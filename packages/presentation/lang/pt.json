@@ -49,10 +49,11 @@
     "Undo": "Desfazer",
     "Redo": "Refazer",
     "ClearCanvas": "Limpar tela",
-    "PenTool": "Ferramenta caneta",
-    "EraserTool": "Ferramenta borracha",
-    "PanTool": "Ferramenta mover",
-    "TextTool": "Ferramenta texto",
+    "PenTool": "Caneta",
+    "EraserTool": "Borracha",
+    "PanTool": "Mover",
+    "TextTool": "Texto",
+    "RectangleTool": "Retângulo",
     "PaletteManagementMenu": "Gerenciar predefinições de cor"
   },
   "status": {

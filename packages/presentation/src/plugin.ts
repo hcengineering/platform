@@ -155,6 +155,7 @@ export default plugin(presentationId, {
     EraserTool: '' as IntlString,
     PanTool: '' as IntlString,
     TextTool: '' as IntlString,
+    RectangleTool: '' as IntlString,
     PaletteManagementMenu: '' as IntlString
   },
   extension: {

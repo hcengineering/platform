@@ -49,10 +49,11 @@
     "Undo": "Annulla",
     "Redo": "Ripristina",
     "ClearCanvas": "Cancella la tela",
-    "PenTool": "Strumento penna",
-    "EraserTool": "Strumento gomma",
-    "PanTool": "Strumento sposta",
-    "TextTool": "Strumento testo",
+    "PenTool": "Penna",
+    "EraserTool": "Gomma",
+    "PanTool": "Sposta",
+    "TextTool": "Testo",
+    "RectangleTool": "Rettangolo",
     "PaletteManagementMenu": "Gestisci i preset di colore"
   },
   "status": {

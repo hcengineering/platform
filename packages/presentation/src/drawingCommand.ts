@@ -20,7 +20,7 @@ export type CommandUid = string & { readonly __brand: 'CommandUid' }
 
 export interface DrawingCmd {
   id: CommandUid
-  type: 'line' | 'text'
+  type: 'line' | 'text' | 'rectangle'
 }
 
 export interface DrawTextCmd extends DrawingCmd {
@@ -36,6 +36,13 @@ export interface DrawLineCmd extends DrawingCmd {
   erasing: boolean
   penColor: ColorMetaNameOrHex
   points: CanvasPoint[]
+}
+
+export interface DrawRectCmd extends DrawingCmd {
+  lineWidth: number
+  penColor: ColorMetaNameOrHex
+  start: CanvasPoint
+  end: CanvasPoint
 }
 
 export const makeCommandUid = (): CommandUid => {

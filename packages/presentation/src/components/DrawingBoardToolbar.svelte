@@ -30,6 +30,7 @@
   import IconEraser from './icons/Eraser.svelte'
   import IconMove from './icons/Move.svelte'
   import IconText from './icons/Text.svelte'
+  import IconRectangle from './icons/Rectangle.svelte'
   import { DrawingTool } from '../drawing'
   import presentation from '../plugin'
   import { ColorMetaName, ColorMetaNameOrHex } from '../drawingUtils'
@@ -47,7 +48,8 @@
     new ToolPresentation(presentation.string.PenTool, IconEdit, 'pen'),
     new ToolPresentation(presentation.string.EraserTool, IconEraser, 'erase'),
     new ToolPresentation(presentation.string.PanTool, IconMove, 'pan'),
-    new ToolPresentation(presentation.string.TextTool, IconText, 'text')
+    new ToolPresentation(presentation.string.TextTool, IconText, 'text'),
+    new ToolPresentation(presentation.string.RectangleTool, IconRectangle, 'shape-rectangle')
   ]
 
   interface DrawingBoardToolbarEvents {
@@ -278,7 +280,7 @@
     </div>
   </Button>
   <div class="divider buttons-divider" />
-  {#if tool === 'pen'}
+  {#if tool === 'pen' || tool === 'shape-rectangle' }
     <input
       class="widthSelector"
       type="range"

@@ -49,10 +49,11 @@
     "Undo": "Geri al",
     "Redo": "Yinele",
     "ClearCanvas": "Tuvali temizle",
-    "PenTool": "Kalem aracı",
-    "EraserTool": "Silgi aracı",
-    "PanTool": "Kaydırma aracı",
-    "TextTool": "Metin aracı",
+    "PenTool": "Kalem",
+    "EraserTool": "Silgi",
+    "PanTool": "Kaydırma",
+    "TextTool": "Metin",
+    "RectangleTool": "Dikdörtgen",
     "PaletteManagementMenu": "Renk önayarlarını yönet"
   },
   "status": {

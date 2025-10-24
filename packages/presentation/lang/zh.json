@@ -49,10 +49,11 @@
     "Undo": "撤销",
     "Redo": "重做",
     "ClearCanvas": "清除画布",
-    "PenTool": "画笔工具",
-    "EraserTool": "橡皮擦工具",
-    "PanTool": "移动工具",
-    "TextTool": "文字工具",
+    "PenTool": "画笔",
+    "EraserTool": "橡皮擦",
+    "PanTool": "移动",
+    "TextTool": "文字",
+    "RectangleTool": "矩形",
     "PaletteManagementMenu": "管理颜色预设"
   },
   "status": {

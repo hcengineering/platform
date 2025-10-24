@@ -31,7 +31,7 @@ import {
   offsetCanvasPoint,
   type ColorMetaNameOrHex
 } from './drawingUtils'
-import { type DrawingCmd, type CommandUid, type DrawTextCmd, type DrawLineCmd, makeCommandUid } from './drawingCommand'
+import { type DrawingCmd, type CommandUid, type DrawTextCmd, type DrawLineCmd, type DrawRectCmd, makeCommandUid } from './drawingCommand'
 import { type ColorsList, DrawingBoardColoringSetup, metaColorNameToHex } from './drawingColors'
 
 export interface DrawingData {
@@ -71,7 +71,7 @@ export interface DrawingProps {
   toolChanged?: (tool: DrawingTool) => void
 }
 
-export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text'
+export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text' | 'shape-rectangle'
 
 const maxTextLength = 500
 
@@ -129,7 +129,7 @@ class DrawState {
   }
 
   isDrawingTool = (): boolean => {
-    return this.tool === 'pen' || this.tool === 'erase'
+    return this.tool === 'pen' || this.tool === 'erase' || this.tool === 'shape-rectangle'
   }
 
   translateCtx = (): void => {
@@ -165,6 +165,8 @@ class DrawState {
   drawCommand = (cmd: DrawingCmd, currentTheme: ThemeVariantType): void => {
     if (cmd.type === 'text') {
       this.drawTextCommand(cmd as DrawTextCmd, currentTheme)
+    } else if (cmd.type === 'rectangle') {
+      this.drawRectCommand(cmd as DrawRectCmd, currentTheme)
     } else {
       this.drawLineCommand(cmd as DrawLineCmd, currentTheme)
     }
@@ -203,6 +205,18 @@ class DrawState {
       this.ctx.fillText(line, p.x, p.y)
       p.y += cmd.fontSize
     }
+    this.ctx.restore()
+  }
+
+  drawRectCommand = (cmd: DrawRectCmd, currentTheme: ThemeVariantType): void => {
+    this.ctx.save()
+    this.translateCtx()
+    this.ctx.beginPath()
+    this.ctx.strokeStyle = metaColorNameToHex(cmd.penColor, currentTheme, this.colors)
+    this.ctx.lineWidth = cmd.lineWidth
+    const width = cmd.end.x - cmd.start.x
+    const height = cmd.end.y - cmd.start.y
+    this.ctx.strokeRect(cmd.start.x, cmd.start.y, width, height)
     this.ctx.restore()
   }
 
@@ -525,7 +539,12 @@ export function drawing (
       toolCursor.style.top = `${parentRelativeLocation.y - cursorSize / 2}px`
 
       if (draw.on) {
-        if (Math.hypot(prevPos.x - scaledPoint.x, prevPos.y - scaledPoint.y) >= draw.minLineLength) {
+        if (draw.tool === 'shape-rectangle') {
+          requestAnimationFrame(() => {
+            replayCommands(currentCommands)
+            drawPreviewRectangle(scaledPoint)
+          })
+        } else if (Math.hypot(prevPos.x - scaledPoint.x, prevPos.y - scaledPoint.y) >= draw.minLineLength) {
           draw.drawLine(scaledPoint, 'intermediate-point', props.getCurrentTheme())
           prevPos = scaledPoint
         }
@@ -557,8 +576,12 @@ export function drawing (
     const scaledPoint = rescaleWithCss(p)
     if (draw.on) {
       if (!forcePan && draw.isDrawingTool()) {
-        draw.drawLine(scaledPoint, 'last-point', props.getCurrentTheme())
-        storeLineCommand()
+        if (draw.tool === 'shape-rectangle') {
+          storeRectCommand(scaledPoint)
+        } else {
+          draw.drawLine(scaledPoint, 'last-point', props.getCurrentTheme())
+          storeLineCommand()
+        }
       } else if (draw.tool === 'pan' || forcePan) {
         props.panned?.(draw.offset)
       } else if (draw.tool === 'text') {
@@ -896,6 +919,44 @@ export function drawing (
         points: draw.points
       }
       props.cmdAdded?.(cmd)
+    }
+  }
+
+  function drawPreviewRectangle (endPoint: MouseScaledPoint): void {
+    if (draw.points.length === 0) return
+
+    const start = draw.points[0]
+    const end = draw.mouseToCanvasPoint(endPoint)
+
+    draw.ctx.save()
+    draw.translateCtx()
+    draw.ctx.beginPath()
+    draw.ctx.strokeStyle = metaColorNameToHex(draw.penColor, props.getCurrentTheme(), colorsSetup)
+    draw.ctx.lineWidth = draw.penWidth
+    const width = end.x - start.x
+    const height = end.y - start.y
+    draw.ctx.strokeRect(start.x, start.y, width, height)
+    draw.ctx.restore()
+  }
+
+  function storeRectCommand (endPoint: MouseScaledPoint): void {
+    if (draw.points.length > 0) {
+      const start = draw.points[0]
+      const end = draw.mouseToCanvasPoint(endPoint)
+
+      const minRectSize = 2
+      const nonDegenerateRect = Math.abs(end.x - start.x) > minRectSize || Math.abs(end.y - start.y) > 2
+      if (nonDegenerateRect) {
+        const cmd: DrawRectCmd = {
+          id: makeCommandUid(),
+          type: 'rectangle',
+          lineWidth: draw.penWidth,
+          penColor: draw.penColor,
+          start,
+          end
+        }
+        props.cmdAdded?.(cmd)
+      }
     }
   }
 

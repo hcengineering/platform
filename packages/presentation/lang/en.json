@@ -49,10 +49,11 @@
     "Undo": "Undo",
     "Redo": "Redo",
     "ClearCanvas": "Clear canvas",
-    "PenTool": "Pen tool",
-    "EraserTool": "Eraser tool",
-    "PanTool": "Pan tool",
-    "TextTool": "Text tool",
+    "PenTool": "Pen",
+    "EraserTool": "Eraser",
+    "PanTool": "Pan",
+    "TextTool": "Text",
+    "RectangleTool": "Rectangle",
     "PaletteManagementMenu": "Manage color presets"
   },
   "status": {

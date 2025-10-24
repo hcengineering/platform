@@ -49,10 +49,11 @@
     "Undo": "Отменить",
     "Redo": "Повторить",
     "ClearCanvas": "Очистить холст",
-    "PenTool": "Инструмент перо",
-    "EraserTool": "Инструмент ластик",
-    "PanTool": "Инструмент перемещения",
-    "TextTool": "Инструмент текст",
+    "PenTool": "Перо",
+    "EraserTool": "Ластик",
+    "PanTool": "Перемещение",
+    "TextTool": "Текст",
+    "RectangleTool": "Прямоугольник",
     "PaletteManagementMenu": "Управление цветовыми пресетами"
   },
   "status": {

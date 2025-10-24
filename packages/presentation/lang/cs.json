@@ -49,10 +49,11 @@
     "Undo": "Zpět",
     "Redo": "Znovu",
     "ClearCanvas": "Vyčistit plátno",
-    "PenTool": "Nástroj pero",
-    "EraserTool": "Nástroj guma",
-    "PanTool": "Nástroj posun",
-    "TextTool": "Nástroj text",
+    "PenTool": "Pero",
+    "EraserTool": "Guma",
+    "PanTool": "Posun",
+    "TextTool": "Text",
+    "RectangleTool": "Obdélník",
     "PaletteManagementMenu": "Spravovat barevné předvolby"
   },
   "status": {
