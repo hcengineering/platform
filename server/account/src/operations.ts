@@ -2611,24 +2611,21 @@ export async function getSubscriptions (
   branding: Branding | null,
   token: string,
   params: {
-    workspaceUuid?: WorkspaceUuid // Optional: used by services only
+    workspaceUuid?: WorkspaceUuid // Optional: used by services only, undefined means all workspaces
     activeOnly?: boolean // Optional: default true - only return active subscriptions
   }
 ): Promise<Subscription[]> {
   const { account, extra, workspace: tokenWorkspace } = decodeTokenVerbose(ctx, token)
   const { workspaceUuid, activeOnly = true } = params
 
-  let targetWorkspace: WorkspaceUuid
+  let targetWorkspace: WorkspaceUuid | null
 
   // Check if this is a service token
   const isService = extra?.service !== undefined
 
   if (isService) {
     // Services can query any workspace
-    if (workspaceUuid === undefined) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-    }
-    targetWorkspace = workspaceUuid
+    targetWorkspace = workspaceUuid ?? null
   } else {
     // Regular users: use workspace from token (ignores workspaceUuid param)
     if (tokenWorkspace === undefined) {
@@ -2652,7 +2649,7 @@ export async function getSubscriptions (
 
   // Fetch subscriptions for workspace (tier + addons + support)
   // By default return only active subscriptions, unless activeOnly=false
-  const query: Query<Subscription> = { workspaceUuid: targetWorkspace }
+  const query: Query<Subscription> = targetWorkspace != null ? { workspaceUuid: targetWorkspace } : {}
   if (activeOnly) {
     query.status = SubscriptionStatus.Active
   }

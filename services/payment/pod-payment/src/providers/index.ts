@@ -63,6 +63,8 @@ export interface WebhookEvent {
  * Includes both subscription operations and webhook handling
  */
 export interface PaymentProvider {
+  get providerName(): string
+
   createSubscription: (
     ctx: MeasureContext,
     request: SubscribeRequest,
@@ -80,6 +82,13 @@ export interface PaymentProvider {
    * Cancel a subscription
    */
   cancelSubscription: (ctx: MeasureContext, subscriptionId: string) => Promise<void>
+
+  /**
+   * Reconcile active subscriptions between provider and our database
+   * This is provider-specific logic and should be delegated to the provider.
+   * All data fetching, transformation, and database updates are handled internally.
+   */
+  reconcileActiveSubscriptions: (ctx: MeasureContext, accountsUrl: string, serviceToken: string) => Promise<void>
 
   /**
    * Register provider-specific webhook endpoints

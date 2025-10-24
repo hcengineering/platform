@@ -28,6 +28,7 @@ import { withAdmin, withLoginInfo, withOwner, withToken, type RequestWithAuth } 
 import { PaymentProviderFactory } from './factory'
 import type { PaymentProvider } from './providers'
 import { SubscribeRequest } from './providers'
+import { startActiveSubscriptionReconciliation } from './reconciliation'
 
 const KEEP_ALIVE_TIMEOUT = 5 // seconds
 
@@ -133,6 +134,14 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
   if (provider == null) {
     throw new Error('Payment provider is not configured. Please provide payment provider configuration.')
   }
+
+  const stopReconciliation = startActiveSubscriptionReconciliation(
+    ctx,
+    config.AccountsUrl,
+    serviceToken,
+    provider,
+    config.ReconciliationIntervalMinutes ?? 60
+  )
 
   // ============ Generic Payment Service Endpoints ============
   // These endpoints are provider-agnostic and work with any payment provider
@@ -261,7 +270,9 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
 
   return {
     app,
-    close: () => {}
+    close: () => {
+      stopReconciliation()
+    }
   }
 }
 

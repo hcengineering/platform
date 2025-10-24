@@ -25,6 +25,8 @@ export interface Config {
   PolarWebhookSecret?: string
   PolarOrganizationId?: string
   PolarSubscriptionPlans?: string
+
+  ReconciliationIntervalMinutes?: number
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -39,7 +41,8 @@ const config: Config = (() => {
     PolarAccessToken: process.env.POLAR_ACCESS_TOKEN,
     PolarWebhookSecret: process.env.POLAR_WEBHOOK_SECRET,
     PolarOrganizationId: process.env.POLAR_ORGANIZATION_ID,
-    PolarSubscriptionPlans: process.env.POLAR_SUBSCRIPTION_PLANS
+    PolarSubscriptionPlans: process.env.POLAR_SUBSCRIPTION_PLANS,
+    ReconciliationIntervalMinutes: parseNumber(process.env.RECONCILIATION_INTERVAL_MINUTES)
   }
 
   const requiredKeys: Array<keyof Config> = ['Port', 'Secret', 'AccountsUrl', 'FrontUrl']

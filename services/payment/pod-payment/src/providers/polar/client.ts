@@ -15,6 +15,7 @@
 
 import { MeasureContext } from '@hcengineering/core'
 import { Polar } from '@polar-sh/sdk'
+import type { Subscription } from '@polar-sh/sdk/models/components/subscription'
 import type { CheckoutResult, CreateCheckoutParams } from './types'
 
 /**
@@ -63,9 +64,31 @@ export class PolarClient {
   /**
    * Get subscription by ID
    */
-  async getSubscription (ctx: MeasureContext, subscriptionId: string): Promise<any> {
+  async getSubscription (ctx: MeasureContext, subscriptionId: string): Promise<Subscription> {
     return await ctx.with('polar-get-subscription', {}, async () => {
       return await this.polar.subscriptions.get({ id: subscriptionId })
+    })
+  }
+
+  /**
+   * Get all active subscriptions
+   * Filters subscriptions by active=true to get only active ones
+   * This is used internally by the provider for reconciliation
+   */
+  async getActiveSubscriptions (ctx: MeasureContext): Promise<Subscription[]> {
+    return await ctx.with('polar-get-active-subscriptions', {}, async () => {
+      const subscriptions: Subscription[] = []
+
+      const iterator = await this.polar.subscriptions.list({
+        limit: 100,
+        active: true
+      })
+
+      for await (const subscription of iterator) {
+        subscriptions.push(...subscription.result.items)
+      }
+
+      return subscriptions
     })
   }
 
@@ -74,7 +97,7 @@ export class PolarClient {
    * Polar subscriptions are canceled via update endpoint with cancelAtPeriodEnd flag
    * Documentation: https://polar.sh/docs/api-reference/subscriptions/update#subscriptioncancel
    */
-  async cancelSubscription (ctx: MeasureContext, subscriptionId: string): Promise<any> {
+  async cancelSubscription (ctx: MeasureContext, subscriptionId: string): Promise<Subscription> {
     return await ctx.with('polar-cancel-subscription', {}, async () => {
       const update = {
         id: subscriptionId,

@@ -16,15 +16,37 @@
 import type { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
 import type { Express, Request, Response } from 'express'
 
+import { getClient, type Subscription, type SubscriptionData } from '@hcengineering/account-client'
 import type { PaymentProvider, SubscribeRequest, CreateSubscriptionResponse } from '../index'
 import { PolarClient } from './client'
 import { handlePolarWebhook } from './webhook'
+import { transformPolarSubscriptionToData } from './utils'
 import { getPlanKey } from '../../utils'
+
+/**
+ * Check if a subscription has changed by comparing modifiedAt timestamps
+ * Returns true if the provider's version is newer than what we have stored
+ */
+function hasSubscriptionChanged (ourSub: SubscriptionData, newData: SubscriptionData): boolean {
+  const ourModifiedAt = ourSub.providerData?.modifiedAt
+  const newModifiedAt = newData.providerData?.modifiedAt
+
+  if (newModifiedAt === undefined) {
+    return false
+  }
+
+  if (ourModifiedAt === undefined) {
+    return true
+  }
+
+  return newModifiedAt > ourModifiedAt
+}
 
 /**
  * Polar.sh implementation of PaymentProvider
  */
 export class PolarProvider implements PaymentProvider {
+  readonly providerName = 'polar'
   private readonly client: PolarClient
   private readonly webhookSecret: string
   // Map: plan@type (Huly) -> productIds (Polar)
@@ -96,6 +118,80 @@ export class PolarProvider implements PaymentProvider {
   async getSubscription (ctx: MeasureContext, subscriptionId: string): Promise<any> {
     ctx.info('Getting Polar subscription', { subscriptionId })
     return await this.client.getSubscription(ctx, subscriptionId)
+  }
+
+  async reconcileActiveSubscriptions (ctx: MeasureContext, accountsUrl: string, serviceToken: string): Promise<void> {
+    try {
+      ctx.info('Starting Polar active subscription reconciliation')
+
+      const accountClient = getClient(accountsUrl, serviceToken)
+      const polarActiveSubscriptions = await this.client.getActiveSubscriptions(ctx)
+      const ourActiveSubscriptions = await accountClient.getSubscriptions()
+
+      const ourSubsByProviderId = new Map(
+        ourActiveSubscriptions.map((sub: Subscription) => [sub.providerSubscriptionId, sub])
+      )
+
+      const polarActiveIds = new Set(polarActiveSubscriptions.map((sub: Record<string, any>) => sub.id))
+
+      // Step 1: Update subscriptions that exist in Polar and have changed
+      let upsertCount = 0
+      for (const polarSub of polarActiveSubscriptions) {
+        try {
+          const subscriptionData = transformPolarSubscriptionToData(polarSub)
+          if (subscriptionData === null) {
+            continue
+          }
+
+          const ourSub = ourSubsByProviderId.get(polarSub.id)
+
+          // Only upsert if subscription doesn't exist locally or if key fields have changed
+          if (ourSub === undefined || hasSubscriptionChanged(ourSub, subscriptionData)) {
+            await accountClient.upsertSubscription(subscriptionData)
+            upsertCount++
+          }
+        } catch (err) {
+          ctx.error('Failed to upsert active subscription', {
+            providerSubId: polarSub.id,
+            err
+          })
+        }
+      }
+
+      // Step 2: Check for subscriptions we think are active but Polar says aren't
+      let staleCount = 0
+      for (const ourSub of ourActiveSubscriptions) {
+        const polarSubId = ourSub.providerSubscriptionId
+        if (!polarActiveIds.has(polarSubId)) {
+          try {
+            // Fetch the current state from Polar directly
+            const currentState = await this.client.getSubscription(ctx, polarSubId)
+            const subscriptionData = transformPolarSubscriptionToData(currentState)
+
+            // Update our database with current state (may have changed to canceled/ended)
+            if (subscriptionData !== null) {
+              await accountClient.upsertSubscription(subscriptionData)
+              staleCount++
+            }
+          } catch (err) {
+            ctx.error('Failed to reconcile subscription status', {
+              subscriptionId: polarSubId,
+              err
+            })
+          }
+        }
+      }
+
+      ctx.info('Polar subscription reconciliation completed', {
+        polarActiveCount: polarActiveSubscriptions.length,
+        ourActiveCount: ourActiveSubscriptions.length,
+        upsertedCount: upsertCount,
+        staleUpdatedCount: staleCount
+      })
+    } catch (err) {
+      ctx.error('Polar subscription reconciliation failed', { err })
+      throw err
+    }
   }
 
   async cancelSubscription (ctx: MeasureContext, subscriptionId: string): Promise<void> {

@@ -372,7 +372,7 @@ implements DbCollection<T> {
           const castType = this.fieldTypes[key]
           currIdx++
           updateChunks.push(`"${snakeKey}" = ${formatVar(currIdx, castType)}`)
-          values.push(ops[key])
+          values.push(convertKeysToSnakeCase(ops[key]))
         }
       }
     }

@@ -18,7 +18,6 @@
  * Uses @polar-sh/sdk for API interactions
  * Documentation: https://docs.polar.sh/api-reference
  */
-
 /**
  * Webhook event wrapper
  */
