@@ -267,12 +267,16 @@
   />
   <div class="divider buttons-divider" />
   <Button
-    icon={toolPresentation.icon}
     kind="icon"
     showTooltip={{ label: toolPresentation.label }}
     noFocus
     on:click={showToolSelectionMenu}
-  />
+  >
+    <div class="tool-button-with-indicator" slot="content">
+      <svelte:component this={toolPresentation.icon} size="small" />
+      <div class="tool-indicator" />
+    </div>
+  </Button>
   <div class="divider buttons-divider" />
   {#if tool === 'pen'}
     <input
@@ -369,5 +373,24 @@
 
   .widthSelector {
     width: 80px;
+  }
+
+  .tool-button-with-indicator {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tool-indicator {
+    position: absolute;
+    bottom: -0.125rem;
+    right: -0.125rem;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 0 0.25rem 0.25rem;
+    border-color: transparent transparent currentColor transparent;
+    opacity: 0.7;
   }
 </style>
