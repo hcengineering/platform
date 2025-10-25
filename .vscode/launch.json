@@ -694,7 +694,8 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "QUEUE_CONFIG": "localhost:19092",
         "QUEUE_REGION": "cockroach",
-        "TEMPORAL_ADDRESS": "localhost:7233"
+        "TEMPORAL_ADDRESS": "localhost:7233",
+        "COLLABORATOR_URL": "ws://localhost:3078"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",

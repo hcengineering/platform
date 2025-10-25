@@ -62,6 +62,7 @@ import { getTemporalClient } from './temporal'
 import { getClient, releaseClient } from './utils'
 import { CreateMessageEvent, MessageEventType } from '@hcengineering/communication-sdk-types'
 import { ActivityUpdateType, ActivityProcess, MessageType } from '@hcengineering/communication-types'
+import { createCollaboratorClient } from './collaborator'
 
 const activeExecutions = new Set<Ref<Execution>>()
 
@@ -72,6 +73,7 @@ export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid,
       const control: ProcessControl = {
         ctx,
         client,
+        collaboratorFactory: () => createCollaboratorClient(ws),
         cache: new Map<string, any>(),
         messageContext: record.context,
         workspace: ws,

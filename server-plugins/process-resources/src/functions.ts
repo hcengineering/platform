@@ -17,11 +17,13 @@ import cardPlugin, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
   Association,
   checkMixinKey,
+  Class,
   Data,
   Doc,
   findProperty,
   generateId,
   getObjectValue,
+  makeDocCollabId,
   matchQuery,
   Ref,
   Relation,
@@ -428,12 +430,41 @@ export async function CreateToDo (
   }
 }
 
+async function getContent (
+  control: ProcessControl,
+  source: string,
+  _id: Ref<Card>,
+  _class: Ref<Class<Card>>
+): Promise<string> {
+  const collabClient = control.collaboratorFactory()
+  const data = source.split('-')
+  const sourceId = data[0]
+  const sourceAttr = data[1]
+  if (isEmpty(sourceId) || isEmpty(sourceAttr)) {
+    throw processError(process.error.RequiredParamsNotProvided, { params: 'content' })
+  }
+  const sourceCard = await control.client.findOne(cardPlugin.class.Card, { _id: sourceId as Ref<Card> })
+  if (sourceCard === undefined) {
+    throw processError(process.error.ObjectNotFound, { _id: sourceId })
+  }
+  const markup = await collabClient.getMarkup(makeDocCollabId(sourceCard, sourceAttr))
+  const ref = await collabClient.createMarkup(
+    {
+      objectClass: _class,
+      objectId: _id,
+      objectAttr: 'content'
+    },
+    markup
+  )
+  return ref
+}
+
 export async function CreateCard (
   params: MethodParams<Card>,
   execution: Execution,
   control: ProcessControl
 ): Promise<ExecuteResult> {
-  const { _class, title, ...attrs } = params
+  const { _class, title, content, ...attrs } = params
   for (const key in { _class, title }) {
     const val = (params as any)[key]
     if (isEmpty(val)) {
@@ -441,10 +472,15 @@ export async function CreateCard (
     }
   }
   const _id = generateId<Card>()
+  const newContent =
+    content !== undefined ? await getContent(control, content, _id, _class as Ref<Class<Card>>) : undefined
   const data = {
     title,
     ...attrs
   } as any
+  if (newContent !== undefined) {
+    data.content = content
+  }
   const tx = control.client.txFactory.createTxCreateDoc(_class as Ref<MasterTag>, execution.space, data, _id)
   const res: Tx[] = [tx]
   const rollback: Tx[] = [control.client.txFactory.createTxRemoveDoc(_class as Ref<MasterTag>, execution.space, _id)]
