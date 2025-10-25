@@ -2,6 +2,26 @@
   "name": "@hcengineering/communication-sdk-types",
   "entries": [
     {
+      "version": "0.7.9",
+      "tag": "@hcengineering/communication-sdk-types_v0.7.9",
+      "date": "Sat, 25 Oct 2025 22:20:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix peer create event"
+          },
+          {
+            "comment": "Bump core"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/communication-types\" from `^0.7.8` to `0.7.9`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.4",
       "tag": "@hcengineering/communication-sdk-types_v0.7.4",
       "date": "Tue, 14 Oct 2025 10:12:38 GMT",

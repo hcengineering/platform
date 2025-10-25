@@ -73,13 +73,15 @@ export type ActivityUpdate =
   | ActivityTypeUpdate
   | ActivityCollaboratorsUpdate
   | ActivityProcess
+  | ActivityCollaborativeChange
 
 export enum ActivityUpdateType {
   Attribute = 'attribute',
   Tag = 'tag',
   Collaborators = 'collaborators',
   Type = 'type',
-  Process = 'process'
+  Process = 'process',
+  CollaborativeChange = 'collaborativeChange'
 }
 
 export interface ActivityProcess {
@@ -104,6 +106,13 @@ export interface ActivityCollaboratorsUpdate {
 export interface ActivityTypeUpdate {
   type: ActivityUpdateType.Type
   newType: CardType
+}
+
+export interface ActivityCollaborativeChange {
+  type: ActivityUpdateType.CollaborativeChange
+  attrKey: string
+  value: string
+  prevValue: string
 }
 
 type AttributeValue = string | number | null
