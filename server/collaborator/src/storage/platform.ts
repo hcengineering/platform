@@ -17,7 +17,9 @@ import activity, { DocUpdateMessage } from '@hcengineering/activity'
 import { Analytics } from '@hcengineering/analytics'
 import { loadCollabJson, loadCollabYdoc, saveCollabJson, saveCollabYdoc } from '@hcengineering/collaboration'
 import { decodeDocumentId } from '@hcengineering/collaborator-client'
-import core, { AttachedData, MeasureContext, Ref, Space, TxOperations } from '@hcengineering/core'
+import { CreateMessageEvent, MessageEventType } from '@hcengineering/communication-sdk-types'
+import { ActivityCollaborativeChange, ActivityUpdateType, MessageType } from '@hcengineering/communication-types'
+import core, { AttachedData, Doc, MeasureContext, OperationDomain, Ref, Space, TxOperations } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { areEqualMarkups } from '@hcengineering/text'
 import { markupToYDoc } from '@hcengineering/text-ydoc'
@@ -263,11 +265,11 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
     await ctx.with(
       'activity',
       {},
-      () => {
+      async () => {
         const space = hierarchy.isDerived(current._class, core.class.Space)
           ? (current._id as Ref<Space>)
           : current.space
-
+        await sendEvent(client, objectAttr, prevValue, currValue, current)
         const data: AttachedData<DocUpdateMessage> = {
           objectId,
           objectClass,
@@ -282,7 +284,7 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
             isMixin: hierarchy.isMixin(objectClass)
           }
         }
-        return client.addCollection(
+        return await client.addCollection(
           activity.class.DocUpdateMessage,
           space,
           current._id,
@@ -299,6 +301,36 @@ export class PlatformStorageAdapter implements CollabStorageAdapter {
 
     return markup.curr
   }
+}
+
+async function sendEvent (
+  client: Omit<TxOperations, 'close'>,
+  attrKey: string,
+  prevValue: string,
+  value: string,
+  doc: Doc
+): Promise<void> {
+  const eventData: ActivityCollaborativeChange = {
+    type: ActivityUpdateType.CollaborativeChange,
+    attrKey,
+    value,
+    prevValue
+  }
+  const event: CreateMessageEvent = {
+    type: MessageEventType.CreateMessage,
+    messageType: MessageType.Activity,
+    cardId: doc._id,
+    cardType: doc._class,
+    extra: {
+      action: 'update',
+      update: eventData
+    },
+    content: '',
+    socialId: client.txFactory.account,
+    date: new Date()
+  }
+
+  await client.domainRequest('communication' as OperationDomain, { event })
 }
 
 async function withRetry<T> (

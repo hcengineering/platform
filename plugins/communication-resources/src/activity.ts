@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import core, { type Class, type Client, type Doc, type Mixin, type Ref } from '@hcengineering/core'
-import view, { type AttributeModel } from '@hcengineering/view'
-import { buildRemovedDoc, getAttributePresenter } from '@hcengineering/view-resources'
 import { type Card } from '@hcengineering/card'
 import {
+  type ActivityAttributeUpdate,
   type ActivityMessage,
   type ActivityUpdate,
   ActivityUpdateType,
   type Message,
   MessageType
 } from '@hcengineering/communication-types'
+import core, { type Class, type Client, type Doc, type Mixin, type Ref } from '@hcengineering/core'
+import view, { type AttributeModel } from '@hcengineering/view'
+import { buildRemovedDoc, getAttributePresenter } from '@hcengineering/view-resources'
 
 const valueTypes: ReadonlyArray<Ref<Class<Doc>>> = [
   core.class.TypeString,
@@ -52,13 +53,16 @@ export async function getAttributeModel (
   update: ActivityUpdate | undefined,
   _class: Ref<Class<Card>>
 ): Promise<AttributeModel | undefined> {
-  if (update == null || update.type !== ActivityUpdateType.Attribute) return undefined
+  if (
+    update == null ||
+    (update.type !== ActivityUpdateType.Attribute && update.type !== ActivityUpdateType.CollaborativeChange)
+  ) { return undefined }
 
   const { attrKey } = update
 
   const model = await getAttributePresenterSafe(
     client,
-    update.mixin ?? _class,
+    (update as ActivityAttributeUpdate).mixin ?? _class,
     attrKey,
     view.mixin.ActivityAttributePresenter
   )
@@ -67,7 +71,7 @@ export async function getAttributeModel (
     return model
   }
 
-  return await getAttributePresenterSafe(client, update.mixin ?? _class, attrKey)
+  return await getAttributePresenterSafe(client, (update as ActivityAttributeUpdate).mixin ?? _class, attrKey)
 }
 
 export async function getAttributeValues (

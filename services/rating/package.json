@@ -71,8 +71,8 @@
     "@hcengineering/postgres": "^0.7.9",
     "@hcengineering/mongo": "^0.7.8",
     "@hcengineering/kafka": "^0.7.8",
-    "@hcengineering/communication-server": "^0.7.8",
-    "@hcengineering/communication-sdk-types": "^0.7.8",
+    "@hcengineering/communication-server": "^0.7.9",
+    "@hcengineering/communication-sdk-types": "^0.7.9",
     "@hcengineering/rating": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
     "lru-cache": "^11.1.0"

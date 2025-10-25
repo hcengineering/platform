@@ -42,7 +42,7 @@
     "@hcengineering/card": "^0.7.0",
     "@hcengineering/communication": "^0.7.0",
     "@hcengineering/communication-resources": "^0.7.0",
-    "@hcengineering/communication-types": "^0.7.8",
+    "@hcengineering/communication-types": "^0.7.9",
     "@hcengineering/communication-shared": "^0.7.8",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/contact-resources": "^0.7.0",
