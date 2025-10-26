@@ -56,7 +56,9 @@ export async function getAttributeModel (
   if (
     update == null ||
     (update.type !== ActivityUpdateType.Attribute && update.type !== ActivityUpdateType.CollaborativeChange)
-  ) { return undefined }
+  ) {
+    return undefined
+  }
 
   const { attrKey } = update
 
