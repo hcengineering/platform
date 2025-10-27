@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, Ref } from '@hcengineering/core'
+  import core, { Class, Doc, Ref, toRank } from '@hcengineering/core'
   import {
     AttributeBarEditor,
     KeyedAttribute,
@@ -38,7 +38,13 @@
 
   function updateKeys (_class: Ref<Class<Doc>>, ignoreKeys: string[], to: Ref<Class<Doc>> | undefined): void {
     const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys, to)
-    keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
+    keys = filtredKeys
+      .filter((key) => !isCollectionAttr(hierarchy, key))
+      .sort((a, b) => {
+        const rankA = a.attr.rank ?? toRank(a.attr._id) ?? ''
+        const rankB = b.attr.rank ?? toRank(b.attr._id) ?? ''
+        return rankA.localeCompare(rankB)
+      })
   }
 
   $: updateKeys(_class, ignoreKeys, to)

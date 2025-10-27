@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Class, Doc, Ref, Space } from '@hcengineering/core'
+  import core, { AnyAttribute, Class, Doc, Ref, Space, toRank } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -81,7 +81,11 @@
     const cl = hierarchy.getClass(_class)
     const attributes = Array.from(
       hierarchy.getAllAttributes(_class, _class === ofClass ? core.class.Doc : cl.extends).values()
-    )
+    ).sort((a, b) => {
+      const rankA = a.rank ?? toRank(a._id) ?? ''
+      const rankB = b.rank ?? toRank(b._id) ?? ''
+      return rankA.localeCompare(rankB)
+    })
     return attributes
   }
 
