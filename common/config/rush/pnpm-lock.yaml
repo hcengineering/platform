@@ -217,8 +217,8 @@ importers:
         specifier: workspace:^0.7.11
         version: link:../types
       '@hcengineering/core':
-        specifier: ^0.7.17
-        version: 0.7.17
+        specifier: ^0.7.18
+        version: 0.7.18
       snappyjs:
         specifier: ^0.7.0
         version: 0.7.0
@@ -275,8 +275,8 @@ importers:
         specifier: workspace:^0.7.11
         version: link:../types
       '@hcengineering/core':
-        specifier: ^0.7.17
-        version: 0.7.17
+        specifier: ^0.7.18
+        version: 0.7.18
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: ^0.7.19
@@ -339,8 +339,8 @@ importers:
         specifier: workspace:^0.7.11
         version: link:../types
       '@hcengineering/core':
-        specifier: ^0.7.17
-        version: 0.7.17
+        specifier: ^0.7.18
+        version: 0.7.18
       '@hcengineering/hulylake-client':
         specifier: ^0.7.17
         version: 0.7.17
@@ -470,8 +470,8 @@ importers:
   ../../packages/types:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.17
-        version: 0.7.17
+        specifier: ^0.7.18
+        version: 0.7.18
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: ^0.7.19
@@ -1062,8 +1062,8 @@ packages:
   '@hcengineering/analytics@0.7.17':
     resolution: {integrity: sha512-AzB2DvmDctEJge8VeAHS3YyRYij/QQlARxa2OCNiY+Vv+2+OsQk0NZsw1yqZqsMkVJ40FTUrzOkI7UdM6RPO1Q==}
 
-  '@hcengineering/core@0.7.17':
-    resolution: {integrity: sha512-K6/mqKhbHMe8SAdK2V0VKCO6bLOk5Fm2cgrphu9WBZyw5K1epZe5vOdvKYmm4qvwV4yuLllFi/VcUUbq1zAdFQ==}
+  '@hcengineering/core@0.7.18':
+    resolution: {integrity: sha512-yezgkRJ5B1WCZW0qEiV2KqOwrSkQpsXOs4YV/T4Oncnu9+8jwR9qSXYNHkYTC6T38Z9Su1X/83RIl/Y4E2ib3Q==}
 
   '@hcengineering/hulylake-client@0.7.17':
     resolution: {integrity: sha512-TPqdc5nd7xV73Y1B2EJ7GxpWazp9ACV1AqHlm6ebYwU1CzXQvbuJxF68itbHmPiNiCmmuiDruJmjnyLGwL18Kw==}
@@ -3653,14 +3653,14 @@ snapshots:
 
   '@hcengineering/account-client@0.7.17':
     dependencies:
-      '@hcengineering/core': 0.7.17
+      '@hcengineering/core': 0.7.18
       '@hcengineering/platform': 0.7.17
 
   '@hcengineering/analytics@0.7.17':
     dependencies:
       '@hcengineering/platform': 0.7.17
 
-  '@hcengineering/core@0.7.17':
+  '@hcengineering/core@0.7.18':
     dependencies:
       '@hcengineering/analytics': 0.7.17
       '@hcengineering/measurements': 0.7.17
@@ -3669,7 +3669,7 @@ snapshots:
 
   '@hcengineering/hulylake-client@0.7.17':
     dependencies:
-      '@hcengineering/core': 0.7.17
+      '@hcengineering/core': 0.7.18
       '@hcengineering/retry': 0.7.17
 
   '@hcengineering/measurements@0.7.17': {}
@@ -3715,14 +3715,14 @@ snapshots:
 
   '@hcengineering/server-token@0.7.17':
     dependencies:
-      '@hcengineering/core': 0.7.17
+      '@hcengineering/core': 0.7.18
       '@hcengineering/platform': 0.7.17
       jwt-simple: 0.5.6
       uuid: 8.3.2
 
   '@hcengineering/text-core@0.7.17':
     dependencies:
-      '@hcengineering/core': 0.7.17
+      '@hcengineering/core': 0.7.18
       fast-equals: 5.3.2
       hash-it: 6.0.0
 
