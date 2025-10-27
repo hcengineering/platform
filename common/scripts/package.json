@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/scripts",
-  "version": "0.7.8",
+  "version": "0.7.11",
   "scripts": {
     "format": "echo \"No format specified\""
   },
