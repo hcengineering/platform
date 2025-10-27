@@ -36,9 +36,9 @@
   "dependencies": {
     "@hcengineering/activity": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.10",
-    "@hcengineering/model": "^0.7.6",
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/model": "^0.7.17",
+    "@hcengineering/platform": "^0.7.17",
     "@hcengineering/rating": "^0.7.0",
     "@hcengineering/model-core": "^0.7.0",
     "@hcengineering/model-presentation": "^0.7.0",

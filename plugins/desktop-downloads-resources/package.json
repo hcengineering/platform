@@ -39,8 +39,8 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.10",
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/platform": "^0.7.17",
     "@hcengineering/presentation": "^0.7.0",
     "@hcengineering/desktop-downloads": "^0.7.0",
     "@hcengineering/theme": "^0.7.0",
