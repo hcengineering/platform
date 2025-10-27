@@ -133,7 +133,7 @@
     "@hcengineering/notification-resources": "^0.7.0",
     "@hcengineering/preference": "^0.7.0",
     "@hcengineering/preference-assets": "^0.7.0",
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/rekoni": "^0.7.0",
     "@hcengineering/tags-assets": "^0.7.0",
     "@hcengineering/tags": "^0.7.0",
@@ -283,7 +283,7 @@
     "electron-updater": "^6.3.4",
     "livekit-client": "^2.15.6",
     "@hcengineering/server-backup": "^0.7.0",
-    "@hcengineering/communication-types": "^0.7.11",
+    "@hcengineering/communication-types": "^0.7.12",
     "ws": "^8.18.2"
   },
   "productName": "Huly Desktop",

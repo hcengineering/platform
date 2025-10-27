@@ -36,17 +36,17 @@
     "@types/node": "^22.15.29"
   },
   "dependencies": {
-    "@hcengineering/mongo": "^0.7.14",
-    "@hcengineering/postgres": "^0.7.14",
+    "@hcengineering/mongo": "^0.7.15",
+    "@hcengineering/postgres": "^0.7.15",
     "mongodb": "^6.16.0",
     "postgres": "^3.4.7",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "otp-generator": "^4.0.1",
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/analytics": "^0.7.17",
-    "@hcengineering/server-storage": "^0.7.14",
-    "@hcengineering/server-core": "^0.7.14",
+    "@hcengineering/server-storage": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.15",
     "@hcengineering/server-pipeline": "^0.7.0"
   }
 }

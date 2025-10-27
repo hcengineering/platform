@@ -66,7 +66,7 @@
   },
   "dependencies": {
     "@anticrm/skillset": "^0.6.0",
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
@@ -82,7 +82,7 @@
     "pdfjs-dist": "2.12.313",
     "sharp": "~0.34.3",
     "morgan": "^1.10.0",
-    "@hcengineering/server-core": "^0.7.14",
+    "@hcengineering/server-core": "^0.7.15",
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/analytics-service": "^0.7.17"

@@ -39,9 +39,9 @@
   "dependencies": {
     "@hcengineering/activity": "^0.7.0",
     "@hcengineering/analytics": "^0.7.17",
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.14",
+    "@hcengineering/server-core": "^0.7.15",
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/workbench": "^0.7.0",
