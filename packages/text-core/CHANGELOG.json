@@ -2,6 +2,18 @@
   "name": "@hcengineering/text-core",
   "entries": [
     {
+      "version": "0.7.18",
+      "tag": "@hcengineering/text-core_v0.7.18",
+      "date": "Mon, 27 Oct 2025 16:46:51 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add support for textColor and textStyle marks"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.17",
       "tag": "@hcengineering/text-core_v0.7.17",
       "date": "Mon, 27 Oct 2025 13:27:12 GMT",

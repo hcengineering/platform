@@ -208,7 +208,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../text
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../text-markdown
       snappyjs:
         specifier: ^0.7.0
@@ -1214,7 +1214,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../core
       '@hcengineering/text-core':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../text-core
       '@tiptap/core':
         specifier: ^2.11.7
@@ -1441,7 +1441,7 @@ importers:
   ../../packages/text-html:
     dependencies:
       '@hcengineering/text-core':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../text-core
       htmlparser2:
         specifier: ^9.0.0
@@ -1493,10 +1493,10 @@ importers:
   ../../packages/text-markdown:
     dependencies:
       '@hcengineering/text-core':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../text-core
       '@hcengineering/text-html':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../text-html
       fast-equals:
         specifier: ^5.2.2
@@ -1560,7 +1560,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../text
       '@hcengineering/text-core':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../text-core
       y-protocols:
         specifier: ^1.0.6

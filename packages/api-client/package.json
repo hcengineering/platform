@@ -59,7 +59,7 @@
     "@hcengineering/core": "workspace:^0.7.18",
     "@hcengineering/platform": "workspace:^0.7.17",
     "@hcengineering/text": "workspace:^0.7.17",
-    "@hcengineering/text-markdown": "workspace:^0.7.17",
+    "@hcengineering/text-markdown": "workspace:^0.7.18",
     "snappyjs": "^0.7.0"
   },
   "repository": "https://github.com/hcengineering/huly.core",

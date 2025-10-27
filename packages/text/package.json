@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "workspace:^0.7.18",
-    "@hcengineering/text-core": "workspace:^0.7.17",
+    "@hcengineering/text-core": "workspace:^0.7.18",
     "@tiptap/core": "^2.11.7",
     "@tiptap/html": "^2.11.7",
     "@tiptap/pm": "^2.11.7",
