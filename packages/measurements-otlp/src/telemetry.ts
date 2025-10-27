@@ -207,7 +207,7 @@ export class OpenTelemetryMetricsContext implements MeasureContext {
       const value = _context !== undefined ? context.with(_context, () => op(c)) : op(c)
       if (value instanceof Promise) {
         needFinally = false
-        if (span !== undefined) {
+        if (span !== undefined && opt?.suspendErrors !== true) {
           void value.catch((err) => {
             span?.recordException(err)
             span?.setStatus({

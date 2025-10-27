@@ -72,6 +72,9 @@ export interface WithOptions {
 
   // Passed context metadata
   meta?: Record<string, string | number | boolean>
+
+  // If passed, will not send an error into span, for some cases we need to throw error from with, without reporting it.
+  suspendErrors?: boolean
 }
 
 /**

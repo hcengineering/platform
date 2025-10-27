@@ -20,7 +20,7 @@ import core, {
   type Class,
   type Classifier,
   ClassifierKind,
-  CustomSequence,
+  type CustomSequence,
   type Data,
   DateRangeMode,
   type Doc,
