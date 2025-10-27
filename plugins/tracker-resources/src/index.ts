@@ -211,8 +211,9 @@ export async function queryIssue<D extends Issue> (
     q2._id = q._id
   }
   const named = await client.findAll<Issue>(_class, q2, { limit: 200 })
+  const lowerSearch = search.toLowerCase()
   for (const d of named) {
-    if (d.identifier.includes(search) || d.title.includes(search)) {
+    if (d.identifier.toLowerCase().includes(lowerSearch) || d.title.toLowerCase().includes(lowerSearch)) {
       if (!numbered.has(d._id)) {
         numbered.set(d._id, d)
       }
