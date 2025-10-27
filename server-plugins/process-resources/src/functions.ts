@@ -473,7 +473,9 @@ export async function CreateCard (
   }
   const _id = generateId<Card>()
   const newContent =
-    content !== undefined && !isEmpty(content) ? await getContent(control, content, _id, _class as Ref<Class<Card>>) : content
+    content !== undefined && !isEmpty(content)
+      ? await getContent(control, content, _id, _class as Ref<Class<Card>>)
+      : content
   const data = {
     title,
     ...attrs
