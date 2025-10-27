@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/text-ydoc",
-  "version": "0.7.17",
+  "version": "0.7.18",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "workspace:^0.7.18",
-    "@hcengineering/text": "workspace:^0.7.17",
+    "@hcengineering/text": "workspace:^0.7.18",
     "@hcengineering/text-core": "workspace:^0.7.18",
     "yjs": "^13.6.27",
     "y-protocols": "^1.0.6"

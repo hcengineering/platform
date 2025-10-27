@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/text",
-  "version": "0.7.17",
+  "version": "0.7.18",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",

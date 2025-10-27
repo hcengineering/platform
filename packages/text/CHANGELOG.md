@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/text
 
-This log was last generated on Mon, 27 Oct 2025 13:27:12 GMT and should not be manually modified.
+This log was last generated on Mon, 27 Oct 2025 17:09:21 GMT and should not be manually modified.
+
+## 0.7.18
+Mon, 27 Oct 2025 17:09:21 GMT
+
+### Patches
+
+- add support for textColor and textStyle marks
 
 ## 0.7.17
 Mon, 27 Oct 2025 13:27:12 GMT
