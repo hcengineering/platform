@@ -72,7 +72,19 @@ class HtmlParseState {
 
   addText (text: string): void {
     const top = this.top()
-    if (top === undefined || text.length === 0 || top.type === MarkupNodeType.doc) {
+    if (top === undefined || text.length === 0) {
+      return
+    }
+
+    // Auto-wrap text in paragraph if we're at the doc level
+    if (top.type === MarkupNodeType.doc) {
+      this.openNode(MarkupNodeType.paragraph)
+      const node: MarkupNode =
+        this.marks.length > 0
+          ? { type: MarkupNodeType.text, text, marks: [...this.marks] }
+          : { type: MarkupNodeType.text, text }
+      this.push(node)
+      this.closeNode(MarkupNodeType.paragraph)
       return
     }
 
@@ -373,11 +385,17 @@ const specialRules: Record<string, HtmlSpecialRule> = {
   span: {
     handleOpenTag: (state: HtmlParseState, tag: string, attributes: Record<string, string>) => {
       const dataType = attributes['data-type']
+      const dataColor = attributes['data-color']
+
       if (dataType === 'reference') {
         state.openNode(MarkupNodeType.reference, {
           id: attributes['data-id'],
           objectclass: attributes['data-objectclass'],
           label: attributes['data-label']
+        })
+      } else if (dataColor !== undefined) {
+        state.openMark(MarkupMarkType.textColor, {
+          color: dataColor
         })
       }
     },
@@ -386,6 +404,9 @@ const specialRules: Record<string, HtmlSpecialRule> = {
       if (top?.type === MarkupNodeType.reference) {
         delete top.content
         state.closeNode(MarkupNodeType.reference)
+      } else {
+        // Check if we have a textColor mark to close
+        state.closeMark(MarkupMarkType.textColor)
       }
     }
   },

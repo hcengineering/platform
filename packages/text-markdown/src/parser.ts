@@ -50,8 +50,8 @@ interface ParsingMarkRule {
 }
 
 interface ParsingSpecialRule {
-  type: (state: MarkdownParseState, tok: Token) => { type: MarkupMarkType | MarkupNodeType, node: boolean }
-  getAttrs?: (tok: Token, state: MarkdownParseState) => Attrs
+  type: (state: MarkdownParseState, tok: Token) => { type: MarkupMarkType | MarkupNodeType, node: boolean } | undefined
+  getAttrs?: (tok: Token, state: MarkdownParseState) => Attrs | undefined
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -161,14 +161,27 @@ class MarkdownParseState {
       if (tok === undefined) {
         break
       }
-      // Check if we need to merge some content into
-      // Merge <sub> </sub> into one html token
+
+      // Merge <sub> ... </sub> into one html token
       if (tok.type === 'html_inline' && tok.content.trim() === '<sub>') {
         while (_toks.length > 0) {
           const _tok = _toks.shift()
           if (_tok !== undefined) {
             tok.content += _tok.content
             if (_tok.type === 'html_inline' && _tok.content.trim() === '</sub>') {
+              break
+            }
+          }
+        }
+      }
+
+      // Merge <span ...> ... </span> into one html token
+      if (tok.type === 'html_inline' && tok.content.trim().startsWith('<span')) {
+        while (_toks.length > 0) {
+          const _tok = _toks.shift()
+          if (_tok !== undefined) {
+            tok.content += _tok.content
+            if (_tok.type === 'html_inline' && _tok.content.trim() === '</span>') {
               break
             }
           }
@@ -277,18 +290,22 @@ function addSpecMark (handlers: HandlersRecord, spec: ParsingMarkRule, type: str
 function addSpecialRule (handlers: HandlersRecord, spec: ParsingSpecialRule, type: string): void {
   handlers[type + '_open'] = (state, tok) => {
     const type = spec.type(state, tok)
-    if (type.node) {
-      state.openNode(type.type as MarkupNodeType, spec.getAttrs?.(tok, state) ?? {})
-    } else {
-      state.openMark({ type: type.type as MarkupMarkType, attrs: spec.getAttrs?.(tok, state) ?? {} })
+    if (type !== undefined) {
+      if (type.node) {
+        state.openNode(type.type as MarkupNodeType, spec.getAttrs?.(tok, state) ?? {})
+      } else {
+        state.openMark({ type: type.type as MarkupMarkType, attrs: spec.getAttrs?.(tok, state) ?? {} })
+      }
     }
   }
   handlers[type + '_close'] = (state, tok) => {
     const type = spec.type(state, tok)
-    if (type.node) {
-      state.closeNode()
-    } else {
-      state.closeMark(type.type as MarkupMarkType)
+    if (type !== undefined) {
+      if (type.node) {
+        state.closeNode()
+      } else {
+        state.closeMark(type.type as MarkupMarkType)
+      }
     }
   }
 }
@@ -696,7 +713,7 @@ export class MarkdownParser {
   }
 
   listRule: RuleCore = (state: TaskListStateCore): boolean => {
-    const tokens = state.tokens
+    const tokens = (state as any).tokens
     const states: Array<{ closeIdx: number, lastItemIdx: number }> = []
 
     // step #1 - convert list items to todo items
@@ -783,7 +800,7 @@ function convertTodoItem (tokens: Token[], open: number): boolean {
       }
 
       const metaTok = inline.children.find(
-        (tok) => tok.type === 'html_inline' && tok.content.startsWith('<!--') && tok.content.endsWith('-->')
+        (tok: Token) => tok.type === 'html_inline' && tok.content.startsWith('<!--') && tok.content.endsWith('-->')
       )
       if (metaTok !== undefined) {
         const metaValues = metaTok.content.slice(5, -4).split(',')

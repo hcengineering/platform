@@ -378,6 +378,30 @@ export const storeMarks: Record<string, MarkProcessor> = {
     mixable: false,
     expelEnclosingWhitespace: false,
     escape: false
+  },
+  textColor: {
+    open: (state, mark, parent, index) => {
+      if (mark.attrs?.color === undefined) {
+        return ''
+      }
+      return `<span style="color: ${mark.attrs.color}" data-color="${mark.attrs.color}">`
+    },
+    close: (state, mark, parent, index) => {
+      if (mark.attrs?.color === undefined) {
+        return ''
+      }
+      return '</span>'
+    },
+    mixable: false,
+    expelEnclosingWhitespace: false,
+    escape: false
+    // },
+    // textStyle: {
+    //   open: '<span>',
+    //   close: '</span>',
+    //   mixable: false,
+    //   expelEnclosingWhitespace: false,
+    //   escape: false
   }
 }
 

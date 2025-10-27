@@ -52,7 +52,9 @@ export enum MarkupMarkType {
   bold = 'bold',
   code = 'code',
   strike = 'strike',
-  underline = 'underline'
+  underline = 'underline',
+  textColor = 'textColor',
+  textStyle = 'textStyle'
 }
 
 /** @public */

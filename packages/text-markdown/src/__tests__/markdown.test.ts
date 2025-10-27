@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MarkupNode } from '@hcengineering/text-core'
+import { MarkupNode, MarkupNodeType, MarkupMarkType } from '@hcengineering/text-core'
 import { markdownToMarkup, markupToMarkdown } from '..'
 import { isMarkdownsEquals } from '../compare'
 
@@ -912,6 +912,25 @@ Lorem ipsum dolor sit amet.
           }
         ]
       }
+    },
+    {
+      name: 'textColor',
+      markdown: '<span style="color: #abcdef" data-color="#abcdef">colored</span>',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.paragraph,
+            content: [
+              {
+                type: MarkupNodeType.text,
+                text: 'colored',
+                marks: [{ type: 'textColor' as MarkupMarkType, attrs: { color: '#abcdef' } }]
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 
@@ -924,11 +943,10 @@ Lorem ipsum dolor sit amet.
     })
   })
 
-  describe('to markup and back', () => {
+  describe('to markdown', () => {
     tests.forEach(({ name, markdown, markup }) => {
       it(name, () => {
-        const json = markdownToMarkup(markdown, options)
-        const serialized = markupToMarkdown(json, options)
+        const serialized = markupToMarkdown(markup as MarkupNode, options)
         expect(serialized).toEqualMarkdown(markdown)
       })
     })
@@ -974,6 +992,47 @@ describe('markupToMarkdown', () => {
                 type: 'text',
                 text: 'Link with spaces and braces',
                 marks: [{ type: 'link', attrs: { href: 'https://example.com/<with spaces>' } }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      name: 'textColor',
+      markdown: '<span style="color: #abcdef" data-color="#abcdef">colored</span>',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.paragraph,
+            content: [
+              {
+                type: MarkupNodeType.text,
+                text: 'colored',
+                marks: [{ type: 'textColor' as MarkupMarkType, attrs: { color: '#abcdef' } }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      name: 'textColor + italic',
+      markdown: '<span style="color: #abcdef" data-color="#abcdef">*styled*</span>',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.paragraph,
+            content: [
+              {
+                type: MarkupNodeType.text,
+                text: 'styled',
+                marks: [
+                  { type: 'textColor' as MarkupMarkType, attrs: { color: '#abcdef' } },
+                  { type: MarkupMarkType.em }
+                ]
               }
             ]
           }
