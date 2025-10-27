@@ -86,7 +86,8 @@ export function hasTranslate (
 
   if (translateTo == null || translateTo === '') return false
   if (message.language != null && dontTranslate.includes(message.language)) return false
-  const res = (message.translates?.[translateTo] ?? '').trim()
+  const translated = message.translates?.[translateTo]
+  const res = typeof translated === 'string' ? translated.trim() : ''
 
   return res !== ''
 }
@@ -138,7 +139,8 @@ export function getMessageTranslation (
 
   if (translateTo == null || translateTo === '') return undefined
   if (message.language != null && dontTranslate.includes(message.language)) return undefined
-  const res = (message.translates?.[translateTo] ?? '').trim()
+  const translated = message.translates?.[translateTo]
+  const res = typeof translated === 'string' ? translated.trim() : ''
 
   return res !== '' ? toMarkup(res) : undefined
 }
