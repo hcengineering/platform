@@ -1,6 +1,11 @@
 # Change Log - @hcengineering/measurements-otlp
 
-This log was last generated on Mon, 27 Oct 2025 04:08:57 GMT and should not be manually modified.
+This log was last generated on Mon, 27 Oct 2025 15:24:19 GMT and should not be manually modified.
+
+## 0.7.17
+Mon, 27 Oct 2025 15:24:19 GMT
+
+_Version update only_
 
 ## 0.7.13
 Mon, 27 Oct 2025 04:08:57 GMT

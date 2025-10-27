@@ -276,12 +276,18 @@ export class NoMetricsContext implements MeasureContext {
 /**
  * Allow to use decorator for context enabled functions
  */
-export function withContext (name: string, params: ParamsType = {}): any {
+export function withContext (name: string, params: ParamsType = {}, options?: WithOptions): any {
   return (target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor => {
     const originalMethod = descriptor.value
     descriptor.value = function (...args: any[]): Promise<any> {
       const ctx = args[0] as MeasureContext
-      return ctx.with(name, params, (ctx) => originalMethod.apply(this, [ctx, ...args.slice(1)]) as Promise<any>)
+      return ctx.with(
+        name,
+        params,
+        (ctx) => originalMethod.apply(this, [ctx, ...args.slice(1)]) as Promise<any>,
+        {},
+        options
+      )
     }
     return descriptor
   }

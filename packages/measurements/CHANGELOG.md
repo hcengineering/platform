@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/measurements
 
-This log was last generated on Mon, 27 Oct 2025 04:08:57 GMT and should not be manually modified.
+This log was last generated on Mon, 27 Oct 2025 15:24:19 GMT and should not be manually modified.
+
+## 0.7.18
+Mon, 27 Oct 2025 15:24:19 GMT
+
+### Patches
+
+- Fix withContext to use options
 
 ## 0.7.14
 Mon, 27 Oct 2025 04:08:57 GMT

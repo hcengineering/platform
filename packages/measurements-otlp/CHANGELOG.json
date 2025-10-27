@@ -2,6 +2,18 @@
   "name": "@hcengineering/measurements-otlp",
   "entries": [
     {
+      "version": "0.7.17",
+      "tag": "@hcengineering/measurements-otlp_v0.7.17",
+      "date": "Mon, 27 Oct 2025 15:24:19 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/measurements\" from `^0.7.17` to `0.7.18`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.13",
       "tag": "@hcengineering/measurements-otlp_v0.7.13",
       "date": "Mon, 27 Oct 2025 04:08:57 GMT",

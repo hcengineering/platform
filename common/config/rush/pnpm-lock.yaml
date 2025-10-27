@@ -468,7 +468,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../analytics
       '@hcengineering/measurements':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../measurements
       '@hcengineering/platform':
         specifier: workspace:^0.7.17
@@ -626,7 +626,7 @@ importers:
   ../../packages/measurements-otlp:
     dependencies:
       '@hcengineering/measurements':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../measurements
       '@opentelemetry/api':
         specifier: ^1.9.0
