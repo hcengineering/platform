@@ -2,6 +2,18 @@
   "name": "@hcengineering/account-client",
   "entries": [
     {
+      "version": "0.7.17",
+      "tag": "@hcengineering/account-client_v0.7.17",
+      "date": "Mon, 27 Oct 2025 13:27:12 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.17` to `0.7.18`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.7",
       "tag": "@hcengineering/account-client_v0.7.7",
       "date": "Wed, 22 Oct 2025 12:46:09 GMT",

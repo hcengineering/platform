@@ -1,6 +1,11 @@
 # Change Log - @hcengineering/model
 
-This log was last generated on Tue, 21 Oct 2025 19:04:55 GMT and should not be manually modified.
+This log was last generated on Mon, 27 Oct 2025 13:27:12 GMT and should not be manually modified.
+
+## 0.7.17
+Mon, 27 Oct 2025 13:27:12 GMT
+
+_Version update only_
 
 ## 0.7.6
 Tue, 21 Oct 2025 19:04:55 GMT

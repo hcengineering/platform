@@ -2,6 +2,18 @@
   "name": "@hcengineering/core",
   "entries": [
     {
+      "version": "0.7.18",
+      "tag": "@hcengineering/core_v0.7.18",
+      "date": "Mon, 27 Oct 2025 13:27:12 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Rank for attributes"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.10",
       "tag": "@hcengineering/core_v0.7.10",
       "date": "Tue, 21 Oct 2025 19:04:55 GMT",

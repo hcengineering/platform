@@ -19,6 +19,7 @@ import { DOMAIN_BENCHMARK } from './benchmark'
 import {
   type Account,
   AccountRole,
+  type AccountUuid,
   type AnyAttribute,
   type AttachedDoc,
   type Class,
@@ -26,6 +27,7 @@ import {
   type Collection,
   type Doc,
   type DocData,
+  type Domain,
   DOMAIN_BLOB,
   DOMAIN_MODEL,
   DOMAIN_TRANSIENT,
@@ -33,6 +35,8 @@ import {
   IndexKind,
   type Obj,
   type Permission,
+  type PluginConfiguration,
+  type Rank,
   type Ref,
   type Role,
   roleOrder,
@@ -41,10 +45,7 @@ import {
   type SocialKey,
   type Space,
   type TypedSpace,
-  type WorkspaceMode,
-  type Domain,
-  type PluginConfiguration,
-  type AccountUuid
+  type WorkspaceMode
 } from './classes'
 import core from './component'
 import { type Hierarchy } from './hierarchy'
@@ -52,7 +53,7 @@ import { type TxOperations } from './operations'
 import { isPredicate } from './predicate'
 import { type Branding, type BrandingMap } from './server'
 import { type DocumentQuery, type FindResult } from './storage'
-import { DOMAIN_TX, TxProcessor, type Tx, type TxCreateDoc, type TxCUD, type TxUpdateDoc } from './tx'
+import { DOMAIN_TX, type Tx, type TxCreateDoc, type TxCUD, TxProcessor, type TxUpdateDoc } from './tx'
 
 function toHex (value: number, chars: number): string {
   const result = value.toString(16)
@@ -999,3 +1000,11 @@ export interface PermissionsGrant {
 }
 
 export type KeysByType<O extends object, T> = { [k in keyof O]-?: O[k] extends T ? k : never }[keyof O]
+
+export function toRank (str: string | undefined): Rank | undefined {
+  if (str === undefined) return
+  if (str.startsWith('0|')) {
+    return str as Rank
+  }
+  return '0|' + str
+}
