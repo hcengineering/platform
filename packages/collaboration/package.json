@@ -35,7 +35,7 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/server-core": "workspace:^0.7.14",
     "@hcengineering/text": "^0.7.17",
     "@hcengineering/text-ydoc": "^0.7.17",
