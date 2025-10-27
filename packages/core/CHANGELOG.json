@@ -2,6 +2,18 @@
   "name": "@hcengineering/server-core",
   "entries": [
     {
+      "version": "0.7.15",
+      "tag": "@hcengineering/server-core_v0.7.15",
+      "date": "Mon, 27 Oct 2025 16:26:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix one second counters"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.8",
       "tag": "@hcengineering/server-core_v0.7.8",
       "date": "Tue, 21 Oct 2025 19:29:19 GMT",
