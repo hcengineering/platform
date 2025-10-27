@@ -27,6 +27,7 @@ export interface Config {
   Secret: string
   ServiceId: string
   HulylakeUrl: string
+  BillingUrl: string
 }
 
 const config: Config = (() => {
@@ -39,7 +40,8 @@ const config: Config = (() => {
     ServiceId: process.env.SERVICE_ID ?? 'translate',
     OpenAIKey: process.env.OPENAI_API_KEY,
     OpenAIModel: (process.env.OPENAI_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
-    OpenAIBaseUrl: process.env.OPENAI_BASE_URL ?? ''
+    OpenAIBaseUrl: process.env.OPENAI_BASE_URL ?? '',
+    BillingUrl: process.env.BILLING_URL ?? ''
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

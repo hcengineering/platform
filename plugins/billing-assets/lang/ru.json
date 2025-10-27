@@ -5,6 +5,9 @@
     "DriveCount": "Количество файлов",
     "OfficeSessionsDuration": "Время встреч",
     "OfficeSessionsBandwidth": "Трафик встреч",
-    "OfficeEgressDuration": "Время записи"
+    "OfficeEgressDuration": "Время записи",
+    "AI": "AI",
+    "TranscriptionTime": "Время транскрипции",
+    "TotalTokens": "Всего токенов"
   }
 }

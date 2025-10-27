@@ -46,6 +46,8 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
+    "@hcengineering/communication-types": "^0.7.9",
+    "@hcengineering/communication-sdk-types": "^0.7.9",
     "@hcengineering/activity": "^0.7.0",
     "@hcengineering/analytics": "^0.7.5",
     "@hcengineering/core": "^0.7.10",

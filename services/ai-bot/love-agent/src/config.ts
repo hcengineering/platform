@@ -35,7 +35,7 @@ interface Config {
   DgVadEvents: boolean
   DgPunctuate: boolean
   DgSmartFormat: boolean
-  DgNoDelay: boolean,
+  DgNoDelay: boolean
   DgSampleRate: number
 }
 

@@ -37,6 +37,11 @@ interface Config {
   Port: number
   LoveEndpoint: string
   DataLabApiKey: string
+  BillingUrl: string
+  DeepgramPollIntervalMinutes: number
+  DeepgramApiKey: string
+  DeepgramProjectId: string
+  DeepgramTag: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -63,7 +68,12 @@ const config: Config = (() => {
     MaxHistoryRecords: parseNumber(process.env.MAX_HISTORY_RECORDS) ?? 500,
     Port: parseNumber(process.env.PORT) ?? 4010,
     LoveEndpoint: process.env.LOVE_ENDPOINT ?? '',
-    DataLabApiKey: process.env.DATALAB_API_KEY ?? ''
+    DataLabApiKey: process.env.DATALAB_API_KEY ?? '',
+    BillingUrl: process.env.BILLING_URL ?? '',
+    DeepgramPollIntervalMinutes: parseNumber(process.env.DEEPGRAM_POLL_INTERVAL_MINUTES) ?? 60,
+    DeepgramApiKey: process.env.DEEPGRAM_API_KEY ?? '',
+    DeepgramProjectId: process.env.DEEPGRAM_PROJECT_ID ?? '',
+    DeepgramTag: process.env.DEEPGRAM_TAG ?? ''
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

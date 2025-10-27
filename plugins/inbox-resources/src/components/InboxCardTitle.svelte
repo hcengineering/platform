@@ -54,7 +54,7 @@
 <div class="labels">
   {#if client.getHierarchy().isDerived(navItem._class, cardPlugin.class.Card)}
     {@const label = client.getHierarchy().getClass(doc?._class ?? navItem._class).label}
-    <span class="title--bold overflow-label clear-mins" use:tooltip={{ label }}>
+    <span class="title--bold overflow-label clear-mins">
       <Label {label} />
     </span>
     {#if doc}

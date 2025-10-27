@@ -60,11 +60,11 @@ export function createServer (controller: AIControl, ctx: MeasureContext): Expre
 
   app.post(
     '/translate',
-    wrapRequest(async (req, res) => {
+    wrapRequest(async (req, res, token) => {
       if (req.body == null || Array.isArray(req.body) || typeof req.body !== 'object') {
         throw new ApiError(400)
       }
-      const response = await controller.translate(req.body as TranslateRequest)
+      const response = await controller.translate(token.workspace, req.body as TranslateRequest)
       if (response === undefined) {
         throw new ApiError(500)
       }

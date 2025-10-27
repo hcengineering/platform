@@ -5,6 +5,9 @@
     "DriveCount": "ファイル数",
     "OfficeSessionsDuration": "会議時間",
     "OfficeSessionsBandwidth": "会議帯域幅",
-    "OfficeEgressDuration": "録画時間"
+    "OfficeEgressDuration": "録画時間",
+    "AI": "AI",
+    "TranscriptionTime": "文字起こし時間",
+    "TotalTokens": "合計トークン"
   }
 }

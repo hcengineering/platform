@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { type PersonId, getCurrentAccount } from '@hcengineering/core'
-  import { getName, getPersonRefsBySocialIds } from '@hcengineering/contact'
-  import { getPersonsByPersonRefs } from '@hcengineering/contact-resources'
+  import { getName } from '@hcengineering/contact'
+  import { getPersonsByPersonIds } from '@hcengineering/contact-resources'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
@@ -25,10 +25,10 @@
   import communication from '../plugin'
 
   export let cardId: CardID
+  export let peerId: string | undefined
 
   const maxTypingPersons = 3
   const acc = getCurrentAccount()
-  const client = getClient()
   const hierarchy = getClient().getHierarchy()
 
   interface TypingGroup {
@@ -40,6 +40,8 @@
 
   let typingInfo = new Map<string, TypingInfo>()
   let typingGroups: TypingGroup[] = []
+
+  $: objectId = peerId ? `peer${peerId}` : cardId
 
   $: void updateTypingPersons(typingInfo)
 
@@ -60,21 +62,22 @@
     const groups: TypingGroup[] = []
 
     for (const [status, personIds] of groupedByStatus.entries()) {
-      const personRefs = await getPersonRefsBySocialIds(client, personIds)
-      const persons = await getPersonsByPersonRefs(Object.values(personRefs))
+      const persons = await getPersonsByPersonIds(personIds)
       const names = Array.from(persons.values())
         .map((person) => getName(hierarchy, person))
         .sort((name1, name2) => name1.localeCompare(name2))
 
-      const displayNames = names.slice(0, maxTypingPersons).join(', ')
-      const moreCount = Math.max(names.length - maxTypingPersons, 0)
+      if (names.length > 0) {
+        const displayNames = names.slice(0, maxTypingPersons).join(', ')
+        const moreCount = Math.max(names.length - maxTypingPersons, 0)
 
-      groups.push({
-        status,
-        names: displayNames,
-        count: names.length,
-        moreCount
-      })
+        groups.push({
+          status,
+          names: displayNames,
+          count: names.length,
+          moreCount
+        })
+      }
     }
 
     groups.sort((a, b) => a.status.localeCompare(b.status))
@@ -91,7 +94,7 @@
   class="root h-4 mt-1 mb-1 ml-0-5 overflow-label"
   use:typing={{
     socialId: acc.primarySocialId,
-    objectId: cardId,
+    objectId,
     onTyping: handleTyping
   }}
 >

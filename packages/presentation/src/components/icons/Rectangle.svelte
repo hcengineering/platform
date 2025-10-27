@@ -12,22 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { LabelAndProps, tooltip } from '@hcengineering/ui'
-
-  export let value: string | undefined
-
-  $: tooltipParams = getTooltip(value)
-
-  function getTooltip (value: string | undefined): LabelAndProps | undefined {
-    if (value === undefined) return
-    return {
-      label: getEmbeddedLabel(value)
-    }
-  }
+  export let size: 'small' | 'medium' | 'large'
+  const fill: string = 'currentColor'
 </script>
 
-<span class="overflow-label px-3" use:tooltip={tooltipParams}>
-  {value ?? ''}
-</span>
+<svg class="svg-{size}" {fill} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <path d="M2 3h12v10H2V3zm1 1v8h10V4H3z" />
+</svg>

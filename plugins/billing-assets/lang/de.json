@@ -5,6 +5,9 @@
     "DriveCount": "Dateianzahl",
     "OfficeSessionsDuration": "Besprechungsdauer",
     "OfficeSessionsBandwidth": "Besprechungsbandbreite",
-    "OfficeEgressDuration": "Aufzeichnungsdauer"
+    "OfficeEgressDuration": "Aufzeichnungsdauer",
+    "AI": "AI",
+    "TranscriptionTime": "Transkriptionszeit",
+    "TotalTokens": "Gesamte Tokens"
   }
 }

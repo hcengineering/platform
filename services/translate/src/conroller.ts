@@ -37,6 +37,7 @@ import { MessageEventType, TranslateMessageEvent, UpdatePatchEvent } from '@hcen
 
 import { Storage } from './storage'
 import config from './config'
+import { pushTokensData } from './billing'
 
 export class Controller {
   private readonly languagesByWorkspace = new Map<WorkspaceUuid, string[]>()
@@ -146,7 +147,7 @@ export class Controller {
     const txes: Tx[] = []
     for (const lang of translateTo) {
       try {
-        const result = await withRetry(() => this.translate(message.content, lang))
+        const result = await withRetry(() => this.translate(workspace, message.content, lang))
         if (result == null) continue
         const translation = result?.translation ?? ''
 
@@ -211,7 +212,7 @@ export class Controller {
 
     for (const lang of translateTo) {
       try {
-        const result = await withRetry(() => this.translate(content, lang))
+        const result = await withRetry(() => this.translate(workspace, content, lang))
         if (result == null) continue
         const translation = result?.translation ?? ''
         if (result?.original_language != null && result.original_language !== '') {
@@ -278,6 +279,7 @@ export class Controller {
   }
 
   private async translate (
+    workspace: WorkspaceUuid,
     markdown: string,
     lang: string
   ): Promise<{ original_language?: string, translation?: string } | undefined> {
@@ -311,6 +313,17 @@ Do not add any explanations, comments, or extra text outside the JSON.
         }
       ]
     })
+
+    if (response.usage != null) {
+      void pushTokensData(this.ctx, [
+        {
+          workspace,
+          reason: 'auto-translate',
+          tokens: response.usage.total_tokens,
+          date: new Date(response.created * 1000).toISOString()
+        }
+      ])
+    }
 
     const res = response.choices[0]?.message.content ?? ''
 

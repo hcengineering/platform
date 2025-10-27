@@ -56,7 +56,8 @@ import {
   TypeNumber,
   TypeRef,
   TypeString,
-  UX
+  UX,
+  ReadOnly
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import { TAttachedDoc, TClass, TDoc, TMixin, TSpace } from '@hcengineering/model-core'
@@ -92,6 +93,11 @@ export class TTag extends TMixin implements Tag {
 @Model(card.class.Card, core.class.Doc, DOMAIN_CARD)
 @UX(card.string.Card, card.icon.Card)
 export class TCard extends TDoc implements Card {
+  @Prop(TypeRef(card.class.CardSpace), core.string.Space)
+  @Index(IndexKind.Indexed)
+  @ReadOnly()
+  declare space: Ref<CardSpace>
+
   @Prop(TypeRef(card.class.MasterTag), card.string.MasterTag)
   declare _class: Ref<MasterTag>
 
@@ -129,6 +135,10 @@ export class TCard extends TDoc implements Card {
   children?: number
 
   parentInfo!: ParentInfo[]
+
+  @Hidden()
+  @ReadOnly()
+    peerId?: string
 }
 
 @Model(card.class.CardSpace, core.class.Space, DOMAIN_SPACE)

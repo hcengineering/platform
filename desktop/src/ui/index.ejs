@@ -43,6 +43,10 @@
             --huly-history-box-left-indent: 0;
         }
 
+        .history-box {
+            display: none !important;
+        }
+
         [data-theme="theme-dark"] {
             --bg-body: #1a1928;
             --bg-secondary: #323233;
@@ -207,6 +211,15 @@
             user-select: none;
         }
 
+        .desktop-app-control-button.desktop-app-back,
+        .desktop-app-control-button.desktop-app-forward {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1;
+            padding-bottom: 2px;
+            -webkit-text-stroke: 0.5px currentColor;
+        }
+
         .desktop-app-control-button:hover {
             background-color: var(--bg-hover);
         }
@@ -227,6 +240,11 @@
     <div id="desktop-app-titlebar-root">
         <div class="desktop-app-titlebar">
             <div class="desktop-app-menu-container">
+            </div>
+
+            <div class="desktop-app-window-controls">
+                <button class="desktop-app-control-button desktop-app-back" id="back-button" title="Back">←</button>
+                <button class="desktop-app-control-button desktop-app-forward" id="forward-button" title="Forward">→</button>
             </div>
 
             <div class="desktop-app-window-title" id="application-title-bar-caption">Huly</div>

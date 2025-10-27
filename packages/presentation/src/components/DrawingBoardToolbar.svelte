@@ -26,10 +26,13 @@
     eventToHTMLElement,
     showPopup
   } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { ComponentType, createEventDispatcher, onMount } from 'svelte'
   import IconEraser from './icons/Eraser.svelte'
   import IconMove from './icons/Move.svelte'
   import IconText from './icons/Text.svelte'
+  import IconRectangle from './icons/Rectangle.svelte'
+  import IconEllipse from './icons/Ellipse.svelte'
+  import IconLine from './icons/Line.svelte'
   import { DrawingTool } from '../drawing'
   import presentation from '../plugin'
   import { ColorMetaName, ColorMetaNameOrHex } from '../drawingUtils'
@@ -37,6 +40,23 @@
   import DrawingBoardColorSelectorIcon from './DrawingBoardColorSelectorIcon.svelte'
   import { ColorsList, DrawingBoardColoringSetup } from '../drawingColors'
   import { Analytics } from '@hcengineering/analytics'
+  import type { IntlString } from '@hcengineering/platform'
+
+  interface ToolPresentation {
+    label: IntlString
+    icon: ComponentType
+    tool: DrawingTool
+  }
+
+  const tools: ToolPresentation[] = [
+    { label: presentation.string.PenTool, icon: IconEdit, tool: 'pen' },
+    { label: presentation.string.EraserTool, icon: IconEraser, tool: 'erase' },
+    { label: presentation.string.PanTool, icon: IconMove, tool: 'pan' },
+    { label: presentation.string.TextTool, icon: IconText, tool: 'text' },
+    { label: presentation.string.LineTool, icon: IconLine, tool: 'shape-line' },
+    { label: presentation.string.RectangleTool, icon: IconRectangle, tool: 'shape-rectangle' },
+    { label: presentation.string.EllipseTool, icon: IconEllipse, tool: 'shape-ellipse' }
+  ]
 
   interface DrawingBoardToolbarEvents {
     undo: undefined
@@ -45,6 +65,7 @@
   }
 
   const dispatch = createEventDispatcher<DrawingBoardToolbarEvents>()
+
   const maxColors = 8
   const minColors = 0
   const defaultColor: ColorMetaName = 'alpha'
@@ -58,6 +79,21 @@
   }
 
   export let tool: DrawingTool = 'pen'
+
+  function evaluateToolPresentation (tool: DrawingTool): ToolPresentation {
+    const found = tools.find((t) => t.tool === tool)
+    if (found == null) {
+      return tools[0]
+    }
+    return found
+  }
+
+  let toolPresentation: ToolPresentation = evaluateToolPresentation(tool)
+
+  $: {
+    toolPresentation = evaluateToolPresentation(tool)
+  }
+
   export let penColor: ColorMetaNameOrHex
   export let penWidth: number
   export let eraserWidth: number
@@ -150,6 +186,25 @@
     localStorage.setItem(storageKey.color, penColor)
   }
 
+  function showToolSelectionMenu (ev: MouseEvent): void {
+    const items: Array<Omit<SelectPopupValueType, 'id'> & { id: DrawingTool }> = []
+    for (const toolPresentation of tools) {
+      if (toolPresentation.tool === 'pan' && !showPanTool) {
+        continue
+      }
+      items.push({
+        id: toolPresentation.tool,
+        label: toolPresentation.label,
+        icon: toolPresentation.icon
+      })
+    }
+    showPopup(SelectPopup, { value: items }, eventToHTMLElement(ev), (id: DrawingTool | undefined) => {
+      if (id != null) {
+        tool = id
+      }
+    })
+  }
+
   onMount(() => {
     try {
       const savedColors = localStorage.getItem(storageKey.colors)
@@ -210,61 +265,23 @@
     }}
   />
   <div class="divider buttons-divider" />
+  <Button kind="icon" showTooltip={{ label: toolPresentation.label }} noFocus on:click={showToolSelectionMenu}>
+    <div class="tool-button-with-indicator" slot="content">
+      <svelte:component this={toolPresentation.icon} size="small" />
+      <div class="tool-indicator" />
+    </div>
+  </Button>
   <Button
     icon={IconDelete}
     kind="icon"
     showTooltip={{ label: presentation.string.ClearCanvas }}
     noFocus
     on:click={() => {
-      tool = 'pen'
       dispatch('clear')
     }}
   />
   <div class="divider buttons-divider" />
-  <Button
-    icon={IconEdit}
-    kind="icon"
-    showTooltip={{ label: presentation.string.PenTool }}
-    noFocus
-    selected={tool === 'pen'}
-    on:click={() => {
-      tool = 'pen'
-    }}
-  />
-  <Button
-    icon={IconEraser}
-    kind="icon"
-    showTooltip={{ label: presentation.string.EraserTool }}
-    noFocus
-    selected={tool === 'erase'}
-    on:click={() => {
-      tool = 'erase'
-    }}
-  />
-  {#if showPanTool}
-    <Button
-      icon={IconMove}
-      kind="icon"
-      showTooltip={{ label: presentation.string.PanTool }}
-      noFocus
-      selected={tool === 'pan'}
-      on:click={() => {
-        tool = 'pan'
-      }}
-    />
-  {/if}
-  <Button
-    icon={IconText}
-    kind="icon"
-    showTooltip={{ label: presentation.string.TextTool }}
-    noFocus
-    selected={tool === 'text'}
-    on:click={() => {
-      tool = 'text'
-    }}
-  />
-  <div class="divider buttons-divider" />
-  {#if tool === 'pen'}
+  {#if tool !== 'erase' && tool !== 'pan' && tool !== 'text'}
     <input
       class="widthSelector"
       type="range"
@@ -336,7 +353,12 @@
     &.inside {
       left: 0.5rem;
       top: 0.5rem;
+      right: auto;
       bottom: unset;
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      max-width: calc(100% - 1rem);
       background-color: var(--theme-popup-header);
       border-radius: var(--small-BorderRadius);
       border: 1px solid var(--theme-popup-divider);
@@ -359,5 +381,24 @@
 
   .widthSelector {
     width: 80px;
+  }
+
+  .tool-button-with-indicator {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tool-indicator {
+    position: absolute;
+    bottom: -0.125rem;
+    right: -0.125rem;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 0 0.25rem 0.25rem;
+    border-color: transparent transparent currentColor transparent;
+    opacity: 0.7;
   }
 </style>

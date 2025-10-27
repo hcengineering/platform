@@ -5,6 +5,9 @@
     "DriveCount": "Dosya sayısı",
     "OfficeSessionsDuration": "Toplantı süresi",
     "OfficeSessionsBandwidth": "Toplantı bant genişliği",
-    "OfficeEgressDuration": "Kayıt süresi"
+    "OfficeEgressDuration": "Kayıt süresi",
+    "AI": "AI",
+    "TranscriptionTime": "Transkripsiyon süresi",
+    "TotalTokens": "Toplam belirteçler"
   }
 }
