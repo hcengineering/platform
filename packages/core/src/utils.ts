@@ -1006,5 +1006,5 @@ export function toRank (str: string | undefined): Rank | undefined {
   if (str.startsWith('0|')) {
     return str
   }
-  return '0|' + str
+  return '0|' + str.replaceAll(/[-:_]/g, '').toLowerCase()
 }
