@@ -33,12 +33,12 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.10",
-    "@hcengineering/model": "^0.7.6",
+    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/model": "^0.7.17",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-github": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.8",
+    "@hcengineering/server-core": "^0.7.14",
     "@hcengineering/github": "^0.7.0",
     "@hcengineering/tracker": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",

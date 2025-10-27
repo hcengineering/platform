@@ -35,10 +35,10 @@
   },
   "dependencies": {
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.10",
+    "@hcengineering/core": "^0.7.17",
     "@hcengineering/hr": "^0.7.0",
     "@hcengineering/hr-resources": "^0.7.0",
-    "@hcengineering/model": "^0.7.6",
+    "@hcengineering/model": "^0.7.17",
     "@hcengineering/model-attachment": "^0.7.0",
     "@hcengineering/model-calendar": "^0.7.0",
     "@hcengineering/model-chunter": "^0.7.0",
@@ -47,7 +47,7 @@
     "@hcengineering/model-view": "^0.7.0",
     "@hcengineering/model-workbench": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/platform": "^0.7.17",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/view": "^0.7.0"
   }

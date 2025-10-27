@@ -38,13 +38,13 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/platform": "^0.7.17",
     "svelte": "^4.2.20",
     "@hcengineering/gmail": "^0.7.0",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/text": "^0.7.5",
-    "@hcengineering/text-html": "^0.7.5",
+    "@hcengineering/text": "^0.7.17",
+    "@hcengineering/text-html": "^0.7.17",
     "@hcengineering/text-editor": "^0.7.0",
     "@hcengineering/text-editor-resources": "^0.7.0",
     "@hcengineering/card": "^0.7.0",
@@ -57,12 +57,12 @@
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/attachment-resources": "^0.7.0",
     "@hcengineering/login": "^0.7.0",
-    "@hcengineering/core": "^0.7.10",
+    "@hcengineering/core": "^0.7.17",
     "@hcengineering/panel": "^0.7.0",
-    "@hcengineering/analytics": "^0.7.5",
+    "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/templates": "^0.7.0",
     "@hcengineering/integration-client": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.7",
+    "@hcengineering/account-client": "^0.7.17",
     "@hcengineering/setting-resources": "^0.7.0"
   }
 }

@@ -34,12 +34,12 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.10",
-    "@hcengineering/model": "^0.7.6",
+    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/model": "^0.7.17",
     "@hcengineering/model-core": "^0.7.0",
     "@hcengineering/model-presentation": "^0.7.0",
     "@hcengineering/model-workbench": "^0.7.0",
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/platform": "^0.7.17",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/uploader": "^0.7.0",
     "@hcengineering/uploader-resources": "^0.7.0"

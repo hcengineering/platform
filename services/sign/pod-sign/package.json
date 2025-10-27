@@ -53,16 +53,16 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/server-token": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.8",
-    "@hcengineering/server": "^0.7.9",
-    "@hcengineering/server-storage": "^0.7.9",
-    "@hcengineering/core": "^0.7.10",
-    "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/client": "^0.7.6",
-    "@hcengineering/client-resources": "^0.7.6",
-    "@hcengineering/server-client": "^0.7.8",
-    "@hcengineering/account-client": "^0.7.7",
+    "@hcengineering/server-token": "^0.7.17",
+    "@hcengineering/server-core": "^0.7.14",
+    "@hcengineering/server": "^0.7.14",
+    "@hcengineering/server-storage": "^0.7.14",
+    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/client": "^0.7.17",
+    "@hcengineering/client-resources": "^0.7.17",
+    "@hcengineering/server-client": "^0.7.14",
+    "@hcengineering/account-client": "^0.7.17",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.21.2",
@@ -73,6 +73,6 @@
     "node-forge": "^1.3.1",
     "pdf-lib": "^1.12.0",
     "mongodb": "^6.16.0",
-    "@hcengineering/analytics-service": "^0.7.5"
+    "@hcengineering/analytics-service": "^0.7.17"
   }
 }
