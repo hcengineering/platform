@@ -386,6 +386,7 @@ const specialRules: Record<string, HtmlSpecialRule> = {
     handleOpenTag: (state: HtmlParseState, tag: string, attributes: Record<string, string>) => {
       const dataType = attributes['data-type']
       const dataColor = attributes['data-color']
+      const style = attributes.style
 
       if (dataType === 'reference') {
         state.openNode(MarkupNodeType.reference, {
@@ -397,6 +398,24 @@ const specialRules: Record<string, HtmlSpecialRule> = {
         state.openMark(MarkupMarkType.textColor, {
           color: dataColor
         })
+      } else if (style !== undefined) {
+        const attrs: Record<string, string> = {}
+        style.split(';').forEach((part) => {
+          const [key, value] = part.split(':')
+          if (key !== undefined && value !== undefined) {
+            const trimmedKey = key.trim()
+            const trimmedValue = value.trim()
+            if (trimmedKey.length > 0 && trimmedValue.length > 0) {
+              // Convert CSS property names to camelCase (e.g., font-family -> fontFamily)
+              const camelKey = trimmedKey.replace(/-([a-z])/g, (g) => g[1].toUpperCase())
+              attrs[camelKey] = trimmedValue
+            }
+          }
+        })
+
+        if (Object.keys(attrs).length > 0) {
+          state.openMark(MarkupMarkType.textStyle, attrs)
+        }
       }
     },
     handleCloseTag: (state: HtmlParseState, tag: string) => {
@@ -405,8 +424,8 @@ const specialRules: Record<string, HtmlSpecialRule> = {
         delete top.content
         state.closeNode(MarkupNodeType.reference)
       } else {
-        // Check if we have a textColor mark to close
         state.closeMark(MarkupMarkType.textColor)
+        state.closeMark(MarkupMarkType.textStyle)
       }
     }
   },

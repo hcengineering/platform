@@ -395,13 +395,32 @@ export const storeMarks: Record<string, MarkProcessor> = {
     mixable: false,
     expelEnclosingWhitespace: false,
     escape: false
-    // },
-    // textStyle: {
-    //   open: '<span>',
-    //   close: '</span>',
-    //   mixable: false,
-    //   expelEnclosingWhitespace: false,
-    //   escape: false
+  },
+  textStyle: {
+    open: (state, mark, parent, index) => {
+      const attrs = mark.attrs ?? {}
+      if (Object.keys(attrs).length === 0) {
+        return ''
+      }
+      const styleAttrs = Object.entries(attrs)
+        .map(([key, value]) => {
+          const kebabKey = key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
+          return `${kebabKey}: ${value}`
+        })
+        .join('; ')
+
+      return `<span style="${styleAttrs}">`
+    },
+    close: (state, mark, parent, index) => {
+      const attrs = mark.attrs ?? {}
+      if (Object.keys(attrs).length === 0) {
+        return ''
+      }
+      return '</span>'
+    },
+    mixable: false,
+    expelEnclosingWhitespace: false,
+    escape: false
   }
 }
 

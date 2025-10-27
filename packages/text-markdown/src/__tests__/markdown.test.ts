@@ -1038,6 +1038,68 @@ describe('markupToMarkdown', () => {
           }
         ]
       }
+    },
+    {
+      name: 'textStyle with font-family',
+      markdown: '<span style="font-family: Arial">arial</span>',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.paragraph,
+            content: [
+              {
+                type: MarkupNodeType.text,
+                text: 'arial',
+                marks: [{ type: MarkupMarkType.textStyle, attrs: { fontFamily: 'Arial' } }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      name: 'textStyle with multiple properties',
+      markdown: '<span style="font-family: Arial; font-size: 16px; font-weight: bold">styled</span>',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.paragraph,
+            content: [
+              {
+                type: MarkupNodeType.text,
+                text: 'styled',
+                marks: [
+                  {
+                    type: MarkupMarkType.textStyle,
+                    attrs: { fontFamily: 'Arial', fontSize: '16px', fontWeight: 'bold' }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      name: 'textStyle with color (no data-color)',
+      markdown: '<span style="color: red">red</span>',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.paragraph,
+            content: [
+              {
+                type: MarkupNodeType.text,
+                text: 'red',
+                marks: [{ type: MarkupMarkType.textStyle, attrs: { color: 'red' } }]
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 

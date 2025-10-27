@@ -132,6 +132,28 @@ function addMark (builder: NodeBuilder, mark?: MarkupMark, next?: () => void): v
       builder.openTag('u')
       next?.()
       builder.closeTag('u')
+    } else if (mark.type === MarkupMarkType.textColor) {
+      const color = attrs.color
+      builder.openTag('span', {
+        style: color !== undefined ? `color: ${color}` : undefined,
+        'data-color': color
+      })
+      next?.()
+      builder.closeTag('span')
+    } else if (mark.type === MarkupMarkType.textStyle) {
+      // Convert camelCase properties back to kebab-case CSS properties
+      const styleAttrs = Object.entries(attrs)
+        .map(([key, value]) => {
+          const kebabKey = key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
+          return `${kebabKey}: ${value}`
+        })
+        .join('; ')
+
+      builder.openTag('span', {
+        style: styleAttrs
+      })
+      next?.()
+      builder.closeTag('span')
     } else {
       // Handle unknown mark as span with data attribute
       builder.openTag('span', { 'data-mark-type': mark.type as string })
