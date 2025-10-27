@@ -84,6 +84,14 @@ describe('OneSecondCountersImpl', () => {
       expect(entries).toEqual([['op', 0]])
     })
 
+    it('focused: counter returns to 0 after operation finishes', async () => {
+      // Ensure explicitly that counter returns to 0 after the operation completes
+      await counters.withCounter('focus', 3, async () => 'ok')
+      const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+      // 'focus' counter should be 0
+      expect(entries.find((e) => e[0] === 'focus')).toEqual(['focus', 0])
+    })
+
     it('should decrement counter on operation error', async () => {
       const operation = jest.fn(async () => {
         throw new Error('Operation failed')
@@ -196,6 +204,20 @@ describe('OneSecondCountersImpl', () => {
       // Counter should be decremented to 0 by timeout
       const entries = Array.from(counters.entries())
       expect(entries).toEqual([['op', 0]])
+    })
+
+    it('focused: counter returns to 0 after timeout', async () => {
+      // Start an operation that never resolves
+      void counters.withCounter('timen', 4, async (): Promise<void> => {
+        // never resolves
+      })
+      // Counter should be incremented
+      expect(Array.from(counters.entries()).find((e) => e[0] === 'timen')?.[1]).toBe(4)
+      // Fast-forward past the timeout and run check
+      jest.advanceTimersByTime(61 * 1000)
+      counters.check()
+      // After timeout the counter for 'timen' should be back to 0
+      expect(Array.from(counters.entries()).find((e) => e[0] === 'timen')).toEqual(['timen', 0])
     })
 
     it('should clean up multiple expired timeouts', async () => {

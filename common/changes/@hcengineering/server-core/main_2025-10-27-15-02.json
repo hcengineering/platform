@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/server-core",
+      "comment": "Fix one second counters",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/server-core"
+}

@@ -431,7 +431,8 @@ export async function calcHashHash (ctx: MeasureContext, domain: Domain, adapter
 
 export class OneSecondCountersImpl implements OneSecondCounters {
   private readonly counters = new Map<string, number>()
-  private counterTimeouts: [number, () => void][] = []
+  private readonly counterTimeouts = new Map<number, [number, () => void]>()
+  ids: number = 0
 
   add (counter: string, count: number): void {
     this.counters.set(counter, (this.counters.get(counter) ?? 0) + count)
@@ -440,7 +441,8 @@ export class OneSecondCountersImpl implements OneSecondCounters {
   async withCounter<T>(counter: string, count: number, op: () => Promise<T>): Promise<T> {
     this.add(counter, count)
     let cleared = false
-    this.counterTimeouts.push([
+    const id = ++this.ids
+    this.counterTimeouts.set(id, [
       platformNow() + 60 * 1000, // One minute timeout
       () => {
         if (!cleared) {
@@ -455,6 +457,7 @@ export class OneSecondCountersImpl implements OneSecondCounters {
       if (!cleared) {
         this.add(counter, -count)
       }
+      cleared = true
     }
   }
 
@@ -465,11 +468,11 @@ export class OneSecondCountersImpl implements OneSecondCounters {
   check (): void {
     // Check for timeouts
     const now = platformNow()
-    for (const [timeout, cb] of this.counterTimeouts) {
+    for (const [k, [timeout, cb]] of [...this.counterTimeouts.entries()]) {
       if (timeout < now) {
         cb()
+        this.counterTimeouts.delete(k)
       }
     }
-    this.counterTimeouts = this.counterTimeouts.filter((it) => it[0] >= now)
   }
 }
