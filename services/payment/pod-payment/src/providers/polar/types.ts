@@ -40,6 +40,7 @@ export interface CreateCheckoutMetadata {
 export interface CreateCheckoutParams {
   productIds: string[]
   successUrl: string
+  returnUrl?: string
   externalCustomerId: string
   metadata: CreateCheckoutMetadata
   customerEmail?: string

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Asset, type IntlString } from '@hcengineering/platform'
+  import { type Asset, type IntlString, getMetadata } from '@hcengineering/platform'
   import {
     AnySvelteComponent,
     Breadcrumb,
@@ -29,6 +29,7 @@
     resolvedLocationStore,
     twoPanelsSeparators
   } from '@hcengineering/ui'
+  import presentation from '@hcengineering/presentation'
   import { onDestroy } from 'svelte'
 
   import ResourceUsage from './ResourceUsage.svelte'
@@ -43,7 +44,7 @@
     component: AnySvelteComponent
   }
 
-  const groups: SettingGroup[] = [
+  const baseGroups: SettingGroup[] = [
     {
       key: 'usage',
       icon: plugin.icon.Billing,
@@ -57,6 +58,10 @@
       component: Subscriptions
     }
   ]
+
+  // Only include subscriptions group if payment URL is configured
+  const paymentUrl = getMetadata(presentation.metadata.PaymentUrl)
+  const groups = (paymentUrl != null && paymentUrl !== '') ? baseGroups : baseGroups.filter((g) => g.key !== 'subscriptions')
 
   let currentGroupKey = groups[0].key
   let currentGroup = groups[0]

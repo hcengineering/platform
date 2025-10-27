@@ -40,6 +40,7 @@ export class PolarClient {
       const checkout = await this.polar.checkouts.create({
         products: params.productIds,
         successUrl: params.successUrl,
+        returnUrl: params.returnUrl,
         externalCustomerId: params.externalCustomerId,
         customerEmail: params.customerEmail,
         customerName: params.customerName,

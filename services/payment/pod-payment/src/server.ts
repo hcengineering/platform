@@ -306,7 +306,8 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
             )
 
             // Check if we should upsert (doesn't exist or has changed)
-            const shouldUpsert = existingSubscription === null ||
+            const shouldUpsert =
+              existingSubscription === null ||
               (subscriptionData.providerData?.modifiedAt !== undefined &&
                 (existingSubscription?.providerData?.modifiedAt ?? 0) < subscriptionData.providerData.modifiedAt)
 

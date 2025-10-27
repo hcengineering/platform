@@ -38,7 +38,12 @@ export class PaymentProviderFactory {
    * Only one provider can be initialized per instance
    * Returns the cached provider if already initialized
    */
-  create (type: string, config: Record<string, any>, accountClient: AccountClient, useSandbox = false): PaymentProvider | undefined {
+  create (
+    type: string,
+    config: Record<string, any>,
+    accountClient: AccountClient,
+    useSandbox = false
+  ): PaymentProvider | undefined {
     switch (type) {
       case 'polar':
         return this.createPolarProvider(config, accountClient, useSandbox)
@@ -47,7 +52,11 @@ export class PaymentProviderFactory {
     }
   }
 
-  private createPolarProvider (config: Record<string, any>, accountClient: AccountClient, useSandbox = false): PaymentProvider {
+  private createPolarProvider (
+    config: Record<string, any>,
+    accountClient: AccountClient,
+    useSandbox = false
+  ): PaymentProvider {
     if (config.accessToken === undefined) {
       throw new Error('Polar provider requires accessToken in config')
     }
