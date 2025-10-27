@@ -1004,7 +1004,7 @@ export type KeysByType<O extends object, T> = { [k in keyof O]-?: O[k] extends T
 export function toRank (str: string | undefined): Rank | undefined {
   if (str === undefined) return
   if (str.startsWith('0|')) {
-    return str as Rank
+    return str
   }
   return '0|' + str
 }
