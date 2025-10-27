@@ -55,9 +55,9 @@
   },
   "dependencies": {
     "@hcengineering/server-token": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.14",
-    "@hcengineering/server-storage": "^0.7.14",
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-storage": "^0.7.15",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/account-client": "^0.7.17",
     "cors": "^2.8.5",

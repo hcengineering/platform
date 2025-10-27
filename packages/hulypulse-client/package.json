@@ -39,7 +39,7 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/platform": "^0.7.17"
   },
   "exports": {

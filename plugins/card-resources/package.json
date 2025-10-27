@@ -41,9 +41,9 @@
   "dependencies": {
     "@hcengineering/presence": "^0.7.0",
     "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/communication-types": "^0.7.11",
+    "@hcengineering/communication-types": "^0.7.12",
     "@hcengineering/communication-resources": "^0.7.0",
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/setting": "^0.7.0",
     "@hcengineering/attachment": "^0.7.0",

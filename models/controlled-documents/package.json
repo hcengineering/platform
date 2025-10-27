@@ -48,7 +48,7 @@
     "@hcengineering/model-print": "^0.7.0",
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/setting": "^0.7.0",
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/view": "^0.7.0",
@@ -63,7 +63,7 @@
     "@hcengineering/model-notification": "^0.7.0",
     "@hcengineering/chunter": "^0.7.0",
     "@hcengineering/text-editor": "^0.7.0",
-    "@hcengineering/collaboration": "^0.7.14",
+    "@hcengineering/collaboration": "^0.7.15",
     "@hcengineering/time": "^0.7.0",
     "@hcengineering/rank": "^0.7.17"
   }

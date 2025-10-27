@@ -43,22 +43,22 @@
   "dependencies": {
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "koa": "^2.15.4",
     "koa-router": "^12.0.1",
     "koa-bodyparser": "^4.4.1",
     "@koa/cors": "^5.0.0",
-    "@hcengineering/server-core": "^0.7.14",
+    "@hcengineering/server-core": "^0.7.15",
     "@hcengineering/server-tool": "^0.7.0",
-    "@hcengineering/server-storage": "^0.7.14",
+    "@hcengineering/server-storage": "^0.7.15",
     "@hcengineering/server-pipeline": "^0.7.0",
-    "@hcengineering/server-client": "^0.7.14",
+    "@hcengineering/server-client": "^0.7.15",
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/account-client": "^0.7.17",
     "@hcengineering/server-backup": "^0.7.0",
-    "@hcengineering/postgres": "^0.7.14",
-    "@hcengineering/mongo": "^0.7.14"
+    "@hcengineering/postgres": "^0.7.15",
+    "@hcengineering/mongo": "^0.7.15"
   }
 }

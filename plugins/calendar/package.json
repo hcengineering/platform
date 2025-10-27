@@ -40,7 +40,7 @@
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/preference": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/setting": "^0.7.0"

@@ -57,7 +57,7 @@
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/attachment-resources": "^0.7.0",
     "@hcengineering/login": "^0.7.0",
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/panel": "^0.7.0",
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/templates": "^0.7.0",

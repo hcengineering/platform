@@ -38,10 +38,10 @@
     "@types/node": "^22.15.29"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/workbench": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.14",
+    "@hcengineering/server-core": "^0.7.15",
     "@hcengineering/document": "^0.7.0",
     "slugify": "^1.6.6"
   }

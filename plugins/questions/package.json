@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/theme": "^0.7.0"
   },

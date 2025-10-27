@@ -41,7 +41,7 @@
     "@hcengineering/ai-bot": "^0.7.0",
     "@hcengineering/analytics-collector": "^0.7.0",
     "@hcengineering/chunter": "^0.7.0",
-    "@hcengineering/core": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/love": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/presentation": "^0.7.0",
