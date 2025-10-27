@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/communication-sdk-types
 
-This log was last generated on Sat, 25 Oct 2025 22:20:35 GMT and should not be manually modified.
+This log was last generated on Mon, 27 Oct 2025 16:28:25 GMT and should not be manually modified.
+
+## 0.7.12
+Mon, 27 Oct 2025 16:28:25 GMT
+
+### Patches
+
+- update deps
 
 ## 0.7.9
 Sat, 25 Oct 2025 22:20:35 GMT

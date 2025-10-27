@@ -2,6 +2,18 @@
   "name": "@hcengineering/communication-types",
   "entries": [
     {
+      "version": "0.7.12",
+      "tag": "@hcengineering/communication-types_v0.7.12",
+      "date": "Mon, 27 Oct 2025 16:28:25 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.9",
       "tag": "@hcengineering/communication-types_v0.7.9",
       "date": "Sat, 25 Oct 2025 22:20:35 GMT",

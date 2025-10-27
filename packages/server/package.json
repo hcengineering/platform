@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-server",
-  "version": "0.7.11",
+  "version": "0.7.12",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -43,9 +43,9 @@
   "dependencies": {
     "@hcengineering/account-client": "^0.7.17",
     "@hcengineering/communication-cockroach": "workspace:^0.7.11",
-    "@hcengineering/communication-sdk-types": "workspace:^0.7.11",
+    "@hcengineering/communication-sdk-types": "workspace:^0.7.12",
     "@hcengineering/communication-shared": "workspace:^0.7.11",
-    "@hcengineering/communication-types": "workspace:^0.7.11",
+    "@hcengineering/communication-types": "workspace:^0.7.12",
     "@hcengineering/core": "^0.7.18",
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/text-core": "^0.7.17",
