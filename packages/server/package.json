@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/server",
-  "version": "0.7.9",
+  "version": "0.7.10",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -36,7 +36,7 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/account-client": "^0.7.6",
+    "@hcengineering/account-client": "^0.7.7",
     "@hcengineering/analytics": "^0.7.5",
     "@hcengineering/core": "^0.7.10",
     "@hcengineering/platform": "^0.7.5",

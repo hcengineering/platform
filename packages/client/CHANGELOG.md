@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/server-client
 
-This log was last generated on Tue, 21 Oct 2025 19:29:19 GMT and should not be manually modified.
+This log was last generated on Mon, 27 Oct 2025 04:47:16 GMT and should not be manually modified.
+
+## 0.7.9
+Mon, 27 Oct 2025 04:47:16 GMT
+
+### Patches
+
+- update deps
 
 ## 0.7.8
 Tue, 21 Oct 2025 19:29:19 GMT

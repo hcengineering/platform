@@ -2,6 +2,18 @@
   "name": "@hcengineering/server-client",
   "entries": [
     {
+      "version": "0.7.9",
+      "tag": "@hcengineering/server-client_v0.7.9",
+      "date": "Mon, 27 Oct 2025 04:47:16 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.8",
       "tag": "@hcengineering/server-client_v0.7.8",
       "date": "Tue, 21 Oct 2025 19:29:19 GMT",
