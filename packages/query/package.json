@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/query",
-  "version": "0.7.6",
+  "version": "0.7.17",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -40,9 +40,9 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.5",
-    "@hcengineering/core": "workspace:^0.7.10",
-    "@hcengineering/analytics": "workspace:^0.7.5",
+    "@hcengineering/platform": "workspace:^0.7.17",
+    "@hcengineering/core": "workspace:^0.7.17",
+    "@hcengineering/analytics": "workspace:^0.7.17",
     "fast-equals": "^5.2.2"
   },
   "repository": "https://github.com/hcengineering/huly.core",
