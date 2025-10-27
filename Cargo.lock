@@ -2283,7 +2283,7 @@ checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
 
 [[package]]
 name = "hulylake"
-version = "0.1.16"
+version = "0.1.17"
 dependencies = [
  "actix-cors",
  "actix-web",
