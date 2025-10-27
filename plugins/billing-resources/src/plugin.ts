@@ -27,6 +27,7 @@ export default mergeIds(billingId, billing, {
     ChangePlan: '' as IntlString,
     Monthly: '' as IntlString,
     Active: '' as IntlString,
-    SubscriptionEnds: '' as IntlString
+    SubscriptionEnds: '' as IntlString,
+    ProcessingPayment: '' as IntlString
   }
 })

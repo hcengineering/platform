@@ -29,6 +29,7 @@
     "ChangePlan": "Alterar plano",
     "Monthly": "Mensal",
     "Active": "Ativo",
-    "SubscriptionEnds": "Até {date}"
+    "SubscriptionEnds": "Até {date}",
+    "ProcessingPayment": "Processando pagamento..."
   }
 }

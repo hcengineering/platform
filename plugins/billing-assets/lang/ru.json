@@ -29,6 +29,7 @@
     "ChangePlan": "Сменить план",
     "Monthly": "В месяц",
     "Active": "Активен",
-    "SubscriptionEnds": "До {date}"
+    "SubscriptionEnds": "До {date}",
+    "ProcessingPayment": "Обработка платежа..."
   }
 }

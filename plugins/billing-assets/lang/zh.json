@@ -29,6 +29,7 @@
     "ChangePlan": "更改计划",
     "Monthly": "每月",
     "Active": "活跃",
-    "SubscriptionEnds": "截止至{date}"
+    "SubscriptionEnds": "截止至{date}",
+    "ProcessingPayment": "正在处理付款..."
   }
 }

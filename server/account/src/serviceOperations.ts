@@ -43,6 +43,7 @@ import type {
   IntegrationSecretKey,
   Query,
   SocialId,
+  Subscription,
   SubscriptionData,
   Workspace,
   WorkspaceEvent,
@@ -1054,6 +1055,34 @@ export async function upsertSubscription (
   }
 }
 
+export async function getSubscription (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    provider: string
+    providerSubscriptionId: string
+  }
+): Promise<Subscription | null> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+
+  // Only payment service can query subscriptions by provider ID
+  if (extra?.service !== 'payment') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const { provider, providerSubscriptionId } = params
+
+  // Find subscription by provider and providerSubscriptionId (unique external ID)
+  const subscription = await db.subscription.findOne({
+    provider,
+    providerSubscriptionId
+  })
+
+  return subscription ?? null
+}
+
 export type AccountServiceMethods =
   | 'getPendingWorkspace'
   | 'updateWorkspaceInfo'
@@ -1081,6 +1110,7 @@ export type AccountServiceMethods =
   | 'findPersonBySocialKey'
   | 'listAccounts'
   | 'findFullSocialIds'
+  | 'getSubscription'
   | 'upsertSubscription'
 
 /**
@@ -1114,6 +1144,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     mergeSpecifiedAccounts: wrap(mergeSpecifiedAccounts),
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     listAccounts: wrap(listAccounts),
+    getSubscription: wrap(getSubscription),
     upsertSubscription: wrap(upsertSubscription)
   }
 }

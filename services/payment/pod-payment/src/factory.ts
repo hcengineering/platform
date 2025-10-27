@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { type AccountClient } from '@hcengineering/account-client'
 import type { PaymentProvider } from './providers'
 import { PolarProvider } from './providers/polar/provider'
 
@@ -37,16 +38,16 @@ export class PaymentProviderFactory {
    * Only one provider can be initialized per instance
    * Returns the cached provider if already initialized
    */
-  create (type: string, config: Record<string, any>, useSandbox = false): PaymentProvider | undefined {
+  create (type: string, config: Record<string, any>, accountClient: AccountClient, useSandbox = false): PaymentProvider | undefined {
     switch (type) {
       case 'polar':
-        return this.createPolarProvider(config, useSandbox)
+        return this.createPolarProvider(config, accountClient, useSandbox)
       default:
         return undefined
     }
   }
 
-  private createPolarProvider (config: Record<string, any>, useSandbox = false): PaymentProvider {
+  private createPolarProvider (config: Record<string, any>, accountClient: AccountClient, useSandbox = false): PaymentProvider {
     if (config.accessToken === undefined) {
       throw new Error('Polar provider requires accessToken in config')
     }
@@ -65,6 +66,7 @@ export class PaymentProviderFactory {
       config.webhookSecret,
       config.subscriptionPlans,
       config.frontUrl,
+      accountClient,
       useSandbox
     )
   }

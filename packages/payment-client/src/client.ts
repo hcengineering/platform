@@ -14,7 +14,7 @@
 //
 
 import { concatLink, type WorkspaceUuid } from '@hcengineering/core'
-import { CreateSubscriptionResponse, SubscribeRequest } from './types'
+import { CreateSubscriptionResponse, SubscribeRequest, CheckoutStatus } from './types'
 import { PaymentError, NetworkError } from './error'
 
 /**
@@ -94,6 +94,19 @@ export class PaymentClient {
       headers: { ...this.headers }
     })
     await response.json()
+  }
+
+  /**
+   * Get checkout status
+   * Poll this endpoint after user returns from payment provider to check if subscription is ready
+   * @param checkoutId - Checkout ID returned from createSubscription
+   * @returns Checkout status with subscription details if completed
+   */
+  async getCheckoutStatus (checkoutId: string): Promise<CheckoutStatus> {
+    const path = `/api/v1/checkouts/${checkoutId}/status`
+    const url = new URL(concatLink(this.endpoint, path))
+    const response = await fetchSafe(url, { headers: { ...this.headers } })
+    return (await response.json()) as CheckoutStatus
   }
 }
 

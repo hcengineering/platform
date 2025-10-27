@@ -29,6 +29,7 @@
     "ChangePlan": "Plan değiştir",
     "Monthly": "Aylık",
     "Active": "Aktif",
-    "SubscriptionEnds": "{date} tarihine kadar"
+    "SubscriptionEnds": "{date} tarihine kadar",
+    "ProcessingPayment": "Ödeme işleniyor..."
   }
 }

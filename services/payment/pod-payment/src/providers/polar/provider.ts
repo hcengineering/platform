@@ -16,7 +16,7 @@
 import type { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
 import type { Express, Request, Response } from 'express'
 
-import { getClient, type Subscription, type SubscriptionData } from '@hcengineering/account-client'
+import { AccountClient, type Subscription, type SubscriptionData } from '@hcengineering/account-client'
 import type { PaymentProvider, SubscribeRequest, CreateSubscriptionResponse } from '../index'
 import { PolarClient } from './client'
 import { handlePolarWebhook } from './webhook'
@@ -52,12 +52,14 @@ export class PolarProvider implements PaymentProvider {
   // Map: plan@type (Huly) -> productIds (Polar)
   private readonly subscriptionPlans: Record<string, string[]>
   private readonly frontUrl: string
+  private readonly accountClient: AccountClient
 
   constructor (
     accessToken: string,
     webhookSecret: string,
     subscriptionPlans: string,
     frontUrl: string,
+    accountClient: AccountClient,
     useSandbox = false
   ) {
     this.client = new PolarClient(accessToken, useSandbox)
@@ -65,6 +67,7 @@ export class PolarProvider implements PaymentProvider {
     // TODO: support branding
     this.frontUrl = frontUrl
     this.subscriptionPlans = {}
+    this.accountClient = accountClient
     const plans = subscriptionPlans.split(';')
     for (const plan of plans) {
       const [type, rawProductIds] = plan.split(':')
@@ -115,18 +118,69 @@ export class PolarProvider implements PaymentProvider {
     }
   }
 
-  async getSubscription (ctx: MeasureContext, subscriptionId: string): Promise<any> {
+  async getSubscription (ctx: MeasureContext, subscriptionId: string): Promise<SubscriptionData | null> {
     ctx.info('Getting Polar subscription', { subscriptionId })
-    return await this.client.getSubscription(ctx, subscriptionId)
+    const polarSubscription = await this.client.getSubscription(ctx, subscriptionId)
+    const subscriptionData = transformPolarSubscriptionToData(polarSubscription)
+
+    if (subscriptionData === null) {
+      return null
+    }
+
+    return subscriptionData
   }
 
-  async reconcileActiveSubscriptions (ctx: MeasureContext, accountsUrl: string, serviceToken: string): Promise<void> {
+  async getSubscriptionByCheckout (ctx: MeasureContext, checkoutId: string): Promise<SubscriptionData | null> {
+    try {
+      const checkout = await this.client.getCheckout(ctx, checkoutId)
+
+      // If checkout is not succeeded, no subscription yet
+      if (checkout.status !== 'succeeded') {
+        return null
+      }
+
+      // If checkout has a subscription ID, fetch it directly
+      if (checkout.subscriptionId != null) {
+        const subscription = await this.client.getSubscription(ctx, checkout.subscriptionId)
+        const subscriptionData = transformPolarSubscriptionToData(subscription)
+
+        if (subscriptionData !== null) {
+          return subscriptionData
+        }
+      }
+
+      const customerId = checkout.externalCustomerId
+      if (customerId === undefined || customerId === null) {
+        ctx.error('Cannot search subscriptions: no customer ID in checkout', { checkoutId })
+        return null
+      }
+
+      const activeSubscriptions = await this.client.getActiveSubscriptions(ctx, customerId)
+
+      for (const polarSub of activeSubscriptions) {
+        // Check if this subscription was created from this checkout
+        if (polarSub.checkoutId === checkoutId) {
+          const subscriptionData = transformPolarSubscriptionToData(polarSub)
+
+          if (subscriptionData !== null) {
+            return subscriptionData
+          }
+        }
+      }
+
+      return null
+    } catch (err) {
+      ctx.error('Failed to get subscription by checkout', { checkoutId, err })
+      return null
+    }
+  }
+
+  async reconcileActiveSubscriptions (ctx: MeasureContext): Promise<void> {
     try {
       ctx.info('Starting Polar active subscription reconciliation')
 
-      const accountClient = getClient(accountsUrl, serviceToken)
       const polarActiveSubscriptions = await this.client.getActiveSubscriptions(ctx)
-      const ourActiveSubscriptions = await accountClient.getSubscriptions()
+      const ourActiveSubscriptions = await this.accountClient.getSubscriptions()
 
       const ourSubsByProviderId = new Map(
         ourActiveSubscriptions.map((sub: Subscription) => [sub.providerSubscriptionId, sub])
@@ -147,7 +201,7 @@ export class PolarProvider implements PaymentProvider {
 
           // Only upsert if subscription doesn't exist locally or if key fields have changed
           if (ourSub === undefined || hasSubscriptionChanged(ourSub, subscriptionData)) {
-            await accountClient.upsertSubscription(subscriptionData)
+            await this.accountClient.upsertSubscription(subscriptionData)
             upsertCount++
           }
         } catch (err) {
@@ -170,7 +224,7 @@ export class PolarProvider implements PaymentProvider {
 
             // Update our database with current state (may have changed to canceled/ended)
             if (subscriptionData !== null) {
-              await accountClient.upsertSubscription(subscriptionData)
+              await this.accountClient.upsertSubscription(subscriptionData)
               staleCount++
             }
           } catch (err) {

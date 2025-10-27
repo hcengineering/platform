@@ -21,7 +21,7 @@ import morgan from 'morgan'
 import onHeaders from 'on-headers'
 import rateLimit from 'express-rate-limit'
 import { generateToken } from '@hcengineering/server-token'
-import type { WorkspaceLoginInfo } from '@hcengineering/account-client'
+import { type WorkspaceLoginInfo } from '@hcengineering/account-client'
 
 import { Config } from './config'
 import { withAdmin, withLoginInfo, withOwner, withToken, type RequestWithAuth } from './middleware'
@@ -29,6 +29,7 @@ import { PaymentProviderFactory } from './factory'
 import type { PaymentProvider } from './providers'
 import { SubscribeRequest } from './providers'
 import { startActiveSubscriptionReconciliation } from './reconciliation'
+import { getAccountClient } from './utils'
 
 const KEEP_ALIVE_TIMEOUT = 5 // seconds
 
@@ -99,6 +100,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
   })
 
   const serviceToken = generateToken(systemAccountUuid, undefined, { service: 'payment' })
+  const accountClient = getAccountClient(config.AccountsUrl, serviceToken)
 
   // Initialize payment provider if configured
   let provider: PaymentProvider | undefined
@@ -117,6 +119,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
           subscriptionPlans: config.PolarSubscriptionPlans,
           frontUrl: config.FrontUrl
         },
+        accountClient,
         config.UseSandbox
       )
 
@@ -257,6 +260,87 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
         const subscriptionId = req.params.subscriptionId
         const subscription = await provider.getSubscription(ctx, subscriptionId)
         res.status(200).json(subscription)
+      },
+      req,
+      res,
+      () => {}
+    )
+  })
+
+  /**
+   * GET /api/v1/checkouts/:checkoutId/status
+   * Get subscription status by checkout ID
+   * Used to poll for subscription creation after successful checkout
+   * If subscription is found in Polar but not in our DB, it will be upserted
+   * If it exists in DB but has changed (newer modifiedAt), it will be updated
+   * Authorization: Only authenticated workspace owners can check checkout status
+   */
+  app.get('/api/v1/checkouts/:checkoutId/status', withToken, withOwner, (req: RequestWithAuth, res: Response) => {
+    if (provider === undefined) {
+      res.status(503).json({ error: 'Payment provider is not configured' })
+      return
+    }
+
+    // Disable caching for this endpoint - we want fresh data on every poll
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+    res.set('Pragma', 'no-cache')
+    res.set('Expires', '0')
+
+    void handleRequest(
+      ctx,
+      'checkout-subscription-status',
+      async (ctx) => {
+        const checkoutId = req.params.checkoutId
+        const accountClient = getAccountClient(config.AccountsUrl, serviceToken)
+
+        // Try to get subscription from Polar by checkout ID
+        const subscriptionData = await provider.getSubscriptionByCheckout(ctx, checkoutId)
+
+        if (subscriptionData !== null) {
+          // Subscription exists in Polar - check if we need to update our DB
+          try {
+            // Get existing subscription from our DB if it exists
+            const existingSubscription = await accountClient.getSubscription(
+              subscriptionData.provider,
+              subscriptionData.providerSubscriptionId
+            )
+
+            // Check if we should upsert (doesn't exist or has changed)
+            const shouldUpsert = existingSubscription === null ||
+              (subscriptionData.providerData?.modifiedAt !== undefined &&
+                (existingSubscription?.providerData?.modifiedAt ?? 0) < subscriptionData.providerData.modifiedAt)
+
+            if (shouldUpsert) {
+              await accountClient.upsertSubscription(subscriptionData)
+              ctx.info('Subscription upserted from checkout poll', {
+                checkoutId,
+                subscriptionId: subscriptionData.id,
+                isNew: existingSubscription === null
+              })
+            } else {
+              ctx.info('Subscription already up to date', { checkoutId, subscriptionId: subscriptionData.id })
+            }
+          } catch (err) {
+            ctx.error('Failed to sync subscription to DB', { checkoutId, err })
+            // Still return the subscription data even if DB update failed
+          }
+
+          res.status(200).json({
+            checkoutId,
+            subscriptionId: subscriptionData.id,
+            status: 'completed',
+            subscription: subscriptionData
+          })
+          return
+        }
+
+        // Subscription not yet completed in Polar
+        res.status(200).json({
+          checkoutId,
+          subscriptionId: null,
+          status: 'pending',
+          subscription: null
+        })
       },
       req,
       res,

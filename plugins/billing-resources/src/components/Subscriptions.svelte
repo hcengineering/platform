@@ -14,7 +14,11 @@
 -->
 <script lang="ts">
   import { type Subscription, SubscriptionType, getClient as getAccountClient } from '@hcengineering/account-client'
-  import { type SubscribeRequest, getClient as getPaymentClient } from '@hcengineering/payment-client'
+  import {
+    type SubscribeRequest,
+    type CheckoutStatus,
+    getClient as getPaymentClient
+  } from '@hcengineering/payment-client'
   import { type Ref, SortingOrder } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import {
@@ -24,12 +28,14 @@
     Scroller,
     Button,
     getPlatformColorByName,
-    themeStore
+    themeStore,
+    getLocation,
+    navigate
   } from '@hcengineering/ui'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Tier } from '@hcengineering/billing'
   import { getMetadata } from '@hcengineering/platform'
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
 
   import plugin from '../plugin'
 
@@ -41,10 +47,17 @@
     acc[plan] = tier
     return acc
   }, {})
+
   let subscriptions: Subscription[] = []
   let currentTier = tiers[0]
   let currentSubscription: Subscription | undefined = undefined
   let loading = true
+  let pollingCheckoutId: string | null = null
+  let isPolling = false
+  let pollAttempts = 0
+  let pollTimer: number | undefined
+  const MAX_POLL_ATTEMPTS = 120
+  const POLL_INTERVAL = 2000
 
   async function handleUpgrade (tierId: Ref<Tier>): Promise<void> {
     const paymentUrl = getMetadata(presentation.metadata.PaymentUrl)
@@ -72,7 +85,7 @@
     try {
       loading = true
       const accountClient = getAccountClient(accountsUrl, token)
-      subscriptions = await accountClient.getSubscriptions(false)
+      subscriptions = await accountClient.getSubscriptions()
       currentSubscription = subscriptions.find((p) => p.type === 'tier' && p.status === 'active')
       const plan = currentSubscription?.plan
       currentTier = plan !== undefined ? tierByPlan[plan] : tiers[0]
@@ -86,6 +99,78 @@
   function formatSize (gb: number): { limit: number, unit: string } {
     return gb < 1000 ? { limit: gb, unit: 'GB' } : { limit: Math.floor(gb / 1000), unit: 'TB' }
   }
+
+  async function pollCheckoutStatus (checkoutId: string): Promise<void> {
+    const paymentUrl = getMetadata(presentation.metadata.PaymentUrl)
+    const token = getMetadata(presentation.metadata.Token)
+
+    if (isPolling || pollAttempts >= MAX_POLL_ATTEMPTS) {
+      return
+    }
+
+    isPolling = true
+    pollAttempts++
+
+    try {
+      const paymentClient = getPaymentClient(paymentUrl, token)
+      const status: CheckoutStatus = await paymentClient.getCheckoutStatus(checkoutId)
+
+      if (status.status === 'completed') {
+        // Subscription is ready, refresh subscriptions and clean up URL
+        console.info('Checkout completed, subscription ready:', status.subscriptionId)
+        await updateSubscriptions()
+
+        // Clean up the checkout_id from URL using navigate
+        const loc = getLocation()
+        const cleanedLoc = { ...loc, query: {} }
+        navigate(cleanedLoc)
+
+        pollingCheckoutId = null
+        pollAttempts = 0
+      } else {
+        // Still pending, poll again after delay
+        pollTimer = setTimeout(() => {
+          void pollCheckoutStatus(checkoutId)
+        }, POLL_INTERVAL)
+      }
+    } catch (err) {
+      console.error('error polling checkout status:', err)
+      // Retry on error (up to max attempts)
+      if (pollAttempts < MAX_POLL_ATTEMPTS) {
+        pollTimer = setTimeout(() => {
+          void pollCheckoutStatus(checkoutId)
+        }, POLL_INTERVAL)
+      }
+    } finally {
+      isPolling = false
+    }
+  }
+
+  function checkForCheckoutParam (): void {
+    const loc = getLocation()
+    const checkoutId = loc.query?.checkout_id as string | undefined
+    const paymentStatus = loc.query?.payment as string | undefined
+
+    if (checkoutId !== undefined && paymentStatus === 'success') {
+      // Check if we already have a tier subscription that matches this checkout
+      const matchingSubscription = subscriptions.find(
+        (sub) => sub.type === 'tier' && sub.providerCheckoutId === checkoutId
+      )
+
+      if (matchingSubscription === undefined) {
+        // No matching subscription found, start polling
+        pollingCheckoutId = checkoutId
+        pollAttempts = 0
+        void pollCheckoutStatus(checkoutId)
+      } else {
+        // Subscription already exists and matches this checkout, just clean up the URL
+        const cleanedLoc = { ...loc, query: {} }
+        navigate(cleanedLoc)
+      }
+    }
+  }
+
+  $: isCheckoutPolling = pollingCheckoutId !== null
 
   function formatEndDate (endDate: number): string {
     const date = new Date(endDate)
@@ -105,7 +190,20 @@
   }
 
   onMount(() => {
-    void updateSubscriptions()
+    void (async () => {
+      // First, load current subscriptions
+      await updateSubscriptions()
+
+      // Then check if we need to poll for a new subscription from checkout
+      checkForCheckoutParam()
+    })()
+  })
+
+  onDestroy(() => {
+    // Clean up any pending polling timer when component is destroyed
+    if (pollTimer !== undefined) {
+      clearTimeout(pollTimer)
+    }
   })
 </script>
 
@@ -117,8 +215,11 @@
           <Label label={plugin.string.ActivePlan} />
         </div>
         <div class="current-tier-card w-full flex-gap-4">
-          {#if loading}
+          {#if loading || isCheckoutPolling}
             <Loading />
+            {#if isCheckoutPolling}
+              <div class="processing"><Label label={plugin.string.ProcessingPayment} /></div>
+            {/if}
           {:else}
             <div class="current-tier-card-title">
               <div class="flex-row-center">
@@ -196,7 +297,7 @@
                       label={plugin.string.ChangePlan}
                       size={'large'}
                       kind={'primary'}
-                      disabled={loading}
+                      disabled={loading || isCheckoutPolling}
                       width={'100%'}
                       on:click={() => {
                         void handleUpgrade(tier._id)
@@ -286,5 +387,9 @@
     flex-direction: row-reverse;
     margin-top: var(--spacing-3);
     height: 2.25rem;
+  }
+
+  .processing {
+    text-align: center;
   }
 </style>

@@ -29,6 +29,7 @@
     "ChangePlan": "プラン変更",
     "Monthly": "月額",
     "Active": "アクティブ",
-    "SubscriptionEnds": "{date}まで"
+    "SubscriptionEnds": "{date}まで",
+    "ProcessingPayment": "お支払い処理中..."
   }
 }

@@ -29,6 +29,7 @@
     "ChangePlan": "Change plan",
     "Monthly": "Monthly",
     "Active": "Active",
-    "SubscriptionEnds": "Until {date}"
+    "SubscriptionEnds": "Until {date}",
+    "ProcessingPayment": "Processing payment..."
   }
 }

@@ -748,7 +748,7 @@
       "env": {
         "PORT": "3040",
         "SECRET": "secret",
-        "SERVICE_ID": "sign-service",
+        "SERVICE_ID": "payment-service",
         "ACCOUNTS_URL": "http://huly.local:3000",
         "FRONT_URL": "http://huly.local:8087",
         "USE_SANDBOX": "true",

@@ -32,3 +32,37 @@ export interface CreateSubscriptionResponse {
   checkoutId: string // Checkout session ID
   checkoutUrl: string // URL to redirect user to for payment
 }
+
+/**
+ * Subscription data for checkout status
+ * Matches @hcengineering/account-client Subscription type
+ * @see @hcengineering/account-client
+ */
+export interface SubscriptionData {
+  id: string // Internal unique subscription ID
+  workspaceUuid: string
+  accountUuid: string
+  provider: string
+  providerSubscriptionId: string
+  providerCheckoutId?: string
+  type: string
+  status: string
+  plan: string
+  amount?: number
+  periodStart?: number
+  periodEnd?: number
+  trialEnd?: number
+  canceledAt?: number
+  providerData?: Record<string, any>
+}
+
+/**
+ * Checkout status response
+ * Contains information about the checkout and subscription status
+ */
+export interface CheckoutStatus {
+  checkoutId: string // Checkout session ID
+  subscriptionId: string | null // Subscription ID if completed
+  status: 'pending' | 'completed' // Checkout status
+  subscription: SubscriptionData | null // Full subscription data if available
+}

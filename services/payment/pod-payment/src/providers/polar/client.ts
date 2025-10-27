@@ -16,6 +16,7 @@
 import { MeasureContext } from '@hcengineering/core'
 import { Polar } from '@polar-sh/sdk'
 import type { Subscription } from '@polar-sh/sdk/models/components/subscription'
+import type { Checkout } from '@polar-sh/sdk/models/components/checkout'
 import type { CheckoutResult, CreateCheckoutParams } from './types'
 
 /**
@@ -55,7 +56,7 @@ export class PolarClient {
   /**
    * Get checkout session by ID
    */
-  async getCheckout (ctx: MeasureContext, checkoutId: string): Promise<any> {
+  async getCheckout (ctx: MeasureContext, checkoutId: string): Promise<Checkout> {
     return await ctx.with('polar-get-checkout', {}, async () => {
       return await this.polar.checkouts.get({ id: checkoutId })
     })
@@ -73,15 +74,17 @@ export class PolarClient {
   /**
    * Get all active subscriptions
    * Filters subscriptions by active=true to get only active ones
+   * Filters by externalCustomerId if provided
    * This is used internally by the provider for reconciliation
    */
-  async getActiveSubscriptions (ctx: MeasureContext): Promise<Subscription[]> {
+  async getActiveSubscriptions (ctx: MeasureContext, externalCustomerId?: string): Promise<Subscription[]> {
     return await ctx.with('polar-get-active-subscriptions', {}, async () => {
       const subscriptions: Subscription[] = []
 
       const iterator = await this.polar.subscriptions.list({
         limit: 100,
-        active: true
+        active: true,
+        ...(externalCustomerId != null ? { externalCustomerId } : {})
       })
 
       for await (const subscription of iterator) {

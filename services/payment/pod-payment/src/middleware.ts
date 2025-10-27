@@ -76,7 +76,7 @@ const withOwnerAsync = async (req: RequestWithAuth, res: Response, next: NextFun
     res.status(401).json({ message: 'Token error' }).end()
     return
   }
-  if ((req.token.workspace as string) !== req.params.workspace) {
+  if (req.params.workspace != null && req.token.workspace !== req.params.workspace) {
     res.status(401).json({ message: 'Workspace mismatch' }).end()
     return
   }

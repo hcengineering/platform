@@ -15,7 +15,7 @@
 
 import type { Express } from 'express'
 import type { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
-import { type SubscriptionType } from '@hcengineering/account-client'
+import { type SubscriptionType, type SubscriptionData } from '@hcengineering/account-client'
 
 /**
  * Payment subscription plan configuration
@@ -76,7 +76,14 @@ export interface PaymentProvider {
   /**
    * Get subscription details
    */
-  getSubscription: (ctx: MeasureContext, subscriptionId: string) => Promise<any>
+  getSubscription: (ctx: MeasureContext, subscriptionId: string) => Promise<SubscriptionData | null>
+
+  /**
+   * Get subscription by checkout ID
+   * Used to poll for subscription creation after successful checkout
+   * Returns the subscription data if found, null otherwise
+   */
+  getSubscriptionByCheckout: (ctx: MeasureContext, checkoutId: string) => Promise<SubscriptionData | null>
 
   /**
    * Cancel a subscription
