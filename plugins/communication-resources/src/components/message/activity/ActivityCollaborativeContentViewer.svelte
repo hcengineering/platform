@@ -13,15 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { ActivityCollaborativeChange } from '@hcengineering/communication-types'
-  import { MarkupDiffPresenter } from '@hcengineering/view-resources'
   import activity from '@hcengineering/activity'
+  import { ActivityCollaborativeChange } from '@hcengineering/communication-types'
   import ui, { Label } from '@hcengineering/ui'
   import { AttributeModel } from '@hcengineering/view'
-  import communication from '../../../plugin'
+  import { MarkupDiffPresenter } from '@hcengineering/view-resources'
 
   export let model: AttributeModel | undefined = undefined
   export let update: ActivityCollaborativeChange
+  export let oneRow: boolean = false
 
   $: isTooLarge = update.value === activity.string.ValueTooLarge || update.prevValue === activity.string.ValueTooLarge
 
@@ -37,15 +37,14 @@
     <Label label={model.label} />
     <span class="lower"><Label label={activity.string.Edited} /></span>
   {/if}
-  {#if isTooLarge}
-    <div class="unset row overflow-label">
+  {#if !oneRow}
+    {#if isTooLarge}
       <Label label={activity.string.ValueTooLarge} />
-    </div>
-  {:else}
-    <div class="showMore" on:click={toggleShowMore}>
-      <div class="triangle" class:left={!isDiffShown} class:down={isDiffShown} />
-      <Label label={isDiffShown ? ui.string.ShowLess : ui.string.ShowMore} />
-    </div>
+    {:else}
+      <span class="showMore" on:click={toggleShowMore}>
+        <Label label={isDiffShown ? ui.string.ShowLess : ui.string.ShowMore} />
+      </span>
+    {/if}
   {/if}
 </div>
 {#if isDiffShown}
@@ -56,29 +55,7 @@
   .showMore {
     color: var(--global-primary-LinkColor);
     cursor: pointer;
-    display: flex;
-    align-items: center;
     font-weight: 500;
-    gap: 0.5rem;
-
-    .triangle {
-      width: 0;
-      height: 0;
-
-      &.left {
-        border-top: 0.25rem solid transparent;
-        border-bottom: 0.25rem solid transparent;
-        border-left: 0.25rem solid var(--global-primary-LinkColor);
-        border-right: none;
-      }
-
-      &.down {
-        border-left: 0.25rem solid transparent;
-        border-right: 0.25rem solid transparent;
-        border-top: 0.25rem solid var(--global-primary-LinkColor);
-        border-bottom: none;
-      }
-    }
 
     &:hover {
       color: var(--global-focus-BorderColor);
