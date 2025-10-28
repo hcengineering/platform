@@ -245,7 +245,8 @@ async fn part_data(s3: &S3Client, part: ObjectPart<PartData>) -> anyhow::Result<
                 .send()
                 .await?;
 
-            let bytes = response.body().bytes().unwrap_or_default().to_vec();
+            let body = response.body.collect().await?;
+            let bytes = body.into_bytes().to_vec();
 
             Ok(bytes)
         }
