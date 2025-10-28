@@ -95,7 +95,7 @@
     "@hcengineering/model-activity": "^0.7.0",
     "@hcengineering/model-lead": "^0.7.0",
     "@hcengineering/postgres": "^0.7.15",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/mongo": "^0.7.15",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/recruit": "^0.7.0",

@@ -41,7 +41,7 @@
     "@hcengineering/core": "^0.7.18",
     "@hcengineering/templates": "^0.7.0",
     "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.17"
+    "@hcengineering/account-client": "^0.7.18"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

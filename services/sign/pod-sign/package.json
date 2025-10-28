@@ -62,7 +62,7 @@
     "@hcengineering/client": "^0.7.17",
     "@hcengineering/client-resources": "^0.7.17",
     "@hcengineering/server-client": "^0.7.15",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.21.2",

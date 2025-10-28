@@ -64,7 +64,7 @@
     "@hcengineering/server-backup": "^0.7.0",
     "@hcengineering/core": "^0.7.18",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",
     "express": "^4.21.2",

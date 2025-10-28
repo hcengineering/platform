@@ -62,7 +62,7 @@
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/templates": "^0.7.0",
     "@hcengineering/integration-client": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/setting-resources": "^0.7.0"
   }
 }

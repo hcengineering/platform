@@ -5567,7 +5567,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/payment-client@file:projects/payment-client.tgz':
-    resolution: {integrity: sha512-14T49egQoM2EeHzD00VB26WklMVCbl33Ia3Dr5teQ1KZnchVjadzZNJKOVICqQWT9MUvXNHiF1FaNLroLW2NBA==, tarball: file:projects/payment-client.tgz}
+    resolution: {integrity: sha512-L4QolbujKK9syqwnER1Pete7Jrg8m1wKQsjbwbMsPkjV3dvCXAljBIwcBCZJ8hp5u6/lDHQPRyqYU6V5QM5UlA==, tarball: file:projects/payment-client.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-account@file:projects/pod-account.tgz':
@@ -5651,7 +5651,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-payment@file:projects/pod-payment.tgz':
-    resolution: {integrity: sha512-Ujy/PbsjtLNMxHT6RR6AeK2+FF7686mEWCHjIo27SoEiNn8MIdi1sF5gM05ZV+myQkATSSPlt97bK1PBK48+vg==, tarball: file:projects/pod-payment.tgz}
+    resolution: {integrity: sha512-TjDHnMpZOhcDesWVZiVL4s0c1/uv+pDhJyscu4H+z6CU9EstIeOzqQLuZBZxZIqWbDoTeC4ic2mNMhIUPaNjSw==, tarball: file:projects/pod-payment.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-preview@file:projects/pod-preview.tgz':
@@ -19012,6 +19012,8 @@ snapshots:
 
   '@rush-temp/billing-resources@file:projects/billing-resources.tgz(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(babel-jest@29.7.0(@babel/core@7.28.5))(esbuild@0.25.11)(jest-util@30.2.0)(postcss-load-config@4.0.2(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.13)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.13)(typescript@5.9.3))':
     dependencies:
+      '@hcengineering/account-client': 0.7.18
+      '@hcengineering/core': 0.7.18
       '@hcengineering/platform': 0.7.17
       '@hcengineering/platform-rig': 0.7.19(@babel/core@7.28.5)(postcss-load-config@4.0.2(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.13)(typescript@5.9.3)))(postcss@8.5.6)(sass@1.93.2)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.13)(typescript@5.9.3))
       '@types/jest': 29.5.14
