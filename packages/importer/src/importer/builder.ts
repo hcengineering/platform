@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import documents, { ControlledDocument, DocumentState } from '@hcengineering/controlled-documents'
+import documents, { type ControlledDocument, DocumentState } from '@hcengineering/controlled-documents'
 import { type DocumentQuery, type Ref, type Status, type TxOperations } from '@hcengineering/core'
 import document from '@hcengineering/document'
 import tracker, { IssuePriority, type IssueStatus } from '@hcengineering/tracker'
 import {
-  ImportControlledDocument,
-  ImportControlledDocumentTemplate,
-  ImportOrgSpace,
+  type ImportControlledDocument,
+  type ImportControlledDocumentTemplate,
+  type ImportOrgSpace,
   type ImportControlledDocOrTemplate,
   type ImportDocument,
   type ImportIssue,

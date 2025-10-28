@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Attachment } from '@hcengineering/attachment'
+import { type Attachment } from '@hcengineering/attachment'
 import { type Person } from '@hcengineering/contact'
 import { type Class, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { MarkupMarkType, type MarkupNode, MarkupNodeType, traverseNode, traverseNodeMarks } from '@hcengineering/text'
@@ -21,7 +21,7 @@ import { contentType } from 'mime-types'
 import * as path from 'path'
 import { type Logger } from '../importer/logger'
 import { BaseMarkdownPreprocessor } from '../importer/preprocessor'
-import { MentionMetadata, MetadataRegistry } from './registry'
+import { type MentionMetadata, type MetadataRegistry } from './registry'
 
 export interface AttachmentMetadata {
   id: Ref<Attachment>

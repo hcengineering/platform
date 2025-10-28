@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 import { saveCollabJson } from '@hcengineering/collaboration'
-import { CollaborativeDoc, Markup, MeasureContext, Blob as PlatformBlob, Ref, WorkspaceIds } from '@hcengineering/core'
+import { type CollaborativeDoc, type Markup, type MeasureContext, type Blob as PlatformBlob, type Ref, type WorkspaceIds } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
-import { FileUploader, UploadResult } from './uploader'
+import { type FileUploader, type UploadResult } from './uploader'
 
 export class StorageFileUploader implements FileUploader {
   constructor (

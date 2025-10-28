@@ -4,20 +4,16 @@
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
-  "files": [
-    "lib/**/*",
-    "types/**/*",
-    "tsconfig.json"
-  ],
   "author": "Anticrm Platform Contributors",
+  "template": "@hcengineering/node-package",
   "license": "EPL-2.0",
   "scripts": {
     "build": "compile",
     "build:watch": "compile",
-    "test": "jest --passWithNoTests --silent",
+    "test": "jest --passWithNoTests --silent --forceExit",
     "format": "format src",
     "_phase:build": "compile transpile src",
-    "_phase:test": "jest --passWithNoTests --silent",
+    "_phase:test": "jest --passWithNoTests --silent --forceExit",
     "_phase:format": "format src",
     "_phase:validate": "compile validate"
   },

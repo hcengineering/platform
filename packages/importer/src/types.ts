@@ -1,4 +1,4 @@
-import { Class, Data, Doc, Mixin, Ref, Space, Blob as PlatformBlob, DocumentUpdate } from '@hcengineering/core'
+import { type Class, type Data, type Doc, type Mixin, type Ref, type Space, type Blob as PlatformBlob, type DocumentUpdate } from '@hcengineering/core'
 export type Props<T extends Doc> = Data<T> & Partial<Doc> & { space: Ref<Space> }
 
 export interface UnifiedDoc<T extends Doc> {
