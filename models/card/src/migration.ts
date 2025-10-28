@@ -77,6 +77,11 @@ export const cardOperation: MigrateOperation = {
         state: 'fill-parent-info',
         mode: 'upgrade',
         func: fillParentInfo
+      },
+      {
+        state: 'make-config-sortable',
+        mode: 'upgrade',
+        func: makeConfigSortable
       }
     ])
   }
@@ -326,5 +331,15 @@ async function updateCustomFieldsDisplayProps (client: MigrationClient): Promise
         await client.update(DOMAIN_MODEL, { _id: viewlet._id }, { config: newConfig })
       }
     }
+  }
+}
+
+async function makeConfigSortable (client: Client): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const masterTags = await client.findAll(card.class.MasterTag, {})
+  const currentViewlets = await client.findAll(view.class.Viewlet, { attachTo: { $in: masterTags.map((p) => p._id) } })
+  for (const currentViewlet of currentViewlets) {
+    const configOptions = { ...currentViewlet.configOptions, sortable: true }
+    await txOp.update(currentViewlet, { configOptions })
   }
 }
