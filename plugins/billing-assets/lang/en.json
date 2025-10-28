@@ -14,8 +14,8 @@
     "TranscriptionTime": "Transcription time",
     "TotalTokens": "Total tokens",
     "Tier": "Tier",
-    "StorageLimit": "{limit}GB storage",
-    "TrafficLimit": "{limit}GB video/audio traffic",
+    "StorageLimit": "{limit} {unit} storage",
+    "TrafficLimit": "{limit} {unit} video/audio traffic",
     "Common": "Common",
     "CommonDescription": "For individuals and teams getting started with Huly.",
     "Rare": "Rare",
@@ -26,8 +26,9 @@
     "LegendaryDescription": "Best for large multiple teams that need maximum capabilities.",
     "UnlimitedUsers": "Unlimited users",
     "UnlimitedObjects": "Unlimited Huly objects",
-    "Upgrade": "Upgrade",
+    "ChangePlan": "Change plan",
     "Monthly": "Monthly",
+    "Active": "Active",
     "SubscriptionEnds": "Until {date}"
   }
 }

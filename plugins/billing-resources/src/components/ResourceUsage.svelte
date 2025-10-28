@@ -81,14 +81,14 @@
         </div>
       </Category>
       <Category icon={view.icon.AiStar} label={billingPlugin.string.AI}>
-            <div class="row">
-              <StatsCard
-                label={billingPlugin.string.TranscriptionTime}
-                text={formatDuration(totalTranscriptDuration, $themeStore.language)}
-              />
-              <StatsCard label={billingPlugin.string.TotalTokens} text={formatNumberCompact(totalTokensCount)} />
-            </div>
-          </Category>
+        <div class="row">
+          <StatsCard
+            label={billingPlugin.string.TranscriptionTime}
+            text={formatDuration(totalTranscriptDuration, $themeStore.language)}
+          />
+          <StatsCard label={billingPlugin.string.TotalTokens} text={formatNumberCompact(totalTokensCount)} />
+        </div>
+      </Category>
       <Category icon={love.icon.Love} label={love.string.Office}>
         <div class="row">
           <StatsCard

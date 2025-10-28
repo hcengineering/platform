@@ -14,8 +14,8 @@
     "TranscriptionTime": "Transkripsiyon süresi",
     "TotalTokens": "Toplam belirteçler",
     "Tier": "Plan",
-    "StorageLimit": "{limit}GB depolama",
-    "TrafficLimit": "{limit}GB video/ses trafiği",
+    "StorageLimit": "{limit} {unit} depolama",
+    "TrafficLimit": "{limit} {unit} video/ses trafiği",
     "Common": "Common",
     "CommonDescription": "Huly ile başlayan bireyler ve ekipler için.",
     "Rare": "Rare",
@@ -26,8 +26,9 @@
     "LegendaryDescription": "Maksimum yeteneklere ihtiyaç duyan büyük ekipler için en iyisi.",
     "UnlimitedUsers": "Sınırsız kullanıcı",
     "UnlimitedObjects": "Sınırsız Huly nesneleri",
-    "Upgrade": "Yükselt",
+    "ChangePlan": "Plan değiştir",
     "Monthly": "Aylık",
+    "Active": "Aktif",
     "SubscriptionEnds": "{date} tarihine kadar"
   }
 }

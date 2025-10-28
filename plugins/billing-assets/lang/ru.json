@@ -14,8 +14,8 @@
     "TranscriptionTime": "Время транскрипции",
     "TotalTokens": "Всего токенов",
     "Tier": "Тариф",
-    "StorageLimit": "{limit}ГБ хранилища",
-    "TrafficLimit": "{limit}ГБ видео/аудио трафика",
+    "StorageLimit": "{limit} {unit} хранилища",
+    "TrafficLimit": "{limit} {unit} видео/аудио трафика",
     "Common": "Common",
     "CommonDescription": "Для частных лиц и команд, начинающих работу с Huly.",
     "Rare": "Rare",
@@ -26,8 +26,9 @@
     "LegendaryDescription": "Лучший вариант для больших команд, которым нужны максимальные возможности.",
     "UnlimitedUsers": "Неограниченное количество пользователей",
     "UnlimitedObjects": "Неограниченное количество объектов Huly",
-    "Upgrade": "Обновить",
+    "ChangePlan": "Сменить план",
     "Monthly": "В месяц",
+    "Active": "Активен",
     "SubscriptionEnds": "До {date}"
   }
 }

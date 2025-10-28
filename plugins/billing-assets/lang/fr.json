@@ -14,8 +14,8 @@
     "TranscriptionTime": "Durée de transcription",
     "TotalTokens": "Nombre total de jetons",
     "Tier": "Plan",
-    "StorageLimit": "{limit}Go de stockage",
-    "TrafficLimit": "{limit}Go de trafic vidéo/audio",
+    "StorageLimit": "{limit} {unit} de stockage",
+    "TrafficLimit": "{limit} {unit} de trafic vidéo/audio",
     "Common": "Common",
     "CommonDescription": "Pour les particuliers et les équipes qui débutent avec Huly.",
     "Rare": "Rare",
@@ -26,8 +26,9 @@
     "LegendaryDescription": "Idéal pour les grandes équipes qui nécessitent des capacités maximales.",
     "UnlimitedUsers": "Utilisateurs illimités",
     "UnlimitedObjects": "Objets Huly illimités",
-    "Upgrade": "Mettre à niveau",
+    "ChangePlan": "Changer de plan",
     "Monthly": "Mensuel",
+    "Active": "Actif",
     "SubscriptionEnds": "Jusqu'au {date}"
   }
 }

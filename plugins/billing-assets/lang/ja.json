@@ -14,8 +14,8 @@
     "TranscriptionTime": "文字起こし時間",
     "TotalTokens": "合計トークン",
     "Tier": "プラン",
-    "StorageLimit": "{limit}GBストレージ",
-    "TrafficLimit": "{limit}GBビデオ/オーディオトラフィック",
+    "StorageLimit": "{limit} {unit} ストレージ",
+    "TrafficLimit": "{limit} {unit} ビデオ/オーディオトラフィック",
     "Common": "Common",
     "CommonDescription": "Hulyを始める個人とチーム向け。",
     "Rare": "Rare",
@@ -26,8 +26,9 @@
     "LegendaryDescription": "最大限の機能が必要な大規模チームに最適。",
     "UnlimitedUsers": "無制限のユーザー",
     "UnlimitedObjects": "無制限のHulyオブジェクト",
-    "Upgrade": "アップグレード",
+    "ChangePlan": "プラン変更",
     "Monthly": "月額",
+    "Active": "アクティブ",
     "SubscriptionEnds": "{date}まで"
   }
 }

@@ -14,8 +14,8 @@
     "TranscriptionTime": "Doba přepisu",
     "TotalTokens": "Celkem tokenů",
     "Tier": "Tarif",
-    "StorageLimit": "{limit}GB úložiště",
-    "TrafficLimit": "{limit}GB video/audio provozu",
+    "StorageLimit": "{limit} {unit} úložiště",
+    "TrafficLimit": "{limit} {unit} video/audio provozu",
     "Common": "Common",
     "CommonDescription": "Pro jednotlivce a týmy začínající s Huly.",
     "Rare": "Rare",
@@ -26,8 +26,9 @@
     "LegendaryDescription": "Nejlepší pro velké týmy, které potřebují maximální možnosti.",
     "UnlimitedUsers": "Neomezení uživatelé",
     "UnlimitedObjects": "Neomezené Huly objekty",
-    "Upgrade": "Upgradovat",
+    "ChangePlan": "Změnit plán",
     "Monthly": "Měsíčně",
+    "Active": "Aktivní",
     "SubscriptionEnds": "Do {date}"
   }
 }

@@ -14,8 +14,8 @@
     "TranscriptionTime": "转录时间",
     "TotalTokens": "总令牌数",
     "Tier": "计划",
-    "StorageLimit": "{limit}GB存储空间",
-    "TrafficLimit": "{limit}GB视频/音频流量",
+    "StorageLimit": "{limit} {unit} 存储空间",
+    "TrafficLimit": "{limit} {unit} 视频/音频流量",
     "Common": "Common",
     "CommonDescription": "适合刚开始使用Huly的个人和团队。",
     "Rare": "Rare",
@@ -26,8 +26,9 @@
     "LegendaryDescription": "最适合需要最大功能的大型团队。",
     "UnlimitedUsers": "无限用户",
     "UnlimitedObjects": "无限Huly对象",
-    "Upgrade": "升级",
+    "ChangePlan": "更改计划",
     "Monthly": "每月",
+    "Active": "活跃",
     "SubscriptionEnds": "截止至{date}"
   }
 }

@@ -17,7 +17,15 @@
   import { type SubscribeRequest, getClient as getPaymentClient } from '@hcengineering/payment-client'
   import { type Ref, SortingOrder } from '@hcengineering/core'
   import login from '@hcengineering/login'
-  import { Label, Scroller, Button, getPlatformColorByName, themeStore, Loading } from '@hcengineering/ui'
+  import {
+    IconCheckmark,
+    Label,
+    Loading,
+    Scroller,
+    Button,
+    getPlatformColorByName,
+    themeStore
+  } from '@hcengineering/ui'
   import presentation, { getClient } from '@hcengineering/presentation'
   import { Tier } from '@hcengineering/billing'
   import { getMetadata } from '@hcengineering/platform'
@@ -64,8 +72,8 @@
     try {
       loading = true
       const accountClient = getAccountClient(accountsUrl, token)
-      subscriptions = await accountClient.getSubscriptions()
-      currentSubscription = subscriptions.find((p) => p.type === 'tier')
+      subscriptions = await accountClient.getSubscriptions(false)
+      currentSubscription = subscriptions.find((p) => p.type === 'tier' && p.status === 'active')
       const plan = currentSubscription?.plan
       currentTier = plan !== undefined ? tierByPlan[plan] : tiers[0]
     } catch (err) {
@@ -73,6 +81,10 @@
     } finally {
       loading = false
     }
+  }
+
+  function formatSize (gb: number): { limit: number, unit: string } {
+    return gb < 1000 ? { limit: gb, unit: 'GB' } : { limit: Math.floor(gb / 1000), unit: 'TB' }
   }
 
   function formatEndDate (endDate: number): string {
@@ -108,8 +120,24 @@
           {#if loading}
             <Loading />
           {:else}
-            <div class="fs-title"><Label label={currentTier.label} /></div>
-            <div><Label label={currentTier.description} /></div>
+            <div class="current-tier-card-title">
+              <div class="flex-row-center">
+                <div class="fs-title"><Label label={currentTier.label} /></div>
+                {#if currentSubscription?.status === 'active'}
+                  <div class="status-badge ml-2 text-md"><Label label={plugin.string.Active} /></div>
+                {/if}
+              </div>
+              {#if currentSubscription?.amount}
+                <div class="flex-row-center items-end">
+                  <span class="fs-title text-xl">
+                    ${currentSubscription?.amount / 100}
+                  </span>
+                  <span class="ml-1 lower">
+                    <Label label={plugin.string.Monthly} />
+                  </span>
+                </div>
+              {/if}
+            </div>
 
             {#if currentSubscription?.periodEnd}
               {@const date = formatEndDate(currentSubscription.periodEnd)}
@@ -122,7 +150,7 @@
       <div class="flex-col flex-gap-4">
         <div class="section-title"><Label label={plugin.string.AllPlans} /></div>
         <Scroller contentDirection="horizontal" buttons={false} showOverflowArrows shrink={false} noFade={false}>
-          <div class="flex-row-top flex-gap-4 flex-no-shrink mb-4">
+          <div class="flex-row-top flex-gap-4 flex-no-shrink mb-3">
             {#each tiers as tier}
               {@const color = tier.color ? getPlatformColorByName(tier.color, $themeStore.dark) : undefined}
               {@const bgAttr = $themeStore.dark ? 'background' : 'background-color'}
@@ -135,40 +163,43 @@
                     <span class="fs-title text-xl">
                       ${tier.priceMonthly}
                     </span>
-                    <span class="ml-2 lower"><Label label={plugin.string.Monthly} /></span>
+                    <span class="ml-1 lower">
+                      <Label label={plugin.string.Monthly} />
+                    </span>
                   </div>
-                  <div class="mb-2 h-12">
+                  <div class="mb-2 h-16">
                     <Label label={tier.description} />
                   </div>
 
                   <div class="tier-features">
                     <div class="feature-item">
-                      <span class="feature-bullet">•</span>
+                      <span class="feature-bullet"><IconCheckmark size="small" /></span>
                       <Label label={plugin.string.UnlimitedUsers} />
                     </div>
                     <div class="feature-item">
-                      <span class="feature-bullet">•</span>
+                      <span class="feature-bullet"><IconCheckmark size="small" /></span>
                       <Label label={plugin.string.UnlimitedObjects} />
                     </div>
                     <div class="feature-item">
-                      <span class="feature-bullet">•</span>
-                      <Label label={plugin.string.StorageLimit} params={{ limit: tier.storageLimitGB }} />
+                      <span class="feature-bullet"><IconCheckmark size="small" /></span>
+                      <Label label={plugin.string.StorageLimit} params={{ ...formatSize(tier.storageLimitGB) }} />
                     </div>
                     <div class="feature-item">
-                      <span class="feature-bullet">•</span>
-                      <Label label={plugin.string.TrafficLimit} params={{ limit: tier.trafficLimitGB }} />
+                      <span class="feature-bullet"><IconCheckmark size="small" /></span>
+                      <Label label={plugin.string.TrafficLimit} params={{ ...formatSize(tier.trafficLimitGB) }} />
                     </div>
                   </div>
                 </div>
                 <div class="tier-card-footer">
                   {#if currentTier._id !== tier._id}
                     <Button
-                      label={plugin.string.Upgrade}
+                      label={plugin.string.ChangePlan}
                       size={'large'}
-                      kind={'regular'}
+                      kind={'primary'}
                       disabled={loading}
+                      width={'100%'}
                       on:click={() => {
-                        handleUpgrade(tier._id)
+                        void handleUpgrade(tier._id)
                       }}
                     />
                   {/if}
@@ -190,11 +221,25 @@
 
   .current-tier-card {
     display: flex;
+    flex-shrink: 0;
     flex-direction: column;
-    width: 100%;
+    width: 31rem;
     border: 1px solid var(--theme-divider-color);
     border-radius: var(--medium-BorderRadius);
     padding: var(--spacing-2);
+  }
+
+  .current-tier-card-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .status-badge {
+    color: var(--theme-state-positive-color);
+    background-color: var(--theme-state-positive-background-color);
+    border-radius: var(--small-BorderRadius);
+    padding: 0.125rem 0.5rem;
   }
 
   .tier-card {
@@ -203,7 +248,7 @@
     justify-content: space-between;
     flex-shrink: 0;
     width: 15rem;
-    height: 24rem;
+    // max-height: 22rem;
     border: 1px solid var(--theme-divider-color);
     border-radius: var(--medium-BorderRadius);
     padding: var(--spacing-2);
@@ -226,13 +271,12 @@
 
   .feature-item {
     display: flex;
-    align-items: baseline;
-    gap: var(--spacing-2);
+    gap: var(--spacing-0_5);
     font-size: 0.8125rem;
   }
 
   .feature-bullet {
-    color: var(--theme-content-color);
+    color: var(--theme-state-positive-color);
     font-weight: 600;
     flex-shrink: 0;
   }
@@ -241,5 +285,6 @@
     display: flex;
     flex-direction: row-reverse;
     margin-top: var(--spacing-3);
+    height: 2.25rem;
   }
 </style>

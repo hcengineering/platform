@@ -14,8 +14,8 @@
     "TranscriptionTime": "Tempo de transcrição",
     "TotalTokens": "Total de tokens",
     "Tier": "Plano",
-    "StorageLimit": "{limit}GB de armazenamento",
-    "TrafficLimit": "{limit}GB de tráfego de vídeo/áudio",
+    "StorageLimit": "{limit} {unit} de armazenamento",
+    "TrafficLimit": "{limit} {unit} de tráfego de vídeo/áudio",
     "Common": "Common",
     "CommonDescription": "Para indivíduos e equipes começando com Huly.",
     "Rare": "Rare",
@@ -26,8 +26,9 @@
     "LegendaryDescription": "Melhor para grandes equipes que precisam de capacidades máximas.",
     "UnlimitedUsers": "Usuários ilimitados",
     "UnlimitedObjects": "Objetos Huly ilimitados",
-    "Upgrade": "Atualizar",
+    "ChangePlan": "Alterar plano",
     "Monthly": "Mensal",
+    "Active": "Ativo",
     "SubscriptionEnds": "Até {date}"
   }
 }
