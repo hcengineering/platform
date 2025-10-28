@@ -1,6 +1,6 @@
 [package]
 name = "hulylake"
-version = "0.1.17"
+version = "0.1.18"
 edition = "2024"
 rust-version = "1.88.0"
 
