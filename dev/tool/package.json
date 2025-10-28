@@ -61,6 +61,11 @@
   "dependencies": {
     "@elastic/elasticsearch": "^7.17.14",
     "@hcengineering/account": "^0.7.0",
+    "@hcengineering/communication": "^0.7.0",
+    "@hcengineering/chat": "^0.7.0",
+    "@hcengineering/card": "^0.7.0",
+    "@hcengineering/rank": "^0.7.5",
+    "@hcengineering/text-markdown": "^0.7.5",
     "@hcengineering/account-service": "^0.7.0",
     "@hcengineering/workspace-service": "^0.7.0",
     "@hcengineering/attachment": "^0.7.0",
