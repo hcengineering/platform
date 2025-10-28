@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/server",
+      "comment": "Tests fixed",
+      "type": "none"
+    }
+  ],
+  "packageName": "@hcengineering/server"
+}

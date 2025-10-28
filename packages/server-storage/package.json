@@ -58,7 +58,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.18",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-core": "workspace:^0.7.15",
+    "@hcengineering/server-core": "workspace:^0.7.16",
     "@hcengineering/minio": "workspace:^0.7.15",
     "@hcengineering/s3": "workspace:^0.7.15",
     "@hcengineering/datalake": "workspace:^0.7.15",

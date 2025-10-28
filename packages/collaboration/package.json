@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.7.18",
-    "@hcengineering/server-core": "workspace:^0.7.15",
+    "@hcengineering/server-core": "workspace:^0.7.16",
     "@hcengineering/text": "^0.7.17",
     "@hcengineering/text-ydoc": "^0.7.17",
     "base64-js": "^1.5.1",

@@ -429,9 +429,11 @@ export async function calcHashHash (ctx: MeasureContext, domain: Domain, adapter
   }
 }
 
+type TimerOp = [number, string, number, boolean]
+
 export class OneSecondCountersImpl implements OneSecondCounters {
   private readonly counters = new Map<string, number>()
-  private readonly counterTimeouts = new Map<number, [number, () => void]>()
+  private readonly counterTimeouts = new Map<number, TimerOp>()
   ids: number = 0
 
   add (counter: string, count: number): void {
@@ -440,24 +442,13 @@ export class OneSecondCountersImpl implements OneSecondCounters {
 
   async withCounter<T>(counter: string, count: number, op: () => Promise<T>): Promise<T> {
     this.add(counter, count)
-    let cleared = false
     const id = ++this.ids
-    this.counterTimeouts.set(id, [
-      platformNow() + 60 * 1000, // One minute timeout
-      () => {
-        if (!cleared) {
-          this.add(counter, -count)
-        }
-        cleared = true
-      }
-    ])
+    const vv: TimerOp = [platformNow(), counter, count, false]
+    this.counterTimeouts.set(id, vv)
     try {
       return await op()
     } finally {
-      if (!cleared) {
-        this.add(counter, -count)
-      }
-      cleared = true
+      vv[3] = true
     }
   }
 
@@ -468,9 +459,17 @@ export class OneSecondCountersImpl implements OneSecondCounters {
   check (): void {
     // Check for timeouts
     const now = platformNow()
-    for (const [k, [timeout, cb]] of [...this.counterTimeouts.entries()]) {
-      if (timeout < now) {
-        cb()
+    for (const [k, [timeout, counter, count, completed]] of [...this.counterTimeouts.entries()]) {
+      // Regular 1 second timeout: if operation completed after at least 1s, decrement once
+      if (completed && timeout + 1000 < now) {
+        this.add(counter, -count)
+        this.counterTimeouts.delete(k)
+        continue
+      }
+
+      // Hard timeout for stuck tasks: if not completed but exceeded hard timeout, decrement once
+      if (!completed && timeout + 60 * 1000 < now) {
+        this.add(counter, -count)
         this.counterTimeouts.delete(k)
       }
     }

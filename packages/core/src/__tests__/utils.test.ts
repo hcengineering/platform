@@ -14,17 +14,27 @@
 //
 
 import { estimateDocSize, OneSecondCountersImpl } from '../utils'
+import { platformNow } from '@hcengineering/core'
 
 describe('OneSecondCountersImpl', () => {
   let counters: OneSecondCountersImpl
 
   beforeEach(() => {
     counters = new OneSecondCountersImpl()
-    jest.useFakeTimers()
+    ;(jest as any).useFakeTimers('modern')
   })
 
+  function ageTimeouts (ms: number): void {
+    const timeouts = (counters as any).counterTimeouts as Map<number, any>
+    const now = platformNow()
+    for (const [k, v] of timeouts.entries()) {
+      v[0] = now - (ms + 1000)
+      timeouts.set(k, v)
+    }
+  }
+
   afterEach(() => {
-    jest.useRealTimers()
+    ;(jest as any).useRealTimers()
   })
 
   describe('add', () => {
@@ -73,13 +83,20 @@ describe('OneSecondCountersImpl', () => {
       expect(result).toBe('result')
       expect(operation).toHaveBeenCalled()
       // Counter should be decremented to 0 after successful operation
+      // Implementation counts operations for at least 1 second.
+      // platformNow used by the implementation may not be affected by Jest timers here,
+      // so age the internal timeouts directly and run check().
+      ageTimeouts(2000)
+      counters.check()
       const entries = Array.from(counters.entries())
       expect(entries).toEqual([['op', 0]])
     })
 
     it('should decrement counter on successful operation', async () => {
       await counters.withCounter('op', 5, async () => 'done')
-      // After successful operation, counter should be decremented to 0
+      // After successful operation, counter should be decremented to 0 after 1s
+      ageTimeouts(2000)
+      counters.check()
       const entries = Array.from(counters.entries())
       expect(entries).toEqual([['op', 0]])
     })
@@ -87,8 +104,10 @@ describe('OneSecondCountersImpl', () => {
     it('focused: counter returns to 0 after operation finishes', async () => {
       // Ensure explicitly that counter returns to 0 after the operation completes
       await counters.withCounter('focus', 3, async () => 'ok')
+      // 'focus' counter should be 0 after aging and check
+      ageTimeouts(2000)
+      counters.check()
       const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
-      // 'focus' counter should be 0
       expect(entries.find((e) => e[0] === 'focus')).toEqual(['focus', 0])
     })
 
@@ -97,7 +116,9 @@ describe('OneSecondCountersImpl', () => {
         throw new Error('Operation failed')
       })
       await expect(counters.withCounter('op', 3, operation)).rejects.toThrow('Operation failed')
-      // Counter should be decremented to 0 even on error
+      // Counter should be decremented to 0 even on error after aging and check
+      ageTimeouts(2000)
+      counters.check()
       const entries = Array.from(counters.entries())
       expect(entries).toEqual([['op', 0]])
     })
@@ -110,7 +131,9 @@ describe('OneSecondCountersImpl', () => {
       ]
       const results = await Promise.all(operations)
       expect(results).toEqual(['result1', 'result2', 'result3'])
-      // All counters should be at 0
+      // All counters should be at 0 after aging and check
+      ageTimeouts(2000)
+      counters.check()
       const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
       expect(entries).toEqual([
         ['op1', 0],
@@ -133,7 +156,7 @@ describe('OneSecondCountersImpl', () => {
       // At this point, counter should be incremented
       expect(Array.from(counters.entries())).toEqual([['op', 1]])
       // Advance time by 61 seconds to trigger timeout
-      jest.advanceTimersByTime(61 * 1000)
+      ageTimeouts(61 * 1000)
       counters.check()
       // After timeout, counter should be decremented to 0
       expect(Array.from(counters.entries())).toEqual([['op', 0]])
@@ -154,7 +177,9 @@ describe('OneSecondCountersImpl', () => {
         return await counters.withCounter('inner', 1, async () => 'nested')
       })
       expect(result).toBe('nested')
-      // All counters should be at 0
+      // All counters should be at 0 after aging and check
+      ageTimeouts(2000)
+      counters.check()
       const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
       expect(entries).toEqual([
         ['inner', 0],
@@ -188,7 +213,7 @@ describe('OneSecondCountersImpl', () => {
         // Don't resolve
       })
       // Advance time by 30 seconds (less than 60 second timeout)
-      jest.advanceTimersByTime(30 * 1000)
+      ageTimeouts(30 * 1000)
       counters.check()
       // Counter should still be at 1
       expect(Array.from(counters.entries())).toEqual([['op', 1]])
@@ -214,7 +239,7 @@ describe('OneSecondCountersImpl', () => {
       // Counter should be incremented
       expect(Array.from(counters.entries()).find((e) => e[0] === 'timen')?.[1]).toBe(4)
       // Fast-forward past the timeout and run check
-      jest.advanceTimersByTime(61 * 1000)
+      ageTimeouts(61 * 1000)
       counters.check()
       // After timeout the counter for 'timen' should be back to 0
       expect(Array.from(counters.entries()).find((e) => e[0] === 'timen')).toEqual(['timen', 0])
@@ -226,7 +251,7 @@ describe('OneSecondCountersImpl', () => {
       void counters.withCounter('op2', 1, async (): Promise<void> => {})
       void counters.withCounter('op3', 1, async (): Promise<void> => {})
       // Advance time past timeout
-      jest.advanceTimersByTime(61 * 1000)
+      ageTimeouts(61 * 1000)
       counters.check()
       // All counters should be at 0
       const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
@@ -243,9 +268,11 @@ describe('OneSecondCountersImpl', () => {
         // Never resolves
       })
       // Advance time by 61 seconds
-      jest.advanceTimersByTime(61 * 1000)
+      ageTimeouts(61 * 1000)
       // Create second operation
       await counters.withCounter('op2', 1, async () => 'result')
+      // Age recent completion so it can be decremented (1s minimum)
+      ageTimeouts(2000)
       counters.check()
       // op1 should be at 0 (after timeout) but may be at -1 if timeout fires after final check
       // op2 should be at 0 (completed)
@@ -262,7 +289,7 @@ describe('OneSecondCountersImpl', () => {
       })
       void counters.withCounter('op', 1, operation)
       // Advance time past timeout
-      jest.advanceTimersByTime(61 * 1000)
+      ageTimeouts(61 * 1000)
       counters.check()
       // Call check again
       counters.check()
@@ -276,17 +303,21 @@ describe('OneSecondCountersImpl', () => {
     it('should track multiple operations correctly', async () => {
       const operations = [
         counters.withCounter('request', 1, async () => {
-          jest.advanceTimersByTime(10)
+          // small simulated delay
+          ageTimeouts(10)
           return 'req1'
         }),
         counters.withCounter('db', 1, async () => {
-          jest.advanceTimersByTime(20)
+          // small simulated delay
+          ageTimeouts(20)
           return 'db1'
         })
       ]
       const results = await Promise.all(operations)
       expect(results).toEqual(['req1', 'db1'])
-      // All should be at 0
+      // All should be at 0 after aging/check
+      ageTimeouts(2000)
+      counters.check()
       const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
       expect(entries).toEqual([
         ['db', 0],
@@ -297,7 +328,9 @@ describe('OneSecondCountersImpl', () => {
     it('should handle add and withCounter together', async () => {
       counters.add('manual', 5)
       await counters.withCounter('op', 1, async () => 'result')
-      // manual and op counters should remain at their values
+      // manual and op counters should remain at their values after aging/check
+      ageTimeouts(2000)
+      counters.check()
       const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
       expect(entries).toEqual([
         ['manual', 5],
@@ -315,7 +348,9 @@ describe('OneSecondCountersImpl', () => {
       const results = await Promise.allSettled(operations)
       expect(results[0]).toEqual({ status: 'fulfilled', value: 'ok' })
       expect(results[1]).toEqual({ status: 'rejected', reason: expect.any(Error) })
-      // All counters should be at 0
+      // All counters should be at 0 after aging/check
+      ageTimeouts(2000)
+      counters.check()
       const entries = Array.from(counters.entries()).sort((a, b) => a[0].localeCompare(b[0]))
       expect(entries).toEqual([
         ['failure', 0],
