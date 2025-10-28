@@ -44,7 +44,7 @@
     "@hcengineering/model": "^0.7.17",
     "tar-stream": "^3.1.7",
     "@hcengineering/server-tool": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-storage": "^0.7.15",
     "@hcengineering/server-backup": "^0.7.0",
     "@hcengineering/minio": "^0.7.15",

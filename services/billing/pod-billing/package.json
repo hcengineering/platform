@@ -60,7 +60,7 @@
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/analytics-service": "^0.7.17",
     "@hcengineering/server-token": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-storage": "^0.7.15",
     "@hcengineering/server-client": "^0.7.15",
     "@hcengineering/core": "^0.7.18",

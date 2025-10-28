@@ -55,7 +55,7 @@
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/query": "^0.7.17",
-    "@hcengineering/text": "^0.7.17",
+    "@hcengineering/text": "^0.7.18",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/uploader": "^0.7.0",
     "@hcengineering/view": "^0.7.0",

@@ -47,7 +47,7 @@
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/request": "^0.7.0",
     "@hcengineering/server-chunter-resources": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/training": "^0.7.0",
     "@hcengineering/workbench": "^0.7.0",

@@ -40,7 +40,7 @@
     "@hcengineering/server-time": "^0.7.0",
     "@hcengineering/time": "^0.7.0",
     "@hcengineering/tracker": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/model-core": "^0.7.0"
   }
 }

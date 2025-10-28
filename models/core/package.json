@@ -39,6 +39,6 @@
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/storage": "^0.7.17",
     "@hcengineering/collaboration": "^0.7.15",
-    "@hcengineering/text": "^0.7.17"
+    "@hcengineering/text": "^0.7.18"
   }
 }

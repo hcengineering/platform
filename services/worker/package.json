@@ -59,6 +59,6 @@
     "@hcengineering/kafka": "^0.7.15",
     "@hcengineering/process": "^0.7.0",
     "@hcengineering/core": "^0.7.18",
-    "@hcengineering/server-core": "^0.7.15"
+    "@hcengineering/server-core": "^0.7.16"
   }
 }
