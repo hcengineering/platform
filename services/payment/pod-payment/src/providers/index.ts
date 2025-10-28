@@ -87,8 +87,28 @@ export interface PaymentProvider {
 
   /**
    * Cancel a subscription
+   * Accepts provider subscription ID
+   * Returns the canceled subscription data
    */
-  cancelSubscription: (ctx: MeasureContext, subscriptionId: string) => Promise<void>
+  cancelSubscription: (ctx: MeasureContext, providerSubscriptionId: string) => Promise<SubscriptionData>
+
+  /**
+   * Uncancel a subscription (reactivate a previously canceled subscription)
+   * Accepts provider subscription ID
+   * Returns the reactivated subscription data
+   */
+  uncancelSubscription: (ctx: MeasureContext, providerSubscriptionId: string) => Promise<SubscriptionData>
+
+  /**
+   * Update a subscription to a different plan
+   * Used for upgrades and downgrades
+   * Handles immediate effective date with proration
+   */
+  updateSubscriptionPlan: (
+    ctx: MeasureContext,
+    subscriptionId: string,
+    newPlan: string
+  ) => Promise<SubscriptionData | null>
 
   /**
    * Reconcile active subscriptions between provider and our database

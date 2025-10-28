@@ -61,7 +61,8 @@
 
   // Only include subscriptions group if payment URL is configured
   const paymentUrl = getMetadata(presentation.metadata.PaymentUrl)
-  const groups = (paymentUrl != null && paymentUrl !== '') ? baseGroups : baseGroups.filter((g) => g.key !== 'subscriptions')
+  const groups =
+    paymentUrl != null && paymentUrl !== '' ? baseGroups : baseGroups.filter((g) => g.key !== 'subscriptions')
 
   let currentGroupKey = groups[0].key
   let currentGroup = groups[0]

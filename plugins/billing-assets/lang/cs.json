@@ -30,6 +30,22 @@
     "Monthly": "Měsíčně",
     "Acitve": "Aktivní",
     "SubscriptionEnds": "Do {date}",
-    "ProcessingPayment": "Zpracování platby..."
+    "SubscriptionRenews": "Obnovení: {date}",
+    "SubscriptionValidUntil": "Platné do {date}",
+    "ProcessingPayment": "Zpracování platby...",
+    "Downgrade": "Snížit",
+    "CancelSubscription": "Zrušit předplatné",
+    "ConfirmUpgrade": "Upgradovat předplatné?",
+    "ConfirmDowngrade": "Snížit předplatné?",
+    "ConfirmCancel": "Zrušit předplatné?",
+    "UpgradeDescription": "Bude vám účtováno až ${amount} okamžitě. Přesná částka závisí na vašem aktuálním fakturačním období.",
+    "DowngradeDescription": "Obdržíte kredit až ${amount} za zbývající čas předplatného. Snížení vstoupí v platnost okamžitě.",
+    "CancelDescription": "Vaše předplatné zůstane aktivní do konce období fakturace.",
+    "UncancelSubscription": "Reaktivovat předplatné",
+    "ConfirmUncancel": "Reaktivovat předplatné?",
+    "UncancelDescription": "Vaše předplatné bude reaktivováno a bude pokračovat od konce aktuálního období fakturace.",
+    "PriceDifference": "Rozdíl v ceně: {amount}",
+    "DialogCancel": "Zrušit",
+    "DialogConfirm": "Potvrdit"
   }
 }

@@ -30,6 +30,22 @@
     "Monthly": "Monthly",
     "Active": "Active",
     "SubscriptionEnds": "Until {date}",
-    "ProcessingPayment": "Processing payment..."
+    "SubscriptionRenews": "Next renewal: {date}",
+    "SubscriptionValidUntil": "Valid until {date}",
+    "ProcessingPayment": "Processing payment...",
+    "Downgrade": "Downgrade",
+    "CancelSubscription": "Cancel Subscription",
+    "ConfirmUpgrade": "Upgrade subscription?",
+    "ConfirmDowngrade": "Downgrade subscription?",
+    "ConfirmCancel": "Cancel subscription?",
+    "UpgradeDescription": "You will be charged up to ${amount} immediately. The exact amount depends on your current billing period.",
+    "DowngradeDescription": "You will receive a credit of up to ${amount} for the remaining subscription time. The downgrade takes effect immediately.",
+    "CancelDescription": "Your subscription will remain active until the end of the billing period.",
+    "UncancelSubscription": "Reactivate Subscription",
+    "ConfirmUncancel": "Reactivate subscription?",
+    "UncancelDescription": "Your subscription will be reactivated and continue from the end of the current billing period.",
+    "PriceDifference": "Price difference: {amount}",
+    "DialogCancel": "Cancel",
+    "DialogConfirm": "Confirm"
   }
 }

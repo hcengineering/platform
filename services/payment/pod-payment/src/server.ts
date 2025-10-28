@@ -231,8 +231,137 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
         'cancel-subscription',
         async (ctx) => {
           const subscriptionId = req.params.subscriptionId
-          await provider.cancelSubscription(ctx, subscriptionId)
-          res.status(200).json({ message: 'Subscription cancellation requested' })
+
+          // Get subscription from our database using internal ID
+          const subscription = await accountClient.getSubscriptionById(subscriptionId)
+
+          if (subscription === undefined || subscription === null) {
+            res.status(404).json({ error: 'Subscription not found' })
+            return
+          }
+
+          // Cancel via provider using the provider's subscription ID
+          const canceledSubscription = await provider.cancelSubscription(ctx, subscription.providerSubscriptionId)
+
+          if (canceledSubscription === null) {
+            res.status(404).json({ error: 'Failed to cancel subscription at provider' })
+            return
+          }
+
+          // Upsert the updated subscription into our database
+          await accountClient.upsertSubscription(canceledSubscription)
+
+          res.status(200).json(canceledSubscription)
+        },
+        req,
+        res,
+        () => {}
+      )
+    }
+  )
+
+  /**
+   * POST /api/v1/subscriptions/:subscriptionId/uncancel
+   * Uncancel a previously canceled subscription
+   * Authorization: Only workspace owner/admin can uncancel
+   */
+  app.post(
+    '/api/v1/subscriptions/:subscriptionId/uncancel',
+    withToken,
+    withOwner,
+    (req: RequestWithAuth, res: Response) => {
+      if (provider === undefined) {
+        res.status(503).json({ error: 'Payment provider is not configured' })
+        return
+      }
+
+      void handleRequest(
+        ctx,
+        'uncancel-subscription',
+        async (ctx) => {
+          const subscriptionId = req.params.subscriptionId
+
+          // Get subscription from our database using internal ID
+          const subscription = await accountClient.getSubscriptionById(subscriptionId)
+
+          if (subscription === undefined || subscription === null) {
+            res.status(404).json({ error: 'Subscription not found' })
+            return
+          }
+
+          // Uncancel via provider using the provider's subscription ID
+          const uncanceledSubscription = await provider.uncancelSubscription(ctx, subscription.providerSubscriptionId)
+
+          if (uncanceledSubscription === null) {
+            res.status(404).json({ error: 'Failed to uncancel subscription at provider' })
+            return
+          }
+
+          // Upsert the updated subscription into our database
+          await accountClient.upsertSubscription(uncanceledSubscription)
+
+          res.status(200).json(uncanceledSubscription)
+        },
+        req,
+        res,
+        () => {}
+      )
+    }
+  )
+
+  /**
+   * POST /api/v1/subscriptions/:subscriptionId/updatePlan
+   * Update a subscription to a different plan
+   * Body: { plan: string } - The new plan name (e.g., 'common', 'rare', 'epic', 'legendary')
+   * Authorization: Only workspace owner/admin can update
+   * Note: subscriptionId is the internal subscription ID, not the provider's ID
+   */
+  app.post(
+    '/api/v1/subscriptions/:subscriptionId/updatePlan',
+    withToken,
+    withOwner,
+    (req: RequestWithAuth, res: Response) => {
+      if (provider === undefined) {
+        res.status(503).json({ error: 'Payment provider is not configured' })
+        return
+      }
+
+      void handleRequest(
+        ctx,
+        'update-subscription',
+        async (ctx) => {
+          const subscriptionId = req.params.subscriptionId
+          const { plan } = req.body
+
+          if (plan === undefined || typeof plan !== 'string') {
+            res.status(400).json({ error: 'Missing or invalid field: plan' })
+            return
+          }
+
+          // Get subscription from our database using internal ID
+          const subscription = await accountClient.getSubscriptionById(subscriptionId)
+
+          if (subscription === undefined || subscription === null) {
+            res.status(404).json({ error: 'Subscription not found' })
+            return
+          }
+
+          // Update via provider using the provider's subscription ID
+          const updatedSubscription = await provider.updateSubscriptionPlan(
+            ctx,
+            subscription.providerSubscriptionId,
+            plan
+          )
+
+          if (updatedSubscription === null) {
+            res.status(404).json({ error: 'Failed to update subscription at provider' })
+            return
+          }
+
+          // Upsert the updated subscription into our database
+          await accountClient.upsertSubscription(updatedSubscription)
+
+          res.status(200).json(updatedSubscription)
         },
         req,
         res,
@@ -300,7 +429,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
           // Subscription exists in Polar - check if we need to update our DB
           try {
             // Get existing subscription from our DB if it exists
-            const existingSubscription = await accountClient.getSubscription(
+            const existingSubscription = await accountClient.getSubscriptionByProviderId(
               subscriptionData.provider,
               subscriptionData.providerSubscriptionId
             )

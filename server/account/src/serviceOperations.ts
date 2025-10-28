@@ -1039,11 +1039,14 @@ export async function upsertSubscription (
   }
   if (existing !== null) {
     // Update existing subscription
-    await db.subscription.update(
-      { id: existing.id },
-      updateData
-    )
-    ctx.info('Subscription updated', { id: existing.id, workspaceUuid, status: params.status, type: params.type, plan: params.plan })
+    await db.subscription.update({ id: existing.id }, updateData)
+    ctx.info('Subscription updated', {
+      id: existing.id,
+      workspaceUuid,
+      status: params.status,
+      type: params.type,
+      plan: params.plan
+    })
   } else {
     // Create new subscription
     await db.subscription.insertOne({
@@ -1051,11 +1054,17 @@ export async function upsertSubscription (
       id: params.id,
       createdOn: Date.now()
     })
-    ctx.info('Subscription created', { id: params.id, workspaceUuid, status: params.status, type: params.type, plan: params.plan })
+    ctx.info('Subscription created', {
+      id: params.id,
+      workspaceUuid,
+      status: params.status,
+      type: params.type,
+      plan: params.plan
+    })
   }
 }
 
-export async function getSubscription (
+export async function getSubscriptionByProviderId (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1110,7 +1119,7 @@ export type AccountServiceMethods =
   | 'findPersonBySocialKey'
   | 'listAccounts'
   | 'findFullSocialIds'
-  | 'getSubscription'
+  | 'getSubscriptionByProviderId'
   | 'upsertSubscription'
 
 /**
@@ -1144,7 +1153,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     mergeSpecifiedAccounts: wrap(mergeSpecifiedAccounts),
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     listAccounts: wrap(listAccounts),
-    getSubscription: wrap(getSubscription),
+    getSubscriptionByProviderId: wrap(getSubscriptionByProviderId),
     upsertSubscription: wrap(upsertSubscription)
   }
 }

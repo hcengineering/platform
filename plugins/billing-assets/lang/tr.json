@@ -30,6 +30,22 @@
     "Monthly": "Aylık",
     "Active": "Aktif",
     "SubscriptionEnds": "{date} tarihine kadar",
-    "ProcessingPayment": "Ödeme işleniyor..."
+    "SubscriptionRenews": "Sonraki yenileme: {date}",
+    "SubscriptionValidUntil": "{date} tarihine kadar geçerli",
+    "ProcessingPayment": "Ödeme işleniyor...",
+    "Downgrade": "Düşür",
+    "CancelSubscription": "Aboneliği İptal Et",
+    "ConfirmUpgrade": "Aboneliği yükselt?",
+    "ConfirmDowngrade": "Aboneliği düşür?",
+    "ConfirmCancel": "Aboneliği iptal et?",
+    "UpgradeDescription": "Size hemen ${amount} kadar tahsil edilecektir. Tam tutar, mevcut faturalandırma döneminizie bağlıdır.",
+    "DowngradeDescription": "Kalan abonelik süresi için ${amount} kadar kredi alacaksınız. Düşürme hemen etkili olur.",
+    "CancelDescription": "Aboneliğiniz faturalandırma döneminin sonuna kadar etkin kalacaktır.",
+    "UncancelSubscription": "Aboneliği Yeniden Etkinleştir",
+    "ConfirmUncancel": "Aboneliği yeniden etkinleştir?",
+    "UncancelDescription": "Aboneliğiniz yeniden etkinleştirilecek ve geçerli faturalandırma döneminin sonundan itibaren devam edecektir.",
+    "PriceDifference": "Fiyat farkı: {amount}",
+    "DialogCancel": "İptal",
+    "DialogConfirm": "Onayla"
   }
 }

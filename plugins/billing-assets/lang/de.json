@@ -30,6 +30,22 @@
     "Monthly": "Monatlich",
     "Active": "Aktiv",
     "SubscriptionEnds": "Bis {date}",
-    "ProcessingPayment": "Zahlung wird verarbeitet..."
+    "SubscriptionRenews": "Nächste Erneuerung: {date}",
+    "SubscriptionValidUntil": "Gültig bis {date}",
+    "ProcessingPayment": "Zahlung wird verarbeitet...",
+    "Downgrade": "Herabstufen",
+    "CancelSubscription": "Abonnement kündigen",
+    "ConfirmUpgrade": "Abonnement aktualisieren?",
+    "ConfirmDowngrade": "Abonnement herabstufen?",
+    "ConfirmCancel": "Abonnement kündigen?",
+    "UpgradeDescription": "Ihnen wird sofort bis zu ${amount} berechnet. Der genaue Betrag hängt von Ihrem aktuellen Abrechnungszeitraum ab.",
+    "DowngradeDescription": "Sie erhalten eine Gutschrift von bis zu ${amount} für die verbleibende Abonnementlaufzeit. Die Herabstufung wird sofort wirksam.",
+    "CancelDescription": "Ihr Abonnement bleibt bis zum Ende des Abonnementzeitraums aktiv.",
+    "UncancelSubscription": "Abonnement reaktivieren",
+    "ConfirmUncancel": "Abonnement reaktivieren?",
+    "UncancelDescription": "Ihr Abonnement wird reaktiviert und läuft ab dem Ende des aktuellen Abrechnungszeitraums weiter.",
+    "PriceDifference": "Preisdifferenz: {amount}",
+    "DialogCancel": "Abbrechen",
+    "DialogConfirm": "Bestätigen"
   }
 }

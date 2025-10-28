@@ -30,6 +30,22 @@
     "Monthly": "В месяц",
     "Active": "Активен",
     "SubscriptionEnds": "До {date}",
-    "ProcessingPayment": "Обработка платежа..."
+    "SubscriptionRenews": "Следующее обновление: {date}",
+    "SubscriptionValidUntil": "Действительно до {date}",
+    "ProcessingPayment": "Обработка платежа...",
+    "Downgrade": "Понизить",
+    "CancelSubscription": "Отменить подписку",
+    "ConfirmUpgrade": "Обновить подписку?",
+    "ConfirmDowngrade": "Понизить подписку?",
+    "ConfirmCancel": "Отменить подписку?",
+    "UpgradeDescription": "С вас будет взято до ${amount} немедленно. Точная сумма зависит от вашего текущего периода выставления счета.",
+    "DowngradeDescription": "Вы получите кредит до ${amount} за оставшееся время подписки. Понижение вступает в силу немедленно.",
+    "CancelDescription": "Ваша подписка останется активной до конца периода выставления счета.",
+    "UncancelSubscription": "Переактивировать подписку",
+    "ConfirmUncancel": "Переактивировать подписку?",
+    "UncancelDescription": "Ваша подписка будет переактивирована и продолжится с конца текущего периода выставления счета.",
+    "PriceDifference": "Разница в цене: {amount}",
+    "DialogCancel": "Отменить",
+    "DialogConfirm": "Подтвердить"
   }
 }

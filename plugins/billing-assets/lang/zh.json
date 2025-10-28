@@ -30,6 +30,22 @@
     "Monthly": "每月",
     "Active": "活跃",
     "SubscriptionEnds": "截止至{date}",
-    "ProcessingPayment": "正在处理付款..."
+    "SubscriptionRenews": "下次续期: {date}",
+    "SubscriptionValidUntil": "有效期至{date}",
+    "ProcessingPayment": "正在处理付款...",
+    "Downgrade": "降级",
+    "CancelSubscription": "取消订阅",
+    "ConfirmUpgrade": "升级订阅?",
+    "ConfirmDowngrade": "降级订阅?",
+    "ConfirmCancel": "取消订阅?",
+    "UpgradeDescription": "将立即向您收取最多 ${amount}。具体金额取决于您当前的计费周期。",
+    "DowngradeDescription": "您将获得最多 ${amount} 的剩余订阅时间积分。降级立即生效。",
+    "CancelDescription": "您的订阅将在计费周期结束前保持活跃。",
+    "UncancelSubscription": "重新激活订阅",
+    "ConfirmUncancel": "重新激活订阅?",
+    "UncancelDescription": "您的订阅将被重新激活，并从当前计费周期结束时继续。",
+    "PriceDifference": "价格差异: {amount}",
+    "DialogCancel": "取消",
+    "DialogConfirm": "确认"
   }
 }

@@ -53,6 +53,7 @@ export async function handlePolarWebhook (
       case 'subscription.updated':
       case 'subscription.active':
       case 'subscription.canceled':
+      case 'subscription.uncanceled':
       case 'subscription.revoked':
         void handleSubscriptionUpdated(ctx, accountsUrl, serviceToken, event).catch((err) => {
           ctx.error('Failed to process Polar webhook event', { event, err })

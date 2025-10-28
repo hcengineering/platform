@@ -14,7 +14,7 @@
 //
 
 import { concatLink, type WorkspaceUuid } from '@hcengineering/core'
-import { CreateSubscriptionResponse, SubscribeRequest, CheckoutStatus } from './types'
+import { CreateSubscriptionResponse, SubscribeRequest, CheckoutStatus, SubscriptionData } from './types'
 import { PaymentError, NetworkError } from './error'
 
 /**
@@ -86,14 +86,47 @@ export class PaymentClient {
    * @param subscriptionId - Subscription ID to cancel
    * @returns Cancellation confirmation
    */
-  async cancelSubscription (subscriptionId: string): Promise<void> {
+  async cancelSubscription (subscriptionId: string): Promise<SubscriptionData> {
     const path = `/api/v1/subscriptions/${subscriptionId}/cancel`
     const url = new URL(concatLink(this.endpoint, path))
     const response = await fetchSafe(url, {
       method: 'POST',
       headers: { ...this.headers }
     })
-    await response.json()
+    return (await response.json()) as SubscriptionData
+  }
+
+  /**
+   * Uncancel a subscription (reactivate a previously canceled subscription)
+   * @param subscriptionId - Subscription ID to uncancel
+   * @returns Reactivation confirmation
+   */
+  async uncancelSubscription (subscriptionId: string): Promise<SubscriptionData> {
+    const path = `/api/v1/subscriptions/${subscriptionId}/uncancel`
+    const url = new URL(concatLink(this.endpoint, path))
+    const response = await fetchSafe(url, {
+      method: 'POST',
+      headers: { ...this.headers }
+    })
+    return (await response.json()) as SubscriptionData
+  }
+
+  /**
+   * Update a subscription to a different plan
+   * @param subscriptionId - Subscription ID to update
+   * @param plan - New plan name
+   * @returns Updated subscription details
+   */
+  async updateSubscriptionPlan (subscriptionId: string, plan: string): Promise<SubscriptionData> {
+    const path = `/api/v1/subscriptions/${subscriptionId}/updatePlan`
+    const url = new URL(concatLink(this.endpoint, path))
+    const body = JSON.stringify({ plan })
+    const response = await fetchSafe(url, {
+      method: 'POST',
+      headers: { ...this.headers },
+      body
+    })
+    return (await response.json()) as SubscriptionData
   }
 
   /**

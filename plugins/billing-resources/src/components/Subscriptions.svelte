@@ -13,12 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Subscription, SubscriptionType, getClient as getAccountClient } from '@hcengineering/account-client'
-  import {
-    type SubscribeRequest,
-    type CheckoutStatus,
-    getClient as getPaymentClient
-  } from '@hcengineering/payment-client'
+  import { type SubscriptionData, SubscriptionType, getClient as getAccountClient } from '@hcengineering/account-client'
+  import { type SubscribeRequest, type CheckoutStatus } from '@hcengineering/payment-client'
   import { type Ref, SortingOrder } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import {
@@ -30,16 +26,19 @@
     getPlatformColorByName,
     themeStore,
     getLocation,
-    navigate
+    navigate,
+    showPopup
   } from '@hcengineering/ui'
-  import presentation, { getClient } from '@hcengineering/presentation'
+  import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
   import { Tier } from '@hcengineering/billing'
   import { getMetadata } from '@hcengineering/platform'
   import { onMount, onDestroy } from 'svelte'
 
   import plugin from '../plugin'
+  import { getPaymentClient } from '../utils'
 
   const client = getClient()
+  const paymentClient = getPaymentClient()
 
   const tiers = client.getModel().findAllSync(plugin.class.Tier, {}, { sort: { index: SortingOrder.Ascending } })
   const tierByPlan = tiers.reduce<Record<string, Tier>>((acc, tier) => {
@@ -48,20 +47,26 @@
     return acc
   }, {})
 
-  let subscriptions: Subscription[] = []
-  let currentTier = tiers[0]
-  let currentSubscription: Subscription | undefined = undefined
+  let currentSubscription: SubscriptionData | undefined = undefined
+  $: currentTier = currentSubscription != null ? tierByPlan[currentSubscription.plan] : tiers[0]
   let loading = true
   let pollingCheckoutId: string | null = null
   let isPolling = false
   let pollAttempts = 0
   let pollTimer: number | undefined
+  let isUpdating = false
+  let isCanceling = false
+  let isUncanceling = false
   const MAX_POLL_ATTEMPTS = 120
   const POLL_INTERVAL = 2000
 
-  async function handleUpgrade (tierId: Ref<Tier>): Promise<void> {
-    const paymentUrl = getMetadata(presentation.metadata.PaymentUrl)
-    const token = getMetadata(presentation.metadata.Token)
+  $: isCurrentCanceled = currentSubscription?.canceledAt !== undefined && currentSubscription.canceledAt > 0
+
+  async function subscribe (tierId: Ref<Tier>): Promise<void> {
+    if (paymentClient == null) {
+      return
+    }
+
     const workspace = getMetadata(presentation.metadata.WorkspaceUuid)
     if (workspace === undefined) {
       console.warn('Workspace metadata not available')
@@ -70,23 +75,139 @@
 
     try {
       const request: SubscribeRequest = getTypeAndPlan(tierId)
-      const client = getPaymentClient(paymentUrl, token)
-      const { checkoutUrl } = await client.createSubscription(workspace, request)
+      const { checkoutUrl } = await paymentClient.createSubscription(workspace, request)
       window.location.href = checkoutUrl
     } catch (error) {
       console.error('error while upgrading plan:', error)
     }
   }
 
-  async function updateSubscriptions (): Promise<void> {
+  async function handlePlanChange (newTierId: Ref<Tier>): Promise<void> {
+    const { plan: newPlan } = getTypeAndPlan(newTierId)
+    const newTier = tierByPlan[newPlan]
+
+    if (currentSubscription?.id === undefined) {
+      // No active subscription, create new one
+      await subscribe(newTierId)
+      return
+    }
+
+    const isDowngrade = newTier.priceMonthly < currentTier.priceMonthly
+    const priceDifference = Math.abs(newTier.priceMonthly - currentTier.priceMonthly)
+
+    const title = isDowngrade ? plugin.string.ConfirmDowngrade : plugin.string.ConfirmUpgrade
+    const descriptionKey = isDowngrade ? plugin.string.DowngradeDescription : plugin.string.UpgradeDescription
+
+    showPopup(MessageBox, {
+      label: title,
+      message: descriptionKey,
+      params: { amount: priceDifference.toFixed(2) },
+      action: async () => {
+        await executeUpdate(newPlan)
+      }
+    })
+  }
+
+  async function executeUpdate (newPlan: string): Promise<void> {
+    if (paymentClient == null) {
+      return
+    }
+    if (currentSubscription?.id === undefined) {
+      return
+    }
+
+    try {
+      isUpdating = true
+      currentSubscription = await paymentClient.updateSubscriptionPlan(currentSubscription.id, newPlan)
+    } catch (error) {
+      console.error('error updating subscription:', error)
+    } finally {
+      isUpdating = false
+    }
+  }
+
+  async function handleCancel (): Promise<void> {
+    if (currentSubscription?.id === undefined) {
+      return
+    }
+
+    if (isCurrentCanceled) {
+      return
+    }
+
+    showPopup(MessageBox, {
+      label: plugin.string.ConfirmCancel,
+      dangerous: true,
+      message: plugin.string.CancelDescription,
+      action: async () => {
+        await executeCancel()
+      }
+    })
+  }
+
+  async function executeCancel (): Promise<void> {
+    if (paymentClient == null) {
+      return
+    }
+    if (currentSubscription?.id === undefined) {
+      return
+    }
+
+    try {
+      isCanceling = true
+      currentSubscription = await paymentClient.cancelSubscription(currentSubscription.id)
+    } catch (error) {
+      console.error('error canceling subscription:', error)
+    } finally {
+      isCanceling = false
+    }
+  }
+
+  async function handleUncancel (): Promise<void> {
+    if (currentSubscription?.id === undefined) {
+      return
+    }
+
+    if (!isCurrentCanceled) {
+      return
+    }
+
+    showPopup(MessageBox, {
+      label: plugin.string.ConfirmUncancel,
+      message: plugin.string.UncancelDescription,
+      action: async () => {
+        await executeUncancel()
+      }
+    })
+  }
+
+  async function executeUncancel (): Promise<void> {
+    if (paymentClient == null) {
+      return
+    }
+    if (currentSubscription?.id === undefined) {
+      return
+    }
+
+    try {
+      isUncanceling = true
+      currentSubscription = await paymentClient.uncancelSubscription(currentSubscription.id)
+    } catch (error) {
+      console.error('error uncanceling subscription:', error)
+    } finally {
+      isUncanceling = false
+    }
+  }
+
+  async function fetchSubscriptions (): Promise<void> {
     const accountsUrl = getMetadata(login.metadata.AccountsUrl)
     const token = getMetadata(presentation.metadata.Token)
 
     try {
       loading = true
       const accountClient = getAccountClient(accountsUrl, token)
-      subscriptions = await accountClient.getSubscriptions()
-      currentSubscription = subscriptions.find((p) => p.type === 'tier' && p.status === 'active')
+      const subscriptions = await accountClient.getSubscriptions()
+      currentSubscription = subscriptions.find((p) => p.type === 'tier')
       const plan = currentSubscription?.plan
       currentTier = plan !== undefined ? tierByPlan[plan] : tiers[0]
     } catch (err) {
@@ -101,9 +222,9 @@
   }
 
   async function pollCheckoutStatus (checkoutId: string): Promise<void> {
-    const paymentUrl = getMetadata(presentation.metadata.PaymentUrl)
-    const token = getMetadata(presentation.metadata.Token)
-
+    if (paymentClient == null) {
+      return
+    }
     if (isPolling || pollAttempts >= MAX_POLL_ATTEMPTS) {
       return
     }
@@ -112,13 +233,12 @@
     pollAttempts++
 
     try {
-      const paymentClient = getPaymentClient(paymentUrl, token)
       const status: CheckoutStatus = await paymentClient.getCheckoutStatus(checkoutId)
 
       if (status.status === 'completed') {
         // Subscription is ready, refresh subscriptions and clean up URL
         console.info('Checkout completed, subscription ready:', status.subscriptionId)
-        await updateSubscriptions()
+        await fetchSubscriptions()
 
         // Clean up the checkout_id from URL using navigate
         const loc = getLocation()
@@ -153,9 +273,7 @@
 
     if (checkoutId !== undefined && paymentStatus === 'success') {
       // Check if we already have a tier subscription that matches this checkout
-      const matchingSubscription = subscriptions.find(
-        (sub) => sub.type === 'tier' && sub.providerCheckoutId === checkoutId
-      )
+      const matchingSubscription = currentSubscription?.providerCheckoutId === checkoutId
 
       if (matchingSubscription === undefined) {
         // No matching subscription found, start polling
@@ -192,7 +310,7 @@
   onMount(() => {
     void (async () => {
       // First, load current subscriptions
-      await updateSubscriptions()
+      await fetchSubscriptions()
 
       // Then check if we need to poll for a new subscription from checkout
       checkForCheckoutParam()
@@ -240,10 +358,36 @@
               {/if}
             </div>
 
-            {#if currentSubscription?.periodEnd}
-              {@const date = formatEndDate(currentSubscription.periodEnd)}
-              <div><Label label={plugin.string.SubscriptionEnds} params={{ date }} /></div>
-            {/if}
+            <div class="curr-tier-footer">
+              {#if currentSubscription?.periodEnd}
+                {@const date = formatEndDate(currentSubscription.periodEnd)}
+                {#if isCurrentCanceled}
+                  <div><Label label={plugin.string.SubscriptionValidUntil} params={{ date }} /></div>
+                {:else}
+                  <div><Label label={plugin.string.SubscriptionRenews} params={{ date }} /></div>
+                {/if}
+              {/if}
+
+              {#if !isCurrentCanceled}
+                <Button
+                  label={plugin.string.CancelSubscription}
+                  kind="ghost"
+                  disabled={loading || isCheckoutPolling || isCanceling}
+                  on:click={() => {
+                    void handleCancel()
+                  }}
+                />
+              {:else}
+                <Button
+                  label={plugin.string.UncancelSubscription}
+                  kind="primary"
+                  disabled={loading || isCheckoutPolling || isUncanceling}
+                  on:click={() => {
+                    void handleUncancel()
+                  }}
+                />
+              {/if}
+            </div>
           {/if}
         </div>
       </div>
@@ -253,9 +397,15 @@
         <Scroller contentDirection="horizontal" buttons={false} showOverflowArrows shrink={false} noFade={false}>
           <div class="flex-row-top flex-gap-4 flex-no-shrink mb-3">
             {#each tiers as tier}
-              {@const color = tier.color ? getPlatformColorByName(tier.color, $themeStore.dark) : undefined}
+              {@const color =
+                tier.color !== null && tier.color !== undefined && tier.color.length > 0
+                  ? getPlatformColorByName(tier.color, $themeStore.dark)
+                  : null}
               {@const bgAttr = $themeStore.dark ? 'background' : 'background-color'}
-              <div class="tier-card" style={color ? `${bgAttr}: ${color?.background};` : ''}>
+              <div
+                class="tier-card"
+                style={color !== null && color !== undefined ? `${bgAttr}: ${color.background};` : ''}
+              >
                 <div class="tier-card-content">
                   <div class="fs-title text-lg">
                     <Label label={tier.label} />
@@ -296,11 +446,10 @@
                     <Button
                       label={plugin.string.ChangePlan}
                       size={'large'}
-                      kind={'primary'}
-                      disabled={loading || isCheckoutPolling}
-                      width={'100%'}
+                      kind={tier.priceMonthly > currentTier.priceMonthly ? 'regular' : 'secondary'}
+                      disabled={loading || isCheckoutPolling || isUpdating}
                       on:click={() => {
-                        void handleUpgrade(tier._id)
+                        void handlePlanChange(tier._id)
                       }}
                     />
                   {/if}
@@ -380,6 +529,13 @@
     color: var(--theme-state-positive-color);
     font-weight: 600;
     flex-shrink: 0;
+  }
+
+  .curr-tier-footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .tier-card-footer {

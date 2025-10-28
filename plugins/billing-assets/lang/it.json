@@ -30,6 +30,22 @@
     "Monthly": "Mensile",
     "Active": "Attivo",
     "SubscriptionEnds": "Fino al {date}",
-    "ProcessingPayment": "Elaborazione pagamento..."
+    "SubscriptionRenews": "Prossimo rinnovo: {date}",
+    "SubscriptionValidUntil": "Valido fino al {date}",
+    "ProcessingPayment": "Elaborazione pagamento...",
+    "Downgrade": "Downgrade",
+    "CancelSubscription": "Annulla abbonamento",
+    "ConfirmUpgrade": "Aggiornare l'abbonamento?",
+    "ConfirmDowngrade": "Eseguire il downgrade dell'abbonamento?",
+    "ConfirmCancel": "Annullare l'abbonamento?",
+    "UpgradeDescription": "Ti verrà addebitato fino a ${amount} immediatamente. L'importo esatto dipende dal tuo periodo di fatturazione attuale.",
+    "DowngradeDescription": "Riceverai un credito fino a ${amount} per il tempo di abbonamento rimanente. Il downgrade ha effetto immediato.",
+    "CancelDescription": "Il tuo abbonamento rimane attivo fino alla fine del periodo di fatturazione.",
+    "UncancelSubscription": "Riattiva abbonamento",
+    "ConfirmUncancel": "Riattivare l'abbonamento?",
+    "UncancelDescription": "Il tuo abbonamento verrà riattivato e continuerà dalla fine del periodo di fatturazione attuale.",
+    "PriceDifference": "Differenza di prezzo: {amount}",
+    "DialogCancel": "Annulla",
+    "DialogConfirm": "Conferma"
   }
 }

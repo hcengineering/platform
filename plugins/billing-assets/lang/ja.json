@@ -30,6 +30,22 @@
     "Monthly": "月額",
     "Active": "アクティブ",
     "SubscriptionEnds": "{date}まで",
-    "ProcessingPayment": "お支払い処理中..."
+    "SubscriptionRenews": "次回更新: {date}",
+    "SubscriptionValidUntil": "{date}まで有効",
+    "ProcessingPayment": "お支払い処理中...",
+    "Downgrade": "ダウングレード",
+    "CancelSubscription": "サブスクリプションをキャンセル",
+    "ConfirmUpgrade": "サブスクリプションをアップグレードしますか?",
+    "ConfirmDowngrade": "サブスクリプションをダウングレードしますか?",
+    "ConfirmCancel": "サブスクリプションをキャンセルしますか?",
+    "UpgradeDescription": "最大 ${amount} が即座に請求されます。正確な金額は、現在の請求期間によって異なります。",
+    "DowngradeDescription": "残りのサブスクリプション時間分の最大 ${amount} のクレジットを受け取ります。ダウングレードは即座に有効になります。",
+    "CancelDescription": "サブスクリプションは請求期間の終了まで有効なままです。",
+    "UncancelSubscription": "サブスクリプションを再度有効化",
+    "ConfirmUncancel": "サブスクリプションを再度有効化しますか?",
+    "UncancelDescription": "サブスクリプションが再度有効化され、現在の請求期間の終了から継続します。",
+    "PriceDifference": "価格差: {amount}",
+    "DialogCancel": "キャンセル",
+    "DialogConfirm": "確認"
   }
 }

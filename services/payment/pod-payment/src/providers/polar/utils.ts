@@ -67,7 +67,9 @@ export function transformPolarSubscriptionToData (subscription: any): Subscripti
   let actualPlan = subscriptionPlan
   const amount = subscription.amount as number | undefined
   if (amount !== undefined) {
-    if (amount >= 1999 && amount < 9999) {
+    if (amount < 1999) {
+      actualPlan = 'common'
+    } else if (amount >= 1999 && amount < 9999) {
       actualPlan = 'rare'
     } else if (amount >= 9999 && amount < 39999) {
       actualPlan = 'epic'

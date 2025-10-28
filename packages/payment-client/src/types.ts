@@ -13,12 +13,28 @@
 // limitations under the License.
 //
 
+import type { AccountUuid, WorkspaceUuid } from '@hcengineering/core'
+
+export enum SubscriptionType {
+  Tier = 'tier', // Main workspace tier (free, starter, pro, enterprise)
+  Support = 'support' // Voluntary support/donation subscription
+}
+
+export enum SubscriptionStatus {
+  Active = 'active', // Subscription is active and paid
+  Trialing = 'trialing', // In trial period (free usage)
+  PastDue = 'past_due', // Payment failed but subscription not yet canceled
+  Canceled = 'canceled', // Subscription was canceled by user or admin
+  Paused = 'paused', // Subscription is temporarily paused (some providers support this)
+  Expired = 'expired' // Subscription or trial has expired
+}
+
 /**
  * Subscription request parameters
  * Used when creating a new subscription
  */
 export interface SubscribeRequest {
-  type: 'tier' | 'support' // Subscription type
+  type: SubscriptionType
   plan: string // Plan identifier
   customerEmail?: string // Optional customer email
   customerName?: string // Optional customer name
@@ -40,13 +56,13 @@ export interface CreateSubscriptionResponse {
  */
 export interface SubscriptionData {
   id: string // Internal unique subscription ID
-  workspaceUuid: string
-  accountUuid: string
+  workspaceUuid: WorkspaceUuid
+  accountUuid: AccountUuid
   provider: string
   providerSubscriptionId: string
   providerCheckoutId?: string
-  type: string
-  status: string
+  type: SubscriptionType
+  status: SubscriptionStatus
   plan: string
   amount?: number
   periodStart?: number

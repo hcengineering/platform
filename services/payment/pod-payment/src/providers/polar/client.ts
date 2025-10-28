@@ -17,6 +17,7 @@ import { MeasureContext } from '@hcengineering/core'
 import { Polar } from '@polar-sh/sdk'
 import type { Subscription } from '@polar-sh/sdk/models/components/subscription'
 import type { Checkout } from '@polar-sh/sdk/models/components/checkout'
+import { SubscriptionProrationBehavior } from '@polar-sh/sdk/models/components/subscriptionprorationbehavior.js'
 import type { CheckoutResult, CreateCheckoutParams } from './types'
 
 /**
@@ -107,6 +108,41 @@ export class PolarClient {
         id: subscriptionId,
         subscriptionUpdate: {
           cancelAtPeriodEnd: true
+        }
+      }
+      return await this.polar.subscriptions.update(update)
+    })
+  }
+
+  /**
+   * Uncancel a subscription (reactivate a previously canceled subscription)
+   * Polar subscriptions are uncanceled via update endpoint with cancelAtPeriodEnd flag set to false
+   * Documentation: https://polar.sh/docs/api-reference/subscriptions/update#subscriptioncancel
+   */
+  async uncancelSubscription (ctx: MeasureContext, subscriptionId: string): Promise<Subscription> {
+    return await ctx.with('polar-uncancel-subscription', {}, async () => {
+      const update = {
+        id: subscriptionId,
+        subscriptionUpdate: {
+          cancelAtPeriodEnd: false
+        }
+      }
+      return await this.polar.subscriptions.update(update)
+    })
+  }
+
+  /**
+   * Update a subscription to a different product
+   * Changes the subscription to use a new product with immediate effective date and proration
+   * Documentation: https://polar.sh/docs/api-reference/subscriptions/update
+   */
+  async updateSubscription (ctx: MeasureContext, subscriptionId: string, productId: string): Promise<Subscription> {
+    return await ctx.with('polar-update-subscription', {}, async () => {
+      const update = {
+        id: subscriptionId,
+        subscriptionUpdate: {
+          productId,
+          prorationBehavior: SubscriptionProrationBehavior.Invoice
         }
       }
       return await this.polar.subscriptions.update(update)

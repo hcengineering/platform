@@ -28,6 +28,22 @@ export default mergeIds(billingId, billing, {
     Monthly: '' as IntlString,
     Active: '' as IntlString,
     SubscriptionEnds: '' as IntlString,
-    ProcessingPayment: '' as IntlString
+    SubscriptionRenews: '' as IntlString,
+    SubscriptionValidUntil: '' as IntlString,
+    ProcessingPayment: '' as IntlString,
+    Downgrade: '' as IntlString,
+    CancelSubscription: '' as IntlString,
+    ConfirmUpgrade: '' as IntlString,
+    ConfirmDowngrade: '' as IntlString,
+    ConfirmCancel: '' as IntlString,
+    UpgradeDescription: '' as IntlString,
+    DowngradeDescription: '' as IntlString,
+    CancelDescription: '' as IntlString,
+    UncancelSubscription: '' as IntlString,
+    ConfirmUncancel: '' as IntlString,
+    UncancelDescription: '' as IntlString,
+    PriceDifference: '' as IntlString,
+    DialogCancel: '' as IntlString,
+    DialogConfirm: '' as IntlString
   }
 })
