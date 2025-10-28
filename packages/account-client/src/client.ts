@@ -234,7 +234,9 @@ export interface AccountClient {
   setMyProfile: (profile: Partial<Omit<UserProfile, 'personUuid'>>) => Promise<void>
   getUserProfile: (personUuid?: PersonUuid) => Promise<PersonWithProfile | null>
 
-  getSubscriptions: (activeOnly?: boolean) => Promise<Subscription[]>
+  getSubscriptions: (workspaceUuid?: WorkspaceUuid | undefined, activeOnly?: boolean) => Promise<Subscription[]>
+  getSubscriptionByProviderId: (provider: string, providerSubscriptionId: string) => Promise<Subscription | null>
+  getSubscriptionById: (subscriptionId: string) => Promise<Subscription | null>
   upsertSubscription: (subscription: SubscriptionData) => Promise<void>
 
   setCookie: () => Promise<void>
@@ -1182,11 +1184,31 @@ class AccountClientImpl implements AccountClient {
     })
   }
 
-  async getSubscriptions (activeOnly: boolean = true): Promise<Subscription[]> {
+  async getSubscriptions (workspaceUuid: WorkspaceUuid | undefined = undefined, activeOnly: boolean = true): Promise<Subscription[]> {
     return await this._rpc({
       method: 'getSubscriptions',
       params: {
+        workspaceUuid,
         activeOnly
+      }
+    })
+  }
+
+  async getSubscriptionByProviderId (provider: string, providerSubscriptionId: string): Promise<Subscription | null> {
+    return await this._rpc({
+      method: 'getSubscriptionByProviderId',
+      params: {
+        provider,
+        providerSubscriptionId
+      }
+    })
+  }
+
+  async getSubscriptionById (subscriptionId: string): Promise<Subscription | null> {
+    return await this._rpc({
+      method: 'getSubscriptionById',
+      params: {
+        subscriptionId
       }
     })
   }

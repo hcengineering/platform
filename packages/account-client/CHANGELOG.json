@@ -2,6 +2,18 @@
   "name": "@hcengineering/account-client",
   "entries": [
     {
+      "version": "0.7.18",
+      "tag": "@hcengineering/account-client_v0.7.18",
+      "date": "Tue, 28 Oct 2025 21:50:57 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "new sub methods"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.17",
       "tag": "@hcengineering/account-client_v0.7.17",
       "date": "Mon, 27 Oct 2025 13:27:12 GMT",
