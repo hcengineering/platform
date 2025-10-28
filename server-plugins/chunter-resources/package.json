@@ -40,7 +40,7 @@
     "@hcengineering/activity": "^0.7.0",
     "@hcengineering/core": "^0.7.18",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/server-contact": "^0.7.0",
     "@hcengineering/chunter": "^0.7.0",
@@ -51,7 +51,7 @@
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/server-notification-resources": "^0.7.0",
     "@hcengineering/server": "^0.7.15",
-    "@hcengineering/text-core": "^0.7.17",
-    "@hcengineering/text": "^0.7.17"
+    "@hcengineering/text-core": "^0.7.18",
+    "@hcengineering/text": "^0.7.18"
   }
 }

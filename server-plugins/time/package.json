@@ -42,6 +42,6 @@
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/time": "^0.7.0",
     "@hcengineering/task": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.15"
+    "@hcengineering/server-core": "^0.7.16"
   }
 }

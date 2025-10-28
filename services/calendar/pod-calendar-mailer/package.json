@@ -54,7 +54,7 @@
     "@hcengineering/account-client": "^0.7.17",
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/analytics-service": "^0.7.17",
-    "@hcengineering/api-client": "^0.7.17",
+    "@hcengineering/api-client": "^0.7.18",
     "@hcengineering/calendar": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/core": "^0.7.18",
@@ -62,7 +62,7 @@
     "@hcengineering/love": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-token": "^0.7.17",
     "dotenv": "~16.0.0"
   }

@@ -53,7 +53,7 @@
     "@hcengineering/contact-resources": "^0.7.0",
     "@hcengineering/attachment-resources": "^0.7.0",
     "@hcengineering/workbench-resources": "^0.7.0",
-    "@hcengineering/text": "^0.7.17",
+    "@hcengineering/text": "^0.7.18",
     "@hcengineering/text-editor-resources": "^0.7.0",
     "@hcengineering/setting": "^0.7.0",
     "@hcengineering/attachment": "^0.7.0",

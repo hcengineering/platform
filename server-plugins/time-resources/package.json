@@ -43,13 +43,13 @@
     "@hcengineering/core": "^0.7.18",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/server-notification-resources": "^0.7.0",
     "@hcengineering/task": "^0.7.0",
     "@hcengineering/tracker": "^0.7.0",
     "@hcengineering/server-time": "^0.7.0",
-    "@hcengineering/text-core": "^0.7.17",
+    "@hcengineering/text-core": "^0.7.18",
     "@hcengineering/time": "^0.7.0"
   }
 }

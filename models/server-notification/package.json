@@ -43,7 +43,7 @@
     "@hcengineering/model-notification": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-notification": "^0.7.0"
   }
 }
