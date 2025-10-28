@@ -307,7 +307,8 @@ export function createSystemType (
     attachTo: type,
     descriptor: view.viewlet.Table,
     configOptions: {
-      hiddenKeys: ['content', 'title']
+      hiddenKeys: ['content', 'title'],
+      sortable: true
     },
     config: [
       { key: '', props: { shrink: true } },
@@ -398,7 +399,8 @@ export function createModel (builder: Builder): void {
     attachTo: card.class.CardSpace,
     descriptor: view.viewlet.Table,
     configOptions: {
-      hiddenKeys: ['name', 'description']
+      hiddenKeys: ['name', 'description'],
+      sortable: true
     },
     config: ['', 'members', 'private', 'archived'],
     viewOptions: {
@@ -511,7 +513,8 @@ export function createModel (builder: Builder): void {
       attachTo: card.class.Card,
       descriptor: view.viewlet.Table,
       configOptions: {
-        hiddenKeys: ['content', 'title']
+        hiddenKeys: ['content', 'title'],
+        sortable: true
       },
       config: [
         '',

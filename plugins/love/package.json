@@ -38,14 +38,14 @@
     "prettier-plugin-svelte": "^3.4.0"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/platform": "^0.7.17",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/preference": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/calendar": "^0.7.0",
     "@hcengineering/drive": "^0.7.0",
-    "@hcengineering/core": "^0.7.10",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/view": "^0.7.0",
     "@hcengineering/workbench": "^0.7.0"
   },

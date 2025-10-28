@@ -37,9 +37,9 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/platform": "^0.7.17",
     "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/core": "^0.7.10",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/view": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
@@ -50,7 +50,7 @@
     "lexorank": "~1.0.4",
     "@hcengineering/activity": "^0.7.0",
     "@hcengineering/chunter": "^0.7.0",
-    "@hcengineering/rank": "^0.7.5"
+    "@hcengineering/rank": "^0.7.17"
   },
   "publishConfig": {
     "@hcengineering:registry": "https://npm.pkg.github.com"

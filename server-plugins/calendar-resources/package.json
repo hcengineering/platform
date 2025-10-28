@@ -37,14 +37,14 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.10",
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-calendar": "^0.7.0",
-    "@hcengineering/server-token": "^0.7.5",
+    "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/calendar": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/kafka": "^0.7.8",
-    "@hcengineering/server-core": "^0.7.8",
+    "@hcengineering/kafka": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.15",
     "@hcengineering/server-notification-resources": "^0.7.0",
     "@hcengineering/server-contact": "^0.7.0"
   }

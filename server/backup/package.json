@@ -40,20 +40,20 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/core": "^0.7.10",
+    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/account": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/model-contact": "^0.7.0",
-    "@hcengineering/client-resources": "^0.7.6",
-    "@hcengineering/client": "^0.7.6",
-    "@hcengineering/model": "^0.7.6",
-    "@hcengineering/analytics": "^0.7.5",
+    "@hcengineering/client-resources": "^0.7.17",
+    "@hcengineering/client": "^0.7.17",
+    "@hcengineering/model": "^0.7.17",
+    "@hcengineering/analytics": "^0.7.17",
     "tar-stream": "^3.1.7",
     "@hcengineering/server-tool": "^0.7.0",
-    "@hcengineering/server-client": "^0.7.8",
-    "@hcengineering/server-token": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.8",
+    "@hcengineering/server-client": "^0.7.15",
+    "@hcengineering/server-token": "^0.7.17",
+    "@hcengineering/server-core": "^0.7.15",
     "fast-equals": "^5.2.2"
   }
 }

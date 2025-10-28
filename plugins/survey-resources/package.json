@@ -38,10 +38,10 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/analytics": "^0.7.5",
-    "@hcengineering/core": "^0.7.10",
+    "@hcengineering/analytics": "^0.7.17",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/panel": "^0.7.0",
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/platform": "^0.7.17",
     "@hcengineering/presentation": "^0.7.0",
     "@hcengineering/survey": "^0.7.0",
     "@hcengineering/view": "^0.7.0",

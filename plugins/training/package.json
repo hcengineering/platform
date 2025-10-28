@@ -38,8 +38,8 @@
   "dependencies": {
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.10",
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/platform": "^0.7.17",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/questions": "^0.7.0"
   },

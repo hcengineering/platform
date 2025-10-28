@@ -33,7 +33,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/platform": "^0.7.17",
     "@hcengineering/inbox": "^0.7.0"
   },
   "repository": "https://github.com/hcenginneing/anticrm",

@@ -39,10 +39,10 @@
   "dependencies": {
     "@hcengineering/chunter": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.10",
+    "@hcengineering/core": "^0.7.18",
     "@hcengineering/love": "^0.7.0",
-    "@hcengineering/platform": "^0.7.5",
-    "@hcengineering/server-core": "^0.7.8",
+    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/server-core": "^0.7.15",
     "@hcengineering/view": "^0.7.0"
   }
 }

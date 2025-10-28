@@ -14,6 +14,7 @@
 // limitations under the License.
 //
 
+import { type Person as GlobalPerson, type SocialId } from '@hcengineering/account'
 import core, {
   Doc,
   Domain,
@@ -420,6 +421,7 @@ export async function compactBackup (
 
     for (const domain of domains) {
       ctx.info('compacting domain...', { domain, ...(opt?.msg ?? {}) })
+      const getObjKey = getGetObjKey(domain)
 
       const processedChanges: Snapshot = {
         added: new Map(),
@@ -448,7 +450,7 @@ export async function compactBackup (
       // We remove all items we have in last part
       Array.from(untouchedDigest.keys()).forEach((it) => digest.delete(it))
 
-      const digestAdded = new Map<Ref<Doc>, string>()
+      const digestAdded = new Map<BackupDocId, string>()
 
       let _pack: Pack | undefined
       let _packClose = async (): Promise<void> => {}
@@ -547,8 +549,10 @@ export async function compactBackup (
           }
         }
 
+        const docKey = getObjKey(doc as any)
+
         // Move processed document to processedChanges
-        processedChanges.added.set(doc._id, digestAdded.get(doc._id) ?? '')
+        processedChanges.added.set(docKey, digestAdded.get(docKey) ?? '')
 
         if (doc._class === core.class.Blob || doc._class === 'core:class:BlobData') {
           const blob = doc as Blob | BlobData
@@ -570,14 +574,19 @@ export async function compactBackup (
         } else {
           const data = JSON.stringify(doc)
           await new Promise<void>((resolve, reject) => {
-            _pack?.entry({ name: doc._id + '.json' }, data, function (err) {
+            _pack?.entry({ name: docKey + '.json' }, data, function (err) {
               if (err != null) reject(err)
               resolve()
             })
           })
         }
       }
-      async function sendChunk (doc: Doc | undefined, len: number, blobData: Record<Ref<Doc>, Buffer>): Promise<void> {
+      async function sendChunk (
+        key: string,
+        doc: Doc | undefined,
+        len: number,
+        blobData: Record<Ref<Doc>, Buffer>
+      ): Promise<void> {
         if (doc !== undefined) {
           if (domain === DOMAIN_BLOB) {
             if (opt?.skipContentTypes !== undefined || (opt?.blobLimit ?? 0) > 0) {
@@ -612,9 +621,9 @@ export async function compactBackup (
               }
             }
           }
-          const hash = digest.get(doc._id)
-          digest.delete(doc._id)
-          digestAdded.set(doc._id, hash ?? '')
+          const hash = digest.get(key)
+          digest.delete(key)
+          digestAdded.set(key, hash ?? '')
           await pushDocs(doc, len, blobData)
         }
       }
@@ -663,7 +672,7 @@ export async function compactBackup (
                           next() // Just skip
                           return
                         }
-                        void sendChunk(doc, bf.length, { [doc._id]: bf })
+                        void sendChunk(doc._id, doc, bf.length, { [doc._id]: bf })
                           .finally(() => {
                             requiredDocs.delete(doc._id)
                             next()
@@ -700,7 +709,7 @@ export async function compactBackup (
                         } else {
                           blobs.delete(bname)
                           ;(doc as any)['%hash%'] = digest.get(doc._id)
-                          void sendChunk(doc, bf.length, { [doc._id]: d?.buffer as Buffer })
+                          void sendChunk(doc._id, doc, bf.length, { [doc._id]: d?.buffer as Buffer })
                             .finally(() => {
                               requiredDocs.delete(doc._id)
                               next()
@@ -711,10 +720,11 @@ export async function compactBackup (
                             })
                         }
                       } else {
-                        ;(doc as any)['%hash%'] = digest.get(doc._id)
-                        void sendChunk(doc, bf.length, {})
+                        const key = getObjKey(doc as any)
+                        ;(doc as any)['%hash%'] = digest.get(key)
+                        void sendChunk(key, doc, bf.length, {})
                           .finally(() => {
-                            requiredDocs.delete(doc._id)
+                            requiredDocs.delete(key)
                             next()
                           })
                           .catch((err) => {
@@ -1445,4 +1455,29 @@ export function toAccountDomain (domain: string): Domain {
 
 export function isAccountDomain (domain: Domain): boolean {
   return domain.startsWith(accountPrefix)
+}
+
+export function getGetObjKey (domain: Domain): GetObjKeyFn {
+  if (isAccountDomain(domain)) {
+    if (domain === toAccountDomain('person')) {
+      return getAccountPersonObjKey
+    } else if (domain === toAccountDomain('socialId')) {
+      return getAccountSocialIdObjKey
+    }
+  }
+  return getDocObjKey
+}
+
+type GetObjKeyFn = (doc: any) => BackupDocId
+
+function getDocObjKey (doc: Doc): BackupDocId {
+  return doc._id
+}
+
+function getAccountPersonObjKey (doc: GlobalPerson): BackupDocId {
+  return doc.uuid
+}
+
+function getAccountSocialIdObjKey (doc: SocialId): BackupDocId {
+  return doc._id
 }

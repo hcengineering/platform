@@ -42,8 +42,8 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.10",
-    "@hcengineering/platform": "^0.7.5",
+    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/platform": "^0.7.17",
     "@hcengineering/achievement": "^0.7.0",
     "@hcengineering/ui": "^0.7.0",
     "svelte": "^4.2.20"
