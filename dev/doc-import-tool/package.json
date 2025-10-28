@@ -49,7 +49,7 @@
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/core": "^0.7.18",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-storage": "^0.7.15",
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/server-tool": "^0.7.0",

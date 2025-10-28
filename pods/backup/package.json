@@ -52,7 +52,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-token": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-pipeline": "^0.7.0",
     "@hcengineering/client": "^0.7.17",
     "@hcengineering/client-resources": "^0.7.17",

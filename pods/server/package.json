@@ -78,7 +78,7 @@
     "@hcengineering/server": "^0.7.15",
     "@hcengineering/server-ai-bot": "^0.7.0",
     "@hcengineering/server-calendar": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/server-pipeline": "^0.7.0",
     "@hcengineering/server-storage": "^0.7.15",

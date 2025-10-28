@@ -42,9 +42,9 @@
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-activity": "^0.7.0",
     "@hcengineering/server-contact": "^0.7.0",
-    "@hcengineering/server-core": "^0.7.15",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-notification-resources": "^0.7.0",
-    "@hcengineering/text-core": "^0.7.17",
+    "@hcengineering/text-core": "^0.7.18",
     "@hcengineering/communication-sdk-types": "^0.7.12",
     "@hcengineering/communication-types": "^0.7.12",
     "@hcengineering/server-card": "^0.7.0"
