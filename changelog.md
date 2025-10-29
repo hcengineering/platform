@@ -2,6 +2,287 @@
 
 Changelog.
 
+## [s0.7.292] - 2025-10-28
+
+* 🐛 BUG FIXES: · Use proper doc key when compacting backup ([#10155](https://github.com/hcengineering/platform/issues/10155)) 
+
+## [s0.7.291] - 2025-10-27
+
+* 🐛 BUG FIXES: · Proper transcode large files ([#10137](https://github.com/hcengineering/platform/issues/10137)) 
+
+## [s0.7.288] - 2025-10-22
+
+* 🐛 BUG FIXES: · Restructure workspace general settings ([#10120](https://github.com/hcengineering/platform/issues/10120)) 
+* FIX: · Reduced theme blinking on desktop app start (windows). ([#10119](https://github.com/hcengineering/platform/issues/10119)) 
+
+## [s0.7.287] - 2025-10-20
+
+* 🚀 FEATURES: · Allow to customize typing ([#10111](https://github.com/hcengineering/platform/issues/10111)) 
+* 🐛 BUG FIXES: · Editor table performance improvements ([#10106](https://github.com/hcengineering/platform/issues/10106)) 
+* QFIX: · Show billing in settings ([#10116](https://github.com/hcengineering/platform/issues/10116)) 
+
+## [s0.7.286] - 2025-10-16
+
+* UBERF-13891: · Global user profile ([#10102](https://github.com/hcengineering/platform/issues/10102)) 
+
+## [s0.7.285] - 2025-10-15
+
+* 🐛 BUG FIXES: · Properly unobserve ydoc in inline comments ([#10094](https://github.com/hcengineering/platform/issues/10094)) · Check pasted content before paste ([#10097](https://github.com/hcengineering/platform/issues/10097)) 
+
+## [s0.7.281] - 2025-10-14
+
+* 🐛 BUG FIXES: · Return original octet-stream blob as image preview ([#10075](https://github.com/hcengineering/platform/issues/10075)) 
+* CHORE: · Improve sass warning suppression, add huly.utils and server to pmpm config overrides ([#10078](https://github.com/hcengineering/platform/issues/10078)) 
+* QFIX: · Remove indexeddb provider ([#10073](https://github.com/hcengineering/platform/issues/10073)) 
+
+## [s0.7.280] - 2025-10-13
+
+* 🚀 FEATURES: · Add storage adapter for hulylake ([#10032](https://github.com/hcengineering/platform/issues/10032)) 
+
+## [s0.7.279] - 2025-10-13
+
+* CHORE: · Use modern api sass ([#10070](https://github.com/hcengineering/platform/issues/10070)) 
+* OFFICE: · Forbid anonymous invites & join requests ([#10065](https://github.com/hcengineering/platform/issues/10065)) 
+
+## [s0.7.278] - 2025-10-10
+
+* 🚀 FEATURES: · Replace translate boilerplate with extension in editor ([#10054](https://github.com/hcengineering/platform/issues/10054)) 
+* 🐛 BUG FIXES: · Data loss in editor ([#10056](https://github.com/hcengineering/platform/issues/10056)) · Paste as plain text when in code block ([#10058](https://github.com/hcengineering/platform/issues/10058)) 
+
+## [s0.7.277] - 2025-10-09
+
+* QFIX: · Add fulltext dlq ([#10046](https://github.com/hcengineering/platform/issues/10046)) · Add ai-assitant to list of allowed integration services ([#10052](https://github.com/hcengineering/platform/issues/10052)) 
+* QFIX: · Fix card open to more native ([#10047](https://github.com/hcengineering/platform/issues/10047)) · Remove token logging ([#10049](https://github.com/hcengineering/platform/issues/10049)) · Validate workspace uuid in datalake ([#10048](https://github.com/hcengineering/platform/issues/10048)) 
+
+## [s0.7.276] - 2025-10-08
+
+* QFIX: · Delete milestone ([#10043](https://github.com/hcengineering/platform/issues/10043)) 
+* UBERF-13874: · Generate token for ai assistant ([#10038](https://github.com/hcengineering/platform/issues/10038)) 
+
+## [s0.7.275] - 2025-10-07
+
+* QFIX: · Ai assistant desktop ([#10031](https://github.com/hcengineering/platform/issues/10031)) 
+* UBERF-13864: · Fix social id presenter ([#10035](https://github.com/hcengineering/platform/issues/10035)) 
+* QFIX: · Log window reload reason ([#10033](https://github.com/hcengineering/platform/issues/10033)) 
+
+## [s0.7.274] - 2025-10-06
+
+* QFIX: · Move user profile to default card space ([#10029](https://github.com/hcengineering/platform/issues/10029)) 
+* QFIX: · Do not allow to disable contacts plugin ([#10025](https://github.com/hcengineering/platform/issues/10025)) 
+* QIFX: · Address sentry issues ([#10027](https://github.com/hcengineering/platform/issues/10027)) 
+
+## [s0.7.271] - 2025-10-03
+
+* 🐛 BUG FIXES: · Pass socialId when patching blobs ([#10017](https://github.com/hcengineering/platform/issues/10017)) 
+* QFIX: · Billing livekit errors ([#10015](https://github.com/hcengineering/platform/issues/10015)) 
+
+## [s0.7.270] - 2025-10-03
+
+* 🐛 BUG FIXES: · Update puppeteer version ([#10011](https://github.com/hcengineering/platform/issues/10011)) 
+
+## [s0.7.269] - 2025-10-03
+
+* 🐛 BUG FIXES: · Use fixed chromium version ([#10010](https://github.com/hcengineering/platform/issues/10010)) 
+* QFIX: · Use css var for calendar zone bg color ([#10013](https://github.com/hcengineering/platform/issues/10013)) 
+* UBERF-13844,13845: · Edit card type UI improvements ([#10009](https://github.com/hcengineering/platform/issues/10009)) 
+* QFIX: · Use natural mermaid diagram width and scroll ([#10006](https://github.com/hcengineering/platform/issues/10006)) 
+
+## [s0.7.268] - 2025-10-02
+
+* OFFICE: · Use pulse for invites and join requests ([#9941](https://github.com/hcengineering/platform/issues/9941)) 
+
+## [s0.7.267] - 2025-10-02
+
+* 🐛 BUG FIXES: · Use values not arrays in activity ([#9992](https://github.com/hcengineering/platform/issues/9992)) 
+* EQMS-1650: · External approvers ([#9987](https://github.com/hcengineering/platform/issues/9987)) 
+* QFIX: · Account client type ([#9988](https://github.com/hcengineering/platform/issues/9988)) 
+* QFIX: · Add user/socialId/workspace into rpc call traces. ([#9983](https://github.com/hcengineering/platform/issues/9983)) · Use measurements from published packages ([#9984](https://github.com/hcengineering/platform/issues/9984)) · Use generateId instead of generateUuid ([#9995](https://github.com/hcengineering/platform/issues/9995)) 
+
+## [s0.7.266] - 2025-09-30
+
+* 🚀 FEATURES: · Add complete Turkish (tr) language support to Huly Platform ([#9975](https://github.com/hcengineering/platform/issues/9975)) 
+* QFIX: · Handle outside clicks only when popup is top level ([#9972](https://github.com/hcengineering/platform/issues/9972)) 
+
+## [s0.7.265] - 2025-09-30
+
+* 🐛 BUG FIXES: · Duplicate marks support ([#9969](https://github.com/hcengineering/platform/issues/9969)) 
+* QFIX: · Desktop should recover on network lose ([#9967](https://github.com/hcengineering/platform/issues/9967)) 
+
+## [s0.7.264] - 2025-09-29
+
+* 🐛 BUG FIXES: · Use known aspect ratio for video to prevent scroll ([#9954](https://github.com/hcengineering/platform/issues/9954)) · Use auto image aspect ratio in text editor ([#9953](https://github.com/hcengineering/platform/issues/9953)) 
+
+## [s0.7.263] - 2025-09-26
+
+* 🐛 BUG FIXES: · Expose card class and id in location data ([#9945](https://github.com/hcengineering/platform/issues/9945)) 
+* OFFICE: · Meeting control bar with large buttons ([#9946](https://github.com/hcengineering/platform/issues/9946)) 
+
+## [s0.7.262] - 2025-09-26
+
+* 🐛 BUG FIXES: · Disable http client spans in datalake client ([#9940](https://github.com/hcengineering/platform/issues/9940)) 
+
+## [s0.7.259] - 2025-09-24
+
+* OFFICE: · Refactor meeting creation ([#9905](https://github.com/hcengineering/platform/issues/9905)) 
+
+## [s0.7.257] - 2025-09-23
+
+* 🐛 BUG FIXES: · Handle submit and tabs in editor ([#9918](https://github.com/hcengineering/platform/issues/9918)) · Report analytics from print ([#9922](https://github.com/hcengineering/platform/issues/9922)) 
+* QFIX: · Region when restoring from v6 ([#9920](https://github.com/hcengineering/platform/issues/9920)) · Restore draft condition ([#9921](https://github.com/hcengineering/platform/issues/9921)) 
+
+## [s0.7.255] - 2025-09-22
+
+* 🐛 BUG FIXES: · Handle disabled contacts plugin in mentions popup ([#9904](https://github.com/hcengineering/platform/issues/9904)) · Refactor presence and typing to use svelte actions ([#9908](https://github.com/hcengineering/platform/issues/9908)) 
+* UBERF-13692: · Adjut merge contacts to global accounts ([#9911](https://github.com/hcengineering/platform/issues/9911)) 
+* EQMS-1618: · Fix server branding ([#9907](https://github.com/hcengineering/platform/issues/9907)) 
+* QFIX: · Hide large values from activity ([#9894](https://github.com/hcengineering/platform/issues/9894)) 
+
+## [s0.7.253] - 2025-09-22
+
+* 🐛 BUG FIXES: · Use pulse for presence ([#9896](https://github.com/hcengineering/platform/issues/9896)) 
+
+## [s0.7.251] - 2025-09-19
+
+* UBERF-13725: · Fix Github service oom ([#9891](https://github.com/hcengineering/platform/issues/9891)) 
+* SELFH-199: · V7 restore providers social ids ([#9892](https://github.com/hcengineering/platform/issues/9892)) 
+* UBERF-13587: · Fix integrating ai-assistant in workspaces other than the first one ([#9882](https://github.com/hcengineering/platform/issues/9882)) 
+
+## [s0.7.250] - 2025-09-18
+
+* 🐛 BUG FIXES: · Reset typing state on resubscribe ([#9881](https://github.com/hcengineering/platform/issues/9881)) 
+* PROCESS: · Use previous step context in the same transition ([#9877](https://github.com/hcengineering/platform/issues/9877)) 
+* QFIX: · Import tool owner permissions ([#9883](https://github.com/hcengineering/platform/issues/9883)) 
+* UBERF-13587: · Huly secretary integration ([#9861](https://github.com/hcengineering/platform/issues/9861)) 
+
+## [s0.7.249] - 2025-09-17
+
+* 🐛 BUG FIXES: · Use latest base image ([#9874](https://github.com/hcengineering/platform/issues/9874)) · Properly update pulse typing sub ([#9875](https://github.com/hcengineering/platform/issues/9875)) 
+
+## [s0.7.246] - 2025-09-16
+
+* 🐛 BUG FIXES: · Build rekoni and print images ([#9860](https://github.com/hcengineering/platform/issues/9860)) 
+
+## [0.7.245] - 2025-09-15
+
+* 🐛 BUG FIXES: · Update docker images to latest base ([#9854](https://github.com/hcengineering/platform/issues/9854)) · Do not show error when love recording not available ([#9852](https://github.com/hcengineering/platform/issues/9852)) · Search by title when moving files and couments ([#9849](https://github.com/hcengineering/platform/issues/9849)) · Handle pong response in pulse client ([#9853](https://github.com/hcengineering/platform/issues/9853)) 
+
+## [s0.7.244] - 2025-09-15
+
+* 🐛 BUG FIXES: · Use pulse typing in communication chat ([#9844](https://github.com/hcengineering/platform/issues/9844)) 
+
+## [s0.7.243] - 2025-09-12
+
+* 🐛 BUG FIXES: · Handle html tags in markdown comparison ([#9838](https://github.com/hcengineering/platform/issues/9838)) 
+* UBERF-13511: · Support guest tokens with open account ([#9834](https://github.com/hcengineering/platform/issues/9834)) 
+* EQMS-1644: · Fix mixins in server pipeline of workspace service ([#9839](https://github.com/hcengineering/platform/issues/9839)) 
+
+## [s0.7.242] - 2025-09-11
+
+* QFIX: · Count anonymous users ([#9833](https://github.com/hcengineering/platform/issues/9833)) 
+
+## [s0.7.239] - 2025-09-10
+
+* QFIX: · Fix github measurements ([#9816](https://github.com/hcengineering/platform/issues/9816)) 
+
+## [s0.7.238] - 2025-09-09
+
+* UBERF-13510: · Card space public link ([#9804](https://github.com/hcengineering/platform/issues/9804)) 
+* UBERF-13564: · Fix logout caused by connectivity issues ([#9809](https://github.com/hcengineering/platform/issues/9809)) 
+* QFIX: · Add separate gauges for sessions ([#9810](https://github.com/hcengineering/platform/issues/9810)) 
+
+## [s0.7.237] - 2025-09-09
+
+* 🐛 BUG FIXES: · Autofocus to qms comment popup ([#9800](https://github.com/hcengineering/platform/issues/9800)) 
+* HULYLAKE: · Initial integration (build + dev docker compose) ([#9802](https://github.com/hcengineering/platform/issues/9802)) 
+
+## [s0.7.236] - 2025-09-08
+
+* 🐛 BUG FIXES: · Show card icon in card title ([#9792](https://github.com/hcengineering/platform/issues/9792)) · Do not fail collab from json when wrong content type ([#9791](https://github.com/hcengineering/platform/issues/9791)) 
+* UBERF-13507: · Support space membership via token claim ([#9786](https://github.com/hcengineering/platform/issues/9786)) 
+
+## [s0.7.235] - 2025-09-05
+
+* 🐛 BUG FIXES: · Preview text files ([#9773](https://github.com/hcengineering/platform/issues/9773)) · Support transcoding for attachment transactions ([#9775](https://github.com/hcengineering/platform/issues/9775)) 
+* UBERF-13485: · Restore v6 from storage tool ([#9777](https://github.com/hcengineering/platform/issues/9777)) 
+
+## [s0.7.233] - 2025-09-03
+
+* 🐛 BUG FIXES: · Use image/png content type for bot avatar ([#9765](https://github.com/hcengineering/platform/issues/9765)) 
+* UBERF-13433: · Migrate channels to threads ([#9761](https://github.com/hcengineering/platform/issues/9761)) 
+
+## [s0.7.231] - 2025-09-03
+
+* UBERF-13430: · Display date and space for cards in Home ([#9759](https://github.com/hcengineering/platform/issues/9759)) 
+
+## [s0.7.230] - 2025-09-02
+
+* 🐛 BUG FIXES: · Push base preview image ([#9756](https://github.com/hcengineering/platform/issues/9756)) 
+
+## [s0.7.228] - 2025-09-01
+
+* UBERF-13383: · Guest access token ([#9747](https://github.com/hcengineering/platform/issues/9747)) 
+* SELFH-195: · Generate uuid for workspaces where missing ([#9751](https://github.com/hcengineering/platform/issues/9751)) 
+
+## [s0.7.227] - 2025-09-01
+
+* UBERF-13261: · Improve office UX ([#9733](https://github.com/hcengineering/platform/issues/9733)) 
+* QFIX: · Docker config mem usage ([#9745](https://github.com/hcengineering/platform/issues/9745)) 
+
+## [s0.7.222] - 2025-08-27
+
+* QFIX: · Use actual Gmail address ([#9727](https://github.com/hcengineering/platform/issues/9727)) 
+* UBERF-12323: · Include accounts info into backup ([#9659](https://github.com/hcengineering/platform/issues/9659)) 
+* QFIX: · Filter content for admin in case person is present in workspace ([#9720](https://github.com/hcengineering/platform/issues/9720)) · Update traces send to opentelemetry ([#9728](https://github.com/hcengineering/platform/issues/9728)) 
+
+## [s0.7.221] - 2025-08-27
+
+* 🐛 BUG FIXES: · Set account cookie to origin and target domains ([#9719](https://github.com/hcengineering/platform/issues/9719)) 
+* UBERF-13271: · Add Huly mail integration ([#9722](https://github.com/hcengineering/platform/issues/9722)) 
+
+## [s0.7.220] - 2025-08-25
+
+* 🐛 BUG FIXES: · Limit clone depth ([#9716](https://github.com/hcengineering/platform/issues/9716)) 
+
+## [s0.7.219] - 2025-08-25
+
+* QFIX: · Migrate deleted social ids in calendar events user ([#9709](https://github.com/hcengineering/platform/issues/9709)) 
+* UBERF-13241: · Support gmail space config ([#9710](https://github.com/hcengineering/platform/issues/9710)) 
+
+## [s0.7.218] - 2025-08-21
+
+* 🐛 BUG FIXES: · Properly close iterators ([#9705](https://github.com/hcengineering/platform/issues/9705)) 
+* QFIX: · Calendar user migration ([#9707](https://github.com/hcengineering/platform/issues/9707)) · Do not cache desktop packaging results ([#9708](https://github.com/hcengineering/platform/issues/9708)) 
+* UBERF-13123: · Fix mail message duplicates ([#9684](https://github.com/hcengineering/platform/issues/9684)) 
+* QFIX: · Show space for document's ([#9701](https://github.com/hcengineering/platform/issues/9701)) 
+
+## [s.0.7.217] - 2025-08-20
+
+* 🐛 BUG FIXES: · Datalake cache memory leaks ([#9699](https://github.com/hcengineering/platform/issues/9699)) 
+* UBERF-12632: · Fix profile name change ([#9691](https://github.com/hcengineering/platform/issues/9691)) 
+
+## [s0.7.215] - 2025-08-19
+
+* OFFICE: · Refactor livekit logic ([#9679](https://github.com/hcengineering/platform/issues/9679)) 
+* UBERF-13124: · Format hulygram phone number ([#9686](https://github.com/hcengineering/platform/issues/9686)) 
+* QFIX: · Backward compatible multiple desktop updates channels ([#9687](https://github.com/hcengineering/platform/issues/9687)) 
+
+## [s0.7.214] - 2025-08-18
+
+* 🐛 BUG FIXES: · Allow to edit channels from candidate card ([#9683](https://github.com/hcengineering/platform/issues/9683)) 
+
+## [s0.7.213] - 2025-08-15
+
+* 🐛 BUG FIXES: · Datalake upload fixes ([#9680](https://github.com/hcengineering/platform/issues/9680)) 
+* SELFH-182: · Add v7 tools for migration from v6 ([#9678](https://github.com/hcengineering/platform/issues/9678)) 
+
+## [s0.7.211] - 2025-08-14
+
+* UBERF-13120: · Support SMTP mail for different accounts ([#9674](https://github.com/hcengineering/platform/issues/9674)) 
+
+## [s0.7.209] - 2025-08-13
+
+* UBERF-13118: · Send emails from Huly mail threads ([#9669](https://github.com/hcengineering/platform/issues/9669)) 
+
 ## [s0.7.208] - 2025-08-12
 
 * 🐛 BUG FIXES: · Increment join index even for empty result ([#9667](https://github.com/hcengineering/platform/issues/9667)) 
@@ -9,149 +290,528 @@ Changelog.
 
 ## [s0.7.207] - 2025-08-12
 
-* 🚀 FEATURES: · Minimized screen recorder ([#9619](https://github.com/hcengineering/platform/issues/9619)) · Pass tracing info with websocket ([#9627](https://github.com/hcengineering/platform/issues/9627)) 
-* 🐛 BUG FIXES: · Adjust live recording ([#9394](https://github.com/hcengineering/platform/issues/9394)) · Request camera and microphone once ([#9410](https://github.com/hcengineering/platform/issues/9410)) · Use worker for recording timing ([#9420](https://github.com/hcengineering/platform/issues/9420)) · Properly parse and serialize html link ([#9427](https://github.com/hcengineering/platform/issues/9427)) · Pass cache control from request to created blob ([#9430](https://github.com/hcengineering/platform/issues/9430)) · Use object title as print file name ([#9437](https://github.com/hcengineering/platform/issues/9437)) · Use plyr player for non-hls video ([#9446](https://github.com/hcengineering/platform/issues/9446)) · Configure love recording quality ([#9509](https://github.com/hcengineering/platform/issues/9509)) · Fix edit request type ([#9570](https://github.com/hcengineering/platform/issues/9570)) · Show members edit table for department ([#9571](https://github.com/hcengineering/platform/issues/9571)) · Use the same hr style in editor and preview ([#9574](https://github.com/hcengineering/platform/issues/9574)) · Use system token when saving collaborative doc ([#9592](https://github.com/hcengineering/platform/issues/9592)) · Log more stats in datalake ([#9624](https://github.com/hcengineering/platform/issues/9624)) · Generate separate bundle for recorder worker ([#9633](https://github.com/hcengineering/platform/issues/9633)) · Ignore existing blobs in datalake migration ([#9664](https://github.com/hcengineering/platform/issues/9664)) 
-* ANALYTICS: · Add OAuth authentication and guest access events ([#9541](https://github.com/hcengineering/platform/issues/9541)) 
-* EQMS-1406: · Added html doc link presenter for qms docs ([#9382](https://github.com/hcengineering/platform/issues/9382)) 
 * EQMS-1548: · TraceX desktop app ([#9666](https://github.com/hcengineering/platform/issues/9666)) 
-* EQMS-1587: · Fixed impacted doc list selector in qms ([#9374](https://github.com/hcengineering/platform/issues/9374)) 
-* EQMS-1622: · Fixed query for older qms docs in version release trigger ([#9611](https://github.com/hcengineering/platform/issues/9611)) 
-* Q-FIX: · Update communication ([#9524](https://github.com/hcengineering/platform/issues/9524)) 
-* QFIX: · Reindex inplace ([#9365](https://github.com/hcengineering/platform/issues/9365)) · Fix reducedCalls to stop in case of error ([#9482](https://github.com/hcengineering/platform/issues/9482)) · Re-enable references in the new chat input ([#9507](https://github.com/hcengineering/platform/issues/9507)) 
-* QFIX: · Fixed parsing of trailing parentless text and empty markers in the markdown -> markup converter ([#9360](https://github.com/hcengineering/platform/issues/9360)) · Fix attachments in mail threads ([#9371](https://github.com/hcengineering/platform/issues/9371)) · Statistics contexts ([#9380](https://github.com/hcengineering/platform/issues/9380)) · Fix mail messages order ([#9419](https://github.com/hcengineering/platform/issues/9419)) · Markdown parsing & serialization fixes for images & tables ([#9429](https://github.com/hcengineering/platform/issues/9429)) · Use new hulygun API for mail ([#9426](https://github.com/hcengineering/platform/issues/9426)) · Clean up gmail logs ([#9433](https://github.com/hcengineering/platform/issues/9433)) · Editor toolbar z-index ([#9549](https://github.com/hcengineering/platform/issues/9549)) · Handle Hulygram errors ([#9637](https://github.com/hcengineering/platform/issues/9637)) 
-* QFIX: · Fast migration cmd of created/modified by ([#9375](https://github.com/hcengineering/platform/issues/9375)) · Adding/deleting social ids ([#9466](https://github.com/hcengineering/platform/issues/9466)) · Qms tests ([#9557](https://github.com/hcengineering/platform/issues/9557)) · Org space auto join in import ([#9562](https://github.com/hcengineering/platform/issues/9562)) 
-* UBER-1290: · Fix refresh token in subsequent requests ([#9550](https://github.com/hcengineering/platform/issues/9550)) 
-* UBERF-10254: · Manage own social ids ([#9398](https://github.com/hcengineering/platform/issues/9398)) 
-* UBERF-11414: · Integrations ([#9610](https://github.com/hcengineering/platform/issues/9610)) 
-* UBERF-11657: · Better handling of disabled employees ([#9389](https://github.com/hcengineering/platform/issues/9389)) 
-* UBERF-11712: · Rework communication integration ([#9335](https://github.com/hcengineering/platform/issues/9335)) 
-* UBERF-11786: · Do not notify about old emails ([#9352](https://github.com/hcengineering/platform/issues/9352)) 
-* UBERF-11998: · Support account deletion from admin page ([#9441](https://github.com/hcengineering/platform/issues/9441)) 
-* UBERF-12146: · Fix queries with lookup conditions ([#9495](https://github.com/hcengineering/platform/issues/9495)) 
-* UBERF-12149: · Fix email send with irrelevant social id ([#9452](https://github.com/hcengineering/platform/issues/9452)) 
-* UBERF-12214: · Fix GitHub assignee update ([#9515](https://github.com/hcengineering/platform/issues/9515)) 
-* UBERF-12227: · Stabilize UI tests ([#9521](https://github.com/hcengineering/platform/issues/9521)) 
-* UBERF-12229: · Fix default gmail integration selection ([#9486](https://github.com/hcengineering/platform/issues/9486)) 
-* UBERF-12299: · Fix gmail integration selection ([#9505](https://github.com/hcengineering/platform/issues/9505)) 
-* UBERF-12313: · Pass editor-kit options in StyledTextBox ([#9512](https://github.com/hcengineering/platform/issues/9512)) 
-* UBERF-12325: · Add mongo warning for v7 ([#9543](https://github.com/hcengineering/platform/issues/9543)) 
-* UBERF-12445: · Fix adding second Github integration for same user ([#9531](https://github.com/hcengineering/platform/issues/9531)) 
+
+## [s0.7.206] - 2025-08-12
+
+* 🐛 BUG FIXES: · Ignore existing blobs in datalake migration ([#9664](https://github.com/hcengineering/platform/issues/9664)) 
+
+## [s0.7.205] - 2025-08-12
+
 * UBERF-12509: · Trusted accounts migration tool ([#9652](https://github.com/hcengineering/platform/issues/9652)) 
-* UBERF-12633: · Fix GH local identities ([#9566](https://github.com/hcengineering/platform/issues/9566)) 
 * UBERF-12966: · Send messages from Gmail threads ([#9657](https://github.com/hcengineering/platform/issues/9657)) 
+* ANALYTICS: · Add IP headers collection for geo debugging and session tracking ([#9648](https://github.com/hcengineering/platform/issues/9648)) 
+
+## [s0.7.203] - 2025-08-06
+
+* QFIX: · Handle Hulygram errors ([#9637](https://github.com/hcengineering/platform/issues/9637)) 
+* UBERF-11414: · Integrations ([#9610](https://github.com/hcengineering/platform/issues/9610)) 
 * UBERF-12970: · Migrate integrations data ([#9640](https://github.com/hcengineering/platform/issues/9640)) 
 * UBERF-12988: · Add integration status and redesign integration state ([#9643](https://github.com/hcengineering/platform/issues/9643)) 
-* ANALYTICS: · Add IP headers collection for geo debugging and session tracking ([#9648](https://github.com/hcengineering/platform/issues/9648)) 
-* QFIX: · Tune backup limits ([#9381](https://github.com/hcengineering/platform/issues/9381)) · Use a fulltext queue for blocked ops ([#9388](https://github.com/hcengineering/platform/issues/9388)) · Update last visit ([#9401](https://github.com/hcengineering/platform/issues/9401)) · Get pending data id ([#9402](https://github.com/hcengineering/platform/issues/9402)) · Increment attempts on restore retry ([#9403](https://github.com/hcengineering/platform/issues/9403)) · Account unit test ([#9409](https://github.com/hcengineering/platform/issues/9409)) · Allow tool to create workspace with dataid for testing ([#9404](https://github.com/hcengineering/platform/issues/9404)) · Backups using pipeline ([#9396](https://github.com/hcengineering/platform/issues/9396)) · Refactor love plugin to not import . ([#9413](https://github.com/hcengineering/platform/issues/9413)) · Backup blob info ([#9496](https://github.com/hcengineering/platform/issues/9496)) · Connection mgr close ([#9502](https://github.com/hcengineering/platform/issues/9502)) · Remap github installation to another workspace ([#9553](https://github.com/hcengineering/platform/issues/9553)) · Allow backup api to be used by admin ([#9560](https://github.com/hcengineering/platform/issues/9560)) · Fix export service ([#9558](https://github.com/hcengineering/platform/issues/9558)) · Add Logs/metrics to telemetry ([#9595](https://github.com/hcengineering/platform/issues/9595)) · Remove sentry on server ([#9597](https://github.com/hcengineering/platform/issues/9597)) · A better fulltext service logs ([#9606](https://github.com/hcengineering/platform/issues/9606)) · Rework span creation ([#9613](https://github.com/hcengineering/platform/issues/9613)) · Connect timeout + service ws info cache ([#9622](https://github.com/hcengineering/platform/issues/9622)) 
-* UBERF-11798: · Win arm build ([#9366](https://github.com/hcengineering/platform/issues/9366)) 
-* UBERF-12170: · Support merging person in addSocialIdToPerson ([#9470](https://github.com/hcengineering/platform/issues/9470)) 
-* UBERF-9485: · Fix state description save ([#9483](https://github.com/hcengineering/platform/issues/9483)) 
+
+## [s0.7.202] - 2025-08-04
+
+* 🚀 FEATURES: · Pass tracing info with websocket ([#9627](https://github.com/hcengineering/platform/issues/9627)) 
+* 🐛 BUG FIXES: · Generate separate bundle for recorder worker ([#9633](https://github.com/hcengineering/platform/issues/9633)) 
+
+## [s0.7.200] - 2025-07-31
+
+* 🚀 FEATURES: · Minimized screen recorder ([#9619](https://github.com/hcengineering/platform/issues/9619)) 
+* 🐛 BUG FIXES: · Log more stats in datalake ([#9624](https://github.com/hcengineering/platform/issues/9624)) 
+* QFIX: · Connect timeout + service ws info cache ([#9622](https://github.com/hcengineering/platform/issues/9622)) 
+
+## [s0.7.198] - 2025-07-29
+
+* EQMS-1622: · Fixed query for older qms docs in version release trigger ([#9611](https://github.com/hcengineering/platform/issues/9611)) 
+* QFIX: · Rework span creation ([#9613](https://github.com/hcengineering/platform/issues/9613)) 
+
+## [s0.7.197] - 2025-07-29
+
+* QFIX: · A better fulltext service logs ([#9606](https://github.com/hcengineering/platform/issues/9606)) 
+
+## [s0.7.194] - 2025-07-24
+
+* QFIX: · Remove sentry on server ([#9597](https://github.com/hcengineering/platform/issues/9597)) 
+
+## [s0.7.193] - 2025-07-24
+
+* 🐛 BUG FIXES: · Use system token when saving collaborative doc ([#9592](https://github.com/hcengineering/platform/issues/9592)) 
+* QFIX: · Add Logs/metrics to telemetry ([#9595](https://github.com/hcengineering/platform/issues/9595)) 
+
+## [s0.7.187] - 2025-07-21
+
+* 🐛 BUG FIXES: · Use the same hr style in editor and preview ([#9574](https://github.com/hcengineering/platform/issues/9574)) 
+
+## [s0.7.185] - 2025-07-20
+
+* 🐛 BUG FIXES: · Fix edit request type ([#9570](https://github.com/hcengineering/platform/issues/9570)) · Show members edit table for department ([#9571](https://github.com/hcengineering/platform/issues/9571)) 
+* ANALYTICS: · Add OAuth authentication and guest access events ([#9541](https://github.com/hcengineering/platform/issues/9541)) 
+
+## [s0.7.183] - 2025-07-18
+
+* QFIX: · Org space auto join in import ([#9562](https://github.com/hcengineering/platform/issues/9562)) 
+* UBERF-12633: · Fix GH local identities ([#9566](https://github.com/hcengineering/platform/issues/9566)) 
+
+## [s0.7.182] - 2025-07-17
+
+* QFIX: · Qms tests ([#9557](https://github.com/hcengineering/platform/issues/9557)) 
+* QFIX: · Allow backup api to be used by admin ([#9560](https://github.com/hcengineering/platform/issues/9560)) · Fix export service ([#9558](https://github.com/hcengineering/platform/issues/9558)) 
+
+## [s0.7.181] - 2025-07-15
+
+* UBER-1290: · Fix refresh token in subsequent requests ([#9550](https://github.com/hcengineering/platform/issues/9550)) 
+* UBERF-12325: · Add mongo warning for v7 ([#9543](https://github.com/hcengineering/platform/issues/9543)) 
+* QFIX: · Remap github installation to another workspace ([#9553](https://github.com/hcengineering/platform/issues/9553)) 
+
+## [s0.7.180] - 2025-07-15
+
+* QFIX: · Editor toolbar z-index ([#9549](https://github.com/hcengineering/platform/issues/9549)) 
+
+## [s0.7.179] - 2025-07-14
+
+* UBERF-12227: · Stabilize UI tests ([#9521](https://github.com/hcengineering/platform/issues/9521)) 
+* UBERF-12445: · Fix adding second Github integration for same user ([#9531](https://github.com/hcengineering/platform/issues/9531)) 
+
+## [s0.7.178] - 2025-07-11
+
+* Q-FIX: · Update communication ([#9524](https://github.com/hcengineering/platform/issues/9524)) 
+
+## [s0.7.175] - 2025-07-10
+
+* 🐛 BUG FIXES: · Configure love recording quality ([#9509](https://github.com/hcengineering/platform/issues/9509)) 
+* QFIX: · Re-enable references in the new chat input ([#9507](https://github.com/hcengineering/platform/issues/9507)) 
+* UBERF-12214: · Fix GitHub assignee update ([#9515](https://github.com/hcengineering/platform/issues/9515)) 
+* UBERF-12299: · Fix gmail integration selection ([#9505](https://github.com/hcengineering/platform/issues/9505)) 
+* UBERF-12313: · Pass editor-kit options in StyledTextBox ([#9512](https://github.com/hcengineering/platform/issues/9512)) 
+
+## [s0.7.174] - 2025-07-09
+
+* UBERF-12146: · Fix queries with lookup conditions ([#9495](https://github.com/hcengineering/platform/issues/9495)) 
+* QFIX: · Backup blob info ([#9496](https://github.com/hcengineering/platform/issues/9496)) · Connection mgr close ([#9502](https://github.com/hcengineering/platform/issues/9502)) 
 * UBERF-9488: · Account operations unit tests ([#9503](https://github.com/hcengineering/platform/issues/9503)) 
+
+## [s0.7.173] - 2025-07-08
+
+* QFIX: · Fix reducedCalls to stop in case of error ([#9482](https://github.com/hcengineering/platform/issues/9482)) 
+* UBERF-12229: · Fix default gmail integration selection ([#9486](https://github.com/hcengineering/platform/issues/9486)) 
+* UBERF-9485: · Fix state description save ([#9483](https://github.com/hcengineering/platform/issues/9483)) 
+
+## [s0.7.172] - 2025-07-07
+
+* UBERF-12170: · Support merging person in addSocialIdToPerson ([#9470](https://github.com/hcengineering/platform/issues/9470)) 
+
+## [s0.7.171] - 2025-07-04
+
+* QFIX: · Adding/deleting social ids ([#9466](https://github.com/hcengineering/platform/issues/9466)) 
+
+## [s0.7.170] - 2025-07-04
+
+* 🐛 BUG FIXES: · Use plyr player for non-hls video ([#9446](https://github.com/hcengineering/platform/issues/9446)) 
+* UBERF-11998: · Support account deletion from admin page ([#9441](https://github.com/hcengineering/platform/issues/9441)) 
+* UBERF-12149: · Fix email send with irrelevant social id ([#9452](https://github.com/hcengineering/platform/issues/9452)) 
+
+## [s0.7.169] - 2025-07-03
+
+* 🐛 BUG FIXES: · Pass cache control from request to created blob ([#9430](https://github.com/hcengineering/platform/issues/9430)) · Use object title as print file name ([#9437](https://github.com/hcengineering/platform/issues/9437)) 
+* QFIX: · Clean up gmail logs ([#9433](https://github.com/hcengineering/platform/issues/9433)) 
+* UBERF-10254: · Manage own social ids ([#9398](https://github.com/hcengineering/platform/issues/9398)) 
+
+## [s0.7.168] - 2025-07-02
+
+* 🐛 BUG FIXES: · Use worker for recording timing ([#9420](https://github.com/hcengineering/platform/issues/9420)) · Properly parse and serialize html link ([#9427](https://github.com/hcengineering/platform/issues/9427)) 
+* QFIX: · Fix mail messages order ([#9419](https://github.com/hcengineering/platform/issues/9419)) · Markdown parsing & serialization fixes for images & tables ([#9429](https://github.com/hcengineering/platform/issues/9429)) · Use new hulygun API for mail ([#9426](https://github.com/hcengineering/platform/issues/9426)) 
+* QFIX: · Backups using pipeline ([#9396](https://github.com/hcengineering/platform/issues/9396)) · Refactor love plugin to not import . ([#9413](https://github.com/hcengineering/platform/issues/9413)) 
+
+## [s0.7.167] - 2025-07-01
+
+* 🐛 BUG FIXES: · Request camera and microphone once ([#9410](https://github.com/hcengineering/platform/issues/9410)) 
+* QFIX: · Account unit test ([#9409](https://github.com/hcengineering/platform/issues/9409)) · Allow tool to create workspace with dataid for testing ([#9404](https://github.com/hcengineering/platform/issues/9404)) 
+
+## [s0.7.166] - 2025-06-30
+
+* 🐛 BUG FIXES: · Adjust live recording ([#9394](https://github.com/hcengineering/platform/issues/9394)) 
+* QFIX: · Update last visit · Update last visit ([#9401](https://github.com/hcengineering/platform/issues/9401)) · Get pending data id ([#9402](https://github.com/hcengineering/platform/issues/9402)) · Increment attempts on restore retry ([#9403](https://github.com/hcengineering/platform/issues/9403)) 
+
+## [s0.7.165] - 2025-06-27
+
+* UBERF-11657: · Better handling of disabled employees ([#9389](https://github.com/hcengineering/platform/issues/9389)) 
+
+## [s0.7.164] - 2025-06-26
+
+* QFIX: · Tune backup limits ([#9381](https://github.com/hcengineering/platform/issues/9381)) · Use a fulltext queue for blocked ops ([#9388](https://github.com/hcengineering/platform/issues/9388)) 
+
+## [s0.7.162] - 2025-06-25
+
+* EQMS-1406: · Added html doc link presenter for qms docs ([#9382](https://github.com/hcengineering/platform/issues/9382)) 
+* EQMS-1587: · Fixed impacted doc list selector in qms ([#9374](https://github.com/hcengineering/platform/issues/9374)) 
+* QFIX: · Statistics contexts ([#9380](https://github.com/hcengineering/platform/issues/9380)) 
+* QFIX: · Fast migration cmd of created/modified by ([#9375](https://github.com/hcengineering/platform/issues/9375)) 
+
+## [s0.7.160] - 2025-06-25
+
+* QFIX: · Reindex inplace ([#9365](https://github.com/hcengineering/platform/issues/9365)) 
+* QFIX: · Fixed parsing of trailing parentless text and empty markers in the markdown -> markup converter ([#9360](https://github.com/hcengineering/platform/issues/9360)) · Fix attachments in mail threads ([#9371](https://github.com/hcengineering/platform/issues/9371)) 
+* UBERF-11712: · Rework communication integration ([#9335](https://github.com/hcengineering/platform/issues/9335)) 
+* UBERF-11786: · Do not notify about old emails ([#9352](https://github.com/hcengineering/platform/issues/9352)) 
+* UBERF-11798: · Win arm build ([#9366](https://github.com/hcengineering/platform/issues/9366)) 
 
 ## [s0.7.158] - 2025-06-24
 
-* 🚀 FEATURES: · Media state plugin ([#8674](https://github.com/hcengineering/platform/issues/8674)) · Use queue for transcoding tasks ([#9216](https://github.com/hcengineering/platform/issues/9216)) 
-* 🐛 BUG FIXES: · Append port to s3 endpoint ([#8601](https://github.com/hcengineering/platform/issues/8601)) · Increase beforeAll timeout on API tests ([#8707](https://github.com/hcengineering/platform/issues/8707)) · Remove file upload console log ([#8722](https://github.com/hcengineering/platform/issues/8722)) · Add more logs do collaborator doc saving ([#8721](https://github.com/hcengineering/platform/issues/8721)) · Adjust media popup styles ([#8724](https://github.com/hcengineering/platform/issues/8724)) · Close media popup on meeting leave ([#8877](https://github.com/hcengineering/platform/issues/8877)) · Storage adapter throw error on stat ([#8893](https://github.com/hcengineering/platform/issues/8893)) · Close room popup on stop share ([#8914](https://github.com/hcengineering/platform/issues/8914)) · Adjust embedded video player style ([#8947](https://github.com/hcengineering/platform/issues/8947)) · Remove datalake extra retries on 404 ([#8962](https://github.com/hcengineering/platform/issues/8962)) · Remove analytics from SplitLogger ([#9086](https://github.com/hcengineering/platform/issues/9086)) · Do not report some datalake errors to analytics ([#9085](https://github.com/hcengineering/platform/issues/9085)) · Add recorder assets to desktop ([#9122](https://github.com/hcengineering/platform/issues/9122)) · Prevent closing recording popup ([#9125](https://github.com/hcengineering/platform/issues/9125)) · Add stream to ext services ([#9126](https://github.com/hcengineering/platform/issues/9126)) · Correct filename in content-disposition header ([#9139](https://github.com/hcengineering/platform/issues/9139)) · Get rid of node-fetch ([#9150](https://github.com/hcengineering/platform/issues/9150)) · Datalake memory leak fixes ([#9161](https://github.com/hcengineering/platform/issues/9161)) · Handle links with spaces in markdown ([#9164](https://github.com/hcengineering/platform/issues/9164)) · Properly configure keep-alive in datalake HTTP server ([#9198](https://github.com/hcengineering/platform/issues/9198)) · Create transcode topics on start ([#9225](https://github.com/hcengineering/platform/issues/9225)) · Ensure workspace and account uuid when generating token ([#9246](https://github.com/hcengineering/platform/issues/9246)) · Empty workspace uuid when generating token ([#9252](https://github.com/hcengineering/platform/issues/9252)) · Show collaborator connection errors ([#9259](https://github.com/hcengineering/platform/issues/9259)) · Handle processing errors in indexer ([#9262](https://github.com/hcengineering/platform/issues/9262)) · Delete markup description from update ([#9269](https://github.com/hcengineering/platform/issues/9269)) · Initialize server secret before storage config ([#9274](https://github.com/hcengineering/platform/issues/9274)) · Restore markup refs corrupted by github ([#9284](https://github.com/hcengineering/platform/issues/9284)) · Integration template values ([#9294](https://github.com/hcengineering/platform/issues/9294)) · Suppress unused regex escaping ([#9299](https://github.com/hcengineering/platform/issues/9299)) · Restore api client functionality ([#9292](https://github.com/hcengineering/platform/issues/9292)) · Transcode livekit videos uploaded to s3 ([#9342](https://github.com/hcengineering/platform/issues/9342)) · Adjust video player controls ([#9343](https://github.com/hcengineering/platform/issues/9343)) · Ignore transcoding for some videos ([#9354](https://github.com/hcengineering/platform/issues/9354)) 
-* BUMP: · Bump few deps with fixes ([#9093](https://github.com/hcengineering/platform/issues/9093)) 
-* EQMS-1302: · Fixed RBAC bypass for space / team related wizards and popups (develop port) ([#8979](https://github.com/hcengineering/platform/issues/8979)) 
-* EQMS-1441: · Editable QMS doc reviewers and approvers during requests. ([#8699](https://github.com/hcengineering/platform/issues/8699)) 
-* EQMS-1471: · Fixed authorship and ownership semantics & labels in qms to prevent confusion ([#8629](https://github.com/hcengineering/platform/issues/8629)) 
-* EQMS-1475: · Space browser for qms documents ([#8668](https://github.com/hcengineering/platform/issues/8668)) 
-* EQMS-1484: · Fixed permission checks when sending a QMS document for approval from the Workflow Validation tab ([#8628](https://github.com/hcengineering/platform/issues/8628)) 
-* EQMS-1510: · QMS documents now start at version 1.0 instead of 0.1 ([#8669](https://github.com/hcengineering/platform/issues/8669)) 
-* EQMS-1524: · Fixed c-state cleanup after state transition in qms docs ([#8697](https://github.com/hcengineering/platform/issues/8697)) 
-* EQMS-1537: · Cleanup all review/approval requests on qms doc deletion ([#8790](https://github.com/hcengineering/platform/issues/8790)) 
-* EQMS-1541: · Fixes TeamStep in qms document wizard ([#8840](https://github.com/hcengineering/platform/issues/8840)) 
-* EQMS-1560: · Fix & migrate duplicate active review/approval requests in qms ([#9062](https://github.com/hcengineering/platform/issues/9062)) 
-* EQMS-1561: · Fixed approval/review requests query when switching between documents ([#9059](https://github.com/hcengineering/platform/issues/9059)) 
-* EQMS-1569: · Fixed ui crash when editing product members ([#9229](https://github.com/hcengineering/platform/issues/9229)) 
+* 🐛 BUG FIXES: · Ignore transcoding for some videos ([#9354](https://github.com/hcengineering/platform/issues/9354)) 
+
+## [s0.7.157] - 2025-06-24
+
+* QFIX: · Backup service ([#9347](https://github.com/hcengineering/platform/issues/9347)) 
+* UBERF-11769: · Fix messages order in mail thread ([#9350](https://github.com/hcengineering/platform/issues/9350)) 
+
+## [s0.7.156] - 2025-06-24
+
+* 🐛 BUG FIXES: · Transcode livekit videos uploaded to s3 ([#9342](https://github.com/hcengineering/platform/issues/9342)) · Adjust video player controls ([#9343](https://github.com/hcengineering/platform/issues/9343)) 
+* QFIX: · Skip communication apply-templates ([#9341](https://github.com/hcengineering/platform/issues/9341)) 
+* QFIX: · Remove unactual tests and mongo-memory-server ([#9345](https://github.com/hcengineering/platform/issues/9345)) 
+* UBERF-11769: · Adjust gmail for communication updates ([#9346](https://github.com/hcengineering/platform/issues/9346)) 
+
+## [s0.7.155] - 2025-06-23
+
+* QFIX: · Hide deleted workspaces from select workspace list ([#9337](https://github.com/hcengineering/platform/issues/9337)) 
+
+## [s0.7.153] - 2025-06-20
+
+* QFIX: · Check last visit in gmail service ([#9300](https://github.com/hcengineering/platform/issues/9300)) 
+* QFIX: · Backup download skip support ([#9312](https://github.com/hcengineering/platform/issues/9312)) 
+
+## [s0.7.151] - 2025-06-19
+
+* QFIX: · Fix errors when disabling gmail synchronization  ([#9310](https://github.com/hcengineering/platform/issues/9310)) 
+* QFIX: · Backup info cors ([#9308](https://github.com/hcengineering/platform/issues/9308)) · Property pass context with OnThreadMessageCreated ([#9311](https://github.com/hcengineering/platform/issues/9311)) 
+
+## [s0.7.150] - 2025-06-19
+
+* QFIX: · Optimize getWorkspaceInfo use ([#9302](https://github.com/hcengineering/platform/issues/9302)) 
+* QFIX: · Tg-bot fix typo in token generation and remove mongo ([#9306](https://github.com/hcengineering/platform/issues/9306)) 
+
+## [s0.7.149] - 2025-06-19
+
+* 🐛 BUG FIXES: · Restore markup refs corrupted by github ([#9284](https://github.com/hcengineering/platform/issues/9284)) · Integration template values ([#9294](https://github.com/hcengineering/platform/issues/9294)) · Suppress unused regex escaping ([#9299](https://github.com/hcengineering/platform/issues/9299)) · Restore api client functionality ([#9292](https://github.com/hcengineering/platform/issues/9292)) 
 * EQMS-1586: · Fixed training related editable state in qms doc's team tab ([#9282](https://github.com/hcengineering/platform/issues/9282)) 
-* LOVE: · Updated ParticipantView ([#8811](https://github.com/hcengineering/platform/issues/8811)) 
-* QFIX: · Show warning of not visited workspace only once ([#8641](https://github.com/hcengineering/platform/issues/8641)) · Region filter in admin panel ([#8646](https://github.com/hcengineering/platform/issues/8646)) · Admin panel show inactive workspaces ([#8716](https://github.com/hcengineering/platform/issues/8716)) · Use front base for datalake ([#8772](https://github.com/hcengineering/platform/issues/8772)) · Improve backup find tool ([#8783](https://github.com/hcengineering/platform/issues/8783)) · Keep snapshots ([#8904](https://github.com/hcengineering/platform/issues/8904)) · Remove duplicate handler errors ([#9084](https://github.com/hcengineering/platform/issues/9084)) · Do not find for a Card for rank ([#9145](https://github.com/hcengineering/platform/issues/9145)) · Build fix for browser list · Rpc response body size ([#9160](https://github.com/hcengineering/platform/issues/9160)) · Services rate limit ([#9193](https://github.com/hcengineering/platform/issues/9193)) · Get workspaces mode is missing ([#9237](https://github.com/hcengineering/platform/issues/9237)) · Rate limits ([#9242](https://github.com/hcengineering/platform/issues/9242)) · Old token ([#9238](https://github.com/hcengineering/platform/issues/9238)) · Restore in workspace service for old workspaces ([#9241](https://github.com/hcengineering/platform/issues/9241)) · Github migration + few checks ([#9244](https://github.com/hcengineering/platform/issues/9244)) · Github service startup ([#9251](https://github.com/hcengineering/platform/issues/9251)) · Empty comments in github ([#9258](https://github.com/hcengineering/platform/issues/9258)) · Backup fixes ([#9256](https://github.com/hcengineering/platform/issues/9256)) · Optimize getWorkspaceInfo use ([#9302](https://github.com/hcengineering/platform/issues/9302)) · Check last visit in gmail service ([#9300](https://github.com/hcengineering/platform/issues/9300)) · Hide deleted workspaces from select workspace list ([#9337](https://github.com/hcengineering/platform/issues/9337)) · Skip communication apply-templates ([#9341](https://github.com/hcengineering/platform/issues/9341)) · Backup service ([#9347](https://github.com/hcengineering/platform/issues/9347)) 
-* QFIX: · Fix gmail history migration ([#8778](https://github.com/hcengineering/platform/issues/8778)) · Added appropriate styling for unavailable mentions ([#8803](https://github.com/hcengineering/platform/issues/8803)) · Add external ws for gmail ([#8910](https://github.com/hcengineering/platform/issues/8910)) · Updated color for disabled mentions ([#8918](https://github.com/hcengineering/platform/issues/8918)) · Add ws dependency to gmail ([#8922](https://github.com/hcengineering/platform/issues/8922)) · Continue processing other workspaces in case of error ([#8923](https://github.com/hcengineering/platform/issues/8923)) · Fix MTA-hook token ([#8954](https://github.com/hcengineering/platform/issues/8954)) · Fix hang in our rate limitter ([#9243](https://github.com/hcengineering/platform/issues/9243)) · Rate limit hello ([#9245](https://github.com/hcengineering/platform/issues/9245)) · Restore old workspaces ([#9260](https://github.com/hcengineering/platform/issues/9260)) · Public links ([#9264](https://github.com/hcengineering/platform/issues/9264)) · Hide achievements until achievement service implementation ([#9266](https://github.com/hcengineering/platform/issues/9266)) · Fix account use in github service ([#9276](https://github.com/hcengineering/platform/issues/9276)) · Find options ([#9290](https://github.com/hcengineering/platform/issues/9290)) · Fix parseMail test ([#9303](https://github.com/hcengineering/platform/issues/9303)) · Fix errors when disabling gmail synchronization  ([#9310](https://github.com/hcengineering/platform/issues/9310)) · Remove unactual tests and mongo-memory-server ([#9345](https://github.com/hcengineering/platform/issues/9345)) 
-* QFIX: · Remove dev migrations ([#8651](https://github.com/hcengineering/platform/issues/8651)) · Emoji input detection ([#8927](https://github.com/hcengineering/platform/issues/8927)) · Make github login/signup case insensitive ([#9247](https://github.com/hcengineering/platform/issues/9247)) · Ws filter in fixed tool ([#9291](https://github.com/hcengineering/platform/issues/9291)) · Tg-bot fix typo in token generation and remove mongo ([#9306](https://github.com/hcengineering/platform/issues/9306)) 
-* UBERF-10222: · Fix Github reviews field update ([#9013](https://github.com/hcengineering/platform/issues/9013)) 
-* UBERF-10248: · Fix local time ([#8623](https://github.com/hcengineering/platform/issues/8623)) · Reduce profile preview size ([#8723](https://github.com/hcengineering/platform/issues/8723)) 
-* UBERF-10272: · Allow workspace owners to enable/disable modules ([#8638](https://github.com/hcengineering/platform/issues/8638)) 
-* UBERF-10303: · Always sign up with OTP ([#8665](https://github.com/hcengineering/platform/issues/8665)) 
-* UBERF-10346: · Combined ensure person ([#8701](https://github.com/hcengineering/platform/issues/8701)) 
-* UBERF-10368: · Fix direct create ([#8760](https://github.com/hcengineering/platform/issues/8760)) 
-* UBERF-10375: · Fix full email messages sync ([#8758](https://github.com/hcengineering/platform/issues/8758)) 
-* UBERF-10376: · Allow todos filtering ([#8729](https://github.com/hcengineering/platform/issues/8729)) 
-* UBERF-10386: · Fix SES client ([#8737](https://github.com/hcengineering/platform/issues/8737)) 
-* UBERF-10407: · Fix Team display ([#8762](https://github.com/hcengineering/platform/issues/8762)) 
-* UBERF-10408: · New gmail integration ([#8869](https://github.com/hcengineering/platform/issues/8869)) 
-* UBERF-10412: · Make rate limit less aggressive ([#8765](https://github.com/hcengineering/platform/issues/8765)) 
-* UBERF-10413: · Fix update of %hash% and update migration ([#8771](https://github.com/hcengineering/platform/issues/8771)) 
-* UBERF-10417: · Corrected red and green colors, icons ([#8808](https://github.com/hcengineering/platform/issues/8808)) 
-* UBERF-10418: · Removed empty popup in the user's personal room ([#8775](https://github.com/hcengineering/platform/issues/8775)) 
-* UBERF-10441: · Fix configure and board item displayed ([#8789](https://github.com/hcengineering/platform/issues/8789)) 
-* UBERF-10471: · Fix Github miss status updates and allow to re-integrate existing repos ([#8842](https://github.com/hcengineering/platform/issues/8842)) 
-* UBERF-10491: · Fix gmail client duplicates ([#8837](https://github.com/hcengineering/platform/issues/8837)) 
-* UBERF-10499: · Fix team planner ([#8847](https://github.com/hcengineering/platform/issues/8847)) 
-* UBERF-10523: · Fixes for backup/compact ([#8888](https://github.com/hcengineering/platform/issues/8888)) 
-* UBERF-10525: · Update MTA-hook integration ([#8925](https://github.com/hcengineering/platform/issues/8925)) 
-* UBERF-10550: · Support internal endpoint in getLoginInfoByToken ([#8902](https://github.com/hcengineering/platform/issues/8902)) 
-* UBERF-10555: · Fix gmail migration ([#8900](https://github.com/hcengineering/platform/issues/8900)) 
-* UBERF-10557: · Use communication queue ([#8993](https://github.com/hcengineering/platform/issues/8993)) 
-* UBERF-10590: · Suport disabled integrations ([#8937](https://github.com/hcengineering/platform/issues/8937)) 
-* UBERF-10593: · Fix MTA hook and reuse clients ([#8938](https://github.com/hcengineering/platform/issues/8938)) 
-* UBERF-10599: · Fix ws not found in gmail ([#8943](https://github.com/hcengineering/platform/issues/8943)) 
-* UBERF-10631: · Fix attachments in old gmail integration ([#8971](https://github.com/hcengineering/platform/issues/8971)) 
-* UBERF-10632: · Fix email thread creation date ([#8968](https://github.com/hcengineering/platform/issues/8968)) 
-* UBERF-10637: · Fix duplication on github with few integerations added ([#8970](https://github.com/hcengineering/platform/issues/8970)) 
-* UBERF-10653: · Handle gmail integration errors ([#8985](https://github.com/hcengineering/platform/issues/8985)) 
-* UBERF-10664: · Fix person preview ([#8995](https://github.com/hcengineering/platform/issues/8995)) 
-* UBERF-10669: · Fix email channel duplicates ([#8996](https://github.com/hcengineering/platform/issues/8996)) 
-* UBERF-10672: · Fix person duplicates ([#9004](https://github.com/hcengineering/platform/issues/9004)) 
-* UBERF-10691: · Fix user selection component to not miss selection ([#9017](https://github.com/hcengineering/platform/issues/9017)) 
-* UBERF-10741: · The application name has been corrected and the Customize label has been added ([#9056](https://github.com/hcengineering/platform/issues/9056)) 
+* QFIX: · Find options ([#9290](https://github.com/hcengineering/platform/issues/9290)) · Fix parseMail test ([#9303](https://github.com/hcengineering/platform/issues/9303)) 
+* QFIX: · Ws filter in fixed tool ([#9291](https://github.com/hcengineering/platform/issues/9291)) 
+* QFIX: · Backup recheck ([#9288](https://github.com/hcengineering/platform/issues/9288)) 
+* UBERF-11651: · Fix huly id confirmation for dev setup ([#9296](https://github.com/hcengineering/platform/issues/9296)) 
+
+## [s0.7.146] - 2025-06-18
+
+* UBERF-8425: · Improve account methods params checks ([#9278](https://github.com/hcengineering/platform/issues/9278)) · Fix created-modified owners tool ([#9283](https://github.com/hcengineering/platform/issues/9283)) 
+
+## [s0.7.145] - 2025-06-17
+
+* 🐛 BUG FIXES: · Delete markup description from update ([#9269](https://github.com/hcengineering/platform/issues/9269)) · Initialize server secret before storage config ([#9274](https://github.com/hcengineering/platform/issues/9274)) 
+* QFIX: · Backup fixes ([#9256](https://github.com/hcengineering/platform/issues/9256)) 
+* QFIX: · Public links ([#9264](https://github.com/hcengineering/platform/issues/9264)) · Hide achievements until achievement service implementation ([#9266](https://github.com/hcengineering/platform/issues/9266)) · Fix account use in github service ([#9276](https://github.com/hcengineering/platform/issues/9276)) 
+* UBERF-11586: · Fix gmail migration ([#9277](https://github.com/hcengineering/platform/issues/9277)) 
+* QFIX: · Ignore ancestor error for txremovedoc ([#9267](https://github.com/hcengineering/platform/issues/9267)) 
+
+## [s0.7.144] - 2025-06-17
+
+* 🐛 BUG FIXES: · Show collaborator connection errors ([#9259](https://github.com/hcengineering/platform/issues/9259)) · Handle processing errors in indexer ([#9262](https://github.com/hcengineering/platform/issues/9262)) 
+* QFIX: · Empty comments in github ([#9258](https://github.com/hcengineering/platform/issues/9258)) 
+* QFIX: · Restore old workspaces ([#9260](https://github.com/hcengineering/platform/issues/9260)) 
+* UBERF-11529: · Fix parseMail test ([#9255](https://github.com/hcengineering/platform/issues/9255)) 
+* UBERF-11533: · Speed up gmail migration ([#9257](https://github.com/hcengineering/platform/issues/9257)) 
+
+## [s0.7.143] - 2025-06-16
+
+* 🐛 BUG FIXES: · Empty workspace uuid when generating token ([#9252](https://github.com/hcengineering/platform/issues/9252)) 
+* QFIX: · Github service startup ([#9251](https://github.com/hcengineering/platform/issues/9251)) 
+
+## [s0.7.142] - 2025-06-16
+
+* TOOL: · Reindex all workspaces ([#9249](https://github.com/hcengineering/platform/issues/9249)) 
+
+## [s0.7.141] - 2025-06-15
+
+* 🐛 BUG FIXES: · Create transcode topics on start ([#9225](https://github.com/hcengineering/platform/issues/9225)) · Ensure workspace and account uuid when generating token ([#9246](https://github.com/hcengineering/platform/issues/9246)) 
+* QFIX: · Get workspaces mode is missing ([#9237](https://github.com/hcengineering/platform/issues/9237)) · Rate limits ([#9242](https://github.com/hcengineering/platform/issues/9242)) · Old token ([#9238](https://github.com/hcengineering/platform/issues/9238)) · Restore in workspace service for old workspaces ([#9241](https://github.com/hcengineering/platform/issues/9241)) · Github migration + few checks ([#9244](https://github.com/hcengineering/platform/issues/9244)) 
+* QFIX: · Fix hang in our rate limitter ([#9243](https://github.com/hcengineering/platform/issues/9243)) · Rate limit hello ([#9245](https://github.com/hcengineering/platform/issues/9245)) 
+* QFIX: · Make github login/signup case insensitive ([#9247](https://github.com/hcengineering/platform/issues/9247)) 
+
+## [s0.7.140] - 2025-06-13
+
+* EQMS-1569: · Fixed ui crash when editing product members ([#9229](https://github.com/hcengineering/platform/issues/9229)) 
+* EQMS-1576: · Hide region in ws selector for a regular user ([#9231](https://github.com/hcengineering/platform/issues/9231)) 
+* EQMS-1582: · Fix roles migration ([#9230](https://github.com/hcengineering/platform/issues/9230)) 
+
+## [s0.7.139] - 2025-06-13
+
+* 🚀 FEATURES: · Use queue for transcoding tasks ([#9216](https://github.com/hcengineering/platform/issues/9216)) 
+* 🐛 BUG FIXES: · Properly configure keep-alive in datalake HTTP server ([#9198](https://github.com/hcengineering/platform/issues/9198)) 
+* UBERF-11451: · Replace ses service with notification service ([#9200](https://github.com/hcengineering/platform/issues/9200)) 
+* QFIX: · ListView, Table ([#9213](https://github.com/hcengineering/platform/issues/9213)) 
+* UBERF-11415: · Person cache unit tests ([#9202](https://github.com/hcengineering/platform/issues/9202)) 
+
+## [s0.7.138] - 2025-06-10
+
+* QFIX: · Services rate limit ([#9193](https://github.com/hcengineering/platform/issues/9193)) 
+* UBERF-11415: · Optimise contact UI stores ([#9185](https://github.com/hcengineering/platform/issues/9185)) 
+* UBERF-9797: · Idp auth state ([#9196](https://github.com/hcengineering/platform/issues/9196)) 
+
+## [s0.7.135] - 2025-06-05
+
+* UBERF-11423: · Fix attachments in emails ([#9166](https://github.com/hcengineering/platform/issues/9166)) 
+
+## [s0.7.134] - 2025-06-04
+
+* 🐛 BUG FIXES: · Handle links with spaces in markdown ([#9164](https://github.com/hcengineering/platform/issues/9164)) 
+
+## [s0.7.133] - 2025-06-03
+
+* 🐛 BUG FIXES: · Datalake memory leak fixes ([#9161](https://github.com/hcengineering/platform/issues/9161)) 
+* QFIX: · Rpc response body size ([#9160](https://github.com/hcengineering/platform/issues/9160)) 
+* UBERF-11156: · Decode encoded mail content and subject ([#9157](https://github.com/hcengineering/platform/issues/9157)) 
+* UBERF-11411: · Add communication threads for emails ([#9156](https://github.com/hcengineering/platform/issues/9156)) 
+* UBERF-8425: · Fix account upgrade deadlocks ([#9163](https://github.com/hcengineering/platform/issues/9163)) 
+
+## [s0.7.132] - 2025-06-03
+
+* 🐛 BUG FIXES: · Get rid of node-fetch ([#9150](https://github.com/hcengineering/platform/issues/9150)) 
+* UBERF-8425: · Improved pg/acc/ws error handling ([#9144](https://github.com/hcengineering/platform/issues/9144)) 
+
+## [s0.7.131] - 2025-06-02
+
+* QFIX: · Build fix for browser list 
+
+## [s0.7.130] - 2025-06-02
+
+* 🐛 BUG FIXES: · Correct filename in content-disposition header ([#9139](https://github.com/hcengineering/platform/issues/9139)) 
+* QFIX: · Do not find for a Card for rank ([#9145](https://github.com/hcengineering/platform/issues/9145)) 
+* UBERF-11398: · Fixing rate limits ([#9143](https://github.com/hcengineering/platform/issues/9143)) 
+
+## [s0.7.129] - 2025-05-30
+
+* UBERF-11392: · Fixes to statistics ([#9138](https://github.com/hcengineering/platform/issues/9138)) 
+* UBERF-8425: · Retry tx account ([#9133](https://github.com/hcengineering/platform/issues/9133)) 
+
+## [s0.7.128] - 2025-05-29
+
+* 🐛 BUG FIXES: · Add stream to ext services ([#9126](https://github.com/hcengineering/platform/issues/9126)) 
+* UBERF-11383: · Fix gmail push processing ([#9127](https://github.com/hcengineering/platform/issues/9127)) 
+* UBERF-8425: · Improve parallel ws upgrade logging within one ws service ([#9118](https://github.com/hcengineering/platform/issues/9118)) 
+
+## [s0.7.127] - 2025-05-28
+
+* 🐛 BUG FIXES: · Add recorder assets to desktop ([#9122](https://github.com/hcengineering/platform/issues/9122)) · Prevent closing recording popup ([#9125](https://github.com/hcengineering/platform/issues/9125)) 
+* UBERF-11233: · Fix non-confirmed sign-up/login flow ([#9108](https://github.com/hcengineering/platform/issues/9108)) 
+* UBERF-11347: · Fix gmail recipients ([#9115](https://github.com/hcengineering/platform/issues/9115)) 
+
+## [s0.7.126] - 2025-05-27
+
+* UBERF-11206: · Few more fixes related to Github ([#9117](https://github.com/hcengineering/platform/issues/9117)) 
+
+## [s0.7.125] - 2025-05-27
+
+* UBERF-11111: · Add retry package ([#9081](https://github.com/hcengineering/platform/issues/9081)) 
+* UBERF-11239: · Fix multipart content in mta-hook ([#9110](https://github.com/hcengineering/platform/issues/9110)) 
+* UBERF-11342: · Fix race conditions handling in mail sync mutex ([#9111](https://github.com/hcengineering/platform/issues/9111)) 
+
+## [s0.7.124] - 2025-05-27
+
+* BUMP: · Bump few deps with fixes ([#9093](https://github.com/hcengineering/platform/issues/9093)) 
+* UBERF-11206: · Few fixes related to Github sync ([#9102](https://github.com/hcengineering/platform/issues/9102)) 
+
+## [s0.7.123] - 2025-05-27
+
+* 🐛 BUG FIXES: · Remove analytics from SplitLogger ([#9086](https://github.com/hcengineering/platform/issues/9086)) · Do not report some datalake errors to analytics ([#9085](https://github.com/hcengineering/platform/issues/9085)) 
+* QFIX: · Remove duplicate handler errors ([#9084](https://github.com/hcengineering/platform/issues/9084)) 
+* UBERF-11175: · Fix new person names in mail ([#9094](https://github.com/hcengineering/platform/issues/9094)) 
+* UBERF-11203: · Display address in gmail integration ([#9095](https://github.com/hcengineering/platform/issues/9095)) 
+* UBERF-8425: · More adjustments for migration scripts and tools ([#9099](https://github.com/hcengineering/platform/issues/9099)) 
+
+## [s0.7.122] - 2025-05-23
+
 * UBERF-10925: · Save gmail messages only for integration owner ([#9061](https://github.com/hcengineering/platform/issues/9061)) 
 * UBERF-11004: · Fix mta-hook email content parsing ([#9066](https://github.com/hcengineering/platform/issues/9066)) 
 * UBERF-11067: · Fix html to md conversion for complex links ([#9070](https://github.com/hcengineering/platform/issues/9070)) 
-* UBERF-11111: · Add retry package ([#9081](https://github.com/hcengineering/platform/issues/9081)) 
-* UBERF-11156: · Decode encoded mail content and subject ([#9157](https://github.com/hcengineering/platform/issues/9157)) 
-* UBERF-11175: · Fix new person names in mail ([#9094](https://github.com/hcengineering/platform/issues/9094)) 
-* UBERF-11203: · Display address in gmail integration ([#9095](https://github.com/hcengineering/platform/issues/9095)) 
-* UBERF-11206: · Few fixes related to Github sync ([#9102](https://github.com/hcengineering/platform/issues/9102)) · Few more fixes related to Github ([#9117](https://github.com/hcengineering/platform/issues/9117)) 
-* UBERF-11233: · Fix non-confirmed sign-up/login flow ([#9108](https://github.com/hcengineering/platform/issues/9108)) 
-* UBERF-11239: · Fix multipart content in mta-hook ([#9110](https://github.com/hcengineering/platform/issues/9110)) 
-* UBERF-11342: · Fix race conditions handling in mail sync mutex ([#9111](https://github.com/hcengineering/platform/issues/9111)) 
-* UBERF-11347: · Fix gmail recipients ([#9115](https://github.com/hcengineering/platform/issues/9115)) 
-* UBERF-11383: · Fix gmail push processing ([#9127](https://github.com/hcengineering/platform/issues/9127)) 
-* UBERF-11392: · Fixes to statistics ([#9138](https://github.com/hcengineering/platform/issues/9138)) 
-* UBERF-11398: · Fixing rate limits ([#9143](https://github.com/hcengineering/platform/issues/9143)) 
-* UBERF-11411: · Add communication threads for emails ([#9156](https://github.com/hcengineering/platform/issues/9156)) 
-* UBERF-11415: · Optimise contact UI stores ([#9185](https://github.com/hcengineering/platform/issues/9185)) 
-* UBERF-11423: · Fix attachments in emails ([#9166](https://github.com/hcengineering/platform/issues/9166)) 
-* UBERF-11451: · Replace ses service with notification service ([#9200](https://github.com/hcengineering/platform/issues/9200)) 
-* UBERF-11529: · Fix parseMail test ([#9255](https://github.com/hcengineering/platform/issues/9255)) 
-* UBERF-11533: · Speed up gmail migration ([#9257](https://github.com/hcengineering/platform/issues/9257)) 
-* UBERF-11586: · Fix gmail migration ([#9277](https://github.com/hcengineering/platform/issues/9277)) 
-* UBERF-11769: · Adjust gmail for communication updates ([#9346](https://github.com/hcengineering/platform/issues/9346)) · Fix messages order in mail thread ([#9350](https://github.com/hcengineering/platform/issues/9350)) 
-* UBERF-8425: · Speed up accounts migration ([#8994](https://github.com/hcengineering/platform/issues/8994)) · More adjustments for migration scripts and tools ([#9099](https://github.com/hcengineering/platform/issues/9099)) · Improve parallel ws upgrade logging within one ws service ([#9118](https://github.com/hcengineering/platform/issues/9118)) · Improved pg/acc/ws error handling ([#9144](https://github.com/hcengineering/platform/issues/9144)) · Fix account upgrade deadlocks ([#9163](https://github.com/hcengineering/platform/issues/9163)) 
-* UBERF-9559: · Make CR accounts migrations concurrency safe ([#8821](https://github.com/hcengineering/platform/issues/8821)) 
-* UBERF-9764: · Adjust gmail for new accounts ([#8681](https://github.com/hcengineering/platform/issues/8681)) 
-* EQMS-1533: · Fix template versions query ([#8753](https://github.com/hcengineering/platform/issues/8753)) ([#8766](https://github.com/hcengineering/platform/issues/8766)) 
-* EQMS-1576: · Hide region in ws selector for a regular user ([#9231](https://github.com/hcengineering/platform/issues/9231)) 
-* EQMS-1582: · Fix roles migration ([#9230](https://github.com/hcengineering/platform/issues/9230)) 
-* QFIX: · ListView, Table ([#9213](https://github.com/hcengineering/platform/issues/9213)) 
-* QFIX: · Disable mixins migration · Ignore ancestor error for txremovedoc ([#9267](https://github.com/hcengineering/platform/issues/9267)) · Backup recheck ([#9288](https://github.com/hcengineering/platform/issues/9288)) · Backup info cors ([#9308](https://github.com/hcengineering/platform/issues/9308)) · Property pass context with OnThreadMessageCreated ([#9311](https://github.com/hcengineering/platform/issues/9311)) · Backup download skip support ([#9312](https://github.com/hcengineering/platform/issues/9312)) 
-* TOOL: · Reindex all workspaces ([#9249](https://github.com/hcengineering/platform/issues/9249)) 
-* UBERF-10222: · Add logging ([#8709](https://github.com/hcengineering/platform/issues/8709)) 
-* UBERF-10255: · Migrate accounts in saved filters ([#8846](https://github.com/hcengineering/platform/issues/8846)) 
-* UBERF-10308: · Adjust onboarding ([#8949](https://github.com/hcengineering/platform/issues/8949)) 
-* UBERF-10318: · Fix push subscriptions ([#8666](https://github.com/hcengineering/platform/issues/8666)) 
-* UBERF-10342: · Fix init script executor ([#8702](https://github.com/hcengineering/platform/issues/8702)) 
-* UBERF-10454: · Support ensure person by system user ([#8807](https://github.com/hcengineering/platform/issues/8807)) 
-* UBERF-10455: · Merge accounts for merged persons ([#8942](https://github.com/hcengineering/platform/issues/8942)) 
-* UBERF-10488: · Allow ws limit per account ([#8864](https://github.com/hcengineering/platform/issues/8864)) 
-* UBERF-10626: · Fix social identity duplicate key exception ([#8969](https://github.com/hcengineering/platform/issues/8969)) 
+
+## [s0.7.121] - 2025-05-23
+
+* EQMS-1560: · Fix & migrate duplicate active review/approval requests in qms ([#9062](https://github.com/hcengineering/platform/issues/9062)) 
+* EQMS-1561: · Fixed approval/review requests query when switching between documents ([#9059](https://github.com/hcengineering/platform/issues/9059)) 
+* UBERF-10691: · Fix user selection component to not miss selection ([#9017](https://github.com/hcengineering/platform/issues/9017)) 
+
+## [s0.7.119] - 2025-05-22
+
+* UBERF-10741: · The application name has been corrected and the Customize label has been added ([#9056](https://github.com/hcengineering/platform/issues/9056)) 
+
+## [s0.7.118] - 2025-05-21
+
+* UBERF-10222: · Fix Github reviews field update ([#9013](https://github.com/hcengineering/platform/issues/9013)) 
+* UBERF-10672: · Fix person duplicates ([#9004](https://github.com/hcengineering/platform/issues/9004)) 
+
+## [s0.7.116] - 2025-05-21
+
+* UBERF-10557: · Use communication queue ([#8993](https://github.com/hcengineering/platform/issues/8993)) 
+
+## [s0.7.115] - 2025-05-21
+
+* UBERF-10669: · Fix email channel duplicates ([#8996](https://github.com/hcengineering/platform/issues/8996)) 
 * UBERF-10649: · Fix last visit for stale workspaces ([#8999](https://github.com/hcengineering/platform/issues/8999)) 
-* UBERF-11415: · Person cache unit tests ([#9202](https://github.com/hcengineering/platform/issues/9202)) 
-* UBERF-11651: · Fix huly id confirmation for dev setup ([#9296](https://github.com/hcengineering/platform/issues/9296)) 
-* UBERF-8425: · Retry tx account ([#9133](https://github.com/hcengineering/platform/issues/9133)) · Improve account methods params checks ([#9278](https://github.com/hcengineering/platform/issues/9278)) · Fix created-modified owners tool ([#9283](https://github.com/hcengineering/platform/issues/9283)) 
-* UBERF-9797: · Idp auth state ([#9196](https://github.com/hcengineering/platform/issues/9196)) 
+
+## [s0.7.114] - 2025-05-20
+
+* UBERF-10653: · Handle gmail integration errors ([#8985](https://github.com/hcengineering/platform/issues/8985)) 
+* UBERF-10664: · Fix person preview ([#8995](https://github.com/hcengineering/platform/issues/8995)) 
+* UBERF-8425: · Speed up accounts migration ([#8994](https://github.com/hcengineering/platform/issues/8994)) 
+
+## [s0.7.112] - 2025-05-19
+
+* EQMS-1302: · Fixed RBAC bypass for space / team related wizards and popups (develop port) ([#8979](https://github.com/hcengineering/platform/issues/8979)) 
+* UBERF-10632: · Fix email thread creation date ([#8968](https://github.com/hcengineering/platform/issues/8968)) 
+
+## [s0.7.111] - 2025-05-16
+
+* UBERF-10631: · Fix attachments in old gmail integration ([#8971](https://github.com/hcengineering/platform/issues/8971)) 
+
+## [s0.7.110] - 2025-05-16
+
+* 🐛 BUG FIXES: · Remove datalake extra retries on 404 ([#8962](https://github.com/hcengineering/platform/issues/8962)) 
+* UBERF-10637: · Fix duplication on github with few integerations added ([#8970](https://github.com/hcengineering/platform/issues/8970)) 
+* UBERF-10626: · Fix social identity duplicate key exception ([#8969](https://github.com/hcengineering/platform/issues/8969)) 
+
+## [s0.7.109] - 2025-05-16
+
+* QFIX: · Fix MTA-hook token ([#8954](https://github.com/hcengineering/platform/issues/8954)) 
+
+## [s0.7.108] - 2025-05-15
+
+* 🐛 BUG FIXES: · Adjust embedded video player style ([#8947](https://github.com/hcengineering/platform/issues/8947)) 
+* UBERF-10590: · Suport disabled integrations ([#8937](https://github.com/hcengineering/platform/issues/8937)) 
+* UBERF-10593: · Fix MTA hook and reuse clients ([#8938](https://github.com/hcengineering/platform/issues/8938)) 
+* UBERF-10599: · Fix ws not found in gmail ([#8943](https://github.com/hcengineering/platform/issues/8943)) 
+* UBERF-10308: · Adjust onboarding ([#8949](https://github.com/hcengineering/platform/issues/8949)) 
+* UBERF-10455: · Merge accounts for merged persons ([#8942](https://github.com/hcengineering/platform/issues/8942)) 
+
+## [s0.7.107] - 2025-05-14
+
+* QFIX: · Updated color for disabled mentions ([#8918](https://github.com/hcengineering/platform/issues/8918)) · Add ws dependency to gmail ([#8922](https://github.com/hcengineering/platform/issues/8922)) · Continue processing other workspaces in case of error ([#8923](https://github.com/hcengineering/platform/issues/8923)) 
+* QFIX: · Emoji input detection ([#8927](https://github.com/hcengineering/platform/issues/8927)) 
+* UBERF-10525: · Update MTA-hook integration ([#8925](https://github.com/hcengineering/platform/issues/8925)) 
+
+## [s0.7.106] - 2025-05-14
+
+* 🐛 BUG FIXES: · Close room popup on stop share ([#8914](https://github.com/hcengineering/platform/issues/8914)) 
+* QFIX: · Add external ws for gmail ([#8910](https://github.com/hcengineering/platform/issues/8910)) 
+
+## [s0.7.105] - 2025-05-13
+
+* QFIX: · Keep snapshots ([#8904](https://github.com/hcengineering/platform/issues/8904)) 
+* UBERF-10550: · Support internal endpoint in getLoginInfoByToken ([#8902](https://github.com/hcengineering/platform/issues/8902)) 
+* UBERF-10555: · Fix gmail migration ([#8900](https://github.com/hcengineering/platform/issues/8900)) 
+
+## [s0.7.104] - 2025-05-12
+
+* 🐛 BUG FIXES: · Storage adapter throw error on stat ([#8893](https://github.com/hcengineering/platform/issues/8893)) 
+
+## [s0.7.103] - 2025-05-12
+
+* UBERF-10408: · New gmail integration ([#8869](https://github.com/hcengineering/platform/issues/8869)) 
+* UBERF-10523: · Fixes for backup/compact ([#8888](https://github.com/hcengineering/platform/issues/8888)) 
+
+## [s0.7.102] - 2025-05-08
+
+* 🐛 BUG FIXES: · Close media popup on meeting leave ([#8877](https://github.com/hcengineering/platform/issues/8877)) 
+
+## [s0.7.101] - 2025-05-07
+
+* UBERF-10471: · Fix Github miss status updates and allow to re-integrate existing repos ([#8842](https://github.com/hcengineering/platform/issues/8842)) 
+* UBERF-10488: · Allow ws limit per account ([#8864](https://github.com/hcengineering/platform/issues/8864)) 
+
+## [s0.7.100] - 2025-05-06
+
+* EQMS-1541: · Fixes TeamStep in qms document wizard ([#8840](https://github.com/hcengineering/platform/issues/8840)) 
+* UBERF-10491: · Fix gmail client duplicates ([#8837](https://github.com/hcengineering/platform/issues/8837)) 
+* UBERF-10499: · Fix team planner ([#8847](https://github.com/hcengineering/platform/issues/8847)) 
+* UBERF-9559: · Make CR accounts migrations concurrency safe ([#8821](https://github.com/hcengineering/platform/issues/8821)) 
+* UBERF-10255: · Migrate accounts in saved filters ([#8846](https://github.com/hcengineering/platform/issues/8846)) 
+
+## [s0.7.99] - 2025-05-02
+
+* LOVE: · Updated ParticipantView ([#8811](https://github.com/hcengineering/platform/issues/8811)) 
+* UBERF-10417: · Corrected red and green colors, icons ([#8808](https://github.com/hcengineering/platform/issues/8808)) 
+* UBERF-10454: · Support ensure person by system user ([#8807](https://github.com/hcengineering/platform/issues/8807)) 
+
+## [s0.7.98] - 2025-05-01
+
+* QFIX: · Added appropriate styling for unavailable mentions ([#8803](https://github.com/hcengineering/platform/issues/8803)) 
+
+## [s0.7.95] - 2025-04-30
+
+* EQMS-1537: · Cleanup all review/approval requests on qms doc deletion ([#8790](https://github.com/hcengineering/platform/issues/8790)) 
+* QFIX: · Improve backup find tool ([#8783](https://github.com/hcengineering/platform/issues/8783)) 
+* UBERF-10441: · Fix configure and board item displayed ([#8789](https://github.com/hcengineering/platform/issues/8789)) 
+
+## [s0.7.94] - 2025-04-30
+
+* QFIX: · Fix gmail history migration ([#8778](https://github.com/hcengineering/platform/issues/8778)) 
+* UBERF-10418: · Removed empty popup in the user's personal room ([#8775](https://github.com/hcengineering/platform/issues/8775)) 
+* QFIX: · Disable mixins migration 
+
+## [s0.7.93] - 2025-04-30
+
+* QFIX: · Use front base for datalake ([#8772](https://github.com/hcengineering/platform/issues/8772)) 
+
+## [s0.7.92] - 2025-04-29
+
+* EQMS-1441: · Editable QMS doc reviewers and approvers during requests. ([#8699](https://github.com/hcengineering/platform/issues/8699)) 
+* UBERF-10368: · Fix direct create ([#8760](https://github.com/hcengineering/platform/issues/8760)) 
+* UBERF-10375: · Fix full email messages sync ([#8758](https://github.com/hcengineering/platform/issues/8758)) 
+* UBERF-10407: · Fix Team display ([#8762](https://github.com/hcengineering/platform/issues/8762)) 
+* UBERF-10412: · Make rate limit less aggressive ([#8765](https://github.com/hcengineering/platform/issues/8765)) 
+* UBERF-10413: · Fix update of %hash% and update migration ([#8771](https://github.com/hcengineering/platform/issues/8771)) 
+* EQMS-1533: · Fix template versions query ([#8753](https://github.com/hcengineering/platform/issues/8753)) ([#8766](https://github.com/hcengineering/platform/issues/8766)) 
+
+## [s0.7.91] - 2025-04-28
+
+* 🐛 BUG FIXES: · Remove file upload console log ([#8722](https://github.com/hcengineering/platform/issues/8722)) · Add more logs do collaborator doc saving ([#8721](https://github.com/hcengineering/platform/issues/8721)) · Adjust media popup styles ([#8724](https://github.com/hcengineering/platform/issues/8724)) 
+* QFIX: · Admin panel show inactive workspaces ([#8716](https://github.com/hcengineering/platform/issues/8716)) 
+* UBERF-10248: · Reduce profile preview size ([#8723](https://github.com/hcengineering/platform/issues/8723)) 
+* UBERF-10376: · Allow todos filtering ([#8729](https://github.com/hcengineering/platform/issues/8729)) 
+* UBERF-10386: · Fix SES client ([#8737](https://github.com/hcengineering/platform/issues/8737)) 
+* UBERF-9764: · Adjust gmail for new accounts ([#8681](https://github.com/hcengineering/platform/issues/8681)) 
+
+## [s0.7.90] - 2025-04-25
+
+* 🐛 BUG FIXES: · Increase beforeAll timeout on API tests ([#8707](https://github.com/hcengineering/platform/issues/8707)) 
+* UBERF-10222: · Add logging ([#8709](https://github.com/hcengineering/platform/issues/8709)) 
+* UBERF-10342: · Fix init script executor ([#8702](https://github.com/hcengineering/platform/issues/8702)) 
+
+## [s0.7.89] - 2025-04-25
+
+* EQMS-1510: · QMS documents now start at version 1.0 instead of 0.1 ([#8669](https://github.com/hcengineering/platform/issues/8669)) 
+* EQMS-1524: · Fixed c-state cleanup after state transition in qms docs ([#8697](https://github.com/hcengineering/platform/issues/8697)) 
+* UBERF-10346: · Combined ensure person ([#8701](https://github.com/hcengineering/platform/issues/8701)) 
+
+## [s0.7.87] - 2025-04-23
+
+* 🚀 FEATURES: · Media state plugin ([#8674](https://github.com/hcengineering/platform/issues/8674)) 
+* EQMS-1475: · Space browser for qms documents ([#8668](https://github.com/hcengineering/platform/issues/8668)) 
+* UBERF-10303: · Always sign up with OTP ([#8665](https://github.com/hcengineering/platform/issues/8665)) 
+* UBERF-10318: · Fix push subscriptions ([#8666](https://github.com/hcengineering/platform/issues/8666)) 
+
+## [s0.7.86] - 2025-04-22
+
+* QFIX: · Remove dev migrations ([#8651](https://github.com/hcengineering/platform/issues/8651)) 
+
+## [s0.7.85] - 2025-04-21
+
+* EQMS-1471: · Fixed authorship and ownership semantics & labels in qms to prevent confusion ([#8629](https://github.com/hcengineering/platform/issues/8629)) 
+* EQMS-1484: · Fixed permission checks when sending a QMS document for approval from the Workflow Validation tab ([#8628](https://github.com/hcengineering/platform/issues/8628)) 
+* QFIX: · Show warning of not visited workspace only once ([#8641](https://github.com/hcengineering/platform/issues/8641)) · Region filter in admin panel ([#8646](https://github.com/hcengineering/platform/issues/8646)) 
+* UBERF-10272: · Allow workspace owners to enable/disable modules ([#8638](https://github.com/hcengineering/platform/issues/8638)) 
+
+## [s0.7.83] - 2025-04-18
+
+* 🐛 BUG FIXES: · Append port to s3 endpoint ([#8601](https://github.com/hcengineering/platform/issues/8601)) 
+* UBERF-10248: · Fix local time ([#8623](https://github.com/hcengineering/platform/issues/8623)) 
 
 ## [s0.7.81] - 2025-04-17
 
