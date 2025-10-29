@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/postgres
 
-This log was last generated on Mon, 27 Oct 2025 16:26:11 GMT and should not be manually modified.
+This log was last generated on Wed, 29 Oct 2025 18:01:56 GMT and should not be manually modified.
+
+## 0.7.16
+Wed, 29 Oct 2025 18:01:56 GMT
+
+### Patches
+
+- Sort for TypeIdentifier
 
 ## 0.7.15
 Mon, 27 Oct 2025 16:26:11 GMT
