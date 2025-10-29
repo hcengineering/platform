@@ -1184,7 +1184,10 @@ class AccountClientImpl implements AccountClient {
     })
   }
 
-  async getSubscriptions (workspaceUuid: WorkspaceUuid | undefined = undefined, activeOnly: boolean = true): Promise<Subscription[]> {
+  async getSubscriptions (
+    workspaceUuid: WorkspaceUuid | undefined = undefined,
+    activeOnly: boolean = true
+  ): Promise<Subscription[]> {
     return await this._rpc({
       method: 'getSubscriptions',
       params: {

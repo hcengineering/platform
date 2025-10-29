@@ -143,7 +143,7 @@ export default async () => {
               newOpt.onConnect = async (event, lastTx, data) => {
                 try {
                   await opt?.onConnect?.(event, lastTx, data)
-                } catch (error) {
+                } catch (error: any) {
                   void clientConnection?.close()
                   void opt?.onDialTimeout?.()
                   reject(error)

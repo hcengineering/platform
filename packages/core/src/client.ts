@@ -289,7 +289,7 @@ export async function createClient (
       }
     }
   }
-  const conn = await ctx.with('connect', {}, () => connect(txHandler))
+  const conn = await ctx.with('connect', {}, () => connect(txHandler), {}, { suspendErrors: true })
 
   let { mode, current, addition } = await ctx.with('load-model', {}, (ctx) => loadModel(ctx, conn, txPersistence))
   switch (mode) {
