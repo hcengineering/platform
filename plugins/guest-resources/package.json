@@ -39,7 +39,7 @@
   "dependencies": {
     "svelte": "^4.2.20",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.19",
     "@hcengineering/client": "^0.7.17",
     "@hcengineering/workbench": "^0.7.0",
     "@hcengineering/workbench-resources": "^0.7.0",
@@ -48,7 +48,7 @@
     "@hcengineering/presentation": "^0.7.0",
     "@hcengineering/guest": "^0.7.0",
     "@hcengineering/login": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/view-resources": "^0.7.0",
     "@hcengineering/analytics": "^0.7.17",
     "fast-copy": "^3.0.2",

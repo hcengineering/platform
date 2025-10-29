@@ -39,7 +39,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.19",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/contact-resources": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",

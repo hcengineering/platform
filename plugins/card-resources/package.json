@@ -43,7 +43,7 @@
     "@hcengineering/presentation": "^0.7.0",
     "@hcengineering/communication-types": "^0.7.12",
     "@hcengineering/communication-resources": "^0.7.0",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.19",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/setting": "^0.7.0",
     "@hcengineering/attachment": "^0.7.0",
@@ -72,7 +72,7 @@
     "@hcengineering/card": "^0.7.0",
     "@hcengineering/communication": "^0.7.0",
     "@hcengineering/preference": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/chat": "^0.7.0",
     "fast-equals": "^5.2.2",
     "svelte": "^4.2.20"

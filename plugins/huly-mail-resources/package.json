@@ -48,11 +48,11 @@
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/setting": "^0.7.0",
     "@hcengineering/login": "^0.7.0",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.19",
     "@hcengineering/panel": "^0.7.0",
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/integration-client": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/setting-resources": "^0.7.0",
     "@hcengineering/view-resources": "^0.7.0"
   }
