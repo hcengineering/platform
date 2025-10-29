@@ -48,7 +48,7 @@
   {/if}
 </div>
 {#if isDiffShown}
-  <MarkupDiffPresenter value={update.value} prevValue={update.prevValue} />
+  <MarkupDiffPresenter value={update.value} prevValue={update.prevValue} showOnlyDiff withShowMore={false} />
 {/if}
 
 <style lang="scss">
