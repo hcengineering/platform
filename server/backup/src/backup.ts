@@ -100,6 +100,7 @@ export async function backup (
     progress?: (progress: number) => Promise<void>
     token?: string
     fullVerify?: boolean
+    forceCompact?: boolean
     keepSnapshots: number
     msg?: Record<string, any>
   } = {
@@ -146,6 +147,7 @@ export async function backup (
   const tmpRoot = mkdtempSync('huly')
 
   const forcedFullCheck = '4'
+  const forcedCompact = '1'
 
   try {
     let backupInfo: BackupInfo = {
@@ -155,6 +157,7 @@ export async function backup (
       domainHashes: {},
       migrations: {
         zeroCheckSize: true, // Assume already checked for new backups
+        forcedCompact, // Force backup compaction
         forcedFullCheck // A force to full recheck.
       },
       dataSize: 0,
@@ -202,12 +205,18 @@ export async function backup (
     }
 
     let fullCheck = options.fullVerify === true
+    let forceCompact = options.forceCompact === true
 
     if (backupInfo.migrations.forcedFullCheck !== forcedFullCheck) {
       // We have forced full check to be performed.
       fullCheck = true
     }
-    if (backupInfo.snapshots.length > options.keepSnapshots) {
+    if (backupInfo.migrations.forcedCompact !== forcedCompact) {
+      // We have forced compaction to be performed.
+      forceCompact = true
+    }
+
+    if (backupInfo.snapshots.length > options.keepSnapshots || forceCompact) {
       // We need to perform compaction
       ctx.warn('Compacting backup')
       await compactBackup(ctx, storage, true, {
@@ -1176,6 +1185,7 @@ export async function backup (
     if (!canceled() && domainChanges > 0) {
       backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
       backupInfo.migrations.forcedFullCheck = forcedFullCheck
+      backupInfo.migrations.forcedCompaction = forcedCompact
       backupInfo.dataSize = result.dataSize
       backupInfo.blobsSize = result.blobsSize
       backupInfo.backupSize = result.backupSize
