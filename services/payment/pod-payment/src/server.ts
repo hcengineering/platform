@@ -343,6 +343,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
    */
   app.post(
     '/api/v1/subscriptions/:subscriptionId/updatePlan',
+    subscriptionRateLimiter,
     withToken,
     withLoginInfo,
     withOwner,
