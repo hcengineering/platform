@@ -991,6 +991,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const key = escape(_key)
         if (attr !== undefined && NumericTypes.includes(attr.type._class)) {
           res.push(`(${this.getKey(_class, baseDomain, key, joins)})::numeric ${val === 1 ? 'ASC' : 'DESC'}`)
+        } else if (attr !== undefined && attr.type._class === core.class.TypeIdentifier) {
+          res.push(
+            `regexp_replace(COALESCE(${this.getKey(_class, baseDomain, key, joins)}, ''), '-?\\d+$', '') ${val === 1 ? 'ASC' : 'DESC'}`
+          )
+          res.push(
+            `COALESCE(NULLIF(regexp_replace(${this.getKey(_class, baseDomain, key, joins)}, '.*?(\\d+)$', '\\1'), ''), '0')::INT ${val === 1 ? 'ASC' : 'DESC'}`
+          )
         } else {
           res.push(`${this.getKey(_class, baseDomain, key, joins)} ${val === 1 ? 'ASC' : 'DESC'}`)
         }
