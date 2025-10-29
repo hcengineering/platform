@@ -13,9 +13,16 @@
 // limitations under the License.
 //
 
-import { Tag } from '@hcengineering/card'
-import { Association, Attribute, Blob as PlatformBlob, Doc, generateId, Ref } from '@hcengineering/core'
-import { UnifiedDoc } from '../types'
+import { type Tag } from '@hcengineering/card'
+import {
+  type Association,
+  type Attribute,
+  type Blob as PlatformBlob,
+  type Doc,
+  generateId,
+  type Ref
+} from '@hcengineering/core'
+import { type UnifiedDoc } from '../types'
 import { v4 as uuid } from 'uuid'
 
 export interface AssociationMetadata {

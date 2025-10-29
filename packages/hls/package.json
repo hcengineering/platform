@@ -43,7 +43,7 @@
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/presentation": "^0.7.0",
     "hls.js": "^1.5.20",
-    "plyr": "^3.7.8",
+    "plyr": "3.7.8",
     "svelte": "^4.2.20"
   },
   "repository": "https://github.com/hcengineering/platform",

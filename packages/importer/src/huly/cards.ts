@@ -13,36 +13,36 @@
 // limitations under the License.
 //
 
-import { Attachment } from '@hcengineering/attachment'
-import card, { Card, CardSpace, MasterTag, Tag } from '@hcengineering/card'
+import { type Attachment } from '@hcengineering/attachment'
+import card, { type Card, type CardSpace, type MasterTag, type Tag } from '@hcengineering/card'
 import core, {
-  Association,
-  Attribute,
-  BlobType,
-  Class,
-  Doc,
-  Enum,
+  type Association,
+  type Attribute,
+  type BlobType,
+  type Class,
+  type Doc,
+  type Enum,
   generateId,
-  Ref,
-  Relation,
-  Space
+  type Ref,
+  type Relation,
+  type Space
 } from '@hcengineering/core'
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
 import { contentType } from 'mime-types'
 import * as path from 'path'
-import { IntlString } from '@hcengineering/platform'
-import { Logger } from '../importer/logger'
-import { Props, UnifiedDoc, UnifiedFile, UnifiedMixin, UnifiedUpdate } from '../types'
-import { UnifiedFormatParser } from './parser'
-import { AssociationMetadata, MetadataRegistry } from './registry'
+import { type IntlString } from '@hcengineering/platform'
+import { type Logger } from '../importer/logger'
+import { type Props, type UnifiedDoc, type UnifiedFile, type UnifiedMixin, type UnifiedUpdate } from '../types'
+import { type UnifiedFormatParser } from './parser'
+import { type AssociationMetadata, type MetadataRegistry } from './registry'
 import {
   AssociationSchema,
-  BaseFieldType,
+  type BaseFieldType,
   BooleanFieldType,
   EnumSchema,
-  FieldType,
-  FormatSchema,
+  type FieldType,
+  type FormatSchema,
   MasterTagSchema,
   NumberFieldType,
   OneOfFieldType,
