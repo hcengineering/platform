@@ -90,6 +90,8 @@
     "Direct": "Diretto",
     "Directs": "Diretti",
     "Members": "Membri",
-    "Translate": "Traduci"
+    "Translate": "Traduci",
+    "WriteMessageEllipsis": "Scrivi un messaggio...",
+    "EditMessageEllipsis": "Modifica messaggio..."
   }
 }

@@ -14,35 +14,18 @@
 -->
 
 <script lang="ts">
-  import { AttachmentPresenter, LinkPreviewCard } from '@hcengineering/attachment-resources'
   import { Card } from '@hcengineering/card'
-  import { isAppletAttachment, isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
-  import {
-    AppletParams,
-    AttachmentID,
-    BlobAttachment,
-    BlobParams,
-    LinkPreviewParams,
-    linkPreviewType,
-    Message,
-    MessageID
-  } from '@hcengineering/communication-types'
+  import { isAppletAttachment, isBlobAttachment } from '@hcengineering/communication-shared'
+  import { BlobParams, LinkPreviewParams, Message, MessageID, BlobID } from '@hcengineering/communication-types'
   import { generateId, getCurrentAccount, Markup, RateLimiter, Ref } from '@hcengineering/core'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { clearTyping, setTyping } from '@hcengineering/presence-resources'
-  import {
-    deleteFile,
-    getClient,
-    getCommunicationClient,
-    isLinkPreviewEnabled,
-    uploadFile
-  } from '@hcengineering/presentation'
+  import { deleteFile, getClient, isLinkPreviewEnabled, uploadFile } from '@hcengineering/presentation'
   import { areEqualMarkups, isEmptyMarkup } from '@hcengineering/text'
-  import { Component, showPopup, ThrottledCaller } from '@hcengineering/ui'
+  import { showPopup, ThrottledCaller } from '@hcengineering/ui'
   import { FileUploadCallbackParams, getUploadHandlers, UploadHandlerDefinition } from '@hcengineering/uploader'
   import { createEventDispatcher, tick } from 'svelte'
 
-  import { Analytics } from '@hcengineering/analytics'
   import { getDraft, getEmptyDraft, messageToDraft, removeDraft, saveDraft } from '../../draft'
   import communication from '../../plugin'
   import { messageEditingStore } from '../../stores'
@@ -58,25 +41,27 @@
   import TextInput from '../TextInput.svelte'
   import TypingPresenter from '../TypingPresenter.svelte'
   import IconAttach from '../icons/Attach.svelte'
+  import AttachmentsHeader from '../input/AttachmentsHeader.svelte'
+  import { createMessage, updateMessage } from '../../actions'
 
   export let card: Card
   export let message: Message | undefined = undefined
-  export let title: string = ''
   export let onCancel: (() => void) | undefined = undefined
 
   const throttle = new ThrottledCaller(500)
   const dispatch = createEventDispatcher()
-  const communicationClient = getCommunicationClient()
   const client = getClient()
   const acc = getCurrentAccount()
 
-  const maxLinkPreviewCount = 4
+  const maxLinkPreviewCount = 5
   const previewUrls = new Map<string, boolean>()
   const linksData = new Map<string, LinkPreviewParams | null>()
 
   let prevCard: Ref<Card> | undefined = card._id
   let prevMessage: MessageID | undefined = message?.id
-  let draft: MessageDraft = message != null ? messageToDraft(message) : getDraft(card._id)
+
+  let markup = message != null ? messageToDraft(message).content : getDraft(card._id).content
+  let attachmentsDraft: Omit<MessageDraft, 'content'> = message != null ? messageToDraft(message) : getDraft(card._id)
 
   let inputElement: HTMLInputElement
   let refContainer: HTMLElement | undefined | null = undefined
@@ -93,19 +78,21 @@
     initDraft()
   }
 
-  $: _saveDraft(draft)
+  $: _saveDraft(markup, attachmentsDraft)
 
   function initDraft (): void {
-    draft = message != null ? messageToDraft(message) : getDraft(card._id)
+    const draft = message != null ? messageToDraft(message) : getDraft(card._id)
+    attachmentsDraft = draft
+    markup = draft.content
     previewUrls.clear()
   }
 
-  function _saveDraft (draft: MessageDraft): void {
+  function _saveDraft (markup: Markup, draft: Omit<MessageDraft, 'content'>): void {
     for (const link of draft.links) {
       previewUrls.set(link.url, true)
     }
     if (message === undefined) {
-      saveDraft(card._id, draft)
+      saveDraft(card._id, { ...draft, content: markup })
     }
   }
 
@@ -119,12 +106,12 @@
     }
 
     const markup = event.detail
-    const blobsToLoad = draft.blobs
-    const linksToLoad = draft.links
-    const appletsToLoad = draft.applets
+    const blobsToLoad = attachmentsDraft.blobs
+    const linksToLoad = attachmentsDraft.links
+    const appletsToLoad = attachmentsDraft.applets
     const urlsToLoad = Array.from(previewUrls.keys()).filter((it) => previewUrls.get(it) === true)
 
-    draft = getEmptyDraft()
+    attachmentsDraft = getEmptyDraft()
     previewUrls.clear()
     if (message === undefined) {
       removeDraft(card._id)
@@ -133,153 +120,14 @@
     const markdown = toMarkdown(markup)
 
     if (message === undefined) {
-      await createMessage(markdown, blobsToLoad, linksToLoad, urlsToLoad, appletsToLoad)
+      await createMessage(card, markdown, blobsToLoad, appletsToLoad, applets, linksToLoad, urlsToLoad, linksData)
       dispatch('sent')
     } else {
-      await editMessage(message, markdown, blobsToLoad, linksToLoad, appletsToLoad)
+      await updateMessage(card, message, markdown, blobsToLoad, appletsToLoad, applets, linksToLoad)
+      dispatch('edited')
     }
 
     void clearTyping(acc.primarySocialId, card._id)
-  }
-
-  async function attachApplets (messageId: MessageID, appletDrafts: AppletDraft[]): Promise<void> {
-    if (appletDrafts.length === 0) return
-    const toAttach: AppletDraft[] = []
-    for (const appletDraft of appletDrafts) {
-      try {
-        const ap = applets.find((it) => it._id === appletDraft.appletId)
-        if (ap?.createFn == null) {
-          toAttach.push(appletDraft)
-          continue
-        }
-        const r = await getResource(ap.createFn)
-        await r(card, messageId, appletDraft.params)
-        toAttach.push(appletDraft)
-      } catch (err: any) {
-        Analytics.handleError(err)
-      }
-    }
-
-    if (toAttach.length > 0) {
-      void communicationClient.attachmentPatch<AppletParams>(card._id, messageId, {
-        add: toAttach.map((it) => ({
-          mimeType: it.mimeType,
-          params: it.params
-        }))
-      })
-    }
-  }
-
-  async function createMessage (
-    markdown: string,
-    blobs: (BlobParams & { mimeType: string })[],
-    links: LinkPreviewParams[],
-    urlsToLoad: string[],
-    appletDrafts: AppletDraft[]
-  ): Promise<void> {
-    const { messageId } = await communicationClient.createMessage(card._id, card._class, markdown)
-    void client.update(card, {}, false, Date.now())
-
-    void attachApplets(messageId, appletDrafts)
-
-    if (blobs.length > 0) {
-      void communicationClient.attachmentPatch<BlobParams>(card._id, messageId, {
-        add: blobs.map((it) => ({
-          id: it.blobId as any as AttachmentID,
-          mimeType: it.mimeType,
-          params: it
-        }))
-      })
-    }
-
-    if (links.length > 0) {
-      void communicationClient.attachmentPatch<LinkPreviewParams>(card._id, messageId, {
-        add: links.map((it) => ({
-          mimeType: linkPreviewType,
-          params: it
-        }))
-      })
-    }
-
-    for (const url of urlsToLoad) {
-      if (links.some((it) => it.url === url)) continue
-      const fetchedData = linksData.get(url)
-      if (fetchedData === null) continue
-      const params = fetchedData ?? (await loadLinkPreviewParams(url))
-      if (params === undefined) continue
-      void communicationClient.attachmentPatch<LinkPreviewParams>(card._id, messageId, {
-        add: [
-          {
-            mimeType: linkPreviewType,
-            params
-          }
-        ]
-      })
-    }
-  }
-
-  async function editMessage (
-    message: Message,
-    markdown: string,
-    blobs: (BlobParams & { mimeType: string })[],
-    links: LinkPreviewParams[],
-    appletDrafts: AppletDraft[]
-  ): Promise<void> {
-    await communicationClient.updateMessage(card._id, message.id, markdown)
-
-    const attachBlobs = blobs.filter(
-      (b) => !message.attachments.some((it) => isBlobAttachment(it) && it.params.blobId === b.blobId)
-    )
-
-    void attachApplets(
-      message.id,
-      appletDrafts.filter((a) => !message.attachments.some((it) => it.id === a.id))
-    )
-
-    if (attachBlobs.length > 0) {
-      void communicationClient.attachmentPatch<BlobParams>(card._id, message.id, {
-        add: attachBlobs.map((it) => ({
-          id: it.blobId as any as AttachmentID,
-          mimeType: it.mimeType,
-          params: it
-        }))
-      })
-    }
-
-    const detachBlobs = message.attachments.filter(
-      (it) => isBlobAttachment(it) && !blobs.some((b) => b.blobId === it.params.blobId)
-    ) as BlobAttachment[]
-    if (detachBlobs.length > 0) {
-      detachBlobs.forEach((it) => {
-        void deleteFile(it.params.blobId)
-      })
-      void communicationClient.attachmentPatch(card._id, message.id, {
-        remove: detachBlobs.map((it) => it.id)
-      })
-    }
-
-    const detachApplets = message.attachments.filter(
-      (it) => isAppletAttachment(it) && !appletDrafts.some((a) => a.id === it.id)
-    )
-
-    if (detachApplets.length > 0) {
-      void communicationClient.attachmentPatch(card._id, message.id, {
-        remove: detachApplets.map((it) => it.id)
-      })
-    }
-
-    const attachLinks = links.filter(
-      (l) => !message.attachments.some((it) => isLinkPreviewAttachment(it) && it.params.url === l.url)
-    )
-
-    void communicationClient.attachmentPatch(card._id, message.id, {
-      add: attachLinks.map((it) => ({
-        mimeType: linkPreviewType,
-        params: it
-      }))
-    })
-
-    dispatch('edited')
   }
 
   async function fileSelected (): Promise<void> {
@@ -310,9 +158,9 @@
       metadata
     }
 
-    draft = {
-      ...draft,
-      blobs: [...draft.blobs, blob]
+    attachmentsDraft = {
+      ...attachmentsDraft,
+      blobs: [...attachmentsDraft.blobs, blob]
     }
   }
 
@@ -328,14 +176,14 @@
 
   async function handleCancel (): Promise<void> {
     onCancel?.()
-    for (const blob of draft.blobs) {
+    for (const blob of attachmentsDraft.blobs) {
       const fromMessage =
         message?.attachments.some((it) => isBlobAttachment(it) && it.params.blobId === blob.blobId) ?? false
       if (!fromMessage) {
         void deleteFile(blob.blobId)
       }
     }
-    draft = getEmptyDraft()
+    attachmentsDraft = getEmptyDraft()
   }
 
   async function loadFiles (evt: ClipboardEvent): Promise<void> {
@@ -420,9 +268,9 @@
 
     for (const url of removedUrls) {
       previewUrls.delete(url)
-      draft = {
-        ...draft,
-        links: draft.links.filter((it) => it.url !== url)
+      attachmentsDraft = {
+        ...attachmentsDraft,
+        links: attachmentsDraft.links.filter((it) => it.url !== url)
       }
     }
     if (newUrls.size > 0) {
@@ -431,17 +279,17 @@
   }
 
   async function loadLinks (urls: string[]): Promise<void> {
-    const draftId = draft._id
+    const draftId = attachmentsDraft._id
 
     for (const url of urls) {
       try {
         const data = linksData.get(url) ?? (await loadLinkPreviewParams(url))
         linksData.set(url, data ?? null)
         if (data === undefined || !previewUrls.has(url)) continue
-        if (draftId !== draft._id) return
-        draft = {
-          ...draft,
-          links: [...draft.links, data]
+        if (draftId !== attachmentsDraft._id) return
+        attachmentsDraft = {
+          ...attachmentsDraft,
+          links: [...attachmentsDraft.links, data]
         }
       } catch (err: any) {
         void setPlatformStatus(unknownError(err))
@@ -450,16 +298,13 @@
   }
 
   async function onUpdate (event: CustomEvent<Markup>): Promise<void> {
-    draft = {
-      ...draft,
-      content: event.detail
-    }
+    markup = event.detail
     const visiblePreviewUrls = Array.from(previewUrls.keys()).filter((it) => previewUrls.get(it) === true)
     if (isLinkPreviewEnabled() && visiblePreviewUrls.length < maxLinkPreviewCount) {
       updateLinkPreview()
     }
     if (message !== undefined) return
-    if (!isEmptyMarkup(draft.content)) {
+    if (!isEmptyMarkup(markup)) {
       throttle.call(() => {
         void setTyping(acc.primarySocialId, card.peerId ? `peer:${card.peerId}` : card._id)
       })
@@ -467,12 +312,12 @@
   }
 
   function isEmptyDraft (): boolean {
-    return isEmptyMarkup(draft.content) && draft.blobs.length === 0 && draft.applets.length === 0
+    return isEmptyMarkup(markup) && attachmentsDraft.blobs.length === 0 && attachmentsDraft.applets.length === 0
   }
 
-  function hasChanges (blobs: BlobParams[], message: Message | undefined, appletDrafts: any[]): boolean {
+  function hasChanges (blobs: BlobParams[], message: Message | undefined, appletDrafts: AppletDraft[]): boolean {
     if (isEmptyDraft()) return false
-    if (message === undefined) return blobs.length > 0 || !isEmptyMarkup(draft.content) || appletDrafts.length > 0
+    if (message === undefined) return blobs.length > 0 || !isEmptyMarkup(markup) || appletDrafts.length > 0
     const messageBlobs = message?.attachments.filter(isBlobAttachment) ?? []
     const messageApplets = message?.attachments.filter(isAppletAttachment) ?? []
 
@@ -481,7 +326,7 @@
     if (messageApplets.length !== appletDrafts.length) return true
     if (messageApplets.some((it) => !appletDrafts.some((a) => a.id === it.id))) return true
 
-    return !areEqualMarkups(draft.content, toMarkup(message.content))
+    return !areEqualMarkups(markup, toMarkup(message.content))
   }
 
   const applets = client.getModel().findAllSync(communication.class.Applet, {})
@@ -492,10 +337,10 @@
       action: () => {
         showPopup(applet.createComponent, { applet }, 'center', (result) => {
           if (result != null) {
-            draft = {
-              ...draft,
+            attachmentsDraft = {
+              ...attachmentsDraft,
               applets: [
-                ...draft.applets,
+                ...attachmentsDraft.applets,
                 { id: generateId(), mimeType: applet.type, appletId: applet._id, params: result }
               ]
             }
@@ -528,9 +373,9 @@
 
       // In case we are in the same card, update the draft in memory
       if (cardId === card._id) {
-        draft = {
-          ...draft,
-          blobs: [...draft.blobs, blob]
+        attachmentsDraft = {
+          ...attachmentsDraft,
+          blobs: [...attachmentsDraft.blobs, blob]
         }
       }
     }
@@ -564,6 +409,43 @@
     }
     return false
   }
+
+  function onChangeApplet (event: CustomEvent<AppletDraft>): void {
+    attachmentsDraft = {
+      ...attachmentsDraft,
+      applets: attachmentsDraft.applets.map((it) => (it.id === event.detail.id ? event.detail : it))
+    }
+  }
+
+  function onDeleteApplet (event: CustomEvent<string>): void {
+    attachmentsDraft = {
+      ...attachmentsDraft,
+      applets: attachmentsDraft.applets.filter((it) => it.id !== event.detail)
+    }
+  }
+
+  function onDeleteBlob (event: CustomEvent<BlobID>): void {
+    const blobId = event.detail
+    attachmentsDraft = {
+      ...attachmentsDraft,
+      blobs: attachmentsDraft.blobs.filter((it) => it.blobId !== blobId)
+    }
+
+    if (message == null || !message.attachments.some((it) => isBlobAttachment(it) && it.params.blobId === blobId)) {
+      void deleteFile(blobId)
+    }
+  }
+
+  function onDeleteLink (event: CustomEvent<string>): void {
+    attachmentsDraft = {
+      ...attachmentsDraft,
+      links: attachmentsDraft.links.filter((it) => it.url !== event.detail)
+    }
+    previewUrls.set(event.detail, false)
+  }
+
+  $: blobs = attachmentsDraft.blobs
+  $: ch = hasChanges(blobs, undefined, [])
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -586,11 +468,10 @@
     on:change={fileSelected}
   />
   <TextInput
-    content={draft.content}
-    placeholder={title !== '' ? communication.string.MessageIn : undefined}
-    placeholderParams={title !== '' ? { title } : undefined}
+    content={markup}
+    placeholder={message == null ? communication.string.WriteMessageEllipsis : communication.string.EditMessageEllipsis}
     loading={progress}
-    hasChanges={hasChanges(draft.blobs, message, draft.applets)}
+    hasChanges={ch}
     actions={[...defaultMessageInputActions, attachAction, ...uploadActions, ...appletActions]}
     on:submit={handleSubmit}
     on:update={onUpdate}
@@ -600,105 +481,18 @@
     onKeyDown={handleKeyDown}
   >
     <div slot="header" class="header">
-      {#if draft.blobs.length > 0 || draft.links.length > 0 || draft.applets.length > 0}
-        <div class="flex-row-center files-list scroll-divider-color flex-gap-2 mt-2">
-          {#each draft.applets as appletDraft}
-            {@const applet = applets.find((it) => it._id === appletDraft.appletId)}
-            {#if applet}
-              <Component
-                is={applet.previewComponent}
-                props={{
-                  applet,
-                  params: appletDraft.params,
-                  editing: message !== undefined && message.attachments.some((it) => it.id === appletDraft.id)
-                }}
-                on:change={() => {
-                  showPopup(applet.createComponent, { applet, params: appletDraft.params }, 'center', (result) => {
-                    if (result != null) {
-                      draft = {
-                        ...draft,
-                        applets: draft.applets.map((it) => {
-                          if (it.id === appletDraft.id) {
-                            return { ...it, params: result }
-                          }
-                          return it
-                        })
-                      }
-                    }
-                  })
-                }}
-                on:delete={() => {
-                  draft = {
-                    ...draft,
-                    applets: draft.applets.filter((it) => it.id !== appletDraft.id)
-                  }
-                }}
-              />
-            {/if}
-          {/each}
-          {#each draft.blobs as attachedBlob (attachedBlob.blobId)}
-            <div class="item flex">
-              <AttachmentPresenter
-                value={{
-                  file: attachedBlob.blobId,
-                  name: attachedBlob.fileName,
-                  type: attachedBlob.mimeType,
-                  size: attachedBlob.size,
-                  metadata: attachedBlob.metadata
-                }}
-                showPreview
-                removable
-                on:remove={(result) => {
-                  if (result !== undefined) {
-                    draft = {
-                      ...draft,
-                      blobs: draft.blobs.filter((it) => it.blobId !== attachedBlob.blobId)
-                    }
-
-                    if (
-                      !message?.attachments?.some(
-                        (it) => isBlobAttachment(it) && it.params.blobId === attachedBlob.blobId
-                      )
-                    ) {
-                      void deleteFile(attachedBlob.blobId)
-                    }
-                  }
-                }}
-              />
-            </div>
-          {/each}
-          {#if draft.links.length > 0 && draft.blobs.length > 0}
-            <div class="divider" />
-          {/if}
-
-          {#each draft.links as link}
-            <div class="item flex">
-              <LinkPreviewCard
-                value={{
-                  url: link.url,
-                  host: link.host,
-                  title: link.title,
-                  description: link.description,
-                  hostname: link.siteName,
-                  image: link.previewImage?.url,
-                  imageWidth: link.previewImage?.width,
-                  imageHeight: link.previewImage?.height,
-                  icon: link.iconUrl
-                }}
-                on:remove={(event) => {
-                  const result = event.detail
-                  if (result !== undefined) {
-                    previewUrls.set(result.url, false)
-                    draft = {
-                      ...draft,
-                      links: draft.links.filter((it) => it.url !== result.url)
-                    }
-                  }
-                }}
-              />
-            </div>
-          {/each}
-        </div>
+      {#if attachmentsDraft.blobs.length > 0 || attachmentsDraft.links.length > 0 || attachmentsDraft.applets.length > 0 || progress}
+        <AttachmentsHeader
+          blobs={attachmentsDraft.blobs}
+          links={attachmentsDraft.links}
+          applets={attachmentsDraft.applets}
+          currentAttachments={message?.attachments ?? []}
+          {progress}
+          on:change-applet={onChangeApplet}
+          on:delete-applet={onDeleteApplet}
+          on:delete-blob={onDeleteBlob}
+          on:delete-link={onDeleteLink}
+        />
       {/if}
     </div>
   </TextInput>
@@ -714,16 +508,5 @@
     display: flex;
     min-width: 0;
     width: 100%;
-  }
-
-  .divider {
-    height: 100%;
-    border-left: 1px solid var(--theme-divider-color);
-  }
-  .files-list {
-    overflow-x: auto;
-    overflow-y: hidden;
-    display: flex;
-    gap: 0.5rem;
   }
 </style>

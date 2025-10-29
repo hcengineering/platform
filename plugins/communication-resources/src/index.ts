@@ -47,7 +47,7 @@ export * from './stores'
 export { defaultMessageInputActions } from './utils'
 
 export { default as MessagePresenter } from './components/message/MessagePresenter.svelte'
-export { default as MessageInput } from './components/message/MessageInput.svelte'
+export { default as MessageInput } from './components/input/MessageInput.svelte'
 export { default as ActivityMessageViewer } from './components/message/ActivityMessageViewer.svelte'
 export { default as AttachmentsPreview } from './components/AttachmentsPreview.svelte'
 export { default as MessagePreview } from './components/MessagePreview.svelte'

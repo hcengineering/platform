@@ -90,6 +90,8 @@
     "Direct": "Личные сообщения",
     "Directs": "Личные сообщения",
     "Members": "Участники",
-    "Translate": "Перевести"
+    "Translate": "Перевести",
+    "WriteMessageEllipsis": "Написать сообщение...",
+    "EditMessageEllipsis": "Редактировать сообщение..."
   }
 }
