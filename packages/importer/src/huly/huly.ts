@@ -22,7 +22,14 @@ import documents, {
   type DocumentMeta,
   DocumentState
 } from '@hcengineering/controlled-documents'
-import { type AccountUuid, generateId, type PersonId, type Ref, SocialIdType, type TxOperations } from '@hcengineering/core'
+import {
+  type AccountUuid,
+  generateId,
+  type PersonId,
+  type Ref,
+  SocialIdType,
+  type TxOperations
+} from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
 import core from '@hcengineering/model-core'
 import tracker, { type Issue, type Project } from '@hcengineering/tracker'

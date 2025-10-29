@@ -14,7 +14,14 @@
 //
 
 import { type Tag } from '@hcengineering/card'
-import { type Association, type Attribute, type Blob as PlatformBlob, type Doc, generateId, type Ref } from '@hcengineering/core'
+import {
+  type Association,
+  type Attribute,
+  type Blob as PlatformBlob,
+  type Doc,
+  generateId,
+  type Ref
+} from '@hcengineering/core'
 import { type UnifiedDoc } from '../types'
 import { v4 as uuid } from 'uuid'
 
