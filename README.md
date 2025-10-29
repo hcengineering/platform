@@ -24,7 +24,7 @@ This project offers a convenient method to host Huly using `docker`, designed fo
 
 ## API Client
 
-If you want to interact with Huly programmatically, check out our [API Client](https://github.com/hcengineering/huly.core/blob/main/packages/api-client) documentation. The API client provides a typed interface for all Huly operations and can be used to build integrations and custom applications.
+If you want to interact with Huly programmatically, check out our [API Client](https://github.com/hcengineering/huly.core/tree/main/packages/api-client) documentation. The API client provides a typed interface for all Huly operations and can be used to build integrations and custom applications.
 
 You can find API usage examples in the [Huly examples](https://github.com/hcengineering/huly-examples) repository.
 
