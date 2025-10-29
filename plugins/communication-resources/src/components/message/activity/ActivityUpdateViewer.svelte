@@ -30,6 +30,7 @@
   export let content: Markdown
   export let card: Card
   export let author: Person | undefined
+  export let oneRow: boolean = false
 </script>
 
 {#if update.type === ActivityUpdateType.Attribute}
@@ -43,5 +44,5 @@
 {:else if update.type === ActivityUpdateType.Process}
   <ActivityUpdateProcessViewer {update} {content} />
 {:else if update.type === ActivityUpdateType.CollaborativeChange}
-  <ActivityCollaborativeContentViewer {model} {update} />
+  <ActivityCollaborativeContentViewer {model} {update} {oneRow} />
 {/if}
