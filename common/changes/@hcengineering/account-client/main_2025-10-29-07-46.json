@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/account-client",
+      "comment": "formatting",
+      "type": "none"
+    }
+  ],
+  "packageName": "@hcengineering/account-client"
+}

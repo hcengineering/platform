@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/core
 
-This log was last generated on Mon, 27 Oct 2025 13:27:12 GMT and should not be manually modified.
+This log was last generated on Wed, 29 Oct 2025 07:46:42 GMT and should not be manually modified.
+
+## 0.7.19
+Wed, 29 Oct 2025 07:46:42 GMT
+
+### Patches
+
+- Suspend exceptions from connect in traces
 
 ## 0.7.18
 Mon, 27 Oct 2025 13:27:12 GMT
