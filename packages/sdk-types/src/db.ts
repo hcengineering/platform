@@ -71,7 +71,7 @@ export interface DbAdapter {
     value: string,
     extra: PeerExtra,
     date: Date,
-    options?: {newValue?: boolean}
+    options?: { newValue?: boolean }
   ) => Promise<void>
   removePeer: (workspaceId: WorkspaceUuid,
     cardId: CardID,

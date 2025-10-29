@@ -234,7 +234,7 @@ export class CockroachAdapter implements DbAdapter {
     value: string,
     extra: PeerExtra,
     date: Date,
-    options?: {newValue?: boolean}
+    options?: { newValue?: boolean }
   ): Promise<void> {
     await this.peer.createPeer(workspaceId, cardId, kind, value, extra, date, options)
   }

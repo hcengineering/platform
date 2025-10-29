@@ -41,15 +41,15 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/communication-cockroach": "workspace:^0.7.11",
     "@hcengineering/communication-sdk-types": "workspace:^0.7.12",
     "@hcengineering/communication-shared": "workspace:^0.7.11",
     "@hcengineering/communication-types": "workspace:^0.7.12",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.19",
     "@hcengineering/server-token": "^0.7.17",
-    "@hcengineering/text-core": "^0.7.17",
-    "@hcengineering/text-markdown": "^0.7.17",
+    "@hcengineering/text-core": "^0.7.18",
+    "@hcengineering/text-markdown": "^0.7.18",
     "@hcengineering/hulylake-client": "^0.7.17",
     "uuid": "^8.3.2",
     "zod": "^3.22.4"

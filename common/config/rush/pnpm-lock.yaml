@@ -217,8 +217,8 @@ importers:
         specifier: workspace:^0.7.12
         version: link:../types
       '@hcengineering/core':
-        specifier: ^0.7.18
-        version: 0.7.18
+        specifier: ^0.7.19
+        version: 0.7.19
       snappyjs:
         specifier: ^0.7.0
         version: 0.7.0
@@ -275,8 +275,8 @@ importers:
         specifier: workspace:^0.7.12
         version: link:../types
       '@hcengineering/core':
-        specifier: ^0.7.18
-        version: 0.7.18
+        specifier: ^0.7.19
+        version: 0.7.19
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: ^0.7.19
@@ -324,8 +324,8 @@ importers:
   ../../packages/server:
     dependencies:
       '@hcengineering/account-client':
-        specifier: ^0.7.17
-        version: 0.7.17
+        specifier: ^0.7.18
+        version: 0.7.18
       '@hcengineering/communication-cockroach':
         specifier: workspace:^0.7.11
         version: link:../cockroach
@@ -339,8 +339,8 @@ importers:
         specifier: workspace:^0.7.12
         version: link:../types
       '@hcengineering/core':
-        specifier: ^0.7.18
-        version: 0.7.18
+        specifier: ^0.7.19
+        version: 0.7.19
       '@hcengineering/hulylake-client':
         specifier: ^0.7.17
         version: 0.7.17
@@ -348,11 +348,11 @@ importers:
         specifier: ^0.7.17
         version: 0.7.17
       '@hcengineering/text-core':
-        specifier: ^0.7.17
-        version: 0.7.17
+        specifier: ^0.7.18
+        version: 0.7.18
       '@hcengineering/text-markdown':
-        specifier: ^0.7.17
-        version: 0.7.17
+        specifier: ^0.7.18
+        version: 0.7.18
       uuid:
         specifier: ^8.3.2
         version: 8.3.2
@@ -470,8 +470,8 @@ importers:
   ../../packages/types:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.18
-        version: 0.7.18
+        specifier: ^0.7.19
+        version: 0.7.19
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: ^0.7.19
@@ -1056,20 +1056,20 @@ packages:
   '@formatjs/intl-localematcher@0.6.2':
     resolution: {integrity: sha512-XOMO2Hupl0wdd172Y06h6kLpBz6Dv+J4okPLl4LPtzbr8f66WbIoy4ev98EBuZ6ZK4h5ydTN6XneT4QVpD7cdA==}
 
-  '@hcengineering/account-client@0.7.17':
-    resolution: {integrity: sha512-wH8VthvRDVM9HXO+I71yO+3JIfUfCEFm5af+UbGggdUluPScoCOgiVrvxDbpfqZC/3Tgq6WVguI4peenGCR7XQ==}
+  '@hcengineering/account-client@0.7.18':
+    resolution: {integrity: sha512-o7iU2cx2rRtkv3ntvbMaw4f8Wk6of7Cot+y6MAsHXTlELLStcKjCQcLRj7abne0sdN/N3luaNVkJBqfu4JpHHw==}
 
   '@hcengineering/analytics@0.7.17':
     resolution: {integrity: sha512-AzB2DvmDctEJge8VeAHS3YyRYij/QQlARxa2OCNiY+Vv+2+OsQk0NZsw1yqZqsMkVJ40FTUrzOkI7UdM6RPO1Q==}
 
-  '@hcengineering/core@0.7.18':
-    resolution: {integrity: sha512-yezgkRJ5B1WCZW0qEiV2KqOwrSkQpsXOs4YV/T4Oncnu9+8jwR9qSXYNHkYTC6T38Z9Su1X/83RIl/Y4E2ib3Q==}
+  '@hcengineering/core@0.7.19':
+    resolution: {integrity: sha512-BMkVkVXMU8qmbR2KAeMZ3YIMfa07/AzdCEY7PNn7dfAZyc63vrLz+Jl0CPvN7cq9p6x/WBkMfS+eKFwtvhZIUA==}
 
   '@hcengineering/hulylake-client@0.7.17':
     resolution: {integrity: sha512-TPqdc5nd7xV73Y1B2EJ7GxpWazp9ACV1AqHlm6ebYwU1CzXQvbuJxF68itbHmPiNiCmmuiDruJmjnyLGwL18Kw==}
 
-  '@hcengineering/measurements@0.7.17':
-    resolution: {integrity: sha512-VP/G2N3RTZ6xufV8trqFdJpp92XOjdIT5Qp/X2HzaMXagc52icPnM2ifDLJ2SzZvB7UvqcqaDo1q/szaoOsWcg==}
+  '@hcengineering/measurements@0.7.18':
+    resolution: {integrity: sha512-4MxYthJhNWPfR389lN5cIFtrhzgmhi39Fx/dqIOOYF+6g0WWA6GtWXi+ORRM8l/AWKSastZqsWxMdBbT+0htdg==}
 
   '@hcengineering/platform-rig@0.7.19':
     resolution: {integrity: sha512-3Fi5nU+nEPjzzcm3FIfEZU+ZgdkiSfL46ojbj42jdXnWMkxew2aZZVtfmIpPnMUP9AMZlj2/EA+yOcMzfY/VmA==}
@@ -1084,14 +1084,14 @@ packages:
   '@hcengineering/server-token@0.7.17':
     resolution: {integrity: sha512-MDoGzVOTScJXnx2jHL63szclhiqPOKEXk7bmUj6i/HLUQoU6UAl9TTq1Zx/TomyzFQUx8Vkuj0j0bJMUcmLXmQ==}
 
-  '@hcengineering/text-core@0.7.17':
-    resolution: {integrity: sha512-pobR4tFiYYS+FqQv3yNWaaFLlP+2hNW9l7SxDZsBD6u3Vo/5jn+Q/jsbiN3DpJb8ZAnI/Pm12Z06SergQjDIOA==}
+  '@hcengineering/text-core@0.7.18':
+    resolution: {integrity: sha512-UZ/ZMwVcf60WpnYYcsA7RqYE4JlHnAGVdmUDHX2SYzXXvDIK7deGWD9AKyK4yqI1mb19ccyCr5fGyGoLxx9k/g==}
 
-  '@hcengineering/text-html@0.7.17':
-    resolution: {integrity: sha512-z1rhtfVnjvtjNwcH25Yh5exWiLEb+qqYzr67nzFM36WywYRHsCxK07xVd+4MfM8Ll0y6WHmVJaa8vu6ESzM6nQ==}
+  '@hcengineering/text-html@0.7.18':
+    resolution: {integrity: sha512-hGPgptTk2Kfvlg8lAniaFe8jpf3RD4mZD0eL6CoPlXTKylUOklOGHFGWId+QjUYGPLBVkODPErmZxrZKbkRSWg==}
 
-  '@hcengineering/text-markdown@0.7.17':
-    resolution: {integrity: sha512-s05ExfKRieDoFIRVG+spch29GNUSnMiSmYeSpFhzMIsEr5iGycf+x5iZF9kmVfLBXkCuHs4p8iXbTghEOpapqA==}
+  '@hcengineering/text-markdown@0.7.18':
+    resolution: {integrity: sha512-GEslsa/gPp5NH+VPg/G8vOVzt9XdEUr8myoFDBz0LGlQVs6veAEv1psUdOynKeHV/ntF3qmN3hSHg0LrMyoGfA==}
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -3651,28 +3651,28 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@hcengineering/account-client@0.7.17':
+  '@hcengineering/account-client@0.7.18':
     dependencies:
-      '@hcengineering/core': 0.7.18
+      '@hcengineering/core': 0.7.19
       '@hcengineering/platform': 0.7.17
 
   '@hcengineering/analytics@0.7.17':
     dependencies:
       '@hcengineering/platform': 0.7.17
 
-  '@hcengineering/core@0.7.18':
+  '@hcengineering/core@0.7.19':
     dependencies:
       '@hcengineering/analytics': 0.7.17
-      '@hcengineering/measurements': 0.7.17
+      '@hcengineering/measurements': 0.7.18
       '@hcengineering/platform': 0.7.17
       fast-equals: 5.3.2
 
   '@hcengineering/hulylake-client@0.7.17':
     dependencies:
-      '@hcengineering/core': 0.7.18
+      '@hcengineering/core': 0.7.19
       '@hcengineering/retry': 0.7.17
 
-  '@hcengineering/measurements@0.7.17': {}
+  '@hcengineering/measurements@0.7.18': {}
 
   '@hcengineering/platform-rig@0.7.19(@babel/core@7.28.4)(postcss-load-config@3.1.4(postcss@8.5.6))(postcss@8.5.6)':
     dependencies:
@@ -3715,26 +3715,26 @@ snapshots:
 
   '@hcengineering/server-token@0.7.17':
     dependencies:
-      '@hcengineering/core': 0.7.18
+      '@hcengineering/core': 0.7.19
       '@hcengineering/platform': 0.7.17
       jwt-simple: 0.5.6
       uuid: 8.3.2
 
-  '@hcengineering/text-core@0.7.17':
+  '@hcengineering/text-core@0.7.18':
     dependencies:
-      '@hcengineering/core': 0.7.18
+      '@hcengineering/core': 0.7.19
       fast-equals: 5.3.2
       hash-it: 6.0.0
 
-  '@hcengineering/text-html@0.7.17':
+  '@hcengineering/text-html@0.7.18':
     dependencies:
-      '@hcengineering/text-core': 0.7.17
+      '@hcengineering/text-core': 0.7.18
       htmlparser2: 9.1.0
 
-  '@hcengineering/text-markdown@0.7.17':
+  '@hcengineering/text-markdown@0.7.18':
     dependencies:
-      '@hcengineering/text-core': 0.7.17
-      '@hcengineering/text-html': 0.7.17
+      '@hcengineering/text-core': 0.7.18
+      '@hcengineering/text-html': 0.7.18
       fast-equals: 5.3.2
       markdown-it: 14.1.0
 

@@ -36,7 +36,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.18"
+    "@hcengineering/core": "^0.7.19"
   },
   "repository": {
     "type": "git",
