@@ -91,7 +91,7 @@
     "Directs": "Directs",
     "Members": "Members",
     "Translate": "Translate",
-    "WriteMessageEllipses": "Write a message...",
-    "EditMessageEllipses": "Edit message..."
+    "WriteMessageEllipsis": "Write a message...",
+    "EditMessageEllipsis": "Edit message..."
   }
 }
