@@ -2123,8 +2123,8 @@ importers:
         specifier: 2.12.313
         version: 2.12.313
       plyr:
-        specifier: ^3.7.8
-        version: 3.8.3
+        specifier: 3.7.8
+        version: 3.7.8
       png-chunks-extract:
         specifier: ^1.0.0
         version: 1.0.0
@@ -5009,7 +5009,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/hls@file:projects/hls.tgz':
-    resolution: {integrity: sha512-dXGkL3myf6cJmD+sI52Tj8s/Hc8WER6Sd8OXNN7Y1kzFhvZZCX+T3MG5brYCGvY9wEGGUWO6f7JbqrC3x4H6kA==, tarball: file:projects/hls.tgz}
+    resolution: {integrity: sha512-y6P3JTdxWSEm6rM2G8xYVrMP+3vqJSQZhxIaRy3xjOx99ypXpt8ERE84/s3GWqSU+/jTKxXClDEW0ITIr3xHHw==, tarball: file:projects/hls.tgz}
     version: 0.0.0
 
   '@rush-temp/hr-assets@file:projects/hr-assets.tgz':
@@ -6277,7 +6277,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/ui@file:projects/ui.tgz':
-    resolution: {integrity: sha512-+sbQDUX1f4qVwaF0qPPJVYydD0uCn+sqjXuGA9qlpUhwt5kd4aTshUWGrhd6q2xEpZdIIYBzdSQrD7AzVmezjw==, tarball: file:projects/ui.tgz}
+    resolution: {integrity: sha512-+6AzajBbSzzszcLNwMl7ufcvbnstvoRLggNPNyOHSGERKYe6pKypFTlp4bzR66puuD8175Yr+NELtbCAkbew5Q==, tarball: file:projects/ui.tgz}
     version: 0.0.0
 
   '@rush-temp/uploader-assets@file:projects/uploader-assets.tgz':
@@ -12282,8 +12282,8 @@ packages:
     resolution: {integrity: sha512-uysumyrvkUX0rX/dEVqt8gC3sTBzd4zoWfLeS29nb53imdaXVvLINYXTI2GNqzaMuvacNx4uJQ8+b3zXR0pkgQ==}
     engines: {node: '>=10.4.0'}
 
-  plyr@3.8.3:
-    resolution: {integrity: sha512-0+iI5uw0WRvtKBpgPCkmQQv7ucHVQKTEo6UFJjgJ8cy/JZhy0dQqshHQVitHXV6l2O3MzhgnuvQ95VSkWcWeSw==}
+  plyr@3.7.8:
+    resolution: {integrity: sha512-yG/EHDobwbB/uP+4Bm6eUpJ93f8xxHjjk2dYcD1Oqpe1EcuQl5tzzw9Oq+uVAzd2lkM11qZfydSiyIpiB8pgdA==}
 
   png-chunks-extract@1.0.0:
     resolution: {integrity: sha512-ZiVwF5EJ0DNZyzAqld8BP1qyJBaGOFaq9zl579qfbkcmOwWLLO4I9L8i2O4j3HkI6/35i0nKG2n+dZplxiT89Q==}
@@ -22037,7 +22037,7 @@ snapshots:
       eslint-plugin-svelte: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.13)(typescript@5.9.3))
       hls.js: 1.6.13
       jest: 29.7.0(@types/node@22.18.13)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.13)(typescript@5.9.3))
-      plyr: 3.8.3
+      plyr: 3.7.8
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
       sass: 1.93.2
@@ -36000,7 +36000,7 @@ snapshots:
       eslint-plugin-svelte: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.13)(typescript@5.9.3))
       fast-equals: 5.3.2
       jest: 29.7.0(@types/node@22.18.13)(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@22.18.13)(typescript@5.9.3))
-      plyr: 3.8.3
+      plyr: 3.7.8
       prettier: 3.6.2
       prettier-plugin-svelte: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
       sass: 1.93.2
@@ -43504,7 +43504,7 @@ snapshots:
       base64-js: 1.5.1
       xmlbuilder: 15.1.1
 
-  plyr@3.8.3:
+  plyr@3.7.8:
     dependencies:
       core-js: 3.46.0
       custom-event-polyfill: 1.0.7
