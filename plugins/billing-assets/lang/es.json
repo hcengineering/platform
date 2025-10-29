@@ -27,6 +27,7 @@
     "UnlimitedUsers": "Usuarios ilimitados",
     "UnlimitedObjects": "Objetos Huly ilimitados",
     "ChangePlan": "Cambiar plan",
+    "Subscribe": "Suscribirse",
     "Monthly": "Mensual",
     "Active": "Activo",
     "SubscriptionEnds": "Hasta {date}",
@@ -46,6 +47,8 @@
     "UncancelDescription": "Su suscripción se reactivará y continuará desde el final del período de facturación actual.",
     "PriceDifference": "Diferencia de precio: {amount}",
     "DialogCancel": "Cancelar",
-    "DialogConfirm": "Confirmar"
+    "DialogConfirm": "Confirmar",
+    "NoActivePlan": "Sin plan activo",
+    "SelectPlanToBegin": "Selecciona un plan a continuación para comenzar"
   }
 }

@@ -14,7 +14,7 @@
 //
 
 import { concatLink, type WorkspaceUuid } from '@hcengineering/core'
-import { CreateSubscriptionResponse, SubscribeRequest, CheckoutStatus, SubscriptionData } from './types'
+import { CheckoutResponse, SubscribeRequest, CheckoutStatus, SubscriptionData } from './types'
 import { PaymentError, NetworkError } from './error'
 
 /**
@@ -57,7 +57,7 @@ export class PaymentClient {
    * @param request - Subscription request details
    * @returns Checkout details with URL for payment
    */
-  async createSubscription (workspace: WorkspaceUuid, request: SubscribeRequest): Promise<CreateSubscriptionResponse> {
+  async createSubscription (workspace: WorkspaceUuid, request: SubscribeRequest): Promise<CheckoutResponse> {
     const path = `/api/v1/subscriptions/${workspace}/subscribe`
     const url = new URL(concatLink(this.endpoint, path))
     const body = JSON.stringify(request)
@@ -66,7 +66,7 @@ export class PaymentClient {
       headers: { ...this.headers },
       body
     })
-    return (await response.json()) as CreateSubscriptionResponse
+    return (await response.json()) as CheckoutResponse
   }
 
   /**
@@ -113,11 +113,13 @@ export class PaymentClient {
 
   /**
    * Update a subscription to a different plan
+   * For free-to-paid upgrades, returns CheckoutResponse (requires checkout)
+   * For paid-to-paid updates, returns SubscriptionData (direct update)
    * @param subscriptionId - Subscription ID to update
    * @param plan - New plan name
-   * @returns Updated subscription details
+   * @returns CheckoutResponse for free-to-paid upgrades or updated SubscriptionData for direct updates
    */
-  async updateSubscriptionPlan (subscriptionId: string, plan: string): Promise<SubscriptionData> {
+  async updateSubscriptionPlan (subscriptionId: string, plan: string): Promise<SubscriptionData | CheckoutResponse> {
     const path = `/api/v1/subscriptions/${subscriptionId}/updatePlan`
     const url = new URL(concatLink(this.endpoint, path))
     const body = JSON.stringify({ plan })
@@ -126,7 +128,7 @@ export class PaymentClient {
       headers: { ...this.headers },
       body
     })
-    return (await response.json()) as SubscriptionData
+    return (await response.json()) as (SubscriptionData | CheckoutResponse)
   }
 
   /**

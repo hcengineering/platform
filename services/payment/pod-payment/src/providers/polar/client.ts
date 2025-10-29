@@ -42,6 +42,7 @@ export class PolarClient {
         products: params.productIds,
         successUrl: params.successUrl,
         returnUrl: params.returnUrl,
+        subscriptionId: params.subscriptionId,
         externalCustomerId: params.externalCustomerId,
         customerEmail: params.customerEmail,
         customerName: params.customerName,

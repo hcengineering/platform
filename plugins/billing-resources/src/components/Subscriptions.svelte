@@ -48,7 +48,7 @@
   }, {})
 
   let currentSubscription: SubscriptionData | undefined = undefined
-  $: currentTier = currentSubscription != null ? tierByPlan[currentSubscription.plan] : tiers[0]
+  $: currentTier = currentSubscription != null ? tierByPlan[currentSubscription.plan] : undefined
   let loading = true
   let pollingCheckoutId: string | null = null
   let isPolling = false
@@ -82,13 +82,8 @@
     }
   }
 
-  async function handlePlanChange (newTierId: Ref<Tier>): Promise<void> {
-    const { plan: newPlan } = getTypeAndPlan(newTierId)
-    const newTier = tierByPlan[newPlan]
-
-    if (currentSubscription?.id === undefined) {
-      // No active subscription, create new one
-      await subscribe(newTierId)
+  async function showPlanChangeConfirmation (newPlan: string, newTier: Tier): Promise<void> {
+    if (currentTier === undefined) {
       return
     }
 
@@ -108,6 +103,36 @@
     })
   }
 
+  async function handlePlanChange (newTierId: Ref<Tier>): Promise<void> {
+    const { plan: newPlan } = getTypeAndPlan(newTierId)
+    const newTier = tierByPlan[newPlan]
+
+    if (currentSubscription?.id === undefined) {
+      // No active subscription, create new one
+      await subscribe(newTierId)
+      return
+    }
+
+    if (currentTier === undefined) {
+      // No current tier selected, should not happen but guard against it
+      return
+    }
+
+    // If subscription is canceled, show uncancel confirmation first
+    if (isCurrentCanceled) {
+      showPopup(MessageBox, {
+        label: plugin.string.ConfirmUncancel,
+        message: plugin.string.UncancelDescription,
+        action: async () => {
+          // After uncanceling, show the plan change confirmation
+          await showPlanChangeConfirmation(newPlan, newTier)
+        }
+      })
+    } else {
+      await showPlanChangeConfirmation(newPlan, newTier)
+    }
+  }
+
   async function executeUpdate (newPlan: string): Promise<void> {
     if (paymentClient == null) {
       return
@@ -118,7 +143,24 @@
 
     try {
       isUpdating = true
-      currentSubscription = await paymentClient.updateSubscriptionPlan(currentSubscription.id, newPlan)
+
+      // If subscription is canceled, uncancel it first
+      if (isCurrentCanceled) {
+        currentSubscription = await paymentClient.uncancelSubscription(currentSubscription.id)
+      }
+
+      // Now update the plan
+      const updateResult = await paymentClient.updateSubscriptionPlan(currentSubscription.id, newPlan)
+
+      // Check if it's a CheckoutResponse (free-to-paid upgrade requires checkout)
+      if ('checkoutUrl' in updateResult) {
+        // Redirect to checkout URL for free-to-paid upgrade
+        window.location.href = (updateResult as any).checkoutUrl
+        return
+      }
+
+      // It's a SubscriptionData - direct update successful
+      currentSubscription = updateResult
     } catch (error) {
       console.error('error updating subscription:', error)
     } finally {
@@ -188,6 +230,9 @@
     if (currentSubscription?.id === undefined) {
       return
     }
+    if (!isCurrentCanceled) {
+      return
+    }
 
     try {
       isUncanceling = true
@@ -209,7 +254,7 @@
       const subscriptions = await accountClient.getSubscriptions()
       currentSubscription = subscriptions.find((p) => p.type === 'tier')
       const plan = currentSubscription?.plan
-      currentTier = plan !== undefined ? tierByPlan[plan] : tiers[0]
+      currentTier = plan !== undefined ? tierByPlan[plan] : undefined
     } catch (err) {
       console.error('error fetching current plan:', err)
     } finally {
@@ -273,9 +318,9 @@
 
     if (checkoutId !== undefined && paymentStatus === 'success') {
       // Check if we already have a tier subscription that matches this checkout
-      const matchingSubscription = currentSubscription?.providerCheckoutId === checkoutId
+      const isMatchingSubscription = currentSubscription?.providerCheckoutId === checkoutId
 
-      if (matchingSubscription === undefined) {
+      if (!isMatchingSubscription) {
         // No matching subscription found, start polling
         pollingCheckoutId = checkoutId
         pollAttempts = 0
@@ -338,6 +383,11 @@
             {#if isCheckoutPolling}
               <div class="processing"><Label label={plugin.string.ProcessingPayment} /></div>
             {/if}
+          {:else if currentTier === undefined}
+            <div class="no-plan-container flex-col flex-gap-4">
+              <div class="fs-title text-lg"><Label label={plugin.string.NoActivePlan} /></div>
+              <div class="text-md"><Label label={plugin.string.SelectPlanToBegin} /></div>
+            </div>
           {:else}
             <div class="current-tier-card-title">
               <div class="flex-row-center">
@@ -442,11 +492,13 @@
                   </div>
                 </div>
                 <div class="tier-card-footer">
-                  {#if currentTier._id !== tier._id}
+                  {#if currentTier === undefined || currentTier._id !== tier._id}
                     <Button
-                      label={plugin.string.ChangePlan}
+                      label={currentTier === undefined ? plugin.string.Subscribe : plugin.string.ChangePlan}
                       size={'large'}
-                      kind={tier.priceMonthly > currentTier.priceMonthly ? 'regular' : 'secondary'}
+                      kind={currentTier === undefined || tier.priceMonthly > currentTier.priceMonthly
+                        ? 'primary'
+                        : 'regular'}
                       disabled={loading || isCheckoutPolling || isUpdating}
                       on:click={() => {
                         void handlePlanChange(tier._id)

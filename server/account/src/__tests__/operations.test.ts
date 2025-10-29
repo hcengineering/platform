@@ -2719,16 +2719,6 @@ describe('getSubscriptions', () => {
     expect(mockDb.getWorkspaceRole).not.toHaveBeenCalled()
   })
 
-  test('should require workspaceUuid parameter for service tokens', async () => {
-    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-      account: accountUuid,
-      workspace: workspaceUuid,
-      extra: { service: 'billing' }
-    })
-
-    await expect(getSubscriptions(mockCtx, mockDb, mockBranding, 'test-token', {})).rejects.toThrow(PlatformError)
-  })
-
   test('should reject non-service users without workspace in token', async () => {
     ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
       account: accountUuid,

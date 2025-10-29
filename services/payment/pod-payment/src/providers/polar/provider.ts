@@ -22,7 +22,7 @@ import {
   type Subscription,
   type SubscriptionData
 } from '@hcengineering/account-client'
-import type { PaymentProvider, SubscribeRequest, CreateSubscriptionResponse } from '../index'
+import type { PaymentProvider, SubscribeRequest, CheckoutResponse } from '../index'
 import { PolarClient } from './client'
 import { handlePolarWebhook } from './webhook'
 import { transformPolarSubscriptionToData } from './utils'
@@ -95,7 +95,7 @@ export class PolarProvider implements PaymentProvider {
     workspaceUuid: WorkspaceUuid,
     workspaceUrl: string,
     accountUuid: string
-  ): Promise<CreateSubscriptionResponse> {
+  ): Promise<CheckoutResponse> {
     ctx.info('Creating Polar subscription', { type: request.type, plan: request.plan })
 
     const planKey = getPlanKey(request.type, request.plan)
@@ -278,17 +278,50 @@ export class PolarProvider implements PaymentProvider {
   async updateSubscriptionPlan (
     ctx: MeasureContext,
     subscriptionId: string,
-    newPlan: string
-  ): Promise<SubscriptionData | null> {
+    newPlan: string,
+    workspaceUrl: string
+  ): Promise<SubscriptionData | CheckoutResponse | null> {
+    // Get the current subscription to check if it's free
+    const currentSub = await this.polar.getSubscription(ctx, subscriptionId)
+
+    // Check if subscription is free by checking if it has a price with amountType === 'free'
+    const isFreeSubscription = currentSub.prices?.[0]?.amountType === 'free'
+
     // Get the Polar product ID for the new plan (subscriptions updates are tier type)
-    const planKey = getPlanKey(SubscriptionType.Tier, newPlan) // Type assertion needed for string literal
+    const planKey = getPlanKey(SubscriptionType.Tier, newPlan)
     const productIds = this.subscriptionPlans[planKey]
     if (productIds === undefined || productIds.length === 0) {
       throw new Error(`No products configured for plan: ${planKey}`)
     }
 
-    // Use first product ID from the list (it should be (default) fixed amount subscription plan)
+    // Use first product ID from the list (it should be the default fixed amount subscription plan)
     const newProductId = productIds[0]
+
+    // If subscription is free, create a checkout instead of updating directly
+    if (isFreeSubscription) {
+      const successUrl = `${this.frontUrl}/workbench/${workspaceUrl}/setting/setting/billing/subscriptions?payment=success&checkout_id={CHECKOUT_ID}`
+      const returnUrl = `${this.frontUrl}/workbench/${workspaceUrl}/setting/setting/billing/subscriptions?payment=canceled`
+
+      const response = await this.polar.createCheckout(ctx, {
+        productIds: [newProductId],
+        successUrl,
+        returnUrl,
+        subscriptionId: currentSub.id,
+        externalCustomerId: currentSub.customerId,
+        customerEmail: currentSub.customer?.email ?? undefined,
+        customerName: currentSub.customer?.name ?? undefined,
+        metadata: {
+          workspaceUuid: (currentSub.metadata?.workspaceUuid as string) ?? '',
+          subscriptionType: SubscriptionType.Tier,
+          subscriptionPlan: newPlan
+        }
+      })
+
+      return {
+        checkoutId: response.checkoutId,
+        checkoutUrl: response.url
+      }
+    }
 
     // Update the subscription to the new product
     const updatedSub = await this.polar.updateSubscription(ctx, subscriptionId, newProductId)

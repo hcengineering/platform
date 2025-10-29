@@ -1444,7 +1444,7 @@ describe('upsertSubscription', () => {
     const accountUuid = 'test-account' as AccountUuid
 
     ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-      extra: { service: 'billing' }
+      extra: { service: 'payment' }
     })
 
     getWorkspaceByIdSpy.mockResolvedValue({ uuid: workspaceUuid })
@@ -1487,7 +1487,7 @@ describe('upsertSubscription', () => {
     const accountUuid = 'test-account' as AccountUuid
 
     ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-      extra: { service: 'billing' }
+      extra: { service: 'payment' }
     })
 
     const existingSubscription = {
@@ -1567,7 +1567,7 @@ describe('upsertSubscription', () => {
     const accountUuid = 'test-account' as AccountUuid
 
     ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-      extra: { service: 'billing' }
+      extra: { service: 'payment' }
     })
 
     getWorkspaceByIdSpy.mockResolvedValue({ uuid: workspaceUuid })

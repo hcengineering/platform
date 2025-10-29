@@ -27,6 +27,7 @@
     "UnlimitedUsers": "無制限のユーザー",
     "UnlimitedObjects": "無制限のHulyオブジェクト",
     "ChangePlan": "プラン変更",
+    "Subscribe": "購読",
     "Monthly": "月額",
     "Active": "アクティブ",
     "SubscriptionEnds": "{date}まで",
@@ -46,6 +47,8 @@
     "UncancelDescription": "サブスクリプションが再度有効化され、現在の請求期間の終了から継続します。",
     "PriceDifference": "価格差: {amount}",
     "DialogCancel": "キャンセル",
-    "DialogConfirm": "確認"
+    "DialogConfirm": "確認",
+    "NoActivePlan": "アクティブなプランなし",
+    "SelectPlanToBegin": "下記からプランを選択して開始してください"
   }
 }

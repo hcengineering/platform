@@ -21,12 +21,12 @@ import morgan from 'morgan'
 import onHeaders from 'on-headers'
 import rateLimit from 'express-rate-limit'
 import { generateToken } from '@hcengineering/server-token'
-import { type WorkspaceLoginInfo } from '@hcengineering/account-client'
+import { SubscriptionData, type WorkspaceLoginInfo } from '@hcengineering/account-client'
 
 import { Config } from './config'
 import { withAdmin, withLoginInfo, withOwner, withToken, type RequestWithAuth } from './middleware'
 import { PaymentProviderFactory } from './factory'
-import type { PaymentProvider } from './providers'
+import type { CheckoutResponse, PaymentProvider } from './providers'
 import { SubscribeRequest } from './providers'
 import { startActiveSubscriptionReconciliation } from './reconciliation'
 import { getAccountClient } from './utils'
@@ -195,14 +195,23 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
             return
           }
 
-          const subscription = await provider.createSubscription(
-            ctx,
-            request,
-            workspaceUuid,
-            loginInfo.workspaceUrl,
-            accountUuid
-          )
-          res.status(200).json(subscription)
+          let createSubResponse: CheckoutResponse
+
+          try {
+            createSubResponse = await provider.createSubscription(
+              ctx,
+              request,
+              workspaceUuid,
+              loginInfo.workspaceUrl,
+              accountUuid
+            )
+          } catch (err) {
+            ctx.error('Failed to create subscription at provider', { err })
+            res.status(500).json({ error: 'Failed to create subscription at provider' })
+            return
+          }
+
+          res.status(200).json(createSubResponse)
         },
         req,
         res,
@@ -240,8 +249,16 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
             return
           }
 
-          // Cancel via provider using the provider's subscription ID
-          const canceledSubscription = await provider.cancelSubscription(ctx, subscription.providerSubscriptionId)
+          let canceledSubscription: SubscriptionData | null
+
+          try {
+            // Cancel via provider using the provider's subscription ID
+            canceledSubscription = await provider.cancelSubscription(ctx, subscription.providerSubscriptionId)
+          } catch (err) {
+            ctx.error('Failed to cancel subscription at provider', { err })
+            res.status(500).json({ error: 'Failed to cancel subscription at provider' })
+            return
+          }
 
           if (canceledSubscription === null) {
             res.status(404).json({ error: 'Failed to cancel subscription at provider' })
@@ -289,8 +306,16 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
             return
           }
 
-          // Uncancel via provider using the provider's subscription ID
-          const uncanceledSubscription = await provider.uncancelSubscription(ctx, subscription.providerSubscriptionId)
+          let uncanceledSubscription: SubscriptionData | null
+
+          try {
+            // Uncancel via provider using the provider's subscription ID
+            uncanceledSubscription = await provider.uncancelSubscription(ctx, subscription.providerSubscriptionId)
+          } catch (err) {
+            ctx.error('Failed to uncancel subscription at provider', { err })
+            res.status(500).json({ error: 'Failed to uncancel subscription at provider' })
+            return
+          }
 
           if (uncanceledSubscription === null) {
             res.status(404).json({ error: 'Failed to uncancel subscription at provider' })
@@ -319,6 +344,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
   app.post(
     '/api/v1/subscriptions/:subscriptionId/updatePlan',
     withToken,
+    withLoginInfo,
     withOwner,
     (req: RequestWithAuth, res: Response) => {
       if (provider === undefined) {
@@ -328,13 +354,19 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
 
       void handleRequest(
         ctx,
-        'update-subscription',
+        'update-plan',
         async (ctx) => {
           const subscriptionId = req.params.subscriptionId
           const { plan } = req.body
+          const loginInfo = req.loginInfo as WorkspaceLoginInfo
 
           if (plan === undefined || typeof plan !== 'string') {
             res.status(400).json({ error: 'Missing or invalid field: plan' })
+            return
+          }
+
+          if (loginInfo?.workspaceUrl === undefined) {
+            res.status(401).json({ error: 'Missing workspace url in login info' })
             return
           }
 
@@ -346,22 +378,39 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
             return
           }
 
-          // Update via provider using the provider's subscription ID
-          const updatedSubscription = await provider.updateSubscriptionPlan(
-            ctx,
-            subscription.providerSubscriptionId,
-            plan
-          )
+          let updateResult: SubscriptionData | CheckoutResponse | null
 
-          if (updatedSubscription === null) {
+          try {
+            // Update via provider using the provider's subscription ID
+            updateResult = await provider.updateSubscriptionPlan(
+              ctx,
+              subscription.providerSubscriptionId,
+              plan,
+              loginInfo.workspaceUrl
+            )
+          } catch (err) {
+            ctx.error('Failed to update subscription at provider', { err })
+            res.status(500).json({ error: 'Failed to update subscription at provider' })
+            return
+          }
+
+          if (updateResult === null) {
             res.status(404).json({ error: 'Failed to update subscription at provider' })
             return
           }
 
-          // Upsert the updated subscription into our database
-          await accountClient.upsertSubscription(updatedSubscription)
+          // Check if it's a CheckoutResponse (free-to-paid upgrade)
+          if ('checkoutUrl' in updateResult) {
+            // Return checkout response for free-to-paid upgrades
+            res.status(200).json(updateResult)
+            return
+          }
 
-          res.status(200).json(updatedSubscription)
+          // It's a SubscriptionData - update was direct
+          // Upsert the updated subscription into our database
+          await accountClient.upsertSubscription(updateResult)
+
+          res.status(200).json(updateResult)
         },
         req,
         res,
@@ -447,8 +496,6 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
                 subscriptionId: subscriptionData.id,
                 isNew: existingSubscription === null
               })
-            } else {
-              ctx.info('Subscription already up to date', { checkoutId, subscriptionId: subscriptionData.id })
             }
           } catch (err) {
             ctx.error('Failed to sync subscription to DB', { checkoutId, err })

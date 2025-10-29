@@ -41,10 +41,10 @@ export interface SubscribeRequest {
 }
 
 /**
- * Subscription creation response
+ * Checkout creation response
  * Contains checkout details for payment
  */
-export interface CreateSubscriptionResponse {
+export interface CheckoutResponse {
   checkoutId: string // Checkout session ID
   checkoutUrl: string // URL to redirect user to for payment
 }

@@ -1013,7 +1013,7 @@ export async function upsertSubscription (
   const workspace = await getWorkspaceById(db, workspaceUuid)
   if (workspace === null) {
     throw new PlatformError(
-      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUrl: workspaceUuid })
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid })
     )
   }
 

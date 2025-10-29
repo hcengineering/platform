@@ -42,19 +42,11 @@ export interface SubscribeRequest {
 }
 
 /**
- * Subscription response after successful creation
+ * Checkout response when a new subscription or plan upgrade requires a checkout
  */
-export interface CreateSubscriptionResponse {
+export interface CheckoutResponse {
   checkoutId: string
   checkoutUrl: string
-}
-
-/**
- * Generic webhook event from payment provider
- */
-export interface WebhookEvent {
-  type: string
-  data: any
 }
 
 /**
@@ -71,7 +63,7 @@ export interface PaymentProvider {
     workspaceUuid: WorkspaceUuid,
     workspaceUrl: string,
     accountUuid: string
-  ) => Promise<CreateSubscriptionResponse>
+  ) => Promise<CheckoutResponse>
 
   /**
    * Get subscription details
@@ -102,13 +94,16 @@ export interface PaymentProvider {
   /**
    * Update a subscription to a different plan
    * Used for upgrades and downgrades
+   * For paid-to-paid upgrades: Returns SubscriptionData | null
+   * For free-to-paid upgrades: Returns CheckoutResponse (requires checkout)
    * Handles immediate effective date with proration
    */
   updateSubscriptionPlan: (
     ctx: MeasureContext,
     subscriptionId: string,
-    newPlan: string
-  ) => Promise<SubscriptionData | null>
+    newPlan: string,
+    workspaceUrl: string
+  ) => Promise<SubscriptionData | CheckoutResponse | null>
 
   /**
    * Reconcile active subscriptions between provider and our database

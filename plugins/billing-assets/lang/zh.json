@@ -27,6 +27,7 @@
     "UnlimitedUsers": "无限用户",
     "UnlimitedObjects": "无限Huly对象",
     "ChangePlan": "更改计划",
+    "Subscribe": "订阅",
     "Monthly": "每月",
     "Active": "活跃",
     "SubscriptionEnds": "截止至{date}",
@@ -46,6 +47,8 @@
     "UncancelDescription": "您的订阅将被重新激活，并从当前计费周期结束时继续。",
     "PriceDifference": "价格差异: {amount}",
     "DialogCancel": "取消",
-    "DialogConfirm": "确认"
+    "DialogConfirm": "确认",
+    "NoActivePlan": "无活跃计划",
+    "SelectPlanToBegin": "选择下面的计划开始使用"
   }
 }

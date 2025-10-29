@@ -2624,7 +2624,7 @@ export async function getSubscriptions (
   const isService = extra?.service !== undefined
 
   if (isService) {
-    // Services can query any workspace
+    // Services can query any workspace/all workspaces
     targetWorkspace = workspaceUuid ?? null
   } else {
     // Regular users: use workspace from token (ignores workspaceUuid param)
