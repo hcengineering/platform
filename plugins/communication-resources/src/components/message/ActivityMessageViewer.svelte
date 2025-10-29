@@ -27,6 +27,7 @@
   export let card: Card
   export let message: ActivityMessage
   export let author: Person | undefined
+  export let oneRow: boolean = false
 
   const client = getClient()
 
@@ -43,5 +44,12 @@
 {#if extra.action === 'create'}
   <ActivityObjectValue {message} {card} />
 {:else if extra.update && extra.action === 'update'}
-  <ActivityUpdateViewer update={extra.update} model={attributeModel} content={message.content} {author} {card} />
+  <ActivityUpdateViewer
+    update={extra.update}
+    model={attributeModel}
+    content={message.content}
+    {author}
+    {card}
+    {oneRow}
+  />
 {/if}

@@ -43,7 +43,8 @@ export async function print (ctx: MeasureContext, url: string, options?: PrintOp
   const page = await browser.newPage()
 
   page
-    .on('pageerror', ({ message }) => {
+    .on('pageerror', (err: unknown) => {
+      const message = err instanceof Error ? err.message : String(err)
       ctx.warn('pageerror', { message })
     })
     .on('requestfailed', (request) => {

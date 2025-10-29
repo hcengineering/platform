@@ -66,7 +66,7 @@
   <svelte:fragment slot="content">
     {#if message}
       {#if isActivityMessage(message)}
-        <ActivityMessageViewer {message} {card} author={person} />
+        <ActivityMessageViewer {message} {card} author={person} oneRow />
       {:else}
         <LiteMessageViewer message={markdownToMarkup(message.content)} />
       {/if}

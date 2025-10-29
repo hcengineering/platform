@@ -1,4 +1,4 @@
-import { FormatSchema, BaseFieldType, FieldType } from './schema'
+import { type FormatSchema, type BaseFieldType, type FieldType } from './schema'
 
 type Field = Record<string, any>
 

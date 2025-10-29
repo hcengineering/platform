@@ -243,6 +243,15 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         options.limit = parseInt(req.query.limit as string)
       }
 
+      const domain = ctx.pipeline.context.hierarchy.findDomain(_class) ?? ''
+      if (domain === '') {
+        sendError(res, 404, {
+          message: 'Failed to execute operation',
+          error: 'Invalid class name is passed. Failed to findAll.'
+        })
+        return
+      }
+
       const result = await session.findAllRaw(ctx, _class, query, options)
       await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
     })
