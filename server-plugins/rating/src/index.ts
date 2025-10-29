@@ -76,24 +76,20 @@ export class RatingMiddleware extends BaseMiddleware {
   }
 
   private async validateNewReaction (ctx: MeasureContext, create: TxCreateDoc<DocReaction>): Promise<void> {
-    if (create.attributes.reactionType !== ReactionKind.Star) {
-      // Should allow only one reaction per document per user for Emoji, Like, Usefull
-      const current = await this.provideFindAll(ctx, rating.class.DocReaction, {
-        attachedTo: create.attachedTo,
-        attachedToClass: create.objectClass
-      })
-      if (
-        current.some(
-          (it) =>
-            it.reactionType === create.attributes.reactionType &&
-            (it.value === create.attributes.value ||
-              (create.attributes.reactionType === ReactionKind.Emoji && it.emoji === create.attributes.emoji))
-        )
-      ) {
-        throw new Error('Duplicate emoji reaction is not allowed.')
-      }
-    } else {
-      // For stars, we probable need to merge them into one value.
+    // Should allow only one reaction per document per user for Emoji, Like, Usefull
+    const current = await this.provideFindAll(ctx, rating.class.DocReaction, {
+      attachedTo: create.attachedTo,
+      attachedToClass: create.objectClass
+    })
+    if (
+      current.some(
+        (it) =>
+          it.reactionType === create.attributes.reactionType &&
+          (it.value === create.attributes.value ||
+            (create.attributes.reactionType === ReactionKind.Emoji && it.emoji === create.attributes.emoji))
+      )
+    ) {
+      throw new Error('Duplicate emoji reaction is not allowed.')
     }
   }
 

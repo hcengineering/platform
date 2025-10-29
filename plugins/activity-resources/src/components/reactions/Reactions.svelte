@@ -136,7 +136,7 @@
       }
       &.highlight {
         background: var(--global-ui-highlight-BackgroundColor);
-        border-color: var(--global-accent-BackgroundColor);
+        border-color: var(--global-accent-SkyText);
       }
 
       &:hover {

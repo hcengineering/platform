@@ -65,7 +65,7 @@
     }
 
     &.selected {
-      background: var(--global-accent-BackgroundColor);
+      background: var(--global-accent-SkyText);
     }
   }
 
