@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@hcengineering/analytics": "^0.7.17",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.19",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/query": "^0.7.17",
     "@hcengineering/rpc": "^0.7.17",
