@@ -2,6 +2,23 @@
   "name": "@hcengineering/server",
   "entries": [
     {
+      "version": "0.7.16",
+      "tag": "@hcengineering/server_v0.7.16",
+      "date": "Wed, 29 Oct 2025 06:31:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Tests fixed"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Send error on wrong domain and do not log it"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.15",
       "tag": "@hcengineering/server_v0.7.15",
       "date": "Mon, 27 Oct 2025 16:26:11 GMT",

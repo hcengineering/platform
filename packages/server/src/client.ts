@@ -209,6 +209,15 @@ export class ClientSession implements Session {
     options?: FindOptions<T>
   ): Promise<void> {
     const domain = ctx.pipeline.context.hierarchy.findDomain(_class) ?? ''
+    if (domain === '') {
+      // Unknown domain, send error
+      await ctx.sendError(
+        ctx.requestId,
+        'Invalid class name is passed. Failed to findAll.',
+        new Error('Unknown domain')
+      )
+      return
+    }
     try {
       const result = await this.counter.withCounter('find-' + domain, 1, () =>
         this.findAllRaw(ctx, _class, query, options)
