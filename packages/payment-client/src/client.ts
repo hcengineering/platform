@@ -128,7 +128,7 @@ export class PaymentClient {
       headers: { ...this.headers },
       body
     })
-    return (await response.json()) as (SubscriptionData | CheckoutResponse)
+    return (await response.json()) as SubscriptionData | CheckoutResponse
   }
 
   /**
