@@ -43,7 +43,7 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.19"
+    "@hcengineering/core": "workspace:^0.7.20"
   },
   "repository": "https://github.com/hcengineering/huly.core",
   "publishConfig": {

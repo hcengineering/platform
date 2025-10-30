@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/account-client
 
-This log was last generated on Tue, 28 Oct 2025 21:50:57 GMT and should not be manually modified.
+This log was last generated on Thu, 30 Oct 2025 08:41:42 GMT and should not be manually modified.
+
+## 0.7.19
+Thu, 30 Oct 2025 08:41:42 GMT
+
+### Patches
+
+- add workspace usage info
 
 ## 0.7.18
 Tue, 28 Oct 2025 21:50:57 GMT

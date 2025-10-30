@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/core
 
-This log was last generated on Wed, 29 Oct 2025 07:46:42 GMT and should not be manually modified.
+This log was last generated on Thu, 30 Oct 2025 08:41:42 GMT and should not be manually modified.
+
+## 0.7.20
+Thu, 30 Oct 2025 08:41:42 GMT
+
+### Patches
+
+- add workspace usae info
 
 ## 0.7.19
 Wed, 29 Oct 2025 07:46:42 GMT

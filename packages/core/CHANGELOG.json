@@ -2,6 +2,18 @@
   "name": "@hcengineering/core",
   "entries": [
     {
+      "version": "0.7.20",
+      "tag": "@hcengineering/core_v0.7.20",
+      "date": "Thu, 30 Oct 2025 08:41:42 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add workspace usae info"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.19",
       "tag": "@hcengineering/core_v0.7.19",
       "date": "Wed, 29 Oct 2025 07:46:42 GMT",

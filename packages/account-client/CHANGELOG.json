@@ -2,6 +2,28 @@
   "name": "@hcengineering/account-client",
   "entries": [
     {
+      "version": "0.7.19",
+      "tag": "@hcengineering/account-client_v0.7.19",
+      "date": "Thu, 30 Oct 2025 08:41:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "formatting"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "add workspace usage info"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.19` to `0.7.20`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.18",
       "tag": "@hcengineering/account-client_v0.7.18",
       "date": "Tue, 28 Oct 2025 21:50:57 GMT",
