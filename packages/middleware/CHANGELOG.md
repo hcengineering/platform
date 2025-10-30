@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/middleware
 
-This log was last generated on Mon, 27 Oct 2025 16:26:11 GMT and should not be manually modified.
+This log was last generated on Thu, 30 Oct 2025 20:53:38 GMT and should not be manually modified.
+
+## 0.7.16
+Thu, 30 Oct 2025 20:53:38 GMT
+
+### Patches
+
+- Fix identifier middleware
 
 ## 0.7.15
 Mon, 27 Oct 2025 16:26:11 GMT

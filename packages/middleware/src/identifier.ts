@@ -19,7 +19,8 @@ import core, {
   type SessionData,
   type Tx,
   type TxCreateDoc,
-  TxFactory
+  TxFactory,
+  type TypeIdentifier
 } from '@hcengineering/core'
 import { type TxMixin } from '@hcengineering/core/src'
 import {
@@ -58,12 +59,17 @@ export class IdentifierMiddleware extends BaseMiddleware implements Middleware {
     ctx: MeasureContext<SessionData>,
     tx: TxCreateDoc<Doc> | TxMixin<Doc, Doc>
   ): Promise<void> {
-    const attributes = this.context.hierarchy.getAllAttributes(tx.objectClass)
+    const attributes =
+      tx._class === core.class.TxCreateDoc
+        ? this.context.hierarchy.getAllAttributes(tx.objectClass)
+        : this.context.hierarchy.getOwnAttributes((tx as TxMixin<Doc, Doc>).mixin)
     for (const attr of attributes) {
       if (attr[1].type._class === core.class.TypeIdentifier) {
         const value = (tx.attributes as any)[attr[1].name]
         if ((value == null && tx._class === core.class.TxCreateDoc) || Object.keys(tx.attributes).length === 0) {
-          const sequence = (await this.findAll(ctx, core.class.CustomSequence, { of: attr[1].of }))[0]
+          const sequence = (
+            await this.findAll(ctx, core.class.CustomSequence, { _id: (attr[1].type as TypeIdentifier).of })
+          )[0]
           if (sequence === undefined) {
             continue
           }
