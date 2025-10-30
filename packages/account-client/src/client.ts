@@ -16,7 +16,7 @@ import {
   type AccountInfo,
   type AccountRole,
   type AccountUuid,
-  BackupStatus,
+  type BackupStatus,
   concatLink,
   Data,
   type Person,
@@ -25,6 +25,7 @@ import {
   type PersonUuid,
   type SocialIdType,
   Version,
+  type UsageStatus,
   type WorkspaceInfoWithStatus,
   type WorkspaceMemberInfo,
   WorkspaceMode,
@@ -182,6 +183,7 @@ export interface AccountClient {
   ) => Promise<boolean>
   assignWorkspace: (email: string, workspaceUuid: string, role: AccountRole) => Promise<void>
   updateBackupInfo: (info: BackupStatus) => Promise<void>
+  updateUsageInfo: (info: UsageStatus) => Promise<void>
   updateWorkspaceRoleBySocialKey: (socialKey: string, targetRole: AccountRole) => Promise<void>
   ensurePerson: (
     socialType: SocialIdType,
@@ -841,6 +843,15 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'updateBackupInfo' as const,
       params: { backupInfo }
+    }
+
+    await this.rpc(request)
+  }
+
+  async updateUsageInfo (usageInfo: UsageStatus): Promise<void> {
+    const request = {
+      method: 'updateUsageInfo' as const,
+      params: { usageInfo }
     }
 
     await this.rpc(request)

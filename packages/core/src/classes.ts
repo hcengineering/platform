@@ -1,6 +1,6 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2021, 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -873,6 +873,12 @@ export interface BackupStatus {
   backups: number
 }
 
+export interface UsageStatus {
+  usage: Record<string, number>
+  startTime: Timestamp
+  updateTime: Timestamp
+}
+
 export interface WorkspaceInfoWithStatus extends WorkspaceInfo {
   isDisabled?: boolean
   versionMajor: number
@@ -882,6 +888,7 @@ export interface WorkspaceInfoWithStatus extends WorkspaceInfo {
   mode: WorkspaceMode
   processingProgress?: number
   backupInfo?: BackupStatus
+  usageInfo?: UsageStatus
   processingAttemps: number
 }
 
