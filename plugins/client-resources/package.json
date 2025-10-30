@@ -42,7 +42,7 @@
     "@hcengineering/client": "^0.7.3",
     "@hcengineering/communication-sdk-types": "^0.7.5",
     "@hcengineering/communication-types": "^0.7.7",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/rpc": "^0.7.3",
     "snappyjs": "^0.7.0"

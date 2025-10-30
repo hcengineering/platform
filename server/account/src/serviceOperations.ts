@@ -27,6 +27,7 @@ import {
   type PersonUuid,
   type WorkspaceUuid,
   type AccountUuid,
+  type UsageStatus,
   readOnlyGuestAccountUuid
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
@@ -486,6 +487,33 @@ export async function updateBackupInfo (
     { workspaceUuid: workspace },
     {
       backupInfo,
+      lastProcessingTime: Date.now()
+    }
+  )
+}
+
+export async function updateUsageInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { usageInfo: UsageStatus }
+): Promise<void> {
+  const { usageInfo } = params
+  const { extra, workspace } = decodeTokenVerbose(ctx, token)
+  if (extra?.service !== 'billing') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const workspaceInfo = await getWorkspaceById(db, workspace)
+  if (workspaceInfo === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  await db.workspaceStatus.update(
+    { workspaceUuid: workspace },
+    {
+      usageInfo,
       lastProcessingTime: Date.now()
     }
   )
@@ -1129,6 +1157,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     updateWorkspaceInfo: wrap(updateWorkspaceInfo),
     workerHandshake: wrap(workerHandshake),
     updateBackupInfo: wrap(updateBackupInfo),
+    updateUsageInfo: wrap(updateUsageInfo),
     assignWorkspace: wrap(assignWorkspace),
     listWorkspaces: wrap(listWorkspaces),
     performWorkspaceOperation: wrap(performWorkspaceOperation),

@@ -48,7 +48,7 @@
     "@hcengineering/model-print": "^0.7.0",
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/setting": "^0.7.0",
-    "@hcengineering/core": "^0.7.19",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/view": "^0.7.0",

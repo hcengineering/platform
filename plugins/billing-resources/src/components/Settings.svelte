@@ -32,7 +32,7 @@
   import presentation from '@hcengineering/presentation'
   import { onDestroy } from 'svelte'
 
-  import ResourceUsage from './ResourceUsage.svelte'
+  // import ResourceUsage from './ResourceUsage.svelte'
   import Subscriptions from './Subscriptions.svelte'
 
   import plugin from '../plugin'
@@ -46,17 +46,17 @@
 
   const baseGroups: SettingGroup[] = [
     {
-      key: 'usage',
-      icon: plugin.icon.Billing,
-      label: plugin.string.ResourceUsage,
-      component: ResourceUsage
-    },
-    {
       key: 'subscriptions',
       icon: plugin.icon.Subscriptions,
       label: plugin.string.Subscriptions,
       component: Subscriptions
     }
+    // {
+    //   key: 'usage',
+    //   icon: plugin.icon.Billing,
+    //   label: plugin.string.ResourceUsage,
+    //   component: ResourceUsage
+    // }
   ]
 
   // Only include subscriptions group if payment URL is configured

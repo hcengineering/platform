@@ -876,7 +876,8 @@ export class PostgresAccountDB implements AccountDB {
             'is_disabled', s.is_disabled,
             'processing_attempts', s.processing_attempts,
             'processing_message', s.processing_message,
-            'backup_info', s.backup_info
+            'backup_info', s.backup_info,
+            'usage_info', s.usage_info
           ) status 
            FROM ${this.getWsMembersTableName()} as m 
            INNER JOIN ${this.workspace.getTableName()} as w ON m.workspace_uuid = w.uuid
@@ -928,7 +929,8 @@ export class PostgresAccountDB implements AccountDB {
             'is_disabled', s.is_disabled,
             'processing_attempts', s.processing_attempts,
             'processing_message', s.processing_message,
-            'backup_info', s.backup_info
+            'backup_info', s.backup_info,
+            'usage_info', s.usage_info
           ) status
            FROM ${this.workspace.getTableName()} as w
            INNER JOIN ${this.workspaceStatus.getTableName()} as s ON s.workspace_uuid = w.uuid

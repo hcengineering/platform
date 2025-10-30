@@ -40,7 +40,7 @@
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/card": "^0.7.0",
-    "@hcengineering/core": "^0.7.19",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/time": "^0.7.0",
     "@hcengineering/view": "^0.7.0"
   }

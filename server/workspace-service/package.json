@@ -43,7 +43,7 @@
   "dependencies": {
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.19",
+    "@hcengineering/core": "^0.7.20",
     "koa": "^2.15.4",
     "koa-router": "^12.0.1",
     "koa-bodyparser": "^4.4.1",
@@ -56,7 +56,7 @@
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/analytics": "^0.7.17",
-    "@hcengineering/account-client": "^0.7.18",
+    "@hcengineering/account-client": "^0.7.19",
     "@hcengineering/server-backup": "^0.7.0",
     "@hcengineering/postgres": "^0.7.16",
     "@hcengineering/mongo": "^0.7.15"

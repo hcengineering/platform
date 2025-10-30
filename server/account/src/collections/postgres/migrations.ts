@@ -37,7 +37,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV16Migration(ns),
     getV17Migration(ns),
     getV18Migration(ns),
-    getV19Migration(ns)
+    getV19Migration(ns),
+    getV20Migration(ns)
   ]
 }
 
@@ -554,6 +555,16 @@ function getV19Migration (ns: string): [string, string] {
         CONSTRAINT subscription_account_fk FOREIGN KEY (account_uuid) REFERENCES ${ns}.account(uuid),
         INDEX subscription_workspace_status_idx (workspace_uuid, status)
     );
+    `
+  ]
+}
+
+function getV20Migration (ns: string): [string, string] {
+  return [
+    'account_db_v20_usage_info',
+    `
+    ALTER TABLE ${ns}.workspace_status
+    ADD COLUMN IF NOT EXISTS usage_info JSONB;
     `
   ]
 }

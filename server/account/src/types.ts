@@ -27,6 +27,7 @@ import {
   type PersonId,
   type PersonUuid,
   type SocialId as SocialIdBase,
+  type UsageStatus,
   type WorkspaceDataId,
   type WorkspaceUuid,
   type WorkspaceInfo,
@@ -100,6 +101,7 @@ export interface WorkspaceStatus extends WorkspaceVersion {
   processingAttempts?: number
   processingMessage?: string
   backupInfo?: BackupStatus
+  usageInfo?: UsageStatus
 
   targetRegion?: string
 }

@@ -49,6 +49,10 @@
     "UncancelDescription": "Ihr Abonnement wird reaktiviert und läuft ab dem Ende des aktuellen Abrechnungszeitraums weiter.",
     "PriceDifference": "Preisdifferenz: {amount}",
     "DialogCancel": "Abbrechen",
-    "DialogConfirm": "Bestätigen"
+    "DialogConfirm": "Bestätigen",
+    "StorageUsage": "Speicher",
+    "TrafficUsage": "Video/Audio-Traffic",
+    "Usage": "Nutzung",
+    "Of": "von"
   }
 }

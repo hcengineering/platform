@@ -39,12 +39,12 @@
   "dependencies": {
     "svelte": "^4.2.20",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.19",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/view": "^0.7.0",
     "@hcengineering/presentation": "^0.7.0",
     "@hcengineering/global-profile": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.18",
+    "@hcengineering/account-client": "^0.7.19",
     "@hcengineering/login": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/theme": "^0.7.0"

@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@hcengineering/attachment": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.18",
+    "@hcengineering/account-client": "^0.7.19",
     "@hcengineering/api-client": "^0.7.18",
     "@hcengineering/card": "^0.7.0",
     "@hcengineering/chat": "^0.7.0",
@@ -69,7 +69,7 @@
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/kvs-client": "^0.7.0",
     "@hcengineering/mail-common": "^0.7.0",
-    "@hcengineering/core": "^0.7.19",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/gmail": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/setting": "^0.7.0",

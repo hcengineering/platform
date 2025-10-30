@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@hcengineering/time": "^0.7.0",
-    "@hcengineering/core": "^0.7.19",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/card": "^0.7.0",
     "@hcengineering/server-process": "^0.7.0",

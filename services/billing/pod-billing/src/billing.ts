@@ -166,7 +166,7 @@ export async function handlePushAiTokensData (
   res.status(204).send()
 }
 
-async function collectDatalakeStats (
+export async function collectDatalakeStats (
   ctx: MeasureContext,
   workspace: WorkspaceUuid,
   storageConfigs: StorageConfig[]
