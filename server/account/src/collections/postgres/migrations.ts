@@ -36,7 +36,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV15Migration(ns),
     getV16Migration(ns),
     getV17Migration(ns),
-    getV18Migration(ns)
+    getV18Migration(ns),
+    getV19Migration(ns)
   ]
 }
 
@@ -486,6 +487,72 @@ function getV18Migration (ns: string): [string, string] {
     FROM ${ns}.account p
     WHERE NOT EXISTS (
       SELECT 1 FROM ${ns}.user_profile up WHERE up.person_uuid = p.uuid
+    );
+    `
+  ]
+}
+
+function getV19Migration (ns: string): [string, string] {
+  return [
+    'account_db_v19_subscription_table',
+    `
+    /* ======= S U B S C R I P T I O N ======= */
+    /* Provider-agnostic subscription information for workspaces */
+    /* Managed by billing service via payment provider webhooks (e.g. Polar.sh, Stripe) */
+    /* Multiple active subscriptions allowed per workspace (tier + addons + support) */
+    /* Historical subscriptions preserved with status: canceled/expired */
+    
+    CREATE TYPE IF NOT EXISTS ${ns}.subscription_status AS ENUM (
+      'active',
+      'trialing',
+      'past_due',
+      'canceled',
+      'paused',
+      'expired'
+    );
+    
+    CREATE TABLE IF NOT EXISTS ${ns}.subscription (
+        id STRING NOT NULL DEFAULT gen_random_uuid()::STRING,
+        workspace_uuid UUID NOT NULL,
+        account_uuid UUID NOT NULL, -- Account that paid for the subscription
+        
+        -- Provider details
+        provider STRING NOT NULL, -- Payment provider identifier (e.g. 'polar', 'stripe', 'manual')
+        provider_subscription_id STRING NOT NULL, -- External subscription ID from the provider
+        provider_checkout_id STRING, -- External checkout/session ID that created this subscription
+        
+        -- Subscription classification
+        type STRING NOT NULL DEFAULT 'tier', -- tier, support, etc.
+        status ${ns}.subscription_status NOT NULL DEFAULT 'active',
+        plan STRING NOT NULL, -- Plan identifier (e.g. 'rare', 'epic', 'legendary', 'custom')
+        
+        -- Amount paid (in cents, e.g. 9999 = $99.99)
+        -- Used primarily for pay-what-you-want/donation subscriptions to track actual payment
+        amount INT8,
+        
+        -- Billing period (optional)
+        period_start BIGINT,
+        period_end BIGINT,
+        
+        -- Trial information (optional)
+        trial_end BIGINT,
+        
+        -- Cancellation info (optional)
+        canceled_at BIGINT,
+        will_cancel_at BIGINT, -- Scheduled cancellation date (cancel at period end)
+        
+        -- Provider-specific data (stored as JSONB for flexibility)
+        -- e.g. customerExternalId, metadata, etc.
+        provider_data JSONB,
+        
+        created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
+        updated_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
+        
+        CONSTRAINT subscription_pk PRIMARY KEY (id),
+        CONSTRAINT subscription_provider_subscription_id_unique UNIQUE (provider, provider_subscription_id),
+        CONSTRAINT subscription_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${ns}.workspace(uuid),
+        CONSTRAINT subscription_account_fk FOREIGN KEY (account_uuid) REFERENCES ${ns}.account(uuid),
+        INDEX subscription_workspace_status_idx (workspace_uuid, status)
     );
     `
   ]

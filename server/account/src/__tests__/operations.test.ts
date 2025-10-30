@@ -48,7 +48,8 @@ import {
   changePassword,
   getPerson,
   getSocialIds,
-  createAccessLink
+  createAccessLink,
+  getSubscriptions
 } from '../operations'
 import { accountPlugin } from '../plugin'
 
@@ -2578,5 +2579,153 @@ describe('account operations', () => {
         )
       })
     })
+  })
+})
+
+describe('getSubscriptions', () => {
+  const mockCtx = {
+    error: jest.fn(),
+    info: jest.fn()
+  } as unknown as MeasureContext
+
+  const mockBranding = null
+  const workspaceUuid = 'test-workspace-uuid' as WorkspaceUuid
+  const accountUuid = 'test-account-uuid' as AccountUuid
+
+  let mockDb: any
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+
+    mockDb = {
+      subscription: {
+        find: jest.fn()
+      },
+      getWorkspaceRole: jest.fn()
+    }
+  })
+
+  test('should return active subscriptions for workspace owner', async () => {
+    const mockSubscriptions = [
+      {
+        id: 'sub-1',
+        workspaceUuid,
+        accountUuid,
+        provider: 'polar',
+        providerSubscriptionId: 'polar-sub-123',
+        type: 'tier',
+        status: 'active',
+        plan: 'pro'
+      }
+    ]
+
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      account: accountUuid,
+      workspace: workspaceUuid,
+      extra: {}
+    })
+
+    mockDb.getWorkspaceRole.mockResolvedValue(AccountRole.Owner)
+    mockDb.subscription.find.mockResolvedValue(mockSubscriptions)
+
+    const result = await getSubscriptions(mockCtx, mockDb, mockBranding, 'test-token', {})
+
+    expect(result).toEqual(mockSubscriptions)
+    expect(mockDb.subscription.find).toHaveBeenCalledWith({ workspaceUuid, status: 'active' })
+    expect(mockDb.getWorkspaceRole).toHaveBeenCalledWith(accountUuid, workspaceUuid)
+  })
+
+  test('should return all subscriptions when activeOnly=false', async () => {
+    const mockSubscriptions = [
+      {
+        id: 'sub-1',
+        status: 'active'
+      },
+      {
+        id: 'sub-2',
+        status: 'canceled'
+      }
+    ]
+
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      account: accountUuid,
+      workspace: workspaceUuid,
+      extra: {}
+    })
+
+    mockDb.getWorkspaceRole.mockResolvedValue(AccountRole.Owner)
+    mockDb.subscription.find.mockResolvedValue(mockSubscriptions)
+
+    const result = await getSubscriptions(mockCtx, mockDb, mockBranding, 'test-token', { activeOnly: false })
+
+    expect(result).toEqual(mockSubscriptions)
+    expect(mockDb.subscription.find).toHaveBeenCalledWith({ workspaceUuid })
+  })
+
+  test('should allow maintainer to view subscriptions', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      account: accountUuid,
+      workspace: workspaceUuid,
+      extra: {}
+    })
+
+    mockDb.getWorkspaceRole.mockResolvedValue(AccountRole.Maintainer)
+    mockDb.subscription.find.mockResolvedValue([])
+
+    await getSubscriptions(mockCtx, mockDb, mockBranding, 'test-token', {})
+
+    expect(mockDb.getWorkspaceRole).toHaveBeenCalled()
+    expect(mockDb.subscription.find).toHaveBeenCalled()
+  })
+
+  test('should reject user without sufficient role', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      account: accountUuid,
+      workspace: workspaceUuid,
+      extra: {}
+    })
+
+    mockDb.getWorkspaceRole.mockResolvedValue(AccountRole.User)
+
+    await expect(getSubscriptions(mockCtx, mockDb, mockBranding, 'test-token', {})).rejects.toThrow(PlatformError)
+  })
+
+  test('should reject user without workspace membership', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      account: accountUuid,
+      workspace: workspaceUuid,
+      extra: {}
+    })
+
+    mockDb.getWorkspaceRole.mockResolvedValue(null)
+
+    await expect(getSubscriptions(mockCtx, mockDb, mockBranding, 'test-token', {})).rejects.toThrow(PlatformError)
+  })
+
+  test('should allow service to query any workspace', async () => {
+    const serviceWorkspaceUuid = 'different-workspace' as WorkspaceUuid
+
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      account: accountUuid,
+      workspace: workspaceUuid,
+      extra: { service: 'billing' }
+    })
+
+    mockDb.subscription.find.mockResolvedValue([])
+
+    await getSubscriptions(mockCtx, mockDb, mockBranding, 'test-token', { workspaceUuid: serviceWorkspaceUuid })
+
+    expect(mockDb.subscription.find).toHaveBeenCalledWith({ workspaceUuid: serviceWorkspaceUuid, status: 'active' })
+    expect(mockDb.getWorkspaceRole).not.toHaveBeenCalled()
+  })
+
+  test('should reject non-service users without workspace in token', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      account: accountUuid,
+      workspace: undefined,
+      extra: {}
+    })
+
+    await expect(getSubscriptions(mockCtx, mockDb, mockBranding, 'test-token', {})).rejects.toThrow(PlatformError)
   })
 })

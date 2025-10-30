@@ -43,6 +43,8 @@ import type {
   IntegrationSecretKey,
   Query,
   SocialId,
+  Subscription,
+  SubscriptionData,
   Workspace,
   WorkspaceEvent,
   WorkspaceInfoWithStatus,
@@ -985,6 +987,109 @@ export async function findPersonBySocialKey (
   return socialId.personUuid
 }
 
+/**
+ * Upsert (create or update) subscription for a workspace
+ * Only accessible by payment service
+ * Creates new subscription or updates existing one based on providerId
+ * @public
+ */
+export async function upsertSubscription (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: SubscriptionData
+): Promise<void> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+
+  // Only payment service can upsert subscriptions
+  if (extra?.service !== 'payment') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const { workspaceUuid, provider, providerSubscriptionId } = params
+
+  // Verify workspace exists
+  const workspace = await getWorkspaceById(db, workspaceUuid)
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
+  }
+
+  // Check if subscription exists by provider + providerSubscriptionId (unique external ID)
+  const existing = await db.subscription.findOne({ provider, providerSubscriptionId })
+  const updateData = {
+    workspaceUuid: params.workspaceUuid,
+    accountUuid: params.accountUuid,
+    provider: params.provider,
+    providerSubscriptionId: params.providerSubscriptionId,
+    providerCheckoutId: params.providerCheckoutId,
+    amount: params.amount,
+    type: params.type,
+    status: params.status,
+    plan: params.plan,
+    periodStart: params.periodStart,
+    periodEnd: params.periodEnd,
+    trialEnd: params.trialEnd,
+    canceledAt: params.canceledAt,
+    willCancelAt: params.willCancelAt,
+    providerData: params.providerData,
+    updatedOn: Date.now()
+  }
+  if (existing !== null) {
+    // Update existing subscription
+    await db.subscription.update({ id: existing.id }, updateData)
+    ctx.info('Subscription updated', {
+      id: existing.id,
+      workspaceUuid,
+      status: params.status,
+      type: params.type,
+      plan: params.plan
+    })
+  } else {
+    // Create new subscription
+    await db.subscription.insertOne({
+      ...updateData,
+      id: params.id,
+      createdOn: Date.now()
+    })
+    ctx.info('Subscription created', {
+      id: params.id,
+      workspaceUuid,
+      status: params.status,
+      type: params.type,
+      plan: params.plan
+    })
+  }
+}
+
+export async function getSubscriptionByProviderId (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    provider: string
+    providerSubscriptionId: string
+  }
+): Promise<Subscription | null> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+
+  // Only payment service can query subscriptions by provider ID
+  if (extra?.service !== 'payment') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const { provider, providerSubscriptionId } = params
+
+  // Find subscription by provider and providerSubscriptionId (unique external ID)
+  const subscription = await db.subscription.findOne({
+    provider,
+    providerSubscriptionId
+  })
+
+  return subscription ?? null
+}
+
 export type AccountServiceMethods =
   | 'getPendingWorkspace'
   | 'updateWorkspaceInfo'
@@ -1012,6 +1117,8 @@ export type AccountServiceMethods =
   | 'findPersonBySocialKey'
   | 'listAccounts'
   | 'findFullSocialIds'
+  | 'getSubscriptionByProviderId'
+  | 'upsertSubscription'
 
 /**
  * @public
@@ -1043,6 +1150,8 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     findFullSocialIds: wrap(findFullSocialIds),
     mergeSpecifiedAccounts: wrap(mergeSpecifiedAccounts),
     findPersonBySocialKey: wrap(findPersonBySocialKey),
-    listAccounts: wrap(listAccounts)
+    listAccounts: wrap(listAccounts),
+    getSubscriptionByProviderId: wrap(getSubscriptionByProviderId),
+    upsertSubscription: wrap(upsertSubscription)
   }
 }

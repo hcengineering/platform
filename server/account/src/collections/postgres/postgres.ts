@@ -47,7 +47,8 @@ import type {
   Integration,
   IntegrationSecret,
   AccountAggregatedInfo,
-  UserProfile
+  UserProfile,
+  Subscription
 } from '../../types'
 
 function toSnakeCase (str: string): string {
@@ -371,7 +372,7 @@ implements DbCollection<T> {
           const castType = this.fieldTypes[key]
           currIdx++
           updateChunks.push(`"${snakeKey}" = ${formatVar(currIdx, castType)}`)
-          values.push(ops[key])
+          values.push(convertKeysToSnakeCase(ops[key]))
         }
       }
     }
@@ -520,6 +521,7 @@ export class PostgresAccountDB implements AccountDB {
   integration: PostgresDbCollection<Integration>
   integrationSecret: PostgresDbCollection<IntegrationSecret>
   userProfile: PostgresDbCollection<UserProfile, 'personUuid'>
+  subscription: PostgresDbCollection<Subscription, 'id'>
 
   constructor (
     readonly client: Sql,
@@ -567,6 +569,12 @@ export class PostgresAccountDB implements AccountDB {
     this.userProfile = new PostgresDbCollection<UserProfile, 'personUuid'>('user_profile', client, {
       ns,
       idKey: 'personUuid',
+      withRetryClient
+    })
+    this.subscription = new PostgresDbCollection<Subscription, 'id'>('subscription', client, {
+      ns,
+      idKey: 'id',
+      timestampFields: ['periodStart', 'periodEnd', 'trialEnd', 'canceledAt', 'willCancelAt', 'createdOn', 'updatedOn'],
       withRetryClient
     })
   }
