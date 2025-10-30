@@ -49,6 +49,10 @@
     "UncancelDescription": "Sua assinatura será reativada e continuará a partir do final do período de faturamento atual.",
     "PriceDifference": "Diferença de preço: {amount}",
     "DialogCancel": "Cancelar",
-    "DialogConfirm": "Confirmar"
+    "DialogConfirm": "Confirmar",
+    "StorageUsage": "Armazenamento",
+    "TrafficUsage": "Tráfego de vídeo/áudio",
+    "Usage": "Uso",
+    "Of": "de"
   }
 }

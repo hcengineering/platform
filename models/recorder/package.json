@@ -38,7 +38,7 @@
     "@hcengineering/model-core": "^0.7.0",
     "@hcengineering/model-presentation": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.19",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/drive": "^0.7.0",
     "@hcengineering/uploader": "^0.7.0",
     "@hcengineering/recorder": "^0.7.0",

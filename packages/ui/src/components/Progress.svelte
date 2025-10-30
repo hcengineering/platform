@@ -23,6 +23,7 @@
   export let max: number = 100
   export let color: number | undefined = undefined
   export let editable = false
+  export let fallback: number = 0
 
   $: proc = (max - min) / 100
   $: if (value > max) value = max
@@ -59,7 +60,7 @@
 
   let drag: boolean = false
 
-  $: position = proc !== 0 ? Math.round((value - min) / proc) : 0
+  $: position = proc !== 0 ? Math.round((value - min) / proc) : fallback
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->

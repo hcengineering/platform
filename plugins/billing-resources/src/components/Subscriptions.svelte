@@ -13,10 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type SubscriptionData, SubscriptionType, getClient as getAccountClient } from '@hcengineering/account-client'
+  import { type SubscriptionData, SubscriptionType } from '@hcengineering/account-client'
   import { type SubscribeRequest, type CheckoutStatus } from '@hcengineering/payment-client'
-  import { type Ref, SortingOrder } from '@hcengineering/core'
-  import login from '@hcengineering/login'
+  import { Tier } from '@hcengineering/billing'
+  import { getMetadata } from '@hcengineering/platform'
+  import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
+  import { type Ref, SortingOrder, UsageStatus } from '@hcengineering/core'
   import {
     IconCheckmark,
     Label,
@@ -29,13 +31,12 @@
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
-  import { Tier } from '@hcengineering/billing'
-  import { getMetadata } from '@hcengineering/platform'
   import { onMount, onDestroy } from 'svelte'
 
   import plugin from '../plugin'
-  import { getPaymentClient } from '../utils'
+  import { getAccountClient, getPaymentClient } from '../utils'
+
+  import UsageSection from './UsageSection.svelte'
 
   const client = getClient()
   const paymentClient = getPaymentClient()
@@ -59,6 +60,9 @@
   let isUncanceling = false
   const MAX_POLL_ATTEMPTS = 120
   const POLL_INTERVAL = 2000
+
+  let usageInfo: UsageStatus | null = null
+  let loadingUsage = false
 
   $: isCurrentCanceled = currentSubscription?.canceledAt !== undefined && currentSubscription.canceledAt > 0
 
@@ -245,12 +249,12 @@
   }
 
   async function fetchSubscriptions (): Promise<void> {
-    const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-    const token = getMetadata(presentation.metadata.Token)
+    loading = true
 
     try {
-      loading = true
-      const accountClient = getAccountClient(accountsUrl, token)
+      const accountClient = getAccountClient()
+      if (accountClient == null) return
+
       const subscriptions = await accountClient.getSubscriptions()
       currentSubscription = subscriptions.find((p) => p.type === 'tier')
       const plan = currentSubscription?.plan
@@ -259,6 +263,23 @@
       console.error('error fetching current plan:', err)
     } finally {
       loading = false
+    }
+  }
+
+  async function fetchUsageStats (): Promise<void> {
+    loadingUsage = true
+
+    try {
+      const accountClient = getAccountClient()
+      if (accountClient == null) return
+
+      const workspaceInfo = await accountClient.getWorkspaceInfo(false)
+      usageInfo = workspaceInfo.usageInfo ?? null
+    } catch (err) {
+      console.error('error fetching usage stats:', err)
+      usageInfo = null
+    } finally {
+      loadingUsage = false
     }
   }
 
@@ -357,6 +378,9 @@
       // First, load current subscriptions
       await fetchSubscriptions()
 
+      // Then fetch usage stats
+      await fetchUsageStats()
+
       // Then check if we need to poll for a new subscription from checkout
       checkForCheckoutParam()
     })()
@@ -387,6 +411,12 @@
             <div class="no-plan-container flex-col flex-gap-4">
               <div class="fs-title text-lg"><Label label={plugin.string.NoActivePlan} /></div>
               <div class="text-md"><Label label={plugin.string.SelectPlanToBegin} /></div>
+
+              {#if usageInfo !== null}
+                <div class="usage-section">
+                  <UsageSection usage={usageInfo} tier={currentTier} />
+                </div>
+              {/if}
             </div>
           {:else}
             <div class="current-tier-card-title">
@@ -407,6 +437,12 @@
                 </div>
               {/if}
             </div>
+
+            {#if usageInfo !== null}
+              <div class="usage-section">
+                <UsageSection usage={usageInfo} tier={currentTier} />
+              </div>
+            {/if}
 
             <div class="curr-tier-footer">
               {#if currentSubscription?.periodEnd}
@@ -588,6 +624,8 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    padding-top: var(--spacing-2);
+    border-top: 1px solid var(--theme-divider-color);
   }
 
   .tier-card-footer {
@@ -599,5 +637,10 @@
 
   .processing {
     text-align: center;
+  }
+
+  .usage-section {
+    padding-top: var(--spacing-2);
+    border-top: 1px solid var(--theme-divider-color);
   }
 </style>

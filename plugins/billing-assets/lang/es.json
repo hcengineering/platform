@@ -49,6 +49,10 @@
     "DialogCancel": "Cancelar",
     "DialogConfirm": "Confirmar",
     "NoActivePlan": "Sin plan activo",
-    "SelectPlanToBegin": "Selecciona un plan a continuación para comenzar"
+    "SelectPlanToBegin": "Selecciona un plan a continuación para comenzar",
+    "StorageUsage": "Almacenamiento",
+    "TrafficUsage": "Tráfico de vídeo/audio",
+    "Usage": "Uso",
+    "Of": "de"
   }
 }

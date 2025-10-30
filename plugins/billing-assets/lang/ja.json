@@ -49,6 +49,10 @@
     "DialogCancel": "キャンセル",
     "DialogConfirm": "確認",
     "NoActivePlan": "アクティブなプランなし",
-    "SelectPlanToBegin": "下記からプランを選択して開始してください"
+    "SelectPlanToBegin": "下記からプランを選択して開始してください",
+    "StorageUsage": "ストレージ",
+    "TrafficUsage": "ビデオ/オーディオトラフィック",
+    "Usage": "使用状況",
+    "Of": "/"
   }
 }
