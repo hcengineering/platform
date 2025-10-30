@@ -43,7 +43,7 @@
     "@hcengineering/collaboration": "^0.7.15",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/controlled-documents": "^0.7.0",
-    "@hcengineering/core": "^0.7.19",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/document": "^0.7.0",
     "@hcengineering/model-attachment": "^0.7.0",
     "@hcengineering/model-core": "^0.7.0",

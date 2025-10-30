@@ -49,6 +49,10 @@
     "UncancelDescription": "Vaše předplatné bude reaktivováno a bude pokračovat od konce aktuálního období fakturace.",
     "PriceDifference": "Rozdíl v ceně: {amount}",
     "DialogCancel": "Zrušit",
-    "DialogConfirm": "Potvrdit"
+    "DialogConfirm": "Potvrdit",
+    "StorageUsage": "Úložiště",
+    "TrafficUsage": "Video/audio provoz",
+    "Usage": "Využití",
+    "Of": "z"
   }
 }

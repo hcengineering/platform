@@ -92,7 +92,7 @@ export function humanReadableFileSize (size: number, base: 2 | 10 = 10, fraction
 
   const pow = size === 0 ? 0 : Math.floor(Math.log(size) / Math.log(kb))
   const val = (1.0 * size) / Math.pow(kb, pow)
-  return `${val.toFixed(2)} ${units[pow]}`
+  return `${val.toFixed(fractionDigits)} ${units[pow]}`
 }
 
 /**

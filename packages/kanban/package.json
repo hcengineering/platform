@@ -42,7 +42,7 @@
     "svelte": "^4.2.20",
     "lexorank": "~1.0.4",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.19",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/presentation": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/rank": "^0.7.17"

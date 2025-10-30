@@ -49,6 +49,10 @@
     "UncancelDescription": "Ваша подписка будет переактивирована и продолжится с конца текущего периода выставления счета.",
     "PriceDifference": "Разница в цене: {amount}",
     "DialogCancel": "Отменить",
-    "DialogConfirm": "Подтвердить"
+    "DialogConfirm": "Подтвердить",
+    "StorageUsage": "Хранилище",
+    "TrafficUsage": "Видео/аудио трафик",
+    "Usage": "Использование",
+    "Of": "из"
   }
 }

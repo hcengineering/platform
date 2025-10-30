@@ -21,7 +21,7 @@ export const YoutubeEmbedProvider: EmbedNodeProviderConstructor<YoutubeEmbedUrlO
     const url = getEmbedUrlFromYoutubeUrl(src, options)
     if (url === undefined) return
 
-    return (editor: Editor, root: HTMLDivElement) => {
+    return (editor: Editor, root: HTMLDivElement, getPos: () => number) => {
       root.setAttribute('data-block-toolbar-mouse-lock', 'true')
 
       const iframe = document.createElement('iframe')

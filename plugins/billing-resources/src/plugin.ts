@@ -47,6 +47,10 @@ export default mergeIds(billingId, billing, {
     UncancelDescription: '' as IntlString,
     PriceDifference: '' as IntlString,
     DialogCancel: '' as IntlString,
-    DialogConfirm: '' as IntlString
+    DialogConfirm: '' as IntlString,
+    StorageUsage: '' as IntlString,
+    TrafficUsage: '' as IntlString,
+    Usage: '' as IntlString,
+    Of: '' as IntlString
   }
 })

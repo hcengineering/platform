@@ -49,6 +49,10 @@
     "UncancelDescription": "Your subscription will be reactivated and continue from the end of the current billing period.",
     "PriceDifference": "Price difference: {amount}",
     "DialogCancel": "Cancel",
-    "DialogConfirm": "Confirm"
+    "DialogConfirm": "Confirm",
+    "StorageUsage": "Storage",
+    "TrafficUsage": "Video/Audio traffic",
+    "Usage": "Usage",
+    "Of": "of"
   }
 }

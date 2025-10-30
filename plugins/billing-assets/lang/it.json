@@ -49,6 +49,10 @@
     "UncancelDescription": "Il tuo abbonamento verrà riattivato e continuerà dalla fine del periodo di fatturazione attuale.",
     "PriceDifference": "Differenza di prezzo: {amount}",
     "DialogCancel": "Annulla",
-    "DialogConfirm": "Conferma"
+    "DialogConfirm": "Conferma",
+    "StorageUsage": "Archiviazione",
+    "TrafficUsage": "Traffico video/audio",
+    "Usage": "Utilizzo",
+    "Of": "di"
   }
 }

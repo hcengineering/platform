@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.19",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/ui": "^0.7.0",
     "events": "^3.3.0"
   },

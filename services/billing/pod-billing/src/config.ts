@@ -19,6 +19,7 @@ export interface Config {
   AccountsUrl: string
   DbUrl: string
   StorageConfig: string
+  UsageUpdateInterval: number // seconds
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -29,7 +30,8 @@ const config: Config = (() => {
     Secret: process.env.SECRET,
     AccountsUrl: process.env.ACCOUNTS_URL,
     DbUrl: process.env.DB_URL,
-    StorageConfig: process.env.STORAGE_CONFIG
+    StorageConfig: process.env.STORAGE_CONFIG,
+    UsageUpdateInterval: parseNumber(process.env.USAGE_UPDATE_INTERVAL) ?? 60 * 60
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

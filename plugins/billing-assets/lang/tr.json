@@ -49,6 +49,10 @@
     "UncancelDescription": "Aboneliğiniz yeniden etkinleştirilecek ve geçerli faturalandırma döneminin sonundan itibaren devam edecektir.",
     "PriceDifference": "Fiyat farkı: {amount}",
     "DialogCancel": "İptal",
-    "DialogConfirm": "Onayla"
+    "DialogConfirm": "Onayla",
+    "StorageUsage": "Depolama",
+    "TrafficUsage": "Video/ses trafiği",
+    "Usage": "Kullanım",
+    "Of": "/"
   }
 }

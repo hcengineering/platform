@@ -49,6 +49,10 @@
     "UncancelDescription": "Votre abonnement sera réactivé et se poursuivra à partir de la fin de la période de facturation actuelle.",
     "PriceDifference": "Différence de prix: {amount}",
     "DialogCancel": "Annuler",
-    "DialogConfirm": "Confirmer"
+    "DialogConfirm": "Confirmer",
+    "StorageUsage": "Stockage",
+    "TrafficUsage": "Trafic vidéo/audio",
+    "Usage": "Utilisation",
+    "Of": "de"
   }
 }
