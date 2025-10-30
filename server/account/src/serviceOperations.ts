@@ -1123,6 +1123,7 @@ export type AccountServiceMethods =
   | 'updateWorkspaceInfo'
   | 'workerHandshake'
   | 'updateBackupInfo'
+  | 'updateUsageInfo'
   | 'assignWorkspace'
   | 'listWorkspaces'
   | 'performWorkspaceOperation'
