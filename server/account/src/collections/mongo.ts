@@ -51,6 +51,7 @@ import type {
   SocialId,
   Sort,
   UserProfile,
+  Subscription,
   WorkspaceData,
   WorkspaceInfoWithStatus,
   WorkspaceInvite,
@@ -405,6 +406,7 @@ export class MongoAccountDB implements AccountDB {
   integration: MongoDbCollection<Integration>
   integrationSecret: MongoDbCollection<IntegrationSecret>
   userProfile: MongoDbCollection<UserProfile, 'personUuid'>
+  subscription: MongoDbCollection<Subscription, 'id'>
 
   workspaceMembers: MongoDbCollection<WorkspaceMember>
 
@@ -423,6 +425,7 @@ export class MongoAccountDB implements AccountDB {
     this.integration = new MongoDbCollection<Integration>('integration', db)
     this.integrationSecret = new MongoDbCollection<IntegrationSecret>('integrationSecret', db)
     this.userProfile = new MongoDbCollection<UserProfile, 'personUuid'>('user_profile', db, 'personUuid')
+    this.subscription = new MongoDbCollection<Subscription, 'id'>('subscription', db, 'id')
 
     this.workspaceMembers = new MongoDbCollection<WorkspaceMember>('workspaceMembers', db)
   }

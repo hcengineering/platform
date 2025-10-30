@@ -13,23 +13,98 @@
 // limitations under the License.
 //
 
-import { type Builder } from '@hcengineering/model'
-import core from '@hcengineering/model-core'
+import { Model, UX, type Builder } from '@hcengineering/model'
+import core, { TDoc } from '@hcengineering/model-core'
+import { type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import billingPlugin from '@hcengineering/billing'
-import { AccountRole } from '@hcengineering/core'
+import billing, { type Tier } from '@hcengineering/billing'
+import { AccountRole, DOMAIN_MODEL } from '@hcengineering/core'
 
 export { billingId } from '@hcengineering/billing'
-export { billingPlugin as default }
+export { billing as default }
+
+@Model(billing.class.Tier, core.class.Doc, DOMAIN_MODEL)
+@UX(billing.string.Tier)
+export class TTier extends TDoc implements Tier {
+  label!: IntlString
+  description!: IntlString
+  storageLimitGB!: number
+  trafficLimitGB!: number
+
+  priceMonthly!: number
+  index!: number
+  color?: string
+}
 
 export function createModel (builder: Builder): void {
+  builder.createModel(TTier)
+
   builder.createDoc(setting.class.WorkspaceSettingCategory, core.space.Model, {
     name: 'billing',
-    label: billingPlugin.string.Billing,
-    icon: billingPlugin.icon.Billing,
-    component: billingPlugin.component.Settings,
+    label: billing.string.Billing,
+    icon: billing.icon.Billing,
+    component: billing.component.Settings,
     group: 'settings-editor',
     role: AccountRole.Owner,
     order: 920
   })
+
+  builder.createDoc(
+    billing.class.Tier,
+    core.space.Model,
+    {
+      label: billing.string.Common,
+      description: billing.string.CommonDescription,
+      storageLimitGB: 10,
+      trafficLimitGB: 10,
+      priceMonthly: 0,
+      index: 0
+    },
+    billing.tier.Common
+  )
+
+  builder.createDoc(
+    billing.class.Tier,
+    core.space.Model,
+    {
+      label: billing.string.Rare,
+      description: billing.string.RareDescription,
+      storageLimitGB: 100,
+      trafficLimitGB: 100,
+      priceMonthly: 19.99,
+      index: 1,
+      color: 'Sky'
+    },
+    billing.tier.Rare
+  )
+
+  builder.createDoc(
+    billing.class.Tier,
+    core.space.Model,
+    {
+      label: billing.string.Epic,
+      description: billing.string.EpicDescription,
+      storageLimitGB: 1000,
+      trafficLimitGB: 500,
+      priceMonthly: 99.99,
+      index: 2,
+      color: 'Orchid'
+    },
+    billing.tier.Epic
+  )
+
+  builder.createDoc(
+    billing.class.Tier,
+    core.space.Model,
+    {
+      label: billing.string.Legendary,
+      description: billing.string.LegendaryDescription,
+      storageLimitGB: 10000,
+      trafficLimitGB: 2000,
+      priceMonthly: 399.99,
+      index: 3,
+      color: 'Orange'
+    },
+    billing.tier.Legendary
+  )
 }

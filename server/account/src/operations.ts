@@ -61,7 +61,10 @@ import {
   type LoginInfoRequest,
   type LoginInfoRequestData,
   type Account,
-  type PersonWithProfile
+  type PersonWithProfile,
+  type Subscription,
+  SubscriptionStatus,
+  type Query
 } from './types'
 import {
   addSocialIdBase,
@@ -2595,6 +2598,125 @@ async function getUserProfile (
   throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
 }
 
+/**
+ * Get subscriptions for a workspace
+ * - Regular users: Must be OWNER or MAINTAINER of the workspace (from token)
+ * - Services: Can query any workspace by workspaceUuid parameter
+ * By default returns only active subscriptions. Set activeOnly=false to include historical subscriptions.
+ * @public
+ */
+export async function getSubscriptions (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    workspaceUuid?: WorkspaceUuid // Optional: used by services only, undefined means all workspaces
+    activeOnly?: boolean // Optional: default true - only return active subscriptions
+  }
+): Promise<Subscription[]> {
+  const { account, extra, workspace: tokenWorkspace } = decodeTokenVerbose(ctx, token)
+  const { workspaceUuid, activeOnly = true } = params
+
+  let targetWorkspace: WorkspaceUuid | null
+
+  // Check if this is a service token
+  const isService = extra?.service !== undefined
+
+  if (isService) {
+    // Services can query any workspace/all workspaces
+    targetWorkspace = workspaceUuid ?? null
+  } else {
+    // Regular users: use workspace from token (ignores workspaceUuid param)
+    if (tokenWorkspace === undefined) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+    }
+    targetWorkspace = tokenWorkspace
+
+    // Verify user has OWNER or MAINTAINER role
+    const role = await db.getWorkspaceRole(account, targetWorkspace)
+    if (role === null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+
+    const rolePower = getRolePower(role)
+    const maintainerPower = getRolePower(AccountRole.Maintainer)
+
+    if (rolePower < maintainerPower) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
+  // Fetch subscriptions for workspace (tier + addons + support)
+  // By default return only active subscriptions, unless activeOnly=false
+  const query: Query<Subscription> = targetWorkspace != null ? { workspaceUuid: targetWorkspace } : {}
+  if (activeOnly) {
+    query.status = SubscriptionStatus.Active
+  }
+
+  const subscriptions = await db.subscription.find(query)
+  return subscriptions
+}
+
+/**
+ * Get a subscription by its internal ID
+ * - Services: Can query any subscription
+ * - Regular users: Can only query subscriptions from their workspace (from token)
+ * @public
+ */
+export async function getSubscriptionById (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    subscriptionId: string // Internal subscription ID (UUID)
+  }
+): Promise<Subscription | null> {
+  const { account, extra, workspace: tokenWorkspace } = decodeTokenVerbose(ctx, token)
+  const { subscriptionId } = params
+
+  // Check if this is a service token
+  const isService = extra?.service !== undefined
+
+  // Fetch the subscription first
+  const subscription = await db.subscription.findOne({ id: subscriptionId })
+
+  if (subscription === null || subscription === undefined) {
+    return null
+  }
+
+  if (isService) {
+    // Services can query any subscription by internal ID
+    return subscription
+  }
+
+  // Regular users: can only query subscriptions from their workspace (from token)
+  if (tokenWorkspace === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  // Verify the subscription belongs to the user's workspace
+  if (subscription.workspaceUuid !== tokenWorkspace) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  // Verify user has OWNER or MAINTAINER role in the workspace
+  const role = await db.getWorkspaceRole(account, tokenWorkspace)
+  if (role === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const rolePower = getRolePower(role)
+  const maintainerPower = getRolePower(AccountRole.Maintainer)
+
+  if (rolePower < maintainerPower) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  return subscription
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -2655,6 +2777,8 @@ export type AccountMethods =
   | 'mergeSpecifiedPersons'
   | 'setMyProfile'
   | 'getUserProfile'
+  | 'getSubscriptions'
+  | 'getSubscriptionById'
 
 /**
  * @public
@@ -2704,6 +2828,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
     setMyProfile: wrap(setMyProfile),
     getUserProfile: wrap(getUserProfile),
+    getSubscriptions: wrap(getSubscriptions),
+    getSubscriptionById: wrap(getSubscriptionById),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),

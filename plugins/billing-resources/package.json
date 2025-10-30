@@ -42,6 +42,7 @@
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/presentation": "^0.7.0",
     "@hcengineering/theme": "^0.7.0",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/billing": "^0.7.0",
     "@hcengineering/view": "^0.7.0",
@@ -49,6 +50,9 @@
     "@hcengineering/billing-client": "^0.7.0",
     "@hcengineering/drive": "^0.7.0",
     "@hcengineering/love": "^0.7.0",
+    "@hcengineering/login": "^0.7.0",
+    "@hcengineering/account-client": "^0.7.19",
+    "@hcengineering/payment-client": "^0.7.0",
     "filesize": "^8.0.3",
     "svelte": "^4.2.20"
   }

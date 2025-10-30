@@ -293,9 +293,9 @@ export const main = async (): Promise<void> => {
   if (config.BillingUrl !== '') {
     setInterval(
       () => {
-        try {
-          void updateLiveKitSessions(ctx)
-        } catch {}
+        void updateLiveKitSessions(ctx).catch((error) => {
+          ctx.error('failed to update livekit sessions', { error })
+        })
       },
       config.BillingPollInterval * 60 * 1000
     )

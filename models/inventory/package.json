@@ -36,7 +36,7 @@
   "dependencies": {
     "@hcengineering/activity": "^0.7.0",
     "@hcengineering/chunter": "^0.7.0",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/inventory": "^0.7.0",
     "@hcengineering/inventory-resources": "^0.7.0",
     "@hcengineering/model": "^0.7.17",

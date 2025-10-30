@@ -14,5 +14,7 @@
 //
 import { billingId, billingPlugin } from './plugin'
 
+export * from './types'
+
 export { billingId }
 export default billingPlugin

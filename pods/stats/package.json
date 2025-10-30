@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "koa": "^2.15.4",
     "koa-router": "^12.0.1",
     "koa-bodyparser": "^4.4.1",
