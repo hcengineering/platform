@@ -125,27 +125,32 @@ export async function getCurrentSubscription (accountClient: AccountClient): Pro
 }
 
 export async function upgradePlan (): Promise<void> {
-  const accountClient = getAccountClient()
-  if (accountClient == null) return
-  const currentAccount = getCurrentAccount()
-  if (currentAccount == null) {
-    return
-  }
+  try {
+    const accountClient = getAccountClient()
+    if (accountClient == null) return
+    const currentAccount = getCurrentAccount()
+    if (currentAccount == null) {
+      return
+    }
 
-  const workspaceInfo = await accountClient.getWorkspaceInfo(false)
+    const workspaceInfo = await accountClient.getWorkspaceInfo(false)
 
-  const isBillingAccount =
-    workspaceInfo.billingAccount != null
-      ? workspaceInfo.billingAccount === currentAccount.uuid
-      : hasAccountRole(currentAccount, AccountRole.Owner)
+    const isBillingAccount =
+      workspaceInfo.billingAccount != null
+        ? workspaceInfo.billingAccount === currentAccount.uuid
+        : hasAccountRole(currentAccount, AccountRole.Owner)
 
-  if (isBillingAccount) {
-    showPopup(SubscriptionsModal, {})
-  } else {
-    showPopup(MessageBox, {
-      label: billing.string.UpgradePlan,
-      message: billing.string.AskBillingAdmin,
-      params: { canSubmit: false }
-    })
+    if (isBillingAccount) {
+      showPopup(SubscriptionsModal, {})
+    } else {
+      showPopup(MessageBox, {
+        label: billing.string.UpgradePlan,
+        message: billing.string.AskBillingAdmin,
+        params: { canSubmit: false }
+      })
+    }
+  } catch (error) {
+    console.error('Failed to show upgrade plan modal:', error)
+    return null
   }
 }

@@ -26,6 +26,7 @@
 
   const POLL_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes in milliseconds
 
+  // TODO: Store flag or recommended plan in workspace info
   async function checkLimits (): Promise<void> {
     try {
       limitExceeded = await isLimitExceeded()
