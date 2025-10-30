@@ -53,6 +53,8 @@
     "StorageUsage": "Depolama",
     "TrafficUsage": "Video/ses trafiği",
     "Usage": "Kullanım",
-    "Of": "/"
+    "Of": "/",
+    "UpgradePlan": "Planı Yükselt",
+    "LimitReached": "Çalışma alanı limiti aşıldı, bazı işlevler devre dışı bırakılabilir. Tam erişimi geri yüklemek için yükseltin."
   }
 }

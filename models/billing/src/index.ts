@@ -19,6 +19,8 @@ import { type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import billing, { type Tier } from '@hcengineering/billing'
 import { AccountRole, DOMAIN_MODEL } from '@hcengineering/core'
+import presentation from '@hcengineering/model-presentation'
+import workbench from '@hcengineering/workbench'
 
 export { billingId } from '@hcengineering/billing'
 export { billing as default }
@@ -107,4 +109,9 @@ export function createModel (builder: Builder): void {
     },
     billing.tier.Legendary
   )
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: workbench.extensions.WorkbenchExtensions,
+    component: billing.component.WorkbenchExtension
+  })
 }

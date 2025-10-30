@@ -53,6 +53,8 @@
     "StorageUsage": "Stockage",
     "TrafficUsage": "Trafic vidéo/audio",
     "Usage": "Utilisation",
-    "Of": "de"
+    "Of": "de",
+    "UpgradePlan": "Mettre à niveau le plan",
+    "LimitReached": "Limite de l'espace de travail atteinte, certaines fonctionnalités peuvent être désactivées. Mettez à niveau pour restaurer l'accès complet."
   }
 }

@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,17 +11,32 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Button } from '@hcengineering/ui'
+  import billing from '../plugin'
+  import { upgradePlan } from '../utils'
 
-import type { Resources } from '@hcengineering/platform'
-import Settings from './components/Settings.svelte'
-import UpgradeButton from './components/UpgradeButton.svelte'
-import WorkbenchExtension from './components/WorkbenchExtension.svelte'
+  export let label: string = 'Upgrade Plan'
+  export let disabled: boolean = false
+  export let size: 'medium' | 'small' = 'small'
 
-export default async (): Promise<Resources> => ({
-  component: {
-    Settings,
-    UpgradeButtonExt: UpgradeButton,
-    WorkbenchExtension
+  function handleClick (): void {
+    if (!disabled) {
+      upgradePlan()
+    }
   }
-})
+</script>
+
+<div class="px-2">
+  <Button
+    label={billing.string.UpgradePlan}
+    showTooltip={{
+      label: billing.string.LimitReached
+    }}
+    kind="attention"
+    {size}
+    {disabled}
+    on:click={handleClick}
+  />
+</div>

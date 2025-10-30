@@ -169,6 +169,65 @@
     }
   }
 
+  &.attention {
+    position: relative;
+    overflow: hidden;
+    font-weight: 600;
+    border: 2px solid var(--theme-button-attention-border);
+    background: var(--theme-button-attention-gradient);
+    animation: attention-pulse 2s ease-in-out infinite;
+
+    .icon { color: var(--button-accent-IconColor); }
+    span { color: var(--button-accent-LabelColor); }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--theme-button-attention-shine);
+      transition: left 0.6s ease;
+    }
+
+    &:not(.disabled, :disabled):hover {
+      background: var(--theme-button-attention-hover-gradient);
+      border-color: var(--theme-button-attention-hover-border);
+      transform: translateY(-2px);
+      box-shadow: var(--theme-button-attention-hover-shadow);
+      
+      &::before { left: 100%; }
+    }
+
+    &:not(.disabled, :disabled):active,
+    &.pressed:not(.disabled, :disabled) {
+      transform: translateY(0) scale(0.98);
+      box-shadow: var(--theme-button-attention-active-shadow);
+    }
+
+    &:not(.no-focus):focus {
+      box-shadow: var(--theme-button-attention-focus-shadow);
+    }
+
+    &:disabled:not(.loading),
+    &.disabled:not(.loading) {
+      background: var(--button-disabled-BackgroundColor);
+      border-color: var(--button-disabled-BackgroundColor);
+      animation: none;
+      transform: none;
+      box-shadow: none;
+
+      &::before { display: none; }
+    }
+
+    &.loading {
+      background: var(--theme-button-attention-active-gradient);
+      
+      span { color: var(--button-accent-LabelColor); }
+    }
+  }
+
   & > * { pointer-events: none; }
 }
 
@@ -530,6 +589,63 @@
     &:disabled {
       color: var(--negative-button-disabled-color);
       background-color: var(--negative-button-disabled);
+    }
+  }
+  &.attention {
+    position: relative;
+    overflow: hidden;
+    font-weight: 600;
+    color: var(--primary-button-color);
+    background: var(--theme-button-attention-gradient);
+    border: 2px solid var(--theme-button-attention-border);
+    animation: attention-pulse 2s ease-in-out infinite;
+
+    .btn-icon,
+    .btn-right-icon { color: var(--primary-button-color); }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--theme-button-attention-shine);
+      transition: left 0.6s ease;
+    }
+
+    &:hover {
+      background: var(--theme-button-attention-hover-gradient);
+      border-color: var(--theme-button-attention-hover-border);
+      transform: translateY(-2px);
+      box-shadow: var(--theme-button-attention-hover-shadow);
+      
+      &::before { left: 100%; }
+    }
+
+    &:active,
+    &.pressed,
+    &.pressed:hover {
+      transform: translateY(0) scale(0.98);
+      box-shadow: var(--theme-button-attention-active-shadow);
+    }
+
+    &:not(.no-focus):focus {
+      box-shadow: var(--theme-button-attention-focus-shadow);
+    }
+
+    &:disabled {
+      color: var(--primary-button-disabled-color);
+      background: var(--primary-button-disabled);
+      border-color: var(--primary-button-disabled);
+      animation: none;
+      transform: none;
+      box-shadow: none;
+
+      &::before { display: none; }
+
+      .btn-icon,
+      .btn-right-icon { color: var(--primary-button-disabled-color); }
     }
   }
   &.contrast {
@@ -900,6 +1016,17 @@
     }
     &:not(.no-focus):focus-within .hulySplitButton-second::after {
       content: none;
+    }
+  }
+
+  @keyframes attention-pulse {
+    0%, 100% {
+      box-shadow: var(--theme-button-attention-active-shadow), 0 0 0 0 var(--theme-button-attention-border);
+      transform: scale(1);
+    }
+    50% {
+      box-shadow: var(--theme-button-attention-hover-shadow), 0 0 0 4px rgba(124, 58, 237, 0.1);
+      transform: scale(1.02);
     }
   }
 }

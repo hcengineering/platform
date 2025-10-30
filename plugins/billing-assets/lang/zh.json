@@ -53,6 +53,8 @@
     "StorageUsage": "存储",
     "TrafficUsage": "视频/音频流量",
     "Usage": "使用情况",
-    "Of": "/"
+    "Of": "/",
+    "UpgradePlan": "升级计划",
+    "LimitReached": "已达到工作空间限制，某些功能可能被禁用。请升级以恢复完全访问权限。"
   }
 }

@@ -138,6 +138,15 @@
 
   --theme-button-container-color: #25262A;
 
+  --theme-button-attention-gradient: linear-gradient(135deg, #7C3AED, #A855F7);
+  --theme-button-attention-border: #A855F7;
+  --theme-button-attention-hover-gradient: linear-gradient(135deg, #8B5CF6, #7C3AED);
+  --theme-button-attention-hover-border: #7C3AED;
+  --theme-button-attention-active-gradient: linear-gradient(135deg, #6D28D9, #7C3AED);
+  --theme-button-attention-hover-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+  --theme-button-attention-active-shadow: 0 4px 12px rgba(124, 58, 237, 0.6);
+  --theme-button-attention-focus-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
+
   --theme-refinput-divider: rgba(255, 255, 255, .07);
   --theme-refinput-border: rgba(255, 255, 255, .1);
 
@@ -448,6 +457,15 @@
   --theme-button-contrast-border: rgba(0, 0, 0, .2);
 
   --theme-button-container-color: #F1F1F1;
+
+  --theme-button-attention-gradient: linear-gradient(135deg, #EC4899, #F97316);
+  --theme-button-attention-border: #F97316;
+  --theme-button-attention-hover-gradient: linear-gradient(135deg, #F97316, #EC4899);
+  --theme-button-attention-hover-border: #EC4899;
+  --theme-button-attention-active-gradient: linear-gradient(135deg, #DC2626, #F97316);
+  --theme-button-attention-hover-shadow: 0 8px 24px rgba(236, 72, 153, 0.3);
+  --theme-button-attention-active-shadow: 0 4px 12px rgba(236, 72, 153, 0.5);
+  --theme-button-attention-focus-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
 
   --theme-refinput-divider: rgba(0, 0, 0, .07);
   --theme-refinput-border: rgba(0, 0, 0, .1);
