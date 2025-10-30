@@ -18,12 +18,6 @@
   import Subscriptions from './Subscriptions.svelte'
 </script>
 
-<ModernDialog
-  width="100%"
-  label={billing.string.UpgradePlan}
-  withoutFooter={true}
-  className="extendedHeight"
-  on:close
->
+<ModernDialog width="100%" label={billing.string.UpgradePlan} withoutFooter={true} className="extendedHeight" on:close>
   <Subscriptions />
 </ModernDialog>

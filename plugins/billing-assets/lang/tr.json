@@ -55,6 +55,7 @@
     "Usage": "Kullanım",
     "Of": "/",
     "UpgradePlan": "Planı Yükselt",
-    "LimitReached": "Çalışma alanı limiti aşıldı, bazı işlevler devre dışı bırakılabilir. Tam erişimi geri yüklemek için yükseltin."
+    "LimitReached": "Çalışma alanı limiti aşıldı, bazı işlevler devre dışı bırakılabilir. Tam erişimi geri yüklemek için yükseltin.",
+    "AskBillingAdmin": "Lütfen planı yükseltmek için faturalama yöneticinizle iletişime geçin."
   }
 }

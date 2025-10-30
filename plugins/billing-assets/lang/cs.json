@@ -55,6 +55,7 @@
     "Usage": "Využití",
     "Of": "z",
     "UpgradePlan": "Upgradovat plán",
-    "LimitReached": "Dosažen limit pracovního prostoru, některé funkce mohou být zakázány. Upgradujte pro obnovení plného přístupu."
+    "LimitReached": "Dosažen limit pracovního prostoru, některé funkce mohou být zakázány. Upgradujte pro obnovení plného přístupu.",
+    "AskBillingAdmin": "Kontaktujte prosím svého správce fakturace pro upgrade plánu."
   }
 }

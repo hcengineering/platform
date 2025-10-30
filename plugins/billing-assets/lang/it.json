@@ -55,6 +55,7 @@
     "Usage": "Utilizzo",
     "Of": "di",
     "UpgradePlan": "Aggiorna Piano",
-    "LimitReached": "Limite workspace raggiunto, alcune funzionalità potrebbero essere disabilitate. Aggiorna per ripristinare l'accesso completo."
+    "LimitReached": "Limite workspace raggiunto, alcune funzionalità potrebbero essere disabilitate. Aggiorna per ripristinare l'accesso completo.",
+    "AskBillingAdmin": "Contatta il tuo amministratore di fatturazione per aggiornare il piano."
   }
 }

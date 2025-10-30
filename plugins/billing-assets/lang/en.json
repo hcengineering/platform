@@ -55,6 +55,7 @@
     "Usage": "Usage",
     "Of": "of",
     "UpgradePlan": "Upgrade Plan",
-    "LimitReached": "Workspace limit reached, some functionality may be disabled. Upgrade to restore full access."
+    "LimitReached": "Workspace limit reached, some functionality may be disabled. Upgrade to restore full access.",
+    "AskBillingAdmin": "Please contact your billing administrator to upgrade the plan."
   }
 }

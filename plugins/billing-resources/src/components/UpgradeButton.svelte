@@ -14,29 +14,61 @@
 -->
 <script lang="ts">
   import { Button } from '@hcengineering/ui'
+  import { onMount, onDestroy } from 'svelte'
   import billing from '../plugin'
-  import { upgradePlan } from '../utils'
+  import { upgradePlan, isLimitExceeded } from '../utils'
 
-  export let label: string = 'Upgrade Plan'
   export let disabled: boolean = false
   export let size: 'medium' | 'small' = 'small'
 
-  function handleClick (): void {
-    if (!disabled) {
-      upgradePlan()
+  let limitExceeded = false
+  let pollInterval: number | undefined
+
+  const POLL_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes in milliseconds
+
+  async function checkLimits (): Promise<void> {
+    try {
+      limitExceeded = await isLimitExceeded()
+    } catch (error) {
+      console.error('Error checking limits:', error)
+      limitExceeded = false
     }
   }
+
+  async function handleClick (): Promise<void> {
+    if (!disabled) {
+      void upgradePlan()
+    }
+  }
+
+  onMount(() => {
+    // Initial check
+    void checkLimits()
+
+    // Set up polling every 10 minutes
+    pollInterval = setInterval(() => {
+      void checkLimits()
+    }, POLL_INTERVAL_MS)
+  })
+
+  onDestroy(() => {
+    if (pollInterval !== undefined) {
+      clearInterval(pollInterval)
+    }
+  })
 </script>
 
-<div class="px-2">
-  <Button
-    label={billing.string.UpgradePlan}
-    showTooltip={{
-      label: billing.string.LimitReached
-    }}
-    kind="attention"
-    {size}
-    {disabled}
-    on:click={handleClick}
-  />
-</div>
+{#if limitExceeded}
+  <div class="px-2">
+    <Button
+      label={billing.string.UpgradePlan}
+      showTooltip={{
+        label: billing.string.LimitReached
+      }}
+      kind="attention"
+      {size}
+      {disabled}
+      on:click={handleClick}
+    />
+  </div>
+{/if}
