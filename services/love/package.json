@@ -57,7 +57,7 @@
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/love": "^0.7.0",
     "@hcengineering/drive": "^0.7.0",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.19",
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-storage": "^0.7.15",
     "@hcengineering/client": "^0.7.17",

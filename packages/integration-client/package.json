@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@hcengineering/account-client": "^0.7.18",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.19",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/kvs-client": "^0.7.0",
     "uuid": "^8.3.2"

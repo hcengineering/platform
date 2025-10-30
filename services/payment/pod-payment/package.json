@@ -63,7 +63,7 @@
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-client": "^0.7.15",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.19",
     "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/platform": "^0.7.17",
     "@polar-sh/sdk": "^0.37.0",

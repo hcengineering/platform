@@ -41,7 +41,7 @@
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/login": "^0.7.0",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.19",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/presentation": "^0.7.0",

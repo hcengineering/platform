@@ -34,7 +34,7 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.19",
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",

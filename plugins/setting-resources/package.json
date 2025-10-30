@@ -40,7 +40,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/analytics": "^0.7.17",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.19",
     "svelte": "^4.2.20",
     "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/setting": "^0.7.0",
