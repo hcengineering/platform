@@ -2,6 +2,18 @@
   "name": "@hcengineering/postgres",
   "entries": [
     {
+      "version": "0.7.17",
+      "tag": "@hcengineering/postgres_v0.7.17",
+      "date": "Thu, 30 Oct 2025 20:24:36 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Improve security pg perfomance"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.16",
       "tag": "@hcengineering/postgres_v0.7.16",
       "date": "Wed, 29 Oct 2025 18:01:56 GMT",

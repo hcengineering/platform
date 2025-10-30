@@ -470,16 +470,16 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
           const select = `SELECT ${this.getProjection(vars, domain, projection, joins, options?.associations)} FROM ${domain}`
 
-          const showArchived = shouldShowArchived(query, options)
-          const secJoin = this.addSecurity(_class, vars, query, showArchived, domain, ctx.contextData)
-          if (secJoin !== undefined) {
-            sqlChunks.push(secJoin)
-          }
           if (joins.length > 0) {
             sqlChunks.push(this.buildJoinString(vars, joins))
           }
           sqlChunks.push(`WHERE ${this.buildQuery(vars, _class, domain, query, joins, options)}`)
 
+          const showArchived = shouldShowArchived(query, options)
+          const secJoin = this.addSecurity(_class, vars, query, showArchived, domain, ctx.contextData)
+          if (secJoin !== undefined) {
+            sqlChunks.push(secJoin)
+          }
           if (options?.sort !== undefined) {
             sqlChunks.push(this.buildOrder(_class, domain, options.sort, joins))
           }
@@ -491,18 +491,17 @@ abstract class PostgresAdapterBase implements DbAdapter {
             let total = options?.total === true ? 0 : -1
             if (options?.total === true) {
               const pvars = new ValuesVariables()
-              const showArchived = shouldShowArchived(query, options)
-              const secJoin = this.addSecurity(_class, pvars, query, showArchived, domain, ctx.contextData)
               const totalChunks: string[] = []
-              if (secJoin !== undefined) {
-                totalChunks.push(secJoin)
-              }
               const joins = this.buildJoin(_class, options?.lookup)
               if (joins.length > 0) {
                 totalChunks.push(this.buildJoinString(pvars, joins))
               }
               totalChunks.push(`WHERE ${this.buildQuery(pvars, _class, domain, query, joins, options)}`)
-
+              const showArchived = shouldShowArchived(query, options)
+              const secJoin = this.addSecurity(_class, pvars, query, showArchived, domain, ctx.contextData)
+              if (secJoin !== undefined) {
+                totalChunks.push(secJoin)
+              }
               const totalReq = `SELECT COUNT(${domain}._id) as count FROM ${domain}`
               const totalSql = [totalReq, ...totalChunks].join(' ')
               const totalResult = await connection.execute(totalSql, pvars.getValues())
@@ -632,14 +631,14 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const privateCheck = domain === DOMAIN_SPACE ? ' OR sec.private = false' : ''
         const archivedCheck = showArchived ? '' : ' AND sec.archived = false'
         const q = `(sec._id = '${core.space.Space}' OR sec."_class" = '${core.class.SystemSpace}' OR sec.members @> '{"${acc.uuid}"}'${privateCheck})${archivedCheck}`
-        const res = `INNER JOIN ${translateDomain(DOMAIN_SPACE)} AS sec ON sec._id = ${domain}.${key} AND sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')}`
+        const res = `EXISTS (SELECT 1 FROM ${translateDomain(DOMAIN_SPACE)} sec WHERE sec._id = ${domain}.${key} AND sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND ${q})`
 
         const collabSec = getClassCollaborators(this.modelDb, this.hierarchy, _class)
         if (collabSec?.provideSecurity === true && [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(acc.role)) {
-          const collab = ` INNER JOIN ${translateDomain(DOMAIN_COLLABORATOR)} AS collab_sec ON collab_sec.collaborator = '${acc.uuid}' AND collab_sec."attachedTo" = ${domain}._id AND collab_sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} OR ${q}`
-          return res + collab
+          const collab = `OR EXISTS (SELECT 1 FROM ${translateDomain(DOMAIN_COLLABORATOR)} collab_sec WHERE collab_sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND collab_sec."attachedTo" = ${domain}._id AND collab_sec.collaborator = '${acc.uuid}')`
+          return `AND (${res} + ${collab})`
         }
-        return `${res} AND ${q}`
+        return `AND (${res})`
       }
     }
   }
