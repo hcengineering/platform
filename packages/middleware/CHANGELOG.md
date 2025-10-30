@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/middleware
 
-This log was last generated on Thu, 30 Oct 2025 20:53:38 GMT and should not be manually modified.
+This log was last generated on Thu, 30 Oct 2025 23:32:01 GMT and should not be manually modified.
+
+## 0.7.17
+Thu, 30 Oct 2025 23:32:01 GMT
+
+### Patches
+
+- allow guests to update their identities
 
 ## 0.7.16
 Thu, 30 Oct 2025 20:53:38 GMT

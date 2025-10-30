@@ -9,6 +9,7 @@ import core, {
   type Doc,
   hasAccountRole,
   type MeasureContext,
+  type PersonId,
   type SessionData,
   type Space,
   type Tx,
@@ -55,27 +56,28 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
       return
     }
     if (TxProcessor.isExtendsCUD(tx._class)) {
+      const socialIds = ctx.contextData.account.socialIds
       const cudTx = tx as TxCUD<Doc>
       const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
       if (isSpace) {
-        if (this.isForbiddenSpaceTx(cudTx as TxCUD<Space>)) {
+        if (this.isForbiddenSpaceTx(cudTx as TxCUD<Space>, socialIds)) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
-      } else if (cudTx.space !== core.space.DerivedTx && this.isForbiddenTx(cudTx)) {
+      } else if (cudTx.space !== core.space.DerivedTx && this.isForbiddenTx(cudTx, socialIds)) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       }
     }
   }
 
-  private isForbiddenTx (tx: TxCUD<Doc>): boolean {
+  private isForbiddenTx (tx: TxCUD<Doc>, socialIds: PersonId[]): boolean {
     if (tx._class === core.class.TxMixin) return false
-    return !this.hasMixinAccessLevel(tx)
+    return !this.hasMixinAccessLevel(tx, socialIds)
   }
 
-  private isForbiddenSpaceTx (tx: TxCUD<Space>): boolean {
+  private isForbiddenSpaceTx (tx: TxCUD<Space>, socialIds: PersonId[]): boolean {
     if (tx._class === core.class.TxRemoveDoc) return true
     if (tx._class === core.class.TxCreateDoc) {
-      return !this.hasMixinAccessLevel(tx)
+      return !this.hasMixinAccessLevel(tx, socialIds)
     }
     if (tx._class === core.class.TxUpdateDoc) {
       const updateTx = tx as TxUpdateDoc<Space>
@@ -91,7 +93,7 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
     return false
   }
 
-  private hasMixinAccessLevel (tx: TxCUD<Doc>): boolean {
+  private hasMixinAccessLevel (tx: TxCUD<Doc>, socialIds: PersonId[]): boolean {
     const h = this.context.hierarchy
     const accessLevelMixin = h.classHierarchyMixin(tx.objectClass, core.mixin.TxAccessLevel)
     if (accessLevelMixin === undefined) return false
@@ -102,6 +104,9 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
       return accessLevelMixin.removeAccessLevel === AccountRole.Guest
     }
     if (tx._class === core.class.TxUpdateDoc) {
+      if (accessLevelMixin.isIdentity === true && socialIds.includes(tx.objectId as unknown as PersonId)) {
+        return true
+      }
       return accessLevelMixin.updateAccessLevel === AccountRole.Guest
     }
     return false

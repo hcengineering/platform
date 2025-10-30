@@ -2,6 +2,18 @@
   "name": "@hcengineering/middleware",
   "entries": [
     {
+      "version": "0.7.17",
+      "tag": "@hcengineering/middleware_v0.7.17",
+      "date": "Thu, 30 Oct 2025 23:32:01 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "allow guests to update their identities"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.16",
       "tag": "@hcengineering/middleware_v0.7.16",
       "date": "Thu, 30 Oct 2025 20:53:38 GMT",

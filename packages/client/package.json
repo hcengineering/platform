@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.19",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/client-resources": "^0.7.17",
     "@hcengineering/client": "^0.7.17",
     "@hcengineering/account-client": "^0.7.18",
