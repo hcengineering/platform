@@ -52,7 +52,7 @@
     "@hcengineering/panel": "^0.7.0",
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/integration-client": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/setting-resources": "^0.7.0",
     "@hcengineering/view-resources": "^0.7.0"
   }

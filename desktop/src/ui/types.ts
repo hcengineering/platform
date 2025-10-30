@@ -64,6 +64,7 @@ export interface Config {
   MAIL_URL?: string
   COMMUNICATION_API_ENABLED?: string
   BILLING_URL?: string
+  PAYMENT_URL?: string
   PULSE_URL?: string
   PASSWORD_STRICTNESS?: 'very_strict' | 'strict' | 'normal' | 'none'
   EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string

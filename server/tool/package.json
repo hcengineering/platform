@@ -43,7 +43,7 @@
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/client-resources": "^0.7.17",
     "@hcengineering/client": "^0.7.17",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/importer": "^0.7.0",
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/rank": "^0.7.17",

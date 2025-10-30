@@ -53,7 +53,7 @@
     "express-static-gzip": "^2.2.0",
     "uuid": "^8.3.2",
     "cors": "^2.8.5",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/storage": "^0.7.17",
     "@hcengineering/server-storage": "^0.7.15",

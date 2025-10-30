@@ -446,6 +446,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/payment-client",
+      "projectFolder": "packages/payment-client",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/prod",
       "projectFolder": "dev/prod",
       "shouldPublish": false
@@ -1974,6 +1979,11 @@
     {
       "packageName": "@hcengineering/pod-billing",
       "projectFolder": "services/billing/pod-billing",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-payment",
+      "projectFolder": "services/payment/pod-payment",
       "shouldPublish": false
     },
     {

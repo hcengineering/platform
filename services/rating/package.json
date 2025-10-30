@@ -67,7 +67,7 @@
     "@koa/cors": "^5.0.0",
     "@hcengineering/middleware": "^0.7.15",
     "@hcengineering/server-client": "^0.7.15",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/server-storage": "^0.7.15",
     "@hcengineering/postgres": "^0.7.15",
     "@hcengineering/mongo": "^0.7.15",

@@ -61,7 +61,7 @@
     "@hcengineering/view": "^0.7.0",
     "@hcengineering/view-resources": "^0.7.0",
     "@hcengineering/workbench": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/achievement": "^0.7.0",
     "svelte": "^4.2.20",
     "crypto-js": "^4.2.0",

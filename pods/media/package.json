@@ -51,7 +51,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/analytics-service": "^0.7.17",
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/core": "^0.7.18",

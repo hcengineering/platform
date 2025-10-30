@@ -119,6 +119,8 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   const billingUrl = process.env.BILLING_URL
 
+  const paymentUrl = process.env.PAYMENT_URL
+
   const hulylakeUrl = process.env.HULYLAKE_URL
 
   const datalakeUrl = process.env.DATALAKE_URL
@@ -152,6 +154,7 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     streamUrl,
     mailUrl,
     billingUrl,
+    paymentUrl,
     pulseUrl,
     hulylakeUrl,
     datalakeUrl

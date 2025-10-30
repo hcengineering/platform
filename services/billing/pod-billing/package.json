@@ -65,7 +65,7 @@
     "@hcengineering/server-client": "^0.7.15",
     "@hcengineering/core": "^0.7.18",
     "@hcengineering/datalake": "^0.7.15",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/platform": "^0.7.17",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",

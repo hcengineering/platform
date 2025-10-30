@@ -56,7 +56,7 @@
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/server-notification": "^0.7.0",
     "@hcengineering/analytics": "^0.7.17",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/server-backup": "^0.7.0",
     "@hcengineering/postgres": "^0.7.15",
     "@hcengineering/mongo": "^0.7.15"

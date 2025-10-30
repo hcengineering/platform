@@ -72,7 +72,7 @@
     "@hcengineering/card": "^0.7.0",
     "@hcengineering/communication": "^0.7.0",
     "@hcengineering/preference": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.18",
     "@hcengineering/chat": "^0.7.0",
     "fast-equals": "^5.2.2",
     "svelte": "^4.2.20"
