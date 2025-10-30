@@ -48,7 +48,11 @@ export interface EmbedNodeProvider {
   autoEmbedUrl?: (src: string) => boolean
 }
 
-export type EmbedNodeView = (editor: Editor, root: HTMLDivElement) => EmbedNodeViewHandle | undefined
+export type EmbedNodeView = (
+  editor: Editor,
+  root: HTMLDivElement,
+  getPos: () => number
+) => EmbedNodeViewHandle | undefined
 export type EmbedNodeProviderConstructor<T> = (options: T) => EmbedNodeProvider
 
 export type EmbedCursor = ToolbarCursor<EmbedCursorProps>
@@ -101,7 +105,7 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
   },
 
   addNodeView () {
-    return ({ node, HTMLAttributes, editor }) => {
+    return ({ node, HTMLAttributes, editor, getPos }) => {
       const providerPromise = matchUrl(this.options.providers, node.attrs.src)
 
       const root = document.createElement('div')
@@ -109,7 +113,8 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
       root.setAttribute('data-embed-src', node.attrs.src)
       root.classList.add('embed-node')
 
-      setLoadingState(editor.view, root, true)
+      const pos = typeof getPos === 'function' ? getPos() : 0
+      setLoadingState(editor.view, pos, true)
       root.setAttribute('block-editor-blur', 'true')
 
       let handle: EmbedNodeViewHandle | undefined
@@ -117,13 +122,14 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
       void providerPromise
         .then((view) => {
           view = view ?? StubEmbedNodeView
-          handle = view(editor, root)
+          handle = view(editor, root, getPos)
           if (handle !== undefined) {
             root.classList.add(`embed-${handle.name}`)
           }
         })
         .finally(() => {
-          setLoadingState(editor.view, root, false)
+          const pos = typeof getPos === 'function' ? getPos() : 0
+          setLoadingState(editor.view, pos, false)
         })
 
       return {
@@ -500,7 +506,7 @@ export function replacePreviewContent (
   return tr
 }
 
-const StubEmbedNodeView: EmbedNodeView = (editor: Editor, root: HTMLElement) => {
+const StubEmbedNodeView: EmbedNodeView = (editor: Editor, root: HTMLDivElement, getPos: () => number) => {
   const hint = document.createElement('p')
   const hintIcon = hint.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'svg'))
   const hintSpan = hint.appendChild(document.createElement('span'))
