@@ -88,7 +88,7 @@ export interface SelectionCursorContext {
 
 export const ToolbarExtension = Extension.create<ToolbarOptions>({
   addProseMirrorPlugins () {
-    return [ToolbarControlPlugin(this.editor, this.options)]
+    return [LoadingStatePlugin(), ToolbarControlPlugin(this.editor, this.options)]
   }
 })
 
@@ -96,6 +96,67 @@ export interface ToolbarControlTxMeta {
   cursor?: ToolbarCursor<any> | null
   site?: string
   providers?: Array<ToolbarProvider<any>>
+}
+
+export const loadingStatePluginKey = new PluginKey('loadingState')
+
+export interface LoadingStatePluginState {
+  loadingNodes: Set<number>
+}
+
+export interface LoadingStateTxMeta {
+  setLoading?: { pos: number, loading: boolean }
+}
+
+export function LoadingStatePlugin (): Plugin<LoadingStatePluginState> {
+  return new Plugin<LoadingStatePluginState>({
+    key: loadingStatePluginKey,
+
+    state: {
+      init: () => ({
+        loadingNodes: new Set<number>()
+      }),
+
+      apply (tr, prevState) {
+        const meta = tr.getMeta(loadingStatePluginKey) as LoadingStateTxMeta | undefined
+        let loadingNodes = prevState.loadingNodes
+
+        // Handle loading state changes
+        if (meta?.setLoading !== undefined) {
+          loadingNodes = new Set(loadingNodes)
+          if (meta.setLoading.loading) {
+            loadingNodes.add(meta.setLoading.pos)
+          } else {
+            loadingNodes.delete(meta.setLoading.pos)
+          }
+        }
+
+        // Map positions through document changes
+        if (tr.docChanged && loadingNodes.size > 0) {
+          const mapped = new Set<number>()
+          loadingNodes.forEach((pos) => {
+            try {
+              const mappedPos = tr.mapping.map(pos, -1)
+              // Verify position is still valid
+              if (mappedPos >= 0 && mappedPos < tr.doc.content.size) {
+                mapped.add(mappedPos)
+              }
+            } catch (e) {
+              // Position no longer valid, skip it
+              console.debug('LoadingStatePlugin: position no longer valid', pos)
+            }
+          })
+          loadingNodes = mapped
+        }
+
+        return { loadingNodes }
+      }
+    }
+  })
+}
+
+export function getLoadingState (state: EditorState): LoadingStatePluginState | undefined {
+  return loadingStatePluginKey.getState(state) as LoadingStatePluginState | undefined
 }
 
 export const toolbarPluginKey = new PluginKey('dynamicToolbar')
@@ -326,6 +387,7 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
       editor.on('transaction', ({ editor, transaction: tr }) => {
         const meta = tr.getMeta(toolbarPluginKey) as ToolbarControlTxMeta
         const loadingState = tr.getMeta('loadingState') as boolean | undefined
+
         if (meta?.cursor !== undefined && !eqCursors(currCursor, meta.cursor)) {
           prevCursor = currCursor
           currCursor = meta.cursor !== null ? { ...meta.cursor } : null
@@ -506,17 +568,22 @@ function updateCursorFromMouseEvent (view: EditorView, event: MouseEvent): void 
 }
 
 function scanForLoadingState (view: EditorView, range: Range): boolean {
-  let isLoading = false
-  view.state.doc.nodesBetween(range.from, range.to, (node, pos) => {
-    const element = view.nodeDOM(pos)
-    if (!(element instanceof HTMLElement)) return
+  if (range.from > range.to || range.from < 0) {
+    return false
+  }
 
-    if (element.dataset.loading === 'true') {
-      isLoading = true
-      return false
+  const loadingState = getLoadingState(view.state)
+  if (loadingState === undefined || loadingState.loadingNodes.size === 0) {
+    return false
+  }
+
+  for (const pos of loadingState.loadingNodes) {
+    if (pos >= range.from && pos <= range.to) {
+      return true
     }
-  })
-  return isLoading
+  }
+
+  return false
 }
 
 function scanForAnchor (view: EditorView, range: Range): HTMLElement | undefined {
@@ -653,15 +720,12 @@ function minmax (value = 0, min = 0, max = 0): number {
   return Math.min(Math.max(value, min), max)
 }
 
-export function setLoadingState (view: EditorView, element: HTMLElement, loading: boolean): void {
-  if (loading) {
-    element.setAttribute('data-loading', 'true')
-  } else {
-    element.removeAttribute('data-loading')
-    requestAnimationFrame(() => {
-      view.dispatch(view.state.tr.setMeta('loadingState', loading))
-    })
+export function setLoadingState (view: EditorView, pos: number, loading: boolean): void {
+  const meta: LoadingStateTxMeta = {
+    setLoading: { pos, loading }
   }
+
+  view.dispatch(view.state.tr.setMeta(loadingStatePluginKey, meta).setMeta('loadingState', loading))
 }
 
 export const GeneralToolbarProvider: ToolbarProvider<any> = {
