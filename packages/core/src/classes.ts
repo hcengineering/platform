@@ -580,6 +580,7 @@ export interface TxAccessLevel extends Class<Doc> {
   createAccessLevel?: AccountRole
   removeAccessLevel?: AccountRole
   updateAccessLevel?: AccountRole
+  isIdentity?: boolean
 }
 
 /**

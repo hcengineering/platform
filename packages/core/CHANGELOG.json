@@ -2,6 +2,18 @@
   "name": "@hcengineering/core",
   "entries": [
     {
+      "version": "0.7.21",
+      "tag": "@hcengineering/core_v0.7.21",
+      "date": "Thu, 30 Oct 2025 23:11:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "extend TxAccessLevel"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.20",
       "tag": "@hcengineering/core_v0.7.20",
       "date": "Thu, 30 Oct 2025 08:41:42 GMT",
