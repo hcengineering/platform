@@ -151,6 +151,5 @@ export async function upgradePlan (): Promise<void> {
     }
   } catch (error) {
     console.error('Failed to show upgrade plan modal:', error)
-    return null
   }
 }
