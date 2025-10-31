@@ -206,7 +206,11 @@ export async function login (
     }
 
     if (!verifyPassword(password, existingAccount.hash, existingAccount.salt)) {
-      await recordFailedLoginAttempt(db, existingAccount.uuid)
+      try {
+        await recordFailedLoginAttempt(db, existingAccount.uuid)
+      } catch (err) {
+        ctx.warn('Failed to record failed login attempt', { error: err, account: existingAccount.uuid })
+      }
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
 
