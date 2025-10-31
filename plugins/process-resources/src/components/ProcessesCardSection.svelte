@@ -18,11 +18,14 @@
   import ProcessesExtension from './ProcessesExtension.svelte'
 
   export let doc: Card
+  export let hidden: boolean = false
 </script>
 
-<div class="processes__section">
-  <ProcessesExtension card={doc} on:loaded />
-</div>
+{#if !hidden}
+  <div class="processes__section">
+    <ProcessesExtension card={doc} on:loaded />
+  </div>
+{/if}
 
 <style lang="scss">
   .processes__section {

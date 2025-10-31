@@ -21,6 +21,7 @@
 
   export let readonly: boolean = false
   export let doc: Card
+  export let hidden: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -31,9 +32,11 @@
   })
 </script>
 
-<div class="section-children">
-  <Childs object={doc} {readonly} on:loaded emptyKind="placeholder" />
-</div>
+{#if !hidden}
+  <div class="section-children">
+    <Childs object={doc} {readonly} on:loaded emptyKind="placeholder" limit={10} />
+  </div>
+{/if}
 
 <style lang="scss">
   .section-children {

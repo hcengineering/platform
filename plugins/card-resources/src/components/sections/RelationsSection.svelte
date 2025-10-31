@@ -19,11 +19,14 @@
 
   export let readonly: boolean = false
   export let doc: Card
+  export let hidden: boolean = false
 </script>
 
-<div class="section-relations">
-  <RelationsEditor object={doc} {readonly} on:loaded emptyKind="placeholder" />
-</div>
+{#if hidden}
+  <div class="section-relations">
+    <RelationsEditor object={doc} {readonly} on:loaded emptyKind="placeholder" />
+  </div>
+{/if}
 
 <style lang="scss">
   .section-relations {

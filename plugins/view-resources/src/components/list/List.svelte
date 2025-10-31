@@ -53,6 +53,7 @@
   export let selection: number | undefined = undefined
   export let compactMode: boolean = false
   export let listProvider: SelectionFocusProvider
+  export let singleCategoryLimit: number | undefined = undefined
 
   const limiter = new RateLimiter(10)
 
@@ -217,6 +218,7 @@
     {createItemDialogProps}
     {createItemLabel}
     {createItemEvent}
+    {singleCategoryLimit}
     on:check
     on:uncheckAll={uncheckAll}
     on:row-focus

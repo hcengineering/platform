@@ -77,6 +77,11 @@
       left: 50%;
       transform: translateX(-50%);
       top: 0.25rem;
+      min-height: 1.625rem;
+      min-width: 3.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   }
 

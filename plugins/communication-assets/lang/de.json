@@ -92,6 +92,7 @@
     "Members": "Mitglieder",
     "Translate": "Übersetzen",
     "WriteMessageEllipsis": "Nachricht schreiben...",
-    "EditMessageEllipsis": "Nachricht bearbeiten..."
+    "EditMessageEllipsis": "Nachricht bearbeiten...",
+    "ArrowDownMessages": "↓ Neueste Nachrichten"
   }
 }

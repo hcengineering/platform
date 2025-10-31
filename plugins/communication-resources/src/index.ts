@@ -15,7 +15,6 @@
 
 import { type Resources } from '@hcengineering/platform'
 
-import CardMessagesSection from './components/CardMessagesSection.svelte'
 import PollPresenter from './components/poll/PollPresenter.svelte'
 import CreatePoll from './components/poll/CreatePoll.svelte'
 import PollPreview from './components/poll/PollPreview.svelte'
@@ -53,10 +52,10 @@ export { default as AttachmentsPreview } from './components/AttachmentsPreview.s
 export { default as MessagePreview } from './components/MessagePreview.svelte'
 export { default as ExtendedMessagePreview } from './components/preview/ExtendedMessagePreview.svelte'
 export { default as PreviewTemplate } from './components/preview/PreviewTemplate.svelte'
+export { default as MessagesSection } from './components/MessagesSection.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
-    CardMessagesSection,
     DirectIcon,
     CreateDirect
   },

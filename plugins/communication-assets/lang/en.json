@@ -92,6 +92,7 @@
     "Members": "Members",
     "Translate": "Translate",
     "WriteMessageEllipsis": "Write a message...",
-    "EditMessageEllipsis": "Edit message..."
+    "EditMessageEllipsis": "Edit message...",
+    "ArrowDownMessages": "↓ Latest messages"
   }
 }

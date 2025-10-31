@@ -84,6 +84,7 @@
             class="emoji"
             style="display: inline-block"
             class:emojiOnly={parsedTextWithEmojis.emojisOnly && singleTextNode}
+            class:custom={'image' in textOrEmoji}
           >
             {#if 'image' in textOrEmoji}
               {@const blob = toRefBlob(textOrEmoji.image)}
@@ -260,6 +261,10 @@
   .emojiOnly {
     font-size: 2rem;
     line-height: 115%;
+
+    &.custom {
+      min-height: 2.625rem;
+    }
   }
 
   .img {

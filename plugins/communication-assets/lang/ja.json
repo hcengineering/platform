@@ -92,6 +92,7 @@
     "Members": "メンバー",
     "Translate": "翻訳",
     "WriteMessageEllipsis": "メッセージを書く...",
-    "EditMessageEllipsis": "メッセージを編集..."
+    "EditMessageEllipsis": "メッセージを編集...",
+    "ArrowDownMessages": "↓ 最新のメッセージ"
   }
 }

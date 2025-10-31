@@ -15,10 +15,10 @@
   import { Card } from '@hcengineering/card'
   import {
     type Message,
+    type NotificationContext,
     MessageType,
-    Notification,
-    NotificationContext,
     NotificationType,
+    Notification,
     Window
   } from '@hcengineering/communication-types'
   import {
@@ -27,9 +27,8 @@
     getCommunicationClient,
     type MessageQueryParams
   } from '@hcengineering/presentation'
-  import { getCurrentAccount, SortingOrder } from '@hcengineering/core'
+  import { SortingOrder, getCurrentAccount } from '@hcengineering/core'
   import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte'
-  import { MessagesNavigationAnchors } from '@hcengineering/communication'
   import { deviceOptionsStore as deviceInfo, isAppFocusedStore } from '@hcengineering/ui'
   import { translationStore } from '@hcengineering/contact-resources'
 
@@ -41,11 +40,9 @@
   export let card: Card
   export let context: NotificationContext | undefined = undefined
   export let readonly = false
-  export let isLoadingBefore: boolean = false
-  export let shouldScrollToStart: boolean = false
-  export let position: MessagesNavigationAnchors = MessagesNavigationAnchors.ConversationStart
   export let scrollDiv: HTMLDivElement
   export let contentDiv: HTMLDivElement
+  export let position: 'start' | 'end'
 
   const dispatch = createEventDispatcher()
   const me = getCurrentAccount()
@@ -75,24 +72,28 @@
   let shouldScrollToNew = false
   let atBottom = false
   let restore: { scrollHeight: number } | undefined = undefined
-  let prevPosition: MessagesNavigationAnchors = position
+
+  let prevPosition: 'start' | 'end' = position
+  let isTopLoaded: boolean | null = null
+  let isTailLoaded = false
 
   let bottomOffset: number = 0
   let topOffset: number = 0
 
-  const limit = $deviceInfo.isMobile ? 25 : 50
+  const limit = $deviceInfo.isMobile ? 20 : 50
   let queryDef = getBaseQuery()
 
   export function scrollDown (): void {
     shouldScrollToEnd = true
-    position = MessagesNavigationAnchors.LatestMessages
-
+    position = 'end'
     reinit(position, true)
+    readAllReactions()
   }
 
   export function canScrollDown (): boolean {
     return window !== undefined && window.hasNextPage()
   }
+
   $: if (
     (context?.lastView?.getTime() ?? 0) >= (context?.lastUpdate?.getTime() ?? 0) &&
     (notifications?.length ?? 0) > 0 &&
@@ -109,6 +110,12 @@
   $: query.query(
     queryDef,
     (res: Window<Message>) => {
+      if (shouldRestoreScrollTop) {
+        restore = {
+          scrollHeight: scrollDiv.scrollHeight
+        }
+        shouldRestoreScrollTop = false
+      }
       window = res
       messages = queryDef.order === SortingOrder.Ascending ? res.getResult() : res.getResult().reverse()
 
@@ -118,9 +125,20 @@
         void window.loadPrevPage()
       }
 
+      if (isTopLoaded !== true && !window.hasPrevPage()) {
+        isTopLoaded = true
+        dispatch('top-loaded')
+      } else if (isTopLoaded !== false && window.hasPrevPage()) {
+        isTopLoaded = false
+        dispatch('top-hidden')
+      }
+
+      isTailLoaded = !window.hasNextPage()
+
       groups = groupMessagesByDay(messages)
       isLoading = messages.length < limit && (res.hasNextPage() || res.hasPrevPage())
-      void onUpdate(messages)
+
+      void onMessagesReceive(messages)
     },
     {
       autoExpand: true,
@@ -160,7 +178,7 @@
         if (!isScrollInitialized) return
         const diff = node.clientHeight - prev
         prev = node.clientHeight
-        if (diff < 0 || position !== MessagesNavigationAnchors.LatestMessages) return
+        if (diff < 0 || window?.hasNextPage()) return
 
         if (atBottom || bottomOffset - diff < 30) {
           dispatch('action', { id: 'hideScrollBar' })
@@ -180,31 +198,30 @@
     }
   }
 
-  function reinit (position: MessagesNavigationAnchors, force = false): void {
-    if (prevPosition === position && !force) {
-      return
-    }
+  function reinit (position: 'start' | 'end', force = false): void {
+    if (prevPosition === position && !force) return
     prevPosition = position
-    if (position === MessagesNavigationAnchors.ConversationStart && window && !window.hasPrevPage()) {
-      if (shouldScrollToStart) {
-        contentDiv?.scrollIntoView({ behavior: 'instant', block: 'start' })
-      }
-    } else if (position === MessagesNavigationAnchors.LatestMessages && window && !window.hasNextPage()) {
+
+    if (position === 'start' && isTopLoaded) return
+
+    if (position === 'end' && isTailLoaded) {
       scrollToBottom(true)
     } else {
-      queryDef = getBaseQuery()
       window = undefined
       isPageLoading = false
+      isTailLoaded = false
+      isTopLoaded = null
       restore = undefined
       messages = []
       groups = []
       isLoading = true
       isScrollInitialized = false
+      queryDef = getBaseQuery()
     }
   }
 
   function getBaseQuery (): MessageQueryParams {
-    if (position === MessagesNavigationAnchors.ConversationStart) {
+    if (position === 'start') {
       return {
         cardId: card._id,
         order: SortingOrder.Ascending,
@@ -215,6 +232,7 @@
     initialLastUpdate = context?.lastUpdate
     const unread = initialLastView != null && initialLastUpdate != null && initialLastUpdate > initialLastView
     const order = unread && !shouldScrollToEnd ? SortingOrder.Ascending : SortingOrder.Descending
+
     return {
       cardId: card._id,
       order,
@@ -243,7 +261,7 @@
   }
 
   function shouldLoadPrevPage (): boolean {
-    return topOffset > -1 && topOffset <= 300
+    return topOffset <= 10
   }
 
   function shouldLoadNextPage (): boolean {
@@ -260,6 +278,8 @@
     }
   }
 
+  let shouldRestoreScrollTop = false
+
   async function loadPrevPage (): Promise<void> {
     if (window === undefined || isPageLoading || scrollDiv == null) return
 
@@ -267,14 +287,8 @@
       isPageLoading = true
       shouldScrollToNew = false
       atBottom = false
+      shouldRestoreScrollTop = true
       await window.loadPrevPage()
-      const topOffset = getTopOffset()
-      const shouldRestore = topOffset > -1 && topOffset <= 70
-      restore = shouldRestore
-        ? {
-            scrollHeight: scrollDiv.scrollHeight
-          }
-        : undefined
     } finally {
       isPageLoading = false
     }
@@ -300,36 +314,13 @@
   }
 
   function restoreScroll (): void {
-    if (restore == null || !$isAppFocusedStore) return
+    if (restore == null) return
     dispatch('action', { id: 'hideScrollBar' })
     const newScrollHeight = scrollDiv.scrollHeight
     scrollDiv.scrollTop = newScrollHeight - restore.scrollHeight + scrollDiv.scrollTop
     restore = undefined
   }
 
-  function checkPositionOnScroll (): void {
-    if (!isScrollInitialized || isPageLoading) return
-
-    if (position === MessagesNavigationAnchors.ConversationStart && window) {
-      if (!window.hasNextPage() && bottomOffset < 400) {
-        dispatch('change', MessagesNavigationAnchors.LatestMessages)
-      }
-      if (!window.hasPrevPage() && topOffset < 400 && topOffset > -1) {
-        dispatch('change', MessagesNavigationAnchors.ConversationStart)
-      }
-    } else if (position === MessagesNavigationAnchors.LatestMessages && window) {
-      if (!window.hasPrevPage() && topOffset < 400 && topOffset > -1) {
-        dispatch('change', MessagesNavigationAnchors.ConversationStart)
-      }
-      if (!window.hasNextPage() && bottomOffset < 400) {
-        dispatch('change', MessagesNavigationAnchors.LatestMessages)
-      }
-    }
-
-    if (topOffset < 0 && isScrollInitialized) {
-      position = MessagesNavigationAnchors.ConversationStart
-    }
-  }
   let rafId: any | null = null
   let lastScrollTop: number = 0
 
@@ -344,7 +335,6 @@
       topOffset = getTopOffset()
       updateShouldScrollToNew()
       loadMore(direction)
-      checkPositionOnScroll()
       void readAll()
       rafId = null
     })
@@ -457,7 +447,7 @@
     }
   }
 
-  async function onUpdate (res: Message[]): Promise<void> {
+  async function onMessagesReceive (res: Message[]): Promise<void> {
     if (messagesCount === res.length) return
     const prevCount = messagesCount
     messagesCount = res.length
@@ -528,7 +518,7 @@
     })
   }
 
-  $: void initializeScroll(isLoading, isLoadingBefore, separatorDiv)
+  $: void initializeScroll(isLoading, separatorDiv)
 
   function scrollToWithOffset (container: HTMLElement, target: HTMLElement, offset: number): void {
     const containerTop = container.getBoundingClientRect().top
@@ -543,28 +533,18 @@
   $: if (isScrollInitialized) {
     dispatch('loaded')
   }
-
-  async function initializeScroll (
-    isLoading: boolean,
-    isLoadingBefore: boolean,
-    separatorDiv?: HTMLDivElement | null
-  ): Promise<void> {
+  async function initializeScroll (isLoading: boolean, separatorDiv?: HTMLDivElement | null): Promise<void> {
     if (isLoading || isScrollInitialized) return
 
-    if (position === MessagesNavigationAnchors.ConversationStart) {
-      if (shouldScrollToStart) {
-        await tick()
-        contentDiv.scrollIntoView()
-      }
+    if (position === 'start') {
       isScrollInitialized = true
       shouldScrollToNew = false
       updateShouldScrollToNew()
-      dispatch('loaded')
       bottomOffset = getBottomOffset()
       topOffset = getTopOffset()
+      dispatch('loaded')
       return
     }
-    if (isLoadingBefore) return
 
     const separatorIndex =
       initialLastView !== undefined
@@ -580,14 +560,11 @@
       scrollToBottom(true)
       shouldScrollToNew = true
       atBottom = true
-      isScrollInitialized = true
-      separatorDate = undefined
       bottomOffset = getBottomOffset()
       topOffset = getTopOffset()
+      separatorDate = undefined
+      isScrollInitialized = true
       dispatch('loaded')
-      if (shouldScrollToEnd) {
-        readAllReactions()
-      }
       return
     }
 
@@ -595,12 +572,12 @@
     if (separatorDiv != null) {
       await tick() // Wait for the DOM to update
       scrollToWithOffset(scrollDiv, separatorDiv, 80)
-      setTimeout(() => {
-        isScrollInitialized = true
-      }, 10)
       updateShouldScrollToNew()
       bottomOffset = getBottomOffset()
       topOffset = getTopOffset()
+      setTimeout(() => {
+        isScrollInitialized = true
+      }, 10)
       dispatch('loaded')
     }
   }

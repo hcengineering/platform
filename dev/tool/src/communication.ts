@@ -746,8 +746,10 @@ async function migrateMessages (
 ): Promise<void> {
   if (cards.length === 0) return
 
-  for (const card of cards) {
-    await createGroupsBlob(hulylake, card._id)
+  if (doc.__migratedUntil == null) {
+    for (const card of cards) {
+      await createGroupsBlob(hulylake, card._id)
+    }
   }
   const iterator = await getActivityCursor(db, ws.uuid, doc._id, chunter.class.ChatMessage, 400, doc.__migratedUntil)
 
@@ -1139,6 +1141,16 @@ function toMessage (r: any): RawMessage | undefined {
 }
 
 function toAttachment (a: any): RawAttachment | undefined {
+  let metadata = a.metadata ?? {}
+
+  if (typeof metadata === 'string') {
+    try {
+      metadata = JSON.parse(metadata)
+    } catch (e) {
+      metadata = {}
+    }
+  }
+
   try {
     return {
       _id: a._id,
@@ -1147,7 +1159,7 @@ function toAttachment (a: any): RawAttachment | undefined {
       type: a.type,
       name: a.name,
       size: Number(a.size ?? 0),
-      metadata: a.metadata ?? {},
+      metadata,
       file: a.file
     }
   } catch (e) {

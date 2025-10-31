@@ -12,9 +12,6 @@
 // limitations under the License.
 
 import { type Builder } from '@hcengineering/model'
-import core from '@hcengineering/core'
-import card from '@hcengineering/model-card'
-import { MessagesNavigationAnchors } from '@hcengineering/communication'
 
 import communication from './plugin'
 import { buildTypes } from './types'
@@ -29,27 +26,6 @@ export function createModel (builder: Builder): void {
   buildMessageActions(builder)
   buildCardActions(builder)
   buildApplets(builder)
-
-  builder.createDoc(
-    card.class.CardSection,
-    core.space.Model,
-    {
-      label: communication.string.Messages,
-      component: communication.component.CardMessagesSection,
-      order: 9999,
-      navigation: [
-        {
-          id: MessagesNavigationAnchors.ConversationStart,
-          label: communication.string.FirstMessages
-        },
-        {
-          id: MessagesNavigationAnchors.LatestMessages,
-          label: communication.string.LatestMessages
-        }
-      ]
-    },
-    communication.ids.CardMessagesSection
-  )
 }
 
 export default communication
