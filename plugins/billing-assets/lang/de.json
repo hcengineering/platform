@@ -56,6 +56,6 @@
     "Of": "von",
     "UpgradePlan": "Plan upgraden",
     "LimitReached": "Arbeitsbereich-Limit erreicht, einige Funktionen könnten deaktiviert sein. Upgraden Sie für vollen Zugriff.",
-    "AskBillingAdmin": "Bitte kontaktieren Sie Ihren Abrechnungsadministrator, um den Plan zu upgraden."
+    "RestrictedPlans": "Nur der Arbeitsbereichsbesitzer oder Abrechnungsmanager kann den Abonnementplan ändern."
   }
 }
