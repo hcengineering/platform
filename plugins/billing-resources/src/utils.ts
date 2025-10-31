@@ -14,7 +14,7 @@
 //
 import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
-import presentation, { MessageBox, getClient } from '@hcengineering/presentation'
+import presentation, { getClient } from '@hcengineering/presentation'
 import billing from '@hcengineering/billing'
 import {
   getClient as getAccountClientRaw,
@@ -140,15 +140,7 @@ export async function upgradePlan (): Promise<void> {
         ? workspaceInfo.billingAccount === currentAccount.uuid
         : hasAccountRole(currentAccount, AccountRole.Owner)
 
-    if (isBillingAccount) {
-      showPopup(SubscriptionsModal, {})
-    } else {
-      showPopup(MessageBox, {
-        label: billing.string.UpgradePlan,
-        message: billing.string.AskBillingAdmin,
-        params: { canSubmit: false }
-      })
-    }
+    showPopup(SubscriptionsModal, { isReadOnly: !isBillingAccount })
   } catch (error) {
     console.error('Failed to show upgrade plan modal:', error)
   }

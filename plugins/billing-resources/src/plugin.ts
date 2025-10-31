@@ -51,6 +51,7 @@ export default mergeIds(billingId, billing, {
     StorageUsage: '' as IntlString,
     TrafficUsage: '' as IntlString,
     Usage: '' as IntlString,
-    Of: '' as IntlString
+    Of: '' as IntlString,
+    RestrictedPlans: '' as IntlString
   }
 })

@@ -56,6 +56,6 @@
     "Of": "z",
     "UpgradePlan": "Upgradovat plán",
     "LimitReached": "Dosažen limit pracovního prostoru, některé funkce mohou být zakázány. Upgradujte pro obnovení plného přístupu.",
-    "AskBillingAdmin": "Kontaktujte prosím svého správce fakturace pro upgrade plánu."
+    "RestrictedPlans": "Pouze vlastník pracovního prostoru nebo správce fakturace může změnit plán předplatného."
   }
 }

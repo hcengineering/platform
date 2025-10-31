@@ -56,6 +56,6 @@
     "Of": "/",
     "UpgradePlan": "升级计划",
     "LimitReached": "已达到工作空间限制，某些功能可能被禁用。请升级以恢复完全访问权限。",
-    "AskBillingAdmin": "请联系您的计费管理员以升级计划。"
+    "RestrictedPlans": "只有工作空间所有者或计费管理员才能更改订阅计划。"
   }
 }
