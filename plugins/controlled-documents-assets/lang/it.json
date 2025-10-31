@@ -197,6 +197,7 @@
     "ArchiveDocsConfirm": "Vuoi davvero archiviare i seguenti documenti: {titles}?",
     "DocumentInHierarchy": "Documento nella gerarchia",
     "FirstDraftVersion": "Questa è la prima versione bozza del documento. Non c'è ancora una storia.",
+    "FirstOrNotAvailable": "Questa è la prima versione disponibile del documento. Non c'è ancora una storia o non è disponibile.",
     "EffectiveDocumentLifecycle": "Ciclo di vita del documento effettivo",
     "ReasonAndImpact": "Motivo e Impatto",
     "ImpactAnalysis": "Analisi dell'impatto",

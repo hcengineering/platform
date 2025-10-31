@@ -202,6 +202,7 @@
     "ArchiveDocsConfirm": "本当に次のドキュメントをアーカイブしますか: {titles}?",
     "DocumentInHierarchy": "階層内のドキュメント",
     "FirstDraftVersion": "これはドキュメントの最初のドラフトバージョンです。まだ履歴はありません。",
+    "FirstOrNotAvailable": "これはドキュメントの最初の利用可能なバージョンです。履歴がまだ存在しないか、利用できません。",
     "EffectiveDocumentLifecycle": "有効なドキュメントライフサイクル",
     "ReasonAndImpact": "理由と影響",
     "ImpactAnalysis": "影響分析",

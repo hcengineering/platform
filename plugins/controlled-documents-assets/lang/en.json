@@ -237,6 +237,7 @@
 
     "DocumentInHierarchy": "Document in hierarchy",
     "FirstDraftVersion": "This is the first draft version of the document. There's no history yet.",
+    "FirstOrNotAvailable": "This is the first available version of the document. There's no history yet or it's not available.",
 
     "EffectiveDocumentLifecycle": "Effective document lifecycle",
 

@@ -65,7 +65,7 @@
     "koa-router": "^12.0.1",
     "koa-bodyparser": "^4.4.1",
     "@koa/cors": "^5.0.0",
-    "@hcengineering/middleware": "^0.7.15",
+    "@hcengineering/middleware": "^0.7.17",
     "@hcengineering/server-client": "^0.7.15",
     "@hcengineering/account-client": "^0.7.19",
     "@hcengineering/server-storage": "^0.7.15",
