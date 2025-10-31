@@ -1,6 +1,11 @@
 # Change Log - @hcengineering/analytics
 
-This log was last generated on Tue, 14 Oct 2025 04:58:17 GMT and should not be manually modified.
+This log was last generated on Fri, 31 Oct 2025 20:11:13 GMT and should not be manually modified.
+
+## 0.7.17
+Fri, 31 Oct 2025 20:11:13 GMT
+
+_Version update only_
 
 ## 0.7.5
 Tue, 14 Oct 2025 04:58:17 GMT

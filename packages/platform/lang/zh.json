@@ -20,8 +20,9 @@
     "WorkspaceRateLimit": "服务器繁忙，请稍后再试",
     "AccountAlreadyConfirmed": "账户已确认",
     "WorkspaceAlreadyExists": "工作区已存在",
-    "InvalidOtp": "无效的代码",
-    "InviteNotFound": "未找到 id 为 {email} 的邀请。",
+        "InvalidOtp": "无效的代码",
+    "PasswordLoginLocked": "由于登录尝试失败次数过多，密码登录已被锁定。请使用 OTP 登录方式解锁您的账户。",
+    "InviteNotFound": "未找到包含以下电子邮件的邀请:{email}。",
     "WorkspaceLimitReached": "您已达到工作区限制。请联系我们...",
     "ReadOnlyAccount": "匿名访客演示",
     "SocialIdAlreadyExists": "社交ID已存在"

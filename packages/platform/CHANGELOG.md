@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/platform
 
-This log was last generated on Tue, 14 Oct 2025 04:58:17 GMT and should not be manually modified.
+This log was last generated on Fri, 31 Oct 2025 20:11:13 GMT and should not be manually modified.
+
+## 0.7.18
+Fri, 31 Oct 2025 20:11:13 GMT
+
+### Patches
+
+- add pwd login locked status
 
 ## 0.7.5
 Tue, 14 Oct 2025 04:58:17 GMT

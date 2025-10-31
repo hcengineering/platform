@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "workspace:^0.7.21",
-    "@hcengineering/platform": "workspace:^0.7.17",
+    "@hcengineering/platform": "workspace:^0.7.18",
     "msgpackr": "^1.11.2"
   },
   "repository": "https://github.com/hcengineering/huly.core",

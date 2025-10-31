@@ -16,7 +16,7 @@ importers:
         specifier: workspace:^0.7.21
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../platform
     devDependencies:
       '@hcengineering/platform-rig':
@@ -74,7 +74,7 @@ importers:
   ../../packages/analytics:
     dependencies:
       '@hcengineering/platform':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../platform
     devDependencies:
       '@hcengineering/platform-rig':
@@ -132,7 +132,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../measurements-otlp
       '@hcengineering/platform':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../platform
       winston:
         specifier: ^3.11.0
@@ -202,7 +202,7 @@ importers:
         specifier: workspace:^0.7.21
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../platform
       '@hcengineering/text':
         specifier: workspace:^0.7.18
@@ -279,7 +279,7 @@ importers:
         specifier: workspace:^0.7.21
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../platform
     devDependencies:
       '@hcengineering/platform-rig':
@@ -340,7 +340,7 @@ importers:
         specifier: workspace:^0.7.21
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../platform
       '@hcengineering/rpc':
         specifier: workspace:^0.7.17
@@ -471,7 +471,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../measurements
       '@hcengineering/platform':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../platform
       fast-equals:
         specifier: ^5.2.2
@@ -720,7 +720,7 @@ importers:
         specifier: workspace:^0.7.21
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../platform
       '@hcengineering/rank':
         specifier: workspace:^0.7.17
@@ -888,7 +888,7 @@ importers:
         specifier: workspace:^0.7.21
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../platform
       fast-equals:
         specifier: ^5.2.2
@@ -1043,7 +1043,7 @@ importers:
         specifier: workspace:^0.7.21
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../platform
       msgpackr:
         specifier: ^1.11.2
@@ -1101,7 +1101,7 @@ importers:
         specifier: workspace:^0.7.21
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../platform
       fast-equals:
         specifier: ^5.2.2
@@ -1627,7 +1627,7 @@ importers:
         specifier: workspace:^0.7.21
         version: link:../core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.18
         version: link:../platform
       jwt-simple:
         specifier: ^0.5.6

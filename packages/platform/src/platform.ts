@@ -165,6 +165,7 @@ export default plugin(platformId, {
     IntegrationSecretNotFound: '' as StatusCode,
     PersonNotFound: '' as StatusCode<{ person: string }>,
     InvalidPassword: '' as StatusCode<{ account: string }>,
+    PasswordLoginLocked: '' as StatusCode,
     AccountAlreadyExists: '' as StatusCode,
     WorkspaceAlreadyExists: '' as StatusCode<{ workspace: string }>,
     WorkspaceRateLimit: '' as StatusCode<{ workspace: string }>,

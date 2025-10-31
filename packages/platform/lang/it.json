@@ -21,6 +21,7 @@
     "AccountAlreadyConfirmed": "Account già confermato",
     "WorkspaceAlreadyExists": "Spazio di lavoro già esistente",
     "InvalidOtp": "Codice non valido",
+    "PasswordLoginLocked": "L'accesso con password è bloccato a causa di troppi tentativi non riusciti. Utilizza un metodo di accesso OTP per sbloccare il tuo account.",
     "InviteNotFound": "Invito con email:{email} non trovato.",
     "WorkspaceLimitReached": "Hai raggiunto il limite di spazi di lavoro. Contattaci...",
     "ReadOnlyAccount": "Demo ospite anonimo",
