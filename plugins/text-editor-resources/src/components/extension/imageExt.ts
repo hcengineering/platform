@@ -151,7 +151,7 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
   addNodeView () {
     const imageSrcCache = new Map<string, { src: string, srcset: string }>()
 
-    return ({ view, node, HTMLAttributes }) => {
+    return ({ view, node, HTMLAttributes, getPos }) => {
       const container = document.createElement('div')
       const imgElement = document.createElement('img')
       container.append(imgElement)
@@ -161,12 +161,14 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
         'data-align': node.attrs.align
       }
 
-      setLoadingState(view, container, true)
+      const pos = typeof getPos === 'function' ? getPos() : 0
+      setLoadingState(view, pos, true)
       const setImageProps = (src: string | null, srcset: string | null): void => {
         if (src != null) imgElement.src = src
         if (srcset != null) imgElement.srcset = srcset
         void imgElement.decode().finally(() => {
-          setLoadingState(view, container, false)
+          const pos = typeof getPos === 'function' ? getPos() : 0
+          setLoadingState(view, pos, false)
         })
       }
 

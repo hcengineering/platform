@@ -653,7 +653,8 @@ describe('PostgresAccountDB', () => {
                 'is_disabled', s.is_disabled,
                 'processing_attempts', s.processing_attempts,
                 'processing_message', s.processing_message,
-                'backup_info', s.backup_info
+                'backup_info', s.backup_info,
+                'usage_info', s.usage_info
               ) status
                FROM global_account.workspace as w
                INNER JOIN global_account.workspace_status as s ON s.workspace_uuid = w.uuid
@@ -696,7 +697,8 @@ describe('PostgresAccountDB', () => {
                 'is_disabled', s.is_disabled,
                 'processing_attempts', s.processing_attempts,
                 'processing_message', s.processing_message,
-                'backup_info', s.backup_info
+                'backup_info', s.backup_info,
+                'usage_info', s.usage_info
               ) status
                FROM global_account.workspace as w
                INNER JOIN global_account.workspace_status as s ON s.workspace_uuid = w.uuid
@@ -764,7 +766,8 @@ describe('PostgresAccountDB', () => {
                 'is_disabled', s.is_disabled,
                 'processing_attempts', s.processing_attempts,
                 'processing_message', s.processing_message,
-                'backup_info', s.backup_info
+                'backup_info', s.backup_info,
+                'usage_info', s.usage_info
               ) status
                FROM global_account.workspace as w
                INNER JOIN global_account.workspace_status as s ON s.workspace_uuid = w.uuid
@@ -836,7 +839,8 @@ describe('PostgresAccountDB', () => {
                 'is_disabled', s.is_disabled,
                 'processing_attempts', s.processing_attempts,
                 'processing_message', s.processing_message,
-                'backup_info', s.backup_info
+                'backup_info', s.backup_info,
+                'usage_info', s.usage_info
               ) status
                FROM global_account.workspace as w
                INNER JOIN global_account.workspace_status as s ON s.workspace_uuid = w.uuid
@@ -927,7 +931,8 @@ describe('PostgresAccountDB', () => {
                 'is_disabled', s.is_disabled,
                 'processing_attempts', s.processing_attempts,
                 'processing_message', s.processing_message,
-                'backup_info', s.backup_info
+                'backup_info', s.backup_info,
+                'usage_info', s.usage_info
               ) status
                FROM global_account.workspace as w
                INNER JOIN global_account.workspace_status as s ON s.workspace_uuid = w.uuid

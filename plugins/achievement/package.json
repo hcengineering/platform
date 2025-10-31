@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/ui": "^0.7.0"
   },
   "repository": "https://github.com/hcengineering/platform",

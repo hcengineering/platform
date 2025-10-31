@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@hcengineering/account": "^0.7.0",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.19",
     "@hcengineering/ai-bot": "^0.7.0",
     "@hcengineering/analytics-service": "^0.7.17",
     "@hcengineering/attachment": "^0.7.0",
@@ -64,7 +64,7 @@
     "@hcengineering/client": "^0.7.17",
     "@hcengineering/client-resources": "^0.7.17",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/document": "^0.7.0",
     "@hcengineering/love": "^0.7.0",
     "@hcengineering/mongo": "^0.7.15",

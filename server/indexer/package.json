@@ -35,7 +35,7 @@
     "@types/uuid": "^8.3.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-token": "^0.7.17",

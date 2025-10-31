@@ -174,6 +174,7 @@ export type ButtonKind =
   | 'list-header'
   | 'contrast'
   | 'stepper'
+  | 'attention'
 export type ButtonSize = 'inline' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 export type ButtonShape =
   | 'rectangle'

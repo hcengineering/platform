@@ -185,7 +185,8 @@ export default plugin(presentationId, {
     MailUrl: '' as Metadata<string>,
     PreviewUrl: '' as Metadata<string>,
     PulseUrl: '' as Metadata<string>,
-    HulylakeUrl: '' as Metadata<string>
+    HulylakeUrl: '' as Metadata<string>,
+    PaymentUrl: '' as Metadata<string>
   },
   status: {
     FileTooLarge: '' as StatusCode

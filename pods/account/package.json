@@ -56,7 +56,7 @@
     "@hcengineering/account-service": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/auth-providers": "^0.7.0",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "mongodb": "^6.16.0",
     "koa": "^2.15.4",
     "koa-router": "^12.0.1",

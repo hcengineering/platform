@@ -52,6 +52,11 @@ export interface Account {
   openId?: string
 }
 
+export interface WorkspaceUsageStatus {
+  storageBytes?: number
+  officeBytes?: number
+}
+
 /**
  * @public
  */
@@ -76,6 +81,7 @@ export interface Workspace {
   region?: string // Transactor group name
 
   backupInfo?: BackupStatus
+  usageInfo?: WorkspaceUsageStatus
 
   _id: ObjectId
   accounts: ObjectId[]

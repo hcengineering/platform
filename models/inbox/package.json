@@ -37,7 +37,7 @@
     "@hcengineering/card": "^0.7.0",
     "@hcengineering/inbox": "^0.7.0",
     "@hcengineering/inbox-resources": "^0.7.0",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/model-core": "^0.7.0",
     "@hcengineering/model-workbench": "^0.7.0",

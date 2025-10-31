@@ -12,18 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { Asset, type IntlString, type Metadata, plugin, type Plugin } from '@hcengineering/platform'
+import { type Class, type Ref } from '@hcengineering/core'
+import { type Asset, type IntlString, type Metadata, plugin, type Plugin } from '@hcengineering/platform'
 import { AnyComponent } from '@hcengineering/ui'
+import { Tier } from './types'
 
 /** @public */
 export const billingId = 'billing' as Plugin
 
 export const billingPlugin = plugin(billingId, {
+  class: {
+    Tier: '' as Ref<Class<Tier>>
+  },
   metadata: {
     BillingURL: '' as Metadata<string>
   },
   component: {
-    Settings: '' as AnyComponent
+    Settings: '' as AnyComponent,
+    WorkbenchExtension: '' as AnyComponent,
+    UpgradeButtonExt: '' as AnyComponent
   },
   string: {
     Billing: '' as IntlString,
@@ -34,10 +41,30 @@ export const billingPlugin = plugin(billingId, {
     OfficeEgressDuration: '' as IntlString,
     AI: '' as IntlString,
     TotalTokens: '' as IntlString,
-    TranscriptionTime: '' as IntlString
+    TranscriptionTime: '' as IntlString,
+    Tier: '' as IntlString,
+    StorageLimit: '' as IntlString,
+    TrafficLimit: '' as IntlString,
+    Common: '' as IntlString,
+    CommonDescription: '' as IntlString,
+    Rare: '' as IntlString,
+    RareDescription: '' as IntlString,
+    Epic: '' as IntlString,
+    EpicDescription: '' as IntlString,
+    Legendary: '' as IntlString,
+    LegendaryDescription: '' as IntlString,
+    UpgradePlan: '' as IntlString,
+    LimitReached: '' as IntlString
   },
   icon: {
-    Billing: '' as Asset
+    Billing: '' as Asset,
+    Subscriptions: '' as Asset
+  },
+  tier: {
+    Common: '' as Ref<Tier>,
+    Rare: '' as Ref<Tier>,
+    Epic: '' as Ref<Tier>,
+    Legendary: '' as Ref<Tier>
   }
 })
 

@@ -54,7 +54,8 @@
     "typescript": "^5.9.3",
     "@types/morgan": "~1.9.9",
     "@types/on-headers": "^1.0.2",
-    "@types/uuid": "^8.3.1"
+    "@types/uuid": "^8.3.1",
+    "cross-env": "~7.0.3"
   },
   "dependencies": {
     "@hcengineering/analytics": "^0.7.17",
@@ -63,9 +64,9 @@
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-storage": "^0.7.15",
     "@hcengineering/server-client": "^0.7.15",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/datalake": "^0.7.15",
-    "@hcengineering/account-client": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.19",
     "@hcengineering/platform": "^0.7.17",
     "cors": "^2.8.5",
     "dotenv": "~16.0.0",

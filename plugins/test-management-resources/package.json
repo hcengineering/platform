@@ -49,7 +49,7 @@
     "@hcengineering/client": "^0.7.17",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/contact-resources": "^0.7.0",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/kanban": "^0.7.0",
     "@hcengineering/login": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",

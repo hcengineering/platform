@@ -37,14 +37,14 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-attachment": "^0.7.0",
     "@hcengineering/server-attachment-resources": "^0.7.0",
     "@hcengineering/server-collaboration": "^0.7.0",
     "@hcengineering/server-collaboration-resources": "^0.7.0",
-    "@hcengineering/server": "^0.7.15",
+    "@hcengineering/server": "^0.7.16",
     "@hcengineering/server-contact": "^0.7.0",
     "@hcengineering/server-contact-resources": "^0.7.0",
     "@hcengineering/server-notification": "^0.7.0",

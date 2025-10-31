@@ -39,7 +39,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/communication-types": "^0.7.12",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/card": "^0.7.0"

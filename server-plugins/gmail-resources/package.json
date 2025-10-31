@@ -40,7 +40,7 @@
     "@hcengineering/activity": "^0.7.0",
     "@hcengineering/ai-bot": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.18",
+    "@hcengineering/core": "^0.7.20",
     "@hcengineering/gmail": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",

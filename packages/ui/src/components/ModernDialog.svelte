@@ -174,6 +174,10 @@
       max-height: unset;
       border-radius: 0;
     }
+
+    &.extendedHeight {
+      max-height: 90vh;
+    }
   }
 
   .shadow {

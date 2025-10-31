@@ -18,11 +18,15 @@ import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } fr
 import { newMetrics } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
-import { initStatisticsContext } from '@hcengineering/server-core'
+import { initStatisticsContext, StorageConfig } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
 import { join } from 'path'
+
 import config from './config'
+import { createDb } from './db/postgres'
 import { createServer, listen } from './server'
+import { UsageWorker } from './usage'
+import { storageConfigFromEnv } from '@hcengineering/server-storage'
 
 const setupMetadata = (): void => {
   setMetadata(serverToken.metadata.Secret, config.Secret)
@@ -50,10 +54,17 @@ export const main = async (): Promise<void> => {
       )
   })
 
-  const { app, close } = await createServer(metricsContext, config)
+  const db = await createDb(metricsContext, config.DbUrl)
+  const storageConfigs: StorageConfig[] = storageConfigFromEnv().storages.filter((p) => p.kind === 'datalake')
+
+  const worker = new UsageWorker(db, storageConfigs, config)
+  await worker.schedule(metricsContext)
+
+  const { app, close } = await createServer(metricsContext, db, storageConfigs, config)
   const server = listen(app, config.Port)
 
   const shutdown = (): void => {
+    void worker.close
     close()
     server.close(() => process.exit())
   }
