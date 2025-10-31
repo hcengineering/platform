@@ -54,7 +54,8 @@
     "typescript": "^5.9.3",
     "@types/morgan": "~1.9.9",
     "@types/on-headers": "^1.0.2",
-    "@types/uuid": "^8.3.1"
+    "@types/uuid": "^8.3.1",
+    "cross-env": "~7.0.3"
   },
   "dependencies": {
     "@hcengineering/analytics": "^0.7.17",

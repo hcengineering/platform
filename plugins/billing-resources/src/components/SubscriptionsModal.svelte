@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,17 +11,13 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { ModernDialog } from '@hcengineering/ui'
+  import billing from '../plugin'
+  import Subscriptions from './Subscriptions.svelte'
+</script>
 
-import type { Resources } from '@hcengineering/platform'
-import Settings from './components/Settings.svelte'
-import UpgradeButton from './components/UpgradeButton.svelte'
-import WorkbenchExtension from './components/WorkbenchExtension.svelte'
-
-export default async (): Promise<Resources> => ({
-  component: {
-    Settings,
-    UpgradeButtonExt: UpgradeButton,
-    WorkbenchExtension
-  }
-})
+<ModernDialog width="100%" label={billing.string.UpgradePlan} withoutFooter={true} className="extendedHeight" on:close>
+  <Subscriptions />
+</ModernDialog>

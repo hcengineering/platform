@@ -5199,7 +5199,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model-billing@file:projects/model-billing.tgz':
-    resolution: {integrity: sha512-1eQLuznSm1zZvdCWlGy3hA8xIwRz8RheuLbgmTh/amnobGuia/8ycCJEiPykrsvoLJSiVHrKyaXyySM5+r5jPg==, tarball: file:projects/model-billing.tgz}
+    resolution: {integrity: sha512-gXVvJywcc4AxaQFQNIy3i/YTJpxtJ7Bo+RSWx4Kn8lVMVSHQ1hK8Crr81hKwP0gNslAXV+TOH+xWRn5WY/xntA==, tarball: file:projects/model-billing.tgz}
     version: 0.0.0
 
   '@rush-temp/model-bitrix@file:projects/model-bitrix.tgz':
@@ -5599,7 +5599,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/pod-billing@file:projects/pod-billing.tgz':
-    resolution: {integrity: sha512-8NzYAsIUJIXwLfBF2mhvK1N70CrgXR/zN4Ppn0YiKrCAPWUaEg6mxz47qvAKyoYZcNvnzGr/6jQbR/Iv7kPEvA==, tarball: file:projects/pod-billing.tgz}
+    resolution: {integrity: sha512-JaJcuMheg+Um4mTADRrB3cYwpb/XFg9rZQCuh1CAWdZDsKh6g8EoeImFZtD1TeiKXB2wkT+mdbFN0dXYR65LXg==, tarball: file:projects/pod-billing.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-calendar-mailer@file:projects/pod-calendar-mailer.tgz':
@@ -28046,6 +28046,7 @@ snapshots:
       '@typescript-eslint/eslint-plugin': 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser': 6.21.0(eslint@8.57.1)(typescript@5.9.3)
       cors: 2.8.5
+      cross-env: 7.0.3
       dotenv: 16.0.3
       esbuild: 0.25.11
       eslint: 8.57.1
