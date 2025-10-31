@@ -231,6 +231,7 @@
 
     "DocumentInHierarchy": "Dokument v hierarchii",
     "FirstDraftVersion": "Toto je první konceptová verze dokumentu. Historie zatím není k dispozici.",
+    "FirstOrNotAvailable": "Toto je první dostupná verze dokumentu. Historie zatím není k dispozici nebo není dostupná.",
     "EffectiveDocumentLifecycle": "Životní cyklus účinného dokumentu",
     "ReasonAndImpact": "Důvod a dopad",
     "ImpactAnalysis": "Analýza dopadu",

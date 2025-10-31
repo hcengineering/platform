@@ -182,6 +182,7 @@ export default mergeIds(documentsId, documents, {
 
     DocumentInHierarchy: '' as IntlString,
     FirstDraftVersion: '' as IntlString,
+    FirstOrNotAvailable: '' as IntlString,
 
     EffectiveDocumentLifecycle: '' as IntlString,
 

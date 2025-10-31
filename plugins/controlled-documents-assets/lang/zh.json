@@ -229,8 +229,9 @@
 
     "DocumentInHierarchy": "层级中的文档",
     "FirstDraftVersion": "这是文档的第一个草稿版本。尚无历史记录。",
+    "FirstOrNotAvailable": "这是文档的第一个可用版本。尚无历史记录或不可用。",
 
-    "EffectiveDocumentLifecycle": "生效文档生命周期",
+    "EffectiveDocumentLifecycle": "有效的文档生命周期",
 
     "ReasonAndImpact": "原因与影响",
     "ImpactAnalysis": "影响分析",
