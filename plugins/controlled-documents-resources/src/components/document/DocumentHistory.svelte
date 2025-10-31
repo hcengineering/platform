@@ -94,7 +94,9 @@
         {/each}
       </div>
     {:else}
-      <Label label={isExternalApprover ? documentsRes.string.FirstOrNotAvailable : documentsRes.string.FirstDraftVersion} />
+      <Label
+        label={isExternalApprover ? documentsRes.string.FirstOrNotAvailable : documentsRes.string.FirstDraftVersion}
+      />
     {/if}
   </div>
 </Scroller>
