@@ -176,4 +176,5 @@ export class TTxAccessLevel extends TClass implements TxAccessLevel {
   createAccessLevel?: AccountRole
   removeAccessLevel?: AccountRole
   updateAccessLevel?: AccountRole
+  isIdentity?: boolean
 }

@@ -70,7 +70,7 @@
     "@hcengineering/server-indexer": "^0.7.0",
     "@hcengineering/elastic": "^0.7.15",
     "@hcengineering/server-collaboration": "^0.7.0",
-    "@hcengineering/middleware": "^0.7.15",
+    "@hcengineering/middleware": "^0.7.17",
     "@hcengineering/server-client": "^0.7.15",
     "@hcengineering/server-storage": "^0.7.15",
     "@hcengineering/postgres": "^0.7.16",
