@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,17 +11,22 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { onMount } from 'svelte'
 
-import type { Resources } from '@hcengineering/platform'
-import Settings from './components/Settings.svelte'
-import UpgradeButton from './components/UpgradeButton.svelte'
-import WorkbenchExtension from './components/WorkbenchExtension.svelte'
+  import { getMetadata } from '@hcengineering/platform'
+  import { pushRootBarComponent } from '@hcengineering/ui'
+  import presentation from '@hcengineering/presentation'
 
-export default async (): Promise<Resources> => ({
-  component: {
-    Settings,
-    UpgradeButtonExt: UpgradeButton,
-    WorkbenchExtension
-  }
-})
+  import billing from '../plugin'
+
+  onMount(() => {
+    const paymentUrl = getMetadata(presentation.metadata.PaymentUrl)
+    if (paymentUrl !== '') {
+      pushRootBarComponent('right', billing.component.UpgradeButtonExt, 10)
+    }
+  })
+</script>
+
+<div id="recorder-workbench-ext" class="hidden" />

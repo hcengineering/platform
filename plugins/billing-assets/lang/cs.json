@@ -53,6 +53,9 @@
     "StorageUsage": "Úložiště",
     "TrafficUsage": "Video/audio provoz",
     "Usage": "Využití",
-    "Of": "z"
+    "Of": "z",
+    "UpgradePlan": "Upgradovat plán",
+    "LimitReached": "Dosažen limit pracovního prostoru, některé funkce mohou být zakázány. Upgradujte pro obnovení plného přístupu.",
+    "AskBillingAdmin": "Kontaktujte prosím svého správce fakturace pro upgrade plánu."
   }
 }

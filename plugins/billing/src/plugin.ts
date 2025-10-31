@@ -28,7 +28,9 @@ export const billingPlugin = plugin(billingId, {
     BillingURL: '' as Metadata<string>
   },
   component: {
-    Settings: '' as AnyComponent
+    Settings: '' as AnyComponent,
+    WorkbenchExtension: '' as AnyComponent,
+    UpgradeButtonExt: '' as AnyComponent
   },
   string: {
     Billing: '' as IntlString,
@@ -50,7 +52,10 @@ export const billingPlugin = plugin(billingId, {
     Epic: '' as IntlString,
     EpicDescription: '' as IntlString,
     Legendary: '' as IntlString,
-    LegendaryDescription: '' as IntlString
+    LegendaryDescription: '' as IntlString,
+    UpgradePlan: '' as IntlString,
+    LimitReached: '' as IntlString,
+    AskBillingAdmin: '' as IntlString
   },
   icon: {
     Billing: '' as Asset,

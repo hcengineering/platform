@@ -79,7 +79,7 @@
     label === undefined &&
     $$slots.content === undefined &&
     (icon !== undefined || iconRight !== undefined || $$slots.icon || $$slots.iconRight)
-  $: primary = ['primary', 'secondary', 'positive', 'negative'].some((p) => p === kind)
+  $: primary = ['primary', 'secondary', 'positive', 'negative', 'attention'].some((p) => p === kind)
 
   $: devSize = $deviceInfo.size
   $: adaptive = adaptiveShrink !== null ? checkAdaptiveMatching(devSize, adaptiveShrink) : false
