@@ -1338,7 +1338,8 @@ describe('account operations', () => {
 
     const mockDb = {
       account: {
-        findOne: jest.fn()
+        findOne: jest.fn(),
+        update: jest.fn()
       },
       person: {
         findOne: jest.fn()
@@ -1568,7 +1569,8 @@ describe('account operations', () => {
 
     const mockDb = {
       account: {
-        findOne: jest.fn()
+        findOne: jest.fn(),
+        update: jest.fn()
       },
       person: {
         findOne: jest.fn(),
@@ -2178,7 +2180,8 @@ describe('account operations', () => {
 
     const mockDb = {
       account: {
-        findOne: jest.fn()
+        findOne: jest.fn(),
+        update: jest.fn()
       },
       person: {
         findOne: jest.fn()

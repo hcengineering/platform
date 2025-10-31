@@ -117,7 +117,10 @@ import {
   getWorkspacesInfoWithStatusByIds,
   doMergePersons,
   getWorkspaceJoinInfo,
-  signUpByGrant
+  signUpByGrant,
+  isAccountPasswordLocked,
+  recordFailedLoginAttempt,
+  resetFailedLoginAttempts
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -152,6 +155,8 @@ export async function loginAsGuest (
 
 /**
  * Given an email and password, logs the user in and returns the account information and token.
+ * If the account has too many failed login attempts, password login is blocked.
+ * The user must use an alternative method (e.g., OTP) to unlock the account.
  */
 export async function login (
   ctx: MeasureContext,
@@ -184,14 +189,29 @@ export async function login (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
 
+    // Check if account is locked due to too many failed login attempts
+    if (isAccountPasswordLocked(existingAccount)) {
+      ctx.warn('Login attempt on locked account - password login locked', {
+        email: normalizedEmail,
+        failedAttempts: existingAccount.failedLoginAttempts
+      })
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.PasswordLoginLocked, { account: normalizedEmail })
+      )
+    }
+
     const person = await db.person.findOne({ uuid: emailSocialId.personUuid })
     if (person == null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
     }
 
     if (!verifyPassword(password, existingAccount.hash, existingAccount.salt)) {
+      await recordFailedLoginAttempt(db, existingAccount.uuid)
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
+
+    // Successful login - reset failed attempts counter
+    await resetFailedLoginAttempts(db, existingAccount.uuid)
 
     const isConfirmed = emailSocialId.verifiedOn != null
 
@@ -476,6 +496,8 @@ export async function validateOtp (
     if (person == null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
     }
+
+    await resetFailedLoginAttempts(db, emailSocialId.personUuid as AccountUuid)
 
     const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
 

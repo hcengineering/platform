@@ -38,7 +38,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV17Migration(ns),
     getV18Migration(ns),
     getV19Migration(ns),
-    getV20Migration(ns)
+    getV20Migration(ns),
+    getV21Migration(ns)
   ]
 }
 
@@ -565,6 +566,16 @@ function getV20Migration (ns: string): [string, string] {
     `
     ALTER TABLE ${ns}.workspace_status
     ADD COLUMN IF NOT EXISTS usage_info JSONB;
+    `
+  ]
+}
+
+function getV21Migration (ns: string): [string, string] {
+  return [
+    'account_db_v21_add_failed_login_attempts',
+    `
+    ALTER TABLE ${ns}.account
+    ADD COLUMN IF NOT EXISTS failed_login_attempts SMALLINT DEFAULT 0;
     `
   ]
 }

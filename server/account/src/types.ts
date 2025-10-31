@@ -64,6 +64,7 @@ export interface Account {
   hash?: Buffer | null
   salt?: Buffer | null
   maxWorkspaces?: number
+  failedLoginAttempts?: number // Number of consecutive failed login attempts
 }
 
 // TODO: type data with generic type

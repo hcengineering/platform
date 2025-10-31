@@ -342,6 +342,66 @@ export function verifyPassword (password: string, hash?: Buffer | null, salt?: B
   return Buffer.compare(hash as any, hashWithSalt(password, salt) as any) === 0
 }
 
+// 0 or negative value means no limit
+const maxFailedLoginAttempts =
+  process.env.MAX_FAILED_LOGIN_ATTEMPTS != null ? parseInt(process.env.MAX_FAILED_LOGIN_ATTEMPTS) : 5
+
+/**
+ * Check if an account is locked due to too many failed login attempts.
+ * An account is locked if failedLoginAttempts >= maxFailedLoginAttempts.
+ * @param account The account to check
+ * @returns true if account is locked, false otherwise
+ */
+export function isAccountPasswordLocked (account: Account): boolean {
+  if (maxFailedLoginAttempts <= 0) {
+    return false
+  }
+
+  const failedAttempts = account.failedLoginAttempts ?? 0
+
+  return failedAttempts >= maxFailedLoginAttempts
+}
+
+/**
+ * Record a failed login attempt for an account.
+ * Increments the failed attempts counter.
+ * @param db Database instance
+ * @param accountUuid Account UUID
+ */
+export async function recordFailedLoginAttempt (db: AccountDB, accountUuid: AccountUuid): Promise<void> {
+  const account = await db.account.findOne({ uuid: accountUuid })
+  if (account == null) {
+    return
+  }
+
+  const currentAttempts = account.failedLoginAttempts ?? 0
+  const newAttempts = currentAttempts + 1
+
+  await db.account.update(
+    { uuid: accountUuid },
+    {
+      failedLoginAttempts: newAttempts
+    }
+  )
+}
+
+/**
+ * Reset failed login attempts for an account.
+ * Called when:
+ * - User successfully logs in with password
+ * - User successfully authenticates via OTP or other alternative method
+ * @param db Database instance
+ * @param accountUuid Account UUID
+ */
+export async function resetFailedLoginAttempts (db: AccountDB, accountUuid: AccountUuid): Promise<void> {
+  await db.account.update(
+    { uuid: accountUuid },
+    {
+      failedLoginAttempts: 0
+    }
+  )
+}
+
 export function cleanEmail (email: string): string {
   return email.toLowerCase().trim()
 }
