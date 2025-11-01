@@ -55,7 +55,7 @@
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/analytics-service": "^0.7.17",
     "@hcengineering/api-client": "^0.7.18",
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/kafka": "^0.7.15",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/card": "^0.7.0",

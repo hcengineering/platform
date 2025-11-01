@@ -34,7 +34,7 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-task": "^0.7.0",

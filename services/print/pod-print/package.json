@@ -57,7 +57,7 @@
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-storage": "^0.7.15",
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/account-client": "^0.7.19",
     "cors": "^2.8.5",
