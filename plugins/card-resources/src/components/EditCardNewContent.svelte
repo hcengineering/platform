@@ -59,7 +59,6 @@
   <div class="message-input" use:resizeObserver={onInputResize}>
     <MessageInput
       card={doc}
-      title={doc.title}
       on:arrowUp={() => {
         content?.editLastMessage()
       }}

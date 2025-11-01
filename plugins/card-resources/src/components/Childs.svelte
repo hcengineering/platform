@@ -35,6 +35,7 @@
   export let object: Card
   export let readonly: boolean = false
   export let emptyKind: 'create' | 'placeholder' = 'create'
+  export let limit = 20
 
   let viewlet: WithLookup<Viewlet> | undefined
   let viewOptions: ViewOptions | undefined
@@ -177,6 +178,7 @@
           {config}
           {viewOptions}
           compactMode={listWidth <= 600}
+          singleCategoryLimit={limit}
           on:docs
           on:row-focus={(event) => {
             listProvider.updateFocus(event.detail ?? undefined)

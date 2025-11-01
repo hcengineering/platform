@@ -90,6 +90,9 @@
     "Direct": "Direkt",
     "Directs": "Direktler",
     "Members": "Üyeler",
-    "Translate": "Çevir"
+    "Translate": "Çevir",
+    "WriteMessageEllipsis": "Mesaj yaz...",
+    "EditMessageEllipsis": "Mesajı düzenle...",
+    "ArrowDownMessages": "↓ Son mesajlar"
   }
 }

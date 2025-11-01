@@ -14,7 +14,7 @@
 -->
 
 <script lang="ts">
-  import { getClient, getCommunicationClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, getCommunicationClient } from '@hcengineering/presentation'
   import cardPlugin, { Card } from '@hcengineering/card'
   import { getCurrentAccount, Ref } from '@hcengineering/core'
   import { AttachmentPreview, LinkPreview } from '@hcengineering/attachment-resources'
@@ -34,6 +34,22 @@
   const me = getCurrentAccount()
   const communicationClient = getCommunicationClient()
   const client = getClient()
+  const threadCardsQuery = createQuery()
+
+  let threadCards: Card[] = []
+
+  $: if (showThreads && message.threads.length > 0) {
+    threadCardsQuery.query(
+      cardPlugin.class.Card,
+      { _id: { $in: message.threads.map((it) => it.threadId) } },
+      (res) => {
+        threadCards = res
+      },
+      { limit: 1 }
+    )
+  } else {
+    threadCardsQuery.unsubscribe()
+  }
 
   function canReply (): boolean {
     return message.type !== MessageType.Activity && message.extra?.threadRoot !== true
@@ -137,7 +153,11 @@
 {#if showThreads && message.threads.length > 0}
   <div class="message__replies overflow-label">
     {#each message.threads as thread (thread.threadId)}
-      <MessageThread {thread} on:click={handleReply} />
+      <MessageThread
+        {thread}
+        threadCard={threadCards.find((it) => it._id === thread.threadId)}
+        on:click={handleReply}
+      />
     {/each}
   </div>
 {/if}

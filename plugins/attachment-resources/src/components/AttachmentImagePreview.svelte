@@ -89,7 +89,7 @@
     width={dimensions.width}
     height={dimensions.height}
     blurhash={value.metadata?.thumbnail?.blurhash}
-    showLoading={true}
+    showLoading={loading}
     on:load={handleLoad}
     on:error={handleError}
     on:loadstart={handleLoadStart}

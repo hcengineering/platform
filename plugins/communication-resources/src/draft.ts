@@ -90,7 +90,7 @@ export function saveDraft (card: Ref<Card>, draft: MessageDraft, force = false):
   } else {
     timer = setTimeout(() => {
       localStorage.setItem(key, JSON.stringify(draft))
-    }, 1000)
+    }, 3000)
   }
 }
 

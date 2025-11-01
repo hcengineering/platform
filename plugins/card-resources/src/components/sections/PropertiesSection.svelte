@@ -23,6 +23,7 @@
 
   export let readonly: boolean = false
   export let doc: Card
+  export let hidden: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -33,9 +34,11 @@
   })
 </script>
 
-<div class="properties">
-  <CardAttributeEditor value={doc} {mixins} {readonly} ignoreKeys={['title', 'content', 'parent']} />
-</div>
+{#if !hidden}
+  <div class="properties">
+    <CardAttributeEditor value={doc} {mixins} {readonly} ignoreKeys={['title', 'content', 'parent']} />
+  </div>
+{/if}
 
 <style lang="scss">
   .properties {

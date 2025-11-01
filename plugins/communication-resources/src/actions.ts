@@ -12,15 +12,27 @@
 // limitations under the License.
 
 import communication, {
+  type Applet,
   type MessageAction,
   type MessageActionFunction,
   type MessageActionVisibilityTester
 } from '@hcengineering/communication'
 import { languageStore, showPopup } from '@hcengineering/ui'
 import emojiPlugin from '@hcengineering/emoji'
-import { type Message, MessageType, SortingOrder } from '@hcengineering/communication-types'
+import {
+  type AppletParams,
+  type AttachmentID,
+  type BlobAttachment,
+  type BlobParams,
+  type LinkPreviewParams,
+  linkPreviewType,
+  type Message,
+  type MessageID,
+  MessageType,
+  SortingOrder
+} from '@hcengineering/communication-types'
 import cardPlugin, { type Card, type MasterTag } from '@hcengineering/card'
-import { addRefreshListener, getClient, getCommunicationClient } from '@hcengineering/presentation'
+import { addRefreshListener, deleteFile, getClient, getCommunicationClient } from '@hcengineering/presentation'
 import {
   AccountRole,
   fillDefaults,
@@ -40,8 +52,10 @@ import { get } from 'svelte/store'
 import { translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 import aiBot from '@hcengineering/ai-bot'
 import CreateCardFromMessagePopup from './components/CreateCardFromMessagePopup.svelte'
+import { Analytics } from '@hcengineering/analytics'
+import { isAppletAttachment, isBlobAttachment, isLinkPreviewAttachment } from '@hcengineering/communication-shared'
 
-import { isCardAllowedForCommunications, showForbidden, toggleReaction, toMarkup } from './utils'
+import { isCardAllowedForCommunications, loadLinkPreviewParams, showForbidden, toggleReaction, toMarkup } from './utils'
 import {
   isMessageManualTranslating,
   messageEditingStore,
@@ -50,6 +64,7 @@ import {
   translateMessagesStore,
   translateToStore
 } from './stores'
+import { type AppletDraft, type BlobDraft, type LinkPreviewDraft } from './types'
 
 export const addReaction: MessageActionFunction = async (message, card: Card, evt, onOpen, onClose) => {
   if (!isCardAllowedForCommunications(card)) {
@@ -286,4 +301,162 @@ async function filterActions (message: Message, actions: MessageAction[]): Promi
   }
 
   return result
+}
+
+export async function createMessage (
+  card: Card,
+  markdown: string,
+  blobs: BlobDraft[],
+  applets: AppletDraft[],
+  appletModels: Applet[],
+  links: LinkPreviewDraft[],
+  urlsToLoad: string[],
+  linksData: Map<string, LinkPreviewParams | null>
+): Promise<void> {
+  const communicationClient = getCommunicationClient()
+  const client = getClient()
+
+  const { messageId } = await communicationClient.createMessage(card._id, card._class, markdown)
+  void client.update(card, {}, false, Date.now())
+
+  void attachApplets(card, messageId, applets, appletModels)
+
+  if (blobs.length > 0) {
+    void communicationClient.attachmentPatch<BlobParams>(card._id, messageId, {
+      add: blobs.map((it) => ({
+        id: it.blobId as any as AttachmentID,
+        mimeType: it.mimeType,
+        params: it
+      }))
+    })
+  }
+
+  if (links.length > 0) {
+    void communicationClient.attachmentPatch<LinkPreviewParams>(card._id, messageId, {
+      add: links.map((it) => ({
+        mimeType: linkPreviewType,
+        params: it
+      }))
+    })
+  }
+
+  for (const url of urlsToLoad) {
+    if (links.some((it) => it.url === url)) continue
+    const fetchedData = linksData.get(url)
+    if (fetchedData === null) continue
+    const params = fetchedData ?? (await loadLinkPreviewParams(url))
+    if (params === undefined) continue
+    void communicationClient.attachmentPatch<LinkPreviewParams>(card._id, messageId, {
+      add: [
+        {
+          mimeType: linkPreviewType,
+          params
+        }
+      ]
+    })
+  }
+}
+
+export async function updateMessage (
+  card: Card,
+  message: Message,
+  markdown: string,
+  blobs: BlobDraft[],
+  applets: AppletDraft[],
+  appletModels: Applet[],
+  links: LinkPreviewDraft[]
+): Promise<void> {
+  const communicationClient = getCommunicationClient()
+
+  await communicationClient.updateMessage(card._id, message.id, markdown)
+
+  const attachBlobs = blobs.filter(
+    (b) => !message.attachments.some((it) => isBlobAttachment(it) && it.params.blobId === b.blobId)
+  )
+
+  void attachApplets(
+    card,
+    message.id,
+    applets.filter((a) => !message.attachments.some((it) => it.id === a.id)),
+    appletModels
+  )
+
+  if (attachBlobs.length > 0) {
+    void communicationClient.attachmentPatch<BlobParams>(card._id, message.id, {
+      add: attachBlobs.map((it) => ({
+        id: it.blobId as any as AttachmentID,
+        mimeType: it.mimeType,
+        params: it
+      }))
+    })
+  }
+
+  const detachBlobs = message.attachments.filter(
+    (it) => isBlobAttachment(it) && !blobs.some((b) => b.blobId === it.params.blobId)
+  ) as BlobAttachment[]
+  if (detachBlobs.length > 0) {
+    detachBlobs.forEach((it) => {
+      void deleteFile(it.params.blobId)
+    })
+    void communicationClient.attachmentPatch(card._id, message.id, {
+      remove: detachBlobs.map((it) => it.id)
+    })
+  }
+
+  const detachApplets = message.attachments.filter(
+    (it) => isAppletAttachment(it) && !applets.some((a) => a.id === it.id)
+  )
+
+  if (detachApplets.length > 0) {
+    void communicationClient.attachmentPatch(card._id, message.id, {
+      remove: detachApplets.map((it) => it.id)
+    })
+  }
+
+  const attachLinks = links.filter(
+    (l) => !message.attachments.some((it) => isLinkPreviewAttachment(it) && it.params.url === l.url)
+  )
+
+  void communicationClient.attachmentPatch(card._id, message.id, {
+    add: attachLinks.map((it) => ({
+      mimeType: linkPreviewType,
+      params: it
+    }))
+  })
+}
+
+async function attachApplets (
+  card: Card,
+  messageId: MessageID,
+  applets: AppletDraft[],
+  models: Applet[]
+): Promise<void> {
+  if (applets.length === 0) return
+
+  const communicationClient = getCommunicationClient()
+  const toAttach: AppletDraft[] = []
+
+  for (const appletDraft of applets) {
+    try {
+      const model = models.find((it) => it._id === appletDraft.appletId)
+      if (model?.createFn == null) {
+        toAttach.push(appletDraft)
+        continue
+      }
+      const r = await getResource(model.createFn)
+      await r(card, messageId, appletDraft.params)
+      toAttach.push(appletDraft)
+    } catch (err: any) {
+      Analytics.handleError(err)
+    }
+  }
+
+  if (toAttach.length > 0) {
+    void communicationClient.attachmentPatch<AppletParams>(card._id, messageId, {
+      add: toAttach.map((it) => ({
+        mimeType: it.mimeType,
+        params: it.params
+      }))
+    })
+  }
 }

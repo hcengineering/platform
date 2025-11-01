@@ -46,10 +46,13 @@ export interface AppletDraft {
   params: Record<string, any>
 }
 
+export type LinkPreviewDraft = LinkPreviewParams
+export type BlobDraft = BlobParams & { mimeType: string }
+
 export interface MessageDraft {
   _id: string
   content: Markup
-  blobs: Array<BlobParams & { mimeType: string }>
-  links: LinkPreviewParams[]
+  blobs: BlobDraft[]
+  links: LinkPreviewDraft[]
   applets: AppletDraft[]
 }

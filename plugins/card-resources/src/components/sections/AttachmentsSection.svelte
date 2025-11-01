@@ -20,6 +20,7 @@
 
   export let readonly: boolean = false
   export let doc: Card
+  export let hidden: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -30,16 +31,18 @@
   })
 </script>
 
-<div class="section-attachments">
-  <Attachments
-    objectId={doc._id}
-    _class={doc._class}
-    space={doc.space}
-    attachments={doc.attachments ?? 0}
-    {readonly}
-    on:attachments={() => dispatch('loaded')}
-  />
-</div>
+{#if !hidden}
+  <div class="section-attachments">
+    <Attachments
+      objectId={doc._id}
+      _class={doc._class}
+      space={doc.space}
+      attachments={doc.attachments ?? 0}
+      {readonly}
+      on:attachments={() => dispatch('loaded')}
+    />
+  </div>
+{/if}
 
 <style lang="scss">
   .section-attachments {

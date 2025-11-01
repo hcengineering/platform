@@ -89,7 +89,9 @@ export default mergeIds(communicationId, communication, {
     MessageAlreadyHasCardAttached: '' as IntlString,
     Direct: '' as IntlString,
     Directs: '' as IntlString,
-    Members: '' as IntlString
+    Members: '' as IntlString,
+    WriteMessageEllipsis: '' as IntlString,
+    EditMessageEllipsis: '' as IntlString
   },
   messageActionImpl: {
     AddReaction: '' as MessageActionFunctionResource,

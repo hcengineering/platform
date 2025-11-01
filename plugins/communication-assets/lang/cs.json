@@ -90,6 +90,9 @@
     "Direct": "Přímý",
     "Directs": "Přímé",
     "Members": "Členové",
-    "Translate": "Přeložit"
+    "Translate": "Přeložit",
+    "WriteMessageEllipsis": "Napište zprávu...",
+    "EditMessageEllipsis": "Upravit zprávu...",
+    "ArrowDownMessages": "↓ Poslední zprávy"
   }
 }

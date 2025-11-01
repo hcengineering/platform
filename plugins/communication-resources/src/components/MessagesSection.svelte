@@ -17,43 +17,39 @@
   import { Card } from '@hcengineering/card'
   import { NotificationContext } from '@hcengineering/communication-types'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { MessagesNavigationAnchors } from '@hcengineering/communication'
 
   import MessagesList from './MessagesList.svelte'
 
   export let readonly: boolean = false
   export let doc: Card
-  export let notificationContext: NotificationContext | undefined = undefined
-  export let isLoadingBefore: boolean = false
+  export let context: NotificationContext | undefined = undefined
   export let isContextLoaded: boolean = false
   export let scrollDiv: HTMLDivElement | undefined | null = undefined
   export let contentDiv: HTMLDivElement | undefined | null = undefined
   export let active: boolean = false
-  export let navigation: MessagesNavigationAnchors | string = MessagesNavigationAnchors.ConversationStart
+  export let isDefault: boolean = false
 
   const dispatch = createEventDispatcher()
 
   let list: MessagesList | undefined = undefined
 
-  let position: MessagesNavigationAnchors =
-    navigation === MessagesNavigationAnchors.LatestMessages
-      ? MessagesNavigationAnchors.LatestMessages
-      : MessagesNavigationAnchors.ConversationStart
-  let shouldScrollToStart = false
+  let position: 'start' | 'end' = isDefault ? 'end' : 'start'
+  let prevActive: boolean = false
 
-  export function navigate (id: MessagesNavigationAnchors) {
-    if (id !== MessagesNavigationAnchors.ConversationStart) {
-      shouldScrollToStart = false
-    } else {
-      shouldScrollToStart = true
-      contentDiv?.scrollIntoView({ behavior: 'instant', block: 'start' })
+  $: if (active !== prevActive) {
+    if (!active) {
+      position = 'start'
     }
-    position = id
+    prevActive = active
+  }
+
+  export function navigate () {
+    position = 'end'
+    list?.scrollDown()
   }
 
   export function scrollDown (): void {
-    shouldScrollToStart = false
-    position = MessagesNavigationAnchors.LatestMessages
+    position = 'end'
     list?.scrollDown()
   }
 
@@ -66,9 +62,9 @@
   }
 
   onMount(() => {
-    if (active && navigation === MessagesNavigationAnchors.LatestMessages) {
-      position = MessagesNavigationAnchors.LatestMessages
+    if (isDefault) {
       dispatch('action', { id: 'overlay', show: true })
+      position = 'end'
     }
   })
 </script>
@@ -79,12 +75,12 @@
       bind:this={list}
       card={doc}
       {readonly}
-      context={notificationContext}
       {scrollDiv}
       {contentDiv}
-      bind:position
-      shouldScrollToStart={active && position === MessagesNavigationAnchors.ConversationStart && shouldScrollToStart}
-      {isLoadingBefore}
+      {position}
+      {context}
+      on:top-loaded
+      on:top-hidden
       on:change
       on:action
       on:loaded={() => {

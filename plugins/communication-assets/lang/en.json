@@ -90,6 +90,9 @@
     "Direct": "Direct",
     "Directs": "Directs",
     "Members": "Members",
-    "Translate": "Translate"
+    "Translate": "Translate",
+    "WriteMessageEllipsis": "Write a message...",
+    "EditMessageEllipsis": "Edit message...",
+    "ArrowDownMessages": "↓ Latest messages"
   }
 }

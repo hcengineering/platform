@@ -12,27 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
-  import { RelationsEditor } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
+  import { AttachmentPresenter } from '@hcengineering/attachment-resources'
 
-  export let readonly: boolean = false
-  export let doc: Card
-  export let hidden: boolean = false
+  import { BlobDraft } from '../../types'
+
+  export let blob: BlobDraft
+
+  const dispatch = createEventDispatcher()
 </script>
 
-{#if hidden}
-  <div class="section-relations">
-    <RelationsEditor object={doc} {readonly} on:loaded emptyKind="placeholder" />
-  </div>
-{/if}
-
-<style lang="scss">
-  .section-relations {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    padding: 0 1rem;
-  }
-</style>
+<div class="item flex">
+  <AttachmentPresenter
+    value={{
+      file: blob.blobId,
+      name: blob.fileName,
+      type: blob.mimeType,
+      size: blob.size,
+      metadata: blob.metadata
+    }}
+    showPreview
+    removable
+    on:remove={(result) => {
+      if (result !== undefined) {
+        dispatch('delete', blob.blobId)
+      }
+    }}
+  />
+</div>
