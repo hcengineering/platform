@@ -308,7 +308,7 @@
       {items}
       selected={selected?._id}
       size={'large'}
-      kind={'transparent'}
+      kind={'ghost'}
       enableSearch={false}
       autoSelect={false}
       on:selected={changeFloor}
