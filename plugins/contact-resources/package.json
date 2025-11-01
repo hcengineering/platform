@@ -44,7 +44,7 @@
     "@hcengineering/attachment": "^0.7.0",
     "@hcengineering/attachment-resources": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/image-cropper": "^0.7.0",
     "@hcengineering/login": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",

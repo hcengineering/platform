@@ -41,7 +41,7 @@
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/model-card": "^0.7.0",
     "@hcengineering/model-core": "^0.7.0",
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/model-view": "^0.7.0",
     "@hcengineering/mail": "^0.7.0",

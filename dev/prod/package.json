@@ -97,7 +97,7 @@
     "@hcengineering/controlled-documents": "^0.7.0",
     "@hcengineering/controlled-documents-assets": "^0.7.0",
     "@hcengineering/controlled-documents-resources": "^0.7.0",
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/desktop-preferences": "^0.7.0",
     "@hcengineering/desktop-preferences-assets": "^0.7.0",
     "@hcengineering/desktop-preferences-resources": "^0.7.0",
