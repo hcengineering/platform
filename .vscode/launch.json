@@ -201,6 +201,7 @@
         "FRONT_URL": "http://huly.local:8087",
         "STATS_URL": "http://huly.local:4900",
         "MAIL_URL": "",
+        "MAX_FAILED_LOGIN_ATTEMPTS": "5",
         // "DB_NS": "account-2",
         // "WS_LIVENESS_DAYS": "1",
         // "WORKSPACE_LIMIT_PER_USER": "1",
