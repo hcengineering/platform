@@ -38,7 +38,7 @@
   .progress-track {
     width: 100%;
     height: 100%;
-    background-color: var(--theme-divider-color);
+    background-color: var(--button-secondary-BackgroundColor);
     border-radius: 2px;
     overflow: hidden;
   }
