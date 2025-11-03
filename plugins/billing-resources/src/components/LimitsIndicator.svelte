@@ -91,11 +91,9 @@
   }
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
+<button
+  type="button"
   class="limits-container"
-  role="button"
-  tabindex="0"
   use:tooltip={{
     component: UsagePopup,
     props: { usage: usageInfo, tier: currentTier },
@@ -110,7 +108,7 @@
   <div class="limit-item">
     <UsageProgressBar percent={bandwidthPercent} height="5px" />
   </div>
-</div>
+</button>
 
 <style lang="scss">
   .limits-container {
@@ -121,12 +119,15 @@
     cursor: pointer;
     transition: background-color 0.2s ease;
     padding: 0.25rem;
+    border: none;
+    background: none;
+    outline: none;
 
-    &:hover {
+    &:hover,
+    &:focus {
       background-color: var(--theme-button-hovered);
     }
   }
-
   .limit-item {
     display: flex;
     align-items: center;
