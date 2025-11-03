@@ -64,7 +64,6 @@
   const POLL_INTERVAL = 2000
 
   let usageInfo: UsageStatus | null = null
-  let loadingUsage = false
 
   $: isCurrentCanceled = currentSubscription?.canceledAt !== undefined && currentSubscription.canceledAt > 0
 
@@ -269,8 +268,6 @@
   }
 
   async function fetchUsageStats (): Promise<void> {
-    loadingUsage = true
-
     try {
       const accountClient = getAccountClient()
       if (accountClient == null) return
@@ -280,8 +277,6 @@
     } catch (err) {
       console.error('error fetching usage stats:', err)
       usageInfo = null
-    } finally {
-      loadingUsage = false
     }
   }
 

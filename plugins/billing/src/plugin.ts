@@ -30,7 +30,7 @@ export const billingPlugin = plugin(billingId, {
   component: {
     Settings: '' as AnyComponent,
     WorkbenchExtension: '' as AnyComponent,
-    UpgradeButtonExt: '' as AnyComponent
+    UsageExtension: '' as AnyComponent
   },
   string: {
     Billing: '' as IntlString,
