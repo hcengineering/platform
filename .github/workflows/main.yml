@@ -26,7 +26,7 @@ env:
     common
     desktop
     desktop-package
-    qms-desktop-package
+    foundations
     dev
     models
     packages
@@ -38,7 +38,6 @@ env:
     services
     workers
     tests
-    qms-tests
     rush.json
     .prettierrc
     tools
@@ -188,7 +187,7 @@ jobs:
         continue-on-error: true
         uses: docker/login-action@v3
         with:
-          username: hardcoreeng
+          username: haiodo
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Prepare server
@@ -201,136 +200,7 @@ jobs:
           DB_URL: 'postgresql://root@localhost:26258/defaultdb?sslmode=disable'
           ELASTIC_URL: 'http://localhost:9201'
           MONGO_URL: 'mongodb://localhost:27018'
-  uitest:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
-          submodules: recursive
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: '.nvmrc'
-      - name: Cache node modules
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-platform
-        with:
-          path: |
-            common/temp
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-      - name: Checking for mis-matching dependencies...
-        run: node common/scripts/install-run-rush.js check
-
-      - name: Checking for mis-matching transitive dependencies...
-        run: node common/scripts/check-versions.js
-
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
-
-      - name: Login to Docker Hub
-        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-        continue-on-error: true
-        uses: docker/login-action@v3
-        with:
-          username: hardcoreeng
-          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-
-      - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker
-        env:
-          DOCKER_CLI_HINTS: false
-      - name: Configure /etc/hosts
-        run: |
-          sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
-      - name: Prepare server
-        run: |
-          cd ./tests
-          export DO_CLEAN="true"
-          ./prepare.sh
-      - name: Install Playwright
-        run: |
-          cd ./tests/sanity
-          node ../../common/scripts/install-run-rushx.js ci
-      - name: Start profiling
-        run: |
-          cd ./tests
-          ./profile-start.sh
-      - name: Run UI tests
-        run: |
-          cd ./tests/sanity          
-          node ../../common/scripts/install-run-rushx.js uitest
-      - name: Download profile
-        run: |
-          cd ./tests
-          ./profile-download.sh
-          npm install -g cpupro
-          ./profile-generate.sh
-      - name: Upload profiling results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: profiling
-          path: ./tests/profiles
-      - name: 'Store docker logs'
-        if: always()
-        run: |
-          cd ./tests/sanity
-          mkdir logs
-          cd logs
-          docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-results
-          path: ./tests/sanity/playwright-report/
-      # - name: Get Allure history
-      #   uses: actions/checkout@v4
-      #   if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-      #   continue-on-error: true
-      #   with:
-      #     ref: gh-pages
-      #     path: gh-pages
-      # - name: Generates Allure Report
-      #   uses: simple-elf/allure-report-action@master
-      #   if: always()
-      #   id: allure-report
-      #   with:
-      #     allure_results: ./tests/sanity/allure-results/
-      #     gh_pages: gh-pages
-      #     allure_report: allure-report
-      #     allure_history: allure-history
-      # - name: Upload allure test results
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: allure-report
-      #     path: ./allure-report/
-      # - name: Deploy report to Github Pages
-      #   if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
-      #   uses: peaceiris/actions-gh-pages@v4
-      #   with:
-      #     PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     PUBLISH_BRANCH: gh-pages
-      #     PUBLISH_DIR: allure-history
-      - name: Upload Logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-logs
-          path: ./tests/sanity/logs
-      # - name: Upload DB snapshot
-      #   if: always()
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: db-snapshot
-      #     path: ./tests/db_dump
   uitest-pg:
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -368,7 +238,7 @@ jobs:
         continue-on-error: true
         uses: docker/login-action@v3
         with:
-          username: hardcoreeng
+          username: haiodo
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Docker Build
@@ -426,84 +296,6 @@ jobs:
         with:
           name: docker-logs-pg
           path: ./tests/sanity/logs
-  uitest-qms:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
-          submodules: recursive
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: '.nvmrc'
-      - name: Cache node modules
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-platform
-        with:
-          path: |
-            common/temp
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-
-      - name: Checking for mis-matching dependencies...
-        run: node common/scripts/install-run-rush.js check
-
-      - name: Checking for mis-matching transitive dependencies...
-        run: node common/scripts/check-versions.js
-
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
-
-      - name: Login to Docker Hub
-        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-        continue-on-error: true
-        uses: docker/login-action@v3
-        with:
-          username: hardcoreeng
-          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-      - name: Docker Build
-        run: node common/scripts/install-run-rush.js docker
-        env:
-          DOCKER_CLI_HINTS: false
-      - name: Configure /etc/hosts
-        run: |
-          sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
-      - name: Prepare server
-        run: |
-          cd ./qms-tests
-          export DO_CLEAN=true
-          ./prepare.sh
-      - name: Install Playwright
-        run: |
-          cd ./qms-tests/sanity
-          node ../../common/scripts/install-run-rushx.js ci
-      - name: Run UI tests
-        run: |
-          cd ./qms-tests/sanity
-          node ../../common/scripts/install-run-rushx.js uitest
-      - name: 'Store docker logs'
-        if: always()
-        run: |
-          cd ./qms-tests/sanity
-          mkdir logs
-          cd logs
-          docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-results-qms
-          path: ./qms-tests/sanity/playwright-report/
-      - name: Upload Logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-logs-qms
-          path: ./qms-tests/sanity/logs
   uitest-workspaces:
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -544,7 +336,7 @@ jobs:
         continue-on-error: true
         uses: docker/login-action@v3
         with:
-          username: hardcoreeng
+          username: haiodo
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
@@ -664,7 +456,7 @@ jobs:
         continue-on-error: true
         uses: docker/login-action@v3
         with:
-          username: hardcoreeng
+          username: haiodo
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Docker build
@@ -686,7 +478,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         uses: docker/login-action@v3
         with:
-          username: hardcoreeng
+          username: haiodo
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
       # - name: Docker push staging
       #   if: ${{ github.ref == 'refs/heads/main' }}
@@ -804,105 +596,3 @@ jobs:
         with:
           name: Huly-Linux
           path: ./desktop-package/deploy/Huly-linux-*.zip
-
-  qms-dist-build:
-    # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
-    if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
-    needs: build
-    runs-on: macos-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
-          submodules: recursive
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: '.nvmrc'
-
-      - name: Cache node modules
-        uses: actions/cache@v4
-        env:
-          cache-name: node
-        with:
-          path: |
-            common/temp
-          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install --purge
-      - name: Model version from git tags
-        run: node common/scripts/install-run-rush.js model-version
-      - name: Package
-        run: node common/scripts/install-run-rush.js package --to qms-desktop -v
-      - name: Bump package JSON version
-        run: |
-          cd qms-desktop-package
-          node ../common/scripts/install-run-rushx.js bump
-          cat ./package.json
-      - name: Install the Apple certificate and provisioning profile
-        env:
-          DEV_ID_P12_BASE64: ${{ secrets.DEV_ID_P12_BASE64 }}
-          DEV_ID_P12_PASSWORD: ${{ secrets.DEV_ID_P12_PASSWORD }}
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-        run: |
-          # create variables
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-
-          # import certificate from secret
-          echo -n "$DEV_ID_P12_BASE64" | base64 --decode -o $CERTIFICATE_PATH
-
-          # create temporary keychain
-          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-
-          # import certificate to keychain
-          security import $CERTIFICATE_PATH -P "$DEV_ID_P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
-      - name: Build distribution's
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_APP_PASS: ${{ secrets.APPLE_ID_APP_PASS }}
-          TEAM_ID: ${{ secrets.TEAM_ID }}
-        run: |
-          cd qms-desktop-package
-          node ../common/scripts/install-run-rushx.js dist --linux --x64
-          node ../common/scripts/install-run-rushx.js dist --windows --x64 --arm64
-          node ../common/scripts/install-run-rushx.js dist-signed --macos --x64 --arm64
-          ./scripts/copy-publish-artifacts.sh ${{ env.PublishTempFolder}}
-      - name: Publish distribution assets and version
-        uses: ryand56/r2-upload-action@latest
-        with:
-          r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
-          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          r2-bucket: desktop-distro
-          source-dir: qms-desktop-package/${{ env.PublishTempFolder}}
-          destination-dir: ./
-      - name: Upload MacOS
-        uses: actions/upload-artifact@v4
-        with:
-          name: TraceX-MacOS-x64
-          path: ./qms-desktop-package/deploy/TraceX-macos-*-x64.dmg
-      - name: Upload MacOS arm64
-        uses: actions/upload-artifact@v4
-        with:
-          name: TraceX-MacOS-arm64
-          path: ./qms-desktop-package/deploy/TraceX-macos-*-arm64.dmg
-      - name: Upload Windows
-        uses: actions/upload-artifact@v4
-        with:
-          name: TraceX-Windows
-          path: ./qms-desktop-package/deploy/TraceX-windows-*.zip
-      - name: Upload Linux
-        uses: actions/upload-artifact@v4
-        with:
-          name: TraceX-Linux
-          path: ./qms-desktop-package/deploy/TraceX-linux-*.zip
