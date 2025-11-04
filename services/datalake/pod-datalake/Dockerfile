@@ -1,4 +1,4 @@
-FROM haiodo/base-slim:v20250916
+FROM haiodo/base-slim:v20250411
 WORKDIR /app
 
 COPY bundle/bundle.js ./
