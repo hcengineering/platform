@@ -538,32 +538,32 @@ services:
       - HULY_DB_CONNECTION=${DB_CR_URL}
       - HULY_TOKEN_SECRET=secret
     restart: unless-stopped
-  hulygun:
-    image: hardcoreeng/hulygun
-    depends_on:
-      redpanda:
-        condition: service_started
-      account:
-        condition: service_started
-    extra_hosts:
-      - 'huly.local:host-gateway'
-    environment:
-      - HULY_LOG=debug
-      - HULY_KAFKA_BOOTSTRAP=redpanda:9092
-      - HULY_TOKEN_SECRET=secret
-      - HULY_ACCOUNT_SERVICE=http://huly.local:3000
-    restart: unless-stopped
-  hulypulse:
-    image: hardcoreeng/hulypulse
-    depends_on:
-      redis:
-        condition: service_started
-    ports:
-      - 8099:8099
-    environment:
-      - HULY_REDIS_URLS=redis://redis:6379
-      - HULY_BIND_PORT=8099
-    restart: unless-stopped
+  # hulygun:
+  #   image: hardcoreeng/hulygun
+  #   depends_on:
+  #     redpanda:
+  #       condition: service_started
+  #     account:
+  #       condition: service_started
+  #   extra_hosts:
+  #     - 'huly.local:host-gateway'
+  #   environment:
+  #     - HULY_LOG=debug
+  #     - HULY_KAFKA_BOOTSTRAP=redpanda:9092
+  #     - HULY_TOKEN_SECRET=secret
+  #     - HULY_ACCOUNT_SERVICE=http://huly.local:3000
+  #   restart: unless-stopped
+  # hulypulse:
+  #   image: hardcoreeng/hulypulse
+  #   depends_on:
+  #     redis:
+  #       condition: service_started
+  #   ports:
+  #     - 8099:8099
+  #   environment:
+  #     - HULY_REDIS_URLS=redis://redis:6379
+  #     - HULY_BIND_PORT=8099
+  #   restart: unless-stopped
 
   process-service:
     image: hardcoreeng/process
