@@ -20,7 +20,7 @@
   $: clampedPercent = Math.min(Math.max(percent, 0), 1)
 
   // Calculate style class based on current percentage
-  $: fillClass = clampedPercent >= 0.9 ? 'critical' : clampedPercent >= 0.5 ? 'warning' : 'normal'
+  $: fillClass = clampedPercent >= 0.9 ? 'critical' : clampedPercent >= 0.7 ? 'warning' : 'normal'
 </script>
 
 <div class="progress-bar" style="width: {width}; height: {height};">
