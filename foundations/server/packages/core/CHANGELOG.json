@@ -1,0 +1,145 @@
+{
+  "name": "@hcengineering/server-core",
+  "entries": [
+    {
+      "version": "0.7.16",
+      "tag": "@hcengineering/server-core_v0.7.16",
+      "date": "Tue, 28 Oct 2025 06:41:27 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Rework One second counter"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.15",
+      "tag": "@hcengineering/server-core_v0.7.15",
+      "date": "Mon, 27 Oct 2025 16:26:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix one second counters"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.8",
+      "tag": "@hcengineering/server-core_v0.7.8",
+      "date": "Tue, 21 Oct 2025 19:29:19 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "bump core"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.7",
+      "tag": "@hcengineering/server-core_v0.7.7",
+      "date": "Fri, 17 Oct 2025 05:15:22 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix one second gauges"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.6",
+      "tag": "@hcengineering/server-core_v0.7.6",
+      "date": "Wed, 15 Oct 2025 18:58:52 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add params for memoryLimit/bulkSize"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.5",
+      "tag": "@hcengineering/server-core_v0.7.5",
+      "date": "Tue, 14 Oct 2025 10:31:32 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Remove communication dependencies"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.4",
+      "tag": "@hcengineering/server-core_v0.7.4",
+      "date": "Tue, 14 Oct 2025 05:23:10 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "deps"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.3",
+      "tag": "@hcengineering/server-core_v0.7.3",
+      "date": "Mon, 13 Oct 2025 12:15:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.2",
+      "tag": "@hcengineering/server-core_v0.7.2",
+      "date": "Sat, 11 Oct 2025 18:26:50 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Use latest platform-rig"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.1",
+      "tag": "@hcengineering/server-core_v0.7.1",
+      "date": "Fri, 10 Oct 2025 14:32:03 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix TxOrderingMiddleware"
+          },
+          {
+            "comment": "New deps"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/server-core_v0.6.0",
+      "date": "Sun, 08 Aug 2021 10:14:57 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `~0.6.3` to `~0.6.4`"
+          }
+        ]
+      }
+    }
+  ]
+}
