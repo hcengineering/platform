@@ -1,4 +1,4 @@
-FROM haiodo/base
+FROM haiodo/base:v20250411
 
 # Chromium hangs when usging LD_PRELOAD and MALLOC_CONF
 ENV LD_PRELOAD=
