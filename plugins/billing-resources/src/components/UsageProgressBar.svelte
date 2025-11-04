@@ -19,13 +19,13 @@
 
   $: clampedPercent = Math.min(Math.max(percent, 0), 1)
 
-  // Calculate color based on current percentage
-  $: fillColor = clampedPercent >= 0.9 ? '#e53935' : clampedPercent >= 0.7 ? '#fbc02d' : '#43a047'
+  // Calculate style class based on current percentage
+  $: fillClass = clampedPercent >= 0.9 ? 'critical' : clampedPercent >= 0.7 ? 'warning' : 'normal'
 </script>
 
 <div class="progress-bar" style="width: {width}; height: {height};">
   <div class="progress-track">
-    <div class="progress-fill" style="width: {clampedPercent * 100}%; background-color: {fillColor};"></div>
+    <div class="progress-fill {fillClass}" style="width: {clampedPercent * 100}%;"></div>
   </div>
 </div>
 
@@ -49,5 +49,17 @@
     transition:
       width 0.3s ease,
       background-color 0.3s ease;
+
+    &.normal {
+      background-color: var(--theme-won-color);
+    }
+
+    &.warning {
+      background-color: var(--theme-warning-color);
+    }
+
+    &.critical {
+      background-color: var(--theme-error-color);
+    }
   }
 </style>
