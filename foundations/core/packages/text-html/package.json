@@ -40,7 +40,7 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/text-core": "workspace:^0.7.18",
+    "@hcengineering/text-core": "^0.7.18",
     "htmlparser2": "^9.0.0"
   },
   "repository": "https://github.com/hcengineering/huly.core",

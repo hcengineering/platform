@@ -37,7 +37,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-core": "workspace:^0.7.16",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/storage": "^0.7.17",
     "kafkajs": "^2.2.4"
   },

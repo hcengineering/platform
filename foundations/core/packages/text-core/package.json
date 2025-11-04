@@ -42,7 +42,7 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.21",
+    "@hcengineering/core": "^0.7.21",
     "fast-equals": "^5.2.2",
     "hash-it": "^6.0.0"
   },

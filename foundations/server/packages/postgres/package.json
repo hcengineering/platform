@@ -38,7 +38,7 @@
     "postgres": "^3.4.7",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-core": "workspace:^0.7.16",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/postgres-base": "^0.7.17"
   },
   "repository": "https://github.com/hcengineering/huly.server",

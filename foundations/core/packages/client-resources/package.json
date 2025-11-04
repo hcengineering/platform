@@ -44,11 +44,11 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/client": "workspace:^0.7.17",
-    "@hcengineering/core": "workspace:^0.7.21",
-    "@hcengineering/platform": "workspace:^0.7.18",
-    "@hcengineering/rpc": "workspace:^0.7.17",
+    "@hcengineering/analytics": "^0.7.17",
+    "@hcengineering/client": "^0.7.17",
+    "@hcengineering/core": "^0.7.21",
+    "@hcengineering/platform": "^0.7.18",
+    "@hcengineering/rpc": "^0.7.17",
     "snappyjs": "^0.7.0"
   },
   "repository": "https://github.com/hcengineering/huly.core",

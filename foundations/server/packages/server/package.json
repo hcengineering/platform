@@ -41,7 +41,7 @@
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/rpc": "^0.7.17",
-    "@hcengineering/server-core": "workspace:^0.7.16",
+    "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-token": "^0.7.17",
     "utf-8-validate": "^6.0.4"
   },

@@ -94,7 +94,7 @@
    * and set projectFolderMaxDepth to a large number.
    */
   // "projectFolderMinDepth": 2,
-  "projectFolderMaxDepth": 3,
+  "projectFolderMaxDepth": 4,
 
   /**
    * Today the npmjs.com registry enforces fairly strict naming rules for packages, but in the early
@@ -330,6 +330,262 @@
     //   // "versionPolicyName": ""
     // },
     //
+
+    {
+      "packageName": "@hcengineering/platform-rig",
+      "projectFolder": "foundations/utils/packages/platform-rig",
+      "reviewCategory": "tools",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/ui-test",
+      "projectFolder": "foundations/utils/packages/ui-test",
+      "shouldPublish": false
+    },
+
+    /// CORE Modules
+
+    {
+      "packageName": "@hcengineering/account-client",
+      "projectFolder": "foundations/core/packages/account-client",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/analytics",
+      "projectFolder": "foundations/core/packages/analytics",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/analytics-service",
+      "projectFolder": "foundations/core/packages/analytics-service",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/api-client",
+      "projectFolder": "foundations/core/packages/api-client",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/collaborator-client",
+      "projectFolder": "foundations/core/packages/collaborator-client",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/core",
+      "projectFolder": "foundations/core/packages/core",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/model",
+      "projectFolder": "foundations/core/packages/model",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/platform",
+      "projectFolder": "foundations/core/packages/platform",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/query",
+      "projectFolder": "foundations/core/packages/query",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/rank",
+      "projectFolder": "foundations/core/packages/rank",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/retry",
+      "projectFolder": "foundations/core/packages/retry",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/storage",
+      "projectFolder": "foundations/core/packages/storage",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/text",
+      "projectFolder": "foundations/core/packages/text",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/text-core",
+      "projectFolder": "foundations/core/packages/text-core",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/text-html",
+      "projectFolder": "foundations/core/packages/text-html",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/text-markdown",
+      "projectFolder": "foundations/core/packages/text-markdown",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/text-ydoc",
+      "projectFolder": "foundations/core/packages/text-ydoc",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/client",
+      "projectFolder": "foundations/core/packages/client",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/client-resources",
+      "projectFolder": "foundations/core/packages/client-resources",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/rpc",
+      "projectFolder": "foundations/core/packages/rpc",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/server-token",
+      "projectFolder": "foundations/core/packages/token",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/hulylake-client",
+      "projectFolder": "foundations/core/packages/hulylake-client",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/storage-client",
+      "projectFolder": "foundations/core/packages/storage-client",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/measurements",
+      "projectFolder": "foundations/core/packages/measurements",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/measurements-otlp",
+      "projectFolder": "foundations/core/packages/measurements-otlp",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/postgres-base",
+      "projectFolder": "foundations/core/packages/postgres-base",
+      "shouldPublish": true
+    },
+    // Communication
+    {
+      "packageName": "@hcengineering/communication-types",
+      "projectFolder": "foundations/communication/packages/types",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/communication-sdk-types",
+      "projectFolder": "foundations/communication/packages/sdk-types",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/communication-shared",
+      "projectFolder": "foundations/communication/packages/shared",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/communication-rest-client",
+      "projectFolder": "foundations/communication/packages/rest-client",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/communication-cockroach",
+      "projectFolder": "foundations/communication/packages/cockroach",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/communication-server",
+      "projectFolder": "foundations/communication/packages/server",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/communication-query",
+      "projectFolder": "foundations/communication/packages/query",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/communication-client-query",
+      "projectFolder": "foundations/communication/packages/client-query",
+      "shouldPublish": true
+    },
+    /// Server
+
+    {
+      "packageName": "@hcengineering/server-client",
+      "projectFolder": "foundations/server/packages/client",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/collaboration",
+      "projectFolder": "foundations/server/packages/collaboration",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/server-core",
+      "projectFolder": "foundations/server/packages/core",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/datalake",
+      "projectFolder": "foundations/server/packages/datalake",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/hulylake",
+      "projectFolder": "foundations/server/packages/hulylake",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/elastic",
+      "projectFolder": "foundations/server/packages/elastic",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/kafka",
+      "projectFolder": "foundations/server/packages/kafka",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/middleware",
+      "projectFolder": "foundations/server/packages/middleware",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/minio",
+      "projectFolder": "foundations/server/packages/minio",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/mongo",
+      "projectFolder": "foundations/server/packages/mongo",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/postgres",
+      "projectFolder": "foundations/server/packages/postgres",
+      "shouldPublish": true
+    },
+    { "packageName": "@hcengineering/s3", "projectFolder": "foundations/server/packages/s3", "shouldPublish": true },
+    {
+      "packageName": "@hcengineering/server",
+      "projectFolder": "foundations/server/packages/server",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/server-storage",
+      "projectFolder": "foundations/server/packages/server-storage",
+      "shouldPublish": true
+    },
+
+    /// Platform modules
     {
       "packageName": "@hcengineering/analytics-providers",
       "projectFolder": "packages/analytics-providers",
