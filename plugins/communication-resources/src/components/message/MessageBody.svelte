@@ -21,7 +21,7 @@
   import { Label } from '@hcengineering/ui'
 
   import communication from '../../plugin'
-  import MessageInput from './MessageInput.svelte'
+  import MessageInput from '../input/MessageInput.svelte'
   import MessageContentViewer from './MessageContentViewer.svelte'
   import MessageFooter from './MessageFooter.svelte'
   import {

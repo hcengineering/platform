@@ -26,6 +26,7 @@
     return rooms.filter((p) => p.floor === floor)
   }
 
+  let floor = $selectedFloor ?? ($activeFloor === '' ? $floors[0]?._id : $activeFloor)
   $: floor = $selectedFloor ?? ($activeFloor === '' ? $floors[0]?._id : $activeFloor)
   let configure: boolean = false
   let replacedPanel: HTMLElement

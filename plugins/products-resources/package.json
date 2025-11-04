@@ -45,7 +45,7 @@
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/view-resources": "^0.7.0",
     "@hcengineering/view": "^0.7.0",
     "@hcengineering/panel": "^0.7.0",

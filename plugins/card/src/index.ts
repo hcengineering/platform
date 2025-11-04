@@ -93,7 +93,6 @@ export interface CardSection extends Doc {
 
 export interface CardViewDefaults extends MasterTag {
   defaultSection: Ref<CardSection>
-  defaultNavigation?: string
 }
 
 export interface FavoriteCard extends Preference {

@@ -133,7 +133,7 @@
     "@hcengineering/notification-resources": "^0.7.0",
     "@hcengineering/preference": "^0.7.0",
     "@hcengineering/preference-assets": "^0.7.0",
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/rekoni": "^0.7.0",
     "@hcengineering/tags-assets": "^0.7.0",
     "@hcengineering/tags": "^0.7.0",

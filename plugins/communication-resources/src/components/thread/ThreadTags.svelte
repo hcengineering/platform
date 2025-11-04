@@ -12,10 +12,26 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import cardPlugin, { Card } from '@hcengineering/card'
+  import cardPlugin, { Card, MasterTag } from '@hcengineering/card'
   import { Component } from '@hcengineering/ui'
+  import { CardType } from '@hcengineering/communication-types'
+  import { getClient } from '@hcengineering/presentation'
 
-  export let card: Card
+  export let card: Card | undefined = undefined
+  export let type: CardType
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  $: clazz = hierarchy.findClass(type) as MasterTag | undefined
 </script>
 
-<Component is={cardPlugin.component.CardTagsColored} props={{ value: card }} />
+{#if card}
+  <Component is={cardPlugin.component.CardTagsColored} props={{ value: card }} showLoading={false} />
+{:else if clazz}
+  <Component
+    is={cardPlugin.component.CardTagColored}
+    props={{ labelIntl: clazz.label, color: clazz.background }}
+    showLoading={false}
+  />
+{/if}

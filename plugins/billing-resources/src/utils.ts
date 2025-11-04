@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { get } from 'svelte/store'
+
 import login from '@hcengineering/login'
 import { getMetadata } from '@hcengineering/platform'
-import presentation, { MessageBox, getClient } from '@hcengineering/presentation'
+import presentation, { getClient } from '@hcengineering/presentation'
 import billing from '@hcengineering/billing'
 import {
   getClient as getAccountClientRaw,
@@ -23,10 +25,17 @@ import {
 } from '@hcengineering/account-client'
 import { getClient as getBillingClientRaw, type BillingClient } from '@hcengineering/billing-client'
 import { getClient as getPaymentClientRaw, type PaymentClient } from '@hcengineering/payment-client'
-import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+import {
+  type UsageStatus,
+  type WorkspaceInfoWithStatus,
+  AccountRole,
+  getCurrentAccount,
+  hasAccountRole
+} from '@hcengineering/core'
 import { showPopup } from '@hcengineering/ui'
 import { type Tier } from '@hcengineering/billing'
 
+import { setSubscriptionState, updateLimitExceeded, subscriptionStore } from './stores/subscription'
 import SubscriptionsModal from './components/SubscriptionsModal.svelte'
 
 export function getAccountClient (): AccountClient | null {
@@ -64,7 +73,7 @@ export async function isLimitExceeded (): Promise<boolean> {
     if (accountClient == null) return false
 
     const workspaceInfo = await accountClient.getWorkspaceInfo(false)
-    const usageInfo = workspaceInfo.usageInfo ?? null
+    const usageInfo = workspaceInfo?.usageInfo ?? null
 
     if (usageInfo === null) {
       return false
@@ -84,6 +93,37 @@ export async function isLimitExceeded (): Promise<boolean> {
   } catch (error) {
     console.error('Error checking usage limits:', error)
     return false
+  }
+}
+
+export async function checkWorkspaceLimits (): Promise<void> {
+  try {
+    const accountClient = getAccountClient()
+    if (accountClient == null) {
+      updateLimitExceeded(false)
+      return
+    }
+
+    const workspaceInfo = await accountClient.getWorkspaceInfo(false)
+    const usageInfo = workspaceInfo?.usageInfo ?? null
+
+    const subscription = await getCurrentSubscription(accountClient)
+    const tier = subscription != null ? await getTierByPlan(subscription.plan) : null
+
+    // Update subscription store
+    setSubscriptionState(subscription, tier ?? undefined, workspaceInfo)
+
+    // Check limits
+    if (usageInfo === null || subscription == null || tier == null) {
+      updateLimitExceeded(subscription == null)
+      return
+    }
+
+    const exceeded = checkUsageAgainstLimits(usageInfo, tier)
+    updateLimitExceeded(exceeded)
+  } catch (error) {
+    console.error('Error checking workspace limits:', error)
+    updateLimitExceeded(false)
   }
 }
 
@@ -109,14 +149,24 @@ function getTierPlan (tierId: string): string {
   return parts.length >= 3 ? parts[2].toLowerCase() : ''
 }
 
-function checkUsageAgainstLimits (usageInfo: any, tier: Tier): boolean {
+export function calculateLimits (tier: Tier | undefined): { storageLimit: number, trafficLimit: number } {
+  const DEFAULT_STORAGE_GB = 10
+  const DEFAULT_TRAFFIC_GB = 10
+
+  return {
+    storageLimit: (tier?.storageLimitGB ?? DEFAULT_STORAGE_GB) * 1e9,
+    trafficLimit: (tier?.trafficLimitGB ?? DEFAULT_TRAFFIC_GB) * 1e9
+  }
+}
+
+export function checkUsageAgainstLimits (usageInfo: UsageStatus | undefined, tier: Tier | undefined): boolean {
+  if (usageInfo == null) return false
   const storageUsedBytes = usageInfo.usage.storageBytes ?? 0
   const trafficUsedBytes = usageInfo.usage.livekitTrafficBytes ?? 0
 
-  const storageLimitBytes = tier.storageLimitGB * 1000 * 1000 * 1000
-  const trafficLimitBytes = tier.trafficLimitGB * 1000 * 1000 * 1000
+  const { storageLimit, trafficLimit } = calculateLimits(tier)
 
-  return storageUsedBytes > storageLimitBytes || trafficUsedBytes > trafficLimitBytes
+  return storageUsedBytes > storageLimit || trafficUsedBytes > trafficLimit
 }
 
 export async function getCurrentSubscription (accountClient: AccountClient): Promise<SubscriptionData | undefined> {
@@ -124,31 +174,27 @@ export async function getCurrentSubscription (accountClient: AccountClient): Pro
   return subscriptions.find((p) => p.type === 'tier')
 }
 
+export async function getWorkspaceInfo (): Promise<WorkspaceInfoWithStatus | undefined> {
+  const accountClient = getAccountClient()
+  if (accountClient == null) return undefined
+  return await accountClient.getWorkspaceInfo(false)
+}
+
 export async function upgradePlan (): Promise<void> {
   try {
-    const accountClient = getAccountClient()
-    if (accountClient == null) return
     const currentAccount = getCurrentAccount()
     if (currentAccount == null) {
       return
     }
 
-    const workspaceInfo = await accountClient.getWorkspaceInfo(false)
+    const workspaceInfo = get(subscriptionStore).workspaceInfo ?? (await getWorkspaceInfo())
 
     const isBillingAccount =
-      workspaceInfo.billingAccount != null
-        ? workspaceInfo.billingAccount === currentAccount.uuid
+      workspaceInfo?.billingAccount != null
+        ? workspaceInfo?.billingAccount === currentAccount.uuid
         : hasAccountRole(currentAccount, AccountRole.Owner)
 
-    if (isBillingAccount) {
-      showPopup(SubscriptionsModal, {})
-    } else {
-      showPopup(MessageBox, {
-        label: billing.string.UpgradePlan,
-        message: billing.string.AskBillingAdmin,
-        params: { canSubmit: false }
-      })
-    }
+    showPopup(SubscriptionsModal, { isReadOnly: !isBillingAccount })
   } catch (error) {
     console.error('Failed to show upgrade plan modal:', error)
   }

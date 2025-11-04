@@ -25,8 +25,7 @@ import {
   type Poll,
   type CustomActivityPresenter,
   type GuestCommunicationSettings,
-  type AppletGetTitleFnResource,
-  MessagesNavigationAnchors
+  type AppletGetTitleFnResource
 } from '@hcengineering/communication'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { type AppletType } from '@hcengineering/communication-types'
@@ -100,8 +99,7 @@ function defineDirect (builder: Builder): void {
     communication.string.Direct,
     communication.string.Directs,
     {
-      defaultSection: communication.ids.CardMessagesSection,
-      defaultNavigation: MessagesNavigationAnchors.LatestMessages
+      defaultSection: communication.ids.CardMessagesSection
     },
     PaletteColorIndexes.Lavander
   )

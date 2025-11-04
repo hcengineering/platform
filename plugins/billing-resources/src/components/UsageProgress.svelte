@@ -26,7 +26,7 @@
 
 <div class="flex-col flex-gap-2">
   <div class="flex-between text-md">
-    <span><Label {label} /></span>
+    <span class="pr-2"><Label {label} /></span>
     <span class="flex-row-center flex-gap-1">
       {humanReadableFileSize(value, 10, 0)}
       <Label label={plugin.string.Of} />

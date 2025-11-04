@@ -40,7 +40,7 @@
     "@hcengineering/view": "^0.7.0",
     "@hcengineering/setting": "^0.7.0",
     "@hcengineering/card": "^0.7.0",
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/communication-types": "^0.7.12",

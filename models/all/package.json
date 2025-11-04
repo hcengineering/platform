@@ -74,7 +74,7 @@
     "@hcengineering/model-notification": "^0.7.0",
     "@hcengineering/model-text-editor": "^0.7.0",
     "@hcengineering/model-uploader": "^0.7.0",
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/model-tags": "^0.7.0",
     "@hcengineering/model-calendar": "^0.7.0",

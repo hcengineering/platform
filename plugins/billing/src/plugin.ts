@@ -30,7 +30,7 @@ export const billingPlugin = plugin(billingId, {
   component: {
     Settings: '' as AnyComponent,
     WorkbenchExtension: '' as AnyComponent,
-    UpgradeButtonExt: '' as AnyComponent
+    UsageExtension: '' as AnyComponent
   },
   string: {
     Billing: '' as IntlString,
@@ -54,8 +54,7 @@ export const billingPlugin = plugin(billingId, {
     Legendary: '' as IntlString,
     LegendaryDescription: '' as IntlString,
     UpgradePlan: '' as IntlString,
-    LimitReached: '' as IntlString,
-    AskBillingAdmin: '' as IntlString
+    LimitReached: '' as IntlString
   },
   icon: {
     Billing: '' as Asset,

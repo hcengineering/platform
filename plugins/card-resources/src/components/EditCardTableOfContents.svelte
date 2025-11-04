@@ -15,16 +15,18 @@
 
 <script lang="ts">
   import card, { Card, CardSection, CardViewDefaults } from '@hcengineering/card'
-  import { Component, languageStore, Loading, ModernButton, Scroller } from '@hcengineering/ui'
+  import { Component, Loading, Scroller, ModernButton } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import { NotificationContext } from '@hcengineering/communication-types'
   import { Ref } from '@hcengineering/core'
-  import { SvelteComponent } from 'svelte'
+  import { SvelteComponent, tick } from 'svelte'
   import { TableOfContents } from '@hcengineering/text-editor-resources'
   import { Heading } from '@hcengineering/text-editor'
+  import communication from '@hcengineering/communication'
+  import { MessagesSection } from '@hcengineering/communication-resources'
 
   import { CardSectionAction } from '../types'
-  import { getResource, translate } from '@hcengineering/platform'
+  import { getCardSections, getCardToc } from '../card'
 
   export let doc: Card
   export let context: NotificationContext | undefined = undefined
@@ -32,20 +34,12 @@
   export let readonly: boolean = false
   export let scrollDiv: HTMLDivElement | undefined | null = undefined
 
+  const messagesId = communication.ids.CardMessagesSection
   const client = getClient()
-
-  let sections: CardSection[] = []
-  const _sections: CardSection[] = client
-    .getModel()
-    .findAllSync(card.class.CardSection, {})
-    .sort((a, b) => a.order - b.order)
-
-  let defaults: CardViewDefaults | undefined = undefined
-  $: defaults = client.getHierarchy().classHierarchyMixin(doc._class, card.mixin.CardViewDefaults)
 
   let selectedToc: Heading | undefined = undefined
 
-  const sectionElement: Record<Ref<CardSection>, HTMLElement | undefined> = {}
+  const sectionElement: Record<Ref<CardSection>, HTMLDivElement | undefined> = {}
   const sectionRef: Record<Ref<CardSection>, SvelteComponent | undefined> = {}
   const sectionLoaded: Record<Ref<CardSection>, boolean | undefined> = {}
   let sectionOverlays: Record<Ref<CardSection>, boolean> = {}
@@ -54,15 +48,46 @@
   let subTocBySection: Record<string, Heading[]> = {}
 
   let isScrollInitialized = false
+  let isNavigating = false
   let showOverlay = false
   let timer: any
   let hideBar: boolean = false
 
   let bottomOffset: number = 0
 
-  function onNavigationClick (heading: Heading): void {
-    selectedToc = heading
-    navigate()
+  let sections: CardSection[] = []
+  $: void getCardSections(doc).then((res) => {
+    sections = res
+  })
+
+  let defaults: CardViewDefaults | undefined = client
+    .getHierarchy()
+    .classHierarchyMixin(doc._class, card.mixin.CardViewDefaults)
+  $: defaults = client.getHierarchy().classHierarchyMixin(doc._class, card.mixin.CardViewDefaults)
+
+  let renderTopSections = defaults?.defaultSection !== communication.ids.CardMessagesSection
+
+  export function scrollDown (): void {
+    if (scrollDiv == null) return
+    const lastTocItem = toc[toc.length - 1]
+    if (lastTocItem === undefined) return
+
+    selectedToc = lastTocItem
+    void navigate()
+  }
+
+  export function editLastMessage (): void {
+    sectionRef[messagesId]?.editLastMessage?.()
+  }
+
+  export function hideScrollBar (): void {
+    hideBar = true
+    if (timer != null) {
+      clearTimeout(timer)
+    }
+    timer = setTimeout(() => {
+      hideBar = false
+    }, 1000)
   }
 
   function getBottomOffset (): number {
@@ -70,25 +95,51 @@
     return Math.max(0, Math.floor(scrollDiv.scrollHeight - scrollDiv.scrollTop - scrollDiv.clientHeight))
   }
 
-  function navigate (): void {
+  async function navigate (): Promise<void> {
     if (selectedToc === undefined) return
+    if (selectedToc.id !== messagesId && !renderTopSections) {
+      renderTopSections = true
+      await tick()
+    }
     const sectionId = selectedToc.group as Ref<CardSection>
 
     const ref = sectionRef[sectionId]
-    const isInnerNavigation = selectedToc.id !== sectionId
-    if (ref?.navigate && isInnerNavigation) {
+    const isInnerNavigation = selectedToc.id !== sectionId || sectionId === messagesId
+    if (ref?.navigate != null && isInnerNavigation) {
+      isNavigating = true
       ref.navigate(selectedToc.id)
     } else {
       sectionElement[sectionId]?.scrollIntoView()
+      isNavigating = false
     }
     isScrollInitialized = true
+  }
+
+  function updateToc (sections: CardSection[], subTocBySection: Record<string, Heading[]>): void {
+    if (sections.length === 0) return
+
+    toc = getCardToc(sections, subTocBySection)
+
+    if (selectedToc == null || toc.findIndex((it) => it.id === selectedToc?.id) === -1) {
+      selectedToc = toc.find((it) => it.group === defaults?.defaultSection) ?? toc[0]
+
+      isScrollInitialized = isScrollInitialized || selectedToc.id === toc[0].id
+    }
+  }
+
+  function handleNavigationClick (heading: Heading): void {
+    if (heading.group !== messagesId) {
+      renderTopSections = true
+    }
+    selectedToc = heading
+    void navigate()
   }
 
   function handleSectionLoaded (_id: Ref<CardSection>): void {
     const wasLoaded = sectionLoaded[_id] === true
     sectionLoaded[_id] = true
     if (!wasLoaded && selectedToc?.group === _id) {
-      navigate()
+      void navigate()
     }
   }
 
@@ -113,146 +164,58 @@
     }
   }
 
-  function updateToc (sections: CardSection[], tocBySection: Record<string, Heading[]>): void {
-    const newToc: Heading[] = []
-
-    for (const section of sections) {
-      const subToc = tocBySection[section._id]
-      if (section.navigation.length > 0) {
-        newToc.push(
-          ...section.navigation.map((nav) => ({
-            id: nav.id,
-            titleIntl: nav.label,
-            level: 0,
-            group: section._id
-          }))
-        )
-      } else {
-        newToc.push({
-          id: section._id,
-          titleIntl: section.label,
-          level: 0,
-          group: section._id
-        })
-      }
-
-      if (subToc !== undefined) {
-        newToc.push(...subToc.map((it) => ({ ...it, group: section._id })))
-      }
-    }
-
-    toc = newToc
-    if (selectedToc == null || newToc.findIndex((it) => it.id === selectedToc?.id) === -1) {
-      selectedToc =
-        newToc.find(
-          (it) =>
-            it.group === defaults?.defaultSection &&
-            (defaults?.defaultNavigation === undefined || it.id === defaults?.defaultNavigation)
-        ) ?? newToc[0]
-      isScrollInitialized = isScrollInitialized ?? selectedToc.id === newToc[0].id
-    }
-  }
-
-  export function scrollDown (): void {
-    if (scrollDiv == null) return
-    const lastTocItem = toc[toc.length - 1]
-    if (lastTocItem === undefined) return
-
-    if (selectedToc?.group === lastTocItem.group && selectedToc?.id === lastTocItem.id) {
-      scrollDiv?.scroll({ top: scrollDiv.scrollHeight, behavior: 'instant' })
-    } else {
-      selectedToc = lastTocItem
-      navigate()
-    }
-  }
-
-  export function editLastMessage (): void {
-    if (scrollDiv == null) return
-    const lastTocItem = toc[toc.length - 1]
-    if (lastTocItem?.group === undefined) return
-    ;(sectionRef as any)[lastTocItem.group]?.editLastMessage?.()
-  }
-
-  export function hideScrollBar (): void {
-    hideBar = true
-    if (timer) {
-      clearTimeout(timer)
-    }
-    timer = setTimeout(() => {
-      hideBar = false
-    }, 1000)
-  }
-
   function handleScroll (): void {
     if (scrollDiv == null || showOverlay) return
-    const allLoaded = sections.every(({ _id }) => sectionLoaded[_id] === true)
+
+    const allLoaded = renderTopSections
+      ? sections.every(({ _id }) => sectionLoaded[_id] === true)
+      : sectionLoaded[messagesId] === true
     if (!allLoaded) return
+
     const scrollTop = scrollDiv.scrollTop ?? 0
     const offsets: Array<{ _id: Ref<CardSection>, offsetTop: number }> = []
-    sections.forEach(({ _id }) => {
-      const sectionRef = sectionElement[_id]
-      if (sectionRef != null && scrollDiv != null) {
-        offsets.push({ _id, offsetTop: sectionRef.offsetTop })
+
+    for (const t of toc) {
+      const _id = t.group as Ref<CardSection>
+      if (!renderTopSections && _id !== messagesId) continue
+      if (offsets.some((it) => it._id === _id)) continue
+      const ref = sectionElement[_id]
+      if (ref != null) {
+        offsets.push({ _id, offsetTop: ref.offsetTop ?? 0 })
       }
-    })
+    }
+
     offsets.sort((a, b) => a.offsetTop - b.offsetTop)
 
-    const selectedSectionId = offsets.filter((it) => it.offsetTop <= scrollTop + 50).pop()?._id
+    const newSelectedId = offsets.filter((it) => it.offsetTop <= scrollTop + 50).pop()?._id
 
-    if (selectedSectionId != null && selectedSectionId !== selectedToc?.group) {
-      selectedToc = toc.find((it) => it.group === selectedSectionId)
+    if (newSelectedId != null) {
+      if (isNavigating) {
+        isNavigating = newSelectedId !== selectedToc?.group
+      } else if (newSelectedId !== selectedToc?.group) {
+        selectedToc = toc.find((it) => it.group === newSelectedId)
+      }
     }
 
     bottomOffset = getBottomOffset()
   }
 
-  async function filterSections (s: CardSection[], doc: Card): Promise<void> {
-    const newSections: CardSection[] = []
-    for (const section of s) {
-      if (section.checkVisibility !== undefined) {
-        const isVisibleFn = await getResource(section.checkVisibility)
-        const isVisible = await isVisibleFn(doc)
-        if (isVisible) {
-          newSections.push(section)
-        }
-      } else {
-        newSections.push(section)
-      }
-    }
-
-    sections = newSections
-  }
-
-  $: void filterSections(_sections, doc)
-  $: updateToc(sections, subTocBySection)
-  $: showOverlay = !isScrollInitialized || Object.values(sectionOverlays).some((it) => it)
-
-  function handleLasTocScroll (): void {
-    selectedToc = toc[toc.length - 1]
-    const sectionId = selectedToc.group as Ref<CardSection>
-
-    const ref = sectionRef[sectionId]
-    if (ref?.scrollDown) {
-      ref.scrollDown(selectedToc.id)
+  function handleScrollDown (): void {
+    const ref = sectionRef[messagesId]
+    if (ref?.scrollDown != null) {
+      ref.scrollDown()
     }
   }
 
   function canScrollDown (): boolean {
-    const lastSection = sections[sections.length - 1]
-    if (lastSection === undefined) return false
-    const ref = sectionRef[lastSection._id]
+    const ref = sectionRef[messagesId]
     if (ref === undefined) return false
 
     return ref.canScrollDown?.() ?? false
   }
 
-  async function getDownButtonTitle (item: Heading, lang: string): Promise<string> {
-    if (item.titleIntl) {
-      const label = await translate(item.titleIntl, {}, lang)
-      return '↓ ' + label
-    }
-    return '↓ ' + (item.title ?? '')
-  }
+  $: updateToc(sections, subTocBySection)
+  $: showOverlay = !isScrollInitialized || Object.values(sectionOverlays).some((it) => it)
 </script>
 
 <div class="hulyComponent-content__container columns relative">
@@ -269,7 +232,7 @@
           selected={toc.find((it) => it.id === selectedToc?.id)}
           position="right"
           on:select={(evt) => {
-            onNavigationClick(evt.detail)
+            handleNavigationClick(evt.detail)
           }}
         />
       </div>
@@ -279,14 +242,12 @@
       {hideBar}
       bottomPadding="var(--spacing-3)"
       disablePointerEventsOnScroll
+      disableOverscroll
       bind:divScroll={scrollDiv}
       onScroll={handleScroll}
     >
-      <div class="hulyComponent-content gap withoutMaxWidth">
-        {#each sections as section, i}
-          <!--NOTE: experimental - do not wait loading of previous sections-->
-          <!--{@const isLoadingBefore = sections.slice(0, i).some((section) => sectionLoaded[section._id] === undefined)}-->
-          {@const isLoadingBefore = false}
+      <div class="hulyComponent-content withoutMaxWidth" class:gap={renderTopSections}>
+        {#each sections as section (section._id)}
           <div id={section._id} bind:this={sectionElement[section._id]} class="section">
             <Component
               is={section.component}
@@ -295,13 +256,10 @@
               props={{
                 doc,
                 readonly,
-                isContextLoaded,
-                isLoadingBefore,
                 scrollDiv,
-                notificationContext: context,
                 contentDiv: sectionElement[section._id],
-                active: selectedToc?.group === section._id,
-                navigation: selectedToc?.id
+                navigation: selectedToc?.id,
+                hidden: !renderTopSections
               }}
               on:loaded={() => {
                 handleSectionLoaded(section._id)
@@ -315,15 +273,46 @@
             />
           </div>
         {/each}
+        <div id={messagesId} bind:this={sectionElement[messagesId]} class="section">
+          <MessagesSection
+            bind:this={sectionRef[messagesId]}
+            {doc}
+            {readonly}
+            {isContextLoaded}
+            {scrollDiv}
+            {context}
+            contentDiv={sectionElement[messagesId]}
+            active={selectedToc?.group === messagesId}
+            isDefault={defaults?.defaultSection === messagesId}
+            on:top-loaded={() => {
+              renderTopSections = true
+            }}
+            on:top-hidden={() => {
+              renderTopSections = false
+            }}
+            on:loaded={() => {
+              handleSectionLoaded(messagesId)
+            }}
+            on:change={(ev) => {
+              handleChangeNavigation(messagesId, ev.detail)
+            }}
+            on:action={(ev) => {
+              handleAction(messagesId, ev.detail)
+            }}
+          />
+        </div>
       </div>
     </Scroller>
-    {#if toc.length > 0 && (bottomOffset > 400 || canScrollDown())}
-      {@const lastToc = toc[toc.length - 1]}
-      {#await getDownButtonTitle(lastToc, $languageStore) then title}
-        <div class="down-button">
-          <ModernButton {title} shape="round" size="small" kind="primary" on:click={handleLasTocScroll} />
-        </div>
-      {/await}
+    {#if toc.length > 0 && (bottomOffset > 400 || canScrollDown()) && selectedToc?.group === messagesId}
+      <div class="down-button">
+        <ModernButton
+          label={communication.string.ArrowDownMessages}
+          shape="round"
+          size="small"
+          kind="primary"
+          on:click={handleScrollDown}
+        />
+      </div>
     {/if}
   </div>
 </div>

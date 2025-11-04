@@ -56,6 +56,6 @@
     "Of": "of",
     "UpgradePlan": "Upgrade Plan",
     "LimitReached": "Workspace limit reached, some functionality may be disabled. Upgrade to restore full access.",
-    "AskBillingAdmin": "Please contact your billing administrator to upgrade the plan."
+    "RestrictedPlans": "Only the workspace owner or billing manager can change the subscription plan"
   }
 }

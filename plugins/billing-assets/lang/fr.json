@@ -56,6 +56,6 @@
     "Of": "de",
     "UpgradePlan": "Mettre à niveau le plan",
     "LimitReached": "Limite de l'espace de travail atteinte, certaines fonctionnalités peuvent être désactivées. Mettez à niveau pour restaurer l'accès complet.",
-    "AskBillingAdmin": "Veuillez contacter votre administrateur de facturation pour mettre à niveau le plan."
+    "RestrictedPlans": "Seul le propriétaire de l'espace de travail ou le gestionnaire de facturation peut modifier le plan d'abonnement."
   }
 }

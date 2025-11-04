@@ -50,7 +50,7 @@
     "@hcengineering/communication-sdk-types": "^0.7.12",
     "@hcengineering/communication-types": "^0.7.12",
     "@hcengineering/communication-shared": "^0.7.11",
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/diffview": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/platform": "^0.7.17",

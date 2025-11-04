@@ -1,12 +1,12 @@
 <script lang="ts">
   import core, { Class, Data, generateId, Ref } from '@hcengineering/core'
+  import { Floor, getFreePosition, Office, Room, RoomAccess, RoomType } from '@hcengineering/love'
   import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { Button, DropdownIntlItem } from '@hcengineering/ui'
-  import { Floor, Office, Room, RoomAccess, RoomType, getFreePosition } from '@hcengineering/love'
-  import love from '../plugin'
-  import { rooms } from '../stores'
   import { createEventDispatcher } from 'svelte'
+  import love from '../plugin'
+  import { rooms, selectedFloor } from '../stores'
 
   export let floor: Ref<Floor>
 
@@ -72,6 +72,14 @@
     await client.createDoc(val._class, core.space.Workspace, data, _id)
     dispatch('close')
   }
+
+  async function createFloor (): Promise<void> {
+    const client = getClient()
+    const name = await translate(love.string.Floor, {})
+    const _id = await client.createDoc(love.class.Floor, core.space.Workspace, { name })
+    selectedFloor.set(_id)
+    dispatch('close')
+  }
 </script>
 
 <div class="antiPopup p-4 flex-gap-2">
@@ -80,6 +88,9 @@
       <Button label={item.label} on:click={() => createRoom(item.id)} />
     </div>
   {/each}
+  <div>
+    <Button label={love.string.Floor} on:click={createFloor} />
+  </div>
 </div>
 
 <style lang="scss">

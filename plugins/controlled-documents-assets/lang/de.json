@@ -230,8 +230,9 @@
 
     "DocumentInHierarchy": "Dokument in Hierarchie",
     "FirstDraftVersion": "Dies ist die erste Entwurfsversion des Dokuments. Es gibt noch keine Historie.",
+    "FirstOrNotAvailable": "Dies ist die erste verfügbare Version des Dokuments. Es gibt noch keine Versionshistorie oder sie ist nicht verfügbar.",
 
-    "EffectiveDocumentLifecycle": "Lebenszyklus des gültigen Dokuments",
+    "EffectiveDocumentLifecycle": "Effektiver Dokumentenlebenszyklus",
 
     "ReasonAndImpact": "Grund & Auswirkung",
     "ImpactAnalysis": "Auswirkungsanalyse",

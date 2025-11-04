@@ -16,8 +16,10 @@
   import { ModernDialog } from '@hcengineering/ui'
   import billing from '../plugin'
   import Subscriptions from './Subscriptions.svelte'
+
+  export let isReadOnly: boolean = false
 </script>
 
 <ModernDialog width="100%" label={billing.string.UpgradePlan} withoutFooter={true} className="extendedHeight" on:close>
-  <Subscriptions />
+  <Subscriptions {isReadOnly} />
 </ModernDialog>

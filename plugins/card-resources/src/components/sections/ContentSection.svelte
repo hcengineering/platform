@@ -24,6 +24,7 @@
   export let readonly: boolean = false
   export let doc: Card
   export let contentDiv: HTMLDivElement | undefined | null = undefined
+  export let hidden: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -44,7 +45,7 @@
 </script>
 
 {#if contentDiv != null}
-  <div class="content">
+  <div class="content" class:hidden>
     <Content {doc} {readonly} content={contentDiv} showToc={false} on:loaded on:headings={handleHeadings} />
   </div>
 {/if}
@@ -56,5 +57,13 @@
     width: 100%;
     padding: 0 2.5rem;
     flex: 1;
+    min-height: 5.5rem;
+
+    &.hidden {
+      display: none;
+      height: 0;
+      min-height: 0;
+      max-height: 0;
+    }
   }
 </style>

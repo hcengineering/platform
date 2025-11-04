@@ -15,13 +15,13 @@
 
 import type { Resources } from '@hcengineering/platform'
 import Settings from './components/Settings.svelte'
-import UpgradeButton from './components/UpgradeButton.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
+import LimitsIndicator from './components/LimitsIndicator.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
     Settings,
-    UpgradeButtonExt: UpgradeButton,
+    UsageExtension: LimitsIndicator,
     WorkbenchExtension
   }
 })

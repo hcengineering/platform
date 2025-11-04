@@ -39,7 +39,7 @@
     "@hcengineering/communication-resources": "^0.7.0",
     "@hcengineering/communication-types": "^0.7.12",
     "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/model-card": "^0.7.0",
     "@hcengineering/model-core": "^0.7.0",

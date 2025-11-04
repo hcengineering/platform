@@ -90,7 +90,7 @@
     if (docInfo._id !== doc?._id) {
       doc = await client.findOne(docInfo._class, { _id: docInfo._id })
 
-      if (doc != null && !hierarchy.isDerived(doc._class, cardPlugin.class.Card)) {
+      if (doc != null) {
         const queryContext = loc.query?.context as Ref<DocNotifyContext>
         const ctx =
           $contextByIdStore.get(queryContext) ?? $contextByDocStore.get(thread) ?? $contextByDocStore.get(urlObjectId)

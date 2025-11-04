@@ -56,6 +56,6 @@
     "Of": "de",
     "UpgradePlan": "Actualizar Plan",
     "LimitReached": "Límite del espacio de trabajo alcanzado, algunas funciones pueden estar deshabilitadas. Actualiza para restaurar acceso completo.",
-    "AskBillingAdmin": "Por favor, contacta a tu administrador de facturación para actualizar el plan."
+    "RestrictedPlans": "Solo el propietario del espacio de trabajo o el administrador de facturación pueden cambiar el plan de suscripción."
   }
 }

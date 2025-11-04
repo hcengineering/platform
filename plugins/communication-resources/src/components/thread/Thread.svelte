@@ -14,9 +14,8 @@
 -->
 
 <script lang="ts">
-  import { createQuery } from '@hcengineering/presentation'
   import { Thread } from '@hcengineering/communication-types'
-  import cardPlugin, { Card } from '@hcengineering/card'
+  import { Card } from '@hcengineering/card'
   import { createEventDispatcher } from 'svelte'
 
   import ThreadCollaborators from './ThreadCollaborators.svelte'
@@ -26,29 +25,10 @@
   import ThreadTitle from './ThreadTitle.svelte'
 
   export let thread: Thread
+  export let threadCard: Card | undefined = undefined
 
   const dispatch = createEventDispatcher()
-  const threadCardQuery = createQuery()
 
-  let threadCard: Card | undefined
-
-  $: if (thread?.threadId !== undefined) {
-    threadCardQuery.query(
-      cardPlugin.class.Card,
-      { _id: thread.threadId },
-      (res) => {
-        threadCard = res[0]
-      },
-      { limit: 1 }
-    )
-  } else {
-    threadCard = undefined
-    threadCardQuery.unsubscribe()
-  }
-
-  $: if (thread?.threadId !== threadCard?._id) {
-    threadCard = undefined
-  }
   let clientWidth = 0
 </script>
 
@@ -65,8 +45,8 @@
       </span>
     {/if}
 
-    {#if threadCard && clientWidth > 300}
-      <ThreadTags card={threadCard} />
+    {#if clientWidth > 300}
+      <ThreadTags type={thread.threadType} card={threadCard} />
     {/if}
 
     {#if threadCard && clientWidth > 300}

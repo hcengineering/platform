@@ -48,6 +48,8 @@
     return acc
   }, {})
 
+  export let isReadOnly: boolean = false
+
   let currentSubscription: SubscriptionData | undefined = undefined
   $: currentTier = currentSubscription != null ? tierByPlan[currentSubscription.plan] : undefined
   let loading = true
@@ -62,7 +64,6 @@
   const POLL_INTERVAL = 2000
 
   let usageInfo: UsageStatus | null = null
-  let loadingUsage = false
 
   $: isCurrentCanceled = currentSubscription?.canceledAt !== undefined && currentSubscription.canceledAt > 0
 
@@ -267,8 +268,6 @@
   }
 
   async function fetchUsageStats (): Promise<void> {
-    loadingUsage = true
-
     try {
       const accountClient = getAccountClient()
       if (accountClient == null) return
@@ -278,8 +277,6 @@
     } catch (err) {
       console.error('error fetching usage stats:', err)
       usageInfo = null
-    } finally {
-      loadingUsage = false
     }
   }
 
@@ -479,7 +476,9 @@
       </div>
 
       <div class="flex-col flex-gap-4">
-        <div class="section-title"><Label label={plugin.string.AllPlans} /></div>
+        <div class="section-title">
+          <Label label={isReadOnly ? plugin.string.RestrictedPlans : plugin.string.AllPlans} />
+        </div>
         <Scroller contentDirection="horizontal" buttons={false} showOverflowArrows shrink={false} noFade={false}>
           <div class="flex-row-top flex-gap-4 flex-no-shrink mb-3">
             {#each tiers as tier}
@@ -528,7 +527,7 @@
                   </div>
                 </div>
                 <div class="tier-card-footer">
-                  {#if currentTier === undefined || currentTier._id !== tier._id}
+                  {#if !isReadOnly && (currentTier === undefined || currentTier._id !== tier._id)}
                     <Button
                       label={currentTier === undefined ? plugin.string.Subscribe : plugin.string.ChangePlan}
                       size={'large'}

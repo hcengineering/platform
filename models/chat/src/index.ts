@@ -18,7 +18,7 @@ import core from '@hcengineering/model-core'
 import workbench from '@hcengineering/model-workbench'
 import { chatId } from '@hcengineering/chat'
 import { createSystemType } from '@hcengineering/model-card'
-import communication, { MessagesNavigationAnchors } from '@hcengineering/communication'
+import communication from '@hcengineering/communication'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 
 import chat from './plugin'
@@ -55,8 +55,7 @@ export function createModel (builder: Builder): void {
     chat.string.Thread,
     chat.string.Threads,
     {
-      defaultSection: communication.ids.CardMessagesSection,
-      defaultNavigation: MessagesNavigationAnchors.LatestMessages
+      defaultSection: communication.ids.CardMessagesSection
     },
     PaletteColorIndexes.Houseplant
   )

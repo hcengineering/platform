@@ -90,6 +90,9 @@
     "Direct": "Direkt",
     "Directs": "Direkte",
     "Members": "Mitglieder",
-    "Translate": "Übersetzen"
+    "Translate": "Übersetzen",
+    "WriteMessageEllipsis": "Nachricht schreiben...",
+    "EditMessageEllipsis": "Nachricht bearbeiten...",
+    "ArrowDownMessages": "↓ Neueste Nachrichten"
   }
 }

@@ -37,11 +37,11 @@
   },
   "dependencies": {
     "@hcengineering/mongo": "^0.7.15",
-    "@hcengineering/postgres": "^0.7.16",
+    "@hcengineering/postgres": "^0.7.17",
     "mongodb": "^6.16.0",
     "postgres": "^3.4.7",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.20",
+    "@hcengineering/core": "^0.7.21",
     "otp-generator": "^4.0.1",
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/analytics": "^0.7.17",
