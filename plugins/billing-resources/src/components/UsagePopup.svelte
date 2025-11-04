@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,17 +11,16 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import { Tier } from '@hcengineering/billing'
+  import { UsageStatus } from '@hcengineering/core'
+  import UsageSection from './UsageSection.svelte'
 
-import type { Resources } from '@hcengineering/platform'
-import Settings from './components/Settings.svelte'
-import WorkbenchExtension from './components/WorkbenchExtension.svelte'
-import LimitsIndicator from './components/LimitsIndicator.svelte'
+  export let usage: UsageStatus
+  export let tier: Tier | undefined
+</script>
 
-export default async (): Promise<Resources> => ({
-  component: {
-    Settings,
-    UsageExtension: LimitsIndicator,
-    WorkbenchExtension
-  }
-})
+<div class="p-2">
+  <UsageSection {usage} {tier} />
+</div>

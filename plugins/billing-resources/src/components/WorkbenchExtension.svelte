@@ -15,16 +15,38 @@
 <script lang="ts">
   import { onMount } from 'svelte'
 
+  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
   import { pushRootBarComponent } from '@hcengineering/ui'
   import presentation from '@hcengineering/presentation'
 
   import billing from '../plugin'
+  import { getWorkspaceInfo } from '../utils'
 
-  onMount(() => {
-    const paymentUrl = getMetadata(presentation.metadata.PaymentUrl)
-    if (paymentUrl !== '') {
-      pushRootBarComponent('right', billing.component.UpgradeButtonExt, 10)
+  onMount(async () => {
+    try {
+      const paymentUrl = getMetadata(presentation.metadata.PaymentUrl)
+      if (paymentUrl == null || paymentUrl === '') {
+        return
+      }
+      const currentAccount = getCurrentAccount()
+      if (currentAccount == null) {
+        return
+      }
+      const workspaceInfo = await getWorkspaceInfo()
+      if (workspaceInfo == null) {
+        return
+      }
+      const showExtension: boolean =
+        workspaceInfo.billingAccount === currentAccount.uuid ||
+        hasAccountRole(currentAccount, AccountRole.Owner) ||
+        hasAccountRole(currentAccount, AccountRole.Maintainer)
+
+      if (showExtension) {
+        pushRootBarComponent('right', billing.component.UsageExtension, 10)
+      }
+    } catch (e) {
+      console.error('Failed to load WorkbenchExtension:', e)
     }
   })
 </script>

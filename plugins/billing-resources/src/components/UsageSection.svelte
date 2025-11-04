@@ -18,14 +18,14 @@
   import { Label } from '@hcengineering/ui'
   import plugin from '../plugin'
   import UsageProgress from './UsageProgress.svelte'
+  import { calculateLimits } from '../utils'
 
-  export let usage: UsageStatus
+  export let usage: UsageStatus | null
   export let tier: Tier | undefined
 
-  $: storageUsedBytes = usage.usage.storageBytes ?? 0
-  $: trafficUsedBytes = usage.usage.livekitTrafficBytes ?? 0
-  $: storageLimitBytes = (tier?.storageLimitGB ?? 0) * 1000 * 1000 * 1000
-  $: trafficLimitBytes = (tier?.trafficLimitGB ?? 0) * 1000 * 1000 * 1000
+  $: storageUsedBytes = usage?.usage?.storageBytes ?? 0
+  $: trafficUsedBytes = usage?.usage?.livekitTrafficBytes ?? 0
+  $: limits = calculateLimits(tier)
 </script>
 
 <div class="flex-col flex-gap-2">
@@ -33,7 +33,7 @@
     <Label label={plugin.string.Usage} />
   </div>
 
-  <UsageProgress label={plugin.string.StorageUsage} value={storageUsedBytes} limit={storageLimitBytes} />
+  <UsageProgress label={plugin.string.StorageUsage} value={storageUsedBytes} limit={limits.storageLimit} />
 
-  <UsageProgress label={plugin.string.TrafficUsage} value={trafficUsedBytes} limit={trafficLimitBytes} />
+  <UsageProgress label={plugin.string.TrafficUsage} value={trafficUsedBytes} limit={limits.trafficLimit} />
 </div>
