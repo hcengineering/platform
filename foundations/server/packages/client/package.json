@@ -26,7 +26,7 @@
     "eslint": "^8.54.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
-    "prettier": "^3.1.0",
+    "prettier": "^3.6.2",
     "typescript": "^5.9.3",
     "@types/uuid": "^8.3.1",
     "@types/ws": "^8.5.12",
