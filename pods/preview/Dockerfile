@@ -1,4 +1,4 @@
-FROM hardcoreeng/preview-base:v20250916
+FROM haiodo/preview-base:v20250916
 
 WORKDIR /app
 

@@ -1,4 +1,4 @@
-FROM hardcoreeng/rekoni-base:v20250916
+FROM haiodo/rekoni-base:v20250916
 WORKDIR /usr/src/app
 
 COPY bundle/bundle.js ./

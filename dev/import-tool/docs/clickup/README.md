@@ -6,6 +6,7 @@
 2. Save the CSV file to your local machine
 
 ### Run Import Tool
+
 1. Place your ClickUp CSV file in a directory (e.g., /path/to/export)
 2. Run the import tool using Docker:
 
@@ -13,7 +14,7 @@
 docker run \
   -e FRONT_URL="https://huly.app" \
   -v /path/to/export:/data \
-  hardcoreeng/import-tool:latest \
+  haiodo/import-tool:latest \
   -- bundle.js import-clickup-tasks /data/tasks.csv \
   --user your.email@company.com \
   --password yourpassword \
@@ -21,14 +22,16 @@ docker run \
 ```
 
 #### User Mapping
-* Users must be created in the platform before import (Under *Contacts/Employee*)
-* ClickUp assignees are mapped to platform users by full name (e.g., "Jane Doe")
-* Comments authors are mapped by email
-* If user is not found:
-  * Task will be imported without assignee
-  * Original assignee name will be added as a comment: *ClickUp assignee: John Smith*
+
+- Users must be created in the platform before import (Under _Contacts/Employee_)
+- ClickUp assignees are mapped to platform users by full name (e.g., "Jane Doe")
+- Comments authors are mapped by email
+- If user is not found:
+  - Task will be imported without assignee
+  - Original assignee name will be added as a comment: _ClickUp assignee: John Smith_
 
 #### Limitations
-* Checklist items are imported as unchecked since ClickUp export doesn't include checkbox states
-* Failed attachment downloads are skipped with warning messages (Original attachment URL is added as a comment)
-* Users import is not supported yet
+
+- Checklist items are imported as unchecked since ClickUp export doesn't include checkbox states
+- Failed attachment downloads are skipped with warning messages (Original attachment URL is added as a comment)
+- Users import is not supported yet

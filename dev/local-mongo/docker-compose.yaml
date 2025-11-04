@@ -30,7 +30,7 @@ services:
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     restart: unless-stopped
   account:
-    image: hardcoreeng/account
+    image: haiodo/account
     links:
       - minio
     ports:
@@ -53,7 +53,7 @@ services:
       - INIT_WORKSPACE=onboarding
     restart: unless-stopped
   collaborator:
-    image: hardcoreeng/collaborator
+    image: haiodo/collaborator
     links:
       - minio
       - transactor
@@ -69,7 +69,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
   front:
-    image: hardcoreeng/front
+    image: haiodo/front
     links:
       - minio
       - elastic
@@ -101,7 +101,7 @@ services:
       - BRANDING_URL=http://localhost:8087/branding.json
     restart: unless-stopped
   transactor:
-    image: hardcoreeng/transactor
+    image: haiodo/transactor
     links:
       - elastic
       - minio
@@ -135,7 +135,7 @@ services:
       - BRANDING_PATH=/var/cfg/branding.json
     restart: unless-stopped
   rekoni:
-    image: hardcoreeng/rekoni-service
+    image: haiodo/rekoni-service
     restart: unless-stopped
     ports:
       - 4004:4004
@@ -144,7 +144,7 @@ services:
         limits:
           memory: 1024M
   print:
-    image: hardcoreeng/print
+    image: haiodo/print
     restart: unless-stopped
     ports:
       - 4005:4005
@@ -158,7 +158,7 @@ services:
         limits:
           memory: 300M
   sign:
-    image: hardcoreeng/sign
+    image: haiodo/sign
     restart: unless-stopped
     ports:
       - 4006:4006
@@ -180,24 +180,24 @@ services:
       resources:
         limits:
           memory: 300M
-#  analytics:
-#    image: hardcoreeng/analytics-collector
-#    restart: unless-stopped
-#    ports:
-#      - 4007:4007
-#    environment:
-#      - SECRET=secret
-#      - PORT=4007
-#      - MONGO_URL=mongodb://huly.local:27017
-#      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
-#      - SERVICE_ID=analytics-collector-service
-#      - ACCOUNTS_URL=http://account:3000
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 300M
+  #  analytics:
+  #    image: haiodo/analytics-collector
+  #    restart: unless-stopped
+  #    ports:
+  #      - 4007:4007
+  #    environment:
+  #      - SECRET=secret
+  #      - PORT=4007
+  #      - MONGO_URL=mongodb://huly.local:27017
+  #      - 'MONGO_OPTIONS={"appName":"analytics","maxPoolSize":1}'
+  #      - SERVICE_ID=analytics-collector-service
+  #      - ACCOUNTS_URL=http://account:3000
+  #    deploy:
+  #      resources:
+  #        limits:
+  #          memory: 300M
   aiBot:
-    image: hardcoreeng/ai-bot
+    image: haiodo/ai-bot
     restart: unless-stopped
     environment:
       - SERVER_SECRET=secret
@@ -213,7 +213,7 @@ services:
         limits:
           memory: 300M
 #  telegram-bot:
-#    image: hardcoreeng/telegram-bot
+#    image: haiodo/telegram-bot
 #    restart: unless-stopped
 #    environment:
 #      - PORT=4020

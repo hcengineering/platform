@@ -1,4 +1,4 @@
-FROM hardcoreeng/base
+FROM haiodo/base
 WORKDIR /usr/src/app
 
 COPY bundle/bundle.js ./

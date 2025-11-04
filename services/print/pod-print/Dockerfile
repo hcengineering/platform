@@ -1,5 +1,5 @@
 
-FROM hardcoreeng/print-base:v20251003
+FROM haiodo/print-base:v20251003
 
 WORKDIR /usr/src/app
 COPY bundle/bundle.js ./
