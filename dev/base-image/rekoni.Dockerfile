@@ -1,4 +1,4 @@
-FROM haiodo/base:v20250411
+FROM haiodo/base
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
