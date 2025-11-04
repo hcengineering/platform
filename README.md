@@ -9,6 +9,10 @@
 A personal Fork of Huly platform, will maintain in my personal resources. 
 I will periodically check if Huly team will provide any critical changes to incorporate to my personal version, and will add more experimentall stuff and improvements.
 
+If you are interested in my work, please support me, join my telegram blog [Haiodo Dev Blob](https://t.me/dev_haiodo) or suppot me on [Boosty.to](https://boosty.to/haiodo)
+
+
+## Overview
 The Huly Platform is a robust framework designed to accelerate the development of business applications, such as CRM systems.
 This repository includes several applications, such as Chat, Project Management, CRM, HRM, and ATS.
 
