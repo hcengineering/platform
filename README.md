@@ -1,32 +1,26 @@
-# Huly Platform
+# Foundation is a personal fork of Huly Platform
 
-[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/huly_io?style=for-the-badge)](https://x.com/huly_io)
-![GitHub License](https://img.shields.io/github/license/hcengineering/platform?style=for-the-badge)
+![GitHub License](https://img.shields.io/github/license/haiodo/foundation?style=for-the-badge)
 
 ⭐️ Your star shines on us. Star us on GitHub!
 
 ## About
 
+A personal Fork of Huly platform, will maintain in my personal resources. 
+I will periodically check if Huly team will provide any critical changes to incorporate to my personal version, and will add more experimentall stuff and improvements.
+
 The Huly Platform is a robust framework designed to accelerate the development of business applications, such as CRM systems.
 This repository includes several applications, such as Chat, Project Management, CRM, HRM, and ATS.
-Various teams are building products on top of the Platform, including [Huly](https://huly.io) and [TraceX](https://tracex.co).
-
-![Huly](https://repository-images.githubusercontent.com/392073243/6d27d5cc-38cd-4d88-affe-bb88b393180c)
 
 ## Self-Hosting
 
-If you're primarily interested in self-hosting Huly without the intention to modify or contribute to its development, please use [huly-selfhost](https://github.com/hcengineering/huly-selfhost).
-This project offers a convenient method to host Huly using `docker`, designed for ease of use and quick setup. Explore this option to effortlessly enjoy Huly on your own server.
+If you're primarily interested in self-hosting Foundation or moving from Huly without the intention to modify or contribute to its development, please wait, instructions will follow.
 
-## Activity
-
-![Alt](https://repobeats.axiom.co/api/embed/c42c99e21691fa60ea61b5cdf11c2e0647621534.svg 'Repobeats analytics image')
 
 ## API Client
 
-If you want to interact with Huly programmatically, check out our [API Client](https://github.com/hcengineering/huly.core/tree/main/packages/api-client) documentation. The API client provides a typed interface for all Huly operations and can be used to build integrations and custom applications.
-
-You can find API usage examples in the [Huly examples](https://github.com/hcengineering/huly-examples) repository.
+If you want to interact with Foundation programmatically, please wait, packages will be ready soon. API mostly will be compativly with Huly on initial steps, 
+and may stay same or with minimal changes for make it stable.
 
 ## Changelog
 
@@ -37,7 +31,6 @@ For detailed information about changes, improvements, and bug fixes in each vers
 - [Huly Platform](#huly-platform)
   - [About](#about)
   - [Self-Hosting](#self-hosting)
-  - [Activity](#activity)
   - [API Client](#api-client)
   - [Changelog](#changelog)
   - [Table of Contents](#table-of-contents)
@@ -79,51 +72,8 @@ docker compose version
 
 ## Branches & Contributing
 
-- The `main` branch is the default branch used for production deployments.
+- The `develop` branch is the default branch used for production deployments.
   Changes to this branch are made from the `staging` branch once a version is ready for community use.
-
-- The `staging` branch is used for pre-release testing.
-  It is stable enough for testing but not yet ready for production deployment.
-
-- The `develop` branch is used for development and is the default branch for contributions.
-
-We periodically merge `develop` into `staging` to perform testing builds. Once we are satisfied with the build quality in our pre-release deployment, we merge changes into `main` and release a new version to the community.
-
-## Setup dev environment
-
-### To initialise the communication submodule
-
-```bash
-git submodule init
-git submodule update
-```
-
-### To update the communication submodule
-
-```bash
-git submodule update
-```
-
-### Authentication
-
-This project uses GitHub Packages for dependency management. To successfully download dependencies, you need to generate a GitHub personal access token and log in to npm using that token.
-
-Follow these steps:
-
-1. Generate a GitHub Token:
-- Log in to your GitHub account
-- Go to **Settings** > **Developer settings** > **Personal access tokens** (https://github.com/settings/personal-access-tokens)
-- Click **Generate new token**
-- Select the required scopes (at least `read:packages`)
-- Generate the token and copy it
-
-2. Authenticate with npm:
-```bash
-npm login --registry=https://npm.pkg.github.com
-```
-
-When prompted, enter your GitHub username, use the generated token as your password
-
 
 ## Fast start
 
