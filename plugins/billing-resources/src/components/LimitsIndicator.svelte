@@ -135,6 +135,6 @@
     border-radius: var(--small-BorderRadius);
     transition: background-color 0.2s ease;
     position: relative;
-    border: 1px solid var(--button-secondary-BorderColor);
+    border: 1px solid var(--theme-trans-color);
   }
 </style>
