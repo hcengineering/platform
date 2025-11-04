@@ -36,7 +36,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/model": "^0.7.17",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/server-lead": "^0.7.0",
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/lead": "^0.7.0",

@@ -44,7 +44,7 @@
     "@hcengineering/model-core": "^0.7.0",
     "@hcengineering/model-view": "^0.7.0",
     "@hcengineering/model-workbench": "^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/setting": "^0.7.0",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/view": "^0.7.0",

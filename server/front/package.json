@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "express": "^4.21.2",
     "express-fileupload": "^1.5.1",
     "express-static-gzip": "^2.2.0",

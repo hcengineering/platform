@@ -37,7 +37,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/model": "^0.7.17",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/text": "^0.7.18",
     "@hcengineering/text-editor": "^0.7.0",

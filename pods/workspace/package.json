@@ -37,7 +37,7 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0",
     "eslint": "^8.54.0",
-    "esbuild": "^0.25.9",
+    "esbuild": "^0.25.10",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "prettier": "^3.6.2",
@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@hcengineering/workspace-service": "^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/core": "^0.7.21",
     "mongodb": "^6.16.0",
     "@hcengineering/server-token": "^0.7.17",

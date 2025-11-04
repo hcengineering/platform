@@ -47,7 +47,7 @@
     "@hcengineering/document": "^0.7.0",
     "@hcengineering/model-attachment": "^0.7.0",
     "@hcengineering/model-core": "^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/rank": "^0.7.17",
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/task": "^0.7.0",

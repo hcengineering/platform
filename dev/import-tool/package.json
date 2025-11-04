@@ -36,7 +36,7 @@
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint": "^8.54.0",
     "ts-node": "^10.8.0",
-    "esbuild": "^0.25.9",
+    "esbuild": "^0.25.10",
     "@types/node": "^22.15.29",
     "@typescript-eslint/parser": "^6.21.0",
     "typescript": "^5.9.3",
@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/server-client": "^0.7.15",
     "@hcengineering/importer": "^0.7.0",
     "commander": "^8.1.0",

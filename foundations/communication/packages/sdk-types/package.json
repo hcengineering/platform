@@ -23,7 +23,7 @@
     "@hcengineering/platform-rig": "^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "esbuild": "^0.25.9",
+    "esbuild": "^0.25.10",
     "esbuild-plugin-copy": "~2.1.1",
     "eslint": "^8.54.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -36,7 +36,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.19",
+    "@hcengineering/core": "^0.7.21",
     "@hcengineering/communication-types": "^0.7.12"
   },
   "repository": {

@@ -63,9 +63,9 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint": "^8.54.0",
     "prettier": "^3.6.2",
-    "esbuild": "^0.25.9",
+    "esbuild": "^0.25.10",
     "esbuild-loader": "^4.3.0",
-    "@types/ws": "^8.5.11",
+    "@types/ws": "^8.5.12",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
@@ -73,7 +73,7 @@
     "jest-environment-jsdom": "^30.2.0"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/ui": "^0.7.0",
     "@hcengineering/theme": "^0.7.0",
     "@hcengineering/login": "^0.7.0",

@@ -42,7 +42,7 @@
     "@hcengineering/setting": "^0.7.0",
     "@hcengineering/calendar": "^0.7.0",
     "@hcengineering/calendar-resources": "^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/model-core": "^0.7.0",
     "@hcengineering/model-view": "^0.7.0",

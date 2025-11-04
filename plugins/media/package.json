@@ -39,7 +39,7 @@
     "typed-emitter": "^2.1.0"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/ui": "^0.7.0",
     "events": "^3.3.0"

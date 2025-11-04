@@ -36,7 +36,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/model": "^0.7.17",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/server-time": "^0.7.0",
     "@hcengineering/time": "^0.7.0",
     "@hcengineering/tracker": "^0.7.0",

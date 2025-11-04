@@ -43,7 +43,7 @@
     "@hcengineering/model-notification": "^0.7.0",
     "@hcengineering/model-view": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/request": "^0.7.0",
     "@hcengineering/request-resources": "^0.7.0",
     "@hcengineering/ui": "^0.7.0"

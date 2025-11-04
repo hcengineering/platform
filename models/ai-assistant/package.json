@@ -36,7 +36,7 @@
   "dependencies": {
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/model-core": "^0.7.0",
     "@hcengineering/ai-assistant": "^0.7.0",
     "@hcengineering/ai-assistant-resources": "^0.7.0",

@@ -11,7 +11,7 @@
     "test": "echo \"No test specified\""
   },
   "devDependencies": {
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/theme": "^0.7.0",
     "@hcengineering/ui": "^0.7.0",
     "@storybook/addon-essentials": "^7.0.6",
@@ -25,7 +25,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "resolve-url-loader": "^5.0.0",
-    "sass": "^1.53.0",
+    "sass": "^1.80.0",
     "sass-loader": "^13.2.0",
     "storybook": "^7.0.6",
     "storybook-addon-themes": "^6.1.0",

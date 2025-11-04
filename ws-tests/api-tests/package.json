@@ -25,7 +25,7 @@
     "@types/express": "^4.17.13",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.15.29",
-    "@types/ws": "^8.5.11",
+    "@types/ws": "^8.5.12",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.54.0",
@@ -43,7 +43,7 @@
   "dependencies": {
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/rpc": "^0.7.17",
     "@hcengineering/server-token": "^0.7.17",
     "bufferutil": "^4.0.8",

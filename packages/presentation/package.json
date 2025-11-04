@@ -53,7 +53,7 @@
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/diffview": "^0.7.0",
     "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/query": "^0.7.17",
     "@hcengineering/text": "^0.7.18",
     "@hcengineering/ui": "^0.7.0",

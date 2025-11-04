@@ -38,7 +38,7 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "@types/markdown-it": "~13.0.0",
-    "jest-environment-jsdom": "^29.7.0",
+    "jest-environment-jsdom": "^30.2.0",
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {

@@ -55,7 +55,7 @@
     "@hcengineering/notification": "^0.7.0",
     "@hcengineering/notification-resources": "^0.7.0",
     "@hcengineering/panel": "^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/preference": "^0.7.0",
     "@hcengineering/presentation": "^0.7.0",
     "@hcengineering/query": "^0.7.17",

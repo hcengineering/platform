@@ -68,7 +68,7 @@
     "@hcengineering/contact": "^0.7.0",
     "@hcengineering/workbench": "^0.7.0",
     "@tiptap/core": "^2.11.7",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/card": "^0.7.0",
     "@hcengineering/communication": "^0.7.0",
     "@hcengineering/preference": "^0.7.0",

@@ -40,7 +40,7 @@
     "@hcengineering/desktop-downloads": "^0.7.0",
     "@hcengineering/model-presentation": "^0.7.0",
     "@hcengineering/model-workbench": "^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/desktop-downloads-resources": "^0.7.0",
     "@hcengineering/ui": "^0.7.0"
   }
