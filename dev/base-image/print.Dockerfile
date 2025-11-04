@@ -1,8 +1,8 @@
-FROM haiodo/base
+FROM node:22
 
-# Chromium hangs when usging LD_PRELOAD and MALLOC_CONF
-ENV LD_PRELOAD=
-ENV MALLOC_CONF=
+WORKDIR /usr/src/app
+ENV NODE_ENV=production
+RUN npm install --ignore-scripts=false --verbose bufferutil utf-8-validate snappy msgpackr msgpackr-extract --unsafe-perm
 
 # We don't need the standalone Chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
