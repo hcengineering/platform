@@ -985,6 +985,9 @@ importers:
       '@rush-temp/pod-stats':
         specifier: file:./projects/pod-stats.tgz
         version: file:projects/pod-stats.tgz(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(@swc/core@1.14.0)(babel-jest@29.7.0(@babel/core@7.28.5))(jest-util@30.2.0)
+      '@rush-temp/pod-stream':
+        specifier: file:./projects/pod-stream.tgz
+        version: file:projects/pod-stream.tgz
       '@rush-temp/pod-telegram':
         specifier: file:./projects/pod-telegram.tgz
         version: file:projects/pod-telegram.tgz(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(@swc/core@1.14.0)(babel-jest@29.7.0(@babel/core@7.28.5))(bufferutil@4.0.9)(gcp-metadata@5.3.0(encoding@0.1.13))(jest-util@30.2.0)(snappy@7.3.3)(socks@2.8.7)(ts-node@10.9.2(@swc/core@1.14.0)(@types/node@22.18.13)(typescript@5.9.3))(utf-8-validate@6.0.5)
@@ -1972,6 +1975,9 @@ importers:
       emojibase-regex:
         specifier: ^16.0.0
         version: 16.0.0
+      esbuild:
+        specifier: ^0.25.10
+        version: 0.25.11
       esbuild-loader:
         specifier: ^4.3.0
         version: 4.4.0(webpack@5.102.1)
@@ -2248,6 +2254,9 @@ importers:
       postgres:
         specifier: ^3.4.7
         version: 3.4.7
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
       prettier-plugin-svelte:
         specifier: ^3.4.0
         version: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
@@ -2365,6 +2374,9 @@ importers:
       typed-emitter:
         specifier: ^2.1.0
         version: 2.1.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
       ua-parser-js:
         specifier: ^2.0.4
         version: 2.0.6
@@ -4598,7 +4610,7 @@ packages:
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
 
   '@rush-temp/account-client@file:projects/account-client.tgz':
-    resolution: {integrity: sha512-56cSDS9GejDyzrNJdilDpxawEmTLi42eRQ3opjNyYvOrvKW+LOepJTGX8ib1iH39GXmfp923IZTns2VfZb36cg==, tarball: file:projects/account-client.tgz}
+    resolution: {integrity: sha512-XUbWu08pf8XLU1I4USob3mVPIw+ThEVz5yldH6SIV6aZeIMkFTyjk8o9GkSnaHsfJ8PajS+SMhtne3Rz6J4OqA==, tarball: file:projects/account-client.tgz}
     version: 0.0.0
 
   '@rush-temp/account-service@file:projects/account-service.tgz':
@@ -4670,15 +4682,15 @@ packages:
     version: 0.0.0
 
   '@rush-temp/analytics-service@file:projects/analytics-service.tgz':
-    resolution: {integrity: sha512-hkc7watQjx9T6wD7dSJHtEI/GUsz2E3yJzNR1E+XntLxkgf/C8C4i+iop9k2AjRp+++6H5FZApbW+plZOTUOkA==, tarball: file:projects/analytics-service.tgz}
+    resolution: {integrity: sha512-U7X+a20UXJr6k7Sx3y4nseddXo/inbX8u9Q2v4SL+9eiQAkiT3z8jM4iyqxKatP6FKA4HqHw0Q3xGKiLA9aOSg==, tarball: file:projects/analytics-service.tgz}
     version: 0.0.0
 
   '@rush-temp/analytics@file:projects/analytics.tgz':
-    resolution: {integrity: sha512-9jpBWiDUy2H2+OF4cy6cqyhQF4TQjiM7MC4Ph0HDF80LwOfVAdBEcoSKAiqSKvNIF5mTsgtuAm/eQ4JJ4lOegA==, tarball: file:projects/analytics.tgz}
+    resolution: {integrity: sha512-zyL9MITqBSoyExhkKedoMm8tH0ylv4KvjMm5j1A9a0domBQkTYZ7V8o7ezmKQAb3hPqlBjFRN4HhFNS99J1wCw==, tarball: file:projects/analytics.tgz}
     version: 0.0.0
 
   '@rush-temp/api-client@file:projects/api-client.tgz':
-    resolution: {integrity: sha512-6Dz3Do0cSJ1wPVi9YmrxPGPipvNTuDh0tRNhu8Awf/vgEoTs3givW9nrc//DnA0SFKdZvTbpgAFMfJNmvYep0g==, tarball: file:projects/api-client.tgz}
+    resolution: {integrity: sha512-Y77+TjkSzZCM8LVUtcOyh4N/pZ9yVbbWDmVuB1Jx3KNoimUmwUemhiGBqWS/b8Uvwo39i3pYc3otRN1g8vhf/w==, tarball: file:projects/api-client.tgz}
     version: 0.0.0
 
   '@rush-temp/api-tests@file:projects/api-tests.tgz':
@@ -4798,19 +4810,19 @@ packages:
     version: 0.0.0
 
   '@rush-temp/client-resources@file:projects/client-resources.tgz':
-    resolution: {integrity: sha512-22Cqwc29DwJnirsDii5quJeWCPj0quowLf7n6HGm8WrVWVwjLY8KmYZikpI68+u8l8CMwREv+YwmbY5zyIvLrQ==, tarball: file:projects/client-resources.tgz}
+    resolution: {integrity: sha512-Zw0fuzQ/pwEnwl8lIcv4RsTDde1AnkjXWmqK3tzNkNZWQV3LTRTFOE/b9H1sAQp2u8hDioM2twdFPmzx4Umshw==, tarball: file:projects/client-resources.tgz}
     version: 0.0.0
 
   '@rush-temp/client@file:projects/client.tgz':
-    resolution: {integrity: sha512-hAIZaopLITzQQn98PExT2m4O4HKGYXRUk9q3V4YOJ+ZUXz9C/FJI4CoAR9ltmkRxGVMYMBDa/CYApR1vt5qX9w==, tarball: file:projects/client.tgz}
+    resolution: {integrity: sha512-HdmaK68mS4GP/JzC03HHZwQlhp+AwYANmSDQoNsRsE6QYPTN4+RYoVST24K1Zc+07uxHYXlBweqLmXDedF7f+g==, tarball: file:projects/client.tgz}
     version: 0.0.0
 
   '@rush-temp/collaboration@file:projects/collaboration.tgz':
-    resolution: {integrity: sha512-r7UHm5Ruct0Yf/jikmchvOmElnTd8JZA7YD3CCSj7bZI4NJPvHWnrV4yEaWn5XLrYz0lvFOk5cSUPK5wG5iDEA==, tarball: file:projects/collaboration.tgz}
+    resolution: {integrity: sha512-zBv3S8kBkB6rxDjifkNRaysWY+7JpA+aCD3NGDT8HoSKUKfzDK/6mI30YQtSg1vPTK7s6Pbx7wDfk+THCCVtcg==, tarball: file:projects/collaboration.tgz}
     version: 0.0.0
 
   '@rush-temp/collaborator-client@file:projects/collaborator-client.tgz':
-    resolution: {integrity: sha512-/oXe4azzhtLGJeNTnL1xSQpTtw6WKvKz2CQsu7kQ6JcF/vzUKoUoKS/pynCQDfbjxYkFwDnE2XbcYze4MCREKg==, tarball: file:projects/collaborator-client.tgz}
+    resolution: {integrity: sha512-1t0c2PS6DAavUdTHHHN2byJXTBAL/lNI6uhG7TWCuQe8orlFes5IBL2jnw4R+5w66jlrYx+etAB+x5BaDpJg8A==, tarball: file:projects/collaborator-client.tgz}
     version: 0.0.0
 
   '@rush-temp/collaborator@file:projects/collaborator.tgz':
@@ -4822,15 +4834,15 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-client-query@file:projects/communication-client-query.tgz':
-    resolution: {integrity: sha512-Q7poA5QD67tKDg7XJJ/UDShfoL7bjS00nyJyHgE4eDcQfpFlVq13QAfwcj/eL4hLS3haixbAeXGxfUg5zCFY0g==, tarball: file:projects/communication-client-query.tgz}
+    resolution: {integrity: sha512-MnCmuVe/spGB0NDWie1tJVXxRMBa3nkU2X5bcWmPVlJDg9W6uuUuoONE1sRo/l1J2h1HyUz/oDwbPbYW0+lahg==, tarball: file:projects/communication-client-query.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-cockroach@file:projects/communication-cockroach.tgz':
-    resolution: {integrity: sha512-EICcfhVVNnT3+ASU8dguU0j8WA6D9A08SlPgLwhJ1s92/vmpQnnE8n++U8CeXGpsxmbUVyZsnjOJ4S8Vep0WdQ==, tarball: file:projects/communication-cockroach.tgz}
+    resolution: {integrity: sha512-SYNlCCf6FjdTy21LfDgUVRTN20JhKSf+kfdZLQrfHdT0OF8QEpmNJQ475iW3XWIugKh+4l6Ljz5IfkKkJW8zmA==, tarball: file:projects/communication-cockroach.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-query@file:projects/communication-query.tgz':
-    resolution: {integrity: sha512-K/Td2Z8bHIS06B462I8lWF64ogJ0UeLdBy9GFH4qnp0eTYu5KERRUY9NoHqnbpAezdZDemvqNvvJXlpSkS7GBA==, tarball: file:projects/communication-query.tgz}
+    resolution: {integrity: sha512-u2cc1bH/Ud3MkBu7jLT9IColAmikwKpIqVYHRElPtCvWF11ju1a2a2Xfm75katNLta5g22PjiGLwNX1s+PoO9w==, tarball: file:projects/communication-query.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-resources@file:projects/communication-resources.tgz':
@@ -4838,23 +4850,23 @@ packages:
     version: 0.0.0
 
   '@rush-temp/communication-rest-client@file:projects/communication-rest-client.tgz':
-    resolution: {integrity: sha512-06i0P6E5sTX9B2RSXqT/tKjsMgfiqBsU9vXB1GzaEEVorxbc09MsW52Alzk9Pkp+Qaz9MPGaa6lo8Heo6cNMTw==, tarball: file:projects/communication-rest-client.tgz}
+    resolution: {integrity: sha512-zKfl98XdUnQQG38iTfXLUoFlGQa/Jjjrn0c0gj/OtJa2qNMczvuO84anMocWR+uBj6JjCmgKLWAm3ObYc9Xn3g==, tarball: file:projects/communication-rest-client.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-sdk-types@file:projects/communication-sdk-types.tgz':
-    resolution: {integrity: sha512-Lsqr2tdrPq/3XZGK3W7bAyKu4tC7LVQwklWYRzKv69/Wca1EQ2RDTJih+LfFlNmpnQvpBHWDAy+3r3Rv2sBMRA==, tarball: file:projects/communication-sdk-types.tgz}
+    resolution: {integrity: sha512-rZVwPOdN9Gy5dE/mna+jv+K/pS4muAQu5xq4w3Le1ZQh4YPCoyOVpPP7Hk3IUV8yquC27LXP4xaOeGwMOyTE5w==, tarball: file:projects/communication-sdk-types.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-server@file:projects/communication-server.tgz':
-    resolution: {integrity: sha512-Zg9QmCqlaJk82tDSED04Nv4Of4kqJbeW7IfbuTMMyG5spkCxrXDyISG3e+bwMMAzXWgl8cVf6LW0fLE1VhRsOw==, tarball: file:projects/communication-server.tgz}
+    resolution: {integrity: sha512-q0/kNGMxd9HW7KrT+VGQSq08usqG4o5sDIQrc0imTMfT67abx0xVsBC1+aU1ANi0R+siMIUniy4VqR8C/gH7iw==, tarball: file:projects/communication-server.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-shared@file:projects/communication-shared.tgz':
-    resolution: {integrity: sha512-OppWACmRqouS6OSDAGB6vhvWf61r83HuWZ8RWHXvNbeZMX4hKNbmwjow+FHeH0d4Rn/X1yQQny4WSRxwiAE+vw==, tarball: file:projects/communication-shared.tgz}
+    resolution: {integrity: sha512-nV52MayxCQXHx7r6WMvWRL5K9HUvJms7ZXgC8dL0NwdqCyDPcl3e+tbCkVUqTGcTAJHsQsh60HdOGpIrhGQkWA==, tarball: file:projects/communication-shared.tgz}
     version: 0.0.0
 
   '@rush-temp/communication-types@file:projects/communication-types.tgz':
-    resolution: {integrity: sha512-oHB7S6FWD4bxjexPA3KLvCixxgVqUb071FerWkSTDyb25RWaHbdpdwaz/ofT0Uj4HKu6R8aYGOTt2+5S6BGGxw==, tarball: file:projects/communication-types.tgz}
+    resolution: {integrity: sha512-CSs+PVDrviL1xoYx4I4AqMgi7aX9dZbMaOusDrGlNyE/NEfHp6JEO1nzszc3mPjA/UVxFHS2nKaWPTmg6W/b/w==, tarball: file:projects/communication-types.tgz}
     version: 0.0.0
 
   '@rush-temp/communication@file:projects/communication.tgz':
@@ -4886,11 +4898,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/core@file:projects/core.tgz':
-    resolution: {integrity: sha512-3MK5m9v/rQquq7OxYHOACmSm5ANDGr5agDb9KmO1aqK85cpdARSxnyEfdfiZvEI0KyuAGq+k7Em3iDaZmAdKCQ==, tarball: file:projects/core.tgz}
+    resolution: {integrity: sha512-iT8B9I3o7Z/FRmLPWTYVBNCBPemk2L4WoZYSSIUH1lR2+drD4pQUtyiL0dgncE8Kms5RjFCa/7VNuN+1OI63bQ==, tarball: file:projects/core.tgz}
     version: 0.0.0
 
   '@rush-temp/datalake@file:projects/datalake.tgz':
-    resolution: {integrity: sha512-S8Prb+ByEx8uoF7UJLYGpBrWK3GQCOufQxXYkDI7qJ6D75DSr+iI/QcYHCykm34lif4uIcgXpC8S66RRKR0zQQ==, tarball: file:projects/datalake.tgz}
+    resolution: {integrity: sha512-SiSptwk7CEV6DRVzQM0KdLs8BMYXS3n4XXy+h7UVHK/XFeGQp28m/hBwl3D4+FTCEAJbhgHrPPjS7m9nL/+siQ==, tarball: file:projects/datalake.tgz}
     version: 0.0.0
 
   '@rush-temp/desktop-1@file:projects/desktop-1.tgz':
@@ -4970,7 +4982,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/elastic@file:projects/elastic.tgz':
-    resolution: {integrity: sha512-uLW6AuB7ZjmQ0evzocLu8szV01CXwbsuHt3oiAmj5PdhdnftGK5EiGPiMsWqqAn/jlFJd9FC+wW8vqI4DcIPVA==, tarball: file:projects/elastic.tgz}
+    resolution: {integrity: sha512-wp0QRFqcV5vlPFRMsNF6mMEL8WElsh4tSbRWEGxKoy4sfqnmKWf7x+CnKxT65OnXnE8QRMfIF10Muc3bQeZfbw==, tarball: file:projects/elastic.tgz}
     version: 0.0.0
 
   '@rush-temp/emoji-assets@file:projects/emoji-assets.tgz':
@@ -5082,11 +5094,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/hulylake-client@file:projects/hulylake-client.tgz':
-    resolution: {integrity: sha512-JwXqR3wHqcJVr29au+MUtiEFqObLFR7pGeND7al6p+cUmP0S++wVvbaRmGnCNUMq5GwDcLK0s39aUEHjj+De6w==, tarball: file:projects/hulylake-client.tgz}
+    resolution: {integrity: sha512-lELuwlAb0k1dBCmRSBk3lYHHBd8hD4mmCneWgBtLSXnfd5aUA9amEPdVDPN4xEfOKXcRvuA4XQCJ68ceCsEO6g==, tarball: file:projects/hulylake-client.tgz}
     version: 0.0.0
 
   '@rush-temp/hulylake@file:projects/hulylake.tgz':
-    resolution: {integrity: sha512-GAZSFFTIkEF3sfeZ3X9LC78wxZD0ZLxl5xEz34DEJbiLGyaz6IcpetlU3yGwYX105QQCGRgVvRARQplROEBCRA==, tarball: file:projects/hulylake.tgz}
+    resolution: {integrity: sha512-y5FJ2v8/wQwJJFrwBwY2v79kXiqy0Wm6eOwOeIr7doARxJX20LKwXYMmGFIzWutYHxsKJYNmDBeBJhJbbuy6sg==, tarball: file:projects/hulylake.tgz}
     version: 0.0.0
 
   '@rush-temp/hulypulse-client@file:projects/hulypulse-client.tgz':
@@ -5138,7 +5150,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/kafka@file:projects/kafka.tgz':
-    resolution: {integrity: sha512-E8gceLwvO6gn1iGaG43jyK3jdFMMrNiBAgp3LbGjiAIZkcSuoB69DROIZHaL7UIBC6EXT+czEr6cwA0p/BgD/Q==, tarball: file:projects/kafka.tgz}
+    resolution: {integrity: sha512-FMWTE2LPkbBUBAywFqqnajZ/B4mq6mevjerVfeXLu9X/6sOhHG1pKgcX6j6mOLDt97sy2RddkGk8XIEzeAmqjA==, tarball: file:projects/kafka.tgz}
     version: 0.0.0
 
   '@rush-temp/kanban@file:projects/kanban.tgz':
@@ -5218,11 +5230,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/middleware@file:projects/middleware.tgz':
-    resolution: {integrity: sha512-B9sOWf5pvk/uRYeTk/+0CNKvduuE1HNTRAX5sSPMSEfnNeSyA1whVBmhDdamgSaoJFdkpJtUeS7uVxy7Pw1loA==, tarball: file:projects/middleware.tgz}
+    resolution: {integrity: sha512-lqQ0Nzrj+lQLJwblnKwnJT8dVff5vk2UH3VvcQSQ/xQf0qAbqFI8gpAkplMnhTBOJFuRqElmsxq6ct/zoUmm2w==, tarball: file:projects/middleware.tgz}
     version: 0.0.0
 
   '@rush-temp/minio@file:projects/minio.tgz':
-    resolution: {integrity: sha512-z6nQWZm3x4ytjyC5cFPCRliQwzvcUNGF7zEGdgtHNbL7Whj8n2FS+S/IZ2ugiuxigoduGlEN28mvoNJZj1aDTg==, tarball: file:projects/minio.tgz}
+    resolution: {integrity: sha512-TX1spsmBzCZFPAS5aB04HM6j78HvkzSCSPPkQfK3+ZwRYk/iov9fPSp1GPo5Dz5LwqbWWzpJJuLQ2YBwjfqeWQ==, tarball: file:projects/minio.tgz}
     version: 0.0.0
 
   '@rush-temp/model-achievement@file:projects/model-achievement.tgz':
@@ -5602,11 +5614,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/model@file:projects/model.tgz':
-    resolution: {integrity: sha512-XoEk0L/iqPZkCZZ56hxriw5BHOO6ODIbuseU1O/Qdlttp2M4c6rorDO4HHg05Fr5ybz84zE+/UjChsbqEEesIQ==, tarball: file:projects/model.tgz}
+    resolution: {integrity: sha512-MWsJf49GceWPZ/28hpYPgRd8LfoZGYQsIRm54+fwimE2AOJzyO65Etz9xZevhJzogPWsoHpGCEeDCFVUkBavvg==, tarball: file:projects/model.tgz}
     version: 0.0.0
 
   '@rush-temp/mongo@file:projects/mongo.tgz':
-    resolution: {integrity: sha512-8Mc0JrPCKQAGg5pHG7ULm09ixsXVGllm1tczXy+lFKD+gvvX+rCwMkSE1kDDxVUm2B6YJ4iLMXakbizOGSC0Yg==, tarball: file:projects/mongo.tgz}
+    resolution: {integrity: sha512-xixezlmcHX+LDtguCnnCAMcFNBlNoL2kArY2rWoTcRw5nf6AI1qEh9710RFmHJYGcaaZeyc24LQfck6kb/URig==, tarball: file:projects/mongo.tgz}
     version: 0.0.0
 
   '@rush-temp/notification-assets@file:projects/notification-assets.tgz':
@@ -5650,7 +5662,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/platform@file:projects/platform.tgz':
-    resolution: {integrity: sha512-pVUFecDIKKTW5jOuwxBFXbTGpB3ZOM0+ZQE4mluJW+X0vM/BW10q5yGUlSIVoJOuLkoY2HTtPAfLdJmS5VlO9Q==, tarball: file:projects/platform.tgz}
+    resolution: {integrity: sha512-PKBYOfS0gv2jxy26UsnwJ0UXUHXJFMpXWKoMjKK89uLxYdM09qkyF6GjS+LgcVoMbGRPWlzkKWf6PlZvaT6/+w==, tarball: file:projects/platform.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-account@file:projects/pod-account.tgz':
@@ -5765,6 +5777,10 @@ packages:
     resolution: {integrity: sha512-rOpVESDZ2yyFyU2zIZ4RNAXU0/p5Opq5LfrUABYyPgk+ZcJraUyv1pBCzoV14PaMu+qQCqxNm/8Jelp00dilYw==, tarball: file:projects/pod-stats.tgz}
     version: 0.0.0
 
+  '@rush-temp/pod-stream@file:projects/pod-stream.tgz':
+    resolution: {integrity: sha512-fopsbbbTdVXSjXwkKQfhU95R98enunyUteJpo1Tx59huhPLwfAM0Ur9y9/2ECcd74W+1gGOwEIPtYSefmtBnyQ==, tarball: file:projects/pod-stream.tgz}
+    version: 0.0.0
+
   '@rush-temp/pod-telegram-bot@file:projects/pod-telegram-bot.tgz':
     resolution: {integrity: sha512-807l8RhxAJS+0cSgX2rD3BpDCGa6XeNDaOzimvE4S5ROM+kcOf7oY/O0wk4EMYtgEX1fnEQNgsJJgqza+UeCDg==, tarball: file:projects/pod-telegram-bot.tgz}
     version: 0.0.0
@@ -5790,7 +5806,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/postgres@file:projects/postgres.tgz':
-    resolution: {integrity: sha512-zyQztJ1onpQzKzw3YGjmTExZByQFXIOn1bkcg8TH9gGn7vmTBsvukS45YifXrL2Ipcnp3b6o6uJE4p3JsSNJ0g==, tarball: file:projects/postgres.tgz}
+    resolution: {integrity: sha512-Nn5di0mWW0kq3s3t+uViTaBvDX0dmjoJ6i1nGoxer87AWYMQPzW/ZVR85dIhRMt+POUL8xSxECpGOqjB27LLoQ==, tarball: file:projects/postgres.tgz}
     version: 0.0.0
 
   '@rush-temp/preference-assets@file:projects/preference-assets.tgz':
@@ -5854,7 +5870,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/query@file:projects/query.tgz':
-    resolution: {integrity: sha512-VroktGR61/jKippg9MoODRlAvms8r9xrlAnWfqr1yB+kd7gD2gsOsiJl142MwG6lve9zQSBOGHuXc4pQ/TbA/w==, tarball: file:projects/query.tgz}
+    resolution: {integrity: sha512-Ve8ueY+mK4sgNJ3i4X+NhiUEBPDe7EYChPwYPXz0NFoUeX+eVWrfCLPP6/8J7QlkCmA4xzf3RDHFEq7pMwvR9Q==, tarball: file:projects/query.tgz}
     version: 0.0.0
 
   '@rush-temp/questions-assets@file:projects/questions-assets.tgz':
@@ -5870,7 +5886,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/rank@file:projects/rank.tgz':
-    resolution: {integrity: sha512-z3uKrc2oaIeGb7tzQ/pl6UIjo3AEU8OdDRnU0p45pBFihXAuW2VUwbe42iNQCCxh4RYE8ZKrx7PQtOZFmla6mg==, tarball: file:projects/rank.tgz}
+    resolution: {integrity: sha512-xBJzCwH2yzvJPgqVAeewVB8dE3crlwdAJE7A0WKehEVEAbXrdAr77tTjJKVMfPLxgbkdhlENg76F6Ma8xFG3Og==, tarball: file:projects/rank.tgz}
     version: 0.0.0
 
   '@rush-temp/rating-assets@file:projects/rating-assets.tgz':
@@ -5930,15 +5946,15 @@ packages:
     version: 0.0.0
 
   '@rush-temp/retry@file:projects/retry.tgz':
-    resolution: {integrity: sha512-i+aCxDdQWU2E+7BfMtERJJm8IUOhHIBXgqwwwXTND9lw3AgIW7dxYrkikNnUT+a3BpSRlzE4Zr63vw+cUOhVsw==, tarball: file:projects/retry.tgz}
+    resolution: {integrity: sha512-DN6/Qb67vimSr3Y8Q0CHAGFa031K+BneuP398Dl+To2TNiJq6lSpvqyy3aG3j06NHPRuu3qNewrWbPrm7UTERA==, tarball: file:projects/retry.tgz}
     version: 0.0.0
 
   '@rush-temp/rpc@file:projects/rpc.tgz':
-    resolution: {integrity: sha512-/9rqNaYRfk9y5Xlu8KIkpCvCJ3UvZJ/9JnSG7EkP6tvexmBMZvjugJo5aPtqe7Uozjuy9o0sC9C0clx36Mlexg==, tarball: file:projects/rpc.tgz}
+    resolution: {integrity: sha512-Cdr5LeUfnqpzsjV2HHt+gz83xOyAX53YFKW/3IMRw91ZapuOelLGYCQfMIVp0YF+oWvQBpXI5S/g71qE+iLUJw==, tarball: file:projects/rpc.tgz}
     version: 0.0.0
 
   '@rush-temp/s3@file:projects/s3.tgz':
-    resolution: {integrity: sha512-SAJ147guSsUlVMRDjfzY1bEh1Xomg0y1sSyUKiDB3cZkj6l+WNcrxYsrn99gTzK7LlOE2uZfknVc5GzOA59/Ow==, tarball: file:projects/s3.tgz}
+    resolution: {integrity: sha512-VH7vRghHgDDIxSNlPGPGfqtwtXB6wAB2ETn87iBNv7n9eHNHxFYuSkBCCLIS+XPYb2hot2E9KAdt173zAqCRHA==, tarball: file:projects/s3.tgz}
     version: 0.0.0
 
   '@rush-temp/scripts@file:projects/scripts.tgz':
@@ -6006,7 +6022,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-client@file:projects/server-client.tgz':
-    resolution: {integrity: sha512-3IjLKM79oM38/gc16F/62Y65FABWo7WOvgm1IxLdLc1P7H09dgMoYt98vPva2TTFNzCeGI6HcqRzfsig2ohVcQ==, tarball: file:projects/server-client.tgz}
+    resolution: {integrity: sha512-fcrB3iYdaARo+bvfCLg9rSdQu9gYdRF06WoEghkCOIPL76cfb46b3xLaMp50WxmidLs5bq+DQFFQ7plmLOK5YQ==, tarball: file:projects/server-client.tgz}
     version: 0.0.0
 
   '@rush-temp/server-collaboration-resources@file:projects/server-collaboration-resources.tgz':
@@ -6034,7 +6050,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-core@file:projects/server-core.tgz':
-    resolution: {integrity: sha512-J7A5B7qyowUekG+GrH0HhoppOTVXfFkxbzesW9EI3mwAp9wxsLt+/1iLNC7Q6pMxksUWSCEvDYi+piYdVQo9vQ==, tarball: file:projects/server-core.tgz}
+    resolution: {integrity: sha512-bE+SsAFZ3Xev+BfX0UPQE6j8mc8VEpfnkvlEft5ACYqCQNPmnC1ramXWKUrf0HG7ZDnb3ApYi+92rZ04dkOFLA==, tarball: file:projects/server-core.tgz}
     version: 0.0.0
 
   '@rush-temp/server-document-resources@file:projects/server-document-resources.tgz':
@@ -6170,7 +6186,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-storage@file:projects/server-storage.tgz':
-    resolution: {integrity: sha512-MB469RS5xeTUSwApvk+6YKgXd3y0mg+bRtkfsR8WnEyDU0y+J90anyArzEnSa9ruRBofXLmkW+WH9sRmnp5Z9g==, tarball: file:projects/server-storage.tgz}
+    resolution: {integrity: sha512-fiaPkyXz4cMX9Q4NyMoZs49jKpLUyfnJp29eg+kOORmY167AJj0ysTihitGsm4ePkoAI7fMmXxQg/5khP6TyGA==, tarball: file:projects/server-storage.tgz}
     version: 0.0.0
 
   '@rush-temp/server-tags-resources@file:projects/server-tags-resources.tgz':
@@ -6210,7 +6226,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server-token@file:projects/server-token.tgz':
-    resolution: {integrity: sha512-4wWXIjRGKn7qMKr+dplPpWIhu+6P+3smnnSzLt2z/i0oWF9m6471DsSARGNb5k4e827Idmn0dbC9917cIaBiTw==, tarball: file:projects/server-token.tgz}
+    resolution: {integrity: sha512-d5Beg6Opge7uetnmNCmpN7O/H+qaUrc0uYgbni1W7ZplNxE3NbPpA8NtXbjGOsR7b8ITk1povEpjr3AyQIzJow==, tarball: file:projects/server-token.tgz}
     version: 0.0.0
 
   '@rush-temp/server-tool@file:projects/server-tool.tgz':
@@ -6242,7 +6258,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/server@file:projects/server.tgz':
-    resolution: {integrity: sha512-OqJlBecxPBkoXQhXo7f4bQgs/wa0KKtivEN1FhHIw9owryvQf+NNv+lXHMWrWoj244kzcDK1GEec9Cb3UHyANg==, tarball: file:projects/server.tgz}
+    resolution: {integrity: sha512-jD7wn9fz8b9ThALeQnC84yOmX1i9Mm9YcJWOUNOii65YnsOqs/92w16c42LYhB8XAZOSohUXV4BKIx0+ARx34w==, tarball: file:projects/server.tgz}
     version: 0.0.0
 
   '@rush-temp/setting-assets@file:projects/setting-assets.tgz':
@@ -6262,11 +6278,11 @@ packages:
     version: 0.0.0
 
   '@rush-temp/storage-client@file:projects/storage-client.tgz':
-    resolution: {integrity: sha512-wHR6OT4f8GJ7bcsFN+XMn6gh2s5vpvHZj17k6dMY7O5gvNVV5EAwM4uDTu5Omuu8umFyAbyLM0oQTtM4dxFEKA==, tarball: file:projects/storage-client.tgz}
+    resolution: {integrity: sha512-Wfb6g4n/C4gLEbcTGmCsSeC4a4Ywevg+bntpRxplzU1B0lYGItPOSteGSC3DuleFd5mK/6nMxZW/6fkxBr3Uyw==, tarball: file:projects/storage-client.tgz}
     version: 0.0.0
 
   '@rush-temp/storage@file:projects/storage.tgz':
-    resolution: {integrity: sha512-xGAj9dwm6KwPTUzrLnL+gSML4pD/H06PyVNHACDZmuSyGfw/EcLbTKj3oT8m8pHIfzrfKnAc+PTSyWdeIUc9eQ==, tarball: file:projects/storage.tgz}
+    resolution: {integrity: sha512-nE9xckN14lydwIeLTOjErttW+s1opULyd+Q6E/98JQ5zNPp0a0yLkDOm5msh0VJrRzdHc7zX2603wxLSCzHh/Q==, tarball: file:projects/storage.tgz}
     version: 0.0.0
 
   '@rush-temp/support-assets@file:projects/support-assets.tgz':
@@ -6362,7 +6378,7 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-core@file:projects/text-core.tgz':
-    resolution: {integrity: sha512-T5SlkPrh+0cwUfOxLCkTpiBLMmoADoBX3Xt4iYFiDHXCmfEBD/bEAaYZKQonh94X4q2WURiT60+fLPZ1lQ11Dg==, tarball: file:projects/text-core.tgz}
+    resolution: {integrity: sha512-KgDeuJqZdrNCiyyQim6EJDB+U0lAze5cSK8mH9G1AMfeOuhpj9NHivCcYfPPnVu5cAPweZzKTEW+rOx6rHnJ1Q==, tarball: file:projects/text-core.tgz}
     version: 0.0.0
 
   '@rush-temp/text-editor-assets@file:projects/text-editor-assets.tgz':
@@ -6378,19 +6394,19 @@ packages:
     version: 0.0.0
 
   '@rush-temp/text-html@file:projects/text-html.tgz':
-    resolution: {integrity: sha512-7zOmitJDJSqFzTaouwCOlB4RkWBHDq6TvQHuJqZbXKFQ5ZVEmwBEVELXUwJq9Wt4Vyd3cYTEkq7teXoY97nnKA==, tarball: file:projects/text-html.tgz}
+    resolution: {integrity: sha512-ftRKaGvPU4uaggaSZ7h1LrX/cE7+uTYsA8kUqOT9lMVgCUSQCnVTKOeP02C1KAlB5FcXv5RaIPDgINdnajvIiQ==, tarball: file:projects/text-html.tgz}
     version: 0.0.0
 
   '@rush-temp/text-markdown@file:projects/text-markdown.tgz':
-    resolution: {integrity: sha512-T4+SLhgGFwl+sZ27L1FovWkcZEM9QZaVzeTX9mx06hI5vZOvTGsTblHz8RycGPPjb8qQYEDC+l8urabSlN+iNQ==, tarball: file:projects/text-markdown.tgz}
+    resolution: {integrity: sha512-nK+uid9avtZvUYcnjENpazh+XeiGD6EIRZ7EHTlT6KZ+IHcZC+utTUgY6eW9GMQI3oPvGXMl1t1tsikyxDtb3g==, tarball: file:projects/text-markdown.tgz}
     version: 0.0.0
 
   '@rush-temp/text-ydoc@file:projects/text-ydoc.tgz':
-    resolution: {integrity: sha512-7u4tixbkqGuIDJTf/JkpTtSqe/ZCDme5AGDiu5hu8mr+6EguduEq/z+9ctMlw4qt9oYe3+abeoRZz/5u4KnZiQ==, tarball: file:projects/text-ydoc.tgz}
+    resolution: {integrity: sha512-7Xxckm1laSeRsNBcq/HFu9e6Bu7XHUKmdDq1aTJdsmTvkPBlOhnfvQxbeD2EXLsM8vLdEgeCB5FUmx8tjeGXGQ==, tarball: file:projects/text-ydoc.tgz}
     version: 0.0.0
 
   '@rush-temp/text@file:projects/text.tgz':
-    resolution: {integrity: sha512-NQ5XRut82Olc30iwFJDQRbM/qepkZCeSPusV5u5P4OT2HfKLNfXdpkHnEPa9oz8CAYk0U1nLoCgaAiU4eWMEAQ==, tarball: file:projects/text.tgz}
+    resolution: {integrity: sha512-KNe5br5TVvoRXiCAtDvsA6liIQio8GUcFW33m3mFvkfjZVdKoGXnWZnKQWOZ1WULVznS5kWop8vn3vrWSTvOwg==, tarball: file:projects/text.tgz}
     version: 0.0.0
 
   '@rush-temp/theme@file:projects/theme.tgz':
@@ -26820,6 +26836,8 @@ snapshots:
       - jest-util
       - node-notifier
       - supports-color
+
+  '@rush-temp/pod-stream@file:projects/pod-stream.tgz': {}
 
   '@rush-temp/pod-telegram-bot@file:projects/pod-telegram-bot.tgz(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(@swc/core@1.14.0)(babel-jest@29.7.0(@babel/core@7.28.5))(encoding@0.1.13)(gcp-metadata@5.3.0(encoding@0.1.13))(jest-util@30.2.0)(snappy@7.3.3)(socks@2.8.7)':
     dependencies:

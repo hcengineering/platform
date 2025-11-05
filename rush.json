@@ -2701,6 +2701,11 @@
       "packageName": "@hcengineering/pod-rating",
       "projectFolder": "services/rating",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-stream",
+      "projectFolder": "foundations/stream",
+      "shouldPublish": false
     }
   ]
 }
