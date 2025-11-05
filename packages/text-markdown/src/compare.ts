@@ -17,6 +17,8 @@
  * Calculate Sørensen–Dice coefficient
  */
 export function calcSørensenDiceCoefficient (a: string, b: string): number {
+  if (a == null || b == null) return 0
+
   const first = a.replace(/\s+/g, '')
   const second = b.replace(/\s+/g, '')
 
@@ -55,11 +57,13 @@ export function isMarkdownsEquals (source1: string, source2: string): boolean {
 }
 
 export function normalizeMarkdown (source: string): string {
+  if (source == null || typeof source !== 'string') return ''
+
   const tagRegex = /<(\w+)([^>]*?)(\/?)>/g
   const attrRegex = /(\w+)(?:=(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g
 
   // Normalize line endings to LF
-  source = source.replace(/\r?\n/g, '\n')
+  source = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
 
   // Remove extra blank lines
   source = source
