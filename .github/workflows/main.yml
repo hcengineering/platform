@@ -461,6 +461,7 @@ jobs:
 
       - name: Docker build
         run: |
+          docker system prune -a -f
           node common/scripts/install-run-rush.js docker:build -v
           docker builder prune -a -f
         env:
