@@ -946,9 +946,6 @@ importers:
       '@rush-temp/pod-gmail':
         specifier: file:./projects/pod-gmail.tgz
         version: file:projects/pod-gmail.tgz(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(@swc/core@1.14.0)(babel-jest@29.7.0(@babel/core@7.28.5))(bufferutil@4.0.9)(encoding@0.1.13)(jest-util@30.2.0)(utf-8-validate@6.0.5)
-      '@rush-temp/pod-hulylake':
-        specifier: file:./projects/pod-hulylake.tgz
-        version: file:projects/pod-hulylake.tgz
       '@rush-temp/pod-love':
         specifier: file:./projects/pod-love.tgz
         version: file:projects/pod-love.tgz(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(@swc/core@1.14.0)(babel-jest@29.7.0(@babel/core@7.28.5))(bufferutil@4.0.9)(jest-util@30.2.0)(utf-8-validate@6.0.5)
@@ -5726,10 +5723,6 @@ packages:
 
   '@rush-temp/pod-gmail@file:projects/pod-gmail.tgz':
     resolution: {integrity: sha512-tMps1wFtiECxdTySDQlkr/8sNXXuTZvUV0yT/VI7efh0DBy9/q6WUCbHRNKkNsx4xeJZ1aYWZv9IFlHXUVZ4wg==, tarball: file:projects/pod-gmail.tgz}
-    version: 0.0.0
-
-  '@rush-temp/pod-hulylake@file:projects/pod-hulylake.tgz':
-    resolution: {integrity: sha512-IcBnXf4m0pvL5xPw6bR0wGZyyqJdvvqTZHQHYmVCR8lE1G9ShVfWdohUHA50s3PecYLDC05yjqNTpxC+2kwwWw==, tarball: file:projects/pod-hulylake.tgz}
     version: 0.0.0
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz':
@@ -26293,8 +26286,6 @@ snapshots:
       - node-notifier
       - supports-color
       - utf-8-validate
-
-  '@rush-temp/pod-hulylake@file:projects/pod-hulylake.tgz': {}
 
   '@rush-temp/pod-love@file:projects/pod-love.tgz(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(@swc/core@1.14.0)(babel-jest@29.7.0(@babel/core@7.28.5))(bufferutil@4.0.9)(jest-util@30.2.0)(utf-8-validate@6.0.5)':
     dependencies:
