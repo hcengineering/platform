@@ -12,16 +12,15 @@ use tracing::*;
 use tracing_actix_web::TracingLogger;
 use uuid::Uuid;
 
-use hulyrs::services::jwt::actix::ServiceRequestExt;
-use hulyrs::services::otel;
-
 mod blob;
 mod compact;
 mod conditional;
 mod config;
 mod handlers;
+mod jwt;
 mod merge;
 mod mutex;
+mod otel;
 mod patch;
 mod postgres;
 mod recovery;
@@ -29,7 +28,7 @@ mod s3;
 
 use config::CONFIG;
 
-use crate::mutex::KeyMutex;
+use crate::{jwt::actix::ServiceRequestExt, mutex::KeyMutex, otel::OtelMode};
 
 fn initialize_tracing() {
     use opentelemetry::trace::TracerProvider;
@@ -39,7 +38,7 @@ fn initialize_tracing() {
     use tracing_subscriber::{filter::targets::Targets, prelude::*};
 
     let otel_config = otel::OtelConfig {
-        mode: config::hulyrs::CONFIG.otel_mode.clone(),
+        mode: OtelMode::On,
         service_name: env!("CARGO_PKG_NAME").to_string(),
         service_version: env!("CARGO_PKG_VERSION").to_string(),
     };
@@ -47,11 +46,13 @@ fn initialize_tracing() {
     otel::init(&otel_config);
 
     let filter = Targets::default()
-        .with_target(env!("CARGO_BIN_NAME"), config::hulyrs::CONFIG.log)
+        .with_target(env!("CARGO_BIN_NAME"), tracing::Level::INFO)
         .with_target("actix", Level::WARN);
     let format = tracing_subscriber::fmt::layer().compact();
 
-    match &config::hulyrs::CONFIG.otel_mode {
+    let mode = OtelMode::On;
+
+    match &mode {
         otel::OtelMode::Off => {
             tracing_subscriber::registry()
                 .with(filter)
@@ -66,7 +67,7 @@ fn initialize_tracing() {
                 .with(otel::tracer_provider(&otel_config).map(|provider| {
                     let filter = Targets::default()
                         .with_default(Level::DEBUG)
-                        .with_target(env!("CARGO_PKG_NAME"), config::hulyrs::CONFIG.log);
+                        .with_target(env!("CARGO_PKG_NAME"), tracing::Level::INFO);
 
                     OpenTelemetryLayer::new(provider.tracer("hulylake")).with_filter(filter)
                 }))

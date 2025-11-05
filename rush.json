@@ -2706,6 +2706,11 @@
       "packageName": "@hcengineering/pod-stream",
       "projectFolder": "foundations/stream",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-hulylake",
+      "projectFolder": "foundations/hulylake",
+      "shouldPublish": false
     }
   ]
 }

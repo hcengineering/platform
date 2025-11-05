@@ -1,4 +1,4 @@
-use hulyrs::StatusCode;
+pub use reqwest::StatusCode;
 use tanu::{
     check, check_eq, eyre,
     http::{self, Client},
