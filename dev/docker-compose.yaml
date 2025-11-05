@@ -1,6 +1,7 @@
 services:
   stream:
     image: 'haiodo/stream'
+    pull_policy: never
     extra_hosts:
       - 'huly.local:host-gateway'
     container_name: stream
@@ -508,6 +509,7 @@ services:
     restart: unless-stopped
   hulylake:
     image: haiodo/hulylake
+    pull_policy: never
     extra_hosts:
       - 'huly.local:host-gateway'
     depends_on:

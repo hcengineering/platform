@@ -1,7 +1,7 @@
 services:
   stream:
     image: 'haiodo/stream'
-    pull_policy: always
+    pull_policy: never
     extra_hosts:
       - 'huly.local:host-gateway'
     environment:
