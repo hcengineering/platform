@@ -15,20 +15,18 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import type { Drive, Folder, Resource } from '@hcengineering/drive'
-  import presentation, { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
+  import presentation, { Card, SpaceSelector } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   import drive from '../plugin'
-  import { moveResources } from '../utils'
+  import { findAllChildren, moveResources } from '../utils'
 
   import ResourcePresenter from './ResourcePresenter.svelte'
 
   export let value: Resource
 
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
   let space: Ref<Drive> = value.space as Ref<Drive>
@@ -42,21 +40,7 @@
   $: void updateChildren(value)
 
   async function updateChildren (resource: Resource): Promise<void> {
-    children = await findChildren(resource)
-  }
-
-  async function findChildren (resource: Resource): Promise<Array<Ref<Folder>>> {
-    if (hierarchy.isDerived(resource._class, drive.class.Folder)) {
-      const children = await client.findAll(
-        drive.class.Folder,
-        { space: resource.space, path: resource._id as Ref<Folder> },
-        { projection: { _id: 1 } }
-      )
-
-      return children.map((p) => p._id)
-    }
-
-    return []
+    children = await findAllChildren(resource)
   }
 
   $: canSave = space !== value.space || parent !== value.parent
