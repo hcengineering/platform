@@ -18,8 +18,8 @@
   import {
     Button,
     Component,
+    HulyLoading,
     Label,
-    Loading,
     Notifications,
     deviceOptionsStore,
     fetchMetadataLocalStorage,
@@ -56,7 +56,7 @@
   {:else}
     {#key $location.path[1]}
       {#await connect(getMetadata(workbenchRes.metadata.PlatformTitle) ?? 'Platform')}
-        <Loading>
+        <HulyLoading>
           {#if ($workspaceCreating ?? -1) >= 0}
             <div class="ml-1">
               <Label label={workbenchRes.string.WorkspaceCreating} />
@@ -73,7 +73,7 @@
               <Label label={workbench.string.UpgradeDownloadProgress} params={{ percent: $upgradeDownloadProgress }} />
             </div>
           {/if}
-        </Loading>
+        </HulyLoading>
       {:then client}
         {#if $versionError}
           <div class="version-wrapper">
