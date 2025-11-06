@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/core
 
-This log was last generated on Thu, 30 Oct 2025 23:11:55 GMT and should not be manually modified.
+This log was last generated on Thu, 06 Nov 2025 09:09:58 GMT and should not be manually modified.
+
+## 0.7.22
+Thu, 06 Nov 2025 09:09:58 GMT
+
+### Patches
+
+- Add txMatch to permission
 
 ## 0.7.21
 Thu, 30 Oct 2025 23:11:55 GMT
