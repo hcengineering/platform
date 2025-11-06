@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/text-markdown",
+      "comment": "Fix normalizeMarkdown errors",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/text-markdown"
+}
