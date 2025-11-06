@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/elastic
 
-This log was last generated on Mon, 27 Oct 2025 16:26:11 GMT and should not be manually modified.
+This log was last generated on Thu, 06 Nov 2025 10:21:28 GMT and should not be manually modified.
+
+## 0.7.16
+Thu, 06 Nov 2025 10:21:28 GMT
+
+### Patches
+
+- bump core
 
 ## 0.7.15
 Mon, 27 Oct 2025 16:26:11 GMT

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/postgres",
-  "version": "0.7.17",
+  "version": "0.7.18",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -36,9 +36,9 @@
   },
   "dependencies": {
     "postgres": "^3.4.7",
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-core": "workspace:^0.7.16",
+    "@hcengineering/core": "^0.7.22",
+    "@hcengineering/platform": "^0.7.18",
+    "@hcengineering/server-core": "workspace:^0.7.17",
     "@hcengineering/postgres-base": "^0.7.17"
   },
   "repository": "https://github.com/hcengineering/huly.server",

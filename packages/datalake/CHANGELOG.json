@@ -2,6 +2,23 @@
   "name": "@hcengineering/datalake",
   "entries": [
     {
+      "version": "0.7.16",
+      "tag": "@hcengineering/datalake_v0.7.16",
+      "date": "Thu, 06 Nov 2025 10:21:28 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "bump core"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `^0.7.16` to `0.7.17`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.15",
       "tag": "@hcengineering/datalake_v0.7.15",
       "date": "Mon, 27 Oct 2025 16:26:11 GMT",
