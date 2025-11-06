@@ -19,7 +19,7 @@
   import type { AnyComponent, AnySvelteComponent } from '../types'
   import ErrorPresenter from './ErrorPresenter.svelte'
   import Loading from './Loading.svelte'
-  import HulyLoading from './HulyLoading.svelte'
+  import AppLoading from './AppLoading.svelte'
   import ErrorBoundary from './internal/ErrorBoundary'
   import { clone } from '@hcengineering/core'
 
@@ -31,7 +31,7 @@
   export let showLoading = true
   export let inline: boolean = false
   export let disabled: boolean = false
-  export let hulyLoading: boolean = false
+  export let appLoading: boolean = false
 
   let _is: AnyComponent | AnySvelteComponent = is
 
@@ -107,8 +107,8 @@
 {#if _is != null}
   {#if loading}
     {#if showLoading}
-      {#if hulyLoading}
-        <HulyLoading {shrink} />
+      {#if appLoading}
+        <AppLoading {shrink} />
       {:else}
         <Loading {shrink} />
       {/if}

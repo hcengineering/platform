@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import AnimatedHulyIcon from './icons/AnimatedHulyIcon.svelte'
+  import SquareSpinner from './icons/SquareSpinner.svelte'
 
   export let shrink: boolean = false
   export let label: string = ''
@@ -34,7 +34,7 @@
 
 <div class="spinner-container" class:fullSize={!shrink}>
   <div data-label={label} class="flex-row-center flex-gap-2" class:labeled={label !== ''}>
-    <AnimatedHulyIcon {size} />
+    <SquareSpinner {size} />
     <slot />
   </div>
 </div>

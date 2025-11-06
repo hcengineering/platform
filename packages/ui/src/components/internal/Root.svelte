@@ -299,7 +299,7 @@
     </div>
     <div class="app">
       {#if application}
-        <Component is={application} hulyLoading={true} props={{}} />
+        <Component is={application} appLoading={true} props={{}} />
       {:else}
         <div class="error">
           Application not found: {application}
