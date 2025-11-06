@@ -18,7 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -35,10 +35,10 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.22",
-    "@hcengineering/platform": "^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/platform": "workspace:^0.7.18",
     "@hcengineering/server-core": "workspace:^0.7.17",
-    "@hcengineering/storage": "^0.7.17",
+    "@hcengineering/storage": "workspace:^0.7.17",
     "kafkajs": "^2.2.4"
   },
   "repository": "https://github.com/hcengineering/huly.server",

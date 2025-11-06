@@ -18,7 +18,7 @@
     "test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -34,19 +34,19 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/activity": "^0.7.0",
-    "@hcengineering/model": "^0.7.17",
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.18",
-    "@hcengineering/model-core": "^0.7.0",
-    "@hcengineering/model-contact": "^0.7.0",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/model-view": "^0.7.0",
-    "@hcengineering/model-tracker": "^0.7.0",
-    "@hcengineering/templates": "^0.7.0",
-    "@hcengineering/templates-resources": "^0.7.0",
-    "@hcengineering/setting": "^0.7.0",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/model-text-editor": "^0.7.0"
+    "@hcengineering/activity": "workspace:^0.7.0",
+    "@hcengineering/model": "workspace:^0.7.17",
+    "@hcengineering/core": "workspace:^0.7.21",
+    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/model-core": "workspace:^0.7.0",
+    "@hcengineering/model-contact": "workspace:^0.7.0",
+    "@hcengineering/view": "workspace:^0.7.0",
+    "@hcengineering/model-view": "workspace:^0.7.0",
+    "@hcengineering/model-tracker": "workspace:^0.7.0",
+    "@hcengineering/templates": "workspace:^0.7.0",
+    "@hcengineering/templates-resources": "workspace:^0.7.0",
+    "@hcengineering/setting": "workspace:^0.7.0",
+    "@hcengineering/ui": "workspace:^0.7.0",
+    "@hcengineering/model-text-editor": "workspace:^0.7.0"
   }
 }

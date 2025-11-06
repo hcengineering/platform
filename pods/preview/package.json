@@ -31,7 +31,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -55,14 +55,14 @@
     "@types/heic-decode": "^1.1.2"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.18",
-    "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/analytics-service": "^0.7.17",
-    "@hcengineering/analytics": "^0.7.17",
-    "@hcengineering/server-client": "^0.7.15",
-    "@hcengineering/server-storage": "^0.7.15",
-    "@hcengineering/server-token": "^0.7.17",
+    "@hcengineering/core": "workspace:^0.7.21",
+    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/server-core": "workspace:^0.7.16",
+    "@hcengineering/analytics-service": "workspace:^0.7.17",
+    "@hcengineering/analytics": "workspace:^0.7.17",
+    "@hcengineering/server-client": "workspace:^0.7.15",
+    "@hcengineering/server-storage": "workspace:^0.7.15",
+    "@hcengineering/server-token": "workspace:^0.7.17",
     "sharp": "~0.34.3",
     "blurhash": "^2.0.5",
     "dotenv": "~16.0.0",

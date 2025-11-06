@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",
@@ -38,16 +38,16 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.18",
+    "@hcengineering/platform": "workspace:^0.7.18",
     "svelte": "^4.2.20",
-    "@hcengineering/templates": "^0.7.0",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/text-editor": "^0.7.0",
-    "@hcengineering/text-editor-resources": "^0.7.0",
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/view-resources": "^0.7.0",
-    "@hcengineering/contact-resources": "^0.7.0"
+    "@hcengineering/templates": "workspace:^0.7.0",
+    "@hcengineering/ui": "workspace:^0.7.0",
+    "@hcengineering/presentation": "workspace:^0.7.0",
+    "@hcengineering/text-editor": "workspace:^0.7.0",
+    "@hcengineering/text-editor-resources": "workspace:^0.7.0",
+    "@hcengineering/core": "workspace:^0.7.21",
+    "@hcengineering/view": "workspace:^0.7.0",
+    "@hcengineering/view-resources": "workspace:^0.7.0",
+    "@hcengineering/contact-resources": "workspace:^0.7.0"
   }
 }

@@ -18,7 +18,7 @@
     "test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.54.0",
@@ -34,16 +34,16 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/activity": "^0.7.0",
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/model": "^0.7.17",
-    "@hcengineering/model-chunter": "^0.7.0",
-    "@hcengineering/model-core": "^0.7.0",
-    "@hcengineering/model-notification": "^0.7.0",
-    "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/platform": "^0.7.18",
-    "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/server-notification": "^0.7.0"
+    "@hcengineering/activity": "workspace:^0.7.0",
+    "@hcengineering/core": "workspace:^0.7.21",
+    "@hcengineering/contact": "workspace:^0.7.0",
+    "@hcengineering/model": "workspace:^0.7.17",
+    "@hcengineering/model-chunter": "workspace:^0.7.0",
+    "@hcengineering/model-core": "workspace:^0.7.0",
+    "@hcengineering/model-notification": "workspace:^0.7.0",
+    "@hcengineering/notification": "workspace:^0.7.0",
+    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/server-core": "workspace:^0.7.16",
+    "@hcengineering/server-notification": "workspace:^0.7.0"
   }
 }

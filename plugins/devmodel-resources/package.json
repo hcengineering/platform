@@ -18,7 +18,7 @@
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -37,20 +37,20 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.18",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/activity": "^0.7.0",
+    "@hcengineering/core": "workspace:^0.7.21",
+    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/ui": "workspace:^0.7.0",
+    "@hcengineering/presentation": "workspace:^0.7.0",
+    "@hcengineering/activity": "workspace:^0.7.0",
     "svelte": "^4.2.20",
-    "@hcengineering/chunter": "^0.7.0",
-    "@hcengineering/text-editor-resources": "^0.7.0",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/view-resources": "^0.7.0",
-    "@hcengineering/client": "^0.7.17",
-    "@hcengineering/devmodel": "^0.7.0",
-    "@hcengineering/model": "^0.7.17",
-    "@hcengineering/workbench": "^0.7.0"
+    "@hcengineering/chunter": "workspace:^0.7.0",
+    "@hcengineering/text-editor-resources": "workspace:^0.7.0",
+    "@hcengineering/contact": "workspace:^0.7.0",
+    "@hcengineering/view": "workspace:^0.7.0",
+    "@hcengineering/view-resources": "workspace:^0.7.0",
+    "@hcengineering/client": "workspace:^0.7.17",
+    "@hcengineering/devmodel": "workspace:^0.7.0",
+    "@hcengineering/model": "workspace:^0.7.17",
+    "@hcengineering/workbench": "workspace:^0.7.0"
   }
 }

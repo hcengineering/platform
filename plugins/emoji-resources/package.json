@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -39,14 +39,14 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.18",
-    "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/theme": "^0.7.0",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/emoji": "^0.7.0",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/view-resources": "^0.7.0",
+    "@hcengineering/core": "workspace:^0.7.21",
+    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/presentation": "workspace:^0.7.0",
+    "@hcengineering/theme": "workspace:^0.7.0",
+    "@hcengineering/ui": "workspace:^0.7.0",
+    "@hcengineering/emoji": "workspace:^0.7.0",
+    "@hcengineering/view": "workspace:^0.7.0",
+    "@hcengineering/view-resources": "workspace:^0.7.0",
     "svelte": "^4.2.20"
   }
 }

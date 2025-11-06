@@ -22,7 +22,7 @@
    *
    * This option is strongly recommended. The default value is false.
    */
-  "useWorkspaces": false,
+  "useWorkspaces": true,
 
   /**
    * This setting determines how PNPM chooses version numbers during `rush update`.
@@ -243,11 +243,9 @@
     // "@hcengineering/server-client": "file:../../../huly.server/packages/client",
     // "@hcengineering/server-core": "file:../../../huly.server/packages/core",
     // "@hcengineering/server-storage": "file:../../../huly.server/packages/server-storage"
-
     // huly.utils packages:
     // "@hcengineering/platform-rig": "file:../../../huly.utils/packages/platform-rig",
     // "@hcengineering/ui-test": "file:../../../huly.utils/packages/ui-test"
-
     // huly.communication packages
     // "@hcengineering/communication-types": "file:../../../communication/packages/types",
     // "@hcengineering/communication-sdk-types": "file:../../../communication/packages/sdk-types",
