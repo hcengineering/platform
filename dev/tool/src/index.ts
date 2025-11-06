@@ -941,7 +941,7 @@ export function devTool (
     .option('-f, --force', 'Force backup', false)
     .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
     .option('-k, --keepSnapshots <keepSnapshots>', 'Keep snapshots for days', '14')
-    .option('-fv, --fullVerify', 'Full verification', false)
+    .option('--fv, --fullVerify', 'Full verification', false)
     .action(
       async (
         dirName: string,
