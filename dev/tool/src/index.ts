@@ -933,7 +933,7 @@ export function devTool (
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .option('--full', 'Full recheck', false)
     .option(
-      '-ct, --contentTypes <contentTypes>',
+      '--ct, --contentTypes <contentTypes>',
       'A list of ; separated content types for blobs to skip download if size >= limit',
       ''
     )
