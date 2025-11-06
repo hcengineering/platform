@@ -15,7 +15,7 @@
 
 import { MarkupNode, MarkupNodeType, MarkupMarkType } from '@hcengineering/text-core'
 import { markdownToMarkup, markupToMarkdown } from '..'
-import { isMarkdownsEquals } from '../compare'
+import { isMarkdownsEquals, normalizeMarkdown } from '../compare'
 
 const refUrl: string = 'ref://'
 const imageUrl: string = 'http://localhost'
@@ -1193,5 +1193,60 @@ describe('markdownToMarkup -> markupToMarkdown', () => {
       const serialized = markupToMarkdown(json, options)
       expect(serialized).toEqualMarkdown(alternate ?? markdown)
     })
+  })
+})
+
+describe('normalizeMarkdown', () => {
+  it('handles null and undefined inputs', () => {
+    expect(normalizeMarkdown(null as any)).toBe('')
+    expect(normalizeMarkdown(undefined as any)).toBe('')
+    expect(normalizeMarkdown('')).toBe('')
+  })
+
+  it('handles non-string inputs', () => {
+    expect(normalizeMarkdown(123 as any)).toBe('')
+    expect(normalizeMarkdown({} as any)).toBe('')
+    expect(normalizeMarkdown([] as any)).toBe('')
+  })
+
+  it('normalizes line endings', () => {
+    expect(normalizeMarkdown('line1\r\nline2\rline3\nline4')).toBe('line1\nline2\nline3\nline4')
+  })
+
+  it('removes trailing whitespace and empty lines', () => {
+    expect(normalizeMarkdown('line1  \n  \nline2   \n\n\nline3')).toBe('line1\nline2\nline3')
+  })
+
+  it('normalizes HTML tag attributes', () => {
+    const input = '<img src="test.jpg" alt="test" width="100">'
+    const expected = '<img alt="test" src="test.jpg" width="100" />'
+    expect(normalizeMarkdown(input)).toBe(expected)
+  })
+
+  it('handles void elements correctly', () => {
+    expect(normalizeMarkdown('<img src="test.jpg">')).toBe('<img src="test.jpg" />')
+    expect(normalizeMarkdown('<br>')).toBe('<br />')
+    expect(normalizeMarkdown('<hr>')).toBe('<hr />')
+  })
+
+  it('handles non-void elements correctly', () => {
+    expect(normalizeMarkdown('<div class="test">')).toBe('<div class="test">')
+    expect(normalizeMarkdown('<span>')).toBe('<span>')
+  })
+
+  it('sorts attributes alphabetically', () => {
+    const input = '<img width="100" src="test.jpg" height="200" alt="test">'
+    const expected = '<img alt="test" height="200" src="test.jpg" width="100" />'
+    expect(normalizeMarkdown(input)).toBe(expected)
+  })
+
+  it('handles attributes without values', () => {
+    expect(normalizeMarkdown('<input type="checkbox" checked>')).toBe('<input checked type="checkbox" />')
+  })
+
+  it('handles mixed content', () => {
+    const input = 'Text before\r\n<img alt="test" src="image.jpg">  \n\nText after   '
+    const expected = 'Text before\n<img alt="test" src="image.jpg" />\nText after'
+    expect(normalizeMarkdown(input)).toBe(expected)
   })
 })
