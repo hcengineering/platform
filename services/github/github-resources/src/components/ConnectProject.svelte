@@ -10,9 +10,9 @@
     IconChevronDown,
     PaletteColorIndexes,
     getEventPopupPositionElement,
-    showPopup
+    showPopup,
+    DropdownLabelsPopup
   } from '@hcengineering/ui'
-  import DropdownLabelsPopup from '@hcengineering/ui/src/components/DropdownLabelsPopup.svelte'
   import {
     GithubIntegration,
     GithubIntegrationRepository,

@@ -1,9 +1,7 @@
 <script lang="ts">
   import calendar, { Event } from '@hcengineering/calendar'
   import { DateRangeMode } from '@hcengineering/core'
-  import { Icon } from '@hcengineering/ui'
-  import DatePresenter from '@hcengineering/ui/src/components/calendar/DatePresenter.svelte'
-  import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
+  import { Icon, DatePresenter, IconArrowRight } from '@hcengineering/ui'
   import TimePresenter from '../../presenters/TimePresenter.svelte'
 
   export let item: Event
@@ -25,7 +23,7 @@
         <div class="flex-row-center">
           <DatePresenter mode={DateRangeMode.TIMEONLY} value={item.date} />
           <div class="p-1">
-            <Icon icon={ArrowRight} size={'small'} />
+            <Icon icon={IconArrowRight} size={'small'} />
           </div>
           <DatePresenter mode={DateRangeMode.TIMEONLY} value={item.dueDate} />
         </div>
