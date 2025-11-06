@@ -37,8 +37,8 @@
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-tags": "^0.7.0",
+    "@hcengineering/server-tags": "workspace:^0.7.0",
     "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/tags": "^0.7.0"
+    "@hcengineering/tags": "workspace:^0.7.0"
   }
 }

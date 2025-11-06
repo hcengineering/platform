@@ -40,20 +40,20 @@
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
     "svelte": "^4.2.20",
-    "@hcengineering/ai-assistant": "^0.7.0",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/card": "^0.7.0",
-    "@hcengineering/card-resources": "^0.7.0",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/setting": "^0.7.0",
-    "@hcengineering/login": "^0.7.0",
+    "@hcengineering/ai-assistant": "workspace:^0.7.0",
+    "@hcengineering/ui": "workspace:^0.7.0",
+    "@hcengineering/presentation": "workspace:^0.7.0",
+    "@hcengineering/card": "workspace:^0.7.0",
+    "@hcengineering/card-resources": "workspace:^0.7.0",
+    "@hcengineering/contact": "workspace:^0.7.0",
+    "@hcengineering/setting": "workspace:^0.7.0",
+    "@hcengineering/login": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/panel": "^0.7.0",
+    "@hcengineering/panel": "workspace:^0.7.0",
     "@hcengineering/analytics": "^0.7.17",
-    "@hcengineering/integration-client": "^0.7.0",
+    "@hcengineering/integration-client": "workspace:^0.7.0",
     "@hcengineering/account-client": "^0.7.19",
-    "@hcengineering/setting-resources": "^0.7.0",
-    "@hcengineering/view-resources": "^0.7.0"
+    "@hcengineering/setting-resources": "workspace:^0.7.0",
+    "@hcengineering/view-resources": "workspace:^0.7.0"
   }
 }

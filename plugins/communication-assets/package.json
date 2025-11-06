@@ -34,6 +34,6 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/communication": "^0.7.0"
+    "@hcengineering/communication": "workspace:^0.7.0"
   }
 }

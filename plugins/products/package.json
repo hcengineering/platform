@@ -37,12 +37,12 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/attachment": "^0.7.0",
+    "@hcengineering/attachment": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/controlled-documents": "^0.7.0"
+    "@hcengineering/contact": "workspace:^0.7.0",
+    "@hcengineering/view": "workspace:^0.7.0",
+    "@hcengineering/ui": "workspace:^0.7.0",
+    "@hcengineering/controlled-documents": "workspace:^0.7.0"
   }
 }

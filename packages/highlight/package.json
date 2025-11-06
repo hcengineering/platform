@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "svelte": "^4.2.20",
-    "@hcengineering/ui": "^0.7.0",
+    "@hcengineering/ui": "workspace:^0.7.0",
     "highlight.js": "^11.11.1",
     "lowlight": "^3.3.0"
   }

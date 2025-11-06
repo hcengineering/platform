@@ -34,19 +34,19 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/activity": "^0.7.0",
-    "@hcengineering/activity-resources": "^0.7.0",
-    "@hcengineering/contact": "^0.7.0",
+    "@hcengineering/activity": "workspace:^0.7.0",
+    "@hcengineering/activity-resources": "workspace:^0.7.0",
+    "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/model": "^0.7.17",
-    "@hcengineering/model-core": "^0.7.0",
-    "@hcengineering/model-preference": "^0.7.0",
-    "@hcengineering/model-presentation": "^0.7.0",
-    "@hcengineering/model-view": "^0.7.0",
-    "@hcengineering/notification": "^0.7.0",
+    "@hcengineering/model-core": "workspace:^0.7.0",
+    "@hcengineering/model-preference": "workspace:^0.7.0",
+    "@hcengineering/model-presentation": "workspace:^0.7.0",
+    "@hcengineering/model-view": "workspace:^0.7.0",
+    "@hcengineering/notification": "workspace:^0.7.0",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/text": "^0.7.18",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/view": "^0.7.0"
+    "@hcengineering/ui": "workspace:^0.7.0",
+    "@hcengineering/view": "workspace:^0.7.0"
   }
 }

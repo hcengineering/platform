@@ -55,8 +55,8 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/prod": "^1.0.1",
-    "@hcengineering/front": "^0.7.0",
+    "@hcengineering/prod": "workspace:^1.0.1",
+    "@hcengineering/front": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
     "express": "^4.21.2",
@@ -65,7 +65,7 @@
     "cors": "^2.8.5",
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-token": "^0.7.17",
-    "@hcengineering/attachment": "^0.7.0",
+    "@hcengineering/attachment": "workspace:^0.7.0",
     "body-parser": "^1.20.3",
     "sharp": "~0.34.3",
     "@hcengineering/analytics": "^0.7.17",

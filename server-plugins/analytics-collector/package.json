@@ -37,7 +37,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/analytics-collector": "^0.7.0",
+    "@hcengineering/analytics-collector": "workspace:^0.7.0",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/server-core": "^0.7.16"

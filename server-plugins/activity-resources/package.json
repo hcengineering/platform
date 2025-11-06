@@ -34,19 +34,19 @@
     "@types/node": "^22.15.29"
   },
   "dependencies": {
-    "@hcengineering/activity": "^0.7.0",
-    "@hcengineering/card": "^0.7.0",
-    "@hcengineering/contact": "^0.7.0",
+    "@hcengineering/activity": "workspace:^0.7.0",
+    "@hcengineering/card": "workspace:^0.7.0",
+    "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/notification": "^0.7.0",
+    "@hcengineering/notification": "workspace:^0.7.0",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-activity": "^0.7.0",
-    "@hcengineering/server-contact": "^0.7.0",
+    "@hcengineering/server-activity": "workspace:^0.7.0",
+    "@hcengineering/server-contact": "workspace:^0.7.0",
     "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/server-notification-resources": "^0.7.0",
+    "@hcengineering/server-notification-resources": "workspace:^0.7.0",
     "@hcengineering/text-core": "^0.7.18",
     "@hcengineering/communication-sdk-types": "^0.7.12",
     "@hcengineering/communication-types": "^0.7.12",
-    "@hcengineering/server-card": "^0.7.0"
+    "@hcengineering/server-card": "workspace:^0.7.0"
   }
 }

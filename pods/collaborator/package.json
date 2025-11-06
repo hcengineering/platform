@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/collaborator": "^0.7.0",
+    "@hcengineering/collaborator": "workspace:^0.7.0",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/analytics-service": "^0.7.17",

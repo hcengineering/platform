@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/love": "^0.7.0"
+    "@hcengineering/love": "workspace:^0.7.0"
   },
   "exports": {
     ".": {

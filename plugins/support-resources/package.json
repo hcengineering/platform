@@ -38,9 +38,9 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/support": "^0.7.0",
-    "@hcengineering/ui": "^0.7.0",
+    "@hcengineering/presentation": "workspace:^0.7.0",
+    "@hcengineering/support": "workspace:^0.7.0",
+    "@hcengineering/ui": "workspace:^0.7.0",
     "svelte": "^4.2.20"
   },
   "repository": "https://github.com/hcengineering/platform",
