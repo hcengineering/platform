@@ -1035,7 +1035,7 @@ export function devTool (
     .description('Compact a given backup, will create one snapshot clean unused resources')
     .option('-f, --force', 'Force compact.', false)
     .option(
-      '-ct, --contentTypes <contentTypes>',
+      '--ct, --contentTypes <contentTypes>',
       'A list of ; separated content types for blobs to exclude from backup',
       'video/;application/octet-stream;audio/;image/'
     )
@@ -1312,7 +1312,7 @@ export function devTool (
     .description('Compact a given backup to just one snapshot')
     .option('-f, --force', 'Force compact.', false)
     .option(
-      '-ct, --contentTypes <contentTypes>',
+      '--ct, --contentTypes <contentTypes>',
       'A list of ; separated content types for blobs to exclude from backup',
       'video/;application/octet-stream;audio/;image/'
     )
@@ -2666,7 +2666,7 @@ export function devTool (
   program
     .command('queue-init-topics')
     .description('create required kafka topics')
-    .option('-tx <tx>', 'Number of TX partitions', '5')
+    .option('--tx <tx>', 'Number of TX partitions', '5')
     .action(async (cmd: { tx: string }) => {
       const queue = getPlatformQueue('tool')
       await queue.createTopics(parseInt(cmd.tx ?? '1'))
