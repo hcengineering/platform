@@ -24,7 +24,7 @@
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "@types/jest": "^29.5.5",
-    "@types/node": "^22.15.29",
+    "@types/node": "^22.18.1",
     "@types/ws": "^8.5.12",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/core": "workspace:^0.7.21",
+    "@hcengineering/core": "workspace:^0.7.22",
     "@hcengineering/platform": "workspace:^0.7.18",
     "@hcengineering/rpc": "workspace:^0.7.17",
     "@hcengineering/server-token": "workspace:^0.7.17",

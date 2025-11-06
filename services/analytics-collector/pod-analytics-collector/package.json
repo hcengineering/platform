@@ -34,7 +34,7 @@
     "@tsconfig/node16": "^1.0.4",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
-    "@types/node": "^22.15.29",
+    "@types/node": "^22.18.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "esbuild": "^0.25.10",
@@ -48,7 +48,7 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "prettier": "^3.6.2",
-    "ts-node": "^10.8.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
@@ -56,13 +56,13 @@
     "@hcengineering/analytics-collector": "workspace:^0.7.0",
     "@hcengineering/analytics-collector-assets": "workspace:^0.7.0",
     "@hcengineering/analytics-service": "workspace:^0.7.17",
-    "@hcengineering/core": "workspace:^0.7.21",
+    "@hcengineering/core": "workspace:^0.7.22",
     "@hcengineering/platform": "workspace:^0.7.18",
     "@hcengineering/server-client": "workspace:^0.7.15",
-    "@hcengineering/server-core": "workspace:^0.7.16",
+    "@hcengineering/server-core": "workspace:^0.7.17",
     "@hcengineering/server-token": "workspace:^0.7.17",
     "cors": "^2.8.5",
-    "dotenv": "~16.0.0",
+    "dotenv": "^16.4.5",
     "express": "^4.21.2",
     "maxmind": "^4.3.6"
   }

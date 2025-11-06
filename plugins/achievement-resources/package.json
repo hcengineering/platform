@@ -25,7 +25,7 @@
     "eslint": "^8.54.0",
     "prettier": "^3.6.2",
     "prettier-plugin-svelte": "^3.4.0",
-    "@types/node": "^22.15.29",
+    "@types/node": "^22.18.1",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
@@ -42,7 +42,7 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.21",
+    "@hcengineering/core": "workspace:^0.7.22",
     "@hcengineering/platform": "workspace:^0.7.18",
     "@hcengineering/achievement": "workspace:^0.7.0",
     "@hcengineering/ui": "workspace:^0.7.0",

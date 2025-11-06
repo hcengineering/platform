@@ -35,19 +35,19 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
-    "@types/node": "^22.15.29"
+    "@types/node": "^22.18.1"
   },
   "dependencies": {
     "@hcengineering/chunter": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/controlled-documents": "workspace:^0.7.0",
     "@hcengineering/server-contact": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.21",
+    "@hcengineering/core": "workspace:^0.7.22",
     "@hcengineering/notification": "workspace:^0.7.0",
     "@hcengineering/platform": "workspace:^0.7.18",
     "@hcengineering/request": "workspace:^0.7.0",
     "@hcengineering/server-chunter-resources": "workspace:^0.7.0",
-    "@hcengineering/server-core": "workspace:^0.7.16",
+    "@hcengineering/server-core": "workspace:^0.7.17",
     "@hcengineering/server-token": "workspace:^0.7.17",
     "@hcengineering/training": "workspace:^0.7.0",
     "@hcengineering/workbench": "workspace:^0.7.0",

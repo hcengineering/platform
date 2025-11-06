@@ -26,7 +26,7 @@
     "react-dom": "^18.2.0",
     "resolve-url-loader": "^5.0.0",
     "sass": "^1.80.0",
-    "sass-loader": "^13.2.0",
+    "sass-loader": "^14.0.0",
     "storybook": "^7.0.6",
     "storybook-addon-themes": "^6.1.0",
     "svelte-preprocess": "^5.1.4"
