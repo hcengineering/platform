@@ -546,6 +546,7 @@ export interface Permission extends Doc {
   forbid?: boolean
   objectClass?: Ref<Class<Doc>>
   scope?: 'space' | 'workspace'
+  txMatch?: DocumentQuery<Tx>
   description?: IntlString
   icon?: Asset
 }

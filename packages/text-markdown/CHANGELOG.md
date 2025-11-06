@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/text-markdown
 
-This log was last generated on Mon, 27 Oct 2025 16:46:51 GMT and should not be manually modified.
+This log was last generated on Thu, 06 Nov 2025 09:09:58 GMT and should not be manually modified.
+
+## 0.7.19
+Thu, 06 Nov 2025 09:09:58 GMT
+
+### Patches
+
+- Fix normalizeMarkdown errors
 
 ## 0.7.18
 Mon, 27 Oct 2025 16:46:51 GMT

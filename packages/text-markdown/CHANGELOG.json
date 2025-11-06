@@ -2,6 +2,18 @@
   "name": "@hcengineering/text-markdown",
   "entries": [
     {
+      "version": "0.7.19",
+      "tag": "@hcengineering/text-markdown_v0.7.19",
+      "date": "Thu, 06 Nov 2025 09:09:58 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix normalizeMarkdown errors"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.18",
       "tag": "@hcengineering/text-markdown_v0.7.18",
       "date": "Mon, 27 Oct 2025 16:46:51 GMT",
