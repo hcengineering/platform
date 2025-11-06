@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/server
 
-This log was last generated on Wed, 29 Oct 2025 06:31:49 GMT and should not be manually modified.
+This log was last generated on Thu, 06 Nov 2025 10:21:28 GMT and should not be manually modified.
+
+## 0.7.17
+Thu, 06 Nov 2025 10:21:28 GMT
+
+### Patches
+
+- bump core
 
 ## 0.7.16
 Wed, 29 Oct 2025 06:31:49 GMT

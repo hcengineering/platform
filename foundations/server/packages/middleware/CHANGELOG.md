@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/middleware
 
-This log was last generated on Thu, 30 Oct 2025 23:32:01 GMT and should not be manually modified.
+This log was last generated on Thu, 06 Nov 2025 10:21:28 GMT and should not be manually modified.
+
+## 0.7.18
+Thu, 06 Nov 2025 10:21:28 GMT
+
+### Patches
+
+- Add tMatch permission middleware
 
 ## 0.7.17
 Thu, 30 Oct 2025 23:32:01 GMT
