@@ -22,7 +22,7 @@
    *
    * This option is strongly recommended. The default value is false.
    */
-  "useWorkspaces": false,
+  "useWorkspaces": true,
 
   /**
    * This setting determines how PNPM chooses version numbers during `rush update`.

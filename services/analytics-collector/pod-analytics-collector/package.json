@@ -53,8 +53,8 @@
   },
   "dependencies": {
     "@hcengineering/analytics": "^0.7.17",
-    "@hcengineering/analytics-collector": "^0.7.0",
-    "@hcengineering/analytics-collector-assets": "^0.7.0",
+    "@hcengineering/analytics-collector": "workspace:^0.7.0",
+    "@hcengineering/analytics-collector-assets": "workspace:^0.7.0",
     "@hcengineering/analytics-service": "^0.7.17",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",

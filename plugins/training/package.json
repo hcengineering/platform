@@ -36,12 +36,12 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/attachment": "^0.7.0",
-    "@hcengineering/contact": "^0.7.0",
+    "@hcengineering/attachment": "workspace:^0.7.0",
+    "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/questions": "^0.7.0"
+    "@hcengineering/ui": "workspace:^0.7.0",
+    "@hcengineering/questions": "workspace:^0.7.0"
   },
   "peerDependencies": {
     "@hcengineering/platform-rig": "*"

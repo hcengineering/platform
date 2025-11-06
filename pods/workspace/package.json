@@ -48,13 +48,13 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/workspace-service": "^0.7.0",
+    "@hcengineering/workspace-service": "workspace:^0.7.0",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/core": "^0.7.21",
     "mongodb": "^6.16.0",
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/model-all": "^0.7.0",
+    "@hcengineering/model-all": "workspace:^0.7.0",
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/analytics-service": "^0.7.17",
     "@hcengineering/kafka": "^0.7.15"

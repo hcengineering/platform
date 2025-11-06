@@ -54,7 +54,7 @@
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-client": "^0.7.15",
-    "@hcengineering/importer": "^0.7.0",
+    "@hcengineering/importer": "workspace:^0.7.0",
     "commander": "^8.1.0",
     "js-yaml": "^4.1.0",
     "mammoth": "^1.9.0"

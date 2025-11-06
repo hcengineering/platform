@@ -35,14 +35,14 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/model": "^0.7.17",
-    "@hcengineering/contact": "^0.7.0",
+    "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-github": "^0.7.0",
+    "@hcengineering/server-github": "workspace:^0.7.0",
     "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/github": "^0.7.0",
-    "@hcengineering/tracker": "^0.7.0",
-    "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/server-notification": "^0.7.0",
-    "@hcengineering/time": "^0.7.0"
+    "@hcengineering/github": "workspace:^0.7.0",
+    "@hcengineering/tracker": "workspace:^0.7.0",
+    "@hcengineering/notification": "workspace:^0.7.0",
+    "@hcengineering/server-notification": "workspace:^0.7.0",
+    "@hcengineering/time": "workspace:^0.7.0"
   }
 }

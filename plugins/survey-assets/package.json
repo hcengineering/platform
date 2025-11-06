@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/survey": "^0.7.0"
+    "@hcengineering/survey": "workspace:^0.7.0"
   },
   "repository": "https://github.com/hcenginneing/anticrm",
   "publishConfig": {

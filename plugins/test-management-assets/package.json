@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/test-management": "^0.7.0"
+    "@hcengineering/test-management": "workspace:^0.7.0"
   },
   "exports": {
     ".": {

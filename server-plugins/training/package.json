@@ -39,7 +39,7 @@
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/server-notification": "^0.7.0",
-    "@hcengineering/training": "^0.7.0"
+    "@hcengineering/server-notification": "workspace:^0.7.0",
+    "@hcengineering/training": "workspace:^0.7.0"
   }
 }

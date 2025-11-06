@@ -51,7 +51,7 @@
     "cross-env": "~7.0.3",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/client-resources": "^0.7.17",
-    "@hcengineering/account": "^0.7.0",
+    "@hcengineering/account": "workspace:^0.7.0",
     "@hcengineering/account-client": "^0.7.19",
     "@hcengineering/server-token": "^0.7.17"
   }
