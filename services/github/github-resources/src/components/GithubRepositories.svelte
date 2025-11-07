@@ -3,7 +3,7 @@
   import { GithubIntegration, GithubIntegrationRepository, GithubProject } from '@hcengineering/github'
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { NavLink, getClient, isAdminUser, MessageBox } from '@hcengineering/presentation'
-    import tracker, { Project } from '@hcengineering/tracker'
+  import tracker, { Project } from '@hcengineering/tracker'
   import ui, {
     Action,
     Button,
