@@ -163,7 +163,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     let withoutMatch: Permission | undefined = undefined
     for (const permission of permissions) {
       if (permission.txClass === undefined || permission.txClass !== tx._class) continue
-      if (permission.objectClass !== undefined && this.context.hierarchy.isDerived(tx.objectClass, permission.objectClass)) continue
+      if (permission.objectClass !== undefined && !this.context.hierarchy.isDerived(tx.objectClass, permission.objectClass)) continue
       if (permission.txMatch === undefined) {
         withoutMatch = permission
         continue
