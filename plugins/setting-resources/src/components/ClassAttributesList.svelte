@@ -187,6 +187,8 @@
       hovered={hovered === attr._id}
       {attributeMapper}
       on:contextmenu={async (event) => {
+        event.stopPropagation()
+        event.preventDefault()
         void showMenu(event, attr)
       }}
       on:click={async () => {
