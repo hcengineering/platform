@@ -49,6 +49,16 @@
     "CardContent": "Co chcete sdílet?",
     "Feed": "Kanál",
     "AllCards": "Všechny karty",
-    "Favorites": "Oblíbené"
+    "Favorites": "Oblíbené",
+    "RemoveCard": "Odstranit kartu",
+    "UpdateCard": "Aktualizovat kartu",
+    "CreateCardPermission": "Vytvořit kartu",
+    "AddTagPermission": "Přidat štítek",
+    "RemoveTag": "Odstranit štítek",
+    "ForbidRemoveCard": "Zakázat odstranění karty",
+    "ForbidUpdateCard": "Zakázat aktualizaci karty",
+    "ForbidCreateCardPermission": "Zakázat vytváření karet",
+    "ForbidAddTagPermission": "Zakázat přidávání štítků",
+    "ForbidRemoveTag": "Zakázat odebírání štítků"
   }
 }

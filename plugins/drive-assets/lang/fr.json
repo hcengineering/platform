@@ -26,7 +26,6 @@
     "EditDrive": "Modifier le disque",
     "Rename": "Renommer",
     "Restore": "Restaurer",
-    "RoleLabel": "Rôle",
     "Root": "/",
     "ForbidCreateDrivePermission": "Interdire la création de disque",
     "ForbidCreateDrivePermissionDescription": "Interdit aux utilisateurs de créer de nouveaux disques"

@@ -13,174 +13,230 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import card, { Role } from '@hcengineering/card'
-  import contact, { Employee, UserRole } from '@hcengineering/contact'
-  import { SelectUsersPopup, UserDetails } from '@hcengineering/contact-resources'
-  import core, { Ref, WithLookup } from '@hcengineering/core'
-  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
+  import core, { Permission, Ref } from '@hcengineering/core'
+  import { AttributeEditor, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
+  import {
+    ButtonIcon,
+    Icon,
+    IconDelete,
+    IconEdit,
+    IconSettings,
+    Label,
+    Scroller,
+    getCurrentResolvedLocation,
+    navigate,
+    showPopup
+  } from '@hcengineering/ui'
+  import contact from '@hcengineering/contact'
+  import { ObjectBoxPopup } from '@hcengineering/view-resources'
+
+  import cardPlugin from '../../plugin'
+  import { MasterTag, Role } from '@hcengineering/card'
+  import settingRes from '@hcengineering/setting-resources/src/plugin'
   import { clearSettingsStore } from '@hcengineering/setting-resources'
-  import { ButtonIcon, Icon, IconAdd, IconDelete, Modal, ModernButton, Scroller, showPopup } from '@hcengineering/ui'
 
   export let _id: Ref<Role>
+  export let masterTag: MasterTag
+  export let readonly: boolean = false
 
   const client = getClient()
+  const h = client.getHierarchy()
 
-  const query = createQuery()
-  let role: Role | undefined
-  query.query(card.class.Role, { _id }, (res) => {
-    role = res[0]
+  const cardPermissionsObjectClasses = client
+    .getModel()
+    .findAllSync(cardPlugin.class.PermissionObjectClass, {})
+    .map((poc) => poc.objectClass)
+  const tagDesc = h.getAncestors(masterTag._id)
+  const allPermissions = client.getModel().findAllSync(core.class.Permission, {
+    scope: 'space',
+    objectClass: { $in: [...cardPermissionsObjectClasses, ...tagDesc] }
   })
-  $: name = role?.name
 
-  const usersQ = createQuery()
+  let role: Role | undefined
+  const roleQuery = createQuery()
+  $: roleQuery.query(cardPlugin.class.Role, { _id }, (res) => {
+    ;[role] = res
+  })
 
-  let roles: WithLookup<UserRole>[] = []
+  let permissions: Permission[] = []
+  $: permissions =
+    role?.permissions !== undefined ? allPermissions.filter((p) => role?.permissions?.includes(p._id)) : []
 
-  usersQ.query(
-    contact.class.UserRole,
-    { role: _id },
-    (res) => {
-      roles = res
-    },
-    {
-      lookup: {
-        user: contact.class.Person
-      }
-    }
-  )
-
-  let users: Employee[] = []
-  $: users = roles.map((role) => role.$lookup?.user).filter((p) => p !== undefined)
-
-  async function remove (): Promise<void> {
-    if (role === undefined) {
+  function handleEditPermissions (evt: Event): void {
+    if (role === undefined || readonly) {
       return
     }
-    await client.remove(role)
-    clearSettingsStore()
-  }
 
-  async function removeAssignment (val: Ref<Employee>): Promise<void> {
-    const toRemove = roles.filter((role) => role.user === val)
-    for (const obj of toRemove) {
-      await client.remove(obj)
-    }
-  }
-
-  function openSelectUsersPopup (): void {
-    const selected = users.map((user) => user._id)
     showPopup(
-      SelectUsersPopup,
+      ObjectBoxPopup,
       {
-        okLabel: presentation.string.Add,
-        disableDeselectFor: selected,
-        skipInactive: true,
-        selected,
-        showStatus: true
+        _class: core.class.Permission,
+        docQuery: { _id: { $in: allPermissions.map((p) => p._id) } },
+        multiSelect: true,
+        allowDeselect: true,
+        selectedObjects: role.permissions
       },
-      'top',
-      (result?: Ref<Employee>[]) => {
-        if (result != null) {
-          void changeUsers(result)
+      evt.target as HTMLElement,
+      undefined,
+      async (result) => {
+        if (role === undefined) {
+          return
         }
+
+        await client.updateCollection(
+          cardPlugin.class.Role,
+          core.space.Model,
+          _id,
+          cardPlugin.spaceType.SpaceType,
+          core.class.SpaceType,
+          'roles',
+          {
+            permissions: result
+          }
+        )
       }
     )
   }
 
-  async function changeUsers (persons: Ref<Employee>[]): Promise<void> {
-    const current = new Set(users.map((user) => user._id))
-    const newPersons = persons.filter((person) => !current.has(person))
-    if (newPersons.length === 0) {
+  async function handleDeleteRole (): Promise<void> {
+    showPopup(
+      MessageBox,
+      {
+        label: settingRes.string.DeleteRole,
+        message: settingRes.string.DeleteRoleConfirmation,
+        action: async () => {
+          await performDeleteRole()
+        }
+      },
+      'top'
+    )
+  }
+
+  async function performDeleteRole (): Promise<void> {
+    if (role === undefined) {
       return
     }
-    const apply = client.apply()
-    for (const person of newPersons) {
-      await apply.createDoc(contact.class.UserRole, contact.space.Contacts, { role: _id, user: person })
+
+    const attribute = await client.findOne(core.class.Attribute, { name: _id, attributeOf: cardPlugin.class.CardSpace })
+    const ops = client.apply()
+
+    await ops.removeCollection(
+      cardPlugin.class.Role,
+      core.space.Model,
+      _id,
+      role.attachedTo,
+      role.attachedToClass,
+      'roles'
+    )
+    if (attribute !== undefined) {
+      const mixins = await client.findAll(cardPlugin.class.CardSpace, {})
+      for (const mixin of mixins) {
+        await ops.updateMixin(mixin._id, mixin._class, mixin.space, cardPlugin.class.CardSpace, {
+          [attribute.name]: undefined
+        })
+      }
+
+      await ops.remove(attribute)
     }
-    await apply.commit()
+
+    // remove all the assignments
+    await ops.commit()
+
+    const loc = getCurrentResolvedLocation()
+    loc.path.length = 5
+
+    clearSettingsStore()
+    navigate(loc)
   }
 </script>
 
-<Modal
-  label={core.string.Role}
-  type={'type-aside'}
-  showCancelButton={false}
-  canSave={true}
-  okLabel={presentation.string.Close}
-  okAction={clearSettingsStore}
->
-  <svelte:fragment slot="actions">
-    <ButtonIcon icon={IconDelete} size={'small'} kind={'tertiary'} on:click={remove} />
-  </svelte:fragment>
-  <div class="hulyModal-content__titleGroup">
-    <div class="flex fs-title items-center flex-gap-2">
-      <Icon icon={contact.icon.Person} size={'medium'} />
-      <div>
-        {name}
-      </div>
-    </div>
-  </div>
-  <div class="hulyModal-content__settingsSet">
-    <div class="item" style:padding="var(--spacing-1_5)" class:withoutBorder={users.length === 0}>
-      <ModernButton
-        label={presentation.string.Add}
-        icon={IconAdd}
-        iconSize="small"
-        kind="secondary"
-        size="small"
-        on:click={openSelectUsersPopup}
-      />
-    </div>
-    {#each users as user, index (user._id)}
-      <div class="item" class:withoutBorder={index === users.length - 1}>
-        <div class="item__content">
-          <UserDetails person={user} showStatus />
-          <div class="item__action">
-            <ButtonIcon
-              icon={IconDelete}
-              size="small"
-              on:click={async () => {
-                await removeAssignment(user._id)
-              }}
-            />
+{#if role !== undefined}
+  <div class="hulyComponent-content__container columns">
+    <div class="hulyComponent-content__column content">
+      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+        <div class="hulyComponent-content gap">
+          <div class="hulyComponent-content__column-group mt-4">
+            <div class="hulyComponent-content__header mb-6 gap-2">
+              <ButtonIcon
+                icon={IconDelete}
+                size="large"
+                kind="secondary"
+                disabled={readonly}
+                on:click={handleDeleteRole}
+              />
+              <ButtonIcon
+                icon={contact.icon.Person}
+                size="large"
+                iconProps={{ size: 'small' }}
+                kind="secondary"
+                disabled={readonly}
+              />
+              <div class="name" class:editable={!readonly}>
+                <AttributeEditor
+                  _class={core.class.Role}
+                  object={role}
+                  key="name"
+                  editKind="modern-ghost-large"
+                  editable={!readonly}
+                />
+              </div>
+            </div>
+
+            <div class="hulyTableAttr-container">
+              <div class="hulyTableAttr-header font-medium-12">
+                <IconSettings size="small" />
+                <span><Label label={settingRes.string.Permissions} /></span>
+                <ButtonIcon
+                  kind="primary"
+                  icon={IconEdit}
+                  size="small"
+                  on:click={handleEditPermissions}
+                  disabled={readonly}
+                />
+              </div>
+
+              {#if permissions.length > 0}
+                <div class="hulyTableAttr-content task">
+                  {#each permissions as permission}
+                    <div class="hulyTableAttr-content__row">
+                      {#if permission.icon !== undefined}
+                        <div class="hulyTableAttr-content__row-icon-wrapper">
+                          <Icon icon={permission.icon} size="small" />
+                        </div>
+                      {/if}
+
+                      <div class="hulyTableAttr-content__row-label font-medium-14">
+                        <Label label={permission.label} />
+                      </div>
+
+                      {#if permission.description !== undefined}
+                        <div class="hulyTableAttr-content__row-label grow dark font-regular-14">
+                          <Label label={permission.description} />
+                        </div>
+                      {/if}
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            </div>
           </div>
         </div>
-      </div>
-    {/each}
+      </Scroller>
+    </div>
   </div>
-</Modal>
+{/if}
 
 <style lang="scss">
-  .item {
-    padding: var(--spacing-0_75);
+  .name {
+    width: 100%;
+    font-weight: 500;
+    margin-left: 1rem;
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
 
-    &.withoutBorder {
-      border: 0;
-    }
-
-    .item__content {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: var(--spacing-0_75);
-      border-radius: var(--small-BorderRadius);
-      cursor: pointer;
-
-      &:hover {
-        background: var(--global-ui-highlight-BackgroundColor);
-
-        .item__action {
-          visibility: visible;
-        }
-      }
-    }
-
-    .item__action {
-      visibility: hidden;
-
-      &:hover {
-        visibility: visible;
-      }
+    &.editable {
+      margin-left: 0;
     }
   }
 </style>

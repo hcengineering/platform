@@ -198,6 +198,8 @@
     "NotConnectedIntegration": "{account} hesabı çalışma alanıyla entegre değil",
     "IntegrationIsUnstable": "Entegrasyon servisi sorunlar yaşıyor. Bazı özellikler düzgün çalışmayabilir.",
     "MinValue": "Minimum değer",
+    "Restricted": "Kısıtlı",
+    "RestrictedAttributeWarning": "Bu özniteliğin değiştirilmesini kısıtlamak istediğinizden emin misiniz? Bu işlem bu öznitelik için izinler oluşturacak ve geri alınamaz.",
     "MaxValue": "Maksimum değer",
     "IntegerOnly": "Sadece tam sayılar",
     "AccessControl": "Erişim kontrolü",

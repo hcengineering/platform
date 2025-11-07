@@ -144,6 +144,9 @@
     "Color": "Renk",
     "AutomationOnly": "Sadece otomasyon",
     "CopyLink": "Bağlantıyı kopyala",
-    "ValueIsSet": "Değer ayarlandı"
+    "ValueIsSet": "Değer ayarlandı",
+    "RoleLabel": "Rol: {role}",
+    "ForbidAttributeChanges": "Özellik değişikliklerini yasakla",
+    "AllowAttributeChanges": "Özellik değişikliklerine izin ver"
   }
 }

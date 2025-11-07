@@ -28,7 +28,6 @@
     "Private": "Özel",
     "Public": "Genel",
     "Members": "Üyeler",
-    "RoleLabel": "Rol: {role}",
     "UpdateProductPermission": "Ürünü güncelle",
     "UpdateProductDescription": "Kullanıcılara ürün güncelleme yetkisi verir",
     "ChangeControl": "Değişiklik kontrolü",

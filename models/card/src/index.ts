@@ -26,6 +26,7 @@ import {
   type FavoriteType,
   type MasterTag,
   type ParentInfo,
+  type PermissionObjectClass,
   type Role,
   type Tag
 } from '@hcengineering/card'
@@ -33,8 +34,10 @@ import chunter from '@hcengineering/chunter'
 import core, {
   AccountRole,
   type Blobs,
+  type Class,
   ClassifierKind,
   type CollectionSize,
+  type Doc,
   DOMAIN_MODEL,
   DOMAIN_SPACE,
   IndexKind,
@@ -45,6 +48,7 @@ import core, {
   SortingOrder
 } from '@hcengineering/core'
 import {
+  ArrOf,
   type Builder,
   Collection,
   Hidden,
@@ -52,15 +56,15 @@ import {
   Mixin,
   Model,
   Prop,
+  ReadOnly,
   TypeCollaborativeDoc,
   TypeNumber,
   TypeRef,
   TypeString,
-  UX,
-  ReadOnly
+  UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
-import { TAttachedDoc, TClass, TDoc, TMixin, TSpace } from '@hcengineering/model-core'
+import { TRole as TBaseRole, TClass, TDoc, TMixin, TTypedSpace } from '@hcengineering/model-core'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
@@ -72,8 +76,9 @@ import time, { type ToDo } from '@hcengineering/time'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type BuildModelKey } from '@hcengineering/view'
-import card from './plugin'
 import { createActions } from './actions'
+import card from './plugin'
+import { definePermissions } from './permissions'
 
 export { cardId } from '@hcengineering/card'
 
@@ -141,10 +146,11 @@ export class TCard extends TDoc implements Card {
     peerId?: string
 }
 
-@Model(card.class.CardSpace, core.class.Space, DOMAIN_SPACE)
+@Model(card.class.CardSpace, core.class.TypedSpace, DOMAIN_SPACE)
 @UX(core.string.Space)
-export class TCardSpace extends TSpace implements CardSpace {
-  types!: Ref<MasterTag>[]
+export class TCardSpace extends TTypedSpace implements CardSpace {
+  @Prop(ArrOf(TypeRef(card.class.MasterTag)), card.string.MasterTags)
+    types!: Ref<MasterTag>[]
 }
 
 @Model(card.class.MasterTagEditorSection, core.class.Doc, DOMAIN_MODEL)
@@ -169,11 +175,9 @@ export class TCardViewDefaults extends TMasterTag implements CardViewDefaults {
   defaultNavigation?: string
 }
 
-@Model(card.class.Role, core.class.AttachedDoc, DOMAIN_MODEL)
-export class TRole extends TAttachedDoc implements Role {
-  name!: string
-  declare attachedTo: Ref<MasterTag | Tag>
-  declare collection: 'roles'
+@Model(card.class.Role, core.class.Role, DOMAIN_MODEL)
+export class TRole extends TBaseRole implements Role {
+  type!: Ref<MasterTag | Tag>
 }
 
 @Model(card.class.FavoriteCard, preference.class.Preference)
@@ -185,6 +189,11 @@ export class TFavoriteCard extends TPreference implements FavoriteCard {
 @Model(card.class.FavoriteType, preference.class.Preference)
 export class TFavoriteType extends TPreference implements FavoriteType {
   declare attachedTo: Ref<MasterTag>
+}
+
+@Model(card.class.PermissionObjectClass, core.class.Doc, DOMAIN_MODEL)
+export class TPermissionObjectClass extends TDoc implements PermissionObjectClass {
+  objectClass!: Ref<Class<Doc>>
 }
 
 @Mixin(card.mixin.CreateCardExtension, card.class.MasterTag)
@@ -355,6 +364,7 @@ export function createSystemType (
 
 export function createModel (builder: Builder): void {
   builder.createModel(
+    TPermissionObjectClass,
     TMasterTag,
     TTag,
     TCard,
@@ -368,7 +378,20 @@ export function createModel (builder: Builder): void {
     TCreateCardExtension
   )
 
+  builder.createDoc(
+    core.class.SpaceType,
+    core.space.Model,
+    {
+      name: '',
+      descriptor: core.descriptor.SpacesType,
+      roles: 0,
+      targetClass: core.mixin.SpacesTypeData
+    },
+    card.spaceType.SpaceType
+  )
+
   defineTabs(builder)
+  definePermissions(builder)
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectIcon, {
     component: card.component.CardIcon

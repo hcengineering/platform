@@ -33,7 +33,6 @@
     "ProjectName": "Имя",
     "ProjectType": "Тип",
     "Members": "Участники",
-    "RoleLabel": "Роль",
     "ProjectMembers": "Участники проекта",
     "TestSuites": "Тестовые наборы",
     "CreateTestSuite": "Создать новую категорию тестов",

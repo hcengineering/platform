@@ -149,6 +149,9 @@
     "Color": "颜色",
     "AutomationOnly": "仅限自动化",
     "CopyLink": "复制链接",
-    "ValueIsSet": "值已设置"
+    "ValueIsSet": "值已设置",
+    "RoleLabel": "角色：{role}",
+    "ForbidAttributeChanges": "禁止属性更改",
+    "AllowAttributeChanges": "允许属性更改"
   }
 }

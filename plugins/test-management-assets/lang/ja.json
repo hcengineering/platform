@@ -33,7 +33,6 @@
     "ProjectName": "名前",
     "ProjectType": "タイプ",
     "Members": "メンバー",
-    "RoleLabel": "役割",
     "ProjectMembers": "プロジェクトメンバー",
     "TestSuites": "テストスイート",
     "CreateTestSuite": "テストスイートを作成",

@@ -196,6 +196,8 @@
     "NotConnectedIntegration": "Účet {account} není integrován s pracovním prostorem",
     "IntegrationIsUnstable": "Integrační služba má problémy. Některé funkce nemusí fungovat správně.",
     "MinValue": "Minimální hodnota",
+    "Restricted": "Omezeno",
+    "RestrictedAttributeWarning": "Opravdu chcete omezit změnu tohoto atributu? Tato akce vytvoří oprávnění pro tento atribut a nelze ji vrátit zpět.",
     "MaxValue": "Maximální hodnota",
     "IntegerOnly": "Pouze celá čísla",
     "AccessControl": "Řízení přístupu",

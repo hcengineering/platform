@@ -39,7 +39,7 @@
     core.class.SpaceType,
     {},
     (result) => {
-      types = result.filter((p) => hasResource(p.descriptor as any as Resource<any>))
+      types = result.filter((p) => hasResource(p.descriptor as any as Resource<any>) && p.name !== '')
     },
     {
       lookup: {

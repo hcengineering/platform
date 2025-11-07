@@ -117,7 +117,11 @@
     "Filter": "Filter",
     "FirstMatchValue": "Erster passender Wert",
     "ConfigLabel": "Prozesskonfiguration",
-    "ConfigDescription": "Definieren Sie Prozesse, um Workflows und Geschäftsprozesse zu automatisieren."
+    "ConfigDescription": "Definieren Sie Prozesse, um Workflows und Geschäftsprozesse zu automatisieren.",
+    "RunProcessPermission": "Prozess ausführen",
+    "CancelProcessPermission": "Prozess abbrechen",
+    "ForbidRunProcessPermission": "Ausführen des Prozesses verbieten",
+    "ForbidCancelProcessPermission": "Abbrechen des Prozesses verbieten"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

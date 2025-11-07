@@ -11,13 +11,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Doc, type Ref } from '@hcengineering/core'
-import { type IntlString, mergeIds } from '@hcengineering/platform'
-import { processId } from '@hcengineering/process'
-import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
-import process from '@hcengineering/process-resources/src/plugin'
-import { type ViewAction, type Action } from '@hcengineering/view'
 import { type CardSection } from '@hcengineering/card'
+import { type Doc, type Ref } from '@hcengineering/core'
+import { mergeIds, type IntlString } from '@hcengineering/platform'
+import { type PresentationMiddlewareFactory } from '@hcengineering/presentation/src/pipeline'
+import { processId } from '@hcengineering/process'
+import process from '@hcengineering/process-resources/src/plugin'
+import { type Action, type ViewAction } from '@hcengineering/view'
 
 export default mergeIds(processId, process, {
   app: {

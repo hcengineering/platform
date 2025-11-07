@@ -273,7 +273,6 @@
 
     "DocSpaceDescriptionPlaceholder": "描述您的空间...",
     "Members": "成员",
-    "RoleLabel": "角色：{role}",
     "CreateOrgSpace": "创建组织空间",
 
     "ReviewDocumentPermission": "审查文档",

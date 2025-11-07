@@ -74,6 +74,7 @@ import { defineMethods } from './actions'
 import { defineTriggers } from './triggers'
 import { defineFunctions } from './functions'
 import process from './plugin'
+import { definePermissions } from './permission'
 
 const DOMAIN_PROCESS = 'process' as Domain
 const DOMAIN_PROCESS_LOG = 'process-log' as Domain
@@ -672,6 +673,12 @@ export function createModel (builder: Builder): void {
     props: {
       modes: ['Equal', 'NotEqual', 'Exists']
     }
+  })
+
+  definePermissions(builder)
+
+  builder.createDoc(card.class.PermissionObjectClass, core.space.Model, {
+    objectClass: process.class.Execution
   })
 }
 
