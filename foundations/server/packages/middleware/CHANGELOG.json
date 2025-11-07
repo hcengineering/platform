@@ -2,6 +2,18 @@
   "name": "@hcengineering/middleware",
   "entries": [
     {
+      "version": "0.7.19",
+      "tag": "@hcengineering/middleware_v0.7.19",
+      "date": "Fri, 07 Nov 2025 16:12:16 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix permission middleware"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.18",
       "tag": "@hcengineering/middleware_v0.7.18",
       "date": "Thu, 06 Nov 2025 10:21:28 GMT",
