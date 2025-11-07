@@ -6,16 +6,22 @@ import { getPlatformToken, lk } from './utils'
 import { getCurrentEmployee } from '@hcengineering/contact'
 import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import { Analytics } from '@hcengineering/analytics'
-import { currentMeetingMinutes } from './stores'
 import { get } from 'svelte/store'
+import { activeMeeting } from './meetings'
 
 export function getLoveClient (): LoveClient {
   return new LoveClient()
 }
 
 export class LoveClient {
+  async getCardToken (cardId: string): Promise<string> {
+    const sessionName = this.getCardTokenId(cardId)
+    return await this.refreshToken(sessionName)
+  }
+
   async getRoomToken (room: Room): Promise<string> {
-    return await this.refreshRoomToken(room)
+    const sessionName = this.getTokenRoomName(room)
+    return await this.refreshToken(sessionName)
   }
 
   async updateSessionLanguage (room: Room): Promise<void> {
@@ -53,13 +59,15 @@ export class LoveClient {
           body: JSON.stringify({ roomName, room: room.name })
         })
       } else {
+        const currentMeeting = get(activeMeeting)
+        if (currentMeeting?.type !== 'room') return
         await fetch(concatLink(endpoint, '/startRecord'), {
           method: 'POST',
           headers: {
             Authorization: 'Bearer ' + token,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ roomName, room: room.name, meetingMinutes: get(currentMeetingMinutes)?._id })
+          body: JSON.stringify({ roomName, room: room.name, meetingMinutes: currentMeeting.document?._id })
         })
       }
     } catch (err: any) {
@@ -77,8 +85,7 @@ export class LoveClient {
     return endpoint
   }
 
-  private async refreshRoomToken (room: Room): Promise<string> {
-    const sessionName = this.getTokenRoomName(room)
+  private async refreshToken (sessionName: string): Promise<string> {
     const endpoint = this.getLoveEndpoint()
     if (endpoint === undefined) {
       throw new Error('Love service endpoint not found')
@@ -105,5 +112,13 @@ export class LoveClient {
       throw new Error('Current workspace not found')
     }
     return `${currentWorkspaceUuid}_${room.name}_${room._id}`
+  }
+
+  private getCardTokenId (cardId: string): string {
+    const currentWorkspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid)
+    if (currentWorkspaceUuid === undefined) {
+      throw new Error('Current workspace not found')
+    }
+    return `${currentWorkspaceUuid}_card_${cardId}`
   }
 }

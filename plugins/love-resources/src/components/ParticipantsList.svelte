@@ -14,32 +14,30 @@
 -->
 <script lang="ts">
   import { Avatar, getPersonByPersonRefStore } from '@hcengineering/contact-resources'
-  import { ParticipantInfo } from '@hcengineering/love'
   import { Scroller } from '@hcengineering/ui'
-  import { formatName } from '@hcengineering/contact'
+  import { formatName, Person } from '@hcengineering/contact'
+  import { Ref } from '@hcengineering/core'
 
-  export let items: (ParticipantInfo & { onclick?: (e: MouseEvent) => void })[]
+  export let items: (Ref<Person> & { onclick?: (e: MouseEvent) => void })[]
 
-  $: personByRefStore = getPersonByPersonRefStore(items.map((p) => p.person))
+  $: personByRefStore = getPersonByPersonRefStore(items)
 </script>
 
 <Scroller padding={'.25rem'} gap={'flex-gap-2'}>
-  {#each items as participant (participant.person)}
+  {#each items as item}
+    {@const person = $personByRefStore.get(item)}
+
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="flex-row-center flex-no-shrink flex-gap-2"
-      class:cursor-pointer={participant.onclick !== undefined}
-      on:click={(e) => participant.onclick?.(e)}
+      class:cursor-pointer={item.onclick !== undefined}
+      on:click={(e) => item.onclick?.(e)}
     >
       <div class="min-w-6">
-        <Avatar
-          name={$personByRefStore.get(participant.person)?.name ?? participant.name}
-          size={items.length < 10 ? 'small' : 'card'}
-          person={$personByRefStore.get(participant.person)}
-        />
+        <Avatar name={person?.name} size={items.length < 10 ? 'small' : 'card'} {person} />
       </div>
-      {formatName(participant.name)}
+      {formatName(person?.name ?? '')}
     </div>
   {/each}
 </Scroller>

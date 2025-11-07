@@ -19,7 +19,7 @@
   import { updateTabData, WidgetState } from '@hcengineering/workbench-resources'
 
   export let widgetState: WidgetState
-  export let meetingMinutes: MeetingMinutes
+  export let meetingMinutes: MeetingMinutes | undefined
   export let height: string
   export let width: string
 
@@ -32,13 +32,15 @@
   }
 </script>
 
-<ChannelEmbeddedContent
-  {width}
-  {height}
-  object={meetingMinutes}
-  threadId={widgetState.tabs.find((tab) => tab.id === 'chat')?.data?.thread}
-  collection="messages"
-  on:channel={closeThread}
-  onReply={replyToThread}
-  on:close
-></ChannelEmbeddedContent>
+{#if meetingMinutes !== undefined}
+  <ChannelEmbeddedContent
+    {width}
+    {height}
+    object={meetingMinutes}
+    threadId={widgetState.tabs.find((tab) => tab.id === 'chat')?.data?.thread}
+    collection="messages"
+    on:channel={closeThread}
+    onReply={replyToThread}
+    on:close
+  ></ChannelEmbeddedContent>
+{/if}

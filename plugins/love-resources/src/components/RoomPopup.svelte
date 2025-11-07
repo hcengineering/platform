@@ -13,53 +13,48 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Person } from '@hcengineering/contact'
   import { UserInfo, getPersonByPersonRef } from '@hcengineering/contact-resources'
   import { Class, Doc, Ref } from '@hcengineering/core'
 
   import { IconArrowLeft, Location, ModernButton, Scroller, location, navigate, panelstore } from '@hcengineering/ui'
 
-  import { MeetingMinutes, ParticipantInfo, Room, loveId } from '@hcengineering/love'
+  import { loveId } from '@hcengineering/love'
   import { getClient } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { getObjectLinkFragment } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
-  import { currentMeetingMinutes, infos, myInfo } from '../stores'
   import { lkSessionConnected } from '../liveKitClient'
   import MicrophoneButton from './meeting/controls/MicrophoneButton.svelte'
   import CameraButton from './meeting/controls/CameraButton.svelte'
   import ShareScreenButton from './meeting/controls/ShareScreenButton.svelte'
   import LeaveRoomButton from './meeting/controls/LeaveRoomButton.svelte'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
-  import { joinMeeting } from '../meetings'
+  import { activeMeeting, createCardMeeting, joinMeeting } from '../meetings'
+  import { getMeetingMinutesRoom } from '../utils'
+  import { MeetingWithParticipants } from '../meetingPresence'
+  import { ActiveMeeting } from '../types'
 
-  export let room: Room
+  export let meetingInfo: MeetingWithParticipants
+  $: myMeeting = $activeMeeting?.document._id === meetingInfo.meeting.document._id
 
   const client = getClient()
-  async function getPerson (info: ParticipantInfo | undefined): Promise<Person | null> {
-    if (info === undefined) {
-      return null
-    }
-
-    return await getPersonByPersonRef(info.person)
-  }
-
-  let joined: boolean = false
-  $: joined = $myInfo?.room === room._id
-
-  let info: ParticipantInfo[] = []
-  $: info = $infos.filter((p) => p.room === room._id)
-
   const dispatch = createEventDispatcher()
 
   async function connect (): Promise<void> {
-    await joinMeeting(room)
     dispatch('close')
+    if (meetingInfo.meeting.type === 'card') {
+      await createCardMeeting(meetingInfo.meeting.document)
+    } else {
+      const room = await getMeetingMinutesRoom(meetingInfo.meeting.document)
+      if (room === undefined) return
+      await joinMeeting(room)
+    }
   }
 
   async function back (): Promise<void> {
-    const meetingMinutes = $currentMeetingMinutes
+    if (meetingInfo.meeting.type !== 'room') return
+    const meetingMinutes = meetingInfo.meeting.document
     if (meetingMinutes !== undefined) {
       const hierarchy = client.getHierarchy()
       const panelComponent = hierarchy.classHierarchyMixin(
@@ -74,25 +69,25 @@
     }
   }
 
-  function canGoBack (joined: boolean, location: Location, meetingMinutes?: MeetingMinutes): boolean {
+  function canGoBack (joined: boolean, location: Location, activeMeeting?: ActiveMeeting): boolean {
+    if (activeMeeting?.type !== 'room') return false
     if (!joined) return false
     if (location.path[2] !== loveId) return true
-    if (meetingMinutes === undefined) return false
 
     const panel = $panelstore.panel
     const { _id } = panel ?? {}
 
-    return _id !== meetingMinutes._id
+    return _id !== activeMeeting.document._id
   }
 </script>
 
 <div class="antiPopup room-popup flex-gap-4">
-  <MeetingHeader {room} />
+  <MeetingHeader meeting={meetingInfo.meeting} />
   <div class="room-popup__content">
     <Scroller padding={'0.5rem'} stickedScrollBars>
       <div class="room-popup__content-grid">
-        {#each info as inf}
-          {#await getPerson(inf) then person}
+        {#each meetingInfo?.persons ?? [] as personRef}
+          {#await getPersonByPersonRef(personRef) then person}
             {#if person}
               <div class="person"><UserInfo value={person} size={'medium'} showStatus={false} /></div>
             {/if}
@@ -102,7 +97,7 @@
     </Scroller>
   </div>
   <div class="flex-between gap-2">
-    {#if joined && $lkSessionConnected}
+    {#if myMeeting && $lkSessionConnected}
       <div class="flex-between gap-2">
         <MicrophoneButton size="medium" />
         <CameraButton size="medium" />
@@ -110,7 +105,7 @@
       </div>
     {/if}
     <div style="width: auto" />
-    {#if canGoBack(joined, $location, $currentMeetingMinutes)}
+    {#if canGoBack(myMeeting, $location, $activeMeeting)}
       <ModernButton
         icon={IconArrowLeft}
         label={love.string.MeetingMinutes}
@@ -119,8 +114,8 @@
         on:click={back}
       />
     {/if}
-    {#if joined}
-      <LeaveRoomButton {room} noLabel={false} size="medium" on:leave={() => dispatch('close')} />
+    {#if myMeeting}
+      <LeaveRoomButton noLabel={false} size="medium" on:leave={() => dispatch('close')} />
     {:else}
       <ModernButton
         icon={love.icon.EnterRoom}

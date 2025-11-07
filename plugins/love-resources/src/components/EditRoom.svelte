@@ -20,9 +20,10 @@
 
   import love from '../plugin'
   import { getRoomName } from '../utils'
-  import { infos, myOffice, currentRoom } from '../stores'
+  import { infos, myOffice } from '../stores'
   import { lkSessionConnected } from '../liveKitClient'
-  import { createMeeting, joinMeeting } from '../meetings'
+  import { activeMeeting, createMeeting, joinMeeting } from '../meetings'
+  import { ActiveMeeting } from '../types'
 
   export let object: Room
 
@@ -48,8 +49,9 @@
       await createMeeting(object)
     }
   }
-
-  $: connecting = tryConnecting || ($currentRoom?._id === object._id && !$lkSessionConnected)
+  $: connecting =
+    tryConnecting ||
+    ($activeMeeting?.type === 'room' && $activeMeeting.document.attachedTo === object._id && !$lkSessionConnected)
 
   let connectLabel: IntlString = $infos.some(({ room }) => room === object._id)
     ? love.string.JoinMeeting
@@ -67,7 +69,7 @@
     isConnected: boolean,
     info: ParticipantInfo[],
     myOffice?: Room,
-    currentRoom?: Room
+    currentMeeting?: ActiveMeeting
   ): boolean {
     if (isOffice(object)) {
       // Do not show connect button in own office
@@ -83,8 +85,9 @@
 
     // Show during connecting with spinner
     if (connecting) return true
+    if (currentMeeting?.type !== 'room') return true
     // Do not show connect button if we are already connected to the room
-    if (isConnected && currentRoom?._id === object._id) return false
+    if (isConnected && currentMeeting.document?.attachedTo === object._id) return false
 
     return true
   }
@@ -95,7 +98,7 @@
     <div class="name">
       <EditBox disabled={true} placeholder={love.string.Room} bind:value={roomName} focusIndex={1} />
     </div>
-    {#if showConnectionButton(object, connecting, $lkSessionConnected, $infos, $myOffice, $currentRoom)}
+    {#if showConnectionButton(object, connecting, $lkSessionConnected, $infos, $myOffice, $activeMeeting)}
       <ModernButton label={connectLabel} size="large" kind={'primary'} on:click={connect} loading={connecting} />
     {/if}
   </div>

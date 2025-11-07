@@ -5,9 +5,7 @@
   import love from '../../../plugin'
   import view from '@hcengineering/view'
   import { ButtonBaseSize, ModernButton } from '@hcengineering/ui'
-  import { Room } from '@hcengineering/love'
 
-  export let room: Room
   export let size: ButtonBaseSize = 'large'
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
 </script>
@@ -21,9 +19,9 @@
     {size}
     on:click={() => {
       if ($isTranscription) {
-        void stopTranscription(room)
+        void stopTranscription()
       } else {
-        void startTranscription(room)
+        void startTranscription()
       }
     }}
   />

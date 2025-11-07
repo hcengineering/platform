@@ -17,17 +17,17 @@
   import type { AnySvelteComponent } from '@hcengineering/ui'
   import { AppItem } from '@hcengineering/workbench-resources'
   import { RoomType } from '@hcengineering/love'
-  import { currentRoom } from '../../../stores'
   import { state } from '@hcengineering/media-resources'
   import love from '../../../plugin'
   import { lkSessionConnected, ScreenSharingState, screenSharingState } from '../../../liveKitClient'
+  import { currentMeetingRoom } from '../../../meetings'
 
   export let label: IntlString
   export let icon: Asset | AnySvelteComponent
   export let selected: boolean = false
   export let size: 'small' | 'medium' | 'large' = 'small'
 
-  $: allowCam = $currentRoom?.type === RoomType.Video
+  $: allowCam = $currentMeetingRoom?.type !== RoomType.Audio
   $: isMicEnabled = $state.microphone?.enabled === true
   $: isCamEnabled = $state.camera?.enabled === true
 </script>

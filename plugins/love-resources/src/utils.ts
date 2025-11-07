@@ -28,8 +28,7 @@ import {
   type MeetingSchedule,
   type Room,
   type RoomMetadata,
-  TranscriptionStatus,
-  MeetingStatus
+  TranscriptionStatus
 } from '@hcengineering/love'
 import { getEmbeddedLabel, getMetadata, getResource, type IntlString } from '@hcengineering/platform'
 import presentation, {
@@ -60,10 +59,13 @@ import { getPersonByPersonRef } from '@hcengineering/contact-resources'
 import MeetingMinutesSearchItem from './components/MeetingMinutesSearchItem.svelte'
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 import love from './plugin'
-import { $myPreferences, currentMeetingMinutes, currentRoom } from './stores'
+import { $myPreferences, rooms } from './stores'
 import { getLiveKitClient } from './liveKitClient'
 import { getLoveClient } from './loveClient'
 import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
+import { activeMeeting, createCardMeeting, currentMeetingRoom } from './meetings'
+import { type Card } from '@hcengineering/card'
+import { type ActiveMeeting } from './types'
 
 export const liveKitClient = getLiveKitClient()
 export const lk: LKRoom = liveKitClient.liveKitRoom
@@ -198,7 +200,7 @@ lk.on(RoomEvent.Connected, () => {
 })
 
 async function initRoomMetadata (metadata: string | undefined): Promise<void> {
-  const room = get(currentRoom)
+  const room = get(currentMeetingRoom)
   const data: RoomMetadata = parseMetadata(metadata)
 
   isTranscription.set(data.transcription === TranscriptionStatus.InProgress)
@@ -207,7 +209,7 @@ async function initRoomMetadata (metadata: string | undefined): Promise<void> {
     (data.transcription == null || data.transcription === TranscriptionStatus.Idle) &&
     room?.startWithTranscription === true
   ) {
-    await startTranscription(room)
+    await startTranscription()
   }
 
   if (get(isRecordingAvailable) && data.recording == null && room?.startWithRecording === true && !get(isRecording)) {
@@ -228,15 +230,28 @@ export function closeMeetingMinutes (): void {
   const loc = getCurrentLocation()
 
   if (loc.path[2] === loveId) {
-    const meetingMinutes = get(currentMeetingMinutes)
+    const meeting = get(activeMeeting)
+    if (meeting?.type !== 'room') return
     const panel = get(panelstore).panel
     const { _id } = panel ?? {}
 
-    if (_id !== undefined && meetingMinutes !== undefined && _id === meetingMinutes._id) {
+    if (_id !== undefined && _id === meeting.document?._id) {
       closePanel()
     }
   }
-  currentMeetingMinutes.set(undefined)
+}
+
+export async function getMeetingMinutesRoom (meeting: MeetingMinutes): Promise<Room | undefined> {
+  return get(rooms).find((r) => r._id === meeting.attachedTo)
+}
+
+export async function getMeetingName (meeting: ActiveMeeting): Promise<string> {
+  if (meeting.type === 'card') {
+    return meeting.document?.title ?? ''
+  }
+  const room = await getMeetingMinutesRoom(meeting.document)
+  if (room === undefined) return ''
+  return await getRoomName(room)
 }
 
 export async function getRoomName (room: Room): Promise<string> {
@@ -267,16 +282,9 @@ export async function navigateToOfficeDoc (object: Doc): Promise<void> {
   navigate(loc)
 }
 
-export async function navigateToMeetingMinutes (room: Room): Promise<void> {
-  const meeting = await getClient().findOne(love.class.MeetingMinutes, {
-    attachedTo: room._id,
-    status: MeetingStatus.Active
-  })
-  if (meeting !== undefined) {
-    await navigateToOfficeDoc(meeting)
-    return
-  }
-  await navigateToOfficeDoc(room)
+export async function navigateToMeetingMinutes (meetingMinutes: MeetingMinutes | undefined): Promise<void> {
+  if (meetingMinutes === undefined) return
+  await navigateToOfficeDoc(meetingMinutes)
 }
 
 export function calculateFloorSize (_rooms: Room[], _preview?: boolean): number {
@@ -378,18 +386,27 @@ export function getPlatformToken (): string {
   return token
 }
 
-export async function startTranscription (room: Room): Promise<void> {
-  const current = get(currentRoom)
-  if (current === undefined || room._id !== current._id) return
-
+export async function startTranscription (): Promise<void> {
+  const room = get(currentMeetingRoom)
+  if (room === undefined) return
   await connectMeeting(room._id, room.language, { transcription: true })
 }
 
-export async function stopTranscription (room: Room): Promise<void> {
-  const current = get(currentRoom)
-  if (current === undefined || room._id !== current._id) return
+export async function stopTranscription (): Promise<void> {
+  const current = get(activeMeeting)
+  if (current?.type !== 'room') return
+  await disconnectMeeting(current.document.attachedTo as Ref<Room>)
+}
 
-  await disconnectMeeting(room._id)
+export async function toggleRecording (): Promise<void> {
+  const room = get(currentMeetingRoom)
+  if (room === undefined) return
+  await loveClient.record(room)
+}
+
+export async function startMeetingAction (card?: Card): Promise<void> {
+  if (card === undefined) return
+  await createCardMeeting(card)
 }
 
 export async function showRoomSettings (room?: Room): Promise<void> {
@@ -416,7 +433,6 @@ async function getRoomGuestLink (room: Room): Promise<string> {
     const accountsUrl = getMetadata(login.metadata.AccountsUrl)
     const token = getMetadata(presentation.metadata.Token)
 
-    console.log('Create link')
     const accountClient = getAccountClientRaw(accountsUrl, token)
     return await accountClient.createAccessLink(AccountRole.Guest, {
       navigateUrl: encodeURIComponent(JSON.stringify(navigateUrl))
@@ -430,7 +446,7 @@ export function isTranscriptionAllowed (): boolean {
   return url !== ''
 }
 
-export function createMeetingWidget (widget: Widget, room: Ref<Room>, video: boolean): void {
+export function createMeetingWidget (widget: Widget, video: boolean): void {
   const tabs: WidgetTab[] = [
     ...(video
       ? [
@@ -455,14 +471,7 @@ export function createMeetingWidget (widget: Widget, room: Ref<Room>, video: boo
       readonly: true
     }
   ]
-  openWidget(
-    widget,
-    {
-      room
-    },
-    { active: true, openedByUser: false },
-    tabs
-  )
+  openWidget(widget, {}, { active: true, openedByUser: false }, tabs)
 }
 
 export function createMeetingVideoWidgetTab (widget: Widget): void {

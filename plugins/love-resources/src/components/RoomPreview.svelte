@@ -15,18 +15,19 @@
 <script lang="ts">
   import { getCurrentEmployee, Person } from '@hcengineering/contact'
   import { Avatar, myEmployeeStore, getPersonByPersonRef } from '@hcengineering/contact-resources'
-  import { ParticipantInfo, Room, RoomAccess, RoomType, MeetingStatus } from '@hcengineering/love'
+  import { ParticipantInfo, Room, RoomAccess, RoomType } from '@hcengineering/love'
   import { Icon, Label, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getClient } from '@hcengineering/presentation'
   import { openDoc } from '@hcengineering/view-resources'
 
   import love from '../plugin'
-  import { myInfo, selectedRoomPlace, currentRoom, currentMeetingMinutes } from '../stores'
+  import { myInfo, selectedRoomPlace } from '../stores'
   import { getRoomLabel } from '../utils'
   import PersonActionPopup from './PersonActionPopup.svelte'
   import { IntlString } from '@hcengineering/platform'
   import { lkSessionConnected } from '../liveKitClient'
+  import { activeMeeting } from '../meetings'
 
   export let room: Room
   export let info: ParticipantInfo[]
@@ -72,19 +73,8 @@
   async function openRoom (x: number, y: number): Promise<void> {
     const client = getClient()
     const hierarchy = client.getHierarchy()
-    if ($lkSessionConnected && $currentRoom?._id === room._id) {
-      let meeting = $currentMeetingMinutes
-      if (meeting?.attachedTo !== room._id || meeting?.status !== MeetingStatus.Active) {
-        meeting = await client.findOne(love.class.MeetingMinutes, {
-          attachedTo: room._id,
-          status: MeetingStatus.Active
-        })
-      }
-      if (meeting === undefined) {
-        await openDoc(hierarchy, room)
-      } else {
-        await openDoc(hierarchy, meeting)
-      }
+    if ($lkSessionConnected && $activeMeeting?.type === 'room' && $activeMeeting.document?.attachedTo === room._id) {
+      await openDoc(hierarchy, $activeMeeting.document)
     } else {
       selectedRoomPlace.set({ _id: room._id, x, y })
       await openDoc(hierarchy, room)

@@ -2,14 +2,7 @@ import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
 import { getCurrentEmployee } from '@hcengineering/contact'
 import { getPersonRefByPersonId } from '@hcengineering/contact-resources'
 import { type Ref } from '@hcengineering/core'
-import {
-  type DevicesPreference,
-  type Floor,
-  type MeetingMinutes,
-  type Office,
-  type ParticipantInfo,
-  type Room
-} from '@hcengineering/love'
+import { type DevicesPreference, type Floor, type Office, type ParticipantInfo, type Room } from '@hcengineering/love'
 import { createQuery, onClient } from '@hcengineering/presentation'
 import { derived, get, writable } from 'svelte/store'
 
@@ -24,9 +17,6 @@ export const infos = writable<ParticipantInfo[]>([])
 export const myInfo = derived(infos, (val) => {
   const personId = getCurrentEmployee()
   return val.find((p) => p.person === personId)
-})
-export const currentRoom = derived([rooms, myInfo], ([rooms, myInfo]) => {
-  return myInfo !== undefined ? rooms.find((p) => p._id === myInfo.room) : undefined
 })
 export const floors = writable<Floor[]>([])
 export const selectedFloor = writable<Ref<Floor> | undefined>(undefined)
@@ -44,7 +34,6 @@ export const activeFloor = derived([rooms, myInfo, myOffice], ([rooms, myInfo, m
 export const myPreferences = writable<DevicesPreference | undefined>()
 export let $myPreferences: DevicesPreference | undefined
 
-export const currentMeetingMinutes = writable<MeetingMinutes | undefined>(undefined)
 export const selectedRoomPlace = writable<{ _id: Ref<Room>, x: number, y: number } | undefined>(undefined)
 
 async function filterParticipantInfo (value: ParticipantInfo[]): Promise<ParticipantInfo[]> {

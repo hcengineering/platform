@@ -13,11 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Room } from '@hcengineering/love'
   import { IconMaximize, ModernButton, Popup, showPopup, TooltipInstance } from '@hcengineering/ui'
 
   import love from '../../plugin'
-  import { myInfo, myOffice } from '../../stores'
   import { isFullScreen } from '../../utils'
   import ControlBarContainer from './ControlBarContainer.svelte'
   import RoomModal from '../RoomModal.svelte'
@@ -32,26 +30,22 @@
   import CameraButton from './controls/CameraButton.svelte'
   import ShareScreenButton from './controls/ShareScreenButton.svelte'
   import InviteEmployeeButton from './invites/InviteEmployeeButton.svelte'
+  import { currentMeetingRoom } from '../../meetings'
 
-  export let room: Room
   export let canMaximize: boolean = true
   export let fullScreen: boolean = false
   export let onFullScreen: (() => void) | undefined = undefined
 
-  let allowLeave: boolean = false
-
-  $: allowLeave = $myInfo?.room !== ($myOffice?._id ?? love.ids.Reception)
-
   function maximize (): void {
-    showPopup(RoomModal, { room }, 'full-centered')
+    showPopup(RoomModal, {}, 'full-centered')
   }
 </script>
 
 <div class="control-bar">
   <ControlBarContainer>
     <svelte:fragment slot="left">
-      {#if room._id !== love.ids.Reception && $lkSessionConnected}
-        <RoomAccessButton {room} />
+      {#if $lkSessionConnected}
+        <RoomAccessButton room={$currentMeetingRoom} />
         <InviteEmployeeButton
           kind={'secondary'}
           type={'type-button-icon'}
@@ -67,10 +61,10 @@
         <MicrophoneButton />
         <CameraButton />
         <ShareScreenButton />
-        <RecordingButton {room} />
-        <TranscriptionButton {room} />
+        <RecordingButton />
+        <TranscriptionButton />
       {:else}
-        <RoomAccessButton {room} />
+        <RoomAccessButton room={$currentMeetingRoom} />
       {/if}
     </svelte:fragment>
     <svelte:fragment slot="right">
@@ -102,10 +96,8 @@
           on:click={maximize}
         />
       {/if}
-      <MeetingOptionsButton {room} />
-      {#if allowLeave}
-        <LeaveRoomButton {room} />
-      {/if}
+      <MeetingOptionsButton room={$currentMeetingRoom} />
+      <LeaveRoomButton />
     </svelte:fragment>
 
     <svelte:fragment slot="extra">

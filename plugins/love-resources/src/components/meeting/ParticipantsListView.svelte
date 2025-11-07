@@ -1,16 +1,9 @@
 <script lang="ts">
-  import { aiBotSocialIdentityStore } from '@hcengineering/ai-bot-resources'
   import ParticipantView from './ParticipantView.svelte'
   import { Participant, RemoteParticipant, RoomEvent } from 'livekit-client'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { liveKitClient, lk } from '../../utils'
   import { infos } from '../../stores'
-  import { Ref } from '@hcengineering/core'
-  import { Person } from '@hcengineering/contact'
-  import { getPersonRefByPersonIdCb } from '@hcengineering/contact-resources'
-  import { Room as TypeRoom } from '@hcengineering/love'
-
-  export let room: Ref<TypeRoom>
 
   const dispatch = createEventDispatcher()
 
@@ -18,17 +11,6 @@
     _id: string
     participant: Participant | undefined
     isAgent: boolean
-  }
-
-  let aiPersonRef: Ref<Person> | undefined
-  $: if ($aiBotSocialIdentityStore != null) {
-    getPersonRefByPersonIdCb($aiBotSocialIdentityStore?._id, (ref) => {
-      if (ref != null) {
-        aiPersonRef = ref
-      }
-    })
-  } else {
-    aiPersonRef = undefined
   }
 
   let participants: ParticipantData[] = []
@@ -66,23 +48,6 @@
     lk.on(RoomEvent.ParticipantConnected, attachParticipant)
     lk.on(RoomEvent.ParticipantDisconnected, handleParticipantDisconnected)
   })
-
-  onDestroy(
-    infos.subscribe((data) => {
-      for (const info of data) {
-        if (info.room !== room) continue
-        const current = participants.find((p) => p._id === info.person)
-        if (current !== undefined) continue
-        const value: ParticipantData = {
-          _id: info.person,
-          participant: undefined,
-          isAgent: info.person === aiPersonRef
-        }
-        participants.push(value)
-      }
-      participants = participants
-    })
-  )
 
   onDestroy(() => {
     lk.off(RoomEvent.ParticipantConnected, attachParticipant)

@@ -1,12 +1,10 @@
 <script lang="ts">
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { ButtonBaseSize, ModernButton } from '@hcengineering/ui'
-  import { isRecording, isRecordingAvailable, loveClient } from '../../../utils'
+  import { isRecording, isRecordingAvailable, toggleRecording } from '../../../utils'
   import love from '../../../plugin'
   import { lkSessionConnected } from '../../../liveKitClient'
-  import { Room } from '@hcengineering/love'
 
-  export let room: Room
   export let size: ButtonBaseSize = 'large'
   export let kind: 'primary' | 'secondary' | 'tertiary' | 'negative' = 'secondary'
 </script>
@@ -18,6 +16,6 @@
     disabled={!$lkSessionConnected}
     {kind}
     {size}
-    on:click={() => loveClient.record(room)}
+    on:click={() => toggleRecording()}
   />
 {/if}
