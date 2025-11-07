@@ -4,12 +4,11 @@
   import { MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import { makeRank } from '@hcengineering/rank'
   import time, { ToDo, ToDoPriority } from '@hcengineering/time'
-  import { CheckBox, getEventPositionElement, showPopup } from '@hcengineering/ui'
+  import { CheckBox, getEventPositionElement, showPopup, Component } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import { NodeViewProps } from '../../node-view'
   import NodeViewWrapper from '../../node-view/NodeViewWrapper.svelte'
   import NodeViewContent from '../../node-view/NodeViewContent.svelte'
-  import Component from '@hcengineering/ui/src/components/Component.svelte'
 
   export let node: NodeViewProps['node']
   export let editor: NodeViewProps['editor']
