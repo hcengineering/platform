@@ -147,7 +147,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 1024m
   redis:
     image: redis:8.0.2-alpine3.21
     ports:
