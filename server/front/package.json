@@ -58,7 +58,7 @@
     "@hcengineering/storage": "^0.7.17",
     "@hcengineering/server-storage": "^0.7.15",
     "@hcengineering/server-token": "^0.7.17",
-    "@hcengineering/attachment": "^0.7.0",
+    "@hcengineering/attachment": "workspace:^0.7.0",
     "body-parser": "^1.20.3",
     "sharp": "~0.34.3",
     "@hcengineering/minio": "^0.7.15",

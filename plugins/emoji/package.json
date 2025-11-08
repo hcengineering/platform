@@ -39,7 +39,7 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/ui": "^0.7.0",
+    "@hcengineering/ui": "workspace:^0.7.0",
     "emojibase": "^16.0.0",
     "emojibase-data": "^16.0.0",
     "emojibase-regex": "^16.0.0"

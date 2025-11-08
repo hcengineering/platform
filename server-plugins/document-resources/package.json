@@ -40,9 +40,9 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/workbench": "^0.7.0",
+    "@hcengineering/workbench": "workspace:^0.7.0",
     "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/document": "^0.7.0",
+    "@hcengineering/document": "workspace:^0.7.0",
     "slugify": "^1.6.6"
   }
 }

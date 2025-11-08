@@ -39,13 +39,13 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-calendar": "^0.7.0",
+    "@hcengineering/server-calendar": "workspace:^0.7.0",
     "@hcengineering/server-token": "^0.7.17",
-    "@hcengineering/calendar": "^0.7.0",
-    "@hcengineering/contact": "^0.7.0",
+    "@hcengineering/calendar": "workspace:^0.7.0",
+    "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/kafka": "^0.7.15",
     "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/server-notification-resources": "^0.7.0",
-    "@hcengineering/server-contact": "^0.7.0"
+    "@hcengineering/server-notification-resources": "workspace:^0.7.0",
+    "@hcengineering/server-contact": "workspace:^0.7.0"
   }
 }

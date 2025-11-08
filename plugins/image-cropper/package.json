@@ -38,6 +38,6 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/ui": "^0.7.0"
+    "@hcengineering/ui": "workspace:^0.7.0"
   }
 }
