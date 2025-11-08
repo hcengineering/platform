@@ -18,6 +18,7 @@ ARG CHROMIUM_VERSION="139.0.7258.154-1~deb12u1"
 # https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md?plain=1#L397
 RUN apt-get update --fix-missing
 RUN apt-get install -y gnupg wget libxss1
+RUN apt-get install dumb-init
 RUN apt-get install -y fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf
 RUN apt-get install -y chromium-common=${CHROMIUM_VERSION} --no-install-recommends
 RUN apt-get install -y chromium=${CHROMIUM_VERSION} --no-install-recommends
