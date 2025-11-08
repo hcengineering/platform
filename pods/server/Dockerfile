@@ -1,4 +1,4 @@
-FROM haiodo/base:v20250411
+FROM haiodo/base:v20250811
 WORKDIR /usr/src/app
 
 COPY bundle/model.json ./

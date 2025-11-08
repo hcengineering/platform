@@ -1,4 +1,4 @@
-FROM haiodo/preview-base:v20250411
+FROM haiodo/preview-base:v20250811
 
 WORKDIR /app
 

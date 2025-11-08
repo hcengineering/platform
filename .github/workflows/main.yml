@@ -495,6 +495,85 @@ jobs:
           echo Pushing love-agent release of tag ${{ github.ref }}
           cd ./services/ai-bot/love-agent
           pnpm docker:push
+  build-hulypulse:
+    needs: [uitest-workspaces]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      # https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
+      - name: Free disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          echo "Disk space after cleanup:"
+          df -h
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Configure docker
+        uses: docker/setup-docker-action@v4
+        with:
+          daemon-config: |
+            {
+              "features": {
+                "containerd-snapshotter": true
+              }
+            }
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+          submodules: recursive
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - name: Cache node modules
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-node-platform
+        with:
+          path: |
+            common/temp
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        continue-on-error: true
+        uses: docker/login-action@v3
+        with:
+          username: haiodo
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+      - name: Docker build huly pulse
+        run: |
+          cd ./foundations/hulypulse
+          ./common/scripts/docker_build.sh haiodo/hulypulse
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+      - name: Login to Docker Hub
+        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+        uses: docker/login-action@v3
+        with:
+          username: haiodo
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      # - name: Docker push staging
+      #   if: ${{ github.ref == 'refs/heads/main' }}
+      #   run: node common/scripts/install-run-rush.js docker:staging -v
+      - name: Docker push tag
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+        run: |
+          echo Pushing release of tag ${{ github.ref }}
+          ./common/scripts/docker_tag.sh haiodo/hulypulse
 
   dist-build:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
