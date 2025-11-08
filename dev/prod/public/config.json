@@ -26,7 +26,7 @@
   "PUBLIC_SCHEDULE_URL": "http://huly.local:8060",
   "CALDAV_SERVER_URL": "http://huly.local:9070",
   "EXPORT_URL": "http://huly.local:4009",
-  "COMMUNICATION_API_ENABLED": "true",
+  "COMMUNICATION_API_ENABLED": "false",
   "BACKUP_URL": "http://huly.local:4039/api/backup",
   "PULSE_URL": "ws://huly.local:8099/ws",
   "HULYLAKE_URL": "http://huly.local:8096",
