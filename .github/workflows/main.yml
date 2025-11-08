@@ -556,7 +556,7 @@ jobs:
       - name: Docker build huly pulse
         run: |
           cd ./foundations/hulypulse
-          ./common/scripts/docker_build.sh haiodo/hulypulse
+          ../../common/scripts/docker_build.sh haiodo/hulypulse
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
@@ -573,7 +573,8 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         run: |
           echo Pushing release of tag ${{ github.ref }}
-          ./common/scripts/docker_tag.sh haiodo/hulypulse
+          cd ./foundations/hulypulse
+          ../../common/scripts/docker_tag.sh haiodo/hulypulse
 
   dist-build:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
