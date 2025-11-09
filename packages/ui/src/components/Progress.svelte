@@ -72,7 +72,6 @@
 <div
   class="container"
   class:editable
-  class:small
   on:click={click}
   on:mousemove={move}
   on:mouseleave={save}
