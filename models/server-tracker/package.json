@@ -36,14 +36,14 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/model": "^0.7.17",
-    "@hcengineering/tracker": "^0.7.0",
+    "@hcengineering/tracker": "workspace:^0.7.0",
     "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/server-notification": "^0.7.0",
-    "@hcengineering/model-tracker": "^0.7.0",
-    "@hcengineering/server-tracker": "^0.7.0",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/model-core": "^0.7.0",
-    "@hcengineering/server-view": "^0.7.0"
+    "@hcengineering/notification": "workspace:^0.7.0",
+    "@hcengineering/server-notification": "workspace:^0.7.0",
+    "@hcengineering/model-tracker": "workspace:^0.7.0",
+    "@hcengineering/server-tracker": "workspace:^0.7.0",
+    "@hcengineering/contact": "workspace:^0.7.0",
+    "@hcengineering/model-core": "workspace:^0.7.0",
+    "@hcengineering/server-view": "workspace:^0.7.0"
   }
 }

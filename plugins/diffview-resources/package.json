@@ -41,12 +41,12 @@
     "svelte": "^4.2.20",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/presentation": "^0.7.0",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/view-resources": "^0.7.0",
-    "@hcengineering/highlight": "^0.7.0",
-    "@hcengineering/diffview": "^0.7.0",
+    "@hcengineering/presentation": "workspace:^0.7.0",
+    "@hcengineering/ui": "workspace:^0.7.0",
+    "@hcengineering/view": "workspace:^0.7.0",
+    "@hcengineering/view-resources": "workspace:^0.7.0",
+    "@hcengineering/highlight": "workspace:^0.7.0",
+    "@hcengineering/diffview": "workspace:^0.7.0",
     "fast-equals": "^5.2.2",
     "diff2html": "~3.4.35"
   }

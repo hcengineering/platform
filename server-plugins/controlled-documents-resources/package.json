@@ -38,19 +38,19 @@
     "@types/node": "^22.15.29"
   },
   "dependencies": {
-    "@hcengineering/chunter": "^0.7.0",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/controlled-documents": "^0.7.0",
-    "@hcengineering/server-contact": "^0.7.0",
+    "@hcengineering/chunter": "workspace:^0.7.0",
+    "@hcengineering/contact": "workspace:^0.7.0",
+    "@hcengineering/controlled-documents": "workspace:^0.7.0",
+    "@hcengineering/server-contact": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/notification": "^0.7.0",
+    "@hcengineering/notification": "workspace:^0.7.0",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/request": "^0.7.0",
-    "@hcengineering/server-chunter-resources": "^0.7.0",
+    "@hcengineering/request": "workspace:^0.7.0",
+    "@hcengineering/server-chunter-resources": "workspace:^0.7.0",
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/server-token": "^0.7.17",
-    "@hcengineering/training": "^0.7.0",
-    "@hcengineering/workbench": "^0.7.0",
+    "@hcengineering/training": "workspace:^0.7.0",
+    "@hcengineering/workbench": "workspace:^0.7.0",
     "slugify": "^1.6.6"
   }
 }

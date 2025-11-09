@@ -69,7 +69,7 @@
     "@hcengineering/core": "^0.7.21",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
-    "dotenv": "~16.0.0",
+    "dotenv": "^16.4.5",
     "email-addresses": "^5.0.0",
     "express": "^4.21.2",
     "express-form-data": "^2.0.22",

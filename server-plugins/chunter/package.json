@@ -38,7 +38,7 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/server-notification": "^0.7.0",
+    "@hcengineering/server-notification": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-core": "^0.7.16"

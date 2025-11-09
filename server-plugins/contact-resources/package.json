@@ -40,13 +40,13 @@
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/card": "^0.7.0",
+    "@hcengineering/contact": "workspace:^0.7.0",
+    "@hcengineering/card": "workspace:^0.7.0",
     "@hcengineering/rank": "^0.7.17",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/login": "^0.7.0",
-    "@hcengineering/workbench": "^0.7.0",
-    "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/server-contact": "^0.7.0"
+    "@hcengineering/view": "workspace:^0.7.0",
+    "@hcengineering/login": "workspace:^0.7.0",
+    "@hcengineering/workbench": "workspace:^0.7.0",
+    "@hcengineering/notification": "workspace:^0.7.0",
+    "@hcengineering/server-contact": "workspace:^0.7.0"
   }
 }

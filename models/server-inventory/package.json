@@ -37,9 +37,9 @@
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-inventory": "^0.7.0",
+    "@hcengineering/server-inventory": "workspace:^0.7.0",
     "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/inventory": "^0.7.0",
-    "@hcengineering/server-notification": "^0.7.0"
+    "@hcengineering/inventory": "workspace:^0.7.0",
+    "@hcengineering/server-notification": "workspace:^0.7.0"
   }
 }

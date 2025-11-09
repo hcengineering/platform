@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/ai-assistant": "^0.7.0"
+    "@hcengineering/ai-assistant": "workspace:^0.7.0"
   },
   "exports": {
     ".": {

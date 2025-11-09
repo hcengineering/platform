@@ -46,12 +46,12 @@
   },
   "dependencies": {
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/ui": "^0.7.0",
+    "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/templates": "^0.7.0",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/preference": "^0.7.0",
-    "@hcengineering/card": "^0.7.0"
+    "@hcengineering/templates": "workspace:^0.7.0",
+    "@hcengineering/view": "workspace:^0.7.0",
+    "@hcengineering/preference": "workspace:^0.7.0",
+    "@hcengineering/card": "workspace:^0.7.0"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
