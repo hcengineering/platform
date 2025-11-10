@@ -1,4 +1,4 @@
-//
+<!--
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -11,17 +11,11 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+-->
+<script lang="ts">
+  import LimitsIndicator from './LimitsIndicator.svelte'
+</script>
 
-import type { Resources } from '@hcengineering/platform'
-import Settings from './components/Settings.svelte'
-import WorkbenchExtension from './components/WorkbenchExtension.svelte'
-import UsageExtension from './components/UsageExtension.svelte'
-
-export default async (): Promise<Resources> => ({
-  component: {
-    Settings,
-    UsageExtension,
-    WorkbenchExtension
-  }
-})
+<div class="px-2">
+  <LimitsIndicator />
+</div>
