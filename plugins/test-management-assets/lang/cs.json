@@ -33,7 +33,6 @@
     "ProjectName": "Název",
     "ProjectType": "Typ",
     "Members": "Členové",
-    "RoleLabel": "Role",
     "ProjectMembers": "Členové projektu",
     "TestSuites": "Testovací sady",
     "CreateTestSuite": "Vytvořit testovací sadu",

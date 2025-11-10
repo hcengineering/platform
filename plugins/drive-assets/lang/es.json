@@ -26,7 +26,6 @@
     "EditDrive": "Editar unidad",
     "Rename": "Renombrar",
     "Restore": "Restaurar",
-    "RoleLabel": "Rol",
     "Root": "/",
     "ForbidCreateDrivePermission": "Prohibir crear unidad",
     "ForbidCreateDrivePermissionDescription": "Prohíbe a los usuarios crear nuevas unidades"

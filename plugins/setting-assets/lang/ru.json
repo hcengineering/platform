@@ -205,6 +205,8 @@
     "DangerZone": "Опасная зона",
     "ApiAccess": "Доступ к API",
     "ApiToken": "API токен",
-    "GenerateApiToken": "Создать API токен"
+    "GenerateApiToken": "Создать API токен",
+    "Restricted": "Ограничено",
+    "RestrictedAttributeWarning": "Вы действительно хотите ограничить изменение атрибута? Это действие создаст разрешения для этого атрибута. Отменить это действие невозможно."
   }
 }

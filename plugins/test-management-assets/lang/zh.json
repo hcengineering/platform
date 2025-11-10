@@ -33,7 +33,6 @@
     "ProjectName": "姓名",
     "ProjectType": "類型",
     "Members": "會員",
-    "RoleLabel": "角色",
     "ProjectMembers": "專案成員",
     "TestSuites": "測試套件",
     "CreateTestSuite": "建立測試套件",

@@ -33,7 +33,6 @@
     "ConfigLabel": "CRM",
     "ConfigDescription": "Müşteri ilişkiler yönetimi için uzantı",
     "EditFunnel": "Huniyi Düzenle",
-    "FunnelMembers": "Üyeler",
-    "RoleLabel": "Rol: {role}"
+    "FunnelMembers": "Üyeler"
   }
 }

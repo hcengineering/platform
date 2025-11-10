@@ -119,7 +119,11 @@
     "Filter": "Filtre",
     "FirstMatchValue": "İlk eşleşen değer",
     "ConfigLabel": "Süreç yapılandırması",
-    "ConfigDescription": "İş akışlarını ve iş süreçlerini otomatikleştirmek için süreçler tanımlayın."
+    "ConfigDescription": "İş akışlarını ve iş süreçlerini otomatikleştirmek için süreçler tanımlayın.",
+    "RunProcessPermission": "Süreci çalıştır",
+    "CancelProcessPermission": "Süreci iptal et",
+    "ForbidRunProcessPermission": "Süreci çalıştırmayı yasakla",
+    "ForbidCancelProcessPermission": "Süreci iptal etmeyi yasakla"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

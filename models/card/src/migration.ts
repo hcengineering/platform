@@ -13,8 +13,16 @@
 // limitations under the License.
 //
 
-import { type Card, cardId, DOMAIN_CARD } from '@hcengineering/card'
-import core, { DOMAIN_MODEL, type Ref, TxOperations, type Client, type Data, type Doc } from '@hcengineering/core'
+import cardPlugin, { type Card, cardId, DOMAIN_CARD, type Role } from '@hcengineering/card'
+import core, {
+  DOMAIN_MODEL,
+  type Ref,
+  TxOperations,
+  type Client,
+  type Data,
+  type Doc,
+  type DocumentUpdate
+} from '@hcengineering/core'
 import {
   tryMigrate,
   tryUpgrade,
@@ -82,8 +90,39 @@ export const cardOperation: MigrateOperation = {
         state: 'make-config-sortable',
         mode: 'upgrade',
         func: makeConfigSortable
+      },
+      {
+        state: 'migrate-roles-v2',
+        mode: 'upgrade',
+        func: migrateRolesToBaseRole
+      },
+      {
+        state: 'add-space-type',
+        mode: 'upgrade',
+        func: addSpaceType
       }
     ])
+  }
+}
+
+async function addSpaceType (client: MigrationUpgradeClient): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const spaces = await client.findAll(card.class.CardSpace, { type: { $exists: false } })
+  for (const space of spaces) {
+    await txOp.diffUpdate(space, { type: cardPlugin.spaceType.SpaceType })
+  }
+}
+
+async function migrateRolesToBaseRole (client: MigrationUpgradeClient): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const roles = await client.findAll(card.class.Role, { attachedTo: { $ne: cardPlugin.spaceType.SpaceType } })
+  for (const role of roles) {
+    const baseRoleData: DocumentUpdate<Role> = {
+      type: role.attachedTo as any,
+      attachedTo: cardPlugin.spaceType.SpaceType,
+      attachedToClass: core.class.SpaceType
+    }
+    await txOp.update(role, baseRoleData)
   }
 }
 
@@ -249,6 +288,7 @@ async function createDefaultProject (tx: TxOperations): Promise<void> {
         members: [],
         archived: false,
         autoJoin: true,
+        type: card.spaceType.SpaceType,
         types: topLevelTypes.map((it) => it._id)
       },
       card.space.Default

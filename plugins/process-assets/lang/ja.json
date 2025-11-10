@@ -121,7 +121,11 @@
     "Filter": "フィルター",
     "FirstMatchValue": "最初の一致する値",
     "ConfigLabel": "プロセス構成",
-    "ConfigDescription": "ワークフローやビジネスプロセスを自動化するためのプロセスを定義します。"
+    "ConfigDescription": "ワークフローやビジネスプロセスを自動化するためのプロセスを定義します。",
+    "RunProcessPermission": "プロセスを実行",
+    "CancelProcessPermission": "プロセスをキャンセル",
+    "ForbidRunProcessPermission": "プロセスの実行を禁止",
+    "ForbidCancelProcessPermission": "プロセスのキャンセルを禁止"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

@@ -122,7 +122,11 @@
     "Filter": "Filter",
     "FirstMatchValue": "First match value",
     "ConfigLabel": "Process configuration",
-    "ConfigDescription": "Define processes to automate workflows and business processes."
+    "ConfigDescription": "Define processes to automate workflows and business processes.",
+    "RunProcessPermission": "Run process",
+    "CancelProcessPermission": "Cancel process",
+    "ForbidRunProcessPermission": "Forbid running process",
+    "ForbidCancelProcessPermission": "Forbid cancelling process"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

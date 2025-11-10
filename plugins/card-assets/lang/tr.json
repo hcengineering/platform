@@ -49,6 +49,16 @@
     "CardContent": "Ne paylaşmak istiyorsunuz?",
     "Feed": "Akış",
     "AllCards": "Tüm Kartlar",
-    "Favorites": "Favoriler"
+    "Favorites": "Favoriler",
+    "RemoveCard": "Kartı kaldır",
+    "UpdateCard": "Kartı güncelle",
+    "CreateCardPermission": "Kart oluştur",
+    "AddTagPermission": "Etiket ekle",
+    "RemoveTag": "Etiketi kaldır",
+    "ForbidRemoveCard": "Kart kaldırmayı yasakla",
+    "ForbidUpdateCard": "Kart güncellemeyi yasakla",
+    "ForbidCreateCardPermission": "Kart oluşturmayı yasakla",
+    "ForbidAddTagPermission": "Etiket eklemeyi yasakla",
+    "ForbidRemoveTag": "Etiket kaldırmayı yasakla"
   }
 }

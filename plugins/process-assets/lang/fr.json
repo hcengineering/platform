@@ -122,7 +122,11 @@
     "Filter": "Filtrer",
     "FirstMatchValue": "Première valeur correspondante",
     "ConfigLabel": "Configuration des processus",
-    "ConfigDescription": "Définissez des processus pour automatiser les flux de travail et les processus métier."
+    "ConfigDescription": "Définissez des processus pour automatiser les flux de travail et les processus métier.",
+    "RunProcessPermission": "Exécuter le processus",
+    "CancelProcessPermission": "Annuler le processus",
+    "ForbidRunProcessPermission": "Interdire l'exécution du processus",
+    "ForbidCancelProcessPermission": "Interdire l'annulation du processus"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

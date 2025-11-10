@@ -117,7 +117,11 @@
     "Filter": "Filtr",
     "FirstMatchValue": "První odpovídající hodnota",
     "ConfigLabel": "Konfigurace procesů",
-    "ConfigDescription": "Definujte procesy pro automatizaci pracovních postupů a obchodních procesů."
+    "ConfigDescription": "Definujte procesy pro automatizaci pracovních postupů a obchodních procesů.",
+    "RunProcessPermission": "Spustit proces",
+    "CancelProcessPermission": "Zrušit proces",
+    "ForbidRunProcessPermission": "Zakázat spuštění procesu",
+    "ForbidCancelProcessPermission": "Zakázat zrušení procesu"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

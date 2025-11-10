@@ -49,6 +49,16 @@
     "CardContent": "Que voulez-vous partager ?",
     "Feed": "Flux",
     "AllCards": "Toutes les Cartes",
-    "Favorites": "Favoris"
+    "Favorites": "Favoris",
+    "RemoveCard": "Supprimer la fiche",
+    "UpdateCard": "Mettre à jour la fiche",
+    "CreateCardPermission": "Créer une fiche",
+    "AddTagPermission": "Ajouter une étiquette",
+    "RemoveTag": "Supprimer l'étiquette",
+    "ForbidRemoveCard": "Interdire la suppression de la fiche",
+    "ForbidUpdateCard": "Interdire la mise à jour de la fiche",
+    "ForbidCreateCardPermission": "Interdire la création de fiche",
+    "ForbidAddTagPermission": "Interdire l'ajout d'étiquette",
+    "ForbidRemoveTag": "Interdire la suppression d'étiquette"
   }
 }

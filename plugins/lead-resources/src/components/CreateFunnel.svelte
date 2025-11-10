@@ -34,6 +34,7 @@
 
   import leadRes from '../plugin'
   import { Analytics } from '@hcengineering/analytics'
+  import view from '@hcengineering/view'
 
   export let funnel: Funnel | undefined = undefined
   const dispatch = createEventDispatcher()
@@ -260,7 +261,7 @@
   {#each roles as role}
     <div class="antiGrid-row">
       <div class="antiGrid-row__header">
-        <Label label={leadRes.string.RoleLabel} params={{ role: role.name }} />
+        <Label label={view.string.RoleLabel} params={{ role: role.name }} />
       </div>
       <AccountArrayEditor
         value={rolesAssignment?.[role._id] ?? []}

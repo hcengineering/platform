@@ -122,7 +122,11 @@
     "Filter": "过滤",
     "FirstMatchValue": "第一个匹配值",
     "ConfigLabel": "流程配置",
-    "ConfigDescription": "定义流程以自动化工作流和业务流程。"
+    "ConfigDescription": "定义流程以自动化工作流和业务流程。",
+    "RunProcessPermission": "运行过程",
+    "CancelProcessPermission": "取消过程",
+    "ForbidRunProcessPermission": "禁止运行过程",
+    "ForbidCancelProcessPermission": "禁止取消过程"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

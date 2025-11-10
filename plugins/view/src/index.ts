@@ -252,7 +252,10 @@ const view = plugin(viewId, {
     Select: '' as IntlString,
     Color: '' as IntlString,
     AutomationOnly: '' as IntlString,
-    CopyDocumentMarkdown: '' as IntlString
+    CopyDocumentMarkdown: '' as IntlString,
+    RoleLabel: '' as IntlString,
+    ForbidAttributeChanges: '' as IntlString,
+    AllowAttributeChanges: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

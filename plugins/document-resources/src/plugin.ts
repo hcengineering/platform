@@ -87,8 +87,6 @@ export default mergeIds(documentId, document, {
     CompareTo: '' as IntlString,
 
     Color: '' as IntlString,
-    Icon: '' as IntlString,
-
-    RoleLabel: '' as IntlString
+    Icon: '' as IntlString
   }
 })

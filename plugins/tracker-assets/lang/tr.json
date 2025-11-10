@@ -269,7 +269,6 @@
     "DefaultIssueStatus": "Varsayılan sorun durumu",
     "IssueStatus": "Durum",
     "Extensions": "Uzantılar",
-    "RoleLabel": "Rol: {role}",
     "UnsetParentIssue": "Üst sorunu kaldır"
   },
   "status": {}

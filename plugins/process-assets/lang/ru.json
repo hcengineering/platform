@@ -122,7 +122,11 @@
     "Filter": "Фильтр",
     "FirstMatchValue": "Первое подходящее значение",
     "ConfigLabel": "Конфигурация процессов",
-    "ConfigDescription": "Определяйте процессы для автоматизации рабочих процессов и бизнес-процессов."
+    "ConfigDescription": "Определяйте процессы для автоматизации рабочих процессов и бизнес-процессов.",
+    "RunProcessPermission": "Запустить процесс",
+    "CancelProcessPermission": "Отменить процесс",
+    "ForbidRunProcessPermission": "Запретить запуск процесса",
+    "ForbidCancelProcessPermission": "Запретить отмену процесса"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

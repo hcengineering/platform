@@ -49,6 +49,16 @@
     "CardContent": "Чем вы хотите поделиться?",
     "Feed": "Лента",
     "AllCards": "Все карты",
-    "Favorites": "Избранное"
+    "Favorites": "Избранное",
+    "RemoveCard": "Удалить карточку",
+    "UpdateCard": "Обновить карточку",
+    "CreateCardPermission": "Создать карточку",
+    "AddTagPermission": "Добавить тег",
+    "RemoveTag": "Удалить тег",
+    "ForbidRemoveCard": "Запретить удаление карточки",
+    "ForbidUpdateCard": "Запретить обновление карточки",
+    "ForbidCreateCardPermission": "Запретить создание карточки",
+    "ForbidAddTagPermission": "Запретить добавление тега",
+    "ForbidRemoveTag": "Запретить удаление тега"
   }
 }

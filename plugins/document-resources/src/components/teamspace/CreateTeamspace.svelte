@@ -417,7 +417,7 @@
     {#each roles as role}
       <div class="antiGrid-row">
         <div class="antiGrid-row__header">
-          <Label label={documentRes.string.RoleLabel} params={{ role: role.name }} />
+          <Label label={view.string.RoleLabel} params={{ role: role.name }} />
         </div>
         <AccountArrayEditor
           value={rolesAssignment?.[role._id] ?? []}

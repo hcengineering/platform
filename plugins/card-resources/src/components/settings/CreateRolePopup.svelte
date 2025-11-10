@@ -31,11 +31,13 @@
     const _id = await client.addCollection(
       card.class.Role,
       core.space.Model,
-      masterTag._id,
-      masterTag._class,
+      card.spaceType.SpaceType,
+      core.class.SpaceType,
       'roles',
       {
-        name: value
+        name: value,
+        type: masterTag._id,
+        permissions: []
       }
     )
     dispatch('close', _id)
