@@ -28,7 +28,6 @@
     "Private": "私有",
     "Public": "公开",
     "Members": "成员",
-    "RoleLabel": "角色：{role}",
     "UpdateProductPermission": "更新产品",
     "UpdateProductDescription": "授予用户更新产品的权限",
     "ChangeControl": "变更控制",

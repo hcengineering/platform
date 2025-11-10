@@ -149,6 +149,9 @@
     "Color": "Barva",
     "AutomationOnly": "Pouze automatizace",
     "CopyLink": "Kopírovat odkaz",
-    "ValueIsSet": "Hodnota je nastavena"
+    "ValueIsSet": "Hodnota je nastavena",
+    "RoleLabel": "Role: {role}",
+    "ForbidAttributeChanges": "Zakázat změny atributů",
+    "AllowAttributeChanges": "Povolit změny atributů"
   }
 }

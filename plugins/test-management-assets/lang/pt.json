@@ -33,7 +33,6 @@
     "ProjectName": "Nome",
     "ProjectType": "Tipo",
     "Members": "Membros",
-    "RoleLabel": "Função",
     "ProjectMembers": "Membros do projeto",
     "TestSuites": "Suites de teste",
     "CreateTestSuite": "Criar suite de teste",

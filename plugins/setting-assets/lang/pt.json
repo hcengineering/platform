@@ -189,6 +189,8 @@
     "NotConnectedIntegration": "A conta {account} não está integrada com o espaço de trabalho",
     "IntegrationIsUnstable": "O serviço de integração está enfrentando problemas. Algumas funcionalidades podem não funcionar corretamente.",
     "MinValue": "Valor mínimo",
+    "Restricted": "Restringido",
+    "RestrictedAttributeWarning": "Tem certeza de que deseja restringir a alteração deste atributo? Esta ação criará permissões para este atributo e não pode ser desfeita.",
     "MaxValue": "Valor máximo",
     "IntegerOnly": "Apenas números inteiros",
     "AccessControl": "Controle de acesso",

@@ -29,7 +29,7 @@
   import { TypeSelector } from '../index'
 
   export let title: string = ''
-  export let type: Ref<MasterTag> = 'chat:masterTag:Thread' as Ref<MasterTag>
+  export let type: Ref<MasterTag> = card.types.Document
   export let space: CardSpace | undefined = undefined
   export let changeType: boolean = false
   export let allowChangeSpace: boolean = true

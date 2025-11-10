@@ -59,7 +59,6 @@ export default mergeIds(productsId, products, {
     Private: '' as IntlString,
     Public: '' as IntlString,
     Members: '' as IntlString,
-    RoleLabel: '' as IntlString,
     ProductVersionStateActive: '' as IntlString,
     ProductVersionStateReleased: '' as IntlString,
     ChangeControl: '' as IntlString,

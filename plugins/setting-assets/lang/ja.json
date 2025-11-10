@@ -198,6 +198,8 @@
     "NotConnectedIntegration": "アカウント {account} はワークスペースに統合されていません",
     "IntegrationIsUnstable": "統合サービスに問題が発生しています。一部の機能が正しく動作しない可能性があります。",
     "MinValue": "最小値",
+    "Restricted": "制限済み",
+    "RestrictedAttributeWarning": "この属性の変更を制限してもよろしいですか？この操作はこの属性の権限を作成し、元に戻すことはできません。",
     "MaxValue": "最大値",
     "IntegerOnly": "整数のみ",
     "AccessControl": "アクセス制御",

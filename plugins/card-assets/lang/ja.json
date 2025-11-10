@@ -49,6 +49,16 @@
     "CardContent": "何を共有しますか？",
     "Feed": "フィード",
     "AllCards": "すべてのカード",
-    "Favorites": "お気に入り"
+    "Favorites": "お気に入り",
+    "RemoveCard": "カードを削除",
+    "UpdateCard": "カードを更新",
+    "CreateCardPermission": "カードを作成",
+    "AddTagPermission": "タグを追加",
+    "RemoveTag": "タグを削除",
+    "ForbidRemoveCard": "カード削除を禁止",
+    "ForbidUpdateCard": "カード更新を禁止",
+    "ForbidCreateCardPermission": "カード作成を禁止",
+    "ForbidAddTagPermission": "タグ追加を禁止",
+    "ForbidRemoveTag": "タグ削除を禁止"
   }
 }

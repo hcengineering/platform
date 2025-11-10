@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Card } from '@hcengineering/card'
-  import core, { Doc, FindOptions, SortingOrder } from '@hcengineering/core'
+  import core, { Doc, FindOptions, Ref, SortingOrder, TypedSpace } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Execution } from '@hcengineering/process'
   import {
@@ -38,6 +38,8 @@
   import process from '../plugin'
   import RunProcessPopup from './RunProcessPopup.svelte'
   import { createEventDispatcher } from 'svelte'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
+  import { PermissionsStore } from '@hcengineering/contact'
 
   export let card: Card
 
@@ -108,13 +110,19 @@
   let viewOptions: ViewOptions | undefined
 
   let docsProvided = false
+
+  function checkForbiddenPermission (permissionsStore: PermissionsStore): boolean {
+    return checkMyPermission(process.permission.ForbidRunProcess, card.space as Ref<TypedSpace>, permissionsStore)
+  }
 </script>
 
 <Section icon={process.icon.Process} label={process.string.Processes} spaceBeforeContent>
   <svelte:fragment slot="header">
     <div class="buttons-group xsmall-gap">
       <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
-      <Button id={process.string.RunProcess} icon={IconAdd} kind={'ghost'} on:click={add} />
+      {#if !checkForbiddenPermission($permissionsStore)}
+        <Button id={process.string.RunProcess} icon={IconAdd} kind={'ghost'} on:click={add} />
+      {/if}
     </div>
   </svelte:fragment>
 

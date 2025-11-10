@@ -28,7 +28,6 @@
     "Private": "Private",
     "Public": "Public",
     "Members": "Members",
-    "RoleLabel": "Role: {role}",
     "UpdateProductPermission": "Update product",
     "UpdateProductDescription": "Grants users ability to update a product",
     "ChangeControl": "Change control",
