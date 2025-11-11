@@ -42,8 +42,8 @@
     "@hcengineering/client": "^0.7.17",
     "@hcengineering/communication-sdk-types": "^0.7.12",
     "@hcengineering/communication-types": "^0.7.12",
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/platform": "workspace:^0.7.18",
     "@hcengineering/rpc": "^0.7.17",
     "snappyjs": "^0.7.0"
   },
