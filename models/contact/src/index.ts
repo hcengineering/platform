@@ -15,10 +15,9 @@
 //
 
 import activity from '@hcengineering/activity'
-import { type Role, type Card } from '@hcengineering/card'
+import { type Card } from '@hcengineering/card'
 import {
   AvatarType,
-  type UserRole,
   contactId,
   type AvatarProvider,
   type Channel,
@@ -32,13 +31,12 @@ import {
   type Person,
   type PersonSpace,
   type SocialIdentity,
-  type Status,
   type SocialIdentityProvider,
+  type Status,
   type Translation
 } from '@hcengineering/contact'
 import {
   AccountRole,
-  type ClassCollaborators,
   DOMAIN_MODEL,
   DateRangeMode,
   IndexKind,
@@ -46,6 +44,7 @@ import {
   type AccountUuid,
   type Blob,
   type Class,
+  type ClassCollaborators,
   type Collection,
   type Domain,
   type MarkupBlobRef,
@@ -54,7 +53,6 @@ import {
   type Ref,
   type Timestamp
 } from '@hcengineering/core'
-import { createSystemType } from '@hcengineering/model-card'
 import {
   Collection as CollectionType,
   Hidden,
@@ -76,10 +74,12 @@ import {
   type Builder
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
+import { createSystemType } from '@hcengineering/model-card'
 import chunter from '@hcengineering/model-chunter'
 import core, { TAttachedDoc, TDoc, TSpace } from '@hcengineering/model-core'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
+import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
 import view, { createAction, createAttributePresenter, type Viewlet } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
@@ -87,18 +87,16 @@ import notification from '@hcengineering/notification'
 import { getEmbeddedLabel, type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
 import templates from '@hcengineering/templates'
+import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action } from '@hcengineering/view'
 import contact from './plugin'
-import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
-import preference, { TPreference } from '@hcengineering/model-preference'
 
 export { contactId } from '@hcengineering/contact'
 export { contactOperation } from './migration'
 export { contact as default }
 
 export const DOMAIN_CONTACT = 'contact' as Domain
-export const DOMAIN_ROLE = 'role' as Domain
 export const DOMAIN_CHANNEL = 'channel' as Domain
 
 @Model(contact.class.AvatarProvider, core.class.Doc, DOMAIN_MODEL)
@@ -287,12 +285,6 @@ export class TPersonSpace extends TSpace implements PersonSpace {
     person!: Ref<Person>
 }
 
-@Model(contact.class.UserRole, core.class.Doc, DOMAIN_ROLE)
-export class TUserRole extends TDoc implements UserRole {
-  user!: Ref<Employee>
-  role!: Ref<Role>
-}
-
 @Model(contact.class.Translation, preference.class.Preference)
 export class TTranslation extends TPreference implements Translation {
   declare attachedTo: Ref<Employee>
@@ -316,7 +308,6 @@ export function createModel (builder: Builder): void {
     TMember,
     TContactsTab,
     TPersonSpace,
-    TUserRole,
     TTranslation
   )
 

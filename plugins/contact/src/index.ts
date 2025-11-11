@@ -14,7 +14,9 @@
 // limitations under the License.
 //
 
+import { Card, MasterTag } from '@hcengineering/card'
 import {
+  AccountUuid,
   AttachedDoc,
   Class,
   Collection,
@@ -27,20 +29,18 @@ import {
   UXObject,
   type BasePerson,
   type Blob,
-  type MarkupBlobRef,
   type Data,
-  type WithLookup,
-  AccountUuid,
-  type SocialIdType
+  type MarkupBlobRef,
+  type SocialIdType,
+  type WithLookup
 } from '@hcengineering/core'
 import type { Asset, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { IntlString, plugin } from '@hcengineering/platform'
+import { Preference } from '@hcengineering/preference'
 import { TemplateField, TemplateFieldCategory } from '@hcengineering/templates'
-import type { AnyComponent, ColorDefinition, ResolvedLocation, Location, ComponentExtensionId } from '@hcengineering/ui'
+import type { AnyComponent, ColorDefinition, ComponentExtensionId, Location, ResolvedLocation } from '@hcengineering/ui'
 import { Action, FilterMode, Viewlet } from '@hcengineering/view'
 import type { Readable } from 'svelte/store'
-import { Card, MasterTag, Role } from '@hcengineering/card'
-import { Preference } from '@hcengineering/preference'
 
 import { PermissionsStore } from './types'
 
@@ -152,11 +152,6 @@ export interface Person extends Contact, BasePerson {
   profile?: Ref<Card>
 }
 
-export interface UserRole extends Doc {
-  user: Ref<Employee>
-  role: Ref<Role>
-}
-
 /**
  * @public
  */
@@ -235,7 +230,6 @@ export const contactPlugin = plugin(contactId, {
     PersonSpace: '' as Ref<Class<PersonSpace>>,
     SocialIdentity: '' as Ref<Class<SocialIdentity>>,
     UserProfile: '' as Ref<MasterTag>,
-    UserRole: '' as Ref<Class<UserRole>>,
     Translation: '' as Ref<Class<Translation>>
   },
   mixin: {
@@ -425,7 +419,7 @@ export const contactPlugin = plugin(contactId, {
 })
 
 export default contactPlugin
-export * from './types'
-export * from './utils'
 export * from './analytics'
 export * from './avatar'
+export * from './types'
+export * from './utils'
