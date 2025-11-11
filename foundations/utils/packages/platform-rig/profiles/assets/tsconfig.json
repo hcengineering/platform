@@ -1,0 +1,23 @@
+{  
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "esnext",
+    "module": "commonjs",
+    "sourceMap": true,
+    "declaration": true,
+    "rootDir": "./src",
+    "outDir": "./lib",
+    "strict": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "esModuleInterop": true,
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+    "types": ["node", "jest"],
+    "incremental": true,
+    "isolatedModules": true,
+    
+  }
+}

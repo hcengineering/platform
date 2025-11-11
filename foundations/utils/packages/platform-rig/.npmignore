@@ -1,0 +1,4 @@
+*
+!/bin/**
+!/profiles/**
+!package.json
