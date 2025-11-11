@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@types/node": "^22.15.29",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
@@ -56,16 +56,16 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.22",
-    "@hcengineering/platform": "^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/platform": "workspace:^0.7.18",
     "@hcengineering/server-core": "workspace:^0.7.17",
     "@hcengineering/minio": "workspace:^0.7.16",
     "@hcengineering/s3": "workspace:^0.7.16",
     "@hcengineering/datalake": "workspace:^0.7.16",
     "@hcengineering/hulylake": "workspace:^0.7.16",
-    "@hcengineering/storage": "^0.7.17",
-    "@hcengineering/analytics": "^0.7.17",
-    "@hcengineering/server-token": "^0.7.17"
+    "@hcengineering/storage": "workspace:^0.7.17",
+    "@hcengineering/analytics": "workspace:^0.7.17",
+    "@hcengineering/server-token": "workspace:^0.7.17"
   },
   "repository": "https://github.com/hcengineering/huly.server",
   "publishConfig": {
