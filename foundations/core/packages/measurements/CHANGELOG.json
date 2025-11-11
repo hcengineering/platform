@@ -1,0 +1,97 @@
+{
+  "name": "@hcengineering/measurements",
+  "entries": [
+    {
+      "version": "0.7.18",
+      "tag": "@hcengineering/measurements_v0.7.18",
+      "date": "Mon, 27 Oct 2025 15:24:19 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix withContext to use options"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.14",
+      "tag": "@hcengineering/measurements_v0.7.14",
+      "date": "Mon, 27 Oct 2025 04:08:57 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Allow to suspend errors on change"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.13",
+      "tag": "@hcengineering/measurements_v0.7.13",
+      "date": "Tue, 14 Oct 2025 03:02:36 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Remove zero value measure with override values"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform-rig\" from `^0.7.18` to `0.7.19`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.12",
+      "tag": "@hcengineering/measurements_v0.7.12",
+      "date": "Sat, 11 Oct 2025 19:18:56 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "rollback eslint"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform-rig\" from `^0.7.14` to `0.7.15`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.11",
+      "tag": "@hcengineering/measurements_v0.7.11",
+      "date": "Sat, 11 Oct 2025 17:58:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add tests"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix eslint deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform-rig\" from `^0.7.12` to `0.7.13`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.10",
+      "tag": "@hcengineering/measurements_v0.7.10",
+      "date": "Fri, 10 Oct 2025 12:32:59 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform-rig\" from `^0.7.10` to `0.7.11`"
+          }
+        ]
+      }
+    }
+  ]
+}

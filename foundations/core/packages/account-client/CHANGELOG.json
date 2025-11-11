@@ -1,0 +1,132 @@
+{
+  "name": "@hcengineering/account-client",
+  "entries": [
+    {
+      "version": "0.7.19",
+      "tag": "@hcengineering/account-client_v0.7.19",
+      "date": "Thu, 30 Oct 2025 08:41:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "formatting"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "add workspace usage info"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.19` to `0.7.20`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.18",
+      "tag": "@hcengineering/account-client_v0.7.18",
+      "date": "Tue, 28 Oct 2025 21:50:57 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "new sub methods"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.17",
+      "tag": "@hcengineering/account-client_v0.7.17",
+      "date": "Mon, 27 Oct 2025 13:27:12 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.17` to `0.7.18`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.7",
+      "tag": "@hcengineering/account-client_v0.7.7",
+      "date": "Wed, 22 Oct 2025 12:46:09 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add subs methods"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.6",
+      "tag": "@hcengineering/account-client_v0.7.6",
+      "date": "Wed, 15 Oct 2025 18:01:30 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "added methods to work with profile"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.7` to `0.7.8`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.5",
+      "tag": "@hcengineering/account-client_v0.7.5",
+      "date": "Tue, 14 Oct 2025 04:58:17 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.6` to `0.7.7`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `^0.7.4` to `0.7.5`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.4",
+      "tag": "@hcengineering/account-client_v0.7.4",
+      "date": "Sat, 11 Oct 2025 18:20:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update to latest platform rig"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.5` to `0.7.6`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `^0.7.3` to `0.7.4`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.3",
+      "tag": "@hcengineering/account-client_v0.7.3",
+      "date": "Wed, 08 Oct 2025 03:40:53 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.3` to `0.7.4`"
+          }
+        ]
+      }
+    }
+  ]
+}
