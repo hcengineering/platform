@@ -144,6 +144,9 @@
     "Color": "Color",
     "AutomationOnly": "Solo automatización",
     "CopyLink": "Copiar enlace",
-    "ValueIsSet": "El valor está establecido"
+    "ValueIsSet": "El valor está establecido",
+    "RoleLabel": "Role: {role}",
+    "ForbidAttributeChanges": "Prohibir cambios de atributo",
+    "AllowAttributeChanges": "Permitir cambios de atributo"
   }
 }

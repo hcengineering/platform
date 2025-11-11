@@ -49,6 +49,16 @@
     "CardContent": "What do you want to share?",
     "Feed": "Feed",
     "AllCards": "All Cards",
-    "Favorites": "Favorites"
+    "Favorites": "Favorites",
+    "RemoveCard": "Remove Card",
+    "UpdateCard": "Update Card",
+    "CreateCardPermission": "Create Card",
+    "AddTagPermission": "Add Tag",
+    "RemoveTag": "Remove Tag",
+    "ForbidRemoveCard": "Forbid Remove Card",
+    "ForbidUpdateCard": "Forbid Update Card",
+    "ForbidCreateCardPermission": "Forbid Create Card",
+    "ForbidAddTagPermission": "Forbid Add Tag",
+    "ForbidRemoveTag": "Forbid Remove Tag"
   }
 }

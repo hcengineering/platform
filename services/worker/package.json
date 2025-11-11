@@ -51,13 +51,13 @@
     "prettier": "^3.6.2",
     "ts-node": "^10.8.0",
     "typescript": "^5.9.3",
-    "@hcengineering/server-process": "^0.7.0"
+    "@hcengineering/server-process": "workspace:^0.7.0"
   },
   "dependencies": {
     "@temporalio/worker": "1.12.3",
     "@temporalio/workflow": "1.12.3",
     "@hcengineering/kafka": "^0.7.15",
-    "@hcengineering/process": "^0.7.0",
+    "@hcengineering/process": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/server-core": "^0.7.16"
   }

@@ -26,7 +26,6 @@
     "EditDrive": "Laufwerk bearbeiten",
     "Rename": "Umbenennen",
     "Restore": "Wiederherstellen",
-    "RoleLabel": "Rolle",
     "Root": "/",
     "ForbidCreateDrivePermission": "Laufwerkserstellung verbieten",
     "ForbidCreateDrivePermissionDescription": "Verbietet Benutzern die Erstellung neuer Laufwerke"

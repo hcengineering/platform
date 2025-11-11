@@ -160,6 +160,7 @@ async function migrateChannel (
       autoJoin: doc.autoJoin,
       owners: doc.owners,
       types: [chat.masterTag.Thread],
+      type: cardPlugin.spaceType.SpaceType,
       space: cardPlugin.space.Default,
       modifiedBy: doc.modifiedBy,
       modifiedOn: doc.modifiedOn,

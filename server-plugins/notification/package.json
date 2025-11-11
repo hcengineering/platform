@@ -39,10 +39,10 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/activity": "^0.7.0",
+    "@hcengineering/activity": "workspace:^0.7.0",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/notification": "^0.7.0",
+    "@hcengineering/notification": "workspace:^0.7.0",
     "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/contact": "^0.7.0"
+    "@hcengineering/contact": "workspace:^0.7.0"
   }
 }

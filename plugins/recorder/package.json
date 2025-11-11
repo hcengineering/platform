@@ -38,9 +38,9 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/drive": "^0.7.0",
+    "@hcengineering/drive": "workspace:^0.7.0",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/uploader": "^0.7.0",
+    "@hcengineering/uploader": "workspace:^0.7.0",
     "tus-js-client": "^4.3.1"
   },
   "repository": "https://github.com/hcengineering/platform",

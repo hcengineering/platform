@@ -11,12 +11,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Ref } from '@hcengineering/core'
+import { type Permission, type Ref } from '@hcengineering/core'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { type PresentationMiddlewareCreator } from '@hcengineering/presentation'
 import process, { processId } from '@hcengineering/process'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type ViewQueryAction, type Viewlet } from '@hcengineering/view'
+
 export default mergeIds(processId, process, {
   viewlet: {
     ExecutionsList: '' as Ref<Viewlet>,
@@ -208,6 +209,16 @@ export default mergeIds(processId, process, {
     Context: '' as IntlString,
     EmptyArray: '' as IntlString,
     ExecutionInitiator: '' as IntlString,
-    ExecutionStarted: '' as IntlString
+    ExecutionStarted: '' as IntlString,
+    RunProcessPermission: '' as IntlString,
+    CancelProcessPermission: '' as IntlString,
+    ForbidRunProcessPermission: '' as IntlString,
+    ForbidCancelProcessPermission: '' as IntlString
+  },
+  permission: {
+    RunProcess: '' as Ref<Permission>,
+    CancelProcess: '' as Ref<Permission>,
+    ForbidRunProcess: '' as Ref<Permission>,
+    ForbidCancelProcess: '' as Ref<Permission>
   }
 })

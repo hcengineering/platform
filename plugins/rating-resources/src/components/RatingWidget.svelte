@@ -2,8 +2,7 @@
   import { getCurrentAccount, groupByArray, SortingOrder, type Class, type Doc, type Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import rating, { ReactionKind, type DocReaction } from '@hcengineering/rating'
-  import { NavGroup, Label } from '@hcengineering/ui'
-  import ScrollBox from '@hcengineering/ui/src/components/ScrollBox.svelte'
+  import { NavGroup, Label, ScrollBox } from '@hcengineering/ui'
   import NavigatorRating from './NavigatorRating.svelte'
 
   const current = getCurrentAccount()

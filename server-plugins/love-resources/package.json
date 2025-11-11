@@ -37,15 +37,15 @@
     "prettier-plugin-svelte": "^3.4.0"
   },
   "dependencies": {
-    "@hcengineering/view": "^0.7.0",
+    "@hcengineering/view": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/contact": "^0.7.0",
-    "@hcengineering/server-contact": "^0.7.0",
-    "@hcengineering/notification": "^0.7.0",
+    "@hcengineering/contact": "workspace:^0.7.0",
+    "@hcengineering/server-contact": "workspace:^0.7.0",
+    "@hcengineering/notification": "workspace:^0.7.0",
     "@hcengineering/server-core": "^0.7.16",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/workbench": "^0.7.0",
-    "@hcengineering/server-notification-resources": "^0.7.0",
-    "@hcengineering/love": "^0.7.0"
+    "@hcengineering/workbench": "workspace:^0.7.0",
+    "@hcengineering/server-notification-resources": "workspace:^0.7.0",
+    "@hcengineering/love": "workspace:^0.7.0"
   }
 }

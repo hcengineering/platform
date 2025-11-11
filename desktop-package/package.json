@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "^0.7.19",
-    "@hcengineering/desktop": "^0.7.0",
+    "@hcengineering/desktop": "workspace:^0.7.0",
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",
     "node-loader": "~2.0.0",
     "cross-env": "~7.0.3",
@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "electron-squirrel-startup": "~1.0.0",
-    "dotenv": "~16.0.0"
+    "dotenv": "^16.4.5"
   },
   "homepage": "https://huly.io/",
   "productName": "Huly Desktop",

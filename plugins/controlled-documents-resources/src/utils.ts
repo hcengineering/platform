@@ -443,11 +443,22 @@ export async function completeRequest (
     return
   }
 
-  await client.update(req, {
+  const ops = client.apply(req._id)
+
+  // Check on the server side if the user has already approved - do not add the second time
+  // otherwise request is never finished and ends up in a broken state
+  ops.notMatch(reqClass, {
+    _id: req._id,
+    approved: me
+  })
+
+  await ops.update(req, {
     $push: {
       approved: me
     }
   })
+
+  await ops.commit()
 }
 
 export async function saveComment (message: Markup | undefined, req: DocumentRequest): Promise<void> {

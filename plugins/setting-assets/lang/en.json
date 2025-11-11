@@ -205,6 +205,8 @@
     "ApiAccess": "API access",
     "ApiToken": "API token",
     "GenerateApiToken": "Generate API token",
-    "IdentifierExists": "Identifier already exists"
+    "IdentifierExists": "Identifier already exists",
+    "Restricted": "Restricted",
+    "RestrictedAttributeWarning": "Are you sure you want to restrict changing this attribute? This action will create permissions for this attribute and cannot be undone."
   }
 }

@@ -41,11 +41,11 @@
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/platform": "^0.7.17",
     "svelte": "^4.2.20",
-    "@hcengineering/tags": "^0.7.0",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/presentation": "^0.7.0",
+    "@hcengineering/tags": "workspace:^0.7.0",
+    "@hcengineering/ui": "workspace:^0.7.0",
+    "@hcengineering/presentation": "workspace:^0.7.0",
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/view": "^0.7.0",
-    "@hcengineering/view-resources": "^0.7.0"
+    "@hcengineering/view": "workspace:^0.7.0",
+    "@hcengineering/view-resources": "workspace:^0.7.0"
   }
 }

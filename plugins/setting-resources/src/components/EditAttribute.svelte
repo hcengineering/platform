@@ -13,9 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Class, DocumentUpdate, IndexKind, PropertyType, Ref, Type } from '@hcengineering/core'
+  import core, {
+    AnyAttribute,
+    Class,
+    DocumentUpdate,
+    IndexKind,
+    Permission,
+    PropertyType,
+    Ref,
+    Type
+  } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel, getResource, translateCB } from '@hcengineering/platform'
-  import presentation, { getClient } from '@hcengineering/presentation'
+  import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
   import {
     AnyComponent,
     ButtonIcon,
@@ -147,6 +156,68 @@
       }
     })
   }
+
+  let isRestricted: boolean =
+    client.getModel().findObject(getAttributePermissionRef(attribute, false)) !== undefined ||
+    client.getModel().findObject(getAttributePermissionRef(attribute, true)) !== undefined
+
+  function getAttributePermissionRef (attr: AnyAttribute, forbidden: boolean): Ref<Permission> {
+    return `${attr._id}_${forbidden ? 'forbidden' : 'allowed'}` as Ref<Permission>
+  }
+
+  function changeRestricted (e: CustomEvent<boolean>): void {
+    showPopup(
+      MessageBox,
+      {
+        label: setting.string.Restricted,
+        message: setting.string.RestrictedAttributeWarning,
+        action: async () => {
+          isRestricted = true
+          const isMixin = hierarchy.isMixin(attribute.attributeOf)
+          const txClass = isMixin ? core.class.TxMixin : core.class.TxUpdateDoc
+          const txMatchQ = isMixin ? `attributes.${attribute.name}` : `operations.${attribute.name}`
+          await client.createDoc(
+            core.class.Permission,
+            core.space.Model,
+            {
+              objectClass: attribute.attributeOf,
+              txClass,
+              txMatch: {
+                [txMatchQ]: { $exists: true }
+              },
+              scope: 'space',
+              forbid: false,
+              label: view.string.AllowAttributeChanges,
+              description: attribute.label
+            },
+            getAttributePermissionRef(attribute, false)
+          )
+          await client.createDoc(
+            core.class.Permission,
+            core.space.Model,
+            {
+              objectClass: attribute.attributeOf,
+              txClass,
+              txMatch: {
+                [txMatchQ]: { $exists: true }
+              },
+              scope: 'space',
+              forbid: true,
+              label: view.string.ForbidAttributeChanges,
+              description: attribute.label
+            },
+            getAttributePermissionRef(attribute, true)
+          )
+        }
+      },
+      'top',
+      (res) => {
+        if (res !== undefined) {
+          isRestricted = res
+        }
+      }
+    )
+  }
 </script>
 
 <Modal
@@ -222,6 +293,10 @@
       <Label label={view.string.AutomationOnly} />
     </span>
     <Toggle bind:on={automationOnly} />
+    <span class="label">
+      <Label label={setting.string.Restricted} />
+    </span>
+    <Toggle on={isRestricted} disabled={isRestricted} on:change={changeRestricted} />
   </div>
 </Modal>
 

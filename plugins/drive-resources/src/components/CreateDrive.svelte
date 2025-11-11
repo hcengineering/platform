@@ -36,6 +36,7 @@
 
   import driveRes from '../plugin'
   import { Analytics } from '@hcengineering/analytics'
+  import view from '@hcengineering/view'
 
   export let drive: Drive | undefined = undefined
 
@@ -309,7 +310,7 @@
     {#each roles as role}
       <div class="antiGrid-row">
         <div class="antiGrid-row__header">
-          <Label label={driveRes.string.RoleLabel} params={{ role: role.name }} />
+          <Label label={view.string.RoleLabel} params={{ role: role.name }} />
         </div>
         <AccountArrayEditor
           value={rolesAssignment?.[role._id] ?? []}

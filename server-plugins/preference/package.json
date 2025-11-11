@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
-    "@hcengineering/preference": "^0.7.0",
+    "@hcengineering/preference": "workspace:^0.7.0",
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/server-core": "^0.7.16"
   }

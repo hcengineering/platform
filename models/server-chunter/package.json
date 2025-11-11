@@ -37,11 +37,11 @@
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-chunter": "^0.7.0",
+    "@hcengineering/server-chunter": "workspace:^0.7.0",
     "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/chunter": "^0.7.0",
-    "@hcengineering/notification": "^0.7.0",
-    "@hcengineering/server-notification": "^0.7.0",
-    "@hcengineering/activity": "^0.7.0"
+    "@hcengineering/chunter": "workspace:^0.7.0",
+    "@hcengineering/notification": "workspace:^0.7.0",
+    "@hcengineering/server-notification": "workspace:^0.7.0",
+    "@hcengineering/activity": "workspace:^0.7.0"
   }
 }

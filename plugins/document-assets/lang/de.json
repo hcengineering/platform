@@ -51,7 +51,6 @@
     "ConfigDescription": "Erweiterung für kollaborative Dokumentbearbeitung",
     "Icon": "Symbol",
     "Color": "Farbe",
-    "RoleLabel": "Rolle: {role}",
     "ForbidCreateTeamspacePermission": "Arbeitsbereichserstellung verbieten",
     "ForbidCreateTeamspacePermissionDescription": "Verbietet Benutzern das Erstellen neuer Arbeitsbereiche"
   }

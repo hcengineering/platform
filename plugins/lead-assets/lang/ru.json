@@ -34,7 +34,6 @@
     "ConfigDescription": "Расширение по работе с клиентами",
     "EditFunnel": "Редактировать воронку",
     "FunnelMembers": "Участники",
-    "RoleLabel": "Роль: {role}",
     "ForbidCreateFunnelPermission": "Запретить создание воронки",
     "ForbidCreateFunnelPermissionDescription": "Запрещает пользователям создавать новые воронки"
   }

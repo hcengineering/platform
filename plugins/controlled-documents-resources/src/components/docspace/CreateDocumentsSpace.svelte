@@ -36,6 +36,7 @@
   import documents, { DocumentSpace, DocumentSpaceType } from '@hcengineering/controlled-documents'
 
   import documentsRes from '../../plugin'
+  import view from '@hcengineering/view'
 
   export let docSpace: DocumentSpace | undefined = undefined
   export let clazz: Ref<Class<DocumentSpace>> = documents.class.OrgSpace
@@ -315,7 +316,7 @@
     {#each roles as role}
       <div class="antiGrid-row">
         <div class="antiGrid-row__header">
-          <Label label={documentsRes.string.RoleLabel} params={{ role: role.name }} />
+          <Label label={view.string.RoleLabel} params={{ role: role.name }} />
         </div>
         <AccountArrayEditor
           value={rolesAssignment?.[role._id] ?? []}

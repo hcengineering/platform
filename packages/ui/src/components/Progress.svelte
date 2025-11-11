@@ -24,6 +24,7 @@
   export let color: number | undefined = undefined
   export let editable = false
   export let fallback: number = 0
+  export let small: boolean = false
 
   $: proc = (max - min) / 100
   $: if (value > max) value = max
@@ -61,6 +62,9 @@
   let drag: boolean = false
 
   $: position = proc !== 0 ? Math.round((value - min) / proc) : fallback
+  $: barWidth = small
+    ? `calc(calc(100% - 0.5rem) * ${position} / 100 + .25rem)`
+    : `calc(calc(100% - 1rem) * ${position} / 100 + .5rem)`
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -68,7 +72,7 @@
 <div class="container" class:editable on:click={click} on:mousemove={move} on:mouseleave={save} on:mouseup={save}>
   <div
     class="bar"
-    style:width={`calc(calc(100% - 1rem) * ${position} / 100 + .5rem)`}
+    style:width={barWidth}
     style:background-color={color !== undefined
       ? getPlatformColor(color, $themeStore.dark)
       : 'var(--theme-toggle-on-bg-color)'}

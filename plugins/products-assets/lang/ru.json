@@ -28,8 +28,6 @@
     "Private": "Приватный",
     "Public": "Публичный",
     "Members": "Участники",
-    "RoleLabel": "Роль: {role}",
-
     "UpdateProductPermission": "Обновлять продукт",
     "UpdateProductDescription": "Предоставляет пользователям разрешение обновлять продукт",
     "ChangeControl": "Контроль изменений",

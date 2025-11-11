@@ -50,7 +50,6 @@
     "ConfigLabel": "Dokümanlar",
     "ConfigDescription": "İşbirlikli doküman düzenleme için uzantı",
     "Icon": "İkon",
-    "Color": "Renk",
-    "RoleLabel": "Rol: {role}"
+    "Color": "Renk"
   }
 }

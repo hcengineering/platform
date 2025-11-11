@@ -239,7 +239,6 @@
     "EditDocumentSpace": "ドキュメントスペースを編集",
     "DocSpaceDescriptionPlaceholder": "スペースの説明...",
     "Members": "メンバー",
-    "RoleLabel": "役割: {role}",
     "CreateOrgSpace": "組織スペースを作成",
     "ReviewDocumentPermission": "ドキュメントをレビュー",
     "ReviewDocumentDescription": "ユーザーにドキュメントをレビューする権限を付与します",

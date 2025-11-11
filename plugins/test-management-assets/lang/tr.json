@@ -33,7 +33,6 @@
     "ProjectName": "İsim",
     "ProjectType": "Tip",
     "Members": "Üyeler",
-    "RoleLabel": "Rol",
     "ProjectMembers": "Proje üyeleri",
     "TestSuites": "Test paketleri",
     "CreateTestSuite": "Test paketi oluştur",

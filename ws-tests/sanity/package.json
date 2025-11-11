@@ -46,10 +46,10 @@
     "allure-playwright": "^3.0.6",
     "allure-js-commons": "^3.0.6",
     "@faker-js/faker": "^8.4.1",
-    "@hcengineering/tests-sanity": "^0.7.0"
+    "@hcengineering/tests-sanity": "workspace:^0.7.0"
   },
   "dependencies": {
-    "dotenv": "~16.0.0",
+    "dotenv": "^16.4.5",
     "cross-env": "~7.0.3",
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/client-resources": "^0.7.17"

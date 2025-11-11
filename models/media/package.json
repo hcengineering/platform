@@ -36,12 +36,12 @@
   "dependencies": {
     "@hcengineering/core": "^0.7.21",
     "@hcengineering/model": "^0.7.17",
-    "@hcengineering/model-core": "^0.7.0",
-    "@hcengineering/model-presentation": "^0.7.0",
-    "@hcengineering/model-workbench": "^0.7.0",
+    "@hcengineering/model-core": "workspace:^0.7.0",
+    "@hcengineering/model-presentation": "workspace:^0.7.0",
+    "@hcengineering/model-workbench": "workspace:^0.7.0",
     "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/ui": "^0.7.0",
-    "@hcengineering/media": "^0.7.0",
-    "@hcengineering/media-resources": "^0.7.0"
+    "@hcengineering/ui": "workspace:^0.7.0",
+    "@hcengineering/media": "workspace:^0.7.0",
+    "@hcengineering/media-resources": "workspace:^0.7.0"
   }
 }

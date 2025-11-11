@@ -68,7 +68,7 @@
     "@hcengineering/platform": "^0.7.17",
     "@hcengineering/account-client": "^0.7.19",
     "cors": "^2.8.5",
-    "dotenv": "~16.0.0",
+    "dotenv": "^16.4.5",
     "express": "^4.21.2",
     "express-fileupload": "^1.5.1",
     "postgres": "^3.4.7",

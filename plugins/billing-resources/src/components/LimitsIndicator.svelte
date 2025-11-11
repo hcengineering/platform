@@ -16,8 +16,7 @@
   import { onDestroy, onMount } from 'svelte'
   import { checkWorkspaceLimits, upgradePlan, calculateLimits } from '../utils'
   import { subscriptionStore, resetSubscriptionStore } from '../stores/subscription'
-  import { location, tooltip } from '@hcengineering/ui'
-  import UsageProgressBar from './UsageProgressBar.svelte'
+  import { location, PaletteColorIndexes, Progress, tooltip } from '@hcengineering/ui'
   import UsagePopup from './UsagePopup.svelte'
 
   let pollInterval: number | undefined
@@ -42,6 +41,9 @@
 
   $: storagePercent = limits.storageLimit > 0 ? Math.min(storageUsed / limits.storageLimit, 1) : 0
   $: bandwidthPercent = limits.trafficLimit > 0 ? Math.min(trafficUsed / limits.trafficLimit, 1) : 0
+
+  $: storageColor = storagePercent >= 0.9 ? PaletteColorIndexes.Firework : undefined
+  $: bandwidthColor = bandwidthPercent >= 0.9 ? PaletteColorIndexes.Firework : undefined
 
   onMount(() => {
     // Initialize with current workspace
@@ -101,12 +103,11 @@
   }}
   on:click={handleClick}
 >
-  <div class="limit-item">
-    <UsageProgressBar percent={storagePercent} height="5px" />
+  <div class="progress-wrapper">
+    <Progress color={storageColor} value={storageUsed} max={limits.storageLimit} fallback={0} small={true} />
   </div>
-
-  <div class="limit-item">
-    <UsageProgressBar percent={bandwidthPercent} height="5px" />
+  <div class="progress-wrapper">
+    <Progress color={bandwidthColor} value={trafficUsed} max={limits.trafficLimit} fallback={0} small={true} />
   </div>
 </button>
 
@@ -115,11 +116,12 @@
     display: flex;
     flex-direction: column;
     gap: 0.125rem;
-    border-radius: var(--small-BorderRadius);
+    border-radius: var(--extra-small-BorderRadius);
     cursor: pointer;
     transition: background-color 0.2s ease;
-    padding: 0.25rem;
-    border: none;
+    padding: 0.188rem;
+    width: 1.75rem;
+    border: 1px solid var(--theme-trans-color);
     background: none;
     outline: none;
 
@@ -128,13 +130,8 @@
       background-color: var(--theme-button-hovered);
     }
   }
-  .limit-item {
-    display: flex;
-    align-items: center;
-    padding: 0.0625rem;
-    border-radius: var(--small-BorderRadius);
-    transition: background-color 0.2s ease;
-    position: relative;
-    border: 1px solid var(--theme-trans-color);
+
+  .progress-wrapper {
+    width: 100%;
   }
 </style>

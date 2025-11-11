@@ -2,8 +2,7 @@
   import { AttachedDoc, Ref, WithLookup } from '@hcengineering/core'
   import { GithubIntegration, GithubIntegrationRepository, GithubProject } from '@hcengineering/github'
   import { getMetadata } from '@hcengineering/platform'
-  import presentation, { NavLink, getClient, isAdminUser } from '@hcengineering/presentation'
-  import MessageBox from '@hcengineering/presentation/src/components/MessageBox.svelte'
+  import presentation, { NavLink, getClient, isAdminUser, MessageBox } from '@hcengineering/presentation'
   import tracker, { Project } from '@hcengineering/tracker'
   import ui, {
     Action,
