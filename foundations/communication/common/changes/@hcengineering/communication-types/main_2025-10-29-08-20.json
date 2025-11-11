@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/communication-types",
+      "comment": "update deps",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/communication-types"
+}
