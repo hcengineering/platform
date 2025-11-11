@@ -1,0 +1,8 @@
+*
+!/lib/**
+!/types/**
+!/src/**
+!CHANGELOG.md
+/lib/**/__test__/
+/types/**/__test__/
+/src/**/__test__/

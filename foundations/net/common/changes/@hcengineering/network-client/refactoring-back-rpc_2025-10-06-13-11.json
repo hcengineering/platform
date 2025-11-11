@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/network-client",
+      "comment": "renamings",
+      "type": "none"
+    }
+  ],
+  "packageName": "@hcengineering/network-client"
+}

@@ -1,0 +1,51 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "address": "127.0.0.1",
+      "localRoot": "${workspaceFolder}",
+      "name": "Attach to Remote",
+      "port": 9229,
+      "request": "attach",
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node"
+    },
+    {
+      "name": "Debug Network",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "3737",
+        "DEVELOPMENT": "true"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "22",
+      "showAsyncStacks": true,
+      "outputCapture": "std",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/network-pod",
+      "protocol": "inspector"
+    },
+    {
+      "name": "Debug Tool",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts", "bench-agent"],
+      "env": {
+        "NETWORK_HOST": "localhost:37371"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "22",
+      "showAsyncStacks": true,
+      "outputCapture": "std",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/pods/network-tool",
+      "protocol": "inspector"
+    }
+  ]
+}
