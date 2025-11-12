@@ -528,3 +528,10 @@ export function escape<T> (str: T): T {
   }
   return str
 }
+
+export function simpleEscape<T> (str: T): T {
+  if (typeof str === 'string') {
+    return str.replace(/'/g, "''") as T
+  }
+  return str
+}

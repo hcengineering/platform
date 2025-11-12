@@ -2,6 +2,18 @@
   "name": "@hcengineering/postgres",
   "entries": [
     {
+      "version": "0.7.19",
+      "tag": "@hcengineering/postgres_v0.7.19",
+      "date": "Wed, 12 Nov 2025 07:07:31 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix enum sorting"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.18",
       "tag": "@hcengineering/postgres_v0.7.18",
       "date": "Thu, 06 Nov 2025 10:21:28 GMT",
