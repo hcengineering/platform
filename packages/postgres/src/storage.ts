@@ -15,6 +15,7 @@
 
 import core, {
   AccountRole,
+  type AnyAttribute,
   type AssociationQuery,
   type Class,
   type Doc,
@@ -28,6 +29,8 @@ import core, {
   DOMAIN_RELATION,
   DOMAIN_SPACE,
   DOMAIN_TX,
+  type Enum,
+  type EnumOf,
   type FindOptions,
   type FindResult,
   getClassCollaborators,
@@ -105,7 +108,8 @@ import {
   NumericTypes,
   parseDoc,
   parseDocWithProjection,
-  parseUpdate
+  parseUpdate,
+  simpleEscape
 } from './utils'
 async function * createCursorGenerator (
   client: postgres.Sql,
@@ -973,6 +977,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
   }
 
+  private getEnumVals (attr: AnyAttribute): Enum | undefined {
+    try {
+      const ref = (attr.type as EnumOf).of
+      return this.modelDb.getObject<Enum>(ref)
+    } catch {}
+  }
+
   private buildOrder<T extends Doc>(
     _class: Ref<Class<T>>,
     baseDomain: string,
@@ -981,12 +992,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
   ): string {
     const res: string[] = []
     for (const _key in sort) {
+      const attr = this.hierarchy.findAttribute(_class, _key)
       const val = sort[_key]
       if (val === undefined) {
         continue
       }
       if (typeof val === 'number') {
-        const attr = this.hierarchy.findAttribute(_class, _key)
         const key = escape(_key)
         if (attr !== undefined && NumericTypes.includes(attr.type._class)) {
           res.push(`(${this.getKey(_class, baseDomain, key, joins)})::numeric ${val === 1 ? 'ASC' : 'DESC'}`)
@@ -997,6 +1008,15 @@ abstract class PostgresAdapterBase implements DbAdapter {
           res.push(
             `COALESCE(NULLIF(regexp_replace(${this.getKey(_class, baseDomain, key, joins)}, '.*?(\\d+)$', '\\1'), ''), '0')::INT ${val === 1 ? 'ASC' : 'DESC'}`
           )
+        } else if (attr?.type._class === core.class.EnumOf && this.getEnumVals(attr) !== undefined) {
+          const enumValues = this.getEnumVals(attr)
+          if (enumValues !== undefined) {
+            const orderCase = enumValues.enumValues.map((v, i) => `WHEN '${simpleEscape(v)}' THEN ${i + 1}`).join(' ')
+
+            res.push(
+              `CASE ${this.getKey(_class, baseDomain, key, joins)} ${orderCase} ELSE 999 END ${val === 1 ? 'ASC' : 'DESC'}`
+            )
+          }
         } else {
           res.push(`${this.getKey(_class, baseDomain, key, joins)} ${val === 1 ? 'ASC' : 'DESC'}`)
         }
