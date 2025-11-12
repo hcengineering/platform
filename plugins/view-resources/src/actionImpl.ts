@@ -19,6 +19,7 @@ import {
   copyTextToClipboardOldBrowser,
   getClient,
   getMarkup,
+  hasResource,
   updateAttribute
 } from '@hcengineering/presentation'
 import { markupToJSON } from '@hcengineering/text'
@@ -48,6 +49,7 @@ import {
   selectionStore
 } from './selection'
 import { deleteObjects, getObjectId, getObjectLinkFragment, restrictionStore } from './utils'
+import workbenchPlugin from '@hcengineering/workbench'
 
 /**
  * Action to be used for copying text to clipboard.
@@ -328,8 +330,13 @@ async function OpenInNewTab (
   const panelComponent = hierarchy.classHierarchyMixin(d._class, view.mixin.ObjectPanel)
   const component = props?.component ?? panelComponent?.component ?? view.component.EditDoc
   const loc = await getObjectLinkFragment(hierarchy, d, {}, component)
-  const url = locationToUrl(loc)
-  window.open(url, '_blank')
+  if (hasResource(workbenchPlugin.function.OpenInNewTab) === true) {
+    const res = await getResource(workbenchPlugin.function.OpenInNewTab)
+    await res(loc)
+  } else {
+    const url = locationToUrl(loc)
+    window.open(url, '_blank')
+  }
 }
 
 /**
