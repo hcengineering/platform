@@ -166,7 +166,9 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       if (
         permission.objectClass !== undefined &&
         !this.context.hierarchy.isDerived(tx.objectClass, permission.objectClass)
-      ) { continue }
+      ) {
+        continue
+      }
       if (permission.txMatch === undefined) {
         withoutMatch = permission
         continue
