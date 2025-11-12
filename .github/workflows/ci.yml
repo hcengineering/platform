@@ -25,6 +25,16 @@ jobs:
         run: node common/scripts/install-run-rush.js install
       - name: Rush validate
         run: node common/scripts/install-run-rush.js validate --verbose
+      - name: Formatting...
+        run: node common/scripts/install-run-rush.js format --force
+      - name: Check files formatting
+        run: |
+          echo '================================================================'
+          echo 'Checking for diff files'
+          echo '================================================================'
+          git diff '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat
+          [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat)" ]
+          echo '================================================================'
       - name: Prepare server
         run: |
           cd ./tests

@@ -160,10 +160,15 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
   private checkPermission (ctx: MeasureContext<SessionData>, space: Ref<TypedSpace>, tx: TxCUD<Doc>): boolean {
     const account = ctx.contextData.account
     const permissions = this.permissionsBySpace[space]?.[account.uuid] ?? []
-    let withoutMatch: Permission | undefined = undefined
+    let withoutMatch: Permission | undefined
     for (const permission of permissions) {
       if (permission.txClass === undefined || permission.txClass !== tx._class) continue
-      if (permission.objectClass !== undefined && !this.context.hierarchy.isDerived(tx.objectClass, permission.objectClass)) continue
+      if (
+        permission.objectClass !== undefined &&
+        !this.context.hierarchy.isDerived(tx.objectClass, permission.objectClass)
+      ) {
+        continue
+      }
       if (permission.txMatch === undefined) {
         withoutMatch = permission
         continue
