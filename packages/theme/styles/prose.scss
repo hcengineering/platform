@@ -23,7 +23,7 @@ table.proseTable {
   --table-handle-size: 0.875rem;
   --table-handle-indent: calc(var(--table-handle-size) * -1 - 1px);
   --table-handle-col-indent: calc(var(--table-handle-size) * -0.5);
-  --table-handle-row-indent: calc(var(--table-handle-size) * -1 - 0.75rem);
+  --table-handle-row-indent: calc(var(--table-handle-size) * -1);
   --table-insert-marker-indent: calc(-1.25rem - 1px);
 
   --table-selection-z-index: 100;
