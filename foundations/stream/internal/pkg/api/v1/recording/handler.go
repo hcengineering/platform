@@ -65,7 +65,7 @@ func (h *recordingHandler) initialize() {
 	tusComposer.UseLengthDeferrer(coordinator)
 
 	var tusHandler, err = tusd.NewHandler(tusd.Config{
-		BasePath:                "/recording",
+		BasePath:                h.cfg.BaseURL + "/recording",
 		StoreComposer:           tusComposer,
 		RespectForwardedHeaders: true,
 		DisableDownload:         true,
