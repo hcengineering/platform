@@ -75,7 +75,10 @@
   }
 
   async function saveNameChange (first: string, last: string): Promise<void> {
-    if ($myEmployeeStore === undefined) return
+    if ($myEmployeeStore === undefined) {
+      Analytics.handleError(new Error('Employee store is undefined'))
+      return
+    }
 
     const newName = combineName(first, last)
     if (newName === $myEmployeeStore.name) return
