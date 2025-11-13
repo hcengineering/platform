@@ -17,7 +17,7 @@
 import type { Class, Doc, Mixin, Ref, Space } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
-import { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
+import { AnyComponent, ComponentExtensionId, Location } from '@hcengineering/ui'
 import { Action, ViewAction } from '@hcengineering/view'
 
 import type {
@@ -95,7 +95,8 @@ export const workbenchPlugin = plugin(workbenchId, {
     CloseWidget: '' as Resource<(widget: Ref<Widget>) => Promise<void>>,
     GetSidebarObject: '' as Resource<() => Partial<Pick<Doc, '_id' | '_class'>>>,
     LogIn: '' as Resource<(loginInfo: { account: string, token?: string }) => Promise<void>>,
-    LogOut: '' as Resource<() => Promise<void>>
+    LogOut: '' as Resource<() => Promise<void>>,
+    OpenInNewTab: '' as Resource<(loc: Location) => Promise<void>>
   },
   actionImpl: {
     Navigate: '' as ViewAction<{

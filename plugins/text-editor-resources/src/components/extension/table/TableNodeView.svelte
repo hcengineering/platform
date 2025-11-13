@@ -195,7 +195,7 @@
       &__col {
         right: calc(var(--table-offscreen-spacing) - 1.5rem);
         top: 0;
-        bottom: 0;
+        bottom: 1rem;
         margin: 1.5rem 0;
 
         .table-button {
@@ -204,7 +204,7 @@
       }
 
       &__row {
-        bottom: -0.25rem;
+        bottom: 1rem;
         left: var(--table-offscreen-spacing);
         right: var(--table-offscreen-spacing);
 
