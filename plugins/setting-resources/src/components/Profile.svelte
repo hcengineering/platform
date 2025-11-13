@@ -32,6 +32,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { logIn, logOut } from '@hcengineering/workbench-resources'
+  import { Analytics } from '@hcengineering/analytics'
 
   import rating, { type PersonRating } from '@hcengineering/rating'
   import setting from '../plugin'
@@ -54,17 +55,52 @@
   let firstName = ''
   let lastName = ''
   let initialized = false
+  let userHasEdited = false
+  let saveTimeout: any
 
   // Initialize names only once when store value changes from undefined
   // not to interfere with further user editing
-  $: if ($myEmployeeStore !== undefined && !initialized) {
+  $: if ($myEmployeeStore !== undefined && !initialized && !userHasEdited) {
     firstName = getFirstName($myEmployeeStore.name)
     lastName = getLastName($myEmployeeStore.name)
     initialized = true
   }
 
+  // Debounced auto-save while typing
+  $: if (initialized && userHasEdited) {
+    clearTimeout(saveTimeout)
+    saveTimeout = setTimeout(() => {
+      void saveNameChange(firstName, lastName)
+    }, 1000)
+  }
+
+  async function saveNameChange (first: string, last: string): Promise<void> {
+    if ($myEmployeeStore === undefined) return
+
+    const newName = combineName(first, last)
+    if (newName === $myEmployeeStore.name) return
+
+    try {
+      await client.diffUpdate($myEmployeeStore, { name: newName })
+    } catch (err: any) {
+      Analytics.handleError(err)
+      console.error('Failed to update name:', err)
+    }
+  }
+
+  function handleInput (): void {
+    userHasEdited = true
+  }
+
+  async function handleBlur (): Promise<void> {
+    clearTimeout(saveTimeout)
+    if (userHasEdited) {
+      await saveNameChange(firstName, lastName)
+    }
+  }
+
   let avatarEditor: EditableAvatar
-  async function onAvatarDone (e: any): Promise<void> {
+  async function onAvatarDone (): Promise<void> {
     if ($myEmployeeStore === undefined) return
 
     if ($myEmployeeStore.avatar != null) {
@@ -93,14 +129,6 @@
         }
       }
     })
-  }
-
-  async function nameChange (): Promise<void> {
-    if ($myEmployeeStore !== undefined) {
-      await client.diffUpdate($myEmployeeStore, {
-        name: combineName(firstName, lastName)
-      })
-    }
   }
 </script>
 
@@ -139,14 +167,16 @@
               kind={'large-style'}
               autoFocus
               focusIndex={1}
-              on:change={nameChange}
+              on:input={handleInput}
+              on:blur={handleBlur}
             />
             <EditBox
               placeholder={contact.string.PersonLastNamePlaceholder}
               bind:value={lastName}
               kind={'large-style'}
               focusIndex={2}
-              on:change={nameChange}
+              on:input={handleInput}
+              on:blur={handleBlur}
             />
             <div class="location">
               <AttributeEditor
