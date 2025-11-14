@@ -1,0 +1,40 @@
+{
+  "incrementalBuildIgnoredGlobs": [
+    "temp/**", 
+    "lib/**", 
+    "coverage/**",
+    ".build/**",
+    ".validate/**",
+    ".format/**",
+    "types"
+  ],
+  "disableBuildCacheForProject": false,
+
+  "operationSettings": [
+    {
+      "operationName": "build",
+      "outputFolderNames": ["lib", ".build"]
+    },
+    {
+      "operationName": "format",
+      "outputFolderNames": [".rush/temp/.format"]
+    },
+    {
+      "operationName": "_phase:build",
+      "outputFolderNames": ["lib", ".build"]
+    },
+    {
+      "operationName": "_phase:validate",
+      "outputFolderNames": ["types", ".validate"]
+    },
+    {
+      "operationName": "_phase:bundle",
+      "outputFolderNames": ["bundle"],
+      "disableBuildCacheForOperation": true
+    },
+    {
+      "operationName": "_phase:test",
+      "outputFolderNames": ["coverage"]
+    }
+  ]
+}

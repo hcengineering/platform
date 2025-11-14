@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/client-resources",
+      "comment": "formatting",
+      "type": "none"
+    }
+  ],
+  "packageName": "@hcengineering/client-resources"
+}

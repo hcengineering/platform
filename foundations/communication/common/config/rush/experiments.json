@@ -1,0 +1,121 @@
+/**
+ * This configuration file allows repo maintainers to enable and disable experimental
+ * Rush features.  More documentation is available on the Rush website: https://rushjs.io
+ */
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/experiments.schema.json",
+
+  /**
+   * By default, 'rush install' passes --no-prefer-frozen-lockfile to 'pnpm install'.
+   * Set this option to true to pass '--frozen-lockfile' instead for faster installs.
+   */
+  // "usePnpmFrozenLockfileForRushInstall": true,
+
+  /**
+   * By default, 'rush update' passes --no-prefer-frozen-lockfile to 'pnpm install'.
+   * Set this option to true to pass '--prefer-frozen-lockfile' instead to minimize shrinkwrap changes.
+   */
+  // "usePnpmPreferFrozenLockfileForRushUpdate": true,
+
+  /**
+   * By default, 'rush update' runs as a single operation.
+   * Set this option to true to instead update the lockfile with `--lockfile-only`, then perform a `--frozen-lockfile` install.
+   * Necessary when using the `afterAllResolved` hook in .pnpmfile.cjs.
+   */
+  // "usePnpmLockfileOnlyThenFrozenLockfileForRushUpdate": true,
+
+  /**
+   * If using the 'preventManualShrinkwrapChanges' option, restricts the hash to only include the layout of external dependencies.
+   * Used to allow links between workspace projects or the addition/removal of references to existing dependency versions to not
+   * cause hash changes.
+   */
+  // "omitImportersFromPreventManualShrinkwrapChanges": true,
+
+  /**
+   * If true, the chmod field in temporary project tar headers will not be normalized.
+   * This normalization can help ensure consistent tarball integrity across platforms.
+   */
+  // "noChmodFieldInTarHeaderNormalization": true,
+
+  /**
+   * If true, build caching will respect the allowWarningsInSuccessfulBuild flag and cache builds with warnings.
+   * This will not replay warnings from the cached build.
+   */
+  // "buildCacheWithAllowWarningsInSuccessfulBuild": true,
+
+  /**
+   * If true, build skipping will respect the allowWarningsInSuccessfulBuild flag and skip builds with warnings.
+   * This will not replay warnings from the skipped build.
+   */
+  // "buildSkipWithAllowWarningsInSuccessfulBuild": true,
+
+  /**
+   * If true, perform a clean install after when running `rush install` or `rush update` if the
+   * `.npmrc` file has changed since the last install.
+   */
+  // "cleanInstallAfterNpmrcChanges": true,
+
+  /**
+   * If true, print the outputs of shell commands defined in event hooks to the console.
+   */
+  // "printEventHooksOutputToConsole": true,
+
+  /**
+   * If true, Rush will not allow node_modules in the repo folder or in parent folders.
+   */
+  // "forbidPhantomResolvableNodeModulesFolders": true,
+
+  /**
+   * (UNDER DEVELOPMENT) For certain installation problems involving peer dependencies, PNPM cannot
+   * correctly satisfy versioning requirements without installing duplicate copies of a package inside the
+   * node_modules folder. This poses a problem for "workspace:*" dependencies, as they are normally
+   * installed by making a symlink to the local project source folder. PNPM's "injected dependencies"
+   * feature provides a model for copying the local project folder into node_modules, however copying
+   * must occur AFTER the dependency project is built and BEFORE the consuming project starts to build.
+   * The "pnpm-sync" tool manages this operation; see its documentation for details.
+   * Enable this experiment if you want "rush" and "rushx" commands to resync injected dependencies
+   * by invoking "pnpm-sync" during the build.
+   */
+  // "usePnpmSyncForInjectedDependencies": true,
+
+  /**
+   * If set to true, Rush will generate a `project-impact-graph.yaml` file in the repository root during `rush update`.
+   */
+  // "generateProjectImpactGraphDuringRushUpdate": true,
+
+  /**
+   * If true, when running in watch mode, Rush will check for phase scripts named `_phase:<name>:ipc` and run them instead
+   * of `_phase:<name>` if they exist. The created child process will be provided with an IPC channel and expected to persist
+   * across invocations.
+   */
+  // "useIPCScriptsInWatchMode": true,
+
+  /**
+   * (UNDER DEVELOPMENT) The Rush alerts feature provides a way to send announcements to engineers
+   * working in the monorepo, by printing directly in the user's shell window when they invoke Rush commands.
+   * This ensures that important notices will be seen by anyone doing active development, since people often
+   * ignore normal discussion group messages or don't know to subscribe.
+   */
+   // "rushAlerts": true,
+
+
+  /**
+   * When using cobuilds, this experiment allows uncacheable operations to benefit from cobuild orchestration without using the build cache.
+   */
+   // "allowCobuildWithoutCache": true,
+
+   /**
+   * By default, rush perform a full scan of the entire repository. For example, Rush runs `git status` to check for local file changes.
+   * When this toggle is enabled, Rush will only scan specific paths, significantly speeding up Git operations.
+   */
+  // "enableSubpathScan": true,
+
+  /**
+   * Rush has a policy that normally requires Rush projects to specify `workspace:*` in package.json when depending
+   * on other projects in the workspace, unless they are explicitly declared as `decoupledLocalDependencies`
+   * in rush.json.  Enabling this experiment will remove that requirement for dependencies belonging to a different
+   * subspace.  This is useful for large product groups who work in separate subspaces and generally prefer to consume
+   * each other's packages via the NPM registry.
+   */
+  // "exemptDecoupledDependenciesBetweenSubspaces": false
+}

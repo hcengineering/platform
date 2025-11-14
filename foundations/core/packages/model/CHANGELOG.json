@@ -1,0 +1,127 @@
+{
+  "name": "@hcengineering/model",
+  "entries": [
+    {
+      "version": "0.7.17",
+      "tag": "@hcengineering/model_v0.7.17",
+      "date": "Mon, 27 Oct 2025 13:27:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "formatting"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.17` to `0.7.18`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.6",
+      "tag": "@hcengineering/model_v0.7.6",
+      "date": "Tue, 21 Oct 2025 19:04:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add TypeIdentifier for custom attribute incremental IDs"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.8` to `0.7.10`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.5",
+      "tag": "@hcengineering/model_v0.7.5",
+      "date": "Tue, 14 Oct 2025 04:58:17 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.6` to `0.7.7`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `^0.7.4` to `0.7.5`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/storage\" from `^0.7.4` to `0.7.5`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/analytics\" from `^0.7.4` to `0.7.5`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/rank\" from `^0.7.4` to `0.7.5`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/account-client\" from `^0.7.4` to `0.7.5`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.4",
+      "tag": "@hcengineering/model_v0.7.4",
+      "date": "Sat, 11 Oct 2025 18:20:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update to latest platform rig"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.5` to `0.7.6`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `^0.7.3` to `0.7.4`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/storage\" from `^0.7.3` to `0.7.4`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/analytics\" from `^0.7.3` to `0.7.4`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/rank\" from `^0.7.3` to `0.7.4`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/account-client\" from `^0.7.3` to `0.7.4`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.3",
+      "tag": "@hcengineering/model_v0.7.3",
+      "date": "Wed, 08 Oct 2025 03:40:53 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.3` to `0.7.4`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/model_v0.6.0",
+      "date": "Sun, 08 Aug 2021 10:14:57 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `~0.6.3` to `~0.6.4`"
+          }
+        ]
+      }
+    }
+  ]
+}

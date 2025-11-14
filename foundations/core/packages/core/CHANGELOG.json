@@ -1,0 +1,283 @@
+{
+  "name": "@hcengineering/core",
+  "entries": [
+    {
+      "version": "0.7.22",
+      "tag": "@hcengineering/core_v0.7.22",
+      "date": "Thu, 06 Nov 2025 09:09:58 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add txMatch to permission"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.21",
+      "tag": "@hcengineering/core_v0.7.21",
+      "date": "Thu, 30 Oct 2025 23:11:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "extend TxAccessLevel"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.20",
+      "tag": "@hcengineering/core_v0.7.20",
+      "date": "Thu, 30 Oct 2025 08:41:42 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "add workspace usae info"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.19",
+      "tag": "@hcengineering/core_v0.7.19",
+      "date": "Wed, 29 Oct 2025 07:46:42 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Suspend exceptions from connect in traces"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.18",
+      "tag": "@hcengineering/core_v0.7.18",
+      "date": "Mon, 27 Oct 2025 13:27:12 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Rank for attributes"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.10",
+      "tag": "@hcengineering/core_v0.7.10",
+      "date": "Tue, 21 Oct 2025 19:04:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add TypeIdentifier for custom attribute incremental IDs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.8",
+      "tag": "@hcengineering/core_v0.7.8",
+      "date": "Wed, 15 Oct 2025 18:01:30 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "adjusted interfaces"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.7",
+      "tag": "@hcengineering/core_v0.7.7",
+      "date": "Tue, 14 Oct 2025 04:58:17 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `^0.7.4` to `0.7.5`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/analytics\" from `^0.7.4` to `0.7.5`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.6",
+      "tag": "@hcengineering/core_v0.7.6",
+      "date": "Sat, 11 Oct 2025 18:20:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update to latest platform rig"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `^0.7.3` to `0.7.4`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/analytics\" from `^0.7.3` to `0.7.4`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.5",
+      "tag": "@hcengineering/core_v0.7.5",
+      "date": "Thu, 09 Oct 2025 16:57:55 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Hierarchy improvements"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.4",
+      "tag": "@hcengineering/core_v0.7.4",
+      "date": "Wed, 08 Oct 2025 03:40:53 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix issue with time rate limiter"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.11",
+      "date": "Fri, 20 Aug 2021 16:21:03 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Transaction ordering"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.10",
+      "date": "Wed, 11 Aug 2021 09:37:04 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Server support for workspaces"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.8",
+      "date": "Sun, 08 Aug 2021 21:05:26 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix server connection"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.7",
+      "date": "Wed, 04 Aug 2021 21:18:44 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `~0.6.2` to `~0.6.3`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.6",
+      "date": "Wed, 04 Aug 2021 21:00:14 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "npmigonre"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.5",
+      "date": "Wed, 04 Aug 2021 20:26:15 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add missed docs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.4",
+      "date": "Wed, 04 Aug 2021 18:12:38 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add `memdb` docs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.3",
+      "date": "Wed, 04 Aug 2021 18:05:12 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add `hierarchy.ts` docs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.2",
+      "date": "Wed, 04 Aug 2021 17:53:24 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add documentation"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/core_v0.6.1",
+      "date": "Wed, 04 Aug 2021 17:38:30 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Minor changes for publish"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `~0.6.0` to `~0.6.1`"
+          }
+        ]
+      }
+    }
+  ]
+}
