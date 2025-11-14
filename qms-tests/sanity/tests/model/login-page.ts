@@ -26,6 +26,10 @@ export class LoginPage {
   async login (email: string, password: string): Promise<void> {
     await this.inputEmail.fill(email)
     await this.inputPassword.fill(password)
+
+    // Wait for form validation to complete
+    await this.page.waitForTimeout(1000)
+
     expect(await this.buttonLogin.isEnabled()).toBe(true)
     await this.buttonLogin.click()
   }

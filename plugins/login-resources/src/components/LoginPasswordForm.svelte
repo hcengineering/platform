@@ -48,24 +48,30 @@
   }
 
   let status = OK
+  let isLoading = false
 
   const action = {
     i18n: login.string.LogIn,
     func: async () => {
-      status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
-      const [loginStatus, result] = await doLogin(object.username, object.password)
-      status = loginStatus
+      isLoading = true
+      try {
+        status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
+        const [loginStatus, result] = await doLogin(object.username, object.password)
+        status = loginStatus
 
-      if (onLogin !== undefined) {
-        void onLogin(result, status)
-      } else {
-        await doLoginNavigate(
-          result,
-          (st) => {
-            status = st
-          },
-          navigateUrl
-        )
+        if (onLogin !== undefined) {
+          void onLogin(result, status)
+        } else {
+          await doLoginNavigate(
+            result,
+            (st) => {
+              status = st
+            },
+            navigateUrl
+          )
+        }
+      } finally {
+        isLoading = false
       }
     }
   }
@@ -79,6 +85,7 @@
   {object}
   {action}
   {signUpDisabled}
+  {isLoading}
   bottomActions={[recoveryAction]}
   ignoreInitialValidation
   withProviders

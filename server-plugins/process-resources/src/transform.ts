@@ -18,6 +18,7 @@ import core, { Doc, matchQuery, Ref, Timestamp } from '@hcengineering/core'
 import { Execution, parseContext } from '@hcengineering/process'
 import { ProcessControl } from '@hcengineering/server-process'
 import { getContextValue } from './utils'
+import cardPlugin from '@hcengineering/card'
 
 // #region ArrayReduce
 
@@ -408,8 +409,17 @@ export async function RoleContext (
 ): Promise<Ref<Employee>[]> {
   const targetRole = props.target
   if (targetRole === undefined) return []
-  const users = await control.client.findAll(contact.class.UserRole, { role: targetRole })
-  return users.map((it) => it.user)
+  const targetCard =
+    control.cache.get(execution.card) ?? (await control.client.findOne(cardPlugin.class.Card, { _id: execution.card }))
+  if (targetCard === undefined) return []
+  const targetSpace =
+    control.cache.get(targetCard.space) ?? (await control.client.findOne(core.class.Space, { _id: targetCard.space }))
+  if (targetSpace === undefined) return []
+  const mixin = control.client.getHierarchy().as(targetSpace, core.mixin.SpacesTypeData)
+  const accs = (mixin as any)[targetRole]
+  if (accs === undefined || accs.length === 0) return []
+  const users = await control.client.findAll(contact.mixin.Employee, { personUuid: { $in: accs } })
+  return users.map((it) => it._id)
 }
 
 export async function CurrentUser (

@@ -176,6 +176,19 @@ export function getTabLocation (tab: Pick<WorkbenchTab, 'location'>): Location {
   return parseLocation(url)
 }
 
+export async function OpenInNewTab (loc: Location): Promise<void> {
+  const client = getClient()
+  const data = await getTabDataByLocation(loc)
+  const name = data.name ?? (await translate(data.label, {}, get(languageStore)))
+  const url = locationToUrl(loc)
+  await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
+    attachedTo: getCurrentAccount().uuid,
+    location: url,
+    isPinned: false,
+    name
+  })
+}
+
 export async function closeTab (tab: WorkbenchTab): Promise<void> {
   const tabs = get(tabsStore)
   const index = tabs.findIndex((t) => t._id === tab._id)

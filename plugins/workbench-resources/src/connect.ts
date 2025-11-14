@@ -453,7 +453,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   const hasEmail = (si: SocialId): boolean => {
     return [SocialIdType.EMAIL, SocialIdType.GOOGLE, SocialIdType.GITHUB].some((type) => type === si.type)
   }
-  const email = me.fullSocialIds.find((si) => hasEmail(si))?.key
+  const email = me.fullSocialIds.find((si) => hasEmail(si) && si.isDeleted !== true)?.key
   const socialId = me.fullSocialIds.find((si) => si._id === me.primarySocialId)?.key
 
   const data: Record<string, any> = {

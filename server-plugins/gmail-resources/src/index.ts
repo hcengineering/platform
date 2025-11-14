@@ -222,7 +222,8 @@ async function processEmailNotifications (control: TriggerControl, notifications
     const emails = await control.findAll(control.ctx, contact.class.SocialIdentity, {
       attachedTo: employee._id,
       type: { $in: [SocialIdType.EMAIL, SocialIdType.GOOGLE] },
-      verifiedOn: { $gt: 0 }
+      verifiedOn: { $gt: 0 },
+      isDeleted: { $ne: true }
     })
     if (emails.length === 0) continue
 
