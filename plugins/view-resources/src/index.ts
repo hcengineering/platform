@@ -63,6 +63,7 @@ import ObjectMention from './components/ObjectMention.svelte'
 import ObjectPresenter from './components/ObjectPresenter.svelte'
 import PersonArrayEditor from './components/PersonArrayEditor.svelte'
 import PersonIdPresenter from './components/PersonIdPresenter.svelte'
+import IdPresenter from './components/IdPresenter.svelte'
 import ReadOnlyNotification from './components/ReadOnlyNotification.svelte'
 import RolePresenter from './components/RolePresenter.svelte'
 import SearchSelector from './components/SearchSelector.svelte'
@@ -274,6 +275,7 @@ export default async (): Promise<Resources> => ({
     TimestampFilter,
     TableBrowser,
     SpacePresenter,
+    IdPresenter,
     StringEditor,
     StringPresenter,
     HyperlinkPresenter,

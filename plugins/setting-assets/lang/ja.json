@@ -193,11 +193,20 @@
     "ServiceIsUnavailable": "サービスは利用できません",
     "Integrated": "統合済み",
     "Connected": "接続済み",
+    "Disconnected": "切断済み",
     "Available": "利用可能",
     "NotConnectedIntegration": "アカウント {account} はワークスペースに統合されていません",
     "IntegrationIsUnstable": "統合サービスに問題が発生しています。一部の機能が正しく動作しない可能性があります。",
     "MinValue": "最小値",
+    "Restricted": "制限済み",
+    "RestrictedAttributeWarning": "この属性の変更を制限してもよろしいですか？この操作はこの属性の権限を作成し、元に戻すことはできません。",
     "MaxValue": "最大値",
-    "IntegerOnly": "整数のみ"
+    "IntegerOnly": "整数のみ",
+    "AccessControl": "アクセス制御",
+    "DangerZone": "危険ゾーン",
+    "ApiAccess": "APIアクセス",
+    "ApiToken": "APIトークン",
+    "GenerateApiToken": "APIトークンを生成",
+    "IdentifierExists": "識別子は既に存在します"
   }
 }

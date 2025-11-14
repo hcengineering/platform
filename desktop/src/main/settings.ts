@@ -19,6 +19,7 @@ import { PackedConfig } from './config'
 export class Settings {
   private static readonly SETTINGS_KEY_SERVER = 'server'
   private static readonly SETTINGS_KEY_MINIMIZE_TO_TRAY = 'minimize-to-tray'
+  private static readonly SETTINGS_KEY_AUTO_LAUNCH = 'auto-launch'
   private static readonly SETTINGS_KEY_WINDOW_BOUNDS = 'windowBounds'
 
   private readonly store: Store
@@ -32,6 +33,41 @@ export class Settings {
   }
 
   readServerUrl (): string {
+    const url = this.extractUrl()
+    // Motivation: fix existing Huly installations (saved on disk URLs).
+    return Settings.sanitizeUrl(url)
+  }
+
+  isMinimizeToTrayEnabled (): boolean {
+    return (this.store as any).get(Settings.SETTINGS_KEY_MINIMIZE_TO_TRAY) as boolean ?? false
+  }
+
+  isAutoLaunchEnabled (): boolean {
+    return (this.store as any).get(Settings.SETTINGS_KEY_AUTO_LAUNCH) as boolean ?? false
+  }
+
+  setMinimizeToTrayEnabled (enabled: boolean): void {
+    (this.store as any).set(Settings.SETTINGS_KEY_MINIMIZE_TO_TRAY, enabled)
+  }
+
+  setAutoLaunchEnabled (enabled: boolean): void {
+    (this.store as any).set(Settings.SETTINGS_KEY_AUTO_LAUNCH, enabled)
+  }
+
+  setServerUrl (serverUrl: string): void {
+    const sanitizedUrl: string = Settings.sanitizeUrl(serverUrl)
+    ;(this.store as any).set(Settings.SETTINGS_KEY_SERVER, sanitizedUrl)
+  }
+
+  getWindowBounds (): any {
+    return (this.store as any).get(Settings.SETTINGS_KEY_WINDOW_BOUNDS)
+  }
+
+  setWindowBounds (bounds: any): void {
+    (this.store as any).set(Settings.SETTINGS_KEY_WINDOW_BOUNDS, bounds)
+  }
+
+  private extractUrl (): string {
     if (this.isDev) {
       return process.env.FRONT_URL ?? 'http://huly.local:8087'
     }
@@ -43,23 +79,11 @@ export class Settings {
     )
   }
 
-  isMinimizeToTrayEnabled (): boolean {
-    return (this.store as any).get(Settings.SETTINGS_KEY_MINIMIZE_TO_TRAY) as boolean ?? false
-  }
-
-  setMinimizeToTrayEnabled (enabled: boolean): void {
-    (this.store as any).set(Settings.SETTINGS_KEY_MINIMIZE_TO_TRAY, enabled)
-  }
-
-  setServerUrl (serverUrl: string): void {
-    (this.store as any).set(Settings.SETTINGS_KEY_SERVER, serverUrl)
-  }
-
-  getWindowBounds (): any {
-    return (this.store as any).get(Settings.SETTINGS_KEY_WINDOW_BOUNDS)
-  }
-
-  setWindowBounds (bounds: any): void {
-    (this.store as any).set(Settings.SETTINGS_KEY_WINDOW_BOUNDS, bounds)
+  private static sanitizeUrl (serverUrl: string): string {
+    let cleanUrl: string = serverUrl
+    while (cleanUrl.endsWith('/')) {
+      cleanUrl = cleanUrl.slice(0, -1)
+    }
+    return cleanUrl
   }
 }

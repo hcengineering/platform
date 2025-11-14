@@ -193,11 +193,20 @@
     "ServiceIsUnavailable": "Le service n'est pas disponible",
     "Integrated": "Intégré",
     "Connected": "Connecté",
+    "Disconnected": "Déconnecté",
     "Available": "Disponible",
     "NotConnectedIntegration": "Le compte {account} n'est pas intégré au workspace",
     "IntegrationIsUnstable": "Le service d'intégration rencontre des problèmes. Certaines fonctionnalités peuvent ne pas fonctionner correctement.",
     "MinValue": "Valeur minimale",
+    "Restricted": "Restreint",
+    "RestrictedAttributeWarning": "Êtes-vous sûr de vouloir restreindre la modification de cet attribut ? Cette action créera des permissions pour cet attribut et ne peut pas être annulée.",
     "MaxValue": "Valeur maximale",
-    "IntegerOnly": "Nombres entiers uniquement"
+    "IntegerOnly": "Nombres entiers uniquement",
+    "AccessControl": "Contrôle d'accès",
+    "DangerZone": "Zone dangereuse",
+    "ApiAccess": "Accès API",
+    "ApiToken": "Token API",
+    "GenerateApiToken": "Générer un token API",
+    "IdentifierExists": "Identifiant déjà utilisé"
   }
 }

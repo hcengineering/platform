@@ -52,12 +52,13 @@
   const client = getClient()
   const dispatch = createEventDispatcher()
 
-  async function onFileUploaded ({ uuid, name, file }: FileUploadCallbackParams): Promise<void> {
+  async function onFileUploaded ({ uuid, name, file, metadata }: FileUploadCallbackParams): Promise<void> {
     await createAttachment(
       client,
       uuid,
       name,
       file,
+      metadata,
       { objectClass: object?._class ?? _class, objectId, space },
       attachmentClass,
       attachmentClassOptions

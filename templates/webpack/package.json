@@ -1,13 +1,12 @@
 {
   "name": "@hcengineering/webpack-package",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "scripts": {},
   "peerDependencies": {
     "webpack": "*"
   },
   "devDependencies": {
-    "svelte-loader": "^3.1.9",
-    "typescript": "^5.8.3"
-  },
-  "dependencies": {}
+    "svelte-loader": "^3.2.0",
+    "typescript": "^5.9.3"
+  }
 }

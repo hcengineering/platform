@@ -2,7 +2,7 @@
   "name": "@hcengineering/workbench",
   "entries": [
     {
-      "version": "0.6.1",
+      "version": "0.7.0",
       "tag": "@hcengineering/workbench_v0.6.1",
       "date": "Sun, 08 Aug 2021 21:05:26 GMT",
       "comments": {
@@ -19,7 +19,7 @@
       }
     },
     {
-      "version": "0.6.0",
+      "version": "0.7.0",
       "tag": "@hcengineering/workbench_v0.6.0",
       "date": "Sun, 08 Aug 2021 10:14:57 GMT",
       "comments": {

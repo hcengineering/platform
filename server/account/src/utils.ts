@@ -342,6 +342,66 @@ export function verifyPassword (password: string, hash?: Buffer | null, salt?: B
   return Buffer.compare(hash as any, hashWithSalt(password, salt) as any) === 0
 }
 
+// 0 or negative value means no limit
+const maxFailedLoginAttempts =
+  process.env.MAX_FAILED_LOGIN_ATTEMPTS != null ? parseInt(process.env.MAX_FAILED_LOGIN_ATTEMPTS) : 5
+
+/**
+ * Check if an account is locked due to too many failed login attempts.
+ * An account is locked if failedLoginAttempts >= maxFailedLoginAttempts.
+ * @param account The account to check
+ * @returns true if account is locked, false otherwise
+ */
+export function isAccountPasswordLocked (account: Account): boolean {
+  if (maxFailedLoginAttempts <= 0) {
+    return false
+  }
+
+  const failedAttempts = account.failedLoginAttempts ?? 0
+
+  return failedAttempts >= maxFailedLoginAttempts
+}
+
+/**
+ * Record a failed login attempt for an account.
+ * Increments the failed attempts counter.
+ * @param db Database instance
+ * @param accountUuid Account UUID
+ */
+export async function recordFailedLoginAttempt (db: AccountDB, accountUuid: AccountUuid): Promise<void> {
+  const account = await db.account.findOne({ uuid: accountUuid })
+  if (account == null) {
+    return
+  }
+
+  const currentAttempts = account.failedLoginAttempts ?? 0
+  const newAttempts = currentAttempts + 1
+
+  await db.account.update(
+    { uuid: accountUuid },
+    {
+      failedLoginAttempts: newAttempts
+    }
+  )
+}
+
+/**
+ * Reset failed login attempts for an account.
+ * Called when:
+ * - User successfully logs in with password
+ * - User successfully authenticates via OTP or other alternative method
+ * @param db Database instance
+ * @param accountUuid Account UUID
+ */
+export async function resetFailedLoginAttempts (db: AccountDB, accountUuid: AccountUuid): Promise<void> {
+  await db.account.update(
+    { uuid: accountUuid },
+    {
+      failedLoginAttempts: 0
+    }
+  )
+}
+
 export function cleanEmail (email: string): string {
   return email.toLowerCase().trim()
 }
@@ -499,6 +559,12 @@ export async function createAccount (
     accountUuid: personUuid as AccountUuid,
     eventType: AccountEventType.ACCOUNT_CREATED,
     time: createdOn
+  })
+
+  // Create user profile with default values (private by default)
+  await db.userProfile.insertOne({
+    personUuid,
+    isPublic: false
   })
 
   return socialId
@@ -709,7 +775,7 @@ export async function selectWorkspace (
   }
 
   if (accountUuid !== systemAccountUuid && meta !== undefined) {
-    void setTimezoneIfNotDefined(ctx, db, accountUuid, account, meta)
+    void setTimezone(ctx, db, accountUuid, account, meta)
   }
 
   if (role === AccountRole.ReadOnlyGuest) {
@@ -1536,7 +1602,7 @@ export async function getWorkspaces (
 }
 
 export function verifyAllowedServices (services: string[], extra: any, shouldThrow = true): boolean {
-  const ok = services.includes(extra?.service) || extra?.admin === 'true'
+  const ok = services.includes(extra?.service)
 
   if (!ok && shouldThrow) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -1780,7 +1846,7 @@ export function generatePassword (len: number = 24): string {
   return randomBytes(len).toString('base64').slice(0, len)
 }
 
-export async function setTimezoneIfNotDefined (
+export async function setTimezone (
   ctx: MeasureContext,
   db: AccountDB,
   accountId: AccountUuid,
@@ -1794,7 +1860,7 @@ export async function setTimezoneIfNotDefined (
       ctx.warn('Failed to find account')
       return
     }
-    if (existingAccount.timezone != null) return
+    if (existingAccount.timezone === meta?.timezone) return
     await db.account.update({ uuid: accountId }, { timezone: meta.timezone })
   } catch (err: any) {
     ctx.error('Failed to set account timezone', err)
@@ -1810,7 +1876,9 @@ export const integrationServices = [
   'caldav',
   'gmail',
   'google-calendar',
-  'huly-mail'
+  'huly-mail',
+  'ai-assistant',
+  'tool'
 ]
 
 export async function findExistingIntegration (

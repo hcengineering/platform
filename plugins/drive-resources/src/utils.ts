@@ -25,7 +25,7 @@ import drive, {
   DriveEvents
 } from '@hcengineering/drive'
 import { type Asset, setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { getClient, getFileMetadata } from '@hcengineering/presentation'
+import { getClient } from '@hcengineering/presentation'
 import { type AnySvelteComponent, showPopup } from '@hcengineering/ui'
 import {
   type FileUploadCallback,
@@ -169,6 +169,38 @@ export async function resolveParents (object: Resource): Promise<Doc[]> {
   return parents.reverse()
 }
 
+export async function findAllChildren (resource: Resource, maxDepth: number = 10): Promise<Array<Ref<Folder>>> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  if (!hierarchy.isDerived(resource._class, drive.class.Folder)) {
+    return []
+  }
+
+  const allChildren: Array<Ref<Folder>> = []
+  let currentLevel: Array<Ref<Folder>> = [resource._id as Ref<Folder>]
+  let depth = 0
+
+  while (currentLevel.length > 0 && depth < maxDepth) {
+    const children = await client.findAll(
+      drive.class.Folder,
+      { space: resource.space, parent: { $in: currentLevel } },
+      { projection: { _id: 1 } }
+    )
+
+    if (children.length === 0) {
+      break
+    }
+
+    const childIds = children.map((p) => p._id)
+    allChildren.push(...childIds)
+    currentLevel = childIds
+    depth++
+  }
+
+  return allChildren
+}
+
 export async function getUploadOptionsByFragment (space: Ref<Drive>, fragment: string): Promise<FileUploadOptions> {
   const [, _id, _class] = decodeURIComponent(fragment).split('|')
   if (_class === drive.class.Folder) {
@@ -223,7 +255,7 @@ export async function uploadFilesToDrivePopup (space: Ref<Drive>, parent: Ref<Fo
       target
     },
     {
-      fileManagerSelectionType: 'both'
+      itemsType: 'files'
     }
   )
 }
@@ -263,10 +295,7 @@ async function fileUploadCallback (space: Ref<Drive>, parent: Ref<Folder>): Prom
     return current
   }
 
-  const callback: FileUploadCallback = async ({ uuid, name, file, path }) => {
-    // TODO this should be done in the upload service
-    const metadata = await getFileMetadata(file, uuid)
-
+  const callback: FileUploadCallback = async ({ uuid, name, file, path, metadata }) => {
     const folder = await findParent(path)
     try {
       const data = {

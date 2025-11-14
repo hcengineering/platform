@@ -76,8 +76,8 @@
   $: remainingViews = viewlet?.masterDetailOptions?.views?.slice(1) ?? []
   $: isSimpleView = (viewlet?.masterDetailOptions?.views?.length ?? 0) <= 2
   $: detailViewComponent = isSimpleView
-    ? detailView?.component ?? view.component.EditDoc
-    : viewlet?.$lookup?.descriptor?.component ?? view.component.MasterDetailBrowser
+    ? (detailView?.component ?? view.component.EditDoc)
+    : (viewlet?.$lookup?.descriptor?.component ?? view.component.MasterDetailBrowser)
   $: nestedViewlet = isSimpleView
     ? undefined
     : {

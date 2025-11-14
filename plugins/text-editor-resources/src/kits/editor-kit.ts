@@ -32,7 +32,6 @@ import 'prosemirror-codemark/dist/codemark.css'
 
 import Collaboration from '@tiptap/extension-collaboration'
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
-import Placeholder from '@tiptap/extension-placeholder'
 import { CodeBlockHighlighExtension, codeBlockHighlightOptions } from '../components/extension/codeSnippets/codeblock'
 import { MermaidExtension, mermaidOptions } from '../components/extension/codeSnippets/mermaid'
 import { DrawingBoardExtension } from '../components/extension/drawingBoard'
@@ -65,6 +64,8 @@ import { ToCExtension } from '../components/extension/toc'
 import { TodoItemExtension, TodoListExtension } from '../components/extension/todo/todo'
 import { ToolbarExtension } from '../components/extension/toolbar/toolbar'
 import { ListKeymapExtension } from '../components/extension/shortcuts/listKeymap'
+import { I18nPlaceholderExtension } from '../components/extension/i18nPlaceholder'
+import { EditorContextExtension } from '../components/extension/editorContext'
 
 export interface EditorKitContext {
   mode?: 'full' | 'compact'
@@ -120,7 +121,12 @@ const StaticEditorKit = extensionKit(
       toc: e(ToCExtension, false),
       leftMenu: e(LeftMenuExtension, false),
       inlineCommands: e(InlineCommandsExtension, false),
-      placeholder: e(Placeholder, false),
+      placeholder: e(I18nPlaceholderExtension, false),
+      editorContext: e(EditorContextExtension, {
+        objectId: context.objectId,
+        objectClass: context.objectClass,
+        objectSpace: context.objectSpace
+      }),
 
       collaboration: e(subKits.collaboration, false),
       hooks: e(subKits.hooks), // Semi-deprecated, should be removed in the future

@@ -16,6 +16,7 @@
   import { getClient } from '@hcengineering/presentation'
   import {
     ContextId,
+    createContext,
     MethodParams,
     parseContext,
     Process,
@@ -115,15 +116,13 @@
       eventToHTMLElement(ev),
       (result) => {
         if (result !== undefined) {
-          dispatch(
-            'change',
-            '$' +
-              JSON.stringify({
-                type: 'context',
-                id: result as ContextId,
-                key: ''
-              })
-          )
+          const ctx: SelectedExecutionContext = {
+            type: 'context',
+            id: result as ContextId,
+            key: ''
+          }
+          const res = createContext(ctx)
+          dispatch('change', res)
         }
       }
     )

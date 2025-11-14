@@ -32,7 +32,7 @@
     "LowerCase": "Minuscolo",
     "Trim": "Taglia",
     "FirstValue": "Primo valore",
-    "LastValue": "Ultimo valore", 
+    "LastValue": "Ultimo valore",
     "Random": "Casuale",
     "AllProcesses": "Tutti i processi",
     "MyProcesses": "I miei processi",
@@ -55,6 +55,7 @@
     "EnterValue": "Inserisci valore",
     "OnToDoDone": "Quando l'azione è completata",
     "OnSubProcessesDone": "Alla fine dei sottoprocessi",
+    "WhenSubProcessMatches": "Quando il sottoprocesso corrisponde",
     "Result": "Risultato",
     "RequestResult": "Richiedi risultato",
     "NoResultRequired": "Nessun risultato richiesto",
@@ -117,7 +118,15 @@
     "NewProcessToDo": "Nuovo Action Item di processo",
     "EmptyArray": "Array vuoto",
     "ExecutionInitiator": "Iniziatore dell'esecuzione",
-    "ExecutionStarted": "Esecuzione avviata"
+    "ExecutionStarted": "Esecuzione avviata",
+    "Filter": "Filtro",
+    "FirstMatchValue": "Primo valore corrispondente",
+      "ConfigLabel": "Configurazione del processo",
+      "ConfigDescription": "Definire i processi per automatizzare i flussi di lavoro e i processi aziendali.",
+      "RunProcessPermission": "Esegui processo",
+      "CancelProcessPermission": "Annulla processo",
+      "ForbidRunProcessPermission": "Vieta l'esecuzione del processo",
+      "ForbidCancelProcessPermission": "Vieta l'annullamento del processo"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",

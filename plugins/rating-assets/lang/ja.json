@@ -1,0 +1,12 @@
+{
+  "string": {
+    "Rating": "評価",
+    "RatingWidgetEmpty": "まだスターが付いたドキュメントはありません。ここに表示するには、ドキュメントにスターを追加してください（ドキュメントのスター反応をクリックしてください）。",
+    "RatingWidget": "評価ウィジェット",
+    "Level": "レベル",
+    "MonthOps": "{month}月: {ops} 操作",
+    "MonthNoOps": "{month}月、操作なし",
+    "AddStar": "スターを追加",
+    "AddStarAria": "スターの反応を追加"
+  }
+}

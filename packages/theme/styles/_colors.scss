@@ -138,6 +138,15 @@
 
   --theme-button-container-color: #25262A;
 
+  --theme-button-attention-gradient: linear-gradient(135deg, #7C3AED, #A855F7);
+  --theme-button-attention-border: #A855F7;
+  --theme-button-attention-hover-gradient: linear-gradient(135deg, #8B5CF6, #7C3AED);
+  --theme-button-attention-hover-border: #7C3AED;
+  --theme-button-attention-active-gradient: linear-gradient(135deg, #6D28D9, #7C3AED);
+  --theme-button-attention-hover-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+  --theme-button-attention-active-shadow: 0 4px 12px rgba(124, 58, 237, 0.6);
+  --theme-button-attention-focus-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
+
   --theme-refinput-divider: rgba(255, 255, 255, .07);
   --theme-refinput-border: rgba(255, 255, 255, .1);
 
@@ -225,6 +234,7 @@
   --theme-calendar-event-available-bgcolor: #f6f9fe;
   --theme-calendar-event-unavailable-color: rgba(244, 119, 88, .2);
   --theme-calendar-event-unavailable-bgcolor: #fdece7;
+  --theme-calendar-zone: rgba(64, 109, 223, 0.1);
 
   --theme-diffview-block-header-color: rgba(56,139,253,0.1);
   --theme-diffview-line-color: var(--theme-content-color);
@@ -402,6 +412,10 @@
   --theme-label-blue-bg-color: rgba(59, 130, 246, .08);
   --theme-label-blue-border-color: rgba(59, 130, 246, .2);
 
+  --theme-label-orange-color: rgba(249, 115, 22, .8);
+  --theme-label-orange-bg-color: rgba(249, 115, 22, .08);
+  --theme-label-orange-border-color: rgba(249, 115, 22, .2);
+
   --theme-label-gray-color: rgba(255, 255, 255, .6);
   --theme-label-gray-bg-color: rgba(255, 255, 255, .02);
   --theme-label-gray-border-color: rgba(255, 255, 255, .09);
@@ -443,6 +457,15 @@
   --theme-button-contrast-border: rgba(0, 0, 0, .2);
 
   --theme-button-container-color: #F1F1F1;
+
+  --theme-button-attention-gradient: linear-gradient(135deg, #EC4899, #F97316);
+  --theme-button-attention-border: #F97316;
+  --theme-button-attention-hover-gradient: linear-gradient(135deg, #F97316, #EC4899);
+  --theme-button-attention-hover-border: #EC4899;
+  --theme-button-attention-active-gradient: linear-gradient(135deg, #DC2626, #F97316);
+  --theme-button-attention-hover-shadow: 0 8px 24px rgba(236, 72, 153, 0.3);
+  --theme-button-attention-active-shadow: 0 4px 12px rgba(236, 72, 153, 0.5);
+  --theme-button-attention-focus-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
 
   --theme-refinput-divider: rgba(0, 0, 0, .07);
   --theme-refinput-border: rgba(0, 0, 0, .1);
@@ -535,6 +558,7 @@
   --theme-calendar-event-available-bgcolor: #f6f9fe;
   --theme-calendar-event-unavailable-color: rgba(244, 119, 88, .2);
   --theme-calendar-event-unavailable-bgcolor: #fdece7;
+  --theme-calendar-zone: rgba(64, 109, 223, 0.1);
 
   --theme-diffview-block-header-color: rgb(221, 244, 255);
   --theme-diffview-line-color: var(--theme-content-color);
@@ -715,6 +739,10 @@
   --theme-label-blue-color: rgba(37, 99, 235, 0.9);
   --theme-label-blue-bg-color: rgba(59, 130, 246, .08);
   --theme-label-blue-border-color: rgba(59, 130, 246, .15);
+
+  --theme-label-orange-color: rgba(194, 65, 12, 0.9);
+  --theme-label-orange-bg-color: rgba(249, 115, 22, .08);
+  --theme-label-orange-border-color: rgba(249, 115, 22, .15);
 
   --theme-label-gray-color: rgba(0, 0, 0, .6);
   --theme-label-gray-bg-color: rgba(0, 0, 0, .02);

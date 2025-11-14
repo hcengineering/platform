@@ -108,6 +108,7 @@
     "Or": "O",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Copia negli appunti",
+    "CopyDocumentMarkdown": "Copia come Markdown",
     "PublicView": "Vista pubblica",
     "ChooseIcon": "Scegli icona",
     "IconColor": "Scegli colore icona",
@@ -143,6 +144,9 @@
     "Color": "Colore",
     "AutomationOnly": "Solo automazione",
     "CopyLink": "Copia link",
-    "ValueIsSet": "Il valore è impostato"
+    "ValueIsSet": "Il valore è impostato",
+    "RoleLabel": "Ruolo: {role}",
+    "ForbidAttributeChanges": "Vieta modifiche attributo",
+    "AllowAttributeChanges": "Consenti modifiche attributo"
   }
 }

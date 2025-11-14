@@ -180,7 +180,7 @@
   {loading}
   {type}
   on:update={(e) => {
-    selectedObjects = e.detail
+    selectedObjects = Array.isArray(e.detail) ? e.detail : [e.detail._id]
     dispatch('update', e.detail)
   }}
   on:close

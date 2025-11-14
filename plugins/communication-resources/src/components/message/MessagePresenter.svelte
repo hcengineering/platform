@@ -18,7 +18,7 @@
   import { employeeByPersonIdStore, getPersonByPersonId } from '@hcengineering/contact-resources'
   import { Card } from '@hcengineering/card'
   import { getEventPositionElement, showPopup, Action, Menu } from '@hcengineering/ui'
-  import type { MessageID, SocialID } from '@hcengineering/communication-types'
+  import type { SocialID } from '@hcengineering/communication-types'
   import { Message, MessageType } from '@hcengineering/communication-types'
   import { getResource } from '@hcengineering/platform'
   import { MessageAction } from '@hcengineering/communication'
@@ -29,9 +29,12 @@
   import OneRowMessageBody from './OneRowMessageBody.svelte'
   import {
     messageEditingStore,
-    TranslateMessagesStatus,
     translateMessagesStore,
-    threadCreateMessageStore
+    threadCreateMessageStore,
+    showOriginalMessagesStore,
+    isMessageTranslated,
+    translateToStore,
+    dontTranslateStore
   } from '../../stores'
   import { getMessageActions } from '../../actions'
   import communication from '../../plugin'
@@ -98,7 +101,14 @@
   let excludedActions: Ref<MessageAction>[] = []
   let actions: MessageAction[] = []
 
-  $: excludedActions = getExcludedActions($translateMessagesStore)
+  $: isTranslated = isMessageTranslated(
+    message,
+    $translateToStore,
+    $dontTranslateStore,
+    $translateMessagesStore,
+    $showOriginalMessagesStore
+  )
+  $: excludedActions = getExcludedActions(isTranslated)
 
   $: void getMessageActions(message).then((res) => {
     allActions = res
@@ -106,15 +116,12 @@
 
   $: actions = allActions.filter((it) => !excludedActions.includes(it._id))
 
-  function getExcludedActions (translatedMessages: Map<MessageID, TranslateMessagesStatus>): Ref<MessageAction>[] {
-    const result: TranslateMessagesStatus | undefined = translatedMessages.get(message.id)
-    if (result === undefined || result.inProgress || !result.shown) {
+  function getExcludedActions (isTranslated: boolean): Ref<MessageAction>[] {
+    if (!isTranslated) {
       return [communication.messageAction.ShowOriginalMessage]
-    } else if (result.shown) {
+    } else {
       return [communication.messageAction.TranslateMessage]
     }
-
-    return []
   }
 
   function handleContextMenu (event: MouseEvent): void {

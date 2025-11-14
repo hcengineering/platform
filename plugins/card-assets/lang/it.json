@@ -48,6 +48,17 @@
     "ShowLess": "Mostra meno",
     "CardContent": "Cosa vuoi condividere?",
     "Feed": "Feed",
-    "AllCards": "Tutte le Carte"
+    "AllCards": "Tutte le Carte",
+    "Favorites": "Preferiti",
+    "RemoveCard": "Rimuovi scheda",
+    "UpdateCard": "Aggiorna scheda",
+    "CreateCardPermission": "Crea scheda",
+    "AddTagPermission": "Aggiungi tag",
+    "RemoveTag": "Rimuovi tag",
+    "ForbidRemoveCard": "Vieta rimozione scheda",
+    "ForbidUpdateCard": "Vieta aggiornamento scheda",
+    "ForbidCreateCardPermission": "Vieta creazione scheda",
+    "ForbidAddTagPermission": "Vieta aggiunta tag",
+    "ForbidRemoveTag": "Vieta rimozione tag"
   }
 }

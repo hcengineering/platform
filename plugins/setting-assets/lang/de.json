@@ -193,11 +193,20 @@
     "ServiceIsUnavailable": "Dienst ist nicht verfügbar",
     "Integrated": "Integriert",
     "Connected": "Verbunden",
+    "Disconnected": "Getrennt",
     "Available": "Verfügbar",
     "NotConnectedIntegration": "Das Konto {account} ist nicht mit dem Arbeitsbereich integriert",
     "IntegrationIsUnstable": "Der Integrationsdienst hat Probleme. Einige Funktionen funktionieren möglicherweise nicht richtig.",
     "MinValue": "Minimalwert",
+    "Restricted": "Eingeschränkt",
+    "RestrictedAttributeWarning": "Möchten Sie wirklich die Bearbeitung dieses Attributs einschränken? Diese Aktion erstellt Berechtigungen für dieses Attribut und kann nicht rückgängig gemacht werden.",
     "MaxValue": "Maximalwert",
-    "IntegerOnly": "Nur ganze Zahlen"
+    "IntegerOnly": "Nur ganze Zahlen",
+    "AccessControl": "Zugriffskontrolle",
+    "DangerZone": "Gefahrenzone",
+    "ApiAccess": "API-Zugriff",
+    "ApiToken": "API-Token",
+    "GenerateApiToken": "API-Token generieren",
+    "IdentifierExists": "Bezeichner existiert bereits"
   }
 }

@@ -21,11 +21,6 @@ import { PersonSpace } from '@hcengineering/contact'
 export * from './poll'
 export * from './direct'
 
-export enum MessagesNavigationAnchors {
-  ConversationStart = 'conversationStart',
-  LatestMessages = 'latestMessages'
-}
-
 export type MessageActionFunction = (
   message: Message,
   card: Card,

@@ -119,7 +119,7 @@
   async function createAttachment (file: File) {
     try {
       const uploadFile = await getResource(attachmentP.helper.UploadFile)
-      const uuid = await uploadFile(file)
+      const { uuid, metadata } = await uploadFile(file)
       await client.addCollection(
         attachmentP.class.Attachment,
         core.space.Workspace,
@@ -131,7 +131,8 @@
           file: uuid,
           type: file.type,
           size: file.size,
-          lastModified: file.lastModified
+          lastModified: file.lastModified,
+          metadata
         }
       )
     } catch (err: any) {

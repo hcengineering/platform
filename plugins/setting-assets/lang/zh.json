@@ -193,11 +193,20 @@
     "ServiceIsUnavailable": "服务不可用",
     "Integrated": "已集成",
     "Connected": "已连接",
+    "Disconnected": "已断开",
     "Available": "可用",
     "NotConnectedIntegration": "帐户 {account} 未与工作区集成",
     "IntegrationIsUnstable": "集成服务出现问题。某些功能可能无法正常工作。",
     "MinValue": "最小值",
+    "Restricted": "受限",
+    "RestrictedAttributeWarning": "您确定要限制对此属性的更改吗？此操作将为该属性创建权限，且无法撤销。",
     "MaxValue": "最大值",
-    "IntegerOnly": "仅整数"
+    "IntegerOnly": "仅整数",
+    "AccessControl": "访问控制",
+    "DangerZone": "危险区域",
+    "ApiAccess": "API访问",
+    "ApiToken": "API令牌",
+    "GenerateApiToken": "生成API令牌",
+    "IdentifierExists": "标识符已存在"
   }
 }

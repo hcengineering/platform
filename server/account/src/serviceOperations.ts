@@ -27,6 +27,7 @@ import {
   type PersonUuid,
   type WorkspaceUuid,
   type AccountUuid,
+  type UsageStatus,
   readOnlyGuestAccountUuid
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
@@ -43,6 +44,8 @@ import type {
   IntegrationSecretKey,
   Query,
   SocialId,
+  Subscription,
+  SubscriptionData,
   Workspace,
   WorkspaceEvent,
   WorkspaceInfoWithStatus,
@@ -489,6 +492,33 @@ export async function updateBackupInfo (
   )
 }
 
+export async function updateUsageInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { usageInfo: UsageStatus }
+): Promise<void> {
+  const { usageInfo } = params
+  const { extra, workspace } = decodeTokenVerbose(ctx, token)
+  if (extra?.service !== 'billing') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const workspaceInfo = await getWorkspaceById(db, workspace)
+  if (workspaceInfo === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  await db.workspaceStatus.update(
+    { workspaceUuid: workspace },
+    {
+      usageInfo,
+      lastProcessingTime: Date.now()
+    }
+  )
+}
+
 export async function assignWorkspace (
   ctx: MeasureContext,
   db: AccountDB,
@@ -585,10 +615,12 @@ export async function addSocialIdToPerson (
   const { person, type, value, confirmed, displayValue } = params
   const { extra } = decodeTokenVerbose(ctx, token)
 
-  verifyAllowedServices(
-    ['github', 'telegram-bot', 'gmail', 'tool', 'workspace', 'hulygram', 'google-calendar', 'ai-assistant'],
-    extra
-  )
+  if (extra?.admin !== 'true') {
+    verifyAllowedServices(
+      ['github', 'telegram-bot', 'gmail', 'tool', 'workspace', 'hulygram', 'google-calendar', 'ai-assistant'],
+      extra
+    )
+  }
 
   if (person == null || person === '' || !Object.values(SocialIdType).includes(type) || value == null || value === '') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
@@ -919,11 +951,13 @@ export async function findFullSocialIds (
 ): Promise<SocialId[]> {
   const { socialIds } = params
   const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['gmail', 'tool', 'workspace', 'huly-mail'], extra)
+  verifyAllowedServices(['gmail', 'tool', 'workspace', 'huly-mail', 'rating'], extra)
 
   if (socialIds == null || socialIds.length === 0) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
+
+  // Add validation to social Ids
 
   return await db.socialId.find({ _id: { $in: socialIds } })
 }
@@ -981,11 +1015,115 @@ export async function findPersonBySocialKey (
   return socialId.personUuid
 }
 
+/**
+ * Upsert (create or update) subscription for a workspace
+ * Only accessible by payment service
+ * Creates new subscription or updates existing one based on providerId
+ * @public
+ */
+export async function upsertSubscription (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: SubscriptionData
+): Promise<void> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+
+  // Only payment service can upsert subscriptions
+  if (extra?.service !== 'payment') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const { workspaceUuid, provider, providerSubscriptionId } = params
+
+  // Verify workspace exists
+  const workspace = await getWorkspaceById(db, workspaceUuid)
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
+  }
+
+  // Check if subscription exists by provider + providerSubscriptionId (unique external ID)
+  const existing = await db.subscription.findOne({ provider, providerSubscriptionId })
+  const updateData = {
+    workspaceUuid: params.workspaceUuid,
+    accountUuid: params.accountUuid,
+    provider: params.provider,
+    providerSubscriptionId: params.providerSubscriptionId,
+    providerCheckoutId: params.providerCheckoutId,
+    amount: params.amount,
+    type: params.type,
+    status: params.status,
+    plan: params.plan,
+    periodStart: params.periodStart,
+    periodEnd: params.periodEnd,
+    trialEnd: params.trialEnd,
+    canceledAt: params.canceledAt,
+    willCancelAt: params.willCancelAt,
+    providerData: params.providerData,
+    updatedOn: Date.now()
+  }
+  if (existing !== null) {
+    // Update existing subscription
+    await db.subscription.update({ id: existing.id }, updateData)
+    ctx.info('Subscription updated', {
+      id: existing.id,
+      workspaceUuid,
+      status: params.status,
+      type: params.type,
+      plan: params.plan
+    })
+  } else {
+    // Create new subscription
+    await db.subscription.insertOne({
+      ...updateData,
+      id: params.id,
+      createdOn: Date.now()
+    })
+    ctx.info('Subscription created', {
+      id: params.id,
+      workspaceUuid,
+      status: params.status,
+      type: params.type,
+      plan: params.plan
+    })
+  }
+}
+
+export async function getSubscriptionByProviderId (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    provider: string
+    providerSubscriptionId: string
+  }
+): Promise<Subscription | null> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+
+  // Only payment service can query subscriptions by provider ID
+  if (extra?.service !== 'payment') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const { provider, providerSubscriptionId } = params
+
+  // Find subscription by provider and providerSubscriptionId (unique external ID)
+  const subscription = await db.subscription.findOne({
+    provider,
+    providerSubscriptionId
+  })
+
+  return subscription ?? null
+}
+
 export type AccountServiceMethods =
   | 'getPendingWorkspace'
   | 'updateWorkspaceInfo'
   | 'workerHandshake'
   | 'updateBackupInfo'
+  | 'updateUsageInfo'
   | 'assignWorkspace'
   | 'listWorkspaces'
   | 'performWorkspaceOperation'
@@ -1008,6 +1146,8 @@ export type AccountServiceMethods =
   | 'findPersonBySocialKey'
   | 'listAccounts'
   | 'findFullSocialIds'
+  | 'getSubscriptionByProviderId'
+  | 'upsertSubscription'
 
 /**
  * @public
@@ -1018,6 +1158,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     updateWorkspaceInfo: wrap(updateWorkspaceInfo),
     workerHandshake: wrap(workerHandshake),
     updateBackupInfo: wrap(updateBackupInfo),
+    updateUsageInfo: wrap(updateUsageInfo),
     assignWorkspace: wrap(assignWorkspace),
     listWorkspaces: wrap(listWorkspaces),
     performWorkspaceOperation: wrap(performWorkspaceOperation),
@@ -1039,6 +1180,8 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     findFullSocialIds: wrap(findFullSocialIds),
     mergeSpecifiedAccounts: wrap(mergeSpecifiedAccounts),
     findPersonBySocialKey: wrap(findPersonBySocialKey),
-    listAccounts: wrap(listAccounts)
+    listAccounts: wrap(listAccounts),
+    getSubscriptionByProviderId: wrap(getSubscriptionByProviderId),
+    upsertSubscription: wrap(upsertSubscription)
   }
 }

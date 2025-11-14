@@ -51,6 +51,7 @@
     "EnterValue": "Değer gir",
     "OnToDoDone": "Eylem öğesi tamamlandığında",
     "OnSubProcessesDone": "Alt süreçler tamamlandığında",
+    "WhenSubProcessMatches": "Alt süreç eşleştiğinde",
     "Result": "Sonuç",
     "RequestResult": "Sonuç talep et",
     "NoResultRequired": "Sonuç gerekmez",
@@ -114,7 +115,15 @@
     "ProcessRunned": "\"{process}\" süreci başlatıldı",
     "ProcessStateChanged": "\"{process}\" süreci \"{state}\" durumuna geçti",
     "ProcessFinished": "\"{process}\" süreci \"{state}\" durumunda tamamlandı",
-    "NewProcessToDo": "Yeni süreç Eylem öğesi"
+    "NewProcessToDo": "Yeni süreç Eylem öğesi",
+    "Filter": "Filtre",
+    "FirstMatchValue": "İlk eşleşen değer",
+    "ConfigLabel": "Süreç yapılandırması",
+    "ConfigDescription": "İş akışlarını ve iş süreçlerini otomatikleştirmek için süreçler tanımlayın.",
+    "RunProcessPermission": "Süreci çalıştır",
+    "CancelProcessPermission": "Süreci iptal et",
+    "ForbidRunProcessPermission": "Süreci çalıştırmayı yasakla",
+    "ForbidCancelProcessPermission": "Süreci iptal etmeyi yasakla"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

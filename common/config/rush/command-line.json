@@ -249,11 +249,27 @@
     },
     {
       "commandKind": "global",
+      "name": "docker-server",
+      "summary": "Build docker with platform",
+      "description": "use to build all docker containers required for platform",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "./common/scripts/docker-server.sh && rush docker:up:server"
+    },
+    {
+      "commandKind": "global",
       "name": "docker:up",
       "summary": "Up development build",
       "description": "Up development build",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "cd ./dev && docker compose up -d --force-recreate"
+    },
+    {
+      "commandKind": "global",
+      "name": "docker:up:server",
+      "summary": "Up development build",
+      "description": "Up development build",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev && docker compose up -d --force-recreate transactor_cockroach"
     },
     {
       "commandKind": "global",
@@ -347,6 +363,14 @@
       "description": "use to build all docker containers required for platform",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "rush package -p 20 --to desktop && cd ./desktop-package && rushx dist"
+    },
+    {
+      "commandKind": "global",
+      "name": "update-deps",
+      "summary": "Update published dependencies",
+      "description": "use to update published dependencies to latest versions",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "./common/scripts/node_modules/.bin/update-deps"
     }
   ],
 

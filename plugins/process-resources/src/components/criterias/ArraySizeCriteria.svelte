@@ -16,7 +16,7 @@
 <script lang="ts">
   import core, { AnyAttribute } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { parseContext, Process, SelectedContext } from '@hcengineering/process'
+  import { createContext, parseContext, Process, SelectedContext } from '@hcengineering/process'
   import { Button, Component, eventToHTMLElement, IconAdd, IconClose, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
@@ -51,7 +51,7 @@
   }
 
   function onSelect (res: SelectedContext | null): void {
-    val = res === null ? undefined : '$' + JSON.stringify(res)
+    val = res === null ? undefined : createContext(res)
     dispatch('change', val)
   }
 
@@ -65,7 +65,6 @@
   {#if contextValue}
     <ContextValue
       {process}
-      masterTag={process.masterTag}
       {contextValue}
       {context}
       {attribute}

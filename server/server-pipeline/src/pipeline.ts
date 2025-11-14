@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import card from '@hcengineering/card'
 import {
   DOMAIN_BENCHMARK,
   DOMAIN_BLOB,
@@ -9,7 +10,10 @@ import {
   ModelDb,
   systemAccountUuid,
   type Branding,
+  type Class,
+  type Doc,
   type MeasureContext,
+  type Ref,
   type Tx,
   type WorkspaceIds
 } from '@hcengineering/core'
@@ -24,6 +28,7 @@ import {
   DomainTxMiddleware,
   FindSecurityMiddleware,
   FullTextMiddleware,
+  GuestPermissionsMiddleware,
   IdentityMiddleware,
   LiveQueryMiddleware,
   LookupMiddleware,
@@ -31,6 +36,8 @@ import {
   MarkDerivedEntryMiddleware,
   ModelMiddleware,
   ModifiedMiddleware,
+  IdentifierMiddleware,
+  NormalizeTxMiddleware,
   PluginConfigurationMiddleware,
   PrivateMiddleware,
   QueryJoinMiddleware,
@@ -39,8 +46,8 @@ import {
   SpaceSecurityMiddleware,
   TriggersMiddleware,
   TxMiddleware,
-  UserStatusMiddleware,
-  GuestPermissionsMiddleware
+  TxOrderingMiddleware,
+  UserStatusMiddleware
 } from '@hcengineering/middleware'
 import {
   createBenchmarkAdapter,
@@ -48,7 +55,6 @@ import {
   createNullAdapter,
   createPipeline,
   type BroadcastOps,
-  type CommunicationApiFactory,
   type DbAdapterFactory,
   type DbConfiguration,
   type Middleware,
@@ -62,7 +68,9 @@ import {
 } from '@hcengineering/server-core'
 import { generateToken } from '@hcengineering/server-token'
 import { createStorageDataAdapter } from './blobStorage'
-import { CommunicationMiddleware } from './communication'
+import { CommunicationMiddleware, type CommunicationApiFactory } from './communication'
+
+import { RatingMiddleware } from '@hcengineering/server-rating'
 
 /**
  * @public
@@ -85,6 +93,19 @@ export function getTxAdapterFactory (
   const adapterName = conf.domains[DOMAIN_TX] ?? conf.defaultAdapter
   const adapter = conf.adapters[adapterName]
   return adapter.factory
+}
+
+function addMessagesToFullText (fulltext: MiddlewareCreator): MiddlewareCreator {
+  return async (ctx: MeasureContext, context: PipelineContext, next?: Middleware) => {
+    const result: FullTextMiddleware = (await fulltext(ctx, context, next)) as FullTextMiddleware
+    result.addExtraFind = (baseClass, childClasses) => {
+      if (context.hierarchy.isDerived(baseClass, card.class.Card)) {
+        // Using Card as base class because messages are the same for any card subclass
+        childClasses.add(`${card.class.Card}%message` as Ref<Class<Doc>>)
+      }
+    }
+    return result
+  }
 }
 
 /**
@@ -118,6 +139,7 @@ export function createServerPipeline (
 
     const middlewares: MiddlewareCreator[] = [
       LookupMiddleware.create,
+      NormalizeTxMiddleware.create,
       IdentityMiddleware.create,
       ModifiedMiddleware.create,
       FindSecurityMiddleware.create,
@@ -135,17 +157,22 @@ export function createServerPipeline (
         : []),
       UserStatusMiddleware.create,
       ApplyTxMiddleware.create, // Extract apply
+      IdentifierMiddleware.create, // After ApplyTx to ensure that it pass
+      RatingMiddleware.create, // Rating editing restrictions
       TxMiddleware.create, // Store tx into transaction domain
       ...(opt.disableTriggers === true ? [] : [TriggersMiddleware.create]),
       ...(opt.fulltextUrl !== undefined
         ? [
-            FullTextMiddleware.create(
-              opt.fulltextUrl,
-              generateToken(systemAccountUuid, workspace.uuid, { service: 'transactor' })
+            addMessagesToFullText(
+              FullTextMiddleware.create(
+                opt.fulltextUrl,
+                generateToken(systemAccountUuid, workspace.uuid, { service: 'transactor' })
+              )
             )
           ]
         : []),
       LowLevelMiddleware.create,
+      TxOrderingMiddleware.create(),
       QueryJoinMiddleware.create,
       LiveQueryMiddleware.create,
       DomainFindMiddleware.create,

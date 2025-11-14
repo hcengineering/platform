@@ -231,6 +231,7 @@
 
     "DocumentInHierarchy": "Dokument v hierarchii",
     "FirstDraftVersion": "Toto je první konceptová verze dokumentu. Historie zatím není k dispozici.",
+    "FirstOrNotAvailable": "Toto je první dostupná verze dokumentu. Historie zatím není k dispozici nebo není dostupná.",
     "EffectiveDocumentLifecycle": "Životní cyklus účinného dokumentu",
     "ReasonAndImpact": "Důvod a dopad",
     "ImpactAnalysis": "Analýza dopadu",
@@ -267,7 +268,6 @@
     "EditDocumentSpace": "Upravit prostor dokumentů",
     "DocSpaceDescriptionPlaceholder": "Popište svůj prostor...",
     "Members": "Členové",
-    "RoleLabel": "Role: {role}",
     "CreateOrgSpace": "Vytvořit prostor organizace",
     "ReviewDocumentPermission": "Revidovat dokument",
     "ReviewDocumentDescription": "Uděluje uživatelům možnost revidovat dokument",

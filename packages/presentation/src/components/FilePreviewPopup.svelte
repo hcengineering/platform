@@ -73,7 +73,6 @@
           .catch((error) => {
             drawingLoading = false
             Analytics.handleError(error)
-            console.error('Failed to load drawings for file', file, error)
           })
       }
     }

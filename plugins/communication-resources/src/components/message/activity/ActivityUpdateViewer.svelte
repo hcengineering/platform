@@ -23,12 +23,14 @@
   import { Card } from '@hcengineering/card'
   import ActivityUpdateTypeViewer from './ActivityUpdateTypeViewer.svelte'
   import ActivityUpdateProcessViewer from './ActivityUpdateProcessViewer.svelte'
+  import ActivityCollaborativeContentViewer from './ActivityCollaborativeContentViewer.svelte'
 
   export let model: AttributeModel | undefined = undefined
   export let update: ActivityUpdate
   export let content: Markdown
   export let card: Card
   export let author: Person | undefined
+  export let oneRow: boolean = false
 </script>
 
 {#if update.type === ActivityUpdateType.Attribute}
@@ -41,4 +43,6 @@
   <ActivityUpdateTypeViewer {update} />
 {:else if update.type === ActivityUpdateType.Process}
   <ActivityUpdateProcessViewer {update} {content} />
+{:else if update.type === ActivityUpdateType.CollaborativeChange}
+  <ActivityCollaborativeContentViewer {model} {update} {oneRow} />
 {/if}

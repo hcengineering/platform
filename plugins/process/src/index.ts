@@ -194,6 +194,7 @@ export interface UpdateCriteriaComponent extends Doc {
 export * from './errors'
 export * from './types'
 export * from './utils'
+export * from './dslContext'
 
 export default plugin(processId, {
   class: {
@@ -220,6 +221,7 @@ export default plugin(processId, {
     OnCardUpdate: '' as Ref<Trigger>, // in fact WhenCardMatches, should migrate in future
     WhenFieldChanges: '' as Ref<Trigger>,
     OnSubProcessesDone: '' as Ref<Trigger>,
+    OnSubProcessMatch: '' as Ref<Trigger>,
     OnToDoClose: '' as Ref<Trigger>,
     OnToDoRemove: '' as Ref<Trigger>,
     OnExecutionStart: '' as Ref<Trigger>,
@@ -231,6 +233,7 @@ export default plugin(processId, {
     MatchCheck: '' as Resource<CheckFunc>,
     FieldChangedCheck: '' as Resource<CheckFunc>,
     SubProcessesDoneCheck: '' as Resource<CheckFunc>,
+    SubProcessMatchCheck: '' as Resource<CheckFunc>,
     Time: '' as Resource<CheckFunc>
   },
   string: {
@@ -276,6 +279,8 @@ export default plugin(processId, {
     Time: '' as Asset
   },
   function: {
+    FirstMatchValue: '' as Ref<ProcessFunction>,
+    Filter: '' as Ref<ProcessFunction>,
     FirstValue: '' as Ref<ProcessFunction>,
     LastValue: '' as Ref<ProcessFunction>,
     Random: '' as Ref<ProcessFunction>,

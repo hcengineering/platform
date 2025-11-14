@@ -129,7 +129,8 @@
       right: 0.85rem;
       box-shadow: 0.25rem 0.75rem 1rem 0.125rem var(--global-popover-ShadowColor);
       border: 1px solid var(--global-subtle-ui-BorderColor);
-      background: linear-gradient(0deg, var(--global-surface-01-BorderColor), var(--global-surface-01-BorderColor)),
+      background:
+        linear-gradient(0deg, var(--global-surface-01-BorderColor), var(--global-surface-01-BorderColor)),
         linear-gradient(0deg, var(--global-ui-BackgroundColor), var(--global-ui-BackgroundColor));
       padding: var(--spacing-0_5);
       border-radius: var(--small-BorderRadius);

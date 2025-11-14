@@ -155,14 +155,30 @@ describe('Settings', () => {
         systemUnderTest.setMinimizeToTrayEnabled(value)
 
         expect(systemUnderTest.isMinimizeToTrayEnabled()).toBe(value)
+        expect(systemUnderTest.isAutoLaunchEnabled()).toBe(false)
+      })
+    })
+
+    describe('setAutoLaunchEnabled', () => {
+      test.each([
+        { value: true, description: 'stored value is true' },
+        { value: false, description: 'stored value is false' }
+      ])('$description', ({ value }) => {
+        systemUnderTest.setAutoLaunchEnabled(value)
+
+        expect(systemUnderTest.isAutoLaunchEnabled()).toBe(value)
+        expect(systemUnderTest.isMinimizeToTrayEnabled()).toBe(false)
       })
     })
 
     describe('setServerUrl', () => {
-      test('write than read', () => {
-        const expectedUrl = 'https://new.server.com'
-
-        systemUnderTest.setServerUrl(expectedUrl)
+      const expectedUrl = 'https://new.server.com'
+      test.each([
+        { serverUrl: 'https://new.server.com' },
+        { serverUrl: 'https://new.server.com/' },
+        { serverUrl: 'https://new.server.com//' }
+      ])('write $serverUrl than read', ({ serverUrl }) => {
+        systemUnderTest.setServerUrl(serverUrl)
 
         expect(systemUnderTest.readServerUrl()).toBe(expectedUrl)
       })

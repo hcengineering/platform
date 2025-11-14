@@ -16,10 +16,11 @@
   import { createEventDispatcher, onMount } from 'svelte'
   import { fade } from 'svelte/transition'
 
-  import presentation, { Card, getClient, getCurrentWorkspaceUuid, SpaceSelector } from '@hcengineering/presentation'
+  import presentation, { Card, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { Label, Loading } from '@hcengineering/ui'
   import { type Integration } from '@hcengineering/account-client'
   import { isWorkspaceIntegration } from '@hcengineering/integration-client'
+  import { Analytics } from '@hcengineering/analytics'
 
   import { getIntegrationClient, getAccountClient } from '../utils'
   import aiAssistant from '../plugin'
@@ -43,6 +44,7 @@
       const integrationClient = await getIntegrationClient()
       if (integration === undefined) {
         integration = await integrationClient.connect(socialId)
+        await accountClient.refreshHulyAssistantToken()
       }
 
       integration = isWorkspaceIntegration(integration)
@@ -51,9 +53,10 @@
 
       isLoading = false
       dispatch('close')
-    } catch (err) {
+    } catch (err: any) {
       isLoading = false
       console.error('Failed to find/create huly assistant social id/integration:', err)
+      Analytics.handleError(err)
     }
   })
 

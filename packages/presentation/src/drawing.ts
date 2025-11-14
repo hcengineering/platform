@@ -31,7 +31,16 @@ import {
   offsetCanvasPoint,
   type ColorMetaNameOrHex
 } from './drawingUtils'
-import { type DrawingCmd, type CommandUid, type DrawTextCmd, type DrawLineCmd, makeCommandUid } from './drawingCommand'
+import {
+  type DrawingCmd,
+  type CommandUid,
+  type DrawTextCmd,
+  type DrawLineCmd,
+  type DrawRectCmd,
+  type DrawEllipseCmd,
+  type DrawStraightLineCmd,
+  makeCommandUid
+} from './drawingCommand'
 import { type ColorsList, DrawingBoardColoringSetup, metaColorNameToHex } from './drawingColors'
 
 export interface DrawingData {
@@ -57,6 +66,7 @@ export interface DrawingProps {
   changingCmdId?: CommandUid
   personCursorPos?: Point
   personCursorVisible?: boolean
+  enableMiddleMousePanning?: boolean
   cmdAdded?: (cmd: DrawingCmd) => void
   cmdChanging?: (id: CommandUid) => void
   cmdUnchanged?: (id: CommandUid) => void
@@ -67,9 +77,10 @@ export interface DrawingProps {
   personCursorMoved?: (nodePos: Point) => void
   panning?: (offset: Point) => void
   panned?: (offset: Point) => void
+  toolChanged?: (tool: DrawingTool) => void
 }
 
-export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text'
+export type DrawingTool = 'pen' | 'erase' | 'pan' | 'text' | 'shape-rectangle' | 'shape-ellipse' | 'shape-line'
 
 const maxTextLength = 500
 
@@ -81,6 +92,7 @@ type PointStatus = 'last-point' | 'intermediate-point'
 
 class DrawState {
   on = false
+  usedBeforePanningTool: DrawingTool | undefined = undefined
   tool: DrawingTool = 'pen'
   penColor: ColorMetaNameOrHex = 'alpha'
   penWidth = 4
@@ -126,7 +138,13 @@ class DrawState {
   }
 
   isDrawingTool = (): boolean => {
-    return this.tool === 'pen' || this.tool === 'erase'
+    return (
+      this.tool === 'pen' ||
+      this.tool === 'erase' ||
+      this.tool === 'shape-rectangle' ||
+      this.tool === 'shape-ellipse' ||
+      this.tool === 'shape-line'
+    )
   }
 
   translateCtx = (): void => {
@@ -162,6 +180,12 @@ class DrawState {
   drawCommand = (cmd: DrawingCmd, currentTheme: ThemeVariantType): void => {
     if (cmd.type === 'text') {
       this.drawTextCommand(cmd as DrawTextCmd, currentTheme)
+    } else if (cmd.type === 'rectangle') {
+      this.drawRectCommand(cmd as DrawRectCmd, currentTheme)
+    } else if (cmd.type === 'ellipse') {
+      this.drawEllipseCommand(cmd as DrawEllipseCmd, currentTheme)
+    } else if (cmd.type === 'straight-line') {
+      this.drawStraightLineCommand(cmd as DrawStraightLineCmd, currentTheme)
     } else {
       this.drawLineCommand(cmd as DrawLineCmd, currentTheme)
     }
@@ -200,6 +224,46 @@ class DrawState {
       this.ctx.fillText(line, p.x, p.y)
       p.y += cmd.fontSize
     }
+    this.ctx.restore()
+  }
+
+  drawRectCommand = (cmd: DrawRectCmd, currentTheme: ThemeVariantType): void => {
+    this.ctx.save()
+    this.translateCtx()
+    this.ctx.beginPath()
+    this.ctx.strokeStyle = metaColorNameToHex(cmd.penColor, currentTheme, this.colors)
+    this.ctx.lineWidth = cmd.lineWidth
+    const width = cmd.end.x - cmd.start.x
+    const height = cmd.end.y - cmd.start.y
+    this.ctx.strokeRect(cmd.start.x, cmd.start.y, width, height)
+    this.ctx.restore()
+  }
+
+  drawEllipseCommand = (cmd: DrawEllipseCmd, currentTheme: ThemeVariantType): void => {
+    this.ctx.save()
+    this.translateCtx()
+    this.ctx.beginPath()
+    this.ctx.strokeStyle = metaColorNameToHex(cmd.penColor, currentTheme, this.colors)
+    this.ctx.lineWidth = cmd.lineWidth
+    const centerX = (cmd.start.x + cmd.end.x) / 2
+    const centerY = (cmd.start.y + cmd.end.y) / 2
+    const radiusX = Math.abs(cmd.end.x - cmd.start.x) / 2
+    const radiusY = Math.abs(cmd.end.y - cmd.start.y) / 2
+    this.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2)
+    this.ctx.stroke()
+    this.ctx.restore()
+  }
+
+  drawStraightLineCommand = (cmd: DrawStraightLineCmd, currentTheme: ThemeVariantType): void => {
+    this.ctx.save()
+    this.translateCtx()
+    this.ctx.beginPath()
+    this.ctx.lineCap = 'round'
+    this.ctx.strokeStyle = metaColorNameToHex(cmd.penColor, currentTheme, this.colors)
+    this.ctx.lineWidth = cmd.lineWidth
+    this.ctx.moveTo(cmd.start.x, cmd.start.y)
+    this.ctx.lineTo(cmd.end.x, cmd.end.y)
+    this.ctx.stroke()
     this.ctx.restore()
   }
 
@@ -308,7 +372,7 @@ export function drawing (
   draw.offset = props.offset ?? draw.offset
   let isOffsetAnimating = false
 
-  updateToolCursor()
+  updateToolCursor(false)
   updateCanvasTouchAction()
 
   interface LiveTextBox {
@@ -335,7 +399,7 @@ export function drawing (
   replayCommands(currentCommands)
 
   props.subscribeOnThemeChange(() => {
-    updateToolCursor()
+    updateToolCursor(false)
     replayCommands(currentCommands)
   })
 
@@ -373,6 +437,7 @@ export function drawing (
   resizeObserver.observe(canvas)
 
   let touchId: number | undefined
+  let isMiddleMousePanning = false
 
   function findTouch (touches: TouchList, id: number | undefined = touchId): Touch | undefined {
     for (let i = 0; i < touches.length; i++) {
@@ -398,7 +463,8 @@ export function drawing (
     }
     const touch = e.changedTouches[0]
     touchId = touch.identifier
-    drawStart(touchToNodePoint(touch, canvas))
+    const forcePan = false
+    drawStart(touchToNodePoint(touch, canvas), forcePan)
   }
 
   canvas.ontouchmove = (e) => {
@@ -407,7 +473,8 @@ export function drawing (
     }
     const touch = findTouch(e.changedTouches)
     if (touch !== undefined) {
-      drawContinue(touchToNodePoint(touch, canvas))
+      const forcePan = false
+      drawContinue(touchToNodePoint(touch, canvas), forcePan)
     }
   }
 
@@ -417,15 +484,27 @@ export function drawing (
     }
     const touch = findTouch(e.changedTouches)
     if (touch !== undefined) {
-      drawEnd(touchToNodePoint(touch, canvas))
+      const forcePan = false
+      drawEnd(touchToNodePoint(touch, canvas), forcePan)
     }
     touchId = undefined
   }
 
   canvas.ontouchcancel = canvas.ontouchend
 
+  const MiddleMouseButton = 1
+
   canvas.onpointerdown = (e) => {
     if (readonly) {
+      return
+    }
+    if (e.button === MiddleMouseButton && props.enableMiddleMousePanning === true) {
+      e.preventDefault()
+      isMiddleMousePanning = true
+      updateToolCursor(true)
+      canvas.setPointerCapture(e.pointerId)
+      const forcePan = true
+      drawStart(pointerToNodePoint(e), forcePan)
       return
     }
     if (e.button !== 0) {
@@ -433,7 +512,8 @@ export function drawing (
     }
     e.preventDefault()
     canvas.setPointerCapture(e.pointerId)
-    drawStart(pointerToNodePoint(e))
+    const forcePan = false
+    drawStart(pointerToNodePoint(e), forcePan)
   }
 
   canvas.onpointermove = (e) => {
@@ -441,7 +521,8 @@ export function drawing (
       return
     }
     e.preventDefault()
-    drawContinue(pointerToNodePoint(e))
+    const forcePan = isMiddleMousePanning
+    drawContinue(pointerToNodePoint(e), forcePan)
   }
 
   canvas.onpointerup = (e) => {
@@ -450,10 +531,25 @@ export function drawing (
     }
     e.preventDefault()
     canvas.releasePointerCapture(e.pointerId)
-    drawEnd(pointerToNodePoint(e))
+    const forcePan = isMiddleMousePanning
+    drawEnd(pointerToNodePoint(e), forcePan)
+    if (e.button === MiddleMouseButton) {
+      isMiddleMousePanning = false
+      updateToolCursor(false)
+    }
   }
 
-  canvas.onpointercancel = canvas.onpointerup
+  canvas.onpointercancel = (e) => {
+    if (readonly) {
+      return
+    }
+    e.preventDefault()
+    canvas.releasePointerCapture(e.pointerId)
+    const forcePan = isMiddleMousePanning
+    drawEnd(pointerToNodePoint(e), forcePan)
+    isMiddleMousePanning = false
+    updateToolCursor(false)
+  }
 
   canvas.onpointerenter = () => {
     if (!readonly && draw.isDrawingTool()) {
@@ -472,36 +568,53 @@ export function drawing (
     return makeMouseScaledPoint(scaled.x, scaled.y)
   }
 
-  function drawStart (p: NodePoint): void {
+  function drawStart (p: NodePoint, forcePan: boolean): void {
     const scaledPoint = rescaleWithCss(p)
     draw.on = true
     draw.points = []
     prevPos = scaledPoint
-    if (draw.isDrawingTool()) {
+    if (!forcePan && draw.isDrawingTool()) {
       draw.addPoint(scaledPoint)
     }
   }
 
-  function drawContinue (p: NodePoint): void {
+  function drawContinue (p: NodePoint, forcePan: boolean): void {
     const scaledPoint = rescaleWithCss(p)
 
-    if (draw.isDrawingTool()) {
+    if (draw.isDrawingTool() || forcePan) {
       const cursorSize = draw.cursorWidth()
 
       const canvasOffsetInParent = offsetInParent(node, canvas)
       const parentRelativeLocation = offsetPoint(scaledPoint, canvasOffsetInParent)
       toolCursor.style.left = `${parentRelativeLocation.x - cursorSize / 2}px`
       toolCursor.style.top = `${parentRelativeLocation.y - cursorSize / 2}px`
+    }
 
+    if (!forcePan && draw.isDrawingTool()) {
       if (draw.on) {
-        if (Math.hypot(prevPos.x - scaledPoint.x, prevPos.y - scaledPoint.y) >= draw.minLineLength) {
+        if (draw.tool === 'shape-rectangle') {
+          requestAnimationFrame(() => {
+            replayCommands(currentCommands)
+            drawPreviewRectangle(scaledPoint)
+          })
+        } else if (draw.tool === 'shape-ellipse') {
+          requestAnimationFrame(() => {
+            replayCommands(currentCommands)
+            drawPreviewEllipse(scaledPoint)
+          })
+        } else if (draw.tool === 'shape-line') {
+          requestAnimationFrame(() => {
+            replayCommands(currentCommands)
+            drawPreviewStraightLine(scaledPoint)
+          })
+        } else if (Math.hypot(prevPos.x - scaledPoint.x, prevPos.y - scaledPoint.y) >= draw.minLineLength) {
           draw.drawLine(scaledPoint, 'intermediate-point', props.getCurrentTheme())
           prevPos = scaledPoint
         }
       }
     }
 
-    if (draw.on && draw.tool === 'pan') {
+    if (draw.on && (draw.tool === 'pan' || forcePan)) {
       requestAnimationFrame(() => {
         draw.offset.x += scaledPoint.x - prevPos.x
         draw.offset.y += scaledPoint.y - prevPos.y
@@ -513,7 +626,7 @@ export function drawing (
       })
     }
 
-    if (draw.on && draw.tool === 'text') {
+    if (draw.on && draw.tool === 'text' && !forcePan) {
       prevPos = scaledPoint
     }
 
@@ -522,13 +635,21 @@ export function drawing (
     }
   }
 
-  function drawEnd (p: NodePoint): void {
+  function drawEnd (p: NodePoint, forcePan: boolean): void {
     const scaledPoint = rescaleWithCss(p)
     if (draw.on) {
-      if (draw.isDrawingTool()) {
-        draw.drawLine(scaledPoint, 'last-point', props.getCurrentTheme())
-        storeLineCommand()
-      } else if (draw.tool === 'pan') {
+      if (!forcePan && draw.isDrawingTool()) {
+        if (draw.tool === 'shape-rectangle') {
+          storeRectCommand(scaledPoint)
+        } else if (draw.tool === 'shape-ellipse') {
+          storeEllipseCommand(scaledPoint)
+        } else if (draw.tool === 'shape-line') {
+          storeStraightLineCommand(scaledPoint)
+        } else {
+          draw.drawLine(scaledPoint, 'last-point', props.getCurrentTheme())
+          storeLineCommand()
+        }
+      } else if (draw.tool === 'pan' || forcePan) {
         props.panned?.(draw.offset)
       } else if (draw.tool === 'text') {
         if (liveTextBox !== undefined) {
@@ -854,24 +975,111 @@ export function drawing (
   }
 
   function storeLineCommand (): void {
-    if (draw.points.length > 0) {
-      const erasing = draw.tool === 'erase'
-      const cmd: DrawLineCmd = {
+    if (draw.points.length === 0) {
+      return
+    }
+    const erasing = draw.tool === 'erase'
+    const cmd: DrawLineCmd = {
+      id: makeCommandUid(),
+      type: 'line',
+      lineWidth: erasing ? draw.eraserWidth : draw.penWidth,
+      erasing,
+      penColor: draw.penColor,
+      points: draw.points
+    }
+    props.cmdAdded?.(cmd)
+  }
+
+  function drawShapePreview (
+    endPoint: MouseScaledPoint,
+    drawShape: (start: CanvasPoint, end: CanvasPoint) => void
+  ): void {
+    if (draw.points.length === 0) {
+      return
+    }
+
+    const start = draw.points[0]
+    const end = draw.mouseToCanvasPoint(endPoint)
+
+    draw.ctx.save()
+    draw.translateCtx()
+    draw.ctx.beginPath()
+    draw.ctx.strokeStyle = metaColorNameToHex(draw.penColor, props.getCurrentTheme(), colorsSetup)
+    draw.ctx.lineWidth = draw.penWidth
+    drawShape(start, end)
+    draw.ctx.stroke()
+    draw.ctx.restore()
+  }
+
+  function drawPreviewRectangle (endPoint: MouseScaledPoint): void {
+    drawShapePreview(endPoint, (start, end) => {
+      const width = end.x - start.x
+      const height = end.y - start.y
+      draw.ctx.strokeRect(start.x, start.y, width, height)
+    })
+  }
+
+  function drawPreviewEllipse (endPoint: MouseScaledPoint): void {
+    drawShapePreview(endPoint, (start, end) => {
+      const centerX = (start.x + end.x) / 2
+      const centerY = (start.y + end.y) / 2
+      const radiusX = Math.abs(end.x - start.x) / 2
+      const radiusY = Math.abs(end.y - start.y) / 2
+      draw.ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2)
+    })
+  }
+
+  function drawPreviewStraightLine (endPoint: MouseScaledPoint): void {
+    drawShapePreview(endPoint, (start, end) => {
+      draw.ctx.lineCap = 'round'
+      draw.ctx.moveTo(start.x, start.y)
+      draw.ctx.lineTo(end.x, end.y)
+    })
+  }
+
+  function storeShapeCommand (endPoint: MouseScaledPoint, type: 'rectangle' | 'ellipse' | 'straight-line'): void {
+    if (draw.points.length === 0) {
+      return
+    }
+
+    const start = draw.points[0]
+    const end = draw.mouseToCanvasPoint(endPoint)
+
+    const minSize = 2
+
+    const nonDegenerate = Math.abs(end.x - start.x) > minSize || Math.abs(end.y - start.y) > minSize
+    if (nonDegenerate) {
+      const cmd: DrawRectCmd | DrawEllipseCmd | DrawStraightLineCmd = {
         id: makeCommandUid(),
-        type: 'line',
-        lineWidth: erasing ? draw.eraserWidth : draw.penWidth,
-        erasing,
+        type,
+        lineWidth: draw.penWidth,
         penColor: draw.penColor,
-        points: draw.points
+        start,
+        end
       }
       props.cmdAdded?.(cmd)
     }
   }
 
-  function updateToolCursor (): void {
+  function storeRectCommand (endPoint: MouseScaledPoint): void {
+    storeShapeCommand(endPoint, 'rectangle')
+  }
+
+  function storeEllipseCommand (endPoint: MouseScaledPoint): void {
+    storeShapeCommand(endPoint, 'ellipse')
+  }
+
+  function storeStraightLineCommand (endPoint: MouseScaledPoint): void {
+    storeShapeCommand(endPoint, 'straight-line')
+  }
+
+  function updateToolCursor (forcePanning: boolean): void {
     if (readonly) {
       toolCursor.style.visibility = 'hidden'
       canvas.style.cursor = props.defaultCursor ?? 'default'
+    } else if (forcePanning) {
+      canvas.style.cursor = 'grabbing'
+      toolCursor.style.visibility = 'hidden'
     } else if (draw.isDrawingTool()) {
       canvas.style.cursor = 'none'
       toolCursor.style.visibility = 'visible'
@@ -1024,6 +1232,11 @@ export function drawing (
       }
       if (props.tool !== undefined) {
         if (draw.tool !== props.tool) {
+          if (props.tool === 'pan') {
+            draw.usedBeforePanningTool = draw.tool
+          } else {
+            draw.usedBeforePanningTool = props.tool
+          }
           draw.tool = props.tool
           syncToolCursor = true
           toolChanged = true
@@ -1031,6 +1244,10 @@ export function drawing (
       }
       if (props.penColor !== undefined) {
         if (draw.penColor !== props.penColor) {
+          if (draw.tool === 'pan' && draw.usedBeforePanningTool != null) {
+            draw.tool = draw.usedBeforePanningTool
+            toolChanged = true
+          }
           draw.penColor = props.penColor
           syncLiveTextBox = true
           syncToolCursor = true
@@ -1084,8 +1301,11 @@ export function drawing (
         }
       }
 
+      if (toolChanged) {
+        props.toolChanged?.(draw.tool)
+      }
       if (syncToolCursor) {
-        updateToolCursor()
+        updateToolCursor(false)
       }
       if (syncPersonCursor !== undefined) {
         updatePersonCursor(syncPersonCursor)

@@ -22,17 +22,11 @@ import { Doc as Ydoc } from 'yjs'
 import plugin from '../plugin'
 
 import { HocuspocusCollabProvider } from './hocuspocus'
-import { IndexeddbProvider } from './indexeddb'
 import { type Provider } from './types'
 
 function getDocumentId (doc: CollaborativeDoc): string {
   const workspace = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
   return encodeDocumentId(workspace, doc)
-}
-
-export function createLocalProvider (ydoc: Ydoc, doc: CollaborativeDoc): Provider {
-  const documentId = getDocumentId(doc)
-  return new IndexeddbProvider(documentId, ydoc)
 }
 
 export function createRemoteProvider (ydoc: Ydoc, doc: CollaborativeDoc, content: Ref<Blob> | null): Provider {

@@ -4,6 +4,8 @@
 import { MeasureContext } from '@hcengineering/core'
 import puppeteer, { Page, Viewport } from 'puppeteer'
 
+import config from './config'
+
 export interface PrintOptions {
   kind?: ExportKind
   viewport?: Viewport
@@ -34,13 +36,15 @@ export async function print (ctx: MeasureContext, url: string, options?: PrintOp
       '--disable-gpu',
       '--disable-dev-shm-usage',
       '--disable-extensions',
-      '--disable-setuid-sandbox'
+      '--disable-setuid-sandbox',
+      ...config.PuppeteerArgs
     ]
   })
   const page = await browser.newPage()
 
   page
-    .on('pageerror', ({ message }) => {
+    .on('pageerror', (err: unknown) => {
+      const message = err instanceof Error ? err.message : String(err)
       ctx.warn('pageerror', { message })
     })
     .on('requestfailed', (request) => {
@@ -56,7 +60,7 @@ export async function print (ctx: MeasureContext, url: string, options?: PrintOp
   })
   await page.waitForNetworkIdle({ idleTime: 1000 })
 
-  let res: Buffer | undefined
+  let res: Uint8Array | undefined
 
   if (kind === 'pdf') {
     await page.emulateMediaType('print')
@@ -101,7 +105,7 @@ export async function print (ctx: MeasureContext, url: string, options?: PrintOp
 
   await browser.close()
 
-  return res
+  return res !== undefined ? Buffer.from(res) : undefined
 }
 
 async function scrollThrough (page: Page): Promise<void> {

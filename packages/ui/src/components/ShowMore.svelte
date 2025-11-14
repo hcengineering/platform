@@ -26,7 +26,8 @@
   let cHeight: number
   let crop: boolean = false
 
-  const toggle = (): void => {
+  const toggle = (event: MouseEvent): void => {
+    event.stopPropagation()
     crop = !crop
   }
 

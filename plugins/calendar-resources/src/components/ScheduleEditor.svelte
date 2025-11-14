@@ -55,6 +55,7 @@
   import calendar from '../plugin'
   import CalendarSelector from './CalendarSelector.svelte'
   import TimeZoneSelector from './TimeZoneSelector.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let schedule: Schedule | undefined
 
@@ -99,8 +100,8 @@
         .then((text) => {
           durationVariants.push({ msec, text })
         })
-        .catch((err) => {
-          console.error(err)
+        .catch((err: any) => {
+          Analytics.handleError(err)
         })
     })
   }
@@ -112,8 +113,8 @@
         .then((text) => {
           intervalVariants.push({ msec, text })
         })
-        .catch((err) => {
-          console.error(err)
+        .catch((err: any) => {
+          Analytics.handleError(err)
         })
     })
   }
@@ -170,8 +171,8 @@
       .then((res) => {
         formattedMeetingDuration = res
       })
-      .catch((err) => {
-        console.error(err)
+      .catch((err: any) => {
+        Analytics.handleError(err)
       })
   }
 
@@ -180,8 +181,8 @@
       .then((res) => {
         formattedMeetingInterval = res
       })
-      .catch((err) => {
-        console.error(err)
+      .catch((err: any) => {
+        Analytics.handleError(err)
       })
   }
 
@@ -351,7 +352,7 @@
       </div>
       <div class="flex-row-center flex-gap-1-5">
         <Icon icon={calendar.icon.Calendar} size={'small'} />
-        <CalendarSelector bind:value={_calendar} />
+        <CalendarSelector bind:value={_calendar} withIcon={false} />
       </div>
     </div>
     <div class="block">

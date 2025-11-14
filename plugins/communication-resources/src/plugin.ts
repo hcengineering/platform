@@ -69,6 +69,7 @@ export default mergeIds(communicationId, communication, {
     YesterdayAt: '' as IntlString,
     AndMore: '' as IntlString,
     IsTyping: '' as IntlString,
+    IsThinking: '' as IntlString,
     Loading: '' as IntlString,
     MessageIn: '' as IntlString,
     ThreadWasRemoved: '' as IntlString,
@@ -77,6 +78,7 @@ export default mergeIds(communicationId, communication, {
     LeftThe: '' as IntlString,
     Translating: '' as IntlString,
     ShowOriginal: '' as IntlString,
+    Translate: '' as IntlString,
     AddReaction: '' as IntlString,
     ReplyInThread: '' as IntlString,
     TranslateMessage: '' as IntlString,
@@ -87,7 +89,9 @@ export default mergeIds(communicationId, communication, {
     MessageAlreadyHasCardAttached: '' as IntlString,
     Direct: '' as IntlString,
     Directs: '' as IntlString,
-    Members: '' as IntlString
+    Members: '' as IntlString,
+    WriteMessageEllipsis: '' as IntlString,
+    EditMessageEllipsis: '' as IntlString
   },
   messageActionImpl: {
     AddReaction: '' as MessageActionFunctionResource,

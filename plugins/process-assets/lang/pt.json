@@ -55,6 +55,7 @@
     "EnterValue": "Insira valor",
     "OnToDoDone": "Ao completar a ação",
     "OnSubProcessesDone": "Ao concluir processos sub",
+    "WhenSubProcessMatches": "Quando o subprocesso corresponde",
     "Result": "Resultado",
     "RequestResult": "Solicitar resultado",
     "NoResultRequired": "Nenhum resultado requerido",
@@ -117,7 +118,15 @@
     "NewProcessToDo": "Nova ação de processo",
     "EmptyArray": "Array vazio",
     "ExecutionInitiator": "Iniciador de Execução",
-    "ExecutionStarted": "Execução Iniciada"
+    "ExecutionStarted": "Execução Iniciada",
+    "Filter": "Filtrar",
+    "FirstMatchValue": "Primeiro Valor Correspondente",
+    "ConfigLabel": "Configuração de processos",
+    "ConfigDescription": "Defina processos para automatizar fluxos de trabalho e processos de negócios.",
+    "RunProcessPermission": "Executar processo",
+    "CancelProcessPermission": "Cancelar processo",
+    "ForbidRunProcessPermission": "Proibir execução do processo",
+    "ForbidCancelProcessPermission": "Proibir cancelamento do processo"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

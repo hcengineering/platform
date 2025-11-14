@@ -30,7 +30,6 @@
   import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
 
   import { savedMessagesStore } from '../../activity'
-  import { isReactionMessage } from '../../activityMessagesUtils'
   import { MessageInlineAction } from '../../types'
   import ActivityMessageActions from '../ActivityMessageActions.svelte'
   import MessageTimestamp from '../MessageTimestamp.svelte'
@@ -276,7 +275,7 @@
           class:isShort
         >
           <ActivityMessageActions
-            message={isReactionMessage(message) ? parentMessage : message}
+            {message}
             {actions}
             {withActionMenu}
             {excludedActions}
@@ -431,7 +430,8 @@
     height: 1.25rem;
     padding: var(--spacing-1);
     border-radius: 50%;
-    background: linear-gradient(0deg, var(--button-primary-BackgroundColor), var(--button-primary-BackgroundColor)),
+    background:
+      linear-gradient(0deg, var(--button-primary-BackgroundColor), var(--button-primary-BackgroundColor)),
       linear-gradient(0deg, var(--global-ui-BackgroundColor), var(--global-ui-BackgroundColor));
     border: 1px solid var(--global-ui-BackgroundColor);
     top: -0.5rem;

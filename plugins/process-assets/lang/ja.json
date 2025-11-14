@@ -55,6 +55,7 @@
     "EnterValue": "値を入力",
     "OnToDoDone": "アクション完了時",
     "OnSubProcessesDone": "サブプロセス完了時",
+    "WhenSubProcessMatches": "サブプロセスが条件に一致したとき",
     "RequestResult": "結果をリクエスト",
     "NoResultRequired": "結果は不要",
     "From": "から",
@@ -116,7 +117,15 @@
     "NewProcessToDo": "新しいプロセスアクション",
     "EmptyArray": "空の配列",
     "ExecutionInitiator": "実行の発起人",
-    "ExecutionStarted": "実行が開始されました"
+    "ExecutionStarted": "実行が開始されました",
+    "Filter": "フィルター",
+    "FirstMatchValue": "最初の一致する値",
+    "ConfigLabel": "プロセス構成",
+    "ConfigDescription": "ワークフローやビジネスプロセスを自動化するためのプロセスを定義します。",
+    "RunProcessPermission": "プロセスを実行",
+    "CancelProcessPermission": "プロセスをキャンセル",
+    "ForbidRunProcessPermission": "プロセスの実行を禁止",
+    "ForbidCancelProcessPermission": "プロセスのキャンセルを禁止"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

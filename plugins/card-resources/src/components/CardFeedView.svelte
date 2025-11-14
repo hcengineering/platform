@@ -17,7 +17,7 @@
   import ui, { Label, Scroller, Loading } from '@hcengineering/ui'
   import card from '@hcengineering/card'
 
-  import HomeCardPresenter from './FeedCardPresenter.svelte'
+  import FeedCardPresenter from './FeedCardPresenter.svelte'
   import NewCardForm from './NewCardForm.svelte'
 
   const cardsQuery = createQuery()
@@ -63,6 +63,7 @@
       }
     }
   )
+  $: cardSpace = space ?? getSpaceFromFilter(resultQuery)
 
   $: hasNextPage = total > cards.length
 
@@ -74,6 +75,16 @@
         limit += limitStep
       }
     }
+  }
+
+  function getSpaceFromFilter (_query: DocumentQuery<Card>): Ref<CardSpace> | undefined {
+    if (_query.space != null) {
+      if (typeof _query.space === 'object' && '$in' in _query.space && Array.isArray(_query.space.$in)) {
+        return _query.space.$in[0] as Ref<CardSpace>
+      }
+      return _query.space as Ref<CardSpace>
+    }
+    return undefined
   }
 
   function getFormatDateId (timestamp: number): string {
@@ -110,7 +121,7 @@
 
 <Scroller bind:divScroll {onScroll} padding="2rem 4rem">
   <div class="home">
-    <NewCardForm type={_class !== card.class.Card ? _class : undefined} {space} />
+    <NewCardForm type={_class !== card.class.Card ? _class : undefined} space={cardSpace} />
     <div class="body flex-gap-2">
       {#each cards as card, index}
         {@const previousCard = cards[index - 1]}
@@ -135,7 +146,9 @@
             {/if}
           </div>
         {/if}
-        <HomeCardPresenter {card} />
+        {#key card._id}
+          <FeedCardPresenter {card} />
+        {/key}
       {/each}
       {#if isLoading}
         <div class="flex-center pb-2">

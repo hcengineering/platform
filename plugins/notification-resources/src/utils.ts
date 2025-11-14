@@ -22,7 +22,6 @@ import {
   activityMessagesComparator,
   combineActivityMessages,
   isActivityMessageClass,
-  isReactionMessage,
   messageInFocus
 } from '@hcengineering/activity-resources'
 import { Analytics } from '@hcengineering/analytics'
@@ -34,20 +33,21 @@ import core, {
   type Ref,
   SortingOrder,
   type TxOperations,
-  type WithLookup
+  type WithLookup,
+  getClassCollaborators
 } from '@hcengineering/core'
 import notification, {
   type ActivityInboxNotification,
   type DisplayInboxNotification,
   type DocNotifyContext,
-  getClassCollaborators,
   type InboxNotification,
   type MentionInboxNotification,
   notificationId,
   type NotificationProvider,
   type NotificationProviderSetting,
   type NotificationType,
-  type NotificationTypeSetting
+  type NotificationTypeSetting,
+  type ReactionInboxNotification
 } from '@hcengineering/notification'
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
@@ -200,6 +200,27 @@ export async function archiveContextNotifications (doc?: DocNotifyContext): Prom
   }
 }
 
+export async function removeContextNotifications (doc?: DocNotifyContext): Promise<void> {
+  if (doc === undefined) return
+
+  const ops = getClient().apply(undefined, 'removeContextNotifications', true)
+
+  try {
+    const notifications = await ops.findAll(
+      notification.class.InboxNotification,
+      { docNotifyContext: doc._id, archived: false },
+      { projection: { _id: 1, _class: 1, space: 1 } }
+    )
+
+    for (const notification of notifications) {
+      await ops.removeDoc(notification._class, notification.space, notification._id)
+    }
+    await ops.update(doc, { lastViewedTimestamp: Date.now() })
+  } finally {
+    await ops.commit()
+  }
+}
+
 /**
  * @public
  */
@@ -324,11 +345,16 @@ export function isMentionNotification (doc?: InboxNotification): doc is MentionI
   return doc._class === notification.class.MentionInboxNotification
 }
 
-export async function getDisplayInboxNotifications (
+export function isReactionNotification (doc?: InboxNotification): doc is ReactionInboxNotification {
+  if (doc === undefined) return false
+  return doc._class === notification.class.ReactionInboxNotification
+}
+
+export function getDisplayInboxNotifications (
   notifications: Array<WithLookup<InboxNotification>>,
   filter: InboxNotificationsFilter = 'all',
   objectClass?: Ref<Class<Doc>>
-): Promise<DisplayInboxNotification[]> {
+): DisplayInboxNotification[] {
   const result: DisplayInboxNotification[] = []
   const activityNotifications: Array<WithLookup<ActivityInboxNotification>> = []
   for (const notification of notifications) {
@@ -359,10 +385,7 @@ export async function getDisplayInboxNotifications (
       return (message as DocUpdateMessage).objectClass === objectClass
     })
 
-  const combinedMessages = await combineActivityMessages(
-    messages.sort(activityMessagesComparator),
-    SortingOrder.Descending
-  )
+  const combinedMessages = combineActivityMessages(messages.sort(activityMessagesComparator), SortingOrder.Descending)
 
   for (const message of combinedMessages) {
     if (message._class === activity.class.DocUpdateMessage) {
@@ -403,17 +426,17 @@ export async function getDisplayInboxNotifications (
   )
 }
 
-export async function getDisplayInboxData (
+export function getDisplayInboxData (
   notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>,
   filter: InboxNotificationsFilter = 'all',
   objectClass?: Ref<Class<Doc>>
-): Promise<InboxData> {
+): InboxData {
   const result: InboxData = new Map()
 
   for (const key of notificationsByContext.keys()) {
     const notifications = notificationsByContext.get(key) ?? []
 
-    const displayNotifications = await getDisplayInboxNotifications(notifications, filter, objectClass)
+    const displayNotifications = getDisplayInboxNotifications(notifications, filter, objectClass)
 
     if (displayNotifications.length > 0) {
       result.set(key, displayNotifications)
@@ -426,7 +449,7 @@ export async function getDisplayInboxData (
 export async function hasInboxNotifications (
   notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>
 ): Promise<boolean> {
-  const unreadInboxData = await getDisplayInboxData(notificationsByContext, 'unread')
+  const unreadInboxData = getDisplayInboxData(notificationsByContext, 'unread')
 
   return unreadInboxData.size > 0
 }
@@ -439,7 +462,7 @@ export async function getNotificationsCount (
     return 0
   }
 
-  const unreadNotifications = await getDisplayInboxNotifications(notifications, 'unread')
+  const unreadNotifications = getDisplayInboxNotifications(notifications, 'unread')
 
   return unreadNotifications.length
 }
@@ -589,6 +612,27 @@ export async function selectInboxContext (
 
     return
   }
+
+  if (isReactionNotification(notification)) {
+    const thread = loc.path[4] === objectId ? objectId : undefined
+    const reactedTo = await client.findOne(activity.class.ActivityMessage, { _id: notification.attachedTo })
+    const isThread = reactedTo != null && hierarchy.isDerived(reactedTo._class, chunter.class.ThreadMessage)
+    const channelId = isThread ? (reactedTo as ThreadMessage)?.objectId : (reactedTo?.attachedTo ?? objectId)
+    const channelClass = isThread
+      ? (reactedTo as ThreadMessage)?.objectClass
+      : (reactedTo?.attachedToClass ?? objectClass)
+
+    void navigateToInboxDoc(
+      linkProviders,
+      context._id,
+      channelId,
+      channelClass,
+      thread as Ref<ActivityMessage>,
+      objectId as Ref<ActivityMessage>
+    )
+    return
+  }
+
   if (hierarchy.isDerived(objectClass, activity.class.ActivityMessage)) {
     const message = (notification as WithLookup<ActivityInboxNotification>)?.$lookup?.attachedTo
 
@@ -611,28 +655,6 @@ export async function selectInboxContext (
         thread?.objectClass ?? objectClass,
         thread?.attachedTo,
         thread?._id
-      )
-      return
-    }
-
-    if (isReactionMessage(message)) {
-      const thread = loc.path[4] === objectId ? objectId : undefined
-      const reactedTo =
-        (object as ActivityMessage) ??
-        (await client.findOne(activity.class.ActivityMessage, { _id: message.attachedTo as Ref<ActivityMessage> }))
-      const isThread = hierarchy.isDerived(reactedTo._class, chunter.class.ThreadMessage)
-      const channelId = isThread ? (reactedTo as ThreadMessage)?.objectId : reactedTo?.attachedTo ?? objectId
-      const channelClass = isThread
-        ? (reactedTo as ThreadMessage)?.objectClass
-        : reactedTo?.attachedToClass ?? objectClass
-
-      void navigateToInboxDoc(
-        linkProviders,
-        context._id,
-        channelId,
-        channelClass,
-        thread as Ref<ActivityMessage>,
-        objectId as Ref<ActivityMessage>
       )
       return
     }

@@ -15,16 +15,18 @@
 -->
 <script lang="ts">
   import { Channel, Person, combineName, getCurrentEmployee, getFirstName, getLastName } from '@hcengineering/contact'
-  import { AccountRole, Ref, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { AttributeEditor, createQuery, getClient } from '@hcengineering/presentation'
+  import { AccountRole, Ref, getCurrentAccount, hasAccountRole, type AccountUuid } from '@hcengineering/core'
+  import { AttributeEditor, createQuery, getClient, hasResource } from '@hcengineering/presentation'
+  import type { PersonRating } from '@hcengineering/rating'
+  import ratingPlugin from '@hcengineering/rating'
   import setting, { IntegrationType } from '@hcengineering/setting'
-  import { EditBox, FocusHandler, Scroller, createFocusManager } from '@hcengineering/ui'
+  import { Component, EditBox, FocusHandler, Scroller, createFocusManager } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import contact from '../plugin'
-  import ChannelsEditor from './ChannelsEditor.svelte'
-  import EditableAvatar from './EditableAvatar.svelte'
   import Avatar from './Avatar.svelte'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
+  import ChannelsEditor from './ChannelsEditor.svelte'
+  import EditableAvatar from './EditableAvatar.svelte'
 
   export let object: Person
   export let readonly: boolean = false
@@ -92,13 +94,26 @@
   }
 
   const manager = createFocusManager()
+
+  const levelQuery = createQuery()
+
+  let personRating: PersonRating | undefined
+
+  $: if (object.personUuid !== undefined) {
+    levelQuery.query(ratingPlugin.class.PersonRating, { accountId: object.personUuid as AccountUuid }, (res) => {
+      personRating = res[0]
+    })
+  } else {
+    levelQuery.unsubscribe()
+    personRating = undefined
+  }
 </script>
 
 <FocusHandler {manager} />
 
 {#if object !== undefined}
   <div class="flex-row-stretch flex-grow">
-    <div class="flex-no-shrink mr-8">
+    <div class="flex-no-shrink mr-8 flex-col flex-row-center">
       {#key object}
         {#if editable}
           <EditableAvatar
@@ -110,6 +125,14 @@
           />
         {:else}
           <Avatar person={object} size={'x-large'} name={object.name} />
+        {/if}
+        {#if personRating != null && hasResource(ratingPlugin.component.RatingRing)}
+          <div class="flex-row-center mt-2">
+            <Component
+              is={ratingPlugin.component.RatingRing}
+              props={{ rating: personRating.rating, showValues: true }}
+            />
+          </div>
         {/if}
       {/key}
     </div>
@@ -166,6 +189,11 @@
       </Scroller>
     </div>
   </div>
+  {#if personRating != null && hasResource(ratingPlugin.component.RatingRing)}
+    <div class="flex-row-center mt-2">
+      <Component is={ratingPlugin.component.RatingActivities} props={{ rating: personRating }} />
+    </div>
+  {/if}
 {/if}
 
 <style lang="scss">

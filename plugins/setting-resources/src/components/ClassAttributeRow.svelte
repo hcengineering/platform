@@ -16,15 +16,13 @@
   import core, { AnyAttribute, ArrOf, Doc, EnumOf, RefTo, Type } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, Icon, IconMoreV2, Label, IconOpenedArrow, tooltip } from '@hcengineering/ui'
-  import settings from '../plugin'
+  import { AnySvelteComponent, Icon, IconMoreV2, IconOpenedArrow, Label, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
   export let attribute: AnyAttribute
   export let attributeType: IntlString | undefined = undefined
   export let selected: boolean = false
   export let hovered: boolean = false
-  export let clickMore: (event: MouseEvent) => Promise<void>
 
   export let attributeMapper:
   | {
@@ -50,8 +48,8 @@
   }
 </script>
 
-<button class="hulyTableAttr-content__row" class:hovered class:selected on:contextmenu on:click>
-  <button class="hulyTableAttr-content__row-dragMenu" on:click|stopPropagation={clickMore}>
+<button class="hulyTableAttr-content__row w-full" class:hovered class:selected on:contextmenu on:click>
+  <button class="hulyTableAttr-content__row-dragMenu">
     <IconMoreV2 size={'small'} />
   </button>
   {#if attribute.automationOnly === true}

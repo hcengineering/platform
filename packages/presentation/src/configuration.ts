@@ -36,7 +36,8 @@ export class ConfigurationManager {
   ) {}
 
   has (plugin: Plugin): boolean {
-    return this.configuration.get(plugin)?.enabled !== false
+    const configuration = this.configuration.get(plugin)
+    return configuration !== undefined && configuration.enabled
   }
 
   hasResource<T>(resource?: Resource<T> | null): boolean | undefined {
@@ -61,6 +62,7 @@ addTxListener((txes: Tx[]) => {
       if (cud.objectClass === core.class.PluginConfiguration) {
         if (cud.operations.enabled !== undefined) {
           // Plugin enabled/disabled we need to refresh
+          console.log('reload due to changed plugin configuration')
           location.reload()
         }
       }

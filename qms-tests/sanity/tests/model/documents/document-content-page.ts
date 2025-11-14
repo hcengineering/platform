@@ -331,7 +331,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   }
 
   async clickAddMember (): Promise<void> {
-    await this.addMember.click()
+    await this.addMember.first().click()
   }
 
   async checkIfMemberDropdownHasMember (member: string, contains: boolean): Promise<void> {
@@ -745,7 +745,7 @@ export class DocumentContentPage extends DocumentCommonPage {
   }
 
   async fillSelectApproversForm (approvers: Array<string>, skipConfirm: boolean = false): Promise<void> {
-    await this.buttonAddMembers.click()
+    await this.buttonAddMembers.first().click()
     for (const approver of approvers) {
       await this.selectListItemWithSearch(this.page, approver)
     }

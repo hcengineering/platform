@@ -528,7 +528,7 @@ export class GithubWorker implements IntegrationManager {
     })
     if (info?.id === undefined) {
       // We need to retrieve info for login
-      const response: any = await container.octokit?.graphql(
+      const response: any = await container.octokit.graphql(
         `query($login: String!) {
         user(login: $login) {
           id

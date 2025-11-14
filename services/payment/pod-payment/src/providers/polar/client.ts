@@ -1,0 +1,152 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+import { MeasureContext } from '@hcengineering/core'
+import { Polar } from '@polar-sh/sdk'
+import type { Subscription } from '@polar-sh/sdk/models/components/subscription'
+import type { Checkout } from '@polar-sh/sdk/models/components/checkout'
+import { SubscriptionProrationBehavior } from '@polar-sh/sdk/models/components/subscriptionprorationbehavior.js'
+import type { CheckoutResult, CreateCheckoutParams } from './types'
+
+/**
+ * Documentation: https://docs.polar.sh/api-reference
+ */
+export class PolarClient {
+  private readonly polar: Polar
+
+  constructor (accessToken: string, useSandbox = false) {
+    this.polar = new Polar({
+      server: useSandbox ? 'sandbox' : undefined,
+      accessToken
+    })
+  }
+
+  /**
+   * Create a checkout session for product(s)
+   */
+  async createCheckout (ctx: MeasureContext, params: CreateCheckoutParams): Promise<CheckoutResult> {
+    return await ctx.with('polar-create-checkout', {}, async () => {
+      const checkout = await this.polar.checkouts.create({
+        products: params.productIds,
+        successUrl: params.successUrl,
+        returnUrl: params.returnUrl,
+        subscriptionId: params.subscriptionId,
+        externalCustomerId: params.externalCustomerId,
+        customerEmail: params.customerEmail,
+        customerName: params.customerName,
+        metadata: params.metadata
+      })
+
+      return {
+        checkoutId: checkout.id,
+        url: checkout.url
+      }
+    })
+  }
+
+  /**
+   * Get checkout session by ID
+   */
+  async getCheckout (ctx: MeasureContext, checkoutId: string): Promise<Checkout> {
+    return await ctx.with('polar-get-checkout', {}, async () => {
+      return await this.polar.checkouts.get({ id: checkoutId })
+    })
+  }
+
+  /**
+   * Get subscription by ID
+   */
+  async getSubscription (ctx: MeasureContext, subscriptionId: string): Promise<Subscription> {
+    return await ctx.with('polar-get-subscription', {}, async () => {
+      return await this.polar.subscriptions.get({ id: subscriptionId })
+    })
+  }
+
+  /**
+   * Get all active subscriptions
+   * Filters subscriptions by active=true to get only active ones
+   * Filters by externalCustomerId if provided
+   * This is used internally by the provider for reconciliation
+   */
+  async getActiveSubscriptions (ctx: MeasureContext, externalCustomerId?: string): Promise<Subscription[]> {
+    return await ctx.with('polar-get-active-subscriptions', {}, async () => {
+      const subscriptions: Subscription[] = []
+
+      const iterator = await this.polar.subscriptions.list({
+        limit: 100,
+        active: true,
+        ...(externalCustomerId != null ? { externalCustomerId } : {})
+      })
+
+      for await (const subscription of iterator) {
+        subscriptions.push(...subscription.result.items)
+      }
+
+      return subscriptions
+    })
+  }
+
+  /**
+   * Cancel a subscription
+   * Polar subscriptions are canceled via update endpoint with cancelAtPeriodEnd flag
+   * Documentation: https://polar.sh/docs/api-reference/subscriptions/update#subscriptioncancel
+   */
+  async cancelSubscription (ctx: MeasureContext, subscriptionId: string): Promise<Subscription> {
+    return await ctx.with('polar-cancel-subscription', {}, async () => {
+      const update = {
+        id: subscriptionId,
+        subscriptionUpdate: {
+          cancelAtPeriodEnd: true
+        }
+      }
+      return await this.polar.subscriptions.update(update)
+    })
+  }
+
+  /**
+   * Uncancel a subscription (reactivate a previously canceled subscription)
+   * Polar subscriptions are uncanceled via update endpoint with cancelAtPeriodEnd flag set to false
+   * Documentation: https://polar.sh/docs/api-reference/subscriptions/update#subscriptioncancel
+   */
+  async uncancelSubscription (ctx: MeasureContext, subscriptionId: string): Promise<Subscription> {
+    return await ctx.with('polar-uncancel-subscription', {}, async () => {
+      const update = {
+        id: subscriptionId,
+        subscriptionUpdate: {
+          cancelAtPeriodEnd: false
+        }
+      }
+      return await this.polar.subscriptions.update(update)
+    })
+  }
+
+  /**
+   * Update a subscription to a different product
+   * Changes the subscription to use a new product with immediate effective date and proration
+   * Documentation: https://polar.sh/docs/api-reference/subscriptions/update
+   */
+  async updateSubscription (ctx: MeasureContext, subscriptionId: string, productId: string): Promise<Subscription> {
+    return await ctx.with('polar-update-subscription', {}, async () => {
+      const update = {
+        id: subscriptionId,
+        subscriptionUpdate: {
+          productId,
+          prorationBehavior: SubscriptionProrationBehavior.Invoice
+        }
+      }
+      return await this.polar.subscriptions.update(update)
+    })
+  }
+}

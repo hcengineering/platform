@@ -42,6 +42,7 @@
     "SearchDocument": "搜索文档...",
     "CreateEnVersion": "创建审核版本",
     "Approvers": "批准人",
+    "ExternalApprovers": "外部批准人",
     "CoAuthors": "共同作者",
     "Status": "状态",
     "TemplateName": "模板名称",
@@ -228,8 +229,9 @@
 
     "DocumentInHierarchy": "层级中的文档",
     "FirstDraftVersion": "这是文档的第一个草稿版本。尚无历史记录。",
+    "FirstOrNotAvailable": "这是文档的第一个可用版本。尚无历史记录或不可用。",
 
-    "EffectiveDocumentLifecycle": "生效文档生命周期",
+    "EffectiveDocumentLifecycle": "有效的文档生命周期",
 
     "ReasonAndImpact": "原因与影响",
     "ImpactAnalysis": "影响分析",
@@ -271,7 +273,6 @@
 
     "DocSpaceDescriptionPlaceholder": "描述您的空间...",
     "Members": "成员",
-    "RoleLabel": "角色：{role}",
     "CreateOrgSpace": "创建组织空间",
 
     "ReviewDocumentPermission": "审查文档",

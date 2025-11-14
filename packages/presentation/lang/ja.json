@@ -49,10 +49,13 @@
     "Undo": "元に戻す",
     "Redo": "やり直し",
     "ClearCanvas": "キャンバスをクリア",
-    "PenTool": "ペンツール",
-    "EraserTool": "消しゴムツール",
-    "PanTool": "パンツール",
-    "TextTool": "テキストツール",
+    "PenTool": "ペン",
+    "EraserTool": "消しゴム",
+    "PanTool": "パン",
+    "TextTool": "テキスト",
+    "LineTool": "直線",
+    "RectangleTool": "長方形",
+    "EllipseTool": "楕円",
     "PaletteManagementMenu": "カラープリセットを管理"
   },
   "status": {

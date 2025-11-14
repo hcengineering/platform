@@ -57,7 +57,7 @@
     const _space = await client.findOne(task.class.Project, { _id: space })
     if (_space) {
       const project = _space as Proj
-      const icon = project.icon === view.ids.IconWithEmoji ? IconWithEmoji : project.icon ?? undefined
+      const icon = project.icon === view.ids.IconWithEmoji ? IconWithEmoji : (project.icon ?? undefined)
       const iconProps =
         project.icon === view.ids.IconWithEmoji
           ? { icon: project.color }

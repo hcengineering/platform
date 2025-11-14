@@ -48,6 +48,17 @@
     "ShowLess": "Weniger anzeigen",
     "CardContent": "Was möchten Sie teilen?",
     "Feed": "Feed",
-    "AllCards": "Alle Karten"
+    "AllCards": "Alle Karten",
+    "Favorites": "Favoriten",
+    "RemoveCard": "Karte entfernen",
+    "UpdateCard": "Karte aktualisieren",
+    "CreateCardPermission": "Karte erstellen",
+    "AddTagPermission": "Tag hinzufügen",
+    "RemoveTag": "Tag entfernen",
+    "ForbidRemoveCard": "Entfernen der Karte verbieten",
+    "ForbidUpdateCard": "Aktualisieren der Karte verbieten",
+    "ForbidCreateCardPermission": "Erstellen von Karten verbieten",
+    "ForbidAddTagPermission": "Hinzufügen von Tags verbieten",
+    "ForbidRemoveTag": "Entfernen von Tags verbieten"
   }
 }

@@ -59,6 +59,7 @@ export default plugin(serverProcessId, {
     MatchCardCheck: '' as Resource<CheckFunc>,
     FieldChangedCheck: '' as Resource<CheckFunc>,
     CheckSubProcessesDone: '' as Resource<CheckFunc>,
+    CheckSubProcessMatch: '' as Resource<CheckFunc>,
     CheckTime: '' as Resource<CheckFunc>
   },
   transform: {
@@ -96,6 +97,8 @@ export default plugin(serverProcessId, {
     CurrentUser: '' as Resource<TransformFunc>,
     CurrentDate: '' as Resource<TransformFunc>,
     EmptyArray: '' as Resource<TransformFunc>,
+    Filter: '' as Resource<TransformFunc>,
+    FirstMatchValue: '' as Resource<TransformFunc>,
     ExecutionInitiator: '' as Resource<TransformFunc>,
     ExecutionStarted: '' as Resource<TransformFunc>
   },

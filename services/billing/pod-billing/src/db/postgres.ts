@@ -14,12 +14,16 @@
 //
 
 import {
-  LiveKitEgressData,
-  LiveKitSessionData,
-  LiveKitUsageData,
+  AiTokensData,
+  AiTokensUsage,
+  AiTranscriptData,
+  AiTranscriptUsage,
   BillingDB,
+  LiveKitEgressData,
+  LiveKitEgressUsageData,
+  LiveKitSessionData,
   LiveKitSessionsUsageData,
-  LiveKitEgressUsageData
+  LiveKitUsageData
 } from '../types'
 import postgres, { type Row, Sql } from 'postgres'
 import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
@@ -52,7 +56,7 @@ export async function createDb (ctx: MeasureContext, connectionString: string): 
   return new LoggedDB(ctx, new RetryDB(db, { retries: 5 }))
 }
 
-export class PostgresDB implements BillingDB {
+class PostgresDB implements BillingDB {
   private constructor (private readonly sql: Sql) {}
 
   static async create (ctx: MeasureContext, sql: Sql): Promise<PostgresDB> {
@@ -184,8 +188,13 @@ export class PostgresDB implements BillingDB {
   }
 
   async setLiveKitSessions (ctx: MeasureContext, data: LiveKitSessionData[]): Promise<void> {
-    for (let i = 0; i < data.length; i += BATCH_SIZE) {
-      const batch = data.slice(i, i + BATCH_SIZE)
+    const uniqueSessions = new Map<string, LiveKitSessionData>()
+    for (const item of data) {
+      uniqueSessions.set(`${item.workspace}::${item.sessionId}`, item)
+    }
+    const uniqueSessionsValues = uniqueSessions.values()
+    for (let i = 0; i < uniqueSessions.size; i += BATCH_SIZE) {
+      const batch = uniqueSessionsValues.take(BATCH_SIZE)
       const values = []
       const params = []
       let paramIndex = 1
@@ -198,6 +207,8 @@ export class PostgresDB implements BillingDB {
         params.push(workspace, sessionId, sessionStart, sessionEnd, room, bandwidth, minutes)
       }
 
+      if (values.length === 0) continue
+
       const query = `
         UPSERT INTO billing.livekit_session (workspace, session_id, session_start, session_end, room, bandwidth, minutes)
         VALUES ${values.join(',')}
@@ -207,8 +218,13 @@ export class PostgresDB implements BillingDB {
   }
 
   async setLiveKitEgress (ctx: MeasureContext, data: LiveKitEgressData[]): Promise<void> {
-    for (let i = 0; i < data.length; i += BATCH_SIZE) {
-      const batch = data.slice(i, i + BATCH_SIZE)
+    const uniqueSessions = new Map<string, LiveKitEgressData>()
+    for (const item of data) {
+      uniqueSessions.set(`${item.workspace}::${item.egressId}`, item)
+    }
+    const uniqueSessionsValues = uniqueSessions.values()
+    for (let i = 0; i < uniqueSessions.size; i += BATCH_SIZE) {
+      const batch = uniqueSessionsValues.take(BATCH_SIZE)
       const values = []
       const params = []
       let paramIndex = 1
@@ -221,6 +237,8 @@ export class PostgresDB implements BillingDB {
         params.push(workspace, egressId, egressStart, egressEnd, room, duration)
       }
 
+      if (values.length === 0) continue
+
       const query = `
         UPSERT INTO billing.livekit_egress (workspace, egress_id, egress_start, egress_end, room, duration)
         VALUES ${values.join(',')}
@@ -228,7 +246,186 @@ export class PostgresDB implements BillingDB {
       await this.execute(query, params)
     }
   }
+
+  async pushAiTranscriptData (ctx: MeasureContext, data: AiTranscriptData[]): Promise<void> {
+    for (let i = 0; i < data.length; i += BATCH_SIZE) {
+      const batch = data.slice(i, i + BATCH_SIZE)
+      if (batch.length === 0) continue
+
+      const values: string[] = []
+      const params: any[] = []
+      let paramIndex = 1
+
+      for (const item of batch) {
+        const { workspace, lastRequestId, lastStartTime, durationSeconds, usd, day } = item
+        values.push(
+          `($${paramIndex++}::uuid, DATE($${paramIndex++}::timestamp), $${paramIndex++}::string, $${paramIndex++}::timestamp, $${paramIndex++}::float, $${paramIndex++}::decimal)`
+        )
+        params.push(workspace, day, lastRequestId, lastStartTime, durationSeconds, usd)
+      }
+
+      const query = `
+      INSERT INTO billing.ai_transcript_usage
+        (workspace, day, last_request_id, last_start_time, total_duration_seconds, total_usd)
+      VALUES ${values.join(',')}
+      ON CONFLICT (workspace, day)
+      DO UPDATE SET
+        total_duration_seconds = billing.ai_transcript_usage.total_duration_seconds + EXCLUDED.total_duration_seconds,
+        total_usd = billing.ai_transcript_usage.total_usd + EXCLUDED.total_usd,
+        last_request_id = CASE
+          WHEN EXCLUDED.last_start_time > billing.ai_transcript_usage.last_start_time
+          THEN EXCLUDED.last_request_id
+          ELSE billing.ai_transcript_usage.last_request_id
+        END,
+        last_start_time = GREATEST(billing.ai_transcript_usage.last_start_time, EXCLUDED.last_start_time);
+    `
+
+      await this.execute(query, params)
+    }
+  }
+
+  async getAiTranscriptStats (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    start?: Date,
+    end?: Date
+  ): Promise<AiTranscriptUsage> {
+    const baseSql = `
+    SELECT
+      SUM(total_duration_seconds) AS total_duration_seconds
+    FROM billing.ai_transcript_usage
+  `
+
+    let where = 'WHERE workspace = $1::uuid'
+    const params: any[] = [workspace]
+    let paramIndex = params.length + 1
+
+    if (start != null) {
+      const s = new Date(start)
+      s.setHours(0, 0, 0, 0)
+
+      where += ` AND day >= $${paramIndex++}::date`
+      params.push(s)
+    }
+
+    if (end != null) {
+      const e = new Date(end)
+      e.setHours(23, 59, 59, 999)
+
+      where += ` AND day <= $${paramIndex++}::date`
+      params.push(e)
+    }
+
+    const sql = [baseSql, where].join(' ')
+    const result = await this.execute(sql, params)
+
+    return {
+      totalDurationSeconds: Number(result[0]?.total_duration_seconds ?? 0)
+    }
+  }
+
+  async getAiTranscriptLastData (ctx: MeasureContext): Promise<AiTranscriptData | undefined> {
+    const sql = `
+    SELECT *
+    FROM billing.ai_transcript_usage
+    ORDER BY day DESC
+    LIMIT 1`
+
+    const result = await this.execute(sql)
+    const last = result[0]
+
+    if (last == null) return undefined
+
+    return {
+      workspace: last.workspace,
+      day: last.day,
+      lastRequestId: last.last_request_id,
+      lastStartTime: last.last_start_time,
+      durationSeconds: Number(last?.total_duration_seconds ?? 0),
+      usd: Number(last.usd)
+    }
+  }
+
+  async pushAiTokensData (ctx: MeasureContext, data: AiTokensData[]): Promise<void> {
+    const BATCH_SIZE = 100
+
+    for (let i = 0; i < data.length; i += BATCH_SIZE) {
+      const batch = data.slice(i, i + BATCH_SIZE)
+      if (batch.length === 0) continue
+
+      const values: string[] = []
+      const params: any[] = []
+      let paramIndex = 1
+
+      for (const item of batch) {
+        const { workspace, reason, tokens, date } = item
+
+        values.push(
+          `($${paramIndex++}::uuid, $${paramIndex++}::date, $${paramIndex++}::string, $${paramIndex++}::int8)`
+        )
+
+        params.push(workspace, date, reason, tokens)
+      }
+
+      const sql = `
+      INSERT INTO billing.ai_tokens_usage (workspace, day, reason, total_tokens)
+      VALUES ${values.join(',')}
+      ON CONFLICT (workspace, day, reason)
+      DO UPDATE SET
+        total_tokens = billing.ai_tokens_usage.total_tokens + EXCLUDED.total_tokens;
+    `
+
+      await this.execute(sql, params)
+    }
+  }
+
+  async getAiTokensStats (
+    ctx: MeasureContext,
+    workspace: WorkspaceUuid,
+    start?: Date,
+    end?: Date
+  ): Promise<AiTokensUsage[]> {
+    const baseSql = `
+    SELECT
+      reason,
+      SUM(total_tokens) AS total_tokens
+    FROM billing.ai_tokens_usage
+  `
+
+    let where = 'WHERE workspace = $1::uuid'
+    const params: any[] = [workspace]
+    let paramIndex = 2
+
+    if (start != null) {
+      const s = new Date(start)
+      s.setHours(0, 0, 0, 0)
+
+      where += ` AND day >= $${paramIndex++}::date`
+      params.push(s)
+    }
+
+    if (end != null) {
+      const e = new Date(end)
+      e.setHours(23, 59, 59, 999)
+
+      where += ` AND day <= $${paramIndex++}::date`
+      params.push(e)
+    }
+
+    const groupBy = 'GROUP BY reason'
+    const orderBy = 'ORDER BY reason ASC'
+
+    const sql = [baseSql, where, groupBy, orderBy].join(' ')
+    const result = await this.execute(sql, params)
+
+    return result.map((row: any) => ({
+      reason: row.reason,
+      totalTokens: Number(row.total_tokens ?? 0)
+    }))
+  }
 }
+
+export default PostgresDB
 
 function injectVars (sql: string, values: any[]): string {
   return sql.replaceAll(/(\$\d+)/g, (_, idx) => {

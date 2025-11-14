@@ -36,6 +36,7 @@
     "YesterdayAt": "昨天 于 {time}",
     "AndMore": "和其他 {count} 条",
     "IsTyping": "{count, plural, =1 {正在输入} other {正在输入}}",
+    "IsThinking": "{count, plural, =1 {正在思考} other {正在思考}}",
     "Loading": "加载中...",
     "MessageIn": "消息 #{title}",
     "ThreadWasDeleted": "此线程已被删除。",
@@ -88,6 +89,10 @@
     "AnonymousQuiz": "匿名测验",
     "Direct": "私信",
     "Directs": "私信",
-    "Members": "成员"
+    "Members": "成员",
+    "Translate": "翻译",
+    "WriteMessageEllipsis": "编写消息...",
+    "EditMessageEllipsis": "编辑消息...",
+    "ArrowDownMessages": "↓ 最新消息"
   }
 }

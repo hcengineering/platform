@@ -14,11 +14,11 @@
 //
 
 import { type AnalyticProvider } from '@hcengineering/analytics'
-import presentation from '@hcengineering/presentation'
-import { getMetadata } from '@hcengineering/platform'
 import { AnalyticEventType } from '@hcengineering/analytics-collector'
-import { collectEventMetadata, triggerUrlChange } from './utils'
+import { getMetadata } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
 import { type QueuedEvent } from './types'
+import { collectEventMetadata, triggerUrlChange } from './utils'
 
 export class AnalyticsCollectorProvider implements AnalyticProvider {
   private readonly collectIntervalMs = 5000
@@ -39,6 +39,7 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
     if (this.url !== undefined && this.url !== '' && this.url !== null) {
       this.initializeAnonymousId()
       this.startCollectionTimer()
+      this.registerExceptionHandlers()
       return true
     }
     return false
@@ -46,6 +47,18 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
 
   private initializeAnonymousId (): void {
     this.anonymousId = this.generateAnonymousId()
+  }
+
+  private registerExceptionHandlers (): void {
+    // Capture unhandled errors
+    window.addEventListener('error', (event) => {
+      this.handleError(event.error ?? new Error(event.message))
+    })
+
+    // Capture unhandled promise rejections
+    window.addEventListener('unhandledrejection', (event) => {
+      this.handleError(event.reason instanceof Error ? event.reason : new Error(String(event.reason)))
+    })
   }
 
   private generateAnonymousId (): string {
@@ -151,7 +164,13 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
       $is_identified: this.isAuthenticated
     }
 
-    const eventMetadata: Record<string, any> = collectEventMetadata(baseProperties)
+    let eventMetadata: Record<string, any> = {}
+
+    try {
+      eventMetadata = collectEventMetadata(baseProperties)
+    } catch (err: any) {
+      // Ignore metadata collection errors
+    }
     if (eventType === AnalyticEventType.CustomEvent && (eventName !== '' || eventName != null)) {
       eventMetadata.event = eventName
     }
@@ -271,16 +290,20 @@ export class AnalyticsCollectorProvider implements AnalyticProvider {
 
   handleError (error: Error): void {
     const currentId = this.isAuthenticated && (this.email != null || this.email !== '') ? this.email : this.anonymousId
-    this.addEvent(
-      AnalyticEventType.Error,
-      {
+
+    const event: QueuedEvent = {
+      event: AnalyticEventType.Error,
+      properties: {
         error_message: error.message ?? 'Unknown error',
         error_type: error.name ?? 'Error',
         error_stack: error.stack ?? ''
       },
-      '$exception',
-      currentId
-    )
+      timestamp: Date.now(),
+      distinct_id: currentId ?? ''
+    }
+    this.events.push(event)
+    // We need to trigger sending immediately for errors
+    void this.sendEvents()
   }
 
   navigate (path: string): void {

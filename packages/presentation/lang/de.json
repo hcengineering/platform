@@ -49,10 +49,13 @@
     "Undo": "Rückgängig",
     "Redo": "Wiederholen",
     "ClearCanvas": "Leinwand löschen",
-    "PenTool": "Stift-Werkzeug",
-    "EraserTool": "Radiergummi-Werkzeug",
-    "PanTool": "Verschieben-Werkzeug",
-    "TextTool": "Text-Werkzeug",
+    "PenTool": "Stift",
+    "EraserTool": "Radiergummi",
+    "PanTool": "Verschieben",
+    "TextTool": "Text",
+    "LineTool": "Linie",
+    "RectangleTool": "Rechteck",
+    "EllipseTool": "Ellipse",
     "PaletteManagementMenu": "Farbpresets verwalten"
   },
   "status": {

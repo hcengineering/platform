@@ -22,7 +22,13 @@
   import notification from '@hcengineering/notification'
   import { Panel } from '@hcengineering/panel'
   import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-  import { IconWithEmoji, copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
+  import {
+    ComponentExtensions,
+    IconWithEmoji,
+    copyTextToClipboard,
+    createQuery,
+    getClient
+  } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { Heading } from '@hcengineering/text-editor'
   import { TableOfContents } from '@hcengineering/text-editor-resources'
@@ -52,7 +58,7 @@
   } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
-  import { starDocument, unlockContent, unstarDocument } from '..'
+  import { unlockContent } from '..'
   import document from '../plugin'
   import { getDocumentUrl } from '../utils'
   import DocumentEditor from './DocumentEditor.svelte'
@@ -108,17 +114,6 @@
     clearTimeout(copyTimeout)
   })
 
-  const starredQuery = createQuery()
-  let isStarred = false
-  $: starredQuery.query(
-    document.class.SavedDocument,
-    { attachedTo: _id },
-    (res) => {
-      isStarred = res.length !== 0
-    },
-    { limit: 1 }
-  )
-
   async function createEmbedding (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
     if (doc === undefined) {
       return undefined
@@ -126,7 +121,7 @@
 
     try {
       const uploadFile = await getResource(attachment.helper.UploadFile)
-      const uuid = await uploadFile(file)
+      const { uuid, metadata } = await uploadFile(file)
       const attachmentId: Ref<Attachment> = generateId()
 
       await client.addCollection(
@@ -140,7 +135,8 @@
           name: file.name,
           type: file.type,
           size: file.size,
-          lastModified: file.lastModified
+          lastModified: file.lastModified,
+          metadata
         },
         attachmentId
       )
@@ -220,18 +216,6 @@
   ]
   let selectedAside: string | boolean = false
 
-  $: starAction = isStarred
-    ? {
-        icon: document.icon.Starred,
-        label: document.string.Unstar,
-        action: () => doc !== undefined && unstarDocument(doc)
-      }
-    : {
-        icon: document.icon.Star,
-        label: document.string.Star,
-        action: () => doc !== undefined && starDocument(doc)
-      }
-
   $: actions = [
     {
       icon: view.icon.CopyId,
@@ -248,8 +232,7 @@
           }, 2000)
         }
       }
-    },
-    starAction
+    }
   ]
 
   let editor: DocumentEditor
@@ -322,6 +305,12 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
+      {#if doc}
+        <ComponentExtensions
+          extension={view.extensions.EditDocTitleExtension}
+          props={{ size: 'medium', kind: 'ghost', _id: doc._id, _class: doc._class, value: doc, readonly }}
+        />
+      {/if}
       {#if !$restrictionStore.disableActions}
         <Button
           id="btn-doc-title-open-more"
@@ -350,7 +339,7 @@
             size={'x-large'}
             kind={'ghost'}
             noFocus
-            icon={doc.icon === view.ids.IconWithEmoji ? IconWithEmoji : doc.icon ?? document.icon.Document}
+            icon={doc.icon === view.ids.IconWithEmoji ? IconWithEmoji : (doc.icon ?? document.icon.Document)}
             iconProps={doc.icon === view.ids.IconWithEmoji
               ? { icon: doc.color, size: 'large' }
               : {

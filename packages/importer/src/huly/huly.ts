@@ -15,17 +15,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Attachment } from '@hcengineering/attachment'
 import card from '@hcengineering/card'
-import contact, { Employee, type Person } from '@hcengineering/contact'
+import contact, { type Employee, type Person } from '@hcengineering/contact'
 import documents, {
-  ControlledDocument,
-  DocumentCategory,
-  DocumentMeta,
+  type ControlledDocument,
+  type DocumentCategory,
+  type DocumentMeta,
   DocumentState
 } from '@hcengineering/controlled-documents'
-import { AccountUuid, generateId, PersonId, type Ref, SocialIdType, type TxOperations } from '@hcengineering/core'
+import {
+  type AccountUuid,
+  generateId,
+  type PersonId,
+  type Ref,
+  SocialIdType,
+  type TxOperations
+} from '@hcengineering/core'
 import document, { type Document } from '@hcengineering/document'
 import core from '@hcengineering/model-core'
-import tracker, { type Issue, Project } from '@hcengineering/tracker'
+import tracker, { type Issue, type Project } from '@hcengineering/tracker'
 import * as fs from 'fs'
 import sizeOf from 'image-size'
 import * as yaml from 'js-yaml'
@@ -35,12 +42,12 @@ import { ImportWorkspaceBuilder } from '../importer/builder'
 import {
   type ImportAttachment,
   type ImportComment,
-  ImportControlledDocument,
-  ImportControlledDocumentTemplate,
+  type ImportControlledDocument,
+  type ImportControlledDocumentTemplate,
   type ImportDocument,
-  ImportDrawing,
+  type ImportDrawing,
   type ImportIssue,
-  ImportOrgSpace,
+  type ImportOrgSpace,
   type ImportProject,
   type ImportProjectType,
   type ImportTeamspace,

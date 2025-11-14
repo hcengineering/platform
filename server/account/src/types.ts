@@ -27,6 +27,7 @@ import {
   type PersonId,
   type PersonUuid,
   type SocialId as SocialIdBase,
+  type UsageStatus,
   type WorkspaceDataId,
   type WorkspaceUuid,
   type WorkspaceInfo,
@@ -63,6 +64,7 @@ export interface Account {
   hash?: Buffer | null
   salt?: Buffer | null
   maxWorkspaces?: number
+  failedLoginAttempts?: number // Number of consecutive failed login attempts
 }
 
 // TODO: type data with generic type
@@ -100,6 +102,7 @@ export interface WorkspaceStatus extends WorkspaceVersion {
   processingAttempts?: number
   processingMessage?: string
   backupInfo?: BackupStatus
+  usageInfo?: UsageStatus
 
   targetRegion?: string
 }
@@ -178,6 +181,105 @@ export interface IntegrationSecret {
 
 export type IntegrationSecretKey = Omit<IntegrationSecret, 'secret'>
 
+/**
+ * Known social link keys for user profiles
+ * Stored flexibly in JSONB/object but with known common keys
+ */
+export interface KnownSocialLinks {
+  twitter?: string
+  linkedin?: string
+  github?: string
+  telegram?: string
+  facebook?: string
+  instagram?: string
+}
+
+/**
+ * User profile with additional information for public sharing
+ * Stored in accounts database (global, not workspace-specific)
+ */
+export interface UserProfile {
+  personUuid: PersonUuid
+  bio?: string // LinkedIn-style bio (up to ~2000 chars)
+  country?: string
+  city?: string
+  website?: string // Personal website URL
+  socialLinks?: Record<string, string> // Flexible storage, keys follow KnownSocialLinks convention
+  isPublic: boolean // Public visibility toggle (default: false)
+}
+
+export type PersonWithProfile = Person & Omit<UserProfile, 'personUuid'>
+
+/**
+ * Workspace subscription status
+ * Provider-agnostic abstraction for billing state
+ */
+export enum SubscriptionStatus {
+  Active = 'active', // Subscription is active and in good standing
+  Trialing = 'trialing', // In trial period
+  PastDue = 'past_due', // Payment failed but still providing service
+  Canceled = 'canceled', // Subscription has been canceled
+  Paused = 'paused', // Subscription is paused
+  Expired = 'expired' // Subscription or trial has expired
+}
+
+/**
+ * Subscription type/purpose
+ * Allows multiple active subscriptions per workspace for different purposes
+ */
+export enum SubscriptionType {
+  Tier = 'tier', // Main workspace tier (free, starter, pro, enterprise)
+  Support = 'support' // Voluntary support/donation subscription
+}
+
+/**
+ * Workspace subscription information
+ * Provider-agnostic subscription data managed by billing service
+ * Multiple subscriptions can be active per workspace (tier + addons + support)
+ * Historical subscriptions are preserved with status: canceled/expired
+ */
+export interface Subscription {
+  id: string // Our internal unique subscription ID (UUID)
+  workspaceUuid: WorkspaceUuid
+  accountUuid: AccountUuid // Account that paid for the subscription
+
+  // Provider details
+  provider: string // Payment provider identifier (e.g. 'polar', 'stripe', 'manual')
+  providerSubscriptionId: string // External subscription ID from the provider
+  providerCheckoutId?: string // External checkout/session ID that created this subscription
+
+  // Subscription classification
+  type: SubscriptionType // What this subscription is for (tier, addon, support)
+  status: SubscriptionStatus // Current status
+  plan: string // Plan/product identifier (e.g. 'free', 'pro', 'storage-100gb', 'supporter')
+
+  // Amount paid (in cents, e.g. 9999 = $99.99)
+  // Used primarily for pay-what-you-want/donation subscriptions to track actual payment
+  amount?: number
+
+  // Billing period (optional - not set for free/manual plans)
+  periodStart?: Timestamp
+  periodEnd?: Timestamp
+
+  // Trial information (optional)
+  trialEnd?: Timestamp
+
+  // Cancellation info (optional)
+  canceledAt?: Timestamp
+  willCancelAt?: Timestamp // Scheduled cancellation date (cancel at period end)
+
+  // Provider-specific data (stored as JSONB for flexibility)
+  // This allows billing service to store additional provider fields if needed
+  // e.g. customerExternalId, metadata, etc. Some providers (like Polar.sh) allow using
+  // our own customer ID and don't require tracking their external customer ID
+  providerData?: Record<string, any>
+
+  createdOn: Timestamp
+  updatedOn: Timestamp
+}
+
+export type SubscriptionData = Omit<Subscription, 'createdOn' | 'updatedOn'>
+
 /* ========= S U P P L E M E N T A R Y ========= */
 
 export interface WorkspaceInfoWithStatus extends Workspace {
@@ -207,6 +309,8 @@ export interface AccountDB {
   mailboxSecret: DbCollection<MailboxSecret>
   integration: DbCollection<Integration>
   integrationSecret: DbCollection<IntegrationSecret>
+  userProfile: DbCollection<UserProfile>
+  subscription: DbCollection<Subscription>
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>

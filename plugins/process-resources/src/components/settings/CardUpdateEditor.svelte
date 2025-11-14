@@ -20,7 +20,7 @@
   import { Process } from '@hcengineering/process'
   import { Button, eventToHTMLElement, SelectPopup, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getCirteriaEditor } from '../../utils'
+  import { getCriteriaEditor } from '../../utils'
   import CriteriasEditor from '../criterias/CriteriasEditor.svelte'
 
   export let readonly: boolean
@@ -46,7 +46,7 @@
       if (attr.hidden === true) continue
       if (ignoreKeys.includes(key)) continue
       const presenterClass = getAttributePresenterClass(hierarchy, attr.type)
-      const updateCriteria = getCirteriaEditor(presenterClass.attrClass, presenterClass.category)
+      const updateCriteria = getCriteriaEditor(presenterClass.attrClass, presenterClass.category)
       const editor = updateCriteria?.editor
       if (editor == null) continue
       res.push(attr)
@@ -93,7 +93,15 @@
   }
 </script>
 
-<CriteriasEditor {keys} {readonly} {process} {params} on:remove={remove} on:change={change} />
+<CriteriasEditor
+  _class={process.masterTag}
+  {keys}
+  {readonly}
+  {process}
+  {params}
+  on:remove={remove}
+  on:change={change}
+/>
 {#if possibleAttrs.length > 0}
   <div class="flex-center mt-4">
     <Button label={presentation.string.Add} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onAdd} />

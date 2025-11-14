@@ -21,7 +21,7 @@
   import { Button, eventToHTMLElement, SelectPopup, showPopup } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { getCirteriaEditor } from '../../utils'
+  import { getCriteriaEditor } from '../../utils'
   import CriteriasEditor from '../criterias/CriteriasEditor.svelte'
 
   export let readonly: boolean
@@ -47,7 +47,7 @@
       if (attr.hidden === true) continue
       if (ignoreKeys.includes(key)) continue
       const presenterClass = getAttributePresenterClass(hierarchy, attr.type)
-      const updateCriteria = getCirteriaEditor(presenterClass.attrClass, presenterClass.category)
+      const updateCriteria = getCriteriaEditor(presenterClass.attrClass, presenterClass.category)
       const editor = updateCriteria?.editor
       if (editor == null) continue
       res.push(attr)
@@ -90,7 +90,15 @@
 </script>
 
 {#if key !== undefined}
-  <CriteriasEditor keys={[key]} {readonly} {process} {params} on:remove={remove} on:change={change} />
+  <CriteriasEditor
+    keys={[key]}
+    _class={process.masterTag}
+    {readonly}
+    {process}
+    {params}
+    on:remove={remove}
+    on:change={change}
+  />
 {:else}
   <div class="flex-center mt-4">
     <Button label={view.string.Select} width={'100%'} kind={'link-bordered'} size={'large'} on:click={onSelect} />

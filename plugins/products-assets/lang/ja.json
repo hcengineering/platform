@@ -28,7 +28,6 @@
     "Private": "非公開",
     "Public": "公開",
     "Members": "メンバー",
-    "RoleLabel": "役割: {role}",
     "UpdateProductPermission": "製品を更新",
     "UpdateProductDescription": "ユーザーに製品を更新する権限を付与します",
     "ChangeControl": "変更管理",

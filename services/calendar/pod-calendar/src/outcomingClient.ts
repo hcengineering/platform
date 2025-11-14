@@ -453,7 +453,7 @@ async function getTokenByEvent (
   })
   if (_calendar === undefined) return
   const res = await accountClient.getIntegrationSecret({
-    socialId: event.user,
+    socialId: _calendar.user,
     kind: calendarIntegrationKind,
     workspaceUuid: workspace,
     key: _calendar.externalUser

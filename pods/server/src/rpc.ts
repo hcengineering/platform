@@ -105,7 +105,7 @@ async function sendJson (
   const contentEncodings: string[] =
     typeof req.headers['accept-encoding'] === 'string'
       ? req.headers['accept-encoding'].split(',').map((it) => it.trim())
-      : req.headers['accept-encoding'] ?? []
+      : (req.headers['accept-encoding'] ?? [])
   for (const contentEncoding of contentEncodings) {
     let done = false
     switch (contentEncoding) {
@@ -163,7 +163,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
 
       const decodedToken = decodeToken(token)
       if (workspaceId !== decodedToken.workspace) {
-        sendError(res, 401, { message: 'Invalid workspace', workspace: decodedToken.workspace })
+        sendError(res, 403, { message: 'Invalid workspace', workspace: decodedToken.workspace })
         return
       }
 
@@ -173,9 +173,9 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         const cs: ConnectionSocket = createClosingSocket(token, rpcSessions)
         const s = await sessions.addSession(ctx, cs, decodedToken, token, token)
         if (!('session' in s)) {
-          sendError(res, 401, {
+          sendError(res, 403, {
             message: 'Failed to create session',
-            mode: 'specialError' in s ? s.specialError ?? '' : 'upgrading'
+            mode: 'specialError' in s ? (s.specialError ?? '') : 'upgrading'
           })
           return
         }
@@ -241,6 +241,15 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       const options = req.query.options !== undefined ? JSON.parse(req.query.options as string) : {}
       if (req.query.limit !== undefined) {
         options.limit = parseInt(req.query.limit as string)
+      }
+
+      const domain = ctx.pipeline.context.hierarchy.findDomain(_class) ?? ''
+      if (domain === '') {
+        sendError(res, 404, {
+          message: 'Failed to execute operation',
+          error: 'Invalid class name is passed. Failed to findAll.'
+        })
+        return
       }
 
       const result = await session.findAllRaw(ctx, _class, query, options)

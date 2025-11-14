@@ -58,7 +58,6 @@
 
     "Icon": "Иконка",
     "Color": "Цвет",
-    "RoleLabel": "Роль: {role}",
     "ForbidCreateTeamspacePermission": "Запретить создание пространства",
     "ForbidCreateTeamspacePermissionDescription": "Запрещает пользователям создавать новые пространства"
   }

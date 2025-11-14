@@ -191,11 +191,20 @@
     "ServiceIsUnavailable": "Služba není k dispozici",
     "Integrated": "Integrované",
     "Connected": "Připojené",
+    "Disconnected": "Odpojené",
     "Available": "Dostupné",
     "NotConnectedIntegration": "Účet {account} není integrován s pracovním prostorem",
     "IntegrationIsUnstable": "Integrační služba má problémy. Některé funkce nemusí fungovat správně.",
     "MinValue": "Minimální hodnota",
+    "Restricted": "Omezeno",
+    "RestrictedAttributeWarning": "Opravdu chcete omezit změnu tohoto atributu? Tato akce vytvoří oprávnění pro tento atribut a nelze ji vrátit zpět.",
     "MaxValue": "Maximální hodnota",
-    "IntegerOnly": "Pouze celá čísla"
+    "IntegerOnly": "Pouze celá čísla",
+    "AccessControl": "Řízení přístupu",
+    "DangerZone": "Nebezpečná zóna",
+    "ApiAccess": "Přístup k API",
+    "ApiToken": "API token",
+    "GenerateApiToken": "Vygenerovat API token",
+    "IdentifierExists": "Identifikátor již existuje"
   }
 }

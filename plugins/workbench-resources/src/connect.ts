@@ -124,6 +124,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   setMetadata(presentation.metadata.Token, workspaceLoginInfo.token)
   setMetadata(presentation.metadata.WorkspaceUuid, workspaceLoginInfo.workspace)
+  setMetadata(presentation.metadata.WorkspaceName, workspaceLoginInfo.name ?? workspaceLoginInfo.workspaceUrl)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
   const fetchWorkspace = await getResource(login.function.FetchWorkspace)
@@ -243,6 +244,7 @@ export async function connect (title: string): Promise<Client | undefined> {
               localStorage.setItem(`versionUpgrade:s${serverVersion}:f${frontVersion}`, 't')
               // It might have been refreshed manually and download has started - do not reload
               if (!isUpgrading) {
+                console.log('reload due to version upgrade')
                 location.reload()
               }
 
@@ -255,6 +257,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                   // It might be possible that this callback will fire after the user has spent some time
                   // in the upgrade !modal! dialog and clicked upgrade - check again and do not reload
                   if (get(upgradeDownloadProgress) < 0) {
+                    console.log('reload due to upgrade download')
                     location.reload()
                   }
                 }, 10000)
@@ -268,6 +271,7 @@ export async function connect (title: string): Promise<Client | undefined> {
           return true
         },
         onUpgrade: () => {
+          console.log('reload due to upgrade')
           location.reload()
         },
         onUnauthorized: () => {
@@ -292,6 +296,7 @@ export async function connect (title: string): Promise<Client | undefined> {
           translateCB(plugin.string.WorkspaceIsMigrating, {}, get(themeStore).language, (r) => {
             versionError.set(r)
             setTimeout(() => {
+              console.log('reload due to migration')
               location.reload()
             }, 5000)
           })
@@ -326,15 +331,17 @@ export async function connect (title: string): Promise<Client | undefined> {
             }
 
             if (event === ClientConnectEvent.Upgraded) {
+              console.log('reload due to upgrade')
               window.location.reload()
             }
 
             void (async () => {
               if (_client !== undefined) {
+                const client = _client
                 const newVersion = await ctx.with(
                   'find-version',
                   {},
-                  async () => await newClient.findOne<Version>(core.class.Version, {})
+                  async () => await client.findOne<Version>(core.class.Version, {})
                 )
                 console.log('Reconnect Model version', newVersion)
 
@@ -343,6 +350,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
                 if (currentVersionStr !== reconnectVersionStr) {
                   // It seems upgrade happened
+                  console.log('reload due to version mismatch')
                   location.reload()
                   versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
                 }
@@ -356,6 +364,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                 if (reconnectVersionStr !== '' && currentVersionStr !== reconnectVersionStr) {
                   if (typeof sessionStorage !== 'undefined') {
                     if (sessionStorage.getItem(versionStorageKey) !== reconnectVersionStr) {
+                      console.log('reload due to version mismatch')
                       sessionStorage.setItem(versionStorageKey, reconnectVersionStr)
                       location.reload()
                     }
@@ -369,10 +378,12 @@ export async function connect (title: string): Promise<Client | undefined> {
                   try {
                     const frontConfig = await loadServerConfig(concatLink(frontUrl, '/config.json'))
                     if (frontConfig?.version !== undefined && frontConfig.version !== currentFrontVersion) {
+                      console.log('reload due to config version mismatch')
                       location.reload()
                     }
                   } catch (err: any) {
                     // Failed to load server config, reload location
+                    console.log('reload due to config loading error')
                     location.reload()
                   }
                 }
@@ -442,7 +453,7 @@ export async function connect (title: string): Promise<Client | undefined> {
   const hasEmail = (si: SocialId): boolean => {
     return [SocialIdType.EMAIL, SocialIdType.GOOGLE, SocialIdType.GITHUB].some((type) => type === si.type)
   }
-  const email = me.fullSocialIds.find((si) => hasEmail(si))?.key
+  const email = me.fullSocialIds.find((si) => hasEmail(si) && si.isDeleted !== true)?.key
   const socialId = me.fullSocialIds.find((si) => si._id === me.primarySocialId)?.key
 
   const data: Record<string, any> = {

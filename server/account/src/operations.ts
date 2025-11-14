@@ -32,7 +32,8 @@ import {
   systemAccountUuid,
   readOnlyGuestAccountUuid,
   type WorkspaceMemberInfo,
-  type WorkspaceUuid
+  type WorkspaceUuid,
+  type IntegrationKind
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { decodeToken, decodeTokenVerbose, generateToken, type PermissionsGrant } from '@hcengineering/server-token'
@@ -53,12 +54,17 @@ import {
   type OtpInfo,
   type RegionInfo,
   type SocialId,
+  type UserProfile,
   type WorkspaceInfoWithStatus,
   type WorkspaceInviteInfo,
   type WorkspaceLoginInfo,
   type LoginInfoRequest,
   type LoginInfoRequestData,
-  type Account
+  type Account,
+  type PersonWithProfile,
+  type Subscription,
+  SubscriptionStatus,
+  type Query
 } from './types'
 import {
   addSocialIdBase,
@@ -97,7 +103,7 @@ import {
   sendEmailConfirmation,
   sendOtp,
   setPassword,
-  setTimezoneIfNotDefined,
+  setTimezone,
   signUpByEmail,
   updateWorkspaceRole,
   verifyAllowedRole,
@@ -111,7 +117,10 @@ import {
   getWorkspacesInfoWithStatusByIds,
   doMergePersons,
   getWorkspaceJoinInfo,
-  signUpByGrant
+  signUpByGrant,
+  isAccountPasswordLocked,
+  recordFailedLoginAttempt,
+  resetFailedLoginAttempts
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -146,6 +155,8 @@ export async function loginAsGuest (
 
 /**
  * Given an email and password, logs the user in and returns the account information and token.
+ * If the account has too many failed login attempts, password login is blocked.
+ * The user must use an alternative method (e.g., OTP) to unlock the account.
  */
 export async function login (
   ctx: MeasureContext,
@@ -178,14 +189,33 @@ export async function login (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
 
+    // Check if account is locked due to too many failed login attempts
+    if (isAccountPasswordLocked(existingAccount)) {
+      ctx.warn('Login attempt on locked account - password login locked', {
+        email: normalizedEmail,
+        failedAttempts: existingAccount.failedLoginAttempts
+      })
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.PasswordLoginLocked, { account: normalizedEmail })
+      )
+    }
+
     const person = await db.person.findOne({ uuid: emailSocialId.personUuid })
     if (person == null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
     }
 
     if (!verifyPassword(password, existingAccount.hash, existingAccount.salt)) {
+      try {
+        await recordFailedLoginAttempt(db, existingAccount.uuid)
+      } catch (err) {
+        ctx.warn('Failed to record failed login attempt', { error: err, account: existingAccount.uuid })
+      }
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
+
+    // Successful login - reset failed attempts counter
+    await resetFailedLoginAttempts(db, existingAccount.uuid)
 
     const isConfirmed = emailSocialId.verifiedOn != null
 
@@ -281,7 +311,7 @@ export async function signUp (
     await confirmHulyIds(ctx, db, account)
   }
 
-  void setTimezoneIfNotDefined(ctx, db, account, null, meta)
+  void setTimezone(ctx, db, account, null, meta)
   return {
     account,
     name: getPersonName(person),
@@ -470,6 +500,8 @@ export async function validateOtp (
     if (person == null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
     }
+
+    await resetFailedLoginAttempts(db, emailSocialId.personUuid as AccountUuid)
 
     const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
 
@@ -1151,7 +1183,7 @@ export async function signUpJoin (
   })
 
   const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last ?? '', true)
-  void setTimezoneIfNotDefined(ctx, db, account, null, meta)
+  void setTimezone(ctx, db, account, null, meta)
 
   return await doJoinByInvite(
     ctx,
@@ -1749,7 +1781,7 @@ export async function getLoginInfoByToken (
   }
 
   if (!isSystem) {
-    void setTimezoneIfNotDefined(ctx, db, accountUuid, null, meta)
+    void setTimezone(ctx, db, accountUuid, null, meta)
   }
 
   if (workspaceUuid != null && workspaceUuid !== '') {
@@ -2305,6 +2337,46 @@ async function addHulyAssistantSocialId (
   return await addSocialIdBase(db, account, SocialIdType.HULY_ASSISTANT, account, true)
 }
 
+export async function refreshHulyAssistantToken (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<void> {
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  const assistantSocialId = await db.socialId.findOne({ type: SocialIdType.HULY_ASSISTANT, personUuid: account })
+  if (assistantSocialId == null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.SocialIdNotFound, {
+        value: account,
+        type: SocialIdType.HULY_ASSISTANT
+      })
+    )
+  }
+
+  const key = 'access_token'
+  const integrationSecretKey = {
+    socialId: assistantSocialId._id,
+    kind: 'ai-assistant' as IntegrationKind,
+    workspaceUuid: null,
+    key
+  }
+
+  const secret = generateToken(account, undefined, { userAiAssistant: 'true' })
+
+  const existingToken = await db.integrationSecret.findOne(integrationSecretKey)
+
+  if (existingToken == null) {
+    await db.integrationSecret.insertOne({
+      ...integrationSecretKey,
+      secret
+    })
+  } else {
+    await db.integrationSecret.update(integrationSecretKey, { secret })
+  }
+}
+
 export async function releaseSocialId (
   ctx: MeasureContext,
   db: AccountDB,
@@ -2442,6 +2514,235 @@ export async function mergeSpecifiedPersons (
   await doMergePersons(db, primaryPerson, secondaryPerson)
 }
 
+async function setMyProfile (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    profile: Partial<Omit<UserProfile, 'personUuid'>>
+  }
+): Promise<void> {
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  const { profile } = params
+
+  // Validate field lengths
+  if (profile.bio !== undefined && profile.bio !== null && profile.bio.length > 150) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { field: 'bio', limit: 150 }))
+  }
+  if (profile.city !== undefined && profile.city !== null && profile.city.length > 100) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { field: 'city', limit: 100 }))
+  }
+  if (profile.country !== undefined && profile.country !== null && profile.country.length > 50) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { field: 'country', limit: 50 }))
+  }
+
+  // Sanitize profile object - only allow known fields to prevent injection
+  const { bio, city, country, website, socialLinks, isPublic } = profile
+  const sanitizedProfile: Partial<Omit<UserProfile, 'personUuid'>> = {
+    bio,
+    city,
+    country,
+    website,
+    socialLinks,
+    isPublic: isPublic ?? false
+  }
+
+  // Get existing profile or create new
+  const existing = await db.userProfile.findOne({ personUuid: account })
+
+  if (existing !== null) {
+    // Update existing profile
+    await db.userProfile.update({ personUuid: account }, sanitizedProfile)
+  } else {
+    // Create new profile
+    await db.userProfile.insertOne({
+      personUuid: account,
+      ...sanitizedProfile
+    })
+  }
+}
+
+async function getUserProfile (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string | undefined,
+  params: {
+    personUuid?: PersonUuid
+  }
+): Promise<PersonWithProfile | null> {
+  const { personUuid } = params
+
+  // Decode token if provided (optional for public profiles)
+  let requestingAccount: PersonUuid | undefined
+  if (token != null && token !== '') {
+    try {
+      const tokenData = decodeTokenVerbose(ctx, token)
+      requestingAccount = tokenData.account
+    } catch {
+      // Invalid token, treat as unauthenticated request
+      requestingAccount = undefined
+    }
+  }
+
+  // If no personUuid provided, return requesting user's own profile
+  const targetPersonUuid = personUuid ?? requestingAccount
+
+  if (targetPersonUuid == null || targetPersonUuid === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const person = await db.person.findOne({ uuid: targetPersonUuid })
+
+  if (person == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: targetPersonUuid }))
+  }
+
+  const profile = await db.userProfile.findOne({ personUuid: targetPersonUuid })
+
+  if (profile === null) {
+    return null
+  }
+
+  // Allow access if:
+  // 1. Requesting own profile (authenticated user requesting their own)
+  // 2. Profile is public
+  if (requestingAccount === targetPersonUuid || profile.isPublic) {
+    const res: PersonWithProfile = {
+      ...person,
+      ...profile
+    }
+
+    delete (res as any).personUuid
+
+    return res
+  }
+
+  // Private profile of another user - not accessible
+  throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+}
+
+/**
+ * Get subscriptions for a workspace
+ * - Regular users: Must be OWNER or MAINTAINER of the workspace (from token)
+ * - Services: Can query any workspace by workspaceUuid parameter
+ * By default returns only active subscriptions. Set activeOnly=false to include historical subscriptions.
+ * @public
+ */
+export async function getSubscriptions (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    workspaceUuid?: WorkspaceUuid // Optional: used by services only, undefined means all workspaces
+    activeOnly?: boolean // Optional: default true - only return active subscriptions
+  }
+): Promise<Subscription[]> {
+  const { account, extra, workspace: tokenWorkspace } = decodeTokenVerbose(ctx, token)
+  const { workspaceUuid, activeOnly = true } = params
+
+  let targetWorkspace: WorkspaceUuid | null
+
+  // Check if this is a service token
+  const isService = extra?.service !== undefined
+
+  if (isService) {
+    // Services can query any workspace/all workspaces
+    targetWorkspace = workspaceUuid ?? null
+  } else {
+    // Regular users: use workspace from token (ignores workspaceUuid param)
+    if (tokenWorkspace === undefined) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+    }
+    targetWorkspace = tokenWorkspace
+
+    // Verify user has OWNER or MAINTAINER role
+    const role = await db.getWorkspaceRole(account, targetWorkspace)
+    if (role === null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+
+    const rolePower = getRolePower(role)
+    const maintainerPower = getRolePower(AccountRole.Maintainer)
+
+    if (rolePower < maintainerPower) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
+  // Fetch subscriptions for workspace (tier + addons + support)
+  // By default return only active subscriptions, unless activeOnly=false
+  const query: Query<Subscription> = targetWorkspace != null ? { workspaceUuid: targetWorkspace } : {}
+  if (activeOnly) {
+    query.status = SubscriptionStatus.Active
+  }
+
+  const subscriptions = await db.subscription.find(query)
+  return subscriptions
+}
+
+/**
+ * Get a subscription by its internal ID
+ * - Services: Can query any subscription
+ * - Regular users: Can only query subscriptions from their workspace (from token)
+ * @public
+ */
+export async function getSubscriptionById (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    subscriptionId: string // Internal subscription ID (UUID)
+  }
+): Promise<Subscription | null> {
+  const { account, extra, workspace: tokenWorkspace } = decodeTokenVerbose(ctx, token)
+  const { subscriptionId } = params
+
+  // Check if this is a service token
+  const isService = extra?.service !== undefined
+
+  // Fetch the subscription first
+  const subscription = await db.subscription.findOne({ id: subscriptionId })
+
+  if (subscription === null || subscription === undefined) {
+    return null
+  }
+
+  if (isService) {
+    // Services can query any subscription by internal ID
+    return subscription
+  }
+
+  // Regular users: can only query subscriptions from their workspace (from token)
+  if (tokenWorkspace === undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  // Verify the subscription belongs to the user's workspace
+  if (subscription.workspaceUuid !== tokenWorkspace) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  // Verify user has OWNER or MAINTAINER role in the workspace
+  const role = await db.getWorkspaceRole(account, tokenWorkspace)
+  if (role === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const rolePower = getRolePower(role)
+  const maintainerPower = getRolePower(AccountRole.Maintainer)
+
+  if (rolePower < maintainerPower) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  return subscription
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -2495,10 +2796,15 @@ export type AccountMethods =
   | 'isReadOnlyGuest'
   | 'addEmailSocialId'
   | 'addHulyAssistantSocialId'
+  | 'refreshHulyAssistantToken'
   | 'releaseSocialId'
   | 'deleteAccount'
   | 'canMergeSpecifiedPersons'
   | 'mergeSpecifiedPersons'
+  | 'setMyProfile'
+  | 'getUserProfile'
+  | 'getSubscriptions'
+  | 'getSubscriptionById'
 
 /**
  * @public
@@ -2541,10 +2847,15 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     exchangeGuestToken: wrap(exchangeGuestToken),
     addEmailSocialId: wrap(addEmailSocialId),
     addHulyAssistantSocialId: wrap(addHulyAssistantSocialId),
+    refreshHulyAssistantToken: wrap(refreshHulyAssistantToken),
     releaseSocialId: wrap(releaseSocialId),
     deleteAccount: wrap(deleteAccount),
     canMergeSpecifiedPersons: wrap(canMergeSpecifiedPersons),
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
+    setMyProfile: wrap(setMyProfile),
+    getUserProfile: wrap(getUserProfile),
+    getSubscriptions: wrap(getSubscriptions),
+    getSubscriptionById: wrap(getSubscriptionById),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),

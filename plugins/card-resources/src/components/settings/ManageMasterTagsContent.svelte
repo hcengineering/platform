@@ -13,26 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { MasterTag } from '@hcengineering/card'
   import core, { Doc, Ref } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
     AnySvelteComponent,
     BreadcrumbItem,
     Breadcrumbs,
-    Header,
-    Location,
-    resizeObserver,
     deviceOptionsStore as deviceInfo,
     getCurrentLocation,
+    Header,
+    Location,
     navigate,
+    resizeObserver,
     resolvedLocationStore
   } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
   import card from '../../plugin'
   import MasterTagEditor from './MasterTagEditor.svelte'
-  import { getResource } from '@hcengineering/platform'
 
   let masterTag: MasterTag | undefined
   let visibleSecondNav: boolean = true
@@ -62,10 +63,10 @@
       selectedSubObjectId = objId
       void getResource(editorId)
         .then((res) => (subEditor = res))
-        .catch((err) => {
+        .catch((err: any) => {
           subEditor = undefined
           subEditorParamas = []
-          console.error(err)
+          Analytics.handleError(err)
         })
     } else {
       subEditorParamas = []

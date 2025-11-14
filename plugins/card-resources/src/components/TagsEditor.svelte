@@ -15,13 +15,16 @@
 //
 -->
 <script lang="ts">
-  import card, { Card, Tag } from '@hcengineering/card'
-  import { Class, Doc, Mixin, Ref } from '@hcengineering/core'
+  import { Card, Tag } from '@hcengineering/card'
+  import { Class, Doc, Mixin, Permission, Ref, TypedSpace } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { CircleButton, eventToHTMLElement, IconAdd, IconDownOutline, SelectPopup, showPopup } from '@hcengineering/ui'
 
   import MasterTagSelector from './MasterTagSelector.svelte'
   import CardTagColored from './CardTagColored.svelte'
+  import { PermissionsStore } from '@hcengineering/contact'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
+  import card from '../plugin'
 
   export let doc: Card
   export let dropdownTags: boolean = false
@@ -81,6 +84,18 @@
     return !desc.some((p) => hierarchy.hasMixin(doc, p) && p !== mixinId)
   }
 
+  function checkForbiddenPermission (permission: Ref<Permission>, permissionsStore: PermissionsStore): boolean {
+    return checkMyPermission(permission, doc.space as Ref<TypedSpace>, permissionsStore)
+  }
+
+  function checkRemovePermission (permissionsStore: PermissionsStore): boolean {
+    return checkForbiddenPermission(card.permission.ForbidRemoveTag, permissionsStore)
+  }
+
+  function checkAddPermission (permissionsStore: PermissionsStore): boolean {
+    return checkForbiddenPermission(card.permission.ForbidAddTag, permissionsStore)
+  }
+
   const handleDrop = (e: MouseEvent): void => {
     e.stopPropagation()
     e.preventDefault()
@@ -116,7 +131,7 @@
         />
       {:else}
         {#each activeTags as mixin}
-          {@const removable = isRemoveable(mixin._id, activeTags)}
+          {@const removable = isRemoveable(mixin._id, activeTags) && !checkRemovePermission($permissionsStore)}
           <CardTagColored
             labelIntl={mixin.label}
             color={mixin.background ?? 0}
@@ -124,7 +139,7 @@
             on:remove={() => removeTag(mixin._id)}
           />
         {/each}
-        {#if dropdownItems.length > 0}
+        {#if dropdownItems.length > 0 && !checkAddPermission($permissionsStore)}
           <CircleButton id={id ? `${id}-add` : undefined} icon={IconAdd} size={'small'} ghost on:click={add} />
         {/if}
       {/if}

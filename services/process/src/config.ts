@@ -23,6 +23,7 @@ export interface Config {
   AccountsUrl: string
   TemporalAddress: string
   TemporalNamespace: string
+  CollaboratorURL: string
 }
 
 const config: Config = {
@@ -31,7 +32,8 @@ const config: Config = {
   QueueRegion: process.env.QUEUE_REGION ?? '',
   AccountsUrl: process.env.ACCOUNTS_URL ?? '',
   TemporalAddress: process.env.TEMPORAL_ADDRESS ?? 'localhost:7233',
-  TemporalNamespace: process.env.TEMPORAL_NAMESPACE ?? 'huly'
+  TemporalNamespace: process.env.TEMPORAL_NAMESPACE ?? 'huly',
+  CollaboratorURL: process.env.COLLABORATOR_URL ?? ''
 }
 
 export default config

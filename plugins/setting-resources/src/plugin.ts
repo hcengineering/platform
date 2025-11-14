@@ -129,11 +129,16 @@ export default mergeIds(settingId, setting, {
     DisablePermissionsConfirmation: '' as IntlString,
     EnablePermissionsConfirmation: '' as IntlString,
     BetaWarning: '' as IntlString,
+    DangerZone: '' as IntlString,
+    AccessControl: '' as IntlString,
     GuestAccess: '' as IntlString,
     GuestAccessDescription: '' as IntlString,
     GuestSignUpDescription: '' as IntlString,
     GuestChannelsDescription: '' as IntlString,
     GuestChannelsArrayLabel: '' as IntlString,
+    ApiAccess: '' as IntlString,
+    ApiToken: '' as IntlString,
+    GenerateApiToken: '' as IntlString,
     ManageIdentities: '' as IntlString,
     AddNew: '' as IntlString,
     Release: '' as IntlString,
@@ -142,6 +147,9 @@ export default mergeIds(settingId, setting, {
     ReleasePrimarySocialId: '' as IntlString,
     ReleasePrimarySocialIdConfirm: '' as IntlString,
     Login: '' as IntlString,
-    Primary: '' as IntlString
+    Primary: '' as IntlString,
+    IdentifierExists: '' as IntlString,
+    Restricted: '' as IntlString,
+    RestrictedAttributeWarning: '' as IntlString
   }
 })

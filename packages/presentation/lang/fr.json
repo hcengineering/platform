@@ -49,10 +49,13 @@
     "Undo": "Annuler",
     "Redo": "Rétablir",
     "ClearCanvas": "Effacer la toile",
-    "PenTool": "Outil stylo",
-    "EraserTool": "Outil gomme",
-    "PanTool": "Outil déplacement",
-    "TextTool": "Outil texte",
+    "PenTool": "Stylo",
+    "EraserTool": "Gomme",
+    "PanTool": "Déplacement",
+    "TextTool": "Texte",
+    "LineTool": "Ligne",
+    "RectangleTool": "Rectangle",
+    "EllipseTool": "Ellipse",
     "PaletteManagementMenu": "Gérer les préréglages de couleur"
   },
   "status": {

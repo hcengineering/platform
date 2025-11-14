@@ -49,10 +49,13 @@
     "Undo": "Deshacer",
     "Redo": "Rehacer",
     "ClearCanvas": "Limpiar lienzo",
-    "PenTool": "Herramienta lápiz",
-    "EraserTool": "Herramienta borrador",
-    "PanTool": "Herramienta mover",
-    "TextTool": "Herramienta texto",
+    "PenTool": "Lápiz",
+    "EraserTool": "Borrador",
+    "PanTool": "Mover",
+    "TextTool": "Texto",
+    "LineTool": "Línea",
+    "RectangleTool": "Rectángulo",
+    "EllipseTool": "Elipse",
     "PaletteManagementMenu": "Gestionar preajustes de color"
   },
   "status": {

@@ -1,6 +1,7 @@
 import { Card } from '@hcengineering/card'
 import { Doc, MeasureContext, PersonId, Ref, Timestamp, Tx, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import { Execution, ExecutionError, MethodParams, Trigger, UserResult } from '@hcengineering/process'
+import { CollaboratorClient } from '@hcengineering/collaborator-client'
 
 export type ExecuteFunc = (
   params: MethodParams<Doc>,
@@ -41,6 +42,7 @@ export interface ProcessMessage {
 export interface ProcessControl {
   ctx: MeasureContext
   client: TxOperations
+  collaboratorFactory: () => CollaboratorClient
   cache: Map<string, any>
   messageContext: Record<string, any>
   workspace: WorkspaceUuid

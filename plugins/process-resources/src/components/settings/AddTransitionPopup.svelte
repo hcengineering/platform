@@ -84,7 +84,7 @@
       return
     }
     const prevTransitions =
-      transitions.findLast((p) => p.from === from) ?? transitions.length > 0
+      (transitions.findLast((p) => p.from === from) ?? transitions.length > 0)
         ? transitions[transitions.length - 1]
         : undefined
     const rank = makeRank(prevTransitions?.rank, undefined)

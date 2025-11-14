@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+@use 'sass:meta';
+
 /* Table */
 table.proseTable {
   --table-selection-border-width: 1px;
@@ -21,7 +23,7 @@ table.proseTable {
   --table-handle-size: 0.875rem;
   --table-handle-indent: calc(var(--table-handle-size) * -1 - 1px);
   --table-handle-col-indent: calc(var(--table-handle-size) * -0.5);
-  --table-handle-row-indent: calc(var(--table-handle-size) * -1 - 0.75rem);
+  --table-handle-row-indent: calc(var(--table-handle-size) * -1);
   --table-insert-marker-indent: calc(-1.25rem - 1px);
 
   --table-selection-z-index: 100;
@@ -540,6 +542,7 @@ pre.proseCodeBlock>pre.proseCode {
   .mermaidPreviewContainer {
     padding: 0.5rem;
     cursor: default;
+    overflow-x: auto;
   }
 
   &:not(.folded) .mermaidPreviewContainer {
@@ -562,9 +565,9 @@ pre.proseCodeBlock>pre.proseCode {
 }
 
 .theme-dark {
-  @import './github-dark.scss';
+  @include meta.load-css('./github-dark.scss');
 }
 
 .theme-light {
-  @import './github-light.scss';
+  @include meta.load-css('./github-light.scss');
 }

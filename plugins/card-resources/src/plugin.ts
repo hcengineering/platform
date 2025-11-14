@@ -14,7 +14,7 @@
 //
 
 import card, { cardId } from '@hcengineering/card'
-import { type Doc, type Ref } from '@hcengineering/core'
+import { type Permission, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
@@ -28,6 +28,7 @@ export default mergeIds(cardId, card, {
     MasterTags: '' as AnyComponent,
     CreateTag: '' as AnyComponent,
     CardPresenter: '' as AnyComponent,
+    CardsPresenter: '' as AnyComponent,
     FavoriteCardPresenter: '' as AnyComponent,
     EditCard: '' as AnyComponent,
     Main: '' as AnyComponent,
@@ -44,16 +45,30 @@ export default mergeIds(cardId, card, {
     CardRefPresenter: '' as AnyComponent,
     ChangeType: '' as AnyComponent,
     CreateCardButton: '' as AnyComponent,
-    NewCardHeader: '' as AnyComponent,
+    CreateSpace: '' as AnyComponent,
     SpacePresenter: '' as AnyComponent,
+    TypesNavigator: '' as AnyComponent,
     RolesSection: '' as AnyComponent,
     EditRole: '' as AnyComponent,
     CardWidget: '' as AnyComponent,
     CardWidgetTab: '' as AnyComponent,
-    CreateCard: '' as AnyComponent
+    CreateCard: '' as AnyComponent,
+    CardHeaderButton: '' as AnyComponent
   },
   function: {
     CardFactory: '' as Resource<(props?: Record<string, any>) => Promise<Ref<Doc> | undefined>>
+  },
+  permission: {
+    CreateCard: '' as Ref<Permission>,
+    RemoveCard: '' as Ref<Permission>,
+    UpdateCard: '' as Ref<Permission>,
+    AddTag: '' as Ref<Permission>,
+    RemoveTag: '' as Ref<Permission>,
+    ForbidCreateCard: '' as Ref<Permission>,
+    ForbidRemoveCard: '' as Ref<Permission>,
+    ForbidUpdateCard: '' as Ref<Permission>,
+    ForbidAddTag: '' as Ref<Permission>,
+    ForbidRemoveTag: '' as Ref<Permission>
   },
   sectionComponent: {
     AttachmentsSection: '' as AnyComponent,

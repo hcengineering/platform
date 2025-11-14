@@ -36,6 +36,7 @@
     "YesterdayAt": "Včera v {time}",
     "AndMore": "a {count} dalších",
     "IsTyping": "{count, plural, =1 {píše} other {píší}}",
+    "IsThinking": "{count, plural, =1 {přemýšlí} other {přemýšlejí}}",
     "Loading": "Načítání...",
     "MessageIn": "Zpráva #{title}",
     "ThreadWasDeleted": "Tato vlákno byla smazána.",
@@ -88,6 +89,10 @@
     "AnonymousQuiz": "Anonymní test",
     "Direct": "Přímý",
     "Directs": "Přímé",
-    "Members": "Členové"
+    "Members": "Členové",
+    "Translate": "Přeložit",
+    "WriteMessageEllipsis": "Napište zprávu...",
+    "EditMessageEllipsis": "Upravit zprávu...",
+    "ArrowDownMessages": "↓ Poslední zprávy"
   }
 }

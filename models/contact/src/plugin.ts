@@ -58,7 +58,8 @@ export default mergeIds(contactId, contact, {
     EmployeeFilter: '' as AnyComponent,
     EmployeeFilterValuePresenter: '' as AnyComponent,
     ChannelIcon: '' as AnyComponent,
-    PersonPreviewPresenter: '' as AnyComponent
+    PersonPreviewPresenter: '' as AnyComponent,
+    TranslationSettings: '' as AnyComponent
   },
   string: {
     SearchEmployee: '' as IntlString,

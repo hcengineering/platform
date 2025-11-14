@@ -175,10 +175,24 @@ export function createModel (builder: Builder): void {
       attachTo: chunter.class.Channel,
       descriptor: view.viewlet.Table,
       configOptions: {
-        strict: true
+        hiddenKeys: ['name', 'description']
       },
       config: ['', 'topic', 'private', 'archived', 'members'],
-      props: { enableChecking: false }
+      props: { enableChecking: false },
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [
+          {
+            key: 'hideArchived',
+            type: 'toggle',
+            defaultValue: true,
+            actionTarget: 'options',
+            action: view.function.HideArchived,
+            label: view.string.HideArchived
+          }
+        ]
+      }
     },
     chunter.viewlet.Channels
   )

@@ -58,7 +58,6 @@
 
     "Icon": "Icon",
     "Color": "Color",
-    "RoleLabel": "Role: {role}",
     "ForbidCreateTeamspacePermission": "Forbid create teamspace",
     "ForbidCreateTeamspacePermissionDescription": "Forbid users creating new teamspaces"
   }

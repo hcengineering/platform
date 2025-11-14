@@ -16,8 +16,9 @@
   import contact, { formatName, getCurrentEmployee } from '@hcengineering/contact'
   import { myEmployeeStore } from '@hcengineering/contact-resources'
   import core, { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import rating, { type PersonRating } from '@hcengineering/rating'
   import login, { loginId } from '@hcengineering/login'
-  import { createQuery, getCurrentWorkspaceUrl } from '@hcengineering/presentation'
+  import { createQuery, getCurrentWorkspaceUrl, hasResource } from '@hcengineering/presentation'
   import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
   import {
     Action,
@@ -36,6 +37,7 @@
   import HelpAndSupport from './HelpAndSupport.svelte'
   import { Analytics } from '@hcengineering/analytics'
   import { allowGuestSignUpStore } from '@hcengineering/view-resources'
+  import { getClient } from '@hcengineering/account-client'
 
   let items: SettingsCategory[] = []
 
@@ -197,6 +199,16 @@
   }
   let menu: Menu
   $: addClass = $deviceInfo.isMobile && $deviceInfo.isPortrait ? 'self-end' : undefined
+
+  const levelQuery = createQuery()
+
+  let personRating: PersonRating | undefined
+
+  levelQuery.query(rating.class.PersonRating, { accountId: getCurrentAccount().uuid }, (res) => {
+    personRating = res[0]
+  })
+
+  const hasRating = hasResource(rating.component.RatingRing)
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -222,15 +234,24 @@
         {/if}
         <div class="ml-2 flex-col">
           {#if person}
-            <div class="overflow-label fs-bold caption-color">
+            <div class="overflow-label fs-bold caption-color" class:mt-2={hasRating}>
               {formatName(person.name)}
             </div>
             <!-- TODO: Show current primary social id? -->
             <!-- <div class="overflow-label text-sm content-dark-color">{account.email}</div> -->
+            {#if hasRating}
+              <div class="flex-row-center text-sm">
+                <Component
+                  is={rating.component.RatingRing}
+                  props={{ rating: personRating?.rating ?? 0, showValues: true }}
+                />
+              </div>
+            {/if}
           {/if}
         </div>
       {/if}
     </div>
+
     <div class="ap-menuItem separator" />
   </svelte:fragment>
 </svelte:component>

@@ -16,11 +16,12 @@
   import type { TypeNumber as TypeNumberType } from '@hcengineering/core'
   import core from '@hcengineering/core'
   import { TypeNumber } from '@hcengineering/model'
-  import { EditBox, Label, NumberInput, Toggle } from '@hcengineering/ui'
+  import { Label, NumberInput, Toggle } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import setting from '../../plugin'
 
   export let type: TypeNumberType
+  export let defaultValue: number | undefined
   export let editable: boolean = true
 
   const dispatch = createEventDispatcher()
@@ -30,12 +31,12 @@
   let isInteger = type?.digits === 0
 
   function updateType (): void {
-    dispatch('change', { type: TypeNumber(min, max, isInteger ? 0 : undefined) })
+    dispatch('change', { type: TypeNumber(min, max, isInteger ? 0 : undefined), defaultValue })
   }
 
   onMount(() => {
     if (type?._class !== core.class.TypeNumber) {
-      dispatch('change', { type: TypeNumber() })
+      updateType()
     }
   })
 
@@ -46,8 +47,16 @@
 </script>
 
 <span class="label">
-  <Label label={setting.string.MinValue} />
+  <Label label={setting.string.DefaultValue} />
 </span>
+<NumberInput
+  bind:value={defaultValue}
+  disabled={!editable}
+  maxWidth={'100%'}
+  placeholder={setting.string.DefaultValue}
+  on:change={updateType}
+/>
+<Label label={setting.string.MinValue} />
 <NumberInput
   bind:value={min}
   disabled={!editable}

@@ -430,7 +430,7 @@ async function createUserProfiles (client: MigrationClient): Promise<void> {
         const userProfile: UserProfile = {
           _id: generateId(),
           _class: contact.class.UserProfile,
-          space: contact.space.Contacts,
+          space: card.space.Default,
 
           person: d._id,
           title,
@@ -485,6 +485,17 @@ async function fixSocialIdCase (client: MigrationClient): Promise<void> {
     await socialIdsIterator.close()
     client.logger.log('Finished fixing social id case. Total updated:', { updated })
   }
+}
+
+async function migrateUserProfiles (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_CARD,
+    {
+      _class: contact.class.UserProfile,
+      space: contact.space.Contacts
+    },
+    { space: card.space.Default }
+  )
 }
 
 export const contactOperation: MigrateOperation = {
@@ -673,6 +684,11 @@ export const contactOperation: MigrateOperation = {
         state: 'fix-social-id-case',
         mode: 'upgrade',
         func: fixSocialIdCase
+      },
+      {
+        state: 'migrate-user-profiles',
+        mode: 'upgrade',
+        func: migrateUserProfiles
       }
     ])
   },

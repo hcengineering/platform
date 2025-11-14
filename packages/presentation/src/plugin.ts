@@ -38,10 +38,9 @@ import {
 } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
+import { type FileStorage } from '@hcengineering/storage-client'
 import { type ComponentExtensionId } from '@hcengineering/ui/src/types'
-import { type UploadConfig } from './file'
 import { type PresentationMiddlewareFactory } from './pipeline'
-import type { PreviewConfig } from './preview'
 import {
   type ComponentPointExtension,
   type DocCreateExtension,
@@ -50,6 +49,8 @@ import {
   type InstantTransactions,
   type ObjectSearchCategory
 } from './types'
+
+export type { FileStorage } from '@hcengineering/storage-client'
 
 /**
  * @public
@@ -154,6 +155,9 @@ export default plugin(presentationId, {
     EraserTool: '' as IntlString,
     PanTool: '' as IntlString,
     TextTool: '' as IntlString,
+    LineTool: '' as IntlString,
+    RectangleTool: '' as IntlString,
+    EllipseTool: '' as IntlString,
     PaletteManagementMenu: '' as IntlString
   },
   extension: {
@@ -165,23 +169,24 @@ export default plugin(presentationId, {
     FrontVersion: '' as Metadata<string>,
     Draft: '' as Metadata<Record<string, any>>,
     UploadURL: '' as Metadata<string>,
-    FilesURL: '' as Metadata<string>,
+    DatalakeUrl: '' as Metadata<string>,
     CollaboratorUrl: '' as Metadata<string>,
     Token: '' as Metadata<string>,
     Endpoint: '' as Metadata<string>,
     WorkspaceUuid: '' as Metadata<WorkspaceUuid>,
+    WorkspaceName: '' as Metadata<string>,
     WorkspaceDataId: '' as Metadata<WorkspaceDataId>,
     FrontUrl: '' as Asset,
     LinkPreviewUrl: '' as Metadata<string>,
-    UploadConfig: '' as Metadata<UploadConfig>,
-    PreviewConfig: '' as Metadata<PreviewConfig | undefined>,
+    FileStorage: '' as Metadata<FileStorage>,
     ClientHook: '' as Metadata<ClientHook>,
     SessionId: '' as Metadata<string>,
     StatsUrl: '' as Metadata<string>,
     MailUrl: '' as Metadata<string>,
     PreviewUrl: '' as Metadata<string>,
     PulseUrl: '' as Metadata<string>,
-    HulylakeUrl: '' as Metadata<string>
+    HulylakeUrl: '' as Metadata<string>,
+    PaymentUrl: '' as Metadata<string>
   },
   status: {
     FileTooLarge: '' as StatusCode

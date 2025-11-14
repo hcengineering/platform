@@ -25,4 +25,6 @@ rush docker:build -p 20 \
 --to @hcengineering/pod-backup \
 --to @hcengineering/backup-api-pod \
 --to @hcengineering/pod-billing \
---to @hcengineering/pod-process
+--to @hcengineering/pod-process \
+--to @hcengineering/pod-rating \
+--to @hcengineering/pod-payment

@@ -160,15 +160,6 @@
     .findAllSync<Application>(workbench.class.Application, { hidden: false, _id: { $nin: excludedApps } })
     .filter((it) => isAllowedToRole(it.accessLevel, account))
 
-  if (isCommunicationEnabled) {
-    const notificationApp = client
-      .getModel()
-      .findAllSync<Application>(workbench.class.Application, { alias: notificationId })[0]
-    if (notificationApp && !apps.some((a) => a._id === notificationApp._id)) {
-      apps.push(notificationApp)
-    }
-  }
-
   let panelInstance: PanelInstance
   let popupInstance: Popup
 
@@ -344,7 +335,6 @@
       return await titleProvider(client, _id)
     } catch (err: any) {
       Analytics.handleError(err)
-      console.error(err)
     }
   }
 
@@ -411,7 +401,7 @@
     loc.fragment =
       (loc.fragment ?? '') !== '' && resolved.loc.fragment === resolved.defaultLocation.fragment
         ? loc.fragment
-        : resolved.loc.fragment ?? resolved.defaultLocation.fragment
+        : (resolved.loc.fragment ?? resolved.defaultLocation.fragment)
     return loc
   }
 
@@ -639,6 +629,12 @@
     }
     for (const s of navigatorModel?.spaces ?? []) {
       const sp = s.specials?.find((x) => x.id === id)
+      if (sp !== undefined) {
+        return sp
+      }
+    }
+    for (const g of navigatorModel?.groups ?? []) {
+      const sp = g.specials?.find((x) => x.id === id)
       if (sp !== undefined) {
         return sp
       }
@@ -973,7 +969,18 @@
           >
             <div class="antiPanel-wrap__content hulyNavPanel-container">
               {#if currentApplication}
-                <NavHeader label={currentApplication.label} />
+                <NavHeader label={currentApplication.label}>
+                  {#if currentApplication.navHeaderActions != null}
+                    <Component
+                      is={currentApplication.navHeaderActions}
+                      props={{
+                        currentSpace,
+                        currentSpecial,
+                        currentFragment
+                      }}
+                    />
+                  {/if}
+                </NavHeader>
                 {#if currentApplication.navHeaderComponent}
                   <Component
                     is={currentApplication.navHeaderComponent}

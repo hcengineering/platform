@@ -14,17 +14,17 @@
 //
 
 import { codeBlockOptions } from '@hcengineering/text'
-import { type CodeBlockLowlightOptions, CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight'
+import { getCurrentTheme, isThemeDark, themeStore } from '@hcengineering/theme'
+import { CodeBlockLowlight, type CodeBlockLowlightOptions } from '@tiptap/extension-code-block-lowlight'
 import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { NodeSelection, Plugin, PluginKey, TextSelection, type Transaction } from '@tiptap/pm/state'
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
 import { createLowlight } from 'lowlight'
-import { isChangeEditable } from '../hooks/editable'
 import type { MermaidConfig } from 'mermaid'
-import { getCurrentTheme, isThemeDark, themeStore } from '@hcengineering/theme'
+import { isChangeEditable } from '../hooks/editable'
 
-import { createRelativePositionFromTypeIndex, type RelativePosition, type Doc as YDoc } from 'yjs'
 import { mergeAttributes } from '@tiptap/core'
+import { createRelativePositionFromTypeIndex, type RelativePosition, type Doc as YDoc } from 'yjs'
 
 export interface MermaidOptions extends CodeBlockLowlightOptions {
   ydoc?: YDoc
@@ -205,7 +205,7 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
         const isEmpty = nodeState.textContent.trim().length === 0
         const diagram = nodeState.diagramBuilder?.(editor.view) ?? null
         const error = diagram?.error ?? null
-        const diagramNode = error === null ? diagram?.domFragments[0] ?? null : null
+        const diagramNode = error === null ? (diagram?.domFragments[0] ?? null) : null
 
         const allowFold = !isEmpty && error === null
 
@@ -328,13 +328,28 @@ async function renderMermaidDiagram (code: string, theme: MermaidConfig['theme']
   // configuration gets changed to split the vendor bundle, it might come in handy
   const mermaid = (await import(/* webpackMode: "lazy-once" */ 'mermaid')).default
 
+  const useMaxWidth = false
+
   mermaid.initialize({
     startOnLoad: false,
-    securityLevel: 'loose',
-    fontFamily: 'var(--font-family)',
+    securityLevel: 'antiscript',
     logLevel: 5,
     theme,
-    suppressErrorRendering: true
+    suppressErrorRendering: true,
+    fontFamily: 'var(--font-family)',
+    fontSize: 16,
+    flowchart: { useMaxWidth },
+    sequence: { useMaxWidth },
+    gantt: { useMaxWidth },
+    journey: { useMaxWidth },
+    timeline: { useMaxWidth },
+    class: { useMaxWidth },
+    state: { useMaxWidth },
+    er: { useMaxWidth },
+    pie: { useMaxWidth },
+    quadrantChart: { useMaxWidth },
+    xyChart: { useMaxWidth },
+    requirement: { useMaxWidth }
   })
 
   const id = `mermaid-diagram-${Math.random().toString(36).substring(2, 9)}`
@@ -397,6 +412,20 @@ function buildState (
     const container = document.createElement('div')
     container.className = 'mermaidPreview'
     container.innerHTML = renderState.svg
+
+    // Ensure SVG maintains its natural size
+    const svg = container.querySelector('svg')
+    if (svg !== null) {
+      svg.style.height = 'auto'
+      // Remove any width/height attributes that might cause stretching
+      if (!svg.hasAttribute('viewBox')) {
+        const width = svg.getAttribute('width')
+        const height = svg.getAttribute('height')
+        if (width !== null && height !== null) {
+          svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
+        }
+      }
+    }
 
     renderState.domFragments.push(container)
     usedFragments.add(container)

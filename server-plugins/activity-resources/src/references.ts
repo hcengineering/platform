@@ -35,13 +35,10 @@ import core, {
   TxProcessor,
   type TxRemoveDoc,
   type TxUpdateDoc,
-  type Type
+  type Type,
+  getClassCollaborators
 } from '@hcengineering/core'
-import notification, {
-  getClassCollaborators,
-  type MentionInboxNotification,
-  type NotificationType
-} from '@hcengineering/notification'
+import notification, { type MentionInboxNotification, type NotificationType } from '@hcengineering/notification'
 import { getPerson } from '@hcengineering/server-contact'
 import { type StorageAdapter, type TriggerControl } from '@hcengineering/server-core'
 import {

@@ -98,7 +98,8 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   }
 
   const id = loc.path[3]
-  if (loc.path[4] === undefined && id !== undefined && id !== 'browser') {
+  const specialItems = ['browser', 'type', 'all']
+  if (loc.path[4] === undefined && id !== undefined && !specialItems.includes(id)) {
     return await generateLocation(loc, id)
   }
 }
@@ -118,7 +119,6 @@ async function generateLocation (loc: Location, id: string): Promise<ResolvedLoc
   }
   const appComponent = loc.path[0] ?? ''
   const workspace = loc.path[1] ?? ''
-  const space = doc.space
   const special = doc._class
 
   const objectPanel = client.getHierarchy().classHierarchyMixin(doc._class as Ref<Class<Doc>>, view.mixin.ObjectPanel)
@@ -130,7 +130,7 @@ async function generateLocation (loc: Location, id: string): Promise<ResolvedLoc
       fragment: getPanelURI(component, doc._id, doc._class, 'content')
     },
     defaultLocation: {
-      path: [appComponent, workspace, cardId, space, special],
+      path: [appComponent, workspace, cardId, 'type', special],
       fragment: getPanelURI(component, doc._id, doc._class, 'content')
     }
   }
@@ -344,9 +344,16 @@ export function getCardIconInfo (doc?: Card): { icon: IconComponent, props: Icon
   const hierarchy = client.getHierarchy()
   const clazz = hierarchy.getClass(doc._class) as MasterTag
 
+  if (clazz?.icon === view.ids.IconWithEmoji) {
+    return {
+      icon: IconWithEmoji,
+      props: { icon: clazz.color }
+    }
+  }
+
   return {
-    icon: clazz?.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz?.icon ?? card.icon.MasterTag,
-    props: clazz?.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}
+    icon: clazz?.icon ?? card.icon.MasterTag,
+    props: {}
   }
 }
 

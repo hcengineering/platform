@@ -14,13 +14,38 @@
 -->
 <script lang="ts">
   import { TypeBoolean } from '@hcengineering/model'
+  import { Label } from '@hcengineering/ui'
+  import setting from '../../plugin'
   import { createEventDispatcher, onMount } from 'svelte'
+  import core, { Type } from '@hcengineering/core'
+  import { BooleanEditor } from '@hcengineering/view-resources'
+
+  export let type: Type<boolean> | undefined
+  export let defaultValue: boolean | undefined
 
   const dispatch = createEventDispatcher()
 
   onMount(() => {
-    dispatch('change', {
-      type: TypeBoolean()
-    })
+    if (type?._class !== core.class.TypeBoolean) {
+      change()
+    }
   })
+
+  function change () {
+    dispatch('change', {
+      type: TypeBoolean(),
+      defaultValue
+    })
+  }
 </script>
+
+<span class="label">
+  <Label label={setting.string.DefaultValue} />
+</span>
+<BooleanEditor
+  bind:value={defaultValue}
+  onChange={(value) => {
+    defaultValue = value
+    change()
+  }}
+/>

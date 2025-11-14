@@ -18,6 +18,7 @@ import { markdownToMarkup } from '@hcengineering/text-markdown'
 import { Extension } from '@tiptap/core'
 import { Node, type Schema } from '@tiptap/pm/model'
 import { Plugin } from '@tiptap/pm/state'
+import { CodeBlockHighlighExtension } from '../codeSnippets/codeblock'
 
 export const SmartPasteExtension = Extension.create({
   name: 'transformPastedContent',
@@ -35,6 +36,17 @@ function PasteTextAsMarkdownPlugin (): Plugin {
         if (clipboardData === null) return false
 
         const pastedText = clipboardData.getData('text/plain')
+
+        // check if we are in code block
+        const { $from } = view.state.selection
+        for (let d = $from.depth; d > 0; d--) {
+          const node = $from.node(d)
+          if (node.type.name === CodeBlockHighlighExtension.name) {
+            // paste as plain text in code blocks
+            return false
+          }
+        }
+
         const isPlainPaste = clipboardData.types.length === 1 && clipboardData.types[0] === 'text/plain'
 
         if (!isPlainPaste) return false
@@ -43,6 +55,8 @@ function PasteTextAsMarkdownPlugin (): Plugin {
           const markupNode = cleanUnknownContent(view.state.schema, markdownToMarkup(pastedText))
           if (shouldUseMarkdownOutput(markupNode)) {
             const content = Node.fromJSON(view.state.schema, markupNode)
+            content.check()
+
             const transaction = view.state.tr.replaceSelectionWith(content)
             view.dispatch(transaction)
             return true

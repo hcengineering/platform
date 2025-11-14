@@ -54,7 +54,7 @@
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER": "ws",
         "MODEL_VERSION": "0.7.48",
-        // "VERSION": "0.6.289",
+        // "version": "0.7.0",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
         "AI_BOT_URL": "http://localhost:4010",
@@ -97,8 +97,8 @@
         "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
         // "SERVER_PROVIDER":"uweb"
         "SERVER_PROVIDER": "ws",
-        "MODEL_VERSION": "0.7.230",
-        // "VERSION": "0.6.289",
+        "MODEL_VERSION": "0.7.301",
+        // "version": "0.7.0",
         "COMMUNICATION_API_ENABLED": "true",
         "ELASTIC_INDEX_NAME": "local_storage_index",
         "UPLOAD_URL": "/files",
@@ -201,6 +201,7 @@
         "FRONT_URL": "http://huly.local:8087",
         "STATS_URL": "http://huly.local:4900",
         "MAIL_URL": "",
+        "MAX_FAILED_LOGIN_ATTEMPTS": "5",
         // "DB_NS": "account-2",
         // "WS_LIVENESS_DAYS": "1",
         // "WORKSPACE_LIMIT_PER_USER": "1",
@@ -314,10 +315,11 @@
         "SERVER_SECRET": "secret",
         "TRANSACTOR_URL": "ws://localhost:3332",
         "ACCOUNTS_URL": "http://localhost:3000",
+        "ACCOUNTS_DB_URL": "postgresql://root@huly.local:26257/defaultdb?sslmode=disable",
         "FRONT_URL": "http://localhost:8080",
         "MAIL_URL": "",
         "STORAGE_CONFIG": "datalake|http://localhost:4030",
-        "MODEL_VERSION": "0.7.153",
+        "MODEL_VERSION": "0.7.301",
         "WS_OPERATION": "all+backup",
         "BACKUP_STORAGE": "minio|minio?accessKey=minioadmin&secretKey=minioadmin",
         "BACKUP_BUCKET": "dev-backups",
@@ -408,27 +410,23 @@
       "protocol": "inspector"
     },
     {
-      "name": "Debug backup tool",
+      "name": "Debug tool",
       "type": "node",
       "request": "launch",
-      "args": [
-        "src/__start.ts",
-        "backup-restore",
-        "/Users/haiodo/Develop/private/platform/tests/sanity-ws",
-        "sanity-ws",
-        "--upgrade"
-      ],
+      "args": ["src/__start.ts", "calculate-ratings", "2d790fe8-faba-4c2e-afb1-5610445966bb"],
       "env": {
         "MODEL_VERSION": "0.7.153",
         "STORAGE_CONFIG": "datalake|http://huly.local:4030",
-        "ACCOUNTS_URL": "http://localhost:3003",
-        "TRANSACTOR_URL": "ws://localhost:3334",
-        "ACCOUNT_DB_URL": "postgresql://root@localhost:26258/defaultdb?sslmode=disable",
-        "MONGO_URL": "mongodb://localhost:27018",
-        "ELASTIC_URL": "http://localhost:9201",
+        "ACCOUNTS_URL": "http://huly.local:3000",
+        "TRANSACTOR_URL": "ws://localhost:3332",
+        "ACCOUNT_DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
+        "MONGO_URL": "mongodb://localhost:27017",
+        "ELASTIC_URL": "http://localhost:9200",
         "SERVER_SECRET": "secret",
-        "DB_URL": "postgresql://root@localhost:26258/defaultdb?sslmode=disable",
-        "QUEUE_CONFIG": "localhost:19093;-staging"
+        "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
+        "QUEUE_CONFIG": "huly.local:19092",
+        "REGION": "cockroach",
+        "QUEUE_REGION": "cockroach"
       },
       "smartStep": false,
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
@@ -626,6 +624,33 @@
       "outputCapture": "std"
     },
     {
+      "name": "Debug Rating service",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/__start__.ts"],
+      "env": {
+        "SERVER_SECRET": "secret",
+        "MODEL_VERSION": "0.7.278",
+        "STORAGE_CONFIG": "datalake|http://huly.local:4030",
+        "ACCOUNTS_URL": "http://localhost:3000",
+        "COLLABORATOR_URL": "ws://huly.local:3078",
+        "PLATFORM_OPERATION_LOGGING": "true",
+        "STATS_URL": "http://huly.local:4900",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://huly.local:4318/v1/traces",
+        "QUEUE_CONFIG": "huly.local:19092",
+        "MODEL_JSON": "${workspaceRoot}/models/all/bundle/model.json",
+        "REGION": "cockroach",
+        "QUEUE_REGION": "cockroach",
+        "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "sourceMaps": true,
+      "nodeVersionHint": 22,
+      "cwd": "${workspaceRoot}/services/rating",
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
       "name": "Debug qms workers",
       "type": "node",
       "request": "launch",
@@ -671,7 +696,8 @@
         "ACCOUNTS_URL": "http://localhost:3000",
         "QUEUE_CONFIG": "localhost:19092",
         "QUEUE_REGION": "cockroach",
-        "TEMPORAL_ADDRESS": "localhost:7233"
+        "TEMPORAL_ADDRESS": "localhost:7233",
+        "COLLABORATOR_URL": "ws://localhost:3078"
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "runtimeVersion": "20",
@@ -715,6 +741,27 @@
       "runtimeVersion": "20",
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/services/sign/pod-sign"
+    },
+    {
+      "name": "Debug payment",
+      "type": "node",
+      "request": "launch",
+      "args": ["src/index.ts"],
+      "env": {
+        "PORT": "3040",
+        "SECRET": "secret",
+        "SERVICE_ID": "payment-service",
+        "ACCOUNTS_URL": "http://huly.local:3000",
+        "FRONT_URL": "http://huly.local:8087",
+        "USE_SANDBOX": "true",
+        // "POLAR_ACCESS_TOKEN": "polar_xxx",
+        // "POLAR_WEBHOOK_SECRET": "whsec_xxx",
+        // "POLAR_SUBSCRIPTION_PLANS": "common@tier:prod_1a,prod_1b;rare@tier:prod_2;epic@tier:prod_3;legendary@tier:prod_4"
+      },
+      "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
+      "runtimeVersion": "20",
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/services/payment/pod-payment"
     },
     {
       "name": "Debug rekoni",
@@ -833,7 +880,7 @@
         "SECRET": "secret",
         "DB_URL": "postgresql://root@localhost:26257/defaultdb?sslmode=disable",
         "BUCKETS": "blobs,eu|http://localhost:9000?accessKey=minioadmin&secretKey=minioadmin",
-        "ACCOUNTS_URL": "http://localhost:3000",
+        "ACCOUNTS_URL": "http://huly.local:3000",
         "STATS_URL": "http://huly.local:4900",
         "QUEUE_CONFIG": "localhost:19092"
       },

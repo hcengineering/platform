@@ -13,17 +13,20 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, Ref } from '@hcengineering/core'
+  import { Card } from '@hcengineering/card'
+  import { PermissionsStore } from '@hcengineering/contact'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
+  import core, { AnyAttribute, Class, Doc, Permission, Ref, toRank, TypedSpace } from '@hcengineering/core'
   import {
     AttributeBarEditor,
-    KeyedAttribute,
     createQuery,
     getClient,
     getFiltredKeys,
-    isCollectionAttr
+    isCollectionAttr,
+    KeyedAttribute
   } from '@hcengineering/presentation'
 
-  export let object: Doc | Record<string, any>
+  export let object: Card
   export let _class: Ref<Class<Doc>>
   export let to: Ref<Class<Doc>> | undefined = core.class.Doc
   export let ignoreKeys: string[] = []
@@ -38,7 +41,13 @@
 
   function updateKeys (_class: Ref<Class<Doc>>, ignoreKeys: string[], to: Ref<Class<Doc>> | undefined): void {
     const filtredKeys = getFiltredKeys(hierarchy, _class, ignoreKeys, to)
-    keys = filtredKeys.filter((key) => !isCollectionAttr(hierarchy, key))
+    keys = filtredKeys
+      .filter((key) => !isCollectionAttr(hierarchy, key))
+      .sort((a, b) => {
+        const rankA = a.attr.rank ?? toRank(a.attr._id) ?? ''
+        const rankB = b.attr.rank ?? toRank(b.attr._id) ?? ''
+        return rankA.localeCompare(rankB)
+      })
   }
 
   $: updateKeys(_class, ignoreKeys, to)
@@ -47,11 +56,24 @@
   $: query.query(core.class.Attribute, { attributeOf: _class }, () => {
     updateKeys(_class, ignoreKeys, to)
   })
+
+  function checkForbiddenPermission (attr: AnyAttribute, permissionsStore: PermissionsStore): boolean {
+    const _id = `${attr._id}_forbidden` as Ref<Permission>
+    return checkMyPermission(_id, object.space as Ref<TypedSpace>, permissionsStore)
+  }
 </script>
 
 <div class="grid" class:fourRows>
-  {#each keys as key (typeof key === 'string' ? key : key.key)}
-    <AttributeBarEditor {key} {_class} {object} {showHeader} {readonly} withIcon on:update />
+  {#each keys as key}
+    <AttributeBarEditor
+      {key}
+      {_class}
+      {object}
+      {showHeader}
+      readonly={readonly || checkForbiddenPermission(key.attr, $permissionsStore)}
+      withIcon
+      on:update
+    />
   {/each}
 </div>
 

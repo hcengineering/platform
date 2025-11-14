@@ -47,6 +47,8 @@ import ArrayElementEditor from './components/transformEditors/ArrayElementEditor
 import MultiArrayElementEditor from './components/transformEditors/MultiArrayElementEditor.svelte'
 import DateOffsetEditor from './components/transformEditors/DateOffsetEditor.svelte'
 import NumberEditor from './components/transformEditors/NumberEditor.svelte'
+import FilterEditor from './components/transformEditors/FilterEditor.svelte'
+import FunctionSubmenu from './components/settings/FunctionSubmenu.svelte'
 
 import ArraySizeCriteria from './components/criterias/ArraySizeCriteria.svelte'
 import BaseCriteria from './components/criterias/BaseCriteria.svelte'
@@ -65,6 +67,8 @@ import TimeEditor from './components/settings/TimeEditor.svelte'
 import TimePresenter from './components/settings/TimePresenter.svelte'
 import ToDoSettingPresenter from './components/settings/ToDoPresenter.svelte'
 import TransitionRefPresenter from './components/settings/TransitionRefPresenter.svelte'
+import SubProcessMatchEditor from './components/settings/SubProcessMatchEditor.svelte'
+import SubProcessMatchPresenter from './components/settings/SubProcessMatchPresenter.svelte'
 import AppendEditor from './components/transformEditors/AppendEditor.svelte'
 import CutEditor from './components/transformEditors/CutEditor.svelte'
 import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
@@ -79,7 +83,8 @@ import {
   todoTranstionCheck,
   matchCardCheck,
   subProcessesDoneCheck,
-  fieldChangesCheck
+  fieldChangesCheck,
+  subProcessMatchCheck
 } from './utils'
 import FieldChangesEditor from './components/settings/FieldChangesEditor.svelte'
 
@@ -135,7 +140,10 @@ export default async (): Promise<Resources> => ({
     AddTagEditor,
     AddTagPresenter,
     ExecutionMyToDos,
-    FieldChangesEditor
+    FieldChangesEditor,
+    FunctionSubmenu,
+    SubProcessMatchEditor,
+    SubProcessMatchPresenter
   },
   criteriaEditor: {
     BaseCriteria,
@@ -154,12 +162,14 @@ export default async (): Promise<Resources> => ({
     AppendEditor,
     ReplaceEditor,
     SplitEditor,
-    CutEditor
+    CutEditor,
+    FilterEditor
   },
   triggerCheck: {
     MatchCheck: matchCardCheck,
     FieldChangedCheck: fieldChangesCheck,
     SubProcessesDoneCheck: subProcessesDoneCheck,
+    SubProcessMatchCheck: subProcessMatchCheck,
     ToDo: todoTranstionCheck,
     Time: timeTransitionCheck
   },

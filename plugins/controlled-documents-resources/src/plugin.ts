@@ -182,6 +182,7 @@ export default mergeIds(documentsId, documents, {
 
     DocumentInHierarchy: '' as IntlString,
     FirstDraftVersion: '' as IntlString,
+    FirstOrNotAvailable: '' as IntlString,
 
     EffectiveDocumentLifecycle: '' as IntlString,
 
@@ -208,7 +209,6 @@ export default mergeIds(documentsId, documents, {
     EditDocumentSpace: '' as IntlString,
     DocSpaceDescriptionPlaceholder: '' as IntlString,
     Members: '' as IntlString,
-    RoleLabel: '' as IntlString,
 
     ViewAll: '' as IntlString,
     Readonly: '' as IntlString,

@@ -1,6 +1,9 @@
+import { WorkspaceUuid } from '@hcengineering/core'
+
 export interface BillingStats {
   liveKitStats: LiveKitStats
   datalakeStats: DatalakeStats
+  aiStats: AiStats
 }
 
 export interface DatalakeStats {
@@ -41,4 +44,34 @@ export interface LiveKitEgressData {
   egressStart: string
   egressEnd: string
   duration: number
+}
+
+export interface AiTranscriptStats {
+  totalDurationSeconds: number
+}
+
+export interface AiTokensStats {
+  reason: string
+  totalTokens: number
+}
+
+export interface AiStats {
+  transcript: AiTranscriptStats
+  tokens: AiTokensStats[]
+}
+
+export interface AiTranscriptData {
+  workspace: WorkspaceUuid
+  day: string
+  lastRequestId: string
+  lastStartTime: string
+  durationSeconds: number
+  usd: number
+}
+
+export interface AiTokensData {
+  workspace: WorkspaceUuid
+  reason: string
+  tokens: number
+  date: string
 }

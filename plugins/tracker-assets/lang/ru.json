@@ -286,7 +286,6 @@
     "DefaultIssueStatus": "Статус по умолчанию",
     "IssueStatus": "Статус",
     "Extensions": "Дополнительно",
-    "RoleLabel": "Роль: {role}",
     "UnsetParentIssue": "Снять родительскую задачу",
     "ForbidCreateProjectPermission": "Запретить создание проекта",
     "ForbidCreateProjectPermissionDescription": "Запрещает пользователям создавать новые проекты"

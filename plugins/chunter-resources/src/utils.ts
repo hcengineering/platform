@@ -19,7 +19,6 @@ import activity, {
   type DisplayDocUpdateMessage,
   type DocUpdateMessage
 } from '@hcengineering/activity'
-import { isReactionMessage } from '@hcengineering/activity-resources'
 import aiBot from '@hcengineering/ai-bot'
 import { summarizeMessages as aiSummarizeMessages, translate as aiTranslate } from '@hcengineering/ai-bot-resources'
 import { type Channel, type ChatMessage, type DirectMessage, type ThreadMessage } from '@hcengineering/chunter'
@@ -42,7 +41,8 @@ import notification, { type DocNotifyContext, type InboxNotification } from '@hc
 import {
   InboxNotificationsClientImpl,
   isActivityNotification,
-  isMentionNotification
+  isMentionNotification,
+  isReactionNotification
 } from '@hcengineering/notification-resources'
 import { type Asset, getMetadata, translate } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
@@ -414,18 +414,16 @@ export async function readChannelMessages (
     const notifications = get(inboxClient.activityInboxNotifications)
       .filter(({ attachedTo, $lookup, isViewed }) => {
         if (isViewed) return false
-        const includes = allIds.includes(attachedTo)
-        if (includes) return true
-        const msg = $lookup?.attachedTo
-        if (isReactionMessage(msg)) {
-          return allIds.includes(msg.attachedTo as Ref<ActivityMessage>)
-        }
-        return false
+        return allIds.includes(attachedTo)
       })
       .map((n) => n._id)
 
     const relatedMentions = get(inboxClient.otherInboxNotifications)
       .filter((n) => !n.isViewed && isMentionNotification(n) && allIds.includes(n.mentionedIn as Ref<ActivityMessage>))
+      .map((n) => n._id)
+
+    const reactionNotifications = get(inboxClient.otherInboxNotifications)
+      .filter((n) => !n.isViewed && isReactionNotification(n) && allIds.includes(n.attachedTo))
       .map((n) => n._id)
 
     chatReadMessagesStore.update((store) => new Set([...store, ...allIds]))
@@ -441,7 +439,7 @@ export async function readChannelMessages (
       })
       await op.update(context, { lastViewedTimestamp: newTimestamp })
     }
-    await inboxClient.readNotifications(op, [...notifications, ...relatedMentions])
+    await inboxClient.readNotifications(op, [...notifications, ...relatedMentions, ...reactionNotifications])
   } finally {
     await op.commit()
   }

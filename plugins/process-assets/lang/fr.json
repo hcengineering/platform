@@ -55,6 +55,7 @@
     "EnterValue": "Saisir une valeur",
     "OnToDoDone": "Lors de l'achèvement de l'action",
     "OnSubProcessesDone": "Au fin des sous-processus",
+    "WhenSubProcessMatches": "Lorsque le sous-processus correspond",
     "Result": "Résultat",
     "RequestResult": "Demander le résultat",
     "NoResultRequired": "Aucun résultat requis",
@@ -117,7 +118,15 @@
     "NewProcessToDo": "Nouvel Action Item de processus",
     "EmptyArray": "Tableau vide",
     "ExecutionInitiator": "Initiateur d'exécution",
-    "ExecutionStarted": "Exécution démarrée"
+    "ExecutionStarted": "Exécution démarrée",
+    "Filter": "Filtrer",
+    "FirstMatchValue": "Première valeur correspondante",
+    "ConfigLabel": "Configuration des processus",
+    "ConfigDescription": "Définissez des processus pour automatiser les flux de travail et les processus métier.",
+    "RunProcessPermission": "Exécuter le processus",
+    "CancelProcessPermission": "Annuler le processus",
+    "ForbidRunProcessPermission": "Interdire l'exécution du processus",
+    "ForbidCancelProcessPermission": "Interdire l'annulation du processus"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

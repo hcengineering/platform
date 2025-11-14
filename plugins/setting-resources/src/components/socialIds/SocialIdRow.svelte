@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import contact, { SocialIdentity, SocialIdentityProvider, SocialIdentityRef } from '@hcengineering/contact'
+  import { SocialIdentityPresenter } from '@hcengineering/contact-resources'
   import {
     getCurrentAccount,
     loginSocialTypes,
@@ -21,18 +22,20 @@
     setCurrentAccount,
     SocialId
   } from '@hcengineering/core'
-  import { Button, getPlatformColorDef, Label, PaletteColorIndexes, showPopup, themeStore } from '@hcengineering/ui'
-  import contact, { SocialIdentity, SocialIdentityProvider, SocialIdentityRef } from '@hcengineering/contact'
-  import { SocialIdentityPresenter } from '@hcengineering/contact-resources'
-  import { getClient, MessageBox } from '@hcengineering/presentation'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { getClient, MessageBox } from '@hcengineering/presentation'
+  import { getPlatformColorDef, Label, PaletteColorIndexes, showPopup, themeStore } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
+  import { Analytics } from '@hcengineering/analytics'
   import setting from '../../plugin'
   import { getAccountClient } from '../../utils'
 
   export let socialId: SocialId
   export let socialIdProvider: SocialIdentityProvider
   export let canRelease: boolean = false
+  export let socialIdRating: number | undefined = undefined
+  export let socialIdRatingTotal: number | undefined = undefined
 
   const client = getClient()
   const accountClient = getAccountClient()
@@ -79,7 +82,7 @@
       currAcc = updatedAccount
       dispatch('released')
     } catch (err: any) {
-      console.error(err)
+      Analytics.handleError(err)
       void setPlatformStatus(unknownError(err))
     }
   }
@@ -98,7 +101,7 @@
             dangerous: true,
             action: async () => {
               await doRelease()
-
+              console.log('reload due to primary social id release')
               location.reload()
             }
           })
@@ -115,6 +118,12 @@
 <div class="flex-row-center flex-gap-2 root">
   <SocialIdentityPresenter value={socialIdentity} {socialIdProvider} />
 
+  {#if socialIdRating != null && socialIdRatingTotal != null && socialIdRatingTotal > 0}
+    <div class="on-hover">
+      {Math.round((socialIdRating / socialIdRatingTotal) * 100)}%
+    </div>
+  {/if}
+
   <div class="flex-grow" />
 
   {#if isLogin}
@@ -128,12 +137,6 @@
     {@const color = getPlatformColorDef(PaletteColorIndexes.Ocean, $themeStore.dark)}
     <div class="tag flex-center" style:background={color.background} style:border-color={color.color}>
       <Label label={setting.string.Primary} />
-    </div>
-  {/if}
-
-  {#if canRelease}
-    <div class="on-hover">
-      <Button label={setting.string.Release} kind="ghost" on:click={handleRelease} />
     </div>
   {/if}
 </div>

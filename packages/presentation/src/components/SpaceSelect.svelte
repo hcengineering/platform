@@ -136,7 +136,7 @@
     {shape}
     disabled={readonly}
     {focusIndex}
-    icon={selected?.icon === iconWithEmoji && iconWithEmoji ? IconWithEmoji : selected?.icon ?? defaultIcon}
+    icon={selected?.icon === iconWithEmoji && iconWithEmoji ? IconWithEmoji : (selected?.icon ?? defaultIcon)}
     iconProps={selected?.icon === iconWithEmoji && iconWithEmoji
       ? { icon: selected?.color }
       : ignoreFill

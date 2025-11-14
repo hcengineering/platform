@@ -11,12 +11,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 
-import { type Employee, type Person } from '@hcengineering/contact'
 import { type UnsubscribeCallback, type Callback } from '@hcengineering/hulypulse-client'
-import { getMetadata } from '@hcengineering/platform'
-import presentation from '@hcengineering/presentation'
-import { type Doc, type Ref } from '@hcengineering/core'
-import { createPulseClient } from './pulse'
+import { type IntlString, getMetadata } from '@hcengineering/platform'
+import presentation, { createPulseClient } from '@hcengineering/presentation'
+import { type PersonId } from '@hcengineering/core'
 
 const typingDelaySeconds = 2
 
@@ -25,36 +23,37 @@ function getWorkspace (): string {
 }
 
 export interface TypingInfo {
-  personId: Ref<Person>
-  objectId: Ref<Doc>
+  socialId: PersonId
+  objectId: string
+  status?: IntlString
 }
 
 export interface TypingActionParams {
-  personId: Ref<Employee>
-  objectId: Ref<Doc>
-  onTyping: (presence: Map<string, Ref<Person>>) => void
+  socialId: PersonId
+  objectId: string
+  onTyping: (presence: Map<string, TypingInfo>) => void
 }
 
 export function typing (node: HTMLElement, params: TypingActionParams): any {
   let unsubscribe: Promise<UnsubscribeCallback> | undefined
-  let presence = new Map<string, Ref<Person>>()
+  let typing = new Map<string, TypingInfo>()
 
-  let personId = params.personId
+  let socialId = params.socialId
   let objectId = params.objectId
   let onTyping = params.onTyping
 
   function handleTypingInfo (key: string, value: TypingInfo | undefined): void {
-    if (value?.personId === personId) {
+    if (value?.socialId === socialId) {
       return
     }
 
     if (value === undefined) {
-      presence.delete(key)
+      typing.delete(key)
     } else {
-      presence.set(key, value.personId)
+      typing.set(key, value)
     }
 
-    onTyping(presence)
+    onTyping(typing)
   }
 
   unsubscribe = subscribeTyping(params.objectId, handleTypingInfo)
@@ -62,7 +61,7 @@ export function typing (node: HTMLElement, params: TypingActionParams): any {
   return {
     update: (params: TypingActionParams) => {
       if (objectId !== params.objectId) {
-        personId = params.personId
+        socialId = params.socialId
         objectId = params.objectId
         onTyping = params.onTyping
 
@@ -70,10 +69,10 @@ export function typing (node: HTMLElement, params: TypingActionParams): any {
           void unsub()
         })
 
-        presence = new Map<string, Ref<Person>>()
+        typing = new Map<string, TypingInfo>()
         unsubscribe = subscribeTyping(params.objectId, handleTypingInfo)
 
-        onTyping(presence)
+        onTyping(typing)
       }
     },
     destroy: () => {
@@ -85,7 +84,7 @@ export function typing (node: HTMLElement, params: TypingActionParams): any {
 }
 
 export async function subscribeTyping (
-  objectId: Ref<Doc>,
+  objectId: string,
   callback: Callback<TypingInfo | undefined>
 ): Promise<UnsubscribeCallback> {
   const client = await createPulseClient()
@@ -101,27 +100,27 @@ export async function subscribeTyping (
   return async () => false
 }
 
-export async function setTyping (personId: Ref<Employee>, objectId: Ref<Doc>): Promise<void> {
+export async function setTyping (socialId: PersonId, objectId: string, status?: IntlString): Promise<void> {
   const client = await createPulseClient()
 
   if (client !== undefined) {
     const workspace = getWorkspace()
-    const typingInfo: TypingInfo = { personId, objectId }
+    const typingInfo: TypingInfo = { socialId, objectId, status }
     try {
-      await client.put(`${workspace}/typing/${objectId}/${personId}`, typingInfo, typingDelaySeconds)
+      await client.put(`${workspace}/typing/${objectId}/${socialId}`, typingInfo, typingDelaySeconds)
     } catch (error) {
       console.warn('failed to put typing info:', error)
     }
   }
 }
 
-export async function clearTyping (me: string, objectId: string): Promise<void> {
+export async function clearTyping (socialId: PersonId, objectId: string): Promise<void> {
   const client = await createPulseClient()
 
   if (client !== undefined) {
     const workspace = getWorkspace()
     try {
-      await client.delete(`${workspace}/typing/${objectId}/${me}`)
+      await client.delete(`${workspace}/typing/${objectId}/${socialId}`)
     } catch (error) {
       console.warn('failed to delete typing info:', error)
     }

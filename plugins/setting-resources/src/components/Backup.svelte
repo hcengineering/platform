@@ -16,8 +16,7 @@
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { getFileUrl } from '@hcengineering/presentation'
-  import { Breadcrumb, Button, Expandable, Header, Label, Loading } from '@hcengineering/ui'
-  import Scroller from '@hcengineering/ui/src/components/Scroller.svelte'
+  import { Breadcrumb, Button, Expandable, Header, Label, Loading, Scroller } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { onMount } from 'svelte'
   import setting from '../plugin'
@@ -172,7 +171,7 @@
 
   <Scroller padding={'1.5rem'} noStretch>
     {#if loading}
-      <Loading size={'small'} />
+      <Loading />
     {:else if backupInfo == null}
       <div class="no-backups">
         <Label label={setting.string.BackupNoBackup} />

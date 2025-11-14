@@ -77,6 +77,11 @@ export function createModel (builder: Builder): void {
     serverCheckFunc: serverProcess.func.CheckSubProcessesDone
   })
 
+  builder.mixin(process.trigger.OnSubProcessMatch, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    preventRollback: true,
+    serverCheckFunc: serverProcess.func.CheckSubProcessMatch
+  })
+
   builder.mixin(process.method.RunSubProcess, process.class.Method, serverProcess.mixin.MethodImpl, {
     func: serverProcess.func.RunSubProcess
   })
@@ -239,6 +244,14 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(process.function.EmptyArray, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.EmptyArray
+  })
+
+  builder.mixin(process.function.FirstMatchValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.FirstMatchValue
+  })
+
+  builder.mixin(process.function.Filter, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Filter
   })
 
   builder.mixin(

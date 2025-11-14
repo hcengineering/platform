@@ -16,53 +16,56 @@
 // Import migrate operations.
 import { type MigrateOperation } from '@hcengineering/model'
 import { activityOperation } from '@hcengineering/model-activity'
+import { aiBotId, aiBotOperation } from '@hcengineering/model-ai-bot'
+import { analyticsCollectorOperation } from '@hcengineering/model-analytics-collector'
 import { attachmentOperation } from '@hcengineering/model-attachment'
 import { bitrixOperation } from '@hcengineering/model-bitrix'
 import { boardOperation } from '@hcengineering/model-board'
 import { calendarOperation } from '@hcengineering/model-calendar'
+import { cardOperation } from '@hcengineering/model-card'
+import { chatId, chatOperation } from '@hcengineering/model-chat'
 import { chunterOperation } from '@hcengineering/model-chunter'
+import { communicationId, communicationOperation } from '@hcengineering/model-communication'
 import { contactOperation } from '@hcengineering/model-contact'
+import { documentsOperation } from '@hcengineering/model-controlled-documents'
 import { coreOperation } from '@hcengineering/model-core'
 import { documentOperation } from '@hcengineering/model-document'
 import { driveOperation } from '@hcengineering/model-drive'
+import { githubOperation, githubOperationPreTime } from '@hcengineering/model-github'
 import { gmailOperation } from '@hcengineering/model-gmail'
 import { guestOperation } from '@hcengineering/model-guest'
 import { hrOperation } from '@hcengineering/model-hr'
+import { inboxId, inboxOperation } from '@hcengineering/model-inbox'
 import { inventoryOperation } from '@hcengineering/model-inventory'
 import { leadOperation } from '@hcengineering/model-lead'
+import { loveId, loveOperation } from '@hcengineering/model-love'
 import { notificationOperation } from '@hcengineering/model-notification'
 import { preferenceOperation } from '@hcengineering/model-preference'
+import { processId, processOperation } from '@hcengineering/model-process'
+import { productsOperation } from '@hcengineering/model-products'
+import { questionsOperation } from '@hcengineering/model-questions'
+import { ratingOperation } from '@hcengineering/model-rating'
+import { recorderId, recorderOperation } from '@hcengineering/model-recorder'
 import { recruitOperation } from '@hcengineering/model-recruit'
+import { requestOperation } from '@hcengineering/model-request'
 import { activityServerOperation } from '@hcengineering/model-server-activity'
 import { settingOperation } from '@hcengineering/model-setting'
+import { surveyOperation } from '@hcengineering/model-survey'
 import { tagsOperation } from '@hcengineering/model-tags'
 import { taskOperation } from '@hcengineering/model-task'
 import { telegramOperation } from '@hcengineering/model-telegram'
 import { templatesOperation } from '@hcengineering/model-templates'
+import { testManagementOperation } from '@hcengineering/model-test-management'
+import { textEditorOperation } from '@hcengineering/model-text-editor'
 import { timeOperation } from '@hcengineering/model-time'
 import { trackerOperation } from '@hcengineering/model-tracker'
-import { viewOperation } from '@hcengineering/model-view'
-import { textEditorOperation } from '@hcengineering/model-text-editor'
-import { githubOperation, githubOperationPreTime } from '@hcengineering/model-github'
-import { loveId, loveOperation } from '@hcengineering/model-love'
-import { questionsOperation } from '@hcengineering/model-questions'
 import { trainingOperation } from '@hcengineering/model-training'
-import { documentsOperation } from '@hcengineering/model-controlled-documents'
-import { productsOperation } from '@hcengineering/model-products'
-import { requestOperation } from '@hcengineering/model-request'
-import { analyticsCollectorOperation } from '@hcengineering/model-analytics-collector'
+import { viewOperation } from '@hcengineering/model-view'
 import { workbenchOperation } from '@hcengineering/model-workbench'
-import { testManagementOperation } from '@hcengineering/model-test-management'
-import { surveyOperation } from '@hcengineering/model-survey'
-import { cardOperation } from '@hcengineering/model-card'
-import { aiBotId, aiBotOperation } from '@hcengineering/model-ai-bot'
-import { chatId, chatOperation } from '@hcengineering/model-chat'
-import { processId, processOperation } from '@hcengineering/model-process'
-import { communicationId, communicationOperation } from '@hcengineering/model-communication'
-import { recorderId, recorderOperation } from '@hcengineering/model-recorder'
 
 export const migrateOperations: [string, MigrateOperation][] = [
   ['core', coreOperation],
+  ['rating', ratingOperation],
   ['activity', activityOperation],
   ['card', cardOperation],
   ['chunter', chunterOperation],
@@ -106,6 +109,7 @@ export const migrateOperations: [string, MigrateOperation][] = [
   ['survey', surveyOperation],
   [aiBotId, aiBotOperation],
   [chatId, chatOperation],
+  [inboxId, inboxOperation],
   [processId, processOperation],
   [communicationId, communicationOperation],
   [recorderId, recorderOperation]

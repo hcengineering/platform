@@ -42,6 +42,7 @@
     "SearchDocument": "Найти документ...",
     "CreateEnVersion": "Создать версию для оценки",
     "Approvers": "Утверждающие",
+    "ExternalApprovers": "Внешние утверждающие",
     "CoAuthors": "Соавторы",
     "Status": "Статус",
     "TemplateName": "Имя шаблона",
@@ -229,9 +230,10 @@
     "ArchiveDocsConfirm": "Вы действительно хотите архивировать следующие документы: {titles}?",
 
     "DocumentInHierarchy": "Документ в иерархии",
-    "FirstDraftVersion": "Это первая рабочая копия документа. Для него пока нет истории.",
+        "FirstDraftVersion": "Это первая рабочая копия документа. Для него пока нет истории.",
+    "FirstOrNotAvailable": "Это первая доступная версия документа. История еще не создана или недоступна.",
 
-    "EffectiveDocumentLifecycle": "Жизненный цикл эффективного документа",
+    "EffectiveDocumentLifecycle": "Эффективный жизненный цикл документа",
 
     "ReasonAndImpact": "Причина и Воздействие",
     "ImpactAnalysis": "Анализ воздействия",
@@ -274,7 +276,6 @@
 
     "DocSpaceDescriptionPlaceholder": "Опишите Ваше пространство...",
     "Members": "Участники",
-    "RoleLabel": "Роль: {role}",
     "CreateOrgSpace": "Создать пространство организации",
 
     "ReviewDocumentPermission": "Рецензировать документ",

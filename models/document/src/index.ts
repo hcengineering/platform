@@ -15,23 +15,17 @@
 
 import activity from '@hcengineering/activity'
 import type {
+  ClassCollaborators,
   CollectionSize,
-  MarkupBlobRef,
   Domain,
+  MarkupBlobRef,
   Rank,
   Ref,
   Role,
-  RolesAssignment,
-  ClassCollaborators
+  RolesAssignment
 } from '@hcengineering/core'
-import { AccountUuid, AccountRole, IndexKind } from '@hcengineering/core'
-import {
-  type Document,
-  type DocumentSnapshot,
-  type SavedDocument,
-  type Teamspace,
-  documentId
-} from '@hcengineering/document'
+import { AccountRole, AccountUuid, IndexKind } from '@hcengineering/core'
+import { type Document, type DocumentSnapshot, type Teamspace, documentId } from '@hcengineering/document'
 import {
   type Builder,
   Collection,
@@ -41,19 +35,18 @@ import {
   Model,
   Prop,
   ReadOnly,
+  TypeAccountUuid,
   TypeCollaborativeDoc,
   TypeNumber,
   TypeRef,
   TypeString,
-  UX,
-  TypeAccountUuid
+  UX
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter from '@hcengineering/model-chunter'
 import core, { TDoc, TTypedSpace } from '@hcengineering/model-core'
 import { createPublicLinkAction } from '@hcengineering/model-guest'
 import { generateClassNotificationTypes } from '@hcengineering/model-notification'
-import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
 import tracker from '@hcengineering/model-tracker'
 import view, { actionTemplates, createAction } from '@hcengineering/model-view'
@@ -62,8 +55,8 @@ import notification from '@hcengineering/notification'
 import { type Asset, getEmbeddedLabel } from '@hcengineering/platform'
 import tags from '@hcengineering/tags'
 import time, { type ToDo, type Todoable } from '@hcengineering/time'
-import document from './plugin'
 import { definePermissions } from './permissions'
+import document from './plugin'
 
 export { documentId } from '@hcengineering/document'
 
@@ -146,12 +139,6 @@ export class TDocumentSnapshot extends TDoc implements DocumentSnapshot {
 
   @Prop(TypeRef(document.class.Document), document.string.ParentDocument)
     parent!: Ref<Document>
-}
-
-@Model(document.class.SavedDocument, preference.class.Preference)
-export class TSavedDocument extends TPreference implements SavedDocument {
-  @Prop(TypeRef(document.class.Document), document.string.SavedDocuments)
-  declare attachedTo: Ref<Document>
 }
 
 @Model(document.class.Teamspace, core.class.TypedSpace)
@@ -281,7 +268,7 @@ function defineTeamspace (builder: Builder): void {
 }
 
 function defineDocument (builder: Builder): void {
-  builder.createModel(TDocument, TDocumentSnapshot, TSavedDocument, TDefaultTeamspaceTypeData)
+  builder.createModel(TDocument, TDocumentSnapshot, TDefaultTeamspaceTypeData)
 
   builder.mixin(document.class.Document, core.class.Class, time.mixin.ItemPresenter, {
     presenter: document.component.DocumentToDoPresenter

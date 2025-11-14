@@ -16,7 +16,7 @@
 
 import { Class, Doc, DocumentQuery, FindOptions, Mixin, Ref } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
-import { AnyComponent, PopupAlignment, PopupPosAlignment } from '@hcengineering/ui/src/types'
+import { AnyComponent, PopupAlignment, PopupPosAlignment, type ComponentExtensionId } from '@hcengineering/ui/src/types'
 import {
   Action,
   ActionCategory,
@@ -24,6 +24,7 @@ import {
   Aggregation,
   AllValuesFunc,
   ArrayEditor,
+  AttrPresenter,
   AttributeEditor,
   AttributeFilter,
   AttributeFilterPresenter,
@@ -32,11 +33,13 @@ import {
   ClassSortFuncs,
   CollectionEditor,
   CollectionPresenter,
+  CustomObjectLinkProvider,
   FilterMode,
   FilteredView,
   Groupping,
   IgnoreActions,
   InlineAttributEditor,
+  LinkIdProvider,
   LinkPresenter,
   LinkProvider,
   ListHeaderExtra,
@@ -52,19 +55,16 @@ import {
   ObjectTitle,
   ObjectTooltip,
   ObjectValidator,
-  ReferenceObjectProvider,
-  AttrPresenter,
+  OpenDocumentFunction,
   PreviewPresenter,
+  ReferenceObjectProvider,
   SpaceHeader,
   SpaceName,
   SpacePresenter,
   ViewAction,
   Viewlet,
   ViewletDescriptor,
-  ViewletPreference,
-  LinkIdProvider,
-  CustomObjectLinkProvider,
-  OpenDocumentFunction
+  ViewletPreference
 } from './types'
 
 export * from './types'
@@ -156,7 +156,8 @@ const view = plugin(viewId, {
     OpenInNewTab: '' as Ref<Action>,
     RemoveRelation: '' as Ref<Action>,
 
-    CopyLink: '' as Ref<Action<Doc, any>>
+    CopyLink: '' as Ref<Action<Doc, any>>,
+    CopyDocumentMarkdown: '' as Ref<Action<Doc, any>>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,
@@ -250,7 +251,11 @@ const view = plugin(viewId, {
     Icon: '' as IntlString,
     Select: '' as IntlString,
     Color: '' as IntlString,
-    AutomationOnly: '' as IntlString
+    AutomationOnly: '' as IntlString,
+    CopyDocumentMarkdown: '' as IntlString,
+    RoleLabel: '' as IntlString,
+    ForbidAttributeChanges: '' as IntlString,
+    AllowAttributeChanges: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -301,7 +306,9 @@ const view = plugin(viewId, {
     Feather: '' as Asset,
     MasterDetail: '' as Asset,
     Tree: '' as Asset,
-    Document: '' as Asset
+    Document: '' as Asset,
+    Print: '' as Asset,
+    AiStar: '' as Asset
   },
   category: {
     General: '' as Ref<ActionCategory>,
@@ -309,6 +316,9 @@ const view = plugin(viewId, {
     Navigation: '' as Ref<ActionCategory>,
     Editor: '' as Ref<ActionCategory>,
     MarkdownFormatting: '' as Ref<ActionCategory>
+  },
+  extensions: {
+    EditDocTitleExtension: '' as ComponentExtensionId
   },
   filter: {
     FilterArrayAll: '' as Ref<FilterMode>,
@@ -343,6 +353,10 @@ const view = plugin(viewId, {
     CopyTextToClipboard: '' as ViewAction<{
       textProvider: Resource<(doc: Doc, props: Record<string, any>) => Promise<string>>
       props?: Record<string, any>
+    }>,
+    CopyDocumentMarkdown: '' as ViewAction<{
+      contentClass: Ref<Class<Doc>>
+      contentField: string
     }>,
     UpdateDocument: '' as ViewAction<{
       key: string

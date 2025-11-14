@@ -92,7 +92,7 @@ export function humanReadableFileSize (size: number, base: 2 | 10 = 10, fraction
 
   const pow = size === 0 ? 0 : Math.floor(Math.log(size) / Math.log(kb))
   const val = (1.0 * size) / Math.pow(kb, pow)
-  return `${val.toFixed(2)} ${units[pow]}`
+  return `${val.toFixed(fractionDigits)} ${units[pow]}`
 }
 
 /**
@@ -353,6 +353,14 @@ export async function formatDuration (duration: number, language: string): Promi
   }
   text = text.trim()
   return text
+}
+
+export function formatNumberCompact (num: number, maximumFractionDigits = 2): string {
+  const locale = new Intl.NumberFormat().resolvedOptions().locale
+  return new Intl.NumberFormat(locale, {
+    notation: 'compact',
+    maximumFractionDigits
+  }).format(num)
 }
 
 export function pushRootBarComponent (pos: 'left' | 'right', component: AnyComponent, order?: number): void {

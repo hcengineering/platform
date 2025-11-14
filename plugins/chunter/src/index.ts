@@ -28,6 +28,12 @@ import { Widget, WidgetTab } from '@hcengineering/workbench'
  */
 export interface ChunterSpace extends Space {
   messages?: number
+
+  __migratedToCard?: {
+    card?: Ref<Doc>
+    space?: Ref<Space>
+  }
+  __migratedUntil?: Timestamp
 }
 
 /**

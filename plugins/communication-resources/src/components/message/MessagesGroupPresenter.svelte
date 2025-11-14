@@ -14,10 +14,11 @@
 -->
 
 <script lang="ts">
-  import { getCurrentAccount, Timestamp, isOtherHour } from '@hcengineering/core'
-  import { Message } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
+  import { ActivityUpdateType, Message } from '@hcengineering/communication-types'
+  import { getCurrentAccount, isOtherHour, Timestamp } from '@hcengineering/core'
 
+  import { isActivityMessage } from '../../activity'
   import DateSeparator from '../DateSeparator.svelte'
   import MessagePresenter from './MessagePresenter.svelte'
   import MessagesSeparator from './MessagesSeparator.svelte'
@@ -40,6 +41,37 @@
         ({ created, creator }) => separatorDate != null && !me.socialIds.includes(creator) && created >= separatorDate
       )
       : -1
+
+  $: mergedMessages = mergeMessages(messages)
+
+  function mergeMessages (messages: Message[]): Message[] {
+    const result: Message[] = []
+    for (let i = 0; i < messages.length; i++) {
+      const currentMessage = messages[i]
+      if (
+        isActivityMessage(currentMessage) &&
+        currentMessage.extra.update?.type === ActivityUpdateType.CollaborativeChange
+      ) {
+        for (let j = i + 1; j < messages.length; j++) {
+          const nextMessage = messages[j]
+          if (
+            currentMessage.creator === nextMessage.creator &&
+            isActivityMessage(nextMessage) &&
+            nextMessage.extra.update?.type === ActivityUpdateType.CollaborativeChange &&
+            nextMessage.created.getTime() - currentMessage.created.getTime() < 1000 * 60 * 10
+          ) {
+            currentMessage.extra.update.value = nextMessage.extra.update.value
+            currentMessage.created = nextMessage.created
+            i = j
+          } else {
+            break
+          }
+        }
+      }
+      result.push(currentMessage)
+    }
+    return result
+  }
 </script>
 
 <div class="messages-group" id={date.toString()} use:customObserver>
@@ -48,7 +80,7 @@
   {/if}
   <DateSeparator {date} />
   <div class="messages-group__messages">
-    {#each messages as message, index (message.id)}
+    {#each mergedMessages as message, index (message.id)}
       {@const previousMessage = messages[index - 1]}
       {@const compact =
         previousMessage !== undefined &&

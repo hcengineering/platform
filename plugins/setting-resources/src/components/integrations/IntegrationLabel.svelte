@@ -17,27 +17,50 @@
   import { IntlString } from '@hcengineering/platform'
   import setting from '@hcengineering/setting'
   import { Label } from '@hcengineering/ui'
+  import { isDisabled } from '@hcengineering/integration-client'
 
   export let integration: Integration | undefined
 
-  function getIntegrationLabel (): IntlString {
+  type IntegrationStatus = 'available' | 'disconnected' | 'connected' | 'integrated'
+
+  function getIntegrationStatus (integration: Integration | undefined): IntegrationStatus {
     if (integration === undefined) {
-      return setting.string.Available
+      return 'available'
+    }
+    if (isDisabled(integration)) {
+      return 'disconnected'
     }
     if (integration.workspaceUuid == null) {
-      return setting.string.Connected
+      return 'connected'
     }
-    return setting.string.Integrated
+    return 'integrated'
   }
+
+  function getIntegrationLabel (status: IntegrationStatus): IntlString {
+    switch (status) {
+      case 'available':
+        return setting.string.Available
+      case 'disconnected':
+        return setting.string.Disconnected
+      case 'connected':
+        return setting.string.Connected
+      case 'integrated':
+        return setting.string.Integrated
+    }
+  }
+
+  $: status = getIntegrationStatus(integration)
+  $: label = getIntegrationLabel(status)
 </script>
 
 <span
   class="integration-label"
-  class:new-connection={integration === undefined}
-  class:connected={integration !== undefined && integration.workspaceUuid == null}
-  class:integrated={integration?.workspaceUuid != null}
+  class:available={status === 'available'}
+  class:disconnected={status === 'disconnected'}
+  class:connected={status === 'connected'}
+  class:integrated={status === 'integrated'}
 >
-  <Label label={getIntegrationLabel()} />
+  <Label {label} />
 </span>
 
 <style>
@@ -52,10 +75,16 @@
     border: 1px solid;
   }
 
-  .new-connection {
+  .available {
     background-color: var(--theme-label-gray-bg-color);
     color: var(--theme-label-gray-color);
     border-color: var(--theme-label-gray-border-color);
+  }
+
+  .disconnected {
+    background-color: var(--theme-label-orange-bg-color);
+    color: var(--theme-label-orange-color);
+    border-color: var(--theme-label-orange-border-color);
   }
 
   .connected {

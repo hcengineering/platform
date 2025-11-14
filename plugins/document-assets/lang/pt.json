@@ -51,7 +51,6 @@
     "ConfigDescription": "Extensão para edição colaborativa de documentos",
     "Icon": "Ícone",
     "Color": "Cor",
-    "RoleLabel": "Papel: {role}",
     "ForbidCreateTeamspacePermission": "Proibir criação de espaço de trabalho",
     "ForbidCreateTeamspacePermissionDescription": "Proíbe os utilizadores de criar novos espaços de trabalho"
   }

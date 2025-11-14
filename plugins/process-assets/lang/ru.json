@@ -55,6 +55,7 @@
     "EnterValue": "Введите значение",
     "OnToDoDone": "При завершении задачи",
     "OnSubProcessesDone": "При завершении подпроцессов",
+    "WhenSubProcessMatches": "Когда подпроцесс соответствует условию",
     "Result": "Результат",
     "NoResultRequired": "Результат не требуется",
     "RequestResult": "Запросить результат",
@@ -117,7 +118,15 @@
     "NewProcessToDo": "Новый Action Item процесса",
     "EmptyArray": "Пустой массив",
     "ExecutionInitiator": "Инициатор выполнения",
-    "ExecutionStarted": "Выполнение начато"
+    "ExecutionStarted": "Выполнение начато",
+    "Filter": "Фильтр",
+    "FirstMatchValue": "Первое подходящее значение",
+    "ConfigLabel": "Конфигурация процессов",
+    "ConfigDescription": "Определяйте процессы для автоматизации рабочих процессов и бизнес-процессов.",
+    "RunProcessPermission": "Запустить процесс",
+    "CancelProcessPermission": "Отменить процесс",
+    "ForbidRunProcessPermission": "Запретить запуск процесса",
+    "ForbidCancelProcessPermission": "Запретить отмену процесса"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

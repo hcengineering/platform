@@ -19,7 +19,7 @@ import core, {
   type Client,
   type Collection,
   type Doc,
-  groupByArrayAsync,
+  groupByArray,
   type Hierarchy,
   type Mixin,
   type Ref,
@@ -29,7 +29,6 @@ import view, { type AttributeModel } from '@hcengineering/view'
 import { getClient, getFiltredKeys } from '@hcengineering/presentation'
 import {
   buildRemovedDoc,
-  checkIsObjectRemoved,
   getAttributePresenter,
   getDocLinkTitle,
   hasAttributePresenter
@@ -37,7 +36,6 @@ import {
 import contact, { type Person } from '@hcengineering/contact'
 import { type IntlString } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui'
-import { getPersonRefByPersonId } from '@hcengineering/contact-resources'
 import activity, {
   type ActivityMessage,
   type DisplayActivityMessage,
@@ -241,10 +239,10 @@ function wrapMessages (
   return { toCombine, uncombined }
 }
 
-export async function combineActivityMessages (
+export function combineActivityMessages (
   messages: ActivityMessage[],
   sortingOrder: SortingOrder = SortingOrder.Ascending
-): Promise<DisplayActivityMessage[]> {
+): DisplayActivityMessage[] {
   const client = getClient()
 
   const { uncombined, toCombine } = wrapMessages(client.getHierarchy(), messages)
@@ -256,10 +254,7 @@ export async function combineActivityMessages (
 
   const result: Array<DisplayActivityMessage | undefined> = [...uncombined]
 
-  const groupedByType: Map<string, DocUpdateMessage[]> = await groupByArrayAsync(
-    docUpdateMessages,
-    getDocUpdateMessageKey
-  )
+  const groupedByType: Map<string, DocUpdateMessage[]> = groupByArray(docUpdateMessages, getDocUpdateMessageKey)
 
   for (const [, groupedMessages] of groupedByType) {
     const cantMerge = groupedMessages.filter(
@@ -278,40 +273,6 @@ export async function combineActivityMessages (
       }
     })
     result.push(...cantMerge)
-  }
-
-  const viewlets = client.getModel().findAllSync(activity.class.DocUpdateMessageViewlet, {})
-
-  for (const [index, message] of result.entries()) {
-    if (message?._class !== activity.class.DocUpdateMessage) {
-      continue
-    }
-    const docUpdateMessage = message as DocUpdateMessage
-
-    if (
-      docUpdateMessage.action === 'update' &&
-      !hasAttributeModel(client, docUpdateMessage.attributeUpdates, docUpdateMessage.objectClass)
-    ) {
-      result[index] = undefined
-      continue
-    }
-
-    const hideIfRemoved = viewlets.some(
-      (viewlet) =>
-        viewlet.action === docUpdateMessage.action &&
-        viewlet.hideIfRemoved === true &&
-        viewlet.objectClass === docUpdateMessage.objectClass
-    )
-
-    if (!hideIfRemoved) {
-      continue
-    }
-
-    const isRemoved = await checkIsObjectRemoved(client, docUpdateMessage.objectId, docUpdateMessage.objectClass)
-
-    if (isRemoved) {
-      result[index] = undefined
-    }
   }
 
   return sortActivityMessages(
@@ -367,17 +328,21 @@ function groupByTime<T extends ActivityMessage> (messages: T[]): T[][] {
   return result
 }
 
-async function getDocUpdateMessageKey (message: DocUpdateMessage): Promise<string> {
-  const personRef = await getPersonRefByPersonId(message.createdBy as any)
-
+function getDocUpdateMessageKey (message: DocUpdateMessage): string {
   if (message.action === 'update') {
-    return [message._class, message.attachedTo, message.action, personRef, getAttributeUpdatesKey(message)].join('_')
+    return [
+      message._class,
+      message.attachedTo,
+      message.action,
+      message.createdBy,
+      getAttributeUpdatesKey(message)
+    ].join('_')
   }
 
   return [
     message._class,
     message.attachedTo,
-    personRef,
+    message.createdBy,
     message.updateCollection,
     message.objectId === message.attachedTo
   ].join('_')
@@ -537,7 +502,7 @@ export async function getLinkData (
   if (hierarchy.isDerived(message.attachedToClass, activity.class.ActivityMessage)) {
     linkObject = parentObject
   } else if (message._class === activity.class.DocUpdateMessage) {
-    linkObject = (message as DocUpdateMessage).action === 'update' ? object : parentObject ?? object
+    linkObject = (message as DocUpdateMessage).action === 'update' ? object : (parentObject ?? object)
   } else {
     linkObject = parentObject ?? object
   }
@@ -577,18 +542,6 @@ export function isActivityMessage (message?: Doc): message is ActivityMessage {
   }
 
   return getClient().getHierarchy().isDerived(message._class, activity.class.ActivityMessage)
-}
-
-export function isReactionMessage (message?: ActivityMessage): message is DocUpdateMessage {
-  if (message === undefined) {
-    return false
-  }
-
-  if (!isDocUpdateMessage(message)) {
-    return false
-  }
-
-  return message.objectClass === activity.class.Reaction
 }
 
 export function isActivityMessageClass (_class?: Ref<Class<Doc>>): boolean {

@@ -22,7 +22,6 @@ interface Config {
 
   BotName: string
 
-  SentryDSN: string
   BrandingPath: string
 
   WorkspaceInactivityInterval: number // Interval in days to stop workspace synchronization if not visited
@@ -49,7 +48,6 @@ const envMap: { [key in keyof Config]: string } = {
 
   CollaboratorURL: 'COLLABORATOR_URL',
 
-  SentryDSN: 'SENTRY_DSN',
   BrandingPath: 'BRANDING_PATH',
 
   WorkspaceInactivityInterval: 'WORKSPACE_INACTIVITY_INTERVAL',
@@ -94,7 +92,6 @@ const config: Config = (() => {
 
     CollaboratorURL: process.env[envMap.CollaboratorURL],
 
-    SentryDSN: process.env[envMap.SentryDSN],
     BrandingPath: process.env[envMap.BrandingPath] ?? '',
     WorkspaceInactivityInterval: parseInt(process.env[envMap.WorkspaceInactivityInterval] ?? '3'), // In days
     RateLimit: parseInt(process.env[envMap.RateLimit] ?? '25')

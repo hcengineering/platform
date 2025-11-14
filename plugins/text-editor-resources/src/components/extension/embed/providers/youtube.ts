@@ -21,7 +21,7 @@ export const YoutubeEmbedProvider: EmbedNodeProviderConstructor<YoutubeEmbedUrlO
     const url = getEmbedUrlFromYoutubeUrl(src, options)
     if (url === undefined) return
 
-    return (editor: Editor, root: HTMLDivElement) => {
+    return (editor: Editor, root: HTMLDivElement, getPos: () => number) => {
       root.setAttribute('data-block-toolbar-mouse-lock', 'true')
 
       const iframe = document.createElement('iframe')
@@ -96,7 +96,7 @@ export const getYoutubeEmbedUrl = (nocookie?: boolean, isPlaylist?: boolean): st
   if (isPlaylist ?? false) {
     return 'https://www.youtube-nocookie.com/embed/videoseries?list='
   }
-  return nocookie ?? false ? 'https://www.youtube-nocookie.com/embed/' : 'https://www.youtube.com/embed/'
+  return (nocookie ?? false) ? 'https://www.youtube-nocookie.com/embed/' : 'https://www.youtube.com/embed/'
 }
 
 export const getEmbedUrlFromYoutubeUrl = (url: string, options: YoutubeEmbedUrlOptions): string | undefined => {

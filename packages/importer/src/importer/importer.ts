@@ -12,26 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import attachment, { type Attachment, Drawing } from '@hcengineering/attachment'
+import attachment, { type Attachment, type Drawing } from '@hcengineering/attachment'
 import chunter, { type ChatMessage } from '@hcengineering/chunter'
-import { Employee, type Person } from '@hcengineering/contact'
+import { type Employee, type Person } from '@hcengineering/contact'
 import documents, {
-  ChangeControl,
+  type ChangeControl,
   type ControlledDocument,
   createControlledDocMetadata,
   createDocumentTemplateMetadata,
-  DocumentCategory,
-  DocumentMeta,
+  type DocumentCategory,
+  type DocumentMeta,
   type DocumentSpace,
-  DocumentState,
-  DocumentTemplate,
-  OrgSpace,
-  ProjectDocument,
+  type DocumentState,
+  type DocumentTemplate,
+  type OrgSpace,
+  type ProjectDocument,
   useDocumentTemplate
 } from '@hcengineering/controlled-documents'
 import core, {
   type AttachedData,
-  AttachedDoc,
+  type AttachedDoc,
   type Class,
   type CollaborativeDoc,
   type Data,
@@ -42,7 +42,7 @@ import core, {
   type Mixin,
   type Blob as PlatformBlob,
   type Ref,
-  RolesAssignment,
+  type RolesAssignment,
   SortingOrder,
   type Space,
   type Status,
@@ -70,8 +70,8 @@ import tracker, {
   TimeReportDayType
 } from '@hcengineering/tracker'
 import view from '@hcengineering/view'
-import { Props, UnifiedUpdate, UnifiedDoc, UnifiedFile, UnifiedMixin } from '../types'
-import { Logger } from './logger'
+import { type Props, type UnifiedUpdate, type UnifiedDoc, type UnifiedFile, type UnifiedMixin } from '../types'
+import { type Logger } from './logger'
 import { type MarkdownPreprocessor, NoopMarkdownPreprocessor } from './preprocessor'
 import { type FileUploader } from './uploader'
 export interface ImportWorkspace {
@@ -204,6 +204,7 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   abstract?: string
   reviewers?: Ref<Employee>[]
   approvers?: Ref<Employee>[]
+  externalApprovers?: Ref<Employee>[]
   coAuthors?: Ref<Employee>[]
   ccReason?: string
   ccImpact?: string
@@ -223,6 +224,7 @@ export interface ImportControlledDocument extends ImportDoc {
   category?: Ref<DocumentCategory>
   reviewers?: Ref<Employee>[]
   approvers?: Ref<Employee>[]
+  externalApprovers?: Ref<Employee>[]
   coAuthors?: Ref<Employee>[]
   author?: Ref<Employee>
   owner?: Ref<Employee>
@@ -497,7 +499,7 @@ export class WorkspaceImporter {
       defaultTimeReportDay: oldProject.defaultTimeReportDay,
       type:
         project.projectType !== undefined
-          ? this.projectTypeByName.get(project.projectType.name) ?? tracker.ids.ClassingProjectType
+          ? (this.projectTypeByName.get(project.projectType.name) ?? tracker.ids.ClassingProjectType)
           : oldProject.type
     }
 
@@ -999,6 +1001,7 @@ export class WorkspaceImporter {
         category: template.category,
         reviewers: template.reviewers ?? [],
         approvers: template.approvers ?? [],
+        externalApprovers: template.externalApprovers ?? [],
         coAuthors: template.coAuthors ?? [],
         code,
         seqNumber,
@@ -1118,6 +1121,7 @@ export class WorkspaceImporter {
         abstract: document.abstract,
         reviewers: document.reviewers ?? [],
         approvers: document.approvers ?? [],
+        externalApprovers: document.externalApprovers ?? [],
         coAuthors: document.coAuthors ?? [],
         changeControl: changeControlId,
         code,

@@ -51,6 +51,7 @@
     "EnterValue": "Zadat hodnotu",
     "OnToDoDone": "Při dokončení akční položky",
     "OnSubProcessesDone": "Při dokončení podprocesů",
+    "WhenSubProcessMatches": "Když podproces odpovídá podmínce",
     "Result": "Výsledek",
     "NoResultRequired": "Není vyžadován žádný výsledek",
     "RequestResult": "Požádat o výsledek",
@@ -112,7 +113,15 @@
     "NewProcessToDo": "Nový Action Item procesu",
     "EmptyArray": "Prázdné pole",
     "ExecutionInitiator": "Iniciátor provedení",
-    "ExecutionStarted": "Provedení spuštěno"
+    "ExecutionStarted": "Provedení spuštěno",
+    "Filter": "Filtr",
+    "FirstMatchValue": "První odpovídající hodnota",
+    "ConfigLabel": "Konfigurace procesů",
+    "ConfigDescription": "Definujte procesy pro automatizaci pracovních postupů a obchodních procesů.",
+    "RunProcessPermission": "Spustit proces",
+    "CancelProcessPermission": "Zrušit proces",
+    "ForbidRunProcessPermission": "Zakázat spuštění procesu",
+    "ForbidCancelProcessPermission": "Zakázat zrušení procesu"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

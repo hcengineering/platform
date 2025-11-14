@@ -36,6 +36,7 @@
     "YesterdayAt": "Ayer a las {time}",
     "AndMore": "y {count} más",
     "IsTyping": "{count, plural, =1 {está escribiendo} other {están escribiendo}}",
+    "IsThinking": "{count, plural, =1 {está pensando} other {están pensando}}",
     "Loading": "Cargando...",
     "MessageIn": "Mensaje #{title}",
     "ThreadWasDeleted": "Este hilo fue eliminado.",
@@ -88,6 +89,10 @@
     "AnonymousQuiz": "Quiz anónimo",
     "Direct": "Directo",
     "Directs": "Directos",
-    "Members": "Miembros"
+    "Members": "Miembros",
+    "Translate": "Traducir",
+    "WriteMessageEllipsis": "Escribe un mensaje...",
+    "EditMessageEllipsis": "Editar mensaje...",
+    "ArrowDownMessages": "↓ Últimos mensajes"
   }
 }

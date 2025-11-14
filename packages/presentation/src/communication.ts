@@ -74,15 +74,15 @@ import core, {
   SocialIdType,
   type Tx,
   type TxDomainEvent,
-  AccountRole,
-  generateUuid
+  AccountRole
 } from '@hcengineering/core'
 import { onDestroy } from 'svelte'
 import { addNotification, NotificationSeverity, languageStore } from '@hcengineering/ui'
 import { getMetadata, translate } from '@hcengineering/platform'
 import view from '@hcengineering/view'
 import { get } from 'svelte/store'
-import { getClient as getHulylakeClient } from '@hcengineering/hulylake-client'
+import { getWorkspaceClient as getHulylakeClient } from '@hcengineering/hulylake-client'
+import { v4 as uuid } from 'uuid'
 
 import { getCurrentWorkspaceUuid } from './file'
 import { addTxListener, removeTxListener, type TxListener } from './utils'
@@ -255,7 +255,7 @@ class Client {
         opcode: 'add',
         attachments: ops.add.map((it) => ({
           ...it,
-          id: it.id ?? (generateUuid() as AttachmentID)
+          id: it.id ?? (uuid() as AttachmentID)
         }))
       })
     }
@@ -272,7 +272,7 @@ class Client {
         opcode: 'set',
         attachments: ops.set.map((it) => ({
           ...it,
-          id: it.id ?? (generateUuid() as AttachmentID)
+          id: it.id ?? (uuid() as AttachmentID)
         }))
       })
     }

@@ -64,9 +64,12 @@
     }
 
     return (inboxNotificationsByContext?.get(context._id) ?? [])
-      .filter((notification) => {
-        const activityNotifications = notification as ActivityInboxNotification
-        return activityNotifications.attachedToClass !== activity.class.DocUpdateMessage
+      .filter((it) => {
+        const activityNotifications = it as ActivityInboxNotification
+        return (
+          activityNotifications.attachedToClass !== activity.class.DocUpdateMessage &&
+          it._class !== notification.class.ReactionInboxNotification
+        )
       })
       .some(({ isViewed }) => !isViewed)
   }

@@ -1,3 +1,18 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { formatName, getPersonByPersonId } from '@hcengineering/contact'
 import { Ref, SortingOrder, TxOperations } from '@hcengineering/core'
 import notification, {
@@ -14,7 +29,7 @@ import workbench, { workbenchId } from '@hcengineering/workbench'
 import desktopPreferences, { defaultNotificationPreference } from '@hcengineering/desktop-preferences'
 import { activePreferences } from '@hcengineering/desktop-preferences-resources'
 import { getDisplayInboxData, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
-import { chatId } from '@hcengineering/chat'
+import { inboxId } from '@hcengineering/inbox'
 import communication from '@hcengineering/communication'
 import { ipcMainExposed } from './typesUtils'
 
@@ -164,7 +179,7 @@ export function configureNotifications (): void {
           notificationHistory.set(notification.id, notification.created.getTime())
           electronAPI.sendNotification({
             silent: !preferences.playSound,
-            application: chatId,
+            application: inboxId,
             title: notification.content.title,
             body: `${notification.content.senderName}: ${notification.content.shortText}`,
             cardId: notification.cardId,

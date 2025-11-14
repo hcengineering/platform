@@ -14,11 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getClient, SpaceSelect } from '@hcengineering/presentation'
-  import { Button, Label, Status as StatusControl, themeStore } from '@hcengineering/ui'
+  import { SpaceSelect, getClient, Card } from '@hcengineering/presentation'
+  import { Label, Status as StatusControl, themeStore } from '@hcengineering/ui'
 
   import core, { Class, Client, Doc, Ref, SortingOrder, Space } from '@hcengineering/core'
-  import { OK, Resource, Status, getResource, translate } from '@hcengineering/platform'
+  import { OK, Resource, Severity, Status, getResource, translate } from '@hcengineering/platform'
   import task, { Project, Task, makeRank } from '@hcengineering/task'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
@@ -47,25 +47,28 @@
   $: _class && translate(_class, {}, $themeStore.language).then((res) => (classLabel = res.toLocaleLowerCase()))
 
   async function move (doc: Doc): Promise<void> {
+    const op = client.apply(undefined, 'move-to-space')
     const needRank = currentSpace ? hierarchy.isDerived(currentSpace._class, task.class.Project) : false
     if (needRank) {
       const lastOne = await client.findOne((doc as Task)._class, { space }, { sort: { rank: SortingOrder.Descending } })
-      await moveToSpace(client, doc, space, {
+      await moveToSpace(op, doc, space, {
         rank: makeRank(lastOne?.rank, undefined)
       })
     } else {
-      await moveToSpace(client, doc, space)
+      await moveToSpace(op, doc, space)
     }
-
-    dispatch('close')
+    await op.commit()
   }
 
   const moveAll = async (): Promise<void> => {
-    await Promise.all(
-      docs.map(async (doc) => {
+    for (const doc of docs) {
+      try {
         await move(doc)
-      })
-    )
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    dispatch('close')
   }
 
   async function getSpace (): Promise<Space | undefined> {
@@ -104,67 +107,37 @@
       : { archived: false }
 </script>
 
-<div class="container">
-  <div class="overflow-label fs-title">
-    <Label label={view.string.MoveClass} params={{ class: label }} />
+<Card
+  label={view.string.MoveClass}
+  okLabel={view.string.Move}
+  canSave={space !== currentSpace?._id && status === OK}
+  okAction={moveAll}
+  width={'small'}
+  labelProps={{ class: label }}
+  on:close
+>
+  <div class="container">
+    {#if status.severity !== Severity.OK}
+      <StatusControl {status} />
+    {/if}
+    <div class="caption-color mt-4 mb-4">
+      <Label label={view.string.SelectToMove} params={{ class: label, classLabel }} />
+    </div>
+    <div class="spaceSelect">
+      {#await getSpace() then}
+        {#if currentSpace && _class}
+          <SpaceSelect {spaceQuery} _class={currentSpace._class} label={_class} bind:value={space} />
+        {/if}
+      {/await}
+    </div>
   </div>
-  <StatusControl {status} />
-  <div class="caption-color mt-4 mb-4">
-    <Label label={view.string.SelectToMove} params={{ class: label, classLabel }} />
-  </div>
-  <div class="spaceSelect">
-    {#await getSpace() then}
-      {#if currentSpace && _class}
-        <SpaceSelect {spaceQuery} _class={currentSpace._class} label={_class} bind:value={space} />
-      {/if}
-    {/await}
-  </div>
-  <div class="footer">
-    <Button
-      label={view.string.Move}
-      size={'small'}
-      disabled={space === currentSpace?._id || status !== OK}
-      kind={'primary'}
-      on:click={moveAll}
-    />
-    <Button
-      size={'small'}
-      label={view.string.Cancel}
-      on:click={() => {
-        dispatch('close')
-      }}
-    />
-  </div>
-</div>
+</Card>
 
 <style lang="scss">
   .container {
     display: flex;
     flex-direction: column;
-    padding: 2rem 1.75rem 1.75rem;
-    width: 25rem;
-    max-width: 40rem;
-    background: var(--popup-bg-color);
-    border-radius: 1.25rem;
-    user-select: none;
-    box-shadow: var(--popup-shadow);
-
-    .spaceSelect {
-      padding: 0.75rem;
-      background-color: var(--theme-bg-color);
-      border: 1px solid var(--popup-divider);
-      border-radius: 0.75rem;
-    }
-
-    .footer {
-      flex-shrink: 0;
-      display: grid;
-      grid-auto-flow: column;
-      direction: rtl;
-      justify-content: start;
-      align-items: center;
-      margin-top: 1rem;
-      column-gap: 0.5rem;
-    }
+    gap: 1rem;
+    width: 100%;
   }
 </style>

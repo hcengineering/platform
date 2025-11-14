@@ -660,14 +660,6 @@ export async function getNotificationProviderControl (
 export async function getObjectSpace (control: TriggerControl, doc: Doc, cache: Map<Ref<Doc>, Doc>): Promise<Space> {
   return control.hierarchy.isDerived(doc._class, core.class.Space)
     ? (doc as Space)
-    : (cache.get(doc.space) as Space) ??
-        (await control.findAll<Space>(control.ctx, core.class.Space, { _id: doc.space }, { limit: 1 }))[0]
-}
-
-export function isReactionMessage (message?: ActivityMessage): boolean {
-  return (
-    message !== undefined &&
-    message._class === activity.class.DocUpdateMessage &&
-    (message as DocUpdateMessage).objectClass === activity.class.Reaction
-  )
+    : ((cache.get(doc.space) as Space) ??
+        (await control.findAll<Space>(control.ctx, core.class.Space, { _id: doc.space }, { limit: 1 }))[0])
 }

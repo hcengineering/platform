@@ -17,9 +17,8 @@
   import contact from '@hcengineering/contact'
   import core from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
-  import { ButtonIcon, Icon, IconAdd, Label, showPopup } from '@hcengineering/ui'
-  import { onDestroy } from 'svelte'
+  import { clearSettingsStore } from '@hcengineering/setting-resources'
+  import { ButtonIcon, getCurrentResolvedLocation, Icon, IconAdd, Label, navigate, showPopup } from '@hcengineering/ui'
   import card from '../../plugin'
   import CreateRolePopup from './CreateRolePopup.svelte'
 
@@ -29,26 +28,29 @@
 
   const ancestors = client.getHierarchy().getAncestors(masterTag._id)
 
-  let roles = client.getModel().findAllSync(card.class.Role, { attachedTo: { $in: ancestors } })
+  let roles = client.getModel().findAllSync(card.class.Role, { type: { $in: ancestors } })
   const query = createQuery()
-  query.query(card.class.Role, { attachedTo: { $in: ancestors } }, (res) => {
+  query.query(card.class.Role, { type: { $in: ancestors } }, (res) => {
     roles = res
   })
 
   function addRole (): void {
-    showPopup(CreateRolePopup, { masterTag }, undefined, (res) => {
-      if (res != null) {
-        $settingsStore = { id: res, component: card.component.EditRole, props: { _id: res } }
-      }
-    })
+    showPopup(CreateRolePopup, { masterTag })
   }
 
   const handleSelect = (role: Role): void => {
-    $settingsStore = { id: role._id, component: card.component.EditRole, props: { _id: role._id } }
-  }
-  onDestroy(() => {
+    const loc = getCurrentResolvedLocation()
+    if (role?._id !== undefined) {
+      loc.path[5] = card.component.EditRole
+      loc.path[6] = role._id
+      loc.path.length = 7
+    } else {
+      loc.path.length = 5
+    }
+
     clearSettingsStore()
-  })
+    navigate(loc)
+  }
 </script>
 
 <div class="hulyTableAttr-header font-medium-12">

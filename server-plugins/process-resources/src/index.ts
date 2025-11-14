@@ -75,7 +75,12 @@ import {
   Split,
   Subtract,
   Trim,
-  UpperCase
+  UpperCase,
+  EmptyArray,
+  ExecutionInitiator,
+  ExecutionStarted,
+  FirstMatchValue,
+  Filter
 } from './transform'
 import {
   RunSubProcess,
@@ -88,6 +93,7 @@ import {
   CheckToDoCancelled,
   MatchCardCheck,
   CheckSubProcessesDone,
+  CheckSubProcessMatch,
   CheckTime,
   FieldChangedCheck
 } from './functions'
@@ -393,6 +399,7 @@ export default async () => ({
     FieldChangedCheck,
     MatchCardCheck,
     CheckSubProcessesDone,
+    CheckSubProcessMatch,
     CheckTime
   },
   transform: {
@@ -428,7 +435,12 @@ export default async () => ({
     Insert,
     Remove,
     RemoveFirst,
-    RemoveLast
+    RemoveLast,
+    EmptyArray,
+    ExecutionInitiator,
+    ExecutionStarted,
+    FirstMatchValue,
+    Filter
   },
   rollbacks: {
     ToDoCloseRollback,

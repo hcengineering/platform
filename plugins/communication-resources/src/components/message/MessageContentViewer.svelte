@@ -15,7 +15,7 @@
 
 <script lang="ts">
   import { MessageViewer as MarkupMessageViewer } from '@hcengineering/presentation'
-  import { Markdown, Message, MessageID } from '@hcengineering/communication-types'
+  import { Markdown, Message } from '@hcengineering/communication-types'
   import { Card } from '@hcengineering/card'
   import { Person } from '@hcengineering/contact'
   import { Markup } from '@hcengineering/core'
@@ -24,7 +24,14 @@
   import ActivityMessageViewer from './ActivityMessageViewer.svelte'
   import { toMarkup } from '../../utils'
   import { isActivityMessage } from '../../activity'
-  import { isShownTranslatedMessage, TranslateMessagesStatus, translateMessagesStore } from '../../stores'
+  import {
+    isShownManualTranslatedMessage,
+    translateMessagesStore,
+    showOriginalMessagesStore,
+    getMessageTranslation,
+    translateToStore,
+    dontTranslateStore
+  } from '../../stores'
   import { translateMessage } from '../../actions'
 
   export let card: Card
@@ -37,25 +44,23 @@
   let displayMarkup: Markup = toMarkup(message.content)
   let prevContent: Markdown | undefined = undefined
 
-  $: updateDisplayMarkup(message, $translateMessagesStore)
+  $: translatedMarkup = getMessageTranslation(
+    message,
+    $translateToStore,
+    $dontTranslateStore,
+    $translateMessagesStore,
+    $showOriginalMessagesStore
+  )
 
-  function updateDisplayMarkup (message: Message, translateMessages: Map<MessageID, TranslateMessagesStatus>): void {
-    const translateResult = translateMessages.get(message.id)
-    if (translateResult?.shown === true && translateResult?.result != null) {
-      displayMarkup = translateResult.result
-    } else {
-      displayMarkup = toMarkup(message.content)
-    }
-  }
+  $: displayMarkup = translatedMarkup ?? toMarkup(message.content)
 
   $: if (prevContent !== message.content) {
     prevContent = message.content
-    if (isShownTranslatedMessage(message.id)) {
+    if (isShownManualTranslatedMessage(message.cardId, message.id)) {
       void translateMessage(message, card)
     } else {
       translateMessagesStore.update((store) => {
-        store.delete(message.id)
-        return store
+        return store.filter((it) => it.cardId !== message.cardId || it.messageId !== message.id)
       })
     }
   }

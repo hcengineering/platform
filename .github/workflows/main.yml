@@ -59,7 +59,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
@@ -79,9 +79,8 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
@@ -117,7 +116,7 @@ jobs:
           filter: tree:0
           submodules: recursive
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
 
@@ -141,7 +140,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache build results
@@ -153,17 +152,6 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
 
-      - name: Apply templates...
-        run: node common/scripts/install-run-rush.js apply-templates
-
-      - name: Check templates
-        run: |
-          echo '================================================================'
-          echo 'Checking for diff files'
-          echo '================================================================'
-          git diff '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat
-          [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat)" ]
-          echo '================================================================'
       - name: Formatting...
         run: node common/scripts/install-run-rush.js fast-format --branch ${{ github.base_ref || 'develop' }}
       - name: Check files formatting
@@ -184,7 +172,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache build results
@@ -197,6 +185,7 @@ jobs:
           restore-keys: ${{ runner.os }}-build-${{ env.cache-name }}-${{ github.sha }}
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        continue-on-error: true
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -221,7 +210,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
@@ -238,15 +227,15 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        continue-on-error: true
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -351,7 +340,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
@@ -368,15 +357,15 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        continue-on-error: true
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -446,7 +435,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
@@ -463,15 +452,15 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        continue-on-error: true
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -524,7 +513,7 @@ jobs:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
@@ -541,9 +530,8 @@ jobs:
       - name: Checking for mis-matching dependencies...
         run: node common/scripts/install-run-rush.js check
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
@@ -553,6 +541,7 @@ jobs:
 
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        continue-on-error: true
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -647,7 +636,7 @@ jobs:
           mv pods/workspace/init-${{env.INIT_SCRIPTS_BRANCH}} pods/workspace/init
           rm -rf ${{env.INIT_SCRIPTS_BRANCH}}.zip
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
       - uses: pnpm/action-setup@v4
@@ -664,10 +653,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
-
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
@@ -676,6 +661,7 @@ jobs:
 
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        continue-on-error: true
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
@@ -730,7 +716,7 @@ jobs:
           filter: tree:0
           submodules: recursive
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
 
@@ -744,10 +730,6 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install --purge
@@ -836,7 +818,7 @@ jobs:
           filter: tree:0
           submodules: recursive
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
 
@@ -850,10 +832,6 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-
-      - name: Prepare .npmrc for GitHub Packages
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{secrets.GITHUB_TOKEN}}" > ~/.npmrc
 
       - name: Installing...
         run: node common/scripts/install-run-rush.js install --purge

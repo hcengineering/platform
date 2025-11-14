@@ -21,11 +21,20 @@
   import { Label } from '@hcengineering/ui'
 
   import communication from '../../plugin'
-  import MessageInput from './MessageInput.svelte'
+  import MessageInput from '../input/MessageInput.svelte'
   import MessageContentViewer from './MessageContentViewer.svelte'
   import MessageFooter from './MessageFooter.svelte'
-  import { translateMessagesStore, messageEditingStore } from '../../stores'
-  import { showOriginalMessage } from '../../actions'
+  import {
+    translateMessagesStore,
+    messageEditingStore,
+    TranslateMessagesStatus,
+    showOriginalMessagesStore,
+    isMessageTranslated,
+    translateToStore,
+    dontTranslateStore,
+    isMessageOriginalShown
+  } from '../../stores'
+  import { showOriginalMessage, translateMessage } from '../../actions'
 
   export let card: Card
   export let author: Person | undefined
@@ -46,6 +55,27 @@
       minute: 'numeric'
     })
   }
+
+  let isManualTranslating = false
+  let manualTranslateStatus: TranslateMessagesStatus | undefined = undefined
+  let isTranslated = false
+
+  $: manualTranslateStatus = $translateMessagesStore.find((it) => it.cardId === card._id && it.messageId === message.id)
+  $: isManualTranslating = manualTranslateStatus?.inProgress === true
+  $: isTranslated = isMessageTranslated(
+    message,
+    $translateToStore,
+    $dontTranslateStore,
+    $translateMessagesStore,
+    $showOriginalMessagesStore
+  )
+  $: isOriginalShown = isMessageOriginalShown(
+    message,
+    $translateToStore,
+    $dontTranslateStore,
+    $translateMessagesStore,
+    $showOriginalMessagesStore
+  )
 </script>
 
 {#if compact || hideHeader}
@@ -106,14 +136,17 @@
             (<Label label={communication.string.Edited} />)
           </div>
         {/if}
-        {#if $translateMessagesStore.get(message.id)?.inProgress === true}
+        {#if isManualTranslating}
           <div class="message__translating">
             <Label label={communication.string.Translating} />
           </div>
-        {/if}
-        {#if $translateMessagesStore.get(message.id)?.shown === true}
+        {:else if isTranslated}
           <div class="message__show-original" on:click={() => showOriginalMessage(message, card)}>
             <Label label={communication.string.ShowOriginal} />
+          </div>
+        {:else if isOriginalShown}
+          <div class="message__translate" on:click={() => translateMessage(message, card)}>
+            <Label label={communication.string.Translate} />
           </div>
         {/if}
       </div>
@@ -202,7 +235,8 @@
     font-weight: 400;
   }
 
-  .message__show-original {
+  .message__show-original,
+  .message__translate {
     font-size: 0.75rem;
     color: var(--global-tertiary-TextColor);
     cursor: pointer;
@@ -227,6 +261,7 @@
     &.with-showmore {
       position: relative; // This ensures ShowMore button positions relative to this container
       margin-bottom: 1rem;
+      overflow: visible;
     }
   }
 

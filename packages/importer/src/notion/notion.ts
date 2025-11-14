@@ -153,7 +153,7 @@ function collectFileMetadata (
   const notionParentId =
     ancestors[ancestors.length - 1] !== undefined ? extractNotionId(ancestors[ancestors.length - 1]) : undefined
   const notionSubRootId =
-    ancestors[1] !== undefined ? extractNotionId(ancestors[1]) ?? extractOriginalName(ancestors[1]) : undefined
+    ancestors[1] !== undefined ? (extractNotionId(ancestors[1]) ?? extractOriginalName(ancestors[1])) : undefined
 
   documentMetaMap.set(notionId, {
     id: generateId(),
@@ -404,7 +404,7 @@ async function importAttachment (
     throw new Error('Cannot import attachment without parent doc: ' + docMeta.id)
   }
 
-  const file = new File([data], docMeta.name)
+  const file = new File([new Uint8Array(data)], docMeta.name)
   await fileUploader.uploadFile(docMeta.id, file)
 
   const attachedData: AttachedData<Attachment> = {

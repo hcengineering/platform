@@ -12,7 +12,7 @@
 // limitations under the License.
 
 import {
-  AttachedDoc,
+  Role as BaseRole,
   Blobs,
   Class,
   CollectionSize,
@@ -23,11 +23,13 @@ import {
   Mixin,
   Rank,
   Ref,
-  Space
+  Space,
+  SpaceType,
+  TypedSpace
 } from '@hcengineering/core'
 import { Asset, IntlString, plugin, Plugin, Resource } from '@hcengineering/platform'
-import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import { Preference } from '@hcengineering/preference'
+import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import { IconProps } from '@hcengineering/view'
 
 export * from './analytics'
@@ -41,9 +43,8 @@ export interface MasterTag extends Class<Card> {
 
 export interface Tag extends MasterTag, Mixin<Card> {}
 
-export interface Role extends AttachedDoc<MasterTag | Tag, 'roles'> {
-  name: string
-  attachedTo: Ref<MasterTag | Tag>
+export interface Role extends BaseRole {
+  type: Ref<MasterTag | Tag>
 }
 
 export interface Card extends Doc, IconProps {
@@ -57,9 +58,11 @@ export interface Card extends Doc, IconProps {
   parent?: Ref<Card> | null
   rank: Rank
   readonly?: boolean
+
+  peerId?: string
 }
 
-export interface CardSpace extends Space {
+export interface CardSpace extends TypedSpace {
   types: Ref<MasterTag>[]
 }
 
@@ -91,7 +94,6 @@ export interface CardSection extends Doc {
 
 export interface CardViewDefaults extends MasterTag {
   defaultSection: Ref<CardSection>
-  defaultNavigation?: string
 }
 
 export interface FavoriteCard extends Preference {
@@ -99,11 +101,19 @@ export interface FavoriteCard extends Preference {
   application: string
 }
 
+export interface FavoriteType extends Preference {
+  attachedTo: Ref<MasterTag>
+}
+
 export interface CreateCardExtension extends MasterTag {
   component?: AnyComponent
   canCreate?: CanCreateCardResource
   disableTitle?: boolean
   hideSpace?: boolean
+}
+
+export interface PermissionObjectClass extends Doc {
+  objectClass: Ref<Class<Doc>>
 }
 
 export type CanCreateCardFn = (space: Ref<Space>, data: Partial<Data<Card>>) => Promise<boolean | Ref<Card>>
@@ -128,7 +138,9 @@ const cardPlugin = plugin(cardId, {
     CardSpace: '' as Ref<Class<CardSpace>>,
     Role: '' as Ref<Class<Role>>,
     CardSection: '' as Ref<Class<CardSection>>,
-    FavoriteCard: '' as Ref<Class<FavoriteCard>>
+    FavoriteCard: '' as Ref<Class<FavoriteCard>>,
+    FavoriteType: '' as Ref<Class<FavoriteType>>,
+    PermissionObjectClass: '' as Ref<Class<PermissionObjectClass>>
   },
   mixin: {
     CardViewDefaults: '' as Ref<Mixin<CardViewDefaults>>,
@@ -136,6 +148,9 @@ const cardPlugin = plugin(cardId, {
   },
   space: {
     Default: '' as Ref<CardSpace>
+  },
+  spaceType: {
+    SpaceType: '' as Ref<SpaceType>
   },
   types: {
     File: '' as Ref<MasterTag>,
@@ -172,7 +187,8 @@ const cardPlugin = plugin(cardId, {
     GetIndividualPublicLink: '' as IntlString,
     AddTag: '' as IntlString,
     Feed: '' as IntlString,
-    AllCards: '' as IntlString
+    AllCards: '' as IntlString,
+    Favorites: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,

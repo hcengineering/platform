@@ -143,7 +143,7 @@ export function showPopup (
     id,
     close: closePopupOp,
     update: (props) => {
-      updatePopup(id, props)
+      updatePopup(id, { props })
     }
   }
 }

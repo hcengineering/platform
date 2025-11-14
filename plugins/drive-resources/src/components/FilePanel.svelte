@@ -72,12 +72,13 @@
         {
           onFileUploaded,
           showProgress: {
-            target
+            target: { objectId: object._id, objectClass: object._class }
           },
-          target,
-          maxNumberOfFiles: 1
+          target
         },
-        {}
+        {
+          itemsCount: 'single'
+        }
       )
     }
   }

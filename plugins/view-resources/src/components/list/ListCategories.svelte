@@ -86,6 +86,7 @@
   export let resultOptions: FindOptions<Doc>
   export let limiter: RateLimiter
   export let listProvider: SelectionFocusProvider
+  export let singleCategoryLimit: number | undefined = undefined
 
   $: groupByKey = viewOptions.groupBy[level] ?? noCategory
   let categories: CategoryType[] = []
@@ -400,6 +401,7 @@
     {configurationsVersion}
     {itemModels}
     {_class}
+    {singleCategoryLimit}
     parentCategories={categories.length}
     groupPersistKey={`${groupPersistKey}_${level}_${typeof category === 'object' ? category.name : category}`}
     singleCat={level === 0 && categories.length === 1}

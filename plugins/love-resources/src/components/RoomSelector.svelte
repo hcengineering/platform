@@ -21,6 +21,7 @@
   import { Dropdown, Icon } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { rooms } from '../stores'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let value: Ref<Room> | undefined
   export let disabled: boolean = false
@@ -64,8 +65,8 @@
               items = [...items]
             }
           })
-          .catch((err) => {
-            console.error(err)
+          .catch((err: any) => {
+            Analytics.handleError(err)
           })
       } else if (room.person !== null) {
         const person = $personByRefStore.get(room.person)
@@ -79,8 +80,8 @@
                 items = [...items]
               }
             })
-            .catch((err) => {
-              console.error(err)
+            .catch((err: any) => {
+              Analytics.handleError(err)
             })
         }
       } else {
@@ -93,8 +94,8 @@
               items = [...items]
             }
           })
-          .catch((err) => {
-            console.error(err)
+          .catch((err: any) => {
+            Analytics.handleError(err)
           })
       }
     }

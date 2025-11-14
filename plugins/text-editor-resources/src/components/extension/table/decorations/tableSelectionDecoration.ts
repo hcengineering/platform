@@ -19,6 +19,7 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import { type Editor } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 
+import { TableCachePluginKey } from './plugins'
 import { findTable, haveTableRelatedChanges } from '../utils'
 
 interface TableSelectionDecorationPluginState {
@@ -46,7 +47,8 @@ export const TableSelectionDecorationPlugin = (editor: Editor): Plugin<TableSele
 
         const decorations: Decoration[] = []
 
-        const tableMap = TableMap.get(table.node)
+        const cache = TableCachePluginKey.getState(newState)
+        const tableMap = cache?.tableMap ?? TableMap.get(table.node)
 
         const selected: number[] = []
 

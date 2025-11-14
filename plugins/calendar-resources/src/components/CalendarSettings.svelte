@@ -10,13 +10,16 @@
 
   const client = getClient()
 
+  const myAcc = getCurrentAccount()
+  const socialStrings = myAcc.socialIds
+
   let calendars: Calendar[] = []
 
   const query = createQuery()
   query.query(
     calendar.class.Calendar,
     {
-      user: getCurrentAccount().primarySocialId
+      user: { $in: socialStrings }
     },
     (res) => {
       calendars = res

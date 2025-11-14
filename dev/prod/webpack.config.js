@@ -13,6 +13,9 @@
 // limitations under the License.
 //
 
+// Load sass-quiet FIRST to install stderr filter
+const sass = require('../../common/scripts/sass-quiet.js')
+
 const Dotenv = require('dotenv-webpack')
 const path = require('path')
 const CompressionPlugin = require('compression-webpack-plugin')
@@ -31,10 +34,15 @@ const devProduction = clientType === 'dev-production'
 const devProductionHuly = clientType === 'dev-huly'
 const devProductionBold = clientType === 'dev-bold'
 const dev =
-  (process.env.CLIENT_TYPE ?? '') === 'dev' || devServer || devProduction || devProductionHuly || devProductionBold || devServerWorker || devServerWorkerLocal || devServerTest
+  (process.env.CLIENT_TYPE ?? '') === 'dev' ||
+  devServer ||
+  devProduction ||
+  devProductionHuly ||
+  devProductionBold ||
+  devServerWorker ||
+  devServerWorkerLocal ||
+  devServerTest
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
-
-const { EsbuildPlugin } = require('esbuild-loader')
 
 const doValidate = !prod || process.env.DO_VALIDATE === 'true'
 
@@ -264,7 +272,6 @@ module.exports = [
     optimization: prod
       ? {
           minimize: true,
-          minimizer: [new EsbuildPlugin({ target: 'es2021' })],
           splitChunks: {
             chunks: 'all'
           }
@@ -279,6 +286,12 @@ module.exports = [
         },
     module: {
       rules: [
+        {
+          test: /\.m?js$/,
+          resolve: {
+            fullySpecified: false
+          }
+        },
         {
           test: /\.ts?$/,
           loader: 'esbuild-loader',
@@ -303,7 +316,10 @@ module.exports = [
                 hotReload: !prod,
                 preprocess: require('svelte-preprocess')({
                   postcss: true,
-                  sourceMap: true
+                  sourceMap: true,
+                  scss: {
+                    implementation: sass
+                  }
                 }),
                 hotOptions: {
                   // Prevent preserving local component state
@@ -352,7 +368,13 @@ module.exports = [
             'style-loader',
             'css-loader',
             'postcss-loader',
-            'sass-loader'
+            {
+              loader: "sass-loader",
+              options: {
+                api: "modern",
+                implementation: sass
+              }
+            }
           ]
         },
 
@@ -482,11 +504,11 @@ module.exports = [
           errors: true,
           warnings: false,
           runtimeErrors: (error) => {
-            if (error.message.includes("ResizeObserver")) {
-              return false;
+            if (error.message.includes('ResizeObserver')) {
+              return false
             }
-            return true;
-          },
+            return true
+          }
         },
         progress: false
       },

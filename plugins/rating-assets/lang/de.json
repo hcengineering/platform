@@ -1,0 +1,12 @@
+{
+  "string": {
+    "Rating": "Bewertung",
+    "RatingWidgetEmpty": "Noch keine markierten Dokumente. Um Elemente hier zu sehen, füge einem Dokument einen Stern hinzu (klicke auf die Stern-Reaktion bei einem Dokument).",
+    "RatingWidget": "Bewertungs-Widget",
+    "Level": "Level",
+    "MonthOps": "{month}: {ops} Vorgänge",
+    "MonthNoOps": "{month}, keine Vorgänge",
+    "AddStar": "Stern hinzufügen",
+    "AddStarAria": "Stern-Reaktion hinzufügen"
+  }
+}

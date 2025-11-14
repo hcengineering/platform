@@ -34,6 +34,7 @@
     type PersonId
   } from '@hcengineering/core'
   import HulyMail from './icons/HulyMail.svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let integration: Integration | undefined = undefined
 
@@ -57,9 +58,9 @@
       personSpace = personSpaceObj?._id
       selectedSpace = integrationSpace ?? personSpace
       isLoading = false
-    } catch (err) {
+    } catch (err: any) {
       isLoading = false
-      console.error('Failed to find person space:', err)
+      Analytics.handleError(err)
     }
   })
 

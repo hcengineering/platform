@@ -29,7 +29,7 @@
 
 <Icon
   {size}
-  icon={value?.icon === iconWithEmoji && iconWithEmoji ? IconWithEmoji : value?.icon ?? defaultIcon}
+  icon={value?.icon === iconWithEmoji && iconWithEmoji ? IconWithEmoji : (value?.icon ?? defaultIcon)}
   iconProps={value?.icon === iconWithEmoji && iconWithEmoji
     ? { icon: value?.color }
     : {

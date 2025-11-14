@@ -15,6 +15,7 @@
 
 import textEditor from '@hcengineering/text-editor'
 import { type Editor } from '@tiptap/core'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { CellSelection, TableMap } from '@tiptap/pm/tables'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
@@ -34,12 +35,12 @@ import {
   updateColDragMarker,
   updateColDropMarker
 } from './tableDragMarkerDecoration'
+import { TableCachePluginKey } from './plugins'
 import { getTableCellWidgetDecorationPos, getTableWidthPx } from './utils'
-
-import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 interface TableColumnHandlerDecorationPluginState {
   decorations?: DecorationSet
+  debounceTimeout?: ReturnType<typeof setTimeout>
 }
 
 export const TableColumnHandlerDecorationPlugin = (editor: Editor): Plugin<TableColumnHandlerDecorationPluginState> => {
@@ -52,11 +53,35 @@ export const TableColumnHandlerDecorationPlugin = (editor: Editor): Plugin<Table
       },
       apply (tr, prev, oldState, newState) {
         const table = findTable(newState.selection)
+
+        if (table === undefined && prev.debounceTimeout !== undefined) {
+          clearTimeout(prev.debounceTimeout)
+          return {}
+        }
+
         if (!haveTableRelatedChanges(editor, table, oldState, newState, tr)) {
           return table !== undefined ? prev : {}
         }
 
-        const tableMap = TableMap.get(table.node)
+        const cache = TableCachePluginKey.getState(newState)
+        const tableMap = cache?.tableMap ?? TableMap.get(table.node)
+
+        if (tr.docChanged && tr.steps.length === 1 && !(newState.selection instanceof CellSelection)) {
+          if (prev.debounceTimeout !== undefined) {
+            clearTimeout(prev.debounceTimeout)
+          }
+
+          const debounceTimeout = setTimeout(() => {
+            editor.view.updateState(editor.state)
+          }, 100)
+
+          const mapped = prev.decorations?.map(tr.mapping, tr.doc)
+          return { decorations: mapped, debounceTimeout }
+        }
+
+        if (prev.debounceTimeout !== undefined) {
+          clearTimeout(prev.debounceTimeout)
+        }
 
         let isStale = false
         const mapped = prev.decorations?.map(tr.mapping, tr.doc)
@@ -87,7 +112,15 @@ export const TableColumnHandlerDecorationPlugin = (editor: Editor): Plugin<Table
       decorations (state) {
         return key.getState(state).decorations
       }
-    }
+    },
+    view: () => ({
+      destroy: () => {
+        const state = key.getState(editor.state)
+        if (state?.debounceTimeout !== undefined) {
+          clearTimeout(state.debounceTimeout)
+        }
+      }
+    })
   })
 }
 
@@ -161,25 +194,6 @@ class ColumnHandler {
       const dropMarker = getDropMarker()
       const dragMarker = getColDragMarker()
 
-      const handleFinish = (): void => {
-        if (dropMarker !== null) hideDropMarker(dropMarker)
-        if (dragMarker !== null) hideDragMarker(dragMarker)
-
-        if (col !== dropIndex) {
-          let tr = editor.state.tr
-          const selection = editor.state.selection
-          if (selection instanceof CellSelection) {
-            const table = findTable(selection)
-            if (table !== undefined) {
-              tr = moveSelectedColumns(editor, table, selection, dropIndex, tr)
-            }
-          }
-          editor.view.dispatch(tr)
-        }
-        window.removeEventListener('mouseup', handleFinish)
-        window.removeEventListener('mousemove', handleMove)
-      }
-
       const handleMove = (event: MouseEvent): void => {
         if (dropMarker !== null && dragMarker !== null) {
           const currentLeft = startLeft + event.clientX - startX
@@ -195,7 +209,26 @@ class ColumnHandler {
         }
       }
 
-      window.addEventListener('mouseup', handleFinish)
+      const handleFinish = (): void => {
+        window.removeEventListener('mousemove', handleMove)
+
+        if (dropMarker !== null) hideDropMarker(dropMarker)
+        if (dragMarker !== null) hideDragMarker(dragMarker)
+
+        if (col !== dropIndex) {
+          let tr = editor.state.tr
+          const selection = editor.state.selection
+          if (selection instanceof CellSelection) {
+            const table = findTable(selection)
+            if (table !== undefined) {
+              tr = moveSelectedColumns(editor, table, selection, dropIndex, tr)
+            }
+          }
+          editor.view.dispatch(tr)
+        }
+      }
+
+      window.addEventListener('mouseup', handleFinish, { once: true })
       window.addEventListener('mousemove', handleMove)
     })
 

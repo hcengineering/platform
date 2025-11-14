@@ -42,6 +42,7 @@
     "SearchDocument": "Dokument suchen...",
     "CreateEnVersion": "Version zur Überprüfung erstellen",
     "Approvers": "Genehmiger",
+    "ExternalApprovers": "Externe Genehmiger",
     "CoAuthors": "Co-Autoren",
     "Status": "Status",
     "TemplateName": "Vorlagenname",
@@ -229,8 +230,9 @@
 
     "DocumentInHierarchy": "Dokument in Hierarchie",
     "FirstDraftVersion": "Dies ist die erste Entwurfsversion des Dokuments. Es gibt noch keine Historie.",
+    "FirstOrNotAvailable": "Dies ist die erste verfügbare Version des Dokuments. Es gibt noch keine Versionshistorie oder sie ist nicht verfügbar.",
 
-    "EffectiveDocumentLifecycle": "Lebenszyklus des gültigen Dokuments",
+    "EffectiveDocumentLifecycle": "Effektiver Dokumentenlebenszyklus",
 
     "ReasonAndImpact": "Grund & Auswirkung",
     "ImpactAnalysis": "Auswirkungsanalyse",
@@ -272,7 +274,6 @@
 
     "DocSpaceDescriptionPlaceholder": "Beschreiben Sie Ihren Bereich...",
     "Members": "Mitglieder",
-    "RoleLabel": "Rolle: {role}",
     "CreateOrgSpace": "Organisationsbereich erstellen",
 
     "ReviewDocumentPermission": "Dokument prüfen",

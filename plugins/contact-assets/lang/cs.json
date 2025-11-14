@@ -120,6 +120,11 @@
     "HereDescription": "Upozornit všechny v tomto {title}",
     "Guest": "Host",
     "Deleted": "Smazáno",
-    "CannotMerge": "Chyba: Nelze sloučit globální osoby"
+    "CannotMerge": "Chyba: Nelze sloučit globální osoby",
+    "AutoTranslation": "Automatický překlad",
+    "TranslateTo": "Přeložit do",
+    "DontTranslate": "Nepřekládat",
+    "SelectLanguage": "Vyberte jazyk",
+    "SelectLanguages": "Vyberte jazyky"
   }
 }

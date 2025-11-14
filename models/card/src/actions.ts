@@ -14,7 +14,7 @@
 import { type Builder } from '@hcengineering/model'
 import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
-import view, { createAction } from '@hcengineering/model-view'
+import view, { actionTemplates, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import card from './plugin'
 
@@ -100,6 +100,24 @@ export function createActions (builder: Builder): void {
     },
     card.action.UnsetParent
   )
+
+  createAction(builder, {
+    action: view.actionImpl.CopyDocumentMarkdown,
+    actionProps: {
+      contentClass: card.class.Card,
+      contentField: 'content'
+    },
+    label: view.string.CopyDocumentMarkdown,
+    icon: view.icon.Print,
+    input: 'any',
+    category: card.category.Card,
+    target: card.class.Card,
+    query: {},
+    context: {
+      mode: ['context', 'browser'],
+      group: 'tools'
+    }
+  })
 
   createAction(builder, {
     action: view.actionImpl.ShowPopup,
@@ -210,6 +228,16 @@ export function createActions (builder: Builder): void {
     icon: card.icon.MasterTag,
     category: setting.category.Settings,
     target: card.class.MasterTag,
+    context: {
+      mode: ['context', 'browser'],
+      group: 'edit'
+    }
+  })
+
+  createAction(builder, {
+    ...actionTemplates.move,
+    input: 'any',
+    target: card.class.Card,
     context: {
       mode: ['context', 'browser'],
       group: 'edit'

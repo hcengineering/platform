@@ -248,7 +248,13 @@ export class WorkspaceClient {
     }
 
     this.summarizing.add(objectId)
-    const { summary, tokens } = await requestSummary(this.openai, this.openaiEncoding, toSummarize)
+    const { summary, tokens } = await requestSummary(
+      this.ctx,
+      this.wsIds.uuid,
+      this.openai,
+      this.openaiEncoding,
+      toSummarize
+    )
 
     if (summary === undefined) {
       this.ctx.error('Failed to summarize history', { objectId, objectClass, user })

@@ -147,7 +147,6 @@ export const testManagementPlugin = plugin(testManagementId, {
     ProjectName: '' as IntlString,
     ProjectType: '' as IntlString,
     Members: '' as IntlString,
-    RoleLabel: '' as IntlString,
     ProjectMembers: '' as IntlString,
     ManageProjectStatuses: '' as IntlString,
     TestSuites: '' as IntlString,

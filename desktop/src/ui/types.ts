@@ -1,3 +1,18 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { DownloadItem } from '@hcengineering/desktop-downloads'
 import { ScreenSource } from '@hcengineering/love'
 import { Plugin } from '@hcengineering/platform'
@@ -8,9 +23,6 @@ export interface Config {
   ACCOUNTS_URL: string
   AI_URL?: string
   ANALYTICS_COLLECTOR_URL?: string
-  POSTHOG_API_KEY?: string
-  POSTHOG_HOST?: string
-  SENTRY_DSN?: string
   BRANDING_URL?: string
   CALENDAR_URL: string
   COLLABORATOR?: string
@@ -22,6 +34,8 @@ export interface Config {
   DISABLE_SIGNUP?: string
   HIDE_LOCAL_LOGIN?: string
   FILES_URL: string
+  UPLOAD_URL: string
+  DATALAKE_URL?: string
   FRONT_URL: string
   GITHUB_APP: string
   GITHUB_CLIENTID: string
@@ -34,7 +48,6 @@ export interface Config {
   MODEL_VERSION: string
   PRESENCE_URL?: string
   PREVIEW_URL?: string
-  PREVIEW_CONFIG?: string
   PRINT_URL?: string
   PUSH_PUBLIC_KEY: string
   REKONI_URL: string
@@ -42,8 +55,6 @@ export interface Config {
   STATS_URL?: string
   TELEGRAM_BOT_URL?: string
   TELEGRAM_URL: string
-  UPLOAD_CONFIG: string
-  UPLOAD_URL: string
   VERSION: string
   STREAM_URL?: string
   BACKUP_URL?: string
@@ -53,6 +64,7 @@ export interface Config {
   MAIL_URL?: string
   COMMUNICATION_API_ENABLED?: string
   BILLING_URL?: string
+  PAYMENT_URL?: string
   PULSE_URL?: string
   PASSWORD_STRICTNESS?: 'very_strict' | 'strict' | 'normal' | 'none'
   EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string
@@ -126,7 +138,8 @@ export const MenuBarActions = [
   'zoom-out',
   'restore-size',
   'toggle-fullscreen',
-  'toggle-minimize-to-tray'] as const
+  'toggle-minimize-to-tray',
+  'toggle-auto-launch'] as const
 
 export type MenuBarAction = typeof MenuBarActions[number]
 
@@ -175,6 +188,8 @@ export interface IPCMainExposed {
 
   isMinimizeToTrayEnabled: () => Promise<boolean>
   onMinimizeToTraySettingChanged: (callback: (enabled: boolean) => void) => void
+  isAutoLaunchEnabled: () => Promise<boolean>
+  onAutoLaunchSettingChanged: (callback: (enabled: boolean) => void) => void
 }
 
 export type SendCommandDelegate = (cmd: Command, ...args: any[]) => void

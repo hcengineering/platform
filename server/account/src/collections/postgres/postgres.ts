@@ -46,7 +46,9 @@ import type {
   MailboxSecret,
   Integration,
   IntegrationSecret,
-  AccountAggregatedInfo
+  AccountAggregatedInfo,
+  UserProfile,
+  Subscription
 } from '../../types'
 
 function toSnakeCase (str: string): string {
@@ -370,7 +372,7 @@ implements DbCollection<T> {
           const castType = this.fieldTypes[key]
           currIdx++
           updateChunks.push(`"${snakeKey}" = ${formatVar(currIdx, castType)}`)
-          values.push(ops[key])
+          values.push(convertKeysToSnakeCase(ops[key]))
         }
       }
     }
@@ -435,6 +437,7 @@ export class AccountPostgresDbCollection
         a.locale,
         a.automatic,
         a.max_workspaces,
+        a.failed_login_attempts,
         p.hash,
         p.salt
       FROM ${this.getTableName()} as a
@@ -518,6 +521,8 @@ export class PostgresAccountDB implements AccountDB {
   mailboxSecret: PostgresDbCollection<MailboxSecret>
   integration: PostgresDbCollection<Integration>
   integrationSecret: PostgresDbCollection<IntegrationSecret>
+  userProfile: PostgresDbCollection<UserProfile, 'personUuid'>
+  subscription: PostgresDbCollection<Subscription, 'id'>
 
   constructor (
     readonly client: Sql,
@@ -560,6 +565,17 @@ export class PostgresAccountDB implements AccountDB {
     this.integration = new PostgresDbCollection<Integration>('integrations', client, { ns, withRetryClient })
     this.integrationSecret = new PostgresDbCollection<IntegrationSecret>('integration_secrets', client, {
       ns,
+      withRetryClient
+    })
+    this.userProfile = new PostgresDbCollection<UserProfile, 'personUuid'>('user_profile', client, {
+      ns,
+      idKey: 'personUuid',
+      withRetryClient
+    })
+    this.subscription = new PostgresDbCollection<Subscription, 'id'>('subscription', client, {
+      ns,
+      idKey: 'id',
+      timestampFields: ['periodStart', 'periodEnd', 'trialEnd', 'canceledAt', 'willCancelAt', 'createdOn', 'updatedOn'],
       withRetryClient
     })
   }
@@ -861,7 +877,8 @@ export class PostgresAccountDB implements AccountDB {
             'is_disabled', s.is_disabled,
             'processing_attempts', s.processing_attempts,
             'processing_message', s.processing_message,
-            'backup_info', s.backup_info
+            'backup_info', s.backup_info,
+            'usage_info', s.usage_info
           ) status 
            FROM ${this.getWsMembersTableName()} as m 
            INNER JOIN ${this.workspace.getTableName()} as w ON m.workspace_uuid = w.uuid
@@ -913,7 +930,8 @@ export class PostgresAccountDB implements AccountDB {
             'is_disabled', s.is_disabled,
             'processing_attempts', s.processing_attempts,
             'processing_message', s.processing_message,
-            'backup_info', s.backup_info
+            'backup_info', s.backup_info,
+            'usage_info', s.usage_info
           ) status
            FROM ${this.workspace.getTableName()} as w
            INNER JOIN ${this.workspaceStatus.getTableName()} as s ON s.workspace_uuid = w.uuid

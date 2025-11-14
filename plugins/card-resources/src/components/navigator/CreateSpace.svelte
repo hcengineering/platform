@@ -13,15 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import core, { AccountUuid, Data, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import core, { AccountUuid, Data, Ref, RolesAssignment, getCurrentAccount, notEmpty } from '@hcengineering/core'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
   import { EditBox, Label, Toggle } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
-  import { CardSpace, MasterTag } from '@hcengineering/card'
+  import { CardSpace, MasterTag, Role } from '@hcengineering/card'
   import card from '../../plugin'
   import TypesSelector from './TypesSelector.svelte'
+  import view from '@hcengineering/view'
+  import { deepEqual } from 'fast-equals'
 
   export let space: CardSpace | undefined = undefined
 
@@ -29,18 +31,41 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let name: string = space?.name ?? ''
   const topLevelTypes = client.getModel().findAllSync(card.class.MasterTag, {
     extends: card.class.Card
   })
+
   let types: Ref<MasterTag>[] =
     space?.types !== undefined ? hierarchy.clone(space.types) : topLevelTypes.map((it) => it._id)
+
+  let roles = client.getModel().findAllSync(card.class.Role, { type: { $in: types } })
+  $: roles = client.getModel().findAllSync(card.class.Role, { type: { $in: types } })
+
+  let name: string = space?.name ?? ''
+
   let isPrivate: boolean = space?.private ?? false
   let members: AccountUuid[] =
     space?.members !== undefined ? hierarchy.clone(space.members) : [getCurrentAccount().uuid]
   let owners: AccountUuid[] = space?.owners !== undefined ? hierarchy.clone(space.owners) : [getCurrentAccount().uuid]
 
   $: isNew = space === undefined
+
+  let rolesAssignment = getRolesAssignment(roles)
+  $: rolesAssignment = getRolesAssignment(roles)
+
+  function getRolesAssignment (roles: Role[]): RolesAssignment {
+    if (space === undefined || roles === undefined) {
+      return {}
+    }
+
+    const asMixin = hierarchy.as(space, core.mixin.SpacesTypeData)
+
+    return roles.reduce<RolesAssignment>((prev, { _id }) => {
+      prev[_id] = (asMixin as any)[_id] ?? []
+
+      return prev
+    }, {})
+  }
 
   async function handleSave (): Promise<void> {
     if (isNew) {
@@ -59,6 +84,7 @@
       owners,
       autoJoin,
       archived: false,
+      type: card.spaceType.SpaceType,
       types
     }
   }
@@ -71,6 +97,10 @@
     const data = getData()
     await client.diffUpdate(space, data)
 
+    if (rolesAssignment && !deepEqual(rolesAssignment, getRolesAssignment(roles))) {
+      await client.updateMixin(space._id, space._class, core.space.Space, core.mixin.SpacesTypeData, rolesAssignment)
+    }
+
     close()
   }
 
@@ -78,6 +108,10 @@
     const teamspaceData = getData()
 
     const id = await client.createDoc(card.class.CardSpace, core.space.Space, { ...teamspaceData })
+
+    if (rolesAssignment && !deepEqual(rolesAssignment, getRolesAssignment(roles))) {
+      await client.updateMixin(id, card.class.CardSpace, core.space.Space, core.mixin.SpacesTypeData, rolesAssignment)
+    }
 
     close(id)
   }
@@ -104,6 +138,16 @@
     !(members.length === 0 && isPrivate) &&
     owners.length > 0 &&
     (!isPrivate || owners.some((o) => members.includes(o)))
+
+  $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
+
+  function handleRoleAssignmentChanged (roleId: Ref<Role>, newMembers: AccountUuid[]): void {
+    if (rolesAssignment === undefined) {
+      rolesAssignment = {}
+    }
+
+    rolesAssignment[roleId] = newMembers
+  }
 </script>
 
 <Card
@@ -178,5 +222,24 @@
       </div>
       <Toggle id={'teamspace-autoJoin'} bind:on={autoJoin} />
     </div>
+
+    {#each roles as role}
+      <div class="antiGrid-row">
+        <div class="antiGrid-row__header">
+          <Label label={view.string.RoleLabel} params={{ role: role.name }} />
+        </div>
+        <AccountArrayEditor
+          value={rolesAssignment?.[role._id] ?? []}
+          label={core.string.Members}
+          includeItems={membersPersons}
+          readonly={membersPersons.length === 0}
+          onChange={(refs) => {
+            handleRoleAssignmentChanged(role._id, refs)
+          }}
+          kind={'regular'}
+          size={'large'}
+        />
+      </div>
+    {/each}
   </div>
 </Card>

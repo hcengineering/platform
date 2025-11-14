@@ -13,14 +13,9 @@
 // limitations under the License.
 //
 
-import cors from 'cors'
-import express, { type Express, NextFunction, type Request, type Response } from 'express'
-import { type Server } from 'http'
-import { Config } from './config'
 import { MeasureContext } from '@hcengineering/core'
-import morgan from 'morgan'
-import onHeaders from 'on-headers'
-import { withAdmin, withOwner, withToken } from './middleware'
+import { StorageConfig } from '@hcengineering/server-core'
+
 import {
   handleListLiveKitSessions,
   handleSetLiveKitEgress,
@@ -28,12 +23,20 @@ import {
   handleListLiveKitEgress,
   handleGetLiveKitStats,
   handleGetDatalakeStats,
-  handleGetStats
+  handleGetStats,
+  handlePushAiTranscriptData,
+  handleGetAiTranscriptLastData,
+  handlePushAiTokensData
 } from './billing'
+import { Config } from './config'
+import { withAdmin, withOwner, withToken } from './middleware'
 import { BillingDB } from './types'
-import { createDb } from './db/postgres'
-import { StorageConfig } from '@hcengineering/server-core'
-import { storageConfigFromEnv } from '@hcengineering/server-storage'
+
+import cors from 'cors'
+import express, { type Express, NextFunction, type Request, type Response } from 'express'
+import { type Server } from 'http'
+import morgan from 'morgan'
+import onHeaders from 'on-headers'
 
 const KEEP_ALIVE_TIMEOUT = 5 // seconds
 
@@ -81,10 +84,12 @@ const handleRequest = async (
   }
 }
 
-export async function createServer (ctx: MeasureContext, config: Config): Promise<{ app: Express, close: () => void }> {
-  const db = await createDb(ctx, config.DbUrl)
-  const storageConfigs: StorageConfig[] = storageConfigFromEnv().storages.filter((p) => p.kind === 'datalake')
-
+export async function createServer (
+  ctx: MeasureContext,
+  db: BillingDB,
+  storageConfigs: StorageConfig[],
+  config: Config
+): Promise<{ app: Express, close: () => void }> {
   const app = express()
   app.use(cors())
   app.use(express.json({ limit: '50mb' }))
@@ -139,6 +144,22 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
     wrapRequest(ctx, 'getDatalakeStats', handleGetDatalakeStats)
   )
   app.get('/api/v1/:workspace/stats', withToken, withOwner, wrapRequest(ctx, 'getStats', handleGetStats))
+
+  app.post(
+    '/api/v1/ai/transcript',
+    withToken,
+    withAdmin,
+    wrapRequest(ctx, 'pushAiTranscriptData', handlePushAiTranscriptData)
+  )
+
+  app.get(
+    '/api/v1/ai/transcript/last',
+    withToken,
+    withAdmin,
+    wrapRequest(ctx, 'getAiTranscriptLastData', handleGetAiTranscriptLastData)
+  )
+
+  app.post('/api/v1/ai/tokens', withToken, withAdmin, wrapRequest(ctx, 'pushAiTokensData', handlePushAiTokensData))
 
   app.use((_req, res) => {
     res.status(404).json({ message: 'Not Found' })

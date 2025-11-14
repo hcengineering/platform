@@ -18,26 +18,38 @@
   import { getCurrentAccount, SocialIdType } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
   import { getResource } from '@hcengineering/platform'
-  import { AttributeEditor, MessageBox, getClient } from '@hcengineering/presentation'
+  import { AttributeEditor, createQuery, getClient, hasResource, MessageBox } from '@hcengineering/presentation'
   import {
     Breadcrumb,
     Button,
+    Component,
+    createFocusManager,
     EditBox,
     FocusHandler,
     Header,
-    createFocusManager,
-    showPopup,
     navigate,
-    Scroller
+    Scroller,
+    showPopup
   } from '@hcengineering/ui'
   import { logIn, logOut } from '@hcengineering/workbench-resources'
 
+  import rating, { type PersonRating } from '@hcengineering/rating'
   import setting from '../plugin'
   import SocialIdsEditor from './socialIds/SocialIdsEditor.svelte'
 
   const client = getClient()
   const account = getCurrentAccount()
   const email = account.fullSocialIds.find((si) => si.type === SocialIdType.EMAIL)?.value ?? ''
+
+  const levelQuery = createQuery()
+
+  let personRating: PersonRating | undefined
+
+  levelQuery.query(rating.class.PersonRating, { accountId: account.uuid }, (res) => {
+    personRating = res[0]
+  })
+
+  $: console.log('SYS', personRating)
 
   let firstName = ''
   let lastName = ''
@@ -102,7 +114,7 @@
     <div class="ac-body p-10 flex-col max-w-240 content">
       {#if $myEmployeeStore}
         <div class="flex flex-grow w-full">
-          <div class="mr-8">
+          <div class="mr-8 flex-col items-center">
             <EditableAvatar
               person={$myEmployeeStore}
               {email}
@@ -111,6 +123,14 @@
               bind:this={avatarEditor}
               on:done={onAvatarDone}
             />
+            {#if hasResource(rating.component.RatingRing)}
+              <div class="flex-row-center">
+                <Component
+                  is={rating.component.RatingRing}
+                  props={{ rating: personRating?.rating ?? 0, showValues: true }}
+                />
+              </div>
+            {/if}
           </div>
           <div class="flex-grow flex-col">
             <EditBox
@@ -149,7 +169,15 @@
         </div>
       {/if}
       <div class="separator" />
-      <SocialIdsEditor />
+      {#if hasResource(rating.component.RatingRing)}
+        {#if personRating != null}
+          <div class="flex-row-center mt-2">
+            <Component is={rating.component.RatingActivities} props={{ rating: personRating }} />
+          </div>
+        {/if}
+        <div class="separator" />
+      {/if}
+      <SocialIdsEditor rating={personRating} />
       <div class="footer">
         <Button
           icon={setting.icon.Signout}

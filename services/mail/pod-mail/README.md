@@ -2,21 +2,22 @@
 
 ## Overview
 
-The Mail Service is responsible for sending emails using SMTP or SES transfer. 
+The Mail Service is responsible for sending emails using SMTP or SES transfer.
 It supports sending emails with multiple recipients, along with optional CC, BCC, and HTML content.
 
 ### Configuration
 
 Environment variables should be set to configure the Mail Service:
+
 - `PORT`: The port on which the mail service listens for incoming HTTP requests.
 - `API_KEY`: An API key that clients must pass. The parameter is optional, should be provided when external access to the service is allowed.
-- `SENTRY_DSN`: (optional) The Data Source Name for Sentry error tracking. This is optional and should be set if you wish to enable error tracking with Sentry.
 - `SOURCE`: The sender source (fallback for when emails emit from the system).
 - `REPLY_TO`: (optional) Email to use for replies (useful for uni-directional STMP setups where emails are only emitted, but not received).
 
 Settings for SMTP or SES email service should be specified, simultaneous use of both protocols is not supported
 
 SMTP settings:
+
 - `SMTP_HOST`: Hostname of the SMTP server used for sending emails.
 - `SMTP_PORT`: Port number of the SMTP server.
 - `SMTP_USERNAME`: Username for authenticating with the SMTP server. Refer to your SMTP server documentation for the appropriate format.
@@ -29,6 +30,7 @@ SMTP settings:
 - `SMTP_ALLOW_SELF_SIGNED` (Optional): Allow self-signed certificates for TLS connections. Set to 'true' to enable (not recommended for production use). Default: false
 
 SES settings:
+
 - `SES_ACCESS_KEY`: AWS SES access key for authentication.
 - `SES_SECRET_KEY`: AWS SES secret key for authentication.
 - `SES_REGION`: AWS SES region where your SES service is hosted.
@@ -36,14 +38,17 @@ SES settings:
 ### Running the Service
 
 Add .env file to the root of the project with the following content to add integration with fake SMTP server:
+
 ```
 PORT=8097
 SMTP_HOST="mail.smtpbucket.com"
-SMTP_PORT=8025 
+SMTP_PORT=8025
 ```
+
 To use the real SMTP server it is required to register an account in some email service provider and specify settings and credentials for it.
 
 Start the service locally using:
+
 ```bash
 rushx run-local
 ```
@@ -76,6 +81,7 @@ Send an email message.
   - `raw`: An optional special value that overrides the entire contents of the current MIME node, including MIME headers. Useful if you want to prepare node contents yourself.
 
 Request body example:
+
 ```
 {
   "subject": "Test SMTP",
@@ -87,7 +93,7 @@ Request body example:
       "filename": "test.txt",
       "content": "Hello world",
       "contentType": "text/plain"
-    }	
+    }
   ]
 }
 ```

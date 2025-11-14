@@ -17,7 +17,7 @@
   import { getResource } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import { createQuery, getClient, isAdminUser } from '@hcengineering/presentation'
-  import { Scroller, NavItem } from '@hcengineering/ui'
+  import { Scroller, NavItem, Component } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
   import type { Application, NavigatorModel, SpecialNavModel } from '@hcengineering/workbench'
   import { getSpecialSpaceClass } from '../utils'
@@ -198,5 +198,14 @@
         deselect={menuSelection || starred.some((s) => s._id === currentSpace)}
       />
     {/each}
+
+    {#if model.groups && model.groups.length > 0}
+      <div class="min-h-3 flex-no-shrink" />
+      {#each model.groups as group (group.id)}
+        {#if group.component}
+          <Component is={group.component} props={{ model: group }} />
+        {/if}
+      {/each}
+    {/if}
   </Scroller>
 {/if}

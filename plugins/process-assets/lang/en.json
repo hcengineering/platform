@@ -51,6 +51,7 @@
     "EnterValue": "Enter value",
     "OnToDoDone": "When action item done",
     "OnSubProcessesDone": "On sub processes done",
+    "WhenSubProcessMatches": "When subprocess matches",
     "Result": "Result",
     "RequestResult": "Request result",
     "NoResultRequired": "No result required",
@@ -117,7 +118,15 @@
     "NewProcessToDo": "New process Action item",
     "EmptyArray": "Empty array",
     "ExecutionInitiator": "Execution initiator",
-    "ExecutionStarted": "Execution started"
+    "ExecutionStarted": "Execution started",
+    "Filter": "Filter",
+    "FirstMatchValue": "First match value",
+    "ConfigLabel": "Process configuration",
+    "ConfigDescription": "Define processes to automate workflows and business processes.",
+    "RunProcessPermission": "Run process",
+    "CancelProcessPermission": "Cancel process",
+    "ForbidRunProcessPermission": "Forbid running process",
+    "ForbidCancelProcessPermission": "Forbid cancelling process"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

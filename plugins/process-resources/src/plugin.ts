@@ -11,12 +11,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Ref } from '@hcengineering/core'
+import { type Permission, type Ref } from '@hcengineering/core'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { type PresentationMiddlewareCreator } from '@hcengineering/presentation'
 import process, { processId } from '@hcengineering/process'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type ViewQueryAction, type Viewlet } from '@hcengineering/view'
+
 export default mergeIds(processId, process, {
   viewlet: {
     ExecutionsList: '' as Ref<Viewlet>,
@@ -70,7 +71,10 @@ export default mergeIds(processId, process, {
     TimeEditor: '' as AnyComponent,
     TimePresenter: '' as AnyComponent,
     AddTagEditor: '' as AnyComponent,
-    AddTagPresenter: '' as AnyComponent
+    AddTagPresenter: '' as AnyComponent,
+    SubProcessMatchEditor: '' as AnyComponent,
+    SubProcessMatchPresenter: '' as AnyComponent,
+    FunctionSubmenu: '' as AnyComponent
   },
   criteriaEditor: {
     BaseCriteria: '' as AnyComponent,
@@ -85,7 +89,8 @@ export default mergeIds(processId, process, {
     AppendEditor: '' as AnyComponent,
     ReplaceEditor: '' as AnyComponent,
     SplitEditor: '' as AnyComponent,
-    CutEditor: '' as AnyComponent
+    CutEditor: '' as AnyComponent,
+    FilterEditor: '' as AnyComponent
   },
   transformPresenter: {
     NumberPresenter: '' as AnyComponent,
@@ -127,6 +132,8 @@ export default mergeIds(processId, process, {
     ReplaceAll: '' as IntlString,
     Split: '' as IntlString,
     Cut: '' as IntlString,
+    Filter: '' as IntlString,
+    FirstMatchValue: '' as IntlString,
     FirstValue: '' as IntlString,
     LastValue: '' as IntlString,
     Random: '' as IntlString,
@@ -162,6 +169,7 @@ export default mergeIds(processId, process, {
     EnterValue: '' as IntlString,
     OnToDoDone: '' as IntlString,
     OnSubProcessesDone: '' as IntlString,
+    WhenSubProcessMatches: '' as IntlString,
     WaitUntil: '' as IntlString,
     WhenCardMatches: '' as IntlString,
     WhenFieldChanges: '' as IntlString,
@@ -201,6 +209,16 @@ export default mergeIds(processId, process, {
     Context: '' as IntlString,
     EmptyArray: '' as IntlString,
     ExecutionInitiator: '' as IntlString,
-    ExecutionStarted: '' as IntlString
+    ExecutionStarted: '' as IntlString,
+    RunProcessPermission: '' as IntlString,
+    CancelProcessPermission: '' as IntlString,
+    ForbidRunProcessPermission: '' as IntlString,
+    ForbidCancelProcessPermission: '' as IntlString
+  },
+  permission: {
+    RunProcess: '' as Ref<Permission>,
+    CancelProcess: '' as Ref<Permission>,
+    ForbidRunProcess: '' as Ref<Permission>,
+    ForbidCancelProcess: '' as Ref<Permission>
   }
 })

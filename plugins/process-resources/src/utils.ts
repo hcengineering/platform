@@ -28,11 +28,12 @@ import core, {
   type TxOperations,
   type Type
 } from '@hcengineering/core'
-import { getResource, PlatformError, Severity, Status } from '@hcengineering/platform'
+import { getResource, type IntlString, PlatformError, Severity, Status } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import {
   type Context,
   type ContextId,
+  createContext,
   type Execution,
   type ExecutionContext,
   ExecutionStatus,
@@ -564,7 +565,7 @@ export function getToDoEndAction (prevState: State): Step<Doc> {
     params: {
       state: prevState._id,
       title: prevState.title,
-      user: '$' + JSON.stringify(context)
+      user: createContext(context)
     }
   }
   return endAction
@@ -655,7 +656,43 @@ export async function subProcessesDoneCheck (
   return res === undefined
 }
 
-export function getCirteriaEditor (
+export async function subProcessMatchCheck (
+  client: Client,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): Promise<boolean> {
+  const { process: _process, ...otherCritera } = params
+  if (_process === undefined) return false
+  if (Object.keys(otherCritera).length === 0) return true
+
+  const subProcesses = await client.findAll(process.class.Execution, {
+    parentId: execution._id,
+    process: params.process
+  })
+
+  if (subProcesses.length === 0) return false
+
+  const [predicate, value] = Object.entries(otherCritera)[0]
+
+  const res = matchQuery(
+    subProcesses,
+    { currentState: { $in: value } },
+    process.class.Execution,
+    client.getHierarchy(),
+    true
+  )
+  if (predicate === '$all') {
+    return res.length === subProcesses.length
+  } else if (predicate === '$any') {
+    return res.length > 0
+  } else if (predicate === '$nin') {
+    return res.length === 0
+  }
+  return false
+}
+
+export function getCriteriaEditor (
   of: Ref<Class<Doc>>,
   category: AttributeCategory
 ): UpdateCriteriaComponent | undefined {
@@ -671,4 +708,18 @@ export function getCirteriaEditor (
     of
   })[0]
   return res
+}
+
+export function getMockAttribute (_class: Ref<Class<Doc>>, label: IntlString, type: Type<any>): AnyAttribute {
+  return {
+    attributeOf: _class,
+    name: '',
+    _id: generateId(),
+    space: core.space.Model,
+    modifiedOn: 0,
+    modifiedBy: core.account.System,
+    _class: core.class.Attribute,
+    type,
+    label
+  }
 }

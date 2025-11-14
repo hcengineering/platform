@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Attachment } from '@hcengineering/attachment'
-  import { createQuery, getClient, getFileMetadata, uploadFile } from '@hcengineering/presentation'
+  import { createQuery, getClient, uploadFile } from '@hcengineering/presentation'
   import { ActionIcon, IconAdd, Label, Loading } from '@hcengineering/ui'
 
   import core, { Doc, Ref, Space, WithLookup } from '@hcengineering/core'
@@ -57,8 +57,7 @@
 
   async function createAttachment (file: File) {
     try {
-      const uuid = await uploadFile(file)
-      const metadata = await getFileMetadata(file, uuid)
+      const { uuid, metadata } = await uploadFile(file)
       const space = client.getHierarchy().isDerived(object._class, core.class.Space)
         ? (object._id as Ref<Space>)
         : object.space

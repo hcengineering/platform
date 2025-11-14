@@ -42,6 +42,7 @@
     "SearchDocument": "Search document...",
     "CreateEnVersion": "Create version for review",
     "Approvers": "Approvers",
+    "ExternalApprovers": "External approvers",
     "CoAuthors": "Co-Authors",
     "Status": "Status",
     "TemplateName": "Template name",
@@ -236,6 +237,7 @@
 
     "DocumentInHierarchy": "Document in hierarchy",
     "FirstDraftVersion": "This is the first draft version of the document. There's no history yet.",
+    "FirstOrNotAvailable": "This is the first available version of the document. There's no history yet or it's not available.",
 
     "EffectiveDocumentLifecycle": "Effective document lifecycle",
 
@@ -279,7 +281,6 @@
 
     "DocSpaceDescriptionPlaceholder": "Describe your space...",
     "Members": "Members",
-    "RoleLabel": "Role: {role}",
     "CreateOrgSpace": "Create organisation space",
 
     "ReviewDocumentPermission": "Review document",

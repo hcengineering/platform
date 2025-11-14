@@ -89,6 +89,7 @@
   export let parentCategories: number = 0
   export let limiter: RateLimiter
   export let listProvider: SelectionFocusProvider
+  export let singleCategoryLimit = 50
 
   $: lastLevel = level + 1 >= viewOptions.groupBy.length
 
@@ -98,7 +99,7 @@
 
   const autoFoldLimit = 20
   const defaultLimit = 20
-  const singleCategoryLimit = 50
+
   let loading = false
   $: initialLimit = !lastLevel ? undefined : singleCat ? singleCategoryLimit : defaultLimit
   $: limit = initialLimit

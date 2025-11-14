@@ -204,9 +204,10 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     return extractAuthorizationToken(headers) ?? extractCookieToken(headers)
   }
 
-  const getRequestMeta = (headers: IncomingHttpHeaders): Meta => {
+  const getRequestMeta = (headers: IncomingHttpHeaders, isServiceRequest: boolean): Meta => {
     const meta: Meta = {}
-    if (headers?.['x-timezone'] !== undefined) {
+
+    if (!isServiceRequest && headers?.['x-timezone'] !== undefined) {
       meta.timezone = headers['x-timezone'] as string
     }
 
@@ -381,7 +382,6 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   router.post('rpc', '/', async (ctx) => {
     const token = extractToken(ctx.request.headers)
-    const meta = getRequestMeta(ctx.request.headers)
 
     const request = ctx.request.body as any
     const method = methods[request.method as AccountMethods]
@@ -403,11 +403,16 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     const branding = getBranding(ctx)
 
     let source = ''
+    let isServiceRequest = false
     try {
-      source = (token != null ? decodeToken(token).extra?.service : undefined) ?? '🤦‍♂️user'
+      const decodedToken = token != null ? decodeToken(token) : null
+      const serviceName = decodedToken?.extra?.service
+      source = serviceName ?? '🤦‍♂️user'
+      isServiceRequest = serviceName !== undefined
     } catch (err) {
       // Ignore
     }
+    const meta = getRequestMeta(ctx.request.headers, isServiceRequest)
 
     await measureCtx.with(
       request.method,

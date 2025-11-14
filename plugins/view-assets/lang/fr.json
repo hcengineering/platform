@@ -108,6 +108,7 @@
     "Or": "Ou",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Copier dans le presse-papiers",
+    "CopyDocumentMarkdown": "Copier en Markdown",
     "PublicView": "Vue publique",
     "ChooseIcon": "Choisir une icône",
     "IconColor": "Choisir la couleur de l'icône",
@@ -143,6 +144,9 @@
     "Color": "Couleur",
     "AutomationOnly": "Automatisation uniquement",
     "CopyLink": "Copier le lien",
-    "ValueIsSet": "La valeur est définie"
+    "ValueIsSet": "La valeur est définie",
+    "RoleLabel": "Rôle : {role}",
+    "ForbidAttributeChanges": "Interdire les modifications d'attributs",
+    "AllowAttributeChanges": "Autoriser les modifications d'attributs"
   }
 }

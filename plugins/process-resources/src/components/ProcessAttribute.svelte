@@ -15,7 +15,7 @@
 <script lang="ts">
   import { MasterTag, Tag } from '@hcengineering/card'
   import { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
-  import { Context, parseContext, Process, SelectedContext } from '@hcengineering/process'
+  import { Context, createContext, parseContext, Process, SelectedContext } from '@hcengineering/process'
   import {
     AnySvelteComponent,
     Button,
@@ -69,7 +69,11 @@
   }
 
   function onSelect (res: SelectedContext | null): void {
-    value = res === null ? undefined : '$' + JSON.stringify(res)
+    if (res === null) {
+      value = undefined
+    } else {
+      value = createContext(res)
+    }
     dispatch('change', value)
   }
 </script>
@@ -86,7 +90,6 @@
   {#if contextValue}
     <ContextValue
       {process}
-      {masterTag}
       {contextValue}
       {context}
       {attribute}

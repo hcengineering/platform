@@ -14,15 +14,15 @@
 //
 
 import { type Editor } from '@tiptap/core'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { TableMap } from '@tiptap/pm/tables'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 
 import { findTable, haveTableRelatedChanges, insertRow } from '../utils'
+
 import { addSvg } from './icons'
-
+import { TableCachePluginKey } from './plugins'
 import { getTableCellWidgetDecorationPos, getTableWidthPx } from './utils'
-
-import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 interface TableRowInsertDecorationPluginState {
   decorations?: DecorationSet
@@ -42,7 +42,8 @@ export const TableRowInsertDecorationPlugin = (editor: Editor): Plugin<TableRowI
           return table !== undefined ? prev : {}
         }
 
-        const tableMap = TableMap.get(table.node)
+        const cache = TableCachePluginKey.getState(newState)
+        const tableMap = cache?.tableMap ?? TableMap.get(table.node)
         const { height } = tableMap
 
         let isStale = false
@@ -99,9 +100,24 @@ class RowInsertHandler {
     const handle = document.createElement('div')
     handle.classList.add('table-row-insert')
 
+    const marker = document.createElement('div')
+    marker.className = 'table-insert-marker'
+    handle.appendChild(marker)
+
     const button = document.createElement('button')
     button.className = 'table-insert-button'
     button.innerHTML = addSvg
+    handle.appendChild(button)
+
+    button.addEventListener('mouseenter', () => {
+      const table = findTable(editor.state.selection)
+      if (table === undefined) {
+        return
+      }
+      const tableWidthPx = getTableWidthPx(table, editor)
+      marker.style.width = tableWidthPx + 'px'
+    })
+
     button.addEventListener('mousedown', (event) => {
       const table = findTable(editor.state.selection)
       if (table === undefined) {
@@ -112,29 +128,9 @@ class RowInsertHandler {
 
       editor.view.dispatch(insertRow(table, row + 1, editor.state.tr))
     })
-    handle.appendChild(button)
-
-    const marker = document.createElement('div')
-    marker.className = 'table-insert-marker'
-    handle.appendChild(marker)
-
-    const updateMarkerHeight = (): void => {
-      const table = findTable(editor.state.selection)
-      if (table === undefined) {
-        return
-      }
-      const tableWidthPx = getTableWidthPx(table, editor)
-      marker.style.width = tableWidthPx + 'px'
-    }
-
-    updateMarkerHeight()
-    editor.on('update', updateMarkerHeight)
 
     if (this.destroy !== undefined) {
       this.destroy()
-    }
-    this.destroy = () => {
-      editor.off('update', updateMarkerHeight)
     }
 
     return handle

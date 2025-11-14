@@ -36,6 +36,7 @@
     "YesterdayAt": "Dün - {time}",
     "AndMore": "ve {count} daha",
     "IsTyping": "{count, plural, =1 {yazıyor} other {yazıyorlar}}...",
+    "IsThinking": "{count, plural, =1 {düşünüyor} other {düşünüyorlar}}...",
     "Loading": "Yükleniyor...",
     "MessageIn": "#{title} içinde mesaj",
     "ThreadWasRemoved": "Bu başlık kaldırıldı.",
@@ -88,6 +89,10 @@
     "AnonymousQuiz": "Anonim quiz",
     "Direct": "Direkt",
     "Directs": "Direktler",
-    "Members": "Üyeler"
+    "Members": "Üyeler",
+    "Translate": "Çevir",
+    "WriteMessageEllipsis": "Mesaj yaz...",
+    "EditMessageEllipsis": "Mesajı düzenle...",
+    "ArrowDownMessages": "↓ Son mesajlar"
   }
 }

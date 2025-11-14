@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
-  import { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { location } from '@hcengineering/ui'
@@ -22,13 +22,12 @@
   import { onDestroy } from 'svelte'
   import card from '../plugin'
 
-  export let currentSpace: Ref<Space>
-
   let _class: Ref<Class<Doc>> | undefined
 
   onDestroy(
     location.subscribe((loc) => {
-      _class = loc.path[4]
+      const isTypeSpecified = loc.path[3] === 'type'
+      _class = isTypeSpecified ? loc.path[4] : card.class.Card
     })
   )
 
@@ -51,8 +50,6 @@
 {#if clazz !== undefined && label !== undefined}
   <SpecialView
     _class={clazz._id}
-    baseQuery={{ space: currentSpace }}
-    space={currentSpace}
     defaultViewletDescriptor={card.viewlet.CardFeedDescriptor}
     {label}
     icon={card.icon.Card}

@@ -74,6 +74,7 @@ import { defineMethods } from './actions'
 import { defineTriggers } from './triggers'
 import { defineFunctions } from './functions'
 import process from './plugin'
+import { definePermissions } from './permission'
 
 const DOMAIN_PROCESS = 'process' as Domain
 const DOMAIN_PROCESS_LOG = 'process-log' as Domain
@@ -315,7 +316,7 @@ export function createModel (builder: Builder): void {
       },
       label: process.string.RunProcess,
       icon: process.icon.Process,
-      input: 'focus',
+      input: 'any',
       category: view.category.General,
       target: card.class.Card,
       context: {
@@ -588,10 +589,10 @@ export function createModel (builder: Builder): void {
     component: process.component.ProcessesSettingSection
   })
 
-  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
-    extension: workbench.extensions.WorkbenchExtensions,
-    component: process.component.NotifierExtension
-  })
+  // builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+  //   extension: workbench.extensions.WorkbenchExtensions,
+  //   component: process.component.NotifierExtension
+  // })
 
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
@@ -672,6 +673,12 @@ export function createModel (builder: Builder): void {
     props: {
       modes: ['Equal', 'NotEqual', 'Exists']
     }
+  })
+
+  definePermissions(builder)
+
+  builder.createDoc(card.class.PermissionObjectClass, core.space.Model, {
+    objectClass: process.class.Execution
   })
 }
 

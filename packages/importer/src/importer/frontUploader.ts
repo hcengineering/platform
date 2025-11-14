@@ -16,11 +16,11 @@ import {
   type CollaborativeDoc,
   concatLink,
   makeCollabJsonId,
-  Markup,
+  type Markup,
   type Blob as PlatformBlob,
   type Ref
 } from '@hcengineering/core'
-import { FileUploader, UploadResult } from './uploader'
+import { type FileUploader, type UploadResult } from './uploader'
 
 interface FileUploadError {
   key: string

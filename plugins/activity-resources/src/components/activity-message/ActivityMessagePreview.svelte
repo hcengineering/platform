@@ -40,6 +40,7 @@
 {#if previewMixin}
   <Component
     is={previewMixin.presenter}
+    showLoading={false}
     props={{
       value,
       type,

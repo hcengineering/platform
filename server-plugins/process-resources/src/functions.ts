@@ -17,16 +17,21 @@ import cardPlugin, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
   Association,
   checkMixinKey,
+  Class,
   Data,
   Doc,
+  findProperty,
   generateId,
   getObjectValue,
+  makeDocCollabId,
   matchQuery,
   Ref,
   Relation,
   splitMixinUpdate,
   Tx,
-  TxProcessor
+  TxProcessor,
+  Type,
+  TypeNumber
 } from '@hcengineering/core'
 import process, {
   Execution,
@@ -41,6 +46,15 @@ import process, {
 import { ExecuteResult, ProcessControl, SuccessExecutionContext } from '@hcengineering/server-process'
 import time, { ToDoPriority } from '@hcengineering/time'
 
+function checkResult (execution: Execution, results: Record<string, any> | undefined): boolean {
+  if (results === undefined) return true
+  for (const [key, value] of Object.entries(results)) {
+    const res = findProperty([execution.context as any], key, value)
+    if (res.length === 0) return false
+  }
+  return true
+}
+
 export async function CheckToDoDone (
   control: ProcessControl,
   execution: Execution,
@@ -49,11 +63,12 @@ export async function CheckToDoDone (
 ): Promise<boolean> {
   if (params._id === undefined) return false
   if (context.todo !== undefined) {
-    return context.todo._id === params._id
+    const matched = context.todo._id === params._id
+    return matched && checkResult(execution, params.result)
   } else {
     const todo = await control.client.findOne(process.class.ProcessToDo, { _id: params._id })
     if (todo === undefined) return false
-    return todo.doneOn !== null
+    return todo.doneOn !== null && checkResult(execution, params.result)
   }
 }
 
@@ -79,6 +94,42 @@ export async function CheckSubProcessesDone (control: ProcessControl, execution:
     status: ExecutionStatus.Active
   })
   return res === undefined
+}
+
+export async function CheckSubProcessMatch (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): Promise<boolean> {
+  const { process: targetProcess, currentState } = params
+
+  if (targetProcess === undefined || currentState === undefined) return false
+
+  const subExecutions = await control.client.findAll(process.class.Execution, {
+    parentId: execution._id,
+    process: targetProcess
+  })
+
+  if (subExecutions.length === 0) return false
+
+  const [predicate, value] = Object.entries(currentState)[0]
+
+  const res = matchQuery(
+    subExecutions,
+    { currentState: { $in: value as any } },
+    process.class.Execution,
+    control.client.getHierarchy(),
+    true
+  )
+  if (predicate === '$all') {
+    return res.length === subExecutions.length
+  } else if (predicate === '$any') {
+    return res.length > 0
+  } else if (predicate === '$nin') {
+    return res.length === 0
+  }
+  return false
 }
 
 export function MatchCardCheck (
@@ -164,6 +215,24 @@ export async function AddRelation (
   }
 }
 
+function respectAttributeType (attrType: Type<any>, value: any): any {
+  switch (attrType._class) {
+    case core.class.TypeNumber: {
+      const type = attrType as TypeNumber
+      const { min, max, digits } = type
+      let res = value
+      if (min !== undefined && res < min) res = min
+      if (max !== undefined && res > max) res = max
+      if (digits !== undefined) {
+        return Number(Number(res).toFixed(digits))
+      }
+      return res
+    }
+    default:
+      return value
+  }
+}
+
 export async function UpdateCard (
   params: MethodParams<Card>,
   execution: Execution,
@@ -180,7 +249,12 @@ export async function UpdateCard (
   for (const key in params) {
     const prevKey = checkMixinKey(key, _process.masterTag, hierarchy)
     prevValue[key] = getObjectValue(prevKey, target)
-    update[key] = (params as any)[key]
+    const attr = hierarchy.findAttribute(_process.masterTag, key)
+    if (attr === undefined) {
+      update[key] = (params as any)[key]
+    } else {
+      update[key] = respectAttributeType(attr.type, (params as any)[key])
+    }
   }
 
   const res: Tx[] = []
@@ -356,12 +430,41 @@ export async function CreateToDo (
   }
 }
 
+async function getContent (
+  control: ProcessControl,
+  source: string,
+  _id: Ref<Card>,
+  _class: Ref<Class<Card>>
+): Promise<string> {
+  const collabClient = control.collaboratorFactory()
+  const data = source.split('-')
+  const sourceId = data[0]
+  const sourceAttr = data[1]
+  if (isEmpty(sourceId) || isEmpty(sourceAttr)) {
+    throw processError(process.error.RequiredParamsNotProvided, { params: 'content' })
+  }
+  const sourceCard = await control.client.findOne(cardPlugin.class.Card, { _id: sourceId as Ref<Card> })
+  if (sourceCard === undefined) {
+    throw processError(process.error.ObjectNotFound, { _id: sourceId })
+  }
+  const markup = await collabClient.getMarkup(makeDocCollabId(sourceCard, sourceAttr))
+  const ref = await collabClient.createMarkup(
+    {
+      objectClass: _class,
+      objectId: _id,
+      objectAttr: 'content'
+    },
+    markup
+  )
+  return ref
+}
+
 export async function CreateCard (
   params: MethodParams<Card>,
   execution: Execution,
   control: ProcessControl
 ): Promise<ExecuteResult> {
-  const { _class, title, ...attrs } = params
+  const { _class, title, content, ...attrs } = params
   for (const key in { _class, title }) {
     const val = (params as any)[key]
     if (isEmpty(val)) {
@@ -369,10 +472,17 @@ export async function CreateCard (
     }
   }
   const _id = generateId<Card>()
+  const newContent =
+    content !== undefined && !isEmpty(content)
+      ? await getContent(control, content, _id, _class as Ref<Class<Card>>)
+      : content
   const data = {
     title,
     ...attrs
   } as any
+  if (newContent !== undefined) {
+    data.content = content
+  }
   const tx = control.client.txFactory.createTxCreateDoc(_class as Ref<MasterTag>, execution.space, data, _id)
   const res: Tx[] = [tx]
   const rollback: Tx[] = [control.client.txFactory.createTxRemoveDoc(_class as Ref<MasterTag>, execution.space, _id)]

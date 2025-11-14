@@ -24,6 +24,7 @@
   import SurveyPopup from './SurveyPopup.svelte'
   import survey from '../plugin'
   import { makePollData } from '../utils'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let objectId: Ref<Doc>
   export let space: Ref<Space>
@@ -49,7 +50,7 @@
 
     const poll = await client.findOne(survey.class.Poll, { _id: pollId })
     if (poll === undefined) {
-      console.error(`Could not find just created poll ${pollId}.`)
+      Analytics.handleError(new Error(`Could not find just created poll ${pollId}.`))
       return
     }
 

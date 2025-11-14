@@ -14,30 +14,34 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { isArchivingMode, WorkspaceInfoWithStatus } from '@hcengineering/core'
+  import { isArchivingMode, systemAccountUuid, WorkspaceInfoWithStatus } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { getMetadata, getResource } from '@hcengineering/platform'
-  import presentation, { decodeTokenPayload, isAdminUser } from '@hcengineering/presentation'
+  import presentation, { createQuery, decodeTokenPayload, hasResource, isAdminUser } from '@hcengineering/presentation'
   import {
+    closePopup,
+    Component,
+    fetchMetadataLocalStorage,
+    getCurrentLocation,
     Icon,
     IconCheck,
+    isSameSegments,
     Label,
     Loading,
     Location,
-    SearchEdit,
-    closePopup,
-    fetchMetadataLocalStorage,
-    getCurrentLocation,
-    isSameSegments,
     locationStorageKeyId,
     locationToUrl,
     navigate,
     resolvedLocationStore,
+    SearchEdit,
     ticker
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { onDestroy, onMount } from 'svelte'
 
+  import { Analytics } from '@hcengineering/analytics'
+  import type { PersonRating } from '@hcengineering/rating'
+  import ratingPlugin from '@hcengineering/rating'
   import { workspacesStore } from '../utils'
   // import Drag from './icons/Drag.svelte'
 
@@ -46,6 +50,16 @@
       $workspacesStore = await f()
     })
   })
+
+  const levelQuery = createQuery()
+
+  let sysRating: PersonRating | undefined
+
+  levelQuery.query(ratingPlugin.class.PersonRating, { accountId: systemAccountUuid }, (res) => {
+    sysRating = res[0]
+  })
+
+  const hasRating = hasResource(ratingPlugin.component.RatingRing)
 
   function getWorkspaceLink (ws: WorkspaceInfoWithStatus): string {
     const loc: Location = {
@@ -124,8 +138,8 @@
         .then(async (json) => {
           data = await json.json()
         })
-        .catch((err) => {
-          console.error(err)
+        .catch((err: any) => {
+          Analytics.handleError(err)
         })
     })
   )
@@ -144,6 +158,24 @@
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="antiPopup" on:keydown={keyDown}>
     <div class="ap-space x2" />
+
+    <div class="p-2 ml-2 mr-2 mb-2 flex-grow flex flex-col">
+      <div class="text-lg font-bold">
+        {getMetadata(presentation.metadata.WorkspaceName) ?? ''}
+      </div>
+      {#if hasRating}
+        <div class="flex-row-center text-sm">
+          <Component
+            is={ratingPlugin.component.RatingRing}
+            props={{ rating: sysRating?.rating ?? 0, showValues: true }}
+          />
+        </div>
+        <div class="flex-row-center mt-2">
+          <Component is={ratingPlugin.component.RatingActivities} props={{ rating: sysRating }} />
+        </div>
+      {/if}
+    </div>
+
     {#if isAdmin}
       <div class="p-2 ml-2 mr-2 mb-2 flex-grow flex-row-center">
         <SearchEdit bind:value={search} width={'100%'} />

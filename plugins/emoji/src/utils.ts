@@ -28,7 +28,7 @@ import {
   type ShortcodesDataset
 } from 'emojibase'
 import emojiPlugin from './plugin'
-import { getResource } from '@hcengineering/platform'
+import { getResource, getResourceP } from '@hcengineering/platform'
 import { ParsedTextWithEmojis } from './types'
 
 export const emojiRegex = new RegExp(`(?:^|\\s)(${EMOJI_REGEX.source})$`)
@@ -81,4 +81,17 @@ async function loadParseEmojisFunction (): Promise<((text: string) => ParsedText
   }
 }
 
-export { fetchEmojis, fetchMessages, loadParseEmojisFunction, type Locale }
+function getParseEmojisFunction (): ((text: string) => ParsedTextWithEmojis) | undefined {
+  try {
+    const c = getResourceP(emojiPlugin.functions.ParseTextWithEmojis)
+    if (c instanceof Promise) {
+      return undefined
+    }
+    return c
+  } catch (e) {
+    console.log('Cannot locate emoji parsing function')
+    return undefined
+  }
+}
+
+export { fetchEmojis, fetchMessages, loadParseEmojisFunction, type Locale, getParseEmojisFunction }

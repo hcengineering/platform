@@ -22,7 +22,7 @@
    *
    * This option is strongly recommended. The default value is false.
    */
-  "useWorkspaces": false,
+  "useWorkspaces": true,
 
   /**
    * This setting determines how PNPM chooses version numbers during `rush update`.
@@ -199,8 +199,64 @@
    * PNPM documentation: https://pnpm.io/package_json#pnpmoverrides
    */
   "globalOverrides": {
-    // "example1": "^1.0.0",
-    // "example2": "npm:@company/example2@^1.0.0"
+    // DEV: Uncomment the lines below to use local huly.core, huly.server, and huly.utils packages
+    // Then "rush update --full" to update the dependencies.
+    // NOTE:  It's configured to work if huly.core, huly.server, and huly.utils are placed adjacent to the platform. If you have them in a different location, you need to change the paths below.
+    // huly.core packages:
+    // "@hcengineering/account-client": "file:../../../huly.core/packages/account-client",
+    // "@hcengineering/analytics": "file:../../../huly.core/packages/analytics",
+    // "@hcengineering/analytics-service": "file:../../../huly.core/packages/analytics-service",
+    // "@hcengineering/api-client": "file:../../../huly.core/packages/api-client",
+    // "@hcengineering/client": "file:../../../huly.core/packages/client",
+    // "@hcengineering/client-resources": "file:../../../huly.core/packages/client-resources",
+    // "@hcengineering/collaborator-client": "file:../../../huly.core/packages/collaborator-client",
+    // "@hcengineering/core": "file:../../../huly.core/packages/core",
+    // "@hcengineering/hulylake-client": "file:../../../huly.core/packages/hulylake-client",
+    // "@hcengineering/model": "file:../../../huly.core/packages/model",
+    // "@hcengineering/platform": "file:../../../huly.core/packages/platform",
+    // "@hcengineering/query": "file:../../../huly.core/packages/query",
+    // "@hcengineering/rank": "file:../../../huly.core/packages/rank",
+    // "@hcengineering/retry": "file:../../../huly.core/packages/retry",
+    // "@hcengineering/rpc": "file:../../../huly.core/packages/rpc",
+    // "@hcengineering/storage": "file:../../../huly.core/packages/storage",
+    // "@hcengineering/text": "file:../../../huly.core/packages/text",
+    // "@hcengineering/text-core": "file:../../../huly.core/packages/text-core",
+    // "@hcengineering/text-html": "file:../../../huly.core/packages/text-html",
+    // "@hcengineering/text-markdown": "file:../../../huly.core/packages/text-markdown",
+    // "@hcengineering/text-ydoc": "file:../../../huly.core/packages/text-ydoc",
+    // "@hcengineering/token": "file:../../../huly.core/packages/token",
+    // "@hcengineering/measurements": "file:../../../huly.core/packages/measurements",
+    // "@hcengineering/measurements-otlp": "file:../../../huly.core/packages/measurements-otlp",
+    // "@hcengineering/postgres-base": "file:../../../huly.core/packages/postgres-base",
+    // huly.server packages:
+    // "@hcengineering/collaboration": "file:../../../huly.server/packages/collaboration",
+    // "@hcengineering/datalake": "file:../../../huly.server/packages/datalake",
+    // "@hcengineering/elastic": "file:../../../huly.server/packages/elastic",
+    // "@hcengineering/hulylake": "file:../../../huly.server/packages/hulylake",
+    // "@hcengineering/kafka": "file:../../../huly.server/packages/kafka",
+    // "@hcengineering/middleware": "file:../../../huly.server/packages/middleware",
+    // "@hcengineering/minio": "file:../../../huly.server/packages/minio",
+    // "@hcengineering/mongo": "file:../../../huly.server/packages/mongo",
+    // "@hcengineering/postgres": "file:../../../huly.server/packages/postgres",
+    // "@hcengineering/s3": "file:../../../huly.server/packages/s3",
+    // "@hcengineering/server": "file:../../../huly.server/packages/server",
+    // "@hcengineering/server-client": "file:../../../huly.server/packages/client",
+    // "@hcengineering/server-core": "file:../../../huly.server/packages/core",
+    // "@hcengineering/server-storage": "file:../../../huly.server/packages/server-storage"
+
+    // huly.utils packages:
+    // "@hcengineering/platform-rig": "file:../../../huly.utils/packages/platform-rig",
+    // "@hcengineering/ui-test": "file:../../../huly.utils/packages/ui-test"
+
+    // huly.communication packages
+    // "@hcengineering/communication-types": "file:../../../communication/packages/types",
+    // "@hcengineering/communication-sdk-types": "file:../../../communication/packages/sdk-types",
+    // "@hcengineering/communication-shared": "file:../../../communication/packages/shared",
+    // "@hcengineering/communication-rest-client": "file:../../../communication/packages/rest-client",
+    // "@hcengineering/communication-cockroach": "file:../../../communication/packages/cockroach",
+    // "@hcengineering/communication-server": "file:../../../communication/packages/server",
+    // "@hcengineering/communication-query": "file:../../../communication/packages/query",
+    // "@hcengineering/communication-client-query": "file:../../../communication/packages/client-query"
   },
 
   /**

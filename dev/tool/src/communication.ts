@@ -12,123 +12,962 @@
 // limitations under the License.
 
 import { type Workspace } from '@hcengineering/account'
-import { type HulylakeClient, type JsonPatch } from '@hcengineering/hulylake-client'
+import { type JsonPatch, type HulylakeWorkspaceClient } from '@hcengineering/hulylake-client'
 import type postgres from 'postgres'
 import {
+  type AccountUuid,
+  DOMAIN_SPACE,
+  fillDefaults,
+  generateId,
   generateUuid,
-  groupByArray,
+  type Hierarchy,
+  type LowLevelStorage,
+  type MarkupBlobRef,
   type MeasureContext,
-  notEmpty,
   type PersonId,
   type PersonUuid,
-  type WorkspaceUuid
+  type Rank,
+  type Ref,
+  SortingOrder,
+  type WorkspaceUuid,
+  systemAccountUuid,
+  notEmpty,
+  type Class,
+  type Markup,
+  type WithLookup,
+  RateLimiter,
+  type Doc
 } from '@hcengineering/core'
 import {
-  type Attachment,
-  type AttachmentData,
   type AttachmentDoc,
   type AttachmentID,
-  type AttachmentUpdateData,
   type BlobID,
   type CardID,
   type CardType,
   type Emoji,
-  type Markdown,
   type MessageDoc,
-  type MessageExtra,
   type MessageID,
   type MessagesDoc,
-  type MessagesGroup,
   type MessagesGroupDoc,
-  type MessagesGroupsDoc,
   MessageType,
-  type SocialID,
-  type ThreadDoc
+  type ThreadDoc,
+  type CardPeer,
+  type Peer
 } from '@hcengineering/communication-types'
 import { type AccountClient } from '@hcengineering/account-client'
+import chunter, {
+  type Channel,
+  type ChunterSpace,
+  type ThreadMessage,
+  type DirectMessage
+} from '@hcengineering/chunter'
+import cardPlugin, { type Card, type CardSpace, DOMAIN_CARD } from '@hcengineering/card'
+import { makeRank } from '@hcengineering/rank'
+import chat from '@hcengineering/chat'
+import { DOMAIN_ACTIVITY } from '@hcengineering/model-activity'
+import { DOMAIN_CONTACT } from '@hcengineering/model-contact'
+import { markupToMarkdown } from '@hcengineering/text-markdown'
+import { markupToJSON, markupToText } from '@hcengineering/text'
+import activity, { type ActivityMessage } from '@hcengineering/activity'
+import communication, { type Direct } from '@hcengineering/communication'
+import { type Employee, formatName, type Person, type PersonSpace } from '@hcengineering/contact'
+import { withRetry, DEFAULT_RETRY_OPTIONS } from '@hcengineering/retry'
+import attachment from '@hcengineering/attachment'
 
+const MAX_MESSAGES_BATCH = 200
 const MAX_MESSAGES_SIZE = 95 * 1024
 
-const MESSAGES_TABLE = 'communication.message'
-const PATCH_TABLE = 'communication.patch'
-const ATTACHMENT_TABLE = 'communication.attachment'
-const REACTION_TABLE = 'communication.reaction'
+const COLLABORATOR_TABLE = 'communication.collaborator'
+const LABEL_TABLE = 'communication.label'
+const PEER_TABLE = 'communication.peer'
+const MESSAGE_INDEX_TABLE = 'communication.message_index'
 const THREAD_INDEX_TABLE = 'communication.thread_index'
 
-export async function migrateWorkspaceMessages (
+export async function migrateWorkspaceChat (
   ctx: MeasureContext,
   ws: Workspace,
-  card: CardID | undefined,
   db: postgres.Sql,
-  hulylake: HulylakeClient,
+  client: LowLevelStorage,
+  hierarchy: Hierarchy,
+  hulylake: HulylakeWorkspaceClient,
   accountClient: AccountClient,
   personUuidBySocialId: Map<PersonId, PersonUuid>
 ): Promise<void> {
-  await migrateMessages(ctx, ws, card, db, hulylake, accountClient, personUuidBySocialId)
+  await migrateChannels(ctx, ws, db, client, hierarchy, hulylake, accountClient, personUuidBySocialId)
+  await migrateDirects(ctx, ws, db, client, hierarchy, hulylake, accountClient, personUuidBySocialId)
+}
+
+async function migrateChannels (
+  ctx: MeasureContext,
+  ws: Workspace,
+  db: postgres.Sql,
+  client: LowLevelStorage,
+  hierarchy: Hierarchy,
+  hulylake: HulylakeWorkspaceClient,
+  accountClient: AccountClient,
+  personUuidBySocialId: Map<PersonId, PersonUuid>
+): Promise<void> {
+  const docs = await client.rawFindAll<Channel>(
+    DOMAIN_SPACE,
+    { _class: chunter.class.Channel },
+    { sort: { createdOn: SortingOrder.Ascending } }
+  )
+  const limiter = new RateLimiter(5)
+  let i = 0
+
+  if (docs == null || docs.length === 0) return
+
+  for (const doc of docs) {
+    if ((doc.messages ?? 0) === 0) continue
+    i++
+    await limiter.add(async () => {
+      try {
+        ctx.info('migrate channel', { index: i, _id: doc._id })
+        await migrateChannel(ctx, ws, db, client, hierarchy, hulylake, accountClient, personUuidBySocialId, doc)
+      } catch (e) {
+        ctx.error('Failed to migrate channel', { _id: doc._id })
+        ctx.error('Error', { error: e })
+      }
+    })
+  }
+
+  await limiter.waitProcessing()
+}
+
+async function migrateChannel (
+  ctx: MeasureContext,
+  ws: Workspace,
+  db: postgres.Sql,
+  client: LowLevelStorage,
+  hierarchy: Hierarchy,
+  hulylake: HulylakeWorkspaceClient,
+  accountClient: AccountClient,
+  personUuidBySocialId: Map<PersonId, PersonUuid>,
+  doc: Channel
+): Promise<void> {
+  const migratedToCard = doc.__migratedToCard
+  const lastOne = (
+    await client.rawFindAll<Card>(DOMAIN_CARD, {}, { sort: { rank: SortingOrder.Descending }, limit: 1 })
+  )[0]
+  let spaceId: Ref<CardSpace> = cardPlugin.space.Default
+  if (doc.private && migratedToCard?.space == null) {
+    const space: CardSpace = {
+      name: doc.name,
+      description: doc.description,
+      members: doc.members,
+      private: true,
+      archived: doc.archived,
+      autoJoin: doc.autoJoin,
+      owners: doc.owners,
+      types: [chat.masterTag.Thread],
+      type: cardPlugin.spaceType.SpaceType,
+      space: cardPlugin.space.Default,
+      modifiedBy: doc.modifiedBy,
+      modifiedOn: doc.modifiedOn,
+      createdOn: doc.createdOn,
+      createdBy: doc.createdBy,
+      _class: cardPlugin.class.CardSpace,
+      _id: generateId<CardSpace>()
+    }
+    await client.upload(ctx, DOMAIN_SPACE, [
+      { ...space, __migratedFromChunter: true, __migratedFromDoc: doc._id } as any
+    ])
+    spaceId = space._id
+  } else {
+    spaceId = (migratedToCard?.space ?? cardPlugin.space.Default) as Ref<CardSpace>
+  }
+
+  let card: Card | undefined
+  if (migratedToCard?.card != null) {
+    card = (await client.rawFindAll<Card>(DOMAIN_CARD, { _id: migratedToCard.card as Ref<Card> }, { limit: 1 }))[0]
+  }
+
+  if (card == null) {
+    const _id = generateId<Card>()
+    const data = fillDefaults<Card>(
+      hierarchy,
+      {
+        title: doc.name,
+        rank: makeRank(lastOne?.rank, undefined),
+        content: '' as MarkupBlobRef,
+        blobs: {},
+        parentInfo: []
+      },
+      chat.masterTag.Thread
+    )
+
+    card = {
+      ...data,
+      space: spaceId,
+      modifiedBy: doc.modifiedBy,
+      modifiedOn: doc.modifiedOn,
+      createdOn: doc.createdOn,
+      createdBy: doc.createdBy,
+      _class: chat.masterTag.Thread,
+      _id
+    }
+
+    await client.upload(ctx, DOMAIN_CARD, [{ ...card, __migratedFromChunter: true, __migratedFromDoc: doc._id } as any])
+    await addCollaboratorsToDb(db, ws.uuid, card._id, card._class, doc.members)
+    await client.rawUpdate<Channel>(
+      DOMAIN_SPACE,
+      { _id: doc._id },
+      { __migratedToCard: { card: card._id, space: spaceId } }
+    )
+    doc.__migratedUntil = undefined
+  }
+
+  await migrateMessages(ctx, ws, db, client, hierarchy, hulylake, accountClient, personUuidBySocialId, doc, [card])
+}
+
+async function migrateDirects (
+  ctx: MeasureContext,
+  ws: Workspace,
+  db: postgres.Sql,
+  client: LowLevelStorage,
+  hierarchy: Hierarchy,
+  hulylake: HulylakeWorkspaceClient,
+  accountClient: AccountClient,
+  personUuidBySocialId: Map<PersonId, PersonUuid>
+): Promise<void> {
+  const docs = await client.rawFindAll<DirectMessage>(
+    DOMAIN_SPACE,
+    { _class: chunter.class.DirectMessage },
+    { sort: { createdOn: SortingOrder.Ascending } }
+  )
+  if (docs == null || docs.length === 0) return
+  const limiter = new RateLimiter(5)
+
+  for (const doc of docs) {
+    if ((doc.messages ?? 0) === 0) continue
+
+    await limiter.add(async () => {
+      try {
+        ctx.info('Start migrate direct', { _id: doc._id })
+        await migrateDirect(ctx, ws, db, client, hierarchy, hulylake, accountClient, personUuidBySocialId, doc)
+      } catch (e) {
+        ctx.error('Failed to migrate direct', { _id: doc._id })
+        ctx.error('Error', { error: e })
+      }
+    })
+  }
+
+  await limiter.waitProcessing()
+}
+
+async function migrateDirect (
+  ctx: MeasureContext,
+  ws: Workspace,
+  db: postgres.Sql,
+  client: LowLevelStorage,
+  hierarchy: Hierarchy,
+  hulylake: HulylakeWorkspaceClient,
+  accountClient: AccountClient,
+  personUuidBySocialId: Map<PersonId, PersonUuid>,
+  doc: DirectMessage
+): Promise<void> {
+  const migratedToCard = doc.__migratedToCard
+
+  const members = doc.members
+
+  const persons = await client.rawFindAll<Person>(DOMAIN_CONTACT, { personUuid: { $in: members } })
+  const personSpaces = (
+    await client.rawFindAll<PersonSpace>(DOMAIN_SPACE, { person: { $in: persons.map((p) => p._id) } })
+  ).sort((a, b) => a._id.localeCompare(b._id))
+  if (personSpaces.length === 0) return
+
+  let lastRank = (
+    await client.rawFindAll<Card>(DOMAIN_CARD, {}, { sort: { rank: SortingOrder.Descending }, limit: 1 })
+  )[0]?.rank
+  const peers: PeerInfo[] = []
+  const directs: Direct[] = []
+
+  let createdDirect: Direct | undefined
+
+  if (migratedToCard != null) {
+    createdDirect = (
+      await client.rawFindAll<Direct>(
+        DOMAIN_CARD,
+        { _class: communication.type.Direct, _id: migratedToCard.card as Ref<Direct> },
+        { limit: 1 }
+      )
+    )[0]
+  }
+
+  if (members.length <= 2 && createdDirect == null) {
+    const myDirects = await client.rawFindAll<Direct>(DOMAIN_CARD, {
+      _class: communication.type.Direct,
+      space: personSpaces[0]._id
+    })
+    createdDirect = myDirects.find((it) => {
+      const directMembers = new Set(it.members)
+      const createMembers = new Set(persons.map((p) => p._id))
+      if (directMembers.size !== createMembers.size) return false
+      for (const item of directMembers) {
+        if (!createMembers.has(item as Ref<Employee>)) return false
+      }
+      return true
+    })
+  }
+
+  if (createdDirect == null) {
+    const peerId = generateId()
+    doc.__migratedUntil = undefined
+
+    for (const me of members) {
+      const person = persons.find((p) => p.personUuid === me)
+      if (person == null) continue
+      const space = personSpaces.find((p) => p.person === person._id)
+      if (space == null) continue
+
+      const _id = generateId<Direct>()
+      const data = fillDefaults<Direct>(
+        hierarchy,
+        {
+          title: getDirectName(me, persons),
+          rank: makeRank(lastRank, undefined),
+          content: '' as MarkupBlobRef,
+          blobs: {},
+          parentInfo: [],
+          members: persons.map((p) => p._id),
+          peerId
+        },
+        communication.type.Direct
+      )
+      lastRank = data.rank
+
+      const direct: Direct = {
+        ...data,
+        space: space._id,
+        modifiedBy: doc.modifiedBy,
+        modifiedOn: doc.modifiedOn,
+        createdOn: doc.createdOn,
+        createdBy: doc.createdBy,
+        _class: communication.type.Direct,
+        _id
+      }
+
+      directs.push(direct)
+      peers.push({ cardId: direct._id, space: direct.space as Ref<PersonSpace> })
+      await client.upload(ctx, DOMAIN_CARD, [
+        { ...direct, __migratedFromChunter: true, __migratedFromDoc: doc._id } as any
+      ])
+      await addCollaboratorsToDb(db, ws.uuid, direct._id, direct._class, doc.members)
+    }
+    if (directs.length > 0) {
+      await client.rawUpdate<ChunterSpace>(
+        DOMAIN_SPACE,
+        { _id: doc._id },
+        { __migratedToCard: { card: directs[0]._id, space: directs[0].space } }
+      )
+
+      await addPeersToDb(db, ws.uuid, peerId, peers)
+    }
+  } else {
+    const cardPeer = await findPeer(db, ws.uuid, createdDirect._id)
+    if (cardPeer != null) {
+      for (const m of cardPeer.members) {
+        const d = (
+          await client.rawFindAll<Direct>(DOMAIN_CARD, { _class: communication.type.Direct, _id: m.cardId })
+        )[0]
+
+        if (d != null) {
+          directs.push(d)
+          peers.push({ cardId: m.cardId, space: m.extra.space as Ref<PersonSpace> })
+        }
+      }
+    }
+  }
+
+  await migrateMessages(
+    ctx,
+    ws,
+    db,
+    client,
+    hierarchy,
+    hulylake,
+    accountClient,
+    personUuidBySocialId,
+    doc,
+    directs,
+    peers
+  )
+}
+
+async function convertChunterMessage (
+  client: LowLevelStorage,
+  hierarchy: Hierarchy,
+  card: Card,
+  message: RawMessage,
+  personUuidBySocialId: Map<PersonId, PersonUuid>,
+  accountClient: AccountClient,
+  lastRank?: Rank,
+  peers: PeerInfo[] = []
+): Promise<ConvertedMessage> {
+  const oldAttachments: RawAttachment[] = message.attachments
+  const oldReactions: RawReaction[] = message.reactions
+  let oldReplies: RawMessage[] = []
+
+  const attachments: Record<AttachmentID, AttachmentDoc> = {}
+  const reactions: Record<Emoji, Record<PersonUuid, { count: number, date: string }>> = {}
+
+  let thread: Card | undefined
+  const threadMessages: MessageDoc[] = []
+  const threadCollaborators: AccountUuid[] = []
+  const threads: Record<CardID, ThreadDoc> = {}
+
+  if ((message.replies ?? 0) > 0) {
+    oldReplies = (
+      await client.rawFindAll<ThreadMessage>(
+        DOMAIN_ACTIVITY,
+        { _class: chunter.class.ThreadMessage, attachedTo: message._id },
+        {
+          sort: { createdOn: SortingOrder.Ascending },
+          lookup: {
+            _id: {
+              attachments: attachment.class.Attachment,
+              reactions: activity.class.Reaction
+            }
+          }
+        }
+      )
+    ).map(threadMessageToRawMessage)
+  }
+
+  if (oldReplies.length > 0) {
+    const firstReply = oldReplies[0]
+    const lastReply = oldReplies[oldReplies.length - 1]
+    const text = sanitizeTitle(markupToText(message.message).trim().slice(0, 30))
+    const data = fillDefaults<Card>(
+      hierarchy,
+      {
+        title: text.length > 0 ? text : `Thread in ${card.title}`,
+        rank: makeRank(lastRank, undefined),
+        content: '' as MarkupBlobRef,
+        blobs: {},
+        parentInfo: [
+          {
+            _id: card._id,
+            _class: card._class,
+            title: card.title
+          }
+        ],
+        ...(peers.length > 0 ? { conversationId: message._id } : {})
+      },
+      chat.masterTag.Thread
+    )
+    thread = {
+      ...data,
+      space: card.space,
+      modifiedBy: lastReply.modifiedBy,
+      modifiedOn: lastReply.modifiedOn,
+      createdOn: firstReply.createdOn ?? message.createdOn,
+      createdBy: firstReply.createdBy ?? message.createdBy,
+      _class: chat.masterTag.Thread,
+      _id: generateId<Card>()
+    }
+
+    const repliedPersons: Record<PersonUuid, number> = {}
+
+    for (const oldReply of oldReplies) {
+      const personUuid = await getPersonUuidBySocialId(
+        accountClient,
+        personUuidBySocialId,
+        oldReply.createdBy ?? oldReply.modifiedBy
+      )
+
+      if (personUuid != null) {
+        if (!threadCollaborators.includes(personUuid as AccountUuid)) {
+          threadCollaborators.push(personUuid as AccountUuid)
+        }
+        const current = repliedPersons[personUuid] ?? 0
+        repliedPersons[personUuid] = current + 1
+      }
+
+      const converted = await convertChunterMessage(
+        client,
+        hierarchy,
+        thread,
+        oldReply,
+        personUuidBySocialId,
+        accountClient
+      )
+
+      threadMessages.push(converted.message)
+    }
+    const personUuid = await getPersonUuidBySocialId(
+      accountClient,
+      personUuidBySocialId,
+      message.createdBy ?? message.modifiedBy
+    )
+
+    if (personUuid != null) {
+      threadCollaborators.push(personUuid as AccountUuid)
+    }
+
+    threads[thread._id] = {
+      threadId: thread._id,
+      threadType: thread._class,
+      repliesCount: oldReplies.length,
+      lastReplyDate: new Date(lastReply.createdOn ?? lastReply.modifiedOn).toISOString(),
+      repliedPersons
+    }
+  }
+
+  for (const oldAttachment of oldAttachments) {
+    const id = oldAttachment._id as any as AttachmentID
+    if (oldAttachment.type !== 'application/link-preview') {
+      attachments[id] = {
+        id,
+        mimeType: oldAttachment.type,
+        params: {
+          blobId: oldAttachment.file,
+          fileName: oldAttachment.name,
+          size: oldAttachment.size,
+          metadata: oldAttachment.metadata
+        },
+        creator: oldAttachment.createdBy,
+        created: new Date(oldAttachment.createdOn).toISOString(),
+        modified: null
+      }
+    }
+  }
+
+  for (const oldReaction of oldReactions) {
+    const emoji = oldReaction.emoji as any as Emoji
+    const personsData = reactions[emoji] ?? {}
+    const personUuid =
+      (await getPersonUuidBySocialId(accountClient, personUuidBySocialId, oldReaction.createdBy)) ?? systemAccountUuid
+
+    personsData[personUuid] = { count: 1, date: new Date(oldReaction.createdOn).toISOString() }
+    reactions[emoji] = personsData
+  }
+
+  const communicationMessage = {
+    id: toMessageID(message._id),
+    cardId: card._id,
+    created: new Date(message.createdOn ?? message.modifiedOn).toISOString(),
+    creator: message.createdBy ?? message.modifiedBy,
+    type: MessageType.Text,
+    content: markupToMarkdown(markupToJSON(message.message)),
+    extra: {},
+    language: null,
+    modified: message.editedOn != null ? new Date(message.editedOn).toISOString() : null,
+    attachments,
+    reactions,
+    threads
+  }
+
+  return { message: communicationMessage, thread, threadMessages, threadCollaborators }
+}
+
+function getDirectName (me: AccountUuid, persons: Person[]): string {
+  if (persons.length === 1) {
+    return persons.map((e) => formatName(e.name)).join(', ')
+  } else {
+    return persons
+      .filter((it) => it.personUuid !== me)
+      .map((e) => formatName(e.name))
+      .join(', ')
+  }
+}
+
+async function findPeer (db: postgres.Sql, ws: WorkspaceUuid, cardId: CardID): Promise<CardPeer | undefined> {
+  const table = db(PEER_TABLE)
+
+  const result = await db<Peer[]>`
+    SELECT p.*,
+           COALESCE(members.members, '[]') AS members
+    FROM ${table} AS p
+    LEFT JOIN LATERAL (
+      SELECT json_agg(
+               json_build_object(
+                 'workspace_id', p2.workspace_id,
+                 'card_id',      p2.card_id,
+                 'extra',        p2.extra
+               )
+             ) AS members
+      FROM ${table} AS p2
+      WHERE p2.value = p.value
+        AND p2.kind = 'card'
+        AND NOT (p2.workspace_id = p.workspace_id AND p2.card_id = p.card_id)
+    ) AS members ON true
+    WHERE p.workspace_id = ${ws}
+      AND p.card_id = ${cardId}
+      AND p.kind = 'card'
+  `
+
+  return result.map((r) => toPeer(r))[0]
+}
+
+async function addPeersToDb (
+  db: postgres.Sql,
+  ws: WorkspaceUuid,
+  conversationId: string,
+  peers: PeerInfo[]
+): Promise<void> {
+  const table = db(PEER_TABLE)
+  const date = Date.now()
+  const rows = peers.map((it) => ({
+    workspace_id: ws,
+    card_id: it.cardId,
+    kind: 'card',
+    value: conversationId,
+    extra: { space: it.space },
+    created: date
+  }))
+
+  await db` INSERT INTO ${table} ${db(rows)} ON CONFLICT DO NOTHING`
+}
+
+async function addCollaboratorsToDb (
+  db: postgres.Sql,
+  ws: WorkspaceUuid,
+  cardId: CardID,
+  cardType: CardType,
+  collaborators: AccountUuid[]
+): Promise<void> {
+  if (collaborators.length === 0) return
+  const cTable = db(COLLABORATOR_TABLE)
+  const date = Date.now()
+  const cRows = collaborators.map((account) => ({
+    workspace_id: ws,
+    card_id: cardId,
+    card_type: cardType,
+    date,
+    account
+  }))
+
+  await db` INSERT INTO ${cTable} ${db(cRows)} ON CONFLICT (workspace_id, card_id, account) DO NOTHING`
+  const lTable = db(LABEL_TABLE)
+
+  const lRows = collaborators.map((account) => ({
+    workspace_id: ws,
+    card_id: cardId,
+    card_type: cardType,
+    label_id: 'card:label:Subscribed',
+    created: date,
+    account
+  }))
+  await db`INSERT INTO ${lTable} ${db(lRows)} ON CONFLICT DO NOTHING`
+}
+
+async function isMessageIndexExists (
+  ctx: MeasureContext,
+  db: postgres.Sql,
+  ws: WorkspaceUuid,
+  cardId: CardID,
+  messageId: MessageID
+): Promise<boolean> {
+  const table = db(MESSAGE_INDEX_TABLE)
+  try {
+    const res = await withRetry(
+      async () =>
+        await db`SELECT * FROM ${table} WHERE workspace_id = ${ws} AND card_id = ${cardId} AND message_id = ${messageId}`
+    )
+    return res.length > 0
+  } catch (e) {
+    ctx.error('Failed to find message index', { error: e, ws, cardId, messageId })
+    return false
+  }
+}
+
+async function getActivityCursor (
+  db: postgres.Sql,
+  ws: WorkspaceUuid,
+  space: Ref<ChunterSpace>,
+  _class: Ref<Class<ActivityMessage>>,
+  limit = 500,
+  gte?: number
+): Promise<AsyncIterable<postgres.Row[]>> {
+  const activivtyTable = db('public.activity')
+  const attachmentsTable = db('public.attachment')
+  const reactionsTable = db('public.reaction')
+
+  return db`
+    SELECT
+      _id,
+      "modifiedBy",
+      "modifiedOn",
+      "createdBy",
+      "createdOn",
+      "attachedTo",
+      COALESCE((data->>'replies')::int, 0) AS replies,
+      data->'message' AS message,
+      data->'editedOn' AS "editedOn",
+      (
+        SELECT json_agg(
+          json_build_object(
+            '_id', att._id,
+            'createdBy', att."createdBy",
+            'createdOn', att."createdOn",
+            'type', att.data->>'type',
+            'name', att.data->>'name',
+            'size', att.data->>'size',
+            'metadata', att.data->>'metadata',
+            'file', att.data->'file'
+          )
+        )
+        FROM ${attachmentsTable} AS att
+        WHERE att."attachedTo" = activity._id
+      ) AS attachments,
+      (
+        SELECT json_agg(
+          json_build_object(
+            '_id', r._id,
+            'createdBy', r."createdBy",
+            'createdOn', r."createdOn",
+            'emoji', r.data->'emoji'
+          )
+        )
+        FROM ${reactionsTable} AS r
+        WHERE r."attachedTo" = activity._id
+      ) AS reactions
+    FROM ${activivtyTable} AS activity
+    WHERE "workspaceId" = ${ws}::uuid
+      AND "_class" = ${_class}::text
+      AND "attachedTo" = ${space}::text
+      ${gte != null ? db`AND "createdOn" >= ${gte}` : db``}
+    ORDER BY "createdOn" ASC;
+  `.cursor(limit)
 }
 
 async function migrateMessages (
   ctx: MeasureContext,
   ws: Workspace,
-  card: CardID | undefined,
   db: postgres.Sql,
-  hulylake: HulylakeClient,
+  client: LowLevelStorage,
+  hierarchy: Hierarchy,
+  hulylake: HulylakeWorkspaceClient,
   accountClient: AccountClient,
-  personUuidBySocialId: Map<PersonId, PersonUuid>
+  personUuidBySocialId: Map<PersonId, PersonUuid>,
+  doc: ChunterSpace,
+  cards: Card[],
+  peers: PeerInfo[] = []
 ): Promise<void> {
-  const force = card != null && card !== ''
-  const cards = card != null && card !== '' ? [card] : await getMessagesCards(ws.uuid, db)
-  ctx.info(`Cards for migration: ${cards.length}, force: ${force}`)
-  let i = 0
-  for (const card of cards) {
-    try {
-      i++
-      const groups = await getGroups(ctx, hulylake, card)
-      const lastGroup = groups[groups.length - 1]
+  if (cards.length === 0) return
 
-      ctx.info(`Migrating messages for card ${card} index ${i} from ${lastGroup?.toDate?.toISOString() ?? 'null'}`)
-      const cursor = getMessagesCursor(ws.uuid, card, db, force ? undefined : lastGroup?.toDate)
-
-      for await (const messages of cursor) {
-        ctx.info(`Messages count ${messages.length}`)
-        if (messages.length === 0) continue
-        const oldMessages = messages.map(deserializeOldMessage).filter(notEmpty)
-        await migrateMessagesBatch(ctx, card, hulylake, accountClient, personUuidBySocialId, oldMessages)
-      }
-    } catch (e) {
-      ctx.error('Failed to migrate messages for card', card)
-      ctx.error('Error', { error: e })
+  if (doc.__migratedUntil == null) {
+    for (const card of cards) {
+      await createGroupsBlob(hulylake, card._id)
     }
+  }
+  const iterator = await getActivityCursor(db, ws.uuid, doc._id, chunter.class.ChatMessage, 400, doc.__migratedUntil)
+
+  let prev: RawMessage[] = []
+
+  let mi = 0
+  let last: RawMessage | undefined
+  let allIndex = 0
+  for await (const nn of iterator) {
+    const next = nn.map(toMessage).filter(notEmpty)
+    last = next[next.length - 1] ?? last
+    allIndex += next.length
+    const messages = [...prev, ...next]
+    ctx.info('migrate messages', { all: allIndex, current: next.length, messages: messages.length })
+    while (messages.length >= MAX_MESSAGES_BATCH || next.length === 0) {
+      if (messages.length === 0) break
+      const batch = messages.splice(0, MAX_MESSAGES_BATCH)
+      const convertedMessages: MessageDoc[] = []
+      for (const card of cards) {
+        for (const m of batch) {
+          mi++
+          if (mi % 100 === 0) console.log('convert messages', mi)
+
+          if (doc.__migratedUntil != null && (m?.createdOn ?? 0) <= doc.__migratedUntil) {
+            const isExists = await isMessageIndexExists(ctx, db, ws.uuid, card._id, toMessageID(m._id))
+            if (isExists) continue
+          }
+
+          const converted = await convertChunterMessage(
+            client,
+            hierarchy,
+            card,
+            m,
+            personUuidBySocialId,
+            accountClient,
+            card.rank,
+            peers
+          )
+          if (converted.thread != null && converted.threadMessages.length > 0) {
+            await createThread(
+              ctx,
+              db,
+              ws.uuid,
+              hulylake,
+              client,
+              converted.message,
+              converted.thread,
+              converted.threadMessages,
+              converted.threadCollaborators,
+              peers,
+              doc._id
+            )
+          }
+          convertedMessages.push(converted.message)
+        }
+        await insertMessages(ctx, db, ws.uuid, hulylake, card, convertedMessages)
+      }
+    }
+    prev = messages
+  }
+
+  if (prev.length > 0) {
+    const convertedMessages: MessageDoc[] = []
+    for (const card of cards) {
+      for (const m of prev) {
+        mi++
+        if (mi % 100 === 0) console.log('convert messages', mi)
+
+        if (doc.__migratedUntil != null && (m?.createdOn ?? 0) <= doc.__migratedUntil) {
+          const isExists = await isMessageIndexExists(ctx, db, ws.uuid, card._id, toMessageID(m._id))
+          if (isExists) continue
+        }
+
+        const converted = await convertChunterMessage(
+          client,
+          hierarchy,
+          card,
+          m,
+          personUuidBySocialId,
+          accountClient,
+          card.rank,
+          peers
+        )
+        if (converted.thread != null && converted.threadMessages.length > 0) {
+          await createThread(
+            ctx,
+            db,
+            ws.uuid,
+            hulylake,
+            client,
+            converted.message,
+            converted.thread,
+            converted.threadMessages,
+            converted.threadCollaborators,
+            peers,
+            doc._id
+          )
+        }
+        convertedMessages.push(converted.message)
+      }
+
+      await insertMessages(ctx, db, ws.uuid, hulylake, card, convertedMessages)
+    }
+  }
+
+  if (last != null) {
+    await client.rawUpdate<Channel>(DOMAIN_SPACE, { _id: doc._id }, { __migratedUntil: last?.createdOn })
   }
 }
 
-async function migrateMessagesBatch (
+async function createThread (
   ctx: MeasureContext,
-  cardId: CardID,
-  hulylake: HulylakeClient,
-  accountClient: AccountClient,
-  personUuidBySocialId: Map<PersonId, PersonUuid>,
-  messages: OldMessage[]
+  db: postgres.Sql,
+  ws: WorkspaceUuid,
+  hulylake: HulylakeWorkspaceClient,
+  client: LowLevelStorage,
+  parentMessage: MessageDoc,
+  thread: Card,
+  messages: MessageDoc[],
+  collaborators: AccountUuid[],
+  peers: PeerInfo[],
+  docId: Ref<Doc>
 ): Promise<void> {
-  const newMessages: MessageDoc[] = []
-  for (const oldMessage of messages) {
-    const newMessageDoc = await oldMessageToNewMessageDoc(oldMessage, accountClient, personUuidBySocialId)
-    newMessages.push(newMessageDoc)
+  try {
+    await client.upload(ctx, DOMAIN_CARD, [{ ...thread, __migratedFromChunter: true, __migratedFromDoc: docId } as any])
+    await addCollaboratorsToDb(db, ws, thread._id, thread._class, collaborators)
+    await createGroupsBlob(hulylake, thread._id)
+    const parent = {
+      ...parentMessage,
+      cardId: thread._id,
+      extra: { ...parentMessage.extra, threadRoot: true },
+      reactions: {},
+      threads: {}
+    }
+    await insertMessages(ctx, db, ws, hulylake, thread, [parent, ...messages])
+
+    if (peers.length > 0 && thread.peerId != null) {
+      await addPeersToDb(db, ws, thread.peerId, [{ cardId: thread._id, space: thread.space as Ref<PersonSpace> }])
+    }
+  } catch (e) {
+    ctx.error('Failed to create thread', { thread, parentMessage })
+    console.error(e)
   }
-  const chunks = chunkMessagesBySize(ctx, newMessages)
+}
+
+async function insertMessageIndex (
+  db: postgres.Sql,
+  ws: WorkspaceUuid,
+  blobId: BlobID,
+  messages: MessageDoc[]
+): Promise<void> {
+  try {
+    if (messages.length === 0) return
+    const table = db(MESSAGE_INDEX_TABLE)
+    const rows = messages.map((it) => ({
+      workspace_id: ws,
+      card_id: it.cardId,
+      created: it.created,
+      creator: it.creator,
+      message_id: it.id,
+      blob_id: blobId
+    }))
+
+    await withRetry(async () => await db` INSERT INTO ${table} ${db(rows)} ON CONFLICT DO NOTHING`)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+function sanitizeTitle (value: string): string {
+  return value.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '')
+}
+
+async function insertThreadIndex (db: postgres.Sql, ws: WorkspaceUuid, messages: MessageDoc[]): Promise<void> {
+  const threads = messages.flatMap((it) => Object.values(it.threads).map((t) => [it.id, it.cardId, t] as const))
+  if (threads.length === 0) return
+  try {
+    const table = db(THREAD_INDEX_TABLE)
+    const rows = threads.map(([messageId, cardId, it]) => ({
+      workspace_id: ws,
+      card_id: cardId,
+      thread_id: it.threadId,
+      thread_type: it.threadType,
+      message_id: messageId,
+      replies_count: it.repliesCount,
+      last_reply: it.lastReplyDate ?? new Date().toISOString()
+    }))
+
+    await withRetry(async () => await db` INSERT INTO ${table} ${db(rows)} ON CONFLICT DO NOTHING`)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+async function insertMessages (
+  ctx: MeasureContext,
+  db: postgres.Sql,
+  ws: WorkspaceUuid,
+  hulylake: HulylakeWorkspaceClient,
+  card: Card,
+  messages: MessageDoc[]
+): Promise<void> {
+  const chunks = chunkMessagesBySize(ctx, messages)
+
   for (const chunk of chunks) {
     const fromDate = chunk.from
     const toDate = chunk.to
     const blobId = generateUuid() as BlobID
     const newGroupDoc: MessagesGroupDoc = {
-      cardId,
+      cardId: card._id,
       blobId,
       fromDate: fromDate.toISOString(),
       toDate: toDate.toISOString(),
       count: chunk.count
     }
     const newMessagesDoc: MessagesDoc = {
-      cardId,
+      cardId: card._id,
       fromDate: fromDate.toISOString(),
       toDate: toDate.toISOString(),
       messages: chunk.chunk,
@@ -144,43 +983,23 @@ async function migrateMessagesBatch (
       } as const
     ]
 
-    await hulylake.patchJson(`${cardId}/messages/groups`, jsonPatches, undefined, {
-      maxRetries: 3,
-      isRetryable: () => true,
-      delayStrategy: {
-        getDelay: () => 1000
-      }
-    })
-    await hulylake.putJson(`${cardId}/messages/${blobId}`, newMessagesDoc, undefined, {
-      maxRetries: 3,
-      isRetryable: () => true,
-      delayStrategy: {
-        getDelay: () => 1000
-      }
-    })
+    await insertMessageIndex(db, ws, blobId, Object.values(newMessagesDoc.messages))
+    await insertThreadIndex(db, ws, Object.values(newMessagesDoc.messages))
+    await hulylake.patchJson(`${card._id}/messages/groups`, jsonPatches, undefined, DEFAULT_RETRY_OPTIONS)
+    await hulylake.putJson(`${card._id}/messages/${blobId}`, newMessagesDoc, undefined, DEFAULT_RETRY_OPTIONS)
   }
 }
 
-async function getGroups (ctx: MeasureContext, hulylake: HulylakeClient, cardId: CardID): Promise<MessagesGroup[]> {
-  const res = await hulylake.getJson<MessagesGroupsDoc>(`${cardId}/messages/groups`, {
-    maxRetries: 3,
-    isRetryable: () => true,
-    delayStrategy: {
-      getDelay: () => 500
-    }
-  })
-  if (res.body != null) {
-    return deserializeMessagesGroups(res.body)
+function toMessageID (_id: Ref<ActivityMessage>): MessageID {
+  if (_id.length <= 22) {
+    return _id as any as MessageID
   }
+  const buf = Buffer.from(_id, 'hex')
+  return buf.toString('base64url') as MessageID
+}
 
-  await hulylake.putJson(`${cardId}/messages/groups`, {}, undefined, {
-    maxRetries: 3,
-    isRetryable: () => true,
-    delayStrategy: {
-      getDelay: () => 1000
-    }
-  })
-  return []
+async function createGroupsBlob (hulylake: HulylakeWorkspaceClient, cardId: CardID): Promise<void> {
+  await hulylake.putJson(`${cardId}/messages/groups`, {}, undefined, DEFAULT_RETRY_OPTIONS)
 }
 
 function chunkMessagesBySize (
@@ -257,639 +1076,168 @@ function chunkMessagesBySize (
   return chunks
 }
 
-async function oldMessageToNewMessageDoc (
-  oldMessage: OldMessage,
-  accountClient: AccountClient,
-  personUuidBySocialId: Map<PersonId, PersonUuid>
-): Promise<MessageDoc> {
-  const reactions: Record<Emoji, Record<PersonUuid, { count: number, date: string }>> = {}
-  const attachments: Record<AttachmentID, AttachmentDoc> = {}
-  const threads: Record<CardID, ThreadDoc> = {}
-
-  const reactionsByEmoji = groupByArray(oldMessage.reactions, (it) => it.reaction)
-  for (const [_emoji, oldReactions] of reactionsByEmoji.entries()) {
-    const emoji = _emoji as Emoji
-    if (reactions[emoji] == null) {
-      reactions[emoji] = {}
-    }
-    for (const oldReaction of oldReactions) {
-      const personUuid = await getPersonUuidBySocialId(accountClient, personUuidBySocialId, oldReaction.creator)
-
-      if (personUuid == null) continue
-      if (reactions[emoji][personUuid] == null) {
-        reactions[emoji][personUuid] = {
-          count: 1,
-          date: oldReaction.created.toISOString()
-        }
-      }
-    }
-  }
-
-  for (const oldAttachment of oldMessage.attachments) {
-    attachments[oldAttachment.id] = {
-      id: oldAttachment.id,
-      mimeType:
-        oldAttachment.mimeType ??
-        (oldAttachment as any)?.params?.mimeType ??
-        (oldAttachment as any).type ??
-        (oldAttachment as any)?.params?.type ??
-        '',
-      params: oldAttachment.params,
-      creator: oldAttachment.creator,
-      created: oldAttachment.created.toISOString(),
-      modified: oldAttachment.modified?.toISOString() ?? null
-    }
-  }
-
-  if (oldMessage.thread != null) {
-    threads[oldMessage.thread.threadId] = {
-      threadId: oldMessage.thread.threadId,
-      threadType: oldMessage.thread.threadType,
-      repliesCount: oldMessage.thread.repliesCount,
-      lastReplyDate: oldMessage.thread.lastReply?.toISOString() ?? null,
-      repliedPersons: {}
-    }
-  }
-  return {
-    id: oldMessage.id,
-    cardId: oldMessage.cardId,
-    type: oldMessage.type === 'activity' ? MessageType.Activity : MessageType.Text,
-    content: oldMessage.content,
-    extra: oldMessage.extra ?? {},
-    creator: oldMessage.creator,
-    created: oldMessage.created.toISOString(),
-    modified: oldMessage.edited?.toISOString() ?? null,
-    reactions,
-    attachments,
-    threads
-  }
-}
-
 function sizeOfJson (obj: unknown): number {
   return Buffer.byteLength(JSON.stringify(obj), 'utf8')
 }
 
 async function getPersonUuidBySocialId (
-  ccountClient: AccountClient,
+  accountClient: AccountClient,
   personUuidBySocialId: Map<PersonId, PersonUuid>,
   socialId: PersonId
 ): Promise<PersonUuid | undefined> {
   if (personUuidBySocialId.has(socialId)) {
     return personUuidBySocialId.get(socialId)
   }
-  const personUuid = await ccountClient.findPersonBySocialId(socialId)
-  if (personUuid != null) {
-    personUuidBySocialId.set(socialId, personUuid)
+  try {
+    const personUuid = await withRetry(async () => await accountClient.findPersonBySocialId(socialId))
+    if (personUuid != null) {
+      personUuidBySocialId.set(socialId, personUuid)
+    }
+
+    return personUuid
+  } catch (e) {
+    console.log('Failed to find personUuid', { socialId })
+    console.log(e)
   }
 
-  return personUuid
+  return undefined
 }
 
-async function getMessagesCards (ws: WorkspaceUuid, db: postgres.Sql): Promise<CardID[]> {
-  const table = db(MESSAGES_TABLE)
-  const res = await db`
-      SELECT DISTINCT card_id
-      FROM ${table}
-      WHERE workspace_id = ${ws}
-  `
-
-  return res.map((r) => r.card_id)
-}
-
-function getMessagesCursor (
-  ws: WorkspaceUuid,
-  cardId: CardID,
-  db: postgres.Sql,
-  from?: Date
-): AsyncIterable<postgres.Row[]> {
-  const messagesTable = db(MESSAGES_TABLE)
-  const threadIndexTable = db(THREAD_INDEX_TABLE)
-  const attachmentTable = db(ATTACHMENT_TABLE)
-  const reactionTable = db(REACTION_TABLE)
-  const patchTable = db(PATCH_TABLE)
-
-  return db`WITH
-                limited_messages AS (
-                    SELECT *
-                    FROM ${messagesTable} m
-                    WHERE m.workspace_id = ${ws}
-                      AND m.card_id      = ${cardId}
-                        ${from != null ? db`AND m.created > ${from}` : db``}
-                    ORDER BY m.created ASC
-                ),
-
-                agg_attachments AS (
-                    SELECT
-                        a.workspace_id,
-                        a.card_id,
-                        a.message_id,
-                        jsonb_agg(jsonb_build_object(
-                                'id', a.id,
-                                'type', a.type,
-                                'params', a.params,
-                                'creator', a.creator,
-                                'created', a.created,
-                                'modified', a.modified
-                                  )) AS attachments
-                    FROM ${attachmentTable} a
-                             INNER JOIN limited_messages m
-                                        ON m.workspace_id = a.workspace_id
-                                            AND m.card_id = a.card_id
-                                            AND m.id = a.message_id
-                    GROUP BY a.workspace_id, a.card_id, a.message_id
-                ),
-
-                agg_reactions AS (
-                    SELECT
-                        r.workspace_id,
-                        r.card_id,
-                        r.message_id,
-                        jsonb_agg(jsonb_build_object(
-                                'reaction', r.reaction,
-                                'creator', r.creator,
-                                'created', r.created
-                                  )) AS reactions
-                    FROM ${reactionTable} r
-                             INNER JOIN limited_messages m
-                                        ON m.workspace_id = r.workspace_id
-                                            AND m.card_id = r.card_id
-                                            AND m.id = r.message_id
-                    GROUP BY r.workspace_id, r.card_id, r.message_id
-                ),
-
-                agg_patches AS (
-                    SELECT
-                        p.workspace_id,
-                        p.card_id,
-                        p.message_id,
-                        jsonb_agg(
-                                jsonb_build_object(
-                                        'type', p.type,
-                                        'data', p.data,
-                                        'creator', p.creator,
-                                        'created', p.created
-                                ) ORDER BY p.created ASC
-                        ) AS patches
-                    FROM ${patchTable} p
-                             INNER JOIN limited_messages m
-                                        ON m.workspace_id = p.workspace_id
-                                            AND m.card_id = p.card_id
-                                            AND m.id = p.message_id
-                    GROUP BY p.workspace_id, p.card_id, p.message_id
-                )
-
-            SELECT m.id::text,
-                   m.card_id,
-                   m.type,
-                   m.content,
-                   m.creator,
-                   m.created,
-                   m.data,
-                   t.thread_id AS thread_id,
-                   t.thread_type AS thread_type,
-                   t.replies_count::int AS replies_count,
-                   t.last_reply AS last_reply,
-                   COALESCE(a.attachments, '[]'::jsonb) AS attachments,
-                   COALESCE(r.reactions, '[]'::jsonb) AS reactions,
-                   COALESCE(p.patches, '[]'::jsonb) AS patches
-            FROM limited_messages m
-                     LEFT JOIN ${threadIndexTable} t
-                               ON t.workspace_id = m.workspace_id
-                                   AND t.card_id = m.card_id
-                                   AND t.message_id = m.id
-                     LEFT JOIN agg_attachments a
-                               ON a.workspace_id = m.workspace_id
-                                   AND a.card_id = m.card_id
-                                   AND a.message_id = m.id
-                     LEFT JOIN agg_reactions r
-                               ON r.workspace_id = m.workspace_id
-                                   AND r.card_id = m.card_id
-                                   AND r.message_id = m.id
-                     LEFT JOIN agg_patches p
-                               ON p.workspace_id = m.workspace_id
-                                   AND p.card_id = m.card_id
-                                   AND p.message_id = m.id
-            ORDER BY m.created ASC;`.cursor(200)
-}
-
-function deserializeMessagesGroups (groups: MessagesGroupsDoc): MessagesGroup[] {
-  return Object.values(groups)
-    .map((group) => {
-      const g: MessagesGroup = {
-        cardId: group.cardId,
-        blobId: group.blobId,
-        fromDate: new Date(group.fromDate),
-        toDate: new Date(group.toDate),
-        count: Number(group.count)
-      }
-
-      return g
-    })
-    .sort((a, b) => a.fromDate.getTime() - b.fromDate.getTime())
-}
-
-function deserializePatch (raw: any): Patch {
+function toPeer (raw: any): CardPeer {
   return {
-    type: raw.type,
-    messageId: String(raw.message_id) as MessageID,
-    data: raw.data,
-    creator: raw.creator,
-    created: new Date(raw.created)
-  }
-}
-
-function deserializeOldMessage (raw: any): OldMessage | undefined {
-  const patches: Patch[] = (raw.patches ?? []).map((it: any) => deserializePatch(it))
-  const rawMessage: OldMessage = {
-    id: String(raw.id) as MessageID,
-    type: raw.type,
+    workspaceId: raw.workspace_id,
     cardId: raw.card_id,
-    content: raw.content,
-    creator: raw.creator,
+    value: raw.value,
+    extra: raw.extra,
     created: new Date(raw.created),
-    removed: false,
-    extra: raw.data,
-    thread:
-      raw.thread_id != null && raw.thread_type != null
-        ? {
-            cardId: raw.card_id,
-            messageId: String(raw.id) as MessageID,
-            threadId: raw.thread_id,
-            threadType: raw.thread_type,
-            repliesCount: raw.replies_count != null ? Number(raw.replies_count) : 0,
-            lastReply: raw.last_reply ?? new Date()
-          }
-        : undefined,
-    reactions: (raw.reactions ?? []).map(deserializeReaction),
-    attachments: (raw.attachments ?? []).map(deserializeAttachment)
-  }
-
-  if (patches.length === 0) {
-    return rawMessage
-  }
-
-  return applyPatches(
-    rawMessage,
-    patches.filter((it) => it.type === PatchType.update || it.type === PatchType.remove)
-  )
-}
-
-function deserializeReaction (raw: any): OldReaction {
-  return {
-    reaction: raw.reaction,
-    creator: raw.creator,
-    created: new Date(raw.created)
+    kind: 'card',
+    members:
+      raw.members?.map((it: any) => ({
+        workspaceId: it.workspace_id,
+        cardId: it.card_id,
+        extra: it.extra ?? {}
+      })) ?? []
   }
 }
 
-function deserializeAttachment (raw: any): Attachment {
-  return {
-    id: String(raw.id) as AttachmentID,
-    type: raw.type,
-    params: raw.params,
-    creator: raw.creator,
-    created: new Date(raw.created),
-    modified: raw.modified != null ? new Date(raw.modified) : undefined
-  } as any as Attachment
-}
-
-export function applyPatches (message: OldMessage, patches: Patch[]): OldMessage | undefined {
-  if (patches.length === 0) return message
-
-  let result: OldMessage | undefined = message
-  for (const p of patches) {
-    result = applyPatch(message, p)
-  }
-  return result
-}
-
-function applyPatch (message: OldMessage, patch: Patch): OldMessage | undefined {
-  if (message.removed) {
+function toMessage (r: any): RawMessage | undefined {
+  try {
+    return {
+      _id: r._id,
+      modifiedBy: r.modifiedBy,
+      modifiedOn: Number(r.modifiedOn ?? 0),
+      createdBy: r.createdBy,
+      createdOn: Number(r.createdOn ?? 0),
+      replies: Number(r.replies ?? 0),
+      editedOn: r.editedOn != null ? Number(r.editedOn) : undefined,
+      message: r.message,
+      attachments: (r.attachments ?? []).map(toAttachment).filter(notEmpty),
+      reactions: (r.reactions ?? []).map(toReaction).filter(notEmpty)
+    }
+  } catch (e) {
+    console.log('Failed to deserialize message', r)
+    console.log(e)
     return undefined
   }
-
-  switch (patch.type) {
-    case PatchType.update: {
-      if (patch.created.getTime() < (message.edited?.getTime() ?? 0)) {
-        return message
-      }
-      return {
-        ...message,
-        edited: patch.created,
-        content: patch.data.content ?? message.content,
-        extra: patch.data.extra ?? message.extra
-      }
-    }
-    case PatchType.remove: {
-      return undefined
-    }
-    case PatchType.reaction:
-      return patchReactions(message, patch)
-    case PatchType.attachment:
-      return patchAttachments(message, patch)
-    case PatchType.thread:
-      return patchThread(message, patch)
-  }
 }
 
-function patchAttachments (message: OldMessage, patch: AttachmentPatch): OldMessage {
-  if (patch.data.operation === 'add') {
-    return addAttachments(message, patch.data.attachments, patch.created, patch.creator)
-  } else if (patch.data.operation === 'remove') {
-    return removeAttachments(message, patch.data.ids)
-  } else if (patch.data.operation === 'set') {
-    return setAttachments(message, patch.data.attachments, patch.created, patch.creator)
-  } else if (patch.data.operation === 'update') {
-    return updateAttachments(message, patch.data.attachments, patch.created)
-  }
-  return message
-}
+function toAttachment (a: any): RawAttachment | undefined {
+  let metadata = a.metadata ?? {}
 
-function patchReactions (message: OldMessage, patch: ReactionPatch): OldMessage {
-  if (patch.data.operation === 'add') {
-    return setReaction(message, patch.data.reaction, patch.creator, patch.created)
-  } else if (patch.data.operation === 'remove') {
-    return removeReaction(message, patch.data.reaction, patch.creator)
-  }
-  return message
-}
-
-function setReaction (message: OldMessage, reaction: string, creator: SocialID, created: Date): OldMessage {
-  const isExist = message.reactions.some((it) => it.reaction === reaction && it.creator === creator)
-  if (isExist) return message
-  message.reactions.push({
-    reaction,
-    creator,
-    created
-  })
-  return message
-}
-
-function removeReaction (message: OldMessage, reaction: string, creator: SocialID): OldMessage {
-  const reactions = message.reactions.filter((it) => it.reaction !== reaction || it.creator !== creator)
-  if (reactions.length === message.reactions.length) return message
-
-  return {
-    ...message,
-    reactions
-  }
-}
-
-function addAttachments (message: OldMessage, data: AttachmentData[], created: Date, creator: SocialID): OldMessage {
-  const newAttachments: Attachment[] = []
-  for (const attach of data) {
-    const isExists = message.attachments.some((it) => it.id === attach.id)
-    if (isExists === undefined) continue
-    const attachment: Attachment = {
-      ...attach,
-      created,
-      creator
-    } as any
-    newAttachments.push(attachment)
-  }
-
-  if (newAttachments.length === 0) return message
-  return {
-    ...message,
-    attachments: [...message.attachments, ...newAttachments]
-  }
-}
-
-function updateAttachments (message: OldMessage, updates: AttachmentUpdateData[], date: Date): OldMessage {
-  if (updates.length === 0) return message
-  const updatedAttachments: Attachment[] = []
-  for (const attachment of message.attachments) {
-    const update = updates.find((it) => it.id === attachment.id)
-    if (update === undefined) {
-      updatedAttachments.push(attachment)
-    } else {
-      updatedAttachments.push({
-        ...attachment,
-        params: {
-          ...attachment.params,
-          ...update.params
-        },
-        modified: date.getTime() > (attachment.modified?.getTime() ?? 0) ? date : attachment.modified
-      } as any)
+  if (typeof metadata === 'string') {
+    try {
+      metadata = JSON.parse(metadata)
+    } catch (e) {
+      metadata = {}
     }
   }
 
-  return {
-    ...message,
-    attachments: updatedAttachments
-  }
-}
-
-function removeAttachments (message: OldMessage, ids: AttachmentID[]): OldMessage {
-  const attachments = message.attachments.filter((it) => !ids.includes(it.id))
-  if (attachments.length === message.attachments.length) return message
-
-  return {
-    ...message,
-    attachments
-  }
-}
-
-function setAttachments (message: OldMessage, data: AttachmentData[], created: Date, creator: SocialID): OldMessage {
-  if (data.length === 0) return message
-  return {
-    ...message,
-    attachments: data.map(
-      (it) =>
-        ({
-          ...it,
-          created,
-          creator
-        }) as any
-    )
-  }
-}
-
-function patchThread (message: OldMessage, patch: ThreadPatch): OldMessage {
-  if (patch.data.operation === 'attach') {
-    return attachThread(message, patch.data.threadId, patch.data.threadType)
-  } else if (patch.data.operation === 'update') {
-    return updateThread(
-      message,
-      patch.data.threadId,
-      patch.data.threadType,
-      patch.data.repliesCountOp,
-      patch.data.lastReply
-    )
-  }
-  return message
-}
-
-function attachThread (message: OldMessage, threadId: CardID, threadType: CardType): OldMessage {
-  if (message.thread !== undefined) return message
-  return {
-    ...message,
-    thread: {
-      cardId: message.cardId,
-      messageId: message.id,
-      threadId,
-      threadType,
-      repliesCount: 0,
-      lastReply: new Date()
+  try {
+    return {
+      _id: a._id,
+      createdBy: a.createdBy,
+      createdOn: Number(a.createdOn ?? 0),
+      type: a.type,
+      name: a.name,
+      size: Number(a.size ?? 0),
+      metadata,
+      file: a.file
     }
+  } catch (e) {
+    console.log('Failed to deserialize attachment', a)
+    console.log(e)
+    return undefined
   }
 }
 
-function updateThread (
-  message: OldMessage,
-  threadId: CardID,
-  threadType?: CardType,
-  repliesCountOp?: 'increment' | 'decrement',
-  lastReply?: Date
-): OldMessage {
-  if (repliesCountOp === undefined && lastReply === undefined) return message
-  if (message.thread === undefined) return message
-  if (message.thread.threadId !== threadId) return message
-
-  let count = message.thread.repliesCount
-  if (repliesCountOp === 'increment') {
-    count = count + 1
-  }
-
-  if (repliesCountOp === 'decrement') {
-    count = Math.max(count - 1, 0)
-  }
-
-  return {
-    ...message,
-    thread: {
-      ...message.thread,
-      repliesCount: count,
-      threadType: threadType ?? message.thread.threadType,
-      lastReply: lastReply ?? message.thread.lastReply
+function toReaction (r: any): RawReaction | undefined {
+  try {
+    return {
+      _id: r._id,
+      createdBy: r.createdBy,
+      createdOn: Number(r.createdOn ?? 0),
+      emoji: r.emoji
     }
+  } catch (e) {
+    console.log('Failed to deserialize reaction', r)
+    console.log(e)
   }
 }
 
-interface OldMessage {
-  id: MessageID
+function threadMessageToRawMessage (r: WithLookup<ThreadMessage>): RawMessage {
+  return {
+    _id: r._id,
+    modifiedBy: r.modifiedBy,
+    modifiedOn: Number(r.modifiedOn ?? 0),
+    createdBy: r.createdBy ?? r.modifiedBy,
+    createdOn: Number(r.createdOn ?? 0),
+    replies: 0,
+    editedOn: r.editedOn != null ? Number(r.editedOn) : undefined,
+    message: r.message,
+    attachments: (r.$lookup?.attachments ?? []).map(toAttachment).filter(notEmpty),
+    reactions: (r.$lookup?.reactions ?? []).map(toReaction).filter(notEmpty)
+  }
+}
+
+interface ConvertedMessage {
+  message: MessageDoc
+  thread?: Card
+  threadMessages: MessageDoc[]
+  threadCollaborators: AccountUuid[]
+}
+
+interface PeerInfo {
   cardId: CardID
-  type: 'message' | 'activity'
-  content: Markdown
-  extra?: MessageExtra
-  creator: SocialID
-  created: Date
-
-  removed: boolean
-  edited?: Date
-
-  reactions: OldReaction[]
-  attachments: Attachment[]
-  thread?: OldThread
+  space: Ref<PersonSpace>
 }
 
-interface OldReaction {
-  reaction: string
-  creator: SocialID
-  created: Date
+interface RawAttachment {
+  _id: string
+  createdBy: PersonId
+  createdOn: number
+  type: string
+  name: string
+  size: number
+  metadata?: Record<string, any>
+  file: string
 }
 
-interface OldThread {
-  cardId: CardID
-  messageId: MessageID
-  threadId: CardID
-  threadType: CardType
-  repliesCount: number
-  lastReply: Date
+interface RawReaction {
+  _id: string
+  createdBy: PersonId
+  createdOn: number
+  emoji: string
 }
 
-type Patch = UpdatePatch | RemovePatch | ReactionPatch | ThreadPatch | AttachmentPatch
-
-enum PatchType {
-  update = 'update',
-  remove = 'remove',
-  reaction = 'reaction',
-  attachment = 'attachment',
-  thread = 'thread'
-}
-
-interface BasePatch {
-  messageId: MessageID
-  type: PatchType
-  creator: SocialID
-  created: Date
-
-  data: Record<string, any>
-}
-
-interface UpdatePatch extends BasePatch {
-  type: PatchType.update
-  data: UpdatePatchData
-}
-
-interface UpdatePatchData {
-  content?: Markdown
-  extra?: MessageExtra
-}
-
-interface RemovePatch extends BasePatch {
-  type: PatchType.remove
-  data: RemovePatchData
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface RemovePatchData {}
-
-interface ReactionPatch extends BasePatch {
-  type: PatchType.reaction
-  data: AddReactionPatchData | RemoveReactionPatchData
-}
-
-interface AddReactionPatchData {
-  operation: 'add'
-  reaction: string
-}
-
-interface RemoveReactionPatchData {
-  operation: 'remove'
-  reaction: string
-}
-
-interface AttachmentPatch extends BasePatch {
-  type: PatchType.attachment
-  data: AddAttachmentsPatchData | RemoveAttachmentsPatchData | SetAttachmentsPatchData | UpdateAttachmentsPatchData
-}
-
-interface AddAttachmentsPatchData {
-  operation: 'add'
-  attachments: AttachmentData[]
-}
-
-interface RemoveAttachmentsPatchData {
-  operation: 'remove'
-  ids: AttachmentID[]
-}
-
-interface SetAttachmentsPatchData {
-  operation: 'set'
-  attachments: AttachmentData[]
-}
-
-interface UpdateAttachmentsPatchData {
-  operation: 'update'
-  attachments: AttachmentUpdateData[]
-}
-
-interface ThreadPatch extends BasePatch {
-  type: PatchType.thread
-  data: AttachThreadPatchData | UpdateThreadPatchData
-}
-
-interface AttachThreadPatchData {
-  operation: 'attach'
-  threadId: CardID
-  threadType: CardType
-}
-
-interface UpdateThreadPatchData {
-  operation: 'update'
-  threadId: CardID
-  threadType?: CardType
-  repliesCountOp?: 'increment' | 'decrement'
-  lastReply?: Date
+interface RawMessage {
+  _id: Ref<ActivityMessage>
+  modifiedBy: PersonId
+  modifiedOn: number
+  createdBy: PersonId
+  createdOn: number
+  replies: number
+  editedOn?: number
+  message: Markup
+  attachments: RawAttachment[]
+  reactions: RawReaction[]
 }

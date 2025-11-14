@@ -51,7 +51,6 @@
     "ConfigDescription": "共同ドキュメント編集のための拡張機能",
     "Icon": "アイコン",
     "Color": "色",
-    "RoleLabel": "ロール: {role}",
     "ForbidCreateTeamspacePermission": "チームスペースの作成禁止",
     "ForbidCreateTeamspacePermissionDescription": "ユーザーが新しいチームスペースを作成することを禁止します"
   }

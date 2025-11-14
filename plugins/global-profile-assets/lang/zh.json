@@ -1,0 +1,29 @@
+{
+  "string": {
+    "GlobalProfile": "全局资料",
+    "EditProfile": "编辑资料",
+    "GeneralInformation": "基本信息",
+    "FirstName": "名字",
+    "LastName": "姓氏",
+    "City": "城市",
+    "Country": "国家",
+    "Bio": "简介",
+    "FirstNamePlaceholder": "输入名字",
+    "LastNamePlaceholder": "输入姓氏",
+    "CityPlaceholder": "输入城市",
+    "CountryPlaceholder": "输入国家",
+    "BioPlaceholder": "介绍一下自己...",
+    "Save": "保存",
+    "Cancel": "取消",
+    "MaximumLength": "最多{count}个字符",
+    "Required": "此字段为必填项",
+    "ProfileVisibility": "资料可见性",
+    "PublicProfile": "公开",
+    "PrivateProfile": "私密",
+    "PublicProfileDescription": "您的资料对所有人可见",
+    "PrivateProfileDescription": "您的资料仅对您可见",
+    "AddBioPlaceholder": "添加简介，告诉他人关于您的信息...",
+    "AddLocationPlaceholder": "添加您的位置...",
+    "ProfileNotAvailable": "资料不可用"
+  }
+}

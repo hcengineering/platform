@@ -322,7 +322,7 @@
         <Label label={testManagementRes.string.ChooseIcon} />
       </div>
       <Button
-        icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : icon ?? testManagement.icon.Home}
+        icon={icon === view.ids.IconWithEmoji ? IconWithEmoji : (icon ?? testManagement.icon.Home)}
         iconProps={icon === view.ids.IconWithEmoji
           ? { icon: color, size: 'medium' }
           : {
@@ -375,7 +375,7 @@
       {#each roles as role}
         <div class="antiGrid-row">
           <div class="antiGrid-row__header">
-            <Label label={testManagementRes.string.RoleLabel} params={{ role: role.name }} />
+            <Label label={view.string.RoleLabel} params={{ role: role.name }} />
           </div>
           <AccountArrayEditor
             value={rolesAssignment?.[role._id] ?? []}

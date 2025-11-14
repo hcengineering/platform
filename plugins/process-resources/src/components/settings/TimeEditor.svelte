@@ -21,9 +21,10 @@
   import { AnySvelteComponent } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import plugin from '../../plugin'
-  import { getContext } from '../../utils'
+  import { getContext, getMockAttribute } from '../../utils'
   import ProcessAttribute from '../ProcessAttribute.svelte'
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
 
   export let readonly: boolean
   export let process: Process
@@ -33,20 +34,10 @@
   const h = client.getHierarchy()
   $: context = getContext(client, process, core.class.TypeDate, 'attribute')
 
-  const attribute: AnyAttribute = {
-    attributeOf: process.masterTag,
-    name: '',
-    type: {
-      label: core.string.Date,
-      _class: core.class.TypeDate
-    },
-    _id: generateId(),
-    space: core.space.Model,
-    modifiedOn: 0,
-    modifiedBy: core.account.System,
-    _class: core.class.Attribute,
-    label: plugin.string.WaitUntil
-  }
+  const attribute: AnyAttribute = getMockAttribute(process.masterTag, plugin.string.WaitUntil, {
+    label: core.string.Date,
+    _class: core.class.TypeDate
+  })
 
   let editor: AnySvelteComponent | undefined
 
@@ -57,11 +48,11 @@
         .then((p) => {
           editor = p
         })
-        .catch((e) => {
-          console.error(e)
+        .catch((e: any) => {
+          Analytics.handleError(e)
         })
-    } catch (e) {
-      console.error(e)
+    } catch (e: any) {
+      Analytics.handleError(e)
     }
   }
 

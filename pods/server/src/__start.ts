@@ -13,6 +13,7 @@ import { setDBExtraOptions } from '@hcengineering/postgres'
 import { serverConfigFromEnv } from '@hcengineering/server'
 import serverAiBot from '@hcengineering/server-ai-bot'
 import serverCalendar from '@hcengineering/server-calendar'
+import serverCard from '@hcengineering/server-card'
 import serverCore, {
   initStatisticsContext,
   loadBrandingMap,
@@ -24,7 +25,7 @@ import { storageConfigFromEnv } from '@hcengineering/server-storage'
 import serverToken from '@hcengineering/server-token'
 import { join } from 'path'
 import { start } from '.'
-import { profileStart, profileStop } from './inspector'
+import { profileStart, profileStop } from './profiler'
 
 configureAnalytics('server', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'transactor')
@@ -85,6 +86,7 @@ setMetadata(serverNotification.metadata.MailAuthToken, config.mailAuthToken)
 setMetadata(serverNotification.metadata.WebPushUrl, config.webPushUrl)
 setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
 setMetadata(serverCalendar.metadata.EndpointURL, process.env.CALENDAR_URL)
+setMetadata(serverCard.metadata.CommunicationEnabled, process.env.COMMUNICATION_API_ENABLED === 'true')
 
 const { shutdown, sessionManager } = start(metricsContext, config.dbUrl, {
   fulltextUrl: config.fulltextUrl,

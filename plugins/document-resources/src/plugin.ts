@@ -14,7 +14,7 @@
 //
 
 import { type Client, type Doc, type Ref } from '@hcengineering/core'
-import document, { type Document, documentId } from '@hcengineering/document'
+import document, { documentId, type Document } from '@hcengineering/document'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
 
@@ -50,7 +50,6 @@ export default mergeIds(documentId, document, {
     Authors: '' as IntlString,
     Backlinks: '' as IntlString,
     History: '' as IntlString,
-    SavedDocuments: '' as IntlString,
     AddLabel: '' as IntlString,
     NewTeamspace: '' as IntlString,
     CreateTeamspace: '' as IntlString,
@@ -88,8 +87,6 @@ export default mergeIds(documentId, document, {
     CompareTo: '' as IntlString,
 
     Color: '' as IntlString,
-    Icon: '' as IntlString,
-
-    RoleLabel: '' as IntlString
+    Icon: '' as IntlString
   }
 })

@@ -47,7 +47,7 @@
   const client = getClient()
   const draftController = new DraftController<IssueDraft>(`${parendIssueId}_subIssue`)
   const draft = shouldSaveDraft ? draftController.get() : undefined
-  let object = childIssue !== undefined ? childIssue : draft ?? getIssueDefaults()
+  let object = childIssue !== undefined ? childIssue : (draft ?? getIssueDefaults())
   let thisRef: HTMLDivElement
   let focusIssueTitle: () => void
 

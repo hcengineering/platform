@@ -88,17 +88,6 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     process.exit(1)
   }
 
-  let uploadConfig = process.env.UPLOAD_CONFIG
-  if (uploadConfig === undefined) {
-    uploadConfig = ''
-  }
-
-  let previewConfig = process.env.PREVIEW_CONFIG
-  if (previewConfig === undefined) {
-    // Use universal preview config
-    previewConfig = `${uploadUrl}/:workspace?file=:blobId&size=:size`
-  }
-
   let previewUrl = process.env.PREVIEW_URL
   if (previewUrl === undefined) {
     previewUrl = ''
@@ -130,7 +119,11 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
 
   const billingUrl = process.env.BILLING_URL
 
+  const paymentUrl = process.env.PAYMENT_URL
+
   const hulylakeUrl = process.env.HULYLAKE_URL
+
+  const datalakeUrl = process.env.DATALAKE_URL
 
   setMetadata(serverToken.metadata.Secret, serverSecret)
   setMetadata(serverToken.metadata.Service, 'front')
@@ -154,8 +147,6 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     collaborator,
     brandingUrl,
     previewUrl,
-    previewConfig,
-    uploadConfig,
     pushPublicKey,
     disableSignUp,
     hideLocalLogin,
@@ -163,8 +154,10 @@ export function startFront (ctx: MeasureContext, extraConfig?: Record<string, st
     streamUrl,
     mailUrl,
     billingUrl,
+    paymentUrl,
     pulseUrl,
-    hulylakeUrl
+    hulylakeUrl,
+    datalakeUrl
   }
   console.log('Starting Front service with', config)
   const shutdown = start(ctx, config, SERVER_PORT, extraConfig)
