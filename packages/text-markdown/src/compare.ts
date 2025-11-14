@@ -42,7 +42,10 @@ export function calcSørensenDiceCoefficient (a: string, b: string): number {
     }
   }
 
-  return (2.0 * intersectionSize) / (first.length + second.length - 2)
+  const denominator = first.length + second.length - 2
+  if (denominator <= 0) return 0
+
+  return (2.0 * intersectionSize) / denominator
 }
 
 /**
