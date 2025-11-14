@@ -14,7 +14,7 @@
 //
 
 export function getMigrations (): [string, string][] {
-  return [migrationV1(), migrationV2()]
+  return [migrationV1(), migrationV2(), migrationV3()]
 }
 
 function migrationV1 (): [string, string] {
@@ -25,7 +25,7 @@ function migrationV1 (): [string, string] {
       session_start TIMESTAMP NOT NULL,
       session_end TIMESTAMP NOT NULL,
       room STRING(255) NOT NULL,
-      bandwidth INT8 NOT NULL,
+      bandwidth INT8 NOT NULL DEFAULT 0,
       minutes INT8 NOT NULL,
       CONSTRAINT pk_livekit_session PRIMARY KEY (workspace, session_id)
     );
@@ -76,4 +76,12 @@ function migrationV2 (): [string, string] {
     CREATE INDEX IF NOT EXISTS idx_ai_tokens_usage_day ON billing.ai_transcript_usage (day);
   `
   return ['init_ai_usage_tables_02', sql]
+}
+
+function migrationV3 (): [string, string] {
+  const sql = `
+    UPDATE billing.livekit_session SET bandwidth = 0 WHERE bandwidth IS NULL;
+    ALTER TABLE billing.livekit_session ALTER COLUMN bandwidth SET DEFAULT 0;
+  `
+  return ['fix_bandwidth_nulls_03', sql]
 }
