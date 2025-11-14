@@ -25,7 +25,7 @@ function migrationV1 (): [string, string] {
       session_start TIMESTAMP NOT NULL,
       session_end TIMESTAMP NOT NULL,
       room STRING(255) NOT NULL,
-      bandwidth INT8 NOT NULL DEFAULT 0,
+      bandwidth INT8 NOT NULL,
       minutes INT8 NOT NULL,
       CONSTRAINT pk_livekit_session PRIMARY KEY (workspace, session_id)
     );
