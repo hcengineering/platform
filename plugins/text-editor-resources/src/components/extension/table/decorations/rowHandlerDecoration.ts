@@ -194,7 +194,24 @@ class RowHandler {
       const dropMarker = getDropMarker()
       const dragMarker = getRowDragMarker()
 
+      const handleMove = (event: MouseEvent): void => {
+        if (dropMarker !== null && dragMarker !== null) {
+          const cursorTop = startTop + event.clientY - startY
+          dropIndex = calculateRowDropIndex(row, rows, cursorTop)
+
+          const dragMarkerHeightPx = rows[row].heightPx
+          const dragMarkerTopPx = Math.max(0, Math.min(cursorTop, tableHeightPx - dragMarkerHeightPx))
+          const dropMarkerTopPx =
+            dropIndex <= row ? rows[dropIndex].topPx : rows[dropIndex].topPx + rows[dropIndex].heightPx
+
+          updateRowDropMarker(dropMarker, dropMarkerTopPx - dropMarkerWidthPx / 2, dropMarkerWidthPx)
+          updateRowDragMarker(dragMarker, dragMarkerTopPx, dragMarkerHeightPx)
+        }
+      }
+
       const handleFinish = (): void => {
+        window.removeEventListener('mousemove', handleMove)
+
         if (dropMarker !== null) hideDropMarker(dropMarker)
         if (dragMarker !== null) hideDragMarker(dragMarker)
 
@@ -208,21 +225,6 @@ class RowHandler {
             }
           }
           editor.view.dispatch(tr)
-        }
-      }
-
-      const handleMove = (event: MouseEvent): void => {
-        if (dropMarker !== null && dragMarker !== null) {
-          const cursorTop = startTop + event.clientY - startY
-          dropIndex = calculateRowDropIndex(row, rows, cursorTop)
-
-          const dragMarkerHeightPx = rows[row].heightPx
-          const dragMarkerTopPx = Math.max(0, Math.min(cursorTop, tableHeightPx - dragMarkerHeightPx))
-          const dropMarkerTopPx =
-            dropIndex <= row ? rows[dropIndex].topPx : rows[dropIndex].topPx + rows[dropIndex].heightPx
-
-          updateRowDropMarker(dropMarker, dropMarkerTopPx - dropMarkerWidthPx / 2, dropMarkerWidthPx)
-          updateRowDragMarker(dragMarker, dragMarkerTopPx, dragMarkerHeightPx)
         }
       }
 

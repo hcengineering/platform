@@ -423,7 +423,7 @@
     editor = new Editor({
       extensions: [kit],
       element,
-      editable: false,
+      editable: !readonly,
       editorProps: {
         attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' })
       },
