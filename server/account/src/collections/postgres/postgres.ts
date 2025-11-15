@@ -49,7 +49,8 @@ import type {
   AccountAggregatedInfo,
   UserProfile,
   Subscription,
-  WorkspacePermission
+  WorkspacePermission,
+  DBFlavor
 } from '../../types'
 
 function toSnakeCase (str: string): string {
@@ -117,7 +118,8 @@ implements DbCollection<T> {
   constructor (
     readonly name: string,
     readonly client: Sql,
-    readonly options: PostgresDbCollectionOptions<T, K> = {}
+    readonly options: PostgresDbCollectionOptions<T, K> = {},
+    readonly filterFields: string[] = []
   ) {}
 
   get ns (): string {
@@ -249,6 +251,14 @@ implements DbCollection<T> {
     for (const field of this.timestampFields) {
       res[field] = convertTimestamp(res[field])
     }
+    if (this.filterFields.length > 0) {
+      for (const key of Object.keys(res)) {
+        if (this.filterFields.includes(key.toLowerCase())) {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete res[key]
+        }
+      }
+    }
 
     return res as T
   }
@@ -334,7 +344,7 @@ implements DbCollection<T> {
       .join(', ')
 
     const sql = `
-      INSERT INTO ${this.getTableName()} 
+      INSERT INTO ${this.getTableName()}
       (${columnsList.map((k) => `"${k}"`).join(', ')})
       VALUES ${placeholders}
       RETURNING *
@@ -432,7 +442,7 @@ export class AccountPostgresDbCollection
 
   protected buildSelectClause (): string {
     return `SELECT * FROM (
-      SELECT 
+      SELECT
         a.uuid,
         a.timezone,
         a.locale,
@@ -528,7 +538,8 @@ export class PostgresAccountDB implements AccountDB {
 
   constructor (
     readonly client: Sql,
-    readonly ns: string = 'global_account'
+    readonly ns: string = 'global_account',
+    readonly dbFlavor: DBFlavor = 'cockroach'
   ) {
     const withRetryClient = this.withRetry
     this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, { ns, idKey: 'uuid', withRetryClient })
@@ -564,11 +575,18 @@ export class PostgresAccountDB implements AccountDB {
     })
     this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>('mailbox', client, { ns, withRetryClient })
     this.mailboxSecret = new PostgresDbCollection<MailboxSecret>('mailbox_secrets', client, { ns, withRetryClient })
-    this.integration = new PostgresDbCollection<Integration>('integrations', client, { ns, withRetryClient })
-    this.integrationSecret = new PostgresDbCollection<IntegrationSecret>('integration_secrets', client, {
-      ns,
-      withRetryClient
-    })
+    this.integration = new PostgresDbCollection<Integration>('integrations', client, { ns, withRetryClient }, [
+      '_def_ws_uuid', '_defwsuuid'
+    ])
+    this.integrationSecret = new PostgresDbCollection<IntegrationSecret>(
+      'integration_secrets',
+      client,
+      {
+        ns,
+        withRetryClient
+      },
+      ['_def_ws_uuid', '_defwsuuid']
+    )
     this.userProfile = new PostgresDbCollection<UserProfile, 'personUuid'>('user_profile', client, {
       ns,
       idKey: 'personUuid',
@@ -614,8 +632,8 @@ export class PostgresAccountDB implements AccountDB {
     const executeMigration = async (client: Sql): Promise<void> => {
       updateInterval = setInterval(() => {
         this.client`
-          UPDATE ${this.client(this.ns)}._account_applied_migrations 
-          SET last_processed_at = NOW() 
+          UPDATE ${this.client(this.ns)}._account_applied_migrations
+          SET last_processed_at = NOW()
           WHERE identifier = ${name} AND applied_at IS NULL
         `.catch((err) => {
             console.error(`Failed to update last_processed_at for migration ${name}:`, err)
@@ -634,7 +652,7 @@ export class PostgresAccountDB implements AccountDB {
             // Only locks if row exists and is not already locked
             const existing = await client`
               SELECT identifier, applied_at, last_processed_at
-              FROM ${this.client(this.ns)}._account_applied_migrations 
+              FROM ${this.client(this.ns)}._account_applied_migrations
               WHERE identifier = ${name}
               FOR UPDATE NOWAIT
             `
@@ -649,7 +667,7 @@ export class PostgresAccountDB implements AccountDB {
               ) {
                 // Take over the stale migration
                 await client`
-                  UPDATE ${this.client(this.ns)}._account_applied_migrations 
+                  UPDATE ${this.client(this.ns)}._account_applied_migrations
                   SET last_processed_at = NOW()
                   WHERE identifier = ${name}
                 `
@@ -658,8 +676,8 @@ export class PostgresAccountDB implements AccountDB {
               }
             } else {
               const res = await client`
-                INSERT INTO ${this.client(this.ns)}._account_applied_migrations 
-                (identifier, ddl, last_processed_at) 
+                INSERT INTO ${this.client(this.ns)}._account_applied_migrations
+                (identifier, ddl, last_processed_at)
                 VALUES (${name}, ${ddl}, NOW())
                 ON CONFLICT (identifier) DO NOTHING
               `
@@ -674,8 +692,8 @@ export class PostgresAccountDB implements AccountDB {
 
           if (executed) {
             await this.client`
-              UPDATE ${this.client(this.ns)}._account_applied_migrations 
-              SET applied_at = NOW() 
+              UPDATE ${this.client(this.ns)}._account_applied_migrations
+              SET applied_at = NOW()
               WHERE identifier = ${name}
             `
             migrationComplete = true
@@ -715,14 +733,14 @@ export class PostgresAccountDB implements AccountDB {
           , last_processed_at TIMESTAMP WITH TIME ZONE
         );
 
-        ALTER TABLE ${this.ns}._account_applied_migrations 
+        ALTER TABLE ${this.ns}._account_applied_migrations
         ADD COLUMN IF NOT EXISTS last_processed_at TIMESTAMP WITH TIME ZONE;
       `
     )
 
     const constraintsExist = await this.client`
-      SELECT 1 
-      FROM information_schema.columns 
+      SELECT 1
+      FROM information_schema.columns
       WHERE table_schema = ${this.ns}
       AND table_name = '_account_applied_migrations'
       AND column_name = 'applied_at'
@@ -733,10 +751,10 @@ export class PostgresAccountDB implements AccountDB {
       try {
         await this.client.unsafe(
           `
-            ALTER TABLE ${this.ns}._account_applied_migrations 
+            ALTER TABLE ${this.ns}._account_applied_migrations
             ALTER COLUMN applied_at DROP DEFAULT;
 
-            ALTER TABLE ${this.ns}._account_applied_migrations 
+            ALTER TABLE ${this.ns}._account_applied_migrations
             ALTER COLUMN applied_at DROP NOT NULL;
           `
         )
@@ -815,7 +833,7 @@ export class PostgresAccountDB implements AccountDB {
     const values = data.flat()
 
     const sql = `
-      INSERT INTO ${this.getWsMembersTableName()} 
+      INSERT INTO ${this.getWsMembersTableName()}
       (account_uuid, workspace_uuid, role)
       VALUES ${placeholders}
     `
@@ -868,7 +886,7 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   async getAccountWorkspaces (accountUuid: AccountUuid): Promise<WorkspaceInfoWithStatus[]> {
-    const sql = `SELECT 
+    const sql = `SELECT
           w.uuid,
           w.name,
           w.url,
@@ -892,8 +910,8 @@ export class PostgresAccountDB implements AccountDB {
             'processing_message', s.processing_message,
             'backup_info', s.backup_info,
             'usage_info', s.usage_info
-          ) status 
-           FROM ${this.getWsMembersTableName()} as m 
+          ) status
+           FROM ${this.getWsMembersTableName()} as m
            INNER JOIN ${this.workspace.getTableName()} as w ON m.workspace_uuid = w.uuid
            INNER JOIN ${this.workspaceStatus.getTableName()} as s ON s.workspace_uuid = w.uuid
            WHERE m.account_uuid = $1
@@ -922,7 +940,7 @@ export class PostgresAccountDB implements AccountDB {
     wsLivenessMs?: number
   ): Promise<WorkspaceInfoWithStatus | undefined> {
     const sqlChunks: string[] = [
-      `SELECT 
+      `SELECT
           w.uuid,
           w.name,
           w.url,
@@ -932,7 +950,7 @@ export class PostgresAccountDB implements AccountDB {
           w.region,
           w.created_by,
           w.created_on,
-          w.billing_account, 
+          w.billing_account,
           json_build_object(
             'mode', s.mode,
             'processing_progress', s.processing_progress,
@@ -1028,7 +1046,7 @@ export class PostgresAccountDB implements AccountDB {
   async setPassword (accountUuid: AccountUuid, hash: Buffer, salt: Buffer): Promise<void> {
     await this.withRetry(
       async (rTx) =>
-        await rTx`UPSERT INTO ${this.client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash.buffer as any}::bytea, ${salt.buffer as any}::bytea)`
+        await rTx`INSERT INTO ${this.client(this.account.getPasswordsTableName())} (account_uuid, hash, salt) VALUES (${accountUuid}, ${hash.buffer as any}::bytea, ${salt.buffer as any}::bytea) ON CONFLICT (account_uuid) DO UPDATE SET hash = EXCLUDED.hash, salt = EXCLUDED.salt;`
     )
   }
 
@@ -1070,7 +1088,7 @@ export class PostgresAccountDB implements AccountDB {
     const sqlChunks: string[] = [
       `
       WITH account_data AS (
-        SELECT 
+        SELECT
           a.uuid,
           a.timezone,
           a.locale,
@@ -1078,16 +1096,16 @@ export class PostgresAccountDB implements AccountDB {
           a.max_workspaces,
           p.first_name,
           p.last_name,
-          p.country,
-          p.city,
+          up.country,
+          up.city,
           p.migrated_to,
           (
             SELECT jsonb_agg(jsonb_build_object(
               'socialId', i.social_id,
               'kind', i.kind,
               'workspaceUuid', i.workspace_uuid
-            )) 
-            FROM ${this.integration.getTableName()} i 
+            ))
+            FROM ${this.integration.getTableName()} i
             WHERE i.social_id IN (SELECT _id FROM ${this.socialId.getTableName()} s WHERE s.person_uuid = a.uuid)
           ) as integrations,
           (
@@ -1121,6 +1139,7 @@ export class PostgresAccountDB implements AccountDB {
           ) as workspaces
         FROM ${this.account.getTableName()} a
         INNER JOIN ${this.ns}.person p ON p.uuid = a.uuid
+        LEFT JOIN ${this.userProfile.getTableName()} up ON up.person_uuid = p.uuid
     `
     ]
 
@@ -1129,11 +1148,11 @@ export class PostgresAccountDB implements AccountDB {
 
     if (search !== undefined && search !== '') {
       sqlChunks.push(`
-        WHERE 
-          p.first_name ILIKE $${paramIndex} OR 
+        WHERE
+          p.first_name ILIKE $${paramIndex} OR
           p.last_name ILIKE $${paramIndex} OR
           EXISTS (
-            SELECT 1 FROM ${this.socialId.getTableName()} s 
+            SELECT 1 FROM ${this.socialId.getTableName()} s
             WHERE s.person_uuid = a.uuid AND s.value ILIKE $${paramIndex}
           )
       `)
@@ -1193,7 +1212,7 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   protected getMigrations (): [string, string][] {
-    return getMigrations(this.ns)
+    return getMigrations(this.ns, this.dbFlavor)
   }
 
   async batchAssignWorkspacePermission (
@@ -1265,4 +1284,5 @@ export class PostgresAccountDB implements AccountDB {
     })
     return results.map((r) => r.accountUuid)
   }
+
 }
