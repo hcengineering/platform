@@ -233,6 +233,19 @@ jobs:
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
+      - name: Free Disk Space Before Docker Build
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo apt-get clean
+          docker system prune -af --volumes
+          echo "Disk space after cleanup:"
+          df -h
+
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         continue-on-error: true
@@ -245,6 +258,7 @@ jobs:
         run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
       - name: Configure /etc/hosts
         run: |
           sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
@@ -363,6 +377,19 @@ jobs:
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
+      - name: Free Disk Space Before Docker Build
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo apt-get clean
+          docker system prune -af --volumes
+          echo "Disk space after cleanup:"
+          df -h
+
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         continue-on-error: true
@@ -375,6 +402,7 @@ jobs:
         run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
       - name: Configure /etc/hosts
         run: |
           sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
@@ -458,6 +486,19 @@ jobs:
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
 
+      - name: Free Disk Space Before Docker Build
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo apt-get clean
+          docker system prune -af --volumes
+          echo "Disk space after cleanup:"
+          df -h
+
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         continue-on-error: true
@@ -465,10 +506,13 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
+      
       - name: Configure /etc/hosts
         run: |
           sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
@@ -539,6 +583,19 @@ jobs:
       - name: Build sanity-tests suite
         run: node common/scripts/install-run-rush.js build -t @hcengineering/tests-sanity
 
+      - name: Free Disk Space Before Docker Build
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo apt-get clean
+          docker system prune -af --volumes
+          echo "Disk space after cleanup:"
+          df -h
+
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         continue-on-error: true
@@ -546,10 +603,13 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
+      
       - name: Configure /etc/hosts
         run: |
           sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
@@ -671,8 +731,12 @@ jobs:
         run: |
           node common/scripts/install-run-rush.js docker:build -v
           docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after build:"
+          df -h
         env:
           DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       - name: Docker build love-agent
         run: |
