@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint --fix \"src/**/*.ts\"",
-    "format": "prettier --write src/**/*.ts &&  eslint --fix \"src/**/*.ts\"",
+    "format": "prettier --write src/**/*.ts &&  eslint --fix \"src/**/*.ts\" && echo 'done'",
     "clean": "rm -rf lib && rm -rf types rm -rf node_modules"
   },
   "devDependencies": {

@@ -200,7 +200,103 @@ jobs:
           DB_URL: 'postgresql://root@localhost:26258/defaultdb?sslmode=disable'
           ELASTIC_URL: 'http://localhost:9201'
           MONGO_URL: 'mongodb://localhost:27018'
+          POSTGRES_URL: 'postgresql://postgres:postgres@localhost:5433/postgres'
 
+  uitest-cockroach:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+          submodules: recursive
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+      - name: Cache node modules
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-node-platform
+        with:
+          path: |
+            common/temp
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Checking for mis-matching dependencies...
+        run: node common/scripts/install-run-rush.js check
+
+      - name: Checking for mis-matching transitive dependencies...
+        run: node common/scripts/check-versions.js
+
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Login to Docker Hub
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        continue-on-error: true
+        uses: docker/login-action@v3
+        with:
+          username: haiodo
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+      - name: Docker Build
+        run: node common/scripts/install-run-rush.js docker
+        env:
+          DOCKER_CLI_HINTS: false
+      - name: Configure /etc/hosts
+        run: |
+          sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
+      - name: Prepare server
+        run: |
+          cd ./tests
+          export DO_CLEAN="true"
+          ./prepare-cockroach.sh
+      - name: Install Playwright
+        run: |
+          cd ./tests/sanity
+          node ../../common/scripts/install-run-rushx.js ci
+      - name: Start profiling
+        run: |
+          cd ./tests
+          ./profile-start.sh
+      - name: Run UI tests
+        run: |
+          cd ./tests/sanity
+          node ../../common/scripts/install-run-rushx.js uitest
+      - name: Download profile
+        run: |
+          cd ./tests
+          ./profile-download.sh
+          npm install -g cpupro
+          ./profile-generate.sh
+      - name: Upload profiling results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: profiling-cockroach
+          path: ./tests/profiles
+      - name: 'Store docker logs'
+        if: always()
+        run: |
+          cd ./tests/sanity
+          mkdir logs
+          cd logs
+          docker ps -a --format '{{.Names}}' | xargs -I {} sh -c 'docker logs {} > {}_logs.log 2>&1'
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-cockroach
+          path: ./tests/sanity/playwright-report/
+      - name: Upload Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-logs-cockroach
+          path: ./tests/sanity/logs
   uitest-pg:
     runs-on: ubuntu-latest
     timeout-minutes: 60

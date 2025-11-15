@@ -21,8 +21,6 @@ ENV GOBIN=/bin
 ENV PATH=$PATH:$GOBIN
 ARG BUILDARCH=amd64
 
-COPY . ./
-
 FROM base AS linter
 
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.5.0
@@ -30,6 +28,8 @@ RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/ins
 RUN golangci-lint run --verbose
 
 FROM base AS builder
+
+COPY . ./
 
 RUN set -xe && GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /go/bin/stream ./cmd/stream
 

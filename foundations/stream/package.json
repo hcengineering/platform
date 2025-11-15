@@ -16,6 +16,7 @@
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "echo done",
     "package": "echo done",
+    "format": "echo done",
     "docker:build": "../../common/scripts/docker_build.sh haiodo/stream",
     "docker:staging": "../../common/scripts/docker_tag.sh haiodo/stream staging",
     "docker:push": "../../common/scripts/docker_tag.sh haiodo/stream",
