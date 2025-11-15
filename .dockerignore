@@ -1,0 +1,145 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Documentation
+*.md
+!README.md
+LICENSE
+CHANGELOG.md
+docs/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Rush temporary files
+common/temp/**/*
+common/scripts/install-run*.log
+.rush/temp/
+
+# Node modules (will be installed in container)
+**/node_modules
+**/.rush/temp
+**/rush-logs/
+
+# Build artifacts
+**/dist
+**/build
+**/lib
+**/out
+**/*.log
+**/*.tsbuildinfo
+
+# Test files
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+**/tests/
+**/__tests__/
+**/__mocks__/
+**/coverage/
+**/.nyc_output/
+**/test-results/
+
+# Source maps
+**/*.map
+
+# TypeScript
+**/*.tsbuildinfo
+**/tsconfig.tsbuildinfo
+
+# Package artifacts
+**/*.tar.gz
+**/*.zip
+**/*.tgz
+
+# Cache directories
+**/.cache
+**/.parcel-cache
+**/.next
+**/.nuxt
+**/.vuepress/dist
+**/.serverless
+**/.fusebox
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local
+**/.env
+
+# Development databases
+*.sqlite
+*.sqlite3
+*.db
+
+# Logs
+**/logs
+**/*.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/lerna-debug.log*
+**/pnpm-debug.log*
+
+# Editor directories
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Storybook
+**/storybook-static
+
+# Rush specific
+common/deploy/
+common/reviews/
+
+# Temporary files
+**/tmp/
+**/temp/
+
+# QMS tests
+qms-tests/sanity/playwright-report/
+qms-tests/sanity/test-results/
+qms-tests/sanity/.auth/
+
+# Desktop builds
+desktop/dist/
+desktop-package/dist/
+
+# Dev environment
+dev/minio/
+dev/elastic/
+dev/mongo/
