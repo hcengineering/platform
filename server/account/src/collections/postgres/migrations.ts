@@ -39,7 +39,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV18Migration(ns),
     getV19Migration(ns),
     getV20Migration(ns),
-    getV21Migration(ns)
+    getV21Migration(ns),
+    getV22Migration(ns)
   ]
 }
 
@@ -576,6 +577,16 @@ function getV21Migration (ns: string): [string, string] {
     `
     ALTER TABLE ${ns}.account
     ADD COLUMN IF NOT EXISTS failed_login_attempts SMALLINT DEFAULT 0;
+    `
+  ]
+}
+
+function getV22Migration (ns: string): [string, string] {
+  return [
+    'account_db_v22_add_password_change_event_index',
+    `
+    CREATE INDEX IF NOT EXISTS account_events_account_uuid_event_type_time_idx
+    ON ${ns}.account_events (account_uuid, event_type, time DESC);
     `
   ]
 }
