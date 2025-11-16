@@ -737,8 +737,8 @@ jobs:
           node common/scripts/install-run-rush.js docker:push \
             --to @hcengineering/pod-rating \
             --to @hcengineering/pod-love \
-            --to @hcengineering/translate \
-            --to @hcengineering/worker \
+            --to @hcengineering/pod-translate \
+            --to @hcengineering/pod-worker \
             --to @hcengineering/rekoni-service \
             --to @hcengineering/pod-process \
             --to @hcengineering/pod-fulltext \
