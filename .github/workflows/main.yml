@@ -667,21 +667,79 @@ jobs:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
-      - name: Docker build
+      # Phase 1: Build all services for amd64
+      - name: Docker build - Phase 1 (amd64)
         run: |
+          echo "=== Building all services for amd64 ==="
+          df -h
           node common/scripts/install-run-rush.js docker:build -v
-          docker builder prune -a -f
+          echo "Disk space after amd64 build:"
+          df -h
         env:
           DOCKER_CLI_HINTS: false
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
-      - name: Docker build love-agent
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/amd64
+      
+      - name: Cleanup after amd64 build
         run: |
+          echo "Cleaning up after amd64 build..."
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after cleanup:"
+          df -h
+      
+      # Phase 2: Build all services for arm64
+      - name: Docker build - Phase 2 (arm64)
+        run: |
+          echo "=== Building all services for arm64 ==="
+          df -h
+          node common/scripts/install-run-rush.js docker:build -v
+          echo "Disk space after arm64 build:"
+          df -h
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/arm64
+      
+      - name: Cleanup after arm64 build
+        run: |
+          echo "Cleaning up after arm64 build..."
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after cleanup:"
+          df -h
+      
+      # Love-agent build (both platforms)
+      - name: Docker build love-agent (amd64)
+        run: |
+          echo "=== Building love-agent for amd64 ==="
+          df -h
           cd ./services/ai-bot/love-agent
           pnpm install && pnpm build
           pnpm docker:build -v
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after love-agent amd64:"
+          df -h
         env:
           DOCKER_CLI_HINTS: false
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/amd64
+      
+      - name: Docker build love-agent (arm64)
+        run: |
+          echo "=== Building love-agent for arm64 ==="
+          df -h
+          cd ./services/ai-bot/love-agent
+          pnpm docker:build -v
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after love-agent arm64:"
+          df -h
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/arm64
       - name: Login to Docker Hub
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         uses: docker/login-action@v3
