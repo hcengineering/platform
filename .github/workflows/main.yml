@@ -667,41 +667,101 @@ jobs:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
-      - name: Docker build
+      - name: Build and push Docker images
         run: |
-          node common/scripts/install-run-rush.js docker:build -v
-          docker builder prune -a -f
-        env:
-          DOCKER_CLI_HINTS: false
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
-      - name: Docker build love-agent
-        run: |
+          # List of all services to build
+          SERVICES=(
+            "pod-backup"
+            "pod-collaborator"
+            "pod-front"
+            "pod-media"
+            "pod-preview"
+            "pod-account"
+            "pod-workspace"
+            "pod-server"
+            "pod-rating"
+            "pod-love"
+            "translate"
+            "worker"
+            "rekoni-service"
+            "pod-process"
+            "pod-fulltext"
+            "pod-stats"
+            "prod"
+            "pod-billing"
+            "pod-gmail"
+            "pod-telegram"
+            "pod-telegram-bot"
+            "pod-github"
+            "pod-notification"
+            "pod-ai-bot"
+            "pod-calendar"
+            "pod-calendar-mailer"
+            "pod-mail"
+            "pod-mail-worker"
+            "pod-payment"
+            "pod-print"
+            "pod-sign"
+            "pod-export"
+            "pod-datalake"
+            "backup-api-pod"
+            "pod-analytics-collector"
+            "tool"
+            "import-tool"
+            "pod-external"
+          )
+          
+          TOTAL=${#SERVICES[@]}
+          COUNTER=1
+          
+          for SERVICE in "${SERVICES[@]}"; do
+            echo "=========================================="
+            echo "Building service $COUNTER/$TOTAL: $SERVICE"
+            echo "=========================================="
+            df -h
+            
+            # Build
+            node common/scripts/install-run-rush.js docker:build --to @hcengineering/$SERVICE -v
+            
+            # Push only for releases
+            if [[ "${{ github.ref }}" == refs/tags/v* ]] || [[ "${{ github.ref }}" == refs/tags/s* ]]; then
+              echo "Pushing $SERVICE for release ${{ github.ref }}"
+              node common/scripts/install-run-rush.js docker:push --to @hcengineering/$SERVICE -v
+            fi
+            
+            # Cleanup
+            docker builder prune -a -f
+            docker system prune -af --volumes
+            echo "Disk space after $SERVICE:"
+            df -h
+            
+            COUNTER=$((COUNTER + 1))
+          done
+          
+          echo "=========================================="
+          echo "Building love-agent"
+          echo "=========================================="
+          df -h
           cd ./services/ai-bot/love-agent
           pnpm install && pnpm build
           pnpm docker:build -v
+          
+          # Push love-agent only for releases
+          if [[ "${{ github.ref }}" == refs/tags/v* ]] || [[ "${{ github.ref }}" == refs/tags/s* ]]; then
+            echo "Pushing love-agent for release ${{ github.ref }}"
+            pnpm docker:push
+          fi
+          
+          # Final cleanup
+          cd ../../..
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Final disk space:"
+          df -h
         env:
           DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
-      - name: Login to Docker Hub
-        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
-        uses: docker/login-action@v3
-        with:
-          username: hardcoreeng
-          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-      # - name: Docker push staging
-      #   if: ${{ github.ref == 'refs/heads/main' }}
-      #   run: node common/scripts/install-run-rush.js docker:staging -v
-      - name: Docker push tag
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
-        run: |
-          echo Pushing release of tag ${{ github.ref }}
-          node common/scripts/install-run-rush.js docker:push -v
-      - name: Docker push love-agent
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
-        run: |
-          echo Pushing love-agent release of tag ${{ github.ref }}
-          cd ./services/ai-bot/love-agent
-          pnpm docker:push
 
   dist-build:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
