@@ -712,27 +712,42 @@ jobs:
           )
           
           TOTAL=${#SERVICES[@]}
-          COUNTER=1
+          BULK_SIZE=20
           
-          for SERVICE in "${SERVICES[@]}"; do
+          # Process services in bulks
+          for ((i=0; i<$TOTAL; i+=BULK_SIZE)); do
+            BULK_END=$((i + BULK_SIZE))
+            if [ $BULK_END -gt $TOTAL ]; then
+              BULK_END=$TOTAL
+            fi
+            
+            BULK_NUM=$((i / BULK_SIZE + 1))
             echo "=========================================="
-            echo "Building service $COUNTER/$TOTAL: $SERVICE"
+            echo "Processing bulk $BULK_NUM (services $((i+1))-$BULK_END of $TOTAL)"
             echo "=========================================="
             df -h
             
-            # Build
-            node common/scripts/install-run-rush.js docker:build --to @hcengineering/$SERVICE -v
+            # Build --to arguments for all services in this bulk
+            BUILD_TO_ARGS=""
+            for ((j=i; j<BULK_END; j++)); do
+              SERVICE="${SERVICES[$j]}"
+              BUILD_TO_ARGS="$BUILD_TO_ARGS --to @hcengineering/$SERVICE"
+            done
             
-            # Push for releases
-            echo "Pushing $SERVICE for release ${{ github.ref }}"
-            node common/scripts/install-run-rush.js docker:push --to @hcengineering/$SERVICE -v
+            # Build all services in this bulk with single command
+            echo "Building services in bulk $BULK_NUM..."
+            node common/scripts/install-run-rush.js docker:build $BUILD_TO_ARGS -v
             
-            # Cleanup - remove only built images, preserve layer cache
-            docker image prune -f
-            echo "Disk space after $SERVICE:"
+            # Push all services in this bulk with single command
+            echo "Pushing services in bulk $BULK_NUM for release ${{ github.ref }}..."
+            node common/scripts/install-run-rush.js docker:push $BUILD_TO_ARGS -v
+            
+            # Cleanup after bulk - remove built images, preserve layer cache
+            echo "Cleaning up after bulk $BULK_NUM..."
+            docker builder prune -a -f
+            docker system prune -af --volumes
+            echo "Disk space after bulk $BULK_NUM:"
             df -h
-            
-            COUNTER=$((COUNTER + 1))
           done
           
           echo "=========================================="
