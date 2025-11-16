@@ -667,41 +667,138 @@ jobs:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
-      - name: Docker build
+      # Phase 1: Core Infrastructure Pods
+      - name: Docker build Phase 1 - Core Pods
         run: |
-          node common/scripts/install-run-rush.js docker:build -v
-          docker builder prune -a -f
+          echo "=== Phase 1: Building Core Infrastructure Pods ==="
+          df -h
+          node common/scripts/install-run-rush.js docker:build \
+            --to @hcengineering/pod-backup \
+            --to @hcengineering/collaborator \
+            --to @hcengineering/front \
+            --to @hcengineering/pod-media \
+            --to @hcengineering/pod-preview \
+            --to @hcengineering/account \
+            --to @hcengineering/workspace \
+            --to @hcengineering/server \
+            -v
         env:
           DOCKER_CLI_HINTS: false
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64 --push
+      
+      - name: Cleanup after Phase 1
+        run: |
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 1:"
+          df -h
+
+      # Phase 2: Business & Processing Services
+      - name: Docker build Phase 2 - Business Services
+        run: |
+          echo "=== Phase 2: Building Business Services ==="
+          df -h
+          node common/scripts/install-run-rush.js docker:build \
+            --to @hcengineering/pod-rating \
+            --to @hcengineering/love \
+            --to @hcengineering/translate \
+            --to @hcengineering/worker \
+            --to @hcengineering/rekoni-service \
+            --to @hcengineering/process \
+            --to @hcengineering/fulltext \
+            --to @hcengineering/stats \
+            -v
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64 --push
+      
+      - name: Cleanup after Phase 2
+        run: |
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 2:"
+          df -h
+
+      # Phase 3: Integration Services
+      - name: Docker build Phase 3 - Integration Services
+        run: |
+          echo "=== Phase 3: Building Integration Services ==="
+          df -h
+          node common/scripts/install-run-rush.js docker:build \
+            --to @hcengineering/pod-billing \
+            --to @hcengineering/pod-gmail \
+            --to @hcengineering/pod-telegram \
+            --to @hcengineering/pod-telegram-bot \
+            --to @hcengineering/pod-github \
+            --to @hcengineering/pod-notification \
+            --to @hcengineering/pod-ai-bot \
+            -v
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64 --push
+      
+      - name: Cleanup after Phase 3
+        run: |
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 3:"
+          df -h
+
+      # Phase 4: Remaining Services
+      - name: Docker build Phase 4 - Remaining Services
+        run: |
+          echo "=== Phase 4: Building Remaining Services ==="
+          df -h
+          node common/scripts/install-run-rush.js docker:build \
+            --to @hcengineering/pod-calendar \
+            --to @hcengineering/pod-calendar-mailer \
+            --to @hcengineering/pod-mail \
+            --to @hcengineering/pod-mail-worker \
+            --to @hcengineering/pod-payment \
+            --to @hcengineering/pod-print \
+            --to @hcengineering/pod-sign \
+            --to @hcengineering/pod-export \
+            --to @hcengineering/pod-datalake \
+            --to @hcengineering/backup-api-pod \
+            --to @hcengineering/analytics-collector \
+            --to @hcengineering/tool \
+            --to @hcengineering/import-tool \
+            --to @hcengineering/external \
+            -v
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64 --push
+      
+      - name: Cleanup after Phase 4
+        run: |
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 4:"
+          df -h
+
+      # Love-agent
       - name: Docker build love-agent
         run: |
+          echo "=== Building love-agent ==="
+          df -h
           cd ./services/ai-bot/love-agent
           pnpm install && pnpm build
           pnpm docker:build -v
         env:
           DOCKER_CLI_HINTS: false
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
-      - name: Login to Docker Hub
-        if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
-        uses: docker/login-action@v3
-        with:
-          username: hardcoreeng
-          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-      # - name: Docker push staging
-      #   if: ${{ github.ref == 'refs/heads/main' }}
-      #   run: node common/scripts/install-run-rush.js docker:staging -v
-      - name: Docker push tag
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64 --push
+      
+      - name: Cleanup after love-agent
         run: |
-          echo Pushing release of tag ${{ github.ref }}
-          node common/scripts/install-run-rush.js docker:push -v
-      - name: Docker push love-agent
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
-        run: |
-          echo Pushing love-agent release of tag ${{ github.ref }}
-          cd ./services/ai-bot/love-agent
-          pnpm docker:push
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after love-agent:"
+          df -h
 
   dist-build:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
