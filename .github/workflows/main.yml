@@ -660,14 +660,14 @@ jobs:
         run: node common/scripts/install-run-rush.js model-version
 
       - name: Login to Docker Hub
-        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-        continue-on-error: true
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         uses: docker/login-action@v3
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Build and push Docker images
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         run: |
           # List of all services to build
           SERVICES=(
@@ -723,15 +723,12 @@ jobs:
             # Build
             node common/scripts/install-run-rush.js docker:build --to @hcengineering/$SERVICE -v
             
-            # Push only for releases
-            if [[ "${{ github.ref }}" == refs/tags/v* ]] || [[ "${{ github.ref }}" == refs/tags/s* ]]; then
-              echo "Pushing $SERVICE for release ${{ github.ref }}"
-              node common/scripts/install-run-rush.js docker:push --to @hcengineering/$SERVICE -v
-            fi
+            # Push for releases
+            echo "Pushing $SERVICE for release ${{ github.ref }}"
+            node common/scripts/install-run-rush.js docker:push --to @hcengineering/$SERVICE -v
             
-            # Cleanup
-            docker builder prune -a -f
-            docker system prune -af --volumes
+            # Cleanup - remove only built images, preserve layer cache
+            docker image prune -f
             echo "Disk space after $SERVICE:"
             df -h
             
@@ -746,15 +743,12 @@ jobs:
           pnpm install && pnpm build
           pnpm docker:build -v
           
-          # Push love-agent only for releases
-          if [[ "${{ github.ref }}" == refs/tags/v* ]] || [[ "${{ github.ref }}" == refs/tags/s* ]]; then
-            echo "Pushing love-agent for release ${{ github.ref }}"
-            pnpm docker:push
-          fi
+          # Push love-agent for releases
+          echo "Pushing love-agent for release ${{ github.ref }}"
+          pnpm docker:push
           
           # Final cleanup
           cd ../../..
-          docker builder prune -a -f
           docker system prune -af --volumes
           echo "Final disk space:"
           df -h
