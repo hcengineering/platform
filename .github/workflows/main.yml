@@ -659,6 +659,24 @@ jobs:
       - name: Model version from git tags
         run: node common/scripts/install-run-rush.js model-version
 
+      - name: Additional cleanup before Docker build
+        run: |
+          echo "Disk space before additional cleanup:"
+          df -h
+          # Remove rush build artifacts
+          rm -rf common/temp
+          # Remove all node_modules to free space (will use from cache in docker)
+          find . -name "node_modules" -type d -prune -exec rm -rf {} + || true
+          # Remove test artifacts
+          rm -rf tests/sanity/playwright-report
+          rm -rf qms-tests/sanity/playwright-report
+          rm -rf ws-tests/sanity/playwright-report
+          # Clean docker again
+          docker system prune -af --volumes
+          docker builder prune -af
+          echo "Disk space after additional cleanup:"
+          df -h
+
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         continue-on-error: true
@@ -667,21 +685,139 @@ jobs:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
-      - name: Docker build
+      # Build Phase 1: Core Infrastructure Pods (amd64)
+      - name: Docker build - Phase 1 Core Pods (amd64)
         run: |
-          node common/scripts/install-run-rush.js docker:build -v
+          echo "=== Building Phase 1: Core Pods (amd64) ==="
+          df -h
+          node common/scripts/install-run-rush.js docker:build \
+            --to @hcengineering/pod-backup \
+            --to @hcengineering/collaborator \
+            --to @hcengineering/front \
+            --to @hcengineering/pod-media \
+            --to @hcengineering/pod-preview \
+            --to @hcengineering/account \
+            --to @hcengineering/workspace \
+            --to @hcengineering/server \
+            -v
           docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 1 (amd64):"
+          df -h
         env:
           DOCKER_CLI_HINTS: false
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/amd64
+
+      # Build Phase 2: Business & Translation Services (amd64)
+      - name: Docker build - Phase 2 Business Services (amd64)
+        run: |
+          echo "=== Building Phase 2: Business Services (amd64) ==="
+          df -h
+          node common/scripts/install-run-rush.js docker:build \
+            --to @hcengineering/pod-rating \
+            --to @hcengineering/love \
+            --to @hcengineering/translate \
+            --to @hcengineering/worker \
+            --to @hcengineering/rekoni-service \
+            --to @hcengineering/process \
+            --to @hcengineering/fulltext \
+            --to @hcengineering/stats \
+            -v
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 2 (amd64):"
+          df -h
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/amd64
+
+      # Build Phase 3: Integration Services (amd64)
+      - name: Docker build - Phase 3 Integration Services (amd64)
+        run: |
+          echo "=== Building Phase 3: Integration Services (amd64) ==="
+          df -h
+          node common/scripts/install-run-rush.js docker:build \
+            --to @hcengineering/pod-billing \
+            --to @hcengineering/pod-gmail \
+            --to @hcengineering/pod-telegram \
+            --to @hcengineering/pod-telegram-bot \
+            --to @hcengineering/pod-github \
+            --to @hcengineering/pod-notification \
+            --to @hcengineering/pod-ai-bot \
+            -v
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 3 (amd64):"
+          df -h
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/amd64
+
+      # Build Phase 4: Remaining Services (amd64)
+      - name: Docker build - Phase 4 Remaining Services (amd64)
+        run: |
+          echo "=== Building Phase 4: Remaining Services (amd64) ==="
+          df -h
+          node common/scripts/install-run-rush.js docker:build \
+            --to @hcengineering/pod-calendar \
+            --to @hcengineering/pod-calendar-mailer \
+            --to @hcengineering/pod-mail \
+            --to @hcengineering/pod-mail-worker \
+            --to @hcengineering/pod-payment \
+            --to @hcengineering/pod-print \
+            --to @hcengineering/pod-sign \
+            --to @hcengineering/pod-export \
+            --to @hcengineering/pod-datalake \
+            --to @hcengineering/backup-api-pod \
+            --to @hcengineering/analytics-collector \
+            --to @hcengineering/tool \
+            --to @hcengineering/import-tool \
+            --to @hcengineering/external \
+            -v
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 4 (amd64):"
+          df -h
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/amd64
+
+      # Build Phase 5: All Services ARM64
+      - name: Docker build - Phase 5 All Services (arm64)
+        run: |
+          echo "=== Building Phase 5: All Services (arm64) ==="
+          df -h
+          node common/scripts/install-run-rush.js docker:build -v
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 5 (arm64):"
+          df -h
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
+          DOCKER_EXTRA: --platform=linux/arm64
+      
+      # Love-agent build (both platforms in one go - smaller service)
       - name: Docker build love-agent
         run: |
+          echo "=== Building love-agent (both platforms) ==="
+          df -h
           cd ./services/ai-bot/love-agent
           pnpm install && pnpm build
           pnpm docker:build -v
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after love-agent build:"
+          df -h
         env:
           DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+      
       - name: Login to Docker Hub
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         uses: docker/login-action@v3
