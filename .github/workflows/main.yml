@@ -674,13 +674,13 @@ jobs:
           df -h
           node common/scripts/install-run-rush.js docker:build \
             --to @hcengineering/pod-backup \
-            --to @hcengineering/collaborator \
-            --to @hcengineering/front \
+            --to @hcengineering/pod-collaborator \
+            --to @hcengineering/pod-front \
             --to @hcengineering/pod-media \
             --to @hcengineering/pod-preview \
-            --to @hcengineering/account \
-            --to @hcengineering/workspace \
-            --to @hcengineering/server \
+            --to @hcengineering/pod-account \
+            --to @hcengineering/pod-workspace \
+            --to @hcengineering/pod-server \
             -v
         env:
           DOCKER_CLI_HINTS: false
@@ -701,13 +701,14 @@ jobs:
           df -h
           node common/scripts/install-run-rush.js docker:build \
             --to @hcengineering/pod-rating \
-            --to @hcengineering/love \
+            --to @hcengineering/pod-love \
             --to @hcengineering/translate \
             --to @hcengineering/worker \
             --to @hcengineering/rekoni-service \
-            --to @hcengineering/process \
-            --to @hcengineering/fulltext \
-            --to @hcengineering/stats \
+            --to @hcengineering/pod-process \
+            --to @hcengineering/pod-fulltext \
+            --to @hcengineering/pod-stats \
+            --to @hcengineering/prod \
             -v
         env:
           DOCKER_CLI_HINTS: false
@@ -763,10 +764,10 @@ jobs:
             --to @hcengineering/pod-export \
             --to @hcengineering/pod-datalake \
             --to @hcengineering/backup-api-pod \
-            --to @hcengineering/analytics-collector \
+            --to @hcengineering/pod-analytics-collector \
             --to @hcengineering/tool \
             --to @hcengineering/import-tool \
-            --to @hcengineering/external \
+            --to @hcengineering/pod-external \
             -v
         env:
           DOCKER_CLI_HINTS: false
