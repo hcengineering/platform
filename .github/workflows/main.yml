@@ -685,7 +685,7 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_BUILDKIT: 1
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64 --push
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       
       - name: Cleanup after Phase 1
         run: |
@@ -693,6 +693,21 @@ jobs:
           docker system prune -af --volumes
           echo "Disk space after Phase 1:"
           df -h
+
+      - name: Docker push Phase 1
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+        run: |
+          echo "Pushing Phase 1 images for release ${{ github.ref }}"
+          node common/scripts/install-run-rush.js docker:push \
+            --to @hcengineering/pod-backup \
+            --to @hcengineering/pod-collaborator \
+            --to @hcengineering/pod-front \
+            --to @hcengineering/pod-media \
+            --to @hcengineering/pod-preview \
+            --to @hcengineering/pod-account \
+            --to @hcengineering/pod-workspace \
+            --to @hcengineering/pod-server \
+            -v
 
       # Phase 2: Business & Processing Services
       - name: Docker build Phase 2 - Business Services
@@ -713,7 +728,7 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_BUILDKIT: 1
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64 --push
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       
       - name: Cleanup after Phase 2
         run: |
@@ -721,6 +736,22 @@ jobs:
           docker system prune -af --volumes
           echo "Disk space after Phase 2:"
           df -h
+
+      - name: Docker push Phase 2
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+        run: |
+          echo "Pushing Phase 2 images for release ${{ github.ref }}"
+          node common/scripts/install-run-rush.js docker:push \
+            --to @hcengineering/pod-rating \
+            --to @hcengineering/pod-love \
+            --to @hcengineering/translate \
+            --to @hcengineering/worker \
+            --to @hcengineering/rekoni-service \
+            --to @hcengineering/pod-process \
+            --to @hcengineering/pod-fulltext \
+            --to @hcengineering/pod-stats \
+            --to @hcengineering/prod \
+            -v
 
       # Phase 3: Integration Services
       - name: Docker build Phase 3 - Integration Services
@@ -735,11 +766,15 @@ jobs:
             --to @hcengineering/pod-github \
             --to @hcengineering/pod-notification \
             --to @hcengineering/pod-ai-bot \
+            --to @hcengineering/pod-calendar \
+            --to @hcengineering/pod-calendar-mailer \
+            --to @hcengineering/pod-mail \
+            --to @hcengineering/pod-mail-worker \
             -v
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_BUILDKIT: 1
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64 --push
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       
       - name: Cleanup after Phase 3
         run: |
@@ -748,16 +783,30 @@ jobs:
           echo "Disk space after Phase 3:"
           df -h
 
+      - name: Docker push Phase 3
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+        run: |
+          echo "Pushing Phase 3 images for release ${{ github.ref }}"
+          node common/scripts/install-run-rush.js docker:push \
+            --to @hcengineering/pod-billing \
+            --to @hcengineering/pod-gmail \
+            --to @hcengineering/pod-telegram \
+            --to @hcengineering/pod-telegram-bot \
+            --to @hcengineering/pod-github \
+            --to @hcengineering/pod-notification \
+            --to @hcengineering/pod-ai-bot \
+            --to @hcengineering/pod-calendar \
+            --to @hcengineering/pod-calendar-mailer \
+            --to @hcengineering/pod-mail \
+            --to @hcengineering/pod-mail-worker \
+            -v
+
       # Phase 4: Remaining Services
       - name: Docker build Phase 4 - Remaining Services
         run: |
           echo "=== Phase 4: Building Remaining Services ==="
           df -h
           node common/scripts/install-run-rush.js docker:build \
-            --to @hcengineering/pod-calendar \
-            --to @hcengineering/pod-calendar-mailer \
-            --to @hcengineering/pod-mail \
-            --to @hcengineering/pod-mail-worker \
             --to @hcengineering/pod-payment \
             --to @hcengineering/pod-print \
             --to @hcengineering/pod-sign \
@@ -772,7 +821,7 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_BUILDKIT: 1
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64 --push
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       
       - name: Cleanup after Phase 4
         run: |
@@ -780,6 +829,23 @@ jobs:
           docker system prune -af --volumes
           echo "Disk space after Phase 4:"
           df -h
+
+      - name: Docker push Phase 4
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+        run: |
+          echo "Pushing Phase 4 images for release ${{ github.ref }}"
+          node common/scripts/install-run-rush.js docker:push \
+            --to @hcengineering/pod-payment \
+            --to @hcengineering/pod-print \
+            --to @hcengineering/pod-sign \
+            --to @hcengineering/pod-export \
+            --to @hcengineering/pod-datalake \
+            --to @hcengineering/backup-api-pod \
+            --to @hcengineering/pod-analytics-collector \
+            --to @hcengineering/tool \
+            --to @hcengineering/import-tool \
+            --to @hcengineering/pod-external \
+            -v
 
       # Love-agent
       - name: Docker build love-agent
@@ -792,8 +858,15 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_BUILDKIT: 1
-          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64 --push
-      
+          DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+
+      - name: Docker push love-agent
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+        run: |
+          echo "Pushing love-agent for release ${{ github.ref }}"
+          cd ./services/ai-bot/love-agent
+          pnpm docker:push
+
       - name: Cleanup after love-agent
         run: |
           docker builder prune -a -f
