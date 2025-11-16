@@ -687,13 +687,6 @@ jobs:
           DOCKER_BUILDKIT: 1
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       
-      - name: Cleanup after Phase 1
-        run: |
-          docker builder prune -a -f
-          docker system prune -af --volumes
-          echo "Disk space after Phase 1:"
-          df -h
-
       - name: Docker push Phase 1
         if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         run: |
@@ -708,6 +701,13 @@ jobs:
             --to @hcengineering/pod-workspace \
             --to @hcengineering/pod-server \
             -v
+
+      - name: Cleanup after Phase 1
+        run: |
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 1:"
+          df -h
 
       # Phase 2: Business & Processing Services
       - name: Docker build Phase 2 - Business Services
@@ -730,13 +730,6 @@ jobs:
           DOCKER_BUILDKIT: 1
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       
-      - name: Cleanup after Phase 2
-        run: |
-          docker builder prune -a -f
-          docker system prune -af --volumes
-          echo "Disk space after Phase 2:"
-          df -h
-
       - name: Docker push Phase 2
         if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         run: |
@@ -752,6 +745,13 @@ jobs:
             --to @hcengineering/pod-stats \
             --to @hcengineering/prod \
             -v
+
+      - name: Cleanup after Phase 2
+        run: |
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 2:"
+          df -h
 
       # Phase 3: Integration Services
       - name: Docker build Phase 3 - Integration Services
@@ -776,13 +776,6 @@ jobs:
           DOCKER_BUILDKIT: 1
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       
-      - name: Cleanup after Phase 3
-        run: |
-          docker builder prune -a -f
-          docker system prune -af --volumes
-          echo "Disk space after Phase 3:"
-          df -h
-
       - name: Docker push Phase 3
         if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         run: |
@@ -800,6 +793,13 @@ jobs:
             --to @hcengineering/pod-mail \
             --to @hcengineering/pod-mail-worker \
             -v
+
+      - name: Cleanup after Phase 3
+        run: |
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 3:"
+          df -h
 
       # Phase 4: Remaining Services
       - name: Docker build Phase 4 - Remaining Services
@@ -823,13 +823,6 @@ jobs:
           DOCKER_BUILDKIT: 1
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
       
-      - name: Cleanup after Phase 4
-        run: |
-          docker builder prune -a -f
-          docker system prune -af --volumes
-          echo "Disk space after Phase 4:"
-          df -h
-
       - name: Docker push Phase 4
         if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         run: |
@@ -846,6 +839,13 @@ jobs:
             --to @hcengineering/import-tool \
             --to @hcengineering/pod-external \
             -v
+
+      - name: Cleanup after Phase 4
+        run: |
+          docker builder prune -a -f
+          docker system prune -af --volumes
+          echo "Disk space after Phase 4:"
+          df -h
 
       # Love-agent
       - name: Docker build love-agent
