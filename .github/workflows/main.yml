@@ -706,11 +706,19 @@ jobs:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/arm64
           
-      - name: Docker push arm64 and create manifests
+      - name: Docker push arm64
         if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         run: |
           echo "Pushing arm64 images for release ${{ github.ref }}..."
           node common/scripts/install-run-rush.js docker:push -v
+
+      - name: Cleanup arm64 images
+        run: |
+          echo "Cleaning up arm64 images..."
+          df -h
+          docker system prune -af --volumes
+          docker builder prune -a -f
+          df -h
           
       - name: Docker build love-agent (both platforms)
         run: |
