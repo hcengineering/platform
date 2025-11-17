@@ -21,26 +21,58 @@ ENV GOBIN=/bin
 ENV PATH=$PATH:$GOBIN
 ARG BUILDARCH=amd64
 
-COPY . ./
+# Download modules once into a dedicated layer so they can be cached
+FROM base AS deps
 
+# Copy only go.mod and go.sum to leverage Docker layer caching
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go mod download
+
+# Linter stage: reuse downloaded modules from deps
 FROM base AS linter
 
+# Install linter and run it against the source
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.5.0
 
-RUN golangci-lint run --verbose
+# Copy go.mod and go.sum for module resolution
+COPY go.mod go.sum ./
 
+# Copy full source for linting
+COPY . ./
+
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    golangci-lint run --verbose
+
+# Builder stage: reuse modules and build caches, then compile
 FROM base AS builder
 
-RUN set -xe && GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o /go/bin/stream ./cmd/stream
+# Copy go.mod and go.sum for module resolution
+COPY go.mod go.sum ./
 
+# Copy the rest of the source
+COPY . ./
+
+# Allow overriding target OS/ARCH at build time (optional)
+ARG TARGETOS
+ARG TARGETARCH
+
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    set -xe && GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} go build -o /go/bin/stream ./cmd/stream
+
+# Final runtime image
 FROM alpine
 
 RUN set -xe && apk add --no-cache ffmpeg
 RUN apk add --no-cache ca-certificates jq bash \
     && addgroup -g 1000 stream \
-    && adduser -u 1000 -G stream -s /bin/sh -D stream \
-    && chown stream:stream /.
+    && adduser -u 1000 -G stream -s /bin/sh -D stream
+
 COPY --from=builder /go/bin/stream /stream
+RUN chown stream:stream /stream
 
 EXPOSE 1080
 USER stream

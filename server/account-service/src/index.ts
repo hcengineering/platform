@@ -18,7 +18,7 @@ import accountRu from '@hcengineering/account/lang/ru.json'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
 import { metricsAggregate, type Branding, type BrandingMap, type MeasureContext } from '@hcengineering/core'
-import platform, { Severity, Status, addStringsLoader, setMetadata } from '@hcengineering/platform'
+import platform, { Severity, Status, addStringsLoader, setMetadata, unknownStatus } from '@hcengineering/platform'
 import serverToken, { decodeToken, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 import cors from '@koa/cors'
 import type Cookies from 'cookies'
@@ -424,15 +424,25 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
             error: new Status(Severity.ERROR, platform.status.UnknownMethod, { method: request.method })
           }
 
-          ctx.body = JSON.stringify(response)
+          ctx.res.writeHead(400, KEEP_ALIVE_HEADERS)
+          ctx.res.end(JSON.stringify(response))
           return
         }
 
-        const result = await method(_ctx, db, branding, request, token, meta)
+        try {
+          const result = await method(_ctx, db, branding, request, token, meta)
 
-        const body = JSON.stringify(result)
-        ctx.res.writeHead(200, KEEP_ALIVE_HEADERS)
-        ctx.res.end(body)
+          const body = JSON.stringify(result)
+          ctx.res.writeHead(200, KEEP_ALIVE_HEADERS)
+          ctx.res.end(body)
+        } catch (err: any) {
+          const response = {
+            id: request.id,
+            error: unknownStatus(err.message)
+          }
+          ctx.res.writeHead(400, KEEP_ALIVE_HEADERS)
+          ctx.res.end(JSON.stringify(response))
+        }
       },
       { method: request.method }
     )

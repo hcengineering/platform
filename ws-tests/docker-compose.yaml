@@ -147,6 +147,9 @@ services:
     pull_policy: never
     extra_hosts:
       - 'huly.local:host-gateway'
+    depends_on:
+      cockroach:
+        condition: service_started
     links:
       - mongodb
       - minio
