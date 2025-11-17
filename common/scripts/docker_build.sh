@@ -3,10 +3,10 @@
 version=$(git rev-parse HEAD)
 
 # Check for cleanup flag from environment
+cleanup=false
 if [ "$DOCKER_BUILD_CLEANUP" = "true" ]; then
   cleanup=true
 fi
-cleanup=false
 
 echo "Building version: $version" 
 
