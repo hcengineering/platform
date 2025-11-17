@@ -667,7 +667,6 @@ jobs:
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
       - name: Build and push Docker images
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         run: |
           # List of all services to build
           SERVICES=(
@@ -713,34 +712,39 @@ jobs:
           
           TOTAL=${#SERVICES[@]}
           BULK_SIZE=20
+          IS_RELEASE=${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
           
           # Process services in bulks
-          for ((i=0; i<$TOTAL; i+=BULK_SIZE)); do
-            BULK_END=$((i + BULK_SIZE))
+          for ((i=0; i<$TOTAL; i+=$BULK_SIZE)); do
+            BULK_END=$((i + $BULK_SIZE))
             if [ $BULK_END -gt $TOTAL ]; then
               BULK_END=$TOTAL
             fi
             
-            BULK_NUM=$((i / BULK_SIZE + 1))
+            BULK_NUM=$((i / $BULK_SIZE + 1))
             echo "=========================================="
             echo "Processing bulk $BULK_NUM (services $((i+1))-$BULK_END of $TOTAL)"
             echo "=========================================="
             df -h
             
             # Build --to arguments for all services in this bulk
-            BUILD_TO_ARGS=""
+            BUILD_TO_ARGS=()
             for ((j=i; j<BULK_END; j++)); do
               SERVICE="${SERVICES[$j]}"
-              BUILD_TO_ARGS="$BUILD_TO_ARGS --to @hcengineering/$SERVICE"
+              BUILD_TO_ARGS+=('--to' "@hcengineering/$SERVICE")
             done
             
             # Build all services in this bulk with single command
             echo "Building services in bulk $BULK_NUM..."
-            node common/scripts/install-run-rush.js docker:build $BUILD_TO_ARGS -v
+            node common/scripts/install-run-rush.js docker:build "${BUILD_TO_ARGS[@]}" -v
             
-            # Push all services in this bulk with single command
-            echo "Pushing services in bulk $BULK_NUM for release ${{ github.ref }}..."
-            node common/scripts/install-run-rush.js docker:push $BUILD_TO_ARGS -v
+            # Push only for release tags
+            if [ "$IS_RELEASE" = "true" ]; then
+              echo "Pushing services in bulk $BULK_NUM for release ${{ github.ref }}..."
+              node common/scripts/install-run-rush.js docker:push "${BUILD_TO_ARGS[@]}" -v
+            else
+              echo "Skipping push for non-release build"
+            fi
             
             # Cleanup after bulk - remove built images, preserve layer cache
             echo "Cleaning up after bulk $BULK_NUM..."
@@ -758,9 +762,13 @@ jobs:
           pnpm install && pnpm build
           pnpm docker:build -v
           
-          # Push love-agent for releases
-          echo "Pushing love-agent for release ${{ github.ref }}"
-          pnpm docker:push
+          # Push love-agent only for release tags
+          if [ "$IS_RELEASE" = "true" ]; then
+            echo "Pushing love-agent for release ${{ github.ref }}"
+            pnpm docker:push
+          else
+            echo "Skipping love-agent push for non-release build"
+          fi
           
           # Final cleanup
           cd ../../..
