@@ -204,7 +204,7 @@ class PostgresDB implements BillingDB {
         values.push(
           `($${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++})`
         )
-        params.push(workspace, sessionId, sessionStart, sessionEnd, room, bandwidth, minutes)
+        params.push(workspace, sessionId, sessionStart, sessionEnd, room, bandwidth ?? 0, minutes)
       }
 
       if (values.length === 0) continue
