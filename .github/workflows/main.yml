@@ -673,12 +673,13 @@ jobs:
 
       - name: Docker build
         run: |
-          node common/scripts/install-run-rush.js docker:build -v
+          node common/scripts/install-run-rush.js docker:build -v 2>&1 | grep -v "did not define any work" || true
           docker builder prune -a -f
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
           DOCKER_BUILDKIT: 1
+          DOCKER_BUILD_CLEANUP: true
       - name: Docker build love-agent
         run: |
           cd ./services/ai-bot/love-agent
