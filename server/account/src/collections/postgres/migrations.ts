@@ -78,7 +78,8 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
     getV18Migration(ns, flavor),
     getV19Migration(ns, flavor),
     getV20Migration(ns, flavor),
-    getV21Migration(ns, flavor)
+    getV21Migration(ns, flavor),
+    getV22Migration(ns, flavor)
   ]
 }
 
@@ -731,6 +732,16 @@ function getV21Migration (ns: string, flavor: DBFlavor): [string, string] {
     `
     ALTER TABLE ${ns}.account
     ADD COLUMN IF NOT EXISTS failed_login_attempts SMALLINT DEFAULT 0;
+    `
+  ]
+}
+
+function getV22Migration (ns: string, flavor: DBFlavor): [string, string] {
+  return [
+    'account_db_v22_add_password_change_event_index',
+    `
+    CREATE INDEX IF NOT EXISTS account_events_account_uuid_event_type_time_idx
+    ON ${ns}.account_events (account_uuid, event_type, time DESC);
     `
   ]
 }

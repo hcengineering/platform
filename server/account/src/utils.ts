@@ -48,6 +48,7 @@ import { accountPlugin } from './plugin'
 import {
   type Account,
   type AccountDB,
+  type AccountEvent,
   AccountEventType,
   type AccountMethodHandler,
   type Integration,
@@ -462,7 +463,7 @@ export async function setPassword (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  personUuid: AccountUuid,
+  accountUuid: AccountUuid,
   password: string
 ): Promise<void> {
   if (password == null || password === '') {
@@ -470,7 +471,35 @@ export async function setPassword (
   }
 
   const salt = randomBytes(32)
-  await db.setPassword(personUuid, hashWithSalt(password, salt), salt)
+  await db.setPassword(accountUuid, hashWithSalt(password, salt), salt)
+
+  // Record password change event
+  try {
+    await db.accountEvent.insertOne({
+      accountUuid,
+      eventType: AccountEventType.PASSWORD_CHANGED,
+      time: Date.now()
+    })
+  } catch (err) {
+    ctx.warn('Failed to record password change event', { accountUuid, err })
+  }
+}
+
+export async function getLastPasswordChangeEvent (
+  db: AccountDB,
+  accountUuid: AccountUuid
+): Promise<AccountEvent | null> {
+  const result = await db.accountEvent.find(
+    { accountUuid, eventType: AccountEventType.PASSWORD_CHANGED },
+    { time: 'descending' },
+    1
+  )
+  return result[0] ?? null
+}
+
+export async function isPasswordChangedSince (db: AccountDB, accountUuid: AccountUuid, since: number): Promise<boolean> {
+  const lastEvent = await getLastPasswordChangeEvent(db, accountUuid)
+  return lastEvent != null && lastEvent.time >= since
 }
 
 export async function generateUniqueOtp (db: AccountDB): Promise<string> {
