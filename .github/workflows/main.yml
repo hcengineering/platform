@@ -673,7 +673,7 @@ jobs:
 
       - name: Docker build
         run: |
-          node common/scripts/install-run-rush.js docker:build -v 2>&1 | grep -v "did not define any work" || true
+          node common/scripts/install-run-rush.js docker:build -v
           docker builder prune -a -f
         env:
           DOCKER_CLI_HINTS: false
