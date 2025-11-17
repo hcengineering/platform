@@ -13,7 +13,7 @@ services:
       - STREAM_LOG_LEVEL=debug
       - AWS_ACCESS_KEY_ID=minioadmin
       - AWS_SECRET_ACCESS_KEY=minioadmin
-      - STREAM_REGION=cockroach
+      - STREAM_REGION=
       - STREAM_QUEUE_CONFIG=${QUEUE_CONFIG}
     ports:
       - 1080:1080
@@ -26,7 +26,7 @@ services:
     environment:
       - ACCOUNTS_URL=http://huly.local:3000
       - SECRET=secret
-      - REGION=cockroach
+      - REGION=
       - QUEUE_CONFIG=${QUEUE_CONFIG}
     restart: unless-stopped
   preview:
@@ -41,71 +41,82 @@ services:
     ports:
       - 4040:4040
     restart: unless-stopped
-  cockroach:
-    image: cockroachdb/cockroach:latest-v24.3
-    extra_hosts:
-      - 'huly.local:host-gateway'
-    ports:
-      - '26257:26257'
-      - '8089:8080'
-    command: start-single-node --insecure
-    volumes:
-      - cockroach_db:/cockroach/cockroach-data
-    restart: unless-stopped
-  redpanda:
-    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
-    extra_hosts:
-      - 'huly.local:host-gateway'
-    command:
-      - redpanda
-      - start
-      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
-      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
-      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
-      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
-      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
-      - --rpc-addr redpanda:33145
-      - --advertise-rpc-addr redpanda:33145
-      - --mode dev-container
-      - --smp 1
-      - --default-log-level=info
-      - --memory 256M
-    container_name: redpanda
-    volumes:
-      - redpanda:/var/lib/redpanda/data
-    ports:
-      - 18081:18081
-      - 18082:18082
-      - 19092:19092
-      - 19644:9644
+  postgres:
+    image: postgres:18.1
+    command: ['postgres', '-p', '5432']
     healthcheck:
-      test: ['CMD', 'rpk', 'cluster', 'info', '-X', 'user=superuser', '-X', 'pass=secretpassword']
+      test: ['CMD-SHELL', 'pg_isready -U postgres -p 5432']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    restart: unless-stopped
+  zookeeper:
+    image: zookeeper:3.9
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    container_name: zookeeper
+    ports:
+      - 2181:2181
+    volumes:
+      - zookeeper_data:/data
+      - zookeeper_logs:/datalog
+    healthcheck:
+      test: ['CMD', 'zkServer.sh', 'status']
       interval: 10s
       timeout: 5s
       retries: 10
     restart: unless-stopped
-  redpanda_console:
-    image: docker.redpanda.com/redpandadata/console:v2.8.3
+  kafka:
+    image: apache/kafka:4.1.1
     extra_hosts:
       - 'huly.local:host-gateway'
-    entrypoint: /bin/sh
-    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+    container_name: kafka
+    ports:
+      - 9092:9092
+      - 19092:19092
     environment:
-      CONFIG_FILEPATH: /tmp/config.yml
-      CONSOLE_CONFIG_FILE: |
-        kafka:
-          brokers: ["redpanda:9092"]
-          schemaRegistry:
-            enabled: true
-            urls: ["http://redpanda:8081"]
-        redpanda:
-          adminApi:
-            enabled: true
-            urls: ["http://redpanda:9644"]
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ['CMD-SHELL', '/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1']
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    restart: unless-stopped
+  kafka_ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    container_name: kafka_ui
     ports:
       - 8000:8080
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
     depends_on:
-      - redpanda
+      kafka:
+        condition: service_healthy
     restart: unless-stopped
   minio:
     image: 'minio/minio'
@@ -172,11 +183,11 @@ services:
       - ADMIN_EMAILS=admin,${PLATFORM_ADMIN_EMAILS}
       - STATS_URL=http://huly.local:4900
       - WORKSPACE_LIMIT_PER_USER=10000
-      - DB_URL=${DB_CR_URL}
+      - DB_URL=${DB_URL_PG}
       # - DB_NS=account-2
       # Pass only one region to disallow selection for new workspaces.
-      - REGION_INFO=cockroach|CockroachDB
-      - TRANSACTOR_URL=ws://huly.local:3332;;cockroach,
+      - REGION_INFO=|Default
+      - TRANSACTOR_URL=ws://huly.local:3332;;
       - MAIL_URL=
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FRONT_URL=http://huly.local:8087
@@ -200,46 +211,46 @@ services:
       - SERVER_SECRET=secret
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
-  payment:
-    image: haiodo/payment
-    extra_hosts:
-      - 'huly.local:host-gateway'
-    ports:
-      - 3040:3040
-    environment:
-      - SECRET=secret
-      - PORT=3040
-      - ACCOUNTS_URL=http://huly.local:3000
-      - FRONT_URL=http://huly.local:8087
-      - USE_SANDBOX=true
-      - POLAR_ACCESS_TOKEN=${POLAR_ACCESS_TOKEN}
-      - POLAR_WEBHOOK_SECRET=${POLAR_WEBHOOK_SECRET}
-      - POLAR_SUBSCRIPTION_PLANS=${POLAR_SUBSCRIPTION_PLANS}
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
-    restart: unless-stopped
-  workspace_cockroach:
+  # payment:
+  #   image: haiodo/payment
+  #   extra_hosts:
+  #     - 'huly.local:host-gateway'
+  #   ports:
+  #     - 3040:3040
+  #   environment:
+  #     - SECRET=secret
+  #     - PORT=3040
+  #     - ACCOUNTS_URL=http://huly.local:3000
+  #     - FRONT_URL=http://huly.local:8087
+  #     - USE_SANDBOX=true
+  #     - POLAR_ACCESS_TOKEN=${POLAR_ACCESS_TOKEN}
+  #     - POLAR_WEBHOOK_SECRET=${POLAR_WEBHOOK_SECRET}
+  #     - POLAR_SUBSCRIPTION_PLANS=${POLAR_SUBSCRIPTION_PLANS}
+  #     - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+  #   restart: unless-stopped
+  workspace:
     image: haiodo/workspace
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
-      - cockroach
+      - postgres
       - minio
       - stats
     depends_on:
-      redpanda:
-        condition: service_started
+      kafka:
+        condition: service_healthy
     volumes:
       - ./branding.json:/var/cfg/branding.json
     environment:
       - WS_OPERATION=all+backup
-      - REGION=cockroach
+      - REGION=
       - SERVER_SECRET=secret
       - QUEUE_CONFIG=${QUEUE_CONFIG}
-      - DB_URL=${DB_CR_URL}
+      - DB_URL=${DB_URL_PG}
       - STATS_URL=http://huly.local:4900
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://huly.local:3000
-      - ACCOUNTS_DB_URL=${DB_CR_URL}
+      - ACCOUNTS_DB_URL=${DB_URL_PG}
       - BRANDING_PATH=/var/cfg/branding.json
       - BACKUP_STORAGE=${BACKUP_STORAGE_CONFIG}
       - BACKUP_BUCKET=${BACKUP_BUCKET_NAME}
@@ -253,7 +264,7 @@ services:
       - 'huly.local:host-gateway'
     links:
       - minio
-      - transactor_cockroach
+      - transactor
       - stats
     ports:
       - 3078:3078
@@ -307,17 +318,17 @@ services:
       - DATALAKE_URL=http://huly.local:4030
       # - HULYLAKE_URL=http://huly.local:8096
     restart: unless-stopped
-  transactor_cockroach:
+  transactor:
     image: haiodo/transactor
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
-      - cockroach
+      - postgres
       - minio
       - account
       - stats
     depends_on:
-      redpanda:
+      kafka:
         condition: service_started
     ports:
       - 3332:3332
@@ -326,12 +337,12 @@ services:
     environment:
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - SERVER_PORT=3332
-      - REGION=cockroach
+      - REGION=
       - SERVER_SECRET=secret
       - ENABLE_COMPRESSION=true
       - FULLTEXT_URL=http://huly.local:4702
       - STATS_URL=http://huly.local:4900
-      - DB_URL=${DB_CR_URL}
+      - DB_URL=${DB_URL_PG}
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -359,7 +370,7 @@ services:
     environment:
       - STATS_URL=http://huly.local:4901
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
-  fulltext_cockroach:
+  fulltext:
     image: haiodo/fulltext
     extra_hosts:
       - 'huly.local:host-gateway'
@@ -369,16 +380,16 @@ services:
     restart: unless-stopped
     links:
       - elastic
-      - cockroach
+      - postgres
       - rekoni
     ports:
       - 4702:4702
     environment:
       - PORT=4702
-      - REGION=cockroach
+      - REGION=
       - SERVER_SECRET=secret
       - QUEUE_CONFIG=${QUEUE_CONFIG}
-      - DB_URL=${DB_CR_URL}
+      - DB_URL=${DB_URL_PG}
       - FULLTEXT_DB_URL=http://huly.local:9200
       - ELASTIC_INDEX_NAME=local_storage_index # Same index for simplicity
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -396,7 +407,7 @@ services:
       - 4005:4005
     environment:
       - SECRET=secret
-      - REGION=cockroach
+      - REGION=
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - STATS_URL=http://huly.local:4900
@@ -415,7 +426,7 @@ services:
     environment:
       - SECRET=secret
       - MINIO_ENDPOINT=minio
-      - REGION=cockroach
+      - REGION=
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://huly.local:3000
@@ -433,7 +444,7 @@ services:
   #   restart: unless-stopped
   #   environment:
   #     - SERVER_SECRET=secret
-  #     - DB_URL=${DB_CR_URL}
+  #     - DB_URL=${DB_URL_PG}
   #     - QUEUE_CONFIG=${QUEUE_CONFIG}
   #     - ACCOUNTS_URL=http://huly.local:3000
   #     - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -475,7 +486,7 @@ services:
       - PORT=4009
       - SECRET=secret
       - SERVICE_ID=export-service
-      - DB_URL=${DB_CR_URL}
+      - DB_URL=${DB_URL_PG}
       - STATS_URL=http://huly.local:4900
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://huly.local:3000
@@ -488,7 +499,7 @@ services:
     depends_on:
       minio:
         condition: service_healthy
-      cockroach:
+      postgres:
         condition: service_started
       stats:
         condition: service_started
@@ -501,9 +512,9 @@ services:
       - SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
       - STATS_URL=http://huly.local:4900
-      - DB_URL=${DB_CR_URL}
+      - DB_URL=${DB_URL_PG}
       - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
-      - REGION=cockroach
+      - REGION=
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
@@ -515,13 +526,13 @@ services:
   #   depends_on:
   #     minio:
   #       condition: service_healthy
-  #     cockroach:
+  #     postgres:
   #       condition: service_started
   #   ports:
   #     - 8096:8096
   #   environment:
   #     - HULY_TOKEN_SECRET=secret
-  #     - HULY_DB_CONNECTION=${DB_CR_URL}
+  #     - HULY_DB_CONNECTION=${DB_URL_PG}
   #     - AWS_ENDPOINT_URL=http://minio:9000
   #     - AWS_REGION=local
   #     - AWS_ACCESS_KEY_ID=minioadmin
@@ -530,28 +541,28 @@ services:
   # hulykvs:
   #   image: haiodo/hulykvs
   #   depends_on:
-  #     cockroach:
+  #     postgres:
   #       condition: service_started
   #   extra_hosts:
   #     - 'huly.local:host-gateway'
   #   ports:
   #     - 8094:8094
   #   environment:
-  #     - HULY_DB_CONNECTION=${DB_CR_URL}
+  #     - HULY_DB_CONNECTION=${DB_URL_PG}
   #     - HULY_TOKEN_SECRET=secret
   #   restart: unless-stopped
   # hulygun:
   #   image: haiodo/hulygun
   #   depends_on:
-  #     redpanda:
-  #       condition: service_started
+  #     kafka:
+  #       condition: service_healthy
   #     account:
   #       condition: service_started
   #   extra_hosts:
   #     - 'huly.local:host-gateway'
   #   environment:
   #     - HULY_LOG=debug
-  #     - HULY_KAFKA_BOOTSTRAP=redpanda:9092
+  #     - HULY_KAFKA_BOOTSTRAP=kafka:9092
   #     - HULY_TOKEN_SECRET=secret
   #     - HULY_ACCOUNT_SERVICE=http://huly.local:3000
   #   restart: unless-stopped
@@ -572,7 +583,7 @@ services:
     extra_hosts:
       - 'huly.local:host-gateway'
     depends_on:
-      redpanda:
+      kafka:
         condition: service_started
       account:
         condition: service_started
@@ -580,14 +591,14 @@ services:
       - SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
       - QUEUE_CONFIG=${QUEUE_CONFIG}
-      - QUEUE_REGION=cockroach
+      - QUEUE_REGION=
     restart: unless-stopped
   #  translate:
   #    image: haiodo/translate
   #    extra_hosts:
   #      - 'huly.local:host-gateway'
   #    depends_on:
-  #      redpanda:
+  #      kafka:
   #        condition: service_started
   #      account:
   #        condition: service_started
@@ -596,17 +607,17 @@ services:
   #      - ACCOUNTS_URL=http://huly.local:3000
   #      - HULYLAKE_URL=http://huly.local:8096
   #      - QUEUE_CONFIG=${QUEUE_CONFIG}
-  #      - QUEUE_REGION=cockroach
+  #      - QUEUE_REGION=
   #      - OPENAI_API_KEY=
   #    restart: unless-stopped
-  backup-cockroach:
+  backup:
     image: haiodo/backup
     extra_hosts:
       - 'huly.local:host-gateway'
     depends_on:
       minio:
         condition: service_healthy
-      cockroach:
+      postgres:
         condition: service_started
       stats:
         condition: service_started
@@ -615,10 +626,10 @@ services:
     environment:
       - SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
-      - ACCOUNTS_DB_URL=${DB_CR_URL}
+      - ACCOUNTS_DB_URL=${DB_URL_PG}
       - STATS_URL=http://huly.local:4900
-      - DB_URL=${DB_CR_URL}
-      - REGION=cockroach
+      - DB_URL=${DB_URL_PG}
+      - REGION=
       - BUCKET_NAME=backups
       - INTERVAL=60
       - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
@@ -650,24 +661,24 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
 
-  rating_cockroach:
+  rating:
     image: haiodo/rating
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
-      - cockroach
+      - postgres
       - minio
       - account
       - stats
     depends_on:
-      redpanda:
-        condition: service_started
+      kafka:
+        condition: service_healthy
     environment:
       - QUEUE_CONFIG=${QUEUE_CONFIG}
-      - REGION=cockroach
+      - REGION=
       - SERVER_SECRET=secret
       - STATS_URL=http://huly.local:4900
-      - DB_URL=${DB_CR_URL}
+      - DB_URL=${DB_URL_PG}
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://huly.local:3000
       - COMMUNICATION_TIME_LOGGING_ENABLED=true
@@ -696,6 +707,7 @@ volumes:
   dbpg:
   files:
   elastic:
-  cockroach_db:
-  redpanda:
+  zookeeper_data:
+  zookeeper_logs:
+  kafka_data:
   telemetry:
