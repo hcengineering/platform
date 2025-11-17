@@ -256,8 +256,12 @@ async function getValueCollaborators (value: any, attr: AnyAttribute, control: T
     if (arrOf._class === core.class.RefTo) {
       const to = (arrOf as RefTo<Doc>).to
       if (hierarchy.isDerived(to, contact.class.Person)) {
+        if (!Array.isArray(value)) {
+          control.ctx.error('Expected array but got non-array value when getting value collaborators', { attr, value })
+          return []
+        }
         if (value.length === 0) return []
-        if ((value as any[]).every((it) => it === null)) {
+        if (value.every((it) => it === null)) {
           control.ctx.error('Null-values array of person refs when getting value collaborators', { attr, value })
         }
 

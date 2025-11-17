@@ -65,14 +65,16 @@ import {
   loginOrSignUpWithProvider,
   sendEmail,
   addSocialIdBase,
-  doReleaseSocialId
+  doReleaseSocialId,
+  getLastPasswordChangeEvent,
+  isPasswordChangedSince
 } from '../utils'
 // eslint-disable-next-line import/no-named-default
 import platform, { getMetadata, PlatformError, Severity, Status } from '@hcengineering/platform'
 import { decodeTokenVerbose, generateToken, TokenError } from '@hcengineering/server-token'
 import { randomBytes } from 'crypto'
 
-import { type AccountDB, AccountEventType, type Workspace } from '../types'
+import { type AccountDB, type AccountEvent, AccountEventType, type Workspace } from '../types'
 import { accountPlugin } from '../plugin'
 
 // Mock platform with minimum required functionality
@@ -512,6 +514,110 @@ describe('account utils', () => {
         ['null both', 'password123', null, null]
       ])('should handle %s', (description, password, hash, salt) => {
         expect(verifyPassword(password, hash, salt)).toBe(false)
+      })
+    })
+
+    describe('getLastPasswordChangeEvent', () => {
+      const mockDb = {
+        accountEvent: {
+          find: jest.fn() as jest.MockedFunction<AccountDB['accountEvent']['find']>
+        }
+      } as unknown as AccountDB
+
+      beforeEach(() => {
+        jest.clearAllMocks()
+      })
+
+      test('should return most recent password change event when it exists', async () => {
+        const accountUuid = 'test-account-uuid' as AccountUuid
+        const now = Date.now()
+        const mockEvent: AccountEvent = {
+          accountUuid,
+          eventType: AccountEventType.PASSWORD_CHANGED,
+          time: now
+        }
+
+        ;(mockDb.accountEvent.find as jest.Mock).mockResolvedValue([mockEvent])
+
+        const result = await getLastPasswordChangeEvent(mockDb, accountUuid)
+
+        expect(result).toEqual(mockEvent)
+        expect(mockDb.accountEvent.find).toHaveBeenCalledWith(
+          { accountUuid, eventType: AccountEventType.PASSWORD_CHANGED },
+          { time: 'descending' },
+          1
+        )
+      })
+
+      test('should return null when no password change events exist', async () => {
+        const accountUuid = 'test-account-uuid' as AccountUuid
+
+        ;(mockDb.accountEvent.find as jest.Mock).mockResolvedValue([])
+
+        const result = await getLastPasswordChangeEvent(mockDb, accountUuid)
+
+        expect(result).toBeNull()
+      })
+    })
+
+    describe('isPasswordChangedSince', () => {
+      const mockDb = {
+        accountEvent: {
+          find: jest.fn() as jest.MockedFunction<AccountDB['accountEvent']['find']>
+        }
+      } as unknown as AccountDB
+
+      beforeEach(() => {
+        jest.clearAllMocks()
+      })
+
+      test('should return true when password changed after given timestamp', async () => {
+        const accountUuid = 'test-account-uuid' as AccountUuid
+        const now = Date.now()
+        const oneHourAgo = now - 1000 * 60 * 60 // 1 hour ago
+        const halfHourAgo = now - 1000 * 60 * 30 // 30 min ago
+
+        const mockEvent: AccountEvent = {
+          accountUuid,
+          eventType: AccountEventType.PASSWORD_CHANGED,
+          time: halfHourAgo
+        }
+
+        ;(mockDb.accountEvent.find as jest.Mock).mockResolvedValue([mockEvent])
+
+        const result = await isPasswordChangedSince(mockDb, accountUuid, oneHourAgo)
+
+        expect(result).toBe(true)
+      })
+
+      test('should return false when password changed before given timestamp', async () => {
+        const accountUuid = 'test-account-uuid' as AccountUuid
+        const now = Date.now()
+        const oneMonthAgo = now - 1000 * 60 * 60 * 24 * 30 // 1 month ago
+        const twoMonthsAgo = now - 1000 * 60 * 60 * 24 * 60 * 2 // 2 months ago
+
+        const mockEvent: AccountEvent = {
+          accountUuid,
+          eventType: AccountEventType.PASSWORD_CHANGED,
+          time: twoMonthsAgo
+        }
+
+        ;(mockDb.accountEvent.find as jest.Mock).mockResolvedValue([mockEvent])
+
+        const result = await isPasswordChangedSince(mockDb, accountUuid, oneMonthAgo)
+
+        expect(result).toBe(false)
+      })
+
+      test('should return false when no password change events exist', async () => {
+        const accountUuid = 'test-account-uuid' as AccountUuid
+        const now = Date.now()
+
+        ;(mockDb.accountEvent.find as jest.Mock).mockResolvedValue([])
+
+        const result = await isPasswordChangedSince(mockDb, accountUuid, now)
+
+        expect(result).toBe(false)
       })
     })
   })

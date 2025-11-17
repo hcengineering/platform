@@ -45,9 +45,10 @@
   export let withProviders: boolean = false
   export let subtitle: string | undefined = undefined
   export let signUpDisabled = false
+  export let isLoading: boolean = false
 
   const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
-    if (ignoreInitialValidation) return true
+    if (ignoreInitialValidation || isLoading) return true
 
     for (const field of fields) {
       const v = object[field.name]
