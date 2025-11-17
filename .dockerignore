@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Git
+.git
+.gitignore
+.github
+
+# Build artifacts
+dist
+**/dist
+build
+**/build
+
+# Development
+*.md
+README.md
+*.log
+.DS_Store
+
+# CI/CD
+.github
+.vscode
+
+# Monorepo
+common/temp
+rush.json
+.prettierrc
+
+# Tests
+tests
+**/tests
+**/*.test.ts
+**/*.spec.ts
