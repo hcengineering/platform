@@ -576,7 +576,8 @@ export class PostgresAccountDB implements AccountDB {
     this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>('mailbox', client, { ns, withRetryClient })
     this.mailboxSecret = new PostgresDbCollection<MailboxSecret>('mailbox_secrets', client, { ns, withRetryClient })
     this.integration = new PostgresDbCollection<Integration>('integrations', client, { ns, withRetryClient }, [
-      '_def_ws_uuid', '_defwsuuid'
+      '_def_ws_uuid',
+      '_defwsuuid'
     ])
     this.integrationSecret = new PostgresDbCollection<IntegrationSecret>(
       'integration_secrets',
