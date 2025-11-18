@@ -612,6 +612,11 @@ jobs:
     timeout-minutes: 60
     steps:
       # https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+          submodules: recursive
       - name: Free space
         uses: ./.github/actions/free-disk-space
       - name: Set up QEMU
@@ -625,11 +630,6 @@ jobs:
                 "containerd-snapshotter": true
               }
             }
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
-          submodules: recursive
 
       - name: Checkout init repository
         run: |
