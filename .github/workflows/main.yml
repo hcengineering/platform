@@ -205,6 +205,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
+      - name: Free disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          echo "Disk space after cleanup:"
+          df -h
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -246,6 +257,7 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_BUILDKIT: 1
+          DOCKER_BUILD_CLEANUP: true
       - name: Configure /etc/hosts
         run: |
           sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
@@ -336,6 +348,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
+      - name: Free disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          echo "Disk space after cleanup:"
+          df -h
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -377,6 +400,7 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_BUILDKIT: 1
+          DOCKER_BUILD_CLEANUP: true
       - name: Configure /etc/hosts
         run: |
           sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
@@ -432,6 +456,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
+      - name: Free disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          echo "Disk space after cleanup:"
+          df -h
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -472,6 +507,7 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_BUILDKIT: 1
+          DOCKER_BUILD_CLEANUP: true
       - name: Configure /etc/hosts
         run: |
           sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
@@ -511,6 +547,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
+      - name: Free disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          echo "Disk space after cleanup:"
+          df -h
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -554,6 +601,7 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_BUILDKIT: 1
+          DOCKER_BUILD_CLEANUP: true
       - name: Configure /etc/hosts
         run: |
           sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
