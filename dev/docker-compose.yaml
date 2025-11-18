@@ -44,6 +44,7 @@ services:
   postgres:
     image: postgres:18.1
     command: ['postgres', '-p', '5432']
+    shm_size: 128mb
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -p 5432']
       interval: 5s
@@ -55,68 +56,63 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
+    volumes:
+      - dbpg:/var/lib/postgresql
     restart: unless-stopped
-  zookeeper:
-    image: zookeeper:3.9
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
     extra_hosts:
       - 'huly.local:host-gateway'
-    container_name: zookeeper
-    ports:
-      - 2181:2181
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+      - --memory 256M
+    container_name: redpanda
     volumes:
-      - zookeeper_data:/data
-      - zookeeper_logs:/datalog
+      - redpanda:/var/lib/redpanda/data
+    ports:
+      - 18081:18081
+      - 18082:18082
+      - 19092:19092
+      - 19644:9644
     healthcheck:
-      test: ['CMD', 'zkServer.sh', 'status']
+      test: ['CMD', 'rpk', 'cluster', 'info']
       interval: 10s
       timeout: 5s
       retries: 10
     restart: unless-stopped
-  kafka:
-    image: apache/kafka:4.1.1
+  redpanda_console:
+    image: docker.redpanda.com/redpandadata/console:v2.8.3
     extra_hosts:
       - 'huly.local:host-gateway'
-    container_name: kafka
-    ports:
-      - 9092:9092
-      - 19092:19092
+    entrypoint: /bin/sh
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
     environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:19092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_LOG_RETENTION_HOURS: 168
-      KAFKA_LOG_SEGMENT_BYTES: 1073741824
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-    volumes:
-      - kafka_data:/var/lib/kafka/data
-    healthcheck:
-      test: ['CMD-SHELL', '/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1']
-      interval: 10s
-      timeout: 10s
-      retries: 10
-    restart: unless-stopped
-  kafka_ui:
-    image: provectuslabs/kafka-ui:v0.7.2
-    extra_hosts:
-      - 'huly.local:host-gateway'
-    container_name: kafka_ui
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9092"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://redpanda:8081"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda:9644"]
     ports:
       - 8000:8080
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
     depends_on:
-      kafka:
-        condition: service_healthy
+      - redpanda
     restart: unless-stopped
   minio:
     image: 'minio/minio'
@@ -129,6 +125,9 @@ services:
     ports:
       - 9000:9000
       - 9001:9001
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
     volumes:
       - files:/data
     healthcheck:
@@ -237,7 +236,7 @@ services:
       - minio
       - stats
     depends_on:
-      kafka:
+      redpanda:
         condition: service_healthy
     volumes:
       - ./branding.json:/var/cfg/branding.json
@@ -328,7 +327,7 @@ services:
       - account
       - stats
     depends_on:
-      kafka:
+      redpanda:
         condition: service_started
     ports:
       - 3332:3332
@@ -554,7 +553,7 @@ services:
   # hulygun:
   #   image: haiodo/hulygun
   #   depends_on:
-  #     kafka:
+  #     redpanda:
   #       condition: service_healthy
   #     account:
   #       condition: service_started
@@ -583,7 +582,7 @@ services:
     extra_hosts:
       - 'huly.local:host-gateway'
     depends_on:
-      kafka:
+      redpanda:
         condition: service_started
       account:
         condition: service_started
@@ -598,7 +597,7 @@ services:
   #    extra_hosts:
   #      - 'huly.local:host-gateway'
   #    depends_on:
-  #      kafka:
+  #      redpanda:
   #        condition: service_started
   #      account:
   #        condition: service_started
@@ -671,7 +670,7 @@ services:
       - account
       - stats
     depends_on:
-      kafka:
+      redpanda:
         condition: service_healthy
     environment:
       - QUEUE_CONFIG=${QUEUE_CONFIG}
@@ -707,7 +706,5 @@ volumes:
   dbpg:
   files:
   elastic:
-  zookeeper_data:
-  zookeeper_logs:
-  kafka_data:
+  redpanda:
   telemetry:
