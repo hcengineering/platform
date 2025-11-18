@@ -67,6 +67,7 @@ pub struct HubState {
     sessions: HashMap<SessionId, actix_ws::Session>,
     subs: HashMap<String, HashSet<SessionId>>,
     heartbeats: HashMap<SessionId, std::time::Instant>,
+    serverping: HashMap<SessionId, std::time::Instant>,
 }
 
 impl HubState {
@@ -74,6 +75,7 @@ impl HubState {
         if self.sessions.contains_key(&session_id) {
             let now = std::time::Instant::now();
             self.heartbeats.insert(session_id, now);
+            self.serverping.insert(session_id, now);
         }
     }
 
@@ -81,11 +83,14 @@ impl HubState {
         self.sessions.insert(session_id, session);
         self.heartbeats
             .insert(session_id, std::time::Instant::now());
+        self.serverping
+            .insert(session_id, std::time::Instant::now());
     }
 
     pub fn disconnect(&mut self, session_id: SessionId) {
         self.sessions.remove(&session_id);
         self.heartbeats.remove(&session_id);
+        self.serverping.remove(&session_id);
         self.subs.retain(|_, ids| {
             ids.remove(&session_id);
             !ids.is_empty()
@@ -192,16 +197,29 @@ pub fn check_heartbeat(hub_state: Arc<RwLock<HubState>>) {
             ticker.tick().await;
 
             let now = std::time::Instant::now();
-            let timeout = std::time::Duration::from_secs(CONFIG.heartbeat_timeout);
-            let timelimit = now - timeout;
+            let timelimit = now - std::time::Duration::from_secs(CONFIG.heartbeat_timeout);
+            let pinglimit = now - std::time::Duration::from_secs(CONFIG.ping_timeout);
 
             let hub = hub_state.read().await;
+
             let expired: Vec<actix_ws::Session> = hub
                 .heartbeats
                 .iter()
                 .filter_map(|(&sid, &last_beat)| {
                     if last_beat < timelimit {
                         hub.sessions.get(&sid).cloned()
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let to_ping: Vec<SessionId> = hub
+                .serverping
+                .iter()
+                .filter_map(|(&sid, &last_ping)| {
+                    if last_ping < pinglimit {
+                        Some(sid)
                     } else {
                         None
                     }
@@ -215,6 +233,17 @@ pub fn check_heartbeat(hub_state: Arc<RwLock<HubState>>) {
                     // addr.do_send(crate::handlers_ws::ForceDisconnect);
                     let _ = addr.clone().close(None).await;
                 }
+            }
+
+            if !to_ping.is_empty() {
+                let mut hub = hub_state.write().await;
+                for sid in &to_ping {
+                    if let Some(session) = hub.sessions.get_mut(sid) {
+                        let _ = session.ping(&[]).await;
+                    }
+                    hub.serverping.insert(*sid, now);
+                }
+                drop(hub);
             }
         }
     });

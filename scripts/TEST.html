@@ -110,7 +110,11 @@
 
     ws.onopen = () => {
 	pr("clear");
-	pr("✅ WebSocket connected.");
+	pr("✅ WebSocket connected");
+    };
+
+    ws.onclose = () => {
+	pr("❌ WebSocket closed");
     };
 
     ws.onmessage = (e) => {
