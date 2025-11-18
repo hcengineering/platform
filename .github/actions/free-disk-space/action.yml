@@ -8,9 +8,7 @@ runs:
       run: |
         echo "Disk space before cleanup:"
         df -h
-        sudo rm -rf ./plugins
         sudo rm -rf ./desktop
-        sudo rm -rf ./server
         sudo rm -rf ./models
         sudo rm -rf ./server-plugins
         sudo rm -rf ./common/temp
