@@ -4,7 +4,6 @@ services:
     pull_policy: never
     extra_hosts:
       - 'huly.local:host-gateway'
-    container_name: stream
     environment:
       - STREAM_ENDPOINT_URL=datalake://huly.local:4030
       - STREAM_INSECURE=true
@@ -22,7 +21,6 @@ services:
     image: 'haiodo/media'
     extra_hosts:
       - 'huly.local:host-gateway'
-    container_name: media
     environment:
       - ACCOUNTS_URL=http://huly.local:3000
       - SECRET=secret
@@ -33,7 +31,6 @@ services:
     image: 'haiodo/preview'
     extra_hosts:
       - 'huly.local:host-gateway'
-    container_name: preview
     environment:
       - SECRET=secret
       - STORAGE_CONFIG=${STORAGE_CONFIG}
@@ -60,7 +57,7 @@ services:
       - dbpg:/var/lib/postgresql
     restart: unless-stopped
   redpanda:
-    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    image: redpandadata/redpanda:v25.2.11
     extra_hosts:
       - 'huly.local:host-gateway'
     command:
@@ -77,7 +74,6 @@ services:
       - --smp 1
       - --default-log-level=info
       - --memory 256M
-    container_name: redpanda
     volumes:
       - redpanda:/var/lib/redpanda/data
     ports:
@@ -92,28 +88,27 @@ services:
       retries: 10
     restart: unless-stopped
   redpanda_console:
-    image: docker.redpanda.com/redpandadata/console:v2.8.3
-    extra_hosts:
-      - 'huly.local:host-gateway'
+    container_name: redpanda-console
+    image: redpandadata/console:v3.2.2
     entrypoint: /bin/sh
-    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml && /app/console'
+    volumes:
+      - ./config:/tmp/config/
     environment:
-      CONFIG_FILEPATH: /tmp/config.yml
+      CONFIG_FILEPATH: ${CONFIG_FILEPATH:-/tmp/config.yml}
       CONSOLE_CONFIG_FILE: |
+        # Configure a connection to the Redpanda cluster
+        # See https://docs.redpanda.com/current/console/config/connect-to-redpanda/
         kafka:
           brokers: ["redpanda:9092"]
-          schemaRegistry:
-            enabled: true
-            urls: ["http://redpanda:8081"]
-        redpanda:
-          adminApi:
-            enabled: true
-            urls: ["http://redpanda:9644"]
+        schemaRegistry:
+          enabled: true
+          urls: ["http://redpanda:8081"]
     ports:
       - 8000:8080
     depends_on:
-      - redpanda
-    restart: unless-stopped
+      redpanda:
+        condition: service_healthy
   minio:
     image: 'minio/minio'
     command: server /data --address ":9000" --console-address ":9001"
