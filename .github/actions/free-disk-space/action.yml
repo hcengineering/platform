@@ -13,5 +13,8 @@ runs:
         sudo rm -rf /usr/share/az_*
         sudo rm -rf /opt/az
         sudo rm -rf /usr/lib/google-cloud-sdk
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
         echo "Disk space after cleanup:"
         df -h
