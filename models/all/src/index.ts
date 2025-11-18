@@ -116,7 +116,7 @@ import { billingId, createModel as billingModel } from '@hcengineering/model-bil
 import chat, { chatId, createModel as chatModel } from '@hcengineering/model-chat'
 import { communicationId, createModel as communicationModel } from '@hcengineering/model-communication'
 import { emojiId, createModel as emojiModel } from '@hcengineering/model-emoji'
-import inbox, { inboxId, createModel as inboxModel } from '@hcengineering/model-inbox'
+import { inboxId, createModel as inboxModel } from '@hcengineering/model-inbox'
 import { presenceId, createModel as presenceModel } from '@hcengineering/model-presence'
 import processes, { processId, createModel as processModel } from '@hcengineering/model-process'
 import {
@@ -483,11 +483,7 @@ export default function buildModel (): Builder {
       chatId,
       { label: chat.string.Chat, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
     ],
-    [
-      inboxModel,
-      inboxId,
-      { label: inbox.string.Inbox, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
-    ],
+    [inboxModel, inboxId],
     [achievementModel, achievementId],
     [emojiModel, emojiId],
     [communicationModel, communicationId],
