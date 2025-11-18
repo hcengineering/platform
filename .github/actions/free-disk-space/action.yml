@@ -1,0 +1,20 @@
+name: 'Free Space For Tests'
+description: 'Free up disk space by removing files and directories that are not needed for tests.'
+runs:
+  using: 'composite'
+  steps:
+    - name: Free space for tests
+      shell: bash
+      run: |
+        echo "Disk space before cleanup:"
+        df -h
+        sudo rm -rf ./plugins
+        sudo rm -rf ./desktop
+        sudo rm -rf ./server
+        sudo rm -rf ./models
+        sudo rm -rf ./server-plugins
+        sudo rm -rf ./common
+        sudo rm -rf ./qms-desktop-package
+        sudo rm -rf ./services
+        echo "Disk space after cleanup:"
+        df -h
