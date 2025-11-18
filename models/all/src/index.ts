@@ -483,11 +483,7 @@ export default function buildModel (): Builder {
       chatId,
       { label: chat.string.Chat, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
     ],
-    [
-      inboxModel,
-      inboxId,
-      { label: inbox.string.Inbox, hidden: true, enabled: false, beta: true, classFilter: defaultFilter }
-    ],
+    [inboxModel, inboxId],
     [achievementModel, achievementId],
     [emojiModel, emojiId],
     [communicationModel, communicationId],
