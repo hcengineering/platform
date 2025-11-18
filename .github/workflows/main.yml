@@ -240,7 +240,8 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -262,8 +263,6 @@ jobs:
         run: |
           cd ./tests
           ./profile-start.sh
-      - name: Free space
-        uses: ./.github/actions/free-disk-space
       - name: Run UI tests
         run: |
           cd ./tests/sanity          
@@ -373,7 +372,8 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -395,8 +395,6 @@ jobs:
         run: |
           cd ./tests
           ./profile-start.sh
-      - name: Free space
-        uses: ./.github/actions/free-disk-space
       - name: Run UI tests
         run: |
           cd ./tests/sanity
@@ -471,6 +469,8 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -488,8 +488,6 @@ jobs:
         run: |
           cd ./qms-tests/sanity
           node ../../common/scripts/install-run-rushx.js ci
-      - name: Free space
-        uses: ./.github/actions/free-disk-space
       - name: Run UI tests
         run: |
           cd ./qms-tests/sanity
@@ -555,6 +553,8 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -568,8 +568,6 @@ jobs:
           cd ./ws-tests
           export DO_CLEAN=true
           ./prepare.sh
-      - name: Free space
-        uses: ./.github/actions/free-disk-space
       - name: Run API tests
         run: |
           cd ./ws-tests/api-tests

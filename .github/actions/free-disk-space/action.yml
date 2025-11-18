@@ -8,7 +8,6 @@ runs:
       run: |
         echo "Disk space before cleanup:"
         df -h
-        sudo rm -rf ./common/temp
         sudo rm -rf /usr/share/dotnet
         sudo rm -rf /usr/local/lib/android
         sudo rm -rf /usr/share/az_*
