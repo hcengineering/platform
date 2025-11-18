@@ -612,16 +612,8 @@ jobs:
     timeout-minutes: 60
     steps:
       # https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
-      - name: Free disk space
-        run: |
-          echo "Disk space before cleanup:"
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          echo "Disk space after cleanup:"
-          df -h
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Configure docker
