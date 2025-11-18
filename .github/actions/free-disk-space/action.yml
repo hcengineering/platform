@@ -8,6 +8,7 @@ runs:
       run: |
         echo "Disk space before cleanup:"
         df -h
+        du -sh /dev/root/* 2>/dev/null | sort -h
         sudo rm -rf ./common/temp
         echo "Disk space after cleanup:"
         df -h
