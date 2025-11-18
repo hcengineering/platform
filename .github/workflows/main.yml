@@ -240,7 +240,8 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -371,7 +372,8 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -467,6 +469,8 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -549,6 +553,8 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
