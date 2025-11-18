@@ -1,19 +1,13 @@
-name: 'Free Space For Tests'
+name: 'Free Temp'
 description: 'Free up disk space by removing files and directories that are not needed for tests.'
 runs:
   using: 'composite'
   steps:
-    - name: Free space for tests
+    - name: Free temp
       shell: bash
       run: |
         echo "Disk space before cleanup:"
-        du -sh ./* 2>/dev/null | sort -h
         df -h
-        sudo rm -rf ./desktop
-        sudo rm -rf ./models
-        sudo rm -rf ./server-plugins
         sudo rm -rf ./common/temp
-        sudo rm -rf ./qms-desktop-package
-        sudo rm -rf ./services
         echo "Disk space after cleanup:"
         df -h
