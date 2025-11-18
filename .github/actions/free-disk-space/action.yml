@@ -7,6 +7,7 @@ runs:
       shell: bash
       run: |
         echo "Disk space before cleanup:"
+        du -sh ./* 2>/dev/null | sort -h
         df -h
         sudo rm -rf ./desktop
         sudo rm -rf ./models
