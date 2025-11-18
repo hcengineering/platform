@@ -13,7 +13,7 @@ runs:
         sudo rm -rf ./server
         sudo rm -rf ./models
         sudo rm -rf ./server-plugins
-        sudo rm -rf ./common
+        sudo rm -rf ./common/temp
         sudo rm -rf ./qms-desktop-package
         sudo rm -rf ./services
         echo "Disk space after cleanup:"
