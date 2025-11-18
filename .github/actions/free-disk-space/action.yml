@@ -1,14 +1,18 @@
-name: 'Free Temp'
+name: 'Free Space'
 description: 'Free up disk space by removing files and directories that are not needed for tests.'
 runs:
   using: 'composite'
   steps:
-    - name: Free temp
+    - name: Free space
       shell: bash
       run: |
         echo "Disk space before cleanup:"
         df -h
-        du -sh /dev/root/* 2>/dev/null | sort -h
         sudo rm -rf ./common/temp
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /usr/share/az_*
+        sudo rm -rf /opt/az
+        sudo rm -rf /usr/lib/google-cloud-sdk
         echo "Disk space after cleanup:"
         df -h
