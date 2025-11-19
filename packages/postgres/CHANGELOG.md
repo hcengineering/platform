@@ -1,6 +1,20 @@
 # Change Log - @hcengineering/postgres
 
-This log was last generated on Thu, 30 Oct 2025 20:24:36 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Nov 2025 07:07:31 GMT and should not be manually modified.
+
+## 0.7.19
+Wed, 12 Nov 2025 07:07:31 GMT
+
+### Patches
+
+- Fix enum sorting
+
+## 0.7.18
+Thu, 06 Nov 2025 10:21:28 GMT
+
+### Patches
+
+- bump core
 
 ## 0.7.17
 Thu, 30 Oct 2025 20:24:36 GMT

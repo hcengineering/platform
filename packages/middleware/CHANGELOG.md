@@ -1,13 +1,20 @@
 # Change Log - @hcengineering/middleware
 
-This log was last generated on Wed, 19 Nov 2025 06:39:47 GMT and should not be manually modified.
+This log was last generated on Fri, 07 Nov 2025 16:12:16 GMT and should not be manually modified.
 
-## 0.7.18
-Wed, 19 Nov 2025 06:39:47 GMT
+## 0.7.19
+Fri, 07 Nov 2025 16:12:16 GMT
 
 ### Patches
 
-- Fix exception for null options in find
+- Fix permission middleware
+
+## 0.7.18
+Thu, 06 Nov 2025 10:21:28 GMT
+
+### Patches
+
+- Add tMatch permission middleware
 
 ## 0.7.17
 Thu, 30 Oct 2025 23:32:01 GMT

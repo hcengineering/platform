@@ -32,7 +32,8 @@ import core, {
   type TypedSpace,
   type MeasureContext,
   type SessionData,
-  type AccountUuid
+  type AccountUuid,
+  matchQuery
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { type Middleware, type TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
@@ -159,10 +160,29 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
   private checkPermission (ctx: MeasureContext<SessionData>, space: Ref<TypedSpace>, tx: TxCUD<Doc>): boolean {
     const account = ctx.contextData.account
     const permissions = this.permissionsBySpace[space]?.[account.uuid] ?? []
+    let withoutMatch: Permission | undefined
     for (const permission of permissions) {
       if (permission.txClass === undefined || permission.txClass !== tx._class) continue
-      if (permission.objectClass !== undefined && permission.objectClass !== tx.objectClass) continue
+      if (
+        permission.objectClass !== undefined &&
+        !this.context.hierarchy.isDerived(tx.objectClass, permission.objectClass)
+      ) {
+        continue
+      }
+      if (permission.txMatch === undefined) {
+        withoutMatch = permission
+        continue
+      } else {
+        const checkMatch = matchQuery([tx], permission.txMatch, tx._class, this.context.hierarchy, true)
+        if (checkMatch.length === 0) {
+          continue
+        }
+      }
       return permission.forbid !== undefined ? !permission.forbid : true
+    }
+
+    if (withoutMatch !== undefined) {
+      return withoutMatch.forbid !== undefined ? !withoutMatch.forbid : true
     }
 
     return true
