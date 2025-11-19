@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/middleware",
+      "comment": "Fix exception in findAll",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/middleware"
+}

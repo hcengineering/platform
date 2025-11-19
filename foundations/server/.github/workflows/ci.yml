@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: ['main']
+    tags:
+      - 'v0.7.*'
+      - 's0.7.*'
+  pull_request:
+    branches: ['main']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 22
+      - name: Verify Change Logs
+        run: node common/scripts/install-run-rush.js change --verify
+      - name: Rush Install
+        run: node common/scripts/install-run-rush.js install
+      - name: Rush validate
+        run: node common/scripts/install-run-rush.js validate --verbose
+      - name: Formatting...
+        run: node common/scripts/install-run-rush.js format --force
+      - name: Check files formatting
+        run: |
+          echo '================================================================'
+          echo 'Checking for diff files'
+          echo '================================================================'
+          git diff '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat
+          [ -z "$(git diff --name-only '*.js' '*.ts' '*.svelte' '*.json' '*.yaml' | cat)" ]
+          echo '================================================================'
+      - name: Prepare server
+        run: |
+          cd ./tests
+          ./prepare-tests.sh
+      - name: Testing...
+        run: node common/scripts/install-run-rush.js test --verbose
+        env:
+          DB_URL: 'postgresql://root@localhost:26258/defaultdb?sslmode=disable'
+          ELASTIC_URL: 'http://localhost:9201'
+          MONGO_URL: 'mongodb://localhost:27018'
+      - name: Publish packages
+        if: startsWith(github.ref, 'refs/tags/v0.7.') || startsWith(github.ref, 'refs/tags/s0.7.')
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: node common/scripts/install-run-rush.js publish --include-all --publish
