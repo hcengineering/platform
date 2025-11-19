@@ -22,7 +22,7 @@ import {
   type PlatformQueue,
   type PlatformQueueProducer
 } from '@hcengineering/server-core'
-import { Kafka, Partitioners, type Consumer, type Producer } from 'kafkajs'
+import { Kafka, Partitioners, type Consumer, type Producer, CompressionTypes } from 'kafkajs'
 import type * as tls from 'tls'
 
 export interface QueueConfig {
@@ -199,7 +199,8 @@ class PlatformQueueProducerImpl implements PlatformQueueProducer<any> {
   ) {
     this.txProducer = kafka.producer({
       allowAutoTopicCreation: true,
-      createPartitioner: Partitioners.DefaultPartitioner
+      createPartitioner: Partitioners.DefaultPartitioner,
+      compression: CompressionTypes.GZIP
     })
     this.connected = this.ctx.with('connect-broker', {}, () => this.txProducer.connect())
   }
