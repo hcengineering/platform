@@ -252,7 +252,8 @@ jobs:
         with:
           username: haiodo
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -359,7 +360,8 @@ jobs:
         with:
           username: haiodo
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -458,6 +460,8 @@ jobs:
         with:
           username: haiodo
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
@@ -515,16 +519,13 @@ jobs:
     timeout-minutes: 60
     steps:
       # https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
-      - name: Free disk space
-        run: |
-          echo "Disk space before cleanup:"
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          echo "Disk space after cleanup:"
-          df -h
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+          submodules: recursive
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Configure docker
@@ -536,11 +537,6 @@ jobs:
                 "containerd-snapshotter": true
               }
             }
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
-          submodules: recursive
 
       - name: Checkout init repository
         run: |

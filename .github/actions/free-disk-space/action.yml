@@ -1,0 +1,20 @@
+name: 'Free Space'
+description: 'Free up disk space by removing files and directories that are not needed for tests.'
+runs:
+  using: 'composite'
+  steps:
+    - name: Free space
+      shell: bash
+      run: |
+        echo "Disk space before cleanup:"
+        df -h
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /usr/share/az_*
+        sudo rm -rf /opt/az
+        sudo rm -rf /usr/lib/google-cloud-sdk
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        echo "Disk space after cleanup:"
+        df -h
