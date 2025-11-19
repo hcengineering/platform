@@ -19,8 +19,6 @@ import { Builder } from '@hcengineering/model'
 import { activityId, createModel as activityModel } from '@hcengineering/model-activity'
 import { aiBotId, createModel as aiBotModel } from '@hcengineering/model-ai-bot'
 import { attachmentId, createModel as attachmentModel } from '@hcengineering/model-attachment'
-import bitrix, { bitrixId, createModel as bitrixModel } from '@hcengineering/model-bitrix'
-import board, { boardId, createModel as boardModel } from '@hcengineering/model-board'
 import calendar, { calendarId, createModel as calendarModel } from '@hcengineering/model-calendar'
 import card, { cardId, createModel as cardModel } from '@hcengineering/model-card'
 import chunter, { chunterId, createModel as chunterModel } from '@hcengineering/model-chunter'
@@ -325,32 +323,6 @@ export default function buildModel (): Builder {
         enabled: true,
         beta: false,
         icon: document.icon.DocumentApplication,
-        classFilter: defaultFilter
-      }
-    ],
-    [
-      boardModel,
-      boardId,
-      {
-        label: board.string.ConfigLabel,
-        description: board.string.ConfigDescription,
-        enabled: false,
-        beta: true,
-        hidden: true,
-        icon: board.icon.Board,
-        classFilter: defaultFilter
-      }
-    ],
-    [
-      bitrixModel,
-      bitrixId,
-      {
-        label: bitrix.string.ConfigLabel,
-        description: bitrix.string.ConfigDescription,
-        enabled: false,
-        beta: true,
-        hidden: true,
-        icon: bitrix.icon.Bitrix,
         classFilter: defaultFilter
       }
     ],

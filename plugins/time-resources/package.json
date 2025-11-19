@@ -54,7 +54,6 @@
     "@hcengineering/tags-resources": "workspace:^0.7.0",
     "@hcengineering/lead": "workspace:^0.7.0",
     "@hcengineering/recruit": "workspace:^0.7.0",
-    "@hcengineering/board": "workspace:^0.7.0",
     "@hcengineering/view": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/contact-resources": "workspace:^0.7.0",
