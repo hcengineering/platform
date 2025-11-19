@@ -317,7 +317,10 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
 
   async getReviewers (issue: PullRequestExternalData): Promise<PersonId[]> {
     // Find Assignees and reviewers
-    const ids: UserInfo[] = (issue.reviewRequests.nodes ?? []).map((it: any) => it.requestedReviewer)
+    const ids: UserInfo[] = (issue.reviewRequests?.nodes ?? [])
+      .filter((it: any) => it != null)
+      .map((it: any) => it.requestedReviewer)
+      .filter((id: any) => id != null)
 
     const values: PersonId[] = []
 
@@ -328,7 +331,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       }
     }
 
-    for (const n of issue.latestReviews.nodes ?? []) {
+    for (const n of issue.latestReviews?.nodes ?? []) {
+      if (n?.author == null) continue
       const acc = await this.provider.getAccount(n.author)
       if (acc !== undefined) {
         values.push(acc)
