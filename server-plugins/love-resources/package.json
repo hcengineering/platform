@@ -38,12 +38,12 @@
   },
   "dependencies": {
     "@hcengineering/view": "workspace:^0.7.0",
-    "@hcengineering/core": "^0.7.21",
+    "@hcengineering/core": "^0.7.22",
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/server-contact": "workspace:^0.7.0",
     "@hcengineering/notification": "workspace:^0.7.0",
-    "@hcengineering/server-core": "^0.7.16",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/server-core": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/workbench": "workspace:^0.7.0",
     "@hcengineering/server-notification-resources": "workspace:^0.7.0",
     "@hcengineering/love": "workspace:^0.7.0"

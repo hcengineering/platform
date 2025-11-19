@@ -36,9 +36,9 @@
   "dependencies": {
     "@hcengineering/activity": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/core": "^0.7.21",
+    "@hcengineering/core": "^0.7.22",
     "@hcengineering/model": "^0.7.17",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/rating": "workspace:^0.7.0",
     "@hcengineering/model-core": "workspace:^0.7.0",
     "@hcengineering/model-presentation": "workspace:^0.7.0",

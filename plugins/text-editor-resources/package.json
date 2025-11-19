@@ -39,12 +39,12 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "svelte": "^4.2.20",
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/presentation": "workspace:^0.7.0",
-    "@hcengineering/core": "^0.7.21",
+    "@hcengineering/core": "^0.7.22",
     "@hcengineering/highlight": "workspace:^0.7.0",
     "@hcengineering/view": "workspace:^0.7.0",
     "@hcengineering/text": "^0.7.18",
@@ -52,7 +52,7 @@
     "@hcengineering/collaborator-client": "^0.7.17",
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/presence": "workspace:^0.7.0",
-    "@hcengineering/text-markdown": "^0.7.18",
+    "@hcengineering/text-markdown": "^0.7.19",
     "@hcengineering/text-ydoc": "^0.7.18",
     "@hcengineering/emoji": "workspace:^0.7.0",
     "@tiptap/core": "^2.11.7",

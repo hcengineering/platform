@@ -56,9 +56,9 @@
   "dependencies": {
     "@hcengineering/client": "^0.7.17",
     "@hcengineering/client-resources": "^0.7.17",
-    "@hcengineering/core": "^0.7.21",
+    "@hcengineering/core": "^0.7.22",
     "@hcengineering/notification": "workspace:^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/server-token": "^0.7.17",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
