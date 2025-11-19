@@ -332,7 +332,9 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     }
 
     for (const n of issue.latestReviews?.nodes ?? []) {
-      if (n?.author == null) continue
+      if (n?.author == null) {
+        continue
+      }
       const acc = await this.provider.getAccount(n.author)
       if (acc !== undefined) {
         values.push(acc)
