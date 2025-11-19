@@ -43,7 +43,6 @@ export default mergeIds(timeId, time, {
     IssuePresenter: '' as AnyComponent,
     DocumentPresenter: '' as AnyComponent,
     ApplicantPresenter: '' as AnyComponent,
-    CardPresenter: '' as AnyComponent,
     LeadPresenter: '' as AnyComponent,
     WorkSlotElement: '' as AnyComponent,
     EditWorkSlot: '' as AnyComponent,

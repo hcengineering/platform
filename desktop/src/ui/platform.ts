@@ -26,8 +26,6 @@ import {
 import { activityId } from '@hcengineering/activity'
 import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 import { attachmentId } from '@hcengineering/attachment'
-import { bitrixId } from '@hcengineering/bitrix'
-import { boardId } from '@hcengineering/board'
 import calendar, { calendarId } from '@hcengineering/calendar'
 import { cardId } from '@hcengineering/card'
 import { chunterId } from '@hcengineering/chunter'
@@ -88,8 +86,6 @@ import billingPlugin, { billingId } from '@hcengineering/billing'
 import '@hcengineering/activity-assets'
 import '@hcengineering/analytics-collector-assets'
 import '@hcengineering/attachment-assets'
-import '@hcengineering/bitrix-assets'
-import '@hcengineering/board-assets'
 import '@hcengineering/calendar-assets'
 import '@hcengineering/card-assets'
 import '@hcengineering/chunter-assets'
@@ -192,8 +188,6 @@ function configureI18n (): void {
     attachmentId,
     async (lang: string) => await import(`@hcengineering/attachment-assets/lang/${lang}.json`)
   )
-  addStringsLoader(bitrixId, async (lang: string) => await import(`@hcengineering/bitrix-assets/lang/${lang}.json`))
-  addStringsLoader(boardId, async (lang: string) => await import(`@hcengineering/board-assets/lang/${lang}.json`))
   addStringsLoader(calendarId, async (lang: string) => await import(`@hcengineering/calendar-assets/lang/${lang}.json`))
   addStringsLoader(chunterId, async (lang: string) => await import(`@hcengineering/chunter-assets/lang/${lang}.json`))
   addStringsLoader(contactId, async (lang: string) => await import(`@hcengineering/contact-assets/lang/${lang}.json`))
@@ -404,9 +398,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   addLocation(aiBotId, async () => await import('@hcengineering/ai-bot-resources'))
 
   addLocation(trackerId, async () => await import('@hcengineering/tracker-resources'))
-  addLocation(boardId, async () => await import('@hcengineering/board-resources'))
   addLocation(hrId, async () => await import('@hcengineering/hr-resources'))
-  addLocation(bitrixId, async () => await import('@hcengineering/bitrix-resources'))
   addLocation(requestId, async () => await import('@hcengineering/request-resources'))
   addLocation(driveId, async () => await import('@hcengineering/drive-resources'))
   addLocation(supportId, async () => await import('@hcengineering/support-resources'))
