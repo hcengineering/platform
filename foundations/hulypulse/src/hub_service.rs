@@ -13,18 +13,13 @@
 // limitations under the License.
 //
 
+use crate::config::CONFIG;
+use redis::aio::MultiplexedConnection;
+use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
-
-use actix::prelude::*;
-
-use redis::aio::MultiplexedConnection;
-use serde::Serialize;
 use tokio::sync::RwLock;
-
-use crate::config::CONFIG;
-use crate::handlers_ws::WsSession;
 
 fn subscription_matches(sub_key: &str, key: &str) -> bool {
     if sub_key == key {
@@ -37,8 +32,7 @@ fn subscription_matches(sub_key: &str, key: &str) -> bool {
     false
 }
 
-#[derive(Clone, Serialize, Debug, Message)]
-#[rtype(result = "()")]
+#[derive(Clone, Serialize, Debug)]
 pub struct ServerMessage {
     #[serde(flatten)]
     pub event: RedisEvent,
@@ -68,9 +62,9 @@ pub struct RedisEvent {
     pub key: String,
 }
 
-#[derive(Debug, Default)]
+#[derive(Default)] // Debug, 
 pub struct HubState {
-    sessions: HashMap<SessionId, Addr<WsSession>>,
+    sessions: HashMap<SessionId, actix_ws::Session>,
     subs: HashMap<String, HashSet<SessionId>>,
     heartbeats: HashMap<SessionId, std::time::Instant>,
 }
@@ -82,11 +76,13 @@ impl HubState {
             self.heartbeats.insert(session_id, now);
         }
     }
-    pub fn connect(&mut self, session_id: SessionId, addr: Addr<WsSession>) {
-        self.sessions.insert(session_id, addr);
-        let now = std::time::Instant::now();
-        self.heartbeats.insert(session_id, now);
+
+    pub fn connect(&mut self, session_id: SessionId, session: actix_ws::Session) {
+        self.sessions.insert(session_id, session);
+        self.heartbeats
+            .insert(session_id, std::time::Instant::now());
     }
+
     pub fn disconnect(&mut self, session_id: SessionId) {
         self.sessions.remove(&session_id);
         self.heartbeats.remove(&session_id);
@@ -95,9 +91,11 @@ impl HubState {
             !ids.is_empty()
         });
     }
+
     pub fn subscribe(&mut self, session_id: SessionId, key: String) {
         self.subs.entry(key).or_default().insert(session_id);
     }
+
     pub fn unsubscribe(&mut self, session_id: SessionId, key: String) {
         if let Some(set) = self.subs.get_mut(&key) {
             set.remove(&session_id);
@@ -112,6 +110,7 @@ impl HubState {
             !ids.is_empty()
         });
     }
+
     pub fn subscribe_list(&self, session_id: SessionId) -> Vec<String> {
         self.subs
             .iter()
@@ -124,10 +123,12 @@ impl HubState {
             })
             .collect()
     }
+
     pub fn count(&self) -> usize {
         self.sessions.len()
     }
-    pub fn recipients_for_key(&self, key: &str) -> Vec<Addr<WsSession>> {
+
+    pub fn recipients_for_key(&self, key: &str) -> Vec<actix_ws::Session> {
         let mut out = Vec::new();
         for (sub_key, set) in &self.subs {
             if subscription_matches(sub_key, key) {
@@ -149,15 +150,17 @@ pub async fn broadcast_event(
     value: Option<String>,
 ) {
     // Collect
-    let recipients: Vec<Addr<WsSession>> = { hub_state.read().await.recipients_for_key(&ev.key) };
+    let recipients: Vec<actix_ws::Session> = { hub_state.read().await.recipients_for_key(&ev.key) };
     if recipients.is_empty() {
         return;
     }
 
     // Send
     let payload = ServerMessage { event: ev, value };
-    for rcpt in recipients {
-        let _ = rcpt.do_send(payload.clone());
+    for mut rcpt in recipients {
+        // let _ = rcpt.do_send(payload.clone());
+        let json = serde_json::to_string(&payload).unwrap();
+        let _ = rcpt.text(json).await;
     }
 }
 
@@ -193,7 +196,7 @@ pub fn check_heartbeat(hub_state: Arc<RwLock<HubState>>) {
             let timelimit = now - timeout;
 
             let hub = hub_state.read().await;
-            let expired: Vec<Addr<WsSession>> = hub
+            let expired: Vec<actix_ws::Session> = hub
                 .heartbeats
                 .iter()
                 .filter_map(|(&sid, &last_beat)| {
@@ -209,7 +212,8 @@ pub fn check_heartbeat(hub_state: Arc<RwLock<HubState>>) {
 
             if !expired.is_empty() {
                 for addr in &expired {
-                    addr.do_send(crate::handlers_ws::ForceDisconnect);
+                    // addr.do_send(crate::handlers_ws::ForceDisconnect);
+                    let _ = addr.clone().close(None).await;
                 }
             }
         }

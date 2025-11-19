@@ -1,6 +1,6 @@
 [package]
 name = "hulypulse"
-version = "0.1.32"
+version = "0.2.0"
 edition = "2024"
 
 [dependencies]
@@ -30,7 +30,8 @@ tokio-stream = "0.1"
 strum = { version = "0.27.2", features = ["derive"] }
 strum_macros = "0.27.2"
 regorus = "0.5.0"
-
+actix-ws = "0.3.0"
+futures-util = "0.3"
 
 [[bin]]
 name = "hulypulse"
