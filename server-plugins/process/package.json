@@ -38,11 +38,11 @@
     "prettier-plugin-svelte": "^3.4.0"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.21",
+    "@hcengineering/core": "^0.7.22",
     "@hcengineering/card": "workspace:^0.7.0",
     "@hcengineering/process": "workspace:^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/collaborator-client": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.16"
+    "@hcengineering/server-core": "^0.7.17"
   }
 }

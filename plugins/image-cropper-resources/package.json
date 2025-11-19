@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "svelte": "^4.2.20",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "cropperjs": "~1.5.12",
     "smartcrop": "~2.0.5"
   }

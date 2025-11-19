@@ -51,14 +51,14 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.21",
+    "@hcengineering/platform": "^0.7.18",
+    "@hcengineering/core": "^0.7.22",
     "koa": "^2.15.4",
     "koa-router": "^12.0.1",
     "koa-bodyparser": "^4.4.1",
     "@koa/cors": "^5.0.0",
     "@hcengineering/server-token": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.16",
+    "@hcengineering/server-core": "^0.7.17",
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/analytics-service": "^0.7.17"
   }

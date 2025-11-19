@@ -39,8 +39,8 @@
   "dependencies": {
     "@hcengineering/chunter": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/core": "^0.7.22",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/ui": "workspace:^0.7.0"
   },
   "repository": "https://github.com/hcengineering/platform",

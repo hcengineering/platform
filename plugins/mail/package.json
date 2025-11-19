@@ -37,9 +37,9 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/card": "workspace:^0.7.0",
-    "@hcengineering/core": "^0.7.21"
+    "@hcengineering/core": "^0.7.22"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {
