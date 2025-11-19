@@ -48,6 +48,7 @@ export function createModel (builder: Builder): void {
     component: billing.component.Settings,
     group: 'settings-editor',
     role: AccountRole.Owner,
+    feature: 'billing',
     order: 920
   })
 

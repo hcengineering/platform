@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
-  import { getClient, createQuery } from '@hcengineering/presentation'
+  import { getClient, createQuery, isDisabled } from '@hcengineering/presentation'
   import settingPlg from '../plugin'
   import setting, { SettingsCategory, SettingsEvents } from '@hcengineering/setting'
   import {
@@ -65,7 +65,11 @@
     setting.class.SettingsCategory,
     {},
     (res) => {
-      categories = res.filter((p) => hasAccountRole(account, p.role))
+      console.log(
+        '#1',
+        res.map((p) => [p.feature, isDisabled(p.feature)])
+      )
+      categories = res.filter((p) => hasAccountRole(account, p.role) && !isDisabled(p.feature))
       category = findCategory(categoryId)
     },
     { sort: { order: 1 } }
@@ -193,7 +197,7 @@
           label={setting.string.SelectWorkspace}
           on:click={selectWorkspace}
         />
-        {#if hasAccountRole(account, AccountRole.User)}
+        {#if hasAccountRole(account, AccountRole.User) && !isDisabled('invites')}
           <NavItem
             icon={setting.icon.InviteWorkspace}
             label={setting.string.InviteWorkspace}
