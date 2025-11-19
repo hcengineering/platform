@@ -38,8 +38,8 @@
   },
   "dependencies": {
     "svelte": "^4.2.20",
-    "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.21",
+    "@hcengineering/platform": "^0.7.18",
+    "@hcengineering/core": "^0.7.22",
     "@hcengineering/client": "^0.7.17",
     "@hcengineering/workbench": "workspace:^0.7.0",
     "@hcengineering/workbench-resources": "workspace:^0.7.0",
