@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/middleware",
-  "version": "0.7.19",
+  "version": "0.7.20",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
