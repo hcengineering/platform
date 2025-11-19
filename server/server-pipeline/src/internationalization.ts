@@ -103,7 +103,6 @@ export function registerStringLoaders (): void {
   addStringsLoader(tagsId, async (lang: string) => tagsEn)
   addStringsLoader(calendarId, async (lang: string) => calendarEn)
   addStringsLoader(trackerId, async (lang: string) => trackerEn)
-  addStringsLoader(boardId, async (lang: string) => boardEn)
   addStringsLoader(preferenceId, async (lang: string) => preferenceEn)
   addStringsLoader(hrId, async (lang: string) => hrEn)
   addStringsLoader(documentId, async (lang: string) => documentEn)
