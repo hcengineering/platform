@@ -269,7 +269,7 @@
       "summary": "Up development build",
       "description": "Up development build",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "cd ./dev && docker compose up -d --force-recreate transactor_cockroach"
+      "shellCommand": "cd ./dev && docker compose up -d --force-recreate transactor"
     },
     {
       "commandKind": "global",

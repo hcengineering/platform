@@ -15,7 +15,6 @@ export enum CustomAttributesButtons {
   DefaultFunnel,
   Project,
   ClassicProject,
-  Board,
   Task,
   Application,
   Applicant,
@@ -46,7 +45,6 @@ export class CustomAttributesPage {
   defaultFunnel = (): Locator => this.page.getByRole('button', { name: 'Default funnel' })
   project = (): Locator => this.page.getByRole('button', { name: 'Project', exact: true })
   classicProject = (): Locator => this.page.getByRole('button', { name: 'Classic project', exact: true })
-  board = (): Locator => this.page.getByRole('button', { name: 'Board' })
   task = (): Locator => this.page.getByRole('button', { name: 'Task' })
   application = (): Locator => this.page.getByRole('button', { name: 'Application' })
   applicant = (): Locator => this.page.getByRole('button', { name: 'Applicant' })
@@ -105,9 +103,6 @@ export class CustomAttributesPage {
       case CustomAttributesButtons.ClassicProject:
         await this.classicProject().click()
         break
-      case CustomAttributesButtons.Board:
-        await this.board().click()
-        break
       case CustomAttributesButtons.Task:
         await this.task().click()
         break
@@ -149,7 +144,6 @@ export class CustomAttributesPage {
     await expect(this.defaultFunnel()).toBeVisible()
     await expect(this.project()).toBeVisible()
     await expect(this.classicProject()).toBeVisible()
-    await expect(this.board()).toBeVisible()
     await expect(this.task()).toBeVisible()
     await expect(this.application()).toBeVisible()
     await expect(this.applicant()).toBeVisible()
