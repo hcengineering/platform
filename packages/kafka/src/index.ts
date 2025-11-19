@@ -199,8 +199,7 @@ class PlatformQueueProducerImpl implements PlatformQueueProducer<any> {
   ) {
     this.txProducer = kafka.producer({
       allowAutoTopicCreation: true,
-      createPartitioner: Partitioners.DefaultPartitioner,
-      compression: CompressionTypes.GZIP
+      createPartitioner: Partitioners.DefaultPartitioner
     })
     this.connected = this.ctx.with('connect-broker', {}, () => this.txProducer.connect())
   }
@@ -224,7 +223,8 @@ class PlatformQueueProducerImpl implements PlatformQueueProducer<any> {
             workspace,
             meta: JSON.stringify(ctx.extractMeta())
           }
-        }))
+        })),
+        compression: CompressionTypes.GZIP
       })
     )
   }
