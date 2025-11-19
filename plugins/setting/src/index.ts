@@ -109,6 +109,9 @@ export interface SettingsCategory extends Doc {
   order?: number
   role: AccountRole
 
+  // A feature to be used with hides
+  feature?: string
+
   expandable?: boolean
   adminOnly?: boolean
 }
