@@ -143,7 +143,7 @@
     "@hcengineering/server-telegram-resources": "workspace:^0.7.0",
     "@hcengineering/server-token": "workspace:^0.7.17",
     "@hcengineering/server-tool": "workspace:^0.7.0",
-    "@hcengineering/server-client": "workspace:^0.7.15",
+    "@hcengineering/server-client": "workspace:^0.7.16",
     "@hcengineering/server-tracker": "workspace:^0.7.0",
     "@hcengineering/server-tracker-resources": "workspace:^0.7.0",
     "@hcengineering/server-view": "workspace:^0.7.0",

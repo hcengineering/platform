@@ -74,7 +74,7 @@
     "@hcengineering/platform": "workspace:^0.7.18",
     "@hcengineering/setting": "workspace:^0.7.0",
     "@hcengineering/server-core": "workspace:^0.7.17",
-    "@hcengineering/server-client": "workspace:^0.7.15",
+    "@hcengineering/server-client": "workspace:^0.7.16",
     "@hcengineering/server-storage": "workspace:^0.7.15",
     "@hcengineering/server-token": "workspace:^0.7.17",
     "@hcengineering/integration-client": "workspace:^0.7.0",

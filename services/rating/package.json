@@ -66,7 +66,7 @@
     "koa-bodyparser": "^4.4.1",
     "@koa/cors": "^5.0.0",
     "@hcengineering/middleware": "workspace:^0.7.17",
-    "@hcengineering/server-client": "workspace:^0.7.15",
+    "@hcengineering/server-client": "workspace:^0.7.16",
     "@hcengineering/account-client": "workspace:^0.7.19",
     "@hcengineering/server-storage": "workspace:^0.7.15",
     "@hcengineering/postgres": "workspace:^0.7.17",

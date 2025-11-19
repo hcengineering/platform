@@ -67,7 +67,7 @@
     "@hcengineering/kafka": "workspace:^0.7.15",
     "@hcengineering/platform": "workspace:^0.7.18",
     "@hcengineering/retry": "workspace:^0.7.17",
-    "@hcengineering/server-client": "workspace:^0.7.15",
+    "@hcengineering/server-client": "workspace:^0.7.16",
     "@hcengineering/server-core": "workspace:^0.7.17",
     "@hcengineering/server-token": "workspace:^0.7.17",
     "dotenv": "^16.4.5",
