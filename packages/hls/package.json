@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@types/dompurify": "^3.0.5",
     "@types/jest": "^29.5.5",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -39,8 +39,8 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.22",
-    "@hcengineering/platform": "^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/platform": "workspace:^0.7.18",
     "@hcengineering/presentation": "workspace:^0.7.0",
     "hls.js": "^1.5.20",
     "plyr": "3.7.8",
