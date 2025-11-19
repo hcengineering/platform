@@ -1,0 +1,34 @@
+name: Hulypulse
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log to registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+      - run: echo VERSION=$(grep '^version =' Cargo.toml | cut -d '"' -f 2) >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push
+        uses: docker/build-push-action@v6
+        with:
+          file: Dockerfile
+          push: true
+          tags: "${{ vars.DOCKER_USER }}/service_hulypulse:${{ env.VERSION }},${{ vars.DOCKER_USER }}/service_hulypulse:latest"
+          platforms: linux/amd64,linux/arm64
