@@ -26,6 +26,7 @@ env:
     common
     desktop
     desktop-package
+    foundations
     qms-desktop-package
     dev
     models
@@ -265,7 +266,7 @@ jobs:
           ./profile-start.sh
       - name: Run UI tests
         run: |
-          cd ./tests/sanity          
+          cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js uitest
       - name: Download profile
         run: |
