@@ -2,8 +2,8 @@
   "changes": [
     {
       "packageName": "@hcengineering/middleware",
-      "comment": "Fix formatting",
-      "type": "none"
+      "comment": "Fix exception in findAll",
+      "type": "patch"
     }
   ],
   "packageName": "@hcengineering/middleware"

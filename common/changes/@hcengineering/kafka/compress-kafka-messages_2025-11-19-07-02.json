@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/kafka",
+      "comment": "Compress Kafka messages",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/kafka"
+}

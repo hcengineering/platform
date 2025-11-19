@@ -46,7 +46,7 @@ export class FindSecurityMiddleware extends BaseMiddleware implements Middleware
     query: DocumentQuery<T>,
     options?: FindOptions<T>
   ): Promise<FindResult<T>> {
-    if (options !== undefined) {
+    if (options != null) {
       const { limit, sort, lookup, projection, associations, total, showArchived } = options
       return this.provideFindAll(ctx, _class, query, {
         limit,

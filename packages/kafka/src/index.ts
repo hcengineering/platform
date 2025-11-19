@@ -22,7 +22,7 @@ import {
   type PlatformQueue,
   type PlatformQueueProducer
 } from '@hcengineering/server-core'
-import { Kafka, Partitioners, type Consumer, type Producer } from 'kafkajs'
+import { Kafka, Partitioners, type Consumer, type Producer, CompressionTypes } from 'kafkajs'
 import type * as tls from 'tls'
 
 export interface QueueConfig {
@@ -223,7 +223,8 @@ class PlatformQueueProducerImpl implements PlatformQueueProducer<any> {
             workspace,
             meta: JSON.stringify(ctx.extractMeta())
           }
-        }))
+        })),
+        compression: CompressionTypes.GZIP
       })
     )
   }

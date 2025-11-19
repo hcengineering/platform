@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/middleware
 
-This log was last generated on Fri, 07 Nov 2025 16:12:16 GMT and should not be manually modified.
+This log was last generated on Wed, 19 Nov 2025 06:47:45 GMT and should not be manually modified.
+
+## 0.7.20
+Wed, 19 Nov 2025 06:47:45 GMT
+
+### Patches
+
+- Fix exception in findAll
 
 ## 0.7.19
 Fri, 07 Nov 2025 16:12:16 GMT
