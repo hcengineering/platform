@@ -45,7 +45,6 @@
     "@hcengineering/lead": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/recruit": "workspace:^0.7.0",
-    "@hcengineering/board": "workspace:^0.7.0",
     "@hcengineering/calendar": "workspace:^0.7.0",
     "@hcengineering/model-document": "workspace:^0.7.0",
     "@hcengineering/model-workbench": "workspace:^0.7.0",
