@@ -124,4 +124,3 @@ export function normalizeMarkdown (source: string): string {
 
   return source
 }
-// Change

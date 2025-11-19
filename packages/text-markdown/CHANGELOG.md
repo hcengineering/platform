@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/text-markdown
 
-This log was last generated on Thu, 06 Nov 2025 09:09:58 GMT and should not be manually modified.
+This log was last generated on Wed, 19 Nov 2025 07:37:47 GMT and should not be manually modified.
+
+## 0.7.20
+Wed, 19 Nov 2025 07:37:47 GMT
+
+### Patches
+
+- Fix NaN error in markdown
 
 ## 0.7.19
 Thu, 06 Nov 2025 09:09:58 GMT
