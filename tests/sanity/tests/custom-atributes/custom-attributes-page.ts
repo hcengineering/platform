@@ -20,7 +20,6 @@ export enum CustomAttributesButtons {
   Applicant,
   Lead,
   Issue,
-  Card,
   Product
 }
 
@@ -50,7 +49,6 @@ export class CustomAttributesPage {
   applicant = (): Locator => this.page.getByRole('button', { name: 'Applicant' })
   lead = (): Locator => this.page.getByRole('button', { name: 'Lead' })
   issue = (): Locator => this.page.getByRole('button', { name: 'Issue' })
-  card = (): Locator => this.page.getByRole('button', { name: 'Card' })
   product = (): Locator => this.page.getByRole('button', { name: 'Product' })
 
   addAttribute = (): Locator => this.page.locator('.hulyTableAttr-header > .font-medium-14')
@@ -118,9 +116,6 @@ export class CustomAttributesPage {
       case CustomAttributesButtons.Issue:
         await this.issue().click()
         break
-      case CustomAttributesButtons.Card:
-        await this.card().click()
-        break
       case CustomAttributesButtons.Product:
         await this.product().click()
         break
@@ -151,7 +146,6 @@ export class CustomAttributesPage {
     await expect(this.lead().nth(1)).toBeVisible()
     await expect(this.issue().nth(0)).toBeVisible()
     await expect(this.issue().nth(1)).toBeVisible()
-    await expect(this.card()).toBeVisible()
     await expect(this.product()).toBeVisible()
   }
 }
