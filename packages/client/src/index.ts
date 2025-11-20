@@ -88,6 +88,7 @@ export default plugin(clientId, {
   metadata: {
     ClientSocketFactory: '' as Metadata<ClientSocketFactory>,
     FilterModel: '' as Metadata<FilterMode>,
+    ExtraFilter: '' as Metadata<string[]>,
     ExtraPlugins: '' as Metadata<Plugin[]>,
     UseBinaryProtocol: '' as Metadata<boolean>,
     UseProtocolCompression: '' as Metadata<boolean>,
