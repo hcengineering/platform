@@ -35,10 +35,10 @@
   },
   "dependencies": {
     "@hcengineering/ai-bot": "workspace:^0.7.0",
-    "@hcengineering/core": "^0.7.21",
+    "@hcengineering/core": "^0.7.22",
     "@hcengineering/model": "^0.7.17",
     "@hcengineering/model-core": "workspace:^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/ui": "workspace:^0.7.0"
   }
 }

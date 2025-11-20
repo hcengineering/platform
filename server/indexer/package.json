@@ -35,12 +35,12 @@
     "@types/uuid": "^8.3.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.16",
+    "@hcengineering/core": "^0.7.22",
+    "@hcengineering/platform": "^0.7.18",
+    "@hcengineering/server-core": "^0.7.17",
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/text": "^0.7.18",
-    "@hcengineering/text-markdown": "^0.7.18",
+    "@hcengineering/text-markdown": "^0.7.19",
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/query": "^0.7.17",
     "@hcengineering/contact": "workspace:^0.7.0",

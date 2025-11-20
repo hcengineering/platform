@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "@hcengineering/analytics": "^0.7.17",
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/core": "^0.7.22",
+    "@hcengineering/platform": "^0.7.18",
     "@hcengineering/rpc": "^0.7.17",
     "@hcengineering/server-token": "^0.7.17",
     "bufferutil": "^4.0.8",

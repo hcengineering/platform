@@ -57,12 +57,12 @@
     "@hcengineering/api-client": "^0.7.18",
     "@hcengineering/calendar": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/kafka": "^0.7.15",
+    "@hcengineering/core": "^0.7.22",
+    "@hcengineering/kafka": "^0.7.16",
     "@hcengineering/love": "workspace:^0.7.0",
     "@hcengineering/notification": "workspace:^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/server-core": "^0.7.16",
+    "@hcengineering/platform": "^0.7.18",
+    "@hcengineering/server-core": "^0.7.17",
     "@hcengineering/server-token": "^0.7.17",
     "dotenv": "^16.4.5"
   }
