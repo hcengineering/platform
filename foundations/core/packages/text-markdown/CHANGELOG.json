@@ -2,6 +2,18 @@
   "name": "@hcengineering/text-markdown",
   "entries": [
     {
+      "version": "0.7.20",
+      "tag": "@hcengineering/text-markdown_v0.7.20",
+      "date": "Wed, 19 Nov 2025 07:37:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix NaN error in markdown"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.19",
       "tag": "@hcengineering/text-markdown_v0.7.19",
       "date": "Thu, 06 Nov 2025 09:09:58 GMT",
