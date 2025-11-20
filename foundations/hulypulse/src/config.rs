@@ -58,6 +58,7 @@ pub struct Config {
     pub no_authorization: bool,
 
     pub heartbeat_timeout: u64,
+    pub ping_timeout: u64,
 
     pub policy_file: Option<String>,
 }

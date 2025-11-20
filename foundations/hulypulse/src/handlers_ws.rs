@@ -317,11 +317,12 @@ pub async fn handler(
             hub_state.write().await.renew_heartbeat(session_id);
 
             match msg {
-                // actix_ws::Message::Text(text) => {
-                //     session.text(format!("echo: {}", text)).await.ok();
-                // }
                 actix_ws::Message::Ping(bytes) => {
                     session.pong(&bytes).await.ok();
+                    continue;
+                }
+
+                actix_ws::Message::Pong(_) => {
                     continue;
                 }
 
