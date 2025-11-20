@@ -354,6 +354,9 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   setMetadata(presentation.metadata.HulylakeUrl, config.HULYLAKE_URL ?? '')
   setMetadata(presentation.metadata.PulseUrl, config.PULSE_URL ?? '')
 
+  const disabledFeatures = (config.DISABLED_FEATURES ?? '').split(',').map(it => it.trim()).filter(it => it.length > 0)
+  setMetadata(presentation.metadata.DisabledFeatures, new Set(disabledFeatures))
+
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR ?? '')
 
   setMetadata(github.metadata.GithubApplication, config.GITHUB_APP ?? '')
@@ -500,6 +503,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   addLocation(ratingId, async () => await import(/* webpackChunkName: "rating" */ '@hcengineering/rating-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
+  setMetadata(client.metadata.ExtraFilter, disabledFeatures)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
 
   // Use binary response transfer for faster performance and small transfer sizes.

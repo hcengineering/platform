@@ -69,6 +69,7 @@ export interface Config {
   PASSWORD_STRICTNESS?: 'very_strict' | 'strict' | 'normal' | 'none'
   EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string
   HULYLAKE_URL?: string
+  DISABLED_FEATURES?: string
 }
 
 export interface Branding {
