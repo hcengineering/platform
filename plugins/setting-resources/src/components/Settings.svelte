@@ -65,10 +65,6 @@
     setting.class.SettingsCategory,
     {},
     (res) => {
-      console.log(
-        '#1',
-        res.map((p) => [p.feature, isDisabled(p.feature)])
-      )
       categories = res.filter((p) => hasAccountRole(account, p.role) && !isDisabled(p.feature))
       category = findCategory(categoryId)
     },
