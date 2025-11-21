@@ -777,7 +777,7 @@
   $: inboxProps = {
     selected: currentAppAlias === activeInboxId || inboxPopup !== undefined,
     navigator: (currentAppAlias === activeInboxId || inboxPopup !== undefined) && $deviceInfo.navigator.visible,
-    notify: isCommunicationEnabled ? (hasInboxNotifications || hasNewInboxNotifications) : hasInboxNotifications,
+    notify: isCommunicationEnabled ? hasInboxNotifications || hasNewInboxNotifications : hasInboxNotifications,
     onClick: (e: MouseEvent) => {
       if (e.metaKey || e.ctrlKey) return
       if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === activeInboxId) {
@@ -793,7 +793,10 @@
     }
   }
 
-  $: customAppProps = new Map([[notificationId, inboxProps], [inboxId, inboxProps]])
+  $: customAppProps = new Map([
+    [notificationId, inboxProps],
+    [inboxId, inboxProps]
+  ])
 
   defineSeparators('workbench', workbenchSeparators)
   defineSeparators('main', mainSeparators)
@@ -894,9 +897,7 @@
             <NavLink
               app={inboxId}
               shrink={0}
-              disabled={!$deviceInfo.navigator.visible &&
-                $deviceInfo.navigator.float &&
-                currentAppAlias === inboxId}
+              disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === inboxId}
             >
               <AppItem
                 icon={inbox.icon.Inbox}
