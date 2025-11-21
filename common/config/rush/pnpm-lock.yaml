@@ -2060,7 +2060,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/text-core
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/text-markdown
       '@hcengineering/text-ydoc':
         specifier: workspace:^0.7.18
@@ -2519,7 +2519,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../../../core/packages/text-core
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../../core/packages/text-markdown
       uuid:
         specifier: ^8.3.2
@@ -13739,7 +13739,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/text
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/text-markdown
       '@hcengineering/tracker':
         specifier: workspace:^0.7.0
@@ -16498,7 +16498,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../text-editor-resources
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/text-markdown
       '@hcengineering/ui':
         specifier: workspace:^0.7.0
@@ -16747,7 +16747,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/text
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/text-markdown
       '@hcengineering/ui':
         specifier: workspace:^0.7.0
@@ -17293,7 +17293,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../text-editor-resources
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/text-markdown
       '@hcengineering/ui':
         specifier: workspace:^0.7.0
@@ -21035,7 +21035,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/text
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/text-markdown
       '@hcengineering/ui':
         specifier: workspace:^0.7.0
@@ -27100,7 +27100,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../text-editor
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/text-markdown
       '@hcengineering/text-ydoc':
         specifier: workspace:^0.7.18
@@ -28501,7 +28501,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../text-editor-resources
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/text-markdown
       '@hcengineering/theme':
         specifier: workspace:^0.7.0
@@ -34975,7 +34975,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/text
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/text-markdown
       fast-equals:
         specifier: ^5.2.2
@@ -35574,7 +35574,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/text
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/text-markdown
       fast-equals:
         specifier: ^5.2.2
@@ -35806,9 +35806,6 @@ importers:
       '@hcengineering/love':
         specifier: workspace:^0.7.0
         version: link:../../../plugins/love
-      '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
-        version: link:../../../foundations/server/packages/mongo
       '@hcengineering/notification':
         specifier: workspace:^0.7.0
         version: link:../../../plugins/notification
@@ -35849,7 +35846,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../../../foundations/core/packages/text-html
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../../foundations/core/packages/text-markdown
       '@hcengineering/workbench':
         specifier: workspace:^0.7.0
@@ -35872,9 +35869,6 @@ importers:
       js-tiktoken:
         specifier: ^1.0.14
         version: 1.0.21
-      mongodb:
-        specifier: ^6.16.0
-        version: 6.20.0(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.3.3)(socks@2.8.7)
       openai:
         specifier: ^4.56.0
         version: 4.104.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.25.76)
@@ -37475,7 +37469,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../../../foundations/core/packages/text
       '@hcengineering/text-markdown':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../../foundations/core/packages/text-markdown
       '@hcengineering/time':
         specifier: workspace:^0.7.0
@@ -59895,7 +59889,7 @@ snapshots:
   node-loader@2.0.0(webpack@5.102.1):
     dependencies:
       loader-utils: 2.0.4
-      webpack: 5.102.1
+      webpack: 5.102.1(@swc/core@1.15.1)(esbuild@0.25.12)(webpack-cli@5.1.4)
 
   node-localstorage@2.2.1:
     dependencies:
@@ -61909,15 +61903,6 @@ snapshots:
     optionalDependencies:
       '@swc/core': 1.15.1
 
-  terser-webpack-plugin@5.3.14(webpack@5.102.1):
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.31
-      jest-worker: 27.5.1
-      schema-utils: 4.3.3
-      serialize-javascript: 6.0.2
-      terser: 5.44.1
-      webpack: 5.102.1
-
   terser@5.44.1:
     dependencies:
       '@jridgewell/source-map': 0.3.11
@@ -62577,38 +62562,6 @@ snapshots:
       source-map: 0.6.1
 
   webpack-sources@3.3.3: {}
-
-  webpack@5.102.1:
-    dependencies:
-      '@types/eslint-scope': 3.7.7
-      '@types/estree': 1.0.8
-      '@types/json-schema': 7.0.15
-      '@webassemblyjs/ast': 1.14.1
-      '@webassemblyjs/wasm-edit': 1.14.1
-      '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.15.0
-      acorn-import-phases: 1.0.4(acorn@8.15.0)
-      browserslist: 4.27.0
-      chrome-trace-event: 1.0.4
-      enhanced-resolve: 5.18.3
-      es-module-lexer: 1.7.0
-      eslint-scope: 5.1.1
-      events: 3.3.0
-      glob-to-regexp: 0.4.1
-      graceful-fs: 4.2.11
-      json-parse-even-better-errors: 2.3.1
-      loader-runner: 4.3.1
-      mime-types: 2.1.35
-      neo-async: 2.6.2
-      schema-utils: 4.3.3
-      tapable: 2.3.0
-      terser-webpack-plugin: 5.3.14(webpack@5.102.1)
-      watchpack: 2.4.4
-      webpack-sources: 3.3.3
-    transitivePeerDependencies:
-      - '@swc/core'
-      - esbuild
-      - uglify-js
 
   webpack@5.102.1(@swc/core@1.15.1):
     dependencies:

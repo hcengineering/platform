@@ -58,7 +58,7 @@
     "@hcengineering/communication-shared": "workspace:^0.7.11",
     "@hcengineering/rank": "workspace:^0.7.17",
     "@hcengineering/text": "workspace:^0.7.18",
-    "@hcengineering/text-markdown": "workspace:^0.7.19",
+    "@hcengineering/text-markdown": "workspace:^0.7.20",
     "@hcengineering/emoji-resources": "workspace:^0.7.0",
     "fast-equals": "^5.2.2",
     "svelte": "^4.2.20"

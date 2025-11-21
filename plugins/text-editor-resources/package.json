@@ -52,7 +52,7 @@
     "@hcengineering/collaborator-client": "workspace:^0.7.17",
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/presence": "workspace:^0.7.0",
-    "@hcengineering/text-markdown": "workspace:^0.7.19",
+    "@hcengineering/text-markdown": "workspace:^0.7.20",
     "@hcengineering/text-ydoc": "workspace:^0.7.18",
     "@hcengineering/emoji": "workspace:^0.7.0",
     "@tiptap/core": "^2.11.7",

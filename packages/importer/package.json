@@ -52,7 +52,7 @@
     "@hcengineering/server-core": "workspace:^0.7.17",
     "@hcengineering/task": "workspace:^0.7.0",
     "@hcengineering/text": "workspace:^0.7.18",
-    "@hcengineering/text-markdown": "workspace:^0.7.19",
+    "@hcengineering/text-markdown": "workspace:^0.7.20",
     "@hcengineering/tracker": "workspace:^0.7.0",
     "@hcengineering/view": "workspace:^0.7.0",
     "commander": "^14.0.0",

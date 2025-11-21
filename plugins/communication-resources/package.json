@@ -65,7 +65,7 @@
     "@hcengineering/text": "workspace:^0.7.18",
     "@hcengineering/text-editor": "workspace:^0.7.0",
     "@hcengineering/text-editor-resources": "workspace:^0.7.0",
-    "@hcengineering/text-markdown": "workspace:^0.7.19",
+    "@hcengineering/text-markdown": "workspace:^0.7.20",
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/uploader": "workspace:^0.7.0",
     "@hcengineering/view": "workspace:^0.7.0",

@@ -63,7 +63,7 @@
     "@hcengineering/chat": "workspace:^0.7.0",
     "@hcengineering/card": "workspace:^0.7.0",
     "@hcengineering/rank": "workspace:^0.7.17",
-    "@hcengineering/text-markdown": "workspace:^0.7.19",
+    "@hcengineering/text-markdown": "workspace:^0.7.20",
     "@hcengineering/account-service": "workspace:^0.7.0",
     "@hcengineering/workspace-service": "workspace:^0.7.0",
     "@hcengineering/attachment": "workspace:^0.7.0",
