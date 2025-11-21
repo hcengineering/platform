@@ -285,11 +285,15 @@
   })
 
   let hasNewInboxNotifications = false
-  const notificationCountQuery = createNotificationsQuery()
 
-  notificationCountQuery.query({ read: false, limit: 1 }, (res) => {
-    hasNewInboxNotifications = res.getResult().length > 0
-  })
+  $: if (isCommunicationEnabled) {
+    const notificationCountQuery = createNotificationsQuery()
+    notificationCountQuery.query({ read: false, limit: 1 }, (res) => {
+      hasNewInboxNotifications = res.getResult().length > 0
+    })
+  } else {
+    hasNewInboxNotifications = false
+  }
 
   const doSyncLoc = reduceCalls(async (loc: Location): Promise<void> => {
     if (workspaceId !== $location.path[1]) {
