@@ -29,11 +29,13 @@
   import login, { loginId } from '@hcengineering/login'
   import notification, { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
   import { BrowserNotificatator, InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
+  import inbox, { inboxId } from '@hcengineering/inbox'
   import { broadcastEvent, getMetadata, getResource, IntlString, translate } from '@hcengineering/platform'
   import {
     ActionContext,
     ComponentExtensions,
     createQuery,
+    createNotificationsQuery,
     getClient,
     isAdminUser,
     reduceCalls
@@ -281,6 +283,17 @@
   $: void hasNotificationsFn?.($inboxNotificationsByContextStore).then((res) => {
     hasInboxNotifications = res
   })
+
+  let hasNewInboxNotifications = false
+
+  $: if (isCommunicationEnabled) {
+    const notificationCountQuery = createNotificationsQuery()
+    notificationCountQuery.query({ read: false, limit: 1 }, (res) => {
+      hasNewInboxNotifications = res.getResult().length > 0
+    })
+  } else {
+    hasNewInboxNotifications = false
+  }
 
   const doSyncLoc = reduceCalls(async (loc: Location): Promise<void> => {
     if (workspaceId !== $location.path[1]) {
@@ -759,15 +772,17 @@
   let inboxPopup: PopupResult | undefined = undefined
   let lastLoc: Location | undefined = undefined
 
+  $: activeInboxId = isCommunicationEnabled ? inboxId : notificationId
+
   $: inboxProps = {
-    selected: currentAppAlias === notificationId || inboxPopup !== undefined,
-    navigator: (currentAppAlias === notificationId || inboxPopup !== undefined) && $deviceInfo.navigator.visible,
-    notify: hasInboxNotifications,
+    selected: currentAppAlias === activeInboxId || inboxPopup !== undefined,
+    navigator: (currentAppAlias === activeInboxId || inboxPopup !== undefined) && $deviceInfo.navigator.visible,
+    notify: isCommunicationEnabled ? hasInboxNotifications || hasNewInboxNotifications : hasInboxNotifications,
     onClick: (e: MouseEvent) => {
       if (e.metaKey || e.ctrlKey) return
-      if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === notificationId) {
+      if (!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === activeInboxId) {
         toggleNav()
-      } else if (currentAppAlias === notificationId && lastLoc !== undefined) {
+      } else if (currentAppAlias === activeInboxId && lastLoc !== undefined) {
         e.preventDefault()
         e.stopPropagation()
         navigate(lastLoc)
@@ -778,7 +793,10 @@
     }
   }
 
-  $: customAppProps = new Map([[notificationId, inboxProps]])
+  $: customAppProps = new Map([
+    [notificationId, inboxProps],
+    [inboxId, inboxProps]
+  ])
 
   defineSeparators('workbench', workbenchSeparators)
   defineSeparators('main', mainSeparators)
@@ -859,22 +877,36 @@
             on:click={toggleNav}
           />
         </div>
-        <!-- <ActivityStatus status="active" /> -->
-        {#if !isExcludedApp(notificationId) && !isCommunicationEnabled}
-          <NavLink
-            app={notificationId}
-            shrink={0}
-            disabled={!$deviceInfo.navigator.visible &&
-              $deviceInfo.navigator.float &&
-              currentAppAlias === notificationId}
-          >
-            <AppItem
-              icon={notification.icon.Notifications}
-              label={notification.string.Inbox}
-              {...inboxProps}
-              on:click={inboxProps.onClick}
-            />
-          </NavLink>
+        {#if !isExcludedApp(activeInboxId)}
+          {#if !isCommunicationEnabled}
+            <NavLink
+              app={notificationId}
+              shrink={0}
+              disabled={!$deviceInfo.navigator.visible &&
+                $deviceInfo.navigator.float &&
+                currentAppAlias === notificationId}
+            >
+              <AppItem
+                icon={notification.icon.Notifications}
+                label={notification.string.Inbox}
+                {...inboxProps}
+                on:click={inboxProps.onClick}
+              />
+            </NavLink>
+          {:else}
+            <NavLink
+              app={inboxId}
+              shrink={0}
+              disabled={!$deviceInfo.navigator.visible && $deviceInfo.navigator.float && currentAppAlias === inboxId}
+            >
+              <AppItem
+                icon={inbox.icon.Inbox}
+                label={inbox.string.Inbox}
+                {...inboxProps}
+                on:click={inboxProps.onClick}
+              />
+            </NavLink>
+          {/if}
         {/if}
         <Applications
           {apps}
