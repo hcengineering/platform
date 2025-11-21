@@ -32,7 +32,7 @@ export function createModel (builder: Builder): void {
       label: inbox.string.Inbox,
       icon: inbox.icon.Inbox,
       alias: inboxId,
-      hidden: false,
+      hidden: true,
       component: inbox.component.InboxApplication,
       position: 'top',
       order: 100
