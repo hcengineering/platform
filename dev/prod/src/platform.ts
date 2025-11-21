@@ -19,6 +19,7 @@ import { activityId } from '@hcengineering/activity'
 import aiBot, { aiBotId } from '@hcengineering/ai-bot'
 import analyticsCollector, { analyticsCollectorId } from '@hcengineering/analytics-collector'
 import { attachmentId } from '@hcengineering/attachment'
+import { boardId } from '@hcengineering/board'
 import calendar, { calendarId } from '@hcengineering/calendar'
 import { cardId } from '@hcengineering/card'
 import { chunterId } from '@hcengineering/chunter'
@@ -71,6 +72,7 @@ import workbench, { workbenchId } from '@hcengineering/workbench'
 import { mailId } from '@hcengineering/mail'
 import { chatId } from '@hcengineering/chat'
 import github, { githubId } from '@hcengineering/github'
+import { bitrixId } from '@hcengineering/bitrix'
 import { inboxId } from '@hcengineering/inbox'
 import { achievementId } from '@hcengineering/achievement'
 import communication, { communicationId } from '@hcengineering/communication'
@@ -83,6 +85,8 @@ import { ratingId } from '@hcengineering/rating'
 import '@hcengineering/activity-assets'
 import '@hcengineering/analytics-collector-assets'
 import '@hcengineering/attachment-assets'
+import '@hcengineering/bitrix-assets'
+import '@hcengineering/board-assets'
 import '@hcengineering/calendar-assets'
 import '@hcengineering/card-assets'
 import '@hcengineering/chunter-assets'
@@ -197,7 +201,6 @@ export interface Config {
   EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string
   PULSE_URL?: string
   HULYLAKE_URL?: string
-  DISABLED_FEATURES?: string
 }
 
 export interface Branding {
@@ -300,6 +303,8 @@ function configureI18n(): void {
     attachmentId,
     async (lang: string) => await import(`@hcengineering/attachment-assets/lang/${lang}.json`)
   )
+  addStringsLoader(bitrixId, async (lang: string) => await import(`@hcengineering/bitrix-assets/lang/${lang}.json`))
+  addStringsLoader(boardId, async (lang: string) => await import(`@hcengineering/board-assets/lang/${lang}.json`))
   addStringsLoader(calendarId, async (lang: string) => await import(`@hcengineering/calendar-assets/lang/${lang}.json`))
   addStringsLoader(chunterId, async (lang: string) => await import(`@hcengineering/chunter-assets/lang/${lang}.json`))
   addStringsLoader(contactId, async (lang: string) => await import(`@hcengineering/contact-assets/lang/${lang}.json`))
@@ -474,14 +479,9 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
   setMetadata(presentation.metadata.LinkPreviewUrl, config.LINK_PREVIEW_URL)
   setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)
-
-  const disabledFeatures = (config.DISABLED_FEATURES ??'').split(',').map(it => it.trim()).filter(it => it.length > 0)
-  setMetadata(presentation.metadata.DisabledFeatures, new Set(disabledFeatures))
-
   setMetadata(recorder.metadata.StreamUrl, config.STREAM_URL)
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
   setMetadata(communication.metadata.Enabled, config.COMMUNICATION_API_ENABLED === 'true')
-
 
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
@@ -606,7 +606,9 @@ export async function configurePlatform() {
   addLocation(aiBotId, async () => await import('@hcengineering/ai-bot-resources'))
 
   addLocation(trackerId, async () => await import(/* webpackChunkName: "tracker" */ '@hcengineering/tracker-resources'))
+  addLocation(boardId, async () => await import(/* webpackChunkName: "board" */ '@hcengineering/board-resources'))
   addLocation(hrId, async () => await import(/* webpackChunkName: "hr" */ '@hcengineering/hr-resources'))
+  addLocation(bitrixId, async () => await import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
   addLocation(requestId, async () => await import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))
   addLocation(driveId, async () => await import(/* webpackChunkName: "drive" */ '@hcengineering/drive-resources'))
   addLocation(supportId, async () => await import(/* webpackChunkName: "support" */ '@hcengineering/support-resources'))
@@ -693,7 +695,6 @@ export async function configurePlatform() {
   addLocation(ratingId, async () => await import(/* webpackChunkName: "rating" */ '@hcengineering/rating-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
-  setMetadata(client.metadata.ExtraFilter, disabledFeatures)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
   setMetadata(login.metadata.TransactorOverride, config.TRANSACTOR_OVERRIDE)
 
