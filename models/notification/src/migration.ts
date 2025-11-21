@@ -313,7 +313,7 @@ async function migrateCollaborators (client: MigrationClient): Promise<void> {
 
 async function migrateReactionNotifications (client: MigrationClient): Promise<void> {
   /*
-    Do nothining for now, since previos implementation was very slow and caused issues in production.
+    Do nothing for now, since previos implementation was very slow and caused issues in production.
     Old inbox is used in production now, so later add a tool to migrate old reaction notifications if needed.
     TODO: UBERF-14185
   */
