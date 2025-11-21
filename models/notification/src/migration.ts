@@ -44,12 +44,9 @@ import notification, {
   type BrowserNotification,
   type DocNotifyContext,
   type InboxNotification,
-  type OldCollaborators,
-  type ReactionInboxNotification,
-  type ActivityInboxNotification
+  type OldCollaborators
 } from '@hcengineering/notification'
 import { DOMAIN_PREFERENCE } from '@hcengineering/preference'
-import activity, { type ActivityMessage, type DocUpdateMessage, type Reaction } from '@hcengineering/activity'
 
 import {
   DOMAIN_SPACE,
@@ -59,7 +56,6 @@ import {
   getSocialIdFromOldAccount
 } from '@hcengineering/model-core'
 import { DOMAIN_DOC_NOTIFY, DOMAIN_NOTIFICATION, DOMAIN_USER_NOTIFY } from './index'
-import { DOMAIN_ACTIVITY, DOMAIN_REACTION } from '@hcengineering/model-activity'
 
 export async function removeNotifications (
   client: MigrationClient,
@@ -316,85 +312,11 @@ async function migrateCollaborators (client: MigrationClient): Promise<void> {
 }
 
 async function migrateReactionNotifications (client: MigrationClient): Promise<void> {
-  const hierarchy = client.hierarchy
-  const iterator = await client.traverse<DocNotifyContext>(DOMAIN_DOC_NOTIFY, {
-    _class: notification.class.DocNotifyContext
-  })
-
-  try {
-    while (true) {
-      const contexts = await iterator.next(500)
-      const res: ReactionInboxNotification[] = []
-      const removeIds: Ref<InboxNotification>[] = []
-      if (contexts == null || contexts.length === 0) break
-      const filtered = contexts.filter((it) => hierarchy.isDerived(it.objectClass, activity.class.ActivityMessage))
-      if (filtered.length === 0) continue
-
-      for (const context of filtered) {
-        const notifications = await client.find<ActivityInboxNotification>(DOMAIN_NOTIFICATION, {
-          docNotifyContext: context._id,
-          _class: notification.class.ActivityInboxNotification,
-          attachedToClass: activity.class.DocUpdateMessage
-        })
-        if (notifications.length === 0) continue
-        const messages = await client.find<DocUpdateMessage>(DOMAIN_ACTIVITY, {
-          _id: { $in: notifications.map((it) => it.attachedTo) as Ref<DocUpdateMessage>[] },
-          _class: activity.class.DocUpdateMessage,
-          objectClass: activity.class.Reaction
-        })
-        const contextMessage = (
-          await client.find<ActivityMessage>(DOMAIN_ACTIVITY, { _id: context.objectId as any })
-        )[0]
-        if (contextMessage == null) continue
-        const newContext = (
-          await client.find<DocNotifyContext>(DOMAIN_DOC_NOTIFY, {
-            user: context.user,
-            objectId: contextMessage.attachedTo
-          })
-        )[0]
-        if (newContext == null) {
-          continue
-        }
-        for (const it of notifications) {
-          const reactionMessage = messages.find((m) => m._id === it.attachedTo)
-          if (reactionMessage == null) continue
-          const emoji =
-            it.data ??
-            (await client.find<Reaction>(DOMAIN_REACTION, { _id: reactionMessage.objectId as Ref<Reaction> }))[0].emoji
-          if (emoji == null || emoji.trim() === '') continue
-          res.push({
-            _id: it._id as Ref<ReactionInboxNotification>,
-            _class: notification.class.ReactionInboxNotification,
-            space: it.space,
-            emoji,
-            user: it.user,
-            docNotifyContext: newContext._id,
-            objectId: newContext.objectId,
-            objectClass: newContext.objectClass,
-            ref: reactionMessage.objectId as Ref<Reaction>,
-            attachedTo: reactionMessage.attachedTo as Ref<ActivityMessage>,
-            attachedToClass: reactionMessage.attachedToClass as Ref<Class<ActivityMessage>>,
-            isViewed: it.isViewed,
-            archived: it.archived,
-            modifiedOn: it.modifiedOn,
-            createdBy: it.createdBy,
-            createdOn: it.createdOn,
-            modifiedBy: it.modifiedBy
-          })
-        }
-      }
-
-      if (removeIds.length > 0) {
-        await client.deleteMany(DOMAIN_NOTIFICATION, { _id: { $in: removeIds } })
-      }
-
-      if (res.length > 0) {
-        await client.create(DOMAIN_NOTIFICATION, res)
-      }
-    }
-  } catch (e) {
-    console.error(e)
-  }
+  /*
+    Do nothining for now, since previos implementation was very slow and caused issues in production.
+    Old inbox is used in production now, so later add a tool to migrate old reaction notifications if needed.
+    TODO: UBERF-14185
+  */
 }
 
 /**
