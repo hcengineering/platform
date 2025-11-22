@@ -29,6 +29,7 @@ import core, {
   Ref,
   Space,
   systemAccountUuid,
+  Tx,
   TxOperations,
   WorkspaceIds
 } from '@hcengineering/core'
@@ -37,7 +38,13 @@ import exportPlugin, { type TransformConfig } from '@hcengineering/export'
 import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
 import { createClient, getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
-import { initStatisticsContext, StorageAdapter, StorageConfiguration } from '@hcengineering/server-core'
+import {
+  initStatisticsContext,
+  PipelineFactory,
+  StorageAdapter,
+  StorageConfiguration
+} from '@hcengineering/server-core'
+import { createBackupPipeline } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import archiver from 'archiver'
@@ -53,6 +60,7 @@ import WebSocket from 'ws'
 import envConfig from './config'
 import { ApiError } from './error'
 import { ExportFormat, WorkspaceExporter } from './exporter'
+import { WorkspaceMigrator, type MigrationOptions, type MigrationResult } from './migrator'
 
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
@@ -157,7 +165,11 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   handleRequest(fn, req, res, next)
 }
 
-export function createServer (storageConfig: StorageConfiguration): { app: Express, close: () => void } {
+export function createServer (
+  storageConfig: StorageConfiguration,
+  dbUrl: string,
+  model: Tx[]
+): { app: Express, close: () => void } {
   const storageAdapter = buildStorageFromConfig(storageConfig)
   const measureCtx = initStatisticsContext('export', {})
 
@@ -295,6 +307,102 @@ export function createServer (storageConfig: StorageConfiguration): { app: Expre
       } finally {
         void fs.rmdir(exportDir, { recursive: true })
       }
+    })
+  )
+
+  app.post(
+    '/migrate',
+    wrapRequest(async (req, res, wsIds, token, socialId) => {
+      const {
+        targetWorkspace,
+        _class,
+        query,
+        conflictStrategy,
+        includeAttachments
+      }: {
+        targetWorkspace: string
+        _class: Ref<Class<Doc>>
+        query?: DocumentQuery<Doc>
+        conflictStrategy?: 'skip' | 'duplicate'
+        includeAttachments?: boolean
+      } = req.body
+
+      if (targetWorkspace == null || _class == null) {
+        throw new ApiError(400, 'Missing required parameters')
+      }
+
+      const decodedToken = decodeToken(token)
+      if (decodedToken.extra?.readonly !== undefined) {
+        throw new ApiError(403, 'Forbidden: read-only token')
+      }
+
+      // Get target workspace info
+      const accountClient = getClient(envConfig.AccountsUrl, token)
+      const targetWsLoginInfo = await accountClient.getLoginWithWorkspaceInfo()
+
+      // Find target workspace by uuid or url
+      let targetWsInfo: any
+      for (const [, ws] of Object.entries(targetWsLoginInfo.workspaces)) {
+        if ((ws as any).uuid === targetWorkspace || (ws as any).url === targetWorkspace) {
+          targetWsInfo = ws
+          break
+        }
+      }
+
+      if (targetWsInfo === undefined) {
+        throw new ApiError(404, 'Target workspace not found or not accessible')
+      }
+
+      const targetWsIds: WorkspaceIds = {
+        uuid: targetWsInfo.uuid,
+        dataId: targetWsInfo.dataId,
+        url: targetWsInfo.url
+      }
+
+      // Create clients for both workspaces
+      const sourceClient = await createPlatformClient(token)
+      const targetToken = generateToken(decodedToken.account, targetWsInfo.uuid, {
+        service: 'export'
+      })
+      const targetClient = await createPlatformClient(targetToken)
+      const targetTxOps = new TxOperations(targetClient, socialId)
+
+      res.status(200).send({ message: 'Migration started' })
+
+      void (async () => {
+        try {
+          // Create pipeline factory for source workspace
+          const sourcePipelineFactory: PipelineFactory = createBackupPipeline(measureCtx, dbUrl, model, {
+            externalStorage: storageAdapter,
+            usePassedCtx: true
+          })
+
+          const migrator = new WorkspaceMigrator(measureCtx, sourcePipelineFactory, targetTxOps, storageAdapter)
+
+          const options: MigrationOptions = {
+            sourceWorkspace: wsIds,
+            targetWorkspace: targetWsIds,
+            sourceQuery: query ?? {},
+            _class,
+            conflictStrategy: conflictStrategy ?? 'duplicate',
+            includeAttachments: includeAttachments ?? true
+          }
+
+          const result = await migrator.migrate(options)
+
+          await sendMigrationNotification(targetTxOps, decodedToken.account, result, targetWsInfo.url)
+        } catch (err: any) {
+          console.error('Migration failed:', err)
+          await sendFailureNotification(
+            targetTxOps,
+            decodedToken.account,
+            err.message ?? 'Unknown error during migration'
+          )
+        } finally {
+          await sourceClient.close()
+          await targetClient.close()
+        }
+      })()
     })
   )
 
@@ -460,6 +568,41 @@ async function sendFailureNotification (client: TxOperations, account: AccountUu
     message: exportPlugin.string.ExportFailed,
     props: {
       error
+    },
+    isViewed: false,
+    archived: false,
+    docNotifyContext: docNotifyContextId
+  })
+}
+
+async function sendMigrationNotification (
+  client: TxOperations,
+  account: AccountUuid,
+  result: MigrationResult,
+  workspaceUrl: string
+): Promise<void> {
+  const docNotifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
+    objectId: core.class.Doc,
+    objectClass: core.class.Doc,
+    objectSpace: core.space.Space,
+    user: account,
+    isPinned: false,
+    hidden: false
+  })
+
+  const message = result.errors.length > 0 ? exportPlugin.string.ExportFailed : exportPlugin.string.ExportCompleted
+
+  await client.createDoc(notification.class.CommonInboxNotification, core.space.Space, {
+    user: account,
+    objectId: core.class.Doc,
+    objectClass: core.class.Doc,
+    icon: exportPlugin.icon.Export,
+    message,
+    props: {
+      migratedCount: result.migratedCount,
+      skippedCount: result.skippedCount,
+      errors: result.errors.map((e: { docId: string, error: string }) => `${e.docId}: ${e.error}`),
+      workspaceUrl
     },
     isViewed: false,
     archived: false,

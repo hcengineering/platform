@@ -18,6 +18,7 @@ import { main } from './main'
 
 export * from './types'
 export * from './exporter'
+export * from './migrator'
 
 config()
 void main()

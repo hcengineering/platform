@@ -13,10 +13,13 @@
 // limitations under the License.
 //
 
+import { type Tx } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
 import serverToken from '@hcengineering/server-token'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
+import builder, { getModelVersion } from '@hcengineering/model-all'
+
 import config from './config'
 import { createServer, listen } from './server'
 
@@ -30,8 +33,12 @@ const setupMetadata = (): void => {
 export const main = async (): Promise<void> => {
   setupMetadata()
 
+  // Load model from JSON file
+  const model = JSON.parse(JSON.stringify(builder().getTxes())) as Tx[]
+  console.log(`Loaded model transactions, version: ${JSON.stringify(getModelVersion())}`)
+
   const storageConfig = storageConfigFromEnv()
-  const { app, close } = createServer(storageConfig)
+  const { app, close } = createServer(storageConfig, config.DbURL, model)
   const server = listen(app, config.Port)
 
   const shutdown = (): void => {
