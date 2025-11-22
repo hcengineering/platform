@@ -81,8 +81,8 @@
 
   let requestIndex = 0
   async function update (model: NavigatorModel, spaces: Space[], preferences: Map<Ref<Doc>, SpacePreference>) {
-    shownSpaces = spaces.filter((sp) => !sp.archived && !preferences.has(sp._id))
-    starred = spaces.filter((sp) => preferences.has(sp._id))
+    shownSpaces = spaces.filter((sp) => !sp.archived && (model.hideStarred || !preferences.has(sp._id)))
+    starred = model.hideStarred ? [] : spaces.filter((sp) => preferences.has(sp._id))
     if (model.specials !== undefined) {
       const [sp, resIndex] = await updateSpecials(model.specials, spaces, ++requestIndex)
       if (resIndex !== requestIndex) return
@@ -173,7 +173,7 @@
     <div class="min-h-3 flex-no-shrink" />
 
     <SavedView alias={currentApplication?.alias} on:select={(res) => (menuSelection = res.detail)} />
-    {#if starred.length}
+    {#if (starred.length > 0) && !model.hideStarred}
       <StarredNav
         label={preference.string.Starred}
         spaces={starred}
@@ -184,6 +184,15 @@
         {currentFragment}
         deselect={menuSelection}
       />
+    {/if}
+
+    {#if model.groups && model.groups.length > 0}
+      <div class="min-h-3 flex-no-shrink" />
+      {#each model.groups as group (group.id)}
+        {#if group.component}
+          <Component is={group.component} props={{ model: group, currentSpace }} />
+        {/if}
+      {/each}
     {/if}
 
     {#each model.spaces as m (m.label)}
@@ -198,14 +207,5 @@
         deselect={menuSelection || starred.some((s) => s._id === currentSpace)}
       />
     {/each}
-
-    {#if model.groups && model.groups.length > 0}
-      <div class="min-h-3 flex-no-shrink" />
-      {#each model.groups as group (group.id)}
-        {#if group.component}
-          <Component is={group.component} props={{ model: group }} />
-        {/if}
-      {/each}
-    {/if}
   </Scroller>
 {/if}

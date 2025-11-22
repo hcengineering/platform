@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
+  import core, { Class, Doc, getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Action, getCurrentLocation, navigate, location as locationStore } from '@hcengineering/ui'
   import { MasterTag, FavoriteType } from '@hcengineering/card'
@@ -25,6 +25,7 @@
   import card from '../../plugin'
 
   export let model: GroupsNavModel
+  export let currentSpace: Ref<Space> | undefined
 
   let classes: MasterTag[] = []
   let _class: Ref<Class<Doc>> | undefined
@@ -115,7 +116,7 @@
   $: empty = rootClasses === undefined || rootClasses.length === 0
 </script>
 
-<div class="flex-col w-full">
+<div class="flex-col w-full flex-no-shrink">
   {#if favoriteRootClasses.length > 0}
     <TreeNode
       _id={'tree-favorites-' + model.id}
@@ -129,7 +130,7 @@
         allClasses={classes}
         {_class}
         space={undefined}
-        currentSpace={undefined}
+        {currentSpace}
         {getItemActions}
         on:select={(e) => {
           selectType(e.detail)
@@ -151,7 +152,7 @@
         allClasses={classes}
         {_class}
         space={undefined}
-        currentSpace={undefined}
+        {currentSpace}
         {getItemActions}
         excludedClasses={favoriteTypes}
         on:select={(e) => {
