@@ -311,6 +311,7 @@ services:
       - PULSE_URL=ws://huly.local:8099/ws
       - DATALAKE_URL=http://huly.local:4030
       # - HULYLAKE_URL=http://huly.local:8096
+      - AI_URL=http://huly.local:4010
     restart: unless-stopped
   transactor:
     image: haiodo/transactor
@@ -353,6 +354,7 @@ services:
       - COMMUNICATION_API_ENABLED=false
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
       - HYLYLAKE_URL=http://huly.local:8096
+      - AI_BOT_URL=http://huly.local:4010
     restart: unless-stopped
   rekoni:
     image: haiodo/rekoni-service
@@ -429,7 +431,7 @@ services:
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://huly.local:4900
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
-  # aiBot:
+  # aibot:
   #   image: haiodo/ai-bot
   #   ports:
   #     - 4010:4010
@@ -438,18 +440,20 @@ services:
   #   restart: unless-stopped
   #   environment:
   #     - SERVER_SECRET=secret
-  #     - DB_URL=${DB_URL_PG}
   #     - QUEUE_CONFIG=${QUEUE_CONFIG}
   #     - ACCOUNTS_URL=http://huly.local:3000
   #     - STORAGE_CONFIG=${STORAGE_CONFIG}
-  #     - FIRST_NAME=Jolie
-  #     - LAST_NAME=AI
+  #     - FIRST_NAME=Баба
+  #     - LAST_NAME=Галя
   #     - PASSWORD=password
   #     - AVATAR_PATH=./avatar.png
   #     - AVATAR_CONTENT_TYPE=.png
   #     - STATS_URL=http://huly.local:4900
   # #      - LOVE_ENDPOINT=http://huly.local:8096
-  # #      - OPENAI_API_KEY=token
+  #     - OPENAI_API_KEY=token
+  #     - OPENAI_SUMMARY_MODEL=openai/gpt-oss-20b
+  #     - OPENAI_TRANSLATE_MODEL=openai/gpt-oss-20b
+  #     - OPENAI_BASE_URL=http://huly.local:1234/v1/
   analytics:
     image: haiodo/analytics-collector
     extra_hosts:
