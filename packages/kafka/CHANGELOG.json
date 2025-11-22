@@ -2,6 +2,18 @@
   "name": "@hcengineering/kafka",
   "entries": [
     {
+      "version": "0.7.18",
+      "tag": "@hcengineering/kafka_v0.7.18",
+      "date": "Sat, 22 Nov 2025 15:29:49 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Compress Kafka messages"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.17",
       "tag": "@hcengineering/kafka_v0.7.17",
       "date": "Wed, 19 Nov 2025 06:47:45 GMT",
