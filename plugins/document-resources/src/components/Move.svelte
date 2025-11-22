@@ -22,6 +22,7 @@
   import document from '../plugin'
   import TeamspacePresenter from './teamspace/TeamspacePresenter.svelte'
   import { moveDocument } from '../utils'
+  import { findChildren } from '../children'
 
   export let value: Document
 
@@ -35,7 +36,7 @@
   $: void updateChildren(value)
 
   async function updateChildren (doc: Document): Promise<void> {
-    children = await findChildren(doc)
+    children = await findChildren(client, doc, document.ids.NoParent)
   }
 
   async function save (): Promise<void> {
@@ -44,8 +45,8 @@
     await moveDocument(value, space, parent ?? document.ids.NoParent)
 
     if (space !== value.space) {
-      const children = await findChildren(value)
-      for (const child of children) {
+      const childDocs = await findChildren(client, value, document.ids.NoParent)
+      for (const child of childDocs) {
         await ops.updateDoc(document.class.Document, value.space, child, {
           space
         })
@@ -53,34 +54,6 @@
     }
 
     await ops.commit()
-  }
-
-  async function findChildren (doc: Document): Promise<Array<Ref<Document>>> {
-    const documents = await client.findAll(
-      document.class.Document,
-      { space: doc.space, parent: { $ne: document.ids.NoParent } },
-      { projection: { _id: 1, parent: 1 } }
-    )
-
-    const byParent = new Map<Ref<Document>, Array<Ref<Document>>>()
-    for (const document of documents) {
-      const group = byParent.get(document.parent) ?? []
-      group.push(document._id)
-      byParent.set(document.parent, group)
-    }
-
-    const result: Ref<Document>[] = []
-
-    const queue = [doc._id]
-    while (true) {
-      const next = queue.pop()
-      if (next === undefined) break
-      const children = byParent.get(next) ?? []
-      result.push(...children)
-      queue.push(...children)
-    }
-
-    return result
   }
 
   $: canSave = space !== value.space || parent !== value.parent
