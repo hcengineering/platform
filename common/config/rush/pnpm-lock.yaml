@@ -17169,6 +17169,9 @@ importers:
       '@hcengineering/export':
         specifier: workspace:^0.7.0
         version: link:../export
+      '@hcengineering/login':
+        specifier: workspace:^0.7.0
+        version: link:../login
       '@hcengineering/platform':
         specifier: ^0.7.17
         version: 0.7.18
@@ -34475,6 +34478,9 @@ importers:
       '@hcengineering/export':
         specifier: workspace:^0.7.0
         version: link:../../../plugins/export
+      '@hcengineering/model-all':
+        specifier: workspace:^0.7.0
+        version: link:../../../models/all
       '@hcengineering/model-attachment':
         specifier: workspace:^0.7.0
         version: link:../../../models/attachment
@@ -34493,6 +34499,9 @@ importers:
       '@hcengineering/server-core':
         specifier: ^0.7.16
         version: 0.7.17
+      '@hcengineering/server-pipeline':
+        specifier: workspace:^0.7.0
+        version: link:../../../server/server-pipeline
       '@hcengineering/server-storage':
         specifier: ^0.7.15
         version: 0.7.16
@@ -34566,6 +34575,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^6.21.0
         version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+      cross-env:
+        specifier: ~7.0.3
+        version: 7.0.3
       esbuild:
         specifier: ^0.25.9
         version: 0.25.12
