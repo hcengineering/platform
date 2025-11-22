@@ -192,31 +192,6 @@ ACCOUNTS_URL="http://127.0.0.1:3000" SECRET="secret" DB_URL=postgresql://root@hu
 rushx test
 ```
 
-## Features
-
-### Permissions
-- Only workspace owners can export data
-- System admins can export any workspace
-- Read-only tokens are rejected
-
-### Performance
-- Asynchronous processing (non-blocking API)
-- Rate limiting for concurrent conversions (50 parallel operations)
-- Efficient caching of referenced documents
-- Streaming for large exports
-
-### Error Handling
-- Comprehensive error logging
-- User notifications on failure
-- Graceful handling of missing references
-- Validation of required parameters
-
-### Data Integrity
-- Space-based organization
-- Preserves document relationships
-- Handles circular references
-- Validates document structure
-
 ## Output Structure
 
 ```
@@ -290,13 +265,6 @@ Export failed: {error message}
 ```bash
 docker logs -f export-service
 ```
-
-## Related Services
-
-- **Account Service**: Authentication and authorization
-- **Storage Service**: File storage backend
-- **Drive**: Document storage and retrieval
-- **Notification Service**: User notifications
 
 ## License
 

@@ -13,20 +13,27 @@
 // limitations under the License.
 //
 
-import { type Resources } from '@hcengineering/platform'
-import ExportButton from './components/ExportButton.svelte'
-import ExportSettings from './components/ExportSettings.svelte'
+import { type Class, type Doc, type DocumentQuery, type Ref } from '@hcengineering/core'
+import { showPopup } from '@hcengineering/ui'
 import ExportModal from './components/ExportModal.svelte'
 
-export { default as ExportButton } from './components/ExportButton.svelte'
-export { default as ExportSettings } from './components/ExportSettings.svelte'
-export { default as ExportModal } from './components/ExportModal.svelte'
-export { showExportModal } from './actions'
-
-export default async (): Promise<Resources> => ({
-  component: {
-    ExportButton,
-    ExportSettings,
-    ExportModal
-  }
-})
+/**
+ * Show export modal for documents
+ * @param _class - Class of documents to export
+ * @param query - Query to filter documents (used when exporting all)
+ * @param selectedDocs - Selected documents (used when exporting selected)
+ */
+export function showExportModal (_class: Ref<Class<Doc>>, query?: DocumentQuery<Doc>, selectedDocs: Doc[] = []): void {
+  showPopup(
+    ExportModal,
+    {
+      _class,
+      query,
+      selectedDocs
+    },
+    'top',
+    () => {
+      // Callback when modal is closed
+    }
+  )
+}

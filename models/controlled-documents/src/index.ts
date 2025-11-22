@@ -25,6 +25,7 @@ import documentsPlugin, {
   type ChangeControl,
   type DocumentRequest
 } from '@hcengineering/controlled-documents'
+import exportPlugin from '@hcengineering/export'
 import { type Builder } from '@hcengineering/model'
 import chunter from '@hcengineering/model-chunter'
 import core from '@hcengineering/model-core'
@@ -824,6 +825,30 @@ export function createModel (builder: Builder): void {
       }
     },
     documents.action.TransferDocument
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: exportPlugin.component.ExportModal,
+        fillProps: {
+          _class: 'object._class',
+          selectedDocs: 'value'
+        }
+      },
+      label: documents.string.ExportDocuments,
+      icon: exportPlugin.icon.Export,
+      input: 'any',
+      category: view.category.General,
+      target: documents.class.Document,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'copy'
+      }
+    },
+    documents.action.ExportDocuments
   )
 
   createAction(
