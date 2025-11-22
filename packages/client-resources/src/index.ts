@@ -98,6 +98,7 @@ export default async () => {
     function: {
       GetClient: async (token: string, endpoint: string, opt?: ClientFactoryOptions): Promise<Client> => {
         const filterModel = getMetadata(clientPlugin.metadata.FilterModel) ?? 'none'
+        const extraFilter = getMetadata(clientPlugin.metadata.ExtraFilter) ?? []
 
         const handler = async (handler: TxHandler): Promise<ClientConnection> => {
           const url = concatLink(endpoint, `/${token}`)
@@ -170,7 +171,7 @@ export default async () => {
             return returnClientTxes(txes)
           }
           if (filterModel === 'ui') {
-            return returnUITxes(txes)
+            return returnUITxes(txes, extraFilter)
           }
           return txes
         }
@@ -181,13 +182,13 @@ export default async () => {
     }
   }
 }
-function returnUITxes (txes: Tx[]): Tx[] {
+function returnUITxes (txes: Tx[], extraFilter: string[]): Tx[] {
   const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
   fillConfiguration(txes, configs)
 
   const allowedPlugins = [...getPlugins(), ...(getMetadata(clientPlugin.metadata.ExtraPlugins) ?? [])]
   const excludedPlugins = Array.from(configs.values()).filter(
-    (it) => !it.enabled || !allowedPlugins.includes(it.pluginId)
+    (it) => !it.enabled || !allowedPlugins.includes(it.pluginId) || extraFilter.includes(it.pluginId)
   )
   return pluginFilterTx(excludedPlugins, configs, txes)
 }
