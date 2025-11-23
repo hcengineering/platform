@@ -2,6 +2,18 @@
   "name": "@hcengineering/middleware",
   "entries": [
     {
+      "version": "0.7.21",
+      "tag": "@hcengineering/middleware_v0.7.21",
+      "date": "Sat, 22 Nov 2025 15:29:49 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix exception in findAll"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.20",
       "tag": "@hcengineering/middleware_v0.7.20",
       "date": "Wed, 19 Nov 2025 06:47:45 GMT",
