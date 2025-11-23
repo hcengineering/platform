@@ -64,7 +64,7 @@
   const groups =
     paymentUrl != null && paymentUrl !== '' ? baseGroups : baseGroups.filter((g) => g.key !== 'subscriptions')
 
-  let currentGroupKey = groups[0].key
+  let currentGroupKey = groups[0]?.key
   let currentGroup = groups[0]
 
   const unsubscribeLocation = resolvedLocationStore.subscribe((loc) => {

@@ -73,8 +73,8 @@ import { mailId } from '@hcengineering/mail'
 import { chatId } from '@hcengineering/chat'
 import github, { githubId } from '@hcengineering/github'
 import { bitrixId } from '@hcengineering/bitrix'
-import {inboxId} from '@hcengineering/inbox'
-import {achievementId} from '@hcengineering/achievement'
+import { inboxId } from '@hcengineering/inbox'
+import { achievementId } from '@hcengineering/achievement'
 import communication, { communicationId } from '@hcengineering/communication'
 import { emojiId } from '@hcengineering/emoji'
 import billingPlugin, { billingId } from '@hcengineering/billing'
@@ -143,11 +143,7 @@ import '@hcengineering/ai-assistant-assets'
 import '@hcengineering/rating-assets'
 
 import { coreId } from '@hcengineering/core'
-import presentation, {
-  loadServerConfig,
-  createFileStorage,
-  presentationId
-} from '@hcengineering/presentation'
+import presentation, { loadServerConfig, createFileStorage, presentationId } from '@hcengineering/presentation'
 
 import { setMetadata } from '@hcengineering/platform'
 import { initThemeStore, setDefaultLanguage } from '@hcengineering/theme'
@@ -268,7 +264,7 @@ const PASSWORD_REQUIREMENTS: Record<NonNullable<Config['PASSWORD_STRICTNESS']>, 
   }
 }
 
-function configureI18n (): void {
+function configureI18n(): void {
   // Add localization
   addStringsLoader(
     platformId,
@@ -367,7 +363,10 @@ function configureI18n (): void {
   )
   addStringsLoader(trainingId, async (lang: string) => await import(`@hcengineering/training-assets/lang/${lang}.json`))
   addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
-  addStringsLoader(globalProfileId, async (lang: string) => await import(`@hcengineering/global-profile-assets/lang/${lang}.json`))
+  addStringsLoader(
+    globalProfileId,
+    async (lang: string) => await import(`@hcengineering/global-profile-assets/lang/${lang}.json`)
+  )
   addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
   addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
   addStringsLoader(exportId, async (lang: string) => await import(`@hcengineering/export-assets/lang/${lang}.json`))
@@ -406,7 +405,7 @@ function configureI18n (): void {
   addStringsLoader(ratingId, async (lang: string) => await import(`@hcengineering/rating-assets/lang/${lang}.json`))
 }
 
-export async function configurePlatform () {
+export async function configurePlatform() {
   setMetadata(platform.metadata.LoadHelper, async (loader) => {
     for (let i = 0; i < 5; i++) {
       try {
@@ -469,7 +468,10 @@ export async function configurePlatform () {
 
   setMetadata(presentation.metadata.UploadURL, config.UPLOAD_URL)
   setMetadata(presentation.metadata.DatalakeUrl, config.DATALAKE_URL)
-  setMetadata(presentation.metadata.FileStorage, createFileStorage(config.UPLOAD_URL, config.DATALAKE_URL, config.HULYLAKE_URL))
+  setMetadata(
+    presentation.metadata.FileStorage,
+    createFileStorage(config.UPLOAD_URL, config.DATALAKE_URL, config.HULYLAKE_URL)
+  )
   setMetadata(presentation.metadata.CollaboratorUrl, config.COLLABORATOR_URL)
 
   setMetadata(presentation.metadata.FrontUrl, config.FRONT_URL)
@@ -633,7 +635,10 @@ export async function configurePlatform () {
     async () => await import(/* webpackChunkName: "documents" */ '@hcengineering/controlled-documents-resources')
   )
   addLocation(guestId, async () => await import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
-  addLocation(globalProfileId, async () => await import(/* webpackChunkName: "global-profile" */ '@hcengineering/global-profile-resources'))
+  addLocation(
+    globalProfileId,
+    async () => await import(/* webpackChunkName: "global-profile" */ '@hcengineering/global-profile-resources')
+  )
   addLocation(loveId, async () => await import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
   addLocation(printId, async () => await import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
   addLocation(exportId, async () => await import(/* webpackChunkName: "export" */ '@hcengineering/export-resources'))
@@ -672,7 +677,12 @@ export async function configurePlatform () {
     async () => await import(/* webpackChunkName: "communication" */ '@hcengineering/communication-resources')
   )
   addLocation(emojiId, async () => await import(/* webpackChunkName: "emoji" */ '@hcengineering/emoji-resources'))
-  addLocation(billingId, async () => await import(/* webpackChunkName: "billing" */ '@hcengineering/billing-resources'))
+  if ((config.BILLING_URL ?? '') !== '') {
+    addLocation(
+      billingId,
+      async () => await import(/* webpackChunkName: "billing" */ '@hcengineering/billing-resources')
+    )
+  }
   addLocation(
     hulyMailId,
     async () => await import(/* webpackChunkName: "hulyMail" */ '@hcengineering/huly-mail-resources')
@@ -681,14 +691,8 @@ export async function configurePlatform () {
     aiAssistantId,
     async () => await import(/* webpackChunkName: "ai-assistant" */ '@hcengineering/ai-assistant-resources')
   )
-  addLocation(
-    inboxId,
-    async () => await import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources')
-  )
-  addLocation(
-    ratingId,
-    async () => await import(/* webpackChunkName: "rating" */ '@hcengineering/rating-resources')
-  )
+  addLocation(inboxId, async () => await import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
+  addLocation(ratingId, async () => await import(/* webpackChunkName: "rating" */ '@hcengineering/rating-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
@@ -698,7 +702,7 @@ export async function configurePlatform () {
   const binaryOverride = localStorage.getItem(client.metadata.UseBinaryProtocol)
   setMetadata(
     client.metadata.UseBinaryProtocol,
-    binaryOverride != null ? binaryOverride === 'true' : config.USE_BINARY_PROTOCOL ?? true
+    binaryOverride != null ? binaryOverride === 'true' : (config.USE_BINARY_PROTOCOL ?? true)
   )
 
   // Disable for now, since it causes performance issues on linux/docker/kubernetes boxes for now.
