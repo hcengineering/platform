@@ -51,6 +51,9 @@
     while (currentDoc && withParent(currentDoc)) {
       const _id = getParentId(currentDoc)
       const _class = getParentClass(currentDoc)
+      if (_id == null || _class == null) {
+        continue
+      }
       const parent: Doc | undefined = await client.findOne(_class, { _id })
 
       if (parent) {

@@ -13,10 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { AnyAttribute, Doc } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
   import { LabelAndProps, tooltip } from '@hcengineering/ui'
+  import DocNavLink from './DocNavLink.svelte'
 
   export let value: string | undefined
+  export let attribute: AnyAttribute
+  export let object: Doc | undefined = undefined
 
   $: tooltipParams = getTooltip(value)
 
@@ -26,8 +31,25 @@
       label: getEmbeddedLabel(value)
     }
   }
+
+  const query = createQuery()
+  $: if (value !== undefined && object === undefined) {
+    query.query(attribute.attributeOf, { [attribute.name]: value }, (res) => {
+      object = res.length > 0 ? res[0] : undefined
+    })
+  } else {
+    query.unsubscribe()
+  }
 </script>
 
-<span class="overflow-label px-3" use:tooltip={tooltipParams}>
-  {value ?? ''}
-</span>
+{#if object !== undefined}
+  <DocNavLink {object} shrink={0}>
+    <span class="overflow-label cursor-pointer px-3">
+      {value ?? ''}
+    </span>
+  </DocNavLink>
+{:else}
+  <span class="overflow-label px-3" use:tooltip={tooltipParams}>
+    {value ?? ''}
+  </span>
+{/if}
