@@ -59,6 +59,7 @@
     "ForbidUpdateCard": "Prohibir actualizar tarjeta",
     "ForbidCreateCardPermission": "Prohibir crear tarjeta",
     "ForbidAddTagPermission": "Prohibir añadir etiqueta",
-    "ForbidRemoveTag": "Prohibir eliminar etiqueta"
+    "ForbidRemoveTag": "Prohibir eliminar etiqueta",
+    "Duplicate": "Duplicar"
   }
 }

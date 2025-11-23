@@ -59,6 +59,7 @@
     "ForbidUpdateCard": "Aktualisieren der Karte verbieten",
     "ForbidCreateCardPermission": "Erstellen von Karten verbieten",
     "ForbidAddTagPermission": "Hinzufügen von Tags verbieten",
-    "ForbidRemoveTag": "Entfernen von Tags verbieten"
+    "ForbidRemoveTag": "Entfernen von Tags verbieten",
+    "Duplicate": "Duplizieren"
   }
 }
