@@ -29,13 +29,15 @@ export default mergeIds(cardId, card, {
   },
   actionImpl: {
     DeleteMasterTag: '' as ViewAction,
+    DuplicateCard: '' as ViewAction,
     EditSpace: '' as ViewAction
   },
   action: {
     DeleteMasterTag: '' as Ref<Action>,
     SetParent: '' as Ref<Action<Doc, any>>,
     UnsetParent: '' as Ref<Action<Doc, any>>,
-    PublicLink: '' as Ref<Action<Doc, any>>
+    PublicLink: '' as Ref<Action<Doc, any>>,
+    Duplicate: '' as Ref<Action>
   },
   string: {
     CreateCardPersmissionDescription: '' as IntlString,

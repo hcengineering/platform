@@ -59,6 +59,7 @@
     "ForbidUpdateCard": "Kart güncellemeyi yasakla",
     "ForbidCreateCardPermission": "Kart oluşturmayı yasakla",
     "ForbidAddTagPermission": "Etiket eklemeyi yasakla",
-    "ForbidRemoveTag": "Etiket kaldırmayı yasakla"
+    "ForbidRemoveTag": "Etiket kaldırmayı yasakla",
+    "Duplicate": "Çoğalt"
   }
 }
