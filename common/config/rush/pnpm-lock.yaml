@@ -4075,6 +4075,9 @@ importers:
       '@hcengineering/core':
         specifier: ^0.7.21
         version: 0.7.22
+      '@hcengineering/export':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/export
       '@hcengineering/model':
         specifier: ^0.7.17
         version: 0.7.17
