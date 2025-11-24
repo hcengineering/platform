@@ -21,6 +21,7 @@
     "ExportRequestFailed": "Dışa aktarma gönderilemedi.",
     "ExportRequestFailedMessage": "Dışa aktarma gönderirken hata oluştu. Lütfen daha sonra tekrar deneyin.",
     "ExportCompleted": "Dışa aktarma tamamlandı. Dosyalarınız hazır. Bunları sürücüden indirebilirsiniz.",
-    "ExportFailed": "Veri dışa aktarılamadı. Lütfen daha sonra tekrar deneyin."
+    "ExportFailed": "Veri dışa aktarılamadı. Lütfen daha sonra tekrar deneyin.",
+    "ExportToWorkspace": "Başka bir çalışma alanına aktar"
   }
 }

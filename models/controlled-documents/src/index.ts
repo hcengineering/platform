@@ -832,13 +832,13 @@ export function createModel (builder: Builder): void {
     {
       action: view.actionImpl.ShowPopup,
       actionProps: {
-        component: exportPlugin.component.ExportModal,
+        component: exportPlugin.component.ExportToWorkspaceModal,
         fillProps: {
           _class: 'object._class',
           selectedDocs: 'value'
         }
       },
-      label: documents.string.ExportDocuments,
+      label: exportPlugin.string.ExportToWorkspace,
       icon: exportPlugin.icon.Export,
       input: 'any',
       category: view.category.General,

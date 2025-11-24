@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, type WorkspaceInfoWithStatus } from '@hcengineering/core'
   import presentation, { Card, MessageBox } from '@hcengineering/presentation'
-  import { DropdownLabelsIntl, DropdownLabels, EditBox, Label, showPopup } from '@hcengineering/ui'
+  import { DropdownLabelsIntl, DropdownLabels, Label, showPopup } from '@hcengineering/ui'
   import { getMetadata, getResource } from '@hcengineering/platform'
   import login from '@hcengineering/login'
   import { createEventDispatcher } from 'svelte'
@@ -31,7 +31,6 @@
 
   let source: ExportSource = selectedDocs.length > 0 ? 'selected' : 'all'
   let targetWorkspace: string | undefined = undefined
-  let targetSpaceName: string = `Export ${new Date().toISOString().split('T')[0]}`
   let workspaces: WorkspaceInfoWithStatus[] = []
   let loading = false
 
@@ -61,7 +60,7 @@
     })
   )
 
-  $: canSave = targetWorkspace !== undefined && targetSpaceName.trim().length > 0
+  $: canSave = targetWorkspace !== undefined
 
   async function handleExport (): Promise<void> {
     if (!canSave) return
@@ -76,7 +75,6 @@
 
       const body: any = {
         targetWorkspace,
-        targetSpace: targetSpaceName.trim(),
         _class
       }
 
@@ -157,15 +155,5 @@
       <Label label={plugin.string.TargetWorkspace} />
       <DropdownLabels items={workspaceItems} bind:selected={targetWorkspace} kind="regular" size="large" />
     </div>
-
-    {#if targetWorkspace}
-      <div class="flex-col gap-2">
-        <Label label={plugin.string.TargetSpaceName} />
-        <EditBox bind:value={targetSpaceName} kind="large-style" autoFocus />
-        <span class="text-sm overflow-label">
-          {plugin.string.TargetSpaceNameHint}
-        </span>
-      </div>
-    {/if}
   </div>
 </Card>

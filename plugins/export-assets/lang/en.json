@@ -21,6 +21,7 @@
     "ExportRequestFailed": "Failed to submit export.",
     "ExportRequestFailedMessage": "Error occurred while submitting export. Please try again later.",
     "ExportCompleted": "Export completed. Your files are ready. You can download them from the drive.",
-    "ExportFailed": "Failed to export data. Please try again later."
+    "ExportFailed": "Failed to export data. Please try again later.",
+    "ExportToWorkspace": "Export to another workspace"
   }
 }

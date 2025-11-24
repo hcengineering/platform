@@ -22,11 +22,13 @@ export const exportPlugin = plugin(exportId, {
   string: {
     Export: '' as IntlString,
     ExportCompleted: '' as IntlString,
-    ExportFailed: '' as IntlString
+    ExportFailed: '' as IntlString,
+    ExportToWorkspace: '' as IntlString
   },
   component: {
     ExportButton: '' as AnyComponent,
-    ExportSettings: '' as AnyComponent
+    ExportSettings: '' as AnyComponent,
+    ExportToWorkspaceModal: '' as AnyComponent
   },
   icon: {
     Export: '' as Asset

@@ -21,6 +21,7 @@
     "ExportRequestFailed": "Échec de la soumission de l'exportation.",
     "ExportRequestFailedMessage": "Une erreur s'est produite lors de la soumission de l'exportation. Veuillez réessayer plus tard.",
     "ExportCompleted": "Exportation terminée. Vos fichiers sont prêts. Vous pouvez les télécharger depuis le lecteur.",
-    "ExportFailed": "Échec de l'exportation des données. Veuillez réessayer plus tard."
+    "ExportFailed": "Échec de l'exportation des données. Veuillez réessayer plus tard.",
+    "ExportToWorkspace": "Exporter vers un autre espace de travail"
   }
 }
