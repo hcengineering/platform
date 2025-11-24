@@ -57,6 +57,6 @@
     "@hcengineering/model-all": "workspace:^0.7.0",
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/analytics-service": "^0.7.17",
-    "@hcengineering/kafka": "^0.7.16"
+    "@hcengineering/kafka": "^0.7.18"
   }
 }
