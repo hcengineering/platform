@@ -38,7 +38,7 @@
     "@hcengineering/model": "workspace:^0.7.17",
     "@hcengineering/platform": "workspace:^0.7.18",
     "@hcengineering/storage": "workspace:^0.7.17",
-    "@hcengineering/collaboration": "workspace:^0.7.15",
+    "@hcengineering/collaboration": "workspace:^0.7.16",
     "@hcengineering/text": "workspace:^0.7.18"
   }
 }

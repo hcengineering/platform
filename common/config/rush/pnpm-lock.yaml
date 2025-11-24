@@ -1763,7 +1763,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/client-resources
       '@hcengineering/collaboration':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/collaboration
       '@hcengineering/communication':
         specifier: workspace:^0.7.0
@@ -1787,13 +1787,13 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../plugins/document
       '@hcengineering/elastic':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/elastic
       '@hcengineering/hulylake-client':
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/hulylake-client
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/kafka
       '@hcengineering/kvs-client':
         specifier: workspace:^0.7.0
@@ -1844,7 +1844,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../models/tracker
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/mongo
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
@@ -1853,7 +1853,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../services/rating
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.19
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/rank':
         specifier: workspace:^0.7.17
@@ -1997,7 +1997,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../server-plugins/setting-resources
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-tags':
         specifier: workspace:^0.7.0
@@ -6967,7 +6967,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../plugins/chunter
       '@hcengineering/collaboration':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/collaboration
       '@hcengineering/contact':
         specifier: workspace:^0.7.0
@@ -7100,7 +7100,7 @@ importers:
   ../../models/core:
     dependencies:
       '@hcengineering/collaboration':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/collaboration
       '@hcengineering/core':
         specifier: workspace:^0.7.22
@@ -7307,7 +7307,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../plugins/attachment
       '@hcengineering/collaboration':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/collaboration
       '@hcengineering/core':
         specifier: workspace:^0.7.22
@@ -13703,7 +13703,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../plugins/chunter
       '@hcengineering/collaboration':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/collaboration
       '@hcengineering/contact':
         specifier: workspace:^0.7.0
@@ -29083,13 +29083,13 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../foundations/core/packages/core
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/mongo
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/platform
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.19
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/server-core':
         specifier: workspace:^0.7.17
@@ -29398,25 +29398,25 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../foundations/core/packages/core
       '@hcengineering/elastic':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/elastic
       '@hcengineering/hulylake-client':
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/hulylake-client
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/kafka
       '@hcengineering/middleware':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.21
         version: link:../../foundations/server/packages/middleware
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/mongo
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/platform
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.19
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/server-client':
         specifier: workspace:^0.7.16
@@ -29434,7 +29434,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../server/server-pipeline
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -29552,7 +29552,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../plugins/drive
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/kafka
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
@@ -29564,7 +29564,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -29652,7 +29652,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -29779,16 +29779,16 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../foundations/core/packages/core
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/kafka
       '@hcengineering/middleware':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.21
         version: link:../../foundations/server/packages/middleware
       '@hcengineering/minio':
         specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/minio
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/mongo
       '@hcengineering/notification':
         specifier: workspace:^0.7.0
@@ -29803,13 +29803,13 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../services/translate
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.19
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/rpc':
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/rpc
       '@hcengineering/server':
-        specifier: workspace:^0.7.16
+        specifier: workspace:^0.7.17
         version: link:../../foundations/server/packages/server
       '@hcengineering/server-ai-bot':
         specifier: workspace:^0.7.0
@@ -29830,7 +29830,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../server/server-pipeline
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-telegram':
         specifier: workspace:^0.7.0
@@ -30054,7 +30054,7 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../foundations/core/packages/core
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/kafka
       '@hcengineering/model-all':
         specifier: workspace:^0.7.0
@@ -30727,7 +30727,7 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../foundations/core/packages/core
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/kafka
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
@@ -31001,7 +31001,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/platform
       '@hcengineering/server':
-        specifier: workspace:^0.7.16
+        specifier: workspace:^0.7.17
         version: link:../../foundations/server/packages/server
       '@hcengineering/server-contact':
         specifier: workspace:^0.7.0
@@ -34258,13 +34258,13 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../foundations/core/packages/core
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/mongo
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/platform
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.19
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/server-core':
         specifier: workspace:^0.7.17
@@ -34273,7 +34273,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../server-pipeline
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -34358,7 +34358,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/model
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/mongo
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
@@ -34579,7 +34579,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -34658,7 +34658,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/client-resources
       '@hcengineering/collaboration':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/collaboration
       '@hcengineering/collaborator-client':
         specifier: workspace:^0.7.17
@@ -34676,7 +34676,7 @@ importers:
         specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/minio
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/mongo
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
@@ -34688,7 +34688,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -34815,7 +34815,7 @@ importers:
         specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/minio
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/mongo
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
@@ -34824,7 +34824,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -35132,7 +35132,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../plugins/inventory-assets
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/kafka
       '@hcengineering/lead':
         specifier: workspace:^0.7.0
@@ -35159,7 +35159,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../plugins/mail-assets
       '@hcengineering/middleware':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.21
         version: link:../../foundations/server/packages/middleware
       '@hcengineering/notification':
         specifier: workspace:^0.7.0
@@ -35201,7 +35201,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../plugins/request-assets
       '@hcengineering/server':
-        specifier: workspace:^0.7.16
+        specifier: workspace:^0.7.17
         version: link:../../foundations/server/packages/server
       '@hcengineering/server-activity':
         specifier: workspace:^0.7.0
@@ -35532,7 +35532,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/client-resources
       '@hcengineering/collaboration':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/collaboration
       '@hcengineering/contact':
         specifier: workspace:^0.7.0
@@ -35550,7 +35550,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/model
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/mongo
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
@@ -35559,7 +35559,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/rank
       '@hcengineering/server':
-        specifier: workspace:^0.7.16
+        specifier: workspace:^0.7.17
         version: link:../../foundations/server/packages/server
       '@hcengineering/server-client':
         specifier: workspace:^0.7.16
@@ -35568,7 +35568,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -35659,13 +35659,13 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/model
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/mongo
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/platform
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.19
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/server-backup':
         specifier: workspace:^0.7.0
@@ -35683,7 +35683,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../server-pipeline
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -35810,7 +35810,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../../plugins/document
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../../foundations/server/packages/kafka
       '@hcengineering/love':
         specifier: workspace:^0.7.0
@@ -35840,7 +35840,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -36088,7 +36088,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -36209,7 +36209,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -36478,7 +36478,7 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../../foundations/core/packages/core
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../../foundations/server/packages/kafka
       '@hcengineering/love':
         specifier: workspace:^0.7.0
@@ -36581,7 +36581,7 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../../foundations/core/packages/core
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../../foundations/server/packages/kafka
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
@@ -36744,7 +36744,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -37397,7 +37397,7 @@ importers:
         specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/minio
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/mongo
       '@hcengineering/notification':
         specifier: workspace:^0.7.0
@@ -37439,7 +37439,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../../server-plugins/guest-resources
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -37956,7 +37956,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../../packages/integration-client
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../../foundations/server/packages/kafka
       '@hcengineering/kvs-client':
         specifier: workspace:^0.7.0
@@ -37974,7 +37974,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -38140,7 +38140,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -38267,7 +38267,7 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../../foundations/core/packages/core
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../../foundations/server/packages/kafka
       '@hcengineering/kvs-client':
         specifier: workspace:^0.7.0
@@ -38279,7 +38279,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/server-storage
       image-size:
         specifier: ^1.1.1
@@ -38506,7 +38506,7 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../../foundations/core/packages/core
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../../foundations/server/packages/kafka
       '@hcengineering/kvs-client':
         specifier: workspace:^0.7.0
@@ -38524,7 +38524,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -38875,7 +38875,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -38993,7 +38993,7 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../foundations/core/packages/core
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/kafka
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
@@ -39105,19 +39105,19 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../foundations/core/packages/core
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/kafka
       '@hcengineering/middleware':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.21
         version: link:../../foundations/server/packages/middleware
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/mongo
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/platform
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.19
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/rating':
         specifier: workspace:^0.7.0
@@ -39132,7 +39132,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../server/server-pipeline
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -39389,7 +39389,7 @@ importers:
         specifier: workspace:^0.7.18
         version: link:../../../foundations/core/packages/platform
       '@hcengineering/server':
-        specifier: workspace:^0.7.16
+        specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/server
       '@hcengineering/server-client':
         specifier: workspace:^0.7.16
@@ -39398,7 +39398,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -39531,10 +39531,10 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../../foundations/core/packages/core
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../../foundations/server/packages/kafka
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/mongo
       '@hcengineering/notification':
         specifier: workspace:^0.7.0
@@ -39549,7 +39549,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/server-storage
       '@hcengineering/server-telegram':
         specifier: workspace:^0.7.0
@@ -39685,7 +39685,7 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../../foundations/core/packages/core
       '@hcengineering/mongo':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/mongo
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
@@ -39697,7 +39697,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/core
       '@hcengineering/server-storage':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/server-storage
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
@@ -39851,7 +39851,7 @@ importers:
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/hulylake-client
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/kafka
       '@hcengineering/platform':
         specifier: workspace:^0.7.18
@@ -39942,7 +39942,7 @@ importers:
         specifier: workspace:^0.7.22
         version: link:../../foundations/core/packages/core
       '@hcengineering/kafka':
-        specifier: workspace:^0.7.15
+        specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/kafka
       '@hcengineering/process':
         specifier: workspace:^0.7.0
@@ -59904,7 +59904,7 @@ snapshots:
   node-loader@2.0.0(webpack@5.102.1):
     dependencies:
       loader-utils: 2.0.4
-      webpack: 5.102.1
+      webpack: 5.102.1(@swc/core@1.15.1)(esbuild@0.25.12)(webpack-cli@5.1.4)
 
   node-localstorage@2.2.1:
     dependencies:
@@ -61918,15 +61918,6 @@ snapshots:
     optionalDependencies:
       '@swc/core': 1.15.1
 
-  terser-webpack-plugin@5.3.14(webpack@5.102.1):
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.31
-      jest-worker: 27.5.1
-      schema-utils: 4.3.3
-      serialize-javascript: 6.0.2
-      terser: 5.44.1
-      webpack: 5.102.1
-
   terser@5.44.1:
     dependencies:
       '@jridgewell/source-map': 0.3.11
@@ -62586,38 +62577,6 @@ snapshots:
       source-map: 0.6.1
 
   webpack-sources@3.3.3: {}
-
-  webpack@5.102.1:
-    dependencies:
-      '@types/eslint-scope': 3.7.7
-      '@types/estree': 1.0.8
-      '@types/json-schema': 7.0.15
-      '@webassemblyjs/ast': 1.14.1
-      '@webassemblyjs/wasm-edit': 1.14.1
-      '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.15.0
-      acorn-import-phases: 1.0.4(acorn@8.15.0)
-      browserslist: 4.27.0
-      chrome-trace-event: 1.0.4
-      enhanced-resolve: 5.18.3
-      es-module-lexer: 1.7.0
-      eslint-scope: 5.1.1
-      events: 3.3.0
-      glob-to-regexp: 0.4.1
-      graceful-fs: 4.2.11
-      json-parse-even-better-errors: 2.3.1
-      loader-runner: 4.3.1
-      mime-types: 2.1.35
-      neo-async: 2.6.2
-      schema-utils: 4.3.3
-      tapable: 2.3.0
-      terser-webpack-plugin: 5.3.14(webpack@5.102.1)
-      watchpack: 2.4.4
-      webpack-sources: 3.3.3
-    transitivePeerDependencies:
-      - '@swc/core'
-      - esbuild
-      - uglify-js
 
   webpack@5.102.1(@swc/core@1.15.1):
     dependencies:
