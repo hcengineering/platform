@@ -13,16 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { FavoriteType, MasterTag } from '@hcengineering/card'
   import core, { Class, Doc, getCurrentAccount, Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Action, getCurrentLocation, navigate, location as locationStore } from '@hcengineering/ui'
-  import { MasterTag, FavoriteType } from '@hcengineering/card'
-  import { TreeNode } from '@hcengineering/view-resources'
-  import { GroupsNavModel } from '@hcengineering/workbench'
-  import view from '@hcengineering/view'
   import preference from '@hcengineering/preference'
-  import TagHierarchy from './TagHierarchy.svelte'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Action, getCurrentLocation, location as locationStore, navigate } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
+  import { setFilters, TreeNode } from '@hcengineering/view-resources'
+  import { GroupsNavModel } from '@hcengineering/workbench'
   import card from '../../plugin'
+  import TagHierarchy from './TagHierarchy.svelte'
 
   export let model: GroupsNavModel
 
@@ -73,6 +73,7 @@
   function selectType (type: Ref<MasterTag>): void {
     const loc = getCurrentLocation()
     loc.path = buildTypePath(loc.path, type)
+    setFilters([])
     navigate(loc)
   }
 
