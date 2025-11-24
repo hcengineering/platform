@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { location } from '@hcengineering/ui'
@@ -23,11 +23,12 @@
   import card from '../plugin'
 
   let _class: Ref<Class<Doc>> | undefined
+  let space: Ref<Space> | undefined
 
   onDestroy(
     location.subscribe((loc) => {
-      const isTypeSpecified = loc.path[3] === 'type'
-      _class = isTypeSpecified ? loc.path[4] : card.class.Card
+      space = loc.path[3] === 'type' ? undefined : loc.path[3]
+      _class = loc.path[4]
     })
   )
 
@@ -38,7 +39,7 @@
     allClasses = res.filter((it) => it.removed !== true)
   })
 
-  $: clazz = allClasses.find((it) => it._id === _class)
+  $: clazz = allClasses.find((it) => it._id === _class) ?? allClasses.find((it) => it._id === card.class.Card)
 
   $: label = getLabel(clazz)
 
@@ -50,8 +51,9 @@
 {#if clazz !== undefined && label !== undefined}
   <SpecialView
     _class={clazz._id}
-    defaultViewletDescriptor={card.viewlet.CardFeedDescriptor}
+    baseQuery={space !== undefined ? { space } : {}}
+    {space}
     {label}
-    icon={card.icon.Card}
+    icon={clazz.icon ?? card.icon.Card}
   />
 {/if}

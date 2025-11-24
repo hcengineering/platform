@@ -26,6 +26,5 @@
   _class={card.class.FavoriteCard}
   icon={view.icon.Star}
   label={preference.string.Starred}
-  defaultViewletDescriptor={view.viewlet.List}
   baseQuery={{ application }}
 />

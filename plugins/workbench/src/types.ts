@@ -159,6 +159,7 @@ export interface NavigatorModel {
   spaces: SpacesNavModel[]
   specials?: SpecialNavModel[]
   groups?: GroupsNavModel[]
+  hideStarred?: boolean
 }
 
 /** @public */
