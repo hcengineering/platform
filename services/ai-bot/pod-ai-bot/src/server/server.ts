@@ -112,6 +112,9 @@ export function createServer (controller: AIControl, ctx: MeasureContext): Expre
       const events = Array.isArray(req.body) ? req.body : [req.body]
 
       await controller.processEvent(token.workspace, events as AIEventRequest[])
+
+      res.status(200)
+      res.json({})
     })
   )
 
