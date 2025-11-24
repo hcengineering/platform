@@ -407,14 +407,14 @@ export class WorkspaceClient {
       if (msg !== undefined) {
         useHistory = [
           {
-            role: 'user',
+            role: 'system',
             content: 'Document type:' + msg?._class
           }
         ]
         if (msg._class === chunter.class.ThreadMessage || msg._class === chunter.class.ChatMessage) {
           useHistory.push({
-            role: 'user',
-            content: markupToText((msg as ChatMessage).message)
+            role: 'system',
+            content: 'Content:' + markupToText((msg as ChatMessage).message)
           })
         }
         if (msg._class === tracker.class.Issue) {
@@ -441,7 +441,7 @@ export class WorkspaceClient {
             }
 
             useHistory.push({
-              role: 'user',
+              role: 'system',
               content: _msg
             })
           }
@@ -470,15 +470,15 @@ export class WorkspaceClient {
       const empAsMap = toIdMap(employeesInChannel.filter((it) => it.personUuid !== undefined))
 
       for (const msg of lastMessages) {
-        let name = 'Unknown'
+        let emp: Person | undefined
         const sid = socialIds.get(msg.modifiedBy as any)
         if (sid !== undefined) {
-          name = empAsMap.get(sid.attachedTo)?.name ?? 'Unknown'
+          emp = empAsMap.get(sid.attachedTo)
         }
         useHistory.push({
-          role: 'user',
+          role: this.aiPerson?.personUuid === emp?.personUuid ? 'assistant' : 'user',
           content: markupToText(msg.message),
-          name
+          name: emp?.name ?? 'Unknown'
         })
       }
     }
