@@ -59,6 +59,7 @@
     "ForbidUpdateCard": "Interdire la mise à jour de la fiche",
     "ForbidCreateCardPermission": "Interdire la création de fiche",
     "ForbidAddTagPermission": "Interdire l'ajout d'étiquette",
-    "ForbidRemoveTag": "Interdire la suppression d'étiquette"
+    "ForbidRemoveTag": "Interdire la suppression d'étiquette",
+    "Duplicate": "Dupliquer"
   }
 }

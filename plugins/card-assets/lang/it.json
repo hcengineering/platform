@@ -59,6 +59,7 @@
     "ForbidUpdateCard": "Vieta aggiornamento scheda",
     "ForbidCreateCardPermission": "Vieta creazione scheda",
     "ForbidAddTagPermission": "Vieta aggiunta tag",
-    "ForbidRemoveTag": "Vieta rimozione tag"
+    "ForbidRemoveTag": "Vieta rimozione tag",
+    "Duplicate": "Duplicato"
   }
 }

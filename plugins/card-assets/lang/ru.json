@@ -59,6 +59,7 @@
     "ForbidUpdateCard": "Запретить обновление карточки",
     "ForbidCreateCardPermission": "Запретить создание карточки",
     "ForbidAddTagPermission": "Запретить добавление тега",
-    "ForbidRemoveTag": "Запретить удаление тега"
+    "ForbidRemoveTag": "Запретить удаление тега",
+    "Duplicate": "Дублировать"
   }
 }

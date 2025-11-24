@@ -243,4 +243,22 @@ export function createActions (builder: Builder): void {
       group: 'edit'
     }
   })
+
+  createAction(
+    builder,
+    {
+      action: card.actionImpl.DuplicateCard,
+      label: card.string.Duplicate,
+      icon: card.icon.Duplicate,
+      input: 'focus',
+      category: card.category.Card,
+      target: card.class.Card,
+      context: {
+        mode: ['context', 'browser'],
+        application: card.app.Card,
+        group: 'associate'
+      }
+    },
+    card.action.Duplicate
+  )
 }

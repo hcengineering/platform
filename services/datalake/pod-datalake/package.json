@@ -64,7 +64,7 @@
     "@hcengineering/server-core": "^0.7.17",
     "@hcengineering/server-client": "^0.7.16",
     "@hcengineering/core": "^0.7.22",
-    "@hcengineering/kafka": "^0.7.16",
+    "@hcengineering/kafka": "^0.7.18",
     "@hcengineering/platform": "^0.7.18",
     "@hcengineering/account-client": "^0.7.19",
     "cors": "^2.8.5",
