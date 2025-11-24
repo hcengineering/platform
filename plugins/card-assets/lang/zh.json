@@ -59,6 +59,7 @@
     "ForbidUpdateCard": "禁止更新卡片",
     "ForbidCreateCardPermission": "禁止创建卡片",
     "ForbidAddTagPermission": "禁止添加标签",
-    "ForbidRemoveTag": "禁止移除标签"
+    "ForbidRemoveTag": "禁止移除标签",
+    "Duplicate": "复制"
   }
 }
