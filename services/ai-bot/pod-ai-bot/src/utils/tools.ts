@@ -86,7 +86,7 @@ async function saveFile (
   user: AccountUuid | undefined,
   args: { fileId: string, folder: string | undefined, parent: string | undefined, name: string }
 ): Promise<string> {
-  console.log('Save file', args)
+  // console.log('Save file', args)
   const content = await pdfToMarkdown(workspaceClient, args.fileId, args.name)
   if (content === undefined) {
     return 'Error while converting pdf to markdown'
@@ -151,6 +151,117 @@ async function getFoldersForDocuments (
   return res
 }
 
+async function updateAssistantMemory (
+  workspaceClient: WorkspaceClient,
+  user: AccountUuid | undefined,
+  args: Record<string, any>
+): Promise<string> {
+  // console.log('Update assistant memory', args)
+  await workspaceClient.updateAssistantMemory(user, args)
+  return 'Assistant memory updated successfully.'
+}
+
+async function updateUserMemory (
+  workspaceClient: WorkspaceClient,
+  user: AccountUuid | undefined,
+  args: Record<string, any>
+): Promise<string> {
+  // console.log('Update user memory', args)
+  await workspaceClient.updateUserMemory(user, args)
+  return 'User memory updated successfully.'
+}
+
+async function getAssistantMemory (
+  workspaceClient: WorkspaceClient,
+  user: AccountUuid | undefined,
+  args: Record<string, any>
+): Promise<string> {
+  if (user === undefined) return 'No user context available'
+
+  const history = await workspaceClient.getHistoryForUser(user)
+  if (history.assistantMemory === '') {
+    return 'No assistant memory stored yet.'
+  }
+  return `Current assistant memory:\n${history.assistantMemory}`
+}
+
+async function getUserMemory (
+  workspaceClient: WorkspaceClient,
+  user: AccountUuid | undefined,
+  args: Record<string, any>
+): Promise<string> {
+  if (user === undefined) return 'No user context available'
+
+  const history = await workspaceClient.getHistoryForUser(user)
+  if (history.userMemory === '') {
+    return 'No user memory stored yet.'
+  }
+  return `Current user memory:\n${history.userMemory}`
+}
+
+async function clearAssistantMemory (
+  workspaceClient: WorkspaceClient,
+  user: AccountUuid | undefined,
+  args: Record<string, any>
+): Promise<string> {
+  if (user === undefined) return 'No user context available'
+  await workspaceClient.updateAssistantMemory(user, { memory: '' })
+  return 'Assistant memory has been cleared.'
+}
+
+async function clearUserMemory (
+  workspaceClient: WorkspaceClient,
+  user: AccountUuid | undefined,
+  args: Record<string, any>
+): Promise<string> {
+  if (user === undefined) return 'No user context available'
+  await workspaceClient.updateUserMemory(user, { memory: '' })
+  return 'User memory has been cleared.'
+}
+
+async function updateSharedContext (
+  workspaceClient: WorkspaceClient,
+  user: AccountUuid | undefined,
+  args: Record<string, any>
+): Promise<string> {
+  // console.log('Update shared context', args)
+  await workspaceClient.updateSharedContext(user, args)
+  return 'Shared context updated successfully.'
+}
+
+async function getSharedContext (
+  workspaceClient: WorkspaceClient,
+  user: AccountUuid | undefined,
+  args: Record<string, any>
+): Promise<string> {
+  if (user === undefined) return 'No user context available'
+
+  const history = await workspaceClient.getHistoryForUser(user)
+  if (history.sharedContext === '') {
+    return 'No shared context stored yet.'
+  }
+  return `Current shared context:\n${history.sharedContext}`
+}
+
+async function clearHistory (
+  workspaceClient: WorkspaceClient,
+  user: AccountUuid | undefined,
+  args: Record<string, any>
+): Promise<string> {
+  if (user === undefined) return 'No user context available'
+  await workspaceClient.clearHistory(user)
+  return 'Conversation history has been cleared. Starting fresh conversation.'
+}
+
+async function getHistorySummary (
+  workspaceClient: WorkspaceClient,
+  user: AccountUuid | undefined,
+  args: Record<string, any>
+): Promise<string> {
+  if (user === undefined) return 'No user context available'
+  return await workspaceClient.getHistorySummary(user)
+}
+
 type ChangeFields<T, R> = Omit<T, keyof R> & R
 type PredefinedTool<T extends object | string> = ChangeFields<
 RunnableToolFunction<T>,
@@ -164,78 +275,285 @@ T extends string ? RunnableFunctionWithoutParse : RunnableFunctionWithParse<any>
 >
 type ToolFunc = (workspaceClient: WorkspaceClient, user: AccountUuid | undefined, args: any) => Promise<string> | string
 
-const tools: [PredefinedTool<any>, ToolFunc][] = []
+const tools: [PredefinedTool<any>, ToolFunc, 'direct' | 'thread' | 'any'][] = []
 
-export function registerTool<T extends object | string> (tool: PredefinedTool<T>, func: ToolFunc): void {
-  tools.push([tool, func])
+export function registerTool<T extends object | string> (
+  tool: PredefinedTool<T>,
+  func: ToolFunc,
+  contextMode: 'direct' | 'thread' | 'any'
+): void {
+  tools.push([tool, func, contextMode])
 }
+
+if (config.DataLabApiKey !== '') {
+  registerTool(
+    {
+      type: 'function',
+      function: {
+        name: 'getDataBeforeImport',
+        parameters: {
+          type: 'object',
+          properties: {}
+        },
+        description:
+          'Get folders and parents for documents. This step necessery before saveFile tool. YOU MUST USE IT BEFORE import file.'
+      }
+    },
+    getFoldersForDocuments,
+    'any'
+  )
+}
+
+if (config.DataLabApiKey !== '') {
+  registerTool<object>(
+    {
+      type: 'function',
+      function: {
+        name: 'saveFile',
+        parse: JSON.parse,
+        parameters: {
+          type: 'object',
+          required: ['fileId, folder, name'],
+          properties: {
+            fileId: { type: 'string', description: 'File id to parse' },
+            folder: {
+              type: 'string',
+              default: '',
+              description:
+                'Folder, id from getDataBeforeImport. If not provided you can guess by file name and folder name, or by another file names, if you can`t, just ask user. Don`t provide empty, this field is required. If no folders at all, you should stop pipeline execution and ask user to create teamspace'
+            },
+            parent: {
+              type: 'string',
+              default: '',
+              description:
+                'Parent document, use id from getDataBeforeImport, leave empty string if not provided, it is not necessery, please feel free to pass empty string'
+            },
+            name: {
+              type: 'string',
+              description: 'Name for file, try to recognize from user input, if not provided use attached file name'
+            }
+          }
+        },
+        description:
+          'Parse pdf to markdown and save it, using for import files. Use only if provide file in current message and user require to import/save, if file not provided ask user to attach it. You MUST call getDataBeforeImport tool before for get ids. Use file name as name if user not provide it, don`t use old parameters. You can ask user about folder if you have not enough data to get folder id'
+      }
+    },
+    saveFile,
+    'any'
+  )
+}
+
+// Assistant memory tools
+registerTool<object>(
+  {
+    type: 'function',
+    function: {
+      name: 'update_assistant_memory',
+      parse: JSON.parse,
+      parameters: {
+        type: 'object',
+        properties: {
+          memory: {
+            type: 'string',
+            description:
+              'Complete updated memory about yourself: your name, behavior style, how to address the user, your role, etc.'
+          }
+        },
+        required: ['memory']
+      },
+      description:
+        'Update information about yourself (the assistant). Use this when user tells you how to behave, what name to use, how to address them, or defines your role/personality.'
+    }
+  },
+  updateAssistantMemory,
+  'direct'
+)
 
 registerTool(
   {
     type: 'function',
     function: {
-      name: 'getDataBeforeImport',
+      name: 'get_assistant_memory',
       parameters: {
         type: 'object',
         properties: {}
       },
       description:
-        'Get folders and parents for documents. This step necessery before saveFile tool. YOU MUST USE IT BEFORE import file.'
+        'Retrieve current memory about yourself (the assistant). Check your name, behavior style, and how you should address the user.'
     }
   },
-  getFoldersForDocuments
+  getAssistantMemory,
+  'direct'
 )
 
+registerTool(
+  {
+    type: 'function',
+    function: {
+      name: 'clear_assistant_memory',
+      parameters: {
+        type: 'object',
+        properties: {}
+      },
+      description:
+        'Clear all memory about yourself (the assistant). Use only if user explicitly asks to reset your persona.'
+    }
+  },
+  clearAssistantMemory,
+  'direct'
+)
+
+// User memory tools
 registerTool<object>(
   {
     type: 'function',
     function: {
-      name: 'saveFile',
+      name: 'update_user_memory',
       parse: JSON.parse,
       parameters: {
         type: 'object',
-        required: ['fileId, folder, name'],
         properties: {
-          fileId: { type: 'string', description: 'File id to parse' },
-          folder: {
+          memory: {
             type: 'string',
-            default: '',
             description:
-              'Folder, id from getDataBeforeImport. If not provided you can guess by file name and folder name, or by another file names, if you can`t, just ask user. Don`t provide empty, this field is required. If no folders at all, you should stop pipeline execution and ask user to create teamspace'
-          },
-          parent: {
-            type: 'string',
-            default: '',
-            description:
-              'Parent document, use id from getDataBeforeImport, leave empty string if not provided, it is not necessery, please feel free to pass empty string'
-          },
-          name: {
-            type: 'string',
-            description: 'Name for file, try to recognize from user input, if not provided use attached file name'
+              'Complete updated memory about the user: their preferences, context, personal info, interests, etc.'
           }
-        }
+        },
+        required: ['memory']
       },
       description:
-        'Parse pdf to markdown and save it, using for import files. Use only if provide file in current message and user require to import/save, if file not provided ask user to attach it. You MUST call getDataBeforeImport tool before for get ids. Use file name as name if user not provide it, don`t use old parameters. You can ask user about folder if you have not enough data to get folder id'
+        'Update information about the user. Use this when user shares personal information, preferences, or context about themselves.'
     }
   },
-  saveFile
+  updateUserMemory,
+  'direct'
+)
+
+registerTool(
+  {
+    type: 'function',
+    function: {
+      name: 'get_user_memory',
+      parameters: {
+        type: 'object',
+        properties: {}
+      },
+      description: 'Retrieve current memory about the user. Check what information is stored about them.'
+    }
+  },
+  getUserMemory,
+  'any'
+)
+
+registerTool(
+  {
+    type: 'function',
+    function: {
+      name: 'clear_user_memory',
+      parameters: {
+        type: 'object',
+        properties: {}
+      },
+      description: 'Clear all memory about the user. Use only if user explicitly asks to forget everything about them.'
+    }
+  },
+  clearUserMemory,
+  'direct'
+)
+
+// Shared context tools
+registerTool<object>(
+  {
+    type: 'function',
+    function: {
+      name: 'update_shared_context',
+      parse: JSON.parse,
+      parameters: {
+        type: 'object',
+        properties: {
+          context: {
+            type: 'string',
+            description:
+              'Complete updated shared context: language preference, timezone, general non-personal settings, etc.'
+          }
+        },
+        required: ['context']
+      },
+      description:
+        'Update shared context that can be used in both direct and group chats. Use for preferences that apply to group chats (like how to address user in public), language, timezone, or public settings.'
+    }
+  },
+  updateSharedContext,
+  'direct'
+)
+
+registerTool(
+  {
+    type: 'function',
+    function: {
+      name: 'get_shared_context',
+      parameters: {
+        type: 'object',
+        properties: {}
+      },
+      description: 'Retrieve current shared context. Check language preference, timezone, or other general settings.'
+    }
+  },
+  getSharedContext,
+  'any'
+)
+
+registerTool(
+  {
+    type: 'function',
+    function: {
+      name: 'clear_history',
+      parameters: {
+        type: 'object',
+        properties: {}
+      },
+      description:
+        'Clear conversation history. Use when user asks to clear/forget the conversation history or start fresh. This removes all previous messages but keeps assistant and user memory.'
+    }
+  },
+  clearHistory,
+  'direct'
+)
+
+registerTool(
+  {
+    type: 'function',
+    function: {
+      name: 'get_history_summary',
+      parameters: {
+        type: 'object',
+        properties: {}
+      },
+      description:
+        'Get a summary of the conversation history. Use this instead of relying on full message history when you need context about previous discussions but want to save tokens. Returns a concise summary of past conversations.'
+    }
+  },
+  getHistorySummary,
+  'direct'
 )
 
 export function getTools (
   workspaceClient: WorkspaceClient,
+  contextMode: 'direct' | 'thread',
   user: AccountUuid | undefined
 ): RunnableTools<BaseFunctionsArgs> {
   const result: (RunnableToolFunctionWithoutParse | RunnableToolFunctionWithParse<any>)[] = []
   for (const tool of tools) {
-    const res: RunnableToolFunctionWithoutParse | RunnableToolFunctionWithParse<any> = {
-      ...tool[0],
-      function: {
-        ...tool[0].function,
-        function: (args: any) => tool[1](workspaceClient, user, args)
+    if (tool[2] === contextMode || tool[2] === 'any') {
+      const res: RunnableToolFunctionWithoutParse | RunnableToolFunctionWithParse<any> = {
+        ...tool[0],
+        function: {
+          ...tool[0].function,
+          function: (args: any) => tool[1](workspaceClient, user, args)
+        }
       }
+      result.push(res)
     }
-    result.push(res)
   }
   return result
 }

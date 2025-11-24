@@ -835,7 +835,11 @@
         "AVATAR_PATH": "./assets/avatar.png",
         "AVATAR_CONTENT_TYPE": ".png",
         "STORAGE_CONFIG": "datalake|http://huly.local:4030",
-        "LOVE_ENDPOINT": "http://localhost:8096"
+        "LOVE_ENDPOINT": "http://huly.local:8096",
+        "QUEUE_CONFIG": "huly.local:19092",
+        "OPENAI_MODEL": "openai/gpt-oss-20b",
+        "REGION": "",
+        "QUEUE_REGION": "",
       },
       "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
       "sourceMaps": true,

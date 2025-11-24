@@ -38,19 +38,17 @@ import core, {
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
-import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
-import { getAccountClient } from '@hcengineering/server-client'
+import { getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { htmlToMarkup, jsonToHTML, jsonToMarkup, markupToJSON } from '@hcengineering/text'
 import { encodingForModel, getEncoding } from 'js-tiktoken'
 import OpenAI from 'openai'
 
 import chunter from '@hcengineering/chunter'
-import { StorageAdapter } from '@hcengineering/server-core'
+import { ConsumerControl, StorageAdapter } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
 import config from './config'
-import { DbStorage } from './storage'
 import { tryAssignToWorkspace } from './utils/account'
 import { summarizeMessages, translateHtml } from './utils/openai'
 import { WorkspaceClient } from './workspace/workspaceClient'
@@ -82,7 +80,6 @@ export class AIControl {
   constructor (
     readonly personUuid: AccountUuid,
     readonly socialIds: SocialId[],
-    private readonly storage: DbStorage,
     private readonly ctx: MeasureContext
   ) {
     this.openai =
@@ -93,10 +90,6 @@ export class AIControl {
         })
         : undefined
     this.storageAdapter = buildStorageFromConfig(storageConfigFromEnv())
-  }
-
-  async getWorkspaceRecord (workspace: string): Promise<WorkspaceInfoRecord | undefined> {
-    return await this.storage.getWorkspace(workspace)
   }
 
   async closeWorkspaceClient (workspace: WorkspaceUuid): Promise<void> {
@@ -128,10 +121,7 @@ export class AIControl {
     this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
   }
 
-  async createWorkspaceClient (
-    workspace: WorkspaceUuid,
-    info: WorkspaceInfoRecord
-  ): Promise<WorkspaceClient | undefined> {
+  async createWorkspaceClient (workspace: WorkspaceUuid): Promise<WorkspaceClient | undefined> {
     const isAssigned = await tryAssignToWorkspace(workspace, this.ctx)
 
     if (!isAssigned) {
@@ -140,13 +130,16 @@ export class AIControl {
     }
 
     const token = generateToken(this.personUuid, workspace, { service: 'aibot' })
-    const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
+    const accountClient = getAccountClient(token)
+    const wsLoginInfo = await accountClient.getLoginInfoByToken()
+
+    // Since AIBOT is internal service, always use internal transactor endpoint.
+    const endpoint = await getTransactorEndpoint(token, 'internal')
 
     if (!isWorkspaceLoginInfo(wsLoginInfo)) {
       this.ctx.error('Invalid workspace login info', { workspace, wsLoginInfo })
       return
     }
-
     const wsIds: WorkspaceIds = {
       uuid: wsLoginInfo.workspace,
       url: wsLoginInfo.workspaceUrl,
@@ -157,16 +150,14 @@ export class AIControl {
 
     return new WorkspaceClient(
       this.storageAdapter,
-      this.storage,
-      wsLoginInfo.endpoint,
+      endpoint,
       token,
       wsIds,
       this.personUuid,
       this.socialIds,
       this.ctx.newChild('create-workspace', {}, { span: false }),
       this.openai,
-      this.openaiEncoding,
-      info
+      this.openaiEncoding
     )
   }
 
@@ -178,8 +169,7 @@ export class AIControl {
     const initPromise = (async () => {
       try {
         if (!this.workspaces.has(workspace)) {
-          const record = (await this.getWorkspaceRecord(workspace)) ?? { workspace }
-          const client = await this.createWorkspaceClient(workspace, record)
+          const client = await this.createWorkspaceClient(workspace)
           if (client === undefined) {
             return
           }
@@ -192,6 +182,8 @@ export class AIControl {
         }
 
         this.updateClearInterval(workspace)
+      } catch (err: any) {
+        this.ctx.error('Unknown error', { err })
       } finally {
         this.connectingWorkspaces.delete(workspace)
       }
@@ -336,13 +328,21 @@ export class AIControl {
     }
   }
 
-  async processEvent (workspace: WorkspaceUuid, events: AIEventRequest[]): Promise<void> {
+  async processEvent (workspace: WorkspaceUuid, events: AIEventRequest[], control?: ConsumerControl): Promise<void> {
     if (this.openai === undefined) return
 
-    for (const event of events) {
-      const wsClient = await this.getWorkspaceClient(workspace)
-      if (wsClient === undefined) continue
-      await wsClient.processMessageEvent(event)
+    const i1 = setInterval(() => {
+      void control?.heartbeat()
+    }, 5000)
+    try {
+      for (const event of events) {
+        await control?.heartbeat()
+        const wsClient = await this.getWorkspaceClient(workspace)
+        if (wsClient === undefined) continue
+        await wsClient.processMessageEvent(event, control)
+      }
+    } finally {
+      clearInterval(i1)
     }
   }
 

@@ -23,14 +23,6 @@ export { serverAiBotId } from '@hcengineering/server-ai-bot'
 
 export function createModel (builder: Builder): void {
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
-    trigger: serverAiBot.trigger.OnUserStatus,
-    txMatch: {
-      objectClass: core.class.UserStatus
-    },
-    isAsync: true
-  })
-
-  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverAiBot.trigger.OnMessageSend,
     txMatch: {
       _class: core.class.TxCreateDoc,

@@ -13,90 +13,84 @@
 // limitations under the License.
 //
 
-import core, {
-  Doc,
-  PersonId,
-  systemAccountUuid,
-  Tx,
-  TxCreateDoc,
-  TxCUD,
-  TxProcessor,
-  TxUpdateDoc,
-  UserStatus
-} from '@hcengineering/core'
-import { TriggerControl } from '@hcengineering/server-core'
-import { getAccountBySocialKey } from '@hcengineering/server-contact'
+import { AccountUuid, Doc, PersonId, Ref, Tx, TxCreateDoc, TxProcessor } from '@hcengineering/core'
+import { PlatformQueueProducer, QueueTopic, TriggerControl } from '@hcengineering/server-core'
 import { aiBotEmailSocialKey, AIEventRequest } from '@hcengineering/ai-bot'
 import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
-import contact from '@hcengineering/contact'
+import contact, { Employee, SocialIdentity } from '@hcengineering/contact'
 
-import { createAccountRequest, hasAiEndpoint, sendAIEvents } from './utils'
+import { MarkupNodeType, markupToJSON, traverseNode } from '@hcengineering/text'
 
-async function OnUserStatus (txes: TxCUD<UserStatus>[], control: TriggerControl): Promise<Tx[]> {
-  if (!hasAiEndpoint()) {
-    return []
+interface WorkspaceCacheEntry {
+  primary: SocialIdentity
+  all: PersonId[]
+  employee: Employee
+}
+
+const cacheKey = 'ai-info'
+
+async function getAIWorkspaceID (control: TriggerControl): Promise<WorkspaceCacheEntry | undefined> {
+  let wsEntry: WorkspaceCacheEntry | number | undefined = control.cache.get(cacheKey) as
+    | WorkspaceCacheEntry
+    | number
+    | undefined
+  if (typeof wsEntry === 'number') {
+    if (Date.now() - wsEntry < 5000) {
+      // Check every 5 seconds.
+      return undefined
+    }
+    wsEntry = undefined
   }
-
-  for (const tx of txes) {
-    if (![core.class.TxCreateDoc, core.class.TxUpdateDoc].includes(tx._class)) {
-      continue
-    }
-
-    if (tx._class === core.class.TxCreateDoc) {
-      const createTx = tx as TxCreateDoc<UserStatus>
-      const status = TxProcessor.createDoc2Doc(createTx)
-      if (status.user === systemAccountUuid) {
-        continue
-      }
-    }
-
-    if (tx._class === core.class.TxUpdateDoc) {
-      const updateTx = tx as TxUpdateDoc<UserStatus>
-      const val = updateTx.operations.online
-      if (val !== true) {
-        continue
-      }
-
-      const status = (await control.findAll(control.ctx, core.class.UserStatus, { _id: updateTx.objectId }))[0]
-      if (status === undefined || status.user === systemAccountUuid) {
-        continue
-      }
-    }
-
-    const socialIdentity = (
+  if (wsEntry === undefined) {
+    const primaryIdentity = (
       await control.findAll(control.ctx, contact.class.SocialIdentity, { key: aiBotEmailSocialKey }, { limit: 1 })
     )[0]
 
-    if (socialIdentity === undefined) {
-      await createAccountRequest(control.workspace.uuid, control.ctx)
-      return []
-    }
-  }
+    if (primaryIdentity === undefined) return undefined
 
-  return []
+    const allAiSocialIds: PersonId[] = (
+      await control.findAll(control.ctx, contact.class.SocialIdentity, {
+        attachedTo: primaryIdentity.attachedTo
+      })
+    ).map((it) => it._id)
+
+    const employee = (
+      await control.findAll(
+        control.ctx,
+        contact.mixin.Employee,
+        { _id: primaryIdentity.attachedTo as Ref<Employee> },
+        { limit: 1 }
+      )
+    ).shift()
+    if (employee === undefined) {
+      return undefined
+    }
+    wsEntry = {
+      all: allAiSocialIds,
+      primary: primaryIdentity,
+      employee
+    }
+    control.cache.set(cacheKey, wsEntry)
+  }
+  return wsEntry
 }
 
 async function OnMessageSend (originTxs: TxCreateDoc<ChatMessage>[], control: TriggerControl): Promise<Tx[]> {
-  if (!hasAiEndpoint()) {
+  const wsID = await getAIWorkspaceID(control)
+  if (wsID === undefined) {
+    // No activity for trigger
     return []
   }
-  const { account } = control.ctx.contextData
-  const primaryIdentity = (
-    await control.findAll(control.ctx, contact.class.SocialIdentity, { key: aiBotEmailSocialKey }, { limit: 1 })
-  )[0]
-
-  if (primaryIdentity === undefined) return []
-
-  const allAiSocialIds: PersonId[] = account.socialIds.includes(primaryIdentity._id)
-    ? account.socialIds
-    : (
-        await control.findAll(control.ctx, contact.class.SocialIdentity, {
-          attachedTo: primaryIdentity.attachedTo
-        })
-      ).map((it) => it._id)
 
   const { hierarchy } = control
-  const txes = originTxs.filter((it) => !allAiSocialIds.includes(it.modifiedBy))
+
+  const producer = control.queue?.getProducer<AIEventRequest>(control.ctx, QueueTopic.AIQueue)
+  if (producer === undefined) {
+    return []
+  }
+
+  // IGNORE AI operations
+  const txes = originTxs.filter((it) => !wsID.all.includes(it.modifiedBy))
 
   if (txes.length === 0) {
     return []
@@ -107,14 +101,31 @@ async function OnMessageSend (originTxs: TxCreateDoc<ChatMessage>[], control: Tr
 
     const isThread = hierarchy.isDerived(tx.objectClass, chunter.class.ThreadMessage)
     const docClass = isThread ? (message as ThreadMessage).objectClass : message.attachedToClass
+    // Find out it message contains a mention of AIBot
+    try {
+      const jsonMarkup = markupToJSON(message.message)
+      let mentioned = false
+      traverseNode(jsonMarkup, (node) => {
+        if (node.type === MarkupNodeType.reference && node.attrs != null) {
+          const objectId = node.attrs.id as Ref<Doc>
+          if (objectId === wsID.primary.attachedTo) {
+            // AI bot has mentioned
+            mentioned = true
+            return false
+          }
+        }
+        return !mentioned
+      })
 
-    if (!hierarchy.isDerived(docClass, chunter.class.DirectMessage)) {
-      continue
+      if (docClass === chunter.class.DirectMessage) {
+        await onBotDirectMessageSend(control, message, 'direct', wsID, producer)
+      } else if (mentioned) {
+        await onBotDirectMessageSend(control, message, 'mentioned', wsID, producer)
+      }
+    } catch (err: any) {
+      control.ctx.error('Failed to prepare a ai bot message')
     }
-
-    if (docClass === chunter.class.DirectMessage) {
-      await onBotDirectMessageSend(control, message)
-    }
+    // }
   }
 
   return []
@@ -154,52 +165,63 @@ async function getMessageDoc (message: ChatMessage, control: TriggerControl): Pr
     const _id = thread.objectId
     const _class = thread.objectClass
 
-    return (await control.findAll(control.ctx, _class, { _id }))[0]
+    return (await control.queryFind(control.ctx, _class, { _id }))[0]
   } else {
     const _id = message.attachedTo
     const _class = message.attachedToClass
 
-    return (await control.findAll(control.ctx, _class, { _id }))[0]
+    return (await control.queryFind(control.ctx, _class, { _id }))[0]
   }
 }
 
-async function isDirectAvailable (direct: DirectMessage, control: TriggerControl): Promise<boolean> {
+function isDirectAvailable (direct: DirectMessage, control: TriggerControl, wsID: WorkspaceCacheEntry): boolean {
   const { members } = direct
-  const account = await getAccountBySocialKey(control, aiBotEmailSocialKey)
 
-  if (account == null) {
-    return false
-  }
-
-  if (!members.includes(account)) {
+  if (!members.includes(wsID.employee.personUuid as AccountUuid)) {
     return false
   }
 
   return members.length === 2
 }
 
-async function onBotDirectMessageSend (control: TriggerControl, message: ChatMessage): Promise<void> {
-  const direct = (await getMessageDoc(message, control)) as DirectMessage
-  if (direct === undefined) {
-    return
+async function onBotDirectMessageSend (
+  control: TriggerControl,
+  message: ChatMessage,
+  kind: 'direct' | 'mentioned',
+  wsID: WorkspaceCacheEntry,
+  producer: PlatformQueueProducer<AIEventRequest>
+): Promise<void> {
+  if (kind === 'direct') {
+    const direct = (await getMessageDoc(message, control)) as DirectMessage
+    if (direct === undefined) {
+      return
+    }
+    const isAvailable = isDirectAvailable(direct, control, wsID)
+    if (!isAvailable) {
+      return
+    }
+    let messageEvent: AIEventRequest
+    if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
+      messageEvent = getThreadMessageData(message as ThreadMessage)
+    } else {
+      messageEvent = getMessageData(direct, message)
+    }
+    await producer.send(control.ctx, control.workspace.uuid, [messageEvent])
+  } else if (kind === 'mentioned') {
+    let messageEvent: AIEventRequest
+    if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
+      messageEvent = getThreadMessageData(message as ThreadMessage)
+    } else {
+      messageEvent = getMessageData(message, message)
+    }
+
+    await producer.send(control.ctx, control.workspace.uuid, [messageEvent])
   }
-  const isAvailable = await isDirectAvailable(direct, control)
-  if (!isAvailable) {
-    return
-  }
-  let messageEvent: AIEventRequest
-  if (control.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
-    messageEvent = getThreadMessageData(message as ThreadMessage)
-  } else {
-    messageEvent = getMessageData(direct, message)
-  }
-  await sendAIEvents([messageEvent], control.workspace.uuid, control.ctx)
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
-    OnUserStatus,
     OnMessageSend
   }
 })

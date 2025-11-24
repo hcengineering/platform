@@ -11,7 +11,6 @@ import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
 import { setDBExtraOptions } from '@hcengineering/postgres'
 import { serverConfigFromEnv } from '@hcengineering/server'
-import serverAiBot from '@hcengineering/server-ai-bot'
 import serverCalendar from '@hcengineering/server-calendar'
 import serverCard from '@hcengineering/server-card'
 import serverCore, {
@@ -84,7 +83,6 @@ setMetadata(serverToken.metadata.Service, 'transactor')
 setMetadata(serverNotification.metadata.MailUrl, config.mailUrl ?? '')
 setMetadata(serverNotification.metadata.MailAuthToken, config.mailAuthToken)
 setMetadata(serverNotification.metadata.WebPushUrl, config.webPushUrl)
-setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
 setMetadata(serverCalendar.metadata.EndpointURL, process.env.CALENDAR_URL)
 setMetadata(serverCard.metadata.CommunicationEnabled, process.env.COMMUNICATION_API_ENABLED === 'true')
 

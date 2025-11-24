@@ -17,8 +17,6 @@ import OpenAI from 'openai'
 
 interface Config {
   AccountsURL: string
-  ConfigurationDB: string
-  MongoURL: string
   ServerSecret: string
   ServiceID: string
   FirstName: string
@@ -49,8 +47,6 @@ const parseNumber = (str: string | undefined): number | undefined => (str !== un
 const config: Config = (() => {
   const params: Partial<Config> = {
     AccountsURL: process.env.ACCOUNTS_URL,
-    ConfigurationDB: process.env.CONFIGURATION_DB ?? '%ai-bot',
-    MongoURL: process.env.MONGO_URL,
     ServerSecret: process.env.SERVER_SECRET,
     ServiceID: process.env.SERVICE_ID ?? 'ai-bot-service',
     FirstName: process.env.FIRST_NAME,
@@ -61,8 +57,12 @@ const config: Config = (() => {
     Password: process.env.PASSWORD ?? 'password',
     OpenAIKey: process.env.OPENAI_API_KEY ?? '',
     OpenAIModel: (process.env.OPENAI_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
-    OpenAITranslateModel: (process.env.OPENAI_TRANSLATE_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
-    OpenAISummaryModel: (process.env.OPENAI_SUMMARY_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
+    OpenAITranslateModel: (process.env.OPENAI_TRANSLATE_MODEL ??
+      process.env.OPENAI_MODEL ??
+      'gpt-4o-mini') as OpenAI.ChatModel,
+    OpenAISummaryModel: (process.env.OPENAI_SUMMARY_MODEL ??
+      process.env.OPENAI_MODEL ??
+      'gpt-4o-mini') as OpenAI.ChatModel,
     OpenAIBaseUrl: process.env.OPENAI_BASE_URL ?? '',
     MaxContentTokens: parseNumber(process.env.MAX_CONTENT_TOKENS) ?? 128 * 100,
     MaxHistoryRecords: parseNumber(process.env.MAX_HISTORY_RECORDS) ?? 500,

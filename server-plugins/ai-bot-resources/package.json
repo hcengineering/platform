@@ -50,6 +50,7 @@
     "@hcengineering/server-core": "workspace:^0.7.17",
     "@hcengineering/server-templates": "workspace:^0.7.0",
     "@hcengineering/server-token": "workspace:^0.7.17",
-    "@hcengineering/templates": "workspace:^0.7.0"
+    "@hcengineering/templates": "workspace:^0.7.0",
+    "@hcengineering/text": "workspace:^0.7.0"
   }
 }

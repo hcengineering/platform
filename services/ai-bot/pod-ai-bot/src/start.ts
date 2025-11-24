@@ -14,20 +14,26 @@
 //
 import { setMetadata } from '@hcengineering/platform'
 import serverClient, { withRetry } from '@hcengineering/server-client'
-import { initStatisticsContext } from '@hcengineering/server-core'
+import {
+  initStatisticsContext,
+  QueueTopic,
+  QueueWorkspaceEvent,
+  QueueWorkspaceMessage
+} from '@hcengineering/server-core'
 import serverToken, { generateToken } from '@hcengineering/server-token'
 
 import { getClient as getAccountClient } from '@hcengineering/account-client'
+import { AIEventRequest } from '@hcengineering/ai-bot'
 import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import { newMetrics, type SocialId } from '@hcengineering/core'
+import { getPlatformQueue } from '@hcengineering/kafka'
 import { join } from 'path'
+import { updateDeepgramBilling } from './billing'
 import config from './config'
 import { AIControl } from './controller'
 import { registerLoaders } from './loaders'
 import { createServer, listen } from './server/server'
-import { getDbStorage } from './storage'
 import { getAccountUuid } from './utils/account'
-import { updateDeepgramBilling } from './billing'
 
 export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
@@ -36,6 +42,8 @@ export const start = async (): Promise<void> => {
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
 
   registerLoaders()
+
+  const queue = getPlatformQueue(QueueTopic.AIQueue)
 
   const ctx = initStatisticsContext('ai-bot-service', {
     factory: () =>
@@ -64,13 +72,43 @@ export const start = async (): Promise<void> => {
   }
   ctx.info('AI person uuid', { personUuid })
 
-  const storage = await getDbStorage()
   const socialIds: SocialId[] = await getAccountClient(
     config.AccountsURL,
     generateToken(personUuid, undefined, { service: 'aibot' })
   ).getSocialIds()
 
-  const aiControl = new AIControl(personUuid, socialIds, storage, ctx)
+  const aiControl = new AIControl(personUuid, socialIds, ctx)
+
+  // Create a workspace consumer
+  // Create queue consumer's
+  //
+  const workspaceConsumer = queue.createConsumer<QueueWorkspaceMessage>(
+    ctx,
+    QueueTopic.Workspace,
+    'ai-bot',
+    async (ctx, message, control) => {
+      try {
+        if (message.value.type === QueueWorkspaceEvent.Up) {
+          await aiControl.connect(message.workspace)
+        }
+      } catch (err: any) {
+        ctx.error('failed to handle operation', { error: err.message })
+      }
+    }
+  )
+
+  const aiEventConsumer = queue.createConsumer<AIEventRequest>(
+    ctx,
+    QueueTopic.AIQueue,
+    'ai-bot',
+    async (ctx, message, control) => {
+      try {
+        await aiControl.processEvent(message.workspace, [message.value], control)
+      } catch (err: any) {
+        ctx.error('failed to handle ai event', { error: err.message })
+      }
+    }
+  )
 
   const app = createServer(aiControl, ctx)
   const server = listen(app, config.Port)
@@ -91,11 +129,12 @@ export const start = async (): Promise<void> => {
   }
 
   const onClose = (): void => {
+    void workspaceConsumer.close()
+    void aiEventConsumer.close()
     if (billingIntervalId !== undefined) {
       clearInterval(billingIntervalId)
     }
     void aiControl.close()
-    storage.close()
     server.close(() => process.exit())
   }
 
