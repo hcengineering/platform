@@ -173,7 +173,7 @@
     <div class="min-h-3 flex-no-shrink" />
 
     <SavedView alias={currentApplication?.alias} on:select={(res) => (menuSelection = res.detail)} />
-    {#if (starred.length > 0) && !model.hideStarred}
+    {#if starred.length > 0 && !model.hideStarred}
       <StarredNav
         label={preference.string.Starred}
         spaces={starred}
