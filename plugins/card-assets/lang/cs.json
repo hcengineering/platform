@@ -59,6 +59,7 @@
     "ForbidUpdateCard": "Zakázat aktualizaci karty",
     "ForbidCreateCardPermission": "Zakázat vytváření karet",
     "ForbidAddTagPermission": "Zakázat přidávání štítků",
-    "ForbidRemoveTag": "Zakázat odebírání štítků"
+    "ForbidRemoveTag": "Zakázat odebírání štítků",
+    "Duplicate": "Duplikovat"
   }
 }

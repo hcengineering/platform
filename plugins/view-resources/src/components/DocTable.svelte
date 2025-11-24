@@ -86,7 +86,7 @@
             disabled: true
           }
         : {}
-    if (attribute.collectionAttr) {
+    if (attribute.collectionAttr || attribute.attribute?.type?._class === core.class.TypeIdentifier) {
       return { object, ...attribute.props, ...readonlyParams }
     }
     if (attribute.attribute?.type._class === core.class.EnumOf) {

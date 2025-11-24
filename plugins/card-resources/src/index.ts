@@ -33,7 +33,8 @@ import {
   checkRelationsSectionVisibility,
   getSpaceAccessPublicLink,
   canGetSpaceAccessPublicLink,
-  cardFactory
+  cardFactory,
+  duplicateCard
 } from './utils'
 import ManageMasterTagsContent from './components/settings/ManageMasterTagsContent.svelte'
 import ManageMasterTagsTools from './components/settings/ManageMasterTagsTools.svelte'
@@ -144,6 +145,7 @@ export default async (): Promise<Resources> => ({
   },
   actionImpl: {
     DeleteMasterTag: deleteMasterTag,
+    DuplicateCard: duplicateCard,
     EditSpace: editSpace
   },
   function: {

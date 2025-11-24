@@ -78,7 +78,7 @@
     "@hcengineering/server-storage": "^0.7.16",
     "@hcengineering/server-token": "^0.7.17",
     "@hcengineering/integration-client": "workspace:^0.7.0",
-    "@hcengineering/kafka": "^0.7.16",
+    "@hcengineering/kafka": "^0.7.18",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
