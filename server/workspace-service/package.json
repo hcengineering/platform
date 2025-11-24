@@ -58,7 +58,7 @@
     "@hcengineering/analytics": "^0.7.17",
     "@hcengineering/account-client": "^0.7.19",
     "@hcengineering/server-backup": "workspace:^0.7.0",
-    "@hcengineering/postgres": "^0.7.18",
+    "@hcengineering/postgres": "^0.7.19",
     "@hcengineering/mongo": "^0.7.16"
   }
 }

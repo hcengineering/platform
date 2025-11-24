@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@hcengineering/mongo": "^0.7.16",
-    "@hcengineering/postgres": "^0.7.18",
+    "@hcengineering/postgres": "^0.7.19",
     "mongodb": "^6.16.0",
     "postgres": "^3.4.7",
     "@hcengineering/platform": "^0.7.18",
