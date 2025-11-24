@@ -291,8 +291,13 @@ ${sharedContext !== '' ? `**Shared preferences:**\n${sharedContext}\n` : ''}
       opt
     )
 
-    const str = await res.finalContent()
+    let str = await res.finalContent()
     const usage = await res.totalUsage()
+
+    const pos = (str ?? '').indexOf('</think>')
+    if (pos > 0) {
+      str = (str ?? '').substring(pos + 8)
+    }
 
     if (usage != null) {
       void pushTokensData(workspaceClient.ctx, [

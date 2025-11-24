@@ -333,12 +333,13 @@ export class AIControl {
 
     const i1 = setInterval(() => {
       void control?.heartbeat()
-    }, 5000)
+    }, 1000)
     try {
       for (const event of events) {
         await control?.heartbeat()
         const wsClient = await this.getWorkspaceClient(workspace)
         if (wsClient === undefined) continue
+        this.ctx.info('processing event', event)
         await wsClient.processMessageEvent(event, control)
       }
     } finally {
