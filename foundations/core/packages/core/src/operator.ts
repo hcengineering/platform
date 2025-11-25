@@ -61,7 +61,13 @@ function $pull (document: Doc, keyval: Record<string, PropertyType>): void {
     if (doc[key] === undefined) {
       doc[key] = []
     }
-    const arr = doc[key] as Array<any>
+    // Ensure doc[key] is an array before attempting to filter
+    if (!Array.isArray(doc[key])) {
+      Analytics.handleError(new Error(`$pull operation on non-array field: ${key}, value: ${JSON.stringify(doc[key])}`))
+      doc[key] = []
+      continue
+    }
+    const arr = doc[key]
     const kvk = keyval[key]
     if (typeof kvk === 'object' && kvk !== null) {
       const { $in } = kvk as PullArray<PropertyType>
@@ -111,9 +117,15 @@ function $update (document: Doc, keyval: Record<string, PropertyType>): void {
     if (doc[key] === undefined) {
       doc[key] = []
     }
+    // Ensure doc[key] is an array before attempting to update
+    if (!Array.isArray(doc[key])) {
+      Analytics.handleError(new Error(`$update operation on non-array field: ${key}, value: ${JSON.stringify(doc[key])}`))
+      doc[key] = []
+      continue
+    }
     const val = keyval[key]
     if (typeof val === 'object') {
-      const arr = doc[key] as Array<any>
+      const arr = doc[key]
       const desc = val as QueryUpdate<PropertyType>
       for (const m of matchArrayElement(arr, desc.$query)) {
         for (const [k, v] of Object.entries(desc.$update)) {
@@ -128,7 +140,19 @@ function $inc (document: Doc, keyval: Record<string, number>): void {
   const doc = document as unknown as Record<string, number | undefined>
   for (const key in keyval) {
     const cur = doc[key] ?? 0
-    doc[key] = cur + keyval[key]
+    // Ensure current value is a number
+    if (typeof cur !== 'number' || isNaN(cur)) {
+      Analytics.handleError(new Error(`$inc operation on non-numeric field: ${key}, value: ${JSON.stringify(doc[key])}`))
+      doc[key] = keyval[key]
+      continue
+    }
+    const increment = keyval[key]
+    // Ensure increment value is a valid number
+    if (typeof increment !== 'number' || isNaN(increment)) {
+      Analytics.handleError(new Error(`$inc operation with invalid increment: ${key}, increment: ${JSON.stringify(increment)}`))
+      continue
+    }
+    doc[key] = cur + increment
   }
 }
 
