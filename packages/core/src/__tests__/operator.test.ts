@@ -395,4 +395,141 @@ describe('operator', () => {
       expect(() => _getOperator('$invalid')).toThrow('unknown operator: $invalid')
     })
   })
+
+  describe('operator error handling', () => {
+    describe('$pull with non-array values', () => {
+      it('should handle string value instead of array', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, field: 'not-an-array' } as unknown as Doc
+        const operator = _getOperator('$pull')
+        operator(doc, { field: 'value' })
+        expect((doc as any).field).toEqual([])
+      })
+
+      it('should handle object value instead of array', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, field: { key: 'value' } } as unknown as Doc
+        const operator = _getOperator('$pull')
+        operator(doc, { field: 'value' })
+        expect((doc as any).field).toEqual([])
+      })
+
+      it('should handle number value instead of array', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, field: 42 } as unknown as Doc
+        const operator = _getOperator('$pull')
+        operator(doc, { field: 'value' })
+        expect((doc as any).field).toEqual([])
+      })
+
+      it('should handle null value', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, field: null } as unknown as Doc
+        const operator = _getOperator('$pull')
+        operator(doc, { field: 'value' })
+        expect((doc as any).field).toEqual([])
+      })
+
+      it('should work correctly with valid array', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, field: [1, 2, 3] } as unknown as Doc
+        const operator = _getOperator('$pull')
+        operator(doc, { field: 2 })
+        expect((doc as any).field).toEqual([1, 3])
+      })
+    })
+
+    describe('$update with non-array values', () => {
+      it('should handle string value instead of array', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, field: 'not-an-array' } as unknown as Doc
+        const operator = _getOperator('$update')
+        operator(doc, { field: { $query: { id: 1 }, $update: { value: 'new' } } })
+        expect((doc as any).field).toEqual([])
+      })
+
+      it('should handle object value instead of array', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, field: { key: 'value' } } as unknown as Doc
+        const operator = _getOperator('$update')
+        operator(doc, { field: { $query: { id: 1 }, $update: { value: 'new' } } })
+        expect((doc as any).field).toEqual([])
+      })
+
+      it('should handle null value', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, field: null } as unknown as Doc
+        const operator = _getOperator('$update')
+        operator(doc, { field: { $query: { id: 1 }, $update: { value: 'new' } } })
+        expect((doc as any).field).toEqual([])
+      })
+
+      it('should work correctly with valid array', () => {
+        const doc: Doc = {
+          _id: '1' as any,
+          _class: 'test' as any,
+          field: [
+            { id: 1, value: 'old' },
+            { id: 2, value: 'keep' }
+          ]
+        } as unknown as Doc
+        const operator = _getOperator('$update')
+        operator(doc, { field: { $query: { id: 1 }, $update: { value: 'new' } } })
+        expect((doc as any).field).toEqual([
+          { id: 1, value: 'new' },
+          { id: 2, value: 'keep' }
+        ])
+      })
+    })
+
+    describe('$inc with non-numeric values', () => {
+      it('should handle NaN current value', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, count: NaN } as unknown as Doc
+        const operator = _getOperator('$inc')
+        operator(doc, { count: 5 })
+        expect((doc as any).count).toBe(5)
+      })
+
+      it('should handle string current value', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, count: 'not-a-number' } as unknown as Doc
+        const operator = _getOperator('$inc')
+        operator(doc, { count: 5 })
+        expect((doc as any).count).toBe(5)
+      })
+
+      it('should handle NaN increment value', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, count: 10 } as unknown as Doc
+        const operator = _getOperator('$inc')
+        operator(doc, { count: NaN })
+        expect((doc as any).count).toBe(10)
+      })
+
+      it('should handle string increment value', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, count: 10 } as unknown as Doc
+        const operator = _getOperator('$inc')
+        operator(doc, { count: 'not-a-number' as any })
+        expect((doc as any).count).toBe(10)
+      })
+
+      it('should handle undefined current value (should default to 0)', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any } as unknown as Doc
+        const operator = _getOperator('$inc')
+        operator(doc, { count: 5 })
+        expect((doc as any).count).toBe(5)
+      })
+
+      it('should work correctly with valid numbers', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, count: 10 } as unknown as Doc
+        const operator = _getOperator('$inc')
+        operator(doc, { count: 5 })
+        expect((doc as any).count).toBe(15)
+      })
+
+      it('should handle negative increments', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, count: 10 } as unknown as Doc
+        const operator = _getOperator('$inc')
+        operator(doc, { count: -3 })
+        expect((doc as any).count).toBe(7)
+      })
+
+      it('should handle zero increment', () => {
+        const doc: Doc = { _id: '1' as any, _class: 'test' as any, count: 10 } as unknown as Doc
+        const operator = _getOperator('$inc')
+        operator(doc, { count: 0 })
+        expect((doc as any).count).toBe(10)
+      })
+    })
+  })
 })
