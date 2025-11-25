@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/kafka
 
-This log was last generated on Wed, 19 Nov 2025 06:47:45 GMT and should not be manually modified.
+This log was last generated on Sat, 22 Nov 2025 15:29:49 GMT and should not be manually modified.
+
+## 0.7.18
+Sat, 22 Nov 2025 15:29:49 GMT
+
+### Patches
+
+- Compress Kafka messages
 
 ## 0.7.17
 Wed, 19 Nov 2025 06:47:45 GMT
