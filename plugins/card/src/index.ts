@@ -169,7 +169,8 @@ const cardPlugin = plugin(cardId, {
     Space: '' as Asset,
     Expand: '' as Asset,
     Feed: '' as Asset,
-    All: '' as Asset
+    All: '' as Asset,
+    Duplicate: '' as Asset
   },
   extensions: {
     EditCardExtension: '' as ComponentExtensionId
