@@ -127,66 +127,11 @@ export async function connect (title: string): Promise<Client | undefined> {
   setMetadata(presentation.metadata.WorkspaceName, workspaceLoginInfo.name ?? workspaceLoginInfo.workspaceUrl)
   setMetadata(presentation.metadata.Endpoint, workspaceLoginInfo.endpoint)
 
-  const fetchWorkspace = await getResource(login.function.FetchWorkspace)
-
-  let workspace: WorkspaceInfoWithStatus | undefined
-
-  while (true) {
-    const fetchResult = await ctx.with('fetch-workspace', {}, async () => await fetchWorkspace())
-
-    if (!fetchResult[2]) {
-      // Connection error happen, wait and retry
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      continue
-    }
-
-    workspace = fetchResult[1]
-    if (workspace == null) {
-      // something went wrong, workspace not exist, redirect to login
-      console.error(
-        `Error fetching workspace ${wsUrl}. It might no longer exist or be inaccessible. Please try to log in again.`
-      )
-      navigate({
-        path: [loginId]
-      })
-      return
-    }
-    break
-  }
+  // Sequential: fetch workspace and wait for creation if needed
+  const workspace = await fetchReadyWorkspace({ ctx, wsUrl })
+  if (workspace === undefined) return undefined
 
   setMetadata(presentation.metadata.WorkspaceDataId, workspace.dataId)
-
-  if (isWorkspaceCreating(workspace.mode)) {
-    while (true) {
-      if (wsUrl !== getCurrentLocation().path[1]) return
-
-      workspaceCreating.set(workspace.processingProgress ?? 0)
-      const fetchResult = await ctx.with('fetch-workspace', {}, async () => await fetchWorkspace())
-      if (!fetchResult[2]) {
-        // Connection error happen, wait and retry
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        continue
-      }
-      workspace = fetchResult[1]
-
-      if (workspace == null) {
-        // something went wrong, workspace not exist, redirect to login
-        navigate({
-          path: [loginId]
-        })
-        return
-      }
-
-      workspaceCreating.set(workspace.processingProgress ?? 0)
-
-      if (!isWorkspaceCreating(workspace.mode)) {
-        workspaceCreating.set(-1)
-        break
-      }
-
-      await new Promise<void>((resolve) => setTimeout(resolve, 1000))
-    }
-  }
 
   setPresentationCookie(token, workspaceLoginInfo.workspace)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, workspaceLoginInfo?.endpoint)
@@ -203,10 +148,9 @@ export async function connect (title: string): Promise<Client | undefined> {
     return
   }
 
+  // Sequential: purge client if token changed
   let tokenChanged = false
-
   if (_token !== token && _client !== undefined) {
-    // We need to flush all data from memory
     await ctx.with('purge-client', {}, async () => {
       await purgeClient()
       await purgeCommunicationClient()
@@ -222,8 +166,184 @@ export async function connect (title: string): Promise<Client | undefined> {
   }
   _token = token
 
+  // Parallel: create client and fetch social IDs
+  const [clientResult, socialIds] = await Promise.all([
+    createTransactorClient({ ctx, token, endpoint, wsUrl, selectWorkspace, tokenChanged }),
+    fetchSocialIds(token)
+  ])
+
+  const { client: newClient } = clientResult
+  _client = newClient
+
+  const me: Account = {
+    uuid: account,
+    role: workspaceLoginInfo.role,
+    primarySocialId: pickPrimarySocialId(socialIds)._id,
+    socialIds: socialIds.map((si) => si._id),
+    fullSocialIds: socialIds
+  }
+
+  // Parallel: ensure employee and find model version
+  const [employeeSuccess, modelVersion] = await Promise.all([
+    ensureEmployeeAndSpace({ ctx, workspaceLoginInfo, newClient }, me, socialIds),
+    findModelVersion(ctx, newClient),
+    ctx.with('set-client', {}, async () => {
+      await setClient(newClient)
+      await setCommunicationClient(newClient)
+    })
+  ])
+  if (!employeeSuccess) return undefined
+  if (modelVersion === undefined) return undefined
+
+  const hasEmail = (si: SocialId): boolean => {
+    return [SocialIdType.EMAIL, SocialIdType.GOOGLE, SocialIdType.GITHUB].some((type) => type === si.type)
+  }
+  const email = me.fullSocialIds.find((si) => hasEmail(si) && si.isDeleted !== true)?.key
+  const socialId = me.fullSocialIds.find((si) => si._id === me.primarySocialId)?.key
+
+  const data: Record<string, any> = {
+    social_id: email ?? socialId ?? account,
+    primary_social_id: socialId,
+    account_uuid: account,
+    role: workspaceLoginInfo.role,
+    branding: workspace.branding ?? 'unknown'
+  }
+
+  const guestRole =
+    workspaceLoginInfo.role === AccountRole.ReadOnlyGuest ||
+    workspaceLoginInfo.role === AccountRole.DocGuest ||
+    workspaceLoginInfo.role === AccountRole.Guest
+  if (guestRole) {
+    data.visited_workspace = workspace.url
+    data.visited_workspace_uuid = workspace.uuid
+  } else {
+    data.workspace = workspace.url
+    data.workspace_uuid = workspace.uuid
+  }
+
+  Analytics.setUser(data.social_id, data)
+  Analytics.setWorkspace(workspace.url, guestRole)
+  Analytics.handleEvent(WorkbenchEvents.Connect)
+  console.log('Logged in with account: ', me)
+  setCurrentAccount(me)
+
+  allowGuestSignUpStore.set(workspaceLoginInfo.allowGuestSignUp ?? false)
+
+  if (me.role === AccountRole.ReadOnlyGuest) {
+    await broadcastEvent(PlatformEvent, new Status(Severity.INFO, platform.status.ReadOnlyAccount, {}))
+  } else {
+    await broadcastEvent(PlatformEvent, new Status(Severity.INFO, platform.status.RegularAccount, {}))
+  }
+
+  versionError.set(undefined)
+
+  // Update window title
+  document.title = [wsUrl, title].filter((it) => it).join(' - ')
+  _clientSet = true
+  await ctx.with('set-client', {}, async () => {
+    await setClient(newClient)
+    await setCommunicationClient(newClient)
+  })
+  await ctx.with('broadcast-connected', {}, async () => {
+    await broadcastEvent(plugin.event.NotifyConnection, me)
+  })
+  console.log(metricsToString((ctx as MeasureMetricsContext).metrics, 'connect', 50))
+  return newClient
+}
+
+interface ConnectContext {
+  ctx: ReturnType<typeof uiContext.newChild>
+  wsUrl: string
+  token: string
+  endpoint: string
+  account: string
+  workspace: WorkspaceInfoWithStatus
+  workspaceLoginInfo: WorkspaceLoginInfo
+  selectWorkspace: any
+  newClient: Client
+  tokenChanged: boolean
+}
+
+async function getGlobalPerson (): Promise<GlobalPerson | undefined> {
+  const getPerson = await getResource(login.function.GetPerson)
+  const [status, globalPerson] = await getPerson()
+
+  if (status !== OK) {
+    console.error('Error getting global person')
+    return undefined
+  }
+
+  return globalPerson
+}
+
+async function fetchReadyWorkspace (
+  connectCtx: Pick<ConnectContext, 'ctx' | 'wsUrl'>
+): Promise<WorkspaceInfoWithStatus | undefined> {
+  const { ctx, wsUrl } = connectCtx
+  const fetchWorkspace = await getResource(login.function.FetchWorkspace)
+  let workspace: WorkspaceInfoWithStatus | undefined
+
+  while (true) {
+    const fetchResult = await ctx.with('fetch-workspace', {}, async () => await fetchWorkspace())
+
+    if (!fetchResult[2]) {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      continue
+    }
+
+    workspace = fetchResult[1]
+    if (workspace == null) {
+      console.error(
+        `Error fetching workspace ${wsUrl}. It might no longer exist or be inaccessible. Please try to log in again.`
+      )
+      navigate({ path: [loginId] })
+      return undefined
+    }
+    break
+  }
+
+  setMetadata(presentation.metadata.WorkspaceDataId, workspace.dataId)
+
+  if (isWorkspaceCreating(workspace.mode)) {
+    while (true) {
+      if (wsUrl !== getCurrentLocation().path[1]) return undefined
+
+      workspaceCreating.set(workspace.processingProgress ?? 0)
+      const fetchResult = await ctx.with('fetch-workspace', {}, async () => await fetchWorkspace())
+      if (!fetchResult[2]) {
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        continue
+      }
+      workspace = fetchResult[1]
+
+      if (workspace == null) {
+        navigate({ path: [loginId] })
+        return undefined
+      }
+
+      workspaceCreating.set(workspace.processingProgress ?? 0)
+
+      if (!isWorkspaceCreating(workspace.mode)) {
+        workspaceCreating.set(-1)
+        break
+      }
+
+      await new Promise<void>((resolve) => setTimeout(resolve, 1000))
+    }
+  }
+
+  return workspace
+}
+
+async function createTransactorClient (
+  connectCtx: Pick<ConnectContext, 'ctx' | 'token' | 'endpoint' | 'wsUrl' | 'selectWorkspace' | 'tokenChanged'>
+): Promise<{ client: Client, version: Version | undefined }> {
+  const { ctx, token, endpoint, wsUrl, selectWorkspace } = connectCtx
+  let { tokenChanged } = connectCtx
+
   const clientFactory = await getResource(client.function.GetClient)
   let version: Version | undefined
+
   const newClient = await ctx.with(
     'create-client',
     {},
@@ -242,32 +362,25 @@ export async function connect (title: string): Promise<Client | undefined> {
 
             if (reloaded === null) {
               localStorage.setItem(`versionUpgrade:s${serverVersion}:f${frontVersion}`, 't')
-              // It might have been refreshed manually and download has started - do not reload
               if (!isUpgrading) {
                 console.log('reload due to version upgrade')
                 location.reload()
               }
-
               return false
             } else {
               versionError.set(`Front version ${frontVersion} is not in sync with server version ${serverVersion}`)
 
               if (!desktopPlatform || !isUpgrading) {
                 setTimeout(() => {
-                  // It might be possible that this callback will fire after the user has spent some time
-                  // in the upgrade !modal! dialog and clicked upgrade - check again and do not reload
                   if (get(upgradeDownloadProgress) < 0) {
                     console.log('reload due to upgrade download')
                     location.reload()
                   }
                 }, 10000)
               }
-              // For embedded if the download has started it should download the upgrade and restart the app
-
               return false
             }
           }
-
           return true
         },
         onUpgrade: () => {
@@ -276,23 +389,16 @@ export async function connect (title: string): Promise<Client | undefined> {
         },
         onUnauthorized: () => {
           void logOut().then(() => {
-            navigate({
-              path: [loginId],
-              query: {}
-            })
+            navigate({ path: [loginId], query: {} })
           })
         },
         onArchived: () => {
           translateCB(plugin.string.WorkspaceIsArchived, {}, get(themeStore).language, (r) => {
             const selectWorkspace: Pages = 'selectWorkspace'
-            navigate({
-              path: [loginId, selectWorkspace],
-              query: {}
-            })
+            navigate({ path: [loginId, selectWorkspace], query: {} })
           })
         },
         onMigration: () => {
-          // TODO: Rework maitenance mode as well
           translateCB(plugin.string.WorkspaceIsMigrating, {}, get(themeStore).language, (r) => {
             versionError.set(r)
             setTimeout(() => {
@@ -301,7 +407,6 @@ export async function connect (title: string): Promise<Client | undefined> {
             }, 5000)
           })
         },
-        // We need to refresh all active live queries and clear old queries.
         onConnect: async (event: ClientConnectEvent, data: any): Promise<void> => {
           console.log('WorkbenchClient: onConnect', event)
           if (event === ClientConnectEvent.Maintenance) {
@@ -349,7 +454,6 @@ export async function connect (title: string): Promise<Client | undefined> {
                 const reconnectVersionStr = versionToString(newVersion as Version)
 
                 if (currentVersionStr !== reconnectVersionStr) {
-                  // It seems upgrade happened
                   console.log('reload due to version mismatch')
                   location.reload()
                   versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
@@ -382,7 +486,6 @@ export async function connect (title: string): Promise<Client | undefined> {
                       location.reload()
                     }
                   } catch (err: any) {
-                    // Failed to load server config, reload location
                     console.log('reload due to config loading error')
                     location.reload()
                   }
@@ -408,32 +511,23 @@ export async function connect (title: string): Promise<Client | undefined> {
       })
   )
 
-  _client = newClient
+  return { client: newClient, version }
+}
 
-  // TODO: should we take the function from some resource like fetchWorkspace/selectWorkspace
-  // to remove account client dependency?
-  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-  const socialIds: SocialId[] = await getAccountClient(accountsUrl, token).getSocialIds(true)
+async function ensureEmployeeAndSpace (
+  connectCtx: Pick<ConnectContext, 'ctx' | 'workspaceLoginInfo' | 'newClient'>,
+  me: Account,
+  socialIds: SocialId[]
+): Promise<boolean> {
+  const { ctx, workspaceLoginInfo, newClient } = connectCtx
 
-  const me: Account = {
-    uuid: account,
-    role: workspaceLoginInfo.role,
-    primarySocialId: pickPrimarySocialId(socialIds)._id,
-    socialIds: socialIds.map((si) => si._id),
-    fullSocialIds: socialIds
-  }
-
-  // Ensure employee and social identifiers
   if (workspaceLoginInfo.role !== AccountRole.Admin) {
     const employee = await ensureEmployee(ctx, me, newClient, socialIds, getGlobalPerson)
 
     if (employee == null) {
       console.log('Failed to ensure employee')
-      navigate({
-        path: [loginId],
-        query: {}
-      })
-      return
+      navigate({ path: [loginId], query: {} })
+      return false
     }
 
     const space = await newClient.findOne(contact.class.PersonSpace, { person: employee }, { projection: { _id: 1 } })
@@ -450,48 +544,20 @@ export async function connect (title: string): Promise<Client | undefined> {
     await setPlatformStatus(new Status(Severity.INFO, platform.status.SystemAccount, {}))
   }
 
-  const hasEmail = (si: SocialId): boolean => {
-    return [SocialIdType.EMAIL, SocialIdType.GOOGLE, SocialIdType.GITHUB].some((type) => type === si.type)
-  }
-  const email = me.fullSocialIds.find((si) => hasEmail(si) && si.isDeleted !== true)?.key
-  const socialId = me.fullSocialIds.find((si) => si._id === me.primarySocialId)?.key
+  return true
+}
 
-  const data: Record<string, any> = {
-    social_id: email ?? socialId ?? account,
-    primary_social_id: socialId,
-    account_uuid: account,
-    role: workspaceLoginInfo.role,
-    branding: workspace.branding ?? 'unknown'
-  }
+async function fetchSocialIds (token: string): Promise<SocialId[]> {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  return await getAccountClient(accountsUrl, token).getSocialIds(true)
+}
 
-  const guestRole =
-    workspaceLoginInfo.role === AccountRole.ReadOnlyGuest ||
-    workspaceLoginInfo.role === AccountRole.DocGuest ||
-    workspaceLoginInfo.role === AccountRole.Guest
-  if (guestRole) {
-    data.visited_workspace = workspace.url
-    data.visited_workspace_uuid = workspace.uuid
-  } else {
-    data.workspace = workspace.url
-    data.workspace_uuid = workspace.uuid
-  }
-
-  Analytics.setUser(data.social_id, data)
-  Analytics.setWorkspace(workspace.url, guestRole)
-  Analytics.handleEvent(WorkbenchEvents.Connect)
-  console.log('Logged in with account: ', me)
-  setCurrentAccount(me)
-
-  allowGuestSignUpStore.set(workspaceLoginInfo.allowGuestSignUp ?? false)
-
-  if (me.role === AccountRole.ReadOnlyGuest) {
-    await broadcastEvent(PlatformEvent, new Status(Severity.INFO, platform.status.ReadOnlyAccount, {}))
-  } else {
-    await broadcastEvent(PlatformEvent, new Status(Severity.INFO, platform.status.RegularAccount, {}))
-  }
-
+async function findModelVersion (
+  ctx: ReturnType<typeof uiContext.newChild>,
+  newClient: Client
+): Promise<Version | undefined> {
   try {
-    version = await ctx.with(
+    const version = await ctx.with(
       'find-model-version',
       {},
       async () => await newClient.findOne<Version>(core.class.Version, {})
@@ -508,6 +574,7 @@ export async function connect (title: string): Promise<Client | undefined> {
         return undefined
       }
     }
+    return version
   } catch (err: any) {
     console.error(err)
     Analytics.handleError(err)
@@ -517,32 +584,6 @@ export async function connect (title: string): Promise<Client | undefined> {
       versionError.set(`'unknown' => ${requiredVersion}`)
       return undefined
     }
-  }
-
-  versionError.set(undefined)
-
-  // Update window title
-  document.title = [wsUrl, title].filter((it) => it).join(' - ')
-  _clientSet = true
-  await ctx.with('set-client', {}, async () => {
-    await setClient(newClient)
-    await setCommunicationClient(newClient)
-  })
-  await ctx.with('broadcast-connected', {}, async () => {
-    await broadcastEvent(plugin.event.NotifyConnection, me)
-  })
-  console.log(metricsToString((ctx as MeasureMetricsContext).metrics, 'connect', 50))
-  return newClient
-}
-
-async function getGlobalPerson (): Promise<GlobalPerson | undefined> {
-  const getPerson = await getResource(login.function.GetPerson)
-  const [status, globalPerson] = await getPerson()
-
-  if (status !== OK) {
-    console.error('Error getting global person')
     return undefined
   }
-
-  return globalPerson
 }
