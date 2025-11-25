@@ -120,7 +120,8 @@ import {
   signUpByGrant,
   isAccountPasswordLocked,
   recordFailedLoginAttempt,
-  resetFailedLoginAttempts
+  resetFailedLoginAttempts,
+  isAllowReadOnlyGuests
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -2781,6 +2782,7 @@ export type AccountMethods =
   | 'getPerson'
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
+  | 'isAllowReadOnlyGuests'
   | 'updateAllowReadOnlyGuests'
   | 'updateAllowGuestSignUp'
   | 'findPersonBySocialId'
@@ -2838,6 +2840,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     updateWorkspaceName: wrap(updateWorkspaceName),
     deleteWorkspace: wrap(deleteWorkspace),
     updateWorkspaceRole: wrap(updateWorkspaceRole),
+    isAllowReadOnlyGuests: wrap(isAllowReadOnlyGuests),
     updateAllowReadOnlyGuests: wrap(updateAllowReadOnlyGuests),
     updateAllowGuestSignUp: wrap(updateAllowGuestSignUp),
     createMailbox: wrap(createMailbox),

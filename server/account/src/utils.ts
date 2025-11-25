@@ -880,6 +880,15 @@ export async function selectWorkspace (
   }
 }
 
+export async function isAllowReadOnlyGuests (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<{ allowed: boolean }> {
+  return { allowed: getMetadata(accountPlugin.metadata.AllowReadonlyGuests) ?? false }
+}
+
 export async function updateAllowReadOnlyGuests (
   ctx: MeasureContext,
   db: AccountDB,
@@ -889,6 +898,9 @@ export async function updateAllowReadOnlyGuests (
     readOnlyGuestsAllowed: boolean
   }
 ): Promise<{ guestPerson: Person, guestSocialIds: SocialId[] } | undefined> {
+  if (getMetadata(accountPlugin.metadata.AllowReadonlyGuests) === false) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
   const { readOnlyGuestsAllowed } = params
   const { account, workspace } = decodeTokenVerbose(ctx, token)
 
@@ -943,6 +955,10 @@ export async function updateAllowGuestSignUp (
     guestSignUpAllowed: boolean
   }
 ): Promise<void> {
+  if (getMetadata(accountPlugin.metadata.AllowReadonlyGuests) === false) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
   const { guestSignUpAllowed } = params
   const { account, workspace } = decodeTokenVerbose(ctx, token)
 
