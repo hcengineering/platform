@@ -197,6 +197,7 @@ export interface Config {
   EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string
   PULSE_URL?: string
   HULYLAKE_URL?: string
+  DISABLED_FEATURES?: string
 }
 
 export interface Branding {
@@ -477,6 +478,9 @@ export async function configurePlatform() {
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
   setMetadata(communication.metadata.Enabled, config.COMMUNICATION_API_ENABLED === 'true')
 
+  const disabledFeatures = (config.DISABLED_FEATURES ??'').split(',').map(it => it.trim()).filter(it => it.length > 0)
+  setMetadata(presentation.metadata.DisabledFeatures, new Set(disabledFeatures))
+
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
     setMetadata(presentation.metadata.ModelVersion, config.MODEL_VERSION)
@@ -687,6 +691,7 @@ export async function configurePlatform() {
   addLocation(ratingId, async () => await import(/* webpackChunkName: "rating" */ '@hcengineering/rating-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
+  setMetadata(client.metadata.ExtraFilter, disabledFeatures)
   setMetadata(client.metadata.ExtraPlugins, ['preference' as Plugin])
   setMetadata(login.metadata.TransactorOverride, config.TRANSACTOR_OVERRIDE)
 

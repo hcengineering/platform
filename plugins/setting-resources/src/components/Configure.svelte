@@ -19,8 +19,7 @@
     getClient,
     pluginConfigurationStore,
     hasResource,
-    isDisabled,
-    isAdminUser
+    isDisabled
   } from '@hcengineering/presentation'
   import ratingPlugin, { getRaiting, type PersonRating } from '@hcengineering/rating'
   import { Breadcrumb, Button, Header, Icon, IconInfo, Label, Scroller } from '@hcengineering/ui'
