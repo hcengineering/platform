@@ -22,6 +22,7 @@
     "ExportRequestFailedMessage": "Ocorreu um erro ao enviar a exportação. Por favor, tente novamente mais tarde.",
     "ExportCompleted": "Exportação concluída. Seus arquivos estão prontos. Você pode baixá-los do drive.",
     "ExportFailed": "Falha ao exportar dados. Por favor, tente novamente mais tarde.",
-    "ExportToWorkspace": "Exportar para outro espaço de trabalho"
+    "ExportToWorkspace": "Exportar para outro espaço de trabalho",
+    "TargetWorkspace": "Espaço de destino"
   }
 }

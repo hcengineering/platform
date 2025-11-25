@@ -22,6 +22,7 @@
     "ExportRequestFailedMessage": "エクスポートの送信中にエラーが発生しました。後でもう一度お試しください。",
     "ExportCompleted": "エクスポートが完了し、ファイルの準備ができました。ドライブからダウンロードできます。",
     "ExportFailed": "データのエクスポートに失敗しました。後でもう一度お試しください。",
-    "ExportToWorkspace": "別のワークスペースにエクスポート"
+    "ExportToWorkspace": "別のワークスペースにエクスポート",
+    "TargetWorkspace": "対象ワークスペース"
   }
 }

@@ -22,6 +22,7 @@
     "ExportRequestFailedMessage": "Beim Starten des Exports ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
     "ExportCompleted": "Export abgeschlossen. Ihre Dateien sind bereit. Sie können sie vom Laufwerk herunterladen.",
     "ExportFailed": "Datenexport fehlgeschlagen. Bitte versuchen Sie es später erneut.",
-    "ExportToWorkspace": "In einen anderen Arbeitsbereich exportieren"
+    "ExportToWorkspace": "In einen anderen Arbeitsbereich exportieren",
+    "TargetWorkspace": "Ziel-Arbeitsbereich"
   }
 }

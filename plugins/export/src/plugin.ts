@@ -23,7 +23,8 @@ export const exportPlugin = plugin(exportId, {
     Export: '' as IntlString,
     ExportCompleted: '' as IntlString,
     ExportFailed: '' as IntlString,
-    ExportToWorkspace: '' as IntlString
+    ExportToWorkspace: '' as IntlString,
+    TargetWorkspace: '' as IntlString
   },
   component: {
     ExportButton: '' as AnyComponent,

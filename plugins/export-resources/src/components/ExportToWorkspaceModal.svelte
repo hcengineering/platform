@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, type WorkspaceInfoWithStatus } from '@hcengineering/core'
-  import presentation, { Card, MessageBox } from '@hcengineering/presentation'
-  import { DropdownLabelsIntl, DropdownLabels, Label, showPopup } from '@hcengineering/ui'
+  import presentation, { Card, MessageBox, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
+  import { DropdownLabels, showPopup } from '@hcengineering/ui'
   import { getMetadata, getResource } from '@hcengineering/platform'
   import login from '@hcengineering/login'
   import { createEventDispatcher } from 'svelte'
@@ -27,17 +27,9 @@
 
   const dispatch = createEventDispatcher()
 
-  type ExportSource = 'all' | 'selected'
-
-  let source: ExportSource = selectedDocs.length > 0 ? 'selected' : 'all'
   let targetWorkspace: string | undefined = undefined
   let workspaces: WorkspaceInfoWithStatus[] = []
   let loading = false
-
-  const sourceItems = [
-    { id: 'selected', label: plugin.string.ExportSelected },
-    { id: 'all', label: plugin.string.ExportAll }
-  ]
 
   async function loadWorkspaces (): Promise<void> {
     try {
@@ -53,12 +45,14 @@
     label: string
   }
 
-  $: workspaceItems = workspaces.map(
-    (ws): WorkspaceItem => ({
-      id: ws.uuid,
-      label: ws.name
-    })
-  )
+  $: workspaceItems = workspaces
+    .filter(ws => ws.uuid !== getCurrentWorkspaceUuid())
+    .map(
+      (ws): WorkspaceItem => ({
+        id: ws.uuid,
+        label: ws.name
+      })
+    )
 
   $: canSave = targetWorkspace !== undefined
 
@@ -78,13 +72,9 @@
         _class
       }
 
-      if (source === 'selected' && selectedDocs.length > 0) {
-        body.query = {
-          _id: { $in: selectedDocs.map((d) => d._id) }
-        }
-      } else if (query !== undefined) {
-        body.query = query
-      }
+      body.query = selectedDocs.length > 0 ? {
+        _id: { $in: selectedDocs.map((d) => d._id) }
+      } : query
 
       const res = await fetch(`${baseUrl}/migrate`, {
         method: 'POST',
@@ -131,29 +121,11 @@
   okAction={handleExport}
   okLabel={plugin.string.Export}
   canSave={canSave && !loading}
+  width="small"
   on:close={() => dispatch('close')}
   on:changeContent
 >
-  <div class="flex-col gap-4">
-    <div class="flex-col gap-2">
-      <Label label={plugin.string.ExportSource} />
-      <DropdownLabelsIntl
-        items={sourceItems}
-        bind:selected={source}
-        kind="regular"
-        size="large"
-        disabled={selectedDocs.length === 0}
-      />
-      {#if selectedDocs.length === 0}
-        <span class="text-sm overflow-label">
-          {plugin.string.NoSelectedDocuments}
-        </span>
-      {/if}
-    </div>
-
-    <div class="flex-col gap-2">
-      <Label label={plugin.string.TargetWorkspace} />
-      <DropdownLabels items={workspaceItems} bind:selected={targetWorkspace} kind="regular" size="large" />
-    </div>
+  <div class="flex-col gap-2">
+    <DropdownLabels placeholder={plugin.string.} items={workspaceItems} bind:selected={targetWorkspace} kind="regular" size="large" />
   </div>
 </Card>

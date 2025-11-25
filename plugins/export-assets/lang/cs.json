@@ -22,6 +22,7 @@
     "ExportRequestFailedMessage": "Při odesílání exportu došlo k chybě. Zkuste to prosím později.",
     "ExportCompleted": "Export byl dokončen. Vaše soubory jsou připraveny. Můžete je stáhnout z disku.",
     "ExportFailed": "Export dat se nezdařil. Zkuste to prosím později.",
-    "ExportToWorkspace": "Exportovat do jiného pracovního prostoru"
+    "ExportToWorkspace": "Exportovat do jiného pracovního prostoru",
+    "TargetWorkspace": "Cílový pracovní prostor"
   }
 }
