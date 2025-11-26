@@ -463,9 +463,7 @@ export async function getLastPasswordChangeEvent (
   return result[0] ?? null
 }
 
-export async function getAccountCreatedEvent (db: AccountDB,
-  accountUuid: AccountUuid
-): Promise<AccountEvent | null> {
+export async function getAccountCreatedEvent (db: AccountDB, accountUuid: AccountUuid): Promise<AccountEvent | null> {
   const result = await db.accountEvent.find(
     { accountUuid, eventType: AccountEventType.ACCOUNT_CREATED },
     { time: 'descending' },
@@ -475,7 +473,8 @@ export async function getAccountCreatedEvent (db: AccountDB,
 }
 
 export async function isPasswordChangedSince (db: AccountDB, accountUuid: AccountUuid, since: number): Promise<boolean> {
-  const lastEvent = await getLastPasswordChangeEvent(db, accountUuid) ?? await getAccountCreatedEvent(db, accountUuid)
+  const lastEvent =
+    (await getLastPasswordChangeEvent(db, accountUuid)) ?? (await getAccountCreatedEvent(db, accountUuid))
   return lastEvent != null && lastEvent.time >= since
 }
 
@@ -911,13 +910,15 @@ export async function updateAllowReadOnlyGuests (
   return { guestPerson, guestSocialIds: guestSocialIds.filter((si) => si.isDeleted !== true) }
 }
 
-export async function updatePasswordAgingRule(ctx: MeasureContext,
+export async function updatePasswordAgingRule (
+  ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string,
   params: {
     days: number
-  }): Promise<void> {
+  }
+): Promise<void> {
   const { days } = params
   const { account, workspace } = decodeTokenVerbose(ctx, token)
 
@@ -936,10 +937,10 @@ export async function checkPasswordAging (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  token: string,
+  token: string
 ): Promise<boolean> {
   const { account, workspace } = decodeTokenVerbose(ctx, token)
-  
+
   if (workspace === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
   }

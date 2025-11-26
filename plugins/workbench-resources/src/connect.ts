@@ -25,14 +25,14 @@ import platform, {
   broadcastEvent,
   getMetadata,
   getResource,
-  IntlString,
+  type IntlString,
   OK,
   PlatformEvent,
   setMetadata,
   setPlatformStatus,
   Severity,
   Status,
-  StatusCode,
+  type StatusCode,
   translateCB
 } from '@hcengineering/platform'
 import presentation, {
@@ -287,43 +287,48 @@ export async function connect (title: string): Promise<Client | undefined> {
             case platform.status.WorkspaceArchived: {
               translateCB(plugin.string.WorkspaceIsArchived, {}, get(themeStore).language, (r) => {
                 error.set(r)
-                errorActions.set([{
-                  label: login.string.SelectWorkspace,
-                  action: () => {
-                    const selectWorkspace: Pages = 'selectWorkspace'
-                    navigate({
-                      path: [loginId, selectWorkspace],
-                      query: {}
-                    })
+                errorActions.set([
+                  {
+                    label: login.string.SelectWorkspace,
+                    action: () => {
+                      const selectWorkspace: Pages = 'selectWorkspace'
+                      navigate({
+                        path: [loginId, selectWorkspace],
+                        query: {}
+                      })
+                    }
                   }
-                }])
+                ])
               })
-              break;
+              break
             }
             case platform.status.PasswordExpired: {
               translateCB(login.string.PasswordExpiredDesc, {}, get(themeStore).language, (r) => {
                 error.set(r)
-                errorActions.set([{
-                  label: login.string.SelectWorkspace,
-                  action: () => {
-                    const selectWorkspace: Pages = 'selectWorkspace'
-                    navigate({
-                      path: [loginId, selectWorkspace],
-                      query: {}
-                    })
+                errorActions.set([
+                  {
+                    label: login.string.SelectWorkspace,
+                    action: () => {
+                      const selectWorkspace: Pages = 'selectWorkspace'
+                      navigate({
+                        path: [loginId, selectWorkspace],
+                        query: {}
+                      })
+                    }
+                  },
+                  {
+                    label: login.string.ChangePassword,
+                    action: () => {
+                      const changePassword: Pages = 'changePassword'
+                      navigate({
+                        path: [loginId, changePassword],
+                        query: {}
+                      })
+                    }
                   }
-                }, {
-                  label: login.string.ChangePassword,
-                  action: () => {
-                    const changePassword: Pages = 'changePassword'
-                    navigate({
-                      path: [loginId, changePassword],
-                      query: {}
-                    })
-                  }
-                }])
+                ])
               })
-              break;
+              break
             }
             case platform.status.WorkspaceMigration: {
               translateCB(plugin.string.WorkspaceIsMigrating, {}, get(themeStore).language, (r) => {
@@ -334,7 +339,7 @@ export async function connect (title: string): Promise<Client | undefined> {
                   location.reload()
                 }, 5000)
               })
-              break;
+              break
             }
             case platform.status.Unauthorized: {
               void logOut().then(() => {

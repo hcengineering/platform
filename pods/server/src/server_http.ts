@@ -28,7 +28,7 @@ import {
   type WorkspaceIds,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import platform, { Severity, Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
+import { Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import {
   doSessionOp,
@@ -501,7 +501,11 @@ export function startHttpServer (
         if ('error' in s) {
           void cs.send(
             ctx,
-            { id: -1, error: s.error instanceof Status ? s.error : unknownStatus(s.error.message ?? 'Unknown error'), terminate: s.terminate },
+            {
+              id: -1,
+              error: s.error instanceof Status ? s.error : unknownStatus(s.error.message ?? 'Unknown error'),
+              terminate: s.terminate
+            },
             false,
             false
           )

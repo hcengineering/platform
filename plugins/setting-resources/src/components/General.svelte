@@ -344,7 +344,14 @@
               />
               {#if passwordAgingRule}
                 <div class="w-32">
-                  <EditBox format={'number'} minValue={0} maxDigitsAfterPoint={0} bind:value={passwordAgingRule} disabled={!passwordAgingRule} on:change={() => changePasswordAgingRules(passwordAgingRule)} />
+                  <EditBox
+                    format={'number'}
+                    minValue={0}
+                    maxDigitsAfterPoint={0}
+                    bind:value={passwordAgingRule}
+                    disabled={!passwordAgingRule}
+                    on:change={() => changePasswordAgingRules(passwordAgingRule)}
+                  />
                 </div>
               {/if}
             </div>
