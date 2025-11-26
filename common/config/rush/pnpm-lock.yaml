@@ -2212,7 +2212,7 @@ importers:
         specifier: ^0.25.10
         version: 0.25.12
       esbuild-plugin-copy:
-        specifier: ~2.1.1
+        specifier: ^2.1.1
         version: 2.1.1(esbuild@0.25.12)
       eslint:
         specifier: ^8.54.0
@@ -2279,7 +2279,7 @@ importers:
         specifier: ^0.25.10
         version: 0.25.12
       esbuild-plugin-copy:
-        specifier: ~2.1.1
+        specifier: ^2.1.1
         version: 2.1.1(esbuild@0.25.12)
       eslint:
         specifier: ^8.54.0
@@ -2346,7 +2346,7 @@ importers:
         specifier: ^0.25.10
         version: 0.25.12
       esbuild-plugin-copy:
-        specifier: ~2.1.1
+        specifier: ^2.1.1
         version: 2.1.1(esbuild@0.25.12)
       eslint:
         specifier: ^8.54.0
@@ -2410,7 +2410,7 @@ importers:
         specifier: ^0.25.10
         version: 0.25.12
       esbuild-plugin-copy:
-        specifier: ~2.1.1
+        specifier: ^2.1.1
         version: 2.1.1(esbuild@0.25.12)
       eslint:
         specifier: ^8.54.0
@@ -2462,7 +2462,7 @@ importers:
         specifier: ^0.25.10
         version: 0.25.12
       esbuild-plugin-copy:
-        specifier: ~2.1.1
+        specifier: ^2.1.1
         version: 2.1.1(esbuild@0.25.12)
       eslint:
         specifier: ^8.54.0
@@ -2550,7 +2550,7 @@ importers:
         specifier: ^0.25.10
         version: 0.25.12
       esbuild-plugin-copy:
-        specifier: ~2.1.1
+        specifier: ^2.1.1
         version: 2.1.1(esbuild@0.25.12)
       eslint:
         specifier: ^8.54.0
@@ -2608,7 +2608,7 @@ importers:
         specifier: ^0.25.10
         version: 0.25.12
       esbuild-plugin-copy:
-        specifier: ~2.1.1
+        specifier: ^2.1.1
         version: 2.1.1(esbuild@0.25.12)
       eslint:
         specifier: ^8.54.0
@@ -2657,7 +2657,7 @@ importers:
         specifier: ^0.25.10
         version: 0.25.12
       esbuild-plugin-copy:
-        specifier: ~2.1.1
+        specifier: ^2.1.1
         version: 2.1.1(esbuild@0.25.12)
       eslint:
         specifier: ^8.54.0
