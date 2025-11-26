@@ -569,19 +569,31 @@ export class TSessionManager implements SessionManager {
     if (isArchivingMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
       return {
-        resp: { error: new Status(Severity.ERROR, platform.status.WorkspaceArchived, { workspaceUuid }), terminate: true, specialError: 'archived' }
+        resp: {
+          error: new Status(Severity.ERROR, platform.status.WorkspaceArchived, { workspaceUuid }),
+          terminate: true,
+          specialError: 'archived'
+        }
       }
     }
     if (isMigrationMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
       return {
-        resp: { error: new Status(Severity.ERROR, platform.status.WorkspaceMigration, { workspaceUuid }), terminate: true, specialError: 'migration' }
+        resp: {
+          error: new Status(Severity.ERROR, platform.status.WorkspaceMigration, { workspaceUuid }),
+          terminate: true,
+          specialError: 'migration'
+        }
       }
     }
     if (isRestoringMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
       return {
-        resp: { error: new Status(Severity.ERROR, platform.status.WorkspaceMigration, { workspaceUuid }), terminate: true, specialError: 'migration' }
+        resp: {
+          error: new Status(Severity.ERROR, platform.status.WorkspaceMigration, { workspaceUuid }),
+          terminate: true,
+          specialError: 'migration'
+        }
       }
     }
 
@@ -729,13 +741,13 @@ export class TSessionManager implements SessionManager {
             role: AccountRole.Owner,
             endpoint: { externalUrl: '', internalUrl: '', region: workspaceInfo.region ?? '' },
             progress: workspaceInfo.processingProgress,
-            branding: workspaceInfo.branding,
+            branding: workspaceInfo.branding
           }
         } else {
           this.workspaceInfoCache.delete(token.workspace)
         }
 
-        if (!!wsInfo.passwordAgingRule) {
+        if (wsInfo.passwordAgingRule !== undefined && wsInfo.passwordAgingRule > 0) {
           const isPasswordAgingOk = await this.checkPasswordAging(ctx, rawToken)
           if (!isPasswordAgingOk) {
             return { error: new Status(Severity.ERROR, platform.status.PasswordExpired, {}), terminate: true }
