@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/mongo",
-  "version": "0.7.16",
+  "version": "0.7.17",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -35,9 +35,9 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "^0.7.22",
-    "@hcengineering/platform": "^0.7.18",
-    "@hcengineering/server-core": "workspace:^0.7.17",
+    "@hcengineering/core": "^0.7.23",
+    "@hcengineering/platform": "^0.7.19",
+    "@hcengineering/server-core": "workspace:^0.7.18",
     "mongodb": "^6.16.0",
     "bson": "^6.10.3"
   },
