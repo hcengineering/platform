@@ -40,11 +40,11 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/analytics": "workspace:^0.7.17",
     "@hcengineering/analytics-collector": "workspace:^0.7.0",
     "@hcengineering/presentation": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/core": "workspace:^0.7.23",
     "ua-parser-js": "^2.0.4",
     "@hcengineering/ui": "workspace:^0.7.0"
   },

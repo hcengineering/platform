@@ -52,7 +52,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/account-client": "workspace:^0.7.19",
+    "@hcengineering/account-client": "workspace:^0.7.20",
     "@hcengineering/analytics": "workspace:^0.7.17",
     "@hcengineering/analytics-service": "workspace:^0.7.17",
     "@hcengineering/api-client": "workspace:^0.7.18",
@@ -62,13 +62,13 @@
     "@hcengineering/communication-shared": "workspace:^0.7.11",
     "@hcengineering/communication-types": "workspace:^0.7.12",
     "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/core": "workspace:^0.7.23",
     "@hcengineering/hulylake-client": "workspace:^0.7.17",
-    "@hcengineering/kafka": "workspace:^0.7.18",
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/kafka": "workspace:^0.7.19",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/retry": "workspace:^0.7.17",
-    "@hcengineering/server-client": "workspace:^0.7.16",
-    "@hcengineering/server-core": "workspace:^0.7.17",
+    "@hcengineering/server-client": "workspace:^0.7.17",
+    "@hcengineering/server-core": "workspace:^0.7.18",
     "@hcengineering/server-token": "workspace:^0.7.17",
     "dotenv": "^16.4.5",
     "openai": "^4.56.0"

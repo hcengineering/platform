@@ -45,10 +45,10 @@
   "dependencies": {
     "@hcengineering/account": "workspace:^0.7.0",
     "@hcengineering/model": "workspace:^0.7.17",
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/auth-providers": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.22",
-    "@hcengineering/mongo": "workspace:^0.7.16",
+    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/mongo": "workspace:^0.7.17",
     "@hcengineering/contact": "workspace:^0.7.0",
     "mongodb": "^6.16.0",
     "koa": "^2.15.4",

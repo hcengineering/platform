@@ -49,14 +49,14 @@
   },
   "dependencies": {
     "@hcengineering/workspace-service": "workspace:^0.7.0",
-    "@hcengineering/platform": "workspace:^0.7.18",
-    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/platform": "workspace:^0.7.19",
+    "@hcengineering/core": "workspace:^0.7.23",
     "mongodb": "^6.16.0",
     "@hcengineering/server-token": "workspace:^0.7.17",
-    "@hcengineering/server-core": "workspace:^0.7.17",
+    "@hcengineering/server-core": "workspace:^0.7.18",
     "@hcengineering/model-all": "workspace:^0.7.0",
     "@hcengineering/analytics": "workspace:^0.7.17",
     "@hcengineering/analytics-service": "workspace:^0.7.17",
-    "@hcengineering/kafka": "workspace:^0.7.18"
+    "@hcengineering/kafka": "workspace:^0.7.19"
   }
 }
