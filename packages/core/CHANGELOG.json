@@ -2,6 +2,23 @@
   "name": "@hcengineering/core",
   "entries": [
     {
+      "version": "0.7.23",
+      "tag": "@hcengineering/core_v0.7.23",
+      "date": "Wed, 26 Nov 2025 15:28:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add password aging"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `^0.7.18` to `0.7.19`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.22",
       "tag": "@hcengineering/core_v0.7.22",
       "date": "Thu, 06 Nov 2025 09:09:58 GMT",
