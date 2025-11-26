@@ -119,7 +119,9 @@ function $update (document: Doc, keyval: Record<string, PropertyType>): void {
     }
     // Ensure doc[key] is an array before attempting to update
     if (!Array.isArray(doc[key])) {
-      Analytics.handleError(new Error(`$update operation on non-array field: ${key}, value: ${JSON.stringify(doc[key])}`))
+      Analytics.handleError(
+        new Error(`$update operation on non-array field: ${key}, value: ${JSON.stringify(doc[key])}`)
+      )
       doc[key] = []
       continue
     }
@@ -142,14 +144,18 @@ function $inc (document: Doc, keyval: Record<string, number>): void {
     const cur = doc[key] ?? 0
     // Ensure current value is a number
     if (typeof cur !== 'number' || isNaN(cur)) {
-      Analytics.handleError(new Error(`$inc operation on non-numeric field: ${key}, value: ${JSON.stringify(doc[key])}`))
+      Analytics.handleError(
+        new Error(`$inc operation on non-numeric field: ${key}, value: ${JSON.stringify(doc[key])}`)
+      )
       doc[key] = keyval[key]
       continue
     }
     const increment = keyval[key]
     // Ensure increment value is a valid number
     if (typeof increment !== 'number' || isNaN(increment)) {
-      Analytics.handleError(new Error(`$inc operation with invalid increment: ${key}, increment: ${JSON.stringify(increment)}`))
+      Analytics.handleError(
+        new Error(`$inc operation with invalid increment: ${key}, increment: ${JSON.stringify(increment)}`)
+      )
       continue
     }
     doc[key] = cur + increment
