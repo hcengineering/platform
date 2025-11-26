@@ -42,7 +42,20 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
+<<<<<<<< HEAD:foundations/core/packages/text-core/package.json
     "@hcengineering/core": "workspace:^0.7.22",
+========
+    "@hcengineering/attachment": "workspace:^0.7.0",
+    "@hcengineering/chunter": "workspace:^0.7.0",
+    "@hcengineering/contact": "workspace:^0.7.0",
+    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/gmail": "workspace:^0.7.0",
+    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/preference": "workspace:^0.7.0",
+    "@hcengineering/recruit": "workspace:^0.7.0",
+    "@hcengineering/tags": "workspace:^0.7.0",
+    "@hcengineering/task": "workspace:^0.7.0",
+>>>>>>>> upstream/develop:plugins/bitrix/package.json
     "fast-equals": "^5.2.2",
     "hash-it": "^6.0.0"
   },

@@ -26,7 +26,10 @@
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "workspace:^0.7.19",
+<<<<<<<< HEAD:foundations/core/packages/platform/package.json
     "@types/jest": "^29.5.5",
+========
+>>>>>>>> upstream/develop:plugins/board-assets/package.json
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.54.0",
@@ -34,6 +37,12 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.4.0",
     "eslint-plugin-promise": "^6.1.1",
+<<<<<<<< HEAD:foundations/core/packages/platform/package.json
+========
+    "eslint": "^8.54.0",
+    "prettier": "^3.6.2",
+    "@types/node": "^22.18.1",
+>>>>>>>> upstream/develop:plugins/board-assets/package.json
     "jest": "^29.7.0",
     "prettier": "^3.6.2",
     "ts-jest": "^29.1.1",
@@ -41,11 +50,16 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
+<<<<<<<< HEAD:foundations/core/packages/platform/package.json
     "intl-messageformat": "^10.7.14"
   },
   "repository": "https://github.com/hcengineering/huly.core",
   "publishConfig": {
     "access": "public"
+========
+    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/board": "workspace:^0.7.0"
+>>>>>>>> upstream/develop:plugins/board-assets/package.json
   },
   "exports": {
     ".": {
