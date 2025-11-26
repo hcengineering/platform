@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/kafka",
-  "version": "0.7.18",
+  "version": "0.7.19",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
