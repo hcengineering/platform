@@ -1,0 +1,21 @@
+bind_port = 8099
+bind_host = "0.0.0.0"
+
+token_secret = "secret"
+
+redis_urls = "redis://huly.local:6379"
+redis_password = "<invalid>"
+redis_mode = "direct"
+redis_service = "mymaster"
+
+max_ttl = 3600
+backend = "redis"
+no_authorization = false
+
+heartbeat_timeout = 90
+ping_timeout = 30
+
+# optional settings
+# max_size = 100
+
+# permit_file = "/home/user/hulipulse/permit.rego"
