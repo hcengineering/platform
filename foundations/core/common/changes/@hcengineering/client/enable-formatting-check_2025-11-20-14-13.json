@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/client",
+      "comment": "Add support for custom exclude filters",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/client"
+}

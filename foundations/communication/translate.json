@@ -1,0 +1,15 @@
+{
+  "cardId": "card-000",
+  "fromDate": "2025-09-02T10:00:00.000Z",
+  "toDate": "2025-09-02T12:30:00.000Z",
+  "language": "en",
+
+  "messages": {
+    "msg-001": {
+      "id": "msg-001",
+      "cardId": "card-000",
+      "type": "text",
+      "content": "Привет! Это первое сообщение."
+    }
+  }
+}

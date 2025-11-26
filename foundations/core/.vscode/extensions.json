@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "svelte.svelte-vscode",
+    "esbenp.prettier-vscode",
+    "firsttris.vscode-jest-runner"
+  ]
+}
