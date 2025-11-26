@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/client-resources",
-  "version": "0.7.17",
+  "version": "0.7.18",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -45,9 +45,9 @@
   },
   "dependencies": {
     "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/client": "workspace:^0.7.17",
-    "@hcengineering/core": "workspace:^0.7.22",
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/client": "workspace:^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/rpc": "workspace:^0.7.17",
     "snappyjs": "^0.7.0"
   },

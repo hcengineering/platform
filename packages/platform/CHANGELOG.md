@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/platform
 
-This log was last generated on Fri, 31 Oct 2025 20:11:13 GMT and should not be manually modified.
+This log was last generated on Wed, 26 Nov 2025 15:28:11 GMT and should not be manually modified.
+
+## 0.7.19
+Wed, 26 Nov 2025 15:28:11 GMT
+
+### Patches
+
+- Add password aging
 
 ## 0.7.18
 Fri, 31 Oct 2025 20:11:13 GMT
