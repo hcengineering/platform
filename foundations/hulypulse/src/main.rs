@@ -189,6 +189,7 @@ async fn main() -> anyhow::Result<()> {
                                 "backend": CONFIG.backend.to_string().to_lowercase(),
                                 "websockets": count,
                                 "status": "OK",
+                                "version": env!("CARGO_PKG_VERSION"),
                             })))
                         }
                     }
