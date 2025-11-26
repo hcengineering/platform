@@ -13,6 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import card, { Card } from '@hcengineering/card'
+  import chat from '@hcengineering/chat'
+  import communication, { GuestCommunicationSettings } from '@hcengineering/communication'
+  import contact, { AvatarType, ensureEmployeeForPerson } from '@hcengineering/contact'
+  import { EditableAvatar, getAccountClient } from '@hcengineering/contact-resources'
   import core, {
     type Account,
     AccountRole,
@@ -23,6 +28,10 @@
     readOnlyGuestAccountUuid,
     Ref
   } from '@hcengineering/core'
+  import { loginId } from '@hcengineering/login'
+  import { translateCB } from '@hcengineering/platform'
+  import { createQuery, getClient, MessageBox, uiContext } from '@hcengineering/presentation'
+  import { WorkspaceSetting } from '@hcengineering/setting'
   import {
     Breadcrumb,
     Button,
@@ -46,17 +55,9 @@
     themeStore,
     Toggle
   } from '@hcengineering/ui'
-  import { loginId } from '@hcengineering/login'
-  import { EditableAvatar, getAccountClient } from '@hcengineering/contact-resources'
-  import { translateCB } from '@hcengineering/platform'
-  import { createQuery, getClient, MessageBox, uiContext } from '@hcengineering/presentation'
-  import { WorkspaceSetting } from '@hcengineering/setting'
-  import contact, { AvatarType, ensureEmployeeForPerson } from '@hcengineering/contact'
   import settingsRes from '../plugin'
-  import communication, { GuestCommunicationSettings } from '@hcengineering/communication'
-  import card, { Card } from '@hcengineering/card'
-  import chat from '@hcengineering/chat'
   import ApiTokenPopup from './ApiTokenPopup.svelte'
+  import de from 'date-fns/locale/de'
 
   let loading = true
   let isEditingName = false
@@ -65,6 +66,7 @@
   let workspaceUrl = ''
   let allowReadOnlyGuests: boolean
   let allowGuestSignUp: boolean
+  let passwordAgingRule: number | undefined = undefined
 
   const accountClient = getAccountClient()
   const disabledSet = ['\n', '<', '>', '/', '\\']
@@ -86,6 +88,7 @@
     name = oldName
     allowReadOnlyGuests = res.allowReadOnlyGuest ?? false
     allowGuestSignUp = res.allowGuestSignUp ?? false
+    passwordAgingRule = res.passwordAgingRule ?? undefined
     loading = false
   }
 
@@ -194,6 +197,11 @@
 
   async function handleToggleGuestSignUp (e: CustomEvent<boolean>): Promise<void> {
     await accountClient.updateAllowGuestSignUp(e.detail)
+  }
+
+  async function changePasswordAgingRules (val: number | undefined): Promise<void> {
+    passwordAgingRule = Math.max(val ?? 0, 0)
+    await accountClient.updatePasswordAgingRule(passwordAgingRule)
   }
 
   async function handleGenerateApiToken (): Promise<void> {
@@ -318,6 +326,28 @@
             {#if isEditingName}
               <Button icon={IconClose} kind="ghost" size="small" on:click={handleCancelEditName} />
             {/if}
+          </div>
+
+          <div class="flex-col flex-gap-4 mt-6">
+            <div class="title"><Label label={settingsRes.string.PasswordAgingRule} /></div>
+            <div class="flex-row-center flex-gap-4">
+              <Label label={settingsRes.string.PasswordAgingRuleDescription} />
+              <Toggle
+                on={!!passwordAgingRule}
+                on:change={(e) => {
+                  if (e.detail === false) {
+                    void changePasswordAgingRules(undefined)
+                  } else {
+                    void changePasswordAgingRules(30)
+                  }
+                }}
+              />
+              {#if passwordAgingRule}
+                <div class="w-32">
+                  <EditBox format={'number'} minValue={0} maxDigitsAfterPoint={0} bind:value={passwordAgingRule} disabled={!passwordAgingRule} on:change={() => changePasswordAgingRules(passwordAgingRule)} />
+                </div>
+              {/if}
+            </div>
           </div>
 
           <div class="flex-col flex-gap-4 mt-6">
