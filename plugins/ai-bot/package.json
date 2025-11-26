@@ -39,10 +39,10 @@
   "dependencies": {
     "@hcengineering/chunter": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/core": "workspace:^0.7.23",
     "@hcengineering/love": "workspace:^0.7.0",
-    "@hcengineering/platform": "workspace:^0.7.18",
-    "@hcengineering/server-core": "workspace:^0.7.17",
+    "@hcengineering/platform": "workspace:^0.7.19",
+    "@hcengineering/server-core": "workspace:^0.7.18",
     "@hcengineering/view": "workspace:^0.7.0"
   }
 }

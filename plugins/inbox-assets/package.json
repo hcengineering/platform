@@ -41,7 +41,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/inbox": "workspace:^0.7.0"
   },
   "repository": "https://github.com/hcenginneing/anticrm",

@@ -46,9 +46,9 @@
   },
   "dependencies": {
     "mongodb": "^6.16.0",
-    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/core": "workspace:^0.7.23",
     "@hcengineering/account": "workspace:^0.7.0",
-    "@hcengineering/account-client": "workspace:^0.7.19",
+    "@hcengineering/account-client": "workspace:^0.7.20",
     "passport-custom": "~1.1.1",
     "passport-google-oauth20": "~2.0.0",
     "passport-github2": "~0.1.12",

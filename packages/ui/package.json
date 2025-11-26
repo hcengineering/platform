@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/core": "workspace:^0.7.22",
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/theme": "workspace:^0.7.0",
     "autolinker": "4.0.0",
     "date-fns": "^2.30.0",
