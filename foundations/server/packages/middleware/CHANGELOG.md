@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/middleware
 
-This log was last generated on Sat, 22 Nov 2025 15:29:49 GMT and should not be manually modified.
+This log was last generated on Wed, 26 Nov 2025 16:04:43 GMT and should not be manually modified.
+
+## 0.7.22
+Wed, 26 Nov 2025 16:04:43 GMT
+
+### Patches
+
+- Bump
 
 ## 0.7.21
 Sat, 22 Nov 2025 15:29:49 GMT

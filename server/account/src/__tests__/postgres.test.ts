@@ -579,6 +579,7 @@ describe('PostgresAccountDB', () => {
             name: 'Test',
             url: 'test',
             allowReadOnlyGuest: false,
+            password_aging_rule: null,
             created_on: '1234567890000',
             status: {
               mode: 'active',
@@ -600,6 +601,7 @@ describe('PostgresAccountDB', () => {
           name: 'Test',
           url: 'test',
           allowReadOnlyGuest: false,
+          passwordAgingRule: null,
           createdOn: 1234567890000,
           status: {
             mode: 'active',

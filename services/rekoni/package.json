@@ -66,7 +66,7 @@
   },
   "dependencies": {
     "@anticrm/skillset": "^0.6.0",
-    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/core": "workspace:^0.7.23",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -82,9 +82,9 @@
     "pdfjs-dist": "2.12.313",
     "sharp": "~0.34.3",
     "morgan": "^1.10.0",
-    "@hcengineering/server-core": "workspace:^0.7.17",
+    "@hcengineering/server-core": "workspace:^0.7.18",
     "@hcengineering/server-token": "workspace:^0.7.17",
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/analytics-service": "workspace:^0.7.17"
   },
   "description": "Document recognition service"

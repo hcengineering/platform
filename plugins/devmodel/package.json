@@ -37,9 +37,9 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.18",
-    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/platform": "workspace:^0.7.19",
+    "@hcengineering/core": "workspace:^0.7.23",
     "@hcengineering/ui": "workspace:^0.7.0",
-    "@hcengineering/client": "workspace:^0.7.17"
+    "@hcengineering/client": "workspace:^0.7.18"
   }
 }

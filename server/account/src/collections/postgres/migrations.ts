@@ -79,7 +79,8 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
     getV19Migration(ns, flavor),
     getV20Migration(ns, flavor),
     getV21Migration(ns, flavor),
-    getV22Migration(ns, flavor)
+    getV22Migration(ns, flavor),
+    getV23Migration(ns, flavor)
   ]
 }
 
@@ -742,6 +743,16 @@ function getV22Migration (ns: string, flavor: DBFlavor): [string, string] {
     `
     CREATE INDEX IF NOT EXISTS account_events_account_uuid_event_type_time_idx
     ON ${ns}.account_events (account_uuid, event_type, time DESC);
+    `
+  ]
+}
+
+function getV23Migration (ns: string, flavor: DBFlavor): [string, string] {
+  return [
+    'account_db_v23_add_password_aging_rule_to_workspace',
+    `
+    ALTER TABLE ${ns}.workspace
+    ADD COLUMN IF NOT EXISTS password_aging_rule INT8;
     `
   ]
 }

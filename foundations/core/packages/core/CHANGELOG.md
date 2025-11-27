@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/core
 
-This log was last generated on Thu, 06 Nov 2025 09:09:58 GMT and should not be manually modified.
+This log was last generated on Wed, 26 Nov 2025 15:28:11 GMT and should not be manually modified.
+
+## 0.7.23
+Wed, 26 Nov 2025 15:28:11 GMT
+
+### Patches
+
+- Add password aging
 
 ## 0.7.22
 Thu, 06 Nov 2025 09:09:58 GMT

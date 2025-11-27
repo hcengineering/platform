@@ -76,6 +76,13 @@
     "SignUpToCreateWorkspace": "ゲストアクセス可能なワークスペースはありません。登録して独自のワークスペースを作成してください。",
     "WhatIsYourName": "お名前は何ですか？",
     "AccessExpired": "アクセス時間が期限切れです。新しいアクセスリンクをリクエストしてください。",
-    "AccessNotActive": "アクセス時間はまだ開始されていません。開始まで: "
+    "AccessNotActive": "アクセス時間はまだ開始されていません。開始まで: ",
+    "ChangePassword": "パスワードを変更",
+    "CurrentPassword": "現在のパスワード",
+    "NewPassword": "新しいパスワード",
+    "EnterCurrentPassword": "現在のパスワードを入力",
+    "EnterNewPassword": "新しいパスワードを入力",
+    "RepeatNewPassword": "新しいパスワードを再入力",
+    "PasswordExpiredDesc": "パスワードの有効期限が切れています。続行するには新しいパスワードを設定してください。"
   }
 }

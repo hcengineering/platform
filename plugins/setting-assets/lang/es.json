@@ -10,8 +10,6 @@
     "Categories": "Categorías",
     "Delete": "Eliminar",
     "ChangePassword": "Cambiar contraseña",
-    "CurrentPassword": "Contraseña actual",
-    "NewPassword": "Nueva contraseña",
     "Disconnect": "Desconectar",
     "DisconnectAll": "Desconectar todos",
     "Saving": "Guardando...",
@@ -25,9 +23,6 @@
     "SendAgain": "Enviar de nuevo",
     "SendAgainIn": "Se puede enviar de nuevo en",
     "Value": "Valor",
-    "EnterCurrentPassword": "Introduce la contraseña actual",
-    "EnterNewPassword": "Introduce la nueva contraseña",
-    "RepeatNewPassword": "Repite la nueva contraseña",
     "Signout": "Cerrar sesión",
     "Settings": "Ajustes",
     "SelectWorkspace": "Seleccionar espacio de trabajo",
@@ -198,6 +193,8 @@
     "ApiAccess": "Acceso API",
     "ApiToken": "Token API",
     "GenerateApiToken": "Generar token API",
-    "IdentifierExists": "El identificador ya existe"
+    "IdentifierExists": "El identificador ya existe",
+    "PasswordAgingRule": "Regla de envejecimiento de contraseñas",
+    "PasswordAgingRuleDescription": "Número de días después de los cuales se requerirá a los usuarios que cambien su contraseña."
   }
 }

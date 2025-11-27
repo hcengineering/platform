@@ -51,8 +51,8 @@
     "@types/js-yaml": "^4.0.9"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.22",
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/server-client": "workspace:^0.7.16",
     "@hcengineering/importer": "workspace:^0.7.0",
     "commander": "^14.0.0",

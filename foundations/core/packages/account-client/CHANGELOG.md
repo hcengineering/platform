@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/account-client
 
-This log was last generated on Thu, 30 Oct 2025 08:41:42 GMT and should not be manually modified.
+This log was last generated on Wed, 26 Nov 2025 15:28:11 GMT and should not be manually modified.
+
+## 0.7.20
+Wed, 26 Nov 2025 15:28:11 GMT
+
+### Patches
+
+- Add password aging
 
 ## 0.7.19
 Thu, 30 Oct 2025 08:41:42 GMT

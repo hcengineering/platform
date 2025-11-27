@@ -10,8 +10,6 @@
     "Categories": "Kategoriler",
     "Delete": "Sil",
     "ChangePassword": "Şifreyi değiştir",
-    "CurrentPassword": "Mevcut şifre",
-    "NewPassword": "Yeni şifre",
     "Disconnect": "Bağlantıyı kes",
     "DisconnectAll": "Tümünün bağlantısını kes",
     "Saving": "Kaydediliyor...",
@@ -25,9 +23,6 @@
     "SendAgain": "Tekrar gönder",
     "SendAgainIn": "Tekrar gönderilebilir:",
     "Value": "Değer",
-    "EnterCurrentPassword": "Mevcut şifreyi girin",
-    "EnterNewPassword": "Yeni şifreyi girin",
-    "RepeatNewPassword": "Yeni şifreyi tekrarla",
     "Signout": "Çıkış yap",
     "Settings": "Ayarlar",
     "SelectWorkspace": "Çalışma alanı seç",
@@ -207,6 +202,8 @@
     "ApiAccess": "API erişimi",
     "ApiToken": "API token",
     "GenerateApiToken": "API token oluştur",
-    "IdentifierExists": "Tanımlayıcı zaten mevcut"
+    "IdentifierExists": "Tanımlayıcı zaten mevcut",
+    "PasswordAgingRule": "Parola yaşlandırma kuralı",
+    "PasswordAgingRuleDescription": "Kullanıcıların parolalarını değiştirmeleri gerekecek gün sayısı"
   }
 }

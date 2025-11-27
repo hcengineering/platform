@@ -233,6 +233,8 @@ export interface AccountClient {
   addEmailSocialId: (email: string) => Promise<OtpInfo>
   addHulyAssistantSocialId: () => Promise<PersonId>
   refreshHulyAssistantToken: () => Promise<void>
+  updatePasswordAgingRule: (days: number) => Promise<void>
+  checkPasswordAging: () => Promise<boolean>
 
   setMyProfile: (profile: Partial<Omit<UserProfile, 'personUuid'>>) => Promise<void>
   getUserProfile: (personUuid?: PersonUuid) => Promise<PersonWithProfile | null>
@@ -507,6 +509,24 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async updatePasswordAgingRule (days: number): Promise<void> {
+    const request = {
+      method: 'updatePasswordAgingRule' as const,
+      params: { days }
+    }
+
+    await this.rpc(request)
+  }
+
+  async checkPasswordAging (): Promise<boolean> {
+    const request = {
+      method: 'checkPasswordAging' as const,
+      params: {}
+    }
+
+    return await this.rpc(request)
   }
 
   async signUpJoin (

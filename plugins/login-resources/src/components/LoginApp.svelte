@@ -52,6 +52,7 @@
   import loginBackWebp from '../../img/login_back.webp'
   import loginBack2xWebp from '../../img/login_back_2x.webp'
   import AdminWorkspaces from './AdminWorkspaces.svelte'
+  import ChangePassword from './ChangePassword.svelte'
 
   export let page: Pages = 'signup'
 
@@ -177,6 +178,8 @@
               <ConfirmationSend />
             {:else if page === 'auth'}
               <Auth />
+            {:else if page === 'changePassword'}
+              <ChangePassword />
             {/if}
           </div>
         </Scroller>

@@ -6,6 +6,13 @@
     "IncorrectValue": "不正确的值 {field}"
   },
   "string": {
+    "ChangePassword": "更改密码",
+    "CurrentPassword": "当前密码",
+    "NewPassword": "新密码",
+    "EnterCurrentPassword": "输入当前密码",
+    "EnterNewPassword": "输入新密码",
+    "RepeatNewPassword": "重复新密码",
+    "PasswordExpiredDesc": "您的密码已过期。请设置新密码以继续。",
     "LogIn": "登录",
     "SignUp": "注册",
     "CreateWorkspace": "创建工作区",

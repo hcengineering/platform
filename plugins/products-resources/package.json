@@ -36,7 +36,7 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "svelte": "^4.2.20",
     "@hcengineering/products": "workspace:^0.7.0",
     "@hcengineering/controlled-documents": "workspace:^0.7.0",
@@ -45,7 +45,7 @@
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/presentation": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/core": "workspace:^0.7.23",
     "@hcengineering/view-resources": "workspace:^0.7.0",
     "@hcengineering/view": "workspace:^0.7.0",
     "@hcengineering/panel": "workspace:^0.7.0",

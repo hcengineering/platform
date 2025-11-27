@@ -121,7 +121,9 @@ import {
   isAccountPasswordLocked,
   recordFailedLoginAttempt,
   resetFailedLoginAttempts,
-  isAllowReadOnlyGuests
+  isAllowReadOnlyGuests,
+  updatePasswordAgingRule,
+  checkPasswordAging
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -1917,7 +1919,8 @@ export async function getLoginWithWorkspaceInfo (
               versionPatch: it.status.versionPatch
             },
             progress: it.status.processingProgress,
-            branding: it.branding
+            branding: it.branding,
+            passwordAgingRule: it.passwordAgingRule
           }
         ])
     ),
@@ -2807,6 +2810,8 @@ export type AccountMethods =
   | 'getUserProfile'
   | 'getSubscriptions'
   | 'getSubscriptionById'
+  | 'updatePasswordAgingRule'
+  | 'checkPasswordAging'
 
 /**
  * @public
@@ -2843,6 +2848,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     isAllowReadOnlyGuests: wrap(isAllowReadOnlyGuests),
     updateAllowReadOnlyGuests: wrap(updateAllowReadOnlyGuests),
     updateAllowGuestSignUp: wrap(updateAllowGuestSignUp),
+    updatePasswordAgingRule: wrap(updatePasswordAgingRule),
+    checkPasswordAging: wrap(checkPasswordAging),
     createMailbox: wrap(createMailbox),
     getMailboxes: wrap(getMailboxes),
     deleteMailbox: wrap(deleteMailbox),

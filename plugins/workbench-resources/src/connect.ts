@@ -25,12 +25,14 @@ import platform, {
   broadcastEvent,
   getMetadata,
   getResource,
+  type IntlString,
   OK,
   PlatformEvent,
   setMetadata,
   setPlatformStatus,
   Severity,
   Status,
+  type StatusCode,
   translateCB
 } from '@hcengineering/platform'
 import presentation, {
@@ -60,7 +62,12 @@ import { logOut, workspaceCreating } from './utils'
 import { WorkbenchEvents } from '@hcengineering/workbench'
 import { allowGuestSignUpStore } from '@hcengineering/view-resources'
 
-export const versionError = writable<string | undefined>(undefined)
+export const error = writable<string | undefined>(undefined)
+export const errorActions = writable<ErrorAction[]>([])
+export interface ErrorAction {
+  label: IntlString
+  action: () => void
+}
 const versionStorageKey = 'last_server_version'
 
 let _token: string | undefined
@@ -250,7 +257,8 @@ export async function connect (title: string): Promise<Client | undefined> {
 
               return false
             } else {
-              versionError.set(`Front version ${frontVersion} is not in sync with server version ${serverVersion}`)
+              errorActions.set([])
+              error.set(`Front version ${frontVersion} is not in sync with server version ${serverVersion}`)
 
               if (!desktopPlatform || !isUpgrading) {
                 setTimeout(() => {
@@ -274,32 +282,74 @@ export async function connect (title: string): Promise<Client | undefined> {
           console.log('reload due to upgrade')
           location.reload()
         },
-        onUnauthorized: () => {
-          void logOut().then(() => {
-            navigate({
-              path: [loginId],
-              query: {}
-            })
-          })
-        },
-        onArchived: () => {
-          translateCB(plugin.string.WorkspaceIsArchived, {}, get(themeStore).language, (r) => {
-            const selectWorkspace: Pages = 'selectWorkspace'
-            navigate({
-              path: [loginId, selectWorkspace],
-              query: {}
-            })
-          })
-        },
-        onMigration: () => {
-          // TODO: Rework maitenance mode as well
-          translateCB(plugin.string.WorkspaceIsMigrating, {}, get(themeStore).language, (r) => {
-            versionError.set(r)
-            setTimeout(() => {
-              console.log('reload due to migration')
-              location.reload()
-            }, 5000)
-          })
+        onError: (status: StatusCode) => {
+          switch (status) {
+            case platform.status.WorkspaceArchived: {
+              translateCB(plugin.string.WorkspaceIsArchived, {}, get(themeStore).language, (r) => {
+                error.set(r)
+                errorActions.set([
+                  {
+                    label: login.string.SelectWorkspace,
+                    action: () => {
+                      const selectWorkspace: Pages = 'selectWorkspace'
+                      navigate({
+                        path: [loginId, selectWorkspace],
+                        query: {}
+                      })
+                    }
+                  }
+                ])
+              })
+              break
+            }
+            case platform.status.PasswordExpired: {
+              translateCB(login.string.PasswordExpiredDesc, {}, get(themeStore).language, (r) => {
+                error.set(r)
+                errorActions.set([
+                  {
+                    label: login.string.SelectWorkspace,
+                    action: () => {
+                      const selectWorkspace: Pages = 'selectWorkspace'
+                      navigate({
+                        path: [loginId, selectWorkspace],
+                        query: {}
+                      })
+                    }
+                  },
+                  {
+                    label: login.string.ChangePassword,
+                    action: () => {
+                      const changePassword: Pages = 'changePassword'
+                      navigate({
+                        path: [loginId, changePassword],
+                        query: {}
+                      })
+                    }
+                  }
+                ])
+              })
+              break
+            }
+            case platform.status.WorkspaceMigration: {
+              translateCB(plugin.string.WorkspaceIsMigrating, {}, get(themeStore).language, (r) => {
+                error.set(r)
+                errorActions.set([])
+                setTimeout(() => {
+                  console.log('reload due to migration')
+                  location.reload()
+                }, 5000)
+              })
+              break
+            }
+            case platform.status.Unauthorized: {
+              void logOut().then(() => {
+                navigate({
+                  path: [loginId],
+                  query: {}
+                })
+              })
+            }
+          }
         },
         // We need to refresh all active live queries and clear old queries.
         onConnect: async (event: ClientConnectEvent, data: any): Promise<void> => {
@@ -307,11 +357,13 @@ export async function connect (title: string): Promise<Client | undefined> {
           if (event === ClientConnectEvent.Maintenance) {
             if (data != null && data.total !== 0) {
               translateCB(plugin.string.ServerUnderMaintenance, {}, get(themeStore).language, (r) => {
-                versionError.set(`${r} ${Math.floor((100 / data.total) * (data.total - data.toProcess))}%`)
+                errorActions.set([])
+                error.set(`${r} ${Math.floor((100 / data.total) * (data.total - data.toProcess))}%`)
               })
             } else {
               translateCB(plugin.string.ServerUnderMaintenance, {}, get(themeStore).language, (r) => {
-                versionError.set(r)
+                errorActions.set([])
+                error.set(r)
               })
             }
             return
@@ -352,7 +404,8 @@ export async function connect (title: string): Promise<Client | undefined> {
                   // It seems upgrade happened
                   console.log('reload due to version mismatch')
                   location.reload()
-                  versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
+                  errorActions.set([])
+                  error.set(`${currentVersionStr} != ${reconnectVersionStr}`)
                 }
 
                 console.log(
@@ -369,7 +422,8 @@ export async function connect (title: string): Promise<Client | undefined> {
                       location.reload()
                     }
                   }
-                  versionError.set(`${currentVersionStr} != ${reconnectVersionStr}`)
+                  error.set(`${currentVersionStr} != ${reconnectVersionStr}`)
+                  errorActions.set([])
                 }
 
                 const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? ''
@@ -504,7 +558,8 @@ export async function connect (title: string): Promise<Client | undefined> {
       const versionStr = versionToString(version)
 
       if (version === undefined || requiredVersion !== versionStr) {
-        versionError.set(`${versionStr} => ${requiredVersion}`)
+        error.set(`${versionStr} => ${requiredVersion}`)
+        errorActions.set([])
         return undefined
       }
     }
@@ -514,12 +569,14 @@ export async function connect (title: string): Promise<Client | undefined> {
     const requiredVersion = getMetadata(presentation.metadata.ModelVersion)
     console.log('checking min model version', requiredVersion)
     if (requiredVersion !== undefined) {
-      versionError.set(`'unknown' => ${requiredVersion}`)
+      error.set(`'unknown' => ${requiredVersion}`)
+      errorActions.set([])
       return undefined
     }
   }
 
-  versionError.set(undefined)
+  error.set(undefined)
+  errorActions.set([])
 
   // Update window title
   document.title = [wsUrl, title].filter((it) => it).join(' - ')
