@@ -6,6 +6,13 @@
     "IncorrectValue": "Yanlış değer {field}"
   },
   "string": {
+    "ChangePassword": "Parolayı değiştir",
+    "CurrentPassword": "Mevcut parola",
+    "NewPassword": "Yeni parola",
+    "EnterCurrentPassword": "Mevcut parolayı girin",
+    "EnterNewPassword": "Yeni parolayı girin",
+    "RepeatNewPassword": "Yeni parolayı tekrarlayın",
+    "PasswordExpiredDesc": "Parolanızın süresi doldu. Devam etmek için lütfen yeni bir parola belirleyin.",
     "LogIn": "Giriş Yap",
     "SignUp": "Kayıt Ol",
     "CreateWorkspace": "Çalışma alanı oluştur",

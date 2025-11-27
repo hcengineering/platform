@@ -10,8 +10,6 @@
     "Categories": "类别",
     "Delete": "删除",
     "ChangePassword": "更改密码",
-    "CurrentPassword": "当前密码",
-    "NewPassword": "新密码",
     "Disconnect": "断开连接",
     "DisconnectAll": "断开所有连接",
     "Saving": "保存中...",
@@ -25,9 +23,6 @@
     "SendAgain": "重新发送",
     "SendAgainIn": "可在  后再次发送",
     "Value": "值",
-    "EnterCurrentPassword": "输入当前密码",
-    "EnterNewPassword": "输入新密码",
-    "RepeatNewPassword": "重复新密码",
     "Signout": "退出登录",
     "Settings": "设置",
     "SelectWorkspace": "选择工作区",
@@ -207,6 +202,8 @@
     "ApiAccess": "API访问",
     "ApiToken": "API令牌",
     "GenerateApiToken": "生成API令牌",
-    "IdentifierExists": "标识符已存在"
+    "IdentifierExists": "标识符已存在",
+    "PasswordAgingRule": "密码老化规则",
+    "PasswordAgingRuleDescription": "用户需要更改密码的天数"
   }
 }

@@ -37,9 +37,9 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/core": "workspace:^0.7.23",
     "@hcengineering/drive": "workspace:^0.7.0",
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/uploader": "workspace:^0.7.0",
     "tus-js-client": "^4.3.1"
   },

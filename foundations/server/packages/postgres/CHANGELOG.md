@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/postgres
 
-This log was last generated on Wed, 12 Nov 2025 07:07:31 GMT and should not be manually modified.
+This log was last generated on Wed, 26 Nov 2025 16:04:43 GMT and should not be manually modified.
+
+## 0.7.20
+Wed, 26 Nov 2025 16:04:43 GMT
+
+### Patches
+
+- Bump
 
 ## 0.7.19
 Wed, 12 Nov 2025 07:07:31 GMT

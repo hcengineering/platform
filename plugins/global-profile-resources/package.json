@@ -38,13 +38,13 @@
   },
   "dependencies": {
     "svelte": "^4.2.20",
-    "@hcengineering/platform": "workspace:^0.7.18",
-    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/platform": "workspace:^0.7.19",
+    "@hcengineering/core": "workspace:^0.7.23",
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/view": "workspace:^0.7.0",
     "@hcengineering/presentation": "workspace:^0.7.0",
     "@hcengineering/global-profile": "workspace:^0.7.0",
-    "@hcengineering/account-client": "workspace:^0.7.19",
+    "@hcengineering/account-client": "workspace:^0.7.20",
     "@hcengineering/login": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/theme": "workspace:^0.7.0"

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/kafka",
-  "version": "0.7.18",
+  "version": "0.7.19",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -35,9 +35,9 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.22",
-    "@hcengineering/platform": "workspace:^0.7.18",
-    "@hcengineering/server-core": "workspace:^0.7.17",
+    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/platform": "workspace:^0.7.19",
+    "@hcengineering/server-core": "workspace:^0.7.18",
     "@hcengineering/storage": "workspace:^0.7.17",
     "kafkajs": "^2.2.4"
   },

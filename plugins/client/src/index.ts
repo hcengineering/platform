@@ -14,7 +14,7 @@
 //
 
 import type { Client, ClientConnectEvent, MeasureContext, TxPersistenceStore } from '@hcengineering/core'
-import { type Plugin, type Resource, type Metadata, plugin } from '@hcengineering/platform'
+import { type Plugin, type Resource, type Metadata, type StatusCode, plugin } from '@hcengineering/platform'
 
 /**
  * @public
@@ -61,9 +61,7 @@ export interface ClientFactoryOptions {
   connectionTimeout?: number
   onHello?: (serverVersion?: string) => boolean
   onUpgrade?: () => void
-  onUnauthorized?: () => void
-  onArchived?: () => void
-  onMigration?: () => void
+  onError?: (status: StatusCode) => void
   onConnect?: (event: ClientConnectEvent, lastTx: string | undefined, data: any) => Promise<void>
   ctx?: MeasureContext
   onDialTimeout?: () => void | Promise<void>

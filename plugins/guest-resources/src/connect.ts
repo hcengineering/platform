@@ -130,7 +130,7 @@ export async function connect (title: string): Promise<Client | undefined> {
     onUpgrade: () => {
       location.reload()
     },
-    onUnauthorized: () => {
+    onError: () => {
       void logOut().then(() => {
         invalidError.set(true)
       })

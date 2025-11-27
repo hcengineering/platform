@@ -2,6 +2,35 @@
   "name": "@hcengineering/server-storage",
   "entries": [
     {
+      "version": "0.7.17",
+      "tag": "@hcengineering/server-storage_v0.7.17",
+      "date": "Wed, 26 Nov 2025 16:04:43 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Bump"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `^0.7.17` to `0.7.18`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/minio\" from `^0.7.16` to `0.7.17`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/s3\" from `^0.7.16` to `0.7.17`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/datalake\" from `^0.7.16` to `0.7.17`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/hulylake\" from `^0.7.16` to `0.7.17`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.16",
       "tag": "@hcengineering/server-storage_v0.7.16",
       "date": "Thu, 06 Nov 2025 10:21:28 GMT",

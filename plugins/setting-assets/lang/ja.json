@@ -10,8 +10,6 @@
     "Categories": "カテゴリ",
     "Delete": "削除",
     "ChangePassword": "パスワードを変更",
-    "CurrentPassword": "現在のパスワード",
-    "NewPassword": "新しいパスワード",
     "Disconnect": "切断",
     "DisconnectAll": "すべて切断",
     "Saving": "保存中...",
@@ -25,9 +23,6 @@
     "SendAgain": "再送信",
     "SendAgainIn": "後に再送信できる",
     "Value": "値",
-    "EnterCurrentPassword": "現在のパスワードを入力",
-    "EnterNewPassword": "新しいパスワードを入力",
-    "RepeatNewPassword": "新しいパスワードを再入力",
     "Signout": "サインアウト",
     "Settings": "設定",
     "SelectWorkspace": "ワークスペースを選択",
@@ -207,6 +202,8 @@
     "ApiAccess": "APIアクセス",
     "ApiToken": "APIトークン",
     "GenerateApiToken": "APIトークンを生成",
-    "IdentifierExists": "識別子は既に存在します"
+    "IdentifierExists": "識別子は既に存在します",
+    "PasswordAgingRule": "パスワードエイジングルール",
+    "PasswordAgingRuleDescription": "ユーザーがパスワードを変更する必要がある日数"
   }
 }

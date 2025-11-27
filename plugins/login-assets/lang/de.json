@@ -6,6 +6,13 @@
     "IncorrectValue": "Ungültiger Wert für {field}"
   },
   "string": {
+    "ChangePassword": "Passwort ändern",
+    "CurrentPassword": "Aktuelles Passwort",
+    "NewPassword": "Neues Passwort",
+    "EnterCurrentPassword": "Aktuelles Passwort eingeben",
+    "EnterNewPassword": "Neues Passwort eingeben",
+    "RepeatNewPassword": "Neues Passwort wiederholen",
+    "PasswordExpiredDesc": "Ihr Passwort ist abgelaufen. Bitte legen Sie ein neues Passwort fest, um fortzufahren.",
     "LogIn": "Anmelden",
     "SignUp": "Registrieren",
     "CreateWorkspace": "Arbeitsbereich erstellen",

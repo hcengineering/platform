@@ -51,7 +51,7 @@ import core, {
   type WorkspaceInfoWithStatus,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import { type Status, UNAUTHORIZED, unknownError } from '@hcengineering/platform'
+import platform, { Severity, Status, UNAUTHORIZED, unknownError } from '@hcengineering/platform'
 import {
   type HelloRequest,
   type HelloResponse,
@@ -484,6 +484,12 @@ export class TSessionManager implements SessionManager {
     }
   }
 
+  @withContext('🧭 check-password-aging')
+  async checkPasswordAging (ctx: MeasureContext, token: string): Promise<boolean> {
+    const accountClient = getAccountClient(this.accountsUrl, token)
+    return await accountClient.checkPasswordAging()
+  }
+
   countUserSessions (workspace: Workspace, accountUuid: AccountUuid): number {
     return Array.from(workspace.sessions.values())
       .filter((it) => it.session.getUser() === accountUuid)
@@ -562,18 +568,32 @@ export class TSessionManager implements SessionManager {
 
     if (isArchivingMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
-      return { resp: { error: new Error('Workspace is archived'), terminate: true, specialError: 'archived' } }
+      return {
+        resp: {
+          error: new Status(Severity.ERROR, platform.status.WorkspaceArchived, { workspaceUuid }),
+          terminate: true,
+          specialError: 'archived'
+        }
+      }
     }
     if (isMigrationMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
       return {
-        resp: { error: new Error('Workspace is in region migration'), terminate: true, specialError: 'migration' }
+        resp: {
+          error: new Status(Severity.ERROR, platform.status.WorkspaceMigration, { workspaceUuid }),
+          terminate: true,
+          specialError: 'migration'
+        }
       }
     }
     if (isRestoringMode(workspaceInfo.mode)) {
       // No access to disabled workspaces for regular users
       return {
-        resp: { error: new Error('Workspace is in backup restore'), terminate: true, specialError: 'migration' }
+        resp: {
+          error: new Status(Severity.ERROR, platform.status.WorkspaceMigration, { workspaceUuid }),
+          terminate: true,
+          specialError: 'migration'
+        }
       }
     }
 
@@ -726,6 +746,14 @@ export class TSessionManager implements SessionManager {
         } else {
           this.workspaceInfoCache.delete(token.workspace)
         }
+
+        if (wsInfo.passwordAgingRule !== undefined && wsInfo.passwordAgingRule > 0) {
+          const isPasswordAgingOk = await this.checkPasswordAging(ctx, rawToken)
+          if (!isPasswordAgingOk) {
+            return { error: new Status(Severity.ERROR, platform.status.PasswordExpired, {}), terminate: true }
+          }
+        }
+
         const { workspace, resp } = await this.getWorkspace(ctx.parent ?? ctx, token.workspace, wsInfo, token, ws)
         if (resp !== undefined) {
           return resp

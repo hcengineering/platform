@@ -6,6 +6,13 @@
     "IncorrectValue": "Incorrect value {field}"
   },
   "string": {
+    "ChangePassword": "Change password",
+    "CurrentPassword": "Current password",
+    "NewPassword": "New password",
+    "EnterCurrentPassword": "Enter current password",
+    "EnterNewPassword": "Enter new password",
+    "RepeatNewPassword": "Repeat new password",
+    "PasswordExpiredDesc": "Your password has expired. Please set a new password to continue.",
     "LogIn": "Log In",
     "SignUp": "Sign Up",
     "CreateWorkspace": "Create workspace",

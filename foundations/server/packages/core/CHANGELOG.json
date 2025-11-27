@@ -2,6 +2,18 @@
   "name": "@hcengineering/server-core",
   "entries": [
     {
+      "version": "0.7.18",
+      "tag": "@hcengineering/server-core_v0.7.18",
+      "date": "Wed, 26 Nov 2025 16:04:43 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Bump"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.17",
       "tag": "@hcengineering/server-core_v0.7.17",
       "date": "Thu, 06 Nov 2025 10:21:28 GMT",
