@@ -14,7 +14,10 @@
 //
 
 use crate::config::CONFIG;
-use redis::aio::MultiplexedConnection;
+
+// #[cfg(feature = "db-redis")]
+// use redis::aio::MultiplexedConnection;
+
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -50,8 +53,10 @@ pub fn new_session_id() -> SessionId {
 pub enum RedisEventAction {
     Set,
     Del,
+    #[cfg(feature = "db-redis")]
     Unlink,
     Expired,
+    #[cfg(feature = "db-redis")]
     Other(String),
 }
 
@@ -169,26 +174,26 @@ pub async fn broadcast_event(
     }
 }
 
-pub async fn push_event(
-    hub_state: &Arc<RwLock<HubState>>,
-    redis: &mut MultiplexedConnection,
-    ev: RedisEvent,
-) {
-    // Value only for Set
-    let mut value: Option<String> = None;
-    if matches!(ev.message, RedisEventAction::Set) {
-        match ::redis::cmd("GET")
-            .arg(&ev.key)
-            .query_async::<Option<String>>(redis)
-            .await
-        {
-            Ok(v) => value = v,
-            Err(e) => tracing::warn!("redis GET {} failed: {}", &ev.key, e),
-        }
-    }
+// pub async fn push_event(
+//     hub_state: &Arc<RwLock<HubState>>,
+//     redis: &mut MultiplexedConnection,
+//     ev: RedisEvent,
+// ) {
+//     // Value only for Set
+//     let mut value: Option<String> = None;
+//     if matches!(ev.message, RedisEventAction::Set) {
+//         match ::redis::cmd("GET")
+//             .arg(&ev.key)
+//             .query_async::<Option<String>>(redis)
+//             .await
+//         {
+//             Ok(v) => value = v,
+//             Err(e) => tracing::warn!("redis GET {} failed: {}", &ev.key, e),
+//         }
+//     }
 
-    broadcast_event(hub_state, ev, value).await;
-}
+//     broadcast_event(hub_state, ev, value).await;
+// }
 
 pub fn check_heartbeat(hub_state: Arc<RwLock<HubState>>) {
     tokio::spawn(async move {

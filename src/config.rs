@@ -15,10 +15,16 @@
 
 use std::{path::Path, sync::LazyLock};
 
+#[cfg(feature = "auth")]
 use secrecy::SecretString;
+
 use serde::Deserialize;
+#[cfg(feature = "db-redis")]
+use serde_with::StringWithSeparator;
+#[cfg(feature = "db-redis")]
 use serde_with::formats::CommaSeparator;
-use serde_with::{StringWithSeparator, serde_as};
+use serde_with::serde_as;
+#[cfg(feature = "db-redis")]
 use url::Url;
 
 use config::FileFormat;
@@ -43,23 +49,27 @@ pub struct Config {
     pub bind_port: u16,
     pub bind_host: String,
 
+    #[cfg(feature = "auth")]
     pub token_secret: SecretString,
 
+    #[cfg(feature = "db-redis")]
     #[serde_as(as = "StringWithSeparator::<CommaSeparator, url::Url>")]
     pub redis_urls: Vec<Url>,
+    #[cfg(feature = "db-redis")]
     pub redis_password: String,
+    #[cfg(feature = "db-redis")]
     pub redis_mode: RedisMode,
+    #[cfg(feature = "db-redis")]
     pub redis_service: String,
 
     pub max_ttl: usize,
     pub max_size: Option<usize>,
 
-    pub backend: BackendType,
-    pub no_authorization: bool,
-
+    // pub backend: BackendType,
     pub heartbeat_timeout: u64,
     pub ping_timeout: u64,
 
+    #[cfg(feature = "auth")]
     pub policy_file: Option<String>,
 }
 

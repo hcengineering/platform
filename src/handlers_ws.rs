@@ -16,27 +16,36 @@
 use actix_ws;
 use futures_util::StreamExt;
 // use tracing::info;
-use actix_web::{Error, HttpMessage, HttpRequest, HttpResponse, web};
+use actix_web::{Error, HttpRequest, HttpResponse, web};
+
+#[cfg(feature = "auth")]
+use actix_web::HttpMessage;
+
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::{
-    config::CONFIG,
-    db::Db,
+    BACKEND,
+    db::{Db, SaveMode, Ttl},
     hub_service::{HubState, SessionId, new_session_id},
-    redis::{SaveMode, Ttl},
-    workspace_owner::check_workspace_core,
-    workspace_owner::test_rego_claims,
 };
 
-use strum_macros::AsRefStr;
+#[cfg(feature = "auth")]
+use crate::workspace_owner::check_workspace_core;
+
+#[cfg(feature = "auth")]
+use crate::workspace_owner::test_rego_claims;
+
+// use strum_macros::AsRefStr;
+use strum::AsRefStr;
 
 #[derive(Deserialize, Debug, AsRefStr)]
 #[serde(rename_all = "lowercase", tag = "type")]
 pub enum WsCommand {
     Put {
+        #[serde(default = "default_corr")]
         correlation: String,
         key: String,
         data: String,
@@ -59,6 +68,7 @@ pub enum WsCommand {
     },
 
     Delete {
+        #[serde(default = "default_corr")]
         correlation: String,
         key: String,
 
@@ -68,36 +78,48 @@ pub enum WsCommand {
     },
 
     Get {
+        #[serde(default = "default_corr")]
         correlation: String,
         key: String,
     },
 
     List {
+        #[serde(default = "default_corr")]
         correlation: String,
         key: String,
     },
 
     Sub {
+        #[serde(default = "default_corr")]
         correlation: String,
         key: String,
     },
 
     Unsub {
+        #[serde(default = "default_corr")]
         correlation: String,
         key: String,
     },
 
     Sublist {
+        #[serde(default = "default_corr")]
         correlation: String,
     },
 
     Info {
+        #[serde(default = "default_corr")]
         correlation: String,
     },
 }
 
+fn default_corr() -> String {
+    "1".to_string()
+}
+
+#[cfg(feature = "auth")]
 use hulyrs::services::jwt::Claims;
 
+#[cfg(feature = "auth")]
 async fn wrong_workspace(
     claims: &Option<Claims>,
     key: &str,
@@ -132,7 +154,7 @@ async fn handle_command(
     cmd: WsCommand,
     db: &Db,
     hub_state: &Arc<RwLock<HubState>>,
-    claims: Option<Claims>,
+    #[cfg(feature = "auth")] claims: Option<Claims>,
     session_id: SessionId,
 ) {
     match cmd {
@@ -140,7 +162,15 @@ async fn handle_command(
         WsCommand::Info { correlation } => {
             tracing::info!("INFO");
             match db.info().await {
-                Ok(info) => result(info, &correlation, ws).await,
+                Ok(info) => {
+                    let info = json!({
+                        "memory_info": info,
+                        "backend": BACKEND,
+                        "websockets": hub_state.read().await.count(),
+                        "version": env!("CARGO_PKG_VERSION"),
+                    });
+                    result(info, &correlation, ws).await
+                }
                 Err(e) => result_err(e.to_string(), &correlation, ws).await,
             }
         }
@@ -156,6 +186,8 @@ async fn handle_command(
             correlation,
         } => {
             tracing::info!("PUT {} = {}", &key, &data);
+
+            #[cfg(feature = "auth")]
             if wrong_workspace(&claims, &key, &correlation, ws).await {
                 return;
             }
@@ -198,6 +230,8 @@ async fn handle_command(
             if_match,
         } => {
             tracing::info!("DELETE {}", &key); //  correlation:{:?} , &correlation
+
+            #[cfg(feature = "auth")]
             if wrong_workspace(&claims, &key, &correlation, ws).await {
                 return;
             }
@@ -224,6 +258,8 @@ async fn handle_command(
 
         WsCommand::Get { key, correlation } => {
             tracing::info!("GET {}", &key);
+
+            #[cfg(feature = "auth")]
             if wrong_workspace(&claims, &key, &correlation, ws).await {
                 return;
             }
@@ -240,9 +276,12 @@ async fn handle_command(
 
         WsCommand::List { key, correlation } => {
             tracing::info!("LIST {:?}", &key);
+
+            #[cfg(feature = "auth")]
             if wrong_workspace(&claims, &key, &correlation, ws).await {
                 return;
             }
+
             match db.list(&key).await {
                 Ok(data) => {
                     let values: Vec<Value> = data.into_iter().map(|item| json!(item)).collect();
@@ -254,9 +293,12 @@ async fn handle_command(
 
         WsCommand::Sub { key, correlation } => {
             tracing::info!("SUB {}", &key);
+
+            #[cfg(feature = "auth")]
             if wrong_workspace(&claims, &key, &correlation, ws).await {
                 return;
             }
+
             hub_state.write().await.subscribe(session_id, key);
             result("OK", &correlation, ws).await;
         }
@@ -267,9 +309,11 @@ async fn handle_command(
                 hub_state.write().await.unsubscribe_all(session_id);
                 result("OK", &correlation, ws).await;
             } else {
+                #[cfg(feature = "auth")]
                 if wrong_workspace(&claims, &key, &correlation, ws).await {
                     return;
                 }
+
                 hub_state.write().await.unsubscribe(session_id, key);
                 result("OK", &correlation, ws).await;
             }
@@ -291,16 +335,13 @@ pub async fn handler(
     db: web::Data<Db>,
     hub_state: web::Data<Arc<RwLock<HubState>>>,
 ) -> Result<HttpResponse, Error> {
-    let claims = if !CONFIG.no_authorization {
-        Some(
-            req.extensions()
-                .get::<Claims>()
-                .expect("Missing claims")
-                .to_owned(),
-        )
-    } else {
-        None
-    };
+    #[cfg(feature = "auth")]
+    let claims = Some(
+        req.extensions()
+            .get::<Claims>()
+            .expect("Missing claims")
+            .to_owned(),
+    );
 
     let (response, mut session, mut msg_stream) = actix_ws::handle(&req, payload)?;
 
@@ -311,7 +352,9 @@ pub async fn handler(
 
     actix_web::rt::spawn(async move {
         while let Some(Ok(msg)) = msg_stream.next().await {
-            tracing::debug!("WebSocket message: {:?}", msg);
+            if !matches!(msg, actix_ws::Message::Pong(_)) {
+                tracing::debug!("WebSocket message: {:?}", msg);
+            }
 
             // renew heartbeat to unixtime (all messages is activity, including "ping")
             hub_state.write().await.renew_heartbeat(session_id);
@@ -336,7 +379,8 @@ pub async fn handler(
 
                 actix_ws::Message::Text(text) => match serde_json::from_str::<WsCommand>(&text) {
                     Ok(cmd) => {
-                        if !CONFIG.no_authorization {
+                        #[cfg(feature = "auth")]
+                        {
                             let key = match &cmd {
                                 WsCommand::Put { key, .. }
                                 | WsCommand::Delete { key, .. }
@@ -360,6 +404,7 @@ pub async fn handler(
                             cmd,
                             &db,
                             &hub_state,
+                            #[cfg(feature = "auth")]
                             claims.clone(),
                             session_id,
                         )
