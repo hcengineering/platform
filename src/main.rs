@@ -71,15 +71,24 @@ pub const BACKEND: &str = "REDIS";
 #[cfg(not(feature = "db-redis"))]
 pub const BACKEND: &str = "MEMORY";
 
-fn initialize_tracing(level: tracing::Level) {
+fn initialize_tracing() {
     use tracing_subscriber::{filter::targets::Targets, prelude::*};
 
-    let filter = Targets::default()
-        .with_target(env!("CARGO_BIN_NAME"), level)
-        .with_target("actix", tracing::Level::WARN);
+    let level = match CONFIG.loglevel.as_str() {
+        "TRACE" => tracing::Level::TRACE, // full
+        "DEBUG" => tracing::Level::DEBUG, // for developer
+        "INFO" => tracing::Level::INFO,   // normal
+        "WARN" => tracing::Level::WARN,   // something went wrong
+        "ERROR" => tracing::Level::ERROR, // serious error
+        _ => tracing::Level::ERROR,
+    };
 
     tracing_subscriber::registry()
-        .with(filter)
+        .with(
+            Targets::new()
+                .with_target(env!("CARGO_BIN_NAME"), level)
+                .with_target("actix", tracing::Level::WARN),
+        )
         .with(tracing_subscriber::fmt::layer().compact())
         .init();
 }
@@ -128,14 +137,7 @@ async fn check_workspace(
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
-    initialize_tracing(match CONFIG.loglevel.as_str() {
-        "TRACE" => tracing::Level::TRACE, // full
-        "DEBUG" => tracing::Level::DEBUG, // for developer
-        "INFO" => tracing::Level::INFO,   // normal
-        "WARN" => tracing::Level::WARN,   // something went wrong
-        "ERROR" => tracing::Level::ERROR, // serious error
-        _ => tracing::Level::ERROR,
-    });
+    initialize_tracing();
 
     tracing::info!("{}/{}", env!("CARGO_BIN_NAME"), env!("CARGO_PKG_VERSION"));
 
