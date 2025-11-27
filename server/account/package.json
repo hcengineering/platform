@@ -36,8 +36,8 @@
     "@types/node": "^22.18.1"
   },
   "dependencies": {
-    "@hcengineering/mongo": "workspace:^0.7.16",
-    "@hcengineering/postgres": "workspace:^0.7.19",
+    "@hcengineering/mongo": "workspace:^0.7.17",
+    "@hcengineering/postgres": "workspace:^0.7.20",
     "mongodb": "^6.16.0",
     "postgres": "^3.4.7",
     "@hcengineering/platform": "workspace:^0.7.19",
@@ -45,7 +45,7 @@
     "otp-generator": "^4.0.1",
     "@hcengineering/server-token": "workspace:^0.7.17",
     "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/server-storage": "workspace:^0.7.16",
+    "@hcengineering/server-storage": "workspace:^0.7.17",
     "@hcengineering/server-core": "workspace:^0.7.18",
     "@hcengineering/server-pipeline": "workspace:^0.7.0"
   }

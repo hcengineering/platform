@@ -62,7 +62,7 @@
     "@hcengineering/analytics-service": "workspace:^0.7.17",
     "@hcengineering/server-token": "workspace:^0.7.17",
     "@hcengineering/server-core": "workspace:^0.7.18",
-    "@hcengineering/server-client": "workspace:^0.7.16",
+    "@hcengineering/server-client": "workspace:^0.7.17",
     "@hcengineering/core": "workspace:^0.7.23",
     "@hcengineering/account-client": "workspace:^0.7.20",
     "@hcengineering/platform": "workspace:^0.7.19",
