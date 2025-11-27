@@ -23,6 +23,14 @@ export class PlanningNavigationMenuPage {
   readonly accordionContainerToDoUnplanned = (): Locator =>
     this.page.locator('div.toDos-container div.hulyAccordionItem-container', { hasText: 'Unplanned' })
 
+  readonly toDoPanelContainer = (): Locator => this.page.locator('div.toDos-container')
+
+  readonly accordionContainerByName = (toDoCategoryName: string): Locator =>
+    this.toDoPanelContainer().locator('div.hulyAccordionItem-container', { hasText: toDoCategoryName })
+
+  readonly categoryProjectContainer = (category: string, project: string): Locator =>
+    this.accordionContainerByName(category).locator(`div.hulyAccordionItem-container:has(button:has-text("${project}"))`)
+
   async clickOnButtonToDoAll (): Promise<void> {
     await this.buttonToDoAll().click()
   }
@@ -42,5 +50,9 @@ export class PlanningNavigationMenuPage {
     )
     const accCount = await this.accordionContainerToDoUnplanned().locator('button.hulyToDoLine-container').count()
     expect(accCount).toBe(navCount)
+  }
+
+  async checkToDoCategory (toDoName: string, category: string, project: string): Promise<void> {
+    await expect(this.categoryProjectContainer(category, project).locator(`div.hulyAccordionItem-content:has-text("${toDoName}")`)).toBeVisible()
   }
 }
