@@ -59,6 +59,7 @@
     "ForbidUpdateCard": "カード更新を禁止",
     "ForbidCreateCardPermission": "カード作成を禁止",
     "ForbidAddTagPermission": "タグ追加を禁止",
-    "ForbidRemoveTag": "タグ削除を禁止"
+    "ForbidRemoveTag": "タグ削除を禁止",
+    "Duplicate": "複製"
   }
 }

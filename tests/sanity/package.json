@@ -29,9 +29,9 @@
     "allure:generate": "allure generate allure-results -o allure-report --clean"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@types/jest": "^29.5.5",
-    "@types/node": "^22.15.29",
+    "@types/node": "^22.18.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -49,10 +49,10 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "cross-env": "~7.0.3",
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/client-resources": "^0.7.17",
+    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/client-resources": "workspace:^0.7.18",
     "@hcengineering/account": "workspace:^0.7.0",
-    "@hcengineering/account-client": "^0.7.19",
-    "@hcengineering/server-token": "^0.7.17"
+    "@hcengineering/account-client": "workspace:^0.7.20",
+    "@hcengineering/server-token": "workspace:^0.7.17"
   }
 }

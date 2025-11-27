@@ -26,6 +26,7 @@ env:
     common
     desktop
     desktop-package
+    foundations
     qms-desktop-package
     dev
     models
@@ -240,11 +241,13 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
       - name: Configure /etc/hosts
         run: |
           sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
@@ -263,7 +266,7 @@ jobs:
           ./profile-start.sh
       - name: Run UI tests
         run: |
-          cd ./tests/sanity          
+          cd ./tests/sanity
           node ../../common/scripts/install-run-rushx.js uitest
       - name: Download profile
         run: |
@@ -370,11 +373,13 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
       - name: Configure /etc/hosts
         run: |
           sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
@@ -465,10 +470,13 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
       - name: Configure /etc/hosts
         run: |
           sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
@@ -546,10 +554,13 @@ jobs:
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Docker Build
         run: node common/scripts/install-run-rush.js docker
         env:
           DOCKER_CLI_HINTS: false
+          DOCKER_BUILDKIT: 1
       - name: Configure /etc/hosts
         run: |
           sudo echo "127.0.0.1 huly.local" | sudo tee -a /etc/hosts
@@ -602,16 +613,13 @@ jobs:
     timeout-minutes: 60
     steps:
       # https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
-      - name: Free disk space
-        run: |
-          echo "Disk space before cleanup:"
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          echo "Disk space after cleanup:"
-          df -h
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+          submodules: recursive
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Configure docker
@@ -623,11 +631,6 @@ jobs:
                 "containerd-snapshotter": true
               }
             }
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          filter: tree:0
-          submodules: recursive
 
       - name: Checkout init repository
         run: |
@@ -674,6 +677,8 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+          DOCKER_BUILDKIT: 1
+          DOCKER_BUILD_CLEANUP: true
       - name: Docker build love-agent
         run: |
           cd ./services/ai-bot/love-agent
@@ -682,6 +687,7 @@ jobs:
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
+          DOCKER_BUILDKIT: 1
       - name: Login to Docker Hub
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
         uses: docker/login-action@v3

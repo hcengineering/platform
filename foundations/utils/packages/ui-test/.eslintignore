@@ -1,0 +1,5 @@
+lib
+types
+dist
+node_modules
+.build

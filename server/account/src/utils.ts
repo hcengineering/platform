@@ -48,6 +48,7 @@ import { accountPlugin } from './plugin'
 import {
   type Account,
   type AccountDB,
+  type AccountEvent,
   AccountEventType,
   type AccountMethodHandler,
   type Integration,
@@ -428,7 +429,7 @@ export async function setPassword (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  personUuid: AccountUuid,
+  accountUuid: AccountUuid,
   password: string
 ): Promise<void> {
   if (password == null || password === '') {
@@ -436,7 +437,45 @@ export async function setPassword (
   }
 
   const salt = randomBytes(32)
-  await db.setPassword(personUuid, hashWithSalt(password, salt), salt)
+  await db.setPassword(accountUuid, hashWithSalt(password, salt), salt)
+
+  // Record password change event
+  try {
+    await db.accountEvent.insertOne({
+      accountUuid,
+      eventType: AccountEventType.PASSWORD_CHANGED,
+      time: Date.now()
+    })
+  } catch (err) {
+    ctx.warn('Failed to record password change event', { accountUuid, err })
+  }
+}
+
+export async function getLastPasswordChangeEvent (
+  db: AccountDB,
+  accountUuid: AccountUuid
+): Promise<AccountEvent | null> {
+  const result = await db.accountEvent.find(
+    { accountUuid, eventType: AccountEventType.PASSWORD_CHANGED },
+    { time: 'descending' },
+    1
+  )
+  return result[0] ?? null
+}
+
+export async function getAccountCreatedEvent (db: AccountDB, accountUuid: AccountUuid): Promise<AccountEvent | null> {
+  const result = await db.accountEvent.find(
+    { accountUuid, eventType: AccountEventType.ACCOUNT_CREATED },
+    { time: 'descending' },
+    1
+  )
+  return result[0] ?? null
+}
+
+export async function isPasswordChangedSince (db: AccountDB, accountUuid: AccountUuid, since: number): Promise<boolean> {
+  const lastEvent =
+    (await getLastPasswordChangeEvent(db, accountUuid)) ?? (await getAccountCreatedEvent(db, accountUuid))
+  return lastEvent != null && lastEvent.time >= since
 }
 
 export async function generateUniqueOtp (db: AccountDB): Promise<string> {
@@ -871,6 +910,52 @@ export async function updateAllowReadOnlyGuests (
   return { guestPerson, guestSocialIds: guestSocialIds.filter((si) => si.isDeleted !== true) }
 }
 
+export async function updatePasswordAgingRule (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    days: number
+  }
+): Promise<void> {
+  const { days } = params
+  const { account, workspace } = decodeTokenVerbose(ctx, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  const accRole = account === systemAccountUuid ? AccountRole.Owner : await db.getWorkspaceRole(account, workspace)
+  if (accRole == null || getRolePower(accRole) < getRolePower(AccountRole.Maintainer)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  await db.updatePasswordAgingRule(workspace, days)
+}
+
+export async function checkPasswordAging (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<boolean> {
+  const { account, workspace } = decodeTokenVerbose(ctx, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+  const ws = await getWorkspaceById(db, workspace)
+  if (ws == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+  if (ws.passwordAgingRule == null || ws.passwordAgingRule <= 0) {
+    return true
+  }
+  const since = Date.now() - ws.passwordAgingRule * 24 * 60 * 60 * 1000
+  const res = await isPasswordChangedSince(db, account, since)
+  return res
+}
+
 export async function updateAllowGuestSignUp (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1076,13 +1161,11 @@ export async function createWorkspaceRecord (
 export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite, email: string): Promise<WorkspaceUuid> {
   if (invite.remainingUses === 0) {
     ctx.error('Invite limit exceeded', { email, ...invite })
-    Analytics.handleError(new Error(`Invite limit exceeded ${email}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
   if (invite.expiresOn > 0 && invite.expiresOn < Date.now()) {
     ctx.error('Invite link expired', { email, ...invite })
-    Analytics.handleError(new Error(`Invite link expired ${invite.id} ${email}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.ExpiredLink, {}))
   }
 
@@ -1100,7 +1183,6 @@ export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite,
 
   if (invite.email != null && invite.email.trim().length > 0 && invite.email !== email) {
     ctx.error("Invite doesn't allow this email address", { email, ...invite })
-    Analytics.handleError(new Error(`Invite link email check failed ${invite.id} ${email} ${invite.email}`))
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 

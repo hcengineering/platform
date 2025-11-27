@@ -39,7 +39,8 @@ export const pages = [
   'confirm',
   'confirmationSend',
   'auth',
-  'login-password'
+  'login-password',
+  'changePassword'
 ] as const
 
 export type Pages = (typeof pages)[number]
@@ -78,9 +79,17 @@ export default plugin(loginId, {
     PasswordMinDigits: '' as IntlString<{ count: number }>,
     PasswordMinUpperChars: '' as IntlString<{ count: number }>,
     PasswordMinLowerChars: '' as IntlString<{ count: number }>,
+    SelectWorkspace: '' as IntlString,
+    ChangePassword: '' as IntlString,
+    CurrentPassword: '' as IntlString,
+    NewPassword: '' as IntlString,
+    EnterCurrentPassword: '' as IntlString,
+    EnterNewPassword: '' as IntlString,
+    RepeatNewPassword: '' as IntlString,
     WorkspaceArchived: '' as IntlString,
     WorkspaceArchivedDesc: '' as IntlString,
-    RestoreArchivedWorkspace: '' as IntlString
+    RestoreArchivedWorkspace: '' as IntlString,
+    PasswordExpiredDesc: '' as IntlString
   },
   function: {
     SendInvite: '' as Resource<(email: string, role: AccountRole) => Promise<void>>,

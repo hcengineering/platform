@@ -28,5 +28,6 @@ loadMetadata(card.icon, {
   Space: `${icons}#space`,
   Expand: `${icons}#expand`,
   Feed: `${icons}#feed`,
-  All: `${icons}#all`
+  All: `${icons}#all`,
+  Duplicate: `${icons}#duplicate`
 })

@@ -20,7 +20,7 @@
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",
     "svelte-check": "^3.6.9",
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -41,10 +41,10 @@
     "@hcengineering/ui": "workspace:^0.7.0",
     "svelte": "^4.2.20",
     "lexorank": "~1.0.4",
-    "@hcengineering/platform": "^0.7.17",
-    "@hcengineering/core": "^0.7.21",
+    "@hcengineering/platform": "workspace:^0.7.19",
+    "@hcengineering/core": "workspace:^0.7.23",
     "@hcengineering/presentation": "workspace:^0.7.0",
     "@hcengineering/notification": "workspace:^0.7.0",
-    "@hcengineering/rank": "^0.7.17"
+    "@hcengineering/rank": "workspace:^0.7.17"
   }
 }

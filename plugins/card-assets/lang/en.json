@@ -59,6 +59,7 @@
     "ForbidUpdateCard": "Forbid Update Card",
     "ForbidCreateCardPermission": "Forbid Create Card",
     "ForbidAddTagPermission": "Forbid Add Tag",
-    "ForbidRemoveTag": "Forbid Remove Tag"
+    "ForbidRemoveTag": "Forbid Remove Tag",
+    "Duplicate": "Duplicate"
   }
 }

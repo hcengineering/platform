@@ -6,6 +6,13 @@
     "IncorrectValue": "Valeur incorrecte {field}"
   },
   "string": {
+    "ChangePassword": "Changer le mot de passe",
+    "CurrentPassword": "Mot de passe actuel",
+    "NewPassword": "Nouveau mot de passe",
+    "EnterCurrentPassword": "Entrez le mot de passe actuel",
+    "EnterNewPassword": "Entrez le nouveau mot de passe",
+    "RepeatNewPassword": "Répétez le nouveau mot de passe",
+    "PasswordExpiredDesc": "Votre mot de passe a expiré. Veuillez définir un nouveau mot de passe pour continuer.",
     "LogIn": "Connexion",
     "SignUp": "Inscription",
     "CreateWorkspace": "Créer un espace de travail",

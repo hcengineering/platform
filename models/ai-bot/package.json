@@ -18,7 +18,7 @@
     "test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.54.0",
@@ -28,17 +28,17 @@
     "eslint-plugin-promise": "^6.1.1",
     "prettier": "^3.6.2",
     "typescript": "^5.9.3",
-    "@types/node": "^22.15.29",
+    "@types/node": "^22.18.1",
     "jest": "^29.7.0",
     "@types/jest": "^29.5.5",
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
     "@hcengineering/ai-bot": "workspace:^0.7.0",
-    "@hcengineering/core": "^0.7.21",
-    "@hcengineering/model": "^0.7.17",
+    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/model": "workspace:^0.7.17",
     "@hcengineering/model-core": "workspace:^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/ui": "workspace:^0.7.0"
   }
 }

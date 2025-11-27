@@ -11,6 +11,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
+import { Analytics } from '@hcengineering/analytics'
 import { type Card, CardEvents, cardId, type CardSpace, type MasterTag } from '@hcengineering/card'
 import core, {
   AccountRole,
@@ -25,6 +27,7 @@ import core, {
   hasAccountRole,
   type Hierarchy,
   makeCollabId,
+  makeDocCollabId,
   type Markup,
   type MarkupBlobRef,
   type Ref,
@@ -35,14 +38,17 @@ import core, {
   type WithLookup
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
+import { getMetadata, translate } from '@hcengineering/platform'
 import presentation, {
   createMarkup,
   getClient,
+  getMarkup,
   IconWithEmoji,
   MessageBox,
   type ObjectSearchResult
 } from '@hcengineering/presentation'
-import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
+import { makeRank } from '@hcengineering/rank'
+import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
 import {
   getCurrentLocation,
   getCurrentResolvedLocation,
@@ -50,18 +56,16 @@ import {
   type IconComponent,
   type IconProps,
   type Location,
+  navigate,
   type ResolvedLocation,
   showPopup
 } from '@hcengineering/ui'
-import view, { encodeObjectURI, canCopyLink } from '@hcengineering/view'
+import view, { canCopyLink, encodeObjectURI } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import workbench, { type LocationData, type Widget, type WidgetTab } from '@hcengineering/workbench'
-import { translate, getMetadata } from '@hcengineering/platform'
-import { makeRank } from '@hcengineering/rank'
-import { Analytics } from '@hcengineering/analytics'
 import { createWidgetTab } from '@hcengineering/workbench-resources'
-import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
 
+import attachment from '@hcengineering/attachment'
 import CardSearchItem from './components/CardSearchItem.svelte'
 import CreateSpace from './components/navigator/CreateSpace.svelte'
 import card from './plugin'
@@ -90,6 +94,82 @@ export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: ()
       })
     }
   }
+}
+
+export async function duplicateCard (origin: Card): Promise<void> {
+  const client = getClient()
+  const h = client.getHierarchy()
+  const props: Partial<Data<Card>> = {}
+  const base = h.getBaseClass(origin._class)
+  const mixins = h.findAllMixins(origin)
+  const attrs = h.getAllAttributes(base, core.class.Doc)
+
+  for (const [key, attr] of attrs) {
+    if (attr.readonly !== true && attr.hidden !== true) {
+      if (attr.type._class === core.class.Collection) {
+        ;(props as any)[key] = 0
+      } else if (
+        attr.type._class !== core.class.TypeCollaborativeDoc &&
+        attr.type._class !== core.class.TypeIdentifier
+      ) {
+        ;(props as any)[key] = (origin as any)[key]
+      }
+    }
+  }
+  props.title = `${origin.title} (Copy)`
+  const targetId = generateId()
+  const relationsA = await client.findAll(core.class.Relation, { docA: origin._id })
+  const relationsB = await client.findAll(core.class.Relation, { docB: origin._id })
+
+  const markup = await getMarkup(makeDocCollabId(origin, 'content'), origin.content)
+  if (!isEmptyMarkup(markup)) {
+    const collabId = makeCollabId(base, targetId, 'content')
+    props.content = await createMarkup(collabId, markup)
+  }
+
+  const ops = client.apply(`Duplicate_card_${origin._id}`)
+  await ops.createDoc(base, origin.space, props, targetId)
+  for (const mixin of mixins) {
+    const mixinAttrs = h.getOwnAttributes(mixin)
+    const as = h.as(origin, mixin)
+    const attributes: Partial<Data<Doc>> = {}
+    for (const [key, attr] of mixinAttrs) {
+      if (attr.readonly !== true && attr.hidden !== true) {
+        ;(attributes as any)[key] = (as as any)[key]
+      }
+    }
+    await ops.createMixin(targetId, base, origin.space, mixin, attributes)
+  }
+
+  for (const rel of relationsA) {
+    await ops.createDoc(core.class.Relation, origin.space, {
+      docA: targetId,
+      docB: rel.docB,
+      association: rel.association
+    })
+  }
+  for (const rel of relationsB) {
+    await ops.createDoc(core.class.Relation, origin.space, {
+      docA: rel.docA,
+      docB: targetId,
+      association: rel.association
+    })
+  }
+  await ops.commit()
+
+  const attachments = await client.findAll(attachment.class.Attachment, { attachedTo: origin._id })
+  const attachmentOps = client.apply(`Duplicate_attachments_${origin._id}`)
+  for (const att of attachments) {
+    const { _id, modifiedBy, modifiedOn, attachedTo, attachedToClass, collection, space, ...props } = att
+    await attachmentOps.addCollection(attachment.class.Attachment, origin.space, targetId, base, 'attachments', props)
+  }
+  await attachmentOps.commit()
+
+  const loc = getCurrentLocation()
+  loc.path[2] = cardId
+  loc.path[3] = targetId
+  loc.path.length = 4
+  navigate(loc)
 }
 
 export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {

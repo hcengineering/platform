@@ -15,7 +15,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@types/jest": "^29.5.5",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -37,21 +37,21 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/analytics": "^0.7.17",
+    "@hcengineering/analytics": "workspace:^0.7.17",
     "@hcengineering/activity": "workspace:^0.7.0",
     "@hcengineering/card": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/contact-resources": "workspace:^0.7.0",
-    "@hcengineering/core": "^0.7.21",
+    "@hcengineering/core": "workspace:^0.7.23",
     "@hcengineering/notification": "workspace:^0.7.0",
-    "@hcengineering/platform": "^0.7.17",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/preference": "workspace:^0.7.0",
     "@hcengineering/presentation": "workspace:^0.7.0",
-    "@hcengineering/text": "^0.7.18",
+    "@hcengineering/text": "workspace:^0.7.18",
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/view": "workspace:^0.7.0",
     "@hcengineering/view-resources": "workspace:^0.7.0",
-    "@hcengineering/communication-types": "^0.7.12",
+    "@hcengineering/communication-types": "workspace:^0.7.12",
     "@hcengineering/emoji": "workspace:^0.7.0",
     "@hcengineering/emoji-resources": "workspace:^0.7.0",
     "svelte": "^4.2.20"

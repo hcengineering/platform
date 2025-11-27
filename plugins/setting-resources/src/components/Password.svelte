@@ -57,7 +57,7 @@
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
-    <Breadcrumb icon={setting.icon.Password} label={setting.string.ChangePassword} size={'large'} isCurrent />
+    <Breadcrumb icon={setting.icon.Password} label={login.string.ChangePassword} size={'large'} isCurrent />
   </Header>
   <div class="flex-row-stretch flex-grow p-10">
     <div class="flex-grow flex-col">
@@ -71,24 +71,24 @@
         <div>
           <EditBox
             format="password"
-            placeholder={setting.string.EnterCurrentPassword}
-            label={setting.string.CurrentPassword}
+            placeholder={login.string.EnterCurrentPassword}
+            label={login.string.CurrentPassword}
             bind:value={oldPassword}
           />
         </div>
         <div class="mt-6">
           <EditBox
             format="password"
-            placeholder={setting.string.EnterNewPassword}
-            label={setting.string.NewPassword}
+            placeholder={login.string.EnterNewPassword}
+            label={login.string.NewPassword}
             bind:value={password}
           />
         </div>
         <div class="mt-6">
           <EditBox
             format="password"
-            placeholder={setting.string.RepeatNewPassword}
-            label={setting.string.NewPassword}
+            placeholder={login.string.RepeatNewPassword}
+            label={login.string.NewPassword}
             bind:value={password2}
           />
         </div>

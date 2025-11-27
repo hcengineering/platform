@@ -194,7 +194,24 @@ class ColumnHandler {
       const dropMarker = getDropMarker()
       const dragMarker = getColDragMarker()
 
+      const handleMove = (event: MouseEvent): void => {
+        if (dropMarker !== null && dragMarker !== null) {
+          const currentLeft = startLeft + event.clientX - startX
+          dropIndex = calculateColumnDropIndex(col, columns, currentLeft)
+
+          const dragMarkerWidthPx = columns[col].widthPx
+          const dragMarkerLeftPx = Math.max(0, Math.min(currentLeft, tableWidthPx - dragMarkerWidthPx))
+          const dropMarkerLeftPx =
+            dropIndex <= col ? columns[dropIndex].leftPx : columns[dropIndex].leftPx + columns[dropIndex].widthPx
+
+          updateColDropMarker(dropMarker, dropMarkerLeftPx - Math.floor(dropMarkerWidthPx / 2) - 1, dropMarkerWidthPx)
+          updateColDragMarker(dragMarker, dragMarkerLeftPx, dragMarkerWidthPx)
+        }
+      }
+
       const handleFinish = (): void => {
+        window.removeEventListener('mousemove', handleMove)
+
         if (dropMarker !== null) hideDropMarker(dropMarker)
         if (dragMarker !== null) hideDragMarker(dragMarker)
 
@@ -208,21 +225,6 @@ class ColumnHandler {
             }
           }
           editor.view.dispatch(tr)
-        }
-      }
-
-      const handleMove = (event: MouseEvent): void => {
-        if (dropMarker !== null && dragMarker !== null) {
-          const currentLeft = startLeft + event.clientX - startX
-          dropIndex = calculateColumnDropIndex(col, columns, currentLeft)
-
-          const dragMarkerWidthPx = columns[col].widthPx
-          const dragMarkerLeftPx = Math.max(0, Math.min(currentLeft, tableWidthPx - dragMarkerWidthPx))
-          const dropMarkerLeftPx =
-            dropIndex <= col ? columns[dropIndex].leftPx : columns[dropIndex].leftPx + columns[dropIndex].widthPx
-
-          updateColDropMarker(dropMarker, dropMarkerLeftPx - Math.floor(dropMarkerWidthPx / 2) - 1, dropMarkerWidthPx)
-          updateColDragMarker(dragMarker, dragMarkerLeftPx, dragMarkerWidthPx)
         }
       }
 

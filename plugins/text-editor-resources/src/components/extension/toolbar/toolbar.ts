@@ -636,7 +636,7 @@ function resolveCursorPositionFromCoords (view: EditorView, coords: { left: numb
 
 function scanMarker (target: HTMLElement | null, field: string): [boolean, HTMLElement | null] {
   while (target != null) {
-    if (target.dataset[field] === 'true') {
+    if (target.dataset?.[field] === 'true') {
       return [true, target]
     }
     target = target.parentElement

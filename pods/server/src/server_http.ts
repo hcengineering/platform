@@ -28,7 +28,7 @@ import {
   type WorkspaceIds,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import platform, { Severity, Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
+import { Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import {
   doSessionOp,
@@ -499,40 +499,16 @@ export function startHttpServer (
     if (webSocketData.session instanceof Promise) {
       void webSocketData.session.then((s) => {
         if ('error' in s) {
-          if (s.specialError === 'archived') {
-            void cs.send(
-              ctx,
-              {
-                id: -1,
-                error: new Status(Severity.ERROR, platform.status.WorkspaceArchived, {
-                  workspaceUuid: token.workspace
-                }),
-                terminate: s.terminate
-              },
-              false,
-              false
-            )
-          } else if (s.specialError === 'migration') {
-            void cs.send(
-              ctx,
-              {
-                id: -1,
-                error: new Status(Severity.ERROR, platform.status.WorkspaceMigration, {
-                  workspaceUuid: token.workspace
-                }),
-                terminate: s.terminate
-              },
-              false,
-              false
-            )
-          } else {
-            void cs.send(
-              ctx,
-              { id: -1, error: unknownStatus(s.error.message ?? 'Unknown error'), terminate: s.terminate },
-              false,
-              false
-            )
-          }
+          void cs.send(
+            ctx,
+            {
+              id: -1,
+              error: s.error instanceof Status ? s.error : unknownStatus(s.error.message ?? 'Unknown error'),
+              terminate: s.terminate
+            },
+            false,
+            false
+          )
           // No connection to account service, retry from client.
           setTimeout(() => {
             cs.close()

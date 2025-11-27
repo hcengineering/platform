@@ -64,14 +64,14 @@
   const groups =
     paymentUrl != null && paymentUrl !== '' ? baseGroups : baseGroups.filter((g) => g.key !== 'subscriptions')
 
-  let currentGroupKey = groups[0].key
+  let currentGroupKey = groups[0]?.key
   let currentGroup = groups[0]
 
   const unsubscribeLocation = resolvedLocationStore.subscribe((loc) => {
     void (async (loc: Location): Promise<void> => {
       const key = loc.path[5]
       currentGroup = groups.find((g) => g.key === key) ?? groups[0]
-      currentGroupKey = currentGroup.key
+      currentGroupKey = currentGroup?.key
     })(loc)
   })
 
@@ -109,8 +109,10 @@
 
     <Separator name="billingSettings" index={0} color={'var(--theme-divider-color)'} />
 
-    <div class="hulyComponent-content__column content">
-      <Component is={currentGroup.component} />
-    </div>
+    {#if currentGroup != null}
+      <div class="hulyComponent-content__column content">
+        <Component is={currentGroup.component} />
+      </div>
+    {/if}
   </div>
 </div>
