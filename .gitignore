@@ -9,6 +9,7 @@ commit.sh
 bloat.sh
 /src/GO.sh
 /src/GOT.sh
+pulse-status.sh
 GO.sh
 TEST.sh
 TEST_WS.sh
@@ -18,3 +19,4 @@ DOCKER.sh
 /lleo
 /client
 /scripts
+

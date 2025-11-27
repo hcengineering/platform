@@ -119,19 +119,6 @@ pub struct Db {
 }
 
 impl Db {
-    // pub fn new_db(hub: Arc<RwLock<HubState>>) -> Self {
-    //     Self {
-    //         inner: DbInner::Memory(m),
-    //         hub,
-    //     }
-    // }
-    // pub fn new_redis(c: MultiplexedConnection, hub: Arc<RwLock<HubState>>) -> Self {
-    //     Self {
-    //         inner: DbInner::Redis(c),
-    //         hub,
-    //     }
-    // }
-
     pub fn new_db(
         #[cfg(not(feature = "db-redis"))] db: MemoryBackend,
         #[cfg(feature = "db-redis")] db: MultiplexedConnection,

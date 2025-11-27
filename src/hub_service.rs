@@ -174,27 +174,6 @@ pub async fn broadcast_event(
     }
 }
 
-// pub async fn push_event(
-//     hub_state: &Arc<RwLock<HubState>>,
-//     redis: &mut MultiplexedConnection,
-//     ev: RedisEvent,
-// ) {
-//     // Value only for Set
-//     let mut value: Option<String> = None;
-//     if matches!(ev.message, RedisEventAction::Set) {
-//         match ::redis::cmd("GET")
-//             .arg(&ev.key)
-//             .query_async::<Option<String>>(redis)
-//             .await
-//         {
-//             Ok(v) => value = v,
-//             Err(e) => tracing::warn!("redis GET {} failed: {}", &ev.key, e),
-//         }
-//     }
-
-//     broadcast_event(hub_state, ev, value).await;
-// }
-
 pub fn check_heartbeat(hub_state: Arc<RwLock<HubState>>) {
     tokio::spawn(async move {
         let mut ticker = tokio::time::interval(std::time::Duration::from_secs(2));
