@@ -13,7 +13,10 @@ max_ttl = 3600
 heartbeat_timeout = 90
 ping_timeout = 30
 
+loglevel = "INFO"
+
 # optional settings
 # max_size = 100
 
 # permit_file = "/home/user/hulipulse/permit.rego"
+

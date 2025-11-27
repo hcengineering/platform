@@ -15,14 +15,15 @@
 
 use crate::config::CONFIG;
 
-// #[cfg(feature = "db-redis")]
-// use redis::aio::MultiplexedConnection;
-
 use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use tokio::sync::RwLock;
+
+use serde_json::{Value, json};
+
+use crate::{BACKEND, db::Db};
 
 fn subscription_matches(sub_key: &str, key: &str) -> bool {
     if sub_key == key {
@@ -73,7 +74,10 @@ pub struct HubState {
     subs: HashMap<String, HashSet<SessionId>>,
     heartbeats: HashMap<SessionId, std::time::Instant>,
     serverping: HashMap<SessionId, std::time::Instant>,
+    abort_handles: HashMap<SessionId, AbortHandle>,
 }
+
+use futures::future::AbortHandle;
 
 impl HubState {
     pub fn renew_heartbeat(&mut self, session_id: SessionId) {
@@ -84,22 +88,34 @@ impl HubState {
         }
     }
 
-    pub fn connect(&mut self, session_id: SessionId, session: actix_ws::Session) {
+    pub fn connect(
+        &mut self,
+        session_id: SessionId,
+        session: actix_ws::Session,
+        abort_handle: AbortHandle,
+    ) {
         self.sessions.insert(session_id, session);
         self.heartbeats
             .insert(session_id, std::time::Instant::now());
         self.serverping
             .insert(session_id, std::time::Instant::now());
+        self.abort_handles.insert(session_id, abort_handle);
     }
 
     pub fn disconnect(&mut self, session_id: SessionId) {
         self.sessions.remove(&session_id);
         self.heartbeats.remove(&session_id);
         self.serverping.remove(&session_id);
+        self.abort_handles.remove(&session_id);
         self.subs.retain(|_, ids| {
             ids.remove(&session_id);
             !ids.is_empty()
         });
+        tracing::debug!(
+            "hub.disconnected {}, all: {}",
+            session_id,
+            self.sessions.len()
+        );
     }
 
     pub fn subscribe(&mut self, session_id: SessionId, key: String) {
@@ -134,8 +150,20 @@ impl HubState {
             .collect()
     }
 
-    pub fn count(&self) -> usize {
-        self.sessions.len()
+    pub async fn info_json(&self, db: &Db) -> Value {
+        let info = db.info().await.unwrap_or_else(|_| "error".to_string());
+        json!({
+            "memory_info": info,
+            "backend": BACKEND,
+            "websockets": self.sessions.len(),
+            "subscriptions": self.subs.len(),
+            "heartbeats": self.heartbeats.len(),
+            "serverping": self.serverping.len(),
+            "loops": self.abort_handles.len(),
+            "loglevel": &CONFIG.loglevel,
+            "status": "OK",
+            "version": env!("CARGO_PKG_VERSION"),
+        })
     }
 
     pub fn recipients_for_key(&self, key: &str) -> Vec<actix_ws::Session> {
@@ -168,7 +196,6 @@ pub async fn broadcast_event(
     // Send
     let payload = ServerMessage { event: ev, value };
     for mut rcpt in recipients {
-        // let _ = rcpt.do_send(payload.clone());
         let json = serde_json::to_string(&payload).unwrap();
         let _ = rcpt.text(json).await;
     }
@@ -186,19 +213,22 @@ pub fn check_heartbeat(hub_state: Arc<RwLock<HubState>>) {
 
             let hub = hub_state.read().await;
 
-            let expired: Vec<actix_ws::Session> = hub
+            let ids_expired: Vec<SessionId> = hub
                 .heartbeats
                 .iter()
-                .filter_map(|(&sid, &last_beat)| {
-                    if last_beat < timelimit {
-                        hub.sessions.get(&sid).cloned()
-                    } else {
-                        None
-                    }
-                })
+                .filter_map(
+                    |(&sid, &last)| {
+                        if last < timelimit { Some(sid) } else { None }
+                    },
+                )
                 .collect();
 
-            let to_ping: Vec<SessionId> = hub
+            let expired_sessions: Vec<actix_ws::Session> = ids_expired
+                .iter()
+                .filter_map(|sid| hub.sessions.get(sid).cloned())
+                .collect();
+
+            let ids_to_ping: Vec<SessionId> = hub
                 .serverping
                 .iter()
                 .filter_map(|(&sid, &last_ping)| {
@@ -212,21 +242,32 @@ pub fn check_heartbeat(hub_state: Arc<RwLock<HubState>>) {
 
             drop(hub);
 
-            if !expired.is_empty() {
-                for addr in &expired {
-                    // addr.do_send(crate::handlers_ws::ForceDisconnect);
-                    let _ = addr.clone().close(None).await;
-                }
+            for session in &expired_sessions {
+                let _ = session.clone().close(None).await;
             }
 
-            if !to_ping.is_empty() {
+            if !ids_to_ping.is_empty() || !ids_expired.is_empty() {
                 let mut hub = hub_state.write().await;
-                for sid in &to_ping {
+
+                for sid in &ids_expired {
+                    if let Some(abort_handle) = hub.abort_handles.get(sid) {
+                        abort_handle.abort();
+                    }
+                    tracing::debug!("WebSocket disconnected by timeout: {}", sid);
+                    hub.disconnect(*sid);
+                }
+
+                for sid in &ids_to_ping {
+                    if ids_expired.contains(sid) {
+                        continue;
+                    }
+
                     if let Some(session) = hub.sessions.get_mut(sid) {
                         let _ = session.ping(&[]).await;
                     }
                     hub.serverping.insert(*sid, now);
                 }
+
                 drop(hub);
             }
         }

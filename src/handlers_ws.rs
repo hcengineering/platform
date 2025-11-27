@@ -15,7 +15,9 @@
 
 use actix_ws;
 use futures_util::StreamExt;
-// use tracing::info;
+
+use futures::future::{AbortHandle, Abortable};
+
 use actix_web::{Error, HttpRequest, HttpResponse, web};
 
 #[cfg(feature = "auth")]
@@ -27,7 +29,6 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::{
-    BACKEND,
     db::{Db, SaveMode, Ttl},
     hub_service::{HubState, SessionId, new_session_id},
 };
@@ -38,7 +39,6 @@ use crate::workspace_owner::check_workspace_core;
 #[cfg(feature = "auth")]
 use crate::workspace_owner::test_rego_claims;
 
-// use strum_macros::AsRefStr;
 use strum::AsRefStr;
 
 #[derive(Deserialize, Debug, AsRefStr)]
@@ -160,19 +160,9 @@ async fn handle_command(
     match cmd {
         // INFO
         WsCommand::Info { correlation } => {
-            tracing::info!("INFO");
-            match db.info().await {
-                Ok(info) => {
-                    let info = json!({
-                        "memory_info": info,
-                        "backend": BACKEND,
-                        "websockets": hub_state.read().await.count(),
-                        "version": env!("CARGO_PKG_VERSION"),
-                    });
-                    result(info, &correlation, ws).await
-                }
-                Err(e) => result_err(e.to_string(), &correlation, ws).await,
-            }
+            tracing::debug!("INFO");
+            let info = hub_state.read().await.info_json(db).await;
+            result(info, &correlation, ws).await
         }
 
         // PUT
@@ -185,7 +175,7 @@ async fn handle_command(
             if_none_match,
             correlation,
         } => {
-            tracing::info!("PUT {} = {}", &key, &data);
+            tracing::debug!("PUT {} = {}", &key, &data);
 
             #[cfg(feature = "auth")]
             if wrong_workspace(&claims, &key, &correlation, ws).await {
@@ -229,7 +219,7 @@ async fn handle_command(
             correlation,
             if_match,
         } => {
-            tracing::info!("DELETE {}", &key); //  correlation:{:?} , &correlation
+            tracing::debug!("DELETE {}", &key); //  correlation:{:?} , &correlation
 
             #[cfg(feature = "auth")]
             if wrong_workspace(&claims, &key, &correlation, ws).await {
@@ -257,7 +247,7 @@ async fn handle_command(
         }
 
         WsCommand::Get { key, correlation } => {
-            tracing::info!("GET {}", &key);
+            tracing::debug!("GET {}", &key);
 
             #[cfg(feature = "auth")]
             if wrong_workspace(&claims, &key, &correlation, ws).await {
@@ -275,7 +265,7 @@ async fn handle_command(
         }
 
         WsCommand::List { key, correlation } => {
-            tracing::info!("LIST {:?}", &key);
+            tracing::debug!("LIST {:?}", &key);
 
             #[cfg(feature = "auth")]
             if wrong_workspace(&claims, &key, &correlation, ws).await {
@@ -292,7 +282,7 @@ async fn handle_command(
         }
 
         WsCommand::Sub { key, correlation } => {
-            tracing::info!("SUB {}", &key);
+            tracing::debug!("SUB {}", &key);
 
             #[cfg(feature = "auth")]
             if wrong_workspace(&claims, &key, &correlation, ws).await {
@@ -304,7 +294,7 @@ async fn handle_command(
         }
 
         WsCommand::Unsub { key, correlation } => {
-            tracing::info!("UNSUB {}", &key);
+            tracing::debug!("UNSUB {}", &key);
             if key == "*" {
                 hub_state.write().await.unsubscribe_all(session_id);
                 result("OK", &correlation, ws).await;
@@ -320,7 +310,7 @@ async fn handle_command(
         }
 
         WsCommand::Sublist { correlation } => {
-            tracing::info!("SUBLIST");
+            tracing::debug!("SUBLIST");
             // w/o Check workspace!
             let keys = hub_state.read().await.subscribe_list(session_id);
             result(keys, &correlation, ws).await;
@@ -347,91 +337,100 @@ pub async fn handler(
 
     let session_id = new_session_id();
 
-    hub_state.write().await.connect(session_id, session.clone());
-    tracing::info!("WebSocket connected: {}", session_id);
+    let (abort_handle, abort_reg) = AbortHandle::new_pair();
 
-    actix_web::rt::spawn(async move {
-        while let Some(Ok(msg)) = msg_stream.next().await {
-            if !matches!(msg, actix_ws::Message::Pong(_)) {
-                tracing::debug!("WebSocket message: {:?}", msg);
-            }
+    hub_state
+        .write()
+        .await
+        .connect(session_id, session.clone(), abort_handle);
+    tracing::debug!("WebSocket connected: {}", session_id);
 
-            // renew heartbeat to unixtime (all messages is activity, including "ping")
-            hub_state.write().await.renew_heartbeat(session_id);
-
-            match msg {
-                actix_ws::Message::Ping(bytes) => {
-                    session.pong(&bytes).await.ok();
-                    continue;
+    actix_web::rt::spawn(Abortable::new(
+        async move {
+            while let Some(Ok(msg)) = msg_stream.next().await {
+                if !matches!(msg, actix_ws::Message::Pong(_)) {
+                    tracing::debug!("WebSocket message: {:?}", msg);
                 }
 
-                actix_ws::Message::Pong(_) => {
-                    continue;
-                }
+                // renew heartbeat to unixtime (all messages is activity, including "ping")
+                hub_state.write().await.renew_heartbeat(session_id);
 
-                actix_ws::Message::Text(text) if text == "ping" => {
-                    let _ = session.text("pong").await;
-                    continue;
-                }
-                actix_ws::Message::Text(text) if text == "pong" => {
-                    continue;
-                }
+                match msg {
+                    actix_ws::Message::Ping(bytes) => {
+                        session.pong(&bytes).await.ok();
+                        continue;
+                    }
 
-                actix_ws::Message::Text(text) => match serde_json::from_str::<WsCommand>(&text) {
-                    Ok(cmd) => {
-                        #[cfg(feature = "auth")]
-                        {
-                            let key = match &cmd {
-                                WsCommand::Put { key, .. }
-                                | WsCommand::Delete { key, .. }
-                                | WsCommand::Get { key, .. }
-                                | WsCommand::List { key, .. }
-                                | WsCommand::Sub { key, .. }
-                                | WsCommand::Unsub { key, .. } => key.as_str(),
-                                _ => "",
-                            };
+                    actix_ws::Message::Pong(_) => {
+                        continue;
+                    }
 
-                            if let Some(ref claim) = claims {
-                                if !test_rego_claims(claim, cmd.as_ref(), key) {
-                                    let _ = session.text("Unauthorized: Rego policy").await;
-                                    break;
+                    actix_ws::Message::Text(text) if text == "ping" => {
+                        let _ = session.text("pong").await;
+                        continue;
+                    }
+                    actix_ws::Message::Text(text) if text == "pong" => {
+                        continue;
+                    }
+
+                    actix_ws::Message::Text(text) => match serde_json::from_str::<WsCommand>(&text)
+                    {
+                        Ok(cmd) => {
+                            #[cfg(feature = "auth")]
+                            {
+                                let key = match &cmd {
+                                    WsCommand::Put { key, .. }
+                                    | WsCommand::Delete { key, .. }
+                                    | WsCommand::Get { key, .. }
+                                    | WsCommand::List { key, .. }
+                                    | WsCommand::Sub { key, .. }
+                                    | WsCommand::Unsub { key, .. } => key.as_str(),
+                                    _ => "",
+                                };
+
+                                if let Some(ref claim) = claims {
+                                    if !test_rego_claims(claim, cmd.as_ref(), key) {
+                                        let _ = session.text("Unauthorized: Rego policy").await;
+                                        break;
+                                    }
                                 }
                             }
+
+                            handle_command(
+                                &mut session,
+                                cmd,
+                                &db,
+                                &hub_state,
+                                #[cfg(feature = "auth")]
+                                claims.clone(),
+                                session_id,
+                            )
+                            .await;
                         }
 
-                        handle_command(
-                            &mut session,
-                            cmd,
-                            &db,
-                            &hub_state,
-                            #[cfg(feature = "auth")]
-                            claims.clone(),
-                            session_id,
-                        )
-                        .await;
+                        Err(err) => {
+                            let _ = session.text(format!("Invalid JSON: {}", err)).await;
+                        }
+                    },
+
+                    actix_ws::Message::Close(reason) => {
+                        if let Err(e) = session.close(reason).await {
+                            tracing::warn!("WS close error: {:?}", e);
+                        }
+                        break;
                     }
 
-                    Err(err) => {
-                        let _ = session.text(format!("Invalid JSON: {}", err)).await;
+                    _ => {
+                        tracing::warn!("Unhandled WS message: {:?}", msg);
                     }
-                },
-
-                actix_ws::Message::Close(reason) => {
-                    if let Err(e) = session.close(reason).await {
-                        tracing::warn!("WS close error: {:?}", e);
-                    }
-                    break;
-                }
-
-                _ => {
-                    tracing::info!("Unhandled WS message: {:?}", msg);
                 }
             }
-        }
 
-        hub_state.write().await.disconnect(session_id);
-        tracing::info!("WebSocket disconnected: {}", session_id);
-    });
+            hub_state.write().await.disconnect(session_id);
+            tracing::debug!("WebSocket disconnected by client: {}", session_id);
+        },
+        abort_reg,
+    ));
 
     Ok(response)
 }

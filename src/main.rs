@@ -35,8 +35,6 @@ use hulyrs::services::jwt::{Claims, actix::ServiceRequestExt};
 #[cfg(feature = "auth")]
 use secrecy::ExposeSecret;
 
-use serde_json::json;
-
 #[cfg(feature = "auth")]
 use tracing::*;
 
@@ -56,11 +54,6 @@ mod workspace_owner;
 mod hub_service;
 use hub_service::HubState;
 
-#[cfg(feature = "db-redis")]
-pub const BACKEND: &str = "REDIS";
-#[cfg(not(feature = "db-redis"))]
-pub const BACKEND: &str = "MEMORY";
-
 use config::CONFIG;
 
 mod db;
@@ -73,17 +66,21 @@ use crate::memory::MemoryBackend;
 
 use crate::hub_service::check_heartbeat;
 
+#[cfg(feature = "db-redis")]
+pub const BACKEND: &str = "REDIS";
+#[cfg(not(feature = "db-redis"))]
+pub const BACKEND: &str = "MEMORY";
+
 fn initialize_tracing(level: tracing::Level) {
     use tracing_subscriber::{filter::targets::Targets, prelude::*};
 
     let filter = Targets::default()
         .with_target(env!("CARGO_BIN_NAME"), level)
         .with_target("actix", tracing::Level::WARN);
-    let format = tracing_subscriber::fmt::layer().compact();
 
     tracing_subscriber::registry()
         .with(filter)
-        .with(format)
+        .with(tracing_subscriber::fmt::layer().compact())
         .init();
 }
 
@@ -131,7 +128,14 @@ async fn check_workspace(
 
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
-    initialize_tracing(tracing::Level::TRACE);
+    initialize_tracing(match CONFIG.loglevel.as_str() {
+        "TRACE" => tracing::Level::TRACE, // full
+        "DEBUG" => tracing::Level::DEBUG, // for developer
+        "INFO" => tracing::Level::INFO,   // normal
+        "WARN" => tracing::Level::WARN,   // something went wrong
+        "ERROR" => tracing::Level::ERROR, // serious error
+        _ => tracing::Level::ERROR,
+    });
 
     tracing::info!("{}/{}", env!("CARGO_BIN_NAME"), env!("CARGO_PKG_VERSION"));
 
@@ -233,30 +237,15 @@ async fn main() -> anyhow::Result<()> {
             .wrap(middleware::Logger::default())
             .wrap(cors)
             .service(api_scope)
-            .route(
-                "/ws",
-                ws_route, // web::get()
-                         //     .to(handlers_ws::handler)
-                         //     .wrap(middleware::from_fn(extract_claims)),
-            )
+            .route("/ws", ws_route)
             .route(
                 "/status",
                 web::get().to({
                     move |hub_state: web::Data<Arc<RwLock<HubState>>>, db_backend: web::Data<Db>| {
                         let hub_state = hub_state.clone();
                         async move {
-                            let info = db_backend
-                                .info()
-                                .await
-                                .unwrap_or_else(|_| "error".to_string());
-                            let count = hub_state.read().await.count();
-                            Ok::<_, actix_web::Error>(HttpResponse::Ok().json(json!({
-                                "memory_info": info,
-                                "backend": BACKEND,
-                                "websockets": count,
-                                "status": "OK",
-                                "version": env!("CARGO_PKG_VERSION"),
-                            })))
+                            let info = hub_state.read().await.info_json(&db_backend).await;
+                            Ok::<_, actix_web::Error>(HttpResponse::Ok().json(info))
                         }
                     }
                 }),

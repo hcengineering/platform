@@ -71,6 +71,8 @@ pub struct Config {
 
     #[cfg(feature = "auth")]
     pub policy_file: Option<String>,
+
+    pub loglevel: String,
 }
 
 pub static CONFIG: LazyLock<Config> = LazyLock::new(|| {
