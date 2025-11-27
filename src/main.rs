@@ -80,7 +80,7 @@ fn initialize_tracing() {
         "INFO" => tracing::Level::INFO,   // normal
         "WARN" => tracing::Level::WARN,   // something went wrong
         "ERROR" => tracing::Level::ERROR, // serious error
-        _ => tracing::Level::ERROR,
+        _ => tracing::Level::TRACE,
     };
 
     tracing_subscriber::registry()
@@ -184,6 +184,7 @@ async fn main() -> anyhow::Result<()> {
 
     let url = format!("http://{}:{}", &CONFIG.bind_host, &CONFIG.bind_port);
     tracing::info!("Server running at {}", &url);
+    tracing::info!("Log level: {}", &CONFIG.loglevel);
     tracing::info!("API: {}/api", &url);
     tracing::info!(
         "WS: {}/ws",
