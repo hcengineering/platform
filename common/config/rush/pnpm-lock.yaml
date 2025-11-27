@@ -34466,6 +34466,9 @@ importers:
       '@hcengineering/account-client':
         specifier: ^0.7.19
         version: 0.7.19
+      '@hcengineering/analytics-service':
+        specifier: ^0.7.17
+        version: 0.7.17(encoding@0.1.13)
       '@hcengineering/client':
         specifier: ^0.7.17
         version: 0.7.17
@@ -34481,6 +34484,9 @@ importers:
       '@hcengineering/export':
         specifier: workspace:^0.7.0
         version: link:../../../plugins/export
+      '@hcengineering/middleware':
+        specifier: ^0.7.19
+        version: 0.7.19
       '@hcengineering/model-all':
         specifier: workspace:^0.7.0
         version: link:../../../models/all
@@ -34494,6 +34500,9 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../../plugins/notification
       '@hcengineering/platform':
+        specifier: ^0.7.17
+        version: 0.7.18
+      '@hcengineering/postgres':
         specifier: ^0.7.17
         version: 0.7.18
       '@hcengineering/server-client':
@@ -53225,7 +53234,7 @@ snapshots:
 
   '@types/pg-pool@2.0.6':
     dependencies:
-      '@types/pg': 8.15.5
+      '@types/pg': 8.15.6
 
   '@types/pg@8.15.5':
     dependencies:

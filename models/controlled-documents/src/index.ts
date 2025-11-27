@@ -834,8 +834,7 @@ export function createModel (builder: Builder): void {
       actionProps: {
         component: exportPlugin.component.ExportToWorkspaceModal,
         fillProps: {
-          _class: 'object._class',
-          selectedDocs: 'value'
+          _objects: 'value'
         }
       },
       label: exportPlugin.string.ExportToWorkspace,

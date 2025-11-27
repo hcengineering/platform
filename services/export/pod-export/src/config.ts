@@ -25,7 +25,7 @@ const parseNumber = (str: string | undefined): number | undefined => (str !== un
 
 const config: Config = (() => {
   const params: Partial<Config> = {
-    Port: parseNumber(process.env.PORT) ?? 4006,
+    Port: parseNumber(process.env.PORT) ?? 4009,
     Secret: process.env.SECRET,
     AccountsUrl: process.env.ACCOUNTS_URL,
     ServiceID: process.env.SERVICE_ID,

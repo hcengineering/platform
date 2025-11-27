@@ -13,30 +13,38 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, type WorkspaceInfoWithStatus } from '@hcengineering/core'
-  import presentation, { Card, MessageBox, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
-  import { DropdownLabels, showPopup } from '@hcengineering/ui'
-  import { getMetadata, getResource } from '@hcengineering/platform'
+  import { Doc, DocumentQuery, type WorkspaceInfoWithStatus, isActiveMode } from '@hcengineering/core'
+  import { Card, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
+  import { DropdownLabels } from '@hcengineering/ui'
+  import { getResource } from '@hcengineering/platform'
   import login from '@hcengineering/login'
   import { createEventDispatcher } from 'svelte'
-  import plugin from '../plugin'
 
-  export let _class: Ref<Class<Doc>>
+  import plugin from '../plugin'
+  import { exportToWorkspace } from '../export'
+
   export let query: DocumentQuery<Doc> | undefined = undefined
-  export let selectedDocs: Doc[] = []
+  export let value: Doc | Doc[]
+
+  $: selectedDocs = Array.isArray(value) ? value : (value != null ? [value] : [])
+  $: _class = selectedDocs.length > 0 ? selectedDocs[0]._class : undefined
 
   const dispatch = createEventDispatcher()
 
   let targetWorkspace: string | undefined = undefined
   let workspaces: WorkspaceInfoWithStatus[] = []
   let loading = false
+  let workspaceLoading = false
 
   async function loadWorkspaces (): Promise<void> {
     try {
+      workspaceLoading = true
       const getWorkspacesFn = await getResource(login.function.GetWorkspaces)
-      workspaces = await getWorkspacesFn()
+      workspaces = (await getWorkspacesFn()).filter(ws => isActiveMode(ws.mode))
     } catch (err) {
       console.error('Failed to load workspaces:', err)
+    } finally {
+      workspaceLoading = false
     }
   }
 
@@ -46,7 +54,7 @@
   }
 
   $: workspaceItems = workspaces
-    .filter(ws => ws.uuid !== getCurrentWorkspaceUuid())
+    .filter((ws) => ws.uuid !== getCurrentWorkspaceUuid())
     .map(
       (ws): WorkspaceItem => ({
         id: ws.uuid,
@@ -54,63 +62,14 @@
       })
     )
 
-  $: canSave = targetWorkspace !== undefined
+  $: canSave = targetWorkspace !== undefined && _class != null
 
   async function handleExport (): Promise<void> {
-    if (!canSave) return
+    if (!canSave || _class == null) return
 
     loading = true
-    try {
-      const baseUrl = getMetadata(plugin.metadata.ExportUrl)
-      const token = getMetadata(presentation.metadata.Token)
-      if (token == null) {
-        throw new Error('No token available')
-      }
-
-      const body: any = {
-        targetWorkspace,
-        _class
-      }
-
-      body.query = selectedDocs.length > 0 ? {
-        _id: { $in: selectedDocs.map((d) => d._id) }
-      } : query
-
-      const res = await fetch(`${baseUrl}/migrate`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      })
-
-      if (!res.ok) {
-        void res.json().catch(() => ({}))
-        showPopup(MessageBox, {
-          label: plugin.string.ExportRequestFailed,
-          kind: 'error',
-          message: plugin.string.ExportRequestFailedMessage
-        })
-        return
-      }
-
-      showPopup(MessageBox, {
-        label: plugin.string.ExportStarted,
-        message: plugin.string.ExportStartedMessage
-      })
-
-      dispatch('close', true)
-    } catch (err) {
-      console.error('Export failed:', err)
-      showPopup(MessageBox, {
-        label: plugin.string.ExportRequestFailed,
-        kind: 'error',
-        message: plugin.string.ExportRequestFailedMessage
-      })
-    } finally {
-      loading = false
-    }
+    await exportToWorkspace(_class, query, selectedDocs, targetWorkspace)
+    loading = false
   }
 
   void loadWorkspaces()
@@ -120,12 +79,20 @@
   label={plugin.string.ExportToWorkspace}
   okAction={handleExport}
   okLabel={plugin.string.Export}
-  canSave={canSave && !loading}
-  width="small"
+  canSave={canSave && !loading && !workspaceLoading}
+  width="x-small"
   on:close={() => dispatch('close')}
   on:changeContent
 >
   <div class="flex-col gap-2">
-    <DropdownLabels placeholder={plugin.string.} items={workspaceItems} bind:selected={targetWorkspace} kind="regular" size="large" />
+    <DropdownLabels
+      placeholder={plugin.string.TargetWorkspace}
+      items={workspaceItems}
+      bind:selected={targetWorkspace}
+      autoSelect={false}
+      loading={workspaceLoading}
+      kind="regular"
+      size="large"
+    />
   </div>
 </Card>

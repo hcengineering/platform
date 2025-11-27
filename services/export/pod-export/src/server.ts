@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 //
 // Copyright © 2025 Hardcore Engineering Inc.
 //
@@ -24,29 +25,44 @@ import core, {
   Doc,
   DocumentQuery,
   generateId,
+  Hierarchy,
   MeasureContext,
+  ModelDb,
   type PersonId,
   Ref,
   Space,
   systemAccountUuid,
   Tx,
   TxOperations,
-  WorkspaceIds
+  WorkspaceIds,
+  type WorkspaceUuid
 } from '@hcengineering/core'
 import drive, { createFile, Drive } from '@hcengineering/drive'
 import exportPlugin, { type TransformConfig } from '@hcengineering/export'
+import {
+  ContextNameMiddleware,
+  DBAdapterInitMiddleware,
+  DBAdapterMiddleware,
+  DomainFindMiddleware,
+  DomainTxMiddleware,
+  LowLevelMiddleware,
+  ModelMiddleware
+} from '@hcengineering/middleware'
 import notification from '@hcengineering/notification'
 import { setMetadata } from '@hcengineering/platform'
 import { createClient, getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import {
-  initStatisticsContext,
-  PipelineFactory,
+  createDummyStorageAdapter,
+  createPipeline,
+  type MiddlewareCreator,
+  type Pipeline,
+  type PipelineContext,
   StorageAdapter,
   StorageConfiguration
 } from '@hcengineering/server-core'
-import { createBackupPipeline } from '@hcengineering/server-pipeline'
+import { getConfig } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { decodeToken, generateToken } from '@hcengineering/server-token'
+import { Token, decodeToken, generateToken } from '@hcengineering/server-token'
 import archiver from 'archiver'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
@@ -168,10 +184,10 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
 export function createServer (
   storageConfig: StorageConfiguration,
   dbUrl: string,
-  model: Tx[]
+  model: Tx[],
+  measureCtx: MeasureContext
 ): { app: Express, close: () => void } {
   const storageAdapter = buildStorageFromConfig(storageConfig)
-  const measureCtx = initStatisticsContext('export', {})
 
   const app = express()
   app.use(cors({ exposedHeaders: 'Content-Disposition' }))
@@ -253,7 +269,7 @@ export function createServer (
 
           await sendSuccessNotification(txOperations, account, exportDrive, archiveName)
         } catch (err: any) {
-          console.error('Export failed:', err)
+          measureCtx.error('Export failed:', err)
           await sendFailureNotification(txOperations, account, err.message ?? 'Unknown error when exporting')
         } finally {
           await fs.rmdir(exportDir, { recursive: true })
@@ -302,7 +318,7 @@ export function createServer (
         const exportedFile = join(exportDir, files[0])
         res.download(exportedFile, basename(exportedFile), () => {})
       } catch (err: any) {
-        console.error('Export failed:', err)
+        measureCtx.error('Export failed:', err)
         throw err
       } finally {
         void fs.rmdir(exportDir, { recursive: true })
@@ -311,103 +327,144 @@ export function createServer (
   )
 
   app.post(
-    '/migrate',
+    '/export-to-workspace',
     wrapRequest(async (req, res, wsIds, token, socialId) => {
-      const {
-        targetWorkspace,
-        _class,
-        query,
-        conflictStrategy,
-        includeAttachments
-      }: {
-        targetWorkspace: string
-        _class: Ref<Class<Doc>>
-        query?: DocumentQuery<Doc>
-        conflictStrategy?: 'skip' | 'duplicate'
-        includeAttachments?: boolean
-      } = req.body
+      let sourceTxOps: TxOperations | undefined
+      let decodedToken: Token | undefined
+      try {
+        const {
+          targetWorkspace,
+          _class,
+          query,
+          conflictStrategy,
+          includeAttachments
+        }: {
+          targetWorkspace: WorkspaceUuid
+          _class: Ref<Class<Doc>>
+          query?: DocumentQuery<Doc>
+          conflictStrategy?: 'skip' | 'duplicate'
+          includeAttachments?: boolean
+        } = req.body
 
-      if (targetWorkspace == null || _class == null) {
-        throw new ApiError(400, 'Missing required parameters')
-      }
-
-      const decodedToken = decodeToken(token)
-      if (decodedToken.extra?.readonly !== undefined) {
-        throw new ApiError(403, 'Forbidden: read-only token')
-      }
-
-      // Get target workspace info
-      const accountClient = getClient(envConfig.AccountsUrl, token)
-      const targetWsLoginInfo = await accountClient.getLoginWithWorkspaceInfo()
-
-      // Find target workspace by uuid or url
-      let targetWsInfo: any
-      for (const [, ws] of Object.entries(targetWsLoginInfo.workspaces)) {
-        if ((ws as any).uuid === targetWorkspace || (ws as any).url === targetWorkspace) {
-          targetWsInfo = ws
-          break
+        if (targetWorkspace == null) {
+          measureCtx.warn(`Missing required parameter: ${req.body}`)
+          throw new ApiError(400, 'Missing required parameter: targetWorkspace')
         }
-      }
+        if (_class == null) {
+          measureCtx.warn(`Missing required parameter: ${req.body}`)
+          throw new ApiError(400, 'Missing required parameter: _class')
+        }
 
-      if (targetWsInfo === undefined) {
-        throw new ApiError(404, 'Target workspace not found or not accessible')
-      }
+        decodedToken = decodeToken(token)
+        if (decodedToken.extra?.readonly !== undefined) {
+          throw new ApiError(403, 'Forbidden: read-only token')
+        }
 
-      const targetWsIds: WorkspaceIds = {
-        uuid: targetWsInfo.uuid,
-        dataId: targetWsInfo.dataId,
-        url: targetWsInfo.url
-      }
+        // Get target workspace info
+        const accountClient = getClient(envConfig.AccountsUrl, token)
+        const targetWsLoginInfo = await accountClient.getLoginWithWorkspaceInfo()
 
-      // Create clients for both workspaces
-      const sourceClient = await createPlatformClient(token)
-      const targetToken = generateToken(decodedToken.account, targetWsInfo.uuid, {
-        service: 'export'
-      })
-      const targetClient = await createPlatformClient(targetToken)
-      const targetTxOps = new TxOperations(targetClient, socialId)
+        const targetWsInfo = targetWsLoginInfo.workspaces[targetWorkspace]
+        if (targetWsInfo === undefined) {
+          measureCtx.warn(`Target workspace not found or not accessible: ${targetWorkspace}`)
+          throw new ApiError(404, 'Target workspace not found or not accessible')
+        }
 
-      res.status(200).send({ message: 'Migration started' })
+        const targetWsIds: WorkspaceIds = {
+          uuid: targetWorkspace,
+          dataId: targetWsInfo.dataId,
+          url: targetWsInfo.url
+        }
 
-      void (async () => {
-        try {
-          // Create pipeline factory for source workspace
-          const sourcePipelineFactory: PipelineFactory = createBackupPipeline(measureCtx, dbUrl, model, {
-            externalStorage: storageAdapter,
-            usePassedCtx: true
-          })
+        const targetToken = generateToken(decodedToken.account, targetWorkspace, {
+          service: 'export'
+        })
 
-          const migrator = new WorkspaceMigrator(measureCtx, sourcePipelineFactory, targetTxOps, storageAdapter)
+        // Create clients for both workspaces
+        const sourceClient = await createPlatformClient(token)
+        const targetClient = await createPlatformClient(targetToken)
+        sourceTxOps = new TxOperations(sourceClient, socialId)
+        const targetTxOps = new TxOperations(targetClient, socialId)
 
-          const options: MigrationOptions = {
-            sourceWorkspace: wsIds,
-            targetWorkspace: targetWsIds,
-            sourceQuery: query ?? {},
-            _class,
-            conflictStrategy: conflictStrategy ?? 'duplicate',
-            includeAttachments: includeAttachments ?? true
+        res.status(200).send({ message: 'Migration started' })
+
+        void (async () => {
+          try {
+            // Create pipeline factory for source workspace using same approach as rating calculator
+            const sourcePipelineFactory = async (ctx: MeasureContext, workspace: WorkspaceIds): Promise<Pipeline> => {
+              const externalStorage = createDummyStorageAdapter()
+              const dbConf = getConfig(ctx, dbUrl, ctx, {
+                disableTriggers: true,
+                externalStorage
+              })
+
+              const middlewares: MiddlewareCreator[] = [
+                LowLevelMiddleware.create,
+                ContextNameMiddleware.create,
+                DomainFindMiddleware.create,
+                DomainTxMiddleware.create,
+                DBAdapterInitMiddleware.create,
+                ModelMiddleware.create(model),
+                DBAdapterMiddleware.create(dbConf)
+              ]
+
+              const hierarchy = new Hierarchy()
+              const modelDb = new ModelDb(hierarchy)
+
+              const context: PipelineContext = {
+                workspace,
+                branding: null,
+                modelDb,
+                hierarchy,
+                storageAdapter: externalStorage,
+                contextVars: {}
+              }
+
+              return await createPipeline(ctx, middlewares, context)
+            }
+
+            const migrator = new WorkspaceMigrator(measureCtx, sourcePipelineFactory, targetTxOps, storageAdapter)
+
+            const options: MigrationOptions = {
+              sourceWorkspace: wsIds,
+              targetWorkspace: targetWsIds,
+              sourceQuery: query ?? {},
+              _class,
+              conflictStrategy: conflictStrategy ?? 'duplicate',
+              includeAttachments: includeAttachments ?? true
+            }
+
+            const result = await migrator.migrate(options)
+
+            await sendMigrationNotification(sourceTxOps, decodedToken.account, result, targetWsInfo.url)
+          } catch (err: any) {
+            measureCtx.error('Migration failed:', err)
+            await sendFailureNotification(
+              sourceTxOps,
+              decodedToken.account,
+              err.message ?? 'Unknown error during migration'
+            )
+          } finally {
+            await sourceClient.close()
+            await targetClient.close()
           }
-
-          const result = await migrator.migrate(options)
-
-          await sendMigrationNotification(targetTxOps, decodedToken.account, result, targetWsInfo.url)
-        } catch (err: any) {
-          console.error('Migration failed:', err)
+        })()
+      } catch (err: any) {
+        measureCtx.error('Export to workspace request failed:', err)
+        if (sourceTxOps != null && decodedToken != null && decodedToken.extra?.readonly !== true) {
           await sendFailureNotification(
-            targetTxOps,
+            sourceTxOps,
             decodedToken.account,
             err.message ?? 'Unknown error during migration'
           )
-        } finally {
-          await sourceClient.close()
-          await targetClient.close()
         }
-      })()
+        throw err
+      }
     })
   )
 
   app.use((err: any, _req: any, res: any, _next: any) => {
-    console.log(err)
+    measureCtx.warn(err)
     if (err instanceof ApiError) {
       res.status(err.code).send({ code: err.code, message: err.message })
       return
@@ -439,9 +496,9 @@ async function createPlatformClient (token: string): Promise<Client> {
   return connection
 }
 
-export function listen (e: Express, port: number, host?: string): Server {
+export function listen (e: Express, port: number, measureCtx: MeasureContext, host?: string): Server {
   const cb = (): void => {
-    console.log(`Export service has been started at ${host ?? '*'}:${port}`)
+    measureCtx.info(`Export service has been started at ${host ?? '*'}:${port}`)
   }
 
   return host !== undefined ? e.listen(port, host, cb) : e.listen(port, cb)

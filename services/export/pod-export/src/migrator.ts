@@ -29,8 +29,10 @@ import {
   LowLevelStorage,
   Hierarchy
 } from '@hcengineering/core'
-import { StorageAdapter, PipelineFactory } from '@hcengineering/server-core'
+import { StorageAdapter, Pipeline } from '@hcengineering/server-core'
 import core from '@hcengineering/model-core'
+
+export type PipelineFactory = (ctx: MeasureContext, workspace: WorkspaceIds) => Promise<Pipeline>
 
 export interface MigrationOptions {
   sourceWorkspace: WorkspaceIds
@@ -81,7 +83,7 @@ export class WorkspaceMigrator {
     }
 
     // Create source pipeline to access LowLevelStorage
-    const sourcePipeline = await this.sourcePipelineFactory(this.context, sourceWorkspace, {} as any, null)
+    const sourcePipeline = await this.sourcePipelineFactory(this.context, sourceWorkspace)
 
     try {
       const { hierarchy, lowLevelStorage } = sourcePipeline.context
@@ -101,9 +103,6 @@ export class WorkspaceMigrator {
         : { _class, ...sourceQuery }
 
       console.log(`Starting migration for ${_class}`)
-
-      // Migrate spaces first to establish space mapping
-      await this.migrateSpaces(hierarchy, lowLevelStorage)
 
       // Use traverse for efficient bulk processing
       const iterator = await lowLevelStorage.traverse<Doc>(domain, query)
@@ -192,7 +191,6 @@ export class WorkspaceMigrator {
     const hierarchy = this.targetClient.getHierarchy()
     const isAttached = hierarchy.isDerived(doc._class, core.class.AttachedDoc)
 
-    // Get or create target space
     const targetSpace = await this.getOrCreateTargetSpace(doc.space, sourceHierarchy, sourceLowLevel)
 
     // Generate new ID or handle conflict
@@ -431,31 +429,6 @@ export class WorkspaceMigrator {
     }
   }
 
-  private async migrateSpaces (sourceHierarchy: Hierarchy, sourceLowLevel: LowLevelStorage): Promise<void> {
-    console.log('Migrating spaces structure...')
-
-    // Find all spaces in source workspace
-    const spaceDomain = sourceHierarchy.findDomain(core.class.Space)
-    if (spaceDomain === undefined) {
-      console.log('Space domain not found, skipping space migration')
-      return
-    }
-
-    const sourceSpaces = await sourceLowLevel.rawFindAll<Space>(spaceDomain, {
-      _class: { $ne: core.class.TypedSpace }
-    })
-
-    console.log(`Found ${sourceSpaces.length} spaces in source workspace`)
-
-    for (const sourceSpace of sourceSpaces) {
-      try {
-        await this.getOrCreateTargetSpace(sourceSpace._id, sourceHierarchy, sourceLowLevel)
-      } catch (err: any) {
-        console.error(`Failed to migrate space ${sourceSpace._id}:`, err)
-      }
-    }
-  }
-
   private async getOrCreateTargetSpace (
     sourceSpaceId: Ref<Space>,
     sourceHierarchy: Hierarchy,
@@ -535,7 +508,7 @@ export class WorkspaceMigrator {
       console.log(`Created new space ${targetSpaceId} (${sourceSpace.name})`)
     }
 
-    // Update mapping
+    // Update mapping and mark as migrated
     this.spaceMapping.set(sourceSpaceId, targetSpaceId)
     return targetSpaceId
   }

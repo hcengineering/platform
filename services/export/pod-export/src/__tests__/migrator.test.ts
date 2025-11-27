@@ -97,7 +97,7 @@ describe('WorkspaceMigrator', () => {
     }
 
     // Mock PipelineFactory
-    mockSourcePipelineFactory = jest.fn().mockResolvedValue(mockSourcePipeline)
+    mockSourcePipelineFactory = jest.fn().mockImplementation(async (ctx: any, workspace: any) => mockSourcePipeline)
 
     // Mock TxOperations (target client)
     const emptyFindResult: any = []
