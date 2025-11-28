@@ -8,6 +8,8 @@ services:
       - STREAM_ENDPOINT_URL=datalake://huly.local:4031
       - STREAM_INSECURE=true
       - STREAM_SERVER_SECRET=secret
+      - STREAM_REGION=
+      - STREAM_QUEUE_CONFIG=${QUEUE_CONFIG}
     ports:
       - 1081:1080
     restart: unless-stopped
@@ -416,15 +418,14 @@ services:
   aiBot:
     image: haiodo/ai-bot
     ports:
-      - 4011:4010
+      - 4011:4011
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
     environment:
       - SERVER_SECRET=secret
-      - MONGO_URL=${MONGO_URL}
       - QUEUE_CONFIG=${QUEUE_CONFIG}
-      - ACCOUNTS_URL=http://huly.local:3000
+      - ACCOUNTS_URL=http://huly.local:3003
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FIRST_NAME=Jolie
       - LAST_NAME=AI
@@ -432,3 +433,7 @@ services:
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://huly.local:4901
+      - OPENAI_API_KEY=token
+      - OPENAI_SUMMARY_MODEL=openai/gpt-oss-20b
+      - OPENAI_TRANSLATE_MODEL=openai/gpt-oss-20b
+      - OPENAI_BASE_URL=http://huly.local:1234/v1/

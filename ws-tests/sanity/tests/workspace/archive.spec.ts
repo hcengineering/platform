@@ -102,7 +102,7 @@ test.describe('Workspace Archive tests', () => {
     await test.step('Check workspace is active again', async () => {
       await page.reload()
 
-      await selectWorkspacePage.selectWorkspace(wsId)
+      // await selectWorkspacePage.selectWorkspace(wsId)
 
       const issuesDetailsPage = new IssuesDetailsPage(page)
       // Should be restored from previos remembered location.
