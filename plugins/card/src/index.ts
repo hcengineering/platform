@@ -44,7 +44,7 @@ export interface MasterTag extends Class<Card> {
 export interface Tag extends MasterTag, Mixin<Card> {}
 
 export interface Role extends BaseRole {
-  type: Ref<MasterTag | Tag>
+  types: Ref<MasterTag | Tag>[]
 }
 
 export interface Card extends Doc, IconProps {

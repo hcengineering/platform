@@ -13,27 +13,27 @@
 // limitations under the License.
 //
 
-import cardPlugin, { type Card, cardId, DOMAIN_CARD, type Role } from '@hcengineering/card'
+import cardPlugin, { cardId, DOMAIN_CARD, type Card, type Role } from '@hcengineering/card'
 import core, {
   DOMAIN_MODEL,
-  type Ref,
   TxOperations,
   type Client,
   type Data,
   type Doc,
-  type DocumentUpdate
+  type DocumentUpdate,
+  type Ref
 } from '@hcengineering/core'
 import {
+  createOrUpdate,
   tryMigrate,
   tryUpgrade,
   type MigrateOperation,
   type MigrationClient,
-  type MigrationUpgradeClient,
-  createOrUpdate
+  type MigrationUpgradeClient
 } from '@hcengineering/model'
+import tags from '@hcengineering/tags'
 import view, { type Viewlet } from '@hcengineering/view'
 import card from '.'
-import tags from '@hcengineering/tags'
 
 export const cardOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
@@ -100,6 +100,11 @@ export const cardOperation: MigrateOperation = {
         state: 'add-space-type',
         mode: 'upgrade',
         func: addSpaceType
+      },
+      {
+        state: 'migrate-role-types',
+        mode: 'upgrade',
+        func: migrateRoleTypes
       }
     ])
   }
@@ -118,7 +123,7 @@ async function migrateRolesToBaseRole (client: MigrationUpgradeClient): Promise<
   const roles = await client.findAll(card.class.Role, { attachedTo: { $ne: cardPlugin.spaceType.SpaceType } })
   for (const role of roles) {
     const baseRoleData: DocumentUpdate<Role> = {
-      type: role.attachedTo as any,
+      types: [role.attachedTo as any],
       attachedTo: cardPlugin.spaceType.SpaceType,
       attachedToClass: core.class.SpaceType
     }
@@ -381,5 +386,16 @@ async function makeConfigSortable (client: Client): Promise<void> {
   for (const currentViewlet of currentViewlets) {
     const configOptions = { ...currentViewlet.configOptions, sortable: true }
     await txOp.update(currentViewlet, { configOptions })
+  }
+}
+
+async function migrateRoleTypes (client: Client): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const roles = await client.findAll(card.class.Role, { types: { $exists: false } })
+  for (const role of roles) {
+    const baseRoleData: DocumentUpdate<Role> = {
+      types: [(role as any).type]
+    }
+    await txOp.update(role, baseRoleData)
   }
 }

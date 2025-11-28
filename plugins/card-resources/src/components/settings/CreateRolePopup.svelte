@@ -36,7 +36,7 @@
       'roles',
       {
         name: value,
-        type: masterTag._id,
+        types: [masterTag._id],
         permissions: []
       }
     )

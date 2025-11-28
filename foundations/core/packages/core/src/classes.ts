@@ -551,6 +551,10 @@ export interface Permission extends Doc {
   icon?: Asset
 }
 
+export interface AttributePermission extends Permission {
+  attribute: Ref<AnyAttribute>
+}
+
 /**
  * @public
  */

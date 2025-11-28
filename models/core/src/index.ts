@@ -76,7 +76,16 @@ import {
   TCollaborator
 } from './core'
 import { definePermissions } from './permissions'
-import { TPermission, TRole, TSpace, TSpaceType, TSpaceTypeDescriptor, TSystemSpace, TTypedSpace } from './security'
+import {
+  TAttributePermission,
+  TPermission,
+  TRole,
+  TSpace,
+  TSpaceType,
+  TSpaceTypeDescriptor,
+  TSystemSpace,
+  TTypedSpace
+} from './security'
 import { defineSpaceType } from './spaceType'
 import { TDomainStatusPlaceholder, TStatus, TStatusCategory } from './status'
 import { TUserStatus } from './transient'
@@ -124,6 +133,7 @@ export function createModel (builder: Builder): void {
     TSpaceTypeDescriptor,
     TRole,
     TPermission,
+    TAttributePermission,
     TAttribute,
     TType,
     TEnumOf,

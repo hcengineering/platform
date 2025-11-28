@@ -63,7 +63,8 @@ import type {
   Version,
   AccountUuid,
   ClassCollaborators,
-  Collaborator
+  Collaborator,
+  AttributePermission
 } from './classes'
 import { type Status, type StatusCategory } from './status'
 import type {
@@ -129,6 +130,7 @@ export default plugin(coreId, {
     SpaceType: '' as Ref<Class<SpaceType>>,
     Role: '' as Ref<Class<Role>>,
     Permission: '' as Ref<Class<Permission>>,
+    AttributePermission: '' as Ref<Class<AttributePermission>>,
     Type: '' as Ref<Class<Type<any>>>,
     TypeRelation: '' as Ref<Class<Type<string>>>,
     TypeString: '' as Ref<Class<Type<string>>>,
