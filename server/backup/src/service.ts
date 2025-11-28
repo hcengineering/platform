@@ -61,7 +61,7 @@ export interface BackupConfig {
 }
 
 class BackupWorker {
-  downloadLimit: number = 5
+  downloadLimit: number = 2
   workspacesToBackup = new Map<WorkspaceUuid, WorkspaceInfoWithStatus>()
   rateLimiter: RateLimiter
 
@@ -336,7 +336,7 @@ class BackupWorker {
               connectTimeout: 5 * 60 * 1000, // 5 minutes to,
               keepSnapshots: this.config.KeepSnapshots,
               blobDownloadLimit: this.downloadLimit,
-              skipBlobContentTypes: ['video/', 'audio/', 'image/'],
+              skipBlobContentTypes: ['video/', 'audio/'],
               fullVerify: this.fullCheck,
               progress: (progress) => {
                 return notify?.(progress) ?? Promise.resolve()

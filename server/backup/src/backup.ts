@@ -108,8 +108,8 @@ export async function backup (
     timeout: 0,
     skipDomains: [],
     connectTimeout: 30000,
-    skipBlobContentTypes: ['video/', 'image/', 'audio/'],
-    blobDownloadLimit: 5,
+    skipBlobContentTypes: ['video/', 'audio/'],
+    blobDownloadLimit: 2,
     keepSnapshots: 7 * 12
   }
 ): Promise<BackupResult> {
@@ -349,7 +349,12 @@ export async function backup (
         }
       }
 
+      let retryCount = 0
+      const maxRetries = 5
       while (true) {
+        if (canceled()) {
+          return { changed: 0, needRetrieveChunks: [] }
+        }
         try {
           const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(ctx, domain, idx))
           if (domain === DOMAIN_BLOB) {
@@ -360,6 +365,7 @@ export async function backup (
 
           idx = currentChunk.idx
           ops++
+          retryCount = 0 // Reset retry count on success
 
           let needRetrieve: RetriavableChunks = new Map()
 
@@ -446,13 +452,19 @@ export async function backup (
             break
           }
         } catch (err: any) {
-          ctx.error('failed to load chunks', { error: err })
+          retryCount++
+          ctx.error('failed to load chunks', { error: err, retryCount, maxRetries })
           if (idx !== undefined) {
             await ctx.with('closeChunk', {}, async () => {
               await connection.closeChunk(ctx, idx as number)
             })
           }
-          // Try again
+          if (retryCount >= maxRetries) {
+            ctx.error('Max retries exceeded in loadChangesFromServer', { domain, retryCount })
+            throw new Error(`Max retries (${maxRetries}) exceeded while loading chunks for domain ${domain}`)
+          }
+          // Try again with delay
+          await new Promise<void>((resolve) => setTimeout(resolve, 1000 * retryCount))
           idx = undefined
           processed = 0
         }
@@ -596,6 +608,8 @@ export async function backup (
       } catch (err) {}
 
       let lastSize = 0
+      const chunkRetryCount = new Map<RetriavableChunks, number>()
+      const maxChunkRetries = 3
 
       while (needRetrieveChunks.length > 0) {
         if (canceled()) {
@@ -659,8 +673,22 @@ export async function backup (
           }
           ops++
         } catch (err: any) {
-          ctx.error('error loading docs', { domain, err, workspace: workspaceId })
-          // Put back.
+          const currentRetry = (chunkRetryCount.get(needRetrieve) ?? 0) + 1
+          chunkRetryCount.set(needRetrieve, currentRetry)
+          ctx.error('error loading docs', {
+            domain,
+            err,
+            workspace: workspaceId,
+            retry: currentRetry,
+            maxRetries: maxChunkRetries
+          })
+          if (currentRetry >= maxChunkRetries) {
+            ctx.error('Max retries exceeded for chunk, skipping', { domain, chunkSize: needRetrieve.size })
+            // Skip this chunk after max retries
+            continue
+          }
+          // Put back with delay.
+          await new Promise<void>((resolve) => setTimeout(resolve, 1000 * currentRetry))
           needRetrieveChunks.push(needRetrieve)
           continue
         }
@@ -763,7 +791,7 @@ export async function backup (
             const descrJson = JSON.stringify(d)
 
             if (blob.size > options.blobDownloadLimit * 1024 * 1024) {
-              ctx.info('skip blob download, limit excheed', {
+              ctx.info('skip blob download, limit exceeded', {
                 blob: blob._id,
                 provider: blob.provider,
                 size: Math.round(blob.size / (1024 * 1024)),
@@ -1185,7 +1213,7 @@ export async function backup (
     if (!canceled() && domainChanges > 0) {
       backupInfo.lastTxId = lastTx?._id ?? '0' // We could store last tx, since full backup is complete
       backupInfo.migrations.forcedFullCheck = forcedFullCheck
-      backupInfo.migrations.forcedCompaction = forcedCompact
+      backupInfo.migrations.forcedCompact = forcedCompact
       backupInfo.dataSize = result.dataSize
       backupInfo.blobsSize = result.blobsSize
       backupInfo.backupSize = result.backupSize
