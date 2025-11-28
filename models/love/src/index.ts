@@ -343,6 +343,7 @@ export function createModel (builder: Builder): void {
       component: love.component.Settings,
       group: 'settings-account',
       role: AccountRole.Guest,
+      feature: 'love',
       order: 1600
     },
     love.ids.Settings

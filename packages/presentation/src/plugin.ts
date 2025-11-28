@@ -183,6 +183,7 @@ export default plugin(presentationId, {
     SessionId: '' as Metadata<string>,
     StatsUrl: '' as Metadata<string>,
     MailUrl: '' as Metadata<string>,
+    DisabledFeatures: '' as Metadata<Set<string>>,
     PreviewUrl: '' as Metadata<string>,
     PulseUrl: '' as Metadata<string>,
     HulylakeUrl: '' as Metadata<string>,
