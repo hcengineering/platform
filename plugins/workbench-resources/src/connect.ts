@@ -285,20 +285,10 @@ export async function connect (title: string): Promise<Client | undefined> {
         onError: (status: StatusCode) => {
           switch (status) {
             case platform.status.WorkspaceArchived: {
-              translateCB(plugin.string.WorkspaceIsArchived, {}, get(themeStore).language, (r) => {
-                error.set(r)
-                errorActions.set([
-                  {
-                    label: login.string.SelectWorkspace,
-                    action: () => {
-                      const selectWorkspace: Pages = 'selectWorkspace'
-                      navigate({
-                        path: [loginId, selectWorkspace],
-                        query: {}
-                      })
-                    }
-                  }
-                ])
+              const selectWorkspace: Pages = 'selectWorkspace'
+              navigate({
+                path: [loginId, selectWorkspace],
+                query: {}
               })
               break
             }
