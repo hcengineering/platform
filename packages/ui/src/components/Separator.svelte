@@ -76,10 +76,12 @@
   const disableUserSelect = (): void => {
     document.body.style.userSelect = 'none'
     document.body.style.webkitUserSelect = 'none'
+    document.body.style.pointerEvents = 'none'
   }
   const enableUserSelect = (): void => {
     document.body.style.userSelect = ''
     document.body.style.webkitUserSelect = ''
+    document.body.style.pointerEvents = ''
   }
 
   const fetchSeparators = (): void => {
@@ -323,21 +325,24 @@
   function floatMouseMove (event: PointerEvent): void {
     if (!isSeparate || parentSize === null || parentElement === null) return
     const coord: number = Math.round(direction === 'horizontal' ? event.clientX - offset : event.clientY - offset)
-    const parentCoord: number = coord - parentSize.start
+    let parentCoord: number = coord - parentSize.start
     const min = remToPx(panel.minSize === 'auto' ? 10 : panel.minSize)
     const max = remToPx(panel.maxSize === 'auto' ? 30 : panel.maxSize)
+    // Clamp parentCoord to valid range to prevent panel from going off-screen
+    if (parentCoord < 0) parentCoord = 0
+    if (parentCoord > parentSize.size - separatorSize) parentCoord = parentSize.size - separatorSize
     const newCoord =
       side === 'start'
-        ? parentSize.size - parentCoord < min - separatorSize
+        ? parentSize.size - parentCoord < min
           ? min
-          : parentSize.size - parentCoord > max - separatorSize
+          : parentSize.size - parentCoord > max
             ? max
             : parentSize.size - parentCoord
-        : parentCoord < min - separatorSize
+        : parentCoord < min
           ? min
-          : parentCoord > max - separatorSize
+          : parentCoord > max
             ? max
-            : parentCoord - separatorSize
+            : parentCoord
     panel.size = pxToRem(newCoord)
     setSize(parentElement, newCoord)
   }
