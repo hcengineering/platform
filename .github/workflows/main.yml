@@ -206,13 +206,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Free space
-        uses: ./.github/actions/free-disk-space
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
@@ -305,13 +305,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Free space
-        uses: ./.github/actions/free-disk-space
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
@@ -404,13 +404,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Free space
-        uses: ./.github/actions/free-disk-space
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
+      - name: Free space
+        uses: ./.github/actions/free-disk-space
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
