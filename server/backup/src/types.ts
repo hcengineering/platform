@@ -76,6 +76,19 @@ export interface BackupSnapshot {
 }
 
 /**
+ * Known migration keys for backup info
+ * @public
+ */
+export interface BackupMigrations {
+  /** Flag indicating zero-size check has been performed */
+  zeroCheckSize?: boolean
+  /** Version of forced compaction migration */
+  forcedCompact?: string
+  /** Version of forced full check migration */
+  forcedFullCheck?: string
+}
+
+/**
  * @public
  */
 export interface BackupInfo {
@@ -88,7 +101,7 @@ export interface BackupInfo {
   // A hash of current domain transactions, so we could skip all other checks if same.
   domainHashes: Record<Domain, string>
 
-  migrations: Record<string, boolean | string>
+  migrations: BackupMigrations
   dataSize?: number
   blobsSize?: number
   backupSize?: number
