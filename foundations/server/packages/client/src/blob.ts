@@ -75,7 +75,9 @@ export class BlobClient {
               await new Promise<void>((resolve) => {
                 writable.end(resolve)
               })
-              throw new Error(`Empty chunk received ${emptyChunkRetries} times for blob ${name} at offset ${written}/${size}`)
+              throw new Error(
+                `Empty chunk received ${emptyChunkRetries} times for blob ${name} at offset ${written}/${size}`
+              )
             }
             ctx.warn('Empty chunk received, retrying', { name, written, size, retry: emptyChunkRetries })
             await new Promise<void>((resolve) => setTimeout(resolve, 100 * emptyChunkRetries))

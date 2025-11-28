@@ -675,7 +675,13 @@ export async function backup (
         } catch (err: any) {
           const currentRetry = (chunkRetryCount.get(needRetrieve) ?? 0) + 1
           chunkRetryCount.set(needRetrieve, currentRetry)
-          ctx.error('error loading docs', { domain, err, workspace: workspaceId, retry: currentRetry, maxRetries: maxChunkRetries })
+          ctx.error('error loading docs', {
+            domain,
+            err,
+            workspace: workspaceId,
+            retry: currentRetry,
+            maxRetries: maxChunkRetries
+          })
           if (currentRetry >= maxChunkRetries) {
             ctx.error('Max retries exceeded for chunk, skipping', { domain, chunkSize: needRetrieve.size })
             // Skip this chunk after max retries
