@@ -10,8 +10,6 @@
     "Categories": "Catégories",
     "Delete": "Supprimer",
     "ChangePassword": "Changer le mot de passe",
-    "CurrentPassword": "Mot de passe actuel",
-    "NewPassword": "Nouveau mot de passe",
     "Disconnect": "Déconnecter",
     "DisconnectAll": "Déconnecter tous",
     "Saving": "Enregistrement...",
@@ -25,9 +23,6 @@
     "SendAgain": "Envoyer à nouveau",
     "SendAgainIn": "Peut être envoyé à nouveau dans",
     "Value": "Valeur",
-    "EnterCurrentPassword": "Entrez le mot de passe actuel",
-    "EnterNewPassword": "Entrez le nouveau mot de passe",
-    "RepeatNewPassword": "Répétez le nouveau mot de passe",
     "Signout": "Déconnexion",
     "Settings": "Paramètres",
     "SelectWorkspace": "Sélectionner un espace de travail",
@@ -207,6 +202,8 @@
     "ApiAccess": "Accès API",
     "ApiToken": "Token API",
     "GenerateApiToken": "Générer un token API",
-    "IdentifierExists": "Identifiant déjà utilisé"
+    "IdentifierExists": "Identifiant déjà utilisé",
+    "PasswordAgingRule": "Règle de vieillissement du mot de passe",
+    "PasswordAgingRuleDescription": "Nombre de jours après lesquels les utilisateurs devront changer leur mot de passe."
   }
 }

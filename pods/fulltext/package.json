@@ -53,13 +53,13 @@
     "@types/koa__cors": "^5.0.0"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/server-token": "workspace:^0.7.17",
-    "@hcengineering/server-core": "workspace:^0.7.17",
+    "@hcengineering/server-core": "workspace:^0.7.18",
     "@hcengineering/server-pipeline": "workspace:^0.7.0",
-    "@hcengineering/client": "workspace:^0.7.17",
-    "@hcengineering/client-resources": "workspace:^0.7.17",
-    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/client": "workspace:^0.7.18",
+    "@hcengineering/client-resources": "workspace:^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.23",
     "dotenv": "^16.4.5",
     "@hcengineering/analytics": "workspace:^0.7.17",
     "@hcengineering/analytics-service": "workspace:^0.7.17",

@@ -10,8 +10,6 @@
     "Categories": "Categories",
     "Delete": "Delete",
     "ChangePassword": "Change password",
-    "CurrentPassword": "Current password",
-    "NewPassword": "New password",
     "Disconnect": "Disconnect",
     "DisconnectAll": "Disconnect all",
     "Saving": "Saving...",
@@ -25,9 +23,6 @@
     "SendAgain": "Send again",
     "SendAgainIn": "Can send again in",
     "Value": "Value",
-    "EnterCurrentPassword": "Enter current password",
-    "EnterNewPassword": "Enter new password",
-    "RepeatNewPassword": "Repeat new password",
     "Signout": "Sign out",
     "Settings": "Settings",
     "SelectWorkspace": "Select workspace",
@@ -207,6 +202,8 @@
     "GenerateApiToken": "Generate API token",
     "IdentifierExists": "Identifier already exists",
     "Restricted": "Restricted",
-    "RestrictedAttributeWarning": "Are you sure you want to restrict changing this attribute? This action will create permissions for this attribute and cannot be undone."
+    "RestrictedAttributeWarning": "Are you sure you want to restrict changing this attribute? This action will create permissions for this attribute and cannot be undone.",
+    "PasswordAgingRule": "Password aging rule",
+    "PasswordAgingRuleDescription": "Number of days after which users will be required to change their password."
   }
 }

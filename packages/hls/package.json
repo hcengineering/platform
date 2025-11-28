@@ -39,8 +39,8 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.22",
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/presentation": "workspace:^0.7.0",
     "hls.js": "^1.5.20",
     "plyr": "3.7.8",

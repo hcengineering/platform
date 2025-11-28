@@ -791,6 +791,11 @@ export class PostgresAccountDB implements AccountDB {
       .client`UPDATE ${this.client(this.workspace.getTableName())} SET allow_guest_sign_up = ${guestSignUpAllowed} WHERE uuid = ${workspaceId}`
   }
 
+  async updatePasswordAgingRule (workspaceId: WorkspaceUuid, days: number): Promise<void> {
+    await this
+      .client`UPDATE ${this.client(this.workspace.getTableName())} SET password_aging_rule = ${days} WHERE uuid = ${workspaceId}`
+  }
+
   async assignWorkspace (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this.withRetry(
       async (rTx) =>
@@ -865,7 +870,8 @@ export class PostgresAccountDB implements AccountDB {
           w.region,
           w.created_by,
           w.created_on,
-          w.billing_account, 
+          w.billing_account,
+          w.password_aging_rule,
           json_build_object(
             'mode', s.mode,
             'processing_progress', s.processing_progress,
@@ -894,6 +900,7 @@ export class PostgresAccountDB implements AccountDB {
         row.created_on = convertTimestamp(row.created_on)
         row.status.last_processing_time = convertTimestamp(row.status.last_processing_time)
         row.status.last_visit = convertTimestamp(row.status.last_visit)
+        row.password_aging_rule = convertTimestamp(row.password_aging_rule)
       }
 
       return convertKeysToCamelCase(res)

@@ -36,12 +36,12 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.22",
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/storage": "workspace:^0.7.17",
     "@hcengineering/analytics": "workspace:^0.7.17",
     "@hcengineering/rank": "workspace:^0.7.17",
-    "@hcengineering/account-client": "workspace:^0.7.19",
+    "@hcengineering/account-client": "workspace:^0.7.20",
     "toposort": "^2.0.2",
     "fast-equals": "^5.2.2"
   },

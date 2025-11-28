@@ -2,6 +2,37 @@
   "name": "@hcengineering/client-resources",
   "entries": [
     {
+      "version": "0.7.18",
+      "tag": "@hcengineering/client-resources_v0.7.18",
+      "date": "Wed, 26 Nov 2025 15:28:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add password aging"
+          },
+          {
+            "comment": "Add support for custom exclude filters"
+          }
+        ],
+        "none": [
+          {
+            "comment": "formatting"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/client\" from `^0.7.17` to `0.7.18`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.22` to `0.7.23`"
+          },
+          {
+            "comment": "Updating dependency \"@hcengineering/platform\" from `^0.7.18` to `0.7.19`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.17",
       "tag": "@hcengineering/client-resources_v0.7.17",
       "date": "Mon, 27 Oct 2025 13:27:12 GMT",

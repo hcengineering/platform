@@ -11,7 +11,7 @@
     "test": "echo \"No test specified\""
   },
   "devDependencies": {
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/theme": "workspace:^0.7.0",
     "@hcengineering/ui": "workspace:^0.7.0",
     "@storybook/addon-essentials": "^7.0.6",

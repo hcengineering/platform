@@ -37,8 +37,8 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.22",
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/presentation": "workspace:^0.7.0",
     "@hcengineering/activity": "workspace:^0.7.0",
@@ -48,7 +48,7 @@
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/view": "workspace:^0.7.0",
     "@hcengineering/view-resources": "workspace:^0.7.0",
-    "@hcengineering/client": "workspace:^0.7.17",
+    "@hcengineering/client": "workspace:^0.7.18",
     "@hcengineering/devmodel": "workspace:^0.7.0",
     "@hcengineering/model": "workspace:^0.7.17",
     "@hcengineering/workbench": "workspace:^0.7.0"

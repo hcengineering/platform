@@ -52,11 +52,11 @@
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/card": "workspace:^0.7.0",
     "@hcengineering/workbench-resources": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.22",
+    "@hcengineering/core": "workspace:^0.7.23",
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/time": "workspace:^0.7.0",
     "@hcengineering/rank": "workspace:^0.7.17",
-    "@hcengineering/platform": "workspace:^0.7.18",
+    "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/process": "workspace:^0.7.0",
     "svelte": "^4.2.20",
     "fast-equals": "^5.2.2"

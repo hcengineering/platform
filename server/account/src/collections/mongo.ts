@@ -645,6 +645,15 @@ export class MongoAccountDB implements AccountDB {
     )
   }
 
+  async updatePasswordAgingRule (workspaceId: WorkspaceUuid, days: number): Promise<void> {
+    await this.workspace.update(
+      {
+        uuid: workspaceId
+      },
+      { passwordAgingRule: days }
+    )
+  }
+
   async getPendingWorkspace (
     region: string,
     version: Data<Version>,
