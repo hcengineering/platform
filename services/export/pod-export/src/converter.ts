@@ -32,6 +32,7 @@ import {
   type IdMap,
   type Space
 } from '@hcengineering/core'
+import { type Attachment } from '@hcengineering/attachment'
 import attachment from '@hcengineering/model-attachment'
 import core from '@hcengineering/model-core'
 import { StorageAdapter } from '@hcengineering/server-core'
@@ -352,7 +353,7 @@ export class UnifiedConverter {
       },
       attachment.class.Attachment,
       this.client.getHierarchy()
-    )
+    ) as Attachment[]
 
     if (attachments.length === 0) {
       return undefined
@@ -360,16 +361,16 @@ export class UnifiedConverter {
 
     // Create attachments with getData callbacks
     const resolved = attachments.map(
-      (attachment): UnifiedAttachment => ({
-        id: attachment._id,
-        name: (attachment as any).name,
-        size: (attachment as any).size,
-        contentType: (attachment as any).contentType,
+      (att): UnifiedAttachment => ({
+        id: att._id,
+        name: att.name,
+        size: att.size,
+        contentType: att.type,
         getData: async () => {
-          const buffer = await this.storage.read(this.context, this.wsIds, (attachment as any).file)
+          const buffer = await this.storage.read(this.context, this.wsIds, att.file)
 
           if (buffer === undefined) {
-            console.error(`Attachment not found: ${attachment._id}`)
+            console.error(`Attachment not found: ${att._id}`)
             return Buffer.from([])
           }
 

@@ -25,7 +25,7 @@ import documentsPlugin, {
   type ChangeControl,
   type DocumentRequest
 } from '@hcengineering/controlled-documents'
-import exportPlugin from '@hcengineering/export'
+import exportPlugin, { type RelationDefinition } from '@hcengineering/export'
 import { type Builder } from '@hcengineering/model'
 import chunter from '@hcengineering/model-chunter'
 import core from '@hcengineering/model-core'
@@ -827,6 +827,11 @@ export function createModel (builder: Builder): void {
     documents.action.TransferDocument
   )
 
+  const relations: RelationDefinition[] = [
+    { field: 'attachedTo', class: documents.class.DocumentMeta },
+    { field: 'document', class: documents.class.ProjectDocument, direction: 'inverse' }
+  ]
+
   createAction(
     builder,
     {
@@ -835,6 +840,9 @@ export function createModel (builder: Builder): void {
         component: exportPlugin.component.ExportToWorkspaceModal,
         fillProps: {
           _objects: 'value'
+        },
+        props: {
+          relations
         }
       },
       label: exportPlugin.string.ExportToWorkspace,

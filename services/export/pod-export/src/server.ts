@@ -38,7 +38,7 @@ import core, {
   type WorkspaceUuid
 } from '@hcengineering/core'
 import drive, { createFile, Drive } from '@hcengineering/drive'
-import exportPlugin, { type TransformConfig } from '@hcengineering/export'
+import exportPlugin, { type TransformConfig, type RelationDefinition } from '@hcengineering/export'
 import {
   ContextNameMiddleware,
   DBAdapterInitMiddleware,
@@ -122,6 +122,70 @@ const extractQueryToken = (queryParams: any): string | null => {
   }
 
   return encodedToken
+}
+
+interface RelationPayloadEntry {
+  field?: string
+  class?: Ref<Class<Doc>>
+  direction?: 'forward' | 'inverse'
+}
+
+type RelationPayload = RelationPayloadEntry[] | Record<string, RelationPayloadEntry | Ref<Class<Doc>>>
+
+const isRelationPayloadEntry = (value: unknown): value is RelationPayloadEntry =>
+  value != null && typeof value === 'object'
+
+const normalizeRelations = (input: unknown): RelationDefinition[] | undefined => {
+  if (input == null) {
+    return undefined
+  }
+
+  const result: RelationDefinition[] = []
+
+  if (Array.isArray(input)) {
+    for (const item of input as RelationPayloadEntry[]) {
+      if (!isRelationPayloadEntry(item)) {
+        continue
+      }
+
+      if (item.class === undefined || typeof item.field !== 'string') {
+        continue
+      }
+
+      result.push({
+        field: item.field,
+        class: item.class,
+        direction: item.direction ?? 'forward'
+      })
+    }
+
+    return result.length > 0 ? result : undefined
+  }
+
+  if (typeof input === 'object') {
+    const entries = Object.entries(input as RelationPayload)
+    for (const [key, value] of entries) {
+      if (!isRelationPayloadEntry(value) && typeof value !== 'string') {
+        continue
+      }
+
+      if (typeof value === 'string') {
+        result.push({ field: key, class: value as Ref<Class<Doc>>, direction: 'forward' })
+        continue
+      }
+
+      if (!isRelationPayloadEntry(value) || value.class === undefined) {
+        continue
+      }
+
+      const field = typeof value.field === 'string' ? value.field : key
+      result.push({ field, class: value.class, direction: value.direction ?? 'forward' })
+    }
+
+    return result.length > 0 ? result : undefined
+  }
+
+  return undefined
 }
 
 const retrieveToken = (headers: IncomingHttpHeaders, queryParams: any): string => {
@@ -337,13 +401,15 @@ export function createServer (
           _class,
           query,
           conflictStrategy,
-          includeAttachments
+          includeAttachments,
+          relations: rawRelations
         }: {
           targetWorkspace: WorkspaceUuid
           _class: Ref<Class<Doc>>
           query?: DocumentQuery<Doc>
           conflictStrategy?: 'skip' | 'duplicate'
           includeAttachments?: boolean
+          relations?: RelationPayload
         } = req.body
 
         if (targetWorkspace == null) {
@@ -425,13 +491,16 @@ export function createServer (
 
             const migrator = new WorkspaceMigrator(measureCtx, sourcePipelineFactory, targetTxOps, storageAdapter)
 
+            const relations = normalizeRelations(rawRelations)
+
             const options: MigrationOptions = {
               sourceWorkspace: wsIds,
               targetWorkspace: targetWsIds,
               sourceQuery: query ?? {},
               _class,
               conflictStrategy: conflictStrategy ?? 'duplicate',
-              includeAttachments: includeAttachments ?? true
+              includeAttachments: includeAttachments ?? true,
+              relations
             }
 
             const result = await migrator.migrate(options)

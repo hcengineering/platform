@@ -14,13 +14,15 @@ import { type Class, type Doc, type DocumentQuery, type Ref } from '@hcengineeri
 import presentation, { MessageBox } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 import { getMetadata } from '@hcengineering/platform'
+import { type RelationDefinition } from '@hcengineering/export'
 import plugin from './plugin'
 
 export async function exportToWorkspace (
   _class: Ref<Class<Doc>>,
   query: DocumentQuery<Doc> | undefined,
   selectedDocs: Doc[],
-  targetWorkspace: string | undefined
+  targetWorkspace: string | undefined,
+  relations: RelationDefinition[] | undefined
 ): Promise<void> {
   try {
     const baseUrl = getMetadata(plugin.metadata.ExportUrl)
@@ -31,7 +33,8 @@ export async function exportToWorkspace (
 
     const body: any = {
       targetWorkspace,
-      _class
+      _class,
+      relations
     }
 
     body.query =
@@ -60,8 +63,6 @@ export async function exportToWorkspace (
       label: plugin.string.ExportStarted,
       message: plugin.string.ExportStartedMessage
     })
-
-    dispatch('close', true)
   } catch (err) {
     console.error('Export failed:', err)
     showFailurePopup()

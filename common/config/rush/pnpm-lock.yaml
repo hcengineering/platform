@@ -7388,8 +7388,8 @@ importers:
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/platform
       '@hcengineering/rank':
-        specifier: ^0.7.17
-        version: 0.7.17
+        specifier: workspace:^0.7.17
+        version: link:../../foundations/core/packages/rank
       '@hcengineering/request':
         specifier: workspace:^0.7.0
         version: link:../../plugins/request
@@ -37737,8 +37737,11 @@ importers:
         specifier: workspace:^0.7.20
         version: link:../../../foundations/core/packages/account-client
       '@hcengineering/analytics-service':
-        specifier: ^0.7.17
-        version: 0.7.17
+        specifier: workspace:^0.7.17
+        version: link:../../../foundations/core/packages/analytics-service
+      '@hcengineering/attachment':
+        specifier: workspace:^0.7.0
+        version: link:../../../plugins/attachment
       '@hcengineering/client':
         specifier: workspace:^0.7.18
         version: link:../../../foundations/core/packages/client
@@ -37755,8 +37758,8 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../../plugins/export
       '@hcengineering/middleware':
-        specifier: ^0.7.19
-        version: 0.7.19
+        specifier: workspace:^0.7.21
+        version: link:../../../foundations/server/packages/middleware
       '@hcengineering/model-all':
         specifier: workspace:^0.7.0
         version: link:../../../models/all
@@ -37773,8 +37776,8 @@ importers:
         specifier: workspace:^0.7.19
         version: link:../../../foundations/core/packages/platform
       '@hcengineering/postgres':
-        specifier: ^0.7.17
-        version: 0.7.18
+        specifier: workspace:^0.7.19
+        version: link:../../../foundations/server/packages/postgres
       '@hcengineering/server-client':
         specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/client
@@ -42050,51 +42053,6 @@ packages:
 
   '@hapi/bourne@3.0.0':
     resolution: {integrity: sha512-Waj1cwPXJDucOib4a3bAISsKJVb15MKi9IvmTI/7ssVEm6sywXGjVJDhl6/umt1pK1ZS7PacXU3A1PmFKHEZ2w==}
-
-  '@hcengineering/analytics-service@0.7.17':
-    resolution: {integrity: sha512-y70WkyyNYehR6C2GmzUH5ITNpPfCa6GJusmdQRZEx3EkiJdQPSBxTJ7nh53Tfzh+rvOdg4lDTaTscEUbPjPKow==}
-
-  '@hcengineering/analytics@0.7.17':
-    resolution: {integrity: sha512-AzB2DvmDctEJge8VeAHS3YyRYij/QQlARxa2OCNiY+Vv+2+OsQk0NZsw1yqZqsMkVJ40FTUrzOkI7UdM6RPO1Q==}
-
-  '@hcengineering/core@0.7.22':
-    resolution: {integrity: sha512-DO5/8ZMLjIHw1xINnr+ASD2Fk/ne5/zJC7Qp0orm8jNdxaBalfv6sX+I2rLXazWzLjH7XYniHPUHdifuXOBbWA==}
-
-  '@hcengineering/measurements-otlp@0.7.17':
-    resolution: {integrity: sha512-Yo0N4bUYJT9usEkHvEmNbcWbHyaBufJwwY+RC9G44mTr78Z1ch5gmpFBkvZPSYmKnEIkSHThrA72D3HdAWTqEg==}
-
-  '@hcengineering/measurements@0.7.18':
-    resolution: {integrity: sha512-4MxYthJhNWPfR389lN5cIFtrhzgmhi39Fx/dqIOOYF+6g0WWA6GtWXi+ORRM8l/AWKSastZqsWxMdBbT+0htdg==}
-
-  '@hcengineering/middleware@0.7.19':
-    resolution: {integrity: sha512-gkL9ccKChbI4nFk8rODCDk5rZe/M6zBfSwRSTZyOX0TEjcE0Gn9SGFg2JoL69ETfPA/pDUa5gmYYEeNqLn5Z8g==}
-
-  '@hcengineering/platform@0.7.18':
-    resolution: {integrity: sha512-IIeNkXGtCIEvLbL/4O+LHGIHoNPWm7fQTqCYoEYytr6WrLrEr4OZKB/Dpd53rOIQegU+Dh5KwWBh1c/6UAqDHw==}
-
-  '@hcengineering/postgres-base@0.7.17':
-    resolution: {integrity: sha512-ex5Xtsce/wa4xdY6dDlKyWaFsNQlgHVVcD0R9BF7hOLDkTDbtkzpT+syYpCJSXCfT4MoA9x3xDcGAD5geDYhrg==}
-
-  '@hcengineering/postgres@0.7.18':
-    resolution: {integrity: sha512-FTCv0oXaILNNKIif7EFisRkeWkZjemS0BvSsoYTjyLNFQWKmFQv2YZ9Fx6GNN7AgclFpES+Z4nZcR/80I7CmJw==}
-
-  '@hcengineering/query@0.7.17':
-    resolution: {integrity: sha512-dOQbLwEHIp5D4J73I96LKeCIb5Am12jXAmrqpoMMmnA8u6UZylJVT8Vn9HwfPTUTVXmYnv9QxUNPKEn/MpaOAw==}
-
-  '@hcengineering/rank@0.7.17':
-    resolution: {integrity: sha512-olGMdtWWaRvz3uDnFmn8GyCW+/yqfN7fqR3uR8F/HlecBMReoQOBsEQlExJAAU7hdIJPS6u+F3Ge82uaUUWejg==}
-
-  '@hcengineering/rpc@0.7.17':
-    resolution: {integrity: sha512-DEd8EMc+Zxgnnk7v9ELj8bk0GpwcKG8rgaMDd2ZXk/JUx9l99RJoJ9/5rlSUHGv8SRxTq8DYJR85nU3aasVd9Q==}
-
-  '@hcengineering/server-core@0.7.17':
-    resolution: {integrity: sha512-p+ijVeqNUG5YKJerjnAXJV8OBLPOAZv7zgKDDKMS9NRDNW7XNDTTmV/7sRPTFFH8AVufa0kSfVvrDHCMOhvr+g==}
-
-  '@hcengineering/server-token@0.7.17':
-    resolution: {integrity: sha512-MDoGzVOTScJXnx2jHL63szclhiqPOKEXk7bmUj6i/HLUQoU6UAl9TTq1Zx/TomyzFQUx8Vkuj0j0bJMUcmLXmQ==}
-
-  '@hcengineering/storage@0.7.17':
-    resolution: {integrity: sha512-1njEkieVWcJgZHvHBB7d656x1EgkwpFeYI9PGJPAiIMnONRfP4KsGLEgfT9Hb5QTM451RCjctbDF+ibBpsCBdQ==}
 
   '@hocuspocus/common@2.15.3':
     resolution: {integrity: sha512-Rzh1HF0a2o/tf90A3w2XNdXd9Ym3aQzMDfD3lAUONCX9B9QOdqdyiORrj6M25QEaJrEIbXFy8LtAFcL0wRdWzA==}
@@ -52762,120 +52720,6 @@ snapshots:
 
   '@hapi/bourne@3.0.0': {}
 
-  '@hcengineering/analytics-service@0.7.17':
-    dependencies:
-      '@hcengineering/analytics': 0.7.17
-      '@hcengineering/core': 0.7.22
-      '@hcengineering/measurements-otlp': 0.7.17
-      '@hcengineering/platform': 0.7.18
-      winston: 3.18.3
-      winston-daily-rotate-file: 5.0.0(winston@3.18.3)
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-
-  '@hcengineering/analytics@0.7.17':
-    dependencies:
-      '@hcengineering/platform': 0.7.18
-
-  '@hcengineering/core@0.7.22':
-    dependencies:
-      '@hcengineering/analytics': 0.7.17
-      '@hcengineering/measurements': 0.7.18
-      '@hcengineering/platform': 0.7.18
-      fast-equals: 5.3.2
-
-  '@hcengineering/measurements-otlp@0.7.17':
-    dependencies:
-      '@hcengineering/measurements': 0.7.18
-      '@opentelemetry/api': 1.9.0
-      '@opentelemetry/api-logs': 0.203.0
-      '@opentelemetry/auto-instrumentations-node': 0.62.2(@opentelemetry/api@1.9.0)(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(encoding@0.1.13)
-      '@opentelemetry/core': 2.2.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/exporter-logs-otlp-http': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/exporter-metrics-otlp-http': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/exporter-trace-otlp-http': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/id-generator-aws-xray': 2.0.3(@opentelemetry/api@1.9.0)
-      '@opentelemetry/otlp-exporter-base': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/resources': 2.2.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-logs': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-metrics': 2.2.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-node': 0.203.0(@opentelemetry/api@1.9.0)
-      '@opentelemetry/sdk-trace-node': 2.2.0(@opentelemetry/api@1.9.0)
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-
-  '@hcengineering/measurements@0.7.18': {}
-
-  '@hcengineering/middleware@0.7.19':
-    dependencies:
-      '@hcengineering/analytics': 0.7.17
-      '@hcengineering/core': 0.7.22
-      '@hcengineering/platform': 0.7.18
-      '@hcengineering/query': 0.7.17
-      '@hcengineering/server-core': 0.7.17
-      fast-equals: 5.3.2
-
-  '@hcengineering/platform@0.7.18':
-    dependencies:
-      intl-messageformat: 10.7.18
-
-  '@hcengineering/postgres-base@0.7.17':
-    dependencies:
-      postgres: 3.4.7
-
-  '@hcengineering/postgres@0.7.18':
-    dependencies:
-      '@hcengineering/core': 0.7.22
-      '@hcengineering/platform': 0.7.18
-      '@hcengineering/postgres-base': 0.7.17
-      '@hcengineering/server-core': 0.7.17
-      postgres: 3.4.7
-
-  '@hcengineering/query@0.7.17':
-    dependencies:
-      '@hcengineering/analytics': 0.7.17
-      '@hcengineering/core': 0.7.22
-      '@hcengineering/platform': 0.7.18
-      fast-equals: 5.3.2
-
-  '@hcengineering/rank@0.7.17':
-    dependencies:
-      '@hcengineering/core': 0.7.22
-      lexorank: 1.0.5
-
-  '@hcengineering/rpc@0.7.17':
-    dependencies:
-      '@hcengineering/core': 0.7.22
-      '@hcengineering/platform': 0.7.18
-      msgpackr: 1.11.5
-
-  '@hcengineering/server-core@0.7.17':
-    dependencies:
-      '@hcengineering/analytics': 0.7.17
-      '@hcengineering/core': 0.7.22
-      '@hcengineering/platform': 0.7.18
-      '@hcengineering/query': 0.7.17
-      '@hcengineering/rpc': 0.7.17
-      '@hcengineering/server-token': 0.7.17
-      '@hcengineering/storage': 0.7.17
-      fast-equals: 5.3.2
-      uuid: 8.3.2
-
-  '@hcengineering/server-token@0.7.17':
-    dependencies:
-      '@hcengineering/core': 0.7.22
-      '@hcengineering/platform': 0.7.18
-      jwt-simple: 0.5.6
-      uuid: 8.3.2
-
-  '@hcengineering/storage@0.7.17':
-    dependencies:
-      '@hcengineering/core': 0.7.22
-      '@hcengineering/platform': 0.7.18
-      fast-equals: 5.3.2
-
   '@hocuspocus/common@2.15.3':
     dependencies:
       lib0: 0.2.114
@@ -61382,7 +61226,7 @@ snapshots:
   node-loader@2.0.0(webpack@5.102.1):
     dependencies:
       loader-utils: 2.0.4
-      webpack: 5.102.1(@swc/core@1.15.1)(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.102.1
 
   node-localstorage@2.2.1:
     dependencies:
@@ -63413,6 +63257,15 @@ snapshots:
     optionalDependencies:
       '@swc/core': 1.15.1
 
+  terser-webpack-plugin@5.3.14(webpack@5.102.1):
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.31
+      jest-worker: 27.5.1
+      schema-utils: 4.3.3
+      serialize-javascript: 6.0.2
+      terser: 5.44.1
+      webpack: 5.102.1
+
   terser@5.44.1:
     dependencies:
       '@jridgewell/source-map': 0.3.11
@@ -64072,6 +63925,38 @@ snapshots:
       source-map: 0.6.1
 
   webpack-sources@3.3.3: {}
+
+  webpack@5.102.1:
+    dependencies:
+      '@types/eslint-scope': 3.7.7
+      '@types/estree': 1.0.8
+      '@types/json-schema': 7.0.15
+      '@webassemblyjs/ast': 1.14.1
+      '@webassemblyjs/wasm-edit': 1.14.1
+      '@webassemblyjs/wasm-parser': 1.14.1
+      acorn: 8.15.0
+      acorn-import-phases: 1.0.4(acorn@8.15.0)
+      browserslist: 4.27.0
+      chrome-trace-event: 1.0.4
+      enhanced-resolve: 5.18.3
+      es-module-lexer: 1.7.0
+      eslint-scope: 5.1.1
+      events: 3.3.0
+      glob-to-regexp: 0.4.1
+      graceful-fs: 4.2.11
+      json-parse-even-better-errors: 2.3.1
+      loader-runner: 4.3.1
+      mime-types: 2.1.35
+      neo-async: 2.6.2
+      schema-utils: 4.3.3
+      tapable: 2.3.0
+      terser-webpack-plugin: 5.3.14(webpack@5.102.1)
+      watchpack: 2.4.4
+      webpack-sources: 3.3.3
+    transitivePeerDependencies:
+      - '@swc/core'
+      - esbuild
+      - uglify-js
 
   webpack@5.102.1(@swc/core@1.15.1):
     dependencies:

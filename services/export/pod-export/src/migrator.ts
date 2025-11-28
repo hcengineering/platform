@@ -27,12 +27,20 @@ import {
   Data,
   Blob,
   LowLevelStorage,
-  Hierarchy
+  Hierarchy,
+  Collection,
+  isId
 } from '@hcengineering/core'
 import { StorageAdapter, Pipeline } from '@hcengineering/server-core'
 import core from '@hcengineering/model-core'
 
 export type PipelineFactory = (ctx: MeasureContext, workspace: WorkspaceIds) => Promise<Pipeline>
+
+export interface RelationDefinition {
+  field: string
+  class: Ref<Class<Doc>>
+  direction?: 'forward' | 'inverse'
+}
 
 export interface MigrationOptions {
   sourceWorkspace: WorkspaceIds
@@ -45,6 +53,7 @@ export interface MigrationOptions {
   includeAttachments?: boolean
   // Optional mapper function to transform documents before migration
   mapper?: (doc: Doc) => Doc | Promise<Doc>
+  relations?: RelationDefinition[]
 }
 
 export interface MigrationResult {
@@ -57,6 +66,7 @@ export interface MigrationResult {
 export class WorkspaceMigrator {
   private readonly idMapping = new Map<Ref<Doc>, Ref<Doc>>()
   private readonly spaceMapping = new Map<Ref<Space>, Ref<Space>>()
+  private readonly processingDocs = new Set<Ref<Doc>>()
 
   constructor (
     private readonly context: MeasureContext,
@@ -72,7 +82,8 @@ export class WorkspaceMigrator {
       _class,
       conflictStrategy = 'duplicate',
       includeAttachments = true,
-      mapper
+      mapper,
+      relations = []
     } = options
 
     const result: MigrationResult = {
@@ -140,7 +151,8 @@ export class WorkspaceMigrator {
                 includeAttachments,
                 hierarchy,
                 lowLevelStorage,
-                existingDocsMap
+                existingDocsMap,
+                relations
               )
               if (migrated) {
                 result.migratedCount++
@@ -186,45 +198,200 @@ export class WorkspaceMigrator {
     includeAttachments: boolean,
     sourceHierarchy: Hierarchy,
     sourceLowLevel: LowLevelStorage,
-    existingDocsMap: Map<Ref<Doc>, Doc>
+    existingDocsMap: Map<Ref<Doc>, Doc>,
+    relations: RelationDefinition[]
   ): Promise<boolean> {
-    const hierarchy = this.targetClient.getHierarchy()
-    const isAttached = hierarchy.isDerived(doc._class, core.class.AttachedDoc)
+    if (this.processingDocs.has(doc._id)) {
+      return false
+    }
 
-    const targetSpace = await this.getOrCreateTargetSpace(doc.space, sourceHierarchy, sourceLowLevel)
+    if (this.idMapping.has(doc._id)) {
+      return false
+    }
 
-    // Generate new ID or handle conflict
-    let targetId: Ref<Doc>
-    if (conflictStrategy === 'duplicate') {
-      targetId = generateId()
-      this.idMapping.set(doc._id, targetId)
-    } else {
-      // Check if document exists using the bulk-loaded map
-      const existing = existingDocsMap.get(doc._id)
-      if (existing !== undefined) {
-        if (conflictStrategy === 'skip') {
-          console.log(`Skipping existing document ${doc._id}`)
-          return false
-        }
+    if (conflictStrategy === 'skip') {
+      const existingDoc = existingDocsMap.get(doc._id)
+      if (existingDoc !== undefined) {
+        this.idMapping.set(doc._id, existingDoc._id)
+        return false
       }
-      targetId = doc._id
+    }
+
+    this.processingDocs.add(doc._id)
+
+    try {
+      const hierarchy = this.targetClient.getHierarchy()
+      const isAttached = hierarchy.isDerived(doc._class, core.class.AttachedDoc)
+
+      await this.migrateRelations(doc, relations, conflictStrategy, includeAttachments, sourceHierarchy, sourceLowLevel)
+
+      const targetSpace = await this.getOrCreateTargetSpace(doc.space, sourceHierarchy, sourceLowLevel)
+
+      const targetId = generateId()
+      const data = await this.prepareDocumentData(doc, targetSpace, isAttached)
+      await this.createDocument(doc, data, targetId, targetSpace, isAttached)
       this.idMapping.set(doc._id, targetId)
+
+      // Handle attachments
+      if (includeAttachments) {
+        await this.migrateAttachments(doc._id, targetId, doc._class, sourceHierarchy, sourceLowLevel)
+      }
+
+      // Handle collections (child documents)
+      await this.migrateCollections(doc, targetId, sourceHierarchy, sourceLowLevel, relations)
+
+      return true
+    } finally {
+      this.processingDocs.delete(doc._id)
+    }
+  }
+
+  private async migrateRelations (
+    doc: Doc,
+    relations: RelationDefinition[],
+    conflictStrategy: 'skip' | 'duplicate',
+    includeAttachments: boolean,
+    sourceHierarchy: Hierarchy,
+    sourceLowLevel: LowLevelStorage
+  ): Promise<void> {
+    if (relations.length === 0) {
+      return
     }
 
-    // Prepare document data
-    const data = await this.prepareDocumentData(doc, targetSpace, isAttached)
+    for (const relation of relations) {
+      const direction = relation.direction ?? 'forward'
+      try {
+        if (direction === 'inverse') {
+          await this.migrateInverseRelation(
+            doc,
+            relation,
+            conflictStrategy,
+            includeAttachments,
+            sourceHierarchy,
+            sourceLowLevel,
+            relations
+          )
+        } else {
+          await this.migrateForwardRelation(
+            doc,
+            relation,
+            conflictStrategy,
+            includeAttachments,
+            sourceHierarchy,
+            sourceLowLevel,
+            relations
+          )
+        }
+      } catch (err: any) {
+        console.error(`Failed to migrate relation ${relation.field} for document ${doc._id}:`, err)
+      }
+    }
+  }
 
-    await this.createDocument(doc, data, targetId, targetSpace, isAttached)
-
-    // Handle attachments
-    if (includeAttachments) {
-      await this.migrateAttachments(doc._id, targetId, doc._class, sourceHierarchy, sourceLowLevel)
+  private async migrateForwardRelation (
+    doc: Doc,
+    relation: RelationDefinition,
+    conflictStrategy: 'skip' | 'duplicate',
+    includeAttachments: boolean,
+    sourceHierarchy: Hierarchy,
+    sourceLowLevel: LowLevelStorage,
+    relations: RelationDefinition[]
+  ): Promise<void> {
+    const value = (doc as any)[relation.field]
+    if (value === undefined || value === null) {
+      return
     }
 
-    // Handle collections (child documents)
-    await this.migrateCollections(doc, targetId, sourceHierarchy, sourceLowLevel)
+    const refs = Array.isArray(value) ? value : [value]
+    for (const ref of refs) {
+      if (!isId(ref)) {
+        continue
+      }
 
-    return true
+      await this.migrateRelatedDocument(
+        ref as Ref<Doc>,
+        relation.class,
+        conflictStrategy,
+        includeAttachments,
+        sourceHierarchy,
+        sourceLowLevel,
+        relations
+      )
+    }
+  }
+
+  private async migrateInverseRelation (
+    doc: Doc,
+    relation: RelationDefinition,
+    conflictStrategy: 'skip' | 'duplicate',
+    includeAttachments: boolean,
+    sourceHierarchy: Hierarchy,
+    sourceLowLevel: LowLevelStorage,
+    relations: RelationDefinition[]
+  ): Promise<void> {
+    const domain = sourceHierarchy.findDomain(relation.class)
+    if (domain === undefined) {
+      console.warn(`Domain not found for relation class ${relation.class}`)
+      return
+    }
+
+    const relatedDocs = await sourceLowLevel.rawFindAll<Doc>(domain, {
+      _class: relation.class,
+      [relation.field]: { $in: [doc._id] }
+    })
+
+    for (const relatedDoc of relatedDocs) {
+      await this.migrateDocument(
+        relatedDoc,
+        conflictStrategy,
+        includeAttachments,
+        sourceHierarchy,
+        sourceLowLevel,
+        new Map(),
+        relations
+      )
+    }
+  }
+
+  private async migrateRelatedDocument (
+    ref: Ref<Doc>,
+    relationClass: Ref<Class<Doc>>,
+    conflictStrategy: 'skip' | 'duplicate',
+    includeAttachments: boolean,
+    sourceHierarchy: Hierarchy,
+    sourceLowLevel: LowLevelStorage,
+    relations: RelationDefinition[]
+  ): Promise<void> {
+    if (this.idMapping.has(ref)) {
+      return
+    }
+
+    const domain = sourceHierarchy.findDomain(relationClass)
+    if (domain === undefined) {
+      console.warn(`Domain not found for relation class ${relationClass}`)
+      return
+    }
+
+    const relatedDocs = await sourceLowLevel.rawFindAll<Doc>(domain, {
+      _class: relationClass,
+      _id: ref
+    })
+
+    const relatedDoc = relatedDocs[0]
+    if (relatedDoc === undefined) {
+      console.warn(`Related document ${ref} not found for class ${relationClass}`)
+      return
+    }
+
+    await this.migrateDocument(
+      relatedDoc,
+      conflictStrategy,
+      includeAttachments,
+      sourceHierarchy,
+      sourceLowLevel,
+      new Map(),
+      relations
+    )
   }
 
   private async createDocument (
@@ -390,7 +557,8 @@ export class WorkspaceMigrator {
     sourceDoc: Doc,
     targetDocId: Ref<Doc>,
     sourceHierarchy: Hierarchy,
-    sourceLowLevel: LowLevelStorage
+    sourceLowLevel: LowLevelStorage,
+    relations: RelationDefinition[]
   ): Promise<void> {
     const attributes = sourceHierarchy.getAllAttributes(sourceDoc._class)
 
@@ -399,7 +567,7 @@ export class WorkspaceMigrator {
         continue
       }
 
-      const collectionClass = (attr.type as any).of as Ref<Class<Doc>>
+      const collectionClass = (attr.type as Collection<AttachedDoc>).of as Ref<Class<Doc>>
       const domain = sourceHierarchy.findDomain(collectionClass)
       if (domain === undefined) {
         console.log(`Domain not found for collection ${key}`)
@@ -421,7 +589,15 @@ export class WorkspaceMigrator {
           // Update attachedTo reference before migration
           const updatedDoc = { ...collectionDoc, attachedTo: targetDocId }
           // Pass empty map since we handle conflicts at top level only
-          await this.migrateDocument(updatedDoc, 'duplicate', true, sourceHierarchy, sourceLowLevel, new Map())
+          await this.migrateDocument(
+            updatedDoc,
+            'duplicate',
+            true,
+            sourceHierarchy,
+            sourceLowLevel,
+            new Map(),
+            relations
+          )
         } catch (err: any) {
           console.error(`Failed to migrate collection item ${collectionDoc._id}:`, err)
         }
@@ -458,7 +634,8 @@ export class WorkspaceMigrator {
 
     // Check if space exists in target workspace
     const targetSpaces = await this.targetClient.findAll(core.class.Space, {
-      _id: sourceSpaceId
+      _class: sourceSpace._class,
+      name: sourceSpace.name
     })
 
     let targetSpaceId: Ref<Space>
@@ -503,7 +680,7 @@ export class WorkspaceMigrator {
         }
       }
 
-      targetSpaceId = await this.targetClient.createDoc(sourceSpace._class, core.space.Space, spaceData, sourceSpaceId)
+      targetSpaceId = await this.targetClient.createDoc(sourceSpace._class, core.space.Space, spaceData)
 
       console.log(`Created new space ${targetSpaceId} (${sourceSpace.name})`)
     }

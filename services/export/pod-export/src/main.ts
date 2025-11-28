@@ -22,14 +22,26 @@ import builder, { getModelVersion } from '@hcengineering/model-all'
 import { initStatisticsContext } from '@hcengineering/server-core'
 import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import { join } from 'path'
-import { registerAdapterFactory, registerTxAdapterFactory } from '@hcengineering/server-pipeline'
-import { createPostgresAdapter, createPostgresTxAdapter } from '@hcengineering/postgres'
+import {
+  registerAdapterFactory,
+  registerTxAdapterFactory,
+  registerServerPlugins,
+  registerStringLoaders,
+  registerDestroyFactory,
+  setAdapterSecurity
+} from '@hcengineering/server-pipeline'
+import { createPostgresAdapter, createPostgresTxAdapter, createPostgreeDestroyAdapter } from '@hcengineering/postgres'
 
 import config from './config'
 import { createServer, listen } from './server'
 
 registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
 registerAdapterFactory('postgresql', createPostgresAdapter, true)
+registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
+setAdapterSecurity('postgresql', true)
+
+registerServerPlugins()
+registerStringLoaders()
 
 const setupMetadata = (): void => {
   setMetadata(serverToken.metadata.Secret, config.Secret)

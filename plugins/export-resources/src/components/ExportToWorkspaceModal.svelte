@@ -18,6 +18,8 @@
   import { DropdownLabels } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
   import login from '@hcengineering/login'
+  import { type RelationDefinition } from '@hcengineering/export'
+
   import { createEventDispatcher } from 'svelte'
 
   import plugin from '../plugin'
@@ -25,8 +27,9 @@
 
   export let query: DocumentQuery<Doc> | undefined = undefined
   export let value: Doc | Doc[]
+  export let relations: RelationDefinition[] | undefined = undefined
 
-  $: selectedDocs = Array.isArray(value) ? value : (value != null ? [value] : [])
+  $: selectedDocs = Array.isArray(value) ? value : value != null ? [value] : []
   $: _class = selectedDocs.length > 0 ? selectedDocs[0]._class : undefined
 
   const dispatch = createEventDispatcher()
@@ -40,7 +43,7 @@
     try {
       workspaceLoading = true
       const getWorkspacesFn = await getResource(login.function.GetWorkspaces)
-      workspaces = (await getWorkspacesFn()).filter(ws => isActiveMode(ws.mode))
+      workspaces = (await getWorkspacesFn()).filter((ws) => isActiveMode(ws.mode))
     } catch (err) {
       console.error('Failed to load workspaces:', err)
     } finally {
@@ -68,8 +71,9 @@
     if (!canSave || _class == null) return
 
     loading = true
-    await exportToWorkspace(_class, query, selectedDocs, targetWorkspace)
+    await exportToWorkspace(_class, query, selectedDocs, targetWorkspace, relations)
     loading = false
+    dispatch('close', true)
   }
 
   void loadWorkspaces()
