@@ -55,6 +55,7 @@ services:
       - --mode dev-container
       - --smp 1
       - --default-log-level=info
+      - --memory 256M
     ports:
       - 18083:18083
       - 18084:18084
@@ -137,7 +138,7 @@ services:
       - ELASTICSEARCH_PORT_NUMBER=9200
       - BITNAMI_DEBUG=true
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
+      - ES_JAVA_OPTS=-Xms256m -Xmx450m
     healthcheck:
       interval: 20s
       retries: 10
