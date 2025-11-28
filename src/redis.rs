@@ -433,7 +433,7 @@ pub async fn receiver(
     while let Some(message) = messages.next().await {
         match RedisEvent::try_from(message) {
             Ok(ev) => {
-                push_event(&hub_state, &mut redis, ev).await;
+                push_event(&hub_state, &mut redis, ev); // .await;
             }
             Err(e) => {
                 warn!("invalid redis message: {e}");

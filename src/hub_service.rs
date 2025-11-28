@@ -75,6 +75,11 @@ pub struct HubState {
     heartbeats: HashMap<SessionId, std::time::Instant>,
     serverping: HashMap<SessionId, std::time::Instant>,
     abort_handles: HashMap<SessionId, AbortHandle>,
+    // client_ids: HashMap<SessionId, String>,
+    #[cfg(feature = "lopt")]
+    name_by_session: HashMap<SessionId, String>,
+    #[cfg(feature = "lopt")]
+    session_by_name: HashMap<String, SessionId>,
 }
 
 use futures::future::AbortHandle;
@@ -93,6 +98,7 @@ impl HubState {
         session_id: SessionId,
         session: actix_ws::Session,
         abort_handle: AbortHandle,
+        #[cfg(feature = "lopt")] client_name: String,
     ) {
         self.sessions.insert(session_id, session);
         self.heartbeats
@@ -100,6 +106,11 @@ impl HubState {
         self.serverping
             .insert(session_id, std::time::Instant::now());
         self.abort_handles.insert(session_id, abort_handle);
+
+        #[cfg(feature = "lopt")]
+        self.name_by_session.insert(session_id, client_name.clone());
+        #[cfg(feature = "lopt")]
+        self.session_by_name.insert(client_name, session_id);
     }
 
     pub fn disconnect(&mut self, session_id: SessionId) {
@@ -111,6 +122,12 @@ impl HubState {
             ids.remove(&session_id);
             !ids.is_empty()
         });
+
+        #[cfg(feature = "lopt")]
+        if let Some(client_id) = self.name_by_session.remove(&session_id) {
+            self.session_by_name.remove(&client_id);
+        }
+
         tracing::debug!(
             "hub.disconnected {}, all: {}",
             session_id,
@@ -199,6 +216,23 @@ pub async fn broadcast_event(
         let json = serde_json::to_string(&payload).unwrap();
         let _ = rcpt.text(json).await;
     }
+}
+
+#[cfg(feature = "lopt")]
+pub async fn send_to_name(hub_state: &Arc<RwLock<HubState>>, to: &str, payload: Value) -> bool {
+    let hub = hub_state.read().await;
+
+    let to_sid = if let Some(&sid) = hub.session_by_name.get(to) {
+        sid
+    } else {
+        return false;
+    };
+
+    let Some(mut session) = hub.sessions.get(&to_sid).cloned() else {
+        return false;
+    };
+
+    session.text(payload.to_string()).await.is_ok()
 }
 
 pub fn check_heartbeat(hub_state: Arc<RwLock<HubState>>) {

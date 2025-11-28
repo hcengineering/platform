@@ -33,6 +33,9 @@ use crate::{
     hub_service::{HubState, SessionId, new_session_id},
 };
 
+#[cfg(feature = "lopt")]
+use crate::hub_service::send_to_name;
+
 #[cfg(feature = "auth")]
 use crate::workspace_owner::check_workspace_core;
 
@@ -44,6 +47,20 @@ use strum::AsRefStr;
 #[derive(Deserialize, Debug, AsRefStr)]
 #[serde(rename_all = "lowercase", tag = "type")]
 pub enum WsCommand {
+    #[cfg(feature = "lopt")]
+    Personal {
+        to: String,
+        correlation: String,
+        data: String,
+    },
+
+    #[cfg(feature = "lopt")]
+    Answer {
+        to: String,
+        correlation: String,
+        data: String,
+    },
+
     Put {
         #[serde(default = "default_corr")]
         correlation: String,
@@ -156,8 +173,39 @@ async fn handle_command(
     hub_state: &Arc<RwLock<HubState>>,
     #[cfg(feature = "auth")] claims: Option<Claims>,
     session_id: SessionId,
+    #[cfg(feature = "lopt")] client_name: &str,
 ) {
     match cmd {
+        #[cfg(feature = "lopt")]
+        WsCommand::Personal {
+            to,
+            correlation,
+            data,
+        } => {
+            use crate::hub_service::send_to_name;
+
+            tracing::debug!("PERSONAL from {} to {}", &client_name, &to);
+            let payload =
+                json!({ "personal": client_name, "correlation": correlation, "data": data });
+            if !send_to_name(&hub_state, &to, payload).await {
+                tracing::debug!("PERSONAL send from [{}] to [{}] failed", &client_name, &to);
+                result_err("failed", &correlation, ws).await;
+            }
+        }
+
+        #[cfg(feature = "lopt")]
+        WsCommand::Answer {
+            to,
+            correlation,
+            data,
+        } => {
+            tracing::debug!("ANSWER from {} to {}", &client_name, &to);
+            let payload = json!({ "correlation": correlation, "data": data });
+            if !send_to_name(&hub_state, &to, payload).await {
+                tracing::debug!("PERSONAL send_to failed: no such session {}", to);
+            }
+        }
+
         // INFO
         WsCommand::Info { correlation } => {
             tracing::debug!("INFO");
@@ -333,16 +381,26 @@ pub async fn handler(
             .to_owned(),
     );
 
+    #[cfg(feature = "lopt")]
+    let client_name = req
+        .match_info()
+        .get("client_name")
+        .unwrap_or("")
+        .to_string();
+
     let (response, mut session, mut msg_stream) = actix_ws::handle(&req, payload)?;
 
     let session_id = new_session_id();
 
     let (abort_handle, abort_reg) = AbortHandle::new_pair();
 
-    hub_state
-        .write()
-        .await
-        .connect(session_id, session.clone(), abort_handle);
+    hub_state.write().await.connect(
+        session_id,
+        session.clone(),
+        abort_handle,
+        #[cfg(feature = "lopt")]
+        client_name.clone(),
+    );
     tracing::debug!("WebSocket connected: {}", session_id);
 
     actix_web::rt::spawn(Abortable::new(
@@ -385,6 +443,7 @@ pub async fn handler(
                                     | WsCommand::List { key, .. }
                                     | WsCommand::Sub { key, .. }
                                     | WsCommand::Unsub { key, .. } => key.as_str(),
+                                    // | WsCommand::Personal { key, .. } => key.as_str(),
                                     _ => "",
                                 };
 
@@ -404,6 +463,8 @@ pub async fn handler(
                                 #[cfg(feature = "auth")]
                                 claims.clone(),
                                 session_id,
+                                #[cfg(feature = "lopt")]
+                                &client_name,
                             )
                             .await;
                         }

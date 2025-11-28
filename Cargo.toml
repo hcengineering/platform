@@ -1,6 +1,6 @@
 [package]
 name = "hulypulse"
-version = "0.3.7"
+version = "0.4.0"
 edition = "2024"
 
 [dependencies]
@@ -43,6 +43,7 @@ tokio-tungstenite = { version = "0.21", default-features = false, features = [
 ] }
 
 [features]
-default = ["db-redis","auth"]
+default = ["db-redis","auth"] # lopt
 auth = ["regorus", "uuid", "hulyrs", "secrecy"]
+lopt = []
 db-redis = ["redis"]

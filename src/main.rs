@@ -240,6 +240,7 @@ async fn main() -> anyhow::Result<()> {
             .wrap(middleware::Logger::default())
             .wrap(cors)
             .service(api_scope)
+            .route("/ws/{client_name}", web::get().to(handlers_ws::handler))
             .route("/ws", ws_route)
             .route(
                 "/status",
