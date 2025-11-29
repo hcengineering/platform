@@ -32,7 +32,8 @@
   const hierarchy = client.getHierarchy()
 
   const topLevelTypes = client.getModel().findAllSync(card.class.MasterTag, {
-    extends: card.class.Card
+    extends: card.class.Card,
+    removed: { $ne: true }
   })
 
   let types: Ref<MasterTag>[] =

@@ -31,7 +31,9 @@ import {
   type AccountUuid,
   type TxAccessLevel,
   type Tx,
-  type Doc
+  type Doc,
+  type AnyAttribute,
+  type AttributePermission
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -163,6 +165,12 @@ export class TPermission extends TDoc implements Permission {
   scope?: 'space' | 'workspace'
   description?: IntlString
   icon?: Asset
+}
+
+@Model(core.class.AttributePermission, core.class.Permission)
+@UX(core.string.Permission)
+export class TAttributePermission extends TPermission implements AttributePermission {
+  attribute!: Ref<AnyAttribute>
 }
 
 @Mixin(core.mixin.SpacesTypeData, core.class.Space)
