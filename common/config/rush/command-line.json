@@ -363,6 +363,38 @@
       "description": "use to update published dependencies to latest versions",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "./common/scripts/node_modules/.bin/update-deps"
+    },
+    {
+      "commandKind": "global",
+      "name": "fast-build",
+      "summary": "Fast compile all packages with esbuild",
+      "description": "Compiles all packages that have '_phase:build': 'compile transpile src' using esbuild directly, bypassing Rush's dependency resolution for faster builds",
+      "safeForSimultaneousRushProcesses": false,
+      "shellCommand": "node ./foundations/utils/packages/platform-rig/bin/compile_all.js . --parallel"
+    },
+    {
+      "commandKind": "global",
+      "name": "fast-build:validate",
+      "summary": "Fast compile and validate all packages",
+      "description": "Compiles and validates all packages that have '_phase:build': 'compile transpile src' using esbuild and TypeScript",
+      "safeForSimultaneousRushProcesses": false,
+      "shellCommand": "node ./foundations/utils/packages/platform-rig/bin/compile_all.js . --parallel --validate"
+    },
+    {
+      "commandKind": "global",
+      "name": "fast-build:bundle",
+      "summary": "Fast compile and bundle packages",
+      "description": "Compiles all packages and runs bundle phase for packages with '_phase:bundle'",
+      "safeForSimultaneousRushProcesses": false,
+      "shellCommand": "node ./foundations/utils/packages/platform-rig/bin/compile_all.js . --parallel --bundle"
+    },
+    {
+      "commandKind": "global",
+      "name": "fast-build:docker-build",
+      "summary": "Fast compile, bundle and docker build packages",
+      "description": "Compiles all packages, runs bundle phase, then docker-build for packages with '_phase:docker-build'",
+      "safeForSimultaneousRushProcesses": false,
+      "shellCommand": "node ./foundations/utils/packages/platform-rig/bin/compile_all.js . --parallel --docker-build"
     }
   ],
 
@@ -400,6 +432,33 @@
       "longName": "--branch",
       "description": "Force formatting of branch",
       "associatedCommands": ["fast-format"]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "PACKAGE",
+      "required": false,
+      "longName": "--to",
+      "description": "Only compile the specified package and its dependencies",
+      "associatedCommands": ["fast-build", "fast-build:validate", "fast-build:bundle", "fast-build:docker-build"]
+    },
+    {
+      "parameterKind": "flag",
+      "longName": "--list",
+      "description": "Only print the list of packages in compilation order (no actual compilation)",
+      "associatedCommands": ["fast-build", "fast-build:validate", "fast-build:bundle", "fast-build:docker-build"]
+    },
+    {
+      "parameterKind": "flag",
+      "longName": "--verbose",
+      "shortName": "-v",
+      "description": "Show detailed output for each package",
+      "associatedCommands": ["fast-build", "fast-build:validate", "fast-build:bundle", "fast-build:docker-build"]
+    },
+    {
+      "parameterKind": "flag",
+      "longName": "--no-cache",
+      "description": "Clear TypeScript validation cache before running (forces full revalidation)",
+      "associatedCommands": ["fast-build:validate"]
     }
     // {
     //   /**

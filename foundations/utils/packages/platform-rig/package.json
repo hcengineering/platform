@@ -29,9 +29,11 @@
     "svelte-eslint-parser": "^0.33.1",
     "eslint-plugin-svelte": "^2.35.1"
   },
+
   "bin": {
     "format": "./bin/format.js",
     "compile": "./bin/compile.js",
+    "compile-all": "./bin/compile_all.js",
     "do-svelte-check": "./bin/do-svelte-check.js",
     "bump-package-version": "./bin/bump-package-version.js",
     "bump-changes-from-tag": "./bin/bump-changes-from-tag.js",

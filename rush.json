@@ -16,7 +16,7 @@
    * path segment in the "$schema" field for all your Rush config files.  This will ensure
    * correct error-underlining and tab-completion for editors such as VS Code.
    */
-  "rushVersion": "5.158.1",
+  "rushVersion": "5.163.0",
 
   /**
    * The next field selects which package manager should be installed and determines its version.
@@ -26,7 +26,7 @@
    * Specify one of: "pnpmVersion", "npmVersion", or "yarnVersion".  See the Rush documentation
    * for details about these alternatives.
    */
-  "pnpmVersion": "10.15.1",
+  "pnpmVersion": "10.24.0",
 
   // "npmVersion": "4.5.0",
   // "yarnVersion": "1.9.4",
@@ -68,7 +68,7 @@
    * version. In those cases, you will need to add an entry to the "allowedAlternativeVersions"
    * section of the common-versions.json.
    */
-  "ensureConsistentVersions": false,
+  "ensureConsistentVersions": true,
 
   /**
    * Large monorepos can become intimidating for newcomers if project folder paths don't follow

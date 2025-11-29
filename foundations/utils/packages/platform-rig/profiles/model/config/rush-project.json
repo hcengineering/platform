@@ -13,8 +13,7 @@
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["lib", ".build"],
-      "disableBuildCacheForOperation": true
+      "outputFolderNames": ["lib", ".build"]
     },
     {
       "operationName": "format",
@@ -22,8 +21,7 @@
     },
     {
       "operationName": "_phase:build",
-      "outputFolderNames": ["lib", ".build"],
-      "disableBuildCacheForOperation": true
+      "outputFolderNames": ["lib", ".build"]
     },
     {
       "operationName": "_phase:validate",
