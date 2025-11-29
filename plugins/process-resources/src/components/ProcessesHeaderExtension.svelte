@@ -13,27 +13,39 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import plugin from '../plugin'
-  import { Execution, ProcessToDo } from '@hcengineering/process'
+  import { Card } from '@hcengineering/card'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import { Button, Component } from '@hcengineering/ui'
-  import time from '@hcengineering/time'
   import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Execution, ExecutionStatus, ProcessToDo } from '@hcengineering/process'
+  import { Button } from '@hcengineering/ui'
+  import process from '../plugin'
 
-  export let value: Execution
+  export let card: Card
 
+  let docs: Execution[] = []
   let todos: ProcessToDo[] = []
 
-  const client = getClient()
+  const executionQuery = createQuery()
+  executionQuery.query(
+    process.class.Execution,
+    {
+      card: card._id,
+      status: { $ne: ExecutionStatus.Cancelled }
+    },
+    (res) => {
+      console.log(res)
+      docs = res
+    }
+  )
 
   const emp = getCurrentEmployee()
 
   const query = createQuery()
-  query.query(
-    plugin.class.ProcessToDo,
+  $: query.query(
+    process.class.ProcessToDo,
     {
-      execution: value._id,
+      execution: { $in: docs.map((d) => d._id) },
       user: emp,
       doneOn: null
     },
@@ -41,6 +53,8 @@
       todos = res
     }
   )
+
+  const client = getClient()
 
   async function checkTodo (todo: ProcessToDo) {
     await client.update(todo, {

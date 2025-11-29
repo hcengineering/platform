@@ -149,6 +149,16 @@
       <CardPresenter value={doc} noUnderline />
     </svelte:fragment>
 
+    <svelte:fragment slot="extra">
+      <ComponentExtensions
+        extension={card.extensions.EditCardHeaderExtension}
+        props={{
+          card: doc
+        }}
+      />
+      <slot name="extra" />
+    </svelte:fragment>
+
     <div class="container">
       <div class="title flex-row-center">
         <EditBox focusIndex={1} bind:value={title} placeholder={card.string.Card} on:blur={(evt) => saveTitle(evt)} />

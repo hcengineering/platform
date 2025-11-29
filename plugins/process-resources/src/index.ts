@@ -75,6 +75,7 @@ import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
 import SplitEditor from './components/transformEditors/SplitEditor.svelte'
 import NumberPresenter from './components/transformPresenters/NumberPresenter.svelte'
 import RolePresenter from './components/transformPresenters/RolePresenter.svelte'
+import ProcessesHeaderExtension from './components/ProcessesHeaderExtension.svelte'
 import { ProcessMiddleware } from './middleware'
 import {
   continueExecution,
@@ -143,7 +144,8 @@ export default async (): Promise<Resources> => ({
     FieldChangesEditor,
     FunctionSubmenu,
     SubProcessMatchEditor,
-    SubProcessMatchPresenter
+    SubProcessMatchPresenter,
+    ProcessesHeaderExtension
   },
   criteriaEditor: {
     BaseCriteria,

@@ -571,6 +571,12 @@ export function createModel (builder: Builder): void {
     props: {}
   })
 
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: card.extensions.EditCardHeaderExtension,
+    component: process.component.ProcessesHeaderExtension,
+    props: {}
+  })
+
   builder.createDoc(
     card.class.CardSection,
     core.space.Model,
