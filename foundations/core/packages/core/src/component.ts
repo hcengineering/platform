@@ -289,7 +289,9 @@ export default plugin(coreId, {
     UpdateSpaceDescription: '' as IntlString,
     ArchiveSpaceDescription: '' as IntlString,
     AutoJoin: '' as IntlString,
-    AutoJoinDescr: '' as IntlString
+    AutoJoinDescr: '' as IntlString,
+    RBAC: '' as IntlString,
+    RBACDescr: '' as IntlString
   },
   descriptor: {
     SpacesType: '' as Ref<SpaceTypeDescriptor>

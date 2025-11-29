@@ -61,6 +61,8 @@
     "ArchiveSpaceDescription": "授予用户归档空间的权限",
     "AutoJoin": "自动加入",
     "AutoJoinDescr": "自动将新员工加入此空间",
+    "RBAC": "基于角色的访问控制",
+    "RBACDescr": "要求基于角色的访问权限以在此空间中执行操作",
     "BlobSize": "大小",
     "BlobContentType": "內容類型",
     "Relation": "关系",

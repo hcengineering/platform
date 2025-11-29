@@ -61,6 +61,8 @@
     "ArchiveSpaceDescription": "Accorde aux utilisateurs la capacité d'archiver l'espace",
     "AutoJoin": "Rejoindre automatiquement",
     "AutoJoinDescr": "Ajouter automatiquement les nouveaux employés à cet espace",
+    "RBAC": "Contrôle d'accès basé sur les rôles",
+    "RBACDescr": "Exiger un accès basé sur les rôles pour effectuer des actions dans cet espace",
     "BlobSize": "Taille",
     "BlobContentType": "Type de contenu",
     "Relation": "Relation",
