@@ -173,7 +173,8 @@ const cardPlugin = plugin(cardId, {
     Duplicate: '' as Asset
   },
   extensions: {
-    EditCardExtension: '' as ComponentExtensionId
+    EditCardExtension: '' as ComponentExtensionId,
+    EditCardHeaderExtension: '' as ComponentExtensionId
   },
   string: {
     MasterTag: '' as IntlString,
