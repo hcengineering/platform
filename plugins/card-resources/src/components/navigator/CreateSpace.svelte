@@ -39,12 +39,13 @@
   let types: Ref<MasterTag>[] =
     space?.types !== undefined ? hierarchy.clone(space.types) : topLevelTypes.map((it) => it._id)
 
-  let roles = client.getModel().findAllSync(card.class.Role, { type: { $in: types } })
-  $: roles = client.getModel().findAllSync(card.class.Role, { type: { $in: types } })
+  let roles = client.getModel().findAllSync(card.class.Role, { types: { $in: types } })
+  $: roles = client.getModel().findAllSync(card.class.Role, { types: { $in: types } })
 
   let name: string = space?.name ?? ''
 
   let isPrivate: boolean = space?.private ?? false
+  let restricted: boolean = space?.restricted ?? false
   let members: AccountUuid[] =
     space?.members !== undefined ? hierarchy.clone(space.members) : [getCurrentAccount().uuid]
   let owners: AccountUuid[] = space?.owners !== undefined ? hierarchy.clone(space.owners) : [getCurrentAccount().uuid]
@@ -86,7 +87,8 @@
       autoJoin,
       archived: false,
       type: card.spaceType.SpaceType,
-      types
+      types,
+      restricted
     }
   }
 
@@ -106,9 +108,9 @@
   }
 
   async function create (): Promise<void> {
-    const teamspaceData = getData()
+    const data = getData()
 
-    const id = await client.createDoc(card.class.CardSpace, core.space.Space, { ...teamspaceData })
+    const id = await client.createDoc(card.class.CardSpace, core.space.Space, data)
 
     if (rolesAssignment && !deepEqual(rolesAssignment, getRolesAssignment(roles))) {
       await client.updateMixin(id, card.class.CardSpace, core.space.Space, core.mixin.SpacesTypeData, rolesAssignment)
@@ -221,7 +223,15 @@
         <Label label={core.string.AutoJoin} />
         <span><Label label={core.string.AutoJoinDescr} /></span>
       </div>
-      <Toggle id={'teamspace-autoJoin'} bind:on={autoJoin} />
+      <Toggle id={'space-autoJoin'} bind:on={autoJoin} />
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header withDesciption">
+        <Label label={core.string.RBAC} />
+        <span><Label label={core.string.RBACDescr} /></span>
+      </div>
+      <Toggle id={'space-restricted'} bind:on={restricted} />
     </div>
 
     {#each roles as role}

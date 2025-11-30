@@ -490,6 +490,7 @@ export interface SystemSpace extends Space {}
  */
 export interface TypedSpace extends Space {
   type: Ref<SpaceType>
+  restricted?: boolean // if true user must have permission to any txes
 }
 
 /**
