@@ -105,6 +105,11 @@ export const cardOperation: MigrateOperation = {
         state: 'migrate-role-types',
         mode: 'upgrade',
         func: migrateRoleTypes
+      },
+      {
+        state: 'fix-migrated-roles-permissions',
+        mode: 'upgrade',
+        func: migrateRolePermissions
       }
     ])
   }
@@ -397,5 +402,13 @@ async function migrateRoleTypes (client: Client): Promise<void> {
       types: [(role as any).type]
     }
     await txOp.update(role, baseRoleData)
+  }
+}
+
+async function migrateRolePermissions (client: Client): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const roles = await client.findAll(card.class.Role, { permissions: { $exists: false } })
+  for (const role of roles) {
+    await txOp.update(role, { permissions: [] })
   }
 }
