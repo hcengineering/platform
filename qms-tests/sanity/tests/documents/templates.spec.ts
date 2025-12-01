@@ -48,7 +48,7 @@ test.describe('QMS. Templates tests', () => {
       await documentContentPage.checkDocument({
         type: 'N/A',
         category: newTemplate.category ?? '',
-        version: 'v1.0',
+        version: 'v1.0.0',
         status: DocumentStatus.DRAFT,
         owner: 'Appleseed John',
         author: 'Appleseed John'

@@ -170,7 +170,7 @@
     const prevDocument = getPreviousDocument(document, allVersionsDesc)
 
     if (prevDocument == null) {
-      return document.major > 0 ? Severity.Major : Severity.Minor
+      return document.major > 0 ? Severity.Major : document.minor > 0 ? Severity.Minor : Severity.Patch
     } else {
       return prevDocument.major < document.major
         ? Severity.Major
