@@ -26,6 +26,7 @@
   let pressed: boolean = false
 
   $: _class = $location.path[4] as Ref<MasterTag>
+  $: space = $location.path[3]
 
   async function navigateToCard (cardId: string): Promise<void> {
     const loc = getCurrentLocation()
@@ -35,7 +36,8 @@
   }
 
   async function handleCreateCard (): Promise<void> {
-    showPopup(CreateCardPopup, { type: _class }, 'center', async (result) => {
+    console.log('Creating card of type', _class, 'in space', space)
+    showPopup(CreateCardPopup, { type: _class, space }, 'center', async (result) => {
       if (result != null && result !== '') {
         await navigateToCard(result)
       }
