@@ -39,7 +39,7 @@
   let activeAction: string | undefined = undefined
 
   async function handleCreateCard (): Promise<void> {
-    showPopup(CreateCardPopup, { type: type._id, space }, 'center', async (result) => {
+    showPopup(CreateCardPopup, { type: type._id, space: space?._id }, 'center', async (result) => {
       if (result !== undefined) {
         const card = await getClient().findOne(cardPlugin.class.Card, { _id: result })
         if (card === undefined) return
