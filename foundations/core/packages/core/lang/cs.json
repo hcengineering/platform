@@ -61,6 +61,8 @@
     "ArchiveSpaceDescription": "Umožňuje uživatelům archivovat prostor",
     "AutoJoin": "Automatické připojení",
     "AutoJoinDescr": "Automaticky připojit nové zaměstnance k tomuto prostoru",
+    "RBAC": "Řízení přístupu na základě rolí",
+    "RBACDescr": "Vyžadovat řízení přístupu na základě rolí pro provádění akcí v tomto prostoru",
     "BlobSize": "Velikost",
     "BlobContentType": "Typ obsahu",
     "Relation": "Vztah",

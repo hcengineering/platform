@@ -490,6 +490,7 @@ export interface SystemSpace extends Space {}
  */
 export interface TypedSpace extends Space {
   type: Ref<SpaceType>
+  restricted?: boolean // if true user must have permission to any txes
 }
 
 /**
@@ -549,6 +550,10 @@ export interface Permission extends Doc {
   txMatch?: DocumentQuery<Tx>
   description?: IntlString
   icon?: Asset
+}
+
+export interface AttributePermission extends Permission {
+  attribute: Ref<AnyAttribute>
 }
 
 /**

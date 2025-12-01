@@ -61,6 +61,8 @@
     "ArchiveSpaceDescription": "ユーザーにスペースをアーカイブする権限を付与します",
     "AutoJoin": "自動参加",
     "AutoJoinDescr": "新しいユーザーを自動的にこのスペースに参加させます",
+    "RBAC": "ロールベースアクセス制御",
+    "RBACDescr": "このスペースでの操作を実行するためにロールベースのアクセスを要求します",
     "BlobSize": "サイズ",
     "BlobContentType": "コンテンツタイプ",
     "Relation": "関係",

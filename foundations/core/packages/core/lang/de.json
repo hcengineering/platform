@@ -61,6 +61,8 @@
     "ArchiveSpaceDescription": "Gewährt Benutzern die Möglichkeit, den Arbeitsbereich zu archivieren",
     "AutoJoin": "Automatisch beitreten",
     "AutoJoinDescr": "Neue Mitarbeiter automatisch diesem Arbeitsbereich hinzufügen",
+    "RBAC": "Rollenbasierte Zugriffskontrolle",
+    "RBACDescr": "Erfordert rollenbasierten Zugriff, um Aktionen in diesem Arbeitsbereich auszuführen",
     "BlobSize": "Größe",
     "BlobContentType": "Inhaltstyp",
     "Relation": "Beziehung",
