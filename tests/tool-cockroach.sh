@@ -11,4 +11,8 @@ export SERVER_SECRET=secret
 export DB_URL=postgresql://root@localhost:26258/defaultdb?sslmode=disable
 export QUEUE_CONFIG='localhost:19093;-staging'
 
-node ${TOOL_OPTIONS} ../dev/tool/bundle/bundle.js $@
+BUNDLE_PATH="../dev/tool/bundle/bundle.js"
+if [ -f "./bundle.js" ]; then
+  BUNDLE_PATH="./bundle.js"
+fi
+node ${TOOL_OPTIONS} ${BUNDLE_PATH} $@

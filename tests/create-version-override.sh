@@ -5,7 +5,7 @@ VERSION="$1"
 
 # Path to docker-compose.yaml file
 COMPOSE_FILE="./docker-compose.yaml"
-OVERRIDE_FILE="./docker-compose.override.yml"
+OVERRIDE_FILE="./docker-compose.override.versions.yml"
 
 # Check if docker-compose file exists
 if [ ! -f "$COMPOSE_FILE" ]; then
@@ -31,7 +31,7 @@ grep -B 1 "image: haiodo/" $COMPOSE_FILE | grep -v "\-\-" | grep -v "image:" | s
         echo "    pull_policy: always" >> $OVERRIDE_FILE
         if [ "$pod_name" == "account" ]; then
           echo "    environment:" >> $OVERRIDE_FILE
-          echo "      - REGION_INFO=|;europe|Europe" >> $OVERRIDE_FILE
+          echo "      - REGION_INFO=|America" >> $OVERRIDE_FILE
         fi
         if [ "$pod_name" == "workspace" ]; then
           echo "    environment:" >> $OVERRIDE_FILE
