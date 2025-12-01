@@ -56,6 +56,7 @@
     labels: 0,
     major: 1,
     minor: 0,
+    patch: 0,
     commentSequence: 0,
     author: currentUser,
     owner: currentUser,

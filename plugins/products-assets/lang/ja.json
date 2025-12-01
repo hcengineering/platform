@@ -20,6 +20,7 @@
     "Description": "説明",
     "Major": "メジャー",
     "Minor": "マイナー",
+    "Patch": "パッチ",
     "Codename": "コードネーム",
     "ProductVersionStateActive": "アクティブ",
     "ProductVersionStateReleased": "リリース済み",

@@ -8,5 +8,5 @@
 </script>
 
 {#if value}
-  <Label label={document.string.VersionValue} params={{ major: value.major, minor: value.minor }} />
+  <Label label={document.string.VersionValue} params={{ major: value.major, minor: value.minor, patch: value.patch }} />
 {/if}

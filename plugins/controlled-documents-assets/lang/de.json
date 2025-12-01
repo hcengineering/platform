@@ -38,7 +38,7 @@
     "EditorPlaceholder": "Tippen Sie, um mit der Bearbeitung zu beginnen...",
     "Version": "Version",
     "TemplateVersion": "Vorlagenversion",
-    "VersionValue": "v{major}.{minor}",
+    "VersionValue": "v{major}.{minor}.{patch}",
     "SearchDocument": "Dokument suchen...",
     "CreateEnVersion": "Version zur Überprüfung erstellen",
     "Approvers": "Genehmiger",

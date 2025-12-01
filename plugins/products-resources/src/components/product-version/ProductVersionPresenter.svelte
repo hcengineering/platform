@@ -34,7 +34,7 @@
   export let shouldShowAvatar: boolean = true
 
   function getProductVersionName (value: ProductVersion): string {
-    const version = `${value.major}.${value.minor}`
+    const version = `${value.major}.${value.minor}.${value.patch}`
     const codename = value.codename ?? ''
     return codename !== '' ? `${version} ${codename}` : version
   }
