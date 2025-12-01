@@ -175,16 +175,6 @@
       </div></svelte:fragment
     >
 
-    <svelte:fragment slot="extra">
-      <ComponentExtensions
-        extension={card.extensions.EditCardHeaderExtension}
-        props={{
-          card: doc
-        }}
-      />
-      <slot name="extra" />
-    </svelte:fragment>
-
     <div class="container">
       <CardAttributeEditor value={doc} {mixins} readonly={_readonly} ignoreKeys={['title', 'content', 'parent']} />
 
@@ -205,6 +195,12 @@
 
     <svelte:fragment slot="extra">
       <TagsEditor {doc} id={'cardHeader-tags'} />
+      <ComponentExtensions
+        extension={card.extensions.EditCardHeaderExtension}
+        props={{
+          card: doc
+        }}
+      />
       <slot name="extra" />
     </svelte:fragment>
 
