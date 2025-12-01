@@ -27,7 +27,7 @@
         _class: card.class.MasterTag,
         selectedObjects: value,
         multiSelect: true,
-        docQuery: { extends: card.class.Card },
+        docQuery: { extends: card.class.Card, removed: { $ne: true } },
         searchField: 'label'
       },
       getEventPositionElement(ev),
