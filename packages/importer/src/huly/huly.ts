@@ -736,7 +736,7 @@ export class HulyFormatImporter {
       code: codeMatch?.[1],
       major: 0,
       minor: 1,
-      patch: 1,
+      patch: 0,
       state: DocumentState.Draft,
       category,
       author,
