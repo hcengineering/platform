@@ -1,4 +1,4 @@
-FROM node:22-slim
+FROM node:24-slim
 
 RUN apt-get update
 RUN apt-get install libjemalloc2 dumb-init ca-certificates -y
