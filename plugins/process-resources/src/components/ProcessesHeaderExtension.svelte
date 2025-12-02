@@ -64,5 +64,5 @@
 </script>
 
 {#each todos as todo (todo._id)}
-  <Button label={getEmbeddedLabel(todo.title)} on:click={() => checkTodo(todo)} />
+  <Button kind={'primary'} label={getEmbeddedLabel(todo.title)} on:click={() => checkTodo(todo)} />
 {/each}
