@@ -38,7 +38,7 @@
     "EditorPlaceholder": "开始编辑...",
     "Version": "版本",
     "TemplateVersion": "模板版本",
-    "VersionValue": "v{major}.{minor}",
+    "VersionValue": "v{major}.{minor}.{patch}",
     "SearchDocument": "搜索文档...",
     "CreateEnVersion": "创建审核版本",
     "Approvers": "批准人",

@@ -43,6 +43,7 @@
   import Content from './Content.svelte'
   import TagsEditor from './TagsEditor.svelte'
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
+  import { canChangeDoc, permissionsStore } from '@hcengineering/contact-resources'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
@@ -97,6 +98,8 @@
     })
 
   $: _readonly = (readonly || doc?.readonly) ?? false
+  $: updatePermissionForbidden = doc && !canChangeDoc(doc?._class, doc?.space, $permissionsStore)
+  $: canSave = title.trim().length > 0 && !_readonly
 
   async function saveTitle (ev: Event): Promise<void> {
     ev.preventDefault()
@@ -163,8 +166,9 @@
           <EditBox
             focusIndex={1}
             bind:value={title}
+            disabled={_readonly || updatePermissionForbidden}
             placeholder={card.string.Card}
-            on:blur={saveTitle}
+            on:blur={(evt) => saveTitle(evt)}
             on:value={() => {
               isTitleEditing = true
             }}
@@ -178,7 +182,7 @@
     <div class="container">
       <CardAttributeEditor value={doc} {mixins} readonly={_readonly} ignoreKeys={['title', 'content', 'parent']} />
 
-      <Content {doc} readonly={_readonly} bind:content />
+      <Content {doc} readonly={_readonly || updatePermissionForbidden} bind:content />
     </div>
 
     <ComponentExtensions
@@ -191,7 +195,13 @@
     <Childs object={doc} readonly={_readonly} />
     <RelationsEditor object={doc} readonly={_readonly} />
 
-    <Attachments objectId={doc._id} _class={doc._class} space={doc.space} attachments={doc.attachments ?? 0} />
+    <Attachments
+      objectId={doc._id}
+      _class={doc._class}
+      space={doc.space}
+      readonly={_readonly}
+      attachments={doc.attachments ?? 0}
+    />
 
     <svelte:fragment slot="extra">
       <TagsEditor {doc} id={'cardHeader-tags'} />

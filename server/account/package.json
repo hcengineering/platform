@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@hcengineering/mongo": "workspace:^0.7.17",
-    "@hcengineering/postgres": "workspace:^0.7.20",
+    "@hcengineering/postgres": "workspace:^0.7.21",
     "mongodb": "^6.16.0",
     "postgres": "^3.4.7",
     "@hcengineering/platform": "workspace:^0.7.19",

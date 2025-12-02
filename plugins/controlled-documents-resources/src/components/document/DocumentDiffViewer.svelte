@@ -72,7 +72,7 @@
     }
 
     if (isDocument(document)) {
-      return `v${document.major}.${document.minor} | ${translatedStates ? translatedStates[state] : ''}`
+      return `v${document.major}.${document.minor}.${document.patch} | ${translatedStates ? translatedStates[state] : ''}`
     } else {
       return `${document.name} | ${translatedStates ? translatedStates[state] : ''}`
     }

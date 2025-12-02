@@ -38,7 +38,7 @@
     "EditorPlaceholder": "type to start editing...",
     "Version": "Version",
     "TemplateVersion": "Template version",
-    "VersionValue": "v{major}.{minor}",
+    "VersionValue": "v{major}.{minor}.{patch}",
     "SearchDocument": "Search document...",
     "CreateEnVersion": "Create version for review",
     "Approvers": "Approvers",

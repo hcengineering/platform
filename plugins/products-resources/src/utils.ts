@@ -27,7 +27,7 @@ import products, { ProductVersionState, type Product, type ProductVersion } from
 
 export function getProductVersionVersion (doc: ProductVersion): string {
   const codename = doc.codename ?? ''
-  const version = `${doc.major}.${doc.minor}`
+  const version = `${doc.major}.${doc.minor}.${doc.patch}`
 
   return codename !== '' ? `${version} ${codename}` : version
 }

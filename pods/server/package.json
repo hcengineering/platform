@@ -73,7 +73,7 @@
     "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/pod-telegram-bot": "workspace:^0.7.0",
     "@hcengineering/pod-translate": "workspace:^0.7.0",
-    "@hcengineering/postgres": "workspace:^0.7.20",
+    "@hcengineering/postgres": "workspace:^0.7.21",
     "@hcengineering/rpc": "workspace:^0.7.17",
     "@hcengineering/server": "workspace:^0.7.18",
     "@hcengineering/server-ai-bot": "workspace:^0.7.0",

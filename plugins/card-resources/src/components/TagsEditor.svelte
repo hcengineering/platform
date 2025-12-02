@@ -29,6 +29,7 @@
   export let doc: Card
   export let dropdownTags: boolean = false
   export let id: string | undefined = undefined
+  export let readonly: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -131,7 +132,8 @@
         />
       {:else}
         {#each activeTags as mixin}
-          {@const removable = isRemoveable(mixin._id, activeTags) && !checkRemovePermission($permissionsStore)}
+          {@const removable =
+            !readonly && isRemoveable(mixin._id, activeTags) && !checkRemovePermission($permissionsStore)}
           <CardTagColored
             labelIntl={mixin.label}
             color={mixin.background ?? 0}
@@ -139,7 +141,7 @@
             on:remove={() => removeTag(mixin._id)}
           />
         {/each}
-        {#if dropdownItems.length > 0 && !checkAddPermission($permissionsStore)}
+        {#if !readonly && dropdownItems.length > 0 && !checkAddPermission($permissionsStore)}
           <CircleButton id={id ? `${id}-add` : undefined} icon={IconAdd} size={'small'} ghost on:click={add} />
         {/if}
       {/if}

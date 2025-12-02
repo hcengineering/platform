@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/postgres",
-  "version": "0.7.20",
+  "version": "0.7.21",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",

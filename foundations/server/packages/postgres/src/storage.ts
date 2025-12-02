@@ -640,7 +640,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         const collabSec = getClassCollaborators(this.modelDb, this.hierarchy, _class)
         if (collabSec?.provideSecurity === true && [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(acc.role)) {
           const collab = `OR EXISTS (SELECT 1 FROM ${translateDomain(DOMAIN_COLLABORATOR)} collab_sec WHERE collab_sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND collab_sec."attachedTo" = ${domain}._id AND collab_sec.collaborator = '${acc.uuid}')`
-          return `AND (${res} + ${collab})`
+          return `AND (${res} ${collab})`
         }
         return `AND (${res})`
       }

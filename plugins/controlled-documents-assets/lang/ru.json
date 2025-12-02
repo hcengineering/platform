@@ -38,7 +38,7 @@
     "EditorPlaceholder": "введите для начала...",
     "Version": "Версия",
     "TemplateVersion": "Версия шаблона",
-    "VersionValue": "v{major}.{minor}",
+    "VersionValue": "v{major}.{minor}.{patch}",
     "SearchDocument": "Найти документ...",
     "CreateEnVersion": "Создать версию для оценки",
     "Approvers": "Утверждающие",
