@@ -142,7 +142,7 @@ test.describe('QMS. Categories tests', () => {
       await documentContentPage.checkDocument({
         type: 'N/A',
         category: canNotDeleteCategoryTemplate.category ?? '',
-        version: 'v1.0',
+        version: 'v1.0.0',
         status: DocumentStatus.DRAFT,
         owner: 'Appleseed John',
         author: 'Appleseed John'

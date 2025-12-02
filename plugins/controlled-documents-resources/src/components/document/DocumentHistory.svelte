@@ -51,7 +51,10 @@
 
       return (
         doc.major < $controlledDocument.major ||
-        (doc.major === $controlledDocument.major && doc.minor <= $controlledDocument.minor)
+        (doc.major === $controlledDocument.major && doc.minor < $controlledDocument.minor) ||
+        (doc.major === $controlledDocument.major &&
+          doc.minor === $controlledDocument.minor &&
+          doc.patch <= $controlledDocument.patch)
       )
     })
     .sort(documentCompareFn)

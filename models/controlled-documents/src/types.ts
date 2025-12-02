@@ -250,6 +250,9 @@ export class TDocument extends TDoc implements Document {
   @Prop(TypeNumber(), documents.string.Minor)
     minor!: number
 
+  @Prop(TypeNumber(), documents.string.Patch)
+    patch!: number
+
   @Prop(TypeRef(documents.class.DocumentCategory), documents.string.Category)
     category?: Ref<DocumentCategory>
 

@@ -44,7 +44,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0',
+      version: 'v1.0.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -63,7 +63,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.IN_APPROVAL,
-        version: 'v1.0'
+        version: 'v1.0.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
     })
@@ -80,7 +80,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       await documentContentPageSecond.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v1.0'
+        version: 'v1.0.0'
       })
       await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
 
@@ -113,7 +113,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0',
+      version: 'v1.0.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -131,7 +131,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.IN_APPROVAL,
-        version: 'v1.0'
+        version: 'v1.0.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
     })
@@ -148,7 +148,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       await documentContentPageSecond.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v1.0'
+        version: 'v1.0.0'
       })
       await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
 

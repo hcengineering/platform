@@ -103,7 +103,8 @@ const queryDocumentVersionsFx = createEffect((payload: ControlledDocument) => {
     {
       sort: {
         major: SortingOrder.Descending,
-        minor: SortingOrder.Descending
+        minor: SortingOrder.Descending,
+        patch: SortingOrder.Descending
       }
     }
   )
