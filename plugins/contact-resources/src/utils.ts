@@ -671,8 +671,12 @@ export function checkMyPermission (_id: Ref<Permission>, space: Ref<TypedSpace>,
   return (store.whitelist.has(space) || store.ps[space]?.has(_id)) ?? false
 }
 
-export function canChangeAttribute (attr: AnyAttribute, space: Ref<TypedSpace>, store: PermissionsStore, _class?: Ref<Class<Doc>>): boolean {
-  debugger
+export function canChangeAttribute (
+  attr: AnyAttribute,
+  space: Ref<TypedSpace>,
+  store: PermissionsStore,
+  _class?: Ref<Class<Doc>>
+): boolean {
   const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
   if (arePermissionsDisabled) return true
   if (store.whitelist.has(space)) return true
@@ -698,9 +702,16 @@ export function canChangeDoc (_class: Ref<Class<Doc>>, space: Ref<Space>, store:
     const client = getClient()
     const h = client.getHierarchy()
     const ancestors = h.getAncestors(_class)
-    const permissions = client.getModel().findAllSync(core.class.Permission, { txClass: { $in: [core.class.TxUpdateDoc, core.class.TxMixin] } })
+    const permissions = client
+      .getModel()
+      .findAllSync(core.class.Permission, { txClass: { $in: [core.class.TxUpdateDoc, core.class.TxMixin] } })
     for (const ancestor of ancestors) {
-      const curr = permissions.filter((p) => p.objectClass === ancestor && p.txMatch === undefined && p.txClass === (h.isMixin(ancestor) ? core.class.TxMixin : core.class.TxUpdateDoc))
+      const curr = permissions.filter(
+        (p) =>
+          p.objectClass === ancestor &&
+          p.txMatch === undefined &&
+          p.txClass === (h.isMixin(ancestor) ? core.class.TxMixin : core.class.TxUpdateDoc)
+      )
       for (const permission of curr) {
         if (store.ps[space]?.has(permission._id)) {
           return permission.forbid !== true
