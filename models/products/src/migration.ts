@@ -13,9 +13,36 @@
 // limitations under the License.
 //
 
-import { type MigrateOperation, type MigrationClient, type MigrationUpgradeClient } from '@hcengineering/model'
+import {
+  type MigrateOperation,
+  type MigrationClient,
+  type MigrationUpgradeClient,
+  tryMigrate
+} from '@hcengineering/model'
+import { DOMAIN_DOCUMENTS } from '@hcengineering/model-controlled-documents'
+import products, { productsId } from '@hcengineering/products'
+
+async function migratePatchVersion (client: MigrationClient): Promise<void> {
+  await client.update(
+    DOMAIN_DOCUMENTS,
+    {
+      _class: products.class.ProductVersion,
+      patch: { $exists: false }
+    },
+    {
+      patch: 0
+    }
+  )
+}
 
 export const productsOperation: MigrateOperation = {
-  async migrate (client: MigrationClient): Promise<void> {},
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, productsId, [
+      {
+        state: 'migratePatchVersion',
+        func: migratePatchVersion
+      }
+    ])
+  },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>): Promise<void> {}
 }

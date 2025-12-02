@@ -115,6 +115,10 @@ export class TProductVersion extends TProject implements ProductVersion {
   @ReadOnly()
     minor!: number
 
+  @Prop(TypeNumber(), products.string.Patch)
+  @ReadOnly()
+    patch!: number
+
   @Prop(TypeString(), products.string.Codename)
     codename?: string
 

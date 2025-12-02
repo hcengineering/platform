@@ -121,6 +121,7 @@ export interface Document extends Doc<DocumentSpace> {
   seqNumber: number
   major: number
   minor: number
+  patch: number
   category?: Ref<DocumentCategory>
   author?: Ref<Employee> // Employee who created/released the document
   owner?: Ref<Employee> // Employee responsible for working on the document

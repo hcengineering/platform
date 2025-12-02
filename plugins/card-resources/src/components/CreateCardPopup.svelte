@@ -30,7 +30,7 @@
 
   export let title: string = ''
   export let type: Ref<MasterTag> = card.types.Document
-  export let space: CardSpace | undefined = undefined
+  export let space: Ref<CardSpace> | undefined = undefined
   export let changeType: boolean = false
   export let allowChangeSpace: boolean = true
   export let description: Markup = EmptyMarkup
@@ -51,7 +51,7 @@
       : undefined
 
   let data: Partial<Data<Card>> = { title }
-  let _space: Ref<CardSpace> | undefined = space?._id
+  let _space: Ref<CardSpace> | undefined = space
   let collaborators: Ref<Employee>[] = [me]
 
   let creating = false
@@ -167,7 +167,7 @@
     <AttachmentStyledBox
       objectId={_id}
       _class={type}
-      space={_space ?? space?._id}
+      space={_space}
       alwaysEdit
       showButtons={false}
       bind:content={description}

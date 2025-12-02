@@ -109,6 +109,9 @@ export interface SettingsCategory extends Doc {
   order?: number
   role: AccountRole
 
+  // A feature to be used with hides
+  feature?: string
+
   expandable?: boolean
   adminOnly?: boolean
 }
@@ -219,13 +222,8 @@ export default plugin(settingId, {
     NewEmail: '' as IntlString,
     AccountSettings: '' as IntlString,
     ChangePassword: '' as IntlString,
-    CurrentPassword: '' as IntlString,
-    NewPassword: '' as IntlString,
     Saving: '' as IntlString,
     Saved: '' as IntlString,
-    EnterCurrentPassword: '' as IntlString,
-    EnterNewPassword: '' as IntlString,
-    RepeatNewPassword: '' as IntlString,
     Signout: '' as IntlString,
     InviteWorkspace: '' as IntlString,
     SelectWorkspace: '' as IntlString,

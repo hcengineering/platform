@@ -20,6 +20,7 @@
     "Description": "Açıklama",
     "Major": "Majör",
     "Minor": "Minör",
+    "Patch": "Yama",
     "Codename": "Kod adı",
     "ProductVersionStateActive": "Aktif",
     "ProductVersionStateReleased": "Yayınlandı",

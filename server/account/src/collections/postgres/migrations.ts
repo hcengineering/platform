@@ -40,7 +40,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV19Migration(ns),
     getV20Migration(ns),
     getV21Migration(ns),
-    getV22Migration(ns)
+    getV22Migration(ns),
+    getV23Migration(ns)
   ]
 }
 
@@ -587,6 +588,16 @@ function getV22Migration (ns: string): [string, string] {
     `
     CREATE INDEX IF NOT EXISTS account_events_account_uuid_event_type_time_idx
     ON ${ns}.account_events (account_uuid, event_type, time DESC);
+    `
+  ]
+}
+
+function getV23Migration (ns: string): [string, string] {
+  return [
+    'account_db_v23_add_password_aging_rule_to_workspace',
+    `
+    ALTER TABLE ${ns}.workspace
+    ADD COLUMN IF NOT EXISTS password_aging_rule INT8;
     `
   ]
 }

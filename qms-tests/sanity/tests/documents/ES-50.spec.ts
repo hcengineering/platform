@@ -50,7 +50,7 @@ test.describe('QMS. PDF Download and Preview', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0',
+      version: 'v1.0.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -90,7 +90,7 @@ test.describe('QMS. PDF Download and Preview', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v1.0'
+        version: 'v1.0.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
 
@@ -135,7 +135,7 @@ test.describe('QMS. PDF Download and Preview', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0',
+      version: 'v1.0.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -199,7 +199,7 @@ test.describe('QMS. PDF Download and Preview', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0',
+      version: 'v1.0.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -253,7 +253,7 @@ test.describe('QMS. PDF Download and Preview', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0',
+      version: 'v1.0.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'

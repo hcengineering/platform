@@ -463,8 +463,18 @@ export async function getLastPasswordChangeEvent (
   return result[0] ?? null
 }
 
+export async function getAccountCreatedEvent (db: AccountDB, accountUuid: AccountUuid): Promise<AccountEvent | null> {
+  const result = await db.accountEvent.find(
+    { accountUuid, eventType: AccountEventType.ACCOUNT_CREATED },
+    { time: 'descending' },
+    1
+  )
+  return result[0] ?? null
+}
+
 export async function isPasswordChangedSince (db: AccountDB, accountUuid: AccountUuid, since: number): Promise<boolean> {
-  const lastEvent = await getLastPasswordChangeEvent(db, accountUuid)
+  const lastEvent =
+    (await getLastPasswordChangeEvent(db, accountUuid)) ?? (await getAccountCreatedEvent(db, accountUuid))
   return lastEvent != null && lastEvent.time >= since
 }
 
@@ -898,6 +908,52 @@ export async function updateAllowReadOnlyGuests (
   })
 
   return { guestPerson, guestSocialIds: guestSocialIds.filter((si) => si.isDeleted !== true) }
+}
+
+export async function updatePasswordAgingRule (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    days: number
+  }
+): Promise<void> {
+  const { days } = params
+  const { account, workspace } = decodeTokenVerbose(ctx, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  const accRole = account === systemAccountUuid ? AccountRole.Owner : await db.getWorkspaceRole(account, workspace)
+  if (accRole == null || getRolePower(accRole) < getRolePower(AccountRole.Maintainer)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  await db.updatePasswordAgingRule(workspace, days)
+}
+
+export async function checkPasswordAging (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<boolean> {
+  const { account, workspace } = decodeTokenVerbose(ctx, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+  const ws = await getWorkspaceById(db, workspace)
+  if (ws == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+  if (ws.passwordAgingRule == null || ws.passwordAgingRule <= 0) {
+    return true
+  }
+  const since = Date.now() - ws.passwordAgingRule * 24 * 60 * 60 * 1000
+  const res = await isPasswordChangedSince(db, account, since)
+  return res
 }
 
 export async function updateAllowGuestSignUp (

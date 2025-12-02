@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import contact from '@hcengineering/contact'
   import core, { Permission, Ref } from '@hcengineering/core'
   import { AttributeEditor, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import {
@@ -23,39 +24,50 @@
     IconSettings,
     Label,
     Scroller,
+    getCurrentLocation,
     getCurrentResolvedLocation,
     navigate,
     showPopup
   } from '@hcengineering/ui'
-  import contact from '@hcengineering/contact'
   import { ObjectBoxPopup } from '@hcengineering/view-resources'
 
-  import cardPlugin from '../../plugin'
   import { MasterTag, Role } from '@hcengineering/card'
-  import settingRes from '@hcengineering/setting-resources/src/plugin'
   import { clearSettingsStore } from '@hcengineering/setting-resources'
+  import settingRes from '@hcengineering/setting-resources/src/plugin'
+  import { createEventDispatcher } from 'svelte'
+  import cardPlugin from '../../plugin'
 
   export let _id: Ref<Role>
-  export let masterTag: MasterTag
   export let readonly: boolean = false
 
   const client = getClient()
   const h = client.getHierarchy()
 
+  let role: Role | undefined = client.getModel().findAllSync(cardPlugin.class.Role, { _id })[0]
+
   const cardPermissionsObjectClasses = client
     .getModel()
     .findAllSync(cardPlugin.class.PermissionObjectClass, {})
     .map((poc) => poc.objectClass)
-  const tagDesc = h.getAncestors(masterTag._id)
+  const tagDesc = Array.from(new Set(role?.types?.map((p) => h.getAncestors(p)).flat()))
   const allPermissions = client.getModel().findAllSync(core.class.Permission, {
     scope: 'space',
     objectClass: { $in: [...cardPermissionsObjectClasses, ...tagDesc] }
   })
 
-  let role: Role | undefined
+  const dispatch = createEventDispatcher()
+
   const roleQuery = createQuery()
   $: roleQuery.query(cardPlugin.class.Role, { _id }, (res) => {
     ;[role] = res
+    if (role !== undefined) {
+      dispatch('change', [
+        {
+          id: res[0]?._id,
+          title: res[0]?.name
+        }
+      ])
+    }
   })
 
   let permissions: Permission[] = []
@@ -112,8 +124,21 @@
     )
   }
 
+  const masterTag = getCurrentLocation().path[4] as Ref<MasterTag>
+
   async function performDeleteRole (): Promise<void> {
     if (role === undefined) {
+      return
+    }
+
+    const types = role.types.filter((p) => p !== masterTag)
+    if (types.length > 0) {
+      await client.update(role, { types })
+      const loc = getCurrentResolvedLocation()
+      loc.path.length = 5
+
+      clearSettingsStore()
+      navigate(loc)
       return
     }
 
@@ -161,7 +186,7 @@
                 icon={IconDelete}
                 size="large"
                 kind="secondary"
-                disabled={readonly}
+                disabled={readonly || !role.types.includes(masterTag)}
                 on:click={handleDeleteRole}
               />
               <ButtonIcon

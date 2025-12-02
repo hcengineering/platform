@@ -150,6 +150,8 @@ export default mergeIds(settingId, setting, {
     Primary: '' as IntlString,
     IdentifierExists: '' as IntlString,
     Restricted: '' as IntlString,
-    RestrictedAttributeWarning: '' as IntlString
+    RestrictedAttributeWarning: '' as IntlString,
+    PasswordAgingRule: '' as IntlString,
+    PasswordAgingRuleDescription: '' as IntlString
   }
 })

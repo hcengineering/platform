@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "esnext",
+    "module": "esnext",
+    "declaration": true,
+    "rootDir": "./src",
+    "outDir": "./.build/dist",
+    "strict": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "esModuleInterop": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "lib": ["esnext", "dom"],
+    "incremental": true,
+    "types": ["jest"],
+    "isolatedModules": true
+  }
+}

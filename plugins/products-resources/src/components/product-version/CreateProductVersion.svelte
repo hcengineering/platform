@@ -34,7 +34,7 @@
 
   import products from '../../plugin'
 
-  type Severity = 'major' | 'minor'
+  type Severity = 'major' | 'minor' | 'patch'
   type ProductVersionDraft = Omit<Data<ProductVersion>, 'parent' | 'name'>
 
   export let space: Ref<Product> | undefined
@@ -70,18 +70,20 @@
 
   $: updateSeverity(parent, severity)
 
-  function updateSeverity (parent: ProductVersion | undefined, severity: Severity): void {
+  function updateSeverity (parent: ProductVersion | null | undefined, severity: Severity): void {
     if (parent != null) {
       object.major = severity === 'major' ? parent.major + 1 : parent.major
       object.minor = severity === 'minor' ? parent.minor + 1 : 0
+      object.patch = severity === 'patch' ? parent.patch + 1 : 0
     } else {
       object.major = 1
       object.minor = 0
+      object.patch = 0
     }
   }
 
   function formatProductVersion (object: ProductVersionDraft): string {
-    return `${object.major}.${object.minor}`
+    return `${object.major}.${object.minor}.${object.patch}`
   }
 
   function formatProductVersionName (object: ProductVersionDraft): string {
@@ -144,6 +146,7 @@
       readonly: false,
       major: 1,
       minor: 0,
+      patch: 0,
       codename: '',
       description: '',
       state: ProductVersionState.Active
@@ -157,6 +160,8 @@
     object.major >= 0 &&
     object.minor !== undefined &&
     object.minor >= 0 &&
+    object.patch !== undefined &&
+    object.patch >= 0 &&
     (parent == null || object.changeControl !== undefined)
 </script>
 
@@ -217,6 +222,7 @@
       <DropdownLabelsIntl
         label={products.string.ChangeSeverity}
         items={[
+          { id: 'patch', label: products.string.Patch },
           { id: 'minor', label: products.string.Minor },
           { id: 'major', label: products.string.Major }
         ]}

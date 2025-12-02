@@ -893,6 +893,7 @@ function defineSettings (builder: Builder): void {
       icon: training.icon.Training,
       component: training.component.Settings,
       order: 1150,
+      feature: 'trainings',
       role: AccountRole.Maintainer
     },
     training.setting.Trainings

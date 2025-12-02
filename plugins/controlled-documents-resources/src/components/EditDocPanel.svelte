@@ -242,7 +242,7 @@
       }
 
       const latest = $documentLatestVersion
-      const version = { major: latest.major, minor: latest.minor + 1 }
+      const version = { major: latest.major, minor: latest.minor + 1, patch: 0 }
       const project = await getLatestProjectId($controlledDocument.space)
 
       if (project === undefined) {

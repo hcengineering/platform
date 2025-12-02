@@ -37,7 +37,7 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0',
+      version: 'v1.0.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -65,7 +65,7 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v1.0'
+        version: 'v1.0.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
 
@@ -94,7 +94,7 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0',
+      version: 'v1.0.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -122,7 +122,7 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v1.0'
+        version: 'v1.0.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
 
@@ -162,7 +162,7 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0',
+      version: 'v1.0.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -185,7 +185,11 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
 
     await test.step('4. Check the document and status', async () => {
       await documentContentPage.checkDocumentStatus(DocumentStatus.EFFECTIVE)
-      await documentContentPage.checkDocument({ ...documentDetails, status: DocumentStatus.EFFECTIVE, version: 'v1.0' })
+      await documentContentPage.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.EFFECTIVE,
+        version: 'v1.0.0'
+      })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
 
       await documentContentPage.openApprovals()
