@@ -75,8 +75,7 @@ commit_preprocessors = [
 ]
 # regex for parsing and grouping commits
 commit_parsers = [
-  # Skip merge c
-  ommits and noise FIRST
+  # Skip merge commits and noise FIRST
   { message = "^Merge branch", skip = true },
   { message = "^Merge remote-tracking branch", skip = true },
   { message = "^chore\\(release\\): prepare for", skip = true },
