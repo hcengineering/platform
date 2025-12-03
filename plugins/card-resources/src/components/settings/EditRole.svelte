@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import core, { Permission, Ref } from '@hcengineering/core'
+  import core, { AnyAttribute, AttributePermission, Permission, Ref } from '@hcengineering/core'
   import { AttributeEditor, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import {
     ButtonIcon,
@@ -36,6 +36,7 @@
   import settingRes from '@hcengineering/setting-resources/src/plugin'
   import { createEventDispatcher } from 'svelte'
   import cardPlugin from '../../plugin'
+  import { IntlString } from '@hcengineering/platform'
 
   export let _id: Ref<Role>
   export let readonly: boolean = false
@@ -173,6 +174,19 @@
     clearSettingsStore()
     navigate(loc)
   }
+
+  function isAttributePermission (permission: Permission): permission is AttributePermission {
+    return permission._class === core.class.AttributePermission
+  }
+
+  function getAttributePermissionLabel (permission: Permission): IntlString | undefined {
+    const isAttribute = isAttributePermission(permission)
+    if (!isAttribute) {
+      return undefined
+    }
+    const attr = client.getModel().findObject(permission.attribute) as AnyAttribute
+    return attr?.label
+  }
 </script>
 
 {#if role !== undefined}
@@ -223,6 +237,7 @@
               {#if permissions.length > 0}
                 <div class="hulyTableAttr-content task">
                   {#each permissions as permission}
+                    {@const extraLabel = getAttributePermissionLabel(permission)}
                     <div class="hulyTableAttr-content__row">
                       {#if permission.icon !== undefined}
                         <div class="hulyTableAttr-content__row-icon-wrapper">
@@ -232,13 +247,10 @@
 
                       <div class="hulyTableAttr-content__row-label font-medium-14">
                         <Label label={permission.label} />
+                        {#if extraLabel}
+                          <Label label={extraLabel} />
+                        {/if}
                       </div>
-
-                      {#if permission.description !== undefined}
-                        <div class="hulyTableAttr-content__row-label grow dark font-regular-14">
-                          <Label label={permission.description} />
-                        </div>
-                      {/if}
                     </div>
                   {/each}
                 </div>
