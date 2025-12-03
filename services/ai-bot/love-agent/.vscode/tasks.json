@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "love-agent: build",
+      "type": "shell",
+      "command": "node",
+      "options": {
+        "cwd": "${workspaceFolder}/services/ai-bot/love-agent"
+      },
+      "args": ["esbuild.config.js"],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

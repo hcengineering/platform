@@ -13,55 +13,31 @@
 // limitations under the License.
 //
 
-import { SttProvider } from './type.js'
+import dotenv from 'dotenv'
 
 interface Config {
-  DeepgramApiKey: string
-  DeepgramModel: string
-  OpenAiTranscriptModel: string
-  OpenaiApiKey: string
-  OpenaiBaseUrl: string
-  OpenaiProvideLanguage: boolean
-  PlatformToken: string
+  ServerSecret: string
   PlatformUrl: string
-  SttProvider: SttProvider
-  VadSilenceDurationMs: number
-  VadPrefixPaddingMs: number
-  VadThreshold: number
 
-  DgEndpointing: number
-  DgUtteranceEndMs: number
-  DgInterimResults: boolean
-  DgVadEvents: boolean
-  DgPunctuate: boolean
-  DgSmartFormat: boolean
-  DgNoDelay: boolean
-  DgSampleRate: number
+  LiveKitApiUrl: string
+  LiveKitApiKey: string
+  LiveKitApiSecret: string
+
+  Debug: boolean // Keep files after sending to ai-bot
 }
 
 const config: Config = (() => {
-  const params: Partial<Config> = {
-    DeepgramApiKey: process.env.DEEPGRAM_API_KEY ?? '',
-    DeepgramModel: process.env.DEEPGRAM_MODEL ?? 'nova-3',
-    OpenAiTranscriptModel: process.env.OPENAI_TRANSCRIPT_MODEL ?? 'gpt-4o-transcribe',
-    OpenaiApiKey: process.env.OPENAI_API_KEY ?? '',
-    OpenaiBaseUrl: process.env.OPENAI_BASE_URL ?? '',
-    OpenaiProvideLanguage: (process.env.OPENAI_PROVIDE_LANGUAGE ?? 'true') === 'true',
-    PlatformToken: process.env.PLATFORM_TOKEN,
-    PlatformUrl: process.env.PLATFORM_URL,
-    SttProvider: (process.env.STT_PROVIDER as SttProvider) ?? 'deepgram',
-    VadSilenceDurationMs: parseInt(process.env.SILENCE_DURATION_MS ?? '1000'),
-    VadPrefixPaddingMs: parseInt(process.env.PREFIX_PADDING_MS ?? '1000'),
-    VadThreshold: parseFloat(process.env.VAD_THRESHOLD ?? '0.5'),
+  dotenv.config()
 
-    DgEndpointing: parseInt(process.env.DG_ENDPOINTING ?? '100'),
-    DgInterimResults: process.env.DG_INTERIM_RESULTS === 'true',
-    DgVadEvents: process.env.DG_VAD_EVENTS === 'true',
-    DgPunctuate: process.env.DG_PUNCTUATE === 'true',
-    DgSmartFormat: process.env.DG_SMART_FORMAT === 'true',
-    DgUtteranceEndMs: parseInt(process.env.DG_UTTERANCE_END_MS ?? '0'),
-    DgNoDelay: process.env.DG_NO_DELAY === 'true',
-    DgSampleRate: parseInt(process.env.DG_SAMPLE_RATE ?? '16000')
+  const params: Partial<Config> = {
+    ServerSecret: process.env.SERVER_SECRET,
+    PlatformUrl: process.env.PLATFORM_URL,
+
+    LiveKitApiKey: process.env.LIVEKIT_API_KEY,
+    LiveKitApiSecret: process.env.LIVEKIT_API_SECRET,
+    LiveKitApiUrl: process.env.LIVEKIT_URL,
+
+    Debug: process.env.DEBUG === 'true'
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

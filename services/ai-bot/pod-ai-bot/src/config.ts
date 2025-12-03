@@ -15,6 +15,8 @@
 
 import OpenAI from 'openai'
 
+import { SttProviderType } from './transcription/types'
+
 interface Config {
   AccountsURL: string
   ServerSecret: string
@@ -40,6 +42,17 @@ interface Config {
   DeepgramApiKey: string
   DeepgramProjectId: string
   DeepgramTag: string
+  // STT Transcription settings
+  SttProvider: SttProviderType
+  SttUrl: string
+  SttApiKey: string
+  SttModel: string
+  // VAD settings
+  VadRmsThreshold: number
+  VadSpeechRatioThreshold: number
+
+  // If specified all chunks will be saved to this directory, per user at a time.wav + transcription
+  DebugDir?: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -73,7 +86,17 @@ const config: Config = (() => {
     DeepgramPollIntervalMinutes: parseNumber(process.env.DEEPGRAM_POLL_INTERVAL_MINUTES) ?? 60,
     DeepgramApiKey: process.env.DEEPGRAM_API_KEY ?? '',
     DeepgramProjectId: process.env.DEEPGRAM_PROJECT_ID ?? '',
-    DeepgramTag: process.env.DEEPGRAM_TAG ?? ''
+    DeepgramTag: process.env.DEEPGRAM_TAG ?? '',
+    // STT Transcription settings
+    SttProvider: (process.env.STT_PROVIDER ?? 'wsr') as SttProviderType,
+    SttUrl: process.env.STT_URL ?? '',
+    SttApiKey: process.env.STT_API_KEY ?? '',
+    SttModel: process.env.STT_MODEL ?? '',
+    // VAD settings
+    VadRmsThreshold: parseFloat(process.env.VAD_RMS_THRESHOLD ?? '0.02'),
+    VadSpeechRatioThreshold: parseFloat(process.env.VAD_SPEECH_RATIO_THRESHOLD ?? '0.1'),
+
+    DebugDir: process.env.DEBUG_DIR ?? ''
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

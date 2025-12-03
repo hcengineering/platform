@@ -13,11 +13,12 @@
 // limitations under the License.
 //
 import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
-import chunter from '@hcengineering/chunter'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, { Person } from '@hcengineering/contact'
 import core, {
   concatLink,
   Doc,
+  generateId,
   Markup,
   MeasureContext,
   PersonId,
@@ -196,6 +197,91 @@ export class LoveController {
     this.socialIdByPerson.set(person, socialId)
 
     return socialId
+  }
+
+  /**
+   * Create a placeholder message for pending transcription
+   * Shows a spinning indicator while transcription is in progress
+   * Returns the message ID for later update/deletion
+   */
+  async createTranscriptionPlaceholder (
+    person: Ref<Person>,
+    roomId: Ref<Room>,
+    startTimeSec: number,
+    endTimeSec: number,
+    blobId: string
+  ): Promise<Ref<ChatMessage> | undefined> {
+    const room = await this.getRoom(roomId)
+    const participant = await this.getRoomParticipant(roomId, person)
+
+    if (room === undefined || participant === undefined) {
+      return undefined
+    }
+
+    const socialId = await this.getSocialId(person)
+    if (socialId === undefined) return undefined
+
+    const doc = await this.getMeetingMinutes(room)
+    if (doc === undefined) return undefined
+
+    // Format time as mm:ss
+    const formatTime = (sec: number): string => {
+      const minutes = Math.floor(sec / 60)
+      const seconds = Math.floor(sec % 60)
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+
+    const timeRange = `${formatTime(startTimeSec)} - ${formatTime(endTimeSec)}`
+
+    // Create placeholder with spinning indicator emoji and audio link
+    // 🎙️ indicates recording, ⏳ indicates processing
+    const placeholderText = `🎙️ ⏳ ... (${timeRange})`
+
+    const messageId = generateId<ChatMessage>()
+
+    const op = this.client.apply(undefined, undefined, true)
+
+    await op.addCollection(
+      chunter.class.ChatMessage,
+      core.space.Workspace,
+      doc._id,
+      doc._class,
+      'transcription',
+      {
+        message: this.transcriptToMarkup(placeholderText)
+      },
+      messageId,
+      undefined,
+      socialId
+    )
+    await op.commit()
+
+    return messageId
+  }
+
+  /**
+   * Update placeholder message with actual transcription text
+   * Or delete it if transcription is empty
+   */
+  async updateTranscriptionMessage (messageId: Ref<ChatMessage>, text: string | null): Promise<void> {
+    const message = await this.client.findOne(chunter.class.ChatMessage, { _id: messageId })
+
+    if (message === undefined) {
+      this.ctx.warn('Transcription placeholder message not found', { messageId })
+      return
+    }
+
+    if (text === null || text.trim() === '') {
+      // Delete message if no transcription
+      await this.client.remove(message)
+      this.ctx.info('Deleted empty transcription placeholder', { messageId })
+    } else {
+      // Update with actual transcription
+      await this.client.update(message, {
+        message: this.transcriptToMarkup(text)
+      })
+      this.ctx.info('Updated transcription message', { messageId, textLength: text.length })
+    }
   }
 
   async processTranscript (text: string, person: Ref<Person>, roomId: Ref<Room>): Promise<void> {

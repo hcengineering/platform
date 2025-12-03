@@ -2252,6 +2252,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/love-agent",
+      "projectFolder": "services/ai-bot/love-agent",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/ai-bot",
       "projectFolder": "plugins/ai-bot",
       "shouldPublish": false

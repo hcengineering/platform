@@ -40,6 +40,10 @@ grep -B 1 "image: haiodo/" $COMPOSE_FILE | grep -v "\-\-" | grep -v "image:" | s
     fi
 done
 
+echo "hulylake:" >> $OVERRIDE_FILE
+echo "    image: haiodo/hulylake:$VERSION" >> $OVERRIDE_FILE
+echo "    pull_policy: always" >> $OVERRIDE_FILE
+
 ./fetch-tool-bundle.sh
 
 echo "Created $OVERRIDE_FILE with fixed version $VERSION for all hardcoreeng services"

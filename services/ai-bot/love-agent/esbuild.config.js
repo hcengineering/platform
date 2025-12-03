@@ -5,7 +5,7 @@ await esbuild.build({
   platform: 'node',
   bundle: false,
   minify: false,
-  outdir: 'lib',
+  outdir: 'bundle',
   keepNames: true,
   sourcemap: 'inline',
   allowOverwrite: true,

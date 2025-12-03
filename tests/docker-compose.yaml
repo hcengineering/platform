@@ -1,6 +1,6 @@
 services:
   stream:
-    image: 'haiodo/stream'
+    image: haiodo/stream
     pull_policy: never
     environment:
       - STREAM_ENDPOINT_URL=s3://localhost:9002
