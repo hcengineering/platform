@@ -135,9 +135,9 @@ graph TB
         Gun[HulyGun<br/>Events]
     end
     
-    subgraph "Media"
+    subgraph "Media Services"
         Stream[Stream<br/>:1080<br/>Video]
-        Media[Media<br/>Processing]
+        MediaProc[Media<br/>Processing]
         Preview[Preview<br/>:4040<br/>Thumbnails]
     end
     
@@ -197,7 +197,7 @@ graph TB
     Gun --> Redpanda
     
     Stream --> Datalake
-    Media --> Redpanda
+    MediaProc --> Redpanda
     Preview --> Datalake
     
     style Front fill:#4A90E2
@@ -209,84 +209,9 @@ graph TB
 
 ---
 
-## 2. Port Mapping & Service Access
 
-```mermaid
-graph TB
-    subgraph "External Ports"
-        P8087[":8087<br/>Frontend"]
-        P3000[":3000<br/>Account"]
-        P3332[":3332<br/>Transactor"]
-        P3078[":3078<br/>Collaborator"]
-        P4030[":4030<br/>Datalake"]
-        P8096[":8096<br/>Hulylake"]
-        P8099[":8099<br/>Pulse"]
-        P4040[":4040<br/>Preview"]
-        P1080[":1080<br/>Stream"]
-    end
-    
-    subgraph "Frontend"
-        Front[Front Server]
-    end
-    
-    subgraph "Core Services"
-        Account[Account]
-        Transactor[Transactor]
-        Workspace[Workspace]
-        Collaborator[Collaborator]
-    end
-    
-    subgraph "Storage"
-        Datalake[Datalake]
-        Hulylake[Hulylake]
-        HulyKVS[HulyKVS :8094]
-    end
-    
-    subgraph "Feature Services"
-        Fulltext[Fulltext :4702]
-        Print[Print :4005]
-        Sign[Sign :4006]
-        Payment[Payment :3040]
-        Export[Export :4009]
-        Preview[Preview]
-        Stream[Stream]
-        BackupAPI2[Backup API :4039]
-        Analytics[Analytics :4017]
-        Rekoni[Rekoni :4004]
-    end
-    
-    subgraph "Real-time"
-        Pulse[HulyPulse]
-    end
-    
-    subgraph "Infrastructure"
-        DB[":26257 CockroachDB"]
-        ES[":9200 Elasticsearch"]
-        Minio[":9000/:9001 MinIO"]
-        Kafka[":19092 Redpanda"]
-        RedisP[":6379 Redis"]
-        Jaeger[":16686 Jaeger UI"]
-    end
-    
-    P8087 --> Front
-    P3000 --> Account
-    P3332 --> Transactor
-    P3078 --> Collaborator
-    P4030 --> Datalake
-    P8096 --> Hulylake
-    P8099 --> Pulse
-    P4040 --> Preview
-    P1080 --> Stream
-    
-    style P8087 fill:#4A90E2
-    style P3332 fill:#E24A4A
-    style DB fill:#7ED321
-    style Kafka fill:#F5A623
-```
 
----
-
-## 3. Event-Driven Architecture (Redpanda/Kafka)
+## 2. Event-Driven Architecture (Redpanda/Kafka)
 
 ```mermaid
 graph LR
@@ -336,7 +261,7 @@ graph LR
 
 ---
 
-## 4. Storage Architecture
+## 3. Storage Architecture
 
 ```mermaid
 graph TB
@@ -392,7 +317,7 @@ graph TB
 
 ---
 
-## 5. Authentication & Authorization Flow
+## 4. Authentication & Authorization Flow
 
 ```mermaid
 sequenceDiagram
