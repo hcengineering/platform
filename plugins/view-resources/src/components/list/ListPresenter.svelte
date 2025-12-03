@@ -13,10 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import core, { Doc } from '@hcengineering/core'
+  import contact, { PermissionsStore } from '@hcengineering/contact'
+  import core, { AnyAttribute, Doc, Ref, TypedSpace } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
   import { AttributeModel } from '@hcengineering/view'
-  import { FixedColumn, restrictionStore } from '../..'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import { Readable } from 'svelte/store'
+  import { canChangeAttribute, FixedColumn, restrictionStore } from '../..'
   import DividerPresenter from './DividerPresenter.svelte'
 
   export let docObject: Doc
@@ -51,6 +54,22 @@
     if (e.detail === undefined) return
     dispatch('resize', e.detail)
   }
+
+  let permissionsStore: Readable<PermissionsStore> | undefined = undefined
+
+  onMount(async () => {
+    permissionsStore = await getResource(contact.store.Permissions)
+  })
+
+  function canChangeAttr (
+    object: Doc,
+    attr: AnyAttribute | undefined,
+    permissionsStore: PermissionsStore | undefined
+  ): boolean {
+    if (attr === undefined) return true
+    if (permissionsStore === undefined) return true
+    return canChangeAttribute(attr, object.space as Ref<TypedSpace>, permissionsStore)
+  }
 </script>
 
 {#if dp?.dividerBefore === true && !hideDivider}
@@ -66,7 +85,12 @@
       {compactMode}
       label={attributeModel.label}
       attribute={attributeModel.attribute}
-      {...joinProps(attributeModel, docObject, props, $restrictionStore.readonly)}
+      {...joinProps(
+        attributeModel,
+        docObject,
+        props,
+        $restrictionStore.readonly || !canChangeAttr(docObject, attributeModel.attribute, $permissionsStore)
+      )}
       on:resize={translateSize}
     />
   </FixedColumn>
@@ -79,7 +103,12 @@
     label={attributeModel.label}
     {compactMode}
     attribute={attributeModel.attribute}
-    {...joinProps(attributeModel, docObject, props, $restrictionStore.readonly)}
+    {...joinProps(
+      attributeModel,
+      docObject,
+      props,
+      $restrictionStore.readonly || !canChangeAttr(docObject, attributeModel.attribute, $permissionsStore)
+    )}
     on:resize={translateSize}
   />
 {/if}
