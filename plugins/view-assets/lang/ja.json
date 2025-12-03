@@ -146,7 +146,7 @@
     "CopyLink": "リンクをコピー",
     "ValueIsSet": "値が設定されています",
     "RoleLabel": "役割: {role}",
-    "ForbidAttributeChanges": "属性の変更を禁止",
-    "AllowAttributeChanges": "属性の変更を許可"
+    "ForbidAttributeChanges": "属性の変更を禁止: ",
+    "AllowAttributeChanges": "属性の変更を許可: "
   }
 }
