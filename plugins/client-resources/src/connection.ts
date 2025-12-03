@@ -304,7 +304,7 @@ class Connection implements ClientConnection {
     }
 
     if (resp.error !== undefined) {
-      if (resp.error?.code === UNAUTHORIZED.code || resp.terminate === true) {
+      if (resp.terminate === true) {
         if (
           resp.error.code !== platform.status.WorkspaceArchived &&
           resp.error.code !== platform.status.WorkspaceNotFound
@@ -313,15 +313,7 @@ class Connection implements ClientConnection {
         }
         this.closed = true
         this.websocket?.close()
-        if (resp.error?.code === UNAUTHORIZED.code) {
-          this.opt?.onUnauthorized?.()
-        }
-        if (resp.error?.code === platform.status.WorkspaceArchived) {
-          this.opt?.onArchived?.()
-        }
-        if (resp.error?.code === platform.status.WorkspaceMigration) {
-          this.opt?.onMigration?.()
-        }
+        this.opt?.onError?.(resp.error.code)
       }
 
       if (resp.id !== undefined) {

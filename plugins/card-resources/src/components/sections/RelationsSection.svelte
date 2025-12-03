@@ -22,7 +22,7 @@
   export let hidden: boolean = false
 </script>
 
-{#if hidden}
+{#if !hidden}
   <div class="section-relations">
     <RelationsEditor object={doc} {readonly} on:loaded emptyKind="placeholder" />
   </div>

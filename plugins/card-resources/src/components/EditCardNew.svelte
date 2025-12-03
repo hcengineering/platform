@@ -261,6 +261,12 @@
     </svelte:fragment>
 
     <svelte:fragment slot="extra">
+      <ComponentExtensions
+        extension={card.extensions.EditCardHeaderExtension}
+        props={{
+          card: doc
+        }}
+      />
       <TagsEditor {doc} {dropdownTags} id={'cardHeader-tags'} />
       <slot name="extra" />
     </svelte:fragment>

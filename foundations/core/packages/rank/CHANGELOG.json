@@ -1,0 +1,63 @@
+{
+  "name": "@hcengineering/rank",
+  "entries": [
+    {
+      "version": "0.7.17",
+      "tag": "@hcengineering/rank_v0.7.17",
+      "date": "Mon, 27 Oct 2025 13:27:12 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.17` to `0.7.18`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.5",
+      "tag": "@hcengineering/rank_v0.7.5",
+      "date": "Tue, 14 Oct 2025 04:58:17 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.6` to `0.7.7`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.4",
+      "tag": "@hcengineering/rank_v0.7.4",
+      "date": "Sat, 11 Oct 2025 18:20:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update to latest platform rig"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.5` to `0.7.6`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.3",
+      "tag": "@hcengineering/rank_v0.7.3",
+      "date": "Wed, 08 Oct 2025 03:40:53 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.3` to `0.7.4`"
+          }
+        ]
+      }
+    }
+  ]
+}

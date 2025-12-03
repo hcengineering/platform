@@ -10,8 +10,6 @@
     "Categories": "Kategorie",
     "Delete": "Smazat",
     "ChangePassword": "Změnit heslo",
-    "CurrentPassword": "Aktuální heslo",
-    "NewPassword": "Nové heslo",
     "Disconnect": "Odpojit",
     "DisconnectAll": "Odpojit všechny",
     "Saving": "Ukládání...",
@@ -19,9 +17,6 @@
     "Add": "Přidat",
     "AddNew": "Přidat {type}",
     "Value": "Hodnota",
-    "EnterCurrentPassword": "Zadejte aktuální heslo",
-    "EnterNewPassword": "Zadejte nové heslo",
-    "RepeatNewPassword": "Zopakujte nové heslo",
     "Signout": "Odhlásit se",
     "Settings": "Nastavení",
     "SelectWorkspace": "Vyberte pracovní prostor",
@@ -205,6 +200,8 @@
     "ApiAccess": "Přístup k API",
     "ApiToken": "API token",
     "GenerateApiToken": "Vygenerovat API token",
-    "IdentifierExists": "Identifikátor již existuje"
+    "IdentifierExists": "Identifikátor již existuje",
+    "PasswordAgingRule": "Pravidlo stárnutí hesla",
+    "PasswordAgingRuleDescription": "Počet dní, po kterých budou uživatelé muset změnit své heslo."
   }
 }

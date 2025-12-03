@@ -20,6 +20,7 @@
     "Description": "Descrição",
     "Major": "Principal",
     "Minor": "Secundária",
+    "Patch": "Correção",
     "Codename": "Codinome",
     "ProductVersionStateActive": "Ativo",
     "ProductVersionStateReleased": "Publicado",

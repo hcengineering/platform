@@ -73,6 +73,17 @@
   const remToPx = (rem: number): number => rem * fs
   const pxToRem = (px: number): number => px / fs
 
+  const disableUserSelect = (): void => {
+    document.body.style.userSelect = 'none'
+    document.body.style.webkitUserSelect = 'none'
+    document.body.style.pointerEvents = 'none'
+  }
+  const enableUserSelect = (): void => {
+    document.body.style.userSelect = ''
+    document.body.style.webkitUserSelect = ''
+    document.body.style.pointerEvents = ''
+  }
+
   const fetchSeparators = (): void => {
     const res = getSeparators(name, float)
     if (res !== null && !Array.isArray(res)) panel = res
@@ -313,29 +324,32 @@
 
   function floatMouseMove (event: PointerEvent): void {
     if (!isSeparate || parentSize === null || parentElement === null) return
-    const coord: number = Math.round(direction === 'horizontal' ? event.x - offset : event.y - offset)
-    const parentCoord: number = coord - parentSize.start
+    const coord: number = Math.round(direction === 'horizontal' ? event.clientX - offset : event.clientY - offset)
+    let parentCoord: number = coord - parentSize.start
     const min = remToPx(panel.minSize === 'auto' ? 10 : panel.minSize)
     const max = remToPx(panel.maxSize === 'auto' ? 30 : panel.maxSize)
+    // Clamp parentCoord to valid range to prevent panel from going off-screen
+    if (parentCoord < 0) parentCoord = 0
+    if (parentCoord > parentSize.size - separatorSize) parentCoord = parentSize.size - separatorSize
     const newCoord =
       side === 'start'
-        ? parentSize.size - parentCoord < min - separatorSize
+        ? parentSize.size - parentCoord < min
           ? min
-          : parentSize.size - parentCoord > max - separatorSize
+          : parentSize.size - parentCoord > max
             ? max
             : parentSize.size - parentCoord
-        : parentCoord < min - separatorSize
+        : parentCoord < min
           ? min
-          : parentCoord > max - separatorSize
+          : parentCoord > max
             ? max
-            : parentCoord - separatorSize
+            : parentCoord
     panel.size = pxToRem(newCoord)
     setSize(parentElement, newCoord)
   }
 
   function normalMouseMove (event: PointerEvent): void {
     if (!isSeparate || separatorMap === undefined || parentSize === null || separatorsSizes === null) return
-    const coord: number = Math.round(direction === 'horizontal' ? event.x - offset : event.y - offset)
+    const coord: number = Math.round(direction === 'horizontal' ? event.clientX - offset : event.clientY - offset)
     let parentCoord: number = coord - parentSize.start
     let prevCoord: number = separatorMap
       .filter((f) => f.begin)
@@ -411,7 +425,6 @@
           if (needAdd > 0) needAdd = resizeContainer(box.id, box.size, box.maxSize, needAdd, true)
         })
       }
-      separatorMap = separatorMap
     }
     applyStyles()
     if ($panelstore.panel?.refit !== undefined) $panelstore.panel.refit()
@@ -419,6 +432,7 @@
 
   function pointerUp (): void {
     finalSeparation()
+    enableUserSelect()
     document.removeEventListener('pointermove', pointerMove)
     document.removeEventListener('pointerup', pointerUp)
   }
@@ -457,6 +471,8 @@
 
   function pointerDown (event: PointerEvent): void {
     if (checkFullWidth()) return
+    event.preventDefault()
+    disableUserSelect()
     prepareSeparation(event)
     document.addEventListener('pointermove', pointerMove)
     document.addEventListener('pointerup', pointerUp)
@@ -470,7 +486,6 @@
       checkSibling()
       return
     }
-    offset = Math.round(direction === 'horizontal' ? event.offsetX : event.offsetY)
     const p = parentElement.getBoundingClientRect()
     parentSize =
       direction === 'horizontal'
@@ -480,7 +495,20 @@
       calculateSeparators()
       generateMap()
       applyStyles(true)
-    } else if (sState === SeparatorState.FLOAT) preparePanel()
+      // Calculate offset based on separator's actual position after generateMap
+      // prevCoord is the sum of all elements before separator + separators before
+      const prevCoord: number =
+        separatorMap
+          .filter((f) => f.begin)
+          .map((m) => m.size)
+          .reduce((prev, a) => prev + a, 0) + separatorsWide.before
+      const mousePos = direction === 'horizontal' ? event.clientX : event.clientY
+      // offset = mouse position relative to where separator should be
+      offset = mousePos - parentSize.start - prevCoord
+    } else if (sState === SeparatorState.FLOAT) {
+      offset = Math.round(direction === 'horizontal' ? event.offsetX : event.offsetY)
+      preparePanel()
+    }
     document.body.style.cursor = direction === 'horizontal' ? 'col-resize' : 'row-resize'
   }
 
@@ -658,6 +686,7 @@
   .antiSeparator {
     position: relative;
     flex-shrink: 0;
+    touch-action: none;
 
     &::after,
     &::before {

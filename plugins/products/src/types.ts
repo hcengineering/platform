@@ -37,6 +37,7 @@ export interface Product extends ExternalSpace, IconProps {
 export interface ProductVersion extends Project<Product> {
   major: number
   minor: number
+  patch: number
   codename?: string
   description: Markup
   state: ProductVersionState

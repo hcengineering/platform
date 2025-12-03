@@ -933,15 +933,15 @@ export function devTool (
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .option('--full', 'Full recheck', false)
     .option(
-      '-ct, --contentTypes <contentTypes>',
+      '--ct, --contentTypes <contentTypes>',
       'A list of ; separated content types for blobs to skip download if size >= limit',
       ''
     )
-    .option('-bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 5mb)', '5')
+    .option('--bl, --blobLimit <blobLimit>', 'A blob size limit in megabytes (default 5mb)', '5')
     .option('-f, --force', 'Force backup', false)
     .option('-t, --timeout <timeout>', 'Connect timeout in seconds', '30')
     .option('-k, --keepSnapshots <keepSnapshots>', 'Keep snapshots for days', '14')
-    .option('-fv, --fullVerify', 'Full verification', false)
+    .option('--fv, --fullVerify', 'Full verification', false)
     .action(
       async (
         dirName: string,
@@ -1035,7 +1035,7 @@ export function devTool (
     .description('Compact a given backup, will create one snapshot clean unused resources')
     .option('-f, --force', 'Force compact.', false)
     .option(
-      '-ct, --contentTypes <contentTypes>',
+      '--ct, --contentTypes <contentTypes>',
       'A list of ; separated content types for blobs to exclude from backup',
       'video/;application/octet-stream;audio/;image/'
     )
@@ -1312,7 +1312,7 @@ export function devTool (
     .description('Compact a given backup to just one snapshot')
     .option('-f, --force', 'Force compact.', false)
     .option(
-      '-ct, --contentTypes <contentTypes>',
+      '--ct, --contentTypes <contentTypes>',
       'A list of ; separated content types for blobs to exclude from backup',
       'video/;application/octet-stream;audio/;image/'
     )
@@ -2666,7 +2666,7 @@ export function devTool (
   program
     .command('queue-init-topics')
     .description('create required kafka topics')
-    .option('-tx <tx>', 'Number of TX partitions', '5')
+    .option('--tx <tx>', 'Number of TX partitions', '5')
     .action(async (cmd: { tx: string }) => {
       const queue = getPlatformQueue('tool')
       await queue.createTopics(parseInt(cmd.tx ?? '1'))

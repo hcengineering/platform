@@ -13,16 +13,19 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import plugin from '../plugin'
   import { Execution, ProcessToDo } from '@hcengineering/process'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import { Component } from '@hcengineering/ui'
+  import { Button, Component } from '@hcengineering/ui'
   import time from '@hcengineering/time'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   export let value: Execution
 
   let todos: ProcessToDo[] = []
+
+  const client = getClient()
 
   const emp = getCurrentEmployee()
 
@@ -38,8 +41,14 @@
       todos = res
     }
   )
+
+  async function checkTodo (todo: ProcessToDo) {
+    await client.update(todo, {
+      doneOn: new Date().getTime()
+    })
+  }
 </script>
 
 {#each todos as todo (todo._id)}
-  <Component is={time.component.ToDoPresenter} props={{ value: todo, withouthWorkItem: true, showCheck: true }} />
+  <Button label={getEmbeddedLabel(todo.title)} on:click={() => checkTodo(todo)} />
 {/each}

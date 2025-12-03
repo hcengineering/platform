@@ -37,6 +37,7 @@
     <SquareSpinner {size} />
     <slot />
   </div>
+  <slot name="actions" />
 </div>
 
 <style lang="scss">
@@ -44,6 +45,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: 0.5rem;
+    flex-direction: column;
 
     &.fullSize {
       width: 100%;

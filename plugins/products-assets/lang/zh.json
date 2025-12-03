@@ -20,6 +20,7 @@
     "Description": "描述",
     "Major": "主要",
     "Minor": "次要",
+    "Patch": "补丁",
     "Codename": "代码名",
     "ProductVersionStateActive": "活跃",
     "ProductVersionStateReleased": "已发布",

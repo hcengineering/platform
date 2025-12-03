@@ -47,7 +47,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0',
+      version: 'v1.0.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -63,7 +63,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.IN_APPROVAL,
-        version: 'v1.0'
+        version: 'v1.0.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
     })
@@ -80,7 +80,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
       await documentContentPageSecond.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v1.0'
+        version: 'v1.0.0'
       })
       await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
 
@@ -92,7 +92,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v1.0'
+        version: 'v1.0.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
 
@@ -104,98 +104,98 @@ test.describe('ISO 13485, 4.2.4 Control of documents, ensure that the current re
       await documentHistoryPage.checkHistoryEventExist('New document creation')
       await attachScreenshot('TESTS-325_check_history_tab.png', page)
     })
-    await test.step('6. Send for Approval v1.1', async () => {
+    await test.step('6. Send for Approval v1.1.0', async () => {
       await documentContentPage.sendForApproval(
         'Minor',
-        'v1.1',
-        'Reason 1.1',
-        'impact 1.1',
-        'v1.0',
-        'v1.1',
+        'v1.1.0',
+        'Reason 1.1.0',
+        'impact 1.1.0',
+        'v1.0.0',
+        'v1.1.0',
         userSecondPage,
         completeDocument,
         documentDetails
       )
     })
 
-    await test.step('7. Send for Approval minor v1.2', async () => {
+    await test.step('7. Send for Approval minor v1.2.0', async () => {
       await documentContentPage.sendForApproval(
         'Minor',
-        'v1.2',
-        'Reason 1.2',
-        'impact 1.2',
-        'v1.1',
-        'v1.2',
+        'v1.2.0',
+        'Reason 1.2.0',
+        'impact 1.2.0',
+        'v1.1.0',
+        'v1.2.0',
         userSecondPage,
         completeDocument,
         documentDetails
       )
     })
 
-    await test.step('8. Send for Approval major v2.0', async () => {
+    await test.step('8. Send for Approval major v2.0.0', async () => {
       await documentContentPage.sendForApproval(
         'Major',
-        'v2.0',
-        'Reason 2.0',
-        'impact 2.0',
-        'v1.2',
-        'v2.0',
+        'v2.0.0',
+        'Reason 2.0.0',
+        'impact 2.0.0',
+        'v1.2.0',
+        'v2.0.0',
         userSecondPage,
         completeDocument,
         documentDetails
       )
     })
 
-    await test.step('9. Send for Approval major v3.0', async () => {
+    await test.step('9. Send for Approval major v3.0.0', async () => {
       await documentContentPage.sendForApproval(
         'Major',
-        'v3.0',
-        'Reason 3.0',
-        'impact 3.0',
-        'v2.0',
-        'v3.0',
+        'v3.0.0',
+        'Reason 3.0.0',
+        'impact 3.0.0',
+        'v2.0.0',
+        'v3.0.0',
         userSecondPage,
         completeDocument,
         documentDetails
       )
     })
 
-    await test.step('10. Send for Approval minor v3.1', async () => {
+    await test.step('10. Send for Approval minor v3.1.0', async () => {
       await documentContentPage.sendForApproval(
         'Minor',
-        'v3.1',
-        'Reason 3.1',
-        'impact 3.1',
-        'v3.0',
-        'v3.1',
+        'v3.1.0',
+        'Reason 3.1.0',
+        'impact 3.1.0',
+        'v3.0.0',
+        'v3.1.0',
         userSecondPage,
         completeDocument,
         documentDetails
       )
     })
 
-    await test.step('11. Send for Approval minor v3.2', async () => {
+    await test.step('11. Send for Approval minor v3.2.0', async () => {
       await documentContentPage.sendForApproval(
         'Minor',
-        'v3.2',
-        'Reason 3.2',
-        'impact 3.2',
-        'v3.1',
-        'v3.2',
+        'v3.2.0',
+        'Reason 3.2.0',
+        'impact 3.2.0',
+        'v3.1.0',
+        'v3.2.0',
         userSecondPage,
         completeDocument,
         documentDetails
       )
     })
 
-    await test.step('12. Send for Approval minor v3.3', async () => {
+    await test.step('12. Send for Approval minor v3.3.0', async () => {
       await documentContentPage.sendForApproval(
         'Minor',
-        'v3.3',
-        'Reason 3.3',
-        'impact 3.3',
-        'v3.2',
-        'v3.3',
+        'v3.3.0',
+        'Reason 3.3.0',
+        'impact 3.3.0',
+        'v3.2.0',
+        'v3.3.0',
         userSecondPage,
         completeDocument,
         documentDetails

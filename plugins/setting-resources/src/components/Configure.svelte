@@ -14,7 +14,14 @@
 -->
 <script lang="ts">
   import { PluginConfiguration, systemAccountUuid } from '@hcengineering/core'
-  import { createQuery, getClient, pluginConfigurationStore, hasResource } from '@hcengineering/presentation'
+  import {
+    createQuery,
+    getClient,
+    pluginConfigurationStore,
+    hasResource,
+    isDisabled,
+    isAdminUser
+  } from '@hcengineering/presentation'
   import ratingPlugin, { getRaiting, type PersonRating } from '@hcengineering/rating'
   import { Breadcrumb, Button, Header, Icon, IconInfo, Label, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
@@ -52,7 +59,7 @@
     <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
       <div class="flex-row-center flex-wrap gap-around-4">
         {#each $pluginConfigurationStore.list as config}
-          {#if config.hidden !== true && config.system !== true}
+          {#if config.hidden !== true && config.system !== true && !isDisabled(config.pluginId)}
             {@const pluginRating = getRaiting(totalVisible, sysRating, [config])}
             <div class="cardBox flex-col clear-mins" class:enabled={config.enabled ?? true}>
               <div class="flex-row-center">

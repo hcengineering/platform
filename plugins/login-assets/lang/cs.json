@@ -8,6 +8,13 @@
   "string": {
     "LogIn": "Přihlásit se",
     "SignUp": "Zaregistrovat se",
+    "ChangePassword": "Změnit heslo",
+    "CurrentPassword": "Aktuální heslo",
+    "NewPassword": "Nové heslo",
+    "EnterCurrentPassword": "Zadejte aktuální heslo",
+    "EnterNewPassword": "Zadejte nové heslo",
+    "RepeatNewPassword": "Zopakujte nové heslo",
+    "PasswordExpiredDesc": "Vaše heslo vypršelo. Chcete-li pokračovat, nastavte nové heslo.",
     "CreateWorkspace": "Vytvořit pracovní prostor",
     "HaveWorkspace": "Již máte pracovní prostor?",
     "LastName": "Příjmení",

@@ -1,0 +1,194 @@
+{
+  "name": "@hcengineering/elastic",
+  "entries": [
+    {
+      "version": "0.7.17",
+      "tag": "@hcengineering/elastic_v0.7.17",
+      "date": "Wed, 26 Nov 2025 16:04:43 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Bump"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `^0.7.17` to `0.7.18`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.16",
+      "tag": "@hcengineering/elastic_v0.7.16",
+      "date": "Thu, 06 Nov 2025 10:21:28 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "bump core"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `^0.7.16` to `0.7.17`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.15",
+      "tag": "@hcengineering/elastic_v0.7.15",
+      "date": "Mon, 27 Oct 2025 16:26:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Use updated deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `^0.7.14` to `0.7.15`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.8",
+      "tag": "@hcengineering/elastic_v0.7.8",
+      "date": "Tue, 21 Oct 2025 19:29:19 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "bump core"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `0.7.7` to `0.7.8`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.7",
+      "tag": "@hcengineering/elastic_v0.7.7",
+      "date": "Fri, 17 Oct 2025 05:15:22 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `0.7.6` to `0.7.7`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.6",
+      "tag": "@hcengineering/elastic_v0.7.6",
+      "date": "Wed, 15 Oct 2025 18:58:52 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `0.7.5` to `0.7.6`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.5",
+      "tag": "@hcengineering/elastic_v0.7.5",
+      "date": "Tue, 14 Oct 2025 10:31:32 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `0.7.4` to `0.7.5`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.4",
+      "tag": "@hcengineering/elastic_v0.7.4",
+      "date": "Tue, 14 Oct 2025 05:23:10 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `0.7.3` to `0.7.4`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.3",
+      "tag": "@hcengineering/elastic_v0.7.3",
+      "date": "Mon, 13 Oct 2025 12:15:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "update deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `0.7.2` to `0.7.3`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.2",
+      "tag": "@hcengineering/elastic_v0.7.2",
+      "date": "Sat, 11 Oct 2025 18:26:50 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Use latest platform-rig"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `0.7.1` to `0.7.2`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.1",
+      "tag": "@hcengineering/elastic_v0.7.1",
+      "date": "Fri, 10 Oct 2025 14:32:03 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "New deps"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/server-core\" from `0.7.0` to `0.7.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.7.0",
+      "tag": "@hcengineering/elastic_v0.7.0",
+      "date": "Thu, 09 Oct 2025 16:41:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial"
+          }
+        ]
+      }
+    }
+  ]
+}

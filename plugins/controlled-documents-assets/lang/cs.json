@@ -38,7 +38,7 @@
     "EditorPlaceholder": "Začněte psát...",
     "Version": "Verze",
     "TemplateVersion": "Verze šablony",
-    "VersionValue": "v{major}.{minor}",
+    "VersionValue": "v{major}.{minor}.{patch}",
     "SearchDocument": "Vyhledat dokument...",
     "CreateEnVersion": "Vytvořit verzi pro revizi",
     "Approvers": "Schvalovatelé",

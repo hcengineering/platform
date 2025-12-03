@@ -177,7 +177,7 @@ export class TCardViewDefaults extends TMasterTag implements CardViewDefaults {
 
 @Model(card.class.Role, core.class.Role, DOMAIN_MODEL)
 export class TRole extends TBaseRole implements Role {
-  type!: Ref<MasterTag | Tag>
+  types!: Ref<MasterTag | Tag>[]
 }
 
 @Model(card.class.FavoriteCard, preference.class.Preference)
@@ -899,6 +899,10 @@ function defineTabs (builder: Builder): void {
         attachedTo: card.class.Card
       } as any
     }
+  })
+
+  builder.mixin(card.class.Role, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: setting.component.PermissionPresenter
   })
 
   builder.createDoc<Viewlet>(view.class.Viewlet, core.space.Model, {

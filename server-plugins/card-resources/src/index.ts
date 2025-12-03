@@ -155,6 +155,16 @@ async function OnMasterTagRemove (ctx: TxUpdateDoc<MasterTag>[], control: Trigge
   for (const des of desc) {
     res.push(...(await removeTagRelations(control, des)))
   }
+  const spaces = await control.findAll(control.ctx, card.class.CardSpace, {
+    types: updateTx.objectId
+  })
+  for (const space of spaces) {
+    res.push(
+      control.txFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+        types: space.types.filter((t) => t !== updateTx.objectId)
+      })
+    )
+  }
   for (const des of desc) {
     if (des === updateTx.objectId) continue
     const _class = control.hierarchy.findClass(des)

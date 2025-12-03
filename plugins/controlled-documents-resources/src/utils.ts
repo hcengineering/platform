@@ -156,7 +156,8 @@ export async function getDocumentMetaLinkFragment (document: Doc): Promise<Locat
     {
       sort: {
         major: SortingOrder.Descending,
-        minor: SortingOrder.Descending
+        minor: SortingOrder.Descending,
+        patch: SortingOrder.Descending
       }
     }
   )
@@ -879,11 +880,15 @@ export async function projectDocumentReferenceObjectProvider (
 }
 
 export function documentCompareFn (doc1: Document, doc2: Document): number {
-  return doc1.major - doc2.major !== 0 ? doc1.major - doc2.major : doc1.minor - doc2.minor
+  return doc1.major - doc2.major !== 0
+    ? doc1.major - doc2.major
+    : doc1.minor - doc2.minor !== 0
+      ? doc1.minor - doc2.minor
+      : doc1.patch - doc2.patch
 }
 
 export function getDocumentVersionString (doc: Document): string {
-  return `v${doc.major}.${doc.minor}`
+  return `v${doc.major}.${doc.minor}.${doc.patch}`
 }
 
 export async function getControlledDocumentTitle (
