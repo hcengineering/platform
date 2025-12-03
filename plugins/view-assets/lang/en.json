@@ -151,7 +151,7 @@
     "CopyLink": "Copy link",
     "ValueIsSet": "Value is set",
     "RoleLabel": "Role: {role}",
-    "ForbidAttributeChanges": "Forbid attribute changes",
-    "AllowAttributeChanges": "Allow attribute changes"
+    "ForbidAttributeChanges": "Forbid changes: ",
+    "AllowAttributeChanges": "Allow changes: "
   }
 }
