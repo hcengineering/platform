@@ -75,7 +75,8 @@ commit_preprocessors = [
 ]
 # regex for parsing and grouping commits
 commit_parsers = [
-  # Skip merge commits and noise FIRST
+  # Skip merge c
+  ommits and noise FIRST
   { message = "^Merge branch", skip = true },
   { message = "^Merge remote-tracking branch", skip = true },
   { message = "^chore\\(release\\): prepare for", skip = true },
@@ -99,7 +100,7 @@ protect_breaking_commits = false
 # filter out the commits that are not matched by commit parsers
 filter_commits = false
 # regex for matching git tags
-# tag_pattern = "v[0-9].*"
+tag_pattern = "v[0-9].*"
 # regex for skipping tags
 # skip_tags = ""
 # regex for ignoring tags
