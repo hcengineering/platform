@@ -31,7 +31,7 @@
     "@types/jest": "^29.5.5",
     "@types/jwt-simple": "^0.5.36",
     "@types/node": "^22.18.1",
-    "@types/uuid": "^10.0.0",
+    "@types/uuid": "^8.3.1",
     "@types/ws": "^8.5.12",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -51,13 +51,12 @@
   "dependencies": {
     "@deepgram/sdk": "^4.11.2",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "@hcengineering/audio-dsp": "workspace:^0.7.0",
     "@livekit/agents": "^1.0.22",
     "@livekit/rtc-node": "^0.13.21",
     "dotenv": "^16.4.5",
     "jwt-simple": "^0.5.6",
-    "uuid": "^11.1.0",
+    "uuid": "^8.3.2",
     "ws": "^8.18.2",
-    "zod": "^4.1.13"
+    "zod": "^3.22.4"
   }
 }

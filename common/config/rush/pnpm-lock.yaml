@@ -35827,12 +35827,9 @@ importers:
       '@ffmpeg-installer/ffmpeg':
         specifier: ^1.1.0
         version: 1.1.0
-      '@hcengineering/audio-dsp':
-        specifier: workspace:^0.7.0
-        version: link:../../../packages/audio-dsp
       '@livekit/agents':
         specifier: ^1.0.22
-        version: 1.0.22(@livekit/rtc-node@0.13.21)(bufferutil@4.0.9)(utf-8-validate@6.0.5)(zod@4.1.13)
+        version: 1.0.22(@livekit/rtc-node@0.13.21)(bufferutil@4.0.9)(utf-8-validate@6.0.5)(zod@3.25.76)
       '@livekit/rtc-node':
         specifier: ^0.13.21
         version: 0.13.21
@@ -35843,14 +35840,14 @@ importers:
         specifier: ^0.5.6
         version: 0.5.6
       uuid:
-        specifier: ^11.1.0
-        version: 11.1.0
+        specifier: ^8.3.2
+        version: 8.3.2
       ws:
         specifier: ^8.18.2
         version: 8.18.3(bufferutil@4.0.9)(utf-8-validate@6.0.5)
       zod:
-        specifier: ^4.1.13
-        version: 4.1.13
+        specifier: ^3.22.4
+        version: 3.25.76
     devDependencies:
       '@types/jest':
         specifier: ^29.5.5
@@ -35862,8 +35859,8 @@ importers:
         specifier: ^22.18.1
         version: 22.19.0
       '@types/uuid':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: ^8.3.1
+        version: 8.3.4
       '@types/ws':
         specifier: ^8.5.12
         version: 8.18.1
@@ -44109,9 +44106,6 @@ packages:
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
 
-  '@types/uuid@10.0.0':
-    resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
-
   '@types/uuid@8.3.4':
     resolution: {integrity: sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==}
 
@@ -51117,9 +51111,6 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.1.13:
-    resolution: {integrity: sha512-AvvthqfqrAhNH9dnfmrfKzX5upOdjUVJYFqNSlkmGf64gRaTzlPwz99IHYnVs28qYAybvAlBV+H7pn0saFY4Ig==}
-
 snapshots:
 
   7zip-bin@5.2.0: {}
@@ -53055,7 +53046,7 @@ snapshots:
 
   '@lifeomic/attempt@3.1.0': {}
 
-  '@livekit/agents@1.0.22(@livekit/rtc-node@0.13.21)(bufferutil@4.0.9)(utf-8-validate@6.0.5)(zod@4.1.13)':
+  '@livekit/agents@1.0.22(@livekit/rtc-node@0.13.21)(bufferutil@4.0.9)(utf-8-validate@6.0.5)(zod@3.25.76)':
     dependencies:
       '@ffmpeg-installer/ffmpeg': 1.1.0
       '@livekit/mutex': 1.1.1
@@ -53075,15 +53066,15 @@ snapshots:
       heap-js: 2.7.1
       json-schema: 0.4.0
       livekit-server-sdk: 2.14.2
-      openai: 6.9.1(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@4.1.13)
+      openai: 6.9.1(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.25.76)
       pidusage: 4.0.1
       pino: 8.21.0
       pino-pretty: 11.3.0
       sharp: 0.34.3
       uuid: 11.1.0
       ws: 8.18.3(bufferutil@4.0.9)(utf-8-validate@6.0.5)
-      zod: 4.1.13
-      zod-to-json-schema: 3.25.0(zod@4.1.13)
+      zod: 3.25.76
+      zod-to-json-schema: 3.25.0(zod@3.25.76)
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -55789,8 +55780,6 @@ snapshots:
   '@types/turndown@5.0.6': {}
 
   '@types/unist@3.0.3': {}
-
-  '@types/uuid@10.0.0': {}
 
   '@types/uuid@8.3.4': {}
 
@@ -60940,7 +60929,7 @@ snapshots:
   node-loader@2.0.0(webpack@5.102.1):
     dependencies:
       loader-utils: 2.0.4
-      webpack: 5.102.1
+      webpack: 5.102.1(@swc/core@1.15.1)(esbuild@0.25.12)(webpack-cli@5.1.4)
 
   node-localstorage@2.2.1:
     dependencies:
@@ -61108,10 +61097,10 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  openai@6.9.1(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@4.1.13):
+  openai@6.9.1(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.25.76):
     optionalDependencies:
       ws: 8.18.3(bufferutil@4.0.9)(utf-8-validate@6.0.5)
-      zod: 4.1.13
+      zod: 3.25.76
 
   opener@1.5.2: {}
 
@@ -63098,15 +63087,6 @@ snapshots:
     optionalDependencies:
       '@swc/core': 1.15.1
 
-  terser-webpack-plugin@5.3.14(webpack@5.102.1):
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.31
-      jest-worker: 27.5.1
-      schema-utils: 4.3.3
-      serialize-javascript: 6.0.2
-      terser: 5.44.1
-      webpack: 5.102.1
-
   terser@5.44.1:
     dependencies:
       '@jridgewell/source-map': 0.3.11
@@ -63775,38 +63755,6 @@ snapshots:
 
   webpack-sources@3.3.3: {}
 
-  webpack@5.102.1:
-    dependencies:
-      '@types/eslint-scope': 3.7.7
-      '@types/estree': 1.0.8
-      '@types/json-schema': 7.0.15
-      '@webassemblyjs/ast': 1.14.1
-      '@webassemblyjs/wasm-edit': 1.14.1
-      '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.15.0
-      acorn-import-phases: 1.0.4(acorn@8.15.0)
-      browserslist: 4.27.0
-      chrome-trace-event: 1.0.4
-      enhanced-resolve: 5.18.3
-      es-module-lexer: 1.7.0
-      eslint-scope: 5.1.1
-      events: 3.3.0
-      glob-to-regexp: 0.4.1
-      graceful-fs: 4.2.11
-      json-parse-even-better-errors: 2.3.1
-      loader-runner: 4.3.1
-      mime-types: 2.1.35
-      neo-async: 2.6.2
-      schema-utils: 4.3.3
-      tapable: 2.3.0
-      terser-webpack-plugin: 5.3.14(webpack@5.102.1)
-      watchpack: 2.4.4
-      webpack-sources: 3.3.3
-    transitivePeerDependencies:
-      - '@swc/core'
-      - esbuild
-      - uglify-js
-
   webpack@5.102.1(@swc/core@1.15.1):
     dependencies:
       '@types/eslint-scope': 3.7.7
@@ -64208,10 +64156,8 @@ snapshots:
       compress-commons: 6.0.2
       readable-stream: 4.7.0
 
-  zod-to-json-schema@3.25.0(zod@4.1.13):
+  zod-to-json-schema@3.25.0(zod@3.25.76):
     dependencies:
-      zod: 4.1.13
+      zod: 3.25.76
 
   zod@3.25.76: {}
-
-  zod@4.1.13: {}
