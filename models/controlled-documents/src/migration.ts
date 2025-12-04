@@ -151,7 +151,6 @@ async function createProductChangeControlTemplate (tx: TxOperations): Promise<vo
         seqNumber: 0,
         major: 1,
         minor: 0,
-        patch: 0,
         state: DocumentState.Effective,
         commentSequence: 0,
         content: null
@@ -528,19 +527,6 @@ async function migrateExternalApprovers (client: MigrationClient): Promise<void>
   )
 }
 
-async function migratePatchVersion (client: MigrationClient): Promise<void> {
-  await client.update(
-    DOMAIN_DOCUMENTS,
-    {
-      _class: documents.class.ControlledDocument,
-      patch: { $exists: false }
-    },
-    {
-      patch: 0
-    }
-  )
-}
-
 export const documentsOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
     await tryMigrate(mode, client, documentsId, [
@@ -582,10 +568,6 @@ export const documentsOperation: MigrateOperation = {
       {
         state: 'migrateExternalApprovers',
         func: migrateExternalApprovers
-      },
-      {
-        state: 'migratePatchVersion',
-        func: migratePatchVersion
       }
     ])
   },

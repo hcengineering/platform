@@ -151,7 +151,7 @@
     "CopyLink": "复制链接",
     "ValueIsSet": "值已设置",
     "RoleLabel": "角色：{role}",
-    "ForbidAttributeChanges": "禁止属性更改",
-    "AllowAttributeChanges": "允许属性更改"
+    "ForbidAttributeChanges": "禁止更改属性: ",
+    "AllowAttributeChanges": "允许更改属性: "
   }
 }

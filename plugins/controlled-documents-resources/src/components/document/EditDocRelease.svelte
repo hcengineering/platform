@@ -52,7 +52,6 @@
   } from '../../stores/editors/document/editor'
 
   enum Severity {
-    Patch = 'patch',
     Minor = 'minor',
     Major = 'major'
   }
@@ -155,10 +154,7 @@
     allVersionsDesc: ControlledDocument[]
   ): ControlledDocument | undefined {
     return allVersionsDesc.find(
-      (d) =>
-        (d.major === document.major && d.minor === document.minor && d.patch < document.patch) ||
-        (d.major === document.major && d.minor < document.minor) ||
-        d.major < document.major
+      (d) => (d.major === document.major && d.minor < document.minor) || d.major < document.major
     )
   }
 
@@ -170,17 +166,13 @@
     const prevDocument = getPreviousDocument(document, allVersionsDesc)
 
     if (prevDocument == null) {
-      return document.major > 0 ? Severity.Major : document.minor > 0 ? Severity.Minor : Severity.Patch
+      return document.major > 0 ? Severity.Major : Severity.Minor
     } else {
-      return prevDocument.major < document.major
-        ? Severity.Major
-        : prevDocument.minor < document.minor
-          ? Severity.Minor
-          : Severity.Patch
+      return prevDocument.major < document.major ? Severity.Major : Severity.Minor
     }
   }
 
-  function getVersionForSeverity (severity: Severity): { major: number, minor: number, patch: number } | undefined {
+  function getVersionForSeverity (severity: Severity): { major: number, minor: number } | undefined {
     if ($controlledDocument == null) {
       return
     }
@@ -190,20 +182,12 @@
     if (severity === Severity.Major) {
       return {
         major: (prevDocument?.major ?? 0) + 1,
-        minor: 0,
-        patch: 0
-      }
-    } else if (severity === Severity.Minor) {
-      return {
-        major: prevDocument?.major ?? 0,
-        minor: (prevDocument?.minor ?? 0) + 1,
-        patch: 0
+        minor: 0
       }
     } else {
       return {
         major: prevDocument?.major ?? 0,
-        minor: prevDocument?.minor ?? 0,
-        patch: (prevDocument?.patch ?? 0) + 1
+        minor: (prevDocument?.minor ?? 0) + 1
       }
     }
   }
@@ -234,18 +218,6 @@
         <Label label={documentsRes.string.ChangeSeverity} />
       </header>
       <div class="flex-col">
-        <RadioButton
-          group={severity}
-          id={Severity.Patch}
-          labelIntl={documentsRes.string.Patch}
-          labelGap="large"
-          value={Severity.Patch}
-          disabled={!canEdit}
-          action={() => {
-            void handleSeverityChanged(Severity.Patch)
-          }}
-          gap="large"
-        />
         <RadioButton
           group={severity}
           id={Severity.Minor}

@@ -156,8 +156,7 @@ export async function getDocumentMetaLinkFragment (document: Doc): Promise<Locat
     {
       sort: {
         major: SortingOrder.Descending,
-        minor: SortingOrder.Descending,
-        patch: SortingOrder.Descending
+        minor: SortingOrder.Descending
       }
     }
   )
@@ -723,22 +722,6 @@ export async function canDeleteDocumentCategory (doc?: Doc | Doc[]): Promise<boo
   return await checkPermission(client, documents.permission.DeleteDocumentCategory, (doc as DocumentCategory).space)
 }
 
-function getCurrentProjectId (space: Ref<DocumentSpace>): string {
-  return `${space}_###_project`
-}
-
-export function getCurrentProject (space: Ref<DocumentSpace>): Ref<Project> | undefined {
-  return localStorage.getItem(getCurrentProjectId(space)) as Ref<Project>
-}
-
-export function setCurrentProject (space: Ref<DocumentSpace>, project: Ref<Project> | undefined): void {
-  if (project !== undefined) {
-    localStorage.setItem(getCurrentProjectId(space), project)
-  } else {
-    localStorage.removeItem(getCurrentProjectId(space))
-  }
-}
-
 async function getLatestProject (space: Ref<DocumentSpace>, includeReadonly = false): Promise<Project | undefined> {
   const client = getClient()
 
@@ -880,15 +863,11 @@ export async function projectDocumentReferenceObjectProvider (
 }
 
 export function documentCompareFn (doc1: Document, doc2: Document): number {
-  return doc1.major - doc2.major !== 0
-    ? doc1.major - doc2.major
-    : doc1.minor - doc2.minor !== 0
-      ? doc1.minor - doc2.minor
-      : doc1.patch - doc2.patch
+  return doc1.major - doc2.major !== 0 ? doc1.major - doc2.major : doc1.minor - doc2.minor
 }
 
 export function getDocumentVersionString (doc: Document): string {
-  return `v${doc.major}.${doc.minor}.${doc.patch}`
+  return `v${doc.major}.${doc.minor}`
 }
 
 export async function getControlledDocumentTitle (

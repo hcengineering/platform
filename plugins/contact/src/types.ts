@@ -58,6 +58,7 @@ export interface PermissionsStore {
   ap: PersonsByPermission
   ms: MembersBySpace
   whitelist: Set<Ref<Space>>
+  restrictedSpaces: Set<Ref<Space>>
 }
 
 export type UserProfile = Card & { person: Ref<Person> }

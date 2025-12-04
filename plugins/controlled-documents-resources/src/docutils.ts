@@ -77,7 +77,7 @@ export async function createNewDraftForControlledDoc (
   client: TxOperations,
   document: ControlledDocument,
   space: Ref<DocumentSpace>,
-  version: { major: number, minor: number, patch: number },
+  version: { major: number, minor: number },
   project: Ref<Project>,
   newDraftDocId?: Ref<ControlledDocument>
 ): Promise<{ success: boolean, id: Ref<ControlledDocument> }> {
@@ -118,7 +118,6 @@ export async function createNewDraftForControlledDoc (
     seqNumber: document.seqNumber,
     major: version.major,
     minor: version.minor,
-    patch: version.patch,
     commentSequence: 0,
     abstract: document.abstract ?? '',
     reviewers: document.reviewers,
