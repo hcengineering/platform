@@ -34,7 +34,7 @@
   export let name: string
   export let contentType: string
   export let fullSize = false
-  export let developerMode = true
+  export let developerMode = false
 
   let time = 0
   let duration = Number.POSITIVE_INFINITY
