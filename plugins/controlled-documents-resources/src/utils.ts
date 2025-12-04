@@ -723,22 +723,6 @@ export async function canDeleteDocumentCategory (doc?: Doc | Doc[]): Promise<boo
   return await checkPermission(client, documents.permission.DeleteDocumentCategory, (doc as DocumentCategory).space)
 }
 
-function getCurrentProjectId (space: Ref<DocumentSpace>): string {
-  return `${space}_###_project`
-}
-
-export function getCurrentProject (space: Ref<DocumentSpace>): Ref<Project> | undefined {
-  return localStorage.getItem(getCurrentProjectId(space)) as Ref<Project>
-}
-
-export function setCurrentProject (space: Ref<DocumentSpace>, project: Ref<Project> | undefined): void {
-  if (project !== undefined) {
-    localStorage.setItem(getCurrentProjectId(space), project)
-  } else {
-    localStorage.removeItem(getCurrentProjectId(space))
-  }
-}
-
 async function getLatestProject (space: Ref<DocumentSpace>, includeReadonly = false): Promise<Project | undefined> {
   const client = getClient()
 
