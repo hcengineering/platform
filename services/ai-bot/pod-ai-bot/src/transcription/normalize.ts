@@ -1,15 +1,19 @@
 // Copyright © 2025 Andrey Sobolev (haiodo@gmail.com)
 
-import { parseWavHeader } from './vad'
+import {
+  WAV_HEADER_SIZE,
+  parseWavHeader,
+  extractWavSamples,
+  getAudioStats as getAudioStatsDsp,
+  normalizeAudio as normalizeAudioDsp,
+  createWavFileFromFloat
+} from '@hcengineering/audio-dsp'
 
 /** Target RMS level for normalization */
 const TARGET_RMS = 0.2
 
 /** Target peak level for normalization (prevents clipping) */
 const TARGET_PEAK = 0.95
-
-/** WAV header size in bytes */
-const WAV_HEADER_SIZE = 44
 
 /**
  * Normalizes audio samples to target RMS and peak levels while preserving dynamics.
@@ -34,67 +38,43 @@ export function normalizeAudio (wavBuffer: Buffer): Buffer {
     return wavBuffer
   }
 
-  const audioData = wavBuffer.subarray(WAV_HEADER_SIZE)
-  const sampleCount = Math.floor(audioData.length / 2)
+  // Extract samples using audio-dsp library (returns Int16Array)
+  const samples = extractWavSamples(wavBuffer)
 
-  if (sampleCount === 0) {
+  if (samples === undefined || samples.length === 0) {
     return wavBuffer
   }
 
-  // First pass: compute RMS and peak
-  let sumSquares = 0
-  let peak = 0
+  // Use audio-dsp library for normalization
+  // normalizeAudioDsp handles Int16Array internally and returns Float32Array
+  const normalizedSamples = normalizeAudioDsp(samples, {
+    targetRms: TARGET_RMS,
+    targetPeak: TARGET_PEAK
+  })
 
-  for (let i = 0; i < audioData.length - 1; i += 2) {
-    const sample = audioData.readInt16LE(i)
-    // Normalize to [-1.0, 1.0] range
-    const normalized = sample / 32768
-    sumSquares += normalized * normalized
-    const absSample = Math.abs(normalized)
-    if (absSample > peak) {
-      peak = absSample
+  // Check if normalization made any significant change
+  // Compare first few samples (normalizedSamples is already normalized 0-1 scale)
+  let unchanged = true
+  for (let i = 0; i < Math.min(100, samples.length); i++) {
+    const originalNormalized = samples[i] / 32768
+    if (Math.abs(originalNormalized - normalizedSamples[i]) > 0.001) {
+      unchanged = false
+      break
     }
   }
 
-  const rms = Math.sqrt(sumSquares / sampleCount)
-
-  // Return original if audio is completely silent
-  if (rms < Number.EPSILON || peak < Number.EPSILON) {
+  if (unchanged) {
     return wavBuffer
   }
 
-  // Calculate scaling factors
-  const rmsScaling = TARGET_RMS / rms
-  const peakScaling = TARGET_PEAK / peak
+  // Create new WAV file from normalized samples
+  const normalizedWav = createWavFileFromFloat(
+    normalizedSamples,
+    header.sampleRate,
+    header.channels
+  )
 
-  // Use minimum to preserve dynamics and prevent clipping
-  const scalingFactor = Math.min(rmsScaling, peakScaling)
-
-  // Skip normalization if scaling is very close to 1.0 (already normalized)
-  if (Math.abs(scalingFactor - 1.0) < 0.01) {
-    return wavBuffer
-  }
-
-  // Create new buffer with normalized audio
-  const result = Buffer.alloc(wavBuffer.length)
-
-  // Copy header unchanged
-  wavBuffer.copy(result, 0, 0, WAV_HEADER_SIZE)
-
-  // Second pass: apply normalization
-  for (let i = 0; i < audioData.length - 1; i += 2) {
-    const sample = audioData.readInt16LE(i)
-    // Apply scaling
-    let normalizedSample = sample * scalingFactor
-
-    // Clamp to valid 16-bit range
-    normalizedSample = Math.max(-32768, Math.min(32767, normalizedSample))
-
-    // Write back as 16-bit signed integer
-    result.writeInt16LE(Math.round(normalizedSample), WAV_HEADER_SIZE + i)
-  }
-
-  return result
+  return Buffer.from(normalizedWav)
 }
 
 /**
@@ -120,39 +100,28 @@ export function getAudioStats (wavBuffer: Buffer):
     return undefined
   }
 
-  const audioData = wavBuffer.subarray(WAV_HEADER_SIZE)
-  const sampleCount = Math.floor(audioData.length / 2)
+  // Extract samples using audio-dsp library (returns Int16Array)
+  const samples = extractWavSamples(wavBuffer)
 
-  if (sampleCount === 0) {
+  if (samples === undefined || samples.length === 0) {
     return undefined
   }
 
-  let sumSquares = 0
-  let peak = 0
+  // Use audio-dsp library for stats calculation
+  // getAudioStatsDsp handles Int16Array internally
+  const stats = getAudioStatsDsp(samples)
 
-  for (let i = 0; i < audioData.length - 1; i += 2) {
-    const sample = audioData.readInt16LE(i)
-    const normalized = sample / 32768
-    sumSquares += normalized * normalized
-    const absSample = Math.abs(normalized)
-    if (absSample > peak) {
-      peak = absSample
-    }
-  }
-
-  const rms = Math.sqrt(sumSquares / sampleCount)
-
-  if (rms < Number.EPSILON || peak < Number.EPSILON) {
+  if (stats.rms < Number.EPSILON || stats.peak < Number.EPSILON) {
     return { rms: 0, peak: 0, suggestedScaling: 1 }
   }
 
-  const rmsScaling = TARGET_RMS / rms
-  const peakScaling = TARGET_PEAK / peak
+  const rmsScaling = TARGET_RMS / stats.rms
+  const peakScaling = TARGET_PEAK / stats.peak
   const suggestedScaling = Math.min(rmsScaling, peakScaling)
 
   return {
-    rms,
-    peak,
+    rms: stats.rms,
+    peak: stats.peak,
     suggestedScaling
   }
 }

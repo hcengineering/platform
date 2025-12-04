@@ -1,6 +1,14 @@
 // Copyright © 2025 Andrey Sobolev (haiodo@gmail.com)
 
 import { MeasureContext } from '@hcengineering/core'
+import {
+  WAV_HEADER_SIZE,
+  parseWavHeader as parseWavHeaderDsp,
+  extractWavSamples,
+  calculateRms,
+  calculatePeak,
+  getWavDuration
+} from '@hcengineering/audio-dsp'
 import { VadResult } from './types'
 
 /** Default RMS threshold for voice activity detection */
@@ -9,11 +17,8 @@ const DEFAULT_VAD_RMS_THRESHOLD = 0.02
 /** Default speech ratio threshold */
 const DEFAULT_VAD_SPEECH_RATIO_THRESHOLD = 0.1
 
-/** Per-sample threshold for counting active samples */
-const SAMPLE_ACTIVITY_THRESHOLD = 0.015
-
-/** WAV header size in bytes */
-const WAV_HEADER_SIZE = 44
+/** Per-sample threshold for counting active samples (in Int16 scale) */
+const SAMPLE_ACTIVITY_THRESHOLD_INT16 = Math.round(0.015 * 32768)
 
 /**
  * Analyze WAV audio buffer for voice activity
@@ -40,12 +45,10 @@ export function analyzeAudio (
     }
   }
 
-  const audioData = wavBuffer.subarray(WAV_HEADER_SIZE)
+  // Extract samples using audio-dsp library (returns Int16Array)
+  const samples = extractWavSamples(wavBuffer)
 
-  // Analyze 16-bit PCM samples (2 bytes per sample)
-  const sampleCount = Math.floor(audioData.length / 2)
-
-  if (sampleCount === 0) {
+  if (samples === undefined || samples.length === 0) {
     return {
       hasSpeech: false,
       speechRatio: 0,
@@ -54,38 +57,24 @@ export function analyzeAudio (
     }
   }
 
-  let sumSquares = 0
-  let peakAmplitude = 0
   let activeSamples = 0
 
   ctx.withSync('analyzeAudio', {}, () => {
-    for (let i = 0; i < audioData.length - 1; i += 2) {
-      // Read 16-bit signed sample (little-endian)
-      const sample = audioData.readInt16LE(i)
-
-      // Normalize to 0-1 range (16-bit audio range is -32768 to 32767)
-      const normalized = Math.abs(sample) / 32768
-
-      // Accumulate for RMS calculation
-      sumSquares += normalized * normalized
-
-      // Track peak amplitude
-      if (normalized > peakAmplitude) {
-        peakAmplitude = normalized
-      }
-
-      // Count samples above activity threshold
-      if (normalized > SAMPLE_ACTIVITY_THRESHOLD) {
+    // Count active samples - work directly with Int16 values to avoid conversion
+    for (let i = 0; i < samples.length; i++) {
+      if (Math.abs(samples[i]) > SAMPLE_ACTIVITY_THRESHOLD_INT16) {
         activeSamples++
       }
     }
   })
 
-  // Calculate RMS amplitude
-  const rmsAmplitude = Math.sqrt(sumSquares / sampleCount)
+  // Use audio-dsp library for RMS and peak calculations
+  // These functions handle Int16Array internally, no conversion needed
+  const rmsAmplitude = calculateRms(samples)
+  const peakAmplitude = calculatePeak(samples)
 
   // Calculate speech ratio
-  const speechRatio = activeSamples / sampleCount
+  const speechRatio = activeSamples / samples.length
 
   // Determine if speech is present using multiple criteria
   const hasSpeech = rmsAmplitude > rmsThreshold || speechRatio > speechRatioThreshold
@@ -113,29 +102,18 @@ export function parseWavHeader (wavBuffer: Buffer):
   dataSize: number
 }
 | undefined {
-  if (wavBuffer.length < WAV_HEADER_SIZE) {
+  // Use audio-dsp library for WAV header parsing
+  const header = parseWavHeaderDsp(wavBuffer)
+
+  if (header === undefined) {
     return undefined
   }
-
-  // Validate RIFF header
-  const riff = wavBuffer.toString('ascii', 0, 4)
-  const wave = wavBuffer.toString('ascii', 8, 12)
-
-  if (riff !== 'RIFF' || wave !== 'WAVE') {
-    return undefined
-  }
-
-  // Read format chunk
-  const channels = wavBuffer.readUInt16LE(22)
-  const sampleRate = wavBuffer.readUInt32LE(24)
-  const bitsPerSample = wavBuffer.readUInt16LE(34)
-  const dataSize = wavBuffer.readUInt32LE(40)
 
   return {
-    sampleRate,
-    channels,
-    bitsPerSample,
-    dataSize
+    sampleRate: header.sampleRate,
+    channels: header.channels,
+    bitsPerSample: header.bitsPerSample,
+    dataSize: header.dataSize
   }
 }
 
@@ -146,18 +124,6 @@ export function parseWavHeader (wavBuffer: Buffer):
  * @returns Duration in seconds, or 0 if unable to parse
  */
 export function getAudioDuration (wavBuffer: Buffer): number {
-  const header = parseWavHeader(wavBuffer)
-
-  if (header === undefined) {
-    return 0
-  }
-
-  const bytesPerSample = header.bitsPerSample / 8
-  const bytesPerSecond = header.sampleRate * header.channels * bytesPerSample
-
-  if (bytesPerSecond === 0) {
-    return 0
-  }
-
-  return header.dataSize / bytesPerSecond
+  // Use audio-dsp library for duration calculation
+  return getWavDuration(wavBuffer)
 }

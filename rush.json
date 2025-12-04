@@ -607,6 +607,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/audio-dsp",
+      "projectFolder": "packages/audio-dsp",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/hls",
       "projectFolder": "packages/hls",
       "shouldPublish": true

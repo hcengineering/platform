@@ -15,6 +15,7 @@ echo ""
 
 curl -X POST \
   -H "Content-Type: multipart/form-data" \
+  -H "Authorization: Bearer key" \
   -F "file=@${AUDIO_FILE}" \
   -F "model=whisper-1" \
   -F "language=ru" \
