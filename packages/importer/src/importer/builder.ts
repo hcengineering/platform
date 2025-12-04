@@ -740,7 +740,6 @@ export class ImportWorkspaceBuilder {
     // Validate numbers are positive
     if (!this.validatePossitiveNumber(doc.major)) errors.push('invalid value for field "major"')
     if (!this.validatePossitiveNumber(doc.minor)) errors.push('invalid value for field "minor"')
-    if (!this.validatePossitiveNumber(doc.patch)) errors.push('invalid value for field "patch"')
 
     // Validate arrays
     errors.push(...this.validateArray(doc.reviewers, 'string', 'reviewers'))
@@ -823,7 +822,6 @@ export class ImportWorkspaceBuilder {
     // Validate numbers are positive
     if (!this.validatePossitiveNumber(template.major)) errors.push('invalid value for field "major"')
     if (!this.validatePossitiveNumber(template.minor)) errors.push('invalid value for field "minor"')
-    if (!this.validatePossitiveNumber(template.patch)) errors.push('invalid value for field "patch"')
 
     // Validate arrays
     errors.push(...this.validateArray(template.reviewers, 'string', 'reviewers'))

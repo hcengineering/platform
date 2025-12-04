@@ -70,7 +70,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       const documentDetails: DocumentDetails = {
         type: 'HR',
         category: 'Human Resources',
-        version: 'v1.0.0',
+        version: 'v1.0',
         status: DocumentStatus.DRAFT,
         owner: 'Dirak Kainin',
         author: 'Dirak Kainin'
@@ -78,7 +78,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents ensure that documents of ex
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.DRAFT,
-        version: 'v1.0.0'
+        version: 'v1.0'
       })
       await documentContentPage.clickLeaveFolder(folderName)
       await attachScreenshot('TESTS-347_manager_document_created.png', page)

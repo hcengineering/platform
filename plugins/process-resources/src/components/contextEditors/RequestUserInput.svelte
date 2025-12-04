@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, generateId, Ref } from '@hcengineering/core'
+  import core, { AnyAttribute, Class, Doc, generateId, Ref, RefTo } from '@hcengineering/core'
   import presentation, { Card, findAttributeEditor, getClient } from '@hcengineering/presentation'
   import { Process, Transition } from '@hcengineering/process'
   import { AnyComponent, Component, Label } from '@hcengineering/ui'
@@ -33,24 +33,26 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const model = client.getModel()
-  const attribute =
-    (hierarchy.findAttribute(_class, key) ?? key === '')
-      ? {
-          attributeOf: _class,
-          name: '',
-          type: {
-            label: core.string.Ref,
-            _class: core.class.RefTo,
-            to: _class
-          },
-          _id: generateId(),
-          space: core.space.Model,
-          modifiedOn: 0,
-          modifiedBy: core.account.System,
-          _class: core.class.Attribute,
-          label: core.string.Object
-        }
-      : undefined
+  const attribute = hierarchy.findAttribute(_class, key) ?? (key === '' ? mockAttribute(_class) : undefined)
+
+  function mockAttribute (_class: Ref<Class<Doc>>): AnyAttribute {
+    const type: RefTo<Doc> = {
+      label: core.string.Ref,
+      _class: core.class.RefTo,
+      to: _class
+    }
+    return {
+      attributeOf: _class,
+      name: '',
+      type,
+      _id: generateId(),
+      space: core.space.Model,
+      modifiedOn: 0,
+      modifiedBy: core.account.System,
+      _class: core.class.Attribute,
+      label: core.string.Object
+    }
+  }
 
   function save (): void {
     dispatch('close', { value })
@@ -100,6 +102,9 @@
   {#if transitionVal}
     <TransitionPresenter transition={transitionVal} />
   {/if}
+  {#if attribute}
+    <Label label={attribute.label} />:
+  {/if}
   {#if editor}
     <div class="w-full mt-2">
       <Component
@@ -112,6 +117,7 @@
           width: '100%',
           justify: 'left',
           type: attribute?.type,
+          showNavigate: false,
           value,
           onChange,
           focus

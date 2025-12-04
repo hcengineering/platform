@@ -27,14 +27,13 @@
   let todos: ProcessToDo[] = []
 
   const executionQuery = createQuery()
-  executionQuery.query(
+  $: executionQuery.query(
     process.class.Execution,
     {
       card: card._id,
       status: { $ne: ExecutionStatus.Cancelled }
     },
     (res) => {
-      console.log(res)
       docs = res
     }
   )

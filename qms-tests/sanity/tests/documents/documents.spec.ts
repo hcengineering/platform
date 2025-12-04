@@ -144,7 +144,7 @@ test.describe('QMS. Documents tests', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0.0',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -179,7 +179,7 @@ test.describe('QMS. Documents tests', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0.0',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -218,7 +218,7 @@ test.describe('QMS. Documents tests', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0.0',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -257,7 +257,7 @@ test.describe('QMS. Documents tests', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0.0',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -320,7 +320,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.DRAFT,
-        version: 'v1.0.0'
+        version: 'v1.0'
       })
       await attachScreenshot('TESTS-136_check_edit_document_flow.png', page)
     })
@@ -337,7 +337,7 @@ test.describe('QMS. Documents tests', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0.0',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -365,7 +365,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v1.0.0'
+        version: 'v1.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
 
@@ -388,7 +388,7 @@ test.describe('QMS. Documents tests', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0.0',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -436,7 +436,7 @@ test.describe('QMS. Documents tests', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0.0',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -505,7 +505,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.DRAFT,
-        version: 'v1.0.0'
+        version: 'v1.0'
       })
       await attachScreenshot('TESTS-139_check_document.png', page)
     })
@@ -522,7 +522,7 @@ test.describe('QMS. Documents tests', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0.0',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -567,7 +567,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.DRAFT,
-        version: 'v1.0.0'
+        version: 'v1.0'
       })
 
       await documentContentPage.replaceContent(updateContentFirst)
@@ -592,7 +592,7 @@ test.describe('QMS. Documents tests', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0.0',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -697,7 +697,7 @@ test.describe('QMS. Documents tests', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0.0',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -728,7 +728,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPageQara.checkDocument({
         ...documentDetails,
         owner: newDocumentOwner,
-        version: 'v1.0.0',
+        version: 'v1.0',
         status: DocumentStatus.EFFECTIVE
       })
       await attachScreenshot('TESTS-155_change_document_owner.png', page)
@@ -738,7 +738,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         owner: newDocumentOwner,
-        version: 'v1.0.0',
+        version: 'v1.0',
         status: DocumentStatus.EFFECTIVE
       })
       await expect(documentContentPage.buttonDraftNewVersion).toBeVisible({ visible: false })
@@ -757,7 +757,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPageSecond.checkDocument({
         ...documentDetails,
         owner: newDocumentOwner,
-        version: 'v1.0.0',
+        version: 'v1.0',
         status: DocumentStatus.EFFECTIVE
       })
       await attachScreenshot('TESTS-155_new_owner.png', page)
@@ -775,7 +775,7 @@ test.describe('QMS. Documents tests', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0.0',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -833,7 +833,7 @@ test.describe('QMS. Documents tests', () => {
     const documentDetails: DocumentDetails = {
       type: 'HR',
       category: 'Human Resources',
-      version: 'v1.0.0',
+      version: 'v1.0',
       status: DocumentStatus.DRAFT,
       owner: 'Appleseed John',
       author: 'Appleseed John'
@@ -921,7 +921,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.DRAFT,
-        version: 'v1.0.0'
+        version: 'v1.0'
       })
       await attachScreenshot('TESTS-206_check_document.png', page)
     })
@@ -955,7 +955,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.IN_APPROVAL,
-        version: 'v1.0.0'
+        version: 'v1.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
     })
@@ -972,7 +972,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPageSecond.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v1.0.0'
+        version: 'v1.0'
       })
       await documentContentPageSecond.checkCurrentRights(DocumentRights.VIEWING)
 
@@ -984,7 +984,7 @@ test.describe('QMS. Documents tests', () => {
       await documentContentPage.checkDocument({
         ...documentDetails,
         status: DocumentStatus.EFFECTIVE,
-        version: 'v1.0.0'
+        version: 'v1.0'
       })
       await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
 
@@ -1065,7 +1065,7 @@ test.describe('QMS. Documents tests', () => {
       id: 'HR-1',
       type: 'HR',
       category: 'N/A',
-      version: 'v0.0.2',
+      version: 'v0.0',
       status: DocumentStatus.IN_REVIEW,
       owner: 'Appleseed John',
       author: 'Appleseed John'

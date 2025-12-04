@@ -49,6 +49,7 @@
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import { openCardInSidebar } from '../utils'
   import { afterUpdate } from 'svelte'
+  import { canChangeDoc, permissionsStore } from '@hcengineering/contact-resources'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
@@ -152,6 +153,7 @@
   })
 
   $: _readonly = (readonly || doc?.readonly) ?? false
+  $: updatePermissionForbidden = doc && !canChangeDoc(doc?._class, doc?.space, $permissionsStore)
 </script>
 
 <FocusHandler {manager} />
@@ -179,7 +181,7 @@
     <svelte:fragment slot="title">
       <ParentNamesPresenter value={doc} maxWidth={'12rem'} compact={!expandedParents} />
       <div class="title flex-row-center">
-        {#if !_readonly}
+        {#if !_readonly && !updatePermissionForbidden}
           <EditBox
             focusIndex={1}
             bind:value={title}
@@ -267,7 +269,7 @@
           card: doc
         }}
       />
-      <TagsEditor {doc} {dropdownTags} id={'cardHeader-tags'} />
+      <TagsEditor {doc} {dropdownTags} readonly={_readonly} id={'cardHeader-tags'} />
       <slot name="extra" />
     </svelte:fragment>
 

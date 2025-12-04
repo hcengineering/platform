@@ -197,7 +197,6 @@ export interface ImportControlledDocumentTemplate extends ImportDoc {
   code?: string
   major: number
   minor: number
-  patch: number
   state: DocumentState
   category: Ref<DocumentCategory>
   author?: Ref<Employee>
@@ -221,7 +220,6 @@ export interface ImportControlledDocument extends ImportDoc {
   code?: string
   major: number
   minor: number
-  patch: number
   state: DocumentState
   category?: Ref<DocumentCategory>
   reviewers?: Ref<Employee>[]
@@ -996,7 +994,6 @@ export class WorkspaceImporter {
         title: template.title,
         major: template.major,
         minor: template.minor,
-        patch: template.patch,
         state: template.state,
         author: template.author,
         owner: template.owner,
@@ -1118,7 +1115,6 @@ export class WorkspaceImporter {
         title: document.title,
         major: document.major,
         minor: document.minor,
-        patch: document.patch,
         state: document.state,
         author: document.author,
         owner: document.owner,
