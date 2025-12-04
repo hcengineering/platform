@@ -13,13 +13,16 @@
 // limitations under the License.
 //
 
-import { cli, defineAgent, type JobContext, JobRequest, WorkerOptions } from '@livekit/agents'
-import { fileURLToPath } from 'node:url'
+// Load environment variables BEFORE any other imports that may use them
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import { cli, defineAgent, type JobContext, JobRequest, ServerOptions } from '@livekit/agents'
 import { RemoteParticipant, RemoteTrack, RemoteTrackPublication, RoomEvent, TrackKind } from '@livekit/rtc-node'
 
 import { Metadata, TranscriptionStatus, Stt } from './type.js'
 import config from './config.js'
 import { getStt } from './utils.js'
+import { generateToken, systemAccountUuid } from './token.js'
+import { fileURLToPath } from 'node:url'
 
 function parseMetadata (metadata: string): Metadata {
   try {
@@ -31,13 +34,13 @@ function parseMetadata (metadata: string): Metadata {
   return {}
 }
 
-async function requestIdentity (roomName: string): Promise<{ identity: string, name: string } | undefined> {
+async function requestIdentity (token: string, roomName: string): Promise<{ identity: string, name: string } | undefined> {
   try {
     const res = await fetch(`${config.PlatformUrl}/love/${roomName}/identity`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + config.PlatformToken
+        Authorization: 'Bearer ' + token
       }
     })
 
@@ -59,7 +62,9 @@ const requestFunc = async (req: JobRequest): Promise<void> => {
     return
   }
 
-  const identity = await requestIdentity(roomName)
+  const token = generateToken(systemAccountUuid, undefined, { service: 'love-agent', roomName })
+
+  const identity = await requestIdentity(token, roomName)
 
   if (identity?.identity == null) {
     console.error('No ai identity', { roomName })
@@ -96,7 +101,7 @@ export default defineAgent({
     const roomName = ctx.room.name
 
     if (roomName === undefined) {
-      console.error('Room name is undefined')
+      console.error('Room name is undefined', { room: ctx.room })
       ctx.shutdown()
       return
     }
@@ -104,12 +109,14 @@ export default defineAgent({
     const workspace = (roomName.split('_')[0] ?? '').trim()
 
     if (workspace === '') {
-      console.error('Workspace is not defined', roomName)
+      console.error('Workspace is not defined', { roomName })
       ctx.shutdown()
       return
     }
 
-    const stt = getStt(ctx.room, workspace)
+    const token = generateToken(systemAccountUuid, undefined, { service: 'love-agent' })
+
+    const stt = getStt(ctx.room, workspace, token)
 
     if (stt === undefined) {
       console.error('Transcription provider is not configured')
@@ -127,7 +134,7 @@ export default defineAgent({
       RoomEvent.TrackSubscribed,
       (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
         if (publication.kind === TrackKind.KIND_AUDIO) {
-          console.log('Subscribing to track', participant.name, publication.sid)
+          console.info('Subscribing to track', { participant: participant.name, sid: publication.sid, workspace })
           stt.subscribe(track, publication, participant)
         }
       }
@@ -137,7 +144,7 @@ export default defineAgent({
       RoomEvent.TrackUnsubscribed,
       (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
         if (publication.kind === TrackKind.KIND_AUDIO) {
-          console.log('Unsubscribing from track', participant.name, publication.sid)
+          console.info('Unsubscribing from track', { participant: participant.name, sid: publication.sid })
           stt.unsubscribe(track, publication, participant)
         }
       }
@@ -150,8 +157,18 @@ export default defineAgent({
 })
 
 export function runAgent (): void {
+  console.info('Starting love-agent v1')
+  console.info(`Platform URL: ${config.PlatformUrl}`)
+  console.info(`Live kit: ${config.LiveKitApiUrl}`)
+  console.info(`Debug mode: ${config.Debug}`)
+  if (config.Debug) {
+    console.info('Debug mode enabled - audio files will be kept after sending')
+  }
+  console.info(`File: ${fileURLToPath(import.meta.url)}`)
   cli.runApp(
-    new WorkerOptions({
+    new ServerOptions({
+      jobMemoryLimitMB: 512,
+      port: 8881,
       agent: fileURLToPath(import.meta.url),
       requestFunc
     })

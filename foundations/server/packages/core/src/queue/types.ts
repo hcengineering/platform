@@ -22,7 +22,10 @@ export enum QueueTopic {
   Process = 'process',
 
   // Queue for AI requests
-  AIQueue = 'ai-queue'
+  AIQueue = 'ai-queue',
+
+  // Queue for audio transcription tasks
+  TranscriptionQueue = 'transcription-queue'
 }
 
 export interface ConsumerHandle {

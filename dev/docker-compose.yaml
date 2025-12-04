@@ -303,6 +303,7 @@ services:
       - BRANDING_URL=http://huly.local:8087/branding.json
       - STREAM_URL=http://huly.local:1080/recording
       - PAYMENT_URL=http://huly.local:3040
+      - BILLING_URL=http://huly.local:4041
       - COMMUNICATION_API_ENABLED=false
       - BACKUP_URL=http://huly.local:4039/api/backup,
       - EXCLUDED_APPLICATIONS_FOR_ANONYMOUS=["chunter", "notification"]
@@ -312,6 +313,8 @@ services:
       - DATALAKE_URL=http://huly.local:4030
       # - HULYLAKE_URL=http://huly.local:8096
       - AI_URL=http://huly.local:4010
+      - LOVE_ENDPOINT=http://huly.local:8096
+      - LIVEKIT_WS=ws://huly.local:7880
     restart: unless-stopped
   transactor:
     image: haiodo/transactor
@@ -431,6 +434,25 @@ services:
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://huly.local:4900
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+  love:
+    image: haiodo/love
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    environment:
+      - PORT=8096
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - DB_URL=${DB_URL_PG}
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STORAGE_PROVIDER_NAME=minio
+      - LIVEKIT_HOST=ws://huly.local:7880
+      - LIVEKIT_API_KEY=devkey
+      - LIVEKIT_API_SECRET=secret
+      - BILLING_URL=http://huly.local:4041
+      - BILLING_POLL_INTERVAL=15
+    ports:
+      - 8096:8096
+    restart: unless-stopped
   aibot:
     image: haiodo/ai-bot
     ports:
@@ -449,11 +471,18 @@ services:
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://huly.local:4900
-  #      - LOVE_ENDPOINT=http://huly.local:8096
+      - LOVE_ENDPOINT=http://huly.local:8096
+      - BILLING_URL=http://huly.local:4041
       - OPENAI_API_KEY=token
       - OPENAI_SUMMARY_MODEL=openai/gpt-oss-20b
       - OPENAI_TRANSLATE_MODEL=openai/gpt-oss-20b
       - OPENAI_BASE_URL=http://huly.local:1234/v1/
+      - STT_PROVIDER=openai
+      # - STT_URL=${OPENAI_AUDIO_API_URL}
+      - STT_URL=http://huly.local:9007
+      # - STT_API_KEY=${OPENAI_AUDIO_API_KEY}
+      - STT_API_KEY=key
+      - STT_MODEL=
   analytics:
     image: haiodo/analytics-collector
     extra_hosts:
@@ -607,6 +636,7 @@ services:
   #      - QUEUE_CONFIG=${QUEUE_CONFIG}
   #      - QUEUE_REGION=
   #      - OPENAI_API_KEY=
+  #      - BILLING_URL=http://huly.local:4041
   #    restart: unless-stopped
   backup:
     image: haiodo/backup
@@ -699,6 +729,44 @@ services:
       - SPAN_STORAGE_TYPE=badger
       - BADGER_DIRECTORY_VALUE=/badger/data
       - BADGER_DIRECTORY_KEY=/badger/key
+    restart: unless-stopped
+  love-agent:
+    image: haiodo/love-agent
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      - love
+      - aibot
+    environment:
+      - SERVER_SECRET=secret
+      - PLATFORM_URL=http://huly.local:4010
+      - LIVEKIT_URL=ws://huly.local:7880
+      - LIVEKIT_API_KEY=devkey
+      - LIVEKIT_API_SECRET=secret
+      - STT_PROVIDER=stream
+    ports:
+      - 4012:4012
+    restart: unless-stopped
+  billing:
+    image: haiodo/billing
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      account:
+        condition: service_started
+      datalake:
+        condition: service_started
+    ports:
+      - 4041:4041
+    environment:
+      - PORT=4041
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - DB_URL=${DB_URL_PG}
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - USAGE_UPDATE_INTERVAL=3600
     restart: unless-stopped
 volumes:
   db:

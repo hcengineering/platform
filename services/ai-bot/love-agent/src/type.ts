@@ -26,7 +26,7 @@ export interface Metadata {
   language?: string
 }
 
-export type SttProvider = 'openai' | 'deepgram'
+export type SttProvider = 'stream'
 
 export interface Stt {
   stop: () => void

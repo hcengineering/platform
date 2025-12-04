@@ -11,6 +11,7 @@ rush docker:build -p 20 \
 --to @hcengineering/pod-analytics-collector \
 --to @hcengineering/rekoni-service \
 --to @hcengineering/pod-ai-bot \
+--to @hcengineering/love-agent \
 --to @hcengineering/import-tool \
 --to @hcengineering/pod-stats \
 --to @hcengineering/pod-fulltext \

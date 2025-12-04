@@ -607,6 +607,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/audio-dsp",
+      "projectFolder": "packages/audio-dsp",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/hls",
       "projectFolder": "packages/hls",
       "shouldPublish": true
@@ -2249,6 +2254,11 @@
     {
       "packageName": "@hcengineering/pod-ai-bot",
       "projectFolder": "services/ai-bot/pod-ai-bot",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/love-agent",
+      "projectFolder": "services/ai-bot/love-agent",
       "shouldPublish": false
     },
     {

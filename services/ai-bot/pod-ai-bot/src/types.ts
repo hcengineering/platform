@@ -25,3 +25,37 @@ export interface HistoryRecord {
   tokens: number
   timestamp: number
 }
+
+/**
+ * Transcription task stored in queue
+ */
+export interface TranscriptionTask {
+  /** Storage object name for gzipped WAV file */
+  blobId: string
+  /** Room name from LiveKit */
+  roomName: string
+  /** Participant identity */
+  participant: string
+  /** Start time in seconds from meeting start */
+  startTimeSec: number
+  /** End time in seconds from meeting start */
+  endTimeSec: number
+  /** Duration in seconds */
+  durationSec: number
+  /** Whether chunk contains speech */
+  hasSpeech: boolean
+  /** Ratio of speech to total duration (0-1) */
+  speechRatio: number
+  /** Peak amplitude (0-1 normalized) */
+  peakAmplitude: number
+  /** RMS amplitude (0-1 normalized) */
+  rmsAmplitude: number
+  /** Sample rate */
+  sampleRate: number
+  /** Number of channels */
+  channels: number
+  /** Bits per sample */
+  bitsPerSample: number
+  /** Placeholder message ID for pending transcription (created when speech starts) */
+  placeholderMessageId?: string
+}

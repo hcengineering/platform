@@ -48,10 +48,11 @@ import core, {
   Tx,
   TxCUD,
   TxOperations,
+  withContext,
   type Account,
   type WorkspaceIds
 } from '@hcengineering/core'
-import { Room } from '@hcengineering/love'
+import love, { MeetingMinutes, MeetingStatus, Room } from '@hcengineering/love'
 import fs from 'fs'
 import { Tiktoken } from 'js-tiktoken'
 import OpenAI from 'openai'
@@ -577,7 +578,13 @@ export class WorkspaceClient {
     await this.love.disconnect(request.roomId)
   }
 
-  async processLoveTranscript (text: string, participant: Ref<Person>, room: Ref<Room>): Promise<void> {
+  @withContext('processLoveTranscript')
+  async processLoveTranscript (
+    ctx: MeasureContext,
+    text: string,
+    participant: Ref<Person>,
+    room: Ref<Room>
+  ): Promise<void> {
     // Just wait initialization
     await this.opClient
 
@@ -587,6 +594,47 @@ export class WorkspaceClient {
     }
 
     await this.love.processTranscript(text, participant, room)
+  }
+
+  /**
+   * Create a placeholder message for pending transcription
+   */
+  @withContext('createTranscriptionPlaceholder')
+  async createTranscriptionPlaceholder (
+    ctx: MeasureContext,
+    participant: Ref<Person>,
+    room: Ref<Room>,
+    startTimeSec: number,
+    endTimeSec: number,
+    blobId: string
+  ): Promise<Ref<ChatMessage> | undefined> {
+    await this.opClient
+
+    if (this.love === undefined) {
+      this.ctx.error('Love controller is not initialized')
+      return undefined
+    }
+
+    return await this.love.createTranscriptionPlaceholder(participant, room, startTimeSec, endTimeSec, blobId)
+  }
+
+  /**
+   * Update or delete a transcription placeholder message
+   */
+  @withContext('updateTranscriptionMessage')
+  async updateTranscriptionMessage (
+    ctx: MeasureContext,
+    messageId: Ref<ChatMessage>,
+    text: string | null
+  ): Promise<void> {
+    await this.opClient
+
+    if (this.love === undefined) {
+      this.ctx.error('Love controller is not initialized')
+      return
+    }
+
+    await this.love.updateTranscriptionMessage(messageId, text)
   }
 
   async getLoveIdentity (): Promise<IdentityResponse | undefined> {
@@ -605,5 +653,80 @@ export class WorkspaceClient {
     if (this.love === undefined) return true
 
     return !this.love.hasActiveConnections()
+  }
+
+  /**
+   * Add session recording as attachment to meeting minutes
+   */
+  async addSessionAttachment (
+    roomId: Ref<Room>,
+    blobId: string,
+    participant: string,
+    startTimeSec: number,
+    endTimeSec: number,
+    size: number,
+    sessionNumber: number
+  ): Promise<void> {
+    const client = await this.opClient
+
+    // Find active meeting minutes for this room
+    const meetingMinutes = await client.findOne<MeetingMinutes>(love.class.MeetingMinutes, {
+      attachedTo: roomId,
+      status: MeetingStatus.Active
+    })
+
+    if (meetingMinutes === undefined) {
+      this.ctx.warn('No active meeting minutes found for room', { roomId, participant })
+      return
+    }
+
+    // participant is now the display name from LiveKit (participant.name), not Ref<Person>
+    // Just sanitize it for use in filename
+    let participantName = participant.trim()
+    if (participantName === '') {
+      participantName = 'Unknown'
+    }
+    // Replace spaces and special characters for filename safety
+    participantName = participantName.replace(/\s+/g, '_').replace(/[<>:"/\\|?*]/g, '_')
+
+    // Format start and end times as mm:ss
+    const formatTime = (sec: number): string => {
+      const minutes = Math.floor(sec / 60)
+      const seconds = Math.floor(sec % 60)
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+    const startTimeStr = formatTime(startTimeSec)
+    const endTimeStr = formatTime(endTimeSec)
+
+    // Create attachment with participant name, session number and time range
+    // Using OGG container with Opus codec for browser compatibility
+    const attachmentName = `${participantName}_${sessionNumber}_${startTimeStr}-${endTimeStr}.ogg`
+
+    await client.addCollection(
+      attachment.class.Attachment,
+      meetingMinutes.space,
+      meetingMinutes._id,
+      meetingMinutes._class,
+      'attachments',
+      {
+        name: attachmentName,
+        file: blobId as Ref<Blob>,
+        type: 'audio/ogg',
+        size,
+        lastModified: Date.now()
+      }
+    )
+
+    this.ctx.info('Added session attachment to meeting minutes', {
+      meetingMinutes: meetingMinutes._id,
+      roomId,
+      participant,
+      participantName,
+      sessionNumber,
+      attachmentName,
+      size,
+      startTimeSec,
+      endTimeSec
+    })
   }
 }

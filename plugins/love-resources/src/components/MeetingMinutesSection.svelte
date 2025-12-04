@@ -50,7 +50,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="content">
-      {#if meetings > 0 && viewlet}
+      {#if viewlet}
         <Scroller horizontal>
           <Table
             _class={love.class.MeetingMinutes}

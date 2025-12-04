@@ -177,12 +177,12 @@ export async function collectDatalakeStats (
   }
 
   const token = generateToken(systemAccountUuid, undefined, { service: 'billing' })
-  const client = createDatalakeClient(storageConfigs[0] as DatalakeConfig, token)
 
   for (const storageConfig of storageConfigs) {
     if (storageConfig.kind !== 'datalake') {
       continue
     }
+    const client = createDatalakeClient(storageConfig as DatalakeConfig, token)
     const storageStats = await client.getWorkspaceStats(ctx, workspace)
     result.count += storageStats.count
     result.size += storageStats.size

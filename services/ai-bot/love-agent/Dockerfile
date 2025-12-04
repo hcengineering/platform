@@ -10,7 +10,7 @@ COPY package.json package.json
 COPY pnpm-lock.yaml pnpm-lock.yaml
 
 RUN pnpm install
-COPY ./lib .
+COPY ./bundle .
 
 EXPOSE 4012
 CMD [ "node", "index.js" , "start"]
