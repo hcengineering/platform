@@ -303,6 +303,7 @@ services:
       - BRANDING_URL=http://huly.local:8087/branding.json
       - STREAM_URL=http://huly.local:1080/recording
       - PAYMENT_URL=http://huly.local:3040
+      - BILLING_URL=http://huly.local:4041
       - COMMUNICATION_API_ENABLED=false
       - BACKUP_URL=http://huly.local:4039/api/backup,
       - EXCLUDED_APPLICATIONS_FOR_ANONYMOUS=["chunter", "notification"]
@@ -447,6 +448,8 @@ services:
       - LIVEKIT_HOST=ws://huly.local:7880
       - LIVEKIT_API_KEY=devkey
       - LIVEKIT_API_SECRET=secret
+      - BILLING_URL=http://huly.local:4041
+      - BILLING_POLL_INTERVAL=15
     ports:
       - 8096:8096
     restart: unless-stopped
@@ -469,6 +472,7 @@ services:
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://huly.local:4900
       - LOVE_ENDPOINT=http://huly.local:8096
+      - BILLING_URL=http://huly.local:4041
       - OPENAI_API_KEY=token
       - OPENAI_SUMMARY_MODEL=openai/gpt-oss-20b
       - OPENAI_TRANSLATE_MODEL=openai/gpt-oss-20b
@@ -632,6 +636,7 @@ services:
   #      - QUEUE_CONFIG=${QUEUE_CONFIG}
   #      - QUEUE_REGION=
   #      - OPENAI_API_KEY=
+  #      - BILLING_URL=http://huly.local:4041
   #    restart: unless-stopped
   backup:
     image: haiodo/backup
@@ -741,6 +746,27 @@ services:
       - STT_PROVIDER=stream
     ports:
       - 4012:4012
+    restart: unless-stopped
+  billing:
+    image: haiodo/billing
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      account:
+        condition: service_started
+      datalake:
+        condition: service_started
+    ports:
+      - 4041:4041
+    environment:
+      - PORT=4041
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - DB_URL=${DB_URL_PG}
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - USAGE_UPDATE_INTERVAL=3600
     restart: unless-stopped
 volumes:
   db:

@@ -33,5 +33,6 @@
   "EXCLUDED_APPLICATIONS_FOR_ANONYMOUS": "[\"chunter\", \"notification\"]",
   "ANALYTICS_COLLECTOR_URL": "http://huly.local:4017",
   "LOVE_ENDPOINT": "http://huly.local:8096",
-  "LIVEKIT_WS":"ws://huly.local:7880"
+  "LIVEKIT_WS":"ws://huly.local:7880",
+  "BILLING_URL": "http://huly.local:3041"
 }
