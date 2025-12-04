@@ -50,6 +50,20 @@ import {
 
 import { createWavHeader, updateWavHeader, convertWavToOggOpus, sanitizePath } from './wav-utils.js'
 
+/**
+ * Get participant display name, handling empty string case
+ * Falls back to identity if name is empty or undefined, then to sid
+ */
+function getParticipantDisplayName (participant: RemoteParticipant | undefined, sid: string): string {
+  if (participant?.name !== undefined && participant.name.trim() !== '') {
+    return participant.name
+  }
+  if (participant?.identity !== undefined && participant.identity.trim() !== '') {
+    return participant.identity
+  }
+  return sid
+}
+
 export class STT implements Stt {
   private isInProgress = false
   private language: string = 'en'
@@ -256,7 +270,7 @@ export class STT implements Stt {
           endTimeSec,
           durationSec,
           participant: participant?.identity ?? sid,
-          participantName: participant?.name ?? participant?.identity ?? sid,
+          participantName: getParticipantDisplayName(participant, sid),
           sampleRate: this.sampleRate,
           channels: this.channels,
           bitsPerSample: this.bitsPerSample,
@@ -340,7 +354,7 @@ export class STT implements Stt {
       const startTimeSec = sessionState.startTimeFromMeeting
       const endTimeSec = startTimeSec + durationSec
       const participantIdentity = participant?.identity ?? sid
-      const participantName = sanitizePath(participant?.name ?? participant?.identity ?? sid)
+      const participantName = sanitizePath(getParticipantDisplayName(participant, sid))
 
       console.info('Finalizing session recording', {
         sid,
@@ -434,7 +448,7 @@ export class STT implements Stt {
 
   private startSession (sid: string, streamDir: string): void {
     const participant = this.participantBySid.get(sid)
-    const participantName = sanitizePath(participant?.name ?? participant?.identity ?? sid)
+    const participantName = sanitizePath(getParticipantDisplayName(participant, sid))
     const filename = `${participantName}_session_${this.sessionNumber}.wav`
     const filePath = join(streamDir, filename)
 
@@ -462,7 +476,7 @@ export class STT implements Stt {
       console.info('Started session recording', {
         sid,
         filePath,
-        participant: participant?.name ?? participant?.identity,
+        participant: getParticipantDisplayName(participant, sid),
         startTimeFromMeeting: startTimeFromMeeting.toFixed(1)
       })
     } catch (e) {
@@ -487,19 +501,19 @@ export class STT implements Stt {
     console.info('Starting transcription for track', {
       room: this.room.name,
       sid,
-      participant: participant?.name ?? participant?.identity
+      participant: getParticipantDisplayName(participant, sid)
     })
 
     this.streamBySid.set(sid, stream)
 
     void this.streamToFiles(sid, stream).catch((err) => {
-      console.error('Failed to stream', { participant: participant?.name ?? participant?.identity ?? sid, error: err })
+      console.error('Failed to stream', { participant: getParticipantDisplayName(participant, sid), error: err })
     })
   }
 
   async streamToFiles (sid: string, stream: AudioStream): Promise<void> {
     const participant = this.participantBySid.get(sid)
-    const streamDir = join(this.rootDir, sanitizePath(participant?.name ?? participant?.identity ?? sid))
+    const streamDir = join(this.rootDir, sanitizePath(getParticipantDisplayName(participant, sid)))
     if (!existsSync(streamDir)) {
       mkdirSync(streamDir, { recursive: true })
     }

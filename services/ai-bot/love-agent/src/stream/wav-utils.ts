@@ -119,5 +119,5 @@ export async function convertWavToOggOpus (wavPath: string, oggPath: string): Pr
  * @returns Sanitized string safe for file paths
  */
 export function sanitizePath (name: string): string {
-  return name.replace(/\s+/g, '_').replace(/[<>:"/\\|?*]/g, '_')
+  return name.replace(/\s+/g, '_').replace(/[<>:"/\\|?*,]/g, '_')
 }

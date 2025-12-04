@@ -162,6 +162,8 @@ describe('WAV Utilities', () => {
       expect(sanitizePath('file|test')).toBe('file_test')
       expect(sanitizePath('file?test')).toBe('file_test')
       expect(sanitizePath('file*test')).toBe('file_test')
+      expect(sanitizePath('file,test')).toBe('file_test')
+      expect(sanitizePath('Last, First')).toBe('Last__First')
     })
 
     it('should handle combined spaces and special characters', () => {
