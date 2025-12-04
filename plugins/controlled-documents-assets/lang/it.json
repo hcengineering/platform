@@ -38,7 +38,7 @@
     "EditorPlaceholder": "digita per iniziare a modificare...",
     "Version": "Versione",
     "TemplateVersion": "Versione del modello",
-    "VersionValue": "v{major}.{minor}.{patch}",
+    "VersionValue": "v{major}.{minor}",
     "SearchDocument": "Cerca documento...",
     "CreateEnVersion": "Crea versione per revisione",
     "Approvers": "Approvatori",

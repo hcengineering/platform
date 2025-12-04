@@ -74,7 +74,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
       await documentContentPage.checkDocument({
         type: 'N/A',
         category: newTemplate.category ?? '',
-        version: 'v1.0.0',
+        version: 'v1.0',
         status: DocumentStatus.DRAFT,
         owner: 'Appleseed John',
         author: 'Appleseed John'
@@ -181,7 +181,7 @@ test.describe('ISO 13485, 4.2.4 Control of documents', () => {
         await documentContentPage.checkDocument({
           type: 'N/A',
           category: newTemplate.category ?? '',
-          version: 'v1.0.0',
+          version: 'v1.0',
           status: DocumentStatus.EFFECTIVE,
           owner: 'Appleseed John',
           author: 'Appleseed John'
