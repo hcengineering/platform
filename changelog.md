@@ -2,6 +2,10 @@
 
 Changelog.
 
+## [0.7.314] - 2025-12-04
+
+* 🐛 BUG FIXES: · Do not remember project version ([#10276](https://github.com/hcengineering/platform/issues/10276)) · Revert document patches ([#10278](https://github.com/hcengineering/platform/issues/10278)) 
+
 ## [0.7.313] - 2025-12-03
 
 * 🚀 FEATURES: · Adjust hulylake client for storage adapter · Compact compact worker ([#4](https://github.com/hcengineering/platform/issues/4)) · Add regorus engine with permit file · Removed actors, improved performance · Ping from server to clients added · Ping from server to clients added · Add version number to /status info · Use queue for transcoding tasks input · Use queue for transcoding tasks input ([#13](https://github.com/hcengineering/platform/issues/13)) · Fast live recording · Fast live recording ([#20](https://github.com/hcengineering/platform/issues/20)) · Product and document patch versions ([#10265](https://github.com/hcengineering/platform/issues/10265)) 
