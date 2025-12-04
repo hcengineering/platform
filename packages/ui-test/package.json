@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/ui-test",
-  "version": "0.7.12",
+  "version": "0.7.13",
   "author": "Copyright © Hardcore Engineering Inc.",
   "template": "@hcengineering/node-package",
   "license": "EPL-2.0",
