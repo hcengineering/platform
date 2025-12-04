@@ -612,6 +612,9 @@ describe('GmailClient', () => {
     let mockTxOperations: any
 
     beforeEach(async () => {
+      // Clear the global processing set before each test
+      ;(GmailClient as any).processingMessages.clear()
+
       mockTxOperations = {
         findAll: jest.fn().mockResolvedValue([]),
         findOne: jest.fn().mockResolvedValue(undefined),
@@ -667,7 +670,7 @@ describe('GmailClient', () => {
       expect(mockContext.info).toHaveBeenCalledWith(
         'Message already being processed, skipping duplicate',
         expect.objectContaining({
-          messageKey: 'v1-test-message-id'
+          messageKey: expect.stringContaining('v1-test-workspace-test-social-id-test-message-id')
         })
       )
     })
@@ -790,6 +793,9 @@ describe('GmailClient', () => {
     let mockTxOperations: any
 
     beforeEach(async () => {
+      // Clear the global processing set before each test
+      ;(GmailClient as any).processingMessages.clear()
+
       // Don't use fake timers for V2 tests to avoid rate limiter issues
       mockTxOperations = {
         findAll: jest.fn().mockResolvedValue([]),
@@ -869,7 +875,7 @@ describe('GmailClient', () => {
       expect(mockContext.info).toHaveBeenCalledWith(
         'Message already being processed, skipping duplicate',
         expect.objectContaining({
-          messageKey: 'msg-123-card-456'
+          messageKey: expect.stringContaining('v2-test-workspace-test-social-id-msg-123-card-456')
         })
       )
     })
@@ -896,7 +902,7 @@ describe('GmailClient', () => {
       expect(mockContext.info).toHaveBeenCalledWith(
         'Message already being processed, skipping duplicate',
         expect.objectContaining({
-          messageKey: 'test-message-id-card-456'
+          messageKey: expect.stringContaining('v2-test-workspace-test-social-id-test-message-id-card-456')
         })
       )
     })
@@ -987,7 +993,7 @@ describe('GmailClient', () => {
       )
     })
 
-    it('should clear processing set when client closes', async () => {
+    it('should clean up message from global processing set after completion', async () => {
       const mockTxOperations = {
         findAll: jest.fn().mockResolvedValue([]),
         findOne: jest.fn().mockResolvedValue(undefined),
@@ -1010,21 +1016,21 @@ describe('GmailClient', () => {
         content: '<p>Test content</p>'
       }
 
+      // Get access to the global static processing set
+      const processingMessages = (GmailClient as any).processingMessages
+
+      // Verify set is empty initially
+      expect(processingMessages.size).toBe(0)
+
       // Start processing a message
       const promise = client.createMessage(newMessage as any)
 
-      // Get access to the processing set
-      const processingMessages = (client as any).processingMessages
-
-      // Verify message is in processing set
+      // Verify message is in processing set while processing
       expect(processingMessages.size).toBeGreaterThan(0)
 
       await promise
 
-      // Close the client
-      await client.close()
-
-      // Verify processing set is cleared
+      // Verify message is removed from processing set after completion
       expect(processingMessages.size).toBe(0)
     })
   })

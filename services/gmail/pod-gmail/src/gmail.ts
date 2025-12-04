@@ -102,6 +102,8 @@ async function wait (sec: number): Promise<void> {
 }
 
 export class GmailClient {
+  private static readonly processingMessages = new Set<string>()
+
   private readonly account: AccountUuid
   private email: string
   private readonly tokenStorage: TokenStorage
@@ -116,7 +118,6 @@ export class GmailClient {
   private integration: Integration | null | undefined = undefined
   private syncStarted: boolean = false
   private channel: Card | undefined = undefined
-  private readonly processingMessages = new Set<string>()
 
   private constructor (
     private readonly ctx: MeasureContext,
@@ -341,19 +342,20 @@ export class GmailClient {
   async createMessage (message: NewMessage): Promise<void> {
     if (message.status === 'sent') return
 
-    const messageKey = `v1-${message._id}`
+    const messageKey = `v1-${this.user.workspace}-${this.socialId._id}-${message._id}`
 
-    if (this.processingMessages.has(messageKey)) {
+    if (GmailClient.processingMessages.has(messageKey)) {
       this.ctx.info('Message already being processed, skipping duplicate', {
         messageKey,
         messageId: message._id,
         status: message.status,
-        email: this.email
+        email: this.email,
+        workspace: this.user.workspace
       })
       return
     }
 
-    this.processingMessages.add(messageKey)
+    GmailClient.processingMessages.add(messageKey)
 
     try {
       this.ctx.info('Send gmail message', { id: message._id, from: message.from, to: message.to })
@@ -387,23 +389,24 @@ export class GmailClient {
         await this.refreshToken()
       }
     } finally {
-      this.processingMessages.delete(messageKey)
+      GmailClient.processingMessages.delete(messageKey)
     }
   }
 
   async handleNewMessage (message: CreateMessageEvent): Promise<void> {
-    const messageKey = `${message.messageId ?? message._id}-${message.cardId}`
+    const messageKey = `v2-${this.user.workspace}-${this.socialId._id}-${message.messageId ?? message._id}-${message.cardId}`
 
-    if (this.processingMessages.has(messageKey)) {
+    if (GmailClient.processingMessages.has(messageKey)) {
       this.ctx.info('Message already being processed, skipping duplicate', {
         messageKey,
         cardId: message.cardId,
-        email: this.email
+        email: this.email,
+        workspace: this.user.workspace
       })
       return
     }
 
-    this.processingMessages.add(messageKey)
+    GmailClient.processingMessages.add(messageKey)
 
     try {
       const personId = message.socialId
@@ -455,7 +458,7 @@ export class GmailClient {
         await this.refreshToken()
       }
     } finally {
-      this.processingMessages.delete(messageKey)
+      GmailClient.processingMessages.delete(messageKey)
     }
   }
 
@@ -793,9 +796,6 @@ export class GmailClient {
   async close (): Promise<void> {
     if (this.watchTimer !== undefined) clearInterval(this.watchTimer)
     if (this.refreshTimer !== undefined) clearTimeout(this.refreshTimer)
-
-    // Clear processing messages set
-    this.processingMessages.clear()
 
     try {
       if (this.syncManager !== undefined) {
