@@ -101,7 +101,6 @@
     labels: 0,
     major: 1,
     minor: 0,
-    patch: 0,
     commentSequence: 0,
     seqNumber: 0,
     category: undefined,

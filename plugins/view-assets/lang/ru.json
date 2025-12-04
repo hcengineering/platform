@@ -148,7 +148,7 @@
     "CopyLink": "Скопировать ссылку",
     "ValueIsSet": "Значение установлено",
     "RoleLabel": "Роль: {role}",
-    "ForbidAttributeChanges": "Запретить изменения атрибутов",
-    "AllowAttributeChanges": "Разрешить изменения атрибутов"
+    "ForbidAttributeChanges": "Запретить изменение: ",
+    "AllowAttributeChanges": "Разрешить изменение: "
   }
 }

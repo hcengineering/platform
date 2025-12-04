@@ -146,7 +146,7 @@
     "CopyLink": "Bağlantıyı kopyala",
     "ValueIsSet": "Değer ayarlandı",
     "RoleLabel": "Rol: {role}",
-    "ForbidAttributeChanges": "Özellik değişikliklerini yasakla",
-    "AllowAttributeChanges": "Özellik değişikliklerine izin ver"
+    "ForbidAttributeChanges": "Özellik yasakla: ",
+    "AllowAttributeChanges": "Özellik izin ver: "
   }
 }

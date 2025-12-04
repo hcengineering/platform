@@ -155,7 +155,7 @@ export function isFolder (doc: ProjectDocument | undefined): boolean {
 }
 
 function getDocumentSortSequence (doc: ControlledDocument | undefined): number[] {
-  return doc !== undefined ? [doc.seqNumber, doc.major, doc.minor, doc.patch, doc.createdOn ?? 0] : [0, 0, 0, 0, 0]
+  return doc !== undefined ? [doc.seqNumber, doc.major, doc.minor, doc.createdOn ?? 0] : [0, 0, 0, 0]
 }
 
 export function compareDocumentVersions (

@@ -102,6 +102,8 @@ async function wait (sec: number): Promise<void> {
 }
 
 export class GmailClient {
+  private static readonly processingMessages = new Set<string>()
+
   private readonly account: AccountUuid
   private email: string
   private readonly tokenStorage: TokenStorage
@@ -339,6 +341,22 @@ export class GmailClient {
 
   async createMessage (message: NewMessage): Promise<void> {
     if (message.status === 'sent') return
+
+    const messageKey = `v1-${this.user.workspace}-${this.socialId._id}-${message._id}`
+
+    if (GmailClient.processingMessages.has(messageKey)) {
+      this.ctx.info('Message already being processed, skipping duplicate', {
+        messageKey,
+        messageId: message._id,
+        status: message.status,
+        email: this.email,
+        workspace: this.user.workspace
+      })
+      return
+    }
+
+    GmailClient.processingMessages.add(messageKey)
+
     try {
       this.ctx.info('Send gmail message', { id: message._id, from: message.from, to: message.to })
       const email = await this.getEmail()
@@ -370,10 +388,26 @@ export class GmailClient {
       if (err?.response?.data?.error === 'invalid_grant') {
         await this.refreshToken()
       }
+    } finally {
+      GmailClient.processingMessages.delete(messageKey)
     }
   }
 
   async handleNewMessage (message: CreateMessageEvent): Promise<void> {
+    const messageKey = `v2-${this.user.workspace}-${this.socialId._id}-${message.messageId ?? message._id}-${message.cardId}`
+
+    if (GmailClient.processingMessages.has(messageKey)) {
+      this.ctx.info('Message already being processed, skipping duplicate', {
+        messageKey,
+        cardId: message.cardId,
+        email: this.email,
+        workspace: this.user.workspace
+      })
+      return
+    }
+
+    GmailClient.processingMessages.add(messageKey)
+
     try {
       const personId = message.socialId
       if (personId !== this.socialId._id && !this.allSocialIds.has(personId)) {
@@ -423,6 +457,8 @@ export class GmailClient {
       if (err?.response?.data?.error === 'invalid_grant') {
         await this.refreshToken()
       }
+    } finally {
+      GmailClient.processingMessages.delete(messageKey)
     }
   }
 

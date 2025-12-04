@@ -30,6 +30,26 @@ and may stay same or with minimal changes for make it stable.
 
 For detailed information about changes, improvements, and bug fixes in each version, see our [Changelog](./changelog.md).
 
+## Versions
+
+The Huly Platform uses two types of version tags to distinguish between production-ready and development releases:
+
+- **Production Versions (`v*`)** - Stable releases for end users
+  - Example: `v0.7.310`, `v0.7.307`, `v0.6.501`
+  - These versions are recommended for production deployments
+  - Suitable for self-hosted installations
+  - Published with release notes on [GitHub Releases](https://github.com/hcengineering/platform/releases)
+
+- **Development Versions (`s*`)** - Pre-release builds for developers
+  - Example: `s0.7.313`, `s0.7.292`, `s0.7.288`
+  - Used for development and testing purposes
+  - May contain experimental features or bug fixes
+  - Not recommended for production use
+
+## Architecture
+
+For detailed information about the platform architecture, services, and their interactions, see our [Architecture Overview](./ARCHITECTURE_OVERVIEW.md).
+
 ## Table of Contents
 
 - [Huly Platform](#huly-platform)
@@ -37,6 +57,8 @@ For detailed information about changes, improvements, and bug fixes in each vers
   - [Self-Hosting](#self-hosting)
   - [API Client](#api-client)
   - [Changelog](#changelog)
+  - [Versions](#versions)
+  - [Architecture](#architecture)
   - [Table of Contents](#table-of-contents)
   - [Pre-requisites](#pre-requisites)
   - [Verification](#verification)

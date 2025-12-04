@@ -146,7 +146,7 @@
     "CopyLink": "Copiar link",
     "ValueIsSet": "O valor está definido",
     "RoleLabel": "Cargo: {role}",
-    "ForbidAttributeChanges": "Proibir alterações de atributo",
-    "AllowAttributeChanges": "Permitir alterações de atributo"
+    "ForbidAttributeChanges": "Proibir alterações: ",
+    "AllowAttributeChanges": "Permitir alterações: "
   }
 }
