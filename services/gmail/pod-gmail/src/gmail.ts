@@ -116,6 +116,7 @@ export class GmailClient {
   private integration: Integration | null | undefined = undefined
   private syncStarted: boolean = false
   private channel: Card | undefined = undefined
+  private readonly processingMessages = new Set<string>()
 
   private constructor (
     private readonly ctx: MeasureContext,
@@ -339,6 +340,21 @@ export class GmailClient {
 
   async createMessage (message: NewMessage): Promise<void> {
     if (message.status === 'sent') return
+
+    const messageKey = `v1-${message._id}`
+
+    if (this.processingMessages.has(messageKey)) {
+      this.ctx.info('Message already being processed, skipping duplicate', {
+        messageKey,
+        messageId: message._id,
+        status: message.status,
+        email: this.email
+      })
+      return
+    }
+
+    this.processingMessages.add(messageKey)
+
     try {
       this.ctx.info('Send gmail message', { id: message._id, from: message.from, to: message.to })
       const email = await this.getEmail()
@@ -370,10 +386,25 @@ export class GmailClient {
       if (err?.response?.data?.error === 'invalid_grant') {
         await this.refreshToken()
       }
+    } finally {
+      this.processingMessages.delete(messageKey)
     }
   }
 
   async handleNewMessage (message: CreateMessageEvent): Promise<void> {
+    const messageKey = `${message.messageId ?? message._id}-${message.cardId}`
+
+    if (this.processingMessages.has(messageKey)) {
+      this.ctx.info('Message already being processed, skipping duplicate', {
+        messageKey,
+        cardId: message.cardId,
+        email: this.email
+      })
+      return
+    }
+
+    this.processingMessages.add(messageKey)
+
     try {
       const personId = message.socialId
       if (personId !== this.socialId._id && !this.allSocialIds.has(personId)) {
@@ -423,6 +454,8 @@ export class GmailClient {
       if (err?.response?.data?.error === 'invalid_grant') {
         await this.refreshToken()
       }
+    } finally {
+      this.processingMessages.delete(messageKey)
     }
   }
 
@@ -760,6 +793,10 @@ export class GmailClient {
   async close (): Promise<void> {
     if (this.watchTimer !== undefined) clearInterval(this.watchTimer)
     if (this.refreshTimer !== undefined) clearTimeout(this.refreshTimer)
+
+    // Clear processing messages set
+    this.processingMessages.clear()
+
     try {
       if (this.syncManager !== undefined) {
         this.syncManager.close()
