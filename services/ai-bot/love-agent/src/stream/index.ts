@@ -42,12 +42,7 @@ export {
 } from './chunk-detection.js'
 
 // WAV utilities
-export {
-  createWavHeader,
-  updateWavHeader,
-  convertWavToOggOpus,
-  sanitizePath
-} from './wav-utils.js'
+export { createWavHeader, updateWavHeader, convertWavToOggOpus, sanitizePath } from './wav-utils.js'
 
 // Main STT class
 export { STT } from './stt.js'

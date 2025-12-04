@@ -136,11 +136,7 @@ export function updateSpeechRate (
  * @param silenceDurationMs - Duration of silence at this point
  * @returns Score for the cut point (higher is better)
  */
-export function scoreCutPoint (
-  lookAheadBuffer: LookAheadFrame[],
-  cutIndex: number,
-  silenceDurationMs: number
-): number {
+export function scoreCutPoint (lookAheadBuffer: LookAheadFrame[], cutIndex: number, silenceDurationMs: number): number {
   if (cutIndex < 0 || cutIndex >= lookAheadBuffer.length) return 0
 
   let score = 0

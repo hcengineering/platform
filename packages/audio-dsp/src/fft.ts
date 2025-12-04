@@ -275,10 +275,7 @@ export function phase (real: Float64Array, imag: Float64Array): Float64Array {
  * @param phase - Phase spectrum in radians
  * @returns Object containing real and imaginary parts
  */
-export function fromPolar (
-  mag: Float64Array,
-  ph: Float64Array
-): { real: Float64Array, imag: Float64Array } {
+export function fromPolar (mag: Float64Array, ph: Float64Array): { real: Float64Array, imag: Float64Array } {
   const n = mag.length
   const real = new Float64Array(n)
   const imag = new Float64Array(n)

@@ -233,12 +233,13 @@ class PostgresDB implements BillingDB {
 
       if (values.length === 0) continue
 
-      const query = this.flavor === 'cockroach'
-        ? `
+      const query =
+        this.flavor === 'cockroach'
+          ? `
           UPSERT INTO billing.livekit_session (workspace, session_id, session_start, session_end, room, bandwidth, minutes)
           VALUES ${values.join(',')}
         `
-        : `
+          : `
           INSERT INTO billing.livekit_session (workspace, session_id, session_start, session_end, room, bandwidth, minutes)
           VALUES ${values.join(',')}
           ON CONFLICT (workspace, session_id)
@@ -275,12 +276,13 @@ class PostgresDB implements BillingDB {
 
       if (values.length === 0) continue
 
-      const query = this.flavor === 'cockroach'
-        ? `
+      const query =
+        this.flavor === 'cockroach'
+          ? `
           UPSERT INTO billing.livekit_egress (workspace, egress_id, egress_start, egress_end, room, duration)
           VALUES ${values.join(',')}
         `
-        : `
+          : `
           INSERT INTO billing.livekit_egress (workspace, egress_id, egress_start, egress_end, room, duration)
           VALUES ${values.join(',')}
           ON CONFLICT (workspace, egress_id)

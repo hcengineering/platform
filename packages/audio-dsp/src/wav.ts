@@ -250,11 +250,7 @@ export function extractWavSamples (data: Uint8Array | Buffer): Int16Array | unde
  * @param channels - Number of channels (default: 1)
  * @returns Complete WAV file as Uint8Array
  */
-export function createWavFile (
-  samples: Int16Array,
-  sampleRate: number,
-  channels: number = 1
-): Uint8Array {
+export function createWavFile (samples: Int16Array, sampleRate: number, channels: number = 1): Uint8Array {
   const dataLength = samples.length * 2 // 16-bit = 2 bytes per sample
   const header = createWavHeader(dataLength, sampleRate, channels, 16)
 
@@ -279,11 +275,7 @@ export function createWavFile (
  * @param channels - Number of channels (default: 1)
  * @returns Complete WAV file as Uint8Array
  */
-export function createWavFileFromFloat (
-  samples: Float32Array,
-  sampleRate: number,
-  channels: number = 1
-): Uint8Array {
+export function createWavFileFromFloat (samples: Float32Array, sampleRate: number, channels: number = 1): Uint8Array {
   const dataLength = samples.length * 2 // 16-bit = 2 bytes per sample
   const header = createWavHeader(dataLength, sampleRate, channels, 16)
 

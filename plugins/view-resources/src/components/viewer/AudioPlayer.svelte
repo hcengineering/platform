@@ -166,9 +166,7 @@
       // Calculate rough stats
       const originalRms = calculateRms(samples)
       const denoisedRms = calculateRms(denoisedSamples)
-      const reductionDb = originalRms > 0 && denoisedRms > 0
-        ? 20 * Math.log10(denoisedRms / originalRms)
-        : 0
+      const reductionDb = originalRms > 0 && denoisedRms > 0 ? 20 * Math.log10(denoisedRms / originalRms) : 0
 
       noiseReductionStats = { averageReductionDb: reductionDb }
 
@@ -438,7 +436,6 @@
         }
       }
       ctx.globalAlpha = 1.0
-
     } else {
       // Normal mode: single waveform centered
       const centerY = height / 2
@@ -604,10 +601,7 @@
           <Spinner size="small" />
           <span class="processing-text">Processing noise reduction...</span>
         {:else}
-          <CheckBox
-            checked={noiseReductionEnabled}
-            on:value={handleNoiseReductionToggle}
-          />
+          <CheckBox checked={noiseReductionEnabled} on:value={handleNoiseReductionToggle} />
           <span
             class="toggle-label"
             class:active={noiseReductionEnabled}
@@ -619,9 +613,7 @@
             <span class="stats">
               ({noiseReductionStats.averageReductionDb.toFixed(1)} dB)
             </span>
-            <span class="playing-indicator">
-              ▶ Playing denoised
-            </span>
+            <span class="playing-indicator"> ▶ Playing denoised </span>
           {/if}
         {/if}
       </div>
@@ -813,7 +805,8 @@
   }
 
   @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 1;
     }
     50% {

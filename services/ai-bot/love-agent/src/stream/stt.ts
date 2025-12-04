@@ -41,12 +41,7 @@ import {
 
 import { analyzeAudioBuffer, isFrameSpeech } from './audio-analysis.js'
 
-import {
-  createAdaptiveVADState,
-  updateNoiseFloor,
-  updateSpeechRate,
-  findOptimalCutPoint
-} from './chunk-detection.js'
+import { createAdaptiveVADState, updateNoiseFloor, updateSpeechRate, findOptimalCutPoint } from './chunk-detection.js'
 
 import { createWavHeader, updateWavHeader, convertWavToOggOpus, sanitizePath } from './wav-utils.js'
 

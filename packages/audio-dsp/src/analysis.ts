@@ -220,10 +220,7 @@ export function analyzeAudioBuffer (
  * @param sampleRate - Sample rate in Hz
  * @returns Spectral features
  */
-export function calculateSpectralFeatures (
-  samples: Float64Array | Float32Array,
-  sampleRate: number
-): SpectralFeatures {
+export function calculateSpectralFeatures (samples: Float64Array | Float32Array, sampleRate: number): SpectralFeatures {
   // Compute FFT
   const { real, imag } = fft(samples)
   const spectrum = magnitude(real, imag)

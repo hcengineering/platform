@@ -19,14 +19,17 @@ type SupportedFlavor = Exclude<DBFlavor, 'unknown'>
 
 // Type definitions for different database flavors.
 // The keys match the DBFlavor type ('postgres' and 'cockroach').
-const dbTypes: Record<SupportedFlavor, {
+const dbTypes: Record<
+SupportedFlavor,
+{
   string: string
   string255: string
   int4: string
   int8: string
   float: string
   decimal: string
-}> = {
+}
+> = {
   cockroach: {
     string: 'STRING',
     string255: 'STRING(255)',

@@ -44,12 +44,7 @@ function createPcmBuffer (samples: number[]): Buffer {
  * @param amplitude - Amplitude (0-1)
  * @returns Array of samples
  */
-function generateSineWave (
-  frequency: number,
-  sampleRate: number,
-  duration: number,
-  amplitude: number = 1.0
-): number[] {
+function generateSineWave (frequency: number, sampleRate: number, duration: number, amplitude: number = 1.0): number[] {
   const numSamples = Math.floor(sampleRate * duration)
   const samples: number[] = []
   for (let i = 0; i < numSamples; i++) {

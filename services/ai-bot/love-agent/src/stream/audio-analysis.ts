@@ -17,11 +17,7 @@
  * Provides spectral analysis, RMS calculation, and speech detection
  */
 
-import {
-  stft,
-  magnitude,
-  createHannWindow
-} from '@hcengineering/audio-dsp'
+import { stft, magnitude, createHannWindow } from '@hcengineering/audio-dsp'
 
 import {
   type AudioAnalysis,
@@ -58,10 +54,7 @@ function nearestPowerOf2 (n: number): number {
   return power
 }
 
-export function calculateSpectralFeatures (
-  samples: Float32Array,
-  sampleRate: number
-): SpectralAnalysisResult {
+export function calculateSpectralFeatures (samples: Float32Array, sampleRate: number): SpectralAnalysisResult {
   // Use audio-dsp library for FFT-based spectral analysis
   // FFT size must be a power of 2
   const targetSize = Math.min(512, samples.length)

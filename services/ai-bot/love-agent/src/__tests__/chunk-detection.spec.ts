@@ -255,9 +255,7 @@ describe('Chunk Detection', () => {
 
   describe('scoreCutPoint', () => {
     it('should return 0 for invalid indices', () => {
-      const buffer: LookAheadFrame[] = [
-        createMockFrame(0, 20, true)
-      ]
+      const buffer: LookAheadFrame[] = [createMockFrame(0, 20, true)]
 
       expect(scoreCutPoint(buffer, -1, 100)).toBe(0)
       expect(scoreCutPoint(buffer, 5, 100)).toBe(0)
@@ -276,12 +274,8 @@ describe('Chunk Detection', () => {
     })
 
     it('should give higher score for lower RMS', () => {
-      const lowRmsBuffer: LookAheadFrame[] = [
-        createMockFrame(0, 20, false, { rms: 0.001 })
-      ]
-      const highRmsBuffer: LookAheadFrame[] = [
-        createMockFrame(0, 20, false, { rms: 0.1 })
-      ]
+      const lowRmsBuffer: LookAheadFrame[] = [createMockFrame(0, 20, false, { rms: 0.001 })]
+      const highRmsBuffer: LookAheadFrame[] = [createMockFrame(0, 20, false, { rms: 0.1 })]
 
       const lowRmsScore = scoreCutPoint(lowRmsBuffer, 0, 100)
       const highRmsScore = scoreCutPoint(highRmsBuffer, 0, 100)
@@ -465,10 +459,7 @@ describe('Chunk Detection', () => {
 
       it('should handle removing all frames', () => {
         const state = createAdaptiveVADState()
-        state.lookAheadBuffer = [
-          createMockFrame(0, 20, true),
-          createMockFrame(20, 40, true)
-        ]
+        state.lookAheadBuffer = [createMockFrame(0, 20, true), createMockFrame(20, 40, true)]
         state.lookAheadDurationMs = 40
 
         removeFromLookAheadBuffer(state, 5)
@@ -481,10 +472,7 @@ describe('Chunk Detection', () => {
     describe('clearLookAheadBuffer', () => {
       it('should clear buffer and reset duration', () => {
         const state = createAdaptiveVADState()
-        state.lookAheadBuffer = [
-          createMockFrame(0, 20, true),
-          createMockFrame(20, 40, true)
-        ]
+        state.lookAheadBuffer = [createMockFrame(0, 20, true), createMockFrame(20, 40, true)]
         state.lookAheadDurationMs = 40
 
         clearLookAheadBuffer(state)
@@ -528,12 +516,7 @@ describe('Chunk Detection', () => {
         updateNoiseFloor(state, ft.rms, ft.speech)
 
         if (ft.time >= 60) {
-          addToLookAheadBuffer(state, createMockFrame(
-            ft.time,
-            ft.time + 20,
-            ft.speech,
-            { rms: ft.rms }
-          ))
+          addToLookAheadBuffer(state, createMockFrame(ft.time, ft.time + 20, ft.speech, { rms: ft.rms }))
         }
       }
 

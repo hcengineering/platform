@@ -68,11 +68,7 @@ export function normalizeAudio (wavBuffer: Buffer): Buffer {
   }
 
   // Create new WAV file from normalized samples
-  const normalizedWav = createWavFileFromFloat(
-    normalizedSamples,
-    header.sampleRate,
-    header.channels
-  )
+  const normalizedWav = createWavFileFromFloat(normalizedSamples, header.sampleRate, header.channels)
 
   return Buffer.from(normalizedWav)
 }

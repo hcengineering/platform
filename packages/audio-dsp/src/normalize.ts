@@ -251,10 +251,7 @@ export function normalizeAudioWithDcRemoval (
  * @param config - Normalization configuration
  * @returns Normalized WAV file data
  */
-export function normalizeWav (
-  wavData: Uint8Array | Buffer,
-  config: Partial<NormalizationConfig> = {}
-): Uint8Array {
+export function normalizeWav (wavData: Uint8Array | Buffer, config: Partial<NormalizationConfig> = {}): Uint8Array {
   const header = parseWavHeader(wavData)
 
   if (header === undefined) {
@@ -337,10 +334,7 @@ export function peakLimit (
  * @param gainDb - Gain in decibels
  * @returns Gained samples (clamped to -1, 1)
  */
-export function applyGain (
-  samples: Float32Array | Float64Array,
-  gainDb: number
-): Float32Array {
+export function applyGain (samples: Float32Array | Float64Array, gainDb: number): Float32Array {
   const gainLinear = Math.pow(10, gainDb / 20)
   const result = new Float32Array(samples.length)
 
