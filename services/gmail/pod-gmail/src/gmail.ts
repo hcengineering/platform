@@ -796,7 +796,6 @@ export class GmailClient {
   async close (): Promise<void> {
     if (this.watchTimer !== undefined) clearInterval(this.watchTimer)
     if (this.refreshTimer !== undefined) clearTimeout(this.refreshTimer)
-
     try {
       if (this.syncManager !== undefined) {
         this.syncManager.close()
