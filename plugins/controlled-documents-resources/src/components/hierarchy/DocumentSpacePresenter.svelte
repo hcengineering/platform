@@ -45,13 +45,11 @@
     createDocument,
     createDocumentHierarchyQuery,
     createFolder,
-    getCurrentProject,
     getLatestProjectId,
     isEditableProject,
     moveDocument,
     moveDocumentAfter,
-    moveDocumentBefore,
-    setCurrentProject
+    moveDocumentBefore
   } from '../../utils'
   import ProjectSelector from '../project/ProjectSelector.svelte'
   import DocHierarchyLevel from './DocHierarchyLevel.svelte'
@@ -122,7 +120,7 @@
   }
 
   async function selectProject (space: DocumentSpace): Promise<void> {
-    project = getCurrentProject(space._id) ?? (await getLatestProjectId(space._id, true)) ?? documents.ids.NoProject
+    project = (await getLatestProjectId(space._id, true)) ?? documents.ids.NoProject
   }
 
   function handleDocumentSelected (doc: WithLookup<ProjectDocument>): void {
@@ -349,7 +347,6 @@
           bind:pressed
           on:change={(evt) => {
             project = evt.detail
-            setCurrentProject(space._id, project)
           }}
         />
       {/if}
