@@ -37,7 +37,7 @@
     "EditorPlaceholder": "入力して編集を開始...",
     "Version": "バージョン",
     "TemplateVersion": "テンプレートバージョン",
-    "VersionValue": "v{major}.{minor}.{patch}",
+    "VersionValue": "v{major}.{minor}",
     "SearchDocument": "ドキュメントを検索...",
     "CreateEnVersion": "レビュー用バージョンを作成",
     "Approvers": "承認者",

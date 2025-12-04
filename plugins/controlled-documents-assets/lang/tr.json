@@ -38,7 +38,7 @@
     "EditorPlaceholder": "düzenlemeye başlamak için yazın...",
     "Version": "Sürüm",
     "TemplateVersion": "Şablon sürümü",
-    "VersionValue": "v{major}.{minor}.{patch}",
+    "VersionValue": "v{major}.{minor}",
     "SearchDocument": "Doküman ara...",
     "CreateEnVersion": "İnceleme için sürüm oluştur",
     "Approvers": "Onaylayanlar",
