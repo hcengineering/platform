@@ -55,6 +55,7 @@ export default mergeIds(productsId, products, {
     Color: '' as IntlString,
     Major: '' as IntlString,
     Minor: '' as IntlString,
+    Patch: '' as IntlString,
     Codename: '' as IntlString,
     Private: '' as IntlString,
     Public: '' as IntlString,

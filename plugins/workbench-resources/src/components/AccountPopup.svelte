@@ -18,7 +18,7 @@
   import core, { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import rating, { type PersonRating } from '@hcengineering/rating'
   import login, { loginId } from '@hcengineering/login'
-  import { createQuery, getCurrentWorkspaceUrl, hasResource } from '@hcengineering/presentation'
+  import { createQuery, getCurrentWorkspaceUrl, hasResource, isDisabled } from '@hcengineering/presentation'
   import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
   import {
     Action,
@@ -126,7 +126,7 @@
       })
     }
     actions.push(...getMenu(items, ['main']))
-    if (hasAccountRole(account, AccountRole.User)) {
+    if (hasAccountRole(account, AccountRole.User) && !isDisabled('invites')) {
       actions.push({
         icon: setting.icon.InviteWorkspace,
         label: setting.string.InviteWorkspace,

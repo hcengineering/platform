@@ -20,6 +20,7 @@
     "Description": "Описание",
     "Major": "Мажорная",
     "Minor": "Минорная",
+    "Patch": "Патч",
     "Codename": "Название",
     "ProductVersionStateActive": "Активная",
     "ProductVersionStateReleased": "Релизная",

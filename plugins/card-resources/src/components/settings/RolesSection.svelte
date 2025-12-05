@@ -20,7 +20,7 @@
   import { clearSettingsStore } from '@hcengineering/setting-resources'
   import { ButtonIcon, getCurrentResolvedLocation, Icon, IconAdd, Label, navigate, showPopup } from '@hcengineering/ui'
   import card from '../../plugin'
-  import CreateRolePopup from './CreateRolePopup.svelte'
+  import RolesPopup from './RolesPopup.svelte'
 
   export let masterTag: MasterTag | Tag
 
@@ -28,14 +28,31 @@
 
   const ancestors = client.getHierarchy().getAncestors(masterTag._id)
 
-  let roles = client.getModel().findAllSync(card.class.Role, { type: { $in: ancestors } })
+  let roles = client.getModel().findAllSync(card.class.Role, { types: { $in: ancestors } })
   const query = createQuery()
-  query.query(card.class.Role, { type: { $in: ancestors } }, (res) => {
+  query.query(card.class.Role, { types: { $in: ancestors } }, (res) => {
     roles = res
   })
 
   function addRole (): void {
-    showPopup(CreateRolePopup, { masterTag })
+    showPopup(
+      RolesPopup,
+      {
+        masterTag,
+        roles: roles.map((r) => r._id)
+      },
+      'top',
+      async (res) => {
+        if (res !== undefined) {
+          const role = res as Role
+          if (!role.types.some((type) => ancestors.includes(type))) {
+            await client.update(role, {
+              $push: { types: masterTag._id }
+            })
+          }
+        }
+      }
+    )
   }
 
   const handleSelect = (role: Role): void => {

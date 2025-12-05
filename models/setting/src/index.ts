@@ -216,6 +216,7 @@ export function createModel (builder: Builder): void {
       component: setting.component.Integrations,
       group: 'settings-account',
       role: AccountRole.User,
+      feature: 'integrations',
       order: 1500
     },
     setting.ids.Integrations
@@ -229,6 +230,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.Mailbox,
       component: setting.component.Mailboxes,
       group: 'settings-account',
+      feature: 'mailboxes',
       role: AccountRole.User,
       order: 1700
     },
@@ -255,6 +257,7 @@ export function createModel (builder: Builder): void {
       label: setting.string.Backup,
       icon: setting.icon.Setting,
       component: setting.component.Backup,
+      feature: 'backup',
       order: 950,
       role: AccountRole.Owner
     },
@@ -351,6 +354,7 @@ export function createModel (builder: Builder): void {
       icon: setting.icon.InviteSettings,
       component: setting.component.InviteSetting,
       group: 'settings-editor',
+      feature: 'invites',
       role: AccountRole.Maintainer,
       order: 4700
     },
@@ -365,6 +369,7 @@ export function createModel (builder: Builder): void {
       icon: exportPlugin.icon.Export,
       component: exportPlugin.component.ExportSettings,
       group: 'settings-editor',
+      feature: 'export',
       role: AccountRole.User,
       order: 4800
     },
@@ -702,6 +707,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.Permission, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: setting.component.PermissionPresenter
+  })
+
+  builder.mixin(core.class.AttributePermission, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: setting.component.AttributePermissionPresenter
   })
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {

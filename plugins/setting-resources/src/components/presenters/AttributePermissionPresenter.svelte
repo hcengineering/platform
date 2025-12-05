@@ -1,5 +1,6 @@
 <!--
-// Copyright © 2025 Hardcore Engineering Inc.
+
+// Copyright © 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,27 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
-  import { RelationsEditor } from '@hcengineering/view-resources'
+  import { AnyAttribute, AttributePermission } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
+  import { Label } from '@hcengineering/ui'
 
-  export let readonly: boolean = false
-  export let doc: Card
-  export let hidden: boolean = false
+  export let value: AttributePermission
+  export let inline: boolean = false
+
+  const client = getClient()
+  $: attr = client.getModel().findObject(value?.attribute) as AnyAttribute
 </script>
 
-{#if !hidden}
-  <div class="section-relations">
-    <RelationsEditor object={doc} {readonly} on:loaded emptyKind="placeholder" />
+{#if value}
+  <div class="flex-presenter" class:inline-presenter={inline}>
+    <Label label={value.label} />
+    {#if attr}
+      <Label label={attr.label} />
+    {/if}
   </div>
 {/if}
-
-<style lang="scss">
-  .section-relations {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    padding: 0 1rem;
-  }
-</style>

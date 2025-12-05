@@ -76,6 +76,7 @@ export function createModel (builder: Builder): void {
       icon: templates.icon.Templates,
       component: templates.component.Templates,
       group: 'settings-editor',
+      feature: 'templates',
       role: AccountRole.User,
       order: 3500
     },

@@ -22,12 +22,13 @@
   import { CardSpace, MasterTag } from '@hcengineering/card'
   import card from '../../plugin'
   import { onDestroy } from 'svelte'
-  import { location } from '@hcengineering/ui'
+  import { Action, location } from '@hcengineering/ui'
 
   export let space: CardSpace
   export let model: SpacesNavModel
   export let currentSpace: Ref<Space> | undefined
   export let forciblyСollapsed: boolean = false
+  export let getActions: (space: Space) => Promise<Action[]> = async () => []
 
   let classes: MasterTag[] = []
   let allClasses: MasterTag[] = []
@@ -61,6 +62,7 @@
     highlighted={currentSpace === space._id}
     visible={currentSpace === space._id || forciblyСollapsed}
     {forciblyСollapsed}
+    actions={() => getActions(space)}
     on:dragstart={(evt) => {
       evt.preventDefault()
     }}

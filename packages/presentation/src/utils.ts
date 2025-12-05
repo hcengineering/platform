@@ -254,6 +254,13 @@ export function getClient (): TxOperations & Client {
   return clientProxy
 }
 
+export function isDisabled (feature?: string): boolean {
+  if (feature === undefined) {
+    return false
+  }
+  return getMetadata(plugin.metadata.DisabledFeatures)?.has(feature) ?? false
+}
+
 export type OnClientListener = (client: Client, account: Account) => void | Promise<void>
 const onClientListeners: OnClientListener[] = []
 

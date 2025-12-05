@@ -109,6 +109,9 @@ export interface SettingsCategory extends Doc {
   order?: number
   role: AccountRole
 
+  // A feature to be used with hides
+  feature?: string
+
   expandable?: boolean
   adminOnly?: boolean
 }
@@ -186,6 +189,7 @@ export default plugin(settingId, {
     Terms: '' as AnyComponent,
     ClassSetting: '' as AnyComponent,
     PermissionPresenter: '' as AnyComponent,
+    AttributePermissionPresenter: '' as AnyComponent,
     SpaceTypeDescriptorPresenter: '' as AnyComponent,
     SpaceTypeGeneralSectionEditor: '' as AnyComponent,
     SpaceTypePropertiesSectionEditor: '' as AnyComponent,

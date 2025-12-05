@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { createQuery, isAdminUser } from '@hcengineering/presentation'
+  import { createQuery, isAdminUser, isDisabled } from '@hcengineering/presentation'
   import setting, { SettingsCategory } from '@hcengineering/setting'
   import {
     Component,
@@ -43,7 +43,7 @@
     setting.class.WorkspaceSettingCategory,
     {},
     (res) => {
-      categories = res.filter((p) => hasAccountRole(account, p.role))
+      categories = res.filter((p) => hasAccountRole(account, p.role) && !isDisabled(p.feature ?? ''))
       if (!admin) {
         categories = categories.filter((p) => !(p.adminOnly ?? false))
       }

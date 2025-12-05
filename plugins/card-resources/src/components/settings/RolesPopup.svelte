@@ -12,27 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
-  import { RelationsEditor } from '@hcengineering/view-resources'
+  import { MasterTag, Role, Tag } from '@hcengineering/card'
+  import core, { Ref } from '@hcengineering/core'
+  import { ObjectPopup } from '@hcengineering/presentation'
+  import card from '../../plugin'
 
-  export let readonly: boolean = false
-  export let doc: Card
-  export let hidden: boolean = false
+  export let masterTag: MasterTag | Tag
+  export let roles: Ref<Role>[]
 </script>
 
-{#if !hidden}
-  <div class="section-relations">
-    <RelationsEditor object={doc} {readonly} on:loaded emptyKind="placeholder" />
-  </div>
-{/if}
-
-<style lang="scss">
-  .section-relations {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    padding: 0 1rem;
-  }
-</style>
+<ObjectPopup
+  _class={card.class.Role}
+  ignoreObjects={roles}
+  create={{
+    label: core.string.Role,
+    component: card.component.CreateRolePopup,
+    props: { masterTag }
+  }}
+  on:close
+>
+  <svelte:fragment slot="item" let:item={doc}>
+    <div class="overflow-label">
+      {doc.name}
+    </div>
+  </svelte:fragment>
+</ObjectPopup>

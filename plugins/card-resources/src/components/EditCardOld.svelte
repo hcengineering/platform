@@ -42,6 +42,7 @@
   import Childs from './Childs.svelte'
   import Content from './Content.svelte'
   import TagsEditor from './TagsEditor.svelte'
+  import { canChangeDoc, permissionsStore } from '@hcengineering/contact-resources'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
@@ -87,6 +88,7 @@
     })
 
   $: _readonly = (readonly || doc?.readonly) ?? false
+  $: updatePermissionForbidden = doc && !canChangeDoc(doc?._class, doc?.space, $permissionsStore)
   $: canSave = title.trim().length > 0 && !_readonly
 
   async function saveTitle (ev: Event): Promise<void> {
@@ -149,16 +151,32 @@
       <CardPresenter value={doc} noUnderline />
     </svelte:fragment>
 
+    <svelte:fragment slot="extra">
+      <ComponentExtensions
+        extension={card.extensions.EditCardHeaderExtension}
+        props={{
+          card: doc
+        }}
+      />
+      <slot name="extra" />
+    </svelte:fragment>
+
     <div class="container">
       <div class="title flex-row-center">
-        <EditBox focusIndex={1} bind:value={title} placeholder={card.string.Card} on:blur={(evt) => saveTitle(evt)} />
+        <EditBox
+          focusIndex={1}
+          bind:value={title}
+          disabled={_readonly || updatePermissionForbidden}
+          placeholder={card.string.Card}
+          on:blur={(evt) => saveTitle(evt)}
+        />
       </div>
 
-      <TagsEditor {doc} />
+      <TagsEditor {doc} readonly={_readonly} />
 
       <CardAttributeEditor value={doc} {mixins} readonly={_readonly} ignoreKeys={['title', 'content', 'parent']} />
 
-      <Content {doc} readonly={_readonly} bind:content />
+      <Content {doc} readonly={_readonly || updatePermissionForbidden} bind:content />
     </div>
 
     <ComponentExtensions
@@ -171,7 +189,13 @@
     <Childs object={doc} readonly={_readonly} />
     <RelationsEditor object={doc} readonly={_readonly} />
 
-    <Attachments objectId={doc._id} _class={doc._class} space={doc.space} attachments={doc.attachments ?? 0} />
+    <Attachments
+      objectId={doc._id}
+      _class={doc._class}
+      space={doc.space}
+      readonly={_readonly}
+      attachments={doc.attachments ?? 0}
+    />
 
     <svelte:fragment slot="utils">
       {#if !_readonly}

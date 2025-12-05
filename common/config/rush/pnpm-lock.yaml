@@ -2010,7 +2010,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../services/rating
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.21
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/rank':
         specifier: workspace:^0.7.17
@@ -29993,7 +29993,7 @@ importers:
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/platform
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.21
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/server-core':
         specifier: workspace:^0.7.18
@@ -30320,7 +30320,7 @@ importers:
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/platform
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.21
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/server-client':
         specifier: workspace:^0.7.16
@@ -30707,7 +30707,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../services/translate
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.21
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/rpc':
         specifier: workspace:^0.7.17
@@ -35290,7 +35290,7 @@ importers:
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/platform
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.21
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/server-core':
         specifier: workspace:^0.7.18
@@ -36697,7 +36697,7 @@ importers:
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/platform
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.21
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/server-backup':
         specifier: workspace:^0.7.0
@@ -40176,7 +40176,7 @@ importers:
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/platform
       '@hcengineering/postgres':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.21
         version: link:../../foundations/server/packages/postgres
       '@hcengineering/rating':
         specifier: workspace:^0.7.0

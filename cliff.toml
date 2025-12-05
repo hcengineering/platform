@@ -48,11 +48,41 @@ filter_unconventional = true
 split_commits = false
 # regex for preprocessing the commit messages
 commit_preprocessors = [
+   # Transform non-conventional commits to conventional format BEFORE filtering
+   { pattern = '^Fix ', replace = "fix: " },
+   { pattern = '^fix ', replace = "fix: " },
+   { pattern = '^QFix ', replace = "fix: " },
+   { pattern = '^qfix ', replace = "fix: " },
+   { pattern = '^QFIX: ', replace = "fix: " },
+   { pattern = '^Add ', replace = "feat: " },
+   { pattern = '^Update ', replace = "chore: " },
+   { pattern = '^Remove ', replace = "chore: " },
+   { pattern = '^Bump ', replace = "chore: " },
+   { pattern = '^Enable ', replace = "feat: " },
+   { pattern = '^Disable ', replace = "chore: " },
+   { pattern = '^Improve ', replace = "feat: " },
+   { pattern = '^Optimize ', replace = "perf: " },
+   { pattern = '^Reuse ', replace = "refactor: " },
+   { pattern = '^Allow ', replace = "feat: " },
+   { pattern = '^Ability to ', replace = "feat: " },
+   { pattern = '^Return ', replace = "fix: " },
+   { pattern = '^Navigate ', replace = "feat: " },
+   { pattern = '^Clear ', replace = "fix: " },
+   { pattern = '^Do not ', replace = "fix: " },
+   # Link issue numbers
    { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](https://github.com/hcengineering/platform/issues/${2}))"},
-    { pattern = "Merge pull request #([0-9]+) from [^ ]+", replace = "PR [#${1}](https://github.com/hcengineering/platform/pull/${1}):"},
+   { pattern = "Merge pull request #([0-9]+) from [^ ]+", replace = "PR [#${1}](https://github.com/hcengineering/platform/pull/${1}):"},
 ]
 # regex for parsing and grouping commits
 commit_parsers = [
+  # Skip merge commits and noise FIRST
+  { message = "^Merge branch", skip = true },
+  { message = "^Merge remote-tracking branch", skip = true },
+  { message = "^chore\\(release\\): prepare for", skip = true },
+  { message = "^chore\\(deps.*\\)", skip = true },
+  { message = "^chore\\(pr\\)", skip = true },
+  { message = "^chore\\(pull\\)", skip = true },
+  # Categorize conventional commits
   { message = "^feat", group = "<!-- 0 -->🚀 Features" },
   { message = "^fix", group = "<!-- 1 -->🐛 Bug Fixes" },
   { message = "^doc", group = "<!-- 3 -->📚 Documentation" },
@@ -60,10 +90,6 @@ commit_parsers = [
   { message = "^refactor", group = "<!-- 2 -->🚜 Refactor" },
   { message = "^style", group = "<!-- 5 -->🎨 Styling" },
   { message = "^test", group = "<!-- 6 -->🧪 Testing" },
-  { message = "^chore\\(release\\): prepare for", skip = true },
-  { message = "^chore\\(deps.*\\)", skip = true },
-  { message = "^chore\\(pr\\)", skip = true },
-  { message = "^chore\\(pull\\)", skip = true },
   { message = "^chore|^ci", group = "<!-- 7 -->⚙️ Miscellaneous Tasks" },
   { body = ".*security", group = "<!-- 8 -->🛡️ Security" },
   { message = "^revert", group = "<!-- 9 -->◀️ Revert" },
@@ -73,7 +99,7 @@ protect_breaking_commits = false
 # filter out the commits that are not matched by commit parsers
 filter_commits = false
 # regex for matching git tags
-# tag_pattern = "v[0-9].*"
+tag_pattern = "v[0-9].*"
 # regex for skipping tags
 # skip_tags = ""
 # regex for ignoring tags

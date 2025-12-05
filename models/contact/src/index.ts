@@ -1425,6 +1425,7 @@ export function createModel (builder: Builder): void {
     component: contact.component.TranslationSettings,
     group: 'settings-account',
     role: AccountRole.Guest,
+    feature: 'auto-translate',
     order: 1600
   })
 }

@@ -20,6 +20,7 @@
     "Description": "Beschreibung",
     "Major": "Major",
     "Minor": "Minor",
+    "Patch": "Patch",
     "Codename": "Codename",
     "ProductVersionStateActive": "Aktiv",
     "ProductVersionStateReleased": "Veröffentlicht",

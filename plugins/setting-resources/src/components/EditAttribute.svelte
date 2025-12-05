@@ -15,10 +15,10 @@
 <script lang="ts">
   import core, {
     AnyAttribute,
+    AttributePermission,
     Class,
     DocumentUpdate,
     IndexKind,
-    Permission,
     PropertyType,
     Ref,
     Type
@@ -161,8 +161,8 @@
     client.getModel().findObject(getAttributePermissionRef(attribute, false)) !== undefined ||
     client.getModel().findObject(getAttributePermissionRef(attribute, true)) !== undefined
 
-  function getAttributePermissionRef (attr: AnyAttribute, forbidden: boolean): Ref<Permission> {
-    return `${attr._id}_${forbidden ? 'forbidden' : 'allowed'}` as Ref<Permission>
+  function getAttributePermissionRef (attr: AnyAttribute, forbidden: boolean): Ref<AttributePermission> {
+    return `${attr._id}_${forbidden ? 'forbidden' : 'allowed'}` as Ref<AttributePermission>
   }
 
   function changeRestricted (e: CustomEvent<boolean>): void {
@@ -177,7 +177,7 @@
           const txClass = isMixin ? core.class.TxMixin : core.class.TxUpdateDoc
           const txMatchQ = isMixin ? `attributes.${attribute.name}` : `operations.${attribute.name}`
           await client.createDoc(
-            core.class.Permission,
+            core.class.AttributePermission,
             core.space.Model,
             {
               objectClass: attribute.attributeOf,
@@ -188,12 +188,13 @@
               scope: 'space',
               forbid: false,
               label: view.string.AllowAttributeChanges,
-              description: attribute.label
+              description: attribute.label,
+              attribute: attribute._id
             },
             getAttributePermissionRef(attribute, false)
           )
           await client.createDoc(
-            core.class.Permission,
+            core.class.AttributePermission,
             core.space.Model,
             {
               objectClass: attribute.attributeOf,
@@ -204,7 +205,8 @@
               scope: 'space',
               forbid: true,
               label: view.string.ForbidAttributeChanges,
-              description: attribute.label
+              description: attribute.label,
+              attribute: attribute._id
             },
             getAttributePermissionRef(attribute, true)
           )

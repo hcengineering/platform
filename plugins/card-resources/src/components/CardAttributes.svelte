@@ -15,8 +15,8 @@
 <script lang="ts">
   import { Card } from '@hcengineering/card'
   import { PermissionsStore } from '@hcengineering/contact'
-  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
-  import core, { AnyAttribute, Class, Doc, Permission, Ref, toRank, TypedSpace } from '@hcengineering/core'
+  import { canChangeAttribute, permissionsStore } from '@hcengineering/contact-resources'
+  import core, { AnyAttribute, Class, Doc, Ref, toRank, TypedSpace } from '@hcengineering/core'
   import {
     AttributeBarEditor,
     createQuery,
@@ -57,9 +57,8 @@
     updateKeys(_class, ignoreKeys, to)
   })
 
-  function checkForbiddenPermission (attr: AnyAttribute, permissionsStore: PermissionsStore): boolean {
-    const _id = `${attr._id}_forbidden` as Ref<Permission>
-    return checkMyPermission(_id, object.space as Ref<TypedSpace>, permissionsStore)
+  function canChange (attr: AnyAttribute, permissionsStore: PermissionsStore): boolean {
+    return canChangeAttribute(attr, object.space as Ref<TypedSpace>, permissionsStore)
   }
 </script>
 
@@ -70,7 +69,7 @@
       {_class}
       {object}
       {showHeader}
-      readonly={readonly || checkForbiddenPermission(key.attr, $permissionsStore)}
+      readonly={readonly || !canChange(key.attr, $permissionsStore)}
       withIcon
       on:update
     />
