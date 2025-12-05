@@ -46,6 +46,7 @@ export {
   createTranscriptionConsumer,
   TranscriptionConsumer,
   type SendToDeadLetterCallback,
+  type CreateMessageWithTimestampCallback,
   type RetryConfig
 } from './consumer'
 

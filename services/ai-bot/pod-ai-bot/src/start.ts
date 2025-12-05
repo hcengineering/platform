@@ -199,9 +199,36 @@ export const start = async (): Promise<void> => {
         const wsClient = await aiControl.getWorkspaceClient(workspace)
         if (wsClient === undefined) {
           ctx.error('Failed to get workspace client for updating message', { workspace })
-          return
+          return false
         }
-        await wsClient.updateTranscriptionMessage(ctx, messageId as Ref<ChatMessage>, text)
+        return await wsClient.updateTranscriptionMessage(ctx, messageId as Ref<ChatMessage>, text)
+      },
+      // Callback to create message with timestamp (fallback when placeholder not found)
+      async (ctx, workspace: WorkspaceUuid, roomId: string, participant: string, text: string, startTimeSec: number) => {
+        const wsClient = await aiControl.getWorkspaceClient(workspace)
+        if (wsClient === undefined) {
+          ctx.error('Failed to get workspace client for creating fallback message', { workspace })
+          return false
+        }
+
+        // Get meeting start time to calculate absolute timestamp
+        // startTimeSec is relative to meeting start
+        const meetingMinutes = await wsClient.getMeetingMinutesByRoom(ctx, roomId as Ref<Room>)
+        if (meetingMinutes === undefined) {
+          ctx.error('Failed to get meeting minutes for fallback message', { workspace, roomId })
+          return false
+        }
+
+        // Calculate absolute timestamp: meeting creation time + offset in seconds
+        const timestamp = (meetingMinutes.createdOn ?? Date.now()) + startTimeSec * 1000
+
+        return await wsClient.createTranscriptionMessageWithTimestamp(
+          ctx,
+          text,
+          participant as Ref<Person>,
+          roomId as Ref<Room>,
+          timestamp
+        )
       },
       // Callback to send failed tasks to dead letter queue
       (async (ctx, workspace, task, error, errorType) => {

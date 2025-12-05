@@ -44,6 +44,7 @@ import core, {
   SocialId,
   SortingOrder,
   Space,
+  Timestamp,
   toIdMap,
   Tx,
   TxCUD,
@@ -52,7 +53,7 @@ import core, {
   type Account,
   type WorkspaceIds
 } from '@hcengineering/core'
-import love, { MeetingMinutes, MeetingStatus, Room } from '@hcengineering/love'
+import love, { type MeetingMinutes, MeetingStatus, Room } from '@hcengineering/love'
 import fs from 'fs'
 import { Tiktoken } from 'js-tiktoken'
 import OpenAI from 'openai'
@@ -620,21 +621,66 @@ export class WorkspaceClient {
 
   /**
    * Update or delete a transcription placeholder message
+   * @returns true if message was found and updated/deleted, false if not found
    */
   @withContext('updateTranscriptionMessage')
   async updateTranscriptionMessage (
     ctx: MeasureContext,
     messageId: Ref<ChatMessage>,
     text: string | null
-  ): Promise<void> {
+  ): Promise<boolean> {
     await this.opClient
 
     if (this.love === undefined) {
       this.ctx.error('Love controller is not initialized')
-      return
+      return false
     }
 
-    await this.love.updateTranscriptionMessage(messageId, text)
+    return await this.love.updateTranscriptionMessage(messageId, text)
+  }
+
+  /**
+   * Create a transcription message with specific timestamp (fallback when placeholder not found)
+   */
+  @withContext('createTranscriptionMessageWithTimestamp')
+  async createTranscriptionMessageWithTimestamp (
+    ctx: MeasureContext,
+    text: string,
+    participant: Ref<Person>,
+    roomId: Ref<Room>,
+    timestamp: Timestamp
+  ): Promise<boolean> {
+    await this.opClient
+
+    if (this.love === undefined) {
+      this.ctx.error('Love controller is not initialized')
+      return false
+    }
+
+    return await this.love.createTranscriptionMessageWithTimestamp(text, participant, roomId, timestamp)
+  }
+
+  /**
+   * Get MeetingMinutes by room ID (any status, most recent)
+   */
+  @withContext('getMeetingMinutesByRoom')
+  async getMeetingMinutesByRoom (
+    ctx: MeasureContext,
+    roomId: Ref<Room>
+  ): Promise<MeetingMinutes | undefined> {
+    await this.opClient
+
+    if (this.love === undefined) {
+      this.ctx.error('Love controller is not initialized')
+      return undefined
+    }
+
+    const room = await this.love.getRoom(roomId)
+    if (room === undefined) {
+      return undefined
+    }
+
+    return await this.love.getMeetingMinutesAny(room)
   }
 
   async getLoveIdentity (): Promise<IdentityResponse | undefined> {

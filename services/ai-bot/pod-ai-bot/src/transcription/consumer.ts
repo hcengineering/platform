@@ -2,7 +2,8 @@
 
 import { gunzip as _gunzip } from 'zlib'
 
-import { MeasureContext, withContext, WorkspaceUuid, type WorkspaceIds } from '@hcengineering/core'
+import { MeasureContext, Ref, withContext, WorkspaceUuid, type WorkspaceIds } from '@hcengineering/core'
+import { Room } from '@hcengineering/love'
 import { ConsumerControl, StorageAdapter } from '@hcengineering/server-core'
 
 import { TranscriptionQueueTask, TranscriptionProvider, TranscriptionConfig } from './types'
@@ -45,6 +46,16 @@ enum TranscriptionErrorType {
 }
 
 /**
+ * Parse roomId from roomName (format: workspaceUuid_roomName_roomId)
+ * Returns the last segment as roomId
+ */
+function parseRoomId (roomName: string): Ref<Room> | undefined {
+  const parsed = roomName.split('_')
+  if (parsed.length < 2) return undefined
+  return parsed[parsed.length - 1] as Ref<Room>
+}
+
+/**
  * Callback type for sending transcription results (legacy, creates new message)
  */
 export type TranscriptSendCallback = (
@@ -67,7 +78,19 @@ export type UpdateMessageCallback = (
   roomName: string,
   messageId: string,
   text: string | null
-) => Promise<void>
+) => Promise<boolean>
+
+/**
+ * Callback type for creating transcription message with timestamp (fallback)
+ */
+export type CreateMessageWithTimestampCallback = (
+  ctx: MeasureContext,
+  workspace: WorkspaceUuid,
+  roomId: string,
+  participant: string,
+  text: string,
+  startTimeSec: number
+) => Promise<boolean>
 
 /**
  * Callback type for getting workspace storage info
@@ -214,6 +237,7 @@ export class TranscriptionConsumer {
     private readonly getWorkspaceStorage: GetWorkspaceStorageCallback,
     private readonly sendTranscript: TranscriptSendCallback,
     private readonly updateMessage: UpdateMessageCallback,
+    private readonly createMessageWithTimestamp: CreateMessageWithTimestampCallback,
     private readonly sendToDeadLetter?: SendToDeadLetterCallback,
     private readonly debugDir?: string,
     retryConfig?: Partial<RetryConfig>
@@ -337,7 +361,43 @@ export class TranscriptionConsumer {
 
       // Update placeholder message with transcription, or create new message if no placeholder
       if (task.placeholderMessageId !== undefined) {
-        await this.updateMessage(ctx, workspace, task.roomName, task.placeholderMessageId, finalText)
+        const updated = await this.updateMessage(ctx, workspace, task.roomName, task.placeholderMessageId, finalText)
+        if (!updated) {
+          // Placeholder not found (e.g., service restarted, meeting ended) - create message with timestamp
+          this.ctx.info('Placeholder not found, creating fallback message with timestamp', {
+            workspace,
+            blobId: task.blobId,
+            participant: task.participant,
+            placeholderMessageId: task.placeholderMessageId,
+            startTimeSec: task.startTimeSec
+          })
+          // Calculate timestamp based on meeting start + startTimeSec
+          // startTimeSec is relative to meeting start, we use it as timestamp offset
+          const roomId = parseRoomId(task.roomName)
+          if (roomId === undefined) {
+            this.ctx.error('Failed to parse roomId from roomName', {
+              workspace,
+              roomName: task.roomName,
+              participant: task.participant
+            })
+            return
+          }
+          const created = await this.createMessageWithTimestamp(
+            ctx,
+            workspace,
+            roomId,
+            task.participant,
+            finalText,
+            task.startTimeSec
+          )
+          if (!created) {
+            this.ctx.error('Failed to create fallback transcription message', {
+              workspace,
+              blobId: task.blobId,
+              participant: task.participant
+            })
+          }
+        }
       } else {
         // Fallback: send as new message (legacy behavior)
         await this.sendTranscript(
@@ -616,6 +676,7 @@ export function createTranscriptionConsumer (
   getWorkspaceStorage: GetWorkspaceStorageCallback,
   sendTranscript: TranscriptSendCallback,
   updateMessage: UpdateMessageCallback,
+  createMessageWithTimestamp: CreateMessageWithTimestampCallback,
   sendToDeadLetter?: SendToDeadLetterCallback,
   debugDir?: string,
   retryConfig?: Partial<RetryConfig>
@@ -627,6 +688,7 @@ export function createTranscriptionConsumer (
     getWorkspaceStorage,
     sendTranscript,
     updateMessage,
+    createMessageWithTimestamp,
     sendToDeadLetter,
     debugDir,
     retryConfig

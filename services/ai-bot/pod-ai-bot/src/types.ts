@@ -32,9 +32,9 @@ export interface HistoryRecord {
 export interface TranscriptionTask {
   /** Storage object name for gzipped WAV file */
   blobId: string
-  /** Room name from LiveKit */
+  /** Room name from LiveKit (format: workspaceUuid_roomName_roomId) */
   roomName: string
-  /** Participant identity */
+  /** Participant identity (Ref<Person>) */
   participant: string
   /** Start time in seconds from meeting start */
   startTimeSec: number
