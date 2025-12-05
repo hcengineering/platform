@@ -196,9 +196,11 @@ export class AIControl {
         placeholderMessageId: placeholderMessageId as string | undefined
       }
 
-      // Queue for transcription
+      // Queue for transcription with partition key based on workspace+participant
+      // This ensures fair processing when multiple users are speaking simultaneously
       if (this.transcriptionProducer !== undefined) {
-        await this.transcriptionProducer.send(this.ctx, workspace, [task])
+        const partitionKey = `${workspace}_${metadata.participant}`
+        await this.transcriptionProducer.send(this.ctx, workspace, [task], partitionKey)
         this.ctx.info('Audio chunk queued for transcription', {
           blobId,
           workspace,

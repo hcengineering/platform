@@ -145,13 +145,16 @@ export default defineAgent({
       (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
         if (publication.kind === TrackKind.KIND_AUDIO) {
           console.info('Unsubscribing from track', { participant: participant.name, sid: publication.sid })
-          stt.unsubscribe(track, publication, participant)
+          // Fire and forget - unsubscribe handles its own async operations
+          // We can't await here as the event handler is sync, but unsubscribe will complete in background
+          void stt.unsubscribe(track, publication, participant)
         }
       }
     )
 
     ctx.addShutdownCallback(async () => {
-      stt.close()
+      // Wait for all session finalizations to complete before shutdown
+      await stt.close()
     })
   }
 })

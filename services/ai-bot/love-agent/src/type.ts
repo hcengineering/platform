@@ -32,7 +32,7 @@ export interface Stt {
   stop: () => void
   start: () => void
   subscribe: (track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => void
-  unsubscribe: (track: RemoteTrack | undefined, publication: RemoteTrackPublication, participant: RemoteParticipant) => void
+  unsubscribe: (track: RemoteTrack | undefined, publication: RemoteTrackPublication, participant: RemoteParticipant) => Promise<void>
   updateLanguage: (language: string) => void
-  close: () => void
+  close: () => Promise<void>
 }

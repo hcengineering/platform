@@ -67,6 +67,7 @@ export class STT implements Stt {
   private readonly streamBySid = new Map<string, AudioStream>()
   private readonly participantBySid = new Map<string, RemoteParticipant>()
   private readonly stoppedSids = new Set<string>()
+  private readonly pendingFinalizations = new Map<string, Promise<void>>()
 
   private readonly sessionBySid = new Map<string, any>()
   private readonly timingBySid = new Map<string, StreamTiming>()
@@ -121,7 +122,7 @@ export class STT implements Stt {
     console.info('Stopping transcription', { workspace: this.workspace, room: this.room.name })
     this.isInProgress = false
     for (const sid of this.trackBySid.keys()) {
-      this.stopWs(sid)
+      void this.stopWs(sid)
     }
   }
 
@@ -142,11 +143,11 @@ export class STT implements Stt {
     }
   }
 
-  unsubscribe (
+  async unsubscribe (
     track: RemoteTrack | undefined,
     publication: RemoteTrackPublication,
     participant: RemoteParticipant
-  ): void {
+  ): Promise<void> {
     const sid = publication.sid
     if (sid === undefined) return
 
@@ -156,12 +157,33 @@ export class STT implements Stt {
       name: participant.name,
       identity: participant.identity
     })
+    // Stop the stream BEFORE deleting participant info from maps
+    // This ensures finalizeSession can still access participant display name
+    // Wait for stopWs to complete to ensure session is finalized before cleanup
+    await this.stopWs(sid)
     this.trackBySid.delete(sid)
     this.participantBySid.delete(sid)
-    this.stopWs(sid)
   }
 
-  stopWs (sid: string): void {
+  async stopWs (sid: string): Promise<void> {
+    // If already finalizing, wait for the existing finalization to complete
+    const existingPromise = this.pendingFinalizations.get(sid)
+    if (existingPromise !== undefined) {
+      await existingPromise
+      return
+    }
+
+    const finalizationPromise = this.doStopWs(sid)
+    this.pendingFinalizations.set(sid, finalizationPromise)
+
+    try {
+      await finalizationPromise
+    } finally {
+      this.pendingFinalizations.delete(sid)
+    }
+  }
+
+  private async doStopWs (sid: string): Promise<void> {
     try {
       this.stoppedSids.add(sid)
 
@@ -171,7 +193,8 @@ export class STT implements Stt {
       }
 
       this.finalizeChunk(sid)
-      void this.finalizeSession(sid)
+      // Wait for session finalization to complete (including ffmpeg conversion and upload)
+      await this.finalizeSession(sid)
 
       this.streamBySid.delete(sid)
       this.sessionBySid.delete(sid)
@@ -912,13 +935,16 @@ export class STT implements Stt {
     }
   }
 
-  close (): void {
+  async close (): Promise<void> {
     for (const sid of this.chunkStateBySid.keys()) {
       this.finalizeChunk(sid)
     }
+    // Wait for all session finalizations to complete in parallel
+    const sessionPromises: Promise<void>[] = []
     for (const sid of this.sessionStateBySid.keys()) {
-      void this.finalizeSession(sid)
+      sessionPromises.push(this.finalizeSession(sid))
     }
+    await Promise.all(sessionPromises)
     this.trackBySid.clear()
     this.participantBySid.clear()
     this.chunkStateBySid.clear()

@@ -150,6 +150,7 @@ class PlatformQueueImpl implements PlatformQueue {
       await this.checkCreateTopic(QueueTopic.Users, topics, 1)
       await this.checkCreateTopic(QueueTopic.Process, topics, 1)
       await this.checkCreateTopic(QueueTopic.AIQueue, topics, 10)
+      await this.checkCreateTopic(QueueTopic.TranscriptionQueue, topics, 10)
     } finally {
       await admin.disconnect()
     }

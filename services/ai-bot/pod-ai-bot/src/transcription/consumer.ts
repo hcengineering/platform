@@ -22,7 +22,8 @@ const DEFAULT_RETRY_CONFIG = {
   maxRetries: 5,
   initialDelayMs: 1000,
   maxDelayMs: 30000,
-  backoffMultiplier: 2
+  backoffMultiplier: 2,
+  maxTimeoutRetries: 3 // After 3 consecutive timeouts, give up
 }
 
 /**
@@ -36,7 +37,11 @@ enum TranscriptionErrorType {
   /** Other transient error - retryable */
   TransientError = 'transient_error',
   /** Permanent error - non-retryable */
-  PermanentError = 'permanent_error'
+  PermanentError = 'permanent_error',
+  /** Network error (fetch failed, connection issues) - infinite retry */
+  NetworkError = 'network_error',
+  /** Request timeout - retryable but with 3-strike limit */
+  Timeout = 'timeout'
 }
 
 /**
@@ -93,6 +98,7 @@ export interface RetryConfig {
   initialDelayMs: number
   maxDelayMs: number
   backoffMultiplier: number
+  maxTimeoutRetries: number
 }
 
 /**
@@ -129,19 +135,41 @@ function classifyError (err: Error): TranscriptionErrorType {
     return TranscriptionErrorType.FileNotFound
   }
 
-  // Service unavailable errors (retryable)
+  // Network errors - these require infinite retry (connection lost, fetch failed)
+  // These typically happen when service is shutting down or network is temporarily unavailable
+  if (
+    message.includes('fetch failed') ||
+    message.includes('econnrefused') ||
+    message.includes('econnreset') ||
+    message.includes('enotfound') ||
+    message.includes('socket hang up') ||
+    message.includes('network error') ||
+    message.includes('network request failed') ||
+    message.includes('failed to fetch') ||
+    message.includes('connection refused') ||
+    message.includes('connection reset')
+  ) {
+    return TranscriptionErrorType.NetworkError
+  }
+
+  // Timeout errors - these have a 3-strike limit
+  if (
+    message.includes('timeout') ||
+    message.includes('timed out') ||
+    message.includes('408') ||
+    message.includes('request timeout') ||
+    message.includes('etimedout') ||
+    message.includes('esockettimedout')
+  ) {
+    return TranscriptionErrorType.Timeout
+  }
+
+  // Service unavailable errors (retryable with maxRetries limit)
   if (
     message.includes('service unavailable') ||
     message.includes('503') ||
     message.includes('502') ||
     message.includes('504') ||
-    message.includes('timeout') ||
-    message.includes('timed out') ||
-    message.includes('econnrefused') ||
-    message.includes('econnreset') ||
-    message.includes('enotfound') ||
-    message.includes('socket hang up') ||
-    message.includes('network') ||
     message.includes('temporarily unavailable') ||
     message.includes('rate limit') ||
     message.includes('429') ||
@@ -359,8 +387,11 @@ export class TranscriptionConsumer {
     control?: ConsumerControl
   ): Promise<{ text: string, language?: string } | undefined> {
     let lastError: Error | undefined
+    let consecutiveTimeouts = 0
+    let attempt = 0
 
-    for (let attempt = 0; attempt <= this.retryConfig.maxRetries; attempt++) {
+    // Use infinite loop - we'll break out based on error type
+    while (true) {
       try {
         const result = await ctx.with('transcribe', {}, () =>
           this.provider.transcribe(audioData, {
@@ -373,18 +404,19 @@ export class TranscriptionConsumer {
       } catch (err: any) {
         lastError = err
         const errorType = classifyError(err)
+        attempt++
 
         this.ctx.warn('Transcription attempt failed', {
           workspace,
           blobId: task.blobId,
-          attempt: attempt + 1,
-          maxRetries: this.retryConfig.maxRetries,
+          attempt,
           errorType,
+          consecutiveTimeouts: errorType === TranscriptionErrorType.Timeout ? consecutiveTimeouts + 1 : 0,
           error: err.message
         })
 
-        // Don't retry permanent errors
-        if (errorType === TranscriptionErrorType.PermanentError) {
+        // Don't retry permanent errors or file not found
+        if (errorType === TranscriptionErrorType.PermanentError || errorType === TranscriptionErrorType.FileNotFound) {
           this.ctx.error('Permanent transcription error, not retrying', {
             workspace,
             blobId: task.blobId,
@@ -394,41 +426,79 @@ export class TranscriptionConsumer {
           return undefined
         }
 
-        // Check if we have more retries
-        if (attempt < this.retryConfig.maxRetries) {
-          const delay = calculateBackoffDelay(attempt, this.retryConfig)
+        // Handle timeout errors with 3-strike rule
+        if (errorType === TranscriptionErrorType.Timeout) {
+          consecutiveTimeouts++
+          if (consecutiveTimeouts >= this.retryConfig.maxTimeoutRetries) {
+            this.ctx.error('Max consecutive timeouts reached, sending to dead letter queue', {
+              workspace,
+              blobId: task.blobId,
+              consecutiveTimeouts,
+              maxTimeoutRetries: this.retryConfig.maxTimeoutRetries
+            })
+            await this.handlePermanentError(
+              ctx,
+              workspace,
+              task,
+              `Max consecutive timeouts (${consecutiveTimeouts}) reached: ${err.message}`,
+              TranscriptionErrorType.Timeout
+            )
+            return undefined
+          }
+        } else {
+          // Reset timeout counter for non-timeout errors
+          consecutiveTimeouts = 0
+        }
 
-          this.ctx.info('Waiting before retry with exponential backoff', {
+        // Network errors get infinite retry - never give up on these
+        // They typically mean the service is shutting down or network is temporarily unavailable
+        if (errorType === TranscriptionErrorType.NetworkError) {
+          const delay = calculateBackoffDelay(Math.min(attempt - 1, 10), this.retryConfig) // Cap backoff growth
+          this.ctx.info('Network error, will retry indefinitely', {
             workspace,
             blobId: task.blobId,
-            attempt: attempt + 1,
-            nextAttempt: attempt + 2,
-            delayMs: delay
+            attempt,
+            delayMs: delay,
+            error: err.message
+          })
+          await this.waitWithHeartbeat(delay, control)
+          continue
+        }
+
+        // For ServiceUnavailable and TransientError, use maxRetries limit
+        if (attempt > this.retryConfig.maxRetries) {
+          this.ctx.error('All transcription retries exhausted', {
+            workspace,
+            blobId: task.blobId,
+            maxRetries: this.retryConfig.maxRetries,
+            lastError: lastError?.message
           })
 
-          // Send heartbeats during the wait to keep the queue healthy
-          await this.waitWithHeartbeat(delay, control)
+          await this.handlePermanentError(
+            ctx,
+            workspace,
+            task,
+            `All retries exhausted after ${this.retryConfig.maxRetries} attempts: ${lastError?.message}`,
+            errorType
+          )
+          return undefined
         }
+
+        // Calculate delay and wait before retry
+        const delay = calculateBackoffDelay(attempt - 1, this.retryConfig)
+
+        this.ctx.info('Waiting before retry with exponential backoff', {
+          workspace,
+          blobId: task.blobId,
+          attempt,
+          nextAttempt: attempt + 1,
+          delayMs: delay
+        })
+
+        // Send heartbeats during the wait to keep the queue healthy
+        await this.waitWithHeartbeat(delay, control)
       }
     }
-
-    // All retries exhausted
-    this.ctx.error('All transcription retries exhausted', {
-      workspace,
-      blobId: task.blobId,
-      maxRetries: this.retryConfig.maxRetries,
-      lastError: lastError?.message
-    })
-
-    await this.handlePermanentError(
-      ctx,
-      workspace,
-      task,
-      `All retries exhausted after ${this.retryConfig.maxRetries} attempts: ${lastError?.message}`,
-      TranscriptionErrorType.ServiceUnavailable
-    )
-
-    return undefined
   }
 
   /**
