@@ -23,6 +23,14 @@
     "ExportCompleted": "Export byl dokončen. Vaše soubory jsou připraveny. Můžete je stáhnout z disku.",
     "ExportFailed": "Export dat se nezdařil. Zkuste to prosím později.",
     "ExportToWorkspace": "Exportovat do jiného pracovního prostoru",
-    "TargetWorkspace": "Cílový pracovní prostor"
+    "TargetWorkspace": "Cílový pracovní prostor",
+    "ExportSource": "Zdroj exportu",
+    "ExportSelected": "Vybrané položky",
+    "ExportAll": "Všechny položky",
+    "ExportStarted": "Export zahájen",
+    "ExportStartedMessage": "Export zahájen. Až bude dokončen, obdržíte oznámení ve své schránce.",
+    "SelectWorkspace": "Vybrat pracovní prostor",
+    "SelectSpace": "Vybrat prostor",
+    "NoSelectedDocuments": "Žádné dokumenty nevybrány"
   }
 }

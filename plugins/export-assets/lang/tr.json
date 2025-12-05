@@ -23,6 +23,14 @@
     "ExportCompleted": "Dışa aktarma tamamlandı. Dosyalarınız hazır. Bunları sürücüden indirebilirsiniz.",
     "ExportFailed": "Veri dışa aktarılamadı. Lütfen daha sonra tekrar deneyin.",
     "ExportToWorkspace": "Başka bir çalışma alanına aktar",
-    "TargetWorkspace": "Hedef çalışma alanı"
+    "TargetWorkspace": "Hedef çalışma alanı",
+    "ExportSource": "Dışa aktarma kaynağı",
+    "ExportSelected": "Seçili öğeler",
+    "ExportAll": "Tüm öğeler",
+    "ExportStarted": "Dışa aktarma başladı",
+    "ExportStartedMessage": "Dışa aktarma başladı. Tamamlandığında Gelen Kutunuzda bir bildirim alacaksınız.",
+    "SelectWorkspace": "Çalışma alanı seç",
+    "SelectSpace": "Alan seç",
+    "NoSelectedDocuments": "Seçili belge yok"
   }
 }

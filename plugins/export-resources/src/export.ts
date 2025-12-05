@@ -11,10 +11,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { type Class, type Doc, type DocumentQuery, type Ref } from '@hcengineering/core'
-import presentation, { MessageBox } from '@hcengineering/presentation'
-import { showPopup } from '@hcengineering/ui'
-import { getMetadata } from '@hcengineering/platform'
+import presentation from '@hcengineering/presentation'
+import { addNotification, NotificationSeverity } from '@hcengineering/ui'
+import { getMetadata, translate } from '@hcengineering/platform'
 import { type RelationDefinition } from '@hcengineering/export'
+import { getCurrentLanguage } from '@hcengineering/theme'
+import ExportNotification from './components/ExportNotification.svelte'
 import plugin from './plugin'
 
 export async function exportToWorkspace (
@@ -57,24 +59,31 @@ export async function exportToWorkspace (
 
     if (!res.ok) {
       void res.json().catch(() => ({}))
-      showFailurePopup()
+      await showFailureNotification()
       return
     }
 
-    showPopup(MessageBox, {
-      label: plugin.string.ExportStarted,
-      message: plugin.string.ExportStartedMessage
-    })
+    const lang = getCurrentLanguage()
+    addNotification(
+      await translate(plugin.string.ExportStarted, {}, lang),
+      await translate(plugin.string.ExportStartedMessage, {}, lang),
+      ExportNotification,
+      undefined,
+      NotificationSeverity.Success
+    )
   } catch (err) {
     console.error('Export failed:', err)
-    showFailurePopup()
+    await showFailureNotification()
   }
 }
 
-function showFailurePopup (): void {
-  showPopup(MessageBox, {
-    label: plugin.string.ExportRequestFailed,
-    kind: 'error',
-    message: plugin.string.ExportRequestFailedMessage
-  })
+async function showFailureNotification (): Promise<void> {
+  const lang = getCurrentLanguage()
+  addNotification(
+    await translate(plugin.string.ExportRequestFailed, {}, lang),
+    await translate(plugin.string.ExportRequestFailedMessage, {}, lang),
+    ExportNotification,
+    undefined,
+    NotificationSeverity.Error
+  )
 }

@@ -23,6 +23,14 @@
     "ExportCompleted": "Export abgeschlossen. Ihre Dateien sind bereit. Sie können sie vom Laufwerk herunterladen.",
     "ExportFailed": "Datenexport fehlgeschlagen. Bitte versuchen Sie es später erneut.",
     "ExportToWorkspace": "In einen anderen Arbeitsbereich exportieren",
-    "TargetWorkspace": "Ziel-Arbeitsbereich"
+    "TargetWorkspace": "Ziel-Arbeitsbereich",
+    "ExportSource": "Exportquelle",
+    "ExportSelected": "Ausgewählte Elemente",
+    "ExportAll": "Alle Elemente",
+    "ExportStarted": "Export gestartet",
+    "ExportStartedMessage": "Export gestartet. Sie erhalten eine Benachrichtigung in Ihrem Posteingang, wenn der Export abgeschlossen ist.",
+    "SelectWorkspace": "Arbeitsbereich auswählen",
+    "SelectSpace": "Bereich auswählen",
+    "NoSelectedDocuments": "Keine Dokumente ausgewählt"
   }
 }

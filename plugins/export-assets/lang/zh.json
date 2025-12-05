@@ -22,7 +22,15 @@
     "ExportRequestFailedMessage": "提交导出时发生错误。请稍后重试。",
     "ExportCompleted": "导出完成。您的文件已准备就绪。您可以从驱动器下载它们。",
     "ExportFailed": "导出数据失败。请稍后重试。",
-    "ExportToWorkspace": "匯出到另一個工作區",
-    "TargetWorkspace": "目标工作区"
+    "ExportToWorkspace": "导出到另一个工作区",
+    "TargetWorkspace": "目标工作区",
+    "ExportSource": "导出来源",
+    "ExportSelected": "已选项目",
+    "ExportAll": "所有项目",
+    "ExportStarted": "导出已开始",
+    "ExportStartedMessage": "导出已开始。完成后您将在收件箱中收到通知。",
+    "SelectWorkspace": "选择工作区",
+    "SelectSpace": "选择空间",
+    "NoSelectedDocuments": "未选择文档"
   }
 }

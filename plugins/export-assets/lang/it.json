@@ -23,6 +23,14 @@
     "ExportCompleted": "Esportazione completata. I tuoi file sono pronti. Puoi scaricarli dal drive.",
     "ExportFailed": "Impossibile esportare i dati. Riprova più tardi.",
     "ExportToWorkspace": "Esporta in un altro spazio di lavoro",
-    "TargetWorkspace": "Spazio di destinazione"
+    "TargetWorkspace": "Spazio di destinazione",
+    "ExportSource": "Origine esportazione",
+    "ExportSelected": "Elementi selezionati",
+    "ExportAll": "Tutti gli elementi",
+    "ExportStarted": "Esportazione avviata",
+    "ExportStartedMessage": "Esportazione avviata. Riceverai una notifica nella tua casella quando sarà completata.",
+    "SelectWorkspace": "Seleziona spazio di lavoro",
+    "SelectSpace": "Seleziona spazio",
+    "NoSelectedDocuments": "Nessun documento selezionato"
   }
 }
