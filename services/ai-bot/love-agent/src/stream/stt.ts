@@ -848,9 +848,9 @@ export class STT implements Stt {
         headers: {
           'Content-Type': 'application/octet-stream',
           Authorization: 'Bearer ' + this.token,
-          'X-Room-Name': this.room.name ?? '',
+          'X-Room-Name': encodeURIComponent(this.room.name ?? ''),
           'X-Participant': metadata.participant,
-          'X-Participant-Name': metadata.participantName,
+          'X-Participant-Name': encodeURIComponent(metadata.participantName),
           'X-Start-Time': metadata.startTimeSec.toString(),
           'X-End-Time': metadata.endTimeSec.toString(),
           'X-Duration': metadata.durationSec.toString(),
@@ -890,9 +890,9 @@ export class STT implements Stt {
           'Content-Type': 'audio/ogg',
           'Content-Length': opusData.length.toString(),
           Authorization: 'Bearer ' + this.token,
-          'X-Room-Name': this.room.name ?? '',
+          'X-Room-Name': encodeURIComponent(this.room.name ?? ''),
           'X-Participant': participant,
-          'X-Participant-Name': participantName,
+          'X-Participant-Name': encodeURIComponent(participantName),
           'X-Start-Time': startTimeSec.toString(),
           'X-End-Time': endTimeSec.toString(),
           'X-Session-Number': sessionNumber.toString()

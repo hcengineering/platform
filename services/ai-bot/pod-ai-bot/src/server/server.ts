@@ -211,7 +211,8 @@ export function createServer (controller: AIControl, ctx: MeasureContext): Expre
         throw new ApiError(400, 'Expected binary body')
       }
 
-      const roomName = req.headers['x-room-name'] as string | undefined
+      const roomNameRaw = req.headers['x-room-name'] as string | undefined
+      const roomName = roomNameRaw !== undefined ? decodeURIComponent(roomNameRaw) : undefined
       const participant = req.headers['x-participant'] as string | undefined
       const startTimeSec = parseFloat((req.headers['x-start-time'] as string) ?? '0')
       const endTimeSec = parseFloat((req.headers['x-end-time'] as string) ?? '0')
@@ -256,9 +257,11 @@ export function createServer (controller: AIControl, ctx: MeasureContext): Expre
         throw new ApiError(401)
       }
 
-      const roomName = req.headers['x-room-name'] as string | undefined
+      const roomNameRaw = req.headers['x-room-name'] as string | undefined
+      const roomName = roomNameRaw !== undefined ? decodeURIComponent(roomNameRaw) : undefined
       const participant = req.headers['x-participant'] as string | undefined
-      const participantName = req.headers['x-participant-name'] as string | undefined
+      const participantNameRaw = req.headers['x-participant-name'] as string | undefined
+      const participantName = participantNameRaw !== undefined ? decodeURIComponent(participantNameRaw) : undefined
       const startTimeSec = parseFloat((req.headers['x-start-time'] as string) ?? '0')
       const endTimeSec = parseFloat((req.headers['x-end-time'] as string) ?? '0')
       const sessionNumber = parseInt((req.headers['x-session-number'] as string) ?? '1', 10)
