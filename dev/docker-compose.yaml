@@ -638,34 +638,34 @@ services:
   #      - OPENAI_API_KEY=
   #      - BILLING_URL=http://huly.local:4041
   #    restart: unless-stopped
-  backup:
-    image: haiodo/backup
-    extra_hosts:
-      - 'huly.local:host-gateway'
-    depends_on:
-      minio:
-        condition: service_healthy
-      postgres:
-        condition: service_started
-      stats:
-        condition: service_started
-      account:
-        condition: service_started
-    environment:
-      - SECRET=secret
-      - ACCOUNTS_URL=http://huly.local:3000
-      - ACCOUNTS_DB_URL=${DB_URL_PG}
-      - STATS_URL=http://huly.local:4900
-      - DB_URL=${DB_URL_PG}
-      - REGION=
-      - BUCKET_NAME=backups
-      - INTERVAL=60
-      - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
-      - WORKSPACE_STORAGE=${STORAGE_CONFIG}
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
-      - QUEUE_CONFIG=${QUEUE_CONFIG}
-      - TEMPORAL_ADDRESS=localhost:7233
-    restart: unless-stopped
+  # backup:
+  #   image: haiodo/backup
+  #   extra_hosts:
+  #     - 'huly.local:host-gateway'
+  #   depends_on:
+  #     minio:
+  #       condition: service_healthy
+  #     postgres:
+  #       condition: service_started
+  #     stats:
+  #       condition: service_started
+  #     account:
+  #       condition: service_started
+  #   environment:
+  #     - SECRET=secret
+  #     - ACCOUNTS_URL=http://huly.local:3000
+  #     - ACCOUNTS_DB_URL=${DB_URL_PG}
+  #     - STATS_URL=http://huly.local:4900
+  #     - DB_URL=${DB_URL_PG}
+  #     - REGION=
+  #     - BUCKET_NAME=backups
+  #     - INTERVAL=60
+  #     - STORAGE=minio|minio?accessKey=minioadmin&secretKey=minioadmin
+  #     - WORKSPACE_STORAGE=${STORAGE_CONFIG}
+  #     - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+  #     - QUEUE_CONFIG=${QUEUE_CONFIG}
+  #     - TEMPORAL_ADDRESS=localhost:7233
+  #   restart: unless-stopped
   backup-api:
     image: haiodo/backup-api
     extra_hosts:
