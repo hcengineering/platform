@@ -36,7 +36,7 @@ function parseMetadata (metadata: string): Metadata {
 
 async function requestIdentity (token: string, roomName: string): Promise<{ identity: string, name: string } | undefined> {
   try {
-    const res = await fetch(`${config.PlatformUrl}/love/${roomName}/identity`, {
+    const res = await fetch(`${config.PlatformUrl}/love/${encodeURIComponent(roomName)}/identity`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
