@@ -395,6 +395,10 @@ export function createServer (
     wrapRequest(async (req, res, wsIds, token, socialId) => {
       let sourceTxOps: TxOperations | undefined
       let decodedToken: Token | undefined
+      let notifyObjectClass: Ref<Class<Doc>> | undefined
+      let notifyObjectId: Ref<Doc> | undefined
+      let notifyObjectSpace: Ref<Space> | undefined
+
       try {
         const {
           targetWorkspace,
@@ -402,6 +406,8 @@ export function createServer (
           query,
           conflictStrategy,
           includeAttachments,
+          objectId,
+          objectSpace,
           relations: rawRelations
         }: {
           targetWorkspace: WorkspaceUuid
@@ -410,6 +416,8 @@ export function createServer (
           conflictStrategy?: 'skip' | 'duplicate'
           includeAttachments?: boolean
           relations?: RelationPayload
+          objectId: Ref<Doc>
+          objectSpace: Ref<Space>
         } = req.body
 
         if (targetWorkspace == null) {
@@ -425,6 +433,11 @@ export function createServer (
         if (decodedToken.extra?.readonly !== undefined) {
           throw new ApiError(403, 'Forbidden: read-only token')
         }
+
+        // Store for notifications
+        notifyObjectClass = _class
+        notifyObjectId = objectId
+        notifyObjectSpace = objectSpace
 
         // Get target workspace info
         const accountClient = getClient(envConfig.AccountsUrl, token)
@@ -505,13 +518,16 @@ export function createServer (
 
             const result = await migrator.migrate(options)
 
-            await sendMigrationNotification(sourceTxOps, decodedToken.account, result, targetWsInfo.url)
+            await sendMigrationNotification(sourceTxOps, decodedToken.account, result, targetWsInfo.url, notifyObjectClass, notifyObjectId, notifyObjectSpace)
           } catch (err: any) {
             measureCtx.error('Migration failed:', err)
             await sendFailureNotification(
               sourceTxOps,
               decodedToken.account,
-              err.message ?? 'Unknown error during migration'
+              err.message ?? 'Unknown error during migration',
+              notifyObjectClass,
+              notifyObjectId,
+              notifyObjectSpace
             )
           } finally {
             await sourceClient.close()
@@ -524,7 +540,10 @@ export function createServer (
           await sendFailureNotification(
             sourceTxOps,
             decodedToken.account,
-            err.message ?? 'Unknown error during migration'
+            err.message ?? 'Unknown error during migration',
+            notifyObjectClass,
+            notifyObjectId,
+            notifyObjectSpace
           )
         }
         throw err
@@ -676,11 +695,22 @@ async function sendSuccessNotification (
   })
 }
 
-async function sendFailureNotification (client: TxOperations, account: AccountUuid, error: string): Promise<void> {
+async function sendFailureNotification (
+  client: TxOperations,
+  account: AccountUuid,
+  error: string,
+  objectClass?: Ref<Class<Doc>>,
+  objectId?: Ref<Doc>,
+  objectSpace?: Ref<Space>
+): Promise<void> {
+  const _objectClass = objectClass ?? core.class.Doc
+  const _objectId = objectId ?? (core.class.Doc as unknown as Ref<Doc>)
+  const _objectSpace = objectSpace ?? core.space.Space
+
   const docNotifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
-    objectId: core.class.Doc,
-    objectClass: core.class.Doc,
-    objectSpace: core.space.Space,
+    objectId: _objectId,
+    objectClass: _objectClass,
+    objectSpace: _objectSpace,
     user: account,
     isPinned: false,
     hidden: false
@@ -688,8 +718,8 @@ async function sendFailureNotification (client: TxOperations, account: AccountUu
 
   await client.createDoc(notification.class.CommonInboxNotification, core.space.Space, {
     user: account,
-    objectId: core.class.Doc,
-    objectClass: core.class.Doc,
+    objectId: _objectId,
+    objectClass: _objectClass,
     icon: exportPlugin.icon.Export,
     message: exportPlugin.string.ExportFailed,
     props: {
@@ -705,12 +735,19 @@ async function sendMigrationNotification (
   client: TxOperations,
   account: AccountUuid,
   result: MigrationResult,
-  workspaceUrl: string
+  workspaceUrl: string,
+  objectClass?: Ref<Class<Doc>>,
+  objectId?: Ref<Doc>,
+  objectSpace?: Ref<Space>
 ): Promise<void> {
+  const _objectClass = objectClass ?? core.class.Doc
+  const _objectId = objectId ?? (core.class.Doc as unknown as Ref<Doc>)
+  const _objectSpace = objectSpace ?? core.space.Space
+
   const docNotifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
-    objectId: core.class.Doc,
-    objectClass: core.class.Doc,
-    objectSpace: core.space.Space,
+    objectId: _objectId,
+    objectClass: _objectClass,
+    objectSpace: _objectSpace,
     user: account,
     isPinned: false,
     hidden: false
@@ -720,8 +757,8 @@ async function sendMigrationNotification (
 
   await client.createDoc(notification.class.CommonInboxNotification, core.space.Space, {
     user: account,
-    objectId: core.class.Doc,
-    objectClass: core.class.Doc,
+    objectId: _objectId,
+    objectClass: _objectClass,
     icon: exportPlugin.icon.Export,
     message,
     props: {

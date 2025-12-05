@@ -34,7 +34,9 @@ export async function exportToWorkspace (
     const body: any = {
       targetWorkspace,
       _class,
-      relations
+      relations,
+      objectId: selectedDocs[0]?._id,
+      objectSpace: selectedDocs[0]?.space
     }
 
     body.query =
