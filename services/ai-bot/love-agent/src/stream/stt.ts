@@ -784,14 +784,19 @@ export class STT implements Stt {
           frameHash = (frameHash + buf.length) | 0
 
           if (sessionState.lastFrameHash === frameHash && sessionState.frameCount > 0) {
-            console.warn('Potential duplicate frame detected in session', {
-              sid,
-              frameCount: sessionState.frameCount,
-              frameHash,
-              bufLength: buf.length,
-              frameStartTime,
-              frameEndTime
-            })
+            sessionState.duplicateCount = (sessionState.duplicateCount ?? 0) + 1
+            // Only log duplicates if audio has significant amplitude (not silence)
+            // and throttle to every 1000 duplicates
+            if (analysis.rms > 0.01 && sessionState.duplicateCount % 1000 === 1) {
+              console.warn('Duplicate frames detected in session (non-silent)', {
+                sid,
+                duplicateCount: sessionState.duplicateCount,
+                frameCount: sessionState.frameCount,
+                rms: analysis.rms
+              })
+            }
+          } else {
+            sessionState.duplicateCount = 0
           }
 
           sessionState.lastFrameHash = frameHash

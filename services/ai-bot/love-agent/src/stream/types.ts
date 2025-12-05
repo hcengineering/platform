@@ -281,6 +281,8 @@ export interface SessionState {
   frameCount: number
   /** Simple hash of last frame to detect duplicates (debug) */
   lastFrameHash: number
+  /** Count of consecutive duplicate frames (for throttled logging) */
+  duplicateCount?: number
 }
 
 /**
