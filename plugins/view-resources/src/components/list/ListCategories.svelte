@@ -37,7 +37,7 @@
     ViewOptions
   } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy, SvelteComponentTyped } from 'svelte'
-  import { SelectionFocusProvider } from '../../selection'
+  import { SelectionFocusProvider, focusStore } from '../../selection'
   import {
     buildModel,
     concatCategories,
@@ -213,7 +213,9 @@
     dir?: 'vertical' | 'horizontal',
     noScroll?: boolean
   ): void {
-    let pos = (of != null ? docs.findIndex((it) => it._id === of._id) : selection) ?? -1
+    // Use current focused document instead of stale selection index
+    const currentDoc = of ?? $focusStore.focus
+    let pos = currentDoc != null ? docs.findIndex((it) => it._id === currentDoc._id) : -1
     if (pos === -1) {
       for (const st of categories) {
         const stateObjs = getGroupByValues(groupByDocs, st) ?? []
@@ -291,10 +293,11 @@
     }
 
     if (level + 1 >= viewOptions.groupBy.length) {
-      const stateObjs: Doc[] = getGroupByValues(groupByDocs, categories[objState]) ?? []
+      // Use actual limited items that are displayed, not stateObjs
+      const limited: Doc[] = listListCategory[objState]?.getLimited() ?? []
 
-      const statePos = stateObjs.findIndex((it) => it._id === obj._id)
-      if (statePos === undefined) {
+      const statePos = limited.findIndex((it) => it._id === obj._id)
+      if (statePos === -1) {
         return
       }
 
@@ -303,20 +306,19 @@
           if (statePos - 1 < 0 && objState >= 0) {
             if (objState !== 0) {
               const pstateObjs = listListCategory[objState - 1]?.getLimited()
-              if (pstateObjs !== undefined) {
-                dispatch('select', pstateObjs[pstateObjs.length - 1])
+              if (pstateObjs !== undefined && pstateObjs.length > 0) {
+                const targetDoc = pstateObjs[pstateObjs.length - 1]
+                if (!noScroll) scrollInto(objState - 1, targetDoc)
+                dispatch('row-focus', targetDoc)
               }
             } else {
-              dispatch('select-prev', stateObjs[statePos])
+              dispatch('select-prev', limited[statePos])
             }
           } else {
-            const obj = stateObjs[statePos - 1]
-            if (obj !== undefined) {
-              const focusDoc = listListCategory[objState]?.getLimited()?.find((it) => it._id === obj._id) ?? obj
-              if (focusDoc !== undefined) {
-                if (!noScroll) scrollInto(objState, focusDoc)
-                dispatch('row-focus', focusDoc)
-              }
+            const targetDoc = limited[statePos - 1]
+            if (targetDoc !== undefined) {
+              if (!noScroll) scrollInto(objState, targetDoc)
+              dispatch('row-focus', targetDoc)
             }
           }
           return
@@ -324,29 +326,30 @@
       }
       if (offset === 1) {
         if (dir === undefined || dir === 'vertical') {
-          const limited = listListCategory[objState]?.getLimited() ?? []
           if (statePos + 1 >= limited.length && objState < categories.length) {
             if (objState + 1 !== categories.length) {
-              const pstateObjs = getGroupByValues(groupByDocs, categories[objState + 1])
-              dispatch('select', pstateObjs[0])
+              const nextLimited = listListCategory[objState + 1]?.getLimited() ?? []
+              if (nextLimited.length > 0) {
+                const targetDoc = nextLimited[0]
+                if (!noScroll) scrollInto(objState + 1, targetDoc)
+                dispatch('row-focus', targetDoc)
+              }
             } else {
-              dispatch('select-next', stateObjs[statePos])
+              dispatch('select-next', limited[statePos])
             }
           } else {
-            const obj = stateObjs[statePos + 1]
-            if (obj !== undefined) {
-              const focusDoc = listListCategory[objState]?.getLimited()?.find((it) => it._id === obj._id) ?? obj
-              if (focusDoc !== undefined) {
-                if (!noScroll) scrollInto(objState, focusDoc)
-                dispatch('row-focus', focusDoc)
-              }
+            const targetDoc = limited[statePos + 1]
+            if (targetDoc !== undefined) {
+              if (!noScroll) scrollInto(objState, targetDoc)
+              dispatch('row-focus', targetDoc)
             }
           }
           return
         }
       }
       if (offset === 0) {
-        const focusDoc = listListCategory[objState]?.getLimited()?.find((it) => it._id === obj._id) ?? obj
+        const limited = listListCategory[objState]?.getLimited() ?? []
+        const focusDoc = limited.find((it) => it._id === obj._id) ?? obj
         if (focusDoc !== undefined) {
           if (!noScroll) scrollInto(objState, focusDoc)
           dispatch('row-focus', focusDoc)
