@@ -48,6 +48,7 @@
   import ListItem from './ListItem.svelte'
 
   export let category: PrimitiveType | AggregateValue
+  export let categoryRefsMap = new Map<string, Map<Ref<Doc>, Doc>>()
   export let headerComponent: AttributeModel | undefined
   export let singleCat: boolean
   export let oneCat: boolean
@@ -101,6 +102,12 @@
   const defaultLimit = 20
 
   let loading = false
+  let wasLoaded = false
+
+  $: categoryCollapseKey = `list_collapsing_${location.pathname}_${groupPersistKey}`
+  $: storedCollapseState = localStorage.getItem(categoryCollapseKey)
+  $: collapsed = storedCollapseState === 'true' || storedCollapseState === null
+
   $: initialLimit = !lastLevel ? undefined : singleCat ? singleCategoryLimit : defaultLimit
   $: limit = initialLimit
 
@@ -133,15 +140,17 @@
       })
       : resultQuery
 
-  $: if (lastLevel) {
+  $: if (lastLevel && !collapsed) {
+    // Do not set loading here on expand — loading will be set when user explicitly requests more items (Show More).
     void limiter.add(async () => {
       try {
-        loading = docsQuery.query(
+        docsQuery.query(
           _class,
           { ...finalResultQuery, ...docKeys },
           (res) => {
             items = res
             loading = false
+            wasLoaded = true
             const focusDoc = items.find((it) => it._id === $focusStore.focus?._id)
             if (focusDoc) {
               handleRowFocused(focusDoc)
@@ -156,13 +165,13 @@
     })
   } else {
     docsQuery.unsubscribe()
+    if (!collapsed && wasLoaded && lastLevel) {
+      // Category was expanded and we have data, keep items
+    } else if (collapsed) {
+      // Category is collapsed, clear loading state
+      loading = false
+    }
   }
-
-  $: categoryCollapseKey = `list_collapsing_${location.pathname}_${groupPersistKey}`
-  $: storedCollapseState = localStorage.getItem(categoryCollapseKey)
-
-  $: collapsed = storedCollapseState === 'true' || storedCollapseState === null
-  let wasLoaded = false
 
   const dispatch = createEventDispatcher()
 
@@ -394,6 +403,9 @@
   export function expand (): void {
     collapsed = false
     localStorage.setItem(categoryCollapseKey, 'false')
+    if (!collapsed && items.length === 0) {
+      loading = true
+    }
   }
   export function scroll (item: Doc): void {
     const pos = limited.findIndex((it) => it._id === item._id)
@@ -455,6 +467,7 @@
 >
   {#if !disableHeader}
     <ListHeader
+      {categoryRefsMap}
       {groupByKey}
       {category}
       {space}
@@ -566,27 +579,43 @@
                 }}
               />
             {/each}
-            {#if HLimited < itemProj.length}
-              <!-- svelte-ignore a11y-click-events-have-key-events -->
-              <div
-                class="listGrid antiList__row row gap-2 flex-grow hoverable showMore last"
-                class:lastCat={oneCat || lastCat}
-                on:mouseenter={() => {
-                  $focusStore.focus = undefined
-                }}
-                on:click={() => {
-                  if (limit !== undefined) limit += 50
-                }}
-              >
-                <span class="caption-color"><Label label={ui.string.ShowMore} /></span>
-                {#if loading}
+            {#if HLimited < itemProj.length || (items.length === 0 && !wasLoaded && !collapsed)}
+              {#if items.length === 0 && !wasLoaded}
+                <!-- nothing loaded yet for this category: show spinner-only (no Show More label) -->
+                <div
+                  class="listGrid antiList__row row gap-2 flex-grow hoverable showMore last"
+                  class:lastCat={oneCat || lastCat}
+                >
                   <div class="p-1">
                     <Loading shrink size={'small'} />
                   </div>
-                {:else}
-                  <span class="content-halfcontent-color ml-0-5">({HLimited} / {itemProj.length})</span>
-                {/if}
-              </div>
+                </div>
+              {:else}
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <div
+                  class="listGrid antiList__row row gap-2 flex-grow hoverable showMore last"
+                  class:lastCat={oneCat || lastCat}
+                  on:mouseenter={() => {
+                    $focusStore.focus = undefined
+                  }}
+                  on:click={() => {
+                    if (limit !== undefined) {
+                      // Always show spinner when user requests more items
+                      loading = true
+                      limit += 50
+                    }
+                  }}
+                >
+                  <span class="caption-color"><Label label={ui.string.ShowMore} /></span>
+                  {#if loading}
+                    <div class="p-1">
+                      <Loading shrink size={'small'} />
+                    </div>
+                  {:else}
+                    <span class="content-halfcontent-color ml-0-5">({HLimited} / {itemProj.length})</span>
+                  {/if}
+                </div>
+              {/if}
             {/if}
           {/key}
         {/if}

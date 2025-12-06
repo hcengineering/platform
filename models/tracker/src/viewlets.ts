@@ -31,6 +31,7 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
     'priority',
     'component',
     'milestone',
+    'attachedTo',
     'createdBy',
     'modifiedBy',
     'estimation',

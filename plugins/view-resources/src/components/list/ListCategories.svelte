@@ -27,7 +27,7 @@
   } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient, reduceCalls } from '@hcengineering/presentation'
-  import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
+  import ui, { AnyComponent, AnySvelteComponent, Button, Label, Spinner } from '@hcengineering/ui'
   import {
     AttributeModel,
     BuildModelKey,
@@ -52,6 +52,7 @@
   import ListCategory from './ListCategory.svelte'
 
   export let docs: Doc[]
+  export let categoryRefsMap = new Map<string, Map<Ref<Doc>, Doc>>()
   export let docKeys: Partial<DocumentQuery<Doc>> = {}
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined
@@ -94,6 +95,16 @@
 
   $: groupByDocs = groupBy(docs, groupByKey, categories)
 
+  // ShowMore functionality for top-level categories
+  const maxInitialCategories = 20
+  let showAllCategories = false
+  let isLoadingCategories = false
+  let isLoadingMoreTop = false
+
+  $: displayedCategories = level === 0 && !showAllCategories ? categories.slice(0, maxInitialCategories) : categories
+
+  $: hasMoreCategories = level === 0 && categories.length > maxInitialCategories
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -111,20 +122,28 @@
       viewOptions: ViewOptions,
       viewOptionsModel: ViewOptionModel[] | undefined
     ): Promise<void> => {
-      categories = await getCategories(client, _class, space, docs, groupByKey)
-      if (level === 0) {
-        for (const viewOption of viewOptionsModel ?? []) {
-          if (viewOption.actionTarget !== 'category') continue
-          const categoryFunc = viewOption as CategoryOption
-          if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
-            const f = await getResource(categoryFunc.action)
-            const res = hierarchy.clone(await f(_class, query, space, groupByKey, update, queryId))
-            if (res !== undefined) {
-              categories = concatCategories(res, categories)
-              return
+      // indicate loading while we compute categories (used by Show More UI)
+      isLoadingCategories = true
+      try {
+        categories = await getCategories(client, _class, space, docs, groupByKey)
+        if (level === 0) {
+          for (const viewOption of viewOptionsModel ?? []) {
+            if (viewOption.actionTarget !== 'category') continue
+            const categoryFunc = viewOption as CategoryOption
+            if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
+              const f = await getResource(categoryFunc.action)
+              const res = hierarchy.clone(await f(_class, query, space, groupByKey, update, queryId))
+              if (res !== undefined) {
+                categories = concatCategories(res, categories)
+                return
+              }
             }
           }
         }
+      } finally {
+        isLoadingCategories = false
+        // Clear top-level Show More loading flag when update completes (success or error)
+        isLoadingMoreTop = false
       }
     }
   )
@@ -421,11 +440,12 @@
   }
 </script>
 
-{#each categories as category, i (typeof category === 'object' ? category.name : category)}
+{#each displayedCategories as category, i (typeof category === 'object' ? category.name : category)}
   {@const items = groupByKey === noCategory ? docs : getGroupByValues(groupByDocs, category)}
   {@const categoryDocKeys = getGroupByKey(docKeys, category, resultQuery)}
   <ListCategory
     bind:this={listListCategory[i]}
+    {categoryRefsMap}
     {extraHeaders}
     {space}
     {selectedObjectIds}
@@ -498,6 +518,7 @@
     >
       <svelte:self
         {docs}
+        {categoryRefsMap}
         bind:this={listCategory[i]}
         {_class}
         {space}
@@ -548,3 +569,31 @@
     </svelte:fragment>
   </ListCategory>
 {/each}
+
+{#if hasMoreCategories && !showAllCategories}
+  {#if isLoadingCategories}
+    <div class="show-more-wrapper flex-center p-2">
+      <Spinner size="small" />
+    </div>
+  {:else}
+    <div class="show-more-wrapper flex-center p-2">
+      <Button
+        kind={'ghost'}
+        label={ui.string.ShowMore}
+        on:click={() => {
+          // show spinner in the top-level Show More while categories are being revealed/loaded
+          isLoadingMoreTop = true
+          showAllCategories = true
+        }}
+      >
+        <svelte:fragment slot="content">
+          <span class="mr-1"><Label label={ui.string.ShowMore} /></span>
+          {#if isLoadingMoreTop}
+            <Spinner size="small" class="ml-1" />
+          {/if}
+          <span class="content-halfcontent-color">({displayedCategories.length}/{categories.length})</span>
+        </svelte:fragment>
+      </Button>
+    </div>
+  {/if}
+{/if}

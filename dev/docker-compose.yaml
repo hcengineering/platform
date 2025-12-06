@@ -351,8 +351,8 @@ services:
       - BRANDING_PATH=/var/cfg/branding.json
       - AI_BOT_URL=http://huly.local:4010
       - COMMUNICATION_TIME_LOGGING_ENABLED=true
-      - RATE_LIMIT_MAX=250 # 250 requests per 30 seconds
-      - RATE_LIMIT_WINDOW=30000
+      - RATE_LIMIT_MAX=25000 # 250 requests per 30 seconds
+      - RATE_LIMIT_WINDOW=3000
       - FILES_URL=http://huly.local:4030/blob/:workspace/:blobId/:filename
       - COMMUNICATION_API_ENABLED=false
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces

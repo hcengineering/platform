@@ -38,6 +38,10 @@ export function definePresenters (builder: Builder): void {
     presenter: tracker.component.IssuePreview
   })
 
+  builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.AttributePresenter, {
+    presenter: tracker.component.ParentIssuePresenter
+  })
+
   //
   // Issue Template
   //

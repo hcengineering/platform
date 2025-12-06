@@ -38,8 +38,10 @@
 
   import view from '../../plugin'
   import { SelectionFocusProvider, selectionLimit } from '../../selection'
+  import { getCategoryReference } from '../../utils'
   import { noCategory } from '../../viewOptions'
 
+  export let categoryRefsMap = new Map<string, Map<Ref<Doc>, Doc>>()
   export let groupByKey: string
   export let category: PrimitiveType | AggregateValue
   export let headerComponent: AttributeModel | undefined
@@ -65,6 +67,9 @@
   export let loading: boolean = false
 
   const dispatch = createEventDispatcher()
+
+  // Get pre-fetched reference document if available
+  $: categoryRefDoc = getCategoryReference(categoryRefsMap, groupByKey, category as Ref<Doc>)
 
   let accentColor: ColorDefinition | undefined = undefined
 
@@ -143,6 +148,7 @@
         <svelte:component
           this={headerComponent.presenter}
           value={category}
+          {...categoryRefDoc ? { object: categoryRefDoc } : {}}
           space={space ?? (items.every((i) => i?.space === items[0]?.space) ? items[0]?.space : undefined)}
           size={'small'}
           kind={'list-header'}
@@ -156,7 +162,7 @@
         />
       {/if}
 
-      {#if loading && items.length === 0}
+      {#if loading && items.length === 0 && !(limited < itemsProj.length)}
         <div class="ml-2 p-1">
           <Loading shrink size={'small'} />
         </div>
@@ -172,7 +178,7 @@
           <div class="antiSection-header__counter flex-row-center mx-2 content-dark-color">
             {itemsProj.length}
           </div>
-          {#if loading}
+          {#if loading && items.length === 0}
             <div class="ml-2 p-1">
               <Loading shrink size={'small'} />
             </div>

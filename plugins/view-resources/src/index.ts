@@ -201,16 +201,19 @@ export * from './selection'
 export * from './status'
 export * from './utils'
 export {
+  buildCategoryReferenceLookups,
   buildModel,
   getActiveViewletId,
   getAdditionalHeader,
   getCategories,
+  getCategoryReference,
   getCollectionCounter,
   getFiltredKeys,
   getObjectPresenter,
   getObjectPreview,
   groupBy,
   isCollectionAttr,
+  isRefAttribute,
   setActiveViewletId,
   type LoadingProps
 } from './utils'

@@ -18,8 +18,10 @@
     Doc,
     DocumentQuery,
     FindOptions,
+    getObjectValue,
     RateLimiter,
     Ref,
+    RefTo,
     Space,
     mergeQueries
   } from '@hcengineering/core'
@@ -29,7 +31,7 @@
   import { BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { SelectionFocusProvider } from '../../selection'
-  import { buildConfigLookup } from '../../utils'
+  import { buildConfigLookup, isRefAttribute } from '../../utils'
   import { getResultOptions, getResultQuery } from '../../viewOptions'
   import ListCategories from './ListCategories.svelte'
 
@@ -130,6 +132,65 @@
 
   $: docs = [...fastDocs, ...slowDocs.filter((it) => !fastQueryIds.has(it._id))]
 
+  // Build lookups for category references to avoid individual presenter queries
+  let categoryRefsMap = new Map<string, Map<Ref<Doc>, Doc>>()
+  const categoryRefQueries = new Map<string, ReturnType<typeof createQuery>>()
+
+  $: {
+    const groupBy = viewOptions.groupBy
+    const currentKeys = new Set(
+      groupBy.filter((key) => {
+        const attr = hierarchy.findAttribute(_class, key)
+        return attr !== undefined && isRefAttribute(attr)
+      })
+    )
+
+    // Unsubscribe queries for keys that are no longer needed
+    for (const [key, query] of categoryRefQueries.entries()) {
+      if (!currentKeys.has(key)) {
+        query.unsubscribe()
+        categoryRefQueries.delete(key)
+        categoryRefsMap.delete(key)
+      }
+    }
+
+    // Create/update queries for each ref-type groupBy key
+    for (const key of currentKeys) {
+      const attr = hierarchy.findAttribute(_class, key)
+      if (!attr || !isRefAttribute(attr)) continue
+
+      // Collect unique reference IDs from docs
+      const refIds = new Set<Ref<Doc>>()
+      for (const doc of docs) {
+        const refId = getObjectValue(key, doc)
+        if (refId != null) refIds.add(refId as Ref<Doc>)
+      }
+
+      if (refIds.size === 0) {
+        categoryRefQueries.get(key)?.unsubscribe()
+        categoryRefQueries.delete(key)
+        categoryRefsMap.delete(key)
+        continue
+      }
+
+      const refClass = (attr.type as RefTo<Doc>).to
+
+      // Create or reuse query
+      if (!categoryRefQueries.has(key)) {
+        categoryRefQueries.set(key, createQuery())
+      }
+
+      const query = categoryRefQueries.get(key)
+      if (query) {
+        query.query(refClass, { _id: { $in: Array.from(refIds) } }, (result) => {
+          const refMap = new Map(result.map((d) => [d._id, d]))
+          categoryRefsMap.set(key, refMap)
+          categoryRefsMap = categoryRefsMap // trigger reactivity
+        })
+      }
+    }
+  }
+
   function getProjection (fields: string[], query: DocumentQuery<Doc>, _class: Ref<Class<Doc>>): Record<string, number> {
     const res: Record<string, number> = {}
     for (const f of fields) {
@@ -204,6 +265,7 @@
     bind:this={listCategories}
     newObjectProps={() => (space != null ? { space } : {})}
     {docs}
+    {categoryRefsMap}
     {_class}
     {space}
     {selection}

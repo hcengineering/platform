@@ -77,6 +77,7 @@ import StatusEditor from './components/issues/StatusEditor.svelte'
 import StatusFilterValuePresenter from './components/issues/StatusFilterValuePresenter.svelte'
 import StatusPresenter from './components/issues/StatusPresenter.svelte'
 import TitlePresenter from './components/issues/TitlePresenter.svelte'
+import ParentIssuePresenter from './components/issues/ParentIssuePresenter.svelte'
 import LabelsView from './components/LabelsView.svelte'
 import EditMilestone from './components/milestones/EditMilestone.svelte'
 import MilestoneDatePresenter from './components/milestones/MilestoneDatePresenter.svelte'
@@ -485,7 +486,8 @@ export default async (): Promise<Resources> => ({
     MembersArrayEditor,
     IssueExtra,
     IssueStatusPresenter,
-    LabelsView
+    LabelsView,
+    ParentIssuePresenter
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
