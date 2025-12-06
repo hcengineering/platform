@@ -664,10 +664,7 @@ export class WorkspaceClient {
    * Get MeetingMinutes by room ID (any status, most recent)
    */
   @withContext('getMeetingMinutesByRoom')
-  async getMeetingMinutesByRoom (
-    ctx: MeasureContext,
-    roomId: Ref<Room>
-  ): Promise<MeetingMinutes | undefined> {
+  async getMeetingMinutesByRoom (ctx: MeasureContext, roomId: Ref<Room>): Promise<MeetingMinutes | undefined> {
     await this.opClient
 
     if (this.love === undefined) {

@@ -213,6 +213,42 @@
     dir?: 'vertical' | 'horizontal',
     noScroll?: boolean
   ): void {
+    // Handle horizontal navigation in lists as jump to first/last of CURRENT category
+    if (dir === 'horizontal') {
+      // Find current category
+      const currentDoc = of ?? $focusStore.focus
+      if (currentDoc === undefined) return
+
+      // Find which category the current document belongs to
+      let currentCategoryIndex = -1
+      for (let i = 0; i < categories.length; i++) {
+        const limited = listListCategory[i]?.getLimited() ?? []
+        if (limited.some((doc) => doc._id === currentDoc._id)) {
+          currentCategoryIndex = i
+          break
+        }
+      }
+
+      if (currentCategoryIndex === -1) return
+
+      const limited = listListCategory[currentCategoryIndex]?.getLimited() ?? []
+      if (limited.length === 0) return
+
+      if (offset === -1) {
+        // ArrowLeft -> jump to first item of current category
+        const firstDoc = limited[0]
+        scrollInto(currentCategoryIndex, firstDoc)
+        dispatch('row-focus', firstDoc)
+        return
+      } else if (offset === 1) {
+        // ArrowRight -> jump to last item of current category
+        const lastDoc = limited[limited.length - 1]
+        scrollInto(currentCategoryIndex, lastDoc)
+        dispatch('row-focus', lastDoc)
+        return
+      }
+    }
+
     // Use current focused document instead of stale selection index
     const currentDoc = of ?? $focusStore.focus
     let pos = currentDoc != null ? docs.findIndex((it) => it._id === currentDoc._id) : -1

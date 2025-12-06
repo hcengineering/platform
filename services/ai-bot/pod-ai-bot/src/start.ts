@@ -204,7 +204,14 @@ export const start = async (): Promise<void> => {
         return await wsClient.updateTranscriptionMessage(ctx, messageId as Ref<ChatMessage>, text)
       },
       // Callback to create message with timestamp (fallback when placeholder not found)
-      async (ctx, workspace: WorkspaceUuid, roomId: string, participant: string, text: string, startTimeSec: number) => {
+      async (
+        ctx,
+        workspace: WorkspaceUuid,
+        roomId: string,
+        participant: string,
+        text: string,
+        startTimeSec: number
+      ) => {
         const wsClient = await aiControl.getWorkspaceClient(workspace)
         if (wsClient === undefined) {
           ctx.error('Failed to get workspace client for creating fallback message', { workspace })
