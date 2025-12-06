@@ -29,12 +29,23 @@ rush build --to PKG  # Build specific
 rush add -p PKG      # Add dependency
 ```
 
+## Error Checking
+
+**IMPORTANT**: Use `diagnostics` tool to check for TypeScript/Svelte errors, NOT `rush build`:
+
+- ✅ `diagnostics()` - Check all files for errors/warnings (fast, uses language server)
+- ✅ `diagnostics({ path: "plugins/tracker-resources/src/utils.ts" })` - Check specific file
+- ❌ `rush build` - Don't use for error checking (runs full transpilation, slower)
+
+`rush build` performs transpilation which may succeed even with type errors. Always use `diagnostics` to verify code correctness.
+
 ## Patterns
 
 - Always handle errors (proper Error subclasses, catch promises)
 - Use async/await, Promise.all() for parallel ops
 - Svelte stores for shared state, separate business logic
 - JSDoc public APIs, tests alongside code
+- Check with `diagnostics` before committing changes
 - Run `rushx test` before commit
 
 ## Debugging Workflow
@@ -57,7 +68,7 @@ console.log('[ComponentName.methodName] Description', {
 
 ## Avoid
 
-❌ `any` without reason ❌ `console.log()` in production ❌ Mixed concerns ❌ Circular deps ❌ Ignoring TS errors
+❌ `any` without reason ❌ `console.log()` in production ❌ Mixed concerns ❌ Circular deps ❌ Ignoring TS errors ❌ Using `rush build` to check for errors
 
 ## When Coding
 
