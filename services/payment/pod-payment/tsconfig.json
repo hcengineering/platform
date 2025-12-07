@@ -5,7 +5,9 @@
     "rootDir": "./src",
     "outDir": "./lib",
     "declarationDir": "./types",
-    "tsBuildInfoFile": ".build/build.tsbuildinfo"
+    "tsBuildInfoFile": ".build/build.tsbuildinfo",
+    "module": "node16",
+    "moduleResolution": "node16"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "lib", "dist", "types", "bundle"]
