@@ -408,7 +408,8 @@ export function createServer (
           includeAttachments,
           objectId,
           objectSpace,
-          relations: rawRelations
+          relations: rawRelations,
+          fieldMappers
         }: {
           targetWorkspace: WorkspaceUuid
           _class: Ref<Class<Doc>>
@@ -418,6 +419,7 @@ export function createServer (
           relations?: RelationPayload
           objectId: Ref<Doc>
           objectSpace: Ref<Space>
+          fieldMappers?: Record<string, Record<string, any>>
         } = req.body
 
         if (targetWorkspace == null) {
@@ -502,7 +504,13 @@ export function createServer (
               return await createPipeline(ctx, middlewares, context)
             }
 
-            const migrator = new WorkspaceMigrator(measureCtx, sourcePipelineFactory, targetTxOps, storageAdapter, decodedToken.account)
+            const migrator = new WorkspaceMigrator(
+              measureCtx,
+              sourcePipelineFactory,
+              targetTxOps,
+              storageAdapter,
+              decodedToken.account
+            )
 
             const relations = normalizeRelations(rawRelations)
 
@@ -513,12 +521,21 @@ export function createServer (
               _class,
               conflictStrategy: conflictStrategy ?? 'duplicate',
               includeAttachments: includeAttachments ?? true,
-              relations
+              relations,
+              fieldMappers
             }
 
             const result = await migrator.migrate(options)
 
-            await sendMigrationNotification(sourceTxOps, decodedToken.account, result, targetWsInfo.url, notifyObjectClass, notifyObjectId, notifyObjectSpace)
+            await sendMigrationNotification(
+              sourceTxOps,
+              decodedToken.account,
+              result,
+              targetWsInfo.url,
+              notifyObjectClass,
+              notifyObjectId,
+              notifyObjectSpace
+            )
           } catch (err: any) {
             measureCtx.error('Migration failed:', err)
             await sendFailureNotification(

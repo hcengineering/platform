@@ -34,6 +34,7 @@ import {
 } from '@hcengineering/core'
 import { StorageAdapter, Pipeline } from '@hcengineering/server-core'
 import core from '@hcengineering/model-core'
+import contact, { type Employee } from '@hcengineering/contact'
 
 export type PipelineFactory = (ctx: MeasureContext, workspace: WorkspaceIds) => Promise<Pipeline>
 
@@ -55,6 +56,9 @@ export interface MigrationOptions {
   // Optional mapper function to transform documents before migration
   mapper?: (doc: Doc) => Doc | Promise<Doc>
   relations?: RelationDefinition[]
+  // Field mappers per class: { classA: { fieldA: value, fieldB: '$currentUser' }, ... }
+  // Special value '$currentUser' will be replaced with current account's employee ID
+  fieldMappers?: Record<string, Record<string, any>>
 }
 
 export interface MigrationResult {
@@ -68,6 +72,9 @@ export class WorkspaceMigrator {
   private readonly idMapping = new Map<Ref<Doc>, Ref<Doc>>()
   private readonly spaceMapping = new Map<Ref<Space>, Ref<Space>>()
   private readonly processingDocs = new Set<Ref<Doc>>()
+  private readonly employeeCache = new Map<AccountUuid, Ref<Employee>>()
+  private fieldMappers: Record<string, Record<string, any>> = {}
+  private currentAccountEmployeeId: Ref<Employee> | undefined
 
   constructor (
     private readonly context: MeasureContext,
@@ -85,8 +92,20 @@ export class WorkspaceMigrator {
       conflictStrategy = 'duplicate',
       includeAttachments = true,
       mapper,
-      relations = []
+      relations = [],
+      fieldMappers = {}
     } = options
+
+    // Store field mappers
+    this.fieldMappers = fieldMappers
+
+    // Pre-fetch current account's employee ID if available
+    if (this.currentAccount !== undefined) {
+      this.currentAccountEmployeeId = await this.getEmployeeByAccount(this.currentAccount)
+      if (this.currentAccountEmployeeId !== undefined) {
+        console.log(`Current account employee ID: ${this.currentAccountEmployeeId}`)
+      }
+    }
 
     const result: MigrationResult = {
       success: true,
@@ -225,7 +244,8 @@ export class WorkspaceMigrator {
       const hierarchy = this.targetClient.getHierarchy()
       // Check both hierarchy derivation AND presence of attachedTo field
       // Some classes like ControlledDocument have attachedTo but don't extend AttachedDoc
-      const hasAttachedFields = (doc as any).attachedTo !== undefined &&
+      const hasAttachedFields =
+        (doc as any).attachedTo !== undefined &&
         (doc as any).attachedToClass !== undefined &&
         (doc as any).collection !== undefined
       const isAttached = hierarchy.isDerived(doc._class, core.class.AttachedDoc) || hasAttachedFields
@@ -236,7 +256,14 @@ export class WorkspaceMigrator {
       this.idMapping.set(doc._id, targetId)
 
       // First: Migrate forward relations (dependencies must exist before this doc)
-      await this.migrateForwardRelations(doc, relations, conflictStrategy, includeAttachments, sourceHierarchy, sourceLowLevel)
+      await this.migrateForwardRelations(
+        doc,
+        relations,
+        conflictStrategy,
+        includeAttachments,
+        sourceHierarchy,
+        sourceLowLevel
+      )
 
       // Create the document
       const targetSpace = await this.getOrCreateTargetSpace(doc.space, sourceHierarchy, sourceLowLevel)
@@ -244,7 +271,14 @@ export class WorkspaceMigrator {
       await this.createDocument(doc, data, targetId, targetSpace, isAttached)
 
       // Now: Migrate inverse relations (they can now reference this document)
-      await this.migrateInverseRelations(doc, relations, conflictStrategy, includeAttachments, sourceHierarchy, sourceLowLevel)
+      await this.migrateInverseRelations(
+        doc,
+        relations,
+        conflictStrategy,
+        includeAttachments,
+        sourceHierarchy,
+        sourceLowLevel
+      )
 
       // Handle attachments
       if (includeAttachments) {
@@ -386,7 +420,9 @@ export class WorkspaceMigrator {
 
     console.log(`Inverse relation ${relation.field}: found ${relatedDocs.length} docs pointing to ${doc._id}`)
     for (const relatedDoc of relatedDocs) {
-      console.log(`  - ${relatedDoc._id} (${relatedDoc._class}), ${relation.field}=${(relatedDoc as any)[relation.field]}`)
+      console.log(
+        `  - ${relatedDoc._id} (${relatedDoc._class}), ${relation.field}=${(relatedDoc as any)[relation.field]}`
+      )
     }
 
     for (const relatedDoc of relatedDocs) {
@@ -484,7 +520,38 @@ export class WorkspaceMigrator {
       await this.targetClient.createDoc(sourceDoc._class, targetSpace, data, targetId)
     }
 
-    console.log(`Created document ${targetId} (from ${sourceDoc._id}) class ${sourceDoc._class} in space ${targetSpace}${isAttached ? ' [attached]' : ''}`)
+    console.log(
+      `Created document ${targetId} (from ${sourceDoc._id}) class ${sourceDoc._class} in space ${targetSpace}${isAttached ? ' [attached]' : ''}`
+    )
+  }
+
+  /**
+   * Get employee ID in target workspace for a given account UUID.
+   * Caches results to avoid repeated queries.
+   */
+  private async getEmployeeByAccount (account: AccountUuid): Promise<Ref<Employee> | undefined> {
+    if (this.employeeCache.has(account)) {
+      return this.employeeCache.get(account)
+    }
+
+    try {
+      // Find employee by personUuid (account)
+      const employees = await this.targetClient.findAll(contact.mixin.Employee, {
+        personUuid: account
+      })
+
+      if (employees.length > 0) {
+        const employeeId = employees[0]._id
+        this.employeeCache.set(account, employeeId)
+        return employeeId
+      }
+
+      console.warn(`Employee not found for account ${account} in target workspace`)
+      return undefined
+    } catch (err: any) {
+      console.error(`Error finding employee for account ${account}:`, err)
+      return undefined
+    }
   }
 
   private async prepareDocumentData (
@@ -526,8 +593,15 @@ export class WorkspaceMigrator {
     // Second pass: Check all doc properties for any missed references
     // This catches fields that might not be in getAllAttributes
     for (const key of Object.keys(doc)) {
-      if (key === '_id' || key === '_class' || key === 'space' || key === 'modifiedOn' ||
-          key === 'modifiedBy' || key === 'createdOn' || key === 'createdBy') {
+      if (
+        key === '_id' ||
+        key === '_class' ||
+        key === 'space' ||
+        key === 'modifiedOn' ||
+        key === 'modifiedBy' ||
+        key === 'createdOn' ||
+        key === 'createdBy'
+      ) {
         continue
       }
 
@@ -544,6 +618,9 @@ export class WorkspaceMigrator {
       data[key] = this.remapValue(value, key)
     }
 
+    // Apply field mappers for specific document classes
+    await this.applyFieldMappers(doc._class, data)
+
     // Debug: Log the data with potential reference fields
     console.log(`prepareDocumentData for ${doc._class} (${doc._id}):`)
     console.log(`  idMapping size: ${this.idMapping.size}`)
@@ -555,6 +632,56 @@ export class WorkspaceMigrator {
     }
 
     return data
+  }
+
+  /**
+   * Apply field mappers for specific document classes.
+   * Field mappers format: { className: { fieldName: value, ... } }
+   * Special value '$currentUser' is replaced with current account's employee ID
+   */
+  private async applyFieldMappers (docClass: Ref<Class<Doc>>, data: Record<string, any>): Promise<void> {
+    const hierarchy = this.targetClient.getHierarchy()
+
+    // Find field mapper for this class or any of its base classes
+    let fieldMapper: Record<string, any> | undefined
+
+    // First check exact class match
+    if (this.fieldMappers[docClass] !== undefined) {
+      fieldMapper = this.fieldMappers[docClass]
+    } else {
+      // Check all base classes
+      for (const [className, mapper] of Object.entries(this.fieldMappers)) {
+        if (hierarchy.isDerived(docClass, className as Ref<Class<Doc>>)) {
+          fieldMapper = mapper
+          break
+        }
+      }
+    }
+
+    if (fieldMapper === undefined) {
+      return
+    }
+
+    // Apply field mappings
+    for (const [fieldName, fieldValue] of Object.entries(fieldMapper)) {
+      // Handle special $currentUser value
+      if (fieldValue === '$currentUser') {
+        if (this.currentAccountEmployeeId !== undefined) {
+          data[fieldName] = this.currentAccountEmployeeId
+          console.log(`  Mapped ${fieldName}: $currentUser -> ${this.currentAccountEmployeeId}`)
+        } else {
+          console.warn(`  Cannot map ${fieldName}: $currentUser but current account employee not found`)
+        }
+      } else if (fieldValue === '') {
+        // Empty string means clear the field
+        data[fieldName] = undefined
+        console.log(`  Cleared ${fieldName}`)
+      } else {
+        // Direct value assignment
+        data[fieldName] = fieldValue
+        console.log(`  Set ${fieldName}: ${fieldValue}`)
+      }
+    }
   }
 
   /**

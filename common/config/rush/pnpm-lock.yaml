@@ -37748,6 +37748,9 @@ importers:
       '@hcengineering/client':
         specifier: workspace:^0.7.18
         version: link:../../../foundations/core/packages/client
+      '@hcengineering/contact':
+        specifier: workspace:^0.7.0
+        version: link:../../../plugins/contact
       '@hcengineering/core':
         specifier: workspace:^0.7.23
         version: link:../../../foundations/core/packages/core

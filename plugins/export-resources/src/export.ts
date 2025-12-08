@@ -33,12 +33,28 @@ export async function exportToWorkspace (
       throw new Error('No token available')
     }
 
+    const fieldMappers = {
+      'documents:class:ControlledDocument': {
+        author: '$currentUser',
+        owner: '$currentUser',
+        state: 'draft',
+        major: 1,
+        minor: 0,
+        reviewers: []
+      },
+      'documents:class:DocumentMeta': {
+        author: '$currentUser',
+        owner: '$currentUser'
+      }
+    }
+
     const body: any = {
       targetWorkspace,
       _class,
       relations,
       objectId: selectedDocs[0]?._id,
-      objectSpace: selectedDocs[0]?.space
+      objectSpace: selectedDocs[0]?.space,
+      fieldMappers
     }
 
     body.query =

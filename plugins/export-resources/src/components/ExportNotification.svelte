@@ -24,4 +24,3 @@
     {notification.subTitle}
   </svelte:fragment>
 </NotificationToast>
-
