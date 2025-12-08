@@ -112,6 +112,14 @@
       "shellCommand": "(rush format && true) && ./common/scripts/format-show.sh"
     },
     {
+      "commandKind": "global",
+      "name": "do-svelte-check",
+      "summary": "Do a svelte-check and show errors after it",
+      "description": "Do a svelte-check and show errors after it",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "(rush svelte-check && true) && ./common/scripts/svelte-check-show.sh"
+    },
+    {
       "commandKind": "phased",
       "name": "build:watch",
       "summary": "Build and watch",

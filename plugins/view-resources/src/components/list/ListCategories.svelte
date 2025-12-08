@@ -589,7 +589,7 @@
         <svelte:fragment slot="content">
           <span class="mr-1"><Label label={ui.string.ShowMore} /></span>
           {#if isLoadingMoreTop}
-            <Spinner size="small" class="ml-1" />
+            <Spinner size="small" />
           {/if}
           <span class="content-halfcontent-color">({displayedCategories.length}/{categories.length})</span>
         </svelte:fragment>

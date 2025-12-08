@@ -1,6 +1,6 @@
 // Copyright © 2025 Andrey Sobolev (haiodo@gmail.com)
 
-import { MeasureContext } from '@hcengineering/core'
+import { concatLink, MeasureContext } from '@hcengineering/core'
 import { TranscriptionOptions, TranscriptionProvider, TranscriptionResult } from '../types'
 
 /**
@@ -51,10 +51,14 @@ export class OpenAIWhisperProvider implements TranscriptionProvider {
     private readonly model: string = 'whisper-1',
     baseUrl?: string
   ) {
-    this.apiUrl =
-      baseUrl !== undefined && baseUrl !== ''
-        ? `${baseUrl.replace(/\/$/, '')}/v1/audio/transcriptions`
-        : 'https://api.openai.com/v1/audio/transcriptions'
+    this.apiUrl = 'https://api.openai.com/v1/audio/transcriptions'
+    if (baseUrl !== undefined && baseUrl !== '') {
+      if (baseUrl.includes('/v1')) {
+        this.apiUrl = concatLink(baseUrl, 'audio/transcriptions')
+      } else {
+        this.apiUrl = concatLink(baseUrl, 'v1/audio/transcriptions')
+      }
+    }
   }
 
   async transcribe (audioData: Buffer, options?: TranscriptionOptions): Promise<TranscriptionResult> {
