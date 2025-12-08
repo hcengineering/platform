@@ -843,11 +843,11 @@
         // "STT_PROVIDER":"whisper-asr",
         // "WHISPER_ASR_URL":"http://huly.local:9007",
         "STT_PROVIDER":"openai",
-        // "STT_URL":"${OPENAI_AUDIO_API_URL}",
-        "STT_URL": "https://api.nexara.ru/api/",
+        "STT_URL":"${OPENAI_AUDIO_API_URL}",
+        // "STT_URL": "https://api.nexara.ru/api/",
         // "STT_URL":"http://huly.local:9007"
-        "STT_API_KEY":"nx-738eDd5kKjA7x42Hwy6yirIS",
-        //"STT_API_KEY": "${OPENAI_AUDIO_API_KEY}"
+        // "STT_API_KEY":"",
+        "STT_API_KEY": "${OPENAI_AUDIO_API_KEY}"
         "STT_MODEL":""
 
       },
