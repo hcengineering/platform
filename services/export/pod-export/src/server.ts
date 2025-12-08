@@ -502,7 +502,7 @@ export function createServer (
               return await createPipeline(ctx, middlewares, context)
             }
 
-            const migrator = new WorkspaceMigrator(measureCtx, sourcePipelineFactory, targetTxOps, storageAdapter)
+            const migrator = new WorkspaceMigrator(measureCtx, sourcePipelineFactory, targetTxOps, storageAdapter, decodedToken.account)
 
             const relations = normalizeRelations(rawRelations)
 

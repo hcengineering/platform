@@ -828,7 +828,15 @@ export function createModel (builder: Builder): void {
   )
 
   const relations: RelationDefinition[] = [
+    // Forward relations - migrate referenced documents first
     { field: 'attachedTo', class: documents.class.DocumentMeta },
+    { field: 'changeControl', class: documents.class.ChangeControl },
+    { field: 'category', class: documents.class.DocumentCategory },
+    { field: 'template', class: documents.class.Document },
+    // Inverse relations - find documents that reference this one
+    // ProjectMeta references DocumentMeta via 'meta' field - must be migrated before ProjectDocument
+    { field: 'meta', class: documents.class.ProjectMeta, direction: 'inverse' },
+    // ProjectDocument references ControlledDocument via 'document' field
     { field: 'document', class: documents.class.ProjectDocument, direction: 'inverse' }
   ]
 

@@ -29,7 +29,8 @@ import {
   LowLevelStorage,
   Hierarchy,
   Collection,
-  isId
+  isId,
+  AccountUuid
 } from '@hcengineering/core'
 import { StorageAdapter, Pipeline } from '@hcengineering/server-core'
 import core from '@hcengineering/model-core'
@@ -72,7 +73,8 @@ export class WorkspaceMigrator {
     private readonly context: MeasureContext,
     private readonly sourcePipelineFactory: PipelineFactory,
     private readonly targetClient: TxOperations,
-    private readonly storage: StorageAdapter
+    private readonly storage: StorageAdapter,
+    private readonly currentAccount?: AccountUuid
   ) {}
 
   async migrate (options: MigrationOptions): Promise<MigrationResult> {
@@ -221,16 +223,28 @@ export class WorkspaceMigrator {
 
     try {
       const hierarchy = this.targetClient.getHierarchy()
-      const isAttached = hierarchy.isDerived(doc._class, core.class.AttachedDoc)
+      // Check both hierarchy derivation AND presence of attachedTo field
+      // Some classes like ControlledDocument have attachedTo but don't extend AttachedDoc
+      const hasAttachedFields = (doc as any).attachedTo !== undefined &&
+        (doc as any).attachedToClass !== undefined &&
+        (doc as any).collection !== undefined
+      const isAttached = hierarchy.isDerived(doc._class, core.class.AttachedDoc) || hasAttachedFields
 
-      await this.migrateRelations(doc, relations, conflictStrategy, includeAttachments, sourceHierarchy, sourceLowLevel)
-
-      const targetSpace = await this.getOrCreateTargetSpace(doc.space, sourceHierarchy, sourceLowLevel)
-
+      // Generate target ID upfront and add to idMapping BEFORE inverse relations
+      // This ensures inverse relations can reference this document
       const targetId = generateId()
+      this.idMapping.set(doc._id, targetId)
+
+      // First: Migrate forward relations (dependencies must exist before this doc)
+      await this.migrateForwardRelations(doc, relations, conflictStrategy, includeAttachments, sourceHierarchy, sourceLowLevel)
+
+      // Create the document
+      const targetSpace = await this.getOrCreateTargetSpace(doc.space, sourceHierarchy, sourceLowLevel)
       const data = await this.prepareDocumentData(doc, targetSpace, isAttached)
       await this.createDocument(doc, data, targetId, targetSpace, isAttached)
-      this.idMapping.set(doc._id, targetId)
+
+      // Now: Migrate inverse relations (they can now reference this document)
+      await this.migrateInverseRelations(doc, relations, conflictStrategy, includeAttachments, sourceHierarchy, sourceLowLevel)
 
       // Handle attachments
       if (includeAttachments) {
@@ -241,12 +255,16 @@ export class WorkspaceMigrator {
       await this.migrateCollections(doc, targetId, sourceHierarchy, sourceLowLevel, relations)
 
       return true
+    } catch (err: any) {
+      // Remove from idMapping on failure
+      this.idMapping.delete(doc._id)
+      throw err
     } finally {
       this.processingDocs.delete(doc._id)
     }
   }
 
-  private async migrateRelations (
+  private async migrateForwardRelations (
     doc: Doc,
     relations: RelationDefinition[],
     conflictStrategy: 'skip' | 'duplicate',
@@ -254,36 +272,52 @@ export class WorkspaceMigrator {
     sourceHierarchy: Hierarchy,
     sourceLowLevel: LowLevelStorage
   ): Promise<void> {
-    if (relations.length === 0) {
-      return
-    }
-
     for (const relation of relations) {
       const direction = relation.direction ?? 'forward'
+      if (direction !== 'forward') {
+        continue
+      }
       try {
-        if (direction === 'inverse') {
-          await this.migrateInverseRelation(
-            doc,
-            relation,
-            conflictStrategy,
-            includeAttachments,
-            sourceHierarchy,
-            sourceLowLevel,
-            relations
-          )
-        } else {
-          await this.migrateForwardRelation(
-            doc,
-            relation,
-            conflictStrategy,
-            includeAttachments,
-            sourceHierarchy,
-            sourceLowLevel,
-            relations
-          )
-        }
+        await this.migrateForwardRelation(
+          doc,
+          relation,
+          conflictStrategy,
+          includeAttachments,
+          sourceHierarchy,
+          sourceLowLevel,
+          relations
+        )
       } catch (err: any) {
-        console.error(`Failed to migrate relation ${relation.field} for document ${doc._id}:`, err)
+        console.error(`Failed to migrate forward relation ${relation.field} for document ${doc._id}:`, err)
+      }
+    }
+  }
+
+  private async migrateInverseRelations (
+    doc: Doc,
+    relations: RelationDefinition[],
+    conflictStrategy: 'skip' | 'duplicate',
+    includeAttachments: boolean,
+    sourceHierarchy: Hierarchy,
+    sourceLowLevel: LowLevelStorage
+  ): Promise<void> {
+    for (const relation of relations) {
+      const direction = relation.direction ?? 'forward'
+      if (direction !== 'inverse') {
+        continue
+      }
+      try {
+        await this.migrateInverseRelation(
+          doc,
+          relation,
+          conflictStrategy,
+          includeAttachments,
+          sourceHierarchy,
+          sourceLowLevel,
+          relations
+        )
+      } catch (err: any) {
+        console.error(`Failed to migrate inverse relation ${relation.field} for document ${doc._id}:`, err)
       }
     }
   }
@@ -306,6 +340,15 @@ export class WorkspaceMigrator {
     for (const ref of refs) {
       if (!isId(ref)) {
         continue
+      }
+
+      // Skip predefined IDs (like documents:template:ProductChangeControl)
+      // Predefined IDs have format module:type:name (two or more colons)
+      if (typeof ref === 'string') {
+        const colonCount = (ref.match(/:/g) ?? []).length
+        if (colonCount >= 2) {
+          continue
+        }
       }
 
       await this.migrateRelatedDocument(
@@ -335,12 +378,23 @@ export class WorkspaceMigrator {
       return
     }
 
+    // Query documents where the relation field points to current doc
+    // Don't filter by _class to find subclasses as well
     const relatedDocs = await sourceLowLevel.rawFindAll<Doc>(domain, {
-      _class: relation.class,
-      [relation.field]: { $in: [doc._id] }
+      [relation.field]: doc._id
     })
 
+    console.log(`Inverse relation ${relation.field}: found ${relatedDocs.length} docs pointing to ${doc._id}`)
     for (const relatedDoc of relatedDocs) {
+      console.log(`  - ${relatedDoc._id} (${relatedDoc._class}), ${relation.field}=${(relatedDoc as any)[relation.field]}`)
+    }
+
+    for (const relatedDoc of relatedDocs) {
+      // Only process docs of the relation class or its subclasses
+      if (!sourceHierarchy.isDerived(relatedDoc._class, relation.class)) {
+        continue
+      }
+
       await this.migrateDocument(
         relatedDoc,
         conflictStrategy,
@@ -372,14 +426,14 @@ export class WorkspaceMigrator {
       return
     }
 
+    // Query by ID only - the document might be a subclass of relationClass
     const relatedDocs = await sourceLowLevel.rawFindAll<Doc>(domain, {
-      _class: relationClass,
       _id: ref
     })
 
     const relatedDoc = relatedDocs[0]
     if (relatedDoc === undefined) {
-      console.warn(`Related document ${ref} not found for class ${relationClass}`)
+      // This is normal for predefined IDs or already-migrated docs
       return
     }
 
@@ -405,17 +459,24 @@ export class WorkspaceMigrator {
       const attachedDoc = sourceDoc as AttachedDoc
       const attachedData = data as Data<AttachedDoc>
 
-      // Remap attachedTo reference if it was migrated
-      if (attachedData.attachedTo !== undefined) {
-        attachedData.attachedTo = this.idMapping.get(attachedData.attachedTo) ?? attachedData.attachedTo
-      }
+      // attachedTo is already remapped in prepareDocumentData
+      const attachedTo = attachedData.attachedTo
+      const attachedToClass = attachedData.attachedToClass
+      const collection = attachedData.collection
+
+      // Remove attached doc fields from data - they're passed as separate params to addCollection
+      delete (attachedData as any).attachedTo
+      delete (attachedData as any).attachedToClass
+      delete (attachedData as any).collection
+
+      console.log(`  addCollection: attachedTo=${attachedTo}, class=${attachedToClass}, collection=${collection}`)
 
       await this.targetClient.addCollection(
         attachedDoc._class,
         targetSpace,
-        attachedData.attachedTo as any,
-        attachedData.attachedToClass,
-        attachedData.collection,
+        attachedTo as any,
+        attachedToClass,
+        collection,
         attachedData,
         targetId as any
       )
@@ -423,7 +484,7 @@ export class WorkspaceMigrator {
       await this.targetClient.createDoc(sourceDoc._class, targetSpace, data, targetId)
     }
 
-    console.log(`Created document ${targetId} in space ${targetSpace}`)
+    console.log(`Created document ${targetId} (from ${sourceDoc._id}) class ${sourceDoc._class} in space ${targetSpace}${isAttached ? ' [attached]' : ''}`)
   }
 
   private async prepareDocumentData (
@@ -435,14 +496,9 @@ export class WorkspaceMigrator {
     const attributes = hierarchy.getAllAttributes(doc._class)
     const data: Record<string, any> = {}
 
-    // Copy attributes, remapping references
-    for (const [key, attr] of Array.from(attributes)) {
+    // First pass: Copy attributes using hierarchy info
+    for (const [key] of Array.from(attributes)) {
       if (key === '_id' || key === '_class' || key === 'space') {
-        continue
-      }
-
-      if (isAttached && (key === 'attachedTo' || key === 'attachedToClass' || key === 'collection')) {
-        data[key] = (doc as any)[key]
         continue
       }
 
@@ -451,28 +507,89 @@ export class WorkspaceMigrator {
         continue
       }
 
-      // Remap references
-      if (attr.type._class === core.class.RefTo) {
-        const ref = value as Ref<Doc>
-        data[key] = this.idMapping.get(ref) ?? ref
-      } else if (attr.type._class === core.class.ArrOf) {
-        // Handle array of references
-        if (Array.isArray(value)) {
-          data[key] = value.map((v) => {
-            if (typeof v === 'string' && this.idMapping.has(v as Ref<Doc>)) {
-              return this.idMapping.get(v as Ref<Doc>)
-            }
-            return v
-          })
-        } else {
-          data[key] = value
-        }
-      } else {
+      // For attached docs, still remap attachedTo reference (but not attachedToClass/collection)
+      if (isAttached && key === 'attachedTo') {
+        // Remap the attachedTo reference to the new target ID
+        data[key] = this.remapValue(value, key)
+        continue
+      }
+
+      if (isAttached && (key === 'attachedToClass' || key === 'collection')) {
         data[key] = value
+        continue
+      }
+
+      // Remap references - use recursive remapping for all values
+      data[key] = this.remapValue(value, key)
+    }
+
+    // Second pass: Check all doc properties for any missed references
+    // This catches fields that might not be in getAllAttributes
+    for (const key of Object.keys(doc)) {
+      if (key === '_id' || key === '_class' || key === 'space' || key === 'modifiedOn' ||
+          key === 'modifiedBy' || key === 'createdOn' || key === 'createdBy') {
+        continue
+      }
+
+      // Skip if already processed
+      if (data[key] !== undefined) {
+        continue
+      }
+
+      const value = (doc as any)[key]
+      if (value === undefined) {
+        continue
+      }
+
+      data[key] = this.remapValue(value, key)
+    }
+
+    // Debug: Log the data with potential reference fields
+    console.log(`prepareDocumentData for ${doc._class} (${doc._id}):`)
+    console.log(`  idMapping size: ${this.idMapping.size}`)
+    for (const [key, value] of Object.entries(data)) {
+      if (typeof value === 'string' && value.length === 24 && /^[0-9a-f]+$/.test(value)) {
+        const mapped = this.idMapping.has(value as Ref<Doc>)
+        console.log(`  ${key}: ${value} (${mapped ? 'MAPPED' : 'not mapped'})`)
       }
     }
 
     return data
+  }
+
+  /**
+   * Recursively remap a value, handling nested objects and arrays.
+   */
+  private remapValue (value: any, fieldPath: string = ''): any {
+    if (value === null || value === undefined) {
+      return value
+    }
+
+    // String - check if it's an ID that needs remapping
+    if (typeof value === 'string') {
+      if (this.idMapping.has(value as Ref<Doc>)) {
+        const remapped = this.idMapping.get(value as Ref<Doc>)
+        console.log(`  Remapped ${fieldPath}: ${value} -> ${remapped}`)
+        return remapped
+      }
+      return value
+    }
+
+    // Array - remap each element
+    if (Array.isArray(value)) {
+      return value.map((v, i) => this.remapValue(v, `${fieldPath}[${i}]`))
+    }
+
+    // Object - recursively remap all properties
+    if (typeof value === 'object') {
+      const result: Record<string, any> = {}
+      for (const [key, v] of Object.entries(value)) {
+        result[key] = this.remapValue(v, fieldPath !== '' ? `${fieldPath}.${key}` : key)
+      }
+      return result
+    }
+
+    return value
   }
 
   private async migrateAttachments (
@@ -586,11 +703,10 @@ export class WorkspaceMigrator {
 
       for (const collectionDoc of collectionDocs) {
         try {
-          // Update attachedTo reference before migration
-          const updatedDoc = { ...collectionDoc, attachedTo: targetDocId }
-          // Pass empty map since we handle conflicts at top level only
+          // Don't modify attachedTo here - the ID remapping happens in createDocument
+          // The source document still has the source attachedTo ID which will be remapped
           await this.migrateDocument(
-            updatedDoc,
+            collectionDoc,
             'duplicate',
             true,
             sourceHierarchy,
@@ -645,13 +761,14 @@ export class WorkspaceMigrator {
       targetSpaceId = targetSpaces[0]._id
       console.log(`Using existing space ${targetSpaceId}`)
     } else {
-      // Create new space without members and roles
-      const spaceData: Data<Space> = {
+      // Create new space with current user as member/owner
+      const spaceData: Data<Space> & { owners?: AccountUuid[] } = {
         name: sourceSpace.name,
         description: sourceSpace.description,
         private: sourceSpace.private,
         archived: sourceSpace.archived ?? false,
-        members: []
+        members: this.currentAccount !== undefined ? [this.currentAccount] : [],
+        owners: this.currentAccount !== undefined ? [this.currentAccount] : []
       }
 
       // Copy type-specific attributes if needed
