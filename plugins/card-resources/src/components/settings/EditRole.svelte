@@ -50,7 +50,7 @@
     .getModel()
     .findAllSync(cardPlugin.class.PermissionObjectClass, {})
     .map((poc) => poc.objectClass)
-  const tagDesc = Array.from(new Set(role?.types?.map((p) => h.getAncestors(p)).flat()))
+  const tagDesc = Array.from(new Set(role?.types?.map((p) => [...h.getAncestors(p), ...h.getDescendants(p)]).flat()))
   const allPermissions = client.getModel().findAllSync(core.class.Permission, {
     scope: 'space',
     objectClass: { $in: [...cardPermissionsObjectClasses, ...tagDesc] }
