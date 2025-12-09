@@ -30,6 +30,7 @@
     "ExportStarted": "导出已开始",
     "ExportStartedMessage": "导出已开始。完成后您将在收件箱中收到通知。",
     "SelectWorkspace": "选择工作区",
+    "SelectWorkspaceToExport": "选择工作区以导出 {count, plural, =1 {1 文档} other {# 个文档}}",
     "SelectSpace": "选择空间",
     "NoSelectedDocuments": "未选择文档"
   }

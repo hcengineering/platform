@@ -30,6 +30,7 @@
     "ExportStarted": "Exportation démarrée",
     "ExportStartedMessage": "Exportation démarrée. Vous recevrez une notification dans votre boîte de réception une fois terminée.",
     "SelectWorkspace": "Sélectionner l'espace de travail",
+    "SelectWorkspaceToExport": "Sélectionner l'espace de travail pour exporter {count, plural, =1 {1 document} other {# documents}}",
     "SelectSpace": "Sélectionner l'espace",
     "NoSelectedDocuments": "Aucun document sélectionné"
   }

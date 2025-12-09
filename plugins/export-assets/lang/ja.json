@@ -30,6 +30,7 @@
     "ExportStarted": "エクスポートを開始しました",
     "ExportStartedMessage": "エクスポートを開始しました。完了すると受信箱に通知が届きます。",
     "SelectWorkspace": "ワークスペースを選択",
+    "SelectWorkspaceToExport": "{count, plural, =1 {1 件のドキュメント} other {# 件のドキュメント}}をエクスポートするワークスペースを選択",
     "SelectSpace": "スペースを選択",
     "NoSelectedDocuments": "ドキュメントが選択されていません"
   }

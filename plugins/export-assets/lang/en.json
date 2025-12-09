@@ -30,6 +30,7 @@
     "ExportStarted": "Export started",
     "ExportStartedMessage": "Export started. You will receive a notification in your Inbox when it completes.",
     "SelectWorkspace": "Select workspace",
+    "SelectWorkspaceToExport": "Select workspace to export {count, plural, =1 {1 document} other {# documents}}",
     "SelectSpace": "Select space",
     "NoSelectedDocuments": "No documents selected"
   }

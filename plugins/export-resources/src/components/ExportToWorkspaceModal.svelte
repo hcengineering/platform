@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Doc, DocumentQuery, type WorkspaceInfoWithStatus, isActiveMode } from '@hcengineering/core'
   import { Card, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
-  import { DropdownLabels } from '@hcengineering/ui'
+  import { DropdownLabels, Label } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
   import login from '@hcengineering/login'
   import { type RelationDefinition } from '@hcengineering/export'
@@ -89,6 +89,9 @@
   on:changeContent
 >
   <div class="flex-col gap-2">
+    <span class="pb-4 secondary-textColor">
+      <Label label={plugin.string.SelectWorkspaceToExport} params={{ count: selectedDocs.length }} />
+    </span>
     <DropdownLabels
       placeholder={plugin.string.TargetWorkspace}
       items={workspaceItems}

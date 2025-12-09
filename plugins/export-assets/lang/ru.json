@@ -30,6 +30,7 @@
     "ExportStarted": "Экспорт начат",
     "ExportStartedMessage": "Экспорт начат. Вы получите уведомление во входящих, когда он будет завершен.",
     "SelectWorkspace": "Выбрать рабочее пространство",
+    "SelectWorkspaceToExport": "Выбрать рабочее пространство для экспорта {count, plural, =1 {1 документ} one {# документ} few {# документа} other {# документов}}",
     "SelectSpace": "Выбрать пространство",
     "NoSelectedDocuments": "Документы не выбраны"
   }
