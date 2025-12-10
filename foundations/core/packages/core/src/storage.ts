@@ -128,7 +128,7 @@ export type Projection<T extends Doc> = {
   [P in keyof T]?: 0 | 1
 }
 
-export type AssociationQuery = [Ref<Association>, 1 | -1]
+export type AssociationQuery = [Ref<Association>, 1 | -1] | [Ref<Association>, 1 | -1, AssociationQuery[]]
 
 /**
  * @public
@@ -205,7 +205,7 @@ export type LookupData<T extends Doc> = Partial<RefsAsDocs<T>>
  */
 export type WithLookup<T extends Doc> = T & {
   $lookup?: LookupData<T>
-  $associations?: Record<string, Doc[]>
+  $associations?: Record<string, WithLookup<Doc>[]>
   $source?: {
     $score: number // Score for document result
     [key: string]: any

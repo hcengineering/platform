@@ -197,7 +197,32 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       return withoutMatch.forbid !== undefined ? !withoutMatch.forbid : true
     }
 
-    return isSpace || !this.restrictedSpaces.has(space)
+    if (isSpace || !this.restrictedSpaces.has(space)) {
+      return true
+    }
+
+    if (this.restrictedSpaces.has(space)) {
+      const attachedDocAncestors = this.context.hierarchy.getAncestors(core.class.AttachedDoc)
+      const ancestors = this.context.hierarchy.getAncestors(tx.objectClass)
+      const targetAncestors = ancestors.filter((a) => !attachedDocAncestors.includes(a))
+
+      const permissions = this.context.modelDb.findAllSync(core.class.Permission, {
+        objectClass: { $in: targetAncestors },
+        txClass: tx._class
+      })
+      const matched = permissions.filter((p) => {
+        if (p.txMatch === undefined) return false
+        const checkMatch = matchQuery([tx], p.txMatch, tx._class, this.context.hierarchy, true)
+        return p.forbid !== true && checkMatch.length > 0
+      })
+
+      if (matched.length > 0) return false
+
+      const withoutMatch = permissions.filter((p) => p.txMatch === undefined)
+      return withoutMatch.length === 0
+    }
+
+    return false
   }
 
   private throwForbidden (): void {

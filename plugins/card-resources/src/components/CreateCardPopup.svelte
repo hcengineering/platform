@@ -21,12 +21,13 @@
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { EmptyMarkup } from '@hcengineering/text'
   import { Employee, getCurrentEmployee } from '@hcengineering/contact'
-  import { SelectUsersPopup, employeeByIdStore } from '@hcengineering/contact-resources'
+  import { SelectUsersPopup, employeeByIdStore, permissionsStore } from '@hcengineering/contact-resources'
   import view from '@hcengineering/view'
 
   import { createCard } from '../utils'
   import CardCollaborators from './CardCollaborators.svelte'
   import { TypeSelector } from '../index'
+  import { canCreateObject } from '@hcengineering/view-resources'
 
   export let title: string = ''
   export let type: Ref<MasterTag> = card.types.Document
@@ -140,6 +141,8 @@
       _space = event.detail.space
     }
   }
+
+  $: allowed = _space && canCreateObject(type, _space, $permissionsStore)
 </script>
 
 <Modal
@@ -149,7 +152,7 @@
   okLabel={presentation.string.Create}
   {okAction}
   okLoading={creating}
-  canSave={data.title != null && data.title.trim().length > 0 && _space != null}
+  canSave={data.title != null && data.title.trim().length > 0 && _space != null && allowed}
   onCancel={handleCancel}
   maxWidth="90vw"
   on:close

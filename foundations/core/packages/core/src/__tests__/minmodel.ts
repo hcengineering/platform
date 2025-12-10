@@ -16,7 +16,7 @@
 import type { IntlString, Plugin } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { Arr, AttachedDoc, Class, Data, Doc, Interface, Mixin, Obj, Ref, Space } from '../classes'
-import { ClassifierKind, DOMAIN_MODEL } from '../classes'
+import { ClassifierKind, DOMAIN_MODEL, DOMAIN_RELATION } from '../classes'
 import core from '../component'
 import type { DocumentUpdate, TxCUD, TxCreateDoc, TxRemoveDoc, TxUpdateDoc } from '../tx'
 import { DOMAIN_TX, TxFactory } from '../tx'
@@ -249,6 +249,34 @@ export function genMinModel (): TxCUD<Doc>[] {
       label: 'TestMixinTodo' as IntlString,
       extends: core.class.AttachedDoc,
       kind: ClassifierKind.CLASS
+    })
+  )
+
+  txes.push(
+    createClass(core.class.Relation, {
+      label: 'Relation' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_RELATION
+    })
+  )
+
+  txes.push(
+    createClass(core.class.Association, {
+      label: 'Association' as IntlString,
+      extends: core.class.Doc,
+      kind: ClassifierKind.CLASS,
+      domain: DOMAIN_MODEL
+    })
+  )
+
+  txes.push(
+    createDoc(core.class.Association, {
+      nameA: 'my-assoc',
+      nameB: 'my-assoc',
+      classA: test.class.TestComment,
+      classB: test.class.TestComment,
+      type: '1:1'
     })
   )
 
