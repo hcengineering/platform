@@ -76,7 +76,7 @@ import WebSocket from 'ws'
 import envConfig from './config'
 import { ApiError } from './error'
 import { ExportFormat, WorkspaceExporter } from './exporter'
-import { WorkspaceMigrator, type MigrationOptions, type MigrationResult } from './migrator'
+import { CrossWorkspaceExporter, type ExportOptions, type ExportResult } from './workspace'
 
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
@@ -522,7 +522,7 @@ export function createServer (
               return await createPipeline(ctx, middlewares, context)
             }
 
-            const migrator = new WorkspaceMigrator(
+            const exporter = new CrossWorkspaceExporter(
               measureCtx,
               sourcePipelineFactory,
               targetTxOps,
@@ -534,7 +534,7 @@ export function createServer (
 
             const relations = normalizeRelations(rawRelations)
 
-            const options: MigrationOptions = {
+            const options: ExportOptions = {
               sourceWorkspace: wsIds,
               targetWorkspace: targetWsIds,
               sourceQuery: query ?? {},
@@ -545,7 +545,7 @@ export function createServer (
               fieldMappers
             }
 
-            const result = await migrator.migrate(options)
+            const result = await exporter.export(options)
 
             await sendMigrationNotification(
               sourceTxOps,
@@ -771,7 +771,7 @@ async function sendFailureNotification (
 async function sendMigrationNotification (
   client: TxOperations,
   account: AccountUuid,
-  result: MigrationResult,
+  result: ExportResult,
   workspaceUrl: string,
   objectClass?: Ref<Class<Doc>>,
   objectId?: Ref<Doc>,

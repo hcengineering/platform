@@ -13,11 +13,10 @@
 // limitations under the License.
 //
 
-import { config } from 'dotenv'
-import { main } from './main'
-
 export * from './types'
-export * from './exporter'
-
-config()
-void main()
+export { CrossWorkspaceExporter } from './workspace-exporter'
+export { DataMapper } from './data-mapper'
+export { SpaceExporter } from './space-exporter'
+export { AttachmentExporter } from './attachment-exporter'
+export { RelationExporter } from './relation-exporter'
+export { DocumentExporter } from './document-exporter'
