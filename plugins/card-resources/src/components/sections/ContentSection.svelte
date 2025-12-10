@@ -20,7 +20,8 @@
 
   import Content from '../Content.svelte'
   import { CardSectionAction } from '../../types'
-  import { canChangeDoc, permissionsStore } from '@hcengineering/contact-resources'
+  import { permissionsStore } from '@hcengineering/contact-resources'
+  import { canChangeDoc } from '@hcengineering/view-resources'
 
   export let readonly: boolean = false
   export let doc: Card
