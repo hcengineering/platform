@@ -38,7 +38,7 @@
     getClient,
     ComponentExtensions
   } from '@hcengineering/presentation'
-  import { showMenu } from '@hcengineering/view-resources'
+  import { canChangeDoc, showMenu } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
   import { NotificationContext } from '@hcengineering/communication-types'
 
@@ -49,7 +49,7 @@
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import { openCardInSidebar } from '../utils'
   import { afterUpdate } from 'svelte'
-  import { canChangeDoc, permissionsStore } from '@hcengineering/contact-resources'
+  import { permissionsStore } from '@hcengineering/contact-resources'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false

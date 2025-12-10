@@ -25,6 +25,7 @@
     Ref,
     SortingOrder,
     TxOperations,
+    TypedSpace,
     getObjectValue,
     mergeQueries
   } from '@hcengineering/core'
@@ -43,13 +44,17 @@
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, BuildModelOptions, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import { showMenu } from '../actions'
   import view from '../plugin'
   import { LoadingProps, buildConfigAssociation, buildConfigLookup, buildModel, restrictionStore } from '../utils'
   import IconUpDown from './icons/UpDown.svelte'
   import { getResultOptions, getResultQuery } from '../viewOptions'
   import { canEditSpace } from '../visibilityTester'
+  import contact, { PermissionsStore } from '@hcengineering/contact'
+  import { Readable } from 'svelte/store'
+  import { getResource } from '@hcengineering/platform'
+  import { canChangeAttribute } from '../permissions'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -338,6 +343,22 @@
     }
   }
 
+  let permissionsStore: Readable<PermissionsStore> | undefined = undefined
+
+  onMount(async () => {
+    permissionsStore = await getResource(contact.store.Permissions)
+  })
+
+  function canChangeAttr (
+    object: Doc,
+    attr: AnyAttribute | undefined,
+    permissionsStore: PermissionsStore | undefined
+  ): boolean {
+    if (permissionsStore === undefined) return true
+    if (attr === undefined) return true
+    return canChangeAttribute(attr, object.space as Ref<TypedSpace>, permissionsStore)
+  }
+
   async function canEdit (object: Doc): Promise<boolean> {
     if (client.getHierarchy().isDerived(object._class, core.class.Space)) {
       return await canEditSpace(object)
@@ -474,7 +495,14 @@
                           onChange={getOnChange(object, attribute)}
                           label={attribute.label}
                           attribute={attribute.attribute}
-                          {...joinProps(attribute, object, readonly || $restrictionStore.readonly, canEditObject)}
+                          {...joinProps(
+                            attribute,
+                            object,
+                            readonly ||
+                              $restrictionStore.readonly ||
+                              !canChangeAttr(object, attribute.attribute, $permissionsStore),
+                            canEditObject
+                          )}
                         />
                       </div>
                     {:else}
@@ -484,7 +512,14 @@
                         onChange={getOnChange(object, attribute)}
                         label={attribute.label}
                         attribute={attribute.attribute}
-                        {...joinProps(attribute, object, readonly || $restrictionStore.readonly, canEditObject)}
+                        {...joinProps(
+                          attribute,
+                          object,
+                          readonly ||
+                            $restrictionStore.readonly ||
+                            !canChangeAttr(object, attribute.attribute, $permissionsStore),
+                          canEditObject
+                        )}
                       />
                     {/if}
                   </td>
