@@ -32,7 +32,13 @@
     navigate
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ParentsNavigator, RelationsEditor, canChangeDoc, getDocMixins, showMenu } from '@hcengineering/view-resources'
+  import {
+    ParentsNavigator,
+    RelationsEditor,
+    canChangeDoc,
+    getDocMixins,
+    showMenu
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
   import card from '../plugin'
