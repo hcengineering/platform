@@ -780,7 +780,9 @@ export class LiveQuery implements WithTx, Client {
         }
         const docs = q.result.getDocs()
         for (const doc of docs) {
-          const docToUpdate = doc.$associations?.[association._id]?.find((it) => it._id === tx.objectId)
+          const docToUpdate =
+            doc.$associations?.[`${association._id}_a`]?.find((it) => it._id === tx.objectId) ??
+            doc.$associations?.[`${association._id}_b`]?.find((it) => it._id === tx.objectId)
           if (docToUpdate !== undefined) {
             if (tx._class === core.class.TxMixin) {
               TxProcessor.updateMixin4Doc(docToUpdate, tx as TxMixin<Doc, Doc>)
@@ -1128,12 +1130,13 @@ export class LiveQuery implements WithTx, Client {
         _id: direct ? relation.docB : relation.docA
       })
       if (docToPush === undefined) return
-      const arr = res?.$associations?.[relation.association] ?? []
-      arr.push(docToPush)
       if (res?.$associations === undefined) {
         res.$associations = {}
       }
-      res.$associations[relation.association] = arr
+      const key = direct ? 'b' : 'a'
+      const arr = res?.$associations?.[`${relation.association}_${key}`] ?? []
+      arr.push(docToPush)
+      res.$associations[`${relation.association}_${key}`] = arr
       q.result.updateDoc(res, false)
       this.queriesToUpdate.set(q.id, q)
     }
