@@ -417,18 +417,27 @@ export function createServer (
           conflictStrategy?: 'skip' | 'duplicate'
           includeAttachments?: boolean
           relations?: RelationPayload
-          objectId: Ref<Doc>
-          objectSpace: Ref<Space>
+          objectId?: Ref<Doc>
+          objectSpace?: Ref<Space>
           fieldMappers?: Record<string, Record<string, any>>
         } = req.body
 
-        if (targetWorkspace == null) {
-          measureCtx.warn(`Missing required parameter: ${req.body}`)
-          throw new ApiError(400, 'Missing required parameter: targetWorkspace')
+        // Validate required parameters
+        if (targetWorkspace == null || typeof targetWorkspace !== 'string') {
+          measureCtx.warn(`Invalid targetWorkspace parameter: ${String(targetWorkspace)}`)
+          throw new ApiError(400, 'Missing or invalid required parameter: targetWorkspace')
         }
-        if (_class == null) {
-          measureCtx.warn(`Missing required parameter: ${req.body}`)
-          throw new ApiError(400, 'Missing required parameter: _class')
+        if (_class == null || typeof _class !== 'string') {
+          measureCtx.warn(`Invalid _class parameter: ${String(_class)}`)
+          throw new ApiError(400, 'Missing or invalid required parameter: _class')
+        }
+        if (conflictStrategy !== undefined && conflictStrategy !== 'skip' && conflictStrategy !== 'duplicate') {
+          measureCtx.warn(`Invalid conflictStrategy: ${String(conflictStrategy)}`)
+          throw new ApiError(400, 'Invalid conflictStrategy. Must be "skip" or "duplicate"')
+        }
+        if (includeAttachments !== undefined && typeof includeAttachments !== 'boolean') {
+          measureCtx.warn(`Invalid includeAttachments: ${String(includeAttachments)}`)
+          throw new ApiError(400, 'Invalid includeAttachments. Must be boolean')
         }
 
         decodedToken = decodeToken(token)
@@ -436,7 +445,7 @@ export function createServer (
           throw new ApiError(403, 'Forbidden: read-only token')
         }
 
-        // Store for notifications
+        // Store for notifications (use defaults if not provided)
         notifyObjectClass = _class
         notifyObjectId = objectId
         notifyObjectSpace = objectSpace
@@ -449,6 +458,15 @@ export function createServer (
         if (targetWsInfo === undefined) {
           measureCtx.warn(`Target workspace not found or not accessible: ${targetWorkspace}`)
           throw new ApiError(404, 'Target workspace not found or not accessible')
+        }
+
+        // Verify user has write access to target workspace
+        const isAdmin: boolean = decodedToken.extra?.admin === 'true'
+        if (!isAdmin && targetWsInfo.role !== AccountRole.Owner) {
+          measureCtx.warn(
+            `User does not have write access to target workspace: ${targetWorkspace}, role: ${targetWsInfo.role}`
+          )
+          throw new ApiError(403, 'You do not have write access to the target workspace. Owner role required.')
         }
 
         const targetWsIds: WorkspaceIds = {
@@ -509,7 +527,9 @@ export function createServer (
               sourcePipelineFactory,
               targetTxOps,
               storageAdapter,
-              decodedToken.account
+              decodedToken.account,
+              wsIds,
+              targetWsIds
             )
 
             const relations = normalizeRelations(rawRelations)

@@ -314,7 +314,9 @@ describe('WorkspaceMigrator', () => {
         pipelineFactory,
         targetClient,
         mockStorage,
-        'test:account:user' as any
+        'test:account:user' as any,
+        createWorkspaceIds('source-ws'),
+        createWorkspaceIds('target-ws')
       )
 
       const result = await migrator.migrate({
@@ -364,7 +366,15 @@ describe('WorkspaceMigrator', () => {
       const targetClient = createMockTxOperations([existingDoc], [existingSpace], hierarchy)
       const pipelineFactory = createMockPipelineFactory(hierarchy, lowLevelStorage)
 
-      const migrator = new WorkspaceMigrator(mockContext, pipelineFactory, targetClient, mockStorage)
+      const migrator = new WorkspaceMigrator(
+        mockContext,
+        pipelineFactory,
+        targetClient,
+        mockStorage,
+        undefined,
+        createWorkspaceIds('source-ws'),
+        createWorkspaceIds('target-ws')
+      )
 
       const result = await migrator.migrate({
         sourceWorkspace: createWorkspaceIds('source-ws'),
@@ -423,7 +433,15 @@ describe('WorkspaceMigrator', () => {
       const targetClient = createMockTxOperations([], [], hierarchy)
       const pipelineFactory = createMockPipelineFactory(hierarchy, lowLevelStorage)
 
-      const migrator = new WorkspaceMigrator(mockContext, pipelineFactory, targetClient, mockStorage)
+      const migrator = new WorkspaceMigrator(
+        mockContext,
+        pipelineFactory,
+        targetClient,
+        mockStorage,
+        undefined,
+        createWorkspaceIds('source-ws'),
+        createWorkspaceIds('target-ws')
+      )
 
       const result = await migrator.migrate({
         sourceWorkspace: createWorkspaceIds('source-ws'),
@@ -491,7 +509,15 @@ describe('WorkspaceMigrator', () => {
       const targetClient = createMockTxOperations([], [], hierarchy) as TxOperations & { getCreatedDocs: () => Doc[] }
       const pipelineFactory = createMockPipelineFactory(hierarchy, lowLevelStorage)
 
-      const migrator = new WorkspaceMigrator(mockContext, pipelineFactory, targetClient, mockStorage)
+      const migrator = new WorkspaceMigrator(
+        mockContext,
+        pipelineFactory,
+        targetClient,
+        mockStorage,
+        undefined,
+        createWorkspaceIds('source-ws'),
+        createWorkspaceIds('target-ws')
+      )
 
       // Migrate parent first via relations
       const result = await migrator.migrate({
@@ -551,7 +577,15 @@ describe('WorkspaceMigrator', () => {
       const targetClient = createMockTxOperations([], [], hierarchy)
       const pipelineFactory = createMockPipelineFactory(hierarchy, lowLevelStorage)
 
-      const migrator = new WorkspaceMigrator(mockContext, pipelineFactory, targetClient, mockStorage)
+      const migrator = new WorkspaceMigrator(
+        mockContext,
+        pipelineFactory,
+        targetClient,
+        mockStorage,
+        undefined,
+        createWorkspaceIds('source-ws'),
+        createWorkspaceIds('target-ws')
+      )
 
       const relations: RelationDefinition[] = [{ field: 'relatedTo', class: mockDocClass }]
 
@@ -603,7 +637,15 @@ describe('WorkspaceMigrator', () => {
       const targetClient = createMockTxOperations([], [], hierarchy)
       const pipelineFactory = createMockPipelineFactory(hierarchy, lowLevelStorage)
 
-      const migrator = new WorkspaceMigrator(mockContext, pipelineFactory, targetClient, mockStorage)
+      const migrator = new WorkspaceMigrator(
+        mockContext,
+        pipelineFactory,
+        targetClient,
+        mockStorage,
+        undefined,
+        createWorkspaceIds('source-ws'),
+        createWorkspaceIds('target-ws')
+      )
 
       const relations: RelationDefinition[] = [{ field: 'template', class: mockDocClass }]
 
@@ -660,7 +702,15 @@ describe('WorkspaceMigrator', () => {
       const targetClient = createMockTxOperations([], [], hierarchy)
       const pipelineFactory = createMockPipelineFactory(hierarchy, lowLevelStorage)
 
-      const migrator = new WorkspaceMigrator(mockContext, pipelineFactory, targetClient, mockStorage)
+      const migrator = new WorkspaceMigrator(
+        mockContext,
+        pipelineFactory,
+        targetClient,
+        mockStorage,
+        undefined,
+        createWorkspaceIds('source-ws'),
+        createWorkspaceIds('target-ws')
+      )
 
       const relations: RelationDefinition[] = [{ field: 'parentRef', class: mockDocClass, direction: 'inverse' }]
 
@@ -719,7 +769,9 @@ describe('WorkspaceMigrator', () => {
         pipelineFactory,
         targetClient,
         mockStorage,
-        'test:account:user' as any
+        'test:account:user' as any,
+        createWorkspaceIds('source-ws'),
+        createWorkspaceIds('target-ws')
       )
 
       const result = await migrator.migrate({
@@ -765,7 +817,15 @@ describe('WorkspaceMigrator', () => {
       const targetClient = createMockTxOperations([], [existingTargetSpace], hierarchy)
       const pipelineFactory = createMockPipelineFactory(hierarchy, lowLevelStorage)
 
-      const migrator = new WorkspaceMigrator(mockContext, pipelineFactory, targetClient, mockStorage)
+      const migrator = new WorkspaceMigrator(
+        mockContext,
+        pipelineFactory,
+        targetClient,
+        mockStorage,
+        undefined,
+        createWorkspaceIds('source-ws'),
+        createWorkspaceIds('target-ws')
+      )
 
       const result = await migrator.migrate({
         sourceWorkspace: createWorkspaceIds('source-ws'),
@@ -820,7 +880,15 @@ describe('WorkspaceMigrator', () => {
       const targetClient = createMockTxOperations([], [], hierarchy)
       const pipelineFactory = createMockPipelineFactory(hierarchy, lowLevelStorage)
 
-      const migrator = new WorkspaceMigrator(mockContext, pipelineFactory, targetClient, mockStorage)
+      const migrator = new WorkspaceMigrator(
+        mockContext,
+        pipelineFactory,
+        targetClient,
+        mockStorage,
+        undefined,
+        createWorkspaceIds('source-ws'),
+        createWorkspaceIds('target-ws')
+      )
 
       await migrator.migrate({
         sourceWorkspace: createWorkspaceIds('source-ws'),
@@ -880,7 +948,15 @@ describe('WorkspaceMigrator', () => {
 
       const pipelineFactory = createMockPipelineFactory(hierarchy, lowLevelStorage)
 
-      const migrator = new WorkspaceMigrator(mockContext, pipelineFactory, targetClient, mockStorage)
+      const migrator = new WorkspaceMigrator(
+        mockContext,
+        pipelineFactory,
+        targetClient,
+        mockStorage,
+        undefined,
+        createWorkspaceIds('source-ws'),
+        createWorkspaceIds('target-ws')
+      )
 
       const result = await migrator.migrate({
         sourceWorkspace: createWorkspaceIds('source-ws'),

@@ -56,8 +56,6 @@ export class UnifiedConverter {
   documentCache = new Map<Ref<Class<Doc>>, DocCache | Promise<DocCache>>()
 
   async convert (doc: Doc, attributesOnly: boolean = false): Promise<UnifiedDoc> {
-    console.log('Convert', doc._id, doc._class, (doc as any).title)
-
     const hierarchy = this.client.getHierarchy()
     const attributes = hierarchy.getAllAttributes(doc._class)
     const processed: Record<string, any> = {}
@@ -131,7 +129,9 @@ export class UnifiedConverter {
     }
 
     if (collabFields.length > 1) {
-      console.warn(`Document ${doc._id} of class ${doc._class} has multiple collab fields: ${collabFields.join(', ')}`)
+      this.context.warn(
+        `Document ${doc._id} of class ${doc._class} has multiple collab fields: ${collabFields.join(', ')}`
+      )
     }
 
     const attachments = attributesOnly ? undefined : await this.resolveAttachments(doc._id, doc._class)
@@ -269,14 +269,17 @@ export class UnifiedConverter {
 
       const doc = byId.get(ref)
       if (doc === undefined) {
-        console.warn(`Referenced document not found: ${ref}`)
+        this.context.warn(`Referenced document not found: ${ref}`)
         return ref
       }
 
       // Try to get the most meaningful identifier
       return (doc as any).identifier ?? (doc as any).title ?? (doc as any).email ?? (doc as any).name ?? doc._id
     } catch (err) {
-      console.error(`Failed to resolve reference: ${ref}`, err)
+      this.context.error(`Failed to resolve reference: ${ref}`, {
+        error: err instanceof Error ? err.message : String(err),
+        ref
+      })
       return ref
     }
   }
@@ -298,7 +301,7 @@ export class UnifiedConverter {
   async loadCache (_class: Ref<Class<Doc>>): Promise<DocCache> {
     const allIds = await this.client.findAll(_class, {}, { projection: { _id: 1 } })
     const docs: Doc[] = []
-    console.log(`Loading cache for ${_class} with ${allIds.length} documents`)
+    this.context.info(`Loading cache for ${_class} with ${allIds.length} documents`)
     while (allIds.length > 0) {
       const batch = allIds.splice(0, 10000).map((it) => it._id)
       const batchDocs = await this.client.findAll(_class, { _id: { $in: batch } })
@@ -320,12 +323,10 @@ export class UnifiedConverter {
   }
 
   private async resolveMarkdown (blobRef: MarkupBlobRef): Promise<string> {
-    console.log(`Resolving markup content for ${blobRef}`)
-    // return 'test'
     try {
       const buffer = await this.storage.read(this.context, this.wsIds, blobRef)
       if (buffer === undefined) {
-        console.error(`Blob not found: ${blobRef}`)
+        this.context.warn(`Blob not found: ${blobRef}`)
         return ''
       }
 
@@ -333,7 +334,10 @@ export class UnifiedConverter {
       // const markdown = await markupToMarkdown(markup, '', '')
       return markup // todo: test it is a markdown
     } catch (err) {
-      console.error(`Failed to resolve markup content: ${blobRef}`, err)
+      this.context.error(`Failed to resolve markup content: ${blobRef}`, {
+        error: err instanceof Error ? err.message : String(err),
+        blobRef
+      })
       return ''
     }
   }
@@ -370,7 +374,7 @@ export class UnifiedConverter {
           const buffer = await this.storage.read(this.context, this.wsIds, att.file)
 
           if (buffer === undefined) {
-            console.error(`Attachment not found: ${att._id}`)
+            this.context.warn(`Attachment not found: ${att._id}`)
             return Buffer.from([])
           }
 

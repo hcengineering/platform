@@ -74,8 +74,15 @@ export async function exportToWorkspace (
     })
 
     if (!res.ok) {
-      void res.json().catch(() => ({}))
-      await showFailureNotification()
+      let errorMessage = 'Unknown error occurred'
+      try {
+        const errorData = await res.json()
+        errorMessage = errorData.message ?? errorData.error ?? `HTTP ${res.status}: ${res.statusText}`
+      } catch {
+        errorMessage = `HTTP ${res.status}: ${res.statusText}`
+      }
+      console.error('Export request failed:', errorMessage)
+      await showFailureNotification(errorMessage)
       return
     }
 
@@ -89,15 +96,20 @@ export async function exportToWorkspace (
     )
   } catch (err) {
     console.error('Export failed:', err)
-    await showFailureNotification()
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
+    await showFailureNotification(errorMessage)
   }
 }
 
-async function showFailureNotification (): Promise<void> {
+async function showFailureNotification (errorDetails?: string): Promise<void> {
   const lang = getCurrentLanguage()
+  const message =
+    errorDetails !== undefined
+      ? `${await translate(plugin.string.ExportRequestFailedMessage, {}, lang)}: ${errorDetails}`
+      : await translate(plugin.string.ExportRequestFailedMessage, {}, lang)
   addNotification(
     await translate(plugin.string.ExportRequestFailed, {}, lang),
-    await translate(plugin.string.ExportRequestFailedMessage, {}, lang),
+    message,
     ExportNotification,
     undefined,
     NotificationSeverity.Error

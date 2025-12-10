@@ -75,14 +75,21 @@ export class WorkspaceMigrator {
   private readonly employeeCache = new Map<AccountUuid, Ref<Employee>>()
   private fieldMappers: Record<string, Record<string, any>> = {}
   private currentAccountEmployeeId: Ref<Employee> | undefined
+  private readonly sourceWorkspace: WorkspaceIds
+  private readonly targetWorkspace: WorkspaceIds
 
   constructor (
     private readonly context: MeasureContext,
     private readonly sourcePipelineFactory: PipelineFactory,
     private readonly targetClient: TxOperations,
     private readonly storage: StorageAdapter,
-    private readonly currentAccount?: AccountUuid
-  ) {}
+    private readonly currentAccount: AccountUuid | undefined,
+    sourceWorkspace: WorkspaceIds,
+    targetWorkspace: WorkspaceIds
+  ) {
+    this.sourceWorkspace = sourceWorkspace
+    this.targetWorkspace = targetWorkspace
+  }
 
   async migrate (options: MigrationOptions): Promise<MigrationResult> {
     const {
@@ -103,7 +110,7 @@ export class WorkspaceMigrator {
     if (this.currentAccount !== undefined) {
       this.currentAccountEmployeeId = await this.getEmployeeByAccount(this.currentAccount)
       if (this.currentAccountEmployeeId !== undefined) {
-        console.log(`Current account employee ID: ${this.currentAccountEmployeeId}`)
+        this.context.info(`Current account employee ID: ${this.currentAccountEmployeeId}`)
       }
     }
 
@@ -134,7 +141,7 @@ export class WorkspaceMigrator {
         ? { [_class]: { $exists: true }, ...sourceQuery }
         : { _class, ...sourceQuery }
 
-      console.log(`Starting migration for ${_class}`)
+      this.context.info(`Starting migration for ${_class}`)
 
       // Use traverse for efficient bulk processing
       const iterator = await lowLevelStorage.traverse<Doc>(domain, query)
@@ -148,7 +155,7 @@ export class WorkspaceMigrator {
             break
           }
 
-          console.log(`Processing batch: ${processedCount + 1}-${processedCount + docs.length}`)
+          this.context.info(`Processing batch: ${processedCount + 1}-${processedCount + docs.length}`)
 
           // Check for existing documents in bulk if needed
           const existingDocsMap = new Map<Ref<Doc>, Doc>()
@@ -181,7 +188,7 @@ export class WorkspaceMigrator {
                 result.skippedCount++
               }
             } catch (err: any) {
-              console.error(`Error migrating document ${doc._id}:`, err)
+              this.context.error(`Error migrating document ${doc._id}:`, err)
               result.errors.push({
                 docId: doc._id,
                 error: err.message ?? 'Unknown error'
@@ -196,11 +203,11 @@ export class WorkspaceMigrator {
         await iterator.close()
       }
 
-      console.log(
+      this.context.info(
         `Migration completed: ${result.migratedCount} migrated, ${result.skippedCount} skipped, ${result.errors.length} errors`
       )
     } catch (err: any) {
-      console.error('Migration failed:', err)
+      this.context.error('Migration failed:', err)
       result.success = false
       result.errors.push({
         docId: 'migration',
@@ -322,7 +329,7 @@ export class WorkspaceMigrator {
           relations
         )
       } catch (err: any) {
-        console.error(`Failed to migrate forward relation ${relation.field} for document ${doc._id}:`, err)
+        this.context.error(`Failed to migrate forward relation ${relation.field} for document ${doc._id}:`, err)
       }
     }
   }
@@ -351,7 +358,7 @@ export class WorkspaceMigrator {
           relations
         )
       } catch (err: any) {
-        console.error(`Failed to migrate inverse relation ${relation.field} for document ${doc._id}:`, err)
+        this.context.error(`Failed to migrate inverse relation ${relation.field} for document ${doc._id}:`, err)
       }
     }
   }
@@ -408,7 +415,7 @@ export class WorkspaceMigrator {
   ): Promise<void> {
     const domain = sourceHierarchy.findDomain(relation.class)
     if (domain === undefined) {
-      console.warn(`Domain not found for relation class ${relation.class}`)
+      this.context.warn(`Domain not found for relation class ${relation.class}`)
       return
     }
 
@@ -418,11 +425,8 @@ export class WorkspaceMigrator {
       [relation.field]: doc._id
     })
 
-    console.log(`Inverse relation ${relation.field}: found ${relatedDocs.length} docs pointing to ${doc._id}`)
-    for (const relatedDoc of relatedDocs) {
-      console.log(
-        `  - ${relatedDoc._id} (${relatedDoc._class}), ${relation.field}=${(relatedDoc as any)[relation.field]}`
-      )
+    if (relatedDocs.length > 0) {
+      this.context.info(`Inverse relation ${relation.field}: found ${relatedDocs.length} docs pointing to ${doc._id}`)
     }
 
     for (const relatedDoc of relatedDocs) {
@@ -458,7 +462,7 @@ export class WorkspaceMigrator {
 
     const domain = sourceHierarchy.findDomain(relationClass)
     if (domain === undefined) {
-      console.warn(`Domain not found for relation class ${relationClass}`)
+      this.context.warn(`Domain not found for relation class ${relationClass}`)
       return
     }
 
@@ -505,8 +509,6 @@ export class WorkspaceMigrator {
       delete (attachedData as any).attachedToClass
       delete (attachedData as any).collection
 
-      console.log(`  addCollection: attachedTo=${attachedTo}, class=${attachedToClass}, collection=${collection}`)
-
       await this.targetClient.addCollection(
         attachedDoc._class,
         targetSpace,
@@ -520,7 +522,7 @@ export class WorkspaceMigrator {
       await this.targetClient.createDoc(sourceDoc._class, targetSpace, data, targetId)
     }
 
-    console.log(
+    this.context.info(
       `Created document ${targetId} (from ${sourceDoc._id}) class ${sourceDoc._class} in space ${targetSpace}${isAttached ? ' [attached]' : ''}`
     )
   }
@@ -546,10 +548,10 @@ export class WorkspaceMigrator {
         return employeeId
       }
 
-      console.warn(`Employee not found for account ${account} in target workspace`)
+      this.context.warn(`Employee not found for account ${account} in target workspace`)
       return undefined
     } catch (err: any) {
-      console.error(`Error finding employee for account ${account}:`, err)
+      this.context.error(`Error finding employee for account ${account}:`, err)
       return undefined
     }
   }
@@ -621,16 +623,6 @@ export class WorkspaceMigrator {
     // Apply field mappers for specific document classes
     await this.applyFieldMappers(doc._class, data)
 
-    // Debug: Log the data with potential reference fields
-    console.log(`prepareDocumentData for ${doc._class} (${doc._id}):`)
-    console.log(`  idMapping size: ${this.idMapping.size}`)
-    for (const [key, value] of Object.entries(data)) {
-      if (typeof value === 'string' && value.length === 24 && /^[0-9a-f]+$/.test(value)) {
-        const mapped = this.idMapping.has(value as Ref<Doc>)
-        console.log(`  ${key}: ${value} (${mapped ? 'MAPPED' : 'not mapped'})`)
-      }
-    }
-
     return data
   }
 
@@ -668,18 +660,16 @@ export class WorkspaceMigrator {
       if (fieldValue === '$currentUser') {
         if (this.currentAccountEmployeeId !== undefined) {
           data[fieldName] = this.currentAccountEmployeeId
-          console.log(`  Mapped ${fieldName}: $currentUser -> ${this.currentAccountEmployeeId}`)
+          this.context.info(`Mapped ${fieldName}: $currentUser -> ${this.currentAccountEmployeeId}`)
         } else {
-          console.warn(`  Cannot map ${fieldName}: $currentUser but current account employee not found`)
+          this.context.warn(`Cannot map ${fieldName}: $currentUser but current account employee not found`)
         }
       } else if (fieldValue === '') {
         // Empty string means clear the field
         data[fieldName] = undefined
-        console.log(`  Cleared ${fieldName}`)
       } else {
         // Direct value assignment
         data[fieldName] = fieldValue
-        console.log(`  Set ${fieldName}: ${fieldValue}`)
       }
     }
   }
@@ -696,7 +686,6 @@ export class WorkspaceMigrator {
     if (typeof value === 'string') {
       if (this.idMapping.has(value as Ref<Doc>)) {
         const remapped = this.idMapping.get(value as Ref<Doc>)
-        console.log(`  Remapped ${fieldPath}: ${value} -> ${remapped}`)
         return remapped
       }
       return value
@@ -734,7 +723,7 @@ export class WorkspaceMigrator {
     const attachmentClass = 'attachment:class:Attachment' as Ref<Class<Doc>>
     const domain = sourceHierarchy.findDomain(attachmentClass)
     if (domain === undefined) {
-      console.log('Domain not found for attachments')
+      this.context.warn('Domain not found for attachments')
       return
     }
 
@@ -748,13 +737,13 @@ export class WorkspaceMigrator {
       return
     }
 
-    console.log(`Migrating ${attachments.length} attachments for document ${targetDocId}`)
+    this.context.info(`Migrating ${attachments.length} attachments for document ${targetDocId}`)
 
     for (const attachment of attachments) {
       try {
         await this.migrateAttachment(attachment, targetDocId, docClass)
       } catch (err: any) {
-        console.error(`Failed to migrate attachment ${attachment._id}:`, err)
+        this.context.error(`Failed to migrate attachment ${attachment._id}:`, err)
       }
     }
   }
@@ -769,9 +758,38 @@ export class WorkspaceMigrator {
     // Copy blob data if exists
     if (attachmentData.file !== undefined) {
       const blobRef = attachmentData.file as Ref<Blob>
-      // Note: Blob migration requires access to storage adapter
-      // This is a simplified version - in production you'd need to copy the actual blob
-      console.log(`Note: Blob ${blobRef} needs to be copied manually`)
+      try {
+        // Read blob from source workspace
+        const blobBuffers = await this.storage.read(this.context, this.sourceWorkspace, blobRef)
+        if (blobBuffers !== undefined && blobBuffers.length > 0) {
+          // Get blob metadata from source
+          const sourceBlob = await this.storage.stat(this.context, this.sourceWorkspace, blobRef)
+          if (sourceBlob !== undefined) {
+            // Combine buffers into single buffer
+            const totalSize = blobBuffers.reduce((sum, buf) => sum + buf.length, 0)
+            const combinedBuffer = Buffer.concat(blobBuffers)
+
+            // Write blob to target workspace
+            await this.storage.put(
+              this.context,
+              this.targetWorkspace,
+              blobRef,
+              combinedBuffer,
+              sourceBlob.contentType ?? 'application/octet-stream',
+              totalSize
+            )
+
+            this.context.info(`Copied blob ${blobRef} (${totalSize} bytes) to target workspace`)
+          } else {
+            this.context.warn(`Blob metadata not found for ${blobRef}, skipping blob copy`)
+          }
+        } else {
+          this.context.warn(`Blob ${blobRef} not found in source workspace, skipping blob copy`)
+        }
+      } catch (err: any) {
+        this.context.error(`Failed to copy blob ${blobRef}:`, err)
+        // Continue with attachment creation even if blob copy fails
+      }
     }
 
     // Create attachment in target workspace
@@ -814,7 +832,7 @@ export class WorkspaceMigrator {
       const collectionClass = (attr.type as Collection<AttachedDoc>).of as Ref<Class<Doc>>
       const domain = sourceHierarchy.findDomain(collectionClass)
       if (domain === undefined) {
-        console.log(`Domain not found for collection ${key}`)
+        this.context.warn(`Domain not found for collection ${key}`)
         continue
       }
 
@@ -826,7 +844,9 @@ export class WorkspaceMigrator {
         collection: key
       })
 
-      console.log(`Migrating ${collectionDocs.length} items in collection ${key}`)
+      if (collectionDocs.length > 0) {
+        this.context.info(`Migrating ${collectionDocs.length} items in collection ${key}`)
+      }
 
       for (const collectionDoc of collectionDocs) {
         try {
@@ -842,7 +862,7 @@ export class WorkspaceMigrator {
             relations
           )
         } catch (err: any) {
-          console.error(`Failed to migrate collection item ${collectionDoc._id}:`, err)
+          this.context.error(`Failed to migrate collection item ${collectionDoc._id}:`, err)
         }
       }
     }
@@ -886,7 +906,7 @@ export class WorkspaceMigrator {
     if (targetSpaces.length > 0) {
       // Space already exists, use it
       targetSpaceId = targetSpaces[0]._id
-      console.log(`Using existing space ${targetSpaceId}`)
+      this.context.info(`Using existing space ${targetSpaceId}`)
     } else {
       // Create new space with current user as member/owner
       const spaceData: Data<Space> & { owners?: AccountUuid[] } = {
@@ -926,7 +946,7 @@ export class WorkspaceMigrator {
 
       targetSpaceId = await this.targetClient.createDoc(sourceSpace._class, core.space.Space, spaceData)
 
-      console.log(`Created new space ${targetSpaceId} (${sourceSpace.name})`)
+      this.context.info(`Created new space ${targetSpaceId} (${sourceSpace.name})`)
     }
 
     // Update mapping and mark as migrated
