@@ -51,7 +51,7 @@ export interface ExportOptions {
 
 export interface ExportResult {
   success: boolean
-  migratedCount: number
+  exportedCount: number
   skippedCount: number
   errors: Array<{ docId: string, error: string }>
 }

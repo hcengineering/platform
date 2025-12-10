@@ -159,7 +159,7 @@ export class CrossWorkspaceExporter {
 
     const result: ExportResult = {
       success: true,
-      migratedCount: 0,
+      exportedCount: 0,
       skippedCount: 0,
       errors: []
     }
@@ -226,7 +226,7 @@ export class CrossWorkspaceExporter {
                 relations
               )
               if (exported) {
-                result.migratedCount++
+                result.exportedCount++
               } else {
                 result.skippedCount++
               }
@@ -250,7 +250,7 @@ export class CrossWorkspaceExporter {
       }
 
       this.context.info(
-        `Export completed: ${result.migratedCount} exported, ${result.skippedCount} skipped, ${result.errors.length} errors`
+        `Export completed: ${result.exportedCount} exported, ${result.skippedCount} skipped, ${result.errors.length} errors`
       )
     } catch (err: any) {
       this.context.error('Export failed:', {
@@ -258,7 +258,7 @@ export class CrossWorkspaceExporter {
       })
       result.success = false
       result.errors.push({
-        docId: 'migration',
+        docId: 'export',
         error: err.message ?? 'Unknown error'
       })
     } finally {

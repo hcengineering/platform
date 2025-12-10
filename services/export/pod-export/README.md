@@ -6,6 +6,7 @@ The Export Service provides asynchronous data export functionality for Huly work
 
 The Export Service is a standalone microservice that:
 - Exports workspace data asynchronously via REST API
+- Exports documents from one workspace to another workspace
 - Converts Huly documents to standardized formats
 - Handles complex document relationships (references, collections, attachments)
 - Packages exports as ZIP archives and saves them to the workspace Drive
@@ -16,7 +17,14 @@ The Export Service is a standalone microservice that:
 ### Components
 
 - **Server** (`server.ts`): Express REST API server with authentication
-- **Exporter** (`exporter.ts`): Main export orchestration logic
+- **Exporter** (`exporter.ts`): Main export orchestration logic for file exports
+- **Workspace Exporter** (`workspace/`): Cross-workspace document export functionality
+  - `workspace-exporter.ts`: Main orchestrator for workspace-to-workspace exports
+  - `document-exporter.ts`: Individual document export logic
+  - `attachment-exporter.ts`: Attachment and blob migration
+  - `relation-exporter.ts`: Forward and inverse relation handling
+  - `space-exporter.ts`: Space migration and reuse
+  - `data-mapper.ts`: Data transformation and field mapping
 - **Converter** (`converter.ts`): Document conversion and type resolution
 - **Serializers**: Format-specific output writers
   - `json/json-serializer.ts`: JSON format output
@@ -75,6 +83,110 @@ Initiates an asynchronous export job.
 3. Output is packaged as a ZIP archive
 4. Archive is uploaded to workspace Drive
 5. User receives notification with download link
+
+### POST `/export-to-workspace`
+
+Exports documents from the current workspace to another workspace. This endpoint copies documents, their attachments, and related data to a target workspace while preserving relationships and remapping IDs.
+
+**Authentication**: Required (Bearer token or Cookie)
+
+**Request Body**:
+```json
+{
+  "targetWorkspace": "target-workspace-uuid",
+  "_class": "documents:class:ControlledDocument",
+  "query": {
+    "_id": { "$in": ["doc-id-1", "doc-id-2"] }
+  },
+  "conflictStrategy": "duplicate",
+  "includeAttachments": true,
+  "relations": [
+    {
+      "field": "references",
+      "class": "documents:class:ControlledDocument",
+      "direction": "forward"
+    }
+  ],
+  "fieldMappers": {
+    "documents:class:ControlledDocument": {
+      "author": "$currentUser",
+      "owner": "$currentUser",
+      "state": "draft"
+    }
+  },
+  "objectId": "doc-id-1",
+  "objectSpace": "space-id"
+}
+```
+
+**Parameters**:
+- `targetWorkspace` (required): UUID of the target workspace to export to
+- `_class` (required): Ref to the document class to export (e.g., `documents:class:ControlledDocument`)
+- `query` (optional): MongoDB-style query to filter documents. If not provided and specific documents are selected, uses `_id: { $in: [...] }`
+- `conflictStrategy` (optional): How to handle existing documents in target workspace
+  - `"duplicate"` (default): Create new documents with new IDs
+  - `"skip"`: Skip documents that already exist (based on matching criteria)
+- `includeAttachments` (optional, default: `true`): Whether to copy attachment blob data
+- `relations` (optional): Array of relation definitions to export
+  - `field`: Field name containing the relation
+  - `class`: Class of related documents
+  - `direction`: `"forward"` (dependencies) or `"inverse"` (references)
+- `fieldMappers` (optional): Field value overrides per document class
+  - Special value `"$currentUser"` is replaced with the current account's employee ID
+  - Example: `{ "author": "$currentUser" }` sets author to current user
+- `objectId` (optional): ID of the primary document for notification context
+- `objectSpace` (optional): Space of the primary document for notification context
+
+**Response**:
+```json
+{
+  "message": "Export started"
+}
+```
+
+**Authorization**:
+- Requires Owner role in **both** source and target workspaces (or system admin privileges)
+- Read-only tokens are rejected
+- Target workspace must be accessible to the user
+
+**Process**:
+1. Validates user permissions for both source and target workspaces
+2. Response is returned immediately (async processing)
+3. Documents are fetched from source workspace
+4. Forward relations (dependencies) are exported first
+5. Main documents are exported with ID remapping
+6. Inverse relations (references) are exported
+7. Attachments and blob data are copied to target workspace
+8. Spaces are created or reused in target workspace
+9. User receives notification with export results
+
+**Features**:
+- **ID Remapping**: All document IDs are regenerated to avoid conflicts
+- **Reference Updates**: Document references are automatically updated to point to new IDs
+- **Space Migration**: Spaces are created in target workspace or reused if they exist
+- **Blob Copying**: Attachment files are physically copied between workspaces
+- **Relation Handling**: Forward and inverse relations are properly exported in order
+- **Field Mapping**: Custom field values can be set during export (e.g., set author to current user)
+- **Conflict Resolution**: Choose to duplicate or skip existing documents
+
+**Example Use Cases**:
+- Copying controlled documents to a new workspace
+- Migrating project data between workspaces
+- Creating workspace templates
+- Sharing documents with another team
+
+**Notifications**:
+Users receive in-app notifications with:
+- Export success/failure status
+- Number of documents exported
+- Number of documents skipped
+- List of errors (if any)
+- Link to target workspace
+
+**Error Handling**:
+- Individual document failures don't stop the entire export
+- Errors are collected and reported in the notification
+- Failed documents are logged with specific error messages
 
 ## Export Formats
 
@@ -227,9 +339,11 @@ Export failed: {error message}
 
 - JWT token validation
 - Workspace access verification
-- Role-based authorization
+- Role-based authorization (Owner role required for both source and target workspaces)
+- Target workspace permission validation
 - Secure file storage
 - Temporary directory cleanup
+- Read-only token rejection
 
 ## Limitations
 
@@ -254,11 +368,19 @@ Export failed: {error message}
 **403 Forbidden**
 - Read-only tokens cannot export
 - Upgrade to full access token
+- Verify Owner role in target workspace
+- Check that target workspace is accessible
+
+**404 Target workspace not found**
+- Verify target workspace UUID is correct
+- Ensure target workspace exists and is accessible
+- Check user has access to target workspace
 
 **Export fails silently**
 - Check service logs
 - Verify storage connectivity
 - Ensure sufficient disk space
+- Verify both source and target workspace connections are working
 
 ### Logs
 

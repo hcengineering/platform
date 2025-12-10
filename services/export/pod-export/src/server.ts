@@ -485,7 +485,7 @@ export function createServer (
         sourceTxOps = new TxOperations(sourceClient, socialId)
         const targetTxOps = new TxOperations(targetClient, socialId)
 
-        res.status(200).send({ message: 'Migration started' })
+        res.status(200).send({ message: 'Export started' })
 
         void (async () => {
           try {
@@ -547,7 +547,7 @@ export function createServer (
 
             const result = await exporter.export(options)
 
-            await sendMigrationNotification(
+            await sendExportNotification(
               sourceTxOps,
               decodedToken.account,
               result,
@@ -557,11 +557,11 @@ export function createServer (
               notifyObjectSpace
             )
           } catch (err: any) {
-            measureCtx.error('Migration failed:', err)
+            measureCtx.error('Export failed:', err)
             await sendFailureNotification(
               sourceTxOps,
               decodedToken.account,
-              err.message ?? 'Unknown error during migration',
+              err.message ?? 'Unknown error during export',
               notifyObjectClass,
               notifyObjectId,
               notifyObjectSpace
@@ -577,7 +577,7 @@ export function createServer (
           await sendFailureNotification(
             sourceTxOps,
             decodedToken.account,
-            err.message ?? 'Unknown error during migration',
+            err.message ?? 'Unknown error during export',
             notifyObjectClass,
             notifyObjectId,
             notifyObjectSpace
@@ -768,7 +768,7 @@ async function sendFailureNotification (
   })
 }
 
-async function sendMigrationNotification (
+async function sendExportNotification (
   client: TxOperations,
   account: AccountUuid,
   result: ExportResult,
@@ -799,7 +799,7 @@ async function sendMigrationNotification (
     icon: exportPlugin.icon.Export,
     message,
     props: {
-      migratedCount: result.migratedCount,
+      exportedCount: result.exportedCount,
       skippedCount: result.skippedCount,
       errors: result.errors.map((e: { docId: string, error: string }) => `${e.docId}: ${e.error}`),
       workspaceUrl

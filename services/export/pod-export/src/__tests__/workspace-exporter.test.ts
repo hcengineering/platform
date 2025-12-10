@@ -327,7 +327,7 @@ describe('CrossWorkspaceExporter', () => {
       })
 
       expect(result.success).toBe(true)
-      expect(result.migratedCount).toBe(1)
+      expect(result.exportedCount).toBe(1)
       expect(result.errors).toHaveLength(0)
       // eslint-disable-next-line @typescript-eslint/unbound-method
       const createDocMock = targetClient.createDoc as jest.Mock
@@ -385,7 +385,7 @@ describe('CrossWorkspaceExporter', () => {
       })
 
       expect(result.skippedCount).toBe(1)
-      expect(result.migratedCount).toBe(0)
+      expect(result.exportedCount).toBe(0)
     })
   })
 
