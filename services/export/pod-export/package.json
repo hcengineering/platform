@@ -77,7 +77,7 @@
     "@hcengineering/middleware": "workspace:^0.7.21",
     "@hcengineering/text": "workspace:^0.7.18",
     "@hcengineering/analytics-service": "workspace:^0.7.17",
-    "@hcengineering/postgres": "workspace:^0.7.19",
+    "@hcengineering/postgres": "workspace:^0.7.21",
     "@hcengineering/attachment": "workspace:^0.7.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
