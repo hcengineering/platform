@@ -160,28 +160,11 @@ Exports documents from the current workspace to another workspace. This endpoint
 8. Spaces are created or reused in target workspace
 9. User receives notification with export results
 
-**Features**:
-- **ID Remapping**: All document IDs are regenerated to avoid conflicts
-- **Reference Updates**: Document references are automatically updated to point to new IDs
-- **Space Migration**: Spaces are created in target workspace or reused if they exist
-- **Blob Copying**: Attachment files are physically copied between workspaces
-- **Relation Handling**: Forward and inverse relations are properly exported in order
-- **Field Mapping**: Custom field values can be set during export (e.g., set author to current user)
-- **Conflict Resolution**: Choose to duplicate or skip existing documents
-
 **Example Use Cases**:
 - Copying controlled documents to a new workspace
 - Migrating project data between workspaces
 - Creating workspace templates
 - Sharing documents with another team
-
-**Notifications**:
-Users receive in-app notifications with:
-- Export success/failure status
-- Number of documents exported
-- Number of documents skipped
-- List of errors (if any)
-- Link to target workspace
 
 **Error Handling**:
 - Individual document failures don't stop the entire export
