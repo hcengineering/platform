@@ -40,7 +40,7 @@ export class CrossWorkspaceExporter {
   private currentAccountEmployeeId: Ref<Employee> | undefined
 
   // Component exporters
-  private readonly dataMapper: DataMapper
+  private dataMapper: DataMapper
   private readonly spaceExporter: SpaceExporter
   private readonly attachmentExporter: AttachmentExporter
   private readonly documentExporter: DocumentExporter
