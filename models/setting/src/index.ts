@@ -375,6 +375,21 @@ export function createModel (builder: Builder): void {
     },
     setting.ids.Export
   )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'office',
+      label: setting.string.OfficeSettings,
+      icon: setting.icon.OfficeSettings,
+      component: setting.component.OfficeSettings,
+      group: 'settings-editor',
+      feature: 'love',
+      role: AccountRole.Maintainer,
+      order: 4900
+    },
+    setting.ids.OfficeSettings
+  )
   // Currently remove Support item from settings
   // builder.createDoc(
   //   setting.class.SettingsCategory,

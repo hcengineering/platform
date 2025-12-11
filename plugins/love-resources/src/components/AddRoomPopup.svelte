@@ -1,8 +1,9 @@
 <script lang="ts">
-  import core, { Class, Data, generateId, Ref } from '@hcengineering/core'
+  import core, { Class, Configuration, Data, generateId, Ref } from '@hcengineering/core'
   import { Floor, getFreePosition, Office, Room, RoomAccess, RoomType } from '@hcengineering/love'
   import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
   import { Button, DropdownIntlItem } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
@@ -52,6 +53,19 @@
     const floorRooms = $rooms.filter((r) => r.floor === floor)
     const pos = getFreePosition(floorRooms, 2, 1)
     const _id = generateId<Room>()
+
+    // Get workspace settings for Video rooms
+    let defaultTranscription = false
+    let defaultRecording = false
+    if (val.type === RoomType.Video && val._class !== love.class.Office) {
+      const officeSettings = await client.findOne<Configuration>(core.class.Configuration, {
+        _id: (setting.ids as any).OfficeSettingsConfiguration
+      })
+      if (officeSettings !== undefined) {
+        defaultTranscription = (officeSettings as any).defaultStartWithTranscription ?? false
+        defaultRecording = (officeSettings as any).defaultStartWithRecording ?? false
+      }
+    }
     const data: Data<Room> = {
       floor,
       name: val._class === love.class.Office ? '' : await translate(val.label, {}),
@@ -62,8 +76,8 @@
       type: val.type,
       access: val.access,
       language: 'en',
-      startWithTranscription: val._class !== love.class.Office && val.type === RoomType.Video,
-      startWithRecording: val._class !== love.class.Office && val.type === RoomType.Video,
+      startWithTranscription: defaultTranscription,
+      startWithRecording: defaultRecording,
       description: null
     }
     if (val._class === love.class.Office) {

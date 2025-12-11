@@ -14,8 +14,9 @@
 //
 
 import contact from '@hcengineering/contact'
-import { TxOperations, type Ref, type Space } from '@hcengineering/core'
+import { TxOperations, type Configuration, type Ref, type Space } from '@hcengineering/core'
 import drive from '@hcengineering/drive'
+import setting from '@hcengineering/setting'
 import {
   MeetingStatus,
   RoomAccess,
@@ -61,7 +62,20 @@ async function createRooms (client: MigrationUpgradeClient): Promise<void> {
     await tx.remove(room)
   }
   const employees = await client.findAll(contact.mixin.Employee, { active: true })
-  const data = createDefaultRooms(employees.map((p) => p._id))
+
+  // Get workspace settings for Video rooms (default to true if not set)
+  let defaultTranscription = true
+  let defaultRecording = true
+  const officeSettings = await client.findOne<Configuration>(
+    core.class.Configuration,
+    { _id: setting.ids.OfficeSettingsConfiguration }
+  )
+  if (officeSettings !== undefined) {
+    defaultTranscription = officeSettings.defaultStartWithTranscription ?? true
+    defaultRecording = officeSettings.defaultStartWithRecording ?? true
+  }
+
+  const data = createDefaultRooms(employees.map((p) => p._id), defaultTranscription, defaultRecording)
   for (const room of data) {
     const _class = isOffice(room) ? love.class.Office : love.class.Room
     await tx.createDoc(_class, core.space.Workspace, room, room._id)
