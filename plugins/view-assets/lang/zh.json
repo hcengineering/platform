@@ -15,6 +15,7 @@
     "Role": "角色",
     "DeleteObject": "删除对象",
     "DeleteObjectConfirm": "您想要删除 {count, plural, =1 {这个对象} other {这些 # 个对象}} 吗？",
+    "NoCreatePermissionTitle": "没有足够的权限创建",
     "DeletePopupNoPermissionTitle": "没有足够的权限删除。",
     "DeletePopupNoPermissionLabel": "请联系以下列表中的人员以便他们执行此操作。",
     "DeletePopupCreatorLabel": "创建者（只能删除他们创建的）：",

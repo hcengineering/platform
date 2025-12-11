@@ -15,6 +15,7 @@
     "Role": "Role",
     "DeleteObject": "Delete object",
     "DeleteObjectConfirm": "Do you want to delete {count, plural, =1 {this object} other {these # objects}}?",
+    "NoCreatePermissionTitle": "Not enough permissions to create",
     "DeletePopupNoPermissionTitle": "Not enough permissions to delete.",
     "DeletePopupNoPermissionLabel": "Please contact people from the list below for them to do so.",
     "DeletePopupCreatorLabel": "Creators (can delete only ones that were created by them):",

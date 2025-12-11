@@ -15,6 +15,7 @@
     "Role": "Rolle",
     "DeleteObject": "Objekt löschen",
     "DeleteObjectConfirm": "Möchten Sie {count, plural, =1 {dieses Objekt} other {diese # Objekte}} löschen?",
+    "NoCreatePermissionTitle": "Keine ausreichenden Berechtigungen zum Erstellen",
     "DeletePopupNoPermissionTitle": "Keine ausreichenden Berechtigungen zum Löschen.",
     "DeletePopupNoPermissionLabel": "Bitte kontaktieren Sie Personen aus der folgenden Liste.",
     "DeletePopupCreatorLabel": "Ersteller (können nur von ihnen erstellte Objekte löschen):",
