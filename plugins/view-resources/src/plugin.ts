@@ -44,7 +44,6 @@ export default mergeIds(viewId, view, {
     LabelNo: '' as IntlString,
     ChooseAColor: '' as IntlString,
 
-    NoCreatePermissionTitle: '' as IntlString,
     DeletePopupNoPermissionTitle: '' as IntlString,
     DeletePopupNoPermissionLabel: '' as IntlString,
     DeletePopupCreatorLabel: '' as IntlString,
