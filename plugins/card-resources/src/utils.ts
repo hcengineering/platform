@@ -210,7 +210,7 @@ async function generateLocation (loc: Location, id: string): Promise<ResolvedLoc
       fragment: getPanelURI(component, doc._id, doc._class, 'content')
     },
     defaultLocation: {
-      path: [appComponent, workspace, cardId, 'type', special],
+      path: [appComponent, workspace, cardId, doc.space, special],
       fragment: getPanelURI(component, doc._id, doc._class, 'content')
     }
   }
