@@ -66,16 +66,19 @@ async function createRooms (client: MigrationUpgradeClient): Promise<void> {
   // Get workspace settings for Video rooms (default to true if not set)
   let defaultTranscription = true
   let defaultRecording = true
-  const officeSettings = await client.findOne<Configuration>(
-    core.class.Configuration,
-    { _id: setting.ids.OfficeSettingsConfiguration }
-  )
+  const officeSettings = await client.findOne<Configuration>(core.class.Configuration, {
+    _id: setting.ids.OfficeSettingsConfiguration
+  })
   if (officeSettings !== undefined) {
-    defaultTranscription = officeSettings.defaultStartWithTranscription ?? true
-    defaultRecording = officeSettings.defaultStartWithRecording ?? true
+    defaultTranscription = (officeSettings as any).defaultStartWithTranscription ?? true
+    defaultRecording = (officeSettings as any).defaultStartWithRecording ?? true
   }
 
-  const data = createDefaultRooms(employees.map((p) => p._id), defaultTranscription, defaultRecording)
+  const data = createDefaultRooms(
+    employees.map((p) => p._id),
+    defaultTranscription,
+    defaultRecording
+  )
   for (const room of data) {
     const _class = isOffice(room) ? love.class.Office : love.class.Room
     await tx.createDoc(_class, core.space.Workspace, room, room._id)
