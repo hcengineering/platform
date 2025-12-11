@@ -448,7 +448,7 @@ export function runSharedIntegrationTests (adapterName: string, getContext: () =
           }
         )
         expect(r.length).toEqual(1)
-        expect(r[0].$associations?.[association._id][0]?._id).toEqual(secondTask)
+        expect(r[0].$associations?.[`${association._id}_b`][0]?._id).toEqual(secondTask)
       })
     })
 

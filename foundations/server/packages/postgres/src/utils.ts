@@ -28,6 +28,7 @@ import core, {
   type Projection,
   type Ref,
   systemAccountUuid,
+  type WithLookup,
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { type DomainHelperOperations } from '@hcengineering/server-core'
@@ -470,6 +471,17 @@ export function parseDocWithProjection<T extends Doc> (
     ...rest
   } as any as T
 
+  return res
+}
+
+export function toWithLookup<T extends Doc> (doc: T): WithLookup<T> {
+  const res = doc as WithLookup<T>
+  if (res.$associations === undefined) {
+    res.$associations = {}
+  }
+  if (res.$lookup === undefined) {
+    res.$lookup = {}
+  }
   return res
 }
 

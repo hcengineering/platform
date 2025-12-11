@@ -14,32 +14,34 @@
 -->
 <script lang="ts">
   import {
+    DraftController,
+    draftsStore,
     getClient,
     getCommunicationClient,
-    SpaceSelector,
-    DraftController,
-    draftsStore
+    SpaceSelector
   } from '@hcengineering/presentation'
-  import { ModernButton, ModernEditbox, ButtonIcon, IconSend, IconMinimize } from '@hcengineering/ui'
+  import { ButtonIcon, IconMinimize, IconSend, ModernButton, ModernEditbox } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
-  import card from '../plugin'
-  import { TypeSelector } from '../index'
-  import core, { Data, generateId, Markup, Ref, getCurrentAccount } from '@hcengineering/core'
-  import { Card, type CardSpace, MasterTag } from '@hcengineering/card'
-  import { getResource } from '@hcengineering/platform'
-  import { EmptyMarkup, markupToText, isEmptyMarkup, markupToJSON } from '@hcengineering/text'
-  import { createCard } from '../utils'
-  import { getCardDraftKey, getEmptyCardDraft, type CardDraft } from '../draft'
-  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { AttachIcon } from '@hcengineering/text-editor-resources'
-  import { AttachmentID, BlobParams } from '@hcengineering/communication-types'
-  import { markupToMarkdown } from '@hcengineering/text-markdown'
-  import textEditor, { type RefAction } from '@hcengineering/text-editor'
-  import { defaultMessageInputActions } from '@hcengineering/communication-resources'
-  import chat from '@hcengineering/chat'
   import { Analytics } from '@hcengineering/analytics'
+  import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
+  import { Card, MasterTag, type CardSpace } from '@hcengineering/card'
+  import chat from '@hcengineering/chat'
+  import { defaultMessageInputActions } from '@hcengineering/communication-resources'
+  import { AttachmentID, BlobParams } from '@hcengineering/communication-types'
+  import core, { Data, generateId, getCurrentAccount, Markup, Ref } from '@hcengineering/core'
+  import { getResource } from '@hcengineering/platform'
+  import { EmptyMarkup, isEmptyMarkup, markupToJSON, markupToText } from '@hcengineering/text'
+  import textEditor, { type RefAction } from '@hcengineering/text-editor'
+  import { AttachIcon } from '@hcengineering/text-editor-resources'
+  import { markupToMarkdown } from '@hcengineering/text-markdown'
+  import { getCardDraftKey, getEmptyCardDraft, type CardDraft } from '../draft'
+  import { TypeSelector } from '../index'
+  import card from '../plugin'
+  import { createCard } from '../utils'
 
+  import { permissionsStore } from '@hcengineering/contact-resources'
+  import { canCreateObject } from '@hcengineering/view-resources'
   import EditorActions from './EditorActions.svelte'
 
   const dispatch = createEventDispatcher()
@@ -84,7 +86,12 @@
   $: draftController.save({ title, description, type, space }, getEmptyCardDraft())
 
   let creating = false
-  $: applyDisabled = (title.trim() === '' && isEmptyMarkup(description)) || space == null || type == null || creating
+  $: applyDisabled =
+    (title.trim() === '' && isEmptyMarkup(description)) ||
+    space == null ||
+    type == null ||
+    creating ||
+    !canCreateObject(type, space, $permissionsStore)
 
   const account = getCurrentAccount()
 
