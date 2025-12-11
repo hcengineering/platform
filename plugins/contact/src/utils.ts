@@ -36,7 +36,7 @@ import {
   TxFactory,
   DocumentUpdate
 } from '@hcengineering/core'
-import { getMetadata } from '@hcengineering/platform'
+import platform, { getMetadata, PlatformError } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
 import contact, {
   AvatarProvider,
@@ -422,166 +422,184 @@ export async function ensureEmployeeForPerson (
   socialIds: SocialId[],
   globalPerson?: GlobalPerson
 ): Promise<Ref<Employee> | null> {
-  const txFactory = new TxFactory(me.primarySocialId)
-  const personByUuid = await client.findOne(contact.class.Person, { personUuid: person.uuid })
-  let personRef: Ref<Person> | undefined = personByUuid?._id
+  let personRef: Ref<Person> | undefined
+  try {
+    const txFactory = new TxFactory(me.primarySocialId)
+    const personByUuid = await client.findOne(contact.class.Person, { personUuid: person.uuid })
+    personRef = personByUuid?._id
 
-  if (personRef === undefined) {
-    const socialIdentity = await client.findOne(contact.class.SocialIdentity, {
-      _id: { $in: person.socialIds as SocialIdentityRef[] }
-    })
+    if (personRef === undefined) {
+      const socialIdentity = await client.findOne(contact.class.SocialIdentity, {
+        _id: { $in: person.socialIds as SocialIdentityRef[] }
+      })
 
-    // This social id is confirmed globally as we only have ids of confirmed social identities in socialIds array
-    personRef = socialIdentity?.attachedTo
-  }
+      // This social id is confirmed globally as we only have ids of confirmed social identities in socialIds array
+      personRef = socialIdentity?.attachedTo
+    }
 
-  if (personRef === undefined) {
-    // Local person not found: neither by personUuid nor by a local social identity
-    // Creating a new local person
-    await ctx.with('create-person', {}, async () => {
-      if (globalPerson === undefined) {
-        console.error('Cannot get global person')
-        return null
+    if (personRef === undefined) {
+      // Local person not found: neither by personUuid nor by a local social identity
+      // Creating a new local person
+      await ctx.with('create-person', {}, async () => {
+        if (globalPerson === undefined) {
+          console.error('Cannot get global person')
+          return null
+        }
+
+        const data = {
+          personUuid: person.uuid,
+          name: combineName(globalPerson.firstName, globalPerson.lastName),
+          city: '',
+          avatarType: AvatarType.COLOR
+        }
+        personRef = generateId()
+
+        const createPersonTx = txFactory.createTxCreateDoc(
+          contact.class.Person,
+          contact.space.Contacts,
+          data,
+          personRef
+        )
+        await client.tx(createPersonTx)
+      })
+    } else if (personByUuid === undefined) {
+      // Local person found only by social identity, need to set personUuid
+      const updatePersonTx = txFactory.createTxUpdateDoc(contact.class.Person, contact.space.Contacts, personRef, {
+        personUuid: person.uuid
+      })
+      await client.tx(updatePersonTx)
+    }
+
+    const existingIdentifiers = toIdMap(
+      await client.findAll(contact.class.SocialIdentity, { _id: { $in: person.socialIds as SocialIdentityRef[] } })
+    )
+
+    for (const socialId of socialIds) {
+      const existing = existingIdentifiers.get(socialId._id as SocialIdentityRef)
+
+      if (existing == null) {
+        await ctx.with('create-social-identity', {}, async () => {
+          if (personRef === undefined) {
+            // something went wrong
+            console.error('Person not found')
+            return null
+          }
+
+          const createSocialIdTx = txFactory.createTxCollectionCUD(
+            contact.class.Person,
+            personRef,
+            contact.space.Contacts,
+            'socialIds',
+            txFactory.createTxCreateDoc(
+              contact.class.SocialIdentity,
+              contact.space.Contacts,
+              {
+                attachedTo: personRef,
+                attachedToClass: contact.class.Person,
+                collection: 'socialIds',
+                type: socialId.type,
+                value: socialId.value,
+                key: buildSocialIdString(socialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
+                verifiedOn: socialId.verifiedOn,
+                isDeleted: socialId.isDeleted
+              },
+              socialId._id as SocialIdentityRef
+            )
+          )
+          await client.tx(createSocialIdTx)
+        })
+      } else {
+        // If not confirmed locally can be attached to a different person (persons merge scenario)
+        // Confirmed social identity should not be attached to a different person for now
+        // It will change with accounts merge function
+        if (existing.verifiedOn != null && existing.attachedTo !== personRef) {
+          throw new Error('Confirmed social identity is attached to the wrong person')
+        }
+
+        // Check and update if needed. It can:
+        // 1. Become verified (maybe with persons merge) (changes verifiedOn, attachedTo)
+        const sidUpdate: DocumentUpdate<SocialIdentity> = {}
+        let needUpdate = false
+
+        // become verified
+        if (existing.verifiedOn == null) {
+          sidUpdate.verifiedOn = socialId.verifiedOn
+          needUpdate = true
+        }
+
+        // merged from another person
+        if (existing.attachedTo !== personRef) {
+          sidUpdate.attachedTo = personRef
+          // Bump collection in Person?
+          needUpdate = true
+        }
+
+        // become deleted
+        if (existing.isDeleted !== socialId.isDeleted && socialId.isDeleted === true) {
+          sidUpdate.value = socialId.value
+          sidUpdate.key = socialId.key
+          sidUpdate.isDeleted = socialId.isDeleted
+          needUpdate = true
+        }
+
+        if (needUpdate) {
+          const updateSocialIdentityTx = txFactory.createTxUpdateDoc(
+            contact.class.SocialIdentity,
+            contact.space.Contacts,
+            existing._id,
+            sidUpdate
+          )
+
+          await client.tx(updateSocialIdentityTx)
+        }
       }
+    }
 
-      const data = {
-        personUuid: person.uuid,
-        name: combineName(globalPerson.firstName, globalPerson.lastName),
-        city: '',
-        avatarType: AvatarType.COLOR
-      }
-      personRef = generateId()
+    // NOTE: it is important to create Employee after Person and SocialIdentities are ensured so all the triggers applied
+    // on Employee creation will be able to properly map things
+    const employeeRole =
+      person.role === AccountRole.Guest || person.role === AccountRole.ReadOnlyGuest ? 'GUEST' : 'USER'
+    const employee = await client.findOne(contact.mixin.Employee, { _id: personRef as Ref<Employee> })
 
-      const createPersonTx = txFactory.createTxCreateDoc(contact.class.Person, contact.space.Contacts, data, personRef)
-      await client.tx(createPersonTx)
-    })
-  } else if (personByUuid === undefined) {
-    // Local person found only by social identity, need to set personUuid
-    const updatePersonTx = txFactory.createTxUpdateDoc(contact.class.Person, contact.space.Contacts, personRef, {
-      personUuid: person.uuid
-    })
-    await client.tx(updatePersonTx)
-  }
-
-  const existingIdentifiers = toIdMap(
-    await client.findAll(contact.class.SocialIdentity, { _id: { $in: person.socialIds as SocialIdentityRef[] } })
-  )
-
-  for (const socialId of socialIds) {
-    const existing = existingIdentifiers.get(socialId._id as SocialIdentityRef)
-
-    if (existing == null) {
-      await ctx.with('create-social-identity', {}, async () => {
+    if (
+      employee === undefined ||
+      !Hierarchy.hasMixin(employee, contact.mixin.Employee) ||
+      !employee.active ||
+      employee.role !== employeeRole
+    ) {
+      await ctx.with('create-employee', {}, async () => {
         if (personRef === undefined) {
           // something went wrong
           console.error('Person not found')
           return null
         }
 
-        const createSocialIdTx = txFactory.createTxCollectionCUD(
-          contact.class.Person,
+        const createEmployeeTx = txFactory.createTxMixin(
           personRef,
+          contact.class.Person,
           contact.space.Contacts,
-          'socialIds',
-          txFactory.createTxCreateDoc(
-            contact.class.SocialIdentity,
-            contact.space.Contacts,
-            {
-              attachedTo: personRef,
-              attachedToClass: contact.class.Person,
-              collection: 'socialIds',
-              type: socialId.type,
-              value: socialId.value,
-              key: buildSocialIdString(socialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
-              verifiedOn: socialId.verifiedOn,
-              isDeleted: socialId.isDeleted
-            },
-            socialId._id as SocialIdentityRef
-          )
+          contact.mixin.Employee,
+          {
+            active: true,
+            role: employeeRole
+          }
         )
-        await client.tx(createSocialIdTx)
+        await client.tx(createEmployeeTx)
       })
-    } else {
-      // If not confirmed locally can be attached to a different person (persons merge scenario)
-      // Confirmed social identity should not be attached to a different person for now
-      // It will change with accounts merge function
-      if (existing.verifiedOn != null && existing.attachedTo !== personRef) {
-        throw new Error('Confirmed social identity is attached to the wrong person')
-      }
+    }
 
-      // Check and update if needed. It can:
-      // 1. Become verified (maybe with persons merge) (changes verifiedOn, attachedTo)
-      const sidUpdate: DocumentUpdate<SocialIdentity> = {}
-      let needUpdate = false
-
-      // become verified
-      if (existing.verifiedOn == null) {
-        sidUpdate.verifiedOn = socialId.verifiedOn
-        needUpdate = true
-      }
-
-      // merged from another person
-      if (existing.attachedTo !== personRef) {
-        sidUpdate.attachedTo = personRef
-        // Bump collection in Person?
-        needUpdate = true
-      }
-
-      // become deleted
-      if (existing.isDeleted !== socialId.isDeleted && socialId.isDeleted === true) {
-        sidUpdate.value = socialId.value
-        sidUpdate.key = socialId.key
-        sidUpdate.isDeleted = socialId.isDeleted
-        needUpdate = true
-      }
-
-      if (needUpdate) {
-        const updateSocialIdentityTx = txFactory.createTxUpdateDoc(
-          contact.class.SocialIdentity,
-          contact.space.Contacts,
-          existing._id,
-          sidUpdate
-        )
-
-        await client.tx(updateSocialIdentityTx)
+    // TODO: check for merged persons with this one and do the merge
+    return personRef as Ref<Employee>
+  } catch (err: any) {
+    // If Forbidden error occurred, return personRef if it exists, otherwise throw error
+    if (err instanceof PlatformError && err.status.code === platform.status.Forbidden) {
+      if (personRef != null) {
+        ctx.info('Skip employee update for person without full access rights')
+        return personRef as Ref<Employee>
       }
     }
+    throw err
   }
-
-  // NOTE: it is important to create Employee after Person and SocialIdentities are ensured so all the triggers applied
-  // on Employee creation will be able to properly map things
-  const employeeRole = person.role === AccountRole.Guest || person.role === AccountRole.ReadOnlyGuest ? 'GUEST' : 'USER'
-  const employee = await client.findOne(contact.mixin.Employee, { _id: personRef as Ref<Employee> })
-
-  if (
-    employee === undefined ||
-    !Hierarchy.hasMixin(employee, contact.mixin.Employee) ||
-    !employee.active ||
-    employee.role !== employeeRole
-  ) {
-    await ctx.with('create-employee', {}, async () => {
-      if (personRef === undefined) {
-        // something went wrong
-        console.error('Person not found')
-        return null
-      }
-
-      const createEmployeeTx = txFactory.createTxMixin(
-        personRef,
-        contact.class.Person,
-        contact.space.Contacts,
-        contact.mixin.Employee,
-        {
-          active: true,
-          role: employeeRole
-        }
-      )
-      await client.tx(createEmployeeTx)
-    })
-  }
-
-  // TODO: check for merged persons with this one and do the merge
-  return personRef as Ref<Employee>
 }
 
 export const contactCache = ContactCache.instance
