@@ -12,9 +12,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Configuration } from '@hcengineering/core'
+  import core from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Header, Label, Scroller, Toggle } from '@hcengineering/ui'
+  import setting, { type OfficeSettings } from '@hcengineering/setting'
+  import { Breadcrumb, Header, Label, Scroller, Toggle } from '@hcengineering/ui'
   import settingsRes from '../plugin'
 
   let loading = true
@@ -22,68 +23,62 @@
   let defaultStartWithRecording = false
 
   const client = getClient()
-  let officeSettingsConfiguration: Configuration | undefined = undefined
+  let existingOfficeSettings: OfficeSettings[] = []
+  const query = createQuery()
 
-  const configurationQuery = createQuery()
-  $: configurationQuery.query(
-    core.class.Configuration,
-    { _id: settingsRes.ids.OfficeSettingsConfiguration },
-    (result) => {
-      officeSettingsConfiguration = result[0]
-      if (officeSettingsConfiguration !== undefined) {
-        defaultStartWithTranscription = (officeSettingsConfiguration as any).defaultStartWithTranscription ?? false
-        defaultStartWithRecording = (officeSettingsConfiguration as any).defaultStartWithRecording ?? false
-      }
-      loading = false
+  $: query.query((setting.class as any).OfficeSettings, {}, (set) => {
+    existingOfficeSettings = set as unknown as OfficeSettings[]
+    if (existingOfficeSettings !== undefined && existingOfficeSettings.length > 0) {
+      defaultStartWithTranscription = existingOfficeSettings[0].defaultStartWithTranscription ?? false
+      defaultStartWithRecording = existingOfficeSettings[0].defaultStartWithRecording ?? false
     }
-  )
+    loading = false
+  })
 
   async function toggleDefaultTranscription (e: CustomEvent<boolean>): Promise<void> {
     const enabled = e.detail
     defaultStartWithTranscription = enabled
-    if (officeSettingsConfiguration === undefined) {
-      await client.createDoc(
-        core.class.Configuration,
-        core.space.Workspace,
-        {
-          defaultStartWithTranscription: enabled,
-          defaultStartWithRecording
-        },
-        settingsRes.ids.OfficeSettingsConfiguration
-      )
+    const newSettings = {
+      defaultStartWithTranscription: enabled,
+      defaultStartWithRecording,
+      enabled: true
+    }
+    if (existingOfficeSettings.length === 0) {
+      await client.createDoc((setting.class as any).OfficeSettings, core.space.Workspace, newSettings)
     } else {
-      await client.update(officeSettingsConfiguration, {
-        defaultStartWithTranscription: enabled,
-        defaultStartWithRecording
-      } as any)
+      await client.updateDoc(
+        (setting.class as any).OfficeSettings,
+        core.space.Workspace,
+        existingOfficeSettings[0]._id,
+        newSettings
+      )
     }
   }
 
   async function toggleDefaultRecording (e: CustomEvent<boolean>): Promise<void> {
     const enabled = e.detail
     defaultStartWithRecording = enabled
-    if (officeSettingsConfiguration === undefined) {
-      await client.createDoc(
-        core.class.Configuration,
-        core.space.Workspace,
-        {
-          defaultStartWithTranscription,
-          defaultStartWithRecording: enabled
-        },
-        settingsRes.ids.OfficeSettingsConfiguration
-      )
+    const newSettings = {
+      defaultStartWithTranscription,
+      defaultStartWithRecording: enabled,
+      enabled: true
+    }
+    if (existingOfficeSettings.length === 0) {
+      await client.createDoc((setting.class as any).OfficeSettings, core.space.Workspace, newSettings)
     } else {
-      await client.update(officeSettingsConfiguration, {
-        defaultStartWithTranscription,
-        defaultStartWithRecording: enabled
-      } as any)
+      await client.updateDoc(
+        (setting.class as any).OfficeSettings,
+        core.space.Workspace,
+        existingOfficeSettings[0]._id,
+        newSettings
+      )
     }
   }
 </script>
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
-    <Label label={settingsRes.string.OfficeSettings} size={'large'} isCurrent />
+    <Breadcrumb label={settingsRes.string.OfficeSettings} size={'large'} isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
     {#if loading}

@@ -128,6 +128,14 @@ export interface InviteSettings extends Configuration {
 /**
  * @public
  */
+export interface OfficeSettings extends Configuration {
+  defaultStartWithTranscription: boolean
+  defaultStartWithRecording: boolean
+}
+
+/**
+ * @public
+ */
 export interface WorkspaceSetting extends Doc {
   icon?: Ref<Blob> | null
 }
@@ -163,7 +171,6 @@ export default plugin(settingId, {
     Export: '' as Ref<Doc>,
     OfficeSettings: '' as Ref<Doc>,
     DisablePermissionsConfiguration: '' as Ref<Configuration>,
-    OfficeSettingsConfiguration: '' as Ref<Configuration>,
     Mailboxes: '' as Ref<Doc>
   },
   mixin: {
@@ -178,6 +185,7 @@ export default plugin(settingId, {
     Integration: '' as Ref<Class<Integration>>,
     IntegrationType: '' as Ref<Class<IntegrationType>>,
     InviteSettings: '' as Ref<Class<InviteSettings>>,
+    OfficeSettings: '' as Ref<Class<OfficeSettings>>,
     WorkspaceSetting: '' as Ref<Class<WorkspaceSetting>>
   },
   component: {
