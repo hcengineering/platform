@@ -200,6 +200,7 @@ export * from './objectIterator'
 export * from './selection'
 export * from './status'
 export * from './utils'
+export * from './permissions'
 export {
   buildCategoryReferenceLookups,
   buildModel,

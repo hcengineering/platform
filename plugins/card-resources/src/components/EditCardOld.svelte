@@ -33,7 +33,13 @@
     deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { RelationsEditor, getDocMixins, showMenu } from '@hcengineering/view-resources'
+  import {
+    ParentsNavigator,
+    RelationsEditor,
+    canChangeDoc,
+    getDocMixins,
+    showMenu
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
   import card from '../plugin'
@@ -43,7 +49,7 @@
   import Content from './Content.svelte'
   import TagsEditor from './TagsEditor.svelte'
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
-  import { canChangeDoc, permissionsStore } from '@hcengineering/contact-resources'
+  import { permissionsStore } from '@hcengineering/contact-resources'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false

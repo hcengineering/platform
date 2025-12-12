@@ -15,6 +15,7 @@
     "Role": "Rol",
     "DeleteObject": "Nesneyi sil",
     "DeleteObjectConfirm": "{count, plural, =1 {bu nesneyi} other {bu # nesneyi}} silmek istiyor musunuz?",
+    "NoCreatePermissionTitle": "Oluşturmak için yeterli izin yok",
     "DeletePopupNoPermissionTitle": "Silmek için yeterli izin yok.",
     "DeletePopupNoPermissionLabel": "Lütfen aşağıdaki listedeki kişilerle iletişime geçin.",
     "DeletePopupCreatorLabel": "Oluşturanlar (sadece kendilerinin oluşturduklarını silebilir):",

@@ -222,7 +222,9 @@ export async function login (
 
     const isConfirmed = emailSocialId.verifiedOn != null
 
-    const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
+    const extraToken: Record<string, string> = isAdminEmail(normalizedEmail)
+      ? { admin: 'true', authMethod: 'password' }
+      : { authMethod: 'password' }
     ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...extraToken })
 
     return {
@@ -506,7 +508,9 @@ export async function validateOtp (
 
     await resetFailedLoginAttempts(db, emailSocialId.personUuid as AccountUuid)
 
-    const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
+    const extraToken: Record<string, string> = isAdminEmail(normalizedEmail)
+      ? { admin: 'true', authMethod: 'otp' }
+      : { authMethod: 'otp' }
 
     return {
       account: emailSocialId.personUuid as AccountUuid,
@@ -537,7 +541,7 @@ export async function createWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const { account } = decodeTokenVerbose(ctx, token)
+  const { account, extra } = decodeTokenVerbose(ctx, token)
 
   checkRateLimit(account, workspaceName)
 
@@ -579,7 +583,7 @@ export async function createWorkspace (
     account,
     socialId: socialId._id,
     name: getPersonName(person),
-    token: generateToken(account, workspaceUuid),
+    token: generateToken(account, workspaceUuid, extra),
     endpoint: getEndpoint(workspaceUuid, region, EndpointKind.External),
     workspace: workspaceUuid,
     workspaceUrl,
@@ -1394,7 +1398,7 @@ export async function leaveWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const { account, workspace } = decodeTokenVerbose(ctx, token)
+  const { account, workspace, extra } = decodeTokenVerbose(ctx, token)
   ctx.info('Removing account from workspace', { account, workspace })
 
   if (account == null || workspace == null) {
@@ -1427,7 +1431,7 @@ export async function leaveWorkspace (
     return {
       account,
       name: getPersonName(person),
-      token: generateToken(account, undefined)
+      token: generateToken(account, undefined, extra)
     }
   }
 

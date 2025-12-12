@@ -985,7 +985,11 @@ export async function checkPasswordAging (
   branding: Branding | null,
   token: string
 ): Promise<boolean> {
-  const { account, workspace } = decodeTokenVerbose(ctx, token)
+  const { account, workspace, extra } = decodeTokenVerbose(ctx, token)
+
+  if (extra?.authMethod !== 'password') {
+    return true
+  }
 
   if (workspace === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))

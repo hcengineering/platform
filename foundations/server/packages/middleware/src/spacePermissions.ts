@@ -174,10 +174,10 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     const permissions = this.permissionsBySpace[space]?.[account.uuid] ?? []
     let withoutMatch: Permission | undefined
     for (const permission of permissions) {
-      if (permission.txClass === undefined || permission.txClass !== tx._class) continue
+      if (!isTxClassMatched(tx, permission)) continue
       if (
         permission.objectClass !== undefined &&
-        !this.context.hierarchy.isDerived(tx.objectClass, permission.objectClass)
+        !this.context.hierarchy.isDerived(getTxObjectClass(tx), permission.objectClass)
       ) {
         continue
       }
@@ -197,7 +197,33 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       return withoutMatch.forbid !== undefined ? !withoutMatch.forbid : true
     }
 
-    return isSpace || !this.restrictedSpaces.has(space)
+    if (isSpace || !this.restrictedSpaces.has(space)) {
+      return true
+    }
+
+    if (this.restrictedSpaces.has(space)) {
+      const attachedDocAncestors = this.context.hierarchy.getAncestors(core.class.AttachedDoc)
+      const ancestors = this.context.hierarchy.getAncestors(getTxObjectClass(tx))
+      const targetAncestors = ancestors.filter((a) => !attachedDocAncestors.includes(a))
+      const txClass = getTxClass(tx)
+
+      const permissions = this.context.modelDb.findAllSync(core.class.Permission, {
+        objectClass: { $in: targetAncestors },
+        txClass
+      })
+      const matched = permissions.filter((p) => {
+        if (p.txMatch === undefined) return false
+        const checkMatch = matchQuery([tx], p.txMatch, tx._class, this.context.hierarchy, true)
+        return p.forbid !== true && checkMatch.length > 0
+      })
+
+      if (matched.length > 0) return false
+
+      const withoutMatch = permissions.filter((p) => p.txMatch === undefined)
+      return withoutMatch.length === 0
+    }
+
+    return false
   }
 
   private throwForbidden (): void {
@@ -434,4 +460,21 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       this.throwForbidden()
     }
   }
+}
+
+function getTxClass (tx: Tx): Ref<Class<Tx>> {
+  let _class = tx._class
+  if (tx._class === core.class.TxMixin && Object.keys((tx as TxMixin<Doc, Doc>).attributes).length > 0) {
+    _class = core.class.TxUpdateDoc
+  }
+  return _class
+}
+
+function isTxClassMatched (tx: Tx, permission: Permission): boolean {
+  const txClass = getTxClass(tx)
+  return permission.txClass === txClass
+}
+
+function getTxObjectClass (tx: TxCUD<Doc>): Ref<Class<Doc>> {
+  return tx._class === core.class.TxMixin ? (tx as TxMixin<Doc, Doc>).mixin : tx.objectClass
 }

@@ -15,6 +15,7 @@
     "Role": "Função",
     "DeleteObject": "Apagar objecto",
     "DeleteObjectConfirm": "Deseja apagar {count, plural, =1 {este objecto} other {estes # objectos}}?",
+    "NoCreatePermissionTitle": "Sem permissões suficientes para criar",
     "DeletePopupNoPermissionTitle": "Sem permissões suficientes para apagar.",
     "DeletePopupNoPermissionLabel": "Por favor, contacte as pessoas da lista abaixo para que o possam fazer.",
     "DeletePopupCreatorLabel": "Criadores (só podem apagar os que criaram):",

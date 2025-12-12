@@ -206,7 +206,7 @@
   }
 
   async function changePasswordAgingRules (val: number | undefined): Promise<void> {
-    passwordAgingRule = Math.max(val ?? 0, 0)
+    passwordAgingRule = Math.max(val ?? 1, 1)
     await accountClient.updatePasswordAgingRule(passwordAgingRule)
   }
 
@@ -352,7 +352,7 @@
                 <div class="w-32">
                   <EditBox
                     format={'number'}
-                    minValue={0}
+                    minValue={1}
                     maxDigitsAfterPoint={0}
                     bind:value={passwordAgingRule}
                     disabled={!passwordAgingRule}

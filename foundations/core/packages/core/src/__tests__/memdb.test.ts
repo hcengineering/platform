@@ -14,7 +14,7 @@
 //
 
 import { type Client, type DomainParams, type DomainRequestOptions, type DomainResult } from '..'
-import type { Class, Doc, Obj, OperationDomain, Ref } from '../classes'
+import type { Class, Doc, Obj, OperationDomain, Ref, Space } from '../classes'
 import core from '../component'
 import { Hierarchy } from '../hierarchy'
 import { ModelDb, TxDb } from '../memdb'
@@ -291,6 +291,155 @@ describe('memdb', () => {
     })
     const result2 = await client.findAll(test.class.TestComment, {})
     expect(result2).toHaveLength(1)
+  })
+
+  it('check associations', async () => {
+    const { model } = await createModel()
+    const operations = new TxOperations(model, core.account.System)
+    const association = await operations.findOne(core.class.Association, {})
+    if (association == null) {
+      throw new Error('Association not found')
+    }
+
+    const spaces = await operations.findAll(core.class.Space, {})
+    expect(spaces).toHaveLength(2)
+
+    const first = await operations.addCollection(
+      test.class.TestComment,
+      core.space.Model,
+      spaces[0]._id,
+      spaces[0]._class,
+      'comments',
+      {
+        message: 'msg'
+      }
+    )
+
+    const second = await operations.addCollection(
+      test.class.TestComment,
+      core.space.Model,
+      first,
+      test.class.TestComment,
+      'comments',
+      {
+        message: 'msg2'
+      }
+    )
+
+    await operations.createDoc(core.class.Relation, '' as Ref<Space>, {
+      docA: first,
+      docB: second,
+      association: association._id
+    })
+
+    const r = await operations.findAll(
+      test.class.TestComment,
+      { _id: first },
+      {
+        associations: [[association._id, 1]]
+      }
+    )
+    expect(r.length).toEqual(1)
+    expect((r[0].$associations?.[association._id + '_b'][0] as any)?._id).toEqual(second)
+  })
+
+  it('check deep associations', async () => {
+    const { model } = await createModel()
+    const operations = new TxOperations(model, core.account.System)
+    const association = await operations.findOne(core.class.Association, {})
+    if (association == null) {
+      throw new Error('Association not found')
+    }
+
+    const spaces = await operations.findAll(core.class.Space, {})
+    expect(spaces).toHaveLength(2)
+
+    const zero = await operations.addCollection(
+      test.class.TestComment,
+      core.space.Model,
+      spaces[0]._id,
+      spaces[0]._class,
+      'comments',
+      {
+        message: 'msg'
+      }
+    )
+
+    const first = await operations.addCollection(
+      test.class.TestComment,
+      core.space.Model,
+      spaces[0]._id,
+      spaces[0]._class,
+      'comments',
+      {
+        message: 'msg'
+      }
+    )
+
+    const second = await operations.addCollection(
+      test.class.TestComment,
+      core.space.Model,
+      first,
+      test.class.TestComment,
+      'comments',
+      {
+        message: 'msg2'
+      }
+    )
+
+    const second2 = await operations.addCollection(
+      test.class.TestComment,
+      core.space.Model,
+      first,
+      test.class.TestComment,
+      'comments',
+      {
+        message: 'msg2'
+      }
+    )
+
+    const third = await operations.addCollection(
+      test.class.TestComment,
+      core.space.Model,
+      spaces[0]._id,
+      spaces[0]._class,
+      'comments',
+      {
+        message: 'msg3'
+      }
+    )
+    await operations.createDoc(core.class.Relation, '' as Ref<Space>, {
+      docA: first,
+      docB: second,
+      association: association._id
+    })
+
+    await operations.createDoc(core.class.Relation, '' as Ref<Space>, {
+      docA: first,
+      docB: second2,
+      association: association._id
+    })
+
+    await operations.createDoc(core.class.Relation, '' as Ref<Space>, {
+      docA: second,
+      docB: third,
+      association: association._id
+    })
+
+    const r = await operations.findAll(
+      test.class.TestComment,
+      { _id: { $in: [zero, first] } },
+      {
+        associations: [[association._id, 1, [[association._id, 1]]]]
+      }
+    )
+    expect(r.length).toEqual(2)
+    expect(r[1].$associations?.[`${association._id}_b`]).toHaveLength(2)
+    expect((r[1].$associations?.[`${association._id}_b`][0] as any)?._id).toEqual(second)
+    expect(r[1].$associations?.[`${association._id}_b`][1]?.$associations?.[`${association._id}_b`]).toHaveLength(0)
+    expect(
+      (r[1].$associations?.[`${association._id}_b`][0]?.$associations?.[`${association._id}_b`][0] as any)?._id
+    ).toEqual(third)
   })
 
   it('lookups', async () => {
