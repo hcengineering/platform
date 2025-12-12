@@ -14,9 +14,8 @@
 //
 
 import contact from '@hcengineering/contact'
-import { TxOperations, type Doc, type Ref, type Space } from '@hcengineering/core'
+import { TxOperations, type Ref, type Space } from '@hcengineering/core'
 import drive from '@hcengineering/drive'
-import setting from '@hcengineering/setting'
 import {
   MeetingStatus,
   RoomAccess,
@@ -36,7 +35,6 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
-import { type OfficeSettings } from '@hcengineering/setting'
 import { DOMAIN_LOVE, DOMAIN_MEETING_MINUTES } from '.'
 import love from './plugin'
 
@@ -64,22 +62,10 @@ async function createRooms (client: MigrationUpgradeClient): Promise<void> {
   }
   const employees = await client.findAll(contact.mixin.Employee, { active: true })
 
-  // Get workspace settings for Video rooms (default to true if not set)
-  let defaultTranscription = true
-  let defaultRecording = true
-  const officeSettings = (await client.findAll<Doc>(
-    (setting.class as any).OfficeSettings,
-    {}
-  )) as unknown as OfficeSettings[]
-  if (officeSettings !== undefined && officeSettings.length > 0) {
-    defaultTranscription = officeSettings[0].defaultStartWithTranscription ?? true
-    defaultRecording = officeSettings[0].defaultStartWithRecording ?? true
-  }
-
   const data = createDefaultRooms(
     employees.map((p) => p._id),
-    defaultTranscription,
-    defaultRecording
+    true,
+    true
   )
   for (const room of data) {
     const _class = isOffice(room) ? love.class.Office : love.class.Room

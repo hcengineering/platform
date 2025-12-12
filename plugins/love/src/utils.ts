@@ -20,8 +20,8 @@ export function isOffice (room: Data<Room>): room is Office {
 
 export function createDefaultRooms (
   employees: Ref<Employee>[],
-  defaultTranscription: boolean = true,
-  defaultRecording: boolean = true
+  defaultTranscription: boolean = false,
+  defaultRecording: boolean = false
 ): (Data<Room | Office> & { _id: Ref<Room> })[] {
   const res: (Data<Room | Office> & { _id: Ref<Room> })[] = []
   // create 12 offices
