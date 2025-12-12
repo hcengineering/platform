@@ -255,7 +255,8 @@ const view = plugin(viewId, {
     CopyDocumentMarkdown: '' as IntlString,
     RoleLabel: '' as IntlString,
     ForbidAttributeChanges: '' as IntlString,
-    AllowAttributeChanges: '' as IntlString
+    AllowAttributeChanges: '' as IntlString,
+    NoCreatePermissionTitle: '' as IntlString
   },
   icon: {
     Table: '' as Asset,

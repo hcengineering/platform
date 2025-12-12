@@ -751,33 +751,18 @@ export const permissionsStore = derived(
   }
 )
 
-const spaceTypesQuery = createQuery(true)
 const permissionsQuery = createQuery(true)
-type TargetClassesProjection = Record<Ref<Class<Space>>, number>
 
-spaceTypesQuery.query(core.class.SpaceType, {}, (types) => {
-  const targetClasses = types.reduce<TargetClassesProjection>((acc, st) => {
-    acc[st.targetClass] = 1
-    return acc
-  }, {})
-
-  permissionsQuery.query(
-    core.class.Space,
-    {},
-    (res) => {
-      spacesStore.set(res)
-    },
-    {
-      showArchived: true,
-      projection: {
-        _id: 1,
-        type: 1,
-        members: 1,
-        ...targetClasses
-      } as any
-    }
-  )
-})
+permissionsQuery.query(
+  core.class.Space,
+  {},
+  (res) => {
+    spacesStore.set(res)
+  },
+  {
+    showArchived: true
+  }
+)
 
 export function getAccountClient (): AccountClient {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)

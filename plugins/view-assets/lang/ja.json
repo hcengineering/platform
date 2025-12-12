@@ -15,6 +15,7 @@
     "Role": "役割",
     "DeleteObject": "オブジェクトを削除",
     "DeleteObjectConfirm": "{count, plural, =1 {このオブジェクト} other {これらの # 個のオブジェクト}}を削除しますか？",
+    "NoCreatePermissionTitle": "作成する権限がありません",
     "DeletePopupNoPermissionTitle": "削除する権限がありません。",
     "DeletePopupNoPermissionLabel": "削除するには、以下のリストの担当者にご連絡ください。",
     "DeletePopupCreatorLabel": "作成者 (自分で作成したもののみ削除できます):",
