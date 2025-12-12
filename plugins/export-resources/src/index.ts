@@ -16,13 +16,16 @@
 import { type Resources } from '@hcengineering/platform'
 import ExportButton from './components/ExportButton.svelte'
 import ExportSettings from './components/ExportSettings.svelte'
+import ExportToWorkspaceModal from './components/ExportToWorkspaceModal.svelte'
 
 export { default as ExportButton } from './components/ExportButton.svelte'
 export { default as ExportSettings } from './components/ExportSettings.svelte'
+export { default as ExportToWorkspaceModal } from './components/ExportToWorkspaceModal.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
     ExportButton,
-    ExportSettings
+    ExportSettings,
+    ExportToWorkspaceModal
   }
 })

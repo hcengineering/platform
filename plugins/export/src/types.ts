@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import type { Class, Doc, Ref } from '@hcengineering/core'
 
 export enum OperationType {
   IDENTITY = 'identity',
@@ -42,4 +43,10 @@ export interface TransformConfig {
   skipAttributes?: string[]
   attributeKeyMap?: Record<string, string>
   attributeTransforms?: Record<string, AttributeTransform>
+}
+
+export interface RelationDefinition {
+  field: string
+  class: Ref<Class<Doc>>
+  direction?: 'forward' | 'inverse'
 }

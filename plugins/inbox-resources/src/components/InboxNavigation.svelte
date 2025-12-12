@@ -109,6 +109,11 @@
     const item = navItems[index]
     if (item == null) return index.toString()
 
+    // For legacy items, use the context's _id to ensure uniqueness
+    if (item.type === 'legacy') {
+      return `${item.context?._id}-${item._id}-${item.type}`
+    }
+
     return `${item._id}-${item.type}`
   }
 </script>

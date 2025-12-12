@@ -36,6 +36,15 @@ export default mergeIds(exportId, exportPlugin, {
     ExportRequestSuccess: '' as IntlString,
     ExportRequestSuccessMessage: '' as IntlString,
     ExportRequestFailed: '' as IntlString,
-    ExportRequestFailedMessage: '' as IntlString
+    ExportRequestFailedMessage: '' as IntlString,
+    ExportSource: '' as IntlString,
+    ExportSelected: '' as IntlString,
+    ExportAll: '' as IntlString,
+    ExportStarted: '' as IntlString,
+    ExportStartedMessage: '' as IntlString,
+    SelectWorkspace: '' as IntlString,
+    SelectWorkspaceToExport: '' as IntlString<{ count: number }>,
+    SelectSpace: '' as IntlString,
+    NoSelectedDocuments: '' as IntlString
   }
 })

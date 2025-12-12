@@ -21,6 +21,17 @@
     "ExportRequestFailed": "Failed to submit export.",
     "ExportRequestFailedMessage": "Error occurred while submitting export. Please try again later.",
     "ExportCompleted": "Export completed. Your files are ready. You can download them from the drive.",
-    "ExportFailed": "Failed to export data. Please try again later."
+    "ExportFailed": "Failed to export data. Please try again later.",
+    "ExportToWorkspace": "Export to another workspace",
+    "TargetWorkspace": "Target workspace",
+    "ExportSource": "Export source",
+    "ExportSelected": "Selected items",
+    "ExportAll": "All items",
+    "ExportStarted": "Export started",
+    "ExportStartedMessage": "Export started. You will receive a notification in your Inbox when it completes.",
+    "SelectWorkspace": "Select workspace",
+    "SelectWorkspaceToExport": "Select workspace to export {count, plural, =1 {1 document} other {# documents}}",
+    "SelectSpace": "Select space",
+    "NoSelectedDocuments": "No documents selected"
   }
 }
