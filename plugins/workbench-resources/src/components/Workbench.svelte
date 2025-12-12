@@ -378,9 +378,9 @@
         loc.path[3] = currentSpace ?? currentSpecial ?? resolved.defaultLocation.path[3]
         if (loc.path[3] !== undefined && isSameApp) {
           // setting space special/aside only if it belongs to the same app
-          if (currentSpace && currentSpecial) {
-            loc.path[4] = currentSpecial
-          } else if (loc.path[3] === resolved.defaultLocation.path[3]) {
+          if (currentSpace) {
+            loc.path[4] = currentSpecial ?? resolved.defaultLocation.path[4]
+          } else if (currentSpecial) {
             loc.path[4] = resolved.defaultLocation.path[4]
           }
         } else {
@@ -390,16 +390,18 @@
     } else {
       loc.path[2] = resolvedApp
       if (resolvedSpace === undefined) {
-        loc.path[3] = currentSpace ?? (currentSpecial as string) ?? resolved.defaultLocation.path[3]
-        loc.path[4] = (currentSpecial as string) ?? resolved.defaultLocation.path[4]
+        loc.path[3] = currentSpace ?? currentSpecial ?? resolved.defaultLocation.path[3]
+        loc.path[4] = currentSpecial ?? resolved.defaultLocation.path[4]
       } else {
         loc.path[3] = resolvedSpace
         if (resolvedSpecial) {
           loc.path[4] = resolvedSpecial
-        } else if (currentSpace && currentSpecial) {
-          loc.path[4] = currentSpecial
-        } else {
+        } else if (currentSpace) {
+          loc.path[4] = currentSpecial ?? resolved.defaultLocation.path[4]
+        } else if (currentSpecial) {
           loc.path[4] = resolved.defaultLocation.path[4]
+        } else {
+          loc.path.length = 4
         }
       }
     }

@@ -15,6 +15,7 @@
     "Role": "Role",
     "DeleteObject": "Smazat objekt",
     "DeleteObjectConfirm": "Chcete smazat {count, plural, =1 {tento objekt} other {těchto # objektů}}?",
+    "NoCreatePermissionTitle": "Nemáte dostatečná oprávnění pro vytvoření",
     "DeletePopupNoPermissionTitle": "Nemáte dostatečná oprávnění pro smazání.",
     "DeletePopupNoPermissionLabel": "Kontaktujte prosím osoby ze seznamu níže, aby to mohly provést.",
     "DeletePopupCreatorLabel": "Tvůrci (mohou mazat pouze objekty, které vytvořili):",

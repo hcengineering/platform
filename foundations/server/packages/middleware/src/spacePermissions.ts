@@ -174,10 +174,10 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     const permissions = this.permissionsBySpace[space]?.[account.uuid] ?? []
     let withoutMatch: Permission | undefined
     for (const permission of permissions) {
-      if (permission.txClass === undefined || permission.txClass !== tx._class) continue
+      if (!isTxClassMatched(tx, permission)) continue
       if (
         permission.objectClass !== undefined &&
-        !this.context.hierarchy.isDerived(tx.objectClass, permission.objectClass)
+        !this.context.hierarchy.isDerived(getTxObjectClass(tx), permission.objectClass)
       ) {
         continue
       }
@@ -203,12 +203,13 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
 
     if (this.restrictedSpaces.has(space)) {
       const attachedDocAncestors = this.context.hierarchy.getAncestors(core.class.AttachedDoc)
-      const ancestors = this.context.hierarchy.getAncestors(tx.objectClass)
+      const ancestors = this.context.hierarchy.getAncestors(getTxObjectClass(tx))
       const targetAncestors = ancestors.filter((a) => !attachedDocAncestors.includes(a))
+      const txClass = getTxClass(tx)
 
       const permissions = this.context.modelDb.findAllSync(core.class.Permission, {
         objectClass: { $in: targetAncestors },
-        txClass: tx._class
+        txClass
       })
       const matched = permissions.filter((p) => {
         if (p.txMatch === undefined) return false
@@ -459,4 +460,21 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       this.throwForbidden()
     }
   }
+}
+
+function getTxClass (tx: Tx): Ref<Class<Tx>> {
+  let _class = tx._class
+  if (tx._class === core.class.TxMixin && Object.keys((tx as TxMixin<Doc, Doc>).attributes).length > 0) {
+    _class = core.class.TxUpdateDoc
+  }
+  return _class
+}
+
+function isTxClassMatched (tx: Tx, permission: Permission): boolean {
+  const txClass = getTxClass(tx)
+  return permission.txClass === txClass
+}
+
+function getTxObjectClass (tx: TxCUD<Doc>): Ref<Class<Doc>> {
+  return tx._class === core.class.TxMixin ? (tx as TxMixin<Doc, Doc>).mixin : tx.objectClass
 }

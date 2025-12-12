@@ -217,7 +217,16 @@
       <Component is={extension.component} props={{ collaborators, data, space: _space }} on:change={handleChange} />
     {/if}
   </div>
+
+  <div slot="afterContent" class="error p-4 flex-row-reverse">
+    {#if !allowed}
+      <Label label={view.string.NoCreatePermissionTitle} />
+    {/if}
+  </div>
 </Modal>
 
 <style lang="scss">
+  .error {
+    color: var(--theme-error-color);
+  }
 </style>

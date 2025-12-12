@@ -36,6 +36,7 @@
   import IntegrationErrorNotification from './IntegrationErrorNotification.svelte'
   import { getAccountClient } from '../../utils'
   import { Analytics } from '@hcengineering/analytics'
+  import { IntegrationKind } from '@hcengineering/core'
 
   const typeQuery = createQuery()
 
@@ -58,7 +59,7 @@
   ]
   let mode: 'all' | 'connected' | 'available' = 'all'
 
-  typeQuery.query(setting.class.IntegrationType, {}, (res) => {
+  typeQuery.query(setting.class.IntegrationType, { kind: { $ne: 'huly-mail' as IntegrationKind } }, (res) => {
     integrationTypes = res
   })
 
