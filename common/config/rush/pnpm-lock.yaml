@@ -22868,6 +22868,9 @@ importers:
       '@hcengineering/presentation':
         specifier: workspace:^0.7.0
         version: link:../../packages/presentation
+      '@hcengineering/setting':
+        specifier: workspace:^0.7.0
+        version: link:../setting
       '@hcengineering/theme':
         specifier: workspace:^0.7.0
         version: link:../../packages/theme

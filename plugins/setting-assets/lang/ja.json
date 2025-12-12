@@ -204,6 +204,10 @@
     "GenerateApiToken": "APIトークンを生成",
     "IdentifierExists": "識別子は既に存在します",
     "PasswordAgingRule": "パスワードエイジングルール",
-    "PasswordAgingRuleDescription": "ユーザーがパスワードを変更する必要がある日数"
+    "PasswordAgingRuleDescription": "ユーザーがパスワードを変更する必要がある日数",
+    "OfficeSettings": "オフィス設定",
+    "OfficeDefaultSettings": "会議室のデフォルト設定",
+    "DefaultStartWithTranscription": "新しいオフィスルームで文字起こしを有効にする",
+    "DefaultStartWithRecording": "新しいオフィスルームで録画を有効にする"
   }
 }

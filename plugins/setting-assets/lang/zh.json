@@ -204,6 +204,10 @@
     "GenerateApiToken": "生成API令牌",
     "IdentifierExists": "标识符已存在",
     "PasswordAgingRule": "密码老化规则",
-    "PasswordAgingRuleDescription": "用户需要更改密码的天数"
+    "PasswordAgingRuleDescription": "用户需要更改密码的天数",
+    "OfficeSettings": "办公室设置",
+    "OfficeDefaultSettings": "会议室的默认设置",
+    "DefaultStartWithTranscription": "在新办公室启用转录",
+    "DefaultStartWithRecording": "在新办公室启用录制"
   }
 }
