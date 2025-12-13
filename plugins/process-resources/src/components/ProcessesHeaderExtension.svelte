@@ -17,7 +17,7 @@
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Execution, ExecutionStatus, ProcessToDo } from '@hcengineering/process'
+  import { EventButton, Execution, ExecutionStatus, ProcessToDo } from '@hcengineering/process'
   import { Button } from '@hcengineering/ui'
   import process from '../plugin'
 
@@ -25,6 +25,18 @@
 
   let docs: Execution[] = []
   let todos: ProcessToDo[] = []
+  let actions: EventButton[] = []
+
+  const buttonsQuery = createQuery()
+  $: buttonsQuery.query(
+    process.class.EventButton,
+    {
+      card: card._id
+    },
+    (res) => {
+      actions = res
+    }
+  )
 
   const executionQuery = createQuery()
   $: executionQuery.query(
@@ -60,8 +72,41 @@
       doneOn: new Date().getTime()
     })
   }
+
+  async function performAction (action: EventButton) {
+    await client.createDoc(process.class.ProcessCustomEvent, action.space, {
+      execution: action.execution,
+      eventType: action.eventType,
+      card: card._id
+    })
+  }
+
+  async function performRollback (execution: Execution) {
+    await client.createDoc(process.class.ProcessCustomEvent, execution.space, {
+      execution: execution._id,
+      eventType: 'rollback',
+      card: card._id
+    })
+  }
+
+  function getExecutionLabel (execution: Execution): string {
+    const pr = client.getModel().findObject(execution.process)
+    if (pr !== undefined) {
+      return `${pr.name}: `
+    }
+    return ''
+  }
+
+  $: rollbacks = docs.filter((d) => d.rollback.length > 0)
 </script>
 
 {#each todos as todo (todo._id)}
   <Button kind={'primary'} label={getEmbeddedLabel(todo.title)} on:click={() => checkTodo(todo)} />
+{/each}
+{#each actions as action (action._id)}
+  <Button kind={'primary'} label={getEmbeddedLabel(action.title)} on:click={() => performAction(action)} />
+{/each}
+{#each rollbacks as rollback}
+  {getExecutionLabel(rollback)}
+  <Button kind={'dangerous'} label={process.string.Rollback} on:click={() => performRollback(rollback)} />
 {/each}
