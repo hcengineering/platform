@@ -38,7 +38,8 @@ import process, {
   State,
   Step,
   Transition,
-  isUpdateTx
+  isUpdateTx,
+  ProcessCustomEvent
 } from '@hcengineering/process'
 import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
 import { ProcessMessage } from '@hcengineering/server-process'
@@ -95,7 +96,8 @@ import {
   CheckSubProcessesDone,
   CheckSubProcessMatch,
   CheckTime,
-  FieldChangedCheck
+  FieldChangedCheck,
+  EventCheck
 } from './functions'
 import { ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 
@@ -139,6 +141,31 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
     )
   }
   return res
+}
+
+export async function OnCustomEvent (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxCreateDoc) continue
+    const createTx = tx as TxCreateDoc<ProcessCustomEvent>
+    if (!control.hierarchy.isDerived(createTx.objectClass, process.class.ProcessCustomEvent)) continue
+    const customEvent = TxProcessor.createDoc2Doc(createTx)
+    const card = await control.findAll(control.ctx, cardPlugin.class.Card, { _id: customEvent.card }, { limit: 1 })
+    if (card.length === 0) continue
+    await putEventToQueue(
+      {
+        event: process.trigger.OnEvent,
+        execution: customEvent.execution,
+        createdOn: tx.modifiedOn,
+        card: customEvent.card,
+        context: {
+          eventType: customEvent.eventType,
+          card
+        }
+      },
+      control
+    )
+  }
+  return []
 }
 
 export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
@@ -244,6 +271,23 @@ export async function OnStateRemove (txes: Tx[], control: TriggerControl): Promi
     const syncTx = await syncContext(control, _process)
     if (syncTx !== undefined) {
       res.push(syncTx)
+    }
+  }
+  return res
+}
+
+export async function OnExecutionRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxRemoveDoc) continue
+    const cudTx = tx as TxRemoveDoc<Execution>
+    if (!control.hierarchy.isDerived(cudTx.objectClass, process.class.Execution)) continue
+    const todos = await control.findAll(control.ctx, process.class.ProcessToDo, {
+      execution: cudTx.objectId,
+      doneOn: null
+    })
+    for (const todo of todos) {
+      res.push(control.txFactory.createTxRemoveDoc(todo._class, todo.space, todo._id))
     }
   }
   return res
@@ -400,7 +444,8 @@ export default async () => ({
     MatchCardCheck,
     CheckSubProcessesDone,
     CheckSubProcessMatch,
-    CheckTime
+    CheckTime,
+    EventCheck
   },
   transform: {
     CurrentDate,
@@ -454,6 +499,8 @@ export default async () => ({
     OnExecutionCreate,
     OnProcessToDoClose,
     OnProcessToDoRemove,
-    OnExecutionContinue
+    OnExecutionContinue,
+    OnCustomEvent,
+    OnExecutionRemove
   }
 })

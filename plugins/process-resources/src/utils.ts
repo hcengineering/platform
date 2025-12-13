@@ -617,6 +617,16 @@ export function timeTransitionCheck (
   return params.value <= Date.now()
 }
 
+export function eventCheck (
+  client: Client,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): boolean {
+  if (params.eventType === undefined) return false
+  return context.eventType === params.eventType
+}
+
 export function matchCardCheck (
   client: Client,
   execution: Execution,

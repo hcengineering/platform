@@ -85,7 +85,8 @@ import {
   matchCardCheck,
   subProcessesDoneCheck,
   fieldChangesCheck,
-  subProcessMatchCheck
+  subProcessMatchCheck,
+  eventCheck
 } from './utils'
 import FieldChangesEditor from './components/settings/FieldChangesEditor.svelte'
 
@@ -173,7 +174,8 @@ export default async (): Promise<Resources> => ({
     SubProcessesDoneCheck: subProcessesDoneCheck,
     SubProcessMatchCheck: subProcessMatchCheck,
     ToDo: todoTranstionCheck,
-    Time: timeTransitionCheck
+    Time: timeTransitionCheck,
+    OnEventCheck: eventCheck
   },
   function: {
     ShowDoneQuery: showDoneQuery,
