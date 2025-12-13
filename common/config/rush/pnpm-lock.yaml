@@ -6981,6 +6981,9 @@ importers:
       '@hcengineering/core':
         specifier: workspace:^0.7.23
         version: link:../../foundations/core/packages/core
+      '@hcengineering/export':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/export
       '@hcengineering/model':
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/model
@@ -19589,12 +19592,18 @@ importers:
       '@hcengineering/export':
         specifier: workspace:^0.7.0
         version: link:../export
+      '@hcengineering/login':
+        specifier: workspace:^0.7.0
+        version: link:../login
       '@hcengineering/platform':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/platform
       '@hcengineering/presentation':
         specifier: workspace:^0.7.0
         version: link:../../packages/presentation
+      '@hcengineering/theme':
+        specifier: workspace:^0.7.0
+        version: link:../../packages/theme
       '@hcengineering/ui':
         specifier: workspace:^0.7.0
         version: link:../../packages/ui
@@ -22021,6 +22030,9 @@ importers:
       '@hcengineering/presentation':
         specifier: workspace:^0.7.0
         version: link:../../packages/presentation
+      '@hcengineering/setting':
+        specifier: workspace:^0.7.0
+        version: link:../setting
       '@hcengineering/theme':
         specifier: workspace:^0.7.0
         version: link:../../packages/theme
@@ -36852,9 +36864,18 @@ importers:
       '@hcengineering/account-client':
         specifier: workspace:^0.7.20
         version: link:../../../foundations/core/packages/account-client
+      '@hcengineering/analytics-service':
+        specifier: workspace:^0.7.17
+        version: link:../../../foundations/core/packages/analytics-service
+      '@hcengineering/attachment':
+        specifier: workspace:^0.7.0
+        version: link:../../../plugins/attachment
       '@hcengineering/client':
         specifier: workspace:^0.7.18
         version: link:../../../foundations/core/packages/client
+      '@hcengineering/contact':
+        specifier: workspace:^0.7.0
+        version: link:../../../plugins/contact
       '@hcengineering/core':
         specifier: workspace:^0.7.23
         version: link:../../../foundations/core/packages/core
@@ -36867,6 +36888,12 @@ importers:
       '@hcengineering/export':
         specifier: workspace:^0.7.0
         version: link:../../../plugins/export
+      '@hcengineering/middleware':
+        specifier: workspace:^0.7.21
+        version: link:../../../foundations/server/packages/middleware
+      '@hcengineering/model-all':
+        specifier: workspace:^0.7.0
+        version: link:../../../models/all
       '@hcengineering/model-attachment':
         specifier: workspace:^0.7.0
         version: link:../../../models/attachment
@@ -36879,12 +36906,18 @@ importers:
       '@hcengineering/platform':
         specifier: workspace:^0.7.19
         version: link:../../../foundations/core/packages/platform
+      '@hcengineering/postgres':
+        specifier: workspace:^0.7.21
+        version: link:../../../foundations/server/packages/postgres
       '@hcengineering/server-client':
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/client
       '@hcengineering/server-core':
         specifier: workspace:^0.7.18
         version: link:../../../foundations/server/packages/core
+      '@hcengineering/server-pipeline':
+        specifier: workspace:^0.7.0
+        version: link:../../../server/server-pipeline
       '@hcengineering/server-storage':
         specifier: workspace:^0.7.17
         version: link:../../../foundations/server/packages/server-storage
@@ -36958,6 +36991,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^6.21.0
         version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+      cross-env:
+        specifier: ~7.0.3
+        version: 7.0.3
       esbuild:
         specifier: ^0.25.10
         version: 0.25.12

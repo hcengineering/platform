@@ -204,6 +204,10 @@
     "Restricted": "Restricted",
     "RestrictedAttributeWarning": "Are you sure you want to restrict changing this attribute? This action will create permissions for this attribute and cannot be undone.",
     "PasswordAgingRule": "Password aging rule",
-    "PasswordAgingRuleDescription": "Number of days after which users will be required to change their password."
+    "PasswordAgingRuleDescription": "Number of days after which users will be required to change their password.",
+    "OfficeSettings": "Office settings",
+    "OfficeDefaultSettings": "Default settings for meeting rooms",
+    "DefaultStartWithTranscription": "Enable transcription in new office rooms",
+    "DefaultStartWithRecording": "Enable recording in new office rooms"
   }
 }

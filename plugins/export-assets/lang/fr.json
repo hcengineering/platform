@@ -21,6 +21,17 @@
     "ExportRequestFailed": "Échec de la soumission de l'exportation.",
     "ExportRequestFailedMessage": "Une erreur s'est produite lors de la soumission de l'exportation. Veuillez réessayer plus tard.",
     "ExportCompleted": "Exportation terminée. Vos fichiers sont prêts. Vous pouvez les télécharger depuis le lecteur.",
-    "ExportFailed": "Échec de l'exportation des données. Veuillez réessayer plus tard."
+    "ExportFailed": "Échec de l'exportation des données. Veuillez réessayer plus tard.",
+    "ExportToWorkspace": "Exporter vers un autre espace de travail",
+    "TargetWorkspace": "Espace de destination",
+    "ExportSource": "Source d'exportation",
+    "ExportSelected": "Éléments sélectionnés",
+    "ExportAll": "Tous les éléments",
+    "ExportStarted": "Exportation démarrée",
+    "ExportStartedMessage": "Exportation démarrée. Vous recevrez une notification dans votre boîte de réception une fois terminée.",
+    "SelectWorkspace": "Sélectionner l'espace de travail",
+    "SelectWorkspaceToExport": "Sélectionner l'espace de travail pour exporter {count, plural, =1 {1 document} other {# documents}}",
+    "SelectSpace": "Sélectionner l'espace",
+    "NoSelectedDocuments": "Aucun document sélectionné"
   }
 }

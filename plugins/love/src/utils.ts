@@ -18,7 +18,11 @@ export function isOffice (room: Data<Room>): room is Office {
   return (room as Office).person !== undefined
 }
 
-export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Office> & { _id: Ref<Room> })[] {
+export function createDefaultRooms (
+  employees: Ref<Employee>[],
+  defaultTranscription: boolean = false,
+  defaultRecording: boolean = false
+): (Data<Room | Office> & { _id: Ref<Room> })[] {
   const res: (Data<Room | Office> & { _id: Ref<Room> })[] = []
   // create 12 offices
   for (let index = 0; index < 12; index++) {
@@ -54,8 +58,8 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     x: 6,
     y: 0,
     language: 'en',
-    startWithTranscription: true,
-    startWithRecording: true,
+    startWithTranscription: defaultTranscription,
+    startWithRecording: defaultRecording,
     description: null
   })
 
@@ -71,8 +75,8 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     x: 6,
     y: 4,
     language: 'en',
-    startWithTranscription: true,
-    startWithRecording: true,
+    startWithTranscription: defaultTranscription,
+    startWithRecording: defaultRecording,
     description: null
   })
   const meetingRoom2 = generateId<Room>()
@@ -87,8 +91,8 @@ export function createDefaultRooms (employees: Ref<Employee>[]): (Data<Room | Of
     x: 11,
     y: 4,
     language: 'en',
-    startWithTranscription: true,
-    startWithRecording: true,
+    startWithTranscription: defaultTranscription,
+    startWithRecording: defaultRecording,
     description: null
   })
   const voiceRoom1 = generateId<Room>()

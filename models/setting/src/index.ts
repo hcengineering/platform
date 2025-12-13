@@ -38,6 +38,7 @@ import {
   type Integration,
   type IntegrationType,
   type InviteSettings,
+  type OfficeSettings,
   type SettingsCategory,
   type SpaceTypeCreator,
   type SpaceTypeEditor,
@@ -113,6 +114,13 @@ export class TInviteSettings extends TConfiguration implements InviteSettings {
   limit!: number
 }
 
+@Model(setting.class.OfficeSettings, core.class.Configuration, DOMAIN_SETTING)
+@UX(setting.string.OfficeSettings)
+export class TOfficeSettings extends TConfiguration implements OfficeSettings {
+  defaultStartWithTranscription!: boolean
+  defaultStartWithRecording!: boolean
+}
+
 @Model(setting.class.WorkspaceSetting, core.class.Doc, DOMAIN_SETTING)
 export class TWorkspaceSetting extends TDoc implements WorkspaceSetting {
   icon?: Ref<Blob>
@@ -138,6 +146,7 @@ export function createModel (builder: Builder): void {
     TEditable,
     TUserMixin,
     TInviteSettings,
+    TOfficeSettings,
     TWorkspaceSetting,
     TSpaceTypeEditor,
     TSpaceTypeCreator
@@ -374,6 +383,21 @@ export function createModel (builder: Builder): void {
       order: 4800
     },
     setting.ids.Export
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'office',
+      label: setting.string.OfficeSettings,
+      icon: setting.icon.OfficeSettings,
+      component: setting.component.OfficeSettings,
+      group: 'settings-editor',
+      feature: 'love',
+      role: AccountRole.Maintainer,
+      order: 4900
+    },
+    setting.ids.OfficeSettings
   )
   // Currently remove Support item from settings
   // builder.createDoc(

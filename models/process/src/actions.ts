@@ -49,18 +49,6 @@ export function defineMethods (builder: Builder): void {
   )
 
   builder.createDoc(
-    process.class.Trigger,
-    core.space.Model,
-    {
-      label: process.string.OnExecutionStart,
-      icon: process.icon.Process,
-      init: true,
-      requiredParams: []
-    },
-    process.trigger.OnExecutionStart
-  )
-
-  builder.createDoc(
     process.class.Method,
     core.space.Model,
     {

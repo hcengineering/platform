@@ -18,16 +18,18 @@ export interface Config {
   Secret: string
   AccountsUrl: string
   ServiceID: string
+  DbURL: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
 
 const config: Config = (() => {
   const params: Partial<Config> = {
-    Port: parseNumber(process.env.PORT) ?? 4006,
+    Port: parseNumber(process.env.PORT) ?? 4009,
     Secret: process.env.SECRET,
     AccountsUrl: process.env.ACCOUNTS_URL,
-    ServiceID: process.env.SERVICE_ID
+    ServiceID: process.env.SERVICE_ID,
+    DbURL: process.env.DB_URL
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

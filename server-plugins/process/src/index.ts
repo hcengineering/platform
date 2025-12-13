@@ -60,7 +60,8 @@ export default plugin(serverProcessId, {
     FieldChangedCheck: '' as Resource<CheckFunc>,
     CheckSubProcessesDone: '' as Resource<CheckFunc>,
     CheckSubProcessMatch: '' as Resource<CheckFunc>,
-    CheckTime: '' as Resource<CheckFunc>
+    CheckTime: '' as Resource<CheckFunc>,
+    EventCheck: '' as Resource<CheckFunc>
   },
   transform: {
     FirstValue: '' as Resource<TransformFunc>,
@@ -110,6 +111,8 @@ export default plugin(serverProcessId, {
     OnExecutionCreate: '' as Resource<TriggerFunc>,
     OnProcessToDoClose: '' as Resource<TriggerFunc>,
     OnProcessToDoRemove: '' as Resource<TriggerFunc>,
-    OnExecutionContinue: '' as Resource<TriggerFunc>
+    OnExecutionContinue: '' as Resource<TriggerFunc>,
+    OnCustomEvent: '' as Resource<TriggerFunc>,
+    OnExecutionRemove: '' as Resource<TriggerFunc>
   }
 })

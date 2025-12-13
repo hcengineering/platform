@@ -204,6 +204,10 @@
     "GenerateApiToken": "API-Token generieren",
     "IdentifierExists": "Bezeichner existiert bereits",
     "PasswordAgingRule": "Passwort-Alterungsregel",
-    "PasswordAgingRuleDescription": "Anzahl der Tage, nach denen Benutzer ihr Passwort ändern müssen."
+    "PasswordAgingRuleDescription": "Anzahl der Tage, nach denen Benutzer ihr Passwort ändern müssen.",
+    "OfficeSettings": "Büroeinstellungen",
+    "OfficeDefaultSettings": "Standardeinstellungen für Besprechungsräume",
+    "DefaultStartWithTranscription": "Transkription in neuen Büroräumen aktivieren",
+    "DefaultStartWithRecording": "Aufnahme in neuen Büroräumen aktivieren"
   }
 }
