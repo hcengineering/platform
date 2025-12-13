@@ -204,6 +204,10 @@
     "GenerateApiToken": "API token oluştur",
     "IdentifierExists": "Tanımlayıcı zaten mevcut",
     "PasswordAgingRule": "Parola yaşlandırma kuralı",
-    "PasswordAgingRuleDescription": "Kullanıcıların parolalarını değiştirmeleri gerekecek gün sayısı"
+    "PasswordAgingRuleDescription": "Kullanıcıların parolalarını değiştirmeleri gerekecek gün sayısı",
+    "OfficeSettings": "Ofis ayarları",
+    "OfficeDefaultSettings": "Toplantı odaları için varsayılan ayarlar",
+    "DefaultStartWithTranscription": "Yeni ofis odalarında transkripsiyonu etkinleştir",
+    "DefaultStartWithRecording": "Yeni ofis odalarında kaydı etkinleştir"
   }
 }

@@ -305,6 +305,7 @@ services:
       - PULSE_URL=ws://huly.local:8099/ws
       - DATALAKE_URL=http://huly.local:4030
       - HULYLAKE_URL=http://huly.local:8096
+      - EXPORT_URL=http://huly.local:4009
     restart: unless-stopped
   transactor_cockroach:
     image: hardcoreeng/transactor

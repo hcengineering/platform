@@ -204,6 +204,10 @@
     "GenerateApiToken": "Genera token API",
     "IdentifierExists": "Identificatore già esistente",
     "PasswordAgingRule": "Regola di invecchiamento della password",
-    "PasswordAgingRuleDescription": "Numero di giorni dopo i quali agli utenti verrà richiesto di cambiare la password."
+    "PasswordAgingRuleDescription": "Numero di giorni dopo i quali agli utenti verrà richiesto di cambiare la password.",
+    "OfficeSettings": "Impostazioni dell'ufficio",
+    "OfficeDefaultSettings": "Impostazioni predefinite per le sale riunioni",
+    "DefaultStartWithTranscription": "Abilita trascrizione nelle nuove stanze dell'ufficio",
+    "DefaultStartWithRecording": "Abilita registrazione nelle nuove stanze dell'ufficio"
   }
 }

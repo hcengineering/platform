@@ -61,7 +61,12 @@ async function createRooms (client: MigrationUpgradeClient): Promise<void> {
     await tx.remove(room)
   }
   const employees = await client.findAll(contact.mixin.Employee, { active: true })
-  const data = createDefaultRooms(employees.map((p) => p._id))
+
+  const data = createDefaultRooms(
+    employees.map((p) => p._id),
+    true,
+    true
+  )
   for (const room of data) {
     const _class = isOffice(room) ? love.class.Office : love.class.Room
     await tx.createDoc(_class, core.space.Workspace, room, room._id)

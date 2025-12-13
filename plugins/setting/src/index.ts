@@ -128,6 +128,14 @@ export interface InviteSettings extends Configuration {
 /**
  * @public
  */
+export interface OfficeSettings extends Configuration {
+  defaultStartWithTranscription: boolean
+  defaultStartWithRecording: boolean
+}
+
+/**
+ * @public
+ */
 export interface WorkspaceSetting extends Doc {
   icon?: Ref<Blob> | null
 }
@@ -161,6 +169,7 @@ export default plugin(settingId, {
     Spaces: '' as Ref<Doc>,
     Backup: '' as Ref<Doc>,
     Export: '' as Ref<Doc>,
+    OfficeSettings: '' as Ref<Doc>,
     DisablePermissionsConfiguration: '' as Ref<Configuration>,
     Mailboxes: '' as Ref<Doc>
   },
@@ -176,6 +185,7 @@ export default plugin(settingId, {
     Integration: '' as Ref<Class<Integration>>,
     IntegrationType: '' as Ref<Class<IntegrationType>>,
     InviteSettings: '' as Ref<Class<InviteSettings>>,
+    OfficeSettings: '' as Ref<Class<OfficeSettings>>,
     WorkspaceSetting: '' as Ref<Class<WorkspaceSetting>>
   },
   component: {
@@ -202,7 +212,8 @@ export default plugin(settingId, {
     CreateRelation: '' as AnyComponent,
     EditRelation: '' as AnyComponent,
     Mailboxes: '' as AnyComponent,
-    AddEmailSocialId: '' as AnyComponent
+    AddEmailSocialId: '' as AnyComponent,
+    OfficeSettings: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -260,6 +271,10 @@ export default plugin(settingId, {
     CreateMailboxPlaceholder: '' as IntlString,
     MailboxNoDomains: '' as IntlString,
     MailboxLimitReached: '' as IntlString,
+    OfficeSettings: '' as IntlString,
+    OfficeDefaultSettings: '' as IntlString,
+    DefaultStartWithTranscription: '' as IntlString,
+    DefaultStartWithRecording: '' as IntlString,
     MailboxErrorInvalidName: '' as IntlString,
     MailboxErrorDomainNotFound: '' as IntlString,
     MailboxErrorNameRulesViolated: '' as IntlString,
@@ -306,7 +321,8 @@ export default plugin(settingId, {
     InviteWorkspace: '' as Asset,
     Views: '' as Asset,
     Relations: '' as Asset,
-    Mailbox: '' as Asset
+    Mailbox: '' as Asset,
+    OfficeSettings: '' as Asset
   },
   templateFieldCategory: {
     Integration: '' as Ref<TemplateFieldCategory>

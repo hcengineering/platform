@@ -83,7 +83,7 @@ export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid,
       ctx.info('Processing event', { event: record.event, ws, record })
       if (record.execution !== undefined) {
         const execution = await control.client.findOne(process.class.Execution, { _id: record.execution })
-        if (execution !== undefined && isActiveExecution(execution, record.event)) {
+        if (execution !== undefined) {
           await processExecution(control, record, execution)
         }
       } else if (record.card !== undefined) {
@@ -140,9 +140,7 @@ async function processCardExecutions (control: ProcessControl, record: ProcessMe
       currentState: { $in: Array.from(states) }
     })
     for (const execution of executions) {
-      if (isActiveExecution(execution, record.event)) {
-        await processExecution(control, record, execution)
-      }
+      await processExecution(control, record, execution)
     }
   }
 
@@ -263,26 +261,36 @@ async function executeResultSet (
 }
 
 async function processExecution (control: ProcessControl, record: ProcessMessage, execution: Execution): Promise<void> {
-  await checkToDoResult(control, record, execution)
-  const transition = await findTransitions(control, record, execution)
-  if (transition !== undefined) {
-    await execute(execution, transition, control)
-  } else {
-    if (record.event === process.trigger.OnToDoRemove) {
-      const rollbackResult = await checkRollback(control, record, execution)
-      if (rollbackResult) return
+  if (isActiveExecution(execution, record.event)) {
+    await checkToDoResult(control, record, execution)
+    const transition = await findTransitions(control, record, execution)
+    if (transition !== undefined) {
+      await execute(execution, transition, control)
+      return
+    } else {
+      control.ctx.info('No transition found for event', {
+        event: record.event,
+        execution: execution._id,
+        state: execution.currentState
+      })
     }
-    control.ctx.info('No transition found for event', {
-      event: record.event,
-      execution: execution._id,
-      state: execution.currentState
-    })
+  }
+  if (isRollback(record)) {
+    await rollback(control, record, execution)
   }
 }
 
-async function checkRollback (control: ProcessControl, record: ProcessMessage, execution: Execution): Promise<boolean> {
-  const todo = record.context.todo as ProcessToDo
-  if (!todo?.withRollback) return false
+function isRollback (record: ProcessMessage): boolean {
+  if (record.event === process.trigger.OnEvent && record.context.eventType === 'rollback') {
+    return true
+  }
+  if (record.event === process.trigger.OnToDoRemove && record.context.todo?.withRollback === true) {
+    return true
+  }
+  return false
+}
+
+async function rollback (control: ProcessControl, record: ProcessMessage, execution: Execution): Promise<void> {
   const rollbackTxes = execution.rollback.pop() ?? []
   for (const tx of rollbackTxes) {
     const timeout = setTimeout(() => {
@@ -294,7 +302,6 @@ async function checkRollback (control: ProcessControl, record: ProcessMessage, e
   await control.client.update(execution, {
     rollback: execution.rollback
   })
-  return true
 }
 
 async function getTriggerRollback (triggger: TriggerImpl, control: ProcessControl): Promise<Tx | undefined> {
@@ -334,6 +341,7 @@ async function executeTransition (
   _transition: Transition,
   control: ProcessControl
 ): Promise<void> {
+  let nested = false
   let transition: Transition | undefined = _transition
   while (transition !== undefined) {
     let deep = control.cache.get(execution._id + 'transition') ?? 0
@@ -391,7 +399,7 @@ async function executeTransition (
       if (isError(actionResult)) {
         errors.push(actionResult)
       } else {
-        if (actionResult.rollback !== undefined) {
+        if (actionResult.rollback !== undefined && actionResult.rollback.length > 0) {
           rollback.push(...actionResult.rollback)
         }
         res.push(...actionResult.txes)
@@ -419,7 +427,14 @@ async function executeTransition (
       }
     }
     if (!disableRollback) {
-      execution.rollback.push(rollback)
+      if (nested) {
+        const last = execution.rollback.pop() ?? []
+        execution.rollback.push([...last, ...rollback])
+      } else {
+        execution.rollback.push(rollback)
+      }
+    } else {
+      execution.rollback = []
     }
     const executionUpdate = getDiffUpdate(execution, {
       currentState: state._id,
@@ -452,6 +467,7 @@ async function executeTransition (
       }
       TxProcessor.applyUpdate(execution, executionUpdate)
       transition = await checkNext(control, execution, context)
+      nested = true
       if (transition === undefined) {
         await setNextTimers(control, execution)
       }

@@ -145,6 +145,16 @@ export function MatchCardCheck (
   return res.length > 0
 }
 
+export function EventCheck (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): boolean {
+  if (params.eventType === undefined) return false
+  return context.eventType === params.eventType
+}
+
 export function FieldChangedCheck (
   control: ProcessControl,
   execution: Execution,
@@ -299,23 +309,23 @@ export async function AddTag (
 ): Promise<ExecuteResult> {
   const { _id, props } = params
   if (_id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
+  const tagId = _id as Ref<Tag>
   const res: Tx[] = []
   const _process = control.client.getModel().findObject(execution.process)
   if (_process === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.process })
-  const tx = control.client.txFactory.createTxMixin(
-    execution.card,
-    _process.masterTag,
-    core.space.Workspace,
-    _id as Ref<Tag>,
-    props
-  )
+  const tx = control.client.txFactory.createTxMixin(execution.card, _process.masterTag, execution.space, tagId, props)
   res.push(tx)
   const card = control.cache.get(execution.card)
   const cardWithMixin =
     card !== undefined ? TxProcessor.updateMixin4Doc(control.client.getHierarchy().clone(card), tx) : undefined
+
+  const rollback = control.client.txFactory.createTxUpdateDoc(_process.masterTag, execution.space, execution.card, {
+    $unset: { [tagId]: true }
+  })
+
   return {
     txes: res,
-    rollback: undefined,
+    rollback: [rollback],
     context: [
       {
         _id: execution.card,
@@ -337,6 +347,7 @@ export async function RunSubProcess (
   if (target === undefined) throw processError(process.error.ObjectNotFound, { _id: processId })
   const res: Tx[] = []
   const resultContext: SuccessExecutionContext[] = []
+  const rollback: Tx[] = []
   for (const _card of Array.isArray(card) ? card : [card]) {
     if (target.parallelExecutionForbidden === true) {
       const currentExecution = await control.client.findAll(process.class.Execution, {
@@ -370,13 +381,15 @@ export async function RunSubProcess (
       _id
     )
 
+    rollback.push(control.client.txFactory.createTxRemoveDoc(process.class.Execution, core.space.Workspace, _id))
+
     res.push(tx)
     resultContext.push({
       _id,
       value: TxProcessor.createDoc2Doc(tx, true)
     })
   }
-  return { txes: res, rollback: undefined, context: resultContext }
+  return { txes: res, rollback, context: resultContext }
 }
 
 export async function CreateToDo (

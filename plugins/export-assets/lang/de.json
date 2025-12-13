@@ -21,6 +21,17 @@
     "ExportRequestFailed": "Export konnte nicht gestartet werden.",
     "ExportRequestFailedMessage": "Beim Starten des Exports ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
     "ExportCompleted": "Export abgeschlossen. Ihre Dateien sind bereit. Sie können sie vom Laufwerk herunterladen.",
-    "ExportFailed": "Datenexport fehlgeschlagen. Bitte versuchen Sie es später erneut."
+    "ExportFailed": "Datenexport fehlgeschlagen. Bitte versuchen Sie es später erneut.",
+    "ExportToWorkspace": "In einen anderen Arbeitsbereich exportieren",
+    "TargetWorkspace": "Ziel-Arbeitsbereich",
+    "ExportSource": "Exportquelle",
+    "ExportSelected": "Ausgewählte Elemente",
+    "ExportAll": "Alle Elemente",
+    "ExportStarted": "Export gestartet",
+    "ExportStartedMessage": "Export gestartet. Sie erhalten eine Benachrichtigung in Ihrem Posteingang, wenn der Export abgeschlossen ist.",
+    "SelectWorkspace": "Arbeitsbereich auswählen",
+    "SelectWorkspaceToExport": "Arbeitsbereich zum Exportieren von {count, plural, =1 {1 Dokument} other {# Dokumenten}} auswählen",
+    "SelectSpace": "Bereich auswählen",
+    "NoSelectedDocuments": "Keine Dokumente ausgewählt"
   }
 }

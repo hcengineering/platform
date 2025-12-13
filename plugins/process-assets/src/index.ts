@@ -27,5 +27,6 @@ loadMetadata(process.icon, {
   Start: `${icons}#start`,
   WhenCardMatches: `${icons}#card-matches`,
   WhenFieldChanges: `${icons}#field-change`,
-  Time: `${icons}#time`
+  Time: `${icons}#time`,
+  OnEvent: `${icons}#start`
 })

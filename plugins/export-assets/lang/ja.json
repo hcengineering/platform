@@ -21,6 +21,17 @@
     "ExportRequestFailed": "エクスポートの送信に失敗しました。",
     "ExportRequestFailedMessage": "エクスポートの送信中にエラーが発生しました。後でもう一度お試しください。",
     "ExportCompleted": "エクスポートが完了し、ファイルの準備ができました。ドライブからダウンロードできます。",
-    "ExportFailed": "データのエクスポートに失敗しました。後でもう一度お試しください。"
+    "ExportFailed": "データのエクスポートに失敗しました。後でもう一度お試しください。",
+    "ExportToWorkspace": "別のワークスペースにエクスポート",
+    "TargetWorkspace": "対象ワークスペース",
+    "ExportSource": "エクスポート元",
+    "ExportSelected": "選択した項目",
+    "ExportAll": "すべての項目",
+    "ExportStarted": "エクスポートを開始しました",
+    "ExportStartedMessage": "エクスポートを開始しました。完了すると受信箱に通知が届きます。",
+    "SelectWorkspace": "ワークスペースを選択",
+    "SelectWorkspaceToExport": "{count, plural, =1 {1 件のドキュメント} other {# 件のドキュメント}}をエクスポートするワークスペースを選択",
+    "SelectSpace": "スペースを選択",
+    "NoSelectedDocuments": "ドキュメントが選択されていません"
   }
 }
