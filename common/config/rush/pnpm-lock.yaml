@@ -36889,7 +36889,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../../plugins/export
       '@hcengineering/middleware':
-        specifier: workspace:^0.7.21
+        specifier: workspace:^0.7.22
         version: link:../../../foundations/server/packages/middleware
       '@hcengineering/model-all':
         specifier: workspace:^0.7.0
