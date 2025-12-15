@@ -1,4 +1,4 @@
-# Foundation is a personal fork of Huly Platform
+# Foundation is a personal fork of hcengineering Platform
 
 ![GitHub License](https://img.shields.io/github/license/haiodo/foundation?style=for-the-badge)
 
@@ -6,19 +6,22 @@
 
 ## About
 
-A personal Fork of Huly platform, will maintain in my personal resources. 
-I will periodically check if Huly team will provide any critical changes to incorporate to my personal version, and will add more experimentall stuff and improvements.
+A personal Fork of hcengineering platform, will maintain in my personal resources. 
+I will periodically check if hcengineering Platform team will provide any critical changes to incorporate to my personal version, and will add more experimentall stuff and improvements.
 
 If you are interested in my work, please support me, join my telegram blog [Haiodo Dev Blob](https://t.me/dev_haiodo) or suppot me on [Boosty.to](https://boosty.to/haiodo)
 
 
 ## Overview
-The Huly Platform is a robust framework designed to accelerate the development of business applications, such as CRM systems.
+The Platform is a robust framework designed to accelerate the development of business applications, such as CRM systems.
 This repository includes several applications, such as Chat, Project Management, CRM, HRM, and ATS.
+
+## Differences
+This is a personal fork of the Platform. For a concise list of how this branch differs from the original repository, see the `features.md` file at the repository root. It lists the main changes: new packages for media and streaming (for example, `foundations/hulylake`, `packages/audio-dsp`), updates to Docker images and local build scripts, removal of some legacy plugins, and other improvements.
 
 ## Self-Hosting
 
-If you're primarily interested in self-hosting Foundation or moving from Huly without the intention to modify or contribute to its development, please wait, instructions will follow.
+If you're primarily interested in self-hosting Foundation or moving from hcengineering Platform without the intention to modify or contribute to its development, please wait, instructions will follow.
 
 
 ## API Client
@@ -32,7 +35,7 @@ For detailed information about changes, improvements, and bug fixes in each vers
 
 ## Versions
 
-The Huly Platform uses two types of version tags to distinguish between production-ready and development releases:
+The Platform uses two types of version tags to distinguish between production-ready and development releases:
 
 - **Production Versions (`v*`)** - Stable releases for end users
   - Example: `v0.7.310`, `v0.7.307`, `v0.6.501`
@@ -52,13 +55,14 @@ For detailed information about the platform architecture, services, and their in
 
 ## Table of Contents
 
-- [Huly Platform](#huly-platform)
+- [Platform](#platform)
   - [About](#about)
   - [Self-Hosting](#self-hosting)
   - [API Client](#api-client)
   - [Changelog](#changelog)
   - [Versions](#versions)
   - [Architecture](#architecture)
+  - [Differences](./features.md)
   - [Table of Contents](#table-of-contents)
   - [Pre-requisites](#pre-requisites)
   - [Verification](#verification)

@@ -1,4 +1,4 @@
-# Huly Platform - Copilot Instructions
+# Foundation Platform - Copilot Instructions
 
 TypeScript/Svelte 4 monorepo using Rush.js (pnpm 10.15.1), Node >=20 <25, Webpack 5, Electron, Jest.
 
