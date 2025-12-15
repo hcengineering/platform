@@ -528,7 +528,7 @@ function buildaAssociation (stringKey: string, record: Record<string, any>): voi
     if (curr[part] === undefined) {
       curr[part] = {}
     }
-    curr = record[part]
+    curr = curr[part]
   }
 }
 
