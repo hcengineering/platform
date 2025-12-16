@@ -602,11 +602,9 @@ function getMigrations (): [string, string][] {
 
 function migrationV1 (): [string, string] {
   const sql = `
-    CREATE TYPE blob.location AS ENUM ('eu', 'weur', 'eeur', 'wnam', 'enam', 'apac');
-
     CREATE TABLE IF NOT EXISTS blob.data (
       hash UUID NOT NULL,
-      location blob.location NOT NULL,
+      location VARCHAR(10) NOT NULL,
       size BIGINT NOT NULL,
       filename VARCHAR(255) NOT NULL,
       type VARCHAR(255) NOT NULL,
@@ -617,7 +615,7 @@ function migrationV1 (): [string, string] {
       workspace VARCHAR(255) NOT NULL,
       name VARCHAR(255) NOT NULL,
       hash UUID NOT NULL,
-      location blob.location NOT NULL,
+      location VARCHAR(10) NOT NULL,
       parent VARCHAR(255) DEFAULT NULL,
       created_at TIMESTAMP NOT NULL DEFAULT NOW(),
       deleted_at TIMESTAMP DEFAULT NULL,

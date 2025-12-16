@@ -120,18 +120,7 @@ export async function createServer (
   const buckets: Array<{ location: Location, bucket: S3Bucket }> = []
   for (const bucket of config.Buckets) {
     const location = bucket.location as Location
-    if (
-      location === 'eu' ||
-      location === 'weur' ||
-      location === 'eeur' ||
-      location === 'wnam' ||
-      location === 'enam' ||
-      location === 'apac'
-    ) {
-      buckets.push({ location, bucket: await createBucket(ctx, createClient(bucket), bucket.bucket) })
-    } else {
-      ctx.warn('invalid bucket location', { location, bucket })
-    }
+    buckets.push({ location, bucket: await createBucket(ctx, createClient(bucket), bucket.bucket) })
   }
 
   const producer = queue.getProducer<Tx>(ctx.newChild('queue', {}, { span: false }), QueueTopic.Tx)
