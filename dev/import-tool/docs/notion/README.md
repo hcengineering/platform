@@ -17,7 +17,7 @@
 docker run \
   -e FRONT_URL="https://huly.app" \
   -v /path/to/export:/data \
-  haiodo/import-tool:latest \
+  intabia-fusion/import-tool:latest \
   -- bundle.js import-notion-with-teamspaces /data \
   --user your.email@company.com \
   --password yourpassword \
@@ -30,7 +30,7 @@ docker run \
 docker run \
   -e FRONT_URL="https://huly.app" \
   -v /path/to/export:/data \
-  haiodo/import-tool:latest \
+  intabia-fusion/import-tool:latest \
   -- bundle.js import-notion-to-teamspace /data \
   --user your.email@company.com \
   --password yourpassword \

@@ -1,23 +1,19 @@
 # Foundation is a personal fork of hcengineering Platform
 
-![GitHub License](https://img.shields.io/github/license/haiodo/foundation?style=for-the-badge)
+![GitHub License](https://img.shields.io/github/license/intabia-fusion/foundation?style=for-the-badge)
 
 ⭐️ Your star shines on us. Star us on GitHub!
 
 ## About
 
-A personal Fork of hcengineering platform, will maintain in my personal resources. 
-I will periodically check if hcengineering Platform team will provide any critical changes to incorporate to my personal version, and will add more experimentall stuff and improvements.
-
-If you are interested in my work, please support me, join my telegram blog [Haiodo Dev Blob](https://t.me/dev_haiodo) or suppot me on [Boosty.to](https://boosty.to/haiodo)
-
+A fork of hcengineering/platform will be improved and maintained by a group of developer.
 
 ## Overview
 The Platform is a robust framework designed to accelerate the development of business applications, such as CRM systems.
 This repository includes several applications, such as Chat, Project Management, CRM, HRM, and ATS.
 
 ## Differences
-This is a personal fork of the Platform. For a concise list of how this branch differs from the original repository, see the `features.md` file at the repository root. It lists the main changes: new packages for media and streaming (for example, `foundations/hulylake`, `packages/audio-dsp`), updates to Docker images and local build scripts, removal of some legacy plugins, and other improvements.
+This is a fork of the Platform. For a concise list of how this branch differs from the original repository, see the `features.md` file at the repository root. It lists the main changes: new packages for media and streaming (for example, `foundations/hulylake`, `packages/audio-dsp`), updates to Docker images and local build scripts, removal of some legacy plugins, and other improvements.
 
 ## Self-Hosting
 

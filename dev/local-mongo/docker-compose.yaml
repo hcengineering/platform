@@ -30,7 +30,7 @@ services:
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     restart: unless-stopped
   account:
-    image: haiodo/account
+    image: intabia-fusion/account
     links:
       - minio
     ports:
@@ -53,7 +53,7 @@ services:
       - INIT_WORKSPACE=onboarding
     restart: unless-stopped
   collaborator:
-    image: haiodo/collaborator
+    image: intabia-fusion/collaborator
     links:
       - minio
       - transactor
@@ -69,7 +69,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
   front:
-    image: haiodo/front
+    image: intabia-fusion/front
     links:
       - minio
       - elastic
@@ -101,7 +101,7 @@ services:
       - BRANDING_URL=http://localhost:8087/branding.json
     restart: unless-stopped
   transactor:
-    image: haiodo/transactor
+    image: intabia-fusion/transactor
     links:
       - elastic
       - minio
@@ -135,7 +135,7 @@ services:
       - BRANDING_PATH=/var/cfg/branding.json
     restart: unless-stopped
   rekoni:
-    image: haiodo/rekoni-service
+    image: intabia-fusion/rekoni-service
     restart: unless-stopped
     ports:
       - 4004:4004
@@ -144,7 +144,7 @@ services:
         limits:
           memory: 1024M
   print:
-    image: haiodo/print
+    image: intabia-fusion/print
     restart: unless-stopped
     ports:
       - 4005:4005
@@ -158,7 +158,7 @@ services:
         limits:
           memory: 300M
   sign:
-    image: haiodo/sign
+    image: intabia-fusion/sign
     restart: unless-stopped
     ports:
       - 4006:4006
@@ -181,7 +181,7 @@ services:
         limits:
           memory: 300M
   #  analytics:
-  #    image: haiodo/analytics-collector
+  #    image: intabia-fusion/analytics-collector
   #    restart: unless-stopped
   #    ports:
   #      - 4007:4007
@@ -197,7 +197,7 @@ services:
   #        limits:
   #          memory: 300M
   aiBot:
-    image: haiodo/ai-bot
+    image: intabia-fusion/ai-bot
     restart: unless-stopped
     environment:
       - SERVER_SECRET=secret
@@ -213,7 +213,7 @@ services:
         limits:
           memory: 300M
 #  telegram-bot:
-#    image: haiodo/telegram-bot
+#    image: intabia-fusion/telegram-bot
 #    restart: unless-stopped
 #    environment:
 #      - PORT=4020

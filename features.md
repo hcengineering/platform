@@ -1,15 +1,14 @@
 # Differences between this fork and the original Huly Platform repository
 
-This document briefly describes how my personal branch/fork (`foundation`) differs from upstream (`hcengineering/platform`). It is prepared based on a comparison of the fork's `develop` branch with `upstream/develop` and serves as a quick reference to the main changes and the reasons behind them.
+This document briefly describes how branch/fork (`foundation`) differs from upstream (`hcengineering/platform`). 
 
-> In short: the main focus is personal experiments and adding support for new infrastructure/media capabilities, some cleanup (removal of unused modules), and tweaks to improve the local development experience.
+> In short: the main focus by adding support for new infrastructure/media capabilities, some cleanup (removal of unused modules), and tweaks to improve experience.
 
 ---
 
 ## Key differences (short)
 
 - Added new components and foundation packages for media/streaming and DSP:
-  - `foundations/hulylake` (Rust service), `foundations/hulypulse`, `foundations/stream`, `foundations/net`.
   - Native library/package `@hcengineering/audio-dsp` for audio processing (FFT, VAD, noise reduction, etc.).
 - Infrastructure and image updates:
   - New/updated Docker images and scripts in `dev/base-image/*`, changes in `dev/docker-compose.yaml`, `common/scripts/docker.sh`.

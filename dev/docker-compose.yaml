@@ -1,6 +1,6 @@
 services:
   stream:
-    image: 'haiodo/stream'
+    image: 'intabia-fusion/stream'
     pull_policy: never
     extra_hosts:
       - 'huly.local:host-gateway'
@@ -18,7 +18,7 @@ services:
       - 1080:1080
     restart: unless-stopped
   media:
-    image: 'haiodo/media'
+    image: 'intabia-fusion/media'
     extra_hosts:
       - 'huly.local:host-gateway'
     environment:
@@ -28,7 +28,7 @@ services:
       - QUEUE_CONFIG=${QUEUE_CONFIG}
     restart: unless-stopped
   preview:
-    image: 'haiodo/preview'
+    image: 'intabia-fusion/preview'
     extra_hosts:
       - 'huly.local:host-gateway'
     environment:
@@ -161,7 +161,7 @@ services:
     restart: unless-stopped
 
   account:
-    image: haiodo/account
+    image: intabia-fusion/account
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -195,7 +195,7 @@ services:
       - MAILBOX_MAX_COUNT_PER_ACCOUNT=2
     restart: unless-stopped
   stats:
-    image: haiodo/stats
+    image: intabia-fusion/stats
     extra_hosts:
       - 'huly.local:host-gateway'
     ports:
@@ -206,7 +206,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   # payment:
-  #   image: haiodo/payment
+  #   image: intabia-fusion/payment
   #   extra_hosts:
   #     - 'huly.local:host-gateway'
   #   ports:
@@ -223,7 +223,7 @@ services:
   #     - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   #   restart: unless-stopped
   workspace:
-    image: haiodo/workspace
+    image: intabia-fusion/workspace
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -253,7 +253,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   collaborator:
-    image: haiodo/collaborator
+    image: intabia-fusion/collaborator
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -271,7 +271,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   front:
-    image: haiodo/front
+    image: intabia-fusion/front
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -318,7 +318,7 @@ services:
       - EXPORT_URL=http://huly.local:4009
     restart: unless-stopped
   transactor:
-    image: haiodo/transactor
+    image: intabia-fusion/transactor
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -361,7 +361,7 @@ services:
       - AI_BOT_URL=http://huly.local:4010
     restart: unless-stopped
   rekoni:
-    image: haiodo/rekoni-service
+    image: intabia-fusion/rekoni-service
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
@@ -371,7 +371,7 @@ services:
       - STATS_URL=http://huly.local:4901
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   fulltext:
-    image: haiodo/fulltext
+    image: intabia-fusion/fulltext
     extra_hosts:
       - 'huly.local:host-gateway'
     depends_on:
@@ -399,7 +399,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
       # - HULYLAKE_URL=http://huly.local:8096
   print:
-    image: haiodo/print
+    image: intabia-fusion/print
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
@@ -414,7 +414,7 @@ services:
       - ACCOUNTS_URL=http://huly.local:3000
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   sign:
-    image: haiodo/sign
+    image: intabia-fusion/sign
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
@@ -436,7 +436,7 @@ services:
       - STATS_URL=http://huly.local:4900
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   love:
-    image: haiodo/love
+    image: intabia-fusion/love
     extra_hosts:
       - 'huly.local:host-gateway'
     environment:
@@ -455,7 +455,7 @@ services:
       - 8096:8096
     restart: unless-stopped
   aibot:
-    image: haiodo/ai-bot
+    image: intabia-fusion/ai-bot
     ports:
       - 4010:4010
     extra_hosts:
@@ -485,7 +485,7 @@ services:
       - STT_API_KEY=key
       - STT_MODEL=
   analytics:
-    image: haiodo/analytics-collector
+    image: intabia-fusion/analytics-collector
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
@@ -502,7 +502,7 @@ services:
       # - POSTHOG_API_KEY=${POSTHOG_API_KEY}
       # - MAX_PAYLOAD_SIZE=10mb
   export:
-    image: haiodo/export
+    image: intabia-fusion/export
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -521,7 +521,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   datalake:
-    image: haiodo/datalake
+    image: intabia-fusion/datalake
     extra_hosts:
       - 'huly.local:host-gateway'
     depends_on:
@@ -547,7 +547,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
   # hulylake:
-  #   image: haiodo/hulylake
+  #   image: intabia-fusion/hulylake
   #   pull_policy: never
   #   extra_hosts:
   #     - 'huly.local:host-gateway'
@@ -567,7 +567,7 @@ services:
   #     - AWS_SECRET_ACCESS_KEY=minioadmin
   #   restart: unless-stopped
   # hulykvs:
-  #   image: haiodo/hulykvs
+  #   image: intabia-fusion/hulykvs
   #   depends_on:
   #     postgres:
   #       condition: service_started
@@ -580,7 +580,7 @@ services:
   #     - HULY_TOKEN_SECRET=secret
   #   restart: unless-stopped
   # hulygun:
-  #   image: haiodo/hulygun
+  #   image: intabia-fusion/hulygun
   #   depends_on:
   #     redpanda:
   #       condition: service_healthy
@@ -595,7 +595,7 @@ services:
   #     - HULY_ACCOUNT_SERVICE=http://huly.local:3000
   #   restart: unless-stopped
   hulypulse:
-    image: haiodo/hulypulse
+    image: intabia-fusion/hulypulse
     depends_on:
       redis:
         condition: service_started
@@ -607,7 +607,7 @@ services:
     restart: unless-stopped
 
   process-service:
-    image: haiodo/process
+    image: intabia-fusion/process
     extra_hosts:
       - 'huly.local:host-gateway'
     depends_on:
@@ -622,7 +622,7 @@ services:
       - QUEUE_REGION=
     restart: unless-stopped
   #  translate:
-  #    image: haiodo/translate
+  #    image: intabia-fusion/translate
   #    extra_hosts:
   #      - 'huly.local:host-gateway'
   #    depends_on:
@@ -640,7 +640,7 @@ services:
   #      - BILLING_URL=http://huly.local:4041
   #    restart: unless-stopped
   # backup:
-  #   image: haiodo/backup
+  #   image: intabia-fusion/backup
   #   extra_hosts:
   #     - 'huly.local:host-gateway'
   #   depends_on:
@@ -668,7 +668,7 @@ services:
   #     - TEMPORAL_ADDRESS=localhost:7233
   #   restart: unless-stopped
   backup-api:
-    image: haiodo/backup-api
+    image: intabia-fusion/backup-api
     extra_hosts:
       - 'huly.local:host-gateway'
     depends_on:
@@ -691,7 +691,7 @@ services:
     restart: unless-stopped
 
   rating:
-    image: haiodo/rating
+    image: intabia-fusion/rating
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -732,7 +732,7 @@ services:
       - BADGER_DIRECTORY_KEY=/badger/key
     restart: unless-stopped
   love-agent:
-    image: haiodo/love-agent
+    image: intabia-fusion/love-agent
     extra_hosts:
       - 'huly.local:host-gateway'
     depends_on:
@@ -749,7 +749,7 @@ services:
       - 4012:4012
     restart: unless-stopped
   billing:
-    image: haiodo/billing
+    image: intabia-fusion/billing
     extra_hosts:
       - 'huly.local:host-gateway'
     depends_on:

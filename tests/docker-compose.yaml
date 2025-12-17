@@ -1,6 +1,6 @@
 services:
   stream:
-    image: haiodo/stream
+    image: intabia-fusion/stream
     pull_policy: never
     environment:
       - STREAM_ENDPOINT_URL=s3://localhost:9002
@@ -123,7 +123,7 @@ services:
       retries: 10
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
   account:
-    image: haiodo/account
+    image: intabia-fusion/account
     pull_policy: never
     depends_on:
       postgres:
@@ -151,7 +151,7 @@ services:
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://stats:4901
   workspace:
-    image: haiodo/workspace
+    image: intabia-fusion/workspace
     links:
       - mongodb
       - cockroach
@@ -176,7 +176,7 @@ services:
       - STATS_URL=http://stats:4901
     restart: unless-stopped
   front:
-    image: haiodo/front
+    image: intabia-fusion/front
     pull_policy: never
     links:
       - account
@@ -207,7 +207,7 @@ services:
       - STATS_URL=http://stats:4901
       - STATS_API=http://localhost:4901
   transactor:
-    image: haiodo/transactor
+    image: intabia-fusion/transactor
     pull_policy: never
     depends_on:
       redpanda:
@@ -246,7 +246,7 @@ services:
       - RATE_LIMIT_MAX=25000
       - RATE_LIMIT_WINDOW=1000
   collaborator:
-    image: haiodo/collaborator
+    image: intabia-fusion/collaborator
     links:
       - mongodb
       - minio
@@ -262,7 +262,7 @@ services:
       - STATS_URL=http://stats:4901
     restart: unless-stopped
   rekoni:
-    image: haiodo/rekoni-service
+    image: intabia-fusion/rekoni-service
     restart: on-failure
     ports:
       - 4007:4004
@@ -270,7 +270,7 @@ services:
       - STATS_URL=http://stats:4901
 
   fulltext:
-    image: haiodo/fulltext
+    image: intabia-fusion/fulltext
     restart: unless-stopped
     depends_on:
       redpanda:
@@ -299,7 +299,7 @@ services:
       - ACCOUNTS_URL=http://account:3003
       - STATS_URL=http://stats:4901
   stats:
-    image: haiodo/stats
+    image: intabia-fusion/stats
     ports:
       - 4901:4901
     environment:

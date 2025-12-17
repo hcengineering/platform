@@ -1,6 +1,6 @@
 services:
   stream:
-    image: 'haiodo/stream'
+    image: 'intabia-fusion/stream'
     pull_policy: never
     extra_hosts:
       - 'huly.local:host-gateway'
@@ -106,7 +106,7 @@ services:
       interval: 5s
       retries: 10
   datalake:
-    image: haiodo/datalake
+    image: intabia-fusion/datalake
     depends_on:
       minio:
         condition: service_healthy
@@ -146,7 +146,7 @@ services:
       retries: 10
       test: curl -s http://huly.local:9200/_cluster/health | grep -vq '"status":"red"'
   account:
-    image: haiodo/account
+    image: intabia-fusion/account
     pull_policy: never
     extra_hosts:
       - 'huly.local:host-gateway'
@@ -181,7 +181,7 @@ services:
       # - DISABLE_SIGNUP=true
     restart: unless-stopped
   stats:
-    image: haiodo/stats
+    image: intabia-fusion/stats
     extra_hosts:
       - 'huly.local:host-gateway'
     ports:
@@ -191,7 +191,7 @@ services:
       - SERVER_SECRET=secret
     restart: unless-stopped
   workspace:
-    image: haiodo/workspace
+    image: intabia-fusion/workspace
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -216,7 +216,7 @@ services:
       # - INIT_WORKSPACE=huly
     restart: unless-stopped
   workspace_europe:
-    image: haiodo/workspace
+    image: intabia-fusion/workspace
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -241,7 +241,7 @@ services:
       # - INIT_WORKSPACE=huly
     restart: unless-stopped
   collaborator:
-    image: haiodo/collaborator
+    image: intabia-fusion/collaborator
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -259,7 +259,7 @@ services:
       - STATS_URL=http://huly.local:4901
     restart: unless-stopped
   front:
-    image: haiodo/front
+    image: intabia-fusion/front
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -296,7 +296,7 @@ services:
       # - DISABLE_SIGNUP=true
     restart: unless-stopped
   transactor:
-    image: haiodo/transactor
+    image: intabia-fusion/transactor
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -328,7 +328,7 @@ services:
       - RATE_LIMIT_MAX=25000
       - RATE_LIMIT_WINDOW=1000
   transactor-europe:
-    image: haiodo/transactor
+    image: intabia-fusion/transactor
     extra_hosts:
       - 'huly.local:host-gateway'
     pull_policy: never
@@ -362,7 +362,7 @@ services:
       - RATE_LIMIT_WINDOW=1000
     restart: unless-stopped
   rekoni:
-    image: haiodo/rekoni-service
+    image: intabia-fusion/rekoni-service
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
@@ -371,7 +371,7 @@ services:
     environment:
       - STATS_URL=http://huly.local:4901
   fulltext:
-    image: haiodo/fulltext
+    image: intabia-fusion/fulltext
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
@@ -393,7 +393,7 @@ services:
       - REKONI_URL=http://huly.local:4007
       - ACCOUNTS_URL=http://huly.local:3003
   fulltext-europe:
-    image: haiodo/fulltext
+    image: intabia-fusion/fulltext
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -416,7 +416,7 @@ services:
       - ACCOUNTS_URL=http://huly.local:3003
     restart: unless-stopped
   aiBot:
-    image: haiodo/ai-bot
+    image: intabia-fusion/ai-bot
     ports:
       - 4011:4011
     extra_hosts:

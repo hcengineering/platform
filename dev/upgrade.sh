@@ -4,4 +4,4 @@
  -e MINIO_ACCESS_KEY=minioadmin \
  -e MINIO_SECRET_KEY=minioadmin \
  --rm --network host \
- haiodo/tool node ./bundle upgrade
+ intabia-fusion/tool node ./bundle upgrade

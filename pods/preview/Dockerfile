@@ -1,4 +1,4 @@
-FROM haiodo/preview-base:v20250811
+FROM intabia-fusion/preview-base:v20250811
 
 WORKDIR /app
 

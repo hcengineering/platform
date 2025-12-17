@@ -5,8 +5,8 @@ set -e
 # Define the path to the docker-compose.override.yml
 DOCKER_COMPOSE_PATH="./docker-compose.override.yml"
 
-# Extract the version of haiodo/transactor from the docker-compose file
-VERSION=$(grep "image: haiodo/transactor:" "$DOCKER_COMPOSE_PATH" | head -1 | sed -E 's/.*image: haiodo\/transactor:([^[:space:]]+).*/\1/')
+# Extract the version of intabia-fusion/transactor from the docker-compose file
+VERSION=$(grep "image: intabia-fusion/transactor:" "$DOCKER_COMPOSE_PATH" | head -1 | sed -E 's/.*image: haiodo\/transactor:([^[:space:]]+).*/\1/')
 
 if [ -z "$VERSION" ]; then
   echo "Error: Could not find transactor version in docker-compose file"
@@ -14,13 +14,13 @@ if [ -z "$VERSION" ]; then
 fi
 
 echo "Found transactor version: $VERSION"
-echo "Fetching haiodo/tool:$VERSION..."
+echo "Fetching intabia-fusion/tool:$VERSION..."
 
 # Pull the tool image with the same version
-docker pull "haiodo/tool:$VERSION"
+docker pull "intabia-fusion/tool:$VERSION"
 
 # Create a temporary container from the image
-CONTAINER_ID=$(docker container create "haiodo/tool:$VERSION")
+CONTAINER_ID=$(docker container create "intabia-fusion/tool:$VERSION")
 
 # Extract bundle.js from the container
 echo "Extracting bundle.js..."
