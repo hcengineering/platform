@@ -360,7 +360,7 @@ async function executeTransition (
     if (trigger === undefined) return
     const rollback: Tx[] = []
     const triggerImpl = control.client.getHierarchy().as(trigger, serverProcess.mixin.TriggerImpl)
-    disableRollback = disableRollback || triggerImpl?.preventRollback ?? false
+    disableRollback = disableRollback || (triggerImpl?.preventRollback ?? false)
     const triggerRollback = await getTriggerRollback(triggerImpl, control)
     if (triggerRollback !== undefined) {
       rollback.push(triggerRollback)

@@ -119,10 +119,13 @@ async function migrateActionsFromStates (client: Client): Promise<void> {
 }
 
 async function cleanupRollback (client: MigrationClient): Promise<void> {
-  await client.update(DOMAIN_PROCESS, {
-    _class: process.class.Execution
-  }, {
-    rollback: []
-  })
+  await client.update(
+    DOMAIN_PROCESS,
+    {
+      _class: process.class.Execution
+    },
+    {
+      rollback: []
+    }
+  )
 }
-
