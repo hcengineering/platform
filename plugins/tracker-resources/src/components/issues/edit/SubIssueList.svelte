@@ -40,12 +40,12 @@
     (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection, noScroll?: boolean) => {
       if (dir === 'vertical') {
         // Select next
-        list?.select(offset, of, noScroll)
+        list?.select(offset, of, dir, noScroll)
       }
     }
   )
   let docs: Doc[] = []
-  function select () {
+  function select (): void {
     listProvider.update(docs)
     listProvider.updateFocus(docs[0])
     list?.select(0, undefined)

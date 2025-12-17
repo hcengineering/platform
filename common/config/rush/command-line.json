@@ -112,6 +112,14 @@
       "shellCommand": "(rush format && true) && ./common/scripts/format-show.sh"
     },
     {
+      "commandKind": "global",
+      "name": "do-svelte-check",
+      "summary": "Do a svelte-check and show errors after it",
+      "description": "Do a svelte-check and show errors after it",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "(rush svelte-check && true) && ./common/scripts/svelte-check-show.sh"
+    },
+    {
       "commandKind": "phased",
       "name": "build:watch",
       "summary": "Build and watch",
@@ -269,7 +277,7 @@
       "summary": "Up development build",
       "description": "Up development build",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "cd ./dev && docker compose up -d --force-recreate transactor_cockroach"
+      "shellCommand": "cd ./dev && docker compose up -d --force-recreate transactor"
     },
     {
       "commandKind": "global",
@@ -286,14 +294,6 @@
       "description": "Upgrade all local models",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "cd ./dev/tool && rushx run-local upgrade -f"
-    },
-    {
-      "commandKind": "global",
-      "name": "apply-templates",
-      "summary": "Update all package.json according to templates matched from templates folder",
-      "description": "Use to update all projects to templates",
-      "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "node templates/apply.js"
     },
     {
       "commandKind": "global",

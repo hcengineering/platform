@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 
-docker compose -p sanity kill
-docker compose -p sanity down --volumes
-docker compose -p sanity up -d --force-recreate --renew-anon-volumes
+# Check if docker-compose.override.yml exists
+if [ -f "docker-compose.override.versions.yml" ]; then
+    docker compose -f docker-compose.yaml -p sanity kill
+    docker compose -f docker-compose.yaml -p sanity down --volumes
+    docker compose -f docker-compose.yaml -f docker-compose.purepg.yaml -f docker-compose.override.versions.yml -p sanity up -d --force-recreate --renew-anon-volumes
+else
+    docker compose -f docker-compose.yaml -p sanity kill
+    docker compose -f docker-compose.yaml -p sanity down --volumes
+    docker compose -f docker-compose.yaml -f docker-compose.purepg.yaml -p sanity up -d --force-recreate --renew-anon-volumes
+fi
 docker_exit=$?
 if [ ${docker_exit} -eq 0 ]; then
     echo "Container started successfully"

@@ -29,7 +29,8 @@
     IconMoreH,
     createFocusManager,
     getCurrentLocation,
-    navigate
+    navigate,
+    deviceOptionsStore as deviceInfo
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import {
@@ -44,10 +45,10 @@
   import card from '../plugin'
   import CardAttributeEditor from './CardAttributeEditor.svelte'
   import CardIcon from './CardIcon.svelte'
-  import CardPresenter from './CardPresenter.svelte'
   import Childs from './Childs.svelte'
   import Content from './Content.svelte'
   import TagsEditor from './TagsEditor.svelte'
+  import ParentNamesPresenter from './ParentNamesPresenter.svelte'
   import { permissionsStore } from '@hcengineering/contact-resources'
 
   export let _id: Ref<Card>
@@ -60,11 +61,18 @@
   let lastId: Ref<Doc> = _id
   const query = createQuery()
   const dispatch = createEventDispatcher()
-  const client = getClient()
 
   let doc: WithLookup<Card> | undefined
-  let title = ''
+  let title: string = ''
+  let isTitleEditing = false
+  let prevId: Ref<Card> = _id
+
   let innerWidth: number
+
+  $: if (prevId !== _id) {
+    prevId = _id
+    isTitleEditing = false
+  }
 
   const notificationClient = getResource(notification.function.GetInboxNotificationsClient).then((res) => res())
 
@@ -85,7 +93,9 @@
     query.query(card.class.Card, { _id }, async (result) => {
       if (result.length > 0) {
         ;[doc] = result
-        title = doc?.title ?? ''
+        if (!isTitleEditing) {
+          title = doc.title ?? ''
+        }
       } else {
         const loc = getCurrentLocation()
         loc.path.length = 3
@@ -99,15 +109,16 @@
 
   async function saveTitle (ev: Event): Promise<void> {
     ev.preventDefault()
-
+    isTitleEditing = false
+    const client = getClient()
+    const trimmedTitle = title.trim()
+    const canSave = trimmedTitle.length > 0 && !_readonly
     if (doc === undefined || !canSave) {
       return
     }
 
-    const nameTrimmed = title.trim()
-
-    if (nameTrimmed.length > 0 && nameTrimmed !== doc.title) {
-      await client.update(doc, { title: nameTrimmed })
+    if (trimmedTitle !== doc.title) {
+      await client.update(doc, { title: trimmedTitle })
     }
   }
 
@@ -127,6 +138,8 @@
   let mixins: Array<Mixin<Doc>> = []
 
   $: mixins = doc !== undefined ? getDocMixins(doc) : []
+
+  const expandedParents: boolean = !$deviceInfo.isMobile
 </script>
 
 <FocusHandler {manager} />
@@ -153,33 +166,26 @@
     </svelte:fragment>
 
     <svelte:fragment slot="title">
-      <ParentsNavigator element={doc} />
-      <CardPresenter value={doc} noUnderline />
-    </svelte:fragment>
-
-    <svelte:fragment slot="extra">
-      <ComponentExtensions
-        extension={card.extensions.EditCardHeaderExtension}
-        props={{
-          card: doc
-        }}
-      />
-      <slot name="extra" />
-    </svelte:fragment>
+      <ParentNamesPresenter value={doc} maxWidth={'12rem'} compact={!expandedParents} />
+      <div class="title flex-row-center">
+        {#if !_readonly}
+          <EditBox
+            focusIndex={1}
+            bind:value={title}
+            disabled={_readonly || updatePermissionForbidden}
+            placeholder={card.string.Card}
+            on:blur={(evt) => saveTitle(evt)}
+            on:value={() => {
+              isTitleEditing = true
+            }}
+          />
+        {:else}
+          {doc.title}
+        {/if}
+      </div></svelte:fragment
+    >
 
     <div class="container">
-      <div class="title flex-row-center">
-        <EditBox
-          focusIndex={1}
-          bind:value={title}
-          disabled={_readonly || updatePermissionForbidden}
-          placeholder={card.string.Card}
-          on:blur={(evt) => saveTitle(evt)}
-        />
-      </div>
-
-      <TagsEditor {doc} readonly={_readonly} />
-
       <CardAttributeEditor value={doc} {mixins} readonly={_readonly} ignoreKeys={['title', 'content', 'parent']} />
 
       <Content {doc} readonly={_readonly || updatePermissionForbidden} bind:content />
@@ -202,6 +208,17 @@
       readonly={_readonly}
       attachments={doc.attachments ?? 0}
     />
+
+    <svelte:fragment slot="extra">
+      <TagsEditor {doc} id={'cardHeader-tags'} />
+      <ComponentExtensions
+        extension={card.extensions.EditCardHeaderExtension}
+        props={{
+          card: doc
+        }}
+      />
+      <slot name="extra" />
+    </svelte:fragment>
 
     <svelte:fragment slot="utils">
       {#if !_readonly}
@@ -227,8 +244,8 @@
     margin: auto;
   }
   .title {
-    font-size: 2.25rem;
-    margin-top: 1.75rem;
-    margin-bottom: 1rem;
+    font-size: 1rem;
+    flex: 1;
+    min-width: 2rem;
   }
 </style>

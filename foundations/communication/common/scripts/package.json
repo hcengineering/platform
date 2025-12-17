@@ -5,8 +5,8 @@
     "format": "echo \"No format specified\""
   },
   "devDependencies": {
-    "esbuild": "^0.24.2",
-    "@hcengineering/platform-rig": "^0.7.19",
+    "esbuild": "^0.25.10",
+    "@hcengineering/platform-rig": "workspace:^0.7.19",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",

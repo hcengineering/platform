@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { Readable } from 'stream'
 import { isWorkspaceLoginInfo } from '@hcengineering/account-client'
 import {
   AIEventRequest,
@@ -38,25 +39,52 @@ import core, {
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { Room } from '@hcengineering/love'
-import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
-import { getAccountClient } from '@hcengineering/server-client'
+import contact, { Person, Contact, getName, SocialIdentityRef } from '@hcengineering/contact'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
+import { getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import { generateToken } from '@hcengineering/server-token'
 import { htmlToMarkup, jsonToHTML, jsonToMarkup, markupToJSON } from '@hcengineering/text'
 import { encodingForModel, getEncoding } from 'js-tiktoken'
 import OpenAI from 'openai'
 
-import chunter from '@hcengineering/chunter'
-import { StorageAdapter } from '@hcengineering/server-core'
+import { ConsumerControl, PlatformQueueProducer, StorageAdapter } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { TranscriptionTask } from './types'
+import { v4 as uuid } from 'uuid'
 import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
 import config from './config'
-import { DbStorage } from './storage'
 import { tryAssignToWorkspace } from './utils/account'
 import { summarizeMessages, translateHtml } from './utils/openai'
 import { WorkspaceClient } from './workspace/workspaceClient'
-import contact, { Contact, getName, SocialIdentityRef } from '@hcengineering/contact'
 
 const CLOSE_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes
+
+/** Audio chunk metadata from HTTP headers */
+export interface AudioChunkMetadata {
+  roomName: string
+  participant: string
+  startTimeSec: number
+  endTimeSec: number
+  durationSec: number
+  hasSpeech: boolean
+  speechRatio: number
+  peakAmplitude: number
+  rmsAmplitude: number
+  sampleRate: number
+  channels: number
+  bitsPerSample: number
+}
+
+/** Session recording metadata from HTTP headers */
+export interface SessionRecordingMetadata {
+  roomName: string
+  participant: string // Identity (Ref<Person>) for user identification
+  participantName: string // Display name for files/attachments
+  startTimeSec: number
+  endTimeSec: number
+  sessionNumber: number
+  size: number
+}
 
 export class AIControl {
   private readonly workspaces: Map<WorkspaceUuid, WorkspaceClient> = new Map<WorkspaceUuid, WorkspaceClient>()
@@ -64,6 +92,7 @@ export class AIControl {
   private readonly connectingWorkspaces = new Map<WorkspaceUuid, Promise<void>>()
 
   readonly storageAdapter: StorageAdapter
+  private transcriptionProducer: PlatformQueueProducer<TranscriptionTask> | undefined
 
   private readonly openai?: OpenAI
 
@@ -82,7 +111,6 @@ export class AIControl {
   constructor (
     readonly personUuid: AccountUuid,
     readonly socialIds: SocialId[],
-    private readonly storage: DbStorage,
     private readonly ctx: MeasureContext
   ) {
     this.openai =
@@ -95,8 +123,150 @@ export class AIControl {
     this.storageAdapter = buildStorageFromConfig(storageConfigFromEnv())
   }
 
-  async getWorkspaceRecord (workspace: string): Promise<WorkspaceInfoRecord | undefined> {
-    return await this.storage.getWorkspace(workspace)
+  setTranscriptionProducer (producer: PlatformQueueProducer<TranscriptionTask>): void {
+    this.transcriptionProducer = producer
+  }
+
+  /**
+   * Process incoming audio chunk: store in storage and queue for transcription
+   */
+  async processAudioChunk (gzipData: Buffer, metadata: AudioChunkMetadata): Promise<void> {
+    // Parse workspace and roomId from room name (format: workspaceUuid_roomName_roomId)
+    const parsed = metadata.roomName.split('_')
+    const workspace = parsed[0] as WorkspaceUuid | undefined
+    const roomId = parsed[parsed.length - 1] as Ref<Room> | undefined
+
+    if (workspace === undefined) {
+      this.ctx.error('Invalid room name format', { roomName: metadata.roomName })
+      return
+    }
+
+    // Generate unique blob ID for this chunk
+    const blobId = `audio-chunk-${uuid()}`
+
+    // Get workspace client to access storage with proper wsIds
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) {
+      this.ctx.error('Failed to get workspace client for audio chunk', { workspace })
+      return
+    }
+
+    try {
+      // Store gzipped WAV in storage
+      await this.storageAdapter.put(this.ctx, wsClient.wsIds, blobId, gzipData, 'application/gzip', gzipData.length)
+
+      // Create placeholder message for pending transcription (with spinner indicator)
+      let placeholderMessageId: Ref<ChatMessage> | undefined
+      if (roomId !== undefined) {
+        try {
+          placeholderMessageId = await wsClient.createTranscriptionPlaceholder(
+            this.ctx,
+            metadata.participant as Ref<Person>,
+            roomId,
+            metadata.startTimeSec,
+            metadata.endTimeSec,
+            blobId
+          )
+          this.ctx.info('Created transcription placeholder', {
+            placeholderMessageId,
+            participant: metadata.participant,
+            startTimeSec: metadata.startTimeSec
+          })
+        } catch (err: any) {
+          this.ctx.warn('Failed to create transcription placeholder', { error: err.message })
+          // Continue without placeholder - transcription will still work
+        }
+      }
+
+      // Create transcription task
+      const task: TranscriptionTask = {
+        blobId,
+        roomName: metadata.roomName,
+        participant: metadata.participant,
+        startTimeSec: metadata.startTimeSec,
+        endTimeSec: metadata.endTimeSec,
+        durationSec: metadata.durationSec,
+        hasSpeech: metadata.hasSpeech,
+        speechRatio: metadata.speechRatio,
+        peakAmplitude: metadata.peakAmplitude,
+        rmsAmplitude: metadata.rmsAmplitude,
+        sampleRate: metadata.sampleRate,
+        channels: metadata.channels,
+        bitsPerSample: metadata.bitsPerSample,
+        placeholderMessageId: placeholderMessageId as string | undefined
+      }
+
+      // Queue for transcription with partition key based on workspace+participant
+      // This ensures fair processing when multiple users are speaking simultaneously
+      if (this.transcriptionProducer !== undefined) {
+        const partitionKey = `${workspace}_${metadata.participant}`
+        await this.transcriptionProducer.send(this.ctx, workspace, [task], partitionKey)
+        this.ctx.info('Audio chunk queued for transcription', {
+          blobId,
+          workspace,
+          participant: metadata.participant,
+          durationSec: metadata.durationSec,
+          hasSpeech: metadata.hasSpeech,
+          placeholderMessageId
+        })
+      } else {
+        this.ctx.warn('Transcription producer not set, audio chunk stored but not queued', { blobId })
+      }
+    } catch (err: any) {
+      this.ctx.error('Failed to process audio chunk', { error: err.message, workspace })
+    }
+  }
+
+  /**
+   * Process full session recording: stream directly to storage and attach to meeting minutes
+   */
+  async processSessionRecording (stream: Readable, metadata: SessionRecordingMetadata): Promise<void> {
+    // Parse workspace and roomId from room name (format: workspaceUuid_roomName_roomId)
+    const parsed = metadata.roomName.split('_')
+    const workspace = parsed[0] as WorkspaceUuid | undefined
+    const roomId = parsed[parsed.length - 1] as Ref<Room> | undefined
+
+    if (workspace === undefined || roomId === undefined) {
+      this.ctx.error('Invalid room name format for session', { roomName: metadata.roomName })
+      return
+    }
+
+    // Get workspace client
+    const wsClient = await this.getWorkspaceClient(workspace)
+    if (wsClient === undefined) {
+      this.ctx.error('Failed to get workspace client for session recording', { workspace })
+      return
+    }
+
+    try {
+      // Generate unique blob ID for this session
+      const blobId = `session-${metadata.participant}-${uuid()}.ogg`
+
+      // Stream OGG Opus directly to storage
+      await this.storageAdapter.put(this.ctx, wsClient.wsIds, blobId, stream, 'audio/ogg', metadata.size)
+
+      this.ctx.info('Session recording stored', {
+        blobId,
+        workspace,
+        participant: metadata.participant,
+        startTimeSec: metadata.startTimeSec,
+        endTimeSec: metadata.endTimeSec,
+        size: metadata.size
+      })
+
+      // Add attachment to meeting minutes
+      await wsClient.addSessionAttachment(
+        roomId,
+        blobId,
+        metadata.participantName,
+        metadata.startTimeSec,
+        metadata.endTimeSec,
+        metadata.size,
+        metadata.sessionNumber
+      )
+    } catch (err: any) {
+      this.ctx.error('Failed to process session recording', { error: err.message, workspace })
+    }
   }
 
   async closeWorkspaceClient (workspace: WorkspaceUuid): Promise<void> {
@@ -128,10 +298,7 @@ export class AIControl {
     this.closeWorkspaceTimeouts.set(workspace, newTimeoutId)
   }
 
-  async createWorkspaceClient (
-    workspace: WorkspaceUuid,
-    info: WorkspaceInfoRecord
-  ): Promise<WorkspaceClient | undefined> {
+  async createWorkspaceClient (workspace: WorkspaceUuid): Promise<WorkspaceClient | undefined> {
     const isAssigned = await tryAssignToWorkspace(workspace, this.ctx)
 
     if (!isAssigned) {
@@ -140,13 +307,16 @@ export class AIControl {
     }
 
     const token = generateToken(this.personUuid, workspace, { service: 'aibot' })
-    const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
+    const accountClient = getAccountClient(token)
+    const wsLoginInfo = await accountClient.getLoginInfoByToken()
+
+    // Since AIBOT is internal service, always use internal transactor endpoint.
+    const endpoint = await getTransactorEndpoint(token, 'internal')
 
     if (!isWorkspaceLoginInfo(wsLoginInfo)) {
       this.ctx.error('Invalid workspace login info', { workspace, wsLoginInfo })
       return
     }
-
     const wsIds: WorkspaceIds = {
       uuid: wsLoginInfo.workspace,
       url: wsLoginInfo.workspaceUrl,
@@ -157,16 +327,14 @@ export class AIControl {
 
     return new WorkspaceClient(
       this.storageAdapter,
-      this.storage,
-      wsLoginInfo.endpoint,
+      endpoint,
       token,
       wsIds,
       this.personUuid,
       this.socialIds,
       this.ctx.newChild('create-workspace', {}, { span: false }),
       this.openai,
-      this.openaiEncoding,
-      info
+      this.openaiEncoding
     )
   }
 
@@ -178,8 +346,7 @@ export class AIControl {
     const initPromise = (async () => {
       try {
         if (!this.workspaces.has(workspace)) {
-          const record = (await this.getWorkspaceRecord(workspace)) ?? { workspace }
-          const client = await this.createWorkspaceClient(workspace, record)
+          const client = await this.createWorkspaceClient(workspace)
           if (client === undefined) {
             return
           }
@@ -192,6 +359,8 @@ export class AIControl {
         }
 
         this.updateClearInterval(workspace)
+      } catch (err: any) {
+        this.ctx.error('Unknown error', { err })
       } finally {
         this.connectingWorkspaces.delete(workspace)
       }
@@ -336,13 +505,22 @@ export class AIControl {
     }
   }
 
-  async processEvent (workspace: WorkspaceUuid, events: AIEventRequest[]): Promise<void> {
+  async processEvent (workspace: WorkspaceUuid, events: AIEventRequest[], control?: ConsumerControl): Promise<void> {
     if (this.openai === undefined) return
 
-    for (const event of events) {
-      const wsClient = await this.getWorkspaceClient(workspace)
-      if (wsClient === undefined) continue
-      await wsClient.processMessageEvent(event)
+    const i1 = setInterval(() => {
+      void control?.heartbeat()
+    }, 1000)
+    try {
+      for (const event of events) {
+        await control?.heartbeat()
+        const wsClient = await this.getWorkspaceClient(workspace)
+        if (wsClient === undefined) continue
+        this.ctx.info('processing event', event)
+        await wsClient.processMessageEvent(event, control)
+      }
+    } finally {
+      clearInterval(i1)
     }
   }
 
@@ -389,6 +567,6 @@ export class AIControl {
     const wsClient = await this.getWorkspaceClient(workspace)
     if (wsClient === undefined) return
 
-    await wsClient.processLoveTranscript(request.transcript, request.participant, roomId)
+    await wsClient.processLoveTranscript(this.ctx, request.transcript, request.participant, roomId)
   }
 }

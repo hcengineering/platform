@@ -18,6 +18,7 @@ package mediaconvert
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -62,6 +63,11 @@ var _ handler.LengthDeferrerDataStore = (*StreamCoordinator)(nil)
 func NewStreamCoordinator(ctx context.Context, c *config.Config) *StreamCoordinator {
 	outputDir := filepath.Join(c.OutputDir, recordingDir)
 
+	err := os.MkdirAll(outputDir, os.ModePerm)
+	if err != nil {
+		log.FromContext(ctx).Error("Failed to create output directory", zap.Error(err))
+		return nil
+	}
 	return &StreamCoordinator{
 		conf:      c,
 		outputDir: outputDir,
@@ -112,6 +118,7 @@ func (s *StreamCoordinator) NewUpload(ctx context.Context, info handler.FileInfo
 
 	if s.conf.EndpointURL != nil {
 		s.logger.Sugar().Debugf("initializing uploader for %v", info)
+		s.logger.Sugar().Debugf("initializing uploader for %v", s.conf.EndpointURL)
 
 		// setup content uploader for transcoded outputs
 		var opts = s.uploadOptions

@@ -14,7 +14,6 @@
 //
 
 import activity from '@hcengineering/activity'
-import board from '@hcengineering/board'
 import calendarPlugin, { type Visibility } from '@hcengineering/calendar'
 import contactPlugin, { type Employee } from '@hcengineering/contact'
 import {
@@ -176,10 +175,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(recruit.class.Applicant, core.class.Class, time.mixin.ItemPresenter, {
     presenter: time.component.ApplicantPresenter
-  })
-
-  builder.mixin(board.class.Card, core.class.Class, time.mixin.ItemPresenter, {
-    presenter: time.component.CardPresenter
   })
 
   builder.mixin(time.class.WorkSlot, core.class.Class, view.mixin.ObjectEditor, {

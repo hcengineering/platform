@@ -13,11 +13,9 @@
 // limitations under the License.
 //
 
-import { ObjectId } from 'mongodb'
 import { Class, Doc, Ref, PersonUuid } from '@hcengineering/core'
 
 export interface HistoryRecord {
-  _id?: ObjectId
   workspace: string
   message: string
   objectId: Ref<Doc>
@@ -26,4 +24,38 @@ export interface HistoryRecord {
   user: PersonUuid
   tokens: number
   timestamp: number
+}
+
+/**
+ * Transcription task stored in queue
+ */
+export interface TranscriptionTask {
+  /** Storage object name for gzipped WAV file */
+  blobId: string
+  /** Room name from LiveKit (format: workspaceUuid_roomName_roomId) */
+  roomName: string
+  /** Participant identity (Ref<Person>) */
+  participant: string
+  /** Start time in seconds from meeting start */
+  startTimeSec: number
+  /** End time in seconds from meeting start */
+  endTimeSec: number
+  /** Duration in seconds */
+  durationSec: number
+  /** Whether chunk contains speech */
+  hasSpeech: boolean
+  /** Ratio of speech to total duration (0-1) */
+  speechRatio: number
+  /** Peak amplitude (0-1 normalized) */
+  peakAmplitude: number
+  /** RMS amplitude (0-1 normalized) */
+  rmsAmplitude: number
+  /** Sample rate */
+  sampleRate: number
+  /** Number of channels */
+  channels: number
+  /** Bits per sample */
+  bitsPerSample: number
+  /** Placeholder message ID for pending transcription (created when speech starts) */
+  placeholderMessageId?: string
 }

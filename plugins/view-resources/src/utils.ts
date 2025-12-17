@@ -1069,6 +1069,76 @@ export async function getCategories (
 }
 
 /**
+ * Check if an attribute is a reference type
+ * @public
+ */
+export function isRefAttribute (attr: AnyAttribute): boolean {
+  return attr.type._class === core.class.RefTo
+}
+
+/**
+ * Build lookup map for category references
+ * Pre-fetches all documents referenced by groupBy keys to avoid individual queries in presenters
+ * @public
+ */
+export async function buildCategoryReferenceLookups (
+  client: TxOperations,
+  _class: Ref<Class<Doc>>,
+  groupByKeys: string[],
+  docs: Doc[]
+): Promise<Map<string, Map<Ref<Doc>, Doc>>> {
+  const hierarchy = client.getHierarchy()
+  const refsMap = new Map<string, Map<Ref<Doc>, Doc>>()
+
+  for (const key of groupByKeys) {
+    try {
+      const attr = hierarchy.findAttribute(_class, key)
+      if (attr === undefined || !isRefAttribute(attr)) continue
+
+      // Collect all unique reference IDs from this key
+      const refIds = new Set<Ref<Doc>>()
+      for (const doc of docs) {
+        const refId = getObjectValue(key, doc)
+        if (refId != null) {
+          refIds.add(refId as Ref<Doc>)
+        }
+      }
+
+      if (refIds.size === 0) continue
+
+      // Fetch all referenced documents in one query
+      const refClass = (attr.type as RefTo<Doc>).to
+      const refDocs = await client.findAll(refClass, {
+        _id: { $in: Array.from(refIds) }
+      })
+
+      // Store in map: key -> (docId -> doc)
+      const refMap = new Map(refDocs.map((d) => [d._id, d]))
+      refsMap.set(key, refMap)
+    } catch (err) {
+      console.error(`Failed to build reference lookup for key ${key}:`, err)
+    }
+  }
+
+  return refsMap
+}
+
+/**
+ * Get referenced document from pre-built lookup map
+ * @public
+ */
+export function getCategoryReference<T extends Doc> (
+  refsMap: Map<string, Map<Ref<Doc>, Doc>>,
+  key: string,
+  refId: Ref<T> | undefined
+): T | undefined {
+  if (refId === undefined) return undefined
+  const keyMap = refsMap.get(key)
+  if (keyMap === undefined) return undefined
+  return keyMap.get(refId) as T | undefined
+}
+
+/**
  * @public
  */
 export function getCategorySpaces (categories: CategoryType[]): Array<Ref<Space>> {

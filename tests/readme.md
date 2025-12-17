@@ -2,12 +2,26 @@
 
 ## Prepare environment with docker to test final product.
 
+Two variants, first use a local build and use an already build version.
+
+### A local build
+
 ```bash
 rush update
 rush build
 rush bundle
 rush docker:build
 ./prepare.sh
+```
+
+### An already build version
+
+```bash
+./create-version-override.sh v0.7.309 # Will create a version override file.
+./prepare-pg.sh # To prepare all stuff
+./reset-version.sh # To go back to local build
+
+# open http://localhost:8083
 ```
 
 ### Restore to pure DB

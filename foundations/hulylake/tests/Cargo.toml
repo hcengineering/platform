@@ -6,10 +6,7 @@ edition = "2024"
 [dependencies]
 tanu = "0.9.0"
 tokio = { version = "1.47.1", features = ["full"] }
-uuid = { version = "1.18.0" }
-hulyrs = { git = "https://github.com/hcengineering/hulyrs.git", features = [
-    "actix",
-] }
+uuid = { version = "1.18", features = ["v4", "serde"] }
 secrecy = "0.10.3"
 reqwest = { version = "0.12.23", default-features = false, features = [
     "json",
@@ -20,3 +17,9 @@ rand = "0.9.2"
 hex = "0.4.3"
 serde_json = "1.0.143"
 futures = "0.3.31"
+jsonwebtoken = "9.3.1"
+serde = "1.0.219"
+derive_builder = "0.20.2"
+serde_with = "3.12.0"
+thiserror = "2.0.16"
+actix-web = "4.11.0"

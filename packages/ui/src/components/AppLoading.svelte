@@ -14,11 +14,11 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import SquareSpinner from './icons/SquareSpinner.svelte'
+  import Loading from './Loading.svelte'
 
   export let shrink: boolean = false
   export let label: string = ''
-  export let size: 'small' | 'medium' | 'large' = 'small'
+  export let size: 'small' | 'medium' | 'large' = 'medium'
 
   const dispatch = createEventDispatcher()
   let timer: any
@@ -34,7 +34,7 @@
 
 <div class="spinner-container" class:fullSize={!shrink}>
   <div data-label={label} class="flex-row-center flex-gap-2" class:labeled={label !== ''}>
-    <SquareSpinner {size} />
+    <Loading {size} />
     <slot />
   </div>
   <slot name="actions" />

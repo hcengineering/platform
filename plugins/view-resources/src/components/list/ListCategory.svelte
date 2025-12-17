@@ -48,6 +48,7 @@
   import ListItem from './ListItem.svelte'
 
   export let category: PrimitiveType | AggregateValue
+  export let categoryRefsMap = new Map<string, Map<Ref<Doc>, Doc>>()
   export let headerComponent: AttributeModel | undefined
   export let singleCat: boolean
   export let oneCat: boolean
@@ -101,6 +102,7 @@
   const defaultLimit = 20
 
   let loading = false
+
   $: initialLimit = !lastLevel ? undefined : singleCat ? singleCategoryLimit : defaultLimit
   $: limit = initialLimit
 
@@ -134,6 +136,7 @@
       : resultQuery
 
   $: if (lastLevel) {
+    // Do not set loading here on expand — loading will be set when user explicitly requests more items (Show More).
     void limiter.add(async () => {
       try {
         loading = docsQuery.query(
@@ -455,6 +458,7 @@
 >
   {#if !disableHeader}
     <ListHeader
+      {categoryRefsMap}
       {groupByKey}
       {category}
       {space}
@@ -566,7 +570,7 @@
                 }}
               />
             {/each}
-            {#if HLimited < itemProj.length}
+            {#if HLimited < itemProj.length || loading}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <div
                 class="listGrid antiList__row row gap-2 flex-grow hoverable showMore last"
@@ -575,7 +579,9 @@
                   $focusStore.focus = undefined
                 }}
                 on:click={() => {
-                  if (limit !== undefined) limit += 50
+                  if (limit !== undefined) {
+                    limit += 50
+                  }
                 }}
               >
                 <span class="caption-color"><Label label={ui.string.ShowMore} /></span>

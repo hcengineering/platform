@@ -1,13 +1,15 @@
 services:
   stream:
-    image: 'hardcoreeng/stream'
-    pull_policy: always
+    image: 'haiodo/stream'
+    pull_policy: never
     extra_hosts:
       - 'huly.local:host-gateway'
     environment:
       - STREAM_ENDPOINT_URL=datalake://huly.local:4031
       - STREAM_INSECURE=true
       - STREAM_SERVER_SECRET=secret
+      - STREAM_REGION=
+      - STREAM_QUEUE_CONFIG=${QUEUE_CONFIG}
     ports:
       - 1081:1080
     restart: unless-stopped
@@ -55,6 +57,7 @@ services:
       - --mode dev-container
       - --smp 1
       - --default-log-level=info
+      - --memory 256M
     ports:
       - 18083:18083
       - 18084:18084
@@ -103,7 +106,7 @@ services:
       interval: 5s
       retries: 10
   datalake:
-    image: hardcoreeng/datalake
+    image: haiodo/datalake
     depends_on:
       minio:
         condition: service_healthy
@@ -137,16 +140,19 @@ services:
       - ELASTICSEARCH_PORT_NUMBER=9200
       - BITNAMI_DEBUG=true
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms1024m -Xmx1024m
+      - ES_JAVA_OPTS=-Xms256m -Xmx450m
     healthcheck:
       interval: 20s
       retries: 10
       test: curl -s http://huly.local:9200/_cluster/health | grep -vq '"status":"red"'
   account:
-    image: hardcoreeng/account
+    image: haiodo/account
     pull_policy: never
     extra_hosts:
       - 'huly.local:host-gateway'
+    depends_on:
+      cockroach:
+        condition: service_started
     links:
       - mongodb
       - minio
@@ -175,7 +181,7 @@ services:
       # - DISABLE_SIGNUP=true
     restart: unless-stopped
   stats:
-    image: hardcoreeng/stats
+    image: haiodo/stats
     extra_hosts:
       - 'huly.local:host-gateway'
     ports:
@@ -185,7 +191,7 @@ services:
       - SERVER_SECRET=secret
     restart: unless-stopped
   workspace:
-    image: hardcoreeng/workspace
+    image: haiodo/workspace
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -210,7 +216,7 @@ services:
       # - INIT_WORKSPACE=huly
     restart: unless-stopped
   workspace_europe:
-    image: hardcoreeng/workspace
+    image: haiodo/workspace
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -235,7 +241,7 @@ services:
       # - INIT_WORKSPACE=huly
     restart: unless-stopped
   collaborator:
-    image: hardcoreeng/collaborator
+    image: haiodo/collaborator
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -253,7 +259,7 @@ services:
       - STATS_URL=http://huly.local:4901
     restart: unless-stopped
   front:
-    image: hardcoreeng/front
+    image: haiodo/front
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -290,7 +296,7 @@ services:
       # - DISABLE_SIGNUP=true
     restart: unless-stopped
   transactor:
-    image: hardcoreeng/transactor
+    image: haiodo/transactor
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -322,7 +328,7 @@ services:
       - RATE_LIMIT_MAX=25000
       - RATE_LIMIT_WINDOW=1000
   transactor-europe:
-    image: hardcoreeng/transactor
+    image: haiodo/transactor
     extra_hosts:
       - 'huly.local:host-gateway'
     pull_policy: never
@@ -356,7 +362,7 @@ services:
       - RATE_LIMIT_WINDOW=1000
     restart: unless-stopped
   rekoni:
-    image: hardcoreeng/rekoni-service
+    image: haiodo/rekoni-service
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
@@ -365,7 +371,7 @@ services:
     environment:
       - STATS_URL=http://huly.local:4901
   fulltext:
-    image: hardcoreeng/fulltext
+    image: haiodo/fulltext
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
@@ -387,7 +393,7 @@ services:
       - REKONI_URL=http://huly.local:4007
       - ACCOUNTS_URL=http://huly.local:3003
   fulltext-europe:
-    image: hardcoreeng/fulltext
+    image: haiodo/fulltext
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -410,17 +416,16 @@ services:
       - ACCOUNTS_URL=http://huly.local:3003
     restart: unless-stopped
   aiBot:
-    image: hardcoreeng/ai-bot
+    image: haiodo/ai-bot
     ports:
-      - 4011:4010
+      - 4011:4011
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
     environment:
       - SERVER_SECRET=secret
-      - MONGO_URL=${MONGO_URL}
       - QUEUE_CONFIG=${QUEUE_CONFIG}
-      - ACCOUNTS_URL=http://huly.local:3000
+      - ACCOUNTS_URL=http://huly.local:3003
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - FIRST_NAME=Jolie
       - LAST_NAME=AI
@@ -428,3 +433,7 @@ services:
       - AVATAR_PATH=./avatar.png
       - AVATAR_CONTENT_TYPE=.png
       - STATS_URL=http://huly.local:4901
+      - OPENAI_API_KEY=token
+      - OPENAI_SUMMARY_MODEL=openai/gpt-oss-20b
+      - OPENAI_TRANSLATE_MODEL=openai/gpt-oss-20b
+      - OPENAI_BASE_URL=http://huly.local:1234/v1/

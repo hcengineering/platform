@@ -45,10 +45,10 @@
     "tar-stream": "^3.1.7",
     "@hcengineering/server-tool": "workspace:^0.7.0",
     "@hcengineering/server-core": "workspace:^0.7.18",
-    "@hcengineering/server-storage": "workspace:^0.7.16",
+    "@hcengineering/server-storage": "workspace:^0.7.17",
     "@hcengineering/server-backup": "workspace:^0.7.0",
     "@hcengineering/minio": "workspace:^0.7.17",
     "@hcengineering/server-token": "workspace:^0.7.17",
-    "@hcengineering/server-client": "workspace:^0.7.16"
+    "@hcengineering/server-client": "workspace:^0.7.17"
   }
 }

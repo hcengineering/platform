@@ -121,6 +121,7 @@ import {
   isAccountPasswordLocked,
   recordFailedLoginAttempt,
   resetFailedLoginAttempts,
+  isAllowReadOnlyGuests,
   updatePasswordAgingRule,
   checkPasswordAging
 } from './utils'
@@ -2788,6 +2789,7 @@ export type AccountMethods =
   | 'getPerson'
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
+  | 'isAllowReadOnlyGuests'
   | 'updateAllowReadOnlyGuests'
   | 'updateAllowGuestSignUp'
   | 'findPersonBySocialId'
@@ -2847,6 +2849,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     updateWorkspaceName: wrap(updateWorkspaceName),
     deleteWorkspace: wrap(deleteWorkspace),
     updateWorkspaceRole: wrap(updateWorkspaceRole),
+    isAllowReadOnlyGuests: wrap(isAllowReadOnlyGuests),
     updateAllowReadOnlyGuests: wrap(updateAllowReadOnlyGuests),
     updateAllowGuestSignUp: wrap(updateAllowGuestSignUp),
     updatePasswordAgingRule: wrap(updatePasswordAgingRule),

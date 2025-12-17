@@ -37,7 +37,7 @@
     targetDate: Date.now() + 14 * 24 * 60 * 60 * 1000
   }
 
-  async function onSave () {
+  async function onSave (): Promise<void> {
     await client.createDoc(tracker.class.Milestone, space, object)
   }
 </script>
@@ -62,18 +62,24 @@
       defaultIcon={tracker.icon.Home}
     />
   </svelte:fragment>
-  <EditBox
-    bind:value={object.label}
-    placeholder={tracker.string.MilestoneNamePlaceholder}
-    kind={'large-style'}
-    autoFocus
-  />
-  <StyledTextArea
-    bind:content={object.description}
-    placeholder={tracker.string.ComponentDescriptionPlaceholder}
-    kind={'emphasized'}
-    showButtons={false}
-  />
+  <div id="milestone-name" class="m-3 clear-mins">
+    <EditBox
+      focusIndex={1}
+      bind:value={object.label}
+      placeholder={tracker.string.MilestoneNamePlaceholder}
+      kind={'large-style'}
+      autoFocus
+      fullSize
+    />
+  </div>
+  <div id="milestone-description">
+    <StyledTextArea
+      bind:content={object.description}
+      placeholder={tracker.string.ComponentDescriptionPlaceholder}
+      kind={'indented'}
+      showButtons={false}
+    />
+  </div>
   <svelte:fragment slot="pool">
     <MilestoneStatusEditor bind:value={object.status} {object} kind="regular" />
     <DatePresenter

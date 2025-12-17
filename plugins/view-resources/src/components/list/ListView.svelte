@@ -48,10 +48,8 @@
 
   const listProvider = new ListSelectionProvider(
     (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection, noScroll?: boolean) => {
-      if (dir === 'vertical') {
-        // Select next
-        list?.select(offset, of, noScroll)
-      }
+      // Pass direction to list.select, defaulting to 'vertical' if undefined
+      list?.select(offset, of, dir ?? 'vertical', noScroll)
     }
   )
   const selection = listProvider.selection

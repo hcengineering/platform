@@ -29,8 +29,8 @@ import contact, {
   Person
 } from '@hcengineering/contact'
 import core, {
-  type Account,
   AccountRole,
+  AccountUuid,
   Blob,
   Class,
   Client,
@@ -38,37 +38,45 @@ import core, {
   MeasureContext,
   PersonId,
   PersonUuid,
+  pickPrimarySocialId,
   RateLimiter,
   Ref,
   SocialId,
+  SortingOrder,
   Space,
+  Timestamp,
+  toIdMap,
   Tx,
   TxCUD,
   TxOperations,
-  type WorkspaceUuid,
-  type WorkspaceIds,
-  AccountUuid,
-  pickPrimarySocialId
+  withContext,
+  type Account,
+  type WorkspaceIds
 } from '@hcengineering/core'
-import { Room } from '@hcengineering/love'
-import { WorkspaceInfoRecord } from '@hcengineering/server-ai-bot'
+import love, { type MeetingMinutes, MeetingStatus, Room } from '@hcengineering/love'
 import fs from 'fs'
-import { WithId } from 'mongodb'
-import OpenAI from 'openai'
 import { Tiktoken } from 'js-tiktoken'
+import OpenAI from 'openai'
 
-import { StorageAdapter } from '@hcengineering/server-core'
+import { countTokens } from '@hcengineering/openai'
+import { getAccountClient } from '@hcengineering/server-client'
+import { ConsumerControl, StorageAdapter } from '@hcengineering/server-core'
+import { jsonToMarkup, markupToText } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
+import tracker, { Issue } from '@hcengineering/tracker'
 import config from '../config'
 import { HistoryRecord } from '../types'
+import { getGlobalPerson } from '../utils/account'
 import { createChatCompletionWithTools, requestSummary } from '../utils/openai'
 import { connectPlatform } from '../utils/platform'
 import { LoveController } from './love'
-import { DbStorage } from '../storage'
-import { jsonToMarkup, markupToText } from '@hcengineering/text'
-import { markdownToMarkup } from '@hcengineering/text-markdown'
-import { countTokens } from '@hcengineering/openai'
-import { getAccountClient } from '@hcengineering/server-client'
-import { getGlobalPerson } from '../utils/account'
+
+interface PersonHistoryRecord {
+  assistantMemory: string // Info about assistant: name, behavior style, how to address user
+  userMemory: string // Info about user: preferences, context, personal info
+  sharedContext: string // Shared context: language, timezone, non-personal preferences
+  history: HistoryRecord[]
+}
 
 export class WorkspaceClient {
   client: Client | undefined
@@ -80,15 +88,11 @@ export class WorkspaceClient {
   aiPerson: Person | undefined
   personUuidBySocialId = new Map<PersonId, PersonUuid>()
 
-  historyMap = new Map<Ref<Doc>, WithId<HistoryRecord>[]>()
-
-  summarizing = new Set<Ref<Doc>>()
-
   love: LoveController | undefined
+  historyMap = new Map<PersonUuid, PersonHistoryRecord>()
 
   constructor (
     readonly storage: StorageAdapter,
-    readonly dbStorage: DbStorage,
     readonly transactorUrl: string,
     readonly token: string,
     readonly wsIds: WorkspaceIds,
@@ -96,8 +100,7 @@ export class WorkspaceClient {
     readonly socialIds: SocialId[],
     readonly ctx: MeasureContext,
     readonly openai: OpenAI | undefined,
-    readonly openaiEncoding: Tiktoken,
-    readonly info: WorkspaceInfoRecord | undefined
+    readonly openaiEncoding: Tiktoken
   ) {
     this.opClient = this.initClient()
     void this.opClient.then((opClient) => {
@@ -149,15 +152,13 @@ export class WorkspaceClient {
       const stat = fs.statSync(config.AvatarPath)
       const lastModified = stat.mtime.getTime()
 
-      const isAlreadyUploaded =
-        this.info !== undefined &&
-        this.info.avatarPath === config.AvatarPath &&
-        this.info.avatarLastModified === lastModified
+      const uploadInfo = await this.storage.stat(this.ctx, this.wsIds, config.AvatarName)
+
+      const isAlreadyUploaded = uploadInfo !== undefined && uploadInfo.modifiedOn !== lastModified
       if (!isAlreadyUploaded) {
         const data = fs.readFileSync(config.AvatarPath)
 
         await this.storage.put(this.ctx, this.wsIds, config.AvatarName, data, config.AvatarContentType, data.length)
-        await this.updateAvatarInfo(this.wsIds.uuid, config.AvatarPath, lastModified)
         this.ctx.info('Avatar file uploaded successfully', { workspace: this.wsIds, path: config.AvatarPath })
       }
     } catch (e) {
@@ -165,16 +166,6 @@ export class WorkspaceClient {
     }
 
     await this.checkPersonData(client)
-  }
-
-  private async updateAvatarInfo (workspace: WorkspaceUuid, path: string, lastModified: number): Promise<void> {
-    const record = await this.dbStorage.getWorkspace(workspace)
-
-    if (record === undefined) {
-      await this.dbStorage.addWorkspace({ workspace, avatarPath: path, avatarLastModified: lastModified })
-    } else {
-      await this.dbStorage.updateWorkspace(workspace, { $set: { avatarPath: path, avatarLastModified: lastModified } })
-    }
   }
 
   private async checkPersonData (client: TxOperations): Promise<void> {
@@ -209,12 +200,16 @@ export class WorkspaceClient {
   }
 
   // TODO: In feature we also should use embeddings
-  private toOpenAiHistory (history: HistoryRecord[], promptTokens: number): any[] {
+  private toOpenAiHistory (history: PersonHistoryRecord, promptTokens: number): OpenAI.ChatCompletionMessageParam[] {
     const result: OpenAI.ChatCompletionMessageParam[] = []
     let totalTokens = promptTokens
+    const maxRecentMessages = 20 // Keep last 20 messages in full detail
 
-    for (let i = history.length - 1; i >= 0; i--) {
-      const record = history[i]
+    // Only use recent messages for context
+    const recentMessages = history.history.slice(-maxRecentMessages)
+
+    for (let i = recentMessages.length - 1; i >= 0; i--) {
+      const record = recentMessages[i]
       const tokens = record.tokens
 
       if (totalTokens + tokens > config.MaxContentTokens) break
@@ -226,61 +221,123 @@ export class WorkspaceClient {
     return result
   }
 
-  private async getHistory (objectId: Ref<Doc>): Promise<WithId<HistoryRecord>[]> {
-    if (this.historyMap.has(objectId)) {
-      return this.historyMap.get(objectId) ?? []
+  private async getHistory (personUuid: PersonUuid): Promise<PersonHistoryRecord> {
+    if (this.historyMap.has(personUuid)) {
+      return (
+        this.historyMap.get(personUuid) ?? {
+          assistantMemory: '',
+          userMemory: '',
+          sharedContext: '',
+          history: []
+        }
+      )
     }
 
-    const historyRecords = await this.dbStorage.getHistoryRecords(this.wsIds.uuid, objectId)
-    this.historyMap.set(objectId, historyRecords)
-    return historyRecords
+    // Try to read a person summary and history.
+    try {
+      const personHistory: PersonHistoryRecord = JSON.parse(
+        Buffer.concat(await this.storage.read(this.ctx, this.wsIds, 'ai-bot-phr-' + personUuid)).toString()
+      )
+
+      // Migration: add sharedContext if missing
+      if (personHistory.sharedContext === undefined) {
+        personHistory.sharedContext = ''
+      }
+
+      this.historyMap.set(personUuid, personHistory)
+      return personHistory
+    } catch (err: any) {
+      // Ignore, no history available
+    }
+
+    // We need to load person info
+
+    const personData = await this.client?.findOne(contact.mixin.Employee, { personUuid: personUuid as AccountUuid })
+
+    const v = {
+      assistantMemory: '',
+      userMemory: personData !== undefined ? `User name: ${personData.name}` : '',
+      sharedContext: '',
+      history: []
+    }
+    this.historyMap.set(personUuid, v)
+    return v
   }
 
-  private async summarizeHistory (
-    toSummarize: WithId<HistoryRecord>[],
-    user: PersonUuid,
-    objectId: Ref<Doc>,
-    objectClass: Ref<Class<Doc>>
-  ): Promise<void> {
-    if (this.openai === undefined) return
-    if (this.summarizing.has(objectId)) {
-      return
+  async updateAssistantMemory (user: PersonUuid | undefined, args: Record<string, any>): Promise<void> {
+    if (user === undefined) return
+
+    const currentHistory = await this.getHistory(user)
+    currentHistory.assistantMemory = args.memory ?? currentHistory.assistantMemory
+
+    await this.saveHistory(user, currentHistory)
+  }
+
+  async updateUserMemory (user: PersonUuid | undefined, args: Record<string, any>): Promise<void> {
+    if (user === undefined) return
+
+    const currentHistory = await this.getHistory(user)
+    currentHistory.userMemory = args.memory ?? currentHistory.userMemory
+
+    await this.saveHistory(user, currentHistory)
+  }
+
+  async updateSharedContext (user: PersonUuid | undefined, args: Record<string, any>): Promise<void> {
+    if (user === undefined) return
+
+    const currentHistory = await this.getHistory(user)
+    currentHistory.sharedContext = args.context ?? currentHistory.sharedContext
+
+    await this.saveHistory(user, currentHistory)
+  }
+
+  async getHistoryForUser (user: PersonUuid): Promise<PersonHistoryRecord> {
+    return await this.getHistory(user)
+  }
+
+  async clearHistory (user: PersonUuid | undefined): Promise<void> {
+    if (user === undefined) return
+
+    const currentHistory = await this.getHistory(user)
+    currentHistory.history = []
+
+    await this.saveHistory(user, currentHistory)
+  }
+
+  async getHistorySummary (user: PersonUuid | undefined): Promise<string> {
+    if (user === undefined) return 'No user context available'
+    if (this.openai === undefined) return 'Summary service not available'
+
+    const currentHistory = await this.getHistory(user)
+
+    if (currentHistory.history.length === 0) {
+      return 'No conversation history available yet.'
     }
 
-    this.summarizing.add(objectId)
-    const { summary, tokens } = await requestSummary(
+    const { summary } = await requestSummary(
       this.ctx,
       this.wsIds.uuid,
       this.openai,
       this.openaiEncoding,
-      toSummarize
+      currentHistory.assistantMemory + '\n' + currentHistory.userMemory,
+      currentHistory.history
     )
 
-    if (summary === undefined) {
-      this.ctx.error('Failed to summarize history', { objectId, objectClass, user })
-      this.summarizing.delete(objectId)
-      return
-    }
+    return summary ?? 'Failed to generate summary'
+  }
 
-    const summaryRecord: HistoryRecord = {
-      message: summary,
-      role: 'assistant',
-      timestamp: toSummarize[0].timestamp,
-      user,
-      objectId,
-      objectClass,
-      tokens,
-      workspace: this.wsIds.uuid
-    }
-
-    await this.dbStorage.addHistoryRecord(summaryRecord)
-    await this.dbStorage.removeHistoryRecords(toSummarize.map(({ _id }) => _id))
-    const newHistory = await this.dbStorage.getHistoryRecords(this.wsIds.uuid, objectId)
-    this.historyMap.set(objectId, newHistory)
-    this.summarizing.delete(objectId)
+  async saveHistory (personUuid: PersonUuid, history: PersonHistoryRecord): Promise<void> {
+    await this.storage.put(
+      this.ctx,
+      this.wsIds,
+      'ai-bot-phr-' + personUuid,
+      JSON.stringify(history),
+      'application/json'
+    )
   }
 
   private async pushHistory (
+    personUuid: PersonUuid,
     message: string,
     role: 'user' | 'assistant',
     tokens: number,
@@ -288,7 +345,7 @@ export class WorkspaceClient {
     objectId: Ref<Doc>,
     objectClass: Ref<Class<Doc>>
   ): Promise<void> {
-    const currentHistory = (await this.getHistory(objectId)) ?? []
+    const currentHistory = (await this.getHistory(personUuid)) ?? []
     const newRecord: HistoryRecord = {
       workspace: this.wsIds.uuid,
       message,
@@ -299,22 +356,23 @@ export class WorkspaceClient {
       tokens,
       timestamp: Date.now()
     }
-    const _id = await this.dbStorage.addHistoryRecord(newRecord)
-    currentHistory.push({ ...newRecord, _id })
-    this.historyMap.set(objectId, currentHistory)
+    currentHistory.history.push({ ...newRecord })
+    this.historyMap.set(personUuid, currentHistory)
   }
 
   private async getAttachments (client: TxOperations, objectId: Ref<Doc>): Promise<Attachment[]> {
     return await client.findAll(attachment.class.Attachment, { attachedTo: objectId })
   }
 
-  async processMessageEvent (event: AIEventRequest): Promise<void> {
+  async processMessageEvent (event: AIEventRequest, control?: ConsumerControl): Promise<void> {
     if (this.openai === undefined) return
 
     const { user, objectId, objectClass, messageClass } = event
     const client = await this.opClient
     const accountClient = getAccountClient(this.token)
     const personUuid = this.personUuidBySocialId.get(user) ?? (await accountClient.findPersonBySocialId(user))
+
+    const contextMode = objectClass === chunter.class.DirectMessage ? 'direct' : 'thread'
 
     if (personUuid === undefined) {
       return
@@ -338,21 +396,105 @@ export class WorkspaceClient {
 
     const space = hierarchy.isDerived(objectClass, core.class.Space) ? (objectId as Ref<Space>) : event.objectSpace
 
-    const rawHistory = await this.getHistory(objectId)
+    const rawHistory = await this.getHistory(personUuid)
     const history = this.toOpenAiHistory(rawHistory, promptTokens)
 
-    if (history.length < rawHistory.length || history.length > config.MaxHistoryRecords) {
-      void this.summarizeHistory(rawHistory, personUuid, objectId, objectClass)
-    }
+    await this.pushHistory(personUuid, promptText, prompt.role, promptTokens, personUuid, objectId, objectClass)
 
-    void this.pushHistory(promptText, prompt.role, promptTokens, personUuid, objectId, objectClass)
+    let useHistory = history
+
+    if (contextMode !== 'direct') {
+      // Load a message itself
+      const msg = await this.client?.findOne<Doc>(objectClass, { _id: objectId })
+      if (msg !== undefined) {
+        useHistory = [
+          {
+            role: 'system',
+            content: 'Document type:' + msg?._class
+          }
+        ]
+        if (msg._class === chunter.class.ThreadMessage || msg._class === chunter.class.ChatMessage) {
+          useHistory.push({
+            role: 'system',
+            content: 'Content:' + markupToText((msg as ChatMessage).message)
+          })
+        }
+        if (msg._class === tracker.class.Issue) {
+          let _msg = ''
+          const is: Issue = msg as Issue
+
+          _msg += 'Issue title: ' + is.title + '\n'
+
+          if (is.description != null && is.description !== '') {
+            try {
+              const readable = await this.storage.read(this.ctx, this.wsIds, is.description)
+              const markup = Buffer.concat(readable as any).toString()
+              let textContent = markupToText(markup)
+              textContent = textContent
+                .split(/ +|\t+|\f+/)
+                .filter((it) => it)
+                .join(' ')
+                .split(/\n\n+/)
+                .join('\n')
+
+              _msg += 'Content:``` \n' + textContent + '\n ```'
+            } catch (err: any) {
+              this.ctx.error('failed to handle description', { _id: is.description, workspace: this.wsIds.uuid })
+            }
+
+            useHistory.push({
+              role: 'system',
+              content: _msg
+            })
+          }
+        }
+      }
+
+      const lastMessages =
+        (await this.client?.findAll(
+          chunter.class.ChatMessage,
+          { attachedTo: objectId, attachedToClass: objectClass },
+          { limit: 500, sort: { modifiedOn: SortingOrder.Descending } }
+        )) ?? []
+
+      lastMessages.sort((a, b) => a.modifiedOn - b.modifiedOn)
+
+      const personIds = new Set(lastMessages.map((it) => it.modifiedBy))
+
+      const socialIds = toIdMap(
+        (await this.client?.findAll(contact.class.SocialIdentity, { _id: { $in: Array.from(personIds) as any } })) ?? []
+      )
+
+      const employeesInChannel =
+        (await this.client?.findAll(contact.class.Person, {
+          _id: { $in: Array.from(socialIds.values()).map((it) => it.attachedTo) }
+        })) ?? []
+      const empAsMap = toIdMap(employeesInChannel.filter((it) => it.personUuid !== undefined))
+
+      for (const msg of lastMessages) {
+        let emp: Person | undefined
+        const sid = socialIds.get(msg.modifiedBy as any)
+        if (sid !== undefined) {
+          emp = empAsMap.get(sid.attachedTo)
+        }
+        useHistory.push({
+          role: this.aiPerson?.personUuid === emp?.personUuid ? 'assistant' : 'user',
+          content: markupToText(msg.message),
+          name: emp?.name ?? 'Unknown'
+        })
+      }
+    }
 
     const chatCompletion = await createChatCompletionWithTools(
       this,
       this.openai,
       prompt,
+      contextMode,
+      rawHistory.assistantMemory,
+      rawHistory.userMemory,
+      rawHistory.sharedContext,
       personUuid as AccountUuid,
-      history
+      useHistory
     )
     const response = chatCompletion?.completion
 
@@ -362,7 +504,7 @@ export class WorkspaceClient {
     const responseTokens =
       chatCompletion?.usage ?? countTokens([{ content: response, role: 'assistant' }], this.openaiEncoding)
 
-    void this.pushHistory(response, 'assistant', responseTokens, personUuid, objectId, objectClass)
+    await this.pushHistory(personUuid, response, 'assistant', responseTokens, personUuid, objectId, objectClass)
 
     const parseResponse = jsonToMarkup(markdownToMarkup(response, { refUrl: '', imageUrl: '' }))
 
@@ -437,7 +579,13 @@ export class WorkspaceClient {
     await this.love.disconnect(request.roomId)
   }
 
-  async processLoveTranscript (text: string, participant: Ref<Person>, room: Ref<Room>): Promise<void> {
+  @withContext('processLoveTranscript')
+  async processLoveTranscript (
+    ctx: MeasureContext,
+    text: string,
+    participant: Ref<Person>,
+    room: Ref<Room>
+  ): Promise<void> {
     // Just wait initialization
     await this.opClient
 
@@ -447,6 +595,89 @@ export class WorkspaceClient {
     }
 
     await this.love.processTranscript(text, participant, room)
+  }
+
+  /**
+   * Create a placeholder message for pending transcription
+   */
+  @withContext('createTranscriptionPlaceholder')
+  async createTranscriptionPlaceholder (
+    ctx: MeasureContext,
+    participant: Ref<Person>,
+    room: Ref<Room>,
+    startTimeSec: number,
+    endTimeSec: number,
+    blobId: string
+  ): Promise<Ref<ChatMessage> | undefined> {
+    await this.opClient
+
+    if (this.love === undefined) {
+      this.ctx.error('Love controller is not initialized')
+      return undefined
+    }
+
+    return await this.love.createTranscriptionPlaceholder(participant, room, startTimeSec, endTimeSec, blobId)
+  }
+
+  /**
+   * Update or delete a transcription placeholder message
+   * @returns true if message was found and updated/deleted, false if not found
+   */
+  @withContext('updateTranscriptionMessage')
+  async updateTranscriptionMessage (
+    ctx: MeasureContext,
+    messageId: Ref<ChatMessage>,
+    text: string | null
+  ): Promise<boolean> {
+    await this.opClient
+
+    if (this.love === undefined) {
+      this.ctx.error('Love controller is not initialized')
+      return false
+    }
+
+    return await this.love.updateTranscriptionMessage(messageId, text)
+  }
+
+  /**
+   * Create a transcription message with specific timestamp (fallback when placeholder not found)
+   */
+  @withContext('createTranscriptionMessageWithTimestamp')
+  async createTranscriptionMessageWithTimestamp (
+    ctx: MeasureContext,
+    text: string,
+    participant: Ref<Person>,
+    roomId: Ref<Room>,
+    timestamp: Timestamp
+  ): Promise<boolean> {
+    await this.opClient
+
+    if (this.love === undefined) {
+      this.ctx.error('Love controller is not initialized')
+      return false
+    }
+
+    return await this.love.createTranscriptionMessageWithTimestamp(text, participant, roomId, timestamp)
+  }
+
+  /**
+   * Get MeetingMinutes by room ID (any status, most recent)
+   */
+  @withContext('getMeetingMinutesByRoom')
+  async getMeetingMinutesByRoom (ctx: MeasureContext, roomId: Ref<Room>): Promise<MeetingMinutes | undefined> {
+    await this.opClient
+
+    if (this.love === undefined) {
+      this.ctx.error('Love controller is not initialized')
+      return undefined
+    }
+
+    const room = await this.love.getRoom(roomId)
+    if (room === undefined) {
+      return undefined
+    }
+
+    return await this.love.getMeetingMinutesAny(room)
   }
 
   async getLoveIdentity (): Promise<IdentityResponse | undefined> {
@@ -465,5 +696,80 @@ export class WorkspaceClient {
     if (this.love === undefined) return true
 
     return !this.love.hasActiveConnections()
+  }
+
+  /**
+   * Add session recording as attachment to meeting minutes
+   */
+  async addSessionAttachment (
+    roomId: Ref<Room>,
+    blobId: string,
+    participant: string,
+    startTimeSec: number,
+    endTimeSec: number,
+    size: number,
+    sessionNumber: number
+  ): Promise<void> {
+    const client = await this.opClient
+
+    // Find active meeting minutes for this room
+    const meetingMinutes = await client.findOne<MeetingMinutes>(love.class.MeetingMinutes, {
+      attachedTo: roomId,
+      status: MeetingStatus.Active
+    })
+
+    if (meetingMinutes === undefined) {
+      this.ctx.warn('No active meeting minutes found for room', { roomId, participant })
+      return
+    }
+
+    // participant is now the display name from LiveKit (participant.name), not Ref<Person>
+    // Just sanitize it for use in filename
+    let participantName = participant.trim()
+    if (participantName === '') {
+      participantName = 'Unknown'
+    }
+    // Replace spaces and special characters for filename safety
+    participantName = participantName.replace(/\s+/g, '_').replace(/[<>:"/\\|?*]/g, '_')
+
+    // Format start and end times as mm:ss
+    const formatTime = (sec: number): string => {
+      const minutes = Math.floor(sec / 60)
+      const seconds = Math.floor(sec % 60)
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+    const startTimeStr = formatTime(startTimeSec)
+    const endTimeStr = formatTime(endTimeSec)
+
+    // Create attachment with participant name, session number and time range
+    // Using OGG container with Opus codec for browser compatibility
+    const attachmentName = `${participantName}_${sessionNumber}_${startTimeStr}-${endTimeStr}.ogg`
+
+    await client.addCollection(
+      attachment.class.Attachment,
+      meetingMinutes.space,
+      meetingMinutes._id,
+      meetingMinutes._class,
+      'attachments',
+      {
+        name: attachmentName,
+        file: blobId as Ref<Blob>,
+        type: 'audio/ogg',
+        size,
+        lastModified: Date.now()
+      }
+    )
+
+    this.ctx.info('Added session attachment to meeting minutes', {
+      meetingMinutes: meetingMinutes._id,
+      roomId,
+      participant,
+      participantName,
+      sessionNumber,
+      attachmentName,
+      size,
+      startTimeSec,
+      endTimeSec
+    })
   }
 }

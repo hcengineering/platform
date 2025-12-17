@@ -27,7 +27,7 @@
   } from '@hcengineering/core'
   import { getResource, IntlString } from '@hcengineering/platform'
   import { getClient, reduceCalls } from '@hcengineering/presentation'
-  import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
+  import ui, { AnyComponent, AnySvelteComponent, Button, Label, Spinner } from '@hcengineering/ui'
   import {
     AttributeModel,
     BuildModelKey,
@@ -37,7 +37,7 @@
     ViewOptions
   } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy, SvelteComponentTyped } from 'svelte'
-  import { SelectionFocusProvider } from '../../selection'
+  import { SelectionFocusProvider, focusStore } from '../../selection'
   import {
     buildModel,
     concatCategories,
@@ -52,6 +52,7 @@
   import ListCategory from './ListCategory.svelte'
 
   export let docs: Doc[]
+  export let categoryRefsMap = new Map<string, Map<Ref<Doc>, Doc>>()
   export let docKeys: Partial<DocumentQuery<Doc>> = {}
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined
@@ -94,6 +95,16 @@
 
   $: groupByDocs = groupBy(docs, groupByKey, categories)
 
+  // ShowMore functionality for top-level categories
+  const maxInitialCategories = 20
+  let showAllCategories = false
+  let isLoadingCategories = false
+  let isLoadingMoreTop = false
+
+  $: displayedCategories = level === 0 && !showAllCategories ? categories.slice(0, maxInitialCategories) : categories
+
+  $: hasMoreCategories = level === 0 && categories.length > maxInitialCategories
+
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -111,20 +122,28 @@
       viewOptions: ViewOptions,
       viewOptionsModel: ViewOptionModel[] | undefined
     ): Promise<void> => {
-      categories = await getCategories(client, _class, space, docs, groupByKey)
-      if (level === 0) {
-        for (const viewOption of viewOptionsModel ?? []) {
-          if (viewOption.actionTarget !== 'category') continue
-          const categoryFunc = viewOption as CategoryOption
-          if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
-            const f = await getResource(categoryFunc.action)
-            const res = hierarchy.clone(await f(_class, query, space, groupByKey, update, queryId))
-            if (res !== undefined) {
-              categories = concatCategories(res, categories)
-              return
+      // indicate loading while we compute categories (used by Show More UI)
+      isLoadingCategories = true
+      try {
+        categories = await getCategories(client, _class, space, docs, groupByKey)
+        if (level === 0) {
+          for (const viewOption of viewOptionsModel ?? []) {
+            if (viewOption.actionTarget !== 'category') continue
+            const categoryFunc = viewOption as CategoryOption
+            if (viewOptions[viewOption.key] ?? viewOption.defaultValue) {
+              const f = await getResource(categoryFunc.action)
+              const res = hierarchy.clone(await f(_class, query, space, groupByKey, update, queryId))
+              if (res !== undefined) {
+                categories = concatCategories(res, categories)
+                return
+              }
             }
           }
         }
+      } finally {
+        isLoadingCategories = false
+        // Clear top-level Show More loading flag when update completes (success or error)
+        isLoadingMoreTop = false
       }
     }
   )
@@ -213,7 +232,45 @@
     dir?: 'vertical' | 'horizontal',
     noScroll?: boolean
   ): void {
-    let pos = (of != null ? docs.findIndex((it) => it._id === of._id) : selection) ?? -1
+    // Handle horizontal navigation in lists as jump to first/last of CURRENT category
+    if (dir === 'horizontal') {
+      // Find current category
+      const currentDoc = of ?? $focusStore.focus
+      if (currentDoc === undefined) return
+
+      // Find which category the current document belongs to
+      let currentCategoryIndex = -1
+      for (let i = 0; i < categories.length; i++) {
+        const limited = listListCategory[i]?.getLimited() ?? []
+        if (limited.some((doc) => doc._id === currentDoc._id)) {
+          currentCategoryIndex = i
+          break
+        }
+      }
+
+      if (currentCategoryIndex === -1) return
+
+      const limited = listListCategory[currentCategoryIndex]?.getLimited() ?? []
+      if (limited.length === 0) return
+
+      if (offset === -1) {
+        // ArrowLeft -> jump to first item of current category
+        const firstDoc = limited[0]
+        scrollInto(currentCategoryIndex, firstDoc)
+        dispatch('row-focus', firstDoc)
+        return
+      } else if (offset === 1) {
+        // ArrowRight -> jump to last item of current category
+        const lastDoc = limited[limited.length - 1]
+        scrollInto(currentCategoryIndex, lastDoc)
+        dispatch('row-focus', lastDoc)
+        return
+      }
+    }
+
+    // Use current focused document instead of stale selection index
+    const currentDoc = of ?? $focusStore.focus
+    let pos = currentDoc != null ? docs.findIndex((it) => it._id === currentDoc._id) : -1
     if (pos === -1) {
       for (const st of categories) {
         const stateObjs = getGroupByValues(groupByDocs, st) ?? []
@@ -291,10 +348,11 @@
     }
 
     if (level + 1 >= viewOptions.groupBy.length) {
-      const stateObjs: Doc[] = getGroupByValues(groupByDocs, categories[objState]) ?? []
+      // Use actual limited items that are displayed, not stateObjs
+      const limited: Doc[] = listListCategory[objState]?.getLimited() ?? []
 
-      const statePos = stateObjs.findIndex((it) => it._id === obj._id)
-      if (statePos === undefined) {
+      const statePos = limited.findIndex((it) => it._id === obj._id)
+      if (statePos === -1) {
         return
       }
 
@@ -303,20 +361,19 @@
           if (statePos - 1 < 0 && objState >= 0) {
             if (objState !== 0) {
               const pstateObjs = listListCategory[objState - 1]?.getLimited()
-              if (pstateObjs !== undefined) {
-                dispatch('select', pstateObjs[pstateObjs.length - 1])
+              if (pstateObjs !== undefined && pstateObjs.length > 0) {
+                const targetDoc = pstateObjs[pstateObjs.length - 1]
+                if (!noScroll) scrollInto(objState - 1, targetDoc)
+                dispatch('row-focus', targetDoc)
               }
             } else {
-              dispatch('select-prev', stateObjs[statePos])
+              dispatch('select-prev', limited[statePos])
             }
           } else {
-            const obj = stateObjs[statePos - 1]
-            if (obj !== undefined) {
-              const focusDoc = listListCategory[objState]?.getLimited()?.find((it) => it._id === obj._id) ?? obj
-              if (focusDoc !== undefined) {
-                if (!noScroll) scrollInto(objState, focusDoc)
-                dispatch('row-focus', focusDoc)
-              }
+            const targetDoc = limited[statePos - 1]
+            if (targetDoc !== undefined) {
+              if (!noScroll) scrollInto(objState, targetDoc)
+              dispatch('row-focus', targetDoc)
             }
           }
           return
@@ -324,29 +381,30 @@
       }
       if (offset === 1) {
         if (dir === undefined || dir === 'vertical') {
-          const limited = listListCategory[objState]?.getLimited() ?? []
           if (statePos + 1 >= limited.length && objState < categories.length) {
             if (objState + 1 !== categories.length) {
-              const pstateObjs = getGroupByValues(groupByDocs, categories[objState + 1])
-              dispatch('select', pstateObjs[0])
+              const nextLimited = listListCategory[objState + 1]?.getLimited() ?? []
+              if (nextLimited.length > 0) {
+                const targetDoc = nextLimited[0]
+                if (!noScroll) scrollInto(objState + 1, targetDoc)
+                dispatch('row-focus', targetDoc)
+              }
             } else {
-              dispatch('select-next', stateObjs[statePos])
+              dispatch('select-next', limited[statePos])
             }
           } else {
-            const obj = stateObjs[statePos + 1]
-            if (obj !== undefined) {
-              const focusDoc = listListCategory[objState]?.getLimited()?.find((it) => it._id === obj._id) ?? obj
-              if (focusDoc !== undefined) {
-                if (!noScroll) scrollInto(objState, focusDoc)
-                dispatch('row-focus', focusDoc)
-              }
+            const targetDoc = limited[statePos + 1]
+            if (targetDoc !== undefined) {
+              if (!noScroll) scrollInto(objState, targetDoc)
+              dispatch('row-focus', targetDoc)
             }
           }
           return
         }
       }
       if (offset === 0) {
-        const focusDoc = listListCategory[objState]?.getLimited()?.find((it) => it._id === obj._id) ?? obj
+        const limited = listListCategory[objState]?.getLimited() ?? []
+        const focusDoc = limited.find((it) => it._id === obj._id) ?? obj
         if (focusDoc !== undefined) {
           if (!noScroll) scrollInto(objState, focusDoc)
           dispatch('row-focus', focusDoc)
@@ -382,11 +440,12 @@
   }
 </script>
 
-{#each categories as category, i (typeof category === 'object' ? category.name : category)}
+{#each displayedCategories as category, i (typeof category === 'object' ? category.name : category)}
   {@const items = groupByKey === noCategory ? docs : getGroupByValues(groupByDocs, category)}
   {@const categoryDocKeys = getGroupByKey(docKeys, category, resultQuery)}
   <ListCategory
     bind:this={listListCategory[i]}
+    {categoryRefsMap}
     {extraHeaders}
     {space}
     {selectedObjectIds}
@@ -459,6 +518,7 @@
     >
       <svelte:self
         {docs}
+        {categoryRefsMap}
         bind:this={listCategory[i]}
         {_class}
         {space}
@@ -509,3 +569,31 @@
     </svelte:fragment>
   </ListCategory>
 {/each}
+
+{#if hasMoreCategories && !showAllCategories}
+  {#if isLoadingCategories}
+    <div class="show-more-wrapper flex-center p-2">
+      <Spinner size="small" />
+    </div>
+  {:else}
+    <div class="show-more-wrapper flex-center p-2">
+      <Button
+        kind={'ghost'}
+        label={ui.string.ShowMore}
+        on:click={() => {
+          // show spinner in the top-level Show More while categories are being revealed/loaded
+          isLoadingMoreTop = true
+          showAllCategories = true
+        }}
+      >
+        <svelte:fragment slot="content">
+          <span class="mr-1"><Label label={ui.string.ShowMore} /></span>
+          {#if isLoadingMoreTop}
+            <Spinner size="small" />
+          {/if}
+          <span class="content-halfcontent-color">({displayedCategories.length}/{categories.length})</span>
+        </svelte:fragment>
+      </Button>
+    </div>
+  {/if}
+{/if}

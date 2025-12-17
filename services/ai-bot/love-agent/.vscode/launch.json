@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Love Agent (dev)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/services/ai-bot/love-agent/bundle/index.js",
+      "args": [],
+      "cwd": "${workspaceFolder}/services/ai-bot/love-agent",
+      "envFile": "${workspaceFolder}/services/ai-bot/love-agent/.env",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "sourceMaps": true,
+      "preLaunchTask": "love-agent: build"
+    }
+  ]
+}

@@ -71,6 +71,12 @@
   const accountClient = getAccountClient()
   const disabledSet = ['\n', '<', '>', '/', '\\']
 
+  let allowReadonlyGuests = false
+
+  void accountClient.isAllowReadOnlyGuests().then(({ allowed }) => {
+    allowReadonlyGuests = allowed
+  })
+
   $: editNameDisabled =
     isEditingName &&
     (name.trim().length > 40 ||
@@ -204,10 +210,10 @@
     await accountClient.updatePasswordAgingRule(passwordAgingRule)
   }
 
-  async function handleGenerateApiToken (): Promise<void> {
-    const { token } = await accountClient.selectWorkspace(workspaceUrl)
-    showPopup(ApiTokenPopup, { token })
-  }
+  // async function handleGenerateApiToken (): Promise<void> {
+  //   const { token } = await accountClient.selectWorkspace(workspaceUrl)
+  //   showPopup(ApiTokenPopup, { token })
+  // }
 
   function handleTogglePermissions (): void {
     const newState = !arePermissionsDisabled
@@ -372,42 +378,44 @@
             </div>
           </div>
 
-          <div class="flex-col flex-gap-4 mt-6">
-            <div class="title"><Label label={settingsRes.string.GuestAccess} /></div>
-            <div class="flex-row-center flex-gap-4">
-              <Label label={settingsRes.string.GuestAccessDescription} />
-              <Toggle
-                on={allowReadOnlyGuests}
-                on:change={(e) => {
-                  void handleToggleReadonlyAccess(e)
-                }}
-              />
-            </div>
+          {#if allowReadonlyGuests}
+            <div class="flex-col flex-gap-4 mt-6">
+              <div class="title"><Label label={settingsRes.string.GuestAccess} /></div>
+              <div class="flex-row-center flex-gap-4">
+                <Label label={settingsRes.string.GuestAccessDescription} />
+                <Toggle
+                  on={allowReadOnlyGuests}
+                  on:change={(e) => {
+                    void handleToggleReadonlyAccess(e)
+                  }}
+                />
+              </div>
 
-            <div class="flex-row-center flex-gap-4">
-              <Label label={settingsRes.string.GuestSignUpDescription} />
-              <Toggle
-                disabled={!allowReadOnlyGuests}
-                on={allowGuestSignUp}
-                on:change={(e) => {
-                  void handleToggleGuestSignUp(e)
-                }}
-              />
-            </div>
+              <div class="flex-row-center flex-gap-4">
+                <Label label={settingsRes.string.GuestSignUpDescription} />
+                <Toggle
+                  disabled={!allowReadOnlyGuests}
+                  on={allowGuestSignUp}
+                  on:change={(e) => {
+                    void handleToggleGuestSignUp(e)
+                  }}
+                />
+              </div>
 
-            <div class="flex-row-center flex-gap-4">
-              <Label label={settingsRes.string.GuestChannelsDescription} />
-              <Component
-                is={card.component.CardArrayEditor}
-                props={{
-                  _class: chat.masterTag.Thread,
-                  value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
-                  label: settingsRes.string.GuestChannelsArrayLabel,
-                  onChange: onAllowedCardsChange
-                }}
-              />
+              <div class="flex-row-center flex-gap-4">
+                <Label label={settingsRes.string.GuestChannelsDescription} />
+                <Component
+                  is={card.component.CardArrayEditor}
+                  props={{
+                    _class: chat.masterTag.Thread,
+                    value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
+                    label: settingsRes.string.GuestChannelsArrayLabel,
+                    onChange: onAllowedCardsChange
+                  }}
+                />
+              </div>
             </div>
-          </div>
+          {/if}
 
           <div class="flex-col flex-gap-4 mt-6">
             <div class="title"><Label label={settingsRes.string.AccessControl} /></div>
@@ -422,7 +430,7 @@
             </div>
           </div>
 
-          <div class="flex-col flex-gap-4 mt-6">
+          <!-- <div class="flex-col flex-gap-4 mt-6">
             <div class="title"><Label label={settingsRes.string.ApiAccess} /></div>
             <div class="w-32">
               <Button
@@ -433,7 +441,7 @@
                 on:click={handleGenerateApiToken}
               />
             </div>
-          </div>
+          </div> -->
 
           <div class="flex-col flex-gap-4 mt-6">
             <div class="title"><Label label={settingsRes.string.DangerZone} /></div>

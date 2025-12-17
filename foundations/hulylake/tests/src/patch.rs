@@ -1,9 +1,9 @@
 use futures::future::join_all;
-use hulyrs::StatusCode;
 use serde_json::{self as json, Value, json};
 use tanu::{check, check_eq, check_ne, eyre, http::Client};
 
 use crate::util::*;
+pub use reqwest::StatusCode;
 
 #[tanu::test((10, 10))]
 pub async fn put_and_patch_content((initial, patch): (usize, usize)) -> eyre::Result<()> {

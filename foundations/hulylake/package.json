@@ -1,0 +1,32 @@
+{
+  "name": "@hcengineering/pod-hulylake",
+  "version": "0.7.0",
+  "main": "lib/index.js",
+  "svelte": "src/index.ts",
+  "types": "types/index.d.ts",
+  "author": "Anticrm Platform Contributors",
+  "template": "@hcengineering/docker-package",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "echo done",
+    "build:watch": "echo done",
+    "_phase:bundle": "echo done",
+    "_phase:package": "echo done",
+    "_phase:docker-build": "rushx docker:build",
+    "_phase:docker-staging": "rushx docker:staging",
+    "bundle": "echo done",
+    "package": "echo done",
+    "docker:build": "../../common/scripts/docker_build.sh haiodo/hulylake",
+    "docker:staging": "../../common/scripts/docker_tag.sh haiodo/hulylake staging",
+    "docker:push": "../../common/scripts/docker_tag.sh haiodo/hulylake",
+    "docker:tbuild": "docker build -t haiodo/hulylake . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh haiodo/hulylake",
+    "docker:abuild": "docker build -t haiodo/hulylake . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh haiodo/hulylake",
+    "test": "echo done",
+    "_phase:build": "echo done",
+    "_phase:test": "echo done",
+    "_phase:format": "echo done",
+    "_phase:validate": "echo done"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}

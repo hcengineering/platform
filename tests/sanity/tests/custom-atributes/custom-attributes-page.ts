@@ -15,13 +15,11 @@ export enum CustomAttributesButtons {
   DefaultFunnel,
   Project,
   ClassicProject,
-  Board,
   Task,
   Application,
   Applicant,
   Lead,
   Issue,
-  Card,
   Product
 }
 
@@ -46,13 +44,11 @@ export class CustomAttributesPage {
   defaultFunnel = (): Locator => this.page.getByRole('button', { name: 'Default funnel' })
   project = (): Locator => this.page.getByRole('button', { name: 'Project', exact: true })
   classicProject = (): Locator => this.page.getByRole('button', { name: 'Classic project', exact: true })
-  board = (): Locator => this.page.getByRole('button', { name: 'Board' })
   task = (): Locator => this.page.getByRole('button', { name: 'Task' })
   application = (): Locator => this.page.getByRole('button', { name: 'Application' })
   applicant = (): Locator => this.page.getByRole('button', { name: 'Applicant' })
   lead = (): Locator => this.page.getByRole('button', { name: 'Lead' })
   issue = (): Locator => this.page.getByRole('button', { name: 'Issue' })
-  card = (): Locator => this.page.getByRole('button', { name: 'Card' })
   product = (): Locator => this.page.getByRole('button', { name: 'Product' })
 
   addAttribute = (): Locator => this.page.locator('.hulyTableAttr-header > .font-medium-14')
@@ -105,9 +101,6 @@ export class CustomAttributesPage {
       case CustomAttributesButtons.ClassicProject:
         await this.classicProject().click()
         break
-      case CustomAttributesButtons.Board:
-        await this.board().click()
-        break
       case CustomAttributesButtons.Task:
         await this.task().click()
         break
@@ -122,9 +115,6 @@ export class CustomAttributesPage {
         break
       case CustomAttributesButtons.Issue:
         await this.issue().click()
-        break
-      case CustomAttributesButtons.Card:
-        await this.card().click()
         break
       case CustomAttributesButtons.Product:
         await this.product().click()
@@ -149,7 +139,6 @@ export class CustomAttributesPage {
     await expect(this.defaultFunnel()).toBeVisible()
     await expect(this.project()).toBeVisible()
     await expect(this.classicProject()).toBeVisible()
-    await expect(this.board()).toBeVisible()
     await expect(this.task()).toBeVisible()
     await expect(this.application()).toBeVisible()
     await expect(this.applicant()).toBeVisible()
@@ -157,7 +146,6 @@ export class CustomAttributesPage {
     await expect(this.lead().nth(1)).toBeVisible()
     await expect(this.issue().nth(0)).toBeVisible()
     await expect(this.issue().nth(1)).toBeVisible()
-    await expect(this.card()).toBeVisible()
     await expect(this.product()).toBeVisible()
   }
 }

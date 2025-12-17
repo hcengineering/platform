@@ -113,3 +113,5 @@ dev/tool/history.json
 /combined_dependencies
 .tmp
 ws-tests/docker-compose.override.yml
+diff
+tests/docker-compose.override.versions.yml

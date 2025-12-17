@@ -64,12 +64,31 @@ import {
   type WorkspaceInvite,
   type WorkspaceJoinInfo,
   type WorkspaceLoginInfo,
-  type WorkspaceStatus
+  type WorkspaceStatus,
+  type DBFlavor
 } from './types'
 import { isAdminEmail } from './admin'
+import { type Sql } from 'postgres'
 
 export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b' as PersonUuid
 
+export async function getDbFlavor (pgClient: Sql<any>): Promise<DBFlavor> {
+  // Run the version query
+  const [{ version }] = await pgClient`SELECT version()`
+
+  // CockroachDB’s string contains “Cockroach” (case‑insensitive)
+  if (/cockroach/i.test(version)) {
+    return 'cockroach'
+  }
+
+  // Anything else that looks like a PostgreSQL version string
+  if (/postgresql/i.test(version)) {
+    return 'postgres'
+  }
+
+  // Fallback – could be a custom build or something unexpected
+  return 'unknown'
+}
 export async function getAccountDB (
   uri: string,
   dbNs?: string,
@@ -98,9 +117,24 @@ export async function getAccountDB (
     })
     const client = getDBClient(uri)
     const pgClient = await client.getClient()
-    const pgAccount = new PostgresAccountDB(pgClient, dbNs ?? 'global_account')
+
+    let flavor: DBFlavor = 'unknown'
 
     let error = false
+
+    do {
+      try {
+        flavor = await getDbFlavor(pgClient)
+        error = false
+      } catch (err: any) {
+        error = true
+        console.error('Error while initializing postgres account db', err.message)
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+    } while (error)
+    error = false
+
+    const pgAccount = new PostgresAccountDB(pgClient, dbNs ?? 'global_account', flavor)
 
     do {
       try {
@@ -856,6 +890,15 @@ export async function selectWorkspace (
   }
 }
 
+export async function isAllowReadOnlyGuests (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<{ allowed: boolean }> {
+  return { allowed: getMetadata(accountPlugin.metadata.AllowReadonlyGuests) ?? false }
+}
+
 export async function updateAllowReadOnlyGuests (
   ctx: MeasureContext,
   db: AccountDB,
@@ -865,6 +908,9 @@ export async function updateAllowReadOnlyGuests (
     readOnlyGuestsAllowed: boolean
   }
 ): Promise<{ guestPerson: Person, guestSocialIds: SocialId[] } | undefined> {
+  if (getMetadata(accountPlugin.metadata.AllowReadonlyGuests) === false) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
   const { readOnlyGuestsAllowed } = params
   const { account, workspace } = decodeTokenVerbose(ctx, token)
 
@@ -969,6 +1015,10 @@ export async function updateAllowGuestSignUp (
     guestSignUpAllowed: boolean
   }
 ): Promise<void> {
+  if (getMetadata(accountPlugin.metadata.AllowReadonlyGuests) === false) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
   const { guestSignUpAllowed } = params
   const { account, workspace } = decodeTokenVerbose(ctx, token)
 

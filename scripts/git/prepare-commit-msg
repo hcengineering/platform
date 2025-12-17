@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# This hook adds a "Signed-off-by:" line to the commit message,
+# if one doesn't already exist.
+
+# The path to the temporary file that contains the commit message
+COMMIT_MSG_FILE=$1
+
+# Check if the commit message already contains a Signed-off-by line
+# We search for the line at the beginning of the line (^)
+if ! grep -qs "^Signed-off-by:" "$COMMIT_MSG_FILE"; then
+  # If not, append a new one.
+  # We get the user.name and user.email from git config.
+  # We also add a blank line before it for better formatting.
+  echo "" >> "$COMMIT_MSG_FILE"
+  echo "Signed-off-by: $(git config user.name) <$(git config user.email)>" >> "$COMMIT_MSG_FILE"
+fi

@@ -1,4 +1,4 @@
-FROM hardcoreeng/base-slim:v20250915
+FROM haiodo/base-slim:v20250811
 
 WORKDIR /usr/src/app
 

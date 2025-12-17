@@ -1,7 +1,7 @@
 {
   "incrementalBuildIgnoredGlobs": [
-    "temp/**", 
-    ".build/**", 
+    "temp/**",
+    ".build/**",
     "coverage/**",
     ".build/**",
     ".validate/**",
@@ -13,7 +13,8 @@
   "operationSettings": [
     {
       "operationName": "build",
-      "outputFolderNames": ["lib", ".build"]
+      "outputFolderNames": ["lib", ".build"],
+      "disableBuildCacheForOperation": true
     },
     {
       "operationName": "test",
@@ -21,7 +22,8 @@
     },
     {
       "operationName": "_phase:build",
-      "outputFolderNames": ["lib", ".build"]
+      "outputFolderNames": ["lib", ".build"],
+      "disableBuildCacheForOperation": true
     },
     {
       "operationName": "_phase:validate",
@@ -39,6 +41,6 @@
     {
       "operationName": "_phase:test",
       "outputFolderNames": ["coverage"]
-    }  
+    }
   ]
 }

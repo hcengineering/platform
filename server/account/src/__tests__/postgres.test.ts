@@ -330,7 +330,7 @@ describe('AccountPostgresDbCollection', () => {
 
       expect(mockClient.unsafe).toHaveBeenCalledWith(
         `SELECT * FROM (
-      SELECT 
+      SELECT
         a.uuid,
         a.timezone,
         a.locale,
@@ -678,7 +678,7 @@ describe('PostgresAccountDB', () => {
         expect(
           mockClient.unsafe.mock.calls[0][0].replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/\s\)/g, ')')
         ).toEqual(
-          `SELECT 
+          `SELECT
               w.uuid,
               w.name,
               w.url,
@@ -688,7 +688,7 @@ describe('PostgresAccountDB', () => {
               w.region,
               w.created_by,
               w.created_on,
-              w.billing_account, 
+              w.billing_account,
               json_build_object(
                 'mode', s.mode,
                 'processing_progress', s.processing_progress,
@@ -747,7 +747,7 @@ describe('PostgresAccountDB', () => {
         expect(
           mockClient.unsafe.mock.calls[0][0].replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/\s\)/g, ')')
         ).toEqual(
-          `SELECT 
+          `SELECT
               w.uuid,
               w.name,
               w.url,
@@ -757,7 +757,7 @@ describe('PostgresAccountDB', () => {
               w.region,
               w.created_by,
               w.created_on,
-              w.billing_account, 
+              w.billing_account,
               json_build_object(
                 'mode', s.mode,
                 'processing_progress', s.processing_progress,
@@ -820,7 +820,7 @@ describe('PostgresAccountDB', () => {
         expect(
           mockClient.unsafe.mock.calls[0][0].replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/\s\)/g, ')')
         ).toEqual(
-          `SELECT 
+          `SELECT
               w.uuid,
               w.name,
               w.url,
@@ -830,7 +830,7 @@ describe('PostgresAccountDB', () => {
               w.region,
               w.created_by,
               w.created_on,
-              w.billing_account, 
+              w.billing_account,
               json_build_object(
                 'mode', s.mode,
                 'processing_progress', s.processing_progress,
@@ -912,7 +912,7 @@ describe('PostgresAccountDB', () => {
         expect(
           mockClient.unsafe.mock.calls[0][0].replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/\s\)/g, ')')
         ).toEqual(
-          `SELECT 
+          `SELECT
               w.uuid,
               w.name,
               w.url,
@@ -922,7 +922,7 @@ describe('PostgresAccountDB', () => {
               w.region,
               w.created_by,
               w.created_on,
-              w.billing_account, 
+              w.billing_account,
               json_build_object(
                 'mode', s.mode,
                 'processing_progress', s.processing_progress,
@@ -963,8 +963,8 @@ describe('PostgresAccountDB', () => {
         expect(
           mockClient.unsafe.mock.calls[1][0].replace(/\s+/g, ' ').replace(/\(\s/g, '(').replace(/\s\)/g, ')')
         ).toEqual(
-          `UPDATE global_account.workspace_status 
-           SET processing_attempts = processing_attempts + 1, "last_processing_time" = $1 
+          `UPDATE global_account.workspace_status
+           SET processing_attempts = processing_attempts + 1, "last_processing_time" = $1
            WHERE workspace_uuid = $2`
             .replace(/\s+/g, ' ')
             .replace(/\(\s/g, '(')
@@ -997,7 +997,13 @@ describe('PostgresAccountDB', () => {
 
       expect(mockClient).toHaveBeenCalledWith('global_account.account_passwords')
       expect(mockClient).toHaveBeenCalledWith(
-        ['UPSERT INTO ', ' (account_uuid, hash, salt) VALUES (', ', ', '::bytea, ', '::bytea)'],
+        [
+          'INSERT INTO ',
+          ' (account_uuid, hash, salt) VALUES (',
+          ', ',
+          '::bytea, ',
+          '::bytea) ON CONFLICT (account_uuid) DO UPDATE SET hash = EXCLUDED.hash, salt = EXCLUDED.salt;'
+        ],
         expect.anything(),
         accountId,
         hash.buffer,

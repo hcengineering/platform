@@ -190,7 +190,11 @@ export async function createChatCompletionWithTools (
   workspaceClient: WorkspaceClient,
   client: OpenAI,
   message: OpenAI.ChatCompletionMessageParam,
-  user?: AccountUuid,
+  contextMode: 'direct' | 'thread',
+  assistantMemory: string,
+  userMemory: string,
+  sharedContext: string,
+  user: AccountUuid,
   history: OpenAI.ChatCompletionMessageParam[] = [],
   skipCache = true,
   reason = 'chat'
@@ -207,25 +211,93 @@ export async function createChatCompletionWithTools (
     opt.headers = { 'cf-skip-cache': 'true' }
   }
   try {
+    const isDirectMode = contextMode === 'direct'
+
+    const systemPrompt = isDirectMode
+      ? `You are a helpful AI assistant, talking to user in direct chat.
+
+**Your role:**
+- Assist users with their questions and tasks
+- Provide accurate, factual responses based only on available information
+- Use available tools to help answer user requests
+- Adapt your communication style to user preferences when explicitly specified
+
+${assistantMemory !== '' ? `**Your persona and behavior:**\n${assistantMemory}\n` : ''}
+${userMemory !== '' ? `**User preferences and context:**\n${userMemory}\n` : ''}
+${sharedContext !== '' ? `**Shared preferences:**\n${sharedContext}\n` : ''}
+**Available tools:**
+- update_assistant_memory: Update information about assistant personality (name, behavior, etc.)
+- update_user_memory: Update information about the user (preferences, context, personal info, how to address use in direct chats)
+- update_shared_context: Update shared context (language, timezone, group chat preferences, how to address user in GROUP chats or general chats)
+- get_assistant_memory: Check current information about yourself
+- get_user_memory: Check current information about the user
+- get_history_summary: Get a summary of past conversation (use this if you need context beyond recent messages)
+- clear_assistant_memory / clear_user_memory / clear_history: Clear respective data
+
+**Important context notes:**
+- You only see the last ~20 messages in conversation history
+- For context about older conversations, use get_history_summary tool
+- This helps save tokens while maintaining conversation continuity
+
+**Critical guidelines - ACCURACY FIRST:**
+- ONLY use information explicitly provided in the conversation, context, or retrieved via tools
+- If you don't have enough information to answer accurately, state this clearly
+- NEVER invent, assume, or fabricate details not present in available data
+- If uncertain about facts, explicitly say "I don't have information about this"
+- Clearly distinguish between facts from context and any inferences you make
+- Use memory tools when user shares important information about themselves or tells you how to behave
+- Use get_history_summary if you need context about earlier parts of long conversations
+- Keep responses precise and grounded in available data`
+      : `You are a helpful AI assistant participating in a group conversation.
+
+**Your role:**
+- Assist all participants with their questions and tasks
+- Provide accurate, factual responses based only on available information
+- Contribute meaningfully to group discussions
+- Stay on topic and maintain professional tone
+
+${sharedContext !== '' ? `**Shared preferences:**\n${sharedContext}\n` : ''}
+**Important - Group Chat Mode:**
+- This is a shared conversation with multiple participants
+- Do NOT use or reference any personal information about specific users
+- Do NOT use memory tools (update_assistant_memory, update_user_memory, etc.)
+- Treat all participants equally and professionally
+- Keep responses neutral and avoid personalization
+- Focus on the current discussion context only
+
+**Critical guidelines - ACCURACY FIRST:**
+- ONLY use information explicitly provided in the conversation or message history
+- If you don't have enough information to answer accurately, state this clearly
+- NEVER invent, assume, or fabricate details not present in the discussion
+- If uncertain about facts, explicitly say "I don't have information about this"
+- Clearly distinguish between facts from the conversation and any inferences
+- Keep answers clear, concise, and grounded in available data
+- Don't assume context or relationships not explicitly mentioned in messages`
+
     const res = client.beta.chat.completions.runTools(
       {
         messages: [
           {
             role: 'system',
-            content: 'Use tools if possible, don`t use previous information after success using tool for user request'
+            content: systemPrompt
           },
           ...history,
           message
         ],
         model: config.OpenAIModel,
         user,
-        tools: getTools(workspaceClient, user)
+        tools: getTools(workspaceClient, contextMode, user)
       },
       opt
     )
 
-    const str = await res.finalContent()
+    let str = await res.finalContent()
     const usage = await res.totalUsage()
+
+    const pos = (str ?? '').indexOf('</think>')
+    if (pos > 0) {
+      str = (str ?? '').substring(pos + 8)
+    }
 
     if (usage != null) {
       void pushTokensData(workspaceClient.ctx, [
@@ -254,18 +326,49 @@ export async function requestSummary (
   workspace: WorkspaceUuid,
   aiClient: OpenAI,
   encoding: Tiktoken,
+  personMemory: string,
   history: HistoryRecord[]
 ): Promise<{
     summary?: string
     tokens: number
   }> {
   const summaryPrompt: OpenAI.ChatCompletionMessageParam = {
-    content: `Summarize the following messages, keeping the key points:  ${history.map((msg) => `${msg.role}: ${msg.message}`).join('\n')}`,
+    content: `
+      Create a factual, accurate summary of the conversation history based ONLY on what was actually discussed.
+
+      **Summarization goals:**
+      - Extract main topics, decisions, and action items EXACTLY as stated
+      - Preserve factual information and specific details from messages
+      - Keep critical facts that may be referenced later
+      - Maintain chronological flow of events as they occurred
+      - Record any user preferences or instructions explicitly provided
+      - Remove only redundant repetitions, NOT important context
+
+      **Critical - ACCURACY REQUIREMENTS:**
+      - ONLY include information explicitly present in the conversation
+      - DO NOT add interpretations, assumptions, or invented details
+      - If something is unclear, note it as unclear rather than guessing
+      - Preserve exact terminology and names used by participants
+      - Keep factual statements separate from interpretations
+
+      **Target compression:**
+      - Compress messages into a compact but complete summary
+      - Aim for maximum information density without losing facts
+      - Prioritize factual accuracy over brevity
+      - Keep summary under 1000 tokens
+
+      Conversation entries:
+        ${history.map((msg) => `${msg.role}: ${msg.message}`).join('\n')}
+      `,
     role: 'user'
   }
 
   const response = await createChatCompletion(ctx, workspace, aiClient, summaryPrompt, undefined, [
-    { role: 'system', content: 'Make a summary of messages history' }
+    {
+      role: 'system',
+      content:
+        'You are a conversation compression system. Create accurate, factual summaries that capture ONLY what was actually discussed. Do NOT add interpretations, assumptions, or invented details. Preserve exact facts, decisions, and context from the conversation. If information is unclear or missing, note this rather than guessing. Focus on maintaining factual accuracy and completeness of real information.'
+    }
   ])
 
   const summary = response?.choices[0].message.content

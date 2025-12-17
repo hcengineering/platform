@@ -13,15 +13,18 @@
 // limitations under the License.
 //
 import { ConnectMeetingRequest } from '@hcengineering/ai-bot'
-import chunter from '@hcengineering/chunter'
+import chunter, { ChatMessage } from '@hcengineering/chunter'
 import contact, { Person } from '@hcengineering/contact'
 import core, {
   concatLink,
   Doc,
+  generateId,
   Markup,
   MeasureContext,
   PersonId,
   Ref,
+  SortingOrder,
+  Timestamp,
   TxCreateDoc,
   TxCUD,
   TxOperations,
@@ -198,6 +201,161 @@ export class LoveController {
     return socialId
   }
 
+  /**
+   * Create a placeholder message for pending transcription
+   * Shows a spinning indicator while transcription is in progress
+   * Returns the message ID for later update/deletion
+   */
+  async createTranscriptionPlaceholder (
+    person: Ref<Person>,
+    roomId: Ref<Room>,
+    startTimeSec: number,
+    endTimeSec: number,
+    blobId: string
+  ): Promise<Ref<ChatMessage> | undefined> {
+    this.ctx.info('Creating transcription placeholder', { person, roomId, startTimeSec, endTimeSec, blobId })
+
+    const room = await this.getRoom(roomId)
+    if (room === undefined) {
+      this.ctx.warn('Room not found for placeholder', { roomId })
+      return undefined
+    }
+
+    const participant = await this.getRoomParticipant(roomId, person)
+    if (participant === undefined) {
+      this.ctx.warn('Participant not found for placeholder', { roomId, person })
+      return undefined
+    }
+
+    const socialId = await this.getSocialId(person)
+    if (socialId === undefined) {
+      this.ctx.warn('SocialId not found for placeholder', { person })
+      return undefined
+    }
+
+    const doc = await this.getMeetingMinutes(room)
+    if (doc === undefined) {
+      this.ctx.warn('MeetingMinutes not found for placeholder', { roomId, roomName: room.name })
+      return undefined
+    }
+
+    // Format time as mm:ss
+    const formatTime = (sec: number): string => {
+      const minutes = Math.floor(sec / 60)
+      const seconds = Math.floor(sec % 60)
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+
+    const timeRange = `${formatTime(startTimeSec)} - ${formatTime(endTimeSec)}`
+
+    // Create placeholder with spinning indicator emoji and audio link
+    // 🎙️ indicates recording, ⏳ indicates processing
+    const placeholderText = `🎙️ ⏳ ... (${timeRange})`
+
+    const messageId = generateId<ChatMessage>()
+
+    const op = this.client.apply(undefined, undefined, true)
+
+    await op.addCollection(
+      chunter.class.ChatMessage,
+      core.space.Workspace,
+      doc._id,
+      doc._class,
+      'transcription',
+      {
+        message: this.transcriptToMarkup(placeholderText)
+      },
+      messageId,
+      undefined,
+      socialId
+    )
+    await op.commit()
+
+    return messageId
+  }
+
+  /**
+   * Update placeholder message with actual transcription text
+   * Or delete it if transcription is empty
+   * @returns true if message was found and updated/deleted, false if not found
+   */
+  async updateTranscriptionMessage (messageId: Ref<ChatMessage>, text: string | null): Promise<boolean> {
+    const message = await this.client.findOne(chunter.class.ChatMessage, { _id: messageId })
+
+    if (message === undefined) {
+      this.ctx.warn('Transcription placeholder message not found', { messageId })
+      return false
+    }
+
+    if (text === null || text.trim() === '') {
+      // Delete message if no transcription
+      await this.client.remove(message)
+      this.ctx.info('Deleted empty transcription placeholder', { messageId })
+    } else {
+      // Update with actual transcription
+      await this.client.update(message, {
+        message: this.transcriptToMarkup(text)
+      })
+      this.ctx.info('Updated transcription message', { messageId, textLength: text.length })
+    }
+    return true
+  }
+
+  /**
+   * Create a transcription message with specific timestamp (for fallback when placeholder not found)
+   * Works even if meeting is already finished
+   */
+  async createTranscriptionMessageWithTimestamp (
+    text: string,
+    person: Ref<Person>,
+    roomId: Ref<Room>,
+    timestamp: Timestamp
+  ): Promise<boolean> {
+    const room = await this.getRoom(roomId)
+    if (room === undefined) {
+      this.ctx.warn('Room not found for fallback transcription', { roomId })
+      return false
+    }
+
+    const socialId = await this.getSocialId(person)
+    if (socialId === undefined) {
+      this.ctx.warn('Social ID not found for fallback transcription', { person })
+      return false
+    }
+
+    // Find MeetingMinutes for this room (including Finished ones)
+    const doc = await this.getMeetingMinutesAny(room)
+    if (doc === undefined) {
+      this.ctx.warn('No MeetingMinutes found for fallback transcription', { roomId })
+      return false
+    }
+
+    const op = this.client.apply(undefined, undefined, true)
+
+    await op.addCollection(
+      chunter.class.ChatMessage,
+      core.space.Workspace,
+      doc._id,
+      doc._class,
+      'transcription',
+      {
+        message: this.transcriptToMarkup(text)
+      },
+      undefined,
+      timestamp,
+      socialId
+    )
+    await op.commit()
+
+    this.ctx.info('Created fallback transcription message with timestamp', {
+      roomId,
+      person,
+      textLength: text.length,
+      timestamp
+    })
+    return true
+  }
+
   async processTranscript (text: string, person: Ref<Person>, roomId: Ref<Room>): Promise<void> {
     const room = await this.getRoom(roomId)
     const participant = await this.getRoomParticipant(roomId, person)
@@ -255,6 +413,31 @@ export class LoveController {
     }
 
     this.meetingMinutes.push(doc)
+    return doc
+  }
+
+  /**
+   * Get MeetingMinutes for room regardless of status (Active or Finished)
+   * Returns the most recent one if multiple exist
+   */
+  async getMeetingMinutesAny (room: Room): Promise<MeetingMinutes | undefined> {
+    // First try to find in cache
+    const cached = this.meetingMinutes.find((m) => m.attachedTo === room._id)
+    if (cached !== undefined) {
+      return cached
+    }
+
+    // Find the most recent meeting minutes for this room (any status)
+    const doc = await this.client.findOne(
+      love.class.MeetingMinutes,
+      { attachedTo: room._id },
+      { sort: { createdOn: SortingOrder.Descending } }
+    )
+
+    if (doc !== undefined) {
+      this.meetingMinutes.push(doc)
+    }
+
     return doc
   }
 

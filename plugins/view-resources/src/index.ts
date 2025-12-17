@@ -190,6 +190,7 @@ export { default as ListView } from './components/list/ListView.svelte'
 export { default as NavLink } from './components/navigator/NavLink.svelte'
 export { default as StatusPresenter } from './components/status/StatusPresenter.svelte'
 export { default as StatusRefPresenter } from './components/status/StatusRefPresenter.svelte'
+export { default as AudioPlayer } from './components/viewer/AudioPlayer.svelte'
 export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 
 export * from './filter'
@@ -201,16 +202,19 @@ export * from './status'
 export * from './utils'
 export * from './permissions'
 export {
+  buildCategoryReferenceLookups,
   buildModel,
   getActiveViewletId,
   getAdditionalHeader,
   getCategories,
+  getCategoryReference,
   getCollectionCounter,
   getFiltredKeys,
   getObjectPresenter,
   getObjectPreview,
   groupBy,
   isCollectionAttr,
+  isRefAttribute,
   setActiveViewletId,
   type LoadingProps
 } from './utils'

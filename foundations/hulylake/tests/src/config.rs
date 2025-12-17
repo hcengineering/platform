@@ -1,6 +1,6 @@
 use std::sync::LazyLock;
 
-use hulyrs::services::jwt::ClaimsBuilder;
+use crate::jwt::ClaimsBuilder;
 use secrecy::SecretString;
 use uuid::{Uuid, uuid};
 

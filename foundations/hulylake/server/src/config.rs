@@ -15,10 +15,12 @@
 
 use std::{path::Path, sync::LazyLock};
 
-use config::FileFormat;
-use secrecy::SecretString;
+use config::{FileFormat, builder};
 use serde::Deserialize;
 use size::Size;
+
+use secrecy::SecretString;
+use serde_with::serde_as;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
@@ -42,18 +44,6 @@ pub struct Config {
 
     pub compact_parts_limit: usize,
     pub compact_buffer_size: usize,
-}
-
-pub mod hulyrs {
-    use std::sync::LazyLock;
-
-    pub static CONFIG: LazyLock<hulyrs::Config> = LazyLock::new(|| match hulyrs::Config::auto() {
-        Ok(config) => config,
-        Err(error) => {
-            eprintln!("configuration error: {}", error);
-            std::process::exit(1);
-        }
-    });
 }
 
 pub static CONFIG: LazyLock<Config> = LazyLock::new(|| {

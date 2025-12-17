@@ -1,4 +1,4 @@
-FROM hardcoreeng/base-slim:v20250916
+FROM haiodo/front-base:v20250811
 WORKDIR /app
 
 COPY bundle/bundle.js ./

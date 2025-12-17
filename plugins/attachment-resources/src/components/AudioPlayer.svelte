@@ -15,52 +15,10 @@
 <script lang="ts">
   import type { Attachment } from '@hcengineering/attachment'
   import type { BlobType, WithLookup } from '@hcengineering/core'
-  import { getFileUrl } from '@hcengineering/presentation'
-  import { CircleButton, Progress } from '@hcengineering/ui'
-  import Pause from './icons/Pause.svelte'
-  import Play from './icons/Play.svelte'
+  import { AudioPlayer as BaseAudioPlayer } from '@hcengineering/view-resources'
 
   export let value: WithLookup<Attachment> | BlobType
   export let fullSize = false
-
-  let time = 0
-  let duration = Number.POSITIVE_INFINITY
-  let paused = true
-
-  function buttonClick (): void {
-    paused = !paused
-  }
-
-  $: icon = !paused ? Pause : Play
 </script>
 
-<div class="container flex-between" class:fullSize>
-  <div>
-    <CircleButton size="x-large" on:click={buttonClick} {icon} />
-  </div>
-  <div class="w-full ml-4">
-    <Progress
-      value={time}
-      max={Number.isFinite(duration) ? duration : 100}
-      editable
-      on:change={(e) => (time = e.detail)}
-    />
-  </div>
-</div>
-<audio bind:duration bind:currentTime={time} bind:paused>
-  <source src={getFileUrl(value.file, value.name)} type={value.type} />
-</audio>
-
-<style lang="scss">
-  .container {
-    padding: 0.5rem;
-    width: 20rem;
-    background-color: var(--accent-bg-color);
-    border: 1px solid var(--divider-color);
-    border-radius: 0.75rem;
-
-    &.fullSize {
-      width: 100%;
-    }
-  }
-</style>
+<BaseAudioPlayer value={value.file} name={value.name} contentType={value.type} {fullSize} />

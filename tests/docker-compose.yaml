@@ -1,7 +1,7 @@
 services:
   stream:
-    image: 'hardcoreeng/stream'
-    pull_policy: always
+    image: haiodo/stream
+    pull_policy: never
     environment:
       - STREAM_ENDPOINT_URL=s3://localhost:9002
       - STREAM_INSECURE=true
@@ -33,6 +33,21 @@ services:
       - '26258:26257'
       - '18089:8080'
     command: start-single-node --insecure
+    restart: unless-stopped
+  postgres:
+    image: postgres:18.1
+    command: ["postgres", "-p", "5433"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -p 5433"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - 5433:5433
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
     restart: unless-stopped
   redpanda:
     image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
@@ -108,12 +123,16 @@ services:
       retries: 10
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
   account:
-    image: hardcoreeng/account
+    image: haiodo/account
     pull_policy: never
+    depends_on:
+      postgres:
+        condition: service_healthy
     links:
       - mongodb
       - minio
       - cockroach
+      - postgres
     ports:
       - 3003:3003
     volumes:
@@ -132,10 +151,11 @@ services:
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://stats:4901
   workspace:
-    image: hardcoreeng/workspace
+    image: haiodo/workspace
     links:
       - mongodb
       - cockroach
+      - postgres
       - minio
       - redpanda
     depends_on:
@@ -156,7 +176,7 @@ services:
       - STATS_URL=http://stats:4901
     restart: unless-stopped
   front:
-    image: hardcoreeng/front
+    image: haiodo/front
     pull_policy: never
     links:
       - account
@@ -187,7 +207,7 @@ services:
       - STATS_URL=http://stats:4901
       - STATS_API=http://localhost:4901
   transactor:
-    image: hardcoreeng/transactor
+    image: haiodo/transactor
     pull_policy: never
     depends_on:
       redpanda:
@@ -198,6 +218,7 @@ services:
       - minio
       - rekoni
       - cockroach
+      - postgres
       - account
       - stats
       - redpanda
@@ -225,7 +246,7 @@ services:
       - RATE_LIMIT_MAX=25000
       - RATE_LIMIT_WINDOW=1000
   collaborator:
-    image: hardcoreeng/collaborator
+    image: haiodo/collaborator
     links:
       - mongodb
       - minio
@@ -241,7 +262,7 @@ services:
       - STATS_URL=http://stats:4901
     restart: unless-stopped
   rekoni:
-    image: hardcoreeng/rekoni-service
+    image: haiodo/rekoni-service
     restart: on-failure
     ports:
       - 4007:4004
@@ -249,7 +270,7 @@ services:
       - STATS_URL=http://stats:4901
 
   fulltext:
-    image: hardcoreeng/fulltext
+    image: haiodo/fulltext
     restart: unless-stopped
     depends_on:
       redpanda:
@@ -278,7 +299,7 @@ services:
       - ACCOUNTS_URL=http://account:3003
       - STATS_URL=http://stats:4901
   stats:
-    image: hardcoreeng/stats
+    image: haiodo/stats
     ports:
       - 4901:4901
     environment:

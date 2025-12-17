@@ -330,6 +330,7 @@
     //   // "versionPolicyName": ""
     // },
     //
+
     {
       "packageName": "@hcengineering/platform-rig",
       "projectFolder": "foundations/utils/packages/platform-rig",
@@ -604,6 +605,11 @@
       "packageName": "@hcengineering/importer",
       "projectFolder": "packages/importer",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/audio-dsp",
+      "projectFolder": "packages/audio-dsp",
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/hls",
@@ -1261,11 +1267,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/qms-tests-sanity",
-      "projectFolder": "qms-tests/sanity",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/rekoni",
       "projectFolder": "packages/rekoni",
       "shouldPublish": false
@@ -1530,27 +1531,6 @@
       "projectFolder": "models/tracker",
       "shouldPublish": false
     },
-
-    {
-      "packageName": "@hcengineering/board",
-      "projectFolder": "plugins/board",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/board-assets",
-      "projectFolder": "plugins/board-assets",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/board-resources",
-      "projectFolder": "plugins/board-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-board",
-      "projectFolder": "models/board",
-      "shouldPublish": false
-    },
     {
       "packageName": "@hcengineering/kanban",
       "projectFolder": "packages/kanban",
@@ -1639,26 +1619,6 @@
     {
       "packageName": "@hcengineering/server-hr-resources",
       "projectFolder": "server-plugins/hr-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/bitrix",
-      "projectFolder": "plugins/bitrix",
-      "shouldPublish": true
-    },
-    {
-      "packageName": "@hcengineering/bitrix-assets",
-      "projectFolder": "plugins/bitrix-assets",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/bitrix-resources",
-      "projectFolder": "plugins/bitrix-resources",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "@hcengineering/model-bitrix",
-      "projectFolder": "models/bitrix",
       "shouldPublish": false
     },
     {
@@ -2097,11 +2057,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "qms-desktop",
-      "projectFolder": "qms-desktop-package",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/diffview",
       "projectFolder": "plugins/diffview",
       "shouldPublish": false
@@ -2222,11 +2177,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/qms-doc-import-tool",
-      "projectFolder": "dev/doc-import-tool",
-      "shouldPublish": false
-    },
-    {
       "packageName": "@hcengineering/pod-datalake",
       "projectFolder": "services/datalake/pod-datalake",
       "shouldPublish": false
@@ -2304,6 +2254,11 @@
     {
       "packageName": "@hcengineering/pod-ai-bot",
       "projectFolder": "services/ai-bot/pod-ai-bot",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/love-agent",
+      "projectFolder": "services/ai-bot/love-agent",
       "shouldPublish": false
     },
     {
@@ -2715,6 +2670,17 @@
       "packageName": "@hcengineering/pod-rating",
       "projectFolder": "services/rating",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-stream",
+      "projectFolder": "foundations/stream",
+      "shouldPublish": false
     }
+    // ,
+    // {
+    //   "packageName": "@hcengineering/pod-hulylake",
+    //   "projectFolder": "foundations/hulylake",
+    //   "shouldPublish": false
+    // }
   ]
 }

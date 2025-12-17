@@ -66,7 +66,7 @@
     (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection, noScroll?: boolean) => {
       if (dir === 'vertical') {
         // Select next
-        list?.select(offset, of, noScroll)
+        list?.select(offset, of, dir, noScroll)
       }
     }
   )

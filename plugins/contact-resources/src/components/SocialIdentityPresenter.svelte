@@ -17,6 +17,7 @@
   import { Icon, Label, tooltip } from '@hcengineering/ui'
   import contact, { SocialIdentity, SocialIdentityProvider } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
+  import { SocialIdType } from '@hcengineering/core'
 
   export let value: SocialIdentity
   export let socialIdProvider: SocialIdentityProvider | undefined = undefined
@@ -33,16 +34,15 @@
   $: icon = socialIdProvider?.icon ?? contact.icon.Profile
 </script>
 
-{#if socialIdProvider != null}
-  <div class="flex-row-center" class:flex-gap-2={shouldShowAvatar}>
+{#if socialIdProvider != null && value.type !== SocialIdType.HULY}
+  <div class="flex flex-row-center" class:flex-gap-2={shouldShowAvatar}>
     <div
-      class="icon"
       use:tooltip={{
         component: Label,
         props: { label: socialIdProvider.label }
       }}
     >
-      <Icon size="full" {icon} />
+      <Icon size="small" {icon} />
     </div>
 
     <div class="flex-col flex-gap-0-5">
@@ -55,11 +55,6 @@
 {/if}
 
 <style lang="scss">
-  .icon {
-    width: 1.75rem;
-    height: 1.75rem;
-  }
-
   .type {
     color: var(--theme-dark-color);
     font-size: 0.75rem;

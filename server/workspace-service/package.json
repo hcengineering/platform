@@ -50,15 +50,15 @@
     "@koa/cors": "^5.0.0",
     "@hcengineering/server-core": "workspace:^0.7.18",
     "@hcengineering/server-tool": "workspace:^0.7.0",
-    "@hcengineering/server-storage": "workspace:^0.7.16",
+    "@hcengineering/server-storage": "workspace:^0.7.17",
     "@hcengineering/server-pipeline": "workspace:^0.7.0",
-    "@hcengineering/server-client": "workspace:^0.7.16",
+    "@hcengineering/server-client": "workspace:^0.7.17",
     "@hcengineering/server-token": "workspace:^0.7.17",
     "@hcengineering/server-notification": "workspace:^0.7.0",
     "@hcengineering/analytics": "workspace:^0.7.17",
     "@hcengineering/account-client": "workspace:^0.7.20",
     "@hcengineering/server-backup": "workspace:^0.7.0",
     "@hcengineering/postgres": "workspace:^0.7.21",
-    "@hcengineering/mongo": "workspace:^0.7.16"
+    "@hcengineering/mongo": "workspace:^0.7.17"
   }
 }

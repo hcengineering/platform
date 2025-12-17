@@ -29,9 +29,23 @@ import postgres, { type Row, Sql } from 'postgres'
 import { MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
 import { LoggedDB } from './logged'
 import { RetryDB } from './retry'
-import { getMigrations } from './migrations'
+import { DBFlavor, getMigrations } from './migrations'
 
 const BATCH_SIZE = 100
+
+export async function getDbFlavor (sql: Sql<any>): Promise<DBFlavor> {
+  const [{ version }] = await sql`SELECT version()`
+
+  if (/cockroach/i.test(version)) {
+    return 'cockroach'
+  }
+
+  if (/postgresql/i.test(version)) {
+    return 'postgres'
+  }
+
+  return 'unknown'
+}
 
 export async function createDb (ctx: MeasureContext, connectionString: string): Promise<BillingDB> {
   const sql = postgres(connectionString, {
@@ -57,10 +71,20 @@ export async function createDb (ctx: MeasureContext, connectionString: string): 
 }
 
 class PostgresDB implements BillingDB {
-  private constructor (private readonly sql: Sql) {}
+  private constructor (
+    private readonly sql: Sql,
+    private readonly flavor: DBFlavor
+  ) {}
 
   static async create (ctx: MeasureContext, sql: Sql): Promise<PostgresDB> {
-    const db = new PostgresDB(sql)
+    const flavor = await getDbFlavor(sql)
+    ctx.info('detected database flavor', { flavor })
+
+    if (flavor === 'unknown') {
+      throw new Error('Unknown database flavor. Only PostgreSQL and CockroachDB are supported.')
+    }
+
+    const db = new PostgresDB(sql, flavor)
     await db.initSchema(ctx)
     return db
   }
@@ -82,7 +106,7 @@ class PostgresDB implements BillingDB {
     const appliedMigrations = (await this.execute<Row[]>('SELECT name FROM billing.migrations')).map((row) => row.name)
     ctx.info('applied migrations', { migrations: appliedMigrations })
 
-    for (const [name, sql] of getMigrations()) {
+    for (const [name, sql] of getMigrations(this.flavor)) {
       if (appliedMigrations.includes(name)) {
         continue
       }
@@ -122,7 +146,7 @@ class PostgresDB implements BillingDB {
           COALESCE(SUM(bandwidth), 0) AS bandwidth,
           COALESCE(SUM(minutes), 0) AS minutes
       FROM billing.livekit_session
-      WHERE 
+      WHERE
           workspace = $1
           AND session_start >= $2
           AND session_start <= $3
@@ -149,7 +173,7 @@ class PostgresDB implements BillingDB {
           DATE_TRUNC('day', egress_start) AS day,
           COALESCE(SUM(duration), 0) AS minutes
       FROM billing.livekit_egress
-      WHERE 
+      WHERE
           workspace = $1
           AND egress_start >= $2
           AND egress_start <= $3
@@ -209,10 +233,23 @@ class PostgresDB implements BillingDB {
 
       if (values.length === 0) continue
 
-      const query = `
-        UPSERT INTO billing.livekit_session (workspace, session_id, session_start, session_end, room, bandwidth, minutes)
-        VALUES ${values.join(',')}
-      `
+      const query =
+        this.flavor === 'cockroach'
+          ? `
+          UPSERT INTO billing.livekit_session (workspace, session_id, session_start, session_end, room, bandwidth, minutes)
+          VALUES ${values.join(',')}
+        `
+          : `
+          INSERT INTO billing.livekit_session (workspace, session_id, session_start, session_end, room, bandwidth, minutes)
+          VALUES ${values.join(',')}
+          ON CONFLICT (workspace, session_id)
+          DO UPDATE SET
+            session_start = EXCLUDED.session_start,
+            session_end = EXCLUDED.session_end,
+            room = EXCLUDED.room,
+            bandwidth = EXCLUDED.bandwidth,
+            minutes = EXCLUDED.minutes
+        `
       await this.execute(query, params)
     }
   }
@@ -239,15 +276,29 @@ class PostgresDB implements BillingDB {
 
       if (values.length === 0) continue
 
-      const query = `
-        UPSERT INTO billing.livekit_egress (workspace, egress_id, egress_start, egress_end, room, duration)
-        VALUES ${values.join(',')}
-      `
+      const query =
+        this.flavor === 'cockroach'
+          ? `
+          UPSERT INTO billing.livekit_egress (workspace, egress_id, egress_start, egress_end, room, duration)
+          VALUES ${values.join(',')}
+        `
+          : `
+          INSERT INTO billing.livekit_egress (workspace, egress_id, egress_start, egress_end, room, duration)
+          VALUES ${values.join(',')}
+          ON CONFLICT (workspace, egress_id)
+          DO UPDATE SET
+            egress_start = EXCLUDED.egress_start,
+            egress_end = EXCLUDED.egress_end,
+            room = EXCLUDED.room,
+            duration = EXCLUDED.duration
+        `
       await this.execute(query, params)
     }
   }
 
   async pushAiTranscriptData (ctx: MeasureContext, data: AiTranscriptData[]): Promise<void> {
+    const stringType = this.flavor === 'cockroach' ? 'string' : 'text'
+
     for (let i = 0; i < data.length; i += BATCH_SIZE) {
       const batch = data.slice(i, i + BATCH_SIZE)
       if (batch.length === 0) continue
@@ -259,7 +310,7 @@ class PostgresDB implements BillingDB {
       for (const item of batch) {
         const { workspace, lastRequestId, lastStartTime, durationSeconds, usd, day } = item
         values.push(
-          `($${paramIndex++}::uuid, DATE($${paramIndex++}::timestamp), $${paramIndex++}::string, $${paramIndex++}::timestamp, $${paramIndex++}::float, $${paramIndex++}::decimal)`
+          `($${paramIndex++}::uuid, DATE($${paramIndex++}::timestamp), $${paramIndex++}::${stringType}, $${paramIndex++}::timestamp, $${paramIndex++}::float, $${paramIndex++}::decimal)`
         )
         params.push(workspace, day, lastRequestId, lastStartTime, durationSeconds, usd)
       }
@@ -347,7 +398,8 @@ class PostgresDB implements BillingDB {
   }
 
   async pushAiTokensData (ctx: MeasureContext, data: AiTokensData[]): Promise<void> {
-    const BATCH_SIZE = 100
+    const stringType = this.flavor === 'cockroach' ? 'string' : 'text'
+    const int8Type = this.flavor === 'cockroach' ? 'int8' : 'bigint'
 
     for (let i = 0; i < data.length; i += BATCH_SIZE) {
       const batch = data.slice(i, i + BATCH_SIZE)
@@ -361,7 +413,7 @@ class PostgresDB implements BillingDB {
         const { workspace, reason, tokens, date } = item
 
         values.push(
-          `($${paramIndex++}::uuid, $${paramIndex++}::date, $${paramIndex++}::string, $${paramIndex++}::int8)`
+          `($${paramIndex++}::uuid, $${paramIndex++}::date, $${paramIndex++}::${stringType}, $${paramIndex++}::${int8Type})`
         )
 
         params.push(workspace, date, reason, tokens)

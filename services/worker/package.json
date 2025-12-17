@@ -18,10 +18,10 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/worker .",
-    "docker:tbuild": "docker build -t hardcoreeng/worker . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/worker",
-    "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/worker staging",
-    "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/worker",
+    "docker:build": "../../common/scripts/docker_build.sh haiodo/worker .",
+    "docker:tbuild": "docker build -t haiodo/worker . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh haiodo/worker",
+    "docker:staging": "../../common/scripts/docker_tag.sh haiodo/worker staging",
+    "docker:push": "../../common/scripts/docker_tag.sh haiodo/worker",
     "run-local": "cross-env QUEUE_CONFIG='localhost:19092' REGION='cockroach' ts-node src/index.ts",
     "format": "format src",
     "_phase:build": "compile transpile src",
@@ -56,7 +56,7 @@
   "dependencies": {
     "@temporalio/worker": "1.12.3",
     "@temporalio/workflow": "1.12.3",
-    "@hcengineering/kafka": "workspace:^0.7.18",
+    "@hcengineering/kafka": "workspace:^0.7.19",
     "@hcengineering/process": "workspace:^0.7.0",
     "@hcengineering/core": "workspace:^0.7.23",
     "@hcengineering/server-core": "workspace:^0.7.18"
