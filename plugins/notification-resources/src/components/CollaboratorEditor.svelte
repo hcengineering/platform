@@ -25,7 +25,7 @@
   const query = createQuery()
   const client = getClient()
 
-  query.query(
+  $: query.query(
     core.class.Collaborator,
     {
       attachedTo: object._id
