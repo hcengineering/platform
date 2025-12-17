@@ -171,6 +171,7 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     isSpace: boolean
   ): boolean {
     const account = ctx.contextData.account
+    if (account.primarySocialId === core.account.System) return true
     const permissions = this.permissionsBySpace[space]?.[account.uuid] ?? []
     let withoutMatch: Permission | undefined
     for (const permission of permissions) {
