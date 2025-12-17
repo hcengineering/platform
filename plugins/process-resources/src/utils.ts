@@ -458,11 +458,17 @@ export async function getTransitionUserInput (
     for (const key in action.params) {
       const value = (action.params as any)[key]
       const context = parseContext(value)
-      if (context !== undefined && context.type === 'userRequest' && userContext[context.id] === undefined) {
+      if (context !== undefined && context.type === 'userRequest') {
         const promise = new Promise<void>((resolve) => {
           showPopup(
             process.component.RequestUserInput,
-            { processId, transition: transition._id, key: context.key, _class: context._class },
+            {
+              processId,
+              transition: transition._id,
+              key: context.key,
+              _class: context._class,
+              value: userContext[context.id]
+            },
             undefined,
             (res) => {
               if (res?.value !== undefined) {
