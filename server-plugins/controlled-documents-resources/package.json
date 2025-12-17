@@ -42,7 +42,7 @@
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/controlled-documents": "workspace:^0.7.0",
     "@hcengineering/server-contact": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/notification": "workspace:^0.7.0",
     "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/request": "workspace:^0.7.0",

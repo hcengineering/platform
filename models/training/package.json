@@ -43,7 +43,7 @@
     "@hcengineering/activity": "workspace:^0.7.0",
     "@hcengineering/attachment": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/model": "workspace:^0.7.17",
     "@hcengineering/model-attachment": "workspace:^0.7.0",
     "@hcengineering/model-contact": "workspace:^0.7.0",
