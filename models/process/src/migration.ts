@@ -18,14 +18,23 @@ import {
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient,
+  tryMigrate,
   tryUpgrade
 } from '@hcengineering/model'
 import process, { type State, type Step } from '@hcengineering/process'
 import { makeRank } from '@hcengineering/rank'
-import { processId } from '.'
+import { DOMAIN_PROCESS, processId } from '.'
 
 export const processOperation: MigrateOperation = {
-  async migrate (client: MigrationClient, mode): Promise<void> {},
+  async migrate (client: MigrationClient, mode): Promise<void> {
+    await tryMigrate(mode, client, processId, [
+      {
+        state: 'cleanup-rollback',
+        mode: 'upgrade',
+        func: cleanupRollback
+      }
+    ])
+  },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
     await tryUpgrade(mode, state, client, processId, [
       {
@@ -108,3 +117,12 @@ async function migrateActionsFromStates (client: Client): Promise<void> {
     }
   }
 }
+
+async function cleanupRollback (client: MigrationClient): Promise<void> {
+  await client.update(DOMAIN_PROCESS, {
+    _class: process.class.Execution
+  }, {
+    rollback: []
+  })
+}
+
