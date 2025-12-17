@@ -43,7 +43,7 @@
   "dependencies": {
     "@hcengineering/model": "workspace:^0.7.17",
     "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "koa": "^2.15.4",
     "koa-router": "^12.0.1",
     "koa-bodyparser": "^4.4.1",
@@ -56,7 +56,7 @@
     "@hcengineering/server-token": "workspace:^0.7.17",
     "@hcengineering/server-notification": "workspace:^0.7.0",
     "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/account-client": "workspace:^0.7.20",
+    "@hcengineering/account-client": "workspace:^0.7.21",
     "@hcengineering/server-backup": "workspace:^0.7.0",
     "@hcengineering/postgres": "workspace:^0.7.21",
     "@hcengineering/mongo": "workspace:^0.7.16"
