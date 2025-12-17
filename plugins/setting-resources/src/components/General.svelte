@@ -26,7 +26,8 @@
     getCurrentAccount,
     pickPrimarySocialId,
     readOnlyGuestAccountUuid,
-    Ref
+    Ref,
+    WorkspaceAccountPermission
   } from '@hcengineering/core'
   import { loginId } from '@hcengineering/login'
   import { translateCB } from '@hcengineering/platform'
@@ -424,7 +425,7 @@
           </div>
 
           <WorkspacePermissionEditor
-            permission="documents:permission:ImportDocument"
+            permission={WorkspaceAccountPermission.ImportDocument}
             label={settingsRes.string.ImportDocumentPermission}
             description={settingsRes.string.ImportDocumentDescription}
             allowGuests={true}

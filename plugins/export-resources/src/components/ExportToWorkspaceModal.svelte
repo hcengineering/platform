@@ -18,7 +18,8 @@
     DocumentQuery,
     type WorkspaceInfoWithStatus,
     isActiveMode,
-    type WorkspaceUuid
+    type WorkspaceUuid,
+    WorkspaceAccountPermission
   } from '@hcengineering/core'
   import { Card, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { DropdownLabels, Label } from '@hcengineering/ui'
@@ -39,8 +40,6 @@
   $: _class = selectedDocs.length > 0 ? selectedDocs[0]._class : undefined
 
   const dispatch = createEventDispatcher()
-  // Workspace account permission - matches WorkspaceAccountPermission.ImportDocument from @hcengineering/account-client
-  const IMPORT_DOCUMENT_PERMISSION = 'documents:permission:ImportDocument'
 
   let targetWorkspace: string | undefined = undefined
   let workspaces: WorkspaceInfoWithStatus[] = []
@@ -58,7 +57,7 @@
       try {
         const getWorkspacePermissionsFn = await getResource(login.function.GetWorkspacePermissions as any)
         const workspaceUuids = await (getWorkspacePermissionsFn as (permission: string) => Promise<WorkspaceUuid[]>)(
-          IMPORT_DOCUMENT_PERMISSION
+          WorkspaceAccountPermission.ImportDocument
         )
         workspacesWithPermission = new Set<WorkspaceUuid>(workspaceUuids)
       } catch (err) {
