@@ -947,3 +947,13 @@ export interface Collaborator extends AttachedDoc {
  * @public
  */
 export type IntegrationKind = string & { __IntegrationKind: true }
+
+/**
+ * @public
+ */
+export enum WorkspaceAccountPermission {
+  /**
+   * Allows users to import documents to workspace.
+   */
+  ImportDocument = 'ImportDocument'
+}
