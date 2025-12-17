@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -8,17 +8,21 @@
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
 
-import { accountPlugin } from './plugin'
-
-export * from './operations'
-export * from './permissions'
-export * from './plugin'
-export * from './utils'
-export * from './types'
-export type { MongoAccountDB } from './collections/mongo'
-export default accountPlugin
+/**
+ * Workspace-level account permissions.
+ * These permissions are stored in the account database and are separate from
+ * document/space-level permissions which are stored in the workspace database.
+ *
+ * @public
+ */
+export enum WorkspaceAccountPermission {
+  /**
+   * Permission to import documents into a workspace.
+   * Allows users to import documents from other workspaces.
+   */
+  ImportDocument = 'documents:permission:ImportDocument'
+}

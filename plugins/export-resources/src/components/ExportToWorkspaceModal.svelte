@@ -13,7 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, type WorkspaceInfoWithStatus, isActiveMode } from '@hcengineering/core'
+  import {
+    Doc,
+    DocumentQuery,
+    type WorkspaceInfoWithStatus,
+    isActiveMode,
+    type WorkspaceUuid
+  } from '@hcengineering/core'
   import { Card, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { DropdownLabels, Label } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
@@ -33,9 +39,12 @@
   $: _class = selectedDocs.length > 0 ? selectedDocs[0]._class : undefined
 
   const dispatch = createEventDispatcher()
+  // Workspace account permission - matches WorkspaceAccountPermission.ImportDocument from @hcengineering/account-client
+  const IMPORT_DOCUMENT_PERMISSION = 'documents:permission:ImportDocument'
 
   let targetWorkspace: string | undefined = undefined
   let workspaces: WorkspaceInfoWithStatus[] = []
+  let workspacesWithPermission = new Set<WorkspaceUuid>()
   let loading = false
   let workspaceLoading = false
 
@@ -43,7 +52,23 @@
     try {
       workspaceLoading = true
       const getWorkspacesFn = await getResource(login.function.GetWorkspaces)
-      workspaces = (await getWorkspacesFn()).filter((ws) => isActiveMode(ws.mode))
+      const allWorkspaces = (await getWorkspacesFn()).filter((ws) => isActiveMode(ws.mode))
+
+      // Get workspaces where user has ImportDocument permission
+      try {
+        const getWorkspacePermissionsFn = await getResource(login.function.GetWorkspacePermissions as any)
+        const workspaceUuids = await (getWorkspacePermissionsFn as (permission: string) => Promise<WorkspaceUuid[]>)(
+          IMPORT_DOCUMENT_PERMISSION
+        )
+        workspacesWithPermission = new Set<WorkspaceUuid>(workspaceUuids)
+      } catch (err) {
+        console.error('Failed to load workspace permissions:', err)
+        // If we can't load permissions, don't filter (show all workspaces)
+        workspacesWithPermission = new Set<WorkspaceUuid>(allWorkspaces.map((ws) => ws.uuid))
+      }
+
+      // Filter to only show workspaces where user has ImportDocument permission
+      workspaces = allWorkspaces.filter((ws) => workspacesWithPermission.has(ws.uuid))
     } catch (err) {
       console.error('Failed to load workspaces:', err)
     } finally {

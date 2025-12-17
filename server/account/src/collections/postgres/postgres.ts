@@ -48,7 +48,8 @@ import type {
   IntegrationSecret,
   AccountAggregatedInfo,
   UserProfile,
-  Subscription
+  Subscription,
+  WorkspacePermission
 } from '../../types'
 
 function toSnakeCase (str: string): string {
@@ -523,6 +524,7 @@ export class PostgresAccountDB implements AccountDB {
   integrationSecret: PostgresDbCollection<IntegrationSecret>
   userProfile: PostgresDbCollection<UserProfile, 'personUuid'>
   subscription: PostgresDbCollection<Subscription, 'id'>
+  workspacePermission: PostgresDbCollection<WorkspacePermission>
 
   constructor (
     readonly client: Sql,
@@ -576,6 +578,11 @@ export class PostgresAccountDB implements AccountDB {
       ns,
       idKey: 'id',
       timestampFields: ['periodStart', 'periodEnd', 'trialEnd', 'canceledAt', 'willCancelAt', 'createdOn', 'updatedOn'],
+      withRetryClient
+    })
+    this.workspacePermission = new PostgresDbCollection<WorkspacePermission>('workspace_permissions', client, {
+      ns,
+      timestampFields: ['createdOn'],
       withRetryClient
     })
   }
@@ -1187,5 +1194,75 @@ export class PostgresAccountDB implements AccountDB {
 
   protected getMigrations (): [string, string][] {
     return getMigrations(this.ns)
+  }
+
+  async batchAssignWorkspacePermission (
+    workspaceId: WorkspaceUuid,
+    accountIds: AccountUuid[],
+    permission: string
+  ): Promise<void> {
+    if (accountIds.length === 0) {
+      return
+    }
+
+    const now = Date.now()
+    await this.withRetry(async (rTx) => {
+      for (const accountId of accountIds) {
+        await rTx`
+          INSERT INTO ${this.client(this.workspacePermission.getTableName())}
+          (workspace_uuid, account_uuid, permission, created_on)
+          VALUES (${workspaceId}, ${accountId}, ${permission}, ${now})
+          ON CONFLICT (workspace_uuid, account_uuid, permission) DO NOTHING
+        `
+      }
+    })
+  }
+
+  async batchRevokeWorkspacePermission (
+    workspaceId: WorkspaceUuid,
+    accountIds: AccountUuid[],
+    permission: string
+  ): Promise<void> {
+    if (accountIds.length === 0) {
+      return
+    }
+
+    await this.withRetry(async (rTx) => {
+      await rTx`
+        DELETE FROM ${this.client(this.workspacePermission.getTableName())}
+        WHERE workspace_uuid = ${workspaceId}
+          AND permission = ${permission}
+          AND account_uuid = ANY(${accountIds}::uuid[])
+      `
+    })
+  }
+
+  async hasWorkspacePermission (
+    accountId: AccountUuid,
+    workspaceId: WorkspaceUuid,
+    permission: string
+  ): Promise<boolean> {
+    const result = await this.workspacePermission.findOne({
+      workspaceUuid: workspaceId,
+      accountUuid: accountId,
+      permission
+    })
+    return result !== undefined
+  }
+
+  async getWorkspacePermissions (accountId: AccountUuid, permission: string): Promise<WorkspaceUuid[]> {
+    const results = await this.workspacePermission.find({
+      accountUuid: accountId,
+      permission
+    })
+    return results.map((r) => r.workspaceUuid)
+  }
+
+  async getWorkspaceUsersWithPermission (workspaceId: WorkspaceUuid, permission: string): Promise<AccountUuid[]> {
+    const results = await this.workspacePermission.find({
+      workspaceUuid: workspaceId,
+      permission
+    })
+    return results.map((r) => r.accountUuid)
   }
 }

@@ -41,7 +41,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV20Migration(ns),
     getV21Migration(ns),
     getV22Migration(ns),
-    getV23Migration(ns)
+    getV23Migration(ns),
+    getV24Migration(ns)
   ]
 }
 
@@ -598,6 +599,26 @@ function getV23Migration (ns: string): [string, string] {
     `
     ALTER TABLE ${ns}.workspace
     ADD COLUMN IF NOT EXISTS password_aging_rule INT8;
+    `
+  ]
+}
+
+function getV24Migration (ns: string): [string, string] {
+  return [
+    'account_db_v24_add_workspace_permissions_table',
+    `
+    /* ======= W O R K S P A C E   P E R M I S S I O N S ======= */
+    CREATE TABLE IF NOT EXISTS ${ns}.workspace_permissions (
+        workspace_uuid UUID NOT NULL,
+        account_uuid UUID NOT NULL,
+        permission STRING NOT NULL,
+        created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
+        CONSTRAINT workspace_permissions_pk PRIMARY KEY (workspace_uuid, account_uuid, permission),
+        CONSTRAINT workspace_permissions_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${ns}.workspace(uuid),
+        CONSTRAINT workspace_permissions_account_fk FOREIGN KEY (account_uuid) REFERENCES ${ns}.account(uuid),
+        INDEX workspace_permissions_account_idx (account_uuid),
+        INDEX workspace_permissions_permission_idx (permission)
+    );
     `
   ]
 }

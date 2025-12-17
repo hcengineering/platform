@@ -208,6 +208,9 @@
     "OfficeSettings": "Настройки офиса",
     "OfficeDefaultSettings": "Настройки по умолчанию для переговорных",
     "DefaultStartWithTranscription": "Включить транскрипцию в новых комнатах",
-    "DefaultStartWithRecording": "Включить запись в новых комнатах"
+    "DefaultStartWithRecording": "Включить запись в новых комнатах",
+    "ImportDocumentPermission": "Импорт документов",
+    "ImportDocumentDescription": "Предоставляет пользователям возможность импортировать документы в рабочее пространство",
+    "SelectUsers": "Выбрать пользователей"
   }
 }

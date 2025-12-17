@@ -57,6 +57,7 @@
   } from '@hcengineering/ui'
   import settingsRes from '../plugin'
   import ApiTokenPopup from './ApiTokenPopup.svelte'
+  import WorkspacePermissionEditor from './WorkspacePermissionEditor.svelte'
   import de from 'date-fns/locale/de'
 
   let loading = true
@@ -421,6 +422,13 @@
               />
             </div>
           </div>
+
+          <WorkspacePermissionEditor
+            permission="documents:permission:ImportDocument"
+            label={settingsRes.string.ImportDocumentPermission}
+            description={settingsRes.string.ImportDocumentDescription}
+            allowGuests={true}
+          />
 
           <div class="flex-col flex-gap-4 mt-6">
             <div class="title"><Label label={settingsRes.string.ApiAccess} /></div>
