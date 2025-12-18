@@ -1,3 +1,3 @@
 #!/bin/bash
 
-../../common/scripts/docker_build.sh intabia-fusion/hulypulse
+../../common/scripts/docker_build.sh intabiafusion/hulypulse

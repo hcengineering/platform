@@ -30,7 +30,7 @@ services:
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     restart: unless-stopped
   account:
-    image: intabia-fusion/account
+    image: intabiafusion/account
     links:
       - minio
     ports:
@@ -53,7 +53,7 @@ services:
       - INIT_WORKSPACE=onboarding
     restart: unless-stopped
   collaborator:
-    image: intabia-fusion/collaborator
+    image: intabiafusion/collaborator
     links:
       - minio
       - transactor
@@ -69,7 +69,7 @@ services:
       - STORAGE_CONFIG=${STORAGE_CONFIG}
     restart: unless-stopped
   front:
-    image: intabia-fusion/front
+    image: intabiafusion/front
     links:
       - minio
       - elastic
@@ -101,7 +101,7 @@ services:
       - BRANDING_URL=http://localhost:8087/branding.json
     restart: unless-stopped
   transactor:
-    image: intabia-fusion/transactor
+    image: intabiafusion/transactor
     links:
       - elastic
       - minio
@@ -135,7 +135,7 @@ services:
       - BRANDING_PATH=/var/cfg/branding.json
     restart: unless-stopped
   rekoni:
-    image: intabia-fusion/rekoni-service
+    image: intabiafusion/rekoni-service
     restart: unless-stopped
     ports:
       - 4004:4004
@@ -144,7 +144,7 @@ services:
         limits:
           memory: 1024M
   print:
-    image: intabia-fusion/print
+    image: intabiafusion/print
     restart: unless-stopped
     ports:
       - 4005:4005
@@ -158,7 +158,7 @@ services:
         limits:
           memory: 300M
   sign:
-    image: intabia-fusion/sign
+    image: intabiafusion/sign
     restart: unless-stopped
     ports:
       - 4006:4006
@@ -181,7 +181,7 @@ services:
         limits:
           memory: 300M
   #  analytics:
-  #    image: intabia-fusion/analytics-collector
+  #    image: intabiafusion/analytics-collector
   #    restart: unless-stopped
   #    ports:
   #      - 4007:4007
@@ -197,7 +197,7 @@ services:
   #        limits:
   #          memory: 300M
   aiBot:
-    image: intabia-fusion/ai-bot
+    image: intabiafusion/ai-bot
     restart: unless-stopped
     environment:
       - SERVER_SECRET=secret
@@ -213,7 +213,7 @@ services:
         limits:
           memory: 300M
 #  telegram-bot:
-#    image: intabia-fusion/telegram-bot
+#    image: intabiafusion/telegram-bot
 #    restart: unless-stopped
 #    environment:
 #      - PORT=4020

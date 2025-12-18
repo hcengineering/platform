@@ -1,4 +1,4 @@
-FROM intabia-fusion/preview-base:v20250811
+FROM intabiafusion/preview-base:v20251218
 
 WORKDIR /app
 

@@ -4,4 +4,4 @@
  -e MINIO_ACCESS_KEY=minioadmin \
  -e MINIO_SECRET_KEY=minioadmin \
  --rm --network host \
- intabia-fusion/tool node ./bundle upgrade
+ intabiafusion/tool node ./bundle upgrade

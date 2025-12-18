@@ -1,4 +1,4 @@
-FROM intabia-fusion/rekoni-base:v20250811
+FROM intabiafusion/rekoni-base:v20251218
 WORKDIR /usr/src/app
 
 COPY bundle/bundle.js ./

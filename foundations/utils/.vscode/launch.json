@@ -411,7 +411,7 @@
       "args": [
         "src/__start.ts",
         "backup-restore",
-        "/Users/intabia-fusion/Develop/private/platform/tests/sanity-ws",
+        "/Users/intabiafusion/Develop/private/platform/tests/sanity-ws",
         "sanity-ws",
         "--upgrade"
       ],

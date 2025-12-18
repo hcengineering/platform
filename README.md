@@ -1,6 +1,6 @@
 # Foundation is a personal fork of hcengineering Platform
 
-![GitHub License](https://img.shields.io/github/license/intabia-fusion/foundation?style=for-the-badge)
+![GitHub License](https://img.shields.io/github/license/intabiafusion/foundation?style=for-the-badge)
 
 ⭐️ Your star shines on us. Star us on GitHub!
 

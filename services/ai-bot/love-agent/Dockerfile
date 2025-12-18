@@ -1,4 +1,4 @@
-FROM intabia-fusion/base-slim:v20250811
+FROM intabiafusion/base-slim:v20251218
 WORKDIR /usr/src/app
 
 RUN npm install -g pnpm

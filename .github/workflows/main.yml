@@ -521,8 +521,6 @@ jobs:
                 "containerd-snapshotter": true
               }
             }
-          rm -rf ${{env.INIT_SCRIPTS_BRANCH}}.zip
-
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
@@ -639,7 +637,7 @@ jobs:
       - name: Docker build huly pulse
         run: |
           cd ./foundations/hulypulse
-          ../../common/scripts/docker_build.sh intabia-fusion/hulypulse
+          ../../common/scripts/docker_build.sh intabiafusion/hulypulse
         env:
           DOCKER_CLI_HINTS: false
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
@@ -657,7 +655,7 @@ jobs:
         run: |
           echo Pushing release of tag ${{ github.ref }}
           cd ./foundations/hulypulse
-          ../../common/scripts/docker_tag.sh intabia-fusion/hulypulse
+          ../../common/scripts/docker_tag.sh intabiafusion/hulypulse
 
   dist-build:
     # if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}

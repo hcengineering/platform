@@ -14,7 +14,7 @@
 docker run \
   -e FRONT_URL="https://huly.app" \
   -v /path/to/export:/data \
-  intabia-fusion/import-tool:latest \
+  intabiafusion/import-tool:latest \
   -- bundle.js import-clickup-tasks /data/tasks.csv \
   --user your.email@company.com \
   --password yourpassword \

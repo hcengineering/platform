@@ -218,7 +218,7 @@ Document content in Markdown...
 docker run \
   -e FRONT_URL="https://huly.app" \
   -v /path/to/workspace:/data \
-  intabia-fusion/import-tool:latest \
+  intabiafusion/import-tool:latest \
   -- bundle.js import /data \
   --user your.email@company.com \
   --password yourpassword \

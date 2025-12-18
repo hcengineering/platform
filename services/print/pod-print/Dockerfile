@@ -1,5 +1,5 @@
 
-FROM intabia-fusion/print-base:v20250811
+FROM intabiafusion/print-base:v20251218
 
 WORKDIR /usr/src/app
 COPY bundle/bundle.js ./

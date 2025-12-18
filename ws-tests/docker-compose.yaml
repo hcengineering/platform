@@ -1,6 +1,6 @@
 services:
   stream:
-    image: 'intabia-fusion/stream'
+    image: 'intabiafusion/stream'
     pull_policy: never
     extra_hosts:
       - 'huly.local:host-gateway'
@@ -106,7 +106,7 @@ services:
       interval: 5s
       retries: 10
   datalake:
-    image: intabia-fusion/datalake
+    image: intabiafusion/datalake
     depends_on:
       minio:
         condition: service_healthy
@@ -146,7 +146,7 @@ services:
       retries: 10
       test: curl -s http://huly.local:9200/_cluster/health | grep -vq '"status":"red"'
   account:
-    image: intabia-fusion/account
+    image: intabiafusion/account
     pull_policy: never
     extra_hosts:
       - 'huly.local:host-gateway'
@@ -181,7 +181,7 @@ services:
       # - DISABLE_SIGNUP=true
     restart: unless-stopped
   stats:
-    image: intabia-fusion/stats
+    image: intabiafusion/stats
     extra_hosts:
       - 'huly.local:host-gateway'
     ports:
@@ -191,7 +191,7 @@ services:
       - SERVER_SECRET=secret
     restart: unless-stopped
   workspace:
-    image: intabia-fusion/workspace
+    image: intabiafusion/workspace
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -216,7 +216,7 @@ services:
       # - INIT_WORKSPACE=huly
     restart: unless-stopped
   workspace_europe:
-    image: intabia-fusion/workspace
+    image: intabiafusion/workspace
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -241,7 +241,7 @@ services:
       # - INIT_WORKSPACE=huly
     restart: unless-stopped
   collaborator:
-    image: intabia-fusion/collaborator
+    image: intabiafusion/collaborator
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -259,7 +259,7 @@ services:
       - STATS_URL=http://huly.local:4901
     restart: unless-stopped
   front:
-    image: intabia-fusion/front
+    image: intabiafusion/front
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -296,7 +296,7 @@ services:
       # - DISABLE_SIGNUP=true
     restart: unless-stopped
   transactor:
-    image: intabia-fusion/transactor
+    image: intabiafusion/transactor
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -328,7 +328,7 @@ services:
       - RATE_LIMIT_MAX=25000
       - RATE_LIMIT_WINDOW=1000
   transactor-europe:
-    image: intabia-fusion/transactor
+    image: intabiafusion/transactor
     extra_hosts:
       - 'huly.local:host-gateway'
     pull_policy: never
@@ -362,7 +362,7 @@ services:
       - RATE_LIMIT_WINDOW=1000
     restart: unless-stopped
   rekoni:
-    image: intabia-fusion/rekoni-service
+    image: intabiafusion/rekoni-service
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
@@ -371,7 +371,7 @@ services:
     environment:
       - STATS_URL=http://huly.local:4901
   fulltext:
-    image: intabia-fusion/fulltext
+    image: intabiafusion/fulltext
     extra_hosts:
       - 'huly.local:host-gateway'
     restart: unless-stopped
@@ -393,7 +393,7 @@ services:
       - REKONI_URL=http://huly.local:4007
       - ACCOUNTS_URL=http://huly.local:3003
   fulltext-europe:
-    image: intabia-fusion/fulltext
+    image: intabiafusion/fulltext
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
@@ -416,7 +416,7 @@ services:
       - ACCOUNTS_URL=http://huly.local:3003
     restart: unless-stopped
   aiBot:
-    image: intabia-fusion/ai-bot
+    image: intabiafusion/ai-bot
     ports:
       - 4011:4011
     extra_hosts:
