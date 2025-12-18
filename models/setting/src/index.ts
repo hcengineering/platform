@@ -737,6 +737,10 @@ export function createModel (builder: Builder): void {
     presenter: setting.component.AttributePermissionPresenter
   })
 
+  builder.mixin(core.class.ClassPermission, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: setting.component.ClassPermissionPresenter
+  })
+
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {
     domain: DOMAIN_SETTING,
     disabled: [{ modifiedOn: 1 }, { modifiedBy: 1 }, { createdOn: 1 }, { space: 1 }]

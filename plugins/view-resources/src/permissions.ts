@@ -31,6 +31,18 @@ export function canChangeAttribute (
     return true
   }
 
+  const target = attr.attributeOf
+  const forbiddenClId = `${target}_forbidden` as Ref<Permission>
+  const forbiddenCl = store.ps[space]?.has(forbiddenClId)
+  if (forbiddenCl) {
+    return false
+  }
+  const allowedClId = `${target}_allowed` as Ref<Permission>
+  const allowedCl = store.ps[space]?.has(allowedClId)
+  if (allowedCl) {
+    return true
+  }
+
   return canChangeDoc(_class ?? attr.attributeOf, space, store)
 }
 

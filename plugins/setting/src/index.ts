@@ -200,6 +200,7 @@ export default plugin(settingId, {
     ClassSetting: '' as AnyComponent,
     PermissionPresenter: '' as AnyComponent,
     AttributePermissionPresenter: '' as AnyComponent,
+    ClassPermissionPresenter: '' as AnyComponent,
     SpaceTypeDescriptorPresenter: '' as AnyComponent,
     SpaceTypeGeneralSectionEditor: '' as AnyComponent,
     SpaceTypePropertiesSectionEditor: '' as AnyComponent,
