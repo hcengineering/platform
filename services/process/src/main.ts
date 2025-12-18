@@ -23,7 +23,9 @@ import core, {
   Ref,
   SortingOrder,
   Tx,
+  TxCUD,
   TxMixin,
+  TxOperations,
   TxProcessor,
   TxUpdateDoc,
   WorkspaceUuid
@@ -68,7 +70,7 @@ const activeExecutions = new Set<Ref<Execution>>()
 
 export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid, ctx: MeasureContext): Promise<void> {
   try {
-    const client = await getClient(ws, record.account)
+    const client = new TxOperations(await getClient(ws), record.account)
     try {
       const control: ProcessControl = {
         ctx,
@@ -92,7 +94,7 @@ export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid,
         await processBroadcast(control, record)
       }
     } finally {
-      await releaseClient(ws, record.account)
+      await releaseClient(ws)
     }
   } catch (error) {
     ctx.error('Error processing event', { error, ws, record })
@@ -344,7 +346,9 @@ async function executeTransition (
   let nested = false
   let disableRollback = false
   let transition: Transition | undefined = _transition
+  let currTransition: Transition = _transition
   while (transition !== undefined) {
+    currTransition = transition
     let deep = control.cache.get(execution._id + 'transition') ?? 0
     deep++
     control.cache.set(execution._id + 'transition', deep)
@@ -455,22 +459,34 @@ async function executeTransition (
       })
     )
     if (errors.length === 0) {
-      for (const tx of res) {
-        const timeout = setTimeout(() => {
-          control.ctx.warn('TX HANG', tx)
-        }, 30000)
-        await client.tx(tx)
-        clearTimeout(timeout)
-      }
-      await sendEvent(control, execution, transition, card, isDone)
-      if (isDone && execution.parentId !== undefined) {
-        await checkParent(execution, control)
-      }
-      TxProcessor.applyUpdate(execution, executionUpdate)
-      transition = await checkNext(control, execution, context)
-      nested = true
-      if (transition === undefined) {
-        await setNextTimers(control, execution)
+      try {
+        const apply = client.txFactory.createTxApplyIf(
+          core.space.Tx,
+          `${execution._id}_${transition._id}`,
+          [],
+          [],
+          res as TxCUD<Doc>[],
+          'process',
+          true
+        )
+        await client.tx(apply)
+        await sendEvent(control, execution, transition, card, isDone)
+        if (isDone && execution.parentId !== undefined) {
+          await checkParent(execution, control)
+        }
+        TxProcessor.applyUpdate(execution, executionUpdate)
+        currTransition = transition
+        transition = await checkNext(control, execution, context)
+        nested = true
+        if (transition === undefined) {
+          await setNextTimers(control, execution)
+        }
+      } catch (err) {
+        const errorId = generateId()
+        control.ctx.error(err instanceof Error ? err.message : String(err), { errorId })
+        const e = parseError(processError(process.error.InternalServerError, { errorId }), currTransition._id)
+        await client.update(execution, { error: [e] })
+        break
       }
     } else {
       await client.update(execution, { error: errors })
