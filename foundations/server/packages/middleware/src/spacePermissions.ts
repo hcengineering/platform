@@ -473,7 +473,7 @@ function getTxClass (tx: Tx): Ref<Class<Tx>> {
 
 function isTxClassMatched (tx: Tx, permission: Permission): boolean {
   const txClass = getTxClass(tx)
-  return permission.txClass === txClass
+  return permission.txClass === txClass || permission.txClass === tx._class
 }
 
 function getTxObjectClass (tx: TxCUD<Doc>): Ref<Class<Doc>> {
