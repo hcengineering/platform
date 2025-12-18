@@ -15,9 +15,81 @@
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
   import { ClassAttributes } from '@hcengineering/setting-resources'
+  import setting from '@hcengineering/setting-resources/src/plugin'
+  import { ButtonIcon, showPopup } from '@hcengineering/ui'
   import card from '../../plugin'
+  import { getClient, MessageBox } from '@hcengineering/presentation'
+  import core, { ClassPermission, Ref } from '@hcengineering/core'
+  import view from '@hcengineering/view'
 
   export let masterTag: MasterTag
+
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  let isRestricted: boolean =
+    client.getModel().findObject(getPermissionRef(false)) !== undefined ||
+    client.getModel().findObject(getPermissionRef(true)) !== undefined
+
+  function getPermissionRef (forbidden: boolean): Ref<ClassPermission> {
+    return `${masterTag._id}_${forbidden ? 'forbidden' : 'allowed'}` as Ref<ClassPermission>
+  }
+
+  function changeRestricted (): void {
+    showPopup(
+      MessageBox,
+      {
+        label: setting.string.Restricted,
+        message: setting.string.RestrictedAttributeWarning,
+        action: async () => {
+          isRestricted = true
+          const isMixin = hierarchy.isMixin(masterTag._id)
+          const objectClass = hierarchy.getBaseClass(masterTag._id)
+          const txClass = isMixin ? core.class.TxMixin : core.class.TxUpdateDoc
+          await client.createDoc(
+            core.class.ClassPermission,
+            core.space.Model,
+            {
+              objectClass,
+              txClass,
+              txMatch: {
+                [isMixin ? 'mixin' : 'objectClass']: masterTag._id
+              },
+              scope: 'space',
+              forbid: false,
+              label: view.string.AllowAttributeChanges,
+              description: masterTag.label,
+              targetClass: masterTag._id
+            },
+            getPermissionRef(false)
+          )
+          await client.createDoc(
+            core.class.ClassPermission,
+            core.space.Model,
+            {
+              objectClass,
+              txClass,
+              txMatch: {
+                [isMixin ? 'mixin' : 'objectClass']: masterTag._id
+              },
+              scope: 'space',
+              forbid: true,
+              label: view.string.ForbidAttributeChanges,
+              description: masterTag.label,
+              targetClass: masterTag._id
+            },
+            getPermissionRef(true)
+          )
+        }
+      },
+      'top',
+      (res) => {
+        if (res !== undefined) {
+          isRestricted = res
+        }
+      }
+    )
+  }
 </script>
 
 <ClassAttributes
@@ -27,4 +99,17 @@
   showHeader={false}
   disabled={false}
   isCard
-/>
+>
+  <div slot="header">
+    <ButtonIcon
+      kind={'secondary'}
+      icon={card.icon.Lock}
+      size={'small'}
+      tooltip={{
+        label: setting.string.Restricted
+      }}
+      disabled={isRestricted}
+      on:click={changeRestricted}
+    />
+  </div>
+</ClassAttributes>

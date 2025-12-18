@@ -30,8 +30,10 @@ import { Analytics } from '@hcengineering/analytics'
 import {
   AccountRole,
   concatLink,
+  getCurrentAccount,
   type AccountUuid,
   type Person,
+  type WorkspaceUuid,
   type WorkspaceInfoWithStatus,
   type WorkspaceUserOperation
 } from '@hcengineering/core'
@@ -249,6 +251,24 @@ export async function getWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
   })
 
   return workspaces
+}
+
+export async function getWorkspacePermissions (permission: string): Promise<WorkspaceUuid[]> {
+  const token = getMetadata(presentation.metadata.Token)
+  if (token == null) {
+    return []
+  }
+
+  try {
+    const currentAccount = getCurrentAccount()
+    return await getAccountClient(token).getWorkspacePermissions({
+      accountId: currentAccount.uuid,
+      permission
+    })
+  } catch (err: any) {
+    Analytics.handleError(err)
+    return []
+  }
 }
 
 export async function performWorkspaceOperation (

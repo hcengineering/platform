@@ -26,6 +26,7 @@ import {
   selectWorkspace,
   exchangeGuestToken,
   getWorkspaces,
+  getWorkspacePermissions,
   sendInvite,
   leaveWorkspace,
   resendInvite
@@ -54,6 +55,7 @@ export default async () => ({
     FetchWorkspace: fetchWorkspace,
     GetPerson: getPerson,
     GetWorkspaces: getWorkspaces,
+    GetWorkspacePermissions: getWorkspacePermissions,
     SendInvite: sendInvite,
     ResendInvite: resendInvite,
     GetInviteLink: getInviteLink

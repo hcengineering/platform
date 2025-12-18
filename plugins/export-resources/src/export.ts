@@ -40,7 +40,8 @@ export async function exportToWorkspace (
         state: 'draft',
         major: 1,
         minor: 0,
-        reviewers: []
+        reviewers: [],
+        controlledState: ''
       },
       'documents:class:DocumentMeta': {
         author: '$currentUser',
