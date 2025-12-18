@@ -199,6 +199,9 @@
     "OfficeSettings": "Configuración de oficina",
     "OfficeDefaultSettings": "Configuración predeterminada para salas de reuniones",
     "DefaultStartWithTranscription": "Habilitar transcripción en nuevas oficinas",
-    "DefaultStartWithRecording": "Habilitar grabación en nuevas oficinas"
+    "DefaultStartWithRecording": "Habilitar grabación en nuevas oficinas",
+    "ImportDocumentPermission": "Importar documentos",
+    "ImportDocumentDescription": "Otorga a los usuarios la capacidad de importar documentos al espacio de trabajo",
+    "SelectUsers": "Seleccionar usuarios"
   }
 }
