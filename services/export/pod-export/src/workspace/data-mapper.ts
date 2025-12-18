@@ -111,13 +111,27 @@ export class DataMapper {
     // First check exact class match
     if (this.fieldMappers[docClass] !== undefined) {
       fieldMapper = this.fieldMappers[docClass]
+      this.context.info(`Found exact field mapper match for class ${docClass}`)
     } else {
-      // Check all base classes
+      // Check all base classes - find the most specific (closest) mapper
+      let bestMapper: Record<string, any> | undefined
+      let bestMapperClass: string | undefined
+
       for (const [className, mapper] of Object.entries(this.fieldMappers)) {
-        if (hierarchy.isDerived(docClass, className as Ref<Class<Doc>>)) {
-          fieldMapper = mapper
-          break
+        const mapperClass = className as Ref<Class<Doc>>
+        if (hierarchy.isDerived(docClass, mapperClass)) {
+          if (bestMapper === undefined) {
+            bestMapper = mapper
+            bestMapperClass = className
+          } else if (hierarchy.isDerived(mapperClass, bestMapperClass as Ref<Class<Doc>>)) {
+            bestMapper = mapper
+            bestMapperClass = className
+          }
         }
+      }
+
+      if (bestMapper !== undefined) {
+        fieldMapper = bestMapper
       }
     }
 
