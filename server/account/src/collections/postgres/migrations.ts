@@ -759,6 +759,7 @@ function getV23Migration (ns: string, flavor: DBFlavor): [string, string] {
 }
 
 function getV24Migration (ns: string, flavor: DBFlavor): [string, string] {
+  const types = dbTypes[flavor]
   return [
     'account_db_v24_add_workspace_permissions_table',
     `
@@ -766,8 +767,8 @@ function getV24Migration (ns: string, flavor: DBFlavor): [string, string] {
     CREATE TABLE IF NOT EXISTS ${ns}.workspace_permissions (
         workspace_uuid UUID NOT NULL,
         account_uuid UUID NOT NULL,
-        permission STRING NOT NULL,
-        created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
+        permission ${types.string}  NOT NULL,
+        created_on ${types.int8} NOT NULL DEFAULT current_epoch_ms(),
         CONSTRAINT workspace_permissions_pk PRIMARY KEY (workspace_uuid, account_uuid, permission),
         CONSTRAINT workspace_permissions_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${ns}.workspace(uuid),
         CONSTRAINT workspace_permissions_account_fk FOREIGN KEY (account_uuid) REFERENCES ${ns}.account(uuid),
