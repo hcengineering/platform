@@ -771,10 +771,14 @@ function getV24Migration (ns: string, flavor: DBFlavor): [string, string] {
         created_on ${types.int8} NOT NULL DEFAULT current_epoch_ms(),
         CONSTRAINT workspace_permissions_pk PRIMARY KEY (workspace_uuid, account_uuid, permission),
         CONSTRAINT workspace_permissions_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${ns}.workspace(uuid),
-        CONSTRAINT workspace_permissions_account_fk FOREIGN KEY (account_uuid) REFERENCES ${ns}.account(uuid),
-        INDEX workspace_permissions_account_idx (account_uuid),
-        INDEX workspace_permissions_permission_idx (permission)
+        CONSTRAINT workspace_permissions_account_fk FOREIGN KEY (account_uuid) REFERENCES ${ns}.account(uuid)
     );
+
+    CREATE INDEX IF NOT EXISTS workspace_permissions_account_idx
+    ON ${ns}.workspace_permissions (account_uuid);
+
+    CREATE INDEX IF NOT EXISTS workspace_permissions_permission_idx
+    ON ${ns}.workspace_permissions (permission);
     `
   ]
 }
