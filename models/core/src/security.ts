@@ -18,8 +18,13 @@ import {
   DOMAIN_SPACE,
   IndexKind,
   type AccountRole,
+  type AccountUuid,
+  type AnyAttribute,
+  type AttributePermission,
   type Class,
+  type ClassPermission,
   type CollectionSize,
+  type Doc,
   type Permission,
   type Ref,
   type Role,
@@ -27,13 +32,9 @@ import {
   type Space,
   type SpaceType,
   type SpaceTypeDescriptor,
-  type TypedSpace,
-  type AccountUuid,
-  type TxAccessLevel,
   type Tx,
-  type Doc,
-  type AnyAttribute,
-  type AttributePermission
+  type TxAccessLevel,
+  type TypedSpace
 } from '@hcengineering/core'
 import {
   ArrOf,
@@ -43,15 +44,15 @@ import {
   Mixin,
   Model,
   Prop,
-  TypeBoolean,
   TypeAccountUuid,
+  TypeBoolean,
   TypeRef,
   TypeString,
   UX
 } from '@hcengineering/model'
 import { getEmbeddedLabel, type Asset, type IntlString } from '@hcengineering/platform'
 import core from './component'
-import { TAttachedDoc, TDoc, TClass } from './core'
+import { TAttachedDoc, TClass, TDoc } from './core'
 // S P A C E
 
 @Model(core.class.Space, core.class.Doc, DOMAIN_SPACE)
@@ -171,6 +172,12 @@ export class TPermission extends TDoc implements Permission {
 @UX(core.string.Permission)
 export class TAttributePermission extends TPermission implements AttributePermission {
   attribute!: Ref<AnyAttribute>
+}
+
+@Model(core.class.ClassPermission, core.class.Permission)
+@UX(core.string.Permission)
+export class TClassPermission extends TPermission implements ClassPermission {
+  targetClass!: Ref<Class<Doc>>
 }
 
 @Mixin(core.mixin.SpacesTypeData, core.class.Space)

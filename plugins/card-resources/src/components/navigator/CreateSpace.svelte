@@ -62,11 +62,32 @@
 
     const asMixin = hierarchy.as(space, core.mixin.SpacesTypeData)
 
-    return roles.reduce<RolesAssignment>((prev, { _id }) => {
+    const res = roles.reduce<RolesAssignment>((prev, { _id }) => {
       prev[_id] = (asMixin as any)[_id] ?? []
 
       return prev
     }, {})
+    return res
+  }
+
+  function getCurrentRolesAssignment (): RolesAssignment {
+    if (space === undefined) {
+      return {}
+    }
+
+    const asMixin = hierarchy.as(space, core.mixin.SpacesTypeData)
+    const allRoles = client.getModel().findAllSync(card.class.Role, {})
+
+    const res: RolesAssignment = {}
+
+    for (const role of allRoles) {
+      const curr = (asMixin as any)[role._id]
+      if (curr !== undefined) {
+        res[role._id] = curr
+      }
+    }
+
+    return res
   }
 
   async function handleSave (): Promise<void> {
@@ -100,7 +121,7 @@
     const data = getData()
     await client.diffUpdate(space, data)
 
-    if (rolesAssignment && !deepEqual(rolesAssignment, getRolesAssignment(roles))) {
+    if (rolesAssignment && !deepEqual(rolesAssignment, getCurrentRolesAssignment())) {
       await client.updateMixin(space._id, space._class, core.space.Space, core.mixin.SpacesTypeData, rolesAssignment)
     }
 
@@ -112,7 +133,7 @@
 
     const id = await client.createDoc(card.class.CardSpace, core.space.Space, data)
 
-    if (rolesAssignment && !deepEqual(rolesAssignment, getRolesAssignment(roles))) {
+    if (rolesAssignment && !deepEqual(rolesAssignment, getCurrentRolesAssignment())) {
       await client.updateMixin(id, card.class.CardSpace, core.space.Space, core.mixin.SpacesTypeData, rolesAssignment)
     }
 
