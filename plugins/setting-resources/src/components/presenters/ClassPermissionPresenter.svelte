@@ -13,22 +13,22 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AnyAttribute, AttributePermission } from '@hcengineering/core'
+  import { Class, ClassPermission, Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
 
-  export let value: AttributePermission
+  export let value: ClassPermission
   export let inline: boolean = false
 
   const client = getClient()
-  $: attr = client.getModel().findObject(value?.attribute) as AnyAttribute
+  $: _class = client.getModel().findObject(value?.targetClass) as Class<Doc>
 </script>
 
 {#if value}
   <div class="flex-presenter" class:inline-presenter={inline}>
     <Label label={value.label} />
-    {#if attr}
-      <Label label={attr.label} />
+    {#if _class}
+      <Label label={_class.label} />
     {/if}
   </div>
 {/if}

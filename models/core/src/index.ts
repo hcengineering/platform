@@ -33,9 +33,12 @@ import {
   TAttribute,
   TBlob,
   TClass,
+  TClassCollaborators,
+  TCollaborator,
   TCollection,
   TConfiguration,
   TConfigurationElement,
+  TCustomSequence,
   TDoc,
   TDomainIndexConfiguration,
   TEnum,
@@ -49,8 +52,10 @@ import {
   TPluginConfiguration,
   TRefTo,
   TRelation,
+  TSequence,
   TTransientConfiguration,
   TType,
+  TTypeAccountUuid,
   TTypeAny,
   TTypeBlob,
   TTypeBoolean,
@@ -58,26 +63,22 @@ import {
   TTypeDate,
   TTypeFileSize,
   TTypeHyperlink,
+  TTypeIdentifier,
   TTypeIntlString,
   TTypeMarkup,
-  TTypePersonId,
-  TTypeAccountUuid,
   TTypeNumber,
-  TTypeIdentifier,
+  TTypePersonId,
   TTypeRank,
   TTypeRecord,
   TTypeRelatedDocument,
   TTypeString,
   TTypeTimestamp,
-  TVersion,
-  TSequence,
-  TCustomSequence,
-  TClassCollaborators,
-  TCollaborator
+  TVersion
 } from './core'
 import { definePermissions } from './permissions'
 import {
   TAttributePermission,
+  TClassPermission,
   TPermission,
   TRole,
   TSpace,
@@ -95,15 +96,15 @@ export { coreId, DOMAIN_SPACE } from '@hcengineering/core'
 export * from './core'
 export {
   coreOperation,
-  getSocialKeyByOldAccount,
   getAccountsFromTxes,
-  getSocialKeyByOldEmail,
-  getAccountUuidBySocialKey,
-  getUniqueAccounts,
   getAccountUuidByOldAccount,
-  getUniqueAccountsFromOldAccounts,
+  getAccountUuidBySocialKey,
   getSocialIdBySocialKey,
-  getSocialIdFromOldAccount
+  getSocialIdFromOldAccount,
+  getSocialKeyByOldAccount,
+  getSocialKeyByOldEmail,
+  getUniqueAccounts,
+  getUniqueAccountsFromOldAccounts
 } from './migration'
 export * from './security'
 export * from './status'
@@ -134,6 +135,7 @@ export function createModel (builder: Builder): void {
     TRole,
     TPermission,
     TAttributePermission,
+    TClassPermission,
     TAttribute,
     TType,
     TEnumOf,

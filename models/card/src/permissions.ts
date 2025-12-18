@@ -23,7 +23,10 @@ export function definePermissions (builder: Builder): void {
       label: card.string.AddTagPermission,
       txClass: core.class.TxMixin,
       objectClass: card.class.Card,
-      scope: 'space'
+      scope: 'space',
+      txMatch: {
+        attributes: {}
+      }
     },
     card.permission.AddTag
   )
