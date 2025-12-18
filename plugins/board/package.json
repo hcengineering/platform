@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/view": "workspace:^0.7.0",
     "@hcengineering/task": "workspace:^0.7.0",

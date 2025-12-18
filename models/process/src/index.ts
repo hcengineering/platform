@@ -79,7 +79,7 @@ import { definePermissions } from './permission'
 import process from './plugin'
 import { defineTriggers } from './triggers'
 
-const DOMAIN_PROCESS = 'process' as Domain
+export const DOMAIN_PROCESS = 'process' as Domain
 const DOMAIN_PROCESS_LOG = 'process-log' as Domain
 
 @Model(process.class.Process, core.class.Doc, DOMAIN_MODEL)

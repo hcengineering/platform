@@ -342,6 +342,7 @@ async function executeTransition (
   control: ProcessControl
 ): Promise<void> {
   let nested = false
+  let disableRollback = false
   let transition: Transition | undefined = _transition
   while (transition !== undefined) {
     let deep = control.cache.get(execution._id + 'transition') ?? 0
@@ -359,7 +360,7 @@ async function executeTransition (
     if (trigger === undefined) return
     const rollback: Tx[] = []
     const triggerImpl = control.client.getHierarchy().as(trigger, serverProcess.mixin.TriggerImpl)
-    const disableRollback = triggerImpl?.preventRollback ?? false
+    disableRollback = disableRollback || (triggerImpl?.preventRollback ?? false)
     const triggerRollback = await getTriggerRollback(triggerImpl, control)
     if (triggerRollback !== undefined) {
       rollback.push(triggerRollback)
