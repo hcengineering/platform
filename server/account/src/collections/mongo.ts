@@ -57,7 +57,8 @@ import type {
   WorkspaceInvite,
   WorkspaceOperation,
   WorkspaceStatus,
-  WorkspaceStatusData
+  WorkspaceStatusData,
+  WorkspacePermission
 } from '../types'
 import { isShallowEqual } from '../utils'
 
@@ -409,6 +410,7 @@ export class MongoAccountDB implements AccountDB {
   subscription: MongoDbCollection<Subscription, 'id'>
 
   workspaceMembers: MongoDbCollection<WorkspaceMember>
+  workspacePermission: MongoDbCollection<WorkspacePermission>
 
   constructor (readonly db: Db) {
     this.migration = new MongoDbCollection<MigrationInfo, 'key'>('migration', db, 'key')
@@ -428,6 +430,7 @@ export class MongoAccountDB implements AccountDB {
     this.subscription = new MongoDbCollection<Subscription, 'id'>('subscription', db, 'id')
 
     this.workspaceMembers = new MongoDbCollection<WorkspaceMember>('workspaceMembers', db)
+    this.workspacePermission = new MongoDbCollection<WorkspacePermission>('workspacePermissions', db)
   }
 
   async init (): Promise<void> {
@@ -874,5 +877,70 @@ export class MongoAccountDB implements AccountDB {
 
   async generatePersonUuid (): Promise<PersonUuid> {
     return new UUID().toJSON() as PersonUuid
+  }
+
+  async batchAssignWorkspacePermission (
+    workspaceId: WorkspaceUuid,
+    accountIds: AccountUuid[],
+    permission: string
+  ): Promise<void> {
+    if (accountIds.length === 0) {
+      return
+    }
+
+    const now = Date.now()
+    await this.workspacePermission.insertMany(
+      accountIds.map((accountId) => ({
+        workspaceUuid: workspaceId,
+        accountUuid: accountId,
+        permission,
+        createdOn: now
+      }))
+    )
+  }
+
+  async batchRevokeWorkspacePermission (
+    workspaceId: WorkspaceUuid,
+    accountIds: AccountUuid[],
+    permission: string
+  ): Promise<void> {
+    if (accountIds.length === 0) {
+      return
+    }
+
+    await this.workspacePermission.deleteMany({
+      workspaceUuid: workspaceId,
+      permission,
+      accountUuid: { $in: accountIds }
+    })
+  }
+
+  async hasWorkspacePermission (
+    accountId: AccountUuid,
+    workspaceId: WorkspaceUuid,
+    permission: string
+  ): Promise<boolean> {
+    const result = await this.workspacePermission.findOne({
+      workspaceUuid: workspaceId,
+      accountUuid: accountId,
+      permission
+    })
+    return result !== undefined
+  }
+
+  async getWorkspacePermissions (accountId: AccountUuid, permission: string): Promise<WorkspaceUuid[]> {
+    const results = await this.workspacePermission.find({
+      accountUuid: accountId,
+      permission
+    })
+    return results.map((r) => r.workspaceUuid)
+  }
+
+  async getWorkspaceUsersWithPermission (workspaceId: WorkspaceUuid, permission: string): Promise<AccountUuid[]> {
+    const results = await this.workspacePermission.find({
+      workspaceUuid: workspaceId,
+      permission
+    })
+    return results.map((r) => r.accountUuid)
   }
 }

@@ -74,7 +74,7 @@
     "@hcengineering/model-notification": "workspace:^0.7.0",
     "@hcengineering/model-text-editor": "workspace:^0.7.0",
     "@hcengineering/model-uploader": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/model-tags": "workspace:^0.7.0",
     "@hcengineering/model-calendar": "workspace:^0.7.0",

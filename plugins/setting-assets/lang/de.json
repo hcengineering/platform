@@ -208,6 +208,9 @@
     "OfficeSettings": "Büroeinstellungen",
     "OfficeDefaultSettings": "Standardeinstellungen für Besprechungsräume",
     "DefaultStartWithTranscription": "Transkription in neuen Büroräumen aktivieren",
-    "DefaultStartWithRecording": "Aufnahme in neuen Büroräumen aktivieren"
+    "DefaultStartWithRecording": "Aufnahme in neuen Büroräumen aktivieren",
+    "ImportDocumentPermission": "Dokumente importieren",
+    "ImportDocumentDescription": "Gewährt Benutzern die Möglichkeit, Dokumente in den Arbeitsbereich zu importieren",
+    "SelectUsers": "Benutzer auswählen"
   }
 }

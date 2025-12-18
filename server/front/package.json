@@ -46,14 +46,14 @@
     "@types/morgan": "~1.9.9"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/platform": "workspace:^0.7.19",
     "express": "^4.21.2",
     "express-fileupload": "^1.5.1",
     "express-static-gzip": "^2.2.0",
     "uuid": "^8.3.2",
     "cors": "^2.8.5",
-    "@hcengineering/account-client": "workspace:^0.7.20",
+    "@hcengineering/account-client": "workspace:^0.7.21",
     "@hcengineering/server-core": "workspace:^0.7.18",
     "@hcengineering/storage": "workspace:^0.7.17",
     "@hcengineering/server-storage": "workspace:^0.7.17",

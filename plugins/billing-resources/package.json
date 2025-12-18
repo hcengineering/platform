@@ -42,7 +42,7 @@
     "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/presentation": "workspace:^0.7.0",
     "@hcengineering/theme": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/billing": "workspace:^0.7.0",
     "@hcengineering/view": "workspace:^0.7.0",
@@ -51,7 +51,7 @@
     "@hcengineering/drive": "workspace:^0.7.0",
     "@hcengineering/love": "workspace:^0.7.0",
     "@hcengineering/login": "workspace:^0.7.0",
-    "@hcengineering/account-client": "workspace:^0.7.20",
+    "@hcengineering/account-client": "workspace:^0.7.21",
     "@hcengineering/payment-client": "workspace:^0.7.0",
     "filesize": "^8.0.3",
     "svelte": "^4.2.20"

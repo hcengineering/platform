@@ -244,6 +244,12 @@ export interface AccountClient {
   getSubscriptionById: (subscriptionId: string) => Promise<Subscription | null>
   upsertSubscription: (subscription: SubscriptionData) => Promise<void>
 
+  batchAssignWorkspacePermission: (params: { accountIds: AccountUuid[], permission: string }) => Promise<void>
+  batchRevokeWorkspacePermission: (params: { accountIds: AccountUuid[], permission: string }) => Promise<void>
+  hasWorkspacePermission: (params: { accountId: AccountUuid, permission: string }) => Promise<boolean>
+  getWorkspacePermissions: (params: { accountId: AccountUuid, permission: string }) => Promise<WorkspaceUuid[]>
+  getWorkspaceUsersWithPermission: (params: { permission: string }) => Promise<AccountUuid[]>
+
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
 }
@@ -1261,6 +1267,41 @@ class AccountClientImpl implements AccountClient {
     await this._rpc({
       method: 'upsertSubscription',
       params: subscription
+    })
+  }
+
+  async batchAssignWorkspacePermission (params: { accountIds: AccountUuid[], permission: string }): Promise<void> {
+    await this._rpc({
+      method: 'batchAssignWorkspacePermission',
+      params
+    })
+  }
+
+  async batchRevokeWorkspacePermission (params: { accountIds: AccountUuid[], permission: string }): Promise<void> {
+    await this._rpc({
+      method: 'batchRevokeWorkspacePermission',
+      params
+    })
+  }
+
+  async hasWorkspacePermission (params: { accountId: AccountUuid, permission: string }): Promise<boolean> {
+    return await this._rpc({
+      method: 'hasWorkspacePermission',
+      params
+    })
+  }
+
+  async getWorkspacePermissions (params: { accountId: AccountUuid, permission: string }): Promise<WorkspaceUuid[]> {
+    return await this._rpc({
+      method: 'getWorkspacePermissions',
+      params
+    })
+  }
+
+  async getWorkspaceUsersWithPermission (params: { permission: string }): Promise<AccountUuid[]> {
+    return await this._rpc({
+      method: 'getWorkspaceUsersWithPermission',
+      params
     })
   }
 }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/platform-rig",
+      "comment": "Ignore svelte preprocess warnings",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/platform-rig"
+}

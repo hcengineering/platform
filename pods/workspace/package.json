@@ -50,7 +50,7 @@
   "dependencies": {
     "@hcengineering/workspace-service": "workspace:^0.7.0",
     "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "mongodb": "^6.16.0",
     "@hcengineering/server-token": "workspace:^0.7.17",
     "@hcengineering/server-core": "workspace:^0.7.18",

@@ -91,7 +91,7 @@
     "@hcengineering/controlled-documents": "workspace:^0.7.0",
     "@hcengineering/controlled-documents-assets": "workspace:^0.7.0",
     "@hcengineering/controlled-documents-resources": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/desktop-preferences": "workspace:^0.7.0",
     "@hcengineering/desktop-preferences-assets": "workspace:^0.7.0",
     "@hcengineering/desktop-preferences-resources": "workspace:^0.7.0",

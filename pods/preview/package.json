@@ -55,7 +55,7 @@
     "@types/heic-decode": "^1.1.2"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/server-core": "workspace:^0.7.18",
     "@hcengineering/analytics-service": "workspace:^0.7.17",
