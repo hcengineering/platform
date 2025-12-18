@@ -438,7 +438,7 @@
             description={settingsRes.string.ImportDocumentDescription}
             allowGuests={true}
           />
-
+          <!--
           <div class="flex-col flex-gap-4 mt-6">
             <div class="title"><Label label={settingsRes.string.ApiAccess} /></div>
             <div class="w-32">
