@@ -355,8 +355,11 @@ async function isLatestDraftDoc (obj?: Doc | Doc[]): Promise<boolean> {
     }
 
     const { template, seqNumber } = doc
+    const docClass = h.hasMixin(doc, documents.mixin.DocumentTemplate)
+      ? documents.mixin.DocumentTemplate
+      : documents.class.Document
     const latestDoc = await client.findOne(
-      documents.class.Document,
+      docClass,
       { template, seqNumber },
       {
         sort: {
