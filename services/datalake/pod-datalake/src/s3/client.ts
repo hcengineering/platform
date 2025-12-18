@@ -34,6 +34,8 @@ export function createClient (opt: S3Options): S3 {
       secretAccessKey: opt.secretKey
     },
     region: opt.region ?? 'auto',
+    // https://github.com/aws/aws-sdk-js-v3/issues/7048
+    requestStreamBufferSize: 32 * 1024,
     requestHandler: new NodeHttpHandler({
       connectionTimeout: 5000,
       socketTimeout: 120000,
