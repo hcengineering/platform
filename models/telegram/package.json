@@ -38,7 +38,7 @@
     "@hcengineering/chunter": "workspace:^0.7.0",
     "@hcengineering/love": "workspace:^0.7.0",
     "@hcengineering/model": "workspace:^0.7.17",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/model-core": "workspace:^0.7.0",
     "@hcengineering/model-attachment": "workspace:^0.7.0",

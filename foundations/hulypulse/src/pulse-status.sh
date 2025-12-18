@@ -1,1 +1,0 @@
-curl -i https://pulse.hc.engineering/status

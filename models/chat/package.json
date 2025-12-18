@@ -38,7 +38,7 @@
     "@hcengineering/communication": "workspace:^0.7.0",
     "@hcengineering/chat": "workspace:^0.7.0",
     "@hcengineering/chat-resources": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/model": "workspace:^0.7.17",
     "@hcengineering/model-card": "workspace:^0.7.0",
     "@hcengineering/model-core": "workspace:^0.7.0",

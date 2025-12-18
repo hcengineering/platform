@@ -15,8 +15,8 @@
 
 use crate::{
     config::CONFIG,
+    db::{DbArray, DbResult, SaveMode, Ttl, deprecated_symbol_error, error},
     hub_service::{HubState, RedisEvent, RedisEventAction, broadcast_event},
-    redis::{RedisArray, SaveMode, Ttl, deprecated_symbol_error, error},
 };
 use std::{
     collections::HashMap,
@@ -95,10 +95,7 @@ impl MemoryBackend {
 }
 
 /// memory_list(&backend, "prefix/") → Vec<RedisArray>
-pub async fn memory_list(
-    backend: &MemoryBackend,
-    key_prefix: &str,
-) -> redis::RedisResult<Vec<RedisArray>> {
+pub async fn memory_list(backend: &MemoryBackend, key_prefix: &str) -> DbResult<Vec<DbArray>> {
     deprecated_symbol_error(key_prefix)?;
     if !key_prefix.ends_with('/') {
         return error(412, "Key must end with slash");
@@ -125,7 +122,7 @@ pub async fn memory_list(
 
         let expires = v.ttl.wrapping_sub(current_tick);
 
-        results.push(RedisArray {
+        results.push(DbArray {
             key: k.clone(),
             data: v.data.clone(),
             ttl: expires as u64,
@@ -137,7 +134,7 @@ pub async fn memory_list(
 }
 
 /// memory_info(&backend)
-pub async fn memory_info(backend: &MemoryBackend) -> redis::RedisResult<String> {
+pub async fn memory_info(backend: &MemoryBackend) -> DbResult<String> {
     let map = backend.inner.read().await;
     let keys = map.len();
     let memory: usize = map.values().map(|v| v.data.len()).sum();
@@ -145,10 +142,7 @@ pub async fn memory_info(backend: &MemoryBackend) -> redis::RedisResult<String> 
 }
 
 /// memory_read(&backend, "key")
-pub async fn memory_read(
-    backend: &MemoryBackend,
-    key: &str,
-) -> redis::RedisResult<Option<RedisArray>> {
+pub async fn memory_read(backend: &MemoryBackend, key: &str) -> DbResult<Option<DbArray>> {
     deprecated_symbol_error(key)?;
     if key.ends_with('/') {
         return error(412, "Key must not end with a slash");
@@ -163,7 +157,7 @@ pub async fn memory_read(
             let current_tick = *backend.tick.read().await;
             let expires = entry.ttl.wrapping_sub(current_tick);
 
-            Ok(Some(RedisArray {
+            Ok(Some(DbArray {
                 key: key.to_string(),
                 data: data.clone(),
                 ttl: expires as u64,
@@ -174,7 +168,7 @@ pub async fn memory_read(
 }
 
 /// TTL in sec
-fn compute_ttl_u8(ttl: Option<Ttl>) -> redis::RedisResult<u8> {
+fn compute_ttl_u8(ttl: Option<Ttl>) -> DbResult<u8> {
     let sec_usize = match ttl {
         Some(Ttl::Sec(secs)) => secs,
         Some(Ttl::At(timestamp)) => {
@@ -209,7 +203,7 @@ pub async fn memory_save<V: AsRef<[u8]>>(
     bytes_value: V,
     ttl: Option<Ttl>,
     mode: Option<SaveMode>,
-) -> redis::RedisResult<()> {
+) -> DbResult<()> {
     // u8 - String
     let value = match std::str::from_utf8(bytes_value.as_ref()) {
         Ok(s) => s.to_string(),
@@ -300,7 +294,7 @@ pub async fn memory_delete(
     backend: &MemoryBackend,
     key: &str,
     mode: Option<SaveMode>,
-) -> redis::RedisResult<bool> {
+) -> DbResult<bool> {
     deprecated_symbol_error(key)?;
     if key.ends_with('/') {
         return error(412, "Key must not end with a slash");

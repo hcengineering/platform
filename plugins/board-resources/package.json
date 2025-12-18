@@ -46,7 +46,7 @@
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/contact-resources": "workspace:^0.7.0",
     "@hcengineering/task-resources": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/notification": "workspace:^0.7.0",
     "@hcengineering/notification-resources": "workspace:^0.7.0",
     "@hcengineering/panel": "workspace:^0.7.0",

@@ -26,8 +26,7 @@
   export let transition: Ref<Transition>
   export let key: string
   export let _class: Ref<Class<Doc>>
-
-  let value: any | undefined = undefined
+  export let value: any | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()

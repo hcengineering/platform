@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/core",
+      "comment": "Add workspace permission enum",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/core"
+}

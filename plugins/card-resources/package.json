@@ -43,7 +43,7 @@
     "@hcengineering/presentation": "workspace:^0.7.0",
     "@hcengineering/communication-types": "workspace:^0.7.12",
     "@hcengineering/communication-resources": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/setting": "workspace:^0.7.0",
     "@hcengineering/attachment": "workspace:^0.7.0",
@@ -72,7 +72,7 @@
     "@hcengineering/card": "workspace:^0.7.0",
     "@hcengineering/communication": "workspace:^0.7.0",
     "@hcengineering/preference": "workspace:^0.7.0",
-    "@hcengineering/account-client": "workspace:^0.7.20",
+    "@hcengineering/account-client": "workspace:^0.7.21",
     "@hcengineering/chat": "workspace:^0.7.0",
     "fast-equals": "^5.2.2",
     "svelte": "^4.2.20"
