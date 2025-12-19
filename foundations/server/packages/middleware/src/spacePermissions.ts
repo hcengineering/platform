@@ -202,35 +202,33 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       return true
     }
 
-    if (this.restrictedSpaces.has(space)) {
-      const attachedDocAncestors = this.context.hierarchy.getAncestors(core.class.AttachedDoc)
-      const ancestors = this.context.hierarchy.getAncestors(getTxObjectClass(tx))
-      const targetAncestors = ancestors.filter((a) => !attachedDocAncestors.includes(a))
+    const attachedDocAncestors = this.context.hierarchy.getAncestors(core.class.AttachedDoc)
+    const ancestors = this.context.hierarchy.getAncestors(getTxObjectClass(tx))
+    const targetAncestors = ancestors.filter((a) => !attachedDocAncestors.includes(a))
 
-      const permissions = this.context.modelDb.findAllSync(core.class.Permission, {
-        objectClass: { $in: targetAncestors }
-      })
-      for (const permission of permissions) {
-        if (!isTxClassMatched(tx, permission)) continue
-        if (
-          permission.objectClass !== undefined &&
-          !this.context.hierarchy.isDerived(getTxObjectClass(tx), permission.objectClass)
-        ) {
+    const allPermissions = this.context.modelDb.findAllSync(core.class.Permission, {
+      objectClass: { $in: targetAncestors }
+    })
+    for (const permission of allPermissions) {
+      if (!isTxClassMatched(tx, permission)) continue
+      if (
+        permission.objectClass !== undefined &&
+        !this.context.hierarchy.isDerived(getTxObjectClass(tx), permission.objectClass)
+      ) {
+        continue
+      }
+      if (permission.txMatch === undefined) {
+        return false
+      } else {
+        const checkMatch = matchQuery([tx], permission.txMatch, tx._class, this.context.hierarchy, true)
+        if (checkMatch.length === 0) {
           continue
-        }
-        if (permission.txMatch === undefined) {
-          return false
-        } else {
-          const checkMatch = matchQuery([tx], permission.txMatch, tx._class, this.context.hierarchy, true)
-          if (checkMatch.length === 0) {
-            continue
-          }
         }
         return false
       }
     }
 
-    return false
+    return true
   }
 
   private throwForbidden (): void {
