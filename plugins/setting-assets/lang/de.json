@@ -211,6 +211,7 @@
     "DefaultStartWithRecording": "Aufnahme in neuen Büroräumen aktivieren",
     "ImportDocumentPermission": "Dokumente importieren",
     "ImportDocumentDescription": "Gewährt Benutzern die Möglichkeit, Dokumente in den Arbeitsbereich zu importieren",
-    "SelectUsers": "Benutzer auswählen"
+    "SelectUsers": "Benutzer auswählen",
+    "ShowInTitle": "Im Titel anzeigen"
   }
 }

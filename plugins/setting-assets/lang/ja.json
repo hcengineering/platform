@@ -211,6 +211,7 @@
     "DefaultStartWithRecording": "新しいオフィスルームで録画を有効にする",
     "ImportDocumentPermission": "ドキュメントをインポート",
     "ImportDocumentDescription": "ユーザーにワークスペースにドキュメントをインポートする機能を付与します",
-    "SelectUsers": "ユーザーを選択"
+    "SelectUsers": "ユーザーを選択",
+    "ShowInTitle": "タイトルに表示"
   }
 }

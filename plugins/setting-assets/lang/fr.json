@@ -211,6 +211,7 @@
     "DefaultStartWithRecording": "Activer l'enregistrement dans les nouveaux bureaux",
     "ImportDocumentPermission": "Importer des documents",
     "ImportDocumentDescription": "Accorde aux utilisateurs la possibilité d'importer des documents dans l'espace de travail",
-    "SelectUsers": "Sélectionner des utilisateurs"
+    "SelectUsers": "Sélectionner des utilisateurs",
+    "ShowInTitle": "Afficher dans le titre"
   }
 }

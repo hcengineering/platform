@@ -209,6 +209,7 @@
     "DefaultStartWithRecording": "Povolit záznam v nových kancelářích",
     "ImportDocumentPermission": "Importovat dokumenty",
     "ImportDocumentDescription": "Umožňuje uživatelům importovat dokumenty do pracovního prostoru",
-    "SelectUsers": "Vybrat uživatele"
+    "SelectUsers": "Vybrat uživatele",
+    "ShowInTitle": "Zobrazit v názvu"
   }
 }

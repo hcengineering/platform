@@ -202,6 +202,7 @@
     "DefaultStartWithRecording": "Habilitar grabación en nuevas oficinas",
     "ImportDocumentPermission": "Importar documentos",
     "ImportDocumentDescription": "Otorga a los usuarios la capacidad de importar documentos al espacio de trabajo",
-    "SelectUsers": "Seleccionar usuarios"
+    "SelectUsers": "Seleccionar usuarios",
+    "ShowInTitle": "Mostrar en el título"
   }
 }
