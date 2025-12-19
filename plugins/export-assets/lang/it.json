@@ -32,6 +32,7 @@
     "SelectWorkspace": "Seleziona spazio di lavoro",
     "SelectWorkspaceToExport": "Seleziona spazio di lavoro per esportare {count, plural, =1 {1 documento} other {# documenti}}",
     "SelectSpace": "Seleziona spazio",
-    "NoSelectedDocuments": "Nessun documento selezionato"
+    "NoSelectedDocuments": "Nessun documento selezionato",
+    "RequestPermissionToImport": "Si prega di richiedere l'autorizzazione al proprietario dello spazio di lavoro di destinazione per importare documenti."
   }
 }

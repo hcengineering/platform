@@ -32,6 +32,7 @@
     "SelectWorkspace": "Select workspace",
     "SelectWorkspaceToExport": "Select workspace to export {count, plural, =1 {1 document} other {# documents}}",
     "SelectSpace": "Select space",
-    "NoSelectedDocuments": "No documents selected"
+    "NoSelectedDocuments": "No documents selected",
+    "RequestPermissionToImport": "Please request permission from the target workspace owner to import documents."
   }
 }

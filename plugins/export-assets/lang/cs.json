@@ -32,6 +32,7 @@
     "SelectWorkspace": "Vybrat pracovní prostor",
     "SelectWorkspaceToExport": "Vybrat pracovní prostor pro export {count, plural, =1 {1 dokument} other {# dokumentů}}",
     "SelectSpace": "Vybrat prostor",
-    "NoSelectedDocuments": "Žádné dokumenty nevybrány"
+    "NoSelectedDocuments": "Žádné dokumenty nevybrány",
+    "RequestPermissionToImport": "Prosím, požádejte vlastníka cílového pracovního prostoru o povolení k importu dokumentů."
   }
 }
