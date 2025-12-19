@@ -211,6 +211,7 @@
     "DefaultStartWithRecording": "Abilita registrazione nelle nuove stanze dell'ufficio",
     "ImportDocumentPermission": "Importa documenti",
     "ImportDocumentDescription": "Concede agli utenti la possibilità di importare documenti nell'area di lavoro",
-    "SelectUsers": "Seleziona utenti"
+    "SelectUsers": "Seleziona utenti",
+    "ShowInTitle": "Mostra nel titolo"
   }
 }

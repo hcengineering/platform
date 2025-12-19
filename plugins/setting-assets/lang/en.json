@@ -211,6 +211,7 @@
     "DefaultStartWithRecording": "Enable recording in new office rooms",
     "ImportDocumentPermission": "Import documents",
     "ImportDocumentDescription": "Grants users ability to import documents into the workspace",
-    "SelectUsers": "Select users"
+    "SelectUsers": "Select users",
+    "ShowInTitle": "Show in title"
   }
 }

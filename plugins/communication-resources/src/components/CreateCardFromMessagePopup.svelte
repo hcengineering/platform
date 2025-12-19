@@ -112,7 +112,7 @@
 </script>
 
 <Modal
-  label={getEmbeddedLabel('Create card from message')}
+  label={cardPlugin.string.CreateCard}
   type="type-popup"
   okLabel={presentation.string.Create}
   okAction={attachCard}
@@ -127,10 +127,10 @@
 
   <div class="hulyModal-content__settingsSet">
     <div class="hulyModal-content__settingsSet-line">
-      <span class="label"><Label label={getEmbeddedLabel('Card type')} /></span>
+      <span class="label"><Label label={cardPlugin.string.MasterTag} /></span>
       <NestedDropdown
         items={classes}
-        label={getEmbeddedLabel('Card type')}
+        label={cardPlugin.string.MasterTag}
         on:selected={(e) => {
           selectedType = e.detail
         }}
