@@ -187,6 +187,8 @@
         <IconSettings size={'small'} />
         <span><Label label={settings.string.ClassProperties} /></span>
       {/if}
+    {:else if $$slots.header}
+      <slot name="header" />
     {:else}
       <div></div>
     {/if}

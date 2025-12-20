@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Card, MasterTag } from '@hcengineering/card'
-  import { Ref } from '@hcengineering/core'
+  import core, { Ref, TypeIdentifier } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, tooltip } from '@hcengineering/ui'
@@ -56,6 +56,25 @@
 
   $: _class = cardObj && (client.getHierarchy().getClass(cardObj?._class) as MasterTag)
   $: icon = _class && _class.icon
+
+  $: ids = getIds(cardObj)
+
+  function getIds (val: Card | undefined): string {
+    if (val === undefined) return ''
+    const h = client.getHierarchy()
+    const attrs = h.getAllAttributes(val._class, core.class.Doc)
+    const res: string[] = []
+    for (const [k, v] of attrs) {
+      if (v.type._class === core.class.TypeIdentifier) {
+        const type = v.type as TypeIdentifier
+        const str = (val as any)[k]
+        if (type.showInPresenter === true && str !== undefined) {
+          res.push(str)
+        }
+      }
+    }
+    return res.join(' ')
+  }
 </script>
 
 {#if inline && cardObj}
@@ -82,6 +101,7 @@
             </div>
           {/if}
           <span class="overflow-label">
+            {ids}
             {cardObj.title}
             <slot name="details" />
           </span>
@@ -106,6 +126,7 @@
           </div>
         {/if}
         <span class="overflow-label cropped-text-presenter">
+          {ids}
           {cardObj.title}
           <slot name="details" />
         </span>
@@ -113,6 +134,7 @@
     {/if}
   {:else}
     <span class="overflow-label" class:select-text={!noSelect} use:tooltip={{ label: getEmbeddedLabel(cardObj.title) }}>
+      {ids}
       {cardObj.title}
     </span>
   {/if}

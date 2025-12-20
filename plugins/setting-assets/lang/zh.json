@@ -208,6 +208,10 @@
     "OfficeSettings": "办公室设置",
     "OfficeDefaultSettings": "会议室的默认设置",
     "DefaultStartWithTranscription": "在新办公室启用转录",
-    "DefaultStartWithRecording": "在新办公室启用录制"
+    "DefaultStartWithRecording": "在新办公室启用录制",
+    "ImportDocumentPermission": "导入文档",
+    "ImportDocumentDescription": "授予用户将文档导入工作区的权限",
+    "SelectUsers": "选择用户",
+    "ShowInTitle": "在标题中显示"
   }
 }

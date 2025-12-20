@@ -202,29 +202,33 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       return true
     }
 
-    if (this.restrictedSpaces.has(space)) {
-      const attachedDocAncestors = this.context.hierarchy.getAncestors(core.class.AttachedDoc)
-      const ancestors = this.context.hierarchy.getAncestors(getTxObjectClass(tx))
-      const targetAncestors = ancestors.filter((a) => !attachedDocAncestors.includes(a))
-      const txClass = getTxClass(tx)
+    const attachedDocAncestors = this.context.hierarchy.getAncestors(core.class.AttachedDoc)
+    const ancestors = this.context.hierarchy.getAncestors(getTxObjectClass(tx))
+    const targetAncestors = ancestors.filter((a) => !attachedDocAncestors.includes(a))
 
-      const permissions = this.context.modelDb.findAllSync(core.class.Permission, {
-        objectClass: { $in: targetAncestors },
-        txClass
-      })
-      const matched = permissions.filter((p) => {
-        if (p.txMatch === undefined) return false
-        const checkMatch = matchQuery([tx], p.txMatch, tx._class, this.context.hierarchy, true)
-        return p.forbid !== true && checkMatch.length > 0
-      })
-
-      if (matched.length > 0) return false
-
-      const withoutMatch = permissions.filter((p) => p.txMatch === undefined)
-      return withoutMatch.length === 0
+    const allPermissions = this.context.modelDb.findAllSync(core.class.Permission, {
+      objectClass: { $in: targetAncestors }
+    })
+    for (const permission of allPermissions) {
+      if (!isTxClassMatched(tx, permission)) continue
+      if (
+        permission.objectClass !== undefined &&
+        !this.context.hierarchy.isDerived(getTxObjectClass(tx), permission.objectClass)
+      ) {
+        continue
+      }
+      if (permission.txMatch === undefined) {
+        return false
+      } else {
+        const checkMatch = matchQuery([tx], permission.txMatch, tx._class, this.context.hierarchy, true)
+        if (checkMatch.length === 0) {
+          continue
+        }
+        return false
+      }
     }
 
-    return false
+    return true
   }
 
   private throwForbidden (): void {
@@ -463,17 +467,16 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
   }
 }
 
-function getTxClass (tx: Tx): Ref<Class<Tx>> {
-  let _class = tx._class
-  if (tx._class === core.class.TxMixin && Object.keys((tx as TxMixin<Doc, Doc>).attributes).length > 0) {
-    _class = core.class.TxUpdateDoc
-  }
-  return _class
+function isMixinUpdateTx (tx: Tx): boolean {
+  return tx._class === core.class.TxMixin && Object.keys((tx as TxMixin<Doc, Doc>).attributes).length > 0
 }
 
 function isTxClassMatched (tx: Tx, permission: Permission): boolean {
-  const txClass = getTxClass(tx)
-  return permission.txClass === txClass || permission.txClass === tx._class
+  if (permission.txClass === tx._class) return true
+  if (permission.txMatch === undefined && isMixinUpdateTx(tx)) {
+    return permission.txClass === core.class.TxUpdateDoc
+  }
+  return false
 }
 
 function getTxObjectClass (tx: TxCUD<Doc>): Ref<Class<Doc>> {

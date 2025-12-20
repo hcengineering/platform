@@ -143,6 +143,13 @@ export interface WorkspaceInvite {
   autoJoin?: boolean
 }
 
+export interface WorkspacePermission {
+  workspaceUuid: WorkspaceUuid
+  accountUuid: AccountUuid
+  permission: string
+  createdOn?: Timestamp
+}
+
 export interface WorkspaceJoinInfo {
   email: string
   workspace: Workspace
@@ -313,6 +320,7 @@ export interface AccountDB {
   integrationSecret: DbCollection<IntegrationSecret>
   userProfile: DbCollection<UserProfile>
   subscription: DbCollection<Subscription>
+  workspacePermission: DbCollection<WorkspacePermission>
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
@@ -327,6 +335,19 @@ export interface AccountDB {
   getWorkspaceRoles: (accountId: AccountUuid) => Promise<Map<WorkspaceUuid, AccountRole>>
   getWorkspaceMembers: (workspaceId: WorkspaceUuid) => Promise<WorkspaceMemberInfo[]>
   getAccountWorkspaces: (accountId: AccountUuid) => Promise<WorkspaceInfoWithStatus[]>
+  batchAssignWorkspacePermission: (
+    workspaceId: WorkspaceUuid,
+    accountIds: AccountUuid[],
+    permission: string
+  ) => Promise<void>
+  batchRevokeWorkspacePermission: (
+    workspaceId: WorkspaceUuid,
+    accountIds: AccountUuid[],
+    permission: string
+  ) => Promise<void>
+  hasWorkspacePermission: (accountId: AccountUuid, workspaceId: WorkspaceUuid, permission: string) => Promise<boolean>
+  getWorkspacePermissions: (accountId: AccountUuid, permission: string) => Promise<WorkspaceUuid[]>
+  getWorkspaceUsersWithPermission: (workspaceId: WorkspaceUuid, permission: string) => Promise<AccountUuid[]>
   getPendingWorkspace: (
     region: string,
     version: Data<Version>,

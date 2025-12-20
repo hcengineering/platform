@@ -68,7 +68,7 @@
   ): boolean {
     if (attr === undefined) return true
     if (permissionsStore === undefined) return true
-    return canChangeAttribute(attr, object.space as Ref<TypedSpace>, permissionsStore)
+    return canChangeAttribute(attr, object.space as Ref<TypedSpace>, permissionsStore, object._class)
   }
 </script>
 

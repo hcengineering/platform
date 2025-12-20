@@ -206,6 +206,10 @@
     "OfficeSettings": "Nastavení kanceláře",
     "OfficeDefaultSettings": "Výchozí nastavení pro jednací místnosti",
     "DefaultStartWithTranscription": "Povolit přepis v nových kancelářích",
-    "DefaultStartWithRecording": "Povolit záznam v nových kancelářích"
+    "DefaultStartWithRecording": "Povolit záznam v nových kancelářích",
+    "ImportDocumentPermission": "Importovat dokumenty",
+    "ImportDocumentDescription": "Umožňuje uživatelům importovat dokumenty do pracovního prostoru",
+    "SelectUsers": "Vybrat uživatele",
+    "ShowInTitle": "Zobrazit v názvu"
   }
 }

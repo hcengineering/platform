@@ -13,7 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Doc, DocumentQuery, type WorkspaceInfoWithStatus, isActiveMode } from '@hcengineering/core'
+  import {
+    Doc,
+    DocumentQuery,
+    type WorkspaceInfoWithStatus,
+    isActiveMode,
+    type WorkspaceUuid,
+    WorkspaceAccountPermission
+  } from '@hcengineering/core'
   import { Card, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { DropdownLabels, Label } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
@@ -36,6 +43,7 @@
 
   let targetWorkspace: string | undefined = undefined
   let workspaces: WorkspaceInfoWithStatus[] = []
+  let workspacesWithPermission = new Set<WorkspaceUuid>()
   let loading = false
   let workspaceLoading = false
 
@@ -43,7 +51,23 @@
     try {
       workspaceLoading = true
       const getWorkspacesFn = await getResource(login.function.GetWorkspaces)
-      workspaces = (await getWorkspacesFn()).filter((ws) => isActiveMode(ws.mode))
+      const allWorkspaces = (await getWorkspacesFn()).filter((ws) => isActiveMode(ws.mode))
+
+      // Get workspaces where user has ImportDocument permission
+      try {
+        const getWorkspacePermissionsFn = await getResource(login.function.GetWorkspacePermissions as any)
+        const workspaceUuids = await (getWorkspacePermissionsFn as (permission: string) => Promise<WorkspaceUuid[]>)(
+          WorkspaceAccountPermission.ImportDocument
+        )
+        workspacesWithPermission = new Set<WorkspaceUuid>(workspaceUuids)
+      } catch (err) {
+        console.error('Failed to load workspace permissions:', err)
+        // If we can't load permissions, don't filter (show all workspaces)
+        workspacesWithPermission = new Set<WorkspaceUuid>(allWorkspaces.map((ws) => ws.uuid))
+      }
+
+      // Filter to only show workspaces where user has ImportDocument permission
+      workspaces = allWorkspaces.filter((ws) => workspacesWithPermission.has(ws.uuid))
     } catch (err) {
       console.error('Failed to load workspaces:', err)
     } finally {
@@ -90,7 +114,11 @@
 >
   <div class="flex-col gap-2">
     <span class="pb-4 secondary-textColor">
-      <Label label={plugin.string.SelectWorkspaceToExport} params={{ count: selectedDocs.length }} />
+      {#if !workspaceLoading && workspaces.length === 0}
+        <Label label={plugin.string.RequestPermissionToImport} />
+      {:else}
+        <Label label={plugin.string.SelectWorkspaceToExport} params={{ count: selectedDocs.length }} />
+      {/if}
     </span>
     <DropdownLabels
       placeholder={plugin.string.TargetWorkspace}
@@ -98,6 +126,7 @@
       bind:selected={targetWorkspace}
       autoSelect={false}
       loading={workspaceLoading}
+      disabled={workspaces.length === 0}
       kind="regular"
       size="large"
     />

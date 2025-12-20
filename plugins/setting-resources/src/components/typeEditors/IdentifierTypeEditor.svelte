@@ -13,15 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { CustomSequence, Ref, TypeIdentifier as TypeId } from '@hcengineering/core'
+  import core, { CustomSequence, Ref, Type, TypeIdentifier as TypeId } from '@hcengineering/core'
   import { TypeIdentifier } from '@hcengineering/model'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { EditBox, Label } from '@hcengineering/ui'
+  import { EditBox, Label, Toggle } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import setting from '../../plugin'
 
   export let type: TypeId | undefined
   export let editable: boolean = true
+  export let onTypePatch: ((type: Type<any>) => Promise<void>) | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -30,6 +31,7 @@
 
   let identifier: string = ''
   let sequences: CustomSequence[] = []
+  let showInPresenter = type?.showInPresenter ?? false
 
   $: identifiers = new Set(sequences.filter((p) => p._id !== seq).map((s) => s.prefix.toUpperCase()))
 
@@ -54,7 +56,16 @@
         attachedTo: core.class.CustomSequence
       })
       seq = newSeq
-      dispatch('change', { type: TypeIdentifier(newSeq) })
+      dispatch('change', { type: TypeIdentifier(newSeq, showInPresenter) })
+    }
+  }
+
+  async function changeShowing () {
+    if (seq === undefined) return
+    const type = TypeIdentifier(seq, showInPresenter)
+    dispatch('change', { type })
+    if (!editable) {
+      onTypePatch?.(type)
     }
   }
 </script>
@@ -77,6 +88,10 @@
     </div>
   {/if}
 </div>
+<span class="label">
+  <Label label={setting.string.ShowInTitle} />
+</span>
+<Toggle bind:on={showInPresenter} on:change={changeShowing} />
 
 <style lang="scss">
   .duplicated-identifier {

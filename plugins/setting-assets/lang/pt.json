@@ -199,6 +199,10 @@
     "OfficeSettings": "Configurações do escritório",
     "OfficeDefaultSettings": "Configurações padrão para salas de reunião",
     "DefaultStartWithTranscription": "Habilitar transcrição em novos escritórios",
-    "DefaultStartWithRecording": "Habilitar gravação em novos escritórios"
+    "DefaultStartWithRecording": "Habilitar gravação em novos escritórios",
+    "ImportDocumentPermission": "Importar documentos",
+    "ImportDocumentDescription": "Concede aos usuários a capacidade de importar documentos para o espaço de trabalho",
+    "SelectUsers": "Selecionar usuários",
+    "ShowInTitle": "Mostrar no título"
   }
 }

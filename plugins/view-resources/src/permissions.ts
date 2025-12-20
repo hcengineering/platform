@@ -15,7 +15,7 @@ export function canChangeAttribute (
   attr: AnyAttribute,
   space: Ref<TypedSpace>,
   store: PermissionsStore,
-  _class?: Ref<Class<Doc>>
+  _class: Ref<Class<Doc>>
 ): boolean {
   const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
   if (arePermissionsDisabled) return true
@@ -31,7 +31,19 @@ export function canChangeAttribute (
     return true
   }
 
-  return canChangeDoc(_class ?? attr.attributeOf, space, store)
+  const target = attr.attributeOf
+  const forbiddenClId = `${target}_forbidden` as Ref<Permission>
+  const forbiddenCl = store.ps[space]?.has(forbiddenClId)
+  if (forbiddenCl) {
+    return false
+  }
+  const allowedClId = `${target}_allowed` as Ref<Permission>
+  const allowedCl = store.ps[space]?.has(allowedClId)
+  if (allowedCl) {
+    return true
+  }
+
+  return canChangeDoc(_class, space, store)
 }
 
 export function canChangeDoc (_class: Ref<Class<Doc>>, space: Ref<Space>, store: PermissionsStore): boolean {
@@ -39,6 +51,16 @@ export function canChangeDoc (_class: Ref<Class<Doc>>, space: Ref<Space>, store:
   if (arePermissionsDisabled) return true
   if (store.whitelist.has(space)) return true
   if (store.ps[space] !== undefined) {
+    const forbiddenClId = `${_class}_forbidden` as Ref<Permission>
+    const forbiddenCl = store.ps[space]?.has(forbiddenClId)
+    if (forbiddenCl) {
+      return false
+    }
+    const allowedClId = `${_class}_allowed` as Ref<Permission>
+    const allowedCl = store.ps[space]?.has(allowedClId)
+    if (allowedCl) {
+      return true
+    }
     const client = getClient()
     const h = client.getHierarchy()
     const ancestors = h.getAncestors(_class)

@@ -15,18 +15,23 @@
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { BenchmarkDoc } from './benchmark'
-import { AccountRole, TxAccessLevel } from './classes'
 import type {
   Account,
+  AccountUuid,
   AnyAttribute,
   ArrOf,
   Association,
   AttachedDoc,
+  AttributePermission,
   Blob,
   Class,
+  ClassCollaborators,
+  ClassPermission,
+  Collaborator,
   Collection,
   Configuration,
   ConfigurationElement,
+  CustomSequence,
   Doc,
   DomainIndexConfiguration,
   Enum,
@@ -49,7 +54,6 @@ import type {
   Relation,
   Role,
   Sequence,
-  CustomSequence,
   Space,
   SpaceType,
   SpaceTypeDescriptor,
@@ -60,12 +64,9 @@ import type {
   TypeAny,
   TypedSpace,
   UserStatus,
-  Version,
-  AccountUuid,
-  ClassCollaborators,
-  Collaborator,
-  AttributePermission
+  Version
 } from './classes'
+import { AccountRole, TxAccessLevel } from './classes'
 import { type Status, type StatusCategory } from './status'
 import type {
   Tx,
@@ -131,6 +132,7 @@ export default plugin(coreId, {
     Role: '' as Ref<Class<Role>>,
     Permission: '' as Ref<Class<Permission>>,
     AttributePermission: '' as Ref<Class<AttributePermission>>,
+    ClassPermission: '' as Ref<Class<ClassPermission>>,
     Type: '' as Ref<Class<Type<any>>>,
     TypeRelation: '' as Ref<Class<Type<string>>>,
     TypeString: '' as Ref<Class<Type<string>>>,

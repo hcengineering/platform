@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { AccountRole, Person, WorkspaceInfoWithStatus } from '@hcengineering/core'
+import { AccountRole, Person, type WorkspaceUuid, WorkspaceInfoWithStatus } from '@hcengineering/core'
 import type { Asset, IntlString, Metadata, Plugin, Resource, Status } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui'
@@ -114,6 +114,7 @@ export default plugin(loginId, {
     ExchangeGuestToken: '' as Resource<(token: string) => Promise<string>>,
     FetchWorkspace: '' as Resource<() => Promise<[Status, WorkspaceInfoWithStatus | undefined, boolean]>>,
     GetPerson: '' as Resource<() => Promise<[Status, Person]>>,
-    GetWorkspaces: '' as Resource<() => Promise<WorkspaceInfoWithStatus[]>>
+    GetWorkspaces: '' as Resource<() => Promise<WorkspaceInfoWithStatus[]>>,
+    GetWorkspacePermissions: '' as Resource<(permission: string) => Promise<WorkspaceUuid[]>>
   }
 })
