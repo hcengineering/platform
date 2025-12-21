@@ -109,7 +109,7 @@ export function createActions (builder: Builder): void {
     },
     label: view.string.CopyDocumentMarkdown,
     icon: view.icon.Print,
-    input: 'any',
+    input: 'focus',
     category: card.category.Card,
     target: card.class.Card,
     query: {},
