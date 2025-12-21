@@ -34,7 +34,7 @@
   export let withIcon: boolean = false
   export let withSelectIcon: boolean = true
   export let disableFocusOnMouseover: boolean = false
-  export let withSearch: boolean = false
+  export let withSearch: boolean = true
 
   let container: HTMLElement
   let opened: boolean = false

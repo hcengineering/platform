@@ -32,6 +32,7 @@
     "SelectWorkspace": "选择工作区",
     "SelectWorkspaceToExport": "选择工作区以导出 {count, plural, =1 {1 文档} other {# 个文档}}",
     "SelectSpace": "选择空间",
-    "NoSelectedDocuments": "未选择文档"
+    "NoSelectedDocuments": "未选择文档",
+    "RequestPermissionToImport": "请向目标工作区所有者请求导入文档的权限。"
   }
 }

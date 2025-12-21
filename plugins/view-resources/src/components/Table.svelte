@@ -356,7 +356,7 @@
   ): boolean {
     if (permissionsStore === undefined) return true
     if (attr === undefined) return true
-    return canChangeAttribute(attr, object.space as Ref<TypedSpace>, permissionsStore)
+    return canChangeAttribute(attr, object.space as Ref<TypedSpace>, permissionsStore, object._class)
   }
 
   async function canEdit (object: Doc): Promise<boolean> {

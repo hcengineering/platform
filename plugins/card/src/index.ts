@@ -191,7 +191,8 @@ const cardPlugin = plugin(cardId, {
     AddTag: '' as IntlString,
     Feed: '' as IntlString,
     AllCards: '' as IntlString,
-    Favorites: '' as IntlString
+    Favorites: '' as IntlString,
+    CreateCard: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,

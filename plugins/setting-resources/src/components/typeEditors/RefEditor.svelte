@@ -41,12 +41,7 @@
 
   function fillClasses (classes: Ref<Class<Doc>>[], exclude: Ref<Class<Doc>>[]): DropdownIntlItem[] {
     const res: DropdownIntlItem[] = []
-    const descendants = new Set(
-      classes
-        .map((p) => hierarchy.getDescendants(p))
-        .reduce((a, b) => a.concat(b))
-        .filter((p) => p !== card.class.Card)
-    )
+    const descendants = new Set(classes.map((p) => hierarchy.getDescendants(p)).reduce((a, b) => a.concat(b)))
     // exclude removed card types
     const removedTypes = client.getModel().findAllSync(card.class.MasterTag, { removed: true })
     const excluded = new Set(removedTypes.map((p) => p._id))

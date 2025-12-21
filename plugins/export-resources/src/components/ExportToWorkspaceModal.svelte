@@ -114,7 +114,11 @@
 >
   <div class="flex-col gap-2">
     <span class="pb-4 secondary-textColor">
-      <Label label={plugin.string.SelectWorkspaceToExport} params={{ count: selectedDocs.length }} />
+      {#if !workspaceLoading && workspaces.length === 0}
+        <Label label={plugin.string.RequestPermissionToImport} />
+      {:else}
+        <Label label={plugin.string.SelectWorkspaceToExport} params={{ count: selectedDocs.length }} />
+      {/if}
     </span>
     <DropdownLabels
       placeholder={plugin.string.TargetWorkspace}
@@ -122,6 +126,7 @@
       bind:selected={targetWorkspace}
       autoSelect={false}
       loading={workspaceLoading}
+      disabled={workspaces.length === 0}
       kind="regular"
       size="large"
     />

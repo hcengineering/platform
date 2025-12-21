@@ -211,6 +211,7 @@
     "DefaultStartWithRecording": "Yeni ofis odalarında kaydı etkinleştir",
     "ImportDocumentPermission": "Belgeleri içe aktar",
     "ImportDocumentDescription": "Kullanıcılara çalışma alanına belge içe aktarma yeteneği verir",
-    "SelectUsers": "Kullanıcıları seç"
+    "SelectUsers": "Kullanıcıları seç",
+    "ShowInTitle": "Başlıkta göster"
   }
 }
