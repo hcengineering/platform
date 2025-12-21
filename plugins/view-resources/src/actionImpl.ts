@@ -87,7 +87,11 @@ async function copyText (text: any, contentType: string = 'text/plain'): Promise
   } catch {
     // Fallback to default clipboard API implementation
     if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
-      await navigator.clipboard.writeText(text)
+      try {
+        await navigator.clipboard.writeText(text)
+      } catch {
+        copyTextToClipboardOldBrowser(text)
+      }
     } else copyTextToClipboardOldBrowser(text)
   }
 }
