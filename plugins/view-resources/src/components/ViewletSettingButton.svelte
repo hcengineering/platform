@@ -16,7 +16,7 @@
   import { ButtonIcon, showPopup, closeTooltip } from '@hcengineering/ui'
   import { ViewOptionModel, ViewOptions, Viewlet, type ViewOptionsModel, BuildModelKey } from '@hcengineering/view'
   import view from '../plugin'
-  import { getViewOptions, viewOptionStore, defaultOptions } from '../viewOptions'
+  import { getViewOptions, viewOptionStore, defaultOptions, getDefaults } from '../viewOptions'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
   import { restrictionStore } from '../utils'
@@ -38,17 +38,6 @@
     showPopup(ViewletSetting, { viewlet, defaultConfig }, btn, () => {
       pressed = false
     })
-  }
-
-  function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
-    const res: ViewOptions = {
-      groupBy: [viewOptions.groupBy[0] ?? defaultOptions.groupBy[0]],
-      orderBy: viewOptions.orderBy?.[0] ?? defaultOptions.orderBy
-    }
-    for (const opt of viewOptions.other) {
-      res[opt.key] = opt.defaultValue
-    }
-    return res
   }
 
   function getDefaultOptions (): ViewOptions {

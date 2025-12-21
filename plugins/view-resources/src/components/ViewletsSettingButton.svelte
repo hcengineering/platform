@@ -16,10 +16,10 @@
   import core, { DocumentQuery, WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { ButtonIcon, showPopup, closeTooltip } from '@hcengineering/ui'
-  import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { ViewOptions, ViewOptionsModel, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
-  import { getViewOptions, viewOptionStore } from '../viewOptions'
+  import { getDefaults, getViewOptions, viewOptionStore } from '../viewOptions'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
   import { restrictionStore } from '../utils'
@@ -47,7 +47,7 @@
     })
   }
 
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore, getDefaults(viewlet?.viewOptions))
 
   const query = createQuery()
 

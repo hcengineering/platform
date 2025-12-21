@@ -20,7 +20,8 @@ import {
   type ViewOptionModel,
   type ViewOptions,
   type Viewlet,
-  type ViewletDescriptor
+  type ViewletDescriptor,
+  type ViewOptionsModel
 } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 import view from './plugin'
@@ -94,6 +95,20 @@ export function getViewOptions (
   const res = _getViewOptions(viewlet, viewOptionStore)
   if (res !== null) return res
   return defaults
+}
+
+export function getDefaults (viewOptions?: ViewOptionsModel): ViewOptions {
+  if (viewOptions === undefined) {
+    return defaultOptions
+  }
+  const res: ViewOptions = {
+    groupBy: [viewOptions.groupBy[0] ?? defaultOptions.groupBy[0]],
+    orderBy: viewOptions.orderBy?.[0] ?? defaultOptions.orderBy
+  }
+  for (const opt of viewOptions.other) {
+    res[opt.key] = opt.defaultValue
+  }
+  return res
 }
 
 export function migrateViewOpttions (): void {
