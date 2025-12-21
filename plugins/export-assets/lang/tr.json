@@ -31,6 +31,7 @@
     "ExportStartedMessage": "Dışa aktarma başladı. Tamamlandığında Gelen Kutunuzda bir bildirim alacaksınız.",
     "SelectWorkspace": "Çalışma alanı seç",
     "SelectWorkspaceToExport": "{count, plural, =1 {1 belgeyi} other {# belgeyi}} dışa aktarmak için çalışma alanı seç",
+    "SelectWorkspaceToExportSpace": "Alanın belgelerini dışa aktarmak için çalışma alanı seç",
     "SelectSpace": "Alan seç",
     "NoSelectedDocuments": "Seçili belge yok",
     "RequestPermissionToImport": "Belgeleri içe aktarmak için lütfen hedef çalışma alanı sahibinden izin isteyin."

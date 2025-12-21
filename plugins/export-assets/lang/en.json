@@ -31,6 +31,7 @@
     "ExportStartedMessage": "Export started. You will receive a notification in your Inbox when it completes.",
     "SelectWorkspace": "Select workspace",
     "SelectWorkspaceToExport": "Select workspace to export {count, plural, =1 {1 document} other {# documents}}",
+    "SelectWorkspaceToExportSpace": "Select workspace to export documents from space",
     "SelectSpace": "Select space",
     "NoSelectedDocuments": "No documents selected",
     "RequestPermissionToImport": "Please request permission from the target workspace owner to import documents."
