@@ -125,6 +125,7 @@ export const documentsPlugin = plugin(documentsId, {
     EditDocSpace: '' as Ref<Action>,
     TransferDocument: '' as Ref<Action>,
     ExportDocuments: '' as Ref<Action<Document, any>>,
+    ExportDocumentsFromSpace: '' as Ref<Action<DocumentSpace, any>>,
     Print: '' as Ref<Action<Doc, { signed: boolean }>>,
     PrintProjectDocument: '' as Ref<Action<Doc, { signed: boolean }>>,
     OpenDocument: '' as Ref<Action<Doc, { signed: boolean }>>,

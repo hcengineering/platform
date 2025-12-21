@@ -31,6 +31,7 @@
     "ExportStartedMessage": "Exportation démarrée. Vous recevrez une notification dans votre boîte de réception une fois terminée.",
     "SelectWorkspace": "Sélectionner l'espace de travail",
     "SelectWorkspaceToExport": "Sélectionner l'espace de travail pour exporter {count, plural, =1 {1 document} other {# documents}}",
+    "SelectWorkspaceToExportSpace": "Sélectionner l'espace de travail pour exporter les documents de l'espace",
     "SelectSpace": "Sélectionner l'espace",
     "NoSelectedDocuments": "Aucun document sélectionné",
     "RequestPermissionToImport": "Veuillez demander l'autorisation au propriétaire de l'espace de travail cible pour importer des documents."

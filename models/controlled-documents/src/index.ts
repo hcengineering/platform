@@ -869,6 +869,34 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: exportPlugin.component.ExportToWorkspaceModal,
+        fillProps: {
+          _object: 'value'
+        },
+        props: {
+          relations,
+          spaceExport: true,
+          docClass: documents.class.ControlledDocument
+        }
+      },
+      label: exportPlugin.string.ExportToWorkspace,
+      icon: exportPlugin.icon.Export,
+      input: 'none',
+      category: view.category.General,
+      target: documents.class.DocumentSpace,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'copy'
+      }
+    },
+    documents.action.ExportDocumentsFromSpace
+  )
+
+  createAction(
+    builder,
+    {
       action: documents.actionImpl.DeleteDocument,
       label: view.string.Delete,
       icon: view.icon.Delete,

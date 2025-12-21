@@ -31,6 +31,7 @@
     "ExportStartedMessage": "Export gestartet. Sie erhalten eine Benachrichtigung in Ihrem Posteingang, wenn der Export abgeschlossen ist.",
     "SelectWorkspace": "Arbeitsbereich auswählen",
     "SelectWorkspaceToExport": "Arbeitsbereich zum Exportieren von {count, plural, =1 {1 Dokument} other {# Dokumenten}} auswählen",
+    "SelectWorkspaceToExportSpace": "Arbeitsbereich zum Exportieren von Dokumenten aus dem Bereich auswählen",
     "SelectSpace": "Bereich auswählen",
     "NoSelectedDocuments": "Keine Dokumente ausgewählt",
     "RequestPermissionToImport": "Bitte fordern Sie die Berechtigung vom Eigentümer des Ziel-Arbeitsbereichs an, um Dokumente zu importieren."
