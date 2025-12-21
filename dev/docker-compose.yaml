@@ -605,6 +605,7 @@ services:
       - HULY_REDIS_URLS=redis://redis:6379
       - HULY_BIND_PORT=8099
     restart: unless-stopped
+    pull_policy: never
 
   process-service:
     image: intabiafusion/process
