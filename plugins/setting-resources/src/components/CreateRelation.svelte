@@ -162,6 +162,7 @@
         {:else}
           <NestedDropdown
             items={classes}
+            withSearch
             on:selected={(e) => {
               classARef = e.detail
             }}
@@ -192,6 +193,7 @@
       <div>
         <NestedDropdown
           items={classes}
+          withSearch
           on:selected={(e) => {
             classBRef = e.detail
           }}

@@ -155,7 +155,7 @@ export async function dateNextMonth (filter: Filter): Promise<ObjQueryType<any>>
 }
 
 export async function dateNotSpecified (filter: Filter): Promise<ObjQueryType<any>> {
-  return { $in: [undefined, null] }
+  return { $exists: false }
 }
 
 export async function dateCustom (filter: Filter): Promise<ObjQueryType<any>> {

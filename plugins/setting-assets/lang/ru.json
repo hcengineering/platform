@@ -211,6 +211,7 @@
     "DefaultStartWithRecording": "Включить запись в новых комнатах",
     "ImportDocumentPermission": "Импорт документов",
     "ImportDocumentDescription": "Предоставляет пользователям возможность импортировать документы в рабочее пространство",
-    "SelectUsers": "Выбрать пользователей"
+    "SelectUsers": "Выбрать пользователей",
+    "ShowInTitle": "Показывать в заголовке"
   }
 }

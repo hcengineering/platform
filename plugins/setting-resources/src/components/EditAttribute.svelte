@@ -134,6 +134,12 @@
     defaultValue = e.detail?.defaultValue
   }
 
+  const onTypePatch = async (type: Type<any>) => {
+    if (type !== undefined && type._class === attribute.type._class) {
+      await client.updateDoc(attribute._class, attribute.space, attribute._id, { type })
+    }
+  }
+
   async function remove (evt: MouseEvent): Promise<void> {
     const impl = await getResource(view.actionImpl.Delete)
     await impl(attribute, evt, {
@@ -165,7 +171,7 @@
     return `${attr._id}_${forbidden ? 'forbidden' : 'allowed'}` as Ref<AttributePermission>
   }
 
-  function changeRestricted (e: CustomEvent<boolean>): void {
+  function changeRestricted (): void {
     showPopup(
       MessageBox,
       {
@@ -285,7 +291,8 @@
           width: '100%',
           editable: !exist && !disabled,
           kind: 'regular',
-          size: 'large'
+          size: 'large',
+          onTypePatch
         }}
         {disabled}
         on:change={handleChange}

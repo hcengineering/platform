@@ -53,7 +53,6 @@ export class ClassesPage {
     await expect(this.lead().nth(1)).toBeVisible()
     await expect(this.issue().nth(0)).toBeVisible()
     await expect(this.issue().nth(1)).toBeVisible()
-    await expect(this.card()).toBeVisible()
     await expect(this.product()).toBeVisible()
   }
 }

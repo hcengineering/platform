@@ -19,7 +19,10 @@
     type WorkspaceInfoWithStatus,
     isActiveMode,
     type WorkspaceUuid,
-    WorkspaceAccountPermission
+    WorkspaceAccountPermission,
+    type Ref,
+    type Space,
+    type Class
   } from '@hcengineering/core'
   import { Card, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { DropdownLabels, Label } from '@hcengineering/ui'
@@ -33,11 +36,16 @@
   import { exportToWorkspace } from '../export'
 
   export let query: DocumentQuery<Doc> | undefined = undefined
-  export let value: Doc | Doc[]
+  export let value: Doc | Doc[] | Space
   export let relations: RelationDefinition[] | undefined = undefined
+  export let docClass: Ref<Class<Doc>> | undefined = undefined
+  export let spaceExport: boolean | undefined = false
 
-  $: selectedDocs = Array.isArray(value) ? value : value != null ? [value] : []
-  $: _class = selectedDocs.length > 0 ? selectedDocs[0]._class : undefined
+  $: selectedDocs = spaceExport !== true ? (Array.isArray(value) ? value : value != null ? [value] : []) : []
+  $: _class = docClass ?? (selectedDocs.length > 0 ? selectedDocs[0]._class : undefined)
+
+  // Build query with space filter when exporting from space
+  $: exportQuery = spaceExport === true ? { ...(query ?? {}), space: (value as Space)._id } : query
 
   const dispatch = createEventDispatcher()
 
@@ -95,7 +103,7 @@
     if (!canSave || _class == null) return
 
     loading = true
-    await exportToWorkspace(_class, query, selectedDocs, targetWorkspace, relations)
+    await exportToWorkspace(_class, exportQuery, selectedDocs, targetWorkspace, relations)
     loading = false
     dispatch('close', true)
   }
@@ -114,7 +122,13 @@
 >
   <div class="flex-col gap-2">
     <span class="pb-4 secondary-textColor">
-      <Label label={plugin.string.SelectWorkspaceToExport} params={{ count: selectedDocs.length }} />
+      {#if !workspaceLoading && workspaces.length === 0}
+        <Label label={plugin.string.RequestPermissionToImport} />
+      {:else if spaceExport === true}
+        <Label label={plugin.string.SelectWorkspaceToExportSpace} />
+      {:else}
+        <Label label={plugin.string.SelectWorkspaceToExport} params={{ count: selectedDocs.length }} />
+      {/if}
     </span>
     <DropdownLabels
       placeholder={plugin.string.TargetWorkspace}
@@ -122,6 +136,7 @@
       bind:selected={targetWorkspace}
       autoSelect={false}
       loading={workspaceLoading}
+      disabled={workspaces.length === 0}
       kind="regular"
       size="large"
     />

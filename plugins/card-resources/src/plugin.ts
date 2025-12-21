@@ -92,7 +92,6 @@ export default mergeIds(cardId, card, {
   string: {
     CreateMasterTag: '' as IntlString,
     CreateTag: '' as IntlString,
-    CreateCard: '' as IntlString,
     Content: '' as IntlString,
     Parent: '' as IntlString,
     CardLibrary: '' as IntlString,

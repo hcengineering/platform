@@ -344,6 +344,7 @@ export interface TypeDate extends Type<Date> {
  */
 export interface TypeIdentifier extends Type<string> {
   of: Ref<CustomSequence>
+  showInPresenter?: boolean
 }
 
 /**
