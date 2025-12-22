@@ -17,7 +17,10 @@ import config from './config.js'
 import { runAgent } from './agent.js'
 
 export const start = async (): Promise<void> => {
-  console.log('Starting love worker', config)
+  const { LiveKitApiUrl, PlatformUrl, Debug } = config
+  console.log('Starting love worker', {
+    LiveKitApiUrl, PlatformUrl, Debug
+  })
 
   runAgent()
   const onClose = (): void => {}
