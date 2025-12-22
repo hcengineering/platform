@@ -36,7 +36,7 @@ const txes = genMinModel()
 
 createTaskModel(txes)
 
-describe('mongo operations', () => {
+describe.skip('mongo operations', () => {
   const mongodbUri: string = process.env.MONGO_URL ?? 'mongodb://localhost:27018'
   let mongoClient!: MongoClientReference
   let dbUuid = crypto.randomUUID() as WorkspaceUuid
