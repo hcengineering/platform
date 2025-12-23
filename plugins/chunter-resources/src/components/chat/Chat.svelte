@@ -153,7 +153,7 @@
   }
 
   defineSeparators('chat', [
-    { minSize: 20, maxSize: 40, size: 30, float: 'navigator' },
+    { minSize: 12.5, maxSize: 40, size: 17.5, float: 'navigator' },
     { size: 'auto', minSize: 20, maxSize: 'auto' },
     { size: 20, minSize: 20, maxSize: 50, float: 'aside' }
   ])
