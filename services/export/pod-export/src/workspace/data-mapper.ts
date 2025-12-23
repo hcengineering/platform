@@ -203,28 +203,22 @@ export class DataMapper {
       fieldMap.set(fieldName, usedValues)
     }
 
-    // Use projection to only load the field we need
     const projection = { [fieldName]: 1 } as any
 
     let uniqueValue: string | number = currentValue
 
     if (typeof currentValue === 'string') {
-      // Check if document has a prefix field - use it to query documents with same template/prefix
       const documentPrefix = data.prefix
       if (documentPrefix !== undefined && typeof documentPrefix === 'string' && documentPrefix !== '') {
-        // Try to extract number from code (e.g., "DOC-1" -> 1, or just "1" -> 1)
         const codeMatch = currentValue.match(/-(\d+)$/)
         const baseNum = codeMatch !== null ? parseInt(codeMatch[1], 10) : parseInt(currentValue, 10)
 
-        // Query all documents with the same prefix (same template) - global uniqueness
         const query: any = { prefix: documentPrefix }
 
-        // Project both the field we're checking and prefix to verify
         const prefixProjection = { [fieldName]: 1, prefix: 1 } as any
 
         const existingDocs = await this.targetClient.findAll(docClass, query, { projection: prefixProjection })
 
-        // Extract all values from existing documents
         const existingValues = new Set<string>()
         for (const doc of existingDocs) {
           const value = (doc as any)[fieldName]
@@ -233,24 +227,17 @@ export class DataMapper {
           }
         }
 
-        // Also check values used in this export batch with the same prefix
         for (const usedValue of usedValues) {
           if (typeof usedValue === 'string') {
-            // Check if this used value belongs to the same prefix group
-            // We'll track it if it matches the pattern or if we can't determine
             existingValues.add(usedValue)
           }
         }
 
-        // Check if current value is already unique
         const isCurrentValueUnique = !existingValues.has(currentValue)
 
         if (isCurrentValueUnique) {
-          // Current value is unique, keep it
           uniqueValue = currentValue
         } else {
-          // Value conflicts, need to generate a new one
-          // Try to extract numbers from existing values to find max
           const existingNumbers = new Set<number>()
           for (const val of existingValues) {
             const match = val.match(/-(\d+)$/)
@@ -264,7 +251,6 @@ export class DataMapper {
             }
           }
 
-          // Find max number and use max + 1
           const maxNum = existingNumbers.size > 0 ? Math.max(...Array.from(existingNumbers), baseNum - 1) : baseNum - 1
           // Generate new value: if original had pattern "PREFIX-N", use same pattern, otherwise just use number
           if (codeMatch !== null) {
