@@ -1,0 +1,14 @@
+{
+  "string": {
+    "ViewMode": "Mode d'affichage",
+    "Unified": "Unifié",
+    "Split": "Divisé",
+    "Viewed": "Consulté",
+    "ShowDiff": "Afficher les différences",
+    "NoChanges": "Le diff du fichier n'a pas de modifications",
+    "LargeDiffsAreHidden": "Les diffs volumineux ne sont pas rendus par défaut.",
+    "FileIsTooLarge": "Le fichier est trop volumineux pour être affiché.",
+    "FileWasRenamed": "Le fichier a été renommé sans modifications.",
+    "FileWasDeleted": "Le fichier a été supprimé."
+  }
+}
