@@ -111,7 +111,9 @@ Exports documents from the current workspace to another workspace. This endpoint
     "documents:class:ControlledDocument": {
       "author": "$currentUser",
       "owner": "$currentUser",
-      "state": "draft"
+      "state": "draft",
+      "code": "$ensureUnique",
+      "seqNumber": "$ensureUnique"
     }
   },
   "objectId": "doc-id-1",
@@ -131,9 +133,13 @@ Exports documents from the current workspace to another workspace. This endpoint
   - `field`: Field name containing the relation
   - `class`: Class of related documents
   - `direction`: `"forward"` (dependencies) or `"inverse"` (references)
-- `fieldMappers` (optional): Field value overrides per document class
-  - Special value `"$currentUser"` is replaced with the current account's employee ID
-  - Example: `{ "author": "$currentUser" }` sets author to current user
+- `fieldMappers` (optional): Field value overrides per document class. Supports special values:
+  - `$currentUser`: Replaced with current account's employee ID
+    - Example: `{ "author": "$currentUser" }` sets author to current user
+  - `$ensureUnique`: Ensures the field value is unique by checking the database and modifying if needed
+    - For strings: appends a suffix like "-1", "-2", etc.
+    - For numbers: increments until unique
+    - Example: `{ "code": "$ensureUnique", "seqNumber": "$ensureUnique" }` ensures unique code and seqNumber
 - `objectId` (optional): ID of the primary document for notification context
 - `objectSpace` (optional): Space of the primary document for notification context
 
