@@ -60,7 +60,8 @@ export class CrossWorkspaceExporter {
     this.state = {
       idMapping: new Map<Ref<Doc>, Ref<Doc>>(),
       spaceMapping: new Map<Ref<Space>, Ref<Space>>(),
-      processingDocs: new Set<Ref<Doc>>()
+      processingDocs: new Set<Ref<Doc>>(),
+      uniqueFieldValues: new Map()
     }
 
     // Initialize component exporters
