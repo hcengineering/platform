@@ -1,0 +1,19 @@
+{
+  "status": {
+    "RequiredField": "Pflichtfeld {field}",
+    "FieldsDoNotMatch": "{field} stimmt nicht mit {field2} überein",
+    "ConnectingToServer": "Verbindung zum Server wird hergestellt...."
+  },
+  "string": {
+    "CreateWorkspace": "Arbeitsbereich erstellen",
+    "LastName": "Nachname",
+    "FirstName": "Vorname",
+    "Workspace": "Name des Arbeitsbereichs",
+    "FillInProfile": "Profil ausfüllen",
+    "SetUpPassword": "Passwort einrichten",
+    "Next": "Weiter",
+    "Skip": "Überspringen",
+    "SignUpCompleted": "Registrierung abgeschlossen",
+    "StartUsingHuly": "Starten Sie mit Huly"
+  }
+}
