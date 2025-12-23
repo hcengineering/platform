@@ -84,7 +84,7 @@
   on:close
 >
   <div class="hulyModal-content__titleGroup" style="padding: 0">
-    <ModernEditbox bind:value={channelName} label={chunter.string.NewChannel} size="large" kind="ghost" />
+    <ModernEditbox bind:value={channelName} label={chunter.string.NewChannel} size="large" kind="ghost" autoFocus />
     <TextArea
       placeholder={chunter.string.TopicOptional}
       width="100%"
