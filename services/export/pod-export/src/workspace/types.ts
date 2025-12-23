@@ -63,4 +63,6 @@ export interface ExportState {
   idMapping: Map<Ref<Doc>, Ref<Doc>>
   spaceMapping: Map<Ref<Space>, Ref<Space>>
   processingDocs: Set<Ref<Doc>>
+  // Track unique field values per class: { className: { fieldName: Set<values> } }
+  uniqueFieldValues: Map<string, Map<string, Set<string | number>>>
 }
