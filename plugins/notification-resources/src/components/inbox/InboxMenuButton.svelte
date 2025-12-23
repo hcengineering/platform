@@ -17,13 +17,13 @@
   import { ButtonMenu, IconMoreV } from '@hcengineering/ui'
 
   import notification from '../../plugin'
-  import { archiveAll, readAll, unreadAll } from '../../utils'
+  import { clearAll, readAll, unreadAll } from '../../utils'
 
-  async function onSelect (id?: 'archive' | 'read' | 'unread'): Promise<void> {
+  async function onSelect (id?: 'clear' | 'read' | 'unread'): Promise<void> {
     if (id == null) return
 
-    if (id === 'archive') {
-      void archiveAll()
+    if (id === 'clear') {
+      void clearAll()
     }
 
     if (id === 'read') {
@@ -52,9 +52,9 @@
       label: notification.string.MarkUnreadAll
     },
     {
-      id: 'archive',
+      id: 'clear',
       icon: view.icon.CheckCircle,
-      label: notification.string.ArchiveAll
+      label: notification.string.ClearAll
     }
   ]}
   on:selected={(ev) => onSelect(ev.detail)}

@@ -15,9 +15,9 @@
 <script lang="ts">
   import activity, { ActivityMessage } from '@hcengineering/activity'
   import chunter from '@hcengineering/chunter'
-  import { Class, Doc, getCurrentAccount, groupByArray, Ref, SortingOrder } from '@hcengineering/core'
+  import { Class, Doc, Ref } from '@hcengineering/core'
   import { DocNotifyContext, InboxNotification, notificationId } from '@hcengineering/notification'
-  import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
+  import { ActionContext, getClient } from '@hcengineering/presentation'
   import {
     AnyComponent,
     closePanel,
@@ -50,16 +50,12 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const acc = getCurrentAccount()
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const notificationsByContextStore = inboxClient.inboxNotificationsByContext
   const contextByIdStore = inboxClient.contextById
   const contextByDocStore = inboxClient.contextByDoc
   const contextsStore = inboxClient.contexts
-
-  const archivedActivityNotificationsQuery = createQuery()
-  const archivedOtherNotificationsQuery = createQuery()
 
   const allTab: TabItem = {
     id: 'all',
@@ -70,11 +66,6 @@
 
   let urlObjectId: Ref<Doc> | undefined = undefined
   let urlObjectClass: Ref<Class<Doc>> | undefined = undefined
-
-  let showArchive = false
-  let archivedActivityNotifications: InboxNotification[] = []
-  let archivedOtherNotifications: InboxNotification[] = []
-  let archivedNotifications: InboxNotification[] = []
 
   let inboxData: InboxData = new Map()
 
@@ -92,55 +83,7 @@
 
   let replacedPanel: HTMLElement
 
-  $: if (showArchive) {
-    archivedActivityNotificationsQuery.query(
-      notification.class.ActivityInboxNotification,
-      { archived: true, user: acc.uuid },
-      (res) => {
-        archivedActivityNotifications = res
-      },
-      {
-        lookup: {
-          attachedTo: activity.class.ActivityMessage
-        },
-        sort: {
-          createdOn: SortingOrder.Descending
-        },
-        limit: 1000
-      }
-    )
-
-    archivedOtherNotificationsQuery.query(
-      notification.class.CommonInboxNotification,
-      { archived: true, user: acc.uuid },
-      (res) => {
-        archivedOtherNotifications = res
-      },
-      {
-        sort: {
-          createdOn: SortingOrder.Descending
-        },
-        limit: 500
-      }
-    )
-  }
-
-  $: archivedNotifications = [...archivedActivityNotifications, ...archivedOtherNotifications].sort(
-    (n1, n2) => (n2.createdOn ?? n2.modifiedOn) - (n1.createdOn ?? n1.modifiedOn)
-  )
-  $: void updateInboxData($notificationsByContextStore, archivedNotifications, showArchive)
-
-  async function updateInboxData (
-    notificationsByContext: Map<Ref<DocNotifyContext>, InboxNotification[]>,
-    archivedNotifications: InboxNotification[],
-    showArchive: boolean
-  ): Promise<void> {
-    if (showArchive) {
-      inboxData = getDisplayInboxData(groupByArray(archivedNotifications, (it) => it.docNotifyContext))
-    } else {
-      inboxData = getDisplayInboxData(notificationsByContext)
-    }
-  }
+  $: inboxData = getDisplayInboxData($notificationsByContextStore)
 
   $: filteredData = filterData(filter, selectedTabId, inboxData)
 
@@ -358,12 +301,6 @@
     { size: 20, minSize: 20, maxSize: 50, float: 'aside' }
   ])
 
-  function onArchiveToggled (): void {
-    showArchive = !showArchive
-    selectedTabId = allTab.id
-    void selectContext(undefined)
-  }
-
   function onUnreadsToggled (): void {
     filter = filter === 'unread' ? 'all' : 'unread'
     localStorage.setItem('inbox-filter', filter)
@@ -376,12 +313,6 @@
       on: filter === 'unread',
       label: notification.string.Unreads,
       onToggle: onUnreadsToggled
-    },
-    {
-      id: 'archive',
-      on: showArchive,
-      label: view.string.Archived,
-      onToggle: onArchiveToggled
     }
   ]
   $: $deviceInfo.replacedPanel = replacedPanel
@@ -421,12 +352,7 @@
         </div>
 
         <Scroller padding="0">
-          <InboxGroupedListView
-            data={filteredData}
-            selectedContext={selectedContextId}
-            archived={showArchive}
-            on:click={selectContext}
-          />
+          <InboxGroupedListView data={filteredData} selectedContext={selectedContextId} on:click={selectContext} />
         </Scroller>
       </div>
       {#if !($deviceInfo.isMobile && $deviceInfo.isPortrait && $deviceInfo.minWidth)}

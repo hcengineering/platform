@@ -174,32 +174,6 @@ export async function unReadNotifyContext (doc: DocNotifyContext): Promise<void>
   }
 }
 
-/**
- * @public
- */
-export async function archiveContextNotifications (doc?: DocNotifyContext): Promise<void> {
-  if (doc === undefined) {
-    return
-  }
-
-  const ops = getClient().apply(undefined, 'archiveContextNotifications', true)
-
-  try {
-    const notifications = await ops.findAll(
-      notification.class.InboxNotification,
-      { docNotifyContext: doc._id, archived: false },
-      { projection: { _id: 1, _class: 1, space: 1 } }
-    )
-
-    for (const notification of notifications) {
-      await ops.updateDoc(notification._class, notification.space, notification._id, { archived: true, isViewed: true })
-    }
-    await ops.update(doc, { lastViewedTimestamp: Date.now() })
-  } finally {
-    await ops.commit()
-  }
-}
-
 export async function removeContextNotifications (doc?: DocNotifyContext): Promise<void> {
   if (doc === undefined) return
 
@@ -216,31 +190,6 @@ export async function removeContextNotifications (doc?: DocNotifyContext): Promi
       await ops.removeDoc(notification._class, notification.space, notification._id)
     }
     await ops.update(doc, { lastViewedTimestamp: Date.now() })
-  } finally {
-    await ops.commit()
-  }
-}
-
-/**
- * @public
- */
-export async function unarchiveContextNotifications (doc?: DocNotifyContext): Promise<void> {
-  if (doc === undefined) {
-    return
-  }
-
-  const ops = getClient().apply(undefined, 'unarchiveContextNotifications', true)
-
-  try {
-    const notifications = await ops.findAll(
-      notification.class.InboxNotification,
-      { docNotifyContext: doc._id, archived: true },
-      { projection: { _id: 1, _class: 1, space: 1 } }
-    )
-
-    for (const notification of notifications) {
-      await ops.updateDoc(notification._class, notification.space, notification._id, { archived: false })
-    }
   } finally {
     await ops.commit()
   }
@@ -307,16 +256,16 @@ export async function unpinDocNotifyContext (object: DocNotifyContext): Promise<
   })
 }
 
-export async function archiveAll (): Promise<void> {
+export async function clearAll (): Promise<void> {
   const client = InboxNotificationsClientImpl.getClient()
 
   showPopup(
     MessageBox,
     {
-      label: notification.string.ArchiveAllConfirmationTitle,
-      message: notification.string.ArchiveAllConfirmationMessage,
+      label: notification.string.RemoveAllConfirmationTitle,
+      message: notification.string.RemoveAllConfirmationMessage,
       action: async () => {
-        await client.archiveAllNotifications()
+        await client.removeAllNotifications()
       }
     },
     'top'

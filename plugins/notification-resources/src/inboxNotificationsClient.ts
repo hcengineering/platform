@@ -212,13 +212,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
     }
   }
 
-  async archiveNotifications (client: TxOperations, ids: Array<Ref<InboxNotification>>): Promise<void> {
-    const inboxNotifications = (get(this.inboxNotifications) ?? []).filter(({ _id }) => ids.includes(_id))
-    for (const notification of inboxNotifications) {
-      await client.update(notification, { archived: true, isViewed: true })
-    }
-  }
-
   async removeAllNotifications (): Promise<void> {
     const ops = getClient().apply(undefined, 'removeAllNotifications', true)
 
@@ -234,34 +227,6 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
       const contexts = get(this.contexts) ?? []
       for (const notification of inboxNotifications) {
         await ops.removeDoc(notification._class, notification.space, notification._id)
-      }
-
-      for (const context of contexts) {
-        await ops.update(context, { lastViewedTimestamp: Date.now() })
-      }
-    } finally {
-      await ops.commit()
-    }
-  }
-
-  async archiveAllNotifications (): Promise<void> {
-    const ops = getClient().apply(undefined, 'archiveAllNotifications', true)
-
-    try {
-      const inboxNotifications = await ops.findAll(
-        notification.class.InboxNotification,
-        {
-          user: getCurrentAccount().uuid,
-          archived: false
-        },
-        { projection: { _id: 1, _class: 1, space: 1 } }
-      )
-      const contexts = get(this.contexts) ?? []
-      for (const notification of inboxNotifications) {
-        await ops.updateDoc(notification._class, notification.space, notification._id, {
-          archived: true,
-          isViewed: true
-        })
       }
 
       for (const context of contexts) {

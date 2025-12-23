@@ -37,11 +37,11 @@
     "Edited": "编辑",
     "Pinned": "置顶",
     "Message": "消息",
-    "ArchiveAll": "归档全部",
+    "ClearAll": "归档全部",
     "MarkReadAll": "全部标记为已读",
     "MarkUnreadAll": "全部标记为未读",
-    "ArchiveAllConfirmationTitle": "归档所有通知？",
-    "ArchiveAllConfirmationMessage": "您确定要归档所有通知吗？此操作无法撤销。",
+    "RemoveAllConfirmationTitle": "归档所有通知？",
+    "RemoveAllConfirmationMessage": "您确定要归档所有通知吗？此操作无法撤销。",
     "StarDocument": "标记文档为星标",
     "UnstarDocument": "取消文档星标",
     "Unsubscribe": "取消订阅",
@@ -57,6 +57,7 @@
     "CommonNotificationCollectionAdded":  "{senderName} 添加了 {collection}",
     "CommonNotificationCollectionRemoved": "{senderName} 移除了 {collection}",
     "NoAccessToObject": "您不再可以访问此对象",
-    "ViewIn": "在 {app} 中查看"
+    "ViewIn": "在 {app} 中查看",
+    "Clear": "清除"
   }
 }

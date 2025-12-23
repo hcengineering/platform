@@ -35,8 +35,7 @@
   export let value: DocNotifyContext
   export let notifications: WithLookup<DisplayInboxNotification>[]
   export let viewlets: ActivityNotificationViewlet[] = []
-  export let isArchiving = false
-  export let archived = false
+  export let isClearing = false
 
   const maxNotifications = 3
 
@@ -49,20 +48,21 @@
   let object: Doc | undefined = undefined
   let isLoading = true
 
+  $: if (object !== undefined && object?._id !== value.objectId) {
+    query.unsubscribe()
+    object = undefined
+    isLoading = true
+  }
+
   $: query.query(
     value.objectClass,
-    { _id: value.objectId, space: value.objectSpace },
+    { _id: value.objectId },
     (res) => {
       object = res[0]
       isLoading = false
     },
     { limit: 1 }
   )
-
-  $: if (object !== undefined && object?._id !== value.objectId) {
-    object = undefined
-    isLoading = true
-  }
 
   let isActionMenuOpened = false
   let unreadCount = 0
@@ -150,13 +150,7 @@
       {
         object: value,
         baseMenuClass: notification.class.DocNotifyContext,
-        excludedActions: archived
-          ? [
-              notification.action.ArchiveContextNotifications,
-              notification.action.ReadNotifyContext,
-              notification.action.UnReadNotifyContext
-            ]
-          : [notification.action.UnarchiveContextNotifications],
+        excludedActions: [],
         mode: 'panel'
       },
       ev.target as HTMLElement,
@@ -174,7 +168,7 @@
   }
 
   async function checkContext (): Promise<void> {
-    dispatch('archive')
+    dispatch('clear')
   }
 
   // function canShowTooltip (group: InboxNotification[]): boolean {
@@ -225,10 +219,10 @@
 
       <div class="actions clear-mins">
         <div class="flex-center min-w-6">
-          {#if isArchiving}
+          {#if isClearing}
             <Spinner size="small" />
           {:else if account.role !== AccountRole.ReadOnlyGuest}
-            <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
+            <CheckBox checked={false} kind="todo" size="medium" on:value={checkContext} />
           {/if}
         </div>
         <ButtonIcon
@@ -278,10 +272,10 @@
 
       <div class="actions clear-mins">
         <div class="flex-center">
-          {#if isArchiving}
+          {#if isClearing}
             <Spinner size="small" />
           {:else}
-            <CheckBox checked={archived} kind="todo" size="medium" on:value={checkContext} />
+            <CheckBox checked={false} kind="todo" size="medium" on:value={checkContext} />
           {/if}
         </div>
         <ButtonIcon

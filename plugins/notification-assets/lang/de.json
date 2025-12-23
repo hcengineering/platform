@@ -37,11 +37,11 @@
     "Edited": "bearbeitet",
     "Pinned": "Angeheftet",
     "Message": "Nachricht",
-    "ArchiveAll": "Alle archivieren",
+    "ClearAll": "Alle löschen",
     "MarkReadAll": "Alle als gelesen markieren",
     "MarkUnreadAll": "Alle als ungelesen markieren",
-    "ArchiveAllConfirmationTitle": "Alle Benachrichtigungen archivieren?",
-    "ArchiveAllConfirmationMessage": "Sind Sie sicher, dass Sie alle Benachrichtigungen archivieren möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "RemoveAllConfirmationTitle": "Alle Benachrichtigungen archivieren?",
+    "RemoveAllConfirmationMessage": "Sind Sie sicher, dass Sie alle Benachrichtigungen archivieren möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "StarDocument": "Dokument mit Stern markieren",
     "UnstarDocument": "Stern vom Dokument entfernen",
     "Unsubscribe": "Abmelden",
@@ -57,6 +57,7 @@
     "Sound": "Ton",
     "SoundNotificationsDescription": "Erhalten Sie Tonbenachrichtigungen für Ereignisse.",
     "NoAccessToObject": "Sie haben keinen Zugriff mehr auf dieses Objekt",
-    "ViewIn": "Ansehen in {app}"
+    "ViewIn": "Ansehen in {app}",
+    "Clear": "Löschen"
   }
 }

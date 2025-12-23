@@ -37,11 +37,11 @@
     "Edited": "modificato",
     "Pinned": "Appuntato",
     "Message": "Messaggio",
-    "ArchiveAll": "Archivia tutto",
+    "ClearAll": "Archivia tutto",
     "MarkReadAll": "Segna tutto come letto",
     "MarkUnreadAll": "Segna tutto come non letto",
-    "ArchiveAllConfirmationTitle": "Archivia tutte le notifiche?",
-    "ArchiveAllConfirmationMessage": "Sei sicuro di voler archiviare tutte le notifiche? Questa operazione non può essere annullata.",
+    "RemoveAllConfirmationTitle": "Archivia tutte le notifiche?",
+    "RemoveAllConfirmationMessage": "Sei sicuro di voler archiviare tutte le notifiche? Questa operazione non può essere annullata.",
     "StarDocument": "Aggiungi ai documenti importanti",
     "UnstarDocument": "Rimuovi dai documenti importanti",
     "Unsubscribe": "Annulla iscrizione",
@@ -57,6 +57,7 @@
     "Sound": "Suono",
     "SoundNotificationsDescription": "Ricevi notifiche sonore per gli eventi.",
     "NoAccessToObject": "Non hai più accesso a questo oggetto",
-    "ViewIn": "Visualizza in {app}"
+    "ViewIn": "Visualizza in {app}",
+    "Clear": "Cancella"
   }
 }

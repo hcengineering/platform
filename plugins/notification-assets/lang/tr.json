@@ -37,11 +37,11 @@
     "Edited": "düzenlendi",
     "Pinned": "Sabitlendi",
     "Message": "Mesaj",
-    "ArchiveAll": "Tümünü arşivle",
+    "ClearAll": "Tümünü arşivle",
     "MarkReadAll": "Tümünü okundu olarak işaretle",
     "MarkUnreadAll": "Tümünü okunmadı olarak işaretle",
-    "ArchiveAllConfirmationTitle": "Tüm bildirimleri arşivle?",
-    "ArchiveAllConfirmationMessage": "Tüm bildirimleri arşivlemek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+    "RemoveAllConfirmationTitle": "Tüm bildirimleri arşivle?",
+    "RemoveAllConfirmationMessage": "Tüm bildirimleri arşivlemek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
     "StarDocument": "Dokümanı yıldızla",
     "UnstarDocument": "Doküman yıldızını kaldır",
     "Unsubscribe": "Abonelikten çık",
@@ -57,6 +57,7 @@
     "Sound": "Ses",
     "SoundNotificationsDescription": "Olaylar için sesli bildirimler alın.",
     "NoAccessToObject": "Artık bu nesneye erişiminiz yok",
-    "ViewIn": "{app} içinde görüntüle"
+    "ViewIn": "{app} içinde görüntüle",
+    "Clear": "Temizle"
   }
 }

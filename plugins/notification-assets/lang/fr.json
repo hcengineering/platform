@@ -37,11 +37,11 @@
     "Edited": "édité",
     "Pinned": "Épinglé",
     "Message": "Message",
-    "ArchiveAll": "Tout archiver",
+    "ClearAll": "Tout archiver",
     "MarkReadAll": "Tout marquer comme lu",
     "MarkUnreadAll": "Tout marquer comme non lu",
-    "ArchiveAllConfirmationTitle": "Archiver toutes les notifications ?",
-    "ArchiveAllConfirmationMessage": "Êtes-vous sûr de vouloir archiver toutes les notifications ? Cette opération est irréversible.",
+    "RemoveAllConfirmationTitle": "Archiver toutes les notifications ?",
+    "RemoveAllConfirmationMessage": "Êtes-vous sûr de vouloir archiver toutes les notifications ? Cette opération est irréversible.",
     "StarDocument": "Document étoilé",
     "UnstarDocument": "Retirer l'étoile du document",
     "Unsubscribe": "Se désabonner",
@@ -57,6 +57,7 @@
     "CommonNotificationCollectionAdded":  "{senderName} a ajouté {collection}",
     "CommonNotificationCollectionRemoved": "{senderName} a supprimé {collection}",
     "NoAccessToObject": "Vous n'avez plus accès à cet objet",
-    "ViewIn": "Voir dans {app}"
+    "ViewIn": "Voir dans {app}",
+    "Clear": "Effacer"
   }
 }

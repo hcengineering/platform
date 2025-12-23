@@ -37,11 +37,11 @@
     "Edited": "upravil",
     "Pinned": "Připnuto",
     "Message": "Zpráva",
-    "ArchiveAll": "Archivovat vše",
+    "ClearAll": "Vymazat vše",
     "MarkReadAll": "Označit vše jako přečtené",
     "MarkUnreadAll": "Označit vše jako nepřečtené",
-    "ArchiveAllConfirmationTitle": "Archivovat všechna oznámení?",
-    "ArchiveAllConfirmationMessage": "Opravdu chcete archivovat všechna oznámení? Tuto operaci nelze vrátit zpět.",
+    "RemoveAllConfirmationTitle": "Archivovat všechna oznámení?",
+    "RemoveAllConfirmationMessage": "Opravdu chcete archivovat všechna oznámení? Tato operace je nevratná.",
     "StarDocument": "Přidat dokument do oblíbených",
     "UnstarDocument": "Odebrat dokument z oblíbených",
     "Unsubscribe": "Odhlásit odběr",
@@ -57,6 +57,7 @@
     "Sound": "Zvuk",
     "SoundNotificationsDescription": "Přijímejte zvuková oznámení o událostech.",
     "NoAccessToObject": "Již nemáte přístup k tomuto objektu",
-    "ViewIn": "Zobrazit v {app}"
+    "ViewIn": "Zobrazit v {app}",
+    "Clear": "Vymazat"
   }
 }

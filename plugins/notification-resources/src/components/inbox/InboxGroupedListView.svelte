@@ -18,19 +18,18 @@
     DisplayInboxNotification,
     DocNotifyContext
   } from '@hcengineering/notification'
-  import { Ref, Timestamp } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { createEventDispatcher } from 'svelte'
   import { ListView } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
 
   import { InboxNotificationsClientImpl } from '../../inboxNotificationsClient'
   import DocNotifyContextCard from '../DocNotifyContextCard.svelte'
-  import { archiveContextNotifications, notificationsComparator, unarchiveContextNotifications } from '../../utils'
+  import { removeContextNotifications, notificationsComparator } from '../../utils'
   import { InboxData } from '../../types'
 
   export let data: InboxData
   export let selectedContext: Ref<DocNotifyContext> | undefined
-  export let archived = false
 
   const client = getClient()
   const dispatch = createEventDispatcher()
@@ -40,10 +39,8 @@
   let list: ListView
   let listSelection = 0
   let element: HTMLDivElement | undefined
-  let prevArchived = false
 
-  let archivingContexts = new Set<Ref<DocNotifyContext>>()
-  let archivedContexts = new Map<Ref<DocNotifyContext>, Timestamp>()
+  let clearingContexts = new Set<Ref<DocNotifyContext>>()
 
   let displayData: [Ref<DocNotifyContext>, DisplayInboxNotification[]][] = []
   let viewlets: ActivityNotificationViewlet[] = []
@@ -52,58 +49,30 @@
     viewlets = res
   })
 
-  $: if (prevArchived !== archived) {
-    prevArchived = archived
-    archivedContexts.clear()
-  }
   $: updateDisplayData(data)
 
   function updateDisplayData (data: InboxData): void {
-    let result: [Ref<DocNotifyContext>, DisplayInboxNotification[]][] = Array.from(data.entries())
-    if (archivedContexts.size > 0) {
-      result = result.filter(([contextId]) => {
-        const context = $contextByIdStore.get(contextId)
-        return (
-          !archivedContexts.has(contextId) ||
-          (context?.lastUpdateTimestamp ?? 0) > (archivedContexts.get(contextId) ?? 0)
-        )
-      })
-    }
+    const result: [Ref<DocNotifyContext>, DisplayInboxNotification[]][] = Array.from(data.entries())
 
     displayData = result.sort(([, notifications1], [, notifications2]) =>
       notificationsComparator(notifications1[0], notifications2[0])
     )
   }
 
-  async function archiveContext (listSelection: number): Promise<void> {
+  async function clearContext (listSelection: number): Promise<void> {
     const contextId = displayData[listSelection]?.[0]
     const context = $contextByIdStore.get(contextId)
-    if (contextId === undefined || context === undefined) {
-      return
-    }
 
-    archivingContexts = archivingContexts.add(contextId)
+    if (contextId === undefined || context === undefined) return
+
+    clearingContexts = clearingContexts.add(contextId)
+
     try {
-      const nextContextId = displayData[listSelection + 1]?.[0] ?? displayData[listSelection - 1]?.[0]
-      const nextContext = $contextByIdStore.get(nextContextId)
-
-      if (archived) {
-        void unarchiveContextNotifications(context)
-      } else {
-        void archiveContextNotifications(context)
-      }
-
-      list.select(Math.min(listSelection, displayData.length - 2))
-      archivedContexts = archivedContexts.set(contextId, context.lastUpdateTimestamp ?? 0)
-      displayData = displayData.filter(([id]) => id !== contextId)
-
-      if (selectedContext === contextId || selectedContext === undefined) {
-        dispatch('click', { context: nextContext })
-      }
-    } catch (e) {}
-
-    archivingContexts.delete(contextId)
-    archivingContexts = archivingContexts
+      await removeContextNotifications(context)
+    } finally {
+      clearingContexts.delete(contextId)
+      clearingContexts = clearingContexts
+    }
   }
 
   async function onKeydown (key: KeyboardEvent): Promise<void> {
@@ -121,7 +90,7 @@
       key.preventDefault()
       key.stopPropagation()
 
-      await archiveContext(listSelection)
+      await clearContext(listSelection)
     }
     if (key.code === 'Enter') {
       key.preventDefault()
@@ -160,17 +129,16 @@
     getKey={getContextKey}
   >
     <svelte:fragment slot="item" let:item={itemIndex}>
-      {@const contextId = displayData[itemIndex][0]}
-      {@const contextNotifications = displayData[itemIndex][1]}
+      {@const contextId = displayData[itemIndex]?.[0]}
+      {@const contextNotifications = displayData[itemIndex]?.[1]}
       {@const context = $contextByIdStore.get(contextId)}
       {#if context}
         <DocNotifyContextCard
           value={context}
           notifications={contextNotifications}
-          {archived}
           {viewlets}
-          isArchiving={archivingContexts.has(contextId)}
-          on:archive={() => archiveContext(itemIndex)}
+          isClearing={clearingContexts.has(contextId)}
+          on:clear={() => clearContext(itemIndex)}
           on:click={(event) => {
             dispatch('click', event.detail)
             listSelection = itemIndex

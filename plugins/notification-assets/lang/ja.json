@@ -37,11 +37,11 @@
     "Edited": "編集済み",
     "Pinned": "ピン留め",
     "Message": "メッセージ",
-    "ArchiveAll": "すべてアーカイブ",
+    "ClearAll": "すべてアーカイブ",
     "MarkReadAll": "すべて既読にする",
     "MarkUnreadAll": "すべて未読にする",
-    "ArchiveAllConfirmationTitle": "すべての通知をアーカイブしますか？",
-    "ArchiveAllConfirmationMessage": "本当にすべての通知をアーカイブしますか？この操作は元に戻せません。",
+    "RemoveAllConfirmationTitle": "すべての通知をアーカイブしますか？",
+    "RemoveAllConfirmationMessage": "本当にすべての通知をアーカイブしますか？この操作は元に戻せません。",
     "StarDocument": "ドキュメントにスターを付ける",
     "UnstarDocument": "ドキュメントのスターを解除",
     "Unsubscribe": "購読解除",
@@ -57,6 +57,7 @@
     "Sound": "サウンド",
     "SoundNotificationsDescription": "イベントのサウンド通知を受け取ります。",
     "NoAccessToObject": "このオブジェクトへのアクセス権がありません",
-    "ViewIn": "{app} で表示"
+    "ViewIn": "{app} で表示",
+    "Clear": "クリア"
   }
 }

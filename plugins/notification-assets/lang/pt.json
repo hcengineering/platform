@@ -38,11 +38,11 @@
     "Message": "Mensagem",
     "FlatList": "Lista Plana",
     "GroupedList": "Lista Agrupada",
-    "ArchiveAll": "Arquivar tudo",
+    "ClearAll": "Arquivar tudo",
     "MarkReadAll": "Marcar tudo como lido",
     "MarkUnreadAll": "Marcar tudo como não lido",
-    "ArchiveAllConfirmationTitle": "Arquivar todas as notificações?",
-    "ArchiveAllConfirmationMessage": "Esta seguro que quer arquivar todas as notificações? Esta operação não se pode desfazer.",
+    "RemoveAllConfirmationTitle": "Arquivar todas as notificações?",
+    "RemoveAllConfirmationMessage": "Esta seguro que quer arquivar todas as notificações? Esta operação não se pode desfazer.",
     "StarDocument": "Marcar documento",
     "UnstarDocument": "Desmarcar documento",
     "Push": "Push",
@@ -56,6 +56,7 @@
     "CommonNotificationCollectionAdded":  "{senderName} adicionou {collection}",
     "CommonNotificationCollectionRemoved": "{senderName} removeu {collection}",
     "NoAccessToObject": "Você não tem mais acesso a este objeto",
-    "ViewIn": "Ver em {app}"
+    "ViewIn": "Ver em {app}",
+    "Clear": "Limpar"
   }
 }

@@ -63,7 +63,7 @@ export default mergeIds(notificationId, notification, {
   groups: {},
   action: {
     Unsubscribe: '' as Ref<Action>,
-    ArchiveAll: '' as Ref<Action>,
+    ClearAll: '' as Ref<Action>,
     ReadAll: '' as Ref<Action>,
     UnreadAll: '' as Ref<Action>
   },
@@ -73,9 +73,8 @@ export default mergeIds(notificationId, notification, {
     PinDocNotifyContext: '' as ViewAction,
     UnReadNotifyContext: '' as ViewAction,
     ReadNotifyContext: '' as ViewAction,
-    ArchiveContextNotifications: '' as ViewAction,
-    UnarchiveContextNotifications: '' as ViewAction,
-    ArchiveAll: '' as ViewAction,
+    RemoveContextNotifications: '' as ViewAction,
+    ClearAll: '' as ViewAction,
     ReadAll: '' as ViewAction,
     UnreadAll: '' as ViewAction
   }

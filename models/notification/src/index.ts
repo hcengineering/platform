@@ -512,29 +512,15 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: notification.actionImpl.ArchiveContextNotifications,
-      label: view.string.Archive,
+      action: notification.actionImpl.RemoveContextNotifications,
+      label: notification.string.Clear,
       icon: view.icon.CheckCircle,
       input: 'focus',
       category: notification.category.Notification,
       target: notification.class.DocNotifyContext,
       context: { mode: ['panel'], application: notification.app.Notification, group: 'remove' }
     },
-    notification.action.ArchiveContextNotifications
-  )
-
-  createAction(
-    builder,
-    {
-      action: notification.actionImpl.UnarchiveContextNotifications,
-      label: view.string.UnArchive,
-      icon: view.icon.Circle,
-      input: 'focus',
-      category: notification.category.Notification,
-      target: notification.class.DocNotifyContext,
-      context: { mode: ['panel'], application: notification.app.Notification, group: 'remove' }
-    },
-    notification.action.UnarchiveContextNotifications
+    notification.action.RemoveContextNotifications
   )
 
   createAction(
@@ -595,8 +581,8 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
-      action: notification.actionImpl.ArchiveAll,
-      label: notification.string.ArchiveAll,
+      action: notification.actionImpl.ClearAll,
+      label: notification.string.ClearAll,
       icon: view.icon.CheckCircle,
       input: 'none',
       category: notification.category.Notification,
@@ -606,7 +592,7 @@ export function createModel (builder: Builder): void {
         group: 'remove'
       }
     },
-    notification.action.ArchiveAll
+    notification.action.ClearAll
   )
 
   createAction(

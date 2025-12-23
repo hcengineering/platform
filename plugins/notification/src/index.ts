@@ -319,8 +319,6 @@ export interface InboxNotificationsClient {
   forceReadDoc: (doc: Doc) => Promise<void>
   readNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
   unreadNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
-  archiveNotifications: (client: TxOperations, ids: Array<Ref<InboxNotification>>) => Promise<void>
-  archiveAllNotifications: () => Promise<void>
   removeAllNotifications: () => Promise<void>
   readAllNotifications: () => Promise<void>
   unreadAllNotifications: () => Promise<void>
@@ -403,8 +401,7 @@ const notification = plugin(notificationId, {
     UnpinDocNotifyContext: '' as Ref<Action>,
     UnReadNotifyContext: '' as Ref<Action>,
     ReadNotifyContext: '' as Ref<Action>,
-    ArchiveContextNotifications: '' as Ref<Action>,
-    UnarchiveContextNotifications: '' as Ref<Action>
+    RemoveContextNotifications: '' as Ref<Action>
   },
   icon: {
     Notifications: '' as Asset,
@@ -429,11 +426,11 @@ const notification = plugin(notificationId, {
     Edited: '' as IntlString,
     Pinned: '' as IntlString,
     All: '' as IntlString,
-    ArchiveAll: '' as IntlString,
+    ClearAll: '' as IntlString,
     MarkReadAll: '' as IntlString,
     MarkUnreadAll: '' as IntlString,
-    ArchiveAllConfirmationTitle: '' as IntlString,
-    ArchiveAllConfirmationMessage: '' as IntlString,
+    RemoveAllConfirmationTitle: '' as IntlString,
+    RemoveAllConfirmationMessage: '' as IntlString,
     YouAddedCollaborators: '' as IntlString,
     YouRemovedCollaborators: '' as IntlString,
     Push: '' as IntlString,
@@ -446,7 +443,8 @@ const notification = plugin(notificationId, {
     Sound: '' as IntlString,
     NoAccessToObject: '' as IntlString,
     ViewIn: '' as IntlString,
-    Collaborators: '' as IntlString
+    Collaborators: '' as IntlString,
+    Clear: '' as IntlString
   },
   function: {
     Notify: '' as Resource<NotifyFunc>,

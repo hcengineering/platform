@@ -37,11 +37,11 @@
     "Edited": "edited",
     "Pinned": "Pinned",
     "Message": "Message",
-    "ArchiveAll": "Archive all",
+    "ClearAll": "Clear all",
     "MarkReadAll": "Mark all as read",
     "MarkUnreadAll": "Mark all as unread",
-    "ArchiveAllConfirmationTitle": "Archive all notifications?",
-    "ArchiveAllConfirmationMessage": "Are you sure you want to archive all notifications? This operation cannot be undone.",
+    "RemoveAllConfirmationTitle": "Remove all notifications?",
+    "RemoveAllConfirmationMessage": "Are you sure you want to remove all notifications? This operation cannot be undone.",
     "StarDocument": "Star document",
     "UnstarDocument": "Unstar document",
     "Unsubscribe": "Unsubscribe",
@@ -57,6 +57,7 @@
     "Sound": "Sound",
     "SoundNotificationsDescription": "Receive sound notifications for events.",
     "NoAccessToObject": "You no longer have access to this object",
-    "ViewIn": "View in {app}"
+    "ViewIn": "View in {app}",
+    "Clear": "Clear"
   }
 }

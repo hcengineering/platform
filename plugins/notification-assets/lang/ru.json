@@ -37,11 +37,11 @@
     "Edited": "отредактировал(а)",
     "Pinned": "Закреплено",
     "Message": "Сообщение",
-    "ArchiveAll": "Архивировать все",
+    "ClearAll": "Очистить все",
     "MarkReadAll": "Отметить все как прочитанное",
     "MarkUnreadAll": "Отметить все как непрочитанные",
-    "ArchiveAllConfirmationTitle": "Архивировать все уведомления?",
-    "ArchiveAllConfirmationMessage": "Вы уверены, что хотите заархивировать все уведомления? Эту операцию невозможно отменить.",
+    "RemoveAllConfirmationTitle": "Удалить все уведомления?",
+    "RemoveAllConfirmationMessage": "Вы уверены, что хотите удалить все уведомления? Эту операцию невозможно отменить.",
     "StarDocument": "Добавить в избранное",
     "UnstarDocument": "Удалить из избранного",
     "Unsubscribe": "Отписаться",
@@ -57,6 +57,7 @@
     "CommonNotificationCollectionAdded":  "{senderName} добавил {collection}",
     "CommonNotificationCollectionRemoved": "{senderName} удалил {collection}",
     "NoAccessToObject": "У вас больше нет доступа к этому объекту",
-    "ViewIn": "Посмотреть в {app}"
+    "ViewIn": "Посмотреть в {app}",
+    "Clear": "Очистить"
   }
 }
