@@ -56,6 +56,8 @@ async function requestIdentity (token: string, roomName: string): Promise<{ iden
 const requestFunc = async (req: JobRequest): Promise<void> => {
   const roomName = req.room?.name
 
+  console.log('Room request:', { roomName })
+
   if (roomName == null) {
     console.error('Room name is undefined', { room: req.room })
     await req.reject()
@@ -64,6 +66,7 @@ const requestFunc = async (req: JobRequest): Promise<void> => {
 
   const token = generateToken(systemAccountUuid, undefined, { service: 'love-agent', roomName })
 
+  console.log('Requesting ai agent identity')
   const identity = await requestIdentity(token, roomName)
 
   if (identity?.identity == null) {
@@ -95,10 +98,13 @@ function applyMetadata (data: string | undefined, stt: Stt): void {
 
 export default defineAgent({
   entry: async (ctx: JobContext) => {
+    console.log('Defining agent, connecting and waiting for participant')
     await ctx.connect()
     await ctx.waitForParticipant()
 
     const roomName = ctx.room.name
+
+    console.log('Connected to ', { roomName })
 
     if (roomName === undefined) {
       console.error('Room name is undefined', { room: ctx.room })
