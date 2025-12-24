@@ -191,15 +191,9 @@ Size of data is limited to some reasonable size
 
 ## Special options in config/default.toml
     - ```memory_mode = true``` Use native memory storage instead Redis
+    - ```no_authorization = true``` Don't check authorization
     - ```max_size = 100``` Max value size in bytes
 
-## Special cargo build options
-    - "db-redis" (default) - use Redis (Memory instead)
-    - "auth" (default) - use huly-authorization
-    Disable both:
-        cargo build --no-default-features
-    Enable one:
-        cargo build --no-default-features --features "auth"
 
 ## Running
 

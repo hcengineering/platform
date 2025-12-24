@@ -18,19 +18,18 @@ use std::str::FromStr;
 use tracing::*;
 
 use actix_web::{
-    Error, HttpResponse,
+    Error, HttpRequest, HttpResponse,
     error::ParseError,
     http::header::{self, HeaderName, HeaderValue, IfMatch, IfNoneMatch, TryIntoHeaderValue},
     web,
 };
 
-#[cfg(feature = "auth")]
-use actix_web::HttpRequest;
-
-use crate::db::{Db, SaveMode, Ttl};
-
-#[cfg(feature = "auth")]
-use crate::workspace_owner::test_rego_http;
+use crate::{
+    config::CONFIG,
+    db::Db,
+    redis::{SaveMode, Ttl},
+    workspace_owner::test_rego_http,
+};
 
 pub fn map_redis_error(err: impl std::fmt::Display) -> Error {
     let msg = err.to_string();
@@ -61,7 +60,7 @@ pub struct TtlExpiresAtHeader(Option<u64>);
 
 /// list
 pub async fn list(
-    #[cfg(feature = "auth")] req: HttpRequest,
+    req: HttpRequest,
     path: web::Path<PathParams>,
     db: web::Data<Db>,
 ) -> Result<HttpResponse, actix_web::Error> {
@@ -69,11 +68,8 @@ pub async fn list(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "list request");
 
-    #[cfg(feature = "auth")]
-    {
-        if !test_rego_http(req, "List", &key) {
-            return Err(actix_web::error::ErrorForbidden("forbidden"));
-        }
+    if !CONFIG.no_authorization && !test_rego_http(req, "List", &key) {
+        return Err(actix_web::error::ErrorForbidden("forbidden"));
     }
 
     let entries = db.list(&key).await.map_err(map_redis_error)?;
@@ -82,7 +78,7 @@ pub async fn list(
 
 /// get
 pub async fn get(
-    #[cfg(feature = "auth")] req: HttpRequest,
+    req: HttpRequest,
     path: web::Path<PathParams>,
     db: web::Data<Db>,
 ) -> Result<HttpResponse, actix_web::error::Error> {
@@ -90,11 +86,8 @@ pub async fn get(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "get request");
 
-    #[cfg(feature = "auth")]
-    {
-        if !test_rego_http(req, "Get", &key) {
-            return Err(actix_web::error::ErrorForbidden("forbidden"));
-        }
+    if !CONFIG.no_authorization && !test_rego_http(req, "Get", &key) {
+        return Err(actix_web::error::ErrorForbidden("forbidden"));
     }
 
     let entry_opt = db.read(&key).await.map_err(map_redis_error)?;
@@ -109,7 +102,7 @@ pub async fn get(
 
 /// put
 pub async fn put(
-    #[cfg(feature = "auth")] req: HttpRequest,
+    req: HttpRequest,
     path: web::Path<PathParams>,
     body: web::Bytes,
     db: web::Data<Db>,
@@ -126,11 +119,8 @@ pub async fn put(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "put request");
 
-    #[cfg(feature = "auth")]
-    {
-        if !test_rego_http(req, "Put", &key) {
-            return Err(actix_web::error::ErrorForbidden("forbidden"));
-        }
+    if !CONFIG.no_authorization && !test_rego_http(req, "Put", &key) {
+        return Err(actix_web::error::ErrorForbidden("forbidden"));
     }
 
     // TTL logic
@@ -172,7 +162,7 @@ pub async fn put(
 
 /// delete
 pub async fn delete(
-    #[cfg(feature = "auth")] req: HttpRequest,
+    req: HttpRequest,
     path: web::Path<PathParams>,
     db: web::Data<Db>,
     if_match: web::Header<header::IfMatch>,
@@ -181,11 +171,8 @@ pub async fn delete(
     let key = format!("{}/{}", &params.workspace, &params.key);
     trace!(key, "delete request");
 
-    #[cfg(feature = "auth")]
-    {
-        if !test_rego_http(req, "Delete", &key) {
-            return Err(actix_web::error::ErrorForbidden("forbidden"));
-        }
+    if !CONFIG.no_authorization && !test_rego_http(req, "Delete", &key) {
+        return Err(actix_web::error::ErrorForbidden("forbidden"));
     }
 
     // MODE logic

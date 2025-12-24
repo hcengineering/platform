@@ -1,36 +1,37 @@
 [package]
 name = "hulypulse"
-version = "0.4.0"
+version = "0.2.2"
 edition = "2024"
 
 [dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "signal"] }
+tokio = { version = "1", features = ["full", "macros", "rt-multi-thread"] }
 tracing = "0.1.41"
-tracing-subscriber = { version = "0.3", default-features = false, features = ["fmt"] }
-config = { version = "0.15", default-features = false, features = ["json", "toml"] }
+tracing-subscriber = "0.3.19"
 anyhow = "1.0.97"
+config = "0.15.4"
 serde = { version = "1.0.219", features = ["derive"] }
-serde_with = "3"
-serde_json = "1.0"
-actix-web = { version = "4.10", default-features = false, features = ["macros"] }
+actix = "0.13.5"
+actix-web = "4.10.2"
 actix-cors = "0.7.1"
-actix-ws = "0.3.0"
+actix-web-actors = "4.2.0"
+redis = { version = "=0.32.5", features = ["aio", "tokio-comp", "sentinel"] }
 md5 = "0.8.0"
+serde_with = "3"
 url = "2"
+size = { version = "0.5.0", features = ["serde"] }
+uuid = { version = "1.7", features = ["v4", "serde"] }
 hex = "0.4.3"
+serde_json = "1.0"
+hulyrs = { git = "https://github.com/hcengineering/hulyrs.git", features = [
+    "actix",
+] }
+secrecy = "0.10.3"
 tokio-stream = "0.1"
 strum = { version = "0.27.2", features = ["derive"] }
+strum_macros = "0.27.2"
+regorus = "0.5.0"
+actix-ws = "0.3.0"
 futures-util = "0.3"
-futures = "0.3"
-
-# auth:
-regorus = { version  = "0.5.0", optional = true }
-uuid = { version = "1.7", features = ["v4", "serde"], optional = true }
-hulyrs = { git = "https://github.com/hcengineering/hulyrs.git", features = [ "actix" ], optional = true }
-secrecy = { version = "0.10.3", optional = true }
-
-#redis
-redis = { version = "=0.32.5", features = ["aio", "tokio-comp", "sentinel"], optional = true }
 
 [[bin]]
 name = "hulypulse"
@@ -41,9 +42,7 @@ tokio-tungstenite = { version = "0.21", default-features = false, features = [
     "rustls-tls-native-roots",
     "connect",
 ] }
-
-[features]
-default = ["db-redis","auth"] # lopt
-auth = ["regorus", "uuid", "hulyrs", "secrecy"]
-lopt = []
-db-redis = ["redis"]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+futures-util = "0.3"
+serde_json = "1"
+uuid = "1"

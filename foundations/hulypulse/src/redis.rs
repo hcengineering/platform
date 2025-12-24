@@ -25,39 +25,66 @@ use tracing::*;
 
 use crate::{
     config::{CONFIG, RedisMode},
-    db::{DbArray, DbResult, SaveMode, Ttl, deprecated_symbol_error, error},
-    hub_service::{HubState, RedisEvent, RedisEventAction},
+    hub_service::{HubState, RedisEvent, RedisEventAction, push_event},
 };
+
+#[derive(serde::Serialize)]
+pub enum Ttl {
+    Sec(usize), // EX
+    At(u64),    // EXAT (timestamp in seconds)
+}
+
+#[derive(Debug)]
+pub enum SaveMode {
+    Upsert,        // default: set or overwrite
+    Insert,        // only if not exists (NX)
+    Update,        // only if exists (XX)
+    Equal(String), // only if md5 matches provided
+}
 
 use redis::{
     Client, ConnectionInfo, ProtocolVersion, RedisConnectionInfo, RedisResult, ToRedisArgs,
     aio::MultiplexedConnection,
 };
-// use serde::Serialize;
-
-use crate::hub_service::broadcast_event;
+use serde::Serialize;
 
 static MAX_LOOP_COUNT: usize = 1000; // to avoid infinite loops
 
-pub async fn push_event(
-    hub_state: &Arc<RwLock<HubState>>,
-    redis: &mut MultiplexedConnection,
-    ev: RedisEvent,
-) {
-    // Value only for Set
-    let mut value: Option<String> = None;
-    if matches!(ev.message, RedisEventAction::Set) {
-        match ::redis::cmd("GET")
-            .arg(&ev.key)
-            .query_async::<Option<String>>(redis)
-            .await
-        {
-            Ok(v) => value = v,
-            Err(e) => tracing::warn!("redis GET {} failed: {}", &ev.key, e),
-        }
-    }
+#[derive(Debug, Serialize)]
+pub struct RedisArray {
+    pub key: String,
+    pub data: String,
+    pub ttl: u64,     // sec to expire TTL
+    pub etag: String, // md5 hash (data)
+}
 
-    broadcast_event(hub_state, ev, value).await;
+/// return Error
+pub fn error<T>(code: u16, msg: impl Into<String>) -> redis::RedisResult<T> {
+    let msg = msg.into();
+    let full = format!("{}: {}", code, msg);
+    Err(redis::RedisError::from((
+        redis::ErrorKind::ExtensionError,
+        "",
+        full,
+    )))
+}
+
+/// Check for redis-deprecated symbols
+pub fn deprecated_symbol(s: &str) -> bool {
+    s.chars().any(|c| {
+        matches!(
+            c,
+            '*' | '?' | '[' | ']' | '\\' | '\0'..='\x1F' | '\x7F' | '"' | '\''
+        )
+    })
+}
+
+pub fn deprecated_symbol_error(s: &str) -> redis::RedisResult<()> {
+    if deprecated_symbol(s) {
+        error(412, "Deprecated symbol in key")
+    } else {
+        Ok(())
+    }
 }
 
 /// redis_info(&connection)
@@ -94,7 +121,7 @@ pub async fn redis_info(conn: &mut MultiplexedConnection) -> redis::RedisResult<
 pub async fn redis_list(
     conn: &mut MultiplexedConnection,
     key: &str,
-) -> redis::RedisResult<Vec<DbArray>> {
+) -> redis::RedisResult<Vec<RedisArray>> {
     deprecated_symbol_error(key)?;
     if !key.ends_with('/') {
         return error(412, "Key must end with slash");
@@ -127,7 +154,7 @@ pub async fn redis_list(
             // Get TTL
             let ttl: i64 = redis::cmd("TTL").arg(&k).query_async(conn).await?;
             if ttl >= 0 {
-                results.push(DbArray {
+                results.push(RedisArray {
                     key: k,
                     data: value.clone(),
                     ttl: ttl as u64,
@@ -149,7 +176,7 @@ pub async fn redis_list(
 pub async fn redis_read(
     conn: &mut MultiplexedConnection,
     key: &str,
-) -> redis::RedisResult<Option<DbArray>> {
+) -> redis::RedisResult<Option<RedisArray>> {
     deprecated_symbol_error(key)?;
 
     if key.ends_with('/') {
@@ -170,7 +197,7 @@ pub async fn redis_read(
         _ => {} // ttl >= 0, ок
     }
 
-    Ok(Some(DbArray {
+    Ok(Some(RedisArray {
         key: key.to_string(),
         data: data.clone(),
         ttl: ttl as u64,
@@ -185,7 +212,7 @@ pub async fn redis_save<T: ToRedisArgs>(
     value: T,
     ttl: Option<Ttl>,
     mode: Option<SaveMode>,
-) -> DbResult<()> {
+) -> RedisResult<()> {
     deprecated_symbol_error(&key)?;
 
     if key.ends_with('/') {
@@ -433,7 +460,7 @@ pub async fn receiver(
     while let Some(message) = messages.next().await {
         match RedisEvent::try_from(message) {
             Ok(ev) => {
-                push_event(&hub_state, &mut redis, ev); // .await;
+                push_event(&hub_state, &mut redis, ev).await;
             }
             Err(e) => {
                 warn!("invalid redis message: {e}");
