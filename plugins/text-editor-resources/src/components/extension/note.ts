@@ -45,7 +45,6 @@ export const NoteExtension = NoteBaseExtension.extend({
             const { doc, schema } = state
             const markType = schema.marks[noteName]
 
-            // If mark type doesn't exist (extension disabled), return empty decorations
             if (markType === undefined) {
               return DecorationSet.empty
             }
@@ -55,7 +54,6 @@ export const NoteExtension = NoteBaseExtension.extend({
           handleKeyDown (view: EditorView, event) {
             const markType = view.state.schema.marks[noteName]
 
-            // If mark type doesn't exist (extension disabled), don't handle keys
             if (markType === undefined) {
               return false
             }
@@ -74,7 +72,6 @@ export const NoteExtension = NoteBaseExtension.extend({
 })
 
 function onArrowRight (view: EditorView, markType: MarkType | undefined): boolean {
-  // If mark type doesn't exist, don't handle the key
   if (markType === undefined) {
     return false
   }
@@ -116,7 +113,6 @@ function createDecorations (doc: ProseMirrorNode, markType: MarkType | undefined
   // Widget decorations at the end of these nodes can interfere with ProseMirror's view update
   const nodesWithCustomViews = new Set(['image', 'embed', 'drawingBoard', 'mermaid', 'reference'])
 
-  // Build a map of positions to node types to efficiently check what node ends at a given position
   const nodeEndMap = new Map<number, string>()
 
   doc.descendants((node, pos) => {
@@ -175,7 +171,6 @@ function appendNoteWidget (
   // renderHTML, so the note functionality remains intact, just without the visual [] marker widget.
   const nodeTypeAtEnd = nodeEndMap.get(note.end)
 
-  // If the note ends right after a node with a custom view, skip the widget decoration
   if (nodeTypeAtEnd !== undefined && nodesWithCustomViews.has(nodeTypeAtEnd)) {
     return
   }
