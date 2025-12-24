@@ -148,6 +148,7 @@
     "ValueIsSet": "El valor está establecido",
     "RoleLabel": "Role: {role}",
     "ForbidAttributeChanges": "Prohibir cambios: ",
-    "AllowAttributeChanges": "Permitir cambios: "
+    "AllowAttributeChanges": "Permitir cambios: ",
+    "RelationshipTable": "Tabla de relaciones"
   }
 }

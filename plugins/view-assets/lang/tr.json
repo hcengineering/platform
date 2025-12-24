@@ -148,6 +148,7 @@
     "ValueIsSet": "Değer ayarlandı",
     "RoleLabel": "Rol: {role}",
     "ForbidAttributeChanges": "Özellik yasakla: ",
-    "AllowAttributeChanges": "Özellik izin ver: "
+    "AllowAttributeChanges": "Özellik izin ver: ",
+    "RelationshipTable": "İlişki tablosu"
   }
 }

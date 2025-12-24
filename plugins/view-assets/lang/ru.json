@@ -150,6 +150,7 @@
     "ValueIsSet": "Значение установлено",
     "RoleLabel": "Роль: {role}",
     "ForbidAttributeChanges": "Запретить изменение: ",
-    "AllowAttributeChanges": "Разрешить изменение: "
+    "AllowAttributeChanges": "Разрешить изменение: ",
+    "RelationshipTable": "Таблица связей"
   }
 }
