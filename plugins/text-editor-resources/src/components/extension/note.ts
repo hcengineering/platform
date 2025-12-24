@@ -101,7 +101,6 @@ interface NoteWidgetData {
 }
 
 function createDecorations (doc: ProseMirrorNode, markType: MarkType | undefined): DecorationSet {
-  // If mark type doesn't exist, return empty decorations
   if (markType === undefined) {
     return DecorationSet.empty
   }
@@ -109,7 +108,6 @@ function createDecorations (doc: ProseMirrorNode, markType: MarkType | undefined
   const decorations: Decoration[] = []
   const notes: NoteWidgetData[] = []
 
-  // Node types that have custom node views and should not have widget decorations
   // Widget decorations at the end of these nodes can interfere with ProseMirror's view update
   const nodesWithCustomViews = new Set(['image', 'embed', 'drawingBoard', 'mermaid', 'reference'])
 
@@ -141,8 +139,6 @@ function createDecorations (doc: ProseMirrorNode, markType: MarkType | undefined
 
     if (currentNote.end === note.start && currentNote.kind === note.kind && currentNote.title === note.title) {
       currentNote.end = note.end
-      // When merging notes, update nodeType to the node at the end position
-      // This is important because widget decorations are placed at the end position
       currentNote.nodeType = note.nodeType
       return
     }
