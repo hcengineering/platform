@@ -65,7 +65,10 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.clickNotification()
     await inboxPage.checkIfTaskIsPresentInInbox(newIssue.title)
     await inboxPage.clickOnToDo(newIssue.title)
-    await inboxPage.clickLeftSidePanelOpen()
+    await inboxPage.page.waitForTimeout(100)
+    if (!(await inboxPage.checkLeftSidePanelOpen())) {
+      await inboxPage.clickLeftSidePanelOpen()
+    }
     await issuesDetailsPage.checkIssue(newIssue)
   })
 
@@ -79,7 +82,10 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.clickNotification()
     await inboxPage.checkIfTaskIsPresentInInbox(newIssue.title)
     await inboxPage.clickOnToDo(newIssue.title)
-    await inboxPage.clickLeftSidePanelOpen()
+    await inboxPage.page.waitForTimeout(100)
+    if (!(await inboxPage.checkLeftSidePanelOpen())) {
+      await inboxPage.clickLeftSidePanelOpen()
+    }
     await issuesDetailsPage.checkIssue(newIssue)
     await inboxPage.clickCloseLeftSidePanel()
     // ADD ASSERT ONCE THE ISSUE IS FIXED
@@ -132,7 +138,10 @@ test.describe('Inbox tests', () => {
       await leftSideMenuPageSecond.clickNotification()
       await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
       await inboxPageSecond.clickOnToDo(newIssue.title)
-      await inboxPageSecond.clickLeftSidePanelOpen()
+      await inboxPage.page.waitForTimeout(100)
+      if (!(await inboxPageSecond.checkLeftSidePanelOpen())) {
+        await inboxPageSecond.clickLeftSidePanelOpen()
+      }
       await issuesDetailsPageSecond.checkIssue(newIssue)
     } finally {
       await page2.close()
@@ -161,7 +170,10 @@ test.describe('Inbox tests', () => {
       await leftSideMenuPageSecond.clickNotification()
       await inboxPageSecond.checkIfTaskIsPresentInInbox(newIssue.title)
       await inboxPageSecond.clickOnToDo(newIssue.title)
-      await inboxPageSecond.clickLeftSidePanelOpen()
+      await inboxPage.page.waitForTimeout(100)
+      if (!(await inboxPageSecond.checkLeftSidePanelOpen())) {
+        await inboxPageSecond.clickLeftSidePanelOpen()
+      }
       await issuesDetailsPageSecond.checkIssue(newIssue)
       await inboxPage.clickCloseLeftSidePanel()
     } finally {
@@ -317,7 +329,10 @@ test.describe('Inbox tests', () => {
       await leftSideMenuPageSecond.clickNotification()
       await inboxPageSecond.checkIfIssueIsPresentInInbox(newIssue.title)
       await inboxPageSecond.clickIssuePresentInInbox(newIssue.title)
-      await inboxPageSecond.clickLeftSidePanelOpen()
+      await inboxPage.page.waitForTimeout(100)
+      if (!(await inboxPageSecond.checkLeftSidePanelOpen())) {
+        await inboxPageSecond.clickLeftSidePanelOpen()
+      }
       await issuesDetailsPageSecond.checkIssue(newIssue)
       await leftSideMenuPageSecond.clickPlanner()
       await planningPageSecond.closeNotification()

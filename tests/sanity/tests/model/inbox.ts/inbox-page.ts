@@ -10,6 +10,7 @@ export class InboxPage {
   readonly taskName = (taskName: string): Locator => this.page.getByRole('paragraph').getByTitle(taskName)
   readonly toDoName = (): Locator => this.page.getByRole('paragraph')
   readonly leftSidePanelOpen = (): Locator => this.page.locator('#btnPAside')
+  readonly leftSidePanel = (): Locator => this.page.locator('.popupPanel-body__aside')
   readonly leftSidePanelClose = (): Locator => this.page.locator('#btnPClose')
   readonly inboxChat = (text: string): Locator => this.page.getByText(text)
   readonly issueTitle = (issueTitle: string): Locator => this.page.getByText(issueTitle).first()
@@ -26,6 +27,10 @@ export class InboxPage {
 
   async clickLeftSidePanelOpen (): Promise<void> {
     await this.leftSidePanelOpen().click()
+  }
+
+  async checkLeftSidePanelOpen (): Promise<boolean> {
+    return await this.leftSidePanel().isVisible()
   }
 
   async clickCloseLeftSidePanel (): Promise<void> {
