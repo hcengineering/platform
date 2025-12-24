@@ -41,7 +41,9 @@ export async function exportToWorkspace (
         major: 1,
         minor: 0,
         reviewers: [],
-        controlledState: ''
+        controlledState: '',
+        seqNumber: '$ensureUnique',
+        code: '$ensureUnique'
       },
       'documents:class:DocumentMeta': {
         author: '$currentUser',

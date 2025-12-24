@@ -15,6 +15,38 @@
 
 @use 'sass:meta';
 
+@media print {
+  table.proseTable {
+    border-spacing: 0 !important;
+    border-collapse: separate !important;
+    width: 100% !important;
+  }
+
+  table.proseTable td,
+  table.proseTable th {
+    border: 0.5px solid var(--text-editor-table-border-color) !important;
+    padding: 0.25rem !important;
+    margin: 0 !important;
+    // ensure cells background colors are printed
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  table.proseTable td:not(:last-child),
+  table.proseTable th:not(:last-child) {
+    border-right: none !important;
+  }
+
+  table.proseTable tr:not(:last-child) td,
+  table.proseTable tr:not(:last-child) th {
+    border-bottom: none !important;
+  }
+
+  table.proseTable col {
+    width: auto !important;
+  }
+}
+
 /* Table */
 table.proseTable {
   --table-selection-border-width: 1px;
