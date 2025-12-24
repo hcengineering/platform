@@ -153,6 +153,7 @@
     "ValueIsSet": "值已设置",
     "RoleLabel": "角色：{role}",
     "ForbidAttributeChanges": "禁止更改属性: ",
-    "AllowAttributeChanges": "允许更改属性: "
+    "AllowAttributeChanges": "允许更改属性: ",
+    "RelationshipTable": "关系表"
   }
 }

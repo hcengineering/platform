@@ -602,6 +602,17 @@ export function createModel (builder: Builder): void {
     view.class.ViewletDescriptor,
     core.space.Model,
     {
+      label: view.string.RelationshipTable,
+      icon: view.icon.Table2,
+      component: view.component.RelationshipTableBrowser
+    },
+    view.viewlet.RelationshipTable
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
       label: view.string.List,
       icon: view.icon.List,
       component: view.component.ListView

@@ -632,6 +632,21 @@ export function createModel (builder: Builder): void {
     card.viewlet.CardFeed
   )
 
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: card.class.Card,
+      descriptor: view.viewlet.RelationshipTable,
+      configOptions: {
+        hiddenKeys: ['content', 'title'],
+        sortable: true
+      },
+      config: ['']
+    },
+    card.viewlet.CardRelationshipTable
+  )
+
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: card.component.CardPresenter
   })
