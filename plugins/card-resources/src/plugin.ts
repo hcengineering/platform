@@ -87,7 +87,8 @@ export default mergeIds(cardId, card, {
     CardList: '' as Ref<Viewlet>,
     CardChildList: '' as Ref<Viewlet>,
     CardFeedDescriptor: '' as Ref<ViewletDescriptor>,
-    CardFeed: '' as Ref<Viewlet>
+    CardFeed: '' as Ref<Viewlet>,
+    CardRelationshipTable: '' as Ref<Viewlet>
   },
   string: {
     CreateMasterTag: '' as IntlString,

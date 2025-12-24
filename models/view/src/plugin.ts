@@ -68,6 +68,7 @@ export default mergeIds(viewId, view, {
     TimestampPresenter: '' as AnyComponent,
     DateTimePresenter: '' as AnyComponent,
     TableBrowser: '' as AnyComponent,
+    RelationshipTableBrowser: '' as AnyComponent,
     YoutubePresenter: '' as AnyComponent,
     GithubPresenter: '' as AnyComponent,
     ClassPresenter: '' as AnyComponent,
@@ -101,6 +102,7 @@ export default mergeIds(viewId, view, {
   },
   string: {
     Table: '' as IntlString,
+    RelationshipTable: '' as IntlString,
     Role: '' as IntlString,
     // Keybaord actions
     MoveUp: '' as IntlString,

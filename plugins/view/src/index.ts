@@ -164,7 +164,8 @@ const view = plugin(viewId, {
     List: '' as Ref<ViewletDescriptor>,
     MasterDetail: '' as Ref<ViewletDescriptor>,
     Tree: '' as Ref<ViewletDescriptor>,
-    Document: '' as Ref<ViewletDescriptor>
+    Document: '' as Ref<ViewletDescriptor>,
+    RelationshipTable: '' as Ref<ViewletDescriptor>
   },
   component: {
     ActionsPopup: '' as AnyComponent,

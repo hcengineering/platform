@@ -16,6 +16,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   Association,
+  AssociationQuery,
   BulkUpdateEvent,
   Class,
   Client,
@@ -1116,28 +1117,44 @@ export class LiveQuery implements WithTx, Client {
     if (q.options?.associations === undefined) return
     if (doc._class !== core.class.Relation) return
     const relation = doc as Relation
-    const assoc = q.options.associations.find((p) => p[0] === relation.association)
+    const assoc = findAssociation(q.options.associations, relation.association)
     if (assoc !== undefined) {
       if (q.result instanceof Promise) {
         q.result = await q.result
       }
       const direct = assoc[1] === 1
-      const res = q.result.findDoc(direct ? relation.docA : relation.docB)
+      const res = findRelationDoc(q.result.getDocs(), q.options.associations, relation)
       if (res === undefined) return
       const association = this.getModel().findObject(assoc[0])
       if (association === undefined) return
-      const docToPush = await this.findOne(direct ? association.classB : association.classA, {
-        _id: direct ? relation.docB : relation.docA
-      })
+      const nestedAssoc = assoc[2]
+      const options: FindOptions<Doc> | undefined =
+        nestedAssoc !== undefined
+          ? {
+              associations: nestedAssoc
+            }
+          : undefined
+      const docToPush = await this.findOne(
+        direct ? association.classB : association.classA,
+        {
+          _id: res.targetId
+        },
+        options
+      )
       if (docToPush === undefined) return
-      if (res?.$associations === undefined) {
-        res.$associations = {}
+      if (res.doc.$associations === undefined) {
+        res.doc.$associations = {}
       }
       const key = direct ? 'b' : 'a'
-      const arr = res?.$associations?.[`${relation.association}_${key}`] ?? []
-      arr.push(docToPush)
-      res.$associations[`${relation.association}_${key}`] = arr
-      q.result.updateDoc(res, false)
+      const arr = res.doc.$associations?.[`${assoc[0]}_${key}`] ?? []
+      const exists = arr.findIndex((p) => p._id === docToPush._id)
+      if (exists !== -1) {
+        arr[exists] = docToPush
+      } else {
+        arr.push(docToPush)
+      }
+      res.doc.$associations[`${assoc[0]}_${key}`] = arr
+      q.result.updateDoc(res.doc, false)
       this.queriesToUpdate.set(q.id, q)
     }
   }
@@ -1610,4 +1627,65 @@ function getNestedLookup (lookup: Ref<Class<Doc>> | [Ref<Class<Doc>>, Lookup<Doc
 
 function getLookupClass (lookup: Ref<Class<Doc>> | [Ref<Class<Doc>>, Lookup<Doc>]): Ref<Class<Doc>> {
   return Array.isArray(lookup) ? lookup[0] : lookup
+}
+
+function findAssociation (
+  associations: AssociationQuery[],
+  association: Ref<Association>
+): AssociationQuery | undefined {
+  for (const assoc of associations) {
+    if (assoc[0] === association) return assoc
+  }
+  for (const assoc of associations) {
+    if (assoc[2] !== undefined) {
+      const res = findAssociation(assoc[2], association)
+      if (res !== undefined) {
+        return assoc
+      }
+    }
+  }
+}
+
+function findRelationDoc (
+  result: WithLookup<Doc>[],
+  associations: AssociationQuery[] | undefined,
+  relation: Relation
+):
+  | {
+    doc: WithLookup<Doc>
+    targetId: Ref<Doc>
+  }
+  | undefined {
+  if (associations === undefined) return
+  for (const assoc of associations) {
+    if (assoc[0] === relation.association) {
+      const sourceId = assoc[1] === 1 ? relation.docA : relation.docB
+      const targetId = assoc[1] === 1 ? relation.docB : relation.docA
+      for (const doc of result) {
+        if (doc._id === sourceId) {
+          return {
+            doc,
+            targetId
+          }
+        }
+      }
+    }
+  }
+  for (const assoc of associations) {
+    if (assoc[2] !== undefined) {
+      const key = assoc[1] === 1 ? 'b' : 'a'
+      for (const doc of result) {
+        const arr = doc.$associations?.[`${assoc[0]}_${key}`] ?? []
+        if (arr.length > 0) {
+          const res = findRelationDoc(arr, assoc[2], relation)
+          if (res !== undefined) {
+            return {
+              doc,
+              targetId: res.doc._id
+            }
+          }
+        }
+      }
+    }
+  }
 }
