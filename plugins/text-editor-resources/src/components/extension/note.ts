@@ -45,10 +45,21 @@ export const NoteExtension = NoteBaseExtension.extend({
             const { doc, schema } = state
             const markType = schema.marks[noteName]
 
+            // If mark type doesn't exist (extension disabled), return empty decorations
+            if (markType === undefined) {
+              return DecorationSet.empty
+            }
+
             return createDecorations(doc, markType)
           },
           handleKeyDown (view: EditorView, event) {
             const markType = view.state.schema.marks[noteName]
+
+            // If mark type doesn't exist (extension disabled), don't handle keys
+            if (markType === undefined) {
+              return false
+            }
+
             switch (event.key) {
               case 'ArrowRight':
                 return onArrowRight(view, markType)
@@ -62,7 +73,12 @@ export const NoteExtension = NoteBaseExtension.extend({
   }
 })
 
-function onArrowRight (view: EditorView, markType: MarkType): boolean {
+function onArrowRight (view: EditorView, markType: MarkType | undefined): boolean {
+  // If mark type doesn't exist, don't handle the key
+  if (markType === undefined) {
+    return false
+  }
+
   const { selection } = view.state
   if (!selection.empty) return false
 
@@ -84,21 +100,38 @@ interface NoteWidgetData {
   end: number
   title: string
   kind: NoteKind
+  nodeType?: string
 }
 
-function createDecorations (doc: ProseMirrorNode, markType: MarkType): DecorationSet {
+function createDecorations (doc: ProseMirrorNode, markType: MarkType | undefined): DecorationSet {
+  // If mark type doesn't exist, return empty decorations
+  if (markType === undefined) {
+    return DecorationSet.empty
+  }
+
   const decorations: Decoration[] = []
   const notes: NoteWidgetData[] = []
 
+  // Node types that have custom node views and should not have widget decorations
+  // Widget decorations at the end of these nodes can interfere with ProseMirror's view update
+  const nodesWithCustomViews = new Set(['image', 'embed', 'drawingBoard', 'mermaid', 'reference'])
+
+  // Build a map of positions to node types to efficiently check what node ends at a given position
+  const nodeEndMap = new Map<number, string>()
+
   doc.descendants((node, pos) => {
+    const nodeEnd = pos + node.nodeSize
+    nodeEndMap.set(nodeEnd, node.type.name)
+
     const noteMark = node.marks.find((mark) => mark.type.name === markType.name)
 
     if (noteMark != null) {
       notes.push({
         start: pos,
-        end: pos + node.nodeSize,
+        end: nodeEnd,
         title: noteMark.attrs.title,
-        kind: noteMark.attrs.kind
+        kind: noteMark.attrs.kind,
+        nodeType: node.type.name
       })
     }
   })
@@ -112,21 +145,41 @@ function createDecorations (doc: ProseMirrorNode, markType: MarkType): Decoratio
 
     if (currentNote.end === note.start && currentNote.kind === note.kind && currentNote.title === note.title) {
       currentNote.end = note.end
+      // When merging notes, update nodeType to the node at the end position
+      // This is important because widget decorations are placed at the end position
+      currentNote.nodeType = note.nodeType
       return
     }
 
-    appendNoteWidget(currentNote, decorations)
+    appendNoteWidget(currentNote, decorations, nodesWithCustomViews, nodeEndMap)
     currentNote = note
   })
 
   if (currentNote !== undefined) {
-    appendNoteWidget(currentNote, decorations)
+    appendNoteWidget(currentNote, decorations, nodesWithCustomViews, nodeEndMap)
   }
 
   return DecorationSet.create(doc, decorations)
 }
 
-function appendNoteWidget (note: NoteWidgetData, decorations: Decoration[]): void {
+function appendNoteWidget (
+  note: NoteWidgetData,
+  decorations: Decoration[],
+  nodesWithCustomViews: Set<string>,
+  nodeEndMap: Map<number, string>
+): void {
+  // Check what node ends at the note's end position using the pre-built map
+  // Widget decorations at the end position of nodes with custom views interfere with
+  // ProseMirror's view update mechanism (preMatch issue), causing "Cannot read properties
+  // of undefined (reading 'children')" errors. The note mark itself will still render via
+  // renderHTML, so the note functionality remains intact, just without the visual [] marker widget.
+  const nodeTypeAtEnd = nodeEndMap.get(note.end)
+
+  // If the note ends right after a node with a custom view, skip the widget decoration
+  if (nodeTypeAtEnd !== undefined && nodesWithCustomViews.has(nodeTypeAtEnd)) {
+    return
+  }
+
   const marker = document.createElement('span')
   marker.classList.add('text-editor-note-marker')
   marker.classList.add('theme-text-editor-note-anchor')
