@@ -31,6 +31,7 @@
     "ExportStartedMessage": "Export zahájen. Až bude dokončen, obdržíte oznámení ve své schránce.",
     "SelectWorkspace": "Vybrat pracovní prostor",
     "SelectWorkspaceToExport": "Vybrat pracovní prostor pro export {count, plural, =1 {1 dokument} other {# dokumentů}}",
+    "SelectWorkspaceToExportSpace": "Vybrat pracovní prostor pro export dokumentů z prostoru",
     "SelectSpace": "Vybrat prostor",
     "NoSelectedDocuments": "Žádné dokumenty nevybrány",
     "RequestPermissionToImport": "Prosím, požádejte vlastníka cílového pracovního prostoru o povolení k importu dokumentů."

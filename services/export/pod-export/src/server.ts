@@ -740,13 +740,15 @@ async function sendFailureNotification (
   objectId?: Ref<Doc>,
   objectSpace?: Ref<Space>
 ): Promise<void> {
-  const _objectClass = objectClass ?? core.class.Doc
-  const _objectId = objectId ?? (core.class.Doc as unknown as Ref<Doc>)
   const _objectSpace = objectSpace ?? core.space.Space
 
+  if (objectId === undefined || objectClass === undefined) {
+    return
+  }
+
   const docNotifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
-    objectId: _objectId,
-    objectClass: _objectClass,
+    objectId,
+    objectClass,
     objectSpace: _objectSpace,
     user: account,
     isPinned: false,
@@ -755,8 +757,8 @@ async function sendFailureNotification (
 
   await client.createDoc(notification.class.CommonInboxNotification, core.space.Space, {
     user: account,
-    objectId: _objectId,
-    objectClass: _objectClass,
+    objectId,
+    objectClass,
     icon: exportPlugin.icon.Export,
     message: exportPlugin.string.ExportFailed,
     props: {
@@ -777,13 +779,15 @@ async function sendExportNotification (
   objectId?: Ref<Doc>,
   objectSpace?: Ref<Space>
 ): Promise<void> {
-  const _objectClass = objectClass ?? core.class.Doc
-  const _objectId = objectId ?? (core.class.Doc as unknown as Ref<Doc>)
   const _objectSpace = objectSpace ?? core.space.Space
 
+  if (objectId === undefined || objectClass === undefined) {
+    return
+  }
+
   const docNotifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
-    objectId: _objectId,
-    objectClass: _objectClass,
+    objectId,
+    objectClass,
     objectSpace: _objectSpace,
     user: account,
     isPinned: false,
@@ -794,8 +798,8 @@ async function sendExportNotification (
 
   await client.createDoc(notification.class.CommonInboxNotification, core.space.Space, {
     user: account,
-    objectId: _objectId,
-    objectClass: _objectClass,
+    objectId,
+    objectClass,
     icon: exportPlugin.icon.Export,
     message,
     props: {
