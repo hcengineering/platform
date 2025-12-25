@@ -54,36 +54,6 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
   }
 
   return [
-<<<<<<< HEAD
-    getV1Migration(ns),
-    getV2Migration1(ns),
-    getV2Migration2(ns),
-    getV2Migration3(ns),
-    getV3Migration(ns),
-    getV4Migration(ns),
-    getV4Migration1(ns),
-    getV5Migration(ns),
-    getV6Migration(ns),
-    getV7Migration(ns),
-    getV8Migration(ns),
-    getV9Migration(ns),
-    getV10Migration1(ns),
-    getV10Migration2(ns),
-    getV11Migration(ns),
-    getV12Migration(ns),
-    getV13Migration(ns),
-    getV14Migration(ns),
-    getV15Migration(ns),
-    getV16Migration(ns),
-    getV17Migration(ns),
-    getV18Migration(ns),
-    getV19Migration(ns),
-    getV20Migration(ns),
-    getV21Migration(ns),
-    getV22Migration(ns),
-    getV23Migration(ns),
-    getV24Migration(ns)
-=======
     getV1Migration(ns, flavor),
     getV2Migration1(ns, flavor),
     getV2Migration2(ns, flavor),
@@ -108,8 +78,10 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
     getV18Migration(ns, flavor),
     getV19Migration(ns, flavor),
     getV20Migration(ns, flavor),
-    getV21Migration(ns, flavor)
->>>>>>> 76913dbfa8 (Pure PostgreSQL)
+    getV21Migration(ns, flavor),
+    getV22Migration(ns, flavor),
+    getV23Migration(ns, flavor),
+    getV24Migration(ns, flavor)
   ]
 }
 
@@ -766,7 +738,7 @@ function getV21Migration (ns: string, flavor: DBFlavor): [string, string] {
   ]
 }
 
-function getV22Migration (ns: string): [string, string] {
+function getV22Migration (ns: string, flavor: DBFlavor): [string, string] {
   return [
     'account_db_v22_add_password_change_event_index',
     `
@@ -776,7 +748,7 @@ function getV22Migration (ns: string): [string, string] {
   ]
 }
 
-function getV23Migration (ns: string): [string, string] {
+function getV23Migration (ns: string, flavor: DBFlavor): [string, string] {
   return [
     'account_db_v23_add_password_aging_rule_to_workspace',
     `
@@ -786,7 +758,8 @@ function getV23Migration (ns: string): [string, string] {
   ]
 }
 
-function getV24Migration (ns: string): [string, string] {
+function getV24Migration (ns: string, flavor: DBFlavor): [string, string] {
+  const types = dbTypes[flavor]
   return [
     'account_db_v24_add_workspace_permissions_table',
     `
@@ -794,14 +767,18 @@ function getV24Migration (ns: string): [string, string] {
     CREATE TABLE IF NOT EXISTS ${ns}.workspace_permissions (
         workspace_uuid UUID NOT NULL,
         account_uuid UUID NOT NULL,
-        permission STRING NOT NULL,
-        created_on BIGINT NOT NULL DEFAULT current_epoch_ms(),
+        permission ${types.string}  NOT NULL,
+        created_on ${types.int8} NOT NULL DEFAULT current_epoch_ms(),
         CONSTRAINT workspace_permissions_pk PRIMARY KEY (workspace_uuid, account_uuid, permission),
         CONSTRAINT workspace_permissions_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${ns}.workspace(uuid),
-        CONSTRAINT workspace_permissions_account_fk FOREIGN KEY (account_uuid) REFERENCES ${ns}.account(uuid),
-        INDEX workspace_permissions_account_idx (account_uuid),
-        INDEX workspace_permissions_permission_idx (permission)
+        CONSTRAINT workspace_permissions_account_fk FOREIGN KEY (account_uuid) REFERENCES ${ns}.account(uuid)
     );
+
+    CREATE INDEX IF NOT EXISTS workspace_permissions_account_idx
+    ON ${ns}.workspace_permissions (account_uuid);
+
+    CREATE INDEX IF NOT EXISTS workspace_permissions_permission_idx
+    ON ${ns}.workspace_permissions (permission);
     `
   ]
 }
