@@ -1285,5 +1285,4 @@ export class PostgresAccountDB implements AccountDB {
     })
     return results.map((r) => r.accountUuid)
   }
-
 }
