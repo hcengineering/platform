@@ -19,7 +19,7 @@
   import { ObjectPresenterType } from '@hcengineering/view'
   import CardPresenter from './CardPresenter.svelte'
 
-  export let value: Card[]
+  export let value: Card[] | Card | undefined
   export let disabled: boolean = false
   export let noUnderline: boolean = disabled
   export let colorInherit: boolean = false
@@ -28,11 +28,13 @@
   export let showParent: boolean = false
   export let type: ObjectPresenterType = 'link'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+
+  $: arr = Array.isArray(value) ? value : [value]
 </script>
 
 {#if value}
-  <div class="flex-col-center">
-    {#each value as card}
+  <div class="flex-col">
+    {#each arr as card}
       <CardPresenter value={card} {noUnderline} {noSelect} {colorInherit} {inline} {showParent} {type} {icon} />
     {/each}
   </div>

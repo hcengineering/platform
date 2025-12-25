@@ -153,6 +153,7 @@
     "ValueIsSet": "Hodnota je nastavena",
     "RoleLabel": "Role: {role}",
     "ForbidAttributeChanges": "Zakázat změny: ",
-    "AllowAttributeChanges": "Povolit změny: "
+    "AllowAttributeChanges": "Povolit změny: ",
+    "RelationshipTable": "Tabulka vztahů"
   }
 }
