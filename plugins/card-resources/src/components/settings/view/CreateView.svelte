@@ -32,7 +32,6 @@
 
   let title: string
   let descriptor: Ref<ViewletDescriptor> | undefined = undefined
-  const association: Association | undefined = undefined
   let viewConfigs: MasterDetailConfig[] = []
   $: viewConfigs = [
     {

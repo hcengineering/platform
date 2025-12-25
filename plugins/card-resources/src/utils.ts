@@ -142,14 +142,14 @@ export async function duplicateCard (origin: Card): Promise<void> {
   }
 
   for (const rel of relationsA) {
-    await ops.createDoc(core.class.Relation, origin.space, {
+    await ops.createDoc(core.class.Relation, core.space.Workspace, {
       docA: targetId,
       docB: rel.docB,
       association: rel.association
     })
   }
   for (const rel of relationsB) {
-    await ops.createDoc(core.class.Relation, origin.space, {
+    await ops.createDoc(core.class.Relation, core.space.Workspace, {
       docA: rel.docA,
       docB: targetId,
       association: rel.association

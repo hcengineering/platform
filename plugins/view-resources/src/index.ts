@@ -116,6 +116,7 @@ import ImageViewer from './components/viewer/ImageViewer.svelte'
 import PDFViewer from './components/viewer/PDFViewer.svelte'
 import TextViewer from './components/viewer/TextViewer.svelte'
 import VideoViewer from './components/viewer/VideoViewer.svelte'
+import RelationshipTableBrowser from './components/RelationshipTableBrowser.svelte'
 
 import { blobImageMetadata, blobVideoMetadata } from './blob'
 
@@ -341,7 +342,8 @@ export default async (): Promise<Resources> => ({
     TreeView,
     MasterDetailBrowser,
     ReadOnlyNotification,
-    ForbiddenNotification
+    ForbiddenNotification,
+    RelationshipTableBrowser
   },
   popup: {
     PositionElementAlignment
