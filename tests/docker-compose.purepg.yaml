@@ -28,7 +28,7 @@ services:
     environment:
       - STORAGE_CONFIG=${DATALAKE_STORAGE_CONFIG}
   datalake:
-    image: haiodo/datalake
+    image: hardcoreeng/datalake
     depends_on:
       minio:
         condition: service_healthy
