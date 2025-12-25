@@ -1,0 +1,36 @@
+{
+  "string": {
+    "Answer": "Respuesta",
+    "Answers": "Respuestas",
+    "Assessment": "Evaluación",
+    "Assessments": "Evaluaciones",
+    "CorrectAnswer": "Respuesta Correcta",
+    "CorrectAnswers": "Respuestas Correctas",
+    "Duplicate": "Duplicar",
+    "Failed": "Fallido",
+    "MultipleChoice": "Seleccionar múltiples",
+    "MultipleChoiceAssessment": "Selección múltiple",
+    "MultipleChoiceQuestion": "Selección múltiple (no calificado)",
+    "NoQuestions": "Sin Preguntas",
+    "Option": "Opción",
+    "Owner": "Propietario",
+    "Options": "Opciones",
+    "Ordering": "Poner en el orden correcto",
+    "OrderingAssessment": "Ordenamiento",
+    "OrderingQuestion": "Ordenamiento (no calificado)",
+    "Passed": "Aprobado",
+    "Question": "Pregunta",
+    "Questions": "Preguntas",
+    "Rank": "Rango",
+    "ReleasedBy": "Publicado Por",
+    "ReleasedDate": "Fecha de Publicación",
+    "Score": "Puntuación",
+    "SingleChoice": "Seleccionar",
+    "SingleChoiceAssessment": "Selección única",
+    "SingleChoiceQuestion": "Selección única (no calificado)",
+    "TypePercentage": "Porcentaje",
+    "TypeQuestionOption": "Opción",
+    "TypeRank": "Rango"
+  }
+}
+
