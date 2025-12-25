@@ -626,6 +626,8 @@ function resolveCursorPositionFromCoords (view: EditorView, coords: { left: numb
   const posInside = posInfo.inside
   const posBase = posInfo.pos
 
+  if (posBase < 0) return
+
   const $posInside = posInfo.inside >= 0 ? view.state.doc.resolve(posInside) : null
   const $posBase = view.state.doc.resolve(posBase)
 
