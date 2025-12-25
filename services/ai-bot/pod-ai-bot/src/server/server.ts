@@ -137,11 +137,37 @@ export function createServer (controller: AIControl, ctx: MeasureContext): Expre
         throw new ApiError(400)
       }
 
+      // Diagnostics: log incoming request summary to help trace misrouted transcripts
+      ctx.info('Incoming /love/transcript request', {
+        token_account: token.account,
+        token_workspace: token.workspace,
+        roomName: (req.body as PostTranscriptRequest).roomName,
+        participant: (req.body as PostTranscriptRequest).participant,
+        transcriptLength: ((req.body as PostTranscriptRequest).transcript ?? '').length
+      })
+
       if (token.account !== controller.personUuid) {
+        ctx.info('Unauthorized /love/transcript request', { token_account: token.account })
         throw new ApiError(401)
       }
 
-      await controller.processLoveTranscript(req.body as PostTranscriptRequest)
+      try {
+        await controller.processLoveTranscript(req.body as PostTranscriptRequest)
+        ctx.info('Processed /love/transcript successfully', {
+          roomName: (req.body as PostTranscriptRequest).roomName,
+          participant: (req.body as PostTranscriptRequest).participant,
+          transcriptLength: ((req.body as PostTranscriptRequest).transcript ?? '').length
+        })
+      } catch (err: any) {
+        ctx.error('Error processing /love/transcript', {
+          error: err?.message ?? String(err),
+          bodyPreview: {
+            roomName: (req.body as PostTranscriptRequest).roomName,
+            participant: (req.body as PostTranscriptRequest).participant
+          }
+        })
+        throw err
+      }
 
       res.status(200)
       res.json({})

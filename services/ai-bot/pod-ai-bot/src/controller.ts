@@ -558,15 +558,49 @@ export class AIControl {
   }
 
   async processLoveTranscript (request: PostTranscriptRequest): Promise<void> {
+    // Debug: incoming request details
+    this.ctx.info('Processing love transcript request', {
+      roomName: request.roomName,
+      participant: request.participant
+    })
+
     const parsed = request.roomName.split('_')
     const workspace = parsed[0] as WorkspaceUuid | undefined
     const roomId = parsed[parsed.length - 1] as Ref<Room> | undefined
 
-    if (workspace == null || roomId == null) return
+    if (workspace == null || roomId == null) {
+      this.ctx.warn('Invalid room name format in love transcript request', { roomName: request.roomName })
+      return
+    }
+
+    this.ctx.info('Parsed roomName into workspace and roomId', { workspace, roomId })
 
     const wsClient = await this.getWorkspaceClient(workspace)
-    if (wsClient === undefined) return
+    if (wsClient === undefined) {
+      this.ctx.error('Failed to get workspace client for love transcript', {
+        workspace,
+        roomName: request.roomName,
+        roomId
+      })
+      return
+    }
 
-    await wsClient.processLoveTranscript(this.ctx, request.transcript, request.participant, roomId)
+    try {
+      await wsClient.processLoveTranscript(this.ctx, request.transcript, request.participant, roomId)
+      this.ctx.info('Processed love transcript', {
+        workspace,
+        roomId,
+        participant: request.participant,
+        transcriptLength: request.transcript?.length ?? 0
+      })
+    } catch (err: any) {
+      this.ctx.error('Error processing love transcript', {
+        error: err?.message ?? String(err),
+        workspace,
+        roomId,
+        participant: request.participant,
+        roomName: request.roomName
+      })
+    }
   }
 }

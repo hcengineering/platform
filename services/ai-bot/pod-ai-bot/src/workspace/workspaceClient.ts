@@ -594,6 +594,13 @@ export class WorkspaceClient {
       return
     }
 
+    // Diagnostics: log incoming love transcript for easier tracing
+    ctx.info('workspaceClient.processLoveTranscript', {
+      room,
+      participant,
+      textLength: text.length
+    })
+
     await this.love.processTranscript(text, participant, room)
   }
 

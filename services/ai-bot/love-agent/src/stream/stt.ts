@@ -926,7 +926,7 @@ export class STT implements Stt {
     }
 
     try {
-      await fetch(`${config.PlatformUrl}/love/transcript`, {
+      const res = await fetch(`${config.PlatformUrl}/love/transcript`, {
         method: 'POST',
         keepalive: true,
         headers: {
@@ -935,8 +935,33 @@ export class STT implements Stt {
         },
         body: JSON.stringify(request)
       })
+
+      if (!res.ok) {
+        let bodyText = '<no-body>'
+        try {
+          const text = await res.text()
+          bodyText = text.length > 1000 ? text.substring(0, 1000) + '... (truncated)' : text
+        } catch (err: any) {
+          bodyText = `<failed-to-read-body: ${err.message}>`
+        }
+        console.error('Failed to send transcript to platform', {
+          status: res.status,
+          statusText: res.statusText,
+          room: this.room.name,
+          participant: request.participant,
+          body: bodyText
+        })
+      } else {
+        if (this.transcriptionCount === 1) {
+          console.info('Transcript sent successfully', { room: this.room.name, participant: request.participant })
+        }
+      }
     } catch (e) {
-      console.error('Error sending to platform', e)
+      console.error('Error sending to platform', {
+        error: e,
+        room: this.room.name,
+        participant: this.participantBySid.get(sid)?.identity
+      })
     }
   }
 

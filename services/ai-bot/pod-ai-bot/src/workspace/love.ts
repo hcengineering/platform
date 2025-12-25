@@ -386,6 +386,11 @@ export class LoveController {
       socialId
     )
     await op.commit()
+    this.ctx.info('Added transcription message to meeting minutes', {
+      roomId: room._id,
+      meetingMinutes: doc._id,
+      textLength: text.length
+    })
   }
 
   hasActiveConnections (): boolean {
