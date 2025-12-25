@@ -1,0 +1,15 @@
+{
+  "string": {
+    "ViewMode": "查看模式",
+    "Unified": "统一",
+    "Split": "拆分",
+    "Viewed": "已查看",
+    "ShowDiff": "显示差异",
+    "NoChanges": "文件差异没有更改",
+    "LargeDiffsAreHidden": "默认情况下不渲染大型差异。",
+    "FileIsTooLarge": "文件太大，无法显示。",
+    "FileWasRenamed": "文件已重命名，无更改。",
+    "FileWasDeleted": "文件已删除。"
+  }
+}
+
