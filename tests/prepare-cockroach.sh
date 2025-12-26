@@ -2,7 +2,7 @@
 
 docker compose -p sanity kill
 docker compose -p sanity down --volumes
-docker compose -f docker-compose.yaml -f docker-compose.purepg.yaml -p sanity up -d --force-recreate --renew-anon-volumes
+docker compose -p sanity up -d --force-recreate --renew-anon-volumes
 docker_exit=$?
 if [ ${docker_exit} -eq 0 ]; then
     echo "Container started successfully"
@@ -19,12 +19,12 @@ fi
 ./wait-elastic.sh 9201
 
 # Create user record in accounts
-./tool-pg.sh create-account user1 -f John -l Appleseed -p 1234
-./tool-pg.sh create-account user2 -f Kainin -l Dirak -p 1234
-./tool-pg.sh create-account admin -f Super -l User -p 1234
+./tool-cockroach.sh create-account user1 -f John -l Appleseed -p 1234
+./tool-cockroach.sh create-account user2 -f Kainin -l Dirak -p 1234
+./tool-cockroach.sh create-account admin -f Super -l User -p 1234
 
 # Create workspace record in accounts
-./tool-pg.sh create-workspace sanity-ws email:user1
+./tool-cockroach.sh create-workspace sanity-ws email:user1
 
-./restore-pg.sh
+./restore-cockroach.sh
 rm -rf ./sanity/.auth

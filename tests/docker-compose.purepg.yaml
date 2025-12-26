@@ -1,0 +1,52 @@
+services:
+  account:
+    environment:
+      - DB_URL=${DB_PURE_PG_URL}
+      - STORAGE_CONFIG=${DATALAKE_STORAGE_CONFIG}
+      - PROCEED_V7_MONGO=false
+  transactor:
+    environment:
+      - DB_URL=${DB_PURE_PG_URL}
+      - STORAGE_CONFIG=${DATALAKE_STORAGE_CONFIG}
+  workspace:
+    environment:
+      - DB_URL=${DB_PURE_PG_URL}
+      - STORAGE_CONFIG=${DATALAKE_STORAGE_CONFIG}
+      - ACCOUNTS_DB_URL=${DB_PURE_PG_URL}
+  fulltext:
+    environment:
+      - DB_URL=${DB_PURE_PG_URL}
+      - STORAGE_CONFIG=${DATALAKE_STORAGE_CONFIG}
+  front:
+    environment:
+      - STORAGE_CONFIG=${DATALAKE_STORAGE_CONFIG}
+      - FILES_URL=http://localhost:4031/blob/:workspace/:blobId/:filename
+      - UPLOAD_URL=http://localhost:4031/upload/form-data/:workspace
+      - DATALAKE_URL=http://localhost:4031
+      - PREVIEW_URL=http://localhost:4031
+  collaborator:
+    environment:
+      - STORAGE_CONFIG=${DATALAKE_STORAGE_CONFIG}
+  datalake:
+    image: hardcoreeng/datalake
+    depends_on:
+      minio:
+        condition: service_healthy
+      cockroach:
+        condition: service_started
+      stats:
+        condition: service_started
+      account:
+        condition: service_started
+    ports:
+      - 4031:4031
+    environment:
+      - PORT=4031
+      - SECRET=secret
+      - ACCOUNTS_URL=http://account:3003
+      - STATS_URL=http://stats:4901
+      - STREAM_URL=http://localhost:1081/recording
+      - DB_URL=${DB_PURE_PG_URL}
+      - BUCKETS=blobs,eu|http://minio:9000?accessKey=minioadmin&secretKey=minioadmin
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+    restart: unless-stopped
