@@ -90,12 +90,15 @@ export async function createDb (ctx: MeasureContext, connectionString: string): 
     fetch_types: false,
     prepare: false,
     types: {
-      // https://jdbc.postgresql.org/documentation/publicapi/constant-values.html
       int8: {
-        to: 0,
+        // Corrected OID for BIGINT is 20.
+        // We parse BIGINT as Number to maintain compatibility with parseInt() used in the codebase.
+        // WARNING: This can lead to precision loss for values larger than Number.MAX_SAFE_INTEGER.
+        // If you expect to handle sizes larger than ~9 PB, consider migrating the codebase to use BigInt.
+        to: 20,
         from: [20],
-        serialize: (value: string) => value.toString(),
-        parse: (value: number) => Number(value)
+        serialize: (value: number | string) => value.toString(),
+        parse: (value: string) => Number(value)
       }
     }
   })
@@ -143,7 +146,7 @@ export class PostgresDB implements BlobDB {
       )`)
 
     const appliedMigrations = (await this.execute<Row[]>('SELECT name FROM blob.migrations')).map((row) => row.name)
-    ctx.info('applied migrations', { migrations: appliedMigrations })
+    ctx.info('Applied migrations', { migrations: appliedMigrations })
 
     for (const [name, sql] of getMigrations()) {
       if (appliedMigrations.includes(name)) {
@@ -151,11 +154,11 @@ export class PostgresDB implements BlobDB {
       }
 
       try {
-        ctx.warn('applying migration', { migration: name })
+        ctx.warn('Applying migration', { migration: name })
         await this.execute(sql)
         await this.execute('INSERT INTO blob.migrations (name) VALUES ($1)', [name])
       } catch (err: any) {
-        ctx.error('failed to apply migration', { migration: name, error: err })
+        ctx.error('Failed to apply migration', { migration: name, error: err })
         throw err
       }
     }
@@ -237,8 +240,13 @@ export class PostgresDB implements BlobDB {
 
     await this.execute(
       `
-      UPSERT INTO blob.blob (workspace, name, hash, location, parent, deleted_at)
+      INSERT INTO blob.blob (workspace, name, hash, location, parent, deleted_at)
       VALUES ($1, $2, $3, $4, $5, NULL)
+      ON CONFLICT (workspace, name) DO UPDATE SET
+        hash = EXCLUDED.hash,
+        location = EXCLUDED.location,
+        parent = EXCLUDED.parent,
+        deleted_at = EXCLUDED.deleted_at
     `,
       [workspace, name, hash, location, parent]
     )
@@ -249,8 +257,12 @@ export class PostgresDB implements BlobDB {
 
     await this.execute(
       `
-      UPSERT INTO blob.data (hash, location, filename, size, type)
+      INSERT INTO blob.data (hash, location, filename, size, type)
       VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (hash, location) DO UPDATE SET
+        filename = EXCLUDED.filename,
+        size = EXCLUDED.size,
+        type = EXCLUDED.type
     `,
       [hash, location, filename, size, type]
     )
@@ -259,18 +271,29 @@ export class PostgresDB implements BlobDB {
   async createBlobData (ctx: MeasureContext, data: BlobWithDataRecord): Promise<void> {
     const { workspace, name, hash, location, parent, filename, size, type } = data
 
+    // First upsert into data table
     await this.execute(
       `
-      UPSERT INTO blob.data (hash, location, filename, size, type)
+      INSERT INTO blob.data (hash, location, filename, size, type)
       VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (hash, location) DO UPDATE SET
+        filename = EXCLUDED.filename,
+        size = EXCLUDED.size,
+        type = EXCLUDED.type
     `,
       [hash, location, filename, size, type]
     )
 
+    // Then upsert into blob table
     await this.execute(
       `
-      UPSERT INTO blob.blob (workspace, name, hash, location, parent, deleted_at)
+      INSERT INTO blob.blob (workspace, name, hash, location, parent, deleted_at)
       VALUES ($1, $2, $3, $4, $5, NULL)
+      ON CONFLICT (workspace, name) DO UPDATE SET
+        hash = EXCLUDED.hash,
+        location = EXCLUDED.location,
+        parent = EXCLUDED.parent,
+        deleted_at = EXCLUDED.deleted_at
     `,
       [workspace, name, hash, location, parent]
     )
@@ -336,10 +359,12 @@ export class PostgresDB implements BlobDB {
 
     await this.execute(
       `
-      UPSERT INTO blob.meta (workspace, name, meta)
-      VALUES ($1, $2, $3)
+      INSERT INTO blob.meta (workspace, name, meta)
+      VALUES ($1, $2, $3::jsonb)
+      ON CONFLICT (workspace, name) DO UPDATE SET
+        meta = EXCLUDED.meta
     `,
-      [workspace, name, meta]
+      [workspace, name, JSON.stringify(meta)]
     )
   }
 
@@ -564,7 +589,7 @@ export function escape (value: any): string {
       if (value instanceof Date) {
         return `'${value.toISOString()}'`
       } else {
-        return `'${JSON.stringify(value)}'`
+        return `'${JSON.stringify(value).replace(/'/g, "''")}'`
       }
     default:
       throw new Error(`Unsupported value type: ${typeof value}`)
@@ -577,33 +602,33 @@ function getMigrations (): [string, string][] {
 
 function migrationV1 (): [string, string] {
   const sql = `
-    CREATE TYPE IF NOT EXISTS blob.location AS ENUM ('eu', 'weur', 'eeur', 'wnam', 'enam', 'apac');
+    CREATE TYPE blob.location AS ENUM ('eu', 'weur', 'eeur', 'wnam', 'enam', 'apac');
 
     CREATE TABLE IF NOT EXISTS blob.data (
       hash UUID NOT NULL,
       location blob.location NOT NULL,
-      size INT8 NOT NULL,
-      filename STRING(255) NOT NULL,
-      type STRING(255) NOT NULL,
+      size BIGINT NOT NULL,
+      filename VARCHAR(255) NOT NULL,
+      type VARCHAR(255) NOT NULL,
       CONSTRAINT pk_data PRIMARY KEY (hash, location)
     );
 
     CREATE TABLE IF NOT EXISTS blob.blob (
-      workspace STRING(255) NOT NULL,
-      name STRING(255) NOT NULL,
+      workspace VARCHAR(255) NOT NULL,
+      name VARCHAR(255) NOT NULL,
       hash UUID NOT NULL,
       location blob.location NOT NULL,
-      parent STRING(255) DEFAULT NULL,
+      parent VARCHAR(255) DEFAULT NULL,
       created_at TIMESTAMP NOT NULL DEFAULT NOW(),
       deleted_at TIMESTAMP DEFAULT NULL,
       CONSTRAINT pk_blob PRIMARY KEY (workspace, name),
       CONSTRAINT fk_data FOREIGN KEY (hash, location) REFERENCES blob.data (hash, location),
-      CONSTRAINT fk_parent FOREIGN KEY (workspace, parent)  REFERENCES blob.blob (workspace, name) ON DELETE CASCADE
+      CONSTRAINT fk_parent FOREIGN KEY (workspace, parent) REFERENCES blob.blob (workspace, name) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS blob.meta (
-      workspace STRING(255) NOT NULL,
-      name STRING(255) NOT NULL,
+      workspace VARCHAR(255) NOT NULL,
+      name VARCHAR(255) NOT NULL,
       meta JSONB NOT NULL,
       CONSTRAINT pk_meta PRIMARY KEY (workspace, name),
       CONSTRAINT fk_blob FOREIGN KEY (workspace, name) REFERENCES blob.blob (workspace, name)
@@ -623,7 +648,7 @@ function migrationV2 (): [string, string] {
       AND NOT EXISTS (
         SELECT 1
         FROM blob.blob existing
-        WHERE existing.workspace = w.uuid::string
+        WHERE existing.workspace = w.uuid::text
         AND existing.name = blob.blob.name
       );
 
@@ -634,7 +659,7 @@ function migrationV2 (): [string, string] {
       AND NOT EXISTS (
         SELECT 1
         FROM blob.meta existing
-        WHERE existing.workspace = w.uuid::string
+        WHERE existing.workspace = w.uuid::text
         AND existing.name = blob.meta.name
       );
 

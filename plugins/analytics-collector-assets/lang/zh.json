@@ -1,0 +1,23 @@
+{
+  "string": {
+    "OnboardingChannelDescription": "用户：{user}；工作区：{workspace}",
+    "Error": "错误：",
+    "InProject": " 在项目 ",
+    "NavigateToSpecial": "{app}：打开 {special}",
+    "OpenSpecial": "打开 {special} ",
+    "Set": "设置 ",
+    "To": " 为 ",
+    "Open": "打开 ",
+    "Workbench": "工作台：",
+    "OnboardingChannel": "入门渠道",
+    "OnboardingChannels": "入门渠道",
+    "WorkspaceId": "工作区 ID",
+    "WorkspaceName": "工作区名称",
+    "WorkspaceUrl": "工作区 URL",
+    "Account": "账户",
+    "UserName": "用户名",
+    "DisableAIReplies": "禁用 AI 回复",
+    "ShowAIReplies": "显示 AI 回复"
+  }
+}
+

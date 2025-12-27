@@ -304,6 +304,8 @@ export type WorkspaceStatusData = Omit<WorkspaceStatus, 'workspaceUuid'>
 
 export type WorkspaceInviteData = Omit<WorkspaceInvite, 'id'>
 
+export type DBFlavor = 'postgres' | 'cockroach' | 'unknown'
+
 /* ========= D A T A B A S E  C O L L E C T I O N S ========= */
 export interface AccountDB {
   person: DbCollection<Person>
