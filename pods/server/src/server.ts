@@ -47,7 +47,6 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
-  setDBExtraOptions,
   shutdownPostgres
 } from '@hcengineering/postgres'
 import { readFileSync } from 'node:fs'
@@ -101,11 +100,8 @@ export function start (
   registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
   setAdapterSecurity('postgresql', true)
 
-  const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
-
-  setDBExtraOptions({
-    prepare: usePrepare // We override defaults
-  })
+  // Prepare statements are controlled via POSTGRES_OPTIONS (e.g. {"prepare": true}).
+  // The old DB_PREPARE env var is removed; do not rely on it.
 
   registerServerPlugins()
 

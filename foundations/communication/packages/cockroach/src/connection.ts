@@ -106,7 +106,8 @@ export function connect (connectionString: string, database?: string): PostgresC
       onnotice () {},
       onparameter () {},
       ...extraOptions,
-      prepare: true,
+      // Respect POSTGRES_OPTIONS.prepare; default to false if not provided
+      prepare: extraOptions.prepare ?? false,
       connection: {
         application_name: 'communication'
       }

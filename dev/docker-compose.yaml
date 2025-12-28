@@ -56,6 +56,32 @@ services:
     volumes:
       - dbpg:/var/lib/postgresql
     restart: unless-stopped
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    depends_on:
+      - postgres
+    volumes:
+      - ./pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:ro
+      - pgbouncer_logs:/var/log/pgbouncer
+    ports:
+      - 6432:6432
+    environment:
+      - PGBOUNCER_LISTEN_PORT=6432
+      - PGBOUNCER_BACKENDS=postgres=postgres:5432/postgres
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=postgres
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -p 6432 || ps aux | grep -q pgbouncer']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   redpanda:
     image: redpandadata/redpanda:v25.2.11
     extra_hosts:
@@ -227,6 +253,7 @@ services:
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
+
       - postgres
       - minio
       - stats
@@ -322,6 +349,7 @@ services:
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
+
       - postgres
       - minio
       - account
@@ -379,6 +407,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     links:
+
       - elastic
       - postgres
       - rekoni
@@ -529,6 +558,7 @@ services:
         condition: service_healthy
       postgres:
         condition: service_started
+
       stats:
         condition: service_started
       account:
@@ -696,6 +726,7 @@ services:
     extra_hosts:
       - 'huly.local:host-gateway'
     links:
+
       - postgres
       - minio
       - account
@@ -756,6 +787,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
       account:
         condition: service_started
       datalake:
@@ -777,3 +809,4 @@ volumes:
   elastic:
   redpanda:
   telemetry:
+  pgbouncer_logs:

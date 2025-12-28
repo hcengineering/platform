@@ -9,7 +9,7 @@ import contactPlugin from '@hcengineering/contact'
 import { newMetrics, setOperationLogProfiling } from '@hcengineering/core'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
-import { setDBExtraOptions } from '@hcengineering/postgres'
+
 import { serverConfigFromEnv } from '@hcengineering/server'
 import serverCalendar from '@hcengineering/server-calendar'
 import serverCard from '@hcengineering/server-card'
@@ -68,11 +68,8 @@ setOperationLogProfiling(process.env.OPERATION_PROFILING === 'true')
 const config = serverConfigFromEnv()
 const storageConfig: StorageConfiguration = storageConfigFromEnv()
 
-const usePrepare = (process.env.DB_PREPARE ?? 'true') === 'true'
-
-setDBExtraOptions({
-  prepare: usePrepare // We override defaults
-})
+// Prepare statements are controlled via POSTGRES_OPTIONS (e.g. {"prepare": true}).
+// The old DB_PREPARE env var is removed; do not rely on it.
 
 const lastNameFirst = process.env.LAST_NAME_FIRST === 'true'
 setMetadata(contactPlugin.metadata.LastNameFirst, lastNameFirst)

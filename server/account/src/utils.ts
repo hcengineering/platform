@@ -128,7 +128,7 @@ export async function getAccountDB (
         error = false
       } catch (err: any) {
         error = true
-        console.error('Error while initializing postgres account db', err.message)
+        console.error('Error while initializing postgres account db1:', err.message)
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     } while (error)
@@ -140,8 +140,8 @@ export async function getAccountDB (
       try {
         await pgAccount.init()
         error = false
-      } catch (e) {
-        console.error('Error while initializing postgres account db', e)
+      } catch (e: any) {
+        console.error('Error while initializing postgres account db2:', e.message)
         error = true
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }

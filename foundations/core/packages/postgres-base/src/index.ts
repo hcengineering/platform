@@ -182,7 +182,33 @@ export function setDBExtraOptions (options: Partial<Options<any>>): void {
   dbExtraOptions = options
 }
 
+/**
+ * Parse POSTGRES_OPTIONS and cache it for subsequent calls.
+ * Priority for determining `prepare`:
+ * 1. POSTGRES_OPTIONS.prepare (if set)
+ * 2. dbExtraOptions.prepare (if set via setDBExtraOptions)
+ * 3. false (default)
+ */
+let cachedPostgresOptions: Partial<Options<any>> | undefined
+
+function getPostgresOptions (): Partial<Options<any>> {
+  if (cachedPostgresOptions !== undefined) return cachedPostgresOptions
+  try {
+    cachedPostgresOptions = JSON.parse(process.env.POSTGRES_OPTIONS ?? '{}') as Partial<Options<any>>
+  } catch (err) {
+    // If JSON is malformed, ignore it and fall back to dbExtraOptions
+    // eslint-disable-next-line no-console
+    console.error('Failed to parse POSTGRES_OPTIONS; falling back to dbExtraOptions for prepare.', err)
+    cachedPostgresOptions = {}
+  }
+  return cachedPostgresOptions
+}
+
 export function getPrepare (): { prepare: boolean } {
+  const extraOptions = getPostgresOptions()
+  if (typeof extraOptions.prepare === 'boolean') {
+    return { prepare: extraOptions.prepare }
+  }
   return { prepare: dbExtraOptions.prepare ?? false }
 }
 
@@ -221,6 +247,7 @@ export function getDBClient (
       notice: false,
       onnotice (notice) {},
       onparameter (key, value) {},
+      prepare: false,
       ...dbExtraOptions,
       ...extraOptions,
       fetch_types: doFetchTypes

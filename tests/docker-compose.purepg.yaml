@@ -29,6 +29,8 @@ services:
       - STORAGE_CONFIG=${DATALAKE_STORAGE_CONFIG}
   datalake:
     image: intabiafusion/datalake
+    extra_hosts:
+      - 'huly.local:host-gateway'
     depends_on:
       minio:
         condition: service_healthy

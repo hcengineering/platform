@@ -21,12 +21,15 @@ import config from './config'
 import { ChannelId, ChannelRecord, MessageRecord, OtpRecord, ReplyRecord } from './types'
 
 export async function getDb (): Promise<PostgresDB> {
+  const extraOptions = JSON.parse(process.env.POSTGRES_OPTIONS ?? '{}')
   const sql = postgres(config.DbUrl, {
     connection: {
       application_name: config.ServiceId
     },
     fetch_types: true,
-    prepare: true
+    ...extraOptions,
+    // Default to false unless explicitly enabled via POSTGRES_OPTIONS.prepare
+    prepare: (extraOptions.prepare as boolean | undefined) ?? false
   })
 
   return await PostgresDB.create(sql)
@@ -48,7 +51,7 @@ export class PostgresDB {
   static async init (client: postgres.Sql): Promise<void> {
     const sql = `
         CREATE SCHEMA IF NOT EXISTS telegram_bot;
-        
+
         CREATE TABLE IF NOT EXISTS ${otpTable} (
           telegram_id INT8 NOT NULL,
           telegram_username TEXT NOT NULL,
@@ -57,7 +60,7 @@ export class PostgresDB {
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           PRIMARY KEY (code)
         );
-        
+
         CREATE TABLE IF NOT EXISTS ${messagesTable} (
           message_id VARCHAR(255) NOT NULL,
           workspace UUID NOT NULL,

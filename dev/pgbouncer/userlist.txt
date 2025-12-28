@@ -1,0 +1,5 @@
+# userlist.txt - pgbouncer authentication file
+# Format: "username" "password"
+# For local development we use auth_type = trust in pgbouncer.ini, so this file
+# is optional; keeping a default user here is convenient for tests that expect it.
+"postgres" "postgres"
