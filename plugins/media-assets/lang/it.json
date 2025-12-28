@@ -1,0 +1,20 @@
+{
+  "string": {
+    "Camera": "Fotocamera",
+    "Microphone": "Microfono",
+    "Speaker": "Altoparlante",
+    "DefaultCam": "Fotocamera predefinita",
+    "DefaultMic": "Microfono predefinito",
+    "DefaultSpeaker": "Altoparlante predefinito",
+    "TurnOnCam": "Attiva fotocamera",
+    "TurnOffCam": "Disattiva fotocamera",
+    "TurnOnMic": "Attiva microfono",
+    "TurnOffMic": "Disattiva microfono",
+    "NoCam": "Nessuna fotocamera",
+    "NoMic": "Nessun microfono",
+    "NoSpeaker": "Nessun altoparlante",
+    "On": "Acceso",
+    "Off": "Spento"
+  }
+}
+

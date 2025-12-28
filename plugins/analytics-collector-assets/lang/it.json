@@ -1,0 +1,23 @@
+{
+  "string": {
+    "OnboardingChannelDescription": "Utente: {user}; Spazio di lavoro: {workspace}",
+    "Error": "Errore: ",
+    "InProject": " nel progetto ",
+    "NavigateToSpecial": "{app}: apri {special}",
+    "OpenSpecial": "apri {special} ",
+    "Set": "Imposta ",
+    "To": " a ",
+    "Open": "apri ",
+    "Workbench": "Workbench: ",
+    "OnboardingChannel": "Canale di onboarding",
+    "OnboardingChannels": "Canali di onboarding",
+    "WorkspaceId": "ID spazio di lavoro",
+    "WorkspaceName": "Nome spazio di lavoro",
+    "WorkspaceUrl": "URL spazio di lavoro",
+    "Account": "Account",
+    "UserName": "Nome utente",
+    "DisableAIReplies": "Disabilita risposte AI",
+    "ShowAIReplies": "Mostra risposte AI"
+  }
+}
+
