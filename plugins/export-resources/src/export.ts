@@ -26,6 +26,16 @@ export async function exportToWorkspace (
   targetWorkspace: string | undefined,
   relations: RelationDefinition[] | undefined
 ): Promise<void> {
+  const lang = getCurrentLanguage()
+
+  addNotification(
+    await translate(plugin.string.ExportStarted, {}, lang),
+    await translate(plugin.string.ExportStartedMessage, {}, lang),
+    ExportNotification,
+    undefined,
+    NotificationSeverity.Info
+  )
+
   try {
     const baseUrl = getMetadata(plugin.metadata.ExportUrl)
     const token = getMetadata(presentation.metadata.Token)
@@ -55,8 +65,6 @@ export async function exportToWorkspace (
       targetWorkspace,
       _class,
       relations,
-      objectId: selectedDocs[0]?._id,
-      objectSpace: selectedDocs[0]?.space,
       fieldMappers
     }
 
@@ -89,10 +97,9 @@ export async function exportToWorkspace (
       return
     }
 
-    const lang = getCurrentLanguage()
     addNotification(
-      await translate(plugin.string.ExportStarted, {}, lang),
-      await translate(plugin.string.ExportStartedMessage, {}, lang),
+      await translate(plugin.string.ExportToWorkspaceCompleted, {}, lang),
+      await translate(plugin.string.ExportToWorkspaceCompletedMessage, {}, lang),
       ExportNotification,
       undefined,
       NotificationSeverity.Success
@@ -108,10 +115,10 @@ async function showFailureNotification (errorDetails?: string): Promise<void> {
   const lang = getCurrentLanguage()
   const message =
     errorDetails !== undefined
-      ? `${await translate(plugin.string.ExportRequestFailedMessage, {}, lang)}: ${errorDetails}`
-      : await translate(plugin.string.ExportRequestFailedMessage, {}, lang)
+      ? `${await translate(plugin.string.ExportFailed, {}, lang)}: ${errorDetails}`
+      : await translate(plugin.string.ExportFailed, {}, lang)
   addNotification(
-    await translate(plugin.string.ExportRequestFailed, {}, lang),
+    await translate(plugin.string.ExportToWorkspaceFailed, {}, lang),
     message,
     ExportNotification,
     undefined,

@@ -76,7 +76,7 @@ import WebSocket from 'ws'
 import envConfig from './config'
 import { ApiError } from './error'
 import { ExportFormat, WorkspaceExporter } from './exporter'
-import { CrossWorkspaceExporter, type ExportOptions, type ExportResult } from './workspace'
+import { CrossWorkspaceExporter, type ExportOptions } from './workspace'
 
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
@@ -393,11 +393,7 @@ export function createServer (
   app.post(
     '/export-to-workspace',
     wrapRequest(async (req, res, wsIds, token, socialId) => {
-      let sourceTxOps: TxOperations | undefined
       let decodedToken: Token | undefined
-      let notifyObjectClass: Ref<Class<Doc>> | undefined
-      let notifyObjectId: Ref<Doc> | undefined
-      let notifyObjectSpace: Ref<Space> | undefined
 
       try {
         const {
@@ -406,8 +402,6 @@ export function createServer (
           query,
           conflictStrategy,
           includeAttachments,
-          objectId,
-          objectSpace,
           relations: rawRelations,
           fieldMappers
         }: {
@@ -445,11 +439,6 @@ export function createServer (
           throw new ApiError(403, 'Forbidden: read-only token')
         }
 
-        // Store for notifications (use defaults if not provided)
-        notifyObjectClass = _class
-        notifyObjectId = objectId
-        notifyObjectSpace = objectSpace
-
         // Get target workspace info
         const accountClient = getClient(envConfig.AccountsUrl, token)
         const targetWsLoginInfo = await accountClient.getLoginWithWorkspaceInfo()
@@ -482,108 +471,79 @@ export function createServer (
         // Create clients for both workspaces
         const sourceClient = await createPlatformClient(token)
         const targetClient = await createPlatformClient(targetToken)
-        sourceTxOps = new TxOperations(sourceClient, socialId)
         const targetTxOps = new TxOperations(targetClient, socialId)
 
-        res.status(200).send({ message: 'Export started' })
+        try {
+          // Create pipeline factory for source workspace using same approach as rating calculator
+          const sourcePipelineFactory = async (ctx: MeasureContext, workspace: WorkspaceIds): Promise<Pipeline> => {
+            const externalStorage = createDummyStorageAdapter()
+            const dbConf = getConfig(ctx, dbUrl, ctx, {
+              disableTriggers: true,
+              externalStorage
+            })
 
-        void (async () => {
-          try {
-            // Create pipeline factory for source workspace using same approach as rating calculator
-            const sourcePipelineFactory = async (ctx: MeasureContext, workspace: WorkspaceIds): Promise<Pipeline> => {
-              const externalStorage = createDummyStorageAdapter()
-              const dbConf = getConfig(ctx, dbUrl, ctx, {
-                disableTriggers: true,
-                externalStorage
-              })
+            const middlewares: MiddlewareCreator[] = [
+              LowLevelMiddleware.create,
+              ContextNameMiddleware.create,
+              DomainFindMiddleware.create,
+              DomainTxMiddleware.create,
+              DBAdapterInitMiddleware.create,
+              ModelMiddleware.create(model),
+              DBAdapterMiddleware.create(dbConf)
+            ]
 
-              const middlewares: MiddlewareCreator[] = [
-                LowLevelMiddleware.create,
-                ContextNameMiddleware.create,
-                DomainFindMiddleware.create,
-                DomainTxMiddleware.create,
-                DBAdapterInitMiddleware.create,
-                ModelMiddleware.create(model),
-                DBAdapterMiddleware.create(dbConf)
-              ]
+            const hierarchy = new Hierarchy()
+            const modelDb = new ModelDb(hierarchy)
 
-              const hierarchy = new Hierarchy()
-              const modelDb = new ModelDb(hierarchy)
-
-              const context: PipelineContext = {
-                workspace,
-                branding: null,
-                modelDb,
-                hierarchy,
-                storageAdapter: externalStorage,
-                contextVars: {}
-              }
-
-              return await createPipeline(ctx, middlewares, context)
+            const context: PipelineContext = {
+              workspace,
+              branding: null,
+              modelDb,
+              hierarchy,
+              storageAdapter: externalStorage,
+              contextVars: {}
             }
 
-            const exporter = new CrossWorkspaceExporter(
-              measureCtx,
-              sourcePipelineFactory,
-              targetTxOps,
-              storageAdapter,
-              decodedToken.account,
-              wsIds,
-              targetWsIds
-            )
-
-            const relations = normalizeRelations(rawRelations)
-
-            const options: ExportOptions = {
-              sourceWorkspace: wsIds,
-              targetWorkspace: targetWsIds,
-              sourceQuery: query ?? {},
-              _class,
-              conflictStrategy: conflictStrategy ?? 'duplicate',
-              includeAttachments: includeAttachments ?? true,
-              relations,
-              fieldMappers
-            }
-
-            const result = await exporter.export(options)
-
-            await sendExportNotification(
-              sourceTxOps,
-              decodedToken.account,
-              result,
-              targetWsInfo.url,
-              notifyObjectClass,
-              notifyObjectId,
-              notifyObjectSpace
-            )
-          } catch (err: any) {
-            measureCtx.error('Export failed:', err)
-            await sendFailureNotification(
-              sourceTxOps,
-              decodedToken.account,
-              err.message ?? 'Unknown error during export',
-              notifyObjectClass,
-              notifyObjectId,
-              notifyObjectSpace
-            )
-          } finally {
-            await sourceClient.close()
-            await targetClient.close()
+            return await createPipeline(ctx, middlewares, context)
           }
-        })()
+
+          const exporter = new CrossWorkspaceExporter(
+            measureCtx,
+            sourcePipelineFactory,
+            targetTxOps,
+            storageAdapter,
+            decodedToken.account,
+            wsIds,
+            targetWsIds
+          )
+
+          const relations = normalizeRelations(rawRelations)
+
+          const options: ExportOptions = {
+            sourceWorkspace: wsIds,
+            targetWorkspace: targetWsIds,
+            sourceQuery: query ?? {},
+            _class,
+            conflictStrategy: conflictStrategy ?? 'duplicate',
+            includeAttachments: includeAttachments ?? true,
+            relations,
+            fieldMappers
+          }
+
+          await exporter.export(options)
+
+          res.status(200).send({ message: 'Export completed' })
+        } catch (err: any) {
+          measureCtx.error('Export failed:', err)
+          res.status(500).send({ message: 'Export failed', error: err.message ?? 'Unknown error' })
+        } finally {
+          await sourceClient.close()
+          await targetClient.close()
+        }
       } catch (err: any) {
         measureCtx.error('Export to workspace request failed:', err)
-        if (sourceTxOps != null && decodedToken != null && decodedToken.extra?.readonly !== true) {
-          await sendFailureNotification(
-            sourceTxOps,
-            decodedToken.account,
-            err.message ?? 'Unknown error during export',
-            notifyObjectClass,
-            notifyObjectId,
-            notifyObjectSpace
-          )
-        }
-        throw err
+        const errorMessage = err instanceof ApiError ? err.message : 'Export to workspace request failed'
+        res.status(err instanceof ApiError ? err.code : 500).send({ message: errorMessage })
       }
     })
   )
@@ -763,50 +723,6 @@ async function sendFailureNotification (
     message: exportPlugin.string.ExportFailed,
     props: {
       error
-    },
-    isViewed: false,
-    archived: false,
-    docNotifyContext: docNotifyContextId
-  })
-}
-
-async function sendExportNotification (
-  client: TxOperations,
-  account: AccountUuid,
-  result: ExportResult,
-  workspaceUrl: string,
-  objectClass?: Ref<Class<Doc>>,
-  objectId?: Ref<Doc>,
-  objectSpace?: Ref<Space>
-): Promise<void> {
-  const _objectSpace = objectSpace ?? core.space.Space
-
-  if (objectId === undefined || objectClass === undefined) {
-    return
-  }
-
-  const docNotifyContextId = await client.createDoc(notification.class.DocNotifyContext, core.space.Space, {
-    objectId,
-    objectClass,
-    objectSpace: _objectSpace,
-    user: account,
-    isPinned: false,
-    hidden: false
-  })
-
-  const message = result.errors.length > 0 ? exportPlugin.string.ExportFailed : exportPlugin.string.ExportCompleted
-
-  await client.createDoc(notification.class.CommonInboxNotification, core.space.Space, {
-    user: account,
-    objectId,
-    objectClass,
-    icon: exportPlugin.icon.Export,
-    message,
-    props: {
-      exportedCount: result.exportedCount,
-      skippedCount: result.skippedCount,
-      errors: result.errors.map((e: { docId: string, error: string }) => `${e.docId}: ${e.error}`),
-      workspaceUrl
     },
     isViewed: false,
     archived: false,
