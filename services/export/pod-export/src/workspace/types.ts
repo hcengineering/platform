@@ -54,6 +54,7 @@ export interface ExportResult {
   exportedCount: number
   skippedCount: number
   errors: Array<{ docId: string, error: string }>
+  exportedDocuments: Array<{ docId: Ref<Doc>, name: string }>
 }
 
 /**
