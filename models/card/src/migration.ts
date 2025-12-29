@@ -419,18 +419,26 @@ async function migrateRolePermissions (client: Client): Promise<void> {
 }
 
 async function fillVersioning (client: MigrationClient): Promise<void> {
-  const cards = await client.find<Card>(DOMAIN_CARD, { baseId: { $exists: false } })
+  const iterator = await client.traverse<Card>(DOMAIN_CARD, { baseId: { $exists: false } })
 
-  for (const doc of cards) {
-    await client.update(
-      DOMAIN_CARD,
-      { _id: doc._id },
-      {
-        baseId: doc._id,
-        version: 1,
-        isLatest: true,
-        docCreatedBy: doc.createdBy ?? doc.modifiedBy
+  try {
+    while (true) {
+      const cards = await iterator.next(500)
+      if (cards == null || cards.length === 0) break
+      for (const doc of cards) {
+        await client.update(
+          DOMAIN_CARD,
+          { _id: doc._id },
+          {
+            baseId: doc._id,
+            version: 1,
+            isLatest: true,
+            docCreatedBy: doc.createdBy ?? doc.modifiedBy
+          }
+        )
       }
-    )
+    }
+  } finally {
+    await iterator.close()
   }
 }
