@@ -49,6 +49,7 @@
   import Content from './Content.svelte'
   import TagsEditor from './TagsEditor.svelte'
   import { permissionsStore } from '@hcengineering/contact-resources'
+  import CardVersionSelector from './CardVersionSelector.svelte'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
@@ -175,8 +176,11 @@
           disabled={_readonly || updatePermissionForbidden}
           placeholder={card.string.Card}
           on:blur={(evt) => saveTitle(evt)}
+          shrink
         />
       </div>
+
+      <CardVersionSelector bind:value={doc} />
 
       <TagsEditor {doc} readonly={_readonly} />
 

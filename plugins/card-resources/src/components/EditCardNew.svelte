@@ -50,6 +50,7 @@
   import { openCardInSidebar } from '../utils'
   import { afterUpdate } from 'svelte'
   import { permissionsStore } from '@hcengineering/contact-resources'
+  import CardVersionSelector from './CardVersionSelector.svelte'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
@@ -190,11 +191,13 @@
             on:value={() => {
               isTitleEditing = true
             }}
+            shrink
           />
         {:else}
           {doc.title}
         {/if}
       </div>
+      <CardVersionSelector bind:value={doc} />
     </svelte:fragment>
 
     <svelte:fragment slot="presence">
@@ -292,7 +295,5 @@
   }
   .title {
     font-size: 1rem;
-    flex: 1;
-    min-width: 2rem;
   }
 </style>

@@ -57,6 +57,11 @@ export const cardOperation: MigrateOperation = {
         state: 'update-custom-fields-displayprops',
         mode: 'upgrade',
         func: updateCustomFieldsDisplayProps
+      },
+      {
+        state: 'fill-versioning',
+        mode: 'upgrade',
+        func: fillVersioning
       }
     ])
   },
@@ -410,5 +415,30 @@ async function migrateRolePermissions (client: Client): Promise<void> {
   const roles = await client.findAll(card.class.Role, { permissions: { $exists: false } })
   for (const role of roles) {
     await txOp.update(role, { permissions: [] })
+  }
+}
+
+async function fillVersioning (client: MigrationClient): Promise<void> {
+  const iterator = await client.traverse<Card>(DOMAIN_CARD, { baseId: { $exists: false } })
+
+  try {
+    while (true) {
+      const cards = await iterator.next(500)
+      if (cards == null || cards.length === 0) break
+      for (const doc of cards) {
+        await client.update(
+          DOMAIN_CARD,
+          { _id: doc._id },
+          {
+            baseId: doc._id,
+            version: 1,
+            isLatest: true,
+            docCreatedBy: doc.createdBy ?? doc.modifiedBy
+          }
+        )
+      }
+    }
+  } finally {
+    await iterator.close()
   }
 }

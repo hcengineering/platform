@@ -19,7 +19,6 @@ import CardsPresenter from './components/CardsPresenter.svelte'
 import EditCard from './components/EditCard.svelte'
 import Main from './components/Main.svelte'
 import {
-  getCardId,
   getCardTitle,
   resolveLocation,
   resolveLocationData,
@@ -152,7 +151,6 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     CardTitleProvider: getCardTitle,
-    CardIdProvider: getCardId,
     GetCardLink: getCardLink,
     CardCustomLinkMatch: cardCustomLinkMatch,
     CardCustomLinkEncode: cardCustomLinkEncode,

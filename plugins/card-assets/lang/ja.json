@@ -60,6 +60,12 @@
     "ForbidCreateCardPermission": "カード作成を禁止",
     "ForbidAddTagPermission": "タグ追加を禁止",
     "ForbidRemoveTag": "タグ削除を禁止",
-    "Duplicate": "複製"
+    "Duplicate": "複製",
+    "Version": "バージョン",
+    "Versions": "バージョン",
+    "NewVersion": "新しいバージョン",
+    "Versioning": "バージョン管理",
+    "EnableVersioning": "バージョン管理を有効にする",
+    "EnableVersioningConfirm": "バージョン管理を有効にしますか？"
   }
 }

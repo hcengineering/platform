@@ -77,8 +77,8 @@ import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type BuildModelKey } from '@hcengineering/view'
 import { createActions } from './actions'
-import card from './plugin'
 import { definePermissions } from './permissions'
+import card from './plugin'
 
 export { cardId } from '@hcengineering/card'
 
@@ -312,12 +312,21 @@ export function createSystemType (
     value: false
   })
 
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.BaseQuery, {
+    baseQuery: {
+      isLatest: true
+    }
+  })
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: type,
     descriptor: view.viewlet.Table,
     configOptions: {
       hiddenKeys: ['content', 'title'],
       sortable: true
+    },
+    baseQuery: {
+      isLatest: true
     },
     config: [
       { key: '', props: { shrink: true } },
@@ -350,6 +359,9 @@ export function createSystemType (
         ['rank', SortingOrder.Ascending]
       ],
       other: []
+    },
+    baseQuery: {
+      isLatest: true
     },
     configOptions: {
       hiddenKeys: ['content', 'title']
@@ -424,6 +436,9 @@ export function createModel (builder: Builder): void {
     configOptions: {
       hiddenKeys: ['name', 'description'],
       sortable: true
+    },
+    baseQuery: {
+      isLatest: true
     },
     config: ['', 'members', 'private', 'archived'],
     viewOptions: {
@@ -547,6 +562,9 @@ export function createModel (builder: Builder): void {
         hiddenKeys: ['content', 'title'],
         sortable: true
       },
+      baseQuery: {
+        isLatest: true
+      },
       config: [
         '',
         '_class',
@@ -580,6 +598,9 @@ export function createModel (builder: Builder): void {
       },
       configOptions: {
         hiddenKeys: ['content', 'title']
+      },
+      baseQuery: {
+        isLatest: true
       },
       config: listConfig
     },
@@ -642,6 +663,9 @@ export function createModel (builder: Builder): void {
         hiddenKeys: ['content', 'title'],
         sortable: true
       },
+      baseQuery: {
+        isLatest: true
+      },
       config: ['']
     },
     card.viewlet.CardRelationshipTable
@@ -685,10 +709,6 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectTitle, {
     titleProvider: card.function.CardTitleProvider
-  })
-
-  builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectIdentifier, {
-    provider: card.function.CardIdProvider
   })
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.LinkProvider, {
@@ -827,6 +847,10 @@ export function createModel (builder: Builder): void {
   builder.mixin(card.class.Card, core.class.Class, view.mixin.CustomObjectLinkProvider, {
     match: card.function.CardCustomLinkMatch,
     encode: card.function.CardCustomLinkEncode
+  })
+
+  builder.mixin(card.class.Card, core.class.Class, core.mixin.VersionableClass, {
+    enabled: false
   })
 
   createPublicLinkAction(builder, card.class.Card, card.action.PublicLink)

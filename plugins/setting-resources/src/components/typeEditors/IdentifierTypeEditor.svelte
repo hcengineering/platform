@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { CustomSequence, Ref, Type, TypeIdentifier as TypeId } from '@hcengineering/core'
+  import core, { CustomSequence, IndexKind, Ref, Type, TypeIdentifier as TypeId } from '@hcengineering/core'
   import { TypeIdentifier } from '@hcengineering/model'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { EditBox, Label, Toggle } from '@hcengineering/ui'
@@ -56,14 +56,14 @@
         attachedTo: core.class.CustomSequence
       })
       seq = newSeq
-      dispatch('change', { type: TypeIdentifier(newSeq, showInPresenter) })
+      dispatch('change', { type: TypeIdentifier(newSeq, showInPresenter), index: IndexKind.FullText })
     }
   }
 
   async function changeShowing () {
     if (seq === undefined) return
     const type = TypeIdentifier(seq, showInPresenter)
-    dispatch('change', { type })
+    dispatch('change', { type, index: IndexKind.FullText })
     if (!editable) {
       onTypePatch?.(type)
     }
