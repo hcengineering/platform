@@ -536,7 +536,6 @@ export function createServer (
           if (exportResult.success && exportResult.exportedCount > 0) {
             await sendExportCompletionEmail(
               measureCtx,
-              accountClient,
               targetWorkspace,
               targetWsIds,
               exportResult.exportedDocuments,
