@@ -28,13 +28,17 @@ import envConfig from './config'
 
 export async function sendExportCompletionEmail (
   ctx: MeasureContext,
-  accountClient: any,
   targetWorkspace: WorkspaceUuid,
   targetWsIds: WorkspaceIds,
   exportedDocuments: Array<{ docId: Ref<Doc>, name: string }>,
   sourceWsIds: WorkspaceIds
 ): Promise<void> {
   try {
+    const mailURL = envConfig.MailURL
+    if (mailURL === undefined || mailURL === null || typeof mailURL !== 'string' || mailURL === '') {
+      ctx.warn('Mail service URL not configured, skipping email notification')
+      return
+    }
     // Get workspace members to find owners
     const targetWsToken = generateToken(systemAccountUuid, targetWorkspace, { service: 'export' })
     const targetAccountClient = getClient(envConfig.AccountsUrl, targetWsToken)
@@ -76,12 +80,6 @@ export async function sendExportCompletionEmail (
     const html = `<p>The following <strong>${exportedDocuments.length}</strong> document${exportedDocuments.length !== 1 ? 's have' : ' has'} been successfully exported to your workspace:</p><ul>${exportedDocuments.map((doc) => `<li>${escapeHtml(doc.name)}</li>`).join('')}</ul><p>Source workspace: ${sourceWsIds.uuid}<br>Target workspace: ${targetWsIds.uuid}</p>`
 
     // Send email to all owners
-    const mailURL = envConfig.MailURL
-    if (mailURL === undefined || mailURL === null || typeof mailURL !== 'string' || mailURL === '') {
-      ctx.warn('Mail service URL not configured, skipping email notification')
-      return
-    }
-
     const mailAuth: string | undefined = envConfig.MailAuthToken
     for (const email of ownerEmails) {
       try {
