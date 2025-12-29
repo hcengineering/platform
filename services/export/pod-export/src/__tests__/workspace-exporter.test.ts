@@ -105,7 +105,10 @@ function createMockHierarchy (config: {
       return config.attributes?.get(classRef) ?? new Map()
     }),
     isMixin: jest.fn(() => config.isMixin ?? false),
-    hasMixin: jest.fn(() => undefined)
+    hasMixin: jest.fn(() => undefined),
+    getClass: jest.fn((classRef: Ref<Class<Doc>>) => {
+      return { label: 'Test Class' }
+    })
   } as unknown as Hierarchy
 }
 

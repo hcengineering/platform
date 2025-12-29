@@ -162,7 +162,8 @@ export class CrossWorkspaceExporter {
       success: true,
       exportedCount: 0,
       skippedCount: 0,
-      errors: []
+      errors: [],
+      exportedDocuments: []
     }
 
     // Create source pipeline to access LowLevelStorage
@@ -228,6 +229,15 @@ export class CrossWorkspaceExporter {
               )
               if (exported) {
                 result.exportedCount++
+                const docName =
+                  (mappedDoc as any).name ??
+                  (mappedDoc as any).title ??
+                  hierarchy.getClass(mappedDoc._class)?.label ??
+                  mappedDoc._id
+                result.exportedDocuments.push({
+                  docId: mappedDoc._id,
+                  name: typeof docName === 'string' ? docName : String(docName)
+                })
               } else {
                 result.skippedCount++
               }

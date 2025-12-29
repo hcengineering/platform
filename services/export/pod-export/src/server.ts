@@ -64,6 +64,7 @@ import { getConfig } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { Token, decodeToken, generateToken } from '@hcengineering/server-token'
 import archiver from 'archiver'
+import { sendExportCompletionEmail } from './notifications'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { createWriteStream } from 'fs'
@@ -76,7 +77,7 @@ import WebSocket from 'ws'
 import envConfig from './config'
 import { ApiError } from './error'
 import { ExportFormat, WorkspaceExporter } from './exporter'
-import { CrossWorkspaceExporter, type ExportOptions } from './workspace'
+import { CrossWorkspaceExporter, type ExportOptions, type ExportResult } from './workspace'
 
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
@@ -530,7 +531,17 @@ export function createServer (
             fieldMappers
           }
 
-          await exporter.export(options)
+          const exportResult: ExportResult = await exporter.export(options)
+
+          if (exportResult.success && exportResult.exportedCount > 0) {
+            await sendExportCompletionEmail(
+              measureCtx,
+              targetWorkspace,
+              targetWsIds,
+              exportResult.exportedDocuments,
+              wsIds
+            )
+          }
 
           res.status(200).send({ message: 'Export completed' })
         } catch (err: any) {
