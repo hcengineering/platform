@@ -18,6 +18,7 @@ import type { Asset, Resource } from '@hcengineering/platform'
 import type { Association, AttachedDoc, Class, Doc, Domain, Ref, Space } from './classes'
 import type { Tx } from './tx'
 import type { KeysByType } from './utils'
+import { VersionableDoc } from './versioning'
 
 export type ArraySizeSelector =
   | {
@@ -269,7 +270,9 @@ export interface SearchResultDoc {
   description?: string
   emojiIcon?: string
   score?: number
-  doc: Pick<Doc, '_id' | '_class' | 'createdOn'> & Partial<Pick<AttachedDoc, 'attachedTo' | 'attachedToClass'>>
+  doc: Pick<Doc, '_id' | '_class' | 'createdOn'> &
+  Partial<Pick<AttachedDoc, 'attachedTo' | 'attachedToClass'>> &
+  Partial<Pick<VersionableDoc, 'baseId'>>
 }
 
 /**

@@ -22,7 +22,8 @@ import core, {
   getFullTextContext,
   type Hierarchy,
   type Ref,
-  type Space
+  type Space,
+  type VersionableDoc
 } from '@hcengineering/core'
 import { type IndexedDoc } from '@hcengineering/server-core'
 import { type FullTextPipeline } from './types'
@@ -97,12 +98,15 @@ export function isCustomAttr (attr: string): boolean {
  * @public
  */
 export function createIndexedDoc (doc: Doc, mixins: Ref<Class<Doc>>[] | undefined, space: Ref<Space>): IndexedDoc {
-  const indexedDoc = {
+  const indexedDoc: IndexedDoc = {
     id: doc._id,
     _class: [doc._class, ...(mixins ?? [])],
     modifiedBy: doc.modifiedBy,
     modifiedOn: doc.modifiedOn,
     space
+  }
+  if ((doc as VersionableDoc).baseId !== undefined) {
+    indexedDoc.baseId = (doc as VersionableDoc).baseId
   }
   return indexedDoc
 }
