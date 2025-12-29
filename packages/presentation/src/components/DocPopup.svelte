@@ -209,7 +209,9 @@
     return vDoc
   }
 
-  const onVersionSelect = (doc: Doc) => { select(doc) }
+  const onVersionSelect = (doc: Doc) => {
+    select(doc)
+  }
 </script>
 
 <FocusHandler {manager} />
