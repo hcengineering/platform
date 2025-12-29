@@ -103,7 +103,7 @@
     if (!canSave || _class == null) return
 
     loading = true
-    await exportToWorkspace(_class, exportQuery, selectedDocs, targetWorkspace, relations)
+    void exportToWorkspace(_class, exportQuery, selectedDocs, targetWorkspace, relations)
     loading = false
     dispatch('close', true)
   }

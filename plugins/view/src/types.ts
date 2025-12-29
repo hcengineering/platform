@@ -250,6 +250,10 @@ export interface SpaceHeader extends Class<Doc> {
   header: AnyComponent
 }
 
+export interface BaseQuery<T extends Doc> extends Class<T> {
+  baseQuery: DocumentQuery<T>
+}
+
 /**
  * @public
  */

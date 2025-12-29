@@ -365,4 +365,12 @@ export function createModel (builder: Builder): void {
       objectClass: process.class.Transition
     }
   })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnCardCreate,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: cardPlugin.class.Card
+    }
+  })
 }

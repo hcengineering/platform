@@ -73,7 +73,8 @@ import {
   TTypeRelatedDocument,
   TTypeString,
   TTypeTimestamp,
-  TVersion
+  TVersion,
+  TVersionableClass
 } from './core'
 import { definePermissions } from './permissions'
 import {
@@ -181,7 +182,8 @@ export function createModel (builder: Builder): void {
     TBenchmarkDoc,
     TTransientConfiguration,
     TClassCollaborators,
-    TCollaborator
+    TCollaborator,
+    TVersionableClass
   )
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {

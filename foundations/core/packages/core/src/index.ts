@@ -43,5 +43,6 @@ export * from './common'
 export * from './time'
 export * from './benchmark'
 export * from './collaborators'
+export * from './versioning'
 
 export default core

@@ -19,6 +19,7 @@
   import { IntlString } from '@hcengineering/platform'
   import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import CardPresenter from './CardPresenter.svelte'
 
   export let _class: Ref<Class<Card>>
   export let selected: Ref<Card> | undefined
@@ -33,6 +34,10 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+
+  const docQuery = {
+    isLatest: true
+  }
 </script>
 
 <ObjectPopup
@@ -43,9 +48,12 @@
   {allowDeselect}
   {titleDeselect}
   {ignoreObjects}
+  {docQuery}
   searchField={'title'}
   type={'object'}
   groupBy={'_class'}
+  showVersions
+  forceShowSelected={false}
   on:update
   on:close
   on:changeContent
@@ -53,9 +61,7 @@
   {readonly}
 >
   <svelte:fragment slot="item" let:item={it}>
-    <div class="flex-row-center flex-grow">
-      {it.title}
-    </div>
+    <CardPresenter value={it} disabled showVersion={false} />
   </svelte:fragment>
 
   <svelte:fragment slot="category" let:item={it}>

@@ -293,6 +293,37 @@ export async function OnExecutionRemove (txes: Tx[], control: TriggerControl): P
   return res
 }
 
+async function getExecutionReassignTxes (card: Card, control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  const cards = await control.findAll(control.ctx, cardPlugin.class.Card, { baseId: card.baseId })
+  const ids = cards.map((p) => p._id).filter((p) => p !== card._id)
+  const executions = await control.findAll(control.ctx, process.class.Execution, { card: { $in: ids } })
+  for (const execution of executions) {
+    res.push(
+      control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+        card: card._id
+      })
+    )
+  }
+  return res
+}
+
+export async function OnCardCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxCreateDoc) continue
+    const createTx = tx as TxCreateDoc<Card>
+    if (!control.hierarchy.isDerived(createTx.objectClass, cardPlugin.class.Card)) continue
+    const obj = TxProcessor.createDoc2Doc(createTx)
+
+    if (obj.baseId !== obj._id) {
+      const reassignTxes = await getExecutionReassignTxes(obj, control)
+      res.push(...reassignTxes)
+    }
+  }
+  return res
+}
+
 export async function OnTransition (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   for (const tx of txes) {
@@ -501,6 +532,7 @@ export default async () => ({
     OnProcessToDoRemove,
     OnExecutionContinue,
     OnCustomEvent,
-    OnExecutionRemove
+    OnExecutionRemove,
+    OnCardCreate
   }
 })

@@ -105,6 +105,7 @@ export default plugin(serverProcessId, {
   },
   trigger: {
     OnTransition: '' as Resource<TriggerFunc>,
+    OnCardCreate: '' as Resource<TriggerFunc>,
     OnCardUpdate: '' as Resource<TriggerFunc>,
     OnProcessRemove: '' as Resource<TriggerFunc>,
     OnStateRemove: '' as Resource<TriggerFunc>,

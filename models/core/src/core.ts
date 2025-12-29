@@ -59,7 +59,8 @@ import {
   type TransientConfiguration,
   type Type,
   type TypeAny,
-  type Version
+  type Version,
+  type VersionableClass
 } from '@hcengineering/core'
 import {
   Hidden,
@@ -419,4 +420,9 @@ export class TClassCollaborators extends TDoc implements ClassCollaborators<Doc>
 @Model(core.class.Collaborator, core.class.Doc, DOMAIN_COLLABORATOR)
 export class TCollaborator extends TAttachedDoc implements Collaborator {
   collaborator!: AccountUuid
+}
+
+@MMixin(core.mixin.VersionableClass, core.class.Class)
+export class TVersionableClass extends TClass implements VersionableClass {
+  enabled!: boolean
 }

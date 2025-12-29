@@ -60,6 +60,12 @@
     "ForbidCreateCardPermission": "Zakázat vytváření karet",
     "ForbidAddTagPermission": "Zakázat přidávání štítků",
     "ForbidRemoveTag": "Zakázat odebírání štítků",
-    "Duplicate": "Duplikovat"
+    "Duplicate": "Duplikovat",
+    "Version": "Verze",
+    "Versions": "Verze",
+    "NewVersion": "Nová verze",
+    "Versioning": "Verzování",
+    "EnableVersioning": "Povolit verzování",
+    "EnableVersioningConfirm": "Chcete povolit verzování?"
   }
 }

@@ -29,6 +29,7 @@ import {
   AttributeFilter,
   AttributeFilterPresenter,
   AttributePresenter,
+  BaseQuery,
   ClassFilters,
   ClassSortFuncs,
   CollectionEditor,
@@ -116,7 +117,8 @@ const view = plugin(viewId, {
     Aggregation: '' as Ref<Mixin<Aggregation>>,
     Groupping: '' as Ref<Mixin<Groupping>>,
     ObjectIcon: '' as Ref<Mixin<ObjectIcon>>,
-    CustomObjectLinkProvider: '' as Ref<Mixin<CustomObjectLinkProvider>>
+    CustomObjectLinkProvider: '' as Ref<Mixin<CustomObjectLinkProvider>>,
+    BaseQuery: '' as Ref<Mixin<BaseQuery<Doc>>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,

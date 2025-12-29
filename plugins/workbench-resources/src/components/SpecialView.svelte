@@ -29,7 +29,7 @@
     SearchInput,
     showPopup
   } from '@hcengineering/ui'
-  import { Viewlet, ViewletDescriptor, ViewletPreference, ViewOptions, BuildModelKey } from '@hcengineering/view'
+  import view, { Viewlet, ViewletDescriptor, ViewletPreference, ViewOptions, BuildModelKey } from '@hcengineering/view'
   import {
     FilterBar,
     FilterButton,
@@ -75,7 +75,9 @@
 
   let isQueryLoaded = queryBuilder === undefined
 
-  $: _baseQuery = mergeQueries(baseQuery ?? {}, viewlet?.baseQuery ?? {})
+  $: baseQueryMixin = hierarchy.classHierarchyMixin(_class, view.mixin.BaseQuery)
+
+  $: _baseQuery = mergeQueries(mergeQueries(baseQuery ?? {}, baseQueryMixin?.baseQuery ?? {}), viewlet?.baseQuery ?? {})
   $: query = { ..._baseQuery }
   $: searchQuery = search === '' ? query : { ...query, $search: search }
   $: resultQuery = isQueryLoaded ? searchQuery : undefined

@@ -60,6 +60,12 @@
     "ForbidCreateCardPermission": "Kart oluşturmayı yasakla",
     "ForbidAddTagPermission": "Etiket eklemeyi yasakla",
     "ForbidRemoveTag": "Etiket kaldırmayı yasakla",
-    "Duplicate": "Çoğalt"
+    "Duplicate": "Çoğalt",
+    "Version": "Sürüm",
+    "Versions": "Sürümler",
+    "NewVersion": "Yeni sürüm",
+    "Versioning": "Sürümleme",
+    "EnableVersioning": "Sürümlemeyi etkinleştir",
+    "EnableVersioningConfirm": "Sürümlemeyi etkinleştirmek istiyor musunuz?"
   }
 }

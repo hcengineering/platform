@@ -60,6 +60,12 @@
     "ForbidCreateCardPermission": "Interdire la création de fiche",
     "ForbidAddTagPermission": "Interdire l'ajout d'étiquette",
     "ForbidRemoveTag": "Interdire la suppression d'étiquette",
-    "Duplicate": "Dupliquer"
+    "Duplicate": "Dupliquer",
+    "Version": "Version",
+    "Versions": "Versions",
+    "NewVersion": "Nouvelle version",
+    "Versioning": "Gestion des versions",
+    "EnableVersioning": "Activer la gestion des versions",
+    "EnableVersioningConfirm": "Voulez-vous activer la gestion des versions ?"
   }
 }

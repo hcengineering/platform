@@ -112,8 +112,13 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
   private async handleCardCreate (etx: Tx): Promise<void> {
     if (etx._class === core.class.TxCreateDoc) {
       const createTx = etx as TxCreateDoc<Card>
+      const doc = TxProcessor.createDoc2Doc(createTx)
       const hierarchy = this.client.getHierarchy()
       if (!hierarchy.isDerived(createTx.objectClass, cardPlugin.class.Card)) return
+
+      // We don't need to start new processes for new version
+      if (doc.baseId !== doc._id) return
+
       const ancestors = hierarchy
         .getAncestors(createTx.objectClass)
         .filter((p) => hierarchy.isDerived(p, cardPlugin.class.Card))

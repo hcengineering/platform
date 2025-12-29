@@ -14,10 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, Ref, Space, WithLookup } from '@hcengineering/core'
+  import type { Class, Doc, DocumentQuery, Ref, Space, WithLookup } from '@hcengineering/core'
   import core from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { AnyComponent, Component, Loading } from '@hcengineering/ui'
   import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import { FilterBar } from '@hcengineering/view-resources'
@@ -34,10 +34,25 @@
   let preference: ViewletPreference | undefined
   let loading = true
 
-  $: query = viewlet?.baseQuery ?? {}
+  const client = getClient()
+  $: baseQuery = client.getHierarchy().classHierarchyMixin(_class, view.mixin.BaseQuery)
+
+  $: query = buildQuery(space, baseQuery?.baseQuery, viewlet)
 
   $: searchQuery = search === '' ? { space, ...query } : { $search: search, space, ...query }
   $: resultQuery = searchQuery
+
+  function buildQuery (
+    space: Ref<Space>,
+    baseQuery: DocumentQuery<Doc> | undefined,
+    viewlet: WithLookup<Viewlet> | undefined
+  ): DocumentQuery<Doc> {
+    return {
+      space,
+      ...(baseQuery ?? {}),
+      ...(viewlet?.baseQuery ?? {})
+    }
+  }
 
   $: viewlet &&
     preferenceQuery.query(

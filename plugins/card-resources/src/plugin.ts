@@ -127,6 +127,10 @@ export default mergeIds(cardId, card, {
     CardContent: '' as IntlString,
     Post: '' as IntlString,
     ShowLess: '' as IntlString,
-    Duplicate: '' as IntlString
+    Duplicate: '' as IntlString,
+    NewVersion: '' as IntlString,
+    Versioning: '' as IntlString,
+    EnableVersioning: '' as IntlString,
+    EnableVersioningConfirm: '' as IntlString
   }
 })
