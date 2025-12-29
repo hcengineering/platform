@@ -57,6 +57,10 @@
   export let embedded: boolean = false
   export let loading: boolean = false
   export let type: 'text' | 'object' | 'presenter' = 'text'
+  export let showVersions: boolean = false
+  export let forceShowSelected: boolean = true
+
+  export let onSelect: ((doc: Doc) => void) | undefined = undefined
 
   export let filter: (it: Doc) => boolean = () => {
     return true
@@ -137,15 +141,18 @@
       {}
     )
   } else {
+    selObjects = []
     sQuery.unsubscribe()
   }
 
   $: {
     if (created.length > 0 || selObjects.length > 0) {
+      const docIds = new Set(resObjects.map((it) => it._id))
+      const selectedOb = forceShowSelected ? selObjects : selObjects.filter((p) => docIds.has(p._id))
       const cmap = new Set(created.map((it) => it._id))
       const smap = new Set(selObjects.map((it) => it._id))
 
-      objects = [...created, ...selObjects, ...resObjects.filter((d) => !cmap.has(d._id) && !smap.has(d._id))].filter(
+      objects = [...created, ...selectedOb, ...resObjects.filter((d) => !cmap.has(d._id) && !smap.has(d._id))].filter(
         filter
       )
     } else {
@@ -179,6 +186,8 @@
   {embedded}
   {loading}
   {type}
+  {showVersions}
+  {onSelect}
   on:update={(e) => {
     selectedObjects = Array.isArray(e.detail) ? e.detail : [e.detail._id]
     dispatch('update', e.detail)

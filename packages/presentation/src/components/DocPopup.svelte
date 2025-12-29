@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getObjectValue, type Class, type Doc, type Ref } from '@hcengineering/core'
+  import core, { getObjectValue, VersionableDoc, type Class, type Doc, type Ref } from '@hcengineering/core'
   import { getResource, type IntlString } from '@hcengineering/platform'
   import {
     AnySvelteComponent,
@@ -26,6 +26,7 @@
     IconSearch,
     ListView,
     Spinner,
+    Submenu,
     createFocusManager,
     deviceOptionsStore,
     resizeObserver,
@@ -34,10 +35,11 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import presentation from '..'
+  import presentation, { DocPopup } from '..'
   import { ObjectCreate } from '../types'
   import { getClient } from '../utils'
   import { Analytics } from '@hcengineering/analytics'
+  import ObjectPopup from './ObjectPopup.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let objects: Doc[] = []
@@ -63,12 +65,18 @@
   export let embedded: boolean = false
   export let loading: boolean = false
   export let type: 'text' | 'object' | 'presenter' = 'text'
+  export let showVersions: boolean = false
+
+  export let onSelect: ((doc: Doc) => void) | undefined = undefined
 
   let search: string = ''
 
   $: selectedElements = new Set(selectedObjects)
 
   const dispatch = createEventDispatcher()
+
+  const client = getClient()
+  const h = client.getHierarchy()
 
   $: showCategories =
     created.length > 0 ||
@@ -92,6 +100,8 @@
     dispatch('update', selectedObjects)
   }
 
+  $: isVersionable = (h.classHierarchyMixin(_class, core.mixin.VersionableClass)?.enabled ?? false) && showVersions
+
   let selection = 0
   let list: ListView
 
@@ -105,6 +115,7 @@
   }
 
   function select (item: Doc): void {
+    onSelect?.(item)
     if (!multiSelect) {
       if (allowDeselect) {
         selected = item._id === selected ? undefined : item._id
@@ -189,6 +200,16 @@
         })
     }
   }
+
+  function isHasVersions (isVersionable: boolean, doc: Doc): VersionableDoc | undefined {
+    if (!isVersionable) return
+    const vDoc = doc as VersionableDoc
+    if (vDoc.baseId === undefined) return
+    if (vDoc.isLatest === true && vDoc.baseId === vDoc._id) return
+    return vDoc
+  }
+
+  const onVersionSelect = (doc: Doc) => { select(doc) }
 </script>
 
 <FocusHandler {manager} />
@@ -254,38 +275,92 @@
         <svelte:fragment slot="item" let:item>
           {@const obj = objects[item]}
           {@const isDeselectDisabled = selectedElements.has(obj._id) && forbiddenDeselectItemIds.has(obj._id)}
-          <button
-            class="menu-item withList w-full flex-row-center"
-            disabled={readonly || isDeselectDisabled || loading}
-            on:click={() => {
-              handleSelection(undefined, objects, item)
-            }}
-          >
-            {#if type === 'text'}
-              <span class="label" class:disabled={readonly || isDeselectDisabled || loading}>
-                <slot name="item" item={obj} />
-              </span>
-            {:else if type === 'presenter'}
-              {#if presenter !== undefined}
-                <svelte:component this={presenter} value={obj} />
-              {/if}
-            {:else}
-              <slot name="item" item={obj} />
-            {/if}
-            {#if (allowDeselect && selected) || multiSelect || selected}
-              <div class="check" class:disabled={readonly}>
-                {#if obj._id === selected || selectedElements.has(obj._id)}
-                  {#if loading}
-                    <Spinner size={'small'} />
-                  {:else}
-                    <div use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
-                      <Icon icon={IconCheck} size={'small'} />
-                    </div>
+          {@const versionedDoc = isHasVersions(isVersionable, obj)}
+          {#if versionedDoc}
+            <Submenu
+              withoutMargin
+              props={{
+                _class,
+                selected,
+                multiSelect,
+                selectedObjects,
+                shadows,
+                width,
+                size,
+                groupBy,
+                readonly,
+                disallowDeselect,
+                embedded,
+                loading,
+                type: 'presenter',
+                forceShowSelected: false,
+                searchMode: 'disabled',
+                docQuery: { baseId: versionedDoc.baseId },
+                onSelect: onVersionSelect
+              }}
+              options={{ component: ObjectPopup }}
+            >
+              <svelte:fragment slot="item">
+                {#if type === 'text'}
+                  <span class="label" class:disabled={readonly || isDeselectDisabled || loading}>
+                    <slot name="item" item={obj} />
+                  </span>
+                {:else if type === 'presenter'}
+                  {#if presenter !== undefined}
+                    <svelte:component this={presenter} value={obj} />
                   {/if}
+                {:else}
+                  <slot name="item" item={obj} />
                 {/if}
-              </div>
-            {/if}
-          </button>
+                {#if (allowDeselect && selected) || multiSelect || selected}
+                  <div class="check" class:disabled={readonly}>
+                    {#if obj._id === selected || selectedElements.has(obj._id)}
+                      {#if loading}
+                        <Spinner size={'small'} />
+                      {:else}
+                        <div use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
+                          <Icon icon={IconCheck} size={'small'} />
+                        </div>
+                      {/if}
+                    {/if}
+                  </div>
+                {/if}
+              </svelte:fragment>
+            </Submenu>
+          {:else}
+            <button
+              class="menu-item withList w-full flex-row-center"
+              disabled={readonly || isDeselectDisabled || loading}
+              on:click={() => {
+                handleSelection(undefined, objects, item)
+              }}
+            >
+              {#if type === 'text'}
+                <span class="label" class:disabled={readonly || isDeselectDisabled || loading}>
+                  <slot name="item" item={obj} />
+                </span>
+              {:else if type === 'presenter'}
+                {#if presenter !== undefined}
+                  <svelte:component this={presenter} value={obj} />
+                {/if}
+              {:else}
+                <slot name="item" item={obj} />
+              {/if}
+              {#if (allowDeselect && selected) || multiSelect || selected}
+                <div class="check" class:disabled={readonly}>
+                  {#if obj._id === selected || selectedElements.has(obj._id)}
+                    {#if loading}
+                      <Spinner size={'small'} />
+                    {:else}
+                      <div use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
+                        <Icon icon={IconCheck} size={'small'} />
+                      </div>
+                    {/if}
+                  {/if}
+                </div>
+              {/if}
+            </button>
+          {/if}
         </svelte:fragment>
       </ListView>
     </div>

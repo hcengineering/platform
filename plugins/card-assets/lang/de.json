@@ -60,6 +60,12 @@
     "ForbidCreateCardPermission": "Erstellen von Karten verbieten",
     "ForbidAddTagPermission": "Hinzufügen von Tags verbieten",
     "ForbidRemoveTag": "Entfernen von Tags verbieten",
-    "Duplicate": "Duplizieren"
+    "Duplicate": "Duplizieren",
+    "Version": "Version",
+    "Versions": "Versionen",
+    "NewVersion": "Neue Version",
+    "Versioning": "Versionsverwaltung",
+    "EnableVersioning": "Versionsverwaltung aktivieren",
+    "EnableVersioningConfirm": "Möchten Sie die Versionsverwaltung aktivieren?"
   }
 }

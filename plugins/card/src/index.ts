@@ -25,7 +25,8 @@ import {
   Ref,
   Space,
   SpaceType,
-  TypedSpace
+  TypedSpace,
+  VersionableDoc
 } from '@hcengineering/core'
 import { Asset, IntlString, plugin, Plugin, Resource } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
@@ -35,7 +36,6 @@ import { IconProps } from '@hcengineering/view'
 export * from './analytics'
 
 export interface MasterTag extends Class<Card> {
-  color?: number // used for emoji icon
   background?: number
   removed?: boolean
   roles?: CollectionSize<Role>
@@ -47,7 +47,7 @@ export interface Role extends BaseRole {
   types: Ref<MasterTag | Tag>[]
 }
 
-export interface Card extends Doc, IconProps {
+export interface Card extends Doc, IconProps, VersionableDoc {
   _class: Ref<MasterTag>
   title: string
   content: MarkupBlobRef
@@ -192,7 +192,9 @@ const cardPlugin = plugin(cardId, {
     Feed: '' as IntlString,
     AllCards: '' as IntlString,
     Favorites: '' as IntlString,
-    CreateCard: '' as IntlString
+    CreateCard: '' as IntlString,
+    Version: '' as IntlString,
+    Versions: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,

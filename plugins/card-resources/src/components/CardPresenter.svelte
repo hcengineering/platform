@@ -34,10 +34,9 @@
   export let noSelect: boolean = true
   export let inline = false
   export let showParent: boolean = false
-  export let shrink: boolean = false
-  export let kind: 'list' | undefined = undefined
   export let type: ObjectPresenterType = 'link'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let showVersion: boolean = true
 
   const client = getClient()
   let cardObj: Card | undefined = undefined
@@ -75,6 +74,18 @@
     }
     return res.join(' ')
   }
+
+  $: version = getVersion(cardObj)
+
+  function getVersion (val: Card | undefined): string {
+    if (val === undefined) return ''
+    const h = client.getHierarchy()
+    const mixin = h.classHierarchyMixin(val._class, core.mixin.VersionableClass)
+    if (mixin?.enabled) {
+      return 'v' + (val.version ?? 1)
+    }
+    return ''
+  }
 </script>
 
 {#if inline && cardObj}
@@ -103,6 +114,9 @@
           <span class="overflow-label">
             {ids}
             {cardObj.title}
+            {#if showVersion}
+              {version}
+            {/if}
             <slot name="details" />
           </span>
         </DocNavLink>
@@ -128,6 +142,9 @@
         <span class="overflow-label cropped-text-presenter">
           {ids}
           {cardObj.title}
+          {#if showVersion}
+            {version}
+          {/if}
           <slot name="details" />
         </span>
       </DocNavLink>
@@ -136,6 +153,9 @@
     <span class="overflow-label" class:select-text={!noSelect} use:tooltip={{ label: getEmbeddedLabel(cardObj.title) }}>
       {ids}
       {cardObj.title}
+      {#if showVersion}
+        {version}
+      {/if}
     </span>
   {/if}
 {/if}

@@ -33,6 +33,7 @@
   export let labelProps: Record<string, any> = {}
   export let withHover: boolean = false
   export let element: HTMLElement | undefined = undefined
+  export let withoutMargin: boolean = false
 
   let optionsMod: LabelAndProps
   $: optionsMod = { component: options.component ?? Menu, props, element, kind: 'submenu' }
@@ -48,6 +49,7 @@
   on:click
   use:tooltip={optionsMod}
   class="antiPopup-submenu"
+  class:withoutMargin
   class:withHover
   tabindex={focusIndex}
 >
@@ -57,6 +59,8 @@
     {:else}
       <svelte:component this={component} {...props} />
     {/if}
+  {:else if $$slots.item}
+    <slot name="item" />
   {:else}
     {#if icon}
       <div class="icon"><Icon {icon} {iconProps} size={'small'} /></div>
@@ -67,3 +71,9 @@
     </span>
   {/if}
 </div>
+
+<style lang="scss">
+  .withoutMargin {
+    margin: 0;
+  }
+</style>

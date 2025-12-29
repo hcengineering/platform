@@ -60,6 +60,12 @@
     "ForbidCreateCardPermission": "Proibir criação de cartão",
     "ForbidAddTagPermission": "Proibir adicionar etiqueta",
     "ForbidRemoveTag": "Proibir remover etiqueta",
-    "Duplicate": "Duplicar"
+    "Duplicate": "Duplicar",
+    "Version": "Versão",
+    "Versions": "Versões",
+    "NewVersion": "Nova versão",
+    "Versioning": "Controle de versões",
+    "EnableVersioning": "Ativar controle de versões",
+    "EnableVersioningConfirm": "Deseja ativar o controle de versões?"
   }
 }

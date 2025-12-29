@@ -16,6 +16,8 @@
 //
 
 import {
+  type AccountUuid,
+  type AnyAttribute,
   type Class,
   type Client,
   DOMAIN_MODEL,
@@ -25,9 +27,7 @@ import {
   type DocumentQuery,
   type Domain,
   type Ref,
-  type Space,
-  type AnyAttribute,
-  type AccountUuid
+  type Space
 } from '@hcengineering/core'
 import { type Builder, Mixin, Model, UX } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
@@ -42,16 +42,20 @@ import {
   type Aggregation,
   type AllValuesFunc,
   type ArrayEditor,
+  type AttrPresenter,
+  type AttributeCategory,
   type AttributeEditor,
   type AttributeFilter,
   type AttributeFilterPresenter,
   type AttributePresenter,
+  type BaseQuery,
   type BuildModelKey,
   type ClassFilters,
   type ClassSortFuncs,
   type CollectionEditor,
   type CollectionPresenter,
   type CreateAggregationManagerFunc,
+  type CustomObjectLinkProvider,
   type Filter,
   type FilterMode,
   type FilteredView,
@@ -63,20 +67,25 @@ import {
   type KeyBinding,
   type KeyFilter,
   type KeyFilterPreset,
+  type LinkIdProvider,
   type LinkPresenter,
   type LinkProvider,
   type ListHeaderExtra,
   type ListItemPresenter,
   type ObjectEditor,
   type ObjectEditorFooter,
-  type ObjectPanelFooter,
   type ObjectEditorHeader,
   type ObjectFactory,
+  type ObjectIcon,
+  type ObjectIdentifier,
   type ObjectPanel,
+  type ObjectPanelFooter,
   type ObjectPresenter,
   type ObjectTitle,
+  type ObjectTooltip,
   type ObjectValidator,
   type PreviewPresenter,
+  type ReferenceObjectProvider,
   type SortFunc,
   type SpaceHeader,
   type SpaceName,
@@ -89,15 +98,7 @@ import {
   type ViewOptionsModel,
   type Viewlet,
   type ViewletDescriptor,
-  type ViewletPreference,
-  type ObjectIdentifier,
-  type ReferenceObjectProvider,
-  type ObjectIcon,
-  type ObjectTooltip,
-  type AttrPresenter,
-  type AttributeCategory,
-  type LinkIdProvider,
-  type CustomObjectLinkProvider
+  type ViewletPreference
 } from '@hcengineering/view'
 
 import view from './plugin'
@@ -397,6 +398,11 @@ export class TCustomObjectLinkProvider extends TClass implements CustomObjectLin
   encode!: Resource<(doc: Doc) => Location>
 }
 
+@Mixin(view.mixin.BaseQuery, core.class.Class)
+export class TBaseQuery extends TClass implements BaseQuery<Doc> {
+  baseQuery!: DocumentQuery<Doc>
+}
+
 export type ActionTemplate = Partial<Data<Action>>
 
 /**
@@ -486,7 +492,8 @@ export function createModel (builder: Builder): void {
     TObjectIcon,
     TAttrPresenter,
     TLinkIdProvider,
-    TCustomObjectLinkProvider
+    TCustomObjectLinkProvider,
+    TBaseQuery
   )
 
   classPresenter(

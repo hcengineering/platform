@@ -60,6 +60,12 @@
     "ForbidCreateCardPermission": "Forbid Create Card",
     "ForbidAddTagPermission": "Forbid Add Tag",
     "ForbidRemoveTag": "Forbid Remove Tag",
-    "Duplicate": "Duplicate"
+    "Duplicate": "Duplicate",
+    "Version": "Version",
+    "Versions": "Versions",
+    "NewVersion": "New version",
+    "Versioning": "Versioning",
+    "EnableVersioning": "Enable versioning",
+    "EnableVersioningConfirm": "Do you want to enable versioning?"
   }
 }

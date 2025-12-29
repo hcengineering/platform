@@ -15,7 +15,8 @@
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
   import { getEmbeddedLabel, translateCB } from '@hcengineering/platform'
-  import { IconWithEmoji, getClient } from '@hcengineering/presentation'
+  import { getClient, IconWithEmoji, MessageBox } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
   import {
     ButtonIcon,
     type ColorDefinition,
@@ -26,13 +27,14 @@
     ModernEditbox,
     navigate,
     showPopup,
-    themeStore
+    themeStore,
+    ToggleWithLabel
   } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { ColorsPopup, IconPicker } from '@hcengineering/view-resources'
-  import setting from '@hcengineering/setting'
   import card from '../../plugin'
   import { deleteMasterTag } from '../../utils'
-  import view from '@hcengineering/view'
+  import core from '@hcengineering/core'
 
   export let masterTag: MasterTag
 
@@ -103,6 +105,22 @@
     color: ${color.title ?? 'var(--theme-caption-color)'};
   `
   }
+
+  async function enableVersioning (): Promise<void> {
+    if (h.isMixin(masterTag._id)) return
+    showPopup(MessageBox, {
+      label: card.string.EnableVersioning,
+      message: card.string.EnableVersioningConfirm,
+      action: async () => {
+        await client.createMixin(masterTag._id, masterTag._class, masterTag.space, core.mixin.VersionableClass, {
+          enabled: true
+        })
+        versioningEnabled = true
+      }
+    })
+  }
+
+  $: versioningEnabled = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
 </script>
 
 <div class="hulyComponent-content__column-group">
@@ -141,6 +159,16 @@
       <ButtonIcon icon={IconDelete} size={'large'} kind={'tertiary'} on:click={handleDelete} />
     {/if}
   </div>
+  {#if !h.isMixin(masterTag._id)}
+    <div>
+      <ToggleWithLabel
+        label={card.string.Versioning}
+        on={versioningEnabled}
+        disabled={versioningEnabled}
+        on:change={enableVersioning}
+      />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
