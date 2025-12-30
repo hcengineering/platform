@@ -17,21 +17,24 @@
   import { checkWorkspaceLimits, upgradePlan, calculateLimits } from '../utils'
   import { subscriptionStore, resetSubscriptionStore } from '../stores/subscription'
   import { location, PaletteColorIndexes, Progress, tooltip } from '@hcengineering/ui'
+  import { addEventListener, removeEventListener } from '@hcengineering/platform'
+  import workbench from '@hcengineering/workbench'
   import UsagePopup from './UsagePopup.svelte'
 
   let pollInterval: number | undefined
-  let currentWorkspace: string | undefined
 
-  const POLL_INTERVAL_MS = 10 * 60 * 1000 // 10 minutes in milliseconds
+  const POLL_INTERVAL_MS = 60 * 60 * 1000 // 1 hour in milliseconds
 
   $: state = $subscriptionStore
   $: usageInfo = state.usageInfo
   $: currentTier = state.currentTier
   $: workspace = $location.path[1]
 
-  // Watch for workspace changes
-  $: if (workspace !== currentWorkspace) {
-    handleWorkspaceChange(workspace)
+  const connectionListener = async (): Promise<void> => {
+    resetSubscriptionStore()
+    if (workspace !== undefined) {
+      void checkWorkspaceLimits()
+    }
   }
 
   // Calculate usage percentages from store data
@@ -46,14 +49,12 @@
   $: bandwidthColor = bandwidthPercent >= 0.9 ? PaletteColorIndexes.Firework : undefined
 
   onMount(() => {
-    // Initialize with current workspace
-    currentWorkspace = workspace
+    addEventListener(workbench.event.NotifyConnection, connectionListener)
 
     // Initial check if workspace exists
     if (workspace != null) {
       void checkWorkspaceLimits()
 
-      // Set up polling every 10 minutes
       pollInterval = setInterval(() => {
         void checkWorkspaceLimits()
       }, POLL_INTERVAL_MS)
@@ -64,32 +65,11 @@
     if (pollInterval !== undefined) {
       clearInterval(pollInterval)
     }
+    removeEventListener(workbench.event.NotifyConnection, connectionListener)
   })
 
   function handleClick (): void {
     void upgradePlan()
-  }
-
-  function handleWorkspaceChange (newWorkspace: string | undefined): void {
-    const prevWorkspace = currentWorkspace
-    currentWorkspace = newWorkspace
-
-    // Only clean up and refetch if workspace actually changed
-    if (prevWorkspace !== newWorkspace) {
-      // Clear existing data
-      resetSubscriptionStore()
-      if (pollInterval !== undefined) {
-        clearInterval(pollInterval)
-        pollInterval = undefined
-      }
-
-      if (newWorkspace != null) {
-        void checkWorkspaceLimits()
-        pollInterval = setInterval(() => {
-          void checkWorkspaceLimits()
-        }, POLL_INTERVAL_MS)
-      }
-    }
   }
 </script>
 
