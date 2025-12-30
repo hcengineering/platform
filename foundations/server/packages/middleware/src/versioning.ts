@@ -124,7 +124,7 @@ export class VersioningMiddleware extends BaseMiddleware implements Middleware {
         { baseId: doc.baseId },
         { sort: { version: SortingOrder.Descending } }
       )
-      const latest = base[0]
+      const latest = base.find((p) => p.isLatest === true) ?? base[0]
       if (latest === undefined) throw new Error('No base object found for the new version')
       tx.attributes.version = (latest.version ?? 1) + 1
       tx.attributes.docCreatedBy = latest.docCreatedBy
