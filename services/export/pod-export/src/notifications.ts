@@ -35,7 +35,7 @@ export async function sendExportCompletionEmail (
 ): Promise<void> {
   try {
     const mailURL = envConfig.MailURL
-    if (mailURL === undefined || mailURL === null || typeof mailURL !== 'string' || mailURL === '') {
+    if (mailURL == null || typeof mailURL !== 'string' || mailURL === '') {
       ctx.warn('Mail service URL not configured, skipping email notification')
       return
     }
@@ -80,7 +80,7 @@ export async function sendExportCompletionEmail (
     const html = `<p>The following <strong>${exportedDocuments.length}</strong> document${exportedDocuments.length !== 1 ? 's have' : ' has'} been successfully exported to your workspace:</p><ul>${exportedDocuments.map((doc) => `<li>${escapeHtml(doc.name)}</li>`).join('')}</ul><p>Source workspace: ${sourceWsIds.uuid}<br>Target workspace: ${targetWsIds.uuid}</p>`
 
     // Send email to all owners
-    const mailAuth: string | undefined = envConfig.MailAuthToken
+    const mailAuth = envConfig.MailAuthToken
     for (const email of ownerEmails) {
       try {
         const response = await fetch(concatLink(mailURL, '/send'), {
