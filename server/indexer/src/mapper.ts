@@ -142,7 +142,8 @@ export function mapSearchResultDoc (hierarchy: Hierarchy, raw: IndexedDoc): Sear
       _class: raw._class[0],
       createdOn: raw.createdOn,
       attachedTo: raw.attachedTo,
-      attachedToClass: raw.attachedToClass
+      attachedToClass: raw.attachedToClass,
+      baseId: raw.baseId
     },
     score: raw._score
   }
