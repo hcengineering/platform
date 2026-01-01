@@ -154,6 +154,6 @@
     "RoleLabel": "Role: {role}",
     "ForbidAttributeChanges": "Forbid changes: ",
     "AllowAttributeChanges": "Allow changes: ",
-    "RelationshipTable": "Relationship table"
+    "RelationshipTable": "Traceability Matrix"
   }
 }
