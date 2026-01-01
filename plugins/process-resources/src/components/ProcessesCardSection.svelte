@@ -18,12 +18,13 @@
   import ProcessesExtension from './ProcessesExtension.svelte'
 
   export let doc: Card
+  export let readonly: boolean = false
   export let hidden: boolean = false
 </script>
 
 {#if !hidden}
   <div class="processes__section">
-    <ProcessesExtension card={doc} on:loaded />
+    <ProcessesExtension card={doc} {readonly} on:loaded />
   </div>
 {/if}
 

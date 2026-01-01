@@ -42,6 +42,7 @@
   import { PermissionsStore } from '@hcengineering/contact'
 
   export let card: Card
+  export let readonly: boolean = false
 
   const viewletId = process.viewlet.CardExecutions
   const dispatch = createEventDispatcher()
@@ -57,6 +58,9 @@
   }
 
   function add (e: MouseEvent): void {
+    if (readonly) {
+      return
+    }
     showPopup(RunProcessPopup, { value: card }, eventToHTMLElement(e))
   }
 
@@ -120,7 +124,7 @@
   <svelte:fragment slot="header">
     <div class="buttons-group xsmall-gap">
       <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
-      {#if !checkForbiddenPermission($permissionsStore)}
+      {#if !readonly && !checkForbiddenPermission($permissionsStore)}
         <Button id={process.string.RunProcess} icon={IconAdd} kind={'ghost'} on:click={add} />
       {/if}
     </div>

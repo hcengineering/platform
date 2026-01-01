@@ -149,6 +149,6 @@
     "RoleLabel": "Rôle : {role}",
     "ForbidAttributeChanges": "Interdire les modifications: ",
     "AllowAttributeChanges": "Autoriser les modifications: ",
-    "RelationshipTable": "Table des relations"
+    "RelationshipTable": "Matrice de traçabilité"
   }
 }
