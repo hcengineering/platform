@@ -301,11 +301,11 @@
     <span class="label">
       <Label label={view.string.AutomationOnly} />
     </span>
-    <Toggle bind:on={automationOnly} />
+    <Toggle bind:on={automationOnly} disabled={attribute.isCustom !== true} />
     <span class="label">
       <Label label={setting.string.Restricted} />
     </span>
-    <Toggle on={isRestricted} disabled={isRestricted} on:change={changeRestricted} />
+    <Toggle on={isRestricted} disabled={isRestricted || attribute.isCustom !== true} on:change={changeRestricted} />
   </div>
 </Modal>
 

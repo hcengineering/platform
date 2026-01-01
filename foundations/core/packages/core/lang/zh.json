@@ -69,6 +69,7 @@
     "Relations": "关系",
     "AddRelation": "添加关系",
     "PersonId": "人员 ID",
-    "AccountId": "帐户"
+    "AccountId": "帐户",
+    "Version": "版本"
   }
 }
