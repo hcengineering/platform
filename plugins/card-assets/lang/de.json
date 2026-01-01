@@ -66,6 +66,7 @@
     "NewVersion": "Neue Version",
     "Versioning": "Versionsverwaltung",
     "EnableVersioning": "Versionsverwaltung aktivieren",
-    "EnableVersioningConfirm": "Möchten Sie die Versionsverwaltung aktivieren?"
+    "EnableVersioningConfirm": "Möchten Sie die Versionsverwaltung aktivieren?",
+    "NewVersionConfirmation": "Möchten Sie eine neue Version erstellen?"
   }
 }
