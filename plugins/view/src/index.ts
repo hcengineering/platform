@@ -62,6 +62,7 @@ import {
   SpaceHeader,
   SpaceName,
   SpacePresenter,
+  TypeEditor,
   ViewAction,
   Viewlet,
   ViewletDescriptor,
@@ -118,7 +119,8 @@ const view = plugin(viewId, {
     Groupping: '' as Ref<Mixin<Groupping>>,
     ObjectIcon: '' as Ref<Mixin<ObjectIcon>>,
     CustomObjectLinkProvider: '' as Ref<Mixin<CustomObjectLinkProvider>>,
-    BaseQuery: '' as Ref<Mixin<BaseQuery<Doc>>>
+    BaseQuery: '' as Ref<Mixin<BaseQuery<Doc>>>,
+    TypeEditor: '' as Ref<Mixin<TypeEditor>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,

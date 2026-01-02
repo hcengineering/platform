@@ -14,10 +14,12 @@
 -->
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
-  import { DocumentQuery, Ref, RefTo } from '@hcengineering/core'
+  import core, { AccountUuid, AnyAttribute, DocumentQuery, notEmpty, Ref, RefTo, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import contact from '../plugin'
+  import { getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'
+  import { employeeRefByAccountUuidStore } from '..'
+  import contact from '../plugin'
   import EmployeeBox from './EmployeeBox.svelte'
 
   export let value: Ref<Employee> | undefined
@@ -30,11 +32,54 @@
   export let width: string | undefined = undefined
   export let readonly = false
   export let showNavigate = true
+  export let attribute: AnyAttribute | undefined = undefined
+  export let space: Ref<Space> | undefined = undefined
 
   $: _class = type?.to ?? contact.mixin.Employee
 
-  const query: DocumentQuery<Employee> = {
+  let query: DocumentQuery<Employee> = {
     active: true
+  }
+
+  const client = getClient()
+
+  $: buildQuery(attribute, space)
+
+  async function buildQuery (attribute: AnyAttribute | undefined, space: Ref<Space> | undefined): Promise<void> {
+    const baseQuery = {
+      active: true
+    }
+    if (attribute === undefined || space === undefined) {
+      query = baseQuery
+      return
+    }
+    if (attribute.spaceMembersOnly === true || attribute.byRole !== undefined) {
+      const _space = await client.findOne(core.class.Space, {
+        _id: space
+      })
+      if (_space === undefined) {
+        query = baseQuery
+        return
+      }
+
+      if (attribute.byRole === undefined) {
+        const allMembers = _space.members ?? []
+        const allPersonsSet = new Set(allMembers.map((p) => $employeeRefByAccountUuidStore.get(p)).filter(notEmpty))
+
+        query = {
+          ...baseQuery,
+          _id: { $in: Array.from(allPersonsSet) }
+        }
+      } else {
+        const asMixin = client.getHierarchy().as(_space, core.mixin.SpacesTypeData)
+        const roleMembers = ((asMixin as any)[attribute.byRole] ?? []) as AccountUuid[]
+        const rolePersons = new Set(roleMembers.map((p) => $employeeRefByAccountUuidStore.get(p)).filter(notEmpty))
+        query = {
+          ...baseQuery,
+          _id: { $in: Array.from(rolePersons) }
+        }
+      }
+    }
   }
 </script>
 

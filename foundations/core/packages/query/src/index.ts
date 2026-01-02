@@ -1146,9 +1146,20 @@ export class LiveQuery implements WithTx, Client {
         const direct = assoc[1] === 1
         for (const doc of docs) {
           if (doc._id === sourceId) {
-            const docToPush = await this.findOne(direct ? association.classB : association.classA, {
-              _id: targetId
-            })
+            const nestedAssoc = assoc[2]
+            const options: FindOptions<Doc> | undefined =
+              nestedAssoc !== undefined
+                ? {
+                    associations: nestedAssoc
+                  }
+                : undefined
+            const docToPush = await this.findOne(
+              direct ? association.classB : association.classA,
+              {
+                _id: targetId
+              },
+              options
+            )
             if (docToPush === undefined) continue
             if (doc.$associations === undefined) {
               doc.$associations = {}

@@ -485,6 +485,10 @@ export function createModel (builder: Builder): void {
     editor: setting.component.DateTypeEditor
   })
 
+  builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.TypeEditor, {
+    editor: setting.component.EmployeeRefEditor
+  })
+
   builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.ObjectEditor, {
     editor: setting.component.NumberTypeEditor
   })

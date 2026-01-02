@@ -44,6 +44,7 @@
   import { IconPicker } from '@hcengineering/view-resources'
   import setting from '../plugin'
   import { clearSettingsStore } from '../store'
+  import { debug } from 'console'
 
   export let _class: Ref<Class<Doc>>
   export let isCard: boolean = false
@@ -53,6 +54,7 @@
   let type: Type<PropertyType> | undefined
   let index: IndexKind | undefined
   let defaultValue: any | undefined
+  let extra: Record<string, any> = {}
   let is: AnyComponent | undefined
   let readonly: boolean = false
   const client = getClient()
@@ -74,6 +76,9 @@
     }
     if (index !== undefined) {
       data.index = index
+    }
+    for (const [k, v] of Object.entries(extra)) {
+      data[k] = v
     }
     await client.createDoc(core.class.Attribute, core.space.Model, data)
     clearSettingsStore()
@@ -111,11 +116,17 @@
     selectType(e.detail)
   }
   const handleChange = (e: any): void => {
-    type = e.detail?.type
-    index = e.detail?.index
-    defaultValue = e.detail?.defaultValue
+    if (e.detail.type !== undefined && e.detail.type !== type) {
+      type = e.detail?.type
+      index = e.detail?.index
+      defaultValue = e.detail?.defaultValue
+      extra = e.detail?.extra ?? {}
+    } else {
+      index = e.detail?.index ?? index
+      defaultValue = e.detail?.defaultValue ?? defaultValue
+      extra = e.detail?.extra ?? extra
+    }
   }
-
   function setIcon (): void {
     showPopup(IconPicker, { icon, showEmoji: false, showColor: false }, 'top', async (res) => {
       if (res !== undefined) {
@@ -175,7 +186,8 @@
           isCard,
           width: '100%',
           kind: 'regular',
-          size: 'large'
+          size: 'large',
+          attributeOf: _class
         }}
         on:change={handleChange}
       />

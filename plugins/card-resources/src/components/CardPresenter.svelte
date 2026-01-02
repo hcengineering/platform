@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Card, MasterTag } from '@hcengineering/card'
-  import core, { Ref, TypeIdentifier } from '@hcengineering/core'
+  import core, { Ref } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, tooltip } from '@hcengineering/ui'
@@ -65,9 +65,8 @@
     const res: string[] = []
     for (const [k, v] of attrs) {
       if (v.type._class === core.class.TypeIdentifier) {
-        const type = v.type as TypeIdentifier
         const str = (val as any)[k]
-        if (type.showInPresenter === true && str !== undefined) {
+        if (v.showInPresenter === true && str !== undefined) {
           res.push(str)
         }
       }
