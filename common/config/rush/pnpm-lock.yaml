@@ -16348,6 +16348,9 @@ importers:
       '@hcengineering/view-resources':
         specifier: workspace:^0.7.0
         version: link:../view-resources
+      '@hcengineering/workbench':
+        specifier: workspace:^0.7.0
+        version: link:../workbench
       filesize:
         specifier: ^8.0.3
         version: 8.0.7
@@ -17353,6 +17356,9 @@ importers:
       '@hcengineering/login':
         specifier: workspace:^0.7.0
         version: link:../login
+      '@hcengineering/model':
+        specifier: workspace:^0.7.17
+        version: link:../../foundations/core/packages/model
       '@hcengineering/notification':
         specifier: workspace:^0.7.0
         version: link:../notification

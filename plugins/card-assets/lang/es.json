@@ -66,6 +66,7 @@
     "NewVersion": "Nueva versión",
     "Versioning": "Versionado",
     "EnableVersioning": "Habilitar control de versiones",
-    "EnableVersioningConfirm": "¿Desea habilitar el control de versiones?"
+    "EnableVersioningConfirm": "¿Desea habilitar el control de versiones?",
+    "NewVersionConfirmation": "¿Desea crear una nueva versión?"
   }
 }

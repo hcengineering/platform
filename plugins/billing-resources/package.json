@@ -53,6 +53,7 @@
     "@hcengineering/login": "workspace:^0.7.0",
     "@hcengineering/account-client": "workspace:^0.7.21",
     "@hcengineering/payment-client": "workspace:^0.7.0",
+    "@hcengineering/workbench": "workspace:^0.7.0",
     "filesize": "^8.0.3",
     "svelte": "^4.2.20"
   }

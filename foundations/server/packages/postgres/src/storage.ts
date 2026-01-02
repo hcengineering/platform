@@ -296,7 +296,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   async rawFindAll<T extends Doc>(_domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
     const domain = translateDomain(_domain)
     const vars = new ValuesVariables()
-    const select = `SELECT ${this.getProjection(vars, domain, options?.projection, [], options?.associations)} FROM ${domain}`
+    const select = `SELECT ${this.getProjection(vars, domain, options?.projection, [])} FROM ${domain}`
     const sqlChunks: string[] = []
     sqlChunks.push(`WHERE ${this.buildRawQuery(vars, domain, query, options)}`)
     if (options?.sort !== undefined) {
@@ -472,7 +472,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
           const projection = this.localizeProjection(_class, options?.projection ?? undefined)
 
-          const select = `SELECT ${this.getProjection(vars, domain, projection, joins, options?.associations)} FROM ${domain}`
+          const select = `SELECT ${this.getProjection(vars, domain, projection, joins)} FROM ${domain}`
 
           if (joins.length > 0) {
             sqlChunks.push(this.buildJoinString(vars, joins))
@@ -745,7 +745,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
       const nextParentMap = new Map<string, WithLookup<Doc>>()
       for (const row of rows) {
         const parentId = row.parent_id
-        const parsed = parseDoc(row, getSchema(row._class))
+        const parsed = nextParentMap.get(row._id) ?? parseDoc(row, getSchema(row._class))
 
         const parent = parentMap.get(parentId)
         if (parent === undefined) continue
@@ -756,7 +756,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
         if (parent.$associations[key] === undefined) parent.$associations[key] = []
         parent.$associations[key].push(parsed)
-        nextParentMap.set(parsed._id, parsed)
+        if (!nextParentMap.has(parsed._id)) {
+          nextParentMap.set(parsed._id, parsed)
+        }
       }
 
       if (nested !== undefined && nested.length > 0 && nextParentMap.size > 0) {
@@ -1459,10 +1461,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
     vars: ValuesVariables,
     baseDomain: string,
     projection: Projection<T> | undefined,
-    joins: JoinProps[],
-    associations: AssociationQuery[] | undefined
+    joins: JoinProps[]
   ): string | '*' {
-    if (projection === undefined && joins.length === 0 && associations === undefined) return `${baseDomain}.*`
+    if (projection === undefined && joins.length === 0) return `${baseDomain}.*`
     const res: string[] = []
     let dataAdded = false
     if (projection === undefined) {

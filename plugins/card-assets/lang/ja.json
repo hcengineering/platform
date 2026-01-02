@@ -66,6 +66,7 @@
     "NewVersion": "新しいバージョン",
     "Versioning": "バージョン管理",
     "EnableVersioning": "バージョン管理を有効にする",
-    "EnableVersioningConfirm": "バージョン管理を有効にしますか？"
+    "EnableVersioningConfirm": "バージョン管理を有効にしますか？",
+    "NewVersionConfirmation": "新しいバージョンを作成しますか？"
   }
 }

@@ -69,6 +69,7 @@
     "Relations": "Связи",
     "AddRelation": "Добавить связь",
     "PersonId": "Персона",
-    "AccountId": "Аккаунт"
+    "AccountId": "Аккаунт",
+    "Version": "Версия"
   }
 }
