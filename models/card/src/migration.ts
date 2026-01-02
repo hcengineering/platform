@@ -27,6 +27,7 @@ import {
   createOrUpdate,
   tryMigrate,
   tryUpgrade,
+  TypeNumber,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
@@ -115,8 +116,33 @@ export const cardOperation: MigrateOperation = {
         state: 'fix-migrated-roles-permissions',
         mode: 'upgrade',
         func: migrateRolePermissions
+      },
+      {
+        state: 'version-for-versionable-types',
+        mode: 'upgrade',
+        func: addVersionForVersionableTypes
       }
     ])
+  }
+}
+
+async function addVersionForVersionableTypes (client: MigrationUpgradeClient): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const versionableTypes = await client.findAll(card.class.MasterTag, {})
+  for (const type of versionableTypes) {
+    if (client.getHierarchy().as(type, core.mixin.VersionableClass).enabled) {
+      if (client.getHierarchy().findAttribute(type._id, 'version') === undefined) {
+        await txOp.createDoc(core.class.Attribute, core.space.Model, {
+          attributeOf: type._id,
+          _class: core.class.Attribute,
+          isCustrom: false,
+          label: core.string.Version,
+          name: 'version',
+          readonly: true,
+          type: TypeNumber()
+        })
+      }
+    }
   }
 }
 
