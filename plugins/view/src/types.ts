@@ -230,6 +230,10 @@ export interface ObjectEditor extends Class<Doc> {
   pinned?: boolean
 }
 
+export interface TypeEditor extends Class<Doc> {
+  editor: AnyComponent
+}
+
 /**
  * @public
  */

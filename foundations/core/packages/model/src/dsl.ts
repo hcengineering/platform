@@ -472,8 +472,8 @@ export function TypeRef (_class: Ref<Class<Doc>>): RefTo<Doc> {
 /**
  * @public
  */
-export function TypeIdentifier (of: Ref<CustomSequence>, showInPresenter: boolean): TypeIdentifierType {
-  return { _class: core.class.TypeIdentifier, label: core.string.Id, icon: core.icon.TypeRef, of, showInPresenter }
+export function TypeIdentifier (of: Ref<CustomSequence>): TypeIdentifierType {
+  return { _class: core.class.TypeIdentifier, label: core.string.Id, icon: core.icon.TypeRef, of }
 }
 
 /**

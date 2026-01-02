@@ -35,7 +35,6 @@ import core, {
   SortingOrder,
   type Space,
   type TxOperations,
-  type TypeIdentifier,
   type WithLookup
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
@@ -260,9 +259,8 @@ export async function getCardTitle (client: TxOperations, ref: Ref<Card>, doc?: 
   const res: string[] = []
   for (const [k, v] of attrs) {
     if (v.type._class === core.class.TypeIdentifier) {
-      const type = v.type as TypeIdentifier
       const str = (object as any)[k]
-      if (type.showInPresenter === true && str !== undefined) {
+      if (v.showInPresenter === true && str !== undefined) {
         res.push(str)
       }
     }

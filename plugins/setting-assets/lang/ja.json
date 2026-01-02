@@ -212,6 +212,7 @@
     "ImportDocumentPermission": "ドキュメントをインポート",
     "ImportDocumentDescription": "ユーザーにワークスペースにドキュメントをインポートする機能を付与します",
     "SelectUsers": "ユーザーを選択",
-    "ShowInTitle": "タイトルに表示"
+    "ShowInTitle": "タイトルに表示",
+    "SpaceMembersOnly": "スペースメンバーのみ"
   }
 }

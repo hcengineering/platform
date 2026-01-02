@@ -212,6 +212,7 @@
     "ImportDocumentPermission": "Importa documenti",
     "ImportDocumentDescription": "Concede agli utenti la possibilità di importare documenti nell'area di lavoro",
     "SelectUsers": "Seleziona utenti",
-    "ShowInTitle": "Mostra nel titolo"
+    "ShowInTitle": "Mostra nel titolo",
+    "SpaceMembersOnly": "Solo membri dello spazio"
   }
 }
