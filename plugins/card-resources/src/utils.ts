@@ -268,7 +268,10 @@ export async function getCardTitle (client: TxOperations, ref: Ref<Card>, doc?: 
     }
   }
   const ids = res.join(' ')
-  const version = object.isLatest === true ? '' : `v${object.version ?? 1}`
+  let version = ''
+  if (h.classHierarchyMixin(object._class, core.mixin.VersionableClass)?.enabled === true) {
+    version = `v${object.version ?? 1}`
+  }
   return ids + ' ' + object.title + ' ' + version
 }
 
