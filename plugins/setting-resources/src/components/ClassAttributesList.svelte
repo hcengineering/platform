@@ -152,11 +152,11 @@
   function getAttrType (type: Type<any>): IntlString | undefined {
     switch (type._class) {
       case core.class.RefTo:
-        return client.getHierarchy().getClass((type as RefTo<Doc>).to).label
+        return client.getHierarchy().getClass((type as RefTo<Doc>).to)?.label
       case core.class.Collection:
-        return client.getHierarchy().getClass((type as Collection<AttachedDoc>).of).label
+        return client.getHierarchy().getClass((type as Collection<AttachedDoc>).of)?.label
       case core.class.ArrOf:
-        return (type as ArrOf<Doc>).of.label
+        return (type as ArrOf<Doc>).of?.label
       default:
         return undefined
     }

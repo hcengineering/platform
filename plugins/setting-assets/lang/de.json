@@ -212,6 +212,7 @@
     "ImportDocumentPermission": "Dokumente importieren",
     "ImportDocumentDescription": "Gewährt Benutzern die Möglichkeit, Dokumente in den Arbeitsbereich zu importieren",
     "SelectUsers": "Benutzer auswählen",
-    "ShowInTitle": "Im Titel anzeigen"
+    "ShowInTitle": "Im Titel anzeigen",
+    "SpaceMembersOnly": "Nur Bereichsmitglieder"
   }
 }

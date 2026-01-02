@@ -73,6 +73,7 @@ import Mailboxes from './components/Mailboxes.svelte'
 import OfficeSettings from './components/OfficeSettings.svelte'
 import BaseIntegrationState from './components/integrations/BaseIntegrationState.svelte'
 import IntegrationStateRow from './components/integrations/IntegrationStateRow.svelte'
+import EmployeeRefEditor from './components/typeEditors/EmployeeRefEditor.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
 
@@ -159,7 +160,8 @@ export default async (): Promise<Resources> => ({
     Mailboxes,
     OfficeSettings,
     AddSocialId,
-    AddEmailSocialId
+    AddEmailSocialId,
+    EmployeeRefEditor
   },
   actionImpl: {
     DeleteMixin

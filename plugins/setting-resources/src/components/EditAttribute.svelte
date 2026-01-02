@@ -56,6 +56,7 @@
   let defaultValue: any | undefined = attribute.defaultValue
   let icon: Asset | undefined = attribute.icon
   let automationOnly = attribute.automationOnly ?? false
+  let extra: Record<string, any> = {}
   let is: AnyComponent | undefined
 
   const client = getClient()
@@ -93,6 +94,10 @@
       update.readonly = automationOnly
       update.automationOnly = automationOnly
     }
+    for (const [k, v] of Object.entries(extra)) {
+      if (attribute[k] === v) continue
+      update[k] = v
+    }
     await client.updateDoc(attribute._class, attribute.space, attribute._id, update)
     clearSettingsStore()
   }
@@ -128,15 +133,15 @@
     selectType(e.detail)
   }
   const handleChange = (e: any) => {
-    if (disabled) return
-    type = e.detail?.type
-    index = e.detail?.index
-    defaultValue = e.detail?.defaultValue
-  }
-
-  const onTypePatch = async (type: Type<any>) => {
-    if (type !== undefined && type._class === attribute.type._class) {
-      await client.updateDoc(attribute._class, attribute.space, attribute._id, { type })
+    if (e.detail.type !== undefined && e.detail.type !== type && !disabled) {
+      type = e.detail?.type
+      index = e.detail?.index
+      defaultValue = e.detail?.defaultValue
+      extra = e.detail?.extra ?? {}
+    } else {
+      index = e.detail?.index ?? index
+      defaultValue = e.detail?.defaultValue ?? defaultValue
+      extra = e.detail?.extra ?? extra
     }
   }
 
@@ -292,7 +297,8 @@
           editable: !exist && !disabled,
           kind: 'regular',
           size: 'large',
-          onTypePatch
+          attribute,
+          attributeOf: attribute.attributeOf
         }}
         {disabled}
         on:change={handleChange}

@@ -212,6 +212,7 @@
     "ImportDocumentPermission": "Belgeleri içe aktar",
     "ImportDocumentDescription": "Kullanıcılara çalışma alanına belge içe aktarma yeteneği verir",
     "SelectUsers": "Kullanıcıları seç",
-    "ShowInTitle": "Başlıkta göster"
+    "ShowInTitle": "Başlıkta göster",
+    "SpaceMembersOnly": "Yalnızca alan üyeleri"
   }
 }
