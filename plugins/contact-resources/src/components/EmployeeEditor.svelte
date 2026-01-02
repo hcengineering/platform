@@ -14,15 +14,7 @@
 -->
 <script lang="ts">
   import { Employee } from '@hcengineering/contact'
-  import core, {
-    AccountUuid,
-    AnyAttribute,
-    DocumentQuery,
-    notEmpty,
-    Ref,
-    RefTo,
-    Space
-  } from '@hcengineering/core'
+  import core, { AccountUuid, AnyAttribute, DocumentQuery, notEmpty, Ref, RefTo, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize } from '@hcengineering/ui'

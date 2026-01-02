@@ -61,7 +61,6 @@
   const hierarchy = client.getHierarchy()
 
   async function save (): Promise<void> {
-    debugger
     if (type === undefined) return
 
     const data: Data<AnyAttribute> = {
@@ -117,7 +116,6 @@
     selectType(e.detail)
   }
   const handleChange = (e: any): void => {
-    debugger
     if (e.detail.type !== undefined && e.detail.type !== type) {
       type = e.detail?.type
       index = e.detail?.index
