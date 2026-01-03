@@ -152,6 +152,15 @@
   }
 
   function handleMembersChanged (newMembers: AccountUuid[]): void {
+    const newMembersSet = new Set(newMembers)
+    const removedMembersSet = new Set(members.filter((m) => !newMembersSet.has(m)))
+
+    if (removedMembersSet.size > 0 && rolesAssignment !== undefined) {
+      for (const [key, value] of Object.entries(rolesAssignment)) {
+        rolesAssignment[key as Ref<Role>] = value != null ? value.filter((m) => !removedMembersSet.has(m)) : undefined
+      }
+    }
+
     members = newMembers
   }
 
