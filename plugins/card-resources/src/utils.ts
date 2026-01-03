@@ -112,7 +112,7 @@ async function cloneCard (
     : [core.class.TypeCollaborativeDoc, core.class.TypeIdentifier]
 
   for (const [key, attr] of attrs) {
-    if (attr.readonly !== true && attr.hidden !== true) {
+    if (attr.hidden !== true) {
       if (attr.type._class === core.class.Collection) {
         ;(props as any)[key] = 0
       } else if (!skipClasses.includes(attr.type._class)) {
