@@ -281,16 +281,13 @@
   async function build (modelOptions: BuildModelOptions): Promise<void> {
     isBuildingModel = true
     const res = await buildModel(modelOptions)
+    res.sort((a, b) => {
+      const indexA = a.key.startsWith(assoc) ? 1 : 0
+      const indexB = b.key.startsWith(assoc) ? 1 : 0
+      return indexA - indexB
+    })
     model = res
     isBuildingModel = false
-  }
-
-  function contextHandler (object: Doc, row: number): (ev: MouseEvent) => void {
-    return (ev) => {
-      if (!readonly) {
-        void showContextMenu(ev, object, row)
-      }
-    }
   }
 
   let permissionsStore: Readable<PermissionsStore> | undefined = undefined
