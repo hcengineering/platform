@@ -44,26 +44,26 @@
   $: currentSequence = sequences.find((s) => s._id === seq)
 
   async function change () {
-    if (!editable) return
     if (identifiers.has(identifier.toUpperCase())) return
     if (identifier.toUpperCase() === (currentSequence?.prefix?.toUpperCase() ?? '')) return
     if (currentSequence !== undefined) {
       await client.update(currentSequence, { prefix: identifier.toUpperCase() })
     } else {
+      if (!editable) return
       const newSeq = await client.createDoc(core.class.CustomSequence, core.space.Workspace, {
         prefix: identifier.toUpperCase(),
         sequence: 0,
         attachedTo: core.class.CustomSequence
       })
       seq = newSeq
-      dispatch('change', { type: TypeIdentifier(newSeq), index: IndexKind.FullText, showInPresenter })
+      dispatch('change', { type: TypeIdentifier(newSeq), index: IndexKind.FullText, extra: { showInPresenter } })
     }
   }
 
   async function changeShowing () {
     if (seq === undefined) return
     const type = TypeIdentifier(seq)
-    dispatch('change', { type, index: IndexKind.FullText, showInPresenter })
+    dispatch('change', { type, index: IndexKind.FullText, extra: { showInPresenter } })
   }
 </script>
 
@@ -71,14 +71,7 @@
   <Label label={core.string.Id} />
 </span>
 <div class="flex-row-center">
-  <EditBox
-    bind:value={identifier}
-    disabled={!editable}
-    placeholder={core.string.Id}
-    uppercase
-    maxWidth={'50%'}
-    on:change={change}
-  />
+  <EditBox bind:value={identifier} placeholder={core.string.Id} uppercase maxWidth={'50%'} on:change={change} />
   {#if editable && identifiers.has(identifier.toUpperCase())}
     <div class="overflow-label duplicated-identifier">
       <Label label={setting.string.IdentifierExists} />

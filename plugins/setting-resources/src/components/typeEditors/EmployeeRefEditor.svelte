@@ -41,9 +41,11 @@
     dispatch('change', { extra: isCard ? { spaceMembersOnly, byRole } : { spaceMembersOnly } })
   }
 
+  $: ancestors = client.getHierarchy().getAncestors(attributeOf)
+
   $: items = client
     .getModel()
-    .findAllSync(card.class.Role, { types: attributeOf })
+    .findAllSync(card.class.Role, { types: { $in: ancestors } })
     .map((role) => ({
       label: role.name,
       id: role._id
