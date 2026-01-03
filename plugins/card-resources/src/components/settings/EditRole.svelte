@@ -92,6 +92,7 @@
       ObjectBoxPopup,
       {
         _class: core.class.Permission,
+        searchField: 'label',
         docQuery: { _id: { $in: allPermissions.map((p) => p._id) } },
         multiSelect: true,
         allowDeselect: true,
