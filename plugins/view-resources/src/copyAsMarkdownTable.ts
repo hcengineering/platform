@@ -231,9 +231,7 @@ function escapeMarkdownLinkText (text: string): string {
 
 function escapeMarkdownLinkUrl (url: string): string {
   // Escape backslashes and closing parentheses used to terminate the URL
-  return url
-    .replace(/\\/g, '\\\\')
-    .replace(/\)/g, '\\)')
+  return url.replace(/\\/g, '\\\\').replace(/\)/g, '\\)')
 }
 
 async function createMarkdownLink (hierarchy: Hierarchy, card: Doc, value: string): Promise<string> {
@@ -311,7 +309,7 @@ export async function CopyAsMarkdownTable (
           const linkValue = await createMarkdownLink(hierarchy, card, value)
           row.push(linkValue)
         } else {
-          const escapedValue = value.replace(/\|/g, '\\|').replace(/\n/g, ' ')
+          const escapedValue = escapeMarkdownLinkText(value)
           row.push(escapedValue)
         }
       }
