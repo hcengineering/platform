@@ -124,7 +124,8 @@ describe('copyAsMarkdownTable', () => {
       getHierarchy: jest.fn(() => mockHierarchy),
       getModel: jest.fn(() => ({
         findAllSync: jest.fn(() => [])
-      }))
+      })),
+      findAll: jest.fn(async () => [])
     }
 
     const mockDocValue = {

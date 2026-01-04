@@ -60,7 +60,7 @@ async function buildTableModel (
   viewlet: Viewlet | undefined
 ): Promise<AttributeModel[]> {
   if (viewlet !== undefined) {
-    const preferences = client.getModel().findAllSync(viewPlugin.class.ViewletPreference, {
+    const preferences = await client.findAll(viewPlugin.class.ViewletPreference, {
       space: core.space.Workspace,
       attachedTo: viewlet._id
     })
@@ -255,6 +255,8 @@ export async function CopyAsMarkdownTable (
   evt: Event,
   props: {
     cardClass: Ref<Class<Doc>>
+    viewlet?: Viewlet
+    config?: Array<string | BuildModelKey>
   }
 ): Promise<void> {
   try {
@@ -269,13 +271,38 @@ export async function CopyAsMarkdownTable (
       return
     }
 
-    const viewlets = client.getModel().findAllSync(viewPlugin.class.Viewlet, {
-      attachTo: props.cardClass,
-      descriptor: viewPlugin.viewlet.Table
-    })
-    const viewlet: Viewlet | undefined = viewlets.length > 0 ? viewlets[0] : undefined
+    let viewlet: Viewlet | undefined = props.viewlet
+    if (viewlet === undefined) {
+      const viewlets = await client.findAll(viewPlugin.class.Viewlet, {
+        attachTo: props.cardClass,
+        descriptor: viewPlugin.viewlet.Table
+      })
+      viewlet = viewlets.length > 0 ? viewlets[0] : undefined
+    }
 
-    const displayableModel = await buildTableModel(client, hierarchy, props.cardClass, viewlet)
+    // If config is provided directly, use it; otherwise build from viewlet
+    let displayableModel: AttributeModel[]
+    if (props.config !== undefined && props.config.length > 0) {
+      const lookup =
+        viewlet !== undefined
+          ? buildConfigLookup(hierarchy, props.cardClass, props.config, viewlet.options?.lookup)
+          : undefined
+      const hiddenKeys = viewlet?.configOptions?.hiddenKeys ?? []
+      const model = await buildModel({
+        client,
+        _class: props.cardClass,
+        keys: props.config.filter((key: string | BuildModelKey) => {
+          if (typeof key === 'string') {
+            return !hiddenKeys.includes(key)
+          }
+          return !hiddenKeys.includes(key.key) && key.displayProps?.grow !== true
+        }),
+        lookup
+      })
+      displayableModel = model.filter((attr) => attr.displayProps?.grow !== true)
+    } else {
+      displayableModel = await buildTableModel(client, hierarchy, props.cardClass, viewlet)
+    }
 
     if (displayableModel.length === 0) {
       return
