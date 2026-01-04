@@ -1,0 +1,283 @@
+//
+// Copyright © 2025 Hardcore Engineering Inc.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+import core, {
+  type Class,
+  type Client,
+  type Doc,
+  type Hierarchy,
+  type Ref,
+  getDisplayTime,
+  getObjectValue
+} from '@hcengineering/core'
+import { translate, type IntlString } from '@hcengineering/platform'
+import { addNotification, NotificationSeverity } from '@hcengineering/ui'
+import { getCurrentLanguage } from '@hcengineering/theme'
+import viewPlugin, { type Viewlet, type AttributeModel, type BuildModelKey } from '@hcengineering/view'
+import { getClient } from '@hcengineering/presentation'
+import { buildModel, buildConfigLookup } from './utils'
+import view from './plugin'
+import SimpleNotification from './components/SimpleNotification.svelte'
+import { copyText } from './actionImpl'
+
+/**
+ * Standard document attribute keys
+ */
+enum DocumentAttributeKey {
+  CreatedBy = 'createdBy',
+  CreatedOn = 'createdOn',
+  ModifiedBy = 'modifiedBy',
+  ModifiedOn = 'modifiedOn',
+  Title = 'title',
+  Name = 'name'
+}
+
+/**
+ * Date format options for Intl.DateTimeFormat
+ */
+enum DateFormatOption {
+  Numeric = 'numeric',
+  Short = 'short'
+}
+
+async function buildTableModel (
+  client: Client,
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  viewlet: Viewlet | undefined
+): Promise<AttributeModel[]> {
+  if (viewlet !== undefined) {
+    const preferences = client.getModel().findAllSync(viewPlugin.class.ViewletPreference, {
+      space: core.space.Workspace,
+      attachedTo: viewlet._id
+    })
+    const config = preferences.length > 0 && preferences[0].config.length > 0 ? preferences[0].config : viewlet.config
+
+    const lookup = buildConfigLookup(hierarchy, _class, config, viewlet.options?.lookup)
+    const hiddenKeys = viewlet.configOptions?.hiddenKeys ?? []
+    const model = await buildModel({
+      client,
+      _class,
+      keys: config.filter((key: string | BuildModelKey) => {
+        if (typeof key === 'string') {
+          return !hiddenKeys.includes(key)
+        }
+        return !hiddenKeys.includes(key.key) && key.displayProps?.grow !== true
+      }),
+      lookup
+    })
+
+    return model.filter((attr) => attr.displayProps?.grow !== true)
+  }
+
+  const defaultConfig: Array<string | BuildModelKey> = [
+    '', // Object presenter (title)
+    DocumentAttributeKey.CreatedBy,
+    DocumentAttributeKey.CreatedOn,
+    DocumentAttributeKey.ModifiedBy,
+    DocumentAttributeKey.ModifiedOn
+  ]
+
+  const model = await buildModel({
+    client,
+    _class,
+    keys: defaultConfig,
+    lookup: undefined
+  })
+
+  return model.filter((attr) => {
+    if (
+      attr.key === DocumentAttributeKey.CreatedBy ||
+      attr.key === DocumentAttributeKey.CreatedOn ||
+      attr.key === DocumentAttributeKey.ModifiedBy ||
+      attr.key === DocumentAttributeKey.ModifiedOn
+    ) {
+      return hierarchy.findAttribute(_class, attr.key) !== undefined
+    }
+    return true
+  })
+}
+
+/**
+ * Check if a string looks like an IntlString (format: plugin:kind:key)
+ * Examples: card:string:Card, contact:class:UserProfile, card:types:Document
+ * @public
+ */
+export function isIntlString (value: string): boolean {
+  if (typeof value !== 'string' || value.length === 0) {
+    return false
+  }
+  const parts = value.split(':')
+  return parts.length >= 3 && parts.every((part) => part.length > 0)
+}
+
+async function formatValue (
+  attr: AttributeModel,
+  card: Doc,
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  language: string | undefined
+): Promise<string> {
+  let value: any
+  if (attr.castRequest != null) {
+    value = getObjectValue(attr.key.substring(attr.castRequest.length + 1), hierarchy.as(card, attr.castRequest))
+  } else {
+    value = getObjectValue(attr.key, card)
+  }
+
+  if (value === null || value === undefined) {
+    return ''
+  }
+
+  const attribute = hierarchy.findAttribute(_class, attr.key)
+  const attrType = attribute?.type
+
+  if (typeof value === 'number' && attrType?._class === core.class.TypeTimestamp) {
+    return getDisplayTime(value)
+  }
+
+  if (value instanceof Date) {
+    const options: Intl.DateTimeFormatOptions = {
+      year: DateFormatOption.Numeric,
+      month: DateFormatOption.Short,
+      day: DateFormatOption.Numeric
+    }
+    return value.toLocaleDateString(language ?? 'default', options)
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+
+  if (typeof value === 'string') {
+    if (isIntlString(value)) {
+      return await translate(value as unknown as IntlString, {}, language)
+    }
+    return value
+  }
+
+  if (Array.isArray(value)) {
+    const translatedValues = await Promise.all(
+      value.map(async (v) => {
+        if (typeof v === 'object' && v !== null && 'title' in v) {
+          const title = v[DocumentAttributeKey.Title] ?? ''
+          if (typeof title === 'string' && isIntlString(title)) {
+            return await translate(title as unknown as IntlString, {}, language)
+          }
+          return String(title)
+        }
+        if (typeof v === 'string' && isIntlString(v)) {
+          return await translate(v as unknown as IntlString, {}, language)
+        }
+        return typeof v === 'string' ? v : String(v)
+      })
+    )
+    return translatedValues.join(', ')
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    const obj = value as Record<string, any>
+    const title = obj[DocumentAttributeKey.Title]
+    if (title != null && title !== undefined) {
+      const titleStr = String(title)
+      if (isIntlString(titleStr)) {
+        return await translate(titleStr as unknown as IntlString, {}, language)
+      }
+      return titleStr
+    }
+    const name = obj[DocumentAttributeKey.Name]
+    if (name != null && name !== undefined) {
+      const nameStr = String(name)
+      if (isIntlString(nameStr)) {
+        return await translate(nameStr as unknown as IntlString, {}, language)
+      }
+      return nameStr
+    }
+    return String(value)
+  }
+
+  return String(value)
+}
+
+export async function CopyAsMarkdownTable (
+  doc: Doc | Doc[],
+  evt: Event,
+  props: {
+    cardClass: Ref<Class<Doc>>
+  }
+): Promise<void> {
+  const docs = Array.isArray(doc) ? doc : doc !== undefined ? [doc] : []
+  if (docs.length === 0) {
+    return
+  }
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const cardClass = hierarchy.getClass(props.cardClass)
+  if (cardClass == null) {
+    return
+  }
+
+  const viewlets = client.getModel().findAllSync(viewPlugin.class.Viewlet, {
+    attachTo: props.cardClass,
+    descriptor: viewPlugin.viewlet.Table
+  })
+  const viewlet: Viewlet | undefined = viewlets.length > 0 ? viewlets[0] : undefined
+
+  const displayableModel = await buildTableModel(client, hierarchy, props.cardClass, viewlet)
+
+  if (displayableModel.length === 0) {
+    return
+  }
+
+  const language = getCurrentLanguage()
+
+  const headers: string[] = []
+  for (const attr of displayableModel) {
+    let label: string
+    if (typeof attr.label === 'string') {
+      label = isIntlString(attr.label) ? await translate(attr.label as unknown as IntlString, {}, language) : attr.label
+    } else {
+      label = await translate(attr.label, {}, language)
+    }
+    headers.push(label)
+  }
+
+  const rows: string[][] = []
+  for (const card of docs) {
+    const row: string[] = []
+    for (const attr of displayableModel) {
+      const value = await formatValue(attr, card, hierarchy, props.cardClass, language)
+      const escapedValue = value.replace(/\|/g, '\\|').replace(/\n/g, ' ')
+      row.push(escapedValue)
+    }
+    rows.push(row)
+  }
+
+  let markdown = '| ' + headers.join(' | ') + ' |\n'
+  markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n'
+  for (const row of rows) {
+    markdown += '| ' + row.join(' | ') + ' |\n'
+  }
+
+  await copyText(markdown, 'text/markdown')
+
+  addNotification(
+    await translate(view.string.Copied, {}, language),
+    await translate(view.string.TableCopiedToClipboard, {}, language),
+    SimpleNotification,
+    undefined,
+    NotificationSeverity.Success
+  )
+}

@@ -110,6 +110,8 @@
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Скопировать в буфер обмена",
     "CopyDocumentMarkdown": "Скопировать как Markdown",
+    "CopyAsMarkdownTable": "Скопировать как таблицу Markdown",
+    "TableCopiedToClipboard": "Таблица скопирована в буфер обмена",
     "PublicView": "Публичный",
 
     "ChooseIcon": "Выбрать иконку",

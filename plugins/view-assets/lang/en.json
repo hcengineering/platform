@@ -114,6 +114,8 @@
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Copy to clipboard",
     "CopyDocumentMarkdown": "Copy as Markdown",
+    "CopyAsMarkdownTable": "Copy as Markdown Table",
+    "TableCopiedToClipboard": "Table copied to clipboard",
     "PublicView": "Public",
 
     "ChooseIcon": "Choose icon",

@@ -114,6 +114,8 @@
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "In die Zwischenablage kopieren",
     "CopyDocumentMarkdown": "Als Markdown kopieren",
+    "CopyAsMarkdownTable": "Als Markdown-Tabelle kopieren",
+    "TableCopiedToClipboard": "Tabelle in die Zwischenablage kopiert",
     "PublicView": "Öffentlich",
 
     "ChooseIcon": "Symbol wählen",

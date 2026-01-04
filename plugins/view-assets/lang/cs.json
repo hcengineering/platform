@@ -114,6 +114,8 @@
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Kopírovat do schránky",
     "CopyDocumentMarkdown": "Kopírovat jako Markdown",
+    "CopyAsMarkdownTable": "Kopírovat jako Markdown tabulka",
+    "TableCopiedToClipboard": "Tabulka zkopírována do schránky",
     "PublicView": "Veřejné",
 
     "ChooseIcon": "Vybrat ikonu",

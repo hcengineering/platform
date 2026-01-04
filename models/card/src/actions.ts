@@ -120,6 +120,23 @@ export function createActions (builder: Builder): void {
   })
 
   createAction(builder, {
+    action: view.actionImpl.CopyAsMarkdownTable,
+    actionProps: {
+      cardClass: card.class.Card
+    },
+    label: view.string.CopyAsMarkdownTable,
+    icon: view.icon.Print,
+    input: 'selection',
+    category: card.category.Card,
+    target: card.class.Card,
+    query: {},
+    context: {
+      mode: ['context', 'browser'],
+      group: 'tools'
+    }
+  })
+
+  createAction(builder, {
     action: view.actionImpl.ShowPopup,
     actionProps: {
       component: card.component.CreateTag,

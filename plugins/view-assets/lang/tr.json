@@ -110,6 +110,8 @@
     "HyperlinkPlaceholder": "https://ornek.com",
     "CopyToClipboard": "Panoya kopyala",
     "CopyDocumentMarkdown": "Markdown olarak kopyala",
+    "CopyAsMarkdownTable": "Markdown tablosu olarak kopyala",
+    "TableCopiedToClipboard": "Tablo panoya kopyalandı",
     "PublicView": "Genel",
     "ChooseIcon": "İkon seç",
     "IconColor": "İkon rengi seç",

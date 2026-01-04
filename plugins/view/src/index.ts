@@ -235,6 +235,7 @@ const view = plugin(viewId, {
     Join: '' as IntlString,
     Leave: '' as IntlString,
     Copied: '' as IntlString,
+    TableCopiedToClipboard: '' as IntlString,
     And: '' as IntlString,
     Title: '' as IntlString,
     DeleteObject: '' as IntlString,
@@ -259,7 +260,8 @@ const view = plugin(viewId, {
     RoleLabel: '' as IntlString,
     ForbidAttributeChanges: '' as IntlString,
     AllowAttributeChanges: '' as IntlString,
-    NoCreatePermissionTitle: '' as IntlString
+    NoCreatePermissionTitle: '' as IntlString,
+    CopyAsMarkdownTable: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -361,6 +363,9 @@ const view = plugin(viewId, {
     CopyDocumentMarkdown: '' as ViewAction<{
       contentClass: Ref<Class<Doc>>
       contentField: string
+    }>,
+    CopyAsMarkdownTable: '' as ViewAction<{
+      cardClass: Ref<Class<Doc>>
     }>,
     UpdateDocument: '' as ViewAction<{
       key: string

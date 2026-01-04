@@ -110,6 +110,8 @@
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Copier dans le presse-papiers",
     "CopyDocumentMarkdown": "Copier en Markdown",
+    "CopyAsMarkdownTable": "Copier en tableau Markdown",
+    "TableCopiedToClipboard": "Tableau copié dans le presse-papiers",
     "PublicView": "Vue publique",
     "ChooseIcon": "Choisir une icône",
     "IconColor": "Choisir la couleur de l'icône",
