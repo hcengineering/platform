@@ -368,7 +368,7 @@ export async function RunSubProcess (
     const _id = generateId<Execution>()
     const tx = control.client.txFactory.createTxCreateDoc(
       process.class.Execution,
-      core.space.Workspace,
+      execution.space,
       {
         process: processId,
         currentState: initTransition.to,
