@@ -71,7 +71,14 @@
   <Label label={core.string.Id} />
 </span>
 <div class="flex-row-center">
-  <EditBox bind:value={identifier} disabled={!editable} placeholder={core.string.Id} uppercase maxWidth={'50%'} on:change={change} />
+  <EditBox
+    bind:value={identifier}
+    disabled={!editable}
+    placeholder={core.string.Id}
+    uppercase
+    maxWidth={'50%'}
+    on:change={change}
+  />
   {#if editable && identifiers.has(identifier.toUpperCase())}
     <div class="overflow-label duplicated-identifier">
       <Label label={setting.string.IdentifierExists} />
