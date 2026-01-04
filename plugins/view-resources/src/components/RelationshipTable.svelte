@@ -192,10 +192,6 @@
     gtotal = total
   }
 
-  const showContextMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
-    showMenu(ev, { object, baseMenuClass })
-  }
-
   function changeSorting (key: string | string[]): void {
     if (key === '') {
       return
@@ -229,6 +225,7 @@
     }
     return { ...attribute.props, space: object.space, ...readonlyParams }
   }
+
   function getValue (attribute: AttributeModel, object: Doc): any {
     if (attribute.castRequest) {
       return getObjectValue(
@@ -240,6 +237,11 @@
       return object
     }
     return getObjectValue(attribute.key, object)
+  }
+
+  function showContextMenu (ev: MouseEvent, object: Doc | undefined): void {
+    if (object === undefined) return
+    showMenu(ev, { object })
   }
 
   function onChange (value: any, doc: Doc, key: string, attribute: AnyAttribute): void {
@@ -607,6 +609,7 @@
                   class:empty={cell.object === undefined}
                   class:first={i === 0}
                   class:cursor-pointer={cell.parentObject}
+                  on:contextmenu={(e) => { showContextMenu(e, cell.object) }}
                   on:click={(e) => {
                     clickHandler(e, cell)
                   }}
