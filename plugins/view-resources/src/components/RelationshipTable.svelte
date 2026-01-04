@@ -609,7 +609,9 @@
                   class:empty={cell.object === undefined}
                   class:first={i === 0}
                   class:cursor-pointer={cell.parentObject}
-                  on:contextmenu={(e) => { showContextMenu(e, cell.object) }}
+                  on:contextmenu={(e) => {
+                    showContextMenu(e, cell.object)
+                  }}
                   on:click={(e) => {
                     clickHandler(e, cell)
                   }}
