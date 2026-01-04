@@ -34,6 +34,7 @@ import core, {
   type RelatedDocument,
   SortingOrder,
   type Space,
+  toRank,
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
@@ -255,16 +256,23 @@ export async function getCardTitle (client: TxOperations, ref: Ref<Card>, doc?: 
   const object = doc ?? (await client.findOne(card.class.Card, { _id: ref }))
   if (object === undefined) throw new Error(`Card not found, _id: ${ref}`)
   const h = client.getHierarchy()
-  const attrs = h.getAllAttributes(object._class, core.class.Doc)
+  const attrs = [...h.getAllAttributes(object._class, core.class.Doc).values()].sort((a, b) => {
+    const rankA = a.rank ?? toRank(a._id) ?? ''
+    const rankB = b.rank ?? toRank(b._id) ?? ''
+    return rankA.localeCompare(rankB)
+  })
   const res: string[] = []
-  for (const [k, v] of attrs) {
-    if (v.type._class === core.class.TypeIdentifier) {
-      const str = (object as any)[k]
-      if (v.showInPresenter === true && str !== undefined) {
-        res.push(str)
+  for (const attr of attrs) {
+    const val = (object as any)[attr.name]
+    if (attr.showInPresenter === true && val !== undefined) {
+      if (typeof val === 'string' || typeof val === 'number') {
+        res.push(val.toString())
+      } else if (typeof val === 'boolean') {
+        res.push(val ? '✅' : '❌️')
       }
     }
   }
+
   const ids = res.join(' ')
   let version = ''
   if (h.classHierarchyMixin(object._class, core.mixin.VersionableClass)?.enabled === true) {

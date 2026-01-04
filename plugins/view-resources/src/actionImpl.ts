@@ -50,6 +50,7 @@ import {
 } from './selection'
 import { deleteObjects, getObjectId, getObjectLinkFragment, restrictionStore } from './utils'
 import workbenchPlugin from '@hcengineering/workbench'
+import { CopyAsMarkdownTable } from './copyAsMarkdownTable'
 
 /**
  * Action to be used for copying text to clipboard.
@@ -78,7 +79,7 @@ async function CopyTextToClipboard (
   await copyText(text, 'text/plain')
 }
 
-async function copyText (text: any, contentType: string = 'text/plain'): Promise<void> {
+export async function copyText (text: any, contentType: string = 'text/plain'): Promise<void> {
   try {
     const clipboardItem = new ClipboardItem({
       'text/plain': text
@@ -667,5 +668,6 @@ export const actionImpl = {
   ShowEditor,
   ValueSelector,
   AttributeSelector,
-  CopyDocumentMarkdown
+  CopyDocumentMarkdown,
+  CopyAsMarkdownTable
 }
