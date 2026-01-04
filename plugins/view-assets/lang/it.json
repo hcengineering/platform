@@ -112,6 +112,7 @@
     "CopyDocumentMarkdown": "Copia come Markdown",
     "CopyAsMarkdownTable": "Copia come tabella Markdown",
     "TableCopiedToClipboard": "Tabella copiata negli appunti",
+    "TableCopyFailed": "Impossibile copiare la tabella negli appunti",
     "PublicView": "Vista pubblica",
     "ChooseIcon": "Scegli icona",
     "IconColor": "Scegli colore icona",

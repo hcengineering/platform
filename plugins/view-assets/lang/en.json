@@ -116,6 +116,7 @@
     "CopyDocumentMarkdown": "Copy as Markdown",
     "CopyAsMarkdownTable": "Copy as Markdown Table",
     "TableCopiedToClipboard": "Table copied to clipboard",
+    "TableCopyFailed": "Failed to copy table to clipboard",
     "PublicView": "Public",
 
     "ChooseIcon": "Choose icon",

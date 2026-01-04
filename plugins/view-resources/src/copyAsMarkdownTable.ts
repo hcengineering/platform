@@ -19,15 +19,16 @@ import core, {
   type Doc,
   type Hierarchy,
   type Ref,
+  concatLink,
   getDisplayTime,
   getObjectValue
 } from '@hcengineering/core'
-import { translate, type IntlString } from '@hcengineering/platform'
-import { addNotification, NotificationSeverity } from '@hcengineering/ui'
+import { translate, type IntlString, getMetadata } from '@hcengineering/platform'
+import { addNotification, NotificationSeverity, locationToUrl } from '@hcengineering/ui'
 import { getCurrentLanguage } from '@hcengineering/theme'
 import viewPlugin, { type Viewlet, type AttributeModel, type BuildModelKey } from '@hcengineering/view'
-import { getClient } from '@hcengineering/presentation'
-import { buildModel, buildConfigLookup } from './utils'
+import presentation, { getClient } from '@hcengineering/presentation'
+import { buildModel, buildConfigLookup, getObjectLinkFragment } from './utils'
 import view from './plugin'
 import SimpleNotification from './components/SimpleNotification.svelte'
 import { copyText } from './actionImpl'
@@ -128,13 +129,20 @@ async function formatValue (
   card: Doc,
   hierarchy: Hierarchy,
   _class: Ref<Class<Doc>>,
-  language: string | undefined
+  language: string | undefined,
+  isFirstColumn: boolean = false
 ): Promise<string> {
   let value: any
   if (attr.castRequest != null) {
     value = getObjectValue(attr.key.substring(attr.castRequest.length + 1), hierarchy.as(card, attr.castRequest))
   } else {
     value = getObjectValue(attr.key, card)
+  }
+
+  // If this is an empty key but NOT the first column, return empty string
+  // (empty key should only be used for the object presenter in the first column)
+  if (attr.key === '' && !isFirstColumn) {
+    return ''
   }
 
   if (value === null || value === undefined) {
@@ -211,6 +219,22 @@ async function formatValue (
   return String(value)
 }
 
+async function createMarkdownLink (hierarchy: Hierarchy, card: Doc, value: string): Promise<string> {
+  try {
+    const loc = await getObjectLinkFragment(hierarchy, card, {}, view.component.EditDoc)
+    const relativeUrl = locationToUrl(loc)
+    const frontUrl =
+      getMetadata(presentation.metadata.FrontUrl) ?? (typeof window !== 'undefined' ? window.location.origin : '')
+    const fullUrl = concatLink(frontUrl, relativeUrl)
+    const escapedText = value.replace(/\]/g, '\\]').replace(/\n/g, ' ')
+    const escapedUrl = fullUrl.replace(/\)/g, '\\)')
+    return `[${escapedText}](${escapedUrl})`
+  } catch {
+    // If link generation fails, fall back to plain text
+    return value.replace(/\|/g, '\\|').replace(/\n/g, ' ')
+  }
+}
+
 export async function CopyAsMarkdownTable (
   doc: Doc | Doc[],
   evt: Event,
@@ -218,66 +242,88 @@ export async function CopyAsMarkdownTable (
     cardClass: Ref<Class<Doc>>
   }
 ): Promise<void> {
-  const docs = Array.isArray(doc) ? doc : doc !== undefined ? [doc] : []
-  if (docs.length === 0) {
-    return
-  }
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const cardClass = hierarchy.getClass(props.cardClass)
-  if (cardClass == null) {
-    return
-  }
-
-  const viewlets = client.getModel().findAllSync(viewPlugin.class.Viewlet, {
-    attachTo: props.cardClass,
-    descriptor: viewPlugin.viewlet.Table
-  })
-  const viewlet: Viewlet | undefined = viewlets.length > 0 ? viewlets[0] : undefined
-
-  const displayableModel = await buildTableModel(client, hierarchy, props.cardClass, viewlet)
-
-  if (displayableModel.length === 0) {
-    return
-  }
-
-  const language = getCurrentLanguage()
-
-  const headers: string[] = []
-  for (const attr of displayableModel) {
-    let label: string
-    if (typeof attr.label === 'string') {
-      label = isIntlString(attr.label) ? await translate(attr.label as unknown as IntlString, {}, language) : attr.label
-    } else {
-      label = await translate(attr.label, {}, language)
+  try {
+    const docs = Array.isArray(doc) ? doc : doc !== undefined ? [doc] : []
+    if (docs.length === 0) {
+      return
     }
-    headers.push(label)
-  }
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    const cardClass = hierarchy.getClass(props.cardClass)
+    if (cardClass == null) {
+      return
+    }
 
-  const rows: string[][] = []
-  for (const card of docs) {
-    const row: string[] = []
+    const viewlets = client.getModel().findAllSync(viewPlugin.class.Viewlet, {
+      attachTo: props.cardClass,
+      descriptor: viewPlugin.viewlet.Table
+    })
+    const viewlet: Viewlet | undefined = viewlets.length > 0 ? viewlets[0] : undefined
+
+    const displayableModel = await buildTableModel(client, hierarchy, props.cardClass, viewlet)
+
+    if (displayableModel.length === 0) {
+      return
+    }
+
+    const language = getCurrentLanguage()
+
+    const headers: string[] = []
     for (const attr of displayableModel) {
-      const value = await formatValue(attr, card, hierarchy, props.cardClass, language)
-      const escapedValue = value.replace(/\|/g, '\\|').replace(/\n/g, ' ')
-      row.push(escapedValue)
+      let label: string
+      if (typeof attr.label === 'string') {
+        label = isIntlString(attr.label)
+          ? await translate(attr.label as unknown as IntlString, {}, language)
+          : attr.label
+      } else {
+        label = await translate(attr.label, {}, language)
+      }
+      headers.push(label)
     }
-    rows.push(row)
+
+    const rows: string[][] = []
+    for (const card of docs) {
+      const row: string[] = []
+      for (let i = 0; i < displayableModel.length; i++) {
+        const attr = displayableModel[i]
+        const isFirstColumn = i === 0
+        const value = await formatValue(attr, card, hierarchy, props.cardClass, language, isFirstColumn)
+
+        // If this is the first column with empty key (title attribute), create a markdown link
+        if (isFirstColumn && attr.key === '') {
+          const linkValue = await createMarkdownLink(hierarchy, card, value)
+          row.push(linkValue)
+        } else {
+          const escapedValue = value.replace(/\|/g, '\\|').replace(/\n/g, ' ')
+          row.push(escapedValue)
+        }
+      }
+      rows.push(row)
+    }
+
+    let markdown = '| ' + headers.join(' | ') + ' |\n'
+    markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n'
+    for (const row of rows) {
+      markdown += '| ' + row.join(' | ') + ' |\n'
+    }
+
+    await copyText(markdown, 'text/markdown')
+
+    addNotification(
+      await translate(view.string.Copied, {}, language),
+      await translate(view.string.TableCopiedToClipboard, {}, language),
+      SimpleNotification,
+      undefined,
+      NotificationSeverity.Success
+    )
+  } catch (error) {
+    const language = getCurrentLanguage()
+    addNotification(
+      await translate(view.string.Copied, {}, language),
+      await translate(view.string.TableCopyFailed, {}, language),
+      SimpleNotification,
+      undefined,
+      NotificationSeverity.Error
+    )
   }
-
-  let markdown = '| ' + headers.join(' | ') + ' |\n'
-  markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n'
-  for (const row of rows) {
-    markdown += '| ' + row.join(' | ') + ' |\n'
-  }
-
-  await copyText(markdown, 'text/markdown')
-
-  addNotification(
-    await translate(view.string.Copied, {}, language),
-    await translate(view.string.TableCopiedToClipboard, {}, language),
-    SimpleNotification,
-    undefined,
-    NotificationSeverity.Success
-  )
 }

@@ -116,6 +116,7 @@
     "CopyDocumentMarkdown": "Als Markdown kopieren",
     "CopyAsMarkdownTable": "Als Markdown-Tabelle kopieren",
     "TableCopiedToClipboard": "Tabelle in die Zwischenablage kopiert",
+    "TableCopyFailed": "Tabelle konnte nicht in die Zwischenablage kopiert werden",
     "PublicView": "Öffentlich",
 
     "ChooseIcon": "Symbol wählen",

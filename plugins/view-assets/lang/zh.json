@@ -116,6 +116,7 @@
     "CopyDocumentMarkdown": "复制为 Markdown",
     "CopyAsMarkdownTable": "复制为 Markdown 表格",
     "TableCopiedToClipboard": "表格已复制到剪贴板",
+    "TableCopyFailed": "复制表格到剪贴板失败",
     "PublicView": "公开视图",
 
     "ChooseIcon": "选择图标",

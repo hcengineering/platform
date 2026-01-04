@@ -112,6 +112,7 @@
     "CopyDocumentMarkdown": "Copiar como Markdown",
     "CopyAsMarkdownTable": "Copiar como tabla Markdown",
     "TableCopiedToClipboard": "Tabla copiada al portapapeles",
+    "TableCopyFailed": "Error al copiar la tabla al portapapeles",
     "PublicView": "Público",
     "ChooseIcon": "Elegir icono",
     "IconColor": "Elegir color del icono",

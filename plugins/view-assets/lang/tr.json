@@ -112,6 +112,7 @@
     "CopyDocumentMarkdown": "Markdown olarak kopyala",
     "CopyAsMarkdownTable": "Markdown tablosu olarak kopyala",
     "TableCopiedToClipboard": "Tablo panoya kopyalandı",
+    "TableCopyFailed": "Tablo panoya kopyalanamadı",
     "PublicView": "Genel",
     "ChooseIcon": "İkon seç",
     "IconColor": "İkon rengi seç",

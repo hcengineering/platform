@@ -116,6 +116,7 @@
     "CopyDocumentMarkdown": "Kopírovat jako Markdown",
     "CopyAsMarkdownTable": "Kopírovat jako Markdown tabulka",
     "TableCopiedToClipboard": "Tabulka zkopírována do schránky",
+    "TableCopyFailed": "Nepodařilo se zkopírovat tabulku do schránky",
     "PublicView": "Veřejné",
 
     "ChooseIcon": "Vybrat ikonu",

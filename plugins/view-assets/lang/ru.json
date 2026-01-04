@@ -112,6 +112,7 @@
     "CopyDocumentMarkdown": "Скопировать как Markdown",
     "CopyAsMarkdownTable": "Скопировать как таблицу Markdown",
     "TableCopiedToClipboard": "Таблица скопирована в буфер обмена",
+    "TableCopyFailed": "Не удалось скопировать таблицу в буфер обмена",
     "PublicView": "Публичный",
 
     "ChooseIcon": "Выбрать иконку",

@@ -112,6 +112,7 @@
     "CopyDocumentMarkdown": "Copiar como Markdown",
     "CopyAsMarkdownTable": "Copiar como tabela Markdown",
     "TableCopiedToClipboard": "Tabela copiada para área de transferência",
+    "TableCopyFailed": "Falha ao copiar tabela para área de transferência",
     "PublicView": "Público",
     "ChooseIcon": "Escolher ícone",
     "IconColor": "Escolher cor do ícone",

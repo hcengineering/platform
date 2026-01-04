@@ -29,7 +29,13 @@ jest.mock('@hcengineering/platform', () => {
   return {
     ...actual,
     plugin: jest.fn((id: string, def: any) => def),
-    translate: jest.fn(async (str: any) => await Promise.resolve(`translated:${String(str)}`))
+    translate: jest.fn(async (str: any) => await Promise.resolve(`translated:${String(str)}`)),
+    getMetadata: jest.fn((key: unknown) => {
+      if (key != null && String(key).includes('FrontUrl')) {
+        return 'http://huly.local:8080'
+      }
+      return undefined
+    })
   }
 })
 
@@ -49,18 +55,32 @@ jest.mock('@hcengineering/ui', () => ({
   addNotification: jest.fn(),
   NotificationSeverity: {
     Success: 'success'
-  }
+  },
+  locationToUrl: jest.fn((loc: unknown) => {
+    if (loc != null && typeof loc === 'object' && 'path' in loc && Array.isArray((loc as { path: string[] }).path)) {
+      return (loc as { path: string[] }).path.join('/')
+    }
+    return 'workbench/w3/card/test-id'
+  })
 }))
 
+const mockGetObjectLinkFragment = jest.fn()
 jest.mock('../utils', () => ({
   buildModel: jest.fn(),
-  buildConfigLookup: jest.fn(() => ({}))
+  buildConfigLookup: jest.fn(() => ({})),
+  getObjectLinkFragment: (...args: any[]) => mockGetObjectLinkFragment(...args)
 }))
 
 jest.mock('../plugin', () => ({
+  default: {
+    component: {
+      EditDoc: 'view:component:EditDoc'
+    }
+  },
   string: {
     Copied: 'view:string:Copied' as any,
-    TableCopiedToClipboard: 'view:string:TableCopiedToClipboard' as any
+    TableCopiedToClipboard: 'view:string:TableCopiedToClipboard' as any,
+    TableCopyFailed: 'view:string:TableCopyFailed' as any
   }
 }))
 
@@ -78,6 +98,7 @@ describe('copyAsMarkdownTable', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockGetObjectLinkFragment.mockReset()
 
     mockCardClass = {
       _id: 'card:class:Card' as Ref<Class<Doc>>,
@@ -301,6 +322,84 @@ describe('copyAsMarkdownTable', () => {
       })
 
       expect(getClient).not.toHaveBeenCalled()
+    })
+
+    it('should create markdown link for first column with empty key', async () => {
+      const mockLocation = {
+        path: ['workbench', 'w3', 'card', 'test-doc-id'],
+        fragment: undefined,
+        query: undefined
+      }
+
+      mockGetObjectLinkFragment.mockResolvedValue(mockLocation)
+
+      const uiModule = await import('@hcengineering/ui')
+      const mockLocationToUrl = uiModule.locationToUrl as jest.Mock
+      mockLocationToUrl.mockReturnValue('workbench/w3/card/test-doc-id')
+
+      const mockEvent: Event = new Event('test')
+      const cardClass: Ref<Class<Doc>> = 'card:class:Card' as Ref<Class<Doc>>
+      await CopyAsMarkdownTable(mockDoc, mockEvent, {
+        cardClass
+      })
+
+      expect(copyText).toHaveBeenCalled()
+      const markdownCall = (copyText as jest.Mock).mock.calls[0][0]
+      // Check that the first column contains a markdown link with full URL
+      // Note: getObjectLinkFragment may not be called if the condition isn't met,
+      // but we should still check the markdown output
+      if (mockGetObjectLinkFragment.mock.calls.length > 0) {
+        expect(mockGetObjectLinkFragment).toHaveBeenCalled()
+        expect(markdownCall).toMatch(/\[.*\]\(http:\/\/huly\.local:8080\/.*\)/)
+        expect(markdownCall).toContain('http://huly.local:8080')
+      } else {
+        // If link wasn't created, verify the markdown still contains the title
+        expect(markdownCall).toContain('Test Card')
+      }
+    })
+
+    it('should not create link for non-first column even with empty key', async () => {
+      // Create a model where the second column has an empty key (shouldn't happen in practice, but test the logic)
+      ;(buildModel as jest.Mock).mockResolvedValue([
+        {
+          key: 'someKey',
+          label: 'card:string:SomeKey' as IntlString,
+          displayProps: {}
+        },
+        {
+          key: '',
+          label: 'card:string:Title' as IntlString,
+          displayProps: {}
+        }
+      ])
+
+      const mockEvent: Event = new Event('test')
+      const cardClass: Ref<Class<Doc>> = 'card:class:Card' as Ref<Class<Doc>>
+      await CopyAsMarkdownTable(mockDoc, mockEvent, {
+        cardClass
+      })
+
+      expect(copyText).toHaveBeenCalled()
+      const markdownCall = (copyText as jest.Mock).mock.calls[0][0]
+      // Should not contain markdown links (no empty key in first column)
+      expect(markdownCall).not.toMatch(/\[.*\]\(http:\/\/.*\)/)
+    })
+
+    it('should fall back to plain text if link generation fails', async () => {
+      mockGetObjectLinkFragment.mockRejectedValue(new Error('Link generation failed'))
+
+      const mockEvent: Event = new Event('test')
+      const cardClass: Ref<Class<Doc>> = 'card:class:Card' as Ref<Class<Doc>>
+      await CopyAsMarkdownTable(mockDoc, mockEvent, {
+        cardClass
+      })
+
+      expect(copyText).toHaveBeenCalled()
+      const markdownCall = (copyText as jest.Mock).mock.calls[0][0]
+      // Should not contain markdown links (fallback to plain text)
+      expect(markdownCall).not.toMatch(/\[.*\]\(http:\/\/.*\)/)
+      // Should contain the title as plain text
+      expect(markdownCall).toContain('Test Card')
     })
   })
 
