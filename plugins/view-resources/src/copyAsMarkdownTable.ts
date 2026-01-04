@@ -219,6 +219,23 @@ async function formatValue (
   return String(value)
 }
 
+function escapeMarkdownLinkText (text: string): string {
+  // Escape backslashes first, then brackets and pipes, and normalize newlines to spaces
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/\[/g, '\\[')
+    .replace(/\]/g, '\\]')
+    .replace(/\|/g, '\\|')
+    .replace(/\r?\n/g, ' ')
+}
+
+function escapeMarkdownLinkUrl (url: string): string {
+  // Escape backslashes and closing parentheses used to terminate the URL
+  return url
+    .replace(/\\/g, '\\\\')
+    .replace(/\)/g, '\\)')
+}
+
 async function createMarkdownLink (hierarchy: Hierarchy, card: Doc, value: string): Promise<string> {
   try {
     const loc = await getObjectLinkFragment(hierarchy, card, {}, view.component.EditDoc)
@@ -226,12 +243,12 @@ async function createMarkdownLink (hierarchy: Hierarchy, card: Doc, value: strin
     const frontUrl =
       getMetadata(presentation.metadata.FrontUrl) ?? (typeof window !== 'undefined' ? window.location.origin : '')
     const fullUrl = concatLink(frontUrl, relativeUrl)
-    const escapedText = value.replace(/\]/g, '\\]').replace(/\n/g, ' ')
-    const escapedUrl = fullUrl.replace(/\)/g, '\\)')
+    const escapedText = escapeMarkdownLinkText(value)
+    const escapedUrl = escapeMarkdownLinkUrl(fullUrl)
     return `[${escapedText}](${escapedUrl})`
   } catch {
     // If link generation fails, fall back to plain text
-    return value.replace(/\|/g, '\\|').replace(/\n/g, ' ')
+    return escapeMarkdownLinkText(value)
   }
 }
 
