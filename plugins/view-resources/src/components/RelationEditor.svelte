@@ -81,9 +81,15 @@
         ? { docA: object._id, docB: doc._id, association: association._id }
         : { docA: doc._id, docB: object._id, association: association._id }
     const relation = await client.findOne(core.class.Relation, q)
+    const overrides = new Map()
     if (relation !== undefined) {
-      showMenu(ev, { object: relation, includedActions: [view.action.RemoveRelation] })
+      overrides.set(view.action.Delete, async (obj: Doc | Doc[], ev?: Event) => {
+        if (relation !== undefined) {
+          await client.remove(relation)
+        }
+      })
     }
+    showMenu(ev, { object: doc, overrides })
   }
 
   function isAllowedToCreate (association: Association, docs: Doc[], direction: 'A' | 'B'): boolean {
