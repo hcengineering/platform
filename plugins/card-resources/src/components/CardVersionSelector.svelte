@@ -72,7 +72,7 @@
 
   async function newVersion (): Promise<void> {
     showPopup(MessageBox, {
-      title: card.string.NewVersion,
+      label: card.string.NewVersion,
       message: card.string.NewVersionConfirmation,
       action: async () => {
         const _id = await createNewVersion(value)

@@ -61,7 +61,7 @@
   {readonly}
 >
   <svelte:fragment slot="item" let:item={it}>
-    <CardPresenter value={it} disabled showVersion={false} />
+    <CardPresenter value={it} disabled />
   </svelte:fragment>
 
   <svelte:fragment slot="category" let:item={it}>
