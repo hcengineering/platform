@@ -35,6 +35,77 @@ import view from './plugin'
 import SimpleNotification from './components/SimpleNotification.svelte'
 import { copyText } from './actionImpl'
 
+/**
+ * Value formatter function for custom field extraction
+ * @param attr - The attribute model
+ * @param card - The document object
+ * @param hierarchy - The hierarchy instance
+ * @param _class - The document class
+ * @param language - Current language
+ * @returns The formatted value, or undefined if this formatter doesn't apply
+ */
+export type ValueFormatter = (
+  attr: AttributeModel,
+  card: Doc,
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  language: string | undefined
+) => Promise<string | undefined>
+
+/**
+ * Registry for value formatters by document class
+ * Plugins can register custom formatters for specific document classes
+ */
+const valueFormattersByClass = new Map<Ref<Class<Doc>>, ValueFormatter[]>()
+
+/**
+ * Global formatters (checked for all classes)
+ */
+const globalValueFormatters: ValueFormatter[] = []
+
+/**
+ * Register a value formatter for a specific document class
+ * @param _class - The document class this formatter applies to
+ * @param formatter - The formatter function to register
+ */
+export function registerValueFormatterForClass (_class: Ref<Class<Doc>>, formatter: ValueFormatter): void {
+  const formatters = valueFormattersByClass.get(_class) ?? []
+  formatters.push(formatter)
+  valueFormattersByClass.set(_class, formatters)
+}
+
+/**
+ * Register a global value formatter (applies to all classes)
+ * @param formatter - The formatter function to register
+ * @deprecated Use registerValueFormatterForClass for better performance and explicit class association
+ */
+export function registerValueFormatter (formatter: ValueFormatter): void {
+  globalValueFormatters.push(formatter)
+}
+
+/**
+ * Get formatters for a specific class (including parent classes)
+ */
+function getFormattersForClass (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): ValueFormatter[] {
+  const formatters: ValueFormatter[] = []
+
+  // Get formatters for this class and all parent classes
+  let currentClass: Ref<Class<Doc>> | undefined = _class
+  while (currentClass !== undefined) {
+    const classFormatters = valueFormattersByClass.get(currentClass)
+    if (classFormatters !== undefined) {
+      formatters.push(...classFormatters)
+    }
+    const classDef: Class<Doc> | undefined = hierarchy.getClass(currentClass)
+    currentClass = classDef?.extends
+  }
+
+  // Add global formatters
+  formatters.push(...globalValueFormatters)
+
+  return formatters
+}
+
 enum DocumentAttributeKey {
   CreatedBy = 'createdBy',
   CreatedOn = 'createdOn',
@@ -213,13 +284,48 @@ async function formatValue (
   _class: Ref<Class<Doc>>,
   language: string | undefined,
   isFirstColumn: boolean = false,
-  userCache?: Map<PersonId, string>
+  userCache?: Map<PersonId, string>,
+  customFormatter?: ValueFormatter
 ): Promise<string> {
+  // Try custom formatter first (from actionProps)
+  if (customFormatter !== undefined) {
+    const formattedValue = await customFormatter(attr, card, hierarchy, _class, language)
+    if (formattedValue !== undefined) {
+      return formattedValue
+    }
+  }
+
+  // Try registered value formatters for this class
+  const formatters = getFormattersForClass(hierarchy, _class)
+  for (const formatter of formatters) {
+    const formattedValue = await formatter(attr, card, hierarchy, _class, language)
+    if (formattedValue !== undefined) {
+      return formattedValue
+    }
+  }
+
   let value: any
   if (attr.castRequest != null) {
     value = getObjectValue(attr.key.substring(attr.castRequest.length + 1), hierarchy.as(card, attr.castRequest))
   } else {
-    value = getObjectValue(attr.key, card)
+    // Handle lookup keys properly
+    if (attr.key.startsWith('$lookup.')) {
+      const lookupKey = attr.key.replace('$lookup.', '')
+      const lookupParts = lookupKey.split('.')
+      const cardWithLookup = card as any
+      const lookupObj = cardWithLookup.$lookup?.[lookupParts[0]]
+      if (lookupObj !== undefined && lookupObj !== null) {
+        if (lookupParts.length > 1) {
+          value = getObjectValue(lookupParts.slice(1).join('.'), lookupObj)
+        } else {
+          value = lookupObj
+        }
+      } else {
+        value = undefined
+      }
+    } else {
+      value = getObjectValue(attr.key, card)
+    }
   }
 
   // If this is an empty key but NOT the first column, return empty string
@@ -336,14 +442,17 @@ async function createMarkdownLink (hierarchy: Hierarchy, card: Doc, value: strin
   }
 }
 
+export interface CopyAsMarkdownTableProps {
+  cardClass: Ref<Class<Doc>>
+  viewlet?: Viewlet
+  config?: Array<string | BuildModelKey>
+  valueFormatter?: ValueFormatter
+}
+
 export async function CopyAsMarkdownTable (
   doc: Doc | Doc[],
   evt: Event,
-  props: {
-    cardClass: Ref<Class<Doc>>
-    viewlet?: Viewlet
-    config?: Array<string | BuildModelKey>
-  }
+  props: CopyAsMarkdownTableProps
 ): Promise<void> {
   try {
     const docs = Array.isArray(doc) ? doc : doc !== undefined ? [doc] : []
@@ -418,7 +527,16 @@ export async function CopyAsMarkdownTable (
       for (let i = 0; i < displayableModel.length; i++) {
         const attr = displayableModel[i]
         const isFirstColumn = i === 0
-        const value = await formatValue(attr, card, hierarchy, props.cardClass, language, isFirstColumn, userCache)
+        const value = await formatValue(
+          attr,
+          card,
+          hierarchy,
+          props.cardClass,
+          language,
+          isFirstColumn,
+          userCache,
+          props.valueFormatter
+        )
 
         // If this is the first column with empty key (title attribute), create a markdown link
         if (isFirstColumn && attr.key === '') {
