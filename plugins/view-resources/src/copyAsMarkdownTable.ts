@@ -120,6 +120,35 @@ export function isIntlString (value: string): boolean {
   return parts.length >= 3 && parts.every((part) => part.length > 0)
 }
 
+async function loadPersonName (
+  personId: PersonId,
+  hierarchy: Hierarchy,
+  userCache?: Map<PersonId, string>
+): Promise<string> {
+  if (userCache !== undefined) {
+    const cachedName = userCache.get(personId)
+    if (cachedName !== undefined) {
+      return cachedName
+    }
+  }
+
+  try {
+    const client = getClient()
+    const person = await getPersonByPersonId(client, personId)
+    if (person !== null) {
+      const name = getName(hierarchy, person)
+      if (userCache !== undefined) {
+        userCache.set(personId, name)
+      }
+      return name
+    }
+  } catch (error) {
+    console.warn('Failed to lookup user name for PersonId:', personId, error)
+  }
+
+  return personId
+}
+
 async function formatValue (
   attr: AttributeModel,
   card: Doc,
@@ -170,31 +199,8 @@ async function formatValue (
     if (isIntlString(value)) {
       return await translate(value as unknown as IntlString, {}, language)
     }
-    // Map user IDs to names for createdBy and modifiedBy fields
     if (attr.key === DocumentAttributeKey.CreatedBy || attr.key === DocumentAttributeKey.ModifiedBy) {
-      const personId = value as PersonId
-      // Check cache first
-      if (userCache !== undefined) {
-        const cachedName = userCache.get(personId)
-        if (cachedName !== undefined) {
-          return cachedName
-        }
-      }
-      try {
-        const client = getClient()
-        const person = await getPersonByPersonId(client, personId)
-        if (person !== null) {
-          const name = getName(hierarchy, person)
-          // Store in cache for future lookups
-          if (userCache !== undefined) {
-            userCache.set(personId, name)
-          }
-          return name
-        }
-      } catch (error) {
-        // If lookup fails, fall back to the original value
-        console.warn('Failed to lookup user name for PersonId:', value, error)
-      }
+      return await loadPersonName(value as PersonId, hierarchy, userCache)
     }
     return value
   }
