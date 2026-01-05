@@ -149,6 +149,63 @@ async function loadPersonName (
   return personId
 }
 
+/**
+ * Loads the actual viewlet configuration, including user preferences
+ * @param client - The client instance
+ * @param hierarchy - The hierarchy instance
+ * @param cardClass - The class to find viewlet for
+ * @param propsViewlet - Optional viewlet from props
+ * @param propsConfig - Optional config from props
+ * @returns The actual config to use, or undefined if no viewlet/config found
+ */
+async function loadViewletConfig (
+  client: Client,
+  hierarchy: Hierarchy,
+  cardClass: Ref<Class<Doc>>,
+  propsViewlet?: Viewlet,
+  propsConfig?: Array<string | BuildModelKey>
+): Promise<{ viewlet: Viewlet | undefined, config: Array<string | BuildModelKey> | undefined }> {
+  // If config is provided directly, use it
+  if (propsConfig !== undefined && propsConfig.length > 0) {
+    return { viewlet: propsViewlet, config: propsConfig }
+  }
+
+  // Find viewlet if not provided
+  let viewlet: Viewlet | undefined = propsViewlet
+  if (viewlet === undefined) {
+    // Search for viewlets attached to this class or any of its ancestor classes
+    // Viewlets attached to a parent class apply to child classes
+    const allClasses = [cardClass]
+    let currentClass = hierarchy.getClass(cardClass)
+    while (currentClass?.extends !== undefined) {
+      allClasses.push(currentClass.extends)
+      currentClass = hierarchy.getClass(currentClass.extends)
+    }
+    const viewlets = await client.findAll(viewPlugin.class.Viewlet, {
+      attachTo: { $in: allClasses },
+      descriptor: viewPlugin.viewlet.Table
+    })
+    // Prefer viewlet attached directly to the class, then parent classes
+    viewlet =
+      viewlets.find((v) => v.attachTo === cardClass) ??
+      viewlets.find((v) => allClasses.includes(v.attachTo)) ??
+      viewlets[0]
+  }
+
+  // Get user's viewlet preference to use the actual displayed config
+  let actualConfig: Array<string | BuildModelKey> | undefined
+  if (viewlet !== undefined) {
+    const preferences = await client.findAll(viewPlugin.class.ViewletPreference, {
+      space: core.space.Workspace,
+      attachedTo: viewlet._id
+    })
+    // Use preference config if available, otherwise fall back to viewlet config
+    actualConfig = preferences.length > 0 && preferences[0].config.length > 0 ? preferences[0].config : viewlet.config
+  }
+
+  return { viewlet, config: actualConfig }
+}
+
 async function formatValue (
   attr: AttributeModel,
   card: Doc,
@@ -300,27 +357,27 @@ export async function CopyAsMarkdownTable (
       return
     }
 
-    let viewlet: Viewlet | undefined = props.viewlet
-    if (viewlet === undefined) {
-      const viewlets = await client.findAll(viewPlugin.class.Viewlet, {
-        attachTo: props.cardClass,
-        descriptor: viewPlugin.viewlet.Table
-      })
-      viewlet = viewlets.length > 0 ? viewlets[0] : undefined
-    }
+    // Load viewlet and config (including user preferences)
+    const { viewlet, config: actualConfig } = await loadViewletConfig(
+      client,
+      hierarchy,
+      props.cardClass,
+      props.viewlet,
+      props.config
+    )
 
-    // If config is provided directly, use it; otherwise build from viewlet
+    // Build displayable model from config
     let displayableModel: AttributeModel[]
-    if (props.config !== undefined && props.config.length > 0) {
+    if (actualConfig !== undefined && actualConfig.length > 0) {
       const lookup =
         viewlet !== undefined
-          ? buildConfigLookup(hierarchy, props.cardClass, props.config, viewlet.options?.lookup)
+          ? buildConfigLookup(hierarchy, props.cardClass, actualConfig, viewlet.options?.lookup)
           : undefined
       const hiddenKeys = viewlet?.configOptions?.hiddenKeys ?? []
       const model = await buildModel({
         client,
         _class: props.cardClass,
-        keys: props.config.filter((key: string | BuildModelKey) => {
+        keys: actualConfig.filter((key: string | BuildModelKey) => {
           if (typeof key === 'string') {
             return !hiddenKeys.includes(key)
           }
