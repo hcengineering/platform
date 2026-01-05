@@ -474,7 +474,7 @@ export async function getTransitionUserInput (
             transition: transition._id,
             space,
             inputs,
-            values: userContext
+            values: {}
           },
           undefined,
           (res) => {
