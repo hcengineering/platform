@@ -19,6 +19,7 @@ import core, {
   type Doc,
   type Hierarchy,
   type Ref,
+  type PersonId,
   concatLink,
   getDisplayTime,
   getObjectValue
@@ -28,14 +29,83 @@ import { addNotification, NotificationSeverity, locationToUrl } from '@hcenginee
 import { getCurrentLanguage } from '@hcengineering/theme'
 import viewPlugin, { type Viewlet, type AttributeModel, type BuildModelKey } from '@hcengineering/view'
 import presentation, { getClient } from '@hcengineering/presentation'
+import { getName, getPersonByPersonId } from '@hcengineering/contact'
 import { buildModel, buildConfigLookup, getObjectLinkFragment } from './utils'
 import view from './plugin'
 import SimpleNotification from './components/SimpleNotification.svelte'
 import { copyText } from './actionImpl'
 
 /**
- * Standard document attribute keys
+ * Value formatter function for custom field extraction
+ * @param attr - The attribute model
+ * @param card - The document object
+ * @param hierarchy - The hierarchy instance
+ * @param _class - The document class
+ * @param language - Current language
+ * @returns The formatted value, or undefined if this formatter doesn't apply
  */
+export type ValueFormatter = (
+  attr: AttributeModel,
+  card: Doc,
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  language: string | undefined
+) => Promise<string | undefined>
+
+/**
+ * Registry for value formatters by document class
+ * Plugins can register custom formatters for specific document classes
+ */
+const valueFormattersByClass = new Map<Ref<Class<Doc>>, ValueFormatter[]>()
+
+/**
+ * Global formatters (checked for all classes)
+ */
+const globalValueFormatters: ValueFormatter[] = []
+
+/**
+ * Register a value formatter for a specific document class
+ * @param _class - The document class this formatter applies to
+ * @param formatter - The formatter function to register
+ */
+export function registerValueFormatterForClass (_class: Ref<Class<Doc>>, formatter: ValueFormatter): void {
+  const formatters = valueFormattersByClass.get(_class) ?? []
+  formatters.push(formatter)
+  valueFormattersByClass.set(_class, formatters)
+}
+
+/**
+ * Register a global value formatter (applies to all classes)
+ * @param formatter - The formatter function to register
+ * @deprecated Use registerValueFormatterForClass for better performance and explicit class association
+ */
+export function registerValueFormatter (formatter: ValueFormatter): void {
+  globalValueFormatters.push(formatter)
+}
+
+/**
+ * Get formatters for a specific class (including parent classes)
+ */
+function getFormattersForClass (hierarchy: Hierarchy, _class: Ref<Class<Doc>>): ValueFormatter[] {
+  const formatters: ValueFormatter[] = []
+
+  // Get formatters for this class and all parent classes
+  let currentClass: Ref<Class<Doc>> | undefined = _class
+  while (currentClass !== undefined) {
+    const classFormatters = valueFormattersByClass.get(currentClass)
+    if (classFormatters !== undefined) {
+      formatters.push(...classFormatters)
+    }
+    const classDef: Class<Doc> | undefined = hierarchy.getClass(currentClass)
+    currentClass = classDef?.extends
+  }
+
+  // Add global formatters
+  formatters.push(...globalValueFormatters)
+
+  return formatters
+}
+
 enum DocumentAttributeKey {
   CreatedBy = 'createdBy',
   CreatedOn = 'createdOn',
@@ -45,9 +115,6 @@ enum DocumentAttributeKey {
   Name = 'name'
 }
 
-/**
- * Date format options for Intl.DateTimeFormat
- */
 enum DateFormatOption {
   Numeric = 'numeric',
   Short = 'short'
@@ -124,19 +191,141 @@ export function isIntlString (value: string): boolean {
   return parts.length >= 3 && parts.every((part) => part.length > 0)
 }
 
+async function loadPersonName (
+  personId: PersonId,
+  hierarchy: Hierarchy,
+  userCache?: Map<PersonId, string>
+): Promise<string> {
+  if (userCache !== undefined) {
+    const cachedName = userCache.get(personId)
+    if (cachedName !== undefined) {
+      return cachedName
+    }
+  }
+
+  try {
+    const client = getClient()
+    const person = await getPersonByPersonId(client, personId)
+    if (person !== null) {
+      const name = getName(hierarchy, person)
+      if (userCache !== undefined) {
+        userCache.set(personId, name)
+      }
+      return name
+    }
+  } catch (error) {
+    console.warn('Failed to lookup user name for PersonId:', personId, error)
+  }
+
+  return personId
+}
+
+/**
+ * Loads the actual viewlet configuration, including user preferences
+ * @param client - The client instance
+ * @param hierarchy - The hierarchy instance
+ * @param cardClass - The class to find viewlet for
+ * @param propsViewlet - Optional viewlet from props
+ * @param propsConfig - Optional config from props
+ * @returns The actual config to use, or undefined if no viewlet/config found
+ */
+async function loadViewletConfig (
+  client: Client,
+  hierarchy: Hierarchy,
+  cardClass: Ref<Class<Doc>>,
+  propsViewlet?: Viewlet,
+  propsConfig?: Array<string | BuildModelKey>
+): Promise<{ viewlet: Viewlet | undefined, config: Array<string | BuildModelKey> | undefined }> {
+  // If config is provided directly, use it
+  if (propsConfig !== undefined && propsConfig.length > 0) {
+    return { viewlet: propsViewlet, config: propsConfig }
+  }
+
+  // Find viewlet if not provided
+  let viewlet: Viewlet | undefined = propsViewlet
+  if (viewlet === undefined) {
+    // Search for viewlets attached to this class or any of its ancestor classes
+    // Viewlets attached to a parent class apply to child classes
+    const allClasses = [cardClass]
+    let currentClass = hierarchy.getClass(cardClass)
+    while (currentClass?.extends !== undefined) {
+      allClasses.push(currentClass.extends)
+      currentClass = hierarchy.getClass(currentClass.extends)
+    }
+    const viewlets = await client.findAll(viewPlugin.class.Viewlet, {
+      attachTo: { $in: allClasses },
+      descriptor: viewPlugin.viewlet.Table
+    })
+    // Prefer viewlet attached directly to the class, then parent classes
+    viewlet =
+      viewlets.find((v) => v.attachTo === cardClass) ??
+      viewlets.find((v) => allClasses.includes(v.attachTo)) ??
+      viewlets[0]
+  }
+
+  // Get user's viewlet preference to use the actual displayed config
+  let actualConfig: Array<string | BuildModelKey> | undefined
+  if (viewlet !== undefined) {
+    const preferences = await client.findAll(viewPlugin.class.ViewletPreference, {
+      space: core.space.Workspace,
+      attachedTo: viewlet._id
+    })
+    // Use preference config if available, otherwise fall back to viewlet config
+    actualConfig = preferences.length > 0 && preferences[0].config.length > 0 ? preferences[0].config : viewlet.config
+  }
+
+  return { viewlet, config: actualConfig }
+}
+
 async function formatValue (
   attr: AttributeModel,
   card: Doc,
   hierarchy: Hierarchy,
   _class: Ref<Class<Doc>>,
   language: string | undefined,
-  isFirstColumn: boolean = false
+  isFirstColumn: boolean = false,
+  userCache?: Map<PersonId, string>,
+  customFormatter?: ValueFormatter
 ): Promise<string> {
+  // Try custom formatter first (from actionProps)
+  if (customFormatter !== undefined) {
+    const formattedValue = await customFormatter(attr, card, hierarchy, _class, language)
+    if (formattedValue !== undefined) {
+      return formattedValue
+    }
+  }
+
+  // Try registered value formatters for this class
+  const formatters = getFormattersForClass(hierarchy, _class)
+  for (const formatter of formatters) {
+    const formattedValue = await formatter(attr, card, hierarchy, _class, language)
+    if (formattedValue !== undefined) {
+      return formattedValue
+    }
+  }
+
   let value: any
   if (attr.castRequest != null) {
     value = getObjectValue(attr.key.substring(attr.castRequest.length + 1), hierarchy.as(card, attr.castRequest))
   } else {
-    value = getObjectValue(attr.key, card)
+    // Handle lookup keys properly
+    if (attr.key.startsWith('$lookup.')) {
+      const lookupKey = attr.key.replace('$lookup.', '')
+      const lookupParts = lookupKey.split('.')
+      const cardWithLookup = card as any
+      const lookupObj = cardWithLookup.$lookup?.[lookupParts[0]]
+      if (lookupObj !== undefined && lookupObj !== null) {
+        if (lookupParts.length > 1) {
+          value = getObjectValue(lookupParts.slice(1).join('.'), lookupObj)
+        } else {
+          value = lookupObj
+        }
+      } else {
+        value = undefined
+      }
+    } else {
+      value = getObjectValue(attr.key, card)
+    }
   }
 
   // If this is an empty key but NOT the first column, return empty string
@@ -172,6 +361,9 @@ async function formatValue (
   if (typeof value === 'string') {
     if (isIntlString(value)) {
       return await translate(value as unknown as IntlString, {}, language)
+    }
+    if (attr.key === DocumentAttributeKey.CreatedBy || attr.key === DocumentAttributeKey.ModifiedBy) {
+      return await loadPersonName(value as PersonId, hierarchy, userCache)
     }
     return value
   }
@@ -250,14 +442,17 @@ async function createMarkdownLink (hierarchy: Hierarchy, card: Doc, value: strin
   }
 }
 
+export interface CopyAsMarkdownTableProps {
+  cardClass: Ref<Class<Doc>>
+  viewlet?: Viewlet
+  config?: Array<string | BuildModelKey>
+  valueFormatter?: ValueFormatter
+}
+
 export async function CopyAsMarkdownTable (
   doc: Doc | Doc[],
   evt: Event,
-  props: {
-    cardClass: Ref<Class<Doc>>
-    viewlet?: Viewlet
-    config?: Array<string | BuildModelKey>
-  }
+  props: CopyAsMarkdownTableProps
 ): Promise<void> {
   try {
     const docs = Array.isArray(doc) ? doc : doc !== undefined ? [doc] : []
@@ -271,27 +466,27 @@ export async function CopyAsMarkdownTable (
       return
     }
 
-    let viewlet: Viewlet | undefined = props.viewlet
-    if (viewlet === undefined) {
-      const viewlets = await client.findAll(viewPlugin.class.Viewlet, {
-        attachTo: props.cardClass,
-        descriptor: viewPlugin.viewlet.Table
-      })
-      viewlet = viewlets.length > 0 ? viewlets[0] : undefined
-    }
+    // Load viewlet and config (including user preferences)
+    const { viewlet, config: actualConfig } = await loadViewletConfig(
+      client,
+      hierarchy,
+      props.cardClass,
+      props.viewlet,
+      props.config
+    )
 
-    // If config is provided directly, use it; otherwise build from viewlet
+    // Build displayable model from config
     let displayableModel: AttributeModel[]
-    if (props.config !== undefined && props.config.length > 0) {
+    if (actualConfig !== undefined && actualConfig.length > 0) {
       const lookup =
         viewlet !== undefined
-          ? buildConfigLookup(hierarchy, props.cardClass, props.config, viewlet.options?.lookup)
+          ? buildConfigLookup(hierarchy, props.cardClass, actualConfig, viewlet.options?.lookup)
           : undefined
       const hiddenKeys = viewlet?.configOptions?.hiddenKeys ?? []
       const model = await buildModel({
         client,
         _class: props.cardClass,
-        keys: props.config.filter((key: string | BuildModelKey) => {
+        keys: actualConfig.filter((key: string | BuildModelKey) => {
           if (typeof key === 'string') {
             return !hiddenKeys.includes(key)
           }
@@ -309,6 +504,9 @@ export async function CopyAsMarkdownTable (
     }
 
     const language = getCurrentLanguage()
+
+    // Cache for user ID (PersonId) -> name mappings to reduce database calls
+    const userCache = new Map<PersonId, string>()
 
     const headers: string[] = []
     for (const attr of displayableModel) {
@@ -329,7 +527,16 @@ export async function CopyAsMarkdownTable (
       for (let i = 0; i < displayableModel.length; i++) {
         const attr = displayableModel[i]
         const isFirstColumn = i === 0
-        const value = await formatValue(attr, card, hierarchy, props.cardClass, language, isFirstColumn)
+        const value = await formatValue(
+          attr,
+          card,
+          hierarchy,
+          props.cardClass,
+          language,
+          isFirstColumn,
+          userCache,
+          props.valueFormatter
+        )
 
         // If this is the first column with empty key (title attribute), create a markdown link
         if (isFirstColumn && attr.key === '') {
