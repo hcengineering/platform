@@ -19,6 +19,7 @@ import core, {
   type Doc,
   type Hierarchy,
   type Ref,
+  type PersonId,
   concatLink,
   getDisplayTime,
   getObjectValue
@@ -28,14 +29,12 @@ import { addNotification, NotificationSeverity, locationToUrl } from '@hcenginee
 import { getCurrentLanguage } from '@hcengineering/theme'
 import viewPlugin, { type Viewlet, type AttributeModel, type BuildModelKey } from '@hcengineering/view'
 import presentation, { getClient } from '@hcengineering/presentation'
+import { getName, getPersonByPersonId } from '@hcengineering/contact'
 import { buildModel, buildConfigLookup, getObjectLinkFragment } from './utils'
 import view from './plugin'
 import SimpleNotification from './components/SimpleNotification.svelte'
 import { copyText } from './actionImpl'
 
-/**
- * Standard document attribute keys
- */
 enum DocumentAttributeKey {
   CreatedBy = 'createdBy',
   CreatedOn = 'createdOn',
@@ -45,9 +44,6 @@ enum DocumentAttributeKey {
   Name = 'name'
 }
 
-/**
- * Date format options for Intl.DateTimeFormat
- */
 enum DateFormatOption {
   Numeric = 'numeric',
   Short = 'short'
@@ -130,7 +126,8 @@ async function formatValue (
   hierarchy: Hierarchy,
   _class: Ref<Class<Doc>>,
   language: string | undefined,
-  isFirstColumn: boolean = false
+  isFirstColumn: boolean = false,
+  userCache?: Map<PersonId, string>
 ): Promise<string> {
   let value: any
   if (attr.castRequest != null) {
@@ -172,6 +169,32 @@ async function formatValue (
   if (typeof value === 'string') {
     if (isIntlString(value)) {
       return await translate(value as unknown as IntlString, {}, language)
+    }
+    // Map user IDs to names for createdBy and modifiedBy fields
+    if (attr.key === DocumentAttributeKey.CreatedBy || attr.key === DocumentAttributeKey.ModifiedBy) {
+      const personId = value as PersonId
+      // Check cache first
+      if (userCache !== undefined) {
+        const cachedName = userCache.get(personId)
+        if (cachedName !== undefined) {
+          return cachedName
+        }
+      }
+      try {
+        const client = getClient()
+        const person = await getPersonByPersonId(client, personId)
+        if (person !== null) {
+          const name = getName(hierarchy, person)
+          // Store in cache for future lookups
+          if (userCache !== undefined) {
+            userCache.set(personId, name)
+          }
+          return name
+        }
+      } catch (error) {
+        // If lookup fails, fall back to the original value
+        console.warn('Failed to lookup user name for PersonId:', value, error)
+      }
     }
     return value
   }
@@ -283,6 +306,9 @@ export async function CopyAsMarkdownTable (
 
     const language = getCurrentLanguage()
 
+    // Cache for user ID (PersonId) -> name mappings to reduce database calls
+    const userCache = new Map<PersonId, string>()
+
     const headers: string[] = []
     for (const attr of displayableModel) {
       let label: string
@@ -302,7 +328,7 @@ export async function CopyAsMarkdownTable (
       for (let i = 0; i < displayableModel.length; i++) {
         const attr = displayableModel[i]
         const isFirstColumn = i === 0
-        const value = await formatValue(attr, card, hierarchy, props.cardClass, language, isFirstColumn)
+        const value = await formatValue(attr, card, hierarchy, props.cardClass, language, isFirstColumn, userCache)
 
         // If this is the first column with empty key (title attribute), create a markdown link
         if (isFirstColumn && attr.key === '') {
