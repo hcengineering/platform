@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { CustomSequence, IndexKind, Ref, Type, TypeIdentifier as TypeId } from '@hcengineering/core'
+  import core, { Attribute, CustomSequence, IndexKind, Ref, Type, TypeIdentifier as TypeId } from '@hcengineering/core'
   import { TypeIdentifier } from '@hcengineering/model'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { EditBox, Label, Toggle } from '@hcengineering/ui'
@@ -21,8 +21,8 @@
   import setting from '../../plugin'
 
   export let type: TypeId | undefined
+  export let attribute: Attribute<TypeId> | undefined
   export let editable: boolean = true
-  export let onTypePatch: ((type: Type<any>) => Promise<void>) | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -31,7 +31,7 @@
 
   let identifier: string = ''
   let sequences: CustomSequence[] = []
-  let showInPresenter = type?.showInPresenter ?? false
+  let showInPresenter = attribute?.showInPresenter ?? false
 
   $: identifiers = new Set(sequences.filter((p) => p._id !== seq).map((s) => s.prefix.toUpperCase()))
 
@@ -56,17 +56,14 @@
         attachedTo: core.class.CustomSequence
       })
       seq = newSeq
-      dispatch('change', { type: TypeIdentifier(newSeq, showInPresenter), index: IndexKind.FullText })
+      dispatch('change', { type: TypeIdentifier(newSeq), index: IndexKind.FullText, extra: { showInPresenter } })
     }
   }
 
   async function changeShowing () {
     if (seq === undefined) return
-    const type = TypeIdentifier(seq, showInPresenter)
-    dispatch('change', { type, index: IndexKind.FullText })
-    if (!editable) {
-      onTypePatch?.(type)
-    }
+    const type = TypeIdentifier(seq)
+    dispatch('change', { type, index: IndexKind.FullText, extra: { showInPresenter } })
   }
 </script>
 

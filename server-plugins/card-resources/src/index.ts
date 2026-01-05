@@ -70,6 +70,7 @@ async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerCo
       for (const viewlet of viewlets) {
         const updatedConfig = [...viewlet.config]
         // let push it after grow for the list
+        if (viewlet.descriptor === view.viewlet.RelationshipTable) continue
         if (viewlet.descriptor === view.viewlet.List) {
           const index = viewlet.config.findIndex((p) => typeof p !== 'string' && p.displayProps?.grow === true)
           if (index !== -1) {

@@ -69,6 +69,7 @@
     "Relations": "関係一覧",
     "AddRelation": "関係を追加",
     "PersonId": "人物",
-    "AccountId": "アカウント"
+    "AccountId": "アカウント",
+    "Version": "バージョン"
   }
 }

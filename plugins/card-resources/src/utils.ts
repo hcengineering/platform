@@ -34,8 +34,8 @@ import core, {
   type RelatedDocument,
   SortingOrder,
   type Space,
+  toRank,
   type TxOperations,
-  type TypeIdentifier,
   type WithLookup
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
@@ -113,7 +113,7 @@ async function cloneCard (
     : [core.class.TypeCollaborativeDoc, core.class.TypeIdentifier]
 
   for (const [key, attr] of attrs) {
-    if (attr.readonly !== true && attr.hidden !== true) {
+    if (attr.hidden !== true) {
       if (attr.type._class === core.class.Collection) {
         ;(props as any)[key] = 0
       } else if (!skipClasses.includes(attr.type._class)) {
@@ -256,19 +256,28 @@ export async function getCardTitle (client: TxOperations, ref: Ref<Card>, doc?: 
   const object = doc ?? (await client.findOne(card.class.Card, { _id: ref }))
   if (object === undefined) throw new Error(`Card not found, _id: ${ref}`)
   const h = client.getHierarchy()
-  const attrs = h.getAllAttributes(object._class, core.class.Doc)
+  const attrs = [...h.getAllAttributes(object._class, core.class.Doc).values()].sort((a, b) => {
+    const rankA = a.rank ?? toRank(a._id) ?? ''
+    const rankB = b.rank ?? toRank(b._id) ?? ''
+    return rankA.localeCompare(rankB)
+  })
   const res: string[] = []
-  for (const [k, v] of attrs) {
-    if (v.type._class === core.class.TypeIdentifier) {
-      const type = v.type as TypeIdentifier
-      const str = (object as any)[k]
-      if (type.showInPresenter === true && str !== undefined) {
-        res.push(str)
+  for (const attr of attrs) {
+    const val = (object as any)[attr.name]
+    if (attr.showInPresenter === true && val !== undefined) {
+      if (typeof val === 'string' || typeof val === 'number') {
+        res.push(val.toString())
+      } else if (typeof val === 'boolean') {
+        res.push(val ? '✅' : '❌️')
       }
     }
   }
+
   const ids = res.join(' ')
-  const version = object.isLatest === true ? '' : `v${object.version ?? 1}`
+  let version = ''
+  if (h.classHierarchyMixin(object._class, core.mixin.VersionableClass)?.enabled === true) {
+    version = `v${object.version ?? 1}`
+  }
   return ids + ' ' + object.title + ' ' + version
 }
 

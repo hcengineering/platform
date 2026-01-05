@@ -66,6 +66,7 @@
     "NewVersion": "新版本",
     "Versioning": "版本控制",
     "EnableVersioning": "启用版本控制",
-    "EnableVersioningConfirm": "您要启用版本控制吗？"
+    "EnableVersioningConfirm": "您要启用版本控制吗？",
+    "NewVersionConfirmation": "您要创建一个新版本吗？"
   }
 }

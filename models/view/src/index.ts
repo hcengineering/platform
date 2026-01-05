@@ -36,6 +36,7 @@ import presentation from '@hcengineering/model-presentation'
 import { type Asset, type IntlString, type Resource, type Status } from '@hcengineering/platform'
 import { type AnyComponent, type LabelAndProps, type Location } from '@hcengineering/ui/src/types'
 import {
+  type TypeEditor,
   type Action,
   type ActionCategory,
   type ActivityAttributePresenter,
@@ -210,6 +211,11 @@ export class TListItemPresenter extends TClass implements ListItemPresenter {
 export class TObjectEditor extends TClass implements ObjectEditor {
   editor!: AnyComponent
   pinned?: boolean
+}
+
+@Mixin(view.mixin.TypeEditor, core.class.Class)
+export class TTypeEditor extends TClass implements TypeEditor {
+  editor!: AnyComponent
 }
 
 @Mixin(view.mixin.ObjectEditorHeader, core.class.Class)
@@ -493,7 +499,8 @@ export function createModel (builder: Builder): void {
     TAttrPresenter,
     TLinkIdProvider,
     TCustomObjectLinkProvider,
-    TBaseQuery
+    TBaseQuery,
+    TTypeEditor
   )
 
   classPresenter(

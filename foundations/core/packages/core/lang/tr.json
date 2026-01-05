@@ -69,6 +69,7 @@
     "Relations": "İlişkiler",
     "AddRelation": "İlişki ekle",
     "PersonId": "Kişi",
-    "AccountId": "Hesap"
+    "AccountId": "Hesap",
+    "Version": "Sürüm"
   }
 }

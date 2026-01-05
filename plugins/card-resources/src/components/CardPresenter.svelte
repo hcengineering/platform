@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Card, MasterTag } from '@hcengineering/card'
-  import core, { Ref, TypeIdentifier } from '@hcengineering/core'
+  import core, { Ref, toRank } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, tooltip } from '@hcengineering/ui'
@@ -58,17 +58,22 @@
 
   $: ids = getIds(cardObj)
 
-  function getIds (val: Card | undefined): string {
-    if (val === undefined) return ''
+  function getIds (object: Card | undefined): string {
+    if (object === undefined) return ''
     const h = client.getHierarchy()
-    const attrs = h.getAllAttributes(val._class, core.class.Doc)
+    const attrs = [...h.getAllAttributes(object._class, core.class.Doc).values()].sort((a, b) => {
+      const rankA = a.rank ?? toRank(a._id) ?? ''
+      const rankB = b.rank ?? toRank(b._id) ?? ''
+      return rankA.localeCompare(rankB)
+    })
     const res: string[] = []
-    for (const [k, v] of attrs) {
-      if (v.type._class === core.class.TypeIdentifier) {
-        const type = v.type as TypeIdentifier
-        const str = (val as any)[k]
-        if (type.showInPresenter === true && str !== undefined) {
-          res.push(str)
+    for (const attr of attrs) {
+      const val = (object as any)[attr.name]
+      if (attr.showInPresenter === true && val !== undefined) {
+        if (typeof val === 'string' || typeof val === 'number') {
+          res.push(val.toString())
+        } else if (typeof val === 'boolean') {
+          res.push(val ? '✅' : '❌️')
         }
       }
     }

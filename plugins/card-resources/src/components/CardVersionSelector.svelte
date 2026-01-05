@@ -17,8 +17,8 @@
 <script lang="ts">
   import { Card, cardId } from '@hcengineering/card'
   import core, { Ref } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { Button, DropdownLabels, DropdownTextItem, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { Button, DropdownLabels, DropdownTextItem, getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
   import card from '../plugin'
   import { createNewVersion } from '../utils'
 
@@ -71,8 +71,14 @@
   }
 
   async function newVersion (): Promise<void> {
-    const _id = await createNewVersion(value)
-    navigateTo(_id)
+    showPopup(MessageBox, {
+      label: card.string.NewVersion,
+      message: card.string.NewVersionConfirmation,
+      action: async () => {
+        const _id = await createNewVersion(value)
+        navigateTo(_id)
+      }
+    })
   }
 </script>
 

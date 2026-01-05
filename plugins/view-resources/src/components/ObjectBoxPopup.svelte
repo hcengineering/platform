@@ -50,6 +50,7 @@
   {groupBy}
   bind:selectedObjects
   bind:ignoreObjects
+  showVersions
   {shadows}
   {create}
   on:update

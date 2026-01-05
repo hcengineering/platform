@@ -66,6 +66,7 @@
     "NewVersion": "Yeni sürüm",
     "Versioning": "Sürümleme",
     "EnableVersioning": "Sürümlemeyi etkinleştir",
-    "EnableVersioningConfirm": "Sürümlemeyi etkinleştirmek istiyor musunuz?"
+    "EnableVersioningConfirm": "Sürümlemeyi etkinleştirmek istiyor musunuz?",
+    "NewVersionConfirmation": "Yeni bir sürüm oluşturmak istiyor musunuz?"
   }
 }

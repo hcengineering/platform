@@ -437,9 +437,6 @@ export function createModel (builder: Builder): void {
       hiddenKeys: ['name', 'description'],
       sortable: true
     },
-    baseQuery: {
-      isLatest: true
-    },
     config: ['', 'members', 'private', 'archived'],
     viewOptions: {
       groupBy: [],

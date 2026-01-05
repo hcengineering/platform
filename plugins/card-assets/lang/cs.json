@@ -66,6 +66,7 @@
     "NewVersion": "Nová verze",
     "Versioning": "Verzování",
     "EnableVersioning": "Povolit verzování",
-    "EnableVersioningConfirm": "Chcete povolit verzování?"
+    "EnableVersioningConfirm": "Chcete povolit verzování?",
+    "NewVersionConfirmation": "Chcete vytvořit novou verzi?"
   }
 }

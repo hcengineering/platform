@@ -192,10 +192,6 @@
     gtotal = total
   }
 
-  const showContextMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
-    showMenu(ev, { object, baseMenuClass })
-  }
-
   function changeSorting (key: string | string[]): void {
     if (key === '') {
       return
@@ -229,6 +225,7 @@
     }
     return { ...attribute.props, space: object.space, ...readonlyParams }
   }
+
   function getValue (attribute: AttributeModel, object: Doc): any {
     if (attribute.castRequest) {
       return getObjectValue(
@@ -240,6 +237,11 @@
       return object
     }
     return getObjectValue(attribute.key, object)
+  }
+
+  function showContextMenu (ev: MouseEvent, object: Doc | undefined): void {
+    if (object === undefined) return
+    showMenu(ev, { object })
   }
 
   function onChange (value: any, doc: Doc, key: string, attribute: AnyAttribute): void {
@@ -281,16 +283,13 @@
   async function build (modelOptions: BuildModelOptions): Promise<void> {
     isBuildingModel = true
     const res = await buildModel(modelOptions)
+    res.sort((a, b) => {
+      const indexA = a.key.startsWith(assoc) ? 1 : 0
+      const indexB = b.key.startsWith(assoc) ? 1 : 0
+      return indexA - indexB
+    })
     model = res
     isBuildingModel = false
-  }
-
-  function contextHandler (object: Doc, row: number): (ev: MouseEvent) => void {
-    return (ev) => {
-      if (!readonly) {
-        void showContextMenu(ev, object, row)
-      }
-    }
   }
 
   let permissionsStore: Readable<PermissionsStore> | undefined = undefined
@@ -610,6 +609,9 @@
                   class:empty={cell.object === undefined}
                   class:first={i === 0}
                   class:cursor-pointer={cell.parentObject}
+                  on:contextmenu={(e) => {
+                    showContextMenu(e, cell.object)
+                  }}
                   on:click={(e) => {
                     clickHandler(e, cell)
                   }}

@@ -1122,41 +1122,83 @@ export class LiveQuery implements WithTx, Client {
       if (q.result instanceof Promise) {
         q.result = await q.result
       }
-      const direct = assoc[1] === 1
-      const res = findRelationDoc(q.result.getDocs(), q.options.associations, relation)
-      if (res === undefined) return
-      const association = this.getModel().findObject(assoc[0])
-      if (association === undefined) return
-      const nestedAssoc = assoc[2]
-      const options: FindOptions<Doc> | undefined =
-        nestedAssoc !== undefined
-          ? {
-              associations: nestedAssoc
-            }
-          : undefined
-      const docToPush = await this.findOne(
-        direct ? association.classB : association.classA,
-        {
-          _id: res.targetId
-        },
-        options
-      )
-      if (docToPush === undefined) return
-      if (res.doc.$associations === undefined) {
-        res.doc.$associations = {}
+      const res = await this.fillRelationDoc(q.result, q.result.getDocs(), q.options.associations, relation)
+      if (res) {
+        this.queriesToUpdate.set(q.id, q)
       }
-      const key = direct ? 'b' : 'a'
-      const arr = res.doc.$associations?.[`${assoc[0]}_${key}`] ?? []
-      const exists = arr.findIndex((p) => p._id === docToPush._id)
-      if (exists !== -1) {
-        arr[exists] = docToPush
-      } else {
-        arr.push(docToPush)
-      }
-      res.doc.$associations[`${assoc[0]}_${key}`] = arr
-      q.result.updateDoc(res.doc, false)
-      this.queriesToUpdate.set(q.id, q)
     }
+  }
+
+  async fillRelationDoc (
+    qRes: ResultArray,
+    docs: WithLookup<Doc>[],
+    associations: AssociationQuery[] | undefined,
+    relation: Relation
+  ): Promise<boolean> {
+    if (associations === undefined) return false
+    let result = false
+    for (const assoc of associations) {
+      if (assoc[0] === relation.association) {
+        const association = this.getModel().findObject(assoc[0])
+        if (association === undefined) continue
+        const sourceId = assoc[1] === 1 ? relation.docA : relation.docB
+        const targetId = assoc[1] === 1 ? relation.docB : relation.docA
+        const direct = assoc[1] === 1
+        for (const doc of docs) {
+          if (doc._id === sourceId) {
+            const nestedAssoc = assoc[2]
+            const options: FindOptions<Doc> | undefined =
+              nestedAssoc !== undefined
+                ? {
+                    associations: nestedAssoc
+                  }
+                : undefined
+            const docToPush = await this.findOne(
+              direct ? association.classB : association.classA,
+              {
+                _id: targetId
+              },
+              options
+            )
+            if (docToPush === undefined) continue
+            if (doc.$associations === undefined) {
+              doc.$associations = {}
+            }
+            const key = direct ? 'b' : 'a'
+            const arr = doc.$associations?.[`${assoc[0]}_${key}`] ?? []
+            const exists = arr.findIndex((p) => p._id === docToPush._id)
+            if (exists !== -1) {
+              arr[exists] = docToPush
+            } else {
+              arr.push(docToPush)
+            }
+            doc.$associations[`${assoc[0]}_${key}`] = arr
+            if (qRes.findDoc(doc._id) !== undefined) {
+              qRes.updateDoc(doc, false)
+            }
+            result = true
+          }
+        }
+      }
+    }
+    for (const assoc of associations) {
+      if (assoc[2] !== undefined) {
+        const key = assoc[1] === 1 ? 'b' : 'a'
+        for (const doc of docs) {
+          const arr = doc.$associations?.[`${assoc[0]}_${key}`] ?? []
+          if (arr.length > 0) {
+            const res = await this.fillRelationDoc(qRes, arr, assoc[2], relation)
+            if (res) {
+              result = true
+              if (qRes.findDoc(doc._id) !== undefined) {
+                qRes.updateDoc(doc, false)
+              }
+            }
+          }
+        }
+      }
+    }
+    return result
   }
 
   private async handleDocAddLookup (q: Query, doc: Doc): Promise<void> {
@@ -1641,50 +1683,6 @@ function findAssociation (
       const res = findAssociation(assoc[2], association)
       if (res !== undefined) {
         return assoc
-      }
-    }
-  }
-}
-
-function findRelationDoc (
-  result: WithLookup<Doc>[],
-  associations: AssociationQuery[] | undefined,
-  relation: Relation
-):
-  | {
-    doc: WithLookup<Doc>
-    targetId: Ref<Doc>
-  }
-  | undefined {
-  if (associations === undefined) return
-  for (const assoc of associations) {
-    if (assoc[0] === relation.association) {
-      const sourceId = assoc[1] === 1 ? relation.docA : relation.docB
-      const targetId = assoc[1] === 1 ? relation.docB : relation.docA
-      for (const doc of result) {
-        if (doc._id === sourceId) {
-          return {
-            doc,
-            targetId
-          }
-        }
-      }
-    }
-  }
-  for (const assoc of associations) {
-    if (assoc[2] !== undefined) {
-      const key = assoc[1] === 1 ? 'b' : 'a'
-      for (const doc of result) {
-        const arr = doc.$associations?.[`${assoc[0]}_${key}`] ?? []
-        if (arr.length > 0) {
-          const res = findRelationDoc(arr, assoc[2], relation)
-          if (res !== undefined) {
-            return {
-              doc,
-              targetId: res.doc._id
-            }
-          }
-        }
       }
     }
   }

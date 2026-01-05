@@ -295,7 +295,8 @@ export default plugin(coreId, {
     AutoJoin: '' as IntlString,
     AutoJoinDescr: '' as IntlString,
     RBAC: '' as IntlString,
-    RBACDescr: '' as IntlString
+    RBACDescr: '' as IntlString,
+    Version: '' as IntlString
   },
   descriptor: {
     SpacesType: '' as Ref<SpaceTypeDescriptor>

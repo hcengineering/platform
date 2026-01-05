@@ -117,7 +117,7 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
       if (!hierarchy.isDerived(createTx.objectClass, cardPlugin.class.Card)) return
 
       // We don't need to start new processes for new version
-      if (doc.baseId !== doc._id) return
+      if (doc.baseId !== undefined && doc.baseId !== doc._id) return
 
       const ancestors = hierarchy
         .getAncestors(createTx.objectClass)
