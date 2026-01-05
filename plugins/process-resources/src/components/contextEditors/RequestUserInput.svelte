@@ -13,65 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AnyAttribute, Class, Doc, generateId, Ref, RefTo } from '@hcengineering/core'
-  import presentation, { Card, findAttributeEditor, getClient } from '@hcengineering/presentation'
-  import { Process, Transition } from '@hcengineering/process'
-  import { AnyComponent, Component, Label } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { Ref, Space } from '@hcengineering/core'
+  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import { ExecutionContext, Process, SelectedUserRequest, Transition } from '@hcengineering/process'
+  import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import TransitionPresenter from '../settings/TransitionPresenter.svelte'
+  import RequestUserInputAttribute from './RequestUserInputAttribute.svelte'
 
   export let processId: Ref<Process>
+  export let space: Ref<Space>
   export let transition: Ref<Transition>
-  export let key: string
-  export let _class: Ref<Class<Doc>>
-  export let value: any | undefined = undefined
+  export let inputs: SelectedUserRequest[]
+  export let values: ExecutionContext
 
   const dispatch = createEventDispatcher()
   const client = getClient()
-  const hierarchy = client.getHierarchy()
   const model = client.getModel()
-  const attribute = hierarchy.findAttribute(_class, key) ?? (key === '' ? mockAttribute(_class) : undefined)
-
-  function mockAttribute (_class: Ref<Class<Doc>>): AnyAttribute {
-    const type: RefTo<Doc> = {
-      label: core.string.Ref,
-      _class: core.class.RefTo,
-      to: _class
-    }
-    return {
-      attributeOf: _class,
-      name: '',
-      type,
-      _id: generateId(),
-      space: core.space.Model,
-      modifiedOn: 0,
-      modifiedBy: core.account.System,
-      _class: core.class.Attribute,
-      label: core.string.Object
-    }
-  }
 
   function save (): void {
-    dispatch('close', { value })
-  }
-
-  let editor: AnyComponent | undefined
-
-  function getEditor (_class: Ref<Class<Doc>>, key: string): void {
-    if (key === '' || key === '_id') {
-      const mixin = hierarchy.classHierarchyMixin(_class, view.mixin.AttributeEditor)
-      if (mixin?.inlineEditor !== undefined) {
-        editor = mixin.inlineEditor
-        return
-      }
-    }
-    editor = findAttributeEditor(client, _class, key)
-  }
-
-  function onChange (val: any | undefined): void {
-    value = val
+    dispatch('close', { value: values })
   }
 
   export function canClose (): boolean {
@@ -80,13 +42,11 @@
 
   const transitionVal = model.findObject(transition)
   const processVal = model.findObject(processId)
-
-  $: getEditor(_class, key)
 </script>
 
 <Card
   on:close
-  width={'menu'}
+  width={'small'}
   label={plugin.string.EnterValue}
   canSave
   okAction={save}
@@ -101,27 +61,30 @@
   {#if transitionVal}
     <TransitionPresenter transition={transitionVal} />
   {/if}
-  {#if attribute}
-    <Label label={attribute.label} />:
-  {/if}
-  {#if editor}
-    <div class="w-full mt-2">
-      <Component
-        is={editor}
-        props={{
-          label: attribute?.label,
-          placeholder: attribute?.label,
-          kind: 'ghost',
-          size: 'large',
-          width: '100%',
-          justify: 'left',
-          type: attribute?.type,
-          showNavigate: false,
-          value,
-          onChange,
-          focus
+  <div class="grid">
+    {#each inputs as input}
+      <RequestUserInputAttribute
+        key={input.key}
+        _class={input._class}
+        {space}
+        on:change={(e) => {
+          values[input.id] = e.detail
         }}
       />
-    </div>
-  {/if}
+    {/each}
+  </div>
 </Card>
+
+<style lang="scss">
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    grid-auto-rows: minmax(2rem, max-content);
+    justify-content: start;
+    align-items: center;
+    row-gap: 0.5rem;
+    column-gap: 1rem;
+    width: calc(100% - 4rem);
+    height: min-content;
+  }
+</style>
