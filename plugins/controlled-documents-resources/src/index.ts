@@ -117,6 +117,8 @@ import {
   getDocumentMetaTitle
 } from './utils'
 
+import './docTableFormatter'
+
 export { DocumentStatusTag, DocumentTitle, DocumentVersionPresenter, StatePresenter }
 
 const toObjectSearchResult = (e: WithLookup<DocumentMeta>): ObjectSearchResult => ({

@@ -217,6 +217,14 @@ export {
 } from './utils'
 export * from './viewOptions'
 export {
+  CopyAsMarkdownTable,
+  type CopyAsMarkdownTableProps,
+  type ValueFormatter,
+  registerValueFormatterForClass,
+  registerValueFormatter,
+  isIntlString
+} from './copyAsMarkdownTable'
+export {
   ArrayEditor,
   BooleanEditor,
   BooleanPresenter,
