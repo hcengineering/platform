@@ -478,6 +478,7 @@ const pluginState = plugin(trackerId, {
     Issue: '' as Ref<TaskTypeDescriptor>
   },
   action: {
+    CopyAsMarkdownTable: '' as Ref<Action<Doc, any>>,
     SetDueDate: '' as Ref<Action<Doc, any>>,
     SetParent: '' as Ref<Action<Doc, any>>,
     SetStatus: '' as Ref<Action>,

@@ -93,6 +93,12 @@ async function formatControlledDocumentValue (
 
   const doc = card as unknown as Record<string, unknown>
 
+  // Handle labels field - check props.key or sortingKey when key is empty
+  if (attr.key === '' && (attr.props?.key === 'labels' || attr.sortingKey === 'labels')) {
+    // TODO: request labels and display them
+    return ''
+  }
+
   // Handle empty key with specific presenters (for ID, Title, Status, Version)
   if (attr.key === '') {
     // Translate label to determine which field to extract
@@ -168,8 +174,6 @@ async function formatControlledDocumentValue (
 
   // Handle labels field - return empty string for collection size (labels are displayed via presenter, not as raw data)
   if (attr.key === 'labels') {
-    // Labels is a CollectionSize (number), but we don't want to display the count
-    // Instead, return empty string - labels should be handled by a custom presenter if needed
     return ''
   }
 
