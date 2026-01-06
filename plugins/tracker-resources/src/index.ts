@@ -101,6 +101,7 @@ import {
   resolveLocation
 } from './issues'
 import tracker from './plugin'
+import './issueTableFormatter'
 
 import MilestoneEditor from './components/milestones/MilestoneEditor.svelte'
 import MilestonePresenter from './components/milestones/MilestonePresenter.svelte'
