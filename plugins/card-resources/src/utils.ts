@@ -100,6 +100,7 @@ export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: ()
 async function cloneCard (
   origin: Card,
   overrideProps: Record<string, any>,
+  relationToCopy: Set<string> | 'all',
   copyIds: boolean = false
 ): Promise<Ref<Card>> {
   const client = getClient()
@@ -149,18 +150,22 @@ async function cloneCard (
   }
 
   for (const rel of relationsA) {
-    await ops.createDoc(core.class.Relation, core.space.Workspace, {
-      docA: targetId,
-      docB: rel.docB,
-      association: rel.association
-    })
+    if (relationToCopy === 'all' || relationToCopy.has(`${rel.association}_b`)) {
+      await ops.createDoc(core.class.Relation, core.space.Workspace, {
+        docA: targetId,
+        docB: rel.docB,
+        association: rel.association
+      })
+    }
   }
   for (const rel of relationsB) {
-    await ops.createDoc(core.class.Relation, core.space.Workspace, {
-      docA: rel.docA,
-      docB: targetId,
-      association: rel.association
-    })
+    if (relationToCopy === 'all' || relationToCopy.has(`${rel.association}_a`)) {
+      await ops.createDoc(core.class.Relation, core.space.Workspace, {
+        docA: rel.docA,
+        docB: targetId,
+        association: rel.association
+      })
+    }
   }
   await ops.commit()
 
@@ -176,9 +181,13 @@ async function cloneCard (
 }
 
 export async function duplicateCard (origin: Card): Promise<void> {
-  const targetId = await cloneCard(origin, {
-    title: `${origin.title} (Copy)`
-  })
+  const targetId = await cloneCard(
+    origin,
+    {
+      title: `${origin.title} (Copy)`
+    },
+    'all'
+  )
 
   const loc = getCurrentLocation()
   loc.path[2] = cardId
@@ -328,13 +337,14 @@ export async function cardFactory (props: Record<string, any> = {}): Promise<Ref
   return await createCard(_class, space, props.data, props.content)
 }
 
-export async function createNewVersion (card: Card): Promise<Ref<Card>> {
+export async function createNewVersion (card: Card, relationsToCopy: Set<string>): Promise<Ref<Card>> {
   return await cloneCard(
     card,
     {
       baseId: card.baseId,
       docCreatedBy: card.docCreatedBy ?? card.createdBy ?? card.modifiedBy
     },
+    relationsToCopy,
     true
   )
 }

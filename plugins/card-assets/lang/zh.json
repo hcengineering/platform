@@ -67,6 +67,7 @@
     "Versioning": "版本控制",
     "EnableVersioning": "启用版本控制",
     "EnableVersioningConfirm": "您要启用版本控制吗？",
-    "NewVersionConfirmation": "您要创建一个新版本吗？"
+    "NewVersionConfirmation": "您想创建一个新版本吗？",
+    "RelationCopyDescr": "您想复制哪些关系？"
   }
 }
