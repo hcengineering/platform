@@ -10,7 +10,8 @@ import core, {
   type ArrOf,
   type Data,
   type AttachedDoc,
-  type AttachedData
+  type AttachedData,
+  type TypeIdentifier
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
@@ -70,19 +71,28 @@ function strip<T extends Doc> (doc: T): Omit<T, 'modifiedBy' | 'modifiedOn' | 'c
   return rest
 }
 
-function exportAttribute (
+async function exportAttribute (
   attr: AnyAttribute,
   m: ModelDb,
   h: Hierarchy
-): {
+): Promise<{
     docs: Doc[]
     required: Array<Ref<Class<Doc>>>
-  } {
+  }> {
+  const client = getClient()
   const docs: Doc[] = []
   const required: Array<Ref<Class<Doc>>> = []
   docs.push(attr)
 
   docs.push(...m.findAllSync(core.class.AttributePermission, { attribute: attr._id }))
+  if (attr.type._class === core.class.TypeIdentifier) {
+    const of = (attr.type as TypeIdentifier).of
+    const seq = await client.findOne(core.class.Sequence, { _id: of })
+    if (seq !== undefined) {
+      seq.sequence = 0
+      docs.push(seq)
+    }
+  }
   if (attr.type._class === core.class.EnumOf) {
     const of = (attr.type as EnumOf).of
     const val = m.findObject(of)
@@ -126,7 +136,7 @@ async function exportType (_id: Ref<Class<Doc>>, processed: Set<Ref<Doc>>): Prom
 
   const attrs = h.getOwnAttributes(_id)
   for (const attr of attrs) {
-    const at = exportAttribute(attr[1], m, h)
+    const at = await exportAttribute(attr[1], m, h)
     res.push(...at.docs)
     required.push(...at.required)
   }
