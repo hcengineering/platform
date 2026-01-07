@@ -68,6 +68,8 @@
     "EnableVersioning": "Versionsverwaltung aktivieren",
     "EnableVersioningConfirm": "Möchten Sie die Versionsverwaltung aktivieren?",
     "NewVersionConfirmation": "Möchten Sie eine neue Version erstellen?",
-    "RelationCopyDescr": "Welche Beziehungen möchten Sie kopieren?"
+    "RelationCopyDescr": "Welche Beziehungen möchten Sie kopieren?",
+    "Import": "Importieren",
+    "Export": "Exportieren"
   }
 }

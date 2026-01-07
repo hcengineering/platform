@@ -68,6 +68,8 @@
     "EnableVersioning": "Habilitar control de versiones",
     "EnableVersioningConfirm": "¿Desea habilitar el control de versiones?",
     "NewVersionConfirmation": "¿Desea crear una nueva versión?",
-    "RelationCopyDescr": "¿Qué relaciones quieres copiar?"
+    "RelationCopyDescr": "¿Qué relaciones quieres copiar?",
+    "Import": "Importar",
+    "Export": "Exportar"
   }
 }

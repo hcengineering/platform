@@ -606,6 +606,10 @@ export function createModel (builder: Builder): void {
     props: {}
   })
 
+  builder.createDoc(card.class.ExportExtension, core.space.Model, {
+    func: process.function.ExportProcess
+  })
+
   builder.createDoc(
     card.class.CardSection,
     core.space.Model,
