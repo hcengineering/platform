@@ -67,6 +67,7 @@
     "Versioning": "Verzování",
     "EnableVersioning": "Povolit verzování",
     "EnableVersioningConfirm": "Chcete povolit verzování?",
-    "NewVersionConfirmation": "Chcete vytvořit novou verzi?"
+    "NewVersionConfirmation": "Chcete vytvořit novou verzi?",
+    "RelationCopyDescr": "Které vztahy chcete zkopírovat?"
   }
 }

@@ -67,6 +67,7 @@
     "Versioning": "Управление версиями",
     "EnableVersioning": "Включить управление версиями",
     "EnableVersioningConfirm": "Вы хотите включить управление версиями?",
-    "NewVersionConfirmation": "Вы хотите создать новую версию?"
+    "NewVersionConfirmation": "Вы хотите создать новую версию?",
+    "RelationCopyDescr": "Какие связи вы хотите скопировать?"
   }
 }

@@ -132,6 +132,7 @@ export default mergeIds(cardId, card, {
     Versioning: '' as IntlString,
     EnableVersioning: '' as IntlString,
     EnableVersioningConfirm: '' as IntlString,
-    NewVersionConfirmation: '' as IntlString
+    NewVersionConfirmation: '' as IntlString,
+    RelationCopyDescr: '' as IntlString
   }
 })

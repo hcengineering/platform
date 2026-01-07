@@ -29,9 +29,11 @@
   let associations: Association[] = []
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  $: descendants = new Set(hierarchy.getDescendants(masterTag._id))
-
-  $: filtered = associations.filter((it) => descendants.has(it.classA) || descendants.has(it.classB))
+  $: targets = new Set([
+    ...hierarchy.getAncestors(masterTag._id),
+    ...hierarchy.getDescendants(masterTag._id).filter((p) => hierarchy.isMixin(p))
+  ])
+  $: filtered = associations.filter((it) => targets.has(it.classA) || targets.has(it.classB))
   const query = createQuery()
 
   query.query(core.class.Association, {}, (res) => {

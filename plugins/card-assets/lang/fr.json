@@ -67,6 +67,7 @@
     "Versioning": "Gestion des versions",
     "EnableVersioning": "Activer la gestion des versions",
     "EnableVersioningConfirm": "Voulez-vous activer la gestion des versions ?",
-    "NewVersionConfirmation": "Voulez-vous créer une nouvelle version ?"
+    "NewVersionConfirmation": "Voulez-vous créer une nouvelle version ?",
+    "RelationCopyDescr": "Quelles relations souhaitez-vous copier ?"
   }
 }
