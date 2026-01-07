@@ -491,7 +491,6 @@ export async function getTransitionUserInput (
       await promise
     }
   }
-  console.log('changed', userContext)
   return changed ? userContext : undefined
 }
 
