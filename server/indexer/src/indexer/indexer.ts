@@ -313,14 +313,16 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               await control?.heartbeat()
 
               if (this.hierarchy.isDerived(v, card.class.Card)) {
-                for (const card of values) {
-                  processedCommunication += await this.indexCommunication(
-                    ctx,
-                    control,
-                    pushQueue,
-                    card as Card,
-                    processedCommunication
-                  )
+                if (process.env.COMMUNICATION_API_ENABLED === 'true') {
+                  for (const card of values) {
+                    processedCommunication += await this.indexCommunication(
+                      ctx,
+                      control,
+                      pushQueue,
+                      card as Card,
+                      processedCommunication
+                    )
+                  }
                 }
               }
               await control?.heartbeat()
