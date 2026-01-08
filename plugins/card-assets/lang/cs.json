@@ -68,6 +68,8 @@
     "EnableVersioning": "Povolit verzování",
     "EnableVersioningConfirm": "Chcete povolit verzování?",
     "NewVersionConfirmation": "Chcete vytvořit novou verzi?",
-    "RelationCopyDescr": "Které vztahy chcete zkopírovat?"
+    "RelationCopyDescr": "Které vztahy chcete zkopírovat?",
+    "Import": "Importovat",
+    "Export": "Exportovat"
   }
 }

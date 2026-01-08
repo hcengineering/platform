@@ -32,7 +32,7 @@
   let versions: Card[] = []
 
   const query = createQuery()
-  $: if (enabled) {
+  $: if (enabled === true) {
     query.query(
       card.class.Card,
       {

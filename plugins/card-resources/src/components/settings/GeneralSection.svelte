@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
+  import core from '@hcengineering/core'
   import { TypeNumber } from '@hcengineering/model'
   import { getEmbeddedLabel, translateCB } from '@hcengineering/platform'
-  import { getClient, IconWithEmoji, MessageBox } from '@hcengineering/presentation'
+  import { getClient, IconDownload, IconWithEmoji, MessageBox } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import {
     ButtonIcon,
@@ -33,9 +34,9 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { ColorsPopup, IconPicker } from '@hcengineering/view-resources'
+  import { exportModule } from '../../exporter'
   import card from '../../plugin'
   import { deleteMasterTag } from '../../utils'
-  import core from '@hcengineering/core'
 
   export let masterTag: MasterTag
 
@@ -99,6 +100,18 @@
     )
   }
 
+  async function handleExport (): Promise<void> {
+    const str = await exportModule(masterTag._id)
+    const blob = new Blob([str], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${name}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   function getTagStyle (color: ColorDefinition): string {
     return `
     background: ${color.color + '33'};
@@ -130,6 +143,7 @@
     })
   }
 
+  let versioningEnabled = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
   $: versioningEnabled = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
 </script>
 
@@ -165,12 +179,19 @@
         on:click={showColorPopup}
       />
     </div>
+    <ButtonIcon
+      icon={IconDownload}
+      size={'large'}
+      tooltip={{ label: card.string.Export }}
+      kind={'tertiary'}
+      on:click={handleExport}
+    />
     {#if isEditable}
       <ButtonIcon icon={IconDelete} size={'large'} kind={'tertiary'} on:click={handleDelete} />
     {/if}
   </div>
   {#if !h.isMixin(masterTag._id)}
-    <div>
+    <div class="mx-2">
       <ToggleWithLabel
         label={card.string.Versioning}
         on={versioningEnabled}

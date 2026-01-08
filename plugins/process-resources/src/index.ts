@@ -89,6 +89,7 @@ import {
   eventCheck
 } from './utils'
 import FieldChangesEditor from './components/settings/FieldChangesEditor.svelte'
+import { exportProcess } from './exporter'
 
 export * from './query'
 
@@ -178,6 +179,7 @@ export default async (): Promise<Resources> => ({
     OnEventCheck: eventCheck
   },
   function: {
+    ExportProcess: exportProcess,
     ShowDoneQuery: showDoneQuery,
     // eslint-disable-next-line @typescript-eslint/unbound-method
     CreateMiddleware: ProcessMiddleware.create
