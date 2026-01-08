@@ -229,9 +229,11 @@ async function processEmailNotifications (control: TriggerControl, notifications
 
     let emails: SocialIdentity[] = []
     try {
+      // Use rawFindAll to avoid filters from permission middleware
       emails = await control.lowLevel.rawFindAll<SocialIdentity>('channel' as Domain, emailQuery, { limit: 10 })
     } catch (err) {
       // Fallback to regular findAll if lowLevel fails
+      control.ctx.warn('processEmailNotifications: Raw find all failed', { employeeId: employee._id, err })
       const emailsResult = await control.findAll(control.ctx, contact.class.SocialIdentity, emailQuery)
       emails = emailsResult as SocialIdentity[]
     }
