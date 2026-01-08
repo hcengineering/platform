@@ -22,6 +22,8 @@ import {
   type CardViewDefaults,
   type CreateCardExtension,
   DOMAIN_CARD,
+  type ExportExtension,
+  type ExportFunc,
   type FavoriteCard,
   type FavoriteType,
   type MasterTag,
@@ -200,6 +202,11 @@ export class TPermissionObjectClass extends TDoc implements PermissionObjectClas
 export class TCreateCardExtension extends TMasterTag implements CreateCardExtension {
   component?: AnyComponent
   canCreate?: CanCreateCardResource
+}
+
+@Model(card.class.ExportExtension, core.class.Doc, DOMAIN_MODEL)
+export class TExportExtension extends TDoc implements ExportExtension {
+  func!: Resource<ExportFunc>
 }
 
 export * from './migration'
@@ -387,7 +394,8 @@ export function createModel (builder: Builder): void {
     TCardViewDefaults,
     TFavoriteCard,
     TFavoriteType,
-    TCreateCardExtension
+    TCreateCardExtension,
+    TExportExtension
   )
 
   builder.createDoc(

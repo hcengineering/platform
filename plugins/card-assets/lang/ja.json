@@ -68,6 +68,8 @@
     "EnableVersioning": "バージョン管理を有効にする",
     "EnableVersioningConfirm": "バージョン管理を有効にしますか？",
     "NewVersionConfirmation": "新しいバージョンを作成しますか？",
-    "RelationCopyDescr": "どの関連をコピーしますか？"
+    "RelationCopyDescr": "どの関連をコピーしますか？",
+    "Import": "インポート",
+    "Export": "エクスポート"
   }
 }

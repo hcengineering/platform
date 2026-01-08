@@ -119,6 +119,15 @@ export interface PermissionObjectClass extends Doc {
 export type CanCreateCardFn = (space: Ref<Space>, data: Partial<Data<Card>>) => Promise<boolean | Ref<Card>>
 export type CanCreateCardResource = Resource<CanCreateCardFn>
 
+export interface ExportExtension extends Doc {
+  func: Resource<ExportFunc>
+}
+
+export type ExportFunc = (id: Ref<MasterTag>) => {
+  docs: Doc[]
+  required: Ref<Class<Doc>>[]
+}
+
 /**
  * @public
  */
@@ -140,7 +149,8 @@ const cardPlugin = plugin(cardId, {
     CardSection: '' as Ref<Class<CardSection>>,
     FavoriteCard: '' as Ref<Class<FavoriteCard>>,
     FavoriteType: '' as Ref<Class<FavoriteType>>,
-    PermissionObjectClass: '' as Ref<Class<PermissionObjectClass>>
+    PermissionObjectClass: '' as Ref<Class<PermissionObjectClass>>,
+    ExportExtension: '' as Ref<Class<ExportExtension>>
   },
   mixin: {
     CardViewDefaults: '' as Ref<Mixin<CardViewDefaults>>,

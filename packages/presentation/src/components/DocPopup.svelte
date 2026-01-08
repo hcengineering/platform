@@ -315,7 +315,7 @@
                   <slot name="item" item={obj} />
                 {/if}
                 {#if (allowDeselect && selected) || multiSelect || selected}
-                  <div class="check" class:disabled={readonly}>
+                  <div class="check mr-2" class:disabled={readonly}>
                     {#if obj._id === selected || selectedElements.has(obj._id)}
                       {#if loading}
                         <Spinner size={'small'} />
