@@ -1501,10 +1501,6 @@ export async function getCollaborators (
   const mixin = getClassCollaborators(control.modelDb, control.hierarchy, doc._class)
 
   if (mixin === undefined) {
-    ctx.info('getCollaborators: No collaborator mixin found', {
-      docId: doc._id,
-      docClass: doc._class
-    })
     return []
   }
 
@@ -1513,27 +1509,12 @@ export async function getCollaborators (
   })
 
   if (collaborators.length > 0) {
-    const accountUuids = collaborators.map((p) => p.collaborator)
-    ctx.info('getCollaborators: Found existing collaborators', {
-      docId: doc._id,
-      docClass: doc._class,
-      collaboratorCount: accountUuids.length,
-      collaborators: accountUuids
-    })
-    return accountUuids
+    return collaborators.map((p) => p.collaborator)
   } else {
     const collaborators = await getDocCollaborators(ctx, doc, mixin, control)
-    const accountUuids = collaborators
-
-    ctx.info('getCollaborators: Computed collaborators from doc', {
-      docId: doc._id,
-      docClass: doc._class,
-      collaboratorCount: accountUuids.length,
-      collaborators: accountUuids
-    })
 
     res.push(...getAddCollaboratTxes(tx.objectId, tx.objectClass, tx.objectSpace, control, collaborators))
-    return accountUuids
+    return collaborators
   }
 }
 
