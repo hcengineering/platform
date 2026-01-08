@@ -108,7 +108,7 @@
           {noSelect}
           inline
           component={card.component.EditCard}
-          shrink={1}
+          shrink={0}
           title={cardObj?.title}
         >
           {#if shouldShowAvatar}
@@ -136,7 +136,7 @@
         {noSelect}
         inline
         component={card.component.EditCard}
-        shrink={1}
+        shrink={0}
         title={cardObj?.title}
       >
         {#if shouldShowAvatar}

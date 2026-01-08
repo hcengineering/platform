@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Card, MasterTag, Tag } from '@hcengineering/card'
+import { Card, ExportFunc, MasterTag, Tag } from '@hcengineering/card'
 import { Association, Class, Client, Doc, DocumentUpdate, ObjQueryType, Rank, Ref, Tx, Type } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, plugin, Resource } from '@hcengineering/platform'
 import { ToDo } from '@hcengineering/time'
@@ -339,6 +339,7 @@ export default plugin(processId, {
     ExecutionEmployeeInitiator: '' as Ref<ProcessFunction>,
     ExecutionInitiator: '' as Ref<ProcessFunction>,
     EmptyArray: '' as Ref<ProcessFunction>,
-    CurrentDate: '' as Ref<ProcessFunction>
+    CurrentDate: '' as Ref<ProcessFunction>,
+    ExportProcess: '' as Resource<ExportFunc>
   }
 })

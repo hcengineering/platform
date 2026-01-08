@@ -15,6 +15,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import contact, { Channel, formatName, Person, SocialIdentity } from '@hcengineering/contact'
 import core, {
+  AccountUuid,
   PersonId,
   Class,
   concatLink,
@@ -122,10 +123,18 @@ export async function sendEmailNotification (
   try {
     const mailURL = getMetadata(serverNotification.metadata.MailUrl)
     if (mailURL === undefined || mailURL === '') {
-      ctx.error('Please provide email service url to enable email notifications.')
+      ctx.error('sendEmailNotification: Email service URL not configured')
       return
     }
     const mailAuth: string | undefined = getMetadata(serverNotification.metadata.MailAuthToken)
+
+    ctx.info('sendEmailNotification: Sending email', {
+      receiver,
+      subject,
+      mailURL,
+      hasAuth: mailAuth != null
+    })
+
     const response = await fetch(concatLink(mailURL, '/send'), {
       method: 'post',
       keepalive: true,
@@ -141,10 +150,24 @@ export async function sendEmailNotification (
       })
     })
     if (!response.ok) {
-      ctx.error(`Failed to send email notification: ${response.statusText}`)
+      ctx.error('sendEmailNotification: Failed to send email', {
+        receiver,
+        subject,
+        status: response.status,
+        statusText: response.statusText
+      })
+    } else {
+      ctx.info('sendEmailNotification: Email sent successfully', {
+        receiver,
+        subject
+      })
     }
   } catch (err) {
-    ctx.error('Could not send email notification', { err, receiver })
+    ctx.error('sendEmailNotification: Exception while sending email', {
+      err,
+      receiver,
+      subject
+    })
   }
 }
 
@@ -158,6 +181,17 @@ async function notifyByEmail (
   data: InboxNotification,
   message: ActivityMessage
 ): Promise<void> {
+  control.ctx.info('notifyByEmail: Preparing email notification', {
+    notificationId: data._id,
+    notificationUser: data.user,
+    type,
+    docId: doc._id,
+    docClass: doc._class,
+    email,
+    messageId: message._id,
+    senderSocialId
+  })
+
   let senderName = sender !== undefined ? formatName(sender.name, control.branding?.lastNameFirst) : ''
   if (senderName === '' && senderSocialId === core.account.System) {
     senderName = 'System'
@@ -166,6 +200,14 @@ async function notifyByEmail (
 
   if (content !== undefined) {
     await sendEmailNotification(control.ctx, content.text, content.html, content.subject, email)
+  } else {
+    control.ctx.warn('notifyByEmail: No content generated for email', {
+      notificationId: data._id,
+      notificationUser: data.user,
+      type,
+      docId: doc._id,
+      email
+    })
   }
 }
 
@@ -193,19 +235,50 @@ async function getNotificationMessages (
 }
 
 async function processEmailNotifications (control: TriggerControl, notifications: InboxNotification[]): Promise<void> {
-  if (notifications.length === 0) return
+  if (notifications.length === 0) {
+    control.ctx.info('processEmailNotifications: No notifications to process')
+    return
+  }
   const docId = notifications[0].objectId
   const docClass = notifications[0].objectClass
+
+  control.ctx.info('processEmailNotifications: Starting email notification processing', {
+    docId,
+    docClass,
+    notificationCount: notifications.length
+  })
+
   const doc = (await control.findAll(control.ctx, docClass, { _id: docId }))[0]
-  if (doc === undefined) return
+  if (doc === undefined) {
+    control.ctx.warn('processEmailNotifications: Document not found', {
+      docId,
+      docClass
+    })
+    return
+  }
   const messages = await getNotificationMessages(notifications, control)
   const { hierarchy } = control
 
+  control.ctx.info('processEmailNotifications: Retrieved activity messages', {
+    docId,
+    messageCount: messages.length
+  })
+
   const senders = new Map<PersonId, Person>()
+  const skipped: Array<{
+    notificationId: Ref<InboxNotification>
+    user: AccountUuid
+    reason: string
+    employeeId?: Ref<Employee>
+  }> = []
+  let sentCount = 0
 
   for (const n of notifications) {
     const type = (n.types ?? [])[0]
-    if (type === undefined) continue
+    if (type === undefined) {
+      skipped.push({ notificationId: n._id, user: n.user, reason: 'no_notification_type' })
+      continue
+    }
     let message: ActivityMessage | undefined
     if (hierarchy.isDerived(n._class, notification.class.ActivityInboxNotification)) {
       const activityNotification = n as ActivityInboxNotification
@@ -217,7 +290,10 @@ async function processEmailNotifications (control: TriggerControl, notifications
       }
     }
 
-    if (message === undefined) continue
+    if (message === undefined) {
+      skipped.push({ notificationId: n._id, user: n.user, reason: 'activity_message_not_found' })
+      continue
+    }
     const employee = await getEmployeeByAcc(control, n.user)
     if (employee === undefined) continue
     const emailQuery = {
@@ -254,10 +330,23 @@ async function processEmailNotifications (control: TriggerControl, notifications
     }
 
     await notifyByEmail(control, type, doc, sender, senderSocialId, emails[0].value, n, message)
+    sentCount++
   }
+
+  control.ctx.info('processEmailNotifications: Completed email notification processing', {
+    docId,
+    totalNotifications: notifications.length,
+    sentCount,
+    skippedCount: skipped.length,
+    skipped
+  })
 }
 
 async function NotificationsHandler (txes: TxCreateDoc<InboxNotification>[], control: TriggerControl): Promise<Tx[]> {
+  control.ctx.info('NotificationsHandler: Processing email notifications', {
+    totalTxes: txes.length
+  })
+
   const availableProviders: AvailableProvidersCache = control.contextCache.get(AvailableProvidersCacheKey) ?? new Map()
 
   const all: InboxNotification[] = txes
@@ -266,17 +355,34 @@ async function NotificationsHandler (txes: TxCreateDoc<InboxNotification>[], con
       (it) => availableProviders.get(it._id)?.find((p) => p === gmail.providers.EmailNotificationProvider) !== undefined
     )
 
+  const filteredOut = txes.length - all.length
+  if (filteredOut > 0) {
+    control.ctx.info('NotificationsHandler: Filtered out notifications without email provider', {
+      filteredOut,
+      totalTxes: txes.length,
+      remaining: all.length
+    })
+  }
+
   if (all.length === 0) {
+    control.ctx.info('NotificationsHandler: No notifications with email provider found')
     return []
   }
 
   const notificationsByDocId = groupByArray(all, (n) => n.objectId)
+
+  control.ctx.info('NotificationsHandler: Grouped notifications by document', {
+    totalNotifications: all.length,
+    documentCount: notificationsByDocId.size
+  })
 
   await Promise.all(
     Array.from(notificationsByDocId.entries()).map(([docId, notifications]) =>
       processEmailNotifications(control, notifications)
     )
   )
+
+  control.ctx.info('NotificationsHandler: Completed processing all email notifications')
 
   return []
 }
