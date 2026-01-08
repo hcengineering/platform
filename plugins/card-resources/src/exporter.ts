@@ -13,7 +13,7 @@ import core, {
   type AttachedData,
   type TypeIdentifier
 } from '@hcengineering/core'
-import { getClient } from '@hcengineering/presentation'
+import { getBlobRef, getClient } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
 import card from './plugin'
 import { getResource } from '@hcengineering/platform'
@@ -130,6 +130,9 @@ async function exportType (_id: Ref<Class<Doc>>, processed: Set<Ref<Doc>>): Prom
   const type = m.findObject(_id)
   processed.add(_id)
   if (type === undefined) return res
+  if (type.icon === view.ids.IconWithEmoji && typeof type.color === 'string') {
+    type.icon = card.icon.Card
+  }
   res.push(type)
 
   res.push(...m.findAllSync(core.class.ClassPermission, { targetClass: _id }))
@@ -149,7 +152,7 @@ async function exportType (_id: Ref<Class<Doc>>, processed: Set<Ref<Doc>>): Prom
 
   res.push(...m.findAllSync(card.class.Role, { types: _id }))
 
-  res.push(...m.findAllSync(view.class.Viewlet, { attachedTo: _id }))
+  res.push(...m.findAllSync(view.class.Viewlet, { attachTo: _id }))
 
   const assocA = m.findAllSync(core.class.Association, { classA: _id })
   for (const assoc of assocA) {
