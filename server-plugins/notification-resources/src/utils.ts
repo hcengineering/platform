@@ -35,7 +35,6 @@ import core, {
   matchQuery,
   type MeasureContext,
   MixinUpdate,
-  notEmpty,
   PersonId,
   Ref,
   Space,
@@ -181,16 +180,33 @@ export function isAllowed (
   )
 
   if (providerSettings.length > 0 && providerSettings.every((s) => !s.enabled)) {
+    control.ctx.info('isAllowed: Provider disabled by user settings', {
+      provider: provider._id,
+      type: type._id,
+      receiverIds,
+      providerSettings: providerSettings.map((s) => ({ createdBy: s.createdBy, enabled: s.enabled }))
+    })
     return false
   }
 
   if (providerSettings.length === 0 && !provider.defaultEnabled) {
+    control.ctx.info('isAllowed: Provider disabled by default (no user settings)', {
+      provider: provider._id,
+      type: type._id,
+      receiverIds,
+      defaultEnabled: provider.defaultEnabled
+    })
     return false
   }
 
   const providerDefaults = control.modelDb.findAllSync(notification.class.NotificationProviderDefaults, {})
 
   if (providerDefaults.some((it) => it.provider === provider._id && it.ignoredTypes.includes(type._id))) {
+    control.ctx.info('isAllowed: Notification type ignored in provider defaults', {
+      provider: provider._id,
+      type: type._id,
+      receiverIds
+    })
     return false
   }
 
@@ -199,16 +215,41 @@ export function isAllowed (
   )
 
   if (setting !== undefined) {
+    control.ctx.info('isAllowed: Using specific type setting', {
+      provider: provider._id,
+      type: type._id,
+      receiverIds,
+      enabled: setting.enabled
+    })
     return setting.enabled
   }
 
   if (providerDefaults.some((it) => it.provider === provider._id && it.enabledTypes.includes(type._id))) {
+    control.ctx.info('isAllowed: Notification type enabled in provider defaults', {
+      provider: provider._id,
+      type: type._id,
+      receiverIds
+    })
     return true
   }
 
-  if (type === undefined) return false
+  if (type === undefined) {
+    control.ctx.warn('isAllowed: Notification type is undefined', {
+      provider: provider._id,
+      receiverIds
+    })
+    return false
+  }
 
-  return type.defaultEnabled
+  const result = type.defaultEnabled
+  control.ctx.info('isAllowed: Using type default enabled', {
+    provider: provider._id,
+    type: type._id,
+    receiverIds,
+    defaultEnabled: type.defaultEnabled,
+    result
+  })
+  return result
 }
 
 export async function isShouldNotifyTx (
@@ -226,12 +267,35 @@ export async function isShouldNotifyTx (
   const result = new Map<Ref<NotificationProvider>, NotificationType[]>()
   let providers: NotificationProvider[] = control.modelDb.findAllSync(notification.class.NotificationProvider, {})
 
+  control.ctx.info('isShouldNotifyTx: Starting notification check', {
+    objectId: object._id,
+    objectClass: object._class,
+    receiverAccount: receiver.account,
+    receiverEmployee: receiver.employee,
+    receiverSocialIds: receiver.socialIds,
+    modifiedBy: modifiedByPersonId,
+    matchedTypesCount: types.length,
+    matchedTypes: types.map((t) => t._id),
+    isOwn,
+    isSpace
+  })
+
   if (getMetadata(serverNotification.metadata.InboxOnlyNotifications) === true) {
     providers = providers.filter((it) => it._id === notification.providers.InboxNotificationProvider)
+    control.ctx.info('isShouldNotifyTx: InboxOnlyNotifications enabled, filtering providers')
   }
+
+  const skippedTypes: Array<{ type: Ref<NotificationType>, reason: string }> = []
+  const allowedProviders: Array<{ provider: Ref<NotificationProvider>, type: Ref<NotificationType> }> = []
+  const disallowedProviders: Array<{
+    provider: Ref<NotificationProvider>
+    type: Ref<NotificationType>
+    reason: string
+  }> = []
 
   for (const type of types) {
     if (type.allowedForAuthor !== true && receiver.socialIds.includes(modifiedByPersonId)) {
+      skippedTypes.push({ type: type._id, reason: 'author_not_allowed_for_this_type' })
       continue
     }
 
@@ -243,7 +307,10 @@ export async function isShouldNotifyTx (
         if (res instanceof Promise) {
           res = await res
         }
-        if (!res) continue
+        if (!res) {
+          skippedTypes.push({ type: type._id, reason: 'type_match_function_returned_false' })
+          continue
+        }
       }
     }
     for (const provider of providers) {
@@ -252,8 +319,30 @@ export async function isShouldNotifyTx (
       if (allowed) {
         const cur = result.get(provider._id) ?? []
         result.set(provider._id, [...cur, type])
+        allowedProviders.push({ provider: provider._id, type: type._id })
+      } else {
+        disallowedProviders.push({ provider: provider._id, type: type._id, reason: 'isAllowed_returned_false' })
       }
     }
+  }
+
+  if (result.size === 0) {
+    control.ctx.warn('isShouldNotifyTx: No notification providers allowed', {
+      objectId: object._id,
+      receiverAccount: receiver.account,
+      receiverEmployee: receiver.employee,
+      receiverSocialIds: receiver.socialIds,
+      skippedTypes,
+      disallowedProviders,
+      matchedTypesCount: types.length
+    })
+  } else {
+    control.ctx.info('isShouldNotifyTx: Notification providers allowed', {
+      objectId: object._id,
+      receiverAccount: receiver.account,
+      allowedProviders,
+      resultSize: result.size
+    })
   }
 
   return result
@@ -484,7 +573,12 @@ export async function getReceiversInfo (
   accounts: AccountUuid[],
   control: TriggerControl
 ): Promise<ReceiverInfo[]> {
-  if (accounts.length === 0) return []
+  if (accounts.length === 0) {
+    ctx.info('getReceiversInfo: No accounts provided')
+    return []
+  }
+
+  ctx.info('getReceiversInfo: Processing accounts', { accountCount: accounts.length, accounts })
 
   const employees: Pick<Employee, '_id' | 'personUuid' | 'role'>[] = await control.findAll(
     ctx,
@@ -492,10 +586,28 @@ export async function getReceiversInfo (
     { personUuid: { $in: accounts }, active: true },
     { projection: { _id: 1, personUuid: 1, role: 1 } }
   )
-  if (employees.length === 0) return []
+  if (employees.length === 0) {
+    ctx.warn('getReceiversInfo: No active employees found', { accounts })
+    return []
+  }
+
+  const foundAccountUuids = new Set(employees.map((it) => it.personUuid))
+  const missingAccounts = accounts.filter((acc) => !foundAccountUuids.has(acc))
+  if (missingAccounts.length > 0) {
+    ctx.warn('getReceiversInfo: Some accounts have no active employee', {
+      missingAccounts,
+      foundEmployees: employees.map((it) => ({ personUuid: it.personUuid, employeeId: it._id }))
+    })
+  }
 
   const spaces = await getPersonSpaces(control)
-  if (spaces.length === 0) return []
+  if (spaces.length === 0) {
+    ctx.warn('getReceiversInfo: No person spaces found', {
+      accounts,
+      employeeCount: employees.length
+    })
+    return []
+  }
 
   const socialIds: Pick<SocialIdentity, '_id' | 'attachedTo'>[] = await control.findAll(
     ctx,
@@ -508,23 +620,55 @@ export async function getReceiversInfo (
   const spaceByPerson = new Map(spaces.map((it) => [it.person, it]))
   const socialIdsByEmployee = groupByArray(socialIds, (it) => it.attachedTo)
 
-  return accounts
-    .map((account) => {
-      const employee = employeeByAccount.get(account)
-      if (employee === undefined) return undefined
-      const space = spaceByPerson.get(employee._id)
-      if (space === undefined) return undefined
+  const result: ReceiverInfo[] = []
+  const filteredOut: Array<{ account: AccountUuid, reason: string }> = []
 
-      const info: ReceiverInfo = {
-        employee: employee._id,
-        role: employee.role,
-        space: space._id,
+  for (const account of accounts) {
+    const employee = employeeByAccount.get(account)
+    if (employee === undefined) {
+      filteredOut.push({ account, reason: 'no_active_employee' })
+      continue
+    }
+    const space = spaceByPerson.get(employee._id)
+    if (space === undefined) {
+      filteredOut.push({ account, reason: 'no_person_space' })
+      continue
+    }
+
+    const employeeSocialIds = socialIdsByEmployee.get(employee._id)?.map((it) => it._id) ?? []
+    if (employeeSocialIds.length === 0) {
+      ctx.warn('getReceiversInfo: Employee has no social identities', {
         account,
-        socialIds: socialIdsByEmployee.get(employee._id)?.map((it) => it._id) ?? []
-      }
-      return info
+        employeeId: employee._id,
+        personUuid: employee.personUuid
+      })
+    }
+
+    const info: ReceiverInfo = {
+      employee: employee._id,
+      role: employee.role,
+      space: space._id,
+      account,
+      socialIds: employeeSocialIds
+    }
+    result.push(info)
+  }
+
+  if (filteredOut.length > 0) {
+    ctx.warn('getReceiversInfo: Some accounts were filtered out', {
+      filteredOut,
+      resultCount: result.length,
+      totalAccounts: accounts.length
     })
-    .filter(notEmpty)
+  }
+
+  ctx.info('getReceiversInfo: Completed', {
+    inputCount: accounts.length,
+    resultCount: result.length,
+    filteredOutCount: filteredOut.length
+  })
+
+  return result
 }
 
 export async function getSenderInfo (
