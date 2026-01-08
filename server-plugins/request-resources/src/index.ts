@@ -153,53 +153,16 @@ async function getRequestNotificationTx (
   )
   const collaborators = await getCollaborators(control.ctx, request, control, tx, res)
 
-  ctx.info('getRequestNotificationTx: Collaborators retrieved', {
-    requestId: request._id,
-    docId: doc._id,
-    collaboratorCount: collaborators.length,
-    collaborators
-  })
-
-  if (collaborators.length === 0) {
-    ctx.warn('getRequestNotificationTx: No collaborators found, skipping notifications', {
-      requestId: request._id,
-      docId: doc._id
-    })
-    return res
-  }
+  if (collaborators.length === 0) return res
 
   const notifyContexts = await control.findAll(control.ctx, notification.class.DocNotifyContext, {
     objectId: doc._id
   })
   const receiverInfos = await getReceiversInfo(ctx, Array.from(collaborators), control)
-
-  ctx.info('getRequestNotificationTx: Receiver info retrieved', {
-    requestId: request._id,
-    docId: doc._id,
-    collaboratorCount: collaborators.length,
-    receiverInfoCount: receiverInfos.length,
-    receivers: receiverInfos.map((r) => ({
-      account: r.account,
-      employee: r.employee,
-      socialIdsCount: r.socialIds.length,
-      socialIds: r.socialIds
-    }))
-  })
-
-  if (receiverInfos.length === 0) {
-    ctx.warn('getRequestNotificationTx: No receiver info after filtering, skipping notifications', {
-      requestId: request._id,
-      docId: doc._id,
-      collaboratorCount: collaborators.length
-    })
-    return res
-  }
-
   const senderInfo = await getSenderInfo(ctx, tx.modifiedBy, control)
 
   const notificationControl = await getNotificationProviderControl(ctx, control)
 
-  let notificationTxCount = 0
   for (const receiver of receiverInfos) {
     const txes = await getNotificationTxes(
       ctx,
@@ -213,28 +176,8 @@ async function getRequestNotificationTx (
       messages,
       notificationControl
     )
-    notificationTxCount += txes.length
     res.push(...txes)
-
-    if (txes.length === 0) {
-      ctx.warn('getRequestNotificationTx: No notification transactions generated for receiver', {
-        requestId: request._id,
-        docId: doc._id,
-        receiverAccount: receiver.account,
-        receiverEmployee: receiver.employee,
-        receiverSocialIds: receiver.socialIds
-      })
-    }
   }
-
-  ctx.info('getRequestNotificationTx: Completed', {
-    requestId: request._id,
-    docId: doc._id,
-    collaboratorCount: collaborators.length,
-    receiverInfoCount: receiverInfos.length,
-    notificationTxCount,
-    totalTxCount: res.length
-  })
 
   return res
 }
