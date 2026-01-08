@@ -67,6 +67,7 @@
     "Versioning": "Versioning",
     "EnableVersioning": "Enable versioning",
     "EnableVersioningConfirm": "Do you want to enable versioning?",
-    "NewVersionConfirmation": "Do you want to create a new version?"
+    "NewVersionConfirmation": "Do you want to create a new version?",
+    "RelationCopyDescr": "Which relations do you want to copy?"
   }
 }
