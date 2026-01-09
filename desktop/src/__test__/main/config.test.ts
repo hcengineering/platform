@@ -38,7 +38,7 @@ const mockFs = {
 
 jest.mock('fs', () => mockFs)
 
-import { PackedConfig, readPackedConfig } from '../../main/config'
+import { readPackedConfig, PackedConfig } from '../../main/config'
 
 describe('config', () => {
   let originalResourcesPath: string | undefined
@@ -81,19 +81,15 @@ describe('config', () => {
 
   describe('readPackedConfig', () => {
     describe('migration on first run', () => {
-      test('migrates bundled config to userData when userData config does not exist', () => {
+      test('does not migrate bundled config to userData when userData config does not exist', () => {
         const bundledConfig: PackedConfig = {
           server: 'https://app.example.com',
           updatesChannelKey: 'test'
         }
 
-        let writeCallCount = 0
         mockFs.existsSync.mockImplementation((filePath: string) => {
           if (filePath === '/mock/userData') return true
-          if (filePath === '/mock/userData/config.json') {
-            // After migration, file exists
-            return writeCallCount > 0
-          }
+          if (filePath === '/mock/userData/config.json') return false
           if (filePath === '/mock/resources/config/config.json') return true
           return false
         })
@@ -102,35 +98,17 @@ describe('config', () => {
           if (filePath === '/mock/resources/config/config.json') {
             return JSON.stringify(bundledConfig)
           }
-          if (filePath === '/mock/userData/config.json' && writeCallCount > 0) {
-            // Return migrated config after write
-            return JSON.stringify({ ...bundledConfig, _version: '1.0.0' })
-          }
           throw new Error('File not found')
-        })
-
-        mockFs.writeFileSync.mockImplementation(() => {
-          writeCallCount++
         })
 
         const result = readPackedConfig()
 
-        expect(result).toEqual({
-          ...bundledConfig,
-          _version: '1.0.0'
-        })
-        expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-          '/mock/userData/config.json',
-          JSON.stringify({ ...bundledConfig, _version: '1.0.0' }, null, 2),
-          'utf8'
-        )
-        expect(console.log).toHaveBeenCalledWith(
-          expect.stringContaining('Migrated config from bundled location'),
-          expect.any(String)
-        )
+        // Should fallback to bundled config without _version (migration doesn't set it)
+        expect(result).toEqual(bundledConfig)
+        expect(mockFs.writeFileSync).not.toHaveBeenCalled()
       })
 
-      test('creates userData directory if it does not exist', () => {
+      test('does not create userData directory if it does not exist', () => {
         mockFs.existsSync.mockImplementation((filePath: string) => {
           if (filePath === '/mock/userData') return false
           if (filePath === '/mock/userData/config.json') return false
@@ -142,7 +120,7 @@ describe('config', () => {
 
         readPackedConfig()
 
-        expect(mockFs.mkdirSync).toHaveBeenCalledWith('/mock/userData', { recursive: true })
+        expect(mockFs.mkdirSync).not.toHaveBeenCalled()
       })
     })
 
@@ -283,13 +261,9 @@ describe('config', () => {
           server: 'https://bundled.server.com'
         }
 
-        let writeCallCount = 0
         mockFs.existsSync.mockImplementation((filePath: string) => {
           if (filePath === '/mock/userData') return true
-          if (filePath === '/mock/userData/config.json') {
-            // After migration, file exists
-            return writeCallCount > 0
-          }
+          if (filePath === '/mock/userData/config.json') return false
           if (filePath === '/mock/resources/config/config.json') return true
           return false
         })
@@ -298,22 +272,13 @@ describe('config', () => {
           if (filePath === '/mock/resources/config/config.json') {
             return JSON.stringify(bundledConfig)
           }
-          if (filePath === '/mock/userData/config.json' && writeCallCount > 0) {
-            return JSON.stringify({ ...bundledConfig, _version: '1.0.0' })
-          }
           throw new Error('File not found')
-        })
-
-        mockFs.writeFileSync.mockImplementation(() => {
-          writeCallCount++
         })
 
         const result = readPackedConfig()
 
-        expect(result).toEqual({
-          ...bundledConfig,
-          _version: '1.0.0'
-        })
+        // Should fallback to bundled config without _version (migration doesn't set it)
+        expect(result).toEqual(bundledConfig)
       })
 
       test('returns undefined when no config exists', () => {
@@ -329,14 +294,10 @@ describe('config', () => {
     })
 
     describe('error handling', () => {
-      test('handles corrupted userData config by replacing with bundled config', () => {
+      test('handles corrupted userData config by falling back to bundled config', () => {
         const bundledConfig: PackedConfig = {
           server: 'https://bundled.server.com'
         }
-
-        let readCallCount = 0
-        let writeCallCount = 0
-        const replacedConfig = { ...bundledConfig, _version: '1.0.0' }
 
         mockFs.existsSync.mockImplementation((filePath: string) => {
           if (filePath === '/mock/userData') return true
@@ -346,16 +307,9 @@ describe('config', () => {
         })
 
         mockFs.readFileSync.mockImplementation((filePath: string) => {
-          readCallCount++
           if (filePath === '/mock/userData/config.json') {
-            if (readCallCount === 1) {
-              // First read fails (corrupted) - this happens in migrateConfigIfNeeded
-              throw new Error('Invalid JSON')
-            }
-            // After replacement, return bundled config - this happens in readPackedConfig
-            if (writeCallCount > 0) {
-              return JSON.stringify(replacedConfig)
-            }
+            // First read fails (corrupted) - this happens in migrateConfigIfNeeded
+            // Second read also fails - this happens in readPackedConfig
             throw new Error('Invalid JSON')
           }
           if (filePath === '/mock/resources/config/config.json') {
@@ -364,18 +318,11 @@ describe('config', () => {
           throw new Error('File not found')
         })
 
-        mockFs.writeFileSync.mockImplementation(() => {
-          writeCallCount++
-        })
-
         const result = readPackedConfig()
 
-        expect(result).toEqual(replacedConfig)
-        expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-          '/mock/userData/config.json',
-          JSON.stringify(replacedConfig, null, 2),
-          'utf8'
-        )
+        // Should fallback to bundled config without _version (migration doesn't set it)
+        expect(result).toEqual(bundledConfig)
+        expect(mockFs.writeFileSync).not.toHaveBeenCalled()
         expect(console.error).toHaveBeenCalled()
       })
 

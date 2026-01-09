@@ -48,8 +48,9 @@ function writeConfigFile (filePath: string, config: PackedConfig): boolean {
 }
 
 /**
- * Migrates and updates config from bundled resourcesPath to app-specific userData location.
- * Handles config updates when a new version is installed with a new bundled config.
+ * Updates userData config if it exists and bundled config version is newer.
+ * Only migrates/updates when local userData config exists - if no local data exists,
+ * the app will use the bundled resources config directly via fallback.
  */
 function migrateConfigIfNeeded (): void {
   try {
@@ -58,7 +59,7 @@ function migrateConfigIfNeeded (): void {
 
     const userDataDir = app.getPath('userData')
     if (!fs.existsSync(userDataDir)) {
-      fs.mkdirSync(userDataDir, { recursive: true })
+      return
     }
 
     const bundledConfig = readConfigFile(resourcesConfigPath)
@@ -69,15 +70,11 @@ function migrateConfigIfNeeded (): void {
     bundledConfig._version = process.env.VERSION
 
     if (!fs.existsSync(userDataConfigPath)) {
-      if (writeConfigFile(userDataConfigPath, bundledConfig)) {
-        console.log('Migrated config from bundled location to app-specific userData:', userDataConfigPath)
-      }
       return
     }
 
     const userDataConfig = readConfigFile(userDataConfigPath)
     if (userDataConfig === undefined) {
-      writeConfigFile(userDataConfigPath, bundledConfig)
       return
     }
 
@@ -111,7 +108,7 @@ export function readPackedConfig (): PackedConfig | undefined {
     return config
   }
 
-  // Fallback to bundled config if userData config doesn't exist (shouldn't happen after migration)
+  // Fallback to bundled config if userData config doesn't exist
   const resourcesConfigPath = path.join(process.resourcesPath, 'config', 'config.json')
   return readConfigFile(resourcesConfigPath)
 }
