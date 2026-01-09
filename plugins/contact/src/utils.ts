@@ -501,7 +501,7 @@ export async function ensureEmployeeForPerson (
                 value: socialId.value,
                 key: buildSocialIdString(socialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
                 verifiedOn: socialId.verifiedOn,
-                isDeleted: socialId.isDeleted
+                isDeleted: socialId.isDeleted ?? false
               },
               socialId._id as SocialIdentityRef
             )

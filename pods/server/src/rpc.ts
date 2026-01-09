@@ -427,7 +427,8 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         const data: AttachedData<SocialIdentity> = {
           key: buildSocialIdString({ type: socialType, value: socialValue }),
           type: socialType,
-          value: socialValue
+          value: socialValue,
+          isDeleted: false
         }
 
         const addSocialIdentityTx = txFactory.createTxCollectionCUD(
