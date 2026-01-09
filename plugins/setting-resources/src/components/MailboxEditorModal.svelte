@@ -57,7 +57,8 @@
         key: buildSocialIdString({ type: SocialIdType.EMAIL, value: mailbox }),
         type: SocialIdType.EMAIL,
         value: mailbox,
-        verifiedOn: Date.now()
+        verifiedOn: Date.now(),
+        isDeleted: false
       },
       socialId as SocialIdentityRef
     )

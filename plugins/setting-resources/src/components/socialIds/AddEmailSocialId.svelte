@@ -128,7 +128,7 @@
             value: newSocialId.value,
             key: buildSocialIdString(newSocialId), // TODO: fill it in trigger or on DB level as stored calculated column or smth?
             verifiedOn: newSocialId.verifiedOn,
-            isDeleted: newSocialId.isDeleted
+            isDeleted: newSocialId.isDeleted ?? false
           },
           newSocialId._id as SocialIdentityRef
         )

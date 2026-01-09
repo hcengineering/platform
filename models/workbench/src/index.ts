@@ -199,7 +199,6 @@ export function createModel (builder: Builder): void {
       action: workbench.actionImpl.CloseCurrentTab,
       label: presentation.string.Close,
       icon: view.icon.Delete,
-      keyBinding: ['Meta + keyW', 'Ctrl + keyW'],
       input: 'none',
       category: workbench.category.Workbench,
       allowedForEditableContent: 'always',

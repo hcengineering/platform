@@ -487,6 +487,21 @@ async function fixSocialIdCase (client: MigrationClient): Promise<void> {
   }
 }
 
+async function setSocialIdentityIsDeleted (client: MigrationClient): Promise<void> {
+  client.logger.log('Setting isDeleted: false for SocialIdentity records missing the field...', {})
+  await client.update(
+    DOMAIN_CHANNEL,
+    {
+      _class: contact.class.SocialIdentity,
+      isDeleted: { $exists: false }
+    },
+    {
+      isDeleted: false
+    }
+  )
+  client.logger.log('Finished setting isDeleted for SocialIdentity records.', {})
+}
+
 async function migrateUserProfiles (client: MigrationClient): Promise<void> {
   await client.update(
     DOMAIN_CARD,
@@ -689,6 +704,11 @@ export const contactOperation: MigrateOperation = {
         state: 'migrate-user-profiles',
         mode: 'upgrade',
         func: migrateUserProfiles
+      },
+      {
+        state: 'set-social-identity-is-deleted',
+        mode: 'upgrade',
+        func: setSocialIdentityIsDeleted
       }
     ])
   },
