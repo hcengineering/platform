@@ -1,22 +1,22 @@
 import core, {
   type AnyAttribute,
+  type ArrOf,
+  type AttachedData,
+  type AttachedDoc,
   type Class,
+  type Data,
   type Doc,
   type EnumOf,
-  type ModelDb,
   type Hierarchy,
+  type ModelDb,
   type Ref,
   type RefTo,
-  type ArrOf,
-  type Data,
-  type AttachedDoc,
-  type AttachedData,
   type TypeIdentifier
 } from '@hcengineering/core'
+import { getResource } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
 import card from './plugin'
-import { getResource } from '@hcengineering/platform'
 
 export async function importModule (json: string): Promise<void> {
   try {
@@ -130,6 +130,9 @@ async function exportType (_id: Ref<Class<Doc>>, processed: Set<Ref<Doc>>): Prom
   const type = m.findObject(_id)
   processed.add(_id)
   if (type === undefined) return res
+  if (type.icon === view.ids.IconWithEmoji && typeof type.color === 'string') {
+    type.icon = card.icon.Card
+  }
   res.push(type)
 
   res.push(...m.findAllSync(core.class.ClassPermission, { targetClass: _id }))
@@ -149,7 +152,7 @@ async function exportType (_id: Ref<Class<Doc>>, processed: Set<Ref<Doc>>): Prom
 
   res.push(...m.findAllSync(card.class.Role, { types: _id }))
 
-  res.push(...m.findAllSync(view.class.Viewlet, { attachedTo: _id }))
+  res.push(...m.findAllSync(view.class.Viewlet, { attachTo: _id }))
 
   const assocA = m.findAllSync(core.class.Association, { classA: _id })
   for (const assoc of assocA) {
