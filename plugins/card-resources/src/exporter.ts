@@ -1,22 +1,22 @@
 import core, {
   type AnyAttribute,
+  type ArrOf,
+  type AttachedData,
+  type AttachedDoc,
   type Class,
+  type Data,
   type Doc,
   type EnumOf,
-  type ModelDb,
   type Hierarchy,
+  type ModelDb,
   type Ref,
   type RefTo,
-  type ArrOf,
-  type Data,
-  type AttachedDoc,
-  type AttachedData,
   type TypeIdentifier
 } from '@hcengineering/core'
-import { getBlobRef, getClient } from '@hcengineering/presentation'
+import { getResource } from '@hcengineering/platform'
+import { getClient } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
 import card from './plugin'
-import { getResource } from '@hcengineering/platform'
 
 export async function importModule (json: string): Promise<void> {
   try {
