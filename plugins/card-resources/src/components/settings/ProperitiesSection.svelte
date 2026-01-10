@@ -25,7 +25,6 @@
   export let masterTag: MasterTag
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
 
   let isRestricted: boolean =
     client.getModel().findObject(getPermissionRef(false)) !== undefined ||
