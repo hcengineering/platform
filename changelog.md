@@ -2,9 +2,6 @@
 
 Changelog.
 
-## [unreleased]
-
-* ⚙️ MISCELLANEOUS TASKS: · Changelog 
 
 ## [0.7.342] - 2026-01-10
 
