@@ -2,15 +2,29 @@
 
 Changelog.
 
+## [0.7.342] - 2026-01-10
+
+* 🚀 FEATURES: · Attribute permissions presenter ([#10272](https://github.com/hcengineering/platform/issues/10272)) · Export documents from one workspace to another ([#10283](https://github.com/hcengineering/platform/issues/10283)) · Show ids in title ([#10318](https://github.com/hcengineering/platform/issues/10318)) · Custom employee ref ([#10349](https://github.com/hcengineering/platform/issues/10349)) · Add ability  to copy cards as table ([#10355](https://github.com/hcengineering/platform/issues/10355)) · Open relations in new tab from context menu ([#10359](https://github.com/hcengineering/platform/issues/10359)) · Add ability  to copy issues as table ([#10366](https://github.com/hcengineering/platform/issues/10366)) · To get person info in export ([#10368](https://github.com/hcengineering/platform/issues/10368)) 
+* 🐛 BUG FIXES: · Attribute permissions for restricted spaces ([#10269](https://github.com/hcengineering/platform/issues/10269)) · Process user input popup ([#10274](https://github.com/hcengineering/platform/issues/10274)) · Gmail messages duplication ([#10277](https://github.com/hcengineering/platform/issues/10277)) · Do not remember project version ([#10276](https://github.com/hcengineering/platform/issues/10276)) · Revert document patches ([#10278](https://github.com/hcengineering/platform/issues/10278)) · And update changelog ([#10273](https://github.com/hcengineering/platform/issues/10273)) · Childs permissions ([#10284](https://github.com/hcengineering/platform/issues/10284)) · Workspace open for guest users ([#10292](https://github.com/hcengineering/platform/issues/10292)) · Hide huly-mail integration ([#10291](https://github.com/hcengineering/platform/issues/10291)) · Merge location ([#10295](https://github.com/hcengineering/platform/issues/10295)) · Permissions for mixins/tags ([#10294](https://github.com/hcengineering/platform/issues/10294)) · Card update process trigger ([#10296](https://github.com/hcengineering/platform/issues/10296)) · Association freeze ([#10299](https://github.com/hcengineering/platform/issues/10299)) · Permissions check ([#10309](https://github.com/hcengineering/platform/issues/10309)) · Organization tree layout ([#10312](https://github.com/hcengineering/platform/issues/10312)) · Permission check for template deletion ([#10313](https://github.com/hcengineering/platform/issues/10313)) · Restricted space permission check ([#10316](https://github.com/hcengineering/platform/issues/10316)) · Not specified date ([#10317](https://github.com/hcengineering/platform/issues/10317)) · Copy as markdown action ([#10321](https://github.com/hcengineering/platform/issues/10321)) · Adjust table print styles ([#10322](https://github.com/hcengineering/platform/issues/10322)) · Add missing german translations ([#10325](https://github.com/hcengineering/platform/issues/10325)) · Add missing portuguese translations ([#10326](https://github.com/hcengineering/platform/issues/10326)) · Add missing French translations ([#10327](https://github.com/hcengineering/platform/issues/10327)) · Documents with notes and images ([#10328](https://github.com/hcengineering/platform/issues/10328)) · Add missing translations ([#10330](https://github.com/hcengineering/platform/issues/10330)) · Export notifications ([#10333](https://github.com/hcengineering/platform/issues/10333)) · Limits after workspace change ([#10340](https://github.com/hcengineering/platform/issues/10340)) · Relation query ([#10346](https://github.com/hcengineering/platform/issues/10346)) · Relationship table header order ([#10353](https://github.com/hcengineering/platform/issues/10353)) · Card spaces table ([#10352](https://github.com/hcengineering/platform/issues/10352)) · Exported table columns ([#10356](https://github.com/hcengineering/platform/issues/10356)) · Subprocess space ([#10358](https://github.com/hcengineering/platform/issues/10358)) · Viewlet settings loading for export ([#10362](https://github.com/hcengineering/platform/issues/10362)) · Show title instead of labels ([#10364](https://github.com/hcengineering/platform/issues/10364)) · Outdated baseline warning ([#10369](https://github.com/hcengineering/platform/issues/10369)) · Fulltext index if communication api is not enabled ([#10371](https://github.com/hcengineering/platform/issues/10371)) · Email notifications ([#10376](https://github.com/hcengineering/platform/issues/10376)) · Social id search ([#10379](https://github.com/hcengineering/platform/issues/10379)) · Exporter ([#10378](https://github.com/hcengineering/platform/issues/10378)) 
+* ⚙️ MISCELLANEOUS TASKS: · Changelog · Actions/cache from 4 to 5 ([#10297](https://github.com/hcengineering/platform/issues/10297)) · Dependencies ([#10305](https://github.com/hcengineering/platform/issues/10305)) · Last document check ([#10315](https://github.com/hcengineering/platform/issues/10315)) · Local client configs in case of version change ([#10377](https://github.com/hcengineering/platform/issues/10377)) · Keybind to close current tab (problem with different keyboards) ([#10375](https://github.com/hcengineering/platform/issues/10375)) · Model version ([#10381](https://github.com/hcengineering/platform/issues/10381)) 
+* QFIX: · External approver ([#10350](https://github.com/hcengineering/platform/issues/10350)) 
+
 ## [0.7.314] - 2025-12-04
 
-* 🐛 BUG FIXES: · Do not remember project version ([#10276](https://github.com/hcengineering/platform/issues/10276)) · Revert document patches ([#10278](https://github.com/hcengineering/platform/issues/10278)) 
+* 🚀 FEATURES: · Attribute permissions presenter ([#10272](https://github.com/hcengineering/platform/issues/10272)) 
+* 🐛 BUG FIXES: · Attribute permissions for restricted spaces ([#10269](https://github.com/hcengineering/platform/issues/10269)) · Process user input popup ([#10274](https://github.com/hcengineering/platform/issues/10274)) · Gmail messages duplication ([#10277](https://github.com/hcengineering/platform/issues/10277)) · Do not remember project version ([#10276](https://github.com/hcengineering/platform/issues/10276)) · Revert document patches ([#10278](https://github.com/hcengineering/platform/issues/10278)) 
+* ⚙️ MISCELLANEOUS TASKS: · Changelog 
 
 ## [0.7.313] - 2025-12-03
 
-* 🚀 FEATURES: · Adjust hulylake client for storage adapter · Compact compact worker ([#4](https://github.com/hcengineering/platform/issues/4)) · Add regorus engine with permit file · Removed actors, improved performance · Ping from server to clients added · Ping from server to clients added · Add version number to /status info · Use queue for transcoding tasks input · Use queue for transcoding tasks input ([#13](https://github.com/hcengineering/platform/issues/13)) · Fast live recording · Fast live recording ([#20](https://github.com/hcengineering/platform/issues/20)) · Product and document patch versions ([#10265](https://github.com/hcengineering/platform/issues/10265)) 
-* 🐛 BUG FIXES: · Do not fail on deseralization error and add logs · Resolve ambiguity in Redis write conditions · Hearbeat activity for all messages, not 'ping' only · Key parameter added · Update esbuild in comm types ([#101](https://github.com/hcengineering/platform/issues/101)) · Correctly handle uploader termination · Writer proper content type to datalake · Null pointer dereference in scheduler · Typos in README · Use proper content type when uploading to datalake ([#7](https://github.com/hcengineering/platform/issues/7)) · Enable conversion for mp4 files only · Increase min complexity · Asjust linter settings · More fixes · Enable conversion for mp4 files only ([#8](https://github.com/hcengineering/platform/issues/8)) · Copy audio stream · Copy audio stream ([#10](https://github.com/hcengineering/platform/issues/10)) · Change artifact name · Change artifact name ([#11](https://github.com/hcengineering/platform/issues/11)) · Properly initialize uploader · Typo fixes · Add .gitignore · Properly detect created hls segments · Wait until uploader finishes · Adjust transcode result · Adjust transcode result ([#15](https://github.com/hcengineering/platform/issues/15)) · Proper upload rollback · Proper upload rollback ([#16](https://github.com/hcengineering/platform/issues/16)) · Nil pointer dereference · Nil pointer dereference ([#17](https://github.com/hcengineering/platform/issues/17)) · Ensure correct ffmpeg commands · Ensure correct ffmpeg commands ([#18](https://github.com/hcengineering/platform/issues/18)) · Extract command executor to separate class · Extract command executor to separate class ([#19](https://github.com/hcengineering/platform/issues/19)) · Use different paths for recording and transcoding ([#21](https://github.com/hcengineering/platform/issues/21)) · Provide service name in token extra · Provide service name in token extra ([#22](https://github.com/hcengineering/platform/issues/22)) · Do not cache m3u8 files · Do not cache m3u8 files ([#23](https://github.com/hcengineering/platform/issues/23)) · Set parent for recording blobs · Set parent for recording blobs ([#25](https://github.com/hcengineering/platform/issues/25)) 
+* 🚀 FEATURES: · Product and document patch versions ([#10265](https://github.com/hcengineering/platform/issues/10265)) 
+
+## [0.7.312] - 2025-11-30
+
+* 🚀 FEATURES: · From ID presenter ([#10242](https://github.com/hcengineering/platform/issues/10242)) · Duplicate a card ([#10245](https://github.com/hcengineering/platform/issues/10245)) · To compile svelte files · Hierarchy + tests · Adjust hulylake client for storage adapter · To suspend errors on with · Formatting check · Pg security perfomance · Guest to update its identities · Formatting check · Compact compact worker ([#4](https://github.com/hcengineering/platform/issues/4)) · Add regorus engine with permit file · Removed actors, improved performance · Ping from server to clients added · Ping from server to clients added · Add version number to /status info · Publish · Find methods schemas to convert to valid types · Use queue for transcoding tasks input · Use queue for transcoding tasks input ([#13](https://github.com/hcengineering/platform/issues/13)) · Fast live recording · Fast live recording ([#20](https://github.com/hcengineering/platform/issues/20)) · To ignore features for an installation ([#10234](https://github.com/hcengineering/platform/issues/10234)) · Performance for separator ([#10258](https://github.com/hcengineering/platform/issues/10258)) · Cards permissions ([#10260](https://github.com/hcengineering/platform/issues/10260)) 
+* 🐛 BUG FIXES: · Spam with expected invite errors ([#10241](https://github.com/hcengineering/platform/issues/10241)) · Domain not found error ([#10240](https://github.com/hcengineering/platform/issues/10240)) · Filters for card ([#10246](https://github.com/hcengineering/platform/issues/10246)) · Spaces to card navigator ([#10243](https://github.com/hcengineering/platform/issues/10243)) · Billing ([#10250](https://github.com/hcengineering/platform/issues/10250)) · Uptrace error e.dataset is undefined ([#10251](https://github.com/hcengineering/platform/issues/10251)) · Formatting ([#10254](https://github.com/hcengineering/platform/issues/10254)) · Compile · Use of peer deps · Publish script · Utils · Not updated lock file · Update-deps · Update-deps · Deps · Tests · Platform-rig detection · Lock file · Log levels rename compile ui -> compile ui-esbuild · Build · All exports · Lock file · Publish · Missing publish configs · Rate limits bug · Lock file · Bug in queue cleanup · Deps · Pnpm · Versions · Instructions · Front service upload · Lock file · Linting · Pnpm lock · Lock file · Pnpm cache · WithContext and allow pass options · Formatting · Uptrace normalizeMarkdown errors · Uptrace NaN error · Uptrace filter is not a function error · CI · Pnpm lock · Test to be executed only once · Package include source files · Pnpm lock · Packages publish · Export · Publish · Validation issues · Collaboration test · Unstable ydoc tests · Ordering tests · Kafka close of admin · Lock file · TxOrdering implementation · Pnpm lock · Pnpm · One second counters for memory usage · Kafka test · One second counters · Lock file · Identifier middleware · Permission middleware · Enum sorting · Compression param · Pnpm lock · Publish · Docker images · Build · Exports · Publish CI · Build · Rejection · Bump to use last git tag · Bugs · Json processing · Bump script v0.7.8 · Launch config · Security section · Auto disaposable · How stateless containers are passed · Docker and rushx dev · Readme and few author mistakes · Formatting · Part column type · Merge tests · Conditional patch · Broken build · Do not fail on deseralization error and add logs · Merge unit tests · Merge of large blobs feched from s3 · National comments in code · Workspace security for WebSocket · WS errors · If-Match headers logic · Error handling of parsing custom headers · Resolve ambiguity in Redis write conditions · Hearbeat activity for all messages, not 'ping' only · Key parameter added · Date type · Deps · Package.json ([#16](https://github.com/hcengineering/platform/issues/16)) · Package.json main ([#18](https://github.com/hcengineering/platform/issues/18)) · Package json 2 ([#19](https://github.com/hcengineering/platform/issues/19)) · Db schema ([#21](https://github.com/hcengineering/platform/issues/21)) · Undefined card in messages ([#25](https://github.com/hcengineering/platform/issues/25)) · Types ([#27](https://github.com/hcengineering/platform/issues/27)) · Version ([#29](https://github.com/hcengineering/platform/issues/29)) · Version ([#30](https://github.com/hcengineering/platform/issues/30)) · Connection info ([#34](https://github.com/hcengineering/platform/issues/34)) · Connection info ([#35](https://github.com/hcengineering/platform/issues/35)) · Token generation ([#38](https://github.com/hcengineering/platform/issues/38)) · Build, add turbo, add publish config ([#41](https://github.com/hcengineering/platform/issues/41)) · Messages query ([#46](https://github.com/hcengineering/platform/issues/46)) · Extran id constraint ([#47](https://github.com/hcengineering/platform/issues/47)) · Messages query ([#49](https://github.com/hcengineering/platform/issues/49)) · Threads and patches, recreate db schema ([#50](https://github.com/hcengineering/platform/issues/50)) · Context create ([#51](https://github.com/hcengineering/platform/issues/51)) · Undefined error ([#52](https://github.com/hcengineering/platform/issues/52)) · Insert message with extarnal_id ([#56](https://github.com/hcengineering/platform/issues/56)) · Label query, implement message remove ([#57](https://github.com/hcengineering/platform/issues/57)) · Context removing ([#60](https://github.com/hcengineering/platform/issues/60)) · Messages query ([#61](https://github.com/hcengineering/platform/issues/61)) · Migration ([#65](https://github.com/hcengineering/platform/issues/65)) · Incorrect types in rest-client extractJson ([#68](https://github.com/hcengineering/platform/issues/68)) · Notifications query ([#69](https://github.com/hcengineering/platform/issues/69)) · Notification update validation schema ([#71](https://github.com/hcengineering/platform/issues/71)) · Thread attach ([#72](https://github.com/hcengineering/platform/issues/72)) · Message id limit ([#74](https://github.com/hcengineering/platform/issues/74)) · Api ([#75](https://github.com/hcengineering/platform/issues/75)) · Async broadcast ([#76](https://github.com/hcengineering/platform/issues/76)) · Format ([#78](https://github.com/hcengineering/platform/issues/78)) · Query ([#79](https://github.com/hcengineering/platform/issues/79)) · Validation ([#83](https://github.com/hcengineering/platform/issues/83)) · Query ([#88](https://github.com/hcengineering/platform/issues/88)) · Query refresh ([#89](https://github.com/hcengineering/platform/issues/89)) · Total ([#92](https://github.com/hcengineering/platform/issues/92)) · Notifications total on update ([#93](https://github.com/hcengineering/platform/issues/93)) · Contexts sql ([#94](https://github.com/hcengineering/platform/issues/94)) · Notifications ([#97](https://github.com/hcengineering/platform/issues/97)) · Reaction notifications ([#98](https://github.com/hcengineering/platform/issues/98)) · Query ([#99](https://github.com/hcengineering/platform/issues/99)) · Update esbuild in comm types ([#101](https://github.com/hcengineering/platform/issues/101)) · Migration ([#103](https://github.com/hcengineering/platform/issues/103)) · Thread ([#107](https://github.com/hcengineering/platform/issues/107)) · Insert message group select · Insert message · Thread attach ([#110](https://github.com/hcengineering/platform/issues/110)) · Uuid ([#111](https://github.com/hcengineering/platform/issues/111)) · Deps · Publish · Message update ([#114](https://github.com/hcengineering/platform/issues/114)) · Lang store ([#115](https://github.com/hcengineering/platform/issues/115)) · Pnpm · Deps · Reaction notification ([#118](https://github.com/hcengineering/platform/issues/118)) · Peers ([#120](https://github.com/hcengineering/platform/issues/120)) · Correctly handle uploader termination · Linter · Issues with recordings with 1440p and above · Tests · Writer proper content type to datalake · Null pointer dereference in scheduler · Typos in README · Use proper content type when uploading to datalake ([#7](https://github.com/hcengineering/platform/issues/7)) · Enable conversion for mp4 files only · Increase min complexity · Asjust linter settings · More fixes · Enable conversion for mp4 files only ([#8](https://github.com/hcengineering/platform/issues/8)) · Lint issues · Copy audio stream · Copy audio stream ([#10](https://github.com/hcengineering/platform/issues/10)) · Change artifact name · Change artifact name ([#11](https://github.com/hcengineering/platform/issues/11)) · Properly initialize uploader · Typo fixes · Uploader ([#12](https://github.com/hcengineering/platform/issues/12)) · Add .gitignore · Build · Properly detect created hls segments · Wait until uploader finishes · Tests and lint issues · Incomplete upload ([#14](https://github.com/hcengineering/platform/issues/14)) · Adjust transcode result · Adjust transcode result ([#15](https://github.com/hcengineering/platform/issues/15)) · Proper upload rollback · Proper upload rollback ([#16](https://github.com/hcengineering/platform/issues/16)) · Nil pointer dereference · Nil pointer dereference ([#17](https://github.com/hcengineering/platform/issues/17)) · Ensure correct ffmpeg commands · Ensure correct ffmpeg commands ([#18](https://github.com/hcengineering/platform/issues/18)) · Extract command executor to separate class · Extract command executor to separate class ([#19](https://github.com/hcengineering/platform/issues/19)) · Ci and fmt issues · Use different paths for recording and transcoding ([#21](https://github.com/hcengineering/platform/issues/21)) · Provide service name in token extra · Provide service name in token extra ([#22](https://github.com/hcengineering/platform/issues/22)) · Do not cache m3u8 files · Do not cache m3u8 files ([#23](https://github.com/hcengineering/platform/issues/23)) · Set parent for recording blobs · Set parent for recording blobs ([#25](https://github.com/hcengineering/platform/issues/25)) · Transcode while recording · Build ([#26](https://github.com/hcengineering/platform/issues/26)) · Formatting · Format script · Format · Every time compacting and put images back to backup ([#10257](https://github.com/hcengineering/platform/issues/10257)) · Ws acrhived teset ([#10259](https://github.com/hcengineering/platform/issues/10259)) · Types role migration ([#10263](https://github.com/hcengineering/platform/issues/10263)) 
 * 🧪 TESTING: · Rest_api.rs · Ws.rs 
+* ⚙️ MISCELLANEOUS TASKS: · Packages ([#10244](https://github.com/hcengineering/platform/issues/10244)) · Versions using Rush.js · Esbuild-svelte · Version to 0.7.5 · Version to 0.7.6 · To new version of esbuild and typescript · Prettier and new update-deps script · Esbuild svelte version · Simplytyped dep · Versions · Versions · To latest platform-rig · Typescript · To latest platform-rig · Deps · Versions · Versions · Pnpm · Versions · Versions again · Lock file · Client · Versions · TxAccessLevel interface · Markdown version · Broken tests · Version · Versions · To latest platform rig and core · Typescript · Deps · Ordering · Instructions file · Version · Version · Versions · Version · Versions · Versions · + passwordAging · Script · To v0.7.2 · Lock file · Free disk space step · To v0.7.6 · Script · To 0.7.9 · Documenation · Of documenation · Twitter and roadmap for now · Types · Types · Types & db schema ([#3](https://github.com/hcengineering/platform/issues/3)) · Message place table ([#11](https://github.com/hcengineering/platform/issues/11)) · Version ([#22](https://github.com/hcengineering/platform/issues/22)) · Version and server-core ([#24](https://github.com/hcengineering/platform/issues/24)) · Adapter ([#33](https://github.com/hcengineering/platform/issues/33)) · Version ([#48](https://github.com/hcengineering/platform/issues/48)) · Dep conflicts ([#63](https://github.com/hcengineering/platform/issues/63)) · Log · Communication version to 0.7.0 · Version · Version · Platform-rig · Core · Version · Version · Version · Pnpm · Deps · Deps to platform.core · Core · Actions/checkout from 4 to 6 ([#10235](https://github.com/hcengineering/platform/issues/10235)) 
 * BLOB: · :size -> Blob::length 
 * CHORE: · Use fixed versions in update-deps · Commit changes 
 * FIX: · Some hls players are not able to run recordings with 1440p and above ([#3](https://github.com/hcengineering/platform/issues/3)) 
@@ -24,10 +38,33 @@ Changelog.
 * QFIX: · Parse huly ops first 
 * UPGRADE: · Memory engine optimized; change name  to  (was recommended by Copilot and Onnikov, TODO: CHANGE CLIENT TOO!!!) 
 
+## [0.7.311] - 2025-11-25
+
+* 🐛 BUG FIXES: · Billing ([#10250](https://github.com/hcengineering/platform/issues/10250)) · Uptrace error e.dataset is undefined ([#10251](https://github.com/hcengineering/platform/issues/10251)) 
+
 ## [0.7.310] - 2025-11-25
 
-* 🚀 FEATURES: · Replace translate boilerplate with extension in editor ([#10054](https://github.com/hcengineering/platform/issues/10054)) · Add storage adapter for hulylake ([#10032](https://github.com/hcengineering/platform/issues/10032)) · Allow to customize typing ([#10111](https://github.com/hcengineering/platform/issues/10111)) 
-* 🐛 BUG FIXES: · Use values not arrays in activity ([#9992](https://github.com/hcengineering/platform/issues/9992)) · Use fixed chromium version ([#10010](https://github.com/hcengineering/platform/issues/10010)) · Update puppeteer version ([#10011](https://github.com/hcengineering/platform/issues/10011)) · Pass socialId when patching blobs ([#10017](https://github.com/hcengineering/platform/issues/10017)) · Data loss in editor ([#10056](https://github.com/hcengineering/platform/issues/10056)) · Paste as plain text when in code block ([#10058](https://github.com/hcengineering/platform/issues/10058)) · Return original octet-stream blob as image preview ([#10075](https://github.com/hcengineering/platform/issues/10075)) · Properly unobserve ydoc in inline comments ([#10094](https://github.com/hcengineering/platform/issues/10094)) · Check pasted content before paste ([#10097](https://github.com/hcengineering/platform/issues/10097)) · Editor table performance improvements ([#10106](https://github.com/hcengineering/platform/issues/10106)) · Restructure workspace general settings ([#10120](https://github.com/hcengineering/platform/issues/10120)) · Proper transcode large files ([#10137](https://github.com/hcengineering/platform/issues/10137)) · Use proper doc key when compacting backup ([#10155](https://github.com/hcengineering/platform/issues/10155)) · Optimize editor toolbar loading state check ([#10174](https://github.com/hcengineering/platform/issues/10174)) · Use slim docker image ([#10214](https://github.com/hcengineering/platform/issues/10214)) 
+* 🚀 FEATURES: · Ignore billing ([#10233](https://github.com/hcengineering/platform/issues/10233)) · Ignore billing ([#10233](https://github.com/hcengineering/platform/issues/10233)) · From ID presenter ([#10242](https://github.com/hcengineering/platform/issues/10242)) · Duplicate a card ([#10245](https://github.com/hcengineering/platform/issues/10245)) 
+* 🐛 BUG FIXES: · Duplicated inbox app ([#10236](https://github.com/hcengineering/platform/issues/10236)) · Runtime error in billing ([#10237](https://github.com/hcengineering/platform/issues/10237)) · Spam with expected invite errors ([#10241](https://github.com/hcengineering/platform/issues/10241)) · Domain not found error ([#10240](https://github.com/hcengineering/platform/issues/10240)) · Filters for card ([#10246](https://github.com/hcengineering/platform/issues/10246)) · Spaces to card navigator ([#10243](https://github.com/hcengineering/platform/issues/10243)) 
+* ⚙️ MISCELLANEOUS TASKS: · Notifications migration ([#10238](https://github.com/hcengineering/platform/issues/10238)) · Packages ([#10244](https://github.com/hcengineering/platform/issues/10244)) 
+
+## [0.7.306] - 2025-11-20
+
+* 🐛 BUG FIXES: · Null error in getReviewers ([#10229](https://github.com/hcengineering/platform/issues/10229)) 
+* ⚙️ MISCELLANEOUS TASKS: · Core and server versions ([#10230](https://github.com/hcengineering/platform/issues/10230)) 
+
+## [0.7.305] - 2025-11-18
+
+* 🚀 FEATURES: · Inbox in default config ([#10227](https://github.com/hcengineering/platform/issues/10227)) 
+* 🐛 BUG FIXES: · QMS login tests ([#10210](https://github.com/hcengineering/platform/issues/10210)) · Value.every is not a function ([#10213](https://github.com/hcengineering/platform/issues/10213)) · Bandwidth constraint errors ([#10211](https://github.com/hcengineering/platform/issues/10211)) · Use slim docker image ([#10214](https://github.com/hcengineering/platform/issues/10214)) 
+* 🚜 REFACTOR: · And improve free space action ([#10226](https://github.com/hcengineering/platform/issues/10226)) 
+* EQMS-1401: · Track password changed events ([#10217](https://github.com/hcengineering/platform/issues/10217)) 
+
+## [0.7.302] - 2025-11-14
+
+* 🚀 FEATURES: · To move many cards ([#10030](https://github.com/hcengineering/platform/issues/10030)) · Replace translate boilerplate with extension in editor ([#10054](https://github.com/hcengineering/platform/issues/10054)) · Add storage adapter for hulylake ([#10032](https://github.com/hcengineering/platform/issues/10032)) · Ordering middleware ([#10077](https://github.com/hcengineering/platform/issues/10077)) · To perform markdown copy ([#10090](https://github.com/hcengineering/platform/issues/10090)) · Build without login to docker hub ([#10095](https://github.com/hcengineering/platform/issues/10095)) · Allow to customize typing ([#10111](https://github.com/hcengineering/platform/issues/10111)) · To see archived channels ([#10148](https://github.com/hcengineering/platform/issues/10148)) · Upgrade modal for non-billing manager ([#10180](https://github.com/hcengineering/platform/issues/10180)) · Office floor editing ([#10173](https://github.com/hcengineering/platform/issues/10173)) · PNPM workspaces ([#10192](https://github.com/hcengineering/platform/issues/10192)) 
+* 🐛 BUG FIXES: · Add collabs on mentions whrn security enabled ([#9991](https://github.com/hcengineering/platform/issues/9991)) · Use values not arrays in activity ([#9992](https://github.com/hcengineering/platform/issues/9992)) · Missing functions ([#9993](https://github.com/hcengineering/platform/issues/9993)) · Threads ([#10000](https://github.com/hcengineering/platform/issues/10000)) · Create child handler ([#10002](https://github.com/hcengineering/platform/issues/10002)) · Use fixed chromium version ([#10010](https://github.com/hcengineering/platform/issues/10010)) · Item id in card feed ([#10014](https://github.com/hcengineering/platform/issues/10014)) · Update puppeteer version ([#10011](https://github.com/hcengineering/platform/issues/10011)) · Pass socialId when patching blobs ([#10017](https://github.com/hcengineering/platform/issues/10017)) · Calendar ([#10020](https://github.com/hcengineering/platform/issues/10020)) · Guest search security ([#10021](https://github.com/hcengineering/platform/issues/10021)) · Process array reduce ([#10036](https://github.com/hcengineering/platform/issues/10036)) · Subscribe initial state, fix switch workspace error, upgrade ping ([#10026](https://github.com/hcengineering/platform/issues/10026)) · Inner dsl ([#10053](https://github.com/hcengineering/platform/issues/10053)) · Data loss in editor ([#10056](https://github.com/hcengineering/platform/issues/10056)) · Paste as plain text when in code block ([#10058](https://github.com/hcengineering/platform/issues/10058)) · Todo trigger ([#10059](https://github.com/hcengineering/platform/issues/10059)) · Auto translate ([#10062](https://github.com/hcengineering/platform/issues/10062)) · User input for relations ([#10064](https://github.com/hcengineering/platform/issues/10064)) · Return original octet-stream blob as image preview ([#10075](https://github.com/hcengineering/platform/issues/10075)) · Admin integrations ([#10076](https://github.com/hcengineering/platform/issues/10076)) · Action layout in card feed ([#10088](https://github.com/hcengineering/platform/issues/10088)) · Properly unobserve ydoc in inline comments ([#10094](https://github.com/hcengineering/platform/issues/10094)) · Check pasted content before paste ([#10097](https://github.com/hcengineering/platform/issues/10097)) · Moved packages ([#10104](https://github.com/hcengineering/platform/issues/10104)) · Editor table performance improvements ([#10106](https://github.com/hcengineering/platform/issues/10106)) · Translate service ([#10118](https://github.com/hcengineering/platform/issues/10118)) · Restructure workspace general settings ([#10120](https://github.com/hcengineering/platform/issues/10120)) · Card close ([#10123](https://github.com/hcengineering/platform/issues/10123)) · Timezone updates ([#10127](https://github.com/hcengineering/platform/issues/10127)) · Inbox ([#10129](https://github.com/hcengineering/platform/issues/10129)) · I18n ([#10132](https://github.com/hcengineering/platform/issues/10132)) · Relation cards presenter ([#10135](https://github.com/hcengineering/platform/issues/10135)) · Proper transcode large files ([#10137](https://github.com/hcengineering/platform/issues/10137)) · Pulse issues ([#10144](https://github.com/hcengineering/platform/issues/10144)) · Error for message without translation ([#10152](https://github.com/hcengineering/platform/issues/10152)) · Case sensitive search for issues ([#10153](https://github.com/hcengineering/platform/issues/10153)) · Use proper doc key when compacting backup ([#10155](https://github.com/hcengineering/platform/issues/10155)) · Optimize editor toolbar loading state check ([#10174](https://github.com/hcengineering/platform/issues/10174)) · Imports ([#10194](https://github.com/hcengineering/platform/issues/10194)) · Double submenu in settings ([#10196](https://github.com/hcengineering/platform/issues/10196)) · Use deleted email for login ([#10202](https://github.com/hcengineering/platform/issues/10202)) · Process roles ([#10203](https://github.com/hcengineering/platform/issues/10203)) · Mail notifications ([#10208](https://github.com/hcengineering/platform/issues/10208)) · Table issues ([#10207](https://github.com/hcengineering/platform/issues/10207)) 
+* ⚙️ MISCELLANEOUS TASKS: · NPM rc ([#9990](https://github.com/hcengineering/platform/issues/9990)) · Cards feed view ([#9979](https://github.com/hcengineering/platform/issues/9979)) · Debug info ([#9999](https://github.com/hcengineering/platform/issues/9999)) · A lot of ping spans ([#10003](https://github.com/hcengineering/platform/issues/10003)) · Local time ([#10019](https://github.com/hcengineering/platform/issues/10019)) · Moved to huly.server packages ([#10061](https://github.com/hcengineering/platform/issues/10061)) · Deps oct 11 ([#10069](https://github.com/hcengineering/platform/issues/10069)) · Electron to 38.2.2 ([#10079](https://github.com/hcengineering/platform/issues/10079)) · Templates check on CI ([#10084](https://github.com/hcengineering/platform/issues/10084)) · All core/server packages to latest version ([#10082](https://github.com/hcengineering/platform/issues/10082)) · Unused ts-standard dependency ([#10086](https://github.com/hcengineering/platform/issues/10086)) · Versions ([#10087](https://github.com/hcengineering/platform/issues/10087)) · Server to include proper gauges ([#10091](https://github.com/hcengineering/platform/issues/10091)) · Chat ([#10098](https://github.com/hcengineering/platform/issues/10098)) · Actions/setup-node from 4 to 6 ([#10093](https://github.com/hcengineering/platform/issues/10093)) · Versions to latest core/server ([#10108](https://github.com/hcengineering/platform/issues/10108)) · Redundant question marks ([#10109](https://github.com/hcengineering/platform/issues/10109)) · Communication version ([#10117](https://github.com/hcengineering/platform/issues/10117)) · Process notification popup ([#10122](https://github.com/hcengineering/platform/issues/10122)) · Redundant tooltip for card type ([#10145](https://github.com/hcengineering/platform/issues/10145)) · Versions of all deps ([#10154](https://github.com/hcengineering/platform/issues/10154)) · Core deps ([#10156](https://github.com/hcengineering/platform/issues/10156)) · Packages ([#10162](https://github.com/hcengineering/platform/issues/10162)) · Changelog and fix api client reference ([#10169](https://github.com/hcengineering/platform/issues/10169)) · Versions ([#10170](https://github.com/hcengineering/platform/issues/10170)) · Chat scroll ([#10182](https://github.com/hcengineering/platform/issues/10182)) · Server ([#10185](https://github.com/hcengineering/platform/issues/10185)) 
 * CHORE: · Use modern api sass ([#10070](https://github.com/hcengineering/platform/issues/10070)) · Improve sass warning suppression, add huly.utils and server to pmpm config overrides ([#10078](https://github.com/hcengineering/platform/issues/10078)) 
 * EQMS-1402: · Limit password login max attempts ([#10184](https://github.com/hcengineering/platform/issues/10184)) 
 * EQMS-1650: · External approvers ([#9987](https://github.com/hcengineering/platform/issues/9987)) · External approvers fixes ([#10181](https://github.com/hcengineering/platform/issues/10181)) 
@@ -37,7 +74,6 @@ Changelog.
 * UBERF-13844,13845: · Edit card type UI improvements ([#10009](https://github.com/hcengineering/platform/issues/10009)) 
 * UBERF-13864: · Fix social id presenter ([#10035](https://github.com/hcengineering/platform/issues/10035)) 
 * UBERF-13891: · Global user profile ([#10102](https://github.com/hcengineering/platform/issues/10102)) 
-* EQMS-1401: · Track password changed events ([#10217](https://github.com/hcengineering/platform/issues/10217)) 
 * QFIX: · Add user/socialId/workspace into rpc call traces. ([#9983](https://github.com/hcengineering/platform/issues/9983)) · Use measurements from published packages ([#9984](https://github.com/hcengineering/platform/issues/9984)) · Use generateId instead of generateUuid ([#9995](https://github.com/hcengineering/platform/issues/9995)) · Use natural mermaid diagram width and scroll ([#10006](https://github.com/hcengineering/platform/issues/10006)) · Do not allow to disable contacts plugin ([#10025](https://github.com/hcengineering/platform/issues/10025)) · Log window reload reason ([#10033](https://github.com/hcengineering/platform/issues/10033)) · Fix card open to more native ([#10047](https://github.com/hcengineering/platform/issues/10047)) · Remove token logging ([#10049](https://github.com/hcengineering/platform/issues/10049)) · Validate workspace uuid in datalake ([#10048](https://github.com/hcengineering/platform/issues/10048)) · Remove indexeddb provider ([#10073](https://github.com/hcengineering/platform/issues/10073)) · Show billing in settings ([#10116](https://github.com/hcengineering/platform/issues/10116)) 
 * QIFX: · Address sentry issues ([#10027](https://github.com/hcengineering/platform/issues/10027)) 
 * UBERF-13874: · Generate token for ai assistant ([#10038](https://github.com/hcengineering/platform/issues/10038)) 
@@ -45,7 +81,8 @@ Changelog.
 ## [0.7.266] - 2025-10-02
 
 * 🚀 FEATURES: · Add complete Turkish (tr) language support to Huly Platform ([#9975](https://github.com/hcengineering/platform/issues/9975)) 
-* 🐛 BUG FIXES: · Use pulse for presence ([#9896](https://github.com/hcengineering/platform/issues/9896)) · Handle disabled contacts plugin in mentions popup ([#9904](https://github.com/hcengineering/platform/issues/9904)) · Refactor presence and typing to use svelte actions ([#9908](https://github.com/hcengineering/platform/issues/9908)) · Handle submit and tabs in editor ([#9918](https://github.com/hcengineering/platform/issues/9918)) · Report analytics from print ([#9922](https://github.com/hcengineering/platform/issues/9922)) · Disable http client spans in datalake client ([#9940](https://github.com/hcengineering/platform/issues/9940)) · Expose card class and id in location data ([#9945](https://github.com/hcengineering/platform/issues/9945)) · Use known aspect ratio for video to prevent scroll ([#9954](https://github.com/hcengineering/platform/issues/9954)) · Use auto image aspect ratio in text editor ([#9953](https://github.com/hcengineering/platform/issues/9953)) · Duplicate marks support ([#9969](https://github.com/hcengineering/platform/issues/9969)) 
+* 🐛 BUG FIXES: · Use pulse for presence ([#9896](https://github.com/hcengineering/platform/issues/9896)) · Process ui ([#9898](https://github.com/hcengineering/platform/issues/9898)) · Trigger params editors ([#9897](https://github.com/hcengineering/platform/issues/9897)) · Process time ([#9900](https://github.com/hcengineering/platform/issues/9900)) · Process infinity loop ([#9903](https://github.com/hcengineering/platform/issues/9903)) · Handle disabled contacts plugin in mentions popup ([#9904](https://github.com/hcengineering/platform/issues/9904)) · Communication ([#9912](https://github.com/hcengineering/platform/issues/9912)) · Refactor presence and typing to use svelte actions ([#9908](https://github.com/hcengineering/platform/issues/9908)) · Handle submit and tabs in editor ([#9918](https://github.com/hcengineering/platform/issues/9918)) · Report analytics from print ([#9922](https://github.com/hcengineering/platform/issues/9922)) · Presence update ([#9924](https://github.com/hcengineering/platform/issues/9924)) · Ctrl-w handling even in background. ([#9925](https://github.com/hcengineering/platform/issues/9925)) · Communication indexing after new communication api ([#9931](https://github.com/hcengineering/platform/issues/9931)) · Request user input ([#9936](https://github.com/hcengineering/platform/issues/9936)) · Result input without result ([#9937](https://github.com/hcengineering/platform/issues/9937)) · Arrow up/down for old activity ([#9938](https://github.com/hcengineering/platform/issues/9938)) · Disable http client spans in datalake client ([#9940](https://github.com/hcengineering/platform/issues/9940)) · Order of messages in activity ([#9943](https://github.com/hcengineering/platform/issues/9943)) · Insert message group select ([#9944](https://github.com/hcengineering/platform/issues/9944)) · Expose card class and id in location data ([#9945](https://github.com/hcengineering/platform/issues/9945)) · Insert message ([#9949](https://github.com/hcengineering/platform/issues/9949)) · Threads and attachments overflow for large messages ([#9950](https://github.com/hcengineering/platform/issues/9950)) · Use known aspect ratio for video to prevent scroll ([#9954](https://github.com/hcengineering/platform/issues/9954)) · Use auto image aspect ratio in text editor ([#9953](https://github.com/hcengineering/platform/issues/9953)) · Number presenter ([#9956](https://github.com/hcengineering/platform/issues/9956)) · Process todo notification ([#9959](https://github.com/hcengineering/platform/issues/9959)) · Default space for new card form ([#9962](https://github.com/hcengineering/platform/issues/9962)) · Layout for new card popup ([#9964](https://github.com/hcengineering/platform/issues/9964)) · Duplicate marks support ([#9969](https://github.com/hcengineering/platform/issues/9969)) · Array size mode selector ([#9973](https://github.com/hcengineering/platform/issues/9973)) · Hidden popups in fullscreen meeting ([#9982](https://github.com/hcengineering/platform/issues/9982)) · Modal layout ([#9980](https://github.com/hcengineering/platform/issues/9980)) 
+* ⚙️ MISCELLANEOUS TASKS: · Migration ([#9923](https://github.com/hcengineering/platform/issues/9923)) · Communication ([#9939](https://github.com/hcengineering/platform/issues/9939)) 
 * OFFICE: · Refactor meeting creation ([#9905](https://github.com/hcengineering/platform/issues/9905)) · Meeting control bar with large buttons ([#9946](https://github.com/hcengineering/platform/issues/9946)) 
 * QFIX: · Region when restoring from v6 ([#9920](https://github.com/hcengineering/platform/issues/9920)) · Restore draft condition ([#9921](https://github.com/hcengineering/platform/issues/9921)) 
 * UBERF-13692: · Adjut merge contacts to global accounts ([#9911](https://github.com/hcengineering/platform/issues/9911)) 
@@ -54,7 +91,8 @@ Changelog.
 
 ## [0.7.252] - 2025-09-21
 
-* 🐛 BUG FIXES: · Build rekoni and print images ([#9860](https://github.com/hcengineering/platform/issues/9860)) · Use latest base image ([#9874](https://github.com/hcengineering/platform/issues/9874)) · Properly update pulse typing sub ([#9875](https://github.com/hcengineering/platform/issues/9875)) · Reset typing state on resubscribe ([#9881](https://github.com/hcengineering/platform/issues/9881)) 
+* 🐛 BUG FIXES: · Build rekoni and print images ([#9860](https://github.com/hcengineering/platform/issues/9860)) · Default space for cards ([#9868](https://github.com/hcengineering/platform/issues/9868)) · Scroll in chat navigator ([#9872](https://github.com/hcengineering/platform/issues/9872)) · Use latest base image ([#9874](https://github.com/hcengineering/platform/issues/9874)) · Properly update pulse typing sub ([#9875](https://github.com/hcengineering/platform/issues/9875)) · Processes mixin work ([#9876](https://github.com/hcengineering/platform/issues/9876)) · Subprocess trigger ([#9884](https://github.com/hcengineering/platform/issues/9884)) · Reset typing state on resubscribe ([#9881](https://github.com/hcengineering/platform/issues/9881)) · Directs order ([#9885](https://github.com/hcengineering/platform/issues/9885)) · Processes rollback ([#9886](https://github.com/hcengineering/platform/issues/9886)) · Function context presenter ([#9887](https://github.com/hcengineering/platform/issues/9887)) 
+* ⚙️ MISCELLANEOUS TASKS: · Email mask ([#9862](https://github.com/hcengineering/platform/issues/9862)) · Electron app to 38 ([#9878](https://github.com/hcengineering/platform/issues/9878)) 
 * PROCESS: · Use previous step context in the same transition ([#9877](https://github.com/hcengineering/platform/issues/9877)) 
 * QFIX: · Import tool owner permissions ([#9883](https://github.com/hcengineering/platform/issues/9883)) 
 * UBERF-13587: · Huly secretary integration ([#9861](https://github.com/hcengineering/platform/issues/9861)) 
@@ -64,13 +102,15 @@ Changelog.
 
 ## [0.7.245] - 2025-09-15
 
-* 🐛 BUG FIXES: · Handle html tags in markdown comparison ([#9838](https://github.com/hcengineering/platform/issues/9838)) · Use pulse typing in communication chat ([#9844](https://github.com/hcengineering/platform/issues/9844)) · Update docker images to latest base ([#9854](https://github.com/hcengineering/platform/issues/9854)) · Do not show error when love recording not available ([#9852](https://github.com/hcengineering/platform/issues/9852)) · Search by title when moving files and couments ([#9849](https://github.com/hcengineering/platform/issues/9849)) · Handle pong response in pulse client ([#9853](https://github.com/hcengineering/platform/issues/9853)) 
+* 🐛 BUG FIXES: · Handle html tags in markdown comparison ([#9838](https://github.com/hcengineering/platform/issues/9838)) · Processes triggers (On card update, on subprocesses done) ([#9841](https://github.com/hcengineering/platform/issues/9841)) · Use pulse typing in communication chat ([#9844](https://github.com/hcengineering/platform/issues/9844)) · Update docker images to latest base ([#9854](https://github.com/hcengineering/platform/issues/9854)) · Do not show error when love recording not available ([#9852](https://github.com/hcengineering/platform/issues/9852)) · Search by title when moving files and couments ([#9849](https://github.com/hcengineering/platform/issues/9849)) · Handle pong response in pulse client ([#9853](https://github.com/hcengineering/platform/issues/9853)) · Role selection logic in Owners component ([#9850](https://github.com/hcengineering/platform/issues/9850)) 
 * UBERF-13511: · Support guest tokens with open account ([#9834](https://github.com/hcengineering/platform/issues/9834)) 
 * EQMS-1644: · Fix mixins in server pipeline of workspace service ([#9839](https://github.com/hcengineering/platform/issues/9839)) 
 
 ## [0.7.242] - 2025-09-12
 
-* 🐛 BUG FIXES: · Show card icon in card title ([#9792](https://github.com/hcengineering/platform/issues/9792)) · Do not fail collab from json when wrong content type ([#9791](https://github.com/hcengineering/platform/issues/9791)) · Autofocus to qms comment popup ([#9800](https://github.com/hcengineering/platform/issues/9800)) 
+* 🚀 FEATURES: · Loop transition ([#9783](https://github.com/hcengineering/platform/issues/9783)) 
+* 🐛 BUG FIXES: · Show card icon in card title ([#9792](https://github.com/hcengineering/platform/issues/9792)) · Do not fail collab from json when wrong content type ([#9791](https://github.com/hcengineering/platform/issues/9791)) · Autofocus to qms comment popup ([#9800](https://github.com/hcengineering/platform/issues/9800)) · Office person assignee ([#9798](https://github.com/hcengineering/platform/issues/9798)) · Subprocess params ([#9805](https://github.com/hcengineering/platform/issues/9805)) · Add missing translations ([#9806](https://github.com/hcengineering/platform/issues/9806)) · Context class set ([#9830](https://github.com/hcengineering/platform/issues/9830)) · Home in desktop ([#9832](https://github.com/hcengineering/platform/issues/9832)) · Old inbox notifications ([#9835](https://github.com/hcengineering/platform/issues/9835)) 
+* ⚙️ MISCELLANEOUS TASKS: · All icon in Home ([#9821](https://github.com/hcengineering/platform/issues/9821)) 
 * UBERF-13510: · Card space public link ([#9804](https://github.com/hcengineering/platform/issues/9804)) 
 * UBERF-13564: · Fix logout caused by connectivity issues ([#9809](https://github.com/hcengineering/platform/issues/9809)) 
 * HULYLAKE: · Initial integration (build + dev docker compose) ([#9802](https://github.com/hcengineering/platform/issues/9802)) 
@@ -79,9 +119,9 @@ Changelog.
 
 ## [0.7.235] - 2025-09-06
 
-* 🚀 FEATURES: · Refactor markup to markdown utils ([#8134](https://github.com/hcengineering/platform/issues/8134)) · Add datalake service ([#8184](https://github.com/hcengineering/platform/issues/8184)) · Media state plugin ([#8674](https://github.com/hcengineering/platform/issues/8674)) · Use queue for transcoding tasks ([#9216](https://github.com/hcengineering/platform/issues/9216)) · Minimized screen recorder ([#9619](https://github.com/hcengineering/platform/issues/9619)) · Pass tracing info with websocket ([#9627](https://github.com/hcengineering/platform/issues/9627)) 
-* 🐛 BUG FIXES: · Check guest access with cookie token ([#8122](https://github.com/hcengineering/platform/issues/8122)) · Missing screen share thumbnails in desktop ([#8135](https://github.com/hcengineering/platform/issues/8135)) · Encode content disposition file name ([#8190](https://github.com/hcengineering/platform/issues/8190)) · Enhance datalake performance logging ([#8197](https://github.com/hcengineering/platform/issues/8197)) · Image preview not displayed ([#8207](https://github.com/hcengineering/platform/issues/8207)) · Use readonly connections for guests ([#8221](https://github.com/hcengineering/platform/issues/8221)) · Use huly.local in webpack proxy config ([#8233](https://github.com/hcengineering/platform/issues/8233)) · Datalake fixes ([#8251](https://github.com/hcengineering/platform/issues/8251)) · Use host + port in datalake address ([#8276](https://github.com/hcengineering/platform/issues/8276)) · Multipart upload in datalake service ([#8307](https://github.com/hcengineering/platform/issues/8307)) · Handle token errors in front service ([#8336](https://github.com/hcengineering/platform/issues/8336)) · Exclude first segment from account cookie domain ([#8348](https://github.com/hcengineering/platform/issues/8348)) · Remove quotes from print blob id ([#8356](https://github.com/hcengineering/platform/issues/8356)) · Handle double quotes in etag ([#8362](https://github.com/hcengineering/platform/issues/8362)) · Update settings context on changes & update system theme ([#8405](https://github.com/hcengineering/platform/issues/8405)) · Reduce amount of text typed ([#8414](https://github.com/hcengineering/platform/issues/8414)) · Build msg2file container ([#8424](https://github.com/hcengineering/platform/issues/8424)) · Handle token error in collaborator service ([#8493](https://github.com/hcengineering/platform/issues/8493)) · Adjust text editor quote and hr styles ([#8524](https://github.com/hcengineering/platform/issues/8524)) · Add error reporting in datalake ([#8535](https://github.com/hcengineering/platform/issues/8535)) · Handle pong message in presence client ([#8597](https://github.com/hcengineering/platform/issues/8597)) · Append port to s3 endpoint ([#8601](https://github.com/hcengineering/platform/issues/8601)) · Increase beforeAll timeout on API tests ([#8707](https://github.com/hcengineering/platform/issues/8707)) · Remove file upload console log ([#8722](https://github.com/hcengineering/platform/issues/8722)) · Add more logs do collaborator doc saving ([#8721](https://github.com/hcengineering/platform/issues/8721)) · Adjust media popup styles ([#8724](https://github.com/hcengineering/platform/issues/8724)) · Close media popup on meeting leave ([#8877](https://github.com/hcengineering/platform/issues/8877)) · Storage adapter throw error on stat ([#8893](https://github.com/hcengineering/platform/issues/8893)) · Close room popup on stop share ([#8914](https://github.com/hcengineering/platform/issues/8914)) · Adjust embedded video player style ([#8947](https://github.com/hcengineering/platform/issues/8947)) · Remove datalake extra retries on 404 ([#8962](https://github.com/hcengineering/platform/issues/8962)) · Remove analytics from SplitLogger ([#9086](https://github.com/hcengineering/platform/issues/9086)) · Do not report some datalake errors to analytics ([#9085](https://github.com/hcengineering/platform/issues/9085)) · Add recorder assets to desktop ([#9122](https://github.com/hcengineering/platform/issues/9122)) · Prevent closing recording popup ([#9125](https://github.com/hcengineering/platform/issues/9125)) · Add stream to ext services ([#9126](https://github.com/hcengineering/platform/issues/9126)) · Correct filename in content-disposition header ([#9139](https://github.com/hcengineering/platform/issues/9139)) · Get rid of node-fetch ([#9150](https://github.com/hcengineering/platform/issues/9150)) · Datalake memory leak fixes ([#9161](https://github.com/hcengineering/platform/issues/9161)) · Handle links with spaces in markdown ([#9164](https://github.com/hcengineering/platform/issues/9164)) · Properly configure keep-alive in datalake HTTP server ([#9198](https://github.com/hcengineering/platform/issues/9198)) · Create transcode topics on start ([#9225](https://github.com/hcengineering/platform/issues/9225)) · Ensure workspace and account uuid when generating token ([#9246](https://github.com/hcengineering/platform/issues/9246)) · Empty workspace uuid when generating token ([#9252](https://github.com/hcengineering/platform/issues/9252)) · Show collaborator connection errors ([#9259](https://github.com/hcengineering/platform/issues/9259)) · Handle processing errors in indexer ([#9262](https://github.com/hcengineering/platform/issues/9262)) · Delete markup description from update ([#9269](https://github.com/hcengineering/platform/issues/9269)) · Initialize server secret before storage config ([#9274](https://github.com/hcengineering/platform/issues/9274)) · Restore markup refs corrupted by github ([#9284](https://github.com/hcengineering/platform/issues/9284)) · Integration template values ([#9294](https://github.com/hcengineering/platform/issues/9294)) · Suppress unused regex escaping ([#9299](https://github.com/hcengineering/platform/issues/9299)) · Restore api client functionality ([#9292](https://github.com/hcengineering/platform/issues/9292)) · Transcode livekit videos uploaded to s3 ([#9342](https://github.com/hcengineering/platform/issues/9342)) · Adjust video player controls ([#9343](https://github.com/hcengineering/platform/issues/9343)) · Ignore transcoding for some videos ([#9354](https://github.com/hcengineering/platform/issues/9354)) · Adjust live recording ([#9394](https://github.com/hcengineering/platform/issues/9394)) · Request camera and microphone once ([#9410](https://github.com/hcengineering/platform/issues/9410)) · Use worker for recording timing ([#9420](https://github.com/hcengineering/platform/issues/9420)) · Properly parse and serialize html link ([#9427](https://github.com/hcengineering/platform/issues/9427)) · Pass cache control from request to created blob ([#9430](https://github.com/hcengineering/platform/issues/9430)) · Use object title as print file name ([#9437](https://github.com/hcengineering/platform/issues/9437)) · Use plyr player for non-hls video ([#9446](https://github.com/hcengineering/platform/issues/9446)) · Configure love recording quality ([#9509](https://github.com/hcengineering/platform/issues/9509)) · Fix edit request type ([#9570](https://github.com/hcengineering/platform/issues/9570)) · Show members edit table for department ([#9571](https://github.com/hcengineering/platform/issues/9571)) · Use the same hr style in editor and preview ([#9574](https://github.com/hcengineering/platform/issues/9574)) · Use system token when saving collaborative doc ([#9592](https://github.com/hcengineering/platform/issues/9592)) · Log more stats in datalake ([#9624](https://github.com/hcengineering/platform/issues/9624)) · Generate separate bundle for recorder worker ([#9633](https://github.com/hcengineering/platform/issues/9633)) · Ignore existing blobs in datalake migration ([#9664](https://github.com/hcengineering/platform/issues/9664)) · Increment join index even for empty result ([#9667](https://github.com/hcengineering/platform/issues/9667)) · Datalake upload fixes ([#9680](https://github.com/hcengineering/platform/issues/9680)) · Allow to edit channels from candidate card ([#9683](https://github.com/hcengineering/platform/issues/9683)) · Datalake cache memory leaks ([#9699](https://github.com/hcengineering/platform/issues/9699)) · Properly close iterators ([#9705](https://github.com/hcengineering/platform/issues/9705)) · Limit clone depth ([#9716](https://github.com/hcengineering/platform/issues/9716)) · Set account cookie to origin and target domains ([#9719](https://github.com/hcengineering/platform/issues/9719)) · Push base preview image ([#9756](https://github.com/hcengineering/platform/issues/9756)) · Use image/png content type for bot avatar ([#9765](https://github.com/hcengineering/platform/issues/9765)) · Preview text files ([#9773](https://github.com/hcengineering/platform/issues/9773)) · Support transcoding for attachment transactions ([#9775](https://github.com/hcengineering/platform/issues/9775)) 
-* ⚙️ MISCELLANEOUS TASKS: · Update tiptap & hocuspocus ([#8428](https://github.com/hcengineering/platform/issues/8428)) 
+* 🚀 FEATURES: · Refactor markup to markdown utils ([#8134](https://github.com/hcengineering/platform/issues/8134)) · Rate limit on sendInvite ([#8150](https://github.com/hcengineering/platform/issues/8150)) · Add datalake service ([#8184](https://github.com/hcengineering/platform/issues/8184)) · WS tests stability ([#8196](https://github.com/hcengineering/platform/issues/8196)) · Change type ([#8337](https://github.com/hcengineering/platform/issues/8337)) · Export for organizations ([#8346](https://github.com/hcengineering/platform/issues/8346)) · UpdateCard editor ([#8479](https://github.com/hcengineering/platform/issues/8479)) · Auto topic creation in consumer ([#8529](https://github.com/hcengineering/platform/issues/8529)) · Media state plugin ([#8674](https://github.com/hcengineering/platform/issues/8674)) · Cpu profiling for ui tests ([#9149](https://github.com/hcengineering/platform/issues/9149)) · Workspace owners to edit spaces ([#9194](https://github.com/hcengineering/platform/issues/9194)) · Use queue for transcoding tasks ([#9216](https://github.com/hcengineering/platform/issues/9216)) · Space in sql filter ([#9330](https://github.com/hcengineering/platform/issues/9330)) · To disable surveys ([#9349](https://github.com/hcengineering/platform/issues/9349)) · Calendar sync ([#9400](https://github.com/hcengineering/platform/issues/9400)) · Backup logging ([#9434](https://github.com/hcengineering/platform/issues/9434)) · To use realted object as value in processes ([#9439](https://github.com/hcengineering/platform/issues/9439)) · Newest first for activity by default ([#9454](https://github.com/hcengineering/platform/issues/9454)) · Processes context ([#9537](https://github.com/hcengineering/platform/issues/9537)) · Notifications count ([#9598](https://github.com/hcengineering/platform/issues/9598)) · To edit description of Channel ([#9607](https://github.com/hcengineering/platform/issues/9607)) · To get blob metadata without authorization ([#9615](https://github.com/hcengineering/platform/issues/9615)) · Minimized screen recorder ([#9619](https://github.com/hcengineering/platform/issues/9619)) · Pass tracing info with websocket ([#9627](https://github.com/hcengineering/platform/issues/9627)) · Process ui ([#9645](https://github.com/hcengineering/platform/issues/9645)) 
+* 🐛 BUG FIXES: · Build · Ui tests · Failed tests · Check guest access with cookie token ([#8122](https://github.com/hcengineering/platform/issues/8122)) · Svelte-check errors ([#8127](https://github.com/hcengineering/platform/issues/8127)) · Creating meeting when create event ([#8131](https://github.com/hcengineering/platform/issues/8131)) · Missing screen share thumbnails in desktop ([#8135](https://github.com/hcengineering/platform/issues/8135)) · Participant name format ([#8141](https://github.com/hcengineering/platform/issues/8141)) · Create of elastic index · Multiple single queries, add  lazy, load with limit ([#8142](https://github.com/hcengineering/platform/issues/8142)) · Backup all and disable full check for migration · Typo in threads ([#8158](https://github.com/hcengineering/platform/issues/8158)) · Enums ([#8168](https://github.com/hcengineering/platform/issues/8168)) · Envs for huly-stream app for local dev ([#8171](https://github.com/hcengineering/platform/issues/8171)) · Encode content disposition file name ([#8190](https://github.com/hcengineering/platform/issues/8190)) · Enhance datalake performance logging ([#8197](https://github.com/hcengineering/platform/issues/8197)) · Keep alive consistency for account + front ([#8198](https://github.com/hcengineering/platform/issues/8198)) · Merge · Image preview not displayed ([#8207](https://github.com/hcengineering/platform/issues/8207)) · Schedule link text ([#8216](https://github.com/hcengineering/platform/issues/8216)) · Use readonly connections for guests ([#8221](https://github.com/hcengineering/platform/issues/8221)) · Attachment spaces ([#8200](https://github.com/hcengineering/platform/issues/8200)) · Use huly.local in webpack proxy config ([#8233](https://github.com/hcengineering/platform/issues/8233)) · Reindex ([#8236](https://github.com/hcengineering/platform/issues/8236)) · Account migration mongo to cr ([#8237](https://github.com/hcengineering/platform/issues/8237)) · Master tag remove ([#8239](https://github.com/hcengineering/platform/issues/8239)) · Model order ([#8250](https://github.com/hcengineering/platform/issues/8250)) · Datalake fixes ([#8251](https://github.com/hcengineering/platform/issues/8251)) · Backup-all script ([#8255](https://github.com/hcengineering/platform/issues/8255)) · Use host + port in datalake address ([#8276](https://github.com/hcengineering/platform/issues/8276)) · Override sidebar with thread ([#8277](https://github.com/hcengineering/platform/issues/8277)) · DocGuest set status cause tx and error record ([#8279](https://github.com/hcengineering/platform/issues/8279)) ([#8282](https://github.com/hcengineering/platform/issues/8282)) · Customize view freezes ([#8281](https://github.com/hcengineering/platform/issues/8281)) · Pg object query ([#8284](https://github.com/hcengineering/platform/issues/8284)) · Preload video by default ([#8286](https://github.com/hcengineering/platform/issues/8286)) · Code block styling fixes ([#8289](https://github.com/hcengineering/platform/issues/8289)) · Card available tags ([#8297](https://github.com/hcengineering/platform/issues/8297)) · Link preview size ([#8294](https://github.com/hcengineering/platform/issues/8294)) · Chat unscroll after chat freeze ([#8299](https://github.com/hcengineering/platform/issues/8299)) · Modify blob url if it has scheme ([#8301](https://github.com/hcengineering/platform/issues/8301)) · Mentions and threads ([#8309](https://github.com/hcengineering/platform/issues/8309)) · Multipart upload in datalake service ([#8307](https://github.com/hcengineering/platform/issues/8307)) · Object-fit mistake ([#8314](https://github.com/hcengineering/platform/issues/8314)) · Sql batch update ([#8296](https://github.com/hcengineering/platform/issues/8296)) · Contact array presenter ([#8332](https://github.com/hcengineering/platform/issues/8332)) · Ai reply loop ([#8333](https://github.com/hcengineering/platform/issues/8333)) · Handle token errors in front service ([#8336](https://github.com/hcengineering/platform/issues/8336)) · Thread open ([#8344](https://github.com/hcengineering/platform/issues/8344)) · Exclude first segment from account cookie domain ([#8348](https://github.com/hcengineering/platform/issues/8348)) · Remove quotes from print blob id ([#8356](https://github.com/hcengineering/platform/issues/8356)) · Handle double quotes in etag ([#8362](https://github.com/hcengineering/platform/issues/8362)) · Meeting window width ([#8365](https://github.com/hcengineering/platform/issues/8365)) · Change type ([#8388](https://github.com/hcengineering/platform/issues/8388)) · Mixins for calendar event ([#8393](https://github.com/hcengineering/platform/issues/8393)) · Meeting window width ([#8382](https://github.com/hcengineering/platform/issues/8382)) · Card migration ([#8402](https://github.com/hcengineering/platform/issues/8402)) · Update settings context on changes & update system theme ([#8405](https://github.com/hcengineering/platform/issues/8405)) · Freeze app for wrong class in mentions ([#8411](https://github.com/hcengineering/platform/issues/8411)) · Reduce amount of text typed ([#8414](https://github.com/hcengineering/platform/issues/8414)) · Stt ([#8415](https://github.com/hcengineering/platform/issues/8415)) · Fix list applications display ([#8417](https://github.com/hcengineering/platform/issues/8417)) · Build msg2file container ([#8424](https://github.com/hcengineering/platform/issues/8424)) · Transcript score ([#8434](https://github.com/hcengineering/platform/issues/8434)) · Cards view settings ([#8437](https://github.com/hcengineering/platform/issues/8437)) · Open doc on mention click in collaborative content ([#8442](https://github.com/hcengineering/platform/issues/8442)) · Admin pending ops ([#8449](https://github.com/hcengineering/platform/issues/8449)) · Duplication of views ([#8450](https://github.com/hcengineering/platform/issues/8450)) · Lookups from array ([#8453](https://github.com/hcengineering/platform/issues/8453)) · Inbound mail attachment upload ([#8472](https://github.com/hcengineering/platform/issues/8472)) · Nested tags ([#8474](https://github.com/hcengineering/platform/issues/8474)) · Office load waiting before joining meeting ([#8484](https://github.com/hcengineering/platform/issues/8484)) · Fix huge statistics send ([#8483](https://github.com/hcengineering/platform/issues/8483)) · Handle token error in collaborator service ([#8493](https://github.com/hcengineering/platform/issues/8493)) · Lookup workspace filter ([#8513](https://github.com/hcengineering/platform/issues/8513)) · Calendar visibility dev ([#8514](https://github.com/hcengineering/platform/issues/8514)) · Card spaces ([#8517](https://github.com/hcengineering/platform/issues/8517)) · Adjust text editor quote and hr styles ([#8524](https://github.com/hcengineering/platform/issues/8524)) · Mentions font-size ([#8526](https://github.com/hcengineering/platform/issues/8526)) · Override script · Calendar migration ([#8531](https://github.com/hcengineering/platform/issues/8531)) · Add error reporting in datalake ([#8535](https://github.com/hcengineering/platform/issues/8535)) · Custom field grouping ([#8538](https://github.com/hcengineering/platform/issues/8538)) · Removed types ([#8544](https://github.com/hcengineering/platform/issues/8544)) · Build for external PRs. ([#8579](https://github.com/hcengineering/platform/issues/8579)) · Handle pong message in presence client ([#8597](https://github.com/hcengineering/platform/issues/8597)) · Append port to s3 endpoint ([#8601](https://github.com/hcengineering/platform/issues/8601)) · TypedSpaces empty owners ([#8574](https://github.com/hcengineering/platform/issues/8574)) · Find for direct persons ([#8632](https://github.com/hcengineering/platform/issues/8632)) · Bot access to send messages under other persons ([#8633](https://github.com/hcengineering/platform/issues/8633)) · Otp admin login ([#8639](https://github.com/hcengineering/platform/issues/8639)) · Show warning of not visited workspace only once ([#8641](https://github.com/hcengineering/platform/issues/8641)) · Region filter in admin panel ([#8646](https://github.com/hcengineering/platform/issues/8646)) · Notifications query ([#8644](https://github.com/hcengineering/platform/issues/8644)) · Threads in new chat ([#8653](https://github.com/hcengineering/platform/issues/8653)) · Related issues query ([#8684](https://github.com/hcengineering/platform/issues/8684)) · Removed cards ([#8694](https://github.com/hcengineering/platform/issues/8694)) · The description of a user creation in dev mode in README ([#8492](https://github.com/hcengineering/platform/issues/8492)) · Increase beforeAll timeout on API tests ([#8707](https://github.com/hcengineering/platform/issues/8707)) · Remove file upload console log ([#8722](https://github.com/hcengineering/platform/issues/8722)) · Add more logs do collaborator doc saving ([#8721](https://github.com/hcengineering/platform/issues/8721)) · Incompatibilities of front files server and datalake ([#8730](https://github.com/hcengineering/platform/issues/8730)) · Adjust media popup styles ([#8724](https://github.com/hcengineering/platform/issues/8724)) · Admin panel show inactive workspaces ([#8716](https://github.com/hcengineering/platform/issues/8716)) · Child card spaces ([#8742](https://github.com/hcengineering/platform/issues/8742)) · Removed types ([#8749](https://github.com/hcengineering/platform/issues/8749)) · Checking for guest in meetings ([#8750](https://github.com/hcengineering/platform/issues/8750)) · Activity for removed tags ([#8761](https://github.com/hcengineering/platform/issues/8761)) · Use front base for datalake ([#8772](https://github.com/hcengineering/platform/issues/8772)) · Datalake pod · Improve backup find tool ([#8783](https://github.com/hcengineering/platform/issues/8783)) · Issue status icon presentation ([#8795](https://github.com/hcengineering/platform/issues/8795)) · Datalake url in dev env ([#8833](https://github.com/hcengineering/platform/issues/8833)) · Messages loading ([#8865](https://github.com/hcengineering/platform/issues/8865)) · Close media popup on meeting leave ([#8877](https://github.com/hcengineering/platform/issues/8877)) · Init workspace in dev ([#8799](https://github.com/hcengineering/platform/issues/8799)) · Undefined error in new chat ([#8892](https://github.com/hcengineering/platform/issues/8892)) · Storage adapter throw error on stat ([#8893](https://github.com/hcengineering/platform/issues/8893)) · Keep snapshots ([#8904](https://github.com/hcengineering/platform/issues/8904)) · Close room popup on stop share ([#8914](https://github.com/hcengineering/platform/issues/8914)) · Custom emojis in reactions ([#8921](https://github.com/hcengineering/platform/issues/8921)) · Adjust embedded video player style ([#8947](https://github.com/hcengineering/platform/issues/8947)) · Communication api config ([#8955](https://github.com/hcengineering/platform/issues/8955)) · Remove datalake extra retries on 404 ([#8962](https://github.com/hcengineering/platform/issues/8962)) · Scheduled events inbox notifications ([#8964](https://github.com/hcengineering/platform/issues/8964)) · Email notifications ([#8978](https://github.com/hcengineering/platform/issues/8978)) · Calendar service ([#8981](https://github.com/hcengineering/platform/issues/8981)) · Processes ([#9014](https://github.com/hcengineering/platform/issues/9014)) · Favorites ([#9020](https://github.com/hcengineering/platform/issues/9020)) · Retry for some kind of errors in Github ([#9055](https://github.com/hcengineering/platform/issues/9055)) · Ts-config to fix ts-server ([#9019](https://github.com/hcengineering/platform/issues/9019)) · Remove analytics from SplitLogger ([#9086](https://github.com/hcengineering/platform/issues/9086)) · Remove duplicate handler errors ([#9084](https://github.com/hcengineering/platform/issues/9084)) · Do not report some datalake errors to analytics ([#9085](https://github.com/hcengineering/platform/issues/9085)) · Space icons ([#9089](https://github.com/hcengineering/platform/issues/9089)) · Backlinks header ([#9107](https://github.com/hcengineering/platform/issues/9107)) · Notification when Request.requested changed ([#9105](https://github.com/hcengineering/platform/issues/9105)) · Everyone/here mentions ([#9109](https://github.com/hcengineering/platform/issues/9109)) · Add recorder assets to desktop ([#9122](https://github.com/hcengineering/platform/issues/9122)) · Prevent closing recording popup ([#9125](https://github.com/hcengineering/platform/issues/9125)) · Add stream to ext services ([#9126](https://github.com/hcengineering/platform/issues/9126)) · Invalid sql query from findAll with empty sort ([#9135](https://github.com/hcengineering/platform/issues/9135)) · Correct filename in content-disposition header ([#9139](https://github.com/hcengineering/platform/issues/9139)) · Do not find for a Card for rank ([#9145](https://github.com/hcengineering/platform/issues/9145)) · Build fix for browser list · Get rid of node-fetch ([#9150](https://github.com/hcengineering/platform/issues/9150)) · Connection reservation logic ([#9153](https://github.com/hcengineering/platform/issues/9153)) · Card parent loop ([#9159](https://github.com/hcengineering/platform/issues/9159)) · Rpc response body size ([#9160](https://github.com/hcengineering/platform/issues/9160)) · Datalake memory leak fixes ([#9161](https://github.com/hcengineering/platform/issues/9161)) · Handle links with spaces in markdown ([#9164](https://github.com/hcengineering/platform/issues/9164)) · Card migration loop ([#9176](https://github.com/hcengineering/platform/issues/9176)) · Rendering of custom attributes without icons ([#9171](https://github.com/hcengineering/platform/issues/9171)) · Services rate limit ([#9193](https://github.com/hcengineering/platform/issues/9193)) · Properly configure keep-alive in datalake HTTP server ([#9198](https://github.com/hcengineering/platform/issues/9198)) · False positive emoji detection ([#9211](https://github.com/hcengineering/platform/issues/9211)) · Image paste in new chat ([#9203](https://github.com/hcengineering/platform/issues/9203)) · Table inplace edit ([#9220](https://github.com/hcengineering/platform/issues/9220)) · Communication migration ([#9228](https://github.com/hcengineering/platform/issues/9228)) · Type properties editor ([#9227](https://github.com/hcengineering/platform/issues/9227)) · Get workspaces mode is missing ([#9237](https://github.com/hcengineering/platform/issues/9237)) · Create transcode topics on start ([#9225](https://github.com/hcengineering/platform/issues/9225)) · Rate limits ([#9242](https://github.com/hcengineering/platform/issues/9242)) · Old token ([#9238](https://github.com/hcengineering/platform/issues/9238)) · Restore in workspace service for old workspaces ([#9241](https://github.com/hcengineering/platform/issues/9241)) · Github migration + few checks ([#9244](https://github.com/hcengineering/platform/issues/9244)) · Ensure workspace and account uuid when generating token ([#9246](https://github.com/hcengineering/platform/issues/9246)) · Github service startup ([#9251](https://github.com/hcengineering/platform/issues/9251)) · Empty workspace uuid when generating token ([#9252](https://github.com/hcengineering/platform/issues/9252)) · Empty comments in github ([#9258](https://github.com/hcengineering/platform/issues/9258)) · Show collaborator connection errors ([#9259](https://github.com/hcengineering/platform/issues/9259)) · Handle processing errors in indexer ([#9262](https://github.com/hcengineering/platform/issues/9262)) · Backup fixes ([#9256](https://github.com/hcengineering/platform/issues/9256)) · Delete markup description from update ([#9269](https://github.com/hcengineering/platform/issues/9269)) · Calendar sync ([#9271](https://github.com/hcengineering/platform/issues/9271)) · Initialize server secret before storage config ([#9274](https://github.com/hcengineering/platform/issues/9274)) · Calendar migration tool ([#9279](https://github.com/hcengineering/platform/issues/9279)) · Emoji input rule ([#9280](https://github.com/hcengineering/platform/issues/9280)) · Error on removing default task states ([#9281](https://github.com/hcengineering/platform/issues/9281)) · Calendar freeze ([#9286](https://github.com/hcengineering/platform/issues/9286)) · Mixin projection ([#9287](https://github.com/hcengineering/platform/issues/9287)) · Restore markup refs corrupted by github ([#9284](https://github.com/hcengineering/platform/issues/9284)) · Integration template values ([#9294](https://github.com/hcengineering/platform/issues/9294)) · Suppress unused regex escaping ([#9299](https://github.com/hcengineering/platform/issues/9299)) · Restore api client functionality ([#9292](https://github.com/hcengineering/platform/issues/9292)) · Team ([#9307](https://github.com/hcengineering/platform/issues/9307)) · Optimize getWorkspaceInfo use ([#9302](https://github.com/hcengineering/platform/issues/9302)) · Check last visit in gmail service ([#9300](https://github.com/hcengineering/platform/issues/9300)) · Notifications read ([#9316](https://github.com/hcengineering/platform/issues/9316)) · Messages to file ([#9319](https://github.com/hcengineering/platform/issues/9319)) · Hide deleted workspaces from select workspace list ([#9337](https://github.com/hcengineering/platform/issues/9337)) · Collaborators tests ([#9331](https://github.com/hcengineering/platform/issues/9331)) · Transcode livekit videos uploaded to s3 ([#9342](https://github.com/hcengineering/platform/issues/9342)) · Adjust video player controls ([#9343](https://github.com/hcengineering/platform/issues/9343)) · Skip communication apply-templates ([#9341](https://github.com/hcengineering/platform/issues/9341)) · Backup service ([#9347](https://github.com/hcengineering/platform/issues/9347)) · Meeting minutes security ([#9348](https://github.com/hcengineering/platform/issues/9348)) · Office empty meeting ([#9353](https://github.com/hcengineering/platform/issues/9353)) · Ignore transcoding for some videos ([#9354](https://github.com/hcengineering/platform/issues/9354)) · Back /api/v1/event/:workspaceId ([#9367](https://github.com/hcengineering/platform/issues/9367)) · Reindex inplace ([#9365](https://github.com/hcengineering/platform/issues/9365)) · New collab presenter ([#9368](https://github.com/hcengineering/platform/issues/9368)) · Collab security ([#9370](https://github.com/hcengineering/platform/issues/9370)) · Secret in billing pod ([#9377](https://github.com/hcengineering/platform/issues/9377)) · Calendar freeze ([#9378](https://github.com/hcengineering/platform/issues/9378)) · Calendar sync ([#9392](https://github.com/hcengineering/platform/issues/9392)) · Adjust live recording ([#9394](https://github.com/hcengineering/platform/issues/9394)) · Meeting minutes activity ([#9395](https://github.com/hcengineering/platform/issues/9395)) · Office preferences ([#9399](https://github.com/hcengineering/platform/issues/9399)) · Calendar flood ([#9405](https://github.com/hcengineering/platform/issues/9405)) · Request camera and microphone once ([#9410](https://github.com/hcengineering/platform/issues/9410)) · Use worker for recording timing ([#9420](https://github.com/hcengineering/platform/issues/9420)) · Miss broadcast for http requests ([#9422](https://github.com/hcengineering/platform/issues/9422)) · Sort model on client ([#9421](https://github.com/hcengineering/platform/issues/9421)) · Properly parse and serialize html link ([#9427](https://github.com/hcengineering/platform/issues/9427)) · Pass cache control from request to created blob ([#9430](https://github.com/hcengineering/platform/issues/9430)) · Use object title as print file name ([#9437](https://github.com/hcengineering/platform/issues/9437)) · Desktop notifications ([#9447](https://github.com/hcengineering/platform/issues/9447)) · Use plyr player for non-hls video ([#9446](https://github.com/hcengineering/platform/issues/9446)) · Card scroll ([#9461](https://github.com/hcengineering/platform/issues/9461)) · Emoji data import for missing locales ([#9442](https://github.com/hcengineering/platform/issues/9442)) · Fix reducedCalls to stop in case of error ([#9482](https://github.com/hcengineering/platform/issues/9482)) · Telegram-bot connect ([#9488](https://github.com/hcengineering/platform/issues/9488)) · Migration ([#9497](https://github.com/hcengineering/platform/issues/9497)) · Configure love recording quality ([#9509](https://github.com/hcengineering/platform/issues/9509)) · Re-enable references in the new chat input ([#9507](https://github.com/hcengineering/platform/issues/9507)) · Communication ([#9520](https://github.com/hcengineering/platform/issues/9520)) · Config ([#9544](https://github.com/hcengineering/platform/issues/9544)) · Calendar serviced and kvs client ([#9551](https://github.com/hcengineering/platform/issues/9551)) · Red dot on new inbox ([#9555](https://github.com/hcengineering/platform/issues/9555)) · Miss config ([#9556](https://github.com/hcengineering/platform/issues/9556)) · Communication refresh ([#9559](https://github.com/hcengineering/platform/issues/9559)) · Navigation buttons visibility on mobile devices ([#9569](https://github.com/hcengineering/platform/issues/9569)) · Grouping error in Execution viewlet configuration ([#9568](https://github.com/hcengineering/platform/issues/9568)) · Fix edit request type ([#9570](https://github.com/hcengineering/platform/issues/9570)) · Show members edit table for department ([#9571](https://github.com/hcengineering/platform/issues/9571)) · Use the same hr style in editor and preview ([#9574](https://github.com/hcengineering/platform/issues/9574)) · Dev elastic healthcheck ([#9576](https://github.com/hcengineering/platform/issues/9576)) · Gmail sync retry ([#9575](https://github.com/hcengineering/platform/issues/9575)) · Messages sync for outdated gmail history id ([#9583](https://github.com/hcengineering/platform/issues/9583)) · Gmail config reset on reboot ([#9587](https://github.com/hcengineering/platform/issues/9587)) · Duplicated gmail sync on startup ([#9590](https://github.com/hcengineering/platform/issues/9590)) · Use system token when saving collaborative doc ([#9592](https://github.com/hcengineering/platform/issues/9592)) · Processes ui ([#9601](https://github.com/hcengineering/platform/issues/9601)) · Cannot find social id error for system ([#9603](https://github.com/hcengineering/platform/issues/9603)) · PayloadTooLargeError in analytics collector ([#9604](https://github.com/hcengineering/platform/issues/9604)) · Calendar ([#9620](https://github.com/hcengineering/platform/issues/9620)) · Model txes order ([#9626](https://github.com/hcengineering/platform/issues/9626)) · Log more stats in datalake ([#9624](https://github.com/hcengineering/platform/issues/9624)) · Broken ui test ([#9629](https://github.com/hcengineering/platform/issues/9629)) · Generate separate bundle for recorder worker ([#9633](https://github.com/hcengineering/platform/issues/9633)) · User mention icon and link previews ([#9635](https://github.com/hcengineering/platform/issues/9635)) · Tracker todo close time tracking ([#9636](https://github.com/hcengineering/platform/issues/9636)) · Notification navigation ([#9642](https://github.com/hcengineering/platform/issues/9642)) · Default gmail port for local setup ([#9650](https://github.com/hcengineering/platform/issues/9650)) · Gmail disconnect error ([#9649](https://github.com/hcengineering/platform/issues/9649)) · Livekit retry counter ([#9651](https://github.com/hcengineering/platform/issues/9651)) · Result editor ([#9653](https://github.com/hcengineering/platform/issues/9653)) · EQMS-1630: Separator resize logic ([#9662](https://github.com/hcengineering/platform/issues/9662)) · Ignore existing blobs in datalake migration ([#9664](https://github.com/hcengineering/platform/issues/9664)) · Notification counter in navigatoir ([#9665](https://github.com/hcengineering/platform/issues/9665)) · Increment join index even for empty result ([#9667](https://github.com/hcengineering/platform/issues/9667)) · Notify about new messages in initial Gmail sync ([#9673](https://github.com/hcengineering/platform/issues/9673)) · Use native bcrypt module ([#9675](https://github.com/hcengineering/platform/issues/9675)) · Huly mail headers format ([#9676](https://github.com/hcengineering/platform/issues/9676)) · Datalake upload fixes ([#9680](https://github.com/hcengineering/platform/issues/9680)) · Allow to edit channels from candidate card ([#9683](https://github.com/hcengineering/platform/issues/9683)) · Inbox ui ([#9688](https://github.com/hcengineering/platform/issues/9688)) · Allow undefined space and fix layout ([#9689](https://github.com/hcengineering/platform/issues/9689)) · Some issues with livekit connection ([#9690](https://github.com/hcengineering/platform/issues/9690)) · Telegram bot ([#9693](https://github.com/hcengineering/platform/issues/9693)) · ParticipantView overflow ([#9694](https://github.com/hcengineering/platform/issues/9694)) · Datalake cache memory leaks ([#9699](https://github.com/hcengineering/platform/issues/9699)) · Properly close iterators ([#9705](https://github.com/hcengineering/platform/issues/9705)) · Limit clone depth ([#9716](https://github.com/hcengineering/platform/issues/9716)) · Direct title ([#9721](https://github.com/hcengineering/platform/issues/9721)) · Set account cookie to origin and target domains ([#9719](https://github.com/hcengineering/platform/issues/9719)) · Notifications ([#9732](https://github.com/hcengineering/platform/issues/9732)) · Reaction notifications ([#9734](https://github.com/hcengineering/platform/issues/9734)) · Navigator ([#9737](https://github.com/hcengineering/platform/issues/9737)) · Load more in Home ([#9739](https://github.com/hcengineering/platform/issues/9739)) · Scroll in the meeting widget ([#9749](https://github.com/hcengineering/platform/issues/9749)) · Calendar rec events ([#9755](https://github.com/hcengineering/platform/issues/9755)) · Push base preview image ([#9756](https://github.com/hcengineering/platform/issues/9756)) · Broadcasting txes with collab security ([#9740](https://github.com/hcengineering/platform/issues/9740)) · Worker docker ([#9760](https://github.com/hcengineering/platform/issues/9760)) · Avatar for system user in Home ([#9762](https://github.com/hcengineering/platform/issues/9762)) · Race condition during lk connection ([#9764](https://github.com/hcengineering/platform/issues/9764)) · Use image/png content type for bot avatar ([#9765](https://github.com/hcengineering/platform/issues/9765)) · Image preview in preview service ([#9767](https://github.com/hcengineering/platform/issues/9767)) · Tags layout in Home ([#9768](https://github.com/hcengineering/platform/issues/9768)) · Thread name display ([#9771](https://github.com/hcengineering/platform/issues/9771)) · Preview text files ([#9773](https://github.com/hcengineering/platform/issues/9773)) · Support transcoding for attachment transactions ([#9775](https://github.com/hcengineering/platform/issues/9775)) 
+* ⚙️ MISCELLANEOUS TASKS: · Model · Version · Model ([#8300](https://github.com/hcengineering/platform/issues/8300)) · Communication ([#8422](https://github.com/hcengineering/platform/issues/8422)) · Livekit client ([#8427](https://github.com/hcengineering/platform/issues/8427)) · Update tiptap & hocuspocus ([#8428](https://github.com/hcengineering/platform/issues/8428)) · Communication ([#8436](https://github.com/hcengineering/platform/issues/8436)) · Readme ([#8454](https://github.com/hcengineering/platform/issues/8454)) · Unused green service anymore ([#8480](https://github.com/hcengineering/platform/issues/8480)) · Livekit agent ([#8518](https://github.com/hcengineering/platform/issues/8518)) · Model ([#8522](https://github.com/hcengineering/platform/issues/8522)) · Communication ([#8578](https://github.com/hcengineering/platform/issues/8578)) · Version · API client documentation ([#8832](https://github.com/hcengineering/platform/issues/8832)) · Deprecated types packages from dependencies ([#8856](https://github.com/hcengineering/platform/issues/8856)) · Unstable/unused Github project support ([#8891](https://github.com/hcengineering/platform/issues/8891)) · Github integrations · Model version ([#8963](https://github.com/hcengineering/platform/issues/8963)) · Version ([#9057](https://github.com/hcengineering/platform/issues/9057)) · Node to v22 ([#9151](https://github.com/hcengineering/platform/issues/9151)) · Extra logs ([#9250](https://github.com/hcengineering/platform/issues/9250)) · Communication ([#9340](https://github.com/hcengineering/platform/issues/9340)) · Mongodb from dev setup ([#9336](https://github.com/hcengineering/platform/issues/9336)) · Extra in for contact.mixin.Employee ([#9356](https://github.com/hcengineering/platform/issues/9356)) · Favorite on card removed ([#9364](https://github.com/hcengineering/platform/issues/9364)) · Emoji img margin ([#9471](https://github.com/hcengineering/platform/issues/9471)) · Communication ([#9487](https://github.com/hcengineering/platform/issues/9487)) · Fulltext indexing from non-text fields, index calendar events/todos ([#9493](https://github.com/hcengineering/platform/issues/9493)) · Communication ([#9548](https://github.com/hcengineering/platform/issues/9548)) · Model version · Card trigger ([#9579](https://github.com/hcengineering/platform/issues/9579)) · Extra ([#9582](https://github.com/hcengineering/platform/issues/9582)) · Rush to 158.1 ([#9752](https://github.com/hcengineering/platform/issues/9752)) · Livekit packages ([#9763](https://github.com/hcengineering/platform/issues/9763)) · Card space icon ([#9779](https://github.com/hcengineering/platform/issues/9779)) · Model version · Readme.md 
 * ANALYTICS: · Add OAuth authentication and guest access events ([#9541](https://github.com/hcengineering/platform/issues/9541)) 
 * BUMP: · Bump few deps with fixes ([#9093](https://github.com/hcengineering/platform/issues/9093)) 
 * EQMS-1302: · Fixed RBAC bypass for space / team related wizards and popups (develop port) ([#8979](https://github.com/hcengineering/platform/issues/8979)) 
@@ -107,7 +147,6 @@ Changelog.
 * OFFICE: · Refactor livekit logic ([#9679](https://github.com/hcengineering/platform/issues/9679)) 
 * PLATF-8339: · Allow test project editing(dev) ([#8354](https://github.com/hcengineering/platform/issues/8354)) 
 * Q-FIX: · Update communication ([#9524](https://github.com/hcengineering/platform/issues/9524)) 
-* QFIX: · Build · Account migration mongo to cr ([#8237](https://github.com/hcengineering/platform/issues/8237)) · DocGuest set status cause tx and error record ([#8279](https://github.com/hcengineering/platform/issues/8279)) ([#8282](https://github.com/hcengineering/platform/issues/8282)) · Pg object query ([#8284](https://github.com/hcengineering/platform/issues/8284)) · Code block styling fixes ([#8289](https://github.com/hcengineering/platform/issues/8289)) · Fix list applications display ([#8417](https://github.com/hcengineering/platform/issues/8417)) · Fix huge statistics send ([#8483](https://github.com/hcengineering/platform/issues/8483)) · Build for external PRs. ([#8579](https://github.com/hcengineering/platform/issues/8579)) · Show warning of not visited workspace only once ([#8641](https://github.com/hcengineering/platform/issues/8641)) · Region filter in admin panel ([#8646](https://github.com/hcengineering/platform/issues/8646)) · Admin panel show inactive workspaces ([#8716](https://github.com/hcengineering/platform/issues/8716)) · Use front base for datalake ([#8772](https://github.com/hcengineering/platform/issues/8772)) · Improve backup find tool ([#8783](https://github.com/hcengineering/platform/issues/8783)) · Keep snapshots ([#8904](https://github.com/hcengineering/platform/issues/8904)) · Remove duplicate handler errors ([#9084](https://github.com/hcengineering/platform/issues/9084)) · Do not find for a Card for rank ([#9145](https://github.com/hcengineering/platform/issues/9145)) · Build fix for browser list · Rpc response body size ([#9160](https://github.com/hcengineering/platform/issues/9160)) · Services rate limit ([#9193](https://github.com/hcengineering/platform/issues/9193)) · Get workspaces mode is missing ([#9237](https://github.com/hcengineering/platform/issues/9237)) · Rate limits ([#9242](https://github.com/hcengineering/platform/issues/9242)) · Old token ([#9238](https://github.com/hcengineering/platform/issues/9238)) · Restore in workspace service for old workspaces ([#9241](https://github.com/hcengineering/platform/issues/9241)) · Github migration + few checks ([#9244](https://github.com/hcengineering/platform/issues/9244)) · Github service startup ([#9251](https://github.com/hcengineering/platform/issues/9251)) · Empty comments in github ([#9258](https://github.com/hcengineering/platform/issues/9258)) · Backup fixes ([#9256](https://github.com/hcengineering/platform/issues/9256)) · Optimize getWorkspaceInfo use ([#9302](https://github.com/hcengineering/platform/issues/9302)) · Check last visit in gmail service ([#9300](https://github.com/hcengineering/platform/issues/9300)) · Hide deleted workspaces from select workspace list ([#9337](https://github.com/hcengineering/platform/issues/9337)) · Skip communication apply-templates ([#9341](https://github.com/hcengineering/platform/issues/9341)) · Backup service ([#9347](https://github.com/hcengineering/platform/issues/9347)) · Reindex inplace ([#9365](https://github.com/hcengineering/platform/issues/9365)) · Fix reducedCalls to stop in case of error ([#9482](https://github.com/hcengineering/platform/issues/9482)) · Re-enable references in the new chat input ([#9507](https://github.com/hcengineering/platform/issues/9507)) 
 * QFIX: · Allow mail service to ensure person ([#8140](https://github.com/hcengineering/platform/issues/8140)) · Add mail domain ([#8147](https://github.com/hcengineering/platform/issues/8147)) · (drive) add title providers for files and folders ([#8224](https://github.com/hcengineering/platform/issues/8224)) · Fix duplicated secret env ([#8416](https://github.com/hcengineering/platform/issues/8416)) · Show proper current employee ([#8435](https://github.com/hcengineering/platform/issues/8435)) · Keep alive connections in account client ([#8503](https://github.com/hcengineering/platform/issues/8503)) · Fix default timezone ([#8547](https://github.com/hcengineering/platform/issues/8547)) · Fix gmail history migration ([#8778](https://github.com/hcengineering/platform/issues/8778)) · Added appropriate styling for unavailable mentions ([#8803](https://github.com/hcengineering/platform/issues/8803)) · Add external ws for gmail ([#8910](https://github.com/hcengineering/platform/issues/8910)) · Updated color for disabled mentions ([#8918](https://github.com/hcengineering/platform/issues/8918)) · Add ws dependency to gmail ([#8922](https://github.com/hcengineering/platform/issues/8922)) · Continue processing other workspaces in case of error ([#8923](https://github.com/hcengineering/platform/issues/8923)) · Fix MTA-hook token ([#8954](https://github.com/hcengineering/platform/issues/8954)) · Fix hang in our rate limitter ([#9243](https://github.com/hcengineering/platform/issues/9243)) · Rate limit hello ([#9245](https://github.com/hcengineering/platform/issues/9245)) · Restore old workspaces ([#9260](https://github.com/hcengineering/platform/issues/9260)) · Public links ([#9264](https://github.com/hcengineering/platform/issues/9264)) · Hide achievements until achievement service implementation ([#9266](https://github.com/hcengineering/platform/issues/9266)) · Fix account use in github service ([#9276](https://github.com/hcengineering/platform/issues/9276)) · Find options ([#9290](https://github.com/hcengineering/platform/issues/9290)) · Fix parseMail test ([#9303](https://github.com/hcengineering/platform/issues/9303)) · Fix errors when disabling gmail synchronization  ([#9310](https://github.com/hcengineering/platform/issues/9310)) · Remove unactual tests and mongo-memory-server ([#9345](https://github.com/hcengineering/platform/issues/9345)) · Fixed parsing of trailing parentless text and empty markers in the markdown -> markup converter ([#9360](https://github.com/hcengineering/platform/issues/9360)) · Fix attachments in mail threads ([#9371](https://github.com/hcengineering/platform/issues/9371)) · Statistics contexts ([#9380](https://github.com/hcengineering/platform/issues/9380)) · Fix mail messages order ([#9419](https://github.com/hcengineering/platform/issues/9419)) · Markdown parsing & serialization fixes for images & tables ([#9429](https://github.com/hcengineering/platform/issues/9429)) · Use new hulygun API for mail ([#9426](https://github.com/hcengineering/platform/issues/9426)) · Clean up gmail logs ([#9433](https://github.com/hcengineering/platform/issues/9433)) · Editor toolbar z-index ([#9549](https://github.com/hcengineering/platform/issues/9549)) · Handle Hulygram errors ([#9637](https://github.com/hcengineering/platform/issues/9637)) · Use actual Gmail address ([#9727](https://github.com/hcengineering/platform/issues/9727)) 
 * QFIX: · The numbers look like emojis ([#8266](https://github.com/hcengineering/platform/issues/8266)) · ListView header ([#8570](https://github.com/hcengineering/platform/issues/8570)) · Remove dev migrations ([#8651](https://github.com/hcengineering/platform/issues/8651)) · Emoji input detection ([#8927](https://github.com/hcengineering/platform/issues/8927)) · Make github login/signup case insensitive ([#9247](https://github.com/hcengineering/platform/issues/9247)) · Ws filter in fixed tool ([#9291](https://github.com/hcengineering/platform/issues/9291)) · Tg-bot fix typo in token generation and remove mongo ([#9306](https://github.com/hcengineering/platform/issues/9306)) · Fast migration cmd of created/modified by ([#9375](https://github.com/hcengineering/platform/issues/9375)) · Adding/deleting social ids ([#9466](https://github.com/hcengineering/platform/issues/9466)) · Qms tests ([#9557](https://github.com/hcengineering/platform/issues/9557)) · Org space auto join in import ([#9562](https://github.com/hcengineering/platform/issues/9562)) · Calendar user migration ([#9707](https://github.com/hcengineering/platform/issues/9707)) · Do not cache desktop packaging results ([#9708](https://github.com/hcengineering/platform/issues/9708)) · Migrate deleted social ids in calendar events user ([#9709](https://github.com/hcengineering/platform/issues/9709)) 
 * UBER-1290: · Fix refresh token in subsequent requests ([#9550](https://github.com/hcengineering/platform/issues/9550)) 
@@ -304,7 +343,11 @@ Changelog.
 
 ## [0.6.458] - 2025-02-27
 
-* QFIX: · Fix REST API + few minors ([#8108](https://github.com/hcengineering/platform/issues/8108)) 
+* 🐛 BUG FIXES: · Join ([#8105](https://github.com/hcengineering/platform/issues/8105)) · Fix REST API + few minors ([#8108](https://github.com/hcengineering/platform/issues/8108)) 
+
+## [0.6.457] - 2025-02-27
+
+* 🐛 BUG FIXES: · Calendar ([#8104](https://github.com/hcengineering/platform/issues/8104)) 
 
 ## [0.6.456] - 2025-02-26
 
@@ -328,14 +371,16 @@ Changelog.
 ## [0.6.452] - 2025-02-24
 
 * 🚀 FEATURES: · Cookie token ([#8057](https://github.com/hcengineering/platform/issues/8057)) 
-* 🐛 BUG FIXES: · Filter props on component update ([#8080](https://github.com/hcengineering/platform/issues/8080)) · Extract video player to separate component ([#8086](https://github.com/hcengineering/platform/issues/8086)) 
+* 🐛 BUG FIXES: · Status order ([#8067](https://github.com/hcengineering/platform/issues/8067)) · Status order ([#8070](https://github.com/hcengineering/platform/issues/8070)) · HideAdd does not prevent adding by keyboard on TagsPopup ([#7246](https://github.com/hcengineering/platform/issues/7246)) · Build ([#8079](https://github.com/hcengineering/platform/issues/8079)) · Filter props on component update ([#8080](https://github.com/hcengineering/platform/issues/8080)) · Extract video player to separate component ([#8086](https://github.com/hcengineering/platform/issues/8086)) · Relations ([#8102](https://github.com/hcengineering/platform/issues/8102)) · Calendar push handler and remove unused client management ([#8078](https://github.com/hcengineering/platform/issues/8078)) 
 * 📚 DOCUMENTATION: · Add API client documentation reference ([#8099](https://github.com/hcengineering/platform/issues/8099)) 
+* ⚙️ MISCELLANEOUS TASKS: · README.md ([#6984](https://github.com/hcengineering/platform/issues/6984)) 
 * UBERF-9501: · Fix use of Date.now() ([#8069](https://github.com/hcengineering/platform/issues/8069)) 
 * UBERF-9516: · Use cards for mail threads ([#8088](https://github.com/hcengineering/platform/issues/8088)) 
 
 ## [0.6.450] - 2025-02-20
 
-* 🐛 BUG FIXES: · Limit tooltip size for left and right location ([#8055](https://github.com/hcengineering/platform/issues/8055)) 
+* 🚀 FEATURES: · TRANSACTOR_OVERRIDE in front service 
+* 🐛 BUG FIXES: · Limit tooltip size for left and right location ([#8055](https://github.com/hcengineering/platform/issues/8055)) · Max width for left tooltip position ([#8064](https://github.com/hcengineering/platform/issues/8064)) 
 * EQMS-1437: · Use different label to display trainees' results "owner". ([#8046](https://github.com/hcengineering/platform/issues/8046)) 
 * EQMS-1440: · Disable delayed qms doc effectiveness and review interval ([#8049](https://github.com/hcengineering/platform/issues/8049)) 
 * UBERF-8545: · Fix links in readonly documents ([#8050](https://github.com/hcengineering/platform/issues/8050)) 
@@ -347,11 +392,10 @@ Changelog.
 
 ## [0.6.449] - 2025-02-18
 
-* 🐛 BUG FIXES: · Use workspace uuid in front service ([#8024](https://github.com/hcengineering/platform/issues/8024)) 
+* 🐛 BUG FIXES: · Use workspace uuid in front service ([#8024](https://github.com/hcengineering/platform/issues/8024)) · Allow to copy workspace uuid from admin ([#8025](https://github.com/hcengineering/platform/issues/8025)) · Fix missing SES_AUTH_TOKEN ([#8026](https://github.com/hcengineering/platform/issues/8026)) 
 * CF: · Transactor fixes ([#8045](https://github.com/hcengineering/platform/issues/8045)) 
 * EQMS-1435: · Enable watermark in obsolete documents ([#8032](https://github.com/hcengineering/platform/issues/8032)) 
 * EQMS-1445: · Fixed qms doc commments theme styling ([#8031](https://github.com/hcengineering/platform/issues/8031)) 
-* QFIX: · Allow to copy workspace uuid from admin ([#8025](https://github.com/hcengineering/platform/issues/8025)) · Fix missing SES_AUTH_TOKEN ([#8026](https://github.com/hcengineering/platform/issues/8026)) 
 * UBERF-9297: · Fix space selection for emails ([#8035](https://github.com/hcengineering/platform/issues/8035)) · Store smtp mail id ([#8044](https://github.com/hcengineering/platform/issues/8044)) 
 * UBERF-9400: · Show name on login screen ([#8013](https://github.com/hcengineering/platform/issues/8013)) 
 * UBERF-9458: · OTP sign up ([#8043](https://github.com/hcengineering/platform/issues/8043)) 
@@ -362,7 +406,7 @@ Changelog.
 
 ## [0.6.448] - 2025-02-17
 
-* 🐛 BUG FIXES: · Handle token decode errors ([#8018](https://github.com/hcengineering/platform/issues/8018)) · Use workspace uuid in image and blob links ([#8019](https://github.com/hcengineering/platform/issues/8019)) · Do not display empty link preview in case of file error ([#8020](https://github.com/hcengineering/platform/issues/8020)) 
+* 🐛 BUG FIXES: · Pnpm lock file · Svelte-check merge issue · Create employee case senstive ([#8004](https://github.com/hcengineering/platform/issues/8004)) · Handle token decode errors ([#8018](https://github.com/hcengineering/platform/issues/8018)) · Use workspace uuid in image and blob links ([#8019](https://github.com/hcengineering/platform/issues/8019)) · Do not display empty link preview in case of file error ([#8020](https://github.com/hcengineering/platform/issues/8020)) 
 * QFIX: · Pass extra token details in selectWorkspace ([#8010](https://github.com/hcengineering/platform/issues/8010)) · Load spinner ([#8014](https://github.com/hcengineering/platform/issues/8014)) 
 * UBERF-8425: · Fix get pending workspace on CR ([#8009](https://github.com/hcengineering/platform/issues/8009)) 
 * UBERF-9429: · Provide workspace ids to storage adapters ([#7956](https://github.com/hcengineering/platform/issues/7956)) 
@@ -374,10 +418,13 @@ Changelog.
 
 ## [0.6.447] - 2025-02-13
 
-* QFIX: · Minor changes to cloud transactor ([#7998](https://github.com/hcengineering/platform/issues/7998)) · Add promise catches ([#8002](https://github.com/hcengineering/platform/issues/8002)) 
+* 🐛 BUG FIXES: · 'Code' style ([#7999](https://github.com/hcengineering/platform/issues/7999)) · Minor changes to cloud transactor ([#7998](https://github.com/hcengineering/platform/issues/7998)) · Versions · Add promise catches ([#8002](https://github.com/hcengineering/platform/issues/8002)) 
+* ⚙️ MISCELLANEOUS TASKS: · Push of latest image in develop ([#8000](https://github.com/hcengineering/platform/issues/8000)) · S0.7.1 
 
 ## [0.6.443] - 2025-02-12
 
+* 🐛 BUG FIXES: · Attribute class in activity for arrays ([#7983](https://github.com/hcengineering/platform/issues/7983)) · Reaction migration ([#7985](https://github.com/hcengineering/platform/issues/7985)) · Cloud transactor extra size ([#7988](https://github.com/hcengineering/platform/issues/7988)) · Standalone mode for IPhone/IPad ([#7989](https://github.com/hcengineering/platform/issues/7989)) · Directs activity ([#7991](https://github.com/hcengineering/platform/issues/7991)) · Typo 
+* ⚙️ MISCELLANEOUS TASKS: · Version to 442 · Model 445 
 * QFIX: · Mongo status collection ([#7990](https://github.com/hcengineering/platform/issues/7990)) 
 * UBERF-8425: · Account DB unit tests ([#7994](https://github.com/hcengineering/platform/issues/7994)) 
 * UBERF-9457: · Region move fixes + tests ([#7986](https://github.com/hcengineering/platform/issues/7986)) 
@@ -390,9 +437,8 @@ Changelog.
 
 ## [0.6.438] - 2025-02-11
 
-* 🐛 BUG FIXES: · Remove debug output ([#7973](https://github.com/hcengineering/platform/issues/7973)) 
+* 🐛 BUG FIXES: · Remove debug output ([#7973](https://github.com/hcengineering/platform/issues/7973)) · Transactor api auth ([#7974](https://github.com/hcengineering/platform/issues/7974)) · Desktop nav link · Nav link 
 * ⚙️ MISCELLANEOUS TASKS: · Upgrade livekit sdk to fix sharing issues ([#7972](https://github.com/hcengineering/platform/issues/7972)) 
-* QFIX: · Desktop nav link 
 * UBERF-9435: · Restore workbench tab preferences ([#7965](https://github.com/hcengineering/platform/issues/7965)) 
 
 ## [0.6.436] - 2025-02-10
@@ -408,7 +454,6 @@ Changelog.
 * 🐛 BUG FIXES: · Infinite loop ([#7952](https://github.com/hcengineering/platform/issues/7952)) · Bump version · Formatting · Notifications ([#7955](https://github.com/hcengineering/platform/issues/7955)) · Admin panel ([#7953](https://github.com/hcengineering/platform/issues/7953)) · Green reserve ([#7951](https://github.com/hcengineering/platform/issues/7951)) · Cleanup DocumentEmbeddings in database ([#7958](https://github.com/hcengineering/platform/issues/7958)) 
 * ⚙️ MISCELLANEOUS TASKS: · 0.7 tagTime versioning · Redundant update and extra operations in migrations ([#7954](https://github.com/hcengineering/platform/issues/7954)) · Model version 
 * EQMS-1430: · Fixed infinite loop in Channellnput ([#7961](https://github.com/hcengineering/platform/issues/7961)) 
-* QFIX: · Admin panel ([#7953](https://github.com/hcengineering/platform/issues/7953)) 
 * QFIX: · Check getWeekInfo (support for older browsers, Firefox). ([#7963](https://github.com/hcengineering/platform/issues/7963)) 
 * QFIX: · Remove types cmd ([#7962](https://github.com/hcengineering/platform/issues/7962)) 
 * QFIX: · Correctly display long strings ([#7957](https://github.com/hcengineering/platform/issues/7957)) 
@@ -543,7 +588,6 @@ Changelog.
 
 ## [0.6.408] - 2025-01-17
 
-* 🚀 FEATURES: · Viber ([#7684](https://github.com/hcengineering/platform/issues/7684)) 
 * EZQMS-1234: · Means for transferring controlled documents between spaces ([#7691](https://github.com/hcengineering/platform/issues/7691)) 
 
 ## [0.6.407] - 2025-01-15
@@ -557,7 +601,6 @@ Changelog.
 
 ## [0.6.406] - 2025-01-14
 
-* 🚀 FEATURES: · Front base image · Relation functionality ([#7653](https://github.com/hcengineering/platform/issues/7653)) 
 * 🐛 BUG FIXES: · Reject query promise on error ([#7650](https://github.com/hcengineering/platform/issues/7650)) · Push of base images · Base image build · Docker base build · Push · Front base image build · Push version · Expandables ([#7655](https://github.com/hcengineering/platform/issues/7655)) · Front pod base image · Edge case for Link extenstions ([#7646](https://github.com/hcengineering/platform/issues/7646)) · Auth error in transactor rcp ([#7661](https://github.com/hcengineering/platform/issues/7661)) 
 * EZQMS-1317: · Authors signature on review and approval request & block review bypass ([#7631](https://github.com/hcengineering/platform/issues/7631)) 
 
@@ -569,7 +612,6 @@ Changelog.
 
 ## [0.6.404] - 2025-01-11
 
-* 🚀 FEATURES: · German translation ([#7636](https://github.com/hcengineering/platform/issues/7636)) 
 * 🐛 BUG FIXES: · Restore services work ([#7641](https://github.com/hcengineering/platform/issues/7641)) 
 
 ## [0.6.403] - 2025-01-10
@@ -623,7 +665,6 @@ Changelog.
 
 ## [0.6.394] - 2024-12-25
 
-* 🚀 FEATURES: · Storage key for viewlet view options ([#7545](https://github.com/hcengineering/platform/issues/7545)) 
 * UBERF-9015: · Remove confusing SYSTEM_EMAIL env ([#7548](https://github.com/hcengineering/platform/issues/7548)) 
 * UBERF-9017: · Reduce createTable calls ([#7550](https://github.com/hcengineering/platform/issues/7550)) 
 
@@ -643,7 +684,7 @@ Changelog.
 
 ## [0.6.390] - 2024-12-20
 
-* 🚀 FEATURES: · Initial transactor rpc ([#7490](https://github.com/hcengineering/platform/issues/7490)) · Resend invitation to kicked employee ([#7472](https://github.com/hcengineering/platform/issues/7472)) 
+* 🚀 FEATURES: · Resend invitation to kicked employee ([#7472](https://github.com/hcengineering/platform/issues/7472)) 
 * 🐛 BUG FIXES: · Chat menu actions ([#7493](https://github.com/hcengineering/platform/issues/7493)) · Search in slash command menu ([#7495](https://github.com/hcengineering/platform/issues/7495)) · Add missing 'mode IN' to archivingSql query ([#7510](https://github.com/hcengineering/platform/issues/7510)) · Enable all available languages by default ([#7513](https://github.com/hcengineering/platform/issues/7513)) 
 * UBERF-8895: · Workspace UUIDs in PG/CR data tables ([#7471](https://github.com/hcengineering/platform/issues/7471)) 
 * UBERF-8957: · Allow to use storage in backup-restore via tool ([#7491](https://github.com/hcengineering/platform/issues/7491)) 
@@ -651,7 +692,6 @@ Changelog.
 
 ## [0.6.389] - 2024-12-16
 
-* 🚀 FEATURES: · Openai transcription provider ([#7480](https://github.com/hcengineering/platform/issues/7480)) 
 * 🐛 BUG FIXES: · Improve reactions tooltip ([#7470](https://github.com/hcengineering/platform/issues/7470)) · Restore wiki content fixes ([#7474](https://github.com/hcengineering/platform/issues/7474)) · Extra proxies ([#7483](https://github.com/hcengineering/platform/issues/7483)) 
 * QFIX: · Add limit to count queries ([#7458](https://github.com/hcengineering/platform/issues/7458)) 
 
@@ -674,7 +714,6 @@ Changelog.
 
 ## [0.6.384] - 2024-12-12
 
-* 🚀 FEATURES: · Optional size parameter to move method for ([#7442](https://github.com/hcengineering/platform/issues/7442)) 
 * 🐛 BUG FIXES: · Chat red dots ([#7440](https://github.com/hcengineering/platform/issues/7440)) 
 
 ## [0.6.383] - 2024-12-12
@@ -701,7 +740,7 @@ Changelog.
 
 ## [0.6.379] - 2024-12-10
 
-* 🚀 FEATURES: · Room settings on panel & reduce finds ([#7399](https://github.com/hcengineering/platform/issues/7399)) · Default activity in documents ([#7401](https://github.com/hcengineering/platform/issues/7401)) 
+* 🚀 FEATURES: · Default activity in documents ([#7401](https://github.com/hcengineering/platform/issues/7401)) 
 * 🐛 BUG FIXES: · Recruit viewlets selector ([#7400](https://github.com/hcengineering/platform/issues/7400)) · *(tracker)* Edit workflow status redirect ([#7392](https://github.com/hcengineering/platform/issues/7392)) · Security ([#7403](https://github.com/hcengineering/platform/issues/7403)) · Chat nav ([#7404](https://github.com/hcengineering/platform/issues/7404)) 
 * ⚙️ MISCELLANEOUS TASKS: · Outdated aside ([#7405](https://github.com/hcengineering/platform/issues/7405)) 
 
@@ -741,7 +780,6 @@ Changelog.
 
 ## [0.6.371] - 2024-12-06
 
-* 🚀 FEATURES: · Text tool for drawings ([#7266](https://github.com/hcengineering/platform/issues/7266)) 
 * 🐛 BUG FIXES: · Space security ([#7278](https://github.com/hcengineering/platform/issues/7278)) 
 * UBERF-8619: · Rework backup %hash% usage ([#7273](https://github.com/hcengineering/platform/issues/7273)) 
 * UBERF-8627: · Enable test management ([#7274](https://github.com/hcengineering/platform/issues/7274)) 
@@ -770,12 +808,11 @@ Changelog.
 
 ## [0.6.365] - 2024-12-03
 
-* 🚀 FEATURES: · No operation update flow ([#7251](https://github.com/hcengineering/platform/issues/7251)) · Next test button ([#7247](https://github.com/hcengineering/platform/issues/7247)) 
+* 🚀 FEATURES: · No operation update flow ([#7251](https://github.com/hcengineering/platform/issues/7251)) 
 * 🐛 BUG FIXES: · Optimize json content migration ([#7252](https://github.com/hcengineering/platform/issues/7252)) · Make todos and commands working in meeting minutes ([#7244](https://github.com/hcengineering/platform/issues/7244)) · Queries for $in: [null, ...etc] in pg ([#7253](https://github.com/hcengineering/platform/issues/7253)) 
 
 ## [0.6.364] - 2024-12-02
 
-* 🚀 FEATURES: · Drawing board to collaborative doc editor ([#7243](https://github.com/hcengineering/platform/issues/7243)) 
 * 🐛 BUG FIXES: · Add document inline editor ([#7233](https://github.com/hcengineering/platform/issues/7233)) · Meetings transcription ([#7240](https://github.com/hcengineering/platform/issues/7240)) · Test suite and test run default selection ([#7250](https://github.com/hcengineering/platform/issues/7250)) 
 * UBERF-8584: · Add test runs ([#7235](https://github.com/hcengineering/platform/issues/7235)) 
 * UBERF-8607: · Fix inbox embedding ([#7236](https://github.com/hcengineering/platform/issues/7236)) 
@@ -815,7 +852,7 @@ Changelog.
 
 ## [0.6.357] - 2024-11-13
 
-* 🚀 FEATURES: · Calendar schema ([#7156](https://github.com/hcengineering/platform/issues/7156)) · Draft survey app ([#7162](https://github.com/hcengineering/platform/issues/7162)) 
+* 🚀 FEATURES: · Calendar schema ([#7156](https://github.com/hcengineering/platform/issues/7156)) 
 * UBERF-8520: · Test management ([#7154](https://github.com/hcengineering/platform/issues/7154)) 
 * UBERF-8582: · Fix triggers ([#7155](https://github.com/hcengineering/platform/issues/7155)) 
 
@@ -827,7 +864,6 @@ Changelog.
 
 ## [0.6.355] - 2024-11-11
 
-* 🚀 FEATURES: · Rate limiting to push notification sending process ([#7149](https://github.com/hcengineering/platform/issues/7149)) 
 * UBERF-8552: · Extract indexer into separate service ([#7120](https://github.com/hcengineering/platform/issues/7120)) 
 
 ## [0.6.354] - 2024-11-11
@@ -860,8 +896,7 @@ Changelog.
 
 ## [0.6.348] - 2024-11-05
 
-* 🚀 FEATURES: · Italian fixes ([#7096](https://github.com/hcengineering/platform/issues/7096)) · Missing commit ([#7097](https://github.com/hcengineering/platform/issues/7097)) 
-* 🐛 BUG FIXES: · Pg application name ([#7087](https://github.com/hcengineering/platform/issues/7087)) · Class editor ([#7099](https://github.com/hcengineering/platform/issues/7099)) 
+* 🐛 BUG FIXES: · Pg application name ([#7087](https://github.com/hcengineering/platform/issues/7087)) · Add missing commit ([#7097](https://github.com/hcengineering/platform/issues/7097)) · Class editor ([#7099](https://github.com/hcengineering/platform/issues/7099)) 
 * ⚙️ MISCELLANEOUS TASKS: · Notification subscriptions when an employee is deactivated ([#7089](https://github.com/hcengineering/platform/issues/7089)) 
 * UBERF-8569: · Backup service regions support ([#7090](https://github.com/hcengineering/platform/issues/7090)) 
 
@@ -871,13 +906,8 @@ Changelog.
 * ⚙️ MISCELLANEOUS TASKS: · Outdated push subscription ([#7080](https://github.com/hcengineering/platform/issues/7080)) 
 * UBERF-8563: · Fix due date selection ([#7073](https://github.com/hcengineering/platform/issues/7073)) 
 
-## [0.6.346] - 2024-10-30
-
-* 🚀 FEATURES: · Warning for telegram integration ([#7065](https://github.com/hcengineering/platform/issues/7065)) · Docs for supported import formats ([#7064](https://github.com/hcengineering/platform/issues/7064)) 
-
 ## [0.6.345] - 2024-10-29
 
-* 🚀 FEATURES: · Select domain for move tool ([#7057](https://github.com/hcengineering/platform/issues/7057)) 
 * UBERF-8547: · Inbox cleanup  and other ([#7058](https://github.com/hcengineering/platform/issues/7058)) 
 * UBERF-8553: · Stats as separate service ([#7054](https://github.com/hcengineering/platform/issues/7054)) 
 
@@ -912,7 +942,8 @@ Changelog.
 
 ## [0.6.336] - 2024-10-23
 
-* 🐛 BUG FIXES: · Use string content type instead of enum ([#7007](https://github.com/hcengineering/platform/issues/7007)) · Datalake logs and fixes ([#7015](https://github.com/hcengineering/platform/issues/7015)) · Datalake fixes and perftest ([#7016](https://github.com/hcengineering/platform/issues/7016)) · Datalake memory limit issue ([#7018](https://github.com/hcengineering/platform/issues/7018)) 
+* 🚀 FEATURES: · Convert guest to user via invite link ([#7014](https://github.com/hcengineering/platform/issues/7014)) 
+* 🐛 BUG FIXES: · Use string content type instead of enum ([#7007](https://github.com/hcengineering/platform/issues/7007)) · Workspace creation with index enabled ([#7013](https://github.com/hcengineering/platform/issues/7013)) · Allow empty string filters ([#7010](https://github.com/hcengineering/platform/issues/7010)) · Datalake logs and fixes ([#7015](https://github.com/hcengineering/platform/issues/7015)) · Datalake fixes and perftest ([#7016](https://github.com/hcengineering/platform/issues/7016)) · Datalake memory limit issue ([#7018](https://github.com/hcengineering/platform/issues/7018)) · Cockroach ([#6965](https://github.com/hcengineering/platform/issues/6965)) 
 * UBERF-8525: · Fix Github stuck on adding new integrations ([#7009](https://github.com/hcengineering/platform/issues/7009)) 
 
 ## [0.6.334] - 2024-10-21
@@ -928,8 +959,8 @@ Changelog.
 
 ## [0.6.333] - 2024-10-20
 
-* 🚀 FEATURES: · Datalake worker initial version ([#6952](https://github.com/hcengineering/platform/issues/6952)) 
-* 🐛 BUG FIXES: · Use ordered list start attribute ([#6974](https://github.com/hcengineering/platform/issues/6974)) 
+* 🚀 FEATURES: · Ws upgrade logging ([#6967](https://github.com/hcengineering/platform/issues/6967)) · Datalake worker initial version ([#6952](https://github.com/hcengineering/platform/issues/6952)) 
+* 🐛 BUG FIXES: · Reverse scroll bar scrolling with bar pull ([#6968](https://github.com/hcengineering/platform/issues/6968)) · Use ordered list start attribute ([#6974](https://github.com/hcengineering/platform/issues/6974)) 
 * UBERF-8427: · Fix desktop oauth flow ([#6975](https://github.com/hcengineering/platform/issues/6975)) 
 * UBERF-8500: · Improve OIDC init logging ([#6981](https://github.com/hcengineering/platform/issues/6981)) 
 * UBERF-8510: · Fix OOM in backup service ([#6973](https://github.com/hcengineering/platform/issues/6973)) 
@@ -1028,14 +1059,12 @@ Changelog.
 
 ## [0.6.316] - 2024-10-03
 
-* 🚀 FEATURES: · Workbench tabs ([#6788](https://github.com/hcengineering/platform/issues/6788)) 
 * ⚙️ MISCELLANEOUS TASKS: · Model version 
 * QFIX: · Account migration ([#6787](https://github.com/hcengineering/platform/issues/6787)) 
 * UBERF-8333: · Retry WS handshake ([#6786](https://github.com/hcengineering/platform/issues/6786)) 
 
 ## [0.6.315] - 2024-10-02
 
-* 🚀 FEATURES: · Chat and inbox fixes ([#6779](https://github.com/hcengineering/platform/issues/6779)) 
 * 🐛 BUG FIXES: · Published packages and bump script ([#6778](https://github.com/hcengineering/platform/issues/6778)) 
 * ⚙️ MISCELLANEOUS TASKS: · Model version to 315 
 * UBERF-8324: · Fix null in external sync and todos ([#6777](https://github.com/hcengineering/platform/issues/6777)) 
@@ -1082,7 +1111,6 @@ Changelog.
 
 ## [0.6.308] - 2024-09-25
 
-* 🚀 FEATURES: · Notifications middleware to do not send updates for all users ([#6714](https://github.com/hcengineering/platform/issues/6714)) 
 * 🐛 BUG FIXES: · Attachment actions icon and image size ([#6710](https://github.com/hcengineering/platform/issues/6710)) · Inbox rerender on delete ([#6709](https://github.com/hcengineering/platform/issues/6709)) 
 * ⚙️ MISCELLANEOUS TASKS: · Migration version 
 * UBERF-8259: · Do not store system model into DB ([#6716](https://github.com/hcengineering/platform/issues/6716)) 
@@ -1100,7 +1128,6 @@ Changelog.
 
 ## [0.6.305] - 2024-09-23
 
-* 🚀 FEATURES: · Employee action to start conversation ([#6687](https://github.com/hcengineering/platform/issues/6687)) 
 * 🐛 BUG FIXES: · Better handling png image size for scale < 2 ([#6688](https://github.com/hcengineering/platform/issues/6688)) 
 * ⚙️ MISCELLANEOUS TASKS: · Model version 
 * UBERF-8226: · Fix backup service OOM ([#6683](https://github.com/hcengineering/platform/issues/6683)) 
@@ -1108,7 +1135,6 @@ Changelog.
 
 ## [0.6.304] - 2024-09-23
 
-* 🚀 FEATURES: · Chat fixes ([#6682](https://github.com/hcengineering/platform/issues/6682)) 
 * ⚙️ MISCELLANEOUS TASKS: · Model version 
 * UBERF-8224: · Fix undefined rejection exception ([#6677](https://github.com/hcengineering/platform/issues/6677)) 
 
@@ -1125,7 +1151,6 @@ Changelog.
 
 ## [0.6.301] - 2024-09-20
 
-* 🚀 FEATURES: · Translate message action ([#6609](https://github.com/hcengineering/platform/issues/6609)) · Config for baseUrl ([#6645](https://github.com/hcengineering/platform/issues/6645)) 
 * 🐛 BUG FIXES: · Duplicated issues contexts ([#6641](https://github.com/hcengineering/platform/issues/6641)) · Office join ([#6650](https://github.com/hcengineering/platform/issues/6650)) 
 * ⚙️ MISCELLANEOUS TASKS: · Bold.ru mentions ([#6649](https://github.com/hcengineering/platform/issues/6649)) · Model version 
 * PLANNER: · Fixed sticking to events when resizing ([#6648](https://github.com/hcengineering/platform/issues/6648)) 
@@ -1145,7 +1170,6 @@ Changelog.
 
 ## [0.6.298] - 2024-09-18
 
-* 🚀 FEATURES: · Widgets sidebar ([#6578](https://github.com/hcengineering/platform/issues/6578)) 
 * ⚙️ MISCELLANEOUS TASKS: · Model version to v0.6.298 
 * UBERF-8139: · Check server version when connecting from client ([#6608](https://github.com/hcengineering/platform/issues/6608)) 
 * UBERF-8150: · Update to fresh mongo ([#6603](https://github.com/hcengineering/platform/issues/6603)) 
@@ -1163,7 +1187,6 @@ Changelog.
 
 ## [0.6.295] - 2024-09-16
 
-* 🚀 FEATURES: · Test for downloading PDF ([#6541](https://github.com/hcengineering/platform/issues/6541)) 
 * 🐛 BUG FIXES: · Proper order of versions in upgrade string ([#6567](https://github.com/hcengineering/platform/issues/6567)) · Check for deleted objects ([#6581](https://github.com/hcengineering/platform/issues/6581)) · Double tx apply with needResult true ([#6585](https://github.com/hcengineering/platform/issues/6585)) 
 * ⚙️ MISCELLANEOUS TASKS: · UWS ([#6575](https://github.com/hcengineering/platform/issues/6575)) 
 * UBERF-8098: · Basic client metrics in UI ([#6556](https://github.com/hcengineering/platform/issues/6556)) 
@@ -1182,7 +1205,6 @@ Changelog.
 
 ## [0.6.293] - 2024-09-12
 
-* 🚀 FEATURES: · Req 10 test ([#6458](https://github.com/hcengineering/platform/issues/6458)) 
 * 🐛 BUG FIXES: · Channels hide and return autohide ([#6529](https://github.com/hcengineering/platform/issues/6529)) 
 * ⚙️ MISCELLANEOUS TASKS: · QMS docker-compose.yaml so it can view and download PDF files ([#6507](https://github.com/hcengineering/platform/issues/6507)) · Model version 
 * UBERF-8071: · Fix workspace service parallel param ([#6540](https://github.com/hcengineering/platform/issues/6540)) 
@@ -1203,8 +1225,9 @@ Changelog.
 
 ## [0.6.289] - 2024-09-10
 
-* 🚀 FEATURES: · Codeblock syntax highlight ([#6505](https://github.com/hcengineering/platform/issues/6505)) 
-* 🐛 BUG FIXES: · Improve codeblock wrapping ([#6440](https://github.com/hcengineering/platform/issues/6440)) · Build and push docker containers for s-prefixed tags ([#6442](https://github.com/hcengineering/platform/issues/6442)) · Copy template content when creating controlled document ([#6441](https://github.com/hcengineering/platform/issues/6441)) · Use workspace id in collaborator ([#6447](https://github.com/hcengineering/platform/issues/6447)) · URI encode datalake blob id and more workspace fixes ([#6449](https://github.com/hcengineering/platform/issues/6449)) · Pass actionPopup to action props ([#6467](https://github.com/hcengineering/platform/issues/6467)) · Retry requests to collaborator in case of failure ([#6468](https://github.com/hcengineering/platform/issues/6468)) · Get rid of removeAllObjects by prefix ([#6479](https://github.com/hcengineering/platform/issues/6479)) · Remove prefixes from listStream method parameters ([#6480](https://github.com/hcengineering/platform/issues/6480)) · Implement better todos parsing ([#6497](https://github.com/hcengineering/platform/issues/6497)) · Better nested todos parsing ([#6499](https://github.com/hcengineering/platform/issues/6499)) 
+* 🚀 FEATURES: · Manual staging builds · To send message from tg bot to channels ([#6472](https://github.com/hcengineering/platform/issues/6472)) · Codeblock syntax highlight ([#6505](https://github.com/hcengineering/platform/issues/6505)) 
+* 🐛 BUG FIXES: · Improve codeblock wrapping ([#6440](https://github.com/hcengineering/platform/issues/6440)) · Upgrade failed ([#6432](https://github.com/hcengineering/platform/issues/6432)) · Model version to be same as in main · Build and push docker containers for s-prefixed tags ([#6442](https://github.com/hcengineering/platform/issues/6442)) · Copy template content when creating controlled document ([#6441](https://github.com/hcengineering/platform/issues/6441)) · Use workspace id in collaborator ([#6447](https://github.com/hcengineering/platform/issues/6447)) · URI encode datalake blob id and more workspace fixes ([#6449](https://github.com/hcengineering/platform/issues/6449)) · Adding person to department action ([#6455](https://github.com/hcengineering/platform/issues/6455)) · Host.docker.internal on linux ([#6443](https://github.com/hcengineering/platform/issues/6443)) ([#6451](https://github.com/hcengineering/platform/issues/6451)) · Pass actionPopup to action props ([#6467](https://github.com/hcengineering/platform/issues/6467)) · Retry requests to collaborator in case of failure ([#6468](https://github.com/hcengineering/platform/issues/6468)) · Document channel disappear after message write ([#6477](https://github.com/hcengineering/platform/issues/6477)) · Chat actions labels ([#6474](https://github.com/hcengineering/platform/issues/6474)) · Get rid of removeAllObjects by prefix ([#6479](https://github.com/hcengineering/platform/issues/6479)) · Remove prefixes from listStream method parameters ([#6480](https://github.com/hcengineering/platform/issues/6480)) · Implement better todos parsing ([#6497](https://github.com/hcengineering/platform/issues/6497)) · Extra notify marker in chat ([#6500](https://github.com/hcengineering/platform/issues/6500)) · Better nested todos parsing ([#6499](https://github.com/hcengineering/platform/issues/6499)) 
+* ⚙️ MISCELLANEOUS TASKS: · Model version · Changelog 
 * UBERF-7684: · Workspace service ([#6460](https://github.com/hcengineering/platform/issues/6460)) 
 * UBERF-7915: · Support tg bot attachments ([#6471](https://github.com/hcengineering/platform/issues/6471)) 
 * UBERF-7922: · Split Server Storage to middlewares ([#6464](https://github.com/hcengineering/platform/issues/6464)) 
@@ -1223,7 +1246,12 @@ Changelog.
 
 ## [0.6.288] - 2024-09-03
 
-* 🐛 BUG FIXES: · Pass actionPopup to action props ([#6467](https://github.com/hcengineering/platform/issues/6467)) · Get rid of removeAllObjects by prefix ([#6479](https://github.com/hcengineering/platform/issues/6479)) 
+* 🐛 BUG FIXES: · Adding person to department action ([#6455](https://github.com/hcengineering/platform/issues/6455)) · Pass actionPopup to action props ([#6467](https://github.com/hcengineering/platform/issues/6467)) · Document channel disappear after message write ([#6477](https://github.com/hcengineering/platform/issues/6477)) · Get rid of removeAllObjects by prefix ([#6479](https://github.com/hcengineering/platform/issues/6479)) 
+
+## [0.6.287] - 2024-08-28
+
+* 🐛 BUG FIXES: · Office popup join button ([#6421](https://github.com/hcengineering/platform/issues/6421)) · Activity for sharing tg messages ([#6420](https://github.com/hcengineering/platform/issues/6420)) · Office select device ([#6422](https://github.com/hcengineering/platform/issues/6422)) · Email notification ([#6425](https://github.com/hcengineering/platform/issues/6425)) · Wrong position of social media icon ([#6426](https://github.com/hcengineering/platform/issues/6426)) · Space security ([#6428](https://github.com/hcengineering/platform/issues/6428)) · Missing mention notification for chat messages ([#6429](https://github.com/hcengineering/platform/issues/6429)) · Bot popup closing ([#6430](https://github.com/hcengineering/platform/issues/6430)) 
+* ⚙️ MISCELLANEOUS TASKS: · Apply for create workspace ([#6416](https://github.com/hcengineering/platform/issues/6416)) · Model version · Changelog · Docker staging push · Version 
 
 ## [0.6.286] - 2024-08-28
 
@@ -1250,7 +1278,7 @@ Changelog.
 
 ## [0.6.284] - 2024-08-23
 
-* 🚀 FEATURES: · Who is typing ([#6373](https://github.com/hcengineering/platform/issues/6373)) · Support worksapce ([#6360](https://github.com/hcengineering/platform/issues/6360)) 
+* 🚀 FEATURES: · Support worksapce ([#6360](https://github.com/hcengineering/platform/issues/6360)) 
 * 🐛 BUG FIXES: · Do not resolve srcset for urls ([#6367](https://github.com/hcengineering/platform/issues/6367)) · Add limit and retries to move files tool ([#6368](https://github.com/hcengineering/platform/issues/6368)) 
 * ⚙️ MISCELLANEOUS TASKS: · Exist openai plugin ([#6377](https://github.com/hcengineering/platform/issues/6377)) · Model version 
 * UBERF-7927: · Get rid of product id ([#6375](https://github.com/hcengineering/platform/issues/6375)) 
@@ -1271,7 +1299,6 @@ Changelog.
 
 ## [0.6.281] - 2024-08-20
 
-* 🚀 FEATURES: · Logs on notify request ([#6295](https://github.com/hcengineering/platform/issues/6295)) 
 * 🐛 BUG FIXES: · Does not send email confirmation when signup with otp ([#6292](https://github.com/hcengineering/platform/issues/6292)) · Wrong spaces ([#6296](https://github.com/hcengineering/platform/issues/6296)) · Build print and sign services for arm64 ([#6321](https://github.com/hcengineering/platform/issues/6321)) · Telegram bot ([#6323](https://github.com/hcengineering/platform/issues/6323)) · Email notifications ([#6328](https://github.com/hcengineering/platform/issues/6328)) · Ne search ([#6330](https://github.com/hcengineering/platform/issues/6330)) · Notifications on pr create ([#6332](https://github.com/hcengineering/platform/issues/6332)) · Analytics collector and ai-bot services ([#6331](https://github.com/hcengineering/platform/issues/6331)) · FulltextUrl in account ([#6349](https://github.com/hcengineering/platform/issues/6349)) · FullTextUrl ([#6355](https://github.com/hcengineering/platform/issues/6355)) · Docker build order ([#6354](https://github.com/hcengineering/platform/issues/6354)) · Clone model requests on server if possible ([#6353](https://github.com/hcengineering/platform/issues/6353)) 
 * ⚙️ MISCELLANEOUS TASKS: · Model version to 0.6.281 
 * QFIX: · Change default filter for my docs in controlled documents ([#6290](https://github.com/hcengineering/platform/issues/6290)) · Fix duplicates in inbox from multiple accounts ([#6306](https://github.com/hcengineering/platform/issues/6306)) 
@@ -1306,7 +1333,6 @@ Changelog.
 
 ## [0.6.277] - 2024-08-08
 
-* 🚀 FEATURES: · Telegram bot fixes ([#6281](https://github.com/hcengineering/platform/issues/6281)) 
 * 🐛 BUG FIXES: · ServerStorage ([#6283](https://github.com/hcengineering/platform/issues/6283)) 
 * UBERF-7604: · Telegram notifications service ([#6182](https://github.com/hcengineering/platform/issues/6182)) 
 * EZQMS-1029: · Fix permissions check for creating project doc from context menu ([#6282](https://github.com/hcengineering/platform/issues/6282)) 
@@ -1314,7 +1340,6 @@ Changelog.
 
 ## [0.6.276] - 2024-08-07
 
-* 🚀 FEATURES: · Test for req-7 ([#6233](https://github.com/hcengineering/platform/issues/6233)) 
 * 🐛 BUG FIXES: · Rekoni service build ([#6255](https://github.com/hcengineering/platform/issues/6255)) · Indexer use of $ne ([#6264](https://github.com/hcengineering/platform/issues/6264)) · Docke target to include ai-bot · Love connection ([#6275](https://github.com/hcengineering/platform/issues/6275)) 
 * ⚙️ MISCELLANEOUS TASKS: · Version to v0.6.276 
 * UBERF-7604: · Preparation for telegram notifications ([#6123](https://github.com/hcengineering/platform/issues/6123)) 
@@ -1336,17 +1361,12 @@ Changelog.
 * UBERF-7800: · Space improvements ([#6250](https://github.com/hcengineering/platform/issues/6250)) 
 * UBERF-7764: · Improve space permissions query ([#6236](https://github.com/hcengineering/platform/issues/6236)) 
 
-## [0.6.273] - 2024-08-02
-
-* 🚀 FEATURES: · File moving tool ([#6223](https://github.com/hcengineering/platform/issues/6223)) 
-
 ## [0.6.272] - 2024-08-02
 
 * ⚙️ MISCELLANEOUS TASKS: · Model version to v0.6.272 · Model check for now 
 
 ## [0.6.271] - 2024-08-02
 
-* 🚀 FEATURES: · Privacy policy link to Help & Support side panel ([#6221](https://github.com/hcengineering/platform/issues/6221)) 
 * 🐛 BUG FIXES: · I18n ([#6222](https://github.com/hcengineering/platform/issues/6222)) · Workspace initializer ([#6232](https://github.com/hcengineering/platform/issues/6232)) · Load of applications in tables/lists/kanban ([#6231](https://github.com/hcengineering/platform/issues/6231)) 
 * ⚙️ MISCELLANEOUS TASKS: · Dev version ([#6228](https://github.com/hcengineering/platform/issues/6228)) 
 * UBERF-7776: · Get rid of blobs in UI ([#6226](https://github.com/hcengineering/platform/issues/6226)) 
@@ -1361,7 +1381,6 @@ Changelog.
 
 ## [0.6.271rc1] - 2024-08-01
 
-* 🚀 FEATURES: · Login and signup by code ([#6097](https://github.com/hcengineering/platform/issues/6097)) 
 * 🐛 BUG FIXES: · Guest links ([#6172](https://github.com/hcengineering/platform/issues/6172)) · Maintenance period warning ([#6179](https://github.com/hcengineering/platform/issues/6179)) · Message text alignment ([#6178](https://github.com/hcengineering/platform/issues/6178)) · For cases when fileType is null which causes infinite loading bug ([#6174](https://github.com/hcengineering/platform/issues/6174)) · Services connectivity ([#6193](https://github.com/hcengineering/platform/issues/6193)) · Otp code paste in mobile browsers ([#6197](https://github.com/hcengineering/platform/issues/6197)) · Love join ([#6209](https://github.com/hcengineering/platform/issues/6209)) · Model find space security ([#6210](https://github.com/hcengineering/platform/issues/6210)) · Drive UX fixes ([#6213](https://github.com/hcengineering/platform/issues/6213)) 
 * ⚙️ MISCELLANEOUS TASKS: · Extra log ([#6190](https://github.com/hcengineering/platform/issues/6190)) · Cross-platform docker build ([#6198](https://github.com/hcengineering/platform/issues/6198)) · Update hocuspocus version ([#6207](https://github.com/hcengineering/platform/issues/6207)) 
 * EZQMS-1145: · Fixes doc import tool ([#6204](https://github.com/hcengineering/platform/issues/6204)) 
@@ -1374,7 +1393,6 @@ Changelog.
 
 ## [0.6.270] - 2024-07-30
 
-* 🚀 FEATURES: · Login and signup by code ([#6097](https://github.com/hcengineering/platform/issues/6097)) 
 * 🐛 BUG FIXES: · Guest links ([#6172](https://github.com/hcengineering/platform/issues/6172)) · Maintenance period warning ([#6179](https://github.com/hcengineering/platform/issues/6179)) · Message text alignment ([#6178](https://github.com/hcengineering/platform/issues/6178)) · For cases when fileType is null which causes infinite loading bug ([#6174](https://github.com/hcengineering/platform/issues/6174)) 
 * UBERF-7016: · Hide channels without any activity long time ([#6176](https://github.com/hcengineering/platform/issues/6176)) 
 * UBERF-7721: · Fixed event display ([#6175](https://github.com/hcengineering/platform/issues/6175)) 
@@ -1382,7 +1400,6 @@ Changelog.
 
 ## [0.6.269] - 2024-07-30
 
-* 🚀 FEATURES: · Login and signup by code ([#6097](https://github.com/hcengineering/platform/issues/6097)) 
 * 🐛 BUG FIXES: · Add github to server pipeline ([#6170](https://github.com/hcengineering/platform/issues/6170)) · Maintenance period warning · Guest links ([#6172](https://github.com/hcengineering/platform/issues/6172)) · Guest links ([#6172](https://github.com/hcengineering/platform/issues/6172)) · Maintenance period warning ([#6179](https://github.com/hcengineering/platform/issues/6179)) · Message text alignment ([#6178](https://github.com/hcengineering/platform/issues/6178)) 
 * UBERF-7016: · Hide channels without any activity long time ([#6176](https://github.com/hcengineering/platform/issues/6176)) 
 * UBERF-7721: · Fixed event display ([#6175](https://github.com/hcengineering/platform/issues/6175)) · Fixed event display ([#6175](https://github.com/hcengineering/platform/issues/6175)) 
@@ -1395,7 +1412,6 @@ Changelog.
 
 ## [0.6.267] - 2024-07-29
 
-* 🚀 FEATURES: · Develop to build targets · Develop to build targets · DB compact tool ([#6125](https://github.com/hcengineering/platform/issues/6125)) · Develop to build targets · DB compact tool ([#6125](https://github.com/hcengineering/platform/issues/6125)) 
 * 🐛 BUG FIXES: · Show statuses of not joined projects in all issues and filter ([#6128](https://github.com/hcengineering/platform/issues/6128)) · Thread messages pin ([#6129](https://github.com/hcengineering/platform/issues/6129)) · Multiple adding user to replied persons ([#6130](https://github.com/hcengineering/platform/issues/6130)) · Leave room ([#6150](https://github.com/hcengineering/platform/issues/6150)) · Capitalization in en lang strings, fix label for adding an issue to a Milestone ([#6142](https://github.com/hcengineering/platform/issues/6142)) · Leave room ([#6150](https://github.com/hcengineering/platform/issues/6150)) 
 * ⚙️ MISCELLANEOUS TASKS: · Websocket compression by default · Websocket compression by default 
 * EZQMS-1069: · Fix request model ([#6131](https://github.com/hcengineering/platform/issues/6131)) · Fix request model ([#6131](https://github.com/hcengineering/platform/issues/6131)) 
@@ -1408,7 +1424,7 @@ Changelog.
 
 ## [0.6.266] - 2024-07-24
 
-* 🚀 FEATURES: · Qms guests ([#6099](https://github.com/hcengineering/platform/issues/6099)) · QMS Tests ([#6087](https://github.com/hcengineering/platform/issues/6087)) 
+* 🚀 FEATURES: · Qms guests ([#6099](https://github.com/hcengineering/platform/issues/6099)) 
 * 🐛 BUG FIXES: · Init script ([#6105](https://github.com/hcengineering/platform/issues/6105)) · Infinity fetch workspace ([#6106](https://github.com/hcengineering/platform/issues/6106)) · Ws init ([#6109](https://github.com/hcengineering/platform/issues/6109)) · Minor office bugs ([#6116](https://github.com/hcengineering/platform/issues/6116)) · For the list ([#6096](https://github.com/hcengineering/platform/issues/6096)) · Mongo indexes ([#6122](https://github.com/hcengineering/platform/issues/6122)) 
 * EZQMS-1109: · Add signature details for reviews/approvals ([#6111](https://github.com/hcengineering/platform/issues/6111)) 
 * EZQMS-1140: · Controlled doc content display improvements ([#6110](https://github.com/hcengineering/platform/issues/6110)) 
@@ -1420,7 +1436,7 @@ Changelog.
 
 ## [0.6.265] - 2024-07-19
 
-* 🚀 FEATURES: · Keep-alive for front service ([#6078](https://github.com/hcengineering/platform/issues/6078)) · Init script ([#6089](https://github.com/hcengineering/platform/issues/6089)) · Plugin loader for account ([#6092](https://github.com/hcengineering/platform/issues/6092)) · DO_CLEAN into preapre.sh ([#6098](https://github.com/hcengineering/platform/issues/6098)) 
+* 🚀 FEATURES: · Keep-alive for front service ([#6078](https://github.com/hcengineering/platform/issues/6078)) · Init script ([#6089](https://github.com/hcengineering/platform/issues/6089)) 
 * 🐛 BUG FIXES: · Hide wiki history sidebar tab ([#6064](https://github.com/hcengineering/platform/issues/6064)) · For duplicate undefined in list ([#6068](https://github.com/hcengineering/platform/issues/6068)) · Props for panel ([#6081](https://github.com/hcengineering/platform/issues/6081)) 
 * UBERF-7595: · Do not use /api/v1/version on connect ([#6075](https://github.com/hcengineering/platform/issues/6075)) 
 * UBERF-7597: · Get rid of formats in preview.ts ([#6077](https://github.com/hcengineering/platform/issues/6077)) 
@@ -1438,18 +1454,15 @@ Changelog.
 
 ## [0.6.263] - 2024-07-10
 
-* 🚀 FEATURES: · PushPublicKey to front ([#6043](https://github.com/hcengineering/platform/issues/6043)) 
 * 🐛 BUG FIXES: · For ArrOf ([#6038](https://github.com/hcengineering/platform/issues/6038)) · Double apply ([#6045](https://github.com/hcengineering/platform/issues/6045)) 
 * UBERF-7543: · Fix memory usage ([#6044](https://github.com/hcengineering/platform/issues/6044)) 
 
 ## [0.6.262] - 2024-07-10
 
-* 🚀 FEATURES: · Small chat ui fixes ([#6028](https://github.com/hcengineering/platform/issues/6028)) 
 * 🐛 BUG FIXES: · Track applied transactions in session op context ([#6029](https://github.com/hcengineering/platform/issues/6029)) · UpdateAllRefs to support attached docs and mixins ([#6033](https://github.com/hcengineering/platform/issues/6033)) 
 
 ## [0.6.261] - 2024-07-09
 
-* 🚀 FEATURES: · Blank view for empty channels ([#6006](https://github.com/hcengineering/platform/issues/6006)) 
 * 🐛 BUG FIXES: · Attachments input ([#6002](https://github.com/hcengineering/platform/issues/6002)) · Message rerender on new message create ([#6025](https://github.com/hcengineering/platform/issues/6025)) · Handle readonly in number presenter ([#6026](https://github.com/hcengineering/platform/issues/6026)) 
 * UBERF-7510: · Add logging and catch errors on cleanup ([#6003](https://github.com/hcengineering/platform/issues/6003)) 
 * UBERF-7520: · Use Bulk for index query updates ([#6012](https://github.com/hcengineering/platform/issues/6012)) 
@@ -1457,7 +1470,7 @@ Changelog.
 
 ## [0.6.260] - 2024-07-04
 
-* 🚀 FEATURES: · Spinner and disable editbox in todo until save is finished ([#5960](https://github.com/hcengineering/platform/issues/5960)) · Chat message create performance ([#5981](https://github.com/hcengineering/platform/issues/5981)) · Logs for not translated push notifications ([#5986](https://github.com/hcengineering/platform/issues/5986)) 
+* 🚀 FEATURES: · Chat message create performance ([#5981](https://github.com/hcengineering/platform/issues/5981)) 
 * 🐛 BUG FIXES: · Planner to top ([#5962](https://github.com/hcengineering/platform/issues/5962)) · Overwriting space in elastic doc ([#5959](https://github.com/hcengineering/platform/issues/5959)) 
 * ⚙️ MISCELLANEOUS TASKS: · Default failed tests limit ([#5955](https://github.com/hcengineering/platform/issues/5955)) · Wrong unused code ([#5996](https://github.com/hcengineering/platform/issues/5996)) 
 * QFIX: · Revert missing pipeline configuration ([#5987](https://github.com/hcengineering/platform/issues/5987)) 
@@ -1478,8 +1491,8 @@ Changelog.
 
 ## [0.6.258] - 2024-06-27
 
-* 🚀 FEATURES: · Add shortcut to create todo in documents ([#5827](https://github.com/hcengineering/platform/issues/5827)) · Missing server-drive-resources ([#5934](https://github.com/hcengineering/platform/issues/5934)) 
-* 🐛 BUG FIXES: · Minor issues ([#5919](https://github.com/hcengineering/platform/issues/5919)) 
+* 🚀 FEATURES: · Add shortcut to create todo in documents ([#5827](https://github.com/hcengineering/platform/issues/5827)) 
+* 🐛 BUG FIXES: · Minor issues ([#5919](https://github.com/hcengineering/platform/issues/5919)) · Add missing server-drive-resources ([#5934](https://github.com/hcengineering/platform/issues/5934)) 
 * UBERF-7411: · Allow to backup blobs with wrong size ([#5926](https://github.com/hcengineering/platform/issues/5926)) 
 * UBERF-7419: · Fix various sentry errors ([#5931](https://github.com/hcengineering/platform/issues/5931)) 
 * UBERF-7422: · Fix blob/stora ([#5933](https://github.com/hcengineering/platform/issues/5933)) 
@@ -1498,7 +1511,6 @@ Changelog.
 
 ## [0.6.256] - 2024-06-20
 
-* 🚀 FEATURES: · Support for Chinese Language ([#5859](https://github.com/hcengineering/platform/issues/5859)) · Tests for filter change in inbox ([#5851](https://github.com/hcengineering/platform/issues/5851)) · French Language ([#5870](https://github.com/hcengineering/platform/issues/5870)) 
 * 🐛 BUG FIXES: · Incorrect project select ([#5865](https://github.com/hcengineering/platform/issues/5865)) · Extra logging in documents content migration ([#5868](https://github.com/hcengineering/platform/issues/5868)) · Chat forward pagination ([#5869](https://github.com/hcengineering/platform/issues/5869)) · Calendar yearly events duplicates ([#5874](https://github.com/hcengineering/platform/issues/5874)) 
 * ⚙️ MISCELLANEOUS TASKS: · README.md ([#5855](https://github.com/hcengineering/platform/issues/5855)) 
 * EZQMS-951: · Server branding ([#5858](https://github.com/hcengineering/platform/issues/5858)) 
@@ -1507,7 +1519,6 @@ Changelog.
 
 ## [0.6.255] - 2024-06-18
 
-* 🚀 FEATURES: · Attachments block for companies and comment input for it's members ([#5843](https://github.com/hcengineering/platform/issues/5843)) 
 * 🐛 BUG FIXES: · Workslots calendar ([#5838](https://github.com/hcengineering/platform/issues/5838)) 
 * ⚙️ MISCELLANEOUS TASKS: · README.md ([#5832](https://github.com/hcengineering/platform/issues/5832)) 
 * UBERF-7126: · Content type based storage configuration ([#5781](https://github.com/hcengineering/platform/issues/5781)) 
@@ -1526,7 +1537,6 @@ Changelog.
 
 ## [0.6.253] - 2024-06-13
 
-* 🚀 FEATURES: · Tests for inbox ([#5780](https://github.com/hcengineering/platform/issues/5780)) 
 * 🐛 BUG FIXES: · Preview config defaults ([#5804](https://github.com/hcengineering/platform/issues/5804)) 
 * UBERF-7247: · Fix queryFind for mixins on server ([#5803](https://github.com/hcengineering/platform/issues/5803)) 
 * EZQMS-972: · Fix custom space types for documents and products ([#5801](https://github.com/hcengineering/platform/issues/5801)) 
@@ -1534,7 +1544,7 @@ Changelog.
 
 ## [0.6.252] - 2024-06-12
 
-* 🚀 FEATURES: · AccessDenied error ([#5788](https://github.com/hcengineering/platform/issues/5788)) · Select text from code block ([#5792](https://github.com/hcengineering/platform/issues/5792)) 
+* 🚀 FEATURES: · Select text from code block ([#5792](https://github.com/hcengineering/platform/issues/5792)) 
 * 🐛 BUG FIXES: · Office mic selection ([#5779](https://github.com/hcengineering/platform/issues/5779)) · Scroll to new messages ([#5782](https://github.com/hcengineering/platform/issues/5782)) · Office bugs ([#5784](https://github.com/hcengineering/platform/issues/5784)) 
 * EZQMS-1008: · Disable archived product editing ([#5794](https://github.com/hcengineering/platform/issues/5794)) 
 * EZQMS-976: · Exclude other types mixins ([#5795](https://github.com/hcengineering/platform/issues/5795)) 
@@ -1549,7 +1559,7 @@ Changelog.
 
 ## [0.6.250] - 2024-06-07
 
-* 🚀 FEATURES: · Office click handler ([#5751](https://github.com/hcengineering/platform/issues/5751)) · OperationContext to be accessible by triggers ([#5753](https://github.com/hcengineering/platform/issues/5753)) 
+* 🚀 FEATURES: · Office click handler ([#5751](https://github.com/hcengineering/platform/issues/5751)) 
 * 🐛 BUG FIXES: · Room connection after refresh ([#5734](https://github.com/hcengineering/platform/issues/5734)) · Create workspace ([#5740](https://github.com/hcengineering/platform/issues/5740)) · Concurrency workspace creation ([#5742](https://github.com/hcengineering/platform/issues/5742)) · Gravatar srcset ([#5744](https://github.com/hcengineering/platform/issues/5744)) · Incorrect attribute for transactions ([#5746](https://github.com/hcengineering/platform/issues/5746)) · Images size ([#5750](https://github.com/hcengineering/platform/issues/5750)) 
 * UBERF-7077: · Fixed Separator ([#5743](https://github.com/hcengineering/platform/issues/5743)) 
 * UBERF-7181: · Fix GH PR statuses ([#5749](https://github.com/hcengineering/platform/issues/5749)) 
@@ -1571,7 +1581,6 @@ Changelog.
 
 ## [0.6.247] - 2024-05-30
 
-* 🚀 FEATURES: · Chat tests ([#5625](https://github.com/hcengineering/platform/issues/5625)) 
 * 🐛 BUG FIXES: · Paste of files ([#5655](https://github.com/hcengineering/platform/issues/5655)) · Get attributes diff ([#5658](https://github.com/hcengineering/platform/issues/5658)) · Use concatLink for transactor URL ([#5659](https://github.com/hcengineering/platform/issues/5659)) · ToDoItemNodeView ([#5678](https://github.com/hcengineering/platform/issues/5678)) · Missing direct for companion ([#5686](https://github.com/hcengineering/platform/issues/5686)) · Event calendar selector ([#5689](https://github.com/hcengineering/platform/issues/5689)) · Migrate content for documents only ([#5699](https://github.com/hcengineering/platform/issues/5699)) 
 * ⚙️ MISCELLANEOUS TASKS: · Tests by removing try catch block ([#5671](https://github.com/hcengineering/platform/issues/5671)) 
 * QFIX: · Remove hardcoded platform url ([#5692](https://github.com/hcengineering/platform/issues/5692)) 
@@ -1591,7 +1600,6 @@ Changelog.
 
 ## [0.6.245] - 2024-05-22
 
-* 🚀 FEATURES: · API Workflow and chat tests ([#5594](https://github.com/hcengineering/platform/issues/5594)) · CreateGuest functionality to AddParticipant component ([#5606](https://github.com/hcengineering/platform/issues/5606)) · Members to space type for easy management members, and add autojo… ([#5612](https://github.com/hcengineering/platform/issues/5612)) · Small inbox fixes ([#5621](https://github.com/hcengineering/platform/issues/5621)) · Join overlay for public channels ([#5630](https://github.com/hcengineering/platform/issues/5630)) · Chat UI fixes ([#5632](https://github.com/hcengineering/platform/issues/5632)) 
 * 🐛 BUG FIXES: · Hr departments ([#5589](https://github.com/hcengineering/platform/issues/5589)) · Messages and reactions spaces ([#5590](https://github.com/hcengineering/platform/issues/5590)) · Header of mention push ([#5591](https://github.com/hcengineering/platform/issues/5591)) · Guest settings ([#5597](https://github.com/hcengineering/platform/issues/5597)) · Spotlight security leak ([#5601](https://github.com/hcengineering/platform/issues/5601)) · Grammar error and change text for setting priorities to match in Todos and Issues ([#5600](https://github.com/hcengineering/platform/issues/5600)) · Team planning event duplicates ([#5605](https://github.com/hcengineering/platform/issues/5605)) · Document link in email notifications ([#5627](https://github.com/hcengineering/platform/issues/5627)) 
 * ⚙️ MISCELLANEOUS TASKS: · Extra strings ([#5603](https://github.com/hcengineering/platform/issues/5603)) · Push when added as collaborator ([#5610](https://github.com/hcengineering/platform/issues/5610)) 
 * UBERF-6365: · Blob mongo storage initial support ([#5474](https://github.com/hcengineering/platform/issues/5474)) 
@@ -1602,7 +1610,7 @@ Changelog.
 
 ## [0.6.243] - 2024-05-13
 
-* 🚀 FEATURES: · Gmail privacy ([#5568](https://github.com/hcengineering/platform/issues/5568)) · User to public document space on mention ([#5587](https://github.com/hcengineering/platform/issues/5587)) · Directs sort order ([#5588](https://github.com/hcengineering/platform/issues/5588)) 
+* 🚀 FEATURES: · Directs sort order ([#5588](https://github.com/hcengineering/platform/issues/5588)) 
 * 🐛 BUG FIXES: · Server statistics ([#5575](https://github.com/hcengineering/platform/issues/5575)) · Multiple channel read while data is updating ([#5576](https://github.com/hcengineering/platform/issues/5576)) · Hide actions for archived teamspaces ([#5580](https://github.com/hcengineering/platform/issues/5580)) · Team planning event disappear ([#5581](https://github.com/hcengineering/platform/issues/5581)) 
 * ⚙️ MISCELLANEOUS TASKS: · Extra user status ([#5578](https://github.com/hcengineering/platform/issues/5578)) 
 * UBERF-6829: · Group messages of the same type and user ([#5569](https://github.com/hcengineering/platform/issues/5569)) 
@@ -1612,7 +1620,7 @@ Changelog.
 
 ## [0.6.242] - 2024-05-10
 
-* 🚀 FEATURES: · Livness check for login and workspace ([#5532](https://github.com/hcengineering/platform/issues/5532)) · More arms emoji ([#5562](https://github.com/hcengineering/platform/issues/5562)) · Export for uberflow liveness tests ([#5561](https://github.com/hcengineering/platform/issues/5561)) · Global user status ([#5526](https://github.com/hcengineering/platform/issues/5526)) · ActionIcon has keys for tooltip 
+* 🚀 FEATURES: · ActionIcon has keys for tooltip 
 * 🐛 BUG FIXES: · Add missing productId to getAccountInfo ([#5540](https://github.com/hcengineering/platform/issues/5540)) · Email notifictions on chat message ([#5544](https://github.com/hcengineering/platform/issues/5544)) · Typos on Google Calendar and Gmail integration cards ([#5547](https://github.com/hcengineering/platform/issues/5547)) · Extra inbox notifications ([#5550](https://github.com/hcengineering/platform/issues/5550)) · Mention notifications on edit ([#5549](https://github.com/hcengineering/platform/issues/5549)) · Select workspace when open workspace in new tab ([#5545](https://github.com/hcengineering/platform/issues/5545)) · Space security ([#5557](https://github.com/hcengineering/platform/issues/5557)) · Spaces popup ([#5559](https://github.com/hcengineering/platform/issues/5559)) 
 * ⚙️ MISCELLANEOUS TASKS: · Extra query params and apply ([#5546](https://github.com/hcengineering/platform/issues/5546)) · Outdated migration ([#5551](https://github.com/hcengineering/platform/issues/5551)) 
 * UBERF-6870: · Speedup server broadcast of derived transactions ([#5553](https://github.com/hcengineering/platform/issues/5553)) 
@@ -1620,14 +1628,13 @@ Changelog.
 
 ## [0.6.241] - 2024-05-08
 
-* 🚀 FEATURES: · Missing string ([#5535](https://github.com/hcengineering/platform/issues/5535)) · Users to create direct with themselves ([#5534](https://github.com/hcengineering/platform/issues/5534)) 
-* 🐛 BUG FIXES: · Locator for flaky test ([#5524](https://github.com/hcengineering/platform/issues/5524)) 
+* 🚀 FEATURES: · Users to create direct with themselves ([#5534](https://github.com/hcengineering/platform/issues/5534)) 
+* 🐛 BUG FIXES: · Locator for flaky test ([#5524](https://github.com/hcengineering/platform/issues/5524)) · Add missing string ([#5535](https://github.com/hcengineering/platform/issues/5535)) 
 * UBERF-6802: · Improve create chat message performance ([#5530](https://github.com/hcengineering/platform/issues/5530)) 
 * UBERF-6807: · Fix empty objects channels in chat ([#5533](https://github.com/hcengineering/platform/issues/5533)) 
 
 ## [0.6.240] - 2024-05-06
 
-* 🚀 FEATURES: · Json markup tool ([#5511](https://github.com/hcengineering/platform/issues/5511)) · Group analytics to track workspace activity; replace setTag() call with setWorkspace() when adding workspace tag to person properties ([#5519](https://github.com/hcengineering/platform/issues/5519)) 
 * 🐛 BUG FIXES: · Move to well known parent when no parent selected ([#5516](https://github.com/hcengineering/platform/issues/5516)) 
 * EZQMS-729: · Restrict spaces operations ([#5500](https://github.com/hcengineering/platform/issues/5500)) 
 * QFIX: · Connection should restore boolean query fields ([#5508](https://github.com/hcengineering/platform/issues/5508)) 
@@ -1647,7 +1654,6 @@ Changelog.
 
 ## [0.6.238] - 2024-04-26
 
-* 🚀 FEATURES: · Measure for chat message create ([#5441](https://github.com/hcengineering/platform/issues/5441)) · Huly docs ([#5471](https://github.com/hcengineering/platform/issues/5471)) 
 * 🐛 BUG FIXES: · Configure all tool · Multiple mention notifications on edit doc ([#5460](https://github.com/hcengineering/platform/issues/5460)) · Recruit link resolver ([#5464](https://github.com/hcengineering/platform/issues/5464)) · Remove notifications on unsubscribe ([#5466](https://github.com/hcengineering/platform/issues/5466)) · Copy link ([#5467](https://github.com/hcengineering/platform/issues/5467)) · Display headers that duplicate content ([#5468](https://github.com/hcengineering/platform/issues/5468)) · Replace missing employee ([#5475](https://github.com/hcengineering/platform/issues/5475)) 
 * ⚙️ MISCELLANEOUS TASKS: · Update-svelte-check and rush ([#5446](https://github.com/hcengineering/platform/issues/5446)) 
 * UBERF-6676: · Chat local state ([#5461](https://github.com/hcengineering/platform/issues/5461)) 
@@ -1658,13 +1664,11 @@ Changelog.
 
 ## [0.6.237] - 2024-04-23
 
-* 🚀 FEATURES: · Chat fixes ([#5437](https://github.com/hcengineering/platform/issues/5437)) 
 * 🐛 BUG FIXES: · Todo creating on assignee change ([#5435](https://github.com/hcengineering/platform/issues/5435)) · Double encode ([#5436](https://github.com/hcengineering/platform/issues/5436)) · Config ([#5439](https://github.com/hcengineering/platform/issues/5439)) 
 * EZQMS-748: · Hide left menu by default, ensure placement, improve show/hide logic ([#5429](https://github.com/hcengineering/platform/issues/5429)) 
 
 ## [0.6.236] - 2024-04-23
 
-* 🚀 FEATURES: · Dock ([#5416](https://github.com/hcengineering/platform/issues/5416)) 
 * 🐛 BUG FIXES: · Incorecct message rendering in inbox ([#5421](https://github.com/hcengineering/platform/issues/5421)) · Double notifications contexts ([#5422](https://github.com/hcengineering/platform/issues/5422)) 
 * UBERF-6653: · Fix minor issue and add force-close ([#5418](https://github.com/hcengineering/platform/issues/5418)) 
 
@@ -1682,7 +1686,7 @@ Changelog.
 
 ## [0.6.234] - 2024-04-18
 
-* 🚀 FEATURES: · Notifications ([#5378](https://github.com/hcengineering/platform/issues/5378)) · Some chat/activity fixes ([#5387](https://github.com/hcengineering/platform/issues/5387)) 
+* 🚀 FEATURES: · Notifications ([#5378](https://github.com/hcengineering/platform/issues/5378)) 
 * 🐛 BUG FIXES: · Inbox preview ([#5389](https://github.com/hcengineering/platform/issues/5389)) · Unintendent collaborative content changes  ([#5388](https://github.com/hcengineering/platform/issues/5388)) · Service worker scope in BrowserNotificatator ([#5391](https://github.com/hcengineering/platform/issues/5391)) 
 * ⚙️ MISCELLANEOUS TASKS: · Extra logging in migrations ([#5380](https://github.com/hcengineering/platform/issues/5380)) · UI of error state in form ([#5232](https://github.com/hcengineering/platform/issues/5232)) 
 * UBERF-5527: · Add context menu for activity and inbox ([#5373](https://github.com/hcengineering/platform/issues/5373)) 
@@ -1698,7 +1702,7 @@ Changelog.
 
 ## [0.6.232] - 2024-04-16
 
-* 🚀 FEATURES: · Mention test ([#5358](https://github.com/hcengineering/platform/issues/5358)) · Navigate method to Analytics provider ([#5367](https://github.com/hcengineering/platform/issues/5367)) 
+* 🚀 FEATURES: · Mention test ([#5358](https://github.com/hcengineering/platform/issues/5358)) 
 * 🐛 BUG FIXES: · Login form issue when using password auto-fill ([#5047](https://github.com/hcengineering/platform/issues/5047)) · Workspace creation issues ([#5362](https://github.com/hcengineering/platform/issues/5362)) 
 * UBERF-5686: · Fix copy link ([#5368](https://github.com/hcengineering/platform/issues/5368)) 
 * UBERF-5964: · Insert items menu in editor ([#5341](https://github.com/hcengineering/platform/issues/5341)) 
@@ -1709,7 +1713,6 @@ Changelog.
 
 ## [0.6.231] - 2024-04-13
 
-* 🚀 FEATURES: · Google API Services User Data Policy link ([#5326](https://github.com/hcengineering/platform/issues/5326)) 
 * 🐛 BUG FIXES: · Activity actions icons ([#5343](https://github.com/hcengineering/platform/issues/5343)) · For null lastName during signup with google ([#5328](https://github.com/hcengineering/platform/issues/5328)) 
 * ⚙️ MISCELLANEOUS TASKS: · README.md ([#5307](https://github.com/hcengineering/platform/issues/5307)) 
 * EZQMS-689: · Slightly improved typings for notification presenters ([#5312](https://github.com/hcengineering/platform/issues/5312)) 
@@ -1728,7 +1731,7 @@ Changelog.
 
 ## [0.6.229] - 2024-04-10
 
-* 🚀 FEATURES: · Issue template ([#5206](https://github.com/hcengineering/platform/issues/5206)) · *(help)* Added find bug button for easy navigation ([#5214](https://github.com/hcengineering/platform/issues/5214)) · Child classes in navigator model ([#5275](https://github.com/hcengineering/platform/issues/5275)) 
+* 🚀 FEATURES: · *(help)* Added find bug button for easy navigation ([#5214](https://github.com/hcengineering/platform/issues/5214)) · Child classes in navigator model ([#5275](https://github.com/hcengineering/platform/issues/5275)) 
 * 🐛 BUG FIXES: · Tab navigation order in issue creation popup ([#5148](https://github.com/hcengineering/platform/issues/5148)) · Progress component ([#5276](https://github.com/hcengineering/platform/issues/5276)) 
 * ⚙️ MISCELLANEOUS TASKS: · Peaceiris/actions-gh-pages from 3 to 4 ([#5248](https://github.com/hcengineering/platform/issues/5248)) 
 * QFIX: · Center media, improve matching ([#5267](https://github.com/hcengineering/platform/issues/5267)) 
@@ -1746,7 +1749,6 @@ Changelog.
 
 ## [0.6.227] - 2024-04-08
 
-* 🚀 FEATURES: · DOCKER_EXTRA env to docker_build.sh ([#5204](https://github.com/hcengineering/platform/issues/5204)) 
 * 🐛 BUG FIXES: · Overflow in Inbox ([#5193](https://github.com/hcengineering/platform/issues/5193)) · Tiny css errors ([#5186](https://github.com/hcengineering/platform/issues/5186)) 
 * EZQMS-663: · Add permissions util ([#5189](https://github.com/hcengineering/platform/issues/5189)) 
 * QFIX: · Restore ats task types tool ([#5185](https://github.com/hcengineering/platform/issues/5185)) 
@@ -1868,7 +1870,7 @@ Changelog.
 
 ## [0.6.210] - 2024-03-13
 
-* 🚀 FEATURES: · Apply-templates check ([#4907](https://github.com/hcengineering/platform/issues/4907)) · The ability to archive all activity fom chat ([#4922](https://github.com/hcengineering/platform/issues/4922)) · *(planner)* New priority layout, update item layout ([#4896](https://github.com/hcengineering/platform/issues/4896)) · *(test)* Updated Due Date test ([#4925](https://github.com/hcengineering/platform/issues/4925)) · Planning to build ([#4936](https://github.com/hcengineering/platform/issues/4936)) 
+* 🚀 FEATURES: · *(planner)* New priority layout, update item layout ([#4896](https://github.com/hcengineering/platform/issues/4896)) · *(test)* Updated Due Date test ([#4925](https://github.com/hcengineering/platform/issues/4925)) 
 * 🐛 BUG FIXES: · Chat opening after workspace change ([#4919](https://github.com/hcengineering/platform/issues/4919)) · Show temporary channel name ([#4920](https://github.com/hcengineering/platform/issues/4920)) · Create workspace without token ([#4932](https://github.com/hcengineering/platform/issues/4932)) 
 * ⚙️ MISCELLANEOUS TASKS: · README.md ([#4934](https://github.com/hcengineering/platform/issues/4934)) · README.md ([#4935](https://github.com/hcengineering/platform/issues/4935)) · Chat navigator ([#4941](https://github.com/hcengineering/platform/issues/4941)) 
 * EZQMS-459: · Hoisted `showNotify` calculation to `ActivityNotificationPresenter` ([#4937](https://github.com/hcengineering/platform/issues/4937)) 
@@ -1883,7 +1885,7 @@ Changelog.
 
 ## [0.6.209] - 2024-03-08
 
-* 🚀 FEATURES: · Archive all button in inbox ([#4870](https://github.com/hcengineering/platform/issues/4870)) · *(planner)* Improve and reuse `Chip` ([#4854](https://github.com/hcengineering/platform/issues/4854)) · Confirmation modal for archive all and add read all option ([#4880](https://github.com/hcengineering/platform/issues/4880)) 
+* 🚀 FEATURES: · *(planner)* Improve and reuse `Chip` ([#4854](https://github.com/hcengineering/platform/issues/4854)) 
 * 🐛 BUG FIXES: · *(todo)* Checkbox focus and spinner ([#4890](https://github.com/hcengineering/platform/issues/4890)) · *(todo)* Broken context actions ([#4889](https://github.com/hcengineering/platform/issues/4889)) · Navigation to inbox from cmd-k modal ([#4900](https://github.com/hcengineering/platform/issues/4900)) · Notifications remove on doc remove ([#4901](https://github.com/hcengineering/platform/issues/4901)) · Docker build ([#4906](https://github.com/hcengineering/platform/issues/4906)) 
 * ⚙️ MISCELLANEOUS TASKS: · Video preload in inbox left panel ([#4902](https://github.com/hcengineering/platform/issues/4902)) 
 * EZQMS-377: · Add file attachments extension to text editor ([#4284](https://github.com/hcengineering/platform/issues/4284)) 
@@ -1969,7 +1971,7 @@ Changelog.
 
 ## [0.6.198] - 2024-02-16
 
-* 🚀 FEATURES: · *(tests)* Updated reports and prepare server step ([#4659](https://github.com/hcengineering/platform/issues/4659)) · Analytics ([#4682](https://github.com/hcengineering/platform/issues/4682)) · Strings for classes ([#4683](https://github.com/hcengineering/platform/issues/4683)) 
+* 🚀 FEATURES: · *(tests)* Updated reports and prepare server step ([#4659](https://github.com/hcengineering/platform/issues/4659)) · Analytics ([#4682](https://github.com/hcengineering/platform/issues/4682)) 
 * 🐛 BUG FIXES: · Account model sorting key ([#4663](https://github.com/hcengineering/platform/issues/4663)) · Create project type ([#4685](https://github.com/hcengineering/platform/issues/4685)) 
 * ⚙️ MISCELLANEOUS TASKS: · Moment-timezone ([#4656](https://github.com/hcengineering/platform/issues/4656)) 
 * UBERF-5548: · Use esbuild with webpack ([#4657](https://github.com/hcengineering/platform/issues/4657)) 
@@ -1996,7 +1998,6 @@ Changelog.
 
 ## [0.6.195] - 2024-02-13
 
-* 🚀 FEATURES: · Dropdown with creating project button for "New issue" button in tracker ([#4612](https://github.com/hcengineering/platform/issues/4612)) 
 * 🐛 BUG FIXES: · Name for rush command ([#4607](https://github.com/hcengineering/platform/issues/4607)) · Creating suubissues from template ([#4610](https://github.com/hcengineering/platform/issues/4610)) 
 * ⚙️ MISCELLANEOUS TASKS: · BaseProjectType ([#4597](https://github.com/hcengineering/platform/issues/4597)) 
 * TESTS-167: · Feat(tests): done Check that the issue backlink test ([#4596](https://github.com/hcengineering/platform/issues/4596)) 
@@ -2121,7 +2122,6 @@ Changelog.
 
 ## [0.6.181] - 2024-01-19
 
-* 🚀 FEATURES: · Keyboard support for inbox and simplify code ([#4380](https://github.com/hcengineering/platform/issues/4380)) 
 * 🐛 BUG FIXES: · Duplicates of inbox notifications and notify contexts ([#4383](https://github.com/hcengineering/platform/issues/4383)) 
 * EZQMS-457: · Added optional ModeSelector to SpecialView ([#4381](https://github.com/hcengineering/platform/issues/4381)) 
 * EZQMS-529: · Added support for primary/positive/negative kinds for CheckBox and RadioButton ([#4384](https://github.com/hcengineering/platform/issues/4384)) · Added support for `grow` and new `align` display options in `Table` ([#4389](https://github.com/hcengineering/platform/issues/4389)) 
@@ -2504,7 +2504,6 @@ Changelog.
 
 ## [0.6.136] - 2023-10-02
 
-* 🚀 FEATURES: · IsEmpty extension to remove on:content event from collaborator editor ([#3774](https://github.com/hcengineering/platform/issues/3774)) 
 * UBER-963: · Related issues ([#3773](https://github.com/hcengineering/platform/issues/3773)) 
 * UBERF-17: · Missing smiles auto-conversion in rich texts :) ([#3771](https://github.com/hcengineering/platform/issues/3771)) 
 
@@ -2715,7 +2714,7 @@ Changelog.
 
 ## [0.6.110] - 2023-07-08
 
-* 🚀 FEATURES: · Build cache ([#3446](https://github.com/hcengineering/platform/issues/3446)) · The ability to restrict adding / removing attachments ([#3479](https://github.com/hcengineering/platform/issues/3479)) 
+* 🚀 FEATURES: · Build cache ([#3446](https://github.com/hcengineering/platform/issues/3446)) 
 * 🐛 BUG FIXES: · Build script ([#3451](https://github.com/hcengineering/platform/issues/3451)) · Typo ([#3455](https://github.com/hcengineering/platform/issues/3455)) · Notification selection ([#3469](https://github.com/hcengineering/platform/issues/3469)) · Gmail error ([#3473](https://github.com/hcengineering/platform/issues/3473)) · Multiple channels ([#3474](https://github.com/hcengineering/platform/issues/3474)) · Label ([#3476](https://github.com/hcengineering/platform/issues/3476)) 
 * ⚙️ MISCELLANEOUS TASKS: · Version and few cleanups ([#3483](https://github.com/hcengineering/platform/issues/3483)) 
 * UBER-142: · Update buttons. Cleaning CSS. ([#3482](https://github.com/hcengineering/platform/issues/3482)) 
@@ -3072,7 +3071,6 @@ Changelog.
 
 ## [0.6.80] - 2023-04-11
 
-* 🚀 FEATURES: · Telegram template field ([#2941](https://github.com/hcengineering/platform/issues/2941)) 
 * 🐛 BUG FIXES: · Create draft issue duplicate id ([#2935](https://github.com/hcengineering/platform/issues/2935)) · Remove tag ([#2939](https://github.com/hcengineering/platform/issues/2939)) · Filter removing values ([#2940](https://github.com/hcengineering/platform/issues/2940)) · Typo ([#2946](https://github.com/hcengineering/platform/issues/2946)) · Multiattachment ([#2950](https://github.com/hcengineering/platform/issues/2950)) · Done filter ([#2951](https://github.com/hcengineering/platform/issues/2951)) 
 * ⚙️ MISCELLANEOUS TASKS: · And publish bitrix package ([#2926](https://github.com/hcengineering/platform/issues/2926)) 
 * TSK-1040: · Support editable for DraggableList ([#2932](https://github.com/hcengineering/platform/issues/2932)) 
@@ -3083,7 +3081,7 @@ Changelog.
 
 ## [0.6.79] - 2023-04-07
 
-* 🚀 FEATURES: · To disable creation in special view ([#2865](https://github.com/hcengineering/platform/issues/2865)) · Inbox employee bold ([#2909](https://github.com/hcengineering/platform/issues/2909)) · Ignore keys for ClassFilters ([#2912](https://github.com/hcengineering/platform/issues/2912)) · Commentator to collaborators ([#2911](https://github.com/hcengineering/platform/issues/2911)) 
+* 🚀 FEATURES: · To disable creation in special view ([#2865](https://github.com/hcengineering/platform/issues/2865)) 
 * 🐛 BUG FIXES: · Date picker translation ([#2883](https://github.com/hcengineering/platform/issues/2883)) · Array values in the "EmployeeRefPresenter" ([#2859](https://github.com/hcengineering/platform/issues/2859)) · Channels last view ([#2894](https://github.com/hcengineering/platform/issues/2894)) · Filter remove ([#2888](https://github.com/hcengineering/platform/issues/2888)) · Message content width ([#2903](https://github.com/hcengineering/platform/issues/2903)) · Notification mark ([#2908](https://github.com/hcengineering/platform/issues/2908)) · Bitrix gmail sync ([#2918](https://github.com/hcengineering/platform/issues/2918)) · Activity is new ([#2923](https://github.com/hcengineering/platform/issues/2923)) 
 * ⚙️ MISCELLANEOUS TASKS: · Contact resolver id check ([#2910](https://github.com/hcengineering/platform/issues/2910)) 
 * TSK-1007: · Add comments in talent editor ([#2922](https://github.com/hcengineering/platform/issues/2922)) 
@@ -3103,14 +3101,13 @@ Changelog.
 
 ## [0.6.78] - 2023-04-03
 
-* 🚀 FEATURES: · Custom label to Attachments component ([#2872](https://github.com/hcengineering/platform/issues/2872)) 
 * 🐛 BUG FIXES: · Setting migration ([#2869](https://github.com/hcengineering/platform/issues/2869)) · Integration selector ([#2871](https://github.com/hcengineering/platform/issues/2871)) · Typos ([#2873](https://github.com/hcengineering/platform/issues/2873)) 
 * TSK-1010: · Change color for New Customer button ([#2870](https://github.com/hcengineering/platform/issues/2870)) 
 * TSK-950: · Remove value from filter if the object doesn't exist ([#2852](https://github.com/hcengineering/platform/issues/2852)) 
 
 ## [0.6.77] - 2023-03-31
 
-* 🚀 FEATURES: · To disable particular items in ObjectPopup ([#2824](https://github.com/hcengineering/platform/issues/2824)) · Ability to hide checkboxes ([#2843](https://github.com/hcengineering/platform/issues/2843)) 
+* 🚀 FEATURES: · To disable particular items in ObjectPopup ([#2824](https://github.com/hcengineering/platform/issues/2824)) · Add ability  to hide checkboxes ([#2843](https://github.com/hcengineering/platform/issues/2843)) 
 * 🐛 BUG FIXES: · Fill defaults ([#2832](https://github.com/hcengineering/platform/issues/2832)) · Cmd+click for new tab ([#2835](https://github.com/hcengineering/platform/issues/2835)) · Blur clear email ([#2862](https://github.com/hcengineering/platform/issues/2862)) · Space security ([#2868](https://github.com/hcengineering/platform/issues/2868)) 
 * TSK-839: · Fix localization strings ([#2833](https://github.com/hcengineering/platform/issues/2833)) 
 * TSK-903: · Do not allow saving if set to private with no members ([#2854](https://github.com/hcengineering/platform/issues/2854)) 
@@ -3182,7 +3179,7 @@ Changelog.
 
 ## [0.6.74] - 2023-03-17
 
-* 🚀 FEATURES: · To hide actions ([#2737](https://github.com/hcengineering/platform/issues/2737)) · Component migration ([#2764](https://github.com/hcengineering/platform/issues/2764)) 
+* 🚀 FEATURES: · To hide actions ([#2737](https://github.com/hcengineering/platform/issues/2737)) 
 * 🐛 BUG FIXES: · Chunter replies ([#2759](https://github.com/hcengineering/platform/issues/2759)) · Links resolvers ([#2761](https://github.com/hcengineering/platform/issues/2761)) 
 * ⚙️ MISCELLANEOUS TASKS: · Focus when open vacancy editor ([#2757](https://github.com/hcengineering/platform/issues/2757)) · Roadmap ([#2760](https://github.com/hcengineering/platform/issues/2760)) 
 * TSK-812: · Opening images in the center. Minor design corrections. ([#2755](https://github.com/hcengineering/platform/issues/2755)) 
@@ -3212,14 +3209,9 @@ Changelog.
 
 ## [0.6.72a] - 2023-03-13
 
-* 🚀 FEATURES: · System spaces ([#2724](https://github.com/hcengineering/platform/issues/2724)) 
 * 🐛 BUG FIXES: · Org member channel open ([#2725](https://github.com/hcengineering/platform/issues/2725)) 
 * ⚙️ MISCELLANEOUS TASKS: · Mention extra ([#2726](https://github.com/hcengineering/platform/issues/2726)) 
 * TSK-803: · Fix load speed ([#2728](https://github.com/hcengineering/platform/issues/2728)) 
-
-## [0.6.71] - 2023-03-06
-
-* 🚀 FEATURES: · Bitrix required mixins ([#2713](https://github.com/hcengineering/platform/issues/2713)) 
 
 ## [0.6.70] - 2023-03-06
 
@@ -3237,7 +3229,6 @@ Changelog.
 
 ## [0.6.69] - 2023-03-01
 
-* 🚀 FEATURES: · "required" asterisk ([#2686](https://github.com/hcengineering/platform/issues/2686)) · Steps dialog based on "Panel" component ([#2688](https://github.com/hcengineering/platform/issues/2688)) · CheckIsHeaderHidden func to Application model ([#2690](https://github.com/hcengineering/platform/issues/2690)) · Scroller to the "StepsDialog" content ([#2697](https://github.com/hcengineering/platform/issues/2697)) 
 * 🐛 BUG FIXES: · Bitrix attachments ([#2683](https://github.com/hcengineering/platform/issues/2683)) · Attachment dragndrop ([#2687](https://github.com/hcengineering/platform/issues/2687)) · Chunter employees ([#2698](https://github.com/hcengineering/platform/issues/2698)) 
 * ⚙️ MISCELLANEOUS TASKS: · StepsDialog steps switching ([#2692](https://github.com/hcengineering/platform/issues/2692)) 
 * TSK-517: · Show 'Last Modified' instead of 'Date' for attachments ([#2696](https://github.com/hcengineering/platform/issues/2696)) 
@@ -3251,7 +3242,6 @@ Changelog.
 
 ## [0.6.68] - 2023-02-22
 
-* 🚀 FEATURES: · Action for changing request type ([#2668](https://github.com/hcengineering/platform/issues/2668)) 
 * 🐛 BUG FIXES: · Create doc ([#2672](https://github.com/hcengineering/platform/issues/2672)) 
 * ⚙️ MISCELLANEOUS TASKS: · Bump from CI ([#2670](https://github.com/hcengineering/platform/issues/2670)) · Member when delete contact ([#2673](https://github.com/hcengineering/platform/issues/2673)) 
 * EZQ-49: · Update collaborator ([#2677](https://github.com/hcengineering/platform/issues/2677)) 
@@ -3282,7 +3272,7 @@ Changelog.
 
 ## [0.6.65] - 2023-02-10
 
-* 🚀 FEATURES: · AttributeFilter in Activity ([#2608](https://github.com/hcengineering/platform/issues/2608)) · To add tabs to Contacts App ([#2599](https://github.com/hcengineering/platform/issues/2599)) · "isEmpty" prop to "MessageViewer" ([#2613](https://github.com/hcengineering/platform/issues/2613)) · 7/8 to time report ([#2614](https://github.com/hcengineering/platform/issues/2614)) 
+* 🚀 FEATURES: · To add tabs to Contacts App ([#2599](https://github.com/hcengineering/platform/issues/2599)) 
 * 🐛 BUG FIXES: · Saved view load ([#2609](https://github.com/hcengineering/platform/issues/2609)) · Filter type popup ([#2610](https://github.com/hcengineering/platform/issues/2610)) · CreateOn ([#2616](https://github.com/hcengineering/platform/issues/2616)) 
 * TSK-651: · Fix Team editing ([#2611](https://github.com/hcengineering/platform/issues/2611)) 
 
@@ -3300,12 +3290,11 @@ Changelog.
 
 ## [0.6.62] - 2023-02-01
 
-* 🚀 FEATURES: · Ses by default ([#2569](https://github.com/hcengineering/platform/issues/2569)) · Wizard ([#2571](https://github.com/hcengineering/platform/issues/2571)) 
+* 🚀 FEATURES: · Ses by default ([#2569](https://github.com/hcengineering/platform/issues/2569)) 
 * 🐛 BUG FIXES: · Small issues ([#2566](https://github.com/hcengineering/platform/issues/2566)) 
 
 ## [0.6.61] - 2023-01-30
 
-* 🚀 FEATURES: · Props to the "CreateObject" popup ([#2552](https://github.com/hcengineering/platform/issues/2552)) 
 * 🐛 BUG FIXES: · Typo ([#2557](https://github.com/hcengineering/platform/issues/2557)) · Html links ([#2558](https://github.com/hcengineering/platform/issues/2558)) 
 * TSK-476: · Bitrix import fixes ([#2548](https://github.com/hcengineering/platform/issues/2548)) 
 * TSK-569: · Fix MarkupPresenter, ShowMore ([#2553](https://github.com/hcengineering/platform/issues/2553)) 
@@ -3320,7 +3309,6 @@ Changelog.
 
 ## [0.6.59] - 2023-01-25
 
-* 🚀 FEATURES: · "on:change" tab event ([#2541](https://github.com/hcengineering/platform/issues/2541)) 
 * 🐛 BUG FIXES: · Recruit ([#2543](https://github.com/hcengineering/platform/issues/2543)) · Remove contact with gravatar/color ([#2542](https://github.com/hcengineering/platform/issues/2542)) · Private txes ([#2544](https://github.com/hcengineering/platform/issues/2544)) · Jumping popup ([#2545](https://github.com/hcengineering/platform/issues/2545)) 
 
 ## [0.6.58] - 2023-01-25
@@ -3330,7 +3318,6 @@ Changelog.
 
 ## [0.6.57] - 2023-01-24
 
-* 🚀 FEATURES: · Timeline component ([#2535](https://github.com/hcengineering/platform/issues/2535)) 
 * TSK-553: · Fix padding in assignee popup ([#2531](https://github.com/hcengineering/platform/issues/2531)) 
 
 ## [0.6.56] - 2023-01-23
@@ -3339,7 +3326,7 @@ Changelog.
 
 ## [0.6.55] - 2023-01-20
 
-* 🚀 FEATURES: · To show filter items only for current space · Support for user-saved filtered Views ([#2521](https://github.com/hcengineering/platform/issues/2521)) 
+* 🚀 FEATURES: · To show filter items only for current space 
 * 🐛 BUG FIXES: · Sprints sort func ([#2507](https://github.com/hcengineering/platform/issues/2507)) · Special view ([#2516](https://github.com/hcengineering/platform/issues/2516)) · Issue templates ([#2517](https://github.com/hcengineering/platform/issues/2517)) 
 * ⚙️ MISCELLANEOUS TASKS: · Versions ([#2494](https://github.com/hcengineering/platform/issues/2494)) · Notifications layout ([#2500](https://github.com/hcengineering/platform/issues/2500)) · Default status id for issues when created one after another ([#2501](https://github.com/hcengineering/platform/issues/2501)) · Requests layout, fix UI ([#2503](https://github.com/hcengineering/platform/issues/2503)) · Preference migrate ([#2506](https://github.com/hcengineering/platform/issues/2506)) · Sprint update propogation ([#2512](https://github.com/hcengineering/platform/issues/2512)) · EstimationPopup layout ([#2513](https://github.com/hcengineering/platform/issues/2513)) · Extra import 
 * TSK-360: · Assignee selection enhancements ([#2509](https://github.com/hcengineering/platform/issues/2509)) 
@@ -3356,7 +3343,6 @@ Changelog.
 
 ## [0.6.53] - 2022-12-29
 
-* 🚀 FEATURES: · Scale PDF preview ([#2478](https://github.com/hcengineering/platform/issues/2478)) 
 * 🐛 BUG FIXES: · Svete a11y warnings ([#2469](https://github.com/hcengineering/platform/issues/2469)) · Month view rounding ([#2472](https://github.com/hcengineering/platform/issues/2472)) · Navigation link with auth ([#2475](https://github.com/hcengineering/platform/issues/2475)) · Archive layout ([#2479](https://github.com/hcengineering/platform/issues/2479)) · Plugin import search ([#2480](https://github.com/hcengineering/platform/issues/2480)) · Wrong calendar numbers ([#2484](https://github.com/hcengineering/platform/issues/2484)) 
 
 ## [0.6.52] - 2022-12-22
@@ -3366,19 +3352,16 @@ Changelog.
 
 ## [0.6.51] - 2022-12-21
 
-* 🚀 FEATURES: · List item presenter ([#2449](https://github.com/hcengineering/platform/issues/2449)) · Missed configs ([#2448](https://github.com/hcengineering/platform/issues/2448)) 
 * 🐛 BUG FIXES: · Attachments in drafts ([#2451](https://github.com/hcengineering/platform/issues/2451)) · Workbench switcher ([#2454](https://github.com/hcengineering/platform/issues/2454)) · Create canidate ([#2456](https://github.com/hcengineering/platform/issues/2456)) · Calendar rounding ([#2457](https://github.com/hcengineering/platform/issues/2457)) · Sprints switch url update ([#2458](https://github.com/hcengineering/platform/issues/2458)) 
 * ⚙️ MISCELLANEOUS TASKS: · Panel. Fix editors. ([#2450](https://github.com/hcengineering/platform/issues/2450)) 
 * TSK-473: · Added tracker layout sanity tests ([#2452](https://github.com/hcengineering/platform/issues/2452)) 
 
 ## [0.6.50] - 2022-12-16
 
-* 🚀 FEATURES: · Copy link button to notification ([#2444](https://github.com/hcengineering/platform/issues/2444)) · Person selector ([#2447](https://github.com/hcengineering/platform/issues/2447)) 
 * TSK-487: · Resume draft stuck in Resume state ([#2443](https://github.com/hcengineering/platform/issues/2443)) 
 
 ## [0.6.49] - 2022-12-15
 
-* 🚀 FEATURES: · AccordionEditor ([#2431](https://github.com/hcengineering/platform/issues/2431)) · Object factory for the "TagElement" component ([#2435](https://github.com/hcengineering/platform/issues/2435)) · IssueView location subscribe ([#2440](https://github.com/hcengineering/platform/issues/2440)) 
 * 🐛 BUG FIXES: · AccordionEditor and UI ([#2436](https://github.com/hcengineering/platform/issues/2436)) · AccordionEditor, ExpandCollapse ([#2438](https://github.com/hcengineering/platform/issues/2438)) · Changed token ([#2439](https://github.com/hcengineering/platform/issues/2439)) 
 * ⚙️ MISCELLANEOUS TASKS: · Versions ([#2430](https://github.com/hcengineering/platform/issues/2430)) · Extra requests ([#2429](https://github.com/hcengineering/platform/issues/2429)) 
 * TSK-344: · Draft for new Candidate/Person etc ([#2432](https://github.com/hcengineering/platform/issues/2432)) 
@@ -3394,7 +3377,7 @@ Changelog.
 
 ## [0.6.47] - 2022-12-02
 
-* 🚀 FEATURES: · Sortable list ([#2403](https://github.com/hcengineering/platform/issues/2403)) · To use maxWidth with Panel ([#2411](https://github.com/hcengineering/platform/issues/2411)) · Horizontal view to the sortable list ([#2412](https://github.com/hcengineering/platform/issues/2412)) · Attachments customizations. ([#2414](https://github.com/hcengineering/platform/issues/2414)) 
+* 🚀 FEATURES: · To use maxWidth with Panel ([#2411](https://github.com/hcengineering/platform/issues/2411)) · Attachments customizations. ([#2414](https://github.com/hcengineering/platform/issues/2414)) 
 * 🐛 BUG FIXES: · Activity ([#2415](https://github.com/hcengineering/platform/issues/2415)) 
 * ⚙️ MISCELLANEOUS TASKS: · EditDoc layout ([#2402](https://github.com/hcengineering/platform/issues/2402)) 
 * TSK-419: · Update workspaces while open menu ([#2413](https://github.com/hcengineering/platform/issues/2413)) 
@@ -3413,7 +3396,6 @@ Changelog.
 
 ## [0.6.44] - 2022-11-22
 
-* 🚀 FEATURES: · Sprint members ([#2392](https://github.com/hcengineering/platform/issues/2392)) 
 * HR: · Update Schedule layout. Fix tooltip and popup. ([#2388](https://github.com/hcengineering/platform/issues/2388)) 
 * TSK-399: · Allow to delete sprints ([#2386](https://github.com/hcengineering/platform/issues/2386)) 
 * TSK-420: · Fixed time report placeholders ([#2390](https://github.com/hcengineering/platform/issues/2390)) 
@@ -3429,7 +3411,7 @@ Changelog.
 
 ## [0.6.41] - 2022-11-12
 
-* 🚀 FEATURES: · To report time for sub-issue from main view ([#2358](https://github.com/hcengineering/platform/issues/2358)) · Close New Issue confirmation dialog ([#2370](https://github.com/hcengineering/platform/issues/2370)) · Verifications for some test steps ([#2371](https://github.com/hcengineering/platform/issues/2371)) 
+* 🚀 FEATURES: · To report time for sub-issue from main view ([#2358](https://github.com/hcengineering/platform/issues/2358)) 
 * 🐛 BUG FIXES: · Reporting null time ([#2362](https://github.com/hcengineering/platform/issues/2362)) · Table display in Documents application and CreateIssue layout ([#2372](https://github.com/hcengineering/platform/issues/2372)) · Navigation handling ([#2373](https://github.com/hcengineering/platform/issues/2373)) 
 * ⚙️ MISCELLANEOUS TASKS: · Workbench ([#2366](https://github.com/hcengineering/platform/issues/2366)) · Contact ([#2369](https://github.com/hcengineering/platform/issues/2369)) 
 * TSK-363: · Fixed multiple no sprint category ([#2352](https://github.com/hcengineering/platform/issues/2352)) 
@@ -3437,7 +3419,7 @@ Changelog.
 
 ## [0.6.40] - 2022-11-02
 
-* 🚀 FEATURES: · Open parent issue button for a sub-issue edit panel ([#2304](https://github.com/hcengineering/platform/issues/2304)) · Mobile integration id ([#2328](https://github.com/hcengineering/platform/issues/2328)) · To set a due date for selected issues ([#2336](https://github.com/hcengineering/platform/issues/2336)) 
+* 🚀 FEATURES: · To set a due date for selected issues ([#2336](https://github.com/hcengineering/platform/issues/2336)) 
 * 🐛 BUG FIXES: · Copying text to clipboard for Safari · UpDownNavigator ([#2311](https://github.com/hcengineering/platform/issues/2311)) · Kicked accounts could become active after upgrade ([#2314](https://github.com/hcengineering/platform/issues/2314)) · UI: DatePopup, Panel, PDFViewer. Adapting to Firefox. ([#2331](https://github.com/hcengineering/platform/issues/2331)) · 365 ([#2337](https://github.com/hcengineering/platform/issues/2337)) · Reported time date ([#2338](https://github.com/hcengineering/platform/issues/2338)) · Moving selected issues to team ([#2348](https://github.com/hcengineering/platform/issues/2348)) 
 * ⚙️ MISCELLANEOUS TASKS: · Double tap and update mobile UI ([#2312](https://github.com/hcengineering/platform/issues/2312)) · Paambaati/codeclimate-action from 3.1.0 to 3.1.1 ([#2316](https://github.com/hcengineering/platform/issues/2316)) · Paambaati/codeclimate-action from 3.1.1 to 3.2.0 ([#2318](https://github.com/hcengineering/platform/issues/2318)) · IssuesList layout ([#2317](https://github.com/hcengineering/platform/issues/2317)) · Notification version ([#2329](https://github.com/hcengineering/platform/issues/2329)) · Versions ([#2334](https://github.com/hcengineering/platform/issues/2334)) 
 * TSK-212: · Add notification on issue created ([#2325](https://github.com/hcengineering/platform/issues/2325)) 
@@ -3445,7 +3427,6 @@ Changelog.
 
 ## [0.6.39] - 2022-10-17
 
-* 🚀 FEATURES: · Task number field for the fulltext elastic search ([#2291](https://github.com/hcengineering/platform/issues/2291)) · Lang UT ([#2297](https://github.com/hcengineering/platform/issues/2297)) 
 * 🐛 BUG FIXES: · Displaying report time in different places ([#2290](https://github.com/hcengineering/platform/issues/2290)) · UI for mobile ([#2293](https://github.com/hcengineering/platform/issues/2293)) · Core intl ([#2301](https://github.com/hcengineering/platform/issues/2301)) · Jumping Scroller ([#2305](https://github.com/hcengineering/platform/issues/2305)) 
 * ⚙️ MISCELLANEOUS TASKS: · Unnecessary '?? 0' statement · LoginApp UI for mobile ([#2298](https://github.com/hcengineering/platform/issues/2298)) · Login. Fix warnings. ([#2300](https://github.com/hcengineering/platform/issues/2300)) · And publish new versions ([#2306](https://github.com/hcengineering/platform/issues/2306)) · Paambaati/codeclimate-action from 3.0.0 to 3.1.0 ([#2307](https://github.com/hcengineering/platform/issues/2307)) 
 
@@ -3497,7 +3478,7 @@ Changelog.
 
 ## [0.6.31] - 2022-07-19
 
-* 🚀 FEATURES: · Extra backup elastic logging ([#2236](https://github.com/hcengineering/platform/issues/2236)) · None filter ([#2238](https://github.com/hcengineering/platform/issues/2238)) · HR statistics ([#2240](https://github.com/hcengineering/platform/issues/2240)) 
+* 🚀 FEATURES: · HR statistics ([#2240](https://github.com/hcengineering/platform/issues/2240)) 
 * 🐛 BUG FIXES: · Schedule timezone ([#2234](https://github.com/hcengineering/platform/issues/2234)) · Password bugs ([#2235](https://github.com/hcengineering/platform/issues/2235)) · Mixin query ([#2239](https://github.com/hcengineering/platform/issues/2239)) · TSK-294 Allow to Bulk operations over enums ([#2241](https://github.com/hcengineering/platform/issues/2241)) 
 * TSK-268: · Supported expandable for issue list ([#2222](https://github.com/hcengineering/platform/issues/2222)) 
 
@@ -3521,7 +3502,7 @@ Changelog.
 
 ## [0.6.30] - 2022-07-02
 
-* 🚀 FEATURES: · Editor for Funnel ([#2140](https://github.com/hcengineering/platform/issues/2140)) · Move action ([#2164](https://github.com/hcengineering/platform/issues/2164)) · Channels table sort ([#2168](https://github.com/hcengineering/platform/issues/2168)) · Create employee ([#2179](https://github.com/hcengineering/platform/issues/2179)) · To do departament d&d ([#2194](https://github.com/hcengineering/platform/issues/2194)) 
+* 🚀 FEATURES: · Channels table sort ([#2168](https://github.com/hcengineering/platform/issues/2168)) · Create employee ([#2179](https://github.com/hcengineering/platform/issues/2179)) · To do departament d&d ([#2194](https://github.com/hcengineering/platform/issues/2194)) 
 * 🐛 BUG FIXES: · Add Label ([#2163](https://github.com/hcengineering/platform/issues/2163)) · Issues TSK-220, TSK-221 ([#2170](https://github.com/hcengineering/platform/issues/2170)) · TSK-241 ([#2182](https://github.com/hcengineering/platform/issues/2182)) · Product filters ([#2192](https://github.com/hcengineering/platform/issues/2192)) · Role migration, remove extra rosamunds ([#2190](https://github.com/hcengineering/platform/issues/2190)) 
 * ⚙️ MISCELLANEOUS TASKS: · Account menu. Remove Tooltip. ([#2189](https://github.com/hcengineering/platform/issues/2189)) · Deps ([#2186](https://github.com/hcengineering/platform/issues/2186)) 
 * AUTOMATION: · Disable UI ([#2158](https://github.com/hcengineering/platform/issues/2158)) 
@@ -3542,7 +3523,6 @@ Changelog.
 
 ## [0.6.29] - 2022-06-25
 
-* 🚀 FEATURES: · Priority filter ([#2114](https://github.com/hcengineering/platform/issues/2114)) · MyIssues ([#2128](https://github.com/hcengineering/platform/issues/2128)) · ObjectTitle mixin ([#2144](https://github.com/hcengineering/platform/issues/2144)) 
 * 🐛 BUG FIXES: · Release notes and new csv import ([#2116](https://github.com/hcengineering/platform/issues/2116)) · Popups. Increased image size of the assignee. ([#2117](https://github.com/hcengineering/platform/issues/2117)) · Components. ([#2122](https://github.com/hcengineering/platform/issues/2122)) · PriorityPresenter ([#2121](https://github.com/hcengineering/platform/issues/2121)) · "$lookup" when changing "attachedTo" ([#2113](https://github.com/hcengineering/platform/issues/2113)) · Actions ([#2132](https://github.com/hcengineering/platform/issues/2132)) 
 * ⚙️ MISCELLANEOUS TASKS: · Window title ([#2138](https://github.com/hcengineering/platform/issues/2138)) 
 * ACTIVITY: · Fix comments display ([#2143](https://github.com/hcengineering/platform/issues/2143)) 
@@ -3552,25 +3532,19 @@ Changelog.
 
 ## [0.6.28] - 2022-06-20
 
-* 🚀 FEATURES: · Labels support ([#2104](https://github.com/hcengineering/platform/issues/2104)) 
 * 🐛 BUG FIXES: · TSK-152 ([#2110](https://github.com/hcengineering/platform/issues/2110)) 
 * ⚙️ MISCELLANEOUS TASKS: · Project editor from sub-issues list ([#2108](https://github.com/hcengineering/platform/issues/2108)) · Issues layout ([#2107](https://github.com/hcengineering/platform/issues/2107)) 
 * BOARD: · Fix header ([#2098](https://github.com/hcengineering/platform/issues/2098)) 
 * CHUNTER: · Copy link to message ([#2078](https://github.com/hcengineering/platform/issues/2078)) 
 * TRACKER: · Fix status editor ([#2097](https://github.com/hcengineering/platform/issues/2097)) 
 
-## [0.6.27b] - 2022-06-17
-
-* 🚀 FEATURES: · Remember active viewlet ([#2094](https://github.com/hcengineering/platform/issues/2094)) · Trigger for updating sub-issues project ([#2079](https://github.com/hcengineering/platform/issues/2079)) 
-
 ## [0.6.27a] - 2022-06-16
 
-* 🚀 FEATURES: · Submenu component. Update tooltip, Menu. ([#2088](https://github.com/hcengineering/platform/issues/2088)) 
 * 🐛 BUG FIXES: · Release notes ([#2086](https://github.com/hcengineering/platform/issues/2086)) · Tracker board card ([#2090](https://github.com/hcengineering/platform/issues/2090)) 
 
 ## [0.6.27] - 2022-06-15
 
-* 🚀 FEATURES: · Kanban view ([#2071](https://github.com/hcengineering/platform/issues/2071)) · Enum value to be used in filters ([#2085](https://github.com/hcengineering/platform/issues/2085)) · Board to Active/Backlog ([#2084](https://github.com/hcengineering/platform/issues/2084)) 
+* 🚀 FEATURES: · Enum value to be used in filters ([#2085](https://github.com/hcengineering/platform/issues/2085)) 
 * 🐛 BUG FIXES: · Main build ([#2065](https://github.com/hcengineering/platform/issues/2065)) · TSK-9 ([#2066](https://github.com/hcengineering/platform/issues/2066)) · TSK-101 navigation ([#2068](https://github.com/hcengineering/platform/issues/2068)) · TSK-104 Create Candidate hang ([#2072](https://github.com/hcengineering/platform/issues/2072)) 
 * CHUNTER: · Add button for link formatting ([#2063](https://github.com/hcengineering/platform/issues/2063)) 
 * TSK-112: · Fix workbench switch ([#2074](https://github.com/hcengineering/platform/issues/2074)) 
@@ -3585,21 +3559,18 @@ Changelog.
 
 ## [0.6.26] - 2022-06-10
 
-* 🚀 FEATURES: · Issue-id to sub-issue list ([#2035](https://github.com/hcengineering/platform/issues/2035)) · Support for basic checkboxes in text ([#2019](https://github.com/hcengineering/platform/issues/2019)) · Ui tests for sub-issue creation ([#2053](https://github.com/hcengineering/platform/issues/2053)) · Project status test ([#2056](https://github.com/hcengineering/platform/issues/2056)) 
 * 🐛 BUG FIXES: · Changelog ([#2040](https://github.com/hcengineering/platform/issues/2040)) · Board status order ([#2042](https://github.com/hcengineering/platform/issues/2042)) · Project status ([#2044](https://github.com/hcengineering/platform/issues/2044)) · Date format ([#2049](https://github.com/hcengineering/platform/issues/2049)) · TSK-96 ([#2052](https://github.com/hcengineering/platform/issues/2052)) · Task Description in Activity ([#2059](https://github.com/hcengineering/platform/issues/2059)) 
 * ⚙️ MISCELLANEOUS TASKS: · Sub-issue rank when attaching to another issue ([#2055](https://github.com/hcengineering/platform/issues/2055)) · Viewoptions layout. ([#2050](https://github.com/hcengineering/platform/issues/2050)) 
 * BOARD: · Fix tags/labels for board table view ([#2045](https://github.com/hcengineering/platform/issues/2045)) · Fix attribute views for tags ([#2046](https://github.com/hcengineering/platform/issues/2046)) · Update popups style ([#2043](https://github.com/hcengineering/platform/issues/2043)) · Add labels view ([#2047](https://github.com/hcengineering/platform/issues/2047)) 
 
 ## [0.6.25] - 2022-06-08
 
-* 🚀 FEATURES: · "Editable" mixin to "Issue" class (TSK-19) ([#2021](https://github.com/hcengineering/platform/issues/2021)) · Context menu to the sub-issues list ([#2029](https://github.com/hcengineering/platform/issues/2029)) 
 * 🐛 BUG FIXES: · Filter section missing attribute ([#2030](https://github.com/hcengineering/platform/issues/2030)) · Members in Review/Board etc. ([#2036](https://github.com/hcengineering/platform/issues/2036)) · IssueStatus order ([#2038](https://github.com/hcengineering/platform/issues/2038)) · Tracker projects layout ([#2039](https://github.com/hcengineering/platform/issues/2039)) 
 * ⚙️ MISCELLANEOUS TASKS: · Changelog ([#2020](https://github.com/hcengineering/platform/issues/2020)) 
 * TRACKER: · Added Projects to the card ([#2023](https://github.com/hcengineering/platform/issues/2023)) · Updating cards in Kanban ([#2032](https://github.com/hcengineering/platform/issues/2032)) · Add "Show Sub-issues" toggle into issue list ([#2033](https://github.com/hcengineering/platform/issues/2033)) 
 
 ## [0.6.24] - 2022-06-07
 
-* 🚀 FEATURES: · "Create Sub-issue" component ([#2004](https://github.com/hcengineering/platform/issues/2004)) 
 * 🐛 BUG FIXES: · Live query ([#2017](https://github.com/hcengineering/platform/issues/2017)) 
 * ⚙️ MISCELLANEOUS TASKS: · Tracker board layout. Removed context menu. ([#2016](https://github.com/hcengineering/platform/issues/2016)) · Build cache for rush actions ([#2018](https://github.com/hcengineering/platform/issues/2018)) 
 * PANEL: · Remove full size. Fix popup. ([#2007](https://github.com/hcengineering/platform/issues/2007)) 
@@ -3607,7 +3578,7 @@ Changelog.
 
 ## [0.6.23] - 2022-06-03
 
-* 🚀 FEATURES: · To define table columns order ([#1959](https://github.com/hcengineering/platform/issues/1959)) · Project selector ([#1973](https://github.com/hcengineering/platform/issues/1973)) · TabList component. Update StatesBar layout. Fix Scroller. ([#1980](https://github.com/hcengineering/platform/issues/1980)) · Contact info presenter ([#1985](https://github.com/hcengineering/platform/issues/1985)) · Recruit contact info ut ([#1987](https://github.com/hcengineering/platform/issues/1987)) 
+* 🚀 FEATURES: · To define table columns order ([#1959](https://github.com/hcengineering/platform/issues/1959)) 
 * 🐛 BUG FIXES: · Checkboxes ([#1923](https://github.com/hcengineering/platform/issues/1923)) · Scrollbar and icons. Contact: Add Open integration. ([#1956](https://github.com/hcengineering/platform/issues/1956)) · Console error · Tags popup and Applicant Labels ([#1958](https://github.com/hcengineering/platform/issues/1958)) · Jump to date ([#1970](https://github.com/hcengineering/platform/issues/1970)) · Build check ([#1981](https://github.com/hcengineering/platform/issues/1981)) · Checklist ([#1979](https://github.com/hcengineering/platform/issues/1979)) · Activity ([#1998](https://github.com/hcengineering/platform/issues/1998)) · #1947 ([#1993](https://github.com/hcengineering/platform/issues/1993)) · Derived delete from collection ([#2002](https://github.com/hcengineering/platform/issues/2002)) · Build cache ([#1996](https://github.com/hcengineering/platform/issues/1996)) · Webpack errors ([#2006](https://github.com/hcengineering/platform/issues/2006)) 
 * ⚙️ MISCELLANEOUS TASKS: · Heft ([#1974](https://github.com/hcengineering/platform/issues/1974)) · Minimist from 1.2.5 to 1.2.6 in /cloud/app ([#1976](https://github.com/hcengineering/platform/issues/1976)) 
 * BOARD: · Update server-plugin for task to subscribe to updates on create & update ([#1925](https://github.com/hcengineering/platform/issues/1925)) 
@@ -3617,7 +3588,6 @@ Changelog.
 
 ## [0.6.22] - 2022-05-29
 
-* 🚀 FEATURES: · Icons to class settings ([#1903](https://github.com/hcengineering/platform/issues/1903)) 
 * 🐛 BUG FIXES: · Match elastic orde ([#1871](https://github.com/hcengineering/platform/issues/1871)) · "Copy to clipboard" title ([#1876](https://github.com/hcengineering/platform/issues/1876)) ([#1877](https://github.com/hcengineering/platform/issues/1877)) · Popup, Loading, DateRange animation ([#1893](https://github.com/hcengineering/platform/issues/1893)) · Skills target and application labels ([#1896](https://github.com/hcengineering/platform/issues/1896)) · Add tag popup ([#1885](https://github.com/hcengineering/platform/issues/1885)) · Attachments popup ([#1899](https://github.com/hcengineering/platform/issues/1899)) · Vacancy Archive item presenting ([#1901](https://github.com/hcengineering/platform/issues/1901)) · Edit Vacancy attributes ([#1900](https://github.com/hcengineering/platform/issues/1900)) 
 * ⚙️ MISCELLANEOUS TASKS: · Popups layouts ([#1864](https://github.com/hcengineering/platform/issues/1864)) · Reminders layout ([#1874](https://github.com/hcengineering/platform/issues/1874)) · Glitch ([#1902](https://github.com/hcengineering/platform/issues/1902)) 
 * BOARD: · Update actions ([#1859](https://github.com/hcengineering/platform/issues/1859)) · Fix cover presenter ([#1872](https://github.com/hcengineering/platform/issues/1872)) · Checklist item dnd support ([#1873](https://github.com/hcengineering/platform/issues/1873)) 
@@ -3626,20 +3596,18 @@ Changelog.
 
 ## [0.6.21] - 2022-05-24
 
-* 🚀 FEATURES: · Custom fields ([#1844](https://github.com/hcengineering/platform/issues/1844)) · CardCover type ([#1856](https://github.com/hcengineering/platform/issues/1856)) · To rebuild elastic for all workspaces ([#1862](https://github.com/hcengineering/platform/issues/1862)) 
+* 🚀 FEATURES: · To rebuild elastic for all workspaces ([#1862](https://github.com/hcengineering/platform/issues/1862)) 
 * 🐛 BUG FIXES: · Cover context menu action ([#1860](https://github.com/hcengineering/platform/issues/1860)) 
 * ⚙️ MISCELLANEOUS TASKS: · Filters layout ([#1847](https://github.com/hcengineering/platform/issues/1847)) 
 * CONTACTS: · Type Filter ([#1855](https://github.com/hcengineering/platform/issues/1855)) 
 
 ## [0.6.20] - 2022-05-23
 
-* 🚀 FEATURES: · Dialog for selecting a parent issue  ([#1817](https://github.com/hcengineering/platform/issues/1817)) 
 * 🐛 BUG FIXES: · ChannelsEditor ([#1833](https://github.com/hcengineering/platform/issues/1833)) 
 * BOARD: · Update card ([#1826](https://github.com/hcengineering/platform/issues/1826)) 
 
 ## [0.6.19] - 2022-05-22
 
-* 🚀 FEATURES: · Confirmation to delete a checklist ([#1775](https://github.com/hcengineering/platform/issues/1775)) · Checklist dueTo ([#1796](https://github.com/hcengineering/platform/issues/1796)) · KanbanCard description icon ([#1814](https://github.com/hcengineering/platform/issues/1814)) 
 * 🐛 BUG FIXES: · Channel editor focus ([#1769](https://github.com/hcengineering/platform/issues/1769)) · Invite link ([#1781](https://github.com/hcengineering/platform/issues/1781)) · Title ([#1800](https://github.com/hcengineering/platform/issues/1800)) · Board preference ([#1807](https://github.com/hcengineering/platform/issues/1807)) · Activity text-overflow. ([#1811](https://github.com/hcengineering/platform/issues/1811)) · Labels activity ([#1819](https://github.com/hcengineering/platform/issues/1819)) · Number and string editors. Update attributes header. ([#1823](https://github.com/hcengineering/platform/issues/1823)) 
 * ⚙️ MISCELLANEOUS TASKS: · EditStatuses, PDFViewer. Add full size for Panel. ([#1797](https://github.com/hcengineering/platform/issues/1797)) · Context menu in the "CreateIssue" dialog ([#1799](https://github.com/hcengineering/platform/issues/1799)) · ReferenceInput layout ([#1821](https://github.com/hcengineering/platform/issues/1821)) 
 * BOARD: · Add TableView ([#1760](https://github.com/hcengineering/platform/issues/1760)) · Use Standard actions ([#1766](https://github.com/hcengineering/platform/issues/1766)) · Add checklists info ([#1772](https://github.com/hcengineering/platform/issues/1772)) · Add checklist assignee ([#1778](https://github.com/hcengineering/platform/issues/1778)) · Add convert checklist to card action ([#1805](https://github.com/hcengineering/platform/issues/1805)) 
@@ -3651,7 +3619,6 @@ Changelog.
 
 ## [0.6.18] - 2022-05-15
 
-* 🚀 FEATURES: · Labels mode preference ([#1730](https://github.com/hcengineering/platform/issues/1730)) 
 * 🐛 BUG FIXES: · Adding several cards ([#1722](https://github.com/hcengineering/platform/issues/1722)) · White theme. Allow to copy text. Update EditVacancy. ([#1723](https://github.com/hcengineering/platform/issues/1723)) · Members activity ([#1750](https://github.com/hcengineering/platform/issues/1750)) · Channel editor ([#1754](https://github.com/hcengineering/platform/issues/1754)) · Channels editor ([#1756](https://github.com/hcengineering/platform/issues/1756)) · Activity layout. ([#1757](https://github.com/hcengineering/platform/issues/1757)) 
 * ⚙️ MISCELLANEOUS TASKS: · Review Category ([#1727](https://github.com/hcengineering/platform/issues/1727)) · EditChannel panel, Attributes ([#1735](https://github.com/hcengineering/platform/issues/1735)) 
 * BOARD: · Initial checklist support ([#1672](https://github.com/hcengineering/platform/issues/1672)) · Refactor AddPanel with TextAreaEditor ([#1720](https://github.com/hcengineering/platform/issues/1720)) · Fix copy from message · Fix push/pull activity ([#1718](https://github.com/hcengineering/platform/issues/1718)) 
@@ -3660,19 +3627,18 @@ Changelog.
 
 ## [0.6.17] - 2022-05-11
 
-* 🚀 FEATURES: · TextAreaEditor ([#1694](https://github.com/hcengineering/platform/issues/1694)) 
 * 🐛 BUG FIXES: · Few issues ([#1705](https://github.com/hcengineering/platform/issues/1705)) · Card label layout ([#1707](https://github.com/hcengineering/platform/issues/1707)) 
 * ⚙️ MISCELLANEOUS TASKS: · Show Activity button. Login button size. ([#1706](https://github.com/hcengineering/platform/issues/1706)) 
 
 ## [0.6.16] - 2022-05-08
 
-* 🚀 FEATURES: · CardCover ([#1652](https://github.com/hcengineering/platform/issues/1652)) · KanbanCard cover ([#1688](https://github.com/hcengineering/platform/issues/1688)) · To create customer for Organization ([#1696](https://github.com/hcengineering/platform/issues/1696)) 
+* 🚀 FEATURES: · To create customer for Organization ([#1696](https://github.com/hcengineering/platform/issues/1696)) 
 * 🐛 BUG FIXES: · Board menu button ([#1693](https://github.com/hcengineering/platform/issues/1693)) 
 * ⚙️ MISCELLANEOUS TASKS: · Docker/login-action from 1 to 2 ([#1665](https://github.com/hcengineering/platform/issues/1665)) · Tags version and migrations other fix ([#1687](https://github.com/hcengineering/platform/issues/1687)) 
 
 ## [0.6.15] - 2022-05-05
 
-* 🚀 FEATURES: · Mongo lookup pipeline ([#1557](https://github.com/hcengineering/platform/issues/1557)) · OnLabelDelete trigger ([#1576](https://github.com/hcengineering/platform/issues/1576)) · BoardMenu ([#1592](https://github.com/hcengineering/platform/issues/1592)) · Ci mismatching dependencies check ([#1616](https://github.com/hcengineering/platform/issues/1616)) · Board activity ([#1613](https://github.com/hcengineering/platform/issues/1613)) · List watch ([#1637](https://github.com/hcengineering/platform/issues/1637)) 
+* 🚀 FEATURES: · Mongo lookup pipeline ([#1557](https://github.com/hcengineering/platform/issues/1557)) · Ci mismatching dependencies check ([#1616](https://github.com/hcengineering/platform/issues/1616)) 
 * 🐛 BUG FIXES: · Vacancies search blinking ([#1566](https://github.com/hcengineering/platform/issues/1566)) · Skill reference delete ([#1577](https://github.com/hcengineering/platform/issues/1577)) · Activity merge collapse ([#1600](https://github.com/hcengineering/platform/issues/1600)) · Formatting issues ([#1617](https://github.com/hcengineering/platform/issues/1617)) · Z-index ([#1624](https://github.com/hcengineering/platform/issues/1624)) · Query clone respect mixins ([#1631](https://github.com/hcengineering/platform/issues/1631)) · Activity view for "No Priority" option ([#1641](https://github.com/hcengineering/platform/issues/1641)) · Actions popup for Issues List ([#1638](https://github.com/hcengineering/platform/issues/1638)) · Skills category is empty ([#1647](https://github.com/hcengineering/platform/issues/1647)) · Lead padding and add switch application ([#1649](https://github.com/hcengineering/platform/issues/1649)) · 1630. UI fixes. ([#1651](https://github.com/hcengineering/platform/issues/1651)) · Kanban scrollInto ([#1663](https://github.com/hcengineering/platform/issues/1663)) · UI for adding attributes ([#1660](https://github.com/hcengineering/platform/issues/1660)) 
 * ⚙️ MISCELLANEOUS TASKS: · Panel layout. ([#1591](https://github.com/hcengineering/platform/issues/1591)) · Watch action ([#1619](https://github.com/hcengineering/platform/issues/1619)) · Panel, Telegram, Scroller layouts. ([#1621](https://github.com/hcengineering/platform/issues/1621)) · Telegram and Email layouts. Fix Channels. ([#1639](https://github.com/hcengineering/platform/issues/1639)) 
 * BOARD: · Remove stale left panel items ([#1574](https://github.com/hcengineering/platform/issues/1574)) · Fix card members update ([#1620](https://github.com/hcengineering/platform/issues/1620)) · Checklists model adjustments ([#1633](https://github.com/hcengineering/platform/issues/1633)) 
@@ -3682,7 +3648,6 @@ Changelog.
 
 ## [0.6.14] - 2022-04-26
 
-* 🚀 FEATURES: · Action ([#1493](https://github.com/hcengineering/platform/issues/1493)) · List archive ([#1537](https://github.com/hcengineering/platform/issues/1537)) · Right panel to the EditIssue dialog ([#1272](https://github.com/hcengineering/platform/issues/1272)) ([#1546](https://github.com/hcengineering/platform/issues/1546)) 
 * 🐛 BUG FIXES: · Saved items header ([#1531](https://github.com/hcengineering/platform/issues/1531)) · Category styles ([#1475](https://github.com/hcengineering/platform/issues/1475)) 
 * BOARD: · Add open card inline menu ([#1511](https://github.com/hcengineering/platform/issues/1511)) · Handle labels when move card to another board ([#1538](https://github.com/hcengineering/platform/issues/1538)) · Make context menu consistent ([#1542](https://github.com/hcengineering/platform/issues/1542)) 
 * CHUNTER: · Avatars in dm header and highlight on first message ([#1499](https://github.com/hcengineering/platform/issues/1499)) · Saved attachments ([#1515](https://github.com/hcengineering/platform/issues/1515)) 
@@ -3690,7 +3655,6 @@ Changelog.
 
 ## [0.6.13] - 2022-04-24
 
-* 🚀 FEATURES: · EditMember popup ([#1448](https://github.com/hcengineering/platform/issues/1448)) · ArchiveCard action ([#1456](https://github.com/hcengineering/platform/issues/1456)) · AttachmentPresenter ([#1452](https://github.com/hcengineering/platform/issues/1452)) · ChannelsDropdown ([#1459](https://github.com/hcengineering/platform/issues/1459)) · WatchCard ([#1465](https://github.com/hcengineering/platform/issues/1465)) 
 * 🐛 BUG FIXES: · UI bugs ([#1447](https://github.com/hcengineering/platform/issues/1447)) · Lint issues · Typo ([#1463](https://github.com/hcengineering/platform/issues/1463)) · AttachmentPresenter ([#1471](https://github.com/hcengineering/platform/issues/1471)) · Edit event members update ([#1495](https://github.com/hcengineering/platform/issues/1495)) · ModifiedOn collection inner tx ([#1504](https://github.com/hcengineering/platform/issues/1504)) · Linting conflicts ([#1506](https://github.com/hcengineering/platform/issues/1506)) 
 * 🚜 REFACTOR: · UsersPopup ([#1428](https://github.com/hcengineering/platform/issues/1428)) 
 * ⚡ PERFORMANCE: · Elastic rebuild & minor fix ([#1451](https://github.com/hcengineering/platform/issues/1451)) 
@@ -3701,7 +3665,6 @@ Changelog.
 
 ## [0.6.12] - 2022-04-18
 
-* 🚀 FEATURES: · MoveCard action ([#1375](https://github.com/hcengineering/platform/issues/1375)) 
 * 🐛 BUG FIXES: · Date ([#1430](https://github.com/hcengineering/platform/issues/1430)) 
 * ⚡ PERFORMANCE: · Assets build process ([#1435](https://github.com/hcengineering/platform/issues/1435)) 
 * BOARD: · Create board labels ([#1426](https://github.com/hcengineering/platform/issues/1426)) · Add card labels picker popup ([#1434](https://github.com/hcengineering/platform/issues/1434)) 
@@ -3709,7 +3672,6 @@ Changelog.
 
 ## [0.6.11] - 2022-04-17
 
-* 🚀 FEATURES: · Additional panel display modes ([#1279](https://github.com/hcengineering/platform/issues/1279)) · ".nvmrc" ([#1276](https://github.com/hcengineering/platform/issues/1276)) · Create new Kanban list panel ([#1299](https://github.com/hcengineering/platform/issues/1299)) · Depend a bot ([#1326](https://github.com/hcengineering/platform/issues/1326)) · `AddMultipleCardsPopup` ([#1374](https://github.com/hcengineering/platform/issues/1374)) · Attachments live updates · Date action ([#1418](https://github.com/hcengineering/platform/issues/1418)) · TagsDropdownEditor. Fix layout. ([#1422](https://github.com/hcengineering/platform/issues/1422)) 
 * 🐛 BUG FIXES: · Kanban card design ([#1278](https://github.com/hcengineering/platform/issues/1278)) · Broken board ([#1317](https://github.com/hcengineering/platform/issues/1317)) · Colors and Panel layout. Update popups. ([#1346](https://github.com/hcengineering/platform/issues/1346)) · Total ([#1355](https://github.com/hcengineering/platform/issues/1355)) · SelectPopup ([#1400](https://github.com/hcengineering/platform/issues/1400)) · AddAttachment control · Lint formatting · AttachmentDroppable · Attachments spinner · Attachments spinner · Lint issues · Lint issues · Card & file drop issues · Card & file drop issues · Lint issues · Review issues: copyright & logging · Scss formatting · Merge conflicts ([#1409](https://github.com/hcengineering/platform/issues/1409)) 
 * ⚙️ MISCELLANEOUS TASKS: · DataPicker layout ([#1309](https://github.com/hcengineering/platform/issues/1309)) · New issue dialog ([#1310](https://github.com/hcengineering/platform/issues/1310)) · DatePicker ([#1337](https://github.com/hcengineering/platform/issues/1337)) · Actions/upload-artifact from 2 to 3 ([#1338](https://github.com/hcengineering/platform/issues/1338)) · Paambaati/codeclimate-action from 2.7.5 to 3.0.0 ([#1339](https://github.com/hcengineering/platform/issues/1339)) · Actions/cache from 2 to 3 ([#1340](https://github.com/hcengineering/platform/issues/1340)) · Supercharge/mongodb-github-action from 1.3.0 to 1.7.0 ([#1341](https://github.com/hcengineering/platform/issues/1341)) · Actions/checkout from 2 to 3 ([#1342](https://github.com/hcengineering/platform/issues/1342)) · UserBox and Button layouts ([#1343](https://github.com/hcengineering/platform/issues/1343)) · Dialogs layout ([#1385](https://github.com/hcengineering/platform/issues/1385)) · Paddings from card-container ([#1386](https://github.com/hcengineering/platform/issues/1386)) · UserBoxList layout. Fix AccountPopup. ([#1397](https://github.com/hcengineering/platform/issues/1397)) · Paddings from card-container · Paddings from card-container · Creations ([#1414](https://github.com/hcengineering/platform/issues/1414)) · White theme ([#1419](https://github.com/hcengineering/platform/issues/1419)) · TagEditor layout ([#1420](https://github.com/hcengineering/platform/issues/1420)) 
 * BOARD: · Design card editor (initial) ([#1292](https://github.com/hcengineering/platform/issues/1292)) · 1265: Make Card Actions extensible ([#1319](https://github.com/hcengineering/platform/issues/1319)) · Update board card model ([#1329](https://github.com/hcengineering/platform/issues/1329)) · Add new card actions + Join Card Action example ([#1335](https://github.com/hcengineering/platform/issues/1335)) · Add card details (members, labels, date) ([#1376](https://github.com/hcengineering/platform/issues/1376)) · Add button shape and title props ([#1381](https://github.com/hcengineering/platform/issues/1381)) · Fix card live updates ([#1403](https://github.com/hcengineering/platform/issues/1403)) · Add attachments support · Fix labels model ([#1405](https://github.com/hcengineering/platform/issues/1405)) · Fix infinite loop in Activity component for space update ([#1417](https://github.com/hcengineering/platform/issues/1417)) 
@@ -3752,32 +3714,30 @@ Changelog.
 
 ## [0.6.4] - 2022-02-21
 
-* 🚀 FEATURES: · Change done state ([#888](https://github.com/hcengineering/platform/issues/888)) · To open candidate from vacancy candidate card ([#943](https://github.com/hcengineering/platform/issues/943)) · Front server bodyparser ([#971](https://github.com/hcengineering/platform/issues/971)) · Linting build phase ([#966](https://github.com/hcengineering/platform/issues/966)) 
+* 🚀 FEATURES: · Change done state ([#888](https://github.com/hcengineering/platform/issues/888)) · To open candidate from vacancy candidate card ([#943](https://github.com/hcengineering/platform/issues/943)) · Linting build phase ([#966](https://github.com/hcengineering/platform/issues/966)) 
 * 🐛 BUG FIXES: · Version to be proper value ([#891](https://github.com/hcengineering/platform/issues/891)) · Mixin sorting ([#905](https://github.com/hcengineering/platform/issues/905)) · Facebook placeholder ([#920](https://github.com/hcengineering/platform/issues/920)) · Rekoni url ([#921](https://github.com/hcengineering/platform/issues/921)) · User model updates ([#924](https://github.com/hcengineering/platform/issues/924)) · 900 ([#925](https://github.com/hcengineering/platform/issues/925)) · Current space selection on page load ([#927](https://github.com/hcengineering/platform/issues/927)) · UI. CSS optimization. ([#932](https://github.com/hcengineering/platform/issues/932)) · Close panel on empty fragment ([#938](https://github.com/hcengineering/platform/issues/938)) · Panel hide on escape with popup ([#941](https://github.com/hcengineering/platform/issues/941)) · PDF viewer close with Cross mark ([#942](https://github.com/hcengineering/platform/issues/942)) · #890 ([#948](https://github.com/hcengineering/platform/issues/948)) · Contact info label missing ([#961](https://github.com/hcengineering/platform/issues/961)) · Recruit activity labels ([#962](https://github.com/hcengineering/platform/issues/962)) · Warnings. Update Scroller. ([#965](https://github.com/hcengineering/platform/issues/965)) · Space on app change ([#970](https://github.com/hcengineering/platform/issues/970)) · Collection editors in Safari ([#973](https://github.com/hcengineering/platform/issues/973)) · Back to candidate with history ([#975](https://github.com/hcengineering/platform/issues/975)) · States search ([#978](https://github.com/hcengineering/platform/issues/978)) · Archive special component ([#979](https://github.com/hcengineering/platform/issues/979)) · No collection editor case ([#980](https://github.com/hcengineering/platform/issues/980)) · Navigator extra space issue ([#981](https://github.com/hcengineering/platform/issues/981)) · Webpack build conflicts ([#985](https://github.com/hcengineering/platform/issues/985)) · UI. ([#986](https://github.com/hcengineering/platform/issues/986)) · Resolves · Lint · Query update when refresh ([#1006](https://github.com/hcengineering/platform/issues/1006)) · Time tooltip ([#1016](https://github.com/hcengineering/platform/issues/1016)) · Images display ([#1019](https://github.com/hcengineering/platform/issues/1019)) · LastView tx space ([#1029](https://github.com/hcengineering/platform/issues/1029)) · Build with skillset ([#1037](https://github.com/hcengineering/platform/issues/1037)) 
 * ⚡ PERFORMANCE: · Components, dialogs. Fix issues. Update Scroller. ([#945](https://github.com/hcengineering/platform/issues/945)) 
 * ⚙️ MISCELLANEOUS TASKS: · MentionList size and position. Added inline display. ([#886](https://github.com/hcengineering/platform/issues/886)) · Setting layouts, popup, icons. ([#897](https://github.com/hcengineering/platform/issues/897)) · Components layout, DoneStatesPopup ([#906](https://github.com/hcengineering/platform/issues/906)) · Layouts, icons. CSS optimize ([#926](https://github.com/hcengineering/platform/issues/926)) · Extra lookups ([#963](https://github.com/hcengineering/platform/issues/963)) · StatesBar layout. Fix StyledTextBox. ([#994](https://github.com/hcengineering/platform/issues/994)) · StatesBar (Safari fix) · Scroller ([#1018](https://github.com/hcengineering/platform/issues/1018)) 
 
 ## [0.6.3] - 2022-01-27
 
-* 🚀 FEATURES: · To perform heft --clean on build ([#768](https://github.com/hcengineering/platform/issues/768)) · Language selector ([#769](https://github.com/hcengineering/platform/issues/769)) · Elastic rebuild ([#804](https://github.com/hcengineering/platform/issues/804)) · TxOperations API ([#809](https://github.com/hcengineering/platform/issues/809)) · To create vacancy for any person ([#815](https://github.com/hcengineering/platform/issues/815)) · Svelte-check in setting. Fix errors. ([#821](https://github.com/hcengineering/platform/issues/821)) · Done state to applications popup 
+* 🚀 FEATURES: · To perform heft --clean on build ([#768](https://github.com/hcengineering/platform/issues/768)) · Elastic rebuild ([#804](https://github.com/hcengineering/platform/issues/804)) · TxOperations API ([#809](https://github.com/hcengineering/platform/issues/809)) · To create vacancy for any person ([#815](https://github.com/hcengineering/platform/issues/815)) 
 * 🐛 BUG FIXES: · #758 ([#762](https://github.com/hcengineering/platform/issues/762)) · EditApplication layout for Safari ([#766](https://github.com/hcengineering/platform/issues/766)) · Activity icons ([#788](https://github.com/hcengineering/platform/issues/788)) · Extra transactions during workspace upgrace ([#792](https://github.com/hcengineering/platform/issues/792)) · ([#799](https://github.com/hcengineering/platform/issues/799)) · Errors ([#803](https://github.com/hcengineering/platform/issues/803)) · Query/predicate circular deps ([#811](https://github.com/hcengineering/platform/issues/811)) · Candidate attachedToClass migration and add DoneState to Applicants ([#817](https://github.com/hcengineering/platform/issues/817)) · Lookup options ([#830](https://github.com/hcengineering/platform/issues/830)) · Full text search control behaviour ([#838](https://github.com/hcengineering/platform/issues/838)) · Height statusbar ([#840](https://github.com/hcengineering/platform/issues/840)) · Errors in Task. EditBox placeholder to IntlString. ([#839](https://github.com/hcengineering/platform/issues/839)) · Popup Esc handling ([#855](https://github.com/hcengineering/platform/issues/855)) · Model versioning · Workspace upgrade in restore 
 * ⚙️ MISCELLANEOUS TASKS: · EditStatuses layout ([#755](https://github.com/hcengineering/platform/issues/755)) · Scale for Icons ([#757](https://github.com/hcengineering/platform/issues/757)) · Notifications from left navigation menu ([#767](https://github.com/hcengineering/platform/issues/767)) · Flags in language selector ([#774](https://github.com/hcengineering/platform/issues/774)) · Circular dep ([#790](https://github.com/hcengineering/platform/issues/790)) · Docker-compose.yaml ([#791](https://github.com/hcengineering/platform/issues/791)) · And clean icons ([#787](https://github.com/hcengineering/platform/issues/787)) · Previous avatar on uploading new one ([#822](https://github.com/hcengineering/platform/issues/822)) · And combine popup layout for select. Add svelte-check in presentation. ([#845](https://github.com/hcengineering/platform/issues/845)) · Navigator layout. Add Scroller. ([#850](https://github.com/hcengineering/platform/issues/850)) · Mention popup. Add svelte-check. Fix warnings. ([#854](https://github.com/hcengineering/platform/issues/854)) · Panel layout for AttributeBarEditor · 'secret' token usage 
 
 ## [0.6.2] - 2021-12-28
 
-* 🚀 FEATURES: · Columns ([#655](https://github.com/hcengineering/platform/issues/655)) · Strings in @anticrm/presentation. DoneState centered ([#668](https://github.com/hcengineering/platform/issues/668)) · H3 node ([#673](https://github.com/hcengineering/platform/issues/673)) · StatusesBar ([#691](https://github.com/hcengineering/platform/issues/691)) · Hidden property to UXObject ([#731](https://github.com/hcengineering/platform/issues/731)) 
 * 🐛 BUG FIXES: · Won/lost state migration ([#633](https://github.com/hcengineering/platform/issues/633)) · Migration ([#650](https://github.com/hcengineering/platform/issues/650)) · Svelte-check in ui ([#663](https://github.com/hcengineering/platform/issues/663)) · Applications display error ([#662](https://github.com/hcengineering/platform/issues/662)) · Header in tables ([#657](https://github.com/hcengineering/platform/issues/657)) · Applicant card open Candidate ([#676](https://github.com/hcengineering/platform/issues/676)) · Lead opening issue ([#685](https://github.com/hcengineering/platform/issues/685)) · Archive table ([#698](https://github.com/hcengineering/platform/issues/698)) · Rebuild-elastic ([#704](https://github.com/hcengineering/platform/issues/704)) · Deps creation in dev env ([#711](https://github.com/hcengineering/platform/issues/711)) · Try to match $search key ([#716](https://github.com/hcengineering/platform/issues/716)) · Actions ([#727](https://github.com/hcengineering/platform/issues/727)) · TooltipInstance horizontal position and other little fixes ([#729](https://github.com/hcengineering/platform/issues/729)) · Chrome Kanban ([#732](https://github.com/hcengineering/platform/issues/732)) · #735 ([#736](https://github.com/hcengineering/platform/issues/736)) 
 * ⚙️ MISCELLANEOUS TASKS: · DoneStates of existing kanban cards ([#625](https://github.com/hcengineering/platform/issues/625)) · Cards and dialogs UI. ([#627](https://github.com/hcengineering/platform/issues/627)) · Kanban and Setting layouts ([#651](https://github.com/hcengineering/platform/issues/651)) · Kanban cards layout ([#684](https://github.com/hcengineering/platform/issues/684)) · StatusesBar · Archive icon. Add margins. Update space menu. ([#700](https://github.com/hcengineering/platform/issues/700)) · Dropdown, popups and icons ([#713](https://github.com/hcengineering/platform/issues/713)) · Application layout ([#738](https://github.com/hcengineering/platform/issues/738)) 
 
 ## [0.6.1] - 2021-12-14
 
-* 🚀 FEATURES: · Candidate create presenter ([#340](https://github.com/hcengineering/platform/issues/340)) · To dump workspace ([#403](https://github.com/hcengineering/platform/issues/403)) · GitHub channel provider ([#424](https://github.com/hcengineering/platform/issues/424)) · Applications and update layout ([#427](https://github.com/hcengineering/platform/issues/427)) · Attachment strings ([#429](https://github.com/hcengineering/platform/issues/429)) · ShowMore ([#445](https://github.com/hcengineering/platform/issues/445)) · ESLint/prettier ([#389](https://github.com/hcengineering/platform/issues/389)) · Integration disconnect handler ([#460](https://github.com/hcengineering/platform/issues/460)) · Tg contact if it is required ([#436](https://github.com/hcengineering/platform/issues/436)) · Clear-telegram-history command ([#497](https://github.com/hcengineering/platform/issues/497)) · Task Kanban and States · Create application icon, Panel header update ([#504](https://github.com/hcengineering/platform/issues/504)) · Unassign ([#511](https://github.com/hcengineering/platform/issues/511)) · Use client from client-resources from NodeJS ([#545](https://github.com/hcengineering/platform/issues/545)) · Model upgrades ([#561](https://github.com/hcengineering/platform/issues/561)) · Move icon ([#620](https://github.com/hcengineering/platform/issues/620)) 
+* 🚀 FEATURES: · To dump workspace ([#403](https://github.com/hcengineering/platform/issues/403)) · ESLint/prettier ([#389](https://github.com/hcengineering/platform/issues/389)) · Unassign ([#511](https://github.com/hcengineering/platform/issues/511)) · Use client from client-resources from NodeJS ([#545](https://github.com/hcengineering/platform/issues/545)) · Model upgrades ([#561](https://github.com/hcengineering/platform/issues/561)) 
 * 🐛 BUG FIXES: · Activity layout ([#351](https://github.com/hcengineering/platform/issues/351)) · Webpack build ([#354](https://github.com/hcengineering/platform/issues/354)) · Activity layout ([#351](https://github.com/hcengineering/platform/issues/351)) ([#352](https://github.com/hcengineering/platform/issues/352)) · Query transactions handling ([#372](https://github.com/hcengineering/platform/issues/372)) · Webpack build · Webpack build client · Few recruiting strings · Channels on:click handler ([#412](https://github.com/hcengineering/platform/issues/412)) · Missing return statement ([#406](https://github.com/hcengineering/platform/issues/406)) · #395 ([#416](https://github.com/hcengineering/platform/issues/416)) · Workspace upgrade ([#426](https://github.com/hcengineering/platform/issues/426)) · Use model.json ([#432](https://github.com/hcengineering/platform/issues/432)) · Devmodel plugin Live Query functionality ([#441](https://github.com/hcengineering/platform/issues/441)) · ShowMore and paddings in Comments ([#461](https://github.com/hcengineering/platform/issues/461)) · Background ShowMore ([#464](https://github.com/hcengineering/platform/issues/464)) · CommentPresenter ([#474](https://github.com/hcengineering/platform/issues/474)) · Hierarchy is extends is not working second time · Workspace create · Kanban display none in rare casers ([#540](https://github.com/hcengineering/platform/issues/540)) · Person presenter in case of unset value ([#548](https://github.com/hcengineering/platform/issues/548)) · Model ([#546](https://github.com/hcengineering/platform/issues/546)) · Crash server on client requests ([#542](https://github.com/hcengineering/platform/issues/542)) · Chunter attachments ([#553](https://github.com/hcengineering/platform/issues/553)) · Task kanban ([#549](https://github.com/hcengineering/platform/issues/549)) · EditCandidate ([#560](https://github.com/hcengineering/platform/issues/560)) · EditBox keep same width if control is reused with different props ([#578](https://github.com/hcengineering/platform/issues/578)) · Proper workspace dump of attachments ([#577](https://github.com/hcengineering/platform/issues/577)) · #575 ([#576](https://github.com/hcengineering/platform/issues/576)) · Preview attachment ([#584](https://github.com/hcengineering/platform/issues/584)) · Tooltip ([#600](https://github.com/hcengineering/platform/issues/600)) · Layouts ([#606](https://github.com/hcengineering/platform/issues/606)) · #608 · Activity layout ([#610](https://github.com/hcengineering/platform/issues/610)) 
 * ⚙️ MISCELLANEOUS TASKS: · Channels, Tooltip, CircleButton ([#363](https://github.com/hcengineering/platform/issues/363)) · Bottom border in tables. Clean warinings. ([#379](https://github.com/hcengineering/platform/issues/379)) · Activity layout ([#430](https://github.com/hcengineering/platform/issues/430)) · ShowMore ([#467](https://github.com/hcengineering/platform/issues/467)) · Layout for comments in tooltip ([#471](https://github.com/hcengineering/platform/issues/471)) · StatesPopup layout, fix AttributeBarEditor ([#476](https://github.com/hcengineering/platform/issues/476)) · StatePresenetr ([#475](https://github.com/hcengineering/platform/issues/475)) · Telegram sharing UI as designed ([#503](https://github.com/hcengineering/platform/issues/503)) · EditWithIcon, add clear ([#537](https://github.com/hcengineering/platform/issues/537)) · Telegram, Panel, top bars layouts. Fix vacancy cards and components ([#534](https://github.com/hcengineering/platform/issues/534)) · Doc on state color change ([#558](https://github.com/hcengineering/platform/issues/558)) · Tooltip UI ([#551](https://github.com/hcengineering/platform/issues/551)) · UI, light theme. ([#564](https://github.com/hcengineering/platform/issues/564)) · Chunter:class:Attachment ([#597](https://github.com/hcengineering/platform/issues/597)) · Unused workspace package ([#566](https://github.com/hcengineering/platform/issues/566)) · Upload package ([#565](https://github.com/hcengineering/platform/issues/565)) 
 
 ## [0.6.0] - 2021-11-22
 
-* 🚀 FEATURES: · Popup component ([#32](https://github.com/hcengineering/platform/issues/32)) · ImageButton for upload resume ([#66](https://github.com/hcengineering/platform/issues/66)) · CircleButton. New layout for DialogHeader. ([#77](https://github.com/hcengineering/platform/issues/77)) · AvatarEditor ([#84](https://github.com/hcengineering/platform/issues/84)) · Inline component Link ([#98](https://github.com/hcengineering/platform/issues/98)) · Backgrounds ([#99](https://github.com/hcengineering/platform/issues/99)) · Mixed backgrounds ([#101](https://github.com/hcengineering/platform/issues/101)) · SocialEditor ([#113](https://github.com/hcengineering/platform/issues/113)) · MaxWidth in EditBox ([#117](https://github.com/hcengineering/platform/issues/117)) · Social icons ([#120](https://github.com/hcengineering/platform/issues/120)) · Hovers on social links ([#127](https://github.com/hcengineering/platform/issues/127)) · Card component. Fix Popup. ([#135](https://github.com/hcengineering/platform/issues/135)) · KanbanView. Move icons. ([#143](https://github.com/hcengineering/platform/issues/143)) · Dialog PDFViewer ([#156](https://github.com/hcengineering/platform/issues/156)) · Panel · Search ([#190](https://github.com/hcengineering/platform/issues/190)) · YesNo, changed Create Candidate ([#211](https://github.com/hcengineering/platform/issues/211)) · AttributesBar, YesNoPresenter ([#230](https://github.com/hcengineering/platform/issues/230)) · AttributeEditor ([#231](https://github.com/hcengineering/platform/issues/231)) · Icons ([#224](https://github.com/hcengineering/platform/issues/224)) · Scroll in Popups ([#233](https://github.com/hcengineering/platform/issues/233)) · Arrow for sort. Modify Popup locations. ([#235](https://github.com/hcengineering/platform/issues/235)) · ColorsPopup ([#247](https://github.com/hcengineering/platform/issues/247)) · MessageBox, fix UsersPopup ([#258](https://github.com/hcengineering/platform/issues/258)) · Table ([#282](https://github.com/hcengineering/platform/issues/282)) · StatusesPopup ([#288](https://github.com/hcengineering/platform/issues/288)) · Candidate and Vacancy cards ([#287](https://github.com/hcengineering/platform/issues/287)) · EditCandidates, EditVacancy and SpacePanel ([#293](https://github.com/hcengineering/platform/issues/293)) · ActivityMsg ([#310](https://github.com/hcengineering/platform/issues/310)) · AccountPopup · PluginCard · Icons · TelegramPopup and PinPad 
 * 🐛 BUG FIXES: · Minmodel · Triggers · Status bar color ([#7](https://github.com/hcengineering/platform/issues/7)) · Webpack · Server · `model-core` and some tests · Client · Storages and domains · Chunter domains · Lambda CORS · Server url · Dialog (form) submit behaviour on Enter · Icon sizes and status icon ([#16](https://github.com/hcengineering/platform/issues/16)) · Border EditBox and calculate width ([#17](https://github.com/hcengineering/platform/issues/17)) · Build · `Component` import · Client usage in chunter · Icon Info ([#35](https://github.com/hcengineering/platform/issues/35)) · Dialog width ([#36](https://github.com/hcengineering/platform/issues/36)) · Font-size in Status Bar ([#47](https://github.com/hcengineering/platform/issues/47)) · Platfrom tests · `Activity` and `ScrollBox` components. Gap in `Dialog` footer. ([#57](https://github.com/hcengineering/platform/issues/57)) · Popup Position on default ([#89](https://github.com/hcengineering/platform/issues/89)) · Nottom Dialog ([#90](https://github.com/hcengineering/platform/issues/90)) · Attachments · Backgrounds ([#100](https://github.com/hcengineering/platform/issues/100)) · Warnings ([#102](https://github.com/hcengineering/platform/issues/102)) · Z-index on popup stack · Social icons ([#122](https://github.com/hcengineering/platform/issues/122)) · Popup result · Mongodb lookup · Click area · Create application · Mongo driver and kanban view · Shadow and blur in KanbanCard ([#146](https://github.com/hcengineering/platform/issues/146)) · Navigator ([#176](https://github.com/hcengineering/platform/issues/176)) · Current space in navigator · `Card` footer ([#178](https://github.com/hcengineering/platform/issues/178)) · Prod · Svelte checks for `ui` · `core` test and add to build pipeline · Predicate and attachments · Title in EditCandidate ([#185](https://github.com/hcengineering/platform/issues/185)) · Flex-grow ([#187](https://github.com/hcengineering/platform/issues/187)) · Subtitle in EditCandidate ([#188](https://github.com/hcengineering/platform/issues/188)) · Panel and Channels ([#189](https://github.com/hcengineering/platform/issues/189)) · Header size ([#191](https://github.com/hcengineering/platform/issues/191)) · Link and Attachments. Add FileGroup. Correct hover on Channels. ([#194](https://github.com/hcengineering/platform/issues/194)) · Elastic deployment · Scroll in Panel. Add sizes in Spinner. ([#195](https://github.com/hcengineering/platform/issues/195)) · Header in TableView ([#199](https://github.com/hcengineering/platform/issues/199)) · Popup, click on UserBox anywhere ([#204](https://github.com/hcengineering/platform/issues/204)) · Popup position ([#210](https://github.com/hcengineering/platform/issues/210)) · Popup for TableView ([#214](https://github.com/hcengineering/platform/issues/214)) · ApplicationsPresenter ([#216](https://github.com/hcengineering/platform/issues/216)) · `Tooltip` · KanbanCard background · Backgrounds in Kanban Card ([#223](https://github.com/hcengineering/platform/issues/223)) · `mongo` $inc operator · Channels, CircleButton. Update icons for social. ([#232](https://github.com/hcengineering/platform/issues/232)) · Colors in transparent Button ([#234](https://github.com/hcengineering/platform/issues/234)) · Scrolling in EditStatuses ([#253](https://github.com/hcengineering/platform/issues/253)) · Status grow ([#271](https://github.com/hcengineering/platform/issues/271)) · KanbanCard ([#275](https://github.com/hcengineering/platform/issues/275)) · YesNo ([#276](https://github.com/hcengineering/platform/issues/276)) · ApplicationPresenter ([#279](https://github.com/hcengineering/platform/issues/279)) · All Yes/No components ([#278](https://github.com/hcengineering/platform/issues/278)) · Build · Table layout ([#286](https://github.com/hcengineering/platform/issues/286)) · CreateCandidate: attachments no longer an object · Content-type · Fulltext mapping issue · Fulltext update · Layout for CreateCandidate ([#289](https://github.com/hcengineering/platform/issues/289)) · CreateCandidate · CircleButton ([#290](https://github.com/hcengineering/platform/issues/290)) · EditCandidate · Tooltip hover ([#295](https://github.com/hcengineering/platform/issues/295)) · Dropdown and forms ([#296](https://github.com/hcengineering/platform/issues/296)) · Avatars ([#302](https://github.com/hcengineering/platform/issues/302)) · Avatar, add button ([#305](https://github.com/hcengineering/platform/issues/305)) · Colors in dialogs ([#306](https://github.com/hcengineering/platform/issues/306)) · ActivityMsg · Eslint working in VSCode ([#314](https://github.com/hcengineering/platform/issues/314)) · CreateApplication double close ([#313](https://github.com/hcengineering/platform/issues/313)) · Collection operations · Duplicate activity · Application kanban card · KanbanPanel ([#331](https://github.com/hcengineering/platform/issues/331)) · Activity view · Comment panning in Activity 
 * ⚙️ MISCELLANEOUS TASKS: · Wrap ([#68](https://github.com/hcengineering/platform/issues/68)) · Button ([#76](https://github.com/hcengineering/platform/issues/76)) · ApplicationsPopup layout ([#228](https://github.com/hcengineering/platform/issues/228)) · Card layout ([#257](https://github.com/hcengineering/platform/issues/257)) · FindNode from TableView ([#281](https://github.com/hcengineering/platform/issues/281)) · Checking from Table ([#285](https://github.com/hcengineering/platform/issues/285)) · README.md · README.md · README.md · CreateVacancy & CreateCandidates layouts. Add Dropdown. ([#292](https://github.com/hcengineering/platform/issues/292)) · Avatar ([#301](https://github.com/hcengineering/platform/issues/301)) · README.md · README.md 
 * CLEAN: · Package.json 
