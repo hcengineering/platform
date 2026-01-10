@@ -76,7 +76,9 @@ export default mergeIds(cardId, card, {
     ChildrenSection: '' as AnyComponent,
     ContentSection: '' as AnyComponent,
     PropertiesSection: '' as AnyComponent,
-    RelationsSection: '' as AnyComponent
+    RelationsSection: '' as AnyComponent,
+    CommunicationMessagesSection: '' as AnyComponent,
+    OldMessagesSection: '' as AnyComponent
   },
   completion: {
     CardQuery: '' as Resource<ObjectSearchFactory>,

@@ -15,22 +15,20 @@
 
 <script lang="ts">
   import card, { Card, CardSection, CardViewDefaults } from '@hcengineering/card'
-  import { Component, Loading, Scroller, ModernButton } from '@hcengineering/ui'
-  import { getClient } from '@hcengineering/presentation'
+  import communication from '@hcengineering/communication'
   import { NotificationContext } from '@hcengineering/communication-types'
   import { Ref } from '@hcengineering/core'
-  import { SvelteComponent, tick } from 'svelte'
-  import { TableOfContents } from '@hcengineering/text-editor-resources'
+  import { getClient } from '@hcengineering/presentation'
   import { Heading } from '@hcengineering/text-editor'
-  import communication from '@hcengineering/communication'
-  import { MessagesSection } from '@hcengineering/communication-resources'
+  import { TableOfContents } from '@hcengineering/text-editor-resources'
+  import { Component, Loading, ModernButton, Scroller } from '@hcengineering/ui'
+  import { SvelteComponent, tick } from 'svelte'
 
-  import { CardSectionAction } from '../types'
+  import { getMetadata } from '@hcengineering/platform'
   import { getCardSections, getCardToc } from '../card'
+  import { CardSectionAction } from '../types'
 
   export let doc: Card
-  export let context: NotificationContext | undefined = undefined
-  export let isContextLoaded: boolean = false
   export let readonly: boolean = false
   export let scrollDiv: HTMLDivElement | undefined | null = undefined
 
@@ -216,6 +214,12 @@
 
   $: updateToc(sections, subTocBySection)
   $: showOverlay = !isScrollInitialized || Object.values(sectionOverlays).some((it) => it)
+
+  const onRenderTopChange = (active: boolean): void => {
+    renderTopSections = active
+  }
+
+  const bottomPadding = getMetadata(communication.metadata.Enabled) === true ? 'var(--spacing-3)' : undefined
 </script>
 
 <div class="hulyComponent-content__container columns relative">
@@ -240,7 +244,7 @@
     <Scroller
       padding="0"
       {hideBar}
-      bottomPadding="var(--spacing-3)"
+      {bottomPadding}
       disablePointerEventsOnScroll
       disableOverscroll
       bind:divScroll={scrollDiv}
@@ -259,7 +263,10 @@
                 scrollDiv,
                 contentDiv: sectionElement[section._id],
                 navigation: selectedToc?.id,
-                hidden: !renderTopSections
+                hidden: !renderTopSections,
+                isDefault: defaults?.defaultSection === section._id,
+                active: selectedToc?.group === section._id,
+                onRenderTopChange
               }}
               on:loaded={() => {
                 handleSectionLoaded(section._id)
@@ -273,34 +280,6 @@
             />
           </div>
         {/each}
-        <div id={messagesId} bind:this={sectionElement[messagesId]} class="section">
-          <MessagesSection
-            bind:this={sectionRef[messagesId]}
-            {doc}
-            {readonly}
-            {isContextLoaded}
-            {scrollDiv}
-            {context}
-            contentDiv={sectionElement[messagesId]}
-            active={selectedToc?.group === messagesId}
-            isDefault={defaults?.defaultSection === messagesId}
-            on:top-loaded={() => {
-              renderTopSections = true
-            }}
-            on:top-hidden={() => {
-              renderTopSections = false
-            }}
-            on:loaded={() => {
-              handleSectionLoaded(messagesId)
-            }}
-            on:change={(ev) => {
-              handleChangeNavigation(messagesId, ev.detail)
-            }}
-            on:action={(ev) => {
-              handleAction(messagesId, ev.detail)
-            }}
-          />
-        </div>
       </div>
     </Scroller>
     {#if toc.length > 0 && (bottomOffset > 400 || canScrollDown()) && selectedToc?.group === messagesId}

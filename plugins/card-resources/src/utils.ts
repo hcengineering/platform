@@ -13,6 +13,7 @@
 
 import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
+import communication from '@hcengineering/communication'
 import { type Card, CardEvents, cardId, type CardSpace, type MasterTag, type Tag } from '@hcengineering/card'
 import core, {
   AccountRole,
@@ -613,6 +614,14 @@ export function cardCustomLinkEncode (doc: Card): Location {
   const loc = getCurrentResolvedLocation()
   loc.path[3] = encodeObjectURI(doc._id, card.class.Card)
   return loc
+}
+
+export async function checkOldMessagesSectionVisibility (doc: Card): Promise<boolean> {
+  return getMetadata(communication.metadata.Enabled) !== true
+}
+
+export async function checkCommunicationMessagesSectionVisibility (doc: Card): Promise<boolean> {
+  return getMetadata(communication.metadata.Enabled) === true
 }
 
 export async function checkRelationsSectionVisibility (doc: Card): Promise<boolean> {

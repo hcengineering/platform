@@ -57,6 +57,8 @@ export default mergeIds(cardId, card, {
     GetCardLink: '' as Resource<(doc: Doc, props: Record<string, any>) => Promise<Location>>,
     CardCustomLinkMatch: '' as Resource<(doc: Doc) => boolean>,
     CardCustomLinkEncode: '' as Resource<(doc: Doc) => Location>,
-    CheckRelationsSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
+    CheckRelationsSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>,
+    CheckOldMessagesSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>,
+    CheckCommunicationMessagesSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
   }
 })
