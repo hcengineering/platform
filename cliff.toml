@@ -56,7 +56,7 @@ commit_preprocessors = [
    { pattern = '^QFIX: ', replace = "fix: " },
    { pattern = '^Missing ', replace = "fix: Missing " },
    { pattern = '^Add missing ', replace = "fix: Add missing " },
-   { pattern = '^Add ability', replace = "feat: Add ability " },
+   { pattern = '^Add ', replace = "feat: Add " },
    { pattern = '^Update ', replace = "chore: " },
    { pattern = '^Remove ', replace = "chore: " },
    { pattern = '^Bump ', replace = "chore: " },
