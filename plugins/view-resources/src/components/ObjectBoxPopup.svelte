@@ -14,9 +14,18 @@
 -->
 <script lang="ts">
   import { Person } from '@hcengineering/contact'
-  import { type Class, type Doc, type DocumentQuery, type FindOptions, type Ref } from '@hcengineering/core'
+  import {
+    getObjectValue,
+    type Class,
+    type Doc,
+    type DocumentQuery,
+    type FindOptions,
+    type Ref
+  } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
-  import presentation, { ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
+  import presentation, { getClient, ObjectCreate, ObjectPopup } from '@hcengineering/presentation'
+  import { Component } from '@hcengineering/ui'
+  import { findAttributePresenter } from '../utils'
   import ObjectPresenter from './ObjectPresenter.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -35,6 +44,8 @@
   export let searchField: string = 'name'
   export let docProps: Record<string, any> = {}
   export let groupBy = '_class'
+
+  const client = getClient()
 </script>
 
 <ObjectPopup
@@ -57,6 +68,14 @@
   on:close
   on:changeContent
 >
+  <svelte:fragment slot="category" let:item={it}>
+    {@const presenter = findAttributePresenter(client, it._class, groupBy)}
+    {#if presenter}
+      <div class="menu-group__header">
+        <Component is={presenter} props={{ value: getObjectValue(groupBy, it) }} />
+      </div>
+    {/if}
+  </svelte:fragment>
   <svelte:fragment slot="item" let:item={doc}>
     <div class="flex flex-grow overflow-label">
       <ObjectPresenter
