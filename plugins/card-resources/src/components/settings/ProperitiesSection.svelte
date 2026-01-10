@@ -14,13 +14,13 @@
 -->
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
+  import { ClassPermission, Ref } from '@hcengineering/core'
+  import { getClient, MessageBox } from '@hcengineering/presentation'
   import { ClassAttributes } from '@hcengineering/setting-resources'
   import setting from '@hcengineering/setting-resources/src/plugin'
   import { ButtonIcon, showPopup } from '@hcengineering/ui'
   import card from '../../plugin'
-  import { getClient, MessageBox } from '@hcengineering/presentation'
-  import core, { ClassPermission, Ref } from '@hcengineering/core'
-  import view from '@hcengineering/view'
+  import { createTypePermissions } from '../../utils'
 
   export let masterTag: MasterTag
 
@@ -43,43 +43,7 @@
         message: setting.string.RestrictedAttributeWarning,
         action: async () => {
           isRestricted = true
-          const isMixin = hierarchy.isMixin(masterTag._id)
-          const objectClass = hierarchy.getBaseClass(masterTag._id)
-          const txClass = isMixin ? core.class.TxMixin : core.class.TxUpdateDoc
-          await client.createDoc(
-            core.class.ClassPermission,
-            core.space.Model,
-            {
-              objectClass,
-              txClass,
-              txMatch: {
-                [isMixin ? 'mixin' : 'objectClass']: masterTag._id
-              },
-              scope: 'space',
-              forbid: false,
-              label: view.string.AllowAttributeChanges,
-              description: masterTag.label,
-              targetClass: masterTag._id
-            },
-            getPermissionRef(false)
-          )
-          await client.createDoc(
-            core.class.ClassPermission,
-            core.space.Model,
-            {
-              objectClass,
-              txClass,
-              txMatch: {
-                [isMixin ? 'mixin' : 'objectClass']: masterTag._id
-              },
-              scope: 'space',
-              forbid: true,
-              label: view.string.ForbidAttributeChanges,
-              description: masterTag.label,
-              targetClass: masterTag._id
-            },
-            getPermissionRef(true)
-          )
+          await createTypePermissions(masterTag)
         }
       },
       'top',

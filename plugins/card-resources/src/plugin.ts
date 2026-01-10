@@ -135,6 +135,26 @@ export default mergeIds(cardId, card, {
     EnableVersioning: '' as IntlString,
     EnableVersioningConfirm: '' as IntlString,
     NewVersionConfirmation: '' as IntlString,
-    RelationCopyDescr: '' as IntlString
+    RelationCopyDescr: '' as IntlString,
+    CreateCardPersmissionDescription: '' as IntlString,
+    UpdateCardPersmissionDescription: '' as IntlString,
+    RemoveCardPersmissionDescription: '' as IntlString,
+    AddTagPersmissionDescription: '' as IntlString,
+    RemoveTagPersmissionDescription: '' as IntlString,
+    RemoveCard: '' as IntlString,
+    UpdateCard: '' as IntlString,
+    CreateCardPermission: '' as IntlString,
+    AddTagPermission: '' as IntlString,
+    RemoveTag: '' as IntlString,
+    ForbidCreateCardPersmissionDescription: '' as IntlString,
+    ForbidUpdateCardPersmissionDescription: '' as IntlString,
+    ForbidRemoveCardPersmissionDescription: '' as IntlString,
+    ForbidAddTagPersmissionDescription: '' as IntlString,
+    ForbidRemoveTagPersmissionDescription: '' as IntlString,
+    ForbidRemoveCard: '' as IntlString,
+    ForbidUpdateCard: '' as IntlString,
+    ForbidCreateCardPermission: '' as IntlString,
+    ForbidAddTagPermission: '' as IntlString,
+    ForbidRemoveTag: '' as IntlString
   }
 })
