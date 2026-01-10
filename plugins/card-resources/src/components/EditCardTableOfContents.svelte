@@ -29,6 +29,8 @@
   import { CardSectionAction } from '../types'
 
   export let doc: Card
+  export let context: NotificationContext | undefined = undefined
+  export let isContextLoaded: boolean = false
   export let readonly: boolean = false
   export let scrollDiv: HTMLDivElement | undefined | null = undefined
 
@@ -266,6 +268,8 @@
                 hidden: !renderTopSections,
                 isDefault: defaults?.defaultSection === section._id,
                 active: selectedToc?.group === section._id,
+                context,
+                isContextLoaded,
                 onRenderTopChange
               }}
               on:loaded={() => {
