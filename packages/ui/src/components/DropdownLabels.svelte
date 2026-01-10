@@ -44,6 +44,7 @@
   export let useFlexGrow = false
   export let minW0 = true
   export let disabled: boolean = false
+  export let loading: boolean = false
 
   export let enableSearch: boolean = true
 
@@ -72,6 +73,7 @@
     {disabled}
     pressed={opened}
     {dataId}
+    {loading}
     showTooltip={{ label, direction: labelDirection }}
     on:click={() => {
       if (!opened) {

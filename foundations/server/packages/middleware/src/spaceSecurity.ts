@@ -734,7 +734,30 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
         lookup[key] = arr as any
       } else if (val !== undefined) {
         if (!allowedSpaces.has(val.space)) {
-          lookup[key] = undefined
+          // allow attached lookups for guests when collaborator security is enabled
+          // do not check if collaborator of the doc because it's being checked on the storage (DB) level
+          // as otherwise there will be no doc here at all
+          if (key === 'attachedTo' && ctx.contextData.modelDb?.hierarchy != null) {
+            const attachedVal = val as AttachedDoc
+            if (attachedVal.attachedToClass == null) {
+              lookup[key] = undefined
+              continue
+            }
+
+            const collabSec = getClassCollaborators(
+              ctx.contextData.modelDb,
+              ctx.contextData.modelDb.hierarchy,
+              attachedVal.attachedToClass
+            )
+            const collabSecEnabled =
+              collabSec?.provideSecurity === true &&
+              [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role)
+            if (!collabSecEnabled) {
+              lookup[key] = undefined
+            }
+          } else {
+            lookup[key] = undefined
+          }
         }
       }
     }

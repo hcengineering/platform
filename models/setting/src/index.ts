@@ -38,6 +38,7 @@ import {
   type Integration,
   type IntegrationType,
   type InviteSettings,
+  type OfficeSettings,
   type SettingsCategory,
   type SpaceTypeCreator,
   type SpaceTypeEditor,
@@ -113,6 +114,13 @@ export class TInviteSettings extends TConfiguration implements InviteSettings {
   limit!: number
 }
 
+@Model(setting.class.OfficeSettings, core.class.Configuration, DOMAIN_SETTING)
+@UX(setting.string.OfficeSettings)
+export class TOfficeSettings extends TConfiguration implements OfficeSettings {
+  defaultStartWithTranscription!: boolean
+  defaultStartWithRecording!: boolean
+}
+
 @Model(setting.class.WorkspaceSetting, core.class.Doc, DOMAIN_SETTING)
 export class TWorkspaceSetting extends TDoc implements WorkspaceSetting {
   icon?: Ref<Blob>
@@ -138,6 +146,7 @@ export function createModel (builder: Builder): void {
     TEditable,
     TUserMixin,
     TInviteSettings,
+    TOfficeSettings,
     TWorkspaceSetting,
     TSpaceTypeEditor,
     TSpaceTypeCreator
@@ -375,6 +384,21 @@ export function createModel (builder: Builder): void {
     },
     setting.ids.Export
   )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'office',
+      label: setting.string.OfficeSettings,
+      icon: setting.icon.OfficeSettings,
+      component: setting.component.OfficeSettings,
+      group: 'settings-editor',
+      feature: 'love',
+      role: AccountRole.Maintainer,
+      order: 4900
+    },
+    setting.ids.OfficeSettings
+  )
   // Currently remove Support item from settings
   // builder.createDoc(
   //   setting.class.SettingsCategory,
@@ -459,6 +483,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.TypeDate, core.class.Class, view.mixin.ObjectEditor, {
     editor: setting.component.DateTypeEditor
+  })
+
+  builder.mixin(contact.mixin.Employee, core.class.Class, view.mixin.TypeEditor, {
+    editor: setting.component.EmployeeRefEditor
   })
 
   builder.mixin(core.class.TypeNumber, core.class.Class, view.mixin.ObjectEditor, {
@@ -711,6 +739,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(core.class.AttributePermission, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: setting.component.AttributePermissionPresenter
+  })
+
+  builder.mixin(core.class.ClassPermission, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: setting.component.ClassPermissionPresenter
   })
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {

@@ -32,7 +32,13 @@
     navigate
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { ParentsNavigator, RelationsEditor, getDocMixins, showMenu } from '@hcengineering/view-resources'
+  import {
+    ParentsNavigator,
+    RelationsEditor,
+    canChangeDoc,
+    getDocMixins,
+    showMenu
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
   import card from '../plugin'
@@ -42,7 +48,8 @@
   import Childs from './Childs.svelte'
   import Content from './Content.svelte'
   import TagsEditor from './TagsEditor.svelte'
-  import { canChangeDoc, permissionsStore } from '@hcengineering/contact-resources'
+  import { permissionsStore } from '@hcengineering/contact-resources'
+  import CardVersionSelector from './CardVersionSelector.svelte'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
@@ -169,8 +176,11 @@
           disabled={_readonly || updatePermissionForbidden}
           placeholder={card.string.Card}
           on:blur={(evt) => saveTitle(evt)}
+          shrink
         />
       </div>
+
+      <CardVersionSelector bind:value={doc} />
 
       <TagsEditor {doc} readonly={_readonly} />
 

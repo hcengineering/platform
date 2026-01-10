@@ -36,6 +36,18 @@ export function defineTriggers (builder: Builder): void {
     process.class.Trigger,
     core.space.Model,
     {
+      label: process.string.OnExecutionStart,
+      icon: process.icon.Process,
+      init: true,
+      requiredParams: []
+    },
+    process.trigger.OnExecutionStart
+  )
+
+  builder.createDoc(
+    process.class.Trigger,
+    core.space.Model,
+    {
       label: process.string.OnToDoCancelled,
       icon: process.icon.ToDoRemove,
       editor: process.component.ToDoRemoveEditor,
@@ -79,6 +91,24 @@ export function defineTriggers (builder: Builder): void {
     },
     process.trigger.WhenFieldChanges
   )
+
+  // builder.createDoc(
+  //   process.class.Trigger,
+  //   core.space.Model,
+  //   {
+  //     label: process.string.OnEvent,
+  //     icon: process.icon.OnEvent,
+  //     editor: process.component.OnEventEditor,
+  //     presenter: process.component.OnEventPresenter,
+  //     requiredParams: [
+  //       'eventType'
+  //     ],
+  //     checkFunction: process.triggerCheck.OnEventCheck,
+  //     init: false,
+  //     auto: false
+  //   },
+  //   process.trigger.OnEvent
+  // )
 
   builder.createDoc(
     process.class.Trigger,

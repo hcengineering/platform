@@ -19,17 +19,17 @@ use serde_json::json;
 use std::{fs, path::Path, sync::LazyLock};
 use uuid::Uuid;
 
-use crate::{config::CONFIG, redis::deprecated_symbol};
+use crate::{config::CONFIG, db::deprecated_symbol};
 
 // common checker
+
 pub fn check_workspace_core(claims_opt: Option<Claims>, key: &str) -> Result<(), &'static str> {
     if deprecated_symbol(key) {
         return Err("Invalid key: deprecated symbols");
     }
 
-    if CONFIG.no_authorization {
-        return Ok(());
-    }
+    #[cfg(not(feature = "auth"))]
+    return Ok(());
 
     let claims = claims_opt.ok_or("Missing authorization")?;
 

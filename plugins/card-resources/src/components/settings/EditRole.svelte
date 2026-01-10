@@ -14,7 +14,15 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import core, { AnyAttribute, AttributePermission, Permission, Ref } from '@hcengineering/core'
+  import core, {
+    AnyAttribute,
+    AttributePermission,
+    Class,
+    ClassPermission,
+    Doc,
+    Permission,
+    Ref
+  } from '@hcengineering/core'
   import { AttributeEditor, MessageBox, createQuery, getClient } from '@hcengineering/presentation'
   import {
     ButtonIcon,
@@ -50,7 +58,7 @@
     .getModel()
     .findAllSync(cardPlugin.class.PermissionObjectClass, {})
     .map((poc) => poc.objectClass)
-  const tagDesc = Array.from(new Set(role?.types?.map((p) => h.getAncestors(p)).flat()))
+  const tagDesc = Array.from(new Set(role?.types?.map((p) => [...h.getAncestors(p), ...h.getDescendants(p)]).flat()))
   const allPermissions = client.getModel().findAllSync(core.class.Permission, {
     scope: 'space',
     objectClass: { $in: [...cardPermissionsObjectClasses, ...tagDesc] }
@@ -84,6 +92,7 @@
       ObjectBoxPopup,
       {
         _class: core.class.Permission,
+        searchField: 'label',
         docQuery: { _id: { $in: allPermissions.map((p) => p._id) } },
         multiSelect: true,
         allowDeselect: true,
@@ -179,13 +188,20 @@
     return permission._class === core.class.AttributePermission
   }
 
+  function isClassPermission (permission: Permission): permission is ClassPermission {
+    return permission._class === core.class.ClassPermission
+  }
+
   function getAttributePermissionLabel (permission: Permission): IntlString | undefined {
     const isAttribute = isAttributePermission(permission)
-    if (!isAttribute) {
-      return undefined
+    if (isAttribute) {
+      const attr = client.getModel().findObject(permission.attribute) as AnyAttribute
+      return attr?.label
     }
-    const attr = client.getModel().findObject(permission.attribute) as AnyAttribute
-    return attr?.label
+    if (isClassPermission(permission)) {
+      const _class = client.getModel().findObject(permission.targetClass) as Class<Doc>
+      return _class?.label
+    }
   }
 </script>
 

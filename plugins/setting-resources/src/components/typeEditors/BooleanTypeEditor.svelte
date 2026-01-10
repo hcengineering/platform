@@ -13,15 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import core, { AnyAttribute, Type } from '@hcengineering/core'
   import { TypeBoolean } from '@hcengineering/model'
-  import { Label } from '@hcengineering/ui'
-  import setting from '../../plugin'
-  import { createEventDispatcher, onMount } from 'svelte'
-  import core, { Type } from '@hcengineering/core'
+  import { Label, Toggle } from '@hcengineering/ui'
   import { BooleanEditor } from '@hcengineering/view-resources'
+  import { createEventDispatcher, onMount } from 'svelte'
+  import setting from '../../plugin'
 
   export let type: Type<boolean> | undefined
+  export let attribute: AnyAttribute | undefined
   export let defaultValue: boolean | undefined
+
+  let showInPresenter = attribute?.showInPresenter ?? false
 
   const dispatch = createEventDispatcher()
 
@@ -34,8 +37,13 @@
   function change () {
     dispatch('change', {
       type: TypeBoolean(),
-      defaultValue
+      defaultValue,
+      extra: { showInPresenter }
     })
+  }
+
+  async function changeShowing () {
+    dispatch('change', { extra: { showInPresenter } })
   }
 </script>
 
@@ -49,3 +57,7 @@
     change()
   }}
 />
+<span class="label">
+  <Label label={setting.string.ShowInTitle} />
+</span>
+<Toggle bind:on={showInPresenter} on:change={changeShowing} />

@@ -725,6 +725,26 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
   createAction(
     builder,
     {
+      action: view.actionImpl.CopyAsMarkdownTable,
+      actionProps: {
+        cardClass: tracker.class.Issue
+      },
+      label: view.string.CopyAsMarkdownTable,
+      icon: view.icon.Print,
+      input: 'selection',
+      category: view.category.General,
+      target: tracker.class.Issue,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'copy'
+      }
+    },
+    tracker.action.CopyAsMarkdownTable
+  )
+
+  createAction(
+    builder,
+    {
       action: view.actionImpl.ShowPopup,
       actionProps: {
         component: tracker.component.EditRelatedTargetsPopup,

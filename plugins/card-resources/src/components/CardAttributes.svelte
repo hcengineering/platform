@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Card } from '@hcengineering/card'
   import { PermissionsStore } from '@hcengineering/contact'
-  import { canChangeAttribute, permissionsStore } from '@hcengineering/contact-resources'
+  import { permissionsStore } from '@hcengineering/contact-resources'
   import core, { AnyAttribute, Class, Doc, Ref, toRank, TypedSpace } from '@hcengineering/core'
   import {
     AttributeBarEditor,
@@ -25,6 +25,7 @@
     isCollectionAttr,
     KeyedAttribute
   } from '@hcengineering/presentation'
+  import { canChangeAttribute } from '@hcengineering/view-resources'
 
   export let object: Card
   export let _class: Ref<Class<Doc>>
@@ -58,7 +59,7 @@
   })
 
   function canChange (attr: AnyAttribute, permissionsStore: PermissionsStore): boolean {
-    return canChangeAttribute(attr, object.space as Ref<TypedSpace>, permissionsStore)
+    return canChangeAttribute(attr, object.space as Ref<TypedSpace>, permissionsStore, _class)
   }
 </script>
 

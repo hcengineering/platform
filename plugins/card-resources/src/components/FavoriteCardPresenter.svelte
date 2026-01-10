@@ -71,7 +71,6 @@
   {noSelect}
   {inline}
   {showParent}
-  {kind}
   {type}
   {icon}
   on:click

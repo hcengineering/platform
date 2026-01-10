@@ -27,6 +27,7 @@ import {
   createOrUpdate,
   tryMigrate,
   tryUpgrade,
+  TypeNumber,
   type MigrateOperation,
   type MigrationClient,
   type MigrationUpgradeClient
@@ -57,13 +58,18 @@ export const cardOperation: MigrateOperation = {
         state: 'update-custom-fields-displayprops',
         mode: 'upgrade',
         func: updateCustomFieldsDisplayProps
+      },
+      {
+        state: 'fill-versioning',
+        mode: 'upgrade',
+        func: fillVersioning
       }
     ])
   },
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
     await tryUpgrade(mode, state, client, cardId, [
       {
-        state: 'migrateViewlets-v5',
+        state: 'migrateViewlets-v6',
         func: migrateViewlets
       },
       {
@@ -110,8 +116,33 @@ export const cardOperation: MigrateOperation = {
         state: 'fix-migrated-roles-permissions',
         mode: 'upgrade',
         func: migrateRolePermissions
+      },
+      {
+        state: 'version-for-versionable-types',
+        mode: 'upgrade',
+        func: addVersionForVersionableTypes
       }
     ])
+  }
+}
+
+async function addVersionForVersionableTypes (client: MigrationUpgradeClient): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const versionableTypes = await client.findAll(card.class.MasterTag, {})
+  for (const type of versionableTypes) {
+    if (client.getHierarchy().as(type, core.mixin.VersionableClass).enabled) {
+      if (client.getHierarchy().findAttribute(type._id, 'version') === undefined) {
+        await txOp.createDoc(core.class.Attribute, core.space.Model, {
+          attributeOf: type._id,
+          _class: core.class.Attribute,
+          isCustrom: false,
+          label: core.string.Version,
+          name: 'version',
+          readonly: true,
+          type: TypeNumber()
+        })
+      }
+    }
   }
 }
 
@@ -410,5 +441,30 @@ async function migrateRolePermissions (client: Client): Promise<void> {
   const roles = await client.findAll(card.class.Role, { permissions: { $exists: false } })
   for (const role of roles) {
     await txOp.update(role, { permissions: [] })
+  }
+}
+
+async function fillVersioning (client: MigrationClient): Promise<void> {
+  const iterator = await client.traverse<Card>(DOMAIN_CARD, { baseId: { $exists: false } })
+
+  try {
+    while (true) {
+      const cards = await iterator.next(500)
+      if (cards == null || cards.length === 0) break
+      for (const doc of cards) {
+        await client.update(
+          DOMAIN_CARD,
+          { _id: doc._id },
+          {
+            baseId: doc._id,
+            version: 1,
+            isLatest: true,
+            docCreatedBy: doc.createdBy ?? doc.modifiedBy
+          }
+        )
+      }
+    }
+  } finally {
+    await iterator.close()
   }
 }

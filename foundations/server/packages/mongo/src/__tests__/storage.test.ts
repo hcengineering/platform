@@ -323,7 +323,78 @@ describe('mongo operations', () => {
       }
     )
     expect(r.length).toEqual(1)
-    expect((r[0].$associations?.[association._id][0] as unknown as Task)?._id).toEqual(secondTask)
+    expect((r[0].$associations?.[association._id + '_b'][0] as unknown as Task)?._id).toEqual(secondTask)
+  })
+
+  it('check deep associations', async () => {
+    const association = await operations.findOne(core.class.Association, {})
+    if (association == null) {
+      throw new Error('Association not found')
+    }
+
+    const zeroTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task',
+      description: 'Descr',
+      rate: 20
+    })
+
+    const firstTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task',
+      description: 'Descr',
+      rate: 20
+    })
+
+    const secondTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task2',
+      description: 'Descr',
+      rate: 20
+    })
+
+    const secondATask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task22',
+      description: 'Descr',
+      rate: 20
+    })
+
+    const thirdTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'my-task3',
+      description: 'Descr',
+      rate: 20
+    })
+
+    await operations.createDoc(core.class.Relation, '' as Ref<Space>, {
+      docA: firstTask,
+      docB: secondTask,
+      association: association._id
+    })
+
+    await operations.createDoc(core.class.Relation, '' as Ref<Space>, {
+      docA: firstTask,
+      docB: secondATask,
+      association: association._id
+    })
+
+    await operations.createDoc(core.class.Relation, '' as Ref<Space>, {
+      docA: secondTask,
+      docB: thirdTask,
+      association: association._id
+    })
+
+    const r = await client.findAll(
+      taskPlugin.class.Task,
+      { _id: { $in: [zeroTask, firstTask] } },
+      {
+        associations: [[association._id, 1, [[association._id, 1]]]]
+      }
+    )
+    expect(r.length).toEqual(2)
+    expect(r[1].$associations?.[`${association._id}_b`]).toHaveLength(2)
+    expect((r[1].$associations?.[`${association._id}_b`][0] as unknown as Task)?._id).toEqual(secondTask)
+    expect(r[1].$associations?.[`${association._id}_b`][1]?.$associations?.[`${association._id}_b`]).toHaveLength(0)
+    expect(
+      (r[1].$associations?.[`${association._id}_b`][0]?.$associations?.[`${association._id}_b`][0] as unknown as Task)
+        ?._id
+    ).toEqual(thirdTask)
   })
 
   // Run shared integration tests

@@ -44,6 +44,7 @@ import core, {
   type TxCUD,
   type TxDomainEvent,
   TxProcessor,
+  type VersionableDoc,
   withContext,
   type WorkspaceIds,
   type WorkspaceUuid
@@ -312,14 +313,16 @@ export class FullTextIndexPipeline implements FullTextPipeline {
               await control?.heartbeat()
 
               if (this.hierarchy.isDerived(v, card.class.Card)) {
-                for (const card of values) {
-                  processedCommunication += await this.indexCommunication(
-                    ctx,
-                    control,
-                    pushQueue,
-                    card as Card,
-                    processedCommunication
-                  )
+                if (process.env.COMMUNICATION_API_ENABLED === 'true') {
+                  for (const card of values) {
+                    processedCommunication += await this.indexCommunication(
+                      ctx,
+                      control,
+                      pushQueue,
+                      card as Card,
+                      processedCommunication
+                    )
+                  }
                 }
               }
               await control?.heartbeat()
@@ -704,7 +707,7 @@ export class FullTextIndexPipeline implements FullTextPipeline {
     try {
       if (toRemove.length !== 0) {
         // We need to add broadcast information
-        for (const _cl of new Set(toRemove.values().map((it) => it._class))) {
+        for (const _cl of new Set(toRemove.map((it) => it._class))) {
           this.broadcastClasses.add(_cl)
         }
         const ids = toRemove.map((it) => it._id)
@@ -909,11 +912,39 @@ export class FullTextIndexPipeline implements FullTextPipeline {
         default:
           docs.push(doc)
       }
+      if (doc != null && this.isNewVersion(doc)) {
+        const versions = await this.storage.findAll(ctx, v, { baseId: doc.baseId })
+        for (const version of versions) {
+          if (version._id === doc._id) continue
+          toRemove.push({ _id: version._id, _class: txes[0].objectClass })
+        }
+      }
     }
     if (docsToRetrieve.size > 0) {
       docs.push(...(await this.storage.findAll(ctx, v, { _id: { $in: Array.from(docsToRetrieve) } })))
     }
-    return docs
+    return docs.filter((p) => !this.isOldVersion(p))
+  }
+
+  private isNewVersion (doc: Doc): doc is VersionableDoc {
+    try {
+      if (
+        this.hierarchy.classHierarchyMixin(doc._class, core.mixin.VersionableClass)?.enabled === true &&
+        (doc as VersionableDoc).baseId !== undefined
+      ) {
+        return (doc as VersionableDoc).baseId !== doc._id
+      }
+    } catch {}
+    return false
+  }
+
+  private isOldVersion (doc: Doc): boolean {
+    try {
+      if (this.hierarchy.classHierarchyMixin(doc._class, core.mixin.VersionableClass)?.enabled === true) {
+        return (doc as VersionableDoc).isLatest === false
+      }
+    } catch {}
+    return false
   }
 
   private createContextData (): SessionDataImpl {

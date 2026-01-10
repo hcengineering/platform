@@ -1,0 +1,16 @@
+{
+  "string": {
+    "Cancel": "Annulla",
+    "Retry": "Riprova",
+    "UploadFiles": "Carica file",
+    "UploadFolders": "Carica cartelle",
+    "UploadingTo": "Caricamento di {files, plural, =1 {# file} other {# file}} in"
+  },
+  "status": {
+    "Error": "Errore",
+    "Waiting": "In attesa",
+    "Uploading": "Caricamento",
+    "Completed": "Completato"
+  }
+}
+

@@ -25,6 +25,7 @@ import documentsPlugin, {
   type ChangeControl,
   type DocumentRequest
 } from '@hcengineering/controlled-documents'
+import exportPlugin, { type RelationDefinition } from '@hcengineering/export'
 import { type Builder } from '@hcengineering/model'
 import chunter from '@hcengineering/model-chunter'
 import core from '@hcengineering/model-core'
@@ -824,6 +825,93 @@ export function createModel (builder: Builder): void {
       }
     },
     documents.action.TransferDocument
+  )
+
+  const relations: RelationDefinition[] = [
+    // Forward relations - migrate referenced documents first
+    { field: 'attachedTo', class: documents.class.DocumentMeta },
+    { field: 'changeControl', class: documents.class.ChangeControl },
+    { field: 'category', class: documents.class.DocumentCategory },
+    { field: 'template', class: documents.class.Document },
+    // Inverse relations - find documents that reference this one
+    // ProjectMeta references DocumentMeta via 'meta' field - must be migrated before ProjectDocument
+    { field: 'meta', class: documents.class.ProjectMeta, direction: 'inverse' },
+    // ProjectDocument references ControlledDocument via 'document' field
+    { field: 'document', class: documents.class.ProjectDocument, direction: 'inverse' }
+  ]
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: exportPlugin.component.ExportToWorkspaceModal,
+        fillProps: {
+          _objects: 'value'
+        },
+        props: {
+          relations
+        }
+      },
+      label: exportPlugin.string.ExportToWorkspace,
+      icon: exportPlugin.icon.Export,
+      input: 'any',
+      category: view.category.General,
+      target: documents.class.Document,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'copy'
+      }
+    },
+    documents.action.ExportDocuments
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: exportPlugin.component.ExportToWorkspaceModal,
+        fillProps: {
+          _object: 'value'
+        },
+        props: {
+          relations,
+          spaceExport: true,
+          docClass: documents.class.ControlledDocument
+        }
+      },
+      label: exportPlugin.string.ExportToWorkspace,
+      icon: exportPlugin.icon.Export,
+      input: 'none',
+      category: view.category.General,
+      target: documents.class.DocumentSpace,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'copy'
+      }
+    },
+    documents.action.ExportDocumentsFromSpace
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.CopyAsMarkdownTable,
+      actionProps: {
+        cardClass: documents.class.ControlledDocument
+      },
+      label: view.string.CopyAsMarkdownTable,
+      icon: view.icon.Print,
+      input: 'selection',
+      category: view.category.General,
+      target: documents.class.Document,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'copy'
+      }
+    },
+    documents.action.CopyAsMarkdownTable
   )
 
   createAction(

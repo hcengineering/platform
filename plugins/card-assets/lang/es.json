@@ -60,6 +60,16 @@
     "ForbidCreateCardPermission": "Prohibir crear tarjeta",
     "ForbidAddTagPermission": "Prohibir añadir etiqueta",
     "ForbidRemoveTag": "Prohibir eliminar etiqueta",
-    "Duplicate": "Duplicar"
+    "Duplicate": "Duplicar",
+    "Version": "Versión",
+    "Versions": "Versiones",
+    "NewVersion": "Nueva versión",
+    "Versioning": "Versionado",
+    "EnableVersioning": "Habilitar control de versiones",
+    "EnableVersioningConfirm": "¿Desea habilitar el control de versiones?",
+    "NewVersionConfirmation": "¿Desea crear una nueva versión?",
+    "RelationCopyDescr": "¿Qué relaciones quieres copiar?",
+    "Import": "Importar",
+    "Export": "Exportar"
   }
 }

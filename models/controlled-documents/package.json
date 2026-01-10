@@ -48,7 +48,7 @@
     "@hcengineering/model-print": "workspace:^0.7.0",
     "@hcengineering/model": "workspace:^0.7.17",
     "@hcengineering/setting": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/view": "workspace:^0.7.0",
@@ -65,6 +65,7 @@
     "@hcengineering/text-editor": "workspace:^0.7.0",
     "@hcengineering/collaboration": "workspace:^0.7.16",
     "@hcengineering/time": "workspace:^0.7.0",
-    "@hcengineering/rank": "workspace:^0.7.17"
+    "@hcengineering/rank": "workspace:^0.7.17",
+    "@hcengineering/export": "workspace:^0.7.0"
   }
 }

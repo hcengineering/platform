@@ -60,6 +60,16 @@
     "ForbidCreateCardPermission": "Forbid Create Card",
     "ForbidAddTagPermission": "Forbid Add Tag",
     "ForbidRemoveTag": "Forbid Remove Tag",
-    "Duplicate": "Duplicate"
+    "Duplicate": "Duplicate",
+    "Version": "Version",
+    "Versions": "Versions",
+    "NewVersion": "New version",
+    "Versioning": "Versioning",
+    "EnableVersioning": "Enable versioning",
+    "EnableVersioningConfirm": "Do you want to enable versioning?",
+    "NewVersionConfirmation": "Do you want to create a new version?",
+    "RelationCopyDescr": "Which relations do you want to copy?",
+    "Import": "Import",
+    "Export": "Export"
   }
 }

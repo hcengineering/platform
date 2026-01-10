@@ -584,7 +584,7 @@ export async function getPersonInfo (
 ): Promise<PersonInfo> {
   const { account } = params
   const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['workspace', 'tool', 'gmail', 'huly-mail'], extra)
+  verifyAllowedServices(['workspace', 'tool', 'gmail', 'huly-mail', 'export'], extra)
 
   if (account == null || account === '') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))

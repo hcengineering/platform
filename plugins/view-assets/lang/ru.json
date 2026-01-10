@@ -15,6 +15,7 @@
     "Role": "Роль",
     "DeleteObject": "Удалить объект",
     "DeleteObjectConfirm": "Вы действительно хотите удалить {count, plural, =1 {этот объект} one {этот # объект} few {эти # объекта} other {эти # объектов}}?",
+    "NoCreatePermissionTitle": "Недостаточно прав для создания",
     "DeletePopupNoPermissionTitle": "Недостаточно прав для удаления.",
     "DeletePopupNoPermissionLabel": "Пожалуйста, обратитесь к людям из списка ниже, чтобы они это сделали.",
     "DeletePopupCreatorLabel": "Создатели объектов (могут удалить лишь те, что были созданы ими):",
@@ -109,6 +110,9 @@
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Скопировать в буфер обмена",
     "CopyDocumentMarkdown": "Скопировать как Markdown",
+    "CopyAsMarkdownTable": "Скопировать как таблицу Markdown",
+    "TableCopiedToClipboard": "Таблица скопирована в буфер обмена",
+    "TableCopyFailed": "Не удалось скопировать таблицу в буфер обмена",
     "PublicView": "Публичный",
 
     "ChooseIcon": "Выбрать иконку",
@@ -149,6 +153,7 @@
     "ValueIsSet": "Значение установлено",
     "RoleLabel": "Роль: {role}",
     "ForbidAttributeChanges": "Запретить изменение: ",
-    "AllowAttributeChanges": "Разрешить изменение: "
+    "AllowAttributeChanges": "Разрешить изменение: ",
+    "RelationshipTable": "Таблица связей"
   }
 }

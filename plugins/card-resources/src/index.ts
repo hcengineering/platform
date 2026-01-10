@@ -19,7 +19,6 @@ import CardsPresenter from './components/CardsPresenter.svelte'
 import EditCard from './components/EditCard.svelte'
 import Main from './components/Main.svelte'
 import {
-  getCardId,
   getCardTitle,
   resolveLocation,
   resolveLocationData,
@@ -75,6 +74,8 @@ import CardTagColored from './components/CardTagColored.svelte'
 import CardWidgetTab from './components/CardWidgetTab.svelte'
 import CardIcon from './components/CardIcon.svelte'
 import CardFeedView from './components/CardFeedView.svelte'
+
+import './cardTableFormatter'
 
 export { default as CardSelector } from './components/CardSelector.svelte'
 export { default as CardIcon } from './components/CardIcon.svelte'
@@ -152,7 +153,6 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     CardTitleProvider: getCardTitle,
-    CardIdProvider: getCardId,
     GetCardLink: getCardLink,
     CardCustomLinkMatch: cardCustomLinkMatch,
     CardCustomLinkEncode: cardCustomLinkEncode,

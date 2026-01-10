@@ -16,6 +16,7 @@ import core, {
   AccountRole,
   type Class,
   DOMAIN_MODEL,
+  DOMAIN_TRANSIENT,
   type Doc,
   type Domain,
   type Rank,
@@ -48,6 +49,7 @@ import {
   type CheckFunc,
   type ContextId,
   type CreatedContext,
+  type ProcessCustomEvent,
   type Execution,
   type ExecutionContext,
   type ExecutionError,
@@ -65,18 +67,19 @@ import {
   type Transition,
   type Trigger,
   type UpdateCriteriaComponent,
-  processId
+  processId,
+  type EventButton
 } from '@hcengineering/process'
 import time from '@hcengineering/time'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type AttributeCategory } from '@hcengineering/view'
 import { defineMethods } from './actions'
-import { defineTriggers } from './triggers'
 import { defineFunctions } from './functions'
-import process from './plugin'
 import { definePermissions } from './permission'
+import process from './plugin'
+import { defineTriggers } from './triggers'
 
-const DOMAIN_PROCESS = 'process' as Domain
+export const DOMAIN_PROCESS = 'process' as Domain
 const DOMAIN_PROCESS_LOG = 'process-log' as Domain
 
 @Model(process.class.Process, core.class.Doc, DOMAIN_MODEL)
@@ -234,6 +237,30 @@ export class TState extends TDoc implements State {
     rank!: Rank
 }
 
+@Model(process.class.ProcessCustomEvent, core.class.Doc, DOMAIN_TRANSIENT)
+export class TProcessCustomEvent extends TDoc implements ProcessCustomEvent {
+  eventType!: string
+
+  @Prop(TypeRef(process.class.Execution), process.string.Execution)
+    execution!: Ref<Execution>
+
+  @Prop(TypeRef(card.class.Card), card.string.Card)
+    card!: Ref<Card>
+}
+
+@Model(process.class.EventButton, core.class.Doc, DOMAIN_PROCESS)
+export class TEventButton extends TDoc implements EventButton {
+  title!: string
+
+  eventType!: string
+
+  @Prop(TypeRef(process.class.Execution), process.string.Execution)
+    execution!: Ref<Execution>
+
+  @Prop(TypeRef(card.class.Card), card.string.Card)
+    card!: Ref<Card>
+}
+
 @Model(process.class.ProcessFunction, core.class.Doc, DOMAIN_MODEL)
 export class TProcessFunction extends TDoc implements ProcessFunction {
   of!: Ref<Class<Doc<Space>>>
@@ -269,7 +296,9 @@ export function createModel (builder: Builder): void {
     TTransition,
     TTrigger,
     TExecutionLog,
-    TUpdateCriteriaComponent
+    TUpdateCriteriaComponent,
+    TProcessCustomEvent,
+    TEventButton
   )
 
   builder.createDoc(
@@ -575,6 +604,10 @@ export function createModel (builder: Builder): void {
     extension: card.extensions.EditCardHeaderExtension,
     component: process.component.ProcessesHeaderExtension,
     props: {}
+  })
+
+  builder.createDoc(card.class.ExportExtension, core.space.Model, {
+    func: process.function.ExportProcess
   })
 
   builder.createDoc(

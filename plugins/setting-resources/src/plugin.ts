@@ -139,6 +139,9 @@ export default mergeIds(settingId, setting, {
     ApiAccess: '' as IntlString,
     ApiToken: '' as IntlString,
     GenerateApiToken: '' as IntlString,
+    ImportDocumentPermission: '' as IntlString,
+    ImportDocumentDescription: '' as IntlString,
+    SelectUsers: '' as IntlString,
     ManageIdentities: '' as IntlString,
     AddNew: '' as IntlString,
     Release: '' as IntlString,
@@ -152,6 +155,8 @@ export default mergeIds(settingId, setting, {
     Restricted: '' as IntlString,
     RestrictedAttributeWarning: '' as IntlString,
     PasswordAgingRule: '' as IntlString,
-    PasswordAgingRuleDescription: '' as IntlString
+    PasswordAgingRuleDescription: '' as IntlString,
+    ShowInTitle: '' as IntlString,
+    SpaceMembersOnly: '' as IntlString
   }
 })

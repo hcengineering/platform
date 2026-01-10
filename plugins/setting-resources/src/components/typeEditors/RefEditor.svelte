@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, Doc, DOMAIN_STATUS, Ref, RefTo } from '@hcengineering/core'
+  import core, { AnyAttribute, Class, Doc, DOMAIN_STATUS, Ref, RefTo } from '@hcengineering/core'
   import { TypeRef } from '@hcengineering/model'
   import { getClient } from '@hcengineering/presentation'
-  import { DropdownLabelsIntl, Label } from '@hcengineering/ui'
+  import { Component, DropdownLabelsIntl, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view-resources/src/plugin'
   import card from '@hcengineering/card'
   import { createEventDispatcher } from 'svelte'
@@ -24,6 +24,8 @@
   import contactPlugin from '@hcengineering/contact'
 
   export let type: RefTo<Doc> | undefined
+  export let attribute: AnyAttribute | undefined
+  export let attributeOf: Ref<Class<Doc>>
   export let editable: boolean = true
   export let kind: ButtonKind = 'regular'
   export let size: ButtonSize = 'medium'
@@ -41,12 +43,7 @@
 
   function fillClasses (classes: Ref<Class<Doc>>[], exclude: Ref<Class<Doc>>[]): DropdownIntlItem[] {
     const res: DropdownIntlItem[] = []
-    const descendants = new Set(
-      classes
-        .map((p) => hierarchy.getDescendants(p))
-        .reduce((a, b) => a.concat(b))
-        .filter((p) => p !== card.class.Card)
-    )
+    const descendants = new Set(classes.map((p) => hierarchy.getDescendants(p)).reduce((a, b) => a.concat(b)))
     // exclude removed card types
     const removedTypes = client.getModel().findAllSync(card.class.MasterTag, { removed: true })
     const excluded = new Set(removedTypes.map((p) => p._id))
@@ -73,6 +70,8 @@
   $: selected = classes.find((p) => p.id === refClass)
 
   $: refClass !== undefined && dispatch('change', { type: TypeRef(refClass) })
+
+  $: editor = refClass !== undefined && hierarchy.classHierarchyMixin(refClass, view.mixin.TypeEditor)?.editor
 </script>
 
 <span class="label">
@@ -90,4 +89,7 @@
   />
 {:else if selected}
   <Label label={selected.label} />
+{/if}
+{#if editor}
+  <Component is={editor} props={{ attribute, type, editable, attributeOf, isCard }} on:change />
 {/if}

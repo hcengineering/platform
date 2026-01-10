@@ -116,6 +116,7 @@ import ImageViewer from './components/viewer/ImageViewer.svelte'
 import PDFViewer from './components/viewer/PDFViewer.svelte'
 import TextViewer from './components/viewer/TextViewer.svelte'
 import VideoViewer from './components/viewer/VideoViewer.svelte'
+import RelationshipTableBrowser from './components/RelationshipTableBrowser.svelte'
 
 import { blobImageMetadata, blobVideoMetadata } from './blob'
 
@@ -199,6 +200,7 @@ export * from './objectIterator'
 export * from './selection'
 export * from './status'
 export * from './utils'
+export * from './permissions'
 export {
   buildModel,
   getActiveViewletId,
@@ -214,6 +216,14 @@ export {
   type LoadingProps
 } from './utils'
 export * from './viewOptions'
+export {
+  CopyAsMarkdownTable,
+  type CopyAsMarkdownTableProps,
+  type ValueFormatter,
+  registerValueFormatterForClass,
+  registerValueFormatter,
+  isIntlString
+} from './copyAsMarkdownTable'
 export {
   ArrayEditor,
   BooleanEditor,
@@ -340,7 +350,8 @@ export default async (): Promise<Resources> => ({
     TreeView,
     MasterDetailBrowser,
     ReadOnlyNotification,
-    ForbiddenNotification
+    ForbiddenNotification,
+    RelationshipTableBrowser
   },
   popup: {
     PositionElementAlignment

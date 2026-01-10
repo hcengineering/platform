@@ -15,6 +15,7 @@
     "Role": "Rol",
     "DeleteObject": "Eliminar objeto",
     "DeleteObjectConfirm": "¿Desea eliminar {count, plural, =1 {este objeto} other {estos # objetos}}?",
+    "NoCreatePermissionTitle": "Permisos insuficientes para crear",
     "DeletePopupNoPermissionTitle": "Permisos insuficientes para eliminar.",
     "DeletePopupNoPermissionLabel": "Por favor, contacte con las personas de la siguiente lista para que puedan eliminarlo.",
     "DeletePopupCreatorLabel": "Creadores (pueden eliminar solo los que ellos crearon):",
@@ -109,6 +110,9 @@
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Copiar al portapapeles",
     "CopyDocumentMarkdown": "Copiar como Markdown",
+    "CopyAsMarkdownTable": "Copiar como tabla Markdown",
+    "TableCopiedToClipboard": "Tabla copiada al portapapeles",
+    "TableCopyFailed": "Error al copiar la tabla al portapapeles",
     "PublicView": "Público",
     "ChooseIcon": "Elegir icono",
     "IconColor": "Elegir color del icono",
@@ -147,6 +151,7 @@
     "ValueIsSet": "El valor está establecido",
     "RoleLabel": "Role: {role}",
     "ForbidAttributeChanges": "Prohibir cambios: ",
-    "AllowAttributeChanges": "Permitir cambios: "
+    "AllowAttributeChanges": "Permitir cambios: ",
+    "RelationshipTable": "Tabla de relaciones"
   }
 }

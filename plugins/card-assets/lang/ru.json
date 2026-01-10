@@ -60,6 +60,16 @@
     "ForbidCreateCardPermission": "Запретить создание карточки",
     "ForbidAddTagPermission": "Запретить добавление тега",
     "ForbidRemoveTag": "Запретить удаление тега",
-    "Duplicate": "Дублировать"
+    "Duplicate": "Дублировать",
+    "Version": "Версия",
+    "Versions": "Версии",
+    "NewVersion": "Новая версия",
+    "Versioning": "Управление версиями",
+    "EnableVersioning": "Включить управление версиями",
+    "EnableVersioningConfirm": "Вы хотите включить управление версиями?",
+    "NewVersionConfirmation": "Вы хотите создать новую версию?",
+    "RelationCopyDescr": "Какие связи вы хотите скопировать?",
+    "Import": "Импортировать",
+    "Export": "Экспортировать"
   }
 }

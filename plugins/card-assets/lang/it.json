@@ -60,6 +60,16 @@
     "ForbidCreateCardPermission": "Vieta creazione scheda",
     "ForbidAddTagPermission": "Vieta aggiunta tag",
     "ForbidRemoveTag": "Vieta rimozione tag",
-    "Duplicate": "Duplicato"
+    "Duplicate": "Duplicato",
+    "Version": "Versione",
+    "Versions": "Versioni",
+    "NewVersion": "Nuova versione",
+    "Versioning": "Versionamento",
+    "EnableVersioning": "Abilita versionamento",
+    "EnableVersioningConfirm": "Vuoi abilitare il versionamento?",
+    "NewVersionConfirmation": "Vuoi creare una nuova versione?",
+    "RelationCopyDescr": "Quali relazioni vuoi copiare?",
+    "Import": "Importa",
+    "Export": "Esporta"
   }
 }

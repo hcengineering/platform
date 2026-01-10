@@ -37,7 +37,7 @@
   <div class="antiPanel-wrap__content hulyNavPanel-container">
     <NavHeader label={hr.string.HRApplication} />
 
-    <Scroller shrink>
+    <Scroller noStretch={true}>
       <DepartmentsHierarchy {departments} {descendants} {departmentById} selected={department} on:selected />
     </Scroller>
 

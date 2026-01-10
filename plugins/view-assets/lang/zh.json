@@ -15,6 +15,7 @@
     "Role": "角色",
     "DeleteObject": "删除对象",
     "DeleteObjectConfirm": "您想要删除 {count, plural, =1 {这个对象} other {这些 # 个对象}} 吗？",
+    "NoCreatePermissionTitle": "没有足够的权限创建",
     "DeletePopupNoPermissionTitle": "没有足够的权限删除。",
     "DeletePopupNoPermissionLabel": "请联系以下列表中的人员以便他们执行此操作。",
     "DeletePopupCreatorLabel": "创建者（只能删除他们创建的）：",
@@ -113,6 +114,9 @@
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "复制到剪贴板",
     "CopyDocumentMarkdown": "复制为 Markdown",
+    "CopyAsMarkdownTable": "复制为 Markdown 表格",
+    "TableCopiedToClipboard": "表格已复制到剪贴板",
+    "TableCopyFailed": "复制表格到剪贴板失败",
     "PublicView": "公开视图",
 
     "ChooseIcon": "选择图标",
@@ -152,6 +156,7 @@
     "ValueIsSet": "值已设置",
     "RoleLabel": "角色：{role}",
     "ForbidAttributeChanges": "禁止更改属性: ",
-    "AllowAttributeChanges": "允许更改属性: "
+    "AllowAttributeChanges": "允许更改属性: ",
+    "RelationshipTable": "关系表"
   }
 }

@@ -15,6 +15,7 @@
     "Role": "Rol",
     "DeleteObject": "Nesneyi sil",
     "DeleteObjectConfirm": "{count, plural, =1 {bu nesneyi} other {bu # nesneyi}} silmek istiyor musunuz?",
+    "NoCreatePermissionTitle": "Oluşturmak için yeterli izin yok",
     "DeletePopupNoPermissionTitle": "Silmek için yeterli izin yok.",
     "DeletePopupNoPermissionLabel": "Lütfen aşağıdaki listedeki kişilerle iletişime geçin.",
     "DeletePopupCreatorLabel": "Oluşturanlar (sadece kendilerinin oluşturduklarını silebilir):",
@@ -109,6 +110,9 @@
     "HyperlinkPlaceholder": "https://ornek.com",
     "CopyToClipboard": "Panoya kopyala",
     "CopyDocumentMarkdown": "Markdown olarak kopyala",
+    "CopyAsMarkdownTable": "Markdown tablosu olarak kopyala",
+    "TableCopiedToClipboard": "Tablo panoya kopyalandı",
+    "TableCopyFailed": "Tablo panoya kopyalanamadı",
     "PublicView": "Genel",
     "ChooseIcon": "İkon seç",
     "IconColor": "İkon rengi seç",
@@ -147,6 +151,7 @@
     "ValueIsSet": "Değer ayarlandı",
     "RoleLabel": "Rol: {role}",
     "ForbidAttributeChanges": "Özellik yasakla: ",
-    "AllowAttributeChanges": "Özellik izin ver: "
+    "AllowAttributeChanges": "Özellik izin ver: ",
+    "RelationshipTable": "İlişki tablosu"
   }
 }

@@ -34,6 +34,21 @@ services:
       - '18089:8080'
     command: start-single-node --insecure
     restart: unless-stopped
+  postgres:
+    image: postgres:18.1
+    command: ["postgres", "-p", "5433"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -p 5433"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - 5433:5433
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    restart: unless-stopped
   redpanda:
     image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
     command:
@@ -110,10 +125,14 @@ services:
   account:
     image: hardcoreeng/account
     pull_policy: never
+    depends_on:
+      postgres:
+        condition: service_healthy
     links:
       - mongodb
       - minio
       - cockroach
+      - postgres
     ports:
       - 3003:3003
     volumes:
@@ -136,6 +155,7 @@ services:
     links:
       - mongodb
       - cockroach
+      - postgres
       - minio
       - redpanda
     depends_on:
@@ -198,6 +218,7 @@ services:
       - minio
       - rekoni
       - cockroach
+      - postgres
       - account
       - stats
       - redpanda

@@ -21,6 +21,22 @@
     "ExportRequestFailed": "Nepodařilo se odeslat export.",
     "ExportRequestFailedMessage": "Při odesílání exportu došlo k chybě. Zkuste to prosím později.",
     "ExportCompleted": "Export byl dokončen. Vaše soubory jsou připraveny. Můžete je stáhnout z disku.",
-    "ExportFailed": "Export dat se nezdařil. Zkuste to prosím později."
+    "ExportFailed": "Export dat se nezdařil. Zkuste to prosím později.",
+    "ExportToWorkspace": "Exportovat do jiného pracovního prostoru",
+    "TargetWorkspace": "Cílový pracovní prostor",
+    "ExportSource": "Zdroj exportu",
+    "ExportSelected": "Vybrané položky",
+    "ExportAll": "Všechny položky",
+    "ExportStarted": "Export zahájen",
+    "ExportStartedMessage": "Export zahájen. Až bude dokončen, obdržíte oznámení.",
+    "ExportToWorkspaceCompleted": "Export dokončen",
+    "ExportToWorkspaceCompletedMessage": "Export byl úspěšně dokončen.",
+    "ExportToWorkspaceFailed": "Export se nezdařil",
+    "SelectWorkspace": "Vybrat pracovní prostor",
+    "SelectWorkspaceToExport": "Vybrat pracovní prostor pro export {count, plural, =1 {1 dokument} other {# dokumentů}}",
+    "SelectWorkspaceToExportSpace": "Vybrat pracovní prostor pro export dokumentů z prostoru",
+    "SelectSpace": "Vybrat prostor",
+    "NoSelectedDocuments": "Žádné dokumenty nevybrány",
+    "RequestPermissionToImport": "Prosím, požádejte vlastníka cílového pracovního prostoru o povolení k importu dokumentů."
   }
 }

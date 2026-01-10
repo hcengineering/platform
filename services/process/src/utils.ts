@@ -15,7 +15,7 @@
 
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createRestTxOperations } from '@hcengineering/api-client'
-import core, { PersonId, systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
+import { systemAccountUuid, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import config from './config'
 
@@ -24,8 +24,8 @@ export const SERVICE_NAME = 'process-service'
 const clients = new Map<string, TxOperations | Promise<TxOperations>>()
 const clientUsage = new Map<string, number>()
 
-export async function getClient (workspaceUuid: WorkspaceUuid, socialId?: PersonId): Promise<TxOperations> {
-  const key = `${workspaceUuid}-${socialId ?? ''}`
+export async function getClient (workspaceUuid: WorkspaceUuid): Promise<TxOperations> {
+  const key = workspaceUuid
   let usage = clientUsage.get(key) ?? 0
   usage++
   clientUsage.set(key, usage)
@@ -37,15 +37,15 @@ export async function getClient (workspaceUuid: WorkspaceUuid, socialId?: Person
     return current
   }
 
-  const client = createClient(workspaceUuid, socialId)
+  const client = createClient(workspaceUuid)
   clients.set(key, client)
   const cl = await client
   clients.set(key, cl)
   return cl
 }
 
-export async function releaseClient (workspaceUuid: WorkspaceUuid, socialId?: PersonId): Promise<void> {
-  const key = `${workspaceUuid}-${socialId ?? ''}`
+export async function releaseClient (workspaceUuid: WorkspaceUuid): Promise<void> {
+  const key = workspaceUuid
   let usage = clientUsage.get(key)
   if (usage === undefined) {
     console.warn(`Client for ${key} not found`)
@@ -77,18 +77,9 @@ async function close (key: string): Promise<void> {
   }
 }
 
-async function createClient (workspaceUuid: WorkspaceUuid, socialId?: PersonId): Promise<TxOperations> {
+async function createClient (workspaceUuid: WorkspaceUuid): Promise<TxOperations> {
   const token = generateToken(systemAccountUuid, workspaceUuid, { service: SERVICE_NAME })
-  let accountClient = getAccountClient(config.AccountsUrl, token)
-
-  if (socialId !== undefined && socialId !== core.account.System) {
-    const personUuid = await accountClient.findPersonBySocialId(socialId, true)
-    if (personUuid === undefined) {
-      throw new Error('Global person not found')
-    }
-    const token = generateToken(personUuid, workspaceUuid, { service: SERVICE_NAME })
-    accountClient = getAccountClient(config.AccountsUrl, token)
-  }
+  const accountClient = getAccountClient(config.AccountsUrl, token)
 
   const wsInfo = await accountClient.getLoginInfoByToken()
   if (wsInfo == null || !('endpoint' in wsInfo)) {

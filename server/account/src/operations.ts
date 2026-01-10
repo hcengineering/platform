@@ -221,7 +221,9 @@ export async function login (
 
     const isConfirmed = emailSocialId.verifiedOn != null
 
-    const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
+    const extraToken: Record<string, string> = isAdminEmail(normalizedEmail)
+      ? { admin: 'true', authMethod: 'password' }
+      : { authMethod: 'password' }
     ctx.info('Login succeeded', { email, normalizedEmail, isConfirmed, emailSocialId, ...extraToken })
 
     return {
@@ -505,7 +507,9 @@ export async function validateOtp (
 
     await resetFailedLoginAttempts(db, emailSocialId.personUuid as AccountUuid)
 
-    const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
+    const extraToken: Record<string, string> = isAdminEmail(normalizedEmail)
+      ? { admin: 'true', authMethod: 'otp' }
+      : { authMethod: 'otp' }
 
     return {
       account: emailSocialId.personUuid as AccountUuid,
@@ -536,7 +540,7 @@ export async function createWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const { account } = decodeTokenVerbose(ctx, token)
+  const { account, extra } = decodeTokenVerbose(ctx, token)
 
   checkRateLimit(account, workspaceName)
 
@@ -578,7 +582,7 @@ export async function createWorkspace (
     account,
     socialId: socialId._id,
     name: getPersonName(person),
-    token: generateToken(account, workspaceUuid),
+    token: generateToken(account, workspaceUuid, extra),
     endpoint: getEndpoint(workspaceUuid, region, EndpointKind.External),
     workspace: workspaceUuid,
     workspaceUrl,
@@ -1393,7 +1397,7 @@ export async function leaveWorkspace (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const { account, workspace } = decodeTokenVerbose(ctx, token)
+  const { account, workspace, extra } = decodeTokenVerbose(ctx, token)
   ctx.info('Removing account from workspace', { account, workspace })
 
   if (account == null || workspace == null) {
@@ -1426,7 +1430,7 @@ export async function leaveWorkspace (
     return {
       account,
       name: getPersonName(person),
-      token: generateToken(account, undefined)
+      token: generateToken(account, undefined, extra)
     }
   }
 
@@ -2746,6 +2750,129 @@ export async function getSubscriptionById (
   return subscription
 }
 
+export async function batchAssignWorkspacePermission (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    accountIds: AccountUuid[]
+    permission: string
+  }
+): Promise<void> {
+  const { accountIds, permission } = params
+  const { account, workspace } = decodeTokenVerbose(ctx, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  const accRole = account === systemAccountUuid ? AccountRole.Owner : await db.getWorkspaceRole(account, workspace)
+  if (accRole == null || getRolePower(accRole) < getRolePower(AccountRole.Maintainer)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  await db.batchAssignWorkspacePermission(workspace, accountIds, permission)
+}
+
+export async function batchRevokeWorkspacePermission (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    accountIds: AccountUuid[]
+    permission: string
+  }
+): Promise<void> {
+  const { accountIds, permission } = params
+  const { account, workspace } = decodeTokenVerbose(ctx, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  const accRole = account === systemAccountUuid ? AccountRole.Owner : await db.getWorkspaceRole(account, workspace)
+  if (accRole == null || getRolePower(accRole) < getRolePower(AccountRole.Maintainer)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  await db.batchRevokeWorkspacePermission(workspace, accountIds, permission)
+}
+
+export async function hasWorkspacePermission (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    accountId: AccountUuid
+    permission: string
+  }
+): Promise<boolean> {
+  const { accountId, permission } = params
+  const { workspace } = decodeTokenVerbose(ctx, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  return await db.hasWorkspacePermission(accountId, workspace, permission)
+}
+
+export async function getWorkspacePermissions (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    accountId: AccountUuid
+    permission: string
+  }
+): Promise<WorkspaceUuid[]> {
+  const { accountId, permission } = params
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  // Allow users to query their own permissions or require Maintainer+ role
+  if (accountId !== account) {
+    // For querying other users' permissions, require at least Maintainer role in any workspace
+    // This is a cross-workspace query, so we check if user has Maintainer+ in at least one workspace
+    const workspaceRoles = await db.getWorkspaceRoles(account)
+    const hasMaintainerAccess = Array.from(workspaceRoles.values()).some(
+      (role) => getRolePower(role) >= getRolePower(AccountRole.Maintainer)
+    )
+    if (!hasMaintainerAccess) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
+  return await db.getWorkspacePermissions(accountId, permission)
+}
+
+export async function getWorkspaceUsersWithPermission (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    permission: string
+  }
+): Promise<AccountUuid[]> {
+  const { permission } = params
+  const { account, workspace } = decodeTokenVerbose(ctx, token)
+
+  if (workspace === null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  const accRole = account === systemAccountUuid ? AccountRole.Owner : await db.getWorkspaceRole(account, workspace)
+  if (accRole == null || getRolePower(accRole) < getRolePower(AccountRole.Maintainer)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  return await db.getWorkspaceUsersWithPermission(workspace, permission)
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -2810,6 +2937,11 @@ export type AccountMethods =
   | 'getSubscriptionById'
   | 'updatePasswordAgingRule'
   | 'checkPasswordAging'
+  | 'batchAssignWorkspacePermission'
+  | 'batchRevokeWorkspacePermission'
+  | 'hasWorkspacePermission'
+  | 'getWorkspacePermissions'
+  | 'getWorkspaceUsersWithPermission'
 
 /**
  * @public
@@ -2863,6 +2995,11 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getUserProfile: wrap(getUserProfile),
     getSubscriptions: wrap(getSubscriptions),
     getSubscriptionById: wrap(getSubscriptionById),
+    batchAssignWorkspacePermission: wrap(batchAssignWorkspacePermission),
+    batchRevokeWorkspacePermission: wrap(batchRevokeWorkspacePermission),
+    hasWorkspacePermission: wrap(hasWorkspacePermission),
+    getWorkspacePermissions: wrap(getWorkspacePermissions),
+    getWorkspaceUsersWithPermission: wrap(getWorkspaceUsersWithPermission),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),

@@ -1,13 +1,13 @@
 <script lang="ts">
   import core, { Association, Doc, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery, getClient, ObjectCreate } from '@hcengineering/presentation'
+  import { getClient, ObjectCreate } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, Scroller, Section, showPopup } from '@hcengineering/ui'
+  import { Viewlet, ViewletPreference } from '@hcengineering/view'
   import { showMenu } from '../actions'
-  import { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
+  import view from '../plugin'
   import DocTable from './DocTable.svelte'
   import ObjectBoxPopup from './ObjectBoxPopup.svelte'
-  import view from '../plugin'
   import ViewletsSettingButton from './ViewletsSettingButton.svelte'
 
   export let object: Doc
@@ -36,11 +36,14 @@
 
   function add (): void {
     const create = getCreate()
+    const isVersionable = client.getHierarchy().classHierarchyMixin(_class, core.mixin.VersionableClass) !== undefined
+    const baseQuery = { _id: { $nin: docs.map((p) => p._id) } }
+    const docQuery = isVersionable ? { isLatest: true, ...baseQuery } : baseQuery
     showPopup(
       ObjectBoxPopup,
       {
         _class,
-        docQuery: { _id: { $nin: docs.map((p) => p._id) } },
+        docQuery,
         docProps: {
           shouldShowAvatar: true
         },
@@ -78,9 +81,15 @@
         ? { docA: object._id, docB: doc._id, association: association._id }
         : { docA: doc._id, docB: object._id, association: association._id }
     const relation = await client.findOne(core.class.Relation, q)
+    const overrides = new Map()
     if (relation !== undefined) {
-      showMenu(ev, { object: relation, includedActions: [view.action.RemoveRelation] })
+      overrides.set(view.action.Delete, async (obj: Doc | Doc[], ev?: Event) => {
+        if (relation !== undefined) {
+          await client.remove(relation)
+        }
+      })
     }
+    showMenu(ev, { object: doc, overrides })
   }
 
   function isAllowedToCreate (association: Association, docs: Doc[], direction: 'A' | 'B'): boolean {

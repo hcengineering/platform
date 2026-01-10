@@ -54,6 +54,7 @@
   let defaultValue: any | undefined
   let is: AnyComponent | undefined
   let readonly: boolean = false
+  let extra: Record<string, any> = {}
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -75,6 +76,9 @@
     }
     if (index !== undefined) {
       data.index = index
+    }
+    for (const [k, v] of Object.entries(extra)) {
+      data[k] = v
     }
     await client.createDoc(core.class.Attribute, core.space.Model, data)
     dispatch('close')
@@ -111,9 +115,16 @@
     selectedType = e.detail
   }
   const handleChange = (e: any): void => {
-    type = e.detail?.type
-    index = e.detail?.index
-    defaultValue = e.detail?.defaultValue
+    if (e.detail.type !== undefined && e.detail.type !== type) {
+      type = e.detail?.type
+      index = e.detail?.index
+      defaultValue = e.detail?.defaultValue
+      extra = e.detail?.extra ?? {}
+    } else {
+      index = e.detail?.index ?? index
+      defaultValue = e.detail?.defaultValue ?? defaultValue
+      extra = e.detail?.extra ?? extra
+    }
   }
 
   function setIcon (): void {
@@ -166,7 +177,8 @@
             defaultValue,
             isCard,
             kind: 'regular',
-            size: 'large'
+            size: 'large',
+            attributeOf: _class
           }}
           on:change={handleChange}
         />

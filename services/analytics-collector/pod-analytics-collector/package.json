@@ -56,7 +56,7 @@
     "@hcengineering/analytics-collector": "workspace:^0.7.0",
     "@hcengineering/analytics-collector-assets": "workspace:^0.7.0",
     "@hcengineering/analytics-service": "workspace:^0.7.17",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/platform": "workspace:^0.7.19",
     "@hcengineering/server-client": "workspace:^0.7.16",
     "@hcengineering/server-core": "workspace:^0.7.18",

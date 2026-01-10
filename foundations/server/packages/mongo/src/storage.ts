@@ -467,19 +467,21 @@ abstract class MongoAdapterBase implements DbAdapter {
     return result
   }
 
-  private getAssociations (associations: AssociationQuery[]): LookupStep[] {
+  private getAssociations (associations: AssociationQuery[], parentId: string = ''): LookupStep[] {
     const res: LookupStep[] = []
     for (const association of associations) {
-      const assoc = this.modelDb.findObject(association[0])
+      const _id = association[0]
+      const assoc = this.modelDb.findObject(_id)
       if (assoc === undefined) continue
       const isReverse = association[1] === -1
       const _class = !isReverse ? assoc.classB : assoc.classA
+      const fullId = _id + (isReverse ? '_a' : '_b')
       const targetDomain = this.hierarchy.getDomain(_class)
       if (targetDomain === DOMAIN_MODEL) continue
-      const as = association[0] + '_hidden_association'
+      const as = parentId + fullId + '_hidden_association'
       res.push({
         from: DOMAIN_RELATION,
-        localField: '_id',
+        localField: `${parentId !== '' ? parentId + '.' : ''}_id`,
         foreignField: isReverse ? 'docB' : 'docA',
         as
       })
@@ -487,8 +489,11 @@ abstract class MongoAdapterBase implements DbAdapter {
         from: targetDomain,
         localField: as + '.' + (isReverse ? 'docA' : 'docB'),
         foreignField: '_id',
-        as: association[0] + '_association'
+        as: parentId + fullId + '_association'
       })
+      if (association[2] !== undefined) {
+        res.push(...this.getAssociations(association[2], parentId + fullId + '_association'))
+      }
     }
     return res
   }
@@ -518,19 +523,36 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
   }
 
-  private fillAssociationsValue (associations: AssociationQuery[], object: any): Record<string, Doc[]> {
+  private fillAssociationsValue (
+    source: any,
+    associations: AssociationQuery[],
+    parentKey: string,
+    targetId: Ref<Doc>
+  ): Record<string, Doc[]> {
     const res: Record<string, Doc[]> = {}
     for (const association of associations) {
-      const assocKey = association[0] + '_hidden_association'
-      const data = object[assocKey]
+      const _id = association[0]
+      const isReverse = association[1] === -1
+      // const key = _id + (isReverse ? '.a' : '.b')
+      const fullId = _id + (isReverse ? '_a' : '_b')
+      const assocKey = parentKey + fullId + '_hidden_association'
+      const data = source[assocKey]
       if (data !== undefined && Array.isArray(data)) {
         const filtered = new Set(
-          data.filter((it) => it.association === association[0]).map((it) => (association[1] === 1 ? it.docB : it.docA))
+          data
+            .filter((it) => it.association === _id && (isReverse ? it.docB : it.docA) === targetId)
+            .map((it) => (!isReverse ? it.docB : it.docA))
         )
-        const fullKey = association[0] + '_association'
-        const arr = object[fullKey]
+        const fullKey = parentKey + fullId + '_association'
+        const arr = source[fullKey] as WithLookup<Doc>[]
         if (arr !== undefined && Array.isArray(arr)) {
-          res[association[0]] = arr.filter((it) => filtered.has(it._id))
+          const objects = arr.filter((it) => filtered.has(it._id))
+          if (association[2] !== undefined) {
+            for (const obj of objects) {
+              this.fillAssociations(obj, association[2], fullKey, source)
+            }
+          }
+          res[fullId] = objects
         }
       }
     }
@@ -718,10 +740,7 @@ abstract class MongoAdapterBase implements DbAdapter {
         }
       }
       if (options.associations !== undefined && options.associations.length > 0) {
-        row.$associations = this.fillAssociationsValue(options.associations, row)
-        for (const [, v] of Object.entries(row.$associations)) {
-          this.stripHash(v)
-        }
+        this.fillAssociations(row, options.associations)
       }
       this.clearExtraLookups(row)
     }
@@ -754,6 +773,19 @@ abstract class MongoAdapterBase implements DbAdapter {
     }
     this.handleEvent(domain, 'read', result.length)
     return toFindResult(this.stripHash(result) as T[], total)
+  }
+
+  private fillAssociations<T extends Doc>(
+    obj: WithLookup<T>,
+    associations: AssociationQuery[],
+    parentId: string = '',
+    source?: Doc
+  ): WithLookup<T> {
+    obj.$associations = this.fillAssociationsValue(source ?? obj, associations, parentId, obj._id)
+    for (const [, v] of Object.entries(obj.$associations)) {
+      this.stripHash(v)
+    }
+    return obj
   }
 
   private translateKey<T extends Doc>(

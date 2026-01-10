@@ -34,6 +34,7 @@ import core, {
   type RelatedDocument,
   SortingOrder,
   type Space,
+  toRank,
   type TxOperations,
   type WithLookup
 } from '@hcengineering/core'
@@ -96,28 +97,35 @@ export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: ()
   }
 }
 
-export async function duplicateCard (origin: Card): Promise<void> {
+async function cloneCard (
+  origin: Card,
+  overrideProps: Record<string, any>,
+  relationToCopy: Set<string> | 'all',
+  copyIds: boolean = false
+): Promise<Ref<Card>> {
   const client = getClient()
   const h = client.getHierarchy()
   const props: Partial<Data<Card>> = {}
   const base = h.getBaseClass(origin._class)
   const mixins = h.findAllMixins(origin)
   const attrs = h.getAllAttributes(base, core.class.Doc)
+  const skipClasses = copyIds
+    ? [core.class.TypeCollaborativeDoc]
+    : [core.class.TypeCollaborativeDoc, core.class.TypeIdentifier]
 
   for (const [key, attr] of attrs) {
-    if (attr.readonly !== true && attr.hidden !== true) {
+    if (attr.hidden !== true) {
       if (attr.type._class === core.class.Collection) {
         ;(props as any)[key] = 0
-      } else if (
-        attr.type._class !== core.class.TypeCollaborativeDoc &&
-        attr.type._class !== core.class.TypeIdentifier
-      ) {
+      } else if (!skipClasses.includes(attr.type._class)) {
         ;(props as any)[key] = (origin as any)[key]
       }
     }
   }
-  props.title = `${origin.title} (Copy)`
-  const targetId = generateId()
+  for (const [k, v] of Object.entries(overrideProps)) {
+    ;(props as any)[k] = v
+  }
+  const targetId = generateId<Card>()
   const relationsA = await client.findAll(core.class.Relation, { docA: origin._id })
   const relationsB = await client.findAll(core.class.Relation, { docB: origin._id })
 
@@ -142,18 +150,22 @@ export async function duplicateCard (origin: Card): Promise<void> {
   }
 
   for (const rel of relationsA) {
-    await ops.createDoc(core.class.Relation, origin.space, {
-      docA: targetId,
-      docB: rel.docB,
-      association: rel.association
-    })
+    if (relationToCopy === 'all' || relationToCopy.has(`${rel.association}_b`)) {
+      await ops.createDoc(core.class.Relation, core.space.Workspace, {
+        docA: targetId,
+        docB: rel.docB,
+        association: rel.association
+      })
+    }
   }
   for (const rel of relationsB) {
-    await ops.createDoc(core.class.Relation, origin.space, {
-      docA: rel.docA,
-      docB: targetId,
-      association: rel.association
-    })
+    if (relationToCopy === 'all' || relationToCopy.has(`${rel.association}_a`)) {
+      await ops.createDoc(core.class.Relation, core.space.Workspace, {
+        docA: rel.docA,
+        docB: targetId,
+        association: rel.association
+      })
+    }
   }
   await ops.commit()
 
@@ -164,6 +176,18 @@ export async function duplicateCard (origin: Card): Promise<void> {
     await attachmentOps.addCollection(attachment.class.Attachment, origin.space, targetId, base, 'attachments', props)
   }
   await attachmentOps.commit()
+
+  return targetId
+}
+
+export async function duplicateCard (origin: Card): Promise<void> {
+  const targetId = await cloneCard(
+    origin,
+    {
+      title: `${origin.title} (Copy)`
+    },
+    'all'
+  )
 
   const loc = getCurrentLocation()
   loc.path[2] = cardId
@@ -210,7 +234,7 @@ async function generateLocation (loc: Location, id: string): Promise<ResolvedLoc
       fragment: getPanelURI(component, doc._id, doc._class, 'content')
     },
     defaultLocation: {
-      path: [appComponent, workspace, cardId, 'type', special],
+      path: [appComponent, workspace, cardId, doc.space, special],
       fragment: getPanelURI(component, doc._id, doc._class, 'content')
     }
   }
@@ -240,13 +264,30 @@ export async function resolveLocationData (loc: Location): Promise<LocationData>
 export async function getCardTitle (client: TxOperations, ref: Ref<Card>, doc?: Card): Promise<string> {
   const object = doc ?? (await client.findOne(card.class.Card, { _id: ref }))
   if (object === undefined) throw new Error(`Card not found, _id: ${ref}`)
-  return object.title
-}
+  const h = client.getHierarchy()
+  const attrs = [...h.getAllAttributes(object._class, core.class.Doc).values()].sort((a, b) => {
+    const rankA = a.rank ?? toRank(a._id) ?? ''
+    const rankB = b.rank ?? toRank(b._id) ?? ''
+    return rankA.localeCompare(rankB)
+  })
+  const res: string[] = []
+  for (const attr of attrs) {
+    const val = (object as any)[attr.name]
+    if (attr.showInPresenter === true && val !== undefined) {
+      if (typeof val === 'string' || typeof val === 'number') {
+        res.push(val.toString())
+      } else if (typeof val === 'boolean') {
+        res.push(val ? '✅' : '❌️')
+      }
+    }
+  }
 
-export async function getCardId (client: TxOperations, ref: Ref<Card>, doc?: Card): Promise<string> {
-  const object = doc ?? (await client.findOne(card.class.Card, { _id: ref }))
-  if (object === undefined) throw new Error(`Card not found, _id: ${ref}`)
-  return object.title
+  const ids = res.join(' ')
+  let version = ''
+  if (h.classHierarchyMixin(object._class, core.mixin.VersionableClass)?.enabled === true) {
+    version = `v${object.version ?? 1}`
+  }
+  return ids + ' ' + object.title + ' ' + version
 }
 
 export async function getCardLink (doc: Card): Promise<Location> {
@@ -294,6 +335,18 @@ export async function cardFactory (props: Record<string, any> = {}): Promise<Ref
   }
 
   return await createCard(_class, space, props.data, props.content)
+}
+
+export async function createNewVersion (card: Card, relationsToCopy: Set<string>): Promise<Ref<Card>> {
+  return await cloneCard(
+    card,
+    {
+      baseId: card.baseId,
+      docCreatedBy: card.docCreatedBy ?? card.createdBy ?? card.modifiedBy
+    },
+    relationsToCopy,
+    true
+  )
 }
 
 export async function createCard (

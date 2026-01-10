@@ -171,13 +171,14 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
     isSpace: boolean
   ): boolean {
     const account = ctx.contextData.account
+    if (account.primarySocialId === core.account.System) return true
     const permissions = this.permissionsBySpace[space]?.[account.uuid] ?? []
     let withoutMatch: Permission | undefined
     for (const permission of permissions) {
-      if (permission.txClass === undefined || permission.txClass !== tx._class) continue
+      if (!isTxClassMatched(tx, permission)) continue
       if (
         permission.objectClass !== undefined &&
-        !this.context.hierarchy.isDerived(tx.objectClass, permission.objectClass)
+        !this.context.hierarchy.isDerived(getTxObjectClass(tx), permission.objectClass)
       ) {
         continue
       }
@@ -197,7 +198,37 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       return withoutMatch.forbid !== undefined ? !withoutMatch.forbid : true
     }
 
-    return isSpace || !this.restrictedSpaces.has(space)
+    if (isSpace || !this.restrictedSpaces.has(space)) {
+      return true
+    }
+
+    const attachedDocAncestors = this.context.hierarchy.getAncestors(core.class.AttachedDoc)
+    const ancestors = this.context.hierarchy.getAncestors(getTxObjectClass(tx))
+    const targetAncestors = ancestors.filter((a) => !attachedDocAncestors.includes(a))
+
+    const allPermissions = this.context.modelDb.findAllSync(core.class.Permission, {
+      objectClass: { $in: targetAncestors }
+    })
+    for (const permission of allPermissions) {
+      if (!isTxClassMatched(tx, permission)) continue
+      if (
+        permission.objectClass !== undefined &&
+        !this.context.hierarchy.isDerived(getTxObjectClass(tx), permission.objectClass)
+      ) {
+        continue
+      }
+      if (permission.txMatch === undefined) {
+        return false
+      } else {
+        const checkMatch = matchQuery([tx], permission.txMatch, tx._class, this.context.hierarchy, true)
+        if (checkMatch.length === 0) {
+          continue
+        }
+        return false
+      }
+    }
+
+    return true
   }
 
   private throwForbidden (): void {
@@ -434,4 +465,20 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       this.throwForbidden()
     }
   }
+}
+
+function isMixinUpdateTx (tx: Tx): boolean {
+  return tx._class === core.class.TxMixin && Object.keys((tx as TxMixin<Doc, Doc>).attributes).length > 0
+}
+
+function isTxClassMatched (tx: Tx, permission: Permission): boolean {
+  if (permission.txClass === tx._class) return true
+  if (permission.txMatch === undefined && isMixinUpdateTx(tx)) {
+    return permission.txClass === core.class.TxUpdateDoc
+  }
+  return false
+}
+
+function getTxObjectClass (tx: TxCUD<Doc>): Ref<Class<Doc>> {
+  return tx._class === core.class.TxMixin ? (tx as TxMixin<Doc, Doc>).mixin : tx.objectClass
 }

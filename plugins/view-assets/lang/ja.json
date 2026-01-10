@@ -15,6 +15,7 @@
     "Role": "役割",
     "DeleteObject": "オブジェクトを削除",
     "DeleteObjectConfirm": "{count, plural, =1 {このオブジェクト} other {これらの # 個のオブジェクト}}を削除しますか？",
+    "NoCreatePermissionTitle": "作成する権限がありません",
     "DeletePopupNoPermissionTitle": "削除する権限がありません。",
     "DeletePopupNoPermissionLabel": "削除するには、以下のリストの担当者にご連絡ください。",
     "DeletePopupCreatorLabel": "作成者 (自分で作成したもののみ削除できます):",
@@ -109,6 +110,9 @@
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "クリップボードにコピー",
     "CopyDocumentMarkdown": "Markdownとしてコピー",
+    "CopyAsMarkdownTable": "Markdownテーブルとしてコピー",
+    "TableCopiedToClipboard": "テーブルをクリップボードにコピーしました",
+    "TableCopyFailed": "テーブルをクリップボードにコピーできませんでした",
     "PublicView": "公開",
     "ChooseIcon": "アイコンを選択",
     "IconColor": "アイコンの色を選択",
@@ -147,6 +151,7 @@
     "ValueIsSet": "値が設定されています",
     "RoleLabel": "役割: {role}",
     "ForbidAttributeChanges": "属性の変更を禁止: ",
-    "AllowAttributeChanges": "属性の変更を許可: "
+    "AllowAttributeChanges": "属性の変更を許可: ",
+    "RelationshipTable": "関係テーブル"
   }
 }

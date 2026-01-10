@@ -87,12 +87,12 @@ export default mergeIds(cardId, card, {
     CardList: '' as Ref<Viewlet>,
     CardChildList: '' as Ref<Viewlet>,
     CardFeedDescriptor: '' as Ref<ViewletDescriptor>,
-    CardFeed: '' as Ref<Viewlet>
+    CardFeed: '' as Ref<Viewlet>,
+    CardRelationshipTable: '' as Ref<Viewlet>
   },
   string: {
     CreateMasterTag: '' as IntlString,
     CreateTag: '' as IntlString,
-    CreateCard: '' as IntlString,
     Content: '' as IntlString,
     Parent: '' as IntlString,
     CardLibrary: '' as IntlString,
@@ -127,6 +127,14 @@ export default mergeIds(cardId, card, {
     CardContent: '' as IntlString,
     Post: '' as IntlString,
     ShowLess: '' as IntlString,
-    Duplicate: '' as IntlString
+    Duplicate: '' as IntlString,
+    Export: '' as IntlString,
+    Import: '' as IntlString,
+    NewVersion: '' as IntlString,
+    Versioning: '' as IntlString,
+    EnableVersioning: '' as IntlString,
+    EnableVersioningConfirm: '' as IntlString,
+    NewVersionConfirmation: '' as IntlString,
+    RelationCopyDescr: '' as IntlString
   }
 })

@@ -38,7 +38,8 @@ import process, {
   State,
   Step,
   Transition,
-  isUpdateTx
+  isUpdateTx,
+  ProcessCustomEvent
 } from '@hcengineering/process'
 import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
 import { ProcessMessage } from '@hcengineering/server-process'
@@ -95,7 +96,8 @@ import {
   CheckSubProcessesDone,
   CheckSubProcessMatch,
   CheckTime,
-  FieldChangedCheck
+  FieldChangedCheck,
+  EventCheck
 } from './functions'
 import { ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 
@@ -139,6 +141,31 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
     )
   }
   return res
+}
+
+export async function OnCustomEvent (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxCreateDoc) continue
+    const createTx = tx as TxCreateDoc<ProcessCustomEvent>
+    if (!control.hierarchy.isDerived(createTx.objectClass, process.class.ProcessCustomEvent)) continue
+    const customEvent = TxProcessor.createDoc2Doc(createTx)
+    const card = await control.findAll(control.ctx, cardPlugin.class.Card, { _id: customEvent.card }, { limit: 1 })
+    if (card.length === 0) continue
+    await putEventToQueue(
+      {
+        event: process.trigger.OnEvent,
+        execution: customEvent.execution,
+        createdOn: tx.modifiedOn,
+        card: customEvent.card,
+        context: {
+          eventType: customEvent.eventType,
+          card
+        }
+      },
+      control
+    )
+  }
+  return []
 }
 
 export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
@@ -249,6 +276,54 @@ export async function OnStateRemove (txes: Tx[], control: TriggerControl): Promi
   return res
 }
 
+export async function OnExecutionRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxRemoveDoc) continue
+    const cudTx = tx as TxRemoveDoc<Execution>
+    if (!control.hierarchy.isDerived(cudTx.objectClass, process.class.Execution)) continue
+    const todos = await control.findAll(control.ctx, process.class.ProcessToDo, {
+      execution: cudTx.objectId,
+      doneOn: null
+    })
+    for (const todo of todos) {
+      res.push(control.txFactory.createTxRemoveDoc(todo._class, todo.space, todo._id))
+    }
+  }
+  return res
+}
+
+async function getExecutionReassignTxes (card: Card, control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  const cards = await control.findAll(control.ctx, cardPlugin.class.Card, { baseId: card.baseId })
+  const ids = cards.map((p) => p._id).filter((p) => p !== card._id)
+  const executions = await control.findAll(control.ctx, process.class.Execution, { card: { $in: ids } })
+  for (const execution of executions) {
+    res.push(
+      control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
+        card: card._id
+      })
+    )
+  }
+  return res
+}
+
+export async function OnCardCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxCreateDoc) continue
+    const createTx = tx as TxCreateDoc<Card>
+    if (!control.hierarchy.isDerived(createTx.objectClass, cardPlugin.class.Card)) continue
+    const obj = TxProcessor.createDoc2Doc(createTx)
+
+    if (obj.baseId !== obj._id) {
+      const reassignTxes = await getExecutionReassignTxes(obj, control)
+      res.push(...reassignTxes)
+    }
+  }
+  return res
+}
+
 export async function OnTransition (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   for (const tx of txes) {
@@ -277,7 +352,7 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
     if (!control.hierarchy.isDerived(cudTx.objectClass, cardPlugin.class.Card)) continue
     const card = await control.findAll(control.ctx, cardPlugin.class.Card, { _id: cudTx.objectId }, { limit: 1 })
     if (card.length === 0) continue
-    const ops = isUpdateTx(cudTx) ? cudTx.operations : cudTx.mixin
+    const ops = isUpdateTx(cudTx) ? cudTx.operations : cudTx.attributes
     await putEventToQueue(
       {
         event: process.trigger.OnCardUpdate,
@@ -400,7 +475,8 @@ export default async () => ({
     MatchCardCheck,
     CheckSubProcessesDone,
     CheckSubProcessMatch,
-    CheckTime
+    CheckTime,
+    EventCheck
   },
   transform: {
     CurrentDate,
@@ -454,6 +530,9 @@ export default async () => ({
     OnExecutionCreate,
     OnProcessToDoClose,
     OnProcessToDoRemove,
-    OnExecutionContinue
+    OnExecutionContinue,
+    OnCustomEvent,
+    OnExecutionRemove,
+    OnCardCreate
   }
 })

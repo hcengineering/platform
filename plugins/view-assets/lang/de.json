@@ -15,6 +15,7 @@
     "Role": "Rolle",
     "DeleteObject": "Objekt löschen",
     "DeleteObjectConfirm": "Möchten Sie {count, plural, =1 {dieses Objekt} other {diese # Objekte}} löschen?",
+    "NoCreatePermissionTitle": "Keine ausreichenden Berechtigungen zum Erstellen",
     "DeletePopupNoPermissionTitle": "Keine ausreichenden Berechtigungen zum Löschen.",
     "DeletePopupNoPermissionLabel": "Bitte kontaktieren Sie Personen aus der folgenden Liste.",
     "DeletePopupCreatorLabel": "Ersteller (können nur von ihnen erstellte Objekte löschen):",
@@ -113,6 +114,9 @@
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "In die Zwischenablage kopieren",
     "CopyDocumentMarkdown": "Als Markdown kopieren",
+    "CopyAsMarkdownTable": "Als Markdown-Tabelle kopieren",
+    "TableCopiedToClipboard": "Tabelle in die Zwischenablage kopiert",
+    "TableCopyFailed": "Tabelle konnte nicht in die Zwischenablage kopiert werden",
     "PublicView": "Öffentlich",
 
     "ChooseIcon": "Symbol wählen",
@@ -152,6 +156,7 @@
     "ValueIsSet": "Wert ist gesetzt",
     "RoleLabel": "Rolle: {role}",
     "ForbidAttributeChanges": "Änderungen verbieten: ",
-    "AllowAttributeChanges": "Änderungen erlauben: "
+    "AllowAttributeChanges": "Änderungen erlauben: ",
+    "RelationshipTable": "Beziehungstabelle"
   }
 }

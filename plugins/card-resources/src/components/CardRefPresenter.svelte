@@ -23,10 +23,8 @@
   import CardPresenter from './CardPresenter.svelte'
 
   export let value: Ref<Card> | undefined
-  export let kind: 'list' | undefined = undefined
   export let type: ObjectPresenterType = 'link'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
-  export let shrink: boolean = false
 
   let doc: Card | undefined
   const query = createQuery()
@@ -41,4 +39,4 @@
     )
 </script>
 
-<CardPresenter value={doc} {kind} {type} {icon} {shrink} />
+<CardPresenter value={doc} {type} {icon} />

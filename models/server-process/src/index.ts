@@ -61,14 +61,25 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(process.trigger.OnCardUpdate, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    preventRollback: true,
     serverCheckFunc: serverProcess.func.MatchCardCheck
   })
 
   builder.mixin(process.trigger.WhenFieldChanges, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    preventRollback: true,
     serverCheckFunc: serverProcess.func.FieldChangedCheck
   })
 
+  builder.mixin(process.trigger.OnExecutionStart, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    preventRollback: true
+  })
+
+  // builder.mixin(process.trigger.OnEvent, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+  //   serverCheckFunc: serverProcess.func.EventCheck
+  // })
+
   builder.mixin(process.trigger.OnTime, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    preventRollback: true,
     serverCheckFunc: serverProcess.func.CheckTime
   })
 
@@ -291,6 +302,22 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnCustomEvent,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: process.class.ProcessCustomEvent
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnExecutionRemove,
+    txMatch: {
+      _class: core.class.TxRemoveDoc,
+      objectClass: process.class.Execution
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverProcess.trigger.OnProcessToDoClose,
     txMatch: {
       _class: core.class.TxUpdateDoc,
@@ -336,6 +363,14 @@ export function createModel (builder: Builder): void {
     trigger: serverProcess.trigger.OnTransition,
     txMatch: {
       objectClass: process.class.Transition
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnCardCreate,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: cardPlugin.class.Card
     }
   })
 }

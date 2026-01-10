@@ -34,5 +34,6 @@ loadMetadata(setting.icon, {
   InviteWorkspace: `${icons}#inviteWorkspace`,
   Views: `${icons}#views`,
   Relations: `${icons}#relation`,
-  Mailbox: `${icons}#mailbox`
+  Mailbox: `${icons}#mailbox`,
+  OfficeSettings: `${icons}#office`
 })

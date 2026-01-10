@@ -15,6 +15,7 @@
     "Role": "Role",
     "DeleteObject": "Smazat objekt",
     "DeleteObjectConfirm": "Chcete smazat {count, plural, =1 {tento objekt} other {těchto # objektů}}?",
+    "NoCreatePermissionTitle": "Nemáte dostatečná oprávnění pro vytvoření",
     "DeletePopupNoPermissionTitle": "Nemáte dostatečná oprávnění pro smazání.",
     "DeletePopupNoPermissionLabel": "Kontaktujte prosím osoby ze seznamu níže, aby to mohly provést.",
     "DeletePopupCreatorLabel": "Tvůrci (mohou mazat pouze objekty, které vytvořili):",
@@ -113,6 +114,9 @@
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Kopírovat do schránky",
     "CopyDocumentMarkdown": "Kopírovat jako Markdown",
+    "CopyAsMarkdownTable": "Kopírovat jako Markdown tabulka",
+    "TableCopiedToClipboard": "Tabulka zkopírována do schránky",
+    "TableCopyFailed": "Nepodařilo se zkopírovat tabulku do schránky",
     "PublicView": "Veřejné",
 
     "ChooseIcon": "Vybrat ikonu",
@@ -152,6 +156,7 @@
     "ValueIsSet": "Hodnota je nastavena",
     "RoleLabel": "Role: {role}",
     "ForbidAttributeChanges": "Zakázat změny: ",
-    "AllowAttributeChanges": "Povolit změny: "
+    "AllowAttributeChanges": "Povolit změny: ",
+    "RelationshipTable": "Tabulka vztahů"
   }
 }

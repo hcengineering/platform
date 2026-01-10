@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/account-client",
+      "comment": "Add permission methods",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/account-client"
+}

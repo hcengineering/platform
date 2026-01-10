@@ -56,6 +56,7 @@
   let defaultValue: any | undefined = attribute.defaultValue
   let icon: Asset | undefined = attribute.icon
   let automationOnly = attribute.automationOnly ?? false
+  let extra: Record<string, any> = {}
   let is: AnyComponent | undefined
 
   const client = getClient()
@@ -93,6 +94,10 @@
       update.readonly = automationOnly
       update.automationOnly = automationOnly
     }
+    for (const [k, v] of Object.entries(extra)) {
+      if (attribute[k] === v) continue
+      update[k] = v
+    }
     await client.updateDoc(attribute._class, attribute.space, attribute._id, update)
     clearSettingsStore()
   }
@@ -128,10 +133,16 @@
     selectType(e.detail)
   }
   const handleChange = (e: any) => {
-    if (disabled) return
-    type = e.detail?.type
-    index = e.detail?.index
-    defaultValue = e.detail?.defaultValue
+    if (e.detail.type !== undefined && e.detail.type !== type && !disabled) {
+      type = e.detail?.type
+      index = e.detail?.index
+      defaultValue = e.detail?.defaultValue
+      extra = e.detail?.extra ?? {}
+    } else {
+      index = e.detail?.index ?? index
+      defaultValue = e.detail?.defaultValue ?? defaultValue
+      extra = e.detail?.extra ?? extra
+    }
   }
 
   async function remove (evt: MouseEvent): Promise<void> {
@@ -165,7 +176,7 @@
     return `${attr._id}_${forbidden ? 'forbidden' : 'allowed'}` as Ref<AttributePermission>
   }
 
-  function changeRestricted (e: CustomEvent<boolean>): void {
+  function changeRestricted (): void {
     showPopup(
       MessageBox,
       {
@@ -285,7 +296,9 @@
           width: '100%',
           editable: !exist && !disabled,
           kind: 'regular',
-          size: 'large'
+          size: 'large',
+          attribute,
+          attributeOf: attribute.attributeOf
         }}
         {disabled}
         on:change={handleChange}
@@ -294,11 +307,11 @@
     <span class="label">
       <Label label={view.string.AutomationOnly} />
     </span>
-    <Toggle bind:on={automationOnly} />
+    <Toggle bind:on={automationOnly} disabled={attribute.isCustom !== true} />
     <span class="label">
       <Label label={setting.string.Restricted} />
     </span>
-    <Toggle on={isRestricted} disabled={isRestricted} on:change={changeRestricted} />
+    <Toggle on={isRestricted} disabled={isRestricted || attribute.isCustom !== true} on:change={changeRestricted} />
   </div>
 </Modal>
 

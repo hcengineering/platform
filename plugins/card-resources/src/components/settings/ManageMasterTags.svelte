@@ -15,7 +15,7 @@
 <script lang="ts">
   import { MasterTag } from '@hcengineering/card'
   import { Ref } from '@hcengineering/core'
-  import { IconWithEmoji, createQuery } from '@hcengineering/presentation'
+  import { IconWithEmoji, createQuery, getClient } from '@hcengineering/presentation'
   import { clearSettingsStore } from '@hcengineering/setting-resources'
   import {
     Icon,
@@ -40,10 +40,16 @@
     selectedTagId = loc.path[4] as Ref<MasterTag>
   }
 
+  const client = getClient()
+  const h = client.getHierarchy()
+
   let tags: MasterTag[] = []
   const tagsQuery = createQuery()
   $: tagsQuery.query(card.class.MasterTag, {}, (result) => {
-    tags = result.filter((p) => p.removed !== true).sort((a, b) => a.label.localeCompare(b.label))
+    tags = [
+      h.getClass(card.class.Card),
+      ...result.filter((p) => p.removed !== true).sort((a, b) => a.label.localeCompare(b.label))
+    ]
   })
 
   function selectProjectType (id: string): void {

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Card, MasterTag } from '@hcengineering/card'
-  import { Ref } from '@hcengineering/core'
+  import core, { Ref, toRank } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, tooltip } from '@hcengineering/ui'
@@ -34,10 +34,9 @@
   export let noSelect: boolean = true
   export let inline = false
   export let showParent: boolean = false
-  export let shrink: boolean = false
-  export let kind: 'list' | undefined = undefined
   export let type: ObjectPresenterType = 'link'
   export let icon: Asset | AnySvelteComponent | undefined = undefined
+  export let showVersion: boolean = true
 
   const client = getClient()
   let cardObj: Card | undefined = undefined
@@ -56,6 +55,42 @@
 
   $: _class = cardObj && (client.getHierarchy().getClass(cardObj?._class) as MasterTag)
   $: icon = _class && _class.icon
+
+  $: ids = getIds(cardObj)
+
+  function getIds (object: Card | undefined): string {
+    if (object === undefined) return ''
+    const h = client.getHierarchy()
+    const attrs = [...h.getAllAttributes(object._class, core.class.Doc).values()].sort((a, b) => {
+      const rankA = a.rank ?? toRank(a._id) ?? ''
+      const rankB = b.rank ?? toRank(b._id) ?? ''
+      return rankA.localeCompare(rankB)
+    })
+    const res: string[] = []
+    for (const attr of attrs) {
+      const val = (object as any)[attr.name]
+      if (attr.showInPresenter === true && val !== undefined) {
+        if (typeof val === 'string' || typeof val === 'number') {
+          res.push(val.toString())
+        } else if (typeof val === 'boolean') {
+          res.push(val ? '✅' : '❌️')
+        }
+      }
+    }
+    return res.join(' ')
+  }
+
+  $: version = getVersion(cardObj)
+
+  function getVersion (val: Card | undefined): string {
+    if (val === undefined) return ''
+    const h = client.getHierarchy()
+    const mixin = h.classHierarchyMixin(val._class, core.mixin.VersionableClass)
+    if (mixin?.enabled) {
+      return 'v' + (val.version ?? 1)
+    }
+    return ''
+  }
 </script>
 
 {#if inline && cardObj}
@@ -73,7 +108,7 @@
           {noSelect}
           inline
           component={card.component.EditCard}
-          shrink={1}
+          shrink={0}
           title={cardObj?.title}
         >
           {#if shouldShowAvatar}
@@ -82,7 +117,11 @@
             </div>
           {/if}
           <span class="overflow-label">
+            {ids}
             {cardObj.title}
+            {#if showVersion}
+              {version}
+            {/if}
             <slot name="details" />
           </span>
         </DocNavLink>
@@ -97,7 +136,7 @@
         {noSelect}
         inline
         component={card.component.EditCard}
-        shrink={1}
+        shrink={0}
         title={cardObj?.title}
       >
         {#if shouldShowAvatar}
@@ -106,14 +145,22 @@
           </div>
         {/if}
         <span class="overflow-label cropped-text-presenter">
+          {ids}
           {cardObj.title}
+          {#if showVersion}
+            {version}
+          {/if}
           <slot name="details" />
         </span>
       </DocNavLink>
     {/if}
   {:else}
     <span class="overflow-label" class:select-text={!noSelect} use:tooltip={{ label: getEmbeddedLabel(cardObj.title) }}>
+      {ids}
       {cardObj.title}
+      {#if showVersion}
+        {version}
+      {/if}
     </span>
   {/if}
 {/if}

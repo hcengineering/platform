@@ -1,0 +1,12 @@
+{
+  "string": {
+    "ShowNotifications": "显示通知",
+    "PlaySound": "播放声音",
+    "BounceAppIcon": "弹跳应用图标（仅限 Mac）",
+    "ShowBadge": "在应用图标上显示徽章",
+    "SoundAndAppearance": "声音和外观",
+    "HaveGotANotification": "您收到了一条通知",
+    "TotalNotificationsCount": "您共有 {count, plural, =1 {# 条通知} other {# 条通知}}"
+  }
+}
+

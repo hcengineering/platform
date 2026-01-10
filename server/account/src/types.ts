@@ -143,6 +143,13 @@ export interface WorkspaceInvite {
   autoJoin?: boolean
 }
 
+export interface WorkspacePermission {
+  workspaceUuid: WorkspaceUuid
+  accountUuid: AccountUuid
+  permission: string
+  createdOn?: Timestamp
+}
+
 export interface WorkspaceJoinInfo {
   email: string
   workspace: Workspace
@@ -297,6 +304,8 @@ export type WorkspaceStatusData = Omit<WorkspaceStatus, 'workspaceUuid'>
 
 export type WorkspaceInviteData = Omit<WorkspaceInvite, 'id'>
 
+export type DBFlavor = 'postgres' | 'cockroach' | 'unknown'
+
 /* ========= D A T A B A S E  C O L L E C T I O N S ========= */
 export interface AccountDB {
   person: DbCollection<Person>
@@ -313,6 +322,7 @@ export interface AccountDB {
   integrationSecret: DbCollection<IntegrationSecret>
   userProfile: DbCollection<UserProfile>
   subscription: DbCollection<Subscription>
+  workspacePermission: DbCollection<WorkspacePermission>
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
@@ -327,6 +337,19 @@ export interface AccountDB {
   getWorkspaceRoles: (accountId: AccountUuid) => Promise<Map<WorkspaceUuid, AccountRole>>
   getWorkspaceMembers: (workspaceId: WorkspaceUuid) => Promise<WorkspaceMemberInfo[]>
   getAccountWorkspaces: (accountId: AccountUuid) => Promise<WorkspaceInfoWithStatus[]>
+  batchAssignWorkspacePermission: (
+    workspaceId: WorkspaceUuid,
+    accountIds: AccountUuid[],
+    permission: string
+  ) => Promise<void>
+  batchRevokeWorkspacePermission: (
+    workspaceId: WorkspaceUuid,
+    accountIds: AccountUuid[],
+    permission: string
+  ) => Promise<void>
+  hasWorkspacePermission: (accountId: AccountUuid, workspaceId: WorkspaceUuid, permission: string) => Promise<boolean>
+  getWorkspacePermissions: (accountId: AccountUuid, permission: string) => Promise<WorkspaceUuid[]>
+  getWorkspaceUsersWithPermission: (workspaceId: WorkspaceUuid, permission: string) => Promise<AccountUuid[]>
   getPendingWorkspace: (
     region: string,
     version: Data<Version>,

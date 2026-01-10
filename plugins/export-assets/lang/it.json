@@ -21,6 +21,22 @@
     "ExportRequestFailed": "Impossibile inviare l'esportazione.",
     "ExportRequestFailedMessage": "Si è verificato un errore durante l'invio dell'esportazione. Riprova più tardi.",
     "ExportCompleted": "Esportazione completata. I tuoi file sono pronti. Puoi scaricarli dal drive.",
-    "ExportFailed": "Impossibile esportare i dati. Riprova più tardi."
+    "ExportFailed": "Impossibile esportare i dati. Riprova più tardi.",
+    "ExportToWorkspace": "Esporta in un altro spazio di lavoro",
+    "TargetWorkspace": "Spazio di destinazione",
+    "ExportSource": "Origine esportazione",
+    "ExportSelected": "Elementi selezionati",
+    "ExportAll": "Tutti gli elementi",
+    "ExportStarted": "Esportazione avviata",
+    "ExportStartedMessage": "Esportazione avviata. Riceverai una notifica quando sarà completata.",
+    "ExportToWorkspaceCompleted": "Esportazione completata",
+    "ExportToWorkspaceCompletedMessage": "Esportazione completata con successo.",
+    "ExportToWorkspaceFailed": "Esportazione fallita",
+    "SelectWorkspace": "Seleziona spazio di lavoro",
+    "SelectWorkspaceToExport": "Seleziona spazio di lavoro per esportare {count, plural, =1 {1 documento} other {# documenti}}",
+    "SelectWorkspaceToExportSpace": "Seleziona spazio di lavoro per esportare documenti dallo spazio",
+    "SelectSpace": "Seleziona spazio",
+    "NoSelectedDocuments": "Nessun documento selezionato",
+    "RequestPermissionToImport": "Si prega di richiedere l'autorizzazione al proprietario dello spazio di lavoro di destinazione per importare documenti."
   }
 }

@@ -69,6 +69,7 @@
     "Relations": "Vztahy",
     "AddRelation": "Přidat vztah",
     "PersonId": "Osoba",
-    "AccountId": "Účet"
+    "AccountId": "Účet",
+    "Version": "Verze"
   }
 }

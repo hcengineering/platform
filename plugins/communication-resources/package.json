@@ -54,7 +54,7 @@
     "@hcengineering/communication-shared": "workspace:^0.7.11",
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/contact-resources": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.23",
+    "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/emoji": "workspace:^0.7.0",
     "@hcengineering/emoji-resources": "workspace:^0.7.0",
     "@hcengineering/platform": "workspace:^0.7.19",

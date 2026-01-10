@@ -44,6 +44,7 @@ import {
   QueueMiddleware,
   SpacePermissionsMiddleware,
   SpaceSecurityMiddleware,
+  VersioningMiddleware,
   TriggersMiddleware,
   TxMiddleware,
   TxOrderingMiddleware,
@@ -157,6 +158,7 @@ export function createServerPipeline (
         : []),
       UserStatusMiddleware.create,
       ApplyTxMiddleware.create, // Extract apply
+      VersioningMiddleware.create,
       IdentifierMiddleware.create, // After ApplyTx to ensure that it pass
       RatingMiddleware.create, // Rating editing restrictions
       TxMiddleware.create, // Store tx into transaction domain

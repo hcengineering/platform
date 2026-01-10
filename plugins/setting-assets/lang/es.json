@@ -195,6 +195,15 @@
     "GenerateApiToken": "Generar token API",
     "IdentifierExists": "El identificador ya existe",
     "PasswordAgingRule": "Regla de envejecimiento de contraseñas",
-    "PasswordAgingRuleDescription": "Número de días después de los cuales se requerirá a los usuarios que cambien su contraseña."
+    "PasswordAgingRuleDescription": "Número de días después de los cuales se requerirá a los usuarios que cambien su contraseña.",
+    "OfficeSettings": "Configuración de oficina",
+    "OfficeDefaultSettings": "Configuración predeterminada para salas de reuniones",
+    "DefaultStartWithTranscription": "Habilitar transcripción en nuevas oficinas",
+    "DefaultStartWithRecording": "Habilitar grabación en nuevas oficinas",
+    "ImportDocumentPermission": "Importar documentos",
+    "ImportDocumentDescription": "Otorga a los usuarios la capacidad de importar documentos al espacio de trabajo",
+    "SelectUsers": "Seleccionar usuarios",
+    "ShowInTitle": "Mostrar en el título",
+    "SpaceMembersOnly": "Solo miembros del espacio"
   }
 }

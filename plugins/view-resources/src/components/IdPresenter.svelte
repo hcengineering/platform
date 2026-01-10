@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AnyAttribute, Doc } from '@hcengineering/core'
+  import core, { AnyAttribute, Doc, VersionableDoc } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { LabelAndProps, tooltip } from '@hcengineering/ui'
   import DocNavLink from './DocNavLink.svelte'
 
@@ -24,6 +24,9 @@
   export let object: Doc | undefined = undefined
 
   $: tooltipParams = getTooltip(value)
+
+  const client = getClient()
+  const h = client.getHierarchy()
 
   function getTooltip (value: string | undefined): LabelAndProps | undefined {
     if (value === undefined) return
@@ -35,7 +38,15 @@
   const query = createQuery()
   $: if (value !== undefined && object === undefined) {
     query.query(attribute.attributeOf, { [attribute.name]: value }, (res) => {
-      object = res.length > 0 ? res[0] : undefined
+      if (res.length === 0) {
+        object = undefined
+        return
+      }
+      if (h.classHierarchyMixin(attribute.attributeOf, core.mixin.VersionableClass)?.enabled === true) {
+        object = res.find((p) => (p as VersionableDoc).isLatest === true) ?? res[0]
+      } else {
+        object = res[0]
+      }
     })
   } else {
     query.unsubscribe()

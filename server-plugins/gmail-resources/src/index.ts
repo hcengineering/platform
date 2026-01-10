@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import contact, { Channel, formatName, Person } from '@hcengineering/contact'
+import contact, { Channel, formatName, Person, SocialIdentity } from '@hcengineering/contact'
 import core, {
   PersonId,
   Class,
@@ -29,7 +29,8 @@ import core, {
   TxCreateDoc,
   TxProcessor,
   groupByArray,
-  SocialIdType
+  SocialIdType,
+  Domain
 } from '@hcengineering/core'
 import gmail, { Message } from '@hcengineering/gmail'
 import { TriggerControl } from '@hcengineering/server-core'
@@ -219,13 +220,32 @@ async function processEmailNotifications (control: TriggerControl, notifications
     if (message === undefined) continue
     const employee = await getEmployeeByAcc(control, n.user)
     if (employee === undefined) continue
-    const emails = await control.findAll(control.ctx, contact.class.SocialIdentity, {
+    const emailQuery = {
       attachedTo: employee._id,
       type: { $in: [SocialIdType.EMAIL, SocialIdType.GOOGLE] },
       verifiedOn: { $gt: 0 },
       isDeleted: { $ne: true }
-    })
-    if (emails.length === 0) continue
+    }
+
+    let emails: SocialIdentity[] = []
+    try {
+      // Use rawFindAll to avoid filters from permission middleware
+      emails = await control.lowLevel.rawFindAll<SocialIdentity>('channel' as Domain, emailQuery, { limit: 10 })
+    } catch (err) {
+      // Fallback to regular findAll if lowLevel fails
+      control.ctx.warn('processEmailNotifications: Raw find all failed', { employeeId: employee._id, err })
+      const emailsResult = await control.findAll(control.ctx, contact.class.SocialIdentity, emailQuery)
+      emails = emailsResult as SocialIdentity[]
+    }
+
+    if (emails.length === 0) {
+      control.ctx.warn('processEmailNotifications: No verified email found for employee', {
+        notificationId: n._id,
+        user: n.user,
+        employeeId: employee._id
+      })
+      continue
+    }
 
     const senderSocialId = message.createdBy ?? message.modifiedBy
     const sender = senders.get(senderSocialId) ?? (await getPerson(control, senderSocialId))

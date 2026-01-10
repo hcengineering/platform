@@ -26,7 +26,8 @@
     getCurrentAccount,
     pickPrimarySocialId,
     readOnlyGuestAccountUuid,
-    Ref
+    Ref,
+    WorkspaceAccountPermission
   } from '@hcengineering/core'
   import { loginId } from '@hcengineering/login'
   import { translateCB } from '@hcengineering/platform'
@@ -57,6 +58,7 @@
   } from '@hcengineering/ui'
   import settingsRes from '../plugin'
   import ApiTokenPopup from './ApiTokenPopup.svelte'
+  import WorkspacePermissionEditor from './WorkspacePermissionEditor.svelte'
   import de from 'date-fns/locale/de'
 
   let loading = true
@@ -200,7 +202,7 @@
   }
 
   async function changePasswordAgingRules (val: number | undefined): Promise<void> {
-    passwordAgingRule = Math.max(val ?? 0, 0)
+    passwordAgingRule = Math.max(val ?? 1, 1)
     await accountClient.updatePasswordAgingRule(passwordAgingRule)
   }
 
@@ -346,7 +348,7 @@
                 <div class="w-32">
                   <EditBox
                     format={'number'}
-                    minValue={0}
+                    minValue={1}
                     maxDigitsAfterPoint={0}
                     bind:value={passwordAgingRule}
                     disabled={!passwordAgingRule}
@@ -421,6 +423,13 @@
               />
             </div>
           </div>
+
+          <WorkspacePermissionEditor
+            permission={WorkspaceAccountPermission.ImportDocument}
+            label={settingsRes.string.ImportDocumentPermission}
+            description={settingsRes.string.ImportDocumentDescription}
+            allowGuests={true}
+          />
 
           <div class="flex-col flex-gap-4 mt-6">
             <div class="title"><Label label={settingsRes.string.ApiAccess} /></div>

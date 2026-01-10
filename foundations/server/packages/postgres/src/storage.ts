@@ -100,7 +100,6 @@ import {
   DBCollectionHelper,
   type DBDoc,
   escape,
-  filterProjection,
   inferType,
   isDataField,
   isOwner,
@@ -109,7 +108,8 @@ import {
   parseDoc,
   parseDocWithProjection,
   parseUpdate,
-  simpleEscape
+  simpleEscape,
+  toWithLookup
 } from './utils'
 async function * createCursorGenerator (
   client: postgres.Sql,
@@ -296,7 +296,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
   async rawFindAll<T extends Doc>(_domain: Domain, query: DocumentQuery<T>, options?: FindOptions<T>): Promise<T[]> {
     const domain = translateDomain(_domain)
     const vars = new ValuesVariables()
-    const select = `SELECT ${this.getProjection(vars, domain, options?.projection, [], options?.associations)} FROM ${domain}`
+    const select = `SELECT ${this.getProjection(vars, domain, options?.projection, [])} FROM ${domain}`
     const sqlChunks: string[] = []
     sqlChunks.push(`WHERE ${this.buildRawQuery(vars, domain, query, options)}`)
     if (options?.sort !== undefined) {
@@ -472,7 +472,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
           const projection = this.localizeProjection(_class, options?.projection ?? undefined)
 
-          const select = `SELECT ${this.getProjection(vars, domain, projection, joins, options?.associations)} FROM ${domain}`
+          const select = `SELECT ${this.getProjection(vars, domain, projection, joins)} FROM ${domain}`
 
           if (joins.length > 0) {
             sqlChunks.push(this.buildJoinString(vars, joins))
@@ -554,7 +554,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
                 total
               )
             } else {
-              const res = this.parseLookup<T>(result, joins, projection, domain)
+              const res = await this.parseLookup<T>(ctx, result, joins, projection, options.associations, domain)
               return toFindResult(res, total)
             }
           })) as FindResult<T>
@@ -647,144 +647,193 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
   }
 
-  private parseLookup<T extends Doc>(
+  private async parseLookup<T extends Doc>(
+    ctx: MeasureContext<SessionData>,
     rows: any[],
     joins: JoinProps[],
     projection: Projection<T> | undefined,
+    associations: AssociationQuery[] | undefined,
     domain: string
-  ): WithLookup<T>[] {
+  ): Promise<WithLookup<T>[]> {
     const map = new Map<Ref<T>, WithLookup<T>>()
+
     const modelJoins: JoinProps[] = []
     const reverseJoins: JoinProps[] = []
     const simpleJoins: JoinProps[] = []
+
     for (const join of joins) {
-      if (join.table === DOMAIN_MODEL) {
-        modelJoins.push(join)
-      } else if (join.isReverse) {
-        reverseJoins.push(join)
-      } else if (join.path !== '') {
-        simpleJoins.push(join)
-      }
+      if (join.table === DOMAIN_MODEL) modelJoins.push(join)
+      else if (join.isReverse) reverseJoins.push(join)
+      else if (join.path !== '') simpleJoins.push(join)
     }
+
     for (const row of rows) {
-      /* eslint-disable @typescript-eslint/consistent-type-assertions */
-      let doc: WithLookup<T> = map.get(row._id) ?? ({ _id: row._id, $lookup: {}, $associations: {} } as WithLookup<T>)
-      const associations: Record<string, any> = doc.$associations as Record<string, any>
-      const lookup: Record<string, any> = doc.$lookup as Record<string, any>
-      let joinIndex: number | undefined
-      let skip = false
-      try {
-        const schema = getSchema(domain)
-        for (const column in row) {
-          if (column.startsWith('reverse_lookup_')) {
-            if (row[column] != null) {
-              const join = reverseJoins.find((j) => j.toAlias.toLowerCase() === column)
-              if (join === undefined) {
-                continue
-              }
-              const res = this.getLookupValue(join.path, lookup, false)
-              if (res === undefined) continue
-              const { obj, key } = res
+      const doc = toWithLookup<T>(parseDoc(row, getSchema(row._class)))
 
-              const parsed = row[column].map((p: any) => parseDoc(p, schema))
-              obj[key] = parsed
-            }
-          } else if (column.startsWith('lookup_')) {
-            const keys = column.split('_')
-            let key = keys[keys.length - 1]
-            if (keys[keys.length - 2] === '') {
-              key = '_' + key
-            }
+      const lookup = doc.$lookup as Record<string, any>
 
-            if (key === 'workspaceId') {
-              continue
-            }
+      this.parseLookupColumns(row, simpleJoins, reverseJoins, lookup, domain)
 
-            if (key === '_id') {
-              joinIndex = joinIndex === undefined ? 0 : ++joinIndex
-              if (row[column] === null) {
-                skip = true
-                continue
-              }
-              skip = false
-            }
-
-            if (skip) {
-              continue
-            }
-
-            const join = simpleJoins[joinIndex ?? 0]
-            if (join === undefined) {
-              continue
-            }
-            const res = this.getLookupValue(join.path, lookup)
-            if (res === undefined) continue
-            const { obj, key: p } = res
-
-            if (key === 'data') {
-              obj[p] = { ...obj[p], ...row[column] }
-            } else {
-              if (key === 'createdOn' || key === 'modifiedOn') {
-                const val = Number.parseInt(row[column])
-                obj[p][key] = Number.isNaN(val) ? null : val
-              } else if (key === '%hash%') {
-                continue
-              } else if (key === 'attachedTo' && row[column] === 'NULL') {
-                continue
-              } else {
-                obj[p][key] = row[column] === 'NULL' ? null : row[column]
-              }
-            }
-          } else if (column.startsWith('assoc_')) {
-            if (row[column] == null) continue
-            const keys = column.split('_')
-            const key = keys[keys.length - 1]
-            const associationDomain = keys[1]
-            const associationSchema = getSchema(associationDomain)
-            const parsed = row[column].map((p: any) => parseDoc(p, associationSchema))
-            associations[key] = parsed
-          } else {
-            joinIndex = undefined
-            if (!map.has(row._id)) {
-              if (column === 'workspaceId') {
-                continue
-              }
-              if (column === 'data') {
-                let data = row[column]
-                data = filterProjection(data, projection)
-                doc = { ...doc, ...data }
-              } else {
-                if (column === 'createdOn' || column === 'modifiedOn') {
-                  const val = Number.parseInt(row[column])
-                  ;(doc as any)[column] = Number.isNaN(val) ? null : val
-                } else if (column === '%hash%') {
-                  // Ignore
-                } else {
-                  ;(doc as any)[column] = row[column] === 'NULL' ? null : row[column]
-                }
-              }
-            }
-          }
-        }
-      } catch (err) {
-        console.log(err)
-        throw err
-      }
       for (const modelJoin of modelJoins) {
         const res = this.getLookupValue(modelJoin.path, lookup)
         if (res === undefined) continue
+
         const { obj, key } = res
         const val = this.getModelLookupValue<T>(doc, modelJoin, [...simpleJoins, ...modelJoins])
+
         if (val !== undefined && modelJoin.toClass !== undefined) {
-          const res = this.modelDb.findAllSync(modelJoin.toClass, {
+          const res2 = this.modelDb.findAllSync(modelJoin.toClass, {
             [modelJoin.toField]: val
           })
-          obj[key] = modelJoin.isReverse ? res : res[0]
+          obj[key] = modelJoin.isReverse ? res2 : res2[0]
         }
       }
+
       map.set(row._id, doc)
     }
-    return Array.from(map.values())
+
+    if (associations !== undefined && map.size > 0) {
+      await this.fetchAssociations(ctx, map, associations)
+    }
+
+    return [...map.values()]
+  }
+
+  async fetchAssociations (
+    ctx: MeasureContext<SessionData>,
+    parentMap: Map<string, WithLookup<Doc>>,
+    associations: AssociationQuery[]
+  ): Promise<void> {
+    for (const association of associations) {
+      const [assocId, dir, nested] = association
+      const isReverse = dir === -1
+      const keyA = isReverse ? 'docB' : 'docA'
+      const keyB = isReverse ? 'docA' : 'docB'
+
+      const assoc = this.modelDb.findObject(assocId)
+      if (assoc === undefined) {
+        continue
+      }
+      const _class = isReverse ? assoc.classA : assoc.classB
+      const domain = this.hierarchy.findDomain(_class)
+      if (domain === undefined) continue
+      const tagetDomain = translateDomain(domain)
+
+      const vars = new ValuesVariables()
+
+      const wsId = vars.add(this.workspaceId, '::uuid')
+      const parentIds = vars.add(Array.from(parentMap.keys()), '::text[]')
+      const assocIdVar = vars.add(assocId)
+
+      const rows = await this.mgr.retry(ctx.id, this.mgrId, async (connection) => {
+        return await connection.execute(
+          `
+          SELECT assoc.*, r."${keyA}" as parent_id
+          FROM ${tagetDomain} AS assoc
+          JOIN ${translateDomain(DOMAIN_RELATION)} AS r
+            ON r."${keyB}" = assoc."_id"
+          WHERE r."${keyA}" = ANY(${parentIds})
+            AND r.association = ${assocIdVar}
+            AND assoc."workspaceId" = ${wsId}
+          `,
+          vars.getValues()
+        )
+      })
+
+      const key = `${assocId}_${!isReverse ? 'b' : 'a'}`
+
+      const nextParentMap = new Map<string, WithLookup<Doc>>()
+      for (const row of rows) {
+        const parentId = row.parent_id
+        const parsed = nextParentMap.get(row._id) ?? parseDoc(row, getSchema(row._class))
+
+        const parent = parentMap.get(parentId)
+        if (parent === undefined) continue
+
+        if (parent.$associations === undefined) {
+          parent.$associations = {}
+        }
+
+        if (parent.$associations[key] === undefined) parent.$associations[key] = []
+        parent.$associations[key].push(parsed)
+        if (!nextParentMap.has(parsed._id)) {
+          nextParentMap.set(parsed._id, parsed)
+        }
+      }
+
+      if (nested !== undefined && nested.length > 0 && nextParentMap.size > 0) {
+        await this.fetchAssociations(ctx, nextParentMap, nested)
+      }
+    }
+  }
+
+  private parseLookupColumns (
+    row: any,
+    simpleJoins: JoinProps[],
+    reverseJoins: JoinProps[],
+    lookup: Record<string, any>,
+    domain: string
+  ): void {
+    const schema = getSchema(domain)
+    let joinIndex: number | undefined
+    let skip = false
+
+    for (const column in row) {
+      if (column.startsWith('reverse_lookup_')) {
+        const join = reverseJoins.find((j) => j.toAlias.toLowerCase() === column)
+        if (join === undefined || row[column] == null) continue
+
+        const parsed = row[column].map((p: any) => parseDoc(p, schema))
+
+        const res = this.getLookupValue(join.path, lookup, false)
+        if (res === undefined) continue
+        const { obj, key } = res
+        obj[key] = parsed
+
+        continue
+      }
+
+      if (column.startsWith('lookup_')) {
+        const keys = column.split('_')
+        let key = keys[keys.length - 1]
+        if (keys[keys.length - 2] === '') {
+          key = '_' + key
+        }
+
+        if (key === 'workspaceId') continue
+
+        if (key === '_id') {
+          joinIndex = joinIndex === undefined ? 0 : joinIndex + 1
+          if (row[column] == null) {
+            skip = true
+            continue
+          }
+          skip = false
+        }
+
+        if (skip) continue
+
+        const join = simpleJoins[joinIndex ?? 0]
+        if (join === undefined) continue
+
+        const res = this.getLookupValue(join.path, lookup)
+        if (res === undefined) continue
+        const { obj, key: p } = res
+
+        if (key === 'data') {
+          obj[p] = { ...obj[p], ...row[column] }
+        } else if (key === 'createdOn' || key === 'modifiedOn') {
+          const val = parseInt(row[column])
+          obj[p][key] = Number.isNaN(val) ? null : val
+        } else if (key === '%hash%') {
+          // ignore
+        } else if (key === 'attachedTo' && row[column] === 'NULL') {
+          // ignore
+        } else {
+          obj[p][key] = row[column] === 'NULL' ? null : row[column]
+        }
+      }
+    }
   }
 
   private getLookupValue (
@@ -1399,36 +1448,6 @@ abstract class PostgresAdapterBase implements DbAdapter {
     return res
   }
 
-  getAssociationsProjections (vars: ValuesVariables, baseDomain: string, associations: AssociationQuery[]): string[] {
-    const res: string[] = []
-    for (const association of associations) {
-      const _id = escape(association[0])
-      const assoc = this.modelDb.findObject(_id)
-      if (assoc === undefined) {
-        continue
-      }
-      const isReverse = association[1] === -1
-      const _class = isReverse ? assoc.classA : assoc.classB
-      const domain = this.hierarchy.findDomain(_class)
-      if (domain === undefined) continue
-      const tagetDomain = translateDomain(domain)
-      const keyA = isReverse ? 'docB' : 'docA'
-      const keyB = isReverse ? 'docA' : 'docB'
-      const wsId = vars.add(this.workspaceId, '::uuid')
-      res.push(
-        `(SELECT jsonb_agg(assoc.*) 
-          FROM ${tagetDomain} AS assoc 
-          JOIN ${translateDomain(DOMAIN_RELATION)} as relation 
-          ON relation."${keyB}" = assoc."_id" 
-          AND relation."workspaceId" = ${wsId}
-          WHERE relation."${keyA}" = ${translateDomain(baseDomain)}."_id" 
-          AND relation.association = '${_id}'
-          AND assoc."workspaceId" = ${wsId}) AS assoc_${tagetDomain}_${_id}`
-      )
-    }
-    return res
-  }
-
   @withContext('get-domain-hash')
   async getDomainHash (ctx: MeasureContext, domain: Domain): Promise<string> {
     return await calcHashHash(ctx, domain, this)
@@ -1442,10 +1461,9 @@ abstract class PostgresAdapterBase implements DbAdapter {
     vars: ValuesVariables,
     baseDomain: string,
     projection: Projection<T> | undefined,
-    joins: JoinProps[],
-    associations: AssociationQuery[] | undefined
+    joins: JoinProps[]
   ): string | '*' {
-    if (projection === undefined && joins.length === 0 && associations === undefined) return `${baseDomain}.*`
+    if (projection === undefined && joins.length === 0) return `${baseDomain}.*`
     const res: string[] = []
     let dataAdded = false
     if (projection === undefined) {
@@ -1471,9 +1489,6 @@ abstract class PostgresAdapterBase implements DbAdapter {
     }
     for (const join of joins) {
       res.push(...this.getProjectionsAliases(vars, join))
-    }
-    if (associations !== undefined) {
-      res.push(...this.getAssociationsProjections(vars, baseDomain, associations))
     }
     return res.join(', ')
   }

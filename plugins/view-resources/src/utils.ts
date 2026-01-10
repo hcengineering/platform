@@ -508,17 +508,46 @@ function getKeyLookup<T extends Doc> (
 }
 
 export function buildConfigAssociation (config: Array<BuildModelKey | string>): AssociationQuery[] | undefined {
-  const res: AssociationQuery[] = []
+  const record: Record<string, any> = {}
   for (const key of config) {
     const k = typeof key === 'string' ? key : key.key
     if (k.startsWith('$associations')) {
-      const parts = k.split('.')
-      if (parts.length === 3) {
-        res.push([parts[1] as Ref<Association>, parts[2] === 'A' ? -1 : 1])
+      buildaAssociation(k, record)
+    }
+  }
+  return convertAssociationsRecord(record)
+}
+
+function buildaAssociation (stringKey: string, record: Record<string, any>): void {
+  const parts = stringKey.split('$associations.').filter((it) => it.length > 0)
+  let curr = record
+  for (let part of parts) {
+    if (part.endsWith('.')) {
+      part = part.slice(0, -1)
+    }
+    if (curr[part] === undefined) {
+      curr[part] = {}
+    }
+    curr = curr[part]
+  }
+}
+
+function convertAssociationsRecord (record: Record<string, any>): AssociationQuery[] {
+  const res: AssociationQuery[] = []
+  for (const key of Object.keys(record)) {
+    const segments = key.split('_')
+    if (segments?.length >= 2) {
+      const nested = Object.keys(record[key]).length > 0 ? convertAssociationsRecord(record[key]) : undefined
+      if (nested !== undefined) {
+        const r: AssociationQuery = [segments[0] as Ref<Association>, segments[1] === 'a' ? -1 : 1, nested]
+        res.push(r)
+      } else {
+        const base: AssociationQuery = [segments[0] as Ref<Association>, segments[1] === 'a' ? -1 : 1]
+        res.push(base)
       }
     }
   }
-  return res.length > 0 ? res : undefined
+  return res
 }
 
 export function buildConfigLookup<T extends Doc> (
@@ -556,11 +585,11 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
     .map(async (key) => {
       try {
         // Check if it is a mixin attribute configuration
+        if (key.key.startsWith('$associations')) {
+          return await getRelationPresenter(options.client, key)
+        }
         const pos = key.key.lastIndexOf('.')
         if (pos !== -1) {
-          if (key.key.startsWith('$associations')) {
-            return await getRelationPresenter(options.client, key)
-          }
           const mixinName = key.key.substring(0, pos) as Ref<Class<Doc>>
           if (!mixinName.includes('$lookup')) {
             const realKey = key.key.substring(pos + 1)
@@ -599,16 +628,17 @@ export async function buildModel (options: BuildModelOptions): Promise<Attribute
 
 async function getRelationPresenter (client: Client, key: BuildModelKey): Promise<AttributeModel> {
   const parts = key.key.split('.')
-  if (parts.length !== 3) {
+  if (parts.length < 2) {
     throw new Error('invalid relation key ' + key.key)
   }
-  const assocId = parts[1] as Ref<Association>
+  const fragments = parts[parts.length - 1].split('_')
+  const assocId = fragments[0] as Ref<Association>
   const assoc = client.getModel().findObject(assocId)
   if (assoc === undefined) {
     throw new Error('association not found for ' + assocId)
   }
-  const _class = parts[2] === 'A' ? assoc.classA : assoc.classB
-  const name = parts[2] === 'A' ? assoc.nameA : assoc.nameB
+  const _class = fragments[1] === 'a' ? assoc.classA : assoc.classB
+  const name = fragments[1] === 'a' ? assoc.nameA : assoc.nameB
 
   const hierarchy = client.getHierarchy()
 
@@ -622,7 +652,7 @@ async function getRelationPresenter (client: Client, key: BuildModelKey): Promis
   const presenter = await getResource(presenterMixin.presenter)
 
   return {
-    key: `${parts[0]}.${parts[1]}`,
+    key: key.key,
     sortingKey: '',
     _class,
     label: getEmbeddedLabel(name),

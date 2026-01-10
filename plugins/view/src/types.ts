@@ -230,6 +230,10 @@ export interface ObjectEditor extends Class<Doc> {
   pinned?: boolean
 }
 
+export interface TypeEditor extends Class<Doc> {
+  editor: AnyComponent
+}
+
 /**
  * @public
  */
@@ -248,6 +252,10 @@ export interface ObjectPanelFooter extends Class<Doc> {
  */
 export interface SpaceHeader extends Class<Doc> {
   header: AnyComponent
+}
+
+export interface BaseQuery<T extends Doc> extends Class<T> {
+  baseQuery: DocumentQuery<T>
 }
 
 /**

@@ -28,7 +28,6 @@ import {
   type DocumentQuery,
   type Ref,
   type RelatedDocument,
-  SortingOrder,
   type WithLookup
 } from '@hcengineering/core'
 import { type Resources } from '@hcengineering/platform'
@@ -117,6 +116,8 @@ import {
   sortDocumentStates,
   getDocumentMetaTitle
 } from './utils'
+
+import './docTableFormatter'
 
 export { DocumentStatusTag, DocumentTitle, DocumentVersionPresenter, StatePresenter }
 
@@ -216,7 +217,7 @@ async function canDeleteDocument (obj?: Doc | Doc[]): Promise<boolean> {
     return false
   }
 
-  return await isLatestDraftDoc(obj)
+  return await isDraftDoc(obj)
 }
 
 async function canArchiveDocument (obj?: Doc | Doc[]): Promise<boolean> {
@@ -334,7 +335,7 @@ async function transferDocuments (selection: Document | Document[]): Promise<voi
   showPopup(TransferDocumentPopup, { sourceDocumentIds, sourceSpaceId, sourceProjectId })
 }
 
-async function isLatestDraftDoc (obj?: Doc | Doc[]): Promise<boolean> {
+async function isDraftDoc (obj?: Doc | Doc[]): Promise<boolean> {
   if (obj == null) {
     return false
   }
@@ -351,27 +352,6 @@ async function isLatestDraftDoc (obj?: Doc | Doc[]): Promise<boolean> {
     const doc = obj as Document
 
     if (doc.state !== DocumentState.Draft) {
-      return false
-    }
-
-    const { template, seqNumber } = doc
-    const latestDoc = await client.findOne(
-      documents.class.Document,
-      { template, seqNumber },
-      {
-        sort: {
-          major: SortingOrder.Descending,
-          minor: SortingOrder.Descending,
-          patch: SortingOrder.Descending
-        }
-      }
-    )
-
-    if (latestDoc == null || latestDoc.state !== DocumentState.Draft) {
-      return false
-    }
-
-    if (latestDoc._id !== doc._id) {
       return false
     }
   }

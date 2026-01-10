@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Card, MasterTag, Tag } from '@hcengineering/card'
+import { Card, ExportFunc, MasterTag, Tag } from '@hcengineering/card'
 import { Association, Class, Client, Doc, DocumentUpdate, ObjQueryType, Rank, Ref, Tx, Type } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, plugin, Resource } from '@hcengineering/platform'
 import { ToDo } from '@hcengineering/time'
@@ -158,6 +158,19 @@ export interface UserResult {
   type: Type<any>
 }
 
+export interface ProcessCustomEvent extends Doc {
+  eventType: string
+  execution: Ref<Execution>
+  card: Ref<Card>
+}
+
+export interface EventButton extends Doc {
+  title: string
+  eventType: string
+  execution: Ref<Execution>
+  card: Ref<Card>
+}
+
 export interface Method<T extends Doc> extends Doc {
   label: IntlString
   objectClass: Ref<Class<T>>
@@ -206,12 +219,17 @@ export default plugin(processId, {
     ProcessFunction: '' as Ref<Class<ProcessFunction>>,
     Transition: '' as Ref<Class<Transition>>,
     Trigger: '' as Ref<Class<Trigger>>,
+    ProcessCustomEvent: '' as Ref<Class<ProcessCustomEvent>>,
     ExecutionLog: '' as Ref<Class<ExecutionLog>>,
-    UpdateCriteriaComponent: '' as Ref<Class<UpdateCriteriaComponent>>
+    UpdateCriteriaComponent: '' as Ref<Class<UpdateCriteriaComponent>>,
+    EventButton: '' as Ref<Class<EventButton>>
   },
   method: {
     RunSubProcess: '' as Ref<Method<Process>>,
+    CreateAction: '' as Ref<Method<EventButton>>,
+    CancellAction: '' as Ref<Method<EventButton>>,
     CreateToDo: '' as Ref<Method<ProcessToDo>>,
+    CloseToDo: '' as Ref<Method<ProcessToDo>>,
     UpdateCard: '' as Ref<Method<Card>>,
     CreateCard: '' as Ref<Method<Card>>,
     AddRelation: '' as Ref<Method<Association>>,
@@ -226,7 +244,8 @@ export default plugin(processId, {
     OnToDoRemove: '' as Ref<Trigger>,
     OnExecutionStart: '' as Ref<Trigger>,
     OnExecutionContinue: '' as Ref<Trigger>,
-    OnTime: '' as Ref<Trigger>
+    OnTime: '' as Ref<Trigger>,
+    OnEvent: '' as Ref<Trigger>
   },
   triggerCheck: {
     ToDo: '' as Resource<CheckFunc>,
@@ -234,7 +253,8 @@ export default plugin(processId, {
     FieldChangedCheck: '' as Resource<CheckFunc>,
     SubProcessesDoneCheck: '' as Resource<CheckFunc>,
     SubProcessMatchCheck: '' as Resource<CheckFunc>,
-    Time: '' as Resource<CheckFunc>
+    Time: '' as Resource<CheckFunc>,
+    OnEventCheck: '' as Resource<CheckFunc>
   },
   string: {
     Method: '' as IntlString,
@@ -276,7 +296,8 @@ export default plugin(processId, {
     WaitSubprocesses: '' as Asset,
     ToDoRemove: '' as Asset,
     Start: '' as Asset,
-    Time: '' as Asset
+    Time: '' as Asset,
+    OnEvent: '' as Asset
   },
   function: {
     FirstMatchValue: '' as Ref<ProcessFunction>,
@@ -318,6 +339,7 @@ export default plugin(processId, {
     ExecutionEmployeeInitiator: '' as Ref<ProcessFunction>,
     ExecutionInitiator: '' as Ref<ProcessFunction>,
     EmptyArray: '' as Ref<ProcessFunction>,
-    CurrentDate: '' as Ref<ProcessFunction>
+    CurrentDate: '' as Ref<ProcessFunction>,
+    ExportProcess: '' as Resource<ExportFunc>
   }
 })

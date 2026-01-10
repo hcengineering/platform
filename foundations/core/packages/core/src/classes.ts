@@ -15,9 +15,9 @@
 //
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import { Tx } from '.'
 import type { DocumentQuery } from './storage'
 import { type WorkspaceDataId, type WorkspaceUuid } from './utils'
-import { Tx } from '.'
 
 /**
  * @public
@@ -556,6 +556,10 @@ export interface AttributePermission extends Permission {
   attribute: Ref<AnyAttribute>
 }
 
+export interface ClassPermission extends Permission {
+  targetClass: Ref<Class<Doc>>
+}
+
 /**
  * @public
  */
@@ -952,3 +956,13 @@ export interface Collaborator extends AttachedDoc {
  * @public
  */
 export type IntegrationKind = string & { __IntegrationKind: true }
+
+/**
+ * @public
+ */
+export enum WorkspaceAccountPermission {
+  /**
+   * Allows users to import documents to workspace.
+   */
+  ImportDocument = 'ImportDocument'
+}

@@ -15,6 +15,7 @@
     "Role": "Role",
     "DeleteObject": "Delete object",
     "DeleteObjectConfirm": "Do you want to delete {count, plural, =1 {this object} other {these # objects}}?",
+    "NoCreatePermissionTitle": "Not enough permissions to create",
     "DeletePopupNoPermissionTitle": "Not enough permissions to delete.",
     "DeletePopupNoPermissionLabel": "Please contact people from the list below for them to do so.",
     "DeletePopupCreatorLabel": "Creators (can delete only ones that were created by them):",
@@ -113,6 +114,9 @@
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Copy to clipboard",
     "CopyDocumentMarkdown": "Copy as Markdown",
+    "CopyAsMarkdownTable": "Copy as Markdown Table",
+    "TableCopiedToClipboard": "Table copied to clipboard",
+    "TableCopyFailed": "Failed to copy table to clipboard",
     "PublicView": "Public",
 
     "ChooseIcon": "Choose icon",
@@ -152,6 +156,7 @@
     "ValueIsSet": "Value is set",
     "RoleLabel": "Role: {role}",
     "ForbidAttributeChanges": "Forbid changes: ",
-    "AllowAttributeChanges": "Allow changes: "
+    "AllowAttributeChanges": "Allow changes: ",
+    "RelationshipTable": "Traceability Matrix"
   }
 }

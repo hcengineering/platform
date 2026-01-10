@@ -124,10 +124,13 @@ export const documentsPlugin = plugin(documentsId, {
     MakeDocumentObsolete: '' as Ref<Action>,
     EditDocSpace: '' as Ref<Action>,
     TransferDocument: '' as Ref<Action>,
+    ExportDocuments: '' as Ref<Action<Document, any>>,
+    ExportDocumentsFromSpace: '' as Ref<Action<DocumentSpace, any>>,
     Print: '' as Ref<Action<Doc, { signed: boolean }>>,
     PrintProjectDocument: '' as Ref<Action<Doc, { signed: boolean }>>,
     OpenDocument: '' as Ref<Action<Doc, { signed: boolean }>>,
-    OpenDocumentInNewTab: '' as Ref<Action<Doc, { signed: boolean }>>
+    OpenDocumentInNewTab: '' as Ref<Action<Doc, { signed: boolean }>>,
+    CopyAsMarkdownTable: '' as Ref<Action<Doc, any>>
   },
   function: {
     CanChangeDocumentOwner: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
@@ -285,7 +288,8 @@ export const documentsPlugin = plugin(documentsId, {
     Transfer: '' as IntlString,
     TransferWarning: '' as IntlString,
     TransferDocuments: '' as IntlString,
-    TransferDocumentsHint: '' as IntlString
+    TransferDocumentsHint: '' as IntlString,
+    ExportDocuments: '' as IntlString
   },
   ids: {
     NoParent: '' as Ref<DocumentMeta>,

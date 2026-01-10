@@ -29,6 +29,7 @@ import {
   AttributeFilter,
   AttributeFilterPresenter,
   AttributePresenter,
+  BaseQuery,
   ClassFilters,
   ClassSortFuncs,
   CollectionEditor,
@@ -61,6 +62,7 @@ import {
   SpaceHeader,
   SpaceName,
   SpacePresenter,
+  TypeEditor,
   ViewAction,
   Viewlet,
   ViewletDescriptor,
@@ -116,7 +118,9 @@ const view = plugin(viewId, {
     Aggregation: '' as Ref<Mixin<Aggregation>>,
     Groupping: '' as Ref<Mixin<Groupping>>,
     ObjectIcon: '' as Ref<Mixin<ObjectIcon>>,
-    CustomObjectLinkProvider: '' as Ref<Mixin<CustomObjectLinkProvider>>
+    CustomObjectLinkProvider: '' as Ref<Mixin<CustomObjectLinkProvider>>,
+    BaseQuery: '' as Ref<Mixin<BaseQuery<Doc>>>,
+    TypeEditor: '' as Ref<Mixin<TypeEditor>>
   },
   class: {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,
@@ -164,7 +168,8 @@ const view = plugin(viewId, {
     List: '' as Ref<ViewletDescriptor>,
     MasterDetail: '' as Ref<ViewletDescriptor>,
     Tree: '' as Ref<ViewletDescriptor>,
-    Document: '' as Ref<ViewletDescriptor>
+    Document: '' as Ref<ViewletDescriptor>,
+    RelationshipTable: '' as Ref<ViewletDescriptor>
   },
   component: {
     ActionsPopup: '' as AnyComponent,
@@ -232,6 +237,8 @@ const view = plugin(viewId, {
     Join: '' as IntlString,
     Leave: '' as IntlString,
     Copied: '' as IntlString,
+    TableCopiedToClipboard: '' as IntlString,
+    TableCopyFailed: '' as IntlString,
     And: '' as IntlString,
     Title: '' as IntlString,
     DeleteObject: '' as IntlString,
@@ -255,7 +262,9 @@ const view = plugin(viewId, {
     CopyDocumentMarkdown: '' as IntlString,
     RoleLabel: '' as IntlString,
     ForbidAttributeChanges: '' as IntlString,
-    AllowAttributeChanges: '' as IntlString
+    AllowAttributeChanges: '' as IntlString,
+    NoCreatePermissionTitle: '' as IntlString,
+    CopyAsMarkdownTable: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -357,6 +366,9 @@ const view = plugin(viewId, {
     CopyDocumentMarkdown: '' as ViewAction<{
       contentClass: Ref<Class<Doc>>
       contentField: string
+    }>,
+    CopyAsMarkdownTable: '' as ViewAction<{
+      cardClass: Ref<Class<Doc>>
     }>,
     UpdateDocument: '' as ViewAction<{
       key: string

@@ -38,6 +38,7 @@ import Configure from './components/Configure.svelte'
 import InviteSetting from './components/InviteSetting.svelte'
 import PermissionPresenter from './components/presenters/PermissionPresenter.svelte'
 import AttributePermissionPresenter from './components/presenters/AttributePermissionPresenter.svelte'
+import ClassPermissionPresenter from './components/presenters/ClassPermissionPresenter.svelte'
 import SpaceTypeDescriptorPresenter from './components/presenters/SpaceTypeDescriptorPresenter.svelte'
 import Spaces from './components/Spaces.svelte'
 import SpaceTypeGeneralSectionEditor from './components/spaceTypes/editor/SpaceTypeGeneralSectionEditor.svelte'
@@ -69,8 +70,10 @@ import EditRelation from './components/EditRelation.svelte'
 import AddSocialId from './components/socialIds/AddSocialId.svelte'
 import AddEmailSocialId from './components/socialIds/AddEmailSocialId.svelte'
 import Mailboxes from './components/Mailboxes.svelte'
+import OfficeSettings from './components/OfficeSettings.svelte'
 import BaseIntegrationState from './components/integrations/BaseIntegrationState.svelte'
 import IntegrationStateRow from './components/integrations/IntegrationStateRow.svelte'
+import EmployeeRefEditor from './components/typeEditors/EmployeeRefEditor.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
 
@@ -143,6 +146,7 @@ export default async (): Promise<Resources> => ({
     ManageSpaceTypeContent,
     PermissionPresenter,
     AttributePermissionPresenter,
+    ClassPermissionPresenter,
     SpaceTypeDescriptorPresenter,
     SpaceTypeGeneralSectionEditor,
     SpaceTypePropertiesSectionEditor,
@@ -154,8 +158,10 @@ export default async (): Promise<Resources> => ({
     CreateRelation,
     EditRelation,
     Mailboxes,
+    OfficeSettings,
     AddSocialId,
-    AddEmailSocialId
+    AddEmailSocialId,
+    EmployeeRefEditor
   },
   actionImpl: {
     DeleteMixin

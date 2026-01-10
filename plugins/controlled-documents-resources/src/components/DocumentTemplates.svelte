@@ -90,7 +90,6 @@
       options={viewlet.options}
       query={resultQuery}
       showNotification
-      enableChecking={false}
     />
   {/if}
 </div>

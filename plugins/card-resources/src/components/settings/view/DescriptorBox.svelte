@@ -29,6 +29,7 @@
         view.viewlet.Tree,
         view.viewlet.MasterDetail,
         card.viewlet.CardFeedDescriptor,
+        view.viewlet.RelationshipTable,
         view.viewlet.Document
       ]
     : [
@@ -36,7 +37,8 @@
         view.viewlet.List,
         view.viewlet.Tree,
         view.viewlet.MasterDetail,
-        card.viewlet.CardFeedDescriptor
+        card.viewlet.CardFeedDescriptor,
+        view.viewlet.RelationshipTable
       ]
 </script>
 
