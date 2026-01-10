@@ -17,7 +17,7 @@ import { type Card, cardId } from '@hcengineering/card'
 import card from '@hcengineering/card-resources/src/plugin'
 import type { Client, Doc, Ref } from '@hcengineering/core'
 import {} from '@hcengineering/core'
-import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
+import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type TagCategory } from '@hcengineering/tags'
 import { type Location, type ResolvedLocation } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
@@ -38,28 +38,6 @@ export default mergeIds(cardId, card, {
     UnsetParent: '' as Ref<Action<Doc, any>>,
     PublicLink: '' as Ref<Action<Doc, any>>,
     Duplicate: '' as Ref<Action>
-  },
-  string: {
-    CreateCardPersmissionDescription: '' as IntlString,
-    UpdateCardPersmissionDescription: '' as IntlString,
-    RemoveCardPersmissionDescription: '' as IntlString,
-    AddTagPersmissionDescription: '' as IntlString,
-    RemoveTagPersmissionDescription: '' as IntlString,
-    RemoveCard: '' as IntlString,
-    UpdateCard: '' as IntlString,
-    CreateCardPermission: '' as IntlString,
-    AddTagPermission: '' as IntlString,
-    RemoveTag: '' as IntlString,
-    ForbidCreateCardPersmissionDescription: '' as IntlString,
-    ForbidUpdateCardPersmissionDescription: '' as IntlString,
-    ForbidRemoveCardPersmissionDescription: '' as IntlString,
-    ForbidAddTagPersmissionDescription: '' as IntlString,
-    ForbidRemoveTagPersmissionDescription: '' as IntlString,
-    ForbidRemoveCard: '' as IntlString,
-    ForbidUpdateCard: '' as IntlString,
-    ForbidCreateCardPermission: '' as IntlString,
-    ForbidAddTagPermission: '' as IntlString,
-    ForbidRemoveTag: '' as IntlString
   },
   category: {
     Card: '' as Ref<ActionCategory>,
