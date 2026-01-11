@@ -128,11 +128,22 @@ async function exportType (_id: Ref<Class<Doc>>, processed: Set<Ref<Doc>>): Prom
   const m = client.getModel()
   const h = client.getHierarchy()
   const type = m.findObject(_id)
+
+  const parent = h.getClass(_id).extends
+  if (parent !== undefined && h.isDerived(parent, card.class.Card) && parent !== card.class.Card) {
+    if (!processed.has(parent)) {
+      res.push(...(await exportType(parent, processed)))
+    }
+  }
+
   processed.add(_id)
   if (type === undefined) return res
   if (type.icon === view.ids.IconWithEmoji && typeof type.color === 'string') {
     type.icon = card.icon.Card
   }
+
+  res.push(...m.findAllSync(view.class.Viewlet, { attachTo: _id }))
+
   res.push(type)
 
   res.push(...m.findAllSync(core.class.ClassPermission, { targetClass: _id }))
@@ -152,8 +163,6 @@ async function exportType (_id: Ref<Class<Doc>>, processed: Set<Ref<Doc>>): Prom
 
   res.push(...m.findAllSync(card.class.Role, { types: _id }))
 
-  res.push(...m.findAllSync(view.class.Viewlet, { attachTo: _id }))
-
   const assocA = m.findAllSync(core.class.Association, { classA: _id })
   for (const assoc of assocA) {
     res.push(assoc)
@@ -172,13 +181,6 @@ async function exportType (_id: Ref<Class<Doc>>, processed: Set<Ref<Doc>>): Prom
     const extRes = f(_id)
     res.push(...extRes.docs)
     required.push(...extRes.required)
-  }
-
-  const parent = h.getClass(_id).extends
-  if (parent !== undefined && h.isDerived(parent, card.class.Card) && parent !== card.class.Card) {
-    if (!processed.has(parent)) {
-      required.push(parent)
-    }
   }
 
   for (const req of required) {

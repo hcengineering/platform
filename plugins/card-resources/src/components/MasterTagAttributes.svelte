@@ -88,7 +88,7 @@
   {/if}
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
-  <CardAttributes object={value} _class={value._class} {readonly} {ignoreKeys} {fourRows} />
+  <CardAttributes object={value} _class={value._class} {readonly} {ignoreKeys} {fourRows} showCollaborators />
 </ExpandCollapse>
 
 <style lang="scss">

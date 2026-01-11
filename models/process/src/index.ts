@@ -49,7 +49,7 @@ import {
   type CheckFunc,
   type ContextId,
   type CreatedContext,
-  type ProcessCustomEvent,
+  type EventButton,
   type Execution,
   type ExecutionContext,
   type ExecutionError,
@@ -60,6 +60,7 @@ import {
   type MethodParams,
   type Process,
   type ProcessContext,
+  type ProcessCustomEvent,
   type ProcessFunction,
   type ProcessToDo,
   type State,
@@ -67,8 +68,7 @@ import {
   type Transition,
   type Trigger,
   type UpdateCriteriaComponent,
-  processId,
-  type EventButton
+  processId
 } from '@hcengineering/process'
 import time from '@hcengineering/time'
 import { type AnyComponent } from '@hcengineering/ui'
@@ -616,6 +616,7 @@ export function createModel (builder: Builder): void {
     {
       label: process.string.Processes,
       component: process.component.ProcessesCardSection,
+      checkVisibility: process.function.CheckProcessSectionVisibility,
       order: 350,
       navigation: []
     },

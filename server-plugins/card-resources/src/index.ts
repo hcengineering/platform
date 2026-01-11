@@ -262,7 +262,12 @@ async function OnMasterTagCreate (ctx: TxCreateDoc<MasterTag | Tag>[], control: 
       attachTo: tag.extends,
       variant: { $exists: false }
     })
+    const existingViewlets = await control.findAll(control.ctx, view.class.Viewlet, {
+      attachTo: createTx.objectId,
+      variant: { $exists: false }
+    })
     for (const viewlet of viewlets) {
+      if (existingViewlets.find((it) => it.descriptor === viewlet.descriptor) !== undefined) continue
       const base = extractObjectData(viewlet)
       res.push(
         control.txFactory.createTxCreateDoc(view.class.Viewlet, core.space.Model, {

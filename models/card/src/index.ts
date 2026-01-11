@@ -12,6 +12,7 @@
 // limitations under the License.
 
 import activity from '@hcengineering/activity'
+import communication from '@hcengineering/communication'
 import {
   type CanCreateCardResource,
   type Card,
@@ -37,6 +38,7 @@ import core, {
   AccountRole,
   type Blobs,
   type Class,
+  type ClassCollaborators,
   ClassifierKind,
   type CollectionSize,
   type Doc,
@@ -859,6 +861,12 @@ export function createModel (builder: Builder): void {
   })
 
   createPublicLinkAction(builder, card.class.Card, card.action.PublicLink)
+
+  builder.createDoc<ClassCollaborators<Card>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: card.class.Card,
+    fields: ['modifiedBy'],
+    allFields: true
+  })
 }
 
 function defineTabs (builder: Builder): void {
@@ -921,6 +929,32 @@ function defineTabs (builder: Builder): void {
       checkVisibility: card.function.CheckRelationsSectionVisibility
     },
     card.section.Relations
+  )
+
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: activity.string.Messages,
+      component: card.sectionComponent.OldMessagesSection,
+      order: 1000,
+      navigation: [],
+      checkVisibility: card.function.CheckOldMessagesSectionVisibility
+    },
+    card.section.OldMessages
+  )
+
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: activity.string.Messages,
+      component: card.sectionComponent.CommunicationMessagesSection,
+      order: 1000,
+      navigation: [],
+      checkVisibility: card.function.CheckCommunicationMessagesSectionVisibility
+    },
+    communication.ids.CardMessagesSection
   )
 
   builder.createDoc<Viewlet>(view.class.Viewlet, core.space.Model, {

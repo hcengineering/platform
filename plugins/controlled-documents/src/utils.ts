@@ -218,7 +218,13 @@ export class ProjectDocumentTree {
     bundles.sort((a, b) => {
       const rankA = a.ProjectMeta[0]?.rank ?? ''
       const rankB = b.ProjectMeta[0]?.rank ?? ''
-      return rankA.localeCompare(rankB)
+      if (rankA !== rankB) {
+        return rankA.localeCompare(rankB)
+      } else {
+        const titleA = a.DocumentMeta[0]?.title ?? ''
+        const titleB = b.DocumentMeta[0]?.title ?? ''
+        return titleA.localeCompare(titleB)
+      }
     })
 
     for (const bundle of bundles) {

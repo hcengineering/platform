@@ -20,6 +20,7 @@
     Class,
     ClassPermission,
     Doc,
+    notEmpty,
     Permission,
     Ref
   } from '@hcengineering/core'
@@ -58,7 +59,8 @@
     .getModel()
     .findAllSync(cardPlugin.class.PermissionObjectClass, {})
     .map((poc) => poc.objectClass)
-  const tagDesc = Array.from(new Set(role?.types?.map((p) => [...h.getAncestors(p), ...h.getDescendants(p)]).flat()))
+  const types = role?.types?.map((p) => h.findClass(p)).filter(notEmpty)
+  const tagDesc = Array.from(new Set(types?.map((p) => [...h.getAncestors(p._id), ...h.getDescendants(p._id)]).flat()))
   const allPermissions = client.getModel().findAllSync(core.class.Permission, {
     scope: 'space',
     objectClass: { $in: [...cardPermissionsObjectClasses, ...tagDesc] }
