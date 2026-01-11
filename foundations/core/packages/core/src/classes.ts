@@ -944,6 +944,7 @@ export type SocialKey = Pick<SocialId, 'type' | 'value'>
 
 export interface ClassCollaborators<T extends Doc> extends Doc {
   attachedTo: Ref<Class<T>>
+  allFields?: boolean // for all (PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]) attributes
   fields: (keyof T)[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
   provideSecurity?: boolean // If true, will provide security for collaborators
 }
