@@ -38,6 +38,7 @@ import core, {
   AccountRole,
   type Blobs,
   type Class,
+  type ClassCollaborators,
   ClassifierKind,
   type CollectionSize,
   type Doc,
@@ -860,6 +861,12 @@ export function createModel (builder: Builder): void {
   })
 
   createPublicLinkAction(builder, card.class.Card, card.action.PublicLink)
+
+  builder.createDoc<ClassCollaborators<Card>>(core.class.ClassCollaborators, core.space.Model, {
+    attachedTo: card.class.Card,
+    fields: ['modifiedBy'],
+    allFields: true
+  })
 }
 
 function defineTabs (builder: Builder): void {

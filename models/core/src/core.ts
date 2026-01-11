@@ -413,6 +413,7 @@ export class TCustomSequence extends TSequence implements CustomSequence {
 @Model(core.class.ClassCollaborators, core.class.Doc, DOMAIN_MODEL)
 export class TClassCollaborators extends TDoc implements ClassCollaborators<Doc> {
   attachedTo!: Ref<Class<Doc>>
+  allFields?: boolean
   fields!: (keyof Doc)[]
   provideSecurity?: boolean
 }

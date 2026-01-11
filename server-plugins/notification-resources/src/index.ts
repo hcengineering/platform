@@ -311,14 +311,30 @@ export async function getDocCollaborators (
   control: TriggerControl
 ): Promise<AccountUuid[]> {
   const collaborators = new Set<AccountUuid>()
-  for (const field of mixin.fields) {
-    const value = (doc as any)[field]
-    const newCollaborators = await ctx.with('getKeyCollaborators', {}, (ctx) =>
-      getKeyCollaborators(doc._class, value, field, control)
-    )
-    if (newCollaborators !== undefined) {
-      for (const newCollaborator of newCollaborators) {
-        collaborators.add(newCollaborator)
+  if (mixin.allFields !== true) {
+    for (const field of mixin.fields) {
+      const value = (doc as any)[field]
+      const newCollaborators = await ctx.with('getKeyCollaborators', {}, (ctx) =>
+        getKeyCollaborators(doc._class, value, field, control)
+      )
+      if (newCollaborators !== undefined) {
+        for (const newCollaborator of newCollaborators) {
+          collaborators.add(newCollaborator)
+        }
+      }
+    }
+  } else {
+    const attrs = control.hierarchy.getAllAttributes(doc._class)
+    // attr type will be checked into getKeyCollaborators
+    for (const [field] of attrs) {
+      const value = (doc as any)[field]
+      const newCollaborators = await ctx.with('getKeyCollaborators', {}, (ctx) =>
+        getKeyCollaborators(doc._class, value, field, control)
+      )
+      if (newCollaborators !== undefined) {
+        for (const newCollaborator of newCollaborators) {
+          collaborators.add(newCollaborator)
+        }
       }
     }
   }
@@ -1137,7 +1153,7 @@ async function getNewCollaborators (
   const newCollaborators = new Set<AccountUuid>()
   if (ops.$push !== undefined) {
     for (const key in ops.$push) {
-      if (mixin.fields.includes(key as any)) {
+      if (mixin.fields.includes(key as any) || mixin.allFields === true) {
         let value = (ops.$push as any)[key]
         if (typeof value !== 'string') {
           value = value.$each
@@ -1153,7 +1169,7 @@ async function getNewCollaborators (
   }
   for (const key in ops) {
     if (key.startsWith('$')) continue
-    if (mixin.fields.includes(key as any)) {
+    if (mixin.fields.includes(key as any) || mixin.allFields === true) {
       const value = (ops as any)[key]
       const newCollabs = await getKeyCollaborators(docClass, value, key, control)
       if (newCollabs !== undefined) {
@@ -1176,7 +1192,7 @@ async function getRemovedMembers (
   const removedCollaborators: AccountUuid[] = []
   if (ops.$pull !== undefined && 'members' in ops.$pull) {
     const key = 'members'
-    if (mixin.fields.includes(key as any)) {
+    if (mixin.fields.includes(key as any) || mixin.allFields === true) {
       let value = (ops.$pull as any)[key]
       if (typeof value !== 'string') {
         value = value.$in
