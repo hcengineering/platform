@@ -488,7 +488,6 @@ export async function configurePlatform() {
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR)
   setMetadata(communication.metadata.Enabled, config.COMMUNICATION_API_ENABLED === 'true')
 
-
   if (config.MODEL_VERSION != null) {
     console.log('Minimal Model version requirement', config.MODEL_VERSION)
     setMetadata(presentation.metadata.ModelVersion, config.MODEL_VERSION)

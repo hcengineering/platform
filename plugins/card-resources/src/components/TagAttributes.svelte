@@ -38,8 +38,8 @@
   export let ignoreKeys: string[]
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const label = hierarchy.getClass(tag._id).label
+  const h = client.getHierarchy()
+  const label = h.getClass(tag._id).label
 
   let isCollapsed = false
 
@@ -52,6 +52,8 @@
   }
 
   $: color = getPlatformColorDef(tag.background ?? 0, $themeStore.dark).color
+
+  $: isEditable = h.hasMixin(tag, setting.mixin.Editable) && h.as(tag, setting.mixin.Editable).value
 </script>
 
 <div class="header flex flex-gap-2">
@@ -66,7 +68,7 @@
     </span>
     <Chevron expanded={!isCollapsed} outline fill={'var(--content-color'} />
   </div>
-  {#if hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)}
+  {#if hasAccountRole(getCurrentAccount(), AccountRole.Maintainer) && isEditable}
     <div class="btns">
       <Button
         icon={IconAdd}

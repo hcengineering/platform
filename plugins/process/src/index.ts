@@ -204,10 +204,10 @@ export interface UpdateCriteriaComponent extends Doc {
   props: Record<string, any>
 }
 
+export * from './dslContext'
 export * from './errors'
 export * from './types'
 export * from './utils'
-export * from './dslContext'
 
 export default plugin(processId, {
   class: {
@@ -340,6 +340,7 @@ export default plugin(processId, {
     ExecutionInitiator: '' as Ref<ProcessFunction>,
     EmptyArray: '' as Ref<ProcessFunction>,
     CurrentDate: '' as Ref<ProcessFunction>,
-    ExportProcess: '' as Resource<ExportFunc>
+    ExportProcess: '' as Resource<ExportFunc>,
+    CheckProcessSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
   }
 })

@@ -17,6 +17,8 @@ import cardPlugin, { cardId, DOMAIN_CARD, type Card, type Role } from '@hcengine
 import core, {
   DOMAIN_MODEL,
   TxOperations,
+  type Class,
+  type ClassPermission,
   type Client,
   type Data,
   type Doc,
@@ -121,8 +123,166 @@ export const cardOperation: MigrateOperation = {
         state: 'version-for-versionable-types',
         mode: 'upgrade',
         func: addVersionForVersionableTypes
+      },
+      {
+        state: 'migrate-restricted-permissions',
+        mode: 'upgrade',
+        func: migrateRestrictedPermissions
       }
     ])
+  }
+}
+
+async function migrateRestrictedPermissions (_client: MigrationUpgradeClient): Promise<void> {
+  const client = new TxOperations(_client, core.account.System)
+  const hierarchy = client.getHierarchy()
+  const desc = hierarchy.getDescendants(card.class.Card)
+  const permissions = await client.findAll(core.class.ClassPermission, { objectClass: { $in: desc } })
+  const restrictedTargets = new Set<Ref<Class<Doc>>>()
+  for (const perm of permissions) {
+    if (perm.targetClass !== undefined) {
+      restrictedTargets.add(perm.targetClass)
+    }
+  }
+
+  const targets = await client.findAll(card.class.MasterTag, { _id: { $in: [...restrictedTargets] } })
+
+  for (const masterTag of targets) {
+    const isMixin = hierarchy.isMixin(masterTag._id)
+    const objectClass = hierarchy.getBaseClass(masterTag._id)
+    if (isMixin) {
+      await client.createDoc(
+        core.class.ClassPermission,
+        core.space.Model,
+        {
+          objectClass,
+          txClass: core.class.TxMixin,
+          txMatch: {
+            mixin: masterTag._id
+          },
+          scope: 'space',
+          forbid: false,
+          label: card.string.AddTagPermission,
+          description: masterTag.label,
+          targetClass: masterTag._id
+        },
+        `${masterTag._id}_create_allowed` as Ref<ClassPermission>
+      )
+      await client.createDoc(
+        core.class.ClassPermission,
+        core.space.Model,
+        {
+          objectClass,
+          txClass: core.class.TxMixin,
+          txMatch: {
+            mixin: masterTag._id
+          },
+          scope: 'space',
+          forbid: true,
+          label: card.string.ForbidAddTagPermission,
+          description: masterTag.label,
+          targetClass: masterTag._id
+        },
+        `${masterTag._id}_create_forbidden` as Ref<ClassPermission>
+      )
+      const key = `operations.$unset.${masterTag._id}`
+      await client.createDoc(
+        core.class.ClassPermission,
+        core.space.Model,
+        {
+          objectClass,
+          txClass: core.class.TxUpdateDoc,
+          txMatch: {
+            [key]: {
+              $exists: true
+            }
+          },
+          scope: 'space',
+          forbid: false,
+          label: card.string.RemoveTag,
+          description: masterTag.label,
+          targetClass: masterTag._id
+        },
+        `${masterTag._id}_remove_allowed` as Ref<ClassPermission>
+      )
+      await client.createDoc(
+        core.class.ClassPermission,
+        core.space.Model,
+        {
+          objectClass,
+          txClass: core.class.TxUpdateDoc,
+          txMatch: {
+            [key]: { $exists: true }
+          },
+          scope: 'space',
+          forbid: true,
+          label: card.string.ForbidRemoveTag,
+          description: masterTag.label,
+          targetClass: masterTag._id
+        },
+        `${masterTag._id}_remove_forbidden` as Ref<ClassPermission>
+      )
+    } else {
+      await client.createDoc(
+        core.class.ClassPermission,
+        core.space.Model,
+        {
+          objectClass,
+          txClass: core.class.TxCreateDoc,
+          scope: 'space',
+          forbid: false,
+          label: card.string.CreateCardPermission,
+          description: masterTag.label,
+          targetClass: masterTag._id
+        },
+        `${masterTag._id}_create_allowed` as Ref<ClassPermission>
+      )
+      await client.createDoc(
+        core.class.ClassPermission,
+        core.space.Model,
+        {
+          objectClass,
+          txClass: core.class.TxCreateDoc,
+          scope: 'space',
+          forbid: true,
+          label: card.string.ForbidCreateCardPermission,
+          description: masterTag.label,
+          targetClass: masterTag._id
+        },
+        `${masterTag._id}_create_forbidden` as Ref<ClassPermission>
+      )
+      await client.createDoc(
+        core.class.ClassPermission,
+        core.space.Model,
+        {
+          objectClass,
+          txClass: core.class.TxRemoveDoc,
+          scope: 'space',
+          forbid: false,
+          label: card.string.RemoveCard,
+          description: masterTag.label,
+          targetClass: masterTag._id
+        },
+        `${masterTag._id}_remove_allowed` as Ref<ClassPermission>
+      )
+      await client.createDoc(
+        core.class.ClassPermission,
+        core.space.Model,
+        {
+          objectClass,
+          txClass: core.class.TxRemoveDoc,
+          txMatch: {
+            objectClass: masterTag._id
+          },
+          scope: 'space',
+          forbid: true,
+          label: card.string.ForbidRemoveCard,
+          description: masterTag.label,
+          targetClass: masterTag._id
+        },
+        `${masterTag._id}_remove_forbidden` as Ref<ClassPermission>
+      )
+    }
   }
 }
 

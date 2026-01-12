@@ -13,7 +13,7 @@
 
 import { getClient } from '@hcengineering/presentation'
 import cardPlugin, { type Card, type CardSection } from '@hcengineering/card'
-import { getResource } from '@hcengineering/platform'
+import { getMetadata, getResource } from '@hcengineering/platform'
 import { type Heading } from '@hcengineering/text-editor'
 import communication from '@hcengineering/communication'
 
@@ -69,12 +69,14 @@ export function getCardToc (sections: CardSection[], tocBySection: Record<string
     }
   }
 
-  newToc.push({
-    id: communication.ids.CardMessagesSection,
-    titleIntl: communication.string.Messages,
-    level: 0,
-    group: communication.ids.CardMessagesSection
-  })
+  if (getMetadata(communication.metadata.Enabled) === true) {
+    newToc.push({
+      id: communication.ids.CardMessagesSection,
+      titleIntl: communication.string.Messages,
+      level: 0,
+      group: communication.ids.CardMessagesSection
+    })
+  }
 
   return newToc
 }

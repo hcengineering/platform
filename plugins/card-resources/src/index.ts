@@ -30,6 +30,8 @@ import {
   cardCustomLinkMatch,
   openCardInSidebar,
   checkRelationsSectionVisibility,
+  checkOldMessagesSectionVisibility,
+  checkCommunicationMessagesSectionVisibility,
   getSpaceAccessPublicLink,
   canGetSpaceAccessPublicLink,
   cardFactory,
@@ -68,6 +70,9 @@ import ChildrenCardSection from './components/sections/ChildrenSection.svelte'
 import ContentCardSection from './components/sections/ContentSection.svelte'
 import PropertiesCardSection from './components/sections/PropertiesSection.svelte'
 import RelationsCardSection from './components/sections/RelationsSection.svelte'
+import CardCommunicatiomMessages from './components/sections/CardCommunicatiomMessages.svelte'
+import OldMessagesCardSection from './components/sections/OldMessagesCardSection.svelte'
+
 import FavoriteCardPresenter from './components/FavoriteCardPresenter.svelte'
 import CardTagsColored from './components/CardTagsColored.svelte'
 import CardTagColored from './components/CardTagColored.svelte'
@@ -137,7 +142,9 @@ export default async (): Promise<Resources> => ({
     ChildrenSection: ChildrenCardSection,
     ContentSection: ContentCardSection,
     PropertiesSection: PropertiesCardSection,
-    RelationsSection: RelationsCardSection
+    RelationsSection: RelationsCardSection,
+    OldMessagesSection: OldMessagesCardSection,
+    CommunicationMessagesSection: CardCommunicatiomMessages
   },
   completion: {
     CardQuery: queryCard
@@ -158,6 +165,8 @@ export default async (): Promise<Resources> => ({
     CardCustomLinkEncode: cardCustomLinkEncode,
     OpenCardInSidebar: openCardInSidebar,
     CheckRelationsSectionVisibility: checkRelationsSectionVisibility,
+    CheckOldMessagesSectionVisibility: checkOldMessagesSectionVisibility,
+    CheckCommunicationMessagesSectionVisibility: checkCommunicationMessagesSectionVisibility,
     GetSpaceAccessPublicLink: getSpaceAccessPublicLink,
     CanGetSpaceAccessPublicLink: canGetSpaceAccessPublicLink,
     CardFactory: cardFactory

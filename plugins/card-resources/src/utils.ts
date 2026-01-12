@@ -13,10 +13,12 @@
 
 import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
-import { type Card, CardEvents, cardId, type CardSpace, type MasterTag } from '@hcengineering/card'
+import communication from '@hcengineering/communication'
+import { type Card, CardEvents, cardId, type CardSpace, type MasterTag, type Tag } from '@hcengineering/card'
 import core, {
   AccountRole,
   type Class,
+  type ClassPermission,
   type Client,
   type Data,
   type Doc,
@@ -94,6 +96,183 @@ export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: ()
         }
       })
     }
+  }
+}
+
+export async function createTypePermissions (masterTag: MasterTag | Tag): Promise<void> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const isMixin = hierarchy.isMixin(masterTag._id)
+  const objectClass = hierarchy.getBaseClass(masterTag._id)
+  const txClass = isMixin ? core.class.TxMixin : core.class.TxUpdateDoc
+
+  await client.createDoc(
+    core.class.ClassPermission,
+    core.space.Model,
+    {
+      objectClass,
+      txClass,
+      txMatch: {
+        [isMixin ? 'mixin' : 'objectClass']: masterTag._id
+      },
+      scope: 'space',
+      forbid: false,
+      label: view.string.AllowAttributeChanges,
+      description: masterTag.label,
+      targetClass: masterTag._id
+    },
+    `${masterTag._id}_allowed` as Ref<ClassPermission>
+  )
+  await client.createDoc(
+    core.class.ClassPermission,
+    core.space.Model,
+    {
+      objectClass,
+      txClass,
+      txMatch: {
+        [isMixin ? 'mixin' : 'objectClass']: masterTag._id
+      },
+      scope: 'space',
+      forbid: true,
+      label: view.string.ForbidAttributeChanges,
+      description: masterTag.label,
+      targetClass: masterTag._id
+    },
+    `${masterTag._id}_forbidden` as Ref<ClassPermission>
+  )
+
+  if (isMixin) {
+    await client.createDoc(
+      core.class.ClassPermission,
+      core.space.Model,
+      {
+        objectClass,
+        txClass: core.class.TxMixin,
+        txMatch: {
+          mixin: masterTag._id
+        },
+        scope: 'space',
+        forbid: false,
+        label: card.string.AddTagPermission,
+        description: masterTag.label,
+        targetClass: masterTag._id
+      },
+      `${masterTag._id}_create_allowed` as Ref<ClassPermission>
+    )
+    await client.createDoc(
+      core.class.ClassPermission,
+      core.space.Model,
+      {
+        objectClass,
+        txClass: core.class.TxMixin,
+        txMatch: {
+          mixin: masterTag._id
+        },
+        scope: 'space',
+        forbid: true,
+        label: card.string.ForbidAddTagPermission,
+        description: masterTag.label,
+        targetClass: masterTag._id
+      },
+      `${masterTag._id}_create_forbidden` as Ref<ClassPermission>
+    )
+    const key = `operations.$unset.${masterTag._id}`
+    await client.createDoc(
+      core.class.ClassPermission,
+      core.space.Model,
+      {
+        objectClass,
+        txClass: core.class.TxUpdateDoc,
+        txMatch: {
+          [key]: {
+            $exists: true
+          }
+        },
+        scope: 'space',
+        forbid: false,
+        label: card.string.RemoveTag,
+        description: masterTag.label,
+        targetClass: masterTag._id
+      },
+      `${masterTag._id}_remove_allowed` as Ref<ClassPermission>
+    )
+    await client.createDoc(
+      core.class.ClassPermission,
+      core.space.Model,
+      {
+        objectClass,
+        txClass: core.class.TxUpdateDoc,
+        txMatch: {
+          [key]: { $exists: true }
+        },
+        scope: 'space',
+        forbid: true,
+        label: card.string.ForbidRemoveTag,
+        description: masterTag.label,
+        targetClass: masterTag._id
+      },
+      `${masterTag._id}_remove_forbidden` as Ref<ClassPermission>
+    )
+  } else {
+    await client.createDoc(
+      core.class.ClassPermission,
+      core.space.Model,
+      {
+        objectClass,
+        txClass: core.class.TxCreateDoc,
+        scope: 'space',
+        forbid: false,
+        label: card.string.CreateCardPermission,
+        description: masterTag.label,
+        targetClass: masterTag._id
+      },
+      `${masterTag._id}_create_allowed` as Ref<ClassPermission>
+    )
+    await client.createDoc(
+      core.class.ClassPermission,
+      core.space.Model,
+      {
+        objectClass,
+        txClass: core.class.TxCreateDoc,
+        scope: 'space',
+        forbid: true,
+        label: card.string.ForbidCreateCardPermission,
+        description: masterTag.label,
+        targetClass: masterTag._id
+      },
+      `${masterTag._id}_create_forbidden` as Ref<ClassPermission>
+    )
+    await client.createDoc(
+      core.class.ClassPermission,
+      core.space.Model,
+      {
+        objectClass,
+        txClass: core.class.TxRemoveDoc,
+        scope: 'space',
+        forbid: false,
+        label: card.string.RemoveCard,
+        description: masterTag.label,
+        targetClass: masterTag._id
+      },
+      `${masterTag._id}_remove_allowed` as Ref<ClassPermission>
+    )
+    await client.createDoc(
+      core.class.ClassPermission,
+      core.space.Model,
+      {
+        objectClass,
+        txClass: core.class.TxRemoveDoc,
+        txMatch: {
+          objectClass: masterTag._id
+        },
+        scope: 'space',
+        forbid: true,
+        label: card.string.ForbidRemoveCard,
+        description: masterTag.label,
+        targetClass: masterTag._id
+      },
+      `${masterTag._id}_remove_forbidden` as Ref<ClassPermission>
+    )
   }
 }
 
@@ -435,6 +614,14 @@ export function cardCustomLinkEncode (doc: Card): Location {
   const loc = getCurrentResolvedLocation()
   loc.path[3] = encodeObjectURI(doc._id, card.class.Card)
   return loc
+}
+
+export async function checkOldMessagesSectionVisibility (doc: Card): Promise<boolean> {
+  return getMetadata(communication.metadata.Enabled) !== true
+}
+
+export async function checkCommunicationMessagesSectionVisibility (doc: Card): Promise<boolean> {
+  return getMetadata(communication.metadata.Enabled) === true
 }
 
 export async function checkRelationsSectionVisibility (doc: Card): Promise<boolean> {

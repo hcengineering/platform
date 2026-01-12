@@ -1367,6 +1367,10 @@ export function createModel (builder: Builder): void {
     searchDisabled: true
   })
 
+  builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributeEditor, {
+    inlineEditor: view.component.PersonIdPresenter
+  })
+
   builder.mixin(core.class.TypePersonId, core.class.Class, view.mixin.AttributePresenter, {
     presenter: view.component.PersonIdPresenter,
     arrayPresenter: view.component.PersonArrayEditor
