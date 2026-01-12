@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { config as dotenvConfig } from 'dotenv'
+
+dotenvConfig()
 
 export interface Config {
   Port: number
@@ -25,6 +28,11 @@ export interface Config {
   PolarWebhookSecret?: string
   PolarOrganizationId?: string
   PolarSubscriptionPlans?: string
+
+  // Stripe configuration
+  StripeApiKey?: string
+  StripeWebhookSecret?: string
+  StripeSubscriptionPlans?: string
 
   ReconciliationIntervalMinutes?: number
 }
@@ -42,6 +50,9 @@ const config: Config = (() => {
     PolarWebhookSecret: process.env.POLAR_WEBHOOK_SECRET,
     PolarOrganizationId: process.env.POLAR_ORGANIZATION_ID,
     PolarSubscriptionPlans: process.env.POLAR_SUBSCRIPTION_PLANS,
+    StripeApiKey: process.env.STRIPE_API_KEY,
+    StripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+    StripeSubscriptionPlans: process.env.STRIPE_SUBSCRIPTION_PLANS,
     ReconciliationIntervalMinutes: parseNumber(process.env.RECONCILIATION_INTERVAL_MINUTES)
   }
 
