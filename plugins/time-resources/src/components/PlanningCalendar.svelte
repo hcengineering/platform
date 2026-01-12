@@ -49,7 +49,7 @@
 
   const myAcc = getCurrentAccount()
   const socialStrings = myAcc.socialIds
-  const emptyCalendar = `${myAcc.uuid}_calendar` as Ref<Calendar>
+  const personalCalendar = `${myAcc.uuid}_calendar` as Ref<Calendar>
 
   const calendarsQ = createQuery()
 
@@ -66,7 +66,7 @@
   function update (calendars: Calendar[]): void {
     q.query<Event>(
       calendar.class.Event,
-      { calendar: { $in: [emptyCalendar, ...calendars.map((p) => p._id)] } },
+      { calendar: { $in: [personalCalendar, ...calendars.map((p) => p._id)] } },
       (result) => {
         raw = result
       },
@@ -128,7 +128,7 @@
           collection: 'events',
           visibility: 'public',
           blockTime: true,
-          calendar: emptyCalendar,
+          calendar: personalCalendar,
           space: calendar.space.Calendar,
           modifiedBy: myAcc.primarySocialId,
           participants: [getCurrentEmployee()],
