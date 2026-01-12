@@ -105,6 +105,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
   // Initialize payment provider if configured
   let provider: PaymentProvider | undefined
 
+  // Try Polar provider first
   if (
     config.PolarAccessToken !== undefined &&
     config.PolarWebhookSecret !== undefined &&
@@ -131,6 +132,37 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
       }
     } catch (err) {
       ctx.error('Failed to initialize payment provider polar.sh', { err })
+    }
+  }
+
+  // Try Stripe provider if Polar is not configured
+  if (
+    provider == null &&
+    config.StripeApiKey !== undefined &&
+    config.StripeWebhookSecret !== undefined &&
+    config.StripeSubscriptionPlans !== undefined
+  ) {
+    try {
+      provider = PaymentProviderFactory.getInstance().create(
+        'stripe',
+        {
+          apiKey: config.StripeApiKey,
+          webhookSecret: config.StripeWebhookSecret,
+          subscriptionPlans: config.StripeSubscriptionPlans,
+          frontUrl: config.FrontUrl
+        },
+        accountClient,
+        false
+      )
+
+      if (provider !== undefined) {
+        // Register provider-specific endpoints (e.g., webhooks)
+        provider.registerWebhookEndpoints(app, ctx, config.AccountsUrl, serviceToken)
+
+        ctx.info('Stripe payment provider initialized successfully')
+      }
+    } catch (err) {
+      ctx.error('Failed to initialize payment provider Stripe', { err })
     }
   }
 
