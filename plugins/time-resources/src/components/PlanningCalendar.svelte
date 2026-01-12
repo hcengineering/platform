@@ -49,6 +49,7 @@
 
   const myAcc = getCurrentAccount()
   const socialStrings = myAcc.socialIds
+  const emptyCalendar = `${myAcc.uuid}_calendar` as Ref<Calendar>
 
   const calendarsQ = createQuery()
 
@@ -65,7 +66,7 @@
   function update (calendars: Calendar[]): void {
     q.query<Event>(
       calendar.class.Event,
-      { calendar: { $in: calendars.map((p) => p._id) } },
+      { calendar: { $in: [emptyCalendar, ...calendars.map((p) => p._id)] } },
       (result) => {
         raw = result
       },
@@ -114,7 +115,6 @@
         current.date = e.detail.date.getTime()
         current.dueDate = new Date(e.detail.date).setMinutes(new Date(e.detail.date).getMinutes() + 30)
       } else {
-        const _calendar = `${myAcc.uuid}_calendar` as Ref<Calendar>
         const ev: WorkSlot = {
           _id: dragItemId,
           allDay: false,
@@ -128,7 +128,7 @@
           collection: 'events',
           visibility: 'public',
           blockTime: true,
-          calendar: _calendar,
+          calendar: emptyCalendar,
           space: calendar.space.Calendar,
           modifiedBy: myAcc.primarySocialId,
           participants: [getCurrentEmployee()],
