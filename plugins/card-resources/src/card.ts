@@ -22,7 +22,6 @@ export async function getCardSections (card: Card): Promise<CardSection[]> {
   const sections: CardSection[] = client
     .getModel()
     .findAllSync(cardPlugin.class.CardSection, {})
-    .filter((it) => it._id !== communication.ids.CardMessagesSection)
     .sort((a, b) => a.order - b.order)
 
   const res: CardSection[] = []
@@ -67,15 +66,6 @@ export function getCardToc (sections: CardSection[], tocBySection: Record<string
     if (subToc !== undefined) {
       newToc.push(...subToc.map((it) => ({ ...it, group: section._id })))
     }
-  }
-
-  if (getMetadata(communication.metadata.Enabled) === true) {
-    newToc.push({
-      id: communication.ids.CardMessagesSection,
-      titleIntl: communication.string.Messages,
-      level: 0,
-      group: communication.ids.CardMessagesSection
-    })
   }
 
   return newToc

@@ -16,6 +16,7 @@
 import { type AccountClient } from '@hcengineering/account-client'
 import type { PaymentProvider } from './providers'
 import { PolarProvider } from './providers/polar/provider'
+import { StripeProvider } from './providers/stripe/provider'
 
 /**
  * Static singleton factory for creating payment providers
@@ -47,6 +48,8 @@ export class PaymentProviderFactory {
     switch (type) {
       case 'polar':
         return this.createPolarProvider(config, accountClient, useSandbox)
+      case 'stripe':
+        return this.createStripeProvider(config, accountClient)
       default:
         return undefined
     }
@@ -77,6 +80,29 @@ export class PaymentProviderFactory {
       config.frontUrl,
       accountClient,
       useSandbox
+    )
+  }
+
+  private createStripeProvider (config: Record<string, any>, accountClient: AccountClient): PaymentProvider {
+    if (config.apiKey === undefined) {
+      throw new Error('Stripe provider requires apiKey in config')
+    }
+    if (config.webhookSecret === undefined) {
+      throw new Error('Stripe provider requires webhookSecret in config')
+    }
+    if (config.subscriptionPlans === undefined) {
+      throw new Error('Stripe provider requires subscriptionPlans in config')
+    }
+    if (config.frontUrl === undefined) {
+      throw new Error('Stripe provider requires frontUrl in config')
+    }
+
+    return new StripeProvider(
+      config.apiKey,
+      config.webhookSecret,
+      config.subscriptionPlans,
+      config.frontUrl,
+      accountClient
     )
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "qms-desktop",
-  "version": "0.7.158",
+  "version": "0.7.326",
   "main": "dist/main/electron.js",
   "author": "Hardcore Engineering <hey@huly.io>",
   "template": "@hcengineering/default-package",

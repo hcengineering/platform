@@ -94,7 +94,7 @@
     "@hcengineering/model-task": "workspace:^0.7.0",
     "@hcengineering/model-activity": "workspace:^0.7.0",
     "@hcengineering/model-lead": "workspace:^0.7.0",
-    "@hcengineering/postgres": "workspace:^0.7.21",
+    "@hcengineering/postgres": "workspace:^0.7.22",
     "@hcengineering/account-client": "workspace:^0.7.21",
     "@hcengineering/mongo": "workspace:^0.7.16",
     "@hcengineering/platform": "workspace:^0.7.19",
