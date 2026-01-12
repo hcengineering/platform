@@ -62,6 +62,6 @@
     "@hcengineering/analytics": "workspace:^0.7.17",
     "@hcengineering/analytics-service": "workspace:^0.7.17",
     "@hcengineering/mongo": "workspace:^0.7.16",
-    "@hcengineering/postgres": "workspace:^0.7.21"
+    "@hcengineering/postgres": "workspace:^0.7.22"
   }
 }
