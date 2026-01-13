@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -85,11 +85,9 @@ export function isNetworkError (err: unknown): boolean {
   // Check if error name matches network error types
   if (errorName != null && networkErrorNames.includes(errorName) && message != null) {
     const lowerMessage = message.toLowerCase()
-    // Check for specific browser fetch error messages
     if (browserFetchErrorMessages.some((pattern) => lowerMessage.includes(pattern))) {
       return true
     }
-    // Check for general network-related keywords
     if (hasNetworkMessage(message)) {
       return true
     }
