@@ -41,7 +41,7 @@ import {
   type PostgresClientReference
 } from '..'
 import { genMinModel } from './minmodel'
-import { createTaskModel, type Task, type TaskComment, taskPlugin } from './tasks'
+import { createTaskModel, TaskReproduce, TaskStatus, type Task, type TaskComment, taskPlugin } from './tasks'
 
 const txes = genMinModel()
 createTaskModel(txes)
@@ -920,6 +920,142 @@ describe('PostgreSQL Integration Tests (Real Database)', () => {
       // Should find Medium Priority (50) and No Rate Task (null)
       expect(tasks.length).toBeGreaterThan(0)
       expect(tasks.every((t) => t.rate !== 100 && t.rate !== 10)).toBe(true)
+    })
+  })
+
+  describe('$ne predicate with missing fields', () => {
+    let taskWithRate100: Ref<Task>
+    let taskWithRate50: Ref<Task>
+    let taskWithRateNull: Ref<Task>
+    let taskWithoutRate: Ref<Task>
+
+    beforeEach(async () => {
+      // Create tasks with different rate scenarios
+      taskWithRate100 = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+        name: 'Task with rate 100',
+        description: 'Should not match $ne: 100',
+        rate: 100
+      })
+
+      taskWithRate50 = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+        name: 'Task with rate 50',
+        description: 'Should match $ne: 100',
+        rate: 50
+      })
+
+      taskWithRateNull = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+        name: 'Task with rate null',
+        description: 'Should match $ne: 100 (null != 100)',
+        rate: null
+      })
+
+      // Create task without rate field (missing field)
+      taskWithoutRate = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+        name: 'Task without rate field',
+        description: 'Should match $ne: 100 (missing field should match)'
+        // rate field is not provided - it will be missing/undefined in the document
+      })
+    })
+
+    it('should match documents with missing fields when using $ne', async () => {
+      const tasks = await client.findAll<Task>(taskPlugin.class.Task, { rate: { $ne: 100 } })
+
+      // Should match:
+      // - Task with rate 50 (different value)
+      // - Task with rate null (null != 100)
+      // - Task without rate field (missing field should match)
+      // Should NOT match:
+      // - Task with rate 100
+
+      expect(tasks).toHaveLength(3)
+
+      const taskIds = tasks.map((t) => t._id)
+      expect(taskIds).not.toContain(taskWithRate100)
+      expect(taskIds).toContain(taskWithRate50)
+      expect(taskIds).toContain(taskWithRateNull)
+      expect(taskIds).toContain(taskWithoutRate)
+
+      // Verify that the task without rate field has undefined or null rate
+      const taskWithoutRateDoc = tasks.find((t) => t._id === taskWithoutRate)
+      expect(taskWithoutRateDoc).toBeDefined()
+      expect(taskWithoutRateDoc?.rate === undefined || taskWithoutRateDoc?.rate === null).toBe(true)
+    })
+
+    it('should match documents with missing fields when using $ne with boolean true', async () => {
+      // Test with a boolean field scenario
+      // Create tasks with status field (which is optional)
+      const taskWithStatusOpen = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+        name: 'Task with status Open',
+        description: 'Has status',
+        status: TaskStatus.Open
+      })
+
+      const taskWithStatusClose = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+        name: 'Task with status Close',
+        description: 'Has different status',
+        status: TaskStatus.Close
+      })
+
+      const taskWithoutStatus = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+        name: 'Task without status',
+        description: 'Missing status field'
+        // status field is not provided
+      })
+
+      // Query for tasks where status is not Open
+      const tasks = await client.findAll<Task>(taskPlugin.class.Task, { status: { $ne: TaskStatus.Open } })
+
+      // Should match:
+      // - Task with status Close (different value)
+      // - Task without status field (missing field should match)
+      // Should NOT match:
+      // - Task with status Open
+
+      expect(tasks.length).toBeGreaterThanOrEqual(2)
+
+      const taskIds = tasks.map((t) => t._id)
+      expect(taskIds).not.toContain(taskWithStatusOpen)
+      expect(taskIds).toContain(taskWithStatusClose)
+      expect(taskIds).toContain(taskWithoutStatus)
+    })
+
+    it('should handle $ne with string value and missing fields', async () => {
+      // Test with a string field that can be missing
+      const taskWithReproduceAlways = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+        name: 'Task with reproduce Always',
+        description: 'Has reproduce field',
+        reproduce: TaskReproduce.Always
+      })
+
+      const taskWithReproduceRare = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+        name: 'Task with reproduce Rare',
+        description: 'Has different reproduce value',
+        reproduce: TaskReproduce.Rare
+      })
+
+      const taskWithoutReproduce = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+        name: 'Task without reproduce field',
+        description: 'Missing reproduce field'
+        // reproduce field is not provided
+      })
+
+      // Query for tasks where reproduce is not Always
+      const tasks = await client.findAll<Task>(taskPlugin.class.Task, {
+        reproduce: { $ne: TaskReproduce.Always }
+      })
+
+      // Should match:
+      // - Task with reproduce Rare (different value)
+      // - Task without reproduce field (missing field should match)
+      // Should NOT match:
+      // - Task with reproduce Always
+
+      expect(tasks.length).toBeGreaterThanOrEqual(2)
+
+      const taskIds = tasks.map((t) => t._id)
+      expect(taskIds).not.toContain(taskWithReproduceAlways)
+      expect(taskIds).toContain(taskWithReproduceRare)
+      expect(taskIds).toContain(taskWithoutReproduce)
     })
   })
 
