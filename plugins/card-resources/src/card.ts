@@ -13,9 +13,8 @@
 
 import { getClient } from '@hcengineering/presentation'
 import cardPlugin, { type Card, type CardSection } from '@hcengineering/card'
-import { getMetadata, getResource } from '@hcengineering/platform'
+import { getResource } from '@hcengineering/platform'
 import { type Heading } from '@hcengineering/text-editor'
-import communication from '@hcengineering/communication'
 
 export async function getCardSections (card: Card): Promise<CardSection[]> {
   const client = getClient()

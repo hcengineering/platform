@@ -219,6 +219,10 @@ export * from './viewOptions'
 export {
   CopyAsMarkdownTable,
   type CopyAsMarkdownTableProps,
+  CopyRelationshipTableAsMarkdown,
+  type CopyRelationshipTableAsMarkdownProps,
+  type RelationshipCellModel,
+  type RelationshipRowModel,
   type ValueFormatter,
   registerValueFormatterForClass,
   registerValueFormatter,
