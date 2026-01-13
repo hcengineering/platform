@@ -159,7 +159,7 @@ async function exportType (
     required.push(...at.required)
   }
 
-  if (!withoutDesc || _id === card.class.Card) {
+  if (!withoutDesc && _id !== card.class.Card) {
     const descendants = h.getDescendants(_id)
     for (const desc of descendants) {
       if (h.getClass(desc).extends !== _id) continue
