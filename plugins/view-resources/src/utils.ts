@@ -1082,6 +1082,24 @@ export function getCategorySpaces (categories: CategoryType[]): Array<Ref<Space>
   )
 }
 
+/**
+ * Get value from a document for a given attribute model
+ * @public
+ */
+export function getAttributeValue (attribute: AttributeModel, object: Doc, hierarchy: Hierarchy): any {
+  const assoc = '$associations'
+  if (attribute.castRequest !== undefined && attribute.castRequest !== null) {
+    return getObjectValue(
+      attribute.key.substring(attribute.castRequest.length + 1),
+      hierarchy.as(object, attribute.castRequest)
+    )
+  }
+  if (attribute.key.startsWith(assoc)) {
+    return object
+  }
+  return getObjectValue(attribute.key, object)
+}
+
 export function concatCategories (arr1: CategoryType[], arr2: CategoryType[]): CategoryType[] {
   const uniqueValues = new Set<string | number | undefined>()
   const uniqueObjects = new Map<string | number, AggregateValue>()

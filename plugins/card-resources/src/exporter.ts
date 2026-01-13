@@ -120,7 +120,11 @@ async function exportAttribute (
   return { docs, required }
 }
 
-async function exportType (_id: Ref<Class<Doc>>, processed: Set<Ref<Doc>>): Promise<Doc[]> {
+async function exportType (
+  _id: Ref<Class<Doc>>,
+  processed: Set<Ref<Doc>>,
+  withoutDesc: boolean = false
+): Promise<Doc[]> {
   if (processed.has(_id)) return []
   const res: Doc[] = []
   const required: Array<Ref<Class<Doc>>> = []
@@ -132,7 +136,7 @@ async function exportType (_id: Ref<Class<Doc>>, processed: Set<Ref<Doc>>): Prom
   const parent = h.getClass(_id).extends
   if (parent !== undefined && h.isDerived(parent, card.class.Card) && parent !== card.class.Card) {
     if (!processed.has(parent)) {
-      res.push(...(await exportType(parent, processed)))
+      res.push(...(await exportType(parent, processed, withoutDesc)))
     }
   }
 
@@ -155,10 +159,12 @@ async function exportType (_id: Ref<Class<Doc>>, processed: Set<Ref<Doc>>): Prom
     required.push(...at.required)
   }
 
-  const descendants = h.getDescendants(_id)
-  for (const desc of descendants) {
-    if (h.getClass(desc).extends !== _id) continue
-    required.push(desc)
+  if (!withoutDesc || _id === card.class.Card) {
+    const descendants = h.getDescendants(_id)
+    for (const desc of descendants) {
+      if (h.getClass(desc).extends !== _id) continue
+      required.push(desc)
+    }
   }
 
   res.push(...m.findAllSync(card.class.Role, { types: _id }))
