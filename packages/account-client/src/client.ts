@@ -57,7 +57,7 @@ import type {
   WorkspaceLoginInfo,
   WorkspaceOperation
 } from './types'
-import { getClientTimezone } from './utils'
+import { getClientTimezone, isNetworkError } from './utils'
 
 /** @public */
 export interface AccountClient {
@@ -1321,18 +1321,15 @@ function withRetry<T, F extends (...args: any[]) => Promise<T>> (
   } as F
 }
 
-const connectionErrorCodes = ['ECONNRESET', 'ECONNREFUSED', 'ENOTFOUND']
-
 function withRetryUntilTimeout<T, F extends (...args: any[]) => Promise<T>> (f: F, timeoutMs: number = 5000): F {
   const timeout = Date.now() + timeoutMs
-  const shouldFail = (err: any): boolean => !connectionErrorCodes.includes(err?.cause?.code) || timeout < Date.now()
+  const shouldFail = (err: any): boolean => !isNetworkError(err) || timeout < Date.now()
 
   return withRetry(f, shouldFail)
 }
 
 function withRetryUntilMaxAttempts<T, F extends (...args: any[]) => Promise<T>> (f: F, maxAttempts: number = 5): F {
-  const shouldFail = (err: any, attempt: number): boolean =>
-    !connectionErrorCodes.includes(err?.cause?.code) || attempt === maxAttempts
+  const shouldFail = (err: any, attempt: number): boolean => !isNetworkError(err) || attempt === maxAttempts
 
   return withRetry(f, shouldFail)
 }
