@@ -14,7 +14,14 @@ export function getTypeOf (obj: any): string {
     return 'Array'
   }
 
-  const stringTag = ste && obj[Symbol.toStringTag]
+  let stringTag: string | undefined
+  if (ste) {
+    try {
+      stringTag = obj[Symbol.toStringTag]
+    } catch {
+      stringTag = undefined
+    }
+  }
   if (typeof stringTag === 'string') {
     return stringTag
   }
