@@ -31,7 +31,11 @@ export function getTypeOf (obj: any): string {
   if (objPrototype === null) {
     return 'Object'
   }
-  return {}.toString.call(obj).slice(8, -1)
+  try {
+    return {}.toString.call(obj).slice(8, -1)
+  } catch {
+    return 'Object'
+  }
 }
 
 export function clone (
