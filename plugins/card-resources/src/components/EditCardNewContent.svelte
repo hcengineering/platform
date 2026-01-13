@@ -40,7 +40,7 @@
     inputHeight = e.clientHeight
     if (delta === 0) return
     content?.hideScrollBar()
-    if (scrollDiv && delta > 0) {
+    if (scrollDiv !== undefined && scrollDiv !== null && delta > 0) {
       const bottomOffset = Math.max(
         0,
         Math.floor(scrollDiv.scrollHeight - scrollDiv.scrollTop - scrollDiv.clientHeight - delta)

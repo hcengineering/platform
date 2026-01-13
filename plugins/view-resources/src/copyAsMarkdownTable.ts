@@ -449,6 +449,28 @@ export interface CopyAsMarkdownTableProps {
   valueFormatter?: ValueFormatter
 }
 
+/**
+ * Interface for RelationshipTable's row and cell models
+ */
+export interface RelationshipCellModel {
+  attribute: AttributeModel
+  rowSpan: number
+  object: Doc | undefined
+  parentObject: Doc | undefined
+}
+
+export interface RelationshipRowModel {
+  cells: RelationshipCellModel[]
+}
+
+export interface CopyRelationshipTableAsMarkdownProps {
+  viewModel: RelationshipRowModel[]
+  model: AttributeModel[]
+  objects: Doc[]
+  cardClass: Ref<Class<Doc>>
+  valueFormatter?: ValueFormatter
+}
+
 export async function CopyAsMarkdownTable (
   doc: Doc | Doc[],
   evt: Event,
@@ -550,6 +572,189 @@ export async function CopyAsMarkdownTable (
       rows.push(row)
     }
 
+    let markdown = '| ' + headers.join(' | ') + ' |\n'
+    markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n'
+    for (const row of rows) {
+      markdown += '| ' + row.join(' | ') + ' |\n'
+    }
+
+    await copyText(markdown, 'text/markdown')
+
+    addNotification(
+      await translate(view.string.Copied, {}, language),
+      await translate(view.string.TableCopiedToClipboard, {}, language),
+      SimpleNotification,
+      undefined,
+      NotificationSeverity.Success
+    )
+  } catch (error) {
+    const language = getCurrentLanguage()
+    addNotification(
+      await translate(view.string.Copied, {}, language),
+      await translate(view.string.TableCopyFailed, {}, language),
+      SimpleNotification,
+      undefined,
+      NotificationSeverity.Error
+    )
+  }
+}
+
+/**
+ * Copy RelationshipTable as markdown table
+ * Handles hierarchical data with row spans by duplicating cell values across spanned rows
+ */
+export async function CopyRelationshipTableAsMarkdown (
+  evt: Event,
+  props: CopyRelationshipTableAsMarkdownProps
+): Promise<void> {
+  try {
+    if (props.viewModel.length === 0 || props.model.length === 0) {
+      return
+    }
+
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    const cardClass = hierarchy.getClass(props.cardClass)
+    if (cardClass == null) {
+      return
+    }
+
+    const language = getCurrentLanguage()
+
+    // Cache for user ID (PersonId) -> name mappings to reduce database calls
+    const userCache = new Map<PersonId, string>()
+
+    // Extract headers from model
+    const headers: string[] = []
+    for (const attr of props.model) {
+      let label: string
+      if (typeof attr.label === 'string') {
+        label = isIntlString(attr.label)
+          ? await translate(attr.label as unknown as IntlString, {}, language)
+          : attr.label
+      } else {
+        label = await translate(attr.label, {}, language)
+      }
+      headers.push(label)
+    }
+
+    // Build a map of attribute keys to their index in the model for quick lookup
+    const attributeKeyToIndex = new Map<string, number>()
+    props.model.forEach((attr, index) => {
+      attributeKeyToIndex.set(attr.key, index)
+    })
+
+    // Track active row spans - maps attribute key to remaining span count
+    const activeRowSpans = new Map<string, { value: string, remaining: number }>()
+
+    // Process rows from viewModel
+    const rows: string[][] = []
+    for (let rowIdx = 0; rowIdx < props.viewModel.length; rowIdx++) {
+      const rowModel = props.viewModel[rowIdx]
+      const row: string[] = new Array(headers.length).fill('')
+
+      // First, handle cells that are continuing from previous rows (row spans)
+      for (const [attrKey, spanInfo] of activeRowSpans.entries()) {
+        if (spanInfo.remaining > 0) {
+          const attrIndex = attributeKeyToIndex.get(attrKey)
+          if (attrIndex !== undefined) {
+            row[attrIndex] = spanInfo.value
+            spanInfo.remaining--
+            if (spanInfo.remaining === 0) {
+              activeRowSpans.delete(attrKey)
+            }
+          }
+        }
+      }
+
+      // Then, process cells in the current row
+      for (const cell of rowModel.cells) {
+        const attrIndex = attributeKeyToIndex.get(cell.attribute.key)
+        if (attrIndex === undefined) continue
+
+        // Get the document object (prefer cell.object, fall back to parentObject)
+        const doc = cell.object ?? cell.parentObject
+        if (doc === undefined) {
+          // Empty cell
+          row[attrIndex] = ''
+          continue
+        }
+
+        // Handle association keys - they need special treatment
+        // For association keys, the cell.object is the related document
+        // and we need to extract the attribute key after the association path
+        const assoc = '$associations'
+        let attributeToUse = cell.attribute
+        let docToUse = doc
+        let isAssociationKey = false
+
+        if (cell.attribute.key.startsWith(assoc)) {
+          isAssociationKey = true
+          // For association keys, the object is the related document
+          docToUse = cell.object ?? doc
+
+          // Extract the part after the association path
+          // e.g., "$associations.relationName.attributeName" -> "attributeName"
+          // or "$associations.relationName" -> "" (for the document itself)
+          const parts = cell.attribute.key.split(assoc)
+          if (parts.length > 1) {
+            const afterAssoc = parts[1].substring(1) // Remove leading dot
+            if (afterAssoc.length > 0) {
+              // Create a modified attribute with the extracted key
+              attributeToUse = {
+                ...cell.attribute,
+                key: afterAssoc
+              }
+            } else {
+              // Association key points to the document itself (use empty key for title)
+              attributeToUse = {
+                ...cell.attribute,
+                key: ''
+              }
+            }
+          }
+        }
+
+        // Format the value
+        const isFirstColumn = attrIndex === 0
+        const docClass = isAssociationKey && docToUse !== undefined ? docToUse._class : props.cardClass
+        let value = await formatValue(
+          attributeToUse,
+          docToUse,
+          hierarchy,
+          docClass,
+          language,
+          isFirstColumn,
+          userCache,
+          props.valueFormatter
+        )
+
+        // If this is the first column with empty key (title attribute), create a markdown link
+        if (
+          isFirstColumn &&
+          (cell.attribute.key === '' || (isAssociationKey && attributeToUse.key === '')) &&
+          cell.object !== undefined
+        ) {
+          value = await createMarkdownLink(hierarchy, cell.object, value)
+        } else {
+          value = escapeMarkdownLinkText(value)
+        }
+
+        row[attrIndex] = value
+
+        // If this cell has a row span > 1, track it for subsequent rows
+        if (cell.rowSpan > 1) {
+          activeRowSpans.set(cell.attribute.key, {
+            value,
+            remaining: cell.rowSpan - 1
+          })
+        }
+      }
+
+      rows.push(row)
+    }
+
+    // Build markdown table
     let markdown = '| ' + headers.join(' | ') + ' |\n'
     markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n'
     for (const row of rows) {

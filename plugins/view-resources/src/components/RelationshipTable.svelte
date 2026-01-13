@@ -34,6 +34,7 @@
   import { createQuery, getClient, reduceCalls, updateAttribute } from '@hcengineering/presentation'
   import ui, {
     Button,
+    IconCopy,
     Label,
     Loading,
     eventToHTMLElement,
@@ -50,6 +51,7 @@
   import view from '../plugin'
   import { buildConfigAssociation, buildConfigLookup, buildModel, restrictionStore } from '../utils'
   import { getResultOptions, getResultQuery } from '../viewOptions'
+  import { CopyRelationshipTableAsMarkdown } from '../copyAsMarkdownTable'
   import IconUpDown from './icons/UpDown.svelte'
   import RelationsSelectorPopup from './RelationsSelectorPopup.svelte'
 
@@ -545,6 +547,16 @@
       eventToHTMLElement(e)
     )
   }
+
+  async function handleCopyAsMarkdown (e: MouseEvent): Promise<void> {
+    if (model === undefined || viewModel.length === 0) return
+    await CopyRelationshipTableAsMarkdown(e, {
+      viewModel,
+      model,
+      objects,
+      cardClass: _class
+    })
+  }
 </script>
 
 {#if !model || isBuildingModel}
@@ -672,6 +684,19 @@
             limit = limit + 100
           }}
         />
+      {/if}
+
+      {#if objects.length > 0 && viewModel.length > 0 && model !== undefined}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div class="px-1">
+          <Button
+            icon={IconCopy}
+            label={view.string.CopyToClipboard}
+            kind={'ghost'}
+            size={'small'}
+            on:click={handleCopyAsMarkdown}
+          />
+        </div>
       {/if}
     </div>
   </div>
