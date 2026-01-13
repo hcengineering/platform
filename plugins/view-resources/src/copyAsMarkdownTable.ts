@@ -30,7 +30,7 @@ import { getCurrentLanguage } from '@hcengineering/theme'
 import viewPlugin, { type Viewlet, type AttributeModel, type BuildModelKey } from '@hcengineering/view'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { getName, getPersonByPersonId } from '@hcengineering/contact'
-import { buildModel, buildConfigLookup, getObjectLinkFragment } from './utils'
+import { buildModel, buildConfigLookup, getAttributeValue, getObjectLinkFragment } from './utils'
 import view from './plugin'
 import SimpleNotification from './components/SimpleNotification.svelte'
 import { copyText } from './actionImpl'
@@ -672,70 +672,73 @@ export async function CopyRelationshipTableAsMarkdown (
         const attrIndex = attributeKeyToIndex.get(cell.attribute.key)
         if (attrIndex === undefined) continue
 
-        // Get the document object (prefer cell.object, fall back to parentObject)
-        const doc = cell.object ?? cell.parentObject
+        // Determine if this is an association column
+        const isAssociationKey = cell.attribute.key.startsWith('$associations')
+
+        let doc: Doc | undefined
+        if (isAssociationKey) {
+          doc = cell.object
+        } else {
+          doc = cell.object ?? cell.parentObject
+        }
+
         if (doc === undefined) {
           // Empty cell
           row[attrIndex] = ''
           continue
         }
 
-        // Handle association keys - they need special treatment
-        // For association keys, the cell.object is the related document
-        // and we need to extract the attribute key after the association path
-        const assoc = '$associations'
-        let attributeToUse = cell.attribute
+        // Use the same getValue logic as RelationshipTable
+        // For association keys, this returns the child document object itself
+        const rawValue = getAttributeValue(cell.attribute, doc, hierarchy)
+
+        // Determine which document and class to use for formatting
         let docToUse = doc
-        let isAssociationKey = false
+        let docClass = props.cardClass
+        let attributeToUse = cell.attribute
 
-        if (cell.attribute.key.startsWith(assoc)) {
-          isAssociationKey = true
-          // For association keys, the object is the related document
-          docToUse = cell.object ?? doc
-
-          // Extract the part after the association path
-          // e.g., "$associations.relationName.attributeName" -> "attributeName"
-          // or "$associations.relationName" -> "" (for the document itself)
-          const parts = cell.attribute.key.split(assoc)
-          if (parts.length > 1) {
-            const afterAssoc = parts[1].substring(1) // Remove leading dot
-            if (afterAssoc.length > 0) {
-              // Create a modified attribute with the extracted key
-              attributeToUse = {
-                ...cell.attribute,
-                key: afterAssoc
-              }
-            } else {
-              // Association key points to the document itself (use empty key for title)
-              attributeToUse = {
-                ...cell.attribute,
-                key: ''
+        if (isAssociationKey) {
+          // For association keys, the value IS the child document object
+          if (rawValue !== undefined && rawValue !== null && typeof rawValue === 'object' && '_class' in rawValue) {
+            docToUse = rawValue as Doc
+            docClass = docToUse._class
+            const parts = cell.attribute.key.split('$associations.')
+            if (parts.length > 1) {
+              const afterAssoc = parts[1].substring(1) // Remove leading dot
+              const dotIndex = afterAssoc.indexOf('.')
+              if (dotIndex > 0) {
+                const attributeName = afterAssoc.substring(dotIndex + 1)
+                attributeToUse = {
+                  ...cell.attribute,
+                  key: attributeName
+                }
+              } else {
+                attributeToUse = {
+                  ...cell.attribute,
+                  key: ''
+                }
               }
             }
           }
         }
 
-        // Format the value
+        // Format the value using the same logic as regular tables
         const isFirstColumn = attrIndex === 0
-        const docClass = isAssociationKey && docToUse !== undefined ? docToUse._class : props.cardClass
+        const allowEmptyKey = isFirstColumn || isAssociationKey
         let value = await formatValue(
           attributeToUse,
           docToUse,
           hierarchy,
           docClass,
           language,
-          isFirstColumn,
+          allowEmptyKey, // Pass true for association keys so empty key works
           userCache,
           props.valueFormatter
         )
 
-        // If this is the first column with empty key (title attribute), create a markdown link
-        if (
-          isFirstColumn &&
-          (cell.attribute.key === '' || (isAssociationKey && attributeToUse.key === '')) &&
-          cell.object !== undefined
-        ) {
-          value = await createMarkdownLink(hierarchy, cell.object, value)
+        const isDocumentTitle = attributeToUse.key === '' && docToUse !== undefined
+        if (isDocumentTitle) {
+          value = await createMarkdownLink(hierarchy, docToUse, value)
         } else {
           value = escapeMarkdownLinkText(value)
         }

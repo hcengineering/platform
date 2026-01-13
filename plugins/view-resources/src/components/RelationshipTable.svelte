@@ -49,7 +49,7 @@
   import { showMenu } from '../actions'
   import { canChangeAttribute } from '../permissions'
   import view from '../plugin'
-  import { buildConfigAssociation, buildConfigLookup, buildModel, restrictionStore } from '../utils'
+  import { buildConfigAssociation, buildConfigLookup, buildModel, getAttributeValue, restrictionStore } from '../utils'
   import { getResultOptions, getResultQuery } from '../viewOptions'
   import { CopyRelationshipTableAsMarkdown } from '../copyAsMarkdownTable'
   import IconUpDown from './icons/UpDown.svelte'
@@ -229,16 +229,7 @@
   }
 
   function getValue (attribute: AttributeModel, object: Doc): any {
-    if (attribute.castRequest) {
-      return getObjectValue(
-        attribute.key.substring(attribute.castRequest.length + 1),
-        client.getHierarchy().as(object, attribute.castRequest)
-      )
-    }
-    if (attribute.key.startsWith(assoc)) {
-      return object
-    }
-    return getObjectValue(attribute.key, object)
+    return getAttributeValue(attribute, object, client.getHierarchy())
   }
 
   function showContextMenu (ev: MouseEvent, object: Doc | undefined): void {
