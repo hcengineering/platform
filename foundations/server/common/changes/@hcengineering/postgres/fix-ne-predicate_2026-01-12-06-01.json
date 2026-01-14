@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@hcengineering/postgres",
+      "comment": "Fix ne predicate",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@hcengineering/postgres"
+}

@@ -1304,7 +1304,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             if (val == null) {
               res.push(`${tlkey} IS NOT NULL`)
             } else {
-              res.push(`${tlkey} != ${vars.add(val, valType)}`)
+              res.push(`(${tlkey} != ${vars.add(val, valType)} OR ${tkey} IS NULL)`)
             }
             break
           case '$gt':
