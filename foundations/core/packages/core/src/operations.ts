@@ -531,6 +531,17 @@ export class ApplyOperations extends TxOperations {
       if (typeof window === 'object' && window !== null && this.measureName != null) {
         console.log(`measure ${this.measureName}`, dnow - st, 'server time', result.serverTime)
       }
+      if (!result.success) {
+        console.warn('ops.commit() failed', {
+          scope: this.scope,
+          measureName: this.measureName,
+          matchCount: this.matches.length,
+          notMatchCount: this.notMatches.length,
+          txCount: this.txes.length,
+          matches: this.matches.map((m) => ({ _class: m._class, query: m.query })),
+          notMatches: this.notMatches.map((m) => ({ _class: m._class, query: m.query }))
+        })
+      }
       this.txes = []
       return {
         result: result.success,
