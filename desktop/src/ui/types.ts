@@ -70,6 +70,7 @@ export interface Config {
   EXCLUDED_APPLICATIONS_FOR_ANONYMOUS?: string
   HULYLAKE_URL?: string
   DISABLED_FEATURES?: string
+  SIGNUP_URL?: string
 }
 
 export interface Branding {
@@ -80,6 +81,12 @@ export interface Branding {
     type?: string
     sizes?: string
   }[]
+  support?: {
+    supportLink?: string
+    reportBugLink?: string
+    docsLink?: string
+    privacyPolicyLink?: string
+  }
   languages?: string
   lastNameFirst?: string
   defaultLanguage?: string

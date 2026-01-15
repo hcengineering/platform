@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { getMetadata } from '@hcengineering/platform'
   import { Button, navigate, Notification, NotificationToast } from '@hcengineering/ui'
   import view from '@hcengineering/view'
-  import { getCurrentWorkspaceUrl } from '@hcengineering/presentation'
+  import presentation, { getCurrentWorkspaceUrl } from '@hcengineering/presentation'
   import { allowGuestSignUpStore } from '../utils'
 
   export let onRemove: () => void
@@ -22,7 +23,7 @@
       {#if $allowGuestSignUpStore}
         <Button label={view.string.ReadOnlyJoinWorkspace} stopPropagation={false} on:click={joinWorkspace} />
       {/if}
-      <a href="https://huly.io/signup" target="_blank">
+      <a href={getMetadata(presentation.metadata.SignupUrl)} target="_blank">
         <Button label={view.string.ReadOnlySignUp} stopPropagation={false} kind="primary" />
       </a>
     </div>
