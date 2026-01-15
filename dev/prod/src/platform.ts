@@ -52,7 +52,7 @@ import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
 import setting, { settingId } from '@hcengineering/setting'
 import sign from '@hcengineering/sign'
-import { supportId } from '@hcengineering/support'
+import support, { supportId, supportLink, reportBugLink, docsLink, privacyPolicyLink } from '@hcengineering/support'
 import { surveyId } from '@hcengineering/survey'
 import { tagsId } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
@@ -202,6 +202,7 @@ export interface Config {
   PULSE_URL?: string
   HULYLAKE_URL?: string
   DISABLED_FEATURES?: string
+  SIGNUP_URL?: string
 }
 
 export interface Branding {
@@ -212,6 +213,12 @@ export interface Branding {
     type?: string
     sizes?: string
   }>
+  support?: {
+    supportLink?: string
+    reportBugLink?: string
+    docsLink?: string
+    privacyPolicyLink?: string
+  }
   languages?: string
   lastNameFirst?: string
   defaultLanguage?: string
@@ -480,6 +487,7 @@ export async function configurePlatform() {
   setMetadata(presentation.metadata.StatsUrl, config.STATS_URL)
   setMetadata(presentation.metadata.LinkPreviewUrl, config.LINK_PREVIEW_URL)
   setMetadata(presentation.metadata.MailUrl, config.MAIL_URL)
+  setMetadata(presentation.metadata.SignupUrl, config.SIGNUP_URL ?? 'https://huly.io/signup')
 
   const disabledFeatures = (config.DISABLED_FEATURES ??'').split(',').map(it => it.trim()).filter(it => it.length > 0)
   setMetadata(presentation.metadata.DisabledFeatures, new Set(disabledFeatures))
@@ -526,6 +534,11 @@ export async function configurePlatform() {
 
   setMetadata(presentation.metadata.PulseUrl, config.PULSE_URL)
   setMetadata(presentation.metadata.HulylakeUrl, config.HULYLAKE_URL ?? '')
+
+  setMetadata(support.metadata.SupportLink, myBranding.support?.supportLink ?? supportLink)
+  setMetadata(support.metadata.ReportBugLink, myBranding.support?.reportBugLink ?? reportBugLink)
+  setMetadata(support.metadata.DocsLink, myBranding.support?.docsLink ?? docsLink)
+  setMetadata(support.metadata.PrivacyPolicyLink, myBranding.support?.privacyPolicyLink ?? privacyPolicyLink)
 
   const languages = myBranding.languages
     ? myBranding.languages.split(',').map((l) => l.trim())

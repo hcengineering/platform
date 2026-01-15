@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Asset, IntlString } from '@hcengineering/platform'
+  import { Asset, getMetadata, IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import setting, { settingId } from '@hcengineering/setting'
-  import support, { docsLink, reportBugLink, supportLink, privacyPolicyLink } from '@hcengineering/support'
+  import support from '@hcengineering/support'
   import {
     AnySvelteComponent,
     Button,
@@ -95,7 +95,7 @@
       title: workbench.string.Documentation,
       description: workbench.string.OpenPlatformGuide,
       onClick: () => {
-        window.open(docsLink, '_blank')
+        window.open(getMetadata(support.metadata.DocsLink), '_blank')
         Analytics.handleEvent(WorkbenchEvents.DocumentationOpened)
       }
     },
@@ -203,13 +203,13 @@
     </Scroller>
   {/if}
   <div class="footer">
-    <a href={privacyPolicyLink} target="_blank">
+    <a href={getMetadata(support.metadata.PrivacyPolicyLink)} target="_blank">
       <Button id="privacy-policy" kind={'ghost'} label={support.string.PrivacyPolicy} stopPropagation={false} />
     </a>
-    <a href={reportBugLink} target="_blank">
+    <a href={getMetadata(support.metadata.ReportBugLink)} target="_blank">
       <Button id="report-a-bug" kind={'primary'} label={support.string.ReportBug} stopPropagation={false} />
     </a>
-    <a href={supportLink}>
+    <a href={getMetadata(support.metadata.SupportLink)} target="_blank">
       <Button
         id="contact-us"
         icon={support.icon.Support}
