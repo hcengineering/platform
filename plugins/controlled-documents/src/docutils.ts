@@ -30,7 +30,7 @@ import {
 import { makeRank } from '@hcengineering/rank'
 
 import documents from './plugin'
-import { getFirstRank, TEMPLATE_PREFIX } from './utils'
+import { getDocumentId, getFirstRank, TEMPLATE_PREFIX } from './utils'
 
 async function getParentPath (client: TxOperations, parent: Ref<ProjectDocument>): Promise<Array<Ref<DocumentMeta>>> {
   const parentDocObj = await client.findOne(documents.class.ProjectDocument, {
@@ -68,8 +68,10 @@ export async function createControlledDocFromTemplate (
     return { seqNumber: -1, success: false }
   }
 
-  const { seqNumber, prefix, content, category } = await useDocumentTemplate(client, templateId)
-  const { success, documentMetaId } = await createControlledDocMetadata(
+  // Try fast path first (assumes template sequence is in sync)
+  let { seqNumber, prefix, content, category } = await useDocumentTemplate(client, templateId, false)
+  let actualCode = getDocumentId({ prefix, seqNumber })
+  let { success, documentMetaId } = await createControlledDocMetadata(
     client,
     templateId,
     documentId,
@@ -78,9 +80,34 @@ export async function createControlledDocFromTemplate (
     parent,
     prefix,
     seqNumber,
-    spec.code,
+    actualCode,
     spec.title
   )
+
+  // If creation failed due to seqNumber conflict, retry with full uniqueness check
+  if (!success) {
+    // Retry with expensive check to find actual max seqNumber
+    const retryResult = await useDocumentTemplate(client, templateId, true)
+    seqNumber = retryResult.seqNumber
+    prefix = retryResult.prefix
+    content = retryResult.content
+    category = retryResult.category
+    actualCode = getDocumentId({ prefix, seqNumber })
+    const retryMetadata = await createControlledDocMetadata(
+      client,
+      templateId,
+      documentId,
+      space,
+      project,
+      parent,
+      prefix,
+      seqNumber,
+      actualCode,
+      spec.title
+    )
+    success = retryMetadata.success
+    documentMetaId = retryMetadata.documentMetaId
+  }
 
   if (!success) {
     return { seqNumber: -1, success: false }
@@ -107,9 +134,33 @@ export async function createControlledDocFromTemplate (
   return { seqNumber, success: true }
 }
 
+/**
+ * Calculate the next available seqNumber by checking existing documents with the template.
+ */
+async function calculateNextSeqNumberWithCheck (
+  client: TxOperations,
+  templateId: Ref<DocumentTemplate>,
+  currentTemplateSequence: number
+): Promise<number> {
+  const existingDocs = await client.findAll(
+    documents.class.Document,
+    {
+      template: templateId
+    },
+    {
+      projection: { seqNumber: 1 }
+    }
+  )
+
+  const maxExistingSeqNumber = existingDocs.length > 0 ? Math.max(...existingDocs.map((doc) => doc.seqNumber ?? 0)) : -1
+
+  return Math.max(currentTemplateSequence, maxExistingSeqNumber) + 1
+}
+
 export async function useDocumentTemplate (
   client: TxOperations,
-  templateId: Ref<DocumentTemplate>
+  templateId: Ref<DocumentTemplate>,
+  checkExisting: boolean = false
 ): Promise<{ seqNumber: number, prefix: string, content: Ref<Blob> | null, category: Ref<DocumentCategory> }> {
   const template = await client.findOne(documents.mixin.DocumentTemplate, {
     _id: templateId
@@ -119,15 +170,27 @@ export async function useDocumentTemplate (
     return { seqNumber: -1, prefix: '', content: null, category: '' as Ref<DocumentCategory> }
   }
 
+  let nextSeqNumber: number
+
+  if (checkExisting) {
+    nextSeqNumber = await calculateNextSeqNumberWithCheck(client, templateId, template.sequence)
+  } else {
+    nextSeqNumber = template.sequence + 1
+  }
+
+  // Update template sequence to nextSeqNumber in a single atomic operation
   await client.updateMixin(templateId, documents.class.Document, template.space, documents.mixin.DocumentTemplate, {
-    $inc: { sequence: 1 }
+    sequence: nextSeqNumber
   })
 
-  // FIXME: not concurrency safe
-  const seqNumber = template.sequence + 1
   const prefix = template.docPrefix
 
-  return { seqNumber, prefix, content: template.content, category: template.category as Ref<DocumentCategory> }
+  return {
+    seqNumber: nextSeqNumber,
+    prefix,
+    content: template.content,
+    category: template.category as Ref<DocumentCategory>
+  }
 }
 
 export async function createControlledDocMetadata (
@@ -203,6 +266,22 @@ export async function createControlledDocMetadata (
 
   const success = await ops.commit()
 
+  if (!success.result) {
+    console.warn('createControlledDocMetadata: ops.commit() failed', {
+      templateId,
+      documentId,
+      space,
+      project,
+      parent,
+      prefix,
+      seqNumber,
+      specCode,
+      specTitle,
+      documentMetaId,
+      projectDocumentId
+    })
+  }
+
   return { success: success.result, seqNumber, documentMetaId, projectDocumentId }
 }
 
@@ -260,6 +339,20 @@ export async function createDocumentTemplate (
     docPrefix: prefix
   })
   const commit = await ops.commit()
+
+  if (!commit.result) {
+    console.warn('createDocumentTemplate: ops.commit() failed', {
+      _class,
+      space,
+      _mixin,
+      project,
+      parent,
+      templateId,
+      prefix,
+      category,
+      author
+    })
+  }
 
   return { seqNumber, success: commit.result }
 }
@@ -355,6 +448,24 @@ export async function createDocumentTemplateMetadata (
 
   const success = await ops.commit()
 
+  if (!success.result) {
+    console.warn('createDocumentTemplateMetadata: ops.commit() failed', {
+      _class,
+      space,
+      _mixin,
+      project,
+      parent,
+      templateId,
+      prefix,
+      specCode,
+      specTitle,
+      seqNumber,
+      code,
+      documentMetaId,
+      projectDocumentId
+    })
+  }
+
   return { success: success.result, seqNumber, code, documentMetaId, projectDocumentId }
 }
 
@@ -406,6 +517,17 @@ export async function createNewFolder (
   )
 
   const success = await ops.commit()
+
+  if (!success.result) {
+    console.warn('createNewFolder: ops.commit() failed', {
+      space,
+      project,
+      parent,
+      title,
+      documentMetaId,
+      projectDocumentId
+    })
+  }
 
   return { success: success.result, documentMetaId, projectDocumentId }
 }
