@@ -223,6 +223,7 @@ export {
   type CopyRelationshipTableAsMarkdownProps,
   type RelationshipCellModel,
   type RelationshipRowModel,
+  type TableMetadata,
   type ValueFormatter,
   registerValueFormatterForClass,
   registerValueFormatter,

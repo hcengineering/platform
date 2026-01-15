@@ -108,6 +108,11 @@ export default plugin(textEditorId, {
     SetCellHighlightColor: '' as IntlString,
     SetTextColor: '' as IntlString,
 
+    RefreshTable: '' as IntlString,
+    ShowDiff: '' as IntlString,
+    SeeOriginalData: '' as IntlString,
+    CategoryVersioning: '' as IntlString,
+
     ConvertToLinkPreview: '' as IntlString,
     ConvertToEmbedPreview: '' as IntlString,
     UnableToLoadEmbeddedContent: '' as IntlString
@@ -143,6 +148,9 @@ export default plugin(textEditorId, {
     Brush: '' as Asset,
     TextStyle: '' as Asset,
     LinkPreview: '' as Asset,
+    Refresh: '' as Asset,
+    ShowDiff: '' as Asset,
+    SeeOriginalData: '' as Asset,
     EmbedPreview: '' as Asset
   }
 })

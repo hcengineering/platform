@@ -17,6 +17,7 @@ import core, {
   type Class,
   type Client,
   type Doc,
+  type DocumentQuery,
   type Hierarchy,
   type Ref,
   type PersonId,
@@ -33,7 +34,7 @@ import { getName, getPersonByPersonId } from '@hcengineering/contact'
 import { buildModel, buildConfigLookup, getAttributeValue, getObjectLinkFragment } from './utils'
 import view from './plugin'
 import SimpleNotification from './components/SimpleNotification.svelte'
-import { copyText } from './actionImpl'
+import { copyMarkdown } from './actionImpl'
 
 /**
  * Value formatter function for custom field extraction
@@ -447,6 +448,7 @@ export interface CopyAsMarkdownTableProps {
   viewlet?: Viewlet
   config?: Array<string | BuildModelKey>
   valueFormatter?: ValueFormatter
+  query?: DocumentQuery<Doc> // Original query used to fetch documents
 }
 
 /**
@@ -469,6 +471,55 @@ export interface CopyRelationshipTableAsMarkdownProps {
   objects: Doc[]
   cardClass: Ref<Class<Doc>>
   valueFormatter?: ValueFormatter
+  query?: DocumentQuery<Doc> // Original query used to fetch documents
+}
+
+/**
+ * Metadata structure for table clipboard data
+ * Used to preserve query and configuration for refresh/diff functionality
+ */
+export interface TableMetadata {
+  version: string // For future compatibility
+  cardClass: Ref<Class<Doc>>
+  viewletId?: Ref<Viewlet>
+  config?: Array<string | BuildModelKey>
+  query?: DocumentQuery<Doc>
+  documentIds: Array<Ref<Doc>>
+  timestamp: number
+  workspace?: string // Optional workspace identifier
+}
+
+/**
+ * Build metadata object from props and documents
+ */
+function buildTableMetadata (props: CopyAsMarkdownTableProps, docs: Doc[]): TableMetadata {
+  return {
+    version: '1.0',
+    cardClass: props.cardClass,
+    viewletId: props.viewlet?._id,
+    config: props.config,
+    query: props.query,
+    documentIds: docs.map((d) => d._id),
+    timestamp: Date.now()
+  }
+}
+
+/**
+ * Build metadata object for relationship tables
+ */
+export function buildRelationshipTableMetadata (
+  props: CopyRelationshipTableAsMarkdownProps,
+  docs: Doc[]
+): TableMetadata {
+  return {
+    version: '1.0',
+    cardClass: props.cardClass,
+    viewletId: undefined, // Relationship tables don't use viewlets
+    config: props.model.map((m) => m.key),
+    query: props.query,
+    documentIds: docs.map((d) => d._id),
+    timestamp: Date.now()
+  }
 }
 
 export async function CopyAsMarkdownTable (
@@ -578,7 +629,9 @@ export async function CopyAsMarkdownTable (
       markdown += '| ' + row.join(' | ') + ' |\n'
     }
 
-    await copyText(markdown, 'text/markdown')
+    // Build metadata for table refresh/diff functionality
+    const metadata = buildTableMetadata(props, docs)
+    await copyMarkdown(markdown, metadata)
 
     addNotification(
       await translate(view.string.Copied, {}, language),
@@ -764,7 +817,9 @@ export async function CopyRelationshipTableAsMarkdown (
       markdown += '| ' + row.join(' | ') + ' |\n'
     }
 
-    await copyText(markdown, 'text/markdown')
+    // Build metadata for relationship table refresh/diff functionality
+    const metadata = buildRelationshipTableMetadata(props, props.objects)
+    await copyMarkdown(markdown, metadata)
 
     addNotification(
       await translate(view.string.Copied, {}, language),
