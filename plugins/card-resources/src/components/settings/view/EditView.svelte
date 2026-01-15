@@ -31,8 +31,10 @@
 
   const client = getClient()
 
+  let origin = client.getHierarchy().clone(viewlet)
+
   async function save (): Promise<void> {
-    await client.diffUpdate(viewlet, {
+    await client.diffUpdate(origin, {
       title,
       descriptor: type,
       config: viewlet.config
