@@ -211,7 +211,7 @@ export function fillDefaults<T extends Doc> (
   const baseClass = hierarchy.isDerived(_class, core.class.AttachedDoc) ? core.class.AttachedDoc : core.class.Doc
   const attributes = hierarchy.getAllAttributes(_class, baseClass)
   for (const attribute of attributes) {
-    if (attribute[1].defaultValue !== undefined) {
+    if (attribute[1].defaultValue != null) {
       if ((object as any)[attribute[0]] === undefined) {
         // Clone default value as it might be an object (e.g. array)
         ;(object as any)[attribute[0]] = structuredClone(attribute[1].defaultValue)
