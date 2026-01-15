@@ -58,7 +58,7 @@ import { recruitId } from '@hcengineering/recruit'
 import rekoni from '@hcengineering/rekoni'
 import { requestId } from '@hcengineering/request'
 import setting, { settingId } from '@hcengineering/setting'
-import { supportId } from '@hcengineering/support'
+import support, { supportId, supportLink, reportBugLink, docsLink, privacyPolicyLink } from '@hcengineering/support'
 import { surveyId } from '@hcengineering/survey'
 import { tagsId } from '@hcengineering/tags'
 import { taskId } from '@hcengineering/task'
@@ -401,6 +401,12 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
 
   setMetadata(billingPlugin.metadata.BillingURL, config.BILLING_URL ?? '')
   setMetadata(presentation.metadata.PaymentUrl, config.PAYMENT_URL ?? '')
+  setMetadata(presentation.metadata.SignupUrl, config.SIGNUP_URL ?? 'https://huly.io/signup')
+
+  setMetadata(support.metadata.SupportLink, myBranding.support?.supportLink ?? supportLink)
+  setMetadata(support.metadata.ReportBugLink, myBranding.support?.reportBugLink ?? reportBugLink)
+  setMetadata(support.metadata.DocsLink, myBranding.support?.docsLink ?? docsLink)
+  setMetadata(support.metadata.PrivacyPolicyLink, myBranding.support?.privacyPolicyLink ?? privacyPolicyLink)
 
   const languages =
     myBranding.languages !== undefined && myBranding.languages !== ''
