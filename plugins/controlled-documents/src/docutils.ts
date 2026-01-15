@@ -134,6 +134,29 @@ export async function createControlledDocFromTemplate (
   return { seqNumber, success: true }
 }
 
+/**
+ * Calculate the next available seqNumber by checking existing documents with the template.
+ */
+async function calculateNextSeqNumberWithCheck (
+  client: TxOperations,
+  templateId: Ref<DocumentTemplate>,
+  currentTemplateSequence: number
+): Promise<number> {
+  const existingDocs = await client.findAll(
+    documents.class.Document,
+    {
+      template: templateId
+    },
+    {
+      projection: { seqNumber: 1 }
+    }
+  )
+
+  const maxExistingSeqNumber = existingDocs.length > 0 ? Math.max(...existingDocs.map((doc) => doc.seqNumber ?? 0)) : -1
+
+  return Math.max(currentTemplateSequence, maxExistingSeqNumber) + 1
+}
+
 export async function useDocumentTemplate (
   client: TxOperations,
   templateId: Ref<DocumentTemplate>,
@@ -150,25 +173,8 @@ export async function useDocumentTemplate (
   let nextSeqNumber: number
 
   if (checkExisting) {
-    // Find the maximum seqNumber for existing documents with this template
-    // This handles cases where exported documents have seqNumbers that don't match template sequence
-    const existingDocs = await client.findAll(
-      documents.class.Document,
-      {
-        template: templateId
-      },
-      {
-        projection: { seqNumber: 1 }
-      }
-    )
-
-    const maxExistingSeqNumber =
-      existingDocs.length > 0 ? Math.max(...existingDocs.map((doc) => doc.seqNumber ?? 0)) : -1
-
-    // Calculate next available seqNumber ensuring it's higher than both template sequence and existing docs
-    nextSeqNumber = Math.max(template.sequence, maxExistingSeqNumber) + 1
+    nextSeqNumber = await calculateNextSeqNumberWithCheck(client, templateId, template.sequence)
   } else {
-    // Fast path: just increment template sequence (assumes it's in sync)
     nextSeqNumber = template.sequence + 1
   }
 
