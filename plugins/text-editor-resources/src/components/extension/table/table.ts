@@ -40,6 +40,7 @@ import TableNodeView from './TableNodeView.svelte'
 import { TableSelection } from './types'
 import { findTable, isTableSelected, selectTable as selectTableNode } from './utils'
 import { getTableMetadata } from './tableMetadata'
+import { refreshTable, showTableDiff, seeOriginalTableData } from './actions'
 
 export const Table = TiptapTable.extend({
   draggable: true,
@@ -227,12 +228,66 @@ function handleModDelete (editor: Editor): boolean {
   return false
 }
 
+interface TableAction {
+  id: string
+  icon?: any
+  label: any
+  action: () => boolean | undefined
+  category?: {
+    label: any
+  }
+}
+
 export async function openTableOptions (editor: Editor, event: MouseEvent): Promise<void> {
   // Check if table has metadata
   const table = findTable(editor.state.selection)
   const metadata = table !== undefined ? getTableMetadata(table.node) : null
 
-  const ops = [
+  const ops: TableAction[] = []
+
+  // Add refreshable table actions first if metadata exists
+  if (metadata !== null && metadata !== undefined) {
+    ops.push(
+      {
+        id: '#refreshTable',
+        icon: textEditor.icon.Refresh,
+        label: textEditor.string.RefreshTable,
+        action: () => {
+          refreshTable(editor).catch(() => {})
+          return true
+        },
+        category: {
+          label: textEditor.string.CategoryVersioning
+        }
+      },
+      {
+        id: '#showDiff',
+        icon: textEditor.icon.ShowDiff,
+        label: textEditor.string.ShowDiff,
+        action: () => {
+          showTableDiff(editor).catch(() => {})
+          return true
+        },
+        category: {
+          label: textEditor.string.CategoryVersioning
+        }
+      },
+      {
+        id: '#seeOriginalData',
+        icon: textEditor.icon.SeeOriginalData,
+        label: textEditor.string.SeeOriginalData,
+        action: () => {
+          seeOriginalTableData(editor).catch(() => {})
+          return true
+        },
+        category: {
+          label: textEditor.string.CategoryVersioning
+        }
+      }
+    )
+  }
+
+  ops.push(
     {
       id: '#addColumnBefore',
       icon: AddColBefore,
@@ -306,49 +361,7 @@ export async function openTableOptions (editor: Editor, event: MouseEvent): Prom
         label: textEditor.string.CategoryCell
       }
     }
-  ]
-
-  // Add refreshable table actions if metadata exists
-  if (metadata !== null && metadata !== undefined) {
-    ops.push(
-      {
-        id: '#refreshTable',
-        icon: textEditor.icon.Refresh,
-        label: textEditor.string.RefreshTable,
-        action: () => {
-          refreshTable(editor).catch(() => {})
-          return true
-        },
-        category: {
-          label: textEditor.string.CategoryVersioning
-        }
-      },
-      {
-        id: '#showDiff',
-        icon: textEditor.icon.ShowDiff,
-        label: textEditor.string.ShowDiff,
-        action: () => {
-          showTableDiff(editor).catch(() => {})
-          return true
-        },
-        category: {
-          label: textEditor.string.CategoryVersioning
-        }
-      },
-      {
-        id: '#seeOriginalData',
-        icon: textEditor.icon.SeeOriginalData,
-        label: textEditor.string.SeeOriginalData,
-        action: () => {
-          seeOriginalTableData(editor).catch(() => {})
-          return true
-        },
-        category: {
-          label: textEditor.string.CategoryVersioning
-        }
-      }
-    )
-  }
+  )
 
   // Add delete table action at the end
   ops.push({
@@ -405,29 +418,4 @@ export async function isRefreshableTableActive (editor: Editor, context: ActionC
   return metadata !== null && metadata !== undefined
 }
 
-export async function refreshTable (editor: Editor): Promise<void> {
-  const table = findTable(editor.state.selection)
-  if (table === undefined) return
-  const metadata = getTableMetadata(table.node)
-  if (metadata === null || metadata === undefined) return
-  // Empty handler for now
-  console.log('Refresh table:', metadata)
-}
-
-export async function showTableDiff (editor: Editor): Promise<void> {
-  const table = findTable(editor.state.selection)
-  if (table === undefined) return
-  const metadata = getTableMetadata(table.node)
-  if (metadata === null || metadata === undefined) return
-  // Empty handler for now
-  console.log('Show diff:', metadata)
-}
-
-export async function seeOriginalTableData (editor: Editor): Promise<void> {
-  const table = findTable(editor.state.selection)
-  if (table === undefined) return
-  const metadata = getTableMetadata(table.node)
-  if (metadata === null || metadata === undefined) return
-  // Empty handler for now
-  console.log('See original data:', metadata)
-}
+export { refreshTable, showTableDiff, seeOriginalTableData } from './actions'

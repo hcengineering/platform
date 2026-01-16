@@ -73,6 +73,7 @@
     "ShowDiff": "Mostra differenze",
     "SeeOriginalData": "Vedi dati originali",
     "CategoryVersioning": "Versionamento",
+    "TableDiffLabel": "Modifiche alla tabella",
     "ConvertToLinkPreview": "Mostra come link",
     "ConvertToEmbedPreview": "Mostra come anteprima del contenuto",
     "UnableToLoadEmbeddedContent": "Impossibile caricare l'anteprima del link a causa delle impostazioni dei permessi o di contenuto non supportato",

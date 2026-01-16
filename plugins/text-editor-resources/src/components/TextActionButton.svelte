@@ -18,7 +18,6 @@
   import { type TextEditorAction, type ActionContext } from '@hcengineering/text-editor'
   import { getResource } from '@hcengineering/platform'
   import { Icon, IconSize, tooltip, type LabelAndProps } from '@hcengineering/ui'
-  import tr from 'date-fns/locale/tr'
   import { Transaction } from '@tiptap/pm/state'
 
   export let action: TextEditorAction
@@ -34,7 +33,7 @@
   $: void updateSelected(editor, action)
 
   if (listenCursorUpdate) {
-    const listener = ({ transaction }: { transaction: Transaction }) => {
+    const listener = ({ transaction }: { transaction: Transaction }): void => {
       if (transaction.getMeta('contextCursorUpdate') === true) {
         void updateSelected(editor, action)
       }
@@ -75,9 +74,11 @@
     } else {
       const { command, params } = handler
 
-      const cmd = (editor.commands as any)[command]
-      if (cmd) {
-        cmd(params)
+      if (command !== '' && command !== null && command !== undefined) {
+        const cmd = (editor.commands as any)[command]
+        if (cmd !== null && cmd !== undefined) {
+          cmd(params)
+        }
       }
     }
     dispatch('focus')

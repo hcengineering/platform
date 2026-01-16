@@ -112,6 +112,7 @@ export default plugin(textEditorId, {
     ShowDiff: '' as IntlString,
     SeeOriginalData: '' as IntlString,
     CategoryVersioning: '' as IntlString,
+    TableDiffLabel: '' as IntlString,
 
     ConvertToLinkPreview: '' as IntlString,
     ConvertToEmbedPreview: '' as IntlString,

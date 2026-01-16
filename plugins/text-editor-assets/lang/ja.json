@@ -74,6 +74,7 @@
     "ShowDiff": "差分を表示",
     "SeeOriginalData": "元のデータを表示",
     "CategoryVersioning": "バージョン管理",
+    "TableDiffLabel": "テーブルの変更",
     "ConvertToLinkPreview": "リンクとして表示",
     "ConvertToEmbedPreview": "コンテンツプレビューとして表示",
     "UnableToLoadEmbeddedContent": "リンクのプレビューを読み込めません。権限設定または非対応のコンテンツが原因です",

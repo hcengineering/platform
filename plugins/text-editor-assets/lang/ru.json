@@ -74,6 +74,7 @@
     "ShowDiff": "Показать различия",
     "SeeOriginalData": "Показать исходные данные",
     "CategoryVersioning": "Версионирование",
+    "TableDiffLabel": "Изменения в таблице",
     "ConvertToLinkPreview": "Показать как ссылку",
     "ConvertToEmbedPreview": "Показать как превью контента",
     "UnableToLoadEmbeddedContent": "Не удалось загрузить превью ссылки из-за настроек доступа или неподдерживаемого содержимого",

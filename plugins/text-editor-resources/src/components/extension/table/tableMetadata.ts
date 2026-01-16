@@ -13,15 +13,11 @@
 //
 
 import type { Node } from '@tiptap/pm/model'
+import type { BuildMarkdownTableMetadata } from '@hcengineering/view'
 
-// TableMetadata type - matches the definition in @hcengineering/view-resources
-// Defined here to avoid circular dependency (view-resources depends on text-editor-resources)
-export interface TableMetadata {
+// Extended TableMetadata for text editor storage (includes additional fields for persistence)
+export interface TableMetadata extends BuildMarkdownTableMetadata {
   version: string
-  cardClass: string
-  viewletId?: string
-  config?: Array<string | Record<string, any>>
-  query?: Record<string, any>
   documentIds: string[]
   timestamp: number
   workspace?: string

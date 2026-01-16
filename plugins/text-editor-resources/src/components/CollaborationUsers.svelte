@@ -37,7 +37,7 @@
       const entries: Array<[number, AwarenessState]> = Array.from(map.entries())
       states = entries
         .filter(([clientId, state]) => clientId !== provider.awareness?.clientID && state.user != null)
-        .map(([_, state]) => state)
+        .map(([, state]) => state)
     })
   }
 
