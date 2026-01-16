@@ -74,11 +74,9 @@
     } else {
       const { command, params } = handler
 
-      if (command !== '' && command !== null && command !== undefined) {
-        const cmd = (editor.commands as any)[command]
-        if (cmd !== null && cmd !== undefined) {
-          cmd(params)
-        }
+      const cmd = (editor.commands as any)[command]
+      if (cmd !== null && cmd !== undefined) {
+        cmd(params)
       }
     }
     dispatch('focus')
