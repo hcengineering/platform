@@ -15,7 +15,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import core, { AnyAttribute, Association, AssociationQuery, Class, Doc, Ref, Type } from '@hcengineering/core'
+  import core, { AnyAttribute, Association, AssociationQuery, Class, Client, Doc, Ref, Type } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import { getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
   import { resizeObserver } from '@hcengineering/ui'
@@ -57,6 +57,22 @@
     }
   }
 
+  function getAssoctiationLabel (client: Client, param: string): IntlString {
+    const model = client.getModel()
+    const associations = param.split('$associations.')
+    const resultLabels = associations
+      .map((r) => {
+        const parts = r.split('_')
+        if (parts.length !== 2) return ''
+        const assoc = model.findObject(parts[0] as Ref<Association>)
+        if (assoc === undefined) return ''
+        return parts[1] === '1' ? assoc.nameA : assoc.nameB
+      })
+      .filter((it) => it.length > 0)
+
+    return getEmbeddedLabel(resultLabels.join(' › '))
+  }
+
   function getBaseConfig (viewlet: Viewlet): Config[] {
     const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, viewlet.config, viewlet.options?.lookup)
     const result: Config[] = []
@@ -67,6 +83,16 @@
         if (viewlet.configOptions?.hiddenKeys?.includes(param)) continue
         if (param.length === 0) {
           result.push(getObjectConfig(viewlet.attachTo, param))
+        } else if (param.startsWith('$associations.')) {
+          const assocConfig: AttributeConfig = {
+            type: 'attribute',
+            value: param,
+            enabled: true,
+            label: getAssoctiationLabel(client, param),
+            _class: viewlet.attachTo,
+            icon: clazz.icon
+          }
+          result.push(assocConfig)
         } else {
           const attrCfg: AttributeConfig = {
             type: 'attribute',

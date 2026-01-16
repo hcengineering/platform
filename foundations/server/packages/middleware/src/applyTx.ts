@@ -63,6 +63,14 @@ export class ApplyTxMiddleware extends BaseMiddleware implements Middleware {
             }
             applyResult.serverTime = Date.now() - st
           } else {
+            ctx.warn('TxApplyIf failed', {
+              scope: applyIf.scope,
+              reason: passed.reason,
+              measureName: applyIf.measureName,
+              matchCount: applyIf.match?.length ?? 0,
+              notMatchCount: applyIf.notMatch?.length ?? 0,
+              txCount: applyIf.txes.length
+            })
             result.push({
               success: false
             })
@@ -92,6 +100,7 @@ export class ApplyTxMiddleware extends BaseMiddleware implements Middleware {
   ): Promise<{
       onEnd: () => void
       passed: boolean
+      reason?: string
     }> {
     if (applyIf.scope == null) {
       return { passed: true, onEnd: () => {} }
@@ -115,11 +124,13 @@ export class ApplyTxMiddleware extends BaseMiddleware implements Middleware {
       })
     )
     let passed = true
+    let reason: string | undefined
     if (applyIf.match != null) {
       for (const { _class, query } of applyIf.match) {
         const res = await this.provideFindAll(ctx, _class, query, { limit: 1 })
         if (res.length === 0) {
           passed = false
+          reason = `match query failed: class=${_class}, query=${JSON.stringify(query)}`
           break
         }
       }
@@ -129,10 +140,11 @@ export class ApplyTxMiddleware extends BaseMiddleware implements Middleware {
         const res = await this.provideFindAll(ctx, _class, query, { limit: 1 })
         if (res.length > 0) {
           passed = false
+          reason = `notMatch query failed: class=${_class}, query=${JSON.stringify(query)} (found ${res.length} matching document(s))`
           break
         }
       }
     }
-    return { passed, onEnd }
+    return { passed, onEnd, reason }
   }
 }
