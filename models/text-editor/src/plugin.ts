@@ -27,6 +27,9 @@ export default mergeIds(textEditorId, textEditor, {
     FormatLink: '' as Resource<TextActionFunction>,
     OpenTableOptions: '' as Resource<TextActionFunction>,
     SelectTable: '' as Resource<TextActionFunction>,
+    RefreshTable: '' as Resource<TextActionFunction>,
+    ShowTableDiff: '' as Resource<TextActionFunction>,
+    SeeOriginalTableData: '' as Resource<TextActionFunction>,
     OpenImage: '' as Resource<TextActionFunction>,
     ExpandImage: '' as Resource<TextActionFunction>,
     MoreImageActions: '' as Resource<TextActionFunction>,
@@ -35,6 +38,7 @@ export default mergeIds(textEditorId, textEditor, {
 
     IsEditableTableActive: '' as Resource<TextActionVisibleFunction>,
     IsTableToolbarContext: '' as Resource<TextActionVisibleFunction>,
+    IsRefreshableTableActive: '' as Resource<TextActionVisibleFunction>,
     IsEditableNote: '' as Resource<TextActionVisibleFunction>,
     IsEditable: '' as Resource<TextActionVisibleFunction>,
     IsTextStylingEnabled: '' as Resource<TextActionVisibleFunction>,

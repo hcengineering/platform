@@ -894,3 +894,14 @@ export interface AttrPresenter extends Doc {
   objectClass: Ref<Class<Doc>>
   component: AnyComponent
 }
+
+/**
+ * @public
+ * Metadata for markdown table generation and refresh
+ */
+export interface BuildMarkdownTableMetadata {
+  cardClass: string | Ref<Class<Doc>>
+  viewletId?: string | Ref<Viewlet>
+  config?: Array<string | BuildModelKey>
+  query?: Record<string, any> | DocumentQuery<Doc>
+}
