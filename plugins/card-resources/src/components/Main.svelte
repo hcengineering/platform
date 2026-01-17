@@ -16,8 +16,9 @@
   import { MasterTag } from '@hcengineering/card'
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, IconWithEmoji } from '@hcengineering/presentation'
   import { location } from '@hcengineering/ui'
+  import view from '@hcengineering/view'
   import { SpecialView } from '@hcengineering/workbench-resources'
   import { onDestroy } from 'svelte'
   import card from '../plugin'
@@ -54,6 +55,7 @@
     baseQuery={space !== undefined ? { space } : {}}
     {space}
     {label}
-    icon={clazz.icon ?? card.icon.Card}
+    icon={clazz.icon === view.ids.IconWithEmoji ? IconWithEmoji : clazz.icon}
+    iconProps={clazz.icon === view.ids.IconWithEmoji ? { icon: clazz.color } : {}}
   />
 {/if}
