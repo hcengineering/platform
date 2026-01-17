@@ -258,6 +258,9 @@
                 }
               }
             },
+            shortcuts: {
+              tableMetadataPaste: true
+            },
             toc: {
               onChange: (h) => {
                 headings = h

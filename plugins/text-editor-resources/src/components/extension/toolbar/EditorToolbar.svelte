@@ -78,7 +78,7 @@
   $: head = cursor?.viewOptions?.head
 </script>
 
-{#if cursor && actions.length > 0}
+{#if cursor != null && actions.length > 0}
   <div
     class="toolbar flex theme-dark"
     contenteditable="false"
@@ -96,7 +96,7 @@
           <div class="buttons-divider" />
         {/if}
 
-        {#each category as [_, action]}
+        {#each category as [, action]}
           <TextActionButton
             {action}
             {editor}

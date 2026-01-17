@@ -50,7 +50,9 @@
       <button
         class="menu-item no-focus flex-row-center item enum{level + 1}"
         on:click={() => dispatch('close', item)}
-        use:tooltip={{ label: item.titleIntl ? item.titleIntl : getEmbeddedLabel(item.title ?? '') }}
+        use:tooltip={{
+          label: item.titleIntl ?? getEmbeddedLabel(item.title ?? '')
+        }}
       >
         <div
           class="label overflow-label flex-grow"

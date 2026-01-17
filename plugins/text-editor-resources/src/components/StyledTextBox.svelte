@@ -125,7 +125,7 @@
   export let focusIndex = -1
   const { idx, focusManager } = registerFocus(focusIndex, {
     focus: () => {
-      const editable = editor?.isEditable() ?? false
+      const editable: boolean = editor != null ? editor.isEditable() : false
       if (editable) {
         focused = true
         focus()
@@ -179,7 +179,7 @@
             targetItem instanceof MouseEvent ? getEventPositionElement(targetItem) : getPopupPositionElement(targetItem)
         }
 
-        addTableHandler(editor.editorHandler.insertTable, position)
+        void addTableHandler(editor.editorHandler.insertTable, position)
         break
       }
       case 'code-block':
