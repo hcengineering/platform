@@ -14,12 +14,14 @@
 -->
 <script lang="ts">
   import type { Class, Doc, DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { generateId } from '@hcengineering/core'
   import { ActionContext } from '@hcengineering/presentation'
   import { FadeOptions, Scroller, tableSP } from '@hcengineering/ui'
   import { BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { focusStore, ListSelectionProvider, SelectDirection } from '../selection'
   import { LoadingProps } from '../utils'
+  import { type ViewletContext, ViewletContextStore, viewletContextStore } from '../viewletContextStore'
   import Table from './Table.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -53,8 +55,42 @@
   )
   const selection = listProvider.selection
 
+  const contextId = generateId()
+
+  // Set viewlet context in store when component mounts/updates
+  $: {
+    viewletContextStore.update((cur) => {
+      const contexts = cur.contexts
+      const pos = contexts.findIndex((it) => it.id === contextId)
+      const newContext: ViewletContext = {
+        id: contextId,
+        viewlet,
+        config,
+        query,
+        viewOptions,
+        _class
+      }
+      if (pos === -1) {
+        return new ViewletContextStore([...contexts, newContext])
+      }
+      return new ViewletContextStore(contexts.map((it) => (it.id === contextId ? newContext : it)))
+    })
+  }
+
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()
+  })
+
+  onDestroy(() => {
+    // Remove this context from store when component unmounts
+    viewletContextStore.update((cur) => {
+      const contexts = cur.contexts
+      const pos = contexts.findIndex((it) => it.id === contextId)
+      if (pos === -1) {
+        return cur
+      }
+      return new ViewletContextStore(contexts.slice(0, pos))
+    })
   })
 </script>
 

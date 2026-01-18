@@ -51,6 +51,7 @@ import {
 import { deleteObjects, getObjectId, getObjectLinkFragment, restrictionStore } from './utils'
 import workbenchPlugin from '@hcengineering/workbench'
 import { CopyAsMarkdownTable } from './copyAsMarkdownTable'
+import { viewletContextStore } from './viewletContextStore'
 
 /**
  * Action to be used for copying text to clipboard.
@@ -720,6 +721,38 @@ async function CopyDocumentMarkdown (
 }
 
 /**
+ * CopyAsMarkdownTable action implementation
+ * Reads viewlet config from store if not provided in props
+ * @public
+ */
+async function CopyAsMarkdownTableAction (
+  doc: Doc | Doc[],
+  evt: Event,
+  props: {
+    cardClass: Ref<Class<Doc>>
+    viewlet?: any
+    config?: Array<string | any>
+    query?: DocumentQuery<Doc>
+    viewOptions?: any
+  }
+): Promise<void> {
+  // Get viewlet context from store if not provided in props
+  const $viewletContextStore = get(viewletContextStore)
+  const viewletContext = $viewletContextStore.getLastContext()
+
+  // Merge store context with props (props take precedence)
+  const mergedProps = {
+    cardClass: props.cardClass,
+    viewlet: props.viewlet ?? viewletContext?.viewlet,
+    config: props.config ?? viewletContext?.config,
+    query: props.query ?? viewletContext?.query,
+    viewOptions: props.viewOptions ?? viewletContext?.viewOptions
+  }
+
+  await CopyAsMarkdownTable(doc, evt, mergedProps)
+}
+
+/**
  * @public
  */
 export const actionImpl = {
@@ -748,5 +781,5 @@ export const actionImpl = {
   ValueSelector,
   AttributeSelector,
   CopyDocumentMarkdown,
-  CopyAsMarkdownTable
+  CopyAsMarkdownTable: CopyAsMarkdownTableAction
 }

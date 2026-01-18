@@ -373,6 +373,10 @@ const view = plugin(viewId, {
     }>,
     CopyAsMarkdownTable: '' as ViewAction<{
       cardClass: Ref<Class<Doc>>
+      viewlet?: Viewlet
+      config?: Array<string | any>
+      query?: DocumentQuery<Doc>
+      viewOptions?: any
     }>,
     UpdateDocument: '' as ViewAction<{
       key: string
