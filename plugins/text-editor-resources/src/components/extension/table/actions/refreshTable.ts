@@ -48,15 +48,15 @@ export async function refreshTable (editor: Editor): Promise<void> {
       return
     }
 
-    // Build query: use existing query if available, otherwise build from documentIds
+    // Build query: use documentIds as filter if available (preserves selected docs), otherwise use query
     let query: any
     let useDocumentIdsOrder = false
-    if (metadata.query !== null && metadata.query !== undefined) {
-      query = metadata.query
-    } else if (metadata.documentIds !== undefined && metadata.documentIds.length > 0) {
-      // Build query from document IDs
-      query = { _id: { $in: metadata.documentIds } }
+    if (metadata.documentIds !== undefined && metadata.documentIds.length > 0) {
+      // Build query from document IDs (preserves selected docs filter)
+      query = { ...(metadata?.query ?? {}), _id: { $in: metadata.documentIds } }
       useDocumentIdsOrder = true
+    } else if (metadata.query !== null && metadata.query !== undefined) {
+      query = metadata.query
     } else {
       console.warn('Table metadata has no query or documentIds to execute')
       return
