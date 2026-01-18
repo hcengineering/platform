@@ -112,12 +112,12 @@ export async function showTableDiff (editor: Editor): Promise<void> {
     // Build query: use existing query if available, otherwise build from documentIds
     let query: any
     let useDocumentIdsOrder = false
-    if (metadata.query !== null && metadata.query !== undefined) {
-      query = metadata.query
-    } else if (metadata.documentIds !== undefined && metadata.documentIds.length > 0) {
+    if (metadata.documentIds !== undefined && metadata.documentIds.length > 0) {
       // Build query from document IDs
-      query = { _id: { $in: metadata.documentIds } }
+      query = { ...(metadata?.query ?? {}), _id: { $in: metadata.documentIds } }
       useDocumentIdsOrder = true
+    } else if (metadata.query !== null && metadata.query !== undefined) {
+      query = metadata.query
     } else {
       console.warn('Table metadata has no query or documentIds to execute')
       return

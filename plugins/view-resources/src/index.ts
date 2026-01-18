@@ -217,6 +217,7 @@ export {
   type LoadingProps
 } from './utils'
 export * from './viewOptions'
+export * from './viewletContextStore'
 export {
   CopyAsMarkdownTable,
   type CopyAsMarkdownTableProps,
