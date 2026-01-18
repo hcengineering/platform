@@ -17,6 +17,7 @@ import core, {
   type Class,
   type Client,
   type Doc,
+  type DocumentQuery,
   type Hierarchy,
   type Ref,
   type PersonId,
@@ -27,13 +28,18 @@ import core, {
 import { translate, type IntlString, getMetadata } from '@hcengineering/platform'
 import { addNotification, NotificationSeverity, locationToUrl } from '@hcengineering/ui'
 import { getCurrentLanguage } from '@hcengineering/theme'
-import viewPlugin, { type Viewlet, type AttributeModel, type BuildModelKey } from '@hcengineering/view'
+import viewPlugin, {
+  type Viewlet,
+  type AttributeModel,
+  type BuildModelKey,
+  type BuildMarkdownTableMetadata
+} from '@hcengineering/view'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { getName, getPersonByPersonId } from '@hcengineering/contact'
-import { buildModel, buildConfigLookup, getObjectLinkFragment } from './utils'
+import { buildModel, buildConfigLookup, getAttributeValue, getObjectLinkFragment } from './utils'
 import view from './plugin'
 import SimpleNotification from './components/SimpleNotification.svelte'
-import { copyText } from './actionImpl'
+import { copyMarkdown } from './actionImpl'
 
 /**
  * Value formatter function for custom field extraction
@@ -447,6 +453,232 @@ export interface CopyAsMarkdownTableProps {
   viewlet?: Viewlet
   config?: Array<string | BuildModelKey>
   valueFormatter?: ValueFormatter
+  query?: DocumentQuery<Doc> // Original query used to fetch documents
+}
+
+/**
+ * Interface for RelationshipTable's row and cell models
+ */
+export interface RelationshipCellModel {
+  attribute: AttributeModel
+  rowSpan: number
+  object: Doc | undefined
+  parentObject: Doc | undefined
+}
+
+export interface RelationshipRowModel {
+  cells: RelationshipCellModel[]
+}
+
+export interface CopyRelationshipTableAsMarkdownProps {
+  viewModel: RelationshipRowModel[]
+  model: AttributeModel[]
+  objects: Doc[]
+  cardClass: Ref<Class<Doc>>
+  valueFormatter?: ValueFormatter
+  query?: DocumentQuery<Doc> // Original query used to fetch documents
+}
+
+/**
+ * Metadata structure for table clipboard data
+ * Used to preserve query and configuration for refresh/diff functionality
+ */
+export interface TableMetadata {
+  version: string // For future compatibility
+  cardClass: Ref<Class<Doc>>
+  viewletId?: Ref<Viewlet>
+  config?: Array<string | BuildModelKey>
+  query?: DocumentQuery<Doc>
+  documentIds: Array<Ref<Doc>>
+  timestamp: number
+  workspace?: string // Optional workspace identifier
+}
+
+/**
+ * Build metadata object from props and documents
+ * If viewlet is not provided, tries to find a default viewlet for the class
+ */
+async function buildTableMetadata (
+  props: CopyAsMarkdownTableProps,
+  docs: Doc[],
+  client?: Client
+): Promise<TableMetadata> {
+  // If viewlet is not provided, try to find a default viewlet for the class
+  let viewletId: Ref<Viewlet> | undefined = props.viewlet?._id
+  if (viewletId === undefined && client !== undefined) {
+    const { viewlet } = await loadViewletConfig(client, client.getHierarchy(), props.cardClass, undefined, props.config)
+    viewletId = viewlet?._id
+  }
+
+  return {
+    version: '1.0',
+    cardClass: props.cardClass,
+    viewletId,
+    config: props.config,
+    query: props.query,
+    documentIds: docs.map((d) => d._id),
+    timestamp: Date.now()
+  }
+}
+
+/**
+ * Build metadata object for relationship tables
+ */
+export function buildRelationshipTableMetadata (
+  props: CopyRelationshipTableAsMarkdownProps,
+  docs: Doc[]
+): TableMetadata {
+  return {
+    version: '1.0',
+    cardClass: props.cardClass,
+    viewletId: undefined, // Relationship tables don't use viewlets
+    config: props.model.map((m) => m.key),
+    query: props.query,
+    documentIds: docs.map((d) => d._id),
+    timestamp: Date.now()
+  }
+}
+
+/**
+ * Wrapper function for building markdown table from BuildMarkdownTableMetadata
+ * This is used by text-editor-resources to refresh tables
+ * Converts BuildMarkdownTableMetadata format to CopyAsMarkdownTableProps format
+ */
+export async function buildMarkdownTableFromMetadata (
+  docs: Doc[],
+  metadata: BuildMarkdownTableMetadata,
+  client: Client
+): Promise<string> {
+  // Load viewlet if viewletId is provided
+  let viewlet: Viewlet | undefined
+  if (metadata.viewletId !== undefined) {
+    viewlet = await client.findOne(viewPlugin.class.Viewlet, { _id: metadata.viewletId as Ref<Viewlet> })
+  }
+
+  // Convert metadata to CopyAsMarkdownTableProps
+  const props: CopyAsMarkdownTableProps = {
+    cardClass: metadata.cardClass as Ref<Class<Doc>>,
+    viewlet,
+    config: metadata.config,
+    query: metadata.query
+  }
+
+  // Use the reusable function
+  return await buildMarkdownTableFromDocs(docs, props, client)
+}
+
+/**
+ * Build markdown table string from documents and props
+ * This is the core logic for building markdown tables, extracted for reuse
+ * @param docs - Documents to include in the table
+ * @param props - Table configuration props
+ * @param client - Client instance
+ * @returns Markdown table string
+ */
+export async function buildMarkdownTableFromDocs (
+  docs: Doc[],
+  props: CopyAsMarkdownTableProps,
+  client: Client
+): Promise<string> {
+  if (docs.length === 0) {
+    return ''
+  }
+
+  const hierarchy = client.getHierarchy()
+  const cardClass = hierarchy.getClass(props.cardClass)
+  if (cardClass == null) {
+    return ''
+  }
+
+  // Load viewlet and config (including user preferences)
+  const { viewlet, config: actualConfig } = await loadViewletConfig(
+    client,
+    hierarchy,
+    props.cardClass,
+    props.viewlet,
+    props.config
+  )
+
+  // Build displayable model from config
+  let displayableModel: AttributeModel[]
+  if (actualConfig !== undefined && actualConfig.length > 0) {
+    const lookup =
+      viewlet !== undefined
+        ? buildConfigLookup(hierarchy, props.cardClass, actualConfig, viewlet.options?.lookup)
+        : undefined
+    const hiddenKeys = viewlet?.configOptions?.hiddenKeys ?? []
+    const model = await buildModel({
+      client,
+      _class: props.cardClass,
+      keys: actualConfig.filter((key: string | BuildModelKey) => {
+        if (typeof key === 'string') {
+          return !hiddenKeys.includes(key)
+        }
+        return !hiddenKeys.includes(key.key) && key.displayProps?.grow !== true
+      }),
+      lookup
+    })
+    displayableModel = model.filter((attr) => attr.displayProps?.grow !== true)
+  } else {
+    displayableModel = await buildTableModel(client, hierarchy, props.cardClass, viewlet)
+  }
+
+  if (displayableModel.length === 0) {
+    return ''
+  }
+
+  const language = getCurrentLanguage()
+
+  // Cache for user ID (PersonId) -> name mappings to reduce database calls
+  const userCache = new Map<PersonId, string>()
+
+  const headers: string[] = []
+  for (const attr of displayableModel) {
+    let label: string
+    if (typeof attr.label === 'string') {
+      label = isIntlString(attr.label) ? await translate(attr.label as unknown as IntlString, {}, language) : attr.label
+    } else {
+      label = await translate(attr.label, {}, language)
+    }
+    headers.push(label)
+  }
+
+  const rows: string[][] = []
+  for (const card of docs) {
+    const row: string[] = []
+    for (let i = 0; i < displayableModel.length; i++) {
+      const attr = displayableModel[i]
+      const isFirstColumn = i === 0
+      const value = await formatValue(
+        attr,
+        card,
+        hierarchy,
+        props.cardClass,
+        language,
+        isFirstColumn,
+        userCache,
+        props.valueFormatter
+      )
+
+      // If this is the first column with empty key (title attribute), create a markdown link
+      if (isFirstColumn && attr.key === '') {
+        const linkValue = await createMarkdownLink(hierarchy, card, value)
+        row.push(linkValue)
+      } else {
+        const escapedValue = escapeMarkdownLinkText(value)
+        row.push(escapedValue)
+      }
+    }
+    rows.push(row)
+  }
+
+  let markdown = '| ' + headers.join(' | ') + ' |\n'
+  markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n'
+  for (const row of rows) {
+    markdown += '| ' + row.join(' | ') + ' |\n'
+  }
+
+  return markdown
 }
 
 export async function CopyAsMarkdownTable (
@@ -460,46 +692,55 @@ export async function CopyAsMarkdownTable (
       return
     }
     const client = getClient()
-    const hierarchy = client.getHierarchy()
-    const cardClass = hierarchy.getClass(props.cardClass)
-    if (cardClass == null) {
+
+    // Build markdown table using the extracted function
+    const markdown = await buildMarkdownTableFromDocs(docs, props, client)
+
+    if (markdown.length === 0) {
       return
     }
 
-    // Load viewlet and config (including user preferences)
-    const { viewlet, config: actualConfig } = await loadViewletConfig(
-      client,
-      hierarchy,
-      props.cardClass,
-      props.viewlet,
-      props.config
-    )
+    // Build metadata for table refresh/diff functionality
+    const metadata = await buildTableMetadata(props, docs, client)
+    await copyMarkdown(markdown, metadata)
 
-    // Build displayable model from config
-    let displayableModel: AttributeModel[]
-    if (actualConfig !== undefined && actualConfig.length > 0) {
-      const lookup =
-        viewlet !== undefined
-          ? buildConfigLookup(hierarchy, props.cardClass, actualConfig, viewlet.options?.lookup)
-          : undefined
-      const hiddenKeys = viewlet?.configOptions?.hiddenKeys ?? []
-      const model = await buildModel({
-        client,
-        _class: props.cardClass,
-        keys: actualConfig.filter((key: string | BuildModelKey) => {
-          if (typeof key === 'string') {
-            return !hiddenKeys.includes(key)
-          }
-          return !hiddenKeys.includes(key.key) && key.displayProps?.grow !== true
-        }),
-        lookup
-      })
-      displayableModel = model.filter((attr) => attr.displayProps?.grow !== true)
-    } else {
-      displayableModel = await buildTableModel(client, hierarchy, props.cardClass, viewlet)
+    const language = getCurrentLanguage()
+    addNotification(
+      await translate(view.string.Copied, {}, language),
+      await translate(view.string.TableCopiedToClipboard, {}, language),
+      SimpleNotification,
+      undefined,
+      NotificationSeverity.Success
+    )
+  } catch (error) {
+    const language = getCurrentLanguage()
+    addNotification(
+      await translate(view.string.Copied, {}, language),
+      await translate(view.string.TableCopyFailed, {}, language),
+      SimpleNotification,
+      undefined,
+      NotificationSeverity.Error
+    )
+  }
+}
+
+/**
+ * Copy RelationshipTable as markdown table
+ * Handles hierarchical data with row spans by duplicating cell values across spanned rows
+ */
+export async function CopyRelationshipTableAsMarkdown (
+  evt: Event,
+  props: CopyRelationshipTableAsMarkdownProps
+): Promise<void> {
+  try {
+    if (props.viewModel.length === 0 || props.model.length === 0) {
+      return
     }
 
-    if (displayableModel.length === 0) {
+    const client = getClient()
+    const hierarchy = client.getHierarchy()
+    const cardClass = hierarchy.getClass(props.cardClass)
+    if (cardClass == null) {
       return
     }
 
@@ -508,8 +749,9 @@ export async function CopyAsMarkdownTable (
     // Cache for user ID (PersonId) -> name mappings to reduce database calls
     const userCache = new Map<PersonId, string>()
 
+    // Extract headers from model
     const headers: string[] = []
-    for (const attr of displayableModel) {
+    for (const attr of props.model) {
       let label: string
       if (typeof attr.label === 'string') {
         label = isIntlString(attr.label)
@@ -521,42 +763,135 @@ export async function CopyAsMarkdownTable (
       headers.push(label)
     }
 
+    // Build a map of attribute keys to their index in the model for quick lookup
+    const attributeKeyToIndex = new Map<string, number>()
+    props.model.forEach((attr, index) => {
+      attributeKeyToIndex.set(attr.key, index)
+    })
+
+    // Track active row spans - maps attribute key to remaining span count
+    const activeRowSpans = new Map<string, { value: string, remaining: number }>()
+
+    // Process rows from viewModel
     const rows: string[][] = []
-    for (const card of docs) {
-      const row: string[] = []
-      for (let i = 0; i < displayableModel.length; i++) {
-        const attr = displayableModel[i]
-        const isFirstColumn = i === 0
-        const value = await formatValue(
-          attr,
-          card,
+    for (let rowIdx = 0; rowIdx < props.viewModel.length; rowIdx++) {
+      const rowModel = props.viewModel[rowIdx]
+      const row: string[] = new Array(headers.length).fill('')
+
+      // First, handle cells that are continuing from previous rows (row spans)
+      for (const [attrKey, spanInfo] of activeRowSpans.entries()) {
+        if (spanInfo.remaining > 0) {
+          const attrIndex = attributeKeyToIndex.get(attrKey)
+          if (attrIndex !== undefined) {
+            row[attrIndex] = spanInfo.value
+            spanInfo.remaining--
+            if (spanInfo.remaining === 0) {
+              activeRowSpans.delete(attrKey)
+            }
+          }
+        }
+      }
+
+      // Then, process cells in the current row
+      for (const cell of rowModel.cells) {
+        const attrIndex = attributeKeyToIndex.get(cell.attribute.key)
+        if (attrIndex === undefined) continue
+
+        // Determine if this is an association column
+        const isAssociationKey = cell.attribute.key.startsWith('$associations')
+
+        let doc: Doc | undefined
+        if (isAssociationKey) {
+          doc = cell.object
+        } else {
+          doc = cell.object ?? cell.parentObject
+        }
+
+        if (doc === undefined) {
+          // Empty cell
+          row[attrIndex] = ''
+          continue
+        }
+
+        // Use the same getValue logic as RelationshipTable
+        // For association keys, this returns the child document object itself
+        const rawValue = getAttributeValue(cell.attribute, doc, hierarchy)
+
+        // Determine which document and class to use for formatting
+        let docToUse = doc
+        let docClass = props.cardClass
+        let attributeToUse = cell.attribute
+
+        if (isAssociationKey) {
+          // For association keys, the value IS the child document object
+          if (rawValue !== undefined && rawValue !== null && typeof rawValue === 'object' && '_class' in rawValue) {
+            docToUse = rawValue as Doc
+            docClass = docToUse._class
+            const parts = cell.attribute.key.split('$associations.')
+            if (parts.length > 1) {
+              const afterAssoc = parts[1].substring(1) // Remove leading dot
+              const dotIndex = afterAssoc.indexOf('.')
+              if (dotIndex > 0) {
+                const attributeName = afterAssoc.substring(dotIndex + 1)
+                attributeToUse = {
+                  ...cell.attribute,
+                  key: attributeName
+                }
+              } else {
+                attributeToUse = {
+                  ...cell.attribute,
+                  key: ''
+                }
+              }
+            }
+          }
+        }
+
+        // Format the value using the same logic as regular tables
+        const isFirstColumn = attrIndex === 0
+        const allowEmptyKey = isFirstColumn || isAssociationKey
+        let value = await formatValue(
+          attributeToUse,
+          docToUse,
           hierarchy,
-          props.cardClass,
+          docClass,
           language,
-          isFirstColumn,
+          allowEmptyKey, // Pass true for association keys so empty key works
           userCache,
           props.valueFormatter
         )
 
-        // If this is the first column with empty key (title attribute), create a markdown link
-        if (isFirstColumn && attr.key === '') {
-          const linkValue = await createMarkdownLink(hierarchy, card, value)
-          row.push(linkValue)
+        const isDocumentTitle = attributeToUse.key === '' && docToUse !== undefined
+        if (isDocumentTitle) {
+          value = await createMarkdownLink(hierarchy, docToUse, value)
         } else {
-          const escapedValue = escapeMarkdownLinkText(value)
-          row.push(escapedValue)
+          value = escapeMarkdownLinkText(value)
+        }
+
+        row[attrIndex] = value
+
+        // If this cell has a row span > 1, track it for subsequent rows
+        if (cell.rowSpan > 1) {
+          activeRowSpans.set(cell.attribute.key, {
+            value,
+            remaining: cell.rowSpan - 1
+          })
         }
       }
+
       rows.push(row)
     }
 
+    // Build markdown table
     let markdown = '| ' + headers.join(' | ') + ' |\n'
     markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n'
     for (const row of rows) {
       markdown += '| ' + row.join(' | ') + ' |\n'
     }
 
-    await copyText(markdown, 'text/markdown')
+    // Build metadata for relationship table refresh/diff functionality
+    const metadata = buildRelationshipTableMetadata(props, props.objects)
+    await copyMarkdown(markdown, metadata)
 
     addNotification(
       await translate(view.string.Copied, {}, language),

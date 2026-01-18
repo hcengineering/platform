@@ -18,7 +18,12 @@
   import core, { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import rating, { type PersonRating } from '@hcengineering/rating'
   import login, { loginId } from '@hcengineering/login'
-  import { createQuery, getCurrentWorkspaceUrl, hasResource, isDisabled } from '@hcengineering/presentation'
+  import presentation, {
+    createQuery,
+    getCurrentWorkspaceUrl,
+    hasResource,
+    isDisabled
+  } from '@hcengineering/presentation'
   import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
   import {
     Action,
@@ -37,7 +42,7 @@
   import HelpAndSupport from './HelpAndSupport.svelte'
   import { Analytics } from '@hcengineering/analytics'
   import { allowGuestSignUpStore } from '@hcengineering/view-resources'
-  import { getClient } from '@hcengineering/account-client'
+  import { getMetadata } from '@hcengineering/platform'
 
   let items: SettingsCategory[] = []
 
@@ -179,7 +184,7 @@
         icon: setting.icon.InviteWorkspace,
         label: view.string.ReadOnlySignUp,
         action: async () => {
-          open('https://huly.io/signup')
+          open(getMetadata(presentation.metadata.SignupUrl))
         },
         group: 'end'
       })

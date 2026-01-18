@@ -13,9 +13,43 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { type Blob, type Ref } from '@hcengineering/core'
+  import { createQuery, getPreviewThumbnail } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
+
   export let workspace: string
   export let title: string
   export let reference: string
+
+  const logoSize = 128
+  const query = createQuery()
+
+  let iconDataUrl: string | undefined = undefined
+
+  query.query(setting.class.WorkspaceSetting, {}, (res) => {
+    const ws = res[0]
+    const icon = ws?.icon
+    if (icon != null) {
+      void fetchIconAsDataUrl(icon)
+    }
+  })
+
+  async function fetchIconAsDataUrl (iconRef: Ref<Blob>): Promise<void> {
+    try {
+      const url = getPreviewThumbnail(iconRef, logoSize, logoSize, 1)
+      const response = await fetch(url)
+      const blob = await response.blob()
+
+      const reader = new FileReader()
+      reader.onload = () => {
+        iconDataUrl = reader.result as string
+      }
+      reader.readAsDataURL(blob)
+    } catch (error) {
+      console.error('Failed to convert image to data URL:', error)
+      iconDataUrl = undefined
+    }
+  }
 
   const rootStyle = /* css */ `
     width: 100%;
@@ -29,6 +63,7 @@
 
   const rowStyle = /* css */ `
     display: flex;
+    align-items: center;
     justify-content: space-between;
     line-height: 150%;
     margin-bottom: 2mm;
@@ -38,11 +73,28 @@
     border-bottom: 1px solid #cccccc;
     margin: 1px 0;
   `
+
+  const logoContainerStyle = /* css */ `
+    display: flex;
+    align-items: center;
+  `
+
+  const logoStyle = /* css */ `
+    width: 24pt;
+    height: 24pt;
+    border: none;
+    margin-right: 4mm;
+  `
 </script>
 
 <header style={rootStyle}>
   <div style={rowStyle}>
-    <span>{workspace}</span>
+    <span style={logoContainerStyle}>
+      {#if iconDataUrl}
+        <img src={iconDataUrl} alt={''} style={logoStyle} />
+      {/if}
+      {workspace}
+    </span>
     <span>{title}</span>
     <span>{reference}</span>
   </div>

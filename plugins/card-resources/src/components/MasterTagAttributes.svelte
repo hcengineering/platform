@@ -64,7 +64,7 @@
         kind={'link'}
         size={'medium'}
         showTooltip={{ label: setting.string.AddAttribute }}
-        on:click={(ev) => {
+        on:click={() => {
           showPopup(setting.component.CreateAttributePopup, { _class: value._class, isCard: true }, 'top')
         }}
       />

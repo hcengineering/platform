@@ -69,6 +69,7 @@ import { createCollaboratorClient } from './collaborator'
 const activeExecutions = new Set<Ref<Execution>>()
 
 export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid, ctx: MeasureContext): Promise<void> {
+  if (record.account === core.account.ConfigUser) return
   try {
     const client = new TxOperations(await getClient(ws), record.account)
     try {

@@ -51,6 +51,7 @@ import {
 import { deleteObjects, getObjectId, getObjectLinkFragment, restrictionStore } from './utils'
 import workbenchPlugin from '@hcengineering/workbench'
 import { CopyAsMarkdownTable } from './copyAsMarkdownTable'
+import { viewletContextStore } from './viewletContextStore'
 
 /**
  * Action to be used for copying text to clipboard.
@@ -81,20 +82,99 @@ async function CopyTextToClipboard (
 
 export async function copyText (text: any, contentType: string = 'text/plain'): Promise<void> {
   try {
-    const clipboardItem = new ClipboardItem({
-      'text/plain': text
-    })
-    await navigator.clipboard.write([clipboardItem])
-  } catch {
-    // Fallback to default clipboard API implementation
+    // Check if ClipboardItem is available
+    if (typeof ClipboardItem !== 'undefined') {
+      const clipboardData: Record<string, any> = {
+        [contentType]: text instanceof Promise ? text : Promise.resolve(text)
+      }
+
+      const clipboardItem = new ClipboardItem(clipboardData)
+      await navigator.clipboard.write([clipboardItem])
+    } else {
+      // Fallback if ClipboardItem is not available
+      if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
+        await navigator.clipboard.writeText(text instanceof Promise ? await text : text)
+      } else {
+        copyTextToClipboardOldBrowser(text instanceof Promise ? await text : text)
+      }
+    }
+  } catch (error) {
+    // Log error and fallback: only copy main content
+    console.error('Failed to copy to clipboard, falling back to plain text:', error)
     if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
       try {
-        await navigator.clipboard.writeText(text)
-      } catch {
-        copyTextToClipboardOldBrowser(text)
+        await navigator.clipboard.writeText(text instanceof Promise ? await text : text)
+      } catch (fallbackError) {
+        console.error('Failed to copy to clipboard with writeText, using old browser fallback:', fallbackError)
+        copyTextToClipboardOldBrowser(text instanceof Promise ? await text : text)
       }
-    } else copyTextToClipboardOldBrowser(text)
+    } else {
+      copyTextToClipboardOldBrowser(text instanceof Promise ? await text : text)
+    }
   }
+}
+
+/**
+ * Copy markdown text to clipboard with optional metadata for refreshable tables.
+ * This function is specifically designed for copying markdown tables with metadata
+ * that enables refresh, diff, and "see original data" functionality in text editors.
+ *
+ * @param markdown - The markdown text to copy
+ * @param metadata - Optional metadata object containing table information (query, config, document IDs, etc.)
+ */
+export async function copyMarkdown (markdown: string, metadata?: Record<string, any>): Promise<void> {
+  // Step 1: Always embed metadata in markdown FIRST (if metadata exists)
+  let markdownToCopy = markdown
+  if (metadata !== undefined) {
+    try {
+      const metadataComment = `<!-- huly-table-metadata:${JSON.stringify(metadata)} -->`
+      // Insert comment before first table (or at start if no table)
+      const tableIndex = markdown.indexOf('|')
+      markdownToCopy =
+        tableIndex !== -1
+          ? markdown.slice(0, tableIndex) + metadataComment + '\n' + markdown.slice(tableIndex)
+          : metadataComment + '\n' + markdown
+    } catch (e) {
+      console.error('Failed to embed metadata in markdown:', e)
+      // Continue with original markdown if embedding fails
+    }
+  }
+
+  // Step 2: Try modern ClipboardItem API (with custom MIME type for performance)
+  try {
+    if (typeof ClipboardItem !== 'undefined') {
+      const clipboardData: Record<string, any> = {
+        'text/markdown': Promise.resolve(markdownToCopy)
+      }
+      // Add custom MIME type for fast parsing in modern browsers
+      if (metadata !== undefined) {
+        try {
+          clipboardData['application/x-huly-table-metadata'] = Promise.resolve(JSON.stringify(metadata))
+        } catch (e) {
+          console.error('Failed to stringify metadata for custom MIME type:', e)
+        }
+      }
+
+      const clipboardItem = new ClipboardItem(clipboardData)
+      await navigator.clipboard.write([clipboardItem])
+      return // Success, exit early
+    }
+  } catch (error) {
+    console.error('Failed to copy with ClipboardItem, falling back:', error)
+  }
+
+  // Step 3: Fallback to writeText (markdownToCopy already has metadata)
+  try {
+    if (navigator.clipboard != null && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(markdownToCopy)
+      return // Success, exit early
+    }
+  } catch (fallbackError) {
+    console.error('Failed to copy with writeText, using old browser fallback:', fallbackError)
+  }
+
+  // Step 4: Final fallback to old browser method (markdownToCopy already has metadata)
+  copyTextToClipboardOldBrowser(markdownToCopy)
 }
 
 function Delete (
@@ -641,6 +721,38 @@ async function CopyDocumentMarkdown (
 }
 
 /**
+ * CopyAsMarkdownTable action implementation
+ * Reads viewlet config from store if not provided in props
+ * @public
+ */
+async function CopyAsMarkdownTableAction (
+  doc: Doc | Doc[],
+  evt: Event,
+  props: {
+    cardClass: Ref<Class<Doc>>
+    viewlet?: any
+    config?: Array<string | any>
+    query?: DocumentQuery<Doc>
+    viewOptions?: any
+  }
+): Promise<void> {
+  // Get viewlet context from store if not provided in props
+  const $viewletContextStore = get(viewletContextStore)
+  const viewletContext = $viewletContextStore.getLastContext()
+
+  // Merge store context with props (props take precedence)
+  const mergedProps = {
+    cardClass: props.cardClass,
+    viewlet: props.viewlet ?? viewletContext?.viewlet,
+    config: props.config ?? viewletContext?.config,
+    query: props.query ?? viewletContext?.query,
+    viewOptions: props.viewOptions ?? viewletContext?.viewOptions
+  }
+
+  await CopyAsMarkdownTable(doc, evt, mergedProps)
+}
+
+/**
  * @public
  */
 export const actionImpl = {
@@ -669,5 +781,5 @@ export const actionImpl = {
   ValueSelector,
   AttributeSelector,
   CopyDocumentMarkdown,
-  CopyAsMarkdownTable
+  CopyAsMarkdownTable: CopyAsMarkdownTableAction
 }

@@ -50,7 +50,9 @@
     if (employeeSearchCategory === undefined) return []
 
     const clazz =
-      docClass && client.getHierarchy().hasClass(docClass) ? client.getHierarchy().getClass(docClass) : undefined
+      docClass != null && client.getHierarchy().hasClass(docClass)
+        ? client.getHierarchy().getClass(docClass)
+        : undefined
     const docTitle = await translate(clazz?.label ?? core.string.Object, {})
 
     const everyoneDescription = await translate(contact.string.EveryoneDescription, {

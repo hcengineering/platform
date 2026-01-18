@@ -306,7 +306,8 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxCreateDoc,
       objectClass: process.class.ProcessCustomEvent
-    }
+    },
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
@@ -314,7 +315,8 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: process.class.Execution
-    }
+    },
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
@@ -340,7 +342,8 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: { $in: [core.class.TxUpdateDoc, core.class.TxMixin] },
       objectClass: cardPlugin.class.Card
-    }
+    },
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
@@ -348,7 +351,8 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: process.class.Process
-    }
+    },
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
@@ -356,14 +360,16 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: process.class.State
-    }
+    },
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverProcess.trigger.OnTransition,
     txMatch: {
       objectClass: process.class.Transition
-    }
+    },
+    isAsync: true
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
@@ -371,6 +377,7 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxCreateDoc,
       objectClass: cardPlugin.class.Card
-    }
+    },
+    isAsync: true
   })
 }

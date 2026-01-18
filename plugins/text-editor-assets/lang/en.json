@@ -70,6 +70,11 @@
     "AddCommentPlaceholder": "Add a comment...",
     "SetCellHighlightColor": "Set cell color",
     "SetTextColor": "Set text color",
+    "RefreshTable": "Refresh Table",
+    "ShowDiff": "Show Diff",
+    "SeeOriginalData": "See Original Data",
+    "CategoryVersioning": "Versioning",
+    "TableDiffLabel": "Table Changes",
 
     "ConvertToLinkPreview": "Show as a link",
     "ConvertToEmbedPreview": "Show as a content preview",

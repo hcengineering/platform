@@ -15,8 +15,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import core, { AnyAttribute, Class, Doc, Ref, Type } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
+  import core, { AnyAttribute, Association, AssociationQuery, Class, Client, Doc, Ref, Type } from '@hcengineering/core'
+  import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import { getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
   import { resizeObserver } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
@@ -57,6 +57,22 @@
     }
   }
 
+  function getAssoctiationLabel (client: Client, param: string): IntlString {
+    const model = client.getModel()
+    const associations = param.split('$associations.')
+    const resultLabels = associations
+      .map((r) => {
+        const parts = r.split('_')
+        if (parts.length !== 2) return ''
+        const assoc = model.findObject(parts[0] as Ref<Association>)
+        if (assoc === undefined) return ''
+        return parts[1] === '1' ? assoc.nameA : assoc.nameB
+      })
+      .filter((it) => it.length > 0)
+
+    return getEmbeddedLabel(resultLabels.join(' › '))
+  }
+
   function getBaseConfig (viewlet: Viewlet): Config[] {
     const lookup = buildConfigLookup(hierarchy, viewlet.attachTo, viewlet.config, viewlet.options?.lookup)
     const result: Config[] = []
@@ -67,6 +83,16 @@
         if (viewlet.configOptions?.hiddenKeys?.includes(param)) continue
         if (param.length === 0) {
           result.push(getObjectConfig(viewlet.attachTo, param))
+        } else if (param.startsWith('$associations.')) {
+          const assocConfig: AttributeConfig = {
+            type: 'attribute',
+            value: param,
+            enabled: true,
+            label: getAssoctiationLabel(client, param),
+            _class: viewlet.attachTo,
+            icon: clazz.icon
+          }
+          result.push(assocConfig)
         } else {
           const attrCfg: AttributeConfig = {
             type: 'attribute',
@@ -203,8 +229,25 @@
         })
       })
 
-      const ancestors = new Set(hierarchy.getAncestors(viewlet.attachTo))
-      const parent = hierarchy.getParentClass(viewlet.attachTo)
+      const desc = hierarchy.getDescendants(viewlet.attachTo)
+      for (const d of desc) {
+        if (!hierarchy.isMixin(d)) continue
+        hierarchy.getOwnAttributes(d).forEach((attr) => {
+          processAttribute(attr, result, true)
+        })
+      }
+
+      addAssociations(result, viewlet.attachTo, preference)
+    }
+
+    function addAssociations (
+      result: Config[],
+      _class: Ref<Class<Doc>>,
+      preference: ViewletPreference | undefined,
+      parents: AssociationQuery[] = []
+    ): void {
+      const ancestors = new Set(hierarchy.getAncestors(_class))
+      const parent = hierarchy.getParentClass(_class)
       const parentMixins = hierarchy
         .getDescendants(parent)
         .map((p) => hierarchy.getClass(p))
@@ -215,6 +258,72 @@
           processAttribute(attr, result, true)
         })
       })
+
+      const allClasses = [...ancestors, ...parentMixins.map((it) => it._id)]
+
+      const associationsB = client.getModel().findAllSync(core.class.Association, { classA: { $in: allClasses } })
+      const associationsA = client.getModel().findAllSync(core.class.Association, { classB: { $in: allClasses } })
+
+      associationsB.forEach((a) => {
+        processAssociation(a, 'b', result, preference, parents)
+      })
+      associationsA.forEach((a) => {
+        processAssociation(a, 'a', result, preference, parents)
+      })
+    }
+
+    function getParentsString (parents: AssociationQuery[]): string {
+      return parents.map(([assocId, direction]) => `$associations.${assocId}_${direction === 1 ? 'a' : 'b'}`).join('.')
+    }
+
+    function processAssociation (
+      association: Association,
+      direction: 'a' | 'b',
+      result: Config[],
+      preference: ViewletPreference | undefined,
+      parents: AssociationQuery[]
+    ): void {
+      const associationName = `$associations.${association._id}_${direction}`
+      const resultName = parents.length > 0 ? `${getParentsString(parents)}.${associationName}` : associationName
+
+      const name = direction === 'a' ? association.nameA : association.nameB
+      const targetClass = direction === 'a' ? association.classA : association.classB
+
+      if (name.trim().length === 0) return
+      const model = client.getModel()
+
+      const resultLabels = parents
+        .map((r) => {
+          const assoc = model.findObject(r[0])
+          if (assoc === undefined) return ''
+          return r[1] === 1 ? assoc.nameA : assoc.nameB
+        })
+        .filter((it) => it.length > 0)
+      resultLabels.push(name)
+      const fullLabel = resultLabels.join(' › ')
+
+      const clazz = hierarchy.getClass(targetClass)
+      const newValue: AttributeConfig = {
+        type: 'attribute',
+        value: resultName,
+        label: getEmbeddedLabel(fullLabel),
+        enabled: false,
+        _class: targetClass,
+        icon: clazz.icon
+      }
+
+      if (!isExist(result, newValue)) {
+        result.push(newValue)
+      }
+
+      if (preference === undefined) return
+      const exists = preference.config.find((p) => {
+        const key = typeof p === 'string' ? p : p.key
+        return key === resultName
+      })
+      if (exists) {
+        addAssociations(result, targetClass, preference, [...parents, [association._id, direction === 'a' ? 1 : -1]])
+      }
     }
 
     return preference === undefined ? result : []

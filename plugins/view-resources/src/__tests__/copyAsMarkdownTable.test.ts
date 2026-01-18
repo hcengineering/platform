@@ -20,7 +20,7 @@ import core, { type Class, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import { getCurrentLanguage } from '@hcengineering/theme'
-import { copyText } from '../actionImpl'
+import { copyMarkdown } from '../actionImpl'
 import { addNotification } from '@hcengineering/ui'
 import { buildModel } from '../utils'
 
@@ -48,7 +48,8 @@ jest.mock('@hcengineering/theme', () => ({
 }))
 
 jest.mock('../actionImpl', () => ({
-  copyText: jest.fn()
+  copyText: jest.fn(),
+  copyMarkdown: jest.fn()
 }))
 
 jest.mock('@hcengineering/ui', () => ({
@@ -185,7 +186,7 @@ describe('copyAsMarkdownTable', () => {
         cardClass
       })
 
-      expect(copyText).not.toHaveBeenCalled()
+      expect(copyMarkdown).not.toHaveBeenCalled()
     })
 
     it('should return early if displayableModel is empty', async () => {
@@ -197,7 +198,7 @@ describe('copyAsMarkdownTable', () => {
         cardClass
       })
 
-      expect(copyText).not.toHaveBeenCalled()
+      expect(copyMarkdown).not.toHaveBeenCalled()
     })
 
     it('should copy markdown table and show notification', async () => {
@@ -214,7 +215,7 @@ describe('copyAsMarkdownTable', () => {
         cardClass
       })
 
-      expect(copyText).toHaveBeenCalled()
+      expect(copyMarkdown).toHaveBeenCalled()
       expect(addNotification).toHaveBeenCalledWith(
         'translated:view:string:Copied',
         'translated:view:string:TableCopiedToClipboard',
@@ -223,11 +224,14 @@ describe('copyAsMarkdownTable', () => {
         'success'
       )
 
-      const markdownCall = (copyText as jest.Mock).mock.calls[0][0]
-      expect(markdownCall).toContain('|')
-      expect(markdownCall).toContain('---')
-      expect(markdownCall).toContain('translated:card:string:Card')
-      expect(markdownCall).toContain('translated:card:string:MasterTag')
+      const markdownCall = (copyMarkdown as jest.Mock).mock.calls[0][0]
+      // copyMarkdown receives markdown as first argument, metadata as second
+      // The markdown may have metadata comment prepended, so check for table content
+      const markdownContent = typeof markdownCall === 'string' ? markdownCall : ''
+      expect(markdownContent).toContain('|')
+      expect(markdownContent).toContain('---')
+      expect(markdownContent).toContain('translated:card:string:Card')
+      expect(markdownContent).toContain('translated:card:string:MasterTag')
     })
 
     it('should translate IntlString values in table', async () => {
@@ -249,9 +253,10 @@ describe('copyAsMarkdownTable', () => {
         cardClass
       })
 
-      expect(copyText).toHaveBeenCalled()
-      const markdownCall = (copyText as jest.Mock).mock.calls[0][0]
-      expect(markdownCall).toContain('translated:card:types:Document')
+      expect(copyMarkdown).toHaveBeenCalled()
+      const markdownCall = (copyMarkdown as jest.Mock).mock.calls[0][0]
+      const markdownContent = typeof markdownCall === 'string' ? markdownCall : ''
+      expect(markdownContent).toContain('translated:card:types:Document')
     })
 
     it('should handle multiple docs', async () => {
@@ -274,9 +279,10 @@ describe('copyAsMarkdownTable', () => {
         cardClass
       })
 
-      expect(copyText).toHaveBeenCalled()
-      const markdownCall = (copyText as jest.Mock).mock.calls[0][0]
-      const lines = markdownCall.split('\n').filter((line: string) => line.trim().length > 0)
+      expect(copyMarkdown).toHaveBeenCalled()
+      const markdownCall = (copyMarkdown as jest.Mock).mock.calls[0][0]
+      const markdownContent = typeof markdownCall === 'string' ? markdownCall : ''
+      const lines = markdownContent.split('\n').filter((line: string) => line.trim().length > 0)
       expect(lines.length > 3).toBe(true)
     })
 
@@ -299,13 +305,14 @@ describe('copyAsMarkdownTable', () => {
         cardClass
       })
 
-      expect(copyText).toHaveBeenCalled()
-      const markdownCall = (copyText as jest.Mock).mock.calls[0][0]
+      expect(copyMarkdown).toHaveBeenCalled()
+      const markdownCall = (copyMarkdown as jest.Mock).mock.calls[0][0]
+      const markdownContent = typeof markdownCall === 'string' ? markdownCall : ''
       // Check that pipe is escaped
-      expect(markdownCall).toContain('\\|')
+      expect(markdownContent).toContain('\\|')
       // Check that newlines in data are replaced with spaces
       // The markdown table itself has newlines between rows, so we check data rows specifically
-      const dataRows = markdownCall.split('\n').filter((line: string) => line.includes('|') && !line.includes('---'))
+      const dataRows = markdownContent.split('\n').filter((line: string) => line.includes('|') && !line.includes('---'))
       dataRows.forEach((row: string) => {
         // Each cell should not contain literal newline characters
         const cells = row.split('|').map((cell: string) => cell.trim())
@@ -344,18 +351,19 @@ describe('copyAsMarkdownTable', () => {
         cardClass
       })
 
-      expect(copyText).toHaveBeenCalled()
-      const markdownCall = (copyText as jest.Mock).mock.calls[0][0]
+      expect(copyMarkdown).toHaveBeenCalled()
+      const markdownCall = (copyMarkdown as jest.Mock).mock.calls[0][0]
+      const markdownContent = typeof markdownCall === 'string' ? markdownCall : ''
       // Check that the first column contains a markdown link with full URL
       // Note: getObjectLinkFragment may not be called if the condition isn't met,
       // but we should still check the markdown output
       if (mockGetObjectLinkFragment.mock.calls.length > 0) {
         expect(mockGetObjectLinkFragment).toHaveBeenCalled()
-        expect(markdownCall).toMatch(/\[.*\]\(http:\/\/huly\.local:8080\/.*\)/)
-        expect(markdownCall).toContain('http://huly.local:8080')
+        expect(markdownContent).toMatch(/\[.*\]\(http:\/\/huly\.local:8080\/.*\)/)
+        expect(markdownContent).toContain('http://huly.local:8080')
       } else {
         // If link wasn't created, verify the markdown still contains the title
-        expect(markdownCall).toContain('Test Card')
+        expect(markdownContent).toContain('Test Card')
       }
     })
 
@@ -380,10 +388,11 @@ describe('copyAsMarkdownTable', () => {
         cardClass
       })
 
-      expect(copyText).toHaveBeenCalled()
-      const markdownCall = (copyText as jest.Mock).mock.calls[0][0]
+      expect(copyMarkdown).toHaveBeenCalled()
+      const markdownCall = (copyMarkdown as jest.Mock).mock.calls[0][0]
+      const markdownContent = typeof markdownCall === 'string' ? markdownCall : ''
       // Should not contain markdown links (no empty key in first column)
-      expect(markdownCall).not.toMatch(/\[.*\]\(http:\/\/.*\)/)
+      expect(markdownContent).not.toMatch(/\[.*\]\(http:\/\/.*\)/)
     })
 
     it('should fall back to plain text if link generation fails', async () => {
@@ -395,12 +404,13 @@ describe('copyAsMarkdownTable', () => {
         cardClass
       })
 
-      expect(copyText).toHaveBeenCalled()
-      const markdownCall = (copyText as jest.Mock).mock.calls[0][0]
+      expect(copyMarkdown).toHaveBeenCalled()
+      const markdownCall = (copyMarkdown as jest.Mock).mock.calls[0][0]
+      const markdownContent = typeof markdownCall === 'string' ? markdownCall : ''
       // Should not contain markdown links (fallback to plain text)
-      expect(markdownCall).not.toMatch(/\[.*\]\(http:\/\/.*\)/)
+      expect(markdownContent).not.toMatch(/\[.*\]\(http:\/\/.*\)/)
       // Should contain the title as plain text
-      expect(markdownCall).toContain('Test Card')
+      expect(markdownContent).toContain('Test Card')
     })
   })
 

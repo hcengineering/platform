@@ -48,5 +48,8 @@ loadMetadata(textEditor.icon, {
   Brush: `${icons}#brush`,
   TextStyle: `${icons}#textStyle`,
   LinkPreview: `${icons}#link`,
+  Refresh: `${icons}#refresh`,
+  ShowDiff: `${icons}#showDiff`,
+  SeeOriginalData: `${icons}#seeOriginal`,
   EmbedPreview: `${icons}#linkEmbed`
 })

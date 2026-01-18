@@ -22,8 +22,12 @@ import { configureNote, isEditableNote } from './components/extension/note'
 import {
   isEditableTableActive,
   isTableToolbarContext,
+  isRefreshableTableActive,
   openTableOptions,
-  selectTable
+  selectTable,
+  refreshTable,
+  showTableDiff,
+  seeOriginalTableData
 } from './components/extension/table/table'
 import {
   convertToEmbedPreviewAction,
@@ -113,6 +117,10 @@ export default async (): Promise<Resources> => ({
     ConfigureNote: configureNote,
     IsEditableTableActive: isEditableTableActive,
     IsTableToolbarContext: isTableToolbarContext,
+    IsRefreshableTableActive: isRefreshableTableActive,
+    RefreshTable: refreshTable,
+    ShowTableDiff: showTableDiff,
+    SeeOriginalTableData: seeOriginalTableData,
     IsEditableNote: isEditableNote,
     IsEditable: isEditable,
     IsHeadingVisible: isHeadingVisible,

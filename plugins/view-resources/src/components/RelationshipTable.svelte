@@ -34,6 +34,7 @@
   import { createQuery, getClient, reduceCalls, updateAttribute } from '@hcengineering/presentation'
   import ui, {
     Button,
+    IconCopy,
     Label,
     Loading,
     eventToHTMLElement,
@@ -48,8 +49,9 @@
   import { showMenu } from '../actions'
   import { canChangeAttribute } from '../permissions'
   import view from '../plugin'
-  import { buildConfigAssociation, buildConfigLookup, buildModel, restrictionStore } from '../utils'
+  import { buildConfigAssociation, buildConfigLookup, buildModel, getAttributeValue, restrictionStore } from '../utils'
   import { getResultOptions, getResultQuery } from '../viewOptions'
+  import { CopyRelationshipTableAsMarkdown } from '../copyAsMarkdownTable'
   import IconUpDown from './icons/UpDown.svelte'
   import RelationsSelectorPopup from './RelationsSelectorPopup.svelte'
 
@@ -227,16 +229,7 @@
   }
 
   function getValue (attribute: AttributeModel, object: Doc): any {
-    if (attribute.castRequest) {
-      return getObjectValue(
-        attribute.key.substring(attribute.castRequest.length + 1),
-        client.getHierarchy().as(object, attribute.castRequest)
-      )
-    }
-    if (attribute.key.startsWith(assoc)) {
-      return object
-    }
-    return getObjectValue(attribute.key, object)
+    return getAttributeValue(attribute, object, client.getHierarchy())
   }
 
   function showContextMenu (ev: MouseEvent, object: Doc | undefined): void {
@@ -545,6 +538,16 @@
       eventToHTMLElement(e)
     )
   }
+
+  async function handleCopyAsMarkdown (e: MouseEvent): Promise<void> {
+    if (model === undefined || viewModel.length === 0) return
+    await CopyRelationshipTableAsMarkdown(e, {
+      viewModel,
+      model,
+      objects,
+      cardClass: _class
+    })
+  }
 </script>
 
 {#if !model || isBuildingModel}
@@ -672,6 +675,19 @@
             limit = limit + 100
           }}
         />
+      {/if}
+
+      {#if objects.length > 0 && viewModel.length > 0 && model !== undefined}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div class="px-1">
+          <Button
+            icon={IconCopy}
+            label={view.string.CopyToClipboard}
+            kind={'ghost'}
+            size={'small'}
+            on:click={handleCopyAsMarkdown}
+          />
+        </div>
       {/if}
     </div>
   </div>

@@ -14,7 +14,14 @@ export function getTypeOf (obj: any): string {
     return 'Array'
   }
 
-  const stringTag = ste && obj[Symbol.toStringTag]
+  let stringTag: string | undefined
+  if (ste) {
+    try {
+      stringTag = obj[Symbol.toStringTag]
+    } catch {
+      stringTag = undefined
+    }
+  }
   if (typeof stringTag === 'string') {
     return stringTag
   }
@@ -31,7 +38,11 @@ export function getTypeOf (obj: any): string {
   if (objPrototype === null) {
     return 'Object'
   }
-  return {}.toString.call(obj).slice(8, -1)
+  try {
+    return {}.toString.call(obj).slice(8, -1)
+  } catch {
+    return 'Object'
+  }
 }
 
 export function clone (
