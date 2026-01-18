@@ -734,6 +734,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
             ON r."${keyB}" = assoc."_id"
           WHERE r."${keyA}" = ANY(${parentIds})
             AND r.association = ${assocIdVar}
+            AND r."workspaceId" = ${wsId}
             AND assoc."workspaceId" = ${wsId}
           `,
           vars.getValues()
