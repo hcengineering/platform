@@ -85,6 +85,7 @@
     {tableId}
     {viewOptions}
     viewOptionsConfig={viewOptionsConfig ?? viewlet?.viewOptions?.other}
+    {viewlet}
     selection={listProvider.current($focusStore)}
     {readonly}
     on:row-focus={(evt) => {

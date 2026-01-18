@@ -42,7 +42,14 @@
     resizeObserver,
     showPopup
   } from '@hcengineering/ui'
-  import { AttributeModel, BuildModelKey, BuildModelOptions, ViewOptionModel, ViewOptions } from '@hcengineering/view'
+  import {
+    AttributeModel,
+    BuildModelKey,
+    BuildModelOptions,
+    ViewOptionModel,
+    ViewOptions,
+    Viewlet
+  } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher, onMount } from 'svelte'
   import { Readable } from 'svelte/store'
@@ -67,6 +74,7 @@
   export let showFooter = false
   export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let viewOptions: ViewOptions | undefined = undefined
+  export let viewlet: Viewlet | undefined = undefined
 
   export let totalQuery: DocumentQuery<Doc> | undefined = undefined
 
@@ -541,11 +549,20 @@
 
   async function handleCopyAsMarkdown (e: MouseEvent): Promise<void> {
     if (model === undefined || viewModel.length === 0) return
+
+    // Compute the actual query with viewOptions/filters applied
+    const p = await getResultQuery(hierarchy, query, viewOptionsConfig, viewOptions)
+    const resultQuery = mergeQueries(p, query)
+
     await CopyRelationshipTableAsMarkdown(e, {
       viewModel,
       model,
       objects,
-      cardClass: _class
+      cardClass: _class,
+      query: resultQuery,
+      viewlet,
+      config,
+      viewOptions
     })
   }
 </script>

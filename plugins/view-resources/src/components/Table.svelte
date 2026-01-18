@@ -42,7 +42,14 @@
     mouseAttractor,
     resizeObserver
   } from '@hcengineering/ui'
-  import { AttributeModel, BuildModelKey, BuildModelOptions, ViewOptionModel, ViewOptions } from '@hcengineering/view'
+  import {
+    AttributeModel,
+    BuildModelKey,
+    BuildModelOptions,
+    ViewOptionModel,
+    ViewOptions,
+    Viewlet
+  } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher, onMount } from 'svelte'
   import { showMenu } from '../actions'
@@ -55,6 +62,7 @@
   import { Readable } from 'svelte/store'
   import { getResource } from '@hcengineering/platform'
   import { canChangeAttribute } from '../permissions'
+  import { CopyAsMarkdownTable, type CopyAsMarkdownTableProps } from '../copyAsMarkdownTable'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -70,6 +78,7 @@
   export let showFooter = false
   export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let viewOptions: ViewOptions | undefined = undefined
+  export let viewlet: Viewlet | undefined = undefined
 
   export let totalQuery: DocumentQuery<Doc> | undefined = undefined
 
@@ -364,6 +373,26 @@
       return await canEditSpace(object)
     }
     return true
+  }
+
+  export async function copyTableAsMarkdown (evt: Event): Promise<void> {
+    if (objects.length === 0) {
+      return
+    }
+
+    // Compute the actual query with viewOptions/filters applied
+    const p = await getResultQuery(hierarchy, query, viewOptionsConfig, viewOptions)
+    const resultQuery = mergeQueries(p, query)
+
+    const props: CopyAsMarkdownTableProps = {
+      cardClass: _class,
+      viewlet,
+      config,
+      query: resultQuery,
+      valueFormatter: undefined
+    }
+
+    await CopyAsMarkdownTable(objects, evt, props)
   }
 </script>
 
