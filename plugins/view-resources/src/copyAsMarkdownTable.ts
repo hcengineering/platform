@@ -32,8 +32,7 @@ import viewPlugin, {
   type Viewlet,
   type AttributeModel,
   type BuildModelKey,
-  type BuildMarkdownTableMetadata,
-  type ViewOptions
+  type BuildMarkdownTableMetadata
 } from '@hcengineering/view'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { getName, getPersonByPersonId } from '@hcengineering/contact'
@@ -477,10 +476,7 @@ export interface CopyRelationshipTableAsMarkdownProps {
   objects: Doc[]
   cardClass: Ref<Class<Doc>>
   valueFormatter?: ValueFormatter
-  query?: DocumentQuery<Doc> // Actual query with filters applied
-  viewlet?: Viewlet // The viewlet being used (if any)
-  config?: Array<string | BuildModelKey> // The actual config from viewlet/preferences
-  viewOptions?: ViewOptions // View options including filters
+  query?: DocumentQuery<Doc> // Original query used to fetch documents
 }
 
 /**

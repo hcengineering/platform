@@ -31,8 +31,6 @@
   export let viewlet: Viewlet | undefined = undefined
   export let readonly = false
 
-  let table: RelationshipTable
-
   onMount(() => {
     ;(document.activeElement as HTMLElement)?.blur()
   })
@@ -48,7 +46,6 @@
 
 <Scroller fade={tableSP} horizontal>
   <RelationshipTable
-    bind:this={table}
     {_class}
     {config}
     {options}
@@ -59,7 +56,6 @@
     showFooter
     {viewOptions}
     viewOptionsConfig={viewOptionsConfig ?? viewlet?.viewOptions?.other}
-    {viewlet}
     {readonly}
   />
 </Scroller>
