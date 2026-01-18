@@ -496,12 +496,24 @@ export interface TableMetadata {
 
 /**
  * Build metadata object from props and documents
+ * If viewlet is not provided, tries to find a default viewlet for the class
  */
-function buildTableMetadata (props: CopyAsMarkdownTableProps, docs: Doc[]): TableMetadata {
+async function buildTableMetadata (
+  props: CopyAsMarkdownTableProps,
+  docs: Doc[],
+  client?: Client
+): Promise<TableMetadata> {
+  // If viewlet is not provided, try to find a default viewlet for the class
+  let viewletId: Ref<Viewlet> | undefined = props.viewlet?._id
+  if (viewletId === undefined && client !== undefined) {
+    const { viewlet } = await loadViewletConfig(client, client.getHierarchy(), props.cardClass, undefined, props.config)
+    viewletId = viewlet?._id
+  }
+
   return {
     version: '1.0',
     cardClass: props.cardClass,
-    viewletId: props.viewlet?._id,
+    viewletId,
     config: props.config,
     query: props.query,
     documentIds: docs.map((d) => d._id),
@@ -689,7 +701,7 @@ export async function CopyAsMarkdownTable (
     }
 
     // Build metadata for table refresh/diff functionality
-    const metadata = buildTableMetadata(props, docs)
+    const metadata = await buildTableMetadata(props, docs, client)
     await copyMarkdown(markdown, metadata)
 
     const language = getCurrentLanguage()

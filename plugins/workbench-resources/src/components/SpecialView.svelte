@@ -18,6 +18,7 @@
   import { getClient, ComponentExtensions } from '@hcengineering/presentation'
   import {
     AnyComponent,
+    AnySvelteComponent,
     Breadcrumb,
     Button,
     Component,
@@ -41,10 +42,12 @@
   import workbench, { ParentsNavigationModel } from '@hcengineering/workbench'
   import ComponentNavigator from './ComponentNavigator.svelte'
   import { deepEqual } from 'fast-equals'
+  import { ComponentType } from 'svelte'
 
   export let _class: Ref<Class<Doc>>
   export let space: Ref<Space> | undefined = undefined
-  export let icon: Asset
+  export let icon: Asset | AnySvelteComponent | ComponentType | undefined = undefined
+  export let iconProps: any | undefined = undefined
   export let label: IntlString
   export let createEvent: string | undefined = undefined
   export let createLabel: IntlString | undefined = undefined
@@ -153,7 +156,7 @@
     <ViewletSettingButton bind:viewOptions bind:viewlet {defaultViewOptions} {defaultConfig} />
   </svelte:fragment>
 
-  <Breadcrumb {icon} {label} size={'large'} isCurrent />
+  <Breadcrumb {icon} {iconProps} {label} size={'large'} isCurrent />
 
   <svelte:fragment slot="search">
     <SearchInput bind:value={search} collapsed />
