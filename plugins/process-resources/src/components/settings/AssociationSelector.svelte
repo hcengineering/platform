@@ -29,9 +29,9 @@
   const dispatch = createEventDispatcher()
 
   function open (e: MouseEvent): void {
-    const descendants = hierarchy.getDescendants(process.masterTag)
-    const leftAssociations = client.getModel().findAllSync(core.class.Association, { classA: { $in: descendants } })
-    const rightAssociations = client.getModel().findAllSync(core.class.Association, { classB: { $in: descendants } })
+    const anc = hierarchy.getAncestors(process.masterTag)
+    const leftAssociations = client.getModel().findAllSync(core.class.Association, { classA: { $in: anc } })
+    const rightAssociations = client.getModel().findAllSync(core.class.Association, { classB: { $in: anc } })
     const items: SelectPopupValueType[] = []
     rightAssociations.forEach((a) => {
       items.push({
