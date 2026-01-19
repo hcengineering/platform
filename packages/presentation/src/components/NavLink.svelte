@@ -134,6 +134,7 @@
       display: inline-flex;
       align-items: center;
       text-decoration: none;
+      max-width: 100%;
     }
 
     &.inlineBlock {
