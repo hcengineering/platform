@@ -60,7 +60,7 @@
   }
 
   const ancestors = client.getHierarchy().getAncestors(masterTag)
-  const roles = client.getModel().findAllSync(card.class.Role, { type: { $in: ancestors } })
+  const roles = client.getModel().findAllSync(card.class.Role, { types: { $in: ancestors } })
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
