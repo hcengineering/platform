@@ -39,7 +39,8 @@
     getClient,
     isLinkPreviewEnabled,
     uploadFile,
-    LinkPreviewAttachmentMetadata
+    LinkPreviewAttachmentMetadata,
+    generateFileId
   } from '@hcengineering/presentation'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import textEditor, { type RefAction } from '@hcengineering/text-editor'
@@ -383,9 +384,10 @@
     for (const url of urls) {
       try {
         const meta = await fetchLinkPreviewDetails(url)
-        if (canDisplayLinkPreview(meta) && meta.url !== undefined) {
+        if (canDisplayLinkPreview(meta)) {
+          const uuid = generateFileId()
           const blob = new Blob([JSON.stringify(meta)])
-          const file = new File([blob], meta.url, { type: 'application/link-preview' })
+          const file = new File([blob], uuid, { type: 'application/link-preview' })
           const metadata: LinkPreviewAttachmentMetadata = {
             title: meta.title,
             image: meta.image,
