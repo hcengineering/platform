@@ -49,8 +49,7 @@ jobs:
       - name: Bundle dev/prod (for front assets)
         run: |
           cd dev/prod
-          rushx build
-          rushx bundle
+          rushx package
 
       - name: Bundle front
         run: |
