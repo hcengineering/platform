@@ -74,6 +74,7 @@
     "SeeOriginalData": "Originaldaten anzeigen",
     "CategoryVersioning": "Versionierung",
     "TableDiffLabel": "Tabellenänderungen",
+    "TableRefreshConfirmationLabel": "Tabellenaktualisierung bestätigen",
     "ConvertToLinkPreview": "Als Link anzeigen",
     "ConvertToEmbedPreview": "Als Inhaltsvorschau anzeigen",
     "UnableToLoadEmbeddedContent": "Die Linkvorschau konnte aufgrund von Berechtigungseinstellungen oder nicht unterstütztem Inhalt nicht geladen werden",

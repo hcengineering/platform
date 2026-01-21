@@ -65,6 +65,7 @@
     "SeeOriginalData": "Ver datos originales",
     "CategoryVersioning": "Control de versiones",
     "TableDiffLabel": "Cambios en la tabla",
+    "TableRefreshConfirmationLabel": "Confirmar actualización de tabla",
     "ConvertToLinkPreview": "Mostrar como enlace",
     "ConvertToEmbedPreview": "Mostrar como vista previa de contenido",
     "UnableToLoadEmbeddedContent": "No se pudo cargar la vista previa del enlace debido a la configuración de permisos o contenido no compatible",

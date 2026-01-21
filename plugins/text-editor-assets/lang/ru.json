@@ -75,6 +75,7 @@
     "SeeOriginalData": "Показать исходные данные",
     "CategoryVersioning": "Версионирование",
     "TableDiffLabel": "Изменения в таблице",
+    "TableRefreshConfirmationLabel": "Подтвердить обновление таблицы",
     "ConvertToLinkPreview": "Показать как ссылку",
     "ConvertToEmbedPreview": "Показать как превью контента",
     "UnableToLoadEmbeddedContent": "Не удалось загрузить превью ссылки из-за настроек доступа или неподдерживаемого содержимого",
