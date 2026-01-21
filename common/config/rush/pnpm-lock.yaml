@@ -5005,6 +5005,9 @@ importers:
       '@hcengineering/analytics':
         specifier: workspace:^0.7.17
         version: link:../../../core/packages/analytics
+      '@hcengineering/contact':
+        specifier: workspace:^0.7.0
+        version: link:../../../../plugins/contact
       '@hcengineering/core':
         specifier: workspace:^0.7.24
         version: link:../../../core/packages/core
