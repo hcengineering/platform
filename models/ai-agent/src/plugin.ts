@@ -8,13 +8,9 @@ import { aiAgentId } from '@hcengineering/ai-agent'
 import aiAgent from '@hcengineering/ai-agent-resources/src/plugin'
 import { type Ref } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui'
 import { type Widget } from '@hcengineering/workbench'
 
 export default mergeIds(aiAgentId, aiAgent, {
-  component: {
-    AgentWidget: '' as AnyComponent
-  },
   ids: {
     AgentWidget: '' as Ref<Widget>
   }
