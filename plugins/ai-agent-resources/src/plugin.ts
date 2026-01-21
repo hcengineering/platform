@@ -4,16 +4,7 @@
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
 
-import aiAgent, { aiAgentId } from '@hcengineering/ai-agent'
-import { mergeIds } from '@hcengineering/platform'
-import { type AnyComponent } from '@hcengineering/ui/src/types'
+import aiAgent from '@hcengineering/ai-agent'
 
-export default mergeIds(aiAgentId, aiAgent, {
-  component: {
-    AgentWidget: '' as AnyComponent,
-    AgentPanel: '' as AnyComponent,
-    ModeSelector: '' as AnyComponent,
-    MessageList: '' as AnyComponent,
-    ChatInput: '' as AnyComponent
-  }
-})
+// Re-export the plugin - components are already defined in the base plugin
+export default aiAgent
