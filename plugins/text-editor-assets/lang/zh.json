@@ -67,6 +67,7 @@
     "SeeOriginalData": "查看原始数据",
     "CategoryVersioning": "版本控制",
     "TableDiffLabel": "表格变更",
+    "TableRefreshConfirmationLabel": "确认表格刷新",
     "ConvertToLinkPreview": "显示为链接",
     "ConvertToEmbedPreview": "显示为内容预览",
     "UnableToLoadEmbeddedContent": "由于权限设置或不支持的内容，无法加载链接预览",
