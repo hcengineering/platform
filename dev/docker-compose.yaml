@@ -40,6 +40,17 @@ services:
     ports:
       - 4040:4040
     restart: unless-stopped
+  link-preview:
+    image: 'hardcoreeng/link-preview'
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    container_name: link-preview
+    environment:
+      - SECRET=secret
+      - PORT=4041
+    ports:
+      - 4041:4041
+    restart: unless-stopped
   cockroach:
     image: cockroachdb/cockroach:latest-v24.3
     extra_hosts:
@@ -306,6 +317,7 @@ services:
       - DATALAKE_URL=http://huly.local:4030
       - HULYLAKE_URL=http://huly.local:8096
       - EXPORT_URL=http://huly.local:4009
+      - LINK_PREVIEW_URL=http://huly.local:4041
     restart: unless-stopped
   transactor_cockroach:
     image: hardcoreeng/transactor
