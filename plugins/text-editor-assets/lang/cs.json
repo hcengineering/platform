@@ -75,6 +75,7 @@
     "SeeOriginalData": "Zobrazit původní data",
     "CategoryVersioning": "Verzování",
     "TableDiffLabel": "Změny v tabulce",
+    "TableRefreshConfirmationLabel": "Potvrdit obnovení tabulky",
     "ConvertToLinkPreview": "Zobrazit jako odkaz",
     "ConvertToEmbedPreview": "Zobrazit jako náhled obsahu",
     "UnableToLoadEmbeddedContent": "Náhled odkazu nelze načíst kvůli nastavení oprávnění nebo nepodporovanému obsahu",

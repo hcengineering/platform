@@ -65,6 +65,7 @@
     "SeeOriginalData": "Voir les données originales",
     "CategoryVersioning": "Gestion de versions",
     "TableDiffLabel": "Modifications du tableau",
+    "TableRefreshConfirmationLabel": "Confirmer l'actualisation du tableau",
     "ConvertToLinkPreview": "Afficher comme lien",
     "ConvertToEmbedPreview": "Afficher comme aperçu de contenu",
     "UnableToLoadEmbeddedContent": "L’aperçu du lien n’a pas pu être chargé en raison des paramètres d’autorisation ou d’un contenu non pris en charge",

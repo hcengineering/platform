@@ -75,6 +75,7 @@
     "SeeOriginalData": "See Original Data",
     "CategoryVersioning": "Versioning",
     "TableDiffLabel": "Table Changes",
+    "TableRefreshConfirmationLabel": "Confirm Table Refresh",
 
     "ConvertToLinkPreview": "Show as a link",
     "ConvertToEmbedPreview": "Show as a content preview",
