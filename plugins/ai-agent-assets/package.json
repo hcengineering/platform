@@ -1,0 +1,52 @@
+{
+  "name": "@hcengineering/ai-agent-assets",
+  "version": "0.7.0",
+  "main": "./lib/index.js",
+  "types": "./types/index.d.ts",
+  "files": [
+    "lib",
+    "types",
+    "src",
+    "assets",
+    "lang"
+  ],
+  "author": "Krang",
+  "template": "@hcengineering/assets-package",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "compile",
+    "build:watch": "compile",
+    "_phase:build": "compile transpile src",
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
+  },
+  "devDependencies": {
+    "@hcengineering/platform-rig": "workspace:^0.7.19"
+  },
+  "dependencies": {
+    "@hcengineering/platform": "workspace:^0.7.19",
+    "@hcengineering/ai-agent": "workspace:^0.7.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./lang/*.json": {
+      "require": "./lang/*.json",
+      "import": "./lang/*.json"
+    },
+    "./lang": {
+      "require": "./lang",
+      "import": "./lang"
+    },
+    "./assets": {
+      "require": "./assets",
+      "import": "./assets"
+    },
+    "./assets/*.svg": {
+      "require": "./assets/*.svg",
+      "import": "./assets/*.svg"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "string": {
+    "Agent": "Agent",
+    "AgentWidget": "AI Agent",
+    "Watching": "Watching",
+    "Active": "Active",
+    "Autonomous": "Autonomous",
+    "AskAgent": "Ask the agent...",
+    "Thinking": "Thinking...",
+    "Connected": "Connected",
+    "Disconnected": "Disconnected",
+    "Reconnecting": "Reconnecting..."
+  }
+}

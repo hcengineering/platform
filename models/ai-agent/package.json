@@ -1,0 +1,30 @@
+{
+  "name": "@hcengineering/model-ai-agent",
+  "version": "0.7.0",
+  "main": "lib/index.js",
+  "svelte": "src/index.ts",
+  "types": "src/index.ts",
+  "author": "Krang",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "compile",
+    "build:watch": "compile",
+    "_phase:build": "compile transpile src",
+    "_phase:format": "format src",
+    "_phase:validate": "compile validate"
+  },
+  "devDependencies": {
+    "@hcengineering/platform-rig": "workspace:^0.7.19"
+  },
+  "dependencies": {
+    "@hcengineering/ai-agent": "workspace:^0.7.0",
+    "@hcengineering/ai-agent-resources": "workspace:^0.7.0",
+    "@hcengineering/core": "workspace:^0.7.24",
+    "@hcengineering/model": "workspace:^0.7.17",
+    "@hcengineering/model-core": "workspace:^0.7.0",
+    "@hcengineering/model-workbench": "workspace:^0.7.0",
+    "@hcengineering/platform": "workspace:^0.7.19",
+    "@hcengineering/ui": "workspace:^0.7.0",
+    "@hcengineering/workbench": "workspace:^0.7.0"
+  }
+}

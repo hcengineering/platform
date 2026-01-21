@@ -52,30 +52,34 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 
 const devProxy = {
   '/account': {
-    target: 'http://huly.local:3000',
+    target: 'https://huly.subfrac.cloud/_accounts',
     changeOrigin: true,
+    secure: true,
     pathRewrite: { '^/account': '' },
     logLevel: 'debug'
   },
   '/files': {
-    target: 'http://huly.local:8087',
+    target: 'https://huly.subfrac.cloud',
     changeOrigin: true,
+    secure: true,
     logLevel: 'debug'
   },
   '/api/v1': {
-    target: 'http://huly.local:8087',
+    target: 'https://huly.subfrac.cloud',
     changeOrigin: true,
+    secure: true,
     logLevel: 'debug'
   },
   '/import': {
-    target: 'http://huly.local:8087',
+    target: 'https://huly.subfrac.cloud',
     changeOrigin: true,
+    secure: true,
     logLevel: 'debug'
   },
   '/rekoni/recognize': {
-    target: 'http://huly.local:4004',
+    target: 'https://huly.subfrac.cloud',
     changeOrigin: true,
-    pathRewrite: { '^/rekoni/recognize': '/recognize' },
+    secure: true,
     logLevel: 'debug'
   }
 }

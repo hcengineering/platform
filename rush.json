@@ -2677,6 +2677,26 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/ai-agent",
+      "projectFolder": "plugins/ai-agent",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/ai-agent-assets",
+      "projectFolder": "plugins/ai-agent-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/ai-agent-resources",
+      "projectFolder": "plugins/ai-agent-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-ai-agent",
+      "projectFolder": "models/ai-agent",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-worker",
       "projectFolder": "services/worker",
       "shouldPublish": false

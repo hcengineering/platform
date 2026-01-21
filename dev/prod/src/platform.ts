@@ -80,6 +80,7 @@ import { emojiId } from '@hcengineering/emoji'
 import billingPlugin, { billingId } from '@hcengineering/billing'
 import { hulyMailId } from '@hcengineering/huly-mail'
 import { aiAssistantId } from '@hcengineering/ai-assistant'
+import { aiAgentId } from '@hcengineering/ai-agent'
 import { ratingId } from '@hcengineering/rating'
 
 import '@hcengineering/activity-assets'
@@ -140,6 +141,7 @@ import '@hcengineering/emoji-assets'
 import '@hcengineering/billing-assets'
 import '@hcengineering/huly-mail-assets'
 import '@hcengineering/ai-assistant-assets'
+import '@hcengineering/ai-agent-assets'
 import '@hcengineering/rating-assets'
 
 import { coreId } from '@hcengineering/core'
@@ -409,6 +411,10 @@ function configureI18n(): void {
   addStringsLoader(
     aiAssistantId,
     async (lang: string) => await import(`@hcengineering/ai-assistant-assets/lang/${lang}.json`)
+  )
+  addStringsLoader(
+    aiAgentId,
+    async (lang: string) => await import(`@hcengineering/ai-agent-assets/lang/${lang}.json`)
   )
   addStringsLoader(ratingId, async (lang: string) => await import(`@hcengineering/rating-assets/lang/${lang}.json`))
 }
@@ -708,6 +714,10 @@ export async function configurePlatform() {
   addLocation(
     aiAssistantId,
     async () => await import(/* webpackChunkName: "ai-assistant" */ '@hcengineering/ai-assistant-resources')
+  )
+  addLocation(
+    aiAgentId,
+    async () => await import(/* webpackChunkName: "ai-agent" */ '@hcengineering/ai-agent-resources')
   )
   addLocation(inboxId, async () => await import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
   addLocation(ratingId, async () => await import(/* webpackChunkName: "rating" */ '@hcengineering/rating-resources'))

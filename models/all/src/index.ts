@@ -98,6 +98,7 @@ import { serverProcessId, createModel as serverProcessModel } from '@hcengineeri
 import { serverTimeId, createModel as serverTimeModel } from '@hcengineering/model-server-time'
 
 import aiAssistant, { aiAssistantId, createModel as aiAssistantModel } from '@hcengineering/model-ai-assistant'
+import aiAgent, { aiAgentId, createModel as aiAgentModel } from '@hcengineering/model-ai-agent'
 import documents, { documentsId, createModel as documentsModel } from '@hcengineering/model-controlled-documents'
 import { hulyMailId, createModel as hulyMailModel } from '@hcengineering/model-huly-mail'
 import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
@@ -507,6 +508,18 @@ export default function buildModel (): Builder {
         description: aiAssistant.string.ConfigDescription,
         hidden: true,
         enabled: false,
+        beta: true,
+        classFilter: defaultFilter
+      }
+    ],
+    [
+      aiAgentModel,
+      aiAgentId,
+      {
+        label: aiAgent.string.AgentWidget,
+        description: aiAgent.string.Agent,
+        hidden: false,
+        enabled: true,
         beta: true,
         classFilter: defaultFilter
       }
