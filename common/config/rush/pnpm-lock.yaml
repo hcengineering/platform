@@ -1081,6 +1081,15 @@ importers:
       '@hcengineering/activity-resources':
         specifier: workspace:^0.7.0
         version: link:../../plugins/activity-resources
+      '@hcengineering/ai-agent':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/ai-agent
+      '@hcengineering/ai-agent-assets':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/ai-agent-assets
+      '@hcengineering/ai-agent-resources':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/ai-agent-resources
       '@hcengineering/ai-assistant':
         specifier: workspace:^0.7.0
         version: link:../../plugins/ai-assistant
@@ -5769,6 +5778,40 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  ../../models/ai-agent:
+    dependencies:
+      '@hcengineering/ai-agent':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/ai-agent
+      '@hcengineering/ai-agent-resources':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/ai-agent-resources
+      '@hcengineering/core':
+        specifier: workspace:^0.7.24
+        version: link:../../foundations/core/packages/core
+      '@hcengineering/model':
+        specifier: workspace:^0.7.17
+        version: link:../../foundations/core/packages/model
+      '@hcengineering/model-core':
+        specifier: workspace:^0.7.0
+        version: link:../core
+      '@hcengineering/model-workbench':
+        specifier: workspace:^0.7.0
+        version: link:../workbench
+      '@hcengineering/platform':
+        specifier: workspace:^0.7.19
+        version: link:../../foundations/core/packages/platform
+      '@hcengineering/ui':
+        specifier: workspace:^0.7.0
+        version: link:../../packages/ui
+      '@hcengineering/workbench':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/workbench
+    devDependencies:
+      '@hcengineering/platform-rig':
+        specifier: workspace:^0.7.19
+        version: link:../../foundations/utils/packages/platform-rig
+
   ../../models/ai-assistant:
     dependencies:
       '@hcengineering/ai-assistant':
@@ -5917,6 +5960,9 @@ importers:
       '@hcengineering/model-activity':
         specifier: workspace:^0.7.0
         version: link:../activity
+      '@hcengineering/model-ai-agent':
+        specifier: workspace:^0.7.0
+        version: link:../ai-agent
       '@hcengineering/model-ai-assistant':
         specifier: workspace:^0.7.0
         version: link:../ai-assistant
@@ -15375,6 +15421,75 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  ../../plugins/ai-agent:
+    dependencies:
+      '@hcengineering/core':
+        specifier: workspace:^0.7.24
+        version: link:../../foundations/core/packages/core
+      '@hcengineering/platform':
+        specifier: workspace:^0.7.19
+        version: link:../../foundations/core/packages/platform
+      '@hcengineering/ui':
+        specifier: workspace:^0.7.0
+        version: link:../../packages/ui
+    devDependencies:
+      '@hcengineering/platform-rig':
+        specifier: workspace:^0.7.19
+        version: link:../../foundations/utils/packages/platform-rig
+
+  ../../plugins/ai-agent-assets:
+    dependencies:
+      '@hcengineering/ai-agent':
+        specifier: workspace:^0.7.0
+        version: link:../ai-agent
+      '@hcengineering/platform':
+        specifier: workspace:^0.7.19
+        version: link:../../foundations/core/packages/platform
+    devDependencies:
+      '@hcengineering/platform-rig':
+        specifier: workspace:^0.7.19
+        version: link:../../foundations/utils/packages/platform-rig
+
+  ../../plugins/ai-agent-resources:
+    dependencies:
+      '@hcengineering/ai-agent':
+        specifier: workspace:^0.7.0
+        version: link:../ai-agent
+      '@hcengineering/core':
+        specifier: workspace:^0.7.24
+        version: link:../../foundations/core/packages/core
+      '@hcengineering/platform':
+        specifier: workspace:^0.7.19
+        version: link:../../foundations/core/packages/platform
+      '@hcengineering/presentation':
+        specifier: workspace:^0.7.0
+        version: link:../../packages/presentation
+      '@hcengineering/ui':
+        specifier: workspace:^0.7.0
+        version: link:../../packages/ui
+      '@hcengineering/workbench':
+        specifier: workspace:^0.7.0
+        version: link:../workbench
+      '@hcengineering/workbench-resources':
+        specifier: workspace:^0.7.0
+        version: link:../workbench-resources
+    devDependencies:
+      '@hcengineering/platform-rig':
+        specifier: workspace:^0.7.19
+        version: link:../../foundations/utils/packages/platform-rig
+      sass:
+        specifier: ^1.80.0
+        version: 1.93.3
+      svelte:
+        specifier: ^4.2.20
+        version: 4.2.20
+      svelte-loader:
+        specifier: ^3.2.0
+        version: 3.2.4(svelte@4.2.20)
+      svelte-preprocess:
+        specifier: ^5.1.4
+        version: 5.1.4(@babel/core@7.28.5)(postcss-load-config@4.0.2(postcss@8.5.6)(ts-node@10.9.2(@swc/core@1.15.1)(@types/node@22.19.0)(typescript@5.9.3)))(postcss@8.5.6)(sass@1.93.3)(svelte@4.2.20)(typescript@5.9.3)
 
   ../../plugins/ai-assistant:
     dependencies:
