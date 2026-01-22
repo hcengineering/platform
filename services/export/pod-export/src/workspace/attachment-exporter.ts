@@ -97,7 +97,6 @@ export class AttachmentExporter {
       const attributes = sourceHierarchy.getAllAttributes(sourceDoc._class)
 
       for (const [key, attr] of Array.from(attributes)) {
-        // Check if this is a collaborative document field
         if (attr.type._class !== core.class.TypeCollaborativeDoc) {
           continue
         }
@@ -108,17 +107,13 @@ export class AttachmentExporter {
         }
 
         try {
-          // Read blob from source workspace
           const blobBuffers = await this.storage.read(this.context, this.sourceWorkspace, blobRef as string)
           if (blobBuffers !== undefined && blobBuffers.length > 0) {
-            // Get blob metadata from source
             const sourceBlob = await this.storage.stat(this.context, this.sourceWorkspace, blobRef as string)
             if (sourceBlob !== undefined) {
-              // Combine buffers into single buffer
               const totalSize = blobBuffers.reduce((sum, buf) => sum + buf.length, 0)
               const combinedBuffer = Buffer.concat(blobBuffers)
 
-              // Write blob to target workspace
               await this.storage.put(
                 this.context,
                 this.targetWorkspace,
@@ -141,17 +136,14 @@ export class AttachmentExporter {
             blobRef,
             field: key
           })
-          // Continue with document creation even if blob copy fails
         }
       }
 
-      // Also check mixin attributes - iterate through document keys to find mixins
       for (const key of Object.keys(sourceDoc)) {
         if (key === '_id' || key === '_class' || key === 'space') {
           continue
         }
 
-        // Check if this key is a mixin
         if (
           sourceHierarchy.isMixin(key as Ref<Mixin<Doc>>) &&
           sourceHierarchy.hasMixin(sourceDoc, key as Ref<Mixin<Doc>>)
@@ -214,7 +206,6 @@ export class AttachmentExporter {
         docId: sourceDoc._id,
         docClass: sourceDoc._class
       })
-      // Re-throw to allow caller to handle the error if needed
       throw err
     }
   }
