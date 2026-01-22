@@ -113,6 +113,7 @@ export default plugin(textEditorId, {
     SeeOriginalData: '' as IntlString,
     CategoryVersioning: '' as IntlString,
     TableDiffLabel: '' as IntlString,
+    TableRefreshConfirmationLabel: '' as IntlString,
 
     ConvertToLinkPreview: '' as IntlString,
     ConvertToEmbedPreview: '' as IntlString,

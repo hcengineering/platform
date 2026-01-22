@@ -64,20 +64,22 @@
 >
   <div class="original-table-container">
     {#if viewletComponent}
-      <Component
-        is={viewletComponent}
-        props={{
-          _class,
-          config: tableConfig,
-          query: tableQuery,
-          totalQuery: tableQuery,
-          options: viewlet?.options,
-          readonly: true,
-          viewlet,
-          viewOptions: viewlet?.viewOptions,
-          viewOptionsConfig: viewlet?.viewOptions?.other
-        }}
-      />
+      <div class="table-wrapper">
+        <Component
+          is={viewletComponent}
+          props={{
+            _class,
+            config: tableConfig,
+            query: tableQuery,
+            totalQuery: tableQuery,
+            options: viewlet?.options,
+            readonly: true,
+            viewlet,
+            viewOptions: viewlet?.viewOptions,
+            viewOptionsConfig: viewlet?.viewOptions?.other
+          }}
+        />
+      </div>
     {:else}
       <Loading />
     {/if}
@@ -86,8 +88,25 @@
 
 <style lang="scss">
   .original-table-container {
-    padding: 1rem;
-    overflow: auto;
-    max-height: 80vh;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
   }
 </style>
