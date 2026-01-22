@@ -41,17 +41,31 @@ jobs:
       - name: Rush build
         run: rush build
 
+      - name: Get Huly version
+        id: huly_version
+        run: |
+          # Extract version from version.txt (strips quotes)
+          HULY_VER=$(cat common/scripts/version.txt | tr -d '"')
+          echo "version=$HULY_VER" >> $GITHUB_OUTPUT
+          echo "Huly version: $HULY_VER"
+
       - name: Bundle tool
         run: |
           cd dev/tool
           rushx bundle
 
       - name: Bundle dev/prod (for front assets)
+        env:
+          MODEL_VERSION: ${{ steps.huly_version.outputs.version }}
+          VERSION: ${{ steps.huly_version.outputs.version }}
         run: |
           cd dev/prod
           rushx package
 
       - name: Bundle front
+        env:
+          MODEL_VERSION: ${{ steps.huly_version.outputs.version }}
+          VERSION: ${{ steps.huly_version.outputs.version }}
         run: |
           cd pods/front
           rushx bundle
