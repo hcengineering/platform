@@ -143,7 +143,7 @@ function createMockMeasureContext (): MeasureContext {
   } as unknown as MeasureContext
 }
 
-describe('DataMapper - ensureFieldUnique', () => {
+describe('DataMapper - generateSeqNumber', () => {
   let mockContext: MeasureContext
   let mockClient: TxOperations
   let state: ExportState
@@ -159,542 +159,502 @@ describe('DataMapper - ensureFieldUnique', () => {
     jest.clearAllMocks()
   })
 
-  describe('String values with prefix pattern', () => {
-    it('should find unique value by querying all prefix values at once', async () => {
-      // Setup: existing docs with codes DOC-1, DOC-2, DOC-5, all with same prefix
-      const testPrefix = 'DOC'
-      const existingDocs = [
-        {
-          _id: generateId(),
-          _class: mockDocClass,
-          code: 'DOC-1',
-          prefix: testPrefix,
-          space: mockSpaceId,
-          modifiedOn: platformNow(),
-          modifiedBy: generateId()
-        },
-        {
-          _id: generateId(),
-          _class: mockDocClass,
-          code: 'DOC-2',
-          prefix: testPrefix,
-          space: mockSpaceId,
-          modifiedOn: platformNow(),
-          modifiedBy: generateId()
-        },
-        {
-          _id: generateId(),
-          _class: mockDocClass,
-          code: 'DOC-5',
-          prefix: testPrefix,
-          space: mockSpaceId,
-          modifiedOn: platformNow(),
-          modifiedBy: generateId()
+  it('should generate seqNumber 1 when no existing documents', async () => {
+    const testPrefix = 'DOC'
+    mockClient = createMockTxOperations([])
+
+    const dataMapper = new DataMapper(
+      mockContext,
+      mockClient,
+      state,
+      {
+        [mockDocClass]: {
+          seqNumber: '$generateSeqNumber'
         }
-      ]
-      mockClient = createMockTxOperations(existingDocs)
+      },
+      undefined
+    )
 
-      const dataMapper = new DataMapper(
-        mockContext,
-        mockClient,
-        state,
-        {
-          [mockDocClass]: {
-            code: '$ensureUnique'
-          }
-        },
-        undefined
-      )
+    const doc = {
+      _id: generateId(),
+      _class: mockDocClass,
+      prefix: testPrefix,
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
 
-      const doc = {
-        _id: generateId(),
-        _class: mockDocClass,
-        code: 'DOC-1',
-        prefix: testPrefix,
-        space: mockSpaceId,
-        modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
+    const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
 
-      const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
-
-      // DOC-1 conflicts with existing, should use max(1,2,5) + 1 = 6
-      expect(result.code).toBe('DOC-6')
-      // Should query by prefix field (global, no space filter)
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockClient.findAll).toHaveBeenCalledWith(
-        mockDocClass,
-        { prefix: testPrefix },
-        { projection: { code: 1, prefix: 1 } }
-      )
-    })
-
-    it('should handle prefix with special characters', async () => {
-      const testPrefix = 'DOC-TEST'
-      const existingDocs = [
-        {
-          _id: generateId(),
-          _class: mockDocClass,
-          code: 'DOC-TEST-1',
-          prefix: testPrefix,
-          space: mockSpaceId,
-          modifiedOn: platformNow(),
-          modifiedBy: generateId()
-        },
-        {
-          _id: generateId(),
-          _class: mockDocClass,
-          code: 'DOC-TEST-2',
-          prefix: testPrefix,
-          space: mockSpaceId,
-          modifiedOn: platformNow(),
-          modifiedBy: generateId()
-        }
-      ]
-      mockClient = createMockTxOperations(existingDocs)
-
-      const dataMapper = new DataMapper(
-        mockContext,
-        mockClient,
-        state,
-        {
-          [mockDocClass]: {
-            code: '$ensureUnique'
-          }
-        },
-        undefined
-      )
-
-      const doc = {
-        _id: generateId(),
-        _class: mockDocClass,
-        code: 'DOC-TEST-1',
-        prefix: testPrefix,
-        space: mockSpaceId,
-        modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
-
-      const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
-
-      // Should use max(1,2) + 1 = 3
-      expect(result.code).toBe('DOC-TEST-3')
-    })
-
-    it('should handle values already used in export batch', async () => {
-      const testPrefix = 'DOC'
-      const existingDocs: any[] = []
-      mockClient = createMockTxOperations(existingDocs)
-
-      const dataMapper = new DataMapper(
-        mockContext,
-        mockClient,
-        state,
-        {
-          [mockDocClass]: {
-            code: '$ensureUnique'
-          }
-        },
-        undefined
-      )
-
-      // First document
-      const doc1 = {
-        _id: generateId(),
-        _class: mockDocClass,
-        code: 'DOC-1',
-        prefix: testPrefix,
-        space: mockSpaceId,
-        modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
-      const result1 = await dataMapper.prepareDocumentData(doc1, mockSpaceId, false)
-      expect(result1.code).toBe('DOC-1')
-
-      // Second document with same code
-      const doc2 = {
-        _id: generateId(),
-        _class: mockDocClass,
-        code: 'DOC-1',
-        prefix: testPrefix,
-        space: mockSpaceId,
-        modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
-      const result2 = await dataMapper.prepareDocumentData(doc2, mockSpaceId, false)
-
-      // Should increment to DOC-2 since DOC-1 is already used in batch
-      expect(result2.code).toBe('DOC-2')
-    })
-
-    it('should handle string without prefix pattern', async () => {
-      const existingDocs = [
-        {
-          _id: generateId(),
-          _class: mockDocClass,
-          code: 'SIMPLE',
-          space: mockSpaceId,
-          modifiedOn: platformNow(),
-          modifiedBy: generateId()
-        }
-      ]
-      mockClient = createMockTxOperations(existingDocs)
-
-      const dataMapper = new DataMapper(
-        mockContext,
-        mockClient,
-        state,
-        {
-          [mockDocClass]: {
-            code: '$ensureUnique'
-          }
-        },
-        undefined
-      )
-
-      const doc = {
-        _id: generateId(),
-        _class: mockDocClass,
-        code: 'SIMPLE',
-        space: mockSpaceId,
-        modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
-
-      const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
-
-      // Should append suffix
-      expect(result.code).toBe('SIMPLE-1')
-      // Should use findOne for exact match (global, no space filter)
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockClient.findOne).toHaveBeenCalledWith(mockDocClass, { code: 'SIMPLE' }, { projection: { code: 1 } })
-    })
+    expect(result.seqNumber).toBe(1)
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockClient.findAll).toHaveBeenCalledWith(
+      mockDocClass,
+      { prefix: testPrefix },
+      { projection: { seqNumber: 1, prefix: 1 } }
+    )
   })
 
-  describe('Numeric values', () => {
-    it('should find unique value by querying all values >= current', async () => {
-      // Setup: existing docs with seqNumber 10, 11, 15
-      const existingDocs = [
-        {
-          _id: generateId(),
-          _class: mockDocClass,
-          seqNumber: 10,
-          space: mockSpaceId,
-          modifiedOn: platformNow(),
-          modifiedBy: generateId()
-        },
-        {
-          _id: generateId(),
-          _class: mockDocClass,
-          seqNumber: 11,
-          space: mockSpaceId,
-          modifiedOn: platformNow(),
-          modifiedBy: generateId()
-        },
-        {
-          _id: generateId(),
-          _class: mockDocClass,
-          seqNumber: 15,
-          space: mockSpaceId,
-          modifiedOn: platformNow(),
-          modifiedBy: generateId()
-        }
-      ]
-      mockClient = createMockTxOperations(existingDocs)
-
-      const dataMapper = new DataMapper(
-        mockContext,
-        mockClient,
-        state,
-        {
-          [mockDocClass]: {
-            seqNumber: '$ensureUnique'
-          }
-        },
-        undefined
-      )
-
-      const doc = {
-        _id: generateId(),
-        _class: mockDocClass,
-        seqNumber: 10,
-        space: mockSpaceId,
-        modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
-
-      const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
-
-      // Should use max(10,11,15) + 1 = 16
-      expect(result.seqNumber).toBe(16)
-      // Should query with $gte (global, no space filter)
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockClient.findAll).toHaveBeenCalledWith(
-        mockDocClass,
-        { seqNumber: { $gte: 10 } },
-        { projection: { seqNumber: 1 } }
-      )
-    })
-
-    it('should handle numeric values already used in export batch', async () => {
-      const existingDocs: any[] = []
-      mockClient = createMockTxOperations(existingDocs)
-
-      const dataMapper = new DataMapper(
-        mockContext,
-        mockClient,
-        state,
-        {
-          [mockDocClass]: {
-            seqNumber: '$ensureUnique'
-          }
-        },
-        undefined
-      )
-
-      // First document
-      const doc1 = {
+  it('should generate seqNumber as max + 1 when existing documents exist', async () => {
+    const testPrefix = 'DOC'
+    const existingDocs = [
+      {
         _id: generateId(),
         _class: mockDocClass,
         seqNumber: 5,
+        prefix: testPrefix,
         space: mockSpaceId,
         modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
-      const result1 = await dataMapper.prepareDocumentData(doc1, mockSpaceId, false)
-      expect(result1.seqNumber).toBe(5)
-
-      // Second document with same seqNumber
-      const doc2 = {
+        modifiedBy: generateId()
+      },
+      {
         _id: generateId(),
         _class: mockDocClass,
-        seqNumber: 5,
-        space: mockSpaceId,
-        modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
-      const result2 = await dataMapper.prepareDocumentData(doc2, mockSpaceId, false)
-
-      // Should increment to 6 since 5 is already used in batch
-      expect(result2.seqNumber).toBe(6)
-    })
-
-    it('should handle numeric value when no conflicts exist', async () => {
-      const existingDocs: any[] = []
-      mockClient = createMockTxOperations(existingDocs)
-
-      const dataMapper = new DataMapper(
-        mockContext,
-        mockClient,
-        state,
-        {
-          [mockDocClass]: {
-            seqNumber: '$ensureUnique'
-          }
-        },
-        undefined
-      )
-
-      const doc = {
-        _id: generateId(),
-        _class: mockDocClass,
-        seqNumber: 1,
-        space: mockSpaceId,
-        modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
-
-      const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
-
-      // Should keep original value if unique
-      expect(result.seqNumber).toBe(1)
-    })
-  })
-
-  describe('Projection usage', () => {
-    it('should use projection to only load the field being checked', async () => {
-      const existingDocs = [
-        {
-          _id: generateId(),
-          _class: mockDocClass,
-          code: 'DOC-1',
-          title: 'Title 1',
-          space: mockSpaceId,
-          modifiedOn: platformNow(),
-          modifiedBy: generateId()
-        }
-      ]
-      mockClient = createMockTxOperations(existingDocs)
-
-      const dataMapper = new DataMapper(
-        mockContext,
-        mockClient,
-        state,
-        {
-          [mockDocClass]: {
-            code: '$ensureUnique'
-          }
-        },
-        undefined
-      )
-
-      const doc = {
-        _id: generateId(),
-        _class: mockDocClass,
-        code: 'DOC-2',
-        title: 'Title 2',
-        space: mockSpaceId,
-        modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
-
-      await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
-
-      // Verify projection was used
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockClient.findAll).toHaveBeenCalledWith(mockDocClass, expect.anything(), { projection: { code: 1 } })
-    })
-  })
-
-  describe('Edge cases', () => {
-    it('should handle null/undefined values gracefully', async () => {
-      mockClient = createMockTxOperations([])
-
-      const dataMapper = new DataMapper(
-        mockContext,
-        mockClient,
-        state,
-        {
-          [mockDocClass]: {
-            code: '$ensureUnique'
-          }
-        },
-        undefined
-      )
-
-      const doc = {
-        _id: generateId(),
-        _class: mockDocClass,
-        code: null,
-        space: mockSpaceId,
-        modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
-
-      const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
-
-      // Should not modify null values
-      expect(result.code).toBeNull()
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockClient.findAll).not.toHaveBeenCalled()
-    })
-
-    it('should handle unsupported types', async () => {
-      mockClient = createMockTxOperations([])
-
-      const dataMapper = new DataMapper(
-        mockContext,
-        mockClient,
-        state,
-        {
-          [mockDocClass]: {
-            code: '$ensureUnique'
-          }
-        },
-        undefined
-      )
-
-      const doc = {
-        _id: generateId(),
-        _class: mockDocClass,
-        code: { complex: 'object' },
-        space: mockSpaceId,
-        modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
-
-      const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
-
-      // Should not modify unsupported types
-      expect(result.code).toEqual({ complex: 'object' })
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockContext.warn).toHaveBeenCalledWith(expect.stringContaining('Cannot ensure uniqueness'))
-    })
-
-    it('should handle empty database with prefix pattern', async () => {
-      mockClient = createMockTxOperations([])
-
-      const dataMapper = new DataMapper(
-        mockContext,
-        mockClient,
-        state,
-        {
-          [mockDocClass]: {
-            code: '$ensureUnique'
-          }
-        },
-        undefined
-      )
-
-      const doc = {
-        _id: generateId(),
-        _class: mockDocClass,
-        code: 'DOC-5',
-        space: mockSpaceId,
-        modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
-      }
-
-      const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
-
-      expect(result.code).toBe('DOC-5')
-    })
-
-    it('should handle multiple fields with $ensureUnique', async () => {
-      const testPrefix = 'DOC'
-      const existingDocs = [
-        {
-          _id: generateId(),
-          _class: mockDocClass,
-          code: 'DOC-1',
-          seqNumber: 10,
-          prefix: testPrefix,
-          space: mockSpaceId,
-          modifiedOn: platformNow(),
-          modifiedBy: generateId()
-        }
-      ]
-      mockClient = createMockTxOperations(existingDocs)
-
-      const dataMapper = new DataMapper(
-        mockContext,
-        mockClient,
-        state,
-        {
-          [mockDocClass]: {
-            code: '$ensureUnique',
-            seqNumber: '$ensureUnique'
-          }
-        },
-        undefined
-      )
-
-      const doc = {
-        _id: generateId(),
-        _class: mockDocClass,
-        code: 'DOC-1',
         seqNumber: 10,
         prefix: testPrefix,
         space: mockSpaceId,
         modifiedOn: platformNow(),
-        modifiedBy: generateId() as any
+        modifiedBy: generateId()
+      },
+      {
+        _id: generateId(),
+        _class: mockDocClass,
+        seqNumber: 3,
+        prefix: testPrefix,
+        space: mockSpaceId,
+        modifiedOn: platformNow(),
+        modifiedBy: generateId()
       }
+    ]
+    mockClient = createMockTxOperations(existingDocs)
 
-      const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
+    const dataMapper = new DataMapper(
+      mockContext,
+      mockClient,
+      state,
+      {
+        [mockDocClass]: {
+          seqNumber: '$generateSeqNumber'
+        }
+      },
+      undefined
+    )
 
-      // Both fields should be made unique
-      expect(result.code).toBe('DOC-2')
-      expect(result.seqNumber).toBe(11)
-    })
+    const doc = {
+      _id: generateId(),
+      _class: mockDocClass,
+      prefix: testPrefix,
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+
+    const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
+
+    // Should use max(5, 10, 3) + 1 = 11
+    expect(result.seqNumber).toBe(11)
+  })
+
+  it('should track seqNumbers used in export batch', async () => {
+    const testPrefix = 'DOC'
+    mockClient = createMockTxOperations([])
+
+    const dataMapper = new DataMapper(
+      mockContext,
+      mockClient,
+      state,
+      {
+        [mockDocClass]: {
+          seqNumber: '$generateSeqNumber'
+        }
+      },
+      undefined
+    )
+
+    // First document
+    const doc1 = {
+      _id: generateId(),
+      _class: mockDocClass,
+      prefix: testPrefix,
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+    const result1 = await dataMapper.prepareDocumentData(doc1, mockSpaceId, false)
+    expect(result1.seqNumber).toBe(1)
+
+    // Second document should get seqNumber 2
+    const doc2 = {
+      _id: generateId(),
+      _class: mockDocClass,
+      prefix: testPrefix,
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+    const result2 = await dataMapper.prepareDocumentData(doc2, mockSpaceId, false)
+    expect(result2.seqNumber).toBe(2)
+  })
+
+  it('should handle documents with different prefixes separately', async () => {
+    const existingDocs = [
+      {
+        _id: generateId(),
+        _class: mockDocClass,
+        seqNumber: 10,
+        prefix: 'DOC-A',
+        space: mockSpaceId,
+        modifiedOn: platformNow(),
+        modifiedBy: generateId()
+      },
+      {
+        _id: generateId(),
+        _class: mockDocClass,
+        seqNumber: 5,
+        prefix: 'DOC-B',
+        space: mockSpaceId,
+        modifiedOn: platformNow(),
+        modifiedBy: generateId()
+      }
+    ]
+    mockClient = createMockTxOperations(existingDocs)
+
+    const dataMapper = new DataMapper(
+      mockContext,
+      mockClient,
+      state,
+      {
+        [mockDocClass]: {
+          seqNumber: '$generateSeqNumber'
+        }
+      },
+      undefined
+    )
+
+    // Document with DOC-A prefix
+    const docA = {
+      _id: generateId(),
+      _class: mockDocClass,
+      prefix: 'DOC-A',
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+    const resultA = await dataMapper.prepareDocumentData(docA, mockSpaceId, false)
+    expect(resultA.seqNumber).toBe(11) // max(10) + 1
+
+    // Document with DOC-B prefix
+    const docB = {
+      _id: generateId(),
+      _class: mockDocClass,
+      prefix: 'DOC-B',
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+    const resultB = await dataMapper.prepareDocumentData(docB, mockSpaceId, false)
+    expect(resultB.seqNumber).toBe(6) // max(5) + 1
+  })
+
+  it('should skip generation if prefix is missing', async () => {
+    mockClient = createMockTxOperations([])
+
+    const dataMapper = new DataMapper(
+      mockContext,
+      mockClient,
+      state,
+      {
+        [mockDocClass]: {
+          seqNumber: '$generateSeqNumber'
+        }
+      },
+      undefined
+    )
+
+    const doc = {
+      _id: generateId(),
+      _class: mockDocClass,
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+
+    const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
+
+    expect(result.seqNumber).toBeUndefined()
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockContext.warn).toHaveBeenCalledWith(
+      'generateSeqNumber: prefix is required but not found, skipping seqNumber generation'
+    )
+  })
+
+  it('should skip generation if prefix is empty string', async () => {
+    mockClient = createMockTxOperations([])
+
+    const dataMapper = new DataMapper(
+      mockContext,
+      mockClient,
+      state,
+      {
+        [mockDocClass]: {
+          seqNumber: '$generateSeqNumber'
+        }
+      },
+      undefined
+    )
+
+    const doc = {
+      _id: generateId(),
+      _class: mockDocClass,
+      prefix: '',
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+
+    const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
+
+    expect(result.seqNumber).toBeUndefined()
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockContext.warn).toHaveBeenCalledWith(
+      'generateSeqNumber: prefix is required but not found, skipping seqNumber generation'
+    )
+  })
+})
+
+describe('DataMapper - generateCode', () => {
+  let mockContext: MeasureContext
+  let mockClient: TxOperations
+  let state: ExportState
+
+  beforeEach(() => {
+    mockContext = createMockMeasureContext()
+    state = {
+      idMapping: new Map(),
+      spaceMapping: new Map(),
+      processingDocs: new Set(),
+      uniqueFieldValues: new Map()
+    }
+    jest.clearAllMocks()
+  })
+
+  it('should generate code from prefix and seqNumber', async () => {
+    const testPrefix = 'DOC'
+    mockClient = createMockTxOperations([])
+
+    const dataMapper = new DataMapper(
+      mockContext,
+      mockClient,
+      state,
+      {
+        [mockDocClass]: {
+          seqNumber: '$generateSeqNumber',
+          code: '$generateCode'
+        }
+      },
+      undefined
+    )
+
+    const doc = {
+      _id: generateId(),
+      _class: mockDocClass,
+      prefix: testPrefix,
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+
+    const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
+
+    expect(result.seqNumber).toBe(1)
+    expect(result.code).toBe('DOC-1')
+  })
+
+  it('should generate code with different seqNumbers', async () => {
+    const testPrefix = 'DOC'
+    const existingDocs = [
+      {
+        _id: generateId(),
+        _class: mockDocClass,
+        seqNumber: 5,
+        prefix: testPrefix,
+        space: mockSpaceId,
+        modifiedOn: platformNow(),
+        modifiedBy: generateId()
+      }
+    ]
+    mockClient = createMockTxOperations(existingDocs)
+
+    const dataMapper = new DataMapper(
+      mockContext,
+      mockClient,
+      state,
+      {
+        [mockDocClass]: {
+          seqNumber: '$generateSeqNumber',
+          code: '$generateCode'
+        }
+      },
+      undefined
+    )
+
+    const doc = {
+      _id: generateId(),
+      _class: mockDocClass,
+      prefix: testPrefix,
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+
+    const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
+
+    expect(result.seqNumber).toBe(6)
+    expect(result.code).toBe('DOC-6')
+  })
+
+  it('should skip generation if prefix is missing', async () => {
+    mockClient = createMockTxOperations([])
+
+    const dataMapper = new DataMapper(
+      mockContext,
+      mockClient,
+      state,
+      {
+        [mockDocClass]: {
+          code: '$generateCode'
+        }
+      },
+      undefined
+    )
+
+    const doc = {
+      _id: generateId(),
+      _class: mockDocClass,
+      seqNumber: 1,
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+
+    const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
+
+    expect(result.code).toBeUndefined()
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockContext.warn).toHaveBeenCalledWith(
+      'generateCode: prefix is required but not found, skipping code generation'
+    )
+  })
+
+  it('should skip generation if seqNumber is missing', async () => {
+    const testPrefix = 'DOC'
+    mockClient = createMockTxOperations([])
+
+    const dataMapper = new DataMapper(
+      mockContext,
+      mockClient,
+      state,
+      {
+        [mockDocClass]: {
+          code: '$generateCode'
+        }
+      },
+      undefined
+    )
+
+    const doc = {
+      _id: generateId(),
+      _class: mockDocClass,
+      prefix: testPrefix,
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+
+    const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
+
+    expect(result.code).toBeUndefined()
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockContext.warn).toHaveBeenCalledWith(
+      'generateCode: seqNumber is required but not found, skipping code generation'
+    )
+  })
+
+  it('should warn if generated code already exists', async () => {
+    const testPrefix = 'DOC'
+    const existingDocs = [
+      {
+        _id: generateId(),
+        _class: mockDocClass,
+        code: 'DOC-1',
+        prefix: testPrefix,
+        space: mockSpaceId,
+        modifiedOn: platformNow(),
+        modifiedBy: generateId()
+      }
+    ]
+    mockClient = createMockTxOperations(existingDocs)
+
+    const dataMapper = new DataMapper(
+      mockContext,
+      mockClient,
+      state,
+      {
+        [mockDocClass]: {
+          seqNumber: '$generateSeqNumber',
+          code: '$generateCode'
+        }
+      },
+      undefined
+    )
+
+    const doc = {
+      _id: generateId(),
+      _class: mockDocClass,
+      prefix: testPrefix,
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+
+    const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
+
+    // Should still generate the code (seqNumber will be 1, code will be DOC-1)
+    expect(result.seqNumber).toBe(1)
+    expect(result.code).toBe('DOC-1')
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockContext.warn).toHaveBeenCalledWith(expect.stringContaining('Generated code DOC-1 already exists'))
+  })
+
+  it('should handle prefix with special characters', async () => {
+    const testPrefix = 'DOC-TEST'
+    mockClient = createMockTxOperations([])
+
+    const dataMapper = new DataMapper(
+      mockContext,
+      mockClient,
+      state,
+      {
+        [mockDocClass]: {
+          seqNumber: '$generateSeqNumber',
+          code: '$generateCode'
+        }
+      },
+      undefined
+    )
+
+    const doc = {
+      _id: generateId(),
+      _class: mockDocClass,
+      prefix: testPrefix,
+      space: mockSpaceId,
+      modifiedOn: platformNow(),
+      modifiedBy: generateId() as any
+    }
+
+    const result = await dataMapper.prepareDocumentData(doc, mockSpaceId, false)
+
+    expect(result.seqNumber).toBe(1)
+    expect(result.code).toBe('DOC-TEST-1')
   })
 })
