@@ -16,7 +16,7 @@
 <script lang="ts">
   import core from '@hcengineering/core'
   import { IconWithEmoji, getClient } from '@hcengineering/presentation'
-  import { Icon, Label } from '@hcengineering/ui'
+  import ui, { Icon, Label } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import textEditor from '@hcengineering/text-editor'
   import type { TableMetadata } from '../tableMetadata'
@@ -83,7 +83,7 @@
     {#if queryInfo}
       <div class="source-row">
         <span class="source-label">
-          <Label label={view.string.Filter} />
+          <Label label={ui.string.Filter} />
         </span>
         <div class="source-value query-value">
           {#if metadata.documentIds !== undefined && metadata.documentIds.length > 0}
