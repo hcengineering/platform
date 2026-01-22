@@ -78,6 +78,7 @@
     "ConvertToLinkPreview": "Als Link anzeigen",
     "ConvertToEmbedPreview": "Als Inhaltsvorschau anzeigen",
     "UnableToLoadEmbeddedContent": "Die Linkvorschau konnte aufgrund von Berechtigungseinstellungen oder nicht unterstütztem Inhalt nicht geladen werden",
-    "CannotConnectToCollaborationService": "Kann keine Verbindung zum Kollaborationsdienst herstellen"
+    "CannotConnectToCollaborationService": "Kann keine Verbindung zum Kollaborationsdienst herstellen",
+    "SourceURL": "Quell-URL"
   }
 }

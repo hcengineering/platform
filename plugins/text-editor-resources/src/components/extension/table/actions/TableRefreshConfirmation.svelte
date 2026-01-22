@@ -19,11 +19,14 @@
   import textEditor from '@hcengineering/text-editor'
   import { Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
+  import type { TableMetadata } from '../tableMetadata'
 
   import MarkupDiffViewer from '../../../MarkupDiffViewer.svelte'
+  import TableSourceInfo from './TableSourceInfo.svelte'
 
   export let oldMarkdown: string
   export let newMarkdown: string
+  export let metadata: TableMetadata
   export let onApply: () => void = () => {}
 
   const dispatch = createEventDispatcher()
@@ -53,6 +56,7 @@
   <div class="table-diff-container">
     <MarkupDiffViewer content={newContent} comparedVersion={oldContent} />
   </div>
+  <TableSourceInfo {metadata} />
   <svelte:fragment slot="buttons">
     <Button label={presentation.string.Cancel} kind="secondary" size="large" on:click={handleCancel} />
   </svelte:fragment>
@@ -60,7 +64,7 @@
 
 <style>
   .table-diff-container {
-    padding: 1rem;
+    padding: 0rem 1rem;
     overflow: auto;
     max-height: 80vh;
   }

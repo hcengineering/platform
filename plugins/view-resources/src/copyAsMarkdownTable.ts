@@ -26,7 +26,7 @@ import core, {
   getObjectValue
 } from '@hcengineering/core'
 import { translate, type IntlString, getMetadata } from '@hcengineering/platform'
-import { addNotification, NotificationSeverity, locationToUrl } from '@hcengineering/ui'
+import { addNotification, NotificationSeverity, locationToUrl, getCurrentResolvedLocation } from '@hcengineering/ui'
 import { getCurrentLanguage } from '@hcengineering/theme'
 import viewPlugin, {
   type Viewlet,
@@ -492,6 +492,7 @@ export interface TableMetadata {
   documentIds: Array<Ref<Doc>>
   timestamp: number
   workspace?: string // Optional workspace identifier
+  originalUrl?: string // Original URL of the page/view where the table was created
 }
 
 /**
@@ -510,6 +511,19 @@ async function buildTableMetadata (
     viewletId = viewlet?._id
   }
 
+  // Capture the original URL of the current page/view
+  let originalUrl: string | undefined
+  try {
+    const currentLocation = getCurrentResolvedLocation()
+    const relativeUrl = locationToUrl(currentLocation)
+    const frontUrl =
+      getMetadata(presentation.metadata.FrontUrl) ?? (typeof window !== 'undefined' ? window.location.origin : '')
+    originalUrl = concatLink(frontUrl, relativeUrl)
+  } catch (error) {
+    // If URL capture fails, continue without it
+    console.warn('Failed to capture original URL for table metadata:', error)
+  }
+
   return {
     version: '1.0',
     cardClass: props.cardClass,
@@ -517,7 +531,8 @@ async function buildTableMetadata (
     config: props.config,
     query: props.query,
     documentIds: docs.map((d) => d._id),
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    originalUrl
   }
 }
 
@@ -528,6 +543,17 @@ export function buildRelationshipTableMetadata (
   props: CopyRelationshipTableAsMarkdownProps,
   docs: Doc[]
 ): TableMetadata {
+  let originalUrl: string | undefined
+  try {
+    const currentLocation = getCurrentResolvedLocation()
+    const relativeUrl = locationToUrl(currentLocation)
+    const frontUrl =
+      getMetadata(presentation.metadata.FrontUrl) ?? (typeof window !== 'undefined' ? window.location.origin : '')
+    originalUrl = concatLink(frontUrl, relativeUrl)
+  } catch (error) {
+    console.warn('Failed to capture original URL for relationship table metadata:', error)
+  }
+
   return {
     version: '1.0',
     cardClass: props.cardClass,
@@ -535,7 +561,8 @@ export function buildRelationshipTableMetadata (
     config: props.model.map((m) => m.key),
     query: props.query,
     documentIds: docs.map((d) => d._id),
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    originalUrl
   }
 }
 

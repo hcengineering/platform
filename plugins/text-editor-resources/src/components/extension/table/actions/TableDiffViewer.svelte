@@ -18,11 +18,14 @@
   import presentation, { Card } from '@hcengineering/presentation'
   import textEditor from '@hcengineering/text-editor'
   import { createEventDispatcher } from 'svelte'
+  import type { TableMetadata } from '../tableMetadata'
 
   import MarkupDiffViewer from '../../../MarkupDiffViewer.svelte'
+  import TableSourceInfo from './TableSourceInfo.svelte'
 
   export let oldMarkdown: string
   export let newMarkdown: string
+  export let metadata: TableMetadata
 
   const dispatch = createEventDispatcher()
 
@@ -47,11 +50,12 @@
   <div class="table-diff-container">
     <MarkupDiffViewer content={newContent} comparedVersion={oldContent} />
   </div>
+  <TableSourceInfo {metadata} />
 </Card>
 
 <style>
   .table-diff-container {
-    padding: 1rem;
+    padding: 0rem 1rem;
     overflow: auto;
     max-height: 80vh;
   }

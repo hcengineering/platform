@@ -80,6 +80,7 @@
     "ConvertToLinkPreview": "Show as a link",
     "ConvertToEmbedPreview": "Show as a content preview",
     "UnableToLoadEmbeddedContent": "Link preview couldn't be loaded due to permission settings or unsupported content",
-    "CannotConnectToCollaborationService": "Cannot connect to collaboration service"
+    "CannotConnectToCollaborationService": "Cannot connect to collaboration service",
+    "SourceURL": "Source URL"
   }
 }

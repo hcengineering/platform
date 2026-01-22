@@ -97,6 +97,7 @@ export async function refreshTable (editor: Editor): Promise<void> {
         {
           oldMarkdown: currentTableMarkdown,
           newMarkdown: freshTableMarkdown,
+          metadata,
           onApply: () => {
             applyTableRefresh(editor, table, freshTableMarkdown, metadata)
           }
