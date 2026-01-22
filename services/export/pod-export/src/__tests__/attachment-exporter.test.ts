@@ -102,8 +102,8 @@ describe('AttachmentExporter - exportCollaborativeContent', () => {
     mockStorage = createMockStorageAdapter()
     mockClient = createMockTxOperations()
     mockHierarchy = createMockHierarchy()
-    sourceWorkspace = { workspace: 'source-ws' as any, workspaceUrl: 'ws://source' }
-    targetWorkspace = { workspace: 'target-ws' as any, workspaceUrl: 'ws://target' }
+    sourceWorkspace = { uuid: 'source-ws' as any, url: 'ws://source' }
+    targetWorkspace = { uuid: 'target-ws' as any, url: 'ws://target' }
     exporter = new AttachmentExporter(mockContext, mockClient, mockStorage, sourceWorkspace, targetWorkspace)
     jest.clearAllMocks()
   })
