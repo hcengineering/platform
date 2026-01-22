@@ -153,7 +153,6 @@
     border: 1px solid var(--theme-border);
     border-radius: 0.25rem;
     font-size: 0.75rem;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
     color: var(--theme-text-primary);
     overflow-x: auto;
     max-width: 100%;
