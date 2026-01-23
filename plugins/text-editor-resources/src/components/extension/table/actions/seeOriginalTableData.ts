@@ -95,7 +95,8 @@ export async function seeOriginalTableData (editor: Editor): Promise<void> {
         documentIds: documentIds.length > 0 ? documentIds : [],
         query: documentIds.length === 0 ? metadata.query : undefined,
         viewlet,
-        viewletWithLookup
+        viewletWithLookup,
+        metadata
       },
       'center'
     )

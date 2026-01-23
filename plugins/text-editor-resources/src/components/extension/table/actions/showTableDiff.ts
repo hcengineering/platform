@@ -50,7 +50,8 @@ export async function showTableDiff (editor: Editor): Promise<void> {
       TableDiffViewer,
       {
         oldMarkdown: currentTableMarkdown,
-        newMarkdown: freshTableMarkdown
+        newMarkdown: freshTableMarkdown,
+        metadata
       },
       'center'
     )
