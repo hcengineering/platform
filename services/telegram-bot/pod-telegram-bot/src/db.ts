@@ -68,9 +68,8 @@ export class PostgresDB {
     const flavor = await getDbFlavor(client)
 
     // Use appropriate syntax for rowid based on database flavor
-    const rowidDefinition = flavor === 'postgres'
-      ? 'rowid BIGINT GENERATED ALWAYS AS IDENTITY'
-      : 'rowid INT8 NOT NULL DEFAULT unique_rowid()'
+    const rowidDefinition =
+      flavor === 'postgres' ? 'rowid BIGINT GENERATED ALWAYS AS IDENTITY' : 'rowid INT8 NOT NULL DEFAULT unique_rowid()'
 
     const sql = `
         CREATE SCHEMA IF NOT EXISTS telegram_bot;

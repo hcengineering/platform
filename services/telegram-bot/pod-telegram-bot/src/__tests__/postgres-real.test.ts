@@ -17,16 +17,36 @@
  * These tests verify that the database schema and operations are compatible with both database flavors.
  */
 
+import { randomUUID } from 'node:crypto'
 import postgres from 'postgres'
-import { generateUuid, type AccountUuid, type WorkspaceUuid } from '@hcengineering/core'
+import { type AccountUuid, type WorkspaceUuid } from '@hcengineering/core'
 import { PostgresDB } from '../db'
 import { type ChannelRecord, type MessageRecord, type OtpRecord, type ReplyRecord } from '../types'
+
+jest.mock('../config', () => ({
+  default: {
+    AccountsURL: 'http://localhost:4020',
+    AccountsUrl: 'http://localhost:4020',
+    App: 'Test',
+    BotPort: 8443,
+    BotToken: 'test-bot-token',
+    DbUrl: 'postgresql://localhost/defaultdb',
+    Domain: '',
+    OtpRetryDelaySec: 60,
+    OtpTimeToLiveSec: 300,
+    Port: 4020,
+    QueueConfig: '{}',
+    QueueRegion: 'local',
+    Secret: 'test-secret',
+    ServiceId: 'telegram-bot-test'
+  }
+}))
 
 jest.setTimeout(90000)
 
 describe('PostgresDB compatibility tests', () => {
   // Use environment variables or default to localhost databases
-  const cockroachDB: string = process.env.DB_URL ?? 'postgresql://root@localhost:26258/defaultdb?sslmode=disable'
+  const cockroachDB: string = process.env.DB_URL ?? 'postgresql://root@localhost:26257/defaultdb?sslmode=disable'
   const postgresDB: string = process.env.POSTGRES_URL ?? 'postgresql://postgres:postgres@localhost:5433/postgres'
 
   let crDbUri = cockroachDB
@@ -44,8 +64,8 @@ describe('PostgresDB compatibility tests', () => {
   let crDb: PostgresDB
   let pgDb: PostgresDB
 
-  const testAccount = generateUuid() as AccountUuid
-  const testWorkspace = generateUuid() as WorkspaceUuid
+  const testAccount = randomUUID() as AccountUuid
+  const testWorkspace = randomUUID() as WorkspaceUuid
 
   beforeAll(async () => {
     // Get admin clients for database creation/deletion
@@ -76,10 +96,7 @@ describe('PostgresDB compatibility tests', () => {
 
     try {
       // Use admin clients to create the test databases
-      await Promise.all([
-        initCockroachDB(adminClientCR, dbUuid),
-        initPostgreSQL(adminClientPG, dbUuid)
-      ])
+      await Promise.all([initCockroachDB(adminClientCR, dbUuid), initPostgreSQL(adminClientPG, dbUuid)])
     } catch (err) {
       console.error('Failed to create test database:', err)
       throw err
@@ -298,10 +315,11 @@ describe('PostgresDB compatibility tests', () => {
     })
 
     it('should update channel name on both databases', async () => {
+      const channelId = 'channel2'
       const channel: Omit<ChannelRecord, 'rowId'> = {
         workspace: testWorkspace,
         account: testAccount,
-        _id: 'channel2' as any,
+        _id: channelId as any,
         _class: 'class:chunter:Space' as any,
         name: 'Original Name'
       }
@@ -312,21 +330,21 @@ describe('PostgresDB compatibility tests', () => {
       const crChannels = await crDb.getChannels(testAccount, testWorkspace)
       const pgChannels = await pgDb.getChannels(testAccount, testWorkspace)
 
-      const crChannelId = crChannels.find(c => c._id === 'channel2')?.rowId
-      const pgChannelId = pgChannels.find(c => c._id === 'channel2')?.rowId
+      const crRowId = crChannels.find((c) => c._id === channelId)?.rowId
+      const pgRowId = pgChannels.find((c) => c._id === channelId)?.rowId
 
-      expect(crChannelId).toBeDefined()
-      expect(pgChannelId).toBeDefined()
+      expect(crRowId).toBeDefined()
+      expect(pgRowId).toBeDefined()
 
-      if (crChannelId != null) {
-        await crDb.updateChannelName(crChannelId, 'Updated Name')
-        const updated = await crDb.getChannel(testAccount, crChannelId)
+      if (crRowId != null) {
+        await crDb.updateChannelName(crRowId, 'Updated Name')
+        const updated = await crDb.getChannel(testAccount, channelId as any)
         expect(updated?.name).toBe('Updated Name')
       }
 
-      if (pgChannelId != null) {
-        await pgDb.updateChannelName(pgChannelId, 'Updated Name')
-        const updated = await pgDb.getChannel(testAccount, pgChannelId)
+      if (pgRowId != null) {
+        await pgDb.updateChannelName(pgRowId, 'Updated Name')
+        const updated = await pgDb.getChannel(testAccount, channelId as any)
         expect(updated?.name).toBe('Updated Name')
       }
     })
