@@ -118,7 +118,8 @@ export default plugin(textEditorId, {
     ConvertToLinkPreview: '' as IntlString,
     ConvertToEmbedPreview: '' as IntlString,
     UnableToLoadEmbeddedContent: '' as IntlString,
-    SourceURL: '' as IntlString
+    SourceURL: '' as IntlString,
+    SelectedDocuments: '' as IntlString<{ count: number }>
   },
   icon: {
     Header1: '' as Asset,

@@ -80,6 +80,7 @@
     "ConvertToEmbedPreview": "Показать как превью контента",
     "UnableToLoadEmbeddedContent": "Не удалось загрузить превью ссылки из-за настроек доступа или неподдерживаемого содержимого",
     "CannotConnectToCollaborationService": "Не удалось подключиться к сервису совместной работы",
-    "SourceURL": "Исходный URL"
+    "SourceURL": "Исходный URL",
+    "SelectedDocuments": "Выбранные документы ({count, plural, =1 {1 элемент} other {# элементов}})"
   }
 }

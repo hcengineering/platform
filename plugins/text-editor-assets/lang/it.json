@@ -79,6 +79,7 @@
     "ConvertToEmbedPreview": "Mostra come anteprima del contenuto",
     "UnableToLoadEmbeddedContent": "Impossibile caricare l'anteprima del link a causa delle impostazioni dei permessi o di contenuto non supportato",
     "CannotConnectToCollaborationService": "Impossibile connettersi al servizio di collaborazione",
-    "SourceURL": "URL di origine"
+    "SourceURL": "URL di origine",
+    "SelectedDocuments": "Documenti selezionati ({count, plural, =1 {1 elemento} other {# elementi}})"
   }
 }

@@ -70,6 +70,7 @@
     "ConvertToEmbedPreview": "Afficher comme aperçu de contenu",
     "UnableToLoadEmbeddedContent": "L’aperçu du lien n’a pas pu être chargé en raison des paramètres d’autorisation ou d’un contenu non pris en charge",
     "CannotConnectToCollaborationService": "Impossible de se connecter au collaborateur",
-    "SourceURL": "URL source"
+    "SourceURL": "URL source",
+    "SelectedDocuments": "Documents sélectionnés ({count, plural, =1 {1 élément} other {# éléments}})"
   }
 }

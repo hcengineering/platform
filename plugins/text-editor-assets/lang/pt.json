@@ -70,6 +70,7 @@
     "ConvertToEmbedPreview": "Mostrar como pré-visualização de conteúdo",
     "UnableToLoadEmbeddedContent": "Não foi possível carregar a pré-visualização do link devido às permissões ou a conteúdo não suportado",
     "CannotConnectToCollaborationService": "Não foi possível conectar ao serviço de colaboração",
-    "SourceURL": "URL de origem"
+    "SourceURL": "URL de origem",
+    "SelectedDocuments": "Documentos selecionados ({count, plural, =1 {1 item} other {# itens}})"
   }
 }

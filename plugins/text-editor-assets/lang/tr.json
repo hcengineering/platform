@@ -80,6 +80,7 @@
     "ConvertToEmbedPreview": "İçerik önizlemesi olarak göster",
     "UnableToLoadEmbeddedContent": "Bağlantı önizlemesi izin ayarları veya desteklenmeyen içerik nedeniyle yüklenemedi",
     "CannotConnectToCollaborationService": "İşbirliği servisine bağlanılamıyor",
-    "SourceURL": "Kaynak URL"
+    "SourceURL": "Kaynak URL",
+    "SelectedDocuments": "Seçilen belgeler ({count, plural, =1 {1 öğe} other {# öğe}})"
   }
 }

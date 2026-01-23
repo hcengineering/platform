@@ -1,6 +1,6 @@
 <!--
 //
-// Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -34,7 +34,7 @@
   // Format query information
   $: queryInfo = (() => {
     if (metadata.documentIds !== undefined && metadata.documentIds.length > 0) {
-      return `Selected documents (${metadata.documentIds.length} items)`
+      return undefined
     } else if (metadata.query !== null && metadata.query !== undefined) {
       try {
         return JSON.stringify(metadata.query, null, 2)
@@ -45,14 +45,25 @@
     return undefined
   })()
 
-  $: originalUrlDisplay = metadata.originalUrl
-    ? metadata.originalUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
-    : undefined
+  $: documentCount = metadata.documentIds?.length ?? 0
+
+  $: originalUrlDisplay = (() => {
+    if (metadata.originalUrl == null || metadata.originalUrl === '') {
+      return undefined
+    }
+    try {
+      const url = new URL(metadata.originalUrl)
+      const path = url.pathname.replace(/\/$/, '')
+      return url.hostname + path
+    } catch {
+      return metadata.originalUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
+    }
+  })()
 </script>
 
 <div class="table-source-info">
   <div class="source-content">
-    {#if originalUrlDisplay && metadata.originalUrl}
+    {#if originalUrlDisplay != null && metadata.originalUrl != null}
       <div class="source-row">
         <span class="source-label">
           <Label label={textEditor.string.SourceURL} />
@@ -80,15 +91,17 @@
         </div>
       </div>
     {/if}
-    {#if queryInfo}
+    {#if queryInfo != null || (metadata.documentIds !== undefined && metadata.documentIds.length > 0)}
       <div class="source-row">
         <span class="source-label">
           <Label label={ui.string.Filter} />
         </span>
         <div class="source-value query-value">
           {#if metadata.documentIds !== undefined && metadata.documentIds.length > 0}
-            <span class="query-text">{queryInfo}</span>
-          {:else}
+            <span class="query-text">
+              <Label label={textEditor.string.SelectedDocuments} params={{ count: documentCount }} />
+            </span>
+          {:else if queryInfo}
             <pre class="query-json"><code>{queryInfo}</code></pre>
           {/if}
         </div>
@@ -109,28 +122,24 @@
 
   .source-content {
     padding: 0.5rem 1rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: flex-start;
+    gap: 0.75rem;
+    row-gap: 0.5rem;
   }
 
   .source-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
+    display: contents;
   }
 
   .source-label {
-    min-width: 5rem;
     color: var(--caption-color);
     font-weight: 500;
-    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .source-value {
-    flex: 1;
     display: flex;
     align-items: center;
     gap: 0.5rem;
