@@ -79,6 +79,8 @@
     "ConvertToLinkPreview": "リンクとして表示",
     "ConvertToEmbedPreview": "コンテンツプレビューとして表示",
     "UnableToLoadEmbeddedContent": "リンクのプレビューを読み込めません。権限設定または非対応のコンテンツが原因です",
-    "CannotConnectToCollaborationService": "コラボレーションサービスに接続できません"
+    "CannotConnectToCollaborationService": "コラボレーションサービスに接続できません",
+    "SourceURL": "ソースURL",
+    "SelectedDocuments": "選択されたドキュメント ({count, plural, =1 {1 項目} other {# 項目}})"
   }
 }

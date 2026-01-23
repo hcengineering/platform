@@ -20,6 +20,9 @@
   import { Component, Loading } from '@hcengineering/ui'
   import type { BuildModelKey, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
+  import type { TableMetadata } from '../tableMetadata'
+
+  import TableSourceInfo from './TableSourceInfo.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let config: Array<string | BuildModelKey> | undefined = undefined
@@ -27,6 +30,7 @@
   export let query: DocumentQuery<Doc> | undefined = undefined
   export let viewlet: Viewlet | undefined = undefined
   export let viewletWithLookup: any | undefined = undefined
+  export let metadata: TableMetadata | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -84,6 +88,9 @@
       <Loading />
     {/if}
   </div>
+  {#if metadata}
+    <TableSourceInfo {metadata} />
+  {/if}
 </Card>
 
 <style lang="scss">

@@ -79,6 +79,8 @@
     "ConvertToLinkPreview": "Zobrazit jako odkaz",
     "ConvertToEmbedPreview": "Zobrazit jako náhled obsahu",
     "UnableToLoadEmbeddedContent": "Náhled odkazu nelze načíst kvůli nastavení oprávnění nebo nepodporovanému obsahu",
-    "CannotConnectToCollaborationService": "Nelze se připojit k službě spolupráce"
+    "CannotConnectToCollaborationService": "Nelze se připojit k službě spolupráce",
+    "SourceURL": "Zdrojová URL",
+    "SelectedDocuments": "Vybrané dokumenty ({count, plural, =1 {1 položka} other {# položek}})"
   }
 }

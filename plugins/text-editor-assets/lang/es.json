@@ -69,6 +69,8 @@
     "ConvertToLinkPreview": "Mostrar como enlace",
     "ConvertToEmbedPreview": "Mostrar como vista previa de contenido",
     "UnableToLoadEmbeddedContent": "No se pudo cargar la vista previa del enlace debido a la configuración de permisos o contenido no compatible",
-    "CannotConnectToCollaborationService": "No se puede conectar con el colaborador"
+    "CannotConnectToCollaborationService": "No se puede conectar con el colaborador",
+    "SourceURL": "URL de origen",
+    "SelectedDocuments": "Documentos seleccionados ({count, plural, =1 {1 elemento} other {# elementos}})"
   }
 }

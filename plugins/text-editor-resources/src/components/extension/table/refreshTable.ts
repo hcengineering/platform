@@ -33,7 +33,8 @@ export async function buildMarkdownTableFromDocs (
       cardClass: metadata.cardClass,
       viewletId: metadata.viewletId,
       config: metadata.config,
-      query: metadata.query
+      query: metadata.query,
+      originalUrl: metadata.originalUrl
     }
     return await buildFunction(docs, buildMetadata, client)
   } catch (error) {

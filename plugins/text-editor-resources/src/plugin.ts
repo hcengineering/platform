@@ -19,6 +19,7 @@ import { type IntlString, plugin } from '@hcengineering/platform'
 
 export default plugin(textEditorId, {
   string: {
-    CannotConnectToCollaborationService: '' as IntlString
+    CannotConnectToCollaborationService: '' as IntlString,
+    SourceURL: '' as IntlString
   }
 })
