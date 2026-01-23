@@ -141,6 +141,9 @@ export class DocumentExporter {
         await this.attachmentExporter.exportAttachments(doc._id, targetId, doc._class, sourceHierarchy, sourceLowLevel)
       }
 
+      // Handle collaborative content blobs (e.g., document content)
+      await this.attachmentExporter.exportCollaborativeContent(doc, sourceHierarchy)
+
       // Handle collections (child documents)
       await this.exportCollections(doc, targetId, sourceHierarchy, sourceLowLevel, relations)
 
