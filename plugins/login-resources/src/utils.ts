@@ -1012,11 +1012,19 @@ export async function doLoginNavigate (
       }
     }
 
+    const currentLoc = getCurrentLocation()
+
     const loc = getCurrentLocation()
     loc.path[1] = result.token != null ? 'selectWorkspace' : 'confirmationSend'
     loc.path.length = 2
     if (navigateUrl !== undefined) {
       loc.query = { ...loc.query, navigateUrl }
+    }
+
+    // If we're already on the target page, reload to refresh state
+    if (loc.path.length === currentLoc.path.length && isSameSegments(currentLoc, loc, loc.path.length)) {
+      window.location.reload()
+      return
     }
 
     navigate(loc)
