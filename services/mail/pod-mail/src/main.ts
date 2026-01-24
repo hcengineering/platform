@@ -52,7 +52,8 @@ export const main = async (): Promise<void> => {
       endpoint: '/send',
       type: 'post',
       handler: async (req, res) => {
-        await handleSendMail(client, req, res, measureCtx)
+        const { to } = req.body
+        await measureCtx.with('send email', {}, (ctx) => handleSendMail(client, req, res, ctx), { to })
       }
     }
   ]

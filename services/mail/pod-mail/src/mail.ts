@@ -47,14 +47,16 @@ export class MailClient {
   async sendMessage (message: SendMailOptions, ctx: MeasureContext, password?: string | undefined): Promise<void> {
     const from = message.from as string
     const transporter = this.getTransporter(from, password)
-    transporter.sendMail(message, (err, info) => {
-      const messageInfo = `(from: ${from}, to: ${message.to as string})`
-      if (err !== null) {
-        ctx.error(`Failed to send email ${messageInfo}: ${err.message}`)
-        Analytics.handleError(err)
-      } else {
-        ctx.info(`Email request ${messageInfo} sent: ${info?.response}`)
-      }
+    await ctx.with('send', {}, async (ctx) => {
+      transporter.sendMail(message, (err, info) => {
+        const messageInfo = `(from: ${from}, to: ${message.to as string})`
+        if (err !== null) {
+          ctx.error(`Failed to send email ${messageInfo}: ${err.message}`)
+          Analytics.handleError(err)
+        } else {
+          ctx.info(`Email request ${messageInfo} sent: ${info?.response}`)
+        }
+      })
     })
   }
 
