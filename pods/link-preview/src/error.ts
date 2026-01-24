@@ -1,6 +1,5 @@
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
-// Copyright © 2021, 2023, 2024 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,12 +13,11 @@
 // limitations under the License.
 //
 
-import { textEditorId } from '@hcengineering/text-editor'
-import { type IntlString, plugin } from '@hcengineering/platform'
+export class HttpError extends Error {
+  code: number
 
-export default plugin(textEditorId, {
-  string: {
-    CannotConnectToCollaborationService: '' as IntlString,
-    SourceURL: '' as IntlString
+  constructor (code: number, message: string) {
+    super(message)
+    this.code = code
   }
-})
+}

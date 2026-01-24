@@ -17,6 +17,7 @@
   import { markdownToMarkup } from '@hcengineering/text-markdown'
   import presentation, { Card } from '@hcengineering/presentation'
   import textEditor from '@hcengineering/text-editor'
+  import { Button } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import type { TableMetadata } from '../tableMetadata'
 
@@ -26,6 +27,7 @@
   export let oldMarkdown: string
   export let newMarkdown: string
   export let metadata: TableMetadata
+  export let onApply: () => void = () => {}
 
   const dispatch = createEventDispatcher()
 
@@ -33,24 +35,31 @@
   $: oldContent = markdownToMarkup(oldMarkdown)
   $: newContent = markdownToMarkup(newMarkdown)
 
-  function handleClose (): void {
+  function handleApply (): void {
+    onApply()
+    dispatch('close')
+  }
+
+  function handleCancel (): void {
     dispatch('close')
   }
 </script>
 
 <Card
-  label={textEditor.string.TableDiffLabel}
+  label={textEditor.string.TableRefreshConfirmationLabel}
   fullSize={true}
   canSave={true}
-  okLabel={presentation.string.Ok}
-  okAction={handleClose}
-  onCancel={handleClose}
-  on:close={handleClose}
+  okAction={handleApply}
+  onCancel={handleCancel}
+  on:close={handleCancel}
 >
   <div class="table-diff-container">
     <MarkupDiffViewer content={newContent} comparedVersion={oldContent} />
   </div>
   <TableSourceInfo {metadata} />
+  <svelte:fragment slot="buttons">
+    <Button label={presentation.string.Cancel} kind="secondary" size="large" on:click={handleCancel} />
+  </svelte:fragment>
 </Card>
 
 <style>

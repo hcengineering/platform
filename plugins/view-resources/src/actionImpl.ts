@@ -128,12 +128,7 @@ export async function copyMarkdown (markdown: string, metadata?: Record<string, 
   if (metadata !== undefined) {
     try {
       const metadataComment = `<!-- huly-table-metadata:${JSON.stringify(metadata)} -->`
-      // Insert comment before first table (or at start if no table)
-      const tableIndex = markdown.indexOf('|')
-      markdownToCopy =
-        tableIndex !== -1
-          ? markdown.slice(0, tableIndex) + metadataComment + '\n' + markdown.slice(tableIndex)
-          : metadataComment + '\n' + markdown
+      markdownToCopy = markdown + '\n' + metadataComment
     } catch (e) {
       console.error('Failed to embed metadata in markdown:', e)
       // Continue with original markdown if embedding fails

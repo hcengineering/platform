@@ -20,6 +20,9 @@
   import { Component, Loading } from '@hcengineering/ui'
   import type { BuildModelKey, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
+  import type { TableMetadata } from '../tableMetadata'
+
+  import TableSourceInfo from './TableSourceInfo.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let config: Array<string | BuildModelKey> | undefined = undefined
@@ -27,6 +30,7 @@
   export let query: DocumentQuery<Doc> | undefined = undefined
   export let viewlet: Viewlet | undefined = undefined
   export let viewletWithLookup: any | undefined = undefined
+  export let metadata: TableMetadata | undefined = undefined
 
   const dispatch = createEventDispatcher()
 
@@ -64,30 +68,52 @@
 >
   <div class="original-table-container">
     {#if viewletComponent}
-      <Component
-        is={viewletComponent}
-        props={{
-          _class,
-          config: tableConfig,
-          query: tableQuery,
-          totalQuery: tableQuery,
-          options: viewlet?.options,
-          readonly: true,
-          viewlet,
-          viewOptions: viewlet?.viewOptions,
-          viewOptionsConfig: viewlet?.viewOptions?.other
-        }}
-      />
+      <div class="table-wrapper">
+        <Component
+          is={viewletComponent}
+          props={{
+            _class,
+            config: tableConfig,
+            query: tableQuery,
+            totalQuery: tableQuery,
+            options: viewlet?.options,
+            readonly: true,
+            viewlet,
+            viewOptions: viewlet?.viewOptions,
+            viewOptionsConfig: viewlet?.viewOptions?.other
+          }}
+        />
+      </div>
     {:else}
       <Loading />
     {/if}
   </div>
+  {#if metadata}
+    <TableSourceInfo {metadata} />
+  {/if}
 </Card>
 
 <style lang="scss">
   .original-table-container {
-    padding: 1rem;
-    overflow: auto;
-    max-height: 80vh;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
   }
 </style>

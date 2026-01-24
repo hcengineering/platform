@@ -5,6 +5,7 @@ import {
   type TxMiddlewareResult
 } from '@hcengineering/server-core'
 import core, {
+  type Account,
   AccountRole,
   type Doc,
   hasAccountRole,
@@ -19,6 +20,7 @@ import core, {
   type TxUpdateDoc
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
+import contact, { type Person } from '@hcengineering/contact'
 
 export class GuestPermissionsMiddleware extends BaseMiddleware implements Middleware {
   static async create (
@@ -40,44 +42,44 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
     }
 
     for (const tx of txes) {
-      this.processTx(ctx, tx)
+      await this.processTx(ctx, tx)
     }
 
     return await this.provideTx(ctx, txes)
   }
 
-  private processTx (ctx: MeasureContext<SessionData>, tx: Tx): void {
+  private async processTx (ctx: MeasureContext<SessionData>, tx: Tx): Promise<void> {
     const h = this.context.hierarchy
     if (tx._class === core.class.TxApplyIf) {
       const applyTx = tx as TxApplyIf
       for (const t of applyTx.txes) {
-        this.processTx(ctx, t)
+        await this.processTx(ctx, t)
       }
       return
     }
     if (TxProcessor.isExtendsCUD(tx._class)) {
-      const socialIds = ctx.contextData.account.socialIds
+      const { account } = ctx.contextData
       const cudTx = tx as TxCUD<Doc>
       const isSpace = h.isDerived(cudTx.objectClass, core.class.Space)
       if (isSpace) {
-        if (this.isForbiddenSpaceTx(cudTx as TxCUD<Space>, socialIds)) {
+        if (await this.isForbiddenSpaceTx(ctx, cudTx as TxCUD<Space>, account)) {
           throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
         }
-      } else if (cudTx.space !== core.space.DerivedTx && this.isForbiddenTx(cudTx, socialIds)) {
+      } else if (cudTx.space !== core.space.DerivedTx && (await this.isForbiddenTx(ctx, cudTx, account))) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       }
     }
   }
 
-  private isForbiddenTx (tx: TxCUD<Doc>, socialIds: PersonId[]): boolean {
+  private async isForbiddenTx (ctx: MeasureContext, tx: TxCUD<Doc>, account: Account): Promise<boolean> {
     if (tx._class === core.class.TxMixin) return false
-    return !this.hasMixinAccessLevel(tx, socialIds)
+    return !(await this.hasMixinAccessLevel(ctx, tx, account))
   }
 
-  private isForbiddenSpaceTx (tx: TxCUD<Space>, socialIds: PersonId[]): boolean {
+  private async isForbiddenSpaceTx (ctx: MeasureContext, tx: TxCUD<Space>, account: Account): Promise<boolean> {
     if (tx._class === core.class.TxRemoveDoc) return true
     if (tx._class === core.class.TxCreateDoc) {
-      return !this.hasMixinAccessLevel(tx, socialIds)
+      return !(await this.hasMixinAccessLevel(ctx, tx, account))
     }
     if (tx._class === core.class.TxUpdateDoc) {
       const updateTx = tx as TxUpdateDoc<Space>
@@ -93,7 +95,7 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
     return false
   }
 
-  private hasMixinAccessLevel (tx: TxCUD<Doc>, socialIds: PersonId[]): boolean {
+  private async hasMixinAccessLevel (ctx: MeasureContext, tx: TxCUD<Doc>, account: Account): Promise<boolean> {
     const h = this.context.hierarchy
     const accessLevelMixin = h.classHierarchyMixin(tx.objectClass, core.mixin.TxAccessLevel)
     if (accessLevelMixin === undefined) return false
@@ -104,8 +106,14 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
       return accessLevelMixin.removeAccessLevel === AccountRole.Guest
     }
     if (tx._class === core.class.TxUpdateDoc) {
-      if (accessLevelMixin.isIdentity === true && socialIds.includes(tx.objectId as unknown as PersonId)) {
+      if (accessLevelMixin.isIdentity === true && account.socialIds.includes(tx.objectId as unknown as PersonId)) {
         return true
+      }
+      if (accessLevelMixin.isIdentity === true && h.isDerived(tx.objectClass, contact.class.Person)) {
+        const person = (await this.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0] as
+          | Person
+          | undefined
+        return person?.personUuid === account.uuid
       }
       return accessLevelMixin.updateAccessLevel === AccountRole.Guest
     }

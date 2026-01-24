@@ -21,6 +21,7 @@ export interface TableMetadata extends BuildMarkdownTableMetadata {
   documentIds: string[]
   timestamp: number
   workspace?: string
+  originalUrl?: string // Original URL of the page/view where the table was created
 }
 
 /**

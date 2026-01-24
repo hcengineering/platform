@@ -81,13 +81,24 @@
 
           newTemplatesByCategory[categoryId]?.push(doc)
         }
+
+        // Sort templates within each category by title
+        for (const categoryId in newTemplatesByCategory) {
+          newTemplatesByCategory[categoryId].sort((a, b) => a.title.localeCompare(b.title))
+        }
+
         templatesByCategory = newTemplatesByCategory
         categoriesById = newCategoriesById
       })
   }
 
   $: canProceed = docObject?.template !== undefined && docObject.template !== ''
-  $: categoriesIds = categoriesById !== undefined ? (Object.keys(categoriesById) as Ref<DocumentCategory>[]) : []
+  $: categoriesIds =
+    categoriesById !== undefined
+      ? (Object.keys(categoriesById) as Ref<DocumentCategory>[]).sort((a, b) =>
+          categoriesById[a].title.localeCompare(categoriesById[b].title)
+        )
+      : []
 
   function handleExpanderToggled (id: Ref<DocumentCategory>): void {
     const categories = { ...$templateStep.collapsedCategories }

@@ -65,9 +65,12 @@
     "SeeOriginalData": "Voir les données originales",
     "CategoryVersioning": "Gestion de versions",
     "TableDiffLabel": "Modifications du tableau",
+    "TableRefreshConfirmationLabel": "Confirmer l'actualisation du tableau",
     "ConvertToLinkPreview": "Afficher comme lien",
     "ConvertToEmbedPreview": "Afficher comme aperçu de contenu",
     "UnableToLoadEmbeddedContent": "L’aperçu du lien n’a pas pu être chargé en raison des paramètres d’autorisation ou d’un contenu non pris en charge",
-    "CannotConnectToCollaborationService": "Impossible de se connecter au collaborateur"
+    "CannotConnectToCollaborationService": "Impossible de se connecter au collaborateur",
+    "SourceURL": "URL source",
+    "SelectedDocuments": "Documents sélectionnés ({count, plural, =1 {1 élément} other {# éléments}})"
   }
 }

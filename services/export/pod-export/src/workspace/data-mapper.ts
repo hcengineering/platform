@@ -102,7 +102,8 @@ export class DataMapper {
    * Field mappers format: { className: { fieldName: value, ... } }
    * Special values:
    * - '$currentUser' is replaced with current account's employee ID
-   * - '$ensureUnique' ensures the field value is unique by checking database and modifying if needed
+   * - '$generateSeqNumber' generates seqNumber based on minimum available value
+   * - '$generateCode' generates code from prefix and seqNumber
    */
   private async applyFieldMappers (docClass: Ref<Class<Doc>>, data: Record<string, any>): Promise<void> {
     const hierarchy = this.targetClient.getHierarchy()
@@ -151,9 +152,12 @@ export class DataMapper {
         } else {
           this.context.warn(`Cannot map ${fieldName}: $currentUser but current account employee not found`)
         }
-      } else if (fieldValue === '$ensureUnique') {
-        // Ensure field value is unique (globally, not per space)
-        await this.ensureFieldUnique(docClass, fieldName, data)
+      } else if (fieldValue === '$generateSeqNumber') {
+        // Generate seqNumber based on minimum available value
+        await this.generateSeqNumber(docClass, data)
+      } else if (fieldValue === '$generateCode') {
+        // Generate code from prefix and seqNumber
+        await this.generateCode(docClass, data)
       } else if (fieldValue === '') {
         // Empty string means clear the field
         data[fieldName] = undefined
@@ -165,229 +169,119 @@ export class DataMapper {
   }
 
   /**
-   * Ensure a field value is unique by checking the database and modifying if needed.
-   * Uses the document's `prefix` field to query documents with the same template/prefix,
-   * ensuring uniqueness within that group. Falls back to global uniqueness if no prefix is available.
-   * - For documents with prefix: queries by prefix field and ensures uniqueness within that group
-   * - For documents without prefix: uses fallback queries (exact match for strings, >= for numbers)
+   * Generate seqNumber based on minimum available value.
+   * Uses max + 1 from existing seqNumbers with the same prefix.
+   * Similar to calculateNextSeqNumberWithCheck.
    */
-  private async ensureFieldUnique (
-    docClass: Ref<Class<Doc>>,
-    fieldName: string,
-    data: Record<string, any>
-  ): Promise<void> {
-    const currentValue = data[fieldName]
-    if (currentValue === undefined || currentValue === null) {
+  private async generateSeqNumber (docClass: Ref<Class<Doc>>, data: Record<string, any>): Promise<void> {
+    const documentPrefix = data.prefix
+    if (documentPrefix === undefined || typeof documentPrefix !== 'string' || documentPrefix === '') {
+      this.context.warn('generateSeqNumber: prefix is required but not found, skipping seqNumber generation')
       return
     }
 
-    // Initialize unique values tracking if not exists
+    // Query all documents with the same prefix
+    const query: any = { prefix: documentPrefix }
+    const projection = { seqNumber: 1, prefix: 1 } as any
+
+    const existingDocs = await this.targetClient.findAll(docClass, query, { projection })
+
+    // Extract all seqNumbers from existing documents
+    const existingSeqNumbers = new Set<number>()
+    for (const doc of existingDocs) {
+      const seqNum = (doc as any).seqNumber
+      if (seqNum !== undefined && seqNum !== null && typeof seqNum === 'number') {
+        existingSeqNumbers.add(seqNum)
+      }
+    }
+
+    // Also check values used in this export batch for this specific prefix
+    // Use composite key to track seqNumbers per prefix
+    const seqNumberKey = `seqNumber:${documentPrefix}`
+    if (this.state.uniqueFieldValues !== undefined) {
+      const classKey = docClass
+      const fieldMap = this.state.uniqueFieldValues.get(classKey)
+      if (fieldMap !== undefined) {
+        const usedValues = fieldMap.get(seqNumberKey)
+        if (usedValues !== undefined) {
+          for (const usedValue of usedValues) {
+            if (typeof usedValue === 'number') {
+              existingSeqNumbers.add(usedValue)
+            }
+          }
+        }
+      }
+    }
+
+    // Find next available seqNumber (max + 1)
+    const minAvailable = existingSeqNumbers.size > 0 ? Math.max(...Array.from(existingSeqNumbers)) + 1 : 1
+
+    data.seqNumber = minAvailable
+
+    // Track this value in uniqueFieldValues per prefix
     if (this.state.uniqueFieldValues === undefined) {
       this.state.uniqueFieldValues = new Map()
     }
-
     const classKey = docClass
     if (!this.state.uniqueFieldValues.has(classKey)) {
       this.state.uniqueFieldValues.set(classKey, new Map())
     }
-
     let fieldMap = this.state.uniqueFieldValues.get(classKey)
     if (fieldMap === undefined) {
       fieldMap = new Map()
       this.state.uniqueFieldValues.set(classKey, fieldMap)
     }
-
-    let usedValues = fieldMap.get(fieldName)
-    if (usedValues === undefined) {
-      usedValues = new Set()
-      fieldMap.set(fieldName, usedValues)
+    if (!fieldMap.has(seqNumberKey)) {
+      fieldMap.set(seqNumberKey, new Set())
+    }
+    const usedValues = fieldMap.get(seqNumberKey)
+    if (usedValues !== undefined) {
+      usedValues.add(minAvailable)
     }
 
-    const projection = { [fieldName]: 1 } as any
+    this.context.info(
+      `generateSeqNumber: Generated seqNumber ${minAvailable} for prefix "${documentPrefix}" (class: ${docClass})`
+    )
+  }
 
-    let uniqueValue: string | number = currentValue
+  /**
+   * Generate code from prefix and seqNumber using the pattern prefix-seqNumber.
+   * Requires both prefix and seqNumber to be set in data.
+   */
+  private async generateCode (docClass: Ref<Class<Doc>>, data: Record<string, any>): Promise<void> {
+    const prefix = data.prefix
+    const seqNumber = data.seqNumber
 
-    if (typeof currentValue === 'string') {
-      const documentPrefix = data.prefix
-      if (documentPrefix !== undefined && typeof documentPrefix === 'string' && documentPrefix !== '') {
-        const codeMatch = currentValue.match(/-(\d+)$/)
-        const baseNum = codeMatch !== null ? parseInt(codeMatch[1], 10) : parseInt(currentValue, 10)
-
-        const query: any = { prefix: documentPrefix }
-
-        const prefixProjection = { [fieldName]: 1, prefix: 1 } as any
-
-        const existingDocs = await this.targetClient.findAll(docClass, query, { projection: prefixProjection })
-
-        const existingValues = new Set<string>()
-        for (const doc of existingDocs) {
-          const value = (doc as any)[fieldName]
-          if (value !== undefined && value !== null) {
-            existingValues.add(String(value))
-          }
-        }
-
-        for (const usedValue of usedValues) {
-          if (typeof usedValue === 'string') {
-            existingValues.add(usedValue)
-          }
-        }
-
-        const isCurrentValueUnique = !existingValues.has(currentValue)
-
-        if (isCurrentValueUnique) {
-          uniqueValue = currentValue
-        } else {
-          const existingNumbers = new Set<number>()
-          for (const val of existingValues) {
-            const match = val.match(/-(\d+)$/)
-            if (match !== null) {
-              existingNumbers.add(parseInt(match[1], 10))
-            } else {
-              const num = parseInt(val, 10)
-              if (!isNaN(num)) {
-                existingNumbers.add(num)
-              }
-            }
-          }
-
-          const maxNum = existingNumbers.size > 0 ? Math.max(...Array.from(existingNumbers), baseNum - 1) : baseNum - 1
-          // Generate new value: if original had pattern "PREFIX-N", use same pattern, otherwise just use number
-          if (codeMatch !== null) {
-            const originalPrefix = currentValue.substring(0, currentValue.lastIndexOf('-'))
-            uniqueValue = `${originalPrefix}-${maxNum + 1}`
-          } else {
-            uniqueValue = String(maxNum + 1)
-          }
-          this.context.info(
-            `ensureFieldUnique: ${fieldName} value ${currentValue} conflicts within prefix "${documentPrefix}", generating new value: ${uniqueValue}`
-          )
-        }
-      } else {
-        // No prefix pattern, check if exact value exists - global uniqueness
-        const query: any = { [fieldName]: currentValue }
-
-        const existing = await this.targetClient.findOne(docClass, query, { projection })
-        const isUsedInBatch = usedValues.has(currentValue)
-
-        if (existing === undefined && !isUsedInBatch) {
-          // Value is unique, use it as-is
-          uniqueValue = currentValue
-        } else {
-          // Value exists, append suffix
-          let attempt = 1
-          while (attempt < 10) {
-            uniqueValue = `${currentValue}-${attempt}`
-            const checkQuery: any = { [fieldName]: uniqueValue }
-            const checkExisting = await this.targetClient.findOne(docClass, checkQuery, { projection })
-            if (checkExisting === undefined && !usedValues.has(uniqueValue)) {
-              break
-            }
-            attempt++
-          }
-          if (attempt >= 10) {
-            this.context.error(
-              `ensureFieldUnique: Failed to find unique value for field ${fieldName} after 10 attempts`
-            )
-            return
-          }
-        }
-      }
-    } else if (typeof currentValue === 'number') {
-      // For numeric fields like seqNumber, check if document has a prefix field
-      // If so, ensure uniqueness within the same prefix (template) group
-      const documentPrefix = data.prefix
-      if (documentPrefix !== undefined && typeof documentPrefix === 'string' && documentPrefix !== '') {
-        // Query all documents with the same prefix (same template) - global uniqueness
-        const query: any = { prefix: documentPrefix }
-
-        // Project both the field we're checking and prefix to verify
-        const prefixProjection = { [fieldName]: 1, prefix: 1 } as any
-
-        const existingDocs = await this.targetClient.findAll(docClass, query, { projection: prefixProjection })
-
-        // Extract all numbers from existing values
-        const existingNumbers = new Set<number>()
-        for (const doc of existingDocs) {
-          const value = (doc as any)[fieldName]
-          if (typeof value === 'number') {
-            existingNumbers.add(value)
-          }
-        }
-
-        // Also check values used in this export batch
-        for (const usedValue of usedValues) {
-          if (typeof usedValue === 'number') {
-            existingNumbers.add(usedValue)
-          }
-        }
-
-        // Check if current value is already unique
-        const isCurrentValueUnique = !existingNumbers.has(currentValue) && !usedValues.has(currentValue)
-
-        if (isCurrentValueUnique) {
-          // Current value is unique, keep it
-          uniqueValue = currentValue
-        } else {
-          // Find max number and use max + 1
-          const maxNum = existingNumbers.size > 0 ? Math.max(...Array.from(existingNumbers)) : currentValue - 1
-          uniqueValue = maxNum + 1
-          this.context.info(
-            `ensureFieldUnique: ${fieldName} value ${currentValue} conflicts within prefix "${documentPrefix}", generating new value: ${uniqueValue}`
-          )
-        }
-      } else {
-        // No prefix field, fall back to querying all values >= current - global uniqueness
-        const query: any = { [fieldName]: { $gte: currentValue } }
-
-        const existingDocs = await this.targetClient.findAll(docClass, query, { projection })
-
-        // Extract all numbers from existing values
-        const existingNumbers = new Set<number>()
-        for (const doc of existingDocs) {
-          const value = (doc as any)[fieldName]
-          if (typeof value === 'number') {
-            existingNumbers.add(value)
-          }
-        }
-
-        // Also check values used in this export batch
-        for (const usedValue of usedValues) {
-          if (typeof usedValue === 'number' && usedValue >= currentValue) {
-            existingNumbers.add(usedValue)
-          }
-        }
-
-        // Check if current value is already unique
-        const isCurrentValueUnique = !existingNumbers.has(currentValue) && !usedValues.has(currentValue)
-
-        if (isCurrentValueUnique) {
-          // Current value is unique, keep it
-          uniqueValue = currentValue
-        } else {
-          // Find max number and use max + 1
-          const maxNum = existingNumbers.size > 0 ? Math.max(...Array.from(existingNumbers)) : currentValue - 1
-          uniqueValue = maxNum + 1
-          this.context.info(
-            `ensureFieldUnique: ${fieldName} value ${currentValue} conflicts, generating new value: ${uniqueValue}`
-          )
-        }
-      }
-    } else {
-      // Unsupported type, skip uniqueness check
-      this.context.warn(`Cannot ensure uniqueness for field ${fieldName} with type ${typeof currentValue}`)
+    if (prefix === undefined || typeof prefix !== 'string' || prefix === '') {
+      this.context.warn('generateCode: prefix is required but not found, skipping code generation')
       return
     }
 
-    // Update data with unique value
-    data[fieldName] = uniqueValue
-    usedValues.add(uniqueValue)
+    if (seqNumber === undefined || seqNumber === null || typeof seqNumber !== 'number') {
+      this.context.warn('generateCode: seqNumber is required but not found, skipping code generation')
+      return
+    }
 
-    if (uniqueValue !== currentValue) {
-      this.context.info(
-        `ensureFieldUnique: Updated ${fieldName} from ${currentValue} to ${uniqueValue} (class: ${docClass})`
+    // Generate code using pattern: prefix-seqNumber
+    const generatedCode = `${prefix}-${seqNumber}`
+
+    // Check if this code already exists (shouldn't happen if seqNumber was generated correctly, but check anyway)
+    const query: any = { code: generatedCode }
+    const projection = { code: 1 } as any
+    const existing = await this.targetClient.findOne(docClass, query, { projection })
+
+    if (existing !== undefined) {
+      this.context.warn(
+        `generateCode: Generated code ${generatedCode} already exists, this should not happen if seqNumber was generated correctly`
       )
     }
+
+    // Update data with generated code
+    data.code = generatedCode
+
+    this.context.info(
+      `generateCode: Generated code ${generatedCode} from prefix "${prefix}" and seqNumber ${seqNumber} (class: ${docClass})`
+    )
   }
 
   /**

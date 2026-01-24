@@ -904,4 +904,5 @@ export interface BuildMarkdownTableMetadata {
   viewletId?: string | Ref<Viewlet>
   config?: Array<string | BuildModelKey>
   query?: Record<string, any> | DocumentQuery<Doc>
+  originalUrl?: string // Original URL of the page/view where the table was created
 }

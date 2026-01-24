@@ -352,7 +352,8 @@ export function createModel (builder: Builder): void {
           presenter: documents.component.OwnerPresenter,
           props: { shouldShowLabel: true, isEditable: false },
           sortingKey: '$lookup.owner.name'
-        }
+        },
+        { key: 'space', sortingKey: 'space' }
       ],
       baseQuery: {
         hidden: { $ne: true }
@@ -687,7 +688,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(documents.mixin.DocumentTemplate, core.class.Class, view.mixin.ClassFilters, {
-    filters: ['prefix', 'title', 'modifiedOn', 'category']
+    filters: ['prefix', 'title', 'modifiedOn', 'category', 'space']
   })
 
   builder.mixin(documents.class.Document, core.class.Class, setting.mixin.Editable, {

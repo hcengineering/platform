@@ -52,8 +52,8 @@ export async function exportToWorkspace (
         minor: 0,
         reviewers: [],
         controlledState: '',
-        seqNumber: '$ensureUnique',
-        code: '$ensureUnique'
+        seqNumber: '$generateSeqNumber',
+        code: '$generateCode'
       },
       'documents:class:DocumentMeta': {
         author: '$currentUser',

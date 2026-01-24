@@ -75,9 +75,12 @@
     "SeeOriginalData": "Показать исходные данные",
     "CategoryVersioning": "Версионирование",
     "TableDiffLabel": "Изменения в таблице",
+    "TableRefreshConfirmationLabel": "Подтвердить обновление таблицы",
     "ConvertToLinkPreview": "Показать как ссылку",
     "ConvertToEmbedPreview": "Показать как превью контента",
     "UnableToLoadEmbeddedContent": "Не удалось загрузить превью ссылки из-за настроек доступа или неподдерживаемого содержимого",
-    "CannotConnectToCollaborationService": "Не удалось подключиться к сервису совместной работы"
+    "CannotConnectToCollaborationService": "Не удалось подключиться к сервису совместной работы",
+    "SourceURL": "Исходный URL",
+    "SelectedDocuments": "Выбранные документы ({count, plural, =1 {1 элемент} other {# элементов}})"
   }
 }
