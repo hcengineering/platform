@@ -24,6 +24,7 @@ import {
 } from '@hcengineering/core'
 import contact, { type Employee } from '@hcengineering/contact'
 import { type StorageAdapter } from '@hcengineering/server-core'
+import { shouldSkipDocument } from '@hcengineering/export'
 import { AttachmentExporter } from './attachment-exporter'
 import { DataMapper } from './data-mapper'
 import { DocumentExporter } from './document-exporter'
@@ -124,7 +125,8 @@ export class CrossWorkspaceExporter {
       includeAttachments = true,
       mapper,
       relations = [],
-      fieldMappers = {}
+      fieldMappers = {},
+      skipDeletedObsolete = true
     } = options
 
     // Store field mappers
@@ -202,10 +204,13 @@ export class CrossWorkspaceExporter {
 
           this.context.info(`Processing batch: ${processedCount + 1}-${processedCount + docs.length}`)
 
+          // Filter out archived/deleted/obsolete documents if skipDeletedObsolete is enabled
+          const docsToProcess = skipDeletedObsolete ? docs.filter((doc) => !shouldSkipDocument(doc)) : docs
+
           // Check for existing documents in bulk if needed
           const existingDocsMap = new Map<Ref<Doc>, Doc>()
           if (conflictStrategy === 'skip') {
-            const docIds = docs.map((d) => d._id)
+            const docIds = docsToProcess.map((d) => d._id)
             const existing = await this.targetClient.findAll(_class, { _id: { $in: docIds } })
             for (const doc of existing) {
               existingDocsMap.set(doc._id, doc)
@@ -213,7 +218,7 @@ export class CrossWorkspaceExporter {
           }
 
           // Export documents in this batch
-          for (const doc of docs) {
+          for (const doc of docsToProcess) {
             try {
               // Apply mapper if provided
               const mappedDoc = mapper !== undefined ? await mapper(doc) : doc
