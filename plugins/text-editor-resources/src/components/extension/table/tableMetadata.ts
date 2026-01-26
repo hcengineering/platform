@@ -13,16 +13,7 @@
 //
 
 import type { Node } from '@tiptap/pm/model'
-import type { BuildMarkdownTableMetadata } from '@hcengineering/view'
-
-// Extended TableMetadata for text editor storage (includes additional fields for persistence)
-export interface TableMetadata extends BuildMarkdownTableMetadata {
-  version: string
-  documentIds: string[]
-  timestamp: number
-  workspace?: string
-  originalUrl?: string // Original URL of the page/view where the table was created
-}
+import type { TableMetadata } from '@hcengineering/view'
 
 /**
  * Extract table metadata from a ProseMirror table node
