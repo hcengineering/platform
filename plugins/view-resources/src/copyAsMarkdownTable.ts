@@ -303,7 +303,6 @@ async function resolveCustomAttributeLabel (
     return attrLabel
   }
 
-  // Try to find the attribute on the document's actual class (MasterTag)
   let customAttr = hierarchy.findAttribute(docClass, attrLabel)
   if (customAttr === undefined) {
     const allAttrs = hierarchy.getAllAttributes(docClass)
@@ -311,11 +310,9 @@ async function resolveCustomAttributeLabel (
   }
 
   if (customAttr?.label !== undefined) {
-    // Use the attribute's human-readable label
     return await translate(customAttr.label, {}, language)
   }
 
-  // Fallback to the attribute ID
   return attrLabel
 }
 
@@ -338,7 +335,6 @@ async function generateHeaders (
   for (const attr of model) {
     let label: string
     if (typeof attr.label === 'string') {
-      // Check if this is a custom attribute ID that needs label lookup
       if (attr.label.startsWith('custom')) {
         label = await resolveCustomAttributeLabel(attr.label, firstDocClass, hierarchy, language)
       } else if (isIntlString(attr.label)) {
@@ -362,9 +358,7 @@ async function generateHeaders (
  */
 function modelToConfig (model: AttributeModel[]): Array<string | BuildModelKey> {
   return model.map((m) => {
-    // For custom attributes, key is empty but label contains the attribute name
     if (m.key === '' && typeof m.label === 'string' && m.label.startsWith('custom')) {
-      // Return as BuildModelKey to preserve the custom attribute name
       return {
         key: m.label, // Use label (custom attribute name) as key
         label: m.label,
@@ -373,11 +367,9 @@ function modelToConfig (model: AttributeModel[]): Array<string | BuildModelKey> 
         sortingKey: m.sortingKey
       }
     }
-    // For regular attributes, return the key
     if (m.key !== '') {
       return m.key
     }
-    // For empty key attributes (like object presenter), return empty string or BuildModelKey
     if (m.castRequest !== undefined) {
       return {
         key: m.key,
@@ -409,7 +401,6 @@ async function formatArrayValue (
   card: Doc,
   language: string | undefined
 ): Promise<string> {
-  // Check if it's an array of references
   const isRefArray =
     attrType?._class === core.class.ArrOf &&
     (attrType as { of?: { _class?: Ref<Class<Doc>> } })?.of?._class === core.class.RefTo
@@ -437,7 +428,6 @@ async function formatArrayValue (
     }
   }
 
-  // Handle regular arrays (strings, objects with title, etc.)
   const translatedValues = await Promise.all(
     value.map(async (v) => {
       if (typeof v === 'object' && v !== null && 'title' in v) {
@@ -497,12 +487,10 @@ async function formatCustomAttributeValue (
 
   const attrType = attribute?.type
 
-  // Handle timestamps
   if (typeof value === 'number' && attrType?._class === core.class.TypeTimestamp) {
     return getDisplayTime(value)
   }
 
-  // Handle dates
   if (value instanceof Date) {
     const options: Intl.DateTimeFormatOptions = {
       year: DateFormatOption.Numeric,
@@ -512,19 +500,15 @@ async function formatCustomAttributeValue (
     return value.toLocaleDateString(language ?? 'default', options)
   }
 
-  // Handle numbers and booleans
   if (typeof value === 'number' || typeof value === 'boolean') {
     return String(value)
   }
 
-  // Handle strings
   if (typeof value === 'string') {
-    // Check if it's an IntlString that needs translation
     if (isIntlString(value)) {
       return await translate(value as unknown as IntlString, {}, language)
     }
 
-    // Check if it's a reference ID - try to resolve from $lookup
     const isRef = attrType?._class === core.class.RefTo
     if (isRef && attribute !== undefined) {
       const cardWithLookup = card as any
@@ -543,12 +527,10 @@ async function formatCustomAttributeValue (
     return value
   }
 
-  // Handle arrays
   if (Array.isArray(value)) {
     return await formatArrayValue(value, attrType, attribute, attribute?.name ?? '', card, language)
   }
 
-  // Handle objects (try to get title or name)
   if (typeof value === 'object' && value !== null) {
     const obj = value as Record<string, any>
     const titleOrName = await extractObjectTitleOrName(obj, language)
@@ -616,17 +598,14 @@ async function formatValue (
     const isCustomAttribute = labelStr.startsWith('custom')
 
     if (isCustomAttribute) {
-      // Get value directly from document using label as key
       const customValue = (card as any)[labelStr]
       if (customValue === null || customValue === undefined) {
         return ''
       }
 
-      // Try to find the attribute definition on the document's class (MasterTag)
       const docClass = card._class
       let customAttr = hierarchy.findAttribute(docClass, labelStr)
 
-      // If not found on document class, search in all attributes
       if (customAttr === undefined) {
         const allAttrs = hierarchy.getAllAttributes(docClass)
         customAttr = allAttrs.get(labelStr)
@@ -635,7 +614,6 @@ async function formatValue (
       return await formatCustomAttributeValue(customValue, customAttr, card, hierarchy, language)
     }
 
-    // Not a custom attribute with empty key - skip (e.g., object presenter in non-first column)
     return ''
   }
 
@@ -665,13 +643,11 @@ async function formatValue (
   }
 
   if (typeof value === 'string') {
-    // Check if this is a single reference ID that needs lookup
     const isRef = attrType?._class === core.class.RefTo
     if (isRef) {
       const cardWithLookup = card as any
       const lookupData = cardWithLookup.$lookup?.[attr.key]
       if (lookupData !== undefined && lookupData !== null) {
-        // Use the resolved object
         const resolvedObj = lookupData
         if (typeof resolvedObj === 'object' && resolvedObj !== null && 'title' in resolvedObj) {
           const title = resolvedObj[DocumentAttributeKey.Title] ?? ''
@@ -680,7 +656,6 @@ async function formatValue (
           }
           return String(title)
         }
-        // Fall through to display as string if no title
       }
     }
 
@@ -929,13 +904,10 @@ export async function buildMarkdownTableFromDocs (
 
   const language = getCurrentLanguage()
 
-  // Cache for user ID (PersonId) -> name mappings to reduce database calls
   const userCache = new Map<PersonId, string>()
 
-  // Get the first document's class for custom attribute lookup
   const firstDocClass = docs.length > 0 ? docs[0]._class : props.cardClass
 
-  // Generate headers using common function
   const headers = await generateHeaders(displayableModel, firstDocClass, hierarchy, language)
 
   const rows: string[][] = []
