@@ -38,7 +38,7 @@ import { Octokit } from 'octokit'
 import { ContainerFocus, IntegrationManager, githubExternalSyncVersion, githubSyncVersion } from '../types'
 import { IssueExternalData } from './githubTypes'
 import { stripGuestLink } from './guest'
-import { collectUpdate, compareMarkdown, deleteObjects, errorToObj, guessStatus } from './utils'
+import { collectUpdate, compareMarkdown, deleteObjects, ensureGraphQLOctokit, errorToObj, guessStatus } from './utils'
 
 /**
  * @public
@@ -338,7 +338,10 @@ export abstract class IssueSyncManagerBase {
     const allAttributes = this.client.getHierarchy().getAllAttributes(existingIssue._class)
     const platformUpdate = collectUpdate<Issue>(previousData, existingIssue, Array.from(allAttributes.keys()))
 
-    const okit = (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit
+    const okit = ensureGraphQLOctokit(
+      (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit,
+      container
+    )
 
     // Remove current same values from update
     for (const [k, v] of Object.entries(update)) {

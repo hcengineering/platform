@@ -29,7 +29,7 @@ import {
   githubSyncVersion
 } from '../types'
 import { PullRequestExternalData, Review as ReviewExternalData, reviewDetails, toReviewState } from './githubTypes'
-import { collectUpdate, deleteObjects, errorToObj, isGHWriteAllowed, syncChilds } from './utils'
+import { collectUpdate, deleteObjects, ensureGraphQLOctokit, errorToObj, isGHWriteAllowed, syncChilds } from './utils'
 
 import { Analytics } from '@hcengineering/analytics'
 import { PullRequestReviewEvent, PullRequestReviewSubmittedEvent } from '@octokit/webhooks-types'
@@ -150,7 +150,10 @@ export class ReviewSyncManager implements DocSyncManager {
     account: PersonId,
     id: string
   ): Promise<void> {
-    const okit = (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit
+    const okit = ensureGraphQLOctokit(
+      (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit,
+      container
+    )
     const q = `mutation deleteReview($reviewID: ID!) {
       deletePullRequestReview(input: {
         pullRequestReviewId: $reviewID
@@ -432,7 +435,10 @@ export class ReviewSyncManager implements DocSyncManager {
       return {}
     }
     const existingReview = existing as GithubReview
-    const okit = (await this.provider.getOctokit(ctx, existingReview.modifiedBy)) ?? container.container.octokit
+    const okit = ensureGraphQLOctokit(
+      (await this.provider.getOctokit(ctx, existingReview.modifiedBy)) ?? container.container.octokit,
+      container
+    )
 
     // No external version yet, create it.
     try {

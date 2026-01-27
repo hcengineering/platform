@@ -48,7 +48,7 @@ import {
 } from '../types'
 import { IssueExternalData, issueDetails } from './githubTypes'
 import { GithubIssueData, IssueSyncManagerBase, IssueUpdate, WithMarkup } from './issueBase'
-import { getSince, gqlp, guessStatus, isGHWriteAllowed, syncRunner } from './utils'
+import { ensureGraphQLOctokit, getSince, gqlp, guessStatus, isGHWriteAllowed, syncRunner } from './utils'
 
 export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncManager {
   createPromise: Promise<IssueExternalData | undefined> | undefined
@@ -608,6 +608,8 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     okit: Octokit,
     account: PersonId
   ): Promise<boolean> {
+    const graphqlOkit = ensureGraphQLOctokit(okit, container)
+
     const { state, stateReason, body, ...issueUpdate } = await this.collectIssueUpdate(
       info,
       existing,
@@ -624,7 +626,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     // We should allow modification from user.
 
     const closeIssue = async (): Promise<void> => {
-      await okit.graphql(
+      await graphqlOkit.graphql(
         `
       mutation closeIssue($issue: ID!) {
         closeIssue(input: {
@@ -642,7 +644,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     }
 
     const reopenIssue = async (): Promise<void> => {
-      await okit.graphql(
+      await graphqlOkit.graphql(
         `
       mutation reopenIssue($issue: ID!) {
         reopenIssue(input: {
@@ -675,7 +677,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
                 // We need to call re-open issue
                 await reopenIssue()
               }
-              await okit.graphql(
+              await graphqlOkit.graphql(
                 `
               mutation updateIssue($issue: ID!, $body: String! ) {
                 updateIssue(input: {
@@ -713,7 +715,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
                 await reopenIssue()
               }
               if (hasOtherChanges) {
-                await okit.graphql(
+                await graphqlOkit.graphql(
                   `
                 mutation updateIssue($issue: ID!) {
                   updateIssue(input: {
@@ -751,7 +753,10 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
   ): Promise<IssueExternalData | undefined> {
     const existingIssue = existing
 
-    const okit = (await this.provider.getOctokit(ctx, existingIssue.modifiedBy)) ?? container.container.octokit
+    const okit = ensureGraphQLOctokit(
+      (await this.provider.getOctokit(ctx, existingIssue.modifiedBy)) ?? container.container.octokit,
+      container
+    )
 
     const repoId = repository.nodeId
 
@@ -797,7 +802,10 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
     account: PersonId,
     id: string
   ): Promise<void> {
-    const okit = (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit
+    const okit = ensureGraphQLOctokit(
+      (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit,
+      container
+    )
 
     const q = `mutation deleteIssue($issueID: ID!) {
       deleteIssue(

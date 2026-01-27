@@ -29,7 +29,7 @@ import {
   githubSyncVersion
 } from '../types'
 import { ReviewComment as ReviewCommentExternalData, reviewCommentDetails } from './githubTypes'
-import { collectUpdate, deleteObjects, errorToObj, isGHWriteAllowed } from './utils'
+import { collectUpdate, deleteObjects, ensureGraphQLOctokit, errorToObj, isGHWriteAllowed } from './utils'
 
 import { Analytics } from '@hcengineering/analytics'
 import { PullRequestReviewCommentCreatedEvent, PullRequestReviewCommentEvent } from '@octokit/webhooks-types'
@@ -155,7 +155,10 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     derivedClient: TxOperations,
     parent?: DocSyncInfo
   ): Promise<void> {
-    const okit = (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit
+    const okit = ensureGraphQLOctokit(
+      (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit,
+      container
+    )
     const q = `mutation deleteReviewComment($reviewID: ID!) {
       deletePullRequestReviewComment(input: {
         id: $reviewID
@@ -435,7 +438,10 @@ export class ReviewCommentSyncManager implements DocSyncManager {
     if (Object.keys(platformUpdate).length > 0) {
       if (platformUpdate.body !== undefined) {
         const body = await this.provider.getMarkupSafe(container.container, platformUpdate.body)
-        const okit = (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit
+        const okit = ensureGraphQLOctokit(
+          (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit,
+          container
+        )
         const q = `mutation updateReviewComment($commentID: ID!, $body: String!) {
           updatePullRequestReviewComment(input: {
             threadId: $threadID
@@ -510,7 +516,10 @@ export class ReviewCommentSyncManager implements DocSyncManager {
       return {}
     }
     const existingReview = existing as GithubReviewComment
-    const okit = (await this.provider.getOctokit(ctx, existingReview.modifiedBy)) ?? container.container.octokit
+    const okit = ensureGraphQLOctokit(
+      (await this.provider.getOctokit(ctx, existingReview.modifiedBy)) ?? container.container.octokit,
+      container
+    )
 
     // No external version yet, create it.
     try {
