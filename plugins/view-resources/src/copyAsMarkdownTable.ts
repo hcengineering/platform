@@ -14,6 +14,7 @@
 //
 
 import core, {
+  type AnyAttribute,
   type Class,
   type Client,
   type Doc,
@@ -284,6 +285,279 @@ async function loadViewletConfig (
   return { viewlet, config: actualConfig }
 }
 
+/**
+ * Resolve the human-readable label for a custom attribute
+ * @param attrLabel - The attribute label (may be an ID like "custom...")
+ * @param docClass - The document's class (MasterTag) where the attribute is defined
+ * @param hierarchy - The hierarchy instance
+ * @param language - Current language
+ * @returns The translated human-readable label, or the original label if not found
+ */
+async function resolveCustomAttributeLabel (
+  attrLabel: string,
+  docClass: Ref<Class<Doc>>,
+  hierarchy: Hierarchy,
+  language: string | undefined
+): Promise<string> {
+  if (!attrLabel.startsWith('custom')) {
+    return attrLabel
+  }
+
+  // Try to find the attribute on the document's actual class (MasterTag)
+  let customAttr = hierarchy.findAttribute(docClass, attrLabel)
+  if (customAttr === undefined) {
+    const allAttrs = hierarchy.getAllAttributes(docClass)
+    customAttr = allAttrs.get(attrLabel)
+  }
+
+  if (customAttr?.label !== undefined) {
+    // Use the attribute's human-readable label
+    return await translate(customAttr.label, {}, language)
+  }
+
+  // Fallback to the attribute ID
+  return attrLabel
+}
+
+/**
+ * Generate table headers from AttributeModel array
+ * Handles custom attributes, IntlStrings, and regular labels
+ * @param model - Array of AttributeModel to generate headers from
+ * @param firstDocClass - The first document's class (for custom attribute lookup)
+ * @param hierarchy - The hierarchy instance
+ * @param language - Current language
+ * @returns Array of header strings
+ */
+async function generateHeaders (
+  model: AttributeModel[],
+  firstDocClass: Ref<Class<Doc>>,
+  hierarchy: Hierarchy,
+  language: string | undefined
+): Promise<string[]> {
+  const headers: string[] = []
+  for (const attr of model) {
+    let label: string
+    if (typeof attr.label === 'string') {
+      // Check if this is a custom attribute ID that needs label lookup
+      if (attr.label.startsWith('custom')) {
+        label = await resolveCustomAttributeLabel(attr.label, firstDocClass, hierarchy, language)
+      } else if (isIntlString(attr.label)) {
+        label = await translate(attr.label as unknown as IntlString, {}, language)
+      } else {
+        label = attr.label
+      }
+    } else {
+      label = await translate(attr.label, {}, language)
+    }
+    headers.push(label)
+  }
+  return headers
+}
+
+/**
+ * Convert AttributeModel array back to config format (Array<string | BuildModelKey>)
+ * Preserves custom attributes by using label as key when key is empty
+ * @param model - Array of AttributeModel to convert
+ * @returns Config array that can be used to rebuild the table
+ */
+function modelToConfig (model: AttributeModel[]): Array<string | BuildModelKey> {
+  return model.map((m) => {
+    // For custom attributes, key is empty but label contains the attribute name
+    if (m.key === '' && typeof m.label === 'string' && m.label.startsWith('custom')) {
+      // Return as BuildModelKey to preserve the custom attribute name
+      return {
+        key: m.label, // Use label (custom attribute name) as key
+        label: m.label,
+        displayProps: m.displayProps,
+        props: m.props,
+        sortingKey: m.sortingKey
+      }
+    }
+    // For regular attributes, return the key
+    if (m.key !== '') {
+      return m.key
+    }
+    // For empty key attributes (like object presenter), return empty string or BuildModelKey
+    if (m.castRequest !== undefined) {
+      return {
+        key: m.key,
+        label: m.label,
+        displayProps: m.displayProps,
+        props: m.props,
+        sortingKey: m.sortingKey
+      }
+    }
+    return m.key
+  })
+}
+
+/**
+ * Format an array of values, handling reference lookups if needed
+ * @param value - The array value
+ * @param attrType - The attribute type
+ * @param attribute - The attribute definition (for getting the name)
+ * @param attrKey - The attribute key (fallback if attribute.name is not available)
+ * @param card - The document
+ * @param language - Current language
+ * @returns Formatted string with comma-separated values
+ */
+async function formatArrayValue (
+  value: any[],
+  attrType: any,
+  attribute: AnyAttribute | undefined,
+  attrKey: string,
+  card: Doc,
+  language: string | undefined
+): Promise<string> {
+  // Check if it's an array of references
+  const isRefArray =
+    attrType?._class === core.class.ArrOf &&
+    (attrType as { of?: { _class?: Ref<Class<Doc>> } })?.of?._class === core.class.RefTo
+
+  if (isRefArray && (attribute !== undefined || attrKey !== '')) {
+    const cardWithLookup = card as any
+    const lookupKey = attribute?.name ?? attrKey
+    const lookupData = cardWithLookup.$lookup?.[lookupKey]
+
+    if (lookupData !== undefined && lookupData !== null) {
+      const resolvedArray = Array.isArray(lookupData) ? lookupData : [lookupData]
+      const translatedValues = await Promise.all(
+        resolvedArray.map(async (v) => {
+          if (typeof v === 'object' && v !== null && 'title' in v) {
+            const title = v.title ?? ''
+            if (typeof title === 'string' && isIntlString(title)) {
+              return await translate(title as unknown as IntlString, {}, language)
+            }
+            return String(title)
+          }
+          return typeof v === 'string' ? v : String(v)
+        })
+      )
+      return translatedValues.join(', ')
+    }
+  }
+
+  // Handle regular arrays (strings, objects with title, etc.)
+  const translatedValues = await Promise.all(
+    value.map(async (v) => {
+      if (typeof v === 'object' && v !== null && 'title' in v) {
+        const title = v.title ?? ''
+        if (typeof title === 'string' && isIntlString(title)) {
+          return await translate(title as unknown as IntlString, {}, language)
+        }
+        return String(title)
+      }
+      if (typeof v === 'string' && isIntlString(v)) {
+        return await translate(v as unknown as IntlString, {}, language)
+      }
+      return typeof v === 'string' ? v : String(v)
+    })
+  )
+  return translatedValues.join(', ')
+}
+
+/**
+ * Extract title or name from an object, translating if needed
+ * @param obj - The object to extract from
+ * @param language - Current language
+ * @returns The title/name string, or empty string if not found
+ */
+async function extractObjectTitleOrName (obj: Record<string, any>, language: string | undefined): Promise<string> {
+  if ('title' in obj) {
+    const title = String(obj.title ?? '')
+    if (isIntlString(title)) {
+      return await translate(title as unknown as IntlString, {}, language)
+    }
+    return title
+  }
+  if ('name' in obj) {
+    const name = String(obj.name ?? '')
+    if (isIntlString(name)) {
+      return await translate(name as unknown as IntlString, {}, language)
+    }
+    return name
+  }
+  return ''
+}
+
+/**
+ * Format a custom attribute value for markdown display
+ * Handles various types: string, number, boolean, arrays, references
+ */
+async function formatCustomAttributeValue (
+  value: any,
+  attribute: AnyAttribute | undefined,
+  card: Doc,
+  hierarchy: Hierarchy,
+  language: string | undefined
+): Promise<string> {
+  if (value === null || value === undefined) {
+    return ''
+  }
+
+  const attrType = attribute?.type
+
+  // Handle timestamps
+  if (typeof value === 'number' && attrType?._class === core.class.TypeTimestamp) {
+    return getDisplayTime(value)
+  }
+
+  // Handle dates
+  if (value instanceof Date) {
+    const options: Intl.DateTimeFormatOptions = {
+      year: DateFormatOption.Numeric,
+      month: DateFormatOption.Short,
+      day: DateFormatOption.Numeric
+    }
+    return value.toLocaleDateString(language ?? 'default', options)
+  }
+
+  // Handle numbers and booleans
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+
+  // Handle strings
+  if (typeof value === 'string') {
+    // Check if it's an IntlString that needs translation
+    if (isIntlString(value)) {
+      return await translate(value as unknown as IntlString, {}, language)
+    }
+
+    // Check if it's a reference ID - try to resolve from $lookup
+    const isRef = attrType?._class === core.class.RefTo
+    if (isRef && attribute !== undefined) {
+      const cardWithLookup = card as any
+      const lookupData = cardWithLookup.$lookup?.[attribute.name]
+      if (lookupData !== undefined && lookupData !== null) {
+        if (typeof lookupData === 'object' && 'title' in lookupData) {
+          const title = lookupData.title ?? ''
+          if (typeof title === 'string' && isIntlString(title)) {
+            return await translate(title as unknown as IntlString, {}, language)
+          }
+          return String(title)
+        }
+      }
+    }
+
+    return value
+  }
+
+  // Handle arrays
+  if (Array.isArray(value)) {
+    return await formatArrayValue(value, attrType, attribute, attribute?.name ?? '', card, language)
+  }
+
+  // Handle objects (try to get title or name)
+  if (typeof value === 'object' && value !== null) {
+    const obj = value as Record<string, any>
+    const titleOrName = await extractObjectTitleOrName(obj, language)
+    return titleOrName !== '' ? titleOrName : String(value)
+  }
+
+  return String(value)
+}
+
 async function formatValue (
   attr: AttributeModel,
   card: Doc,
@@ -335,9 +609,33 @@ async function formatValue (
     }
   }
 
-  // If this is an empty key but NOT the first column, return empty string
-  // (empty key should only be used for the object presenter in the first column)
+  // Handle custom attributes that failed to build properly in the model
+  // These have key: '' but the actual attribute name is in the label
   if (attr.key === '' && !isFirstColumn) {
+    const labelStr = typeof attr.label === 'string' ? attr.label : ''
+    const isCustomAttribute = labelStr.startsWith('custom')
+
+    if (isCustomAttribute) {
+      // Get value directly from document using label as key
+      const customValue = (card as any)[labelStr]
+      if (customValue === null || customValue === undefined) {
+        return ''
+      }
+
+      // Try to find the attribute definition on the document's class (MasterTag)
+      const docClass = card._class
+      let customAttr = hierarchy.findAttribute(docClass, labelStr)
+
+      // If not found on document class, search in all attributes
+      if (customAttr === undefined) {
+        const allAttrs = hierarchy.getAllAttributes(docClass)
+        customAttr = allAttrs.get(labelStr)
+      }
+
+      return await formatCustomAttributeValue(customValue, customAttr, card, hierarchy, language)
+    }
+
+    // Not a custom attribute with empty key - skip (e.g., object presenter in non-first column)
     return ''
   }
 
@@ -345,7 +643,8 @@ async function formatValue (
     return ''
   }
 
-  const attribute = hierarchy.findAttribute(_class, attr.key)
+  // Use attribute from model if available, otherwise try to find it
+  const attribute = attr.attribute ?? hierarchy.findAttribute(_class, attr.key)
   const attrType = attribute?.type
 
   if (typeof value === 'number' && attrType?._class === core.class.TypeTimestamp) {
@@ -366,6 +665,25 @@ async function formatValue (
   }
 
   if (typeof value === 'string') {
+    // Check if this is a single reference ID that needs lookup
+    const isRef = attrType?._class === core.class.RefTo
+    if (isRef) {
+      const cardWithLookup = card as any
+      const lookupData = cardWithLookup.$lookup?.[attr.key]
+      if (lookupData !== undefined && lookupData !== null) {
+        // Use the resolved object
+        const resolvedObj = lookupData
+        if (typeof resolvedObj === 'object' && resolvedObj !== null && 'title' in resolvedObj) {
+          const title = resolvedObj[DocumentAttributeKey.Title] ?? ''
+          if (typeof title === 'string' && isIntlString(title)) {
+            return await translate(title as unknown as IntlString, {}, language)
+          }
+          return String(title)
+        }
+        // Fall through to display as string if no title
+      }
+    }
+
     if (isIntlString(value)) {
       return await translate(value as unknown as IntlString, {}, language)
     }
@@ -376,43 +694,13 @@ async function formatValue (
   }
 
   if (Array.isArray(value)) {
-    const translatedValues = await Promise.all(
-      value.map(async (v) => {
-        if (typeof v === 'object' && v !== null && 'title' in v) {
-          const title = v[DocumentAttributeKey.Title] ?? ''
-          if (typeof title === 'string' && isIntlString(title)) {
-            return await translate(title as unknown as IntlString, {}, language)
-          }
-          return String(title)
-        }
-        if (typeof v === 'string' && isIntlString(v)) {
-          return await translate(v as unknown as IntlString, {}, language)
-        }
-        return typeof v === 'string' ? v : String(v)
-      })
-    )
-    return translatedValues.join(', ')
+    return await formatArrayValue(value, attrType, attribute, attr.key, card, language)
   }
 
   if (typeof value === 'object' && value !== null) {
     const obj = value as Record<string, any>
-    const title = obj[DocumentAttributeKey.Title]
-    if (title != null && title !== undefined) {
-      const titleStr = String(title)
-      if (isIntlString(titleStr)) {
-        return await translate(titleStr as unknown as IntlString, {}, language)
-      }
-      return titleStr
-    }
-    const name = obj[DocumentAttributeKey.Name]
-    if (name != null && name !== undefined) {
-      const nameStr = String(name)
-      if (isIntlString(nameStr)) {
-        return await translate(nameStr as unknown as IntlString, {}, language)
-      }
-      return nameStr
-    }
-    return String(value)
+    const titleOrName = await extractObjectTitleOrName(obj, language)
+    return titleOrName !== '' ? titleOrName : String(value)
   }
 
   return String(value)
@@ -543,7 +831,7 @@ export function buildRelationshipTableMetadata (
     version: '1.0',
     cardClass: props.cardClass,
     viewletId: undefined, // Relationship tables don't use viewlets
-    config: props.model.map((m) => m.key),
+    config: modelToConfig(props.model), // Preserve custom attributes by converting model to config
     query: props.query,
     documentIds: docs.map((d) => d._id),
     timestamp: Date.now(),
@@ -644,16 +932,11 @@ export async function buildMarkdownTableFromDocs (
   // Cache for user ID (PersonId) -> name mappings to reduce database calls
   const userCache = new Map<PersonId, string>()
 
-  const headers: string[] = []
-  for (const attr of displayableModel) {
-    let label: string
-    if (typeof attr.label === 'string') {
-      label = isIntlString(attr.label) ? await translate(attr.label as unknown as IntlString, {}, language) : attr.label
-    } else {
-      label = await translate(attr.label, {}, language)
-    }
-    headers.push(label)
-  }
+  // Get the first document's class for custom attribute lookup
+  const firstDocClass = docs.length > 0 ? docs[0]._class : props.cardClass
+
+  // Generate headers using common function
+  const headers = await generateHeaders(displayableModel, firstDocClass, hierarchy, language)
 
   const rows: string[][] = []
   for (const card of docs) {
@@ -761,19 +1044,11 @@ export async function CopyRelationshipTableAsMarkdown (
     // Cache for user ID (PersonId) -> name mappings to reduce database calls
     const userCache = new Map<PersonId, string>()
 
-    // Extract headers from model
-    const headers: string[] = []
-    for (const attr of props.model) {
-      let label: string
-      if (typeof attr.label === 'string') {
-        label = isIntlString(attr.label)
-          ? await translate(attr.label as unknown as IntlString, {}, language)
-          : attr.label
-      } else {
-        label = await translate(attr.label, {}, language)
-      }
-      headers.push(label)
-    }
+    // Get the first document's class for custom attribute lookup
+    const firstDocClass = props.objects.length > 0 ? props.objects[0]._class : props.cardClass
+
+    // Generate headers using common function
+    const headers = await generateHeaders(props.model, firstDocClass, hierarchy, language)
 
     // Build a map of attribute keys to their index in the model for quick lookup
     const attributeKeyToIndex = new Map<string, number>()
