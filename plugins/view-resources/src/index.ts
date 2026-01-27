@@ -228,10 +228,10 @@ export {
   type ValueFormatter,
   registerValueFormatterForClass,
   registerValueFormatter,
-  isIntlString,
   buildMarkdownTableFromDocs,
   buildMarkdownTableFromMetadata
 } from './copyAsMarkdownTable'
+export { isIntlString } from './markdownTableUtils'
 export type { BuildMarkdownTableMetadata } from '@hcengineering/view'
 export {
   ArrayEditor,
