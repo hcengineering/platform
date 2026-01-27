@@ -16,8 +16,8 @@ import { type Node } from '@tiptap/pm/model'
 import { TableMap } from '@tiptap/pm/tables'
 import type { Client } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
+import type { TableMetadata } from '@hcengineering/view'
 import { buildMarkdownTableFromDocs } from '../refreshTable'
-import type { TableMetadata } from '../tableMetadata'
 
 /**
  * Extract markdown string from a ProseMirror table node

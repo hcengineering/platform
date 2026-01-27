@@ -18,7 +18,7 @@
   import presentation, { Card } from '@hcengineering/presentation'
   import textEditor from '@hcengineering/text-editor'
   import { createEventDispatcher } from 'svelte'
-  import type { TableMetadata } from '../tableMetadata'
+  import type { TableMetadata } from '@hcengineering/view'
 
   import MarkupDiffViewer from '../../../MarkupDiffViewer.svelte'
   import TableSourceInfo from './TableSourceInfo.svelte'

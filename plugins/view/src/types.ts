@@ -906,3 +906,15 @@ export interface BuildMarkdownTableMetadata {
   query?: Record<string, any> | DocumentQuery<Doc>
   originalUrl?: string // Original URL of the page/view where the table was created
 }
+
+/**
+ * @public
+ * Complete table metadata including persistence fields
+ * Extends BuildMarkdownTableMetadata with additional fields for storage and versioning
+ */
+export interface TableMetadata extends BuildMarkdownTableMetadata {
+  version: string // For future compatibility
+  documentIds: Array<string | Ref<Doc>> // Document IDs used in the table
+  timestamp: number // Timestamp when the table was created/updated
+  workspace?: string // Optional workspace identifier
+}
