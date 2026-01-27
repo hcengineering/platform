@@ -47,6 +47,8 @@ export interface ExportOptions {
   // Field mappers per class: { classA: { fieldA: value, fieldB: '$currentUser' }, ... }
   // Special value '$currentUser' will be replaced with current account's employee ID
   fieldMappers?: Record<string, Record<string, any>>
+  // Whether to skip documents and templates in deleted or obsolete state
+  skipDeletedObsolete?: boolean
 }
 
 export interface ExportResult {

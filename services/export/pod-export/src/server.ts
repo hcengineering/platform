@@ -404,7 +404,8 @@ export function createServer (
           conflictStrategy,
           includeAttachments,
           relations: rawRelations,
-          fieldMappers
+          fieldMappers,
+          skipDeletedObsolete
         }: {
           targetWorkspace: WorkspaceUuid
           _class: Ref<Class<Doc>>
@@ -415,6 +416,7 @@ export function createServer (
           objectId?: Ref<Doc>
           objectSpace?: Ref<Space>
           fieldMappers?: Record<string, Record<string, any>>
+          skipDeletedObsolete?: boolean
         } = req.body
 
         // Validate required parameters
@@ -528,7 +530,8 @@ export function createServer (
             conflictStrategy: conflictStrategy ?? 'duplicate',
             includeAttachments: includeAttachments ?? true,
             relations,
-            fieldMappers
+            fieldMappers,
+            skipDeletedObsolete: skipDeletedObsolete ?? true
           }
 
           const exportResult: ExportResult = await exporter.export(options)
