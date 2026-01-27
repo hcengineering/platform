@@ -37,7 +37,17 @@ import viewPlugin, {
 } from '@hcengineering/view'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { getName, getPersonByPersonId } from '@hcengineering/contact'
-import { buildModel, buildConfigLookup, getAttributeValue, getObjectLinkFragment } from './utils'
+import { buildModel, buildConfigLookup, getAttributeValue } from './utils'
+import {
+  generateHeaders,
+  modelToConfig,
+  formatArrayValue,
+  extractObjectTitleOrName,
+  formatCustomAttributeValue,
+  escapeMarkdownLinkText,
+  createMarkdownLink,
+  isIntlString
+} from './markdownTableUtils'
 import view from './plugin'
 import SimpleNotification from './components/SimpleNotification.svelte'
 import { copyMarkdown } from './actionImpl'
@@ -190,13 +200,6 @@ async function buildTableModel (
  * Examples: card:string:Card, contact:class:UserProfile, card:types:Document
  * @public
  */
-export function isIntlString (value: string): boolean {
-  if (typeof value !== 'string' || value.length === 0) {
-    return false
-  }
-  const parts = value.split(':')
-  return parts.length >= 3 && parts.every((part) => part.length > 0)
-}
 
 async function loadPersonName (
   personId: PersonId,
@@ -335,9 +338,29 @@ async function formatValue (
     }
   }
 
-  // If this is an empty key but NOT the first column, return empty string
-  // (empty key should only be used for the object presenter in the first column)
+  // Handle custom attributes that failed to build properly in the model
+  // These have key: '' but the actual attribute name is in the label
   if (attr.key === '' && !isFirstColumn) {
+    const labelStr = typeof attr.label === 'string' ? attr.label : ''
+    const isCustomAttribute = labelStr.startsWith('custom')
+
+    if (isCustomAttribute) {
+      const customValue = (card as any)[labelStr]
+      if (customValue === null || customValue === undefined) {
+        return ''
+      }
+
+      const docClass = card._class
+      let customAttr = hierarchy.findAttribute(docClass, labelStr)
+
+      if (customAttr === undefined) {
+        const allAttrs = hierarchy.getAllAttributes(docClass)
+        customAttr = allAttrs.get(labelStr)
+      }
+
+      return await formatCustomAttributeValue(customValue, customAttr, card, hierarchy, language)
+    }
+
     return ''
   }
 
@@ -345,7 +368,8 @@ async function formatValue (
     return ''
   }
 
-  const attribute = hierarchy.findAttribute(_class, attr.key)
+  // Use attribute from model if available, otherwise try to find it
+  const attribute = attr.attribute ?? hierarchy.findAttribute(_class, attr.key)
   const attrType = attribute?.type
 
   if (typeof value === 'number' && attrType?._class === core.class.TypeTimestamp) {
@@ -366,6 +390,22 @@ async function formatValue (
   }
 
   if (typeof value === 'string') {
+    const isRef = attrType?._class === core.class.RefTo
+    if (isRef) {
+      const cardWithLookup = card as any
+      const lookupData = cardWithLookup.$lookup?.[attr.key]
+      if (lookupData !== undefined && lookupData !== null) {
+        const resolvedObj = lookupData
+        if (typeof resolvedObj === 'object' && resolvedObj !== null && 'title' in resolvedObj) {
+          const title = resolvedObj[DocumentAttributeKey.Title] ?? ''
+          if (typeof title === 'string' && isIntlString(title)) {
+            return await translate(title as unknown as IntlString, {}, language)
+          }
+          return String(title)
+        }
+      }
+    }
+
     if (isIntlString(value)) {
       return await translate(value as unknown as IntlString, {}, language)
     }
@@ -376,77 +416,16 @@ async function formatValue (
   }
 
   if (Array.isArray(value)) {
-    const translatedValues = await Promise.all(
-      value.map(async (v) => {
-        if (typeof v === 'object' && v !== null && 'title' in v) {
-          const title = v[DocumentAttributeKey.Title] ?? ''
-          if (typeof title === 'string' && isIntlString(title)) {
-            return await translate(title as unknown as IntlString, {}, language)
-          }
-          return String(title)
-        }
-        if (typeof v === 'string' && isIntlString(v)) {
-          return await translate(v as unknown as IntlString, {}, language)
-        }
-        return typeof v === 'string' ? v : String(v)
-      })
-    )
-    return translatedValues.join(', ')
+    return await formatArrayValue(value, attrType, attribute, attr.key, card, language)
   }
 
   if (typeof value === 'object' && value !== null) {
     const obj = value as Record<string, any>
-    const title = obj[DocumentAttributeKey.Title]
-    if (title != null && title !== undefined) {
-      const titleStr = String(title)
-      if (isIntlString(titleStr)) {
-        return await translate(titleStr as unknown as IntlString, {}, language)
-      }
-      return titleStr
-    }
-    const name = obj[DocumentAttributeKey.Name]
-    if (name != null && name !== undefined) {
-      const nameStr = String(name)
-      if (isIntlString(nameStr)) {
-        return await translate(nameStr as unknown as IntlString, {}, language)
-      }
-      return nameStr
-    }
-    return String(value)
+    const titleOrName = await extractObjectTitleOrName(obj, language)
+    return titleOrName !== '' ? titleOrName : String(value)
   }
 
   return String(value)
-}
-
-function escapeMarkdownLinkText (text: string): string {
-  // Escape backslashes first, then brackets and pipes, and normalize newlines to spaces
-  return text
-    .replace(/\\/g, '\\\\')
-    .replace(/\[/g, '\\[')
-    .replace(/\]/g, '\\]')
-    .replace(/\|/g, '\\|')
-    .replace(/\r?\n/g, ' ')
-}
-
-function escapeMarkdownLinkUrl (url: string): string {
-  // Escape backslashes and closing parentheses used to terminate the URL
-  return url.replace(/\\/g, '\\\\').replace(/\)/g, '\\)')
-}
-
-async function createMarkdownLink (hierarchy: Hierarchy, card: Doc, value: string): Promise<string> {
-  try {
-    const loc = await getObjectLinkFragment(hierarchy, card, {}, view.component.EditDoc)
-    const relativeUrl = locationToUrl(loc)
-    const frontUrl =
-      getMetadata(presentation.metadata.FrontUrl) ?? (typeof window !== 'undefined' ? window.location.origin : '')
-    const fullUrl = concatLink(frontUrl, relativeUrl)
-    const escapedText = escapeMarkdownLinkText(value)
-    const escapedUrl = escapeMarkdownLinkUrl(fullUrl)
-    return `[${escapedText}](${escapedUrl})`
-  } catch {
-    // If link generation fails, fall back to plain text
-    return escapeMarkdownLinkText(value)
-  }
 }
 
 export interface CopyAsMarkdownTableProps {
@@ -543,7 +522,7 @@ export function buildRelationshipTableMetadata (
     version: '1.0',
     cardClass: props.cardClass,
     viewletId: undefined, // Relationship tables don't use viewlets
-    config: props.model.map((m) => m.key),
+    config: modelToConfig(props.model), // Preserve custom attributes by converting model to config
     query: props.query,
     documentIds: docs.map((d) => d._id),
     timestamp: Date.now(),
@@ -641,19 +620,11 @@ export async function buildMarkdownTableFromDocs (
 
   const language = getCurrentLanguage()
 
-  // Cache for user ID (PersonId) -> name mappings to reduce database calls
   const userCache = new Map<PersonId, string>()
 
-  const headers: string[] = []
-  for (const attr of displayableModel) {
-    let label: string
-    if (typeof attr.label === 'string') {
-      label = isIntlString(attr.label) ? await translate(attr.label as unknown as IntlString, {}, language) : attr.label
-    } else {
-      label = await translate(attr.label, {}, language)
-    }
-    headers.push(label)
-  }
+  const firstDocClass = docs.length > 0 ? docs[0]._class : props.cardClass
+
+  const headers = await generateHeaders(displayableModel, firstDocClass, hierarchy, language)
 
   const rows: string[][] = []
   for (const card of docs) {
@@ -761,19 +732,11 @@ export async function CopyRelationshipTableAsMarkdown (
     // Cache for user ID (PersonId) -> name mappings to reduce database calls
     const userCache = new Map<PersonId, string>()
 
-    // Extract headers from model
-    const headers: string[] = []
-    for (const attr of props.model) {
-      let label: string
-      if (typeof attr.label === 'string') {
-        label = isIntlString(attr.label)
-          ? await translate(attr.label as unknown as IntlString, {}, language)
-          : attr.label
-      } else {
-        label = await translate(attr.label, {}, language)
-      }
-      headers.push(label)
-    }
+    // Get the first document's class for custom attribute lookup
+    const firstDocClass = props.objects.length > 0 ? props.objects[0]._class : props.cardClass
+
+    // Generate headers using common function
+    const headers = await generateHeaders(props.model, firstDocClass, hierarchy, language)
 
     // Build a map of attribute keys to their index in the model for quick lookup
     const attributeKeyToIndex = new Map<string, number>()

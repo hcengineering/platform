@@ -15,7 +15,8 @@
 
 // Mock platform plugin function first (before any imports)
 // Import after mocks are set up
-import { CopyAsMarkdownTable, isIntlString } from '../copyAsMarkdownTable'
+import { CopyAsMarkdownTable } from '../copyAsMarkdownTable'
+import { isIntlString } from '../markdownTableUtils'
 import core, { type Class, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
