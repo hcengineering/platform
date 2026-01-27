@@ -37,6 +37,7 @@
     "SelectWorkspaceToExportSpace": "Alanın belgelerini dışa aktarmak için çalışma alanı seç",
     "SelectSpace": "Alan seç",
     "NoSelectedDocuments": "Seçili belge yok",
-    "RequestPermissionToImport": "Belgeleri içe aktarmak için lütfen hedef çalışma alanı sahibinden izin isteyin."
+    "RequestPermissionToImport": "Belgeleri içe aktarmak için lütfen hedef çalışma alanı sahibinden izin isteyin.",
+    "SkipDeletedObsolete": "Arşivlenmiş veya kullanımdan kaldırılmış belgeleri atla"
   }
 }

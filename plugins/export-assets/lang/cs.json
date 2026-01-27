@@ -37,6 +37,7 @@
     "SelectWorkspaceToExportSpace": "Vybrat pracovní prostor pro export dokumentů z prostoru",
     "SelectSpace": "Vybrat prostor",
     "NoSelectedDocuments": "Žádné dokumenty nevybrány",
-    "RequestPermissionToImport": "Prosím, požádejte vlastníka cílového pracovního prostoru o povolení k importu dokumentů."
+    "RequestPermissionToImport": "Prosím, požádejte vlastníka cílového pracovního prostoru o povolení k importu dokumentů.",
+    "SkipDeletedObsolete": "Přeskočit archivované nebo zastaralé dokumenty"
   }
 }

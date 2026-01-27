@@ -35,7 +35,15 @@ import {
   getUpdatedAtReviewThread,
   reviewThreadDetails
 } from './githubTypes'
-import { collectUpdate, deleteObjects, errorToObj, isGHWriteAllowed, syncChilds, syncDerivedDocuments } from './utils'
+import {
+  collectUpdate,
+  deleteObjects,
+  ensureGraphQLOctokit,
+  errorToObj,
+  isGHWriteAllowed,
+  syncChilds,
+  syncDerivedDocuments
+} from './utils'
 
 import { Analytics } from '@hcengineering/analytics'
 import { PullRequestReviewThreadEvent } from '@octokit/webhooks-types'
@@ -371,7 +379,10 @@ export class ReviewThreadSyncManager implements DocSyncManager {
     if (Object.keys(platformUpdate).length > 0) {
       // Check and update  external
       if (platformUpdate.isResolved !== undefined && githubConfiguration.ResolveThreadSupported) {
-        const okit = (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit
+        const okit = ensureGraphQLOctokit(
+          (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit,
+          container
+        )
         const q = `mutation updateReviewThread($threadID: ID!) {
           ${platformUpdate.isResolved ? 'resolveReviewThread' : 'unresolveReviewThread'} (
             input: {
@@ -446,7 +457,10 @@ export class ReviewThreadSyncManager implements DocSyncManager {
       return {}
     }
     const existingReview = existing as GithubReviewThread
-    const okit = (await this.provider.getOctokit(ctx, existingReview.modifiedBy)) ?? container.container.octokit
+    const okit = ensureGraphQLOctokit(
+      (await this.provider.getOctokit(ctx, existingReview.modifiedBy)) ?? container.container.octokit,
+      container
+    )
 
     // No external version yet, create it.
     // Will be added into pending state.

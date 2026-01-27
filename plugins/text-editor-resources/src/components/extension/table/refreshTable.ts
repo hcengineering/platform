@@ -14,8 +14,7 @@
 
 import type { Client, Doc } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import view, { type BuildMarkdownTableMetadata } from '@hcengineering/view'
-import type { TableMetadata } from './tableMetadata'
+import view, { type BuildMarkdownTableMetadata, type TableMetadata } from '@hcengineering/view'
 
 /**
  * Build markdown table string from documents and metadata

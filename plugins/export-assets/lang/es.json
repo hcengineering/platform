@@ -37,6 +37,7 @@
     "SelectWorkspaceToExportSpace": "Seleccionar espacio de trabajo para exportar documentos del espacio",
     "SelectSpace": "Seleccionar espacio",
     "NoSelectedDocuments": "No hay documentos seleccionados",
-    "RequestPermissionToImport": "Por favor, solicite permiso al propietario del espacio de trabajo de destino para importar documentos."
+    "RequestPermissionToImport": "Por favor, solicite permiso al propietario del espacio de trabajo de destino para importar documentos.",
+    "SkipDeletedObsolete": "Omitir documentos archivados u obsoletos"
   }
 }

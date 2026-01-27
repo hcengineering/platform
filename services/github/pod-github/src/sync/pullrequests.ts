@@ -61,6 +61,7 @@ import {
 } from './githubTypes'
 import { GithubIssueData, IssueSyncManagerBase, WithMarkup } from './issueBase'
 import {
+  ensureGraphQLOctokit,
   errorToObj,
   getSinceRaw,
   gqlp,
@@ -975,6 +976,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     okit: Octokit,
     account: PersonId
   ): Promise<boolean> {
+    const graphqlOkit = ensureGraphQLOctokit(okit, container)
+
     let { state, stateReason, body, ...issueUpdate } = await this.collectIssueUpdate(
       info,
       existing,
@@ -1006,7 +1009,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               workspace: this.provider.getWorkspaceId()
             })
             if (isGHWriteAllowed()) {
-              await okit.graphql(
+              await graphqlOkit.graphql(
                 `
             mutation updatePullRequest($issue: ID!, $body: String!) {
               updatePullRequest(input: {
@@ -1040,7 +1043,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               workspace: this.provider.getWorkspaceId()
             })
             if (isGHWriteAllowed()) {
-              await okit.graphql(
+              await graphqlOkit.graphql(
                 `
           mutation updatePullRequest($issue: ID!) {
             updatePullRequest(input: {

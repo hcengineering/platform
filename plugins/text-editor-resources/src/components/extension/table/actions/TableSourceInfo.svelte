@@ -17,9 +17,8 @@
   import core from '@hcengineering/core'
   import { IconWithEmoji, getClient } from '@hcengineering/presentation'
   import ui, { Icon, Label } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import view, { type TableMetadata } from '@hcengineering/view'
   import textEditor from '@hcengineering/text-editor'
-  import type { TableMetadata } from '../tableMetadata'
 
   export let metadata: TableMetadata
 

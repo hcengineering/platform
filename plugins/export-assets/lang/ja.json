@@ -37,6 +37,7 @@
     "SelectWorkspaceToExportSpace": "スペースからドキュメントをエクスポートするワークスペースを選択",
     "SelectSpace": "スペースを選択",
     "NoSelectedDocuments": "ドキュメントが選択されていません",
-    "RequestPermissionToImport": "ドキュメントをインポートするには、対象ワークスペースの所有者に許可をリクエストしてください。"
+    "RequestPermissionToImport": "ドキュメントをインポートするには、対象ワークスペースの所有者に許可をリクエストしてください。",
+    "SkipDeletedObsolete": "アーカイブ済みまたは廃止されたドキュメントをスキップ"
   }
 }

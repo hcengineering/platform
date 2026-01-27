@@ -2,6 +2,21 @@
 
 Changelog.
 
+## [0.7.353] - 2026-01-24
+
+* 🚀 FEATURES: · Link preview service ([#10424](https://github.com/hcengineering/platform/issues/10424)) · Add confirmation modal for table refresh ([#10428](https://github.com/hcengineering/platform/issues/10428)) · Guest update profile (avatar, name etc) ([#10429](https://github.com/hcengineering/platform/issues/10429)) 
+* 🐛 BUG FIXES: · Size predicate null handle ([#10417](https://github.com/hcengineering/platform/issues/10417)) · Long title display ([#10418](https://github.com/hcengineering/platform/issues/10418)) · Sort qms templates in wizard ([#10419](https://github.com/hcengineering/platform/issues/10419)) · Original table layout ([#10427](https://github.com/hcengineering/platform/issues/10427)) · Missing collaborative content in export ([#10432](https://github.com/hcengineering/platform/issues/10432)) · Login if current location equal to target ([#10436](https://github.com/hcengineering/platform/issues/10436)) · Add more mail ervice traces ([#10438](https://github.com/hcengineering/platform/issues/10438)) · Source table columns ([#10437](https://github.com/hcengineering/platform/issues/10437)) 
+
+## [0.7.350] - 2026-01-18
+
+* 🐛 BUG FIXES: · Association attribute in markdown table ([#10398](https://github.com/hcengineering/platform/issues/10398)) · Card export ([#10403](https://github.com/hcengineering/platform/issues/10403)) · Card view settings ([#10404](https://github.com/hcengineering/platform/issues/10404)) · Customize support links ([#10405](https://github.com/hcengineering/platform/issues/10405)) · Controlled doc sequence conflicts ([#10406](https://github.com/hcengineering/platform/issues/10406)) · Default null value ([#10409](https://github.com/hcengineering/platform/issues/10409)) · View setting freeze ([#10410](https://github.com/hcengineering/platform/issues/10410)) · Show custom icons for cards breadcrumbs ([#10412](https://github.com/hcengineering/platform/issues/10412)) · Filter relations by workspaceId ([#10414](https://github.com/hcengineering/platform/issues/10414)) 
+* ⚙️ MISCELLANEOUS TASKS: · Core and server ([#10400](https://github.com/hcengineering/platform/issues/10400)) · Beta marks for cards and processes ([#10408](https://github.com/hcengineering/platform/issues/10408)) · Actions/upload-artifact from 4 to 6 ([#10300](https://github.com/hcengineering/platform/issues/10300)) 
+
+## [0.7.344] - 2026-01-12
+
+* 🚀 FEATURES: · Add type/tag permissions ([#10384](https://github.com/hcengineering/platform/issues/10384)) 
+* 🐛 BUG FIXES: · Sort controlled documents by rank and title ([#10383](https://github.com/hcengineering/platform/issues/10383)) · Card type export ([#10385](https://github.com/hcengineering/platform/issues/10385)) · Old card UI ([#10386](https://github.com/hcengineering/platform/issues/10386)) · Exporter ancestor order ([#10388](https://github.com/hcengineering/platform/issues/10388)) · Card activity ([#10393](https://github.com/hcengineering/platform/issues/10393)) · Missing events in planner ([#10395](https://github.com/hcengineering/platform/issues/10395)) 
+* ⚙️ MISCELLANEOUS TASKS: · Changelog · Changelog · Changelog ([#10382](https://github.com/hcengineering/platform/issues/10382)) · Postgres package version ([#10394](https://github.com/hcengineering/platform/issues/10394)) 
 
 ## [0.7.342] - 2026-01-10
 
