@@ -541,7 +541,6 @@ const activityDocumentStates = [
   ControlledDocumentState.InReview,
   ControlledDocumentState.Reviewed,
   ControlledDocumentState.InApproval,
-  ControlledDocumentState.Approved,
   ControlledDocumentState.Rejected
 ]
 
