@@ -8,11 +8,12 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: bahadir67/huly-front
+  INIT_SCRIPTS_BRANCH: main
 
 jobs:
   build-front:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     permissions:
       contents: read
       packages: write
@@ -23,15 +24,30 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
+      - name: Free space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Checkout init repository
+        run: |
+          wget https://github.com/hcengineering/init/archive/refs/heads/${{env.INIT_SCRIPTS_BRANCH}}.zip
+          unzip ${{env.INIT_SCRIPTS_BRANCH}}.zip -d pods/workspace
+          mv pods/workspace/init-${{env.INIT_SCRIPTS_BRANCH}} pods/workspace/init
+          rm -rf ${{env.INIT_SCRIPTS_BRANCH}}.zip
+
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
 
       - uses: pnpm/action-setup@v4
         with:
@@ -46,11 +62,8 @@ jobs:
       - name: Install dependencies
         run: node common/scripts/install-run-rush.js install
 
-      - name: Build
-        run: node common/scripts/install-run-rush.js build
-
-      - name: Bundle front
-        run: node common/scripts/install-run-rush.js bundle --to @hcengineering/pod-front
+      - name: Model version from git tags
+        run: node common/scripts/install-run-rush.js model-version
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -59,12 +72,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push front image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./pods/front
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:tr-test
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          platforms: linux/amd64
+      - name: Docker build (all images)
+        run: node common/scripts/install-run-rush.js docker:build -v
+        env:
+          DOCKER_CLI_HINTS: false
+          DOCKER_EXTRA: --platform=linux/amd64
+          DOCKER_BUILDKIT: 1
+
+      - name: Tag and push front image
+        run: |
+          # Find the built front image
+          FRONT_IMAGE=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "front" | head -1)
+          echo "Found front image: $FRONT_IMAGE"
+
+          # Tag for ghcr.io
+          docker tag $FRONT_IMAGE ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:tr-test
+          docker tag $FRONT_IMAGE ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+          # Push
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:tr-test
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
