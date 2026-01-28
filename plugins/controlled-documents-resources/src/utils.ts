@@ -536,6 +536,15 @@ export const controlledDocumentStatesOrder = [
   ControlledDocumentState.ToReview
 ]
 
+const activityDocumentStates = [
+  DocumentState.Draft,
+  ControlledDocumentState.InReview,
+  ControlledDocumentState.Reviewed,
+  ControlledDocumentState.InApproval,
+  ControlledDocumentState.Approved,
+  ControlledDocumentState.Rejected
+]
+
 export interface LoginInfo {
   email: string
   password: string
@@ -1232,4 +1241,11 @@ export async function extractValidationWorkflow (
   }
 
   return result
+}
+
+export function isActivityDocumentState (state: DocumentState | ControlledDocumentState | null): boolean {
+  if (state == null) {
+    return false
+  }
+  return activityDocumentStates.includes(state)
 }
