@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/huly-front
+  IMAGE_NAME: bahadir67/huly-front
 
 jobs:
   build-front:
