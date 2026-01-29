@@ -79,7 +79,8 @@
     { id: 'it', label: ui.string.Italian, logo: '&#x1F1EE;&#x1F1F9;' },
     { id: 'cs', label: ui.string.Czech, logo: '&#x1F1E8;&#x1F1FF;' },
     { id: 'de', label: ui.string.German, logo: '&#x1F1E9;&#x1F1EA;' },
-    { id: 'ja', label: ui.string.Japanese, logo: '&#x1F1EF;&#x1F1F5;' }
+    { id: 'ja', label: ui.string.Japanese, logo: '&#x1F1EF;&#x1F1F5;' },
+    { id: 'tr', label: ui.string.Turkish, logo: '&#x1F1F9;&#x1F1F7;' }
   ].filter((lang) => uiLangs.has(lang.id))
 
   if (langs.findIndex((l) => l.id === $currentLanguage) < 0 && langs.length !== 0) {
