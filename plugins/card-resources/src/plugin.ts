@@ -19,6 +19,7 @@ import { type IntlString, mergeIds, type Resource } from '@hcengineering/platfor
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import type { ViewletDescriptor, Viewlet } from '@hcengineering/view'
+import type { ValueFormatter } from '@hcengineering/converter'
 
 export default mergeIds(cardId, card, {
   component: {
@@ -57,7 +58,8 @@ export default mergeIds(cardId, card, {
     CreateRolePopup: '' as AnyComponent
   },
   function: {
-    CardFactory: '' as Resource<(props?: Record<string, any>) => Promise<Ref<Doc> | undefined>>
+    CardFactory: '' as Resource<(props?: Record<string, any>) => Promise<Ref<Doc> | undefined>>,
+    FormatCardMarkdownValue: '' as Resource<ValueFormatter>
   },
   permission: {
     CreateCard: '' as Ref<Permission>,

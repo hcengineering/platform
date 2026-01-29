@@ -18,7 +18,17 @@ import { translate, type IntlString } from '@hcengineering/platform'
 import documentsPlugin from '@hcengineering/controlled-documents'
 import { type AttributeModel } from '@hcengineering/view'
 import { getClient } from '@hcengineering/presentation'
-import { registerValueFormatterForClass, isIntlString } from '@hcengineering/view-resources'
+
+/**
+ * Check if a value is an IntlString-encoded string ("plugin:resource:key")
+ */
+function isIntlStringValue (value: unknown): value is string {
+  if (typeof value !== 'string' || value.length === 0) {
+    return false
+  }
+  const parts = value.split(':')
+  return parts.length >= 3 && parts.every((part) => part.length > 0)
+}
 
 /**
  * Format version number from major and minor
@@ -78,7 +88,7 @@ async function loadSpaceName (spaceRef: Ref<Space>): Promise<string> {
  * Value formatter for controlled document fields
  * Handles special cases where empty keys use custom presenters
  */
-async function formatControlledDocumentValue (
+export async function formatControlledDocumentValue (
   attr: AttributeModel,
   card: Doc,
   hierarchy: Hierarchy,
@@ -104,7 +114,7 @@ async function formatControlledDocumentValue (
     // Translate label to determine which field to extract
     let labelText = ''
     if (typeof attr.label === 'string') {
-      labelText = isIntlString(attr.label)
+      labelText = isIntlStringValue(attr.label)
         ? await translate(attr.label as unknown as IntlString, {}, language)
         : attr.label
     } else {
@@ -123,7 +133,7 @@ async function formatControlledDocumentValue (
       // For TitlePresenter: extract title
       const titleValue: unknown = doc.title
       if (typeof titleValue === 'string') {
-        if (isIntlString(titleValue)) {
+        if (isIntlStringValue(titleValue)) {
           return await translate(titleValue as unknown as IntlString, {}, language)
         }
         return titleValue
@@ -133,7 +143,7 @@ async function formatControlledDocumentValue (
       const state = getDocumentState(doc)
       if (state !== undefined && state !== null) {
         // State values are typically IntlStrings, try to translate
-        if (typeof state === 'string' && isIntlString(state)) {
+        if (typeof state === 'string' && isIntlStringValue(state)) {
           return await translate(state as unknown as IntlString, {}, language)
         }
         return state
@@ -153,14 +163,14 @@ async function formatControlledDocumentValue (
     }
     const titleValue: unknown = doc.title
     if (typeof titleValue === 'string') {
-      if (isIntlString(titleValue)) {
+      if (isIntlStringValue(titleValue)) {
         return await translate(titleValue as unknown as IntlString, {}, language)
       }
       return titleValue
     }
     const state = getDocumentState(doc)
     if (state !== undefined && state !== null) {
-      if (typeof state === 'string' && isIntlString(state)) {
+      if (typeof state === 'string' && isIntlStringValue(state)) {
         return await translate(state as unknown as IntlString, {}, language)
       }
       return state
@@ -210,7 +220,7 @@ async function formatControlledDocumentValue (
       // Translate label to determine which field to extract for template
       let labelText = ''
       if (typeof attr.label === 'string') {
-        labelText = isIntlString(attr.label)
+        labelText = isIntlStringValue(attr.label)
           ? await translate(attr.label as unknown as IntlString, {}, language)
           : attr.label
       } else {
@@ -224,7 +234,7 @@ async function formatControlledDocumentValue (
         const nestedValue: unknown = getObjectValue(lookupParts.slice(1).join('.'), lookupObj as unknown as Doc)
         if (nestedValue !== undefined && nestedValue !== null) {
           if (typeof nestedValue === 'string') {
-            if (isIntlString(nestedValue)) {
+            if (isIntlStringValue(nestedValue)) {
               return await translate(nestedValue as unknown as IntlString, {}, language)
             }
             return nestedValue
@@ -255,6 +265,3 @@ async function formatControlledDocumentValue (
 
   return undefined
 }
-
-// Register the formatter for Document class and all derived classes
-registerValueFormatterForClass(documentsPlugin.class.Document, formatControlledDocumentValue)
