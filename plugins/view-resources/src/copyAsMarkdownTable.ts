@@ -37,7 +37,7 @@ import viewPlugin, {
 } from '@hcengineering/view'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { getName, getPersonByPersonId } from '@hcengineering/contact'
-import { buildModel, buildConfigLookup, getAttributeValue } from './utils'
+import { buildModel, buildConfigLookup, buildConfigAssociation, getAttributeValue } from './utils'
 import {
   generateHeaders,
   modelToConfig,
@@ -501,6 +501,14 @@ async function buildTableMetadata (
 }
 
 /**
+ * Check if a table metadata represents a relationship table
+ * Relationship tables have viewletId: undefined
+ */
+export function isRelationshipTable (metadata: TableMetadata): boolean {
+  return metadata.viewletId === undefined
+}
+
+/**
  * Build metadata object for relationship tables
  */
 export function buildRelationshipTableMetadata (
@@ -531,6 +539,157 @@ export function buildRelationshipTableMetadata (
 }
 
 /**
+ * Rebuild relationship table viewModel from documents and metadata
+ * Recreates the hierarchical structure with row spans and separate rows for each associated child
+ */
+async function rebuildRelationshipTableViewModel (
+  docs: Doc[],
+  model: AttributeModel[],
+  cardClass: Ref<Class<Doc>>,
+  hierarchy: Hierarchy,
+  client: Client
+): Promise<RelationshipRowModel[]> {
+  const viewModel: RelationshipRowModel[] = []
+
+  // Build association queries from config to fetch associations
+  const config = model.map((m) => m.key)
+  const associations = buildConfigAssociation(config)
+  const lookup = buildConfigLookup(hierarchy, cardClass, config)
+
+  const associationAttrs = model.filter((attr) => attr.key.startsWith('$associations'))
+
+  // Fetch documents with associations if needed
+  let docsWithAssociations: Doc[] = docs
+  if (associations !== undefined && associations.length > 0) {
+    // Re-fetch documents with associations
+    const docIds = docs.map((d) => d._id)
+    const query = { _id: { $in: docIds } }
+    docsWithAssociations = await client.findAll(cardClass, query, { lookup, associations })
+  }
+
+  // Process each parent document and create rows with proper hierarchy
+  for (const parentDoc of docsWithAssociations) {
+    const docWithAssoc = parentDoc as any
+    const parentAssociations = docWithAssoc.$associations ?? {}
+
+    // Find the maximum number of children across all association columns
+    let maxChildren = 0
+    for (const assocAttr of associationAttrs) {
+      const assocKey = assocAttr.key.replace('$associations.', '')
+      const children = parentAssociations[assocKey]
+      if (Array.isArray(children)) {
+        maxChildren = Math.max(maxChildren, children.length)
+      } else if (children !== undefined && children !== null) {
+        maxChildren = Math.max(maxChildren, 1)
+      }
+    }
+
+    // If no children, create a single row for the parent
+    if (maxChildren === 0) {
+      const cells: RelationshipCellModel[] = []
+      for (const attr of model) {
+        const isAssociationKey = attr.key.startsWith('$associations')
+        cells.push({
+          attribute: attr,
+          rowSpan: 1,
+          object: isAssociationKey ? undefined : parentDoc,
+          parentObject: isAssociationKey ? parentDoc : undefined
+        })
+      }
+      viewModel.push({ cells })
+      continue
+    }
+
+    // Create rows: first row has parent with rowSpan, then one row per child
+    for (let childIndex = 0; childIndex < maxChildren; childIndex++) {
+      const cells: RelationshipCellModel[] = []
+
+      for (const attr of model) {
+        const isAssociationKey = attr.key.startsWith('$associations')
+
+        if (attr.key === '') {
+          // First column: parent document with row span
+          cells.push({
+            attribute: attr,
+            rowSpan: maxChildren, // Span across all child rows
+            object: parentDoc,
+            parentObject: undefined
+          })
+        } else if (isAssociationKey) {
+          // Association column: show child at current index
+          const assocKey = attr.key.replace('$associations.', '')
+          const children = parentAssociations[assocKey]
+          let childDoc: Doc | undefined
+          if (Array.isArray(children) && children.length > childIndex) {
+            childDoc = children[childIndex] as Doc
+          } else if (!Array.isArray(children) && children !== undefined && children !== null && childIndex === 0) {
+            childDoc = children as Doc
+          }
+
+          cells.push({
+            attribute: attr,
+            rowSpan: 1,
+            object: childDoc,
+            parentObject: parentDoc
+          })
+        } else {
+          // Regular attribute: show parent value only in first row
+          // In subsequent rows, this will be empty (handled by row span logic in markdown generation)
+          cells.push({
+            attribute: attr,
+            rowSpan: 1,
+            object: childIndex === 0 ? parentDoc : undefined,
+            parentObject: undefined
+          })
+        }
+      }
+
+      viewModel.push({ cells })
+    }
+  }
+
+  return viewModel
+}
+
+/**
+ * Build relationship table markdown from metadata
+ * Rebuilds the viewModel and model, then uses the common markdown generation logic
+ */
+async function buildRelationshipTableFromMetadata (
+  docs: Doc[],
+  metadata: BuildMarkdownTableMetadata,
+  client: Client
+): Promise<string> {
+  const hierarchy = client.getHierarchy()
+  const cardClass = metadata.cardClass as Ref<Class<Doc>>
+
+  // Rebuild model from config
+  const config = metadata.config ?? []
+  const lookup = buildConfigLookup(hierarchy, cardClass, config)
+  const model = await buildModel({
+    client,
+    _class: cardClass,
+    keys: config,
+    lookup
+  })
+
+  // Rebuild viewModel from documents
+  const viewModel = await rebuildRelationshipTableViewModel(docs, model, cardClass, hierarchy, client)
+
+  // Build props and use common markdown generation
+  const props: CopyRelationshipTableAsMarkdownProps = {
+    viewModel,
+    model,
+    objects: docs,
+    cardClass,
+    query: metadata.query
+  }
+
+  const language = getCurrentLanguage()
+  return await buildRelationshipTableMarkdown(props, hierarchy, language)
+}
+
+/**
  * Wrapper function for building markdown table from BuildMarkdownTableMetadata
  * This is used by text-editor-resources to refresh tables
  * Converts BuildMarkdownTableMetadata format to CopyAsMarkdownTableProps format
@@ -540,7 +699,13 @@ export async function buildMarkdownTableFromMetadata (
   metadata: BuildMarkdownTableMetadata,
   client: Client
 ): Promise<string> {
-  // Load viewlet if viewletId is provided
+  // Check if this is a relationship table (viewletId is undefined)
+  const tableMetadata = metadata as TableMetadata
+  if (isRelationshipTable(tableMetadata)) {
+    return await buildRelationshipTableFromMetadata(docs, metadata, client)
+  }
+
+  // Regular table: Load viewlet if viewletId is provided
   let viewlet: Viewlet | undefined
   if (metadata.viewletId !== undefined) {
     viewlet = await client.findOne(viewPlugin.class.Viewlet, { _id: metadata.viewletId as Ref<Viewlet> })
@@ -708,6 +873,157 @@ export async function CopyAsMarkdownTable (
 }
 
 /**
+ * Build markdown table from relationship table props (viewModel, model, objects)
+ * This is the core logic extracted for reuse in both copy and refresh operations
+ */
+async function buildRelationshipTableMarkdown (
+  props: CopyRelationshipTableAsMarkdownProps,
+  hierarchy: Hierarchy,
+  language: string | undefined
+): Promise<string> {
+  if (props.viewModel.length === 0 || props.model.length === 0) {
+    return ''
+  }
+
+  // Cache for user ID (PersonId) -> name mappings to reduce database calls
+  const userCache = new Map<PersonId, string>()
+
+  // Get the first document's class for custom attribute lookup
+  const firstDocClass = props.objects.length > 0 ? props.objects[0]._class : props.cardClass
+
+  // Generate headers using common function
+  const headers = await generateHeaders(props.model, firstDocClass, hierarchy, language)
+
+  // Build a map of attribute keys to their index in the model for quick lookup
+  const attributeKeyToIndex = new Map<string, number>()
+  props.model.forEach((attr, index) => {
+    attributeKeyToIndex.set(attr.key, index)
+  })
+
+  // Track active row spans - maps attribute key to remaining span count
+  const activeRowSpans = new Map<string, { value: string, remaining: number }>()
+
+  // Process rows from viewModel
+  const rows: string[][] = []
+  for (let rowIdx = 0; rowIdx < props.viewModel.length; rowIdx++) {
+    const rowModel = props.viewModel[rowIdx]
+    const row: string[] = new Array(headers.length).fill('')
+
+    // First, handle cells that are continuing from previous rows (row spans)
+    for (const [attrKey, spanInfo] of activeRowSpans.entries()) {
+      if (spanInfo.remaining > 0) {
+        const attrIndex = attributeKeyToIndex.get(attrKey)
+        if (attrIndex !== undefined) {
+          row[attrIndex] = spanInfo.value
+          spanInfo.remaining--
+          if (spanInfo.remaining === 0) {
+            activeRowSpans.delete(attrKey)
+          }
+        }
+      }
+    }
+
+    // Then, process cells in the current row
+    for (const cell of rowModel.cells) {
+      const attrIndex = attributeKeyToIndex.get(cell.attribute.key)
+      if (attrIndex === undefined) continue
+
+      // Determine if this is an association column
+      const isAssociationKey = cell.attribute.key.startsWith('$associations')
+
+      let doc: Doc | undefined
+      if (isAssociationKey) {
+        doc = cell.object
+      } else {
+        doc = cell.object ?? cell.parentObject
+      }
+
+      if (doc === undefined) {
+        // Empty cell
+        row[attrIndex] = ''
+        continue
+      }
+
+      // Use the same getValue logic as RelationshipTable
+      // For association keys, this returns the child document object itself
+      const rawValue = getAttributeValue(cell.attribute, doc, hierarchy)
+
+      // Determine which document and class to use for formatting
+      let docToUse = doc
+      let docClass = props.cardClass
+      let attributeToUse = cell.attribute
+
+      if (isAssociationKey) {
+        // For association keys, the value IS the child document object
+        if (rawValue !== undefined && rawValue !== null && typeof rawValue === 'object' && '_class' in rawValue) {
+          docToUse = rawValue as Doc
+          docClass = docToUse._class
+          const parts = cell.attribute.key.split('$associations.')
+          if (parts.length > 1) {
+            const afterAssoc = parts[1].substring(1) // Remove leading dot
+            const dotIndex = afterAssoc.indexOf('.')
+            if (dotIndex > 0) {
+              const attributeName = afterAssoc.substring(dotIndex + 1)
+              attributeToUse = {
+                ...cell.attribute,
+                key: attributeName
+              }
+            } else {
+              attributeToUse = {
+                ...cell.attribute,
+                key: ''
+              }
+            }
+          }
+        }
+      }
+
+      // Format the value using the same logic as regular tables
+      const isFirstColumn = attrIndex === 0
+      const allowEmptyKey = isFirstColumn || isAssociationKey
+      let value = await formatValue(
+        attributeToUse,
+        docToUse,
+        hierarchy,
+        docClass,
+        language,
+        allowEmptyKey, // Pass true for association keys so empty key works
+        userCache,
+        props.valueFormatter
+      )
+
+      const isDocumentTitle = attributeToUse.key === '' && docToUse !== undefined
+      if (isDocumentTitle) {
+        value = await createMarkdownLink(hierarchy, docToUse, value)
+      } else {
+        value = escapeMarkdownLinkText(value)
+      }
+
+      row[attrIndex] = value
+
+      // If this cell has a row span > 1, track it for subsequent rows
+      if (cell.rowSpan > 1) {
+        activeRowSpans.set(cell.attribute.key, {
+          value,
+          remaining: cell.rowSpan - 1
+        })
+      }
+    }
+
+    rows.push(row)
+  }
+
+  // Build markdown table
+  let markdown = '| ' + headers.join(' | ') + ' |\n'
+  markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n'
+  for (const row of rows) {
+    markdown += '| ' + row.join(' | ') + ' |\n'
+  }
+
+  return markdown
+}
+
+/**
  * Copy RelationshipTable as markdown table
  * Handles hierarchical data with row spans by duplicating cell values across spanned rows
  */
@@ -716,10 +1032,6 @@ export async function CopyRelationshipTableAsMarkdown (
   props: CopyRelationshipTableAsMarkdownProps
 ): Promise<void> {
   try {
-    if (props.viewModel.length === 0 || props.model.length === 0) {
-      return
-    }
-
     const client = getClient()
     const hierarchy = client.getHierarchy()
     const cardClass = hierarchy.getClass(props.cardClass)
@@ -729,139 +1041,11 @@ export async function CopyRelationshipTableAsMarkdown (
 
     const language = getCurrentLanguage()
 
-    // Cache for user ID (PersonId) -> name mappings to reduce database calls
-    const userCache = new Map<PersonId, string>()
+    // Build markdown using extracted function
+    const markdown = await buildRelationshipTableMarkdown(props, hierarchy, language)
 
-    // Get the first document's class for custom attribute lookup
-    const firstDocClass = props.objects.length > 0 ? props.objects[0]._class : props.cardClass
-
-    // Generate headers using common function
-    const headers = await generateHeaders(props.model, firstDocClass, hierarchy, language)
-
-    // Build a map of attribute keys to their index in the model for quick lookup
-    const attributeKeyToIndex = new Map<string, number>()
-    props.model.forEach((attr, index) => {
-      attributeKeyToIndex.set(attr.key, index)
-    })
-
-    // Track active row spans - maps attribute key to remaining span count
-    const activeRowSpans = new Map<string, { value: string, remaining: number }>()
-
-    // Process rows from viewModel
-    const rows: string[][] = []
-    for (let rowIdx = 0; rowIdx < props.viewModel.length; rowIdx++) {
-      const rowModel = props.viewModel[rowIdx]
-      const row: string[] = new Array(headers.length).fill('')
-
-      // First, handle cells that are continuing from previous rows (row spans)
-      for (const [attrKey, spanInfo] of activeRowSpans.entries()) {
-        if (spanInfo.remaining > 0) {
-          const attrIndex = attributeKeyToIndex.get(attrKey)
-          if (attrIndex !== undefined) {
-            row[attrIndex] = spanInfo.value
-            spanInfo.remaining--
-            if (spanInfo.remaining === 0) {
-              activeRowSpans.delete(attrKey)
-            }
-          }
-        }
-      }
-
-      // Then, process cells in the current row
-      for (const cell of rowModel.cells) {
-        const attrIndex = attributeKeyToIndex.get(cell.attribute.key)
-        if (attrIndex === undefined) continue
-
-        // Determine if this is an association column
-        const isAssociationKey = cell.attribute.key.startsWith('$associations')
-
-        let doc: Doc | undefined
-        if (isAssociationKey) {
-          doc = cell.object
-        } else {
-          doc = cell.object ?? cell.parentObject
-        }
-
-        if (doc === undefined) {
-          // Empty cell
-          row[attrIndex] = ''
-          continue
-        }
-
-        // Use the same getValue logic as RelationshipTable
-        // For association keys, this returns the child document object itself
-        const rawValue = getAttributeValue(cell.attribute, doc, hierarchy)
-
-        // Determine which document and class to use for formatting
-        let docToUse = doc
-        let docClass = props.cardClass
-        let attributeToUse = cell.attribute
-
-        if (isAssociationKey) {
-          // For association keys, the value IS the child document object
-          if (rawValue !== undefined && rawValue !== null && typeof rawValue === 'object' && '_class' in rawValue) {
-            docToUse = rawValue as Doc
-            docClass = docToUse._class
-            const parts = cell.attribute.key.split('$associations.')
-            if (parts.length > 1) {
-              const afterAssoc = parts[1].substring(1) // Remove leading dot
-              const dotIndex = afterAssoc.indexOf('.')
-              if (dotIndex > 0) {
-                const attributeName = afterAssoc.substring(dotIndex + 1)
-                attributeToUse = {
-                  ...cell.attribute,
-                  key: attributeName
-                }
-              } else {
-                attributeToUse = {
-                  ...cell.attribute,
-                  key: ''
-                }
-              }
-            }
-          }
-        }
-
-        // Format the value using the same logic as regular tables
-        const isFirstColumn = attrIndex === 0
-        const allowEmptyKey = isFirstColumn || isAssociationKey
-        let value = await formatValue(
-          attributeToUse,
-          docToUse,
-          hierarchy,
-          docClass,
-          language,
-          allowEmptyKey, // Pass true for association keys so empty key works
-          userCache,
-          props.valueFormatter
-        )
-
-        const isDocumentTitle = attributeToUse.key === '' && docToUse !== undefined
-        if (isDocumentTitle) {
-          value = await createMarkdownLink(hierarchy, docToUse, value)
-        } else {
-          value = escapeMarkdownLinkText(value)
-        }
-
-        row[attrIndex] = value
-
-        // If this cell has a row span > 1, track it for subsequent rows
-        if (cell.rowSpan > 1) {
-          activeRowSpans.set(cell.attribute.key, {
-            value,
-            remaining: cell.rowSpan - 1
-          })
-        }
-      }
-
-      rows.push(row)
-    }
-
-    // Build markdown table
-    let markdown = '| ' + headers.join(' | ') + ' |\n'
-    markdown += '| ' + headers.map(() => '---').join(' | ') + ' |\n'
-    for (const row of rows) {
-      markdown += '| ' + row.join(' | ') + ' |\n'
+    if (markdown.length === 0) {
+      return
     }
 
     // Build metadata for relationship table refresh/diff functionality
