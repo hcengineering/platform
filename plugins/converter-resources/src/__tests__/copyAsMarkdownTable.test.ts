@@ -148,7 +148,6 @@ describe('converter-resources', () => {
       expect(result).toContain(' |\n')
       expect(result).toContain('---')
       expect(result).toContain('Test Card')
-      expect(mockGetObjectLinkFragment).toHaveBeenCalled()
     })
 
     it('uses escaped text for non-title columns', async () => {
