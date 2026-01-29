@@ -106,9 +106,12 @@
   ): CalendarItem[] => {
     const result: CalendarItem[] = []
     for (let day = 0; day < days; day++) {
-      const startDay = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(0, 0, 0, 0)
-      const startDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(startHour, 0, 0, 0)
-      const lastDate = new Date(MILLISECONDS_IN_DAY * day + date.getTime()).setHours(endHour, 0, 0, 0)
+      // Use setDate() for proper day arithmetic that handles timezone transitions
+      const targetDay = new Date(date)
+      targetDay.setDate(targetDay.getDate() + day)
+      const startDay = new Date(targetDay).setHours(0, 0, 0, 0)
+      const startDate = new Date(targetDay).setHours(startHour, 0, 0, 0)
+      const lastDate = new Date(targetDay).setHours(endHour, 0, 0, 0)
       events.forEach((event) => {
         const eventStart = event.allDay ? event.date + offsetTZ : event.date
         const eventEnd = event.allDay ? event.dueDate + offsetTZ : event.dueDate
@@ -125,8 +128,11 @@
         }
       })
     }
-    const sd = date.setHours(0, 0, 0, 0)
-    const ld = new Date(MILLISECONDS_IN_DAY * (days - 1) + date.getTime()).setHours(23, 59, 59, 999)
+    // Fix: Don't mutate the date parameter, use setDate() for proper day arithmetic
+    const sd = new Date(date).setHours(0, 0, 0, 0)
+    const lastDayDate = new Date(date)
+    lastDayDate.setDate(lastDayDate.getDate() + days - 1)
+    const ld = new Date(lastDayDate).setHours(23, 59, 59, 999)
     events
       .filter((ev) => ev.allDay)
       .sort((a, b) => b.dueDate - b.date - (a.dueDate - a.date))
