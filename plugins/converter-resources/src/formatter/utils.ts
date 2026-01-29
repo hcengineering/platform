@@ -31,9 +31,10 @@ export enum DateFormatOption {
 }
 
 /**
- * Check if a string is an IntlString (format: "plugin:resource:key")
+ * Check if a value is an IntlString (format: "plugin:resource:key").
+ * Type guard: narrows unknown to string when true.
  */
-export function isIntlString (value: string): boolean {
+export function isIntlString (value: unknown): value is string {
   if (typeof value !== 'string' || value.length === 0) {
     return false
   }

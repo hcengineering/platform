@@ -31,9 +31,7 @@ jest.mock('@hcengineering/view', () => ({
 describe('model/tableModel', () => {
   describe('modelToConfig', () => {
     it('returns key for model with non-empty key', () => {
-      const model: AttributeModel[] = [
-        { key: 'title', label: 'Title', displayProps: {}, attribute: undefined } as any
-      ]
+      const model: AttributeModel[] = [{ key: 'title', label: 'Title', displayProps: {}, attribute: undefined } as any]
       expect(modelToConfig(model)).toEqual(['title'])
     })
 
@@ -83,9 +81,7 @@ describe('model/tableModel', () => {
     })
 
     it('returns empty string for simple empty key without custom/castRequest', () => {
-      const model: AttributeModel[] = [
-        { key: '', label: 'Title', displayProps: {}, attribute: undefined } as any
-      ]
+      const model: AttributeModel[] = [{ key: '', label: 'Title', displayProps: {}, attribute: undefined } as any]
       expect(modelToConfig(model)).toEqual([''])
     })
 

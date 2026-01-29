@@ -18,6 +18,7 @@ import { translate, type IntlString } from '@hcengineering/platform'
 import cardPlugin, { type CardSpace } from '@hcengineering/card'
 import { type AttributeModel } from '@hcengineering/view'
 import { getClient } from '@hcengineering/presentation'
+import { isIntlString } from '@hcengineering/converter-resources'
 
 /**
  * Cache for MasterTag ID -> label mappings to reduce database calls
@@ -91,17 +92,6 @@ async function loadCardSpaceName (spaceRef: Ref<CardSpace>): Promise<string> {
 }
 
 /**
- * Check if a value is an IntlString-encoded string ("plugin:resource:key")
- */
-function isIntlStringValue (value: unknown): value is string {
-  if (typeof value !== 'string' || value.length === 0) {
-    return false
-  }
-  const parts = value.split(':')
-  return parts.length >= 3 && parts.every((part) => part.length > 0)
-}
-
-/**
  * Value formatter for card fields
  * Handles special cases for type (MasterTag) and space (CardSpace) fields
  */
@@ -131,7 +121,7 @@ export async function formatCardValue (
         const classObj = lookupClass as Record<string, unknown>
         const label: unknown = classObj.label
         if (typeof label === 'string') {
-          if (isIntlStringValue(label)) {
+          if (isIntlString(label)) {
             return await translate(label as unknown as IntlString, {}, language)
           }
           return label

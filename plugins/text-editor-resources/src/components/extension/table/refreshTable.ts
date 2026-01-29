@@ -36,7 +36,7 @@ export async function buildMarkdownTableFromDocs (
       query: metadata.query,
       originalUrl: metadata.originalUrl
     }
-    return buildFunction(docs, buildMetadata, client)
+    return await buildFunction(docs, buildMetadata, client)
   } catch (error) {
     // Function not available (converter-resources not loaded)
     console.warn('BuildMarkdownTableFromMetadata function not available:', error)

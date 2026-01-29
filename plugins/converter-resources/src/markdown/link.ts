@@ -19,15 +19,15 @@ import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import { getObjectLinkFragment } from '@hcengineering/view-resources'
 import { locationToUrl } from '@hcengineering/ui'
+import view from '@hcengineering/view'
 import { escapeMarkdownLinkText, escapeMarkdownLinkUrl } from './escape'
 
 /**
  * Create a markdown link for a document
  */
 export async function createMarkdownLink (hierarchy: Hierarchy, card: Doc, value: string): Promise<string> {
-  const EDIT_DOC_COMPONENT = 'view:component:EditDoc'
   try {
-    const loc = await getObjectLinkFragment(hierarchy, card, {}, EDIT_DOC_COMPONENT as any)
+    const loc = await getObjectLinkFragment(hierarchy, card, {}, view.component.EditDoc)
     const relativeUrl = locationToUrl(loc)
     const frontUrl =
       getMetadata(presentation.metadata.FrontUrl) ?? (typeof window !== 'undefined' ? window.location.origin : '')
