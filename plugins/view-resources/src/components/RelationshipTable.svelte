@@ -51,7 +51,7 @@
   import view from '../plugin'
   import { buildConfigAssociation, buildConfigLookup, buildModel, getAttributeValue, restrictionStore } from '../utils'
   import { getResultOptions, getResultQuery } from '../viewOptions'
-  import { CopyRelationshipTableAsMarkdown } from '../copyAsMarkdownTable'
+  import converter from '@hcengineering/converter'
   import IconUpDown from './icons/UpDown.svelte'
   import RelationsSelectorPopup from './RelationsSelectorPopup.svelte'
 
@@ -541,7 +541,8 @@
 
   async function handleCopyAsMarkdown (e: MouseEvent): Promise<void> {
     if (model === undefined || viewModel.length === 0) return
-    await CopyRelationshipTableAsMarkdown(e, {
+    const copyFn = await getResource(converter.function.CopyRelationshipAsMarkdown)
+    await copyFn(e, {
       viewModel,
       model,
       objects,

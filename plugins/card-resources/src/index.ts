@@ -37,6 +37,7 @@ import {
   cardFactory,
   duplicateCard
 } from './utils'
+import { formatCardValue } from './cardTableFormatter'
 import ManageMasterTagsContent from './components/settings/ManageMasterTagsContent.svelte'
 import ManageMasterTagsTools from './components/settings/ManageMasterTagsTools.svelte'
 import ManageMasterTags from './components/settings/ManageMasterTags.svelte'
@@ -79,8 +80,6 @@ import CardTagColored from './components/CardTagColored.svelte'
 import CardWidgetTab from './components/CardWidgetTab.svelte'
 import CardIcon from './components/CardIcon.svelte'
 import CardFeedView from './components/CardFeedView.svelte'
-
-import './cardTableFormatter'
 
 export { default as CardSelector } from './components/CardSelector.svelte'
 export { default as CardIcon } from './components/CardIcon.svelte'
@@ -169,6 +168,7 @@ export default async (): Promise<Resources> => ({
     CheckCommunicationMessagesSectionVisibility: checkCommunicationMessagesSectionVisibility,
     GetSpaceAccessPublicLink: getSpaceAccessPublicLink,
     CanGetSpaceAccessPublicLink: canGetSpaceAccessPublicLink,
-    CardFactory: cardFactory
+    CardFactory: cardFactory,
+    FormatCardMarkdownValue: formatCardValue
   }
 })

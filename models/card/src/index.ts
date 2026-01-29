@@ -75,6 +75,7 @@ import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
 import view, { type Viewlet } from '@hcengineering/model-view'
 import workbench, { WidgetType } from '@hcengineering/model-workbench'
+import converter from '@hcengineering/converter'
 import { type Asset, getEmbeddedLabel, type IntlString, type Resource } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
@@ -325,6 +326,10 @@ export function createSystemType (
     baseQuery: {
       isLatest: true
     }
+  })
+
+  builder.mixin(card.class.Card, core.class.Class, converter.mixin.MarkdownValueFormatter, {
+    formatter: card.function.FormatCardMarkdownValue
   })
 
   builder.createDoc(view.class.Viewlet, core.space.Model, {

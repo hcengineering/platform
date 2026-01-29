@@ -45,6 +45,7 @@
     "@hcengineering/analytics": "workspace:^0.7.17",
     "@hcengineering/presentation": "workspace:^0.7.0",
     "@hcengineering/core": "workspace:^0.7.24",
+    "@hcengineering/converter": "workspace:^0.7.0",
     "@hcengineering/highlight": "workspace:^0.7.0",
     "@hcengineering/view": "workspace:^0.7.0",
     "@hcengineering/text": "workspace:^0.7.18",

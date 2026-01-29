@@ -117,7 +117,7 @@ import {
   getDocumentMetaTitle
 } from './utils'
 
-import './docTableFormatter'
+import { formatControlledDocumentValue } from './docTableFormatter'
 
 export { DocumentStatusTag, DocumentTitle, DocumentVersionPresenter, StatePresenter }
 
@@ -444,6 +444,7 @@ export default async (): Promise<Resources> => ({
     ProjectDocumentReferenceObjectProvider: projectDocumentReferenceObjectProvider,
     ControlledDocumentTitleProvider: getControlledDocumentTitle,
     DocumentMetaTitleProvider: getDocumentMetaTitle,
+    FormatDocumentMarkdownValue: formatControlledDocumentValue,
     Comment: comment,
     IsCommentVisible: isCommentVisible
   },

@@ -23,6 +23,7 @@ import presentation from '@hcengineering/model-presentation'
 import task from '@hcengineering/model-task'
 import view from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
+import converter from '@hcengineering/converter'
 import notification from '@hcengineering/notification'
 import setting from '@hcengineering/setting'
 import pluginState, { type Issue, trackerId } from '@hcengineering/tracker'
@@ -82,6 +83,10 @@ export const classicIssueTaskStatuses: TaskStatusFactory[] = [
 ]
 
 function defineSortAndGrouping (builder: Builder): void {
+  builder.mixin(tracker.class.Issue, core.class.Class, converter.mixin.MarkdownValueFormatter, {
+    formatter: tracker.function.FormatIssueMarkdownValue
+  })
+
   builder.mixin(tracker.class.IssueStatus, core.class.Class, view.mixin.SortFuncs, {
     func: tracker.function.IssueStatusSort
   })

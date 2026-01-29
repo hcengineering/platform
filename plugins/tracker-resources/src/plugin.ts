@@ -29,6 +29,7 @@ import {
   type Viewlet,
   type ViewletDescriptor
 } from '@hcengineering/view'
+import type { ValueFormatter } from '@hcengineering/converter'
 
 export default mergeIds(trackerId, tracker, {
   viewlet: {
@@ -398,7 +399,8 @@ export default mergeIds(trackerId, tracker, {
     IssueChatTitleProvider: '' as Resource<(object: Doc) => string>,
     GetIssueStatusCategories: '' as Resource<(project: ProjectType) => Array<Ref<StatusCategory>>>,
     GetIssueIdByIdentifier: '' as Resource<(id: string) => Promise<Ref<Issue> | undefined>>,
-    OpenIssuesOfTaskType: '' as Resource<(taskType: TaskType) => Promise<void>>
+    OpenIssuesOfTaskType: '' as Resource<(taskType: TaskType) => Promise<void>>,
+    FormatIssueMarkdownValue: '' as Resource<ValueFormatter>
   },
   aggregation: {
     CreateComponentAggregationManager: '' as CreateAggregationManagerFunc,

@@ -82,6 +82,7 @@ import tracker, { trackerId, createModel as trackerModel } from '@hcengineering/
 import { uploaderId, createModel as uploaderModel } from '@hcengineering/model-uploader'
 import view, { viewId, createModel as viewModel } from '@hcengineering/model-view'
 import workbench, { workbenchId, createModel as workbenchModel } from '@hcengineering/model-workbench'
+import { converterId, createModel as converterModel } from '@hcengineering/model-converter'
 
 import document, { documentId, createModel as documentModel } from '@hcengineering/model-document'
 import { serverDocumentId, createModel as serverDocumentModel } from '@hcengineering/model-server-document'
@@ -524,6 +525,7 @@ export default function buildModel (): Builder {
         classFilter: defaultFilter
       }
     ],
+    [converterModel, converterId],
 
     [serverCoreModel, serverCoreId],
     [serverAttachmentModel, serverAttachmentId],
