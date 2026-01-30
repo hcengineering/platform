@@ -1666,9 +1666,9 @@ export async function getLoginInfoByToken (
     }
     accountUuid = sub ?? account
   } catch (err: any) {
-    Analytics.handleError(err)
     if (token !== undefined) {
       // do not spam errors as this is expected when we issue request with no token
+      Analytics.handleError(err)
       ctx.error('Invalid token', { token, errMsg: err.message })
     }
     switch (err.message) {
