@@ -33,6 +33,7 @@ import { cardId } from '@hcengineering/card'
 import { chunterId } from '@hcengineering/chunter'
 import client, { clientId } from '@hcengineering/client'
 import contactPlugin, { contactId } from '@hcengineering/contact'
+import { converterId } from '@hcengineering/converter'
 import { documentsId } from '@hcengineering/controlled-documents'
 import { desktopPreferencesId } from '@hcengineering/desktop-preferences'
 import { desktopDownloadsId } from '@hcengineering/desktop-downloads'
@@ -435,6 +436,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   addLocation(onboardId, async () => await import('@hcengineering/onboard-resources'))
   addLocation(workbenchId, async () => await import('@hcengineering/workbench-resources'))
   addLocation(viewId, async () => await import('@hcengineering/view-resources'))
+  addLocation(converterId, async () => await import('@hcengineering/converter-resources'))
   addLocation(taskId, async () => await import('@hcengineering/task-resources'))
   addLocation(contactId, async () => await import('@hcengineering/contact-resources'))
   addLocation(chunterId, async () => await import('@hcengineering/chunter-resources'))

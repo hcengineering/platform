@@ -36,6 +36,7 @@ import request from '@hcengineering/model-request'
 import tracker from '@hcengineering/model-tracker'
 import view, { classPresenter, createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
+import converter from '@hcengineering/converter'
 import notification from '@hcengineering/notification'
 import contacts from '@hcengineering/model-contact'
 import setting from '@hcengineering/setting'
@@ -109,6 +110,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(documents.class.ControlledDocument, core.class.Class, view.mixin.ObjectTitle, {
     titleProvider: documents.function.ControlledDocumentTitleProvider
+  })
+
+  builder.mixin(documents.class.Document, core.class.Class, converter.mixin.MarkdownValueFormatter, {
+    formatter: documents.function.FormatDocumentMarkdownValue
   })
 
   builder.mixin(documents.class.DocumentApprovalRequest, core.class.Class, view.mixin.ObjectPresenter, {

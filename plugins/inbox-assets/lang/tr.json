@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Inbox": "Gelen Kutusu",
+    "ReactedToYourMessage": "mesajınıza tepki verdi",
+    "ClearAll": "Tümünü temizle",
+    "InboxIsClear": "Gelen kutusu temiz",
+    "YouDontHaveAnyNewMessages": "Yeni mesajınız yok",
+    "ReadAll": "Tümünü oku",
+    "Clearing": "Temizleniyor...",
+    "Reading": "Okunuyor...",
+    "HideUserNames": "Kullanıcı adlarını gizle"
+  }
+}

@@ -1947,6 +1947,21 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/converter",
+      "projectFolder": "plugins/converter",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/converter-resources",
+      "projectFolder": "plugins/converter-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-converter",
+      "projectFolder": "models/converter",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/model-controlled-documents",
       "projectFolder": "models/controlled-documents",
       "shouldPublish": false

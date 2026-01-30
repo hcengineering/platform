@@ -265,6 +265,8 @@
     "@hcengineering/view": "workspace:^0.7.0",
     "@hcengineering/view-assets": "workspace:^0.7.0",
     "@hcengineering/view-resources": "workspace:^0.7.0",
+    "@hcengineering/converter": "workspace:^0.7.0",
+    "@hcengineering/converter-resources": "workspace:^0.7.0",
     "@hcengineering/workbench": "workspace:^0.7.0",
     "@hcengineering/workbench-assets": "workspace:^0.7.0",
     "@hcengineering/workbench-resources": "workspace:^0.7.0",
