@@ -103,7 +103,8 @@
       })
     )
 
-  $: canSave = targetWorkspace !== undefined && _class != null && filteredSelectedDocs.length > 0
+  $: canSave =
+    targetWorkspace !== undefined && _class != null && (spaceExport === true || filteredSelectedDocs.length > 0)
 
   async function handleExport (): Promise<void> {
     if (!canSave || _class == null) return
