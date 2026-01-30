@@ -239,10 +239,14 @@ export class CrossWorkspaceExporter {
                   (mappedDoc as any).title ??
                   hierarchy.getClass(mappedDoc._class)?.label ??
                   mappedDoc._id
-                result.exportedDocuments.push({
-                  docId: mappedDoc._id,
-                  name: typeof docName === 'string' ? docName : String(docName)
-                })
+                // Use target workspace doc id so the notification panel can resolve docs in the target workspace
+                const targetDocId = this.state.idMapping.get(mappedDoc._id)
+                if (targetDocId !== undefined) {
+                  result.exportedDocuments.push({
+                    docId: targetDocId,
+                    name: typeof docName === 'string' ? docName : String(docName)
+                  })
+                }
               } else {
                 result.skippedCount++
               }

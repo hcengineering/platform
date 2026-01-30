@@ -64,7 +64,7 @@ import { getConfig } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { Token, decodeToken, generateToken } from '@hcengineering/server-token'
 import archiver from 'archiver'
-import { sendExportCompletionEmail } from './notifications'
+import { sendExportCompletionNotification } from './notifications'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { createWriteStream } from 'fs'
@@ -537,12 +537,14 @@ export function createServer (
           const exportResult: ExportResult = await exporter.export(options)
 
           if (exportResult.success && exportResult.exportedCount > 0) {
-            await sendExportCompletionEmail(
+            await sendExportCompletionNotification(
               measureCtx,
+              targetTxOps,
               targetWorkspace,
               targetWsIds,
               exportResult.exportedDocuments,
-              wsIds
+              wsIds,
+              _class
             )
           }
 

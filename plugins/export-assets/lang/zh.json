@@ -31,6 +31,15 @@
     "ExportStartedMessage": "导出已开始。完成后您将收到通知。",
     "ExportToWorkspaceCompleted": "导出完成",
     "ExportToWorkspaceCompletedMessage": "导出已成功完成。",
+    "ImportToWorkspaceNotificationMessage": "{count} 个文档已导入到您的工作区",
+    "ImportCompleted": "文档已导入到工作区",
+    "SourceWorkspace": "源工作区",
+    "ExportedCount": "导出数量",
+    "ExportedDocumentIds": "已导出文档的 ID",
+    "DocumentsImportedFromWorkspace": "{count, plural, one {1 个文档已从工作区 {workspace} 导入} other {# 个文档已从工作区 {workspace} 导入}}:",
+    "ExportedDocumentClass": "已导出文档的类",
+    "Import": "导入",
+    "ImportedDocuments": "新文档",
     "ExportToWorkspaceFailed": "导出失败",
     "SelectWorkspace": "选择工作区",
     "SelectWorkspaceToExport": "选择工作区以导出 {count, plural, =1 {1 文档} other {# 个文档}}",
@@ -38,6 +47,7 @@
     "SelectSpace": "选择空间",
     "NoSelectedDocuments": "未选择文档",
     "RequestPermissionToImport": "请向目标工作区所有者请求导入文档的权限。",
-    "SkipDeletedObsolete": "跳过已归档或已过时的文档"
+    "SkipDeletedObsolete": "跳过已归档或已过时的文档",
+    "ExportResultRecordTitle": "从工作区 {workspace} 导出文档 ({date})"
   }
 }

@@ -14,6 +14,26 @@
 //
 import type { Class, Doc, Ref } from '@hcengineering/core'
 
+/**
+ * @public
+ */
+export interface ExportResultDoc {
+  docId: Ref<Doc>
+  name: string
+}
+
+/**
+ * @public
+ */
+export interface ExportResultRecord extends Doc {
+  sourceWorkspace: string
+  targetWorkspace: string
+  exportedCount: number
+  exportedDocumentIds: Ref<Doc>[]
+  objectClass: Ref<Class<Doc>>
+  title?: string
+}
+
 export enum OperationType {
   IDENTITY = 'identity',
   GROUP_BY = 'group_by'
