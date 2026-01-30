@@ -20,7 +20,8 @@
   import { getResource } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, IconMoreH, Label } from '@hcengineering/ui'
-  import view, { DocNavLink, ObjectPresenter, showMenu } from '@hcengineering/view-resources'
+  import { DocNavLink, ObjectPresenter, showMenu } from '@hcengineering/view-resources'
+  import view from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
   export let _id: Ref<ExportResultRecord>
