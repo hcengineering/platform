@@ -31,6 +31,15 @@
     "ExportStartedMessage": "エクスポートを開始しました。完了すると通知が届きます。",
     "ExportToWorkspaceCompleted": "エクスポート完了",
     "ExportToWorkspaceCompletedMessage": "エクスポートが正常に完了しました。",
+    "ImportToWorkspaceNotificationMessage": "{count} 件のドキュメントがワークスペースにインポートされました",
+    "ImportCompleted": "ドキュメントがワークスペースにインポートされました",
+    "SourceWorkspace": "ソースワークスペース",
+    "ExportedCount": "エクスポート数",
+    "ExportedDocumentIds": "エクスポートされたドキュメントのID",
+    "DocumentsImportedFromWorkspace": "{count, plural, one {1 件のドキュメントがワークスペース {workspace} からインポートされました} other {# 件のドキュメントがワークスペース {workspace} からインポートされました}}:",
+    "ExportedDocumentClass": "エクスポートされたドキュメントのクラス",
+    "Import": "インポート",
+    "ImportedDocuments": "新しいドキュメント",
     "ExportToWorkspaceFailed": "エクスポート失敗",
     "SelectWorkspace": "ワークスペースを選択",
     "SelectWorkspaceToExport": "{count, plural, =1 {1 件のドキュメント} other {# 件のドキュメント}}をエクスポートするワークスペースを選択",
@@ -38,6 +47,12 @@
     "SelectSpace": "スペースを選択",
     "NoSelectedDocuments": "ドキュメントが選択されていません",
     "RequestPermissionToImport": "ドキュメントをインポートするには、対象ワークスペースの所有者に許可をリクエストしてください。",
-    "SkipDeletedObsolete": "アーカイブ済みまたは廃止されたドキュメントをスキップ"
+    "SkipDeletedObsolete": "アーカイブ済みまたは廃止されたドキュメントをスキップ",
+    "ExportOnlyEffective": "有効なステータスのドキュメントのみエクスポート",
+    "ExportFilterMode": "エクスポートするドキュメント",
+    "ExportFilterEffectiveOnly": "有効なドキュメントのみ",
+    "ExportFilterSkipArchivedObsolete": "アーカイブ・廃止を除くすべて",
+    "ExportFilterAll": "すべてのドキュメント",
+    "ExportResultRecordTitle": "ワークスペース {workspace} からのドキュメントのエクスポート ({date})"
   }
 }

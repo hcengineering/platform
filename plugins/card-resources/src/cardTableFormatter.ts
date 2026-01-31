@@ -15,10 +15,11 @@
 
 import { type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
 import { translate, type IntlString } from '@hcengineering/platform'
-import cardPlugin, { type CardSpace } from '@hcengineering/card'
+import cardPlugin, { type Card, type CardSpace } from '@hcengineering/card'
 import { type AttributeModel } from '@hcengineering/view'
 import { getClient } from '@hcengineering/presentation'
 import { isIntlString } from '@hcengineering/converter-resources'
+import { getCardIds, getCardVersion } from './cardUtils'
 
 /**
  * Cache for MasterTag ID -> label mappings to reduce database calls
@@ -109,6 +110,18 @@ export async function formatCardValue (
   }
 
   const cardDoc = card as unknown as Record<string, unknown>
+
+  if (attr.key === '') {
+    const labelStr = typeof attr.label === 'string' ? attr.label : ''
+    if (labelStr.startsWith('custom') || attr.isLookup) {
+      return undefined
+    }
+    const cardObj = card as unknown as Card
+    const ids = getCardIds(cardObj, hierarchy)
+    const version = getCardVersion(cardObj, hierarchy)
+    const parts = [ids, cardObj.title, version].filter(Boolean)
+    return parts.join(' ')
+  }
 
   // Handle _class field (MasterTag/Type) - format MasterTag ID to label
   if (attr.key === '_class') {

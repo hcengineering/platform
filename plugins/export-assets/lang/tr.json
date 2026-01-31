@@ -31,6 +31,15 @@
     "ExportStartedMessage": "Dışa aktarma başladı. Tamamlandığında bir bildirim alacaksınız.",
     "ExportToWorkspaceCompleted": "Dışa aktarma tamamlandı",
     "ExportToWorkspaceCompletedMessage": "Dışa aktarma başarıyla tamamlandı.",
+    "ImportToWorkspaceNotificationMessage": "{count} belge çalışma alanınıza içe aktarıldı",
+    "ImportCompleted": "Belgeler çalışma alanına içe aktarıldı",
+    "SourceWorkspace": "Kaynak çalışma alanı",
+    "ExportedCount": "Dışa aktarılan sayı",
+    "ExportedDocumentIds": "Dışa aktarılan belge kimlikleri",
+    "DocumentsImportedFromWorkspace": "{count, plural, one {1 belge {workspace} çalışma alanından içe aktarıldı} other {# belge {workspace} çalışma alanından içe aktarıldı}}:",
+    "ExportedDocumentClass": "Dışa aktarılan belge sınıfı",
+    "Import": "İçe aktarma",
+    "ImportedDocuments": "Yeni belgeler",
     "ExportToWorkspaceFailed": "Dışa aktarma başarısız oldu",
     "SelectWorkspace": "Çalışma alanı seç",
     "SelectWorkspaceToExport": "{count, plural, =1 {1 belgeyi} other {# belgeyi}} dışa aktarmak için çalışma alanı seç",
@@ -38,6 +47,12 @@
     "SelectSpace": "Alan seç",
     "NoSelectedDocuments": "Seçili belge yok",
     "RequestPermissionToImport": "Belgeleri içe aktarmak için lütfen hedef çalışma alanı sahibinden izin isteyin.",
-    "SkipDeletedObsolete": "Arşivlenmiş veya kullanımdan kaldırılmış belgeleri atla"
+    "SkipDeletedObsolete": "Arşivlenmiş veya kullanımdan kaldırılmış belgeleri atla",
+    "ExportOnlyEffective": "Yalnızca geçerli durumdaki belgeleri dışa aktar",
+    "ExportFilterMode": "Dışa aktarılacak belgeler",
+    "ExportFilterEffectiveOnly": "Yalnızca geçerli belgeler",
+    "ExportFilterSkipArchivedObsolete": "Arşivlenmiş ve kullanımdan kaldırılmış hariç tümü",
+    "ExportFilterAll": "Tüm belgeler",
+    "ExportResultRecordTitle": "{workspace} çalışma alanından belge dışa aktarma ({date})"
   }
 }
