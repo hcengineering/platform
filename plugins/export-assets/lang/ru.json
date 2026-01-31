@@ -48,6 +48,11 @@
     "NoSelectedDocuments": "Документы не выбраны",
     "RequestPermissionToImport": "Пожалуйста, запросите разрешение у владельца рабочего пространства, куда вы хотите экспортировать документы.",
     "SkipDeletedObsolete": "Пропускать архивированные или устаревшие документы",
+    "ExportOnlyEffective": "Экспортировать только документы с действующим статусом",
+    "ExportFilterMode": "Документы для экспорта",
+    "ExportFilterEffectiveOnly": "Только действующие документы",
+    "ExportFilterSkipArchivedObsolete": "Все кроме архивных и устаревших",
+    "ExportFilterAll": "Все документы",
     "ExportResultRecordTitle": "Экспорт документов из пространства {workspace} ({date})"
   }
 }

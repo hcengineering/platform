@@ -48,6 +48,11 @@
     "NoSelectedDocuments": "No hay documentos seleccionados",
     "RequestPermissionToImport": "Por favor, solicite permiso al propietario del espacio de trabajo de destino para importar documentos.",
     "SkipDeletedObsolete": "Omitir documentos archivados u obsoletos",
+    "ExportOnlyEffective": "Exportar solo documentos con estado efectivo",
+    "ExportFilterMode": "Documentos a exportar",
+    "ExportFilterEffectiveOnly": "Solo documentos efectivos",
+    "ExportFilterSkipArchivedObsolete": "Todos excepto archivados y obsoletos",
+    "ExportFilterAll": "Todos los documentos",
     "ExportResultRecordTitle": "Exportación de documentos del espacio de trabajo {workspace} ({date})"
   }
 }

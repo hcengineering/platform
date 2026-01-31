@@ -24,7 +24,7 @@ import {
 } from '@hcengineering/core'
 import contact, { type Employee } from '@hcengineering/contact'
 import { type StorageAdapter } from '@hcengineering/server-core'
-import { shouldSkipDocument } from '@hcengineering/export'
+import { isEffectiveDocument, shouldSkipDocument } from '@hcengineering/export'
 import { AttachmentExporter } from './attachment-exporter'
 import { DataMapper } from './data-mapper'
 import { DocumentExporter } from './document-exporter'
@@ -126,7 +126,8 @@ export class CrossWorkspaceExporter {
       mapper,
       relations = [],
       fieldMappers = {},
-      skipDeletedObsolete = true
+      skipDeletedObsolete = true,
+      exportOnlyEffective = false
     } = options
 
     // Store field mappers
@@ -204,8 +205,12 @@ export class CrossWorkspaceExporter {
 
           this.context.info(`Processing batch: ${processedCount + 1}-${processedCount + docs.length}`)
 
-          // Filter out archived/deleted/obsolete documents if skipDeletedObsolete is enabled
-          const docsToProcess = skipDeletedObsolete ? docs.filter((doc) => !shouldSkipDocument(doc)) : docs
+          // Filter by effective status or skip archived/deleted/obsolete
+          const docsToProcess = exportOnlyEffective
+            ? docs.filter((doc) => isEffectiveDocument(doc))
+            : skipDeletedObsolete
+              ? docs.filter((doc) => !shouldSkipDocument(doc))
+              : docs
 
           // Check for existing documents in bulk if needed
           const existingDocsMap = new Map<Ref<Doc>, Doc>()
