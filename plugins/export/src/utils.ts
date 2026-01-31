@@ -34,3 +34,15 @@ export function shouldSkipDocument (doc: Doc): boolean {
   }
   return false
 }
+
+/**
+ * Checks if a document has effective status (only such docs should be exported when "export only effective" is on).
+ * Returns true if the document has no state property or state === 'effective'.
+ * @param doc - The document to check
+ * @returns true if the document is effective or has no state, false otherwise
+ */
+export function isEffectiveDocument (doc: Doc): boolean {
+  if (!('state' in doc)) return true
+  const docWithState = doc as Doc & { state?: string }
+  return typeof docWithState.state === 'string' && docWithState.state === 'effective'
+}

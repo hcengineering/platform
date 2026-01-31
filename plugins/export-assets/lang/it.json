@@ -31,6 +31,15 @@
     "ExportStartedMessage": "Esportazione avviata. Riceverai una notifica quando sarà completata.",
     "ExportToWorkspaceCompleted": "Esportazione completata",
     "ExportToWorkspaceCompletedMessage": "Esportazione completata con successo.",
+    "ImportToWorkspaceNotificationMessage": "{count} documenti importati nel tuo spazio di lavoro",
+    "ImportCompleted": "Documenti importati nell'area di lavoro",
+    "SourceWorkspace": "Spazio di lavoro di origine",
+    "ExportedCount": "Conteggio esportato",
+    "ExportedDocumentIds": "ID documenti esportati",
+    "DocumentsImportedFromWorkspace": "{count, plural, one {1 documento è stato importato dallo spazio di lavoro {workspace}} other {# documenti sono stati importati dallo spazio di lavoro {workspace}}}:",
+    "ExportedDocumentClass": "Classe documenti esportati",
+    "Import": "Importa",
+    "ImportedDocuments": "Nuovi documenti",
     "ExportToWorkspaceFailed": "Esportazione fallita",
     "SelectWorkspace": "Seleziona spazio di lavoro",
     "SelectWorkspaceToExport": "Seleziona spazio di lavoro per esportare {count, plural, =1 {1 documento} other {# documenti}}",
@@ -38,6 +47,12 @@
     "SelectSpace": "Seleziona spazio",
     "NoSelectedDocuments": "Nessun documento selezionato",
     "RequestPermissionToImport": "Si prega di richiedere l'autorizzazione al proprietario dello spazio di lavoro di destinazione per importare documenti.",
-    "SkipDeletedObsolete": "Salta documenti archivati o obsoleti"
+    "SkipDeletedObsolete": "Salta documenti archivati o obsoleti",
+    "ExportOnlyEffective": "Esporta solo documenti con stato effettivo",
+    "ExportFilterMode": "Documenti da esportare",
+    "ExportFilterEffectiveOnly": "Solo documenti effettivi",
+    "ExportFilterSkipArchivedObsolete": "Tutti tranne archiviati e obsoleti",
+    "ExportFilterAll": "Tutti i documenti",
+    "ExportResultRecordTitle": "Esportazione di documenti dallo spazio di lavoro {workspace} ({date})"
   }
 }

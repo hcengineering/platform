@@ -8067,9 +8067,18 @@ importers:
       '@hcengineering/model-core':
         specifier: workspace:^0.7.0
         version: link:../core
+      '@hcengineering/model-notification':
+        specifier: workspace:^0.7.0
+        version: link:../notification
       '@hcengineering/model-presentation':
         specifier: workspace:^0.7.0
         version: link:../presentation
+      '@hcengineering/model-view':
+        specifier: workspace:^0.7.0
+        version: link:../view
+      '@hcengineering/notification':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/notification
       '@hcengineering/platform':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/platform
@@ -8079,6 +8088,9 @@ importers:
       '@hcengineering/ui':
         specifier: workspace:^0.7.0
         version: link:../../packages/ui
+      '@hcengineering/view':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/view
       '@hcengineering/workbench':
         specifier: workspace:^0.7.0
         version: link:../../plugins/workbench
@@ -20563,6 +20575,9 @@ importers:
       '@hcengineering/core':
         specifier: workspace:^0.7.24
         version: link:../../foundations/core/packages/core
+      '@hcengineering/notification':
+        specifier: workspace:^0.7.0
+        version: link:../notification
       '@hcengineering/platform':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/platform
@@ -20679,6 +20694,12 @@ importers:
       '@hcengineering/login':
         specifier: workspace:^0.7.0
         version: link:../login
+      '@hcengineering/notification':
+        specifier: workspace:^0.7.0
+        version: link:../notification
+      '@hcengineering/panel':
+        specifier: workspace:^0.7.0
+        version: link:../../packages/panel
       '@hcengineering/platform':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/platform
@@ -20691,6 +20712,12 @@ importers:
       '@hcengineering/ui':
         specifier: workspace:^0.7.0
         version: link:../../packages/ui
+      '@hcengineering/view':
+        specifier: workspace:^0.7.0
+        version: link:../view
+      '@hcengineering/view-resources':
+        specifier: workspace:^0.7.0
+        version: link:../view-resources
       svelte:
         specifier: ^4.2.20
         version: 4.2.20

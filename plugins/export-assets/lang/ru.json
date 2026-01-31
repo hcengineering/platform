@@ -31,6 +31,15 @@
     "ExportStartedMessage": "Экспорт начат. Вы получите уведомление, когда он будет завершен.",
     "ExportToWorkspaceCompleted": "Экспорт завершен",
     "ExportToWorkspaceCompletedMessage": "Экспорт успешно завершен.",
+    "ImportToWorkspaceNotificationMessage": "{count} документов импортировано в ваше рабочее пространство",
+    "ImportCompleted": "Документы импортированы в рабочее пространство",
+    "SourceWorkspace": "Исходное рабочее пространство",
+    "ExportedCount": "Количество экспортированных",
+    "ExportedDocumentIds": "ID экспортированных документов",
+    "DocumentsImportedFromWorkspace": "{count, plural, one {1 документ импортирован из рабочего пространства {workspace}} few {# документа импортированы из рабочего пространства {workspace}} other {# документов импортировано из рабочего пространства {workspace}}}:",
+    "ExportedDocumentClass": "Класс экспортированных документов",
+    "Import": "Импорт",
+    "ImportedDocuments": "Новые документы",
     "ExportToWorkspaceFailed": "Экспорт не удался",
     "SelectWorkspace": "Выбрать рабочее пространство",
     "SelectWorkspaceToExport": "Выбрать рабочее пространство для экспорта {count, plural, =1 {1 документ} one {# документ} few {# документа} other {# документов}}",
@@ -38,6 +47,12 @@
     "SelectSpace": "Выбрать пространство",
     "NoSelectedDocuments": "Документы не выбраны",
     "RequestPermissionToImport": "Пожалуйста, запросите разрешение у владельца рабочего пространства, куда вы хотите экспортировать документы.",
-    "SkipDeletedObsolete": "Пропускать архивированные или устаревшие документы"
+    "SkipDeletedObsolete": "Пропускать архивированные или устаревшие документы",
+    "ExportOnlyEffective": "Экспортировать только документы с действующим статусом",
+    "ExportFilterMode": "Документы для экспорта",
+    "ExportFilterEffectiveOnly": "Только действующие документы",
+    "ExportFilterSkipArchivedObsolete": "Все кроме архивных и устаревших",
+    "ExportFilterAll": "Все документы",
+    "ExportResultRecordTitle": "Экспорт документов из пространства {workspace} ({date})"
   }
 }
