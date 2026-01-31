@@ -25,7 +25,8 @@ export async function exportToWorkspace (
   selectedDocs: Doc[],
   targetWorkspace: string | undefined,
   relations: RelationDefinition[] | undefined,
-  skipDeletedObsolete?: boolean
+  skipDeletedObsolete?: boolean,
+  exportOnlyEffective?: boolean
 ): Promise<void> {
   const lang = getCurrentLanguage()
 
@@ -67,7 +68,8 @@ export async function exportToWorkspace (
       _class,
       relations,
       fieldMappers,
-      skipDeletedObsolete
+      skipDeletedObsolete,
+      exportOnlyEffective
     }
 
     body.query =

@@ -405,7 +405,8 @@ export function createServer (
           includeAttachments,
           relations: rawRelations,
           fieldMappers,
-          skipDeletedObsolete
+          skipDeletedObsolete,
+          exportOnlyEffective
         }: {
           targetWorkspace: WorkspaceUuid
           _class: Ref<Class<Doc>>
@@ -417,6 +418,7 @@ export function createServer (
           objectSpace?: Ref<Space>
           fieldMappers?: Record<string, Record<string, any>>
           skipDeletedObsolete?: boolean
+          exportOnlyEffective?: boolean
         } = req.body
 
         // Validate required parameters
@@ -531,7 +533,8 @@ export function createServer (
             includeAttachments: includeAttachments ?? true,
             relations,
             fieldMappers,
-            skipDeletedObsolete: skipDeletedObsolete ?? true
+            skipDeletedObsolete: skipDeletedObsolete ?? true,
+            exportOnlyEffective: exportOnlyEffective ?? false
           }
 
           const exportResult: ExportResult = await exporter.export(options)

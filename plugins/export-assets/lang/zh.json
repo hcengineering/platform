@@ -48,6 +48,11 @@
     "NoSelectedDocuments": "未选择文档",
     "RequestPermissionToImport": "请向目标工作区所有者请求导入文档的权限。",
     "SkipDeletedObsolete": "跳过已归档或已过时的文档",
+    "ExportOnlyEffective": "仅导出具有有效状态的文档",
+    "ExportFilterMode": "要导出的文档",
+    "ExportFilterEffectiveOnly": "仅有效文档",
+    "ExportFilterSkipArchivedObsolete": "除已归档和已过时外的全部",
+    "ExportFilterAll": "全部文档",
     "ExportResultRecordTitle": "从工作区 {workspace} 导出文档 ({date})"
   }
 }

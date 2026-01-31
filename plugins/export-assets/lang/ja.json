@@ -48,6 +48,11 @@
     "NoSelectedDocuments": "ドキュメントが選択されていません",
     "RequestPermissionToImport": "ドキュメントをインポートするには、対象ワークスペースの所有者に許可をリクエストしてください。",
     "SkipDeletedObsolete": "アーカイブ済みまたは廃止されたドキュメントをスキップ",
+    "ExportOnlyEffective": "有効なステータスのドキュメントのみエクスポート",
+    "ExportFilterMode": "エクスポートするドキュメント",
+    "ExportFilterEffectiveOnly": "有効なドキュメントのみ",
+    "ExportFilterSkipArchivedObsolete": "アーカイブ・廃止を除くすべて",
+    "ExportFilterAll": "すべてのドキュメント",
     "ExportResultRecordTitle": "ワークスペース {workspace} からのドキュメントのエクスポート ({date})"
   }
 }
