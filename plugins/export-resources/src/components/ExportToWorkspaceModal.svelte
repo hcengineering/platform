@@ -61,7 +61,7 @@
   $: selectedDocs = spaceExport !== true ? (Array.isArray(value) ? value : value != null ? [value] : []) : []
   $: _class = docClass ?? (selectedDocs.length > 0 ? selectedDocs[0]._class : undefined)
 
-  function filterDocsForExport(docs: Doc[], exportFilterMode: ExportFilterMode): Doc[] {
+  function filterDocsForExport (docs: Doc[], exportFilterMode: ExportFilterMode): Doc[] {
     if (docs.length === 0) return docs
     if (exportFilterMode === 'effectiveOnly') return docs.filter((doc) => isEffectiveDocument(doc))
     if (exportFilterMode === 'skipArchivedObsolete') return docs.filter((doc) => !shouldSkipDocument(doc))
@@ -73,7 +73,7 @@
   // Build query with space filter when exporting from space
   $: exportQuery = spaceExport === true ? { ...(query ?? {}), space: (value as Space)._id } : query
 
-  async function loadWorkspaces(): Promise<void> {
+  async function loadWorkspaces (): Promise<void> {
     try {
       workspaceLoading = true
       const getWorkspacesFn = await getResource(login.function.GetWorkspaces)
@@ -118,7 +118,7 @@
   $: canSave =
     targetWorkspace !== undefined && _class != null && (spaceExport === true || filteredSelectedDocs.length > 0)
 
-  async function handleExport(): Promise<void> {
+  async function handleExport (): Promise<void> {
     if (!canSave || _class == null) return
 
     loading = true
