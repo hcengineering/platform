@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Card, MasterTag } from '@hcengineering/card'
-  import core, { Ref, toRank } from '@hcengineering/core'
+  import { Ref } from '@hcengineering/core'
   import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, tooltip } from '@hcengineering/ui'
@@ -22,6 +22,7 @@
   import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
 
   import card from '../plugin'
+  import { getCardIds, getCardVersion } from '../cardUtils'
   import CardIcon from './CardIcon.svelte'
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
 
@@ -56,41 +57,8 @@
   $: _class = cardObj && (client.getHierarchy().getClass(cardObj?._class) as MasterTag)
   $: icon = _class && _class.icon
 
-  $: ids = getIds(cardObj)
-
-  function getIds (object: Card | undefined): string {
-    if (object === undefined) return ''
-    const h = client.getHierarchy()
-    const attrs = [...h.getAllAttributes(object._class, core.class.Doc).values()].sort((a, b) => {
-      const rankA = a.rank ?? toRank(a._id) ?? ''
-      const rankB = b.rank ?? toRank(b._id) ?? ''
-      return rankA.localeCompare(rankB)
-    })
-    const res: string[] = []
-    for (const attr of attrs) {
-      const val = (object as any)[attr.name]
-      if (attr.showInPresenter === true && val !== undefined) {
-        if (typeof val === 'string' || typeof val === 'number') {
-          res.push(val.toString())
-        } else if (typeof val === 'boolean') {
-          res.push(val ? '✅' : '❌️')
-        }
-      }
-    }
-    return res.join(' ')
-  }
-
-  $: version = getVersion(cardObj)
-
-  function getVersion (val: Card | undefined): string {
-    if (val === undefined) return ''
-    const h = client.getHierarchy()
-    const mixin = h.classHierarchyMixin(val._class, core.mixin.VersionableClass)
-    if (mixin?.enabled) {
-      return 'v' + (val.version ?? 1)
-    }
-    return ''
-  }
+  $: ids = getCardIds(cardObj, client.getHierarchy())
+  $: version = getCardVersion(cardObj, client.getHierarchy())
 </script>
 
 {#if inline && cardObj}
