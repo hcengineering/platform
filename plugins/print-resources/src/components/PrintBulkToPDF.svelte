@@ -19,6 +19,7 @@
   import presentation, { Card, getClient, PDFViewer } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
   import { Button, Label, Loading } from '@hcengineering/ui'
+
   import print from '../plugin'
   import { type PdfResult, printAll, downloadPdf, downloadAllPdfs } from '../printUtils'
 
@@ -109,11 +110,11 @@
       <div class="flex flex-col gap-2">
         {#if processing && currentIndex <= total}
           <div class="flex flex-col gap-2 py-2">
-            <div class="flex gap-2">
+            <div class="flex items-start gap-2">
               <Label label={print.string.PrintingDocumentOf} params={{ current: currentIndex, total }} />
-              {#if downloadAllLoading}
-                <Loading />
-              {/if}
+              <div class="flex pl-2">
+                <Loading shrink={true} size="small" />
+              </div>
             </div>
             <div class="flex justify-end">
               <Button kind="secondary" label={presentation.string.Cancel} on:click={cancel} />
