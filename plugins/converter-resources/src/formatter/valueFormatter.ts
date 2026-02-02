@@ -37,6 +37,83 @@ import {
 import { loadPersonName } from '../data/personLoader'
 import type { ValueFormatter } from '../types'
 
+/** Resolved context for formatting: which object we display and its value */
+export interface DisplayContext {
+  value: any
+  displayDoc: Doc
+  displayClass: Ref<Class<Doc>>
+  attribute: AnyAttribute | undefined
+}
+
+/**
+ * Resolve which object should be displayed (card, ref, or custom attribute) and its value.
+ * Used so formatters and fallbacks can format all types consistently.
+ */
+function resolveDisplayContext (
+  attr: AttributeModel,
+  card: Doc,
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  isFirstColumn: boolean
+): DisplayContext | null {
+  const docClass = card._class
+
+  // Custom attribute: value lives on card under label key
+  if (attr.key === '' && !isFirstColumn) {
+    const labelStr = typeof attr.label === 'string' ? attr.label : ''
+    const isCustomAttribute = labelStr.startsWith('custom')
+    if (!isCustomAttribute) {
+      return null
+    }
+    const customValue = (card as any)[labelStr]
+    let customAttr = hierarchy.findAttribute(docClass, labelStr)
+    if (customAttr === undefined) {
+      const allAttrs = hierarchy.getAllAttributes(docClass)
+      customAttr = allAttrs.get(labelStr)
+    }
+    return {
+      value: customValue,
+      displayDoc: card,
+      displayClass: docClass,
+      attribute: customAttr
+    }
+  }
+
+  let value: any
+  let displayDoc: Doc = card
+  let displayClass: Ref<Class<Doc>> = _class
+
+  if (attr.castRequest != null) {
+    const castDoc = hierarchy.as(card, attr.castRequest)
+    value = getObjectValue(attr.key.substring(attr.castRequest.length + 1), castDoc)
+    displayDoc = castDoc
+    displayClass = attr.castRequest
+  } else if (attr.key.startsWith('$lookup.')) {
+    const lookupKey = attr.key.replace('$lookup.', '')
+    const lookupParts = lookupKey.split('.')
+    const cardWithLookup = card as any
+    const lookupObj = cardWithLookup.$lookup?.[lookupParts[0]]
+    if (lookupObj !== undefined && lookupObj !== null) {
+      if (lookupParts.length > 1) {
+        value = getObjectValue(lookupParts.slice(1).join('.'), lookupObj)
+      } else {
+        value = lookupObj
+      }
+      if (typeof value === 'object' && value !== null && '_class' in value) {
+        displayDoc = value as Doc
+        displayClass = displayDoc._class
+      }
+    } else {
+      value = undefined
+    }
+  } else {
+    value = getObjectValue(attr.key, card)
+  }
+
+  const attribute = attr.attribute ?? hierarchy.findAttribute(displayClass, attr.key)
+  return { value, displayDoc, displayClass, attribute }
+}
+
 /**
  * Format a custom attribute value for markdown display
  * Handles various types: string, number, boolean, arrays, references
@@ -108,97 +185,27 @@ export async function formatCustomAttributeValue (
 }
 
 /**
- * Format a single attribute value for display (used by table builders)
+ * Fallback formatting when no formatter returns a value. Uses current formatting logic.
  */
-export async function formatValue (
+async function formatValueFallback (
+  value: any,
   attr: AttributeModel,
+  ctx: DisplayContext,
   card: Doc,
   hierarchy: Hierarchy,
-  _class: Ref<Class<Doc>>,
   language: string | undefined,
-  isFirstColumn: boolean = false,
-  userCache?: Map<PersonId, string>,
-  customFormatter?: ValueFormatter
+  userCache?: Map<PersonId, string>
 ): Promise<string> {
-  // Try custom formatter first (from actionProps)
-  if (customFormatter !== undefined) {
-    const formattedValue = await customFormatter(attr, card, hierarchy, _class, language)
-    if (formattedValue !== undefined) {
-      return formattedValue
-    }
-  }
-
-  // Try mixin-based formatter (MarkdownValueFormatter on the class)
-  const formatterMixin = hierarchy.classHierarchyMixin(_class, converter.mixin.MarkdownValueFormatter)
-  if (formatterMixin?.formatter !== undefined) {
-    const formatter = await getResource(formatterMixin.formatter)
-    const result = await formatter(attr, card, hierarchy, _class, language)
-    if (result !== undefined) {
-      return result
-    }
-  }
-
-  // Fall back to registered value formatters
-  const formatters = getFormattersForClass(hierarchy, _class)
-  for (const formatter of formatters) {
-    const formattedValue = await formatter(attr, card, hierarchy, _class, language)
-    if (formattedValue !== undefined) {
-      return formattedValue
-    }
-  }
-
-  let value: any
-  if (attr.castRequest != null) {
-    value = getObjectValue(attr.key.substring(attr.castRequest.length + 1), hierarchy.as(card, attr.castRequest))
-  } else {
-    if (attr.key.startsWith('$lookup.')) {
-      const lookupKey = attr.key.replace('$lookup.', '')
-      const lookupParts = lookupKey.split('.')
-      const cardWithLookup = card as any
-      const lookupObj = cardWithLookup.$lookup?.[lookupParts[0]]
-      if (lookupObj !== undefined && lookupObj !== null) {
-        if (lookupParts.length > 1) {
-          value = getObjectValue(lookupParts.slice(1).join('.'), lookupObj)
-        } else {
-          value = lookupObj
-        }
-      } else {
-        value = undefined
-      }
-    } else {
-      value = getObjectValue(attr.key, card)
-    }
-  }
-
-  if (attr.key === '' && !isFirstColumn) {
-    const labelStr = typeof attr.label === 'string' ? attr.label : ''
-    const isCustomAttribute = labelStr.startsWith('custom')
-
-    if (isCustomAttribute) {
-      const customValue = (card as any)[labelStr]
-      if (customValue === null || customValue === undefined) {
-        return ''
-      }
-
-      const docClass = card._class
-      let customAttr = hierarchy.findAttribute(docClass, labelStr)
-
-      if (customAttr === undefined) {
-        const allAttrs = hierarchy.getAllAttributes(docClass)
-        customAttr = allAttrs.get(labelStr)
-      }
-
-      return await formatCustomAttributeValue(customValue, customAttr, card, hierarchy, language)
-    }
-
-    return ''
-  }
-
   if (value === null || value === undefined) {
     return ''
   }
 
-  const attribute = attr.attribute ?? hierarchy.findAttribute(_class, attr.key)
+  const isCustomAttribute = attr.key === '' && typeof attr.label === 'string' && attr.label.startsWith('custom')
+  if (isCustomAttribute) {
+    return await formatCustomAttributeValue(value, ctx.attribute, card, hierarchy, language)
+  }
+
+  const attribute = ctx.attribute
   const attrType = attribute?.type
 
   if (typeof value === 'number' && attrType?._class === core.class.TypeTimestamp) {
@@ -255,4 +262,51 @@ export async function formatValue (
   }
 
   return String(value)
+}
+
+/**
+ * Format a single attribute value for display (used by table builders).
+ */
+export async function formatValue (
+  attr: AttributeModel,
+  card: Doc,
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  language: string | undefined,
+  isFirstColumn: boolean = false,
+  userCache?: Map<PersonId, string>,
+  customFormatter?: ValueFormatter
+): Promise<string> {
+  const ctx = resolveDisplayContext(attr, card, hierarchy, _class, isFirstColumn)
+  if (ctx === null) {
+    return ''
+  }
+
+  const { value, displayDoc, displayClass } = ctx
+
+  if (customFormatter !== undefined) {
+    const formattedValue = await customFormatter(attr, displayDoc, hierarchy, displayClass, language)
+    if (formattedValue !== undefined) {
+      return formattedValue
+    }
+  }
+
+  const formatterMixin = hierarchy.classHierarchyMixin(displayClass, converter.mixin.MarkdownValueFormatter)
+  if (formatterMixin?.formatter !== undefined) {
+    const formatter = await getResource(formatterMixin.formatter)
+    const result = await formatter(attr, displayDoc, hierarchy, displayClass, language)
+    if (result !== undefined) {
+      return result
+    }
+  }
+
+  const formatters = getFormattersForClass(hierarchy, displayClass)
+  for (const formatter of formatters) {
+    const formattedValue = await formatter(attr, displayDoc, hierarchy, displayClass, language)
+    if (formattedValue !== undefined) {
+      return formattedValue
+    }
+  }
+
+  return await formatValueFallback(value, attr, ctx, card, hierarchy, language, userCache)
 }
