@@ -1070,6 +1070,11 @@ export function defineNotifications (builder: Builder): void {
   builder.mixin(documents.class.ControlledDocument, core.class.Class, activity.mixin.ActivityDoc, {})
 
   builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
+    ofClass: documents.class.ControlledDocument,
+    components: { input: { component: chunter.component.ChatMessageInput } }
+  })
+
+  builder.createDoc(activity.class.ActivityExtension, core.space.Model, {
     ofClass: documents.class.DocumentComment,
     components: { input: { component: chunter.component.ChatMessageInput } }
   })
