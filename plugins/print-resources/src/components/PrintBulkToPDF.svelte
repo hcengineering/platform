@@ -126,7 +126,7 @@
               <div class="flex flex-col gap-1 w-full">
                 {#each results as result}
                   <div
-                    class="flex items-center justify-between gap-2 py-1 border-b border-gray-200 dark:border-gray-700"
+                    class="flex items-center justify-between gap-2 py-1 w-full"
                   >
                     <span class="truncate flex-1 min-w-0 secondary-textColor" title={result.title ?? ''}>
                       {#if result.error !== undefined}
