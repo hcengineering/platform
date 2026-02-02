@@ -18,7 +18,7 @@
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "node ../../common/scripts/esbuild.js --external=ws",
-    "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/media",
+    "docker:build": "node ../../common/scripts/docker_build.js hardcoreeng/media",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/media staging",
     "docker:abuild": "docker build -t hardcoreeng/media . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/media",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/media",

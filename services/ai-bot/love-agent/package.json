@@ -13,7 +13,7 @@
   "type": "module",
   "scripts": {
     "build": "node esbuild.config.js",
-    "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/love-agent",
+    "docker:build": "node ../../../common/scripts/docker_build.js hardcoreeng/love-agent",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/love-agent",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint --fix src/**/*.ts",

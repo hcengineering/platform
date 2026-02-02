@@ -18,7 +18,7 @@
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "node ../../../common/scripts/esbuild.js",
-    "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/notification",
+    "docker:build": "node ../../../common/scripts/docker_build.js hardcoreeng/notification",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/notification staging",
     "docker:abuild": "docker build -t hardcoreeng/notification . --platform=linux/arm64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/notification",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/notification",

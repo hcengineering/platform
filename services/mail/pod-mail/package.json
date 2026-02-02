@@ -18,7 +18,7 @@
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "node ../../../common/scripts/esbuild.js",
-    "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/mail",
+    "docker:build": "node ../../../common/scripts/docker_build.js hardcoreeng/mail",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/mail staging",
     "docker:abuild": "docker build -t hardcoreeng/mail . --platform=linux/arm64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/mail",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/mail",

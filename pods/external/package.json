@@ -5,8 +5,8 @@
   "license": "EPL-2.0",
   "scripts": {
     "_phase:docker-build": "rushx docker:build",
-    "docker:build": "sh bin/build.sh",
-    "docker:push": "sh bin/push.sh",
+    "docker:build": "node bin/build.js",
+    "docker:push": "node bin/push.js",
     "format": "true"
   },
   "devDependencies": {

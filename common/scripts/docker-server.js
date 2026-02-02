@@ -13,25 +13,11 @@
 // limitations under the License.
 //
 
-const fs = require('fs')
 const path = require('path')
-const execSync = require('child_process').execSync
+const { spawnSync } = require('child_process')
 
-function main() {
-  try {
-    execSync('git describe --tags --abbrev=0', { encoding: 'utf8' })
-  } catch (err) {
-    console.log('"0.6.0"')
-    return
-  }
-  let version
-  try {
-    const versionFilePath = path.resolve(__dirname, 'version.txt')
-    version = fs.readFileSync(versionFilePath, 'utf8').trim()
-  } catch (error) {
-    version = '"0.6.0"'
-  }
-  console.log(version)
-}
-
-main()
+const repoRoot = path.resolve(__dirname, '..', '..')
+const args = ['docker:build', '-p', '20', '--to', '@hcengineering/pod-server', '--to', '@hcengineering/tool']
+const result = spawnSync('rush', args, { stdio: 'inherit', cwd: repoRoot })
+// Mimic "|| true" - always exit 0 so rush docker-server can continue to docker:up:server
+process.exit(0)

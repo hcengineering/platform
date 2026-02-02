@@ -14,7 +14,7 @@
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "node ../../common/scripts/esbuild.js --entry=src/__start.ts --keep-names=true --sourcemap=external --external=*.node --external=snappy --external=bufferutil",
-    "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/collaborator",
+    "docker:build": "node ../../common/scripts/docker_build.js hardcoreeng/collaborator",
     "docker:tbuild": "docker build -t hardcoreeng/collaborator . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/collaborator",
     "docker:abuild": "docker build -t hardcoreeng/collaborator . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/collaborator",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/collaborator staging",

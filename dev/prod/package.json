@@ -5,9 +5,9 @@
   "license": "EPL-2.0",
   "scripts": {
     "_phase:package": "rushx package",
-    "_phase:validate": "rm -rf ./types && compile validate",
-    "package": "rm -rf ./dist && cross-env NODE_ENV=production webpack --stats-error-details && echo 'done'",
-    "analyze": "rm -rf ./dist && cross-env NODE_ENV=production webpack --profile --json > stats.json",
+    "_phase:validate": "node -e \"require('fs').rmSync('./types',{recursive:true,force:true})\" && compile validate",
+    "package": "node -e \"require('fs').rmSync('./dist',{recursive:true,force:true})\" && cross-env NODE_ENV=production webpack --stats-error-details && echo done",
+    "analyze": "node -e \"require('fs').rmSync('./dist',{recursive:true,force:true})\" && cross-env NODE_ENV=production webpack --profile --json > stats.json",
     "show": "webpack-bundle-analyzer stats.json dist",
     "dev-server": "cross-env USE_CACHE=false CLIENT_TYPE=dev-server webpack serve",
     "dev-server-test": "cross-env USE_CACHE=false CLIENT_TYPE=dev-server-test webpack serve",

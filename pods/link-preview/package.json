@@ -18,7 +18,7 @@
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "node ../../common/scripts/esbuild.js --keep-names=true --sourcemap=external",
-    "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/link-preview",
+    "docker:build": "node ../../common/scripts/docker_build.js hardcoreeng/link-preview",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/link-preview staging",
     "docker:abuild": "docker build -t hardcoreeng/link-preview . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/link-preview",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/link-preview",

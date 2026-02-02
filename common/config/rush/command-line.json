@@ -245,7 +245,7 @@
       "summary": "Build docker with platform",
       "description": "use to build all docker containers required for platform",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "./common/scripts/docker.sh"
+      "shellCommand": "node common/scripts/docker.js"
     },
     {
       "commandKind": "global",
@@ -253,7 +253,7 @@
       "summary": "Build docker with platform",
       "description": "use to build all docker containers required for platform",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "./common/scripts/docker-server.sh && rush docker:up:server"
+      "shellCommand": "node common/scripts/docker-server.js && rush docker:up:server"
     },
     {
       "commandKind": "global",
@@ -261,7 +261,7 @@
       "summary": "Up development build",
       "description": "Up development build",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "cd ./dev && docker compose up -d --force-recreate"
+      "shellCommand": "docker compose -f dev/docker-compose.yaml up -d --force-recreate"
     },
     {
       "commandKind": "global",
@@ -269,7 +269,7 @@
       "summary": "Up development build",
       "description": "Up development build",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "cd ./dev && docker compose up -d --force-recreate transactor_cockroach"
+      "shellCommand": "docker compose -f dev/docker-compose.yaml up -d --force-recreate transactor_cockroach"
     },
     {
       "commandKind": "global",
@@ -277,7 +277,7 @@
       "summary": "Up development build",
       "description": "Up development build",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "cd ./dev/local-mongo && docker compose -p dev up -d --force-recreate"
+      "shellCommand": "docker compose -f dev/local-mongo/docker-compose.yaml -p dev up -d --force-recreate"
     },
     {
       "commandKind": "global",

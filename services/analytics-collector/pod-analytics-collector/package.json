@@ -18,7 +18,7 @@
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "node ../../../common/scripts/esbuild.js",
-    "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/analytics-collector",
+    "docker:build": "node ../../../common/scripts/docker_build.js hardcoreeng/analytics-collector",
     "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/analytics-collector staging",
     "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/analytics-collector",
     "docker:tbuild": "rush bundle --to @hcengineering/pod-analytics-collector && docker build -t hardcoreeng/analytics-collector . --platform=linux/amd64 && ../../../common/scripts/docker_tag_push.sh hardcoreeng/analytics-collector",

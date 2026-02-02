@@ -18,7 +18,7 @@
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
-    "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/worker .",
+    "docker:build": "node ../../common/scripts/docker_build.js hardcoreeng/worker .",
     "docker:tbuild": "docker build -t hardcoreeng/worker . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/worker",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/worker staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/worker",

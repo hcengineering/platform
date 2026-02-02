@@ -13,19 +13,25 @@
 // limitations under the License.
 //
 
-const exec = require('child_process').exec
+const execSync = require('child_process').execSync
 
-exec('git describe --tags --abbrev=0', (err, stdout, stderr) => {
-  if (err !== null) {
-    console.log('"0.6.0"')
-  }
-  const rawVersion = stdout.trim().replace('v', '').replace('s', '').split('.')
-  if (rawVersion.length === 3) {
-    const version = {
-      major: parseInt(rawVersion[0]),
-      minor: parseInt(rawVersion[1]),
-      patch: parseInt(rawVersion[2])
+function main() {
+  try {
+    const stdout = execSync('git describe --tags --abbrev=0', { encoding: 'utf8' })
+    const rawVersion = stdout.trim().replace('v', '').replace('s', '').split('.')
+    if (rawVersion.length === 3) {
+      const version = {
+        major: parseInt(rawVersion[0]),
+        minor: parseInt(rawVersion[1]),
+        patch: parseInt(rawVersion[2])
+      }
+      console.log(`"${version.major}.${version.minor}.${version.patch}"`)
+      return
     }
-    console.log(`"${version.major}.${version.minor}.${version.patch}"`)
+  } catch (err) {
+    // git failed or no tags
   }
-})
+  console.log('"0.6.0"')
+}
+
+main()
