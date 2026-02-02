@@ -1046,7 +1046,7 @@ export function createModel (builder: Builder): void {
         label: print.string.PrintToPDF,
         icon: print.icon.Print,
         category: view.category.General,
-        input: 'focus', // NOTE: should only work for one doc for now, not bulk
+        input: 'selection',
         target,
         context: { mode: ['context', 'browser'], group: 'tools' },
         visibilityTester: documents.function.CanPrintDocument,
