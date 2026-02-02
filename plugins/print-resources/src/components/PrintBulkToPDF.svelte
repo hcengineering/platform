@@ -18,7 +18,7 @@
   import type { Blob, Doc, Ref } from '@hcengineering/core'
   import presentation, { Card, getClient, PDFViewer } from '@hcengineering/presentation'
   import view from '@hcengineering/view'
-  import { Button, Label, Loading } from '@hcengineering/ui'
+  import { Button, Label, Loading, Scroller } from '@hcengineering/ui'
 
   import print from '../plugin'
   import { type PdfResult, printAll, downloadPdf, downloadAllPdfs } from '../printUtils'
@@ -121,40 +121,44 @@
             </div>
           </div>
         {:else}
-          <div class="flex-1 min-h-0 max-h-64 overflow-auto">
-            <div class="flex flex-col gap-1 w-full">
-              {#each results as result}
-                <div class="flex items-center justify-between gap-2 py-1 border-b border-gray-200 dark:border-gray-700">
-                  <span class="truncate flex-1 min-w-0 secondary-textColor" title={result.title ?? ''}>
-                    {#if result.error !== undefined}
-                      {result.title} – <Label label={print.string.PrintFailed} />
-                    {:else}
-                      {result.title}
-                    {/if}
-                  </span>
-                  <div class="flex gap-1 shrink-0 w-[11rem] justify-end">
-                    {#if result.error === undefined}
-                      <Button
-                        kind="ghost"
-                        size="small"
-                        label={presentation.string.Download}
-                        on:click={() => {
-                          downloadPdf(result)
-                        }}
-                      />
-                      <Button
-                        kind="ghost"
-                        size="small"
-                        label={view.string.Open}
-                        on:click={() => {
-                          openPdf(result)
-                        }}
-                      />
-                    {/if}
+          <div class="results-scroller">
+            <Scroller>
+              <div class="flex flex-col gap-1 w-full">
+                {#each results as result}
+                  <div
+                    class="flex items-center justify-between gap-2 py-1 border-b border-gray-200 dark:border-gray-700"
+                  >
+                    <span class="truncate flex-1 min-w-0 secondary-textColor" title={result.title ?? ''}>
+                      {#if result.error !== undefined}
+                        {result.title} – <Label label={print.string.PrintFailed} />
+                      {:else}
+                        {result.title}
+                      {/if}
+                    </span>
+                    <div class="flex gap-1 shrink-0 w-[11rem] justify-end">
+                      {#if result.error === undefined}
+                        <Button
+                          kind="ghost"
+                          size="small"
+                          label={presentation.string.Download}
+                          on:click={() => {
+                            downloadPdf(result)
+                          }}
+                        />
+                        <Button
+                          kind="ghost"
+                          size="small"
+                          label={view.string.Open}
+                          on:click={() => {
+                            openPdf(result)
+                          }}
+                        />
+                      {/if}
+                    </div>
                   </div>
-                </div>
-              {/each}
-            </div>
+                {/each}
+              </div>
+            </Scroller>
           </div>
           {#if successCount > 0}
             <div class="flex justify-end pt-2">
@@ -188,3 +192,12 @@
     on:fullsize
   />
 {/if}
+
+<style lang="scss">
+  .results-scroller {
+    max-height: 16rem;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+</style>
