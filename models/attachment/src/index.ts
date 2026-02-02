@@ -22,7 +22,7 @@ import type {
   Photo,
   SavedAttachments
 } from '@hcengineering/attachment'
-import { IndexKind, type Blob, type Class, type Doc, type Domain, type Ref } from '@hcengineering/core'
+import { AccountRole, IndexKind, type Blob, type Class, type Doc, type Domain, type Ref } from '@hcengineering/core'
 import {
   Hidden,
   Index,
@@ -122,6 +122,10 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(attachment.class.Attachment, core.class.Class, view.mixin.CollectionEditor, {
     editor: attachment.component.Attachments
+  })
+
+  builder.mixin(attachment.class.Attachment, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
   })
 
   builder.mixin(attachment.class.Photo, core.class.Class, view.mixin.CollectionEditor, {
