@@ -279,6 +279,8 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(activity.class.Reaction, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest,
+    updateAccessLevel: AccountRole.Guest,
     removeAccessLevel: AccountRole.Guest
   })
 

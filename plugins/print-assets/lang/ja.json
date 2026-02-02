@@ -1,5 +1,8 @@
 {
   "string": {
-    "PrintToPDF": "PDFとして印刷"
+    "PrintToPDF": "PDFとして印刷",
+    "PrintingDocumentOf": "ドキュメント {current} / {total} を印刷中",
+    "DownloadAll": "すべてダウンロード",
+    "PrintFailed": "印刷に失敗しました"
   }
 }
