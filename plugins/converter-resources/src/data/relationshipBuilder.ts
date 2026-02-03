@@ -42,6 +42,9 @@ export async function rebuildRelationshipTableViewModel (
     const docIds = docs.map((d) => d._id)
     const query = { _id: { $in: docIds } }
     docsWithAssociations = await client.findAll(cardClass, query, { lookup, associations })
+    // Preserve order of input docs (findAll does not guarantee order)
+    const idToIndex = new Map(docs.map((d, i) => [d._id, i]))
+    docsWithAssociations.sort((a, b) => (idToIndex.get(a._id) ?? Infinity) - (idToIndex.get(b._id) ?? Infinity))
   }
 
   for (const parentDoc of docsWithAssociations) {
