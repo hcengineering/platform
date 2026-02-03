@@ -15,7 +15,7 @@
 //
 -->
 <script lang="ts">
-  import { Html, Modal, ButtonIcon, IconClose, IconMaximize, IconMinimize } from '@hcengineering/ui'
+  import { Html, Modal, ButtonIcon, IconClose, IconMaximize, IconMinimize, Scroller } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let svg: string
@@ -24,15 +24,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<Modal
-  type={'type-component'}
-  padding={'0.5rem'}
-  bottomPadding={'0'}
-  on:fullsize
-  on:close={() => {
-    dispatch('close')
-  }}
->
+<Modal type={'type-component'} padding={'0.5rem'} bottomPadding={'0'} on:fullsize on:close>
   <svelte:fragment slot="beforeTitle">
     <ButtonIcon
       icon={IconClose}
@@ -57,24 +49,25 @@
     <div class="hulyHeader-divider short no-print" />
   </svelte:fragment>
 
-  <div class="mermaid-container">
-    <Html value={svg} />
-  </div>
+  <Scroller horizontal stickedScrollBars thinScrollBars>
+    <div class="mermaid-container">
+      <Html value={svg} />
+    </div>
+  </Scroller>
 </Modal>
 
 <style>
   .mermaid-container {
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 100%;
+    align-items: flex-start;
     width: 100%;
-    overflow: auto;
   }
 
   .mermaid-container :global(svg) {
     max-width: 100%;
     height: auto;
     display: block;
+    margin: 0 auto;
   }
 </style>
