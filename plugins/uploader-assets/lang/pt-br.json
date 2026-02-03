@@ -1,0 +1,15 @@
+{
+  "string": {
+    "Cancel": "Cancelar",
+    "Retry": "Reintentar",
+    "UploadFiles": "Carregar Arquivos",
+    "UploadFolders": "Carregar Pastas",
+    "UploadingTo": "Enviando {files, plural, =1 {# archivo} other {# archivos}} a"
+  },
+  "status": {
+    "Error": "Error",
+    "Waiting": "Esperando",
+    "Uploading": "Enviando",
+    "Completed": "Completado"
+  }
+}
