@@ -1198,12 +1198,12 @@ export async function createWorkspaceRecord (
 
 export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite, email: string): Promise<WorkspaceUuid> {
   if (invite.remainingUses === 0) {
-    ctx.error('Invite limit exceeded', { email, ...invite })
+    ctx.warn('Invite limit exceeded', { email, ...invite })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
   if (invite.expiresOn > 0 && invite.expiresOn < Date.now()) {
-    ctx.error('Invite link expired', { email, ...invite })
+    ctx.warn('Invite link expired', { email, ...invite })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.ExpiredLink, {}))
   }
 
@@ -1220,7 +1220,7 @@ export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite,
   // }
 
   if (invite.email != null && invite.email.trim().length > 0 && invite.email !== email) {
-    ctx.error("Invite doesn't allow this email address", { email, ...invite })
+    ctx.warn("Invite doesn't allow this email address", { email, ...invite })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 

@@ -86,7 +86,8 @@ jest.mock('@hcengineering/server-token', () => ({
 describe('account operations', () => {
   const mockCtx = {
     error: jest.fn(),
-    info: jest.fn()
+    info: jest.fn(),
+    warn: jest.fn()
   } as unknown as MeasureContext
 
   const mockBranding = null
@@ -503,7 +504,8 @@ describe('account operations', () => {
   describe('getLoginInfoByToken', () => {
     const mockCtx = {
       error: jest.fn(),
-      info: jest.fn()
+      info: jest.fn(),
+      warn: jest.fn()
     } as unknown as MeasureContext
 
     const mockBranding = null
@@ -2588,7 +2590,8 @@ describe('account operations', () => {
 describe('getSubscriptions', () => {
   const mockCtx = {
     error: jest.fn(),
-    info: jest.fn()
+    info: jest.fn(),
+    warn: jest.fn()
   } as unknown as MeasureContext
 
   const mockBranding = null
