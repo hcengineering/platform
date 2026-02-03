@@ -51,7 +51,7 @@
     "ExportOnlyEffective": "Export only documents with effective status",
     "ExportFilterMode": "Documents to export",
     "ExportFilterEffectiveOnly": "Export only effective documents",
-    "ExportFilterSkipArchivedObsolete": "All documents except archived and outdated",
+    "ExportFilterSkipArchivedObsolete": "All documents except archived and obsolete",
     "ExportFilterAll": "All documents",
     "ExportResultRecordTitle": "Export of documents from {workspace} workspace ({date})"
   }
