@@ -65,6 +65,7 @@
       min-width: 0;
       line-height: 150%;
       color: var(--theme-caption-color);
+      text-rendering: optimizeLegibility;
 
       &.accentHeader { font-size: 1rem; }
     }
