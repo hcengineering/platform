@@ -886,6 +886,7 @@ a.no-line {
   font-size: 1rem;
   color: var(--theme-caption-color);
   user-select: none;
+  text-rendering: optimizeLegibility;
 }
 .trans-title {
   text-transform: uppercase;
@@ -893,6 +894,7 @@ a.no-line {
   font-size: .75rem;
   color: var(--theme-dark-color);
   user-select: none;
+  text-rendering: optimizeLegibility;
 }
 .text-16px { font-size: 16px; }
 .text-xs { font-size: .625rem; }
