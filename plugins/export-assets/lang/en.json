@@ -47,7 +47,6 @@
     "SelectSpace": "Select space",
     "NoSelectedDocuments": "No documents selected",
     "RequestPermissionToImport": "Please request permission from the target workspace owner to import documents.",
-    "SkipDeletedObsolete": "Skip archived or obsolete documents",
     "ExportOnlyEffective": "Export only documents with effective status",
     "ExportFilterMode": "Documents to export",
     "ExportFilterEffectiveOnly": "Export only effective documents",

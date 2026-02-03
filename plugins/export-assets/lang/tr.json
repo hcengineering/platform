@@ -47,7 +47,6 @@
     "SelectSpace": "Alan seç",
     "NoSelectedDocuments": "Seçili belge yok",
     "RequestPermissionToImport": "Belgeleri içe aktarmak için lütfen hedef çalışma alanı sahibinden izin isteyin.",
-    "SkipDeletedObsolete": "Arşivlenmiş veya geçersiz belgeleri atla",
     "ExportOnlyEffective": "Yalnızca geçerli durumdaki belgeleri dışa aktar",
     "ExportFilterMode": "Dışa aktarılacak belgeler",
     "ExportFilterEffectiveOnly": "Yalnızca geçerli belgeler",

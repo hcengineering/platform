@@ -47,7 +47,6 @@
     "SelectSpace": "Selecionar espaço",
     "NoSelectedDocuments": "Nenhum documento selecionado",
     "RequestPermissionToImport": "Por favor, solicite permissão ao proprietário do espaço de trabalho de destino para importar documentos.",
-    "SkipDeletedObsolete": "Pular documentos arquivados ou obsoletos",
     "ExportOnlyEffective": "Exportar apenas documentos com status efetivo",
     "ExportFilterMode": "Documentos a exportar",
     "ExportFilterEffectiveOnly": "Apenas documentos efetivos",
