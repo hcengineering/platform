@@ -125,6 +125,16 @@ export interface ProcessToDo extends ToDo {
   results?: UserResult[]
 }
 
+export interface ApproveRequest extends ProcessToDo {
+  card: Ref<Card>
+
+  approved?: boolean
+
+  reason?: string
+
+  group: string
+}
+
 export type MethodParams<T extends Doc> = {
   [P in keyof T]?: ObjQueryType<T[P]> | string
 } & DocumentUpdate<T> &
@@ -214,6 +224,7 @@ export default plugin(processId, {
     Process: '' as Ref<Class<Process>>,
     Execution: '' as Ref<Class<Execution>>,
     ProcessToDo: '' as Ref<Class<ProcessToDo>>,
+    ApproveRequest: '' as Ref<Class<ApproveRequest>>,
     Method: '' as Ref<Class<Method<Doc>>>,
     State: '' as Ref<Class<State>>,
     ProcessFunction: '' as Ref<Class<ProcessFunction>>,
@@ -233,7 +244,10 @@ export default plugin(processId, {
     UpdateCard: '' as Ref<Method<Card>>,
     CreateCard: '' as Ref<Method<Card>>,
     AddRelation: '' as Ref<Method<Association>>,
-    AddTag: '' as Ref<Method<Tag>>
+    AddTag: '' as Ref<Method<Tag>>,
+    RequestApproval: '' as Ref<Method<ApproveRequest>>,
+    LockCard: '' as Ref<Method<Card>>,
+    LockSection: '' as Ref<Method<Card>>
   },
   trigger: {
     OnCardUpdate: '' as Ref<Trigger>, // in fact WhenCardMatches, should migrate in future
@@ -245,7 +259,9 @@ export default plugin(processId, {
     OnExecutionStart: '' as Ref<Trigger>,
     OnExecutionContinue: '' as Ref<Trigger>,
     OnTime: '' as Ref<Trigger>,
-    OnEvent: '' as Ref<Trigger>
+    OnEvent: '' as Ref<Trigger>,
+    OnApproveRequestApproved: '' as Ref<Trigger>,
+    OnApproveRequestRejected: '' as Ref<Trigger>
   },
   triggerCheck: {
     ToDo: '' as Resource<CheckFunc>,
@@ -254,7 +270,9 @@ export default plugin(processId, {
     SubProcessesDoneCheck: '' as Resource<CheckFunc>,
     SubProcessMatchCheck: '' as Resource<CheckFunc>,
     Time: '' as Resource<CheckFunc>,
-    OnEventCheck: '' as Resource<CheckFunc>
+    OnEventCheck: '' as Resource<CheckFunc>,
+    ApproveRequestApproved: '' as Resource<CheckFunc>,
+    ApproveRequestRejected: '' as Resource<CheckFunc>
   },
   string: {
     Method: '' as IntlString,
@@ -341,6 +359,7 @@ export default plugin(processId, {
     EmptyArray: '' as Ref<ProcessFunction>,
     CurrentDate: '' as Ref<ProcessFunction>,
     ExportProcess: '' as Resource<ExportFunc>,
-    CheckProcessSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
+    CheckProcessSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>,
+    CheckRequestsSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
   }
 })

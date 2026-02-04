@@ -46,6 +46,7 @@ import workbench from '@hcengineering/model-workbench'
 import notification from '@hcengineering/notification'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import {
+  type ApproveRequest,
   type CheckFunc,
   type ContextId,
   type CreatedContext,
@@ -204,6 +205,19 @@ export class TProcessToDo extends TToDo implements ProcessToDo {
     withRollback!: boolean
 }
 
+@Model(process.class.ApproveRequest, process.class.ProcessToDo)
+export class TApproveRequest extends TProcessToDo implements ApproveRequest {
+  @Prop(TypeBoolean(), process.string.IsApproved)
+    approved?: boolean
+
+  @Prop(TypeString(), process.string.RejectionReason)
+    reason?: string
+
+  group!: string
+
+  card!: Ref<Card>
+}
+
 @Model(process.class.Method, core.class.Doc, DOMAIN_MODEL)
 export class TMethod extends TDoc implements Method<Doc> {
   label!: IntlString
@@ -290,6 +304,7 @@ export function createModel (builder: Builder): void {
     TProcess,
     TExecution,
     TProcessToDo,
+    TApproveRequest,
     TMethod,
     TState,
     TProcessFunction,
@@ -321,6 +336,28 @@ export function createModel (builder: Builder): void {
       }
     },
     process.ids.ProcessToDoCreated
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      allowedForAuthor: true,
+      label: process.string.ApproveRequest,
+      group: time.ids.TimeNotificationGroup,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: process.class.ApproveRequest,
+      onlyOwn: true,
+      defaultEnabled: true,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
+      }
+    },
+    process.ids.ApproveRequestCreated
   )
 
   createAction(builder, {
@@ -412,6 +449,42 @@ export function createModel (builder: Builder): void {
   builder.mixin(process.class.State, core.class.Class, view.mixin.AttributePresenter, {
     presenter: process.component.StatePresenter
   })
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      variant: 'cardRequests',
+      attachTo: process.class.ApproveRequest,
+      descriptor: view.viewlet.List,
+      props: {
+        baseMenuClass: process.class.ApproveRequest
+      },
+      viewOptions: {
+        groupBy: ['user', 'approved'],
+        orderBy: [
+          ['approved', SortingOrder.Descending],
+          ['modifiedOn', SortingOrder.Descending],
+          ['createdOn', SortingOrder.Descending]
+        ],
+        other: []
+      },
+      configOptions: {
+        strict: true
+      },
+      config: [
+        {
+          key: '',
+          label: process.string.ApproveRequest,
+          presenter: process.component.ApproveRequestPresenter
+        },
+        'user',
+        'approved',
+        'reason'
+      ]
+    },
+    process.viewlet.CardRequests
+  )
 
   builder.createDoc(
     view.class.Viewlet,
@@ -601,6 +674,12 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: card.extensions.EditCardExtension,
+    component: process.component.RequestsExtension,
+    props: {}
+  })
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: card.extensions.EditCardHeaderExtension,
     component: process.component.ProcessesHeaderExtension,
     props: {}
@@ -621,6 +700,19 @@ export function createModel (builder: Builder): void {
       navigation: []
     },
     process.section.CardProcesses
+  )
+
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: process.string.ApproveRequest,
+      component: process.component.RequestsCardSection,
+      checkVisibility: process.function.CheckRequestsSectionVisibility,
+      order: 360,
+      navigation: []
+    },
+    process.section.CardApproveRequest
   )
 
   builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {

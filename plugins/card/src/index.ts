@@ -57,9 +57,10 @@ export interface Card extends Doc, IconProps, VersionableDoc {
   parentInfo: ParentInfo[]
   parent?: Ref<Card> | null
   rank: Rank
-  readonly?: boolean
 
   peerId?: string
+
+  readonlySections?: Ref<MasterTag>[]
 }
 
 export interface CardSpace extends TypedSpace {

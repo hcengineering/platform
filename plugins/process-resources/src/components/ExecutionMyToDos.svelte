@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import plugin from '../plugin'
-  import { Execution, ProcessToDo } from '@hcengineering/process'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import { Button, Component } from '@hcengineering/ui'
-  import time from '@hcengineering/time'
   import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ApproveRequest, Execution, ProcessToDo } from '@hcengineering/process'
+  import { Button } from '@hcengineering/ui'
+  import plugin from '../plugin'
+  import ApproveRequestButtons from './ApproveRequestButtons.svelte'
 
   export let value: Execution
 
@@ -47,8 +47,15 @@
       doneOn: new Date().getTime()
     })
   }
+
+  function isRequest (todo: ProcessToDo): todo is ApproveRequest {
+    return todo._class === plugin.class.ApproveRequest
+  }
 </script>
 
 {#each todos as todo (todo._id)}
+  {#if isRequest(todo)}
+    <ApproveRequestButtons {todo} card={value.card} />
+  {/if}
   <Button label={getEmbeddedLabel(todo.title)} on:click={() => checkTodo(todo)} />
 {/each}

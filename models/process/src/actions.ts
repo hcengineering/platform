@@ -35,6 +35,23 @@ export function defineMethods (builder: Builder): void {
     process.class.Method,
     core.space.Model,
     {
+      label: process.string.RequestApproval,
+      objectClass: process.class.ApproveRequest,
+      editor: process.component.ApproveRequestEditor,
+      presenter: process.component.ApproveRequestPresenter,
+      createdContext: {
+        _class: process.class.ApproveRequest,
+        nameField: 'title'
+      },
+      requiredParams: ['user']
+    },
+    process.method.RequestApproval
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
       label: process.string.CreateToDo,
       editor: process.component.ToDoEditor,
       objectClass: process.class.ProcessToDo,
@@ -102,5 +119,31 @@ export function defineMethods (builder: Builder): void {
       requiredParams: ['_id']
     },
     process.method.AddTag
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.LockCard,
+      objectClass: card.class.Card,
+      requiredParams: [],
+      createdContext: null
+    },
+    process.method.LockCard
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.LockSection,
+      objectClass: card.class.Card,
+      editor: process.component.LockSectionEditor,
+      presenter: process.component.LockSectionPresenter,
+      requiredParams: ['_id'],
+      createdContext: null
+    },
+    process.method.LockSection
   )
 }
