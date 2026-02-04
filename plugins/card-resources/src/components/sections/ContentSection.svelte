@@ -52,7 +52,7 @@
   <div class="content" class:hidden>
     <Content
       {doc}
-      readonly={readonly || updatePermissionForbidden}
+      readonly={readonly || updatePermissionForbidden || doc.readonlySections?.includes(doc._class)}
       content={contentDiv}
       showToc={false}
       on:loaded

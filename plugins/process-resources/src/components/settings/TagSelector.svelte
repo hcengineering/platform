@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import cardPlugin, { Tag } from '@hcengineering/card'
+  import cardPlugin, { Tag as MasterTag } from '@hcengineering/card'
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Process } from '@hcengineering/process'
@@ -21,7 +21,8 @@
   import { createEventDispatcher } from 'svelte'
 
   export let process: Process
-  export let tag: Ref<Tag> | undefined = undefined
+  export let tag: Ref<MasterTag> | undefined = undefined
+  export let includeBase: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -29,14 +30,14 @@
   const dispatch = createEventDispatcher()
 
   function open (e: MouseEvent): void {
-    const res: Tag[] = []
+    const res = new Set<MasterTag>(includeBase ? [hierarchy.getClass(process.masterTag)] : [])
     const ancestors = hierarchy.getAncestors(process.masterTag)
     const tags = client.getModel().findAllSync(cardPlugin.class.Tag, {})
     for (const p of tags) {
       try {
         const base = hierarchy.getBaseClass(p._id)
         if (process.masterTag === base || ancestors.includes(base)) {
-          res.push(p)
+          res.add(p)
         }
       } catch (err) {
         console.log('error', err, p._id)
@@ -44,7 +45,6 @@
     }
     const items: SelectPopupValueType[] = []
     res.forEach((cl) => {
-      if (cl._class !== cardPlugin.class.Tag) return
       items.push({
         id: cl._id,
         label: cl.label,

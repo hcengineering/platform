@@ -38,6 +38,7 @@
   import plugin from '../../plugin'
   import ExecutionContextPresenter from '../attributeEditors/ExecutionContextPresenter.svelte'
   import ProcessContextPresenter from './ProcessContextPresenter.svelte'
+  import { Class, Ref } from '@hcengineering/core'
 
   export let readonly: boolean
   export let process: Process
@@ -48,6 +49,8 @@
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = undefined
+
+  export let _class: Ref<Class<ProcessToDo>> = plugin.class.ProcessToDo
 
   $: context = getContext(value)
 
@@ -71,7 +74,7 @@
     const res: SelectPopupValueType[] = []
     for (const key in process.context) {
       const ctx = process.context[key as ContextId]
-      if (ctx._class === plugin.class.ProcessToDo) {
+      if (ctx._class === _class) {
         if (skipRollback) {
           const transition = client.getModel().findObject(ctx.producer)
           if (transition === undefined) {

@@ -643,6 +643,26 @@ export function eventCheck (
   return context.eventType === params.eventType
 }
 
+export async function approveRequestApproved (
+  client: Client,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): Promise<boolean> {
+  if (params._id === undefined) return false
+  return context.todo?.group === params._id && context.todo?.approved === true
+}
+
+export async function approveRequestRejected (
+  client: Client,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): Promise<boolean> {
+  if (params._id === undefined) return false
+  return context.todo?.group === params._id && context.todo?.approved === false
+}
+
 export function matchCardCheck (
   client: Client,
   execution: Execution,
@@ -755,4 +775,10 @@ export async function checkProcessSectionVisibility (doc: Card): Promise<boolean
   const anc = client.getHierarchy().getAncestors(doc._class)
   const processes = client.getModel().findAllSync(process.class.Process, { masterTag: { $in: anc } })
   return processes.length > 0
+}
+
+export async function checkRequestsSectionVisibility (doc: Card): Promise<boolean> {
+  const client = getClient()
+  const requests = await client.findOne(process.class.ApproveRequest, { card: doc._id })
+  return requests !== undefined
 }

@@ -22,19 +22,25 @@ export default mergeIds(processId, process, {
   viewlet: {
     ExecutionsList: '' as Ref<Viewlet>,
     ExecutionLogList: '' as Ref<Viewlet>,
-    CardExecutions: '' as Ref<Viewlet>
+    CardExecutions: '' as Ref<Viewlet>,
+    CardRequests: '' as Ref<Viewlet>
   },
   component: {
     Main: '' as AnyComponent,
     ProcessEditor: '' as AnyComponent,
     ProcessesSettingSection: '' as AnyComponent,
     SubProcessEditor: '' as AnyComponent,
+    ApproveRequestEditor: '' as AnyComponent,
+    ApproveRequestPresenter: '' as AnyComponent,
+    ApproveRequestTriggerEditor: '' as AnyComponent,
+    ApproveRequestTriggerPresenter: '' as AnyComponent,
     UpdateCardEditor: '' as AnyComponent,
     ToDoEditor: '' as AnyComponent,
     SubProcessPresenter: '' as AnyComponent,
     ToDoPresenter: '' as AnyComponent,
     RunProcessPopup: '' as AnyComponent,
     UpdateCardPresenter: '' as AnyComponent,
+    RequestsExtension: '' as AnyComponent,
     ProcessesExtension: '' as AnyComponent,
     ProcessesHeaderExtension: '' as AnyComponent,
     ProcessPresenter: '' as AnyComponent,
@@ -56,6 +62,7 @@ export default mergeIds(processId, process, {
     ToDoCloseEditor: '' as AnyComponent,
     ToDoRemoveEditor: '' as AnyComponent,
     ProcessesCardSection: '' as AnyComponent,
+    RequestsCardSection: '' as AnyComponent,
     TransitionEditor: '' as AnyComponent,
     StateEditor: '' as AnyComponent,
     TransitionRefPresenter: '' as AnyComponent,
@@ -77,7 +84,9 @@ export default mergeIds(processId, process, {
     AddTagPresenter: '' as AnyComponent,
     SubProcessMatchEditor: '' as AnyComponent,
     SubProcessMatchPresenter: '' as AnyComponent,
-    FunctionSubmenu: '' as AnyComponent
+    FunctionSubmenu: '' as AnyComponent,
+    LockSectionEditor: '' as AnyComponent,
+    LockSectionPresenter: '' as AnyComponent
   },
   criteriaEditor: {
     BaseCriteria: '' as AnyComponent,
@@ -217,7 +226,23 @@ export default mergeIds(processId, process, {
     RunProcessPermission: '' as IntlString,
     CancelProcessPermission: '' as IntlString,
     ForbidRunProcessPermission: '' as IntlString,
-    ForbidCancelProcessPermission: '' as IntlString
+    ForbidCancelProcessPermission: '' as IntlString,
+    RequestApproval: '' as IntlString,
+    IsApproved: '' as IntlString,
+    Approve: '' as IntlString,
+    Reject: '' as IntlString,
+    Reason: '' as IntlString,
+    ApproveRequest: '' as IntlString,
+    OnApproveRequestApproved: '' as IntlString,
+    OnApproveRequestRejected: '' as IntlString,
+    ConfirmApproval: '' as IntlString,
+    ConfirmRejection: '' as IntlString,
+    RejectionReason: '' as IntlString,
+    ProvideRejectionReason: '' as IntlString,
+    FieldIsEmpty: '' as IntlString,
+    Reviewers: '' as IntlString,
+    LockCard: '' as IntlString,
+    LockSection: '' as IntlString
   },
   permission: {
     RunProcess: '' as Ref<Permission>,
