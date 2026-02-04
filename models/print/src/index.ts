@@ -21,7 +21,7 @@ export function createModel (builder: Builder): void {
       label: print.string.PrintToPDF,
       icon: print.icon.Print,
       category: view.category.General,
-      input: 'selection',
+      input: 'any',
       target: core.class.Doc,
       context: { mode: ['context', 'browser'], group: 'tools' },
       visibilityTester: print.function.CanPrint
