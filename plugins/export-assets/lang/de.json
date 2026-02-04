@@ -47,7 +47,6 @@
     "SelectSpace": "Bereich auswählen",
     "NoSelectedDocuments": "Keine Dokumente ausgewählt",
     "RequestPermissionToImport": "Bitte fordern Sie die Berechtigung vom Eigentümer des Ziel-Arbeitsbereichs an, um Dokumente zu importieren.",
-    "SkipDeletedObsolete": "Archivierte oder veraltete Dokumente überspringen",
     "ExportOnlyEffective": "Nur Dokumente mit wirksamem Status exportieren",
     "ExportFilterMode": "Zu exportierende Dokumente",
     "ExportFilterEffectiveOnly": "Nur wirksame Dokumente exportieren",
