@@ -26,7 +26,7 @@ export function TypeFileVersion (): Type<number> {
 export interface Drive extends TypedSpace {}
 
 /** @public */
-export interface Resource extends Doc {
+export interface Resource extends Doc<Drive> {
   title: string
   parent: Ref<Resource>
   path: Ref<Resource>[]

@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type Doc, type DocumentQuery, type Space, type Ref, type WithLookup } from '@hcengineering/core'
+  import { type Doc, type DocumentQuery, type Ref, type WithLookup } from '@hcengineering/core'
+  import { permissionsStore } from '@hcengineering/contact-resources'
   import drive, { type Drive, type Folder } from '@hcengineering/drive'
   import { Scroller, SearchInput, Panel, Button, IconMoreH } from '@hcengineering/ui'
   import view, { Viewlet, ViewOptions } from '@hcengineering/view'
@@ -24,7 +25,8 @@
     ViewletSelector,
     ViewletSettingButton,
     DocAttributeBar,
-    showMenu
+    showMenu,
+    canCreateObject
   } from '@hcengineering/view-resources'
 
   import DrivePresenter from './DrivePresenter.svelte'
@@ -42,6 +44,7 @@
 
   $: object = type === 'drive' ? (object as Drive) : (object as Folder)
   $: query = { space, parent }
+  $: canUpload = canCreateObject(drive.class.File, space, $permissionsStore)
 
   let viewlet: WithLookup<Viewlet> | undefined = undefined
   let viewOptions: ViewOptions | undefined
@@ -101,7 +104,7 @@
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="popupPanel-body" on:contextmenu>
         {#if viewlet}
-          <FileDropArea {space} {parent} canDrop={() => !readonly}>
+          <FileDropArea {space} {parent} canDrop={() => !readonly && canUpload}>
             <Scroller horizontal={true}>
               <ViewletContentView {_class} {viewlet} query={resultQuery} {space} {viewOptions} />
             </Scroller>
