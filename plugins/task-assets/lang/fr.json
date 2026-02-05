@@ -96,6 +96,9 @@
     "RenameStatus": "Renommer un statut en un nouveau nom",
     "UpdateTasksStatusRequest": "Le statut est utilisé avec {total} tâches, cela nécessitera la mise à jour de toutes. Veuillez approuver.",
     "TaskTypes": "Types de tâches",
-    "Collections": "Collections"
+    "Collections": "Collections",
+    "BaseMixin": "Mixin de base",
+    "NoBaseMixin": "Aucun (créer nouveau)",
+    "BaseMixinDescription": "Hériter des attributs d'un mixin existant"
   }
 }

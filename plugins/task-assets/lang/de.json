@@ -96,6 +96,9 @@
     "RenameStatus": "Status umbenennen",
     "UpdateTasksStatusRequest": "Status wird bei {total} Aufgaben verwendet, dies erfordert eine Aktualisierung aller Aufgaben. Bitte bestätigen.",
     "TaskTypes": "Aufgabentypen",
-    "Collections": "Sammlungen"
+    "Collections": "Sammlungen",
+    "BaseMixin": "Basis-Mixin",
+    "NoBaseMixin": "Keins (neu erstellen)",
+    "BaseMixinDescription": "Attribute von einem vorhandenen Mixin erben"
   }
 }

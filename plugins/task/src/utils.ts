@@ -21,6 +21,7 @@ import core, {
   DocumentQuery,
   Hierarchy,
   IdMap,
+  Mixin,
   Ref,
   Status,
   TxOperations,
@@ -33,6 +34,22 @@ import task, { Project, ProjectStatus, ProjectType, Task, TaskType } from '.'
 import { makeRank } from '@hcengineering/rank'
 
 export { genRanks, makeRank } from '@hcengineering/rank'
+
+/**
+ * Validates that a baseMixin is compatible with the ofClass.
+ * The baseMixin must be derived from ofClass to be a valid base.
+ * @public
+ */
+export function validateMixinHierarchy (
+  hierarchy: Hierarchy,
+  baseMixin: Ref<Mixin<Task>> | undefined,
+  ofClass: Ref<Class<Task>>
+): boolean {
+  if (baseMixin === undefined) {
+    return true
+  }
+  return hierarchy.isDerived(baseMixin, ofClass)
+}
 
 /**
  * @deprecated Prefer {@link makeRank}
@@ -162,10 +179,10 @@ export function findStatusAttr (h: Hierarchy, _class: Ref<Class<Task>>): AnyAttr
   return h.getAttribute(task.class.Task, 'status')
 }
 
-export type TaskTypeWithFactory = Omit<Data<TaskType>, 'statuses' | 'parent' | 'targetClass'> & {
+export type TaskTypeWithFactory = Omit<Data<TaskType>, 'statuses' | 'parent' | 'targetClass' | 'baseMixin'> & {
   _id: TaskType['_id']
   factory: Data<Status>[]
-} & Partial<Pick<TaskType, 'targetClass'>>
+} & Partial<Pick<TaskType, 'targetClass' | 'baseMixin'>>
 
 type ProjectData = Omit<Data<ProjectType>, 'statuses' | 'targetClass'>
 
@@ -330,11 +347,15 @@ async function createTaskTypes (
       const targetClassId = `${taskId}:type:mixin` as Ref<Class<Task>>
       tdata.targetClass = targetClassId
 
+      // If baseMixin is specified, extend from it instead of ofClass directly
+      // This allows reusing existing mixins as a base for new task types
+      const extendsClass = data.baseMixin ?? data.ofClass
+
       await client.createDoc(
         core.class.Mixin,
         core.space.Model,
         {
-          extends: data.ofClass,
+          extends: extendsClass,
           kind: ClassifierKind.MIXIN,
           label: ofClassClass.label,
           icon: ofClassClass.icon

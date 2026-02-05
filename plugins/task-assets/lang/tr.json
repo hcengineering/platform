@@ -96,6 +96,9 @@
     "RenameStatus": "Durumu yeni isme yeniden adlandır",
     "UpdateTasksStatusRequest": "Durum {total} görevle kullanılıyor, hepsinin güncellenmesini gerektirecek. Lütfen onaylayın.",
     "TaskTypes": "Görev tipleri",
-    "Collections": "Koleksiyonlar"
+    "Collections": "Koleksiyonlar",
+    "BaseMixin": "Temel Mixin",
+    "NoBaseMixin": "Yok (yeni oluştur)",
+    "BaseMixinDescription": "Mevcut bir mixin'den öznitelikleri devral"
   }
 }

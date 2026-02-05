@@ -96,6 +96,9 @@
     "RenameStatus": "Přejmenovat stav na nový název",
     "UpdateTasksStatusRequest": "Stav je použit u {total} úkolů, bude třeba je aktualizovat. Prosím schvalte.",
     "TaskTypes": "Typy úkolů",
-    "Collections": "Kolekce"
+    "Collections": "Kolekce",
+    "BaseMixin": "Základní mixin",
+    "NoBaseMixin": "Žádný (vytvořit nový)",
+    "BaseMixinDescription": "Zdědit atributy z existujícího mixinu"
   }
 }

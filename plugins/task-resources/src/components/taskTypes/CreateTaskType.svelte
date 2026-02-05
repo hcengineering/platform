@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Class, ClassifierKind, Data, Ref, RefTo, Status, generateId, toIdMap } from '@hcengineering/core'
+  import core, { Class, ClassifierKind, Data, Mixin, Ref, RefTo, Status, generateId, toIdMap } from '@hcengineering/core'
   import { Resource, getEmbeddedLabel, getResource } from '@hcengineering/platform'
   import presentation, { getClient, hasResource } from '@hcengineering/presentation'
   import {
@@ -28,6 +28,7 @@
   import { DropdownIntlItem, Modal, ModernEditbox, Label, ButtonMenu } from '@hcengineering/ui'
   import task from '../../plugin'
   import TaskTypeKindEditor from './TaskTypeKindEditor.svelte'
+  import MixinSelector from './MixinSelector.svelte'
   import { clearSettingsStore } from '@hcengineering/setting-resources'
 
   const client = getClient()
@@ -65,7 +66,7 @@
     )
     .filter((p) => hasResource(p._id as any as Resource<any>))
 
-  let { kind, name, targetClass, statusCategories, statuses, allowedAsChildOf } =
+  let { kind, name, targetClass, statusCategories, statuses, allowedAsChildOf, baseMixin } =
     taskType !== undefined ? { ...taskType } : { ...defaultTaskType(type) }
 
   function findStatusClass (_class: Ref<Class<Task>>): Ref<Class<Status>> | undefined {
@@ -87,12 +88,13 @@
     if (descr === undefined) return
 
     const ofClass = descr.baseClass
-    const _taskType = {
+    const _taskType: Data<TaskType> & { icon?: any } = {
       kind,
       name,
       ofClass,
       descriptor: taskTypeDescriptor._id,
       targetClass,
+      baseMixin,
       statusCategories,
       statuses,
       allowedAsChildOf,
@@ -136,14 +138,16 @@
     } else {
       const ofClassClass = client.getHierarchy().getClass(ofClass)
       // Create target class for custom field.
+      // If baseMixin is specified, extend from it instead of ofClass directly
+      const extendsClass = baseMixin ?? ofClass
       _taskType.targetClass = await client.createDoc(core.class.Class, core.space.Model, {
-        extends: ofClass,
+        extends: extendsClass,
         kind: ClassifierKind.MIXIN,
         label: getEmbeddedLabel(name),
         icon: ofClassClass.icon
       })
 
-      await client.createDoc(task.class.TaskType, core.space.Model, _taskType, taskTypeId)
+      await client.createDoc(task.class.TaskType, core.space.Model, _taskType as Data<TaskType>, taskTypeId)
     }
 
     if (!type.tasks.includes(taskTypeId)) {
@@ -180,6 +184,17 @@
         <Label label={task.string.TaskType} />
       </span>
       <TaskTypeKindEditor bind:kind />
+    </div>
+    <div class="hulyModal-content__settingsSet-line">
+      <span class="label">
+        <Label label={task.string.BaseMixin} />
+      </span>
+      <MixinSelector
+        bind:value={baseMixin}
+        baseClass={taskTypeDescriptor?.baseClass ?? task.class.Task}
+        kind={'secondary'}
+        size={'large'}
+      />
     </div>
     {#if taskTypeDescriptors.length > 1}
       <div class="hulyModal-content__settingsSet-line">

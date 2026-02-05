@@ -96,6 +96,9 @@
     "RenameStatus": "Rinomina uno stato con un nuovo nome",
     "UpdateTasksStatusRequest": "Lo stato è utilizzato con {total} task, richiederà l'aggiornamento di tutte. Si prega di approvare.",
     "TaskTypes": "Tipi di task",
-    "Collections": "Collezioni"
+    "Collections": "Collezioni",
+    "BaseMixin": "Mixin Base",
+    "NoBaseMixin": "Nessuno (crea nuovo)",
+    "BaseMixinDescription": "Eredita attributi da un mixin esistente"
   }
 }

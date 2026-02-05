@@ -96,6 +96,9 @@
     "RenameStatus": "将状态重命名为新名称",
     "UpdateTasksStatusRequest": "状态用于 {total} 个任务，这将需要更新所有任务。请确认。",
     "TaskTypes": "任务类型",
-    "Collections": "集合"
+    "Collections": "集合",
+    "BaseMixin": "基础混入",
+    "NoBaseMixin": "无（创建新的）",
+    "BaseMixinDescription": "从现有混入继承属性"
   }
 }

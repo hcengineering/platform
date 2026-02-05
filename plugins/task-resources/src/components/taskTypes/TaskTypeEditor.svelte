@@ -38,6 +38,7 @@
   import StatesProjectEditor from '../state/StatesProjectEditor.svelte'
   import TaskTypeKindEditor from '../taskTypes/TaskTypeKindEditor.svelte'
   import TaskTypeRefEditor from '../taskTypes/TaskTypeRefEditor.svelte'
+  import MixinSelector from '../taskTypes/MixinSelector.svelte'
   import TaskTypeIcon from './TaskTypeIcon.svelte'
 
   export let spaceType: ProjectType
@@ -230,6 +231,25 @@
                 key="name"
                 editKind={'modern-ghost-large'}
                 editable={!readonly}
+              />
+            </div>
+
+            <div class="flex-row-center mt-4 ml-4 mr-4 gap-4">
+              <div class="flex-no-shrink trans-title uppercase">
+                <Label label={plugin.string.BaseMixin} />
+              </div>
+              <MixinSelector
+                value={taskType.baseMixin}
+                baseClass={taskType.ofClass}
+                kind={'secondary'}
+                size={'medium'}
+                disabled={readonly}
+                on:change={(evt) => {
+                  if (taskType === undefined) {
+                    return
+                  }
+                  void client.diffUpdate(taskType, { baseMixin: evt.detail })
+                }}
               />
             </div>
 

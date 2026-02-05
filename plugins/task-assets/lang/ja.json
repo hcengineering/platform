@@ -96,6 +96,9 @@
     "RenameStatus": "ステータスを新しい名前に変更",
     "UpdateTasksStatusRequest": "ステータスは{total}個のタスクで使用されており、それらすべての更新が必要です。承認してください。",
     "TaskTypes": "タスクタイプ",
-    "Collections": "コレクション"
+    "Collections": "コレクション",
+    "BaseMixin": "ベースミックスイン",
+    "NoBaseMixin": "なし（新規作成）",
+    "BaseMixinDescription": "既存のミックスインから属性を継承"
   }
 }

@@ -20,6 +20,7 @@ import {
   IndexKind,
   type Class,
   type Domain,
+  type Mixin as MixinType,
   type Ref,
   type Status,
   type StatusCategory,
@@ -209,6 +210,9 @@ export class TTaskType extends TDoc implements TaskType {
 
   @Prop(ArrOf(TypeRef(task.class.TaskType)), getEmbeddedLabel('Parent'))
     allowedAsChildOf!: Ref<TaskType>[] // In case of specified, task type is for sub-tasks
+
+  @Prop(TypeRef(core.class.Mixin), getEmbeddedLabel('Base Mixin'))
+    baseMixin?: Ref<MixinType<Task>> // If specified, targetClass will extend from this mixin
 
   @Prop(TypeRef(core.class.Class), getEmbeddedLabel('Task class'))
     ofClass!: Ref<Class<Task>> // Base class for task

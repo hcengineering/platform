@@ -120,6 +120,10 @@ export interface TaskType extends Doc, IconProps {
   // Specify if task is allowed to be used as subtask of following tasks.
   allowedAsChildOf?: Ref<TaskType>[]
 
+  // If specified, the targetClass mixin will extend from this mixin instead of ofClass directly
+  // This allows reusing existing mixins as a base for new task types
+  baseMixin?: Ref<Mixin<Task>>
+
   ofClass: Ref<Class<Task>> // Base class for task
   targetClass: Ref<Class<Task>> // Class or Mixin mixin to hold all user defined attributes.
 

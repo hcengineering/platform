@@ -96,6 +96,9 @@
     "RenomearStatus": "Renomear um status para um novo nome",
     "AtualizarPedidoDeStatusDaTarefa": "O status está sendo usado em {total} tarefas e precisará ser atualizado em todas elas. Por favor, confirme.",
     "TaskTypes": "Tipos de Tarefas",
-    "Collections": "Coleções"
+    "Collections": "Coleções",
+    "BaseMixin": "Mixin Base",
+    "NoBaseMixin": "Nenhum (criar novo)",
+    "BaseMixinDescription": "Herdar atributos de um mixin existente"
   }
 }
