@@ -63,14 +63,28 @@ jobs:
       - name: Model version from git
         run: node common/scripts/install-run-rush.js model-version
 
-      - name: Build
+      - name: Build all packages
         run: node common/scripts/install-run-rush.js build
 
-      - name: Bundle
+      - name: Bundle UI packages
         run: node common/scripts/install-run-rush.js bundle
 
-      - name: Package Frontend
-        run: node common/scripts/install-run-rush.js package --to front
+      - name: Package prod (generates webpack dist)
+        run: |
+          cd dev/prod
+          node ../../common/scripts/install-run-rushx.js package
+
+      - name: Package Frontend pod
+        run: |
+          cd pods/front
+          node ../../common/scripts/install-run-rushx.js package
+
+      - name: Verify dist directory exists
+        run: |
+          echo "Contents of pods/front:"
+          ls -la pods/front/
+          echo "Contents of pods/front/dist (if exists):"
+          ls -la pods/front/dist/ || echo "dist directory not found"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
