@@ -35,6 +35,7 @@ export interface Config {
   DbUrl: string
   Buckets: BucketConfig[]
   CleanupInterval: number
+  Secure: boolean
   Readonly: boolean
   Cache: CacheConfig
 }
@@ -86,6 +87,7 @@ const config: Config = (() => {
     AccountsUrl: process.env.ACCOUNTS_URL,
     DbUrl: process.env.DB_URL,
     Buckets: parseBucketsConfig(process.env.BUCKETS),
+    Secure: process.env.SECURE === 'true',
     Readonly: process.env.READONLY === 'true',
     Cache: {
       enabled: process.env.CACHE_ENABLED !== 'false',

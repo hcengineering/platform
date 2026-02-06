@@ -38,6 +38,14 @@ export const keepAlive = (options: KeepAliveOptions): RequestHandler => {
   }
 }
 
+export const withOptionalAuth = (secure: boolean): RequestHandler => {
+  return secure
+    ? withAuthorization
+    : (req: Request, res: Response, next: NextFunction) => {
+        next()
+      }
+}
+
 export const withAdminAuthorization = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
   try {
     const token = extractToken(req.headers)
