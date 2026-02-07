@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { AccountRole, Ref, getCurrentAccount } from '@hcengineering/core'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import { type Drive } from '@hcengineering/drive'
   import { getResource } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -23,6 +24,7 @@
   import { getFolderIdFromFragment } from '../navigation'
   import { showCreateDrivePopup, showCreateFolderPopup, getUploadOptionsByFragment } from '../utils'
   import { onMount } from 'svelte'
+  import { canCreateObject } from '@hcengineering/view-resources'
 
   export let currentSpace: Ref<Drive> | undefined
   export let currentFragment: string | undefined
@@ -44,6 +46,8 @@
   ]
 
   let uploadActions: HeaderButtonAction[] = []
+  let filteredUploadActions: HeaderButtonAction[] = []
+  let filteredBasicActions: HeaderButtonAction[] = []
   let allActions: HeaderButtonAction[] = []
 
   const myAcc = getCurrentAccount()
@@ -84,6 +88,12 @@
   )
 
   $: parent = getFolderIdFromFragment(currentFragment ?? '') ?? drive.ids.Root
+  $: canCreateFolder =
+    currentSpace !== undefined && canCreateObject(drive.class.Folder, currentSpace, $permissionsStore)
+  $: canUpload = currentSpace !== undefined && canCreateObject(drive.class.File, currentSpace, $permissionsStore)
+
+  $: filteredBasicActions = [basicActions[0], ...(canCreateFolder ? [basicActions[1]] : [])]
+  $: filteredUploadActions = canUpload ? uploadActions : []
 
   function handleCreateDrive (): void {
     void showCreateDrivePopup()
@@ -94,7 +104,11 @@
   }
 
   let visibleActions: (string | number | null)[] = []
-  function updateActions (hasSpace: boolean, uploadActions: HeaderButtonAction[]): void {
+  function updateActions (
+    hasSpace: boolean,
+    uploadActions: HeaderButtonAction[],
+    basicActions: HeaderButtonAction[]
+  ): void {
     allActions = [...basicActions, ...uploadActions]
     if (hasSpace) {
       visibleActions = allActions.map((a) => a.id)
@@ -103,7 +117,13 @@
     }
   }
 
-  $: updateActions(hasDrive, uploadActions)
+  $: updateActions(hasDrive, filteredUploadActions, filteredBasicActions)
 </script>
 
-<HeaderButton loading={false} {client} mainActionId={uploadActions[0]?.id} {visibleActions} actions={allActions} />
+<HeaderButton
+  loading={false}
+  {client}
+  mainActionId={filteredUploadActions[0]?.id}
+  {visibleActions}
+  actions={allActions}
+/>
