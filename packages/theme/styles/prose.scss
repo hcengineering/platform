@@ -584,9 +584,11 @@ pre.proseCodeBlock>pre.proseCode {
 
   .mermaidPreview {
     width: 100%;
+    display: flex;
+    justify-content: center;
 
     svg {
-      width: 100%;
+      width: auto;
       max-width: 100%;
       height: auto;
       display: block;

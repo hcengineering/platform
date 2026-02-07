@@ -234,6 +234,12 @@ function defineDrive (builder: Builder): void {
       icon: drive.icon.Drive,
       baseClass: drive.class.Drive,
       availablePermissions: [
+        drive.permission.CreateFolder,
+        drive.permission.UpdateFolder,
+        drive.permission.RemoveFolder,
+        drive.permission.CreateFile,
+        drive.permission.UpdateFile,
+        drive.permission.RemoveFile,
         core.permission.UpdateSpace,
         core.permission.ArchiveSpace,
         core.permission.ForbidDeleteObject
@@ -326,7 +332,8 @@ function defineDrive (builder: Builder): void {
         mode: ['context', 'browser'],
         application: drive.app.Drive,
         group: 'create'
-      }
+      },
+      visibilityTester: drive.function.CanCreateFolder
     },
     drive.action.CreateRootFolder
   )
@@ -475,6 +482,7 @@ function defineFolder (builder: Builder): void {
     actions: [
       view.action.Open,
       view.action.OpenInNewTab,
+      view.action.Delete,
       print.action.Print,
       tracker.action.EditRelatedTargets,
       tracker.action.NewRelatedIssue
@@ -494,7 +502,8 @@ function defineFolder (builder: Builder): void {
         mode: ['context', 'browser'],
         application: drive.app.Drive,
         group: 'create'
-      }
+      },
+      visibilityTester: drive.function.CanCreateFolder
     },
     drive.action.CreateChildFolder
   )
@@ -518,6 +527,25 @@ function defineFolder (builder: Builder): void {
     drive.action.RenameFolder
   )
 
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Delete,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.Folder,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'edit'
+      },
+      visibilityTester: drive.function.CanDeleteFolder
+    },
+    drive.action.DeleteFolder
+  )
+
   createAction(builder, {
     ...actionTemplates.move,
     action: view.actionImpl.ShowPopup,
@@ -529,6 +557,7 @@ function defineFolder (builder: Builder): void {
       }
     },
     target: drive.class.Folder,
+    visibilityTester: drive.function.CanUpdateFolder,
     context: {
       mode: ['browser', 'context'],
       group: 'tools'
@@ -569,7 +598,8 @@ function defineFileVersion (builder: Builder): void {
         mode: ['context', 'browser'],
         application: drive.app.Drive,
         group: 'edit'
-      }
+      },
+      visibilityTester: drive.function.CanUpdateFileVersion
     },
     drive.action.RestoreFileVersion
   )
@@ -649,6 +679,7 @@ function defineFile (builder: Builder): void {
     actions: [
       view.action.Open,
       view.action.OpenInNewTab,
+      view.action.Delete,
       print.action.Print,
       tracker.action.EditRelatedTargets,
       tracker.action.NewRelatedIssue
@@ -692,6 +723,25 @@ function defineFile (builder: Builder): void {
     drive.action.RenameFile
   )
 
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Delete,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.File,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'edit'
+      },
+      visibilityTester: drive.function.CanDeleteFile
+    },
+    drive.action.DeleteFile
+  )
+
   // createAction(
   //   builder,
   //   {
@@ -721,6 +771,7 @@ function defineFile (builder: Builder): void {
       }
     },
     target: drive.class.File,
+    visibilityTester: drive.function.CanUpdateFile,
     context: {
       mode: ['browser', 'context'],
       group: 'tools'

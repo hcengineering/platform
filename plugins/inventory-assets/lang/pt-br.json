@@ -1,0 +1,25 @@
+{
+  "status": {
+    "CategoryRequired": "Categoria Obrigatória",
+    "NameRequired": "Nome Obrigatório"
+  },
+  "string": {
+    "Categories": "Categorias",
+    "Category": "Categoria",
+    "CategoryCreateLabel": "Categoria",
+    "CreateCategory": "Criar Categoria",
+    "CreateSubcategory": "Criar Sub-Categoria",
+    "Inventory": "Inventário",
+    "ProductCreateLabel": "Produto",
+    "CreateProduct": "Criar Produto",
+    "Products": "Produtos",
+    "Product": "Produto",
+    "Variant": "Variante",
+    "SKU": "SKU",
+    "Variants": "Variantes",
+    "NoVariantsForProduct": "Não existem variantes para este produto.",
+    "CreateVariant": "Criar Variante",
+    "ConfigLabel": "Inventário",
+    "ConfigDescription": "Extensão para gerir extensões"
+  }
+}

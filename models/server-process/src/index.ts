@@ -70,6 +70,16 @@ export function createModel (builder: Builder): void {
     serverCheckFunc: serverProcess.func.FieldChangedCheck
   })
 
+  builder.mixin(process.trigger.OnApproveRequestApproved, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    preventRollback: true,
+    serverCheckFunc: serverProcess.func.ApproveRequestApproved
+  })
+
+  builder.mixin(process.trigger.OnApproveRequestRejected, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    preventRollback: true,
+    serverCheckFunc: serverProcess.func.ApproveRequestRejected
+  })
+
   builder.mixin(process.trigger.OnExecutionStart, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
     preventRollback: true
   })
@@ -115,6 +125,18 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(process.method.AddTag, process.class.Method, serverProcess.mixin.MethodImpl, {
     func: serverProcess.func.AddTag
+  })
+
+  builder.mixin(process.method.RequestApproval, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.RequestApproval
+  })
+
+  builder.mixin(process.method.LockCard, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.LockCard
+  })
+
+  builder.mixin(process.method.LockSection, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.LockSection
   })
 
   builder.mixin(process.function.FirstValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {

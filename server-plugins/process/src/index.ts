@@ -54,6 +54,9 @@ export default plugin(serverProcessId, {
     AddRelation: '' as Resource<ExecuteFunc>,
     WaitSubProcess: '' as Resource<ExecuteFunc>,
     AddTag: '' as Resource<ExecuteFunc>,
+    RequestApproval: '' as Resource<ExecuteFunc>,
+    LockCard: '' as Resource<ExecuteFunc>,
+    LockSection: '' as Resource<ExecuteFunc>,
     CheckToDoDone: '' as Resource<CheckFunc>,
     CheckToDoCancelled: '' as Resource<CheckFunc>,
     MatchCardCheck: '' as Resource<CheckFunc>,
@@ -61,7 +64,9 @@ export default plugin(serverProcessId, {
     CheckSubProcessesDone: '' as Resource<CheckFunc>,
     CheckSubProcessMatch: '' as Resource<CheckFunc>,
     CheckTime: '' as Resource<CheckFunc>,
-    EventCheck: '' as Resource<CheckFunc>
+    EventCheck: '' as Resource<CheckFunc>,
+    ApproveRequestApproved: '' as Resource<CheckFunc>,
+    ApproveRequestRejected: '' as Resource<CheckFunc>
   },
   transform: {
     FirstValue: '' as Resource<TransformFunc>,

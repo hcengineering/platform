@@ -24660,6 +24660,9 @@ importers:
 
   ../../plugins/process-resources:
     dependencies:
+      '@hcengineering/account-client':
+        specifier: workspace:^0.7.21
+        version: link:../../foundations/core/packages/account-client
       '@hcengineering/analytics':
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/analytics
@@ -24681,6 +24684,9 @@ importers:
       '@hcengineering/core':
         specifier: workspace:^0.7.24
         version: link:../../foundations/core/packages/core
+      '@hcengineering/login':
+        specifier: workspace:^0.7.0
+        version: link:../login
       '@hcengineering/platform':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/platform

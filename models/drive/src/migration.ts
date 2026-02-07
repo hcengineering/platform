@@ -14,7 +14,7 @@
 //
 
 import core, { type Blob, type Ref, DOMAIN_BLOB, generateId, toIdMap } from '@hcengineering/core'
-import type { Drive, File, FileVersion, Resource } from '@hcengineering/drive'
+import type { File, FileVersion, Resource } from '@hcengineering/drive'
 import {
   type MigrateOperation,
   type MigrationClient,
@@ -56,7 +56,7 @@ async function migrateFileVersions (client: MigrationClient): Promise<void> {
       collection: 'versions',
       modifiedOn: file.modifiedOn,
       modifiedBy: file.modifiedBy,
-      space: file.space as Ref<Drive>,
+      space: file.space,
       title: exfile.title,
       file: blob._id,
       size: blob.size,

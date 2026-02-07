@@ -473,24 +473,38 @@ function buildState (
     // Ensure SVG maintains its natural size
     const svg = container.querySelector('svg')
     if (svg !== null) {
-      svg.style.width = '100%'
+      svg.style.width = 'auto'
       svg.style.maxWidth = '100%'
       svg.style.height = 'auto'
       svg.style.display = 'block'
-      // Remove any width/height attributes that might cause stretching
+
+      const widthAttr = svg.getAttribute('width')
+      const heightAttr = svg.getAttribute('height')
+      const viewBox = svg.getAttribute('viewBox')
+      const viewBoxParts = viewBox
+        ?.trim()
+        .split(/[\s,]+/)
+        .map((v) => Number.parseFloat(v))
+      const viewBoxWidth = viewBoxParts?.length === 4 ? viewBoxParts[2] : NaN
+      const viewBoxHeight = viewBoxParts?.length === 4 ? viewBoxParts[3] : NaN
+
+      const widthIsPercent = widthAttr?.trim().endsWith('%') ?? false
+      const heightIsPercent = heightAttr?.trim().endsWith('%') ?? false
+
+      if ((widthAttr !== undefined || widthIsPercent) && Number.isFinite(viewBoxWidth)) {
+        svg.setAttribute('width', String(viewBoxWidth))
+      }
+      if ((heightAttr !== undefined || heightIsPercent) && Number.isFinite(viewBoxHeight)) {
+        svg.setAttribute('height', String(viewBoxHeight))
+      }
+
+      // If no viewBox, derive one from numeric width/height to allow scaling down
       if (!svg.hasAttribute('viewBox')) {
-        const width = svg.getAttribute('width')
-        const height = svg.getAttribute('height')
-        const widthValue = width !== null ? Number.parseFloat(width) : NaN
-        const heightValue = height !== null ? Number.parseFloat(height) : NaN
+        const widthValue = widthAttr !== null ? Number.parseFloat(widthAttr) : NaN
+        const heightValue = heightAttr !== null ? Number.parseFloat(heightAttr) : NaN
         if (Number.isFinite(widthValue) && Number.isFinite(heightValue)) {
           svg.setAttribute('viewBox', `0 0 ${widthValue} ${heightValue}`)
-          svg.removeAttribute('width')
-          svg.removeAttribute('height')
         }
-      } else {
-        svg.removeAttribute('width')
-        svg.removeAttribute('height')
       }
     }
 

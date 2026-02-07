@@ -15,7 +15,7 @@
 //
 -->
 <script lang="ts">
-  import { Html, Modal, ButtonIcon, IconClose, IconMaximize, IconMinimize, Scroller } from '@hcengineering/ui'
+  import { Modal, ButtonIcon, IconClose, IconMaximize, IconMinimize } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   export let svg: string
@@ -24,7 +24,7 @@
   const dispatch = createEventDispatcher()
 </script>
 
-<Modal type={'type-component'} padding={'0.5rem'} bottomPadding={'0'} on:fullsize on:close>
+<Modal type={'type-component'} scrollableContent={false} on:fullsize on:close>
   <svelte:fragment slot="beforeTitle">
     <ButtonIcon
       icon={IconClose}
@@ -49,25 +49,46 @@
     <div class="hulyHeader-divider short no-print" />
   </svelte:fragment>
 
-  <Scroller horizontal stickedScrollBars thinScrollBars>
-    <div class="mermaid-container">
-      <Html value={svg} />
+  <div class="mermaid-scroll">
+    <div class="mermaid-center">
+      <div class="mermaid-container">
+        <!-- Mermaid renders SVG with securityLevel=antiscript; render as-is to preserve SVG text -->
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+        {@html svg}
+      </div>
     </div>
-  </Scroller>
+  </div>
 </Modal>
 
 <style>
-  .mermaid-container {
+  .mermaid-scroll {
+    width: 100%;
+    height: 100%;
+    padding: 0.5rem;
+    overflow: auto;
+    box-sizing: border-box;
+    scrollbar-width: auto;
+  }
+
+  .mermaid-center {
+    min-width: 100%;
+    min-height: 100%;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    width: 100%;
+    align-items: center;
+  }
+
+  .mermaid-container {
+    width: max-content;
+    height: max-content;
   }
 
   .mermaid-container :global(svg) {
-    max-width: 100%;
+    width: auto;
     height: auto;
+    max-width: none;
+    max-height: none;
     display: block;
-    margin: 0 auto;
+    margin: 0;
   }
 </style>
