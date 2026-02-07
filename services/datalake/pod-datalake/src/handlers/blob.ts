@@ -25,6 +25,8 @@ import { type Datalake, wrapETag } from '../datalake'
 import { getBufferSha256, getFileSha256 } from '../hash'
 import { type TemporaryDir } from '../tempdir'
 
+const safeInlineTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp']
+
 interface BlobParentRequest {
   parent: string | null
 }
@@ -76,13 +78,16 @@ export async function handleBlobGet (
     return
   }
 
+  const disposition = safeInlineTypes.includes(blob.contentType) ? 'inline' : 'attachment'
+
   res.setHeader('Accept-Ranges', 'bytes')
   res.setHeader('Content-Length', blob.bodyLength.toString())
   res.setHeader('Content-Type', blob.contentType ?? '')
   res.setHeader('Content-Security-Policy', "default-src 'none';")
+  res.setHeader('X-Content-Type-Options', 'nosniff')
   res.setHeader(
     'Content-Disposition',
-    filename !== undefined ? `attachment; filename*=UTF-8''${encodeURIComponent(filename)}` : 'attachment'
+    filename !== undefined ? `${disposition}; filename*=UTF-8''${encodeURIComponent(filename)}` : disposition
   )
   res.setHeader('Cache-Control', blob.cacheControl ?? cacheControl)
   res.setHeader('Last-Modified', new Date(blob.lastModified).toUTCString())
@@ -131,13 +136,16 @@ export async function handleBlobHead (
     return
   }
 
+  const disposition = safeInlineTypes.includes(head.contentType) ? 'inline' : 'attachment'
+
   res.setHeader('Accept-Ranges', 'bytes')
   res.setHeader('Content-Length', head.size.toString())
   res.setHeader('Content-Type', head.contentType ?? '')
   res.setHeader('Content-Security-Policy', "default-src 'none';")
+  res.setHeader('X-Content-Type-Options', 'nosniff')
   res.setHeader(
     'Content-Disposition',
-    filename !== undefined ? `attachment; filename*=UTF-8''${encodeURIComponent(filename)}` : 'attachment'
+    filename !== undefined ? `${disposition}; filename*=UTF-8''${encodeURIComponent(filename)}` : disposition
   )
   res.setHeader('Cache-Control', head.cacheControl ?? cacheControl)
   res.setHeader('Last-Modified', new Date(head.lastModified).toUTCString())
