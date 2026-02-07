@@ -38,7 +38,8 @@
 
       await client.update(todo, {
         doneOn: new Date().getTime(),
-        approved: !isRejection
+        approved: !isRejection,
+        reason: isRejection ? rejectionNote : undefined
       })
     })
   }

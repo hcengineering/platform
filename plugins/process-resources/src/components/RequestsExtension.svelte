@@ -113,6 +113,7 @@
       {#if viewOptions && viewlet}
         <List
           bind:this={list}
+          readonly={true}
           _class={process.class.ApproveRequest}
           {viewOptions}
           baseMenuClass={process.class.ApproveRequest}

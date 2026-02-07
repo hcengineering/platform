@@ -137,7 +137,10 @@
     "FieldIsEmpty": "Feld ist leer",
     "Reviewers": "Prüfer",
     "LockCard": "Karte sperren",
-    "LockSection": "Abschnitt sperren"
+    "LockSection": "Abschnitt sperren",
+    "Approvers": "Genehmiger",
+    "UnlockCard": "Karte entsperren",
+    "UnlockSection": "Abschnitt entsperren"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

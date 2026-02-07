@@ -141,7 +141,10 @@
     "FieldIsEmpty": "フィールドが空です",
     "Reviewers": "レビュー担当者",
     "LockCard": "カードをロック",
-    "LockSection": "セクションをロック"
+    "LockSection": "セクションをロック",
+    "Approvers": "承認者",
+    "UnlockCard": "カードのロックを解除",
+    "UnlockSection": "セクションのロックを解除"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

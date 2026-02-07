@@ -139,6 +139,14 @@ export function createModel (builder: Builder): void {
     func: serverProcess.func.LockSection
   })
 
+  builder.mixin(process.method.UnlockCard, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.UnlockCard
+  })
+
+  builder.mixin(process.method.UnlockSection, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.UnlockSection
+  })
+
   builder.mixin(process.function.FirstValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.FirstValue
   })

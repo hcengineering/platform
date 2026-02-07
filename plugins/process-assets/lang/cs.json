@@ -137,7 +137,10 @@
     "FieldIsEmpty": "Pole je prázdné",
     "Reviewers": "Recenzenti",
     "LockCard": "Zamknout kartu",
-    "LockSection": "Zamknout sekci"
+    "LockSection": "Zamknout sekci",
+    "Approvers": "Schvalovatelé",
+    "UnlockCard": "Odemknout kartu",
+    "UnlockSection": "Odemknout sekci"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",
