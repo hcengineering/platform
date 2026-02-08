@@ -38,10 +38,9 @@ export function defineMethods (builder: Builder): void {
       label: process.string.RequestApproval,
       objectClass: process.class.ApproveRequest,
       editor: process.component.ApproveRequestEditor,
-      presenter: process.component.ApproveRequestPresenter,
+      presenter: process.component.ToDoPresenter,
       createdContext: {
-        _class: process.class.ApproveRequest,
-        nameField: 'title'
+        _class: process.class.ApproveRequest
       },
       requiredParams: ['user']
     },
@@ -145,5 +144,31 @@ export function defineMethods (builder: Builder): void {
       createdContext: null
     },
     process.method.LockSection
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.UnlockCard,
+      objectClass: card.class.Card,
+      requiredParams: [],
+      createdContext: null
+    },
+    process.method.UnlockCard
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.UnlockSection,
+      objectClass: card.class.Card,
+      editor: process.component.LockSectionEditor,
+      presenter: process.component.UnLockSectionPresenter,
+      requiredParams: ['_id'],
+      createdContext: null
+    },
+    process.method.UnlockSection
   )
 }

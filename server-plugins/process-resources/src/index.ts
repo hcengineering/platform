@@ -40,7 +40,8 @@ import process, {
   Transition,
   isUpdateTx,
   ProcessCustomEvent,
-  ApproveRequest
+  ApproveRequest,
+  ExecutionStatus
 } from '@hcengineering/process'
 import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
 import { ProcessMessage } from '@hcengineering/server-process'
@@ -103,7 +104,9 @@ import {
   ApproveRequestApproved,
   ApproveRequestRejected,
   LockCard,
-  LockSection
+  LockSection,
+  UnlockCard,
+  UnlockSection
 } from './functions'
 import { ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 
@@ -339,7 +342,10 @@ async function getExecutionReassignTxes (card: Card, control: TriggerControl): P
   const res: Tx[] = []
   const cards = await control.findAll(control.ctx, cardPlugin.class.Card, { baseId: card.baseId })
   const ids = cards.map((p) => p._id).filter((p) => p !== card._id)
-  const executions = await control.findAll(control.ctx, process.class.Execution, { card: { $in: ids } })
+  const executions = await control.findAll(control.ctx, process.class.Execution, {
+    card: { $in: ids },
+    status: ExecutionStatus.Active
+  })
   for (const execution of executions) {
     res.push(
       control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
@@ -523,7 +529,9 @@ export default async () => ({
     ApproveRequestApproved,
     ApproveRequestRejected,
     LockCard,
-    LockSection
+    LockSection,
+    UnlockCard,
+    UnlockSection
   },
   transform: {
     CurrentDate,

@@ -32,6 +32,7 @@
   export let lastCat: boolean = false
   export let props: Record<string, any> = {}
   export let compactMode: boolean = false
+  export let readonly: boolean = false
 
   export function scroll () {
     elem?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
@@ -133,6 +134,7 @@
               {docObject}
               attributeModel={attrModel}
               {props}
+              {readonly}
               {compactMode}
               value={getObjectValue(attrModel.key, docObject)}
               onChange={getOnChange(docObject, attrModel)}
@@ -149,6 +151,7 @@
                 {props}
                 value={getObjectValue(attrModel.key, docObject)}
                 onChange={getOnChange(docObject, attrModel)}
+                {readonly}
                 on:resize={(e) => {
                   if (e.detail == null) return
                   sizes.set(index, e.detail)
@@ -161,6 +164,7 @@
             <ListPresenter
               {docObject}
               attributeModel={attrModel}
+              {readonly}
               {props}
               value={getObjectValue(attrModel.key, docObject)}
               onChange={getOnChange(docObject, attrModel)}
@@ -172,6 +176,7 @@
           {docObject}
           {attributeModel}
           {props}
+          {readonly}
           value={getObjectValue(attributeModel.key, docObject)}
           onChange={getOnChange(docObject, attributeModel)}
           hideDivider={i === 0}
@@ -201,6 +206,7 @@
               {docObject}
               attributeModel={attrModel}
               {props}
+              {readonly}
               {compactMode}
               value={getObjectValue(attrModel.key, docObject)}
               onChange={getOnChange(docObject, attrModel)}
@@ -216,6 +222,7 @@
                 {docObject}
                 {attributeModel}
                 {props}
+                {readonly}
                 value={getObjectValue(attributeModel.key, docObject)}
                 onChange={getOnChange(docObject, attributeModel)}
                 hideDivider={j === 0}
@@ -234,6 +241,7 @@
               {docObject}
               {attributeModel}
               {props}
+              {readonly}
               value={getObjectValue(attributeModel.key, docObject)}
               onChange={getOnChange(docObject, attributeModel)}
             />

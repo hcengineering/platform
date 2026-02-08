@@ -56,6 +56,7 @@
 {#each todos as todo (todo._id)}
   {#if isRequest(todo)}
     <ApproveRequestButtons {todo} card={value.card} />
+  {:else}
+    <Button label={getEmbeddedLabel(todo.title)} on:click={() => checkTodo(todo)} />
   {/if}
-  <Button label={getEmbeddedLabel(todo.title)} on:click={() => checkTodo(todo)} />
 {/each}

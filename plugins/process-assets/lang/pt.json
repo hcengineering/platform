@@ -142,7 +142,10 @@
     "FieldIsEmpty": "Campo está vazio",
     "Reviewers": "Revisores",
     "LockCard": "Bloquear cartão",
-    "LockSection": "Bloquear seção"
+    "LockSection": "Bloquear seção",
+    "Approvers": "Aprovadores",
+    "UnlockCard": "Desbloquear cartão",
+    "UnlockSection": "Desbloquear seção"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

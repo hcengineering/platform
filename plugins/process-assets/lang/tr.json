@@ -139,7 +139,10 @@
     "FieldIsEmpty": "Alan boş",
     "Reviewers": "Gözden geçirenler",
     "LockCard": "Kartı kilitle",
-    "LockSection": "Bölümü kilitle"
+    "LockSection": "Bölümü kilitle",
+    "Approvers": "Onaylayanlar",
+    "UnlockCard": "Kartın kilidini aç",
+    "UnlockSection": "Bölümün kilidini aç"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

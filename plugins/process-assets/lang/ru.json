@@ -142,7 +142,10 @@
     "FieldIsEmpty": "Поле пустое",
     "Reviewers": "Рецензенты",
     "LockCard": "Заблокировать карточку",
-    "LockSection": "Заблокировать секцию"
+    "LockSection": "Заблокировать секцию",
+    "Approvers": "Утверждающие",
+    "UnlockCard": "Разблокировать карточку",
+    "UnlockSection": "Разблокировать секцию"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

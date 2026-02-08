@@ -142,7 +142,10 @@
     "FieldIsEmpty": "字段为空",
     "Reviewers": "审查员",
     "LockCard": "锁定卡片",
-    "LockSection": "锁定部分"
+    "LockSection": "锁定部分",
+    "Approvers": "批准人",
+    "UnlockCard": "解锁卡片",
+    "UnlockSection": "解锁部分"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

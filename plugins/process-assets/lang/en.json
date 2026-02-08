@@ -142,7 +142,10 @@
     "FieldIsEmpty": "Field is empty",
     "Reviewers": "Reviewers",
     "LockCard": "Lock card",
-    "LockSection": "Lock section"
+    "LockSection": "Lock section",
+    "Approvers": "Approvers",
+    "UnlockCard": "Unlock card",
+    "UnlockSection": "Unlock section"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",
