@@ -199,13 +199,15 @@ export class TExecution extends TDoc implements Execution {
 @Model(process.class.ProcessToDo, time.class.ToDo)
 @UX(process.string.ToDo)
 export class TProcessToDo extends TToDo implements ProcessToDo {
-  execution!: Ref<Execution>
+  @Prop(TypeRef(process.class.Execution), process.string.Execution)
+    execution!: Ref<Execution>
 
   @Prop(TypeBoolean(), process.string.Rollback)
     withRollback!: boolean
 }
 
 @Model(process.class.ApproveRequest, process.class.ProcessToDo)
+@UX(process.string.ApproveRequest)
 export class TApproveRequest extends TProcessToDo implements ApproveRequest {
   @Prop(TypeBoolean(), process.string.IsApproved)
     approved?: boolean
@@ -461,7 +463,7 @@ export function createModel (builder: Builder): void {
         baseMenuClass: process.class.ApproveRequest
       },
       viewOptions: {
-        groupBy: ['user', 'approved'],
+        groupBy: ['user', 'approved', 'execution'],
         orderBy: [
           ['approved', SortingOrder.Descending],
           ['modifiedOn', SortingOrder.Descending],
@@ -473,14 +475,18 @@ export function createModel (builder: Builder): void {
         strict: true
       },
       config: [
+        'user',
+        {
+          key: '',
+          presenter: view.component.GrowPresenter,
+          displayProps: { grow: true }
+        },
+        'reason',
         {
           key: '',
           label: process.string.ApproveRequest,
           presenter: process.component.ApproveRequestPresenter
-        },
-        'user',
-        'approved',
-        'reason'
+        }
       ]
     },
     process.viewlet.CardRequests

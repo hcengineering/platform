@@ -400,7 +400,6 @@ export async function RequestApproval (
   control: ProcessControl,
   results: UserResult[] | undefined
 ): Promise<ExecuteResult> {
-  if (params.title === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: 'title' })
   if (params.user === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: 'user' })
   const group = generateId()
   const res: TxCreateDoc<ApproveRequest>[] = []
@@ -416,7 +415,7 @@ export async function RequestApproval (
         collection: 'todos',
         workslots: 0,
         execution: execution._id,
-        title: params.title,
+        title: 'Approve request',
         user,
         description: params.description ?? '',
         dueDate: params.dueDate,
@@ -507,6 +506,48 @@ export async function LockSection (
   rollback.push(
     control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
       $pull: { readonlySections: target }
+    })
+  )
+  return { txes: res, rollback, context: [] }
+}
+
+export async function UnlockCard (
+  params: MethodParams<Card>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+    readonly: false
+  })
+  res.push(tx)
+  rollback.push(
+    control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+      readonly: true
+    })
+  )
+  return { txes: res, rollback, context: [] }
+}
+
+export async function UnlockSection (
+  params: MethodParams<Card>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  if (params._id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+  if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
+  const target = params._id as Ref<MasterTag>
+  const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+    $pull: { readonlySections: target }
+  })
+  res.push(tx)
+  rollback.push(
+    control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+      $push: { readonlySections: target }
     })
   )
   return { txes: res, rollback, context: [] }

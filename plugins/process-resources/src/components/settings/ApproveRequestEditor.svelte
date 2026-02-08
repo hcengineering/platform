@@ -41,7 +41,7 @@
     }
   }
 
-  const keys = ['title', 'dueDate']
+  const keys = ['dueDate']
 
   $: value = params.user
 
@@ -55,7 +55,7 @@
     }
   }
 
-  const attribute = getMockAttribute(plugin.class.ApproveRequest, plugin.string.Reviewers, type)
+  const attribute = getMockAttribute(plugin.class.ApproveRequest, plugin.string.Approvers, type)
 
   const presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
   $: context = getContext(client, process, presenterClass.attrClass, presenterClass.category)
@@ -105,7 +105,7 @@
     align-items: center;
     row-gap: 0.5rem;
     column-gap: 1rem;
-    margin: 0.25rem 2rem 0;
+    margin: 0.25rem 2rem 0.5rem;
     width: calc(100% - 4rem);
     height: min-content;
   }

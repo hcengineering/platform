@@ -142,7 +142,10 @@
     "FieldIsEmpty": "Le champ est vide",
     "Reviewers": "Relecteurs",
     "LockCard": "Verrouiller la carte",
-    "LockSection": "Verrouiller la section"
+    "LockSection": "Verrouiller la section",
+    "Approvers": "Approbateurs",
+    "UnlockCard": "Déverrouiller la carte",
+    "UnlockSection": "Déverrouiller la section"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

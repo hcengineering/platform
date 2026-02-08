@@ -14,18 +14,9 @@
 -->
 
 <script lang="ts">
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { ApproveRequest } from '@hcengineering/process'
-  import { tooltip } from '@hcengineering/ui'
-  import { BooleanPresenter } from '@hcengineering/view-resources'
+  import LockSectionPresenter from './LockSectionPresenter.svelte'
 
-  export let value: ApproveRequest
+  export let params: Record<string, any>
 </script>
 
-<div
-  use:tooltip={value.approved !== undefined
-    ? { label: getEmbeddedLabel(value.user + ' ' + new Date(value.modifiedOn).toLocaleString()) }
-    : undefined}
->
-  <BooleanPresenter value={value.approved} />
-</div>
+<LockSectionPresenter {params} unlock />

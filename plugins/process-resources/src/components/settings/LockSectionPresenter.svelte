@@ -15,19 +15,18 @@
 
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { Process } from '@hcengineering/process'
   import { Label } from '@hcengineering/ui'
   import plugin from '../../plugin'
 
-  export let process: Process
   export let params: Record<string, any>
+  export let unlock: boolean = false
 
   const client = getClient()
 
   $: _class = client.getHierarchy().findClass(params._id)
 </script>
 
-<Label label={plugin.string.LockSection} />:
+<Label label={unlock ? plugin.string.UnlockSection : plugin.string.LockSection} />:
 {#if _class !== undefined}
   <Label label={_class.label} />
 {/if}

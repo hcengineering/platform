@@ -86,7 +86,8 @@ export default mergeIds(processId, process, {
     SubProcessMatchPresenter: '' as AnyComponent,
     FunctionSubmenu: '' as AnyComponent,
     LockSectionEditor: '' as AnyComponent,
-    LockSectionPresenter: '' as AnyComponent
+    LockSectionPresenter: '' as AnyComponent,
+    UnLockSectionPresenter: '' as AnyComponent
   },
   criteriaEditor: {
     BaseCriteria: '' as AnyComponent,
@@ -241,8 +242,11 @@ export default mergeIds(processId, process, {
     ProvideRejectionReason: '' as IntlString,
     FieldIsEmpty: '' as IntlString,
     Reviewers: '' as IntlString,
+    Approvers: '' as IntlString,
     LockCard: '' as IntlString,
-    LockSection: '' as IntlString
+    LockSection: '' as IntlString,
+    UnlockCard: '' as IntlString,
+    UnlockSection: '' as IntlString
   },
   permission: {
     RunProcess: '' as Ref<Permission>,

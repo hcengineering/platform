@@ -126,7 +126,14 @@
     "RunProcessPermission": "Executar processo",
     "CancelProcessPermission": "Cancelar processo",
     "ForbidRunProcessPermission": "Proibir execução do processo",
-    "ForbidCancelProcessPermission": "Proibir cancelamento do processo"
+    "ForbidCancelProcessPermission": "Proibir cancelamento do processo",
+    "Approvers": "Aprovadores",
+    "LockCard": "Bloquear cartão",
+    "LockSection": "Bloquear seção",
+    "Reviewers": "Revisores",
+    "FieldIsEmpty": "Campo vazio",
+    "UnlockCard": "Desbloquear cartão",
+    "UnlockSection": "Desbloquear seção"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

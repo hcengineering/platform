@@ -79,6 +79,7 @@ import ApproveRequestTriggerEditor from './components/settings/ApproveRequestTri
 import ApproveRequestTriggerPresenter from './components/settings/ApproveRequestTriggerPresenter.svelte'
 import LockSectionEditor from './components/settings/LockSectionEditor.svelte'
 import LockSectionPresenter from './components/settings/LockSectionPresenter.svelte'
+import UnLockSectionPresenter from './components/settings/UnLockSectionPresenter.svelte'
 import AppendEditor from './components/transformEditors/AppendEditor.svelte'
 import CutEditor from './components/transformEditors/CutEditor.svelte'
 import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
@@ -167,7 +168,8 @@ export default async (): Promise<Resources> => ({
     ApproveRequestTriggerEditor,
     ApproveRequestTriggerPresenter,
     LockSectionPresenter,
-    LockSectionEditor
+    LockSectionEditor,
+    UnLockSectionPresenter
   },
   criteriaEditor: {
     BaseCriteria,
