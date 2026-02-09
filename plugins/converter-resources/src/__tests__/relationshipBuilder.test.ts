@@ -14,6 +14,7 @@
 //
 
 import type { AttributeModel } from '@hcengineering/view'
+import type { IntlString } from '@hcengineering/platform'
 import type { Class, Client, Doc, Hierarchy, Ref } from '@hcengineering/core'
 import { rebuildRelationshipTableViewModel } from '../data/relationshipBuilder'
 
@@ -22,8 +23,14 @@ jest.mock('@hcengineering/view-resources', () => ({
   buildConfigLookup: jest.fn(() => ({}))
 }))
 
-function doc (id: string, overrides: Partial<Doc> & { $associations?: Record<string, Doc[] | Doc> } = {}): Doc {
-  return {
+type DocOverrides = Partial<Doc> & {
+  $associations?: Record<string, Doc[] | Doc>
+  title?: string
+}
+
+function doc (id: string, overrides: DocOverrides = {}): Doc {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- test helper with spread overrides
+  const result = {
     _id: id as Ref<Doc>,
     _class: 'test:class:Doc' as Ref<Class<Doc>>,
     space: 'test:space' as any,
@@ -32,11 +39,21 @@ function doc (id: string, overrides: Partial<Doc> & { $associations?: Record<str
     createdOn: 0,
     createdBy: '' as any,
     ...overrides
-  } as any
+  } as Doc
+  return result
 }
 
-function attr (key: string, label = key): AttributeModel {
-  return { key, label, _class: '' as Ref<Class<Doc>>, sortingKey: '', collectionAttr: false, isLookup: false }
+function attr (key: string, label: string = key): AttributeModel {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- minimal AttributeModel for tests
+  const result = {
+    key,
+    label: label as IntlString,
+    _class: '' as Ref<Class<Doc>>,
+    sortingKey: '',
+    collectionAttr: false,
+    isLookup: false
+  } as AttributeModel
+  return result
 }
 
 describe('relationshipBuilder', () => {
