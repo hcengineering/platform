@@ -28,7 +28,7 @@
   import { DropdownIntlItem, Modal, ModernEditbox, Label, ButtonMenu, Toggle } from '@hcengineering/ui'
   import task from '../../plugin'
   import TaskTypeKindEditor from './TaskTypeKindEditor.svelte'
-  import MixinSelector from './MixinSelector.svelte'
+  import ClassMixinSelector from './ClassMixinSelector.svelte'
   import LinkTaskTypeSelector from './LinkTaskTypeSelector.svelte'
   import { clearSettingsStore } from '@hcengineering/setting-resources'
 
@@ -301,7 +301,7 @@
         <TaskTypeKindEditor bind:kind />
       </div>
       <div class="hulyModal-content__settingsSet-line">
-        <MixinSelector
+        <ClassMixinSelector
           baseClass={taskTypeDescriptor?.baseClass ?? task.class.Task}
           bind:value={baseMixin}
         />
