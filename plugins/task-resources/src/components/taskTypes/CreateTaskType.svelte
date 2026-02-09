@@ -28,6 +28,7 @@
   import { DropdownIntlItem, Modal, ModernEditbox, Label, ButtonMenu } from '@hcengineering/ui'
   import task from '../../plugin'
   import TaskTypeKindEditor from './TaskTypeKindEditor.svelte'
+  import MixinSelector from './MixinSelector.svelte'
   import { clearSettingsStore } from '@hcengineering/setting-resources'
 
   const client = getClient()
@@ -68,6 +69,8 @@
   let { kind, name, targetClass, statusCategories, statuses, allowedAsChildOf } =
     taskType !== undefined ? { ...taskType } : { ...defaultTaskType(type) }
 
+  let baseMixin = taskType?.baseMixin
+
   function findStatusClass (_class: Ref<Class<Task>>): Ref<Class<Status>> | undefined {
     const h = getClient().getHierarchy()
     const attrs = h.getAllAttributes(_class)
@@ -98,7 +101,8 @@
       allowedAsChildOf,
       statusClass: findStatusClass(ofClass) ?? core.class.Status,
       parent: type._id,
-      icon: descr.icon
+      icon: descr.icon,
+      baseMixin
     }
 
     if (taskType === undefined && descr.statusCategoriesFunc !== undefined) {
@@ -136,8 +140,10 @@
     } else {
       const ofClassClass = client.getHierarchy().getClass(ofClass)
       // Create target class for custom field.
+      // Use baseMixin if provided, otherwise use ofClass
+      const extendsClass = baseMixin ?? ofClass
       _taskType.targetClass = await client.createDoc(core.class.Class, core.space.Model, {
-        extends: ofClass,
+        extends: extendsClass,
         kind: ClassifierKind.MIXIN,
         label: getEmbeddedLabel(name),
         icon: ofClassClass.icon
@@ -180,6 +186,12 @@
         <Label label={task.string.TaskType} />
       </span>
       <TaskTypeKindEditor bind:kind />
+    </div>
+    <div class="hulyModal-content__settingsSet-line">
+      <MixinSelector
+        baseClass={taskTypeDescriptor?.baseClass ?? task.class.Task}
+        bind:value={baseMixin}
+      />
     </div>
     {#if taskTypeDescriptors.length > 1}
       <div class="hulyModal-content__settingsSet-line">
