@@ -29,6 +29,7 @@ export interface FileStorageUploadOptions {
 /** @public */
 export interface FileStorage {
   getFileUrl: (workspace: string, file: string, filename?: string) => string
+  getCookiePath: (workspace: string) => string
   getFileMeta: (token: string, workspace: string, file: string) => Promise<Record<string, any>>
   uploadFile: (
     token: string,
