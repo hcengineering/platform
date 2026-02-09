@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { Class, ClassifierKind, Doc, Mixin, Ref } from '@hcengineering/core'
-  import { Task } from '@hcengineering/task'
+  import { Class, Mixin, Ref, SortingOrder } from '@hcengineering/core'
+  import task, { Task, TaskType } from '@hcengineering/task'
   import { ButtonMenu, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import { getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import plugin from '../../plugin'
 
   export let baseClass: Ref<Class<Task>>
@@ -19,49 +19,79 @@
   interface MixinItem {
     id: string
     label: string
-    level: number
-    _class: Ref<Class<Doc>>
+    targetClass: Ref<Mixin<Task>>
+    parentMixin: Ref<Mixin<Task>> | undefined
   }
 
-  function buildMixinHierarchy (rootClass: Ref<Class<Doc>>, level: number = 0): MixinItem[] {
+  let allTaskTypes: TaskType[] = []
+
+  // Query all TaskTypes to get their names and targetClass mixins
+  const taskTypeQuery = createQuery()
+  $: {
+    const compatibleClasses = hierarchy.getDescendants(baseClass)
+    taskTypeQuery.query(
+      task.class.TaskType,
+      { ofClass: { $in: compatibleClasses } },
+      (res) => {
+        allTaskTypes = res
+      },
+      { sort: { name: SortingOrder.Ascending } }
+    )
+  }
+
+  // Build hierarchical items from TaskTypes
+  // Each TaskType has a targetClass mixin and optionally a baseMixin (parent)
+  function buildItems (taskTypes: TaskType[]): MixinItem[] {
     const result: MixinItem[] = []
-    const descendants = hierarchy.getDescendants(rootClass)
 
-    for (const desc of descendants) {
-      try {
-        const cls = hierarchy.getClass(desc)
-        // Only include direct children (extends === rootClass) and mixins
-        if (cls.extends === rootClass && cls.kind === ClassifierKind.MIXIN && cls.label !== undefined) {
-          // Get the label string
-          let labelStr = ''
-          try {
-            const labelValue = client.getModel().findAllSync(cls._class, { _id: cls._id })[0]
-            labelStr = (labelValue as any)?.label ?? cls._id.split(':').pop() ?? cls._id
-          } catch {
-            labelStr = cls._id.split(':').pop() ?? cls._id
-          }
+    // Create a map of targetClass -> TaskType for lookup
+    const targetClassToTaskType = new Map<string, TaskType>()
+    for (const tt of taskTypes) {
+      targetClassToTaskType.set(tt.targetClass as string, tt)
+    }
 
+    // Find root TaskTypes (those without baseMixin or with baseMixin that's not another TaskType's targetClass)
+    const rootTaskTypes = taskTypes.filter((tt) => {
+      if (tt.baseMixin === undefined) return true
+      return !targetClassToTaskType.has(tt.baseMixin as string)
+    })
+
+    // Add root items
+    for (const tt of rootTaskTypes) {
+      result.push({
+        id: tt.targetClass as string,
+        label: tt.name,
+        targetClass: tt.targetClass,
+        parentMixin: tt.baseMixin
+      })
+
+      // Find and add children (TaskTypes that have this targetClass as baseMixin)
+      const children = taskTypes.filter((child) => child.baseMixin === tt.targetClass)
+      for (const child of children) {
+        result.push({
+          id: child.targetClass as string,
+          label: '  ' + child.name,
+          targetClass: child.targetClass,
+          parentMixin: child.baseMixin
+        })
+
+        // Add grandchildren
+        const grandchildren = taskTypes.filter((gc) => gc.baseMixin === child.targetClass)
+        for (const gc of grandchildren) {
           result.push({
-            id: cls._id,
-            label: '  '.repeat(level) + labelStr,
-            level,
-            _class: cls._id
+            id: gc.targetClass as string,
+            label: '    ' + gc.name,
+            targetClass: gc.targetClass,
+            parentMixin: gc.baseMixin
           })
-
-          // Recursively add children
-          const children = buildMixinHierarchy(cls._id, level + 1)
-          result.push(...children)
         }
-      } catch {
-        // Skip invalid classes
       }
     }
 
     return result
   }
 
-  // Build the hierarchical list of mixins
-  $: mixinItems = buildMixinHierarchy(baseClass)
+  $: mixinItems = buildItems(allTaskTypes)
 
   // Build items for ButtonMenu
   $: items = [
