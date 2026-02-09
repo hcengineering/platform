@@ -39,8 +39,7 @@
     )
   }
 
-  // Build hierarchical items from TaskTypes
-  // Each TaskType has a targetClass mixin and optionally a baseMixin (parent)
+  // Build hierarchical items from TaskTypes using recursive tree structure
   function buildItems (taskTypes: TaskType[]): MixinItem[] {
     const result: MixinItem[] = []
 
@@ -50,44 +49,41 @@
       targetClassToTaskType.set(tt.targetClass as string, tt)
     }
 
-    // Find root TaskTypes (those without baseMixin or with baseMixin that's not another TaskType's targetClass)
-    const rootTaskTypes = taskTypes.filter((tt) => {
-      if (tt.baseMixin === undefined) return true
-      return !targetClassToTaskType.has(tt.baseMixin as string)
-    })
+    // Find children of a given targetClass
+    function getChildren (parentTargetClass: Ref<Mixin<Task>> | undefined): TaskType[] {
+      return taskTypes.filter((tt) => tt.baseMixin === parentTargetClass)
+    }
 
-    // Add root items
-    for (const tt of rootTaskTypes) {
-      result.push({
-        id: tt.targetClass as string,
-        label: tt.name,
-        targetClass: tt.targetClass,
-        parentMixin: tt.baseMixin
+    // Get root TaskTypes (those without baseMixin or with baseMixin not in our set)
+    function getRoots (): TaskType[] {
+      return taskTypes.filter((tt) => {
+        if (tt.baseMixin === undefined) return true
+        return !targetClassToTaskType.has(tt.baseMixin as string)
       })
+    }
 
-      // Find and add children (TaskTypes that have this targetClass as baseMixin)
-      const children = taskTypes.filter((child) => child.baseMixin === tt.targetClass)
-      for (const child of children) {
+    // Recursively add items with proper indentation
+    function addItems (parent: Ref<Mixin<Task>> | undefined, level: number, prefix: string): void {
+      const children = parent === undefined ? getRoots() : getChildren(parent)
+
+      for (let i = 0; i < children.length; i++) {
+        const tt = children[i]
+        const isLast = i === children.length - 1
+        const connector = level === 0 ? '' : (isLast ? '└─ ' : '├─ ')
+        const nextPrefix = level === 0 ? '' : (isLast ? '   ' : '│  ')
+
         result.push({
-          id: child.targetClass as string,
-          label: '  ' + child.name,
-          targetClass: child.targetClass,
-          parentMixin: child.baseMixin
+          id: tt.targetClass as string,
+          label: prefix + connector + tt.name,
+          targetClass: tt.targetClass,
+          parentMixin: tt.baseMixin
         })
 
-        // Add grandchildren
-        const grandchildren = taskTypes.filter((gc) => gc.baseMixin === child.targetClass)
-        for (const gc of grandchildren) {
-          result.push({
-            id: gc.targetClass as string,
-            label: '    ' + gc.name,
-            targetClass: gc.targetClass,
-            parentMixin: gc.baseMixin
-          })
-        }
+        addItems(tt.targetClass, level + 1, prefix + nextPrefix)
       }
     }
 
+    addItems(undefined, 0, '')
     return result
   }
 
