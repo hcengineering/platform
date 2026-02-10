@@ -16,7 +16,7 @@
   import { type SubscriptionData, SubscriptionType } from '@hcengineering/account-client'
   import { type SubscribeRequest, type CheckoutStatus } from '@hcengineering/payment-client'
   import { Tier } from '@hcengineering/billing'
-  import { getMetadata } from '@hcengineering/platform'
+  import { getMetadata, translate } from '@hcengineering/platform'
   import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
   import { type Ref, SortingOrder, UsageStatus } from '@hcengineering/core'
   import {
@@ -29,7 +29,9 @@
     themeStore,
     getLocation,
     navigate,
-    showPopup
+    showPopup,
+    addNotification,
+    NotificationSeverity
   } from '@hcengineering/ui'
   import { onMount, onDestroy } from 'svelte'
 
@@ -37,6 +39,7 @@
   import { getAccountClient, getPaymentClient } from '../utils'
 
   import UsageSection from './UsageSection.svelte'
+  import BillingErrorNotification from './BillingErrorNotification.svelte'
 
   const client = getClient()
   const paymentClient = getPaymentClient()
@@ -83,8 +86,19 @@
       const { checkoutUrl } = await paymentClient.createSubscription(workspace, request)
       window.location.href = checkoutUrl
     } catch (error) {
-      console.error('error while upgrading plan:', error)
+      console.error('Error while upgrading plan:', error)
+      await showErrorNotification()
     }
+  }
+
+  async function showErrorNotification (): Promise<void> {
+    addNotification(
+      await translate(plugin.string.SubscriptionOperationFailed, {}, $themeStore.language),
+      await translate(plugin.string.SubscriptionErrorMessage, {}, $themeStore.language),
+      BillingErrorNotification,
+      undefined,
+      NotificationSeverity.Error
+    )
   }
 
   async function showPlanChangeConfirmation (newPlan: string, newTier: Tier): Promise<void> {
@@ -167,7 +181,8 @@
       // It's a SubscriptionData - direct update successful
       currentSubscription = updateResult
     } catch (error) {
-      console.error('error updating subscription:', error)
+      console.error('Error updating subscription:', error)
+      await showErrorNotification()
     } finally {
       isUpdating = false
     }
@@ -204,7 +219,8 @@
       isCanceling = true
       currentSubscription = await paymentClient.cancelSubscription(currentSubscription.id)
     } catch (error) {
-      console.error('error canceling subscription:', error)
+      console.error('Error canceling subscription:', error)
+      await showErrorNotification()
     } finally {
       isCanceling = false
     }
@@ -243,7 +259,8 @@
       isUncanceling = true
       currentSubscription = await paymentClient.uncancelSubscription(currentSubscription.id)
     } catch (error) {
-      console.error('error uncanceling subscription:', error)
+      console.error('Error uncanceling subscription:', error)
+      await showErrorNotification()
     } finally {
       isUncanceling = false
     }
@@ -261,7 +278,8 @@
       const plan = currentSubscription?.plan
       currentTier = plan !== undefined ? tierByPlan[plan] : undefined
     } catch (err) {
-      console.error('error fetching current plan:', err)
+      console.error('Error fetching current plan:', err)
+      await showErrorNotification()
     } finally {
       loading = false
     }
@@ -275,7 +293,8 @@
       const workspaceInfo = await accountClient.getWorkspaceInfo(false)
       usageInfo = workspaceInfo.usageInfo ?? null
     } catch (err) {
-      console.error('error fetching usage stats:', err)
+      console.error('Error fetching usage stats:', err)
+      await showErrorNotification()
       usageInfo = null
     }
   }
@@ -317,7 +336,8 @@
         }, POLL_INTERVAL)
       }
     } catch (err) {
-      console.error('error polling checkout status:', err)
+      console.error('Error polling checkout status:', err)
+      await showErrorNotification()
       // Retry on error (up to max attempts)
       if (pollAttempts < MAX_POLL_ATTEMPTS) {
         pollTimer = setTimeout(() => {
