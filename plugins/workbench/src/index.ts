@@ -17,6 +17,7 @@ import { workbenchId, workbenchPlugin } from './plugin'
 
 export * from './analytics'
 export * from './types'
+export type { ViewletSpecialViewAction } from './types'
 export * from './utils'
 
 export { workbenchId }
