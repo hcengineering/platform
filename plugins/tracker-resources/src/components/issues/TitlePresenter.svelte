@@ -22,11 +22,12 @@
   export let value: WithLookup<Issue>
   export let shouldUseMargin: boolean = false
   export let showParent: boolean = true
-  export let noShrink: boolean = false
+  export let grow: boolean = false
   export let kind: 'list' | undefined = undefined
   export let onClick: (() => void) | undefined = undefined
   export let disabled: boolean = false
   export let maxWidth: string | undefined = undefined
+  export let minWidth: string | undefined = '1rem'
 </script>
 
 {#if value}
@@ -35,7 +36,8 @@
     class:with-margin={shouldUseMargin}
     class:list={kind === 'list'}
     style:max-width={maxWidth}
-    class:no-shrink={noShrink}
+    style:min-width={minWidth}
+    class:flex-grow={grow}
     title={value.title}
   >
     <DocNavLink object={value} {onClick} component={tracker.component.EditIssue} shrink={1} {disabled} colorInherit>
@@ -54,10 +56,10 @@
     display: inline-flex;
     align-items: center;
     flex-shrink: 1;
-    min-width: 1rem;
 
-    &.no-shrink {
-      flex-shrink: 0;
+    &.flex-grow {
+      flex-shrink: 0.5;
+      flex-grow: 1;
     }
   }
 
