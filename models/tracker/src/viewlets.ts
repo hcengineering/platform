@@ -116,7 +116,9 @@ export function issueConfig (
       key: '',
       label: tracker.string.Title,
       presenter: tracker.component.TitlePresenter,
-      props: compact ? { shouldUseMargin: true, showParent: false } : {},
+      props: compact
+        ? { shouldUseMargin: true, showParent: false, noShrink: true }
+        : { noShrink: true },
       displayProps: { key: key + 'title' }
     },
     {

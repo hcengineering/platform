@@ -22,6 +22,7 @@
   export let value: WithLookup<Issue>
   export let shouldUseMargin: boolean = false
   export let showParent: boolean = true
+  export let noShrink: boolean = false
   export let kind: 'list' | undefined = undefined
   export let onClick: (() => void) | undefined = undefined
   export let disabled: boolean = false
@@ -34,6 +35,7 @@
     class:with-margin={shouldUseMargin}
     class:list={kind === 'list'}
     style:max-width={maxWidth}
+    class:no-shrink={noShrink}
     title={value.title}
   >
     <DocNavLink object={value} {onClick} component={tracker.component.EditIssue} shrink={1} {disabled} colorInherit>
@@ -53,6 +55,10 @@
     align-items: center;
     flex-shrink: 1;
     min-width: 1rem;
+
+    &.no-shrink {
+      flex-shrink: 0;
+    }
   }
 
   .with-margin {
