@@ -54,9 +54,7 @@ export const billingPlugin = plugin(billingId, {
     Legendary: '' as IntlString,
     LegendaryDescription: '' as IntlString,
     UpgradePlan: '' as IntlString,
-    LimitReached: '' as IntlString,
-    SubscriptionOperationFailed: '' as IntlString,
-    SubscriptionErrorMessage: '' as IntlString
+    LimitReached: '' as IntlString
   },
   icon: {
     Billing: '' as Asset,
