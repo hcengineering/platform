@@ -14,25 +14,26 @@
 //
 
 import { AccountRole, type AccountUuid, type Class, DOMAIN_MODEL, type Ref, type Space } from '@hcengineering/core'
-import { type Builder, Mixin, Model, Prop, TypeRef, UX } from '@hcengineering/model'
+import { type Builder, Mixin, Model, Prop, TypeRecord, TypeRef, TypeString, UX } from '@hcengineering/model'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import { createAction } from '@hcengineering/model-view'
+import core, { TAttachedDoc, TClass, TDoc } from '@hcengineering/model-core'
 import { type Asset, getEmbeddedLabel, type IntlString, type Resource } from '@hcengineering/platform'
-import view, { type KeyBinding } from '@hcengineering/view'
+import view, { type KeyBinding, type Viewlet } from '@hcengineering/view'
 import type {
   Application,
   ApplicationNavModel,
   HiddenApplication,
   SpaceView,
   ViewConfiguration,
+  ViewletSpecialViewAction,
   Widget,
   WidgetPreference,
   WidgetTab,
   WidgetType,
   WorkbenchTab
 } from '@hcengineering/workbench'
-import { type AnyComponent } from '@hcengineering/ui/src/types'
-import core, { TClass, TDoc } from '@hcengineering/model-core'
+import { type AnyComponent, type ComponentExtensionId } from '@hcengineering/ui/src/types'
 import presentation from '@hcengineering/model-presentation'
 
 import workbench from './plugin'
@@ -105,10 +106,29 @@ export class TWorkbenchTab extends TPreference implements WorkbenchTab {
   isPinned!: boolean
 }
 
+@Model(workbench.class.ViewletSpecialViewAction, core.class.AttachedDoc, DOMAIN_MODEL)
+@UX(workbench.string.ViewletSpecialViewAction)
+export class TViewletSpecialViewAction extends TAttachedDoc implements ViewletSpecialViewAction {
+  @Prop(TypeRef(view.class.Viewlet), core.string.AttachedTo)
+  declare attachedTo: Ref<Viewlet>
+
+  @Prop(TypeRef(view.class.Viewlet), core.string.AttachedToClass)
+  declare attachedToClass: Ref<Class<Viewlet>>
+
+  override collection: 'specialViewActions' = 'specialViewActions'
+
+  @Prop(TypeString(), getEmbeddedLabel('Extension'))
+  declare extension: ComponentExtensionId
+
+  @Prop(TypeRecord(), getEmbeddedLabel('Config'))
+  declare config?: Record<string, any>
+}
+
 export function createModel (builder: Builder): void {
   builder.createModel(
     TApplication,
     TSpaceView,
+    TViewletSpecialViewAction,
     THiddenApplication,
     TApplicationNavModel,
     TWidget,
