@@ -20,6 +20,7 @@ import serverCore from '@hcengineering/server-core'
 import serverCard from '@hcengineering/server-card'
 import card from '@hcengineering/card'
 import communication from '@hcengineering/communication'
+import serverNotification from '@hcengineering/server-notification'
 
 export { serverCardId } from '@hcengineering/server-card'
 
@@ -128,5 +129,9 @@ export function createModel (builder: Builder): void {
       fields: [['_id']]
     },
     title: [['title']]
+  })
+
+  builder.mixin(card.class.Card, core.class.Class, serverNotification.mixin.TextPresenter, {
+    presenter: serverCard.function.CardTextPresenter
   })
 }
