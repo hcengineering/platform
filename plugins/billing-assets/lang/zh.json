@@ -56,6 +56,8 @@
     "Of": "/",
     "UpgradePlan": "升级计划",
     "LimitReached": "已达到工作空间限制，某些功能可能被禁用。请升级以恢复完全访问权限。",
-    "RestrictedPlans": "只有工作空间所有者或计费管理员才能更改订阅计划。"
+    "RestrictedPlans": "只有工作空间所有者或计费管理员才能更改订阅计划。",
+    "SubscriptionOperationFailed": "订阅操作失败",
+    "SubscriptionErrorMessage": "出了点问题。请重试或联系支持。"
   }
 }

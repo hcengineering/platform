@@ -39,7 +39,7 @@
     ViewletSelector,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
-  import workbench, { ParentsNavigationModel } from '@hcengineering/workbench'
+  import workbench, { type ParentsNavigationModel, type ViewletSpecialViewAction } from '@hcengineering/workbench'
   import ComponentNavigator from './ComponentNavigator.svelte'
   import { deepEqual } from 'fast-equals'
   import { ComponentType } from 'svelte'
@@ -60,8 +60,6 @@
   export let modes: IModeSelector<any> | undefined = undefined
   export let navigationModel: ParentsNavigationModel | undefined = undefined
   export let queryBuilder: Resource<() => Promise<DocumentQuery<Doc>>> | undefined = undefined
-  export let actionConfig: Record<string, any> = {}
-  export let actionVisible: boolean = false
   export let defaultViewletDescriptor: Ref<ViewletDescriptor> | undefined = undefined
   export let defaultViewOptions: ViewOptions | undefined = undefined
   export let defaultConfig: (BuildModelKey | string)[] | undefined = undefined
@@ -95,6 +93,13 @@
 
   $: void updateQuery(_baseQuery, viewOptions, viewlet, queryBuilder)
   $: void updateOptions(viewlet?.options, viewOptions, viewlet)
+
+  $: viewletActions =
+    viewlet != null
+      ? (client.getModel().findAllSync(workbench.class.ViewletSpecialViewAction, {
+          attachedTo: viewlet._id
+        }) as ViewletSpecialViewAction[])
+      : []
 
   async function updateOptions (
     _options: FindOptions<Doc> | undefined,
@@ -163,10 +168,18 @@
     <FilterButton {_class} bind:visible={filterVisible} />
   </svelte:fragment>
   <svelte:fragment slot="actions">
-    <ComponentExtensions
-      extension={workbench.extensions.SpecialViewAction}
-      props={{ _class, visible: actionVisible, query: resultQuery, config: actionConfig }}
-    />
+    {#if viewletActions != null && viewletActions.length > 0}
+      {#each viewletActions as action (action._id)}
+        <ComponentExtensions
+          extension={action.extension}
+          props={{
+            _class,
+            query: resultQuery,
+            config: action.config ?? {}
+          }}
+        />
+      {/each}
+    {/if}
     {#if createLabel && createComponent}
       <Button
         icon={IconAdd}

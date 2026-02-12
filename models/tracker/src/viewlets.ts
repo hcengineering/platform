@@ -116,7 +116,9 @@ export function issueConfig (
       key: '',
       label: tracker.string.Title,
       presenter: tracker.component.TitlePresenter,
-      props: compact ? { shouldUseMargin: true, showParent: false } : {},
+      props: compact
+        ? { shouldUseMargin: true, showParent: false, grow: true, minWidth: '5rem' }
+        : { grow: true, minWidth: '5rem' },
       displayProps: { key: key + 'title' }
     },
     {
@@ -150,7 +152,8 @@ export function issueConfig (
             props: {
               kind: 'list',
               size: 'small',
-              shouldShowPlaceholder: false
+              shouldShowPlaceholder: false,
+              maxWidth: '30rem'
             },
             displayProps: {
               key: key + 'milestone',
@@ -169,7 +172,8 @@ export function issueConfig (
             props: {
               kind: 'list',
               size: 'small',
-              shouldShowPlaceholder: false
+              shouldShowPlaceholder: false,
+              maxWidth: '30rem'
             },
             displayProps: {
               key: key + 'component',
@@ -425,7 +429,8 @@ export function defineViewlets (builder: Builder): void {
           props: {
             kind: 'list',
             size: 'small',
-            shouldShowPlaceholder: false
+            shouldShowPlaceholder: false,
+            maxWidth: '30rem'
           },
           displayProps: { key: 'component', compression: true }
         },
@@ -436,7 +441,8 @@ export function defineViewlets (builder: Builder): void {
           props: {
             kind: 'list',
             size: 'small',
-            shouldShowPlaceholder: false
+            shouldShowPlaceholder: false,
+            maxWidth: '30rem'
           },
           displayProps: { key: 'milestone', compression: true }
         },

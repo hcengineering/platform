@@ -1,5 +1,6 @@
+<!--
 //
-// Copyright © 2020, 2021 Anticrm Platform Contributors.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,14 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+-->
 
-import { workbenchId, workbenchPlugin } from './plugin'
+<script lang="ts">
+  import { Notification, NotificationToast } from '@hcengineering/ui'
 
-export * from './analytics'
-export * from './types'
-export type { ViewletSpecialViewAction } from './types'
-export * from './utils'
+  export let notification: Notification
+  export let onRemove: () => void
+</script>
 
-export { workbenchId }
-
-export default workbenchPlugin
+<NotificationToast title={notification.title} severity={notification.severity} onClose={onRemove}>
+  <svelte:fragment slot="content">
+    <div class="pl-1">
+      {notification.subTitle}
+    </div>
+  </svelte:fragment>
+</NotificationToast>
