@@ -96,11 +96,9 @@
 
   $: viewletActions =
     viewlet != null
-      ? (client
-          .getModel()
-          .findAllSync(workbench.class.ViewletSpecialViewAction, {
-            attachedTo: viewlet._id
-          }) as ViewletSpecialViewAction[])
+      ? (client.getModel().findAllSync(workbench.class.ViewletSpecialViewAction, {
+          attachedTo: viewlet._id
+        }) as ViewletSpecialViewAction[])
       : []
 
   async function updateOptions (
