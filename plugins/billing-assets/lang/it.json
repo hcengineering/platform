@@ -56,6 +56,8 @@
     "Of": "di",
     "UpgradePlan": "Aggiorna Piano",
     "LimitReached": "Limite workspace raggiunto, alcune funzionalità potrebbero essere disabilitate. Aggiorna per ripristinare l'accesso completo.",
-    "RestrictedPlans": "Solo il proprietario del workspace o il responsabile della fatturazione può modificare il piano di abbonamento."
+    "RestrictedPlans": "Solo il proprietario del workspace o il responsabile della fatturazione può modificare il piano di abbonamento.",
+    "SubscriptionOperationFailed": "Operazione di abbonamento non riuscita",
+    "SubscriptionErrorMessage": "Qualcosa è andato storto. Riprova o contatta l'assistenza."
   }
 }

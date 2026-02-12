@@ -56,6 +56,8 @@
     "Of": "of",
     "UpgradePlan": "Upgrade Plan",
     "LimitReached": "Workspace limit reached, some functionality may be disabled. Upgrade to restore full access.",
-    "RestrictedPlans": "Only the workspace owner or billing manager can change the subscription plan"
+    "RestrictedPlans": "Only the workspace owner or billing manager can change the subscription plan",
+    "SubscriptionOperationFailed": "Subscription operation failed",
+    "SubscriptionErrorMessage": "Something went wrong. Please try again or contact support."
   }
 }
