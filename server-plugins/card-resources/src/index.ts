@@ -876,8 +876,17 @@ export async function OnCardTag (ctx: TxMixin<Card, Card>[], control: TriggerCon
   return res
 }
 
+export async function CardTextPresenter (doc: Doc): Promise<string> {
+  const card = doc as Card
+
+  return card.title
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
+  function: {
+    CardTextPresenter
+  },
   trigger: {
     OnAttribute,
     OnAttributeRemove,

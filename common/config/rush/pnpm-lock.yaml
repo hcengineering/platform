@@ -6857,6 +6857,9 @@ importers:
       '@hcengineering/model-guest':
         specifier: workspace:^0.7.0
         version: link:../guest
+      '@hcengineering/model-notification':
+        specifier: workspace:^0.7.0
+        version: link:../notification
       '@hcengineering/model-preference':
         specifier: workspace:^0.7.0
         version: link:../preference
@@ -6872,6 +6875,9 @@ importers:
       '@hcengineering/model-workbench':
         specifier: workspace:^0.7.0
         version: link:../workbench
+      '@hcengineering/notification':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/notification
       '@hcengineering/platform':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/platform
@@ -10425,6 +10431,9 @@ importers:
       '@hcengineering/server-core':
         specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/core
+      '@hcengineering/server-notification':
+        specifier: workspace:^0.7.0
+        version: link:../../server-plugins/notification
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: workspace:^0.7.19
@@ -32222,6 +32231,9 @@ importers:
       '@hcengineering/server-core':
         specifier: workspace:^0.7.18
         version: link:../../foundations/server/packages/core
+      '@hcengineering/server-notification':
+        specifier: workspace:^0.7.0
+        version: link:../notification
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: workspace:^0.7.19
