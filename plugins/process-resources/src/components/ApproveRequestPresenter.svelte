@@ -22,19 +22,19 @@
   export let value: ApproveRequest
 
   export function formatSignatureDate (date: number): string {
-  const timeZone: string = getUserTimezone()
+    const timeZone: string = getUserTimezone()
 
-  return new Date(date).toLocaleDateString('default', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    timeZone,
-    timeZoneName: 'short',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric'
-  })
-}
+    return new Date(date).toLocaleDateString('default', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      timeZone,
+      timeZoneName: 'short',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric'
+    })
+  }
 </script>
 
 <div
