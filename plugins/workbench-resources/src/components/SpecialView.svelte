@@ -36,10 +36,11 @@
     FilterButton,
     getResultOptions,
     getResultQuery,
+    getViewletSpecialActions,
     ViewletSelector,
     ViewletSettingButton
   } from '@hcengineering/view-resources'
-  import workbench, { type ParentsNavigationModel, type ViewletSpecialViewAction } from '@hcengineering/workbench'
+  import workbench, { type ParentsNavigationModel } from '@hcengineering/workbench'
   import ComponentNavigator from './ComponentNavigator.svelte'
   import { deepEqual } from 'fast-equals'
   import { ComponentType } from 'svelte'
@@ -94,12 +95,7 @@
   $: void updateQuery(_baseQuery, viewOptions, viewlet, queryBuilder)
   $: void updateOptions(viewlet?.options, viewOptions, viewlet)
 
-  $: viewletActions =
-    viewlet != null
-      ? (client.getModel().findAllSync(workbench.class.ViewletSpecialViewAction, {
-          attachedTo: viewlet._id
-        }) as ViewletSpecialViewAction[])
-      : []
+  $: viewletActions = viewlet != null ? getViewletSpecialActions(client, viewlet) : []
 
   async function updateOptions (
     _options: FindOptions<Doc> | undefined,
@@ -141,7 +137,9 @@
 
 <Header
   adaptive={modes !== undefined ? 'doubleRow' : filterVisible ? 'freezeActions' : 'disabled'}
-  hideActions={!(createLabel && createComponent) && createButton === undefined}
+  hideActions={!(createLabel && createComponent) &&
+    createButton === undefined &&
+    (viewletActions == null || viewletActions.length === 0)}
   hideExtra={modes === undefined}
   freezeBefore
 >

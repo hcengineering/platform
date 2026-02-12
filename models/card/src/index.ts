@@ -683,6 +683,60 @@ export function createModel (builder: Builder): void {
     card.viewlet.CardRelationshipTable
   )
 
+  builder.createDoc(
+    presentation.class.ComponentPointExtension,
+    core.space.Model,
+    {
+      extension: converter.extensions.CopyAsMarkdownAction,
+      component: converter.component.CopyAsMarkdownButton
+    },
+    converter.extensions.CopyAsMarkdownButton
+  )
+
+  builder.createDoc(
+    view.class.ViewletViewAction,
+    core.space.Model,
+    {
+      descriptor: view.viewlet.RelationshipTable,
+      extension: converter.extensions.CopyAsMarkdownAction,
+      applicableToClass: card.class.Card
+    },
+    card.specialViewAction.CardRelationshipTable
+  )
+
+  builder.createDoc(
+    view.class.ViewletViewAction,
+    core.space.Model,
+    {
+      descriptor: view.viewlet.Table,
+      extension: converter.extensions.CopyAsMarkdownAction,
+      applicableToClass: card.class.Card
+    },
+    card.specialViewAction.CardTable
+  )
+
+  builder.createDoc(
+    view.class.ViewletViewAction,
+    core.space.Model,
+    {
+      descriptor: view.viewlet.Table,
+      extension: converter.extensions.CopyAsMarkdownAction,
+      applicableToClass: card.class.Card
+    },
+    card.specialViewAction.CopyAsMarkdownTable
+  )
+
+  builder.createDoc(
+    view.class.ViewletViewAction,
+    core.space.Model,
+    {
+      descriptor: view.viewlet.RelationshipTable,
+      extension: converter.extensions.CopyAsMarkdownAction,
+      applicableToClass: card.class.Card
+    },
+    card.specialViewAction.CopyAsMarkdownRelationshipTable
+  )
+
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: card.component.CardPresenter
   })

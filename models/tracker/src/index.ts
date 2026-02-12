@@ -487,6 +487,17 @@ export function createModel (builder: Builder): void {
 
   defineViewlets(builder)
 
+  builder.createDoc(
+    view.class.ViewletViewAction,
+    core.space.Model,
+    {
+      descriptor: view.viewlet.List,
+      extension: converter.extensions.CopyAsMarkdownAction,
+      applicableToClass: tracker.class.Issue
+    },
+    tracker.specialViewAction.IssueList
+  )
+
   const issuesId = 'issues'
   const componentsId = 'components'
   const milestonesId = 'milestones'

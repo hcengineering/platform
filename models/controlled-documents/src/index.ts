@@ -319,6 +319,17 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    view.class.ViewletViewAction,
+    core.space.Model,
+    {
+      descriptor: view.viewlet.Table,
+      extension: converter.extensions.CopyAsMarkdownAction,
+      applicableToClass: documents.class.Document
+    },
+    documents.specialViewAction.TableDocument
+  )
+
+  builder.createDoc(
     view.class.Viewlet,
     core.space.Model,
     {
