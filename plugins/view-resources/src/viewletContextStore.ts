@@ -15,7 +15,6 @@ export interface ViewletContext {
   query?: DocumentQuery<Doc>
   viewOptions?: ViewOptions
   _class?: Ref<Class<Doc>>
-  /** Set by RelationshipTable when it has data; used by CopyAsMarkdownButton */
   relationshipTableData?: CopyRelationshipTableAsMarkdownProps
 }
 
