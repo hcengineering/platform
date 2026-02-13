@@ -47,10 +47,10 @@ function expandRowsForRoot (
   root: Doc,
   associationAttrs: AttributeModel[],
   pathPerAttr: string[][]
-): Array<{ docsByLevel: (Doc | undefined)[] }> {
-  const rows: Array<{ docsByLevel: (Doc | undefined)[] }> = []
+): Array<{ docsByLevel: Array<Doc | undefined> }> {
+  const rows: Array<{ docsByLevel: Array<Doc | undefined> }> = []
 
-  function expand (parent: Doc | undefined, level: number, docsSoFar: (Doc | undefined)[]): void {
+  function expand (parent: Doc | undefined, level: number, docsSoFar: Array<Doc | undefined>): void {
     if (level >= associationAttrs.length) {
       rows.push({ docsByLevel: docsSoFar })
       return
@@ -78,7 +78,7 @@ function expandRowsForRoot (
 /**
  * Compute rowSpan for a given level at each row index: how many consecutive rows share the same doc at this level.
  */
-function computeRowSpans (rows: Array<{ docsByLevel: (Doc | undefined)[] }>, level: number): number[] {
+function computeRowSpans (rows: Array<{ docsByLevel: Array<Doc | undefined> }>, level: number): number[] {
   const spans: number[] = []
   for (let i = 0; i < rows.length; i++) {
     const doc = rows[i].docsByLevel[level]

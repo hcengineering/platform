@@ -14,28 +14,11 @@
 // limitations under the License.
 //
 
-import type {
-  AccountRole,
-  AccountUuid,
-  AttachedDoc,
-  Class,
-  Doc,
-  DocumentQuery,
-  Obj,
-  Ref,
-  Space
-} from '@hcengineering/core'
-import type { Viewlet } from '@hcengineering/view'
+import type { AccountRole, AccountUuid, Class, Doc, DocumentQuery, Obj, Ref, Space } from '@hcengineering/core'
 import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
-import {
-  AnyComponent,
-  type AnySvelteComponent,
-  type ComponentExtensionId,
-  Location,
-  ResolvedLocation
-} from '@hcengineering/ui'
+import { AnyComponent, type AnySvelteComponent, Location, ResolvedLocation } from '@hcengineering/ui'
 
 /** @public */
 export interface LocationData {
@@ -228,10 +211,4 @@ export interface ViewConfiguration {
 /** @public */
 export interface SpaceView extends Class<Obj> {
   view: ViewConfiguration
-}
-
-/** @public */
-export interface ViewletSpecialViewAction extends AttachedDoc<Viewlet, 'specialViewActions'> {
-  extension: ComponentExtensionId
-  config?: Record<string, any>
 }
