@@ -36536,6 +36536,12 @@ importers:
       '@hcengineering/drive-assets':
         specifier: workspace:^0.7.0
         version: link:../../plugins/drive-assets
+      '@hcengineering/export':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/export
+      '@hcengineering/export-assets':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/export-assets
       '@hcengineering/github':
         specifier: workspace:^0.7.0
         version: link:../../services/github/github
