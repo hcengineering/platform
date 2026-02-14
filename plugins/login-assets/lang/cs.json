@@ -85,12 +85,12 @@
     "WhatIsYourName": "Jak se jmenujete?",
     "AccessExpired": "Doba přístupu vypršela. Požádejte prosím o nový odkaz pro přístup.",
     "AccessNotActive": "Doba přístupu ještě nezačala. Začíná za: ",
-    "JoinWithThisAccount": "Join with this account",
-    "UseDifferentAccount": "Use different account",
-    "InvitedToJoinWorkspace": "You've been invited to join a workspace",
-    "LogInAndJoin": "Log In & Join",
+    "JoinWithThisAccount": "Připojit se tímto účtem",
+    "UseDifferentAccount": "Použít jiný účet",
+    "InvitedToJoinWorkspace": "Byli jste pozváni do pracovního prostoru",
+    "LogInAndJoin": "Přihlásit se a připojit",
     "SignUpAndJoin": "Registrovat se a připojit",
-    "CreateNewAccount": "Create new account",
+    "CreateNewAccount": "Vytvořit nový účet",
     "SignedInAs": "Chcete se připojit pomocí stávajícího účtu {name}?"
   }
 }

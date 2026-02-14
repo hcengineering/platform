@@ -84,12 +84,12 @@
     "WhatIsYourName": "Adınız nedir?",
     "AccessExpired": "Erişim süresi doldu. Lütfen yeni bir erişim bağlantısı isteyin.",
     "AccessNotActive": "Erişim süresi henüz başlamadı. Başlangıç zamanı: ",
-    "JoinWithThisAccount": "Join with this account",
-    "UseDifferentAccount": "Use different account",
-    "InvitedToJoinWorkspace": "You've been invited to join a workspace",
-    "LogInAndJoin": "Log In & Join",
+    "JoinWithThisAccount": "Bu hesapla katıl",
+    "UseDifferentAccount": "Farklı hesap kullan",
+    "InvitedToJoinWorkspace": "Bir çalışma alanına katılmaya davet edildiniz",
+    "LogInAndJoin": "Giriş yap ve katıl",
     "SignUpAndJoin": "Kayıt ol ve katıl",
-    "CreateNewAccount": "Create new account",
+    "CreateNewAccount": "Yeni hesap oluştur",
     "SignedInAs": "Mevcut {name} hesabınızla katılmak ister misiniz?"
   }
 }

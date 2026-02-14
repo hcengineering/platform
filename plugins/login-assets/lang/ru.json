@@ -84,12 +84,12 @@
     "WhatIsYourName": "Как вас зовут?",
     "AccessExpired": "Время доступа истекло. Пожалуйста, запросите новую ссылку доступа.",
     "AccessNotActive": "Время доступа еще не началось. Начинается через: ",
-    "JoinWithThisAccount": "Join with this account",
-    "UseDifferentAccount": "Use different account",
-    "InvitedToJoinWorkspace": "You've been invited to join a workspace",
-    "LogInAndJoin": "Log In & Join",
+    "JoinWithThisAccount": "Присоединиться с этим аккаунтом",
+    "UseDifferentAccount": "Использовать другой аккаунт",
+    "InvitedToJoinWorkspace": "Вас пригласили в рабочее пространство",
+    "LogInAndJoin": "Войти и присоединиться",
     "SignUpAndJoin": "Зарегистрироваться и присоединиться",
-    "CreateNewAccount": "Create new account",
+    "CreateNewAccount": "Создать новый аккаунт",
     "SignedInAs": "Хотите присоединиться, используя существующий аккаунт {name}?"
   }
 }

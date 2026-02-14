@@ -84,12 +84,12 @@
     "WhatIsYourName": "您的姓名是什么？",
     "AccessExpired": "访问时间已过期。请申请新的访问链接。",
     "AccessNotActive": "访问时间尚未开始。开始时间：",
-    "JoinWithThisAccount": "Join with this account",
-    "UseDifferentAccount": "Use different account",
-    "InvitedToJoinWorkspace": "You've been invited to join a workspace",
-    "LogInAndJoin": "Log In & Join",
+    "JoinWithThisAccount": "使用此账户加入",
+    "UseDifferentAccount": "使用其他账户",
+    "InvitedToJoinWorkspace": "您已被邀请加入工作区",
+    "LogInAndJoin": "登录并加入",
     "SignUpAndJoin": "注册并加入",
-    "CreateNewAccount": "Create new account",
+    "CreateNewAccount": "创建新账户",
     "SignedInAs": "是否使用现有账户 {name} 加入？"
   }
 }

@@ -84,12 +84,12 @@
     "WhatIsYourName": "¿Cuál es su nombre?",
     "AccessExpired": "El tiempo de acceso ha expirado. Por favor, solicite un nuevo enlace de acceso.",
     "AccessNotActive": "El tiempo de acceso aún no ha comenzado. Comienza en: ",
-    "JoinWithThisAccount": "Join with this account",
-    "UseDifferentAccount": "Use different account",
-    "InvitedToJoinWorkspace": "You've been invited to join a workspace",
-    "LogInAndJoin": "Log In & Join",
+    "JoinWithThisAccount": "Unirse con esta cuenta",
+    "UseDifferentAccount": "Usar otra cuenta",
+    "InvitedToJoinWorkspace": "Has sido invitado a unirte a un espacio de trabajo",
+    "LogInAndJoin": "Iniciar sesión y unirse",
     "SignUpAndJoin": "Registrarse y unirse",
-    "CreateNewAccount": "Create new account",
+    "CreateNewAccount": "Crear nueva cuenta",
     "SignedInAs": "¿Desea unirse con su cuenta existente {name}?"
   }
 }

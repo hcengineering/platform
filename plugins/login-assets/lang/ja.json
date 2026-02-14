@@ -84,12 +84,12 @@
     "EnterNewPassword": "新しいパスワードを入力",
     "RepeatNewPassword": "新しいパスワードを再入力",
     "PasswordExpiredDesc": "パスワードの有効期限が切れています。続行するには新しいパスワードを設定してください。",
-    "JoinWithThisAccount": "Join with this account",
-    "UseDifferentAccount": "Use different account",
-    "InvitedToJoinWorkspace": "You've been invited to join a workspace",
-    "LogInAndJoin": "Log In & Join",
+    "JoinWithThisAccount": "このアカウントで参加",
+    "UseDifferentAccount": "別のアカウントを使用",
+    "InvitedToJoinWorkspace": "ワークスペースに参加する招待が届いています",
+    "LogInAndJoin": "ログインして参加",
     "SignUpAndJoin": "サインアップして参加",
-    "CreateNewAccount": "Create new account",
+    "CreateNewAccount": "新規アカウントを作成",
     "SignedInAs": "既存のアカウント「{name}」で参加しますか？"
   }
 }
