@@ -140,7 +140,8 @@
     "LockSection": "Zamknout sekci",
     "Approvers": "Schvalovatelé",
     "UnlockCard": "Odemknout kartu",
-    "UnlockSection": "Odemknout sekci"
+    "UnlockSection": "Odemknout sekci",
+    "CancelToDo": "Zrušit akční položku"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",
@@ -156,6 +157,7 @@
     "EmptyFunctionResult": "Prázdný výsledek funkce {func}",
     "ContextValueNotProvided": "Hodnota kontextu nebyla poskytnuta: {name}",
     "RequiredParamsNotProvided": "Chybí požadované parametry: {params}",
-    "TooDeepTransitionRecursion": "Příliš hluboká rekurze přechodů"
+    "TooDeepTransitionRecursion": "Příliš hluboká rekurze přechodů",
+    "ToDoAlreadyCompleted": "Akční položka již byla dokončena"
   }
 }

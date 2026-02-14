@@ -145,7 +145,8 @@
     "LockSection": "Заблокировать секцию",
     "Approvers": "Утверждающие",
     "UnlockCard": "Разблокировать карточку",
-    "UnlockSection": "Разблокировать секцию"
+    "UnlockSection": "Разблокировать секцию",
+    "CancelToDo": "Отменить задачу"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
@@ -161,6 +162,7 @@
     "EmptyFunctionResult": "Отсутствуют результат функции {func}",
     "ContextValueNotProvided": "Значение контекста не предоставлено: {name}",
     "RequiredParamsNotProvided": "Отсутствуют обязательные параметры: {params}",
-    "TooDeepTransitionRecursion": "Слишком глубокая рекурсия переходов"
+    "TooDeepTransitionRecursion": "Слишком глубокая рекурсия переходов",
+    "ToDoAlreadyCompleted": "Задача уже выполнена"
   }
 }

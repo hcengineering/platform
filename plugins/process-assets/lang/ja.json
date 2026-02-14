@@ -144,7 +144,8 @@
     "LockSection": "セクションをロック",
     "Approvers": "承認者",
     "UnlockCard": "カードのロックを解除",
-    "UnlockSection": "セクションのロックを解除"
+    "UnlockSection": "セクションのロックを解除",
+    "CancelToDo": "アクションをキャンセル"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
@@ -160,6 +161,7 @@
     "ContextValueNotProvided": "コンテキスト値が提供されていません: {name}",
     "RequiredParamsNotProvided": "必須パラメータが提供されていません: {params}",
     "ResultNotProvided": "結果が提供されていません",
-    "TooDeepTransitionRecursion": "遷移の再帰が深すぎます"
+    "TooDeepTransitionRecursion": "遷移の再帰が深すぎます",
+    "ToDoAlreadyCompleted": "アクションは既に完了しています"
   }
 }
