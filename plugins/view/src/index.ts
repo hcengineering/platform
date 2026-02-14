@@ -66,7 +66,8 @@ import {
   ViewAction,
   Viewlet,
   ViewletDescriptor,
-  ViewletPreference
+  ViewletPreference,
+  ViewletViewAction
 } from './types'
 
 export * from './types'
@@ -126,6 +127,7 @@ const view = plugin(viewId, {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,
     Viewlet: '' as Ref<Class<Viewlet>>,
+    ViewletViewAction: '' as Ref<Class<ViewletViewAction>>,
     Action: '' as Ref<Class<Action>>,
     ActionCategory: '' as Ref<Class<ActionCategory>>,
     LinkPresenter: '' as Ref<Class<LinkPresenter>>,
@@ -224,8 +226,10 @@ const view = plugin(viewId, {
     Subscribed: '' as IntlString,
     HyperlinkPlaceholder: '' as IntlString,
     CopyToClipboard: '' as IntlString,
+    CopyAll: '' as IntlString,
     NoGrouping: '' as IntlString,
     Type: '' as IntlString,
+    ViewletViewAction: '' as IntlString,
     UnArchive: '' as IntlString,
     Archive: '' as IntlString,
     Save: '' as IntlString,

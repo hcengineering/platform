@@ -70,6 +70,7 @@
     "NewVersionConfirmation": "新しいバージョンを作成しますか？",
     "RelationCopyDescr": "どの関連をコピーしますか？",
     "Import": "インポート",
-    "Export": "エクスポート"
+    "Export": "エクスポート",
+    "CardUpdated": "カードが更新されました"
   }
 }

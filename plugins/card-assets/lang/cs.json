@@ -70,6 +70,7 @@
     "NewVersionConfirmation": "Chcete vytvořit novou verzi?",
     "RelationCopyDescr": "Které vztahy chcete zkopírovat?",
     "Import": "Importovat",
-    "Export": "Exportovat"
+    "Export": "Exportovat",
+    "CardUpdated": "Karta aktualizována"
   }
 }

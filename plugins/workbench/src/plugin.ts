@@ -25,7 +25,6 @@ import type {
   ApplicationNavModel,
   HiddenApplication,
   SpaceView,
-  ViewletSpecialViewAction,
   Widget,
   WidgetPreference,
   WidgetTab,
@@ -43,8 +42,7 @@ export const workbenchPlugin = plugin(workbenchId, {
     HiddenApplication: '' as Ref<Class<HiddenApplication>>,
     Widget: '' as Ref<Class<Widget>>,
     WidgetPreference: '' as Ref<Class<WidgetPreference>>,
-    WorkbenchTab: '' as Ref<Class<WorkbenchTab>>,
-    ViewletSpecialViewAction: '' as Ref<Class<ViewletSpecialViewAction>>
+    WorkbenchTab: '' as Ref<Class<WorkbenchTab>>
   },
   mixin: {
     SpaceView: '' as Ref<Mixin<SpaceView>>
@@ -61,7 +59,6 @@ export const workbenchPlugin = plugin(workbenchId, {
   string: {
     Archive: '' as IntlString,
     View: '' as IntlString,
-    ViewletSpecialViewAction: '' as IntlString,
     ServerUnderMaintenance: '' as IntlString,
     UpgradeDownloadProgress: '' as IntlString,
     OpenInSidebar: '' as IntlString,

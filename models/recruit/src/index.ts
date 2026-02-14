@@ -323,14 +323,13 @@ export function createModel (builder: Builder): void {
     }
   }
   builder.createDoc(
-    workbench.class.ViewletSpecialViewAction,
+    view.class.ViewletViewAction,
     core.space.Model,
     {
-      attachedTo: recruit.viewlet.TableCandidate,
-      attachedToClass: view.class.Viewlet,
-      collection: 'specialViewActions',
+      descriptor: view.viewlet.Table,
       extension: workbench.extensions.SpecialViewAction,
-      config: tableCandidateExportConfig
+      config: tableCandidateExportConfig,
+      applicableToClass: recruit.mixin.Candidate
     },
     recruit.specialViewAction.TableCandidate
   )
