@@ -18,17 +18,24 @@ export class SignInJoinPage extends CommonPage {
   buttonUseDifferentAccount = (): Locator => this.page.locator('button[data-id="join-use-different-account"]')
 
   async join (data: Pick<SignUpData, 'email' | 'password'>): Promise<void> {
+    await Promise.race([
+      this.buttonSubmit().waitFor({ state: 'visible', timeout: 10000 }),
+      this.buttonJoinWithThisAccount().waitFor({ state: 'visible', timeout: 10000 })
+    ])
+
     const submitBtn = this.buttonSubmit()
     const toggleBtn = this.buttonToggle()
     const joinWithAccountBtn = this.buttonJoinWithThisAccount()
 
     if (await joinWithAccountBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
       await this.buttonUseDifferentAccount().click()
+      await this.inputEmail().waitFor({ state: 'visible', timeout: 5000 })
     }
 
     const submitText = await submitBtn.textContent().catch(() => '')
     if (submitText != null && submitText.toLowerCase().includes('sign up')) {
       await toggleBtn.click()
+      await this.inputEmail().waitFor({ state: 'visible', timeout: 5000 })
     }
     await this.inputEmail().fill(data.email)
     await this.inputPassword().fill(data.password)
