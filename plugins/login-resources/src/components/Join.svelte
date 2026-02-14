@@ -229,7 +229,7 @@
     style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
   >
     <div class="join-with-account">
-      <div class="join-title">
+      <div class="fs-title">
         <Label label={login.string.InvitedToJoinWorkspace} />
       </div>
       {#if currentAccountName}
@@ -266,7 +266,7 @@
   </div>
 {:else}
   <Form
-    caption={login.string.InvitedToJoinWorkspace}
+    caption={login.string.Join}
     actionButtonDataId="join-form-submit"
     secondaryButtonDataId="join-form-toggle"
     {status}
@@ -302,13 +302,6 @@
     flex-direction: column;
     flex: 1;
     gap: 0.5rem;
-
-    .join-title {
-      font-weight: 500;
-      font-size: 1.25rem;
-      color: var(--theme-caption-color);
-      margin-bottom: 0.5rem;
-    }
 
     .join-signed-in-as {
       margin: 0 0 1.5rem;
