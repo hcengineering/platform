@@ -78,7 +78,7 @@
   let status = OK
 
   $: action = {
-    i18n: page === 'login' ? login.string.LogInAndJoin : login.string.SignUp,
+    i18n: page === 'login' ? login.string.LogInAndJoin : login.string.SignUpAndJoin,
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 

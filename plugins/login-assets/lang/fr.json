@@ -88,6 +88,7 @@
     "UseDifferentAccount": "Use different account",
     "InvitedToJoinWorkspace": "You've been invited to join a workspace",
     "LogInAndJoin": "Log In & Join",
+    "SignUpAndJoin": "S'inscrire et rejoindre",
     "CreateNewAccount": "Create new account",
     "SignedInAs": "Voulez-vous rejoindre avec votre compte existant {name} ?"
   }

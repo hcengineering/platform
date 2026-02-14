@@ -80,6 +80,7 @@ export default mergeIds(loginId, login, {
     UseDifferentAccount: '' as IntlString,
     InvitedToJoinWorkspace: '' as IntlString,
     LogInAndJoin: '' as IntlString,
+    SignUpAndJoin: '' as IntlString,
     CreateNewAccount: '' as IntlString,
     SignedInAs: '' as IntlString<{ name: string }>
   }

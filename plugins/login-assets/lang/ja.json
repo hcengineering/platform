@@ -88,6 +88,7 @@
     "UseDifferentAccount": "Use different account",
     "InvitedToJoinWorkspace": "You've been invited to join a workspace",
     "LogInAndJoin": "Log In & Join",
+    "SignUpAndJoin": "サインアップして参加",
     "CreateNewAccount": "Create new account",
     "SignedInAs": "既存のアカウント「{name}」で参加しますか？"
   }
