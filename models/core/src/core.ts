@@ -416,6 +416,7 @@ export class TClassCollaborators extends TDoc implements ClassCollaborators<Doc>
   allFields?: boolean
   fields!: (keyof Doc)[]
   provideSecurity?: boolean
+  provideAttachedSecurity?: boolean
 }
 
 @Model(core.class.Collaborator, core.class.Doc, DOMAIN_COLLABORATOR)
