@@ -46,6 +46,8 @@
   export let subtitle: IntlString | undefined = undefined
   export let signUpDisabled = false
   export let isLoading: boolean = false
+  export let actionButtonDataId: string | undefined = undefined
+  export let secondaryButtonDataId: string | undefined = undefined
 
   const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
     if (ignoreInitialValidation || isLoading) return true
@@ -174,6 +176,7 @@
 
     <div class="form-row send">
       <Button
+        dataId={actionButtonDataId}
         label={action.i18n}
         kind={'contrast'}
         shape={'round2'}
@@ -196,6 +199,7 @@
     {#if secondaryButtonLabel !== undefined && secondaryButtonAction}
       <div class="form-row">
         <Button
+          dataId={secondaryButtonDataId}
           label={secondaryButtonLabel}
           width="100%"
           on:click={(e) => {

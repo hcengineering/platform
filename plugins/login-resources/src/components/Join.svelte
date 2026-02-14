@@ -244,6 +244,7 @@
       {/if}
       <div class="join-with-account-buttons">
         <Button
+          dataId="join-with-this-account"
           label={login.string.JoinWithThisAccount}
           kind={'contrast'}
           shape={'round2'}
@@ -253,6 +254,7 @@
           on:click={() => handleJoinWithThisAccount()}
         />
         <Button
+          dataId="join-use-different-account"
           label={login.string.UseDifferentAccount}
           size={'large'}
           shape={'round2'}
@@ -264,8 +266,9 @@
   </div>
 {:else}
   <Form
-    caption={login.string.Join}
-    subtitle={login.string.InvitedToJoinWorkspace}
+    caption={login.string.InvitedToJoinWorkspace}
+    actionButtonDataId="join-form-submit"
+    secondaryButtonDataId="join-form-toggle"
     {status}
     {fields}
     {object}
