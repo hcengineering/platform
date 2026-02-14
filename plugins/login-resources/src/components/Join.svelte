@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,11 +13,21 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, Severity, Status } from '@hcengineering/platform'
-  import { Location, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { OK, PlatformError, Severity, Status, getMetadata, setMetadata } from '@hcengineering/platform'
+  import {
+    Button,
+    Label,
+    Loading,
+    Location,
+    deviceOptionsStore as deviceInfo,
+    getCurrentLocation,
+    navigate
+  } from '@hcengineering/ui'
+  import presentation from '@hcengineering/presentation'
 
-  import { checkJoined, join, setLoginInfo, signUpJoin } from '../utils'
+  import { checkJoined, join, joinByToken, setLoginInfo, signUpJoin, getLoginInfo } from '../utils'
   import Form from './Form.svelte'
+  import StatusControl from './StatusControl.svelte'
 
   import { Analytics } from '@hcengineering/analytics'
   import { signupStore } from '@hcengineering/analytics-providers'
@@ -28,7 +38,13 @@
 
   const location = getCurrentLocation()
   Analytics.handleEvent('invite_link_activated', { invite_id: location.query?.inviteId })
-  let page = 'signUp'
+
+  const token = getMetadata(presentation.metadata.Token)
+  let page = token != null ? 'login' : 'signUp'
+  let checking = true
+  let showJoinWithAccount = false
+  let currentAccountName: string | undefined
+  let joiningWithAccount = false
 
   $: signupStore.setSignUpFlow(page === 'signUp')
 
@@ -62,7 +78,7 @@
   let status = OK
 
   $: action = {
-    i18n: page === 'login' ? login.string.Join : login.string.SignUp,
+    i18n: page === 'login' ? login.string.LogInAndJoin : login.string.SignUp,
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
@@ -105,7 +121,7 @@
     }
   }
 
-  $: secondaryButtonLabel = page === 'login' ? login.string.SignUp : login.string.Join
+  $: secondaryButtonLabel = page === 'login' ? login.string.CreateNewAccount : login.string.HaveAccount
   $: secondaryButtonAction =
     page === 'login'
       ? () => {
@@ -120,11 +136,16 @@
   })
 
   async function check (): Promise<void> {
-    if (location.query?.inviteId === undefined || location.query?.inviteId === null) return
+    if (location.query?.inviteId === undefined || location.query?.inviteId === null) {
+      checking = false
+      return
+    }
+    checking = true
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
     const result = await checkJoined(location.query.inviteId)
     status = OK
+
     if (result != null) {
       setLoginInfo(result)
 
@@ -140,18 +161,170 @@
         }
       }
       navigate({ path: [workbenchId, result.workspaceUrl] })
+      return
     }
+
+    try {
+      const info = await getLoginInfo()
+      if (info != null) {
+        showJoinWithAccount = true
+        currentAccountName = info.name
+        if (info.token != null) {
+          setMetadata(presentation.metadata.Token, info.token)
+        }
+      }
+    } catch {
+      // No session (metadata token or cookie)
+    }
+
+    checking = false
+  }
+
+  async function handleJoinWithThisAccount (): Promise<void> {
+    const inviteId = location.query?.inviteId
+    if (inviteId == null) return
+    joiningWithAccount = true
+    status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
+    try {
+      const result = await joinByToken(inviteId)
+      await logIn(result)
+      setLoginInfo(result)
+
+      if (location.query?.navigateUrl != null) {
+        try {
+          const loc = JSON.parse(decodeURIComponent(location.query.navigateUrl)) as Location
+          if (loc.path[1] === result.workspaceUrl) {
+            navigate(loc)
+            return
+          }
+        } catch (err: any) {
+          // Json parse error could be ignored
+        }
+      }
+      navigate({ path: [workbenchId, result.workspaceUrl] })
+    } catch (err: any) {
+      status =
+        err instanceof PlatformError ? err.status : new Status(Severity.ERROR, login.status.ConnectingToServer, {})
+    } finally {
+      joiningWithAccount = false
+    }
+  }
+
+  function handleUseDifferentAccount (): void {
+    setMetadata(presentation.metadata.Token, null)
+    showJoinWithAccount = false
+    page = 'login'
   }
 </script>
 
-<Form
-  caption={login.string.Join}
-  {status}
-  {fields}
-  {object}
-  {action}
-  {secondaryButtonLabel}
-  {secondaryButtonAction}
-  bottomActions={[loginAction, recoveryAction]}
-  withProviders
-/>
+{#if checking}
+  <div class="join-checking">
+    <Loading size="small" shrink={true} />
+    <Label label={login.string.ProcessingInvite} />
+  </div>
+{:else if showJoinWithAccount}
+  <div
+    class="join-with-account-container"
+    style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}
+    style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
+  >
+    <div class="join-with-account">
+      <div class="join-title">
+        <Label label={login.string.InvitedToJoinWorkspace} />
+      </div>
+      {#if currentAccountName}
+        <p class="join-signed-in-as">
+          <Label label={login.string.SignedInAs} params={{ name: currentAccountName }} />
+        </p>
+      {/if}
+      {#if status.severity !== Severity.OK}
+        <div class="join-status">
+          <StatusControl {status} />
+        </div>
+      {/if}
+      <div class="join-with-account-buttons">
+        <Button
+          label={login.string.JoinWithThisAccount}
+          kind={'contrast'}
+          shape={'round2'}
+          size={'large'}
+          loading={joiningWithAccount}
+          disabled={joiningWithAccount}
+          on:click={() => handleJoinWithThisAccount()}
+        />
+        <Button
+          label={login.string.UseDifferentAccount}
+          size={'large'}
+          shape={'round2'}
+          disabled={joiningWithAccount}
+          on:click={handleUseDifferentAccount}
+        />
+      </div>
+    </div>
+  </div>
+{:else}
+  <Form
+    caption={login.string.Join}
+    subtitle={login.string.InvitedToJoinWorkspace}
+    {status}
+    {fields}
+    {object}
+    {action}
+    {secondaryButtonLabel}
+    {secondaryButtonAction}
+    bottomActions={[loginAction, recoveryAction]}
+    withProviders
+  />
+{/if}
+
+<style lang="scss">
+  .join-checking {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-self: center;
+    gap: 1rem;
+    padding: 2rem;
+    color: var(--theme-caption-color);
+  }
+
+  .join-with-account-container {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .join-with-account {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 0.5rem;
+
+    .join-title {
+      font-weight: 500;
+      font-size: 1.25rem;
+      color: var(--theme-caption-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .join-signed-in-as {
+      margin: 0 0 1.5rem;
+      font-size: 0.95rem;
+      color: var(--theme-content-color);
+    }
+
+    .join-status {
+      margin-bottom: 1rem;
+    }
+
+    .join-with-account-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+
+      :global(button:first-child) {
+        width: 100%;
+      }
+    }
+  }
+</style>

@@ -558,10 +558,8 @@ export function navigateToWorkspace (
 export async function checkJoined (inviteId: string): Promise<WorkspaceLoginInfo | undefined> {
   const token = getMetadata(presentation.metadata.Token)
 
-  if (token == null) return
-
   try {
-    const workspaceLoginInfo = await getAccountClient(token).checkJoin(inviteId)
+    const workspaceLoginInfo = await getAccountClient(token ?? undefined).checkJoin(inviteId)
 
     return workspaceLoginInfo
   } catch (err: any) {
@@ -569,6 +567,12 @@ export async function checkJoined (inviteId: string): Promise<WorkspaceLoginInfo
       Analytics.handleError(err)
     }
   }
+}
+
+export async function joinByToken (inviteId: string): Promise<WorkspaceLoginInfo> {
+  const token = getMetadata(presentation.metadata.Token)
+
+  return await getAccountClient(token ?? undefined).joinByToken(inviteId)
 }
 
 export async function checkAutoJoin (

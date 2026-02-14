@@ -1042,6 +1042,46 @@ export async function checkJoin (
   }
 }
 
+/**
+ * Joins the workspace using the current session token (no password).
+ * Called only when the user explicitly clicks "Join with this account".
+ */
+export async function joinByToken (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { inviteId: string }
+): Promise<WorkspaceLoginInfo> {
+  const { inviteId } = params
+
+  if (inviteId == null || inviteId === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const invite = await getWorkspaceInvite(db, inviteId)
+  if (invite == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const { account: accountUuid } = decodeTokenVerbose(ctx, token)
+  const emailSocialId = await db.socialId.findOne({
+    type: SocialIdType.EMAIL,
+    personUuid: accountUuid,
+    verifiedOn: { $gt: 0 }
+  })
+  const email = emailSocialId?.value ?? ''
+  const workspaceUuid = await checkInvite(ctx, invite, email)
+  const workspace = await getWorkspaceById(db, workspaceUuid)
+
+  if (workspace === null) {
+    ctx.error('Workspace not found in joinByToken', { workspaceUuid, email, inviteId })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
+  }
+
+  return await doJoinByInvite(ctx, db, branding, token, accountUuid, workspace, invite)
+}
+
 export async function checkAutoJoin (
   ctx: MeasureContext,
   db: AccountDB,
@@ -2892,6 +2932,7 @@ export type AccountMethods =
   | 'resendInvite'
   | 'selectWorkspace'
   | 'join'
+  | 'joinByToken'
   | 'checkJoin'
   | 'checkAutoJoin'
   | 'signUpJoin'
@@ -2966,6 +3007,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     resendInvite: wrap(resendInvite),
     selectWorkspace: wrap(selectWorkspace),
     join: wrap(join),
+    joinByToken: wrap(joinByToken),
     checkJoin: wrap(checkJoin),
     checkAutoJoin: wrap(checkAutoJoin),
     signUpJoin: wrap(signUpJoin),

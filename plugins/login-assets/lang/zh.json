@@ -83,6 +83,12 @@
     "SignUpToCreateWorkspace": "没有支持访客访问的工作区。请注册以创建您自己的工作区。",
     "WhatIsYourName": "您的姓名是什么？",
     "AccessExpired": "访问时间已过期。请申请新的访问链接。",
-    "AccessNotActive": "访问时间尚未开始。开始时间："
+    "AccessNotActive": "访问时间尚未开始。开始时间：",
+    "JoinWithThisAccount": "Join with this account",
+    "UseDifferentAccount": "Use different account",
+    "InvitedToJoinWorkspace": "You've been invited to join a workspace",
+    "LogInAndJoin": "Log In & Join",
+    "CreateNewAccount": "Create new account",
+    "SignedInAs": "是否使用现有账户 {name} 加入？"
   }
 }

@@ -83,6 +83,12 @@
     "SignUpToCreateWorkspace": "Misafir erişimi olan çalışma alanı yok. Kendi alanınızı oluşturmak için lütfen kayıt olun.",
     "WhatIsYourName": "Adınız nedir?",
     "AccessExpired": "Erişim süresi doldu. Lütfen yeni bir erişim bağlantısı isteyin.",
-    "AccessNotActive": "Erişim süresi henüz başlamadı. Başlangıç zamanı: "
+    "AccessNotActive": "Erişim süresi henüz başlamadı. Başlangıç zamanı: ",
+    "JoinWithThisAccount": "Join with this account",
+    "UseDifferentAccount": "Use different account",
+    "InvitedToJoinWorkspace": "You've been invited to join a workspace",
+    "LogInAndJoin": "Log In & Join",
+    "CreateNewAccount": "Create new account",
+    "SignedInAs": "Mevcut {name} hesabınızla katılmak ister misiniz?"
   }
 }

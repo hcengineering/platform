@@ -83,6 +83,12 @@
     "SignUpToCreateWorkspace": "There are no workspaces with guest access. Please sign up to create your own.",
     "WhatIsYourName": "What is your name?",
     "AccessExpired": "Access time expired. Please ask for a new access link.",
-    "AccessNotActive": "Access time hasn't started yet. It is starting in: "
+    "AccessNotActive": "Access time hasn't started yet. It is starting in: ",
+    "JoinWithThisAccount": "Join with this account",
+    "UseDifferentAccount": "Use different account",
+    "InvitedToJoinWorkspace": "You've been invited to join a workspace",
+    "LogInAndJoin": "Log In & Join",
+    "CreateNewAccount": "Create new account",
+    "SignedInAs": "Would you like to join with your existing account {name}?"
   }
 }

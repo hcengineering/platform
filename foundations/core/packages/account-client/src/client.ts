@@ -124,6 +124,7 @@ export interface AccountClient {
     }
   ) => Promise<string>
   checkJoin: (inviteId: string) => Promise<WorkspaceLoginInfo>
+  joinByToken: (inviteId: string) => Promise<WorkspaceLoginInfo>
   checkAutoJoin: (inviteId: string, firstName?: string, lastName?: string) => Promise<WorkspaceLoginInfo>
   getWorkspaceInfo: (updateLastVisit?: boolean) => Promise<WorkspaceInfoWithStatus>
   getWorkspacesInfo: (workspaces: WorkspaceUuid[]) => Promise<WorkspaceInfoWithStatus[]>
@@ -571,6 +572,15 @@ class AccountClientImpl implements AccountClient {
   async checkJoin (inviteId: string): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'checkJoin' as const,
+      params: { inviteId }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async joinByToken (inviteId: string): Promise<WorkspaceLoginInfo> {
+    const request = {
+      method: 'joinByToken' as const,
       params: { inviteId }
     }
 

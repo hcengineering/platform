@@ -43,7 +43,7 @@
   export let object: any
   export let ignoreInitialValidation: boolean = false
   export let withProviders: boolean = false
-  export let subtitle: string | undefined = undefined
+  export let subtitle: IntlString | undefined = undefined
   export let signUpDisabled = false
   export let isLoading: boolean = false
 
@@ -143,7 +143,7 @@
   {:else}
     {#if subtitle !== undefined}
       <div class="fs-title">
-        {subtitle}
+        <Label label={subtitle} />
       </div>
     {/if}
     <div class="flex-row-center">

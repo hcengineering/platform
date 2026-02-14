@@ -83,6 +83,12 @@
     "SignUpToCreateWorkspace": "Aucun espace de travail avec accès invité. Veuillez vous inscrire pour créer le vôtre.",
     "WhatIsYourName": "Quel est votre nom ?",
     "AccessExpired": "Le temps d'accès a expiré. Veuillez demander un nouveau lien d'accès.",
-    "AccessNotActive": "Le temps d'accès n'a pas encore commencé. Il commence dans : "
+    "AccessNotActive": "Le temps d'accès n'a pas encore commencé. Il commence dans : ",
+    "JoinWithThisAccount": "Join with this account",
+    "UseDifferentAccount": "Use different account",
+    "InvitedToJoinWorkspace": "You've been invited to join a workspace",
+    "LogInAndJoin": "Log In & Join",
+    "CreateNewAccount": "Create new account",
+    "SignedInAs": "Voulez-vous rejoindre avec votre compte existant {name} ?"
   }
 }
