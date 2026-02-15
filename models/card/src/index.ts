@@ -84,6 +84,7 @@ import { type BuildModelKey } from '@hcengineering/view'
 import { createActions } from './actions'
 import { definePermissions } from './permissions'
 import card from './plugin'
+import notification from '@hcengineering/notification'
 
 export { cardId } from '@hcengineering/card'
 
@@ -149,6 +150,9 @@ export class TCard extends TDoc implements Card {
   @Hidden()
   @ReadOnly()
     peerId?: string
+
+  @Prop(Collection(chunter.class.ChatMessage), chunter.string.Comments)
+    comments?: number
 }
 
 @Model(card.class.CardSpace, core.class.TypedSpace, DOMAIN_SPACE)
@@ -445,6 +449,47 @@ export function createModel (builder: Builder): void {
     PaletteColorIndexes.Arctic
   )
 
+  builder.createDoc(
+    notification.class.NotificationGroup,
+    core.space.Model,
+    {
+      label: card.string.Card,
+      icon: card.icon.Card
+    },
+    card.ids.CardNotificationGroup
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: card.string.CardUpdated,
+      group: card.ids.CardNotificationGroup,
+      txClasses: [core.class.TxUpdateDoc, core.class.TxMixin],
+      objectClass: card.class.Card,
+      defaultEnabled: false
+    },
+    card.ids.CardNotification
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: chunter.string.Comments,
+      group: card.ids.CardNotificationGroup,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: chunter.class.ChatMessage,
+      attachedToClass: card.class.Card,
+      defaultEnabled: true
+    },
+    card.ids.CardMessageNotification
+  )
+
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: card.class.CardSpace,
     descriptor: view.viewlet.Table,
@@ -681,6 +726,60 @@ export function createModel (builder: Builder): void {
       config: ['']
     },
     card.viewlet.CardRelationshipTable
+  )
+
+  builder.createDoc(
+    presentation.class.ComponentPointExtension,
+    core.space.Model,
+    {
+      extension: converter.extensions.CopyAsMarkdownAction,
+      component: converter.component.CopyAsMarkdownButton
+    },
+    converter.extensions.CopyAsMarkdownButton
+  )
+
+  builder.createDoc(
+    view.class.ViewletViewAction,
+    core.space.Model,
+    {
+      descriptor: view.viewlet.RelationshipTable,
+      extension: converter.extensions.CopyAsMarkdownAction,
+      applicableToClass: card.class.Card
+    },
+    card.specialViewAction.CardRelationshipTable
+  )
+
+  builder.createDoc(
+    view.class.ViewletViewAction,
+    core.space.Model,
+    {
+      descriptor: view.viewlet.Table,
+      extension: converter.extensions.CopyAsMarkdownAction,
+      applicableToClass: card.class.Card
+    },
+    card.specialViewAction.CardTable
+  )
+
+  builder.createDoc(
+    view.class.ViewletViewAction,
+    core.space.Model,
+    {
+      descriptor: view.viewlet.Table,
+      extension: converter.extensions.CopyAsMarkdownAction,
+      applicableToClass: card.class.Card
+    },
+    card.specialViewAction.CopyAsMarkdownTable
+  )
+
+  builder.createDoc(
+    view.class.ViewletViewAction,
+    core.space.Model,
+    {
+      descriptor: view.viewlet.RelationshipTable,
+      extension: converter.extensions.CopyAsMarkdownAction,
+      applicableToClass: card.class.Card
+    },
+    card.specialViewAction.CopyAsMarkdownRelationshipTable
   )
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectPresenter, {

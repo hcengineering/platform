@@ -29,12 +29,17 @@ import {
   type Ref,
   type Space
 } from '@hcengineering/core'
-import { type Builder, Mixin, Model, UX } from '@hcengineering/model'
+import { type Builder, Mixin, Model, Prop, TypeRecord, TypeRef, TypeString, UX } from '@hcengineering/model'
 import core, { TClass, TDoc } from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import presentation from '@hcengineering/model-presentation'
-import { type Asset, type IntlString, type Resource, type Status } from '@hcengineering/platform'
-import { type AnyComponent, type LabelAndProps, type Location } from '@hcengineering/ui/src/types'
+import { type Asset, getEmbeddedLabel, type IntlString, type Resource, type Status } from '@hcengineering/platform'
+import {
+  type AnyComponent,
+  type ComponentExtensionId,
+  type LabelAndProps,
+  type Location
+} from '@hcengineering/ui/src/types'
 import {
   type TypeEditor,
   type Action,
@@ -99,7 +104,8 @@ import {
   type ViewOptionsModel,
   type Viewlet,
   type ViewletDescriptor,
-  type ViewletPreference
+  type ViewletPreference,
+  type ViewletViewAction
 } from '@hcengineering/view'
 
 import view from './plugin'
@@ -318,6 +324,28 @@ export class TViewletDescriptor extends TDoc implements ViewletDescriptor {
   label!: IntlString
 }
 
+@Model(view.class.ViewletViewAction, core.class.Doc, DOMAIN_MODEL)
+@UX(view.string.ViewletViewAction)
+export class TViewletViewAction extends TDoc implements ViewletViewAction {
+  @Prop(TypeRef(view.class.Viewlet), getEmbeddedLabel('Viewlet'))
+  declare viewlet?: Ref<Viewlet>
+
+  @Prop(TypeRef(view.class.ViewletDescriptor), getEmbeddedLabel('Descriptor'))
+  declare descriptor?: Ref<ViewletDescriptor>
+
+  @Prop(TypeString(), getEmbeddedLabel('Extension'))
+  declare extension: ComponentExtensionId
+
+  @Prop(TypeRecord(), getEmbeddedLabel('Config'))
+  declare config?: Record<string, any>
+
+  @Prop(TypeRef(core.class.Class), getEmbeddedLabel('ApplicableToClass'))
+  declare applicableToClass?: Ref<Class<Doc>>
+
+  @Prop(TypeRef(core.class.Class), getEmbeddedLabel('DisabledForClass'))
+  declare disabledForClass?: Ref<Class<Doc>>
+}
+
 @Model(view.class.Viewlet, core.class.Doc, DOMAIN_MODEL)
 export class TViewlet extends TDoc implements Viewlet {
   attachTo!: Ref<Class<Doc>>
@@ -472,6 +500,7 @@ export function createModel (builder: Builder): void {
     TViewletPreference,
     TViewletDescriptor,
     TViewlet,
+    TViewletViewAction,
     TAction,
     TActionCategory,
     TObjectValidator,

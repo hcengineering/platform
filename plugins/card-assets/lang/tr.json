@@ -70,6 +70,7 @@
     "NewVersionConfirmation": "Yeni bir sürüm oluşturmak istiyor musunuz?",
     "RelationCopyDescr": "Hangi ilişkileri kopyalamak istiyorsunuz?",
     "Import": "İçe aktar",
-    "Export": "Dışa aktar"
+    "Export": "Dışa aktar",
+    "CardUpdated": "Kart güncellendi"
   }
 }

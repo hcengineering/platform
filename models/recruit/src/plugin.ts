@@ -23,14 +23,14 @@ import { recruitId } from '@hcengineering/recruit'
 import recruit from '@hcengineering/recruit-resources/src/plugin'
 import { type ProjectType, type TaskTypeDescriptor } from '@hcengineering/task'
 import type { AnyComponent, Location } from '@hcengineering/ui/src/types'
-import type { ViewletSpecialViewAction } from '@hcengineering/workbench'
 import type {
   Action,
   ActionCategory,
   ViewAction,
   ViewActionAvailabilityFunction,
   ViewQueryAction,
-  Viewlet
+  Viewlet,
+  ViewletViewAction
 } from '@hcengineering/view'
 
 export default mergeIds(recruitId, recruit, {
@@ -134,7 +134,7 @@ export default mergeIds(recruitId, recruit, {
     DefaultVacancy: '' as Ref<ProjectType>
   },
   specialViewAction: {
-    TableCandidate: '' as Ref<ViewletSpecialViewAction>
+    TableCandidate: '' as Ref<ViewletViewAction>
   },
   viewlet: {
     TableCandidate: '' as Ref<Viewlet>,

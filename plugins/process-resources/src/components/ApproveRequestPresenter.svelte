@@ -16,15 +16,30 @@
 <script lang="ts">
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { ApproveRequest } from '@hcengineering/process'
-  import { tooltip } from '@hcengineering/ui'
+  import { getUserTimezone, tooltip } from '@hcengineering/ui'
   import { BooleanPresenter } from '@hcengineering/view-resources'
 
   export let value: ApproveRequest
+
+  export function formatSignatureDate (date: number): string {
+    const timeZone: string = getUserTimezone()
+
+    return new Date(date).toLocaleDateString('default', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      timeZone,
+      timeZoneName: 'short',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric'
+    })
+  }
 </script>
 
 <div
   use:tooltip={value.approved !== undefined
-    ? { label: getEmbeddedLabel(value.user + ' ' + new Date(value.modifiedOn).toLocaleString()) }
+    ? { label: getEmbeddedLabel(value.user + ' ' + formatSignatureDate(value.modifiedOn)) }
     : undefined}
 >
   <BooleanPresenter value={value.approved} />

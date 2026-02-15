@@ -15,7 +15,13 @@
 
 import type { Class, Client, Doc, Hierarchy, Ref, PersonId } from '@hcengineering/core'
 import { getCurrentLanguage } from '@hcengineering/theme'
-import type { AttributeModel, BuildMarkdownTableMetadata, TableMetadata, Viewlet } from '@hcengineering/view'
+import type {
+  AttributeModel,
+  BuildMarkdownTableMetadata,
+  TableMetadata,
+  Viewlet,
+  BuildModelKey
+} from '@hcengineering/view'
 import viewPlugin from '@hcengineering/view'
 import { buildConfigLookup, buildModel, getAttributeValue } from '@hcengineering/view-resources'
 import type { CopyAsMarkdownTableProps, CopyRelationshipTableAsMarkdownProps } from '../types'
@@ -133,7 +139,7 @@ export async function buildMarkdownTableFromDocs (
     const model = await buildModel({
       client,
       _class: props.cardClass,
-      keys: actualConfig.filter((key: string | import('@hcengineering/view').BuildModelKey) => {
+      keys: actualConfig.filter((key: string | BuildModelKey) => {
         if (typeof key === 'string') {
           return !hiddenKeys.includes(key)
         }

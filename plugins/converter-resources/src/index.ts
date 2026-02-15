@@ -21,6 +21,7 @@ import {
   buildMarkdownTableFromDocs as buildMarkdownTableFromDocsImpl
 } from './markdown'
 import { copyAsMarkdownTableAction } from './actionImpl'
+import CopyAsMarkdownButton from './components/CopyAsMarkdownButton.svelte'
 
 export * from './formatter'
 export * from './model'
@@ -50,5 +51,8 @@ export default async (): Promise<Resources> => ({
   },
   actionImpl: {
     CopyAsMarkdownTable: copyAsMarkdownTableAction
+  },
+  component: {
+    CopyAsMarkdownButton
   }
 })

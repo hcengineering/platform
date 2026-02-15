@@ -15,6 +15,8 @@
 
 import type { Client, Doc, Mixin, Ref } from '@hcengineering/core'
 import { type Plugin, type Resource, plugin } from '@hcengineering/platform'
+import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
+import type { ComponentPointExtension } from '@hcengineering/presentation'
 import type { Action, BuildMarkdownTableMetadata, ViewAction } from '@hcengineering/view'
 import type {
   CopyAsMarkdownTableFunction,
@@ -38,6 +40,13 @@ export const converterPlugin = plugin(converterId, {
     BuildMarkdownTableFromDocs: '' as Resource<
     (docs: Doc[], props: CopyAsMarkdownTableProps, client: Client) => Promise<string>
     >
+  },
+  extensions: {
+    CopyAsMarkdownAction: '' as ComponentExtensionId,
+    CopyAsMarkdownButton: '' as Ref<ComponentPointExtension>
+  },
+  component: {
+    CopyAsMarkdownButton: '' as AnyComponent
   },
   action: {
     CopyAsMarkdownTable: '' as Ref<Action<Doc, Record<string, any>>>
