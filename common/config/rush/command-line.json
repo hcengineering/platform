@@ -243,7 +243,7 @@
       "commandKind": "global",
       "name": "docker",
       "summary": "Build docker with platform",
-      "description": "use to build all docker containers required for platform",
+      "description": "Build all docker containers required for platform. Use --minified for resource-constrained dev (or rush docker:min).",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "./common/scripts/docker.sh"
     },
@@ -270,6 +270,22 @@
       "description": "Up development build",
       "safeForSimultaneousRushProcesses": true,
       "shellCommand": "cd ./dev && docker compose up -d --force-recreate transactor_cockroach"
+    },
+    {
+      "commandKind": "global",
+      "name": "docker:min",
+      "summary": "Build minified docker images for resource-constrained dev",
+      "description": "Build docker images excluding optional services (hulypulse, redis, process, backup, rating, preview, link-preview, elastic, fulltext, payment, stats, print, sign, hulygun, hulykvs). Use with rush docker:up:min",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "./common/scripts/docker.sh --minified"
+    },
+    {
+      "commandKind": "global",
+      "name": "docker:up:min",
+      "summary": "Up minified development stack",
+      "description": "Start minified docker compose (docker-compose.yaml + docker-compose.min.yaml) for resource-constrained machines",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev && docker compose -f docker-compose.yaml -f docker-compose.min.yaml up -d --force-recreate"
     },
     {
       "commandKind": "global",
