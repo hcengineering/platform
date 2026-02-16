@@ -64,7 +64,8 @@ import {
   type PersonWithProfile,
   type Subscription,
   SubscriptionStatus,
-  type Query
+  type Query,
+  type InviteInfo
 } from './types'
 import {
   addSocialIdBase,
@@ -991,6 +992,38 @@ export async function join (
   }
 
   return await doJoinByInvite(ctx, db, branding, token, account, workspaceJoinInfo.workspace, workspaceJoinInfo.invite)
+}
+
+/**
+ * Returns public invite details (e.g. workspace name) for a valid invite. No auth required.
+ * Returns { workspaceName: null } for invalid or expired invites.
+ */
+export async function getInviteInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  _branding: Branding | null,
+  _token: string,
+  params: { inviteId: string }
+): Promise<InviteInfo> {
+  const { inviteId } = params
+
+  if (inviteId == null || inviteId === '') {
+    ctx.error('Mandatory param inviteId is missing in getInviteInfo', { inviteId })
+    return { workspaceName: null }
+  }
+
+  const invite = await getWorkspaceInvite(db, inviteId)
+  if (invite == null) {
+    ctx.error('Invite not found in getInviteInfo', { inviteId })
+    return { workspaceName: null }
+  }
+
+  const workspace = await getWorkspaceById(db, invite.workspaceUuid)
+  if (workspace === null) {
+    return { workspaceName: null }
+  }
+
+  return { workspaceName: workspace.name }
 }
 
 /**
@@ -2935,6 +2968,7 @@ export type AccountMethods =
   | 'joinByToken'
   | 'checkJoin'
   | 'checkAutoJoin'
+  | 'getInviteInfo'
   | 'signUpJoin'
   | 'confirm'
   | 'changePassword'
@@ -3010,6 +3044,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     joinByToken: wrap(joinByToken),
     checkJoin: wrap(checkJoin),
     checkAutoJoin: wrap(checkAutoJoin),
+    getInviteInfo: wrap(getInviteInfo),
     signUpJoin: wrap(signUpJoin),
     confirm: wrap(confirm),
     changePassword: wrap(changePassword),

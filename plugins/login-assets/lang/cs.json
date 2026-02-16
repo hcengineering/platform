@@ -20,6 +20,7 @@
     "LastName": "Příjmení",
     "FirstName": "Jméno",
     "Join": "Připojit se",
+    "JoinWorkspace": "Připojit se k {workspaceName}",
     "Email": "E-mail",
     "Password": "Heslo",
     "Workspace": "Název pracovního prostoru",
@@ -87,10 +88,10 @@
     "AccessNotActive": "Doba přístupu ještě nezačala. Začíná za: ",
     "JoinWithThisAccount": "Připojit se tímto účtem",
     "UseDifferentAccount": "Použít jiný účet",
-    "InvitedToJoinWorkspace": "Byli jste pozváni do pracovního prostoru",
+    "UseCurrentAccountToJoin": "Už jste přihlášeni?",
     "LogInAndJoin": "Přihlásit se a připojit",
     "SignUpAndJoin": "Registrovat se a připojit",
     "CreateNewAccount": "Vytvořit nový účet",
-    "SignedInAs": "Chcete se připojit pomocí stávajícího účtu {name}?"
+    "SignedInAs": "Přihlášen jako {name}"
   }
 }

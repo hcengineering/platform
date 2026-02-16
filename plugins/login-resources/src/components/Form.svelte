@@ -34,6 +34,7 @@
   }
 
   export let caption: IntlString
+  export let captionParams: Record<string, any> = {}
   export let status: Status
   export let fields: Field[]
   export let action: Action
@@ -149,7 +150,7 @@
       </div>
     {/if}
     <div class="flex-row-center">
-      <div class="title"><Label label={caption} /></div>
+      <div class="title"><Label label={caption} params={captionParams} /></div>
       <slot name="region-selector" />
     </div>
   {/if}

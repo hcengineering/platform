@@ -20,6 +20,7 @@
     "LastName": "Фамилия",
     "FirstName": "Имя",
     "Join": "Присоединиться",
+    "JoinWorkspace": "Присоединиться к {workspaceName}",
     "Email": "Email",
     "Password": "Пароль",
     "Workspace": "Рабочее пространство",
@@ -86,10 +87,10 @@
     "AccessNotActive": "Время доступа еще не началось. Начинается через: ",
     "JoinWithThisAccount": "Присоединиться с этим аккаунтом",
     "UseDifferentAccount": "Использовать другой аккаунт",
-    "InvitedToJoinWorkspace": "Вас пригласили в рабочее пространство",
+    "UseCurrentAccountToJoin": "Уже вошли в аккаунт?",
     "LogInAndJoin": "Войти и присоединиться",
     "SignUpAndJoin": "Зарегистрироваться и присоединиться",
     "CreateNewAccount": "Создать новый аккаунт",
-    "SignedInAs": "Хотите присоединиться, используя существующий аккаунт {name}?"
+    "SignedInAs": "Вы вошли как {name}"
   }
 }

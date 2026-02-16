@@ -20,6 +20,7 @@
     "LastName": "Cognome",
     "FirstName": "Nome",
     "Join": "Unisciti",
+    "JoinWorkspace": "Partecipa a {workspaceName}",
     "Email": "Email",
     "Password": "Password",
     "Workspace": "Nome dello spazio di lavoro",
@@ -86,10 +87,10 @@
     "AccessNotActive": "Il tempo di accesso non è ancora iniziato. Inizia tra: ",
     "JoinWithThisAccount": "Partecipa con questo account",
     "UseDifferentAccount": "Usa un altro account",
-    "InvitedToJoinWorkspace": "Sei stato invitato a partecipare a uno spazio di lavoro",
+    "UseCurrentAccountToJoin": "Già effettuato l'accesso?",
     "LogInAndJoin": "Accedi e partecipa",
     "SignUpAndJoin": "Iscriviti e partecipa",
     "CreateNewAccount": "Crea nuovo account",
-    "SignedInAs": "Vuoi partecipare con il tuo account esistente {name}?"
+    "SignedInAs": "Accesso effettuato come {name}"
   }
 }

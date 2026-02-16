@@ -20,6 +20,7 @@
     "LastName": "Last name",
     "FirstName": "First name",
     "Join": "Join",
+    "JoinWorkspace": "Join {workspaceName}",
     "Email": "Email",
     "Password": "Password",
     "Workspace": "Workspace name",
@@ -86,10 +87,10 @@
     "AccessNotActive": "Access time hasn't started yet. It is starting in: ",
     "JoinWithThisAccount": "Join with this account",
     "UseDifferentAccount": "Use different account",
-    "InvitedToJoinWorkspace": "You've been invited to join a workspace",
+    "UseCurrentAccountToJoin": "Already signed in?",
     "LogInAndJoin": "Log In & Join",
     "SignUpAndJoin": "Sign Up & Join",
     "CreateNewAccount": "Create new account",
-    "SignedInAs": "Would you like to join with your existing account {name}?"
+    "SignedInAs": "Signed in as {name}"
   }
 }

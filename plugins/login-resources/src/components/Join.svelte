@@ -25,7 +25,15 @@
   } from '@hcengineering/ui'
   import presentation from '@hcengineering/presentation'
 
-  import { checkJoined, join, joinByToken, setLoginInfo, signUpJoin, getLoginInfo } from '../utils'
+  import {
+    checkJoined,
+    getInviteWorkspaceName,
+    join,
+    joinByToken,
+    setLoginInfo,
+    signUpJoin,
+    getLoginInfo
+  } from '../utils'
   import Form from './Form.svelte'
   import StatusControl from './StatusControl.svelte'
 
@@ -45,6 +53,7 @@
   let showJoinWithAccount = false
   let currentAccountName: string | undefined
   let joiningWithAccount = false
+  let inviteWorkspaceName: string | undefined
 
   $: signupStore.setSignUpFlow(page === 'signUp')
 
@@ -143,7 +152,9 @@
     checking = true
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-    const result = await checkJoined(location.query.inviteId)
+    const inviteId = location.query.inviteId
+    const [result, workspaceName] = await Promise.all([checkJoined(inviteId), getInviteWorkspaceName(inviteId)])
+    inviteWorkspaceName = workspaceName
     status = OK
 
     if (result != null) {
@@ -215,6 +226,29 @@
     showJoinWithAccount = false
     page = 'login'
   }
+
+  async function handleUseCurrentAccountToJoin (): Promise<void> {
+    try {
+      if (currentAccountName == null) {
+        console.error('Current account is not found')
+        return
+      }
+      const info = await getLoginInfo()
+      if (info != null) {
+        showJoinWithAccount = true
+      }
+    } catch {
+      // No session
+    }
+  }
+
+  const useCurrentAccountToJoinAction = {
+    caption: login.string.UseCurrentAccountToJoin,
+    i18n: login.string.JoinWithThisAccount,
+    func: () => {
+      void handleUseCurrentAccountToJoin()
+    }
+  }
 </script>
 
 {#if checking}
@@ -229,13 +263,13 @@
     style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
   >
     <div class="join-with-account">
-      <div class="fs-title">
-        <Label label={login.string.InvitedToJoinWorkspace} />
+      <div class="join-title">
+        <Label label={login.string.JoinWorkspace} params={{ workspaceName: inviteWorkspaceName ?? '' }} />
       </div>
       {#if currentAccountName}
-        <p class="join-signed-in-as">
+        <div class="join-subtitle pb-4">
           <Label label={login.string.SignedInAs} params={{ name: currentAccountName }} />
-        </p>
+        </div>
       {/if}
       {#if status.severity !== Severity.OK}
         <div class="join-status">
@@ -245,7 +279,7 @@
       <div class="join-with-account-buttons">
         <Button
           dataId="join-with-this-account"
-          label={login.string.JoinWithThisAccount}
+          label={login.string.Join}
           kind={'contrast'}
           shape={'round2'}
           size={'large'}
@@ -266,7 +300,8 @@
   </div>
 {:else}
   <Form
-    caption={login.string.Join}
+    caption={login.string.JoinWorkspace}
+    captionParams={{ workspaceName: inviteWorkspaceName ?? '' }}
     actionButtonDataId="join-form-submit"
     secondaryButtonDataId="join-form-toggle"
     {status}
@@ -275,12 +310,27 @@
     {action}
     {secondaryButtonLabel}
     {secondaryButtonAction}
-    bottomActions={[loginAction, recoveryAction]}
+    bottomActions={[
+      loginAction,
+      ...(currentAccountName != null ? [useCurrentAccountToJoinAction] : []),
+      recoveryAction
+    ]}
     withProviders
   />
 {/if}
 
 <style lang="scss">
+  .join-title {
+    font-weight: 500;
+    font-size: 1.25rem;
+    color: var(--theme-caption-color);
+  }
+
+  .join-subtitle {
+    font-size: 0.95rem;
+    color: var(--theme-content-color);
+  }
+
   .join-checking {
     display: flex;
     flex-direction: row;
@@ -301,13 +351,7 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    gap: 0.5rem;
-
-    .join-signed-in-as {
-      margin: 0 0 1.5rem;
-      font-size: 0.95rem;
-      color: var(--theme-content-color);
-    }
+    gap: 0.25rem;
 
     .join-status {
       margin-bottom: 1rem;
@@ -316,7 +360,7 @@
     .join-with-account-buttons {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1rem;
 
       :global(button:first-child) {
         width: 100%;

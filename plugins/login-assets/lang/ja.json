@@ -13,6 +13,7 @@
     "LastName": "姓",
     "FirstName": "名",
     "Join": "参加",
+    "JoinWorkspace": "{workspaceName} に参加",
     "Email": "メールアドレス",
     "Password": "パスワード",
     "Workspace": "ワークスペース名",
@@ -86,10 +87,10 @@
     "PasswordExpiredDesc": "パスワードの有効期限が切れています。続行するには新しいパスワードを設定してください。",
     "JoinWithThisAccount": "このアカウントで参加",
     "UseDifferentAccount": "別のアカウントを使用",
-    "InvitedToJoinWorkspace": "ワークスペースに参加する招待が届いています",
+    "UseCurrentAccountToJoin": "すでにサインインしていますか？",
     "LogInAndJoin": "ログインして参加",
     "SignUpAndJoin": "サインアップして参加",
     "CreateNewAccount": "新規アカウントを作成",
-    "SignedInAs": "既存のアカウント「{name}」で参加しますか？"
+    "SignedInAs": "{name} としてサインイン中"
   }
 }

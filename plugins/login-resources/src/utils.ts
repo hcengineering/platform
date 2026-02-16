@@ -560,12 +560,28 @@ export async function checkJoined (inviteId: string): Promise<WorkspaceLoginInfo
 
   try {
     const workspaceLoginInfo = await getAccountClient(token ?? undefined).checkJoin(inviteId)
-
-    return workspaceLoginInfo
+    return workspaceLoginInfo ?? undefined
   } catch (err: any) {
     if (!(err instanceof PlatformError)) {
       Analytics.handleError(err)
     }
+  }
+}
+
+/**
+ * Fetches workspace name for a valid invite (no auth required). Returns undefined for invalid or expired invites.
+ */
+export async function getInviteWorkspaceName (inviteId: string): Promise<string | undefined> {
+  try {
+    const client = getAccountClient(null)
+    const info = await client.getInviteInfo(inviteId)
+    return info.workspaceName ?? undefined
+  } catch (err: any) {
+    console.error('Failed to get invite workspace name', err)
+    if (!(err instanceof PlatformError)) {
+      Analytics.handleError(err)
+    }
+    return undefined
   }
 }
 

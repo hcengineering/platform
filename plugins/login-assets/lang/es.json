@@ -20,6 +20,7 @@
     "LastName": "Apellido",
     "FirstName": "Nombre",
     "Join": "Unirse",
+    "JoinWorkspace": "Unirse a {workspaceName}",
     "Email": "Correo Electrónico",
     "Password": "Contraseña",
     "Workspace": "Nombre del espacio de trabajo",
@@ -86,10 +87,10 @@
     "AccessNotActive": "El tiempo de acceso aún no ha comenzado. Comienza en: ",
     "JoinWithThisAccount": "Unirse con esta cuenta",
     "UseDifferentAccount": "Usar otra cuenta",
-    "InvitedToJoinWorkspace": "Has sido invitado a unirte a un espacio de trabajo",
+    "UseCurrentAccountToJoin": "¿Ya has iniciado sesión?",
     "LogInAndJoin": "Iniciar sesión y unirse",
     "SignUpAndJoin": "Registrarse y unirse",
     "CreateNewAccount": "Crear nueva cuenta",
-    "SignedInAs": "¿Desea unirse con su cuenta existente {name}?"
+    "SignedInAs": "Conectado como {name}"
   }
 }
