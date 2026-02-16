@@ -131,6 +131,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.func.RequestApproval
   })
 
+  builder.mixin(process.method.CancelToDo, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.CancelToDo
+  })
+
   builder.mixin(process.method.LockCard, process.class.Method, serverProcess.mixin.MethodImpl, {
     func: serverProcess.func.LockCard
   })

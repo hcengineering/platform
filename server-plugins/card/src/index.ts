@@ -31,7 +31,8 @@ export default plugin(serverCardId, {
     CommunicationEnabled: '' as Metadata<boolean>
   },
   function: {
-    CardTextPresenter: '' as Resource<Presenter>
+    CardTextPresenter: '' as Resource<Presenter>,
+    CardHTMLPresenter: '' as Resource<Presenter>
   },
   trigger: {
     OnAttribute: '' as Resource<TriggerFunc>,

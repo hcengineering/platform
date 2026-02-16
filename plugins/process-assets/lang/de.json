@@ -140,7 +140,8 @@
     "LockSection": "Abschnitt sperren",
     "Approvers": "Genehmiger",
     "UnlockCard": "Karte entsperren",
-    "UnlockSection": "Abschnitt entsperren"
+    "UnlockSection": "Abschnitt entsperren",
+    "CancelToDo": "Action Item abbrechen"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",
@@ -156,6 +157,7 @@
     "EmptyFunctionResult": "Leerer Funktionsresultat {func}",
     "ContextValueNotProvided": "Kontextwert nicht bereitgestellt: {name}",
     "RequiredParamsNotProvided": "Erforderliche Parameter nicht bereitgestellt: {params}",
-    "TooDeepTransitionRecursion": "Zu tiefe Übergangsrekursion"
+    "TooDeepTransitionRecursion": "Zu tiefe Übergangsrekursion",
+    "ToDoAlreadyCompleted": "Action Item bereits abgeschlossen"
   }
 }

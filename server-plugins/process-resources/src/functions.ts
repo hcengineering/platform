@@ -604,6 +604,33 @@ export async function CreateToDo (
   }
 }
 
+export async function CancelToDo (
+  params: MethodParams<ProcessToDo>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  if (params._id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
+  const todo = await control.client.findOne(process.class.ProcessToDo, { _id: params._id as any })
+  if (todo === undefined) throw processError(process.error.ObjectNotFound, { _id: params._id })
+  if (todo.doneOn !== null) throw processError(process.error.ToDoAlreadyCompleted, { _id: params._id })
+  const res: Tx[] = [control.client.txFactory.createTxRemoveDoc(todo._class, todo.space, todo._id)]
+  const rollback: Tx[] = [
+    control.client.txFactory.createTxCreateDoc(
+      todo._class,
+      todo.space,
+      { ...todo },
+      todo._id,
+      todo.modifiedOn,
+      todo.modifiedBy
+    )
+  ]
+  return {
+    txes: res,
+    rollback,
+    context: null
+  }
+}
+
 async function getContent (
   control: ProcessControl,
   source: string,

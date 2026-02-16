@@ -947,6 +947,7 @@ export interface ClassCollaborators<T extends Doc> extends Doc {
   allFields?: boolean // for all (PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]) attributes
   fields: (keyof T)[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
   provideSecurity?: boolean // If true, will provide security for collaborators
+  provideAttachedSecurity?: boolean // If true, will provide security for collaborators of attached doc
 }
 
 export interface Collaborator extends AttachedDoc {

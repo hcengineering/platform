@@ -145,7 +145,8 @@
     "LockSection": "Verrouiller la section",
     "Approvers": "Approbateurs",
     "UnlockCard": "Déverrouiller la carte",
-    "UnlockSection": "Déverrouiller la section"
+    "UnlockSection": "Déverrouiller la section",
+    "CancelToDo": "Annuler l'action"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",
@@ -161,6 +162,7 @@
     "EmptyFunctionResult": "Résultat de fonction vide {func}",
     "ContextValueNotProvided": "Valeur de contexte non fournie : {name}",
     "RequiredParamsNotProvided": "Paramètres requis non fournis : {params}",
-    "TooDeepTransitionRecursion": "Récursion de transition trop profonde"
+    "TooDeepTransitionRecursion": "Récursion de transition trop profonde",
+    "ToDoAlreadyCompleted": "Action déjà terminée"
   }
 }
