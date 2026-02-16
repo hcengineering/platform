@@ -87,7 +87,9 @@ export default mergeIds(processId, process, {
     FunctionSubmenu: '' as AnyComponent,
     LockSectionEditor: '' as AnyComponent,
     LockSectionPresenter: '' as AnyComponent,
-    UnLockSectionPresenter: '' as AnyComponent
+    UnLockSectionPresenter: '' as AnyComponent,
+    CancelToDoEditor: '' as AnyComponent,
+    ToDoValuePresenter: '' as AnyComponent
   },
   criteriaEditor: {
     BaseCriteria: '' as AnyComponent,
@@ -228,6 +230,7 @@ export default mergeIds(processId, process, {
     CancelProcessPermission: '' as IntlString,
     ForbidRunProcessPermission: '' as IntlString,
     ForbidCancelProcessPermission: '' as IntlString,
+    CancelToDo: '' as IntlString,
     RequestApproval: '' as IntlString,
     IsApproved: '' as IntlString,
     Approve: '' as IntlString,

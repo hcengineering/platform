@@ -24,6 +24,7 @@ import ExecutionMyToDos from './components/ExecutionMyToDos.svelte'
 import ExecutonPresenter from './components/ExecutonPresenter.svelte'
 import ExecutonProgressPresenter from './components/ExecutonProgressPresenter.svelte'
 import Main from './components/Main.svelte'
+import CancelToDoEditor from './components/settings/CancelToDoEditor.svelte'
 import ApproveRequestPresenter from './components/ApproveRequestPresenter.svelte'
 import SubProcessPresenter from './components/presenters/SubProcessPresenter.svelte'
 import ToDoPresenter from './components/presenters/ToDoPresenter.svelte'
@@ -86,6 +87,7 @@ import ReplaceEditor from './components/transformEditors/ReplaceEditor.svelte'
 import SplitEditor from './components/transformEditors/SplitEditor.svelte'
 import NumberPresenter from './components/transformPresenters/NumberPresenter.svelte'
 import RolePresenter from './components/transformPresenters/RolePresenter.svelte'
+import ToDoValuePresenter from './components/settings/ToDoValuePresenter.svelte'
 import { exportProcess } from './exporter'
 import { ProcessMiddleware } from './middleware'
 import {
@@ -169,7 +171,9 @@ export default async (): Promise<Resources> => ({
     ApproveRequestTriggerPresenter,
     LockSectionPresenter,
     LockSectionEditor,
-    UnLockSectionPresenter
+    UnLockSectionPresenter,
+    CancelToDoEditor,
+    ToDoValuePresenter
   },
   criteriaEditor: {
     BaseCriteria,

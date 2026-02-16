@@ -124,6 +124,20 @@ export function defineMethods (builder: Builder): void {
     process.class.Method,
     core.space.Model,
     {
+      label: process.string.CancelToDo,
+      editor: process.component.CancelToDoEditor,
+      presenter: process.component.ToDoValuePresenter,
+      objectClass: process.class.ProcessToDo,
+      requiredParams: ['_id'],
+      createdContext: null
+    },
+    process.method.CancelToDo
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
       label: process.string.LockCard,
       objectClass: card.class.Card,
       requiredParams: [],

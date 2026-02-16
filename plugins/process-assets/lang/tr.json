@@ -142,7 +142,8 @@
     "LockSection": "Bölümü kilitle",
     "Approvers": "Onaylayanlar",
     "UnlockCard": "Kartın kilidini aç",
-    "UnlockSection": "Bölümün kilidini aç"
+    "UnlockSection": "Bölümün kilidini aç",
+    "CancelToDo": "Eylem öğesini iptal et"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",
@@ -158,6 +159,7 @@
     "EmptyFunctionResult": "Boş fonksiyon sonucu {func}",
     "ContextValueNotProvided": "Bağlam değeri sağlanmadı: {name}",
     "RequiredParamsNotProvided": "Gerekli parametreler sağlanmadı: {params}",
-    "TooDeepTransitionRecursion": "Çok derin geçiş özyinelemesi"
+    "TooDeepTransitionRecursion": "Çok derin geçiş özyinelemesi",
+    "ToDoAlreadyCompleted": "Eylem öğesi zaten tamamlandı"
   }
 }
