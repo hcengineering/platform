@@ -487,6 +487,10 @@ export interface WorkspaceInviteInfo {
   name?: string
 }
 
+export interface InviteInfo {
+  workspaceName: string | null
+}
+
 export interface MailboxOptions {
   availableDomains: string[]
   minNameLength: number
