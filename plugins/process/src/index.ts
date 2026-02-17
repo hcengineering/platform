@@ -246,6 +246,7 @@ export default plugin(processId, {
     AddRelation: '' as Ref<Method<Association>>,
     AddTag: '' as Ref<Method<Tag>>,
     RequestApproval: '' as Ref<Method<ApproveRequest>>,
+    CancelToDo: '' as Ref<Method<ProcessToDo>>,
     LockCard: '' as Ref<Method<Card>>,
     LockSection: '' as Ref<Method<Card>>,
     UnlockCard: '' as Ref<Method<Card>>,
@@ -304,7 +305,8 @@ export default plugin(processId, {
     EmptyFunctionResult: '' as IntlString,
     ContextValueNotProvided: '' as IntlString,
     RequiredParamsNotProvided: '' as IntlString,
-    TooDeepTransitionRecursion: '' as IntlString
+    TooDeepTransitionRecursion: '' as IntlString,
+    ToDoAlreadyCompleted: '' as IntlString
   },
   icon: {
     Process: '' as Asset,

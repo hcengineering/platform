@@ -34,6 +34,7 @@
   }
 
   export let caption: IntlString
+  export let captionParams: Record<string, any> = {}
   export let status: Status
   export let fields: Field[]
   export let action: Action
@@ -46,6 +47,8 @@
   export let subtitle: string | undefined = undefined
   export let signUpDisabled = false
   export let isLoading: boolean = false
+  export let actionButtonDataId: string | undefined = undefined
+  export let secondaryButtonDataId: string | undefined = undefined
 
   const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
     if (ignoreInitialValidation || isLoading) return true
@@ -147,7 +150,7 @@
       </div>
     {/if}
     <div class="flex-row-center">
-      <div class="title"><Label label={caption} /></div>
+      <div class="title"><Label label={caption} params={captionParams} /></div>
       <slot name="region-selector" />
     </div>
   {/if}
@@ -174,6 +177,7 @@
 
     <div class="form-row send">
       <Button
+        dataId={actionButtonDataId}
         label={action.i18n}
         kind={'contrast'}
         shape={'round2'}
@@ -196,6 +200,7 @@
     {#if secondaryButtonLabel !== undefined && secondaryButtonAction}
       <div class="form-row">
         <Button
+          dataId={secondaryButtonDataId}
           label={secondaryButtonLabel}
           width="100%"
           on:click={(e) => {

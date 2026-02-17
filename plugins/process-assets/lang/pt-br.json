@@ -133,7 +133,8 @@
     "Reviewers": "Revisores",
     "FieldIsEmpty": "Campo vazio",
     "UnlockCard": "Desbloquear cartão",
-    "UnlockSection": "Desbloquear seção"
+    "UnlockSection": "Desbloquear seção",
+    "CancelToDo": "Cancelar ação"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",
@@ -149,6 +150,7 @@
     "EmptyFunctionResult": "Resultado da função vazio {func}",
     "ContextValueNotProvided": "Valor de contexto não fornecido: {name}",
     "RequiredParamsNotProvided": "Parâmetros obrigatórios não fornecidos: {params}",
-    "TooDeepTransitionRecursion": "Recursão de transição muito profunda"
+    "TooDeepTransitionRecursion": "Recursão de transição muito profunda",
+    "ToDoAlreadyCompleted": "Ação já concluída"
   }
 }

@@ -68,7 +68,8 @@ export default plugin(serverProcessId, {
     CheckTime: '' as Resource<CheckFunc>,
     EventCheck: '' as Resource<CheckFunc>,
     ApproveRequestApproved: '' as Resource<CheckFunc>,
-    ApproveRequestRejected: '' as Resource<CheckFunc>
+    ApproveRequestRejected: '' as Resource<CheckFunc>,
+    CancelToDo: '' as Resource<ExecuteFunc>
   },
   transform: {
     FirstValue: '' as Resource<TransformFunc>,

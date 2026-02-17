@@ -145,7 +145,8 @@
     "LockSection": "Lock section",
     "Approvers": "Approvers",
     "UnlockCard": "Unlock card",
-    "UnlockSection": "Unlock section"
+    "UnlockSection": "Unlock section",
+    "CancelToDo": "Cancel Action item"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",
@@ -161,6 +162,7 @@
     "EmptyFunctionResult": "Empty function result {func}",
     "ContextValueNotProvided": "Context value not provided: {name}",
     "RequiredParamsNotProvided": "Required parameters not provided: {params}",
-    "TooDeepTransitionRecursion": "Too deep transition recursion"
+    "TooDeepTransitionRecursion": "Too deep transition recursion",
+    "ToDoAlreadyCompleted": "Action item already completed"
   }
 }

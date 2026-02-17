@@ -134,4 +134,8 @@ export function createModel (builder: Builder): void {
   builder.mixin(card.class.Card, core.class.Class, serverNotification.mixin.TextPresenter, {
     presenter: serverCard.function.CardTextPresenter
   })
+
+  builder.mixin(card.class.Card, core.class.Class, serverNotification.mixin.HTMLPresenter, {
+    presenter: serverCard.function.CardHTMLPresenter
+  })
 }

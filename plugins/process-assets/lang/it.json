@@ -145,7 +145,8 @@
     "LockSection": "Blocca sezione",
     "Approvers": "Approvatori",
     "UnlockCard": "Sblocca scheda",
-    "UnlockSection": "Sblocca sezione"
+    "UnlockSection": "Sblocca sezione",
+    "CancelToDo": "Annulla azione"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",
@@ -161,6 +162,7 @@
     "EmptyFunctionResult": "Risultato funzione vuoto {func}",
     "ContextValueNotProvided": "Valore di contesto non fornito: {name}",
     "RequiredParamsNotProvided": "Parametri richiesti non forniti: {params}",
-    "TooDeepTransitionRecursion": "Ricorsione di transizione troppo profonda"
+    "TooDeepTransitionRecursion": "Ricorsione di transizione troppo profonda",
+    "ToDoAlreadyCompleted": "Azione già completata"
   }
 }
