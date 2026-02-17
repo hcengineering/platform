@@ -85,6 +85,7 @@ import { RepositorySyncMapper } from './sync/repository'
 import { ReviewCommentSyncManager } from './sync/reviewComments'
 import { ReviewThreadSyncManager } from './sync/reviewThreads'
 import { ReviewSyncManager } from './sync/reviews'
+import { appendGuestLinkToImage } from './sync/guest'
 import { UsersSyncManager, fetchViewerDetails } from './sync/users'
 import { errorToObj } from './sync/utils'
 import {
@@ -243,7 +244,7 @@ export class GithubWorker implements IntegrationManager {
       concatLink(this.getBranding()?.front ?? config.FrontURL, `/browse/?workspace=${this.workspace.uuid}`),
       // TODO storage URL
       concatLink(this.getBranding()?.front ?? config.FrontURL, `/files/${this.workspace.uuid}/`),
-      preprocessor
+      preprocessor ?? (async (nodes) => { appendGuestLinkToImage(nodes, this.workspace.uuid) })
     )
   }
 
