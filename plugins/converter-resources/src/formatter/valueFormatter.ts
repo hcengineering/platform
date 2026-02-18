@@ -142,7 +142,8 @@ function resolveDisplayContext (
       value: customValue,
       displayDoc: card,
       displayClass: docClass,
-      attribute: customAttr
+      attribute: customAttr,
+      lookupKey: customAttr?.name ?? labelStr
     }
   }
 
