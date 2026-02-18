@@ -244,7 +244,10 @@ export class GithubWorker implements IntegrationManager {
       concatLink(this.getBranding()?.front ?? config.FrontURL, `/browse/?workspace=${this.workspace.uuid}`),
       // TODO storage URL
       concatLink(this.getBranding()?.front ?? config.FrontURL, `/files/${this.workspace.uuid}/`),
-      preprocessor ?? (async (nodes) => { appendGuestLinkToImage(nodes, this.workspace.uuid) })
+      preprocessor ??
+        (async (nodes) => {
+          appendGuestLinkToImage(nodes, this.workspace.uuid)
+        })
     )
   }
 
