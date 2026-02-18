@@ -31,7 +31,7 @@
     showPopup
   } from '@hcengineering/ui'
   import { exportProcess } from '../../exporter'
-    import view from '@hcengineering/view'
+  import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import process from '../../plugin'
   import ContextEditor from './ContextEditor.svelte'
