@@ -1,6 +1,6 @@
 {
   "string": {
-    "WorkspaceNamePattern": "O nome deve ter 40 caracteres ou menos, não está vazio e não pode conter caracteres especiais (<, >, /)",
+    "WorkspaceNamePattern": "O nome deve ter 40 caracteres ou menos, não estar vazio e não pode conter caracteres especiais (<, >, /)",
     "Export": "Exportar",
     "DataToExport": "Dados para exportar",
     "ExportDocuments": "Documentos",
