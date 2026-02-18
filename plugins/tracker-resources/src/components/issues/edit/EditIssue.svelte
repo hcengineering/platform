@@ -41,6 +41,7 @@
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { DocNavLink, ParentsNavigator, showMenu, RelationsEditor } from '@hcengineering/view-resources'
+  import ProjectPresenter from '../../projects/ProjectPresenter.svelte'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { Analytics } from '@hcengineering/analytics'
 
@@ -212,6 +213,10 @@
     on:select
   >
     <svelte:fragment slot="title">
+      {#if !embedded && issue.space}
+        <ProjectPresenter value={issue.space} openIssues={true} />
+        <span class="breadcrumb-separator">›</span>
+      {/if}
       {#if !embedded && issue.attachedTo !== tracker.ids.NoParent}
         <ParentsNavigator element={issue} />
       {/if}
@@ -359,3 +364,10 @@
     </svelte:fragment>
   </Panel>
 {/if}
+
+<style>
+  .breadcrumb-separator {
+    margin: 0 0.5rem;
+    color: var(--theme-caption-color);
+  }
+</style>
