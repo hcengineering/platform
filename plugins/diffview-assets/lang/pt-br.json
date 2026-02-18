@@ -5,10 +5,10 @@
     "Split": "Dividido",
     "Viewed": "Visualizado",
     "ShowDiff": "Mostrar diferença",
-    "NoChanges": "A diferença do ficheiro não tem alterações",
+    "NoChanges": "O arquivo não tem alterações",
     "LargeDiffsAreHidden": "As diferenças grandes não são renderizadas por padrão.",
-    "FileIsTooLarge": "O ficheiro é demasiado grande para ser exibido.",
-    "FileWasRenamed": "O ficheiro foi renomeado sem alterações.",
-    "FileWasDeleted": "O ficheiro foi eliminado."
+    "FileIsTooLarge": "O arquivo é muito grande para ser exibido.",
+    "FileWasRenamed": "O arquivo foi renomeado sem alterações.",
+    "FileWasDeleted": "O arquivo foi excluido."
   }
 }

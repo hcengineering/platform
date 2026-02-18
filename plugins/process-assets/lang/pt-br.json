@@ -54,7 +54,7 @@
     "RequestFromUser": "Solicitar do usuário",
     "EnterValue": "Insira valor",
     "OnToDoDone": "Ao completar a ação",
-    "OnSubProcessesDone": "Ao concluir processos sub",
+    "OnSubProcessesDone": "Ao concluir subprocessos",
     "WhenSubProcessMatches": "Quando o subprocesso corresponde",
     "Result": "Resultado",
     "RequestResult": "Solicitar resultado",

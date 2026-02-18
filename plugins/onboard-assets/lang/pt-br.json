@@ -1,18 +1,18 @@
 {
   "status": {
     "RequiredField": "Campo obrigatório {field}",
-    "FieldsDoNotMatch": "{field} não coincidem com {field2}",
-    "ConnectingToServer": "A ligar ao servidor...."
+    "FieldsDoNotMatch": "{field} não coincide com {field2}",
+    "ConnectingToServer": "Conectando ao servidor...."
   },
   "string": {
     "CreateWorkspace": "Criar espaço de trabalho",
-    "LastName": "Apelido",
+    "LastName": "Sobrenome",
     "FirstName": "Nome",
     "Workspace": "Nome do espaço de trabalho",
     "FillInProfile": "Preencha o seu perfil",
-    "SetUpPassword": "Definir a sua palavra-passe",
+    "SetUpPassword": "Definir a sua senha",
     "Next": "Seguinte",
-    "Skip": "Saltar",
+    "Skip": "Pular",
     "SignUpCompleted": "Registo concluído",
     "StartUsingHuly": "Começar a usar Huly"
   }
