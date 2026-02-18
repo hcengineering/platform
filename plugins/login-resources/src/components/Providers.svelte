@@ -38,6 +38,9 @@
   })
 
   function getColumnsCount (providersCount: number): number {
+    if ($deviceOptionsStore.isMobile) {
+      return 1
+    }
     return providersCount % 2 === 0 ? 2 : 1
   }
 
@@ -73,26 +76,24 @@
   }
 </script>
 
-{#if !$deviceOptionsStore.isMobile}
-  <div class="container">
-    <Grid column={getColumnsCount(enabledProviders.length)} columnGap={1} rowGap={1} alignItems={'center'}>
-      {#each enabledProviders as provider}
-        <a
-          href={getLink(provider)}
-          on:click={() => {
-            handleProviderClick(provider)
-          }}
-        >
-          <Button kind={'contrast'} shape={'round2'} size={'x-large'} width="100%" stopPropagation={false}>
-            <svelte:fragment slot="content">
-              <svelte:component this={provider.component} displayName={provider.displayName} />
-            </svelte:fragment>
-          </Button>
-        </a>
-      {/each}
-    </Grid>
-  </div>
-{/if}
+<div class="container">
+  <Grid column={getColumnsCount(enabledProviders.length)} columnGap={1} rowGap={1} alignItems={'center'}>
+    {#each enabledProviders as provider}
+      <a
+        href={getLink(provider)}
+        on:click={() => {
+          handleProviderClick(provider)
+        }}
+      >
+        <Button kind={'contrast'} shape={'round2'} size={'x-large'} width="100%" stopPropagation={false}>
+          <svelte:fragment slot="content">
+            <svelte:component this={provider.component} displayName={provider.displayName} />
+          </svelte:fragment>
+        </Button>
+      </a>
+    {/each}
+  </Grid>
+</div>
 
 <style lang="scss">
   .container {
