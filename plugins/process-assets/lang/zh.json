@@ -146,7 +146,9 @@
     "Approvers": "批准人",
     "UnlockCard": "解锁卡片",
     "UnlockSection": "解锁部分",
-    "CancelToDo": "取消任务"
+    "CancelToDo": "取消任务",
+    "Export": "导出",
+    "Import": "导入"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

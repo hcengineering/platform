@@ -134,7 +134,9 @@
     "FieldIsEmpty": "Campo vazio",
     "UnlockCard": "Desbloquear cartão",
     "UnlockSection": "Desbloquear seção",
-    "CancelToDo": "Cancelar ação"
+    "CancelToDo": "Cancelar ação",
+    "Export": "Exportar",
+    "Import": "Importar"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

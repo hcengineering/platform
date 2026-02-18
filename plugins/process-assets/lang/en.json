@@ -146,7 +146,9 @@
     "Approvers": "Approvers",
     "UnlockCard": "Unlock card",
     "UnlockSection": "Unlock section",
-    "CancelToDo": "Cancel Action item"
+    "CancelToDo": "Cancel Action item",
+    "Export": "Export",
+    "Import": "Import"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

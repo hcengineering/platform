@@ -141,7 +141,9 @@
     "Approvers": "Genehmiger",
     "UnlockCard": "Karte entsperren",
     "UnlockSection": "Abschnitt entsperren",
-    "CancelToDo": "Action Item abbrechen"
+    "CancelToDo": "Action Item abbrechen",
+    "Export": "Exportieren",
+    "Import": "Importieren"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

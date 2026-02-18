@@ -15,13 +15,11 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Process, State } from '@hcengineering/process'
+  import { Process } from '@hcengineering/process'
   import { DropdownLabels, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import { ModeId, Modes } from '../../query'
-  import { getContext } from '../../utils'
-  import BaseCriteria from '../criterias/BaseCriteria.svelte'
+  import { ModeId } from '../../query'
   import SubProcessStateCriteria from '../criterias/SubProcessStateCriteria.svelte'
 
   export let readonly: boolean

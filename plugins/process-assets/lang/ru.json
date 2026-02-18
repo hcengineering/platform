@@ -146,7 +146,9 @@
     "Approvers": "Утверждающие",
     "UnlockCard": "Разблокировать карточку",
     "UnlockSection": "Разблокировать секцию",
-    "CancelToDo": "Отменить задачу"
+    "CancelToDo": "Отменить задачу",
+    "Export": "Экспорт",
+    "Import": "Импорт"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

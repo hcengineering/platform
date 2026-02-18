@@ -14,7 +14,7 @@ export async function SendTimeEvent (ws: WorkspaceUuid, _execution: Ref<Executio
   await producer.send(ctx, ws, [
     {
       account: core.account.System,
-      event: process.trigger.OnTime,
+      event: [process.trigger.OnTime],
       createdOn: Date.now(),
       context: {},
       execution: _execution
