@@ -298,7 +298,7 @@ export async function handleUploadFormData (
         } catch (err: any) {
           Analytics.handleError(err)
           const error = err instanceof Error ? err.message : String(err)
-          ctx.error('failed to upload blob', { error: err })
+          ctx.error('failed to upload blob', { error })
           return { key, error }
         } finally {
           if (data instanceof Readable) {
