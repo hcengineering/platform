@@ -8,7 +8,7 @@
     "DriveSize": "Tamanho dos arquivos",
     "DriveCount": "Quantidade de arquivos",
     "OfficeSessionsDuration": "Tempo de reuniões",
-    "OfficeSessionsBandwidth": "Largura de banda de reuniões",
+    "OfficeSessionsBandwidth": "Tráfego de reuniões",
     "OfficeEgressDuration": "Tempo de gravação",
     "AI": "IA",
     "TranscriptionTime": "Tempo de transcrição",
@@ -16,13 +16,13 @@
     "Tier": "Plano",
     "StorageLimit": "{limit} {unit} de armazenamento",
     "TrafficLimit": "{limit} {unit} de tráfego de vídeo/áudio",
-    "Common": "Common",
-    "CommonDescription": "Para indivíduos e equipes começando com Huly.",
+    "Common": "Geral",
+    "CommonDescription": "Para pessoas e equipes começando com Huly.",
     "Rare": "Rare",
-    "RareDescription": "Para criativos individuais, freelancers e micro-agências.",
-    "Epic": "Epic",
-    "EpicDescription": "Para empresas criativas profissionais e pequenas empresas.",
-    "Legendary": "Legendary",
+    "RareDescription": "Para pessoas criativas, freelancers e micro-agências.",
+    "Epic": "Épico",
+    "EpicDescription": "Para empresas criativas grandes ou pequenas empresas.",
+    "Legendary": "Legendário",
     "LegendaryDescription": "Melhor para grandes equipes que precisam de capacidades máximas.",
     "UnlimitedUsers": "Usuários ilimitados",
     "UnlimitedObjects": "Objetos Huly ilimitados",
@@ -55,7 +55,7 @@
     "Usage": "Uso",
     "Of": "de",
     "UpgradePlan": "Atualizar Plano",
-    "LimitReached": "Limite do workspace atingido, algumas funcionalidades podem estar desabilitadas. Atualize para restaurar acesso completo.",
-    "RestrictedPlans": "Apenas o proprietário do workspace ou o administrador de faturamento podem alterar o plano de assinatura."
+    "LimitReached": "Limite do espaços de trabalho atingido, algumas funcionalidades podem estar desabilitadas. Atualize para restaurar acesso completo.",
+    "RestrictedPlans": "Apenas o proprietário do espaço de trabalho ou o administrador de faturamento podem alterar o plano de assinatura."
   }
 }

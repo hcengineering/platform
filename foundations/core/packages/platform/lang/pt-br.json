@@ -21,9 +21,9 @@
     "AccountAlreadyConfirmed": "Conta já confirmada",
     "WorkspaceAlreadyExists": "Espaço de trabalho já existe",
     "InvalidOtp": "Código inválido",
-    "PasswordLoginLocked": "O login com senha está bloqueado devido a muitas tentativas falhadas. Use um método de login OTP para desbloquear sua conta.",
+    "PasswordLoginLocked": "O login com senha está bloqueado devido a muitas tentativas incorretas. Use um método de login OTP para desbloquear sua conta.",
     "InviteNotFound": "Convite com e-mail:{email} não encontrado.",
-    "WorkspaceLimitReached": "Você atingiu o limite de espaço de trabalho. Entre em contato conosco...",
+    "WorkspaceLimitReached": "Você atingiu o limite de espaços de trabalho. Entre em contato conosco...",
     "ReadOnlyAccount": "Demonstração anônima de convidado",
     "SystemAccount": "Conta do sistema",
     "SocialIdAlreadyExists": "ID social já existe"

@@ -1,7 +1,7 @@
 {
   "string": {
     "More": "Mais...",
-    "Delete": "Eliminar",
+    "Delete": "Excluir",
     "ShowMenu": "Mostrar Menu",
     "HideMenu": "Ocultar Menu",
     "Archive": "Arquivar",
@@ -18,7 +18,7 @@
     "KeyboardShortcuts": "Atalhos de Teclado",
     "Documentation": "Documentação",
     "OpenPlatformGuide": "Guia da Huly",
-    "AccessWorkspaceSettings": "Aceda as configurações do seu espaço de trabalho",
+    "AccessWorkspaceSettings": "Acesse as configurações do seu espaço de trabalho",
     "HowToWorkFaster": "Aprenda a trabalhar mais rápido",
     "HiddenApplication": "Aplicação Oculta",
     "OpenInNewTab": "Abrir num novo separador",
