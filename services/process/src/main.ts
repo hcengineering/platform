@@ -488,10 +488,10 @@ async function executeTransition (
         )
         await client.tx(apply)
         await sendEvent(control, execution, transition, card, isDone)
-        if (isDone && execution.parentId !== undefined) {
-          await checkParent(execution, control)
-        }
         TxProcessor.applyUpdate(execution, executionUpdate)
+        if (execution.parentId !== undefined) {
+          await checkParent(execution, control, isDone)
+        }
         currTransition = transition
         transition = await checkNext(control, execution, context)
         nested = true
@@ -734,28 +734,26 @@ async function fillParams<T extends Doc> (
   return res
 }
 
-async function checkParent (execution: Execution, control: ProcessControl): Promise<void> {
+async function checkParent (execution: Execution, control: ProcessControl, isDone: boolean): Promise<void> {
   try {
     const subProcesses = await control.client.findAll(process.class.Execution, {
       parentId: execution.parentId,
       status: ExecutionStatus.Active
     })
     const filtered = subProcesses.filter((it) => it._id !== execution._id)
-    if (filtered.length !== 0) return
     const parent = (await control.client.findAll(process.class.Execution, { _id: execution.parentId }))[0]
     if (parent === undefined) return
     const _process = control.client.getModel().findObject(parent.process)
     if (_process === undefined) return
     if (parent.status !== ExecutionStatus.Active) return
+    const triggers: Ref<Trigger>[] = [process.trigger.OnSubProcessMatch]
+    if (filtered.length === 0 && isDone) triggers.push(process.trigger.OnSubProcessesDone)
     const transitions = control.client.getModel().findAllSync(
       process.class.Transition,
       {
         from: parent.currentState,
         process: parent.process,
-        trigger:
-          filtered.length === 0
-            ? { $in: [process.trigger.OnSubProcessesDone, process.trigger.OnSubProcessMatch] }
-            : process.trigger.OnSubProcessMatch
+        trigger: { $in: triggers }
       },
       {
         sort: { rank: SortingOrder.Ascending }

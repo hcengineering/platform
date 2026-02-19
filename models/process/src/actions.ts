@@ -138,6 +138,20 @@ export function defineMethods (builder: Builder): void {
     process.class.Method,
     core.space.Model,
     {
+      label: process.string.CancelProcess,
+      editor: process.component.CancelSubProcessEditor,
+      presenter: process.component.SubProcessPresenter,
+      objectClass: process.class.Process,
+      requiredParams: ['_id'],
+      createdContext: null
+    },
+    process.method.CancelSubProcess
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
       label: process.string.LockCard,
       objectClass: card.class.Card,
       requiredParams: [],

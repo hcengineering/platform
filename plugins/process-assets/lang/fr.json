@@ -148,7 +148,8 @@
     "UnlockSection": "Déverrouiller la section",
     "CancelToDo": "Annuler l'action",
     "Export": "Exporter",
-    "Import": "Importer"
+    "Import": "Importer",
+    "CancelProcess": "Annuler le processus"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

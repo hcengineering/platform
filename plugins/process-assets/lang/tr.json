@@ -145,7 +145,8 @@
     "UnlockSection": "Bölümün kilidini aç",
     "CancelToDo": "Eylem öğesini iptal et",
     "Export": "Dışa aktar",
-    "Import": "İçe aktar"
+    "Import": "İçe aktar",
+    "CancelProcess": "Süreci iptal et"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

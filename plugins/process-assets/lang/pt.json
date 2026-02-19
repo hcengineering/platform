@@ -148,7 +148,8 @@
     "UnlockSection": "Desbloquear seção",
     "CancelToDo": "Cancelar ação",
     "Export": "Exportar",
-    "Import": "Importar"
+    "Import": "Importar",
+    "CancelProcess": "Cancelar processo"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

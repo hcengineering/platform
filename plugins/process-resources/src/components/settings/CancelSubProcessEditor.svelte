@@ -14,20 +14,23 @@
 -->
 
 <script lang="ts">
+  import card from '@hcengineering/card'
   import { Ref } from '@hcengineering/core'
-  import { Process, ProcessToDo, Step } from '@hcengineering/process'
-  import { Label } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import { Process, Step } from '@hcengineering/process'
+  import { DropdownLabels, DropdownTextItem, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
-  import ToDoContextSelector from '../contextEditors/ToDoContextSelector.svelte'
 
   export let process: Process
-  export let step: Step<ProcessToDo>
+  export let step: Step<Process>
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
 
   const params = step.params
-  let _id = params._id as Ref<ProcessToDo>
+  let _id = params._id as Ref<Process>
 
   function change (e: CustomEvent): void {
     if (e.detail !== undefined) {
@@ -37,9 +40,33 @@
       dispatch('change', step)
     }
   }
+
+  let processes: Process[] = []
+  let items: DropdownTextItem[] = []
+
+  $: items = processes.map((it) => ({
+    id: it._id,
+    label: it.name
+  }))
+
+  $: ancestors = hierarchy.getAncestors(process.masterTag).filter((it) => hierarchy.isDerived(it, card.class.Card))
+
+  $: selected = _id !== undefined ? items.find((it) => it.id === _id)?.id : undefined
+
+  $: processes = client
+    .getModel()
+    .findAllSync(plugin.class.Process, { masterTag: { $in: ancestors }, _id: { $ne: process._id } })
 </script>
 
 <div class="editor-grid">
-  <Label label={plugin.string.ToDo} />
-  <ToDoContextSelector readonly={false} skipRollback {process} value={_id} on:change={change} />
+  <Label label={plugin.string.Process} />
+  <DropdownLabels
+    autoSelect={false}
+    enableSearch={false}
+    width={'100%'}
+    {items}
+    {selected}
+    placeholder={plugin.string.Process}
+    on:selected={change}
+  />
 </div>

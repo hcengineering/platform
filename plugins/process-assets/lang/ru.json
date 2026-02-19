@@ -148,7 +148,8 @@
     "UnlockSection": "Разблокировать секцию",
     "CancelToDo": "Отменить задачу",
     "Export": "Экспорт",
-    "Import": "Импорт"
+    "Import": "Импорт",
+    "CancelProcess": "Отменить процесс"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
