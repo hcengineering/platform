@@ -146,7 +146,9 @@
     "Approvers": "Approvatori",
     "UnlockCard": "Sblocca scheda",
     "UnlockSection": "Sblocca sezione",
-    "CancelToDo": "Annulla azione"
+    "CancelToDo": "Annulla azione",
+    "Export": "Esporta",
+    "Import": "Importa"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",

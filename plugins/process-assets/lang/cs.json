@@ -141,7 +141,9 @@
     "Approvers": "Schvalovatelé",
     "UnlockCard": "Odemknout kartu",
     "UnlockSection": "Odemknout sekci",
-    "CancelToDo": "Zrušit akční položku"
+    "CancelToDo": "Zrušit akční položku",
+    "Export": "Exportovat",
+    "Import": "Importovat"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

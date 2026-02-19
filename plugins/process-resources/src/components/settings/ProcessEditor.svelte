@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Ref, SortingOrder } from '@hcengineering/core'
-  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
+  import { createQuery, getClient, MessageBox, IconDownload } from '@hcengineering/presentation'
   import { Process, State, Transition } from '@hcengineering/process'
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
   import {
@@ -30,6 +30,7 @@
     secondNavSeparators,
     showPopup
   } from '@hcengineering/ui'
+  import { exportProcess } from '../../exporter'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import process from '../../plugin'
@@ -135,6 +136,24 @@
   function handleSettings (): void {
     showPopup(ProcesssSetting, { value })
   }
+
+  function handleExport (): void {
+    if (value === undefined) return
+    const str = JSON.stringify(
+      exportProcess(value).docs.map((doc) => {
+        const { modifiedBy, modifiedOn, createdBy, createdOn, ...rest } = doc
+        return rest
+      })
+    )
+    const blob = new Blob([str], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${value.name}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 </script>
 
 <div class="hulyComponent-content__container columns">
@@ -153,6 +172,13 @@
             />
             <div class="flex-row-center flex-gap-2">
               <ButtonIcon icon={IconSettings} size="small" kind="secondary" on:click={handleSettings} />
+              <ButtonIcon
+                icon={IconDownload}
+                tooltip={{ label: process.string.Export, direction: 'bottom' }}
+                size="small"
+                kind="secondary"
+                on:click={handleExport}
+              />
               <ButtonIcon
                 icon={IconDetails}
                 tooltip={{ label: process.string.Data, direction: 'bottom' }}
