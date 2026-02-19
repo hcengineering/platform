@@ -37,7 +37,7 @@
     "Mentioned": "Mencionado",
     "You": "Tu",
     "Mentions": "Menções",
-    "MentionedYouIn": "Foste Mencionado em {title}",
+    "MentionedYouIn": "Você Foi  Mencionado em {title}",
     "Messages": "Mensagens",
     "Thread": "Tópico",
     "AddReaction": "Adicionar Reação",
@@ -55,6 +55,6 @@
     "AttributeSetTo": "{name} definido para {value}",
     "AddedTag": "Tag adicionado: {title}",
     "RemovedTag": "Tag removido: {title}",
-    "ValueTooLarge": "Valor demasiado grande para mostrar"
+    "ValueTooLarge": "Valor muito grande para mostrar"
   }
 }
