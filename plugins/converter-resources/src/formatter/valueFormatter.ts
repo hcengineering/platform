@@ -43,6 +43,73 @@ export interface DisplayContext {
   displayDoc: Doc
   displayClass: Ref<Class<Doc>>
   attribute: AnyAttribute | undefined
+  lookupKey: string
+}
+
+function getAttributeKey (attr: AttributeModel): string {
+  if (attr.castRequest != null && attr.key.startsWith(`${attr.castRequest}.`)) {
+    return attr.key.substring(attr.castRequest.length + 1)
+  }
+  if (attr.key.startsWith('$lookup.')) {
+    return attr.key.replace('$lookup.', '').split('.')[0] ?? attr.key
+  }
+  return attr.key
+}
+
+function getLookupData (card: Doc, ...keys: string[]): any {
+  const cardWithLookup = card as any
+  const lookupData = cardWithLookup.$lookup
+  if (lookupData === undefined || lookupData === null) {
+    return undefined
+  }
+
+  const candidates = Array.from(
+    new Set(
+      keys.flatMap((key) => {
+        if (key.length === 0) {
+          return []
+        }
+        const normalized = key.startsWith('$lookup.') ? key.replace('$lookup.', '') : key
+        const lastSegment = normalized.split('.').pop()
+        return [key, normalized, lastSegment].filter((v): v is string => v !== undefined && v.length > 0)
+      })
+    )
+  )
+
+  for (const candidate of candidates) {
+    if (lookupData[candidate] !== undefined) {
+      return lookupData[candidate]
+    }
+    const nestedLookupData = getObjectValue(candidate, lookupData)
+    if (nestedLookupData !== undefined) {
+      return nestedLookupData
+    }
+  }
+
+  return undefined
+}
+
+function formatDateValue (
+  value: number | string | Date,
+  isDateOnly: boolean,
+  language: string | undefined
+): string | undefined {
+  if (!isDateOnly && typeof value === 'number') {
+    return getDisplayTime(value)
+  }
+
+  const parsedDate = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(parsedDate.getTime())) {
+    return undefined
+  }
+
+  const options: Intl.DateTimeFormatOptions = {
+    year: DateFormatOption.Numeric,
+    month: DateFormatOption.Short,
+    day: DateFormatOption.Numeric
+  }
+
+  return parsedDate.toLocaleDateString(language ?? 'default', options)
 }
 
 /**
@@ -75,7 +142,8 @@ function resolveDisplayContext (
       value: customValue,
       displayDoc: card,
       displayClass: docClass,
-      attribute: customAttr
+      attribute: customAttr,
+      lookupKey: customAttr?.name ?? labelStr
     }
   }
 
@@ -110,8 +178,10 @@ function resolveDisplayContext (
     value = getObjectValue(attr.key, card)
   }
 
-  const attribute = attr.attribute ?? hierarchy.findAttribute(displayClass, attr.key)
-  return { value, displayDoc, displayClass, attribute }
+  const attributeKey = getAttributeKey(attr)
+  const attribute = attr.attribute ?? hierarchy.findAttribute(displayClass, attributeKey)
+  const lookupKey = attribute?.name ?? attributeKey
+  return { value, displayDoc, displayClass, attribute, lookupKey }
 }
 
 /**
@@ -131,17 +201,28 @@ export async function formatCustomAttributeValue (
 
   const attrType = attribute?.type
 
-  if (typeof value === 'number' && attrType?._class === core.class.TypeTimestamp) {
-    return getDisplayTime(value)
+  if (
+    typeof value === 'number' &&
+    (attrType?._class === core.class.TypeTimestamp || attrType?._class === core.class.TypeDate)
+  ) {
+    const formattedDate = formatDateValue(value, attrType?._class === core.class.TypeDate, language)
+    if (formattedDate !== undefined) {
+      return formattedDate
+    }
   }
 
   if (value instanceof Date) {
-    const options: Intl.DateTimeFormatOptions = {
-      year: DateFormatOption.Numeric,
-      month: DateFormatOption.Short,
-      day: DateFormatOption.Numeric
+    return formatDateValue(value, true, language) ?? ''
+  }
+
+  if (
+    typeof value === 'string' &&
+    (attrType?._class === core.class.TypeTimestamp || attrType?._class === core.class.TypeDate)
+  ) {
+    const formattedDate = formatDateValue(value, attrType?._class === core.class.TypeDate, language)
+    if (formattedDate !== undefined) {
+      return formattedDate
     }
-    return value.toLocaleDateString(language ?? 'default', options)
   }
 
   if (typeof value === 'number' || typeof value === 'boolean') {
@@ -208,17 +289,28 @@ async function formatValueFallback (
   const attribute = ctx.attribute
   const attrType = attribute?.type
 
-  if (typeof value === 'number' && attrType?._class === core.class.TypeTimestamp) {
-    return getDisplayTime(value)
+  if (
+    typeof value === 'number' &&
+    (attrType?._class === core.class.TypeTimestamp || attrType?._class === core.class.TypeDate)
+  ) {
+    const formattedDate = formatDateValue(value, attrType?._class === core.class.TypeDate, language)
+    if (formattedDate !== undefined) {
+      return formattedDate
+    }
   }
 
   if (value instanceof Date) {
-    const options: Intl.DateTimeFormatOptions = {
-      year: DateFormatOption.Numeric,
-      month: DateFormatOption.Short,
-      day: DateFormatOption.Numeric
+    return formatDateValue(value, true, language) ?? ''
+  }
+
+  if (
+    typeof value === 'string' &&
+    (attrType?._class === core.class.TypeTimestamp || attrType?._class === core.class.TypeDate)
+  ) {
+    const formattedDate = formatDateValue(value, attrType?._class === core.class.TypeDate, language)
+    if (formattedDate !== undefined) {
+      return formattedDate
     }
-    return value.toLocaleDateString(language ?? 'default', options)
   }
 
   if (typeof value === 'number' || typeof value === 'boolean') {
@@ -228,8 +320,7 @@ async function formatValueFallback (
   if (typeof value === 'string') {
     const isRef = attrType?._class === core.class.RefTo
     if (isRef) {
-      const cardWithLookup = card as any
-      const lookupData = cardWithLookup.$lookup?.[attr.key]
+      const lookupData = getLookupData(card, ctx.lookupKey, attribute?.name ?? '', attr.key)
       if (lookupData !== undefined && lookupData !== null) {
         const resolvedObj = lookupData
         if (typeof resolvedObj === 'object' && resolvedObj !== null && 'title' in resolvedObj) {
@@ -252,7 +343,7 @@ async function formatValueFallback (
   }
 
   if (Array.isArray(value)) {
-    return await formatArrayValue(value, attrType, attribute, attr.key, card, language)
+    return await formatArrayValue(value, attrType, attribute, ctx.lookupKey, card, language)
   }
 
   if (typeof value === 'object' && value !== null) {

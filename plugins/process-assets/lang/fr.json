@@ -146,7 +146,9 @@
     "Approvers": "Approbateurs",
     "UnlockCard": "Déverrouiller la carte",
     "UnlockSection": "Déverrouiller la section",
-    "CancelToDo": "Annuler l'action"
+    "CancelToDo": "Annuler l'action",
+    "Export": "Exporter",
+    "Import": "Importer"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

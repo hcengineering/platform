@@ -143,7 +143,9 @@
     "Approvers": "Onaylayanlar",
     "UnlockCard": "Kartın kilidini aç",
     "UnlockSection": "Bölümün kilidini aç",
-    "CancelToDo": "Eylem öğesini iptal et"
+    "CancelToDo": "Eylem öğesini iptal et",
+    "Export": "Dışa aktar",
+    "Import": "İçe aktar"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

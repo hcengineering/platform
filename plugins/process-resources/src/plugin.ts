@@ -249,7 +249,9 @@ export default mergeIds(processId, process, {
     LockCard: '' as IntlString,
     LockSection: '' as IntlString,
     UnlockCard: '' as IntlString,
-    UnlockSection: '' as IntlString
+    UnlockSection: '' as IntlString,
+    Export: '' as IntlString,
+    Import: '' as IntlString
   },
   permission: {
     RunProcess: '' as Ref<Permission>,
