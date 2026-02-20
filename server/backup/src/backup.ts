@@ -220,7 +220,7 @@ export async function backup (
       // We need to perform compaction
       ctx.warn('Compacting backup')
       await compactBackup(ctx, storage, true, {
-        blobLimit: options.blobDownloadLimit,
+        blobLimit: options.blobDownloadLimit * 1024 * 1024,
         skipContentTypes: options.skipBlobContentTypes,
         msg: { workspaceId, url: wsIds.url }
       })
