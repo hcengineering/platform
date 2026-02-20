@@ -44,7 +44,7 @@
     process.class.Execution,
     {
       card: card._id,
-      status: { $ne: ExecutionStatus.Cancelled }
+      status: ExecutionStatus.Active
     },
     (res) => {
       docs = res

@@ -37,6 +37,7 @@ import RequestsExtension from './components/RequestsExtension.svelte'
 import RunProcessCardPopup from './components/RunProcessCardPopup.svelte'
 import RunProcessPopup from './components/RunProcessPopup.svelte'
 import ActionsPresenter from './components/settings/ActionsPresenter.svelte'
+import CancelSubProcessEditor from './components/settings/CancelSubProcessEditor.svelte'
 import CancelToDoEditor from './components/settings/CancelToDoEditor.svelte'
 import FunctionSubmenu from './components/settings/FunctionSubmenu.svelte'
 import ProcessEditor from './components/settings/ProcessEditor.svelte'
@@ -173,6 +174,7 @@ export default async (): Promise<Resources> => ({
     LockSectionEditor,
     UnLockSectionPresenter,
     CancelToDoEditor,
+    CancelSubProcessEditor,
     ToDoValuePresenter
   },
   criteriaEditor: {

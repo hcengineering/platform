@@ -107,6 +107,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.func.RunSubProcess
   })
 
+  builder.mixin(process.method.CancelSubProcess, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.CancelSubProcess
+  })
+
   builder.mixin(process.method.CreateToDo, process.class.Method, serverProcess.mixin.MethodImpl, {
     func: serverProcess.func.CreateToDo
   })

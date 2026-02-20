@@ -19,11 +19,15 @@
   import card from '../plugin'
   import MasterTagAttributes from './MasterTagAttributes.svelte'
   import TagAttributes from './TagAttributes.svelte'
+  import { getClient } from '@hcengineering/presentation'
 
   export let value: Card
   export let readonly: boolean = false
   export let mixins: Array<Mixin<Doc>> = []
   export let ignoreKeys: string[]
+
+  const client = getClient()
+  const h = client.getHierarchy()
 
   let width: number = 0
 
@@ -57,7 +61,7 @@
   <div class="masterTag">
     <MasterTagAttributes
       bind:this={masterTagAttributes}
-      readonly={readonly || value.readonlySections?.includes(value._class)}
+      readonly={readonly || h.getAncestors(value._class).some((p) => value.readonlySections?.includes(p))}
       {value}
       {ignoreKeys}
       fourRows={columns === 2}

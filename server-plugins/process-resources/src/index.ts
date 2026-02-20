@@ -89,6 +89,7 @@ import {
 } from './transform'
 import {
   RunSubProcess,
+  CancelSubProcess,
   CreateToDo,
   UpdateCard,
   CreateCard,
@@ -489,6 +490,7 @@ export * from './utils'
 export default async () => ({
   func: {
     RunSubProcess,
+    CancelSubProcess,
     CreateToDo,
     UpdateCard,
     CreateCard,
