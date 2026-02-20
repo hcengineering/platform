@@ -30,7 +30,7 @@ use crate::{
 };
 
 use redis::{
-    Client, ConnectionInfo, ProtocolVersion, RedisConnectionInfo, RedisResult, ToRedisArgs,
+    Client, ConnectionInfo, ProtocolVersion, RedisConnectionInfo, ToRedisArgs,
     aio::MultiplexedConnection,
 };
 // use serde::Serialize;
@@ -61,7 +61,7 @@ pub async fn push_event(
 }
 
 /// redis_info(&connection)
-pub async fn redis_info(conn: &mut MultiplexedConnection) -> redis::RedisResult<String> {
+pub async fn redis_info(conn: &mut MultiplexedConnection) -> DbResult<String> {
     let info: String = redis::cmd("INFO").query_async(conn).await?;
 
     let mut redis_keys: Option<usize> = None;
@@ -91,10 +91,7 @@ pub async fn redis_info(conn: &mut MultiplexedConnection) -> redis::RedisResult<
 }
 
 /// redis_list(&connection,prefix)
-pub async fn redis_list(
-    conn: &mut MultiplexedConnection,
-    key: &str,
-) -> redis::RedisResult<Vec<DbArray>> {
+pub async fn redis_list(conn: &mut MultiplexedConnection, key: &str) -> DbResult<Vec<DbArray>> {
     deprecated_symbol_error(key)?;
     if !key.ends_with('/') {
         return error(412, "Key must end with slash");
@@ -146,10 +143,7 @@ pub async fn redis_list(
 }
 
 /// redis_read(&connection,key)
-pub async fn redis_read(
-    conn: &mut MultiplexedConnection,
-    key: &str,
-) -> redis::RedisResult<Option<DbArray>> {
+pub async fn redis_read(conn: &mut MultiplexedConnection, key: &str) -> DbResult<Option<DbArray>> {
     deprecated_symbol_error(key)?;
 
     if key.ends_with('/') {
@@ -306,7 +300,7 @@ pub async fn redis_delete(
     conn: &mut MultiplexedConnection,
     key: &str,
     mode: Option<SaveMode>,
-) -> RedisResult<bool> {
+) -> DbResult<bool> {
     deprecated_symbol_error(key)?;
 
     if key.ends_with('/') {
@@ -433,7 +427,7 @@ pub async fn receiver(
     while let Some(message) = messages.next().await {
         match RedisEvent::try_from(message) {
             Ok(ev) => {
-                push_event(&hub_state, &mut redis, ev); // .await;
+                push_event(&hub_state, &mut redis, ev).await;
             }
             Err(e) => {
                 warn!("invalid redis message: {e}");

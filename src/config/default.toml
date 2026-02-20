@@ -3,6 +3,7 @@ bind_host = "0.0.0.0"
 
 token_secret = "secret"
 
+backend = "redis"
 redis_urls = "redis://huly.local:6379"
 redis_password = "<invalid>"
 redis_mode = "direct"
@@ -19,4 +20,3 @@ loglevel = "INFO"
 # max_size = 100
 
 # permit_file = "/home/user/hulipulse/permit.rego"
-
