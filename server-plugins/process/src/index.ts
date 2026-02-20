@@ -48,6 +48,7 @@ export default plugin(serverProcessId, {
   },
   func: {
     RunSubProcess: '' as Resource<ExecuteFunc>,
+    CancelSubProcess: '' as Resource<ExecuteFunc>,
     CreateToDo: '' as Resource<ExecuteFunc>,
     UpdateCard: '' as Resource<ExecuteFunc>,
     CreateCard: '' as Resource<ExecuteFunc>,

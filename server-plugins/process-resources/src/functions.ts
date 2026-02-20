@@ -126,7 +126,7 @@ export async function CheckSubProcessMatch (
   )
   if (predicate === '$all') {
     return res.length === subExecutions.length
-  } else if (predicate === '$any') {
+  } else if (predicate === '$in') {
     return res.length > 0
   } else if (predicate === '$nin') {
     return res.length === 0
@@ -335,6 +335,38 @@ export async function AddTag (
       }
     ]
   }
+}
+
+export async function CancelSubProcess (
+  params: MethodParams<Execution>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  const processId = params._id as Ref<Process>
+  if (processId === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
+  const target = control.client.getModel().findObject(processId)
+  if (target === undefined) throw processError(process.error.ObjectNotFound, { _id: processId })
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const executions = await control.client.findAll(process.class.Execution, {
+    card: execution.card,
+    process: processId,
+    status: ExecutionStatus.Active
+  })
+  for (const exec of executions) {
+    res.push(
+      control.client.txFactory.createTxUpdateDoc(process.class.Execution, execution.space, exec._id, {
+        status: ExecutionStatus.Cancelled
+      })
+    )
+    rollback.push(
+      control.client.txFactory.createTxUpdateDoc(process.class.Execution, execution.space, exec._id, {
+        status: ExecutionStatus.Active
+      })
+    )
+  }
+
+  return { txes: res, rollback, context: null }
 }
 
 export async function RunSubProcess (
@@ -611,7 +643,7 @@ export async function CancelToDo (
 ): Promise<ExecuteResult> {
   if (params._id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
   const todo = await control.client.findOne(process.class.ProcessToDo, { _id: params._id as any })
-  if (todo === undefined) throw processError(process.error.ObjectNotFound, { _id: params._id })
+  if (todo === undefined) return { txes: [], rollback: [], context: null }
   if (todo.doneOn !== null) throw processError(process.error.ToDoAlreadyCompleted, { _id: params._id })
   const res: Tx[] = [control.client.txFactory.createTxRemoveDoc(todo._class, todo.space, todo._id)]
   const rollback: Tx[] = [

@@ -16,7 +16,7 @@
   import { getCurrentEmployee } from '@hcengineering/contact'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ApproveRequest, Execution, ProcessToDo } from '@hcengineering/process'
+  import { ApproveRequest, Execution, ExecutionStatus, ProcessToDo } from '@hcengineering/process'
   import { Button } from '@hcengineering/ui'
   import plugin from '../plugin'
   import ApproveRequestButtons from './ApproveRequestButtons.svelte'
@@ -30,17 +30,22 @@
   const emp = getCurrentEmployee()
 
   const query = createQuery()
-  query.query(
-    plugin.class.ProcessToDo,
-    {
-      execution: value._id,
-      user: emp,
-      doneOn: null
-    },
-    (res) => {
-      todos = res
-    }
-  )
+  $: if (value.status === ExecutionStatus.Active) {
+    query.query(
+      plugin.class.ProcessToDo,
+      {
+        execution: value._id,
+        user: emp,
+        doneOn: null
+      },
+      (res) => {
+        todos = res
+      }
+    )
+  } else {
+    query.unsubscribe()
+    todos = []
+  }
 
   async function checkTodo (todo: ProcessToDo) {
     await client.update(todo, {

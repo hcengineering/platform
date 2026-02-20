@@ -237,6 +237,7 @@ export default plugin(processId, {
   },
   method: {
     RunSubProcess: '' as Ref<Method<Process>>,
+    CancelSubProcess: '' as Ref<Method<Process>>,
     CreateAction: '' as Ref<Method<EventButton>>,
     CancellAction: '' as Ref<Method<EventButton>>,
     CreateToDo: '' as Ref<Method<ProcessToDo>>,

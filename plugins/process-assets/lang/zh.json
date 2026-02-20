@@ -148,7 +148,8 @@
     "UnlockSection": "解锁部分",
     "CancelToDo": "取消任务",
     "Export": "导出",
-    "Import": "导入"
+    "Import": "导入",
+    "CancelProcess": "取消过程"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

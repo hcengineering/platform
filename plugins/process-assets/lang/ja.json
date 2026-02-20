@@ -147,7 +147,8 @@
     "UnlockSection": "セクションのロックを解除",
     "CancelToDo": "アクションをキャンセル",
     "Export": "エクスポート",
-    "Import": "インポート"
+    "Import": "インポート",
+    "CancelProcess": "プロセスをキャンセル"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
