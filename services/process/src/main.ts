@@ -102,15 +102,15 @@ export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid,
   }
 }
 
-function isActiveExecution (execution: Execution, trigger: Ref<Trigger>): boolean {
+function isActiveExecution (execution: Execution, trigger: Ref<Trigger>[]): boolean {
   if (execution.status !== ExecutionStatus.Active) return false
-  if (execution.error != null && trigger !== process.trigger.OnExecutionContinue) return false
+  if (execution.error != null && !trigger.includes(process.trigger.OnExecutionContinue)) return false
   return true
 }
 
 async function processBroadcast (control: ProcessControl, record: ProcessMessage): Promise<void> {
   const transitions = control.client.getModel().findAllSync(process.class.Transition, {
-    trigger: record.event
+    trigger: { $in: record.event }
   })
   for (const transition of transitions) {
     if (transition.from == null) continue
@@ -128,7 +128,7 @@ async function processBroadcast (control: ProcessControl, record: ProcessMessage
 
 async function processCardExecutions (control: ProcessControl, record: ProcessMessage): Promise<void> {
   const transitions = control.client.getModel().findAllSync(process.class.Transition, {
-    trigger: record.event
+    trigger: { $in: record.event }
   })
   const states = new Set<Ref<State>>()
   for (const transition of transitions) {
@@ -148,7 +148,7 @@ async function processCardExecutions (control: ProcessControl, record: ProcessMe
   }
 
   // we should update timers, probably context value changed
-  if ([process.trigger.OnCardUpdate, process.trigger.WhenFieldChanges].includes(record.event)) {
+  if (record.event.some((p) => p === process.trigger.OnCardUpdate || p === process.trigger.WhenFieldChanges)) {
     await updateTimers(control, record)
   }
 }
@@ -158,18 +158,18 @@ async function findTransitions (
   record: ProcessMessage,
   execution: Execution
 ): Promise<Transition | undefined> {
-  if (record.event === process.trigger.OnExecutionStart) {
+  if (record.event.includes(process.trigger.OnExecutionStart)) {
     const transitions = control.client.getModel().findAllSync(
       process.class.Transition,
       {
         process: execution.process,
-        trigger: record.event
+        trigger: { $in: record.event }
       },
       { sort: { rank: SortingOrder.Ascending } }
     )
     return await pickTransition(control, execution, transitions, record.context)
   }
-  if (record.event === process.trigger.OnExecutionContinue) {
+  if (record.event.includes(process.trigger.OnExecutionContinue)) {
     const transition = execution.error?.[0].transition
     if (transition === undefined) return
     const res = control.client.getModel().findAllSync(process.class.Transition, {
@@ -180,16 +180,20 @@ async function findTransitions (
       return res
     }
   }
-  const transitions = control.client.getModel().findAllSync(process.class.Transition, {
-    from: execution.currentState,
-    process: execution.process,
-    trigger: record.event
-  })
+  const transitions = control.client.getModel().findAllSync(
+    process.class.Transition,
+    {
+      from: execution.currentState,
+      process: execution.process,
+      trigger: { $in: record.event }
+    },
+    { sort: { rank: SortingOrder.Ascending } }
+  )
   return await pickTransition(control, execution, transitions, record.context)
 }
 
 async function checkToDoResult (control: ProcessControl, record: ProcessMessage, execution: Execution): Promise<void> {
-  if (record.event !== process.trigger.OnToDoClose) return
+  if (!record.event.includes(process.trigger.OnToDoClose)) return
   const todo = record.context.todo as ProcessToDo
   if (todo === undefined) return
   if (todo.results == null) return
@@ -284,10 +288,10 @@ async function processExecution (control: ProcessControl, record: ProcessMessage
 }
 
 function isRollback (record: ProcessMessage): boolean {
-  if (record.event === process.trigger.OnEvent && record.context.eventType === 'rollback') {
+  if (record.event.includes(process.trigger.OnEvent) && record.context.eventType === 'rollback') {
     return true
   }
-  if (record.event === process.trigger.OnToDoRemove && record.context.todo?.withRollback === true) {
+  if (record.event.includes(process.trigger.OnToDoRemove) && record.context.todo?.withRollback === true) {
     return true
   }
   return false
@@ -393,11 +397,23 @@ async function executeTransition (
     } else {
       rollback.push(client.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
     }
-    const card: Card =
+    let card: Card | undefined =
       control.cache.get(execution.card) ??
       (await control.client.findOne(cardPlugin.class.Card, { _id: execution.card }))
     if (card !== undefined) {
       control.cache.set(execution.card, card)
+    } else if (transition.trigger === process.trigger.OnExecutionStart) {
+      for (let attempt = 1; attempt < 5; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt))
+        card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+        if (card !== undefined) {
+          control.cache.set(execution.card, card)
+          break
+        }
+      }
+    }
+    if (card === undefined) {
+      return
     }
     const context: Record<string, any> = {}
     for (const action of transition.actions) {
@@ -472,10 +488,10 @@ async function executeTransition (
         )
         await client.tx(apply)
         await sendEvent(control, execution, transition, card, isDone)
-        if (isDone && execution.parentId !== undefined) {
-          await checkParent(execution, control)
-        }
         TxProcessor.applyUpdate(execution, executionUpdate)
+        if (execution.parentId !== undefined) {
+          await checkParent(execution, control, isDone)
+        }
         currTransition = transition
         transition = await checkNext(control, execution, context)
         nested = true
@@ -718,28 +734,26 @@ async function fillParams<T extends Doc> (
   return res
 }
 
-async function checkParent (execution: Execution, control: ProcessControl): Promise<void> {
+async function checkParent (execution: Execution, control: ProcessControl, isDone: boolean): Promise<void> {
   try {
     const subProcesses = await control.client.findAll(process.class.Execution, {
       parentId: execution.parentId,
       status: ExecutionStatus.Active
     })
     const filtered = subProcesses.filter((it) => it._id !== execution._id)
-    if (filtered.length !== 0) return
     const parent = (await control.client.findAll(process.class.Execution, { _id: execution.parentId }))[0]
     if (parent === undefined) return
     const _process = control.client.getModel().findObject(parent.process)
     if (_process === undefined) return
     if (parent.status !== ExecutionStatus.Active) return
+    const triggers: Ref<Trigger>[] = [process.trigger.OnSubProcessMatch]
+    if (filtered.length === 0 && isDone) triggers.push(process.trigger.OnSubProcessesDone)
     const transitions = control.client.getModel().findAllSync(
       process.class.Transition,
       {
         from: parent.currentState,
         process: parent.process,
-        trigger:
-          filtered.length === 0
-            ? { $in: [process.trigger.OnSubProcessesDone, process.trigger.OnSubProcessMatch] }
-            : process.trigger.OnSubProcessMatch
+        trigger: { $in: triggers }
       },
       {
         sort: { rank: SortingOrder.Ascending }

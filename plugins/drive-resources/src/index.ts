@@ -13,11 +13,14 @@
 // limitations under the License.
 //
 
+import { permissionsStore } from '@hcengineering/contact-resources'
 import type { Class, Client, Doc, DocumentQuery, Ref, RelatedDocument, WithLookup } from '@hcengineering/core'
 import drive, { type Drive, type File, type FileVersion, type Folder } from '@hcengineering/drive'
 import { type Resources } from '@hcengineering/platform'
 import { type ObjectSearchResult, getFileUrl } from '@hcengineering/presentation'
 import { showPopup, type Location } from '@hcengineering/ui'
+import { canChangeDoc, canCreateObject, canDeleteObject, canRemoveDoc } from '@hcengineering/view-resources'
+import { get } from 'svelte/store'
 
 import CreateDrive from './components/CreateDrive.svelte'
 import DrivePanel from './components/DrivePanel.svelte'
@@ -153,22 +156,96 @@ async function RestoreFileVersion (doc: FileVersion | FileVersion[]): Promise<vo
 }
 
 export async function CanRenameFile (doc: File | File[] | undefined): Promise<boolean> {
-  return doc !== undefined && !Array.isArray(doc)
+  if (doc === undefined || Array.isArray(doc)) {
+    return false
+  }
+  return canChangeDoc(drive.class.File, doc.space, get(permissionsStore))
 }
 
 export async function CanRenameFolder (doc: Folder | Folder[] | undefined): Promise<boolean> {
-  return doc !== undefined && !Array.isArray(doc)
+  if (doc === undefined || Array.isArray(doc)) {
+    return false
+  }
+  return canChangeDoc(drive.class.Folder, doc.space, get(permissionsStore))
+}
+
+export async function CanUpdateFileVersion (doc: FileVersion | FileVersion[] | undefined): Promise<boolean> {
+  if (doc === undefined || Array.isArray(doc)) {
+    return false
+  }
+
+  return canChangeDoc(drive.class.File, doc.space, get(permissionsStore))
 }
 
 export async function CanDeleteFileVersion (
   doc: WithLookup<FileVersion> | Array<WithLookup<FileVersion>> | undefined
 ): Promise<boolean> {
-  if (doc === undefined) {
+  if (doc === undefined || Array.isArray(doc)) {
     return false
   }
 
   const docs = Array.isArray(doc) ? doc : [doc]
-  return docs.every((p) => p.$lookup?.attachedTo !== undefined && p.$lookup?.attachedTo.file !== p._id)
+  const canDeleteByVersion = docs.every(
+    (p) => p.$lookup?.attachedTo !== undefined && p.$lookup?.attachedTo.file !== p._id
+  )
+  if (!canDeleteByVersion) {
+    return false
+  }
+
+  const permissions = get(permissionsStore)
+  return docs.every((p) => canChangeDoc(drive.class.File, doc.space, permissions))
+}
+
+export async function CanCreateFolder (doc: Drive | Folder | Array<Drive | Folder> | undefined): Promise<boolean> {
+  if (doc === undefined || Array.isArray(doc)) {
+    return false
+  }
+  const space = ((doc as Drive).space ?? doc._id) as Ref<Drive>
+  return canCreateObject(drive.class.Folder, space, get(permissionsStore))
+}
+
+export async function CanUpdateFile (doc: File | File[] | undefined): Promise<boolean> {
+  if (doc === undefined || Array.isArray(doc)) {
+    return false
+  }
+  return canChangeDoc(drive.class.File, doc.space, get(permissionsStore))
+}
+
+export async function CanUpdateFolder (doc: Folder | Folder[] | undefined): Promise<boolean> {
+  if (doc === undefined || Array.isArray(doc)) {
+    return false
+  }
+  return canChangeDoc(drive.class.Folder, doc.space, get(permissionsStore))
+}
+
+export async function CanDeleteFile (doc: File | File[] | undefined): Promise<boolean> {
+  if (doc === undefined) return false
+  doc = Array.isArray(doc) ? doc : [doc]
+
+  const permissions = get(permissionsStore)
+  const results = await Promise.all(
+    doc.map(async (p) => {
+      return permissions.restrictedSpaces.has(p.space)
+        ? canRemoveDoc(drive.class.File, p.space, permissions)
+        : await canDeleteObject(doc)
+    })
+  )
+  return results.every(Boolean)
+}
+
+export async function CanDeleteFolder (doc: Folder | Folder[] | undefined): Promise<boolean> {
+  if (doc === undefined) return false
+  doc = Array.isArray(doc) ? doc : [doc]
+
+  const permissions = get(permissionsStore)
+  const results = await Promise.all(
+    doc.map(async (p) => {
+      return permissions.restrictedSpaces.has(p.space)
+        ? canRemoveDoc(drive.class.Folder, p.space, permissions)
+        : await canDeleteObject(doc)
+    })
+  )
+  return results.every(Boolean)
 }
 
 export async function FileTitleProvider (client: Client, ref: Ref<File>, doc?: File): Promise<string> {
@@ -222,8 +299,14 @@ export default async (): Promise<Resources> => ({
     DriveLinkProvider,
     FileLinkProvider,
     FolderLinkProvider,
+    CanCreateFolder,
+    CanUpdateFile,
+    CanUpdateFolder,
+    CanDeleteFile,
+    CanDeleteFolder,
     CanRenameFile,
     CanRenameFolder,
+    CanUpdateFileVersion,
     CanDeleteFileVersion,
     FileTitleProvider,
     FolderTitleProvider

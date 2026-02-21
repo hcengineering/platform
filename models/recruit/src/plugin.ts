@@ -29,7 +29,8 @@ import type {
   ViewAction,
   ViewActionAvailabilityFunction,
   ViewQueryAction,
-  Viewlet
+  Viewlet,
+  ViewletViewAction
 } from '@hcengineering/view'
 
 export default mergeIds(recruitId, recruit, {
@@ -131,6 +132,9 @@ export default mergeIds(recruitId, recruit, {
   },
   template: {
     DefaultVacancy: '' as Ref<ProjectType>
+  },
+  specialViewAction: {
+    TableCandidate: '' as Ref<ViewletViewAction>
   },
   viewlet: {
     TableCandidate: '' as Ref<Viewlet>,

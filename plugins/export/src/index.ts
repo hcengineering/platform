@@ -16,6 +16,7 @@
 import { exportPlugin, exportId } from './plugin'
 
 export * from './types'
+export * from './utils'
 
 export { exportId }
 

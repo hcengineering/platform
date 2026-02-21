@@ -29,11 +29,13 @@ import core, {
   Relation,
   splitMixinUpdate,
   Tx,
+  TxCreateDoc,
   TxProcessor,
   Type,
   TypeNumber
 } from '@hcengineering/core'
 import process, {
+  ApproveRequest,
   Execution,
   ExecutionContext,
   ExecutionStatus,
@@ -124,7 +126,7 @@ export async function CheckSubProcessMatch (
   )
   if (predicate === '$all') {
     return res.length === subExecutions.length
-  } else if (predicate === '$any') {
+  } else if (predicate === '$in') {
     return res.length > 0
   } else if (predicate === '$nin') {
     return res.length === 0
@@ -335,6 +337,38 @@ export async function AddTag (
   }
 }
 
+export async function CancelSubProcess (
+  params: MethodParams<Execution>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  const processId = params._id as Ref<Process>
+  if (processId === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
+  const target = control.client.getModel().findObject(processId)
+  if (target === undefined) throw processError(process.error.ObjectNotFound, { _id: processId })
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const executions = await control.client.findAll(process.class.Execution, {
+    card: execution.card,
+    process: processId,
+    status: ExecutionStatus.Active
+  })
+  for (const exec of executions) {
+    res.push(
+      control.client.txFactory.createTxUpdateDoc(process.class.Execution, execution.space, exec._id, {
+        status: ExecutionStatus.Cancelled
+      })
+    )
+    rollback.push(
+      control.client.txFactory.createTxUpdateDoc(process.class.Execution, execution.space, exec._id, {
+        status: ExecutionStatus.Active
+      })
+    )
+  }
+
+  return { txes: res, rollback, context: null }
+}
+
 export async function RunSubProcess (
   params: MethodParams<Execution>,
   execution: Execution,
@@ -392,6 +426,165 @@ export async function RunSubProcess (
   return { txes: res, rollback, context: resultContext }
 }
 
+export async function RequestApproval (
+  params: MethodParams<ApproveRequest>,
+  execution: Execution,
+  control: ProcessControl,
+  results: UserResult[] | undefined
+): Promise<ExecuteResult> {
+  if (params.user === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: 'user' })
+  const group = generateId()
+  const res: TxCreateDoc<ApproveRequest>[] = []
+  const rollback: Tx[] = []
+  for (const user of Array.isArray(params.user) ? params.user : [params.user]) {
+    const id = generateId<ApproveRequest>()
+    const tx = control.client.txFactory.createTxCreateDoc(
+      process.class.ApproveRequest,
+      time.space.ToDos,
+      {
+        attachedTo: execution.card,
+        attachedToClass: cardPlugin.class.Card,
+        collection: 'todos',
+        workslots: 0,
+        execution: execution._id,
+        title: 'Approve request',
+        user,
+        description: params.description ?? '',
+        dueDate: params.dueDate,
+        priority: params.priority ?? ToDoPriority.NoPriority,
+        visibility: 'public',
+        card: execution.card,
+        doneOn: null,
+        rank: '',
+        withRollback: params.withRollback ?? false,
+        results,
+        group
+      },
+      id
+    )
+    res.push(tx)
+    rollback.push(control.client.txFactory.createTxRemoveDoc(process.class.ApproveRequest, time.space.ToDos, id))
+  }
+  return {
+    txes: res,
+    rollback,
+    context: [
+      {
+        _id: group,
+        value: res.map((tx) => TxProcessor.createDoc2Doc(tx, true))
+      }
+    ]
+  }
+}
+
+export async function ApproveRequestApproved (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): Promise<boolean> {
+  if (params._id === undefined) return false
+  const todo = await control.client.findAll(process.class.ApproveRequest, { group: params._id })
+  return todo.every((t) => t.approved === true)
+}
+
+export async function ApproveRequestRejected (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): Promise<boolean> {
+  if (params._id === undefined) return false
+  const todo = await control.client.findAll(process.class.ApproveRequest, { group: params._id })
+  return todo.some((t) => t.approved === false)
+}
+
+export async function LockCard (
+  params: MethodParams<Card>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+    readonly: true
+  })
+  res.push(tx)
+  rollback.push(
+    control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+      readonly: false
+    })
+  )
+  return { txes: res, rollback, context: [] }
+}
+
+export async function LockSection (
+  params: MethodParams<Card>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  if (params._id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+  if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
+  const readonlySections = card.readonlySections ?? []
+  const target = params._id as Ref<MasterTag>
+  readonlySections.push(target)
+  const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+    readonlySections
+  })
+  res.push(tx)
+  rollback.push(
+    control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+      $pull: { readonlySections: target }
+    })
+  )
+  return { txes: res, rollback, context: [] }
+}
+
+export async function UnlockCard (
+  params: MethodParams<Card>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+    readonly: false
+  })
+  res.push(tx)
+  rollback.push(
+    control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+      readonly: true
+    })
+  )
+  return { txes: res, rollback, context: [] }
+}
+
+export async function UnlockSection (
+  params: MethodParams<Card>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  if (params._id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+  if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
+  const target = params._id as Ref<MasterTag>
+  const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+    $pull: { readonlySections: target }
+  })
+  res.push(tx)
+  rollback.push(
+    control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+      $push: { readonlySections: target }
+    })
+  )
+  return { txes: res, rollback, context: [] }
+}
+
 export async function CreateToDo (
   params: MethodParams<ProcessToDo>,
   execution: Execution,
@@ -440,6 +633,33 @@ export async function CreateToDo (
         value: TxProcessor.createDoc2Doc(tx, true)
       }
     ]
+  }
+}
+
+export async function CancelToDo (
+  params: MethodParams<ProcessToDo>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  if (params._id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
+  const todo = await control.client.findOne(process.class.ProcessToDo, { _id: params._id as any })
+  if (todo === undefined) return { txes: [], rollback: [], context: null }
+  if (todo.doneOn !== null) throw processError(process.error.ToDoAlreadyCompleted, { _id: params._id })
+  const res: Tx[] = [control.client.txFactory.createTxRemoveDoc(todo._class, todo.space, todo._id)]
+  const rollback: Tx[] = [
+    control.client.txFactory.createTxCreateDoc(
+      todo._class,
+      todo.space,
+      { ...todo },
+      todo._id,
+      todo.modifiedOn,
+      todo.modifiedBy
+    )
+  ]
+  return {
+    txes: res,
+    rollback,
+    context: null
   }
 }
 

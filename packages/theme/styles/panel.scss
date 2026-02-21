@@ -55,6 +55,7 @@
   font-size: 1.25rem;
   line-height: 1.5rem;
   color: var(--global-primary-TextColor);
+  text-rendering: optimizeLegibility;
 
   &:not(.withButton) {
     min-height: 4.25rem;

@@ -121,7 +121,30 @@
     "RunProcessPermission": "Prozess ausführen",
     "CancelProcessPermission": "Prozess abbrechen",
     "ForbidRunProcessPermission": "Ausführen des Prozesses verbieten",
-    "ForbidCancelProcessPermission": "Abbrechen des Prozesses verbieten"
+    "ForbidCancelProcessPermission": "Abbrechen des Prozesses verbieten",
+    "RequestApproval": "Genehmigung anfordern",
+    "IsApproved": "Ist genehmigt",
+    "Approve": "Genehmigen",
+    "Reject": "Ablehnen",
+    "Reason": "Grund",
+    "ApproveRequest": "Genehmigungsanfrage",
+    "OnApproveRequestApproved": "Bei Genehmigung der Anfrage",
+    "OnApproveRequestRejected": "Bei Ablehnung der Anfrage",
+    "ConfirmApproval": "Genehmigung bestätigen",
+    "ConfirmRejection": "Ablehnung bestätigen",
+    "RejectionReason": "Ablehnungsgrund",
+    "ProvideRejectionReason": "Ablehnungsgrund angeben",
+    "FieldIsEmpty": "Feld ist leer",
+    "Reviewers": "Prüfer",
+    "LockCard": "Karte sperren",
+    "LockSection": "Abschnitt sperren",
+    "Approvers": "Genehmiger",
+    "UnlockCard": "Karte entsperren",
+    "UnlockSection": "Abschnitt entsperren",
+    "CancelToDo": "Action Item abbrechen",
+    "Export": "Exportieren",
+    "Import": "Importieren",
+    "CancelProcess": "Prozess abbrechen"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",
@@ -137,6 +160,7 @@
     "EmptyFunctionResult": "Leerer Funktionsresultat {func}",
     "ContextValueNotProvided": "Kontextwert nicht bereitgestellt: {name}",
     "RequiredParamsNotProvided": "Erforderliche Parameter nicht bereitgestellt: {params}",
-    "TooDeepTransitionRecursion": "Zu tiefe Übergangsrekursion"
+    "TooDeepTransitionRecursion": "Zu tiefe Übergangsrekursion",
+    "ToDoAlreadyCompleted": "Action Item bereits abgeschlossen"
   }
 }

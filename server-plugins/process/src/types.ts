@@ -33,7 +33,7 @@ export type TransformFunc = (
 export interface ProcessMessage {
   account: PersonId
   createdOn: Timestamp
-  event: Ref<Trigger>
+  event: Ref<Trigger>[]
   context: Record<string, any>
   execution?: Ref<Execution>
   card?: Ref<Card>

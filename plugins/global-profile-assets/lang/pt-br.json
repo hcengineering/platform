@@ -1,0 +1,29 @@
+{
+  "string": {
+    "GlobalProfile": "Perfil global",
+    "EditProfile": "Editar perfil",
+    "GeneralInformation": "Informações gerais",
+    "FirstName": "Nome",
+    "LastName": "Sobrenome",
+    "City": "Cidade",
+    "Country": "País",
+    "Bio": "Biografia",
+    "FirstNamePlaceholder": "Digite o nome",
+    "LastNamePlaceholder": "Digite o sobrenome",
+    "CityPlaceholder": "Digite a cidade",
+    "CountryPlaceholder": "Digite o país",
+    "BioPlaceholder": "Conte-nos sobre você...",
+    "Save": "Salvar",
+    "Cancel": "Cancelar",
+    "MaximumLength": "Máximo de {count} caracteres",
+    "Required": "Este campo é obrigatório",
+    "ProfileVisibility": "Visibilidade do perfil",
+    "PublicProfile": "Público",
+    "PrivateProfile": "Privado",
+    "PublicProfileDescription": "Seu perfil é visível para todos",
+    "PrivateProfileDescription": "Seu perfil é visível apenas para você",
+    "AddBioPlaceholder": "Adicione uma biografia para contar aos outros sobre você...",
+    "AddLocationPlaceholder": "Adicione sua localização...",
+    "ProfileNotAvailable": "Perfil não disponível"
+  }
+}

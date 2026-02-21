@@ -123,7 +123,30 @@
     "RunProcessPermission": "Süreci çalıştır",
     "CancelProcessPermission": "Süreci iptal et",
     "ForbidRunProcessPermission": "Süreci çalıştırmayı yasakla",
-    "ForbidCancelProcessPermission": "Süreci iptal etmeyi yasakla"
+    "ForbidCancelProcessPermission": "Forbid cancelling process",
+    "RequestApproval": "Onay iste",
+    "IsApproved": "Onaylandı",
+    "Approve": "Onayla",
+    "Reject": "Reddet",
+    "Reason": "Sebep",
+    "ApproveRequest": "Onay iste",
+    "OnApproveRequestApproved": "Onay isteği onaylandığında",
+    "OnApproveRequestRejected": "Onay isteği reddedildiğinde",
+    "ConfirmApproval": "Onayı onayla",
+    "ConfirmRejection": "Reddi onayla",
+    "RejectionReason": "Red sebebi",
+    "ProvideRejectionReason": "Red sebebini sağla",
+    "FieldIsEmpty": "Alan boş",
+    "Reviewers": "Gözden geçirenler",
+    "LockCard": "Kartı kilitle",
+    "LockSection": "Bölümü kilitle",
+    "Approvers": "Onaylayanlar",
+    "UnlockCard": "Kartın kilidini aç",
+    "UnlockSection": "Bölümün kilidini aç",
+    "CancelToDo": "Eylem öğesini iptal et",
+    "Export": "Dışa aktar",
+    "Import": "İçe aktar",
+    "CancelProcess": "Süreci iptal et"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",
@@ -139,6 +162,7 @@
     "EmptyFunctionResult": "Boş fonksiyon sonucu {func}",
     "ContextValueNotProvided": "Bağlam değeri sağlanmadı: {name}",
     "RequiredParamsNotProvided": "Gerekli parametreler sağlanmadı: {params}",
-    "TooDeepTransitionRecursion": "Çok derin geçiş özyinelemesi"
+    "TooDeepTransitionRecursion": "Çok derin geçiş özyinelemesi",
+    "ToDoAlreadyCompleted": "Eylem öğesi zaten tamamlandı"
   }
 }

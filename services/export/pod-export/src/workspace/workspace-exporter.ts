@@ -24,6 +24,7 @@ import {
 } from '@hcengineering/core'
 import contact, { type Employee } from '@hcengineering/contact'
 import { type StorageAdapter } from '@hcengineering/server-core'
+import { isEffectiveDocument, shouldSkipDocument } from '@hcengineering/export'
 import { AttachmentExporter } from './attachment-exporter'
 import { DataMapper } from './data-mapper'
 import { DocumentExporter } from './document-exporter'
@@ -124,7 +125,9 @@ export class CrossWorkspaceExporter {
       includeAttachments = true,
       mapper,
       relations = [],
-      fieldMappers = {}
+      fieldMappers = {},
+      skipDeletedObsolete = true,
+      exportOnlyEffective = false
     } = options
 
     // Store field mappers
@@ -202,10 +205,17 @@ export class CrossWorkspaceExporter {
 
           this.context.info(`Processing batch: ${processedCount + 1}-${processedCount + docs.length}`)
 
+          // Filter by effective status or skip archived/deleted/obsolete
+          const docsToProcess = exportOnlyEffective
+            ? docs.filter((doc) => isEffectiveDocument(doc))
+            : skipDeletedObsolete
+              ? docs.filter((doc) => !shouldSkipDocument(doc))
+              : docs
+
           // Check for existing documents in bulk if needed
           const existingDocsMap = new Map<Ref<Doc>, Doc>()
           if (conflictStrategy === 'skip') {
-            const docIds = docs.map((d) => d._id)
+            const docIds = docsToProcess.map((d) => d._id)
             const existing = await this.targetClient.findAll(_class, { _id: { $in: docIds } })
             for (const doc of existing) {
               existingDocsMap.set(doc._id, doc)
@@ -213,7 +223,7 @@ export class CrossWorkspaceExporter {
           }
 
           // Export documents in this batch
-          for (const doc of docs) {
+          for (const doc of docsToProcess) {
             try {
               // Apply mapper if provided
               const mappedDoc = mapper !== undefined ? await mapper(doc) : doc
@@ -234,10 +244,14 @@ export class CrossWorkspaceExporter {
                   (mappedDoc as any).title ??
                   hierarchy.getClass(mappedDoc._class)?.label ??
                   mappedDoc._id
-                result.exportedDocuments.push({
-                  docId: mappedDoc._id,
-                  name: typeof docName === 'string' ? docName : String(docName)
-                })
+                // Use target workspace doc id so the notification panel can resolve docs in the target workspace
+                const targetDocId = this.state.idMapping.get(mappedDoc._id)
+                if (targetDocId !== undefined) {
+                  result.exportedDocuments.push({
+                    docId: targetDocId,
+                    name: typeof docName === 'string' ? docName : String(docName)
+                  })
+                }
               } else {
                 result.skippedCount++
               }

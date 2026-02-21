@@ -31,12 +31,27 @@
     "ExportStartedMessage": "Export gestartet. Sie erhalten eine Benachrichtigung, wenn der Export abgeschlossen ist.",
     "ExportToWorkspaceCompleted": "Export abgeschlossen",
     "ExportToWorkspaceCompletedMessage": "Export erfolgreich abgeschlossen.",
+    "ImportToWorkspaceNotificationMessage": "{count} Dokumente in Ihren Arbeitsbereich importiert",
+    "ImportCompleted": "Dokumente in Arbeitsbereich importiert",
+    "SourceWorkspace": "Quell-Arbeitsbereich",
+    "ExportedCount": "Exportierte Anzahl",
+    "ExportedDocumentIds": "IDs exportierter Dokumente",
+    "DocumentsImportedFromWorkspace": "{count, plural, one {1 Dokument wurde aus dem Arbeitsbereich {workspace} importiert} other {# Dokumente wurden aus dem Arbeitsbereich {workspace} importiert}}:",
+    "ExportedDocumentClass": "Klasse exportierter Dokumente",
+    "Import": "Import",
+    "ImportedDocuments": "Neue Dokumente",
     "ExportToWorkspaceFailed": "Export fehlgeschlagen",
     "SelectWorkspace": "Arbeitsbereich auswählen",
     "SelectWorkspaceToExport": "Arbeitsbereich zum Exportieren von {count, plural, =1 {1 Dokument} other {# Dokumenten}} auswählen",
     "SelectWorkspaceToExportSpace": "Arbeitsbereich zum Exportieren von Dokumenten aus dem Bereich auswählen",
     "SelectSpace": "Bereich auswählen",
     "NoSelectedDocuments": "Keine Dokumente ausgewählt",
-    "RequestPermissionToImport": "Bitte fordern Sie die Berechtigung vom Eigentümer des Ziel-Arbeitsbereichs an, um Dokumente zu importieren."
+    "RequestPermissionToImport": "Bitte fordern Sie die Berechtigung vom Eigentümer des Ziel-Arbeitsbereichs an, um Dokumente zu importieren.",
+    "ExportOnlyEffective": "Nur Dokumente mit wirksamem Status exportieren",
+    "ExportFilterMode": "Zu exportierende Dokumente",
+    "ExportFilterEffectiveOnly": "Nur wirksame Dokumente exportieren",
+    "ExportFilterSkipArchivedObsolete": "Alle Dokumente außer archivierten und veralteten",
+    "ExportFilterAll": "Alle Dokumente",
+    "ExportResultRecordTitle": "Export von Dokumenten aus dem Arbeitsbereich {workspace} ({date})"
   }
 }

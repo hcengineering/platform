@@ -70,6 +70,7 @@
     "NewVersionConfirmation": "Voulez-vous créer une nouvelle version ?",
     "RelationCopyDescr": "Quelles relations souhaitez-vous copier ?",
     "Import": "Importer",
-    "Export": "Exporter"
+    "Export": "Exporter",
+    "CardUpdated": "Carte mise à jour"
   }
 }

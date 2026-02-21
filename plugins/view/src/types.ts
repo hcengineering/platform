@@ -46,6 +46,7 @@ import { Preference } from '@hcengineering/preference'
 import {
   AnyComponent,
   AnySvelteComponent,
+  type ComponentExtensionId,
   Location,
   Location as PlatformLocation,
   type LabelAndProps
@@ -456,6 +457,24 @@ export interface ViewletConfigOptions {
   strict?: boolean
   extraProps?: Omit<BuildModelKey, 'key'>
   sortable?: boolean
+}
+
+/**
+ * Special view action shown in the viewlet header. Exactly one of viewlet or descriptor must be set.
+ * When descriptor is set, scope is filtered by applicableToClass / disabledForClass.
+ * @public
+ */
+export interface ViewletViewAction extends Doc {
+  /** When set, action applies to this viewlet (and template viewlets). */
+  viewlet?: Ref<Viewlet>
+  /** When set, action applies to viewlets with this descriptor; use applicableToClass / disabledForClass to scope. */
+  descriptor?: Ref<ViewletDescriptor>
+  extension: ComponentExtensionId
+  config?: Record<string, any>
+  /** When descriptor is set: show only when viewlet.attachTo is this class or a subclass. */
+  applicableToClass?: Ref<Class<Doc>>
+  /** When descriptor is set: hide when viewlet.attachTo is this class or a subclass. */
+  disabledForClass?: Ref<Class<Doc>>
 }
 
 /**
@@ -905,4 +924,16 @@ export interface BuildMarkdownTableMetadata {
   config?: Array<string | BuildModelKey>
   query?: Record<string, any> | DocumentQuery<Doc>
   originalUrl?: string // Original URL of the page/view where the table was created
+}
+
+/**
+ * @public
+ * Complete table metadata including persistence fields
+ * Extends BuildMarkdownTableMetadata with additional fields for storage and versioning
+ */
+export interface TableMetadata extends BuildMarkdownTableMetadata {
+  version: string // For future compatibility
+  documentIds: Array<string | Ref<Doc>> // Document IDs used in the table
+  timestamp: number // Timestamp when the table was created/updated
+  workspace?: string // Optional workspace identifier
 }

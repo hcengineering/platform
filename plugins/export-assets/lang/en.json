@@ -31,12 +31,27 @@
     "ExportStartedMessage": "Export started. You will receive a notification when it completes.",
     "ExportToWorkspaceCompleted": "Export completed",
     "ExportToWorkspaceCompletedMessage": "Export completed successfully.",
+    "ImportToWorkspaceNotificationMessage": "{count} documents imported to your workspace",
+    "ImportCompleted": "Documents imported to workspace",
+    "SourceWorkspace": "Source workspace",
+    "ExportedCount": "Exported count",
+    "ExportedDocumentIds": "Exported document IDs",
+    "DocumentsImportedFromWorkspace": "{count, plural, one {1 document was imported from {workspace} workspace} other {# documents were imported from {workspace} workspace}}:",
+    "ExportedDocumentClass": "Exported document class",
+    "Import": "Import",
+    "ImportedDocuments": "New documents",
     "ExportToWorkspaceFailed": "Export failed",
     "SelectWorkspace": "Select workspace",
     "SelectWorkspaceToExport": "Select workspace to export {count, plural, =1 {1 document} other {# documents}}",
     "SelectWorkspaceToExportSpace": "Select workspace to export documents from space",
     "SelectSpace": "Select space",
     "NoSelectedDocuments": "No documents selected",
-    "RequestPermissionToImport": "Please request permission from the target workspace owner to import documents."
+    "RequestPermissionToImport": "Please request permission from the target workspace owner to import documents.",
+    "ExportOnlyEffective": "Export only documents with effective status",
+    "ExportFilterMode": "Documents to export",
+    "ExportFilterEffectiveOnly": "Export only effective documents",
+    "ExportFilterSkipArchivedObsolete": "All documents except archived and obsolete",
+    "ExportFilterAll": "All documents",
+    "ExportResultRecordTitle": "Export of documents from {workspace} workspace ({date})"
   }
 }

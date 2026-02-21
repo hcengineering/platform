@@ -20,7 +20,7 @@ import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineer
 import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type TagCategory } from '@hcengineering/tags'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import { type ActionCategory, type ViewAction } from '@hcengineering/view'
+import type { ActionCategory, ViewAction, Viewlet, ViewletViewAction } from '@hcengineering/view'
 import { type NotificationType, type NotificationGroup } from '@hcengineering/notification'
 import { type TextActionVisibleFunction, type TextActionFunction } from '@hcengineering/text-editor'
 
@@ -78,11 +78,14 @@ export default mergeIds(documentsId, documents, {
     TransferDocument: '' as ViewAction,
     EditDocSpace: '' as ViewAction
   },
+  specialViewAction: {
+    TableDocument: '' as Ref<ViewletViewAction>
+  },
   viewlet: {
-    TableDocument: '' as Ref<Doc>,
-    ListDocument: '' as Ref<Doc>,
-    TableDocumentTemplate: '' as Ref<Doc>,
-    TableDocumentDomain: '' as Ref<Doc>
+    TableDocument: '' as Ref<Viewlet>,
+    ListDocument: '' as Ref<Viewlet>,
+    TableDocumentTemplate: '' as Ref<Viewlet>,
+    TableDocumentDomain: '' as Ref<Viewlet>
   },
   notification: {
     DocumentsNotificationGroup: '' as Ref<NotificationGroup>,

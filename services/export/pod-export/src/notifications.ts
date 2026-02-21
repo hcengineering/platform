@@ -13,109 +13,94 @@
 //
 
 import { getClient } from '@hcengineering/account-client'
-import {
+import core, {
   AccountRole,
-  concatLink,
-  Doc,
+  type AccountUuid,
+  type Class,
+  type Doc,
+  generateId,
   MeasureContext,
-  Ref,
+  type Ref,
   systemAccountUuid,
+  type TxOperations,
   WorkspaceIds,
   WorkspaceUuid
 } from '@hcengineering/core'
+import exportPlugin from '@hcengineering/export'
+import notification from '@hcengineering/notification'
 import { generateToken } from '@hcengineering/server-token'
 import envConfig from './config'
 
-export async function sendExportCompletionEmail (
+export async function sendExportCompletionNotification (
   ctx: MeasureContext,
+  targetTxOps: TxOperations,
   targetWorkspace: WorkspaceUuid,
   targetWsIds: WorkspaceIds,
   exportedDocuments: Array<{ docId: Ref<Doc>, name: string }>,
-  sourceWsIds: WorkspaceIds
+  sourceWsIds: WorkspaceIds,
+  objectClass: Ref<Class<Doc>>
 ): Promise<void> {
   try {
-    const mailURL = envConfig.MailURL
-    if (mailURL == null || typeof mailURL !== 'string' || mailURL === '') {
-      ctx.warn('Mail service URL not configured, skipping email notification')
-      return
-    }
-    // Get workspace members to find owners
+    const count = exportedDocuments.length
+    const resultId = generateId<Doc>()
+
+    await targetTxOps.createDoc(
+      exportPlugin.class.ExportResultRecord,
+      core.space.Space,
+      {
+        sourceWorkspace: sourceWsIds.url,
+        targetWorkspace: targetWsIds.url,
+        exportedCount: count,
+        exportedDocumentIds: exportedDocuments.map((d) => d.docId),
+        objectClass
+      },
+      resultId
+    )
+
     const targetWsToken = generateToken(systemAccountUuid, targetWorkspace, { service: 'export' })
     const targetAccountClient = getClient(envConfig.AccountsUrl, targetWsToken)
     const members = await targetAccountClient.getWorkspaceMembers()
-
-    // Find workspace owners
-    const owners = members.filter((m: any) => m.role === AccountRole.Owner)
+    const owners = members.filter((m: { role: string }) => m.role === AccountRole.Owner) as Array<{
+      person: AccountUuid
+    }>
 
     if (owners.length === 0) {
-      ctx.warn('No workspace owners found for email notification', { targetWorkspace })
+      ctx.warn('No workspace owners found for export notification', { targetWorkspace })
       return
     }
 
-    // Get email addresses for owners
-    const ownerEmails: string[] = []
     for (const owner of owners) {
       try {
-        const personInfo = await targetAccountClient.getPersonInfo(owner.person)
-        const emailSocialId = personInfo.socialIds.find(
-          (sid: any) => (sid.type === 'EMAIL' || sid.type === 'GOOGLE') && sid.verifiedOn > 0 && sid.isDeleted !== true
-        )
-        if (emailSocialId?.value != null && emailSocialId.value !== '') {
-          ownerEmails.push(emailSocialId.value)
-        }
-      } catch (err) {
-        ctx.warn('Failed to get email for workspace owner', { owner: owner.person, error: err })
-      }
-    }
-
-    if (ownerEmails.length === 0) {
-      ctx.warn('No email addresses found for workspace owners', { targetWorkspace })
-      return
-    }
-
-    // Build email content
-    const documentList = exportedDocuments.map((doc) => `  - ${doc.name}`).join('\n')
-    const subject = `Export completed: ${exportedDocuments.length} document${exportedDocuments.length !== 1 ? 's' : ''} exported to your workspace`
-    const text = `The following ${exportedDocuments.length} document${exportedDocuments.length !== 1 ? 's have' : ' has'} been successfully exported to your workspace:\n\n${documentList}\n\nSource workspace: ${sourceWsIds.uuid}\nTarget workspace: ${targetWsIds.uuid}`
-    const html = `<p>The following <strong>${exportedDocuments.length}</strong> document${exportedDocuments.length !== 1 ? 's have' : ' has'} been successfully exported to your workspace:</p><ul>${exportedDocuments.map((doc) => `<li>${escapeHtml(doc.name)}</li>`).join('')}</ul><p>Source workspace: ${sourceWsIds.uuid}<br>Target workspace: ${targetWsIds.uuid}</p>`
-
-    // Send email to all owners
-    const mailAuth = envConfig.MailAuthToken
-    for (const email of ownerEmails) {
-      try {
-        const response = await fetch(concatLink(mailURL, '/send'), {
-          method: 'post',
-          keepalive: true,
-          headers: {
-            'Content-Type': 'application/json',
-            ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
-          },
-          body: JSON.stringify({
-            text,
-            html,
-            subject,
-            to: [email]
-          })
+        const docNotifyContextId = await targetTxOps.createDoc(notification.class.DocNotifyContext, core.space.Space, {
+          objectId: resultId,
+          objectClass: exportPlugin.class.ExportResultRecord,
+          objectSpace: core.space.Space,
+          user: owner.person,
+          isPinned: false,
+          hidden: false
         })
-        if (!response.ok) {
-          ctx.error(`Failed to send export completion email: ${response.statusText}`, { email })
-        } else {
-          ctx.info('Export completion email sent', { email, documentCount: exportedDocuments.length })
-        }
+
+        await targetTxOps.createDoc(notification.class.CommonInboxNotification, core.space.Space, {
+          user: owner.person,
+          objectId: resultId,
+          objectClass: exportPlugin.class.ExportResultRecord,
+          icon: exportPlugin.icon.Export,
+          header: exportPlugin.string.ImportCompleted,
+          message: exportPlugin.string.ImportToWorkspaceNotificationMessage,
+          props: {
+            count,
+            sourceWorkspace: sourceWsIds.uuid
+          },
+          isViewed: false,
+          archived: false,
+          docNotifyContext: docNotifyContextId,
+          types: [exportPlugin.ids.ImportedDocumentsNotification]
+        })
       } catch (err) {
-        ctx.error('Could not send export completion email', { err, email })
+        ctx.error('Failed to create export notification for owner', { owner: owner.person, err })
       }
     }
   } catch (err) {
-    ctx.error('Failed to send export completion email', { err })
+    ctx.error('Failed to send export completion notification', { err })
   }
-}
-
-function escapeHtml (text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
 }

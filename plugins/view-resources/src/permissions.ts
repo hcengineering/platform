@@ -85,6 +85,28 @@ export function canChangeDoc (_class: Ref<Class<Doc>>, space: Ref<Space>, store:
   return !store.restrictedSpaces.has(space)
 }
 
+export function canRemoveDoc (_class: Ref<Class<Doc>>, space: Ref<Space>, store: PermissionsStore): boolean {
+  const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
+  if (arePermissionsDisabled) return true
+  if (store.whitelist.has(space)) return true
+  if (store.ps[space] !== undefined) {
+    const client = getClient()
+    const h = client.getHierarchy()
+    const ancestors = h.getAncestors(_class)
+    const permissions = client.getModel().findAllSync(core.class.Permission, { txClass: core.class.TxRemoveDoc })
+    for (const ancestor of ancestors) {
+      const curr = permissions.filter((p) => p.objectClass === ancestor && p.txMatch === undefined)
+      for (const permission of curr) {
+        if (store.ps[space]?.has(permission._id)) {
+          return permission.forbid !== true
+        }
+      }
+    }
+  }
+
+  return !store.restrictedSpaces.has(space)
+}
+
 export function canCreateObject (_class: Ref<Class<Doc>>, space: Ref<Space>, store: PermissionsStore): boolean {
   const arePermissionsDisabled = getMetadata(core.metadata.DisablePermissions) ?? false
   if (arePermissionsDisabled) return true

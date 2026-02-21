@@ -25,10 +25,10 @@
     type Class
   } from '@hcengineering/core'
   import { Card, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
-  import { DropdownLabels, Label } from '@hcengineering/ui'
+  import { DropdownLabels, DropdownLabelsIntl, Label } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
   import login from '@hcengineering/login'
-  import { type RelationDefinition } from '@hcengineering/export'
+  import { type RelationDefinition, shouldSkipDocument, isEffectiveDocument } from '@hcengineering/export'
 
   import { createEventDispatcher } from 'svelte'
 
@@ -41,12 +41,6 @@
   export let docClass: Ref<Class<Doc>> | undefined = undefined
   export let spaceExport: boolean | undefined = false
 
-  $: selectedDocs = spaceExport !== true ? (Array.isArray(value) ? value : value != null ? [value] : []) : []
-  $: _class = docClass ?? (selectedDocs.length > 0 ? selectedDocs[0]._class : undefined)
-
-  // Build query with space filter when exporting from space
-  $: exportQuery = spaceExport === true ? { ...(query ?? {}), space: (value as Space)._id } : query
-
   const dispatch = createEventDispatcher()
 
   let targetWorkspace: string | undefined = undefined
@@ -54,6 +48,30 @@
   let workspacesWithPermission = new Set<WorkspaceUuid>()
   let loading = false
   let workspaceLoading = false
+
+  type ExportFilterMode = 'effectiveOnly' | 'skipArchivedObsolete' | 'all'
+  let exportFilterMode: ExportFilterMode = 'effectiveOnly'
+
+  const exportFilterItems = [
+    { id: 'effectiveOnly' as const, label: plugin.string.ExportFilterEffectiveOnly },
+    { id: 'skipArchivedObsolete' as const, label: plugin.string.ExportFilterSkipArchivedObsolete },
+    { id: 'all' as const, label: plugin.string.ExportFilterAll }
+  ]
+
+  $: selectedDocs = spaceExport !== true ? (Array.isArray(value) ? value : value != null ? [value] : []) : []
+  $: _class = docClass ?? (selectedDocs.length > 0 ? selectedDocs[0]._class : undefined)
+
+  function filterDocsForExport (docs: Doc[], exportFilterMode: ExportFilterMode): Doc[] {
+    if (docs.length === 0) return docs
+    if (exportFilterMode === 'effectiveOnly') return docs.filter((doc) => isEffectiveDocument(doc))
+    if (exportFilterMode === 'skipArchivedObsolete') return docs.filter((doc) => !shouldSkipDocument(doc))
+    return docs
+  }
+
+  $: filteredSelectedDocs = filterDocsForExport(selectedDocs, exportFilterMode)
+
+  // Build query with space filter when exporting from space
+  $: exportQuery = spaceExport === true ? { ...(query ?? {}), space: (value as Space)._id } : query
 
   async function loadWorkspaces (): Promise<void> {
     try {
@@ -97,13 +115,22 @@
       })
     )
 
-  $: canSave = targetWorkspace !== undefined && _class != null
+  $: canSave =
+    targetWorkspace !== undefined && _class != null && (spaceExport === true || filteredSelectedDocs.length > 0)
 
   async function handleExport (): Promise<void> {
     if (!canSave || _class == null) return
 
     loading = true
-    void exportToWorkspace(_class, exportQuery, selectedDocs, targetWorkspace, relations)
+    void exportToWorkspace(
+      _class,
+      exportQuery,
+      filteredSelectedDocs,
+      targetWorkspace,
+      relations,
+      exportFilterMode === 'skipArchivedObsolete',
+      exportFilterMode === 'effectiveOnly'
+    )
     loading = false
     dispatch('close', true)
   }
@@ -116,18 +143,18 @@
   okAction={handleExport}
   okLabel={plugin.string.Export}
   canSave={canSave && !loading && !workspaceLoading}
-  width="x-small"
+  width="small"
   on:close={() => dispatch('close')}
   on:changeContent
 >
   <div class="flex-col gap-2">
-    <span class="pb-4 secondary-textColor">
+    <span class="pl-2 pb-4 secondary-textColor">
       {#if !workspaceLoading && workspaces.length === 0}
         <Label label={plugin.string.RequestPermissionToImport} />
       {:else if spaceExport === true}
         <Label label={plugin.string.SelectWorkspaceToExportSpace} />
       {:else}
-        <Label label={plugin.string.SelectWorkspaceToExport} params={{ count: selectedDocs.length }} />
+        <Label label={plugin.string.SelectWorkspaceToExport} params={{ count: filteredSelectedDocs.length }} />
       {/if}
     </span>
     <DropdownLabels
@@ -140,5 +167,9 @@
       kind="regular"
       size="large"
     />
+    <span class="pl-2 py-4 secondary-textColor">
+      <Label label={plugin.string.ExportFilterMode} />
+    </span>
+    <DropdownLabelsIntl items={exportFilterItems} bind:selected={exportFilterMode} kind="regular" size="large" />
   </div>
 </Card>

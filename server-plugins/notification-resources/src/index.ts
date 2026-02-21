@@ -183,12 +183,21 @@ export async function getContentByTemplate (
   const notificationType = control.modelDb.getObject(type)
   if (notificationType.templates === undefined) return
 
-  const textPart = await getTextPart(doc, control)
-  if (textPart === undefined) return
   const params: Record<string, string> =
     notificationData !== undefined
       ? await getTranslatedNotificationContent(notificationData, notificationData._class, control)
       : {}
+
+  let textPart = await getTextPart(doc, control)
+  if (textPart === undefined) {
+    if (
+      notificationData !== undefined &&
+      control.hierarchy.isDerived(notificationData._class, notification.class.CommonInboxNotification)
+    ) {
+      textPart = params.title ?? params.body ?? ''
+    }
+    if (textPart === undefined || textPart === '') return
+  }
 
   if (
     notificationData !== undefined &&

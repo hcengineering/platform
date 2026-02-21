@@ -126,7 +126,30 @@
     "RunProcessPermission": "Exécuter le processus",
     "CancelProcessPermission": "Annuler le processus",
     "ForbidRunProcessPermission": "Interdire l'exécution du processus",
-    "ForbidCancelProcessPermission": "Interdire l'annulation du processus"
+    "ForbidCancelProcessPermission": "Forbid cancelling process",
+    "RequestApproval": "Demander l'approbation",
+    "IsApproved": "Approuvé",
+    "Approve": "Approuver",
+    "Reject": "Rejeter",
+    "Reason": "Raison",
+    "ApproveRequest": "Demander l'approbation",
+    "OnApproveRequestApproved": "Lors de l'approbation",
+    "OnApproveRequestRejected": "Lors du rejet",
+    "ConfirmApproval": "Confirmer l'approbation",
+    "ConfirmRejection": "Confirmer le rejet",
+    "RejectionReason": "Raison du rejet",
+    "ProvideRejectionReason": "Fournir la raison du rejet",
+    "FieldIsEmpty": "Le champ est vide",
+    "Reviewers": "Relecteurs",
+    "LockCard": "Verrouiller la carte",
+    "LockSection": "Verrouiller la section",
+    "Approvers": "Approbateurs",
+    "UnlockCard": "Déverrouiller la carte",
+    "UnlockSection": "Déverrouiller la section",
+    "CancelToDo": "Annuler l'action",
+    "Export": "Exporter",
+    "Import": "Importer",
+    "CancelProcess": "Annuler le processus"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",
@@ -142,6 +165,7 @@
     "EmptyFunctionResult": "Résultat de fonction vide {func}",
     "ContextValueNotProvided": "Valeur de contexte non fournie : {name}",
     "RequiredParamsNotProvided": "Paramètres requis non fournis : {params}",
-    "TooDeepTransitionRecursion": "Récursion de transition trop profonde"
+    "TooDeepTransitionRecursion": "Récursion de transition trop profonde",
+    "ToDoAlreadyCompleted": "Action déjà terminée"
   }
 }

@@ -20,6 +20,7 @@
     "LastName": "Soyad",
     "FirstName": "Ad",
     "Join": "Katıl",
+    "JoinWorkspace": "{workspaceName} alanına katıl",
     "Email": "E-posta",
     "Password": "Şifre",
     "Workspace": "Çalışma alanı adı",
@@ -83,6 +84,13 @@
     "SignUpToCreateWorkspace": "Misafir erişimi olan çalışma alanı yok. Kendi alanınızı oluşturmak için lütfen kayıt olun.",
     "WhatIsYourName": "Adınız nedir?",
     "AccessExpired": "Erişim süresi doldu. Lütfen yeni bir erişim bağlantısı isteyin.",
-    "AccessNotActive": "Erişim süresi henüz başlamadı. Başlangıç zamanı: "
+    "AccessNotActive": "Erişim süresi henüz başlamadı. Başlangıç zamanı: ",
+    "JoinWithThisAccount": "Bu hesapla katıl",
+    "UseDifferentAccount": "Farklı hesap kullan",
+    "UseCurrentAccountToJoin": "Zaten giriş yaptınız mı?",
+    "LogInAndJoin": "Giriş yap ve katıl",
+    "SignUpAndJoin": "Kayıt ol ve katıl",
+    "CreateNewAccount": "Yeni hesap oluştur",
+    "SignedInAs": "{name} olarak giriş yapıldı"
   }
 }

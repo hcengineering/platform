@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import { Class, Client, Doc, DocumentQuery, FindOptions, Mixin, Ref } from '@hcengineering/core'
+import { Class, Doc, DocumentQuery, FindOptions, Mixin, Ref } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
 import { AnyComponent, PopupAlignment, PopupPosAlignment, type ComponentExtensionId } from '@hcengineering/ui/src/types'
 import {
@@ -30,7 +30,6 @@ import {
   AttributeFilterPresenter,
   AttributePresenter,
   BaseQuery,
-  BuildMarkdownTableMetadata,
   ClassFilters,
   ClassSortFuncs,
   CollectionEditor,
@@ -67,7 +66,8 @@ import {
   ViewAction,
   Viewlet,
   ViewletDescriptor,
-  ViewletPreference
+  ViewletPreference,
+  ViewletViewAction
 } from './types'
 
 export * from './types'
@@ -127,6 +127,7 @@ const view = plugin(viewId, {
     ViewletPreference: '' as Ref<Class<ViewletPreference>>,
     ViewletDescriptor: '' as Ref<Class<ViewletDescriptor>>,
     Viewlet: '' as Ref<Class<Viewlet>>,
+    ViewletViewAction: '' as Ref<Class<ViewletViewAction>>,
     Action: '' as Ref<Class<Action>>,
     ActionCategory: '' as Ref<Class<ActionCategory>>,
     LinkPresenter: '' as Ref<Class<LinkPresenter>>,
@@ -225,8 +226,10 @@ const view = plugin(viewId, {
     Subscribed: '' as IntlString,
     HyperlinkPlaceholder: '' as IntlString,
     CopyToClipboard: '' as IntlString,
+    CopyAll: '' as IntlString,
     NoGrouping: '' as IntlString,
     Type: '' as IntlString,
+    ViewletViewAction: '' as IntlString,
     UnArchive: '' as IntlString,
     Archive: '' as IntlString,
     Save: '' as IntlString,
@@ -357,10 +360,7 @@ const view = plugin(viewId, {
     PositionElementAlignment: '' as Resource<(e?: Event) => PopupAlignment | undefined>
   },
   function: {
-    OpenDocument: '' as Resource<OpenDocumentFunction>,
-    BuildMarkdownTableFromDocs: '' as Resource<
-    (docs: Doc[], metadata: BuildMarkdownTableMetadata, client: Client) => Promise<string>
-    >
+    OpenDocument: '' as Resource<OpenDocumentFunction>
   },
   actionImpl: {
     CopyTextToClipboard: '' as ViewAction<{

@@ -50,7 +50,7 @@ import {
 } from './selection'
 import { deleteObjects, getObjectId, getObjectLinkFragment, restrictionStore } from './utils'
 import workbenchPlugin from '@hcengineering/workbench'
-import { CopyAsMarkdownTable } from './copyAsMarkdownTable'
+import converter from '@hcengineering/converter'
 import { viewletContextStore } from './viewletContextStore'
 
 /**
@@ -737,14 +737,15 @@ async function CopyAsMarkdownTableAction (
 
   // Merge store context with props (props take precedence)
   const mergedProps = {
-    cardClass: props.cardClass,
+    cardClass: viewletContext?._class ?? props.cardClass,
     viewlet: props.viewlet ?? viewletContext?.viewlet,
     config: props.config ?? viewletContext?.config,
     query: props.query ?? viewletContext?.query,
     viewOptions: props.viewOptions ?? viewletContext?.viewOptions
   }
 
-  await CopyAsMarkdownTable(doc, evt, mergedProps)
+  const copyFn = await getResource(converter.actionImpl.CopyAsMarkdownTable)
+  await copyFn(doc, evt, mergedProps)
 }
 
 /**

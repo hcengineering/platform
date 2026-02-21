@@ -17,6 +17,7 @@ import cardPlugin, { Card } from '@hcengineering/card'
 import core, {
   ArrOf,
   Doc,
+  Ref,
   RefTo,
   Tx,
   TxCreateDoc,
@@ -39,7 +40,10 @@ import process, {
   Step,
   Transition,
   isUpdateTx,
-  ProcessCustomEvent
+  ProcessCustomEvent,
+  ApproveRequest,
+  ExecutionStatus,
+  Trigger
 } from '@hcengineering/process'
 import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
 import { ProcessMessage } from '@hcengineering/server-process'
@@ -85,6 +89,7 @@ import {
 } from './transform'
 import {
   RunSubProcess,
+  CancelSubProcess,
   CreateToDo,
   UpdateCard,
   CreateCard,
@@ -97,7 +102,15 @@ import {
   CheckSubProcessMatch,
   CheckTime,
   FieldChangedCheck,
-  EventCheck
+  EventCheck,
+  RequestApproval,
+  ApproveRequestApproved,
+  ApproveRequestRejected,
+  CancelToDo,
+  LockCard,
+  LockSection,
+  UnlockCard,
+  UnlockSection
 } from './functions'
 import { ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 
@@ -128,9 +141,18 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
       await control.findAll(control.ctx, process.class.ProcessToDo, { _id: updateTx.objectId }, { limit: 1 })
     )[0]
     if (todo === undefined) continue
+    const events: Ref<Trigger>[] = [process.trigger.OnToDoClose]
+    if (todo._class === process.class.ApproveRequest) {
+      const request = todo as ApproveRequest
+      if (request.approved === true) {
+        events.push(process.trigger.OnApproveRequestApproved)
+      } else if (request.approved === false) {
+        events.push(process.trigger.OnApproveRequestRejected)
+      }
+    }
     await putEventToQueue(
       {
-        event: process.trigger.OnToDoClose,
+        event: events,
         execution: todo.execution,
         createdOn: tx.modifiedOn,
         context: {
@@ -139,6 +161,19 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
       },
       control
     )
+    if (todo._class === process.class.ApproveRequest) {
+      const request = todo as ApproveRequest
+      if (request.approved === false) {
+        // remove all other approve requests for this execution
+        const toRemove = await control.findAll(control.ctx, process.class.ApproveRequest, {
+          group: request.group,
+          doneOn: null
+        })
+        for (const req of toRemove) {
+          res.push(control.txFactory.createTxRemoveDoc(req._class, req.space, req._id))
+        }
+      }
+    }
   }
   return res
 }
@@ -153,7 +188,7 @@ export async function OnCustomEvent (txes: Tx[], control: TriggerControl): Promi
     if (card.length === 0) continue
     await putEventToQueue(
       {
-        event: process.trigger.OnEvent,
+        event: [process.trigger.OnEvent],
         execution: customEvent.execution,
         createdOn: tx.modifiedOn,
         card: customEvent.card,
@@ -176,7 +211,7 @@ export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): P
     const execution = TxProcessor.createDoc2Doc(createTx)
     await putEventToQueue(
       {
-        event: process.trigger.OnExecutionStart,
+        event: [process.trigger.OnExecutionStart],
         execution: execution._id,
         createdOn: tx.modifiedOn,
         context: {}
@@ -196,7 +231,7 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
     if (removedTodo === undefined) continue
     await putEventToQueue(
       {
-        event: process.trigger.OnToDoRemove,
+        event: [process.trigger.OnToDoRemove],
         execution: removedTodo.execution,
         createdOn: tx.modifiedOn,
         context: {
@@ -225,7 +260,7 @@ export async function OnExecutionContinue (txes: Tx[], control: TriggerControl):
     if (transition === undefined) continue
     await putEventToQueue(
       {
-        event: process.trigger.OnExecutionContinue,
+        event: [process.trigger.OnExecutionContinue],
         execution: execution._id,
         createdOn: tx.modifiedOn,
         context: {}
@@ -297,7 +332,10 @@ async function getExecutionReassignTxes (card: Card, control: TriggerControl): P
   const res: Tx[] = []
   const cards = await control.findAll(control.ctx, cardPlugin.class.Card, { baseId: card.baseId })
   const ids = cards.map((p) => p._id).filter((p) => p !== card._id)
-  const executions = await control.findAll(control.ctx, process.class.Execution, { card: { $in: ids } })
+  const executions = await control.findAll(control.ctx, process.class.Execution, {
+    card: { $in: ids },
+    status: ExecutionStatus.Active
+  })
   for (const execution of executions) {
     res.push(
       control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
@@ -355,19 +393,7 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
     const ops = isUpdateTx(cudTx) ? cudTx.operations : cudTx.attributes
     await putEventToQueue(
       {
-        event: process.trigger.OnCardUpdate,
-        card: cudTx.objectId,
-        createdOn: tx.modifiedOn,
-        context: {
-          card: card[0],
-          operations: ops ?? {}
-        }
-      },
-      control
-    )
-    await putEventToQueue(
-      {
-        event: process.trigger.WhenFieldChanges,
+        event: [process.trigger.OnCardUpdate, process.trigger.WhenFieldChanges],
         card: cudTx.objectId,
         createdOn: tx.modifiedOn,
         context: {
@@ -464,6 +490,7 @@ export * from './utils'
 export default async () => ({
   func: {
     RunSubProcess,
+    CancelSubProcess,
     CreateToDo,
     UpdateCard,
     CreateCard,
@@ -476,7 +503,15 @@ export default async () => ({
     CheckSubProcessesDone,
     CheckSubProcessMatch,
     CheckTime,
-    EventCheck
+    EventCheck,
+    RequestApproval,
+    ApproveRequestApproved,
+    ApproveRequestRejected,
+    CancelToDo,
+    LockCard,
+    LockSection,
+    UnlockCard,
+    UnlockSection
   },
   transform: {
     CurrentDate,

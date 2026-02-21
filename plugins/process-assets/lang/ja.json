@@ -125,7 +125,30 @@
     "RunProcessPermission": "プロセスを実行",
     "CancelProcessPermission": "プロセスをキャンセル",
     "ForbidRunProcessPermission": "プロセスの実行を禁止",
-    "ForbidCancelProcessPermission": "プロセスのキャンセルを禁止"
+    "ForbidCancelProcessPermission": "Forbid cancelling process",
+    "RequestApproval": "承認をリクエスト",
+    "IsApproved": "承認済み",
+    "Approve": "承認",
+    "Reject": "拒否",
+    "Reason": "理由",
+    "ApproveRequest": "承認をリクエスト",
+    "OnApproveRequestApproved": "承認リクエストが承認されたとき",
+    "OnApproveRequestRejected": "承認リクエストが拒否されたとき",
+    "ConfirmApproval": "承認を確認",
+    "ConfirmRejection": "拒否を確認",
+    "RejectionReason": "拒否理由",
+    "ProvideRejectionReason": "拒否理由を提供する",
+    "FieldIsEmpty": "フィールドが空です",
+    "Reviewers": "レビュー担当者",
+    "LockCard": "カードをロック",
+    "LockSection": "セクションをロック",
+    "Approvers": "承認者",
+    "UnlockCard": "カードのロックを解除",
+    "UnlockSection": "セクションのロックを解除",
+    "CancelToDo": "アクションをキャンセル",
+    "Export": "エクスポート",
+    "Import": "インポート",
+    "CancelProcess": "プロセスをキャンセル"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
@@ -141,6 +164,7 @@
     "ContextValueNotProvided": "コンテキスト値が提供されていません: {name}",
     "RequiredParamsNotProvided": "必須パラメータが提供されていません: {params}",
     "ResultNotProvided": "結果が提供されていません",
-    "TooDeepTransitionRecursion": "遷移の再帰が深すぎます"
+    "TooDeepTransitionRecursion": "遷移の再帰が深すぎます",
+    "ToDoAlreadyCompleted": "アクションは既に完了しています"
   }
 }

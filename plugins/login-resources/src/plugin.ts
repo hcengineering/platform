@@ -34,9 +34,7 @@ export default mergeIds(loginId, login, {
     HaveAccount: '' as IntlString,
     LoadingAccount: '' as IntlString,
     Join: '' as IntlString,
-    Email: '' as IntlString,
-    Password: '' as IntlString,
-    PasswordRepeat: '' as IntlString,
+    JoinWorkspace: '' as IntlString<{ workspaceName: string }>,
     Workspace: '' as IntlString,
     SignUp: '' as IntlString,
     DoNotHaveAnAccount: '' as IntlString,
@@ -78,6 +76,13 @@ export default mergeIds(loginId, login, {
     SignUpToCreateWorkspace: '' as IntlString,
     WhatIsYourName: '' as IntlString,
     AccessExpired: '' as IntlString,
-    AccessNotActive: '' as IntlString
+    AccessNotActive: '' as IntlString,
+    JoinWithThisAccount: '' as IntlString,
+    UseDifferentAccount: '' as IntlString,
+    UseCurrentAccountToJoin: '' as IntlString,
+    LogInAndJoin: '' as IntlString,
+    SignUpAndJoin: '' as IntlString,
+    CreateNewAccount: '' as IntlString,
+    SignedInAs: '' as IntlString<{ name: string }>
   }
 })

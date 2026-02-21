@@ -126,7 +126,30 @@
     "RunProcessPermission": "Ejecutar proceso",
     "CancelProcessPermission": "Cancelar proceso",
     "ForbidRunProcessPermission": "Prohibir ejecución de proceso",
-    "ForbidCancelProcessPermission": "Prohibir cancelación de proceso"
+    "ForbidCancelProcessPermission": "Forbid cancelling process",
+    "RequestApproval": "Solicitar aprobación",
+    "IsApproved": "Aprobado",
+    "Approve": "Aprobar",
+    "Reject": "Rechazar",
+    "Reason": "Razón",
+    "ApproveRequest": "Aprobar solicitud",
+    "OnApproveRequestApproved": "Al aprobar la solicitud",
+    "OnApproveRequestRejected": "Al rechazar la solicitud",
+    "ConfirmApproval": "Confirmar aprobación",
+    "ConfirmRejection": "Confirmar rechazo",
+    "RejectionReason": "Razón de rechazo",
+    "ProvideRejectionReason": "Proporcionar razón de rechazo",
+    "FieldIsEmpty": "Campo vacío",
+    "Reviewers": "Revisores",
+    "LockCard": "Bloquear tarjeta",
+    "LockSection": "Bloquear sección",
+    "Approvers": "Aprobadores",
+    "UnlockCard": "Desbloquear tarjeta",
+    "UnlockSection": "Desbloquear sección",
+    "CancelToDo": "Cancelar acción",
+    "Export": "Exportar",
+    "Import": "Importar",
+    "CancelProcess": "Cancelar proceso"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",
@@ -142,6 +165,7 @@
     "EmptyFunctionResult": "Resultado de función vacío {func}",
     "ContextValueNotProvided": "Valor de contexto no proporcionado: {name}",
     "RequiredParamsNotProvided": "Faltan parámetros requeridos: {params}",
-    "TooDeepTransitionRecursion": "Demasiada recursión de transición"
+    "TooDeepTransitionRecursion": "Demasiada recursión de transición",
+    "ToDoAlreadyCompleted": "Acción ya completada"
   }
 }

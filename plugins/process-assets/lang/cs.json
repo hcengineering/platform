@@ -121,7 +121,30 @@
     "RunProcessPermission": "Spustit proces",
     "CancelProcessPermission": "Zrušit proces",
     "ForbidRunProcessPermission": "Zakázat spuštění procesu",
-    "ForbidCancelProcessPermission": "Zakázat zrušení procesu"
+    "ForbidCancelProcessPermission": "Forbid cancelling process",
+    "RequestApproval": "Požádat o schválení",
+    "IsApproved": "Schváleno",
+    "Approve": "Schválit",
+    "Reject": "Odmítnout",
+    "Reason": "Důvod",
+    "ApproveRequest": "Schválit požadavek",
+    "OnApproveRequestApproved": "Při schválení požadavku",
+    "OnApproveRequestRejected": "Při zamítnutí požadavku",
+    "ConfirmApproval": "Potvrdit schválení",
+    "ConfirmRejection": "Potvrdit zamítnutí",
+    "RejectionReason": "Důvod zamítnutí",
+    "ProvideRejectionReason": "Poskytnout důvod zamítnutí",
+    "FieldIsEmpty": "Pole je prázdné",
+    "Reviewers": "Recenzenti",
+    "LockCard": "Zamknout kartu",
+    "LockSection": "Zamknout sekci",
+    "Approvers": "Schvalovatelé",
+    "UnlockCard": "Odemknout kartu",
+    "UnlockSection": "Odemknout sekci",
+    "CancelToDo": "Zrušit akční položku",
+    "Export": "Exportovat",
+    "Import": "Importovat",
+    "CancelProcess": "Zrušit proces"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",
@@ -137,6 +160,7 @@
     "EmptyFunctionResult": "Prázdný výsledek funkce {func}",
     "ContextValueNotProvided": "Hodnota kontextu nebyla poskytnuta: {name}",
     "RequiredParamsNotProvided": "Chybí požadované parametry: {params}",
-    "TooDeepTransitionRecursion": "Příliš hluboká rekurze přechodů"
+    "TooDeepTransitionRecursion": "Příliš hluboká rekurze přechodů",
+    "ToDoAlreadyCompleted": "Akční položka již byla dokončena"
   }
 }

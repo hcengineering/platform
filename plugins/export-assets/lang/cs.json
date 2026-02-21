@@ -31,12 +31,27 @@
     "ExportStartedMessage": "Export zahájen. Až bude dokončen, obdržíte oznámení.",
     "ExportToWorkspaceCompleted": "Export dokončen",
     "ExportToWorkspaceCompletedMessage": "Export byl úspěšně dokončen.",
+    "ImportToWorkspaceNotificationMessage": "{count} dokumentů importováno do vašeho pracovního prostoru",
+    "ImportCompleted": "Dokumenty importovány do pracovního prostoru",
+    "SourceWorkspace": "Zdrojový pracovní prostor",
+    "ExportedCount": "Počet exportovaných",
+    "ExportedDocumentIds": "ID exportovaných dokumentů",
+    "DocumentsImportedFromWorkspace": "{count, plural, one {1 dokument byl importován z pracovního prostoru {workspace}} other {# dokumentů bylo importováno z pracovního prostoru {workspace}}}:",
+    "ExportedDocumentClass": "Třída exportovaných dokumentů",
+    "Import": "Import",
+    "ImportedDocuments": "Nové dokumenty",
     "ExportToWorkspaceFailed": "Export se nezdařil",
     "SelectWorkspace": "Vybrat pracovní prostor",
     "SelectWorkspaceToExport": "Vybrat pracovní prostor pro export {count, plural, =1 {1 dokument} other {# dokumentů}}",
     "SelectWorkspaceToExportSpace": "Vybrat pracovní prostor pro export dokumentů z prostoru",
     "SelectSpace": "Vybrat prostor",
     "NoSelectedDocuments": "Žádné dokumenty nevybrány",
-    "RequestPermissionToImport": "Prosím, požádejte vlastníka cílového pracovního prostoru o povolení k importu dokumentů."
+    "RequestPermissionToImport": "Prosím, požádejte vlastníka cílového pracovního prostoru o povolení k importu dokumentů.",
+    "ExportOnlyEffective": "Exportovat pouze dokumenty s platným stavem",
+    "ExportFilterMode": "Dokumenty k exportu",
+    "ExportFilterEffectiveOnly": "Pouze platné dokumenty",
+    "ExportFilterSkipArchivedObsolete": "Vše kromě archivovaných a zastaralých",
+    "ExportFilterAll": "Všechny dokumenty",
+    "ExportResultRecordTitle": "Export dokumentů z pracovního prostoru {workspace} ({date})"
   }
 }

@@ -44,6 +44,10 @@
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/export": "workspace:^0.7.0",
     "@hcengineering/login": "workspace:^0.7.0",
-    "@hcengineering/theme": "workspace:^0.7.0"
+    "@hcengineering/notification": "workspace:^0.7.0",
+    "@hcengineering/panel": "workspace:^0.7.0",
+    "@hcengineering/theme": "workspace:^0.7.0",
+    "@hcengineering/view": "workspace:^0.7.0",
+    "@hcengineering/view-resources": "workspace:^0.7.0"
   }
 }

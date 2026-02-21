@@ -126,7 +126,30 @@
     "RunProcessPermission": "Запустить процесс",
     "CancelProcessPermission": "Отменить процесс",
     "ForbidRunProcessPermission": "Запретить запуск процесса",
-    "ForbidCancelProcessPermission": "Запретить отмену процесса"
+    "ForbidCancelProcessPermission": "Запретить отмену процесса",
+    "RequestApproval": "Запрос на утверждение",
+    "IsApproved": "Утверждено",
+    "Approve": "Утвердить",
+    "Reject": "Отклонить",
+    "Reason": "Причина",
+    "ApproveRequest": "Запрос на утверждение",
+    "OnApproveRequestApproved": "При утверждении",
+    "OnApproveRequestRejected": "При отклонении",
+    "ConfirmApproval": "Подтвердить утверждение",
+    "ConfirmRejection": "Подтвердить отклонение",
+    "RejectionReason": "Причина отклонения",
+    "ProvideRejectionReason": "Укажите причину отклонения",
+    "FieldIsEmpty": "Поле пустое",
+    "Reviewers": "Рецензенты",
+    "LockCard": "Заблокировать карточку",
+    "LockSection": "Заблокировать секцию",
+    "Approvers": "Утверждающие",
+    "UnlockCard": "Разблокировать карточку",
+    "UnlockSection": "Разблокировать секцию",
+    "CancelToDo": "Отменить задачу",
+    "Export": "Экспорт",
+    "Import": "Импорт",
+    "CancelProcess": "Отменить процесс"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
@@ -142,6 +165,7 @@
     "EmptyFunctionResult": "Отсутствуют результат функции {func}",
     "ContextValueNotProvided": "Значение контекста не предоставлено: {name}",
     "RequiredParamsNotProvided": "Отсутствуют обязательные параметры: {params}",
-    "TooDeepTransitionRecursion": "Слишком глубокая рекурсия переходов"
+    "TooDeepTransitionRecursion": "Слишком глубокая рекурсия переходов",
+    "ToDoAlreadyCompleted": "Задача уже выполнена"
   }
 }

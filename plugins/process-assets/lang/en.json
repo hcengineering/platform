@@ -126,7 +126,30 @@
     "RunProcessPermission": "Run process",
     "CancelProcessPermission": "Cancel process",
     "ForbidRunProcessPermission": "Forbid running process",
-    "ForbidCancelProcessPermission": "Forbid cancelling process"
+    "ForbidCancelProcessPermission": "Forbid cancelling process",
+    "RequestApproval": "Request approval",
+    "IsApproved": "Is approved",
+    "Approve": "Approve",
+    "Reject": "Reject",
+    "Reason": "Reason",
+    "ApproveRequest": "Approve request",
+    "OnApproveRequestApproved": "On approved",
+    "OnApproveRequestRejected": "On rejected",
+    "ConfirmApproval": "Confirm approval",
+    "ConfirmRejection": "Confirm rejection",
+    "RejectionReason": "Rejection reason",
+    "ProvideRejectionReason": "Provide rejection reason",
+    "FieldIsEmpty": "Field is empty",
+    "Reviewers": "Reviewers",
+    "LockCard": "Lock card",
+    "LockSection": "Lock section",
+    "Approvers": "Approvers",
+    "UnlockCard": "Unlock card",
+    "UnlockSection": "Unlock section",
+    "CancelToDo": "Cancel Action item",
+    "Export": "Export",
+    "Import": "Import",
+    "CancelProcess": "Cancel process"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",
@@ -142,6 +165,7 @@
     "EmptyFunctionResult": "Empty function result {func}",
     "ContextValueNotProvided": "Context value not provided: {name}",
     "RequiredParamsNotProvided": "Required parameters not provided: {params}",
-    "TooDeepTransitionRecursion": "Too deep transition recursion"
+    "TooDeepTransitionRecursion": "Too deep transition recursion",
+    "ToDoAlreadyCompleted": "Action item already completed"
   }
 }

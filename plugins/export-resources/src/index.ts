@@ -13,19 +13,50 @@
 // limitations under the License.
 //
 
-import { type Resources } from '@hcengineering/platform'
+import type { Client, Doc, Ref } from '@hcengineering/core'
+import exportPlugin, { type ExportResultRecord } from '@hcengineering/export'
+import { type Resources, translate } from '@hcengineering/platform'
+import { themeStore } from '@hcengineering/ui'
+import { get } from 'svelte/store'
 import ExportButton from './components/ExportButton.svelte'
 import ExportSettings from './components/ExportSettings.svelte'
 import ExportToWorkspaceModal from './components/ExportToWorkspaceModal.svelte'
+import ExportResultPanel from './components/ExportResultPanel.svelte'
 
 export { default as ExportButton } from './components/ExportButton.svelte'
 export { default as ExportSettings } from './components/ExportSettings.svelte'
 export { default as ExportToWorkspaceModal } from './components/ExportToWorkspaceModal.svelte'
+export { default as ExportResultPanel } from './components/ExportResultPanel.svelte'
+
+export async function getExportResultTitle (_client: Client, _ref: Ref<Doc>, doc?: Doc): Promise<string> {
+  const record = doc as ExportResultRecord | undefined
+  if (record === undefined) return ''
+  if (record.title !== undefined && record.title !== '') return record.title
+  const lang = get(themeStore).language
+  const createdOn = record.createdOn ?? Date.now()
+  const dateStr = new Date(createdOn).toLocaleDateString(lang, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  })
+  return await translate(
+    exportPlugin.string.ExportResultRecordTitle,
+    {
+      workspace: record.sourceWorkspace,
+      date: dateStr
+    },
+    lang
+  )
+}
 
 export default async (): Promise<Resources> => ({
   component: {
     ExportButton,
     ExportSettings,
-    ExportToWorkspaceModal
+    ExportToWorkspaceModal,
+    ExportResultPanel
+  },
+  function: {
+    ExportResultTitleProvider: getExportResultTitle
   }
 })

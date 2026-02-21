@@ -126,7 +126,30 @@
     "RunProcessPermission": "运行过程",
     "CancelProcessPermission": "取消过程",
     "ForbidRunProcessPermission": "禁止运行过程",
-    "ForbidCancelProcessPermission": "禁止取消过程"
+    "ForbidCancelProcessPermission": "禁止取消过程",
+    "RequestApproval": "请求批准",
+    "IsApproved": "批准",
+    "Approve": "批准",
+    "Reject": "拒绝",
+    "Reason": "原因",
+    "ApproveRequest": "批准请求",
+    "OnApproveRequestApproved": "批准请求批准时",
+    "OnApproveRequestRejected": "批准请求拒绝时",
+    "ConfirmApproval": "确认批准",
+    "ConfirmRejection": "确认拒绝",
+    "RejectionReason": "拒绝原因",
+    "ProvideRejectionReason": "提供拒绝原因",
+    "FieldIsEmpty": "字段为空",
+    "Reviewers": "审查员",
+    "LockCard": "锁定卡片",
+    "LockSection": "锁定部分",
+    "Approvers": "批准人",
+    "UnlockCard": "解锁卡片",
+    "UnlockSection": "解锁部分",
+    "CancelToDo": "取消任务",
+    "Export": "导出",
+    "Import": "导入",
+    "CancelProcess": "取消过程"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",
@@ -142,6 +165,7 @@
     "EmptyFunctionResult": "空函数结果 {func}",
     "ContextValueNotProvided": "未提供上下文值：{name}",
     "RequiredParamsNotProvided": "未提供必需的参数：{params}",
-    "TooDeepTransitionRecursion": "转换递归过深"
+    "TooDeepTransitionRecursion": "转换递归过深",
+    "ToDoAlreadyCompleted": "任务已完成"
   }
 }

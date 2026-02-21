@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import type { ViewletViewAction, Action, ActionCategory, ViewAction } from '@hcengineering/view'
 import { type Card, cardId } from '@hcengineering/card'
 import card from '@hcengineering/card-resources/src/plugin'
 import type { Client, Doc, Ref } from '@hcengineering/core'
@@ -20,8 +21,8 @@ import {} from '@hcengineering/core'
 import { mergeIds, type Resource } from '@hcengineering/platform'
 import { type TagCategory } from '@hcengineering/tags'
 import { type Location, type ResolvedLocation } from '@hcengineering/ui/src/types'
-import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
 import { type LocationData } from '@hcengineering/workbench'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(cardId, card, {
   app: {
@@ -43,10 +44,19 @@ export default mergeIds(cardId, card, {
     Card: '' as Ref<ActionCategory>,
     Labels: '' as Ref<TagCategory>
   },
+  specialViewAction: {
+    CardRelationshipTable: '' as Ref<ViewletViewAction>,
+    CardTable: '' as Ref<ViewletViewAction>,
+    CopyAsMarkdownTable: '' as Ref<ViewletViewAction>,
+    CopyAsMarkdownRelationshipTable: '' as Ref<ViewletViewAction>
+  },
   ids: {
     MasterTags: '' as Ref<Doc>,
     ManageMasterTags: '' as Ref<Doc>,
-    TagRelations: '' as Ref<Doc>
+    TagRelations: '' as Ref<Doc>,
+    CardNotificationGroup: '' as Ref<NotificationGroup>,
+    CardNotification: '' as Ref<NotificationType>,
+    CardMessageNotification: '' as Ref<NotificationType>
   },
   resolver: {
     Location: '' as Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>,

@@ -161,7 +161,7 @@ export async function resolveParents (object: Resource): Promise<Doc[]> {
     }
   }
 
-  const root = await client.findOne(drive.class.Drive, { _id: object.space as Ref<Drive> })
+  const root = await client.findOne(drive.class.Drive, { _id: object.space })
   if (root !== undefined) {
     parents.push(root)
   }

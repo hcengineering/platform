@@ -64,7 +64,7 @@ import { getConfig } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import { Token, decodeToken, generateToken } from '@hcengineering/server-token'
 import archiver from 'archiver'
-import { sendExportCompletionEmail } from './notifications'
+import { sendExportCompletionNotification } from './notifications'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import { createWriteStream } from 'fs'
@@ -404,7 +404,9 @@ export function createServer (
           conflictStrategy,
           includeAttachments,
           relations: rawRelations,
-          fieldMappers
+          fieldMappers,
+          skipDeletedObsolete,
+          exportOnlyEffective
         }: {
           targetWorkspace: WorkspaceUuid
           _class: Ref<Class<Doc>>
@@ -415,6 +417,8 @@ export function createServer (
           objectId?: Ref<Doc>
           objectSpace?: Ref<Space>
           fieldMappers?: Record<string, Record<string, any>>
+          skipDeletedObsolete?: boolean
+          exportOnlyEffective?: boolean
         } = req.body
 
         // Validate required parameters
@@ -528,18 +532,22 @@ export function createServer (
             conflictStrategy: conflictStrategy ?? 'duplicate',
             includeAttachments: includeAttachments ?? true,
             relations,
-            fieldMappers
+            fieldMappers,
+            skipDeletedObsolete: skipDeletedObsolete ?? true,
+            exportOnlyEffective: exportOnlyEffective ?? false
           }
 
           const exportResult: ExportResult = await exporter.export(options)
 
           if (exportResult.success && exportResult.exportedCount > 0) {
-            await sendExportCompletionEmail(
+            await sendExportCompletionNotification(
               measureCtx,
+              targetTxOps,
               targetWorkspace,
               targetWsIds,
               exportResult.exportedDocuments,
-              wsIds
+              wsIds,
+              _class
             )
           }
 

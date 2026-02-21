@@ -43,9 +43,10 @@ import presentation from '@hcengineering/model-presentation'
 import { TToDo } from '@hcengineering/model-time'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
-import notification from '@hcengineering/notification'
+import notification, { type NotificationGroup } from '@hcengineering/notification'
 import { type Asset, type IntlString, type Resource } from '@hcengineering/platform'
 import {
+  type ApproveRequest,
   type CheckFunc,
   type ContextId,
   type CreatedContext,
@@ -198,10 +199,25 @@ export class TExecution extends TDoc implements Execution {
 @Model(process.class.ProcessToDo, time.class.ToDo)
 @UX(process.string.ToDo)
 export class TProcessToDo extends TToDo implements ProcessToDo {
-  execution!: Ref<Execution>
+  @Prop(TypeRef(process.class.Execution), process.string.Execution)
+    execution!: Ref<Execution>
 
   @Prop(TypeBoolean(), process.string.Rollback)
     withRollback!: boolean
+}
+
+@Model(process.class.ApproveRequest, process.class.ProcessToDo)
+@UX(process.string.ApproveRequest)
+export class TApproveRequest extends TProcessToDo implements ApproveRequest {
+  @Prop(TypeBoolean(), process.string.IsApproved)
+    approved?: boolean
+
+  @Prop(TypeString(), process.string.RejectionReason)
+    reason?: string
+
+  group!: string
+
+  card!: Ref<Card>
 }
 
 @Model(process.class.Method, core.class.Doc, DOMAIN_MODEL)
@@ -290,6 +306,7 @@ export function createModel (builder: Builder): void {
     TProcess,
     TExecution,
     TProcessToDo,
+    TApproveRequest,
     TMethod,
     TState,
     TProcessFunction,
@@ -321,6 +338,28 @@ export function createModel (builder: Builder): void {
       }
     },
     process.ids.ProcessToDoCreated
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      allowedForAuthor: true,
+      label: process.string.ApproveRequest,
+      group: time.ids.TimeNotificationGroup,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: process.class.ApproveRequest,
+      onlyOwn: true,
+      defaultEnabled: true,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p>',
+        subjectTemplate: '{title}'
+      }
+    },
+    process.ids.ApproveRequestCreated
   )
 
   createAction(builder, {
@@ -412,6 +451,46 @@ export function createModel (builder: Builder): void {
   builder.mixin(process.class.State, core.class.Class, view.mixin.AttributePresenter, {
     presenter: process.component.StatePresenter
   })
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      variant: 'cardRequests',
+      attachTo: process.class.ApproveRequest,
+      descriptor: view.viewlet.List,
+      props: {
+        baseMenuClass: process.class.ApproveRequest
+      },
+      viewOptions: {
+        groupBy: ['user', 'approved', 'execution'],
+        orderBy: [
+          ['approved', SortingOrder.Descending],
+          ['modifiedOn', SortingOrder.Descending],
+          ['createdOn', SortingOrder.Descending]
+        ],
+        other: []
+      },
+      configOptions: {
+        strict: true
+      },
+      config: [
+        'user',
+        {
+          key: '',
+          presenter: view.component.GrowPresenter,
+          displayProps: { grow: true }
+        },
+        'reason',
+        {
+          key: '',
+          label: process.string.ApproveRequest,
+          presenter: process.component.ApproveRequestPresenter
+        }
+      ]
+    },
+    process.viewlet.CardRequests
+  )
 
   builder.createDoc(
     view.class.Viewlet,
@@ -601,6 +680,12 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
+    extension: card.extensions.EditCardExtension,
+    component: process.component.RequestsExtension,
+    props: {}
+  })
+
+  builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {
     extension: card.extensions.EditCardHeaderExtension,
     component: process.component.ProcessesHeaderExtension,
     props: {}
@@ -623,10 +708,42 @@ export function createModel (builder: Builder): void {
     process.section.CardProcesses
   )
 
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: process.string.ApproveRequest,
+      component: process.component.RequestsCardSection,
+      checkVisibility: process.function.CheckRequestsSectionVisibility,
+      order: 360,
+      navigation: []
+    },
+    process.section.CardApproveRequest
+  )
+
   builder.createDoc(card.class.MasterTagEditorSection, core.space.Model, {
     id: 'processes',
     label: process.string.Processes,
     component: process.component.ProcessesSettingSection
+  })
+
+  builder.createDoc(notification.class.NotificationType, core.space.Model, {
+    hidden: false,
+    generated: false,
+    allowedForAuthor: true,
+    label: process.string.NewProcessToDo,
+    group: time.ids.TimeNotificationGroup as Ref<NotificationGroup>,
+    txClasses: [core.class.TxCreateDoc],
+    objectClass: process.class.ProcessToDo,
+    txMatch: {
+      objectClass: process.class.ProcessToDo
+    },
+    defaultEnabled: true,
+    templates: {
+      textTemplate: '{body}',
+      htmlTemplate: '<p>{body}</p>',
+      subjectTemplate: '{title}'
+    }
   })
 
   // builder.createDoc(presentation.class.ComponentPointExtension, core.space.Model, {

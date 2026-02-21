@@ -50,6 +50,11 @@ export default mergeIds(exportId, exportPlugin, {
     SelectWorkspaceToExportSpace: '' as IntlString,
     SelectSpace: '' as IntlString,
     NoSelectedDocuments: '' as IntlString,
-    RequestPermissionToImport: '' as IntlString
+    RequestPermissionToImport: '' as IntlString,
+    ExportOnlyEffective: '' as IntlString,
+    ExportFilterMode: '' as IntlString,
+    ExportFilterEffectiveOnly: '' as IntlString,
+    ExportFilterSkipArchivedObsolete: '' as IntlString,
+    ExportFilterAll: '' as IntlString
   }
 })

@@ -24,7 +24,7 @@ import {
   githubExternalSyncVersion,
   githubSyncVersion
 } from '../types'
-import { collectUpdate, deleteObjects, errorToObj, getSince, isGHWriteAllowed } from './utils'
+import { collectUpdate, deleteObjects, ensureGraphQLOctokit, errorToObj, getSince, isGHWriteAllowed } from './utils'
 
 import { Analytics } from '@hcengineering/analytics'
 import { IssueComment, IssueCommentCreatedEvent, IssueCommentEvent } from '@octokit/webhooks-types'
@@ -144,7 +144,10 @@ export class CommentSyncManager implements DocSyncManager {
     account: PersonId,
     id: string
   ): Promise<void> {
-    const okit = (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit
+    const okit = ensureGraphQLOctokit(
+      (await this.provider.getOctokit(ctx, account)) ?? container.container.octokit,
+      container
+    )
 
     const q = `mutation deleteComment($commentID: ID!) {
       deleteIssueComment(

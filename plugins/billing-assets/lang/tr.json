@@ -56,6 +56,8 @@
     "Of": "/",
     "UpgradePlan": "Planı Yükselt",
     "LimitReached": "Çalışma alanı limiti aşıldı, bazı işlevler devre dışı bırakılabilir. Tam erişimi geri yüklemek için yükseltin.",
-    "RestrictedPlans": "Abonelik planını yalnızca çalışma alanı sahibi veya faturalama yöneticisi değiştirebilir."
+    "RestrictedPlans": "Abonelik planını yalnızca çalışma alanı sahibi veya faturalama yöneticisi değiştirebilir.",
+    "SubscriptionOperationFailed": "Abonelik işlemi başarısız oldu",
+    "SubscriptionErrorMessage": "Bir şeyler yanlış gitti. Lütfen tekrar deneyin veya destek ile iletişime geçin."
   }
 }

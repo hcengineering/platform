@@ -64,7 +64,8 @@ import {
   type PersonWithProfile,
   type Subscription,
   SubscriptionStatus,
-  type Query
+  type Query,
+  type InviteInfo
 } from './types'
 import {
   addSocialIdBase,
@@ -350,7 +351,7 @@ export async function signUpOtp (
     const existingAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
 
     if (existingAccount !== null) {
-      ctx.error('An account with the provided email already exists', { email })
+      ctx.warn('An account with the provided email already exists', { email })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {}))
     }
 
@@ -460,7 +461,7 @@ export async function validateOtp (
           await db.socialId.update({ _id: emailSocialId._id }, { verifiedOn: Date.now() })
         } else {
           // Normally, it should not be the case
-          ctx.error("Verifying new social id belonging to person w/o account but it's already verified", {
+          ctx.warn("Verifying new social id belonging to person w/o account but it's already verified", {
             emailSocialId,
             callerAccountUuid
           })
@@ -994,6 +995,38 @@ export async function join (
 }
 
 /**
+ * Returns public invite details (e.g. workspace name) for a valid invite. No auth required.
+ * Returns { workspaceName: null } for invalid or expired invites.
+ */
+export async function getInviteInfo (
+  ctx: MeasureContext,
+  db: AccountDB,
+  _branding: Branding | null,
+  _token: string,
+  params: { inviteId: string }
+): Promise<InviteInfo> {
+  const { inviteId } = params
+
+  if (inviteId == null || inviteId === '') {
+    ctx.error('Mandatory param inviteId is missing in getInviteInfo', { inviteId })
+    return { workspaceName: null }
+  }
+
+  const invite = await getWorkspaceInvite(db, inviteId)
+  if (invite == null) {
+    ctx.error('Invite not found in getInviteInfo', { inviteId })
+    return { workspaceName: null }
+  }
+
+  const workspace = await getWorkspaceById(db, invite.workspaceUuid)
+  if (workspace === null) {
+    return { workspaceName: null }
+  }
+
+  return { workspaceName: workspace.name }
+}
+
+/**
  * Given an invite and a token, checks if the user has already joined the workspace and updates the role if necessary.
  * Returns the workspace login information if the user has already joined. Otherwise, throws an error.
  */
@@ -1042,6 +1075,46 @@ export async function checkJoin (
   }
 }
 
+/**
+ * Joins the workspace using the current session token (no password).
+ * Called only when the user explicitly clicks "Join with this account".
+ */
+export async function joinByToken (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { inviteId: string }
+): Promise<WorkspaceLoginInfo> {
+  const { inviteId } = params
+
+  if (inviteId == null || inviteId === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const invite = await getWorkspaceInvite(db, inviteId)
+  if (invite == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const { account: accountUuid } = decodeTokenVerbose(ctx, token)
+  const emailSocialId = await db.socialId.findOne({
+    type: SocialIdType.EMAIL,
+    personUuid: accountUuid,
+    verifiedOn: { $gt: 0 }
+  })
+  const email = emailSocialId?.value ?? ''
+  const workspaceUuid = await checkInvite(ctx, invite, email)
+  const workspace = await getWorkspaceById(db, workspaceUuid)
+
+  if (workspace === null) {
+    ctx.error('Workspace not found in joinByToken', { workspaceUuid, email, inviteId })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
+  }
+
+  return await doJoinByInvite(ctx, db, branding, token, accountUuid, workspace, invite)
+}
+
 export async function checkAutoJoin (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1061,12 +1134,12 @@ export async function checkAutoJoin (
   }
 
   if (invite.autoJoin !== true) {
-    ctx.error('Not an auto-join invite', invite)
+    ctx.warn('Not an auto-join invite', invite)
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
   if (invite.role !== AccountRole.Guest) {
-    ctx.error('Auto-join not for guest role is forbidden', invite)
+    ctx.warn('Auto-join not for guest role is forbidden', invite)
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
@@ -1075,7 +1148,7 @@ export async function checkAutoJoin (
   const workspace = await getWorkspaceById(db, workspaceUuid)
 
   if (workspace === null) {
-    ctx.error('Workspace not found in auto-joining workflow', { workspaceUuid, email: normalizedEmail, inviteId })
+    ctx.warn('Workspace not found in auto-joining workflow', { workspaceUuid, email: normalizedEmail, inviteId })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
@@ -1614,7 +1687,7 @@ export async function getWorkspaceInfo (
     }
 
     if (role == null) {
-      ctx.error('Not a member of the workspace', { workspaceUuid, account })
+      ctx.warn('Not a member of the workspace', { workspaceUuid, account })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
     }
   }
@@ -1623,12 +1696,12 @@ export async function getWorkspaceInfo (
 
   // TODO: what should we return for archived?
   if (workspace == null) {
-    ctx.error('Workspace not found', { workspaceUuid, account })
+    ctx.warn('Workspace not found', { workspaceUuid, account })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
   if (workspace.status.isDisabled && isActiveMode(workspace.status.mode)) {
-    ctx.error('Workspace is disabled', { workspaceUuid, account })
+    ctx.warn('Workspace is disabled', { workspaceUuid, account })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
@@ -1666,8 +1739,11 @@ export async function getLoginInfoByToken (
     }
     accountUuid = sub ?? account
   } catch (err: any) {
-    Analytics.handleError(err)
-    ctx.error('Invalid token', { token, errMsg: err.message })
+    if (token !== undefined) {
+      // do not spam errors as this is expected when we issue request with no token
+      Analytics.handleError(err)
+      ctx.error('Invalid token', { token, errMsg: err.message })
+    }
     switch (err.message) {
       case 'Token not yet active': {
         const { nbf } = decodeToken(token, false)
@@ -1691,7 +1767,7 @@ export async function getLoginInfoByToken (
   // Check if token has grants and create automatic account if needed
   if (grant != null) {
     if (workspaceUuid != null) {
-      ctx.error('Grants are not allowed in workspace-specific tokens', { workspaceUuid, grant })
+      ctx.warn('Grants are not allowed in workspace-specific tokens', { workspaceUuid, grant })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
     }
 
@@ -1705,7 +1781,7 @@ export async function getLoginInfoByToken (
     const grantWorkspace = await getWorkspaceById(db, workspaceUuid)
 
     if (grantWorkspace == null) {
-      ctx.error('Workspace not found in token grant workflow', { grant })
+      ctx.warn('Workspace not found in token grant workflow', { grant })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
     }
 
@@ -1794,7 +1870,7 @@ export async function getLoginInfoByToken (
     const workspace = await getWorkspaceById(db, workspaceUuid)
 
     if (workspace == null) {
-      ctx.error('Workspace not found', { workspaceUuid, account: accountUuid })
+      ctx.warn('Workspace not found', { workspaceUuid, account: accountUuid })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
     }
 
@@ -2889,8 +2965,10 @@ export type AccountMethods =
   | 'resendInvite'
   | 'selectWorkspace'
   | 'join'
+  | 'joinByToken'
   | 'checkJoin'
   | 'checkAutoJoin'
+  | 'getInviteInfo'
   | 'signUpJoin'
   | 'confirm'
   | 'changePassword'
@@ -2963,8 +3041,10 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     resendInvite: wrap(resendInvite),
     selectWorkspace: wrap(selectWorkspace),
     join: wrap(join),
+    joinByToken: wrap(joinByToken),
     checkJoin: wrap(checkJoin),
     checkAutoJoin: wrap(checkAutoJoin),
+    getInviteInfo: wrap(getInviteInfo),
     signUpJoin: wrap(signUpJoin),
     confirm: wrap(confirm),
     changePassword: wrap(changePassword),

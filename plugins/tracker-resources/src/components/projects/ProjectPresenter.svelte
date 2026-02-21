@@ -13,46 +13,63 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import presentation, { IconWithEmoji, isAdminUser } from '@hcengineering/presentation'
+  import { getCurrentAccount, Ref } from '@hcengineering/core'
+  import presentation, { createQuery, IconWithEmoji, isAdminUser } from '@hcengineering/presentation'
   import { Project } from '@hcengineering/tracker'
   import { Icon, Label, getPlatformColorDef, getPlatformColorForTextDef, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { NavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
-  import { getCurrentAccount } from '@hcengineering/core'
 
-  export let value: Project | undefined
+  export let value: Project | Ref<Project> | undefined
   export let inline: boolean = false
   export let accent: boolean = false
   export let colorInherit: boolean = false
   export let openIssues: boolean
+
+  const projectQuery = createQuery()
+  let projectObj: Project | undefined
+  $: if (typeof value === 'string' && value !== undefined) {
+    projectQuery.query<Project>(
+      tracker.class.Project,
+      { _id: value },
+      (result) => {
+        ;[projectObj] = result
+      },
+      { limit: 1 }
+    )
+  } else if (value !== undefined && typeof value === 'object') {
+    projectObj = value
+  } else {
+    projectObj = undefined
+  }
 </script>
 
-{#if value}
+{#if projectObj}
   <div class="flex-presenter cursor-default" class:inline-presenter={inline} class:colorInherit>
-    <div class="icon" class:emoji={value.icon === view.ids.IconWithEmoji}>
+    <div class="icon" class:emoji={projectObj.icon === view.ids.IconWithEmoji}>
       <Icon
-        icon={value.icon === view.ids.IconWithEmoji ? IconWithEmoji : (value.icon ?? tracker.icon.Home)}
-        iconProps={value.icon === view.ids.IconWithEmoji
-          ? { icon: value.color }
+        icon={projectObj.icon === view.ids.IconWithEmoji ? IconWithEmoji : (projectObj.icon ?? tracker.icon.Home)}
+        iconProps={projectObj.icon === view.ids.IconWithEmoji
+          ? { icon: projectObj.color }
           : {
               fill:
-                value.color !== undefined && typeof value.color !== 'string'
-                  ? getPlatformColorDef(value.color, $themeStore.dark).icon
-                  : getPlatformColorForTextDef(value.name, $themeStore.dark).icon
+                projectObj.color !== undefined && typeof projectObj.color !== 'string'
+                  ? getPlatformColorDef(projectObj.color, $themeStore.dark).icon
+                  : getPlatformColorForTextDef(projectObj.name, $themeStore.dark).icon
             }}
         size="small"
       />
     </div>
     <span class="label no-underline nowrap" class:fs-bold={accent}>
-      {#if openIssues && (isAdminUser() || value.members.includes(getCurrentAccount().uuid))}
-        <NavLink space={value._id} special={'issues'} noUnderline={false}>
-          {value.name}
+      {#if openIssues && (isAdminUser() || projectObj.members.includes(getCurrentAccount().uuid))}
+        <NavLink space={projectObj._id} special={'issues'} noUnderline={false}>
+          {projectObj.name}
         </NavLink>
       {:else}
-        {value.name}
+        {projectObj.name}
       {/if}
-      {#if value.archived}
+      {#if projectObj.archived}
         <Label label={presentation.string.Archived} />
       {/if}
     </span>

@@ -28,10 +28,11 @@
     highlightUpdateCommand,
     selectNode
   } from '@hcengineering/text-editor-resources'
-  import { EditBox, Label, Scroller } from '@hcengineering/ui'
+  import { Component, EditBox, Label, Scroller } from '@hcengineering/ui'
   import { getCollaborationUser } from '@hcengineering/view-resources'
   import { merge } from 'effector'
   import { createEventDispatcher, onDestroy, tick } from 'svelte'
+  import activity from '@hcengineering/activity'
   import plugin from '../../plugin'
 
   import {
@@ -41,11 +42,13 @@
     $controlledDocument as controlledDocument,
     $documentCommentHighlightedLocation as documentCommentHighlightedLocation,
     $documentComments as documentComments,
+    $documentState as documentState,
     documentCommentsDisplayRequested,
     documentCommentsLocationNavigateRequested,
     documentCommentsAddCanceled,
     $isEditable as isEditable
   } from '../../stores/editors/document'
+  import { isActivityDocumentState } from '../../utils'
   import DocumentPrintTitlePage from '../print/DocumentPrintTitlePage.svelte'
   import DocumentTitle from './DocumentTitle.svelte'
 
@@ -276,6 +279,20 @@
             return await createEmbedding(file)
           }}
         />
+        {#if isActivityDocumentState($documentState)}
+          <div class="activity-container no-print">
+            <Component
+              is={activity.component.Activity}
+              props={{
+                object: $controlledDocument,
+                showCommenInput: true,
+                boundary: boundary ?? undefined,
+                focusIndex: 1000,
+                shouldScroll: false
+              }}
+            />
+          </div>
+        {/if}
         <div class="bottomSpacing no-print" />
       </div>
     </Scroller>
@@ -338,6 +355,10 @@
 
   .bottomSpacing {
     padding-bottom: 55vh;
+  }
+
+  .activity-container {
+    padding-top: 2rem;
   }
 
   .watermark-container {

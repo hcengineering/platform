@@ -13,29 +13,53 @@
 // limitations under the License.
 //
 
-import { type IntlString, type Metadata, type Plugin, plugin, type Asset } from '@hcengineering/platform'
+import type { Class, Client, Doc, Ref } from '@hcengineering/core'
+import { type IntlString, type Metadata, type Plugin, plugin, type Resource, type Asset } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
+import type { NotificationGroup, NotificationType } from '@hcengineering/notification'
+import type { ExportResultRecord } from './types'
 
 export const exportId = 'export' as Plugin
 
 export const exportPlugin = plugin(exportId, {
+  ids: {
+    ImportNotificationGroup: '' as Ref<NotificationGroup>,
+    ImportedDocumentsNotification: '' as Ref<NotificationType>
+  },
+  class: {
+    ExportResultRecord: '' as Ref<Class<ExportResultRecord>>
+  },
   string: {
     Export: '' as IntlString,
     ExportCompleted: '' as IntlString,
     ExportFailed: '' as IntlString,
     ExportToWorkspace: '' as IntlString,
-    TargetWorkspace: '' as IntlString
+    TargetWorkspace: '' as IntlString,
+    ImportCompleted: '' as IntlString,
+    ImportToWorkspaceNotificationMessage: '' as IntlString,
+    SourceWorkspace: '' as IntlString,
+    ExportedCount: '' as IntlString,
+    ExportedDocumentIds: '' as IntlString,
+    DocumentsImportedFromWorkspace: '' as IntlString,
+    ExportedDocumentClass: '' as IntlString,
+    Import: '' as IntlString,
+    ImportedDocuments: '' as IntlString,
+    ExportResultRecordTitle: '' as IntlString
   },
   component: {
     ExportButton: '' as AnyComponent,
     ExportSettings: '' as AnyComponent,
-    ExportToWorkspaceModal: '' as AnyComponent
+    ExportToWorkspaceModal: '' as AnyComponent,
+    ExportResultPanel: '' as AnyComponent
   },
   icon: {
     Export: '' as Asset
   },
   metadata: {
     ExportUrl: '' as Metadata<string>
+  },
+  function: {
+    ExportResultTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
   }
 })
 

@@ -23,7 +23,8 @@ import { PlatformError, unknownStatus } from '@hcengineering/platform'
 import task from '@hcengineering/task'
 import { IssueStatus } from '@hcengineering/tracker'
 import { deepEqual } from 'fast-equals'
-import { githubExternalSyncVersion } from '../types'
+import { Octokit } from 'octokit'
+import { ContainerFocus, githubExternalSyncVersion } from '../types'
 
 /**
  * Return if github write operations are allowed.
@@ -33,6 +34,20 @@ export function isGHWriteAllowed (): boolean {
     return false
   }
   return true
+}
+
+/**
+ * Ensures an Octokit instance has the graphql method available.
+ * If the provided okit doesn't have graphql, falls back to container.octokit which is guaranteed to have it.
+ * @param okit - The Octokit instance to check (may be undefined)
+ * @param container - The ContainerFocus containing the fallback octokit instance
+ * @returns An Octokit instance with graphql method available
+ */
+export function ensureGraphQLOctokit (okit: Octokit | undefined, container: ContainerFocus): Octokit {
+  if (okit !== undefined && typeof (okit as any).graphql === 'function') {
+    return okit
+  }
+  return container.container.octokit
 }
 
 /**

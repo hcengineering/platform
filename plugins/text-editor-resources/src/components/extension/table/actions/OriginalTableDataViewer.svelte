@@ -18,9 +18,8 @@
   import presentation, { Card } from '@hcengineering/presentation'
   import textEditor from '@hcengineering/text-editor'
   import { Component, Loading } from '@hcengineering/ui'
-  import type { BuildModelKey, Viewlet } from '@hcengineering/view'
+  import type { BuildModelKey, TableMetadata, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import type { TableMetadata } from '../tableMetadata'
 
   import TableSourceInfo from './TableSourceInfo.svelte'
 
