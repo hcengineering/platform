@@ -306,8 +306,11 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   router.put('/cookie', async (ctx) => {
     const token = extractToken(ctx.request.headers)
     if (token === undefined) {
-      ctx.status = 401
-      ctx.body = { error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
+      ctx.body = JSON.stringify({
+        error: new Status(Severity.ERROR, platform.status.Unauthorized, {})
+      })
+      ctx.res.writeHead(401)
+      ctx.res.end()
       return
     }
 
