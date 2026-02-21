@@ -35,17 +35,19 @@ use crate::workspace_owner::test_rego_http;
 pub fn map_redis_error(err: impl std::fmt::Display) -> Error {
     let msg = err.to_string();
 
-    if let Some(detail) = msg.split(" - ExtensionError: ").nth(1) {
-        if let Some((code, text)) = detail.split_once(": ") {
-            let text = format!("{} {}", code, text);
-            return match code {
-                "400" => actix_web::error::ErrorBadRequest(text),
-                "404" => actix_web::error::ErrorNotFound(text),
-                "412" => actix_web::error::ErrorPreconditionFailed(text),
-                "500" => actix_web::error::ErrorInternalServerError(text),
-                _ => actix_web::error::ErrorInternalServerError("unexpected error"),
-            };
-        }
+    let detail = msg
+        .split(" - ExtensionError: ")
+        .nth(1)
+        .unwrap_or(msg.as_str());
+    if let Some((code, text)) = detail.split_once(": ") {
+        let text = format!("{} {}", code, text);
+        return match code {
+            "400" => actix_web::error::ErrorBadRequest(text),
+            "404" => actix_web::error::ErrorNotFound(text),
+            "412" => actix_web::error::ErrorPreconditionFailed(text),
+            "500" => actix_web::error::ErrorInternalServerError(text),
+            _ => actix_web::error::ErrorInternalServerError("unexpected error"),
+        };
     }
     actix_web::error::ErrorInternalServerError("internal error")
 }

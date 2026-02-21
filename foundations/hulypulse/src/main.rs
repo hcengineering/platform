@@ -19,6 +19,8 @@ use actix_web::{
     middleware::{self},
     web::{self},
 };
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 #[cfg(feature = "auth")]
 use actix_web::{
@@ -45,7 +47,7 @@ mod config;
 mod handlers_http;
 mod handlers_ws;
 
-#[cfg(feature = "db-redis")]
+mod memory;
 mod redis;
 
 #[cfg(feature = "auth")]
@@ -57,19 +59,11 @@ use hub_service::HubState;
 use config::CONFIG;
 
 mod db;
+use crate::config::BackendType;
 use crate::db::Db;
-
-#[cfg(not(feature = "db-redis"))]
-mod memory;
-#[cfg(not(feature = "db-redis"))]
 use crate::memory::MemoryBackend;
 
 use crate::hub_service::check_heartbeat;
-
-#[cfg(feature = "db-redis")]
-pub const BACKEND: &str = "REDIS";
-#[cfg(not(feature = "db-redis"))]
-pub const BACKEND: &str = "MEMORY";
 
 fn initialize_tracing() {
     use tracing_subscriber::{filter::targets::Targets, prelude::*};
@@ -147,9 +141,8 @@ async fn main() -> anyhow::Result<()> {
     // starting heartbeat checker
     check_heartbeat(hub_state.clone());
 
-    let db_backend = {
-        #[cfg(feature = "db-redis")]
-        {
+    let db_backend = match &CONFIG.backend {
+        BackendType::Redis => {
             let redis_client = redis::client().await?;
             let db_connection = redis_client
                 .get_multiplexed_async_connection()
@@ -166,19 +159,24 @@ async fn main() -> anyhow::Result<()> {
                     );
                     e
                 })?;
-            tokio::spawn(crate::redis::receiver(redis_client, hub_state.clone()));
-            Db::new_db(db_connection)
+            tokio::spawn({
+                let hub_state = hub_state.clone();
+                async move {
+                    if let Err(err) = crate::redis::receiver(redis_client, hub_state).await {
+                        tracing::error!("Redis receiver stopped: {err}");
+                    }
+                }
+            });
+            Db::new_redis(db_connection)
         }
-
-        #[cfg(not(feature = "db-redis"))]
-        {
+        BackendType::Memory => {
             let db_connection = MemoryBackend::new();
             db_connection.spawn_ticker(hub_state.clone());
-            Db::new_db(db_connection, hub_state.clone())
+            Db::new_memory(db_connection, hub_state.clone())
         }
     };
 
-    tracing::info!("DB mode: {}", BACKEND);
+    tracing::info!("DB mode: {}", db_backend.mode());
 
     let socket = std::net::SocketAddr::new(CONFIG.bind_host.as_str().parse()?, CONFIG.bind_port);
 
@@ -191,9 +189,6 @@ async fn main() -> anyhow::Result<()> {
         format!("ws://{}:{}", &CONFIG.bind_host, &CONFIG.bind_port)
     );
     tracing::info!("Status: {}/status", &url);
-
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
 
     let server = HttpServer::new(move || {
         let cors = Cors::default()

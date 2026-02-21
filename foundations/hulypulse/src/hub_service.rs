@@ -23,7 +23,7 @@ use tokio::sync::RwLock;
 
 use serde_json::{Value, json};
 
-use crate::{BACKEND, db::Db};
+use crate::db::Db;
 
 fn subscription_matches(sub_key: &str, key: &str) -> bool {
     if sub_key == key {
@@ -54,10 +54,8 @@ pub fn new_session_id() -> SessionId {
 pub enum RedisEventAction {
     Set,
     Del,
-    #[cfg(feature = "db-redis")]
     Unlink,
     Expired,
-    #[cfg(feature = "db-redis")]
     Other(String),
 }
 
@@ -171,7 +169,7 @@ impl HubState {
         let info = db.info().await.unwrap_or_else(|_| "error".to_string());
         json!({
             "memory_info": info,
-            "backend": BACKEND,
+            "backend": db.mode(),
             "websockets": self.sessions.len(),
             "subscriptions": self.subs.len(),
             "heartbeats": self.heartbeats.len(),
