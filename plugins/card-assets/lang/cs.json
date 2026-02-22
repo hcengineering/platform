@@ -71,6 +71,7 @@
     "RelationCopyDescr": "Které vztahy chcete zkopírovat?",
     "Import": "Importovat",
     "Export": "Exportovat",
-    "CardUpdated": "Karta aktualizována"
+    "CardUpdated": "Karta aktualizována",
+    "CardCreated": "Karta vytvořena"
   }
 }

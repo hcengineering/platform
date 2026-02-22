@@ -39,7 +39,7 @@ export function Random (value: Doc[]): Doc {
 }
 
 export function All (value: Doc[]): Doc[] {
-  return value
+  return value ?? []
 }
 
 export async function FirstMatchValue (

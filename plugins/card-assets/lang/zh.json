@@ -71,6 +71,7 @@
     "RelationCopyDescr": "您想复制哪些关系？",
     "Import": "导入",
     "Export": "导出",
-    "CardUpdated": "卡片已更新"
+    "CardUpdated": "卡片已更新",
+    "CardCreated": "卡片已创建"
   }
 }
