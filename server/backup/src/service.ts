@@ -476,7 +476,7 @@ export async function doRestoreWorkspace (
       'restore',
       {},
       (ctx) =>
-        restore(ctx, pipeline as Pipeline, wsIds, storage, {
+        restore(ctx, pipeline as Pipeline, wsIds, storage, undefined, {
           date: -1,
           skip: new Set(skipDomains),
           recheck: false, // Do not need to recheck

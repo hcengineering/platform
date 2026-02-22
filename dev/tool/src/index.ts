@@ -1136,6 +1136,7 @@ export function devTool (
     .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .option('--upgrade', 'Upgrade workspace', false)
+    .option('--accounts', 'Restore accounts (person/socialId) from backup', false)
     .option(
       '--history-file <historyFile>',
       'Store blob send info into file. Will skip already send documents.',
@@ -1156,6 +1157,7 @@ export function devTool (
           useStorage: string
           historyFile: string
           upgrade: boolean
+          accounts: boolean
         }
       ) => {
         await withAccountDatabase(async (db) => {
@@ -1202,7 +1204,7 @@ export function devTool (
             }
             await sendTransactorEvent(workspace, 'force-maintenance')
 
-            await restore(toolCtx, pipeline, wsIds, storage, {
+            await restore(toolCtx, pipeline, wsIds, storage, cmd.accounts ? db : undefined, {
               date: parseInt(date ?? '-1'),
               merge: cmd.merge,
               parallel: parseInt(cmd.parallel ?? '1'),
