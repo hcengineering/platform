@@ -2,6 +2,21 @@
   "name": "@hcengineering/core",
   "entries": [
     {
+      "version": "0.7.26",
+      "tag": "@hcengineering/core_v0.7.26",
+      "date": "Sun, 22 Feb 2026 06:34:18 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add workspace permission enum"
+          },
+          {
+            "comment": "Fix object clone"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.23",
       "tag": "@hcengineering/core_v0.7.23",
       "date": "Wed, 26 Nov 2025 15:28:11 GMT",
