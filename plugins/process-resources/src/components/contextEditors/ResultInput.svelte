@@ -26,10 +26,11 @@
   const client = getClient()
   const h = client.getHierarchy()
 
-  const values: Record<ContextId, any> = {}
+  let values: Record<ContextId, any> = {}
 
   results.forEach((r) => {
     values[r._id] = context[r._id]
+    values = values
   })
 
   export function canClose (): boolean {
@@ -43,6 +44,7 @@
   function getOnChange (id: ContextId): (val: any) => void {
     return (val: any) => {
       values[id] = val
+      values = values
     }
   }
 </script>
@@ -51,7 +53,7 @@
   width={'small'}
   on:close
   label={plugin.string.Result}
-  canSave={Object.keys(values).length === results.length}
+  canSave={Object.values(values).filter((v) => v != null).length === results.length}
   okAction={save}
   hideClose
   okLabel={presentation.string.Save}
