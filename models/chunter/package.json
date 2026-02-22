@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/model-chunter",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -18,7 +18,7 @@
     "test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.54.0",
@@ -34,24 +34,24 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/activity": "workspace:^0.7.0",
-    "@hcengineering/attachment": "workspace:^0.7.0",
-    "@hcengineering/chunter": "workspace:^0.7.0",
-    "@hcengineering/chunter-resources": "workspace:^0.7.0",
-    "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/model": "workspace:^0.7.17",
-    "@hcengineering/model-attachment": "workspace:^0.7.0",
-    "@hcengineering/model-activity": "workspace:^0.7.0",
-    "@hcengineering/model-core": "workspace:^0.7.0",
-    "@hcengineering/model-notification": "workspace:^0.7.0",
-    "@hcengineering/model-view": "workspace:^0.7.0",
-    "@hcengineering/model-workbench": "workspace:^0.7.0",
-    "@hcengineering/model-presentation": "workspace:^0.7.0",
-    "@hcengineering/notification": "workspace:^0.7.0",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/ui": "workspace:^0.7.0",
-    "@hcengineering/view": "workspace:^0.7.0",
-    "@hcengineering/workbench": "workspace:^0.7.0"
+    "@hcengineering/activity": "workspace:^0.7.1",
+    "@hcengineering/attachment": "workspace:^0.7.1",
+    "@hcengineering/chunter": "workspace:^0.7.1",
+    "@hcengineering/chunter-resources": "workspace:^0.7.1",
+    "@hcengineering/contact": "workspace:^0.7.1",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/model": "workspace:^0.7.18",
+    "@hcengineering/model-attachment": "workspace:^0.7.1",
+    "@hcengineering/model-activity": "workspace:^0.7.1",
+    "@hcengineering/model-core": "workspace:^0.7.1",
+    "@hcengineering/model-notification": "workspace:^0.7.1",
+    "@hcengineering/model-view": "workspace:^0.7.1",
+    "@hcengineering/model-workbench": "workspace:^0.7.1",
+    "@hcengineering/model-presentation": "workspace:^0.7.1",
+    "@hcengineering/notification": "workspace:^0.7.1",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/ui": "workspace:^0.7.1",
+    "@hcengineering/view": "workspace:^0.7.1",
+    "@hcengineering/workbench": "workspace:^0.7.1"
   }
 }

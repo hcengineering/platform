@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/model",
-  "version": "0.7.17",
+  "version": "0.7.18",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -18,7 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -36,12 +36,12 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/storage": "workspace:^0.7.17",
-    "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/rank": "workspace:^0.7.17",
-    "@hcengineering/account-client": "workspace:^0.7.21",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/storage": "workspace:^0.7.18",
+    "@hcengineering/analytics": "workspace:^0.7.19",
+    "@hcengineering/rank": "workspace:^0.7.18",
+    "@hcengineering/account-client": "workspace:^0.7.25",
     "toposort": "^2.0.2",
     "fast-equals": "^5.2.2"
   },

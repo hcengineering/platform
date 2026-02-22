@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/account",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -18,7 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -36,17 +36,17 @@
     "@types/node": "^22.18.1"
   },
   "dependencies": {
-    "@hcengineering/mongo": "workspace:^0.7.16",
-    "@hcengineering/postgres": "workspace:^0.7.22",
+    "@hcengineering/mongo": "workspace:^0.7.18",
+    "@hcengineering/postgres": "workspace:^0.7.23",
     "mongodb": "^6.16.0",
     "postgres": "^3.4.7",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/core": "workspace:^0.7.24",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/core": "workspace:^0.7.26",
     "otp-generator": "^4.0.1",
-    "@hcengineering/server-token": "workspace:^0.7.17",
-    "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/server-storage": "workspace:^0.7.16",
-    "@hcengineering/server-core": "workspace:^0.7.18",
-    "@hcengineering/server-pipeline": "workspace:^0.7.0"
+    "@hcengineering/server-token": "workspace:^0.7.18",
+    "@hcengineering/analytics": "workspace:^0.7.19",
+    "@hcengineering/server-storage": "workspace:^0.7.18",
+    "@hcengineering/server-core": "workspace:^0.7.19",
+    "@hcengineering/server-pipeline": "workspace:^0.7.1"
   }
 }

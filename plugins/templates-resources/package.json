@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/templates-resources",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",
@@ -38,16 +38,16 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.19",
+    "@hcengineering/platform": "workspace:^0.7.20",
     "svelte": "^4.2.20",
-    "@hcengineering/templates": "workspace:^0.7.0",
-    "@hcengineering/ui": "workspace:^0.7.0",
-    "@hcengineering/presentation": "workspace:^0.7.0",
-    "@hcengineering/text-editor": "workspace:^0.7.0",
-    "@hcengineering/text-editor-resources": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/view": "workspace:^0.7.0",
-    "@hcengineering/view-resources": "workspace:^0.7.0",
-    "@hcengineering/contact-resources": "workspace:^0.7.0"
+    "@hcengineering/templates": "workspace:^0.7.1",
+    "@hcengineering/ui": "workspace:^0.7.1",
+    "@hcengineering/presentation": "workspace:^0.7.1",
+    "@hcengineering/text-editor": "workspace:^0.7.1",
+    "@hcengineering/text-editor-resources": "workspace:^0.7.1",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/view": "workspace:^0.7.1",
+    "@hcengineering/view-resources": "workspace:^0.7.1",
+    "@hcengineering/contact-resources": "workspace:^0.7.1"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/global-profile-resources",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -18,7 +18,7 @@
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -38,15 +38,15 @@
   },
   "dependencies": {
     "svelte": "^4.2.20",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/ui": "workspace:^0.7.0",
-    "@hcengineering/view": "workspace:^0.7.0",
-    "@hcengineering/presentation": "workspace:^0.7.0",
-    "@hcengineering/global-profile": "workspace:^0.7.0",
-    "@hcengineering/account-client": "workspace:^0.7.21",
-    "@hcengineering/login": "workspace:^0.7.0",
-    "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/theme": "workspace:^0.7.0"
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/ui": "workspace:^0.7.1",
+    "@hcengineering/view": "workspace:^0.7.1",
+    "@hcengineering/presentation": "workspace:^0.7.1",
+    "@hcengineering/global-profile": "workspace:^0.7.1",
+    "@hcengineering/account-client": "workspace:^0.7.25",
+    "@hcengineering/login": "workspace:^0.7.1",
+    "@hcengineering/contact": "workspace:^0.7.1",
+    "@hcengineering/theme": "workspace:^0.7.1"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/model-products",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -20,7 +20,7 @@
     "test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -38,25 +38,25 @@
     "ts-jest": "^29.1.1"
   },
   "dependencies": {
-    "@hcengineering/attachment": "workspace:^0.7.0",
-    "@hcengineering/model": "workspace:^0.7.17",
-    "@hcengineering/model-attachment": "workspace:^0.7.0",
-    "@hcengineering/model-core": "workspace:^0.7.0",
-    "@hcengineering/model-presentation": "workspace:^0.7.0",
-    "@hcengineering/model-view": "workspace:^0.7.0",
-    "@hcengineering/model-workbench": "workspace:^0.7.0",
-    "@hcengineering/activity": "workspace:^0.7.0",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/ui": "workspace:^0.7.0",
-    "@hcengineering/view": "workspace:^0.7.0",
-    "@hcengineering/model-tracker": "workspace:^0.7.0",
-    "@hcengineering/chunter": "workspace:^0.7.0",
-    "@hcengineering/setting": "workspace:^0.7.0",
-    "@hcengineering/products": "workspace:^0.7.0",
-    "@hcengineering/products-resources": "workspace:^0.7.0",
-    "@hcengineering/controlled-documents": "workspace:^0.7.0",
-    "@hcengineering/model-controlled-documents": "workspace:^0.7.0"
+    "@hcengineering/attachment": "workspace:^0.7.1",
+    "@hcengineering/model": "workspace:^0.7.18",
+    "@hcengineering/model-attachment": "workspace:^0.7.1",
+    "@hcengineering/model-core": "workspace:^0.7.1",
+    "@hcengineering/model-presentation": "workspace:^0.7.1",
+    "@hcengineering/model-view": "workspace:^0.7.1",
+    "@hcengineering/model-workbench": "workspace:^0.7.1",
+    "@hcengineering/activity": "workspace:^0.7.1",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/contact": "workspace:^0.7.1",
+    "@hcengineering/ui": "workspace:^0.7.1",
+    "@hcengineering/view": "workspace:^0.7.1",
+    "@hcengineering/model-tracker": "workspace:^0.7.1",
+    "@hcengineering/chunter": "workspace:^0.7.1",
+    "@hcengineering/setting": "workspace:^0.7.1",
+    "@hcengineering/products": "workspace:^0.7.1",
+    "@hcengineering/products-resources": "workspace:^0.7.1",
+    "@hcengineering/controlled-documents": "workspace:^0.7.1",
+    "@hcengineering/model-controlled-documents": "workspace:^0.7.1"
   }
 }

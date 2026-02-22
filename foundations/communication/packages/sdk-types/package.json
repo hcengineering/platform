@@ -20,7 +20,7 @@
     "clean": "rm -rf lib && rm -rf types rm -rf node_modules"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "esbuild": "^0.25.10",
@@ -36,7 +36,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.24",
+    "@hcengineering/core": "workspace:^0.7.26",
     "@hcengineering/communication-types": "workspace:^0.7.12"
   },
   "repository": {

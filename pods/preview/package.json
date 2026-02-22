@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/pod-preview",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -31,7 +31,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.18.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -55,14 +55,14 @@
     "@types/heic-decode": "^1.1.2"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/server-core": "workspace:^0.7.18",
-    "@hcengineering/analytics-service": "workspace:^0.7.17",
-    "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/server-client": "workspace:^0.7.16",
-    "@hcengineering/server-storage": "workspace:^0.7.16",
-    "@hcengineering/server-token": "workspace:^0.7.17",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/server-core": "workspace:^0.7.19",
+    "@hcengineering/analytics-service": "workspace:^0.7.18",
+    "@hcengineering/analytics": "workspace:^0.7.19",
+    "@hcengineering/server-client": "workspace:^0.7.18",
+    "@hcengineering/server-storage": "workspace:^0.7.18",
+    "@hcengineering/server-token": "workspace:^0.7.18",
     "sharp": "~0.34.3",
     "blurhash": "^2.0.5",
     "dotenv": "^16.4.5",

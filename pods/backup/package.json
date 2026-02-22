@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/pod-backup",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@types/node": "^22.18.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
@@ -47,21 +47,21 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
-    "@hcengineering/model-all": "workspace:^0.7.0"
+    "@hcengineering/model-all": "workspace:^0.7.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/server-token": "workspace:^0.7.17",
-    "@hcengineering/server-core": "workspace:^0.7.18",
-    "@hcengineering/server-pipeline": "workspace:^0.7.0",
-    "@hcengineering/client": "workspace:^0.7.18",
-    "@hcengineering/client-resources": "workspace:^0.7.18",
-    "@hcengineering/core": "workspace:^0.7.24",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/server-token": "workspace:^0.7.18",
+    "@hcengineering/server-core": "workspace:^0.7.19",
+    "@hcengineering/server-pipeline": "workspace:^0.7.1",
+    "@hcengineering/client": "workspace:^0.7.19",
+    "@hcengineering/client-resources": "workspace:^0.7.19",
+    "@hcengineering/core": "workspace:^0.7.26",
     "dotenv": "^16.4.5",
-    "@hcengineering/backup-service": "workspace:^0.7.0",
-    "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/analytics-service": "workspace:^0.7.17",
-    "@hcengineering/mongo": "workspace:^0.7.16",
-    "@hcengineering/postgres": "workspace:^0.7.22"
+    "@hcengineering/backup-service": "workspace:^0.7.1",
+    "@hcengineering/analytics": "workspace:^0.7.19",
+    "@hcengineering/analytics-service": "workspace:^0.7.18",
+    "@hcengineering/mongo": "workspace:^0.7.18",
+    "@hcengineering/postgres": "workspace:^0.7.23"
   }
 }

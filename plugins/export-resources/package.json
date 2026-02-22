@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/export-resources",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "src/index.ts",
   "author": "Hardcore Engineering Inc.",
   "scripts": {
@@ -18,7 +18,7 @@
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -38,16 +38,16 @@
   },
   "dependencies": {
     "svelte": "^4.2.20",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/presentation": "workspace:^0.7.0",
-    "@hcengineering/ui": "workspace:^0.7.0",
-    "@hcengineering/export": "workspace:^0.7.0",
-    "@hcengineering/login": "workspace:^0.7.0",
-    "@hcengineering/notification": "workspace:^0.7.0",
-    "@hcengineering/panel": "workspace:^0.7.0",
-    "@hcengineering/theme": "workspace:^0.7.0",
-    "@hcengineering/view": "workspace:^0.7.0",
-    "@hcengineering/view-resources": "workspace:^0.7.0"
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/presentation": "workspace:^0.7.1",
+    "@hcengineering/ui": "workspace:^0.7.1",
+    "@hcengineering/export": "workspace:^0.7.1",
+    "@hcengineering/login": "workspace:^0.7.1",
+    "@hcengineering/notification": "workspace:^0.7.1",
+    "@hcengineering/panel": "workspace:^0.7.1",
+    "@hcengineering/theme": "workspace:^0.7.1",
+    "@hcengineering/view": "workspace:^0.7.1",
+    "@hcengineering/view-resources": "workspace:^0.7.1"
   }
 }

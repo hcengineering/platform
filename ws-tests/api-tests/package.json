@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/api-tests",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -19,7 +19,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@types/compression": "~1.7.2",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
@@ -41,20 +41,20 @@
     "@types/morgan": "~1.9.9"
   },
   "dependencies": {
-    "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/rpc": "workspace:^0.7.17",
-    "@hcengineering/server-token": "workspace:^0.7.17",
+    "@hcengineering/analytics": "workspace:^0.7.19",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/rpc": "workspace:^0.7.18",
+    "@hcengineering/server-token": "workspace:^0.7.18",
     "bufferutil": "^4.0.8",
     "utf-8-validate": "^6.0.4",
     "ws": "^8.18.2",
     "snappyjs": "^0.7.0",
-    "@hcengineering/api-client": "workspace:^0.7.18",
-    "@hcengineering/account-client": "workspace:^0.7.21",
-    "@hcengineering/tracker": "workspace:^0.7.0",
-    "@hcengineering/task": "workspace:^0.7.0",
-    "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/chunter": "workspace:^0.7.0"
+    "@hcengineering/api-client": "workspace:^0.7.19",
+    "@hcengineering/account-client": "workspace:^0.7.25",
+    "@hcengineering/tracker": "workspace:^0.7.1",
+    "@hcengineering/task": "workspace:^0.7.1",
+    "@hcengineering/contact": "workspace:^0.7.1",
+    "@hcengineering/chunter": "workspace:^0.7.1"
   }
 }

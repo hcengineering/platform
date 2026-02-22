@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/pod-analytics-collector",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -30,7 +30,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@tsconfig/node16": "^1.0.4",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
@@ -52,15 +52,15 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/analytics-collector": "workspace:^0.7.0",
-    "@hcengineering/analytics-collector-assets": "workspace:^0.7.0",
-    "@hcengineering/analytics-service": "workspace:^0.7.17",
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/server-client": "workspace:^0.7.16",
-    "@hcengineering/server-core": "workspace:^0.7.18",
-    "@hcengineering/server-token": "workspace:^0.7.17",
+    "@hcengineering/analytics": "workspace:^0.7.19",
+    "@hcengineering/analytics-collector": "workspace:^0.7.1",
+    "@hcengineering/analytics-collector-assets": "workspace:^0.7.1",
+    "@hcengineering/analytics-service": "workspace:^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/server-client": "workspace:^0.7.18",
+    "@hcengineering/server-core": "workspace:^0.7.19",
+    "@hcengineering/server-token": "workspace:^0.7.18",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
