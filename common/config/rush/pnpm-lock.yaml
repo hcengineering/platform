@@ -13,8 +13,8 @@ importers:
   ../../packages/client:
     dependencies:
       '@hcengineering/account-client':
-        specifier: ^0.7.20
-        version: 0.7.20
+        specifier: ^0.7.21
+        version: 0.7.25
       '@hcengineering/client':
         specifier: ^0.7.18
         version: 0.7.18
@@ -22,8 +22,8 @@ importers:
         specifier: ^0.7.18
         version: 0.7.18
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/platform':
         specifier: ^0.7.19
         version: 0.7.19
@@ -44,13 +44,13 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@types/uuid':
         specifier: ^8.3.1
         version: 8.3.4
       '@types/ws':
-        specifier: ^8.5.11
+        specifier: ^8.5.12
         version: 8.18.1
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -80,7 +80,7 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
@@ -92,8 +92,8 @@ importers:
   ../../packages/collaboration:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/server-core':
         specifier: workspace:^0.7.18
         version: link:../core
@@ -117,7 +117,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -147,7 +147,7 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
@@ -162,8 +162,8 @@ importers:
         specifier: ^0.7.17
         version: 0.7.17
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/platform':
         specifier: ^0.7.19
         version: 0.7.19
@@ -193,7 +193,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@types/uuid':
         specifier: ^8.3.1
@@ -226,7 +226,7 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
@@ -238,8 +238,8 @@ importers:
   ../../packages/datalake:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/platform':
         specifier: ^0.7.19
         version: 0.7.19
@@ -257,7 +257,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -287,13 +287,13 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
         version: 29.4.5(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.5))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3)))(typescript@5.9.3)
       ts-node:
-        specifier: ^10.8.0
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@22.19.0)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
@@ -308,8 +308,8 @@ importers:
         specifier: ^0.7.17
         version: 0.7.17
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/platform':
         specifier: ^0.7.19
         version: 0.7.19
@@ -351,13 +351,13 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
         version: 29.4.5(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.5))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3)))(typescript@5.9.3)
       ts-node:
-        specifier: ^10.8.0
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@22.19.0)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
@@ -366,8 +366,8 @@ importers:
   ../../packages/hulylake:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/hulylake-client':
         specifier: ^0.7.17
         version: 0.7.17
@@ -388,7 +388,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -418,13 +418,13 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
         version: 29.4.5(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.5))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3)))(typescript@5.9.3)
       ts-node:
-        specifier: ^10.8.0
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@22.19.0)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
@@ -433,8 +433,8 @@ importers:
   ../../packages/kafka:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/platform':
         specifier: ^0.7.19
         version: 0.7.19
@@ -455,7 +455,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -485,7 +485,7 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
@@ -499,9 +499,12 @@ importers:
       '@hcengineering/analytics':
         specifier: ^0.7.17
         version: 0.7.17
+      '@hcengineering/contact':
+        specifier: ^0.7.0
+        version: 0.7.0
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/platform':
         specifier: ^0.7.19
         version: 0.7.19
@@ -522,7 +525,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -552,7 +555,7 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
@@ -564,8 +567,8 @@ importers:
   ../../packages/minio:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/platform':
         specifier: ^0.7.19
         version: 0.7.19
@@ -583,7 +586,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -613,7 +616,7 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
@@ -625,8 +628,8 @@ importers:
   ../../packages/mongo:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/platform':
         specifier: ^0.7.19
         version: 0.7.19
@@ -647,7 +650,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -677,7 +680,7 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
@@ -689,8 +692,8 @@ importers:
   ../../packages/postgres:
     dependencies:
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/platform':
         specifier: ^0.7.19
         version: 0.7.19
@@ -711,7 +714,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -741,7 +744,7 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
@@ -762,8 +765,8 @@ importers:
         specifier: ^3.738.0
         version: 3.925.0
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/platform':
         specifier: ^0.7.19
         version: 0.7.19
@@ -784,7 +787,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -814,7 +817,7 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
@@ -826,14 +829,14 @@ importers:
   ../../packages/server:
     dependencies:
       '@hcengineering/account-client':
-        specifier: ^0.7.20
-        version: 0.7.20
+        specifier: ^0.7.21
+        version: 0.7.25
       '@hcengineering/analytics':
         specifier: ^0.7.17
         version: 0.7.17
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/platform':
         specifier: ^0.7.19
         version: 0.7.19
@@ -857,7 +860,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -890,7 +893,7 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
@@ -905,8 +908,8 @@ importers:
         specifier: ^0.7.17
         version: 0.7.17
       '@hcengineering/core':
-        specifier: ^0.7.23
-        version: 0.7.23
+        specifier: ^0.7.24
+        version: 0.7.26
       '@hcengineering/datalake':
         specifier: workspace:^0.7.17
         version: link:../datalake
@@ -939,7 +942,7 @@ importers:
         specifier: ^29.5.5
         version: 29.5.14
       '@types/node':
-        specifier: ^22.15.29
+        specifier: ^22.18.1
         version: 22.19.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.21.0
@@ -972,13 +975,13 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
       prettier:
-        specifier: ^3.1.0
+        specifier: ^3.6.2
         version: 3.6.2
       ts-jest:
         specifier: ^29.1.1
         version: 29.4.5(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.5))(jest-util@29.7.0)(jest@29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3)))(typescript@5.9.3)
       ts-node:
-        specifier: ^10.8.0
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@22.19.0)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
@@ -1351,6 +1354,10 @@ packages:
     peerDependencies:
       '@babel/core': ^7.0.0-0
 
+  '@babel/runtime@7.28.6':
+    resolution: {integrity: sha512-05WQkdpL9COIMz4LjTxGpPNCdlpyimKppYNoJ5Di5EUObifl8t4tuLuUBBZEpoLYOmfvIWrsp9fCl0HoPRVTdA==}
+    engines: {node: '>=6.9.0'}
+
   '@babel/template@7.27.2':
     resolution: {integrity: sha512-LPDZ85aEJyYSd18/DkjNh4/y1ntkE5KwUHWTiqgRxruuZL2F1yuHligVHLvcHY2vMHXttKFpJn6LwfI7cw7ODw==}
     engines: {node: '>=6.9.0'}
@@ -1563,11 +1570,17 @@ packages:
   '@formatjs/intl-localematcher@0.6.2':
     resolution: {integrity: sha512-XOMO2Hupl0wdd172Y06h6kLpBz6Dv+J4okPLl4LPtzbr8f66WbIoy4ev98EBuZ6ZK4h5ydTN6XneT4QVpD7cdA==}
 
-  '@hcengineering/account-client@0.7.20':
-    resolution: {integrity: sha512-Qj5FzV5ywImEU/hHwI9rdKgpI2+Hh1+DZkogiu5S43mY3qprVqENoyp+iS9jJUvUQNzdpMtM3gFjFvyK03pZdQ==}
+  '@hcengineering/account-client@0.7.25':
+    resolution: {integrity: sha512-GHGitAfJjljj201TxmeFZSN6qw/FSblDs0ljpl230eBd4EB7jDpAbUyCNdvUt1CK0uBbJECtPrfbmiuBVPvI8w==}
 
   '@hcengineering/analytics@0.7.17':
     resolution: {integrity: sha512-AzB2DvmDctEJge8VeAHS3YyRYij/QQlARxa2OCNiY+Vv+2+OsQk0NZsw1yqZqsMkVJ40FTUrzOkI7UdM6RPO1Q==}
+
+  '@hcengineering/analytics@0.7.19':
+    resolution: {integrity: sha512-fdsNGs/OlFqBrE/byUXWWZoTwfKXLR8sg07JHgZAEumuI19W1BnJM3tb0Eih4lFQl16DEjT7zxtXaWcU797u3Q==}
+
+  '@hcengineering/card@0.7.0':
+    resolution: {integrity: sha512-8tviVI1Hf8IE1EIMLd+VmWIE3T5wQz1CYIW7Dwd4Vc+1uZllGTYTM3cGT1jDbHWeQCgLcyG/OlGEKlpHl30Tew==}
 
   '@hcengineering/client-resources@0.7.18':
     resolution: {integrity: sha512-nnskuWP6D5QN4Yjf/P/QLzJOi0kfntEos9R75nWrN0L08PvGfVASehgB/8J/Uwmm/LrdWcJVnw2+9bK11jGn4g==}
@@ -1575,14 +1588,17 @@ packages:
   '@hcengineering/client@0.7.18':
     resolution: {integrity: sha512-r42fZwfz/bizU4INMG39elQOkAW8E+uRLDZHp3DnLEXgnl/B2mfu1Q0xWkey1pj2//myuMAOocyT8a83ms2J/A==}
 
-  '@hcengineering/core@0.7.23':
-    resolution: {integrity: sha512-2FmzSMUreuQPBrhTjMI72SY2C4dtw5HwxJlOHuvm8A3hthwU5IS9Kmk1H/8y2ZfiC7x1a7gqeCnRsm02BjcZfw==}
+  '@hcengineering/contact@0.7.0':
+    resolution: {integrity: sha512-vrgkI/bZ74Mv/yCIXbv6pVCU/vHYEY8XJ+b2Xl79K4qrKP/+iArHTUtpquU0tqpC8eV5lTRbdrxSbFr6JXzNpw==}
+
+  '@hcengineering/core@0.7.26':
+    resolution: {integrity: sha512-VUKnNnsl44VJCs/HWFP1KUVUti4/eS4YgLCVWaGjPUzwOiC0cHRGwW+7ukqAlb4b6jTD12Qwa9qdFF3qAPEz9A==}
 
   '@hcengineering/hulylake-client@0.7.17':
     resolution: {integrity: sha512-TPqdc5nd7xV73Y1B2EJ7GxpWazp9ACV1AqHlm6ebYwU1CzXQvbuJxF68itbHmPiNiCmmuiDruJmjnyLGwL18Kw==}
 
-  '@hcengineering/measurements@0.7.18':
-    resolution: {integrity: sha512-4MxYthJhNWPfR389lN5cIFtrhzgmhi39Fx/dqIOOYF+6g0WWA6GtWXi+ORRM8l/AWKSastZqsWxMdBbT+0htdg==}
+  '@hcengineering/measurements@0.7.19':
+    resolution: {integrity: sha512-hw/fhqoJfchSBdGbjx+UbuOqf6omp/pjPsaabixcgw1BYO5F4X4G+b07yfZxMNf1PnLfwntCleisuNqLvjD+gw==}
 
   '@hcengineering/platform-rig@0.7.19':
     resolution: {integrity: sha512-3Fi5nU+nEPjzzcm3FIfEZU+ZgdkiSfL46ojbj42jdXnWMkxew2aZZVtfmIpPnMUP9AMZlj2/EA+yOcMzfY/VmA==}
@@ -1591,8 +1607,14 @@ packages:
   '@hcengineering/platform@0.7.19':
     resolution: {integrity: sha512-HdRJ81A1p/0P9qmHUsBeyWgIkkz00a9fNdxJWjftD0zG2g1UK0212cGy1nfY3PbCefaf3PW/RqHs/oEVInl4iA==}
 
+  '@hcengineering/platform@0.7.20':
+    resolution: {integrity: sha512-T84Obdt408ZBmYCzK+WaQcehHO1g59NbynQk0F9Y+DnB819OfCcgTzoIhTh4aXNY39X2sJ9qhgacZ3D23nenuQ==}
+
   '@hcengineering/postgres-base@0.7.17':
     resolution: {integrity: sha512-ex5Xtsce/wa4xdY6dDlKyWaFsNQlgHVVcD0R9BF7hOLDkTDbtkzpT+syYpCJSXCfT4MoA9x3xDcGAD5geDYhrg==}
+
+  '@hcengineering/preference@0.7.0':
+    resolution: {integrity: sha512-VdmWaR20xu4KhFhRAr86IZ4lB8sPD8DieN0qacIB/EXkqgdYpDov0zCR4SYI1HLSk7YR7bhnEWZXTvGc1N8a6Q==}
 
   '@hcengineering/query@0.7.17':
     resolution: {integrity: sha512-dOQbLwEHIp5D4J73I96LKeCIb5Am12jXAmrqpoMMmnA8u6UZylJVT8Vn9HwfPTUTVXmYnv9QxUNPKEn/MpaOAw==}
@@ -1609,6 +1631,9 @@ packages:
   '@hcengineering/storage@0.7.17':
     resolution: {integrity: sha512-1njEkieVWcJgZHvHBB7d656x1EgkwpFeYI9PGJPAiIMnONRfP4KsGLEgfT9Hb5QTM451RCjctbDF+ibBpsCBdQ==}
 
+  '@hcengineering/templates@0.7.0':
+    resolution: {integrity: sha512-1tmbv2Aw2/p5T0RPUunc/2s4c8bSdhOYN5NZTKl7KVA1W4RDjpg6rqcgls6IV+BuoIg3FFEWuVHVGin5fJClqg==}
+
   '@hcengineering/text-core@0.7.18':
     resolution: {integrity: sha512-UZ/ZMwVcf60WpnYYcsA7RqYE4JlHnAGVdmUDHX2SYzXXvDIK7deGWD9AKyK4yqI1mb19ccyCr5fGyGoLxx9k/g==}
 
@@ -1617,6 +1642,15 @@ packages:
 
   '@hcengineering/text@0.7.18':
     resolution: {integrity: sha512-0se5IwEF/7LoHcFqqxtx7WUEc0sfzaytsQeqs15gRfjLx0vJ/XMc/ZAj1lkpeLKMPXRQ0mCwdzMjxVzo3W9XDQ==}
+
+  '@hcengineering/theme@0.7.0':
+    resolution: {integrity: sha512-n1sgpfNZuC+e9fO+en77DNgOE4quh0+IAy+r+/g65U+ENSD9nmUVFoym9IdwFnrUrTLPa4jyxncGrZ16fJtdsA==}
+
+  '@hcengineering/ui@0.7.0':
+    resolution: {integrity: sha512-sm2T3TIVQtHBMLw94VsRksHyJQ2Xva6p5vEUkVn5CvFrimALohx72iFzBsd7Oz9MYsX0RPZJIe49IONb2GmLBQ==}
+
+  '@hcengineering/view@0.7.0':
+    resolution: {integrity: sha512-qeqBD4mSHSRUqrLPFHWZ0FUDDeJH4S0DDkosVjfZuHYQ7xjlfWCRMlDpVyKhtmNvkTMnb1GLvHzxKxe1gTkl/w==}
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -2262,6 +2296,9 @@ packages:
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
 
+  '@types/trusted-types@2.0.7':
+    resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
+
   '@types/uuid@8.3.4':
     resolution: {integrity: sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==}
 
@@ -2429,6 +2466,9 @@ packages:
   async@3.2.6:
     resolution: {integrity: sha512-htCUDlxyyCLMgaM3xXg0C0LW2xqfuQ6p05pCEIsXuyQ+a1koYKTuBMzRNwmybfLgvJDMd0r1LTn4+E0Ti6C2AA==}
 
+  autolinker@4.0.0:
+    resolution: {integrity: sha512-fl5Kh6BmEEZx+IWBfEirnRUU5+cOiV0OK7PEt0RBKvJMJ8GaRseIOeDU3FKf4j3CE5HVefcjHmhYPOcaVt0bZw==}
+
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
@@ -2478,6 +2518,9 @@ packages:
 
   block-stream2@2.1.0:
     resolution: {integrity: sha512-suhjmLI57Ewpmq00qaygS8UgEq2ly2PCItenIyhMqVjo4t4pGzqMvfgJuX8iWTeSDdfSSqS6j38fL4ToNL7Pfg==}
+
+  blurhash@2.0.5:
+    resolution: {integrity: sha512-cRygWd7kGBQO3VEhPiTgq4Wc43ctsM+o46urrmPOiuAe+07fzlSB9OJVdpgDL0jPqXUVQ9ht7aq7kxOeJHRK+w==}
 
   bowser@2.12.1:
     resolution: {integrity: sha512-z4rE2Gxh7tvshQ4hluIT7XcFrgLIQaw9X3A+kTTRdovCz5PMukm/0QC/BKSYPj3omF5Qfypn9O/c5kgpmvYUCw==}
@@ -2597,6 +2640,9 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
+  core-js@3.48.0:
+    resolution: {integrity: sha512-zpEHTy1fjTMZCKLHUZoVeylt9XrzaIN2rbPXEt0k+q7JE5CkCZdo6bNq55bn24a69CH7ErAVLKijxJja4fw+UQ==}
+
   create-jest@29.7.0:
     resolution: {integrity: sha512-Adz2bdH0Vq3F53KEMJOoftQFutWCukm6J24wbPWRO4k1kMY7gS7ds/uoJkNuV8wDCtWWnuwGcJwpWcih+zEW1Q==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -2630,6 +2676,9 @@ packages:
     engines: {node: '>=4'}
     hasBin: true
 
+  custom-event-polyfill@1.0.7:
+    resolution: {integrity: sha512-TDDkd5DkaZxZFM8p+1I3yAlvM3rSr1wbrOliG4yJiwinMZN8z/iGL7BTlDkrJcYTmgUSb4ywVCc3ZaUtOtC76w==}
+
   data-view-buffer@1.0.2:
     resolution: {integrity: sha512-EmKO5V3OLXh1rtK2wgXRansaK1/mtVdTUEiEI0W8RkvgT05kfxaH29PliLnpLP73yYO6142Q72QNa8Wx/A5CqQ==}
     engines: {node: '>= 0.4'}
@@ -2641,6 +2690,15 @@ packages:
   data-view-byte-offset@1.0.1:
     resolution: {integrity: sha512-BS8PfmtDGnrgYdOonGZQdLZslWIeCGFP9tpan0hi1Co2Zr2NKADsvGYA8XxuG/4UWgJ6Cjtv+YJnB6MM69QGlQ==}
     engines: {node: '>= 0.4'}
+
+  date-fns-tz@2.0.1:
+    resolution: {integrity: sha512-fJCG3Pwx8HUoLhkepdsP7Z5RsucUi+ZBOxyM5d0ZZ6c4SdYustq0VMmOu6Wf7bli+yS/Jwp91TOCqn9jMcVrUA==}
+    peerDependencies:
+      date-fns: 2.x
+
+  date-fns@2.30.0:
+    resolution: {integrity: sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==}
+    engines: {node: '>=0.11'}
 
   debug@3.2.7:
     resolution: {integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==}
@@ -2719,6 +2777,9 @@ packages:
     resolution: {integrity: sha512-yS+Q5i3hBf7GBkd4KG8a7eBNNWNGLTaEwwYWUijIYM7zrlYDM0BFXHjjPWlWZ1Rg7UaddZeIDmi9jF3HmqiQ2w==}
     engines: {node: '>=6.0.0'}
 
+  dompurify@3.3.1:
+    resolution: {integrity: sha512-qkdCKzLNtrgPFP1Vo+98FRzJnBRGe4ffyCea9IwHB1fyxPOeNTHpLKYGd4Uk9xvNoH0ZoOjwZxNptyMwqrId1Q==}
+
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
@@ -2732,6 +2793,13 @@ packages:
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
+
+  emojibase-regex@16.0.0:
+    resolution: {integrity: sha512-ZMp31BkzBWNW+T73of6NURL6nXQa5GkfKneOkr3cEwBDVllbW/2nuva7NO0J3RjaQ07+SZQNgPTGZ4JlIhmM2Q==}
+
+  emojibase@16.0.0:
+    resolution: {integrity: sha512-Nw2m7JLIO4Ou2X/yZPRNscHQXVbbr6SErjkJ7EooG7MbR3yDZszCv9KTizsXFc7yZl0n3WF+qUKIC/Lw6H9xaQ==}
+    engines: {node: '>=18.12.0'}
 
   entities@4.5.0:
     resolution: {integrity: sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==}
@@ -3568,6 +3636,9 @@ packages:
   linkifyjs@4.3.2:
     resolution: {integrity: sha512-NT1CJtq3hHIreOianA8aSXn6Cw0JzYOuDQbOrSPe7gqFnCpKP++MQe3ODgO3oh2GJFORkAAdqredOa60z63GbA==}
 
+  loadjs@4.3.0:
+    resolution: {integrity: sha512-vNX4ZZLJBeDEOBvdr2v/F+0aN5oMuPu7JTqrMwp+DtgK+AryOlpy6Xtm2/HpNr+azEa828oQjOtWsB6iDtSfSQ==}
+
   locate-character@3.0.0:
     resolution: {integrity: sha512-SW13ws7BjaeJ6p7Q6CO2nchbYEc3X3J6WrmTTDto7yMPqVSZTUyY5Tjbid+Ab8gLnATtygYtiDIJGQRRn2ZOiA==}
 
@@ -3846,6 +3917,9 @@ packages:
     resolution: {integrity: sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==}
     engines: {node: '>=8'}
 
+  plyr@3.8.4:
+    resolution: {integrity: sha512-DrzLbK9Wol3zeiuZCleD9aUOl0KAaBHR9H6WVVVYPZ4Ya+LYxUFTgSF1jooHcMQCv96Ws96wCaZzIoP3bES8pQ==}
+
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
@@ -3992,6 +4066,9 @@ packages:
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
+
+  rangetouch@2.0.1:
+    resolution: {integrity: sha512-sln+pNSc8NGaHoLzwNBssFSf/rSYkqeBXzX1AtJlkJiUaVSJSbRAWJk+4omsXkN+EJalzkZhWQ3th1m0FpR5xA==}
 
   react-is@18.3.1:
     resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
@@ -4464,6 +4541,9 @@ packages:
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
+
+  url-polyfill@1.1.14:
+    resolution: {integrity: sha512-p4f3TTAG6ADVF3mwbXw7hGw+QJyw5CnNGvYh5fCuQQZIiuKUswqcznyV3pGDP9j0TSmC4UvRKm8kl1QsX1diiQ==}
 
   utf-8-validate@6.0.5:
     resolution: {integrity: sha512-EYZR+OpIXp9Y1eG1iueg8KRsY8TuT8VNgnanZ0uA3STqhHQTLwbl+WX76/9X5OY12yQubymBpaBSmMPkSTQcKA==}
@@ -5270,6 +5350,8 @@ snapshots:
       '@babel/core': 7.28.5
       '@babel/helper-plugin-utils': 7.27.1
 
+  '@babel/runtime@7.28.6': {}
+
   '@babel/template@7.27.2':
     dependencies:
       '@babel/code-frame': 7.27.1
@@ -5435,42 +5517,64 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@hcengineering/account-client@0.7.20':
+  '@hcengineering/account-client@0.7.25':
     dependencies:
-      '@hcengineering/core': 0.7.23
-      '@hcengineering/platform': 0.7.19
+      '@hcengineering/core': 0.7.26
+      '@hcengineering/platform': 0.7.20
 
   '@hcengineering/analytics@0.7.17':
     dependencies:
       '@hcengineering/platform': 0.7.19
 
+  '@hcengineering/analytics@0.7.19':
+    dependencies:
+      '@hcengineering/platform': 0.7.20
+
+  '@hcengineering/card@0.7.0':
+    dependencies:
+      '@hcengineering/core': 0.7.26
+      '@hcengineering/platform': 0.7.19
+      '@hcengineering/preference': 0.7.0
+      '@hcengineering/ui': 0.7.0
+      '@hcengineering/view': 0.7.0
+
   '@hcengineering/client-resources@0.7.18':
     dependencies:
       '@hcengineering/analytics': 0.7.17
       '@hcengineering/client': 0.7.18
-      '@hcengineering/core': 0.7.23
+      '@hcengineering/core': 0.7.26
       '@hcengineering/platform': 0.7.19
       '@hcengineering/rpc': 0.7.17
       snappyjs: 0.7.0
 
   '@hcengineering/client@0.7.18':
     dependencies:
-      '@hcengineering/core': 0.7.23
+      '@hcengineering/core': 0.7.26
       '@hcengineering/platform': 0.7.19
 
-  '@hcengineering/core@0.7.23':
+  '@hcengineering/contact@0.7.0':
     dependencies:
-      '@hcengineering/analytics': 0.7.17
-      '@hcengineering/measurements': 0.7.18
+      '@hcengineering/card': 0.7.0
+      '@hcengineering/core': 0.7.26
       '@hcengineering/platform': 0.7.19
+      '@hcengineering/preference': 0.7.0
+      '@hcengineering/templates': 0.7.0
+      '@hcengineering/ui': 0.7.0
+      '@hcengineering/view': 0.7.0
+
+  '@hcengineering/core@0.7.26':
+    dependencies:
+      '@hcengineering/analytics': 0.7.19
+      '@hcengineering/measurements': 0.7.19
+      '@hcengineering/platform': 0.7.20
       fast-equals: 5.3.2
 
   '@hcengineering/hulylake-client@0.7.17':
     dependencies:
-      '@hcengineering/core': 0.7.23
+      '@hcengineering/core': 0.7.26
       '@hcengineering/retry': 0.7.17
 
-  '@hcengineering/measurements@0.7.18': {}
+  '@hcengineering/measurements@0.7.19': {}
 
   '@hcengineering/platform-rig@0.7.19(@babel/core@7.28.5)(postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3)))(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))':
     dependencies:
@@ -5509,14 +5613,24 @@ snapshots:
     dependencies:
       intl-messageformat: 10.7.18
 
+  '@hcengineering/platform@0.7.20':
+    dependencies:
+      intl-messageformat: 10.7.18
+
   '@hcengineering/postgres-base@0.7.17':
     dependencies:
       postgres: 3.4.7
 
+  '@hcengineering/preference@0.7.0':
+    dependencies:
+      '@hcengineering/core': 0.7.26
+      '@hcengineering/platform': 0.7.19
+      '@hcengineering/ui': 0.7.0
+
   '@hcengineering/query@0.7.17':
     dependencies:
       '@hcengineering/analytics': 0.7.17
-      '@hcengineering/core': 0.7.23
+      '@hcengineering/core': 0.7.26
       '@hcengineering/platform': 0.7.19
       fast-equals: 5.3.2
 
@@ -5524,32 +5638,38 @@ snapshots:
 
   '@hcengineering/rpc@0.7.17':
     dependencies:
-      '@hcengineering/core': 0.7.23
+      '@hcengineering/core': 0.7.26
       '@hcengineering/platform': 0.7.19
       msgpackr: 1.11.5
 
   '@hcengineering/server-token@0.7.17':
     dependencies:
-      '@hcengineering/core': 0.7.23
+      '@hcengineering/core': 0.7.26
       '@hcengineering/platform': 0.7.19
       jwt-simple: 0.5.6
       uuid: 8.3.2
 
   '@hcengineering/storage@0.7.17':
     dependencies:
-      '@hcengineering/core': 0.7.23
+      '@hcengineering/core': 0.7.26
       '@hcengineering/platform': 0.7.19
       fast-equals: 5.3.2
 
+  '@hcengineering/templates@0.7.0':
+    dependencies:
+      '@hcengineering/core': 0.7.26
+      '@hcengineering/platform': 0.7.19
+      '@hcengineering/ui': 0.7.0
+
   '@hcengineering/text-core@0.7.18':
     dependencies:
-      '@hcengineering/core': 0.7.23
+      '@hcengineering/core': 0.7.26
       fast-equals: 5.3.2
       hash-it: 6.0.0
 
   '@hcengineering/text-ydoc@0.7.18(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.3)':
     dependencies:
-      '@hcengineering/core': 0.7.23
+      '@hcengineering/core': 0.7.26
       '@hcengineering/text': 0.7.18(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.3)
       '@hcengineering/text-core': 0.7.18
       y-protocols: 1.0.6(yjs@13.6.27)
@@ -5562,7 +5682,7 @@ snapshots:
 
   '@hcengineering/text@0.7.18(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.3)':
     dependencies:
-      '@hcengineering/core': 0.7.23
+      '@hcengineering/core': 0.7.26
       '@hcengineering/text-core': 0.7.18
       '@tiptap/core': 2.27.1(@tiptap/pm@2.27.1)
       '@tiptap/extension-blockquote': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
@@ -5607,6 +5727,36 @@ snapshots:
       - prosemirror-model
       - prosemirror-state
       - prosemirror-view
+
+  '@hcengineering/theme@0.7.0':
+    dependencies:
+      '@hcengineering/analytics': 0.7.17
+      '@hcengineering/platform': 0.7.19
+      svelte: 4.2.20
+
+  '@hcengineering/ui@0.7.0':
+    dependencies:
+      '@hcengineering/analytics': 0.7.17
+      '@hcengineering/core': 0.7.26
+      '@hcengineering/platform': 0.7.19
+      '@hcengineering/theme': 0.7.0
+      autolinker: 4.0.0
+      blurhash: 2.0.5
+      date-fns: 2.30.0
+      date-fns-tz: 2.0.1(date-fns@2.30.0)
+      dompurify: 3.3.1
+      emojibase: 16.0.0
+      emojibase-regex: 16.0.0
+      fast-equals: 5.3.2
+      plyr: 3.8.4
+      svelte: 4.2.20
+
+  '@hcengineering/view@0.7.0':
+    dependencies:
+      '@hcengineering/core': 0.7.26
+      '@hcengineering/platform': 0.7.19
+      '@hcengineering/preference': 0.7.0
+      '@hcengineering/ui': 0.7.0
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
@@ -6474,6 +6624,9 @@ snapshots:
 
   '@types/stack-utils@2.0.3': {}
 
+  '@types/trusted-types@2.0.7':
+    optional: true
+
   '@types/uuid@8.3.4': {}
 
   '@types/webidl-conversions@7.0.3': {}
@@ -6683,6 +6836,10 @@ snapshots:
 
   async@3.2.6: {}
 
+  autolinker@4.0.0:
+    dependencies:
+      tslib: 2.8.1
+
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.1.0
@@ -6755,6 +6912,8 @@ snapshots:
   block-stream2@2.1.0:
     dependencies:
       readable-stream: 3.6.2
+
+  blurhash@2.0.5: {}
 
   bowser@2.12.1: {}
 
@@ -6880,6 +7039,8 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
+  core-js@3.48.0: {}
+
   create-jest@29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3)):
     dependencies:
       '@jest/types': 29.6.3
@@ -6918,6 +7079,8 @@ snapshots:
 
   cssesc@3.0.0: {}
 
+  custom-event-polyfill@1.0.7: {}
+
   data-view-buffer@1.0.2:
     dependencies:
       call-bound: 1.0.4
@@ -6935,6 +7098,14 @@ snapshots:
       call-bound: 1.0.4
       es-errors: 1.3.0
       is-data-view: 1.0.2
+
+  date-fns-tz@2.0.1(date-fns@2.30.0):
+    dependencies:
+      date-fns: 2.30.0
+
+  date-fns@2.30.0:
+    dependencies:
+      '@babel/runtime': 7.28.6
 
   debug@3.2.7:
     dependencies:
@@ -6991,6 +7162,10 @@ snapshots:
     dependencies:
       esutils: 2.0.3
 
+  dompurify@3.3.1:
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
+
   dunder-proto@1.0.1:
     dependencies:
       call-bind-apply-helpers: 1.0.2
@@ -7002,6 +7177,10 @@ snapshots:
   emittery@0.13.1: {}
 
   emoji-regex@8.0.0: {}
+
+  emojibase-regex@16.0.0: {}
+
+  emojibase@16.0.0: {}
 
   entities@4.5.0: {}
 
@@ -8153,6 +8332,8 @@ snapshots:
 
   linkifyjs@4.3.2: {}
 
+  loadjs@4.3.0: {}
+
   locate-character@3.0.0: {}
 
   locate-path@5.0.0:
@@ -8419,6 +8600,14 @@ snapshots:
     dependencies:
       find-up: 4.1.0
 
+  plyr@3.8.4:
+    dependencies:
+      core-js: 3.48.0
+      custom-event-polyfill: 1.0.7
+      loadjs: 4.3.0
+      rangetouch: 2.0.1
+      url-polyfill: 1.1.14
+
   possible-typed-array-names@1.1.0: {}
 
   postcss-load-config@3.1.4(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3)):
@@ -8594,6 +8783,8 @@ snapshots:
       strict-uri-encode: 2.0.0
 
   queue-microtask@1.2.3: {}
+
+  rangetouch@2.0.1: {}
 
   react-is@18.3.1: {}
 
@@ -9082,6 +9273,8 @@ snapshots:
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
+
+  url-polyfill@1.1.14: {}
 
   utf-8-validate@6.0.5:
     dependencies:

@@ -349,6 +349,7 @@ export interface IndexedDoc {
   searchShortTitle_fields?: any[]
   searchIcon_fields?: any[]
   fulltextSummary?: string
+  baseId?: Ref<Doc>
   [key: string]: any
 }
 

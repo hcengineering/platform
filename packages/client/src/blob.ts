@@ -46,6 +46,8 @@ export class BlobClient {
   ): Promise<void> {
     let written = 0
     const chunkSize = 50 * 1024 * 1024
+    let emptyChunkRetries = 0
+    const maxEmptyChunkRetries = 3
 
     // Use ranges to iterave through file with retry if required.
     while (written < size) {
@@ -64,6 +66,24 @@ export class BlobClient {
             })
           })
           const chunk = Buffer.concat(chunks)
+
+          // Check for empty chunk to prevent infinite loop
+          if (chunk.length === 0) {
+            emptyChunkRetries++
+            if (emptyChunkRetries >= maxEmptyChunkRetries) {
+              ctx.error('Empty chunk received multiple times, aborting', { name, written, size, emptyChunkRetries })
+              await new Promise<void>((resolve) => {
+                writable.end(resolve)
+              })
+              throw new Error(
+                `Empty chunk received ${emptyChunkRetries} times for blob ${name} at offset ${written}/${size}`
+              )
+            }
+            ctx.warn('Empty chunk received, retrying', { name, written, size, retry: emptyChunkRetries })
+            await new Promise<void>((resolve) => setTimeout(resolve, 100 * emptyChunkRetries))
+            continue
+          }
+          emptyChunkRetries = 0 // Reset on successful non-empty chunk
 
           await new Promise<void>((resolve, reject) => {
             writable.write(chunk, (err) => {
@@ -86,13 +106,13 @@ export class BlobClient {
             ctx.info('No such key', { name })
             return
           }
-          if (i > 4) {
+          if (i >= 4) {
             await new Promise<void>((resolve) => {
               writable.end(resolve)
             })
             throw err
           }
-          await new Promise<void>((resolve) => setTimeout(resolve, 10))
+          await new Promise<void>((resolve) => setTimeout(resolve, 100 * (i + 1)))
           // retry
         }
       }
