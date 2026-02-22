@@ -71,6 +71,7 @@
     "RelationCopyDescr": "Hangi ilişkileri kopyalamak istiyorsunuz?",
     "Import": "İçe aktar",
     "Export": "Dışa aktar",
-    "CardUpdated": "Kart güncellendi"
+    "CardUpdated": "Kart güncellendi",
+    "CardCreated": "Kart oluşturuldu"
   }
 }

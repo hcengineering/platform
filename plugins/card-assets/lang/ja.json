@@ -71,6 +71,7 @@
     "RelationCopyDescr": "どの関連をコピーしますか？",
     "Import": "インポート",
     "Export": "エクスポート",
-    "CardUpdated": "カードが更新されました"
+    "CardUpdated": "カードが更新されました",
+    "CardCreated": "カードが作成されました"
   }
 }

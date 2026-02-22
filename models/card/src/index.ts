@@ -465,6 +465,26 @@ export function createModel (builder: Builder): void {
     {
       hidden: false,
       generated: false,
+      label: card.string.CardCreated,
+      group: card.ids.CardNotificationGroup,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: card.class.Card,
+      defaultEnabled: true,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p><p>{link}</p>',
+        subjectTemplate: '{title} created'
+      }
+    },
+    card.ids.CardCreateNotification
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
       label: card.string.CardUpdated,
       group: card.ids.CardNotificationGroup,
       txClasses: [core.class.TxUpdateDoc, core.class.TxMixin],
