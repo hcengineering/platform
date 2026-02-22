@@ -2,6 +2,18 @@
   "name": "@hcengineering/platform-rig",
   "entries": [
     {
+      "version": "0.7.21",
+      "tag": "@hcengineering/platform-rig_v0.7.21",
+      "date": "Sun, 22 Feb 2026 02:07:07 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Ignore svelte preprocess warnings"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.19",
       "tag": "@hcengineering/platform-rig_v0.7.19",
       "date": "Tue, 14 Oct 2025 03:02:36 GMT",
