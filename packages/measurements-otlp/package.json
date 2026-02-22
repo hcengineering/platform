@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/measurements-otlp",
-  "version": "0.7.17",
+  "version": "0.7.18",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -41,7 +41,7 @@
     "eslint-plugin-n": "^15.4.0"
   },
   "dependencies": {
-    "@hcengineering/measurements": "workspace:^0.7.18",
+    "@hcengineering/measurements": "workspace:^0.7.19",
     "@opentelemetry/sdk-node": "^0.203.0",
     "@opentelemetry/sdk-logs": "^0.203.0",
     "@opentelemetry/auto-instrumentations-node": "^0.62.0",

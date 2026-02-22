@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/text",
-  "version": "0.7.18",
+  "version": "0.7.19",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -41,8 +41,8 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/text-core": "workspace:^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/text-core": "workspace:^0.7.19",
     "@tiptap/core": "^2.11.7",
     "@tiptap/html": "^2.11.7",
     "@tiptap/pm": "^2.11.7",

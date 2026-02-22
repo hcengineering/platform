@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/hulylake-client",
-  "version": "0.7.17",
+  "version": "0.7.18",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -43,8 +43,8 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/retry": "workspace:^0.7.17"
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/retry": "workspace:^0.7.18"
   },
   "repository": "https://github.com/hcengineering/huly.core",
   "publishConfig": {
