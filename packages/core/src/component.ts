@@ -15,18 +15,23 @@
 import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { BenchmarkDoc } from './benchmark'
-import { AccountRole, TxAccessLevel } from './classes'
 import type {
   Account,
+  AccountUuid,
   AnyAttribute,
   ArrOf,
   Association,
   AttachedDoc,
+  AttributePermission,
   Blob,
   Class,
+  ClassCollaborators,
+  ClassPermission,
+  Collaborator,
   Collection,
   Configuration,
   ConfigurationElement,
+  CustomSequence,
   Doc,
   DomainIndexConfiguration,
   Enum,
@@ -49,7 +54,6 @@ import type {
   Relation,
   Role,
   Sequence,
-  CustomSequence,
   Space,
   SpaceType,
   SpaceTypeDescriptor,
@@ -60,11 +64,9 @@ import type {
   TypeAny,
   TypedSpace,
   UserStatus,
-  Version,
-  AccountUuid,
-  ClassCollaborators,
-  Collaborator
+  Version
 } from './classes'
+import { AccountRole, TxAccessLevel } from './classes'
 import { type Status, type StatusCategory } from './status'
 import type {
   Tx,
@@ -78,6 +80,7 @@ import type {
   TxUpdateDoc,
   TxWorkspaceEvent
 } from './tx'
+import { VersionableClass } from './versioning'
 
 /**
  * @public
@@ -129,6 +132,8 @@ export default plugin(coreId, {
     SpaceType: '' as Ref<Class<SpaceType>>,
     Role: '' as Ref<Class<Role>>,
     Permission: '' as Ref<Class<Permission>>,
+    AttributePermission: '' as Ref<Class<AttributePermission>>,
+    ClassPermission: '' as Ref<Class<ClassPermission>>,
     Type: '' as Ref<Class<Type<any>>>,
     TypeRelation: '' as Ref<Class<Type<string>>>,
     TypeString: '' as Ref<Class<Type<string>>>,
@@ -195,7 +200,8 @@ export default plugin(coreId, {
     IndexConfiguration: '' as Ref<Mixin<IndexingConfiguration<Doc>>>,
     SpacesTypeData: '' as Ref<Mixin<Space>>,
     TransientConfiguration: '' as Ref<Mixin<TransientConfiguration>>,
-    TxAccessLevel: '' as Ref<Mixin<TxAccessLevel>>
+    TxAccessLevel: '' as Ref<Mixin<TxAccessLevel>>,
+    VersionableClass: '' as Ref<Mixin<VersionableClass>>
   },
   space: {
     Tx: '' as Ref<Space>,
@@ -287,7 +293,10 @@ export default plugin(coreId, {
     UpdateSpaceDescription: '' as IntlString,
     ArchiveSpaceDescription: '' as IntlString,
     AutoJoin: '' as IntlString,
-    AutoJoinDescr: '' as IntlString
+    AutoJoinDescr: '' as IntlString,
+    RBAC: '' as IntlString,
+    RBACDescr: '' as IntlString,
+    Version: '' as IntlString
   },
   descriptor: {
     SpacesType: '' as Ref<SpaceTypeDescriptor>

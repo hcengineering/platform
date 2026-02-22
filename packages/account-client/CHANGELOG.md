@@ -1,6 +1,13 @@
 # Change Log - @hcengineering/account-client
 
-This log was last generated on Wed, 26 Nov 2025 15:28:11 GMT and should not be manually modified.
+This log was last generated on Sun, 22 Feb 2026 06:34:18 GMT and should not be manually modified.
+
+## 0.7.22
+Sun, 22 Feb 2026 06:34:18 GMT
+
+### Patches
+
+- Add permission methods
 
 ## 0.7.20
 Wed, 26 Nov 2025 15:28:11 GMT

@@ -2,6 +2,23 @@
   "name": "@hcengineering/account-client",
   "entries": [
     {
+      "version": "0.7.22",
+      "tag": "@hcengineering/account-client_v0.7.22",
+      "date": "Sun, 22 Feb 2026 06:34:18 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add permission methods"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@hcengineering/core\" from `^0.7.24` to `0.7.26`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.7.20",
       "tag": "@hcengineering/account-client_v0.7.20",
       "date": "Wed, 26 Nov 2025 15:28:11 GMT",
