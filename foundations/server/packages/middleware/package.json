@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/middleware",
-  "version": "0.7.22",
+  "version": "0.7.23",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -35,12 +35,12 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.24",
+    "@hcengineering/core": "workspace:^0.7.26",
     "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/server-core": "workspace:^0.7.18",
-    "@hcengineering/query": "workspace:^0.7.17",
-    "@hcengineering/analytics": "workspace:^0.7.17",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/server-core": "workspace:^0.7.19",
+    "@hcengineering/query": "workspace:^0.7.18",
+    "@hcengineering/analytics": "workspace:^0.7.19",
     "fast-equals": "^5.2.2"
   },
   "repository": "https://github.com/hcengineering/huly.server",

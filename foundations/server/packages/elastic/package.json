@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/elastic",
-  "version": "0.7.17",
+  "version": "0.7.18",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -55,11 +55,11 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/server-core": "workspace:^0.7.18",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/server-core": "workspace:^0.7.19",
     "@elastic/elasticsearch": "^7.17.14",
-    "@hcengineering/analytics": "workspace:^0.7.17"
+    "@hcengineering/analytics": "workspace:^0.7.19"
   },
   "repository": "https://github.com/hcengineering/huly.server",
   "publishConfig": {
