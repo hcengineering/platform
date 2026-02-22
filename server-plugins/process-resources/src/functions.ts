@@ -321,6 +321,10 @@ export async function AddTag (
   const tx = control.client.txFactory.createTxMixin(execution.card, _process.masterTag, execution.space, tagId, props)
   res.push(tx)
   const card = control.cache.get(execution.card)
+  if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
+  if (control.client.getHierarchy().hasMixin(card, tagId)) {
+    return { txes: res, rollback: [], context: null }
+  }
   const cardWithMixin =
     card !== undefined ? TxProcessor.updateMixin4Doc(control.client.getHierarchy().clone(card), tx) : undefined
 
@@ -330,9 +334,7 @@ export async function AddTag (
     })
   ]
 
-  const processes = control.client
-    .getModel()
-    .findAllSync(process.class.Process, { masterTag: _process.masterTag, autoStart: true })
+  const processes = control.client.getModel().findAllSync(process.class.Process, { masterTag: tagId, autoStart: true })
   for (const proc of processes) {
     const [txes, rbTxes] = await createExecution(proc._id, execution.card, execution, control)
     res.push(...txes)
@@ -396,6 +398,9 @@ export async function RunSubProcess (
   const res: Tx[] = []
   const resultContext: SuccessExecutionContext[] = []
   const rollback: Tx[] = []
+  const initTransition = control.client
+    .getModel()
+    .findAllSync(process.class.Transition, { process: target._id, from: null })[0]
   for (const _card of Array.isArray(card) ? card : [card]) {
     if (target.parallelExecutionForbidden === true) {
       const currentExecution = await control.client.findAll(process.class.Execution, {
@@ -408,9 +413,13 @@ export async function RunSubProcess (
         continue
       }
     }
-    const initTransition = control.client
-      .getModel()
-      .findAllSync(process.class.Transition, { process: target._id, from: null })[0]
+
+    // check card is exists
+    const exists = await control.client.findOne(cardPlugin.class.Card, { _id: _card })
+    if (exists === undefined) {
+      throw processError(process.error.ObjectNotFound, { _id: _card })
+    }
+
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const context = params.context ?? ({} as ExecutionContext)
     const _id = generateId<Execution>()
