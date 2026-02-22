@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/server",
-  "version": "0.7.18",
+  "version": "0.7.19",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -36,13 +36,13 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/account-client": "^0.7.21",
-    "@hcengineering/analytics": "^0.7.17",
-    "@hcengineering/core": "^0.7.24",
-    "@hcengineering/platform": "^0.7.19",
-    "@hcengineering/rpc": "^0.7.17",
-    "@hcengineering/server-core": "workspace:^0.7.18",
-    "@hcengineering/server-token": "^0.7.17",
+    "@hcengineering/account-client": "^0.7.25",
+    "@hcengineering/analytics": "^0.7.19",
+    "@hcengineering/core": "^0.7.26",
+    "@hcengineering/platform": "^0.7.20",
+    "@hcengineering/rpc": "^0.7.18",
+    "@hcengineering/server-core": "workspace:^0.7.19",
+    "@hcengineering/server-token": "^0.7.18",
     "utf-8-validate": "^6.0.4"
   },
   "repository": "https://github.com/hcengineering/huly.server",
