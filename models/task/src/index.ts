@@ -210,6 +210,9 @@ export class TTaskType extends TDoc implements TaskType {
   @Prop(ArrOf(TypeRef(task.class.TaskType)), getEmbeddedLabel('Parent'))
     allowedAsChildOf!: Ref<TaskType>[] // In case of specified, task type is for sub-tasks
 
+  @Prop(TypeRef(core.class.Mixin), getEmbeddedLabel('Base Mixin'))
+    baseMixin?: Ref<Mixin<Task>> // Existing mixin to inherit attributes from
+
   @Prop(TypeRef(core.class.Class), getEmbeddedLabel('Task class'))
     ofClass!: Ref<Class<Task>> // Base class for task
 
