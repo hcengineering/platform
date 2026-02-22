@@ -94,7 +94,20 @@ function main () {
 
   console.log('bump version ...', version)
 
-  const config = JSON.parse(execSync('rush list -p --json', { encoding: 'utf-8' }))
+  const output = execSync('node common/scripts/install-run-rush.js list -p --json', { encoding: 'utf-8', cwd: repoRoot })
+  const lines = output.split('\n')
+  let jsonStart = -1
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim().startsWith('{')) {
+      jsonStart = i
+      break
+    }
+  }
+  if (jsonStart === -1) {
+    console.error('Could not find JSON output from rush list')
+    process.exit(1)
+  }
+  const config = JSON.parse(lines.slice(jsonStart).join('\n'))
 
   fillPackages(config)
 
