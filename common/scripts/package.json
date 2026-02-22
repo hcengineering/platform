@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/scripts",
-  "version": "0.7.14",
+  "version": "0.7.15",
   "scripts": {
     "format": "echo \"No format specified\"",
     "coverage:merge": "node merge-coverage.js",

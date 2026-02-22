@@ -484,10 +484,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       const space = this.spacesMap.get(tx.objectSpace)
       if (space === undefined) return undefined
 
-      // For all other spaces broadcast to space members + guests that are collaborators for objects with collab security enabled
-      let collabTargets: AccountUuid[] = []
-      const collabSec = getClassCollaborators(this.context.modelDb, this.context.hierarchy, cud.objectClass)
-      if (collabSec?.provideSecurity === true) {
+      const getCollabTargets = async (_id: Ref<Doc>): Promise<AccountUuid[]> => {
         const guests = new Set<AccountUuid>()
         for (const val of ctx.contextData.socialStringsToUsers.values()) {
           if ([AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(val.role)) {
@@ -495,11 +492,30 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
           }
         }
         const collaboratorObjs = (await this.next?.findAll(ctx, core.class.Collaborator, {
-          attachedTo: cud.objectId
+          attachedTo: _id
         })) as Collaborator[]
 
-        collabTargets = collaboratorObjs.map((it) => it.collaborator).filter((it) => guests.has(it))
+        return collaboratorObjs.map((it) => it.collaborator).filter((it) => guests.has(it))
       }
+
+      // For all other spaces broadcast to space members
+      // + guests that are collaborators for objects with collab security enabled
+      // + guests that are collaborators for attached objects with collab security enabled
+      let collabTargets: AccountUuid[] = []
+      const collabSec = getClassCollaborators(this.context.modelDb, this.context.hierarchy, cud.objectClass)
+      if (collabSec?.provideSecurity === true) {
+        collabTargets = await getCollabTargets(cud.objectId)
+      } else if (cud.attachedTo != null && cud.attachedToClass != null) {
+        const attachedCollabSec = getClassCollaborators(
+          this.context.modelDb,
+          this.context.hierarchy,
+          cud.attachedToClass
+        )
+        if (attachedCollabSec?.provideSecurity === true) {
+          collabTargets = await getCollabTargets(cud.attachedTo)
+        }
+      }
+
       const spaceTargets = space.members.length === 0 ? [] : this.getTargets(space?.members)
       const target = [...collabTargets, ...spaceTargets]
 
@@ -672,7 +688,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
         findResult.lookupMap
       )
     }
-    if (!isOwner(account, ctx) && account.role !== AccountRole.DocGuest) {
+    if (account.role !== AccountRole.DocGuest) {
       if (options?.lookup !== undefined) {
         for (const object of findResult) {
           if (object.$lookup !== undefined) {
@@ -721,20 +737,53 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     if (Object.keys(lookup).length === 0) return
     const account = ctx.contextData.account
     if (isSystem(account, ctx)) return
+    const owner = isOwner(account, ctx)
+    const h = this.context.hierarchy
     const allowedSpaces = new Set(this.getAllAllowedSpaces(account, true, showArchived))
     for (const key in lookup) {
       const val = lookup[key]
       if (Array.isArray(val)) {
         const arr: AttachedDoc[] = []
         for (const value of val) {
-          if (allowedSpaces.has(value.space)) {
+          const isSpace = '_class' in value && h.isDerived(value._class, core.class.Space)
+          const availableForOwner = owner && isSpace
+          const availableSpace = isSpace && allowedSpaces.has(value._id)
+          const availableDoc = !isSpace && allowedSpaces.has(value.space)
+          if (availableForOwner || availableSpace || availableDoc) {
             arr.push(value)
           }
         }
         lookup[key] = arr as any
       } else if (val !== undefined) {
-        if (!allowedSpaces.has(val.space)) {
-          lookup[key] = undefined
+        const isSpace = '_class' in val && h.isDerived(val._class, core.class.Space)
+        const availableForOwner = owner && isSpace
+        const availableSpace = isSpace && allowedSpaces.has(val._id as Ref<Space>)
+        const availableDoc = !isSpace && allowedSpaces.has(val.space)
+        if (!availableForOwner && !availableSpace && !availableDoc) {
+          // allow attached lookups for guests when collaborator security is enabled
+          // do not check if collaborator of the doc because it's being checked on the storage (DB) level
+          // as otherwise there will be no doc here at all
+          if (key === 'attachedTo' && ctx.contextData.modelDb?.hierarchy != null) {
+            const attachedVal = val as AttachedDoc
+            if (attachedVal.attachedToClass == null) {
+              lookup[key] = undefined
+              continue
+            }
+
+            const collabSec = getClassCollaborators(
+              ctx.contextData.modelDb,
+              ctx.contextData.modelDb.hierarchy,
+              attachedVal.attachedToClass
+            )
+            const collabSecEnabled =
+              collabSec?.provideSecurity === true &&
+              [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role)
+            if (!collabSecEnabled) {
+              lookup[key] = undefined
+            }
+          } else {
+            lookup[key] = undefined
+          }
         }
       }
     }
