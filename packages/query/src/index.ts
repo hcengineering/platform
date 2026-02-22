@@ -16,6 +16,7 @@
 import { Analytics } from '@hcengineering/analytics'
 import core, {
   Association,
+  AssociationQuery,
   BulkUpdateEvent,
   Class,
   Client,
@@ -780,7 +781,9 @@ export class LiveQuery implements WithTx, Client {
         }
         const docs = q.result.getDocs()
         for (const doc of docs) {
-          const docToUpdate = doc.$associations?.[association._id]?.find((it) => it._id === tx.objectId)
+          const docToUpdate =
+            doc.$associations?.[`${association._id}_a`]?.find((it) => it._id === tx.objectId) ??
+            doc.$associations?.[`${association._id}_b`]?.find((it) => it._id === tx.objectId)
           if (docToUpdate !== undefined) {
             if (tx._class === core.class.TxMixin) {
               TxProcessor.updateMixin4Doc(docToUpdate, tx as TxMixin<Doc, Doc>)
@@ -1114,29 +1117,88 @@ export class LiveQuery implements WithTx, Client {
     if (q.options?.associations === undefined) return
     if (doc._class !== core.class.Relation) return
     const relation = doc as Relation
-    const assoc = q.options.associations.find((p) => p[0] === relation.association)
+    const assoc = findAssociation(q.options.associations, relation.association)
     if (assoc !== undefined) {
       if (q.result instanceof Promise) {
         q.result = await q.result
       }
-      const direct = assoc[1] === 1
-      const res = q.result.findDoc(direct ? relation.docA : relation.docB)
-      if (res === undefined) return
-      const association = this.getModel().findObject(assoc[0])
-      if (association === undefined) return
-      const docToPush = await this.findOne(direct ? association.classB : association.classA, {
-        _id: direct ? relation.docB : relation.docA
-      })
-      if (docToPush === undefined) return
-      const arr = res?.$associations?.[relation.association] ?? []
-      arr.push(docToPush)
-      if (res?.$associations === undefined) {
-        res.$associations = {}
+      const res = await this.fillRelationDoc(q.result, q.result.getDocs(), q.options.associations, relation)
+      if (res) {
+        this.queriesToUpdate.set(q.id, q)
       }
-      res.$associations[relation.association] = arr
-      q.result.updateDoc(res, false)
-      this.queriesToUpdate.set(q.id, q)
     }
+  }
+
+  async fillRelationDoc (
+    qRes: ResultArray,
+    docs: WithLookup<Doc>[],
+    associations: AssociationQuery[] | undefined,
+    relation: Relation
+  ): Promise<boolean> {
+    if (associations === undefined) return false
+    let result = false
+    for (const assoc of associations) {
+      if (assoc[0] === relation.association) {
+        const association = this.getModel().findObject(assoc[0])
+        if (association === undefined) continue
+        const sourceId = assoc[1] === 1 ? relation.docA : relation.docB
+        const targetId = assoc[1] === 1 ? relation.docB : relation.docA
+        const direct = assoc[1] === 1
+        for (const doc of docs) {
+          if (doc._id === sourceId) {
+            const nestedAssoc = assoc[2]
+            const options: FindOptions<Doc> | undefined =
+              nestedAssoc !== undefined
+                ? {
+                    associations: nestedAssoc
+                  }
+                : undefined
+            const docToPush = await this.findOne(
+              direct ? association.classB : association.classA,
+              {
+                _id: targetId
+              },
+              options
+            )
+            if (docToPush === undefined) continue
+            if (doc.$associations === undefined) {
+              doc.$associations = {}
+            }
+            const key = direct ? 'b' : 'a'
+            const arr = doc.$associations?.[`${assoc[0]}_${key}`] ?? []
+            const exists = arr.findIndex((p) => p._id === docToPush._id)
+            if (exists !== -1) {
+              arr[exists] = docToPush
+            } else {
+              arr.push(docToPush)
+            }
+            doc.$associations[`${assoc[0]}_${key}`] = arr
+            if (qRes.findDoc(doc._id) !== undefined) {
+              qRes.updateDoc(doc, false)
+            }
+            result = true
+          }
+        }
+      }
+    }
+    for (const assoc of associations) {
+      if (assoc[2] !== undefined) {
+        const key = assoc[1] === 1 ? 'b' : 'a'
+        for (const doc of docs) {
+          const arr = doc.$associations?.[`${assoc[0]}_${key}`] ?? []
+          if (arr.length > 0) {
+            const res = await this.fillRelationDoc(qRes, arr, assoc[2], relation)
+            if (res) {
+              result = true
+              if (qRes.findDoc(doc._id) !== undefined) {
+                qRes.updateDoc(doc, false)
+              }
+            }
+          }
+        }
+      }
+    }
+    return result
   }
 
   private async handleDocAddLookup (q: Query, doc: Doc): Promise<void> {
@@ -1607,4 +1669,21 @@ function getNestedLookup (lookup: Ref<Class<Doc>> | [Ref<Class<Doc>>, Lookup<Doc
 
 function getLookupClass (lookup: Ref<Class<Doc>> | [Ref<Class<Doc>>, Lookup<Doc>]): Ref<Class<Doc>> {
   return Array.isArray(lookup) ? lookup[0] : lookup
+}
+
+function findAssociation (
+  associations: AssociationQuery[],
+  association: Ref<Association>
+): AssociationQuery | undefined {
+  for (const assoc of associations) {
+    if (assoc[0] === association) return assoc
+  }
+  for (const assoc of associations) {
+    if (assoc[2] !== undefined) {
+      const res = findAssociation(assoc[2], association)
+      if (res !== undefined) {
+        return assoc
+      }
+    }
+  }
 }

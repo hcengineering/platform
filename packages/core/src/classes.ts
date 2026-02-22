@@ -15,9 +15,9 @@
 //
 
 import type { Asset, IntlString, Plugin } from '@hcengineering/platform'
+import { Tx } from '.'
 import type { DocumentQuery } from './storage'
 import { type WorkspaceDataId, type WorkspaceUuid } from './utils'
-import { Tx } from '.'
 
 /**
  * @public
@@ -490,6 +490,7 @@ export interface SystemSpace extends Space {}
  */
 export interface TypedSpace extends Space {
   type: Ref<SpaceType>
+  restricted?: boolean // if true user must have permission to any txes
 }
 
 /**
@@ -549,6 +550,14 @@ export interface Permission extends Doc {
   txMatch?: DocumentQuery<Tx>
   description?: IntlString
   icon?: Asset
+}
+
+export interface AttributePermission extends Permission {
+  attribute: Ref<AnyAttribute>
+}
+
+export interface ClassPermission extends Permission {
+  targetClass: Ref<Class<Doc>>
 }
 
 /**
@@ -935,8 +944,10 @@ export type SocialKey = Pick<SocialId, 'type' | 'value'>
 
 export interface ClassCollaborators<T extends Doc> extends Doc {
   attachedTo: Ref<Class<T>>
+  allFields?: boolean // for all (PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]) attributes
   fields: (keyof T)[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
   provideSecurity?: boolean // If true, will provide security for collaborators
+  provideAttachedSecurity?: boolean // If true, will provide security for collaborators of attached doc
 }
 
 export interface Collaborator extends AttachedDoc {

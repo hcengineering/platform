@@ -54,12 +54,15 @@
     "ArchiveSpaceDescription": "Concede a los usuarios la capacidad de archivar el espacio",
     "AutoJoin": "Auto unirse",
     "AutoJoinDescr": "Unirse automáticamente a los nuevos empleados a este espacio",
+    "RBAC": "Control de acceso basado en roles",
+    "RBACDescr": "Requerir acceso basado en roles para realizar acciones en este espacio",
     "BlobSize": "Tamaño",
     "BlobContentType": "Tipo de contenido",
     "Relation": "Relación",
     "Relations": "Relaciones",
     "AddRelation": "Añadir relación",
     "PersonId": "Id. de persona",
-    "AccountId": "Cuenta"
+    "AccountId": "Cuenta",
+    "Version": "Versión"
   }
 }

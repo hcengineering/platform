@@ -159,7 +159,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
   private async getAssociationValue<T extends Doc>(
     doc: T,
     associations: AssociationQuery[]
-  ): Promise<Record<string, Doc[]>> {
+  ): Promise<Record<string, WithLookup<Doc>[]>> {
     const result: Record<string, Doc[]> = {}
     for (const association of associations) {
       const _id = association[0]
@@ -170,8 +170,11 @@ export abstract class MemDb extends TxProcessor implements Storage {
       const key2 = !isReverse ? 'docB' : 'docA'
       const _class = !isReverse ? assoc.classB : assoc.classA
       const relations = await this.findAll(core.class.Relation, { association: _id, [key]: doc._id })
-      const objects = await this.findAll(_class, { _id: { $in: relations.map((r) => r[key2]) } })
-      result[_id] = objects
+      let objects = await this.findAll(_class, { _id: { $in: relations.map((r) => r[key2]) } })
+      if (association[2] !== undefined) {
+        objects = toFindResult(await this.fillAssociations(objects, association[2]), objects.length)
+      }
+      result[`${_id}_${!isReverse ? 'b' : 'a'}`] = objects
     }
     return result
   }
@@ -246,6 +249,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
       // We need to filter instances without mixin was set
       result = result.filter((r) => (r as any)[_class] !== undefined)
     }
+    if (options?.sort !== undefined) resultSort(result, options?.sort, _class, this.hierarchy, this)
     const total = result.length
     result = result.slice(0, options?.limit)
 

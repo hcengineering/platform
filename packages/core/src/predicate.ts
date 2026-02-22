@@ -114,6 +114,9 @@ const predicates: Record<string, PredicateFactory> = {
   $size: (o, propertyKey) => {
     return (docs) =>
       execPredicate(docs, propertyKey, (value) => {
+        if (value == null) {
+          return false
+        }
         if (!Array.isArray(value)) {
           throw new Error('$size predicate requires array')
         }

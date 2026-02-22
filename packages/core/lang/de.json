@@ -61,12 +61,15 @@
     "ArchiveSpaceDescription": "Gewährt Benutzern die Möglichkeit, den Arbeitsbereich zu archivieren",
     "AutoJoin": "Automatisch beitreten",
     "AutoJoinDescr": "Neue Mitarbeiter automatisch diesem Arbeitsbereich hinzufügen",
+    "RBAC": "Rollenbasierte Zugriffskontrolle",
+    "RBACDescr": "Erfordert rollenbasierten Zugriff, um Aktionen in diesem Arbeitsbereich auszuführen",
     "BlobSize": "Größe",
     "BlobContentType": "Inhaltstyp",
     "Relation": "Beziehung",
     "Relations": "Beziehungen",
     "AddRelation": "Beziehung hinzufügen",
     "PersonId": "Person",
-    "AccountId": "Konto"
+    "AccountId": "Konto",
+    "Version": "Version"
   }
 }
