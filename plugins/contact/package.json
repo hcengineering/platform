@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/contact",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "exports": {
     ".": {
@@ -30,7 +30,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -45,13 +45,13 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/ui": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/templates": "workspace:^0.7.0",
-    "@hcengineering/view": "workspace:^0.7.0",
-    "@hcengineering/preference": "workspace:^0.7.0",
-    "@hcengineering/card": "workspace:^0.7.0"
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/ui": "workspace:^0.7.1",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/templates": "workspace:^0.7.1",
+    "@hcengineering/view": "workspace:^0.7.1",
+    "@hcengineering/preference": "workspace:^0.7.1",
+    "@hcengineering/card": "workspace:^0.7.1"
   },
   "repository": "https://github.com/hcengineering/platform",
   "publishConfig": {

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/server-process-resources",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -21,7 +21,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -37,13 +37,13 @@
     "prettier-plugin-svelte": "^3.4.0"
   },
   "dependencies": {
-    "@hcengineering/time": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/card": "workspace:^0.7.0",
-    "@hcengineering/server-process": "workspace:^0.7.0",
-    "@hcengineering/server-core": "workspace:^0.7.18",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/process": "workspace:^0.7.0"
+    "@hcengineering/time": "workspace:^0.7.1",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/contact": "workspace:^0.7.1",
+    "@hcengineering/card": "workspace:^0.7.1",
+    "@hcengineering/server-process": "workspace:^0.7.1",
+    "@hcengineering/server-core": "workspace:^0.7.19",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/process": "workspace:^0.7.1"
   }
 }

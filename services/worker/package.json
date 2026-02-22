@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/pod-worker",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -35,7 +35,7 @@
     "@types/node": "^22.18.1",
     "@types/ws": "^8.5.12",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
@@ -51,14 +51,14 @@
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "@hcengineering/server-process": "workspace:^0.7.0"
+    "@hcengineering/server-process": "workspace:^0.7.1"
   },
   "dependencies": {
     "@temporalio/worker": "1.12.3",
     "@temporalio/workflow": "1.12.3",
-    "@hcengineering/kafka": "workspace:^0.7.18",
-    "@hcengineering/process": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/server-core": "workspace:^0.7.18"
+    "@hcengineering/kafka": "workspace:^0.7.20",
+    "@hcengineering/process": "workspace:^0.7.1",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/server-core": "workspace:^0.7.19"
   }
 }

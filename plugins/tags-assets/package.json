@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/tags-assets",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "./lib/index.js",
   "types": "./types/index.d.ts",
   "files": [
@@ -25,7 +25,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -41,8 +41,8 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/tags": "workspace:^0.7.0"
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/tags": "workspace:^0.7.1"
   },
   "exports": {
     ".": {

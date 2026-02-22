@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/server-indexer",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -18,7 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@types/node": "^22.18.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
@@ -35,24 +35,24 @@
     "@types/uuid": "^8.3.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/server-core": "workspace:^0.7.18",
-    "@hcengineering/server-token": "workspace:^0.7.17",
-    "@hcengineering/text": "workspace:^0.7.18",
-    "@hcengineering/text-markdown": "workspace:^0.7.20",
-    "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/query": "workspace:^0.7.17",
-    "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/attachment": "workspace:^0.7.0",
-    "@hcengineering/card": "workspace:^0.7.0",
-    "@hcengineering/drive": "workspace:^0.7.0",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/server-core": "workspace:^0.7.19",
+    "@hcengineering/server-token": "workspace:^0.7.18",
+    "@hcengineering/text": "workspace:^0.7.19",
+    "@hcengineering/text-markdown": "workspace:^0.7.21",
+    "@hcengineering/analytics": "workspace:^0.7.19",
+    "@hcengineering/query": "workspace:^0.7.18",
+    "@hcengineering/contact": "workspace:^0.7.1",
+    "@hcengineering/attachment": "workspace:^0.7.1",
+    "@hcengineering/card": "workspace:^0.7.1",
+    "@hcengineering/drive": "workspace:^0.7.1",
     "fast-equals": "^5.2.2",
-    "@hcengineering/storage": "workspace:^0.7.17",
+    "@hcengineering/storage": "workspace:^0.7.18",
     "@hcengineering/communication-rest-client": "workspace:^0.7.12",
     "@hcengineering/communication-sdk-types": "workspace:^0.7.12",
     "@hcengineering/communication-shared": "workspace:^0.7.11",
     "@hcengineering/communication-types": "workspace:^0.7.12",
-    "@hcengineering/hulylake-client": "workspace:^0.7.17"
+    "@hcengineering/hulylake-client": "workspace:^0.7.18"
   }
 }
