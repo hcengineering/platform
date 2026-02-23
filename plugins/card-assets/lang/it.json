@@ -71,6 +71,7 @@
     "RelationCopyDescr": "Quali relazioni vuoi copiare?",
     "Import": "Importa",
     "Export": "Esporta",
-    "CardUpdated": "Scheda aggiornata"
+    "CardUpdated": "Scheda aggiornata",
+    "CardCreated": "Scheda creata"
   }
 }

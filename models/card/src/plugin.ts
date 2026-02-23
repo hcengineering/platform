@@ -55,6 +55,7 @@ export default mergeIds(cardId, card, {
     ManageMasterTags: '' as Ref<Doc>,
     TagRelations: '' as Ref<Doc>,
     CardNotificationGroup: '' as Ref<NotificationGroup>,
+    CardCreateNotification: '' as Ref<NotificationType>,
     CardNotification: '' as Ref<NotificationType>,
     CardMessageNotification: '' as Ref<NotificationType>
   },

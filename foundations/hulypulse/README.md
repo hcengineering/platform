@@ -190,15 +190,14 @@ Size of data is limited to some reasonable size
     - `{"message":"Del","key":"00000000-0000-0000-0000-000000000001/foo/bar"}`
 
 ## Special options in config/default.toml
-    - ```memory_mode = true``` Use native memory storage instead Redis
+    - ```backend = "memory"``` Use native memory storage instead Redis
     - ```max_size = 100``` Max value size in bytes
 
 ## Special cargo build options
-    - "db-redis" (default) - use Redis (Memory instead)
     - "auth" (default) - use huly-authorization
-    Disable both:
+    Disable auth:
         cargo build --no-default-features
-    Enable one:
+    Enable auth:
         cargo build --no-default-features --features "auth"
 
 ## Running
@@ -207,7 +206,17 @@ Pre-build docker images is available at: hardcoreeng/service_hulypulse:{tag}.
 
 You can use the following command to run the image locally:
 ```bash
-docker run -p 8095:8095 -it --rm hardcoreeng/service_hulypulse:{tag}"
+docker run -p 8095:8095 -it --rm hardcoreeng/service_hulypulse:{tag}
+```
+
+Run from source using Redis:
+```bash
+HULY_REDIS_URLS=redis://huly.local:6379 cargo run
+```
+
+Run from source in in-memory mode:
+```bash
+HULY_BACKEND=memory cargo run
 ```
 
 If you want to run the service as a part of local huly development environment use the following command:
@@ -228,6 +237,7 @@ The following environment variables are used to configure hulypulse:
    - ```HULY_BIND_HOST```: host to bind the server to (default: 0.0.0.0)
    - ```HULY_BIND_PORT```: port to bind the server to (default: 8094)
    - ```HULY_TOKEN_SECRET```: secret used to sign JWT tokens (default: secret)
+   - ```HULY_BACKEND```: storage backend "redis" or "memory" (default: "redis")
    - ```HULY_REDIS_URLS```: redis connection string (default: redis://huly.local:6379)
    - ```HULY_REDIS_PASSWORD```: redis password (default: "&lt;invalid&gt;")
    - ```HULY_REDIS_MODE```: redis mode "direct" or "sentinel" (default: "direct")

@@ -2,6 +2,9 @@
 
 name: CI
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -19,6 +22,16 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Ref to run as (e.g. refs/tags/v0.7.370 to test release flow)'
+        required: false
+        default: 'refs/heads/develop'
+      skip_publish:
+        description: 'Skip all publishing (npm, Docker, R2) when testing release flow'
+        required: false
+        default: false
+        type: boolean
 
 env:
   CacheFolders: |
@@ -57,12 +70,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
           fetch-depth: 0
           filter: tree:0
           submodules: recursive
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
+      - name: Set package versions
+        if: startsWith(github.event.inputs.ref || github.ref, 'refs/tags/v')
+        uses: ./.github/actions/set-package-versions
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
       - name: Cache node modules
         uses: actions/cache@v5
         env:
@@ -74,6 +93,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
+      - name: Installing...
+        run: |
+          REF="${{ github.event.inputs.ref || github.ref }}"
+          if [[ "$REF" == refs/tags/v* ]]; then
+            node common/scripts/install-run-rush.js update
+          else
+            node common/scripts/install-run-rush.js install
+          fi
+
       # - name: Cheking model is updated...
       #   run: node common/scripts/check_model_version.js
 
@@ -82,9 +110,6 @@ jobs:
 
       - name: Checking for mis-matching transitive dependencies...
         run: node common/scripts/check-versions.js
-
-      - name: Installing...
-        run: node common/scripts/install-run-rush.js install
 
       - name: Model version from git tags
         run: node common/scripts/install-run-rush.js model-version
@@ -698,12 +723,12 @@ jobs:
       #   if: ${{ github.ref == 'refs/heads/main' }}
       #   run: node common/scripts/install-run-rush.js docker:staging -v
       - name: Docker push tag
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s')) && (github.event_name != 'workflow_dispatch' || github.event.inputs.skip_publish != 'true') }}
         run: |
           echo Pushing release of tag ${{ github.ref }}
           node common/scripts/install-run-rush.js docker:push -v
       - name: Docker push love-agent
-        if: ${{ startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
+        if: ${{ (startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s')) && (github.event_name != 'workflow_dispatch' || github.event.inputs.skip_publish != 'true') }}
         run: |
           echo Pushing love-agent release of tag ${{ github.ref }}
           cd ./services/ai-bot/love-agent
@@ -782,6 +807,7 @@ jobs:
           node ../common/scripts/install-run-rushx.js dist-signed --macos --x64 --arm64
           ./scripts/copy-publish-artifacts.sh ${{ env.PublishTempFolder}}
       - name: Publish distribution assets and version
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.skip_publish != 'true'
         uses: ryand56/r2-upload-action@latest
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
@@ -884,6 +910,7 @@ jobs:
           node ../common/scripts/install-run-rushx.js dist-signed --macos --x64 --arm64
           ./scripts/copy-publish-artifacts.sh ${{ env.PublishTempFolder}}
       - name: Publish distribution assets and version
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.skip_publish != 'true'
         uses: ryand56/r2-upload-action@latest
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
@@ -912,3 +939,34 @@ jobs:
         with:
           name: TraceX-Linux
           path: ./qms-desktop-package/deploy/TraceX-linux-*.zip
+
+  publish-npm:
+    if: startsWith(github.event.inputs.ref || github.ref, 'refs/tags/v') && (github.event_name != 'workflow_dispatch' || github.event.inputs.skip_publish != 'true')
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+      - name: Cache node modules
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-node-platform
+        with:
+          path: common/temp
+          key: ${{ runner.os }}-build-cache-node-platform-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-build-cache-node-platform-
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install
+      - name: Publish to npm
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          REF="${{ github.event.inputs.ref || github.ref }}"
+          VERSION="${REF#refs/tags/v}"
+          node common/scripts/bump.js "$VERSION" --publish

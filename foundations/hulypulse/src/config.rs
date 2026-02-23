@@ -19,12 +19,9 @@ use std::{path::Path, sync::LazyLock};
 use secrecy::SecretString;
 
 use serde::Deserialize;
-#[cfg(feature = "db-redis")]
 use serde_with::StringWithSeparator;
-#[cfg(feature = "db-redis")]
 use serde_with::formats::CommaSeparator;
 use serde_with::serde_as;
-#[cfg(feature = "db-redis")]
 use url::Url;
 
 use config::FileFormat;
@@ -43,6 +40,10 @@ pub enum BackendType {
     Redis,
 }
 
+fn default_backend() -> BackendType {
+    BackendType::Redis
+}
+
 #[serde_as]
 #[derive(Deserialize, Debug)]
 pub struct Config {
@@ -52,20 +53,18 @@ pub struct Config {
     #[cfg(feature = "auth")]
     pub token_secret: SecretString,
 
-    #[cfg(feature = "db-redis")]
+    #[serde(default = "default_backend")]
+    pub backend: BackendType,
+
     #[serde_as(as = "StringWithSeparator::<CommaSeparator, url::Url>")]
     pub redis_urls: Vec<Url>,
-    #[cfg(feature = "db-redis")]
     pub redis_password: String,
-    #[cfg(feature = "db-redis")]
     pub redis_mode: RedisMode,
-    #[cfg(feature = "db-redis")]
     pub redis_service: String,
 
     pub max_ttl: usize,
     pub max_size: Option<usize>,
 
-    // pub backend: BackendType,
     pub heartbeat_timeout: u64,
     pub ping_timeout: u64,
 

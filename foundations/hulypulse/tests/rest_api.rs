@@ -31,7 +31,12 @@ async fn status(base: &str, client: &reqwest::Client) -> () {
     let text = resp.text().await.unwrap();
     let json: Value = serde_json::from_str(&text).unwrap();
 
-    assert_eq!(json["backend"], "memory");
+    let backend = json["backend"].as_str().unwrap_or_default();
+    if let Ok(expected_backend) = env::var("TEST_BACKEND") {
+        assert_eq!(backend, expected_backend);
+    } else {
+        assert!(backend == "memory" || backend == "redis");
+    }
     assert_eq!(json["status"], "OK");
     assert!(json.get("memory_info").is_some());
     assert!(json.get("websockets").is_some());

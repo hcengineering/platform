@@ -71,6 +71,7 @@
     "RelationCopyDescr": "Quelles relations souhaitez-vous copier ?",
     "Import": "Importer",
     "Export": "Exporter",
-    "CardUpdated": "Carte mise à jour"
+    "CardUpdated": "Carte mise à jour",
+    "CardCreated": "Carte créée"
   }
 }

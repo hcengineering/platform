@@ -29,6 +29,7 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
     'kind',
     'assignee',
     'priority',
+    'space',
     'component',
     'milestone',
     'createdBy',

@@ -20,6 +20,7 @@ import core, {
   Class,
   Data,
   Doc,
+  fillDefaults,
   findProperty,
   generateId,
   getObjectValue,
@@ -110,6 +111,7 @@ export async function CheckSubProcessMatch (
 
   const subExecutions = await control.client.findAll(process.class.Execution, {
     parentId: execution._id,
+    status: { $ne: ExecutionStatus.Cancelled },
     process: targetProcess
   })
 
@@ -315,19 +317,33 @@ export async function AddTag (
   const res: Tx[] = []
   const _process = control.client.getModel().findObject(execution.process)
   if (_process === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.process })
+  // todo fill default for tag and set parent tags
   const tx = control.client.txFactory.createTxMixin(execution.card, _process.masterTag, execution.space, tagId, props)
   res.push(tx)
   const card = control.cache.get(execution.card)
+  if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
+  if (control.client.getHierarchy().hasMixin(card, tagId)) {
+    return { txes: res, rollback: [], context: null }
+  }
   const cardWithMixin =
     card !== undefined ? TxProcessor.updateMixin4Doc(control.client.getHierarchy().clone(card), tx) : undefined
 
-  const rollback = control.client.txFactory.createTxUpdateDoc(_process.masterTag, execution.space, execution.card, {
-    $unset: { [tagId]: true }
-  })
+  const rollback: Tx[] = [
+    control.client.txFactory.createTxUpdateDoc(_process.masterTag, execution.space, execution.card, {
+      $unset: { [tagId]: true }
+    })
+  ]
+
+  const processes = control.client.getModel().findAllSync(process.class.Process, { masterTag: tagId, autoStart: true })
+  for (const proc of processes) {
+    const [txes, rbTxes] = await createExecution(proc._id, execution.card, execution, control)
+    res.push(...txes)
+    rollback.push(...rbTxes)
+  }
 
   return {
     txes: res,
-    rollback: [rollback],
+    rollback,
     context: [
       {
         _id: execution.card,
@@ -382,6 +398,9 @@ export async function RunSubProcess (
   const res: Tx[] = []
   const resultContext: SuccessExecutionContext[] = []
   const rollback: Tx[] = []
+  const initTransition = control.client
+    .getModel()
+    .findAllSync(process.class.Transition, { process: target._id, from: null })[0]
   for (const _card of Array.isArray(card) ? card : [card]) {
     if (target.parallelExecutionForbidden === true) {
       const currentExecution = await control.client.findAll(process.class.Execution, {
@@ -394,9 +413,13 @@ export async function RunSubProcess (
         continue
       }
     }
-    const initTransition = control.client
-      .getModel()
-      .findAllSync(process.class.Transition, { process: target._id, from: null })[0]
+
+    // check card is exists
+    const exists = await control.client.findOne(cardPlugin.class.Card, { _id: _card })
+    if (exists === undefined) {
+      throw processError(process.error.ObjectNotFound, { _id: _card })
+    }
+
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const context = params.context ?? ({} as ExecutionContext)
     const _id = generateId<Execution>()
@@ -704,11 +727,10 @@ export async function CreateCard (
       throw processError(process.error.RequiredParamsNotProvided, { params: key })
     }
   }
+  const masterTag = _class as Ref<MasterTag>
   const _id = generateId<Card>()
   const newContent =
-    content !== undefined && !isEmpty(content)
-      ? await getContent(control, content, _id, _class as Ref<Class<Card>>)
-      : content
+    content !== undefined && !isEmpty(content) ? await getContent(control, content, _id, masterTag) : content
   const data = {
     title,
     ...attrs
@@ -716,9 +738,26 @@ export async function CreateCard (
   if (newContent !== undefined) {
     data.content = content
   }
-  const tx = control.client.txFactory.createTxCreateDoc(_class as Ref<MasterTag>, execution.space, data, _id)
+  const filledData = fillDefaults(control.client.getHierarchy(), data, masterTag)
+
+  const tx = control.client.txFactory.createTxCreateDoc(masterTag, execution.space, filledData, _id)
   const res: Tx[] = [tx]
-  const rollback: Tx[] = [control.client.txFactory.createTxRemoveDoc(_class as Ref<MasterTag>, execution.space, _id)]
+  const rollback: Tx[] = [control.client.txFactory.createTxRemoveDoc(masterTag, execution.space, _id)]
+
+  const ancestors = control.client
+    .getHierarchy()
+    .getAncestors(masterTag)
+    .filter((p) => control.client.getHierarchy().isDerived(p, cardPlugin.class.Card))
+
+  const processes = control.client.getModel().findAllSync(process.class.Process, {
+    masterTag: { $in: ancestors },
+    autoStart: true
+  })
+  for (const proc of processes) {
+    const [txes, rbTxes] = await createExecution(proc._id, _id, execution, control)
+    res.push(...txes)
+    rollback.push(...rbTxes)
+  }
   return {
     txes: res,
     rollback,
@@ -733,4 +772,37 @@ export async function CreateCard (
 
 function isEmpty (value: any): boolean {
   return value === undefined || value === null || (typeof value === 'string' && value.trim() === '')
+}
+
+async function createExecution (
+  proc: Ref<Process>,
+  _id: Ref<Card>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<[Tx[], Tx[]]> {
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const initTransition = control.client.getModel().findAllSync(process.class.Transition, {
+    process: proc,
+    from: null
+  })[0]
+  if (initTransition === undefined) return [res, rollback]
+  const execId = generateId()
+  const tx = control.client.txFactory.createTxCreateDoc(
+    process.class.Execution,
+    execution.space,
+    {
+      process: proc,
+      currentState: initTransition.to,
+      card: _id,
+      rollback: [],
+      context: {},
+      status: ExecutionStatus.Active
+    },
+    execId
+  )
+
+  res.push(tx)
+  rollback.push(control.client.txFactory.createTxRemoveDoc(process.class.Execution, execution.space, execId))
+  return [res, rollback]
 }

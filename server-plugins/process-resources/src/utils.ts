@@ -178,11 +178,14 @@ async function getRelationValue (
   const q = context.direction === 'A' ? { docB: execution.card } : { docA: execution.card }
   const relations = await control.client.findAll(core.class.Relation, { association: assoc._id, ...q })
   const name = context.direction === 'A' ? assoc.nameA : assoc.nameB
-  if (relations.length === 0) throw processError(process.error.RelatedObjectNotFound, { attr: name })
+  const shouldBeArray = assoc.type === 'N:N' || (assoc.type === '1:N' && context.direction === 'A')
+  if (relations.length === 0) {
+    if (shouldBeArray) return []
+    throw processError(process.error.RelatedObjectNotFound, { attr: name })
+  }
   const ids = relations.map((it) => {
     return context.direction === 'A' ? it.docA : it.docB
   })
-  const shouldBeArray = assoc.type === 'N:N' || (assoc.type === '1:N' && context.direction === 'A')
   const target = await control.client.findAll(targetClass, { _id: { $in: ids } })
   if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, { attr: context.name })
   const attr = context.key !== '' ? control.client.getHierarchy().findAttribute(targetClass, context.key) : undefined
