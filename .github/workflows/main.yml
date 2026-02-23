@@ -969,4 +969,6 @@ jobs:
         run: |
           REF="${{ github.event.inputs.ref || github.ref }}"
           VERSION="${REF#refs/tags/v}"
-          node common/scripts/bump.js "$VERSION" --publish
+          VERSION="${VERSION#v}"
+          node common/scripts/bump.js "$VERSION"
+          node common/scripts/safe-publish.js
