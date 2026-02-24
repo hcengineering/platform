@@ -20,7 +20,7 @@ import core, {
   type Client,
   type Doc,
   type DocumentQuery,
-  DocumentUpdate,
+  type DocumentUpdate,
   generateId,
   matchQuery,
   type Ref,
