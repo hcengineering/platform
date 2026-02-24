@@ -25,7 +25,14 @@ import { type Datalake, wrapETag } from '../datalake'
 import { getBufferSha256, getFileSha256 } from '../hash'
 import { type TemporaryDir } from '../tempdir'
 
-const safeInlineTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp']
+const safeInlineTypes = [
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'text/html'
+]
 
 interface BlobParentRequest {
   parent: string | null
