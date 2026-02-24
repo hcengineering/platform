@@ -14,6 +14,8 @@
 //
 
 import cardPlugin, { Card } from '@hcengineering/card'
+import { CreateMessageEvent, MessageEventType } from '@hcengineering/communication-sdk-types'
+import { ActivityProcess, ActivityUpdateType, MessageType } from '@hcengineering/communication-types'
 import core, {
   Doc,
   generateId,
@@ -30,6 +32,7 @@ import core, {
   TxUpdateDoc,
   WorkspaceUuid
 } from '@hcengineering/core'
+import { getPlatformQueue } from '@hcengineering/kafka'
 import { getResource } from '@hcengineering/platform'
 import process, {
   Execution,
@@ -49,22 +52,19 @@ import process, {
   Trigger,
   UserResult
 } from '@hcengineering/process'
+import { QueueTopic } from '@hcengineering/server-core'
 import serverProcess, {
   ExecuteResult,
   MethodImpl,
   ProcessControl,
   ProcessMessage,
+  TimeMachineMessage,
   TriggerImpl
 } from '@hcengineering/server-process'
 import { getContextValue } from '@hcengineering/server-process-resources'
-import { Client as TemporalClient } from '@temporalio/client'
-import config from './config'
-import { isError } from './errors'
-import { getTemporalClient } from './temporal'
-import { getClient, releaseClient } from './utils'
-import { CreateMessageEvent, MessageEventType } from '@hcengineering/communication-sdk-types'
-import { ActivityUpdateType, ActivityProcess, MessageType } from '@hcengineering/communication-types'
 import { createCollaboratorClient } from './collaborator'
+import { isError } from './errors'
+import { getClient, releaseClient, SERVICE_NAME } from './utils'
 
 const activeExecutions = new Set<Ref<Execution>>()
 
@@ -608,9 +608,8 @@ async function updateExecutionTimers (control: ProcessControl, execution: Execut
       trigger: process.trigger.OnTime
     })
     if (transitions.length === 0) return
-    const temporalClient = await getTemporalClient()
     for (const transition of transitions) {
-      await setTimer(control, execution, transition, temporalClient)
+      await setTimer(control, execution, transition)
     }
   } catch (err) {
     control.ctx.error('Error setting next timers:', { error: err, execution: execution._id })
@@ -619,66 +618,60 @@ async function updateExecutionTimers (control: ProcessControl, execution: Execut
 
 async function setNextTimers (control: ProcessControl, execution: Execution): Promise<void> {
   try {
-    const temporalClient = await getTemporalClient()
-    await cleanTimers(execution, temporalClient)
+    await cleanTimers(control, execution)
     const transitions = control.client.getModel().findAllSync(process.class.Transition, {
       from: execution.currentState,
       process: execution.process,
       trigger: process.trigger.OnTime
     })
     for (const transition of transitions) {
-      await setTimer(control, execution, transition, temporalClient)
+      await setTimer(control, execution, transition)
     }
   } catch (err) {
     control.ctx.error('Error setting next timers:', { error: err, execution: execution._id })
   }
 }
 
-async function cleanTimers (execution: Execution, temporalClient: TemporalClient): Promise<void> {
+async function cleanTimers (control: ProcessControl, execution: Execution): Promise<void> {
   try {
-    const res = await temporalClient.workflowService.listWorkflowExecutions({
-      namespace: config.TemporalNamespace,
-      query: `WorkflowType="processTimeWorkflow" AND ExecutionStatus="Running" AND ProcessExecution="${execution._id}"`
-    })
-
-    for (const ex of res.executions) {
-      try {
-        await temporalClient.workflowService.terminateWorkflowExecution({
-          workflowExecution: {
-            workflowId: ex.execution?.workflowId,
-            runId: ex.execution?.runId
-          },
-          reason: 'Outdated'
-        })
-      } catch (err) {
-        console.error('Error terminating workflow execution:', err)
+    const queue = getPlatformQueue(SERVICE_NAME)
+    const producer = queue.getProducer<TimeMachineMessage>(control.ctx, QueueTopic.TimeMachine)
+    await producer.send(control.ctx, control.workspace, [
+      {
+        type: 'cancel',
+        id: `${execution._id}_%`
       }
-    }
+    ])
   } catch (err) {
     console.error('Error cleaning timers:', err)
   }
 }
 
-async function setTimer (
-  control: ProcessControl,
-  execution: Execution,
-  transition: Transition,
-  temporalClient: TemporalClient
-): Promise<void> {
+async function setTimer (control: ProcessControl, execution: Execution, transition: Transition): Promise<void> {
   const filled = await fillParams(transition.triggerParams, execution, control)
   const targetDate: number = filled.value
   if (targetDate === undefined || typeof targetDate !== 'number' || targetDate === 0 || Number.isNaN(targetDate)) return
   try {
-    await temporalClient.workflow.signalWithStart('processTimeWorkflow', {
-      taskQueue: 'process',
-      signal: 'setDate',
-      args: [targetDate, control.workspace, execution._id],
-      signalArgs: [targetDate],
-      workflowId: `${execution._id}_${transition._id}`,
-      searchAttributes: {
-        ProcessExecution: [execution._id]
+    const queue = getPlatformQueue(SERVICE_NAME)
+    const producer = queue.getProducer<TimeMachineMessage>(control.ctx, QueueTopic.TimeMachine)
+
+    const data: ProcessMessage = {
+      account: core.account.System,
+      event: [process.trigger.OnTime],
+      createdOn: Date.now(),
+      context: {},
+      execution: execution._id
+    }
+
+    await producer.send(control.ctx, control.workspace, [
+      {
+        type: 'schedule',
+        id: `${execution._id}_${transition._id}`,
+        targetDate,
+        topic: QueueTopic.Process,
+        data
       }
-    })
+    ])
   } catch (e) {
     console.error('Error setting timer:', e)
   }

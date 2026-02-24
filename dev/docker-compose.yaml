@@ -63,7 +63,7 @@ services:
       - cockroach_db:/cockroach/cockroach-data
     restart: unless-stopped
   redpanda:
-    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    image: redpandadata/redpanda:v25.2.11
     extra_hosts:
       - 'huly.local:host-gateway'
     command:
@@ -79,7 +79,7 @@ services:
       - --mode dev-container
       - --smp 1
       - --default-log-level=info
-      - --memory 256M
+      - --memory 512M
     container_name: redpanda
     volumes:
       - redpanda:/var/lib/redpanda/data
@@ -95,7 +95,7 @@ services:
       retries: 10
     restart: unless-stopped
   redpanda_console:
-    image: docker.redpanda.com/redpandadata/console:v2.8.3
+    image: redpandadata/console:v3.2.2
     extra_hosts:
       - 'huly.local:host-gateway'
     entrypoint: /bin/sh
@@ -591,6 +591,22 @@ services:
     environment:
       - SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - QUEUE_REGION=cockroach
+    restart: unless-stopped
+  time-machine:
+    image: hardcoreeng/worker
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      redpanda:
+        condition: service_started
+      account:
+        condition: service_started
+      cockroach:
+        condition: service_started
+    environment:
+      - DB_URL=${DB_CR_URL}
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - QUEUE_REGION=cockroach
     restart: unless-stopped

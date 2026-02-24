@@ -25,7 +25,6 @@ import { join } from 'path'
 import config from './config'
 import { prepare } from './init'
 import { messageHandler } from './main'
-import { closeTemporal } from './temporal'
 import { SERVICE_NAME } from './utils'
 
 async function main (): Promise<void> {
@@ -63,7 +62,6 @@ async function main (): Promise<void> {
   )
 
   const shutdown = (): void => {
-    void closeTemporal()
     void Promise.all([consumer.close()]).then(() => {
       process.exit()
     })

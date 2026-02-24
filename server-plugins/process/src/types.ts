@@ -1,7 +1,7 @@
 import { Card } from '@hcengineering/card'
+import { CollaboratorClient } from '@hcengineering/collaborator-client'
 import { Doc, MeasureContext, PersonId, Ref, Timestamp, Tx, TxOperations, WorkspaceUuid } from '@hcengineering/core'
 import { Execution, ExecutionError, MethodParams, Trigger, UserResult } from '@hcengineering/process'
-import { CollaboratorClient } from '@hcengineering/collaborator-client'
 
 export type ExecuteFunc = (
   params: MethodParams<Doc>,
@@ -51,3 +51,11 @@ export interface ProcessControl {
 }
 
 export type RollbackFunc = (context: Record<string, any>, control: ProcessControl) => Tx
+
+export interface TimeMachineMessage {
+  type: 'schedule' | 'cancel'
+  id: string
+  targetDate?: Timestamp
+  topic?: string
+  data?: any
+}
