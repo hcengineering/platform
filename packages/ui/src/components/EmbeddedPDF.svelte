@@ -42,7 +42,14 @@
   }
 </script>
 
-<iframe bind:this={iframe} class:fit src={src + '#view=FitH&navpanes=0'} title={name} on:load />
+<iframe
+  bind:this={iframe}
+  class:fit
+  src={src + '#view=FitH&navpanes=0'}
+  title={name}
+  sandbox="allow-same-origin"
+  on:load
+/>
 
 <style lang="scss">
   iframe {

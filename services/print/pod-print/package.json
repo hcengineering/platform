@@ -66,6 +66,7 @@
     "puppeteer": "^24.17.1",
     "mammoth": "^1.9.0",
     "ws": "^8.18.2",
-    "@hcengineering/analytics-service": "workspace:^0.7.17"
+    "@hcengineering/analytics-service": "workspace:^0.7.17",
+    "sanitize-html": "^2.15.0"
   }
 }
