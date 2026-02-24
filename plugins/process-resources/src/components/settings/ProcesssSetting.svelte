@@ -61,7 +61,11 @@
     />
   </div>
   <div class="mb-2">
-    <ToggleWithLabel on={value.autoStart ?? false} on:change={saveAutoStart} label={process.string.StartAutomatically} />
+    <ToggleWithLabel
+      on={value.autoStart ?? false}
+      on:change={saveAutoStart}
+      label={process.string.StartAutomatically}
+    />
   </div>
   <ToggleWithLabel
     on={value.automationOnly ?? false}
