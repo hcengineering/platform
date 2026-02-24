@@ -50,12 +50,12 @@ export async function runWorker (): Promise<void> {
       const expiredEvents = await db.getExpiredEvents()
       if (expiredEvents.length > 0) {
         for (const event of expiredEvents) {
-          await SendTimeEvent(event.workspace, event.topic, event.data)
+          await SendTimeEvent(ctx, event.workspace, event.topic, event.data)
         }
         await db.deleteEvents(expiredEvents)
       }
     } catch (err) {
-      console.error('Error in Time Machine polling loop:', err)
+      ctx.error('Error in Time Machine polling loop:')
     } finally {
       setTimeout(() => {
         void poll()
@@ -65,5 +65,5 @@ export async function runWorker (): Promise<void> {
 
   void poll()
 
-  console.log('Time Machine worker started')
+  ctx.info('Time Machine worker started')
 }

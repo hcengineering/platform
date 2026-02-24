@@ -10,17 +10,5 @@ void esbuild.build({
     keepNames: true,
     loader: { ".node": "file" },
     platform: 'node',
-    outfile: 'bundle/bundle.js',
-    external: ['@temporalio/*']
-})
-
-void esbuild.build({
-    entryPoints: ['src/workflows.ts'],
-    bundle: true,
-    minify: true,
-    keepNames: true,
-    loader: { ".node": "file" },
-    platform: 'node',
-    outfile: 'bundle/workflows.js',
-    external: ['@temporalio/*']
+    outfile: 'bundle/bundle.js'
 })
