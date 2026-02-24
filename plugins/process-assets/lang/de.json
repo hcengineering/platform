@@ -45,6 +45,7 @@
     "Required": "Erforderlich",
     "ParallelExecutionForbidden": "Parallele Ausführung verboten",
     "StartAutomatically": "Automatisch starten",
+    "AutomationOnly": "Nur Automatisierung",
     "Error": "Fehler",
     "Continue": "Fortsetzen",
     "RequestFromUser": "Anfrage von Benutzer",

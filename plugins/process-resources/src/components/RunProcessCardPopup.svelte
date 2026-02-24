@@ -31,6 +31,7 @@
   let card: Card | undefined
 
   const processes = client.getModel().findAllSync(plugin.class.Process, {})
+    .filter((p) => p.automationOnly !== true)
 
   const items: ListItem[] = processes.map((p) => ({ label: p.name, _id: p._id }))
 
