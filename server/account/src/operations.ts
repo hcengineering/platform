@@ -115,6 +115,7 @@ import {
   updateAllowGuestSignUp,
   getWorkspaceByDataId,
   assignableRoles,
+  inviteableRoles,
   getWorkspacesInfoWithStatusByIds,
   doMergePersons,
   getWorkspaceJoinInfo,
@@ -607,7 +608,7 @@ export async function createInvite (
 ): Promise<string> {
   const { exp, emailMask, email, limit, role, autoJoin } = params
 
-  if (role == null || !assignableRoles.includes(role)) {
+  if (role == null || !inviteableRoles.includes(role)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 

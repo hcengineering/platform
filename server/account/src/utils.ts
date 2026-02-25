@@ -157,6 +157,7 @@ export async function getAccountDB (
 }
 
 export const assignableRoles = [AccountRole.Guest, AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]
+export const inviteableRoles = [AccountRole.Guest, AccountRole.User]
 
 export function getRolePower (role: AccountRole): number {
   return roleOrder[role]
