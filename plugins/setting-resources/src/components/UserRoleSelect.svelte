@@ -21,15 +21,20 @@
 
   export let selected: AccountRole
   export let disabled: boolean = false
+  export let securityFilter: boolean = true
 
   const dispatch = createEventDispatcher()
 
-  const inviteRoleItems: DropdownIntlItem[] = [
+  const allInviteRoleItems: DropdownIntlItem[] = [
     { id: AccountRole.Guest, label: settingRes.string.Guest },
     { id: AccountRole.User, label: settingRes.string.User },
     { id: AccountRole.Maintainer, label: settingRes.string.Maintainer },
     { id: AccountRole.Owner, label: settingRes.string.Owner }
   ]
+
+  $: inviteRoleItems = securityFilter
+    ? allInviteRoleItems.filter((item) => item.id !== AccountRole.Owner && item.id !== AccountRole.Maintainer)
+    : allInviteRoleItems
 
   function handleSelected (e: CustomEvent<AccountRole>): void {
     dispatch('selected', e.detail)

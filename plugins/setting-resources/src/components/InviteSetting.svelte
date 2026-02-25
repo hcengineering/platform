@@ -103,10 +103,6 @@
 
   $: query.query(setting.class.InviteSettings, {}, applyInviteSettings)
 
-  function handleDefaultInviteRoleSelected (e: CustomEvent<AccountRole>): void {
-    defaultInviteRole = e.detail
-  }
-
   function normalizeValues (): void {
     expTime = Math.max(1, expTime)
     limit = noLimit ? -1 : Math.max(1, limit ?? 1)
@@ -172,6 +168,11 @@
   }
 
   function handleLimitChange (): void {
+    void autoSaveIfValid()
+  }
+
+  function handleDefaultInviteRoleSelected (e: CustomEvent<AccountRole>): void {
+    defaultInviteRole = e.detail
     void autoSaveIfValid()
   }
 
