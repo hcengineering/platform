@@ -157,6 +157,8 @@ export default mergeIds(settingId, setting, {
     PasswordAgingRule: '' as IntlString,
     PasswordAgingRuleDescription: '' as IntlString,
     ShowInTitle: '' as IntlString,
-    SpaceMembersOnly: '' as IntlString
+    SpaceMembersOnly: '' as IntlString,
+    LastOwnerLeaveTitle: '' as IntlString,
+    LastOwnerLeaveMessage: '' as IntlString
   }
 })

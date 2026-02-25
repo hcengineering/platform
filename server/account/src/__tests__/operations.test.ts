@@ -49,7 +49,8 @@ import {
   getPerson,
   getSocialIds,
   createAccessLink,
-  getSubscriptions
+  getSubscriptions,
+  leaveWorkspace
 } from '../operations'
 import { accountPlugin } from '../plugin'
 
@@ -105,6 +106,8 @@ describe('account operations', () => {
       update: jest.fn()
     },
     getWorkspaceRole: jest.fn(),
+    getWorkspaceMembers: jest.fn(),
+    unassignWorkspace: jest.fn(),
     person: {
       findOne: jest.fn()
     },
@@ -1549,6 +1552,82 @@ describe('account operations', () => {
         await expect(loginAsGuest(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
           new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
         )
+      })
+    })
+  })
+
+  describe('workspace membership operations', () => {
+    const ownerAccount = 'owner-account-uuid' as AccountUuid
+    const maintainerAccount = 'maintainer-account-uuid' as AccountUuid
+    const otherOwnerAccount = 'other-owner-account-uuid' as AccountUuid
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: maintainerAccount,
+        workspace: mockWorkspace.uuid,
+        extra: {}
+      })
+    })
+
+    describe('leaveWorkspace', () => {
+      test('should forbid maintainer from removing owner from workspace', async () => {
+        ;(mockDb.getWorkspaceRole as jest.Mock).mockImplementation(async (accountId: AccountUuid) => {
+          if (accountId === maintainerAccount) return AccountRole.Maintainer
+          if (accountId === ownerAccount) return AccountRole.Owner
+          return null
+        })
+
+        await expect(
+          leaveWorkspace(mockCtx, mockDb, mockBranding, mockToken, { account: ownerAccount })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {})))
+
+        expect(mockDb.unassignWorkspace).not.toHaveBeenCalled()
+      })
+
+      test('should forbid last owner from leaving workspace', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: ownerAccount,
+          workspace: mockWorkspace.uuid,
+          extra: {}
+        })
+        ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Owner)
+        ;(mockDb.getWorkspaceMembers as jest.Mock).mockResolvedValue([
+          { accountUuid: ownerAccount, role: AccountRole.Owner }
+        ])
+
+        await expect(
+          leaveWorkspace(mockCtx, mockDb, mockBranding, mockToken, { account: ownerAccount })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {})))
+
+        expect(mockDb.unassignWorkspace).not.toHaveBeenCalled()
+      })
+
+      test('should allow owner to leave when there are multiple owners', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: ownerAccount,
+          workspace: mockWorkspace.uuid,
+          extra: {}
+        })
+        ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Owner)
+        ;(mockDb.getWorkspaceMembers as jest.Mock).mockResolvedValue([
+          { accountUuid: ownerAccount, role: AccountRole.Owner },
+          { accountUuid: otherOwnerAccount, role: AccountRole.Owner }
+        ])
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({
+          uuid: ownerAccount,
+          firstName: 'Owner',
+          lastName: 'User'
+        })
+
+        const result = await leaveWorkspace(mockCtx, mockDb, mockBranding, mockToken, { account: ownerAccount })
+
+        expect(mockDb.unassignWorkspace).toHaveBeenCalledWith(ownerAccount, mockWorkspace.uuid)
+        expect(result).toEqual({
+          account: ownerAccount,
+          name: 'Owner User',
+          token: expect.any(String)
+        })
       })
     })
   })
