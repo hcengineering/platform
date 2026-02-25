@@ -546,7 +546,7 @@ export function defineViewlets (builder: Builder): void {
   const hideArchivedOption: ViewOptionModel = {
     key: 'hideArchived',
     type: 'toggle',
-    defaultValue: true,
+    defaultValue: false,
     actionTarget: 'options',
     action: view.function.HideArchived,
     label: view.string.HideArchived
