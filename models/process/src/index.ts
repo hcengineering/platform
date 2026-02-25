@@ -103,6 +103,9 @@ export class TProcess extends TDoc implements Process {
   @Prop(TypeBoolean(), process.string.StartAutomatically)
     autoStart: boolean | undefined
 
+  @Prop(TypeBoolean(), process.string.AutomationOnly)
+    automationOnly: boolean | undefined
+
   context!: Record<ContextId, ProcessContext>
 }
 

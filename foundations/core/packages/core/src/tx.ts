@@ -436,7 +436,10 @@ export abstract class TxProcessor implements WithTx {
   }
 
   static txHasUpdate<T extends Doc>(tx: TxUpdateDoc<T>, attribute: string): boolean {
-    const ops = tx.operations
+    return TxProcessor.hasUpdate(tx.operations, attribute)
+  }
+
+  static hasUpdate<T extends Doc>(ops: DocumentUpdate<T>, attribute: string): boolean {
     if ((ops as any)[attribute] !== undefined) return true
     for (const op in ops) {
       if (op.startsWith('$')) {

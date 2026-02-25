@@ -20,6 +20,7 @@ import core, {
   Class,
   Data,
   Doc,
+  DocumentUpdate,
   fillDefaults,
   findProperty,
   generateId,
@@ -169,9 +170,9 @@ export function FieldChangedCheck (
   const process = control.client.getModel().findObject(execution.process)
   if (process === undefined) return false
   if (context.operations === undefined) return false
-  const changedFields = Object.keys(context.operations)
+  const operations = context.operations as DocumentUpdate<Doc>
   const target = Object.keys(params)[0]
-  if (!changedFields.includes(target)) return false
+  if (!TxProcessor.hasUpdate(operations, target)) return false
   const res = matchQuery([context.card], params, process.masterTag, control.client.getHierarchy(), true)
   return res.length > 0
 }

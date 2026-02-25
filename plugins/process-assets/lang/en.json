@@ -45,6 +45,7 @@
     "Required": "Required",
     "ParallelExecutionForbidden": "Parallel execution forbidden",
     "StartAutomatically": "Start automatically",
+    "AutomationOnly": "Automation only",
     "Error": "Error",
     "Continue": "Continue",
     "RequestFromUser": "Request from user",
