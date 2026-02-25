@@ -49,6 +49,7 @@
     "Required": "必需",
     "ParallelExecutionForbidden": "禁止并行执行",
     "StartAutomatically": "自动启动",
+    "AutomationOnly": "仅限自动化",
     "Error": "错误",
     "Continue": "继续",
     "RequestFromUser": "从用户请求",

@@ -45,6 +45,7 @@
     "Required": "Gerekli",
     "ParallelExecutionForbidden": "Paralel yürütme yasak",
     "StartAutomatically": "Otomatik başlat",
+    "AutomationOnly": "Sadece otomasyon",
     "Error": "Hata",
     "Continue": "Devam et",
     "RequestFromUser": "Kullanıcıdan talep et",

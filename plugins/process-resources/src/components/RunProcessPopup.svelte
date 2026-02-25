@@ -32,7 +32,7 @@
   const resClasses = getPossibleClasses()
 
   const res = client.getModel().findAllSync(process.class.Process, {})
-  const processes = res.filter((it) => resClasses.includes(it.masterTag))
+  const processes = res.filter((it) => resClasses.includes(it.masterTag) && it.automationOnly !== true)
 
   function getCardPossibleClasses (card: Card): Ref<Class<Doc>>[] {
     const asc = h.getAncestors(card._class)

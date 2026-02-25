@@ -20,12 +20,14 @@ import core, {
   type Client,
   type Doc,
   type DocumentQuery,
+  type DocumentUpdate,
   generateId,
   matchQuery,
   type Ref,
   type RefTo,
   type Space,
   type TxOperations,
+  TxProcessor,
   type Type
 } from '@hcengineering/core'
 import { getResource, type IntlString, PlatformError, Severity, Status } from '@hcengineering/platform'
@@ -207,9 +209,9 @@ export function getContext (
     }
   }
   const allRelations = client.getModel().findAllSync(core.class.Association, {})
-  const descendants = new Set(client.getHierarchy().getDescendants(process.masterTag))
+  const ancestors = new Set(client.getHierarchy().getAncestors(process.masterTag))
 
-  const relationsA = allRelations.filter((it) => descendants.has(it.classA))
+  const relationsA = allRelations.filter((it) => ancestors.has(it.classA))
   for (const rel of relationsA) {
     if (['object', 'array'].includes(category) && client.getHierarchy().isDerived(rel.classB, target)) {
       relations[rel.nameB] = {
@@ -231,7 +233,7 @@ export function getContext (
     }
   }
 
-  const relationsB = allRelations.filter((it) => descendants.has(it.classB))
+  const relationsB = allRelations.filter((it) => ancestors.has(it.classB))
   for (const rel of relationsB) {
     if (['object', 'array'].includes(category) && client.getHierarchy().isDerived(rel.classA, target)) {
       relations[rel.nameA] = {
@@ -683,8 +685,9 @@ export function fieldChangesCheck (
 ): boolean {
   const doc = context.card
   if (doc === undefined) return false
-  const param = Object.keys(params)[0]
-  if (!Object.keys(context.operations ?? {}).includes(param)) return false
+  const operations = (context.operations ?? {}) as DocumentUpdate<Doc>
+  const target = Object.keys(params)[0]
+  if (!TxProcessor.hasUpdate(operations, target)) return false
   const res = matchQuery([doc], params, doc._class, client.getHierarchy(), true)
   return res.length > 0
 }

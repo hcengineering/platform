@@ -35,6 +35,12 @@
       await client.update(value, { autoStart: e.detail })
     }
   }
+
+  async function saveAutomationOnly (e: CustomEvent<boolean>): Promise<void> {
+    if (value !== undefined) {
+      await client.update(value, { automationOnly: e.detail })
+    }
+  }
 </script>
 
 <Card
@@ -54,5 +60,16 @@
       label={process.string.ParallelExecutionForbidden}
     />
   </div>
-  <ToggleWithLabel on={value.autoStart ?? false} on:change={saveAutoStart} label={process.string.StartAutomatically} />
+  <div class="mb-2">
+    <ToggleWithLabel
+      on={value.autoStart ?? false}
+      on:change={saveAutoStart}
+      label={process.string.StartAutomatically}
+    />
+  </div>
+  <ToggleWithLabel
+    on={value.automationOnly ?? false}
+    on:change={saveAutomationOnly}
+    label={process.string.AutomationOnly}
+  />
 </Card>

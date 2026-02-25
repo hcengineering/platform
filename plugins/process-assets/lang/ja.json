@@ -49,6 +49,7 @@
     "Required": "必須",
     "ParallelExecutionForbidden": "並列実行は禁止されています",
     "StartAutomatically": "自動的に開始",
+    "AutomationOnly": "自動化のみ",
     "Error": "エラー",
     "Continue": "続行",
     "RequestFromUser": "ユーザーからのリクエスト",

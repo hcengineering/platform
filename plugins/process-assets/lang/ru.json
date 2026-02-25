@@ -49,6 +49,7 @@
     "Required": "Обязательно",
     "ParallelExecutionForbidden": "Одновременное выполнение запрещено",
     "StartAutomatically": "Запускать автоматически",
+    "AutomationOnly": "Только автоматизация",
     "Error": "Ошибка",
     "Continue": "Продолжить",
     "RequestFromUser": "Запросить у пользователя",

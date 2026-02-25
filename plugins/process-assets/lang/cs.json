@@ -45,6 +45,7 @@
     "Required": "Povinné",
     "ParallelExecutionForbidden": "Nedovoluj paralelní spuštění",
     "StartAutomatically": "Spustit automaticky",
+    "AutomationOnly": "Pouze automatizace",
     "Error": "Chyba",
     "Continue": "Pokračovat",
     "RequestFromUser": "Požádat uživatele",
