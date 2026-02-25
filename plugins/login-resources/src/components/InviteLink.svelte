@@ -15,7 +15,8 @@
 <script lang="ts">
   import { AccountRole, getCurrentAccount, hasAccountRole, Timestamp } from '@hcengineering/core'
   import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
-  import setting from '@hcengineering/setting'
+  import setting, { RoleCapability } from '@hcengineering/setting'
+  import { hasRoleCapability } from '@hcengineering/setting-resources'
   import { Button, EditBox, Grid, Label, Loading, MiniToggle, ticker } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -43,9 +44,13 @@
         expHours = set[0].expirationTime
         emailMask = set[0].emailMask
         limit = set[0].limit
+        defaultInviteRole = set[0].defaultInviteRole ?? role
+        inviteLinkGeneratorRoles = set[0].inviteLinkGeneratorRoles ?? defaultGeneratorRoles
       } else {
         expHours = 48
         limit = -1
+        defaultInviteRole = role
+        inviteLinkGeneratorRoles = defaultGeneratorRoles
       }
 
       if (limit === -1) noLimit = true
@@ -90,7 +95,23 @@
   let limit: number | undefined = undefined
   let useDefault: boolean | undefined = true
   let noLimit: boolean = false
-  const isOwnerOrMaintainer: boolean = hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)
+  const currentAccount = getCurrentAccount()
+  const isOwnerOrMaintainer: boolean = hasAccountRole(currentAccount, AccountRole.Maintainer)
+  const defaultGeneratorRoles: AccountRole[] = [AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]
+  let defaultInviteRole: AccountRole = role
+  let inviteLinkGeneratorRoles: AccountRole[] = defaultGeneratorRoles
+  let roleByCapability: Record<string, AccountRole[]> | undefined
+  const roleCapabilityQuery = createQuery()
+  roleCapabilityQuery.query(setting.class.RoleCapabilitySettings, {}, (set) => {
+    const first = set?.[0] as { roleByCapability?: Record<string, AccountRole[]> } | undefined
+    roleByCapability = first?.roleByCapability
+  })
+  $: canGenerateInviteLinks = hasRoleCapability(
+    currentAccount,
+    RoleCapability.GenerateInviteLink,
+    roleByCapability,
+    inviteLinkGeneratorRoles
+  )
   let defaultValues: InviteParams = {
     expirationTime: 48,
     emailMask: '',
@@ -162,8 +183,11 @@
         label={login.string.GetLink}
         size={'medium'}
         kind={'primary'}
+        disabled={!canGenerateInviteLinks}
         on:click={() => {
-          ;((limit !== undefined && limit > 0) || noLimit) && getLink(expHours, emailMask, limit, role)
+          canGenerateInviteLinks &&
+            ((limit !== undefined && limit > 0) || noLimit) &&
+            getLink(expHours, emailMask, limit, defaultInviteRole)
         }}
       />
     </div>

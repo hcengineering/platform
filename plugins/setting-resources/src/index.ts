@@ -76,8 +76,11 @@ import IntegrationStateRow from './components/integrations/IntegrationStateRow.s
 import EmployeeRefEditor from './components/typeEditors/EmployeeRefEditor.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
+import { hasRoleCapabilityAsync } from './hasRoleCapabilityAsync'
 
 export * from './store'
+export { hasRoleCapability, getRolesForCapability } from './roleCapability'
+export { hasRoleCapabilityAsync } from './hasRoleCapabilityAsync'
 export {
   ClassAttributes,
   ClassAttributesList,
@@ -167,6 +170,7 @@ export default async (): Promise<Resources> => ({
     DeleteMixin
   },
   function: {
+    HasRoleCapability: hasRoleCapabilityAsync,
     GetOwnerFirstName: getOwnerFirstName,
     GetOwnerLastName: getOwnerLastName,
     GetOwnerPosition: getOwnerPosition,
