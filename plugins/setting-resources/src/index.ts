@@ -36,6 +36,7 @@ import ClassAttributes from './components/ClassAttributes.svelte'
 import ClassAttributesList from './components/ClassAttributesList.svelte'
 import Configure from './components/Configure.svelte'
 import InviteSetting from './components/InviteSetting.svelte'
+import UserRoleSelect from './components/UserRoleSelect.svelte'
 import PermissionPresenter from './components/presenters/PermissionPresenter.svelte'
 import AttributePermissionPresenter from './components/presenters/AttributePermissionPresenter.svelte'
 import ClassPermissionPresenter from './components/presenters/ClassPermissionPresenter.svelte'
@@ -164,7 +165,8 @@ export default async (): Promise<Resources> => ({
     OfficeSettings,
     AddSocialId,
     AddEmailSocialId,
-    EmployeeRefEditor
+    EmployeeRefEditor,
+    UserRoleSelect
   },
   actionImpl: {
     DeleteMixin

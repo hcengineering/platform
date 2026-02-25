@@ -243,7 +243,8 @@ export default plugin(settingId, {
     EditRelation: '' as AnyComponent,
     Mailboxes: '' as AnyComponent,
     AddEmailSocialId: '' as AnyComponent,
-    OfficeSettings: '' as AnyComponent
+    OfficeSettings: '' as AnyComponent,
+    UserRoleSelect: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,

@@ -17,7 +17,8 @@
   import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
   import setting, { RoleCapability } from '@hcengineering/setting'
   import { hasRoleCapability } from '@hcengineering/setting-resources'
-  import { Button, EditBox, Grid, Label, Loading, MiniToggle, ticker } from '@hcengineering/ui'
+  import { getResource } from '@hcengineering/platform'
+  import { AnySvelteComponent, Button, EditBox, Grid, Label, Loading, MiniToggle, ticker } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   import login from '../plugin'
@@ -100,6 +101,10 @@
   const defaultGeneratorRoles: AccountRole[] = [AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]
   let defaultInviteRole: AccountRole = role
   let inviteLinkGeneratorRoles: AccountRole[] = defaultGeneratorRoles
+  let userRoleSelectComponent: AnySvelteComponent | undefined
+  void getResource(setting.component.UserRoleSelect).then((component) => {
+    userRoleSelectComponent = component
+  })
   let roleByCapability: Record<string, AccountRole[]> | undefined
   const roleCapabilityQuery = createQuery()
   roleCapabilityQuery.query(setting.class.RoleCapabilitySettings, {}, (set) => {
@@ -120,6 +125,11 @@
 
   let link: string | undefined
   let loading = false
+
+  function handleInviteRoleSelected (e: CustomEvent<AccountRole>): void {
+    defaultInviteRole = e.detail
+    link = undefined
+  }
 </script>
 
 <div class="antiPopup popup" class:secure={isSecureContext}>
@@ -154,6 +164,13 @@
             disabled={useDefault || !isOwnerOrMaintainer}
           />
         {/if}
+        {#if userRoleSelectComponent}
+          <svelte:component
+            this={userRoleSelectComponent}
+            selected={defaultInviteRole}
+            on:selected={handleInviteRoleSelected}
+          />
+        {/if}
       {/if}
     </Grid>
   {/if}
@@ -185,9 +202,11 @@
         kind={'primary'}
         disabled={!canGenerateInviteLinks}
         on:click={() => {
-          canGenerateInviteLinks &&
-            ((limit !== undefined && limit > 0) || noLimit) &&
-            getLink(expHours, emailMask, limit, defaultInviteRole)
+          if (!canGenerateInviteLinks) return
+          const effectiveLimit = limit ?? 0
+          if (effectiveLimit > 0 || noLimit) {
+            void getLink(expHours, emailMask, limit, defaultInviteRole)
+          }
         }}
       />
     </div>

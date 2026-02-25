@@ -21,9 +21,7 @@
   import { translate } from '@hcengineering/platform'
   import {
     Breadcrumb,
-    DropdownIntlItem,
     DropdownLabels,
-    DropdownLabelsIntl,
     DropdownTextItem,
     EditBox,
     Header,
@@ -34,6 +32,7 @@
     Toggle
   } from '@hcengineering/ui'
   import settingRes from '../plugin'
+  import UserRoleSelect from './UserRoleSelect.svelte'
 
   const client = getClient()
   let loading = true
@@ -78,13 +77,6 @@
       ]
     })
   }
-
-  const inviteRoleItems: DropdownIntlItem[] = [
-    { id: AccountRole.Guest, label: settingRes.string.Guest },
-    { id: AccountRole.User, label: settingRes.string.User },
-    { id: AccountRole.Maintainer, label: settingRes.string.Maintainer },
-    { id: AccountRole.Owner, label: settingRes.string.Owner }
-  ]
 
   function applyInviteSettings (set: InviteSettings[]): void {
     existingInviteSettings = set
@@ -242,13 +234,7 @@
             <div class="setting-row mt-4">
               <Label label={settingRes.string.DefaultInviteRoleForJoin} />
               <div class="max-w-60">
-                <DropdownLabelsIntl
-                  kind={'regular'}
-                  size={'medium'}
-                  items={inviteRoleItems}
-                  selected={defaultInviteRole}
-                  on:selected={handleDefaultInviteRoleSelected}
-                />
+                <UserRoleSelect selected={defaultInviteRole} on:selected={handleDefaultInviteRoleSelected} />
               </div>
             </div>
 
