@@ -204,6 +204,8 @@
     const ref = sectionRef[messagesId]
     if (ref?.scrollDown != null) {
       ref.scrollDown()
+    } else {
+      console.warn('scrollDown not implemented for section', messagesId)
     }
   }
 
