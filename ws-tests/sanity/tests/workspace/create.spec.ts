@@ -259,7 +259,7 @@ test.describe('Workspace tests', () => {
     const memberRow = page.getByTestId('owners-member-row').filter({ hasText: newUser2DisplayName })
     await expect(memberRow).toBeVisible({ timeout: 10000 })
     await memberRow.getByRole('button').last().click()
-    await page.getByRole('menuitem', { name: 'Owner' }).click()
+    await page.getByRole('button', { name: 'Owner' }).click()
 
     // Now the first user can leave (they are no longer the only owner)
     await userProfilePage.openProfileMenu()
