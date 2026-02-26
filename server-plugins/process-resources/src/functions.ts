@@ -737,7 +737,7 @@ export async function CreateCard (
     ...attrs
   } as any
   if (newContent !== undefined) {
-    data.content = content
+    data.content = newContent
   }
   const filledData = fillDefaults(control.client.getHierarchy(), data, masterTag)
 
