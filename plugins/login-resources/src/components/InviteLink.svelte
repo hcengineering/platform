@@ -15,15 +15,16 @@
 <script lang="ts">
   import { AccountRole, getCurrentAccount, hasAccountRole, Timestamp } from '@hcengineering/core'
   import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
-  import setting from '@hcengineering/setting'
-  import { Button, EditBox, Grid, Label, Loading, MiniToggle, ticker } from '@hcengineering/ui'
+  import setting, { RoleCapability } from '@hcengineering/setting'
+  import { getResource } from '@hcengineering/platform'
+  import { AnySvelteComponent, Button, EditBox, Grid, Label, Loading, MiniToggle, ticker } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
   import login from '../plugin'
   import { getInviteLink } from '../utils'
   import InviteWorkspace from './icons/InviteWorkspace.svelte'
 
-  export let role: AccountRole = AccountRole.User
+  export let role: AccountRole | undefined = undefined
   export let ignoreSettings: boolean = false
 
   const dispatch = createEventDispatcher()
@@ -43,9 +44,15 @@
         expHours = set[0].expirationTime
         emailMask = set[0].emailMask
         limit = set[0].limit
+        if (role == null) {
+          role = set[0].defaultInviteRole ?? AccountRole.User
+        }
       } else {
         expHours = 48
         limit = -1
+        if (role == null) {
+          role = AccountRole.User
+        }
       }
 
       if (limit === -1) noLimit = true
@@ -90,7 +97,22 @@
   let limit: number | undefined = undefined
   let useDefault: boolean | undefined = true
   let noLimit: boolean = false
-  const isOwnerOrMaintainer: boolean = hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)
+  const currentAccount = getCurrentAccount()
+  const isOwnerOrMaintainer: boolean = hasAccountRole(currentAccount, AccountRole.Maintainer)
+  let userRoleSelectComponent: AnySvelteComponent | undefined
+  void getResource(setting.component.UserRoleSelect).then((component) => {
+    userRoleSelectComponent = component
+  })
+  let canGenerateInviteLinks = false
+
+  // Use shared HasRoleCapability function resource from setting package instead of setting-resources
+  void getResource(setting.function.HasRoleCapability).then((checkCapability) => {
+    if (checkCapability != null) {
+      void checkCapability(RoleCapability.GenerateInviteLink).then((value: boolean) => {
+        canGenerateInviteLinks = value
+      })
+    }
+  })
   let defaultValues: InviteParams = {
     expirationTime: 48,
     emailMask: '',
@@ -99,6 +121,11 @@
 
   let link: string | undefined
   let loading = false
+
+  function handleInviteRoleSelected (e: CustomEvent<AccountRole>): void {
+    role = e.detail
+    link = undefined
+  }
 </script>
 
 <div class="antiPopup popup" class:secure={isSecureContext}>
@@ -133,6 +160,13 @@
             disabled={useDefault || !isOwnerOrMaintainer}
           />
         {/if}
+        {#if userRoleSelectComponent}
+          <svelte:component
+            this={userRoleSelectComponent}
+            selected={role ?? AccountRole.User}
+            on:selected={handleInviteRoleSelected}
+          />
+        {/if}
       {/if}
     </Grid>
   {/if}
@@ -162,8 +196,13 @@
         label={login.string.GetLink}
         size={'medium'}
         kind={'primary'}
+        disabled={!canGenerateInviteLinks}
         on:click={() => {
-          ;((limit !== undefined && limit > 0) || noLimit) && getLink(expHours, emailMask, limit, role)
+          if (!canGenerateInviteLinks) return
+          const effectiveLimit = limit ?? 0
+          if (effectiveLimit > 0 || noLimit) {
+            void getLink(expHours, emailMask, limit, role ?? AccountRole.User)
+          }
         }}
       />
     </div>

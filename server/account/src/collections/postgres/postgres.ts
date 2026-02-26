@@ -176,6 +176,10 @@ implements DbCollection<T> {
       switch (operator) {
         case '$in': {
           const inVals = Object.values(qKey as object)[0]
+          if (inVals.length === 0) {
+            whereChunks.push('FALSE')
+            break
+          }
           const inVars: string[] = []
           for (const val of inVals) {
             currIdx++

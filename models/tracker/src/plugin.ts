@@ -72,7 +72,8 @@ export default mergeIds(trackerId, tracker, {
     IssueKanban: '' as Ref<Viewlet>,
     MilestoneList: '' as Ref<Viewlet>,
     ComponentList: '' as Ref<Viewlet>,
-    ProjectList: '' as Ref<Viewlet>
+    ProjectList: '' as Ref<Viewlet>,
+    ProjectListGrouped: '' as Ref<Viewlet>
   },
   ids: {
     TrackerNotificationGroup: '' as Ref<NotificationGroup>,

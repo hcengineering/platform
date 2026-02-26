@@ -68,7 +68,6 @@
     "@hcengineering/account-client": "workspace:^0.7.21",
     "@hcengineering/communication-types": "workspace:^0.7.12",
     "@hcengineering/communication-sdk-types": "workspace:^0.7.12",
-    "@temporalio/client": "1.12.3",
     "dotenv": "^16.4.5"
   }
 }

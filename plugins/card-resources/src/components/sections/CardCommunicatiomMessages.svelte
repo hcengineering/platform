@@ -27,9 +27,25 @@
   export let active: boolean = false
   export let isDefault: boolean = false
   export let onRenderTopChange: (active: boolean) => void
+
+  let messagesSection: MessagesSection | undefined
+
+  // Expose scrolling/editing helpers so the parent TOC component can control this section.
+  export function scrollDown (): void {
+    messagesSection?.scrollDown()
+  }
+
+  export function canScrollDown (): boolean {
+    return messagesSection?.canScrollDown() ?? false
+  }
+
+  export function editLastMessage (): void {
+    messagesSection?.editLastMessage()
+  }
 </script>
 
 <MessagesSection
+  bind:this={messagesSection}
   {doc}
   {readonly}
   {isContextLoaded}

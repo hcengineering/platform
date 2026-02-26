@@ -59,7 +59,6 @@
   import settingsRes from '../plugin'
   import ApiTokenPopup from './ApiTokenPopup.svelte'
   import WorkspacePermissionEditor from './WorkspacePermissionEditor.svelte'
-  import de from 'date-fns/locale/de'
 
   let loading = true
   let isEditingName = false

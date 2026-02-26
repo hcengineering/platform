@@ -1,25 +1,18 @@
-import core, { MeasureMetricsContext, type Ref, type WorkspaceUuid } from '@hcengineering/core'
+import { MeasureMetricsContext, type WorkspaceUuid } from '@hcengineering/core'
 import { getPlatformQueue } from '@hcengineering/kafka'
-import process, { type Execution } from '@hcengineering/process'
-import { QueueTopic } from '@hcengineering/server-core'
-import type { ProcessMessage } from '@hcengineering/server-process'
 
-export async function SendTimeEvent (ws: WorkspaceUuid, _execution: Ref<Execution>): Promise<void> {
-  const SERVICE_NAME = 'worker'
+export async function SendTimeEvent (
+  ctx: MeasureMetricsContext,
+  ws: WorkspaceUuid,
+  topic: string,
+  data: any
+): Promise<void> {
+  const SERVICE_NAME = 'time-machine'
   const queue = getPlatformQueue(SERVICE_NAME)
-  const ctx = new MeasureMetricsContext(SERVICE_NAME, {})
 
-  const producer = queue.getProducer<ProcessMessage>(ctx, QueueTopic.Process)
+  const producer = queue.getProducer<any>(ctx, topic as any)
 
-  await producer.send(ctx, ws, [
-    {
-      account: core.account.System,
-      event: [process.trigger.OnTime],
-      createdOn: Date.now(),
-      context: {},
-      execution: _execution
-    }
-  ])
+  await producer.send(ctx, ws, [data])
 }
 
 export default {
