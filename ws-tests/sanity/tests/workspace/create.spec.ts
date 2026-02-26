@@ -247,28 +247,19 @@ test.describe('Workspace tests', () => {
       await signUpPage2.signUp(newUser2)
       const leftSideMenuPage2 = new LeftSideMenuPage(page2)
       await leftSideMenuPage2.clickTracker()
+
+      // Second user leaves the workspace
+      const userProfilePage2 = new UserProfilePage(page2)
+      await userProfilePage2.openProfileMenu()
+      await userProfilePage2.selectProfileByName(`${newUser2.lastName} ${newUser2.firstName}`)
+      await userProfilePage2.clickLeaveWorkspaceButton()
+      await userProfilePage2.clickLeaveWorkspaceCancelButton()
+      await userProfilePage2.clickLeaveWorkspaceButton()
+      await userProfilePage2.clickLeaveWorkspaceConfirmButton()
+      await expect(page2.locator('form')).toContainText('Select workspace')
+      await expect(page2.getByText(newWorkspaceName)).toHaveCount(0)
     } finally {
       await page2.close()
     }
-
-    // Promote the second user to owner so the first user can leave
-    await userProfilePage.openProfileMenu()
-    await userProfilePage.clickSettings()
-    await page.getByRole('button', { name: 'Owners' }).click()
-    const newUser2DisplayName = `${newUser2.lastName} ${newUser2.firstName}`
-    const memberRow = page.getByTestId('owners-member-row').filter({ hasText: newUser2DisplayName })
-    await expect(memberRow).toBeVisible({ timeout: 10000 })
-    await memberRow.getByRole('button').last().click()
-    await page.getByRole('button', { name: 'Owner' }).click()
-
-    // Now the first user can leave (they are no longer the only owner)
-    await userProfilePage.openProfileMenu()
-    await userProfilePage.selectProfileByName(newUser.lastName + ' ' + newUser.firstName)
-    await userProfilePage.clickLeaveWorkspaceButton()
-    await userProfilePage.clickLeaveWorkspaceCancelButton()
-    await userProfilePage.clickLeaveWorkspaceButton()
-    await userProfilePage.clickLeaveWorkspaceConfirmButton()
-    await expect(page.locator('form')).toContainText('Select workspace')
-    await expect(page.getByText(newWorkspaceName)).toHaveCount(0)
   })
 })
