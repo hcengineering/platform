@@ -22,7 +22,6 @@ test.describe('Workspace tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let issuesPage: IssuesPage
-  let userProfilePage: UserProfilePage
 
   test.beforeEach(async ({ page }) => {
     loginPage = new LoginPage(page)
@@ -31,7 +30,6 @@ test.describe('Workspace tests', () => {
     leftSideMenuPage = new LeftSideMenuPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     issuesPage = new IssuesPage(page)
-    userProfilePage = new UserProfilePage(page)
   })
 
   test('Create a workspace with a custom name', async () => {
