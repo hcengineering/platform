@@ -128,6 +128,8 @@
     "WorkspaceName": "ワークスペース名",
     "Workspace": "ワークスペース",
     "OwnerOrMaintainerRequired": "ワークスペースの所有者またはメンテナーである必要があります",
+    "LastOwnerLeaveTitle": "ワークスペースから退出できません",
+    "LastOwnerLeaveMessage": "あなたはこのワークスペースの唯一の所有者です。退出するには、先に別のメンバーに所有者権限を付与してください。このワークスペースが誰にも必要ない場合は、削除することも検討してください。",
     "Backup": "バックアップ",
     "BackupLast": "最後のバックアップ",
     "BackupTotalSnapshots": "合計スナップショット",

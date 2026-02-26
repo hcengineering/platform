@@ -15,9 +15,9 @@
 <script lang="ts">
   import contact, { combineName, getFirstName, getLastName } from '@hcengineering/contact'
   import { ChannelsEditor, EditableAvatar, myEmployeeStore } from '@hcengineering/contact-resources'
-  import { getCurrentAccount, SocialIdType } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, SocialIdType } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
-  import { getResource } from '@hcengineering/platform'
+  import platform, { getResource, PlatformError } from '@hcengineering/platform'
   import { AttributeEditor, createQuery, getClient, hasResource, MessageBox } from '@hcengineering/presentation'
   import {
     Breadcrumb,
@@ -64,7 +64,7 @@
   }
 
   let avatarEditor: EditableAvatar
-  async function onAvatarDone (e: any): Promise<void> {
+  async function onAvatarDone (): Promise<void> {
     if ($myEmployeeStore === undefined) return
 
     if ($myEmployeeStore.avatar != null) {
@@ -82,14 +82,30 @@
       message: setting.string.LeaveDescr,
       action: async () => {
         const leaveWorkspace = await getResource(login.function.LeaveWorkspace)
-        const loginInfo = await leaveWorkspace(account.uuid)
+        try {
+          const loginInfo = await leaveWorkspace(account.uuid)
 
-        if (loginInfo?.token != null) {
-          await logIn(loginInfo)
-          navigate({ path: [loginId, 'selectWorkspace'] })
-        } else {
-          await logOut()
-          navigate({ path: [loginId] })
+          if (loginInfo?.token != null) {
+            await logIn(loginInfo)
+            navigate({ path: [loginId, 'selectWorkspace'] })
+          } else {
+            await logOut()
+            navigate({ path: [loginId] })
+          }
+        } catch (err: any) {
+          if (
+            err instanceof PlatformError &&
+            err.status?.code === platform.status.Forbidden &&
+            account.role === AccountRole.Owner
+          ) {
+            showPopup(MessageBox, {
+              label: setting.string.LastOwnerLeaveTitle,
+              message: setting.string.LastOwnerLeaveMessage,
+              canSubmit: false
+            })
+          } else {
+            throw err
+          }
         }
       }
     })

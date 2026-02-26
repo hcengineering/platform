@@ -323,11 +323,20 @@ export async function AddTag (
   res.push(tx)
   const card = control.cache.get(execution.card)
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
-  if (control.client.getHierarchy().hasMixin(card, tagId)) {
-    return { txes: res, rollback: [], context: null }
-  }
   const cardWithMixin =
     card !== undefined ? TxProcessor.updateMixin4Doc(control.client.getHierarchy().clone(card), tx) : undefined
+  if (control.client.getHierarchy().hasMixin(card, tagId)) {
+    return {
+      txes: res,
+      rollback: [],
+      context: [
+        {
+          _id: execution.card,
+          value: cardWithMixin
+        }
+      ]
+    }
+  }
 
   const rollback: Tx[] = [
     control.client.txFactory.createTxUpdateDoc(_process.masterTag, execution.space, execution.card, {
@@ -737,7 +746,7 @@ export async function CreateCard (
     ...attrs
   } as any
   if (newContent !== undefined) {
-    data.content = content
+    data.content = newContent
   }
   const filledData = fillDefaults(control.client.getHierarchy(), data, masterTag)
 

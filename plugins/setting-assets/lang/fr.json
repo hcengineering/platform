@@ -128,6 +128,8 @@
     "WorkspaceName": "Nom de l'espace de travail",
     "Workspace": "Espace de travail",
     "OwnerOrMaintainerRequired": "Vous devez être propriétaire ou responsable d'un espace de travail",
+    "LastOwnerLeaveTitle": "Impossible de quitter l'espace de travail",
+    "LastOwnerLeaveMessage": "Vous êtes le seul propriétaire de cet espace de travail. Pour le quitter, attribuez d'abord les droits de propriétaire à un autre membre. Si personne n'a plus besoin de cet espace de travail, envisagez de le supprimer.",
     "Backup": "Sauvegarde",
     "BackupLast": "Dernière sauvegarde",
     "BackupTotalSnapshots": "Total des instantanés",

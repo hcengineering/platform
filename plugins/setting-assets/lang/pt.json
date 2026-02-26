@@ -119,6 +119,8 @@
     "WorkspaceName": "Nome do espaço de trabalho",
     "Workspace": "Espaço de trabalho",
     "OwnerOrMaintainerRequired": "Precisa de ser proprietário ou mantenedor do espaço de trabalho",
+    "LastOwnerLeaveTitle": "Não é possível sair do espaço de trabalho",
+    "LastOwnerLeaveMessage": "É o único proprietário deste espaço de trabalho. Para sair, primeiro conceda permissões de proprietário a outro membro. Se ninguém mais precisar deste espaço de trabalho, considere eliminar o espaço de trabalho.",
     "Backup": "Backup",
     "BackupLast": "Último backup",
     "BackupTotalSnapshots": "Total de Snapshots",

@@ -128,6 +128,8 @@
     "WorkspaceName": "工作区名称",
     "Workspace": "工作区",
     "OwnerOrMaintainerRequired": "您需要成为工作空间所有者或维护者",
+    "LastOwnerLeaveTitle": "无法离开工作区",
+    "LastOwnerLeaveMessage": "您是此工作区的唯一所有者。要离开，请先将所有者权限授予其他成员。如果不再有人需要此工作区，请考虑删除该工作区。",
     "Backup": "备份",
     "BackupLast": "上次备份",
     "BackupTotalSnapshots": "快照总数",

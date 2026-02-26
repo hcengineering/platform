@@ -91,7 +91,7 @@
           {@const personUuid = employee.personUuid ?? undefined}
           {@const role = personUuid !== undefined ? workspaceMembers[personUuid] : undefined}
           {#if personUuid !== undefined && role !== undefined && employee.name?.includes(search)}
-            <div class="flex-row-center p-2 flex-no-shrink">
+            <div class="flex-row-center p-2 flex-no-shrink" data-id="owners-member-row">
               <div class="p-1 min-w-80">
                 <EmployeePresenter value={employee} disabled={false} />
               </div>

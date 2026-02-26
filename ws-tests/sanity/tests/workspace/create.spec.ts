@@ -22,7 +22,6 @@ test.describe('Workspace tests', () => {
   let leftSideMenuPage: LeftSideMenuPage
   let trackerNavigationMenuPage: TrackerNavigationMenuPage
   let issuesPage: IssuesPage
-  let userProfilePage: UserProfilePage
 
   test.beforeEach(async ({ page }) => {
     loginPage = new LoginPage(page)
@@ -31,7 +30,6 @@ test.describe('Workspace tests', () => {
     leftSideMenuPage = new LeftSideMenuPage(page)
     trackerNavigationMenuPage = new TrackerNavigationMenuPage(page)
     issuesPage = new IssuesPage(page)
-    userProfilePage = new UserProfilePage(page)
   })
 
   test('Create a workspace with a custom name', async () => {
@@ -213,7 +211,7 @@ test.describe('Workspace tests', () => {
     }
   })
 
-  test('User can leave workspace', async ({ page }) => {
+  test('User can leave workspace', async ({ page, browser }) => {
     const newUser: SignUpData = {
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
@@ -226,13 +224,40 @@ test.describe('Workspace tests', () => {
     await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await trackerNavigationMenuPage.checkIfTrackerSidebarIsVisible()
-    await userProfilePage.openProfileMenu()
-    await userProfilePage.selectProfileByName(newUser.lastName + ' ' + newUser.firstName)
-    await userProfilePage.clickLeaveWorkspaceButton()
-    await userProfilePage.clickLeaveWorkspaceCancelButton()
-    await userProfilePage.clickLeaveWorkspaceButton()
-    await userProfilePage.clickLeaveWorkspaceConfirmButton()
-    await expect(page.locator('form')).toContainText('Select workspace')
-    await expect(page.getByText(newWorkspaceName)).toHaveCount(0)
+
+    // Invite a second user so the first user is no longer the only owner (required to leave)
+    await leftSideMenuPage.openProfileMenu()
+    await leftSideMenuPage.inviteToWorkspace()
+    await leftSideMenuPage.getInviteLink()
+    const linkText = await page.locator('.antiPopup .link').textContent()
+    await leftSideMenuPage.clickOnCloseInvite()
+
+    const newUser2: SignUpData = {
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      email: faker.internet.email(),
+      password: '1234'
+    }
+    const page2 = await browser.newPage()
+    try {
+      await page2.goto(linkText ?? '')
+      const signUpPage2 = new SignUpPage(page2)
+      await signUpPage2.signUp(newUser2)
+      const leftSideMenuPage2 = new LeftSideMenuPage(page2)
+      await leftSideMenuPage2.clickTracker()
+
+      // Second user leaves the workspace
+      const userProfilePage2 = new UserProfilePage(page2)
+      await userProfilePage2.openProfileMenu()
+      await userProfilePage2.selectProfileByName(`${newUser2.lastName} ${newUser2.firstName}`)
+      await userProfilePage2.clickLeaveWorkspaceButton()
+      await userProfilePage2.clickLeaveWorkspaceCancelButton()
+      await userProfilePage2.clickLeaveWorkspaceButton()
+      await userProfilePage2.clickLeaveWorkspaceConfirmButton()
+      await expect(page2.locator('form')).toContainText('Select workspace')
+      await expect(page2.getByText(newWorkspaceName)).toHaveCount(0)
+    } finally {
+      await page2.close()
+    }
   })
 })

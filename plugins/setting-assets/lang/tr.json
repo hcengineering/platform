@@ -128,6 +128,8 @@
     "WorkspaceName": "Çalışma alanı adı",
     "Workspace": "Çalışma alanı",
     "OwnerOrMaintainerRequired": "Çalışma alanı Sahibi veya Bakımcısı olmanız gerekiyor",
+    "LastOwnerLeaveTitle": "Çalışma alanından ayrılamazsınız",
+    "LastOwnerLeaveMessage": "Bu çalışma alanının tek sahibisiniz. Ayrılmak için önce başka bir üyeye sahiplik yetkisi verin. Bu çalışma alanına artık kimsenin ihtiyacı yoksa, silmeyi de düşünebilirsiniz.",
     "Backup": "Yedek",
     "BackupLast": "Son yedekleme",
     "BackupTotalSnapshots": "Toplam Anlık Görüntü",

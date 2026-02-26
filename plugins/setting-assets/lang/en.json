@@ -128,6 +128,8 @@
     "WorkspaceName": "Workspace name",
     "Workspace": "Workspace",
     "OwnerOrMaintainerRequired": "You need to be a workspace Owner or Maintainer",
+    "LastOwnerLeaveTitle": "Cannot leave workspace",
+    "LastOwnerLeaveMessage": "You are the only owner of this workspace. To leave, first grant owner permissions to another member. If nobody needs this workspace anymore, consider deleting this workspace instead.",
     "Backup": "Backup",
     "BackupLast": "Last backup",
     "BackupTotalSnapshots": "Total Snapshots",

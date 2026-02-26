@@ -122,6 +122,8 @@
     "WorkspaceName": "Název pracovního prostoru",
     "Workspace": "Pracovní prostor",
     "OwnerOrMaintainerRequired": "Musíte být vlastníkem nebo správcem pracovního prostoru",
+    "LastOwnerLeaveTitle": "Nelze opustit pracovní prostor",
+    "LastOwnerLeaveMessage": "Jste jediným vlastníkem tohoto pracovního prostoru. Abyste jej mohli opustit, nejprve předejte oprávnění vlastníka jinému členovi. Pokud tento pracovní prostor už nikdo nepotřebuje, zvažte jeho smazání.",
     "Backup": "Záloha",
     "BackupLast": "Poslední záloha",
     "BackupTotalSnapshots": "Celkový počet snímků",

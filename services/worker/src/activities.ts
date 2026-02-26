@@ -1,5 +1,6 @@
 import { MeasureMetricsContext, type WorkspaceUuid } from '@hcengineering/core'
 import { getPlatformQueue } from '@hcengineering/kafka'
+import config from './config'
 
 export async function SendTimeEvent (
   ctx: MeasureMetricsContext,
@@ -8,7 +9,7 @@ export async function SendTimeEvent (
   data: any
 ): Promise<void> {
   const SERVICE_NAME = 'time-machine'
-  const queue = getPlatformQueue(SERVICE_NAME)
+  const queue = getPlatformQueue(SERVICE_NAME, config.QueueRegion)
 
   const producer = queue.getProducer<any>(ctx, topic as any)
 

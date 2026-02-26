@@ -26,7 +26,7 @@ export async function runWorker (): Promise<void> {
   const db = await TimeMachineDB.init(config.DbUrl)
 
   const ctx = new MeasureMetricsContext(SERVICE_NAME, {})
-  const queue = getPlatformQueue(SERVICE_NAME)
+  const queue = getPlatformQueue(SERVICE_NAME, config.QueueRegion)
 
   // 1. Kafka Consumer for commands
   queue.createConsumer<TimeMachineMessage>(ctx, QueueTopic.TimeMachine, SERVICE_NAME, async (ctx, msg) => {
