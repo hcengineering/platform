@@ -213,7 +213,7 @@ test.describe('Workspace tests', () => {
     }
   })
 
-  test('User can leave workspace', async ({ page }) => {
+  test('User can leave workspace', async ({ page, browser }) => {
     const newUser: SignUpData = {
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
@@ -226,6 +226,43 @@ test.describe('Workspace tests', () => {
     await signUpPage.signUp(newUser)
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await trackerNavigationMenuPage.checkIfTrackerSidebarIsVisible()
+
+    // Invite a second user so the first user is no longer the only owner (required to leave)
+    await leftSideMenuPage.openProfileMenu()
+    await leftSideMenuPage.inviteToWorkspace()
+    await leftSideMenuPage.getInviteLink()
+    const linkText = await page.locator('.antiPopup .link').textContent()
+    await leftSideMenuPage.clickOnCloseInvite()
+
+    const newUser2: SignUpData = {
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      email: faker.internet.email(),
+      password: '1234'
+    }
+    const page2 = await browser.newPage()
+    try {
+      await page2.goto(linkText ?? '')
+      const signUpPage2 = new SignUpPage(page2)
+      await signUpPage2.signUp(newUser2)
+      const leftSideMenuPage2 = new LeftSideMenuPage(page2)
+      await leftSideMenuPage2.clickTracker()
+    } finally {
+      await page2.close()
+    }
+
+    // Promote the second user to owner so the first user can leave
+    await userProfilePage.openProfileMenu()
+    await userProfilePage.clickSettings()
+    await page.getByRole('button', { name: 'Owners' }).click()
+    const newUser2DisplayName = `${newUser2.lastName} ${newUser2.firstName}`
+    await expect(page.locator('.flex-row-center').filter({ hasText: newUser2DisplayName })).toBeVisible({
+      timeout: 10000
+    })
+    await page.locator('.flex-row-center').filter({ hasText: newUser2DisplayName }).getByRole('button').last().click()
+    await page.getByRole('menuitem', { name: 'Owner' }).click()
+
+    // Now the first user can leave (they are no longer the only owner)
     await userProfilePage.openProfileMenu()
     await userProfilePage.selectProfileByName(newUser.lastName + ' ' + newUser.firstName)
     await userProfilePage.clickLeaveWorkspaceButton()
