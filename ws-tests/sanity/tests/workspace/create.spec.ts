@@ -256,10 +256,9 @@ test.describe('Workspace tests', () => {
     await userProfilePage.clickSettings()
     await page.getByRole('button', { name: 'Owners' }).click()
     const newUser2DisplayName = `${newUser2.lastName} ${newUser2.firstName}`
-    await expect(page.locator('.flex-row-center').filter({ hasText: newUser2DisplayName })).toBeVisible({
-      timeout: 10000
-    })
-    await page.locator('.flex-row-center').filter({ hasText: newUser2DisplayName }).getByRole('button').last().click()
+    const memberRow = page.getByTestId('owners-member-row').filter({ hasText: newUser2DisplayName })
+    await expect(memberRow).toBeVisible({ timeout: 10000 })
+    await memberRow.getByRole('button').last().click()
     await page.getByRole('menuitem', { name: 'Owner' }).click()
 
     // Now the first user can leave (they are no longer the only owner)
