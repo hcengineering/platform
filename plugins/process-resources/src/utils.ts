@@ -22,13 +22,15 @@ import core, {
   type DocumentQuery,
   type DocumentUpdate,
   generateId,
+  getCurrentAccount,
   matchQuery,
   type Ref,
   type RefTo,
   type Space,
-  type TxOperations,
+  TxOperations,
   TxProcessor,
-  type Type
+  type Type,
+  type TxCUD
 } from '@hcengineering/core'
 import { getResource, type IntlString, PlatformError, Severity, Status } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
@@ -545,7 +547,11 @@ export async function getNextStateUserInput (
   return await requestUserInput(execution.process, execution.space, transition, userContext)
 }
 
-export async function createExecution (card: Ref<Card>, _id: Ref<Process>, space: Ref<Space>): Promise<void> {
+export async function createExecution (
+  card: Ref<Card>,
+  _id: Ref<Process>,
+  space: Ref<Space>
+): Promise<TxCUD<Doc> | undefined> {
   const client = getClient()
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const context = await newExecutionUserInput(_id, space)
@@ -556,14 +562,18 @@ export async function createExecution (card: Ref<Card>, _id: Ref<Process>, space
     from: null
   })[0]
   if (initTransition === undefined) return
-  await client.createDoc(process.class.Execution, space, {
-    process: _id,
-    currentState: initTransition.to,
-    card,
-    rollback: [],
-    context: context ?? getEmptyContext(),
-    status: ExecutionStatus.Active
-  })
+  return new TxOperations(client, getCurrentAccount().primarySocialId).txFactory.createTxCreateDoc(
+    process.class.Execution,
+    space,
+    {
+      process: _id,
+      currentState: initTransition.to,
+      card,
+      rollback: [],
+      context: context ?? getEmptyContext(),
+      status: ExecutionStatus.Active
+    }
+  )
 }
 
 export function getToDoEndAction (prevState: State): Step<Doc> {
@@ -590,11 +600,10 @@ export function getToDoEndAction (prevState: State): Step<Doc> {
 }
 
 export async function requestResult (
-  txop: TxOperations,
   execution: Execution,
   results: UserResult[] | undefined,
   context: ExecutionContext
-): Promise<void> {
+): Promise<ExecutionContext | undefined> {
   if (results == null || results.length === 0) return
   const promise = new Promise<void>((resolve, reject) => {
     showPopup(process.component.ResultInput, { results, context }, undefined, (res) => {
@@ -610,9 +619,7 @@ export async function requestResult (
     })
   })
   await promise
-  await txop.update(execution, {
-    context
-  })
+  return context
 }
 
 export function todoTranstionCheck (

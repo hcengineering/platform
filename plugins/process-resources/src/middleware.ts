@@ -13,14 +13,17 @@
 
 import cardPlugin, { type Card } from '@hcengineering/card'
 import core, {
+  generateId,
   getCurrentAccount,
   SortingOrder,
   TxOperations,
   TxProcessor,
   type Client,
+  type Doc,
   type Tx,
   type TxApplyIf,
   type TxCreateDoc,
+  type TxCUD,
   type TxMixin,
   type TxResult,
   type TxUpdateDoc
@@ -51,26 +54,43 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
   }
 
   async tx (tx: Tx): Promise<TxResult> {
-    await this.handleTx(tx)
+    const extraTx: Array<TxCUD<Doc>> = []
+    await this.handleTx(extraTx, tx)
+
+    if (extraTx.length > 0) {
+      if (TxProcessor.isExtendsCUD(tx._class)) {
+        const applyIf = new TxOperations(this.client, getCurrentAccount().primarySocialId).txFactory.createTxApplyIf(
+          core.space.Tx,
+          generateId(),
+          [],
+          [],
+          [tx as TxCUD<Doc>, ...extraTx],
+          'process',
+          true
+        )
+        return await this.provideTx(applyIf)
+      }
+    }
+
     return await this.provideTx(tx)
   }
 
-  private async handleTx (...txes: Tx[]): Promise<void> {
+  private async handleTx (extraTx: Array<TxCUD<Doc>>, ...txes: Tx[]): Promise<void> {
     for (const etx of txes) {
       if (etx._class === core.class.TxApplyIf) {
         const applyIf = etx as TxApplyIf
-        await this.handleTx(...applyIf.txes)
+        await this.handleTx(extraTx, ...applyIf.txes)
       }
 
-      await this.handleCardCreate(etx)
-      await this.handleCardUpdate(etx)
-      await this.handleTagAdd(etx)
-      await this.handleToDoDone(etx)
-      await this.handleApproveRequest(etx)
+      await this.handleCardCreate(extraTx, etx)
+      await this.handleCardUpdate(extraTx, etx)
+      await this.handleTagAdd(extraTx, etx)
+      await this.handleToDoDone(extraTx, etx)
+      await this.handleApproveRequest(extraTx, etx)
     }
   }
 
-  private async handleCardUpdate (etx: Tx): Promise<void> {
+  private async handleCardUpdate (extraTx: Array<TxCUD<Doc>>, etx: Tx): Promise<void> {
     if (etx._class === core.class.TxUpdateDoc || etx._class === core.class.TxMixin) {
       const updateTx = etx as TxUpdateDoc<Card> | TxMixin<Card, Card>
       const hierarchy = this.client.getHierarchy()
@@ -103,15 +123,23 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         })
         if (transition === undefined) return
         const context = await getNextStateUserInput(execution, transition, execution.context)
-        const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
-        await txop.update(execution, {
-          context
-        })
+        if (context !== undefined) {
+          extraTx.push(
+            new TxOperations(this.client, getCurrentAccount().primarySocialId).txFactory.createTxUpdateDoc(
+              execution._class,
+              execution.space,
+              execution._id,
+              {
+                context
+              }
+            )
+          )
+        }
       }
     }
   }
 
-  private async handleCardCreate (etx: Tx): Promise<void> {
+  private async handleCardCreate (extraTx: Array<TxCUD<Doc>>, etx: Tx): Promise<void> {
     if (etx._class === core.class.TxCreateDoc) {
       const createTx = etx as TxCreateDoc<Card>
       const doc = TxProcessor.createDoc2Doc(createTx)
@@ -130,12 +158,13 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         autoStart: true
       })
       for (const proc of processes) {
-        await createExecution(createTx.objectId, proc._id, createTx.objectSpace)
+        const res = await createExecution(createTx.objectId, proc._id, createTx.objectSpace)
+        if (res !== undefined) extraTx.push(res)
       }
     }
   }
 
-  private async handleTagAdd (tx: Tx): Promise<void> {
+  private async handleTagAdd (extraTx: Array<TxCUD<Doc>>, tx: Tx): Promise<void> {
     if (tx._class !== core.class.TxMixin) return
     const mixinTx = tx as TxMixin<Card, Card>
     const hierarchy = this.client.getHierarchy()
@@ -146,11 +175,12 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
       .getModel()
       .findAllSync(process.class.Process, { masterTag: mixinTx.mixin, autoStart: true })
     for (const proc of processes) {
-      await createExecution(mixinTx.objectId, proc._id, mixinTx.objectSpace)
+      const res = await createExecution(mixinTx.objectId, proc._id, mixinTx.objectSpace)
+      if (res !== undefined) extraTx.push(res)
     }
   }
 
-  private async handleApproveRequest (etx: Tx): Promise<void> {
+  private async handleApproveRequest (extraTx: Array<TxCUD<Doc>>, etx: Tx): Promise<void> {
     if (etx._class === core.class.TxUpdateDoc) {
       const cud = etx as TxUpdateDoc<ApproveRequest>
       if (cud.objectClass !== process.class.ApproveRequest) return
@@ -163,7 +193,6 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         _id: approveRequest.execution
       })
       if (execution === undefined) return
-      const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
       const transitions = this.client.getModel().findAllSync(
         process.class.Transition,
         {
@@ -181,13 +210,22 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
       })
       if (transition === undefined) return
       const context = await getNextStateUserInput(execution, transition, execution.context)
-      await txop.update(execution, {
-        context
-      })
+      if (context !== undefined) {
+        extraTx.push(
+          new TxOperations(this.client, getCurrentAccount().primarySocialId).txFactory.createTxUpdateDoc(
+            execution._class,
+            execution.space,
+            execution._id,
+            {
+              context
+            }
+          )
+        )
+      }
     }
   }
 
-  private async handleToDoDone (etx: Tx): Promise<void> {
+  private async handleToDoDone (extraTx: Array<TxCUD<Doc>>, etx: Tx): Promise<void> {
     if (etx._class === core.class.TxUpdateDoc) {
       const cud = etx as TxUpdateDoc<ProcessToDo>
       if (cud.objectClass !== process.class.ProcessToDo) return
@@ -200,8 +238,9 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         _id: todo.execution
       })
       if (execution === undefined) return
-      const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
-      await requestResult(txop, execution, todo.results, execution.context)
+
+      const context = await requestResult(execution, todo.results, execution.context)
+
       const transitions = this.client.getModel().findAllSync(process.class.Transition, {
         process: execution.process,
         from: execution.currentState,
@@ -210,12 +249,33 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
       const transition = await pickTransition(this.client, execution, transitions, {
         todo
       })
-      if (transition === undefined) return
-      const context = await getNextStateUserInput(execution, transition, execution.context)
-      if (context !== undefined) {
-        await txop.update(execution, {
-          context
-        })
+      if (transition === undefined) {
+        if (context !== undefined) {
+          extraTx.push(
+            new TxOperations(this.client, getCurrentAccount().primarySocialId).txFactory.createTxUpdateDoc(
+              execution._class,
+              execution.space,
+              execution._id,
+              {
+                context
+              }
+            )
+          )
+        }
+        return
+      }
+      const finalContext = (await getNextStateUserInput(execution, transition, context ?? execution.context)) ?? context
+      if (finalContext !== undefined) {
+        extraTx.push(
+          new TxOperations(this.client, getCurrentAccount().primarySocialId).txFactory.createTxUpdateDoc(
+            execution._class,
+            execution.space,
+            execution._id,
+            {
+              context: finalContext
+            }
+          )
+        )
       }
     }
   }
