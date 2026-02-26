@@ -147,7 +147,12 @@
     "CancelToDo": "Eylem öğesini iptal et",
     "Export": "Dışa aktar",
     "Import": "İçe aktar",
-    "CancelProcess": "Süreci iptal et"
+    "CancelProcess": "Süreci iptal et",
+    "SyncWithField": "Alan ile senkronize et",
+    "ActionType": "Tür",
+    "ApproveAction": "Onayla",
+    "ReviewAction": "Gözden geçir",
+    "Review": "Gözden geçir"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

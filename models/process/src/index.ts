@@ -221,6 +221,9 @@ export class TApproveRequest extends TProcessToDo implements ApproveRequest {
   group!: string
 
   card!: Ref<Card>
+
+  @Prop(TypeString(), process.string.ActionType)
+    actionType?: 'approve' | 'review'
 }
 
 @Model(process.class.Method, core.class.Doc, DOMAIN_MODEL)
@@ -478,7 +481,17 @@ export function createModel (builder: Builder): void {
         strict: true
       },
       config: [
+        {
+          key: 'execution',
+          label: process.string.Process,
+          presenter: process.component.ExecutionRefPresenter
+        },
         'user',
+        {
+          key: 'actionType',
+          label: process.string.ActionType,
+          presenter: process.component.ActionTypePresenter
+        },
         {
           key: '',
           presenter: view.component.GrowPresenter,
@@ -494,6 +507,10 @@ export function createModel (builder: Builder): void {
     },
     process.viewlet.CardRequests
   )
+
+  builder.mixin(process.class.ApproveRequest, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete]
+  })
 
   builder.createDoc(
     view.class.Viewlet,

@@ -150,7 +150,12 @@
     "CancelToDo": "Отменить задачу",
     "Export": "Экспорт",
     "Import": "Импорт",
-    "CancelProcess": "Отменить процесс"
+    "CancelProcess": "Отменить процесс",
+    "SyncWithField": "Синхронизировать с полем",
+    "ActionType": "Тип",
+    "ApproveAction": "Утверждение",
+    "ReviewAction": "Рецензирование",
+    "Review": "Рецензировать"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

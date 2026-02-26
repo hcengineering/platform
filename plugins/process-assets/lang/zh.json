@@ -150,7 +150,12 @@
     "CancelToDo": "取消任务",
     "Export": "导出",
     "Import": "导入",
-    "CancelProcess": "取消过程"
+    "CancelProcess": "取消过程",
+    "SyncWithField": "字段同步",
+    "ActionType": "类型",
+    "ApproveAction": "批准",
+    "ReviewAction": "审查",
+    "Review": "审查"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

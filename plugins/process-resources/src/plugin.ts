@@ -90,7 +90,9 @@ export default mergeIds(processId, process, {
     LockSectionPresenter: '' as AnyComponent,
     UnLockSectionPresenter: '' as AnyComponent,
     CancelToDoEditor: '' as AnyComponent,
-    ToDoValuePresenter: '' as AnyComponent
+    ToDoValuePresenter: '' as AnyComponent,
+    ActionTypePresenter: '' as AnyComponent,
+    ExecutionRefPresenter: '' as AnyComponent
   },
   criteriaEditor: {
     BaseCriteria: '' as AnyComponent,

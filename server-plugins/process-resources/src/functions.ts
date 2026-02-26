@@ -465,7 +465,9 @@ export async function RequestApproval (
   control: ProcessControl,
   results: UserResult[] | undefined
 ): Promise<ExecuteResult> {
-  if (params.user === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: 'user' })
+  if (params.user === undefined || params.user.length === 0) {
+    throw processError(process.error.RequiredParamsNotProvided, { params: 'user' })
+  }
   const group = generateId()
   const res: TxCreateDoc<ApproveRequest>[] = []
   const rollback: Tx[] = []
@@ -491,7 +493,9 @@ export async function RequestApproval (
         rank: '',
         withRollback: params.withRollback ?? false,
         results,
-        group
+        group,
+        actionType: params.actionType,
+        field: (params as any).field
       },
       id
     )
@@ -652,7 +656,8 @@ export async function CreateToDo (
       doneOn: null,
       rank: '',
       withRollback: params.withRollback ?? false,
-      results
+      results,
+      field: (params as any).field
     },
     id
   )

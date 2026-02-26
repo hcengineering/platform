@@ -150,7 +150,12 @@
     "CancelToDo": "Cancelar acción",
     "Export": "Exportar",
     "Import": "Importar",
-    "CancelProcess": "Cancelar proceso"
+    "CancelProcess": "Cancelar proceso",
+    "SyncWithField": "Sincronizar con campo",
+    "ActionType": "Tipo",
+    "ApproveAction": "Aprobar",
+    "ReviewAction": "Revisar",
+    "Review": "Revisar"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",

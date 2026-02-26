@@ -149,7 +149,12 @@
     "CancelToDo": "アクションをキャンセル",
     "Export": "エクスポート",
     "Import": "インポート",
-    "CancelProcess": "プロセスをキャンセル"
+    "CancelProcess": "プロセスをキャンセル",
+    "SyncWithField": "フィールドと同期",
+    "ActionType": "タイプ",
+    "ApproveAction": "承認",
+    "ReviewAction": "レビュー",
+    "Review": "レビュー"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
