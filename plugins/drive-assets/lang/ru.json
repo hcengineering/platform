@@ -28,6 +28,18 @@
     "Restore": "Восстановить",
     "Root": "/",
     "ForbidCreateDrivePermission": "Запретить создание диска",
-    "ForbidCreateDrivePermissionDescription": "Запрещает пользователям создавать новые диски"
+    "ForbidCreateDrivePermissionDescription": "Запрещает пользователям создавать новые диски",
+    "CreateFilePermission": "Create File",
+    "CreateFilePermissionDescription": "Grants users ability to create files",
+    "UpdateFilePermission": "Update File",
+    "UpdateFilePermissionDescription": "Grants users ability to update files",
+    "RemoveFilePermission": "Remove File",
+    "RemoveFilePermissionDescription": "Grants users ability to remove files",
+    "CreateFolderPermission": "Create Folder",
+    "CreateFolderPermissionDescription": "Grants users ability to create folders",
+    "UpdateFolderPermission": "Update Folder",
+    "UpdateFolderPermissionDescription": "Grants users ability to update folders",
+    "RemoveFolderPermission": "Remove Folder",
+    "RemoveFolderPermissionDescription": "Grants users ability to remove folders"
   }
 }

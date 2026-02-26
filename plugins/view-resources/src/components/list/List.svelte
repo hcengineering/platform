@@ -54,6 +54,7 @@
   export let compactMode: boolean = false
   export let listProvider: SelectionFocusProvider
   export let singleCategoryLimit: number | undefined = undefined
+  export let readonly: boolean = false
 
   const limiter = new RateLimiter(10)
 
@@ -240,6 +241,7 @@
     on:collapsed
     {resultQuery}
     {resultOptions}
+    {readonly}
   />
 </div>
 

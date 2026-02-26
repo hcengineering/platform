@@ -14,28 +14,10 @@
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte'
-  import Loading from './Loading.svelte'
-
   export let src: string
   export let name: string
   export let fit: boolean = false
   export let css: string | undefined = undefined
-
-  let iframeSrc: string | undefined = undefined
-
-  async function loadFile (src: string): Promise<void> {
-    if (iframeSrc !== undefined) {
-      URL.revokeObjectURL(iframeSrc)
-      iframeSrc = undefined
-    }
-
-    const response = await fetch(src)
-    const blob = await response.blob()
-    iframeSrc = URL.createObjectURL(blob)
-  }
-
-  $: void loadFile(src)
 
   let iframe: HTMLIFrameElement | undefined = undefined
 
@@ -58,19 +40,9 @@
       }
     }
   }
-
-  onDestroy(() => {
-    if (iframeSrc !== undefined) {
-      URL.revokeObjectURL(iframeSrc)
-    }
-  })
 </script>
 
-{#if iframeSrc}
-  <iframe bind:this={iframe} class:fit src={iframeSrc + '#view=FitH&navpanes=0'} title={name} on:load />
-{:else}
-  <Loading />
-{/if}
+<iframe bind:this={iframe} class:fit src={src + '#view=FitH&navpanes=0'} title={name} on:load />
 
 <style lang="scss">
   iframe {

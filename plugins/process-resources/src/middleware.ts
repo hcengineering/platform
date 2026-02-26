@@ -11,23 +11,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import cardPlugin, { type Card } from '@hcengineering/card'
 import core, {
   getCurrentAccount,
-  type TxCreateDoc,
-  type TxMixin,
+  SortingOrder,
   TxOperations,
+  TxProcessor,
   type Client,
   type Tx,
   type TxApplyIf,
+  type TxCreateDoc,
+  type TxMixin,
   type TxResult,
-  type TxUpdateDoc,
-  TxProcessor,
-  SortingOrder
+  type TxUpdateDoc
 } from '@hcengineering/core'
 import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
-import process, { ExecutionStatus, type ProcessToDo, isUpdateTx } from '@hcengineering/process'
-import { createExecution, getNextStateUserInput, requestResult, pickTransition } from './utils'
-import cardPlugin, { type Card } from '@hcengineering/card'
+import { type ApproveRequest, ExecutionStatus, isUpdateTx, type ProcessToDo } from '@hcengineering/process'
+import process from './plugin'
+import { createExecution, getNextStateUserInput, pickTransition, requestResult } from './utils'
 
 /**
  * @public
@@ -65,6 +66,7 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
       await this.handleCardUpdate(etx)
       await this.handleTagAdd(etx)
       await this.handleToDoDone(etx)
+      await this.handleApproveRequest(etx)
     }
   }
 
@@ -145,6 +147,43 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
       .findAllSync(process.class.Process, { masterTag: mixinTx.mixin, autoStart: true })
     for (const proc of processes) {
       await createExecution(mixinTx.objectId, proc._id, mixinTx.objectSpace)
+    }
+  }
+
+  private async handleApproveRequest (etx: Tx): Promise<void> {
+    if (etx._class === core.class.TxUpdateDoc) {
+      const cud = etx as TxUpdateDoc<ApproveRequest>
+      if (cud.objectClass !== process.class.ApproveRequest) return
+      if (cud.operations.doneOn == null || cud.operations.approved == null) return
+      const approveRequest = await this.client.findOne(process.class.ApproveRequest, {
+        _id: cud.objectId
+      })
+      if (approveRequest === undefined) return
+      const execution = await this.client.findOne(process.class.Execution, {
+        _id: approveRequest.execution
+      })
+      if (execution === undefined) return
+      const txop = new TxOperations(this.client, getCurrentAccount().primarySocialId)
+      const transitions = this.client.getModel().findAllSync(
+        process.class.Transition,
+        {
+          process: execution.process,
+          from: execution.currentState,
+          trigger: cud.operations.approved
+            ? process.trigger.OnApproveRequestApproved
+            : process.trigger.OnApproveRequestRejected
+        },
+        { sort: { rank: SortingOrder.Ascending } }
+      )
+      const updatedApproveRequest = TxProcessor.updateDoc2Doc(approveRequest, cud)
+      const transition = await pickTransition(this.client, execution, transitions, {
+        todo: updatedApproveRequest
+      })
+      if (transition === undefined) return
+      const context = await getNextStateUserInput(execution, transition, execution.context)
+      await txop.update(execution, {
+        context
+      })
     }
   }
 

@@ -85,6 +85,7 @@ export async function sendExportCompletionNotification (
           objectId: resultId,
           objectClass: exportPlugin.class.ExportResultRecord,
           icon: exportPlugin.icon.Export,
+          header: exportPlugin.string.ImportCompleted,
           message: exportPlugin.string.ImportToWorkspaceNotificationMessage,
           props: {
             count,

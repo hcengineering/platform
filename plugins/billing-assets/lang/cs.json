@@ -56,6 +56,8 @@
     "Of": "z",
     "UpgradePlan": "Upgradovat plán",
     "LimitReached": "Dosažen limit pracovního prostoru, některé funkce mohou být zakázány. Upgradujte pro obnovení plného přístupu.",
-    "RestrictedPlans": "Pouze vlastník pracovního prostoru nebo správce fakturace může změnit plán předplatného."
+    "RestrictedPlans": "Pouze vlastník pracovního prostoru nebo správce fakturace může změnit plán předplatného.",
+    "SubscriptionOperationFailed": "Operace s předplatným se nezdařila",
+    "SubscriptionErrorMessage": "Něco se pokazilo. Zkuste to znovu nebo kontaktujte podporu."
   }
 }

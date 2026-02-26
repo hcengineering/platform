@@ -45,6 +45,7 @@
   {viewlets}
   {label}
   {space}
+  {resultQuery}
   {modeSelectorProps}
 >
   <svelte:fragment slot="header-tools">

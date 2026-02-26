@@ -8,6 +8,7 @@ import { chunterId } from '@hcengineering/chunter'
 import { contactId } from '@hcengineering/contact'
 import { documentsId } from '@hcengineering/controlled-documents'
 import { documentId } from '@hcengineering/document'
+import { exportId } from '@hcengineering/export'
 import { driveId } from '@hcengineering/drive'
 import { githubId } from '@hcengineering/github'
 import { gmailId } from '@hcengineering/gmail'
@@ -50,6 +51,7 @@ import chunterEn from '@hcengineering/chunter-assets/lang/en.json'
 import contactEn from '@hcengineering/contact-assets/lang/en.json'
 import documentsEn from '@hcengineering/controlled-documents-assets/lang/en.json'
 import documentEn from '@hcengineering/document-assets/lang/en.json'
+import exportEn from '@hcengineering/export-assets/lang/en.json'
 import driveEn from '@hcengineering/drive-assets/lang/en.json'
 import githubEn from '@hcengineering/github-assets/lang/en.json'
 import gmailEn from '@hcengineering/gmail-assets/lang/en.json'
@@ -109,6 +111,7 @@ export function registerStringLoaders (): void {
   addStringsLoader(preferenceId, async (lang: string) => preferenceEn)
   addStringsLoader(hrId, async (lang: string) => hrEn)
   addStringsLoader(documentId, async (lang: string) => documentEn)
+  addStringsLoader(exportId, async (lang: string) => exportEn)
   addStringsLoader(requestId, async (lang: string) => requestEn)
   addStringsLoader(loveId, async (lang: string) => loveEn)
   addStringsLoader(driveId, async (lang: string) => driveEn)

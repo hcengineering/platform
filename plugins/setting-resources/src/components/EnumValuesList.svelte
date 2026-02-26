@@ -45,7 +45,7 @@
     return false
   }
 
-  function dragover (ev: MouseEvent, item: string) {
+  function dragover (ev: MouseEvent, item: string): void {
     const s = values.findIndex((p) => p === selected)
     const i = values.findIndex((p) => p === item)
     if (dragswap(ev, item)) {
@@ -55,11 +55,11 @@
 
   const dispatch = createEventDispatcher()
 
-  async function remove (target: string) {
+  async function remove (target: string): Promise<void> {
     dispatch('remove', target)
   }
 
-  async function onDrop () {
+  async function onDrop (): Promise<void> {
     dispatch('drop')
   }
 
@@ -70,7 +70,7 @@
       label: setting.string.Delete,
       action: () => {
         if (opened !== undefined) {
-          remove(values[opened])
+          void remove(values[opened])
           opened = undefined
         }
       }

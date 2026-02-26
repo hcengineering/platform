@@ -56,6 +56,8 @@
     "Of": "de",
     "UpgradePlan": "Mettre à niveau le plan",
     "LimitReached": "Limite de l'espace de travail atteinte, certaines fonctionnalités peuvent être désactivées. Mettez à niveau pour restaurer l'accès complet.",
-    "RestrictedPlans": "Seul le propriétaire de l'espace de travail ou le gestionnaire de facturation peut modifier le plan d'abonnement."
+    "RestrictedPlans": "Seul le propriétaire de l'espace de travail ou le gestionnaire de facturation peut modifier le plan d'abonnement.",
+    "SubscriptionOperationFailed": "Échec de l'opération d'abonnement",
+    "SubscriptionErrorMessage": "Une erreur s'est produite. Veuillez réessayer ou contacter le support."
   }
 }

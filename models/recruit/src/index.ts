@@ -188,31 +188,7 @@ export function createModel (builder: Builder): void {
               createEvent: RecruitEvents.PlusTalentButtonClicked,
               createLabel: recruit.string.TalentCreateLabel,
               createComponent: recruit.component.CreateCandidate,
-              createComponentProps: { shouldSaveDraft: false },
-              actionVisible: true,
-              actionConfig: {
-                skipAttributes: ['_class', 'avatarType', 'space'],
-                attributeKeyMap: { city: 'location' },
-                attributeTransforms: {
-                  channels: {
-                    operations: [
-                      {
-                        type: 'group_by',
-                        config: {
-                          keyField: 'data.provider',
-                          valueField: 'data.value'
-                        }
-                      },
-                      {
-                        type: 'join',
-                        config: {
-                          delimiter: ', '
-                        }
-                      }
-                    ]
-                  }
-                }
-              }
+              createComponentProps: { shouldSaveDraft: false }
             },
             position: 'vacancy'
           },
@@ -321,6 +297,41 @@ export function createModel (builder: Builder): void {
       }
     },
     recruit.viewlet.TableCandidate
+  )
+
+  const tableCandidateExportConfig = {
+    skipAttributes: ['_class', 'avatarType', 'space'],
+    attributeKeyMap: { city: 'location' },
+    attributeTransforms: {
+      channels: {
+        operations: [
+          {
+            type: 'group_by',
+            config: {
+              keyField: 'data.provider',
+              valueField: 'data.value'
+            }
+          },
+          {
+            type: 'join',
+            config: {
+              delimiter: ', '
+            }
+          }
+        ]
+      }
+    }
+  }
+  builder.createDoc(
+    view.class.ViewletViewAction,
+    core.space.Model,
+    {
+      descriptor: view.viewlet.Table,
+      extension: workbench.extensions.SpecialViewAction,
+      config: tableCandidateExportConfig,
+      applicableToClass: recruit.mixin.Candidate
+    },
+    recruit.specialViewAction.TableCandidate
   )
 
   builder.createDoc(

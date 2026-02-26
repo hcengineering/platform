@@ -60,7 +60,7 @@ export type RoomLanguage =
   | 'no'
   | 'pl'
   | 'pt'
-  | 'pt-BR'
+  | 'pt-br'
   | 'pt-PT'
   | 'ro'
   | 'ru'

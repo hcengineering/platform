@@ -1,5 +1,8 @@
 {
   "string": {
-    "PrintToPDF": "Imprimir em PDF"
+    "PrintToPDF": "Imprimir em PDF",
+    "PrintingDocumentOf": "Imprimindo documento {current} de {total}",
+    "DownloadAll": "Descarregar tudo",
+    "PrintFailed": "Falha na impressão"
   }
 }

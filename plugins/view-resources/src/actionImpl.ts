@@ -737,7 +737,7 @@ async function CopyAsMarkdownTableAction (
 
   // Merge store context with props (props take precedence)
   const mergedProps = {
-    cardClass: props.cardClass,
+    cardClass: viewletContext?._class ?? props.cardClass,
     viewlet: props.viewlet ?? viewletContext?.viewlet,
     config: props.config ?? viewletContext?.config,
     query: props.query ?? viewletContext?.query,

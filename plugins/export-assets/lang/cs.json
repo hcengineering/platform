@@ -47,7 +47,6 @@
     "SelectSpace": "Vybrat prostor",
     "NoSelectedDocuments": "Žádné dokumenty nevybrány",
     "RequestPermissionToImport": "Prosím, požádejte vlastníka cílového pracovního prostoru o povolení k importu dokumentů.",
-    "SkipDeletedObsolete": "Přeskočit archivované nebo zastaralé dokumenty",
     "ExportOnlyEffective": "Exportovat pouze dokumenty s platným stavem",
     "ExportFilterMode": "Dokumenty k exportu",
     "ExportFilterEffectiveOnly": "Pouze platné dokumenty",

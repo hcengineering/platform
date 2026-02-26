@@ -15,7 +15,13 @@
 
 import type { Class, Client, Doc, Hierarchy, Ref, PersonId } from '@hcengineering/core'
 import { getCurrentLanguage } from '@hcengineering/theme'
-import type { AttributeModel, BuildMarkdownTableMetadata, TableMetadata, Viewlet } from '@hcengineering/view'
+import type {
+  AttributeModel,
+  BuildMarkdownTableMetadata,
+  TableMetadata,
+  Viewlet,
+  BuildModelKey
+} from '@hcengineering/view'
 import viewPlugin from '@hcengineering/view'
 import { buildConfigLookup, buildModel, getAttributeValue } from '@hcengineering/view-resources'
 import type { CopyAsMarkdownTableProps, CopyRelationshipTableAsMarkdownProps } from '../types'
@@ -25,33 +31,45 @@ import { rebuildRelationshipTableViewModel, isRelationshipTable } from '../data'
 import { escapeMarkdownLinkText } from './escape'
 import { createMarkdownLink } from './link'
 
-async function buildRelationshipTableFromMetadata (
+async function buildRelationshipTablePropsFromMetadata (
   docs: Doc[],
   metadata: BuildMarkdownTableMetadata,
   client: Client
-): Promise<string> {
+): Promise<CopyRelationshipTableAsMarkdownProps> {
   const hierarchy = client.getHierarchy()
   const cardClass = metadata.cardClass as Ref<Class<Doc>>
 
-  const config = metadata.config ?? []
-  const lookup = buildConfigLookup(hierarchy, cardClass, config)
-  const model = await buildModel({
-    client,
-    _class: cardClass,
-    keys: config,
-    lookup
-  })
+  let model: AttributeModel[]
+  if (metadata.config !== undefined && metadata.config.length > 0) {
+    const config = metadata.config
+    const lookup = buildConfigLookup(hierarchy, cardClass, config)
+    model = await buildModel({
+      client,
+      _class: cardClass,
+      keys: config,
+      lookup
+    })
+  } else {
+    model = await buildTableModel(client, hierarchy, cardClass, undefined)
+  }
 
   const viewModel = await rebuildRelationshipTableViewModel(docs, model, cardClass, hierarchy, client)
-
-  const props: CopyRelationshipTableAsMarkdownProps = {
+  return {
     viewModel,
     model,
     objects: docs,
     cardClass,
     query: metadata.query
   }
+}
 
+async function buildRelationshipTableFromMetadata (
+  docs: Doc[],
+  metadata: BuildMarkdownTableMetadata,
+  client: Client
+): Promise<string> {
+  const hierarchy = client.getHierarchy()
+  const props = await buildRelationshipTablePropsFromMetadata(docs, metadata, client)
   const language = getCurrentLanguage()
   return await buildRelationshipTableMarkdown(props, hierarchy, language)
 }
@@ -121,7 +139,7 @@ export async function buildMarkdownTableFromDocs (
     const model = await buildModel({
       client,
       _class: props.cardClass,
-      keys: actualConfig.filter((key: string | import('@hcengineering/view').BuildModelKey) => {
+      keys: actualConfig.filter((key: string | BuildModelKey) => {
         if (typeof key === 'string') {
           return !hiddenKeys.includes(key)
         }
@@ -234,6 +252,7 @@ export async function buildRelationshipTableMarkdown (
       }
 
       if (doc === undefined) {
+        if (cell.rowSpan === 0) continue
         row[attrIndex] = ''
         continue
       }

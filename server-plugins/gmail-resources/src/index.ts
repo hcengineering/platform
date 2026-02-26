@@ -44,7 +44,10 @@ import serverNotification from '@hcengineering/server-notification'
 import {
   AvailableProvidersCache,
   AvailableProvidersCacheKey,
-  getContentByTemplate
+  getContentByTemplate,
+  getNotificationProviderControl,
+  getReceiversInfo,
+  getAllowedProviders
 } from '@hcengineering/server-notification-resources'
 import { getMetadata } from '@hcengineering/platform'
 import activity, { ActivityMessage } from '@hcengineering/activity'
@@ -156,7 +159,7 @@ async function notifyByEmail (
   senderSocialId: PersonId,
   email: string,
   data: InboxNotification,
-  message: ActivityMessage
+  message?: ActivityMessage
 ): Promise<void> {
   let senderName = sender !== undefined ? formatName(sender.name, control.branding?.lastNameFirst) : ''
   if (senderName === '' && senderSocialId === core.account.System) {
@@ -166,6 +169,12 @@ async function notifyByEmail (
 
   if (content !== undefined) {
     await sendEmailNotification(control.ctx, content.text, content.html, content.subject, email)
+  } else {
+    control.ctx.info('notifyByEmail: getContentByTemplate returned undefined, email not sent', {
+      notificationId: data._id,
+      type,
+      docClass: doc._class
+    })
   }
 }
 
@@ -197,7 +206,10 @@ async function processEmailNotifications (control: TriggerControl, notifications
   const docId = notifications[0].objectId
   const docClass = notifications[0].objectClass
   const doc = (await control.findAll(control.ctx, docClass, { _id: docId }))[0]
-  if (doc === undefined) return
+  if (doc === undefined) {
+    control.ctx.info('processEmailNotifications: doc not found', { docId, docClass })
+    return
+  }
   const messages = await getNotificationMessages(notifications, control)
   const { hierarchy } = control
 
@@ -205,7 +217,10 @@ async function processEmailNotifications (control: TriggerControl, notifications
 
   for (const n of notifications) {
     const type = (n.types ?? [])[0]
-    if (type === undefined) continue
+    if (type === undefined) {
+      control.ctx.info('processEmailNotifications: skipping notification without type', { notificationId: n._id })
+      continue
+    }
     let message: ActivityMessage | undefined
     if (hierarchy.isDerived(n._class, notification.class.ActivityInboxNotification)) {
       const activityNotification = n as ActivityInboxNotification
@@ -215,11 +230,22 @@ async function processEmailNotifications (control: TriggerControl, notifications
       if (hierarchy.isDerived(mentionNotification.mentionedInClass, activity.class.ActivityMessage)) {
         message = messages.find((m) => m._id === mentionNotification.mentionedIn)
       }
+    } else if (hierarchy.isDerived(n._class, notification.class.CommonInboxNotification)) {
+      message = undefined
     }
 
-    if (message === undefined) continue
+    if (message === undefined && !hierarchy.isDerived(n._class, notification.class.CommonInboxNotification)) {
+      control.ctx.info('processEmailNotifications: skipping - no ActivityMessage and not CommonInboxNotification', {
+        notificationId: n._id,
+        notificationClass: n._class
+      })
+      continue
+    }
     const employee = await getEmployeeByAcc(control, n.user)
-    if (employee === undefined) continue
+    if (employee === undefined) {
+      control.ctx.info('processEmailNotifications: no employee for user', { notificationId: n._id, user: n.user })
+      continue
+    }
     const emailQuery = {
       attachedTo: employee._id,
       type: { $in: [SocialIdType.EMAIL, SocialIdType.GOOGLE] },
@@ -247,30 +273,85 @@ async function processEmailNotifications (control: TriggerControl, notifications
       continue
     }
 
-    const senderSocialId = message.createdBy ?? message.modifiedBy
+    const senderSocialId = message !== undefined ? (message.createdBy ?? message.modifiedBy) : core.account.System
     const sender = senders.get(senderSocialId) ?? (await getPerson(control, senderSocialId))
     if (sender != null) {
       senders.set(senderSocialId, sender)
     }
 
+    control.ctx.info('processEmailNotifications: sending email', {
+      notificationId: n._id,
+      type,
+      notificationClass: n._class
+    })
     await notifyByEmail(control, type, doc, sender, senderSocialId, emails[0].value, n, message)
   }
 }
 
+function hasEmailProvider (n: InboxNotification, availableProviders: AvailableProvidersCache): boolean {
+  const providers = availableProviders.get(n._id) ?? availableProviders.get(n.objectId as Ref<InboxNotification>)
+  return providers?.find((p) => p === gmail.providers.EmailNotificationProvider) !== undefined
+}
+
 async function NotificationsHandler (txes: TxCreateDoc<InboxNotification>[], control: TriggerControl): Promise<Tx[]> {
+  control.ctx.info('NotificationsHandler: received InboxNotification txes', {
+    count: txes.length,
+    workspace: control.workspace?.url,
+    objectClasses: [...new Set(txes.map((tx) => tx.objectClass))]
+  })
+
   const availableProviders: AvailableProvidersCache = control.contextCache.get(AvailableProvidersCacheKey) ?? new Map()
 
-  const all: InboxNotification[] = txes
-    .map((tx) => TxProcessor.createDoc2Doc(tx))
-    .filter(
-      (it) => availableProviders.get(it._id)?.find((p) => p === gmail.providers.EmailNotificationProvider) !== undefined
-    )
+  const all: InboxNotification[] = txes.map((tx) => TxProcessor.createDoc2Doc(tx))
 
-  if (all.length === 0) {
+  const notificationsWithEmail = all.filter((it) => hasEmailProvider(it, availableProviders))
+
+  control.ctx.info('NotificationsHandler: processing inbox notifications', {
+    total: all.length,
+    withEmailFromCache: notificationsWithEmail.length,
+    notificationClasses: [...new Set(all.map((n) => n._class))],
+    notificationTypes: [...new Set(all.flatMap((n) => n.types ?? []))]
+  })
+
+  if (notificationsWithEmail.length < all.length) {
+    const notificationControl = await getNotificationProviderControl(control.ctx, control)
+    const receivers = await getReceiversInfo(control.ctx, [...new Set(all.map((n) => n.user))], control)
+    const receiverByAccount = new Map(receivers.map((r) => [r.account, r]))
+    for (const n of all) {
+      if (hasEmailProvider(n, availableProviders)) continue
+      const type = (n.types ?? [])[0]
+      if (type === undefined) {
+        control.ctx.info('NotificationsHandler: skipping notification without type', { notificationId: n._id })
+        continue
+      }
+      const notificationType = control.modelDb.getObject(type)
+      const receiver = receiverByAccount.get(n.user)
+      if (receiver === undefined) {
+        control.ctx.info('NotificationsHandler: no receiver info for user', {
+          notificationId: n._id,
+          type,
+          reason: 'user not in getReceiversInfo result'
+        })
+        continue
+      }
+      const allowedProviders = getAllowedProviders(control, receiver.socialIds, notificationType, notificationControl)
+      if (allowedProviders.includes(gmail.providers.EmailNotificationProvider)) {
+        notificationsWithEmail.push(n)
+      } else {
+        control.ctx.info('NotificationsHandler: email provider not enabled for notification type', {
+          notificationId: n._id,
+          type
+        })
+      }
+    }
+  }
+
+  if (notificationsWithEmail.length === 0) {
+    control.ctx.info('NotificationsHandler: no notifications with email provider, skipping')
     return []
   }
 
-  const notificationsByDocId = groupByArray(all, (n) => n.objectId)
+  const notificationsByDocId = groupByArray(notificationsWithEmail, (n) => n.objectId)
 
   await Promise.all(
     Array.from(notificationsByDocId.entries()).map(([docId, notifications]) =>

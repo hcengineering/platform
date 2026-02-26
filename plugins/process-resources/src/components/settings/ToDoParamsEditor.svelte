@@ -31,7 +31,7 @@
   function change (e: CustomEvent<string>): void {
     if (readonly || e.detail == null) return
     params._id = e.detail
-    params.result = undefined
+    params.result = {}
     dispatch('change', { params })
   }
 
@@ -46,6 +46,12 @@
   <Label label={plugin.string.ToDo} />
   <ToDoContextSelector {readonly} {skipRollback} {process} value={params._id} on:change={change} />
   {#if !skipRollback}
-    <ResultCriteriaEditor {readonly} {process} result={params.result} value={params._id} on:change={changeResult} />
+    <ResultCriteriaEditor
+      {readonly}
+      {process}
+      result={params.result ?? {}}
+      value={params._id}
+      on:change={changeResult}
+    />
   {/if}
 </div>

@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { AccountRole } from '@hcengineering/core'
 import { Model, type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import preference, { TPreference } from '@hcengineering/model-preference'
@@ -32,6 +33,12 @@ export class TDesktopNotificationPreference extends TPreference implements Deskt
 
 export function createModel (builder: Builder): void {
   builder.createModel(TDesktopNotificationPreference)
+
+  builder.mixin(desktopPreferences.class.DesktopNotificationPreference, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest,
+    updateAccessLevel: AccountRole.Guest,
+    removeAccessLevel: AccountRole.Guest
+  })
 
   builder.createDoc(
     notification.class.NotificationPreferencesGroup,

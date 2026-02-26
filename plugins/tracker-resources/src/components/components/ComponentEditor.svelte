@@ -35,6 +35,7 @@
   export let shape: ButtonShape = undefined
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
+  export let maxWidth: string | undefined = undefined
   // export let onlyIcon: boolean = false
   export let isAction: boolean = false
   export let groupBy: string | undefined = undefined
@@ -109,7 +110,7 @@
 
 {#if kind === 'list'}
   {#if !Array.isArray(value) && value.component}
-    <div bind:this={element} class={compression ? 'label-wrapper' : 'clear-mins'}>
+    <div bind:this={element} class={compression ? 'label-wrapper' : 'clear-mins'} style:max-width={maxWidth}>
       <ComponentSelector
         {kind}
         {size}
@@ -135,6 +136,7 @@
     class="flex flex-wrap clear-mins"
     class:minus-margin={kind === 'list-header'}
     class:label-wrapper={compression}
+    style:max-width={maxWidth}
     style:flex-direction={twoRows ? 'column' : 'row'}
   >
     {#if (!Array.isArray(value) && value.component && value.component !== $activeComponent && groupBy !== 'component') || shouldShowPlaceholder}

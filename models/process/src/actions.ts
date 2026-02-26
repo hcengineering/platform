@@ -35,6 +35,22 @@ export function defineMethods (builder: Builder): void {
     process.class.Method,
     core.space.Model,
     {
+      label: process.string.RequestApproval,
+      objectClass: process.class.ApproveRequest,
+      editor: process.component.ApproveRequestEditor,
+      presenter: process.component.ToDoPresenter,
+      createdContext: {
+        _class: process.class.ApproveRequest
+      },
+      requiredParams: ['user']
+    },
+    process.method.RequestApproval
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
       label: process.string.CreateToDo,
       editor: process.component.ToDoEditor,
       objectClass: process.class.ProcessToDo,
@@ -102,5 +118,85 @@ export function defineMethods (builder: Builder): void {
       requiredParams: ['_id']
     },
     process.method.AddTag
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.CancelToDo,
+      editor: process.component.CancelToDoEditor,
+      presenter: process.component.ToDoValuePresenter,
+      objectClass: process.class.ProcessToDo,
+      requiredParams: ['_id'],
+      createdContext: null
+    },
+    process.method.CancelToDo
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.CancelProcess,
+      editor: process.component.CancelSubProcessEditor,
+      presenter: process.component.SubProcessPresenter,
+      objectClass: process.class.Process,
+      requiredParams: ['_id'],
+      createdContext: null
+    },
+    process.method.CancelSubProcess
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.LockCard,
+      objectClass: card.class.Card,
+      requiredParams: [],
+      createdContext: null
+    },
+    process.method.LockCard
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.LockSection,
+      objectClass: card.class.Card,
+      editor: process.component.LockSectionEditor,
+      presenter: process.component.LockSectionPresenter,
+      requiredParams: ['_id'],
+      createdContext: null
+    },
+    process.method.LockSection
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.UnlockCard,
+      objectClass: card.class.Card,
+      requiredParams: [],
+      createdContext: null
+    },
+    process.method.UnlockCard
+  )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.UnlockSection,
+      objectClass: card.class.Card,
+      editor: process.component.LockSectionEditor,
+      presenter: process.component.UnLockSectionPresenter,
+      requiredParams: ['_id'],
+      createdContext: null
+    },
+    process.method.UnlockSection
   )
 }

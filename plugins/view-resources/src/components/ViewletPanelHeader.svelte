@@ -16,7 +16,9 @@
     SearchInput,
     themeStore
   } from '@hcengineering/ui'
-  import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import view, { ViewOptions, Viewlet, ViewletPreference, type ViewletViewAction } from '@hcengineering/view'
+  import { ComponentExtensions, getClient } from '@hcengineering/presentation'
+  import { getViewletSpecialActions } from '../viewletUtils'
 
   import FilterBar from './filter/FilterBar.svelte'
   import FilterButton from './filter/FilterButton.svelte'
@@ -51,6 +53,8 @@
   $: searchQuery = search === '' ? { ...query } : { ...query, $search: search }
 
   $: hideExtra = modeSelectorProps === undefined && $$slots.extra === undefined
+
+  $: viewletActions = viewlet != null ? getViewletSpecialActions(getClient(), viewlet) : []
 </script>
 
 <Header {adaptive} {hideActions} {hideExtra} overflowExtra>
@@ -67,6 +71,16 @@
     <FilterButton {_class} />
   </svelte:fragment>
   <svelte:fragment slot="actions">
+    {#each viewletActions as action (action._id)}
+      <ComponentExtensions
+        extension={action.extension}
+        props={{
+          _class,
+          query: resultQuery,
+          config: action.config ?? {}
+        }}
+      />
+    {/each}
     <slot name="actions" />
   </svelte:fragment>
   <svelte:fragment slot="extra">

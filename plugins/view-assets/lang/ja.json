@@ -109,6 +109,7 @@
     "Or": "または",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "クリップボードにコピー",
+    "CopyAll": "すべてコピー",
     "CopyDocumentMarkdown": "Markdownとしてコピー",
     "CopyAsMarkdownTable": "Markdownテーブルとしてコピー",
     "TableCopiedToClipboard": "テーブルをクリップボードにコピーしました",

@@ -17,6 +17,7 @@ import { AccountRole, type AccountUuid, type Class, DOMAIN_MODEL, type Ref, type
 import { type Builder, Mixin, Model, Prop, TypeRef, UX } from '@hcengineering/model'
 import preference, { TPreference } from '@hcengineering/model-preference'
 import { createAction } from '@hcengineering/model-view'
+import core, { TClass, TDoc } from '@hcengineering/model-core'
 import { type Asset, getEmbeddedLabel, type IntlString, type Resource } from '@hcengineering/platform'
 import view, { type KeyBinding } from '@hcengineering/view'
 import type {
@@ -32,7 +33,6 @@ import type {
   WorkbenchTab
 } from '@hcengineering/workbench'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import core, { TClass, TDoc } from '@hcengineering/model-core'
 import presentation from '@hcengineering/model-presentation'
 
 import workbench from './plugin'

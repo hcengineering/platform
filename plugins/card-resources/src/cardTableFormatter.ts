@@ -113,7 +113,7 @@ export async function formatCardValue (
 
   if (attr.key === '') {
     const labelStr = typeof attr.label === 'string' ? attr.label : ''
-    if (labelStr.startsWith('custom') || attr.isLookup) {
+    if (labelStr.startsWith('custom')) {
       return undefined
     }
     const cardObj = card as unknown as Card

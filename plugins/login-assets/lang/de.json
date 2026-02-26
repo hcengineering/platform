@@ -20,6 +20,7 @@
     "LastName": "Nachname",
     "FirstName": "Vorname",
     "Join": "Beitreten",
+    "JoinWorkspace": "{workspaceName} beitreten",
     "Email": "E-Mail",
     "Password": "Passwort",
     "Workspace": "Name des Arbeitsbereichs",
@@ -84,6 +85,13 @@
     "SignUpToCreateWorkspace": "Keine Arbeitsbereiche mit Gastzugang. Bitte registrieren Sie sich, um Ihren eigenen zu erstellen.",
     "WhatIsYourName": "Wie ist Ihr Name?",
     "AccessExpired": "Zugriffszeit abgelaufen. Bitte fragen Sie nach einem neuen Zugangslink.",
-    "AccessNotActive": "Zugriffszeit hat noch nicht begonnen. Sie beginnt in: "
+    "AccessNotActive": "Zugriffszeit hat noch nicht begonnen. Sie beginnt in: ",
+    "JoinWithThisAccount": "Mit diesem Konto beitreten",
+    "UseDifferentAccount": "Anderes Konto verwenden",
+    "UseCurrentAccountToJoin": "Bereits angemeldet?",
+    "LogInAndJoin": "Anmelden & beitreten",
+    "SignUpAndJoin": "Registrieren & beitreten",
+    "CreateNewAccount": "Neues Konto erstellen",
+    "SignedInAs": "Angemeldet als {name}"
   }
 }

@@ -113,6 +113,7 @@
     "Or": "或",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "复制到剪贴板",
+    "CopyAll": "复制全部",
     "CopyDocumentMarkdown": "复制为 Markdown",
     "CopyAsMarkdownTable": "复制为 Markdown 表格",
     "TableCopiedToClipboard": "表格已复制到剪贴板",

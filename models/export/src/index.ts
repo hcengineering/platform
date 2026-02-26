@@ -89,7 +89,12 @@ export function createModel (builder: Builder): void {
       group: exportPlugin.ids.ImportNotificationGroup,
       txClasses: [],
       objectClass: exportPlugin.class.ExportResultRecord,
-      defaultEnabled: true
+      defaultEnabled: true,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p><p>{link}</p>',
+        subjectTemplate: '{title}'
+      }
     },
     exportPlugin.ids.ImportedDocumentsNotification
   )

@@ -41,6 +41,7 @@
   export let shape: ButtonShape = undefined
   export let justify: 'left' | 'center' = 'left'
   export let width: string | undefined = '100%'
+  export let maxWidth: string | undefined = undefined
   export let onlyIcon: boolean = false
   export let isAction: boolean = false
 
@@ -93,7 +94,7 @@
 
 {#if kind === 'list'}
   {#if !Array.isArray(value) && value.milestone}
-    <div bind:this={element} class={compression ? 'label-wrapper' : 'clear-mins'}>
+    <div bind:this={element} class={compression ? 'label-wrapper' : 'clear-mins'} style:max-width={maxWidth}>
       <MilestoneSelector
         {kind}
         {size}
@@ -117,6 +118,7 @@
   <div
     bind:this={element}
     class="flex flex-wrap clear-mins"
+    style:max-width={maxWidth}
     class:minus-margin={kind === 'list-header'}
     class:label-wrapper={compression}
     style:flex-direction={twoRows ? 'column' : 'row'}

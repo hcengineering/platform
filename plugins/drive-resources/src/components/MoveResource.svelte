@@ -29,7 +29,7 @@
 
   const dispatch = createEventDispatcher()
 
-  let space: Ref<Drive> = value.space as Ref<Drive>
+  let space: Ref<Drive> = value.space
   let parent: Ref<Folder> = value.parent as Ref<Folder>
 
   async function save (): Promise<void> {

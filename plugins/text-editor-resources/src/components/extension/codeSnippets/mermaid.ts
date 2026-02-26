@@ -15,16 +15,19 @@
 
 import { codeBlockOptions } from '@hcengineering/text'
 import { getCurrentTheme, isThemeDark, themeStore } from '@hcengineering/theme'
+import { showPopup } from '@hcengineering/ui'
+import { mergeAttributes } from '@tiptap/core'
 import { CodeBlockLowlight, type CodeBlockLowlightOptions } from '@tiptap/extension-code-block-lowlight'
 import { type Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { NodeSelection, Plugin, PluginKey, TextSelection, type Transaction } from '@tiptap/pm/state'
 import { Decoration, DecorationSet, type EditorView } from '@tiptap/pm/view'
 import { createLowlight } from 'lowlight'
 import type { MermaidConfig } from 'mermaid'
+import { createRelativePositionFromTypeIndex, type RelativePosition, type Doc as YDoc } from 'yjs'
+
 import { isChangeEditable } from '../hooks/editable'
 
-import { mergeAttributes } from '@tiptap/core'
-import { createRelativePositionFromTypeIndex, type RelativePosition, type Doc as YDoc } from 'yjs'
+import MermaidPopup from './MermaidPopup.svelte'
 
 export interface MermaidOptions extends CodeBlockLowlightOptions {
   ydoc?: YDoc
@@ -156,6 +159,9 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
         diagramBuilder: () => null,
         textContent: node.textContent
       }
+      let pendingSelection = false
+      let pendingSelectionPos: number | null = null
+      let pendingSelectionTimer: number | null = null
 
       const toggleFoldState = (newState: boolean, event?: MouseEvent): void => {
         event?.preventDefault()
@@ -187,16 +193,56 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
       toggleButtonNode.onmousedown = (e) => {
         toggleFoldState(!nodeState.folded, e)
       }
-      previewNode.ondblclick = (e) => {
-        toggleFoldState(!nodeState.folded, e)
-      }
 
       previewNode.onclick = (e) => {
         if (typeof getPos !== 'function') return
-        const pos = getPos()
-        const selection = NodeSelection.create(editor.view.state.doc, pos)
-        editor.view.dispatch(editor.view.state.tr.setSelection(selection))
+        if (node?.type.name !== MermaidExtension.name) return
+
         e.preventDefault()
+        e.stopPropagation()
+
+        const pos = getPos()
+
+        const { selection } = editor.view.state
+        const mermaid = editor.view.state.doc.nodeAt(pos)
+        const isSelected =
+          containerNode.classList.contains('selected') ||
+          nodeState.selected ||
+          (pendingSelection && pendingSelectionPos === pos) ||
+          (selection instanceof NodeSelection &&
+            mermaid !== null &&
+            selection.from === pos &&
+            selection.to === pos + mermaid.nodeSize)
+
+        if (!isSelected) {
+          const nodePatch: NodePatchSpec = {
+            pos,
+            folded: nodeState.folded,
+            selected: true
+          }
+
+          const selection = NodeSelection.create(editor.view.state.doc, pos)
+          const tr = setTxMeta(editor.view.state.tr, { nodePatch })
+          tr.setSelection(selection)
+
+          editor.view.dispatch(tr)
+          pendingSelection = true
+          pendingSelectionPos = pos
+          if (pendingSelectionTimer !== null) {
+            clearTimeout(pendingSelectionTimer)
+          }
+          pendingSelectionTimer = window.setTimeout(() => {
+            pendingSelection = false
+            pendingSelectionPos = null
+            pendingSelectionTimer = null
+          }, 1000)
+          return
+        }
+
+        const diagram = nodeState.diagramBuilder?.(editor.view)
+        if (diagram?.svg != null) {
+          showPopup(MermaidPopup, { svg: diagram.svg, fullSize: true }, 'centered')
+        }
       }
 
       const syncState = (decorations: readonly Decoration[]): void => {
@@ -228,8 +274,10 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
 
         if (nodeState.selected) {
           containerNode.classList.add('selected')
+          previewNode.style.cursor = 'zoom-in'
         } else {
           containerNode.classList.remove('selected')
+          previewNode.style.cursor = 'default'
         }
 
         if (!isEmpty && error !== null) {
@@ -254,6 +302,15 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
 
         if (!allowFold && nodeState.folded) {
           toggleFoldState(false)
+        }
+
+        if (nodeState.selected && pendingSelection) {
+          pendingSelection = false
+          pendingSelectionPos = null
+          if (pendingSelectionTimer !== null) {
+            clearTimeout(pendingSelectionTimer)
+            pendingSelectionTimer = null
+          }
         }
       }
 
@@ -416,13 +473,37 @@ function buildState (
     // Ensure SVG maintains its natural size
     const svg = container.querySelector('svg')
     if (svg !== null) {
+      svg.style.width = 'auto'
+      svg.style.maxWidth = '100%'
       svg.style.height = 'auto'
-      // Remove any width/height attributes that might cause stretching
+      svg.style.display = 'block'
+
+      const widthAttr = svg.getAttribute('width')
+      const heightAttr = svg.getAttribute('height')
+      const viewBox = svg.getAttribute('viewBox')
+      const viewBoxParts = viewBox
+        ?.trim()
+        .split(/[\s,]+/)
+        .map((v) => Number.parseFloat(v))
+      const viewBoxWidth = viewBoxParts?.length === 4 ? viewBoxParts[2] : NaN
+      const viewBoxHeight = viewBoxParts?.length === 4 ? viewBoxParts[3] : NaN
+
+      const widthIsPercent = widthAttr?.trim().endsWith('%') ?? false
+      const heightIsPercent = heightAttr?.trim().endsWith('%') ?? false
+
+      if ((widthAttr !== undefined || widthIsPercent) && Number.isFinite(viewBoxWidth)) {
+        svg.setAttribute('width', String(viewBoxWidth))
+      }
+      if ((heightAttr !== undefined || heightIsPercent) && Number.isFinite(viewBoxHeight)) {
+        svg.setAttribute('height', String(viewBoxHeight))
+      }
+
+      // If no viewBox, derive one from numeric width/height to allow scaling down
       if (!svg.hasAttribute('viewBox')) {
-        const width = svg.getAttribute('width')
-        const height = svg.getAttribute('height')
-        if (width !== null && height !== null) {
-          svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
+        const widthValue = widthAttr !== null ? Number.parseFloat(widthAttr) : NaN
+        const heightValue = heightAttr !== null ? Number.parseFloat(heightAttr) : NaN
+        if (Number.isFinite(widthValue) && Number.isFinite(heightValue)) {
+          svg.setAttribute('viewBox', `0 0 ${widthValue} ${heightValue}`)
         }
       }
     }

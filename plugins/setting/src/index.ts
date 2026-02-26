@@ -123,6 +123,33 @@ export interface InviteSettings extends Configuration {
   expirationTime: number
   emailMask: string
   limit: number
+  defaultInviteRole: AccountRole
+  inviteLinkGeneratorRoles: AccountRole[]
+}
+
+/**
+ * Stable capability IDs for role-based permissions.
+ * Used with RoleCapabilitySettings to define which AccountRoles can perform which actions.
+ * @public
+ */
+export const RoleCapability = {
+  GenerateInviteLink: 'setting:capability:GenerateInviteLink',
+  ManageInviteSettings: 'setting:capability:ManageInviteSettings'
+} as const
+
+/**
+ * @public
+ */
+export type RoleCapabilityId = (typeof RoleCapability)[keyof typeof RoleCapability]
+
+/**
+ * Workspace-level config: which AccountRoles have which capabilities.
+ * Maps capability ID -> list of roles that have it (account has capability if hasAccountRole(account, role) for any role in the list).
+ * @public
+ */
+export interface RoleCapabilitySettings extends Configuration {
+  /** capabilityId -> roles that are allowed (e.g. [User, Maintainer, Owner]) */
+  roleByCapability: Record<string, AccountRole[]>
 }
 
 /**
@@ -164,6 +191,7 @@ export default plugin(settingId, {
     General: '' as Ref<Doc>,
     Owners: '' as Ref<Doc>,
     InviteSettings: '' as Ref<Doc>,
+    RoleCapabilitySettings: '' as Ref<Doc>,
     WorkspaceSetting: '' as Ref<Doc>,
     ManageSpaces: '' as Ref<Doc>,
     Spaces: '' as Ref<Doc>,
@@ -185,6 +213,7 @@ export default plugin(settingId, {
     Integration: '' as Ref<Class<Integration>>,
     IntegrationType: '' as Ref<Class<IntegrationType>>,
     InviteSettings: '' as Ref<Class<InviteSettings>>,
+    RoleCapabilitySettings: '' as Ref<Class<RoleCapabilitySettings>>,
     OfficeSettings: '' as Ref<Class<OfficeSettings>>,
     WorkspaceSetting: '' as Ref<Class<WorkspaceSetting>>
   },
@@ -214,7 +243,8 @@ export default plugin(settingId, {
     EditRelation: '' as AnyComponent,
     Mailboxes: '' as AnyComponent,
     AddEmailSocialId: '' as AnyComponent,
-    OfficeSettings: '' as AnyComponent
+    OfficeSettings: '' as AnyComponent,
+    UserRoleSelect: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -246,6 +276,9 @@ export default plugin(settingId, {
     Owners: '' as IntlString,
     Configure: '' as IntlString,
     InviteSettings: '' as IntlString,
+    RoleCapabilitySettings: '' as IntlString,
+    DefaultInviteRoleForJoin: '' as IntlString,
+    InviteLinkGeneratorRoles: '' as IntlString,
     General: '' as IntlString,
     Properties: '' as IntlString,
     TaskTypes: '' as IntlString,
@@ -336,5 +369,8 @@ export default plugin(settingId, {
   },
   metadata: {
     BackupUrl: '' as Metadata<string>
+  },
+  function: {
+    HasRoleCapability: '' as Resource<(capabilityId: RoleCapabilityId | string) => Promise<boolean>>
   }
 })

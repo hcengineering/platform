@@ -109,6 +109,7 @@
     "Or": "Или",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Скопировать в буфер обмена",
+    "CopyAll": "Копировать всё",
     "CopyDocumentMarkdown": "Скопировать как Markdown",
     "CopyAsMarkdownTable": "Скопировать как таблицу Markdown",
     "TableCopiedToClipboard": "Таблица скопирована в буфер обмена",

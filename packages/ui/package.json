@@ -49,8 +49,6 @@
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
     "dompurify": "^3.1.6",
-    "emojibase": "^16.0.0",
-    "emojibase-regex": "^16.0.0",
     "fast-equals": "^5.2.2",
     "svelte": "^4.2.20",
     "plyr": "3.7.8",

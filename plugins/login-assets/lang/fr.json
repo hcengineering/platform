@@ -20,6 +20,7 @@
     "LastName": "Nom de famille",
     "FirstName": "Prénom",
     "Join": "Rejoindre",
+    "JoinWorkspace": "Rejoindre {workspaceName}",
     "Email": "E-mail",
     "Password": "Mot de passe",
     "Workspace": "Nom de l'espace de travail",
@@ -83,6 +84,13 @@
     "SignUpToCreateWorkspace": "Aucun espace de travail avec accès invité. Veuillez vous inscrire pour créer le vôtre.",
     "WhatIsYourName": "Quel est votre nom ?",
     "AccessExpired": "Le temps d'accès a expiré. Veuillez demander un nouveau lien d'accès.",
-    "AccessNotActive": "Le temps d'accès n'a pas encore commencé. Il commence dans : "
+    "AccessNotActive": "Le temps d'accès n'a pas encore commencé. Il commence dans : ",
+    "JoinWithThisAccount": "Rejoindre avec ce compte",
+    "UseDifferentAccount": "Utiliser un autre compte",
+    "UseCurrentAccountToJoin": "Déjà connecté ?",
+    "LogInAndJoin": "Se connecter et rejoindre",
+    "SignUpAndJoin": "S'inscrire et rejoindre",
+    "CreateNewAccount": "Créer un nouveau compte",
+    "SignedInAs": "Connecté en tant que {name}"
   }
 }

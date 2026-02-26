@@ -10,10 +10,14 @@ export const printId = 'print' as Plugin
 
 export const print = plugin(printId, {
   string: {
-    PrintToPDF: '' as IntlString
+    PrintToPDF: '' as IntlString,
+    PrintingDocumentOf: '' as IntlString,
+    DownloadAll: '' as IntlString,
+    PrintFailed: '' as IntlString
   },
   component: {
     PrintToPDF: '' as AnyComponent,
+    PrintBulkToPDF: '' as AnyComponent,
     DOCXViewer: '' as AnyComponent
   },
   icon: {

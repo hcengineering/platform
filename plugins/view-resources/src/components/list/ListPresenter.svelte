@@ -29,6 +29,7 @@
   export let props: Record<string, any>
   export let hideDivider: boolean = false
   export let compactMode: boolean = false
+  export let readonly: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -89,7 +90,7 @@
         attributeModel,
         docObject,
         props,
-        $restrictionStore.readonly || !canChangeAttr(docObject, attributeModel.attribute, $permissionsStore)
+        readonly || $restrictionStore.readonly || !canChangeAttr(docObject, attributeModel.attribute, $permissionsStore)
       )}
       on:resize={translateSize}
     />
@@ -107,7 +108,7 @@
       attributeModel,
       docObject,
       props,
-      $restrictionStore.readonly || !canChangeAttr(docObject, attributeModel.attribute, $permissionsStore)
+      readonly || $restrictionStore.readonly || !canChangeAttr(docObject, attributeModel.attribute, $permissionsStore)
     )}
     on:resize={translateSize}
   />

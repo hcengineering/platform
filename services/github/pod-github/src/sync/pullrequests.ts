@@ -1319,7 +1319,9 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
     try {
       while (true) {
         const docsPart = allSyncDocs.splice(0, partsize)
-        const idsPart = docsPart.map((it) => (it.external as IssueExternalData).id).filter((it) => it !== undefined)
+        const idsPart = docsPart
+          .map((it) => (it.external as IssueExternalData | undefined)?.id)
+          .filter((id): id is string => id !== undefined)
         if (idsPart.length === 0) {
           break
         }
@@ -1366,7 +1368,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
             })
           } else if (partsize === 1) {
             // We need to update issue, since it is missing on external side.
-            const syncDoc = syncDocs.find((it) => it.external.id === idsPart[0])
+            const syncDoc = syncDocs.find((it) => it.external?.id === idsPart[0])
             if (syncDoc !== undefined) {
               ctx.warn('mark missing external PR', {
                 errors: err.errors,
@@ -1388,7 +1390,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         }
       }
       for (const d of syncDocs) {
-        if ((d.external as IssueExternalData).id == null) {
+        if ((d.external as IssueExternalData | undefined)?.id == null) {
           ctx.error('failed to do external sync for', { objectClass: d.objectClass, _id: d._id })
           // no external data for doc
           await derivedClient.update<DocSyncInfo>(d, {

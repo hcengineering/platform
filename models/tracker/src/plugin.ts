@@ -22,7 +22,7 @@ import { type ProjectType } from '@hcengineering/task'
 import { trackerId } from '@hcengineering/tracker'
 import tracker from '@hcengineering/tracker-resources/src/plugin'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
-import { type Action, type ViewAction, type Viewlet } from '@hcengineering/view'
+import { type Action, type ViewAction, type Viewlet, type ViewletViewAction } from '@hcengineering/view'
 import { type Application } from '@hcengineering/workbench'
 
 export default mergeIds(trackerId, tracker, {
@@ -63,13 +63,17 @@ export default mergeIds(trackerId, tracker, {
   app: {
     Tracker: '' as Ref<Application>
   },
+  specialViewAction: {
+    IssueList: '' as Ref<ViewletViewAction>
+  },
   viewlet: {
     IssueList: '' as Ref<Viewlet>,
     IssueTemplateList: '' as Ref<Viewlet>,
     IssueKanban: '' as Ref<Viewlet>,
     MilestoneList: '' as Ref<Viewlet>,
     ComponentList: '' as Ref<Viewlet>,
-    ProjectList: '' as Ref<Viewlet>
+    ProjectList: '' as Ref<Viewlet>,
+    ProjectListGrouped: '' as Ref<Viewlet>
   },
   ids: {
     TrackerNotificationGroup: '' as Ref<NotificationGroup>,

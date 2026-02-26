@@ -286,8 +286,9 @@
               props={{
                 object: $controlledDocument,
                 showCommenInput: true,
-                boundary,
-                focusIndex: 1000
+                boundary: boundary ?? undefined,
+                focusIndex: 1000,
+                shouldScroll: false
               }}
             />
           </div>

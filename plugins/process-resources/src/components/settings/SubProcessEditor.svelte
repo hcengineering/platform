@@ -60,9 +60,7 @@
 
   $: selected = _id !== undefined ? items.find((it) => it.id === _id)?.id : undefined
 
-  $: processes = client
-    .getModel()
-    .findAllSync(plugin.class.Process, { masterTag: { $in: ancestors }, _id: { $ne: process._id } })
+  $: processes = client.getModel().findAllSync(plugin.class.Process, { masterTag: { $in: ancestors } })
 
   function changeThis (): void {
     step.params = {}

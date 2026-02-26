@@ -263,7 +263,8 @@ export async function OnToDoCreate (txes: TxCUD<Doc>[], control: TriggerControl)
 
     if (
       !hierarchy.isDerived(objectSpace._class, core.class.SystemSpace) &&
-      !objectSpace.members.includes(currentAcc.uuid)
+      !objectSpace.members.includes(currentAcc.uuid) &&
+      currentAcc.primarySocialId !== core.account.System
     ) {
       continue
     }

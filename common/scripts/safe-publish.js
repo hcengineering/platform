@@ -43,8 +43,24 @@ function checkPackageExists(packageName, version) {
  */
 function getPublishablePackages(includePattern) {
   try {
-    const output = execSync('rush list -p --json', { encoding: 'utf-8' })
-    const config = JSON.parse(output)
+    const repoRoot = execSync('git rev-parse --show-toplevel', { encoding: 'utf-8' }).trim()
+    const output = execSync('node common/scripts/install-run-rush.js list -p --json', {
+      encoding: 'utf-8',
+      cwd: repoRoot
+    })
+    const lines = output.split('\n')
+    let jsonStart = -1
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].trim().startsWith('{')) {
+        jsonStart = i
+        break
+      }
+    }
+    if (jsonStart === -1) {
+      console.error('Could not find JSON output from rush list')
+      return []
+    }
+    const config = JSON.parse(lines.slice(jsonStart).join('\n'))
 
     return config.projects.filter((project) => {
       // Check if package should be published according to rush.json

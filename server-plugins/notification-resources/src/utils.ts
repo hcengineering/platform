@@ -266,10 +266,13 @@ function getMatchedTypes (
   isSpace: boolean,
   field?: string
 ): NotificationType[] {
-  const allTypes = control.modelDb
-    .findAllSync(notification.class.NotificationType, { ...(field !== undefined ? { field } : {}) })
-    .filter((p) => (isSpace ? p.spaceSubscribe === true : p.spaceSubscribe !== true))
   const filtered: NotificationType[] = []
+  let allTypes: NotificationType[] = control.modelDb.findAllSync(notification.class.NotificationType, {})
+  allTypes = allTypes.filter(
+    (p) =>
+      (isSpace ? p.spaceSubscribe === true : p.spaceSubscribe !== true) &&
+      (field === undefined || p.field === field || p.field === undefined)
+  )
   for (const type of allTypes) {
     if (isTypeMatched(control, type, tx, isOwn)) {
       filtered.push(type)

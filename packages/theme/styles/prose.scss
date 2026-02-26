@@ -574,12 +574,25 @@ pre.proseCodeBlock>pre.proseCode {
   .mermaidPreviewContainer {
     padding: 0.5rem;
     cursor: default;
-    overflow-x: auto;
+    overflow: auto;
   }
 
   &:not(.folded) .mermaidPreviewContainer {
     border-top: 1px solid var(--border-color);
     min-height: 6rem;
+  }
+
+  .mermaidPreview {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    svg {
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
   }
 }
 

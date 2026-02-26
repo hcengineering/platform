@@ -425,7 +425,10 @@
       element,
       editable: !readonly,
       editorProps: {
-        attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { class: 'flex-grow' })
+        attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, {
+          class: 'flex-grow',
+          translate: readonly ? 'yes' : 'no'
+        })
       },
       enableContentCheck: true,
       parseOptions: {

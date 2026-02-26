@@ -20,6 +20,7 @@
     "LastName": "Apelido",
     "FirstName": "Nome",
     "Join": "Participar",
+    "JoinWorkspace": "Participar em {workspaceName}",
     "Email": "Email",
     "Password": "Palavra-Passe",
     "Workspace": "Nome do espaço de trabalho",
@@ -83,6 +84,13 @@
     "SignUpToCreateWorkspace": "Não há espaços de trabalho com acesso de convidado. Por favor, cadastre-se para criar o seu.",
     "WhatIsYourName": "Qual é o seu nome?",
     "AccessExpired": "O tempo de acesso expirou. Por favor, solicite um novo link de acesso.",
-    "AccessNotActive": "O tempo de acesso ainda não começou. Começa em: "
+    "AccessNotActive": "O tempo de acesso ainda não começou. Começa em: ",
+    "JoinWithThisAccount": "Participar com esta conta",
+    "UseDifferentAccount": "Usar outra conta",
+    "UseCurrentAccountToJoin": "Já tem sessão iniciada?",
+    "LogInAndJoin": "Entrar e participar",
+    "SignUpAndJoin": "Registar e participar",
+    "CreateNewAccount": "Criar nova conta",
+    "SignedInAs": "Sessão iniciada como {name}"
   }
 }

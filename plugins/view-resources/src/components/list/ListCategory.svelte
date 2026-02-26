@@ -90,6 +90,7 @@
   export let limiter: RateLimiter
   export let listProvider: SelectionFocusProvider
   export let singleCategoryLimit = 50
+  export let readonly: boolean = false
 
   $: lastLevel = level + 1 >= viewOptions.groupBy.length
 
@@ -515,6 +516,7 @@
           {groupPersistKey}
           {viewOptionsConfig}
           {listDiv}
+          {readonly}
           dragItem
           dragstart={dragStartHandler}
         />
@@ -529,6 +531,7 @@
                 model={getDocItemModel(Hierarchy.mixinOrClass(docObject))}
                 {groupByKey}
                 selected={isSelected(docObject, $focusStore)}
+                {readonly}
                 checked={selectedObjectIdsSet.has(docObject._id)}
                 last={i === limited.length - 1 && HLimited >= itemProj.length}
                 lastCat={i === limited.length - 1 && (oneCat || lastCat) && HLimited >= itemProj.length}

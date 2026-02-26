@@ -37,7 +37,7 @@ import core, {
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import { type Middleware, type TxMiddlewareResult, type PipelineContext } from '@hcengineering/server-core'
-
+import contact from '@hcengineering/contact'
 import { BaseMiddleware } from '@hcengineering/server-core'
 
 /**
@@ -446,7 +446,18 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
 
     this.checkSpacePermissions(ctx, cudTx, cudTx.objectSpace)
     if (isSpace) {
+      this.checkSpaceTypePermissions(ctx, cudTx as TxCUD<Space>)
       this.checkSpacePermissions(ctx, cudTx, cudTx.objectId as Ref<Space>, true)
+    }
+  }
+
+  private checkSpaceTypePermissions (ctx: MeasureContext, cudTx: TxCUD<Space>): void {
+    const account = ctx.contextData.account
+    const h = this.context.hierarchy
+    if (account.primarySocialId === core.account.System) return
+
+    if (h.isDerived(cudTx.objectClass, contact.class.PersonSpace)) {
+      this.throwForbidden()
     }
   }
 

@@ -1,0 +1,13 @@
+{
+  "string": {
+    "IntegrationLabel": "Assistente de IA",
+    "IntegrationDescription": "Seu assistente pessoal alimentado por IA que ajuda a organizar, automatizar e simplificar seu fluxo de trabalho diário na plataforma",
+    "ConfigLabel": "Assistente de IA",
+    "ConfigDescription": "Assistente pessoal alimentado por IA",
+    "Connect": "Conectar",
+    "Cancel": "Cancelar",
+    "Status": "Status",
+    "FailedToConnect": "O serviço do Assistente de IA não está disponível",
+    "Configure": "Configurar Assistente de IA"
+  }
+}

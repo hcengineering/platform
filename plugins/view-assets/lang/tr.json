@@ -109,6 +109,7 @@
     "Or": "Veya",
     "HyperlinkPlaceholder": "https://ornek.com",
     "CopyToClipboard": "Panoya kopyala",
+    "CopyAll": "Tümünü kopyala",
     "CopyDocumentMarkdown": "Markdown olarak kopyala",
     "CopyAsMarkdownTable": "Markdown tablosu olarak kopyala",
     "TableCopiedToClipboard": "Tablo panoya kopyalandı",

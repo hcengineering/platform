@@ -1,5 +1,8 @@
 {
   "string": {
-      "PrintToPDF": "Print to PDF"
+    "PrintToPDF": "Print to PDF",
+    "PrintingDocumentOf": "Printing document {current} of {total}",
+    "DownloadAll": "Download all",
+    "PrintFailed": "Print failed"
   }
 }

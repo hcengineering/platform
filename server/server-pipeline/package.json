@@ -127,6 +127,8 @@
     "@hcengineering/hr-assets": "workspace:^0.7.0",
     "@hcengineering/request-assets": "workspace:^0.7.0",
     "@hcengineering/document-assets": "workspace:^0.7.0",
+    "@hcengineering/export": "workspace:^0.7.0",
+    "@hcengineering/export-assets": "workspace:^0.7.0",
     "@hcengineering/controlled-documents-assets": "workspace:^0.7.0",
     "@hcengineering/products-assets": "workspace:^0.7.0",
     "@hcengineering/training-assets": "workspace:^0.7.0",

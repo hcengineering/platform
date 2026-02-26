@@ -1,0 +1,22 @@
+# Reusable action: set all @hcengineering package versions from a v tag ref
+# (e.g. refs/tags/v0.7.370 → 0.7.370) using common/scripts/bump.js.
+# Call only when github.ref is a v* tag (e.g. if: startsWith(github.ref, 'refs/tags/v')).
+name: 'Set package versions'
+description: 'Set all @hcengineering package versions from a v tag ref using bump.js'
+inputs:
+  ref:
+    description: 'Git ref for the tag (e.g. github.ref, e.g. refs/tags/v0.7.370)'
+    required: true
+outputs:
+  version:
+    description: 'Semver version derived from the tag (e.g. 0.7.370)'
+runs:
+  using: 'composite'
+  steps:
+    - id: bump
+      run: |
+        VERSION="${INPUT_REF#refs/tags/v}"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        node common/scripts/bump.js "$VERSION"
+      shell: bash

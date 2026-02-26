@@ -19,8 +19,6 @@ export interface Config {
   AccountsUrl: string
   ServiceID: string
   DbURL: string
-  MailURL?: string | null
-  MailAuthToken?: string | null
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -31,9 +29,7 @@ const config: Config = (() => {
     Secret: process.env.SECRET,
     AccountsUrl: process.env.ACCOUNTS_URL,
     ServiceID: process.env.SERVICE_ID,
-    DbURL: process.env.DB_URL,
-    MailURL: process.env.MAIL_URL ?? null,
-    MailAuthToken: process.env.MAIL_AUTH_TOKEN ?? null
+    DbURL: process.env.DB_URL
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

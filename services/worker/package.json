@@ -14,7 +14,7 @@
     "build": "compile",
     "build:watch": "compile",
     "test": "jest --passWithNoTests --silent",
-    "bundle": "node esbuild.js",
+    "bundle": "node ../../common/scripts/esbuild.js",
     "_phase:bundle": "rushx bundle",
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
@@ -54,11 +54,11 @@
     "@hcengineering/server-process": "workspace:^0.7.0"
   },
   "dependencies": {
-    "@temporalio/worker": "1.12.3",
-    "@temporalio/workflow": "1.12.3",
     "@hcengineering/kafka": "workspace:^0.7.18",
     "@hcengineering/process": "workspace:^0.7.0",
     "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/server-core": "workspace:^0.7.18"
+    "@hcengineering/server-core": "workspace:^0.7.18",
+    "postgres": "^3.4.7",
+    "dotenv": "^16.4.5"
   }
 }

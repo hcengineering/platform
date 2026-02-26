@@ -24,14 +24,16 @@ export default mergeIds(processId, process, {
     Process: '' as Ref<Doc>
   },
   section: {
-    CardProcesses: '' as Ref<CardSection>
+    CardProcesses: '' as Ref<CardSection>,
+    CardApproveRequest: '' as Ref<CardSection>
   },
   pipeline: {
     ProcessMiddleware: '' as Ref<PresentationMiddlewareFactory>
   },
   ids: {
     ProcessSettings: '' as Ref<Doc>,
-    ProcessToDoCreated: '' as Ref<Doc>
+    ProcessToDoCreated: '' as Ref<Doc>,
+    ApproveRequestCreated: '' as Ref<Doc>
   },
   actionImpl: {
     ContinueExecution: '' as ViewAction

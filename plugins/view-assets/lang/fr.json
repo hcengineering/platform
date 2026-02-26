@@ -109,6 +109,7 @@
     "Or": "Ou",
     "HyperlinkPlaceholder": "https://jappleseed.com",
     "CopyToClipboard": "Copier dans le presse-papiers",
+    "CopyAll": "Tout copier",
     "CopyDocumentMarkdown": "Copier en Markdown",
     "CopyAsMarkdownTable": "Copier en tableau Markdown",
     "TableCopiedToClipboard": "Tableau copié dans le presse-papiers",

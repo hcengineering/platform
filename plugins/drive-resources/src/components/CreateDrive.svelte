@@ -18,7 +18,6 @@
   import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import core, {
     Data,
-    DocumentUpdate,
     RolesAssignment,
     Ref,
     Role,
@@ -48,6 +47,8 @@
   let description: string = drive?.description ?? ''
   let isPrivate: boolean = drive?.private ?? false
 
+  let autoJoin = drive?.autoJoin ?? false
+  let restricted: boolean = drive?.restricted ?? false
   let members: AccountUuid[] =
     drive?.members !== undefined ? hierarchy.clone(drive.members) : [getCurrentAccount().uuid]
   let owners: AccountUuid[] = drive?.owners !== undefined ? hierarchy.clone(drive.owners) : [getCurrentAccount().uuid]
@@ -102,7 +103,9 @@
       private: isPrivate,
       members,
       owners,
-      archived: false
+      autoJoin,
+      archived: false,
+      restricted
     }
   }
 
@@ -111,41 +114,8 @@
       return
     }
 
-    const data = getDriveData()
-    const update: DocumentUpdate<Drive> = {}
-    if (data.name !== drive?.name) {
-      update.name = data.name
-    }
-    if (data.description !== drive?.description) {
-      update.description = data.description
-    }
-    if (data.private !== drive?.private) {
-      update.private = data.private
-    }
-    if (data.members.length !== drive?.members.length) {
-      update.members = data.members
-    } else {
-      for (const member of data.members) {
-        if (drive.members.findIndex((p) => p === member) === -1) {
-          update.members = data.members
-          break
-        }
-      }
-    }
-    if (data.owners?.length !== drive?.owners?.length) {
-      update.owners = data.owners
-    } else {
-      for (const owner of data.owners ?? []) {
-        if (drive.owners?.findIndex((p) => p === owner) === -1) {
-          update.owners = data.owners
-          break
-        }
-      }
-    }
-
-    if (Object.keys(update).length > 0) {
-      await client.update(drive, update)
-    }
+    const update = getDriveData()
+    await client.diffUpdate(drive, update)
 
     if (!deepEqual(rolesAssignment, getRolesAssignment())) {
       await client.updateMixin(
@@ -305,6 +275,22 @@
         size={'large'}
         allowGuests
       />
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header withDesciption">
+        <Label label={core.string.AutoJoin} />
+        <span><Label label={core.string.AutoJoinDescr} /></span>
+      </div>
+      <Toggle id={'space-autoJoin'} bind:on={autoJoin} />
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header withDesciption">
+        <Label label={core.string.RBAC} />
+        <span><Label label={core.string.RBACDescr} /></span>
+      </div>
+      <Toggle id={'space-restricted'} bind:on={restricted} />
     </div>
 
     {#each roles as role}

@@ -80,7 +80,7 @@ export const languagesDisplayData: {
   no: { emoji: '🇳🇴', label: 'Norsk' },
   pl: { emoji: '🇵🇱', label: 'Polski' },
   pt: { emoji: '🇵🇹', label: 'Português' },
-  'pt-BR': { emoji: '🇧🇷', label: 'Português (Brasil)' },
+  'pt-br': { emoji: '🇧🇷', label: 'Português (Brasil)' },
   'pt-PT': { emoji: '🇵🇹', label: 'Português (Portugal)' },
   ro: { emoji: '🇷🇴', label: 'Română' },
   ru: { emoji: '🇷🇺', label: 'Русский' },

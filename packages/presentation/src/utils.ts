@@ -891,15 +891,19 @@ export function isSpaceClass (_class: Ref<Class<Doc>>): boolean {
 }
 
 export function setPresentationCookie (token: string, workspaceUuid: WorkspaceUuid): void {
-  function setToken (path: string): void {
-    const res =
-      encodeURIComponent(plugin.metadata.Token.replaceAll(':', '-')) +
-      '=' +
-      encodeURIComponent(token) +
-      `; path=${path}`
-    document.cookie = res
+  const cookieName = encodeURIComponent(plugin.metadata.Token.replaceAll(':', '-'))
+  const cookieValue = encodeURIComponent(token)
+
+  const storage = getMetadata(plugin.metadata.FileStorage)
+  if (storage !== undefined) {
+    let path = `/files/${workspaceUuid}`
+    try {
+      path = storage.getCookiePath(workspaceUuid)
+    } catch {}
+
+    const normalized = path.startsWith('/') ? path : `/${path}`
+    document.cookie = `${cookieName}=${cookieValue}; path=${normalized}`
   }
-  setToken('/files/' + workspaceUuid)
 }
 
 export const upgradeDownloadProgress = writable(-1)

@@ -24,7 +24,7 @@
     hasResource,
     isDisabled
   } from '@hcengineering/presentation'
-  import setting, { settingId, SettingsCategory } from '@hcengineering/setting'
+  import setting, { RoleCapability, settingId, SettingsCategory } from '@hcengineering/setting'
   import {
     Action,
     closePopup,
@@ -42,9 +42,11 @@
   import HelpAndSupport from './HelpAndSupport.svelte'
   import { Analytics } from '@hcengineering/analytics'
   import { allowGuestSignUpStore } from '@hcengineering/view-resources'
-  import { getMetadata } from '@hcengineering/platform'
+  import { getMetadata, getResource } from '@hcengineering/platform'
+  import { onMount } from 'svelte'
 
   let items: SettingsCategory[] = []
+  let canGenerateInviteLink = false
 
   const account = getCurrentAccount()
   const settingsQuery = createQuery()
@@ -56,6 +58,16 @@
     },
     { sort: { order: 1 } }
   )
+
+  onMount(() => {
+    void getResource(setting.function.HasRoleCapability).then((checkCapability) => {
+      if (checkCapability != null) {
+        void checkCapability(RoleCapability.GenerateInviteLink).then((v: boolean) => {
+          canGenerateInviteLink = v
+        })
+      }
+    })
+  })
 
   $: person = $myEmployeeStore
 
@@ -131,7 +143,7 @@
       })
     }
     actions.push(...getMenu(items, ['main']))
-    if (hasAccountRole(account, AccountRole.User) && !isDisabled('invites')) {
+    if (hasAccountRole(account, AccountRole.User) && !isDisabled('invites') && canGenerateInviteLink) {
       actions.push({
         icon: setting.icon.InviteWorkspace,
         label: setting.string.InviteWorkspace,

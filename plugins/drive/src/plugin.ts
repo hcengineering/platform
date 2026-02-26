@@ -66,7 +66,19 @@ export const drivePlugin = plugin(driveId, {
     Folder: '' as IntlString,
     Resource: '' as IntlString,
     ForbidCreateDrivePermission: '' as IntlString,
-    ForbidCreateDrivePermissionDescription: '' as IntlString
+    ForbidCreateDrivePermissionDescription: '' as IntlString,
+    CreateFilePermission: '' as IntlString,
+    CreateFilePermissionDescription: '' as IntlString,
+    UpdateFilePermission: '' as IntlString,
+    UpdateFilePermissionDescription: '' as IntlString,
+    RemoveFilePermission: '' as IntlString,
+    RemoveFilePermissionDescription: '' as IntlString,
+    CreateFolderPermission: '' as IntlString,
+    CreateFolderPermissionDescription: '' as IntlString,
+    UpdateFolderPermission: '' as IntlString,
+    UpdateFolderPermissionDescription: '' as IntlString,
+    RemoveFolderPermission: '' as IntlString,
+    RemoveFolderPermissionDescription: '' as IntlString
   },
   descriptor: {
     DriveType: '' as Ref<SpaceTypeDescriptor>
@@ -75,7 +87,13 @@ export const drivePlugin = plugin(driveId, {
     DefaultDrive: '' as Ref<SpaceType>
   },
   permission: {
-    ForbidCreateDrive: '' as Ref<Permission>
+    ForbidCreateDrive: '' as Ref<Permission>,
+    CreateFile: '' as Ref<Permission>,
+    UpdateFile: '' as Ref<Permission>,
+    RemoveFile: '' as Ref<Permission>,
+    CreateFolder: '' as Ref<Permission>,
+    UpdateFolder: '' as Ref<Permission>,
+    RemoveFolder: '' as Ref<Permission>
   }
 })
 

@@ -34,7 +34,6 @@
   import { createQuery, getClient, reduceCalls, updateAttribute } from '@hcengineering/presentation'
   import ui, {
     Button,
-    IconCopy,
     Label,
     Loading,
     eventToHTMLElement,
@@ -44,14 +43,14 @@
   } from '@hcengineering/ui'
   import { AttributeModel, BuildModelKey, BuildModelOptions, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { deepEqual } from 'fast-equals'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { Readable } from 'svelte/store'
   import { showMenu } from '../actions'
   import { canChangeAttribute } from '../permissions'
   import view from '../plugin'
+  import { ViewletContextStore, viewletContextStore } from '../viewletContextStore'
   import { buildConfigAssociation, buildConfigLookup, buildModel, getAttributeValue, restrictionStore } from '../utils'
   import { getResultOptions, getResultQuery } from '../viewOptions'
-  import converter from '@hcengineering/converter'
   import IconUpDown from './icons/UpDown.svelte'
   import RelationsSelectorPopup from './RelationsSelectorPopup.svelte'
 
@@ -539,16 +538,38 @@
     )
   }
 
-  async function handleCopyAsMarkdown (e: MouseEvent): Promise<void> {
-    if (model === undefined || viewModel.length === 0) return
-    const copyFn = await getResource(converter.function.CopyRelationshipAsMarkdown)
-    await copyFn(e, {
-      viewModel,
-      model,
-      objects,
-      cardClass: _class
+  $: relationshipTableData =
+    model !== undefined && viewModel.length > 0 ? { viewModel, model, objects, cardClass: _class } : undefined
+
+  $: {
+    viewletContextStore.update((cur) => {
+      const contexts = cur.contexts
+      const last = contexts[contexts.length - 1]
+      if (last === undefined) return cur
+      const updated =
+        relationshipTableData !== undefined
+          ? { ...last, relationshipTableData }
+          : (() => {
+              const rest = { ...last }
+              delete rest.relationshipTableData
+              return rest
+            })()
+      return new ViewletContextStore([...contexts.slice(0, -1), updated])
     })
   }
+
+  onDestroy(() => {
+    viewletContextStore.update((cur) => {
+      const contexts = cur.contexts
+      const last = contexts[contexts.length - 1]
+      if (last?.relationshipTableData !== undefined) {
+        const rest = { ...last }
+        delete rest.relationshipTableData
+        return new ViewletContextStore([...contexts.slice(0, -1), rest])
+      }
+      return cur
+    })
+  })
 </script>
 
 {#if !model || isBuildingModel}
@@ -676,19 +697,6 @@
             limit = limit + 100
           }}
         />
-      {/if}
-
-      {#if objects.length > 0 && viewModel.length > 0 && model !== undefined}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="px-1">
-          <Button
-            icon={IconCopy}
-            label={view.string.CopyToClipboard}
-            kind={'ghost'}
-            size={'small'}
-            on:click={handleCopyAsMarkdown}
-          />
-        </div>
       {/if}
     </div>
   </div>

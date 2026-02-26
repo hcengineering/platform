@@ -1,6 +1,6 @@
 [package]
 name = "hulypulse"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2024"
 
 [dependencies]
@@ -30,7 +30,7 @@ hulyrs = { git = "https://github.com/hcengineering/hulyrs.git", features = [ "ac
 secrecy = { version = "0.10.3", optional = true }
 
 #redis
-redis = { version = "=0.32.5", features = ["aio", "tokio-comp", "sentinel"], optional = true }
+redis = { version = "=0.32.5", features = ["aio", "tokio-comp", "sentinel"] }
 
 [[bin]]
 name = "hulypulse"
@@ -43,7 +43,6 @@ tokio-tungstenite = { version = "0.21", default-features = false, features = [
 ] }
 
 [features]
-default = ["db-redis","auth"] # lopt
+default = ["auth"] # lopt
 auth = ["regorus", "uuid", "hulyrs", "secrecy"]
 lopt = []
-db-redis = ["redis"]

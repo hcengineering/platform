@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import plugin from '../plugin'
-  import { Execution, ProcessToDo } from '@hcengineering/process'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import { Button, Component } from '@hcengineering/ui'
-  import time from '@hcengineering/time'
   import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { ApproveRequest, Execution, ExecutionStatus, ProcessToDo } from '@hcengineering/process'
+  import { Button } from '@hcengineering/ui'
+  import plugin from '../plugin'
+  import ApproveRequestButtons from './ApproveRequestButtons.svelte'
 
   export let value: Execution
 
@@ -30,25 +30,38 @@
   const emp = getCurrentEmployee()
 
   const query = createQuery()
-  query.query(
-    plugin.class.ProcessToDo,
-    {
-      execution: value._id,
-      user: emp,
-      doneOn: null
-    },
-    (res) => {
-      todos = res
-    }
-  )
+  $: if (value.status === ExecutionStatus.Active) {
+    query.query(
+      plugin.class.ProcessToDo,
+      {
+        execution: value._id,
+        user: emp,
+        doneOn: null
+      },
+      (res) => {
+        todos = res
+      }
+    )
+  } else {
+    query.unsubscribe()
+    todos = []
+  }
 
   async function checkTodo (todo: ProcessToDo) {
     await client.update(todo, {
       doneOn: new Date().getTime()
     })
   }
+
+  function isRequest (todo: ProcessToDo): todo is ApproveRequest {
+    return todo._class === plugin.class.ApproveRequest
+  }
 </script>
 
 {#each todos as todo (todo._id)}
-  <Button label={getEmbeddedLabel(todo.title)} on:click={() => checkTodo(todo)} />
+  {#if isRequest(todo)}
+    <ApproveRequestButtons {todo} card={value.card} />
+  {:else}
+    <Button label={getEmbeddedLabel(todo.title)} on:click={() => checkTodo(todo)} />
+  {/if}
 {/each}

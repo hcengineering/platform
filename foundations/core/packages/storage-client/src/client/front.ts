@@ -17,6 +17,11 @@ import { concatLink } from '@hcengineering/core'
 import { FileStorage, FileStorageUploadOptions } from '../types'
 import { uploadXhr } from '../upload'
 
+const getPathname = (url: string): string => {
+  const base = window?.location?.href !== undefined ? window.location.href : 'http://localhost'
+  return new URL(url, base).pathname
+}
+
 /** @public */
 export class FrontStorage implements FileStorage {
   constructor (private readonly baseUrl: string) {}
@@ -24,6 +29,11 @@ export class FrontStorage implements FileStorage {
   getFileUrl (workspace: string, file: string, filename?: string): string {
     const path = `/${workspace}/${filename ?? file}?file=${file}&workspace=${workspace}`
     return concatLink(this.baseUrl, path)
+  }
+
+  getCookiePath (workspace: string): string {
+    const url = concatLink(this.baseUrl, `/${workspace}`)
+    return getPathname(url)
   }
 
   async getFileMeta (token: string, workspace: string, file: string): Promise<Record<string, any>> {

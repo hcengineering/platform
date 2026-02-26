@@ -19,7 +19,9 @@ export enum QueueTopic {
   CalendarEventCUD = 'calendarEventCUD',
 
   // A topic about process events
-  Process = 'process'
+  Process = 'process',
+
+  TimeMachine = 'timeMachine'
 }
 
 export interface ConsumerHandle {

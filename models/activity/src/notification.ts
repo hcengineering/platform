@@ -44,12 +44,14 @@ export function buildNotifications (builder: Builder): void {
 
   builder.createDoc<ClassCollaborators<ActivityMessage>>(core.class.ClassCollaborators, core.space.Model, {
     attachedTo: activity.class.ActivityMessage,
-    fields: ['createdBy', 'repliedPersons']
+    fields: ['createdBy', 'repliedPersons'],
+    provideAttachedSecurity: true
   })
 
   builder.createDoc<ClassCollaborators<DocUpdateMessage>>(core.class.ClassCollaborators, core.space.Model, {
     attachedTo: activity.class.DocUpdateMessage,
-    fields: ['createdBy', 'repliedPersons']
+    fields: ['createdBy', 'repliedPersons'],
+    provideAttachedSecurity: true
   })
 
   builder.mixin(activity.class.ActivityMessage, core.class.Class, notification.mixin.NotificationContextPresenter, {

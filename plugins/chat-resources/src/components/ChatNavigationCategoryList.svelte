@@ -84,7 +84,6 @@
     icon={clazz.icon ?? card.icon.Card}
     label={clazz.label}
     defaultViewletDescriptor={view.viewlet.List}
-    actionVisible={true}
     defaultViewOptions={defaultOptions}
     {defaultConfig}
   />

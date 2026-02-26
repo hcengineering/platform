@@ -249,6 +249,7 @@ export abstract class MemDb extends TxProcessor implements Storage {
       // We need to filter instances without mixin was set
       result = result.filter((r) => (r as any)[_class] !== undefined)
     }
+    if (options?.sort !== undefined) resultSort(result, options?.sort, _class, this.hierarchy, this)
     const total = result.length
     result = result.slice(0, options?.limit)
 

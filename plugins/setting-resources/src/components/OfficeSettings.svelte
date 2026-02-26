@@ -26,8 +26,8 @@
   let existingOfficeSettings: OfficeSettings[] = []
   const query = createQuery()
 
-  $: query.query((setting.class as any).OfficeSettings, {}, (set) => {
-    existingOfficeSettings = set as unknown as OfficeSettings[]
+  $: query.query(setting.class.OfficeSettings, {}, (set) => {
+    existingOfficeSettings = set as OfficeSettings[]
     if (existingOfficeSettings !== undefined && existingOfficeSettings.length > 0) {
       defaultStartWithTranscription = existingOfficeSettings[0].defaultStartWithTranscription ?? false
       defaultStartWithRecording = existingOfficeSettings[0].defaultStartWithRecording ?? false
@@ -44,10 +44,10 @@
       enabled: true
     }
     if (existingOfficeSettings.length === 0) {
-      await client.createDoc((setting.class as any).OfficeSettings, core.space.Workspace, newSettings)
+      await client.createDoc(setting.class.OfficeSettings, core.space.Workspace, newSettings)
     } else {
       await client.updateDoc(
-        (setting.class as any).OfficeSettings,
+        setting.class.OfficeSettings,
         core.space.Workspace,
         existingOfficeSettings[0]._id,
         newSettings
@@ -64,10 +64,10 @@
       enabled: true
     }
     if (existingOfficeSettings.length === 0) {
-      await client.createDoc((setting.class as any).OfficeSettings, core.space.Workspace, newSettings)
+      await client.createDoc(setting.class.OfficeSettings, core.space.Workspace, newSettings)
     } else {
       await client.updateDoc(
-        (setting.class as any).OfficeSettings,
+        setting.class.OfficeSettings,
         core.space.Workspace,
         existingOfficeSettings[0]._id,
         newSettings

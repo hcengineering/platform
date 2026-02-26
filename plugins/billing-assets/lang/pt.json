@@ -56,6 +56,8 @@
     "Of": "de",
     "UpgradePlan": "Atualizar Plano",
     "LimitReached": "Limite do workspace atingido, algumas funcionalidades podem estar desabilitadas. Atualize para restaurar acesso completo.",
-    "RestrictedPlans": "Apenas o proprietário do workspace ou o administrador de faturamento podem alterar o plano de assinatura."
+    "RestrictedPlans": "Apenas o proprietário do workspace ou o administrador de faturamento podem alterar o plano de assinatura.",
+    "SubscriptionOperationFailed": "Falha na operação de assinatura",
+    "SubscriptionErrorMessage": "Algo deu errado. Tente novamente ou entre em contato com o suporte."
   }
 }
