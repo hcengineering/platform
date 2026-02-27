@@ -94,7 +94,8 @@
   async function runProcess (_id: Ref<Process>): Promise<void> {
     if (!value) return
     for (const element of values) {
-      await createExecution(element._id, _id, element.space)
+      const tx = await createExecution(element._id, _id, element.space, client.txFactory)
+      if (tx) await client.tx(tx)
     }
     dispatch('close')
   }

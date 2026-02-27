@@ -26,7 +26,8 @@ import core, {
   type Ref,
   type RefTo,
   type Space,
-  type TxOperations,
+  type TxCUD,
+  type TxFactory,
   TxProcessor,
   type Type
 } from '@hcengineering/core'
@@ -422,13 +423,13 @@ export async function continueExecution (value: Execution): Promise<void> {
   let context = value.context
   const transition = value.error[0].transition
   if (transition == null) {
-    const res = await newExecutionUserInput(value.process, value.space, context)
-    context = res ?? context
+    const res = await newExecutionUserInput(value.process, value.space, value)
+    context = res?.context ?? context
   } else {
     const _transition = client.getModel().findObject(transition)
     if (_transition === undefined) return
     const res = await getNextStateUserInput(value, _transition, context)
-    context = res ?? context
+    context = res?.context ?? context
   }
   await client.update(value, { status: ExecutionStatus.Active, context })
 }
@@ -437,17 +438,57 @@ export async function requestUserInput (
   processId: Ref<Process>,
   space: Ref<Space>,
   target: Transition,
-  userContext: ExecutionContext
-): Promise<ExecutionContext | undefined> {
+  execution: Execution,
+  userContext: ExecutionContext,
+  inputContext: Record<string, any> = {}
+): Promise<{ context: ExecutionContext, state: Ref<State>, changed: boolean }> {
+  const client = getClient()
+  let changed = false
   const tr = await getTransitionUserInput(processId, space, target, userContext)
   if (tr !== undefined) {
     userContext = { ...userContext, ...tr }
+    changed = true
   }
   const sub = await getSubProcessesUserInput(space, target, userContext)
   if (sub !== undefined) {
     userContext = { ...userContext, ...sub }
+    changed = true
   }
-  return sub !== undefined || tr !== undefined ? userContext : undefined
+
+  // Follow auto transitions
+  const nextAutoTransitions = client
+    .getModel()
+    .findAllSync(process.class.Transition, {
+      process: processId,
+      from: target.to
+    })
+    .filter((t) => client.getModel().findObject(t.trigger)?.auto === true)
+
+  if (nextAutoTransitions.length > 0) {
+    const newExecution = {
+      ...execution,
+      context: userContext,
+      currentState: target.to
+    }
+    const nextTransition = await pickTransition(client, newExecution, nextAutoTransitions, inputContext)
+    if (nextTransition !== undefined) {
+      const recursive = await requestUserInput(
+        processId,
+        space,
+        nextTransition,
+        newExecution,
+        userContext,
+        inputContext
+      )
+      return {
+        context: recursive.context,
+        state: recursive.state,
+        changed: changed || recursive.changed
+      }
+    }
+  }
+
+  return { context: userContext, state: target.to, changed }
 }
 
 export async function getTransitionUserInput (
@@ -523,47 +564,76 @@ export async function getSubProcessesUserInput (
 export async function newExecutionUserInput (
   _id: Ref<Process>,
   space: Ref<Space>,
-  userContext?: ExecutionContext
-): Promise<ExecutionContext | undefined> {
+  execution: Execution
+): Promise<{ context: ExecutionContext, state: Ref<State>, changed: boolean } | undefined> {
   const client = getClient()
   const initTransition = client.getModel().findAllSync(process.class.Transition, {
     process: _id,
     from: null
   })[0]
-  if (initTransition === undefined) return userContext
-  return await requestUserInput(_id, space, initTransition, userContext ?? getEmptyContext())
+  if (initTransition === undefined) return undefined
+  return await requestUserInput(_id, space, initTransition, execution, execution.context)
 }
 
 export async function getNextStateUserInput (
   execution: Execution,
   transition: Transition,
-  userContext: ExecutionContext
-): Promise<ExecutionContext | undefined> {
+  userContext: ExecutionContext,
+  inputContext: Record<string, any> = {}
+): Promise<{ context: ExecutionContext, state: Ref<State>, changed: boolean } | undefined> {
   const client = getClient()
-  const process = client.getModel().findObject(execution.process)
-  if (process === undefined) return userContext
-  return await requestUserInput(execution.process, execution.space, transition, userContext)
+  const _process = client.getModel().findObject(execution.process)
+  if (_process === undefined) return undefined
+  return await requestUserInput(execution.process, execution.space, transition, execution, userContext, inputContext)
 }
 
-export async function createExecution (card: Ref<Card>, _id: Ref<Process>, space: Ref<Space>): Promise<void> {
+export async function createExecution (
+  card: Ref<Card>,
+  _id: Ref<Process>,
+  space: Ref<Space>,
+  txFactory: TxFactory
+): Promise<TxCUD<Doc> | undefined> {
   const client = getClient()
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const context = await newExecutionUserInput(_id, space)
+
   const _process = client.getModel().findObject(_id)
   if (_process === undefined) return
+
   const initTransition = client.getModel().findAllSync(process.class.Transition, {
     process: _id,
     from: null
   })[0]
   if (initTransition === undefined) return
-  await client.createDoc(process.class.Execution, space, {
+  const executionId = generateId<Execution>()
+
+  const mockExecution: Execution = {
+    _id: executionId,
     process: _id,
     currentState: initTransition.to,
     card,
     rollback: [],
-    context: context ?? getEmptyContext(),
-    status: ExecutionStatus.Active
-  })
+    context: getEmptyContext(),
+    status: ExecutionStatus.Active,
+    space,
+    _class: process.class.Execution,
+    modifiedOn: 0,
+    modifiedBy: client.user
+  }
+
+  const result = await newExecutionUserInput(_id, space, mockExecution)
+
+  return txFactory.createTxCreateDoc(
+    process.class.Execution,
+    space,
+    {
+      process: _id,
+      currentState: initTransition.to,
+      card,
+      rollback: [],
+      context: result?.context ?? getEmptyContext(),
+      status: ExecutionStatus.Active
+    },
+    executionId
+  )
 }
 
 export function getToDoEndAction (prevState: State): Step<Doc> {
@@ -590,11 +660,10 @@ export function getToDoEndAction (prevState: State): Step<Doc> {
 }
 
 export async function requestResult (
-  txop: TxOperations,
   execution: Execution,
   results: UserResult[] | undefined,
   context: ExecutionContext
-): Promise<void> {
+): Promise<ExecutionContext | undefined> {
   if (results == null || results.length === 0) return
   const promise = new Promise<void>((resolve, reject) => {
     showPopup(process.component.ResultInput, { results, context }, undefined, (res) => {
@@ -610,9 +679,7 @@ export async function requestResult (
     })
   })
   await promise
-  await txop.update(execution, {
-    context
-  })
+  return context
 }
 
 export function todoTranstionCheck (

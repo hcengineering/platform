@@ -41,7 +41,8 @@
 
   async function runProcess (): Promise<void> {
     if (process === undefined || card === undefined) return
-    await createExecution(card._id, process, card.space)
+    const tx = await createExecution(card._id, process, card.space, client.txFactory)
+    if (tx) await client.tx(tx)
     dispatch('close')
   }
 
