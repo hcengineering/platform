@@ -14,7 +14,7 @@
 // limitations under the License.
 //
 
-import activity from '@hcengineering/activity'
+import activity, { type ActivityMessageControl } from '@hcengineering/activity'
 import { type Role, type Card } from '@hcengineering/card'
 import {
   AvatarType,
@@ -338,6 +338,13 @@ export function createModel (builder: Builder): void {
 
   builder.mixin(contact.class.Person, core.class.Class, activity.mixin.ActivityDoc, {
     preposition: contact.string.For
+  })
+
+  // Prevent leaking private social identifiers (emails, external handles) via activity updates.
+  builder.createDoc<ActivityMessageControl<Person>>(activity.class.ActivityMessageControl, core.space.Model, {
+    objectClass: contact.class.Person,
+    skip: [],
+    skipFields: ['socialIds']
   })
 
   builder.mixin(contact.mixin.Employee, core.class.Class, activity.mixin.ActivityDoc, {
