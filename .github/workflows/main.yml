@@ -77,11 +77,6 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
-      - name: Set package versions
-        if: startsWith(github.event.inputs.ref || github.ref, 'refs/tags/v')
-        uses: ./.github/actions/set-package-versions
-        with:
-          ref: ${{ github.event.inputs.ref || github.ref }}
       - name: Cache node modules
         uses: actions/cache@v5
         env:
@@ -113,6 +108,14 @@ jobs:
 
       - name: Model version from git tags
         run: node common/scripts/install-run-rush.js model-version
+
+      - name: Verify package versions match tag
+        if: startsWith(github.event.inputs.ref || github.ref, 'refs/tags/v')
+        run: |
+          REF="${{ github.event.inputs.ref || github.ref }}"
+          VERSION="${REF#refs/tags/v}"
+          VERSION="${VERSION#v}"
+          node common/scripts/bump.js --check "$VERSION"
 
       - name: Building...
         run: node common/scripts/install-run-rush.js build
@@ -970,5 +973,5 @@ jobs:
           REF="${{ github.event.inputs.ref || github.ref }}"
           VERSION="${REF#refs/tags/v}"
           VERSION="${VERSION#v}"
-          node common/scripts/bump.js "$VERSION"
+          node common/scripts/bump.js --check "$VERSION"
           node common/scripts/safe-publish.js

@@ -77,22 +77,25 @@ function fix (name) {
 }
 
 function main () {
-  const args = process.argv
+  const argv = process.argv.slice(2)
 
-  const doFix = args.includes('--fix')
-  const doPublish = args.includes('--publish')
+  const doFix = argv.includes('--fix')
+  const doPublish = argv.includes('--publish')
+  const doCheck = argv.includes('--check')
 
-  const version = args.reverse().shift()
+  const positional = argv.filter((a) => !a.startsWith('--'))
+  const version = positional[0]
+
   if (version === undefined || version === '') {
-    console.log('usage: node bump.js [--publish] <version>')
+    console.log('usage: node bump.js [--check] [--fix] [--publish] <version>')
     return
   }
-  if( !/^(\d+\.)?(\d+\.)?(\*|\d+)$/.test(version)) {
+  if (!/^(\d+\.)?(\d+\.)?(\*|\d+)$/.test(version)) {
     console.log('Invalid <version>', version, ' should be xx.xx.xx')
     return
   }
 
-  console.log('bump version ...', version)
+  console.log(doCheck ? 'check versions ...' : 'bump version ...', version)
 
   const output = execSync('node common/scripts/install-run-rush.js list -p --json', { encoding: 'utf-8', cwd: repoRoot })
   const lines = output.split('\n')
@@ -112,14 +115,33 @@ function main () {
   fillPackages(config)
 
   const packageNames = Object.keys(packages)
+
+  if (doCheck) {
+    let ok = true
+    for (const packageName of packageNames) {
+      const json = jsons[packageName]
+      if (json === undefined) continue
+      if (json.version !== version) {
+        console.error('Version mismatch:', packageName, 'expected', version, 'got', json.version)
+        ok = false
+      }
+    }
+    if (!ok) {
+      console.error('Some @hcengineering package versions do not match', version)
+      process.exit(1)
+    }
+    console.log('All @hcengineering package versions match', version)
+    return
+  }
+
   for (const packageName of packageNames) {
     bumpPackage(packageName, version)
   }
 
   for (const packageName of packageNames) {
-    const package = packages[packageName]
+    const pkg = packages[packageName]
     if (jsons[packageName] === undefined) continue
-    const file = path.join(package.path, 'package.json')
+    const file = path.join(pkg.path, 'package.json')
     const res = JSON.stringify(jsons[packageName], undefined, 2)
     fs.writeFileSync(file, res + '\n')
   }
