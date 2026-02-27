@@ -45,5 +45,9 @@
   }
 </script>
 
-<Button label={process.string.Approve} kind="positive" on:click={(ev) => changeApprovalRequestState(ev, false)} />
+<Button
+  label={todo.actionType === 'review' ? process.string.Review : process.string.Approve}
+  kind="positive"
+  on:click={(ev) => changeApprovalRequestState(ev, false)}
+/>
 <Button label={process.string.Reject} kind="negative" on:click={(ev) => changeApprovalRequestState(ev, true)} />

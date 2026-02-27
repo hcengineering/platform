@@ -145,7 +145,12 @@
     "CancelToDo": "Action Item abbrechen",
     "Export": "Exportieren",
     "Import": "Importieren",
-    "CancelProcess": "Prozess abbrechen"
+    "CancelProcess": "Prozess abbrechen",
+    "SyncWithField": "Synchronisieren mit Feld",
+    "ActionType": "Typ",
+    "ApproveAction": "Genehmigen",
+    "ReviewAction": "Prüfen",
+    "Review": "Prüfen"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

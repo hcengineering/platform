@@ -1,5 +1,5 @@
-//
-// Copyright © 2025 Hardcore Engineering Inc.
+<!--
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,23 +11,12 @@
 //
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-import { config as dotenvConfig } from 'dotenv'
+-->
+<script lang="ts">
+  import { Label } from '@hcengineering/ui'
+  import plugin from '../plugin'
 
-dotenvConfig()
+  export let value: 'approve' | 'review' | undefined
+</script>
 
-export interface Config {
-  DbUrl: string
-  PollInterval: number
-  QueueRegion: string
-  QueueConfig: string
-}
-
-const config: Config = {
-  DbUrl: process.env.DB_URL ?? 'postgres://localhost:5432/huly',
-  PollInterval: process.env.POLL_INTERVAL != null ? Number(process.env.POLL_INTERVAL) : 20000,
-  QueueRegion: process.env.QUEUE_REGION ?? '',
-  QueueConfig: process.env.QUEUE_CONFIG ?? ''
-}
-
-export default config
+<Label label={value === 'review' ? plugin.string.ReviewAction : plugin.string.ApproveAction} />

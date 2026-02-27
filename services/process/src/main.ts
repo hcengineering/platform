@@ -284,7 +284,7 @@ async function processExecution (control: ProcessControl, record: ProcessMessage
     }
   }
   if (isRollback(record)) {
-    await rollback(control, record, execution)
+    await rollback(control, execution)
   }
 }
 
@@ -298,7 +298,8 @@ function isRollback (record: ProcessMessage): boolean {
   return false
 }
 
-async function rollback (control: ProcessControl, record: ProcessMessage, execution: Execution): Promise<void> {
+async function rollback (control: ProcessControl, execution: Execution): Promise<void> {
+  if (execution.rollback.length === 0) return
   const rollbackTxes = execution.rollback.pop() ?? []
   for (const tx of rollbackTxes) {
     const timeout = setTimeout(() => {
@@ -719,6 +720,12 @@ async function fillParams<T extends Doc> (
   execution: Execution,
   control: ProcessControl
 ): Promise<MethodParams<T>> {
+  if (!control.cache.has(execution.card)) {
+    const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+    if (card !== undefined) {
+      control.cache.set(execution.card, card)
+    }
+  }
   const res: MethodParams<T> = {}
   for (const key in params) {
     const value = control.client.getHierarchy().clone((params as any)[key])

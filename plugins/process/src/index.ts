@@ -124,6 +124,7 @@ export interface ProcessToDo extends ToDo {
   withRollback: boolean
 
   results?: UserResult[]
+  field?: string
 }
 
 export interface ApproveRequest extends ProcessToDo {
@@ -134,6 +135,8 @@ export interface ApproveRequest extends ProcessToDo {
   reason?: string
 
   group: string
+  field?: string
+  actionType?: 'approve' | 'review'
 }
 
 export type MethodParams<T extends Doc> = {
@@ -291,7 +294,12 @@ export default plugin(processId, {
     Actions: '' as IntlString,
     ProcessRunned: '' as IntlString,
     ProcessStateChanged: '' as IntlString,
-    ProcessFinished: '' as IntlString
+    ProcessFinished: '' as IntlString,
+    SyncWithField: '' as IntlString,
+    ActionType: '' as IntlString,
+    ApproveAction: '' as IntlString,
+    ReviewAction: '' as IntlString,
+    Review: '' as IntlString
   },
   error: {
     MethodNotFound: '' as IntlString,

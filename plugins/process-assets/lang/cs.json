@@ -145,7 +145,12 @@
     "CancelToDo": "Zrušit akční položku",
     "Export": "Exportovat",
     "Import": "Importovat",
-    "CancelProcess": "Zrušit proces"
+    "CancelProcess": "Zrušit proces",
+    "SyncWithField": "Synchronizovat s polem",
+    "ActionType": "Typ",
+    "ApproveAction": "Schválit",
+    "ReviewAction": "Zkontrolovat",
+    "Review": "Zkontrolovat"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",
