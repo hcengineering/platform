@@ -79,13 +79,7 @@ export function exportProcess (proc: Doc): {
   return { docs, required }
 }
 
-function processType (
-  type: Type<any>,
-  docs: Doc[],
-  required: Array<Ref<Class<Doc>>>,
-  m: ModelDb,
-  h: Hierarchy
-): void {
+function processType (type: Type<any>, docs: Doc[], required: Array<Ref<Class<Doc>>>, m: ModelDb, h: Hierarchy): void {
   if (type._class === core.class.EnumOf) {
     const enumRef = (type as EnumOf).of
     const enumDoc = m.findObject(enumRef)
