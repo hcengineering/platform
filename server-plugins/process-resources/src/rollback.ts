@@ -54,7 +54,7 @@ function invertUpdate (ops: Record<string, any>): Record<string, any> {
       const inverted = invertOperator(key, value)
       if (inverted !== undefined) {
         for (const [antiKey, antiValue] of Object.entries(inverted)) {
-          antiOps[antiKey] = { ...(antiOps[antiKey] ?? {}), ...(antiValue) }
+          antiOps[antiKey] = { ...(antiOps[antiKey] ?? {}), ...antiValue }
         }
       }
     } else {
