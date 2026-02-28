@@ -432,6 +432,22 @@
       "longName": "--branch",
       "description": "Force formatting of branch",
       "associatedCommands": ["fast-format"]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "VERSION",
+      "required": false,
+      "longName": "--version",
+      "description": "The version tag to use for docker images",
+      "associatedCommands": ["docker:patch"]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "PLATFORM",
+      "required": false,
+      "longName": "--platform",
+      "description": "The target platform for docker build (e.g., linux/amd64). Defaults to linux/amd64.",
+      "associatedCommands": ["docker:patch"]
     }
     // {
     //   /**
