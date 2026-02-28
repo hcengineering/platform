@@ -449,7 +449,7 @@ export async function requestUserInput (
     userContext = { ...userContext, ...tr }
     changed = true
   }
-  const sub = await getSubProcessesUserInput(space, target, userContext)
+  const sub = await getSubProcessesUserInput(execution, space, target, userContext)
   if (sub !== undefined) {
     userContext = { ...userContext, ...sub }
     changed = true
@@ -543,6 +543,7 @@ function getEmptyContext (): ExecutionContext {
 }
 
 export async function getSubProcessesUserInput (
+  execution: Execution,
   space: Ref<Space>,
   transition: Transition,
   userContext: ExecutionContext
@@ -552,8 +553,28 @@ export async function getSubProcessesUserInput (
     if (action.methodId !== process.method.RunSubProcess) continue
     const processId = action.params._id as Ref<Process>
     if (processId === undefined) continue
-    const context = action.params.context ?? getEmptyContext()
-    const res = await newExecutionUserInput(processId, space, context)
+    const context: ExecutionContext = action.params.context ?? getEmptyContext()
+    const initTransition = getClient().getModel().findAllSync(process.class.Transition, {
+      process: processId,
+      from: null
+    })[0]
+    if (initTransition === undefined) continue
+    const card = action.params.card ?? execution.card
+    const client = getClient()
+    const mockExecution: Execution = {
+      _id: generateId(),
+      process: processId,
+      currentState: initTransition.to,
+      card,
+      rollback: [],
+      context,
+      status: ExecutionStatus.Active,
+      space,
+      _class: process.class.Execution,
+      modifiedOn: 0,
+      modifiedBy: client.user
+    }
+    const res = await newExecutionUserInput(processId, space, mockExecution)
     if (action.context == null || res === undefined) continue
     userContext[action.context._id] = res
     changed = true

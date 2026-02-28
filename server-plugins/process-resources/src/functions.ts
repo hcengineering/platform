@@ -424,12 +424,6 @@ export async function RunSubProcess (
       }
     }
 
-    // check card is exists
-    const exists = await control.client.findOne(cardPlugin.class.Card, { _id: _card })
-    if (exists === undefined) {
-      throw processError(process.error.ObjectNotFound, { _id: _card })
-    }
-
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const context = params.context ?? ({} as ExecutionContext)
     const _id = generateId<Execution>()

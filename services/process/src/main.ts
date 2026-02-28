@@ -68,9 +68,24 @@ import { getClient, releaseClient, SERVICE_NAME } from './utils'
 import config from './config'
 
 const activeExecutions = new Set<Ref<Execution>>()
+const processedMessages = new Map<string, number>()
+const MAX_PROCESSED_MESSAGES = 1000
 
 export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid, ctx: MeasureContext): Promise<void> {
   if (record.account === core.account.ConfigUser) return
+  if (record._id !== undefined) {
+    if (processedMessages.has(record._id)) {
+      ctx.info('Skipping duplicate message', { _id: record._id, ws, record })
+      return
+    }
+    processedMessages.set(record._id, Date.now())
+    if (processedMessages.size > MAX_PROCESSED_MESSAGES) {
+      const first = processedMessages.keys().next().value
+      if (first !== undefined) {
+        processedMessages.delete(first)
+      }
+    }
+  }
   try {
     const client = new TxOperations(await getClient(ws), record.account)
     try {
@@ -658,6 +673,7 @@ async function setTimer (control: ProcessControl, execution: Execution, transiti
     const producer = queue.getProducer<TimeMachineMessage>(control.ctx, QueueTopic.TimeMachine)
 
     const data: ProcessMessage = {
+      _id: `${execution._id}_${transition._id}`,
       account: core.account.System,
       event: [process.trigger.OnTime],
       createdOn: Date.now(),

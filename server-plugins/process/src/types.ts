@@ -31,6 +31,7 @@ export type TransformFunc = (
 ) => Promise<any>
 
 export interface ProcessMessage {
+  _id?: string
   account: PersonId
   createdOn: Timestamp
   event: Ref<Trigger>[]
