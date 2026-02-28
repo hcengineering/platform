@@ -155,7 +155,9 @@
     "ActionType": "Type",
     "ApproveAction": "Approve",
     "ReviewAction": "Review",
-    "Review": "Review"
+    "Review": "Review",
+    "LockField": "Lock field",
+    "UnlockField": "Unlock field"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

@@ -150,7 +150,9 @@
     "ActionType": "Typ",
     "ApproveAction": "Schválit",
     "ReviewAction": "Zkontrolovat",
-    "Review": "Zkontrolovat"
+    "Review": "Zkontrolovat",
+    "LockField": "Zamknout pole",
+    "UnlockField": "Odemknout pole"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

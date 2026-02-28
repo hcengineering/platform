@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,22 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
+
 <script lang="ts">
-  import { Ref } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { Label } from '@hcengineering/ui'
-  import { State } from '@hcengineering/process'
-  import plugin from '../plugin'
+  import { Process } from '@hcengineering/process'
+  import LockFieldPresenter from './LockFieldPresenter.svelte'
 
-  export let value: Ref<State>
-
-  const client = getClient()
-
-  $: currentState = client.getModel().findObject(value)
+  export let process: Process
+  export let params: Record<string, any>
 </script>
 
-{#if currentState}
-  {currentState.title}
-{:else if value === null}
-  <span class="opacity-50"><Label label={plugin.string.Started} /></span>
-{/if}
+<LockFieldPresenter {process} {params} unlock />

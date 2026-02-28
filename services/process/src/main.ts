@@ -179,7 +179,8 @@ async function findTransitions (
       process.class.Transition,
       {
         process: execution.process,
-        trigger: { $in: record.event }
+        from: null,
+        trigger: process.trigger.OnExecutionStart
       },
       { sort: { rank: SortingOrder.Ascending } }
     )
@@ -346,6 +347,17 @@ async function execute (execution: Execution, transition: Transition, control: P
     control.ctx.info('Execution already in progress', { execution: execution._id, transition: transition._id })
     return
   }
+
+  const fresh = await control.client.findOne(process.class.Execution, { _id: execution._id })
+  if (fresh === undefined || fresh.currentState !== execution.currentState) {
+    control.ctx.info('Skipping stale transition execution', {
+      execution: execution._id,
+      expectedState: execution.currentState,
+      actualState: fresh?.currentState
+    })
+    return
+  }
+
   activeExecutions.add(execution._id)
   try {
     await executeTransition(execution, transition, control)
@@ -497,13 +509,20 @@ async function executeTransition (
         const apply = client.txFactory.createTxApplyIf(
           core.space.Tx,
           `${execution._id}_${transition._id}`,
-          [],
+          [{ _class: process.class.Execution, query: { _id: execution._id, currentState: execution.currentState } }],
           [],
           res as TxCUD<Doc>[],
           'process',
           true
         )
-        await client.tx(apply)
+        const result = (await client.tx(apply)) as any
+        if (result.success === false) {
+          control.ctx.info('Transition apply failed (likely already processed)', {
+            execution: execution._id,
+            transition: transition._id
+          })
+          break
+        }
         await sendEvent(control, execution, transition, card, isDone)
         TxProcessor.applyUpdate(execution, executionUpdate)
         if (execution.parentId !== undefined) {

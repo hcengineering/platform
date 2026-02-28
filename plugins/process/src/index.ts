@@ -255,7 +255,9 @@ export default plugin(processId, {
     LockCard: '' as Ref<Method<Card>>,
     LockSection: '' as Ref<Method<Card>>,
     UnlockCard: '' as Ref<Method<Card>>,
-    UnlockSection: '' as Ref<Method<Card>>
+    UnlockSection: '' as Ref<Method<Card>>,
+    LockField: '' as Ref<Method<Card>>,
+    UnlockField: '' as Ref<Method<Card>>
   },
   trigger: {
     OnCardUpdate: '' as Ref<Trigger>, // in fact WhenCardMatches, should migrate in future

@@ -75,7 +75,7 @@
       {_class}
       {object}
       {showHeader}
-      readonly={readonly || !canChange(key.attr, $permissionsStore)}
+      readonly={readonly || !canChange(key.attr, $permissionsStore) || object.readonlyFields?.includes(key.key)}
       withIcon
       on:update
     />

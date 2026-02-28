@@ -119,7 +119,7 @@ export function defineTriggers (builder: Builder): void {
       requiredParams: [],
       checkFunction: process.triggerCheck.FieldChangedCheck,
       init: false,
-      auto: true
+      auto: false
     },
     process.trigger.WhenFieldChanges
   )

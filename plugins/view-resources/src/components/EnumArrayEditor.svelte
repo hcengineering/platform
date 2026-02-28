@@ -22,6 +22,7 @@
   export let value: string[] = []
   export let type: ArrOf<string>
   export let onChange: (value: string[]) => void
+  export let readonly: boolean = false
 
   export let kind: ButtonKind = 'link'
   export let size: ButtonSize = 'large'
@@ -55,6 +56,7 @@
   {size}
   width={'100%'}
   multiselect
+  disabled={readonly}
   autoSelect={false}
   on:selected={(e) => {
     onChange(e.detail)

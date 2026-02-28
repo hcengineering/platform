@@ -155,7 +155,9 @@
     "ActionType": "Тип",
     "ApproveAction": "Утверждение",
     "ReviewAction": "Рецензирование",
-    "Review": "Рецензировать"
+    "Review": "Рецензировать",
+    "LockField": "Заблокировать поле",
+    "UnlockField": "Разблокировать поле"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

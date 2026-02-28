@@ -155,7 +155,9 @@
     "ActionType": "Tipo",
     "ApproveAction": "Aprobar",
     "ReviewAction": "Revisar",
-    "Review": "Revisar"
+    "Review": "Revisar",
+    "LockField": "Bloquear campo",
+    "UnlockField": "Desbloquear campo"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",

@@ -21,6 +21,7 @@ import core, {
   type Doc,
   type DocumentQuery,
   type DocumentUpdate,
+  findProperty,
   generateId,
   matchQuery,
   type Ref,
@@ -564,7 +565,7 @@ export async function getSubProcessesUserInput (
     const mockExecution: Execution = {
       _id: generateId(),
       process: processId,
-      currentState: initTransition.to,
+      currentState: null as any,
       card,
       rollback: [],
       context,
@@ -629,7 +630,7 @@ export async function createExecution (
   const mockExecution: Execution = {
     _id: executionId,
     process: _id,
-    currentState: initTransition.to,
+    currentState: null as any,
     card,
     rollback: [],
     context: getEmptyContext(),
@@ -647,7 +648,7 @@ export async function createExecution (
     space,
     {
       process: _id,
-      currentState: initTransition.to,
+      currentState: null as any,
       card,
       rollback: [],
       context: result?.context ?? getEmptyContext(),
@@ -710,7 +711,16 @@ export function todoTranstionCheck (
   context: Record<string, any>
 ): boolean {
   if (params._id === undefined) return false
-  return context.todo?._id === params._id
+  return context.todo?._id === params._id && checkResult(context, params.result)
+}
+
+function checkResult (context: Record<string, any>, results: Record<string, any> | undefined): boolean {
+  if (results === undefined) return true
+  for (const [key, value] of Object.entries(results)) {
+    const res = findProperty([context as any], key, value)
+    if (res.length === 0) return false
+  }
+  return true
 }
 
 export function timeTransitionCheck (

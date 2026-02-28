@@ -154,7 +154,9 @@
     "ActionType": "タイプ",
     "ApproveAction": "承認",
     "ReviewAction": "レビュー",
-    "Review": "レビュー"
+    "Review": "レビュー",
+    "LockField": "フィールドをロック",
+    "UnlockField": "フィールドのロックを解除"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

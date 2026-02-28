@@ -112,9 +112,11 @@ import {
   LockCard,
   LockSection,
   UnlockCard,
-  UnlockSection
+  UnlockSection,
+  LockField,
+  UnlockField
 } from './functions'
-import { ToDoCancellRollback, ToDoCloseRollback } from './rollback'
+import { FieldChangedRollback, ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 
 async function putEventToQueue (value: Omit<ProcessMessage, 'account'>, control: TriggerControl): Promise<void> {
   if (control.queue === undefined) return
@@ -599,7 +601,9 @@ export default async () => ({
     LockCard,
     LockSection,
     UnlockCard,
-    UnlockSection
+    UnlockSection,
+    LockField,
+    UnlockField
   },
   transform: {
     CurrentDate,
@@ -643,7 +647,8 @@ export default async () => ({
   },
   rollbacks: {
     ToDoCloseRollback,
-    ToDoCancellRollback
+    ToDoCancellRollback,
+    FieldChangedRollback
   },
   trigger: {
     OnProcessRemove,

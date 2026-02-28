@@ -9,7 +9,8 @@ import core, {
   type RefTo,
   type ArrOf,
   type ModelDb,
-  type Hierarchy
+  type Hierarchy,
+  type Type
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { type Process, type Transition } from '@hcengineering/process'
@@ -54,10 +55,48 @@ export function exportProcess (proc: Doc): {
     processParams(tr.triggerParams, processDoc.masterTag, docs, required, m, h)
     for (const action of tr.actions) {
       processParams(action.params, processDoc.masterTag, docs, required, m, h)
+      if (action.results !== undefined) {
+        for (const res of action.results) {
+          processType(res.type, docs, required, m, h)
+        }
+      }
     }
   }
 
+  if (processDoc.context !== undefined) {
+    for (const key in processDoc.context) {
+      const ctx = processDoc.context[key as any]
+      if (ctx.type !== undefined) {
+        processType(ctx.type, docs, required, m, h)
+      }
+    }
+  }
+
+  if (processDoc.resultType !== undefined) {
+    processType(processDoc.resultType, docs, required, m, h)
+  }
+
   return { docs, required }
+}
+
+function processType (type: Type<any>, docs: Doc[], required: Array<Ref<Class<Doc>>>, m: ModelDb, h: Hierarchy): void {
+  if (type._class === core.class.EnumOf) {
+    const enumRef = (type as EnumOf).of
+    const enumDoc = m.findObject(enumRef)
+    if (enumDoc !== undefined && !docs.some((d) => d._id === enumDoc._id)) {
+      docs.push(enumDoc)
+    }
+  }
+  if (type._class === core.class.RefTo) {
+    const to = (type as RefTo<Doc>).to
+    if (h.isDerived(to, card.class.Card) && !required.includes(to)) {
+      required.push(to)
+    }
+  }
+  if (type._class === core.class.ArrOf) {
+    const of = (type as ArrOf<Doc>).of
+    processType(of, docs, required, m, h)
+  }
 }
 
 function processParams (
@@ -85,36 +124,7 @@ function processParams (
     }
     const attr = h.findAttribute(masterTag, key)
     if (attr !== undefined) {
-      const type = attr.type
-      if (type._class === core.class.EnumOf) {
-        const enumRef = (type as EnumOf).of
-        const enumDoc = m.findObject(enumRef)
-        if (enumDoc !== undefined && !docs.some((d) => d._id === enumDoc._id)) {
-          docs.push(enumDoc)
-        }
-      }
-      if (type._class === core.class.RefTo) {
-        const to = (type as RefTo<Doc>).to
-        if (h.isDerived(to, card.class.Card) && !required.includes(to)) {
-          required.push(to)
-        }
-      }
-      if (type._class === core.class.ArrOf) {
-        const of = (type as ArrOf<Doc>).of
-        if (of._class === core.class.EnumOf) {
-          const enumRef = (of as EnumOf).of
-          const enumDoc = m.findObject(enumRef)
-          if (enumDoc !== undefined && !docs.some((d) => d._id === enumDoc._id)) {
-            docs.push(enumDoc)
-          }
-        }
-        if (of._class === core.class.RefTo) {
-          const to = (of as RefTo<Doc>).to
-          if (h.isDerived(to, card.class.Card) && !required.includes(to)) {
-            required.push(to)
-          }
-        }
-      }
+      processType(attr.type, docs, required, m, h)
     }
   }
 }

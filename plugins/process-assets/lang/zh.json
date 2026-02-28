@@ -155,7 +155,9 @@
     "ActionType": "类型",
     "ApproveAction": "批准",
     "ReviewAction": "审查",
-    "Review": "审查"
+    "Review": "审查",
+    "LockField": "锁定字段",
+    "UnlockField": "解锁字段"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

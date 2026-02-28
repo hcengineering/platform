@@ -408,9 +408,6 @@ export async function RunSubProcess (
   const res: Tx[] = []
   const resultContext: SuccessExecutionContext[] = []
   const rollback: Tx[] = []
-  const initTransition = control.client
-    .getModel()
-    .findAllSync(process.class.Transition, { process: target._id, from: null })[0]
   for (const _card of Array.isArray(card) ? card : [card]) {
     if (target.parallelExecutionForbidden === true) {
       const currentExecution = await control.client.findAll(process.class.Execution, {
@@ -432,7 +429,7 @@ export async function RunSubProcess (
       execution.space,
       {
         process: processId,
-        currentState: initTransition.to,
+        currentState: null as any,
         card: _card,
         context,
         status: ExecutionStatus.Active,
@@ -559,11 +556,11 @@ export async function LockSection (
   const rollback: Tx[] = []
   const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
-  const readonlySections = card.readonlySections ?? []
+  const readonlySections = new Set(card.readonlySections ?? [])
   const target = params._id as Ref<MasterTag>
-  readonlySections.push(target)
+  readonlySections.add(target)
   const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
-    readonlySections
+    readonlySections: [...readonlySections]
   })
   res.push(tx)
   rollback.push(
@@ -604,13 +601,78 @@ export async function UnlockSection (
   const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
   const target = params._id as Ref<MasterTag>
+  const readonlySections = new Set(card.readonlySections ?? [])
+  readonlySections.delete(target)
   const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
-    $pull: { readonlySections: target }
+    readonlySections: [...readonlySections]
   })
   res.push(tx)
   rollback.push(
     control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
       $push: { readonlySections: target }
+    })
+  )
+  return { txes: res, rollback, context: [] }
+}
+
+export async function LockField (
+  params: Record<string, any>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  if (params.value === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: 'value' })
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+  if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
+  const oldReadonlyFields = card.readonlyFields ?? []
+  const readonlyFields = [...oldReadonlyFields]
+  const targets = Array.isArray(params.value) ? params.value : [params.value]
+  let changed = false
+  for (const target of targets) {
+    if (!readonlyFields.includes(target)) {
+      readonlyFields.push(target)
+      changed = true
+    }
+  }
+  if (!changed) {
+    return { txes: [], rollback: [], context: [] }
+  }
+  const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+    readonlyFields
+  })
+  res.push(tx)
+  rollback.push(
+    control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+      readonlyFields: oldReadonlyFields
+    })
+  )
+  return { txes: res, rollback, context: [] }
+}
+
+export async function UnlockField (
+  params: Record<string, any>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  if (params.value === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: 'value' })
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+  if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
+  const oldReadonlyFields = card.readonlyFields ?? []
+  const targets = Array.isArray(params.value) ? params.value : [params.value]
+  const readonlyFields = oldReadonlyFields.filter((f: string) => !targets.includes(f))
+  if (readonlyFields.length === oldReadonlyFields.length) {
+    return { txes: [], rollback: [], context: [] }
+  }
+  const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+    readonlyFields
+  })
+  res.push(tx)
+  rollback.push(
+    control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+      readonlyFields: oldReadonlyFields
     })
   )
   return { txes: res, rollback, context: [] }
@@ -802,7 +864,7 @@ async function createExecution (
     execution.space,
     {
       process: proc,
-      currentState: initTransition.to,
+      currentState: null as any,
       card: _id,
       rollback: [],
       context: {},

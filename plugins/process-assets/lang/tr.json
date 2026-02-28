@@ -152,7 +152,9 @@
     "ActionType": "Tür",
     "ApproveAction": "Onayla",
     "ReviewAction": "Gözden geçir",
-    "Review": "Gözden geçir"
+    "Review": "Gözden geçir",
+    "LockField": "Alanı kilitle",
+    "UnlockField": "Alanı kilitle"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",
