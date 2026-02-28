@@ -15,7 +15,9 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
+  import { Label } from '@hcengineering/ui'
   import { State } from '@hcengineering/process'
+  import plugin from '../plugin'
 
   export let value: Ref<State>
 
@@ -26,4 +28,6 @@
 
 {#if currentState}
   {currentState.title}
+{:else if value === null}
+  <span class="opacity-50"><Label label={plugin.string.Started} /></span>
 {/if}

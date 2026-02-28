@@ -432,7 +432,7 @@ export async function RunSubProcess (
       execution.space,
       {
         process: processId,
-        currentState: initTransition.to,
+        currentState: null as any,
         card: _card,
         context,
         status: ExecutionStatus.Active,
@@ -802,7 +802,7 @@ async function createExecution (
     execution.space,
     {
       process: proc,
-      currentState: initTransition.to,
+      currentState: null as any,
       card: _id,
       rollback: [],
       context: {},
