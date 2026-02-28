@@ -66,7 +66,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(process.trigger.WhenFieldChanges, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
-    preventRollback: true,
+    rollbackFunc: serverProcess.rollbacks.FieldChangedRollback, // set to null for now
     serverCheckFunc: serverProcess.func.FieldChangedCheck
   })
 

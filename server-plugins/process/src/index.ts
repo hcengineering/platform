@@ -44,7 +44,8 @@ export default plugin(serverProcessId, {
   },
   rollbacks: {
     ToDoCloseRollback: '' as Resource<RollbackFunc>,
-    ToDoCancellRollback: '' as Resource<RollbackFunc>
+    ToDoCancellRollback: '' as Resource<RollbackFunc>,
+    FieldChangedRollback: '' as Resource<RollbackFunc>
   },
   func: {
     RunSubProcess: '' as Resource<ExecuteFunc>,
