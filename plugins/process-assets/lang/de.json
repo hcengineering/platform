@@ -150,7 +150,9 @@
     "ActionType": "Typ",
     "ApproveAction": "Genehmigen",
     "ReviewAction": "Prüfen",
-    "Review": "Prüfen"
+    "Review": "Prüfen",
+    "LockField": "Feld sperren",
+    "UnlockField": "Feld entsperren"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

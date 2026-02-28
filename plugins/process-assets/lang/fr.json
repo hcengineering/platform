@@ -155,7 +155,9 @@
     "ActionType": "Type",
     "ApproveAction": "Approuver",
     "ReviewAction": "Revoir",
-    "Review": "Revoir"
+    "Review": "Revoir",
+    "LockField": "Verrouiller le champ",
+    "UnlockField": "Déverrouiller le champ"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

@@ -91,6 +91,9 @@ import NumberPresenter from './components/transformPresenters/NumberPresenter.sv
 import RolePresenter from './components/transformPresenters/RolePresenter.svelte'
 import ExecutionRefPresenter from './components/ExecutionRefPresenter.svelte'
 import ActionTypePresenter from './components/ActionTypePresenter.svelte'
+import LockFieldEditor from './components/settings/LockFieldEditor.svelte'
+import LockFieldPresenter from './components/settings/LockFieldPresenter.svelte'
+import UnLockFieldPresenter from './components/settings/UnLockFieldPresenter.svelte'
 
 import { exportProcesses, importProcess } from './exporter'
 import { ProcessMiddleware } from './middleware'
@@ -180,7 +183,10 @@ export default async (): Promise<Resources> => ({
     CancelSubProcessEditor,
     ToDoValuePresenter,
     ExecutionRefPresenter,
-    ActionTypePresenter
+    ActionTypePresenter,
+    LockFieldEditor,
+    LockFieldPresenter,
+    UnLockFieldPresenter
   },
   criteriaEditor: {
     BaseCriteria,
