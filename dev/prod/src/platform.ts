@@ -278,9 +278,9 @@ function configureI18n(): void {
   addStringsLoader(
     platformId,
     async (lang: string) =>
-      await import(
+      await import(/* webpackMode: "eager" */ 
         /* webpackInclude: /\.json$/ */
-        /* webpackMode: "lazy" */
+        /* webpackMode: "eager" */
         /* webpackChunkName: "lang-[request]" */
         `@hcengineering/platform/lang/${lang}.json`
       )
@@ -288,143 +288,152 @@ function configureI18n(): void {
   addStringsLoader(
     coreId,
     async (lang: string) =>
-      await import(
+      await import(/* webpackMode: "eager" */ 
         /* webpackInclude: /\.json$/ */
-        /* webpackMode: "lazy" */
+        /* webpackMode: "eager" */
         /* webpackChunkName: "lang-[request]" */
         `@hcengineering/core/lang/${lang}.json`
       )
   )
   addStringsLoader(
     presentationId,
-    async (lang: string) => await import(`@hcengineering/presentation/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/presentation/lang/${lang}.json`)
   )
   addStringsLoader(
     textEditorId,
-    async (lang: string) => await import(`@hcengineering/text-editor-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/text-editor-assets/lang/${lang}.json`)
   )
-  addStringsLoader(uiId, async (lang: string) => await import(`@hcengineering/ui/lang/${lang}.json`))
-  addStringsLoader(uploaderId, async (lang: string) => await import(`@hcengineering/uploader-assets/lang/${lang}.json`))
-  addStringsLoader(recorderId, async (lang: string) => await import(`@hcengineering/recorder-assets/lang/${lang}.json`))
-  addStringsLoader(mediaId, async (lang: string) => await import(`@hcengineering/media-assets/lang/${lang}.json`))
-  addStringsLoader(activityId, async (lang: string) => await import(`@hcengineering/activity-assets/lang/${lang}.json`))
+  addStringsLoader(uiId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/ui/lang/${lang}.json`))
+  addStringsLoader(uploaderId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/uploader-assets/lang/${lang}.json`))
+  addStringsLoader(recorderId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/recorder-assets/lang/${lang}.json`))
+  addStringsLoader(mediaId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/media-assets/lang/${lang}.json`))
+  addStringsLoader(activityId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/activity-assets/lang/${lang}.json`))
   addStringsLoader(
     attachmentId,
-    async (lang: string) => await import(`@hcengineering/attachment-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/attachment-assets/lang/${lang}.json`)
   )
-  addStringsLoader(bitrixId, async (lang: string) => await import(`@hcengineering/bitrix-assets/lang/${lang}.json`))
-  addStringsLoader(boardId, async (lang: string) => await import(`@hcengineering/board-assets/lang/${lang}.json`))
-  addStringsLoader(calendarId, async (lang: string) => await import(`@hcengineering/calendar-assets/lang/${lang}.json`))
-  addStringsLoader(chunterId, async (lang: string) => await import(`@hcengineering/chunter-assets/lang/${lang}.json`))
-  addStringsLoader(contactId, async (lang: string) => await import(`@hcengineering/contact-assets/lang/${lang}.json`))
-  addStringsLoader(driveId, async (lang: string) => await import(`@hcengineering/drive-assets/lang/${lang}.json`))
-  addStringsLoader(gmailId, async (lang: string) => await import(`@hcengineering/gmail-assets/lang/${lang}.json`))
-  addStringsLoader(hrId, async (lang: string) => await import(`@hcengineering/hr-assets/lang/${lang}.json`))
+  addStringsLoader(bitrixId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/bitrix-assets/lang/${lang}.json`))
+  addStringsLoader(boardId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/board-assets/lang/${lang}.json`))
+  addStringsLoader(calendarId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/calendar-assets/lang/${lang}.json`))
+  addStringsLoader(chunterId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/chunter-assets/lang/${lang}.json`))
+  addStringsLoader(contactId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/contact-assets/lang/${lang}.json`))
+  addStringsLoader(driveId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/drive-assets/lang/${lang}.json`))
+  addStringsLoader(gmailId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/gmail-assets/lang/${lang}.json`))
+  addStringsLoader(hrId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/hr-assets/lang/${lang}.json`))
   addStringsLoader(
     inventoryId,
-    async (lang: string) => await import(`@hcengineering/inventory-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/inventory-assets/lang/${lang}.json`)
   )
-  addStringsLoader(leadId, async (lang: string) => await import(`@hcengineering/lead-assets/lang/${lang}.json`))
-  addStringsLoader(loginId, async (lang: string) => await import(`@hcengineering/login-assets/lang/${lang}.json`))
+  addStringsLoader(leadId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/lead-assets/lang/${lang}.json`))
+  addStringsLoader(loginId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/login-assets/lang/${lang}.json`))
   addStringsLoader(
     notificationId,
-    async (lang: string) => await import(`@hcengineering/notification-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/notification-assets/lang/${lang}.json`)
   )
-  addStringsLoader(onboardId, async (lang: string) => await import(`@hcengineering/onboard-assets/lang/${lang}.json`))
+  addStringsLoader(onboardId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/onboard-assets/lang/${lang}.json`))
   addStringsLoader(
     preferenceId,
-    async (lang: string) => await import(`@hcengineering/preference-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/preference-assets/lang/${lang}.json`)
   )
-  addStringsLoader(recruitId, async (lang: string) => await import(`@hcengineering/recruit-assets/lang/${lang}.json`))
-  addStringsLoader(requestId, async (lang: string) => await import(`@hcengineering/request-assets/lang/${lang}.json`))
-  addStringsLoader(settingId, async (lang: string) => await import(`@hcengineering/setting-assets/lang/${lang}.json`))
-  addStringsLoader(supportId, async (lang: string) => await import(`@hcengineering/support-assets/lang/${lang}.json`))
-  addStringsLoader(tagsId, async (lang: string) => await import(`@hcengineering/tags-assets/lang/${lang}.json`))
-  addStringsLoader(taskId, async (lang: string) => await import(`@hcengineering/task-assets/lang/${lang}.json`))
-  addStringsLoader(telegramId, async (lang: string) => await import(`@hcengineering/telegram-assets/lang/${lang}.json`))
+  addStringsLoader(recruitId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/recruit-assets/lang/${lang}.json`))
+  addStringsLoader(requestId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/request-assets/lang/${lang}.json`))
+  addStringsLoader(settingId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/setting-assets/lang/${lang}.json`))
+  addStringsLoader(supportId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/support-assets/lang/${lang}.json`))
+  addStringsLoader(tagsId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/tags-assets/lang/${lang}.json`))
+  addStringsLoader(taskId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/task-assets/lang/${lang}.json`))
+  addStringsLoader(telegramId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/telegram-assets/lang/${lang}.json`))
   addStringsLoader(
     templatesId,
-    async (lang: string) => await import(`@hcengineering/templates-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/templates-assets/lang/${lang}.json`)
   )
-  addStringsLoader(trackerId, async (lang: string) => await import(`@hcengineering/tracker-assets/lang/${lang}.json`))
-  addStringsLoader(viewId, async (lang: string) => await import(`@hcengineering/view-assets/lang/${lang}.json`))
+  addStringsLoader(trackerId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/tracker-assets/lang/${lang}.json`))
+  addStringsLoader(viewId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/view-assets/lang/${lang}.json`))
   addStringsLoader(
     workbenchId,
-    async (lang: string) => await import(`@hcengineering/workbench-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/workbench-assets/lang/${lang}.json`)
   )
 
   addStringsLoader(
     desktopPreferencesId,
-    async (lang: string) => await import(`@hcengineering/desktop-preferences-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/desktop-preferences-assets/lang/${lang}.json`)
   )
-  addStringsLoader(diffviewId, async (lang: string) => await import(`@hcengineering/diffview-assets/lang/${lang}.json`))
-  addStringsLoader(documentId, async (lang: string) => await import(`@hcengineering/document-assets/lang/${lang}.json`))
-  addStringsLoader(timeId, async (lang: string) => await import(`@hcengineering/time-assets/lang/${lang}.json`))
-  addStringsLoader(githubId, async (lang: string) => await import(`@hcengineering/github-assets/lang/${lang}.json`))
+  addStringsLoader(diffviewId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/diffview-assets/lang/${lang}.json`))
+  addStringsLoader(documentId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/document-assets/lang/${lang}.json`))
+  addStringsLoader(timeId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/time-assets/lang/${lang}.json`))
+  addStringsLoader(githubId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/github-assets/lang/${lang}.json`))
   addStringsLoader(
     documentsId,
-    async (lang: string) => await import(`@hcengineering/controlled-documents-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/controlled-documents-assets/lang/${lang}.json`)
   )
-  addStringsLoader(productsId, async (lang: string) => await import(`@hcengineering/products-assets/lang/${lang}.json`))
+  addStringsLoader(productsId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/products-assets/lang/${lang}.json`))
   addStringsLoader(
     questionsId,
-    async (lang: string) => await import(`@hcengineering/questions-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/questions-assets/lang/${lang}.json`)
   )
-  addStringsLoader(trainingId, async (lang: string) => await import(`@hcengineering/training-assets/lang/${lang}.json`))
-  addStringsLoader(guestId, async (lang: string) => await import(`@hcengineering/guest-assets/lang/${lang}.json`))
+  addStringsLoader(trainingId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/training-assets/lang/${lang}.json`))
+  addStringsLoader(guestId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/guest-assets/lang/${lang}.json`))
   addStringsLoader(
     globalProfileId,
-    async (lang: string) => await import(`@hcengineering/global-profile-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/global-profile-assets/lang/${lang}.json`)
   )
-  addStringsLoader(loveId, async (lang: string) => await import(`@hcengineering/love-assets/lang/${lang}.json`))
-  addStringsLoader(printId, async (lang: string) => await import(`@hcengineering/print-assets/lang/${lang}.json`))
-  addStringsLoader(exportId, async (lang: string) => await import(`@hcengineering/export-assets/lang/${lang}.json`))
+  addStringsLoader(loveId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/love-assets/lang/${lang}.json`))
+  addStringsLoader(printId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/print-assets/lang/${lang}.json`))
+  addStringsLoader(exportId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/export-assets/lang/${lang}.json`))
   addStringsLoader(
     analyticsCollectorId,
-    async (lang: string) => await import(`@hcengineering/analytics-collector-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/analytics-collector-assets/lang/${lang}.json`)
   )
   addStringsLoader(
     testManagementId,
-    async (lang: string) => await import(`@hcengineering/test-management-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/test-management-assets/lang/${lang}.json`)
   )
-  addStringsLoader(surveyId, async (lang: string) => await import(`@hcengineering/survey-assets/lang/${lang}.json`))
-  addStringsLoader(cardId, async (lang: string) => await import(`@hcengineering/card-assets/lang/${lang}.json`))
-  addStringsLoader(mailId, async (lang: string) => await import(`@hcengineering/mail-assets/lang/${lang}.json`))
-  addStringsLoader(chatId, async (lang: string) => await import(`@hcengineering/chat-assets/lang/${lang}.json`))
-  addStringsLoader(processId, async (lang: string) => await import(`@hcengineering/process-assets/lang/${lang}.json`))
+  addStringsLoader(surveyId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/survey-assets/lang/${lang}.json`))
+  addStringsLoader(cardId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/card-assets/lang/${lang}.json`))
+  addStringsLoader(mailId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/mail-assets/lang/${lang}.json`))
+  addStringsLoader(chatId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/chat-assets/lang/${lang}.json`))
+  addStringsLoader(processId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/process-assets/lang/${lang}.json`))
   addStringsLoader(
     achievementId,
-    async (lang: string) => await import(`@hcengineering/achievement-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/achievement-assets/lang/${lang}.json`)
   )
   addStringsLoader(
     communicationId,
-    async (lang: string) => await import(`@hcengineering/communication-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/communication-assets/lang/${lang}.json`)
   )
-  addStringsLoader(inboxId, async (lang: string) => await import(`@hcengineering/inbox-assets/lang/${lang}.json`))
-  addStringsLoader(emojiId, async (lang: string) => await import(`@hcengineering/emoji-assets/lang/${lang}.json`))
-  addStringsLoader(billingId, async (lang: string) => await import(`@hcengineering/billing-assets/lang/${lang}.json`))
+  addStringsLoader(inboxId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/inbox-assets/lang/${lang}.json`))
+  addStringsLoader(emojiId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/emoji-assets/lang/${lang}.json`))
+  addStringsLoader(billingId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/billing-assets/lang/${lang}.json`))
   addStringsLoader(
     hulyMailId,
-    async (lang: string) => await import(`@hcengineering/huly-mail-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/huly-mail-assets/lang/${lang}.json`)
   )
   addStringsLoader(
     aiAssistantId,
-    async (lang: string) => await import(`@hcengineering/ai-assistant-assets/lang/${lang}.json`)
+    async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/ai-assistant-assets/lang/${lang}.json`)
   )
-  addStringsLoader(ratingId, async (lang: string) => await import(`@hcengineering/rating-assets/lang/${lang}.json`))
+  addStringsLoader(ratingId, async (lang: string) => await import(/* webpackMode: "eager" */ `@hcengineering/rating-assets/lang/${lang}.json`))
 }
 
 export async function configurePlatform() {
+  const dev = process.env.NODE_ENV === 'development';
   setMetadata(platform.metadata.LoadHelper, async (loader) => {
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < (dev ? 30 : 5); i++) {
       try {
+        console.log(`[Rspack] Chunk loading`);
         return await loader()
       } catch (err: any) {
-        if (err.message.includes('Loading chunk') && i != 4) {
-          continue
+        if (err.message.includes('Loading chunk') || err.message.includes('Loading hot update')) {
+          if (dev) {
+            console.log(`[Rspack] Chunk loading failed, retrying in 1s (${i + 1}/30)...`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          }
+          if (i < 4) continue;
         }
-        console.log('reload due to loading error')
-        location.reload()
+        console.error('Platform load error:', err)
+        if (!dev) {
+          location.reload()
+        }
       }
     }
   })
@@ -563,156 +572,156 @@ export async function configurePlatform() {
   addLocation(coreId, async () => ({ default: async () => ({}) }))
   addLocation(presentationId, async () => ({ default: async () => ({}) }))
 
-  addLocation(clientId, async () => await import(/* webpackChunkName: "client" */ '@hcengineering/client-resources'))
-  addLocation(loginId, async () => await import(/* webpackChunkName: "login" */ '@hcengineering/login-resources'))
-  addLocation(onboardId, async () => await import(/* webpackChunkName: "onboard" */ '@hcengineering/onboard-resources'))
+  addLocation(clientId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "client" */ '@hcengineering/client-resources'))
+  addLocation(loginId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "login" */ '@hcengineering/login-resources'))
+  addLocation(onboardId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "onboard" */ '@hcengineering/onboard-resources'))
   addLocation(
     workbenchId,
-    async () => await import(/* webpackChunkName: "workbench" */ '@hcengineering/workbench-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "workbench" */ '@hcengineering/workbench-resources')
   )
-  addLocation(viewId, async () => await import(/* webpackChunkName: "view" */ '@hcengineering/view-resources'))
-  addLocation(converterId, async () => await import(/* webpackChunkName: "converter" */ '@hcengineering/converter-resources'))
-  addLocation(taskId, async () => await import(/* webpackChunkName: "task" */ '@hcengineering/task-resources'))
-  addLocation(contactId, async () => await import(/* webpackChunkName: "contact" */ '@hcengineering/contact-resources'))
-  addLocation(chunterId, async () => await import(/* webpackChunkName: "chunter" */ '@hcengineering/chunter-resources'))
-  addLocation(recruitId, async () => await import(/* webpackChunkName: "recruit" */ '@hcengineering/recruit-resources'))
+  addLocation(viewId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "view" */ '@hcengineering/view-resources'))
+  addLocation(converterId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "converter" */ '@hcengineering/converter-resources'))
+  addLocation(taskId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "task" */ '@hcengineering/task-resources'))
+  addLocation(contactId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "contact" */ '@hcengineering/contact-resources'))
+  addLocation(chunterId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "chunter" */ '@hcengineering/chunter-resources'))
+  addLocation(recruitId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "recruit" */ '@hcengineering/recruit-resources'))
   addLocation(
     activityId,
-    async () => await import(/* webpackChunkName: "activity" */ '@hcengineering/activity-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "activity" */ '@hcengineering/activity-resources')
   )
-  addLocation(settingId, async () => await import(/* webpackChunkName: "setting" */ '@hcengineering/setting-resources'))
-  addLocation(leadId, async () => await import(/* webpackChunkName: "lead" */ '@hcengineering/lead-resources'))
+  addLocation(settingId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "setting" */ '@hcengineering/setting-resources'))
+  addLocation(leadId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "lead" */ '@hcengineering/lead-resources'))
   addLocation(
     telegramId,
-    async () => await import(/* webpackChunkName: "telegram" */ '@hcengineering/telegram-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "telegram" */ '@hcengineering/telegram-resources')
   )
   addLocation(
     attachmentId,
-    async () => await import(/* webpackChunkName: "attachment" */ '@hcengineering/attachment-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "attachment" */ '@hcengineering/attachment-resources')
   )
-  addLocation(gmailId, async () => await import(/* webpackChunkName: "gmail" */ '@hcengineering/gmail-resources'))
+  addLocation(gmailId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "gmail" */ '@hcengineering/gmail-resources'))
   addLocation(
     imageCropperId,
-    async () => await import(/* webpackChunkName: "image-cropper" */ '@hcengineering/image-cropper-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "image-cropper" */ '@hcengineering/image-cropper-resources')
   )
   addLocation(
     inventoryId,
-    async () => await import(/* webpackChunkName: "inventory" */ '@hcengineering/inventory-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "inventory" */ '@hcengineering/inventory-resources')
   )
   addLocation(
     templatesId,
-    async () => await import(/* webpackChunkName: "templates" */ '@hcengineering/templates-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "templates" */ '@hcengineering/templates-resources')
   )
   addLocation(
     notificationId,
-    async () => await import(/* webpackChunkName: "notification" */ '@hcengineering/notification-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "notification" */ '@hcengineering/notification-resources')
   )
-  addLocation(tagsId, async () => await import(/* webpackChunkName: "tags" */ '@hcengineering/tags-resources'))
+  addLocation(tagsId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "tags" */ '@hcengineering/tags-resources'))
   addLocation(
     calendarId,
-    async () => await import(/* webpackChunkName: "calendar" */ '@hcengineering/calendar-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "calendar" */ '@hcengineering/calendar-resources')
   )
   addLocation(
     diffviewId,
-    async () => await import(/* webpackChunkName: "diffview" */ '@hcengineering/diffview-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "diffview" */ '@hcengineering/diffview-resources')
   )
-  addLocation(timeId, async () => await import(/* webpackChunkName: "time" */ '@hcengineering/time-resources'))
+  addLocation(timeId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "time" */ '@hcengineering/time-resources'))
   addLocation(
     desktopPreferencesId,
     async () =>
-      await import(/* webpackChunkName: "desktop-preferences" */ '@hcengineering/desktop-preferences-resources')
+      await import(/* webpackMode: "eager" */ /* webpackChunkName: "desktop-preferences" */ '@hcengineering/desktop-preferences-resources')
   )
-  addLocation(analyticsCollectorId, async () => await import('@hcengineering/analytics-collector-resources'))
-  addLocation(aiBotId, async () => await import('@hcengineering/ai-bot-resources'))
+  addLocation(analyticsCollectorId, async () => await import(/* webpackMode: "eager" */ '@hcengineering/analytics-collector-resources'))
+  addLocation(aiBotId, async () => await import(/* webpackMode: "eager" */ '@hcengineering/ai-bot-resources'))
 
-  addLocation(trackerId, async () => await import(/* webpackChunkName: "tracker" */ '@hcengineering/tracker-resources'))
-  addLocation(boardId, async () => await import(/* webpackChunkName: "board" */ '@hcengineering/board-resources'))
-  addLocation(hrId, async () => await import(/* webpackChunkName: "hr" */ '@hcengineering/hr-resources'))
-  addLocation(bitrixId, async () => await import(/* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
-  addLocation(requestId, async () => await import(/* webpackChunkName: "request" */ '@hcengineering/request-resources'))
-  addLocation(driveId, async () => await import(/* webpackChunkName: "drive" */ '@hcengineering/drive-resources'))
-  addLocation(supportId, async () => await import(/* webpackChunkName: "support" */ '@hcengineering/support-resources'))
+  addLocation(trackerId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "tracker" */ '@hcengineering/tracker-resources'))
+  addLocation(boardId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "board" */ '@hcengineering/board-resources'))
+  addLocation(hrId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "hr" */ '@hcengineering/hr-resources'))
+  addLocation(bitrixId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "bitrix" */ '@hcengineering/bitrix-resources'))
+  addLocation(requestId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "request" */ '@hcengineering/request-resources'))
+  addLocation(driveId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "drive" */ '@hcengineering/drive-resources'))
+  addLocation(supportId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "support" */ '@hcengineering/support-resources'))
 
   addLocation(
     documentId,
-    async () => await import(/* webpackChunkName: "document" */ '@hcengineering/document-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "document" */ '@hcengineering/document-resources')
   )
-  addLocation(githubId, async () => await import(/* webpackChunkName: "github" */ '@hcengineering/github-resources'))
+  addLocation(githubId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "github" */ '@hcengineering/github-resources'))
   addLocation(
     questionsId,
-    async () => await import(/* webpackChunkName: "training" */ '@hcengineering/questions-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "training" */ '@hcengineering/questions-resources')
   )
   addLocation(
     trainingId,
-    async () => await import(/* webpackChunkName: "training" */ '@hcengineering/training-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "training" */ '@hcengineering/training-resources')
   )
   addLocation(
     productsId,
-    async () => await import(/* webpackChunkName: "products" */ '@hcengineering/products-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "products" */ '@hcengineering/products-resources')
   )
   addLocation(
     documentsId,
-    async () => await import(/* webpackChunkName: "documents" */ '@hcengineering/controlled-documents-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "documents" */ '@hcengineering/controlled-documents-resources')
   )
-  addLocation(guestId, async () => await import(/* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
+  addLocation(guestId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "guest" */ '@hcengineering/guest-resources'))
   addLocation(
     globalProfileId,
-    async () => await import(/* webpackChunkName: "global-profile" */ '@hcengineering/global-profile-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "global-profile" */ '@hcengineering/global-profile-resources')
   )
-  addLocation(loveId, async () => await import(/* webpackChunkName: "love" */ '@hcengineering/love-resources'))
-  addLocation(printId, async () => await import(/* webpackChunkName: "print" */ '@hcengineering/print-resources'))
-  addLocation(exportId, async () => await import(/* webpackChunkName: "export" */ '@hcengineering/export-resources'))
+  addLocation(loveId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "love" */ '@hcengineering/love-resources'))
+  addLocation(printId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "print" */ '@hcengineering/print-resources'))
+  addLocation(exportId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "export" */ '@hcengineering/export-resources'))
   addLocation(
     textEditorId,
-    async () => await import(/* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "text-editor" */ '@hcengineering/text-editor-resources')
   )
   addLocation(
     uploaderId,
-    async () => await import(/* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "uploader" */ '@hcengineering/uploader-resources')
   )
   addLocation(
     recorderId,
-    async () => await import(/* webpackChunkName: "recorder" */ '@hcengineering/recorder-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "recorder" */ '@hcengineering/recorder-resources')
   )
-  addLocation(mediaId, async () => await import(/* webpackChunkName: "media" */ '@hcengineering/media-resources'))
+  addLocation(mediaId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "media" */ '@hcengineering/media-resources'))
 
   addLocation(
     testManagementId,
-    async () => await import(/* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "test-management" */ '@hcengineering/test-management-resources')
   )
-  addLocation(surveyId, async () => await import(/* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
+  addLocation(surveyId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "survey" */ '@hcengineering/survey-resources'))
   addLocation(
     presenceId,
-    async () => await import(/* webpackChunkName: "presence" */ '@hcengineering/presence-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "presence" */ '@hcengineering/presence-resources')
   )
-  addLocation(cardId, async () => await import(/* webpackChunkName: "card" */ '@hcengineering/card-resources'))
-  addLocation(chatId, async () => await import(/* webpackChunkName: "chat" */ '@hcengineering/chat-resources'))
-  addLocation(processId, async () => await import(/* webpackChunkName: "process" */ '@hcengineering/process-resources'))
+  addLocation(cardId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "card" */ '@hcengineering/card-resources'))
+  addLocation(chatId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "chat" */ '@hcengineering/chat-resources'))
+  addLocation(processId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "process" */ '@hcengineering/process-resources'))
   addLocation(
     achievementId,
-    async () => await import(/* webpackChunkName: "achievement" */ '@hcengineering/achievement-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "achievement" */ '@hcengineering/achievement-resources')
   )
   addLocation(
     communicationId,
-    async () => await import(/* webpackChunkName: "communication" */ '@hcengineering/communication-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "communication" */ '@hcengineering/communication-resources')
   )
-  addLocation(emojiId, async () => await import(/* webpackChunkName: "emoji" */ '@hcengineering/emoji-resources'))
+  addLocation(emojiId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "emoji" */ '@hcengineering/emoji-resources'))
   if ((config.BILLING_URL ?? '') !== '') {
     addLocation(
       billingId,
-      async () => await import(/* webpackChunkName: "billing" */ '@hcengineering/billing-resources')
+      async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "billing" */ '@hcengineering/billing-resources')
     )
   }
   addLocation(
     hulyMailId,
-    async () => await import(/* webpackChunkName: "hulyMail" */ '@hcengineering/huly-mail-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "hulyMail" */ '@hcengineering/huly-mail-resources')
   )
   addLocation(
     aiAssistantId,
-    async () => await import(/* webpackChunkName: "ai-assistant" */ '@hcengineering/ai-assistant-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "ai-assistant" */ '@hcengineering/ai-assistant-resources')
   )
-  addLocation(inboxId, async () => await import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
-  addLocation(ratingId, async () => await import(/* webpackChunkName: "rating" */ '@hcengineering/rating-resources'))
+  addLocation(inboxId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
+  addLocation(ratingId, async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "rating" */ '@hcengineering/rating-resources'))
 
   setMetadata(client.metadata.FilterModel, 'ui')
   setMetadata(client.metadata.ExtraFilter, disabledFeatures)

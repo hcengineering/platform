@@ -168,7 +168,16 @@ switch (args[0]) {
   default: {
     let st = performance.now()
     const filesToTranspile = collectFiles(join(process.cwd(), 'src'))
-    Promise.all([performESBuild(filesToTranspile), validateTSC()]).then(() => {
+    const skipValidate = process.env.SKIP_VALIDATE === 'true' || args.includes('--fast')
+
+    const tasks = [performESBuild(filesToTranspile)]
+    if (!skipValidate) {
+      tasks.push(validateTSC())
+    } else {
+      console.log('Skipping TSC validation...')
+    }
+
+    Promise.all(tasks).then(() => {
       console.log('Full build time: ', Math.round((performance.now() - st) * 100) / 100)
     })
     break

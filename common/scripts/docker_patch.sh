@@ -35,6 +35,10 @@ fi
 
 export DOCKER_VERSION="$VERSION"
 export DOCKER_EXTRA="--platform=$PLATFORM"
+export SKIP_VALIDATE="true"
+export USE_CACHE="true"
+export FAST_BUILD="true"
+
 echo "Starting docker build and push for version: $DOCKER_VERSION ($PLATFORM)"
 
 # We use 'node common/scripts/install-run-rush.js' to ensure we use the right rush version
