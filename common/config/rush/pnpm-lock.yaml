@@ -819,10 +819,10 @@ importers:
         specifier: ^2.3.2
         version: 2.5.0
       '@hcengineering/desktop':
-        specifier: workspace:^0.7.0
+        specifier: workspace:^0.7.382
         version: link:../desktop
       '@hcengineering/platform-rig':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.382
         version: link:../foundations/utils/packages/platform-rig
       '@types/node':
         specifier: ^22.18.1
@@ -31477,10 +31477,10 @@ importers:
         specifier: ^2.3.2
         version: 2.5.0
       '@hcengineering/desktop':
-        specifier: workspace:^0.7.0
+        specifier: workspace:^0.7.382
         version: link:../desktop
       '@hcengineering/platform-rig':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.382
         version: link:../foundations/utils/packages/platform-rig
       '@types/node':
         specifier: ^22.18.1
