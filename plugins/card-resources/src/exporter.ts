@@ -20,7 +20,8 @@ import card from './plugin'
 
 export async function importModule (json: string): Promise<void> {
   try {
-    const data = JSON.parse(json) as Doc[]
+    const rawData = JSON.parse(json) as Doc[]
+    const data = Array.from(new Map(rawData.map(d => [d._id, d])).values())
     const client = getClient()
     const m = client.getModel()
     const h = client.getHierarchy()
@@ -61,7 +62,8 @@ function stripData<T extends Doc> (doc: T): Data<T> {
 export async function exportModule (_id: Ref<Class<Doc>>): Promise<string> {
   const processed = new Set<Ref<Doc>>()
   const res = await exportType(_id, processed)
-  const clear = res.map(strip)
+  const unique = Array.from(new Map(res.map(d => [d._id, d])).values())
+  const clear = unique.map(strip)
   const str = JSON.stringify(clear)
   return str
 }
@@ -126,12 +128,14 @@ async function exportType (
   withoutDesc: boolean = false
 ): Promise<Doc[]> {
   if (processed.has(_id)) return []
+  processed.add(_id)
   const res: Doc[] = []
   const required: Array<Ref<Class<Doc>>> = []
   const client = getClient()
   const m = client.getModel()
   const h = client.getHierarchy()
   const type = m.findObject(_id)
+  if (type === undefined) return res
 
   const parent = h.getClass(_id).extends
   if (parent !== undefined && h.isDerived(parent, card.class.Card) && parent !== card.class.Card) {
@@ -140,8 +144,6 @@ async function exportType (
     }
   }
 
-  processed.add(_id)
-  if (type === undefined) return res
   if (type.icon === view.ids.IconWithEmoji && typeof type.color === 'string') {
     type.icon = card.icon.Card
   }
