@@ -41,7 +41,10 @@
     "@hcengineering/card": "workspace:^0.7.0",
     "@hcengineering/core": "workspace:^0.7.24"
   },
-  "repository": "https://github.com/hcengineering/platform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/platform.git"
+  },
   "publishConfig": {
     "access": "public"
   }

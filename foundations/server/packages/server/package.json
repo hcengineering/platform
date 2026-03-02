@@ -45,7 +45,10 @@
     "@hcengineering/server-token": "workspace:^0.7.17",
     "utf-8-validate": "^6.0.4"
   },
-  "repository": "https://github.com/hcengineering/huly.server",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/huly.server.git"
+  },
   "publishConfig": {
     "access": "public"
   },

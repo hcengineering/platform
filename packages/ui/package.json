@@ -54,7 +54,10 @@
     "plyr": "3.7.8",
     "blurhash": "^2.0.5"
   },
-  "repository": "https://github.com/hcengineering/platform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/platform.git"
+  },
   "publishConfig": {
     "access": "public"
   }

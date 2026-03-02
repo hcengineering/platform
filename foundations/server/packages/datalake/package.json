@@ -41,7 +41,10 @@
     "@hcengineering/server-core": "workspace:^0.7.18",
     "@hcengineering/server-token": "workspace:^0.7.17"
   },
-  "repository": "https://github.com/hcengineering/huly.server",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/huly.server.git"
+  },
   "publishConfig": {
     "access": "public"
   },
