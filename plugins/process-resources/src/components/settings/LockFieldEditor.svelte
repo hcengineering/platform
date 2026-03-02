@@ -95,7 +95,13 @@
         <Label label={attribute.label} />
       </span>
       <div class="button flex-row-center">
-        <Button icon={IconClose} kind="ghost" on:click={() => { remove(key) }} />
+        <Button
+          icon={IconClose}
+          kind="ghost"
+          on:click={() => {
+            remove(key)
+          }}
+        />
       </div>
     {/if}
   {/each}
