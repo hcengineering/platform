@@ -966,10 +966,17 @@ jobs:
           restore-keys: ${{ runner.os }}-build-cache-node-platform-
       - name: Installing...
         run: node common/scripts/install-run-rush.js install
+      - name: Building...
+        run: node common/scripts/install-run-rush.js build
       - name: Publish to npm
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "::error::NPM_TOKEN secret is not set. Add it in repository Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
           REF="${{ github.event.inputs.ref || github.ref }}"
           VERSION="${REF#refs/tags/v}"
           VERSION="${VERSION#v}"
