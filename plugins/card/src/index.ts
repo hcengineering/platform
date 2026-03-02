@@ -61,6 +61,7 @@ export interface Card extends Doc, IconProps, VersionableDoc {
   peerId?: string
 
   readonlySections?: Ref<MasterTag>[]
+  readonlyFields?: string[]
 }
 
 export interface CardSpace extends TypedSpace {

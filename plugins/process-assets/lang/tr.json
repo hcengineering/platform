@@ -45,6 +45,7 @@
     "Required": "Gerekli",
     "ParallelExecutionForbidden": "Paralel yürütme yasak",
     "StartAutomatically": "Otomatik başlat",
+    "AutomationOnly": "Sadece otomasyon",
     "Error": "Hata",
     "Continue": "Devam et",
     "RequestFromUser": "Kullanıcıdan talep et",
@@ -146,7 +147,14 @@
     "CancelToDo": "Eylem öğesini iptal et",
     "Export": "Dışa aktar",
     "Import": "İçe aktar",
-    "CancelProcess": "Süreci iptal et"
+    "CancelProcess": "Süreci iptal et",
+    "SyncWithField": "Alan ile senkronize et",
+    "ActionType": "Tür",
+    "ApproveAction": "Onayla",
+    "ReviewAction": "Gözden geçir",
+    "Review": "Gözden geçir",
+    "LockField": "Alanı kilitle",
+    "UnlockField": "Alanı kilitle"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

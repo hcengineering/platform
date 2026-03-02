@@ -17,6 +17,8 @@ import cardPlugin, { Card } from '@hcengineering/card'
 import core, {
   ArrOf,
   Doc,
+  DocumentUpdate,
+  generateId,
   Ref,
   RefTo,
   Tx,
@@ -110,9 +112,11 @@ import {
   LockCard,
   LockSection,
   UnlockCard,
-  UnlockSection
+  UnlockSection,
+  LockField,
+  UnlockField
 } from './functions'
-import { ToDoCancellRollback, ToDoCloseRollback } from './rollback'
+import { FieldChangedRollback, ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 
 async function putEventToQueue (value: Omit<ProcessMessage, 'account'>, control: TriggerControl): Promise<void> {
   if (control.queue === undefined) return
@@ -155,6 +159,7 @@ export async function OnProcessToDoClose (txes: Tx[], control: TriggerControl): 
         event: events,
         execution: todo.execution,
         createdOn: tx.modifiedOn,
+        _id: tx._id,
         context: {
           todo
         }
@@ -192,6 +197,7 @@ export async function OnCustomEvent (txes: Tx[], control: TriggerControl): Promi
         execution: customEvent.execution,
         createdOn: tx.modifiedOn,
         card: customEvent.card,
+        _id: tx._id,
         context: {
           eventType: customEvent.eventType,
           card
@@ -214,6 +220,7 @@ export async function OnExecutionCreate (txes: Tx[], control: TriggerControl): P
         event: [process.trigger.OnExecutionStart],
         execution: execution._id,
         createdOn: tx.modifiedOn,
+        _id: tx._id,
         context: {}
       },
       control
@@ -227,6 +234,7 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
     if (tx._class !== core.class.TxRemoveDoc) continue
     const removeTx = tx as TxRemoveDoc<ProcessToDo>
     if (!control.hierarchy.isDerived(removeTx.objectClass, process.class.ProcessToDo)) continue
+    if (removeTx.space === core.space.DerivedTx) continue
     const removedTodo = control.removedMap.get(removeTx.objectId) as ProcessToDo
     if (removedTodo === undefined) continue
     await putEventToQueue(
@@ -234,6 +242,7 @@ export async function OnProcessToDoRemove (txes: Tx[], control: TriggerControl):
         event: [process.trigger.OnToDoRemove],
         execution: removedTodo.execution,
         createdOn: tx.modifiedOn,
+        _id: tx._id,
         context: {
           todo: removedTodo
         }
@@ -263,6 +272,7 @@ export async function OnExecutionContinue (txes: Tx[], control: TriggerControl):
         event: [process.trigger.OnExecutionContinue],
         execution: execution._id,
         createdOn: tx.modifiedOn,
+        _id: tx._id,
         context: {}
       },
       control
@@ -346,6 +356,83 @@ async function getExecutionReassignTxes (card: Card, control: TriggerControl): P
   return res
 }
 
+async function reassignToDos (card: Card, ops: DocumentUpdate<Card>, control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  const todos = await control.findAll(control.ctx, process.class.ProcessToDo, {
+    attachedTo: card._id,
+    doneOn: null,
+    field: { $ne: null }
+  } as any)
+  const handledGroups = new Set<string>()
+  for (const todo of todos as any[]) {
+    if (todo.field === undefined || !TxProcessor.hasUpdate(ops, todo.field)) continue
+
+    if (todo._class === process.class.ApproveRequest) {
+      const request = todo as ApproveRequest
+      if (handledGroups.has(request.group)) continue
+      handledGroups.add(request.group)
+
+      const newUsers = (card[todo.field as keyof Card] as any[]) ?? []
+      if (newUsers.length === 0) {
+        continue
+      }
+      const currentRequests = await control.findAll(control.ctx, process.class.ApproveRequest, {
+        group: request.group,
+        doneOn: null
+      })
+      const currentUsers = currentRequests.map((r) => r.user)
+
+      // Remove users not in new list
+      for (const req of currentRequests) {
+        if (!newUsers.includes(req.user)) {
+          res.push(control.txFactory.createTxRemoveDoc(req._class, req.space, req._id))
+        }
+      }
+
+      // Add users not in current list
+      for (const user of newUsers) {
+        if (!currentUsers.includes(user)) {
+          const id = generateId<ApproveRequest>()
+          const { _id, modifiedBy, modifiedOn, ...data } = request as any
+          res.push(
+            control.txFactory.createTxCreateDoc(
+              request._class,
+              request.space,
+              {
+                ...data,
+                user
+              },
+              id
+            )
+          )
+        }
+      }
+    } else {
+      const newUser = card[todo.field as keyof Card]
+      if (newUser === todo.user) continue
+
+      if (newUser != null) {
+        res.push(control.txFactory.createTxRemoveDoc(todo._class, todo.space, todo._id))
+
+        const id = generateId<ProcessToDo>()
+        const { _id, modifiedBy, modifiedOn, ...data } = todo
+        res.push(
+          control.txFactory.createTxCreateDoc(
+            todo._class,
+            todo.space,
+            {
+              ...data,
+              user: newUser
+            },
+            id
+          )
+        )
+      }
+    }
+  }
+  return res
+}
+
 export async function OnCardCreate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   for (const tx of txes) {
@@ -396,6 +483,7 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
         event: [process.trigger.OnCardUpdate, process.trigger.WhenFieldChanges],
         card: cudTx.objectId,
         createdOn: tx.modifiedOn,
+        _id: tx._id,
         context: {
           card: card[0],
           operations: ops ?? {}
@@ -403,6 +491,8 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
       },
       control
     )
+    const reassignTxes = await reassignToDos(card[0], ops ?? {}, control)
+    res.push(...reassignTxes)
   }
   return res
 }
@@ -511,7 +601,9 @@ export default async () => ({
     LockCard,
     LockSection,
     UnlockCard,
-    UnlockSection
+    UnlockSection,
+    LockField,
+    UnlockField
   },
   transform: {
     CurrentDate,
@@ -555,7 +647,8 @@ export default async () => ({
   },
   rollbacks: {
     ToDoCloseRollback,
-    ToDoCancellRollback
+    ToDoCancellRollback,
+    FieldChangedRollback
   },
   trigger: {
     OnProcessRemove,

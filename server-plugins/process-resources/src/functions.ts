@@ -20,6 +20,7 @@ import core, {
   Class,
   Data,
   Doc,
+  DocumentUpdate,
   fillDefaults,
   findProperty,
   generateId,
@@ -169,9 +170,9 @@ export function FieldChangedCheck (
   const process = control.client.getModel().findObject(execution.process)
   if (process === undefined) return false
   if (context.operations === undefined) return false
-  const changedFields = Object.keys(context.operations)
+  const operations = context.operations as DocumentUpdate<Doc>
   const target = Object.keys(params)[0]
-  if (!changedFields.includes(target)) return false
+  if (!TxProcessor.hasUpdate(operations, target)) return false
   const res = matchQuery([context.card], params, process.masterTag, control.client.getHierarchy(), true)
   return res.length > 0
 }
@@ -322,11 +323,20 @@ export async function AddTag (
   res.push(tx)
   const card = control.cache.get(execution.card)
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
-  if (control.client.getHierarchy().hasMixin(card, tagId)) {
-    return { txes: res, rollback: [], context: null }
-  }
   const cardWithMixin =
     card !== undefined ? TxProcessor.updateMixin4Doc(control.client.getHierarchy().clone(card), tx) : undefined
+  if (control.client.getHierarchy().hasMixin(card, tagId)) {
+    return {
+      txes: res,
+      rollback: [],
+      context: [
+        {
+          _id: execution.card,
+          value: cardWithMixin
+        }
+      ]
+    }
+  }
 
   const rollback: Tx[] = [
     control.client.txFactory.createTxUpdateDoc(_process.masterTag, execution.space, execution.card, {
@@ -398,9 +408,6 @@ export async function RunSubProcess (
   const res: Tx[] = []
   const resultContext: SuccessExecutionContext[] = []
   const rollback: Tx[] = []
-  const initTransition = control.client
-    .getModel()
-    .findAllSync(process.class.Transition, { process: target._id, from: null })[0]
   for (const _card of Array.isArray(card) ? card : [card]) {
     if (target.parallelExecutionForbidden === true) {
       const currentExecution = await control.client.findAll(process.class.Execution, {
@@ -414,12 +421,6 @@ export async function RunSubProcess (
       }
     }
 
-    // check card is exists
-    const exists = await control.client.findOne(cardPlugin.class.Card, { _id: _card })
-    if (exists === undefined) {
-      throw processError(process.error.ObjectNotFound, { _id: _card })
-    }
-
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const context = params.context ?? ({} as ExecutionContext)
     const _id = generateId<Execution>()
@@ -428,7 +429,7 @@ export async function RunSubProcess (
       execution.space,
       {
         process: processId,
-        currentState: initTransition.to,
+        currentState: null as any,
         card: _card,
         context,
         status: ExecutionStatus.Active,
@@ -455,7 +456,9 @@ export async function RequestApproval (
   control: ProcessControl,
   results: UserResult[] | undefined
 ): Promise<ExecuteResult> {
-  if (params.user === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: 'user' })
+  if (params.user === undefined || params.user.length === 0) {
+    throw processError(process.error.RequiredParamsNotProvided, { params: 'user' })
+  }
   const group = generateId()
   const res: TxCreateDoc<ApproveRequest>[] = []
   const rollback: Tx[] = []
@@ -481,7 +484,9 @@ export async function RequestApproval (
         rank: '',
         withRollback: params.withRollback ?? false,
         results,
-        group
+        group,
+        actionType: params.actionType,
+        field: (params as any).field
       },
       id
     )
@@ -551,11 +556,11 @@ export async function LockSection (
   const rollback: Tx[] = []
   const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
-  const readonlySections = card.readonlySections ?? []
+  const readonlySections = new Set(card.readonlySections ?? [])
   const target = params._id as Ref<MasterTag>
-  readonlySections.push(target)
+  readonlySections.add(target)
   const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
-    readonlySections
+    readonlySections: [...readonlySections]
   })
   res.push(tx)
   rollback.push(
@@ -596,13 +601,78 @@ export async function UnlockSection (
   const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
   const target = params._id as Ref<MasterTag>
+  const readonlySections = new Set(card.readonlySections ?? [])
+  readonlySections.delete(target)
   const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
-    $pull: { readonlySections: target }
+    readonlySections: [...readonlySections]
   })
   res.push(tx)
   rollback.push(
     control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
       $push: { readonlySections: target }
+    })
+  )
+  return { txes: res, rollback, context: [] }
+}
+
+export async function LockField (
+  params: Record<string, any>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  if (params.value === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: 'value' })
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+  if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
+  const oldReadonlyFields = card.readonlyFields ?? []
+  const readonlyFields = [...oldReadonlyFields]
+  const targets = Array.isArray(params.value) ? params.value : [params.value]
+  let changed = false
+  for (const target of targets) {
+    if (!readonlyFields.includes(target)) {
+      readonlyFields.push(target)
+      changed = true
+    }
+  }
+  if (!changed) {
+    return { txes: [], rollback: [], context: [] }
+  }
+  const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+    readonlyFields
+  })
+  res.push(tx)
+  rollback.push(
+    control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+      readonlyFields: oldReadonlyFields
+    })
+  )
+  return { txes: res, rollback, context: [] }
+}
+
+export async function UnlockField (
+  params: Record<string, any>,
+  execution: Execution,
+  control: ProcessControl
+): Promise<ExecuteResult> {
+  if (params.value === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: 'value' })
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+  if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
+  const oldReadonlyFields = card.readonlyFields ?? []
+  const targets = Array.isArray(params.value) ? params.value : [params.value]
+  const readonlyFields = oldReadonlyFields.filter((f: string) => !targets.includes(f))
+  if (readonlyFields.length === oldReadonlyFields.length) {
+    return { txes: [], rollback: [], context: [] }
+  }
+  const tx = control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+    readonlyFields
+  })
+  res.push(tx)
+  rollback.push(
+    control.client.txFactory.createTxUpdateDoc(cardPlugin.class.Card, execution.space, execution.card, {
+      readonlyFields: oldReadonlyFields
     })
   )
   return { txes: res, rollback, context: [] }
@@ -642,7 +712,8 @@ export async function CreateToDo (
       doneOn: null,
       rank: '',
       withRollback: params.withRollback ?? false,
-      results
+      results,
+      field: (params as any).field
     },
     id
   )
@@ -736,7 +807,7 @@ export async function CreateCard (
     ...attrs
   } as any
   if (newContent !== undefined) {
-    data.content = content
+    data.content = newContent
   }
   const filledData = fillDefaults(control.client.getHierarchy(), data, masterTag)
 
@@ -793,7 +864,7 @@ async function createExecution (
     execution.space,
     {
       process: proc,
-      currentState: initTransition.to,
+      currentState: null as any,
       card: _id,
       rollback: [],
       context: {},

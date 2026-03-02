@@ -45,6 +45,7 @@
     "Required": "Erforderlich",
     "ParallelExecutionForbidden": "Parallele Ausführung verboten",
     "StartAutomatically": "Automatisch starten",
+    "AutomationOnly": "Nur Automatisierung",
     "Error": "Fehler",
     "Continue": "Fortsetzen",
     "RequestFromUser": "Anfrage von Benutzer",
@@ -144,7 +145,14 @@
     "CancelToDo": "Action Item abbrechen",
     "Export": "Exportieren",
     "Import": "Importieren",
-    "CancelProcess": "Prozess abbrechen"
+    "CancelProcess": "Prozess abbrechen",
+    "SyncWithField": "Synchronisieren mit Feld",
+    "ActionType": "Typ",
+    "ApproveAction": "Genehmigen",
+    "ReviewAction": "Prüfen",
+    "Review": "Prüfen",
+    "LockField": "Feld sperren",
+    "UnlockField": "Feld entsperren"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

@@ -57,5 +57,6 @@ else
     --to @hcengineering/pod-billing \
     --to @hcengineering/pod-process \
     --to @hcengineering/pod-rating \
-    --to @hcengineering/pod-payment
+    --to @hcengineering/pod-payment \
+    --to @hcengineering/pod-worker
 fi

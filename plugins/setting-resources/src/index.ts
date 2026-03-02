@@ -36,6 +36,7 @@ import ClassAttributes from './components/ClassAttributes.svelte'
 import ClassAttributesList from './components/ClassAttributesList.svelte'
 import Configure from './components/Configure.svelte'
 import InviteSetting from './components/InviteSetting.svelte'
+import UserRoleSelect from './components/UserRoleSelect.svelte'
 import PermissionPresenter from './components/presenters/PermissionPresenter.svelte'
 import AttributePermissionPresenter from './components/presenters/AttributePermissionPresenter.svelte'
 import ClassPermissionPresenter from './components/presenters/ClassPermissionPresenter.svelte'
@@ -76,8 +77,11 @@ import IntegrationStateRow from './components/integrations/IntegrationStateRow.s
 import EmployeeRefEditor from './components/typeEditors/EmployeeRefEditor.svelte'
 import setting from './plugin'
 import { filterDescendants, getOwnerFirstName, getOwnerLastName, getOwnerPosition, getValue } from './utils'
+import { hasRoleCapabilityAsync } from './hasRoleCapabilityAsync'
 
 export * from './store'
+export { hasRoleCapability, getRolesForCapability } from './roleCapability'
+export { hasRoleCapabilityAsync } from './hasRoleCapabilityAsync'
 export {
   ClassAttributes,
   ClassAttributesList,
@@ -161,12 +165,14 @@ export default async (): Promise<Resources> => ({
     OfficeSettings,
     AddSocialId,
     AddEmailSocialId,
-    EmployeeRefEditor
+    EmployeeRefEditor,
+    UserRoleSelect
   },
   actionImpl: {
     DeleteMixin
   },
   function: {
+    HasRoleCapability: hasRoleCapabilityAsync,
     GetOwnerFirstName: getOwnerFirstName,
     GetOwnerLastName: getOwnerLastName,
     GetOwnerPosition: getOwnerPosition,

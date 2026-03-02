@@ -129,22 +129,35 @@ function resolveDisplayContext (
   if (attr.key === '' && !isFirstColumn) {
     const labelStr = typeof attr.label === 'string' ? attr.label : ''
     const isCustomAttribute = labelStr.startsWith('custom')
-    if (!isCustomAttribute) {
-      return null
+    if (isCustomAttribute) {
+      const customValue = (card as any)[labelStr]
+      let customAttr = hierarchy.findAttribute(docClass, labelStr)
+      if (customAttr === undefined) {
+        const allAttrs = hierarchy.getAllAttributes(docClass)
+        customAttr = allAttrs.get(labelStr)
+      }
+      return {
+        value: customValue,
+        displayDoc: card,
+        displayClass: docClass,
+        attribute: customAttr,
+        lookupKey: customAttr?.name ?? labelStr
+      }
     }
-    const customValue = (card as any)[labelStr]
-    let customAttr = hierarchy.findAttribute(docClass, labelStr)
-    if (customAttr === undefined) {
-      const allAttrs = hierarchy.getAllAttributes(docClass)
-      customAttr = allAttrs.get(labelStr)
+
+    // Tags column can be configured with empty key and Tags label (CardTagsColored).
+    // In that case we still want to format it via class-level MarkdownValueFormatter.
+    if (labelStr.endsWith(':Tags')) {
+      return {
+        value: undefined,
+        displayDoc: card,
+        displayClass: docClass,
+        attribute: undefined,
+        lookupKey: 'tags'
+      }
     }
-    return {
-      value: customValue,
-      displayDoc: card,
-      displayClass: docClass,
-      attribute: customAttr,
-      lookupKey: customAttr?.name ?? labelStr
-    }
+
+    return null
   }
 
   let value: any

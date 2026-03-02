@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Process, ProcessToDo, Step, UserResult } from '@hcengineering/process'
+  import { parseContext, Process, ProcessToDo, Step, UserResult } from '@hcengineering/process'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import ParamsEditor from './ParamsEditor.svelte'
@@ -43,6 +43,27 @@
   }
 
   const keys = ['title', 'user', 'dueDate']
+
+  $: contextValue = typeof params.user === 'string' ? parseContext(params.user) : undefined
+  $: userContext = contextValue?.type === 'attribute'
+
+  $: if (!userContext && params.field) {
+    delete (params as any).field
+    step.params = params
+    dispatch('change', step)
+  }
+
+  function toggleField (e: CustomEvent<boolean>): void {
+    if (e.detail) {
+      if (contextValue?.type === 'attribute') {
+        params.field = contextValue.key
+      }
+    } else {
+      delete (params as any).field
+    }
+    step.params = params
+    dispatch('change', step)
+  }
 </script>
 
 <ParamsEditor _class={plugin.class.ProcessToDo} {process} {keys} {params} on:change={changeParams} />
@@ -59,6 +80,12 @@
       dispatch('change', step)
     }}
   />
+</div>
+<div class="grid">
+  <div>
+    <Label label={plugin.string.SyncWithField} />
+  </div>
+  <Toggle disabled={!userContext} on={params.field !== undefined} on:change={toggleField} />
 </div>
 <div class="divider" />
 <ResultsEditor {process} result={step.results} on:change={changeResults} />

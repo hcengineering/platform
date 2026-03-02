@@ -14,6 +14,8 @@
 //
 
 import cardPlugin, { Card } from '@hcengineering/card'
+import { CreateMessageEvent, MessageEventType } from '@hcengineering/communication-sdk-types'
+import { ActivityProcess, ActivityUpdateType, MessageType } from '@hcengineering/communication-types'
 import core, {
   Doc,
   generateId,
@@ -30,6 +32,7 @@ import core, {
   TxUpdateDoc,
   WorkspaceUuid
 } from '@hcengineering/core'
+import { getPlatformQueue } from '@hcengineering/kafka'
 import { getResource } from '@hcengineering/platform'
 import process, {
   Execution,
@@ -49,27 +52,40 @@ import process, {
   Trigger,
   UserResult
 } from '@hcengineering/process'
+import { QueueTopic } from '@hcengineering/server-core'
 import serverProcess, {
   ExecuteResult,
   MethodImpl,
   ProcessControl,
   ProcessMessage,
+  TimeMachineMessage,
   TriggerImpl
 } from '@hcengineering/server-process'
 import { getContextValue } from '@hcengineering/server-process-resources'
-import { Client as TemporalClient } from '@temporalio/client'
-import config from './config'
-import { isError } from './errors'
-import { getTemporalClient } from './temporal'
-import { getClient, releaseClient } from './utils'
-import { CreateMessageEvent, MessageEventType } from '@hcengineering/communication-sdk-types'
-import { ActivityUpdateType, ActivityProcess, MessageType } from '@hcengineering/communication-types'
 import { createCollaboratorClient } from './collaborator'
+import { isError } from './errors'
+import { getClient, releaseClient, SERVICE_NAME } from './utils'
+import config from './config'
 
 const activeExecutions = new Set<Ref<Execution>>()
+const processedMessages = new Map<string, number>()
+const MAX_PROCESSED_MESSAGES = 1000
 
 export async function messageHandler (record: ProcessMessage, ws: WorkspaceUuid, ctx: MeasureContext): Promise<void> {
   if (record.account === core.account.ConfigUser) return
+  if (record._id !== undefined) {
+    if (processedMessages.has(record._id)) {
+      ctx.info('Skipping duplicate message', { _id: record._id, ws, record })
+      return
+    }
+    processedMessages.set(record._id, Date.now())
+    if (processedMessages.size > MAX_PROCESSED_MESSAGES) {
+      const first = processedMessages.keys().next().value
+      if (first !== undefined) {
+        processedMessages.delete(first)
+      }
+    }
+  }
   try {
     const client = new TxOperations(await getClient(ws), record.account)
     try {
@@ -163,7 +179,8 @@ async function findTransitions (
       process.class.Transition,
       {
         process: execution.process,
-        trigger: { $in: record.event }
+        from: null,
+        trigger: process.trigger.OnExecutionStart
       },
       { sort: { rank: SortingOrder.Ascending } }
     )
@@ -283,7 +300,7 @@ async function processExecution (control: ProcessControl, record: ProcessMessage
     }
   }
   if (isRollback(record)) {
-    await rollback(control, record, execution)
+    await rollback(control, execution)
   }
 }
 
@@ -297,7 +314,8 @@ function isRollback (record: ProcessMessage): boolean {
   return false
 }
 
-async function rollback (control: ProcessControl, record: ProcessMessage, execution: Execution): Promise<void> {
+async function rollback (control: ProcessControl, execution: Execution): Promise<void> {
+  if (execution.rollback.length === 0) return
   const rollbackTxes = execution.rollback.pop() ?? []
   for (const tx of rollbackTxes) {
     const timeout = setTimeout(() => {
@@ -329,6 +347,17 @@ async function execute (execution: Execution, transition: Transition, control: P
     control.ctx.info('Execution already in progress', { execution: execution._id, transition: transition._id })
     return
   }
+
+  const fresh = await control.client.findOne(process.class.Execution, { _id: execution._id })
+  if (fresh === undefined || fresh.currentState !== execution.currentState) {
+    control.ctx.info('Skipping stale transition execution', {
+      execution: execution._id,
+      expectedState: execution.currentState,
+      actualState: fresh?.currentState
+    })
+    return
+  }
+
   activeExecutions.add(execution._id)
   try {
     await executeTransition(execution, transition, control)
@@ -480,13 +509,20 @@ async function executeTransition (
         const apply = client.txFactory.createTxApplyIf(
           core.space.Tx,
           `${execution._id}_${transition._id}`,
-          [],
+          [{ _class: process.class.Execution, query: { _id: execution._id, currentState: execution.currentState } }],
           [],
           res as TxCUD<Doc>[],
           'process',
           true
         )
-        await client.tx(apply)
+        const result = (await client.tx(apply)) as any
+        if (result.success === false) {
+          control.ctx.info('Transition apply failed (likely already processed)', {
+            execution: execution._id,
+            transition: transition._id
+          })
+          break
+        }
         await sendEvent(control, execution, transition, card, isDone)
         TxProcessor.applyUpdate(execution, executionUpdate)
         if (execution.parentId !== undefined) {
@@ -608,9 +644,8 @@ async function updateExecutionTimers (control: ProcessControl, execution: Execut
       trigger: process.trigger.OnTime
     })
     if (transitions.length === 0) return
-    const temporalClient = await getTemporalClient()
     for (const transition of transitions) {
-      await setTimer(control, execution, transition, temporalClient)
+      await setTimer(control, execution, transition)
     }
   } catch (err) {
     control.ctx.error('Error setting next timers:', { error: err, execution: execution._id })
@@ -619,66 +654,61 @@ async function updateExecutionTimers (control: ProcessControl, execution: Execut
 
 async function setNextTimers (control: ProcessControl, execution: Execution): Promise<void> {
   try {
-    const temporalClient = await getTemporalClient()
-    await cleanTimers(execution, temporalClient)
+    await cleanTimers(control, execution)
     const transitions = control.client.getModel().findAllSync(process.class.Transition, {
       from: execution.currentState,
       process: execution.process,
       trigger: process.trigger.OnTime
     })
     for (const transition of transitions) {
-      await setTimer(control, execution, transition, temporalClient)
+      await setTimer(control, execution, transition)
     }
   } catch (err) {
     control.ctx.error('Error setting next timers:', { error: err, execution: execution._id })
   }
 }
 
-async function cleanTimers (execution: Execution, temporalClient: TemporalClient): Promise<void> {
+async function cleanTimers (control: ProcessControl, execution: Execution): Promise<void> {
   try {
-    const res = await temporalClient.workflowService.listWorkflowExecutions({
-      namespace: config.TemporalNamespace,
-      query: `WorkflowType="processTimeWorkflow" AND ExecutionStatus="Running" AND ProcessExecution="${execution._id}"`
-    })
-
-    for (const ex of res.executions) {
-      try {
-        await temporalClient.workflowService.terminateWorkflowExecution({
-          workflowExecution: {
-            workflowId: ex.execution?.workflowId,
-            runId: ex.execution?.runId
-          },
-          reason: 'Outdated'
-        })
-      } catch (err) {
-        console.error('Error terminating workflow execution:', err)
+    const queue = getPlatformQueue(SERVICE_NAME, config.QueueRegion)
+    const producer = queue.getProducer<TimeMachineMessage>(control.ctx, QueueTopic.TimeMachine)
+    await producer.send(control.ctx, control.workspace, [
+      {
+        type: 'cancel',
+        id: `${execution._id}_%`
       }
-    }
+    ])
   } catch (err) {
     console.error('Error cleaning timers:', err)
   }
 }
 
-async function setTimer (
-  control: ProcessControl,
-  execution: Execution,
-  transition: Transition,
-  temporalClient: TemporalClient
-): Promise<void> {
+async function setTimer (control: ProcessControl, execution: Execution, transition: Transition): Promise<void> {
   const filled = await fillParams(transition.triggerParams, execution, control)
   const targetDate: number = filled.value
   if (targetDate === undefined || typeof targetDate !== 'number' || targetDate === 0 || Number.isNaN(targetDate)) return
   try {
-    await temporalClient.workflow.signalWithStart('processTimeWorkflow', {
-      taskQueue: 'process',
-      signal: 'setDate',
-      args: [targetDate, control.workspace, execution._id],
-      signalArgs: [targetDate],
-      workflowId: `${execution._id}_${transition._id}`,
-      searchAttributes: {
-        ProcessExecution: [execution._id]
+    const queue = getPlatformQueue(SERVICE_NAME, config.QueueRegion)
+    const producer = queue.getProducer<TimeMachineMessage>(control.ctx, QueueTopic.TimeMachine)
+
+    const data: ProcessMessage = {
+      _id: `${execution._id}_${transition._id}`,
+      account: core.account.System,
+      event: [process.trigger.OnTime],
+      createdOn: Date.now(),
+      context: {},
+      execution: execution._id
+    }
+
+    await producer.send(control.ctx, control.workspace, [
+      {
+        type: 'schedule',
+        id: `${execution._id}_${transition._id}`,
+        targetDate,
+        topic: QueueTopic.Process,
+        data
       }
-    })
+    ])
   } catch (e) {
     console.error('Error setting timer:', e)
   }
@@ -725,6 +755,12 @@ async function fillParams<T extends Doc> (
   execution: Execution,
   control: ProcessControl
 ): Promise<MethodParams<T>> {
+  if (!control.cache.has(execution.card)) {
+    const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+    if (card !== undefined) {
+      control.cache.set(execution.card, card)
+    }
+  }
   const res: MethodParams<T> = {}
   for (const key in params) {
     const value = control.client.getHierarchy().clone((params as any)[key])

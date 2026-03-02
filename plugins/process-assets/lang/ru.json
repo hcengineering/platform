@@ -49,6 +49,7 @@
     "Required": "Обязательно",
     "ParallelExecutionForbidden": "Одновременное выполнение запрещено",
     "StartAutomatically": "Запускать автоматически",
+    "AutomationOnly": "Только автоматизация",
     "Error": "Ошибка",
     "Continue": "Продолжить",
     "RequestFromUser": "Запросить у пользователя",
@@ -149,7 +150,14 @@
     "CancelToDo": "Отменить задачу",
     "Export": "Экспорт",
     "Import": "Импорт",
-    "CancelProcess": "Отменить процесс"
+    "CancelProcess": "Отменить процесс",
+    "SyncWithField": "Синхронизировать с полем",
+    "ActionType": "Тип",
+    "ApproveAction": "Утверждение",
+    "ReviewAction": "Рецензирование",
+    "Review": "Рецензировать",
+    "LockField": "Заблокировать поле",
+    "UnlockField": "Разблокировать поле"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

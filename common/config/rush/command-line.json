@@ -249,6 +249,14 @@
     },
     {
       "commandKind": "global",
+      "name": "docker:patch",
+      "summary": "Build and push docker images with a custom version",
+      "description": "Allows building and pushing docker images with a manually specified version tag. Usage: rush docker:patch --version <version> [rush-args]",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "./common/scripts/docker_patch.sh"
+    },
+    {
+      "commandKind": "global",
       "name": "docker-server",
       "summary": "Build docker with platform",
       "description": "use to build all docker containers required for platform",
@@ -424,6 +432,22 @@
       "longName": "--branch",
       "description": "Force formatting of branch",
       "associatedCommands": ["fast-format"]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "VERSION",
+      "required": false,
+      "longName": "--version",
+      "description": "The version tag to use for docker images",
+      "associatedCommands": ["docker:patch"]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "PLATFORM",
+      "required": false,
+      "longName": "--platform",
+      "description": "The target platform for docker build (e.g., linux/amd64). Defaults to linux/amd64.",
+      "associatedCommands": ["docker:patch"]
     }
     // {
     //   /**

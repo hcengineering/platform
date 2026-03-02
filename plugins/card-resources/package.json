@@ -9,11 +9,13 @@
     "build:docs": "api-extractor run --local",
     "format": "format src",
     "svelte-check": "do-svelte-check",
+    "test": "jest --passWithNoTests --silent",
     "_phase:svelte-check": "do-svelte-check",
     "build:watch": "compile ui",
     "_phase:build": "compile ui",
     "_phase:format": "format src",
-    "_phase:validate": "compile validate"
+    "_phase:validate": "compile validate",
+    "_phase:test": "jest --passWithNoTests --silent"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "workspace:^0.7.19",

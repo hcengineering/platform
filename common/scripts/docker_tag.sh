@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-version=$(git describe --tags --abbrev=0)
+version=${DOCKER_VERSION:-$(git describe --tags --abbrev=0)}
 rev_version=$(git rev-parse HEAD)
 
 if [ "x$2" = "xstaging" ]

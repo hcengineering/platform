@@ -89,8 +89,13 @@ export default mergeIds(processId, process, {
     LockSectionEditor: '' as AnyComponent,
     LockSectionPresenter: '' as AnyComponent,
     UnLockSectionPresenter: '' as AnyComponent,
+    LockFieldEditor: '' as AnyComponent,
+    LockFieldPresenter: '' as AnyComponent,
+    UnLockFieldPresenter: '' as AnyComponent,
     CancelToDoEditor: '' as AnyComponent,
-    ToDoValuePresenter: '' as AnyComponent
+    ToDoValuePresenter: '' as AnyComponent,
+    ActionTypePresenter: '' as AnyComponent,
+    ExecutionRefPresenter: '' as AnyComponent
   },
   criteriaEditor: {
     BaseCriteria: '' as AnyComponent,
@@ -181,6 +186,7 @@ export default mergeIds(processId, process, {
     Required: '' as IntlString,
     ParallelExecutionForbidden: '' as IntlString,
     StartAutomatically: '' as IntlString,
+    AutomationOnly: '' as IntlString,
     Continue: '' as IntlString,
     RequestFromUser: '' as IntlString,
     EnterValue: '' as IntlString,
@@ -252,6 +258,8 @@ export default mergeIds(processId, process, {
     LockSection: '' as IntlString,
     UnlockCard: '' as IntlString,
     UnlockSection: '' as IntlString,
+    LockField: '' as IntlString,
+    UnlockField: '' as IntlString,
     Export: '' as IntlString,
     Import: '' as IntlString
   },

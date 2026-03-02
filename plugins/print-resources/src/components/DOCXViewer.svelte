@@ -9,7 +9,7 @@
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { getFileUrl } from '@hcengineering/presentation'
   import { convertToHTML } from '@hcengineering/print'
-  import { EmbeddedPDF, Spinner, themeStore } from '@hcengineering/ui'
+  import { EmbeddedHTML, Spinner, themeStore } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
   export let name: string
@@ -270,7 +270,7 @@
       <Spinner size="medium" />
     </div>
   {:else}
-    <EmbeddedPDF {src} {name} {css} />
+    <EmbeddedHTML {src} {name} {css} />
   {/if}
 {/if}
 

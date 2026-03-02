@@ -32,7 +32,7 @@
   const resClasses = getPossibleClasses()
 
   const res = client.getModel().findAllSync(process.class.Process, {})
-  const processes = res.filter((it) => resClasses.includes(it.masterTag))
+  const processes = res.filter((it) => resClasses.includes(it.masterTag) && it.automationOnly !== true)
 
   function getCardPossibleClasses (card: Card): Ref<Class<Doc>>[] {
     const asc = h.getAncestors(card._class)
@@ -94,7 +94,8 @@
   async function runProcess (_id: Ref<Process>): Promise<void> {
     if (!value) return
     for (const element of values) {
-      await createExecution(element._id, _id, element.space)
+      const tx = await createExecution(element._id, _id, element.space, client.txFactory)
+      if (tx) await client.tx(tx)
     }
     dispatch('close')
   }

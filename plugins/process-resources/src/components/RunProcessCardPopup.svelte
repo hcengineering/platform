@@ -30,7 +30,10 @@
   let process: Ref<Process> | undefined = value
   let card: Card | undefined
 
-  const processes = client.getModel().findAllSync(plugin.class.Process, {})
+  const processes = client
+    .getModel()
+    .findAllSync(plugin.class.Process, {})
+    .filter((p) => p.automationOnly !== true)
 
   const items: ListItem[] = processes.map((p) => ({ label: p.name, _id: p._id }))
 
@@ -38,7 +41,8 @@
 
   async function runProcess (): Promise<void> {
     if (process === undefined || card === undefined) return
-    await createExecution(card._id, process, card.space)
+    const tx = await createExecution(card._id, process, card.space, client.txFactory)
+    if (tx) await client.tx(tx)
     dispatch('close')
   }
 

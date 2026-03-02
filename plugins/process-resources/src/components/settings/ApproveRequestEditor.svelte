@@ -16,8 +16,8 @@
   import contact from '@hcengineering/contact'
   import core, { AnyAttribute } from '@hcengineering/core'
   import { getAttributeEditor, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
-  import { ApproveRequest, Process, Step } from '@hcengineering/process'
-  import { AnySvelteComponent } from '@hcengineering/ui'
+  import { ApproveRequest, parseContext, Process, Step } from '@hcengineering/process'
+  import { AnySvelteComponent, Label, Toggle } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import plugin from '../../plugin'
   import { getContext, getMockAttribute } from '../../utils'
@@ -78,6 +78,33 @@
   }
 
   getBaseEditor(attribute)
+
+  $: contextValue = typeof params.user === 'string' ? parseContext(params.user) : undefined
+  $: userContext = contextValue?.type === 'attribute'
+
+  $: if (!userContext && params.field) {
+    delete (params as any).field
+    step.params = params
+    dispatch('change', step)
+  }
+
+  function toggleField (e: CustomEvent<boolean>): void {
+    if (e.detail) {
+      if (contextValue?.type === 'attribute') {
+        params.field = contextValue.key
+      }
+    } else {
+      delete (params as any).field
+    }
+    step.params = params
+    dispatch('change', step)
+  }
+
+  function toggleActionType (e: CustomEvent<any>): void {
+    params.actionType = e.detail ? 'review' : 'approve'
+    step.params = params
+    dispatch('change', step)
+  }
 </script>
 
 <div class="grid">
@@ -93,6 +120,14 @@
     on:remove
     on:change={onChange}
   />
+  <div>
+    <Label label={plugin.string.SyncWithField} />
+  </div>
+  <Toggle disabled={!userContext} on={params.field !== undefined} on:change={toggleField} />
+  <div>
+    <Label label={plugin.string.ReviewAction} />
+  </div>
+  <Toggle on={params.actionType === 'review'} on:change={toggleActionType} />
 </div>
 <ParamsEditor _class={plugin.class.ApproveRequest} {process} {keys} {params} on:change={changeParams} />
 

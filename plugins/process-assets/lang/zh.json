@@ -49,6 +49,7 @@
     "Required": "必需",
     "ParallelExecutionForbidden": "禁止并行执行",
     "StartAutomatically": "自动启动",
+    "AutomationOnly": "仅限自动化",
     "Error": "错误",
     "Continue": "继续",
     "RequestFromUser": "从用户请求",
@@ -149,7 +150,14 @@
     "CancelToDo": "取消任务",
     "Export": "导出",
     "Import": "导入",
-    "CancelProcess": "取消过程"
+    "CancelProcess": "取消过程",
+    "SyncWithField": "字段同步",
+    "ActionType": "类型",
+    "ApproveAction": "批准",
+    "ReviewAction": "审查",
+    "Review": "审查",
+    "LockField": "锁定字段",
+    "UnlockField": "解锁字段"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

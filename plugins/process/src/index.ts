@@ -31,6 +31,7 @@ export interface Process extends Doc {
   description: string
   parallelExecutionForbidden?: boolean
   autoStart?: boolean
+  automationOnly?: boolean
   context: Record<ContextId, ProcessContext>
   resultType?: Type<any>
 }
@@ -123,6 +124,7 @@ export interface ProcessToDo extends ToDo {
   withRollback: boolean
 
   results?: UserResult[]
+  field?: string
 }
 
 export interface ApproveRequest extends ProcessToDo {
@@ -133,6 +135,8 @@ export interface ApproveRequest extends ProcessToDo {
   reason?: string
 
   group: string
+  field?: string
+  actionType?: 'approve' | 'review'
 }
 
 export type MethodParams<T extends Doc> = {
@@ -251,7 +255,9 @@ export default plugin(processId, {
     LockCard: '' as Ref<Method<Card>>,
     LockSection: '' as Ref<Method<Card>>,
     UnlockCard: '' as Ref<Method<Card>>,
-    UnlockSection: '' as Ref<Method<Card>>
+    UnlockSection: '' as Ref<Method<Card>>,
+    LockField: '' as Ref<Method<Card>>,
+    UnlockField: '' as Ref<Method<Card>>
   },
   trigger: {
     OnCardUpdate: '' as Ref<Trigger>, // in fact WhenCardMatches, should migrate in future
@@ -290,7 +296,12 @@ export default plugin(processId, {
     Actions: '' as IntlString,
     ProcessRunned: '' as IntlString,
     ProcessStateChanged: '' as IntlString,
-    ProcessFinished: '' as IntlString
+    ProcessFinished: '' as IntlString,
+    SyncWithField: '' as IntlString,
+    ActionType: '' as IntlString,
+    ApproveAction: '' as IntlString,
+    ReviewAction: '' as IntlString,
+    Review: '' as IntlString
   },
   error: {
     MethodNotFound: '' as IntlString,

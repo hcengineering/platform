@@ -153,7 +153,7 @@
     }
   })
 
-  $: _readonly = (readonly || doc?.readonly) ?? false
+  $: _readonly = (readonly || doc?.readonly || doc?.readonlyFields?.includes('title')) ?? false
   $: updatePermissionForbidden = doc && !canChangeDoc(doc?._class, doc?.space, $permissionsStore)
 </script>
 

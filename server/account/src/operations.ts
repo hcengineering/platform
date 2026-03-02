@@ -1479,6 +1479,7 @@ export async function leaveWorkspace (
   }
 
   const initiatorRole = await db.getWorkspaceRole(account, workspace)
+  const targetRole = await db.getWorkspaceRole(targetAccount, workspace)
 
   if (account !== targetAccount) {
     if (initiatorRole == null || getRolePower(initiatorRole) < getRolePower(AccountRole.Maintainer)) {
@@ -1486,6 +1487,30 @@ export async function leaveWorkspace (
         account,
         workspace,
         initiatorRole
+      })
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+
+    if (targetRole === AccountRole.Owner && initiatorRole === AccountRole.Maintainer) {
+      ctx.warn('Maintainer cannot remove owner from workspace', {
+        account,
+        targetAccount,
+        workspace,
+        initiatorRole,
+        targetRole
+      })
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
+  if (account === targetAccount && initiatorRole === AccountRole.Owner) {
+    const members = await db.getWorkspaceMembers(workspace)
+    const owners = members.filter((m) => m.role === AccountRole.Owner)
+
+    if (owners.length === 1) {
+      ctx.warn('Owner cannot remove themselves as the last owner of the workspace', {
+        account,
+        workspace
       })
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
     }

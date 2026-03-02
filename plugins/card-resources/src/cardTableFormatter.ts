@@ -20,6 +20,7 @@ import { type AttributeModel } from '@hcengineering/view'
 import { getClient } from '@hcengineering/presentation'
 import { isIntlString } from '@hcengineering/converter-resources'
 import { getCardIds, getCardVersion } from './cardUtils'
+import { formatCardTagsForMarkdown, isTagsColumn } from './tagFormatter'
 
 /**
  * Cache for MasterTag ID -> label mappings to reduce database calls
@@ -111,6 +112,11 @@ export async function formatCardValue (
 
   const cardDoc = card as unknown as Record<string, unknown>
 
+  // Handle tags column - format as comma-separated tag labels (same as CardTagsColored)
+  if (isTagsColumn(attr)) {
+    return await formatCardTagsForMarkdown(card as Card, hierarchy, language)
+  }
+
   if (attr.key === '') {
     const labelStr = typeof attr.label === 'string' ? attr.label : ''
     if (labelStr.startsWith('custom')) {
@@ -124,7 +130,9 @@ export async function formatCardValue (
   }
 
   // Handle _class field (MasterTag/Type) - format MasterTag ID to label
-  if (attr.key === '_class') {
+  // Key can be '_class' or '$lookup.attachedTo._class' (e.g. in relationship tables); doc is already displayDoc
+  const isClassAttr = attr.key === '_class' || attr.key === '$lookup.attachedTo._class' || attr.key.endsWith('._class')
+  if (isClassAttr) {
     const classValue: unknown = cardDoc._class
     if (classValue !== undefined && classValue !== null) {
       // Check if MasterTag is in lookup

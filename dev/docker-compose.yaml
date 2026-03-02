@@ -79,7 +79,7 @@ services:
       - --mode dev-container
       - --smp 1
       - --default-log-level=info
-      - --memory 256M
+      - --memory 512M
     container_name: redpanda
     volumes:
       - redpanda:/var/lib/redpanda/data
@@ -591,6 +591,22 @@ services:
     environment:
       - SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - QUEUE_REGION=cockroach
+    restart: unless-stopped
+  time-machine:
+    image: hardcoreeng/worker
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      redpanda:
+        condition: service_started
+      account:
+        condition: service_started
+      cockroach:
+        condition: service_started
+    environment:
+      - DB_URL=${DB_CR_URL}
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - QUEUE_REGION=cockroach
     restart: unless-stopped

@@ -49,6 +49,7 @@
     "Required": "Requerido",
     "ParallelExecutionForbidden": "Ejecución paralela prohibida",
     "StartAutomatically": "Iniciar automáticamente",
+    "AutomationOnly": "Solo automatización",
     "Error": "Error",
     "Continue": "Continuar",
     "RequestFromUser": "Solicitar desde el usuario",
@@ -149,7 +150,14 @@
     "CancelToDo": "Cancelar acción",
     "Export": "Exportar",
     "Import": "Importar",
-    "CancelProcess": "Cancelar proceso"
+    "CancelProcess": "Cancelar proceso",
+    "SyncWithField": "Sincronizar con campo",
+    "ActionType": "Tipo",
+    "ApproveAction": "Aprobar",
+    "ReviewAction": "Revisar",
+    "Review": "Revisar",
+    "LockField": "Bloquear campo",
+    "UnlockField": "Desbloquear campo"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",

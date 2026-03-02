@@ -47,6 +47,7 @@
     "@hcengineering/core": "workspace:^0.7.24",
     "@hcengineering/presentation": "workspace:^0.7.0",
     "@hcengineering/setting": "workspace:^0.7.0",
+    "@hcengineering/setting-resources": "workspace:^0.7.0",
     "@hcengineering/theme": "workspace:^0.7.0",
     "@hcengineering/analytics": "workspace:^0.7.17",
     "@hcengineering/account-client": "workspace:^0.7.21",
