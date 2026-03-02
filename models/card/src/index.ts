@@ -63,6 +63,7 @@ import {
   ReadOnly,
   TypeCollaborativeDoc,
   TypeNumber,
+  TypeRank,
   TypeRef,
   TypeString,
   UX
@@ -127,7 +128,9 @@ export class TCard extends TDoc implements Card {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  rank!: Rank
+  @Prop(TypeRank(), core.string.Rank)
+  @Hidden()
+    rank!: Rank
 
   @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
     todos?: CollectionSize<ToDo>

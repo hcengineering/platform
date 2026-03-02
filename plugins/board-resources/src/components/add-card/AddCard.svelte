@@ -15,8 +15,7 @@
 <script lang="ts">
   import type { Card as BoardCard } from '@hcengineering/board'
   import board from '../../plugin'
-  import { makeRank } from '@hcengineering/task'
-  import core, { AttachedData, generateId, Ref, SortingOrder, Space } from '@hcengineering/core'
+  import core, { AttachedData, generateId, Ref, Space } from '@hcengineering/core'
   import { IconAdd, Button, showPopup } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import AddCardEditor from './AddCardEditor.svelte'
@@ -36,14 +35,13 @@
       throw new Error('sequence object not found')
     }
 
-    const lastOne = await client.findOne(board.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const value: AttachedData<BoardCard> = {
       status: state._id,
       number: (incResult as any).object.sequence,
       title,
-      rank: makeRank(lastOne?.rank, undefined),
+      rank: '',
       assignee: null,
       description: '',
       members: [],

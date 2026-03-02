@@ -40,7 +40,7 @@
   } from '@hcengineering/presentation'
   import { RecruitEvents, Vacancy, Vacancy as VacancyClass } from '@hcengineering/recruit'
   import tags from '@hcengineering/tags'
-  import task, { ProjectType, makeRank } from '@hcengineering/task'
+  import task, { ProjectType } from '@hcengineering/task'
   import { selectedTypeStore, typeStore } from '@hcengineering/task-resources'
   import tracker, { Issue, IssueStatus, IssueTemplate, IssueTemplateData, Project } from '@hcengineering/tracker'
   import {
@@ -160,11 +160,6 @@
     template: IssueTemplateData,
     parent: Ref<Issue> = tracker.ids.NoParent
   ): Promise<Ref<Issue> | undefined> {
-    const lastOne = await client.findOne<Issue>(
-      tracker.class.Issue,
-      { space },
-      { sort: { rank: SortingOrder.Descending } }
-    )
     const incResult = await client.updateDoc(
       tracker.class.Project,
       core.space.Space,
@@ -175,7 +170,6 @@
       true
     )
     const project = await client.findOne(tracker.class.Project, { _id: space })
-    const rank = makeRank(lastOne?.rank, undefined)
     const taskType = await client.findOne(task.class.TaskType, { ofClass: tracker.class.Issue })
     if (taskType === undefined) {
       return
@@ -193,7 +187,7 @@
       number,
       status: project?.defaultIssueStatus as Ref<IssueStatus>,
       priority: template.priority,
-      rank,
+      rank: '',
       comments: 0,
       subIssues: 0,
       dueDate: null,

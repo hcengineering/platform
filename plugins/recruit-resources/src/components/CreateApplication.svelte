@@ -25,8 +25,8 @@
     Doc,
     FindOptions,
     Markup,
+    PersonId,
     Ref,
-    SortingOrder,
     Space,
     Status as TaskStatus,
     fillDefaults,
@@ -43,7 +43,7 @@
     getClient
   } from '@hcengineering/presentation'
   import { recruitId, type Applicant, type Candidate, type Vacancy, RecruitEvents } from '@hcengineering/recruit'
-  import task, { TaskType, getStates, makeRank } from '@hcengineering/task'
+  import { TaskType, getStates } from '@hcengineering/task'
   import { TaskKindSelector, selectedTypeStore, typeStore } from '@hcengineering/task-resources'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import ui, {
@@ -98,7 +98,7 @@
     _id: generateId(),
     collection: 'applications',
     modifiedOn: Date.now(),
-    modifiedBy: '',
+    modifiedBy: '' as PersonId,
     startDate: null,
     dueDate: null,
     kind: '' as Ref<TaskType>,
@@ -126,7 +126,6 @@
       throw new Error('kind is not specified')
     }
 
-    const lastOne = await client.findOne(recruit.class.Applicant, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const candidateInstance = await client.findOne(contact.class.Person, { _id: _candidate })
@@ -159,7 +158,7 @@
         status: selectedState._id,
         number,
         identifier: `APP-${number}`,
-        rank: makeRank(lastOne?.rank, undefined),
+        rank: '',
         kind
       },
       doc._id

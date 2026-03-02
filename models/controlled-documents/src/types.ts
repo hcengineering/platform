@@ -75,7 +75,8 @@ import {
   UX,
   TypeCollaborativeDoc,
   TypeMarkup,
-  ReadOnly
+  ReadOnly,
+  TypeRank
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import chunter, { TChatMessage } from '@hcengineering/model-chunter'
@@ -181,6 +182,7 @@ export class TProjectMeta extends TDoc implements ProjectMeta {
   @Prop(Collection(documents.class.ProjectDocument), documents.string.Documents)
     documents!: CollectionSize<ProjectDocument>
 
+  @Prop(TypeRank(), core.string.Rank)
   @Index(IndexKind.Indexed)
   @Hidden()
     rank!: Rank

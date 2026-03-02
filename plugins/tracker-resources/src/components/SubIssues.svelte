@@ -58,7 +58,6 @@
     if (project === undefined) return
     saved = true
     for (const subIssue of subIssues) {
-      const lastOne = await client.findOne<Issue>(tracker.class.Issue, {}, { sort: { rank: SortingOrder.Descending } })
       const incResult = await client.updateDoc(
         tracker.class.Project,
         core.space.Space,
@@ -79,7 +78,7 @@
         number,
         status: subIssue.status ?? project.defaultIssueStatus,
         priority: subIssue.priority,
-        rank: makeRank(lastOne?.rank, undefined),
+        rank: '',
         comments: 0,
         subIssues: 0,
         dueDate: null,

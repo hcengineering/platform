@@ -16,10 +16,9 @@
   import { Analytics } from '@hcengineering/analytics'
   import { Card, CardEvents, cardId } from '@hcengineering/card'
   import { chatId } from '@hcengineering/chat'
-  import { Data, Doc, fillDefaults, MarkupBlobRef, SortingOrder, WithLookup } from '@hcengineering/core'
+  import { Data, Doc, fillDefaults, MarkupBlobRef, WithLookup } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { makeRank } from '@hcengineering/rank'
   import { ButtonIcon, getCurrentLocation, IconAdd, Label, navigate, resizeObserver, Section } from '@hcengineering/ui'
   import view, { encodeObjectURI, Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import {
@@ -101,13 +100,12 @@
   async function createCard (): Promise<void> {
     const client = getClient()
     const hierarchy = client.getHierarchy()
-    const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
     const title = await translate(card.string.Card, {})
 
     const data: Data<Card> = {
       parent: object._id,
       title,
-      rank: makeRank(lastOne?.rank, undefined),
+      rank: '',
       content: '' as MarkupBlobRef,
       blobs: {},
       parentInfo: [
