@@ -89,6 +89,11 @@ function getPublishablePackages(includePattern) {
  */
 function publishPackage(packagePath, packageName) {
   try {
+    try {
+      execSync('npm pkg fix', { cwd: packagePath, encoding: 'utf-8', stdio: 'pipe' })
+    } catch {
+      // Ignore pkg fix errors (e.g. npm < 10)
+    }
     console.log(`Publishing ${packageName}...`)
     execSync('npm publish', {
       cwd: packagePath,
