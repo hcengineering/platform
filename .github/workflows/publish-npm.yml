@@ -1,0 +1,50 @@
+name: Publish npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Ref to publish (e.g. refs/tags/v0.7.382 or a branch)'
+        required: true
+        default: 'refs/heads/develop'
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.inputs.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+      - name: Cache node modules
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-node-platform
+        with:
+          path: common/temp
+          key: ${{ runner.os }}-build-cache-node-platform-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-build-cache-node-platform-
+      - name: Installing...
+        run: node common/scripts/install-run-rush.js install
+      - name: Building...
+        run: node common/scripts/install-run-rush.js build
+      - name: Publish to npm
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "::error::NPM_TOKEN secret is not set. Add it in repository Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+          REF="${{ github.event.inputs.ref }}"
+          VERSION="${REF#refs/tags/v}"
+          VERSION="${VERSION#v}"
+          if [[ "$REF" == refs/tags/v* ]]; then
+            node common/scripts/bump.js --check "$VERSION"
+          fi
+          node common/scripts/safe-publish.js
