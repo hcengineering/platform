@@ -396,6 +396,13 @@ export interface TypeHyperlink extends Type<Hyperlink> {}
 
 /**
  * @public
+ */
+export interface TypeRank extends Type<Rank> {
+  pos?: 'start' | 'end'
+}
+
+/**
+ * @public
  *
  * A type for some custom serialized field with a set of editors
  */

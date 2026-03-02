@@ -28,8 +28,7 @@ import {
   linkPreviewType,
   type Message,
   type MessageID,
-  MessageType,
-  SortingOrder
+  MessageType
 } from '@hcengineering/communication-types'
 import cardPlugin, { type Card, type MasterTag } from '@hcengineering/card'
 import { addRefreshListener, deleteFile, getClient, getCommunicationClient } from '@hcengineering/presentation'
@@ -45,7 +44,6 @@ import {
 import { getMetadata, getResource } from '@hcengineering/platform'
 import { employeeByPersonIdStore } from '@hcengineering/contact-resources'
 import { getEmployeeBySocialId } from '@hcengineering/contact'
-import { makeRank } from '@hcengineering/rank'
 import chat from '@hcengineering/chat'
 import { markupToText } from '@hcengineering/text'
 import { get } from 'svelte/store'
@@ -130,12 +128,11 @@ export async function attachCardToMessage (
 
   const author =
     get(employeeByPersonIdStore).get(message.creator) ?? (await getEmployeeBySocialId(client, message.creator))
-  const lastOne = await client.findOne(cardPlugin.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
   const data = fillDefaults<Card>(
     hierarchy,
     {
       title,
-      rank: makeRank(lastOne?.rank, undefined),
+      rank: '',
       content: '' as MarkupBlobRef,
       blobs: {},
       parentInfo: [

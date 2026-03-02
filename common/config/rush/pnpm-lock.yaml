@@ -5029,6 +5029,9 @@ importers:
       '@hcengineering/query':
         specifier: workspace:^0.7.17
         version: link:../../../core/packages/query
+      '@hcengineering/rank':
+        specifier: workspace:^0.7.17
+        version: link:../../../core/packages/rank
       '@hcengineering/server-core':
         specifier: workspace:^0.7.18
         version: link:../core
@@ -61377,7 +61380,7 @@ snapshots:
   node-loader@2.0.0(webpack@5.102.1):
     dependencies:
       loader-utils: 2.0.4
-      webpack: 5.102.1
+      webpack: 5.102.1(esbuild@0.25.12)(webpack-cli@5.1.4)
 
   node-localstorage@2.2.1:
     dependencies:

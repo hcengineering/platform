@@ -6,11 +6,9 @@ import core, {
   type Ref,
   type Space,
   type AttachedData,
-  SortingOrder,
   type Status
 } from '@hcengineering/core'
 import { showPanel } from '@hcengineering/ui'
-import { makeRank } from '@hcengineering/task'
 import board from '../plugin'
 
 export async function createCard (
@@ -24,7 +22,6 @@ export async function createCard (
     throw new Error('sequence object not found')
   }
 
-  const lastOne = await client.findOne(board.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
   const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
   const number = (incResult as any).object.sequence
 
@@ -34,7 +31,7 @@ export async function createCard (
     startDate: null,
     dueDate: null,
     number,
-    rank: makeRank(lastOne?.rank, undefined),
+    rank: '',
     assignee: null,
     identifier: `CARD-${number}`,
     description: '',
