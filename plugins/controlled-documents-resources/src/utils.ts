@@ -317,12 +317,19 @@ export async function updateExternalApproversAccess (
     })
 
     for (const person of addedPersons) {
+      const accountUuid: AccountUuid = person.personUuid as any
+      await client.createDoc(core.class.Collaborator, controlledDoc.space, {
+        attachedTo: controlledDoc._id,
+        attachedToClass: controlledDoc._class,
+        collection: 'collaborators',
+        collaborator: accountUuid
+      })
       for (const projectDoc of projectDocs) {
         await client.createDoc(core.class.Collaborator, controlledDoc.space, {
           attachedTo: projectDoc._id,
           attachedToClass: projectDoc._class,
           collection: 'collaborators',
-          collaborator: person.personUuid as AccountUuid
+          collaborator: accountUuid
         })
       }
 
@@ -331,7 +338,7 @@ export async function updateExternalApproversAccess (
           attachedTo: controlledDoc.changeControl,
           attachedToClass: documents.class.ChangeControl,
           collection: 'collaborators',
-          collaborator: person.personUuid as AccountUuid
+          collaborator: accountUuid
         })
       }
     }
