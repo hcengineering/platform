@@ -18,13 +18,11 @@ import {
   getCurrentAccount,
   type MarkupBlobRef,
   type Ref,
-  SortingOrder,
   type Timestamp
 } from '@hcengineering/core'
 import { type Poll, type PollAnswer } from '@hcengineering/communication'
 import { getClient, getCommunicationClient } from '@hcengineering/presentation'
-import card, { type Card } from '@hcengineering/card'
-import { makeRank } from '@hcengineering/rank'
+import { type Card } from '@hcengineering/card'
 import { type AppletAttachment, type MessageID } from '@hcengineering/communication-types'
 
 import communication from './plugin'
@@ -71,11 +69,10 @@ export async function createPoll (parent: Card, message: MessageID, params: Poll
   const client = getClient()
   const communicationClient = getCommunicationClient()
   const hierarchy = client.getHierarchy()
-  const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
 
   const data: Data<Poll> = {
     title: params.question,
-    rank: makeRank(lastOne?.rank, undefined),
+    rank: '',
     content: '' as MarkupBlobRef,
     parentInfo: [],
     blobs: {},

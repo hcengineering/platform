@@ -15,9 +15,8 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { Card, CardEvents } from '@hcengineering/card'
-  import core, { Class, Data, Doc, fillDefaults, MarkupBlobRef, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { Class, Data, Doc, fillDefaults, MarkupBlobRef, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import { makeRank } from '@hcengineering/rank'
   import { ButtonIcon, getCurrentLocation, IconAdd, navigate } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import card from '../plugin'
@@ -29,12 +28,11 @@
 
   async function createCard (): Promise<void> {
     if (_class === undefined) return
-    const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
     const title = await translate(card.string.Card, {})
 
     const data: Data<Card> = {
       title,
-      rank: makeRank(lastOne?.rank, undefined),
+      rank: '',
       content: '' as MarkupBlobRef,
       parentInfo: [],
       blobs: {}

@@ -34,7 +34,6 @@ import core, {
   type MarkupBlobRef,
   type Ref,
   type RelatedDocument,
-  SortingOrder,
   type Space,
   toRank,
   type TxOperations,
@@ -50,7 +49,6 @@ import presentation, {
   MessageBox,
   type ObjectSearchResult
 } from '@hcengineering/presentation'
-import { makeRank } from '@hcengineering/rank'
 import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
 import {
   getCurrentLocation,
@@ -537,7 +535,6 @@ export async function createCard (
 ): Promise<Ref<Card>> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
   const title = data.title ?? (await translate(card.string.Card, {}))
 
   const _id = id ?? generateId()
@@ -550,7 +547,7 @@ export async function createCard (
     blobs: {},
     ...data,
     title,
-    rank: makeRank(lastOne?.rank, undefined),
+    rank: '',
     content
   }
 

@@ -50,7 +50,7 @@
     SpaceSelector
   } from '@hcengineering/presentation'
   import tags, { type TagElement, TagReference } from '@hcengineering/tags'
-  import { makeRank, TaskType } from '@hcengineering/task'
+  import { TaskType } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import {
@@ -460,11 +460,6 @@
     try {
       const operations = client.apply(undefined, 'tracker.createIssue')
 
-      const lastOne = await client.findOne<Issue>(
-        tracker.class.Issue,
-        { space: _space },
-        { sort: { rank: SortingOrder.Descending } }
-      )
       const incResult = await client.updateDoc(
         tracker.class.Project,
         core.space.Space,
@@ -488,7 +483,7 @@
         number,
         status: object.status,
         priority: object.priority,
-        rank: makeRank(lastOne?.rank, undefined),
+        rank: '',
         comments: 0,
         subIssues: 0,
         dueDate: object.dueDate,

@@ -24,13 +24,12 @@
     getCurrentAccount,
     hasAccountRole,
     Ref,
-    SortingOrder,
     Status as TaskStatus
   } from '@hcengineering/core'
   import { Customer, Funnel, Lead, LeadEvents } from '@hcengineering/lead'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, createQuery, getClient, InlineAttributeBar, SpaceSelector } from '@hcengineering/presentation'
-  import task, { getStates, makeRank, TaskType } from '@hcengineering/task'
+  import task, { getStates, TaskType } from '@hcengineering/task'
   import { TaskKindSelector, typeStore } from '@hcengineering/task-resources'
   import { Button, createFocusManager, EditBox, FocusHandler, Label, Status as StatusControl } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
@@ -93,7 +92,6 @@
       throw new Error('kind is not specified')
     }
 
-    const lastOne = await client.findOne(lead.class.Lead, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
     const number = (incResult as any).object.sequence
 
@@ -103,7 +101,7 @@
       identifier: `LEAD-${number}`,
       title,
       kind,
-      rank: makeRank(lastOne?.rank, undefined),
+      rank: '',
       assignee: null,
       startDate: null,
       dueDate: null,

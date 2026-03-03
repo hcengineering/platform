@@ -36,6 +36,7 @@ import {
   ReadOnly,
   TypeBoolean,
   TypeDate,
+  TypeRank,
   TypeRecord,
   TypeRef,
   TypeString,
@@ -113,7 +114,7 @@ export class TTask extends TAttachedDoc implements Task {
   @Prop(TypeDate(), task.string.DueDate, { editor: task.component.DueDateEditor })
     dueDate!: Timestamp | null
 
-  @Prop(TypeString(), task.string.Rank)
+  @Prop(TypeRank(), task.string.Rank)
   @Index(IndexKind.IndexedDsc)
   @Hidden()
     rank!: Rank
