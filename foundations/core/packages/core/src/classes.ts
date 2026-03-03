@@ -151,6 +151,21 @@ export interface Relation extends Doc {
 }
 
 /**
+ * Describes an existing class field with reference to other document: which relations to follow when building documents graph.
+ * @public
+ */
+export interface RelationMetadata extends Doc {
+  /** Class (source) */
+  sourceClass: Ref<Class<Doc>>
+  /** Class referenced by the field (target) */
+  targetClass: Ref<Class<Doc>>
+  /** Field on the source class */
+  field: string
+  /** Whether this is a forward (source→target) or inverse (target→source) relation */
+  direction?: 'forward' | 'inverse'
+}
+
+/**
  * @public
  */
 export interface AttachedDoc<

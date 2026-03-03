@@ -28,7 +28,7 @@
   import { DropdownLabels, DropdownLabelsIntl, Label } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
   import login from '@hcengineering/login'
-  import { type RelationDefinition, shouldSkipDocument, isEffectiveDocument } from '@hcengineering/export'
+  import { shouldSkipDocument, isEffectiveDocument } from '@hcengineering/export'
 
   import { createEventDispatcher } from 'svelte'
 
@@ -37,7 +37,6 @@
 
   export let query: DocumentQuery<Doc> | undefined = undefined
   export let value: Doc | Doc[] | Space
-  export let relations: RelationDefinition[] | undefined = undefined
   export let docClass: Ref<Class<Doc>> | undefined = undefined
   export let spaceExport: boolean | undefined = false
 
@@ -127,7 +126,7 @@
       exportQuery,
       filteredSelectedDocs,
       targetWorkspace,
-      relations,
+      undefined,
       exportFilterMode === 'skipArchivedObsolete',
       exportFilterMode === 'effectiveOnly'
     )

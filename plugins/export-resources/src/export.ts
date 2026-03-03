@@ -24,7 +24,7 @@ export async function exportToWorkspace (
   query: DocumentQuery<Doc> | undefined,
   selectedDocs: Doc[],
   targetWorkspace: string | undefined,
-  relations: RelationDefinition[] | undefined,
+  relations?: RelationDefinition[] | undefined,
   skipDeletedObsolete?: boolean,
   exportOnlyEffective?: boolean
 ): Promise<void> {
@@ -66,10 +66,12 @@ export async function exportToWorkspace (
     const body: any = {
       targetWorkspace,
       _class,
-      relations,
       fieldMappers,
       skipDeletedObsolete,
       exportOnlyEffective
+    }
+    if (relations != null) {
+      body.relations = relations
     }
 
     body.query =
