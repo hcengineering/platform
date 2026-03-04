@@ -135,6 +135,15 @@ export class DocumentExporter {
         sourceHierarchy,
         sourceLowLevel
       )
+      await this.exportSpaceRelations(
+        doc,
+        doc.space,
+        conflictStrategy,
+        includeAttachments,
+        sourceHierarchy,
+        sourceLowLevel,
+        relations
+      )
 
       // Handle attachments
       if (includeAttachments) {
@@ -154,6 +163,49 @@ export class DocumentExporter {
       throw err
     } finally {
       this.state.processingDocs.delete(doc._id)
+    }
+  }
+
+  private async exportSpaceRelations (
+    doc: Doc,
+    space: Ref<Space>,
+    conflictStrategy: 'skip' | 'duplicate',
+    includeAttachments: boolean,
+    sourceHierarchy: Hierarchy,
+    sourceLowLevel: LowLevelStorage,
+    relations: RelationDefinition[]
+  ): Promise<void> {
+    try {
+      if (this.relationExporter === undefined) {
+        return
+      }
+
+      const spaceDomain = sourceHierarchy.findDomain(core.class.Space)
+      if (spaceDomain === undefined) {
+        this.context.warn('Space domain not found')
+        return
+      }
+
+      const sourceSpaces = await sourceLowLevel.rawFindAll<Space>(spaceDomain, { _id: space })
+      const spaceDoc = sourceSpaces[0]
+      if (spaceDoc == null) {
+        this.context.warn(`Source space ${space} not found for exporting relations`)
+        return
+      }
+
+      await this.relationExporter.exportAllRelations(
+        spaceDoc,
+        relations,
+        conflictStrategy,
+        includeAttachments,
+        sourceHierarchy,
+        sourceLowLevel
+      )
+    } catch (err: any) {
+      this.context.error(`Failed to export relations for space ${space}:`, {
+        error: err instanceof Error ? err.message : String(err),
+        docId: doc._id
+      })
     }
   }
 

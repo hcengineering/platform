@@ -53,6 +53,7 @@ import {
   type Ref,
   type RefTo,
   type Relation,
+  type RelationMetadata,
   type Sequence,
   type Space,
   type Timestamp,
@@ -159,6 +160,22 @@ export class TRelation extends TDoc implements Relation {
   docB!: Ref<Doc<Space>>
 
   association!: Ref<Association>
+}
+
+@Model(core.class.RelationMetadata, core.class.Doc, DOMAIN_MODEL)
+export class TRelationMetadata extends TDoc implements RelationMetadata {
+  @Prop(TypeRef(core.class.Class), core.string.Class)
+  @Index(IndexKind.Indexed)
+    sourceClass!: Ref<Class<Doc>>
+
+  @Prop(TypeRef(core.class.Class), core.string.TargetClass)
+    targetClass!: Ref<Class<Doc>>
+
+  @Prop(TypeString(), core.string.ClassPropertyLabel)
+    field!: string
+
+  @Prop(TypeString(), core.string.Description)
+    direction?: 'forward' | 'inverse'
 }
 
 @Model(core.class.Blob, core.class.Doc, DOMAIN_BLOB)

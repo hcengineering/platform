@@ -22,7 +22,17 @@ import { type Attachment } from '@hcengineering/attachment'
 import contact from '@hcengineering/contact'
 import chunter from '@hcengineering/chunter'
 import { getRoleAttributeProps } from '@hcengineering/setting'
-import type { Type, Ref, CollectionSize, Markup, RolesAssignment, Permission, Role } from '@hcengineering/core'
+import type {
+  Type,
+  Ref,
+  CollectionSize,
+  Markup,
+  RolesAssignment,
+  Permission,
+  Role,
+  Class,
+  Doc
+} from '@hcengineering/core'
 import { IndexKind, AccountUuid } from '@hcengineering/core'
 import {
   type Builder,
@@ -418,6 +428,25 @@ function defineProductVersionState (builder: Builder): void {
   })
 }
 
+function defineRelationMetadata (builder: Builder): void {
+  const rel = (
+    sourceClass: Ref<Class<Doc>>,
+    field: string,
+    targetClass: Ref<Class<Doc>>,
+    direction: 'forward' | 'inverse' = 'forward'
+  ): void => {
+    builder.createDoc(core.class.RelationMetadata, core.space.Model, {
+      sourceClass,
+      field,
+      targetClass,
+      direction
+    })
+  }
+
+  // Product → ProductVersion via `space` (inverse: versions that belong to this product)
+  rel(products.class.Product, 'space', products.class.ProductVersion, 'inverse')
+}
+
 function defineApplication (builder: Builder): void {
   builder.createDoc(
     workbench.class.Application,
@@ -467,6 +496,7 @@ export function createModel (builder: Builder): void {
   defineProduct(builder)
   defineProductVersion(builder)
   defineProductVersionState(builder)
+  defineRelationMetadata(builder)
   defineApplication(builder)
 }
 
