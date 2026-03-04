@@ -46,6 +46,7 @@
     "SelectWorkspaceToExportSpace": "Seleccionar espacio de trabajo para exportar documentos del espacio",
     "SelectSpace": "Seleccionar espacio",
     "NoSelectedDocuments": "No hay documentos seleccionados",
+    "NoDocumentsMatchedFilters": "No se encontraron documentos para exportar con los filtros actuales. Ajusta los filtros o la selección y vuelve a intentarlo.",
     "RequestPermissionToImport": "Por favor, solicite permiso al propietario del espacio de trabajo de destino para importar documentos.",
     "ExportOnlyEffective": "Exportar solo documentos con estado efectivo",
     "ExportFilterMode": "Documentos a exportar",
