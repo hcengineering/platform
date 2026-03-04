@@ -119,6 +119,32 @@ export class RelationExporter {
     }
   }
 
+  async exportAllRelations (
+    doc: Doc,
+    relations: RelationDefinition[],
+    conflictStrategy: 'skip' | 'duplicate',
+    includeAttachments: boolean,
+    sourceHierarchy: Hierarchy,
+    sourceLowLevel: LowLevelStorage
+  ): Promise<void> {
+    await this.exportForwardRelations(
+      doc,
+      relations,
+      conflictStrategy,
+      includeAttachments,
+      sourceHierarchy,
+      sourceLowLevel
+    )
+    await this.exportInverseRelations(
+      doc,
+      relations,
+      conflictStrategy,
+      includeAttachments,
+      sourceHierarchy,
+      sourceLowLevel
+    )
+  }
+
   private async exportForwardRelation (
     doc: Doc,
     relation: RelationDefinition,

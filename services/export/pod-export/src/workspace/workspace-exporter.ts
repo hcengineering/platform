@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import {
+import core, {
   type AccountUuid,
   type Doc,
   type MeasureContext,
@@ -178,6 +178,25 @@ export class CrossWorkspaceExporter {
         throw new Error('Low level storage not available')
       }
 
+      // Resolve relations from RelationMetadata when not provided
+      let resolvedRelations = relations
+      try {
+        if (resolvedRelations.length === 0) {
+          const relations = await sourcePipeline.findAll(this.context, core.class.RelationMetadata, {})
+          resolvedRelations = relations.map((doc) => ({
+            field: doc.field,
+            class: doc.targetClass,
+            direction: (doc.direction ?? 'forward') as 'forward' | 'inverse'
+          }))
+        }
+      } catch (err: any) {
+        this.context.error('Failed to get relations:', {
+          error: err instanceof Error ? err.message : String(err)
+        })
+      }
+      const relationsCount = resolvedRelations != null ? resolvedRelations.length : 0
+      this.context.info(`Number of document relations: ${relationsCount}`)
+
       // Get domain for the class
       const domain = hierarchy.findDomain(_class)
       if (domain === undefined) {
@@ -235,7 +254,7 @@ export class CrossWorkspaceExporter {
                 hierarchy,
                 lowLevelStorage,
                 existingDocsMap,
-                relations
+                resolvedRelations
               )
               if (exported) {
                 result.exportedCount++
