@@ -649,7 +649,7 @@ jobs:
       - name: Free space
         uses: ./.github/actions/free-disk-space
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Configure docker
         uses: docker/setup-docker-action@v5
         with:
