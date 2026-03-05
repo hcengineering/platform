@@ -130,11 +130,7 @@ async function showNoDocumentsNotification (): Promise<void> {
   const lang = getCurrentLanguage()
   addNotification(
     await translate(plugin.string.ExportToWorkspaceFailed, {}, lang),
-    await translate(
-      plugin.string.NoDocumentsMatchedFilters,
-      {},
-      lang
-    ),
+    await translate(plugin.string.NoDocumentsMatchedFilters, {}, lang),
     ExportNotification,
     undefined,
     NotificationSeverity.Error
