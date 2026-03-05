@@ -46,6 +46,7 @@
     "SelectWorkspaceToExportSpace": "Arbeitsbereich zum Exportieren von Dokumenten aus dem Bereich auswählen",
     "SelectSpace": "Bereich auswählen",
     "NoSelectedDocuments": "Keine Dokumente ausgewählt",
+    "NoDocumentsMatchedFilters": "Es wurden keine Dokumente zum Export gefunden, die den aktuellen Filtern entsprechen. Passen Sie Ihre Filter oder Auswahl an und versuchen Sie es erneut.",
     "RequestPermissionToImport": "Bitte fordern Sie die Berechtigung vom Eigentümer des Ziel-Arbeitsbereichs an, um Dokumente zu importieren.",
     "ExportOnlyEffective": "Nur Dokumente mit wirksamem Status exportieren",
     "ExportFilterMode": "Zu exportierende Dokumente",

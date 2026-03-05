@@ -46,6 +46,7 @@
     "SelectWorkspaceToExportSpace": "Select workspace to export documents from space",
     "SelectSpace": "Select space",
     "NoSelectedDocuments": "No documents selected",
+    "NoDocumentsMatchedFilters": "No documents were found to export with the current filters. Try adjusting your filters or selection and try again.",
     "RequestPermissionToImport": "Please request permission from the target workspace owner to import documents.",
     "ExportOnlyEffective": "Export only documents with effective status",
     "ExportFilterMode": "Documents to export",

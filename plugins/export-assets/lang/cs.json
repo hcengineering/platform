@@ -46,6 +46,7 @@
     "SelectWorkspaceToExportSpace": "Vybrat pracovní prostor pro export dokumentů z prostoru",
     "SelectSpace": "Vybrat prostor",
     "NoSelectedDocuments": "Žádné dokumenty nevybrány",
+    "NoDocumentsMatchedFilters": "Pro export nebyly nalezeny žádné dokumenty odpovídající aktuálním filtrům. Upravte filtry nebo výběr a zkuste to znovu.",
     "RequestPermissionToImport": "Prosím, požádejte vlastníka cílového pracovního prostoru o povolení k importu dokumentů.",
     "ExportOnlyEffective": "Exportovat pouze dokumenty s platným stavem",
     "ExportFilterMode": "Dokumenty k exportu",
