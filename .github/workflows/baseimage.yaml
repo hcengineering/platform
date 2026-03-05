@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Configure docker
         uses: crazy-max/ghaction-setup-docker@v5
         with:
