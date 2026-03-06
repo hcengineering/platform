@@ -115,8 +115,8 @@ export function importTool (): void {
     .command('import-notion-with-teamspaces <dir>')
     .description('import extracted archive exported from Notion as "Markdown & CSV"')
     .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace url where the documents should be imported to')
+    .requiredOption('-p, --password <password>', 'password')
+    .requiredOption('-w, --workspace <workspace>', 'workspace url where the documents should be imported to')
     .action(async (dir: string, cmd) => {
       const { workspace, user, password } = cmd
       await authorize(user, password, workspace, async (client, uploader) => {
@@ -129,9 +129,9 @@ export function importTool (): void {
     .command('import-notion-to-teamspace <dir>')
     .description('import extracted archive exported from Notion as "Markdown & CSV"')
     .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace url where the documents should be imported to')
-    .requiredOption('-ts, --teamspace <teamspace>', 'new teamspace name where the documents should be imported to')
+    .requiredOption('-p, --password <password>', 'password')
+    .requiredOption('-w, --workspace <workspace>', 'workspace url where the documents should be imported to')
+    .requiredOption('-t, --teamspace <teamspace>', 'new teamspace name where the documents should be imported to')
     .action(async (dir: string, cmd) => {
       const { workspace, user, password, teamspace } = cmd
       await authorize(user, password, workspace, async (client, uploader) => {
@@ -144,8 +144,8 @@ export function importTool (): void {
     .command('import-clickup-tasks <file>')
     .description('import extracted archive exported from Notion as "Markdown & CSV"')
     .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace url where the documents should be imported to')
+    .requiredOption('-p, --password <password>', 'password')
+    .requiredOption('-w, --workspace <workspace>', 'workspace url where the documents should be imported to')
     .action(async (file: string, cmd) => {
       const { workspace, user, password } = cmd
       await authorize(user, password, workspace, async (client, uploader) => {
@@ -159,8 +159,8 @@ export function importTool (): void {
     .command('import <dir>')
     .description('import issues in Unified Huly Format')
     .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-pw, --password <password>', 'password')
-    .requiredOption('-ws, --workspace <workspace>', 'workspace url where the documents should be imported to')
+    .requiredOption('-p, --password <password>', 'password')
+    .requiredOption('-w, --workspace <workspace>', 'workspace url where the documents should be imported to')
     .action(async (dir: string, cmd) => {
       const { workspace, user, password } = cmd
       await authorize(user, password, workspace, async (client, uploader) => {
