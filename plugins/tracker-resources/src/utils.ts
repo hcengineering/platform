@@ -298,7 +298,7 @@ export async function canEditIssue (issue?: Issue | WithLookup<Issue>): Promise<
     attachedTo: issue._id,
     collaborator: account.uuid
   })
-  if (collaborator !== undefined) return true
+  return collaborator !== undefined
 }
 
 export function getTimeReportDate (type: TimeReportDayType): number {
