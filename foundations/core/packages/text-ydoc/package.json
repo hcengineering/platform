@@ -49,7 +49,10 @@
     "yjs": "^13.6.27",
     "y-protocols": "^1.0.6"
   },
-  "repository": "https://github.com/hcengineering/huly.core",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/huly.core.git"
+  },
   "publishConfig": {
     "access": "public"
   },

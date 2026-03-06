@@ -45,7 +45,10 @@
     "@hcengineering/analytics": "workspace:^0.7.17",
     "fast-equals": "^5.2.2"
   },
-  "repository": "https://github.com/hcengineering/huly.core",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/huly.core.git"
+  },
   "publishConfig": {
     "access": "public"
   },
