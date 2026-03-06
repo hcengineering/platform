@@ -454,6 +454,14 @@ export function createModel (builder: Builder): void {
     TProjectTargetPreference
   )
 
+  builder.mixin(tracker.class.Issue, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest,
+    updateAccessLevel: AccountRole.Guest,
+    removeAccessLevel: AccountRole.Guest,
+    updateRules: { [AccountRole.Guest]: [{ requireOwnership: true }] },
+    removeRules: { [AccountRole.Guest]: [{ requireOwnership: true }] }
+  })
+
   builder.mixin(tracker.class.Project, core.class.Class, activity.mixin.ActivityDoc, {})
   builder.mixin(tracker.class.Issue, core.class.Class, activity.mixin.ActivityDoc, {})
   builder.mixin(tracker.class.Milestone, core.class.Class, activity.mixin.ActivityDoc, {})

@@ -608,10 +608,21 @@ export const roleOrder: Record<AccountRole, number> = {
   [AccountRole.Admin]: 100
 }
 
+/**
+ * Optional constraint applied when a role is allowed to perform an operation.
+ * @public
+ */
+export interface PermissionRule {
+  /** Require that the document was created by the current user (createdBy === modifiedBy). */
+  requireOwnership?: boolean
+}
+
 export interface TxAccessLevel extends Class<Doc> {
   createAccessLevel?: AccountRole
   removeAccessLevel?: AccountRole
   updateAccessLevel?: AccountRole
+  removeRules?: Partial<Record<AccountRole, PermissionRule[]>>
+  updateRules?: Partial<Record<AccountRole, PermissionRule[]>>
   isIdentity?: boolean
 }
 

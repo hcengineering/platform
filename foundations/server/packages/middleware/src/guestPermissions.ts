@@ -10,6 +10,7 @@ import core, {
   type Doc,
   hasAccountRole,
   type MeasureContext,
+  type PermissionRule,
   type PersonId,
   type SessionData,
   type Space,
@@ -103,7 +104,8 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
       return accessLevelMixin.createAccessLevel === AccountRole.Guest
     }
     if (tx._class === core.class.TxRemoveDoc) {
-      return accessLevelMixin.removeAccessLevel === AccountRole.Guest
+      if (accessLevelMixin.removeAccessLevel !== AccountRole.Guest) return false
+      return await this.verifyPermissionRules(ctx, tx, accessLevelMixin.removeRules?.[account.role])
     }
     if (tx._class === core.class.TxUpdateDoc) {
       if (accessLevelMixin.isIdentity === true && account.socialIds.includes(tx.objectId as unknown as PersonId)) {
@@ -115,8 +117,33 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
           | undefined
         return person?.personUuid === account.uuid
       }
-      return accessLevelMixin.updateAccessLevel === AccountRole.Guest
+      if (accessLevelMixin.updateAccessLevel !== AccountRole.Guest) return false
+      return await this.verifyPermissionRules(ctx, tx, accessLevelMixin.updateRules?.[account.role])
     }
     return false
+  }
+
+  private async verifyPermissionRules (
+    ctx: MeasureContext,
+    tx: TxCUD<Doc>,
+    rules: PermissionRule[] | undefined
+  ): Promise<boolean> {
+    if (rules === undefined || rules.length === 0) return true
+    for (const rule of rules) {
+      if (rule.requireOwnership === true) {
+        if (!(await this.isCreator(ctx, tx, tx.modifiedBy))) return false
+      }
+    }
+    return true
+  }
+
+  /** True if the document's createdBy equals the given personId (optional ownership check). */
+  private async isCreator (ctx: MeasureContext, tx: TxCUD<Doc>, personId: PersonId): Promise<boolean> {
+    const docs = await this.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 })
+    const doc = docs[0] as (Doc & { createdBy?: PersonId }) | undefined
+    if (doc === undefined) return false
+    const creator = doc.createdBy
+    if (creator === undefined) return true
+    return creator === personId
   }
 }

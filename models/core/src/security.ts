@@ -26,6 +26,7 @@ import {
   type CollectionSize,
   type Doc,
   type Permission,
+  type PermissionRule,
   type Ref,
   type Role,
   type RolesAssignment,
@@ -191,5 +192,7 @@ export class TTxAccessLevel extends TClass implements TxAccessLevel {
   createAccessLevel?: AccountRole
   removeAccessLevel?: AccountRole
   updateAccessLevel?: AccountRole
+  removeRules?: Partial<Record<AccountRole, PermissionRule[]>>
+  updateRules?: Partial<Record<AccountRole, PermissionRule[]>>
   isIdentity?: boolean
 }
