@@ -24,7 +24,7 @@
     type Space,
     type Class
   } from '@hcengineering/core'
-  import { Card, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
+  import { Card, getClient, getCurrentWorkspaceUuid } from '@hcengineering/presentation'
   import { DropdownLabels, DropdownLabelsIntl, Label } from '@hcengineering/ui'
   import { getResource } from '@hcengineering/platform'
   import login from '@hcengineering/login'
@@ -39,6 +39,7 @@
   export let value: Doc | Doc[] | Space
   export let docClass: Ref<Class<Doc>> | undefined = undefined
   export let spaceExport: boolean | undefined = false
+  export let projectDocExport: boolean | undefined = false
 
   const dispatch = createEventDispatcher()
 
@@ -117,14 +118,34 @@
   $: canSave =
     targetWorkspace !== undefined && _class != null && (spaceExport === true || filteredSelectedDocs.length > 0)
 
+  async function getExportDocuments (): Promise<Array<Doc>> {
+    if (docClass == null) {
+      console.error('Document class is required to export project documents')
+      return []
+    }
+    const client = getClient()
+    const innerIds = selectedDocs.map((d) => (d as any)?.document).filter((id) => id != null)
+
+    if (innerIds.length > 0) {
+      const docs = await client.findAll(docClass, {
+        _id: { $in: innerIds }
+      })
+      return filterDocsForExport(docs, exportFilterMode)
+    }
+    return []
+  }
+
   async function handleExport (): Promise<void> {
     if (!canSave || _class == null) return
 
     loading = true
+
+    const effectiveDocs = projectDocExport === true ? await getExportDocuments() : filteredSelectedDocs
+
     void exportToWorkspace(
       _class,
       exportQuery,
-      filteredSelectedDocs,
+      effectiveDocs,
       targetWorkspace,
       undefined,
       exportFilterMode === 'skipArchivedObsolete',
