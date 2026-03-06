@@ -904,6 +904,33 @@ export function createModel (builder: Builder): void {
       actionProps: {
         component: exportPlugin.component.ExportToWorkspaceModal,
         fillProps: {
+          _objects: 'value'
+        },
+        props: {
+          projectDocExport: true,
+          docClass: documents.class.ControlledDocument
+        }
+      },
+      label: exportPlugin.string.ExportToWorkspace,
+      icon: exportPlugin.icon.Export,
+      input: 'any',
+      category: view.category.General,
+      target: documents.class.ProjectDocument,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'copy'
+      }
+    },
+    documents.action.ExportProjectDocuments
+  )
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: exportPlugin.component.ExportToWorkspaceModal,
+        fillProps: {
           _object: 'value'
         },
         props: {

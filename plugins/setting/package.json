@@ -43,7 +43,10 @@
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/account-client": "workspace:^0.7.21"
   },
-  "repository": "https://github.com/hcengineering/platform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/platform.git"
+  },
   "publishConfig": {
     "access": "public"
   }

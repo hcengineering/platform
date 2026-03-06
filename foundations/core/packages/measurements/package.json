@@ -40,7 +40,10 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-n": "^15.4.0"
   },
-  "repository": "https://github.com/hcengineering/platform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/platform.git"
+  },
   "exports": {
     ".": {
       "types": "./types/index.d.ts",

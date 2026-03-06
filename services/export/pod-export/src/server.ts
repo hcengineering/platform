@@ -539,7 +539,11 @@ export function createServer (
 
           const exportResult: ExportResult = await exporter.export(options)
 
-          if (exportResult.success && exportResult.exportedCount > 0) {
+          if (exportResult.exportedCount === 0) {
+            res.status(400).send({ message: 'No documents found to export' })
+          }
+
+          if (exportResult.success) {
             await sendExportCompletionNotification(
               measureCtx,
               targetTxOps,

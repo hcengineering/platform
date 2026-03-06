@@ -57,7 +57,10 @@
     "@opentelemetry/api-logs": "^0.203.0",
     "@opentelemetry/sdk-metrics": "^2.0.1"
   },
-  "repository": "https://github.com/hcengineering/huly.utils",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/huly.utils.git"
+  },
   "exports": {
     ".": {
       "types": "./types/index.d.ts",

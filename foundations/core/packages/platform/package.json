@@ -43,7 +43,10 @@
   "dependencies": {
     "intl-messageformat": "^10.7.14"
   },
-  "repository": "https://github.com/hcengineering/huly.core",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/huly.core.git"
+  },
   "publishConfig": {
     "access": "public"
   },

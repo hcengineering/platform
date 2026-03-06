@@ -44,7 +44,10 @@
     "emojibase-data": "^16.0.0",
     "emojibase-regex": "^16.0.0"
   },
-  "repository": "https://github.com/hcengineering/platform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/platform.git"
+  },
   "publishConfig": {
     "access": "public"
   }

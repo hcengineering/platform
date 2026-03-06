@@ -1,0 +1,57 @@
+# PostgreSQL override: adds a local Postgres instance for dev.
+# Use with: docker compose -f docker-compose.yaml -f docker-compose.pg.yaml --profile postgres up
+#
+# This does NOT change any DB_URLs automatically; services will still use whatever
+# connection string you configure via env (e.g. DB_URL_PG in dev/.env).
+
+services:
+  postgres:
+    profiles: ["postgres"]
+    image: postgres:16
+    extra_hosts:
+      - "huly.local:host-gateway"
+    command: ["postgres", "-p", "5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    restart: unless-stopped
+
+  account:
+    environment:
+      - DB_URL=${DB_URL_PG}
+
+  workspace_cockroach:
+    environment:
+      - DB_URL=${DB_URL_PG}
+      - ACCOUNTS_DB_URL=${DB_URL_PG}
+
+  transactor_cockroach:
+    environment:
+      - DB_URL=${DB_URL_PG}
+      - COMMUNICATION_API_ENABLED=false
+
+  fulltext_cockroach:
+    environment:
+      - DB_URL=${DB_URL_PG}
+      - COMMUNICATION_API_ENABLED=false
+
+  export:
+    environment:
+      - DB_URL=${DB_URL_PG}
+
+  datalake:
+    environment:
+      - DB_URL=${DB_URL_PG}
+
+  front:
+    environment:
+      - COMMUNICATION_API_ENABLED=false
+

@@ -18,7 +18,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { type InviteSettings, type RoleCapabilitySettings, RoleCapability } from '@hcengineering/setting'
   import { hasRoleCapability } from '../roleCapability'
-  import { translate } from '@hcengineering/platform'
+  import { getMetadata, translate } from '@hcengineering/platform'
   import {
     Breadcrumb,
     DropdownLabels,
@@ -35,12 +35,42 @@
   import UserRoleSelect from './UserRoleSelect.svelte'
 
   const client = getClient()
+
+  const configDefaultInviteRole = getMetadata(setting.metadata.DefaultInviteRole)
+  const configInviteLinkGeneratorRoles = getMetadata(setting.metadata.DefaultInviteLinkGeneratorRoles)
+
+  function normalizeRole (value: string | undefined, fallback: AccountRole): AccountRole {
+    if (typeof value === 'string') {
+      const normalizedValue = value.toLowerCase()
+      switch (normalizedValue) {
+        case 'guest':
+          return AccountRole.Guest
+        case 'user':
+          return AccountRole.User
+        case 'maintainer':
+          return AccountRole.Maintainer
+        case 'owner':
+          return AccountRole.Owner
+      }
+    }
+    return fallback
+  }
+
+  function normalizeRoles (values: Array<string> | undefined, fallback: AccountRole[]): AccountRole[] {
+    if (!Array.isArray(values) || values.length === 0) return [...fallback]
+    const mapped = values
+      .map((v) => normalizeRole(v, AccountRole.User))
+      .filter((role, index, arr) => arr.indexOf(role) === index)
+    return mapped.length > 0 ? mapped : [...fallback]
+  }
   let loading = true
   let expTime: number = 48
   let mask: string = ''
   let limit: number | undefined = -1
-  let defaultInviteRole: AccountRole = AccountRole.User
-  let inviteLinkGeneratorRoles: AccountRole[] = [AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]
+  const defaultGeneratorRoles: AccountRole[] = [AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]
+
+  let defaultInviteRole: AccountRole = normalizeRole(configDefaultInviteRole, AccountRole.User)
+  let inviteLinkGeneratorRoles: AccountRole[] = normalizeRoles(configInviteLinkGeneratorRoles, defaultGeneratorRoles)
   let noLimit: boolean = true
   let existingInviteSettings: InviteSettings[] = []
   let existingRoleCapabilitySettings: {
@@ -60,8 +90,6 @@
     roleByCapability,
     undefined
   )
-  const defaultGeneratorRoles: AccountRole[] = [AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]
-
   let inviteLinkGeneratorRolesItems: DropdownTextItem[] = []
   $: lang = $themeStore?.language
   $: if (typeof lang === 'string') {
@@ -85,17 +113,17 @@
       expTime = first.expirationTime
       mask = first.emailMask
       limit = first.limit
-      defaultInviteRole = first.defaultInviteRole ?? AccountRole.User
+      defaultInviteRole = normalizeRole(first.defaultInviteRole, defaultInviteRole)
       inviteLinkGeneratorRoles =
         first.inviteLinkGeneratorRoles != null && first.inviteLinkGeneratorRoles.length > 0
-          ? [...first.inviteLinkGeneratorRoles]
+          ? normalizeRoles(first.inviteLinkGeneratorRoles, defaultGeneratorRoles)
           : [...defaultGeneratorRoles]
     } else {
       expTime = 48
       mask = ''
       limit = -1
-      defaultInviteRole = AccountRole.User
-      inviteLinkGeneratorRoles = [...defaultGeneratorRoles]
+      defaultInviteRole = normalizeRole(configDefaultInviteRole, AccountRole.User)
+      inviteLinkGeneratorRoles = normalizeRoles(configInviteLinkGeneratorRoles, defaultGeneratorRoles)
     }
     noLimit = limit === -1
     loading = false
@@ -255,7 +283,6 @@
                     autoSelect={false}
                     kind={'regular'}
                     size={'medium'}
-                    width={'100%'}
                     on:selected={handleGeneratorRolesSelected}
                   />
                 </div>

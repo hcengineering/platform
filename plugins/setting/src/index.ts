@@ -368,7 +368,9 @@ export default plugin(settingId, {
     Value: '' as Ref<TemplateField>
   },
   metadata: {
-    BackupUrl: '' as Metadata<string>
+    BackupUrl: '' as Metadata<string>,
+    DefaultInviteRole: '' as Metadata<string | undefined>,
+    DefaultInviteLinkGeneratorRoles: '' as Metadata<string[] | undefined>
   },
   function: {
     HasRoleCapability: '' as Resource<(capabilityId: RoleCapabilityId | string) => Promise<boolean>>

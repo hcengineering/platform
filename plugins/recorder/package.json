@@ -43,7 +43,10 @@
     "@hcengineering/uploader": "workspace:^0.7.0",
     "tus-js-client": "^4.3.1"
   },
-  "repository": "https://github.com/hcengineering/platform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/platform.git"
+  },
   "publishConfig": {
     "access": "public"
   }

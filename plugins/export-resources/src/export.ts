@@ -92,14 +92,23 @@ export async function exportToWorkspace (
 
     if (!res.ok) {
       let errorMessage = 'Unknown error occurred'
+      let noDocuments = false
       try {
         const errorData = await res.json()
         errorMessage = errorData.message ?? errorData.error ?? `HTTP ${res.status}: ${res.statusText}`
+        if (res.status === 400 && errorMessage === 'No documents found to export') {
+          noDocuments = true
+        }
       } catch {
         errorMessage = `HTTP ${res.status}: ${res.statusText}`
       }
       console.error('Export request failed:', errorMessage)
-      await showFailureNotification(errorMessage)
+
+      if (noDocuments) {
+        await showNoDocumentsNotification()
+      } else {
+        await showFailureNotification(errorMessage)
+      }
       return
     }
 
@@ -115,6 +124,17 @@ export async function exportToWorkspace (
     const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
     await showFailureNotification(errorMessage)
   }
+}
+
+async function showNoDocumentsNotification (): Promise<void> {
+  const lang = getCurrentLanguage()
+  addNotification(
+    await translate(plugin.string.ExportToWorkspaceFailed, {}, lang),
+    await translate(plugin.string.NoDocumentsMatchedFilters, {}, lang),
+    ExportNotification,
+    undefined,
+    NotificationSeverity.Error
+  )
 }
 
 async function showFailureNotification (errorDetails?: string): Promise<void> {
