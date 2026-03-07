@@ -6,18 +6,25 @@ const extractCookieToken = (cookie?: string): string | null => {
     return null
   }
 
+  let authToken: string | null = null
+
   const cookies = cookie.split(';')
-  const tokenCookie = cookies.find((cookie) => cookie.toLocaleLowerCase().includes('token'))
-  if (tokenCookie === undefined) {
-    return null
+  for (const cookie of cookies) {
+    if (cookie.toLocaleLowerCase().includes('token')) {
+      try {
+        const encodedToken = cookie.split('=')[1]
+        const token = decodeToken(encodedToken)
+
+        if (token.workspace != null) {
+          return encodedToken
+        }
+
+        authToken = encodedToken
+      } catch {}
+    }
   }
 
-  const encodedToken = tokenCookie.split('=')[1]
-  if (encodedToken === undefined) {
-    return null
-  }
-
-  return encodedToken
+  return authToken
 }
 
 const extractAuthorizationToken = (authorization?: string): string | null => {
