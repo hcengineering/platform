@@ -115,7 +115,8 @@ export class StripeProvider implements PaymentProvider {
       metadata: {
         workspaceUuid,
         subscriptionType: request.type,
-        subscriptionPlan: request.plan
+        subscriptionPlan: request.plan,
+        accountUuid
       }
     })
 

@@ -34,10 +34,11 @@ export class StripeClient {
    */
   async createCheckout (ctx: MeasureContext, params: CreateCheckoutParams): Promise<CheckoutResult> {
     return await ctx.with('stripe-create-checkout', {}, async () => {
-      const subscriptionMetadata = {
+      const subscriptionMetadata: Stripe.MetadataParam = {
         workspaceUuid: params.metadata.workspaceUuid,
         subscriptionType: params.metadata.subscriptionType,
-        subscriptionPlan: params.metadata.subscriptionPlan
+        subscriptionPlan: params.metadata.subscriptionPlan,
+        accountUuid: params.metadata.accountUuid
       }
 
       const sessionParams: Stripe.Checkout.SessionCreateParams = {
