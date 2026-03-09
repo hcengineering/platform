@@ -168,6 +168,9 @@ class BackupWorker {
 
     const infoTo = setInterval(() => {
       const avgTime = this.allBackupTime / (this.processed + 1)
+      if (this.activeWorkspaces.size === 0 && this.workspacesToBackup.size === 0) {
+        return
+      }
       ctx.warn('********** backup info **********', {
         processed: this.processed,
         toGo: this.workspacesToBackup.size,
