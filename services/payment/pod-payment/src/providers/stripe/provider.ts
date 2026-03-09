@@ -54,6 +54,7 @@ function hasSubscriptionChanged (ourSub: SubscriptionData, newData: Subscription
 export class StripeProvider implements PaymentProvider {
   readonly providerName = 'stripe'
   private readonly stripe: StripeClient
+  private readonly stripeApiKey: string
   private readonly webhookSecret: string
   // Map: plan@type (Huly) -> priceId (Stripe)
   private readonly subscriptionPlans: Record<string, string>
@@ -67,6 +68,7 @@ export class StripeProvider implements PaymentProvider {
     frontUrl: string,
     accountClient: AccountClient
   ) {
+    this.stripeApiKey = apiKey
     this.stripe = new StripeClient(apiKey)
     this.webhookSecret = webhookSecret
     // TODO: support branding
@@ -336,7 +338,7 @@ export class StripeProvider implements PaymentProvider {
 
     // Register Stripe-specific webhook endpoint (body parsing handled by server middleware)
     app.post('/api/v1/webhooks/stripe', (req: Request, res: Response) => {
-      void handleStripeWebhook(ctx, accountsUrl, serviceToken, this.webhookSecret, req, res)
+      void handleStripeWebhook(ctx, accountsUrl, serviceToken, this.webhookSecret, this.stripeApiKey, req, res)
     })
   }
 }

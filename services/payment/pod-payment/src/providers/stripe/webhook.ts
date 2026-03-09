@@ -31,6 +31,7 @@ export async function handleStripeWebhook (
   accountsUrl: string,
   serviceToken: string,
   webhookSecret: string,
+  stripeApiKey: string,
   req: Request,
   res: Response
 ): Promise<void> {
@@ -52,7 +53,7 @@ export async function handleStripeWebhook (
     }
 
     // Create Stripe instance for webhook verification
-    const stripe = new Stripe('', { apiVersion: '2025-02-24.acacia' })
+    const stripe = new Stripe(stripeApiKey, { apiVersion: '2025-02-24.acacia' })
 
     // Verify webhook signature and parse event
     let event: Stripe.Event
