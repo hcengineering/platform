@@ -21,7 +21,7 @@ import card from './plugin'
 export async function importModule (json: string): Promise<void> {
   try {
     const rawData = JSON.parse(json) as Doc[]
-    const data = Array.from(new Map(rawData.map(d => [d._id, d])).values())
+    const data = Array.from(new Map(rawData.map((d) => [d._id, d])).values())
     const client = getClient()
     const m = client.getModel()
     const h = client.getHierarchy()
@@ -62,7 +62,7 @@ function stripData<T extends Doc> (doc: T): Data<T> {
 export async function exportModule (_id: Ref<Class<Doc>>): Promise<string> {
   const processed = new Set<Ref<Doc>>()
   const res = await exportType(_id, processed)
-  const unique = Array.from(new Map(res.map(d => [d._id, d])).values())
+  const unique = Array.from(new Map(res.map((d) => [d._id, d])).values())
   const clear = unique.map(strip)
   const str = JSON.stringify(clear)
   return str
