@@ -1268,7 +1268,7 @@ export function defineNotifications (builder: Builder): void {
     enabledTypes: [
       documents.notification.StateNotification,
       documents.notification.ContentNotification,
-      (documents.notification as any).ReviewNotification
+      documents.notification.ReviewNotification
     ]
   })
 
