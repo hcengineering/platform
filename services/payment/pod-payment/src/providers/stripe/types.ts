@@ -30,8 +30,8 @@ export interface CreateCheckoutMetadata {
   workspaceUuid: string
   subscriptionType: string
   subscriptionPlan: string
-  accountUuid: string
-  [key: string]: string | number | boolean
+  accountUuid?: string
+  [key: string]: string | number | boolean | undefined
 }
 
 /**

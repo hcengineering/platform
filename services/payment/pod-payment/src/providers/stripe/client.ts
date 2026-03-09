@@ -37,8 +37,11 @@ export class StripeClient {
       const subscriptionMetadata: Stripe.MetadataParam = {
         workspaceUuid: params.metadata.workspaceUuid,
         subscriptionType: params.metadata.subscriptionType,
-        subscriptionPlan: params.metadata.subscriptionPlan,
-        accountUuid: params.metadata.accountUuid
+        subscriptionPlan: params.metadata.subscriptionPlan
+      }
+
+      if (params.metadata.accountUuid != null) {
+        subscriptionMetadata.accountUuid = params.metadata.accountUuid
       }
 
       const sessionParams: Stripe.Checkout.SessionCreateParams = {
