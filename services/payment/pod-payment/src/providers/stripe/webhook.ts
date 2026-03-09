@@ -18,7 +18,7 @@ import Stripe from 'stripe'
 import { type MeasureContext } from '@hcengineering/core'
 
 import { getAccountClient } from '../../utils'
-import { transformStripeSubscriptionToData } from './utils'
+import { createSubscriptionEventFromInvoiceEvent, transformStripeSubscriptionToData } from './utils'
 
 /**
  * Handle Stripe webhook events
@@ -69,15 +69,29 @@ export async function handleStripeWebhook (
     switch (event.type) {
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
-      case 'customer.subscription.deleted':
-      case 'invoice.payment_succeeded':
-      case 'invoice.payment_failed':
+      case 'customer.subscription.deleted': {
         void handleSubscriptionUpdated(ctx, accountsUrl, serviceToken, event).catch((err) => {
           ctx.error('Failed to process Stripe webhook event', { event, err })
         })
         break
-      default:
+      }
+      case 'invoice.payment_succeeded':
+      case 'invoice.payment_failed': {
+        void (async () => {
+          try {
+            const subscriptionEvent = await createSubscriptionEventFromInvoiceEvent(ctx, stripe, event)
+            if (subscriptionEvent == null) return
+
+            await handleSubscriptionUpdated(ctx, accountsUrl, serviceToken, subscriptionEvent)
+          } catch (err) {
+            ctx.error('Failed to process Stripe invoice event', { event, err })
+          }
+        })()
+        break
+      }
+      default: {
         ctx.info('Unhandled Stripe webhook event type', { type: event.type })
+      }
     }
 
     res.status(200).json({ received: true })
@@ -105,7 +119,7 @@ async function handleSubscriptionUpdated (
   const subscriptionData = transformStripeSubscriptionToData(subscription)
 
   if (subscriptionData === null) {
-    ctx.info('Ignoring subscription in irrelevant state', {
+    ctx.warn('Ignoring subscription in irrelevant state', {
       subscriptionId: subscription.id,
       status: subscription.status
     })
