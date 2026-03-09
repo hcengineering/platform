@@ -21,12 +21,14 @@ export default plugin(serverDocumentsId, {
     OnDocEnteredNonActionableState: '' as Resource<TriggerFunc>,
     OnDocPlannedEffectiveDateChanged: '' as Resource<TriggerFunc>,
     OnDocApprovalRequestApproved: '' as Resource<TriggerFunc>,
+    OnDocumentReviewRequestCompleted: '' as Resource<TriggerFunc>,
     OnDocHasBecomeEffective: '' as Resource<TriggerFunc>,
     OnDocTitleChanged: '' as Resource<TriggerFunc>
   },
   function: {
     ControlledDocumentTextPresenter: '' as Resource<Presenter>,
     ControlledDocumentHTMLPresenter: '' as Resource<Presenter>,
-    CoAuthorsTypeMatch: '' as TypeMatchFunc
+    CoAuthorsTypeMatch: '' as TypeMatchFunc,
+    DocumentReviewedTypeMatch: '' as TypeMatchFunc
   }
 })

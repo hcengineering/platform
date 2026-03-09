@@ -336,7 +336,8 @@ export const documentsPlugin = plugin(documentsId, {
     ProductChangeControl: '' as Ref<DocumentTemplate>
   },
   notification: {
-    CoAuthorsNotification: '' as Ref<NotificationType>
+    CoAuthorsNotification: '' as Ref<NotificationType>,
+    ReviewNotification: '' as Ref<NotificationType>
   },
   viewlet: {
     DocumentSpaceTable: '' as Ref<Viewlet>
