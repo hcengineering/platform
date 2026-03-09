@@ -72,6 +72,8 @@
     "Import": "导入",
     "Export": "导出",
     "CardUpdated": "卡片已更新",
-    "CardCreated": "卡片已创建"
+    "CardCreated": "卡片已创建",
+    "MyCards": "我的卡片",
+    "GotoMyCards": "转到我的卡片"
   }
 }

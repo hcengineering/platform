@@ -55,7 +55,8 @@ export default mergeIds(cardId, card, {
     CardWidgetTab: '' as AnyComponent,
     CreateCard: '' as AnyComponent,
     CardHeaderButton: '' as AnyComponent,
-    CreateRolePopup: '' as AnyComponent
+    CreateRolePopup: '' as AnyComponent,
+    MyCards: '' as AnyComponent
   },
   function: {
     CardFactory: '' as Resource<(props?: Record<string, any>) => Promise<Ref<Doc> | undefined>>,
@@ -161,6 +162,8 @@ export default mergeIds(cardId, card, {
     ForbidAddTagPermission: '' as IntlString,
     ForbidRemoveTag: '' as IntlString,
     CardUpdated: '' as IntlString,
-    CardCreated: '' as IntlString
+    CardCreated: '' as IntlString,
+    MyCards: '' as IntlString,
+    GotoMyCards: '' as IntlString
   }
 })

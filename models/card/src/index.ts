@@ -569,6 +569,21 @@ export function createModel (builder: Builder): void {
       navigatorModel: {
         specials: [
           {
+            id: 'my-cards',
+            label: card.string.MyCards,
+            icon: card.icon.Card,
+            component: card.component.MyCards,
+            componentProps: {
+              icon: card.icon.Card,
+              config: [
+                ['assigned', view.string.Assigned, {}],
+                ['created', view.string.Created, {}],
+                ['subscribed', view.string.Subscribed, {}]
+              ]
+            },
+            position: 'top'
+          },
+          {
             id: 'all',
             label: card.string.AllCards,
             icon: card.icon.All,
