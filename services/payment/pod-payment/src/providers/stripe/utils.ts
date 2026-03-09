@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type AccountUuid, type WorkspaceUuid } from '@hcengineering/core'
+import { type AccountUuid, type WorkspaceUuid, type MeasureContext } from '@hcengineering/core'
 import type { SubscriptionData } from '@hcengineering/account-client'
 import { SubscriptionStatus, SubscriptionType } from '@hcengineering/account-client'
 import type Stripe from 'stripe'
@@ -70,6 +70,18 @@ export function transformStripeSubscriptionToData (subscription: Stripe.Subscrip
     subscriptionType === undefined ||
     subscriptionPlan === undefined
   ) {
+    const missing: string[] = []
+    if (accountUuid === undefined) missing.push('accountUuid')
+    if (workspaceUuid === undefined) missing.push('workspaceUuid')
+    if (subscriptionType === undefined) missing.push('subscriptionType')
+    if (subscriptionPlan === undefined) missing.push('subscriptionPlan')
+
+    console.warn('Stripe subscription missing required metadata, ignoring update', {
+      subscriptionId: subscription.id,
+      status: subscription.status,
+      missingFields: missing
+    })
+
     return null
   }
 
@@ -82,6 +94,10 @@ export function transformStripeSubscriptionToData (subscription: Stripe.Subscrip
 
   if (status === null) {
     // Ignore updates for subscriptions in irrelevant states
+    console.warn('Stripe subscription status is missing', {
+      subscriptionId: subscription.id,
+      status: subscription.status
+    })
     return null
   }
 
@@ -128,4 +144,40 @@ export function transformStripeSubscriptionToData (subscription: Stripe.Subscrip
   }
 
   return subscriptionData
+}
+
+/**
+ * For invoice.* events, load the related subscription from Stripe and
+ * return a new Event whose data.object is the Subscription.
+ *
+ * Returns null when the invoice has no subscription.
+ */
+export async function createSubscriptionEventFromInvoiceEvent (
+  ctx: MeasureContext,
+  stripe: Stripe,
+  event: Stripe.Event
+): Promise<Stripe.Event | null> {
+  // Stripe sends the invoice in data.object for invoice.* events
+  const invoice = event.data.object as Stripe.Invoice
+  const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id
+
+  if (subscriptionId === undefined) {
+    ctx.info('Invoice event without subscription, skipping', {
+      invoiceId: invoice.id,
+      status: invoice.status
+    })
+    return null
+  }
+
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+
+  // We only care that data.object is a Subscription; the exact event
+  // subtype is not used by the subscription handler.
+  return {
+    ...event,
+    data: {
+      ...event.data,
+      object: subscription
+    }
+  } as unknown as Stripe.Event
 }
