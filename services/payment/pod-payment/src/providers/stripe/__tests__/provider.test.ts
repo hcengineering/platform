@@ -228,15 +228,17 @@ describe('StripeProvider', () => {
     })
   })
 
-  test('updateSubscriptionPlan creates checkout for free subscription', async () => {
+  test('updateSubscriptionPlan creates checkout for free subscription with accountUuid in metadata', async () => {
     const provider = new StripeProvider(apiKey, webhookSecret, subscriptionPlans, frontUrl, accountClient)
 
     const subscriptionId = 'sub_free'
     const newPlan = 'epic'
     const workspaceUrl = 'workspace-url'
+    const accountUuid = 'acc-upgrade-123'
 
     const currentSub: Stripe.Subscription = {
       id: subscriptionId,
+      metadata: { workspaceUuid: 'ws-1' },
       items: {
         data: [
           {
@@ -257,7 +259,7 @@ describe('StripeProvider', () => {
       url: 'https://stripe.test/checkout/new'
     })
 
-    const result = await provider.updateSubscriptionPlan(ctx, subscriptionId, newPlan, workspaceUrl)
+    const result = await provider.updateSubscriptionPlan(ctx, subscriptionId, newPlan, workspaceUrl, accountUuid)
 
     expect(result).toEqual({
       checkoutId: 'cs_test_new',
@@ -269,7 +271,11 @@ describe('StripeProvider', () => {
       ctx,
       expect.objectContaining({
         priceId: 'price_epic',
-        subscriptionId
+        subscriptionId,
+        metadata: expect.objectContaining({
+          accountUuid,
+          subscriptionPlan: newPlan
+        })
       })
     )
   })
