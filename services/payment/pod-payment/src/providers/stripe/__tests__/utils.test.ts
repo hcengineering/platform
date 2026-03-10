@@ -82,6 +82,16 @@ describe('Stripe utils - createSubscriptionEventFromInvoiceEvent', () => {
 })
 
 describe('Stripe utils - transformStripeSubscriptionToData', () => {
+  const ctx = {
+    warn: jest.fn(),
+    info: jest.fn(),
+    error: jest.fn()
+  } as any
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
   test('returns SubscriptionData when all required metadata is present', () => {
     const subscription: Stripe.Subscription = {
       id: 'sub_123',
@@ -89,7 +99,8 @@ describe('Stripe utils - transformStripeSubscriptionToData', () => {
       metadata: {
         workspaceUuid: 'ws-123',
         subscriptionType: 'common',
-        subscriptionPlan: 'pro'
+        subscriptionPlan: 'pro',
+        accountUuid: 'acc-123'
       },
       customer: {
         id: 'cus_123',
@@ -119,14 +130,14 @@ describe('Stripe utils - transformStripeSubscriptionToData', () => {
       latest_invoice: 'in_123' as any
     } as any
 
-    const result = transformStripeSubscriptionToData(subscription)
+    const result = transformStripeSubscriptionToData(ctx, subscription)
 
     expect(result).not.toBeNull()
     expect(result).toEqual(
       expect.objectContaining({
         id: 'stripe_sub_123',
         workspaceUuid: 'ws-123',
-        accountUuid: 'cus_123',
+        accountUuid: 'acc-123',
         providerSubscriptionId: 'sub_123',
         type: 'common',
         plan: 'pro',
@@ -159,20 +170,16 @@ describe('Stripe utils - transformStripeSubscriptionToData', () => {
       latest_invoice: 'in_999' as any
     } as any
 
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-
-    const result = transformStripeSubscriptionToData(subscription)
+    const result = transformStripeSubscriptionToData(ctx, subscription)
 
     expect(result).toBeNull()
-    expect(warnSpy).toHaveBeenCalledWith(
+    expect(ctx.warn).toHaveBeenCalledWith(
       'Stripe subscription missing required metadata, ignoring update',
       expect.objectContaining({
         subscriptionId: 'sub_missing',
         missingFields: expect.arrayContaining(['accountUuid', 'workspaceUuid', 'subscriptionType', 'subscriptionPlan'])
       })
     )
-
-    warnSpy.mockRestore()
   })
 
   test('returns null when subscription status maps to an irrelevant state', () => {
@@ -182,7 +189,8 @@ describe('Stripe utils - transformStripeSubscriptionToData', () => {
       metadata: {
         workspaceUuid: 'ws-123',
         subscriptionType: 'common',
-        subscriptionPlan: 'pro'
+        subscriptionPlan: 'pro',
+        accountUuid: 'acc-123'
       },
       customer: 'cus_123' as any,
       items: {
@@ -202,8 +210,12 @@ describe('Stripe utils - transformStripeSubscriptionToData', () => {
       latest_invoice: 'in_123' as any
     } as any
 
-    const result = transformStripeSubscriptionToData(subscription)
+    const result = transformStripeSubscriptionToData(ctx, subscription)
 
     expect(result).toBeNull()
+    expect(ctx.warn).toHaveBeenCalledWith(
+      'Stripe subscription status is missing',
+      expect.objectContaining({ subscriptionId: 'sub_incomplete', status: 'incomplete' })
+    )
   })
 })

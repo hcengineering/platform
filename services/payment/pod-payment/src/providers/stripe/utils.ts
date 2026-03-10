@@ -43,12 +43,26 @@ function mapStripeStatus (stripeStatus: Stripe.Subscription.Status): Subscriptio
  * Extracts metadata and maps status
  * Returns null if subscription is in an irrelevant state
  */
-export function transformStripeSubscriptionToData (subscription: Stripe.Subscription): SubscriptionData | null {
+export function transformStripeSubscriptionToData (
+  ctx: MeasureContext,
+  subscription: Stripe.Subscription
+): SubscriptionData | null {
   const metadata = subscription.metadata ?? {}
   const workspaceUuid = metadata.workspaceUuid as WorkspaceUuid | undefined
-  let accountUuid: AccountUuid | undefined
   const subscriptionType = metadata.subscriptionType as SubscriptionType | undefined
   const subscriptionPlan = metadata.subscriptionPlan as string | undefined
+
+  // accountUuid is set in subscription_data.metadata when creating checkout; prefer subscription.metadata
+  let accountUuid: AccountUuid | undefined = metadata.accountUuid as AccountUuid | undefined
+  if (
+    accountUuid === undefined &&
+    typeof subscription.customer !== 'string' &&
+    subscription.customer !== null &&
+    subscription.customer.deleted !== true
+  ) {
+    // Fallback when customer is expanded and metadata has been stored there
+    accountUuid = subscription.customer.metadata?.accountUuid as AccountUuid | undefined
+  }
 
   // For Stripe, customer can be a string ID or expanded Customer object
   let customerId: string | undefined
@@ -57,11 +71,6 @@ export function transformStripeSubscriptionToData (subscription: Stripe.Subscrip
   } else if (subscription.customer !== null && subscription.customer.deleted !== true) {
     // subscription.customer is Customer (not DeletedCustomer)
     customerId = subscription.customer.id
-    accountUuid = subscription.customer.id as AccountUuid
-    // Try to get accountUuid from customer metadata if not in subscription metadata
-    if (subscription.customer.metadata?.accountUuid !== undefined) {
-      accountUuid = subscription.customer.metadata.accountUuid as AccountUuid
-    }
   }
 
   if (
@@ -76,7 +85,7 @@ export function transformStripeSubscriptionToData (subscription: Stripe.Subscrip
     if (subscriptionType === undefined) missing.push('subscriptionType')
     if (subscriptionPlan === undefined) missing.push('subscriptionPlan')
 
-    console.warn('Stripe subscription missing required metadata, ignoring update', {
+    ctx.warn('Stripe subscription missing required metadata, ignoring update', {
       subscriptionId: subscription.id,
       status: subscription.status,
       missingFields: missing
@@ -94,7 +103,7 @@ export function transformStripeSubscriptionToData (subscription: Stripe.Subscrip
 
   if (status === null) {
     // Ignore updates for subscriptions in irrelevant states
-    console.warn('Stripe subscription status is missing', {
+    ctx.warn('Stripe subscription status is missing', {
       subscriptionId: subscription.id,
       status: subscription.status
     })
