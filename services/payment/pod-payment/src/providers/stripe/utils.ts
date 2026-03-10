@@ -46,7 +46,10 @@ function mapStripeStatus (stripeStatus: Stripe.Subscription.Status): Subscriptio
  * Extracts metadata and maps status
  * Returns null if subscription is in an irrelevant state
  */
-export function transformStripeSubscriptionToData (subscription: Stripe.Subscription): SubscriptionData | null {
+export function transformStripeSubscriptionToData (
+  ctx: MeasureContext,
+  subscription: Stripe.Subscription
+): SubscriptionData | null {
   const metadata = subscription.metadata ?? {}
   const workspaceUuid = metadata.workspaceUuid as WorkspaceUuid | undefined
   const subscriptionType = metadata.subscriptionType as SubscriptionType | undefined
@@ -83,7 +86,7 @@ export function transformStripeSubscriptionToData (subscription: Stripe.Subscrip
     if (subscriptionType === undefined) missing.push('subscriptionType')
     if (subscriptionPlan === undefined) missing.push('subscriptionPlan')
 
-    console.warn('Stripe subscription missing required metadata, ignoring update', {
+    ctx.warn('Stripe subscription missing required metadata, ignoring update', {
       subscriptionId: subscription.id,
       status: subscription.status,
       missingFields: missing
@@ -101,7 +104,7 @@ export function transformStripeSubscriptionToData (subscription: Stripe.Subscrip
 
   if (status === null) {
     // Ignore updates for subscriptions in irrelevant states
-    console.warn('Stripe subscription status is missing', {
+    ctx.warn('Stripe subscription status is missing', {
       subscriptionId: subscription.id,
       status: subscription.status
     })
