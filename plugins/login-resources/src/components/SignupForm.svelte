@@ -95,7 +95,9 @@
         status = loginStatus
 
         if (result != null) {
-          await logIn(result)
+          if (result.token != null) {
+            await logIn(result)
+          }
           goTo('confirmationSend')
         }
       }
