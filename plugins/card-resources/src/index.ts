@@ -35,7 +35,9 @@ import {
   getSpaceAccessPublicLink,
   canGetSpaceAccessPublicLink,
   cardFactory,
-  duplicateCard
+  duplicateCard,
+  checkChildrenSectionVisibility,
+  createChildAction
 } from './utils'
 import { formatCardValue } from './cardTableFormatter'
 import ManageMasterTagsContent from './components/settings/ManageMasterTagsContent.svelte'
@@ -157,7 +159,8 @@ export default async (): Promise<Resources> => ({
   actionImpl: {
     DeleteMasterTag: deleteMasterTag,
     DuplicateCard: duplicateCard,
-    EditSpace: editSpace
+    EditSpace: editSpace,
+    CreateChild: createChildAction
   },
   function: {
     CardTitleProvider: getCardTitle,
@@ -168,6 +171,7 @@ export default async (): Promise<Resources> => ({
     CheckRelationsSectionVisibility: checkRelationsSectionVisibility,
     CheckOldMessagesSectionVisibility: checkOldMessagesSectionVisibility,
     CheckCommunicationMessagesSectionVisibility: checkCommunicationMessagesSectionVisibility,
+    CheckChildrenSectionVisibility: checkChildrenSectionVisibility,
     GetSpaceAccessPublicLink: getSpaceAccessPublicLink,
     CanGetSpaceAccessPublicLink: canGetSpaceAccessPublicLink,
     CardFactory: cardFactory,

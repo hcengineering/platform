@@ -31,14 +31,16 @@ export default mergeIds(cardId, card, {
   actionImpl: {
     DeleteMasterTag: '' as ViewAction,
     DuplicateCard: '' as ViewAction,
-    EditSpace: '' as ViewAction
+    EditSpace: '' as ViewAction,
+    CreateChild: '' as ViewAction
   },
   action: {
     DeleteMasterTag: '' as Ref<Action>,
     SetParent: '' as Ref<Action<Doc, any>>,
     UnsetParent: '' as Ref<Action<Doc, any>>,
     PublicLink: '' as Ref<Action<Doc, any>>,
-    Duplicate: '' as Ref<Action>
+    Duplicate: '' as Ref<Action>,
+    CreateChild: '' as Ref<Action>
   },
   category: {
     Card: '' as Ref<ActionCategory>,

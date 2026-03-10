@@ -13,14 +13,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Analytics } from '@hcengineering/analytics'
-  import { Card, CardEvents, cardId } from '@hcengineering/card'
-  import { chatId } from '@hcengineering/chat'
-  import { Data, Doc, fillDefaults, MarkupBlobRef, WithLookup } from '@hcengineering/core'
-  import { translate } from '@hcengineering/platform'
-  import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ButtonIcon, getCurrentLocation, IconAdd, Label, navigate, resizeObserver, Section } from '@hcengineering/ui'
-  import view, { encodeObjectURI, Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
+  import { Card } from '@hcengineering/card'
+  import { Doc, WithLookup } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { ButtonIcon, IconAdd, Label, resizeObserver, Section } from '@hcengineering/ui'
+  import view, { Viewlet, ViewletPreference, ViewOptions } from '@hcengineering/view'
   import {
     List,
     ListSelectionProvider,
@@ -30,6 +27,7 @@
   } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
+  import { createChildCard } from '../utils'
 
   export let object: Card
   export let readonly: boolean = false
@@ -45,7 +43,7 @@
 
   const viewletId = card.viewlet.CardChildList
 
-  let list: List
+  let list: any
   const listProvider = new ListSelectionProvider(
     (offset: 1 | -1 | 0, of?: Doc, dir?: SelectDirection, noScroll?: boolean) => {
       if (dir === 'vertical') {
@@ -98,41 +96,7 @@
   let listWidth: number
 
   async function createCard (): Promise<void> {
-    const client = getClient()
-    const hierarchy = client.getHierarchy()
-    const title = await translate(card.string.Card, {})
-
-    const data: Data<Card> = {
-      parent: object._id,
-      title,
-      rank: '',
-      content: '' as MarkupBlobRef,
-      blobs: {},
-      parentInfo: [
-        ...(object.parentInfo ?? []),
-        {
-          _id: object._id,
-          _class: object._class,
-          title: object.title
-        }
-      ]
-    }
-
-    const filledData = fillDefaults(hierarchy, data, object._class)
-
-    const _id = await client.createDoc(object._class, object.space, filledData)
-
-    Analytics.handleEvent(CardEvents.CardCreated)
-
-    const loc = getCurrentLocation()
-    if (loc.path[2] === chatId) {
-      loc.path[3] = encodeObjectURI(_id, card.class.Card)
-    } else {
-      loc.path[2] = cardId
-      loc.path[3] = _id
-    }
-    loc.path.length = 4
-    navigate(loc)
+    await createChildCard(object)
   }
 
   const selection = listProvider.selection
