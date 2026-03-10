@@ -53,6 +53,85 @@ describe('StripeProvider', () => {
     jest.clearAllMocks()
   })
 
+  test('createSubscription removes trailing slash from frontUrl to avoid double slashes in URLs', async () => {
+    const frontUrlWithTrailingSlash = 'https://huly.app/'
+    const provider = new StripeProvider(
+      apiKey,
+      webhookSecret,
+      subscriptionPlans,
+      frontUrlWithTrailingSlash,
+      accountClient
+    )
+
+    const request = {
+      type: SubscriptionType.Tier,
+      plan: 'common',
+      customerEmail: 'user@example.test',
+      customerName: 'User'
+    } as any
+
+    const workspaceUuid = 'workspace-uuid' as any
+    const workspaceUrl = 'tup'
+    const accountUuid = 'account-uuid'
+
+    ;(getPlanKey as jest.Mock).mockReturnValue('common@tier')
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    stripeClient.createCheckout.mockResolvedValue({
+      checkoutId: 'cs_test_123',
+      url: 'https://stripe.test/checkout'
+    })
+
+    await provider.createSubscription(ctx, request, workspaceUuid, workspaceUrl, accountUuid)
+
+    const successUrl = (stripeClient.createCheckout as jest.Mock).mock.calls[0][1].successUrl
+    const cancelUrl = (stripeClient.createCheckout as jest.Mock).mock.calls[0][1].cancelUrl
+
+    expect(successUrl).toBe(
+      'https://huly.app/workbench/tup/setting/setting/billing/subscriptions?payment=success&checkout_id={CHECKOUT_SESSION_ID}'
+    )
+    expect(cancelUrl).toBe('https://huly.app/workbench/tup/setting/setting/billing/subscriptions?payment=canceled')
+    expect(successUrl).not.toContain('//workbench')
+    expect(cancelUrl).not.toContain('//workbench')
+  })
+
+  test('createSubscription strips multiple trailing slashes from frontUrl', async () => {
+    const frontUrlWithMultipleSlashes = 'https://huly.app///'
+    const provider = new StripeProvider(
+      apiKey,
+      webhookSecret,
+      subscriptionPlans,
+      frontUrlWithMultipleSlashes,
+      accountClient
+    )
+
+    const request = {
+      type: SubscriptionType.Tier,
+      plan: 'common',
+      customerEmail: 'user@example.test',
+      customerName: 'User'
+    } as any
+
+    const workspaceUuid = 'workspace-uuid' as any
+    const workspaceUrl = 'ws1'
+    const accountUuid = 'account-uuid'
+
+    ;(getPlanKey as jest.Mock).mockReturnValue('common@tier')
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    stripeClient.createCheckout.mockResolvedValue({
+      checkoutId: 'cs_test_123',
+      url: 'https://stripe.test/checkout'
+    })
+
+    await provider.createSubscription(ctx, request, workspaceUuid, workspaceUrl, accountUuid)
+
+    const successUrl = (stripeClient.createCheckout as jest.Mock).mock.calls[0][1].successUrl
+    expect(successUrl).toBe(
+      'https://huly.app/workbench/ws1/setting/setting/billing/subscriptions?payment=success&checkout_id={CHECKOUT_SESSION_ID}'
+    )
+  })
+
   test('createSubscription creates checkout with correct parameters', async () => {
     const provider = new StripeProvider(apiKey, webhookSecret, subscriptionPlans, frontUrl, accountClient)
 

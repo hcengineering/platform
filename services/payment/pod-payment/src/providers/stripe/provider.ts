@@ -72,7 +72,7 @@ export class StripeProvider implements PaymentProvider {
     this.stripe = new StripeClient(apiKey)
     this.webhookSecret = webhookSecret
     // TODO: support branding
-    this.frontUrl = frontUrl
+    this.frontUrl = frontUrl.replace(/\/+$/, '')
     this.subscriptionPlans = {}
     this.accountClient = accountClient
     const plans = subscriptionPlans.split(';')

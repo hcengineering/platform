@@ -70,7 +70,7 @@ export class PolarProvider implements PaymentProvider {
     this.polar = new PolarClient(accessToken, useSandbox)
     this.webhookSecret = webhookSecret
     // TODO: support branding
-    this.frontUrl = frontUrl
+    this.frontUrl = frontUrl.replace(/\/+$/, '')
     this.subscriptionPlans = {}
     this.accountClient = accountClient
     const plans = subscriptionPlans.split(';')
