@@ -61,7 +61,7 @@ export interface IssueStatus extends Status {}
 export interface Project extends TaskProject, IconProps {
   identifier: string // Project identifier
   sequence: number
-  defaultIssueStatus: Ref<IssueStatus>
+  defaultIssueStatus?: Ref<IssueStatus>
   defaultAssignee?: Ref<Employee>
   defaultTimeReportDay: TimeReportDayType
 }

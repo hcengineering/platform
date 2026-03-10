@@ -126,7 +126,7 @@ export class TProject extends TTaskProject implements Project {
     sequence!: number
 
   @Prop(TypeRef(tracker.class.IssueStatus), tracker.string.DefaultIssueStatus)
-    defaultIssueStatus!: Ref<IssueStatus>
+    defaultIssueStatus?: Ref<IssueStatus>
 
   @Prop(TypeRef(contact.mixin.Employee), tracker.string.DefaultAssignee)
     defaultAssignee!: Ref<Employee>
