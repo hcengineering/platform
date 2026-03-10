@@ -76,6 +76,7 @@ const handleRequest = async (
 
 export async function createServer (ctx: MeasureContext, config: Config): Promise<{ app: Express, close: () => void }> {
   const app = express()
+  app.set('trust proxy', true)
   app.use(cors())
 
   const childLogger = ctx.logger.childLogger?.('requests', { enableConsole: 'true' })
