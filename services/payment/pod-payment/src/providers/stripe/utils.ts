@@ -60,7 +60,6 @@ export function transformStripeSubscriptionToData (
     subscription.customer !== null &&
     subscription.customer.deleted !== true
   ) {
-    // Fallback when customer is expanded and metadata has been stored there
     accountUuid = subscription.customer.metadata?.accountUuid as AccountUuid | undefined
   }
 
@@ -69,7 +68,6 @@ export function transformStripeSubscriptionToData (
   if (typeof subscription.customer === 'string') {
     customerId = subscription.customer
   } else if (subscription.customer !== null && subscription.customer.deleted !== true) {
-    // subscription.customer is Customer (not DeletedCustomer)
     customerId = subscription.customer.id
   }
 

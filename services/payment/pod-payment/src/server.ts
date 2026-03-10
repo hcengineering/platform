@@ -76,6 +76,7 @@ const handleRequest = async (
 
 export async function createServer (ctx: MeasureContext, config: Config): Promise<{ app: Express, close: () => void }> {
   const app = express()
+  app.set('trust proxy', true)
   app.use(cors())
 
   const childLogger = ctx.logger.childLogger?.('requests', { enableConsole: 'true' })
@@ -411,6 +412,12 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
             return
           }
 
+          const accountUuid = subscription.accountUuid ?? req.token?.account
+          if (accountUuid == null) {
+            res.status(400).json({ error: 'Missing account, cannot update plan' })
+            return
+          }
+
           let updateResult: SubscriptionData | CheckoutResponse | null
 
           try {
@@ -419,7 +426,8 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
               ctx,
               subscription.providerSubscriptionId,
               plan,
-              loginInfo.workspaceUrl
+              loginInfo.workspaceUrl,
+              accountUuid
             )
           } catch (err) {
             ctx.error('Failed to update subscription at provider', { err })
