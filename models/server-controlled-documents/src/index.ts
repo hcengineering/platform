@@ -73,6 +73,15 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(
+    documents.notification.ReviewNotification,
+    notification.class.NotificationType,
+    serverNotification.mixin.TypeMatch,
+    {
+      func: serverDocuments.function.DocumentReviewedTypeMatch
+    }
+  )
+
+  builder.mixin(
     documents.notification.CoAuthorsNotification,
     notification.class.NotificationType,
     serverNotification.mixin.TypeMatch,
