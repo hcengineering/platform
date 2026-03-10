@@ -46,22 +46,26 @@ function mapStripeStatus (stripeStatus: Stripe.Subscription.Status): Subscriptio
 export function transformStripeSubscriptionToData (subscription: Stripe.Subscription): SubscriptionData | null {
   const metadata = subscription.metadata ?? {}
   const workspaceUuid = metadata.workspaceUuid as WorkspaceUuid | undefined
-  let accountUuid: AccountUuid | undefined
   const subscriptionType = metadata.subscriptionType as SubscriptionType | undefined
   const subscriptionPlan = metadata.subscriptionPlan as string | undefined
+
+  // accountUuid is set in subscription_data.metadata when creating checkout; prefer subscription.metadata
+  let accountUuid: AccountUuid | undefined = metadata.accountUuid as AccountUuid | undefined
+  if (
+    accountUuid === undefined &&
+    typeof subscription.customer !== 'string' &&
+    subscription.customer !== null &&
+    subscription.customer.deleted !== true
+  ) {
+    accountUuid = subscription.customer.metadata?.accountUuid as AccountUuid | undefined
+  }
 
   // For Stripe, customer can be a string ID or expanded Customer object
   let customerId: string | undefined
   if (typeof subscription.customer === 'string') {
     customerId = subscription.customer
   } else if (subscription.customer !== null && subscription.customer.deleted !== true) {
-    // subscription.customer is Customer (not DeletedCustomer)
     customerId = subscription.customer.id
-    accountUuid = subscription.customer.id as AccountUuid
-    // Try to get accountUuid from customer metadata if not in subscription metadata
-    if (subscription.customer.metadata?.accountUuid !== undefined) {
-      accountUuid = subscription.customer.metadata.accountUuid as AccountUuid
-    }
   }
 
   if (

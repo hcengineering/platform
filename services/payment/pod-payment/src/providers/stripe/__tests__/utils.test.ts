@@ -89,7 +89,8 @@ describe('Stripe utils - transformStripeSubscriptionToData', () => {
       metadata: {
         workspaceUuid: 'ws-123',
         subscriptionType: 'common',
-        subscriptionPlan: 'pro'
+        subscriptionPlan: 'pro',
+        accountUuid: 'acc-123'
       },
       customer: {
         id: 'cus_123',
@@ -126,7 +127,7 @@ describe('Stripe utils - transformStripeSubscriptionToData', () => {
       expect.objectContaining({
         id: 'stripe_sub_123',
         workspaceUuid: 'ws-123',
-        accountUuid: 'cus_123',
+        accountUuid: 'acc-123',
         providerSubscriptionId: 'sub_123',
         type: 'common',
         plan: 'pro',
@@ -182,7 +183,8 @@ describe('Stripe utils - transformStripeSubscriptionToData', () => {
       metadata: {
         workspaceUuid: 'ws-123',
         subscriptionType: 'common',
-        subscriptionPlan: 'pro'
+        subscriptionPlan: 'pro',
+        accountUuid: 'acc-123'
       },
       customer: 'cus_123' as any,
       items: {
