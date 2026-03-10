@@ -1,7 +1,7 @@
 import Stripe from 'stripe'
 import type { MeasureContext } from '@hcengineering/core'
 
-import { createSubscriptionEventFromInvoiceEvent } from '../utils'
+import { createSubscriptionEventFromInvoiceEvent, transformStripeSubscriptionToData } from '../utils'
 
 describe('Stripe utils - createSubscriptionEventFromInvoiceEvent', () => {
   const stripeApiKey = 'sk_test_123'
@@ -78,5 +78,132 @@ describe('Stripe utils - createSubscriptionEventFromInvoiceEvent', () => {
     expect(retrieveMock).toHaveBeenCalledWith('sub_1T8HuSLfExample')
     expect(result).not.toBeNull()
     expect(result?.data.object).toEqual(expect.objectContaining({ id: 'sub_1T8HuSLfExample', status: 'active' }))
+  })
+})
+
+describe('Stripe utils - transformStripeSubscriptionToData', () => {
+  test('returns SubscriptionData when all required metadata is present', () => {
+    const subscription: Stripe.Subscription = {
+      id: 'sub_123',
+      status: 'active',
+      metadata: {
+        workspaceUuid: 'ws-123',
+        subscriptionType: 'common',
+        subscriptionPlan: 'pro'
+      },
+      customer: {
+        id: 'cus_123',
+        deleted: false,
+        metadata: {}
+      } as any,
+      items: {
+        data: [
+          {
+            price: {
+              unit_amount: 9999
+            } as any
+          } as any
+        ]
+      } as any,
+      current_period_start: 1700000000,
+      current_period_end: 1700003600,
+      trial_end: null,
+      canceled_at: null,
+      created: 1700000000,
+      cancel_at_period_end: false,
+      cancellation_details: {
+        comment: null,
+        feedback: null,
+        reason: null
+      },
+      latest_invoice: 'in_123' as any
+    } as any
+
+    const result = transformStripeSubscriptionToData(subscription)
+
+    expect(result).not.toBeNull()
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'stripe_sub_123',
+        workspaceUuid: 'ws-123',
+        accountUuid: 'cus_123',
+        providerSubscriptionId: 'sub_123',
+        type: 'common',
+        plan: 'pro',
+        status: 'active',
+        amount: 9999
+      })
+    )
+  })
+
+  test('returns null and logs when required metadata is missing', () => {
+    const subscription: Stripe.Subscription = {
+      id: 'sub_missing',
+      status: 'active',
+      metadata: {},
+      customer: 'cus_999' as any,
+      items: {
+        data: []
+      } as any,
+      current_period_start: 1700000000,
+      current_period_end: 1700003600,
+      trial_end: null,
+      canceled_at: null,
+      created: 1700000000,
+      cancel_at_period_end: false,
+      cancellation_details: {
+        comment: null,
+        feedback: null,
+        reason: null
+      },
+      latest_invoice: 'in_999' as any
+    } as any
+
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const result = transformStripeSubscriptionToData(subscription)
+
+    expect(result).toBeNull()
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Stripe subscription missing required metadata, ignoring update',
+      expect.objectContaining({
+        subscriptionId: 'sub_missing',
+        missingFields: expect.arrayContaining(['accountUuid', 'workspaceUuid', 'subscriptionType', 'subscriptionPlan'])
+      })
+    )
+
+    warnSpy.mockRestore()
+  })
+
+  test('returns null when subscription status maps to an irrelevant state', () => {
+    const subscription: Stripe.Subscription = {
+      id: 'sub_incomplete',
+      status: 'incomplete',
+      metadata: {
+        workspaceUuid: 'ws-123',
+        subscriptionType: 'common',
+        subscriptionPlan: 'pro'
+      },
+      customer: 'cus_123' as any,
+      items: {
+        data: []
+      } as any,
+      current_period_start: 1700000000,
+      current_period_end: 1700003600,
+      trial_end: null,
+      canceled_at: null,
+      created: 1700000000,
+      cancel_at_period_end: false,
+      cancellation_details: {
+        comment: null,
+        feedback: null,
+        reason: null
+      },
+      latest_invoice: 'in_123' as any
+    } as any
+
+    const result = transformStripeSubscriptionToData(subscription)
+
+    expect(result).toBeNull()
   })
 })
