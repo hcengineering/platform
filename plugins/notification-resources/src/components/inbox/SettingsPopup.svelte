@@ -36,26 +36,31 @@
     if (key.code === 'ArrowUp') {
       key.stopPropagation()
       key.preventDefault()
-      list.select(selection - 1)
+      selectIndex(selection - 1)
       return true
     }
     if (key.code === 'ArrowDown') {
       key.stopPropagation()
       key.preventDefault()
-      list.select(selection + 1)
+      selectIndex(selection + 1)
       return true
     }
-    if (key.code === 'Enter') {
+    if (key.code === 'Home') {
+      key.stopPropagation()
+      key.preventDefault()
+      selectIndex(0)
+      return true
+    }
+    if (key.code === 'End') {
+      key.stopPropagation()
+      key.preventDefault()
+      selectIndex(items.length - 1)
+      return true
+    }
+    if (key.code === 'Enter' || key.code === 'Space') {
       key.preventDefault()
       key.stopPropagation()
-      items[selection]?.onToggle()
-      items = items.map((item, index) => {
-        if (index === selection) {
-          return { ...item, on: !item.on }
-        }
-
-        return item
-      })
+      toggleSelectedItem()
       return true
     }
     return false
@@ -66,16 +71,36 @@
   $: if (popupElement) {
     popupElement.focus()
   }
+
+  function selectIndex (index: number): void {
+    if (items.length === 0) return
+
+    list.select(Math.max(0, Math.min(index, items.length - 1)))
+  }
+
+  function toggleSelectedItem (): void {
+    const item = items[selection]
+    if (item === undefined) return
+
+    item.onToggle()
+    items = items.map((settingItem, index) => {
+      if (index === selection) {
+        return { ...settingItem, on: !settingItem.on }
+      }
+
+      return settingItem
+    })
+  }
 </script>
 
 <FocusHandler {manager} />
 
-<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class="selectPopup"
   bind:this={popupElement}
   tabindex="0"
+  role="dialog"
+  aria-label="Inbox settings"
   use:resizeObserver={() => {
     dispatch('changeContent')
   }}
