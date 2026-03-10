@@ -64,6 +64,7 @@ import CreateRolePopup from './components/settings/CreateRolePopup.svelte'
 import CardWidget from './components/CardWidget.svelte'
 import CreateSpace from './components/navigator/CreateSpace.svelte'
 import CardHeaderButton from './components/navigator/CardHeaderButton.svelte'
+import MyCards from './components/navigator/MyCards.svelte'
 
 // Card Sections
 import AttachmentsCardSection from './components/sections/AttachmentsSection.svelte'
@@ -134,7 +135,8 @@ export default async (): Promise<Resources> => ({
     CardFeedView,
     CreateSpace,
     CardHeaderButton,
-    CreateRolePopup
+    CreateRolePopup,
+    MyCards
   },
   sectionComponent: {
     AttachmentsSection: AttachmentsCardSection,

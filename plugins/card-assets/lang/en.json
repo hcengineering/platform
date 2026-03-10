@@ -72,6 +72,8 @@
     "Import": "Import",
     "Export": "Export",
     "CardUpdated": "Card updated",
-    "CardCreated": "Card created"
+    "CardCreated": "Card created",
+    "MyCards": "My cards",
+    "GotoMyCards": "Go to my cards"
   }
 }
