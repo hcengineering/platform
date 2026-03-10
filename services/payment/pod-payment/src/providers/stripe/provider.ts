@@ -115,7 +115,8 @@ export class StripeProvider implements PaymentProvider {
       metadata: {
         workspaceUuid,
         subscriptionType: request.type,
-        subscriptionPlan: request.plan
+        subscriptionPlan: request.plan,
+        accountUuid
       }
     })
 
@@ -142,6 +143,10 @@ export class StripeProvider implements PaymentProvider {
 
       // If checkout is not complete, no subscription yet
       if (checkout.status !== 'complete') {
+        ctx.info('Cannot get subscription by checkout: checkout is not complete', {
+          checkoutId,
+          status: checkout.status
+        })
         return null
       }
 
@@ -153,6 +158,7 @@ export class StripeProvider implements PaymentProvider {
         const subscriptionData = transformStripeSubscriptionToData(subscription)
 
         if (subscriptionData !== null) {
+          ctx.info('Found subscription by checkout: subscription ID', { checkoutId, subscriptionId })
           return subscriptionData
         }
       }
@@ -174,9 +180,15 @@ export class StripeProvider implements PaymentProvider {
 
         if (subscriptionData !== null) {
           return subscriptionData
+        } else {
+          ctx.error('Cannot get subscription by checkout: subscription is in irrelevant state', {
+            checkoutId,
+            subscriptionId: activeSubscriptions[0].id
+          })
         }
       }
 
+      ctx.error('Cannot get subscription by checkout: no subscriptions found', { checkoutId })
       return null
     } catch (err) {
       ctx.error('Failed to get subscription by checkout', { checkoutId, err })

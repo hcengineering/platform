@@ -17522,6 +17522,9 @@ importers:
       '@hcengineering/text-markdown':
         specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/text-markdown
+      '@hcengineering/time':
+        specifier: workspace:^0.7.0
+        version: link:../time
       '@hcengineering/ui':
         specifier: workspace:^0.7.0
         version: link:../../packages/ui
@@ -61380,7 +61383,7 @@ snapshots:
   node-loader@2.0.0(webpack@5.102.1):
     dependencies:
       loader-utils: 2.0.4
-      webpack: 5.102.1(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.102.1
 
   node-localstorage@2.2.1:
     dependencies:

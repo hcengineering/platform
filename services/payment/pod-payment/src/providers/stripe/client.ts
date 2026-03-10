@@ -34,6 +34,16 @@ export class StripeClient {
    */
   async createCheckout (ctx: MeasureContext, params: CreateCheckoutParams): Promise<CheckoutResult> {
     return await ctx.with('stripe-create-checkout', {}, async () => {
+      const subscriptionMetadata: Stripe.MetadataParam = {
+        workspaceUuid: params.metadata.workspaceUuid,
+        subscriptionType: params.metadata.subscriptionType,
+        subscriptionPlan: params.metadata.subscriptionPlan
+      }
+
+      if (params.metadata.accountUuid != null) {
+        subscriptionMetadata.accountUuid = params.metadata.accountUuid
+      }
+
       const sessionParams: Stripe.Checkout.SessionCreateParams = {
         mode: 'subscription',
         line_items: [
@@ -44,10 +54,9 @@ export class StripeClient {
         ],
         success_url: params.successUrl,
         cancel_url: params.cancelUrl ?? params.successUrl,
-        metadata: {
-          workspaceUuid: params.metadata.workspaceUuid,
-          subscriptionType: params.metadata.subscriptionType,
-          subscriptionPlan: params.metadata.subscriptionPlan
+        metadata: subscriptionMetadata,
+        subscription_data: {
+          metadata: subscriptionMetadata
         }
       }
 
@@ -55,16 +64,6 @@ export class StripeClient {
         sessionParams.customer = params.customerId
       } else if (params.customerEmail !== undefined) {
         sessionParams.customer_email = params.customerEmail
-      }
-
-      if (params.subscriptionId !== undefined) {
-        sessionParams.subscription_data = {
-          metadata: {
-            workspaceUuid: params.metadata.workspaceUuid,
-            subscriptionType: params.metadata.subscriptionType,
-            subscriptionPlan: params.metadata.subscriptionPlan
-          }
-        }
       }
 
       const session = await this.stripe.checkout.sessions.create(sessionParams)

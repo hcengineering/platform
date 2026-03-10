@@ -72,6 +72,8 @@
     "Import": "Importieren",
     "Export": "Exportieren",
     "CardUpdated": "Karte aktualisiert",
-    "CardCreated": "Karte erstellt"
+    "CardCreated": "Karte erstellt",
+    "MyCards": "Meine Karten",
+    "GotoMyCards": "Zu meinen Karten"
   }
 }

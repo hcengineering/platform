@@ -89,7 +89,8 @@ describe('StripeProvider', () => {
       metadata: {
         workspaceUuid,
         subscriptionType: request.type,
-        subscriptionPlan: request.plan
+        subscriptionPlan: request.plan,
+        accountUuid
       }
     })
 

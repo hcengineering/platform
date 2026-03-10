@@ -1224,6 +1224,28 @@ export function defineNotifications (builder: Builder): void {
     {
       hidden: false,
       generated: false,
+      allowedForAuthor: true,
+      label: documents.string.Review,
+      group: documents.notification.DocumentsNotificationGroup,
+      field: 'controlledState',
+      txClasses: [core.class.TxUpdateDoc],
+      objectClass: documents.class.ControlledDocument,
+      defaultEnabled: true,
+      templates: {
+        textTemplate: '{sender} marked {doc} as reviewed',
+        htmlTemplate: '<p>{sender} marked {doc} as reviewed</p>',
+        subjectTemplate: '{doc} reviewed'
+      }
+    },
+    documents.notification.ReviewNotification
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
       allowedForAuthor: false,
       label: documents.string.CoAuthors,
       group: documents.notification.DocumentsNotificationGroup,
@@ -1243,7 +1265,11 @@ export function defineNotifications (builder: Builder): void {
   builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
     provider: notification.providers.InboxNotificationProvider,
     ignoredTypes: [],
-    enabledTypes: [documents.notification.StateNotification, documents.notification.ContentNotification]
+    enabledTypes: [
+      documents.notification.StateNotification,
+      documents.notification.ContentNotification,
+      documents.notification.ReviewNotification
+    ]
   })
 
   generateClassNotificationTypes(

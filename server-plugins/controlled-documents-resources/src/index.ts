@@ -448,6 +448,21 @@ async function CoAuthorsTypeMatch (
   return false
 }
 
+async function DocumentReviewedTypeMatch (
+  originTx: TxCUD<ControlledDocument>,
+  _doc: Doc,
+  _person: Ref<Person>,
+  _socialIds: PersonId[],
+  _type: NotificationType,
+  _control: TriggerControl
+): Promise<boolean> {
+  if (originTx._class !== core.class.TxUpdateDoc) return false
+
+  const tx = originTx as TxUpdateDoc<ControlledDocument>
+
+  return tx.operations.controlledState === ControlledDocumentState.Reviewed
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   trigger: {
@@ -460,6 +475,7 @@ export default async () => ({
   function: {
     ControlledDocumentTextPresenter,
     ControlledDocumentHTMLPresenter,
-    CoAuthorsTypeMatch
+    CoAuthorsTypeMatch,
+    DocumentReviewedTypeMatch
   }
 })

@@ -72,6 +72,8 @@
     "Import": "Importovat",
     "Export": "Exportovat",
     "CardUpdated": "Karta aktualizována",
-    "CardCreated": "Karta vytvořena"
+    "CardCreated": "Karta vytvořena",
+    "MyCards": "Moje karty",
+    "GotoMyCards": "Přejít na moje karty"
   }
 }
