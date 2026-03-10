@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import card, { cardId } from '@hcengineering/card'
+import card, { type Card, cardId } from '@hcengineering/card'
 import { type Permission, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
@@ -60,7 +60,8 @@ export default mergeIds(cardId, card, {
   },
   function: {
     CardFactory: '' as Resource<(props?: Record<string, any>) => Promise<Ref<Doc> | undefined>>,
-    FormatCardMarkdownValue: '' as Resource<ValueFormatter>
+    FormatCardMarkdownValue: '' as Resource<ValueFormatter>,
+    CheckChildrenSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
   },
   permission: {
     CreateCard: '' as Ref<Permission>,

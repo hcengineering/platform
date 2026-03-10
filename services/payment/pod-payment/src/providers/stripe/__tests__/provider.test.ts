@@ -209,7 +209,7 @@ describe('StripeProvider', () => {
 
     stripeClient.getActiveSubscriptions.mockResolvedValue([stripeSubActive])
     accountClient.getSubscriptions.mockResolvedValue([ourSub])
-    ;(transformStripeSubscriptionToData as jest.Mock).mockImplementation((sub: Stripe.Subscription) => ({
+    ;(transformStripeSubscriptionToData as jest.Mock).mockImplementation((_ctx: any, sub: Stripe.Subscription) => ({
       id: sub.id,
       status: sub.status,
       providerData: {

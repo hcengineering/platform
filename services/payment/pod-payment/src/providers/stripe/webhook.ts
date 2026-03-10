@@ -116,7 +116,7 @@ async function handleSubscriptionUpdated (
     throw new Error('Missing subscription data')
   }
 
-  const subscriptionData = transformStripeSubscriptionToData(subscription)
+  const subscriptionData = transformStripeSubscriptionToData(ctx, subscription)
 
   if (subscriptionData === null) {
     ctx.warn('Ignoring subscription in irrelevant state', {

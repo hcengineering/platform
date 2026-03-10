@@ -128,7 +128,7 @@ export class StripeProvider implements PaymentProvider {
 
   async getSubscription (ctx: MeasureContext, subscriptionId: string): Promise<SubscriptionData | null> {
     const stripeSubscription = await this.stripe.getSubscription(ctx, subscriptionId)
-    const subscriptionData = transformStripeSubscriptionToData(stripeSubscription)
+    const subscriptionData = transformStripeSubscriptionToData(ctx, stripeSubscription)
 
     if (subscriptionData === null) {
       return null
@@ -155,7 +155,7 @@ export class StripeProvider implements PaymentProvider {
         const subscriptionId =
           typeof checkout.subscription === 'string' ? checkout.subscription : checkout.subscription.id
         const subscription = await this.stripe.getSubscription(ctx, subscriptionId)
-        const subscriptionData = transformStripeSubscriptionToData(subscription)
+        const subscriptionData = transformStripeSubscriptionToData(ctx, subscription)
 
         if (subscriptionData !== null) {
           ctx.info('Found subscription by checkout: subscription ID', { checkoutId, subscriptionId })
@@ -176,7 +176,7 @@ export class StripeProvider implements PaymentProvider {
       if (activeSubscriptions.length > 0) {
         // Sort by created date, most recent first
         activeSubscriptions.sort((a, b) => b.created - a.created)
-        const subscriptionData = transformStripeSubscriptionToData(activeSubscriptions[0])
+        const subscriptionData = transformStripeSubscriptionToData(ctx, activeSubscriptions[0])
 
         if (subscriptionData !== null) {
           return subscriptionData
@@ -213,7 +213,7 @@ export class StripeProvider implements PaymentProvider {
       let upsertCount = 0
       for (const stripeSub of stripeActiveSubscriptions) {
         try {
-          const subscriptionData = transformStripeSubscriptionToData(stripeSub)
+          const subscriptionData = transformStripeSubscriptionToData(ctx, stripeSub)
           if (subscriptionData === null) {
             continue
           }
@@ -241,7 +241,7 @@ export class StripeProvider implements PaymentProvider {
           try {
             // Fetch the current state from Stripe directly
             const currentState = await this.stripe.getSubscription(ctx, stripeSubId)
-            const subscriptionData = transformStripeSubscriptionToData(currentState)
+            const subscriptionData = transformStripeSubscriptionToData(ctx, currentState)
 
             // Update our database with current state (may have changed to canceled/ended)
             if (subscriptionData !== null) {
@@ -271,7 +271,7 @@ export class StripeProvider implements PaymentProvider {
 
   async cancelSubscription (ctx: MeasureContext, providerSubscriptionId: string): Promise<SubscriptionData> {
     const stripeSubscription = await this.stripe.cancelSubscription(ctx, providerSubscriptionId)
-    const subscriptionData = transformStripeSubscriptionToData(stripeSubscription)
+    const subscriptionData = transformStripeSubscriptionToData(ctx, stripeSubscription)
 
     if (subscriptionData == null) {
       throw new Error(`Failed to cancel subscription ${providerSubscriptionId}`)
@@ -282,7 +282,7 @@ export class StripeProvider implements PaymentProvider {
 
   async uncancelSubscription (ctx: MeasureContext, providerSubscriptionId: string): Promise<SubscriptionData> {
     const stripeSubscription = await this.stripe.uncancelSubscription(ctx, providerSubscriptionId)
-    const subscriptionData = transformStripeSubscriptionToData(stripeSubscription)
+    const subscriptionData = transformStripeSubscriptionToData(ctx, stripeSubscription)
     if (subscriptionData == null) {
       throw new Error(`Failed to uncancel subscription ${providerSubscriptionId}`)
     }
@@ -343,7 +343,7 @@ export class StripeProvider implements PaymentProvider {
     const updatedSub = await this.stripe.updateSubscription(ctx, subscriptionId, priceId)
 
     // Transform and return the updated subscription data
-    const subscriptionData = transformStripeSubscriptionToData(updatedSub)
+    const subscriptionData = transformStripeSubscriptionToData(ctx, updatedSub)
     return subscriptionData
   }
 

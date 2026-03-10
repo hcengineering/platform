@@ -13,8 +13,9 @@
 
 import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
-import communication from '@hcengineering/communication'
 import { type Card, CardEvents, cardId, type CardSpace, type MasterTag, type Tag } from '@hcengineering/card'
+import { chatId } from '@hcengineering/chat'
+import communication from '@hcengineering/communication'
 import core, {
   AccountRole,
   type Class,
@@ -559,6 +560,50 @@ export async function createCard (
   return _id
 }
 
+export async function createChildCard (object: Card): Promise<void> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const title = await translate(card.string.Card, {})
+
+  const data: Data<Card> = {
+    parent: object._id,
+    title,
+    rank: '',
+    content: '' as MarkupBlobRef,
+    blobs: {},
+    parentInfo: [
+      ...(object.parentInfo ?? []),
+      {
+        _id: object._id,
+        _class: object._class,
+        title: object.title
+      }
+    ]
+  }
+
+  const filledData = fillDefaults(hierarchy, data, object._class)
+
+  const _id = await client.createDoc(object._class, object.space, filledData)
+
+  Analytics.handleEvent(CardEvents.CardCreated)
+
+  const loc = getCurrentLocation()
+  if (loc.path[2] === chatId) {
+    loc.path[3] = encodeObjectURI(_id, card.class.Card)
+  } else {
+    loc.path[2] = cardId
+    loc.path[3] = _id
+  }
+  loc.path.length = 4
+  navigate(loc)
+}
+
+export async function createChildAction (doc: Card | Card[]): Promise<void> {
+  if (doc !== undefined && !Array.isArray(doc)) {
+    await createChildCard(doc)
+  }
+}
+
 export function getRootType (hierarchy: Hierarchy, type: Ref<MasterTag>): Ref<MasterTag> {
   const ancestors = hierarchy.getAncestors(type)
   const idx = ancestors.indexOf(card.class.Card)
@@ -619,6 +664,10 @@ export async function checkOldMessagesSectionVisibility (doc: Card): Promise<boo
 
 export async function checkCommunicationMessagesSectionVisibility (doc: Card): Promise<boolean> {
   return getMetadata(communication.metadata.Enabled) === true
+}
+
+export async function checkChildrenSectionVisibility (doc: Card): Promise<boolean> {
+  return (doc.children ?? 0) > 0
 }
 
 export async function checkRelationsSectionVisibility (doc: Card): Promise<boolean> {
