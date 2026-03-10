@@ -23,16 +23,19 @@ import type Stripe from 'stripe'
 function mapStripeStatus (stripeStatus: Stripe.Subscription.Status): SubscriptionStatus | null {
   switch (stripeStatus) {
     case 'active':
-      return 'active' as SubscriptionStatus
+      return SubscriptionStatus.Active
     case 'trialing':
-      return 'trialing' as SubscriptionStatus
+      return SubscriptionStatus.Trialing
     case 'past_due':
-      return 'past_due' as SubscriptionStatus
+      return SubscriptionStatus.PastDue
     case 'canceled':
+      return SubscriptionStatus.Canceled
+    case 'paused':
+      return SubscriptionStatus.Paused
+    // Stripe-only intermediate/error states we currently ignore
     case 'unpaid':
     case 'incomplete':
     case 'incomplete_expired':
-    case 'paused':
     default:
       return null
   }
