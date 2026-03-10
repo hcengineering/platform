@@ -61,7 +61,7 @@
   export async function save (parents: IssueParentInfo[], _id: Ref<Doc>) {
     if (project === undefined) return
     saved = true
-    const statuses = getTaskTypeStates(subIssues[0].kind, $taskTypeStore, $statusStore.byId)
+    const statuses = subIssues.length > 0 ? getTaskTypeStates(subIssues[0].kind, $taskTypeStore, $statusStore.byId) : []
     for (const subIssue of subIssues) {
       const incResult = await client.updateDoc(
         tracker.class.Project,
