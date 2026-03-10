@@ -14,10 +14,9 @@
  -->
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import core, { AttachedData, Doc, makeCollabId, Ref, SortingOrder } from '@hcengineering/core'
+  import core, { AttachedData, Doc, makeCollabId, Ref } from '@hcengineering/core'
   import { DraftController, draftsStore, getClient, deleteFile, createMarkup } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
-  import { makeRank } from '@hcengineering/task'
   import { isEmptyMarkup } from '@hcengineering/text'
   import { Component, Issue, IssueDraft, IssueParentInfo, Milestone, Project } from '@hcengineering/tracker'
   import { Button, ExpandCollapse, Scroller } from '@hcengineering/ui'
@@ -26,6 +25,10 @@
   import Collapsed from './icons/Collapsed.svelte'
   import Expanded from './icons/Expanded.svelte'
   import DraftIssueChildList from './templates/DraftIssueChildList.svelte'
+  import { taskTypeStore } from '@hcengineering/task-resources'
+  import { getTaskTypeStates } from '@hcengineering/task'
+  import { statusStore } from '@hcengineering/view-resources'
+
   export let projectId: Ref<Project>
   export let project: Project | undefined
   export let milestone: Ref<Milestone> | null = null
@@ -43,6 +46,7 @@
     }
   }
   $: onProjectChange(project)
+
   function onProjectChange (project: Project | undefined) {
     if (lastProject?._id === project?._id) return
     lastProject = project
@@ -57,6 +61,7 @@
   export async function save (parents: IssueParentInfo[], _id: Ref<Doc>) {
     if (project === undefined) return
     saved = true
+    const statuses = getTaskTypeStates(subIssues[0].kind, $taskTypeStore, $statusStore.byId)
     for (const subIssue of subIssues) {
       const incResult = await client.updateDoc(
         tracker.class.Project,
@@ -76,7 +81,7 @@
         component: subIssue.component,
         milestone: subIssue.milestone,
         number,
-        status: subIssue.status ?? project.defaultIssueStatus,
+        status: subIssue.status ?? project.defaultIssueStatus ?? statuses[0]?._id,
         priority: subIssue.priority,
         rank: '',
         comments: 0,
