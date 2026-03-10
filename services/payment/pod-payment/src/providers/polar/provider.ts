@@ -70,7 +70,7 @@ export class PolarProvider implements PaymentProvider {
     this.polar = new PolarClient(accessToken, useSandbox)
     this.webhookSecret = webhookSecret
     // TODO: support branding
-    this.frontUrl = frontUrl
+    this.frontUrl = frontUrl.replace(/\/+$/, '')
     this.subscriptionPlans = {}
     this.accountClient = accountClient
     const plans = subscriptionPlans.split(';')
@@ -279,7 +279,8 @@ export class PolarProvider implements PaymentProvider {
     ctx: MeasureContext,
     subscriptionId: string,
     newPlan: string,
-    workspaceUrl: string
+    workspaceUrl: string,
+    accountUuid: string
   ): Promise<SubscriptionData | CheckoutResponse | null> {
     // Get the current subscription to check if it's free
     const currentSub = await this.polar.getSubscription(ctx, subscriptionId)
@@ -307,13 +308,14 @@ export class PolarProvider implements PaymentProvider {
         successUrl,
         returnUrl,
         subscriptionId: currentSub.id,
-        externalCustomerId: currentSub.customerId,
+        externalCustomerId: accountUuid,
         customerEmail: currentSub.customer?.email ?? undefined,
         customerName: currentSub.customer?.name ?? undefined,
         metadata: {
           workspaceUuid: (currentSub.metadata?.workspaceUuid as string) ?? '',
           subscriptionType: SubscriptionType.Tier,
-          subscriptionPlan: newPlan
+          subscriptionPlan: newPlan,
+          accountUuid
         }
       })
 

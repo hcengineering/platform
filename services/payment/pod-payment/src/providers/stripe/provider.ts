@@ -72,7 +72,7 @@ export class StripeProvider implements PaymentProvider {
     this.stripe = new StripeClient(apiKey)
     this.webhookSecret = webhookSecret
     // TODO: support branding
-    this.frontUrl = frontUrl
+    this.frontUrl = frontUrl.replace(/\/+$/, '')
     this.subscriptionPlans = {}
     this.accountClient = accountClient
     const plans = subscriptionPlans.split(';')
@@ -294,7 +294,8 @@ export class StripeProvider implements PaymentProvider {
     ctx: MeasureContext,
     subscriptionId: string,
     newPlan: string,
-    workspaceUrl: string
+    workspaceUrl: string,
+    accountUuid: string
   ): Promise<SubscriptionData | CheckoutResponse | null> {
     // Get the current subscription to check if it's free
     const currentSub = await this.stripe.getSubscription(ctx, subscriptionId)
@@ -327,7 +328,8 @@ export class StripeProvider implements PaymentProvider {
         metadata: {
           workspaceUuid: metadata.workspaceUuid,
           subscriptionType: SubscriptionType.Tier,
-          subscriptionPlan: newPlan
+          subscriptionPlan: newPlan,
+          accountUuid
         }
       })
 
