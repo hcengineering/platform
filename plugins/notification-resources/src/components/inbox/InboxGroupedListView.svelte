@@ -110,14 +110,24 @@
     if (key.code === 'ArrowUp') {
       key.stopPropagation()
       key.preventDefault()
-      list.select(listSelection - 1)
+      selectIndex(listSelection - 1)
     }
     if (key.code === 'ArrowDown') {
       key.stopPropagation()
       key.preventDefault()
-      list.select(listSelection + 1)
+      selectIndex(listSelection + 1)
     }
-    if (key.code === 'Backspace') {
+    if (key.code === 'Home') {
+      key.stopPropagation()
+      key.preventDefault()
+      selectIndex(0)
+    }
+    if (key.code === 'End') {
+      key.stopPropagation()
+      key.preventDefault()
+      selectIndex(displayData.length - 1)
+    }
+    if (key.code === 'Backspace' || key.code === 'Delete') {
       key.preventDefault()
       key.stopPropagation()
 
@@ -141,11 +151,22 @@
     const contextId = displayData[index][0]
     return contextId ?? index.toString()
   }
+
+  function selectIndex (index: number): void {
+    if (displayData.length === 0) return
+
+    list.select(Math.max(0, Math.min(index, displayData.length - 1)))
+  }
 </script>
 
-<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="root" bind:this={element} tabindex="0" on:keydown={onKeydown}>
+<div
+  class="root"
+  bind:this={element}
+  tabindex="0"
+  role="listbox"
+  aria-label="Inbox notifications"
+  on:keydown={onKeydown}
+>
   <ListView
     bind:this={list}
     bind:selection={listSelection}
