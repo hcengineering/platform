@@ -18,7 +18,7 @@
   import { DraftController, draftsStore, getClient, deleteFile, createMarkup } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { isEmptyMarkup } from '@hcengineering/text'
-  import { Component, Issue, IssueDraft, IssueParentInfo, IssueStatus, Milestone, Project } from '@hcengineering/tracker'
+  import { Component, Issue, IssueDraft, IssueParentInfo, Milestone, Project } from '@hcengineering/tracker'
   import { Button, ExpandCollapse, Scroller } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
