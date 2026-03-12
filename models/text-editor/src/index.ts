@@ -247,6 +247,20 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: {
+      command: 'toggleHighlight'
+    },
+    icon: textEditor.icon.Highlight,
+    visibilityTester: textEditor.function.IsEditable,
+    isActive: {
+      name: 'highlight'
+    },
+    label: textEditor.string.Highlight,
+    category: 20,
+    index: 22
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
     action: textEditor.function.SetTextColor,
     icon: textEditor.icon.TextStyle,
     visibilityTester: textEditor.function.IsTextStylingEnabled,
