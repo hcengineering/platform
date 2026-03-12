@@ -67,7 +67,7 @@ function wrapWithMath (
   const charsAfter = to + dLen <= state.doc.content.size ? state.doc.textBetween(to, to + dLen) : ''
 
   if (charsBefore === delimiter && charsAfter === delimiter) {
-    if (dispatch) dispatch(state.tr.delete(to, to + dLen).delete(from - dLen, from))
+    if (dispatch !== undefined) dispatch(state.tr.delete(to, to + dLen).delete(from - dLen, from))
     return true
   }
 
@@ -78,11 +78,11 @@ function wrapWithMath (
     !text.startsWith(longerDelimiter) &&
     !text.endsWith(longerDelimiter)
   ) {
-    if (dispatch) dispatch(state.tr.delete(to - dLen, to).delete(from, from + dLen))
+    if (dispatch !== undefined) dispatch(state.tr.delete(to - dLen, to).delete(from, from + dLen))
     return true
   }
 
-  if (dispatch) dispatch(state.tr.insertText(delimiter, to).insertText(delimiter, from))
+  if (dispatch !== undefined) dispatch(state.tr.insertText(delimiter, to).insertText(delimiter, from))
   return true
 }
 
@@ -216,7 +216,6 @@ function createMathPlugin (
   })
 }
 
-
 function MathPastePlugin (): Plugin {
   const LATEX_RE = /\$\$?[^$]+\$\$?/
   return new Plugin({
@@ -227,7 +226,7 @@ function MathPastePlugin (): Plugin {
           if (clipboardData === null) return false
 
           const text = clipboardData.getData('text/plain')
-          if (!text || !LATEX_RE.test(text)) return false
+          if (text === '' || !LATEX_RE.test(text)) return false
 
           event.preventDefault()
           view.dispatch(view.state.tr.insertText(text))
@@ -245,42 +244,46 @@ const shouldRender = (_state: EditorState, _pos: number, node: Node): boolean =>
 export const MathematicsExtension = Mathematics.extend({
   addCommands () {
     return {
-      insertMathInline: () => ({ state, dispatch }) => {
-        const { selection } = state
-        const { from } = selection
+      insertMathInline:
+        () =>
+          ({ state, dispatch }) => {
+            const { selection } = state
+            const { from } = selection
 
-        if (selection.empty) {
-          const boundaries = findInlineMathBoundaries(state)
-          if (boundaries !== null) {
-            if (dispatch) {
-              dispatch(
-                state.tr
-                  .delete(boundaries.after, boundaries.after + 1)
-                  .delete(boundaries.before, boundaries.before + 1)
-              )
+            if (selection.empty) {
+              const boundaries = findInlineMathBoundaries(state)
+              if (boundaries !== null) {
+                if (dispatch !== undefined) {
+                  dispatch(
+                    state.tr
+                      .delete(boundaries.after, boundaries.after + 1)
+                      .delete(boundaries.before, boundaries.before + 1)
+                  )
+                }
+                return true
+              }
+              const tr = state.tr.insertText('$  $', from)
+              if (dispatch !== undefined) dispatch(tr.setSelection(TextSelection.create(tr.doc, from + 2)))
+              return true
             }
-            return true
+
+            return wrapWithMath(state, dispatch, '$')
+          },
+
+      insertMathBlock:
+        () =>
+          ({ state, dispatch }) => {
+            const { selection } = state
+            const { from } = selection
+
+            if (selection.empty) {
+              const tr = state.tr.insertText('$$  $$', from)
+              if (dispatch !== undefined) dispatch(tr.setSelection(TextSelection.create(tr.doc, from + 3)))
+              return true
+            }
+
+            return wrapWithMath(state, dispatch, '$$')
           }
-          const tr = state.tr.insertText('$  $', from)
-          if (dispatch) dispatch(tr.setSelection(TextSelection.create(tr.doc, from + 2)))
-          return true
-        }
-
-        return wrapWithMath(state, dispatch, '$')
-      },
-
-      insertMathBlock: () => ({ state, dispatch }) => {
-        const { selection } = state
-        const { from } = selection
-
-        if (selection.empty) {
-          const tr = state.tr.insertText('$$  $$', from)
-          if (dispatch) dispatch(tr.setSelection(TextSelection.create(tr.doc, from + 3)))
-          return true
-        }
-
-        return wrapWithMath(state, dispatch, '$$')
-      }
     }
   },
   addProseMirrorPlugins () {
