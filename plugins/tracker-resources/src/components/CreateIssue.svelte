@@ -165,13 +165,15 @@
       return
     }
 
+    const _parentIssue = parentIssue
     return {
       ...draft,
       ...(status != null ? { status } : {}),
       ...(priority != null ? { priority } : {}),
       ...(assignee != null ? { assignee } : {}),
       ...(component != null ? { component } : {}),
-      ...(milestone != null ? { milestone } : {})
+      ...(milestone != null ? { milestone } : {}),
+      ...(_parentIssue !== undefined ? { parentIssue: _parentIssue._id } : {})
     }
   }
 
