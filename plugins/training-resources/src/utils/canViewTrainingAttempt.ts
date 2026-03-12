@@ -19,6 +19,9 @@ import { get } from 'svelte/store'
 import { getCurrentEmployeeRef } from './getCurrentEmployeeRef'
 import training from '../plugin'
 
+/**
+ * User may view an attempt only if it is their own attempt or they have permission to view others' results.
+ */
 export function canViewTrainingAttempt (
   attempt: TrainingAttempt,
   request: TrainingRequest,
@@ -28,7 +31,7 @@ export function canViewTrainingAttempt (
   return (
     attempt.attachedTo === request._id &&
     request.attachedTo === trainingObject._id &&
-    (request.trainees.includes(currentEmployeeRef) ||
+    (attempt.owner === currentEmployeeRef ||
       checkMyPermission(training.permission.ViewSomeoneElsesTraineesResults, attempt.space, get(permissionsStore)) ||
       request.owner === currentEmployeeRef)
   )
