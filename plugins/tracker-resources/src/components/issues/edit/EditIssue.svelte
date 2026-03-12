@@ -47,6 +47,7 @@
 
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink, getIssueIdByIdentifier } from '../../../issues'
+  import { canEditIssue } from '../../../utils'
   import tracker from '../../../plugin'
   import IssueStatusActivity from '../IssueStatusActivity.svelte'
   import ControlPanel from './ControlPanel.svelte'
@@ -71,6 +72,18 @@
   let innerWidth: number
   let descriptionBox: AttachmentStyleBoxCollabEditor
   let showAllMixins: boolean
+
+  let effectiveReadonly = true
+  $: if (issue !== undefined) {
+    const currentIssue = issue
+    void canEditIssue(currentIssue).then((canEdit) => {
+      if (issue === currentIssue) {
+        effectiveReadonly = readonly || !canEdit
+      }
+    })
+  } else {
+    effectiveReadonly = readonly
+  }
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
 
@@ -198,7 +211,7 @@
   <Panel
     object={issue}
     isHeader={false}
-    withoutInput={readonly}
+    withoutInput={effectiveReadonly}
     allowClose={!embedded}
     isAside={true}
     isSub={false}
@@ -233,17 +246,17 @@
       {/if}
       <ComponentExtensions
         extension={tracker.extensions.EditIssueTitle}
-        props={{ size: 'medium', kind: 'ghost', space: issue.space, value: issue, readonly }}
+        props={{ size: 'medium', kind: 'ghost', space: issue.space, value: issue, readonly: effectiveReadonly }}
       />
     </svelte:fragment>
     <svelte:fragment slot="pre-utils">
       <ComponentExtensions
         extension={view.extensions.EditDocTitleExtension}
-        props={{ size: 'medium', kind: 'ghost', _id, _class, value: issue, readonly }}
+        props={{ size: 'medium', kind: 'ghost', _id, _class, value: issue, readonly: effectiveReadonly }}
       />
       <ComponentExtensions
         extension={tracker.extensions.EditIssueHeader}
-        props={{ size: 'medium', kind: 'ghost', space: issue.space, readonly, value: issue }}
+        props={{ size: 'medium', kind: 'ghost', space: issue.space, readonly: effectiveReadonly, value: issue }}
       />
       {#if saved}
         <Label label={presentation.string.Saved} />
@@ -251,7 +264,7 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
-      {#if !readonly}
+      {#if !effectiveReadonly}
         <Button
           icon={IconMoreH}
           iconProps={{ size: 'medium' }}
@@ -294,7 +307,7 @@
     {#if hasParentIssue}
       <div class="mb-6 flex-row-center">
         <SubIssueSelector {issue} />
-        {#if !readonly}
+        {#if !effectiveReadonly}
           <div class="ml-2">
             <Button
               icon={tracker.icon.UnsetParent}
@@ -313,7 +326,7 @@
     <EditBox
       focusIndex={1}
       bind:value={title}
-      disabled={readonly}
+      disabled={effectiveReadonly}
       placeholder={tracker.string.IssueTitlePlaceholder}
       kind="large-style"
       on:blur={save}
@@ -322,7 +335,7 @@
       <AttachmentStyleBoxCollabEditor
         focusIndex={30}
         object={issue}
-        {readonly}
+        readonly={effectiveReadonly}
         key={{ key: 'description', attr: descriptionKey }}
         bind:this={descriptionBox}
         identifier={issue?.identifier}
@@ -339,11 +352,14 @@
       {/key}
     </div>
 
-    <RelationsEditor object={issue} {readonly} />
+    <RelationsEditor object={issue} readonly={effectiveReadonly} />
 
     {#if editorFooter}
       <div class="step-tb-6">
-        <Component is={editorFooter.footer} props={{ object: issue, _class, ...editorFooter.props, readonly }} />
+        <Component
+          is={editorFooter.footer}
+          props={{ object: issue, _class, ...editorFooter.props, readonly: effectiveReadonly }}
+        />
       </div>
     {/if}
 
@@ -354,7 +370,7 @@
     <svelte:fragment slot="custom-attributes">
       {#if issue !== undefined}
         <div class="space-divider" />
-        <ControlPanel {issue} {showAllMixins} {readonly} />
+        <ControlPanel {issue} {showAllMixins} readonly={effectiveReadonly} />
       {/if}
 
       <div class="popupPanel-body__aside-grid">
