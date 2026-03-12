@@ -29,6 +29,7 @@ import textEditor, { type ActionContext, type ExtensionCreator, type TextEditorM
 import { type AnyExtension, Extension } from '@tiptap/core'
 import TableHeader from '@tiptap/extension-table-header'
 import 'prosemirror-codemark/dist/codemark.css'
+import 'katex/dist/katex.min.css'
 
 import Collaboration from '@tiptap/extension-collaboration'
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
@@ -67,6 +68,7 @@ import { ToolbarExtension } from '../components/extension/toolbar/toolbar'
 import { ListKeymapExtension } from '../components/extension/shortcuts/listKeymap'
 import { I18nPlaceholderExtension } from '../components/extension/i18nPlaceholder'
 import { EditorContextExtension } from '../components/extension/editorContext'
+import { MathematicsExtension } from '../components/extension/mathematics'
 
 export interface EditorKitContext {
   mode?: 'full' | 'compact'
@@ -101,6 +103,7 @@ const StaticEditorKit = extensionKit(
       file: e(FileExtension, { inline: true }),
       image: e(ImageExtension),
       emoji: e(EmojiExtension),
+      mathematics: e(MathematicsExtension, context.mode === 'full'),
       drawingBoard: e(DrawingBoardExtension),
       embed: e(
         EmbedNode,

@@ -289,6 +289,30 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: {
+      command: 'insertMathInline'
+    },
+    icon: textEditor.icon.Mathematics,
+    visibilityTester: textEditor.function.IsEditable,
+    isActive: textEditor.function.IsMathInlineActive,
+    label: textEditor.string.Mathematics,
+    category: 60,
+    index: 15
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: {
+      command: 'insertMathBlock'
+    },
+    icon: textEditor.icon.MathematicsBlock,
+    visibilityTester: textEditor.function.IsEditable,
+    isActive: textEditor.function.IsMathBlockActive,
+    label: textEditor.string.MathematicsBlock,
+    category: 60,
+    index: 20
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
     action: textEditor.function.SetTextColor,
     icon: textEditor.icon.TextStyle,
     visibilityTester: textEditor.function.IsTextStylingEnabled,

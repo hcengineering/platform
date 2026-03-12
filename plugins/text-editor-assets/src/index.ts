@@ -49,6 +49,8 @@ loadMetadata(textEditor.icon, {
   Highlight: `${icons}#highlight`,
   Subscript: `${icons}#subscript`,
   Superscript: `${icons}#superscript`,
+  Mathematics: `${icons}#mathematics`,
+  MathematicsBlock: `${icons}#mathematicsBlock`,
   TextStyle: `${icons}#textStyle`,
   LinkPreview: `${icons}#link`,
   Refresh: `${icons}#refresh`,
