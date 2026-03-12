@@ -1547,7 +1547,7 @@ export async function loginOrSignUpWithProvider (
         return null
       }
 
-      personUuid = await db.person.insertOne({ firstName: first, lastName: last })
+      personUuid = await db.person.insertOne({ firstName: first, lastName: last ?? '' })
     }
 
     if (personUuid == null) {
