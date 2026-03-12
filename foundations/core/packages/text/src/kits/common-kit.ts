@@ -23,6 +23,8 @@ import {
   Heading,
   Highlight,
   History,
+  Subscript,
+  Superscript,
   HorizontalRule,
   Italic,
   Link,
@@ -68,6 +70,8 @@ export const CommonKitFactory = (e: ExtensionFactory) =>
     heading: e(Heading),
     underline: e(Underline),
     highlight: e(Highlight, { multicolor: false }),
+    subscript: e(Subscript),
+    superscript: e(Superscript),
     blockquote: e(Blockquote, { HTMLAttributes: { class: 'proseBlockQuote' } }),
     link: e(Link.extend({ inclusive: false }), {
       openOnClick: false,

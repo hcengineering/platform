@@ -30,6 +30,8 @@
     "Mention": "Mention",
     "Underlined": "Underlined",
     "Highlight": "Highlight",
+    "Subscript": "Subscript",
+    "Superscript": "Superscript",
     "AlignCenter": "Align center",
     "AlignLeft": "Align left",
     "AlignRight": "Align right",
