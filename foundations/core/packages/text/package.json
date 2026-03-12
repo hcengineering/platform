@@ -80,7 +80,7 @@
     "prosemirror-codemark": "^0.4.2",
     "fast-equals": "^5.2.2",
     "@tiptap/extension-text-align": "~2.11.0",
-    "@tiptap/extension-text-style": "~2.11.0"
+    "@tiptap/extension-text-style": "~2.11.0",
   },
   "repository": {
     "type": "git",

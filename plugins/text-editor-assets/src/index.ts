@@ -46,6 +46,7 @@ loadMetadata(textEditor.icon, {
   MergeCells: `${icons}#union`,
   SplitCells: `${icons}#divide`,
   Brush: `${icons}#brush`,
+  Highlight: `${icons}#highlight`,
   TextStyle: `${icons}#textStyle`,
   LinkPreview: `${icons}#link`,
   Refresh: `${icons}#refresh`,

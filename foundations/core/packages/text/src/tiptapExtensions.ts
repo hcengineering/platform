@@ -35,6 +35,7 @@ export { ListItem, type ListItemOptions } from '@tiptap/extension-list-item'
 export { OrderedList, type OrderedListOptions } from '@tiptap/extension-ordered-list'
 export { TextAlign, type TextAlignOptions } from '@tiptap/extension-text-align'
 export { TaskList, type TaskListOptions } from '@tiptap/extension-task-list'
+export { Highlight, type HighlightOptions } from '@tiptap/extension-highlight'
 
 export { Table, type TableOptions } from '@tiptap/extension-table'
 export { TableCell, type TableCellOptions } from '@tiptap/extension-table-cell'

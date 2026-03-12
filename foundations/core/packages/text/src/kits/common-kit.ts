@@ -21,6 +21,7 @@ import {
   Dropcursor,
   Gapcursor,
   Heading,
+  Highlight,
   History,
   HorizontalRule,
   Italic,
@@ -66,6 +67,7 @@ export const CommonKitFactory = (e: ExtensionFactory) =>
     horizontalRule: e(HorizontalRule),
     heading: e(Heading),
     underline: e(Underline),
+    highlight: e(Highlight, { multicolor: false }),
     blockquote: e(Blockquote, { HTMLAttributes: { class: 'proseBlockQuote' } }),
     link: e(Link.extend({ inclusive: false }), {
       openOnClick: false,
