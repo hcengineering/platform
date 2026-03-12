@@ -47,6 +47,8 @@ loadMetadata(textEditor.icon, {
   SplitCells: `${icons}#divide`,
   Brush: `${icons}#brush`,
   Highlight: `${icons}#highlight`,
+  Subscript: `${icons}#subscript`,
+  Superscript: `${icons}#superscript`,
   TextStyle: `${icons}#textStyle`,
   LinkPreview: `${icons}#link`,
   Refresh: `${icons}#refresh`,

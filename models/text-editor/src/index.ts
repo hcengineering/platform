@@ -261,6 +261,34 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: {
+      command: 'toggleSubscript'
+    },
+    icon: textEditor.icon.Subscript,
+    visibilityTester: textEditor.function.IsEditable,
+    isActive: {
+      name: 'subscript'
+    },
+    label: textEditor.string.Subscript,
+    category: 20,
+    index: 28
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: {
+      command: 'toggleSuperscript'
+    },
+    icon: textEditor.icon.Superscript,
+    visibilityTester: textEditor.function.IsEditable,
+    isActive: {
+      name: 'superscript'
+    },
+    label: textEditor.string.Superscript,
+    category: 20,
+    index: 30
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
     action: textEditor.function.SetTextColor,
     icon: textEditor.icon.TextStyle,
     visibilityTester: textEditor.function.IsTextStylingEnabled,
