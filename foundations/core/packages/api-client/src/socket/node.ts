@@ -51,8 +51,13 @@ export const NodeWebSocketFactory: ClientSocketFactory = (url: string): ClientSo
 
   ws.on('message', (data: WebSocketData) => {
     if (client.onmessage != null) {
+      let eventData: string | ArrayBuffer | SharedArrayBuffer = data as any
+      if (typeof Buffer !== 'undefined' && data instanceof Buffer) {
+        eventData = new Uint8Array(data).buffer
+      }
+
       const event = {
-        data,
+        data: eventData,
         type: 'message',
         target: this
       } as unknown as MessageEvent
