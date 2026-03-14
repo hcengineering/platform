@@ -13,11 +13,14 @@
 // limitations under the License.
 //
 
+import { getResource } from '@hcengineering/platform'
 import { showPopup } from '@hcengineering/ui'
+import viewPlugin from '@hcengineering/view'
 import { Extension } from '@tiptap/core'
 import { type MarkType } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import LinkPopup from '../../LinkPopup.svelte'
+import { parseReferenceUrl } from '../reference'
 
 export const LinkKeymapExtension = Extension.create<any>({
   name: 'linkUtils',
@@ -60,7 +63,17 @@ export function LinkClickHandlerPlugin (options: LinkClickHandlerPluginOptions):
         const $pos = view.state.doc.resolve(pos)
         const link = options.type.isInSet($pos.marks())
         if (typeof link?.attrs.href === 'string') {
-          window.open(link.attrs.href, link.attrs.target)
+          const href = link.attrs.href
+          if (href.startsWith('ref://')) {
+            const ref = parseReferenceUrl(href)
+            if (ref !== undefined) {
+              void getResource(viewPlugin.function.OpenDocument).then((openDoc) => {
+                void openDoc?.(ref.objectclass, ref.id)
+              })
+              return true
+            }
+          }
+          window.open(href, link.attrs.target)
           return true
         }
 
