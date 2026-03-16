@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Doc, Hierarchy, Ref, PersonId } from '@hcengineering/core'
+import core, { type Class, type Client, type Doc, type Hierarchy, type Ref, type PersonId } from '@hcengineering/core'
 import { getCurrentLanguage } from '@hcengineering/theme'
 import type {
   AttributeModel,
@@ -30,6 +30,74 @@ import { generateHeaders, loadViewletConfig, buildTableModel } from '../model'
 import { rebuildRelationshipTableViewModel, isRelationshipTable } from '../data'
 import { escapeMarkdownLinkText } from './escape'
 import { createMarkdownLink } from './link'
+
+async function preloadRefLookups (
+  docs: Doc[],
+  model: AttributeModel[],
+  hierarchy: Hierarchy,
+  client: Client
+): Promise<void> {
+  const refAttrs = model.filter((attr) => {
+    const a = attr.attribute as any
+    if (a?.type === undefined || a.type === null) return false
+    const t = a.type
+    if (t._class === core.class.RefTo) return true
+    if (t._class === core.class.ArrOf && t.of?._class === core.class.RefTo) return true
+    return false
+  })
+
+  if (refAttrs.length === 0) return
+
+  for (const attr of refAttrs) {
+    const a = attr.attribute as any
+    const t = a.type
+    const isArray = t._class === core.class.ArrOf
+    const refType = isArray ? t.of : t
+    const targetClass = refType.to as Ref<Class<Doc>>
+
+    const idSet = new Set<string>()
+    for (const doc of docs) {
+      const raw = getAttributeValue(attr, doc, hierarchy)
+      if (raw === undefined || raw === null) continue
+      if (Array.isArray(raw)) {
+        for (const v of raw) {
+          if (typeof v === 'string' && v.trim() !== '') idSet.add(v)
+        }
+      } else if (typeof raw === 'string' && raw.trim() !== '') {
+        idSet.add(raw)
+      }
+    }
+
+    if (idSet.size === 0) continue
+
+    const ids = Array.from(idSet)
+    const refDocs = await client.findAll(targetClass, { _id: { $in: ids as any } })
+    const byId = new Map<string, Doc>()
+    for (const d of refDocs) {
+      byId.set(d._id as string, d)
+    }
+
+    for (const doc of docs) {
+      const raw = getAttributeValue(attr, doc, hierarchy)
+      if (raw === undefined || raw === null) continue
+      const cardWithLookup = doc as any
+      cardWithLookup.$lookup ??= {}
+      if (isArray && Array.isArray(raw)) {
+        const resolved = raw
+          .map((v: any) => (typeof v === 'string' ? byId.get(v) : undefined))
+          .filter((v): v is Doc => v !== undefined)
+        if (resolved.length > 0) {
+          cardWithLookup.$lookup[a.name] = resolved
+        }
+      } else if (!isArray && typeof raw === 'string') {
+        const resolved = byId.get(raw)
+        if (resolved !== undefined) {
+          cardWithLookup.$lookup[a.name] = resolved
+        }
+      }
+    }
+  }
+}
 
 async function buildRelationshipTablePropsFromMetadata (
   docs: Doc[],
@@ -156,6 +224,9 @@ export async function buildMarkdownTableFromDocs (
     return ''
   }
 
+  // Preload referenced documents for RefTo / ArrOf<RefTo> attributes into $lookup
+  await preloadRefLookups(docs, displayableModel, hierarchy, client)
+
   const language = getCurrentLanguage()
   const userCache = new Map<PersonId, string>()
   const firstDocClass = docs.length > 0 ? docs[0]._class : props.cardClass
@@ -182,7 +253,10 @@ export async function buildMarkdownTableFromDocs (
         const linkValue = await createMarkdownLink(hierarchy, card, value)
         row.push(linkValue)
       } else {
-        row.push(escapeMarkdownLinkText(value))
+        // If formatter already returned a markdown link, do not escape it again.
+        const looksLikeMarkdownLink =
+          typeof value === 'string' && value.startsWith('[') && value.includes('](') && value.endsWith(')')
+        row.push(looksLikeMarkdownLink ? value : escapeMarkdownLinkText(value))
       }
     }
     rows.push(row)
