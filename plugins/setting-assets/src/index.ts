@@ -35,5 +35,6 @@ loadMetadata(setting.icon, {
   Views: `${icons}#views`,
   Relations: `${icons}#relation`,
   Mailbox: `${icons}#mailbox`,
-  OfficeSettings: `${icons}#office`
+  OfficeSettings: `${icons}#office`,
+  Reset: `${icons}#reset`
 })

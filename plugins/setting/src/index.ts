@@ -356,7 +356,8 @@ export default plugin(settingId, {
     Views: '' as Asset,
     Relations: '' as Asset,
     Mailbox: '' as Asset,
-    OfficeSettings: '' as Asset
+    OfficeSettings: '' as Asset,
+    Reset: '' as Asset
   },
   templateFieldCategory: {
     Integration: '' as Ref<TemplateFieldCategory>
