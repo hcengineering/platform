@@ -88,7 +88,16 @@ async function createClient (
   config: ServerConfig,
   options: ConnectOptions
 ): Promise<PlatformClient> {
-  addLocation(clientId, () => import(/* webpackChunkName: "client" */ '@hcengineering/client-resources'))
+  addLocation(clientId, () => {
+    // In Node/Jest environments, dynamic import callbacks can fail without
+    // --experimental-vm-modules. Use require there and keep dynamic import
+    // for browser/bundler environments.
+    if (typeof window === 'undefined') {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      return Promise.resolve(require('@hcengineering/client-resources'))
+    }
+    return import(/* webpackChunkName: "client" */ '@hcengineering/client-resources')
+  })
 
   const { socketFactory, connectionTimeout } = options
 
