@@ -13,12 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  type Class,
-  type Doc,
-  type Hierarchy,
-  type Ref
-} from '@hcengineering/core'
+import { type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
 import { translate, type IntlString } from '@hcengineering/platform'
 import cardPlugin, { type Card, type CardSpace } from '@hcengineering/card'
 import { type AttributeModel } from '@hcengineering/view'
