@@ -28402,6 +28402,12 @@ importers:
       '@tiptap/extension-placeholder':
         specifier: ^2.11.7
         version: 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
+      '@tiptap/extension-subscript':
+        specifier: ^2.11.7
+        version: 2.27.2(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-superscript':
+        specifier: ^2.11.7
+        version: 2.27.2(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
       '@tiptap/extension-table':
         specifier: ^2.11.7
         version: 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
@@ -39077,6 +39083,12 @@ importers:
       '@tiptap/extension-placeholder':
         specifier: ^2.11.7
         version: 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
+      '@tiptap/extension-subscript':
+        specifier: ^2.11.7
+        version: 2.27.2(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-superscript':
+        specifier: ^2.11.7
+        version: 2.27.2(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
       '@tiptap/extension-table':
         specifier: ^2.11.7
         version: 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
