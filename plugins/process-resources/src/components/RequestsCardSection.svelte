@@ -27,13 +27,9 @@
 
   $: {
     if (doc) {
-      query.query(
-        process.class.ApproveRequest,
-        { card: doc._id },
-        (res) => {
-          hasRequests = res.length > 0
-        }
-      )
+      query.query(process.class.ApproveRequest, { card: doc._id }, (res) => {
+        hasRequests = res.length > 0
+      })
     } else {
       query.unsubscribe()
       hasRequests = false
