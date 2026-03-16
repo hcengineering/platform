@@ -977,10 +977,6 @@ jobs:
             echo "::error::NPM_TOKEN secret is not set. Add it in repository Settings > Secrets and variables > Actions."
             exit 1
           fi
-          if [ ! -f .npmrc ]; then
-            echo "registry=https://registry.npmjs.org/" > .npmrc
-            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
-          fi
           REF="${{ github.event.inputs.ref || github.ref }}"
           VERSION="${REF#refs/tags/v}"
           VERSION="${VERSION#v}"
