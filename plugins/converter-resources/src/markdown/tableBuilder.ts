@@ -254,7 +254,8 @@ export async function buildMarkdownTableFromDocs (
         row.push(linkValue)
       } else {
         // If formatter already returned a markdown link, do not escape it again.
-        const looksLikeMarkdownLink = /^\[.*\]\(.+\)$/.test(value)
+        const looksLikeMarkdownLink =
+          typeof value === 'string' && value.startsWith('[') && value.includes('](') && value.endsWith(')')
         row.push(looksLikeMarkdownLink ? value : escapeMarkdownLinkText(value))
       }
     }
