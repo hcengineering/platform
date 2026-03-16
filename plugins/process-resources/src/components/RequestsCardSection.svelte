@@ -14,14 +14,34 @@
 -->
 <script lang="ts">
   import { Card } from '@hcengineering/card'
+  import { createQuery } from '@hcengineering/presentation'
+  import process from '../plugin'
 
   import RequestsExtension from './RequestsExtension.svelte'
 
   export let doc: Card
   export let hidden: boolean = false
+
+  const query = createQuery()
+  let hasRequests = false
+
+  $: {
+    if (doc) {
+      query.query(
+        process.class.ApproveRequest,
+        { card: doc._id },
+        (res) => {
+          hasRequests = res.length > 0
+        }
+      )
+    } else {
+      query.unsubscribe()
+      hasRequests = false
+    }
+  }
 </script>
 
-{#if !hidden}
+{#if !hidden && hasRequests}
   <div class="requests__section">
     <RequestsExtension card={doc} on:loaded />
   </div>

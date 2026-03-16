@@ -375,7 +375,6 @@ export default plugin(processId, {
     EmptyArray: '' as Ref<ProcessFunction>,
     CurrentDate: '' as Ref<ProcessFunction>,
     ExportProcess: '' as Resource<ExportFunc>,
-    CheckProcessSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>,
-    CheckRequestsSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
+    CheckProcessSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
   }
 })

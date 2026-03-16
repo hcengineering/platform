@@ -101,7 +101,6 @@ import {
   approveRequestApproved,
   approveRequestRejected,
   checkProcessSectionVisibility,
-  checkRequestsSectionVisibility,
   continueExecution,
   eventCheck,
   fieldChangesCheck,
@@ -224,7 +223,6 @@ export default async (): Promise<Resources> => ({
     ImportProcess: importProcess,
     ShowDoneQuery: showDoneQuery,
     CheckProcessSectionVisibility: checkProcessSectionVisibility,
-    CheckRequestsSectionVisibility: checkRequestsSectionVisibility,
     // eslint-disable-next-line @typescript-eslint/unbound-method
     CreateMiddleware: ProcessMiddleware.create
   }
