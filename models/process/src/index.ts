@@ -734,7 +734,6 @@ export function createModel (builder: Builder): void {
     {
       label: process.string.ApproveRequest,
       component: process.component.RequestsCardSection,
-      checkVisibility: process.function.CheckRequestsSectionVisibility,
       order: 360,
       navigation: []
     },

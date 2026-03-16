@@ -659,10 +659,18 @@ export function cardCustomLinkEncode (doc: Card): Location {
 }
 
 export async function checkOldMessagesSectionVisibility (doc: Card): Promise<boolean> {
+  if (!hasAccountRole(getCurrentAccount(), AccountRole.User)) {
+    return false
+  }
+
   return getMetadata(communication.metadata.Enabled) !== true
 }
 
 export async function checkCommunicationMessagesSectionVisibility (doc: Card): Promise<boolean> {
+  if (!hasAccountRole(getCurrentAccount(), AccountRole.User)) {
+    return false
+  }
+
   return getMetadata(communication.metadata.Enabled) === true
 }
 
