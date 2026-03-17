@@ -34,6 +34,7 @@ import {
   DocumentAttributeKey,
   DateFormatOption
 } from './utils'
+import { createMarkdownLink } from '../markdown/link'
 import { loadPersonName } from '../data/personLoader'
 import type { ValueFormatter } from '../types'
 
@@ -251,14 +252,10 @@ export async function formatCustomAttributeValue (
     if (isRef && attribute !== undefined) {
       const cardWithLookup = card as any
       const lookupData = cardWithLookup.$lookup?.[attribute.name]
-      if (lookupData !== undefined && lookupData !== null) {
-        if (typeof lookupData === 'object' && 'title' in lookupData) {
-          const title = lookupData.title ?? ''
-          if (typeof title === 'string' && isIntlString(title)) {
-            return await translate(title as unknown as IntlString, {}, language)
-          }
-          return String(title)
-        }
+      if (lookupData !== undefined && lookupData !== null && typeof lookupData === 'object') {
+        const title = await extractObjectTitleOrName(lookupData as Doc, language)
+        const text = title !== '' ? title : value
+        return await createMarkdownLink(hierarchy, lookupData as Doc, text)
       }
     }
 
@@ -294,7 +291,9 @@ async function formatValueFallback (
     return ''
   }
 
-  const isCustomAttribute = attr.key === '' && typeof attr.label === 'string' && attr.label.startsWith('custom')
+  const isCustomAttribute =
+    (ctx.attribute as any)?.isCustom === true ||
+    (attr.key === '' && typeof attr.label === 'string' && attr.label.startsWith('custom'))
   if (isCustomAttribute) {
     return await formatCustomAttributeValue(value, ctx.attribute, card, hierarchy, language)
   }
@@ -334,15 +333,10 @@ async function formatValueFallback (
     const isRef = attrType?._class === core.class.RefTo
     if (isRef) {
       const lookupData = getLookupData(card, ctx.lookupKey, attribute?.name ?? '', attr.key)
-      if (lookupData !== undefined && lookupData !== null) {
-        const resolvedObj = lookupData
-        if (typeof resolvedObj === 'object' && resolvedObj !== null && 'title' in resolvedObj) {
-          const title = resolvedObj[DocumentAttributeKey.Title] ?? ''
-          if (typeof title === 'string' && isIntlString(title)) {
-            return await translate(title as unknown as IntlString, {}, language)
-          }
-          return String(title)
-        }
+      if (lookupData !== undefined && lookupData !== null && typeof lookupData === 'object') {
+        const title = await extractObjectTitleOrName(lookupData as Doc, language)
+        const text = title !== '' ? title : value
+        return await createMarkdownLink(hierarchy, lookupData as Doc, text)
       }
     }
 

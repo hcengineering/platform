@@ -877,9 +877,3 @@ export async function checkProcessSectionVisibility (doc: Card): Promise<boolean
   const processes = client.getModel().findAllSync(process.class.Process, { masterTag: { $in: anc } })
   return processes.length > 0
 }
-
-export async function checkRequestsSectionVisibility (doc: Card): Promise<boolean> {
-  const client = getClient()
-  const requests = await client.findOne(process.class.ApproveRequest, { card: doc._id })
-  return requests !== undefined
-}

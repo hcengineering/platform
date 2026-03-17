@@ -206,6 +206,7 @@
     "ApiToken": "API token",
     "GenerateApiToken": "Generate API token",
     "IdentifierExists": "Identifier already exists",
+    "Reset": "Reset",
     "Restricted": "Restricted",
     "RestrictedAttributeWarning": "Are you sure you want to restrict changing this attribute? This action will create permissions for this attribute and cannot be undone.",
     "PasswordAgingRule": "Password aging rule",

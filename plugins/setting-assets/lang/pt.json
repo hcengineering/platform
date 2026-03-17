@@ -209,6 +209,7 @@
     "ImportDocumentDescription": "Concede aos usuários a capacidade de importar documentos para o espaço de trabalho",
     "SelectUsers": "Selecionar usuários",
     "ShowInTitle": "Mostrar no título",
-    "SpaceMembersOnly": "Apenas membros do espaço"
+    "SpaceMembersOnly": "Apenas membros do espaço",
+    "Reset": "Reiniciar"
   }
 }
