@@ -157,6 +157,24 @@ export interface WorkspaceJoinInfo {
   invite?: WorkspaceInvite | null
 }
 
+/**
+ * Represents an API token record in the database.
+ * Timestamps are in milliseconds since Unix epoch.
+ *
+ * @public
+ */
+export interface ApiToken {
+  id: string
+  accountUuid: PersonUuid
+  name: string
+  workspaceUuid: WorkspaceUuid
+  /** Milliseconds since epoch */
+  createdOn: number
+  /** Milliseconds since epoch */
+  expiresOn: number
+  revoked: boolean
+}
+
 export interface Mailbox {
   accountUuid: PersonUuid
   mailbox: string
@@ -324,6 +342,7 @@ export interface AccountDB {
   userProfile: DbCollection<UserProfile>
   subscription: DbCollection<Subscription>
   workspacePermission: DbCollection<WorkspacePermission>
+  apiToken: DbCollection<ApiToken>
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
