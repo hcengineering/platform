@@ -15,6 +15,7 @@
 <script lang="ts">
   import { Breadcrumb, Header, IconAdd, Label, Loading, ModernButton, Scroller, showPopup } from '@hcengineering/ui'
   import { MessageBox } from '@hcengineering/presentation'
+  import { translate } from '@hcengineering/platform'
   import setting from '@hcengineering/setting'
   import { type ApiTokenInfo } from '@hcengineering/account-client'
   import { getAccountClient } from '../utils'
@@ -83,6 +84,33 @@
     })
   }
 
+  let scopeLabels = {
+    readOnly: 'Read Only',
+    readWrite: 'Read & Write',
+    fullAccess: 'Full Access'
+  }
+
+  async function resolveScopeLabels (): Promise<void> {
+    const lang = $themeStore.language
+    scopeLabels = {
+      readOnly: await translate(setting.string.ApiTokenScopeReadOnly, {}, lang),
+      readWrite: await translate(setting.string.ApiTokenScopeReadWrite, {}, lang),
+      fullAccess: await translate(setting.string.ApiTokenScopeFullAccess, {}, lang)
+    }
+  }
+
+  function getScopeLabel (token: ApiTokenInfo): string {
+    const scopes = token.scopes
+    if (scopes == null || scopes.length === 0) return scopeLabels.fullAccess
+    const hasRead = scopes.includes('read:*')
+    const hasWrite = scopes.includes('write:*')
+    const hasDelete = scopes.includes('delete:*')
+    if (hasRead && hasWrite && hasDelete && scopes.length === 3) return scopeLabels.fullAccess
+    if (hasRead && hasWrite && scopes.length === 2) return scopeLabels.readWrite
+    if (hasRead && scopes.length === 1) return scopeLabels.readOnly
+    return `${scopes.length} scopes`
+  }
+
   function getStatus (token: ApiTokenInfo): 'active' | 'expiring' | 'revoked' | 'expired' {
     if (token.revoked) return 'revoked'
     const now = Date.now()
@@ -93,6 +121,7 @@
 
   onMount(() => {
     loadTokens()
+    void resolveScopeLabels()
   })
 </script>
 
@@ -132,6 +161,7 @@
               <tr class="scroller-thead__tr">
                 <th><Label label={setting.string.ApiTokenName} /></th>
                 <th><Label label={setting.string.ApiTokenWorkspace} /></th>
+                <th><Label label={setting.string.ApiTokenPermissions} /></th>
                 <th><Label label={setting.string.Created} /></th>
                 <th><Label label={setting.string.Expires} /></th>
                 <th><Label label={setting.string.TokenStatus} /></th>
@@ -144,6 +174,7 @@
                 <tr class="antiGrid-row">
                   <td class="overflow-label font-medium-14">{token.name}</td>
                   <td class="overflow-label">{token.workspaceName}</td>
+                  <td><span class="tag-item tag-scope">{getScopeLabel(token)}</span></td>
                   <td>{formatDate(token.createdOn)}</td>
                   <td>{token.revoked ? '—' : formatDate(token.expiresOn)}</td>
                   <td>
@@ -200,5 +231,9 @@
   .tag-negative {
     background-color: var(--tag-accent-FlamingoColor);
     color: var(--tag-on-accent-FlamingoColor);
+  }
+  .tag-scope {
+    background-color: var(--theme-button-default);
+    color: var(--theme-content-color);
   }
 </style>

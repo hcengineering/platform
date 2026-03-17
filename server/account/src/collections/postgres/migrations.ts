@@ -826,3 +826,13 @@ function getV26Migration (ns: string, flavor: DBFlavor): [string, string] {
     `
   ]
 }
+
+function getV26Migration (ns: string, flavor: DBFlavor): [string, string] {
+  return [
+    'account_db_v26_add_api_token_scopes',
+    `
+    ALTER TABLE ${ns}.api_tokens
+    ADD COLUMN IF NOT EXISTS scopes TEXT[] DEFAULT NULL;
+    `
+  ]
+}

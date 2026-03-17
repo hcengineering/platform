@@ -32,6 +32,35 @@
   let copiedTime: Timestamp | undefined
   let copied = false
 
+  const scopePresets = [
+    { _id: 'read-only', label: 'Read Only', scopes: ['read:*'] },
+    { _id: 'read-write', label: 'Read & Write', scopes: ['read:*', 'write:*'] },
+    { _id: 'full-access', label: 'Full Access', scopes: ['read:*', 'write:*', 'delete:*'] }
+  ]
+  let scopePresetItems: ListItem[] = scopePresets.map((p) => ({ _id: p._id, label: p.label }))
+  let selectedScopePreset: ListItem = scopePresetItems[0]
+
+  async function resolveScopeLabels (): Promise<void> {
+    const lang = $themeStore.language
+    const labels = await Promise.all([
+      translate(setting.string.ApiTokenScopeReadOnly, {}, lang),
+      translate(setting.string.ApiTokenScopeReadWrite, {}, lang),
+      translate(setting.string.ApiTokenScopeFullAccess, {}, lang)
+    ])
+    const prevId = selectedScopePreset._id
+    scopePresetItems = [
+      { _id: 'read-only', label: labels[0] },
+      { _id: 'read-write', label: labels[1] },
+      { _id: 'full-access', label: labels[2] }
+    ]
+    selectedScopePreset = scopePresetItems.find((o) => o._id === prevId) ?? scopePresetItems[0]
+  }
+
+  function getSelectedScopes (): string[] {
+    const preset = scopePresets.find((p) => p._id === selectedScopePreset._id)
+    return preset?.scopes ?? ['read:*']
+  }
+
   const expiryKeys = [
     { _id: '7', intl: setting.string.ApiTokenExpiry7Days },
     { _id: '30', intl: setting.string.ApiTokenExpiry30Days },
@@ -72,10 +101,12 @@
     loading = true
     error = undefined
     try {
+      const scopes = getSelectedScopes()
       const result = await getAccountClient().createApiToken(
         name.trim(),
         selectedWs._id as WorkspaceUuid,
-        parseInt(selectedExpiry._id, 10)
+        parseInt(selectedExpiry._id, 10),
+        scopes
       )
       createdToken = result.token
     } catch (err: any) {
@@ -99,6 +130,7 @@
   onMount(() => {
     void loadWorkspaces()
     void resolveExpiryLabels()
+    void resolveScopeLabels()
   })
 </script>
 
@@ -138,6 +170,10 @@
     <div class="antiPopup-msg">
       <span class="label"><Label label={setting.string.ApiTokenWorkspace} /></span>
       <Dropdown placeholder={setting.string.ApiTokenWorkspace} items={wsItems} bind:selected={selectedWs} />
+    </div>
+    <div class="antiPopup-msg">
+      <span class="label"><Label label={setting.string.ApiTokenScopePreset} /></span>
+      <Dropdown placeholder={setting.string.ApiTokenScopePreset} items={scopePresetItems} bind:selected={selectedScopePreset} />
     </div>
     <div class="antiPopup-msg">
       <span class="label"><Label label={setting.string.ApiTokenExpiry} /></span>

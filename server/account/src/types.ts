@@ -161,6 +161,15 @@ export interface WorkspaceJoinInfo {
  * Represents an API token record in the database.
  * Timestamps are in milliseconds since Unix epoch.
  *
+ * ## Token Scopes
+ *
+ * Phase 1 (coarse): `read:*`, `write:*`, `delete:*`
+ * Phase 2 (planned): domain-scoped like `read:tracker`, `write:chunter`
+ *
+ * NULL/undefined scopes = full access (backward compatible with legacy tokens).
+ * Scopes are embedded in the JWT via `extra.scopes` (JSON-serialized array)
+ * and enforced server-side in `pods/server/src/rpc.ts`.
+ *
  * @public
  */
 export interface ApiToken {
@@ -173,6 +182,8 @@ export interface ApiToken {
   /** Milliseconds since epoch */
   expiresOn: number
   revoked: boolean
+  /** Token scopes. NULL/undefined = full access (legacy). e.g. ['read:*', 'write:tracker'] */
+  scopes?: string[]
 }
 
 export interface Mailbox {
