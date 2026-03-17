@@ -23,7 +23,10 @@ import {
   CommonListKitFactory,
   extensionKit,
   mergeKitOptions,
-  TextColorStylingKit
+  TextColorStylingKit,
+  Highlight,
+  Subscript,
+  Superscript
 } from '@hcengineering/text'
 import textEditor, { type ActionContext, type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
 import { type AnyExtension, Extension } from '@tiptap/core'
@@ -104,6 +107,9 @@ const StaticEditorKit = extensionKit(
       image: e(ImageExtension),
       emoji: e(EmojiExtension),
       mathematics: e(MathematicsExtension, context.mode === 'full'),
+      highlight: e(Highlight, { multicolor: false }),
+      subscript: e(Subscript),
+      superscript: e(Superscript),
       drawingBoard: e(DrawingBoardExtension),
       embed: e(
         EmbedNode,
