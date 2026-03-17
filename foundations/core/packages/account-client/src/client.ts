@@ -262,6 +262,7 @@ export interface AccountClient {
   revokeApiToken: (tokenId: string) => Promise<void>
   listWorkspaceApiTokens: (workspaceUuid: WorkspaceUuid) => Promise<ApiTokenInfo[]>
   revokeWorkspaceApiToken: (tokenId: string, workspaceUuid: WorkspaceUuid) => Promise<void>
+  checkApiTokenRevoked: (apiTokenId: string) => Promise<boolean>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -1274,6 +1275,15 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async checkApiTokenRevoked (apiTokenId: string): Promise<boolean> {
+    const request = {
+      method: 'checkApiTokenRevoked' as const,
+      params: { apiTokenId }
+    }
+
+    return await this.rpc(request)
   }
 
   async setCookie (): Promise<void> {
