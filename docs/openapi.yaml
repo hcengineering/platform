@@ -1,0 +1,456 @@
+openapi: 3.1.0
+info:
+  title: Huly Self-Hosted API
+  version: 0.1.0
+  description: |
+    REST API for Huly self-hosted instances.
+
+    ## Authentication
+
+    All data endpoints require a workspace-scoped JWT in the `Authorization: Bearer <token>` header.
+    Tokens can be minted using the CLI tool (`tools/mint-token/`) or the optional token service (`/_tokens`).
+
+    ## Getting Started
+
+    1. Mint a token using the CLI tool or token service
+    2. Use the token to query the transactor REST API
+    3. The `find-all` endpoint queries documents by class
+    4. The `tx` endpoint submits transactions (create, update, delete)
+
+  license:
+    name: EPL-2.0
+    url: https://www.eclipse.org/legal/epl-2.0/
+
+servers:
+  - url: https://{host}
+    description: Your Huly self-hosted instance
+    variables:
+      host:
+        default: localhost:8083
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Workspace-scoped JWT. Payload: `{ account: AccountUuid, workspace: WorkspaceUuid, exp: number }`.
+        Signed with `SERVER_SECRET` using HS256.
+
+    serverSecret:
+      type: apiKey
+      in: header
+      name: X-Server-Secret
+      description: SERVER_SECRET value — used for admin-only token service endpoints.
+
+  schemas:
+    TxOperation:
+      type: object
+      description: A Huly transaction object
+      properties:
+        _class:
+          type: string
+          description: Transaction class (e.g. `core:class:TxCreateDoc`)
+          example: 'core:class:TxCreateDoc'
+        objectClass:
+          type: string
+          description: Target document class
+          example: 'tracker:class:Issue'
+        objectSpace:
+          type: string
+          description: Target space
+          example: 'tracker:project:DefaultProject'
+        objectId:
+          type: string
+          description: Document ID (generated or existing)
+        attributes:
+          type: object
+          description: Document attributes to set
+      required:
+        - _class
+
+    FindAllResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            type: object
+          description: Array of matching documents
+        total:
+          type: integer
+          description: Total count of matching documents
+
+    TokenRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email — resolved to account UUID via CockroachDB
+          example: user@example.com
+        workspace:
+          type: string
+          description: Workspace URL slug — resolved to workspace UUID via CockroachDB
+          example: my-workspace
+        expiryDays:
+          type: integer
+          minimum: 1
+          maximum: 365
+          default: 30
+          description: Token lifetime in days
+      required:
+        - email
+        - workspace
+
+    TokenResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Token metadata ID (for listing/revoking)
+        token:
+          type: string
+          description: Signed JWT
+        expiresAt:
+          type: string
+          format: date-time
+          description: Token expiration timestamp
+
+    TokenMetadata:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        workspace:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        revoked:
+          type: boolean
+
+    JsonRpcRequest:
+      type: object
+      properties:
+        method:
+          type: string
+          description: RPC method name
+        params:
+          type: array
+          items: {}
+          description: Method parameters
+      required:
+        - method
+        - params
+
+    JsonRpcResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        result:
+          description: Method-specific result
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+paths:
+  # ── Account Service (JSON-RPC) ──────────────────────────────────────
+
+  /_accounts:
+    post:
+      operationId: accountRpc
+      tags: [Auth]
+      summary: Account service JSON-RPC
+      description: |
+        JSON-RPC endpoint for the account service. Key methods:
+
+        - `login(params: [email, password])` → returns account JWT
+        - `selectWorkspace(params: [workspaceUrl, kind, allowAdmin])` → returns workspace JWT + endpoint
+        - `getUserWorkspaces()` → list workspaces for authenticated user
+
+        Note: For API token-based access, you don't need these — mint a token directly.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonRpcRequest'
+            examples:
+              login:
+                summary: Login
+                value:
+                  method: login
+                  params: ['user@example.com', 'password']
+              selectWorkspace:
+                summary: Select workspace
+                value:
+                  method: selectWorkspace
+                  params: ['my-workspace', 'external', false]
+      responses:
+        '200':
+          description: JSON-RPC response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonRpcResponse'
+        '400':
+          description: Malformed request
+
+  # ── Transactor REST API ─────────────────────────────────────────────
+
+  /_transactor/api/v1/find-all/{workspace}:
+    get:
+      operationId: findAll
+      tags: [Data]
+      summary: Query documents by class
+      description: |
+        Find all documents matching a class and optional query/options filters.
+        Returns an array of matching documents.
+      parameters:
+        - name: workspace
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Workspace UUID
+          example: 'ws-abc-123'
+        - name: class
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Huly class reference
+          example: 'contact:class:Person'
+        - name: query
+          in: query
+          schema:
+            type: string
+          description: JSON-encoded query filter
+          example: '{"name": "John"}'
+        - name: options
+          in: query
+          schema:
+            type: string
+          description: JSON-encoded options (limit, sort, etc.)
+          example: '{"limit": 10}'
+      responses:
+        '200':
+          description: Matching documents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindAllResponse'
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /_transactor/api/v1/tx/{workspace}:
+    post:
+      operationId: submitTx
+      tags: [Data]
+      summary: Submit a transaction
+      description: |
+        Submit a transaction to create, update, or delete documents.
+        The transaction format follows the Huly platform transaction model.
+      parameters:
+        - name: workspace
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Workspace UUID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TxOperation'
+            examples:
+              createIssue:
+                summary: Create a tracker issue
+                value:
+                  _class: 'core:class:TxCreateDoc'
+                  objectClass: 'tracker:class:Issue'
+                  objectSpace: 'tracker:project:DefaultProject'
+                  attributes:
+                    title: 'Fix login bug'
+                    description: 'Users cannot log in with SSO'
+                    priority: 1
+      responses:
+        '200':
+          description: Transaction result
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Invalid or expired token
+
+  /_transactor/api/v1/load-model/{workspace}:
+    get:
+      operationId: loadModel
+      tags: [Data]
+      summary: Load data model / schema
+      description: |
+        Returns the full data model (class hierarchy, mixins, attributes) for the workspace.
+        Useful for discovering available classes and their fields.
+      parameters:
+        - name: workspace
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Workspace UUID
+      responses:
+        '200':
+          description: Data model
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Invalid or expired token
+
+  /_transactor/api/v1/ping/{workspace}:
+    get:
+      operationId: ping
+      tags: [Data]
+      summary: Health check
+      description: |
+        Verifies the token is valid and the workspace is reachable.
+        Returns a simple status response.
+      parameters:
+        - name: workspace
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Workspace UUID
+      responses:
+        '200':
+          description: Workspace is reachable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pong:
+                    type: boolean
+        '401':
+          description: Invalid or expired token
+
+  /_transactor/api/v1/account/{workspace}:
+    get:
+      operationId: getAccountInfo
+      tags: [Data]
+      summary: Get account info
+      description: |
+        Returns information about the authenticated account in the context of the given workspace,
+        including the account UUID and workspace role.
+      parameters:
+        - name: workspace
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Workspace UUID
+      responses:
+        '200':
+          description: Account information
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Invalid or expired token
+
+  # ── Token Service (optional) ────────────────────────────────────────
+
+  /_tokens:
+    post:
+      operationId: mintToken
+      tags: [Tokens]
+      summary: Mint an API token
+      description: |
+        Mint a workspace-scoped JWT. Requires admin auth via `X-Server-Secret` header.
+        Resolves email → account UUID and workspace slug → workspace UUID automatically.
+
+        Only available when `tokenService.enabled: true` in Helm values.
+      security:
+        - serverSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+      responses:
+        '200':
+          description: Minted token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid server secret
+        '404':
+          description: Email or workspace not found
+
+    get:
+      operationId: listTokens
+      tags: [Tokens]
+      summary: List minted tokens
+      description: Returns metadata for all minted tokens (token values are not stored).
+      security:
+        - serverSecret: []
+      responses:
+        '200':
+          description: Token list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TokenMetadata'
+        '401':
+          description: Invalid server secret
+
+  /_tokens/{id}:
+    delete:
+      operationId: revokeToken
+      tags: [Tokens]
+      summary: Revoke a token
+      description: |
+        Soft-revoke a token by marking it as revoked in the database.
+        Note: The token will still be valid until it expires, as full revocation
+        requires a denylist check at the transactor level (future enhancement).
+      security:
+        - serverSecret: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Token revoked
+        '404':
+          description: Token not found
