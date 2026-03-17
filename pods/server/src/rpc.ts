@@ -161,11 +161,11 @@ async function isApiTokenRevoked (apiTokenId: string, accountClient: AccountClie
 // ── Token Scope Enforcement ─────────────────────────────────────────
 // Phase 1: coarse scopes only (read:*, write:*, delete:*)
 
-function hasScope (scopes: string[], required: string): boolean {
+export function hasScope (scopes: string[], required: string): boolean {
   return scopes.includes(required)
 }
 
-function getRequiredScope (method: string): string | null {
+export function getRequiredScope (method: string): string | null {
   switch (method) {
     case 'ping':
     case 'generateId':
