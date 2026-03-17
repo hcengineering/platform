@@ -2630,7 +2630,7 @@ async function createApiToken (
   const expSec = Math.floor(expiresOn / 1000)
 
   const id = randomUUID()
-  const apiToken = generateToken(account, workspaceUuid, undefined, undefined, { exp: expSec })
+  const apiToken = generateToken(account, workspaceUuid, { apiTokenId: id }, undefined, { exp: expSec })
 
   await db.apiToken.insertOne({
     id,
@@ -2706,6 +2706,25 @@ async function revokeApiToken (
 
   await db.apiToken.update({ id: tokenId }, { revoked: true })
   ctx.info('API token revoked', { tokenId, account })
+}
+
+/**
+ * Checks if a specific API token has been revoked.
+ * Used by the transactor to enforce revocation at the request level.
+ */
+async function checkApiTokenRevoked (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { apiTokenId: string }
+): Promise<boolean> {
+  const { apiTokenId } = params
+  const existing = await db.apiToken.findOne({ id: apiTokenId })
+  if (existing == null) {
+    return true // Unknown token treated as revoked
+  }
+  return existing.revoked
 }
 
 /**
@@ -3479,6 +3498,7 @@ export type AccountMethods =
   | 'revokeApiToken'
   | 'listWorkspaceApiTokens'
   | 'revokeWorkspaceApiToken'
+  | 'checkApiTokenRevoked'
 
 /**
  * @public
@@ -3552,6 +3572,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     revokeApiToken: wrap(revokeApiToken),
     listWorkspaceApiTokens: wrap(listWorkspaceApiTokens),
     revokeWorkspaceApiToken: wrap(revokeWorkspaceApiToken),
+    checkApiTokenRevoked: wrap(checkApiTokenRevoked),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),

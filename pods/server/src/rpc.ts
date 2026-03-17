@@ -129,6 +129,35 @@ async function sendJson (
   res.end(body)
 }
 
+// ── API Token Revocation Cache ──────────────────────────────────────
+// Per-token cache with 60s TTL. Once a token is confirmed revoked it
+// stays cached permanently (revocation is irreversible). Non-revoked
+// tokens are re-checked every TTL interval.
+const REVOCATION_CACHE_TTL_MS = 60_000
+const revocationCache = new Map<string, { revoked: boolean, checkedAt: number }>()
+
+async function isApiTokenRevoked (apiTokenId: string, accountClient: AccountClient): Promise<boolean> {
+  const now = Date.now()
+  const cached = revocationCache.get(apiTokenId)
+
+  // Permanently cached once revoked
+  if (cached?.revoked === true) return true
+
+  // Re-check if stale or missing
+  if (cached == null || now - cached.checkedAt > REVOCATION_CACHE_TTL_MS) {
+    try {
+      const revoked = await accountClient.checkApiTokenRevoked(apiTokenId)
+      revocationCache.set(apiTokenId, { revoked, checkedAt: now })
+      return revoked
+    } catch {
+      // If we can't reach the account service, use stale cache or allow
+      return cached?.revoked ?? false
+    }
+  }
+
+  return cached.revoked
+}
+
 export function registerRPC (app: Express, sessions: SessionManager, ctx: MeasureContext, accountsUrl: string): void {
   const rpcSessions = new Map<string, RPCClientInfo>()
 
@@ -165,6 +194,15 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       if (workspaceId !== decodedToken.workspace) {
         sendError(res, 403, { message: 'Invalid workspace', workspace: decodedToken.workspace })
         return
+      }
+
+      // Reject revoked API tokens (cached check, ~60s TTL)
+      const apiTokenId = decodedToken.extra?.apiTokenId
+      if (apiTokenId !== undefined) {
+        if (await isApiTokenRevoked(apiTokenId, getAccountClient(token))) {
+          sendError(res, 401, { message: 'Token has been revoked' })
+          return
+        }
       }
 
       let transactorRpc = rpcSessions.get(token)
