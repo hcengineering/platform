@@ -418,7 +418,7 @@ export async function validateOtp (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
     }
 
-    let callerAccountUuid: AccountUuid | null = null
+    let callerAccountUuid: AccountUuid | undefined
     let callerAccount: Account | null = null
 
     if (action === 'verify') {
@@ -1967,7 +1967,7 @@ export async function getLoginInfoByToken (
   let extra: any
   let grant: PermissionsGrant | undefined
   let sub: AccountUuid | undefined
-  let account: AccountUuid | undefined
+  let account: AccountUuid
   let nbf: number | undefined
   let exp: number | undefined
 
@@ -2574,6 +2574,7 @@ async function deleteMailbox (
  * @param params.name Human-readable token name (1–255 chars)
  * @param params.workspaceUuid Target workspace — user must have access
  * @param params.expiryDays Token validity period (1–365 days)
+ * @param params.scopes Optional scopes array. NULL/undefined = full access. e.g. ['read:*', 'write:*']
  * @returns Token ID, signed JWT, and expiration timestamp (ms)
  * @throws BadRequest if validation fails
  * @throws Forbidden if user lacks workspace access
@@ -2587,9 +2588,10 @@ async function createApiToken (
     name: string
     workspaceUuid: WorkspaceUuid
     expiryDays: number
+    scopes?: string[]
   }
 ): Promise<{ id: string, token: string, expiresOn: number }> {
-  const { name, workspaceUuid, expiryDays } = params
+  const { name, workspaceUuid, expiryDays, scopes } = params
 
   if (
     name == null ||
@@ -2625,12 +2627,29 @@ async function createApiToken (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
+  // Validate scopes if provided
+  const validScopePattern = /^(read|write|delete):\*$/
+  if (scopes !== undefined) {
+    if (!Array.isArray(scopes) || scopes.length === 0) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+    }
+    for (const scope of scopes) {
+      if (typeof scope !== 'string' || !validScopePattern.test(scope)) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+      }
+    }
+  }
+
   const now = Date.now()
   const expiresOn = now + days * 86400000
   const expSec = Math.floor(expiresOn / 1000)
 
   const id = randomUUID()
-  const apiToken = generateToken(account, workspaceUuid, { apiTokenId: id }, undefined, { exp: expSec })
+  const extra: Record<string, string> = { apiTokenId: id }
+  if (scopes !== undefined) {
+    extra.scopes = JSON.stringify(scopes)
+  }
+  const apiToken = generateToken(account, workspaceUuid, extra, undefined, { exp: expSec })
 
   await db.apiToken.insertOne({
     id,
@@ -2639,10 +2658,11 @@ async function createApiToken (
     workspaceUuid,
     createdOn: now,
     expiresOn,
-    revoked: false
+    revoked: false,
+    scopes
   })
 
-  ctx.info('API token created', { id, account, workspaceUuid, days })
+  ctx.info('API token created', { id, account, workspaceUuid, days, scopes })
   return { id, token: apiToken, expiresOn }
 }
 
@@ -2680,7 +2700,8 @@ async function listApiTokens (
     workspaceName: wsMap.get(t.workspaceUuid) ?? t.workspaceUuid,
     createdOn: t.createdOn,
     expiresOn: t.expiresOn,
-    revoked: t.revoked
+    revoked: t.revoked,
+    scopes: t.scopes ?? undefined
   }))
 }
 
@@ -2764,7 +2785,8 @@ async function listWorkspaceApiTokens (
     workspaceUuid: t.workspaceUuid,
     createdOn: t.createdOn,
     expiresOn: t.expiresOn,
-    revoked: t.revoked
+    revoked: t.revoked,
+    scopes: t.scopes ?? undefined
   }))
 }
 
@@ -3210,7 +3232,7 @@ export async function getSubscriptions (
     targetWorkspace = tokenWorkspace
 
     // Verify user has OWNER or MAINTAINER role
-    const role = await db.getWorkspaceRole(account, targetWorkspace)
+    const role = await db.getWorkspaceRole(account, tokenWorkspace)
     if (role === null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
     }
