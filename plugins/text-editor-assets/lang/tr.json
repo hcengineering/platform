@@ -81,6 +81,11 @@
     "UnableToLoadEmbeddedContent": "Bağlantı önizlemesi izin ayarları veya desteklenmeyen içerik nedeniyle yüklenemedi",
     "CannotConnectToCollaborationService": "İşbirliği servisine bağlanılamıyor",
     "SourceURL": "Kaynak URL",
-    "SelectedDocuments": "Seçilen belgeler ({count, plural, =1 {1 öğe} other {# öğe}})"
+    "SelectedDocuments": "Seçilen belgeler ({count, plural, =1 {1 öğe} other {# öğe}})",
+    "Highlight": "Highlight",
+    "Subscript": "Subscript",
+    "Superscript": "Superscript",
+    "Mathematics": "Mathematics",
+    "MathematicsBlock": "Mathematics block"
   }
 }
