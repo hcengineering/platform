@@ -1,12 +1,21 @@
 import type { ActivityMessage, Reaction } from '@hcengineering/activity'
-import core, { getCurrentAccount, isOtherHour, type Doc, type Ref, type Space, type Blob } from '@hcengineering/core'
+import core, {
+  getCurrentAccount,
+  isOtherHour,
+  type Doc,
+  type Ref,
+  type Space,
+  type Blob,
+  type TxOperations
+} from '@hcengineering/core'
 import { getClient, isSpace } from '@hcengineering/presentation'
 import {
   closePopup,
   getCurrentResolvedLocation,
   getEventPositionElement,
   showPopup,
-  type Location
+  type Location,
+  type LabelAndProps
 } from '@hcengineering/ui'
 import { type AttributeModel } from '@hcengineering/view'
 import emojiPlugin from '@hcengineering/emoji'
@@ -14,6 +23,7 @@ import { get } from 'svelte/store'
 
 import { savedMessagesStore } from './activity'
 import activity from './plugin'
+import ActivityMessageTooltip from './components/activity-message/ActivityMessageTooltip.svelte'
 
 export async function updateDocReactions (
   reactions: Reaction[],
@@ -193,4 +203,19 @@ export function getActivityNewestFirst (): boolean {
 
 export function setActivityNewestFirst (value: boolean): void {
   localStorage.setItem(activityNewestFirstLocalStorageKey, JSON.stringify(value))
+}
+
+export async function activityMessageTooltipProvider (
+  _client: TxOperations,
+  doc?: ActivityMessage | null
+): Promise<LabelAndProps | undefined> {
+  if (doc == null) return undefined
+
+  return {
+    component: ActivityMessageTooltip,
+    props: { value: doc },
+    timeout: 300,
+    style: 'modern',
+    noArrow: true
+  }
 }

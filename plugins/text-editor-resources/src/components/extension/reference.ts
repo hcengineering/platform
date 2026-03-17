@@ -25,7 +25,7 @@ import { type Blob, type Class, type Doc, type Ref } from '@hcengineering/core'
 import { getMetadata, getResource, translate } from '@hcengineering/platform'
 import presentation, { createQuery, getBlobRef, getClient, MessageBox } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
-
+import activity, { type ActivityMessage } from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
 import { parseLocation, showPopup, tooltip, type LabelAndProps, type Location, fromCodePoint } from '@hcengineering/ui'
 import workbench, { type Application } from '@hcengineering/workbench'
@@ -422,6 +422,26 @@ async function getReferenceTooltip<T extends Doc> (
   return { label: hierarchy.getClass(objectclass).label }
 }
 
+async function getDocLabel (_id: Ref<Doc>, _class: Ref<Class<Doc>>, doc?: Doc): Promise<string> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  const labelProvider = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectIdentifier)
+  const labelProviderFn = labelProvider !== undefined ? await getResource(labelProvider.provider) : undefined
+
+  const titleMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectTitle)
+  const titleProviderFn = titleMixin !== undefined ? await getResource(titleMixin.titleProvider) : undefined
+
+  const identifier = (await labelProviderFn?.(client, _id, doc)) ?? ''
+  const title = (await titleProviderFn?.(client, _id, doc)) ?? ''
+
+  return identifier !== '' && title !== '' && identifier !== title
+    ? `${identifier} ${title}`
+    : title !== ''
+      ? title
+      : identifier
+}
+
 export async function getReferenceLabel<T extends Doc> (
   objectclass: Ref<Class<T>>,
   id: Ref<T>,
@@ -430,23 +450,21 @@ export async function getReferenceLabel<T extends Doc> (
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  const labelProvider = hierarchy.classHierarchyMixin(objectclass as Ref<Class<Doc>>, view.mixin.ObjectIdentifier)
-  const labelProviderFn = labelProvider !== undefined ? await getResource(labelProvider.provider) : undefined
+  if (hierarchy.isDerived(objectclass, activity.class.ActivityMessage)) {
+    const message =
+      (doc as any as ActivityMessage) ??
+      (await client.findOne(activity.class.ActivityMessage, { _id: id as any as Ref<ActivityMessage> }))
+    if (message === undefined) return ''
 
-  const titleMixin = hierarchy.classHierarchyMixin(objectclass as Ref<Class<Doc>>, view.mixin.ObjectTitle)
-  const titleProviderFn = titleMixin !== undefined ? await getResource(titleMixin.titleProvider) : undefined
+    const attachedToDoc = await client.findOne(message.attachedToClass, { _id: message.attachedTo })
+    if (attachedToDoc === undefined) return ''
 
-  const identifier = (await labelProviderFn?.(client, id, doc)) ?? ''
-  const title = (await titleProviderFn?.(client, id, doc)) ?? ''
+    const label = await getDocLabel(attachedToDoc._id, attachedToDoc._class, attachedToDoc)
 
-  const label =
-    identifier !== '' && title !== '' && identifier !== title
-      ? `${identifier} ${title}`
-      : title !== ''
-        ? title
-        : identifier
+    return `${label}?message=${message._id}`
+  }
 
-  return label
+  return await getDocLabel(id, objectclass, doc)
 }
 
 export async function getReferenceObject<T extends Doc> (
@@ -456,6 +474,14 @@ export async function getReferenceObject<T extends Doc> (
 ): Promise<Doc | undefined> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
+
+  if (objectclass === activity.class.ActivityMessage) {
+    const message: ActivityMessage | undefined =
+      (doc as any as ActivityMessage) ??
+      (await client.findOne(activity.class.ActivityMessage, { _id: id as any as Ref<ActivityMessage> }))
+    if (message === undefined) return undefined
+    return message
+  }
 
   const referenceObjectProvider = hierarchy.classHierarchyMixin(
     objectclass as Ref<Class<Doc>>,
@@ -512,6 +538,10 @@ export async function getTargetObjectFromUrl (
   const app = apps.find((p) => p.alias === appAlias)
   const locationResolver = app?.locationResolver
   const locationDataResolver = app?.locationDataResolver
+  const messageId = location?.query?.message ?? ''
+  if (messageId !== '') {
+    return { _id: messageId as Ref<ActivityMessage>, _class: activity.class.ActivityMessage }
+  }
 
   if ((location.fragment ?? '') !== '') {
     const obj = await getObjectFromFragment(location.fragment ?? '')

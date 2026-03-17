@@ -29,7 +29,7 @@
   import { Action as ViewAction } from '@hcengineering/view'
   import { getActions, restrictionStore, showMenu } from '@hcengineering/view-resources'
 
-  import { savedMessagesStore } from '../../activity'
+  import { clearMessageInLocation, savedMessagesStore } from '../../activity'
   import { MessageInlineAction } from '../../types'
   import ActivityMessageActions from '../ActivityMessageActions.svelte'
   import MessageTimestamp from '../MessageTimestamp.svelte'
@@ -106,6 +106,13 @@
     isActionsOpened = false
   }
 
+  function handleAnimationEnd (event: AnimationEvent): void {
+    const name = event.animationName.split('-').pop()
+    if (name === 'highlight') {
+      clearMessageInLocation()
+    }
+  }
+
   $: key = parentMessage != null ? `${message._id}_${parentMessage._id}` : message._id
 
   $: isHidden = !!viewlet?.onlyWithParent && parentMessage === undefined
@@ -180,6 +187,7 @@
       class:stale
       on:click={onClick}
       on:contextmenu={handleContextMenu}
+      on:animationend={handleAnimationEnd}
     >
       {#if showNotify && !embedded && !isShort}
         <div class="notify" />

@@ -390,6 +390,10 @@ export function createModel (builder: Builder): void {
     txClasses: [core.class.TxCreateDoc]
   })
 
+  builder.mixin(activity.class.ActivityMessage, core.class.Class, view.mixin.ObjectTooltip, {
+    provider: activity.function.ActivityMessageTooltipProvider
+  })
+
   buildActions(builder)
   buildNotifications(builder)
 }

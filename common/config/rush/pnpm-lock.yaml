@@ -28282,6 +28282,9 @@ importers:
 
   ../../plugins/text-editor-resources:
     dependencies:
+      '@hcengineering/activity':
+        specifier: workspace:^0.7.0
+        version: link:../activity
       '@hcengineering/analytics':
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/analytics
@@ -29695,6 +29698,9 @@ importers:
 
   ../../plugins/view-resources:
     dependencies:
+      '@hcengineering/activity':
+        specifier: workspace:^0.7.0
+        version: link:../activity
       '@hcengineering/analytics':
         specifier: workspace:^0.7.17
         version: link:../../foundations/core/packages/analytics
