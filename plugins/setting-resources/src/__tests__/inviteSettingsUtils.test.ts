@@ -69,7 +69,7 @@ describe('inviteSettingsUtils', () => {
     })
 
     it('returns fallback for invalid number', () => {
-      expect(normalizeInviteRole(999 as AccountRole, AccountRole.Guest)).toBe(AccountRole.Guest)
+      expect(normalizeInviteRole(999 as unknown as AccountRole, AccountRole.Guest)).toBe(AccountRole.Guest)
     })
   })
 
