@@ -7,6 +7,11 @@
   },
   "string": {
     "ChangePassword": "Change password",
+    "SetPassword": "Set a password",
+    "SSOPasswordDescription": "Your account uses external login. Set up a password via email confirmation.",
+    "SendSetupLink": "Send setup link",
+    "SSOPasswordEmailSent": "Check your email for a link to set your password.",
+    "SSONoEmailLinked": "No email address is linked to your account. Add one in Account Settings → Manage Identities first.",
     "CurrentPassword": "Current password",
     "NewPassword": "New password",
     "EnterCurrentPassword": "Enter current password",

@@ -92,7 +92,9 @@ export interface AccountClient {
   ) => Promise<string>
   leaveWorkspace: (account: AccountUuid) => Promise<LoginInfo | null>
   changeUsername: (first: string, last: string) => Promise<void>
+  checkHasPassword: () => Promise<boolean>
   changePassword: (oldPassword: string, newPassword: string) => Promise<void>
+  requestPasswordSetup: () => Promise<void>
   signUpJoin: (
     email: string,
     password: string,
@@ -510,10 +512,28 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
+  async checkHasPassword (): Promise<boolean> {
+    const request = {
+      method: 'checkHasPassword' as const,
+      params: {}
+    }
+
+    return await this.rpc(request)
+  }
+
   async changePassword (oldPassword: string, newPassword: string): Promise<void> {
     const request = {
       method: 'changePassword' as const,
       params: { oldPassword, newPassword }
+    }
+
+    await this.rpc(request)
+  }
+
+  async requestPasswordSetup (): Promise<void> {
+    const request = {
+      method: 'requestPasswordSetup' as const,
+      params: {}
     }
 
     await this.rpc(request)
