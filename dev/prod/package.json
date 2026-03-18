@@ -17,6 +17,7 @@
     "tunnel-qms": "socat tcp-listen:8081,reuseaddr,fork,bind=localhost tcp:localhost:8080",
     "dev-production": "cross-env CLIENT_TYPE=dev-production webpack serve",
     "dev-huly": "cross-env CLIENT_TYPE=dev-huly webpack serve",
+    "dev-local": "cross-env USE_CACHE=false CLIENT_TYPE=dev-local webpack serve",
     "dev-bold": "cross-env CLIENT_TYPE=dev-bold webpack serve",
     "start": "cross-env NODE_ENV=production webpack serve",
     "deploy": "cp -p public/* dist && aws s3 sync dist s3://anticrm-platform --delete --acl public-read",
