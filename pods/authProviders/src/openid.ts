@@ -87,7 +87,9 @@ export function registerOpenid (
     async (ctx, next) => {
       const email = ctx.state.user.email
       const verifiedEmail = (ctx.state.user.email_verified as boolean) ? email : ''
-      const [first, last] = ctx.state.user.name?.split(' ') ?? [ctx.state.user.username, '']
+      const nameParts = (ctx.state.user.name ?? ctx.state.user.username ?? '').split(' ')
+      const first: string = ctx.state.user.given_name ?? nameParts[0] ?? ''
+      const last: string = ctx.state.user.family_name ?? nameParts.slice(1).join(' ')
 
       const db = await dbPromise
       const redirectUrl = await handleProviderAuth(
