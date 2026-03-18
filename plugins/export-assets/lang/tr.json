@@ -43,7 +43,7 @@
     "ExportToWorkspaceFailed": "Dışa aktarma başarısız oldu",
     "SelectWorkspace": "Çalışma alanı seç",
     "SelectWorkspaceToExport": "{count, plural, =1 {1 belgeyi} other {# belgeyi}} dışa aktarmak için çalışma alanı seç",
-    "SelectWorkspaceToExportSpace": "Alanın belgelerini dışa aktarmak için çalışma alanı seç",
+    "SelectWorkspaceToExportSpace": "Belgeleri dışa aktarmak için çalışma alanı seç",
     "SelectSpace": "Alan seç",
     "NoSelectedDocuments": "Seçili belge yok",
     "NoDocumentsMatchedFilters": "Geçerli filtrelerle dışa aktarılacak belge bulunamadı. Filtreleri veya seçimi düzenleyip tekrar deneyin.",

@@ -43,7 +43,7 @@
     "ExportToWorkspaceFailed": "Export se nezdařil",
     "SelectWorkspace": "Vybrat pracovní prostor",
     "SelectWorkspaceToExport": "Vybrat pracovní prostor pro export {count, plural, =1 {1 dokument} other {# dokumentů}}",
-    "SelectWorkspaceToExportSpace": "Vybrat pracovní prostor pro export dokumentů z prostoru",
+    "SelectWorkspaceToExportSpace": "Vybrat pracovní prostor pro export dokumentů",
     "SelectSpace": "Vybrat prostor",
     "NoSelectedDocuments": "Žádné dokumenty nevybrány",
     "NoDocumentsMatchedFilters": "Pro export nebyly nalezeny žádné dokumenty odpovídající aktuálním filtrům. Upravte filtry nebo výběr a zkuste to znovu.",

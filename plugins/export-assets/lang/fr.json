@@ -43,7 +43,7 @@
     "ExportToWorkspaceFailed": "Exportation échouée",
     "SelectWorkspace": "Sélectionner l'espace de travail",
     "SelectWorkspaceToExport": "Sélectionner l'espace de travail pour exporter {count, plural, =1 {1 document} other {# documents}}",
-    "SelectWorkspaceToExportSpace": "Sélectionner l'espace de travail pour exporter les documents de l'espace",
+    "SelectWorkspaceToExportSpace": "Sélectionner l'espace de travail pour exporter les documents",
     "SelectSpace": "Sélectionner l'espace",
     "NoSelectedDocuments": "Aucun document sélectionné",
     "NoDocumentsMatchedFilters": "Aucun document à exporter ne correspond aux filtres actuels. Modifiez vos filtres ou votre sélection puis réessayez.",
