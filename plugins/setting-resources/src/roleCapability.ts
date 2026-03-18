@@ -16,15 +16,17 @@ import type { Account } from '@hcengineering/core'
 import { AccountRole, hasAccountRole } from '@hcengineering/core'
 import { RoleCapability, type RoleCapabilityId } from '@hcengineering/setting'
 
+import { DEFAULT_INVITE_LINK_GENERATOR_ROLES } from './inviteSettingsUtils'
+
 /** Default roles that have each capability when no RoleCapabilitySettings is set */
 const DEFAULT_ROLES_BY_CAPABILITY: Record<string, AccountRole[]> = {
-  [RoleCapability.GenerateInviteLink]: [AccountRole.User, AccountRole.Maintainer, AccountRole.Owner],
+  [RoleCapability.GenerateInviteLink]: DEFAULT_INVITE_LINK_GENERATOR_ROLES,
   [RoleCapability.ManageInviteSettings]: [AccountRole.Maintainer, AccountRole.Owner]
 }
 
 /**
  * Returns whether the given account has the specified capability.
- * Uses roleByCapability if provided; otherwise for GenerateInviteLink falls back to inviteLinkGeneratorRoles; otherwise uses built-in defaults.
+ * Uses roleByCapability if provided; otherwise for GenerateInviteLink falls back to inviteLinkGeneratorRoles (from workspace settings / resolved defaults); otherwise {@link DEFAULT_INVITE_LINK_GENERATOR_ROLES}.
  * @public
  */
 export function hasRoleCapability (
