@@ -16,10 +16,7 @@
   import { AccountRole, getCurrentAccount, hasAccountRole, Timestamp } from '@hcengineering/core'
   import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
   import setting, { RoleCapability } from '@hcengineering/setting'
-  import {
-    getDefaultInviteRole,
-    resolveInviteSettings
-  } from '@hcengineering/setting-resources'
+  import { getDefaultInviteRole, resolveInviteSettings } from '@hcengineering/setting-resources'
   import { getResource } from '@hcengineering/platform'
   import { AnySvelteComponent, Button, EditBox, Grid, Label, Loading, MiniToggle, ticker } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -43,11 +40,6 @@
   }
 
   const defaultInviteRole: AccountRole = getDefaultInviteRole()
-
-  function effectiveInviteRole (): AccountRole {
-    if (role != null) return role
-    return defaultInviteRole
-  }
 
   $: !ignoreSettings &&
     query.query(setting.class.InviteSettings, {}, (set) => {
@@ -204,7 +196,7 @@
           if (!canGenerateInviteLinks) return
           const effectiveLimit = limit ?? 0
           if (effectiveLimit > 0 || noLimit) {
-            void getLink(expHours, emailMask, limit, effectiveInviteRole())
+            void getLink(expHours, emailMask, limit, role ?? defaultInviteRole)
           }
         }}
       />
