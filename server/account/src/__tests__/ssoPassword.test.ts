@@ -107,6 +107,13 @@ describe('checkHasPassword', () => {
     const result = await checkHasPassword(mockCtx, mockDb, null, { id: 1, params: {} }, 'token')
     expect(result.error).toBeDefined()
   })
+
+  test('returns error for invalid/expired token', async () => {
+    const { TokenError } = jest.requireMock('@hcengineering/server-token')
+    ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => { throw new TokenError('invalid token') })
+    const result = await checkHasPassword(mockCtx, mockDb, null, { id: 1, params: {} }, 'bad-token')
+    expect(result.error).toBeDefined()
+  })
 })
 
 describe('changePassword', () => {
@@ -183,6 +190,7 @@ describe('changePassword', () => {
 
 describe('requestPasswordSetup', () => {
   const mockDb = {
+    account: { findOne: jest.fn() },
     socialId: { findOne: jest.fn() }
   } as unknown as AccountDB
 
@@ -205,6 +213,19 @@ describe('requestPasswordSetup', () => {
     })
     global.fetch = mockFetch
     mockFetch.mockResolvedValue({ ok: true })
+    // Default: SSO-only account (no password hash)
+    ;(mockDb.account.findOne as jest.Mock).mockResolvedValue({ uuid: accountUuid, hash: null, salt: null })
+  })
+
+  test('rejects when account already has a password (server-side guard)', async () => {
+    ;(mockDb.account.findOne as jest.Mock).mockResolvedValue({
+      uuid: accountUuid,
+      hash: Buffer.from('hash'),
+      salt: Buffer.from('salt')
+    })
+    const result = await requestPasswordSetup(mockCtx, mockDb, null, { id: 1, params: {} }, 'token')
+    expect(result.error).toBeDefined()
+    expect(mockFetch).not.toHaveBeenCalled()
   })
 
   test('sends email when account has a verified email social ID', async () => {

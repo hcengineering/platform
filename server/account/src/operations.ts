@@ -1435,6 +1435,13 @@ export async function requestPasswordReset (
   }
 }
 
+/**
+ * Sends a password-setup email to an SSO-only account so they can add
+ * email+password as a secondary sign-in method.
+ *
+ * Requires authentication (session token). Only valid for accounts that have
+ * no password set — accounts with an existing password must use changePassword.
+ */
 export async function requestPasswordSetup (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1442,6 +1449,14 @@ export async function requestPasswordSetup (
   token: string
 ): Promise<void> {
   const { account: accountUuid } = decodeTokenVerbose(ctx, token)
+
+  // Guard: reject if the account already has a password. The setup flow
+  // bypasses the old-password requirement in changePassword, so it must only
+  // be accessible to accounts that have no password yet.
+  const existingAccount = await getAccount(db, accountUuid)
+  if (existingAccount?.hash != null && existingAccount?.salt != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
 
   ctx.info('Requesting password setup', { accountUuid })
 
