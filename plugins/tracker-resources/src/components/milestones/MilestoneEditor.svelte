@@ -124,7 +124,12 @@
     style:flex-direction={twoRows ? 'column' : 'row'}
   >
     {#if (!Array.isArray(value) && value.milestone && value.milestone !== $activeMilestone && groupBy !== 'milestone') || shouldShowPlaceholder}
-      <div class="flex-row-center clear-mins" class:minus-margin-vSpace={kind === 'list-header'} class:compression style:width>
+      <div
+        class="flex-row-center clear-mins"
+        class:minus-margin-vSpace={kind === 'list-header'}
+        class:compression
+        style:width
+      >
         <MilestoneSelector
           {kind}
           {size}
