@@ -92,6 +92,8 @@
     "@tiptap/pm": "^2.11.7",
     "@tiptap/starter-kit": "^2.11.7",
     "@tiptap/extension-highlight": "^2.11.7",
+    "@tiptap/extension-subscript": "^2.11.7",
+    "@tiptap/extension-superscript": "^2.11.7",
     "@tiptap/extension-placeholder": "^2.11.7",
     "@tiptap/extension-mention": "^2.11.7",
     "@tiptap/extension-typography": "^2.11.7",

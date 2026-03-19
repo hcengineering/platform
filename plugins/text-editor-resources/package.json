@@ -36,6 +36,7 @@
     "ts-jest": "^29.1.1",
     "@types/jest": "^29.5.5",
     "@types/diff": "~5.0.2",
+    "@types/katex": "^0.16.0",
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
@@ -73,6 +74,8 @@
     "@tiptap/extension-code": "^2.11.7",
     "@tiptap/extension-code-block": "^2.11.7",
     "@tiptap/extension-highlight": "^2.11.7",
+    "@tiptap/extension-subscript": "^2.11.7",
+    "@tiptap/extension-superscript": "^2.11.7",
     "@tiptap/extension-typography": "^2.11.7",
     "@tiptap/extension-link": "^2.11.7",
     "@tiptap/extension-ordered-list": "^2.11.7",
@@ -98,6 +101,8 @@
     "tippy.js": "~6.3.7",
     "@hcengineering/chunter": "workspace:^0.7.0",
     "@tiptap/extension-text-align": "~2.11.0",
+    "@tiptap/extension-mathematics": "^2.11.7",
+    "katex": "^0.16.0",
     "@hcengineering/workbench": "workspace:^0.7.0",
     "@hcengineering/drive": "workspace:^0.7.0",
     "@hcengineering/time": "workspace:^0.7.0",

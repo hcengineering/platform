@@ -670,7 +670,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: latest
       - name: Cache node modules
@@ -971,12 +971,12 @@ jobs:
       - name: Publish to npm
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/common/config/rush/.npmrc-publish
         run: |
           if [ -z "$NPM_TOKEN" ]; then
             echo "::error::NPM_TOKEN secret is not set. Add it in repository Settings > Secrets and variables > Actions."
             exit 1
           fi
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
           REF="${{ github.event.inputs.ref || github.ref }}"
           VERSION="${REF#refs/tags/v}"
           VERSION="${VERSION#v}"

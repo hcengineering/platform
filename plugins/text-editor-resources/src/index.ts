@@ -39,6 +39,7 @@ import {
   shouldShowCopyPreviewLinkAction,
   copyPreviewLinkAction
 } from './components/extension/embed/embed'
+import { isMathBlockActive, isMathInlineActive } from './components/extension/mathematics'
 import { formatLink, isEditable, isHeadingVisible } from './utils'
 export { SmartPasteExtension as TransformPastedContentExtension } from './components/extension/shortcuts/smartPaste'
 export { getReferenceFromUrl, getReferenceLabel, getTargetObjectFromUrl } from './components/extension/reference'
@@ -141,6 +142,9 @@ export default async (): Promise<Resources> => ({
     CopyPreviewLinkAction: copyPreviewLinkAction,
 
     SetBackgroundColor: openBackgroundColorOptions,
-    SetTextColor: openTextColorOptions
+    SetTextColor: openTextColorOptions,
+
+    IsMathInlineActive: isMathInlineActive,
+    IsMathBlockActive: isMathBlockActive
   }
 })
