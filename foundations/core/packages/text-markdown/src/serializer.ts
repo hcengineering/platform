@@ -421,6 +421,20 @@ export const storeMarks: Record<string, MarkProcessor> = {
     mixable: false,
     expelEnclosingWhitespace: false,
     escape: false
+  },
+  subscript: {
+    open: '<sub>',
+    close: '</sub>',
+    mixable: true,
+    expelEnclosingWhitespace: false,
+    escape: true
+  },
+  superscript: {
+    open: '<sup>',
+    close: '</sup>',
+    mixable: true,
+    expelEnclosingWhitespace: false,
+    escape: true
   }
 }
 

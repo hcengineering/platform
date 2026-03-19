@@ -60,6 +60,9 @@ export default mergeIds(textEditorId, textEditor, {
     CopyPreviewLinkAction: '' as Resource<TextActionFunction>,
 
     SetBackgroundColor: '' as Resource<TextActionFunction>,
-    SetTextColor: '' as Resource<TextActionFunction>
+    SetTextColor: '' as Resource<TextActionFunction>,
+
+    IsMathInlineActive: '' as Resource<TextActionActiveFunction>,
+    IsMathBlockActive: '' as Resource<TextActionActiveFunction>
   }
 })

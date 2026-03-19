@@ -39,7 +39,6 @@
     "FullDescription": "完整描述",
     "NoFullDescription": "没有详细描述",
     "EnableDiffMode": "差异模式",
-
     "AddColumnBefore": "在前面添加",
     "AddColumnAfter": "在后面添加",
     "DeleteColumn": "删除",
@@ -48,7 +47,6 @@
     "DeleteRow": "删除",
     "DeleteTable": "删除",
     "Duplicate": "重复",
-
     "CategoryRow": "行",
     "CategoryColumn": "列",
     "Table": "表格",
@@ -73,6 +71,11 @@
     "UnableToLoadEmbeddedContent": "由于权限设置或不支持的内容，无法加载链接预览",
     "CannotConnectToCollaborationService": "无法连接到协作者",
     "SourceURL": "源URL",
-    "SelectedDocuments": "选定的文档 ({count, plural, =1 {1 项} other {# 项}})"
+    "SelectedDocuments": "选定的文档 ({count, plural, =1 {1 项} other {# 项}})",
+    "Highlight": "Highlight",
+    "Subscript": "Subscript",
+    "Superscript": "Superscript",
+    "Mathematics": "Mathematics",
+    "MathematicsBlock": "Mathematics block"
   }
 }
