@@ -74,6 +74,7 @@
     provider: Ref<ChannelProvider>
     integration: boolean
     notification: boolean
+    canEdit: boolean
   }
 
   function getProvider (
@@ -84,21 +85,23 @@
   ): Item | undefined {
     const provider = map.get(item.provider)
     if (provider) {
+      const channel = item as Channel
       const notification =
-        (item as Channel)._id !== undefined
-          ? isNew(item as Channel, notifyContextByDoc, inboxNotificationsByContext)
-          : false
+        channel._id !== undefined ? isNew(channel, notifyContextByDoc, inboxNotificationsByContext) : false
+      const hasActivity = (channel.items ?? 0) > 0 || channel.lastMessage !== undefined
+      const canEditRestricted = !hasActivity
       return {
         label: provider.label,
         icon: provider.icon as Asset,
-        value: item.value,
+        value: channel.value,
         presenter: provider.presenter,
         action: provider.action,
         placeholder: provider.placeholder,
         provider: provider._id,
-        channel: item,
+        channel,
         notification,
-        integration: provider.integrationType !== undefined ? integrations.has(provider.integrationType) : false
+        integration: provider.integrationType !== undefined ? integrations.has(provider.integrationType) : false,
+        canEdit: !restricted.includes(provider._id) || canEditRestricted
       }
     }
   }
@@ -299,7 +302,7 @@
         {shape}
         highlight={item.integration || item.notification}
         on:click={(ev) => {
-          if (editable && !restricted.includes(item.provider)) {
+          if (editable && item.canEdit) {
             closeTooltip()
             editChannel(eventToHTMLElement(ev), i, item)
           } else {
@@ -340,7 +343,7 @@
         {shape}
         highlight={item.integration || item.notification}
         on:click={(ev) => {
-          if (editable && !restricted.includes(item.provider)) {
+          if (editable && item.canEdit) {
             closeTooltip()
             editChannel(eventToHTMLElement(ev), i, item)
           } else {
