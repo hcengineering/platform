@@ -82,6 +82,7 @@ import { hasRoleCapabilityAsync } from './hasRoleCapabilityAsync'
 export * from './store'
 export { hasRoleCapability, getRolesForCapability } from './roleCapability'
 export { hasRoleCapabilityAsync } from './hasRoleCapabilityAsync'
+export * from './inviteSettingsUtils'
 export {
   ClassAttributes,
   ClassAttributesList,
