@@ -99,7 +99,7 @@ export {
   IntegrationStateRow
 }
 
-async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
+async function DeleteMixin(object: Mixin<Class<Doc>>): Promise<void> {
   const docs = await getClient().findAll(object._id, {}, { limit: 1 })
 
   showPopup(MessageBox, {

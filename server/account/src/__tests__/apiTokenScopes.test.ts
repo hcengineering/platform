@@ -13,13 +13,7 @@
 // limitations under the License.
 //
 
-import {
-  AccountRole,
-  type MeasureContext,
-  type PersonUuid,
-  type WorkspaceUuid
-} from '@hcengineering/core'
-import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
+import { AccountRole, type MeasureContext, type PersonUuid, type WorkspaceUuid } from '@hcengineering/core'
 import { decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 
 import { type AccountDB } from '../types'
@@ -75,6 +69,7 @@ describe('createApiToken scopes', () => {
   } as unknown as AccountDB
 
   const methods = getMethods()
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const createApiToken = methods.createApiToken!
 
   beforeEach(() => {
@@ -91,7 +86,9 @@ describe('createApiToken scopes', () => {
 
   test('creates token with valid scopes', async () => {
     const result = await createApiToken(
-      mockCtx, mockDb, null,
+      mockCtx,
+      mockDb,
+      null,
       { id: 1, params: { name: 'test', workspaceUuid, expiryDays: 30, scopes: ['read:*'] } },
       'test-token'
     )
@@ -110,14 +107,14 @@ describe('createApiToken scopes', () => {
     )
 
     // Verify scopes were persisted to DB
-    expect(mockDb.apiToken.insertOne).toHaveBeenCalledWith(
-      expect.objectContaining({ scopes: ['read:*'] })
-    )
+    expect(mockDb.apiToken.insertOne).toHaveBeenCalledWith(expect.objectContaining({ scopes: ['read:*'] }))
   })
 
   test('creates token with multiple valid scopes', async () => {
     const result = await createApiToken(
-      mockCtx, mockDb, null,
+      mockCtx,
+      mockDb,
+      null,
       { id: 1, params: { name: 'test', workspaceUuid, expiryDays: 30, scopes: ['read:*', 'write:*', 'delete:*'] } },
       'test-token'
     )
@@ -130,7 +127,9 @@ describe('createApiToken scopes', () => {
 
   test('creates token without scopes (full access, backward compat)', async () => {
     const result = await createApiToken(
-      mockCtx, mockDb, null,
+      mockCtx,
+      mockDb,
+      null,
       { id: 1, params: { name: 'test', workspaceUuid, expiryDays: 30 } },
       'test-token'
     )
@@ -153,7 +152,9 @@ describe('createApiToken scopes', () => {
 
   test('rejects invalid scope format', async () => {
     const result = await createApiToken(
-      mockCtx, mockDb, null,
+      mockCtx,
+      mockDb,
+      null,
       { id: 1, params: { name: 'test', workspaceUuid, expiryDays: 30, scopes: ['invalid'] } },
       'test-token'
     )
@@ -163,7 +164,9 @@ describe('createApiToken scopes', () => {
 
   test('rejects empty scopes array', async () => {
     const result = await createApiToken(
-      mockCtx, mockDb, null,
+      mockCtx,
+      mockDb,
+      null,
       { id: 1, params: { name: 'test', workspaceUuid, expiryDays: 30, scopes: [] } },
       'test-token'
     )
@@ -173,7 +176,9 @@ describe('createApiToken scopes', () => {
 
   test('rejects domain-scoped scopes in Phase 1', async () => {
     const result = await createApiToken(
-      mockCtx, mockDb, null,
+      mockCtx,
+      mockDb,
+      null,
       { id: 1, params: { name: 'test', workspaceUuid, expiryDays: 30, scopes: ['read:tracker'] } },
       'test-token'
     )
@@ -223,6 +228,7 @@ describe('listApiTokens includes scopes', () => {
   } as unknown as AccountDB
 
   const methods = getMethods()
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const listApiTokens = methods.listApiTokens!
 
   beforeEach(() => {
@@ -235,11 +241,7 @@ describe('listApiTokens includes scopes', () => {
   })
 
   test('returns scopes for scoped tokens and undefined for legacy', async () => {
-    const result = await listApiTokens(
-      mockCtx, mockDb, null,
-      { id: 1, params: {} },
-      'test-token'
-    )
+    const result = await listApiTokens(mockCtx, mockDb, null, { id: 1, params: {} }, 'test-token')
 
     const tokens = result.result
     expect(tokens).toHaveLength(2)

@@ -270,6 +270,11 @@
     "CreateApiToken": "Создать токен",
     "Created": "Создан",
     "Expires": "Истекает",
-    "TokenStatus": "Статус"
+    "TokenStatus": "Статус",
+    "ApiTokenPermissions": "Permissions",
+    "ApiTokenScopePreset": "Permissions",
+    "ApiTokenScopeReadOnly": "Read Only",
+    "ApiTokenScopeReadWrite": "Read & Write",
+    "ApiTokenScopeFullAccess": "Full Access"
   }
 }

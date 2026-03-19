@@ -40,7 +40,7 @@
   let scopePresetItems: ListItem[] = scopePresets.map((p) => ({ _id: p._id, label: p.label }))
   let selectedScopePreset: ListItem = scopePresetItems[0]
 
-  async function resolveScopeLabels (): Promise<void> {
+  async function resolveScopeLabels(): Promise<void> {
     const lang = $themeStore.language
     const labels = await Promise.all([
       translate(setting.string.ApiTokenScopeReadOnly, {}, lang),
@@ -56,7 +56,7 @@
     selectedScopePreset = scopePresetItems.find((o) => o._id === prevId) ?? scopePresetItems[0]
   }
 
-  function getSelectedScopes (): string[] {
+  function getSelectedScopes(): string[] {
     const preset = scopePresets.find((p) => p._id === selectedScopePreset._id)
     return preset?.scopes ?? ['read:*']
   }
@@ -71,7 +71,7 @@
   let expiryOptions: ListItem[] = expiryKeys.map((k) => ({ _id: k._id, label: k._id + ' days' }))
   let selectedExpiry: ListItem = expiryOptions[1]
 
-  async function resolveExpiryLabels (): Promise<void> {
+  async function resolveExpiryLabels(): Promise<void> {
     const lang = $themeStore.language
     const prevId = selectedExpiry._id
     expiryOptions = await Promise.all(
@@ -88,7 +88,7 @@
     copied = false
   }
 
-  async function loadWorkspaces (): Promise<void> {
+  async function loadWorkspaces(): Promise<void> {
     const workspaces = await getAccountClient().getUserWorkspaces()
     wsItems = workspaces.map((w) => ({ _id: w.uuid, label: w.name ?? w.url }))
     if (wsItems.length > 0) {
@@ -96,7 +96,7 @@
     }
   }
 
-  async function create (): Promise<void> {
+  async function create(): Promise<void> {
     if (selectedWs === undefined) return
     loading = true
     error = undefined
@@ -120,7 +120,7 @@
     }
   }
 
-  async function copyToken (): Promise<void> {
+  async function copyToken(): Promise<void> {
     if (createdToken === undefined || !window.isSecureContext) return
     await copyTextToClipboard(createdToken)
     copied = true
@@ -173,7 +173,11 @@
     </div>
     <div class="antiPopup-msg">
       <span class="label"><Label label={setting.string.ApiTokenScopePreset} /></span>
-      <Dropdown placeholder={setting.string.ApiTokenScopePreset} items={scopePresetItems} bind:selected={selectedScopePreset} />
+      <Dropdown
+        placeholder={setting.string.ApiTokenScopePreset}
+        items={scopePresetItems}
+        bind:selected={selectedScopePreset}
+      />
     </div>
     <div class="antiPopup-msg">
       <span class="label"><Label label={setting.string.ApiTokenExpiry} /></span>
