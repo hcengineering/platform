@@ -66,6 +66,7 @@ import core, {
   type PersonId,
   pickPrimarySocialId,
   type Ref,
+  type SocialId,
   SocialIdType,
   type Space,
   type Timestamp,
@@ -219,6 +220,16 @@ export async function getCurrentEmployeeEmail (): Promise<string> {
     attachedToClass: contact.class.Person
   })
   return emailSocialId?.value ?? ''
+}
+
+export function isSocialIdOwnedByCurrentUser (value: SocialIdentity | SocialId): boolean {
+  if ('attachedTo' in value) {
+    const me = getCurrentEmployee()
+    return me != null && value.attachedTo === me
+  }
+
+  const account = getCurrentAccount()
+  return account.primarySocialId === value._id || account.socialIds.includes(value._id)
 }
 
 export async function getCurrentEmployeePosition (): Promise<string | undefined> {
