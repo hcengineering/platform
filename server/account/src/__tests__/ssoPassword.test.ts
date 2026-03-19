@@ -55,7 +55,7 @@ describe('checkHasPassword', () => {
   } as unknown as AccountDB
 
   const methods = getMethods()
-  const checkHasPassword = methods.checkHasPassword!
+  const checkHasPassword = methods.checkHasPassword as NonNullable<typeof methods.checkHasPassword>
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -110,7 +110,9 @@ describe('checkHasPassword', () => {
 
   test('returns error for invalid/expired token', async () => {
     const { TokenError } = jest.requireMock('@hcengineering/server-token')
-    ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => { throw new TokenError('invalid token') })
+    ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
+      throw new TokenError('invalid token')
+    })
     const result = await checkHasPassword(mockCtx, mockDb, null, { id: 1, params: {} }, 'bad-token')
     expect(result.error).toBeDefined()
   })
@@ -124,7 +126,7 @@ describe('changePassword', () => {
   } as unknown as AccountDB
 
   const methods = getMethods()
-  const changePassword = methods.changePassword!
+  const changePassword = methods.changePassword as NonNullable<typeof methods.changePassword>
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -133,7 +135,9 @@ describe('changePassword', () => {
 
   test('rejects empty newPassword', async () => {
     const result = await changePassword(
-      mockCtx, mockDb, null,
+      mockCtx,
+      mockDb,
+      null,
       { id: 1, params: { oldPassword: 'old', newPassword: '' } },
       'token'
     )
@@ -149,7 +153,9 @@ describe('changePassword', () => {
       salt: null
     })
     const result = await changePassword(
-      mockCtx, mockDb, null,
+      mockCtx,
+      mockDb,
+      null,
       { id: 1, params: { oldPassword: '', newPassword: 'newpass123' } },
       'token'
     )
@@ -164,7 +170,9 @@ describe('changePassword', () => {
       salt: Buffer.from('salt')
     })
     const result = await changePassword(
-      mockCtx, mockDb, null,
+      mockCtx,
+      mockDb,
+      null,
       { id: 1, params: { oldPassword: '', newPassword: 'newpass123' } },
       'token'
     )
@@ -179,7 +187,9 @@ describe('changePassword', () => {
       salt: Buffer.from('salt')
     })
     const result = await changePassword(
-      mockCtx, mockDb, null,
+      mockCtx,
+      mockDb,
+      null,
       { id: 1, params: { oldPassword: 'wrongpass', newPassword: 'newpass123' } },
       'token'
     )
@@ -195,7 +205,7 @@ describe('requestPasswordSetup', () => {
   } as unknown as AccountDB
 
   const methods = getMethods()
-  const requestPasswordSetup = methods.requestPasswordSetup!
+  const requestPasswordSetup = methods.requestPasswordSetup as NonNullable<typeof methods.requestPasswordSetup>
 
   const mockFetch = jest.fn()
 
@@ -205,10 +215,14 @@ describe('requestPasswordSetup', () => {
     ;(generateToken as jest.Mock).mockReturnValue('mocked-reset-token')
     ;(getMetadata as jest.Mock).mockImplementation((key: any) => {
       switch (key) {
-        case accountPlugin.metadata.MAIL_URL: return 'http://mail.test'
-        case accountPlugin.metadata.MAIL_AUTH_TOKEN: return undefined
-        case accountPlugin.metadata.FrontURL: return 'http://app.test'
-        default: return undefined
+        case accountPlugin.metadata.MAIL_URL:
+          return 'http://mail.test'
+        case accountPlugin.metadata.MAIL_AUTH_TOKEN:
+          return undefined
+        case accountPlugin.metadata.FrontURL:
+          return 'http://app.test'
+        default:
+          return undefined
       }
     })
     global.fetch = mockFetch

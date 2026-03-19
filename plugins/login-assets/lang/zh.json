@@ -91,6 +91,11 @@
     "LogInAndJoin": "登录并加入",
     "SignUpAndJoin": "注册并加入",
     "CreateNewAccount": "创建新账户",
-    "SignedInAs": "已以 {name} 身份登录"
+    "SignedInAs": "已以 {name} 身份登录",
+    "SetPassword": "Set a password",
+    "SSOPasswordDescription": "Your account uses external login. Set up a password via email confirmation.",
+    "SendSetupLink": "Send setup link",
+    "SSOPasswordEmailSent": "Check your email for a link to set your password.",
+    "SSONoEmailLinked": "No email address is linked to your account. Add one in Account Settings → Manage Identities first."
   }
 }
