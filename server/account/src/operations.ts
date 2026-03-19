@@ -35,7 +35,7 @@ import {
   type WorkspaceUuid,
   type IntegrationKind
 } from '@hcengineering/core'
-import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
+import platform, { PlatformError, Severity, Status, getMetadata, translate } from '@hcengineering/platform'
 import { decodeToken, decodeTokenVerbose, generateToken, type PermissionsGrant } from '@hcengineering/server-token'
 
 import { randomUUID } from 'crypto'
@@ -2612,13 +2612,14 @@ async function createApiToken (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const { account } = decodeTokenVerbose(ctx, token)
+  const { account, extra } = decodeTokenVerbose(ctx, token)
 
-  // Verify the user has access to this workspace
+  // Verify the user has access to this workspace and is at least a User (not a guest)
   const role = await db.getWorkspaceRole(account, workspaceUuid)
   if (role == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
+  verifyAllowedRole(role, AccountRole.User, extra)
 
   // Enforce per-account token limit
   const MAX_TOKENS_PER_ACCOUNT = 100
@@ -2645,11 +2646,11 @@ async function createApiToken (
   const expSec = Math.floor(expiresOn / 1000)
 
   const id = randomUUID()
-  const extra: Record<string, string> = { apiTokenId: id }
+  const tokenExtra: Record<string, string> = { apiTokenId: id }
   if (scopes !== undefined) {
-    extra.scopes = JSON.stringify(scopes)
+    tokenExtra.scopes = JSON.stringify(scopes)
   }
-  const apiToken = generateToken(account, workspaceUuid, extra, undefined, { exp: expSec })
+  const apiToken = generateToken(account, workspaceUuid, tokenExtra, undefined, { exp: expSec })
 
   await db.apiToken.insertOne({
     id,
@@ -2685,7 +2686,7 @@ async function listApiTokens (
     expiresOn: number
     revoked: boolean
   }>
-> {
+  > {
   const { account } = decodeTokenVerbose(ctx, token)
 
   const tokens = await db.apiToken.find({ accountUuid: account })
@@ -2717,13 +2718,17 @@ async function revokeApiToken (
   token: string,
   params: { tokenId: string }
 ): Promise<void> {
-  const { account } = decodeTokenVerbose(ctx, token)
+  const { account, extra } = decodeTokenVerbose(ctx, token)
   const { tokenId } = params
 
   const existing = await db.apiToken.findOne({ id: tokenId, accountUuid: account })
   if (existing == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
+
+  // Verify the user is at least a User (not a guest) in the token's workspace
+  const role = await db.getWorkspaceRole(account, existing.workspaceUuid)
+  verifyAllowedRole(role, AccountRole.User, extra)
 
   await db.apiToken.update({ id: tokenId }, { revoked: true })
   ctx.info('API token revoked', { tokenId, account })
@@ -2768,7 +2773,7 @@ async function listWorkspaceApiTokens (
     expiresOn: number
     revoked: boolean
   }>
-> {
+  > {
   const { account } = decodeTokenVerbose(ctx, token)
   const { workspaceUuid } = params
 

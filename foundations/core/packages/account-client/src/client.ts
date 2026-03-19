@@ -257,7 +257,12 @@ export interface AccountClient {
   getWorkspaceUsersWithPermission: (params: { permission: string }) => Promise<AccountUuid[]>
 
   verify2fa: (code: string) => Promise<LoginInfo>
-  createApiToken: (name: string, workspaceUuid: WorkspaceUuid, expiryDays: number, scopes?: string[]) => Promise<ApiTokenResult>
+  createApiToken: (
+    name: string,
+    workspaceUuid: WorkspaceUuid,
+    expiryDays: number,
+    scopes?: string[]
+  ) => Promise<ApiTokenResult>
   listApiTokens: () => Promise<ApiTokenInfo[]>
   revokeApiToken: (tokenId: string) => Promise<void>
   listWorkspaceApiTokens: (workspaceUuid: WorkspaceUuid) => Promise<ApiTokenInfo[]>
@@ -1232,7 +1237,12 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async createApiToken (name: string, workspaceUuid: WorkspaceUuid, expiryDays: number, scopes?: string[]): Promise<ApiTokenResult> {
+  async createApiToken (
+    name: string,
+    workspaceUuid: WorkspaceUuid,
+    expiryDays: number,
+    scopes?: string[]
+  ): Promise<ApiTokenResult> {
     const request = {
       method: 'createApiToken' as const,
       params: { name, workspaceUuid, expiryDays, scopes }

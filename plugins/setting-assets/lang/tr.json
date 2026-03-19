@@ -262,6 +262,11 @@
     "ApiTokenExpiry180Days": "180 days",
     "ApiTokenExpiry365Days": "365 days",
     "ApiTokenLoadError": "Failed to load API tokens",
-    "ApiTokenCreateError": "Failed to create token. Please try again."
+    "ApiTokenCreateError": "Failed to create token. Please try again.",
+    "ApiTokenPermissions": "Permissions",
+    "ApiTokenScopePreset": "Permissions",
+    "ApiTokenScopeReadOnly": "Read Only",
+    "ApiTokenScopeReadWrite": "Read & Write",
+    "ApiTokenScopeFullAccess": "Full Access"
   }
 }

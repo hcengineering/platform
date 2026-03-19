@@ -83,7 +83,8 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
     getV23Migration(ns, flavor),
     getV24Migration(ns, flavor),
     getV25Migration(ns, flavor),
-    getV26Migration(ns, flavor)
+    getV26Migration(ns, flavor),
+    getV27Migration(ns, flavor)
   ]
 }
 
@@ -827,9 +828,9 @@ function getV26Migration (ns: string, flavor: DBFlavor): [string, string] {
   ]
 }
 
-function getV26Migration (ns: string, flavor: DBFlavor): [string, string] {
+function getV27Migration (ns: string, flavor: DBFlavor): [string, string] {
   return [
-    'account_db_v26_add_api_token_scopes',
+    'account_db_v27_add_api_token_scopes',
     `
     ALTER TABLE ${ns}.api_tokens
     ADD COLUMN IF NOT EXISTS scopes TEXT[] DEFAULT NULL;
