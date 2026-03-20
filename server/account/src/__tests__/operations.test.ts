@@ -1440,7 +1440,8 @@ describe('account operations', () => {
           account: mockAccountId,
           token: undefined,
           name: 'John Doe',
-          socialId: 'social-id'
+          socialId: 'social-id',
+          tfaRequired: false
         })
       })
 
@@ -2477,7 +2478,8 @@ describe('account operations', () => {
           account: mockAccountId,
           name: 'John Doe',
           token: expect.any(String),
-          socialId: mockSocialId._id
+          socialId: mockSocialId._id,
+          tfaRequired: false
         })
 
         expect(utils.setPassword).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, mockAccountId, mockNewPassword)
