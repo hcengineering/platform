@@ -183,36 +183,6 @@ const devFrontProxy = {
   }
 }
 
-const devLocalProxy = {
-  '/_accounts': {
-    target: 'http://localhost:8088',
-    changeOrigin: true,
-    logLevel: 'debug'
-  },
-  '/account': {
-    target: 'http://localhost:8088',
-    changeOrigin: true,
-    pathRewrite: { '^/account': '/_accounts' },
-    logLevel: 'debug'
-  },
-  '/_files': {
-    target: 'http://localhost:8088',
-    changeOrigin: true,
-    logLevel: 'debug'
-  },
-  '/_transactor': {
-    target: 'ws://localhost:8088',
-    changeOrigin: true,
-    ws: true,
-    logLevel: 'debug'
-  },
-  '/api/v1': {
-    target: 'http://localhost:8088',
-    changeOrigin: true,
-    logLevel: 'debug'
-  }
-}
-
 const proxy = {
   'dev-worker': devProxy,
   'dev-worker-local': devProxy,
@@ -220,8 +190,7 @@ const proxy = {
   'dev-server-test': devProxyTest,
   'dev-production': devFrontProxy,
   'dev-bold': devBoldProxy,
-  'dev-huly': devHulyProxy,
-  'dev-local': devLocalProxy
+  'dev-huly': devHulyProxy
 }
 
 /**
