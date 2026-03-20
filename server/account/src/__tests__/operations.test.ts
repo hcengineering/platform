@@ -2075,7 +2075,7 @@ describe('account operations', () => {
           account: callerAccountId,
           name: 'John Doe',
           socialId: mockSocialId._id,
-          token: expect.any(String),
+          token: undefined,
           tfaRequired: false
         })
 
@@ -2131,7 +2131,7 @@ describe('account operations', () => {
           account: callerAccountId,
           name: 'John Doe',
           socialId: mockSocialId._id,
-          token: expect.any(String),
+          token: undefined,
           tfaRequired: false
         })
 
@@ -2179,7 +2179,7 @@ describe('account operations', () => {
           account: callerAccountId,
           name: 'John Doe',
           socialId: mockSocialId._id,
-          token: expect.any(String),
+          token: undefined,
           tfaRequired: false
         })
 
