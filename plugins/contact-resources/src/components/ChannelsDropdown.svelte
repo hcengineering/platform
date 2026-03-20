@@ -259,7 +259,8 @@
             if (result.trim() === '') {
               remove(n)
             } else if (item.value.trim() !== result.trim()) {
-              item.value = result
+              item.value = result.trim()
+              item.channel.value = item.value
               saveItems()
               dispatch('save', item.channel)
             }
