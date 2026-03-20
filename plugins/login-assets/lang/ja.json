@@ -91,6 +91,10 @@
     "LogInAndJoin": "ログインして参加",
     "SignUpAndJoin": "サインアップして参加",
     "CreateNewAccount": "新規アカウントを作成",
-    "SignedInAs": "{name} としてサインイン中"
+    "SignedInAs": "{name} としてサインイン中",
+    "TwoFactorAuth": "2段階認証",
+    "EnterTwoFactorCode": "2段階認証コードを入力",
+    "TwoFactorCode": "2段階認証コード",
+    "Verify": "確認"
   }
 }

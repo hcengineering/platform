@@ -91,6 +91,10 @@
     "LogInAndJoin": "Giriş yap ve katıl",
     "SignUpAndJoin": "Kayıt ol ve katıl",
     "CreateNewAccount": "Yeni hesap oluştur",
-    "SignedInAs": "{name} olarak giriş yapıldı"
+    "SignedInAs": "{name} olarak giriş yapıldı",
+    "TwoFactorAuth": "İki faktörlü kimlik doğrulama",
+    "EnterTwoFactorCode": "İki faktörlü kimlik doğrulama kodunu girin",
+    "TwoFactorCode": "İki faktörlü kimlik doğrulama kodu",
+    "Verify": "Doğrula"
   }
 }

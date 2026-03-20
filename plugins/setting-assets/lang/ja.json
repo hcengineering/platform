@@ -219,6 +219,15 @@
     "SelectUsers": "ユーザーを選択",
     "ShowInTitle": "タイトルに表示",
     "SpaceMembersOnly": "スペースメンバーのみ",
-    "Reset": "リセット"
+    "Reset": "リセット",
+    "Security": "セキュリティ",
+    "TwoFactorAuth": "二要素認証",
+    "TwoFactorAuthDescription": "二要素認証はアカウントにセキュリティの追加レイヤーを追加します",
+    "EnableTwoFactorAuth": "二要素認証を有効にする",
+    "DisableTwoFactorAuth": "二要素認証を無効にする",
+    "TwoFactorAuthEnabled": "二要素認証は有効です",
+    "TwoFactorAuthDisabled": "二要素認証は無効です",
+    "ShowQRCode": "QRコードを表示",
+    "EnterVerificationCode": "確認コードを入力"
   }
 }

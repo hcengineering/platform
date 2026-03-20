@@ -92,6 +92,10 @@
     "LogInAndJoin": "Anmelden & beitreten",
     "SignUpAndJoin": "Registrieren & beitreten",
     "CreateNewAccount": "Neues Konto erstellen",
-    "SignedInAs": "Angemeldet als {name}"
+    "SignedInAs": "Angemeldet als {name}",
+    "TwoFactorAuth": "Zweistufige Authentifizierung",
+    "EnterTwoFactorCode": "Geben Sie den zweistufigen Authentifizierungscode ein",
+    "TwoFactorCode": "Zweistufiger Authentifizierungscode",
+    "Verify": "Überprüfen"
   }
 }

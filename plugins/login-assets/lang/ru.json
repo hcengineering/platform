@@ -91,6 +91,10 @@
     "LogInAndJoin": "Войти и присоединиться",
     "SignUpAndJoin": "Зарегистрироваться и присоединиться",
     "CreateNewAccount": "Создать новый аккаунт",
-    "SignedInAs": "Вы вошли как {name}"
+    "SignedInAs": "Вы вошли как {name}",
+    "TwoFactorAuth": "Двухфакторная аутентификация",
+    "EnterTwoFactorCode": "Введите код двухфакторной аутентификации",
+    "TwoFactorCode": "Код двухфакторной аутентификации",
+    "Verify": "Проверить"
   }
 }

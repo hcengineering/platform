@@ -217,6 +217,15 @@
     "SelectUsers": "Vybrat uživatele",
     "ShowInTitle": "Zobrazit v názvu",
     "SpaceMembersOnly": "Pouze členové prostoru",
-    "Reset": "Resetovat"
+    "Reset": "Resetovat",
+    "Security": "Zabezpečení",
+    "TwoFactorAuth": "Dvoufaktorové ověřování",
+    "TwoFactorAuthDescription": "Dvoufaktorové ověřování přidává další vrstvu zabezpečení k vašemu účtu",
+    "EnableTwoFactorAuth": "Povolit dvoufaktorové ověřování",
+    "DisableTwoFactorAuth": "Zakázat dvoufaktorové ověřování",
+    "TwoFactorAuthEnabled": "Dvoufaktorové ověřování je povoleno",
+    "TwoFactorAuthDisabled": "Dvoufaktorové ověřování je zakázáno",
+    "ShowQRCode": "Zobrazit QR kód",
+    "EnterVerificationCode": "Zadejte ověřovací kód"
   }
 }

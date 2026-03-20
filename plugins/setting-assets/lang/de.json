@@ -219,6 +219,15 @@
     "SelectUsers": "Benutzer auswählen",
     "ShowInTitle": "Im Titel anzeigen",
     "SpaceMembersOnly": "Nur Bereichsmitglieder",
-    "Reset": "Zurücksetzen"
+    "Reset": "Zurücksetzen",
+    "Security": "Sicherheit",
+    "TwoFactorAuth": "Zweistufige Authentifizierung",
+    "TwoFactorAuthDescription": "Zweistufige Authentifizierung fügt eine zusätzliche Sicherheitsebene zu Ihrem Konto hinzu",
+    "EnableTwoFactorAuth": "Zweistufige Authentifizierung aktivieren",
+    "DisableTwoFactorAuth": "Zweistufige Authentifizierung deaktivieren",
+    "TwoFactorAuthEnabled": "Zweistufige Authentifizierung ist aktiviert",
+    "TwoFactorAuthDisabled": "Zweistufige Authentifizierung ist deaktiviert",
+    "ShowQRCode": "QR-Code anzeigen",
+    "EnterVerificationCode": "Verifizierungscode eingeben"
   }
 }

@@ -91,6 +91,10 @@
     "LogInAndJoin": "登录并加入",
     "SignUpAndJoin": "注册并加入",
     "CreateNewAccount": "创建新账户",
-    "SignedInAs": "已以 {name} 身份登录"
+    "SignedInAs": "已以 {name} 身份登录",
+    "TwoFactorAuth": "两步验证",
+    "EnterTwoFactorCode": "输入两步验证码",
+    "TwoFactorCode": "两步验证码",
+    "Verify": "验证"
   }
 }

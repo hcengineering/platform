@@ -252,8 +252,14 @@ export interface AccountClient {
   getWorkspacePermissions: (params: { accountId: AccountUuid, permission: string }) => Promise<WorkspaceUuid[]>
   getWorkspaceUsersWithPermission: (params: { permission: string }) => Promise<AccountUuid[]>
 
+  verify2fa: (code: string) => Promise<LoginInfo>
+
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
+
+  generate2faSecret: () => Promise<{ secret: string, url: string }>
+  enable2fa: (secret: string, code: string) => Promise<void>
+  disable2fa: (code: string) => Promise<void>
 }
 
 /** @public */
@@ -1314,6 +1320,42 @@ class AccountClientImpl implements AccountClient {
       method: 'getWorkspaceUsersWithPermission',
       params
     })
+  }
+
+  async verify2fa (code: string): Promise<LoginInfo> {
+    const request = {
+      method: 'verify2fa' as const,
+      params: { code }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async generate2faSecret (): Promise<{ secret: string, url: string }> {
+    const request = {
+      method: 'generate2faSecret' as const,
+      params: {}
+    }
+
+    return await this.rpc(request)
+  }
+
+  async enable2fa (secret: string, code: string): Promise<void> {
+    const request = {
+      method: 'enable2fa' as const,
+      params: { secret, code }
+    }
+
+    await this.rpc(request)
+  }
+
+  async disable2fa (code: string): Promise<void> {
+    const request = {
+      method: 'disable2fa' as const,
+      params: { code }
+    }
+
+    await this.rpc(request)
   }
 }
 

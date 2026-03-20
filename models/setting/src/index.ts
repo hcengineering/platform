@@ -209,6 +209,22 @@ export function createModel (builder: Builder): void {
     },
     setting.ids.Password
   )
+
+  builder.createDoc(
+    setting.class.SettingsCategory,
+    core.space.Model,
+    {
+      name: 'security',
+      label: setting.string.Security,
+      icon: setting.icon.Password,
+      component: setting.component.TwoFactorSettings,
+      group: 'settings-account',
+      role: AccountRole.Guest,
+      order: 1200
+    },
+    setting.ids.Security
+  )
+
   builder.createDoc(
     setting.class.SettingsCategory,
     core.space.Model,

@@ -91,6 +91,10 @@
     "LogInAndJoin": "Entrar e participar",
     "SignUpAndJoin": "Registar e participar",
     "CreateNewAccount": "Criar nova conta",
-    "SignedInAs": "Sessão iniciada como {name}"
+    "SignedInAs": "Sessão iniciada como {name}",
+    "TwoFactorAuth": "Autenticação de dois fatores",
+    "EnterTwoFactorCode": "Digite o código de autenticação de dois fatores",
+    "TwoFactorCode": "Código de autenticação de dois fatores",
+    "Verify": "Verificar"
   }
 }

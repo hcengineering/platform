@@ -91,6 +91,10 @@
     "LogInAndJoin": "Accedi e partecipa",
     "SignUpAndJoin": "Iscriviti e partecipa",
     "CreateNewAccount": "Crea nuovo account",
-    "SignedInAs": "Accesso effettuato come {name}"
+    "SignedInAs": "Accesso effettuato come {name}",
+    "TwoFactorAuth": "Autenticazione a due fattori",
+    "EnterTwoFactorCode": "Inserisci il codice di autenticazione a due fattori",
+    "TwoFactorCode": "Codice di autenticazione a due fattori",
+    "Verify": "Verifica"
   }
 }

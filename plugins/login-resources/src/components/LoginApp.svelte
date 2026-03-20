@@ -41,6 +41,7 @@
   import PasswordRestore from './PasswordRestore.svelte'
   import SelectWorkspace from './SelectWorkspace.svelte'
   import SignupForm from './SignupForm.svelte'
+  import LoginTfaForm from './LoginTfaForm.svelte'
   import LoginIcon from './icons/LoginIcon.svelte'
   import { Pages, getAccount, pages } from '..'
   import login from '../plugin'
@@ -60,6 +61,7 @@
   const localLoginHidden = getMetadata(login.metadata.HideLocalLogin) ?? false
   const useOTP = getMetadata(presentation.metadata.MailUrl) != null && getMetadata(presentation.metadata.MailUrl) !== ''
   let navigateUrl: string | undefined
+  let tfaToken: string | undefined = undefined
 
   onDestroy(location.subscribe(updatePageLoc))
 
@@ -79,7 +81,8 @@
       'autoJoin',
       'confirm',
       'confirmationSend',
-      'auth'
+      'auth',
+      'tfa'
     ]
     if (token === undefined ? !allowedUnauthPages.includes(page) : !pages.includes(page)) {
       const account = fetchMetadataLocalStorage(login.metadata.LastAccount)
@@ -87,6 +90,7 @@
     }
 
     navigateUrl = loc.query?.navigateUrl ?? undefined
+    tfaToken = loc.query?.token ?? undefined
   }
 
   async function chooseToken (): Promise<void> {
@@ -180,6 +184,8 @@
               <Auth />
             {:else if page === 'changePassword'}
               <ChangePassword />
+            {:else if page === 'tfa'}
+              <LoginTfaForm {navigateUrl} token={tfaToken} on:back={() => (page = 'login')} />
             {/if}
           </div>
         </Scroller>

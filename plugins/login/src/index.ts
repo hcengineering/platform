@@ -40,7 +40,8 @@ export const pages = [
   'confirmationSend',
   'auth',
   'login-password',
-  'changePassword'
+  'changePassword',
+  'tfa'
 ] as const
 
 export type Pages = (typeof pages)[number]
@@ -92,7 +93,11 @@ export default plugin(loginId, {
     PasswordExpiredDesc: '' as IntlString,
     Email: '' as IntlString,
     Password: '' as IntlString,
-    PasswordRepeat: '' as IntlString
+    PasswordRepeat: '' as IntlString,
+    TwoFactorAuth: '' as IntlString,
+    EnterTwoFactorCode: '' as IntlString,
+    TwoFactorCode: '' as IntlString,
+    Verify: '' as IntlString
   },
   function: {
     SendInvite: '' as Resource<(email: string, role: AccountRole) => Promise<void>>,
