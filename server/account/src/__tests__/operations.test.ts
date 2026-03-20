@@ -1400,7 +1400,8 @@ describe('account operations', () => {
           account: mockAccountId,
           token: expect.any(String),
           name: 'John Doe',
-          socialId: 'social-id'
+          socialId: 'social-id',
+          tfaRequired: false
         })
       })
 
