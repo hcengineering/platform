@@ -1333,6 +1333,24 @@ export async function confirm (
   return result
 }
 
+/**
+ * Checks whether the authenticated account has a password set.
+ * SSO-only accounts (Google, GitHub, OIDC) have no password hash.
+ */
+export async function checkHasPassword (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<boolean> {
+  const { account: accountUuid } = decodeTokenVerbose(ctx, token)
+  const account = await getAccount(db, accountUuid)
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountUuid }))
+  }
+  return account.hash != null && account.salt != null
+}
+
 export async function changePassword (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1437,6 +1455,72 @@ export async function requestPasswordReset (
       normalizedEmail,
       account: account.uuid
     })
+  }
+}
+
+/**
+ * Sends a password-setup email to an SSO-only account so they can add
+ * email+password as a secondary sign-in method.
+ *
+ * Requires authentication (session token). Only valid for accounts that have
+ * no password set — accounts with an existing password must use changePassword.
+ */
+export async function requestPasswordSetup (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<void> {
+  const { account: accountUuid } = decodeTokenVerbose(ctx, token)
+
+  // Guard: reject if the account already has a password. The setup flow
+  // bypasses the old-password requirement in changePassword, so it must only
+  // be accessible to accounts that have no password yet.
+  const existingAccount = await getAccount(db, accountUuid)
+  if (existingAccount?.hash != null && existingAccount?.salt != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  ctx.info('Requesting password setup', { accountUuid })
+
+  const emailSocialId = await db.socialId.findOne({
+    type: SocialIdType.EMAIL,
+    personUuid: accountUuid
+  })
+
+  if (emailSocialId == null) {
+    ctx.error('Email social id not found for account', { accountUuid })
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.SocialIdNotFound, { value: '', type: SocialIdType.EMAIL })
+    )
+  }
+
+  const { mailURL, mailAuth } = getMailUrl()
+  const front = getFrontUrl(branding)
+  const resetToken = generateToken(accountUuid, undefined, { restoreEmail: emailSocialId.value })
+  const link = concatLink(front, `/login/recovery?id=${resetToken}`)
+  const lang = branding?.language
+  const text = await translate(accountPlugin.string.PasswordSetupText, { link }, lang)
+  const html = await translate(accountPlugin.string.PasswordSetupHTML, { link }, lang)
+  const subject = await translate(accountPlugin.string.PasswordSetupSubject, {}, lang)
+
+  const response = await fetch(concatLink(mailURL, '/send'), {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
+    },
+    body: JSON.stringify({
+      text,
+      html,
+      subject,
+      to: emailSocialId.value
+    })
+  })
+  if (response.ok) {
+    ctx.info('Password setup email sent', { accountUuid })
+  } else {
+    ctx.error(`Failed to send password setup email: ${response.statusText}`, { accountUuid })
   }
 }
 
@@ -3125,8 +3209,10 @@ export type AccountMethods =
   | 'getInviteInfo'
   | 'signUpJoin'
   | 'confirm'
+  | 'checkHasPassword'
   | 'changePassword'
   | 'requestPasswordReset'
+  | 'requestPasswordSetup'
   | 'restorePassword'
   | 'leaveWorkspace'
   | 'changeUsername'
@@ -3205,8 +3291,10 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     getInviteInfo: wrap(getInviteInfo),
     signUpJoin: wrap(signUpJoin),
     confirm: wrap(confirm),
+    checkHasPassword: wrap(checkHasPassword),
     changePassword: wrap(changePassword),
     requestPasswordReset: wrap(requestPasswordReset),
+    requestPasswordSetup: wrap(requestPasswordSetup),
     restorePassword: wrap(restorePassword),
     leaveWorkspace: wrap(leaveWorkspace),
     changeUsername: wrap(changeUsername),

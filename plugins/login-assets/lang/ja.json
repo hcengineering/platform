@@ -95,6 +95,11 @@
     "TwoFactorAuth": "2段階認証",
     "EnterTwoFactorCode": "2段階認証コードを入力",
     "TwoFactorCode": "2段階認証コード",
-    "Verify": "確認"
+    "Verify": "確認",
+    "SetPassword": "パスワードを設定",
+    "SSOPasswordDescription": "アカウントは外部ログインを使用しています。メール確認でパスワードを設定してください。",
+    "SendSetupLink": "セットアップリンクを送信",
+    "SSOPasswordEmailSent": "パスワードを設定するためのリンクが記載されたメールを確認してください。",
+    "SSONoEmailLinked": "アカウントにメールアドレスがリンクされていません。まず、アカウント設定 → IDの管理 で追加してください。"
   }
 }

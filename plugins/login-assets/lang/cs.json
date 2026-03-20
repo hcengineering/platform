@@ -96,6 +96,11 @@
     "TwoFactorAuth": "Dvoufaktorové ověření",
     "EnterTwoFactorCode": "Zadejte dvoufaktorový ověřovací kód",
     "TwoFactorCode": "Dvoufaktorový ověřovací kód",
-    "Verify": "Ověřit"
+    "Verify": "Ověřit",
+    "SetPassword": "Nastavit heslo",
+    "SSOPasswordDescription": "Váš účet používá externí přihlášení. Nastavte si heslo prostřednictvím e-mailové potvrzení.",
+    "SendSetupLink": "Odeslat odkaz na nastavení",
+    "SSOPasswordEmailSent": "Zkontrolujte svůj e-mail, zda neobsahuje odkaz pro nastavení hesla.",
+    "SSONoEmailLinked": "K vašemu účtu není přidružena žádná e-mailová adresa. Nejprve ji přidejte v Nastavení účtu → Spravovat identity."
   }
 }

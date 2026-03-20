@@ -82,6 +82,11 @@ export default plugin(loginId, {
     PasswordMinLowerChars: '' as IntlString<{ count: number }>,
     SelectWorkspace: '' as IntlString,
     ChangePassword: '' as IntlString,
+    SetPassword: '' as IntlString,
+    SSOPasswordDescription: '' as IntlString,
+    SendSetupLink: '' as IntlString,
+    SSOPasswordEmailSent: '' as IntlString,
+    SSONoEmailLinked: '' as IntlString,
     CurrentPassword: '' as IntlString,
     NewPassword: '' as IntlString,
     EnterCurrentPassword: '' as IntlString,
@@ -112,7 +117,9 @@ export default plugin(loginId, {
     ) => Promise<string>
     >,
     LeaveWorkspace: '' as Resource<(account: string) => Promise<LoginInfo | null>>,
+    CheckHasPassword: '' as Resource<() => Promise<boolean>>,
     ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,
+    RequestPasswordSetup: '' as Resource<() => Promise<void>>,
     SelectWorkspace: '' as Resource<
     (
       workspace: string,

@@ -95,6 +95,11 @@
     "TwoFactorAuth": "Autenticação de dois fatores",
     "EnterTwoFactorCode": "Digite o código de autenticação de dois fatores",
     "TwoFactorCode": "Código de autenticação de dois fatores",
-    "Verify": "Verificar"
+    "Verify": "Verificar",
+    "SetPassword": "Definir senha",
+    "SSOPasswordDescription": "Sua conta usa login externo. Defina uma senha através da confirmação por e-mail.",
+    "SendSetupLink": "Enviar link de configuração",
+    "SSOPasswordEmailSent": "Verifique seu e-mail para encontrar o link de configuração da senha.",
+    "SSONoEmailLinked": "Nenhum endereço de e-mail está vinculado à sua conta. Adicione um em Configurações da Conta → Gerenciar Identidades primeiro."
   }
 }

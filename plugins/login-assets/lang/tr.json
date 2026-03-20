@@ -95,6 +95,11 @@
     "TwoFactorAuth": "İki faktörlü kimlik doğrulama",
     "EnterTwoFactorCode": "İki faktörlü kimlik doğrulama kodunu girin",
     "TwoFactorCode": "İki faktörlü kimlik doğrulama kodu",
-    "Verify": "Doğrula"
+    "Verify": "Doğrula",
+    "SetPassword": "Şifreyi ayarla",
+    "SSOPasswordDescription": "Hesabınız harici girişi kullanıyor. E-posta onayı ile bir şifre belirleyin.",
+    "SendSetupLink": "Kurulum bağlantısı gönder",
+    "SSOPasswordEmailSent": "Şifrenizi belirlemek için bir bağlantı içeren e-postayı kontrol edin.",
+    "SSONoEmailLinked": "Hesabınıza bağlı bir e-posta adresi yok. Önce Hesap Ayarları → Kimlikleri Yönet bölümünden bir tane ekleyin."
   }
 }

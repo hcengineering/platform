@@ -96,6 +96,11 @@
     "TwoFactorAuth": "Zweistufige Authentifizierung",
     "EnterTwoFactorCode": "Geben Sie den zweistufigen Authentifizierungscode ein",
     "TwoFactorCode": "Zweistufiger Authentifizierungscode",
-    "Verify": "Überprüfen"
+    "Verify": "Überprüfen",
+    "SetPassword": "Passwort festlegen",
+    "SSOPasswordDescription": "Ihr Konto verwendet externe Anmeldung. Richten Sie ein Passwort über die E-Mail-Bestätigung ein.",
+    "SendSetupLink": "Setup-Link senden",
+    "SSOPasswordEmailSent": "Überprüfen Sie Ihre E-Mail auf einen Link zum Festlegen des Passworts.",
+    "SSONoEmailLinked": "Keine E-Mail-Adresse mit Ihrem Konto verknüpft. Fügen Sie eine unter Kontoeinstellungen → Identitäten verwalten hinzu."
   }
 }
