@@ -28,6 +28,6 @@ function enableDevModel () {
   setMetadata(presentation.metadata.ClientHook, new PresentationClientHook())
   addLocation(
     devModelId,
-    async () => await import(/* webpackChunkName: "devmodel" */ '@hcengineering/devmodel-resources')
+    async () => await import(/* webpackMode: "eager" */ /* webpackChunkName: "devmodel" */ '@hcengineering/devmodel-resources')
   )
 }
