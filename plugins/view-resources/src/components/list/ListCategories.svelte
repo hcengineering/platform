@@ -378,7 +378,7 @@
             : resultQuery[groupByKey]?.$in?.length !== 0
               ? undefined
               : []
-          : category
+          : category ?? null
     }
   }
 </script>
