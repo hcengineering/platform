@@ -24,7 +24,7 @@ jest.mock('web-push', () => {
     __esModule: true,
     WebPushError: actual.WebPushError,
     default: {
-      ...actual.default,
+      ...(actual ?? {}),
       sendNotification: jest.fn()
     }
   }
