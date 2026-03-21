@@ -16,7 +16,6 @@ import activity, { type ActivityMessage, type SavedMessage } from '@hcengineerin
 import core, { type Ref, SortingOrder, type WithLookup } from '@hcengineering/core'
 import { createQuery, onClient } from '@hcengineering/presentation'
 import { writable } from 'svelte/store'
-import attachment from '@hcengineering/attachment'
 import { getCurrentLocation, navigate } from '@hcengineering/ui'
 
 export const savedMessagesStore = writable<Array<WithLookup<SavedMessage>>>([])

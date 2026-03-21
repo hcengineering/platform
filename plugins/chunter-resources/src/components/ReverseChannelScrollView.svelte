@@ -125,12 +125,6 @@
     read()
   }
 
-  $: void inboxClient.getReadState(object._id).then((it) => {
-    readState = it
-    isReadStateLoaded = true
-  })
-  $: readState = $readStateByDocStore.get(doc._id) ?? undefined
-
   const unsubscribe = inboxClient.inboxNotificationsByContext.subscribe(() => {
     if (notifyContext !== undefined && !isFreeze()) {
       recheckNotifications(notifyContext)
@@ -139,11 +133,11 @@
   })
 
   $: adjustScrollPosition(selectedMessageId)
-  $: void initializeScroll($isLoadingStore || !isReadStateLoaded, separatorDiv, separatorIndex)
+  $: void initializeScroll($isLoadingStore, separatorDiv, separatorIndex)
   $: void handleMessagesUpdated(messages.length)
 
   function adjustScrollPosition (selectedMessageId?: Ref<ActivityMessage>): void {
-    if ($isLoadingStore || !isReadStateLoaded || !isScrollInitialized) {
+    if ($isLoadingStore || !isScrollInitialized) {
       return
     }
     const msgData = $metadataStore.find(({ _id }) => _id === selectedMessageId)
@@ -581,10 +575,10 @@
     removeTxListener(newMessageTxListener)
   })
 
-  $: showBlankView = !($isLoadingStore || !isReadStateLoaded) && messages.length === 0 && !isThread
+  $: showBlankView = !$isLoadingStore && messages.length === 0 && !isThread
 
   export function editLastMessage (): void {
-    if ($isLoadingStore || !isReadStateLoaded || !isScrollInitialized || !$isTailLoadedStore || scrollDiv == null) {
+    if ($isLoadingStore || !isScrollInitialized || !$isTailLoadedStore || scrollDiv == null) {
       return
     }
     if (!isScrollAtBottom) return
@@ -634,7 +628,7 @@
     bind:scrollDiv
     bind:contentDiv
     bottomStart={!showBlankView}
-    loadingOverlay={$isLoadingStore || !isReadStateLoaded || !isScrollInitialized}
+    loadingOverlay={$isLoadingStore || !isScrollInitialized}
     onScroll={handleScroll}
     onResize={handleResize}
     key={getKey(messages)}
