@@ -40178,6 +40178,12 @@ importers:
 
   ../../services/notification/pod-notification:
     dependencies:
+      '@hcengineering/analytics':
+        specifier: workspace:^0.7.17
+        version: link:../../../foundations/core/packages/analytics
+      '@hcengineering/analytics-service':
+        specifier: workspace:^0.7.17
+        version: link:../../../foundations/core/packages/analytics-service
       '@hcengineering/client':
         specifier: workspace:^0.7.18
         version: link:../../../foundations/core/packages/client
@@ -40193,6 +40199,9 @@ importers:
       '@hcengineering/platform':
         specifier: workspace:^0.7.19
         version: link:../../../foundations/core/packages/platform
+      '@hcengineering/server-core':
+        specifier: workspace:^0.7.18
+        version: link:../../../foundations/server/packages/core
       '@hcengineering/server-token':
         specifier: workspace:^0.7.17
         version: link:../../../foundations/core/packages/token
@@ -61548,7 +61557,7 @@ snapshots:
   node-loader@2.0.0(webpack@5.102.1):
     dependencies:
       loader-utils: 2.0.4
-      webpack: 5.102.1(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.102.1
 
   node-localstorage@2.2.1:
     dependencies:

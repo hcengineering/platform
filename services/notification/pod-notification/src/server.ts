@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -59,9 +59,13 @@ export function createServer (endpoints: Endpoint[]): Express {
   return app
 }
 
-export function listen (e: Express, port: number, host?: string): Server {
+export function listen (e: Express, port: number, host?: string, onListening?: () => void): Server {
   const cb = (): void => {
-    console.log(`Notification service has been started at ${host ?? '*'}:${port}`)
+    if (onListening !== undefined) {
+      onListening()
+    } else {
+      console.log(`Notification service has been started at ${host ?? '*'}:${port}`)
+    }
   }
 
   return host !== undefined ? e.listen(port, host, cb) : e.listen(port, cb)
