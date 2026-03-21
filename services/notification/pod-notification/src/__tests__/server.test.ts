@@ -66,7 +66,9 @@ function withServer (endpoints: Endpoint[], fn: (baseUrl: string) => Promise<voi
       const baseUrl = `http://127.0.0.1:${port}`
       void fn(baseUrl)
         .then(() => {
-          srv.close((err) => { err != null ? reject(err) : resolve() })
+          srv.close((err) => {
+            err != null ? reject(err) : resolve()
+          })
         })
         .catch((e) => {
           srv.close(() => {
