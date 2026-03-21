@@ -27,7 +27,6 @@ import {
   Tx,
   TxCUD,
   Blob,
-  Markup,
   Client
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
