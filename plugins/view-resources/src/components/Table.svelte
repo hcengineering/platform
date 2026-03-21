@@ -86,6 +86,8 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
+  let sortOrder = SortingOrder.Descending
+
   let lookup = buildConfigLookup(hierarchy, _class, config, options?.lookup)
   let associations = buildConfigAssociation(config)
 
@@ -94,11 +96,15 @@
 
   let _sortKey = prefferedSorting
   let userSorting = false
-  $: if (!userSorting) {
+  $: if (!userSorting && !viewOptions?.orderBy) {
     _sortKey = prefferedSorting
   }
 
-  let sortOrder = SortingOrder.Descending
+  $: if (viewOptions?.orderBy) {
+    _sortKey = viewOptions.orderBy[0]
+    sortOrder = viewOptions.orderBy[1]
+  }
+
   let loading = 0
 
   let objects: Doc[] = []
@@ -225,6 +231,7 @@
     } else {
       sortOrder = sortOrder === SortingOrder.Ascending ? SortingOrder.Descending : SortingOrder.Ascending
     }
+    dispatch('sort', { key: _sortKey, order: sortOrder })
   }
 
   $: checkedSet = new Set<Ref<Doc>>(checked.map((it) => it._id))
