@@ -337,6 +337,7 @@ describe('AccountPostgresDbCollection', () => {
         a.automatic,
         a.max_workspaces,
         a.failed_login_attempts,
+        a.tfa_secret,
         p.hash,
         p.salt
       FROM global_account.account as a

@@ -219,6 +219,15 @@
     "ImportDocumentDescription": "Grants users ability to import documents into the workspace",
     "SelectUsers": "Select users",
     "ShowInTitle": "Show in title",
-    "SpaceMembersOnly": "Space members only"
+    "SpaceMembersOnly": "Space members only",
+    "Security": "Security",
+    "TwoFactorAuth": "Two-factor authentication",
+    "TwoFactorAuthDescription": "Two-factor authentication adds an extra layer of security to your account",
+    "EnableTwoFactorAuth": "Enable two-factor authentication",
+    "DisableTwoFactorAuth": "Disable two-factor authentication",
+    "TwoFactorAuthEnabled": "Two-factor authentication is enabled",
+    "TwoFactorAuthDisabled": "Two-factor authentication is disabled",
+    "ShowQRCode": "Show QR code",
+    "EnterVerificationCode": "Enter verification code"
   }
 }

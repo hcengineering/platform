@@ -453,6 +453,7 @@ export class AccountPostgresDbCollection
         a.automatic,
         a.max_workspaces,
         a.failed_login_attempts,
+        a.tfa_secret,
         p.hash,
         p.salt
       FROM ${this.getTableName()} as a

@@ -960,6 +960,7 @@ export interface SocialId {
 export interface AccountInfo {
   timezone?: string
   locale?: string
+  tfaEnabled?: boolean
 }
 
 export type SocialKey = Pick<SocialId, 'type' | 'value'>

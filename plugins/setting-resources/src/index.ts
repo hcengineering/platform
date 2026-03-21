@@ -30,6 +30,7 @@ import Password from './components/Password.svelte'
 import Privacy from './components/Privacy.svelte'
 import Profile from './components/Profile.svelte'
 import Settings from './components/Settings.svelte'
+import TwoFactorSettings from './components/TwoFactorSettings.svelte'
 
 import { Analytics } from '@hcengineering/analytics'
 import ClassAttributes from './components/ClassAttributes.svelte'
@@ -167,7 +168,8 @@ export default async (): Promise<Resources> => ({
     AddSocialId,
     AddEmailSocialId,
     EmployeeRefEditor,
-    UserRoleSelect
+    UserRoleSelect,
+    TwoFactorSettings
   },
   actionImpl: {
     DeleteMixin

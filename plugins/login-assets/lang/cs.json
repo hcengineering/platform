@@ -93,10 +93,14 @@
     "SignUpAndJoin": "Registrovat se a připojit",
     "CreateNewAccount": "Vytvořit nový účet",
     "SignedInAs": "Přihlášen jako {name}",
-    "SetPassword": "Set a password",
-    "SSOPasswordDescription": "Your account uses external login. Set up a password via email confirmation.",
-    "SendSetupLink": "Send setup link",
-    "SSOPasswordEmailSent": "Check your email for a link to set your password.",
-    "SSONoEmailLinked": "No email address is linked to your account. Add one in Account Settings → Manage Identities first."
+    "TwoFactorAuth": "Dvoufaktorové ověření",
+    "EnterTwoFactorCode": "Zadejte dvoufaktorový ověřovací kód",
+    "TwoFactorCode": "Dvoufaktorový ověřovací kód",
+    "Verify": "Ověřit",
+    "SetPassword": "Nastavit heslo",
+    "SSOPasswordDescription": "Váš účet používá externí přihlášení. Nastavte si heslo prostřednictvím e-mailové potvrzení.",
+    "SendSetupLink": "Odeslat odkaz na nastavení",
+    "SSOPasswordEmailSent": "Zkontrolujte svůj e-mail, zda neobsahuje odkaz pro nastavení hesla.",
+    "SSONoEmailLinked": "K vašemu účtu není přidružena žádná e-mailová adresa. Nejprve ji přidejte v Nastavení účtu → Spravovat identity."
   }
 }

@@ -92,10 +92,14 @@
     "SignUpAndJoin": "Iscriviti e partecipa",
     "CreateNewAccount": "Crea nuovo account",
     "SignedInAs": "Accesso effettuato come {name}",
-    "SetPassword": "Set a password",
-    "SSOPasswordDescription": "Your account uses external login. Set up a password via email confirmation.",
-    "SendSetupLink": "Send setup link",
-    "SSOPasswordEmailSent": "Check your email for a link to set your password.",
-    "SSONoEmailLinked": "No email address is linked to your account. Add one in Account Settings → Manage Identities first."
+    "TwoFactorAuth": "Autenticazione a due fattori",
+    "EnterTwoFactorCode": "Inserisci il codice di autenticazione a due fattori",
+    "TwoFactorCode": "Codice di autenticazione a due fattori",
+    "Verify": "Verifica",
+    "SetPassword": "Imposta una password",
+    "SSOPasswordDescription": "Il tuo account utilizza l'accesso esterno. Imposta una password tramite conferma via email.",
+    "SendSetupLink": "Invia link di configurazione",
+    "SSOPasswordEmailSent": "Controlla la tua email per trovare un link per impostare la password.",
+    "SSONoEmailLinked": "Nessun indirizzo email è collegato al tuo account. Aggiungine uno in Impostazioni account → Gestisci identità prima."
   }
 }

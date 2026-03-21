@@ -96,6 +96,10 @@
     "LogInAndJoin": "Log In & Join",
     "SignUpAndJoin": "Sign Up & Join",
     "CreateNewAccount": "Create new account",
-    "SignedInAs": "Signed in as {name}"
+    "SignedInAs": "Signed in as {name}",
+    "TwoFactorAuth": "Two-factor authentication",
+    "EnterTwoFactorCode": "Enter two-factor authentication code",
+    "TwoFactorCode": "Two-factor authentication code",
+    "Verify": "Verify"
   }
 }
