@@ -15,13 +15,13 @@
 
 import type { DocUpdateMessageViewlet } from '@hcengineering/activity'
 import { type Doc, type Ref } from '@hcengineering/core'
-import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
+import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
+import { mergeIds, type Resource } from '@hcengineering/platform'
 import { settingId } from '@hcengineering/setting'
 import setting from '@hcengineering/setting-resources/src/plugin'
+import { type TemplateFieldFunc } from '@hcengineering/templates'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Action, type ActionCategory, type ViewAction } from '@hcengineering/view'
-import { type TemplateFieldFunc } from '@hcengineering/templates'
-import { type NotificationGroup, type NotificationType } from '@hcengineering/notification'
 
 export default mergeIds(settingId, setting, {
   ids: {
@@ -60,9 +60,6 @@ export default mergeIds(settingId, setting, {
   },
   actionImpl: {
     DeleteMixin: '' as ViewAction<Record<string, any>>
-  },
-  string: {
-    Value: '' as IntlString
   },
   function: {
     GetValue: '' as Resource<TemplateFieldFunc>,

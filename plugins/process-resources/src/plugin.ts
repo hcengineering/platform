@@ -94,6 +94,8 @@ export default mergeIds(processId, process, {
     UnLockFieldPresenter: '' as AnyComponent,
     CancelToDoEditor: '' as AnyComponent,
     ToDoValuePresenter: '' as AnyComponent,
+    TransformEditor: '' as AnyComponent,
+    TransformPresenter: '' as AnyComponent,
     ActionTypePresenter: '' as AnyComponent,
     ExecutionRefPresenter: '' as AnyComponent
   },
@@ -261,7 +263,9 @@ export default mergeIds(processId, process, {
     LockField: '' as IntlString,
     UnlockField: '' as IntlString,
     Export: '' as IntlString,
-    Import: '' as IntlString
+    Import: '' as IntlString,
+    Transform: '' as IntlString,
+    Type: '' as IntlString
   },
   permission: {
     RunProcess: '' as Ref<Permission>,

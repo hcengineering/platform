@@ -227,4 +227,20 @@ export function defineMethods (builder: Builder): void {
     },
     process.method.UnlockField
   )
+
+  builder.createDoc(
+    process.class.Method,
+    core.space.Model,
+    {
+      label: process.string.Transform,
+      objectClass: card.class.Card,
+      editor: process.component.TransformEditor,
+      presenter: process.component.TransformPresenter,
+      requiredParams: [],
+      createdContext: {
+        _class: core.class.TypeAny
+      }
+    },
+    process.method.Transform
+  )
 }

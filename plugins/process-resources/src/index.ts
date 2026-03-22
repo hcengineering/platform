@@ -111,6 +111,8 @@ import {
   timeTransitionCheck,
   todoTranstionCheck
 } from './utils'
+import TransformPresenter from './components/settings/TransformPresenter.svelte'
+import TransformEditor from './components/settings/TransformEditor.svelte'
 
 export * from './query'
 
@@ -185,7 +187,9 @@ export default async (): Promise<Resources> => ({
     ActionTypePresenter,
     LockFieldEditor,
     LockFieldPresenter,
-    UnLockFieldPresenter
+    UnLockFieldPresenter,
+    TransformEditor,
+    TransformPresenter
   },
   criteriaEditor: {
     BaseCriteria,

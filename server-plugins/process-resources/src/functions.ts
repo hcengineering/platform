@@ -248,6 +248,19 @@ function respectAttributeType (attrType: Type<any>, value: any): any {
   }
 }
 
+export async function Transform (
+  params: Record<string, any>,
+  _execution: Execution,
+  _control: ProcessControl
+): Promise<ExecuteResult> {
+  if (params.value === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: 'value' })
+  return {
+    txes: [],
+    rollback: [],
+    context: [{ _id: params.value, value: params.value }]
+  }
+}
+
 export async function UpdateCard (
   params: MethodParams<Card>,
   execution: Execution,

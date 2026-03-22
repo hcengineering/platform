@@ -160,6 +160,7 @@ export default mergeIds(settingId, setting, {
     ShowInTitle: '' as IntlString,
     SpaceMembersOnly: '' as IntlString,
     LastOwnerLeaveTitle: '' as IntlString,
-    LastOwnerLeaveMessage: '' as IntlString
+    LastOwnerLeaveMessage: '' as IntlString,
+    Value: '' as IntlString
   }
 })

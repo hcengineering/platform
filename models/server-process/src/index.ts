@@ -163,6 +163,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.func.UnlockField
   })
 
+  builder.mixin(process.method.Transform, process.class.Method, serverProcess.mixin.MethodImpl, {
+    func: serverProcess.func.Transform
+  })
+
   builder.mixin(process.function.FirstValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.FirstValue
   })
