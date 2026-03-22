@@ -85,12 +85,17 @@
   $: associations = buildConfigAssociation(config)
 
   let _sortKey = prefferedSorting
+  let sortOrder = SortingOrder.Descending
   let userSorting = false
-  $: if (!userSorting) {
+  $: if (!userSorting && !viewOptions?.orderBy) {
     _sortKey = prefferedSorting
   }
 
-  let sortOrder = SortingOrder.Descending
+  $: if (viewOptions?.orderBy) {
+    _sortKey = viewOptions.orderBy[0]
+    sortOrder = viewOptions.orderBy[1]
+  }
+
   let loading = 0
 
   let objects: Doc[] = []
@@ -204,6 +209,7 @@
     } else {
       sortOrder = sortOrder === SortingOrder.Ascending ? SortingOrder.Descending : SortingOrder.Ascending
     }
+    dispatch('sort', { key: _sortKey, order: sortOrder })
   }
 
   const joinProps = (attribute: AttributeModel, object: Doc, readonly: boolean) => {
