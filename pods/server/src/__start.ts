@@ -3,6 +3,7 @@
 //
 
 // Add this to the VERY top of the first file loaded in your app
+import { setAiBotAccountEmail } from '@hcengineering/ai-bot'
 import { Analytics } from '@hcengineering/analytics'
 import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import contactPlugin from '@hcengineering/contact'
@@ -85,6 +86,9 @@ setMetadata(serverNotification.metadata.MailUrl, config.mailUrl ?? '')
 setMetadata(serverNotification.metadata.MailAuthToken, config.mailAuthToken)
 setMetadata(serverNotification.metadata.WebPushUrl, config.webPushUrl)
 setMetadata(serverAiBot.metadata.EndpointURL, process.env.AI_BOT_URL)
+if (process.env.AI_BOT_EMAIL !== undefined) {
+  setAiBotAccountEmail(process.env.AI_BOT_EMAIL)
+}
 setMetadata(serverCalendar.metadata.EndpointURL, process.env.CALENDAR_URL)
 setMetadata(serverCard.metadata.CommunicationEnabled, process.env.COMMUNICATION_API_ENABLED === 'true')
 
