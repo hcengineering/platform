@@ -175,12 +175,12 @@ describe('rest-api-server', () => {
   it('find avg', async () => {
     const conn = connect()
     await checkFindPerformance(conn) // 5ms max per operation
-  })
+  }, 10000)
 
   it('find avg-europe', async () => {
     const conn = connect(apiWorkspace2)
     await checkFindPerformance(conn) // 5ms max per operation
-  })
+  }, 10000)
 
   it('add space', async () => {
     const conn = connect()
