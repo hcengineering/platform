@@ -36,6 +36,7 @@
   export let inlineBlock = false
   export let noSelect: boolean = true
   export let title: string | undefined = undefined
+  export let query: Record<string, string> | undefined = undefined
 
   const docQuery = createQuery()
   const client = getClient()
@@ -66,7 +67,10 @@
     const comp = panelComponent?.component ?? component
     const loc = await getObjectLinkFragment(hierarchy, object, props, comp)
     const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-    href = concatLink(frontUrl, locationToUrl(loc))
+
+    href = query
+      ? `${concatLink(frontUrl, locationToUrl(loc))}?${new URLSearchParams(query).toString()}`
+      : concatLink(frontUrl, locationToUrl(loc))
   }
 
   $: if (object !== undefined) getHref(object)
