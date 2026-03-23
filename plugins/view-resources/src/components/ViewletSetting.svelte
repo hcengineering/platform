@@ -194,11 +194,12 @@
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
     const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
     const value = getValue(attribute.name, attribute.type, attrClass)
+    const proxiedValue = attribute.attributeOf + '.' + attribute.name
     for (const res of result) {
-      const key = typeof res.value === 'string' ? res.value : res.value?.key
-      if (key === undefined) return
-      if (key === attribute.name) return
-      if (key === value) return
+      const key = getKey(res.value)
+      if (key === undefined) continue
+      if (key === attribute.name || key === value || key === proxiedValue) return
+      if (key === '' && isAttribute(res) && res.label === attribute.label) return
     }
     const mixin =
       category === 'object'
@@ -248,13 +249,24 @@
     return val.type === 'attribute'
   }
 
+  function getKey (value: string | BuildModelKey | undefined): string | undefined {
+    return typeof value === 'string' ? value : value?.key
+  }
+
   function isExist (result: Config[], newValue: Config): boolean {
+    if (!isAttribute(newValue)) return false
+    const newValueKey = getKey(newValue.value)
+    if (newValueKey === undefined) return false
+
     for (const res of result) {
-      if (!isAttribute(res)) continue
-      if (!isAttribute(newValue)) continue
-      if (res._class !== newValue._class) continue
-      if (typeof res.value === 'string') {
-        if (res.value === newValue.value) return true
+      if (!isAttribute(res)) {
+        continue
+      }
+      if (getKey(res.value) === newValueKey) {
+        return true
+      }
+      if (newValueKey === '' && res.label === newValue.label) {
+        return true
       }
     }
     return false
