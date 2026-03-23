@@ -112,7 +112,8 @@ export default mergeIds(processId, process, {
     ReplaceEditor: '' as AnyComponent,
     SplitEditor: '' as AnyComponent,
     CutEditor: '' as AnyComponent,
-    FilterEditor: '' as AnyComponent
+    FilterEditor: '' as AnyComponent,
+    DateDifferenceEditor: '' as AnyComponent
   },
   transformPresenter: {
     NumberPresenter: '' as AnyComponent,
@@ -272,7 +273,8 @@ export default mergeIds(processId, process, {
     DateFromText: '' as IntlString,
     YearFromDate: '' as IntlString,
     MonthFromDate: '' as IntlString,
-    DayFromDate: '' as IntlString
+    DayFromDate: '' as IntlString,
+    DateDifference: '' as IntlString
   },
   permission: {
     RunProcess: '' as Ref<Permission>,

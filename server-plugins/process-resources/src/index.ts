@@ -97,7 +97,8 @@ import {
   DateFromString,
   YearFromDate,
   MonthFromDate,
-  DayFromDate
+  DayFromDate,
+  DateDifference
 } from './transform'
 import {
   RunSubProcess,
@@ -663,7 +664,8 @@ export default async () => ({
     DateFromString,
     YearFromDate,
     MonthFromDate,
-    DayFromDate
+    DayFromDate,
+    DateDifference
   },
   rollbacks: {
     ToDoCloseRollback,

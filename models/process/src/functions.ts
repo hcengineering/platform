@@ -614,6 +614,20 @@ export function defineFunctions (builder: Builder): void {
     process.class.ProcessFunction,
     core.space.Model,
     {
+      of: core.class.TypeDate,
+      to: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.DateDifference,
+      type: 'convert',
+      editor: process.transformEditor.DateDifferenceEditor
+    },
+    process.function.DateDifference
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
       of: core.class.TypeString,
       to: core.class.TypeNumber,
       category: 'attribute',

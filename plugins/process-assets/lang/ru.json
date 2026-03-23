@@ -163,11 +163,12 @@
     "TextFromCheckbox": "Строка из чекбокса",
     "NumberFromDate": "Число из даты",
     "DateFromNumber": "Дата из числа",
-    "NumberFromString": "Число из строки",
-    "DateFromString": "Дата из строки",
+    "NumberFromText": "Число из текста",
+    "DateFromText": "Дата из текста",
     "YearFromDate": "Год из даты",
     "MonthFromDate": "Месяц из даты",
-    "DayFromDate": "День из даты"
+    "DayFromDate": "День из даты",
+    "DateDifference": "Разница дат"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

@@ -165,8 +165,12 @@
     <!-- svelte-ignore a11y-mouse-events-have-key-events -->
     <button
       bind:this={elements[0]}
-      on:keydown={(event) => keyDown(event, 0)}
-      on:mouseover={() => elements[0]?.focus()}
+      on:keydown={(event) => {
+        keyDown(event, 0)
+      }}
+      on:mouseover={() => {
+        elements[0]?.focus()
+      }}
       on:click={() => {
         onUserRequest()
       }}
@@ -183,8 +187,12 @@
         {#if func.editor !== undefined}
           <Submenu
             bind:element={elements[functionsOffset + i]}
-            on:keydown={(event) => keyDown(event, functionsOffset + i)}
-            on:mouseover={() => elements[functionsOffset + i]?.focus()}
+            on:keydown={(event) => {
+              keyDown(event, functionsOffset + i)
+            }}
+            on:mouseover={() => {
+              elements[functionsOffset + i]?.focus()
+            }}
             label={func.label}
             props={{
               masterTag,
@@ -199,8 +207,12 @@
           <!-- svelte-ignore a11y-mouse-events-have-key-events -->
           <button
             bind:this={elements[functionsOffset + i]}
-            on:keydown={(event) => keyDown(event, functionsOffset + i)}
-            on:mouseover={() => elements[functionsOffset + i]?.focus()}
+            on:keydown={(event) => {
+              keyDown(event, functionsOffset + i)
+            }}
+            on:mouseover={() => {
+              elements[functionsOffset + i]?.focus()
+            }}
             on:click={() => {
               onFunc(func._id)
             }}
@@ -219,8 +231,12 @@
         {#if pc.attributes.length > 0}
           <Submenu
             bind:element={elements[processContextOffset + i]}
-            on:keydown={(event) => keyDown(event, processContextOffset + i)}
-            on:mouseover={() => elements[processContextOffset + i]?.focus()}
+            on:keydown={(event) => {
+              keyDown(event, processContextOffset + i)
+            }}
+            on:mouseover={() => {
+              elements[processContextOffset + i]?.focus()
+            }}
             component={ExecutionContextPresenter}
             props={{
               context: pc,
@@ -236,8 +252,12 @@
           <!-- svelte-ignore a11y-mouse-events-have-key-events -->
           <button
             bind:this={elements[processContextOffset + i]}
-            on:keydown={(event) => keyDown(event, processContextOffset + i)}
-            on:mouseover={() => elements[processContextOffset + i]?.focus()}
+            on:keydown={(event) => {
+              keyDown(event, processContextOffset + i)
+            }}
+            on:mouseover={() => {
+              elements[processContextOffset + i]?.focus()
+            }}
             on:click={() => {
               onProcessContext(pc)
             }}
@@ -254,8 +274,12 @@
         <!-- svelte-ignore a11y-mouse-events-have-key-events -->
         <button
           bind:this={elements[attributesOffset + i]}
-          on:keydown={(event) => keyDown(event, attributesOffset + i)}
-          on:mouseover={() => elements[attributesOffset + i]?.focus()}
+          on:keydown={(event) => {
+            keyDown(event, attributesOffset + i)
+          }}
+          on:mouseover={() => {
+            elements[attributesOffset + i]?.focus()
+          }}
           on:click={() => {
             onAttribute(attr)
           }}
@@ -272,8 +296,12 @@
       {#each nested as object, i}
         <Submenu
           bind:element={elements[nestedOffset + i]}
-          on:keydown={(event) => keyDown(event, nestedOffset + i)}
-          on:mouseover={() => elements[nestedOffset + i]?.focus()}
+          on:keydown={(event) => {
+            keyDown(event, nestedOffset + i)
+          }}
+          on:mouseover={() => {
+            elements[nestedOffset + i]?.focus()
+          }}
           label={object.attribute.label}
           props={{
             context: object,
@@ -292,8 +320,12 @@
           <!-- svelte-ignore a11y-mouse-events-have-key-events -->
           <button
             bind:this={elements[relationsOffset + i]}
-            on:keydown={(event) => keyDown(event, relationsOffset + i)}
-            on:mouseover={() => elements[relationsOffset + i]?.focus()}
+            on:keydown={(event) => {
+              keyDown(event, relationsOffset + i)
+            }}
+            on:mouseover={() => {
+              elements[relationsOffset + i]?.focus()
+            }}
             on:click={() => {
               onRelation(object[1])
             }}
@@ -306,8 +338,12 @@
         {:else}
           <Submenu
             bind:element={elements[relationsOffset + i]}
-            on:keydown={(event) => keyDown(event, relationsOffset + i)}
-            on:mouseover={() => elements[relationsOffset + i]?.focus()}
+            on:keydown={(event) => {
+              keyDown(event, relationsOffset + i)
+            }}
+            on:mouseover={() => {
+              elements[relationsOffset + i]?.focus()
+            }}
             text={object[1].name}
             props={{
               context: object[1],
@@ -324,8 +360,12 @@
       {#each convertible as conv, i}
         <Submenu
           bind:element={elements[convertibleOffset + i]}
-          on:keydown={(event) => keyDown(event, convertibleOffset + i)}
-          on:mouseover={() => elements[convertibleOffset + i]?.focus()}
+          on:keydown={(event) => {
+            keyDown(event, convertibleOffset + i)
+          }}
+          on:mouseover={() => {
+            elements[convertibleOffset + i]?.focus()
+          }}
           label={getFunc(conv.func).label}
           props={{
             process,
@@ -344,8 +384,12 @@
       <!-- svelte-ignore a11y-mouse-events-have-key-events -->
       <button
         bind:this={elements[customValueIndex]}
-        on:keydown={(event) => keyDown(event, customValueIndex)}
-        on:mouseover={() => elements[customValueIndex]?.focus()}
+        on:keydown={(event) => {
+          keyDown(event, customValueIndex)
+        }}
+        on:mouseover={() => {
+          elements[customValueIndex]?.focus()
+        }}
         on:click={onConst}
         class="menu-item"
       >
