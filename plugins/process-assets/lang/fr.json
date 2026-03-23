@@ -158,6 +158,8 @@
     "Review": "Revoir",
     "LockField": "Verrouiller le champ",
     "UnlockField": "Déverrouiller le champ",
+    "TextFromNumber": "Texte depuis nombre",
+    "TextFromDate": "Texte depuis date",
     "TextFromCheckbox": "Texte depuis checkbox",
     "NumberFromDate": "Nombre depuis date",
     "DateFromNumber": "Date depuis nombre",

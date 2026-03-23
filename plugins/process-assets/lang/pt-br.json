@@ -146,6 +146,8 @@
     "Review": "Revisar",
     "LockField": "Bloquear campo",
     "UnlockField": "Desbloquear campo",
+    "TextFromNumber": "Texto de número",
+    "TextFromDate": "Texto de data",
     "TextFromCheckbox": "Texto de checkbox",
     "NumberFromDate": "Número de data",
     "DateFromNumber": "Data de número",

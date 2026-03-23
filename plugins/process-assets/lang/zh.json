@@ -158,6 +158,8 @@
     "Review": "审查",
     "LockField": "锁定字段",
     "UnlockField": "解锁字段",
+    "TextFromNumber": "数字到文本",
+    "TextFromDate": "日期到文本",
     "TextFromCheckbox": "复选框到文本",
     "NumberFromDate": "日期到数字",
     "DateFromNumber": "数字到日期",

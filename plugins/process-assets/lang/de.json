@@ -153,6 +153,8 @@
     "Review": "Prüfen",
     "LockField": "Feld sperren",
     "UnlockField": "Feld entsperren",
+    "TextFromNumber": "Text aus Zahl",
+    "TextFromDate": "Text aus Datum",
     "TextFromCheckbox": "Text aus Checkbox",
     "NumberFromDate": "Zahl aus Datum",
     "DateFromNumber": "Datum aus Zahl",

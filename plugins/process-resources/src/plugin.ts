@@ -14,7 +14,7 @@
 import { type Permission, type Ref } from '@hcengineering/core'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { type PresentationMiddlewareCreator } from '@hcengineering/presentation'
-import process, { type ProcessFunction, processId } from '@hcengineering/process'
+import process, { processId } from '@hcengineering/process'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type ViewQueryAction, type Viewlet } from '@hcengineering/view'
 

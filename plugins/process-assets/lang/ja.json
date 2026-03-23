@@ -157,6 +157,8 @@
     "Review": "レビュー",
     "LockField": "フィールドをロック",
     "UnlockField": "フィールドのロックを解除",
+    "TextFromNumber": "テキストから数値",
+    "TextFromDate": "テキストから日付",
     "TextFromCheckbox": "チェックボックスからテキスト",
     "NumberFromDate": "日付から数値",
     "DateFromNumber": "数値から日付",
