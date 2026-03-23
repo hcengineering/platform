@@ -123,7 +123,8 @@ export default plugin(serverProcessId, {
     DateFromString: '' as Resource<TransformFunc>,
     YearFromDate: '' as Resource<TransformFunc>,
     MonthFromDate: '' as Resource<TransformFunc>,
-    DayFromDate: '' as Resource<TransformFunc>
+    DayFromDate: '' as Resource<TransformFunc>,
+    DateDifference: '' as Resource<TransformFunc>
   },
   trigger: {
     OnTransition: '' as Resource<TriggerFunc>,

@@ -320,7 +320,7 @@ function getContextFunctions (
   const matched: Array<Ref<ProcessFunction>> = []
   const hierarchy = client.getHierarchy()
   const funcs = client.getModel().findAllSync(process.class.ProcessFunction, { type: 'context' })
-  for (const func of (funcs as unknown as ProcessFunction[])) {
+  for (const func of funcs as unknown as ProcessFunction[]) {
     switch (category) {
       case 'array': {
         if (func.category === 'array') {

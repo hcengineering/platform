@@ -211,6 +211,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.DayFromDate
   })
 
+  builder.mixin(process.function.DateDifference, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.DateDifference
+  })
+
   builder.mixin(process.function.Random, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Random
   })

@@ -167,7 +167,8 @@
     "DateFromString": "Дата из строки",
     "YearFromDate": "Год из даты",
     "MonthFromDate": "Месяц из даты",
-    "DayFromDate": "День из даты"
+    "DayFromDate": "День из даты",
+    "DateDifference": "Разница дат"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

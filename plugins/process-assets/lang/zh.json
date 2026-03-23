@@ -167,7 +167,8 @@
     "DateFromText": "文本到日期",
     "YearFromDate": "日期到年份",
     "MonthFromDate": "日期到月份",
-    "DayFromDate": "日期到天"
+    "DayFromDate": "日期到天",
+    "DateDifference": "日期差异"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",
