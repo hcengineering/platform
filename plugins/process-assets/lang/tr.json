@@ -162,7 +162,8 @@
     "DateFromText": "Metinden tarih",
     "YearFromDate": "Tarihten yıl",
     "MonthFromDate": "Tarihten ay",
-    "DayFromDate": "Tarihten gün"
+    "DayFromDate": "Tarihten gün",
+    "DateDifference": "Tarih farkı"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

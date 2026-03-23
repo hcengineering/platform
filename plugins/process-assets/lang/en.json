@@ -167,7 +167,8 @@
     "DateFromText": "Date from text",
     "YearFromDate": "Year from date",
     "MonthFromDate": "Month from date",
-    "DayFromDate": "Day from date"
+    "DayFromDate": "Day from date",
+    "DateDifference": "Date difference"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

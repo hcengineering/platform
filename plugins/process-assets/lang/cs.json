@@ -162,7 +162,8 @@
     "DateFromText": "Datum ze stringu",
     "YearFromDate": "Rok z data",
     "MonthFromDate": "Měsíc z data",
-    "DayFromDate": "Den z data"
+    "DayFromDate": "Den z data",
+    "DateDifference": "Rozdíl dat"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

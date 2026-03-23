@@ -166,7 +166,8 @@
     "DateFromText": "テキストから日付",
     "YearFromDate": "日付から年",
     "MonthFromDate": "日付から月",
-    "DayFromDate": "日付から日"
+    "DayFromDate": "日付から日",
+    "DateDifference": "日付の差"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
