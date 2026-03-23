@@ -157,7 +157,17 @@
     "ReviewAction": "Рецензирование",
     "Review": "Рецензировать",
     "LockField": "Заблокировать поле",
-    "UnlockField": "Разблокировать поле"
+    "UnlockField": "Разблокировать поле",
+    "TextFromNumber": "Строка из числа",
+    "TextFromDate": "Строка из даты",
+    "TextFromCheckbox": "Строка из чекбокса",
+    "NumberFromDate": "Число из даты",
+    "DateFromNumber": "Дата из числа",
+    "NumberFromString": "Число из строки",
+    "DateFromString": "Дата из строки",
+    "YearFromDate": "Год из даты",
+    "MonthFromDate": "Месяц из даты",
+    "DayFromDate": "День из даты"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

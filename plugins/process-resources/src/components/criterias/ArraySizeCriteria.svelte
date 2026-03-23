@@ -32,7 +32,7 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
 
-  $: context = getContext(client, process, core.class.TypeNumber, 'attribute')
+  $: context = getContext(client, process, core.class.TypeNumber, 'attribute', undefined, true)
 
   $: contextValue = parseContext(val)
 

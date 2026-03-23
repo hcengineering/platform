@@ -152,7 +152,15 @@
     "ReviewAction": "Prüfen",
     "Review": "Prüfen",
     "LockField": "Feld sperren",
-    "UnlockField": "Feld entsperren"
+    "UnlockField": "Feld entsperren",
+    "TextFromCheckbox": "Text aus Checkbox",
+    "NumberFromDate": "Zahl aus Datum",
+    "DateFromNumber": "Datum aus Zahl",
+    "NumberFromText": "Zahl aus Text",
+    "DateFromText": "Datum aus Text",
+    "YearFromDate": "Jahr aus Datum",
+    "MonthFromDate": "Monat aus Datum",
+    "DayFromDate": "Tag aus Datum"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

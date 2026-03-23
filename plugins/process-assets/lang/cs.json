@@ -152,7 +152,17 @@
     "ReviewAction": "Zkontrolovat",
     "Review": "Zkontrolovat",
     "LockField": "Zamknout pole",
-    "UnlockField": "Odemknout pole"
+    "UnlockField": "Odemknout pole",
+    "TextFromNumber": "Text z čísla",
+    "TextFromDate": "Text z data",
+    "TextFromCheckbox": "Text z checkboxu",
+    "NumberFromDate": "Číslo z data",
+    "DateFromNumber": "Datum z čísla",
+    "NumberFromText": "Číslo ze stringu",
+    "DateFromText": "Datum ze stringu",
+    "YearFromDate": "Rok z data",
+    "MonthFromDate": "Měsíc z data",
+    "DayFromDate": "Den z data"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

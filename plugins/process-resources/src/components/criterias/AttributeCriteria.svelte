@@ -45,7 +45,7 @@
     }
   }
 
-  $: context = getContext(client, process, presenterClass.attrClass, presenterClass.category)
+  $: context = getContext(client, process, presenterClass.attrClass, presenterClass.category, undefined, true)
 </script>
 
 {#if editor}

@@ -14,7 +14,7 @@
 import { type Permission, type Ref } from '@hcengineering/core'
 import { mergeIds, type IntlString, type Resource } from '@hcengineering/platform'
 import { type PresentationMiddlewareCreator } from '@hcengineering/presentation'
-import process, { processId } from '@hcengineering/process'
+import process, { type ProcessFunction, processId } from '@hcengineering/process'
 import { type AnyComponent } from '@hcengineering/ui'
 import { type ViewQueryAction, type Viewlet } from '@hcengineering/view'
 
@@ -53,6 +53,7 @@ export default mergeIds(processId, process, {
     RelatedContextSelector: '' as AnyComponent,
     FunctionSelector: '' as AnyComponent,
     RunProcessCardPopup: '' as AnyComponent,
+    ContextSelectorPopup: '' as AnyComponent,
     ErrorPresenter: '' as AnyComponent,
     RequestUserInput: '' as AnyComponent,
     ResultInput: '' as AnyComponent,
@@ -261,7 +262,17 @@ export default mergeIds(processId, process, {
     LockField: '' as IntlString,
     UnlockField: '' as IntlString,
     Export: '' as IntlString,
-    Import: '' as IntlString
+    Import: '' as IntlString,
+    TextFromNumber: '' as IntlString,
+    TextFromDate: '' as IntlString,
+    TextFromCheckbox: '' as IntlString,
+    NumberFromDate: '' as IntlString,
+    DateFromNumber: '' as IntlString,
+    NumberFromText: '' as IntlString,
+    DateFromText: '' as IntlString,
+    YearFromDate: '' as IntlString,
+    MonthFromDate: '' as IntlString,
+    DayFromDate: '' as IntlString
   },
   permission: {
     RunProcess: '' as Ref<Permission>,
