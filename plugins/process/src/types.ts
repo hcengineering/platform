@@ -7,6 +7,10 @@ export interface Context {
   nested: Record<string, NestedContext>
   relations: Record<string, RelatedContext>
   executionContext: Record<ContextId, ProcessExecutionContext>
+  convertible?: Array<{
+    func: Ref<ProcessFunction>
+    context: Context
+  }>
 }
 
 export interface NestedContext {

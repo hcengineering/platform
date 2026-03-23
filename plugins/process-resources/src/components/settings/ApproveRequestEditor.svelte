@@ -58,7 +58,7 @@
   const attribute = getMockAttribute(plugin.class.ApproveRequest, plugin.string.Approvers, type)
 
   const presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
-  $: context = getContext(client, process, presenterClass.attrClass, presenterClass.category)
+  $: context = getContext(client, process, presenterClass.attrClass, presenterClass.category, undefined, true)
 
   function onChange (e: CustomEvent<any>): void {
     params.user = e.detail

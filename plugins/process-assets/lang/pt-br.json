@@ -145,7 +145,17 @@
     "ReviewAction": "Revisar",
     "Review": "Revisar",
     "LockField": "Bloquear campo",
-    "UnlockField": "Desbloquear campo"
+    "UnlockField": "Desbloquear campo",
+    "TextFromNumber": "Texto de número",
+    "TextFromDate": "Texto de data",
+    "TextFromCheckbox": "Texto de checkbox",
+    "NumberFromDate": "Número de data",
+    "DateFromNumber": "Data de número",
+    "NumberFromText": "Número de texto",
+    "DateFromText": "Data de texto",
+    "YearFromDate": "Ano de data",
+    "MonthFromDate": "Mês de data",
+    "DayFromDate": "Dia de data"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

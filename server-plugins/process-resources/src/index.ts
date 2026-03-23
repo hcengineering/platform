@@ -87,7 +87,17 @@ import {
   ExecutionInitiator,
   ExecutionStarted,
   FirstMatchValue,
-  Filter
+  Filter,
+  StringFromNumber,
+  StringFromDate,
+  StringFromBoolean,
+  NumberFromDate,
+  DateFromNumber,
+  NumberFromString,
+  DateFromString,
+  YearFromDate,
+  MonthFromDate,
+  DayFromDate
 } from './transform'
 import {
   RunSubProcess,
@@ -643,7 +653,17 @@ export default async () => ({
     ExecutionInitiator,
     ExecutionStarted,
     FirstMatchValue,
-    Filter
+    Filter,
+    StringFromNumber,
+    StringFromDate,
+    StringFromBoolean,
+    NumberFromDate,
+    DateFromNumber,
+    NumberFromString,
+    DateFromString,
+    YearFromDate,
+    MonthFromDate,
+    DayFromDate
   },
   rollbacks: {
     ToDoCloseRollback,

@@ -544,4 +544,134 @@ export function defineFunctions (builder: Builder): void {
     },
     process.function.CurrentDate
   )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      to: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.TextFromNumber,
+      type: 'convert'
+    },
+    process.function.StringFromNumber
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeDate,
+      to: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.TextFromDate,
+      type: 'convert'
+    },
+    process.function.StringFromDate
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeBoolean,
+      to: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.TextFromCheckbox,
+      type: 'convert'
+    },
+    process.function.StringFromBoolean
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeDate,
+      to: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.NumberFromDate,
+      type: 'convert'
+    },
+    process.function.NumberFromDate
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      to: core.class.TypeDate,
+      category: 'attribute',
+      label: process.string.DateFromNumber,
+      type: 'convert'
+    },
+    process.function.DateFromNumber
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeString,
+      to: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.NumberFromText,
+      type: 'convert'
+    },
+    process.function.NumberFromString
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeString,
+      to: core.class.TypeDate,
+      category: 'attribute',
+      label: process.string.DateFromText,
+      type: 'convert'
+    },
+    process.function.DateFromString
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeDate,
+      to: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.YearFromDate,
+      type: 'convert'
+    },
+    process.function.YearFromDate
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeDate,
+      to: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.MonthFromDate,
+      type: 'convert'
+    },
+    process.function.MonthFromDate
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeDate,
+      to: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.DayFromDate,
+      type: 'convert'
+    },
+    process.function.DayFromDate
+  )
 }

@@ -58,6 +58,7 @@
 
   $: nested = Object.values(context.nested)
   $: relations = Object.entries(context.relations)
+  $: convertible = (context as any).convertible ?? []
 
   function onUserRequest (): void {
     onSelect({
@@ -117,12 +118,55 @@
       dispatch('close')
     })
   }
+
+  function onConvertSelect (val: SelectedContext | null, func: Ref<ProcessFunction>): void {
+    if (val !== null) {
+      onClick({
+        ...val,
+        functions: [{ func, props: {} }, ...(val.functions ?? [])]
+      })
+    }
+  }
+
+  const elements: HTMLElement[] = []
+
+  const keyDown = (event: KeyboardEvent, index: number): void => {
+    if (event.key === 'ArrowDown') {
+      elements[(index + 1) % elements.length]?.focus()
+    }
+
+    if (event.key === 'ArrowUp') {
+      elements[(elements.length + index - 1) % elements.length]?.focus()
+    }
+
+    if (event.key === 'ArrowLeft') {
+      dispatch('close')
+    }
+  }
+
+  function getOnConvertSelect (func: Ref<ProcessFunction>): (val: SelectedContext | null) => void {
+    return (val: SelectedContext | null) => {
+      onConvertSelect(val, func)
+    }
+  }
+
+  $: functionsOffset = 1
+  $: processContextOffset = functionsOffset + context.functions.length
+  $: attributesOffset = processContextOffset + processContext.length
+  $: nestedOffset = attributesOffset + context.attributes.length
+  $: relationsOffset = nestedOffset + nested.length
+  $: convertibleOffset = relationsOffset + relations.length
+  $: customValueIndex = convertibleOffset + convertible.length
 </script>
 
 <div class="selectPopup" use:resizeObserver={() => dispatch('changeContent')}>
   <div class="menu-space" />
   <Scroller>
+    <!-- svelte-ignore a11y-mouse-events-have-key-events -->
     <button
+      bind:this={elements[0]}
+      on:keydown={(event) => keyDown(event, 0)}
+      on:mouseover={() => elements[0]?.focus()}
       on:click={() => {
         onUserRequest()
       }}
@@ -134,10 +178,13 @@
     </button>
     <div class="menu-separator" />
     {#if context.functions.length > 0}
-      {#each context.functions as f}
+      {#each context.functions as f, i}
         {@const func = getFunc(f)}
         {#if func.editor !== undefined}
           <Submenu
+            bind:element={elements[functionsOffset + i]}
+            on:keydown={(event) => keyDown(event, functionsOffset + i)}
+            on:mouseover={() => elements[functionsOffset + i]?.focus()}
             label={func.label}
             props={{
               masterTag,
@@ -149,7 +196,11 @@
             withHover
           />
         {:else}
+          <!-- svelte-ignore a11y-mouse-events-have-key-events -->
           <button
+            bind:this={elements[functionsOffset + i]}
+            on:keydown={(event) => keyDown(event, functionsOffset + i)}
+            on:mouseover={() => elements[functionsOffset + i]?.focus()}
             on:click={() => {
               onFunc(func._id)
             }}
@@ -164,9 +215,12 @@
       <div class="menu-separator" />
     {/if}
     {#if processContext.length > 0}
-      {#each processContext as pc}
+      {#each processContext as pc, i}
         {#if pc.attributes.length > 0}
           <Submenu
+            bind:element={elements[processContextOffset + i]}
+            on:keydown={(event) => keyDown(event, processContextOffset + i)}
+            on:mouseover={() => elements[processContextOffset + i]?.focus()}
             component={ExecutionContextPresenter}
             props={{
               context: pc,
@@ -179,7 +233,11 @@
             withHover
           />
         {:else}
+          <!-- svelte-ignore a11y-mouse-events-have-key-events -->
           <button
+            bind:this={elements[processContextOffset + i]}
+            on:keydown={(event) => keyDown(event, processContextOffset + i)}
+            on:mouseover={() => elements[processContextOffset + i]?.focus()}
             on:click={() => {
               onProcessContext(pc)
             }}
@@ -192,8 +250,12 @@
       <div class="menu-separator" />
     {/if}
     {#if context.attributes.length > 0}
-      {#each context.attributes as attr}
+      {#each context.attributes as attr, i}
+        <!-- svelte-ignore a11y-mouse-events-have-key-events -->
         <button
+          bind:this={elements[attributesOffset + i]}
+          on:keydown={(event) => keyDown(event, attributesOffset + i)}
+          on:mouseover={() => elements[attributesOffset + i]?.focus()}
           on:click={() => {
             onAttribute(attr)
           }}
@@ -207,8 +269,11 @@
       <div class="menu-separator" />
     {/if}
     {#if nested.length > 0}
-      {#each nested as object}
+      {#each nested as object, i}
         <Submenu
+          bind:element={elements[nestedOffset + i]}
+          on:keydown={(event) => keyDown(event, nestedOffset + i)}
+          on:mouseover={() => elements[nestedOffset + i]?.focus()}
           label={object.attribute.label}
           props={{
             context: object,
@@ -222,9 +287,13 @@
       <div class="menu-separator" />
     {/if}
     {#if relations.length > 0}
-      {#each relations as object}
+      {#each relations as object, i}
         {#if object[1].attributes.length === 0}
+          <!-- svelte-ignore a11y-mouse-events-have-key-events -->
           <button
+            bind:this={elements[relationsOffset + i]}
+            on:keydown={(event) => keyDown(event, relationsOffset + i)}
+            on:mouseover={() => elements[relationsOffset + i]?.focus()}
             on:click={() => {
               onRelation(object[1])
             }}
@@ -236,6 +305,9 @@
           </button>
         {:else}
           <Submenu
+            bind:element={elements[relationsOffset + i]}
+            on:keydown={(event) => keyDown(event, relationsOffset + i)}
+            on:mouseover={() => elements[relationsOffset + i]?.focus()}
             text={object[1].name}
             props={{
               context: object[1],
@@ -247,10 +319,36 @@
           />
         {/if}
       {/each}
+    {/if}
+    {#if convertible.length > 0}
+      {#each convertible as conv, i}
+        <Submenu
+          bind:element={elements[convertibleOffset + i]}
+          on:keydown={(event) => keyDown(event, convertibleOffset + i)}
+          on:mouseover={() => elements[convertibleOffset + i]?.focus()}
+          label={getFunc(conv.func).label}
+          props={{
+            process,
+            masterTag,
+            context: conv.context,
+            attribute,
+            onSelect: getOnConvertSelect(conv.func)
+          }}
+          options={{ component: plugin.component.ContextSelectorPopup }}
+          withHover
+        />
+      {/each}
       <div class="menu-separator" />
     {/if}
     {#if !forbidValue}
-      <button on:click={onConst} class="menu-item">
+      <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+      <button
+        bind:this={elements[customValueIndex]}
+        on:keydown={(event) => keyDown(event, customValueIndex)}
+        on:mouseover={() => elements[customValueIndex]?.focus()}
+        on:click={onConst}
+        class="menu-item"
+      >
         <span class="overflow-label pr-1">
           <Label label={plugin.string.CustomValue} />
         </span>

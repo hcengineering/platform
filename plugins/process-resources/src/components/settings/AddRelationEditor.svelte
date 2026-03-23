@@ -65,7 +65,7 @@
   let attribute: AnyAttribute
   $: attribute = getMockAttribute(targetClass ?? process.masterTag, core.string.Object, type)
 
-  $: context = targetClass && getContext(client, process, targetClass, 'object')
+  $: context = targetClass && getContext(client, process, targetClass, 'object', undefined, true)
 </script>
 
 <div class="grid">
