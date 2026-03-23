@@ -16,12 +16,21 @@ import activity, { type ActivityMessage, type SavedMessage } from '@hcengineerin
 import core, { type Ref, SortingOrder, type WithLookup } from '@hcengineering/core'
 import { createQuery, onClient } from '@hcengineering/presentation'
 import { writable } from 'svelte/store'
+import { getCurrentLocation, navigate } from '@hcengineering/ui'
 
 export const savedMessagesStore = writable<Array<WithLookup<SavedMessage>>>([])
 export const messageInFocus = writable<Ref<ActivityMessage> | undefined>(undefined)
 export const editingMessageStore = writable<Ref<ActivityMessage> | undefined>(undefined)
 
 const savedMessagesQuery = createQuery(true)
+
+export function clearMessageInLocation (): void {
+  const loc = getCurrentLocation()
+  if (loc.query?.message != null) {
+    delete loc.query.message
+    navigate(loc, true)
+  }
+}
 
 onClient(() => {
   savedMessagesQuery.query(

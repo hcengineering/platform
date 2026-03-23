@@ -54,11 +54,17 @@
 </script>
 
 {#if hierarchy.isDerived(value._class, notification.class.ActivityInboxNotification)}
-  <ActivityInboxNotificationPresenter value={asDisplayActivityNotification(value)} {object} {viewlets} {space} />
+  <ActivityInboxNotificationPresenter
+    value={asDisplayActivityNotification(value)}
+    {object}
+    {viewlets}
+    {space}
+    on:click
+  />
 {:else if hierarchy.isDerived(value._class, notification.class.MentionInboxNotification)}
-  <MentionInboxNotificationPresenter value={asMentionNotification(value)} {object} {space} />
+  <MentionInboxNotificationPresenter value={asMentionNotification(value)} {object} {space} on:click />
 {:else if hierarchy.isDerived(value._class, notification.class.ReactionInboxNotification)}
-  <ReactionInboxNotificationPresenter value={asReactionNotification(value)} {object} />
+  <ReactionInboxNotificationPresenter value={asReactionNotification(value)} {object} on:click />
 {:else if hierarchy.isDerived(value._class, notification.class.CommonInboxNotification)}
   <CommonInboxNotificationPresenter value={asCommonNotification(value)} />
 {/if}

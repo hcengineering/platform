@@ -26,12 +26,13 @@ import {
   Timestamp,
   Tx,
   TxCUD,
-  Blob
+  Blob,
+  Client
 } from '@hcengineering/core'
 import type { Asset, IntlString, Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { Preference } from '@hcengineering/preference'
-import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
+import type { AnyComponent, ComponentExtensionId, LabelAndProps } from '@hcengineering/ui'
 import type { Action } from '@hcengineering/view'
 
 /**
@@ -348,7 +349,10 @@ export default plugin(activityId, {
     ActivityEmployeePresenter: '' as ComponentExtensionId
   },
   function: {
-    ShouldScrollToActivity: '' as Resource<() => boolean>
+    ShouldScrollToActivity: '' as Resource<() => boolean>,
+    ActivityMessageTooltipProvider: '' as Resource<
+    (client: Client, doc?: Doc | null) => Promise<LabelAndProps | undefined>
+    >
   },
   backreference: {
     // Update list of back references

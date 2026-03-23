@@ -99,6 +99,7 @@
   const urlSet = new Set<string>()
 
   let progress = false
+  let loadingLinks = false
 
   let refContainer: HTMLElement
 
@@ -380,7 +381,7 @@
   }
 
   async function loadLinks (urls: string[]): Promise<void> {
-    progress = true
+    loadingLinks = true
     for (const url of urls) {
       try {
         const meta = await fetchLinkPreviewDetails(url)
@@ -401,7 +402,7 @@
         void setPlatformStatus(unknownError(err))
       }
     }
-    progress = false
+    loadingLinks = false
   }
 
   async function loadFiles (evt: ClipboardEvent): Promise<void> {
@@ -492,7 +493,7 @@
       {showSend}
       {showActions}
       autofocus={autofocus ? 'end' : false}
-      loading={loading || progress}
+      loading={loading || progress || loadingLinks}
       {boundary}
       {docClass}
       extraActions={[
