@@ -1400,7 +1400,8 @@ describe('account operations', () => {
           account: mockAccountId,
           token: expect.any(String),
           name: 'John Doe',
-          socialId: 'social-id'
+          socialId: 'social-id',
+          tfaRequired: false
         })
       })
 
@@ -1439,7 +1440,8 @@ describe('account operations', () => {
           account: mockAccountId,
           token: undefined,
           name: 'John Doe',
-          socialId: 'social-id'
+          socialId: 'social-id',
+          tfaRequired: false
         })
       })
 
@@ -1984,7 +1986,8 @@ describe('account operations', () => {
           account: mockPersonId,
           name: 'John Doe',
           socialId: mockSocialId._id,
-          token: expect.any(String)
+          token: expect.any(String),
+          tfaRequired: false
         })
 
         expect(mockDb.otp.deleteMany).toHaveBeenCalledWith({ socialId: mockSocialId._id })
@@ -2030,7 +2033,8 @@ describe('account operations', () => {
           account: mockPersonId,
           name: 'John Doe',
           socialId: mockSocialId._id,
-          token: expect.any(String)
+          token: expect.any(String),
+          tfaRequired: false
         })
 
         expect(mockDb.otp.deleteMany).toHaveBeenCalledWith({ socialId: mockSocialId._id })
@@ -2071,7 +2075,8 @@ describe('account operations', () => {
           account: callerAccountId,
           name: 'John Doe',
           socialId: mockSocialId._id,
-          token: expect.any(String)
+          token: undefined,
+          tfaRequired: false
         })
 
         expect(mockDb.otp.deleteMany).toHaveBeenCalledWith({ socialId: mockSocialId._id })
@@ -2126,7 +2131,8 @@ describe('account operations', () => {
           account: callerAccountId,
           name: 'John Doe',
           socialId: mockSocialId._id,
-          token: expect.any(String)
+          token: undefined,
+          tfaRequired: false
         })
 
         expect(mockDb.otp.deleteMany).toHaveBeenCalledWith({ socialId: mockSocialId._id })
@@ -2173,7 +2179,8 @@ describe('account operations', () => {
           account: callerAccountId,
           name: 'John Doe',
           socialId: mockSocialId._id,
-          token: expect.any(String)
+          token: undefined,
+          tfaRequired: false
         })
 
         expect(mockDb.otp.deleteMany).toHaveBeenCalledWith({ socialId: mockSocialId._id })
@@ -2476,7 +2483,8 @@ describe('account operations', () => {
           account: mockAccountId,
           name: 'John Doe',
           token: expect.any(String),
-          socialId: mockSocialId._id
+          socialId: mockSocialId._id,
+          tfaRequired: false
         })
 
         expect(utils.setPassword).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, mockAccountId, mockNewPassword)

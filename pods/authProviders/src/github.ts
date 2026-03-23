@@ -57,7 +57,9 @@ export function registerGithub (
     },
     async (ctx, next) => {
       const email = ctx.state.user.emails?.[0]?.value
-      const [first, last] = ctx.state.user.displayName?.split(' ') ?? [ctx.state.user.username, '']
+      const nameParts = (ctx.state.user.displayName ?? ctx.state.user.username ?? '').split(' ')
+      const first: string = nameParts[0] ?? ''
+      const last: string = nameParts.slice(1).join(' ')
       const db = await dbPromise
 
       const redirectUrl = await handleProviderAuth(

@@ -40,7 +40,8 @@ export const pages = [
   'confirmationSend',
   'auth',
   'login-password',
-  'changePassword'
+  'changePassword',
+  'tfa'
 ] as const
 
 export type Pages = (typeof pages)[number]
@@ -81,6 +82,11 @@ export default plugin(loginId, {
     PasswordMinLowerChars: '' as IntlString<{ count: number }>,
     SelectWorkspace: '' as IntlString,
     ChangePassword: '' as IntlString,
+    SetPassword: '' as IntlString,
+    SSOPasswordDescription: '' as IntlString,
+    SendSetupLink: '' as IntlString,
+    SSOPasswordEmailSent: '' as IntlString,
+    SSONoEmailLinked: '' as IntlString,
     CurrentPassword: '' as IntlString,
     NewPassword: '' as IntlString,
     EnterCurrentPassword: '' as IntlString,
@@ -92,7 +98,11 @@ export default plugin(loginId, {
     PasswordExpiredDesc: '' as IntlString,
     Email: '' as IntlString,
     Password: '' as IntlString,
-    PasswordRepeat: '' as IntlString
+    PasswordRepeat: '' as IntlString,
+    TwoFactorAuth: '' as IntlString,
+    EnterTwoFactorCode: '' as IntlString,
+    TwoFactorCode: '' as IntlString,
+    Verify: '' as IntlString
   },
   function: {
     SendInvite: '' as Resource<(email: string, role: AccountRole) => Promise<void>>,
@@ -107,7 +117,9 @@ export default plugin(loginId, {
     ) => Promise<string>
     >,
     LeaveWorkspace: '' as Resource<(account: string) => Promise<LoginInfo | null>>,
+    CheckHasPassword: '' as Resource<() => Promise<boolean>>,
     ChangePassword: '' as Resource<(oldPassword: string, password: string) => Promise<void>>,
+    RequestPasswordSetup: '' as Resource<() => Promise<void>>,
     SelectWorkspace: '' as Resource<
     (
       workspace: string,

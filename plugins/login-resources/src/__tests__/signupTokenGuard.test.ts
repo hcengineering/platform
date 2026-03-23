@@ -73,6 +73,13 @@ describe('SignupForm token guard (#10518)', () => {
     expect(goTo).toHaveBeenCalledWith('confirmationSend')
   })
 
+  it('calls logIn and redirects when token is an empty string (malformed response)', async () => {
+    const result: LoginInfo = { account: 'acc-uuid', token: '' }
+    await handleSignupResult(result, logIn, goTo)
+    expect(logIn).toHaveBeenCalledTimes(1)
+    expect(goTo).toHaveBeenCalledWith('confirmationSend')
+  })
+
   it('calls neither logIn nor goTo when result is null (signup error)', async () => {
     await handleSignupResult(null, logIn, goTo)
     expect(logIn).not.toHaveBeenCalled()

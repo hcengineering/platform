@@ -219,6 +219,15 @@
     "SelectUsers": "选择用户",
     "ShowInTitle": "在标题中显示",
     "SpaceMembersOnly": "仅限空间成员",
-    "Reset": "重置"
+    "Reset": "重置",
+    "Security": "安全",
+    "TwoFactorAuth": "双因素认证",
+    "TwoFactorAuthDescription": "双因素认证为您的帐户增加额外的安全层",
+    "EnableTwoFactorAuth": "启用双因素认证",
+    "DisableTwoFactorAuth": "禁用双因素认证",
+    "TwoFactorAuthEnabled": "双因素认证已启用",
+    "TwoFactorAuthDisabled": "双因素认证已禁用",
+    "ShowQRCode": "显示QR码",
+    "EnterVerificationCode": "输入验证码"
   }
 }

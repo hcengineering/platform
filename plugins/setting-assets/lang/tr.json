@@ -219,6 +219,15 @@
     "SelectUsers": "Kullanıcıları seç",
     "ShowInTitle": "Başlıkta göster",
     "SpaceMembersOnly": "Yalnızca alan üyeleri",
-    "Reset": "Sıfırla"
+    "Reset": "Sıfırla",
+    "Security": "Güvenlik",
+    "TwoFactorAuth": "İki faktörlü kimlik doğrulama",
+    "TwoFactorAuthDescription": "İki faktörlü kimlik doğrulama hesabınıza ek bir güvenlik katmanı ekler",
+    "EnableTwoFactorAuth": "İki faktörlü kimlik doğrulamayı etkinleştir",
+    "DisableTwoFactorAuth": "İki faktörlü kimlik doğrulamayı devre dışı bırak",
+    "TwoFactorAuthEnabled": "İki faktörlü kimlik doğrulama etkin",
+    "TwoFactorAuthDisabled": "İki faktörlü kimlik doğrulama devre dışı",
+    "ShowQRCode": "QR kodu göster",
+    "EnterVerificationCode": "Doğrulama kodunu gir"
   }
 }

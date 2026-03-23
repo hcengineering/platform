@@ -91,6 +91,15 @@
     "LogInAndJoin": "Se connecter et rejoindre",
     "SignUpAndJoin": "S'inscrire et rejoindre",
     "CreateNewAccount": "Créer un nouveau compte",
-    "SignedInAs": "Connecté en tant que {name}"
+    "SignedInAs": "Connecté en tant que {name}",
+    "TwoFactorAuth": "Authentification à deux facteurs",
+    "EnterTwoFactorCode": "Entrez le code d'authentification à deux facteurs",
+    "TwoFactorCode": "Code d'authentification à deux facteurs",
+    "Verify": "Vérifier",
+    "SetPassword": "Définir un mot de passe",
+    "SSOPasswordDescription": "Votre compte utilise une connexion externe. Définissez un mot de passe via confirmation par e-mail.",
+    "SendSetupLink": "Envoyer le lien de configuration",
+    "SSOPasswordEmailSent": "Vérifiez votre e-mail pour trouver un lien de configuration de mot de passe.",
+    "SSONoEmailLinked": "Aucune adresse e-mail n'est liée à votre compte. Ajoutez-en une dans Paramètres du compte → Gérer les identités d'abord."
   }
 }

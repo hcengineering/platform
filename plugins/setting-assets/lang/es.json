@@ -210,6 +210,15 @@
     "SelectUsers": "Seleccionar usuarios",
     "ShowInTitle": "Mostrar en el título",
     "SpaceMembersOnly": "Solo miembros del espacio",
-    "Reset": "Reiniciar"
+    "Reset": "Reiniciar",
+    "Security": "Seguridad",
+    "TwoFactorAuth": "Autenticación de dos factores",
+    "TwoFactorAuthDescription": "La autenticación de dos factores añade una capa adicional de seguridad a tu cuenta",
+    "EnableTwoFactorAuth": "Habilitar autenticación de dos factores",
+    "DisableTwoFactorAuth": "Deshabilitar autenticación de dos factores",
+    "TwoFactorAuthEnabled": "La autenticación de dos factores está habilitada",
+    "TwoFactorAuthDisabled": "La autenticación de dos factores está deshabilitada",
+    "ShowQRCode": "Mostrar código QR",
+    "EnterVerificationCode": "Introducir código de verificación"
   }
 }

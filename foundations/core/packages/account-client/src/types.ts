@@ -19,6 +19,8 @@ export interface LoginInfo {
   name?: string
   socialId?: PersonId
   token?: string
+  tfaRequired?: boolean
+  extra?: Record<string, string>
 }
 
 export interface EndpointInfo {

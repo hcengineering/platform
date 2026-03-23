@@ -91,6 +91,15 @@
     "LogInAndJoin": "登录并加入",
     "SignUpAndJoin": "注册并加入",
     "CreateNewAccount": "创建新账户",
-    "SignedInAs": "已以 {name} 身份登录"
+    "SignedInAs": "已以 {name} 身份登录",
+    "TwoFactorAuth": "两步验证",
+    "EnterTwoFactorCode": "输入两步验证码",
+    "TwoFactorCode": "两步验证码",
+    "Verify": "验证",
+    "SetPassword": "设置密码",
+    "SSOPasswordDescription": "您的账户使用外部登录。请通过电子邮件确认设置密码。",
+    "SendSetupLink": "发送设置链接",
+    "SSOPasswordEmailSent": "请检查您的电子邮件，获取设置密码的链接。",
+    "SSONoEmailLinked": "您的账户没有关联的电子邮件地址。请先在账户设置 → 管理身份中添加。"
   }
 }

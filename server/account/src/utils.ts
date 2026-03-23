@@ -39,6 +39,7 @@ import platform, { getMetadata, PlatformError, Severity, Status, translate } fro
 import { getDBClient, setDBExtraOptions } from '@hcengineering/postgres'
 import { pbkdf2Sync, randomBytes } from 'crypto'
 import otpGenerator from 'otp-generator'
+import { authenticator } from 'otplib'
 
 import { Analytics } from '@hcengineering/analytics'
 import { decodeTokenVerbose, generateToken, type PermissionsGrant, TokenError } from '@hcengineering/server-token'
@@ -1547,7 +1548,7 @@ export async function loginOrSignUpWithProvider (
         return null
       }
 
-      personUuid = await db.person.insertOne({ firstName: first, lastName: last })
+      personUuid = await db.person.insertOne({ firstName: first, lastName: last ?? '' })
     }
 
     if (personUuid == null) {
@@ -2117,4 +2118,16 @@ export async function doMergeAccounts (
   if (primaryAccountObj.hash == null && secondaryAccountObj.hash != null && secondaryAccountObj.salt != null) {
     await db.setPassword(primaryAccount, secondaryAccountObj.hash, secondaryAccountObj.salt)
   }
+}
+
+export function generateTotpSecret (): string {
+  return authenticator.generateSecret()
+}
+
+export function verifyTotpCode (secret: string, code: string): boolean {
+  return authenticator.check(code, secret)
+}
+
+export function getTotpUrl (account: string, issuer: string, secret: string): string {
+  return authenticator.keyuri(account, issuer, secret)
 }

@@ -65,6 +65,7 @@ export interface Account {
   salt?: Buffer | null
   maxWorkspaces?: number
   failedLoginAttempts?: number // Number of consecutive failed login attempts
+  tfaSecret?: string
 }
 
 // TODO: type data with generic type
@@ -432,6 +433,7 @@ export interface LoginInfo {
   name?: string
   socialId?: PersonId
   token?: string
+  tfaRequired?: boolean
 }
 
 export interface LoginInfoRequestData {
