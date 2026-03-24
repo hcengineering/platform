@@ -173,22 +173,23 @@ export async function initState<T extends Doc> (methodId: Ref<Method<T>>): Promi
 // I think one step depth should be enough for now
 export function getContext (
   client: Client,
-  process: Process,
+  _process: Process,
   target: Ref<Class<Type<any>>>,
   category: AttributeCategory,
-  attr?: Ref<AnyAttribute>
+  attr?: Ref<AnyAttribute>,
+  includeConvertible: boolean = false
 ): Context {
-  let attributes = getClassAttributes(client, process.masterTag, target, category)
+  let attributes = getClassAttributes(client, _process.masterTag, target, category)
   if (attr !== undefined && category === 'object') {
     attributes = attributes.filter((it) => it._id !== attr)
   }
 
-  const functions = getContextFunctions(client, process.masterTag, target, category)
+  const functions = getContextFunctions(client, _process.masterTag, target, category)
   const nested: Record<string, NestedContext> = {}
   const relations: Record<string, RelatedContext> = {}
   const executionContext: Record<string, ProcessExecutionContext> = {}
 
-  const refs = getClassAttributes(client, process.masterTag, core.class.RefTo, 'attribute')
+  const refs = getClassAttributes(client, _process.masterTag, core.class.RefTo, 'attribute')
   for (const ref of refs) {
     const refAttributes = getClassAttributes(client, (ref.type as RefTo<Doc>).to, target, 'attribute')
     if (refAttributes.length === 0) continue
@@ -198,7 +199,7 @@ export function getContext (
     }
   }
 
-  const arrs = getClassAttributes(client, process.masterTag, core.class.ArrOf, 'attribute')
+  const arrs = getClassAttributes(client, _process.masterTag, core.class.ArrOf, 'attribute')
   for (const arr of arrs) {
     const arrOf = (arr.type as ArrOf<Doc>).of
     if (arrOf._class !== core.class.RefTo) continue
@@ -211,7 +212,7 @@ export function getContext (
     }
   }
   const allRelations = client.getModel().findAllSync(core.class.Association, {})
-  const ancestors = new Set(client.getHierarchy().getAncestors(process.masterTag))
+  const ancestors = new Set(client.getHierarchy().getAncestors(_process.masterTag))
 
   const relationsA = allRelations.filter((it) => ancestors.has(it.classA))
   for (const rel of relationsA) {
@@ -257,9 +258,9 @@ export function getContext (
     }
   }
 
-  for (const key in process.context) {
+  for (const key in _process.context) {
     const contextId = key as ContextId
-    const value = process.context[contextId]
+    const value = _process.context[contextId]
     if (client.getHierarchy().isDerived(value._class, target)) {
       executionContext[key] = {
         attributes: [],
@@ -280,12 +281,33 @@ export function getContext (
     }
   }
 
+  const convertible: Array<{ func: Ref<ProcessFunction>, context: Context }> = []
+  if (includeConvertible) {
+    const funcs = client.getModel().findAllSync(process.class.ProcessFunction, { type: 'convert', to: target })
+    for (const func of funcs) {
+      const convContext = getContext(client, _process, func.of as Ref<Class<Type<any>>>, category, attr, false)
+      if (
+        convContext.attributes.length > 0 ||
+        Object.keys(convContext.executionContext).length > 0 ||
+        Object.keys(convContext.nested).length > 0 ||
+        Object.keys(convContext.relations).length > 0 ||
+        convContext.functions.length > 0
+      ) {
+        convertible.push({
+          func: func._id,
+          context: convContext
+        })
+      }
+    }
+  }
+
   return {
     functions,
     attributes,
     nested,
     relations,
-    executionContext
+    executionContext,
+    convertible: convertible.length > 0 ? convertible : undefined
   }
 }
 
@@ -298,7 +320,7 @@ function getContextFunctions (
   const matched: Array<Ref<ProcessFunction>> = []
   const hierarchy = client.getHierarchy()
   const funcs = client.getModel().findAllSync(process.class.ProcessFunction, { type: 'context' })
-  for (const func of funcs) {
+  for (const func of funcs as unknown as ProcessFunction[]) {
     switch (category) {
       case 'array': {
         if (func.category === 'array') {
@@ -769,8 +791,13 @@ export function matchCardCheck (
   params: Record<string, any>,
   context: Record<string, any>
 ): boolean {
-  const doc = context.card
+  let doc = context.card
   if (doc === undefined) return false
+  const process = client.getModel().findObject(execution.process)
+  if (process === undefined) return false
+  if (client.getHierarchy().isMixin(process.masterTag)) {
+    doc = client.getHierarchy().as(doc, process.masterTag)
+  }
   const res = matchQuery([doc], params, doc._class, client.getHierarchy(), true)
   return res.length > 0
 }

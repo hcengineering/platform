@@ -264,6 +264,7 @@
     "SevenHoursLength": "Seven Hours",
     "EightHoursLength": "Eight Hours",
     "HourLabel": "h",
+    "MinuteLabel": "m",
     "Saved": "Saved...",
     "CreatedIssue": "Created issue",
     "CreatedSubIssue": "Created sub-issue",

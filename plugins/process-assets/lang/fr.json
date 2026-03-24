@@ -157,7 +157,18 @@
     "ReviewAction": "Revoir",
     "Review": "Revoir",
     "LockField": "Verrouiller le champ",
-    "UnlockField": "Déverrouiller le champ"
+    "UnlockField": "Déverrouiller le champ",
+    "TextFromNumber": "Texte depuis nombre",
+    "TextFromDate": "Texte depuis date",
+    "TextFromCheckbox": "Texte depuis checkbox",
+    "NumberFromDate": "Nombre depuis date",
+    "DateFromNumber": "Date depuis nombre",
+    "NumberFromText": "Nombre depuis texte",
+    "DateFromText": "Date depuis texte",
+    "YearFromDate": "Année depuis date",
+    "MonthFromDate": "Mois depuis date",
+    "DayFromDate": "Jour depuis date",
+    "DateDifference": "Différence de dates"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

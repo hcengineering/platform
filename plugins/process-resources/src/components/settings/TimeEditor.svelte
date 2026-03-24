@@ -32,7 +32,7 @@
 
   const client = getClient()
   const h = client.getHierarchy()
-  $: context = getContext(client, process, core.class.TypeDate, 'attribute')
+  $: context = getContext(client, process, core.class.TypeDate, 'attribute', undefined, true)
 
   const attribute: AnyAttribute = getMockAttribute(process.masterTag, plugin.string.WaitUntil, {
     label: core.string.Date,
