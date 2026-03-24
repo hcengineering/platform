@@ -247,6 +247,7 @@
     "SevenHoursLength": "Sete Horas",
     "EightHoursLength": "Oito Horas",
     "HourLabel": "h",
+    "MinuteLabel": "m",
     "Saved": "Guardado...",
     "CreatedIssue": "Problema criado",
     "CreatedSubIssue": "Sub-problema criado",

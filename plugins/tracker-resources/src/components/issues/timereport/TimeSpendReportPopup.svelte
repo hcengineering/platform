@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@hcengineering/contact'
+  import contact, { Employee, getCurrentEmployee } from '@hcengineering/contact'
   import { AttachedData, Class, DocumentUpdate, Ref, Space } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
@@ -40,7 +40,7 @@
     date: value?.date ?? getTimeReportDate(defaultTimeReportDay),
     description: value?.description ?? '',
     value: value?.value,
-    employee: value?.employee ?? assignee ?? null
+    employee: value?.employee ?? getCurrentEmployee() ?? assignee ?? null
   }
 
   let selectedTimeReportDay = getTimeReportDayType(data.date)
@@ -112,6 +112,12 @@
       maxDigitsAfterPoint={3}
       kind={'editbox'}
     />
+    <Button kind={'link-bordered'} on:click={() => (data.value = 0.25)}>
+      <span slot="content">15<Label label={tracker.string.MinuteLabel} /></span>
+    </Button>
+    <Button kind={'link-bordered'} on:click={() => (data.value = 0.5)}>
+      <span slot="content">30<Label label={tracker.string.MinuteLabel} /></span>
+    </Button>
     <Button kind={'link-bordered'} on:click={() => (data.value = 1)}>
       <span slot="content">1<Label label={tracker.string.HourLabel} /></span>
     </Button>

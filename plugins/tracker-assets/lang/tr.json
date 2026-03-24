@@ -247,6 +247,7 @@
     "SevenHoursLength": "Yedi Saat",
     "EightHoursLength": "Sekiz Saat",
     "HourLabel": "s",
+    "MinuteLabel": "dk",
     "Saved": "Kaydedildi...",
     "CreatedIssue": "Sorun oluşturuldu",
     "CreatedSubIssue": "Alt sorun oluşturuldu",

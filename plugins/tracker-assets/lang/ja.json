@@ -247,6 +247,7 @@
     "SevenHoursLength": "7時間",
     "EightHoursLength": "8時間",
     "HourLabel": "時間",
+    "MinuteLabel": "分",
     "Saved": "保存済み...",
     "CreatedIssue": "イシューを作成しました",
     "CreatedSubIssue": "子イシューを作成しました",
