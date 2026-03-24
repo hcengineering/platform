@@ -523,9 +523,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
               info.repository as Ref<GithubIntegrationRepository>,
               container.project,
               taskTypes[0]._id,
-              repo as GithubIntegrationRepository & {
-                repository: IntegrationRepositoryData
-              },
+              repo,
               !markdownCompatible
             )
           },
