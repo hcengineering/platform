@@ -426,6 +426,22 @@ export function createModel (builder: Builder): void {
     },
     setting.ids.OfficeSettings
   )
+
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'guestPermissions',
+      label: setting.string.AccountPermissionsSettings,
+      icon: setting.icon.Setting,
+      component: setting.component.AccountPermissionsSettings,
+      group: 'settings-editor',
+      role: AccountRole.Owner,
+      order: 5100
+    },
+    'setting:ids:AccountPermissionsSettings' as Ref<any>
+  )
+
   // Currently remove Support item from settings
   // builder.createDoc(
   //   setting.class.SettingsCategory,

@@ -193,3 +193,21 @@ export class TTxAccessLevel extends TClass implements TxAccessLevel {
   updateAccessLevel?: AccountRole
   isIdentity?: boolean
 }
+
+@Model(core.class.ModulePermissionGroup, core.class.Configuration)
+export class TModulePermissionGroup extends TDoc {
+  @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
+    application!: Ref<Doc>
+
+  @Prop(ArrOf(TypeString()), core.string.Roles)
+    roles!: AccountRole[]
+
+  @Prop(ArrOf(TypeRef(core.class.Permission)), core.string.Permission)
+    permissions!: Ref<Permission>[]
+
+  @Prop(TypeRef(core.class.Class), core.string.Class)
+    spaceClass!: Ref<Class<Space>>
+
+  @Prop(TypeBoolean(), core.string.Name)
+    enabled!: boolean
+}

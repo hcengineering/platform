@@ -31,14 +31,7 @@ import {
   TrainingSpecialIds
 } from '@hcengineering/training'
 
-import {
-  AccountRole,
-  ClassCollaborators,
-  type Data,
-  type FindOptions,
-  type Permission,
-  type Ref
-} from '@hcengineering/core'
+import { AccountRole, ClassCollaborators, type Data, type FindOptions, type Permission, type Ref } from '@hcengineering/core'
 import { Prop, type Builder } from '@hcengineering/model'
 
 import contacts from '@hcengineering/model-contact'
@@ -897,6 +890,30 @@ function defineSettings (builder: Builder): void {
       role: AccountRole.Maintainer
     },
     training.setting.Trainings
+  )
+
+  builder.createDoc(
+    core.class.ClassPermission,
+    core.space.Model,
+    {
+      label: training.string.TrainingApplication,
+      scope: 'space',
+      targetClass: training.class.TrainingAttempt
+    },
+    training.ids.GuestTrainingAttemptClassPermission
+  )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: training.app.Training,
+      roles: [AccountRole.Guest],
+      permissions: [training.ids.GuestTrainingAttemptClassPermission],
+      spaceClass: core.class.TypedSpace,
+      enabled: true
+    },
+    training.ids.ModulePermissionGroup
   )
 }
 

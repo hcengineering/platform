@@ -43,6 +43,7 @@ import type {
   MarkupBlobRef,
   MigrationState,
   Mixin,
+  ModulePermissionGroup,
   Obj,
   Permission,
   PersonId,
@@ -180,7 +181,8 @@ export default plugin(coreId, {
     Sequence: '' as Ref<Class<Sequence>>,
     CustomSequence: '' as Ref<Class<CustomSequence>>,
     ClassCollaborators: '' as Ref<Class<ClassCollaborators<Doc>>>,
-    Collaborator: '' as Ref<Class<Collaborator>>
+    Collaborator: '' as Ref<Class<Collaborator>>,
+    ModulePermissionGroup: '' as Ref<Class<ModulePermissionGroup>>
   },
   icon: {
     TypeString: '' as Asset,

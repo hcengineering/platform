@@ -218,7 +218,9 @@ const cardPlugin = plugin(cardId, {
     CommunicationMessages: '' as Ref<CardSection>
   },
   ids: {
-    CardWidget: '' as Ref<Doc>
+    CardWidget: '' as Ref<Doc>,
+    GuestCardClassPermission: '' as Ref<Doc>,
+    ModulePermissionGroup: '' as Ref<Doc>
   },
   component: {
     LabelsPresenter: '' as AnyComponent,
