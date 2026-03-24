@@ -24,6 +24,9 @@ import plugin from '../plugin'
 import { HocuspocusCollabProvider } from './hocuspocus'
 import { type Provider } from './types'
 
+/** After idle/tab sleep the WS often closes with 1006; Hocuspocus reconnects. Defer user-visible errors. */
+const COLLABORATOR_RECONNECT_GRACE_MS = 5000
+
 function getDocumentId (doc: CollaborativeDoc): string {
   const workspace = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
   return encodeDocumentId(workspace, doc)
@@ -35,6 +38,15 @@ export function createRemoteProvider (ydoc: Ydoc, doc: CollaborativeDoc, content
 
   const documentId = getDocumentId(doc)
 
+  let reconnectGraceTimeout: ReturnType<typeof setTimeout> | undefined
+
+  const clearReconnectGrace = (): void => {
+    if (reconnectGraceTimeout !== undefined) {
+      clearTimeout(reconnectGraceTimeout)
+      reconnectGraceTimeout = undefined
+    }
+  }
+
   const provider = new HocuspocusCollabProvider({
     url: collaboratorUrl,
     name: documentId,
@@ -42,16 +54,28 @@ export function createRemoteProvider (ydoc: Ydoc, doc: CollaborativeDoc, content
     token,
     parameters: { content },
     onConnect: () => {
+      clearReconnectGrace()
       void setPlatformStatus(OK)
     },
     onClose: (data) => {
       if (data.event.code === 1006) {
-        console.error('Failed to connect to collaborator', data.event)
-        const status = new Status(Severity.ERROR, plugin.string.CannotConnectToCollaborationService, {})
-        void setPlatformStatus(status)
+        if (reconnectGraceTimeout === undefined) {
+          reconnectGraceTimeout = setTimeout(() => {
+            reconnectGraceTimeout = undefined
+            console.error('Failed to connect to collaborator', data.event)
+            const status = new Status(Severity.ERROR, plugin.string.CannotConnectToCollaborationService, {})
+            void setPlatformStatus(status)
+          }, COLLABORATOR_RECONNECT_GRACE_MS)
+        }
       }
     }
   })
+
+  const baseDestroy = provider.destroy.bind(provider)
+  provider.destroy = (): void => {
+    clearReconnectGrace()
+    baseDestroy()
+  }
 
   return provider
 }
