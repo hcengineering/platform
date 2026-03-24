@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@hcengineering/contact'
+  import contact, { Employee, getCurrentEmployee } from '@hcengineering/contact'
   import { AttachedData, Class, DocumentUpdate, Ref, Space } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
@@ -40,7 +40,7 @@
     date: value?.date ?? getTimeReportDate(defaultTimeReportDay),
     description: value?.description ?? '',
     value: value?.value,
-    employee: value?.employee ?? assignee ?? null
+    employee: value?.employee ?? getCurrentEmployee() ?? assignee ?? null
   }
 
   let selectedTimeReportDay = getTimeReportDayType(data.date)
