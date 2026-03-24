@@ -264,6 +264,7 @@
     "SevenHoursLength": "Sieben Stunden",
     "EightHoursLength": "Acht Stunden",
     "HourLabel": "Std",
+    "MinuteLabel": "Min",
     "Saved": "Gespeichert...",
     "CreatedIssue": "Aufgabe erstellt",
     "CreatedSubIssue": "Unteraufgabe erstellt",

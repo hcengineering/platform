@@ -112,6 +112,12 @@
       maxDigitsAfterPoint={3}
       kind={'editbox'}
     />
+    <Button kind={'link-bordered'} on:click={() => (data.value = 0.25)}>
+      <span slot="content">15<Label label={tracker.string.MinuteLabel} /></span>
+    </Button>
+    <Button kind={'link-bordered'} on:click={() => (data.value = 0.5)}>
+      <span slot="content">30<Label label={tracker.string.MinuteLabel} /></span>
+    </Button>
     <Button kind={'link-bordered'} on:click={() => (data.value = 1)}>
       <span slot="content">1<Label label={tracker.string.HourLabel} /></span>
     </Button>
