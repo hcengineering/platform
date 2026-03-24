@@ -124,7 +124,10 @@ export default plugin(textEditorId, {
     ConvertToEmbedPreview: '' as IntlString,
     UnableToLoadEmbeddedContent: '' as IntlString,
     SourceURL: '' as IntlString,
-    SelectedDocuments: '' as IntlString<{ count: number }>
+    SelectedDocuments: '' as IntlString<{ count: number }>,
+    PasteAsMarkdown: '' as IntlString,
+    ImportMarkdown: '' as IntlString,
+    ExportMarkdown: '' as IntlString
   },
   icon: {
     Header1: '' as Asset,

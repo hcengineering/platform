@@ -62,6 +62,7 @@ import { IndentExtension, indentExtensionOptions } from '../components/extension
 import { LinkKeymapExtension } from '../components/extension/shortcuts/linkKeymap'
 import { ParagraphKeymapExtension } from '../components/extension/shortcuts/paragraphKeymap'
 import { SmartPasteExtension } from '../components/extension/shortcuts/smartPaste'
+import { MarkdownFileDropExtension } from '../components/extension/shortcuts/markdownFileDrop'
 import { TableMetadataPasteExtension } from '../components/extension/shortcuts/tablePaste'
 import { HandleSubmitExtension } from '../components/extension/shortcuts/handleSubmit'
 import { Table, TableCell, TableRow } from '../components/extension/table'
@@ -194,6 +195,7 @@ const subKits = {
         imageUpload: e(ImageUploadExtension, false),
         indent: e(IndentExtension, indentExtensionOptions),
         smartPaste: e(SmartPasteExtension),
+        markdownFileDrop: e(MarkdownFileDropExtension),
         tableMetadataPaste: e(TableMetadataPasteExtension),
         paragraphKeymap: e(ParagraphKeymapExtension, context.mode === 'compact'),
         linkKeymap: e(LinkKeymapExtension),

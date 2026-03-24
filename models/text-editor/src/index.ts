@@ -559,4 +559,31 @@ export function createModel (builder: Builder): void {
     category: 120,
     index: 20
   })
+
+  // Markdown category
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: textEditor.function.PasteAsMarkdown,
+    icon: textEditor.icon.Code,
+    visibilityTester: textEditor.function.IsEditable,
+    label: textEditor.string.PasteAsMarkdown,
+    category: 130,
+    index: 5
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: textEditor.function.MarkdownFileImport,
+    icon: textEditor.icon.ScaleOut,
+    visibilityTester: textEditor.function.IsEditable,
+    label: textEditor.string.ImportMarkdown,
+    category: 130,
+    index: 10
+  })
+
+  builder.createDoc(textEditor.class.TextEditorAction, core.space.Model, {
+    action: textEditor.function.ExportMarkdown,
+    icon: textEditor.icon.Download,
+    label: textEditor.string.ExportMarkdown,
+    category: 130,
+    index: 15
+  })
 }

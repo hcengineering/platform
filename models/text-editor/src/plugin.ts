@@ -63,6 +63,10 @@ export default mergeIds(textEditorId, textEditor, {
     SetTextColor: '' as Resource<TextActionFunction>,
 
     IsMathInlineActive: '' as Resource<TextActionActiveFunction>,
-    IsMathBlockActive: '' as Resource<TextActionActiveFunction>
+    IsMathBlockActive: '' as Resource<TextActionActiveFunction>,
+
+    PasteAsMarkdown: '' as Resource<TextActionFunction>,
+    MarkdownFileImport: '' as Resource<TextActionFunction>,
+    ExportMarkdown: '' as Resource<TextActionFunction>
   }
 })
