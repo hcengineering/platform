@@ -3,7 +3,7 @@
 //
 -->
 <script lang="ts">
-  import core, { PersonId, Ref, WithLookup, getCurrentAccount } from '@hcengineering/core'
+  import core, { Ref, WithLookup, getCurrentAccount } from '@hcengineering/core'
   import { GithubPullRequest, GithubReviewComment, GithubReviewThread } from '@hcengineering/github'
 
   import { ActivityMessageHeader, ActivityMessageTemplate } from '@hcengineering/activity-resources'
@@ -82,8 +82,10 @@
     }
   }
 
-  const toRefPersonAccount = (account: PersonId): PersonId => account
-  const toRefPerson = (account?: Ref<Person>): Ref<Person> => account as Ref<Person>
+  function onDiffExpand (nextExpanded: boolean): void {
+    expanded = nextExpanded
+  }
+
 </script>
 
 <div
@@ -122,9 +124,7 @@
               fileName: value.path,
               expandable: value.isResolved,
               expanded,
-              onExpand: (value) => {
-                expanded = value
-              }
+              onExpand: onDiffExpand
             }}
           />
         {/if}
