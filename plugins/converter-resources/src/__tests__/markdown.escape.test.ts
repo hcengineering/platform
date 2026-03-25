@@ -48,6 +48,10 @@ describe('markdown/escape', () => {
       expect(escapeMarkdownLinkUrl('https://example.com/path)')).toBe('https://example.com/path\\)')
     })
 
+    it('escapes pipe', () => {
+      expect(escapeMarkdownLinkUrl('https://example.com/x|y')).toBe('https://example.com/x\\|y')
+    })
+
     it('returns plain URL unchanged when no special chars', () => {
       expect(escapeMarkdownLinkUrl('https://example.com')).toBe('https://example.com')
     })
