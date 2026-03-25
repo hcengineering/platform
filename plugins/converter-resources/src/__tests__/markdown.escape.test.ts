@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { escapeMarkdownLinkText, escapeMarkdownLinkUrl } from '../markdown/escape'
+import { escapeMarkdownLinkText, escapeMarkdownLinkUrl, escapeTableCell } from '../markdown/escape'
 
 describe('markdown/escape', () => {
   describe('escapeMarkdownLinkText', () => {
@@ -48,8 +48,38 @@ describe('markdown/escape', () => {
       expect(escapeMarkdownLinkUrl('https://example.com/path)')).toBe('https://example.com/path\\)')
     })
 
+    it('escapes pipe', () => {
+      expect(escapeMarkdownLinkUrl('https://example.com/x|y')).toBe('https://example.com/x\\|y')
+    })
+
     it('returns plain URL unchanged when no special chars', () => {
       expect(escapeMarkdownLinkUrl('https://example.com')).toBe('https://example.com')
+    })
+  })
+
+  describe('escapeTableCellPreservingLink', () => {
+    it('escapes plain text pipe for table safety', () => {
+      expect(escapeTableCell('a|b')).toBe('a\\|b')
+    })
+
+    it('preserves markdown link and escapes pipes inside text and URL', () => {
+      const input = '[a|b](http://example.com/x|y)'
+      expect(escapeTableCell(input)).toBe('[a\\|b](http://example.com/x\\|y)')
+    })
+
+    it('escapes pipes even when value contains escaped characters', () => {
+      const input = '[a|b](http://example.com/x|y\\z)'
+      expect(escapeTableCell(input)).toBe('[a\\|b](http://example.com/x\\|y\\\\z)')
+    })
+
+    it('treats strings that do not end with `)` as plain text', () => {
+      const input = '[a|b](http://example.com/x|y'
+      expect(escapeTableCell(input)).toBe('\\[a\\|b\\](http://example.com/x\\|y')
+    })
+
+    it('returns empty string for null/undefined', () => {
+      expect(escapeTableCell(null)).toBe('')
+      expect(escapeTableCell(undefined)).toBe('')
     })
   })
 })
