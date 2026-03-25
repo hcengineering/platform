@@ -290,7 +290,7 @@ describe('rest-api-server', () => {
 
   describe('workspace-not-found', () => {
     it('getWorkspaceInfo rejects WorkspaceNotFound for unknown workspace (system token)', async () => {
-      const unknownWorkspaceId = generateId() as unknown as WorkspaceUuid
+      const unknownWorkspaceId = 'd388f8f8-915c-4ef8-96f7-018147ce1234' as unknown as WorkspaceUuid
       const token = generateToken(systemAccountUuid, unknownWorkspaceId, undefined, 'secret')
       const client = getAccountClient(serverConfig.ACCOUNTS_URL, token)
 
@@ -305,7 +305,7 @@ describe('rest-api-server', () => {
     })
 
     it('transactor WebSocket sends WorkspaceNotFound RPC error for unknown workspace (system token)', async () => {
-      const unknownWorkspaceId = generateId() as unknown as WorkspaceUuid
+      const unknownWorkspaceId = 'd388f8f8-915c-4ef8-96f7-018147ce1234' as unknown as WorkspaceUuid
       const token = generateToken(systemAccountUuid, unknownWorkspaceId, undefined, 'secret')
       const url = concatLink(apiWorkspace1.endpoint, `/${token}`)
       const rpc = new RPCHandler()
