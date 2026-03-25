@@ -538,6 +538,7 @@ export function startHttpServer (
         }
         if (buff !== undefined) {
           doSessionOp(
+            ctx,
             webSocketData,
             (s, buff) => {
               s.context.measure('receive-data', buff?.length ?? 0)
@@ -556,6 +557,7 @@ export function startHttpServer (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('close', (code: number, reason: Buffer) => {
       doSessionOp(
+        ctx,
         webSocketData,
         (s) => {
           if (!(s.session.workspaceClosed ?? false)) {
@@ -569,6 +571,7 @@ export function startHttpServer (
 
     ws.on('error', (err) => {
       doSessionOp(
+        ctx,
         webSocketData,
         (s) => {
           ctx.error('error', { err, user: s.session.getUser() })

@@ -35,6 +35,7 @@ export interface WebsocketData {
 }
 
 export function doSessionOp (
+  ctx: MeasureContext,
   data: WebsocketData,
   op: (session: AddSessionActive, msg: Buffer) => void,
   msg: Buffer
@@ -50,7 +51,7 @@ export function doSessionOp (
         }
       })
       .catch((err) => {
-        console.error({ message: 'Failed to process session operation', err })
+        ctx.error('Failed to process session operation', { err })
       })
   } else {
     if (data.session !== undefined && 'session' in data.session) {
