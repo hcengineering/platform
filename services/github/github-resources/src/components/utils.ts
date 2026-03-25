@@ -1,11 +1,18 @@
+import {
+  getClient as getAccountClientRaw,
+  type AccountClient,
+  type Integration as AccountIntegration
+} from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import { concatLink, getCurrentAccount, toIdMap, type IdMap } from '@hcengineering/core'
 import {
+  githubIntegrationKind,
   makeQuery,
   type GithubAuthentication,
   type GithubIntegrationRepository,
   type GithubProject
 } from '@hcengineering/github'
+import login from '@hcengineering/login'
 import { PlatformError, getMetadata, unknownError } from '@hcengineering/platform'
 import presentation, { createQuery, getClient } from '@hcengineering/presentation'
 import { location } from '@hcengineering/ui'
@@ -39,6 +46,41 @@ export async function onAuthorize (login?: string): Promise<void> {
       allow_signup: 'true'
     })
   window.open(url)
+}
+
+export function getAccountClient (): AccountClient | undefined {
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl)
+  const token = getMetadata(presentation.metadata.Token)
+  if (accountsUrl == null || token == null) {
+    return undefined
+  }
+  return getAccountClientRaw(accountsUrl, token)
+}
+
+export async function updateGithubAccountIntegrationLogin (
+  loginVal: string,
+  integration: AccountIntegration | undefined
+): Promise<void> {
+  try {
+    const accountClient = getAccountClient()
+    if (accountClient === undefined) {
+      throw new Error('Account client is not defined')
+    }
+    const socialId = integration?.socialId ?? getCurrentAccount().primarySocialId
+    const workspaceUuid = integration?.workspaceUuid ?? null
+
+    const key = { socialId, kind: githubIntegrationKind, workspaceUuid }
+    const existing = await accountClient.getIntegration(key)
+    const mergedData = { ...(existing?.data ?? {}), login: loginVal }
+
+    if (existing == null) {
+      throw new Error('Integration not found')
+    }
+    await accountClient.updateIntegration({ ...existing, data: mergedData })
+  } catch (err: any) {
+    console.error('Error updating github account integration login', err)
+    Analytics.handleError(err)
+  }
 }
 
 const repositoryQuery = createQuery(true)
