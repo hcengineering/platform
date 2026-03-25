@@ -29,7 +29,6 @@ import github, {
   GithubIntegrationRepository,
   GithubIssueStateReason,
   GithubProject,
-  IntegrationRepositoryData,
   GithubIssue as TGithubIssue
 } from '@hcengineering/github'
 import task, { TaskType, calcRank } from '@hcengineering/task'
