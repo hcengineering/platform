@@ -3,18 +3,17 @@
 //
 -->
 <script lang="ts">
-  import { PersonAccount } from '@hcengineering/contact'
-  import { getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient, getFileUrl } from '@hcengineering/presentation'
   import { Button, Chevron, Component, ExpandCollapse, Label } from '@hcengineering/ui'
   import diffview from '@hcengineering/diffview'
   import { GithubPatch, GithubPullRequest, GithubPullRequestReview } from '@hcengineering/github'
 
   import github from '../plugin'
+  import { getCurrentEmployee } from '@hcengineering/contact'
 
   export let pullRequest: GithubPullRequest
 
-  const me = getCurrentAccount() as PersonAccount
+  const me = getCurrentEmployee()
 
   let isCollapsed = true
 
@@ -37,6 +36,7 @@
   }
 
   $: hasPatch = patch !== undefined && patchText !== ''
+  $: changedFilesCount = patchText === '' ? 0 : (patchText.match(/^diff --git /gm)?.length ?? 0)
 
   let review: GithubPullRequestReview | undefined
 
@@ -46,7 +46,7 @@
     github.class.GithubPullRequestReview,
     {
       attachedTo: pullRequest._id,
-      author: me.person
+      author: me
     },
     (res) => {
       ;[review] = res
@@ -60,7 +60,7 @@
   async function handleFileViewed (fileName: string, sha: string, viewed: boolean): Promise<void> {
     const current = await client.findOne(github.class.GithubPullRequestReview, {
       attachedTo: pullRequest._id,
-      author: me.person
+      author: me
     })
 
     const files = current?.files ?? []
@@ -73,7 +73,7 @@
       files.push({ fileName, sha })
     }
 
-    if (current) {
+    if (current != null) {
       await client.update(current, { files })
     } else {
       await client.addCollection(
@@ -82,7 +82,7 @@
         pullRequest._id,
         github.class.GithubPullRequest,
         'reviewsVisual',
-        { author: me.person, files }
+        { author: me, files }
       )
     }
   }
@@ -106,7 +106,7 @@
             fill={'var(--caption-color)'}
             marginRight={'.375rem'}
           />
-          <Label label={github.string.ChangedFiles} params={{ files: pullRequest.files }} />
+          <Label label={github.string.ChangedFiles} params={{ files: changedFilesCount }} />
         </svelte:fragment>
       </Button>
     </div>
@@ -119,7 +119,7 @@
             props={{ patch: patchText, viewed: viewedFiles }}
             on:change={(evt) => {
               const { fileName, sha, viewed } = evt.detail
-              handleFileViewed(fileName, sha, viewed)
+              void handleFileViewed(fileName, sha, viewed)
             }}
           />
         </div>

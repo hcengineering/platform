@@ -103,8 +103,16 @@ export function initStatisticsContext (
     const handleError = (err: any): void => {
       errorToSend++
       if (errorToSend % 2 === 0) {
-        if (err.code !== 'UND_ERR_SOCKET') {
-          console.error(err)
+        const code = err?.code ?? err?.cause?.code
+        if (code !== 'UND_ERR_SOCKET') {
+          metricsContext.warn('Failed to send statistics', {
+            service: serviceName,
+            statsUrl,
+            code,
+            message: err?.message,
+            causeMessage: err?.cause?.message,
+            err
+          })
         }
       }
       prev = undefined
