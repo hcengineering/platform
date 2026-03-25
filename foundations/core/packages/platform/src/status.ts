@@ -105,8 +105,6 @@ function unwrapEmbeddedStatus (err: unknown): Status | undefined {
 
 /**
  * Normalizes a thrown or structured error value into a {@link Status} for RPC / telemetry.
- * Handles {@link Status} and {@link PlatformError} instances from duplicate `@hcengineering/platform`
- * copies (where `instanceof` would fail), plain status-shaped objects, and the same cases as {@link unknownError}.
  * @public
  */
 export function errorToStatus (err: unknown): Status {
@@ -115,8 +113,8 @@ export function errorToStatus (err: unknown): Status {
   if (isStatusLike(err)) {
     return new Status(err.severity as Severity, err.code, err.params)
   }
-  const embedded = unwrapEmbeddedStatus(err)
-  if (embedded !== undefined) return embedded
+  const status = unwrapEmbeddedStatus(err)
+  if (status !== undefined) return status
   return unknownError(err)
 }
 
