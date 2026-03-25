@@ -11,8 +11,6 @@ import core, {
   Client,
   ClientConnectEvent,
   DocumentUpdate,
-  isActiveMode,
-  isDeletingMode,
   MeasureContext,
   PersonId,
   RateLimiter,
@@ -46,6 +44,7 @@ import { type StorageAdapter } from '@hcengineering/server-core'
 import { join } from 'path'
 import { createPlatformClient } from './client'
 import config from './config'
+import { GithubWorkerWorkspaceState, getGithubWorkerState } from './workspaceUtils'
 import { registerLoaders } from './loaders'
 import { createNotification } from './notifications'
 import { errorToObj } from './sync/utils'
@@ -67,6 +66,8 @@ export interface InstallationRecord {
 interface IntegrationDataValue {
   installationId: number | number[]
 }
+
+export { GithubWorkerWorkspaceState, getGithubWorkerState } from './workspaceUtils'
 
 export class PlatformWorker {
   private readonly clients = new Map<WorkspaceUuid, GithubWorker>()
@@ -948,32 +949,6 @@ export class PlatformWorker {
 
   checkedWorkspaces = new Set<string>()
 
-  checkWorkspaceIsActive (workspace: WorkspaceUuid, workspaceInfo: WorkspaceInfoWithStatus): boolean {
-    if (workspaceInfo?.uuid === undefined) {
-      this.ctx.error('No workspace exists for workspaceId', { workspace })
-      return false
-    }
-    if (workspaceInfo?.isDisabled === true || isDeletingMode(workspaceInfo?.mode)) {
-      this.ctx.warn('Workspace is disabled', { workspace })
-      return false
-    }
-    if (!isActiveMode(workspaceInfo?.mode)) {
-      this.ctx.warn('Workspace is in maitenance, skipping for now.', { workspace, mode: workspaceInfo?.mode })
-      return true
-    }
-
-    const lastVisit = (Date.now() - (workspaceInfo.lastVisit ?? 0)) / (3600 * 24 * 1000) // In days
-
-    if (config.WorkspaceInactivityInterval > 0 && lastVisit > config.WorkspaceInactivityInterval) {
-      if (!this.checkedWorkspaces.has(workspace)) {
-        this.checkedWorkspaces.add(workspace)
-        this.ctx.warn('Workspace is inactive for too long, skipping for now.', { workspace })
-      }
-      return true
-    }
-    return false
-  }
-
   checkReconnect (workspace: WorkspaceUuid, event: ClientConnectEvent, worker: GithubWorker): void {
     if (event === ClientConnectEvent.Refresh || event === ClientConnectEvent.Upgraded) {
       void this.clients
@@ -989,9 +964,15 @@ export class PlatformWorker {
     getAccountClient(config.AccountsURL, token)
       .getWorkspaceInfo()
       .then((wsInfo) => {
-        const res = this.checkWorkspaceIsActive(workspace, wsInfo)
-        if (!res) {
-          this.ctx.warn('Workspace is inactive, removing from clients list.', { workspace })
+        const state = getGithubWorkerState(
+          this.ctx,
+          workspace,
+          wsInfo,
+          config.WorkspaceInactivityInterval,
+          this.checkedWorkspaces
+        )
+        if (state === GithubWorkerWorkspaceState.Skip) {
+          this.ctx.warn('Github worker state is skip, removing from clients list.', { workspace })
           this.clients.delete(workspace)
           void worker?.close().catch((err) => {
             this.ctx.error('Failed to close workspace', { workspace, error: err })
@@ -1053,9 +1034,18 @@ export class PlatformWorker {
           rechecks.push(workspace)
           continue
         }
-        const needRecheck = this.checkWorkspaceIsActive(workspace, returnedInfo)
-        if (needRecheck) {
+        const state = getGithubWorkerState(
+          this.ctx,
+          workspace,
+          returnedInfo,
+          config.WorkspaceInactivityInterval,
+          this.checkedWorkspaces
+        )
+        if (state === GithubWorkerWorkspaceState.Wait) {
           rechecks.push(workspace)
+          continue
+        }
+        if (state === GithubWorkerWorkspaceState.Skip) {
           continue
         }
         await rateLimiter.add(async () => {
