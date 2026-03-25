@@ -85,7 +85,6 @@
   function onDiffExpand (nextExpanded: boolean): void {
     expanded = nextExpanded
   }
-
 </script>
 
 <div
