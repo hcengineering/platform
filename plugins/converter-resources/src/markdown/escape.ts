@@ -31,3 +31,24 @@ export function escapeMarkdownLinkText (text: string): string {
 export function escapeMarkdownLinkUrl (url: string): string {
   return url.replace(/\\/g, '\\\\').replace(/\)/g, '\\)')
 }
+
+/**
+ * Escape a markdown table cell while preserving `[text](url)` links.
+ */
+export function escapeTableCell (value: unknown): string {
+  const s = value == null ? '' : String(value)
+
+  const sep = s.indexOf('](')
+  const looksLikeMarkdownLink = s.startsWith('[') && sep !== -1 && s.endsWith(')')
+  if (!looksLikeMarkdownLink) {
+    return escapeMarkdownLinkText(s)
+  }
+
+  const rawText = s.slice(1, sep)
+  const rawUrl = s.slice(sep + 2, -1)
+
+  const escapedText = escapeMarkdownLinkText(rawText)
+  // `escapeMarkdownLinkUrl` doesn't escape pipes, but pipes break markdown tables.
+  const escapedUrl = escapeMarkdownLinkUrl(rawUrl).replace(/\|/g, '\\|')
+  return `[${escapedText}](${escapedUrl})`
+}
