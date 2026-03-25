@@ -13,6 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { getMetadata } from '@hcengineering/platform'
+  import presentation from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import { Icon, Label, showPopup } from '@hcengineering/ui'
   import workbench from '../plugin'
@@ -21,6 +23,8 @@
   export let split: boolean = false
 
   let selected: boolean = false
+
+  const version = getMetadata(presentation.metadata.FrontVersion)
 </script>
 
 <div class="antiNav-footer-line" />
@@ -46,5 +50,17 @@
     <span class="an-element__label">
       <Label label={workbench.string.HelpAndSupport} />
     </span>
+    {#if version}
+      <span class="version-label">{version}</span>
+    {/if}
   </div>
 </div>
+
+<style lang="scss">
+  .version-label {
+    margin-left: auto;
+    font-size: 0.6875rem;
+    color: var(--theme-dark-color);
+    user-select: all;
+  }
+</style>
