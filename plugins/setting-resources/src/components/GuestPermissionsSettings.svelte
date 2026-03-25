@@ -72,13 +72,13 @@
     const next = new Set(group.permissions ?? [])
     if (checked) next.add(permissionId)
     else next.delete(permissionId)
-    await client.updateDoc(core.class.ModulePermissionGroup, core.space.Workspace, group._id, {
+    await client.updateDoc(core.class.ModulePermissionGroup, core.space.Model, group._id, {
       permissions: Array.from(next)
     } as any)
   }
 
   async function toggleModule (group: ModulePermissionGroup, checked: boolean): Promise<void> {
-    await client.updateDoc(core.class.ModulePermissionGroup, core.space.Workspace, group._id, {
+    await client.updateDoc(core.class.ModulePermissionGroup, core.space.Model, group._id, {
       enabled: checked
     } as any)
   }

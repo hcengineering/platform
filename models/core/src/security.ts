@@ -194,7 +194,7 @@ export class TTxAccessLevel extends TClass implements TxAccessLevel {
   isIdentity?: boolean
 }
 
-@Model(core.class.ModulePermissionGroup, core.class.Configuration)
+@Model(core.class.ModulePermissionGroup, core.class.Configuration, DOMAIN_MODEL)
 export class TModulePermissionGroup extends TDoc {
   @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
     application!: Ref<Doc>
