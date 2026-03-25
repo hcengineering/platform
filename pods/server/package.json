@@ -76,6 +76,7 @@
     "@hcengineering/postgres": "workspace:^0.7.22",
     "@hcengineering/rpc": "workspace:^0.7.17",
     "@hcengineering/server": "workspace:^0.7.17",
+    "@hcengineering/ai-bot": "workspace:^0.7.0",
     "@hcengineering/server-ai-bot": "workspace:^0.7.0",
     "@hcengineering/server-calendar": "workspace:^0.7.0",
     "@hcengineering/server-core": "workspace:^0.7.18",
