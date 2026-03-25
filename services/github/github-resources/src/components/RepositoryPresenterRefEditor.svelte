@@ -37,7 +37,7 @@
   export let label: IntlString = github.string.AssignRepository
   export let showIcon: boolean = false
 
-  $: repository = $integrationRepositories.get(value)
+  $: repository = value != null ? $integrationRepositories.get(value) : undefined
 
   let selectedRepository: GithubIntegrationRepository | undefined
 
