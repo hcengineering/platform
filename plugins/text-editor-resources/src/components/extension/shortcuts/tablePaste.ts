@@ -48,7 +48,7 @@ function extractMetadataFromHtmlComments (text: string): { metadata: TableMetada
   return { metadata: null, cleanedText: text }
 }
 
-function normalizeEscapedMarkdownLinks (markdown: string): string {
+export function normalizeEscapedMarkdownLinks (markdown: string): string {
   // Some producers escape markdown links in table cells:
   // 1) partially escaped: `\\[text\\](url)`
   // 2) fully escaped: `\\[text\\]\\(url\\)`
