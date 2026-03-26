@@ -19,6 +19,7 @@ import core, {
   Doc,
   DocumentUpdate,
   generateId,
+  getObjectValue,
   Ref,
   RefTo,
   Tx,
@@ -374,6 +375,7 @@ async function reassignToDos (card: Card, ops: DocumentUpdate<Card>, control: Tr
     doneOn: null,
     field: { $ne: null }
   } as any)
+  const cache = new Map<Ref<Execution>, Execution>()
   const handledGroups = new Set<string>()
   for (const todo of todos as any[]) {
     if (todo.field === undefined || !TxProcessor.hasUpdate(ops, todo.field)) continue
@@ -383,7 +385,18 @@ async function reassignToDos (card: Card, ops: DocumentUpdate<Card>, control: Tr
       if (handledGroups.has(request.group)) continue
       handledGroups.add(request.group)
 
-      const newUsers = (card[todo.field as keyof Card] as any[]) ?? []
+      const execution =
+        cache.get(todo.execution) ??
+        (await control.findAll(control.ctx, process.class.Execution, { _id: todo.execution }, { limit: 1 }))[0]
+      if (execution === undefined) continue
+      cache.set(todo.execution, execution)
+      const _process = control.modelDb.findObject(execution.process)
+      if (_process === undefined) continue
+      const h = control.hierarchy
+
+      const target = h.isMixin(_process.masterTag) ? h.asIf(card, _process.masterTag) : card
+      if (target === undefined) continue
+      const newUsers = (target[todo.field as keyof Card] as any[]) ?? []
       if (newUsers.length === 0) {
         continue
       }
