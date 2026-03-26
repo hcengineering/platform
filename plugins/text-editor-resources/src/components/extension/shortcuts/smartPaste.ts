@@ -36,6 +36,7 @@ function PasteTextAsMarkdownPlugin (): Plugin {
         if (clipboardData === null) return false
 
         const pastedText = clipboardData.getData('text/plain')
+        const pastedMarkdown = clipboardData.getData('text/markdown')
 
         // check if we are in code block
         const { $from } = view.state.selection
@@ -47,12 +48,21 @@ function PasteTextAsMarkdownPlugin (): Plugin {
           }
         }
 
+        // If the clipboard explicitly provides markdown, prefer it even if other types (e.g. html) exist.
+        const hasMarkdown = pastedMarkdown.trim().length > 0
+        const markdownSource = hasMarkdown ? pastedMarkdown : pastedText
+
+        // Table copies include metadata comment; treat as markdown even when clipboard has rich types.
+        const hasTableMetadata =
+          pastedText.includes('<!-- huly-table-metadata:') || pastedMarkdown.includes('<!-- huly-table-metadata:')
+
         const isPlainPaste = clipboardData.types.length === 1 && clipboardData.types[0] === 'text/plain'
 
-        if (!isPlainPaste) return false
+        // Keep default paste behavior for rich clipboard formats, unless markdown is explicitly present.
+        if (!hasMarkdown && !hasTableMetadata && !isPlainPaste) return false
 
         try {
-          const markupNode = cleanUnknownContent(view.state.schema, markdownToMarkup(pastedText))
+          const markupNode = cleanUnknownContent(view.state.schema, markdownToMarkup(markdownSource))
           if (shouldUseMarkdownOutput(markupNode)) {
             const content = Node.fromJSON(view.state.schema, markupNode)
             content.check()
