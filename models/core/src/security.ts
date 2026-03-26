@@ -17,6 +17,7 @@ import {
   DOMAIN_MODEL,
   DOMAIN_SPACE,
   IndexKind,
+  type ModulePermissionGroup,
   type AccountRole,
   type AccountUuid,
   type AnyAttribute,
@@ -194,16 +195,19 @@ export class TTxAccessLevel extends TClass implements TxAccessLevel {
   isIdentity?: boolean
 }
 
-@Model(core.class.ModulePermissionGroup, core.class.ModulePermissionGroup, DOMAIN_MODEL)
-export class TModulePermissionGroup extends TDoc {
+@Model(core.class.ModulePermissionGroup, core.class.Doc, DOMAIN_MODEL)
+export class TModulePermissionGroup extends TDoc implements ModulePermissionGroup {
   @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
     application!: Ref<Doc>
 
-  @Prop(ArrOf(TypeString()), core.string.Roles)
-    roles!: AccountRole[]
+  @Prop(TypeString(), core.string.Roles)
+    role!: AccountRole
 
   @Prop(ArrOf(TypeRef(core.class.Permission)), core.string.Permission)
     permissions!: Ref<Permission>[]
+
+  @Prop(ArrOf(TypeRef(core.class.Permission)), core.string.Permission)
+    disabledPermissions?: Ref<Permission>[]
 
   @Prop(TypeRef(core.class.Class), core.string.Class)
     spaceClass!: Ref<Class<Space>>

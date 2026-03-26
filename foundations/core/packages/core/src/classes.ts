@@ -585,10 +585,11 @@ export interface ClassPermission extends Permission {
 /**
  * @public
  */
-export interface ModulePermissionGroup extends Configuration {
+export interface ModulePermissionGroup extends Doc {
   application: Ref<Doc>
-  roles: AccountRole[]
+  role: AccountRole
   permissions: Ref<Permission>[]
+  disabledPermissions?: Ref<Permission>[]
   spaceClass: Ref<Class<Space>>
   enabled: boolean
 }

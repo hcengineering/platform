@@ -267,6 +267,19 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: love.app.Love,
+      role: AccountRole.Guest,
+      permissions: [],
+      spaceClass: love.class.Office,
+      enabled: true
+    },
+    love.ids.ModulePermissionGroup
+  )
+
+  builder.createDoc(
     workbench.class.Widget,
     core.space.Model,
     {

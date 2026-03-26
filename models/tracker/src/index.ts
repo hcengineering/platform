@@ -661,7 +661,7 @@ export function createModel (builder: Builder): void {
     core.class.ClassPermission,
     core.space.Model,
     {
-      label: tracker.string.Issue,
+      label: tracker.string.AllowCreatingIssues,
       scope: 'space',
       targetClass: tracker.class.Issue
     },
@@ -673,7 +673,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       application: tracker.app.Tracker,
-      roles: [AccountRole.Guest],
+      role: AccountRole.Guest,
       permissions: [tracker.ids.GuestIssueClassPermission],
       spaceClass: tracker.class.Project,
       enabled: true

@@ -41,7 +41,8 @@ export default mergeIds(trackerId, tracker, {
     ConfigDescription: '' as IntlString,
     AllProjects: '' as IntlString,
     MapRelatedIssues: '' as IntlString,
-    Extensions: '' as IntlString
+    Extensions: '' as IntlString,
+    AllowCreatingIssues: '' as IntlString
   },
   activity: {
     StatusIcon: '' as AnyComponent,

@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import core, { AccountRole, getCurrentAccount, type Ref } from '@hcengineering/core'
+  import core, { AccountRole, getCurrentAccount, type ModulePermissionGroup, type Ref } from '@hcengineering/core'
   import { createNotificationsQuery, createQuery } from '@hcengineering/presentation'
   import { Scroller, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { NavLink } from '@hcengineering/view-resources'
@@ -36,7 +36,7 @@
 
   const dispatch = createEventDispatcher()
 
-  function getClickHandler (app: Application, customProps: any) {
+  function getClickHandler (app: Application, customProps: any): () => void {
     return (
       customProps.onClick ??
       (() => {
@@ -48,8 +48,14 @@
   let loaded: boolean = false
   let hiddenAppsIds: Array<Ref<Application>> = []
   let excludedApps: string[] = []
+  let modulePermissionGroups: ModulePermissionGroup[] = []
 
   const hiddenAppsIdsQuery = createQuery()
+  const modulePermissionGroupsQuery = createQuery()
+  modulePermissionGroupsQuery.query(core.class.ModulePermissionGroup, {}, (res) => {
+    modulePermissionGroups = res as ModulePermissionGroup[]
+  })
+
   hiddenAppsIdsQuery.query(
     workbench.class.HiddenApplication,
     {
@@ -86,22 +92,32 @@
 
   updateExcludedApps()
 
+  /** Applications hidden for this account when a matching ModulePermissionGroup exists and is disabled. */
+  $: disabledByModulePermissionGroup = new Set<Ref<Application>>(
+    modulePermissionGroups
+      .filter((g) => {
+        if (g.enabled ?? true) return false
+        return getCurrentAccount().role === g.role
+      })
+      .map((g) => g.application as Ref<Application>)
+  )
+
+  function isAppVisibleInSwitcher (app: Application): boolean {
+    return (
+      !hiddenAppsIds.includes(app._id) &&
+      !excludedApps.includes(app.alias) &&
+      !disabledByModulePermissionGroup.has(app._id)
+    )
+  }
+
   $: topApps = apps
-    .filter((it) => it.position === 'top' && !hiddenAppsIds.includes(it._id) && !excludedApps.includes(it.alias))
+    .filter((it) => it.position === 'top' && isAppVisibleInSwitcher(it))
     .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
   $: midApps = apps
-    .filter(
-      (it) =>
-        !hiddenAppsIds.includes(it._id) &&
-        !excludedApps.includes(it.alias) &&
-        it.position !== 'top' &&
-        it.position !== 'bottom'
-    )
+    .filter((it) => it.position !== 'top' && it.position !== 'bottom' && isAppVisibleInSwitcher(it))
     .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
 
-  $: bottomApps = apps.filter(
-    (it) => it.position === 'bottom' && !hiddenAppsIds.includes(it._id) && !excludedApps.includes(it.alias)
-  )
+  $: bottomApps = apps.filter((it) => it.position === 'bottom' && isAppVisibleInSwitcher(it))
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext

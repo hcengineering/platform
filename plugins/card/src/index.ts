@@ -205,6 +205,7 @@ const cardPlugin = plugin(cardId, {
     AllCards: '' as IntlString,
     Favorites: '' as IntlString,
     CreateCard: '' as IntlString,
+    AllowCreatingCards: '' as IntlString,
     Version: '' as IntlString,
     Versions: '' as IntlString
   },

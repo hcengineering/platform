@@ -107,7 +107,7 @@ function makeCreateTx (objectClass: Ref<Class<Doc>>, objectSpace: Ref<Space>): T
 }
 
 // Helper: buildGuestSettings - simulate the document that loadPermissionsCache would find
-function makeGuestSettingsDoc (allowedPermissions: Ref<Doc>[]): Doc {
+function makeGuestSettingsDoc (allowedPermissions: Ref<Doc>[], disabledPermissions?: Ref<Doc>[]): Doc {
   return {
     _id: generateId(),
     _class: MODULE_PERMISSION_GROUP_CLASS,
@@ -115,8 +115,9 @@ function makeGuestSettingsDoc (allowedPermissions: Ref<Doc>[]): Doc {
     modifiedOn: Date.now(),
     modifiedBy: 'test' as PersonId,
     application: 'test:app:tracker' as Ref<Doc>,
-    roles: [AccountRole.Guest],
+    role: AccountRole.Guest,
     permissions: allowedPermissions,
+    ...(disabledPermissions !== undefined && disabledPermissions.length > 0 ? { disabledPermissions } : {}),
     spaceClass: 'core:class:Space' as Ref<Class<Doc>>,
     enabled: true
   } as any
@@ -179,7 +180,9 @@ describe('GuestPermissionsMiddleware', () => {
 
     const findAllWithSettings: FindAllFn = async (_ctx, _class) => {
       if (_class === MODULE_PERMISSION_GROUP_CLASS) return [settingsDoc]
-      if (_class === core.class.ClassPermission) return [{ targetClass: COVERED_CLASS } as any]
+      if (_class === core.class.ClassPermission) {
+        return [{ _id: COVERED_CLASS_PERMISSION, targetClass: COVERED_CLASS } as any]
+      }
       return []
     }
 
@@ -216,6 +219,22 @@ describe('GuestPermissionsMiddleware', () => {
       await mw.tx(ctx, [tx])
       expect(nextCalled).toBe(true)
     })
+
+    it('ignores permissions listed in disabledPermissions (falls back to TxAccessLevel)', async () => {
+      const docWithDisabled = makeGuestSettingsDoc([COVERED_CLASS_PERMISSION], [COVERED_CLASS_PERMISSION])
+      const findAll: FindAllFn = async (_ctx, _class) => {
+        if (_class === MODULE_PERMISSION_GROUP_CLASS) return [docWithDisabled]
+        if (_class === core.class.ClassPermission) {
+          return [{ _id: COVERED_CLASS_PERMISSION, targetClass: COVERED_CLASS } as any]
+        }
+        return []
+      }
+      const mw = makeMiddleware(findAll)
+      patchHierarchy(mw)
+      const tx = makeCreateTx(COVERED_CLASS, ALLOWED_SPACE)
+      const ctx = makeCtx(makeAccount(AccountRole.Guest))
+      await expect(mw.tx(ctx, [tx])).rejects.toThrow()
+    })
   })
 
   // ─── Uncovered class falls back to TxAccessLevel ────────────────────────────
@@ -235,7 +254,9 @@ describe('GuestPermissionsMiddleware', () => {
       const mw = makeMiddleware(
         async (_ctx, _class) => {
           if (_class === MODULE_PERMISSION_GROUP_CLASS) return [settingsDoc]
-          if (_class === core.class.ClassPermission) return [{ targetClass: COVERED_CLASS } as any]
+          if (_class === core.class.ClassPermission) {
+            return [{ _id: COVERED_CLASS_PERMISSION, targetClass: COVERED_CLASS } as any]
+          }
           return []
         },
         async () => {
@@ -272,7 +293,9 @@ describe('GuestPermissionsMiddleware', () => {
       const mw = makeMiddleware(
         async (_ctx, _class) => {
           if (_class === MODULE_PERMISSION_GROUP_CLASS) return [settingsDoc]
-          if (_class === core.class.ClassPermission) return [{ targetClass: COVERED_CLASS } as any]
+          if (_class === core.class.ClassPermission) {
+            return [{ _id: COVERED_CLASS_PERMISSION, targetClass: COVERED_CLASS } as any]
+          }
           return []
         },
         async () => {
@@ -299,7 +322,9 @@ describe('GuestPermissionsMiddleware', () => {
 
       const mw = makeMiddleware(async (_ctx, _class) => {
         if (_class === MODULE_PERMISSION_GROUP_CLASS) return [settingsDoc]
-        if (_class === core.class.ClassPermission) return [{ targetClass: COVERED_CLASS } as any]
+        if (_class === core.class.ClassPermission) {
+          return [{ _id: COVERED_CLASS_PERMISSION, targetClass: COVERED_CLASS } as any]
+        }
         return []
       })
 
@@ -327,7 +352,7 @@ describe('GuestPermissionsMiddleware', () => {
           return [makeGuestSettingsDoc([COVERED_CLASS_PERMISSION])]
         }
         if (_class === core.class.ClassPermission) {
-          return [{ targetClass: COVERED_CLASS } as any]
+          return [{ _id: COVERED_CLASS_PERMISSION, targetClass: COVERED_CLASS } as any]
         }
         return []
       }

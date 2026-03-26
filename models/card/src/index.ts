@@ -921,7 +921,7 @@ export function createModel (builder: Builder): void {
     core.class.ClassPermission,
     core.space.Model,
     {
-      label: card.string.CreateCard,
+      label: card.string.AllowCreatingCards,
       scope: 'space',
       targetClass: card.class.Card
     },
@@ -933,7 +933,7 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       application: card.app.Card,
-      roles: [AccountRole.Guest],
+      role: AccountRole.Guest,
       permissions: [card.ids.GuestCardClassPermission],
       spaceClass: card.class.CardSpace,
       enabled: true
