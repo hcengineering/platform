@@ -120,13 +120,14 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
           },
           { sort: { rank: SortingOrder.Ascending } }
         )
+        if (transitions.length === 0) continue
         const inputContext = {
           ...execution.context,
           card: updated,
           operations: isUpdateTx(updateTx) ? updateTx.operations : updateTx.attributes
         }
         const transition = await pickTransition(this.client, execution, transitions, inputContext)
-        if (transition === undefined) return
+        if (transition === undefined) continue
         const result = await getNextStateUserInput(execution, transition, execution.context, inputContext)
         if (result?.changed === true) {
           preTx.push(
