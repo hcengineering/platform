@@ -47,12 +47,28 @@ function PasteTextAsMarkdownPlugin (): Plugin {
           }
         }
 
+        // Always parse text/markdown MIME as markdown
+        const markdownMimeText = clipboardData.getData('text/markdown')
+        if (markdownMimeText.length > 0) {
+          try {
+            const stripped = stripFrontmatter(markdownMimeText)
+            const markupNode = cleanUnknownContent(view.state.schema, markdownToMarkup(stripped))
+            const content = Node.fromJSON(view.state.schema, markupNode)
+            content.check()
+            const transaction = view.state.tr.replaceSelectionWith(content)
+            view.dispatch(transaction)
+            return true
+          } catch (e) {
+            console.log('Unable to convert text/markdown to markup:', e)
+          }
+        }
+
         const isPlainPaste = clipboardData.types.length === 1 && clipboardData.types[0] === 'text/plain'
 
         if (!isPlainPaste) return false
 
         try {
-          const markupNode = cleanUnknownContent(view.state.schema, markdownToMarkup(pastedText))
+          const markupNode = cleanUnknownContent(view.state.schema, markdownToMarkup(stripFrontmatter(pastedText)))
           if (shouldUseMarkdownOutput(markupNode)) {
             const content = Node.fromJSON(view.state.schema, markupNode)
             content.check()
@@ -71,6 +87,10 @@ function PasteTextAsMarkdownPlugin (): Plugin {
   })
 }
 
+function stripFrontmatter (text: string): string {
+  return text.replace(/^---\n[\s\S]*?\n---\n/, '')
+}
+
 const importantMarkupNodeTypes = new Set<MarkupNodeType>([
   MarkupNodeType.code_block,
   MarkupNodeType.bullet_list,
@@ -81,14 +101,17 @@ const importantMarkupNodeTypes = new Set<MarkupNodeType>([
   MarkupNodeType.reference,
   MarkupNodeType.image,
   MarkupNodeType.heading,
-  MarkupNodeType.mermaid
+  MarkupNodeType.mermaid,
+  MarkupNodeType.blockquote,
+  MarkupNodeType.horizontal_rule
 ])
 
 const importantMarkupMarkTypes = new Set<MarkupMarkType>([
   MarkupMarkType.bold,
   MarkupMarkType.em,
   MarkupMarkType.code,
-  MarkupMarkType.link
+  MarkupMarkType.link,
+  MarkupMarkType.strike
 ])
 
 export function cleanUnknownContent (schema: Schema, node: MarkupNode): MarkupNode {
