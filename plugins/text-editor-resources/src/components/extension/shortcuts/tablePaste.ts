@@ -53,13 +53,13 @@ function normalizeEscapedMarkdownLinks (markdown: string): string {
   // 1) partially escaped: `\\[text\\](url)`
   // 2) fully escaped: `\\[text\\]\\(url\\)`
   // Normalize both back to `[text](url)` so markdown parser restores link marks.
-  let result = markdown.replace(/\\\[((?:\\.|[^\]])*?)\\\]\(([^)\r\n]+)\)/g, (_m, text, url) => {
+  let result = markdown.replace(/\\\[((?:\\.|[^\\\]])*?)\\\]\(([^)\r\n]+)\)/g, (_m, text, url) => {
     const unescapedText = String(text).replace(/\\([\\[\]|])/g, '$1')
     const unescapedUrl = String(url).replace(/\\([\\|)])/g, '$1')
     return `[${unescapedText}](${unescapedUrl})`
   })
 
-  result = result.replace(/\\\[((?:\\.|[^\]])*?)\\\]\\\(([^)\r\n]+?)\\\)/g, (_m, text, url) => {
+  result = result.replace(/\\\[((?:\\.|[^\\\]])*?)\\\]\\\(([^)\r\n]+?)\\\)/g, (_m, text, url) => {
     const unescapedText = String(text).replace(/\\([\\[\]|])/g, '$1')
     const unescapedUrl = String(url).replace(/\\([\\|)])/g, '$1')
     return `[${unescapedText}](${unescapedUrl})`
