@@ -5041,9 +5041,6 @@ importers:
       '@hcengineering/server-core':
         specifier: workspace:^0.7.18
         version: link:../core
-      '@hcengineering/setting':
-        specifier: workspace:^0.7.0
-        version: link:../../../../plugins/setting
       fast-equals:
         specifier: ^5.2.2
         version: 5.3.2
