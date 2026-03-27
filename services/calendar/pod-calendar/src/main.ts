@@ -173,7 +173,9 @@ export const main = async (): Promise<void> => {
           res.status(400).send({ err: "'event' or 'workspace' or 'type' is missing" })
           return
         }
-        void OutcomingClient.push(ctx, accountClient, workspace, event, type)
+        void OutcomingClient.push(ctx, accountClient, workspace, event, type).catch((err: any) => {
+          ctx.error('Outcoming sync failed', { eventId: event.eventId, workspace, type, error: err.message })
+        })
         res.send()
       }
     }
