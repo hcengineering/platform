@@ -160,7 +160,9 @@
       enableContentCheck: true,
       element,
       editorProps: {
-        attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, { spellcheck: spellcheck ? 'true' : 'false' }),
+        attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, {
+          spellcheck: spellcheck ? 'true' : 'false'
+        }),
         handlePaste: onPaste,
         handleKeyDown: (view, event) => {
           if (onKeyDown !== undefined) {
