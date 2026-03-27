@@ -112,7 +112,7 @@ pub async fn redis_list(conn: &mut ConnectionManager, key: &str) -> DbResult<Vec
 
         for k in keys {
             // Check for $-security path
-            if k.strip_prefix(key).map_or(false, |s| s.contains('$')) {
+            if k.strip_prefix(key).is_some_and(|s| s.contains('$')) {
                 continue;
             }
 
@@ -181,7 +181,7 @@ pub async fn redis_save<T: ToRedisArgs>(
     ttl: Option<Ttl>,
     mode: Option<SaveMode>,
 ) -> DbResult<()> {
-    deprecated_symbol_error(&key)?;
+    deprecated_symbol_error(key)?;
 
     if key.ends_with('/') {
         return error(412, "Key must not end with a slash");
@@ -192,7 +192,7 @@ pub async fn redis_save<T: ToRedisArgs>(
     if max_size != 0 && value.to_redis_args().iter().map(|a| a.len()).sum::<usize>() > max_size {
         return error(
             400,
-            format!("Value in memory mode must be less than {} bytes", max_size),
+            format!("Value in memory mode must be less than {max_size} bytes"),
         );
     }
 
@@ -264,8 +264,7 @@ pub async fn redis_save<T: ToRedisArgs>(
                     return error(
                         412,
                         format!(
-                            "md5 mismatch, current: {}, expected: {}",
-                            actual_md5, expected_md5
+                            "md5 mismatch, current: {actual_md5}, expected: {expected_md5}"
                         ),
                     );
                 }
@@ -313,7 +312,7 @@ pub async fn redis_delete(
     match mode {
         SaveMode::Update | SaveMode::Upsert => {
             let deleted: i32 = redis::cmd("DEL").arg(key).query_async(conn).await?;
-            return Ok(deleted > 0);
+            Ok(deleted > 0)
         }
 
         SaveMode::Equal(ref expected_md5) => {
@@ -337,8 +336,7 @@ pub async fn redis_delete(
                     return error(
                         412,
                         format!(
-                            "md5 mismatch, current: {}, expected: {}",
-                            actual_md5, expected_md5
+                            "md5 mismatch, current: {actual_md5}, expected: {expected_md5}"
                         ),
                     );
                 }
@@ -360,7 +358,7 @@ pub async fn redis_delete(
         }
 
         SaveMode::Insert => {
-            return error(412, "Insert mode is not supported for delete");
+            error(412, "Insert mode is not supported for delete")
         }
     }
 }
