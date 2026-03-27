@@ -148,16 +148,16 @@ async fn main() -> anyhow::Result<()> {
                 .get_connection_manager()
                 .await
                 .inspect_err(|_e| {
-                tracing::error!(
-                    "REDIS not found: {:?}",
-                    &CONFIG
-                        .redis_urls
-                        .iter()
-                        .map(|u| u.as_str())
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                );
-            })?;
+                    tracing::error!(
+                        "REDIS not found: {:?}",
+                        &CONFIG
+                            .redis_urls
+                            .iter()
+                            .map(|u| u.as_str())
+                            .collect::<Vec<_>>()
+                            .join(", ")
+                    );
+                })?;
             tokio::spawn({
                 let hub_state = hub_state.clone();
                 async move {

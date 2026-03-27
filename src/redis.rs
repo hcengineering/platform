@@ -263,9 +263,7 @@ pub async fn redis_save<T: ToRedisArgs>(
                     let _: () = redis::cmd("UNWATCH").query_async(conn).await?;
                     return error(
                         412,
-                        format!(
-                            "md5 mismatch, current: {actual_md5}, expected: {expected_md5}"
-                        ),
+                        format!("md5 mismatch, current: {actual_md5}, expected: {expected_md5}"),
                     );
                 }
 
@@ -335,9 +333,7 @@ pub async fn redis_delete(
                     let _: () = redis::cmd("UNWATCH").query_async(conn).await?;
                     return error(
                         412,
-                        format!(
-                            "md5 mismatch, current: {actual_md5}, expected: {expected_md5}"
-                        ),
+                        format!("md5 mismatch, current: {actual_md5}, expected: {expected_md5}"),
                     );
                 }
 
@@ -357,9 +353,7 @@ pub async fn redis_delete(
             }
         }
 
-        SaveMode::Insert => {
-            error(412, "Insert mode is not supported for delete")
-        }
+        SaveMode::Insert => error(412, "Insert mode is not supported for delete"),
     }
 }
 

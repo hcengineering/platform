@@ -232,7 +232,9 @@ async fn handle_command(
             // TTL logic
             let real_ttl = if let Some(secs) = ttl {
                 Some(Ttl::Sec(secs as usize))
-            } else { expires_at.map(Ttl::At) };
+            } else {
+                expires_at.map(Ttl::At)
+            };
 
             // SaveMode logic
             let mut mode = Some(SaveMode::Upsert);

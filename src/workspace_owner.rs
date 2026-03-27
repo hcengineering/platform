@@ -88,7 +88,7 @@ pub static POLICY_TEXT: LazyLock<String> = LazyLock::new(|| {
     if !path.exists() {
         panic!("Policy file not found: {}", path.display());
     }
-    
+
     match fs::read_to_string(path) {
         Ok(text) => format!("package main\n\n{text}"),
         Err(e) => {
