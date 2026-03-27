@@ -19,6 +19,7 @@ import { Extension } from '@tiptap/core'
 import { Node, type Schema } from '@tiptap/pm/model'
 import { Plugin } from '@tiptap/pm/state'
 import { CodeBlockHighlighExtension } from '../codeSnippets/codeblock'
+import { hasTableMetadataMarker } from './tableMetadata'
 
 export const SmartPasteExtension = Extension.create({
   name: 'transformPastedContent',
@@ -53,8 +54,7 @@ function PasteTextAsMarkdownPlugin (): Plugin {
         const markdownSource = hasMarkdown ? pastedMarkdown : pastedText
 
         // Table copies include metadata comment; treat as markdown even when clipboard has rich types.
-        const hasTableMetadata =
-          pastedText.includes('<!-- huly-table-metadata:') || pastedMarkdown.includes('<!-- huly-table-metadata:')
+        const hasTableMetadata = hasTableMetadataMarker(pastedText) || hasTableMetadataMarker(pastedMarkdown)
 
         const isPlainPaste = clipboardData.types.length === 1 && clipboardData.types[0] === 'text/plain'
 

@@ -19,6 +19,7 @@ import katex from 'katex'
 import { type Node } from '@tiptap/pm/model'
 import { type EditorState, Plugin, PluginKey, type Transaction, TextSelection } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
+import { hasTableMetadataMarker } from './shortcuts/tableMetadata'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -225,7 +226,14 @@ function MathPastePlugin (): Plugin {
           const clipboardData = event.clipboardData
           if (clipboardData === null) return false
 
-          const text = clipboardData.getData('text/plain')
+          // Let table metadata paste handlers process this payload.
+          const plainText = clipboardData.getData('text/plain')
+          const markdownText = clipboardData.getData('text/markdown')
+          if (hasTableMetadataMarker(plainText) || hasTableMetadataMarker(markdownText)) {
+            return false
+          }
+
+          const text = plainText
           if (text === '' || !LATEX_RE.test(text)) return false
 
           event.preventDefault()
