@@ -144,21 +144,18 @@ async fn main() -> anyhow::Result<()> {
     let db_backend = match &CONFIG.backend {
         BackendType::Redis => {
             let redis_client = redis::client().await?;
-            let db_connection = redis_client
-                .get_connection_manager()
-                .await
-                .map_err(|e| {
-                    tracing::error!(
-                        "REDIS not found: {:?}",
-                        &CONFIG
-                            .redis_urls
-                            .iter()
-                            .map(|u| u.as_str())
-                            .collect::<Vec<_>>()
-                            .join(", ")
-                    );
-                    e
-                })?;
+            let db_connection = redis_client.get_connection_manager().await.map_err(|e| {
+                tracing::error!(
+                    "REDIS not found: {:?}",
+                    &CONFIG
+                        .redis_urls
+                        .iter()
+                        .map(|u| u.as_str())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                );
+                e
+            })?;
             tokio::spawn({
                 let hub_state = hub_state.clone();
                 async move {
