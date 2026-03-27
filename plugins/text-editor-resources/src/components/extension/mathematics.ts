@@ -217,8 +217,15 @@ function createMathPlugin (
   })
 }
 
+// Handle paste as math only when the full payload is a standalone inline/block expression.
+// This avoids intercepting rich text/table markdown that may contain incidental '$' chars.
+const LATEX_RE = /^\s*(?:\$\$[\s\S]+\$\$|\$(?:\\.|[^\n$])+\$)\s*$/
+
+export function isStandaloneMathExpression (text: string): boolean {
+  return text !== '' && LATEX_RE.test(text)
+}
+
 function MathPastePlugin (): Plugin {
-  const LATEX_RE = /\$\$?[^$]+\$\$?/
   return new Plugin({
     props: {
       handleDOMEvents: {
@@ -234,7 +241,7 @@ function MathPastePlugin (): Plugin {
           }
 
           const text = plainText
-          if (text === '' || !LATEX_RE.test(text)) return false
+          if (!isStandaloneMathExpression(text)) return false
 
           event.preventDefault()
           view.dispatch(view.state.tr.insertText(text))
