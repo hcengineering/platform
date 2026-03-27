@@ -183,6 +183,18 @@ export class HulypulseClient implements Disposable {
 //    this.handleMyDataChanged(get(myData), true)
   }
 
+  private static isConnectionLikeError (err: string): boolean {
+    const s = err.toLowerCase()
+    return (
+      s.includes('broken pipe') ||
+      s.includes('connection reset') ||
+      s.includes('connection refused') ||
+      s.includes('connection aborted') ||
+      s.includes('unexpected eof') ||
+      s.includes('io error')
+    )
+  }
+
   private handleMessage (data: string): void {
     if (data === 'pong') {
       clearTimeout(this.pingTimeout)
@@ -192,6 +204,17 @@ export class HulypulseClient implements Disposable {
     try {
       const message = JSON.parse(data); //  as IncomingMessage
       console.log('Received message', message);
+      if (
+        typeof message === 'object' &&
+        message !== null &&
+        'error' in message &&
+        typeof (message as { error: unknown }).error === 'string' &&
+        HulypulseClient.isConnectionLikeError((message as { error: string }).error)
+      ) {
+        console.warn('Pulse server reported connection-like error; reconnecting')
+        this.reconnect()
+        return
+      }
       // const message = JSON.parse(data) as IncomingMessage
       // if (message.type === 'update' && message.presence !== undefined) {
       //   onPersonUpdate(message.id, message.presence ?? [])
