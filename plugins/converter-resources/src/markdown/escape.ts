@@ -37,23 +37,3 @@ export function escapeMarkdownLinkUrl (url: string): string {
       .replace(/\|/g, '\\|')
   )
 }
-
-/**
- * Escape a markdown table cell while preserving `[text](url)` links.
- */
-export function escapeTableCell (value: unknown): string {
-  const s = value == null ? '' : String(value)
-
-  const sep = s.indexOf('](')
-  const looksLikeMarkdownLink = s.startsWith('[') && sep !== -1 && s.endsWith(')')
-  if (!looksLikeMarkdownLink) {
-    return escapeMarkdownLinkText(s)
-  }
-
-  const rawText = s.slice(1, sep)
-  const rawUrl = s.slice(sep + 2, -1)
-
-  const escapedText = escapeMarkdownLinkText(rawText)
-  const escapedUrl = escapeMarkdownLinkUrl(rawUrl)
-  return `[${escapedText}](${escapedUrl})`
-}

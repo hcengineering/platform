@@ -48,6 +48,26 @@ function extractMetadataFromHtmlComments (text: string): { metadata: TableMetada
   return { metadata: null, cleanedText: text }
 }
 
+export function normalizeEscapedMarkdownLinks (markdown: string): string {
+  // Some producers escape markdown links in table cells:
+  // 1) partially escaped: `\\[text\\](url)`
+  // 2) fully escaped: `\\[text\\]\\(url\\)`
+  // Normalize both back to `[text](url)` so markdown parser restores link marks.
+  let result = markdown.replace(/\\\[((?:\\.|[^\\\]])*?)\\\]\(([^)\r\n]+)\)/g, (_m, text, url) => {
+    const unescapedText = String(text).replace(/\\([\\[\]|])/g, '$1')
+    const unescapedUrl = String(url).replace(/\\([\\|)])/g, '$1')
+    return `[${unescapedText}](${unescapedUrl})`
+  })
+
+  result = result.replace(/\\\[((?:\\.|[^\\\]])*?)\\\]\\\(([^)\r\n]+?)\\\)/g, (_m, text, url) => {
+    const unescapedText = String(text).replace(/\\([\\[\]|])/g, '$1')
+    const unescapedUrl = String(url).replace(/\\([\\|)])/g, '$1')
+    return `[${unescapedText}](${unescapedUrl})`
+  })
+
+  return result
+}
+
 function TableMetadataPastePlugin (): Plugin {
   return new Plugin({
     props: {
@@ -127,6 +147,8 @@ function TableMetadataPastePlugin (): Plugin {
           if (markdown.length === 0) {
             return false
           }
+
+          markdown = normalizeEscapedMarkdownLinks(markdown)
 
           // Check if we're in a code block (don't process tables there)
           const { $from } = view.state.selection

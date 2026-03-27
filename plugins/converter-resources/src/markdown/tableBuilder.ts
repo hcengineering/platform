@@ -28,7 +28,7 @@ import type { CopyAsMarkdownTableProps, CopyRelationshipTableAsMarkdownProps } f
 import { formatValue } from '../formatter'
 import { generateHeaders, loadViewletConfig, buildTableModel } from '../model'
 import { rebuildRelationshipTableViewModel, isRelationshipTable } from '../data'
-import { escapeTableCell } from './escape'
+import { escapeMarkdownLinkText } from './escape'
 import { createMarkdownLink } from './link'
 
 async function preloadRefLookups (
@@ -253,7 +253,7 @@ export async function buildMarkdownTableFromDocs (
         const linkValue = await createMarkdownLink(hierarchy, card, value)
         row.push(linkValue)
       } else {
-        row.push(escapeTableCell(value))
+        row.push(escapeMarkdownLinkText(value == null ? '' : String(value)))
       }
     }
     rows.push(row)
@@ -375,7 +375,7 @@ export async function buildRelationshipTableMarkdown (
       if (isDocumentTitle) {
         value = await createMarkdownLink(hierarchy, docToUse, value)
       } else {
-        value = escapeTableCell(value)
+        value = escapeMarkdownLinkText(value == null ? '' : String(value))
       }
 
       row[attrIndex] = value
