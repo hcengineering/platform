@@ -24,7 +24,15 @@ import {
   githubExternalSyncVersion,
   githubSyncVersion
 } from '../types'
-import { collectUpdate, deleteObjects, ensureGraphQLOctokit, ensureRESTOctokit, errorToObj, getSince, isGHWriteAllowed } from './utils'
+import {
+  collectUpdate,
+  deleteObjects,
+  ensureGraphQLOctokit,
+  ensureRESTOctokit,
+  errorToObj,
+  getSince,
+  isGHWriteAllowed
+} from './utils'
 
 import { Analytics } from '@hcengineering/analytics'
 import { IssueComment, IssueCommentCreatedEvent, IssueCommentEvent } from '@octokit/webhooks-types'
