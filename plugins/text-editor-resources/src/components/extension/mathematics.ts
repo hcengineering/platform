@@ -219,7 +219,7 @@ function createMathPlugin (
 
 // Handle paste as math only when the full payload is a standalone inline/block expression.
 // This avoids intercepting rich text/table markdown that may contain incidental '$' chars.
-const LATEX_RE = /^\s*(?:\$\$[\s\S]+\$\$|\$(?:\\.|[^\n$])+\$)\s*$/
+const LATEX_RE = /^\s*(?:\$\$[\s\S]+\$\$|\$(?:\\.|[^\n$\\])+\$)\s*$/
 
 export function isStandaloneMathExpression (text: string): boolean {
   return text !== '' && LATEX_RE.test(text)
