@@ -444,11 +444,11 @@ pub async fn handler(
                                     _ => "",
                                 };
 
-                                if let Some(ref claim) = claims {
-                                    if !test_rego_claims(claim, cmd.as_ref(), key) {
-                                        let _ = session.text("Unauthorized: Rego policy").await;
-                                        break;
-                                    }
+                                if let Some(ref claim) = claims
+                                    && !test_rego_claims(claim, cmd.as_ref(), key)
+                                {
+                                    let _ = session.text("Unauthorized: Rego policy").await;
+                                    break;
                                 }
                             }
 

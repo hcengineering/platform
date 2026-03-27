@@ -71,16 +71,16 @@ pub async fn redis_info(conn: &mut ConnectionManager) -> DbResult<String> {
     for line in info.lines() {
         if line.starts_with("db0:") {
             // parsing: db0:keys=152,expires=10,avg_ttl=456789
-            if let Some(keys_part) = line.split(',').find(|s| s.starts_with("keys=")) {
-                if let Some(val) = keys_part.strip_prefix("keys=") {
-                    redis_keys = val.parse::<usize>().ok();
-                }
+            if let Some(keys_part) = line.split(',').find(|s| s.starts_with("keys="))
+                && let Some(val) = keys_part.strip_prefix("keys=")
+            {
+                redis_keys = val.parse::<usize>().ok();
             }
         }
-        if line.starts_with("used_memory:") {
-            if let Some(val) = line.strip_prefix("used_memory:") {
-                redis_bytes = val.parse::<usize>().ok();
-            }
+        if line.starts_with("used_memory:")
+            && let Some(val) = line.strip_prefix("used_memory:")
+        {
+            redis_bytes = val.parse::<usize>().ok();
         }
     }
 
