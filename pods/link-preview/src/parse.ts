@@ -17,6 +17,7 @@ import { MeasureContext } from '@hcengineering/core'
 import * as cheerio from 'cheerio'
 import { imageSize } from 'image-size'
 import oembedProviders from 'oembed-providers'
+import net from 'node:net'
 
 // ============================================================================
 // Types and Interfaces
@@ -89,20 +90,6 @@ const DEFAULT_TIMEOUT_MS = 10_000
 const DEFAULT_MAX_IMAGE_BYTES = 10 * 1024 * 1024 // 10MB
 const OEMBED_SERVICE_NAME = 'Huly Link Preview Service/1.0'
 
-// Private IP ranges to block for SSRF protection
-const BLOCKED_IP_PATTERNS = [
-  /^127\./, // Loopback
-  /^10\./, // Private Class A
-  /^172\.(1[6-9]|2\d|3[01])\./, // Private Class B
-  /^192\.168\./, // Private Class C
-  /^169\.254\./, // Link-local
-  /^0\./, // Current network
-  /^localhost$/i,
-  /^::1$/, // IPv6 loopback
-  /^fc00:/i, // IPv6 private
-  /^fe80:/i // IPv6 link-local
-]
-
 // ============================================================================
 // Error Classes
 // ============================================================================
@@ -110,6 +97,7 @@ const BLOCKED_IP_PATTERNS = [
 export class LinkPreviewError extends Error {
   constructor (
     message: string,
+    public readonly code?: 'BLOCKED_URL' | 'INVALID_URL' | 'INVALID_PROTOCOL' | 'TIMEOUT' | 'FETCH_FAILED',
     public readonly cause?: unknown
   ) {
     super(message)
@@ -121,28 +109,163 @@ export class LinkPreviewError extends Error {
 // URL Validation
 // ============================================================================
 
+function normalizeHostnameForChecks (hostname: string): string {
+  // URL.hostname is already punycode-normalized by WHATWG URL for IDNs.
+  // Keep it lowercase for comparisons.
+  const trimmed = hostname.trim().toLowerCase().replace(/\.+$/, '')
+  if (trimmed.startsWith('[') && trimmed.endsWith(']')) return trimmed.slice(1, -1)
+  return trimmed
+}
+
+function parseIpv6MappedIpv4 (ipv6: string): string | undefined {
+  const host = ipv6.toLowerCase()
+
+  // Common form: ::ffff:127.0.0.1
+  const dotted = host.match(/(?:^|:)ffff:(\d{1,3}(?:\.\d{1,3}){3})$/)
+  if (dotted?.[1] !== undefined) return dotted[1]
+
+  // Hex form used in the report: ::ffff:7f00:1  (=> 127.0.0.1)
+  const hex = host.match(/(?:^|:)ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/)
+  if (hex?.[1] === undefined || hex?.[2] === undefined) return undefined
+
+  const hi = Number.parseInt(hex[1], 16)
+  const lo = Number.parseInt(hex[2], 16)
+  if (!Number.isFinite(hi) || !Number.isFinite(lo)) return undefined
+
+  const a = (hi >> 8) & 0xff
+  const b = hi & 0xff
+  const c = (lo >> 8) & 0xff
+  const d = lo & 0xff
+  return `${a}.${b}.${c}.${d}`
+}
+
+function isBlockedIpv4 (ipv4: string): boolean {
+  const parts = ipv4.split('.').map((p) => Number.parseInt(p, 10))
+  if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n) || n < 0 || n > 255)) return true
+
+  const [a, b] = parts
+
+  // 0.0.0.0/8
+  if (a === 0) return true
+  // 127.0.0.0/8 loopback
+  if (a === 127) return true
+  // 10.0.0.0/8
+  if (a === 10) return true
+  // 172.16.0.0/12
+  if (a === 172 && b >= 16 && b <= 31) return true
+  // 192.168.0.0/16
+  if (a === 192 && b === 168) return true
+  // 169.254.0.0/16 link-local
+  if (a === 169 && b === 254) return true
+
+  return false
+}
+
+function isBlockedIpv6 (ipv6: string): boolean {
+  const host = ipv6.toLowerCase()
+  // unspecified / loopback (compressed or expanded)
+  if (host === '::' || host === '0:0:0:0:0:0:0:0') return true
+  if (host === '::1' || host === '0:0:0:0:0:0:0:1') return true
+  if (host.startsWith('fc') || host.startsWith('fd')) return true // unique-local fc00::/7 (coarse but safe)
+  if (
+    host.startsWith('fe80:') ||
+    host.startsWith('fe8') ||
+    host.startsWith('fe9') ||
+    host.startsWith('fea') ||
+    host.startsWith('feb')
+  ) {
+    // link-local fe80::/10 (coarse but safe)
+    return true
+  }
+
+  const mapped = parseIpv6MappedIpv4(host)
+  if (mapped !== undefined) return isBlockedIpv4(mapped)
+
+  return false
+}
+
+function isBlockedHost (hostname: string): boolean {
+  const host = normalizeHostnameForChecks(hostname)
+  if (host === 'localhost') return true
+
+  const ipType = net.isIP(host)
+  if (ipType === 4) return isBlockedIpv4(host)
+  if (ipType === 6) return isBlockedIpv6(host)
+
+  // Some Node versions are stricter about IPv6 parsing. If it still looks like an IPv6 literal,
+  // apply our IPv6 checks anyway (covers IPv6-mapped IPv4 forms like ::ffff:7f00:1).
+  if (host.includes(':') && isBlockedIpv6(host)) return true
+
+  // Hostname is not an IP literal. Keep legacy explicit localhost-ish blocks.
+  // (We intentionally do not attempt DNS resolution here.)
+  if (host.endsWith('.localhost')) return true
+
+  return false
+}
+
 function validateUrl (urlString: string): URL {
   let url: URL
   try {
     url = new URL(urlString)
   } catch {
-    throw new LinkPreviewError(`Invalid URL: ${urlString}`)
+    throw new LinkPreviewError(`Invalid URL: ${urlString}`, 'INVALID_URL')
   }
 
   // Only allow HTTP(S) protocols
   if (!['http:', 'https:'].includes(url.protocol)) {
-    throw new LinkPreviewError(`Invalid protocol: ${url.protocol}. Only HTTP and HTTPS are allowed.`)
+    throw new LinkPreviewError(
+      `Invalid protocol: ${url.protocol}. Only HTTP and HTTPS are allowed.`,
+      'INVALID_PROTOCOL'
+    )
   }
 
-  // SSRF protection: block private/internal IPs
-  const hostname = url.hostname
-  for (const pattern of BLOCKED_IP_PATTERNS) {
-    if (pattern.test(hostname)) {
-      throw new LinkPreviewError('Blocked URL: Access to internal addresses is not allowed.')
-    }
+  // SSRF protection: block private/internal hosts and IP literals (incl. IPv6-mapped IPv4)
+  if (isBlockedHost(url.hostname)) {
+    throw new LinkPreviewError('Blocked URL: Access to internal addresses is not allowed.', 'BLOCKED_URL')
   }
 
   return url
+}
+
+function isRedirectStatus (status: number): boolean {
+  return status >= 300 && status < 400
+}
+
+async function fetchWithValidatedRedirects (
+  url: string,
+  options: RequestInit,
+  timeoutMs: number,
+  maxRedirects: number = 5
+): Promise<{ response: Response, finalUrl: string }> {
+  let currentUrl = url
+
+  for (let i = 0; i <= maxRedirects; i++) {
+    // Validate every hop (including the initial request URL).
+    validateUrl(currentUrl)
+
+    const response = await fetchWithTimeout(
+      currentUrl,
+      {
+        ...options,
+        redirect: 'manual'
+      },
+      timeoutMs
+    )
+
+    if (!isRedirectStatus(response.status)) {
+      return { response, finalUrl: currentUrl }
+    }
+
+    const location = response.headers.get('location')
+    if (!isNonEmptyString(location)) {
+      return { response, finalUrl: currentUrl }
+    }
+
+    const nextUrl = new URL(location, currentUrl).href
+    currentUrl = nextUrl
+  }
+
+  throw new LinkPreviewError('Too many redirects')
 }
 
 // ============================================================================
@@ -163,10 +286,11 @@ async function fetchWithTimeout (url: string, options: RequestInit, timeoutMs: n
     return response
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new LinkPreviewError(`Request timed out after ${timeoutMs}ms`, error)
+      throw new LinkPreviewError(`Request timed out after ${timeoutMs}ms`, 'TIMEOUT', error)
     }
     throw new LinkPreviewError(
       `Failed to fetch URL: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      'FETCH_FAILED',
       error
     )
   } finally {
@@ -230,9 +354,15 @@ async function fetchOEmbedData (
 
     if (oembedUrl === null) return null
 
+    // Validate discovered/provider oEmbed URL to prevent SSRF.
+    validateUrl(oembedUrl)
     ctx.info('fetching oEmbed data', { oembedUrl })
 
-    const response = await fetchWithTimeout(oembedUrl, { headers: { 'User-Agent': OEMBED_SERVICE_NAME } }, timeoutMs)
+    const { response } = await fetchWithValidatedRedirects(
+      oembedUrl,
+      { headers: { 'User-Agent': OEMBED_SERVICE_NAME } },
+      timeoutMs
+    )
 
     if (!response.ok) {
       ctx.warn('oEmbed fetch failed', {
@@ -259,12 +389,16 @@ async function fetchOEmbedData (
     ctx.info('successfully fetched oEmbed data', { type: data.type })
     return data
   } catch (error) {
-    // Don't throw - oEmbed failure should fall back to OG parsing
+    // Security-related URL validation errors must still fail fast.
+    if (error instanceof LinkPreviewError && error.code === 'BLOCKED_URL') {
+      throw error
+    }
+
+    // Other oEmbed failures should fall back to OG parsing.
     ctx.warn('failed to fetch oEmbed data', {
       error: error instanceof Error ? error.message : String(error)
     })
-    // return null
-    throw error
+    return null
   }
 }
 
@@ -424,7 +558,11 @@ async function loadImageSize (ctx: MeasureContext, url: string, config: Config):
     // Validate the image URL too
     validateUrl(url)
 
-    const response = await fetchWithTimeout(url, { headers: { 'User-Agent': config.UserAgent } }, timeoutMs)
+    const { response } = await fetchWithValidatedRedirects(
+      url,
+      { headers: { 'User-Agent': config.UserAgent } },
+      timeoutMs
+    )
 
     if (!response.ok) {
       ctx.warn('failed to fetch image', { status: response.status, url })
@@ -598,10 +736,9 @@ export async function parseLinkPreviewDetails (
   const parsedUrl = validateUrl(query)
 
   // Fetch the page
-  const response = await fetchWithTimeout(
+  const { response, finalUrl } = await fetchWithValidatedRedirects(
     query,
     {
-      redirect: 'follow',
       headers: {
         Accept: 'text/html,application/xhtml+xml',
         'User-Agent': config.UserAgent
@@ -617,10 +754,10 @@ export async function parseLinkPreviewDetails (
   // Check if response is an image
   const contentType = response.headers.get('content-type') ?? ''
   if (contentType.startsWith('image/')) {
-    const size = await loadImageSize(ctx, query, config)
+    const size = await loadImageSize(ctx, finalUrl, config)
     return {
-      url: query,
-      image: query,
+      url: finalUrl,
+      image: finalUrl,
       host: `${parsedUrl.protocol}//${parsedUrl.host}`,
       hostname: parsedUrl.hostname,
       imageWidth: size?.width,
@@ -639,17 +776,17 @@ export async function parseLinkPreviewDetails (
   const host = `${parsedUrl.protocol}//${parsedUrl.host}`
 
   // Try oEmbed first
-  const oembedData = await fetchOEmbedData(ctx, $, query, timeoutMs)
+  const oembedData = await fetchOEmbedData(ctx, $, finalUrl, timeoutMs)
   if (oembedData !== null) {
     const ogSiteName = $('meta[property="og:site_name"]').attr('content')
     const hostname = isNonEmptyString(ogSiteName) ? ogSiteName : parsedUrl.hostname
-    ctx.info('using oEmbed data', { url: query })
-    return convertOEmbedToPreview(oembedData, query, hostname, host)
+    ctx.info('using oEmbed data', { url: finalUrl })
+    return convertOEmbedToPreview(oembedData, finalUrl, hostname, host)
   }
 
   // Fall back to Open Graph / meta tag parsing
-  ctx.info('using Open Graph data', { url: query })
-  const preview = parseOpenGraphData($, config, parsedUrl, query)
+  ctx.info('using Open Graph data', { url: finalUrl })
+  const preview = parseOpenGraphData($, config, parsedUrl, finalUrl)
 
   // Get image dimensions if we have an image but no dimensions
   let imageWidth: number | undefined
