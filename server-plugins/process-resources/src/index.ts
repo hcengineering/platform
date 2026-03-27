@@ -30,25 +30,53 @@ import core, {
   TxUpdateDoc
 } from '@hcengineering/core'
 import process, {
+  ApproveRequest,
   ContextId,
   Execution,
+  ExecutionStatus,
+  isUpdateTx,
   Method,
   parseContext,
   Process,
   ProcessContext,
+  ProcessCustomEvent,
   ProcessToDo,
   SelectedExecutionContext,
   State,
   Step,
   Transition,
-  isUpdateTx,
-  ProcessCustomEvent,
-  ApproveRequest,
-  ExecutionStatus,
   Trigger
 } from '@hcengineering/process'
 import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
 import { ProcessMessage } from '@hcengineering/server-process'
+import {
+  AddRelation,
+  AddTag,
+  ApproveRequestApproved,
+  ApproveRequestRejected,
+  CancelSubProcess,
+  CancelToDo,
+  CheckSubProcessesDone,
+  CheckSubProcessMatch,
+  CheckTime,
+  CheckToDoCancelled,
+  CheckToDoDone,
+  CreateCard,
+  CreateToDo,
+  EventCheck,
+  FieldChangedCheck,
+  LockCard,
+  LockField,
+  LockSection,
+  MatchCardCheck,
+  RequestApproval,
+  RunSubProcess,
+  UnlockCard,
+  UnlockField,
+  UnlockSection,
+  UpdateCard
+} from './functions'
+import { FieldChangedRollback, ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 import {
   Absolute,
   Add,
@@ -58,7 +86,16 @@ import {
   CurrentDate,
   CurrentUser,
   Cut,
+  DateDifference,
+  DateFromNumber,
+  DateFromString,
+  DayFromDate,
   Divide,
+  EmptyArray,
+  ExecutionInitiator,
+  ExecutionStarted,
+  Filter,
+  FirstMatchValue,
   FirstValue,
   FirstWorkingDayAfter,
   Floor,
@@ -66,10 +103,12 @@ import {
   LastValue,
   LowerCase,
   Modulo,
+  MonthFromDate,
   Multiply,
+  NumberFromDate,
+  NumberFromString,
   Offset,
   Power,
-  Sqrt,
   Prepend,
   Random,
   Remove,
@@ -80,54 +119,15 @@ import {
   RoleContext,
   Round,
   Split,
+  Sqrt,
+  StringFromBoolean,
+  StringFromDate,
+  StringFromNumber,
   Subtract,
   Trim,
   UpperCase,
-  EmptyArray,
-  ExecutionInitiator,
-  ExecutionStarted,
-  FirstMatchValue,
-  Filter,
-  StringFromNumber,
-  StringFromDate,
-  StringFromBoolean,
-  NumberFromDate,
-  DateFromNumber,
-  NumberFromString,
-  DateFromString,
-  YearFromDate,
-  MonthFromDate,
-  DayFromDate,
-  DateDifference
+  YearFromDate
 } from './transform'
-import {
-  RunSubProcess,
-  CancelSubProcess,
-  CreateToDo,
-  UpdateCard,
-  CreateCard,
-  AddRelation,
-  AddTag,
-  CheckToDoDone,
-  CheckToDoCancelled,
-  MatchCardCheck,
-  CheckSubProcessesDone,
-  CheckSubProcessMatch,
-  CheckTime,
-  FieldChangedCheck,
-  EventCheck,
-  RequestApproval,
-  ApproveRequestApproved,
-  ApproveRequestRejected,
-  CancelToDo,
-  LockCard,
-  LockSection,
-  UnlockCard,
-  UnlockSection,
-  LockField,
-  UnlockField
-} from './functions'
-import { FieldChangedRollback, ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 
 async function putEventToQueue (value: Omit<ProcessMessage, 'account'>, control: TriggerControl): Promise<void> {
   if (control.queue === undefined) return
@@ -374,6 +374,7 @@ async function reassignToDos (card: Card, ops: DocumentUpdate<Card>, control: Tr
     doneOn: null,
     field: { $ne: null }
   } as any)
+  const cache = new Map<Ref<Execution>, Execution>()
   const handledGroups = new Set<string>()
   for (const todo of todos as any[]) {
     if (todo.field === undefined || !TxProcessor.hasUpdate(ops, todo.field)) continue
@@ -383,7 +384,18 @@ async function reassignToDos (card: Card, ops: DocumentUpdate<Card>, control: Tr
       if (handledGroups.has(request.group)) continue
       handledGroups.add(request.group)
 
-      const newUsers = (card[todo.field as keyof Card] as any[]) ?? []
+      const execution =
+        cache.get(todo.execution) ??
+        (await control.findAll(control.ctx, process.class.Execution, { _id: todo.execution }, { limit: 1 }))[0]
+      if (execution === undefined) continue
+      cache.set(todo.execution, execution)
+      const _process = control.modelDb.findObject(execution.process)
+      if (_process === undefined) continue
+      const h = control.hierarchy
+
+      const target = h.isMixin(_process.masterTag) ? h.asIf(card, _process.masterTag) : card
+      if (target === undefined) continue
+      const newUsers = (target[todo.field as keyof Card] as any[]) ?? []
       if (newUsers.length === 0) {
         continue
       }

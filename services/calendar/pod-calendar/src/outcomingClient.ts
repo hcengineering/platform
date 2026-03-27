@@ -153,10 +153,20 @@ export class OutcomingClient {
     const calendarId = calendar.externalId
     if (calendarId !== undefined) {
       await this.rateLimiter.take(1)
-      await this.calendar.events.insert({
-        calendarId,
-        requestBody: body
-      })
+      try {
+        await this.calendar.events.insert({
+          calendarId,
+          requestBody: body
+        })
+      } catch (err: any) {
+        this.ctx.error('Google API insert error', {
+          calendarId,
+          eventId: event.eventId,
+          error: err.message,
+          code: err.code
+        })
+        throw err
+      }
     }
   }
 
@@ -380,17 +390,33 @@ export class OutcomingClient {
   }
 
   private async remove (eventId: string, calendarId: string): Promise<void> {
-    const current = await this.calendar.events.get({ calendarId, eventId })
-    if (current?.data !== undefined) {
-      if (current.data.organizer?.self === true) {
-        await this.rateLimiter.take(1)
-        try {
-          await this.calendar.events.delete({
-            eventId,
-            calendarId
-          })
-        } catch {}
+    try {
+      const current = await this.calendar.events.get({ calendarId, eventId })
+      if (current?.data !== undefined) {
+        if (current.data.organizer?.self === true) {
+          await this.rateLimiter.take(1)
+          try {
+            await this.calendar.events.delete({
+              eventId,
+              calendarId
+            })
+          } catch (err: any) {
+            this.ctx.error('Google API delete error', {
+              calendarId,
+              eventId,
+              error: err.message,
+              code: err.code
+            })
+          }
+        }
       }
+    } catch (err: any) {
+      this.ctx.error('Failed to get event for deletion', {
+        calendarId,
+        eventId,
+        error: err.message,
+        code: err.code
+      })
     }
   }
 
