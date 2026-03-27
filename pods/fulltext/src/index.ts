@@ -16,10 +16,16 @@
 import { Analytics } from '@hcengineering/analytics'
 import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import { newMetrics, type Tx } from '@hcengineering/core'
-import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
+import {
+  initStatisticsContext,
+  type StorageConfiguration,
+  type FullTextAdapterFactory
+} from '@hcengineering/server-core'
 import { join } from 'path'
 
 import { createElasticAdapter } from '@hcengineering/elastic'
+import { createOpenSearchAdapter } from '@hcengineering/opensearch'
+import { createTypesenseAdapter } from '@hcengineering/typesense'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
 import { createRekoniAdapter, type FulltextDBConfiguration } from '@hcengineering/server-indexer'
@@ -74,9 +80,22 @@ if (rekoniUrl === undefined) {
   process.exit(1)
 }
 
+const fulltextBackend = (process.env.FULLTEXT_BACKEND ?? 'elastic').toLowerCase()
+const fulltextAdapterFactories: Record<string, FullTextAdapterFactory> = {
+  elastic: createElasticAdapter,
+  opensearch: createOpenSearchAdapter,
+  typesense: createTypesenseAdapter
+}
+const fulltextFactory = fulltextAdapterFactories[fulltextBackend]
+if (fulltextFactory === undefined) {
+  console.error(`Unknown FULLTEXT_BACKEND: "${fulltextBackend}". Supported: elastic, opensearch, typesense`)
+  process.exit(1)
+}
+console.info(`Using fulltext backend: ${fulltextBackend}`)
+
 const config: FulltextDBConfiguration = {
   fulltextAdapter: {
-    factory: createElasticAdapter,
+    factory: fulltextFactory,
     url: fullTextDbURL
   },
   contentAdapters: {
@@ -89,11 +108,7 @@ const config: FulltextDBConfiguration = {
   defaultContentAdapter: 'Rekoni'
 }
 
-const elasticIndexName = process.env.ELASTIC_INDEX_NAME
-if (elasticIndexName === undefined) {
-  console.log('Please provide ELASTIC_INDEX_NAME')
-  process.exit(1)
-}
+const elasticIndexName = process.env.ELASTIC_INDEX_NAME ?? 'huly_storage_index'
 
 const servicePort = parseInt(process.env.PORT ?? '4700')
 metricsContext.info('Starting stats service')

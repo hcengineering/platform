@@ -69,6 +69,8 @@
     "@koa/cors": "^5.0.0",
     "@hcengineering/server-indexer": "workspace:^0.7.0",
     "@hcengineering/elastic": "workspace:^0.7.16",
+    "@hcengineering/opensearch": "workspace:^0.7.17",
+    "@hcengineering/typesense": "workspace:^0.7.17",
     "@hcengineering/server-collaboration": "workspace:^0.7.0",
     "@hcengineering/middleware": "workspace:^0.7.21",
     "@hcengineering/server-client": "workspace:^0.7.16",
