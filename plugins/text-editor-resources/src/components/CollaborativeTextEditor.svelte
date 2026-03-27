@@ -38,6 +38,7 @@
     imageSizeToRatio,
     KeyedAttribute
   } from '@hcengineering/presentation'
+  import { isDocCreatedByAccount } from '@hcengineering/contact'
   import { markupToJSON } from '@hcengineering/text'
   import {
     AnySvelteComponent,
@@ -131,7 +132,13 @@
   let editorReady = false
 
   $: loading = !synced
-  $: editable = !readonly && !contentError && synced && editorReady && hasAccountRole(account, AccountRole.User)
+  $: canEditAsGuestCreator = account.role === AccountRole.Guest && isDocCreatedByAccount(object, account)
+  $: editable =
+    !readonly &&
+    !contentError &&
+    synced &&
+    editorReady &&
+    (hasAccountRole(account, AccountRole.User) || canEditAsGuestCreator)
 
   void provider.loaded.then(() => (synced = true))
   void provider.loaded.then(() => dispatch('loaded'))
