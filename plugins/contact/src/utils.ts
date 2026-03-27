@@ -89,6 +89,18 @@ export function setCurrentEmployeeSpace (space: Ref<PersonSpace>): void {
 }
 
 /**
+ * True when {@link Doc.createdBy} is one of the given account's social identities.
+ *
+ * @public
+ */
+export function isDocCreatedByAccount (doc: Doc, account: Account): boolean {
+  const creator = doc.createdBy
+  if (creator === undefined) return false
+  if (creator === account.primarySocialId) return true
+  return account.socialIds.includes(creator)
+}
+
+/**
  * @public
  */
 export function getAvatarColorForId (id: string | null | undefined): string {
