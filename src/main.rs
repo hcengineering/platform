@@ -145,7 +145,7 @@ async fn main() -> anyhow::Result<()> {
         BackendType::Redis => {
             let redis_client = redis::client().await?;
             let db_connection = redis_client
-                .get_multiplexed_async_connection()
+                .get_connection_manager()
                 .await
                 .map_err(|e| {
                     tracing::error!(
@@ -162,9 +162,7 @@ async fn main() -> anyhow::Result<()> {
             tokio::spawn({
                 let hub_state = hub_state.clone();
                 async move {
-                    if let Err(err) = crate::redis::receiver(redis_client, hub_state).await {
-                        tracing::error!("Redis receiver stopped: {err}");
-                    }
+                    crate::redis::receiver(redis_client, hub_state).await;
                 }
             });
             Db::new_redis(db_connection)
