@@ -20,7 +20,12 @@
   import { getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
   import { resizeObserver } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { buildConfigLookup, canResolveAttribute, getKeyLabel, ViewletClassSettings } from '@hcengineering/view-resources'
+  import {
+    buildConfigLookup,
+    canResolveAttribute,
+    getKeyLabel,
+    ViewletClassSettings
+  } from '@hcengineering/view-resources'
 
   export let viewlet: Viewlet
 

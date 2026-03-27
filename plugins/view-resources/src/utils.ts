@@ -772,7 +772,7 @@ export function getLookupLabel<T extends Doc> (
       return attribute.label
     } catch {
       console.log('attribute not found for ' + key.key + ' in class ' + lookupClass)
-      return key.key as IntlString
+      return getEmbeddedLabel(key.key)
     }
   }
 }
