@@ -21,7 +21,7 @@
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
-  import { buildConfigLookup, getKeyLabel } from '../utils'
+  import { buildConfigLookup, canResolveAttribute, getKeyLabel } from '../utils'
   import ViewletClassSettings from './ViewletClassSettings.svelte'
 
   export let viewlet: Viewlet
@@ -136,6 +136,7 @@
           }
           result.push(assocConfig)
         } else {
+          if (!canResolveAttribute(hierarchy, viewlet.attachTo, param, lookup)) continue
           const paramValue = param.startsWith('custom') ? { key: param, displayProps: { optional: true } } : param
           const attrCfg: AttributeConfig = {
             type: 'attribute',
@@ -162,6 +163,7 @@
               value: ''
             })
           }
+          if (!canResolveAttribute(hierarchy, viewlet.attachTo, param.key, lookup)) continue
           const attrCfg: AttributeConfig = {
             type: 'attribute',
             value: param,
