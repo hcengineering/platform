@@ -40,7 +40,7 @@ pub fn map_redis_error(err: impl std::fmt::Display) -> Error {
         .nth(1)
         .unwrap_or(msg.as_str());
     if let Some((code, text)) = detail.split_once(": ") {
-        let text = format!("{} {}", code, text);
+        let text = format!("{code} {text}");
         return match code {
             "400" => actix_web::error::ErrorBadRequest(text),
             "404" => actix_web::error::ErrorNotFound(text),

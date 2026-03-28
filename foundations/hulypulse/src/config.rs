@@ -94,7 +94,7 @@ pub static CONFIG: LazyLock<Config> = LazyLock::new(|| {
     match settings {
         Ok(settings) => settings,
         Err(error) => {
-            eprintln!("configuration error: {}", error);
+            eprintln!("configuration error: {error}");
             std::process::exit(1);
         }
     }
