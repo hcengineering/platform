@@ -74,6 +74,10 @@
     "CardUpdated": "Carte mise à jour",
     "CardCreated": "Carte créée",
     "MyCards": "Mes cartes",
-    "GotoMyCards": "Aller à mes cartes"
+    "GotoMyCards": "Aller à mes cartes",
+    "LockSection": "Verrouiller la section",
+    "UnLockSection": "Déverrouiller la section",
+    "SectionLocked": "Section {section} verrouillée",
+    "SectionUnlocked": "Section {section} déverrouillée"
   }
 }

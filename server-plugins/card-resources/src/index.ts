@@ -13,7 +13,22 @@
 // limitations under the License.
 //
 
+import activity from '@hcengineering/activity'
 import card, { Card, cardId, MasterTag, Tag } from '@hcengineering/card'
+import communication, { Direct } from '@hcengineering/communication'
+import {
+  AddCollaboratorsEvent,
+  CardEventType,
+  CreatePeerEvent,
+  MessageEventType,
+  NotificationEventType,
+  PeerEventType,
+  RemoveCardEvent,
+  ThreadPatchEvent,
+  UpdateCardTypeEvent
+} from '@hcengineering/communication-sdk-types'
+import { CardPeer } from '@hcengineering/communication-types'
+import contact, { Employee, formatName, Person } from '@hcengineering/contact'
 import core, {
   AccountUuid,
   AnyAttribute,
@@ -42,26 +57,12 @@ import core, {
   TxRemoveDoc,
   TxUpdateDoc
 } from '@hcengineering/core'
+import { getMetadata, translate } from '@hcengineering/platform'
+import { getEmployee, getPersonSpaces } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
-import { workbenchId } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
-import {
-  AddCollaboratorsEvent,
-  CardEventType,
-  NotificationEventType,
-  PeerEventType,
-  RemoveCardEvent,
-  UpdateCardTypeEvent,
-  CreatePeerEvent,
-  ThreadPatchEvent,
-  MessageEventType
-} from '@hcengineering/communication-sdk-types'
-import { getEmployee, getPersonSpaces } from '@hcengineering/server-contact'
-import contact, { Employee, formatName, Person } from '@hcengineering/contact'
-import communication, { Direct } from '@hcengineering/communication'
-import { CardPeer } from '@hcengineering/communication-types'
-import { getMetadata } from '@hcengineering/platform'
+import { workbenchId } from '@hcengineering/workbench'
 
 async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerControl): Promise<Tx[]> {
   const attr = TxProcessor.createDoc2Doc(ctx[0])
@@ -433,6 +434,24 @@ async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl):
   res.push(...(await updatePeers(control, doc, updateTx)))
 
   await updateCollaborators(control, updateTx.operations, doc._class, doc, updateTx.modifiedBy)
+
+  const push = (updateTx.operations as any).$push?.readonlySections as Ref<Class<Doc>> | undefined
+  const pull = (updateTx.operations as any).$pull?.readonlySections as Ref<Class<Doc>> | undefined
+  const sectionId = push ?? pull
+  if (sectionId !== undefined) {
+    const sectionClass = control.hierarchy.getClass(sectionId)
+    const label = sectionClass?.label ?? sectionId
+    const section = await translate(label, {})
+    res.push(
+      control.txFactory.createTxCreateDoc(activity.class.ActivityInfoMessage, doc.space, {
+        attachedTo: doc._id,
+        attachedToClass: doc._class,
+        message: push !== undefined ? card.string.SectionLocked : card.string.SectionUnlocked,
+        props: { section },
+        collection: 'activity'
+      })
+    )
+  }
   return res
 }
 
