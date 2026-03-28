@@ -172,13 +172,10 @@ async function moveToMeetingRoom (room: Room): Promise<void> {
 
 async function createMeetingDocument (room: Room): Promise<void> {
   const client = getClient()
-  await client.createDoc(love.class.MeetingMinutes, core.space.Workspace, {
+  await client.addCollection(love.class.MeetingMinutes, core.space.Workspace, room._id, love.class.Room, 'meetings', {
     description: null,
-    attachedTo: room._id,
     status: MeetingStatus.Active,
-    title: await getNewMeetingTitle(room),
-    attachedToClass: love.class.Room,
-    collection: 'meetings'
+    title: await getNewMeetingTitle(room)
   })
 }
 
