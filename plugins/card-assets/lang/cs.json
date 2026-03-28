@@ -76,6 +76,8 @@
     "MyCards": "Moje karty",
     "GotoMyCards": "Přejít na moje karty",
     "LockSection": "Zamknout sekci",
-    "UnLockSection": "Odemknout sekci"
+    "UnLockSection": "Odemknout sekci",
+    "SectionLocked": "Sekce {section} zamknuta",
+    "SectionUnlocked": "Sekce {section} odemknuta"
   }
 }

@@ -76,6 +76,8 @@
     "MyCards": "Le mie carte",
     "GotoMyCards": "Vai alle mie carte",
     "LockSection": "Blocca sezione",
-    "UnLockSection": "Sblocca sezione"
+    "UnLockSection": "Sblocca sezione",
+    "SectionLocked": "Sezione {section} bloccata",
+    "SectionUnlocked": "Sezione {section} sbloccata"
   }
 }

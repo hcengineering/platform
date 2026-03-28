@@ -76,6 +76,8 @@
     "MyCards": "マイカード",
     "GotoMyCards": "マイカードへ移動",
     "LockSection": "セクションをロック",
-    "UnLockSection": "セクションをアンロック"
+    "UnLockSection": "セクションをアンロック",
+    "SectionLocked": "セクション {section} ロック済み",
+    "SectionUnlocked": "セクション {section} アンロック済み"
   }
 }

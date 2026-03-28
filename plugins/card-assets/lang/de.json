@@ -76,6 +76,8 @@
     "MyCards": "Meine Karten",
     "GotoMyCards": "Zu meinen Karten",
     "LockSection": "Sperren",
-    "UnLockSection": "Entsperren"
+    "UnLockSection": "Entsperren",
+    "SectionLocked": "Sektion {section} gesperrt",
+    "SectionUnlocked": "Sektion {section} entsperrt"
   }
 }

@@ -76,6 +76,8 @@
     "MyCards": "Мои карты",
     "GotoMyCards": "Перейти к моим картам",
     "LockSection": "Заблокировать секцию",
-    "UnLockSection": "Разблокировать секцию"
+    "UnLockSection": "Разблокировать секцию",
+    "SectionLocked": "Секция {section} заблокирована",
+    "SectionUnlocked": "Секция {section} разблокирована"
   }
 }

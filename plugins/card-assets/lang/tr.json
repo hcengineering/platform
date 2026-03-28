@@ -76,6 +76,8 @@
     "MyCards": "Benim kartlarım",
     "GotoMyCards": "Benim kartlarıma git",
     "LockSection": "Bölümü kilitle",
-    "UnLockSection": "Bölümü kilitle"
+    "UnLockSection": "Bölümü kilitle",
+    "SectionLocked": "Bölüm {section} kilitli",
+    "SectionUnlocked": "Bölüm {section} kilidi açıldı"
   }
 }
