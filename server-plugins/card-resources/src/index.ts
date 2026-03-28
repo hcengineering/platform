@@ -121,23 +121,36 @@ async function OnAttributeRemove (ctx: TxRemoveDoc<AnyAttribute>[], control: Tri
   if (attr === undefined) return []
   if (control.hierarchy.isDerived(attr.attributeOf, card.class.Card)) {
     const desc = control.hierarchy.getDescendants(attr.attributeOf)
+    const forbidden = new Set(desc.map((d) => `${d}.${attr.name}`))
+    forbidden.add(attr.name)
+
     const res: Tx[] = []
-    for (const des of desc) {
-      const viewlets = control.modelDb.findAllSync(view.class.Viewlet, { attachTo: des })
-      for (const viewlet of viewlets) {
+    const viewlets = control.modelDb.findAllSync(view.class.Viewlet, {})
+    for (const viewlet of viewlets) {
+      const filteredConfig = viewlet.config.filter((p) => {
+        const key = typeof p === 'string' ? p : (p as any).key
+        return !forbidden.has(key)
+      })
+      if (filteredConfig.length !== viewlet.config.length) {
         res.push(
           control.txFactory.createTxUpdateDoc(viewlet._class, viewlet.space, viewlet._id, {
-            config: viewlet.config.filter((p) => p !== attr.name)
+            config: filteredConfig
           })
         )
-        const prefs = await control.findAll(control.ctx, view.class.ViewletPreference, { attachedTo: viewlet._id })
-        for (const pref of prefs) {
-          res.push(
-            control.txFactory.createTxUpdateDoc(pref._class, pref.space, pref._id, {
-              config: pref.config.filter((p) => p !== attr.name)
-            })
-          )
-        }
+      }
+    }
+    const prefs = await control.findAll(control.ctx, view.class.ViewletPreference, {})
+    for (const pref of prefs) {
+      const filteredPrefConfig = pref.config.filter((p) => {
+        const key = typeof p === 'string' ? p : (p as any).key
+        return !forbidden.has(key)
+      })
+      if (filteredPrefConfig.length !== pref.config.length) {
+        res.push(
+          control.txFactory.createTxUpdateDoc(pref._class, pref.space, pref._id, {
+            config: filteredPrefConfig
+          })
+        )
       }
     }
     return res

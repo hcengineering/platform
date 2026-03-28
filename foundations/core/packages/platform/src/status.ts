@@ -88,6 +88,36 @@ export function unknownStatus (message: string): Status<any> {
   return new Status(Severity.ERROR, platform.status.UnknownError, { message })
 }
 
+function isStatusLike (err: unknown): err is Pick<Status, 'severity' | 'code' | 'params'> {
+  if (typeof err !== 'object' || err === null) return false
+  const o = err as Record<string, unknown>
+  return (
+    typeof o.severity === 'string' && typeof o.code === 'string' && typeof o.params === 'object' && o.params !== null
+  )
+}
+
+function unwrapEmbeddedStatus (err: unknown): Status | undefined {
+  if (typeof err !== 'object' || err === null || !('status' in err)) return undefined
+  const st = (err as { status: unknown }).status
+  if (!isStatusLike(st)) return undefined
+  return new Status(st.severity as Severity, st.code, st.params)
+}
+
+/**
+ * Normalizes a thrown or structured error value into a {@link Status} for RPC / telemetry.
+ * @public
+ */
+export function errorToStatus (err: unknown): Status {
+  if (err instanceof PlatformError) return err.status
+  if (err instanceof Status) return err
+  if (isStatusLike(err)) {
+    return new Status(err.severity as Severity, err.code, err.params)
+  }
+  const status = unwrapEmbeddedStatus(err)
+  if (status !== undefined) return status
+  return unknownError(err)
+}
+
 /**
  * Creates unknown error status
  * @public

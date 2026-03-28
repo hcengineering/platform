@@ -767,8 +767,13 @@ export function getLookupLabel<T extends Doc> (
     const clazz = client.getHierarchy().getClass(lookupClass)
     return clazz.label
   } else {
-    const attribute = client.getHierarchy().getAttribute(lookupClass, key.key)
-    return attribute.label
+    try {
+      const attribute = client.getHierarchy().getAttribute(lookupClass, key.key)
+      return attribute.label
+    } catch {
+      console.log('attribute not found for ' + key.key + ' in class ' + lookupClass)
+      return getEmbeddedLabel(key.key)
+    }
   }
 }
 
@@ -1145,6 +1150,33 @@ export async function sortCategories (
   }
   const f = await getResource(sortFunc.func)
   return await f(client, existingCategories, space, viewletDescriptorId)
+}
+
+/**
+ * @public
+ */
+export function canResolveAttribute<T extends Doc> (
+  hierarchy: Hierarchy,
+  _class: Ref<Class<T>>,
+  key: string,
+  lookup: Lookup<T> | undefined
+): boolean {
+  if (key.startsWith('$relation') || key.startsWith('$associations')) return true
+  if (key.startsWith('$lookup')) {
+    if (lookup === undefined) return false
+    try {
+      getLookupClass(key, lookup, _class)
+      return true
+    } catch {
+      return false
+    }
+  }
+  if (key.length === 0) return true
+  try {
+    return hierarchy.findAttribute(_class, key) !== undefined
+  } catch {
+    return false
+  }
 }
 
 export function getKeyLabel<T extends Doc> (

@@ -28,7 +28,7 @@ import {
   type WorkspaceIds,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import { Status, UNAUTHORIZED, unknownStatus } from '@hcengineering/platform'
+import { UNAUTHORIZED, errorToStatus } from '@hcengineering/platform'
 import { RPCHandler, type Response } from '@hcengineering/rpc'
 import {
   doSessionOp,
@@ -503,7 +503,7 @@ export function startHttpServer (
             ctx,
             {
               id: -1,
-              error: s.error instanceof Status ? s.error : unknownStatus(s.error.message ?? 'Unknown error'),
+              error: errorToStatus(s.error),
               terminate: s.terminate
             },
             false,
@@ -538,6 +538,7 @@ export function startHttpServer (
         }
         if (buff !== undefined) {
           doSessionOp(
+            ctx,
             webSocketData,
             (s, buff) => {
               s.context.measure('receive-data', buff?.length ?? 0)
@@ -556,6 +557,7 @@ export function startHttpServer (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     ws.on('close', (code: number, reason: Buffer) => {
       doSessionOp(
+        ctx,
         webSocketData,
         (s) => {
           if (!(s.session.workspaceClosed ?? false)) {
@@ -569,6 +571,7 @@ export function startHttpServer (
 
     ws.on('error', (err) => {
       doSessionOp(
+        ctx,
         webSocketData,
         (s) => {
           ctx.error('error', { err, user: s.session.getUser() })
