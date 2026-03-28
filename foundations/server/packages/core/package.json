@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/server-core",
-  "version": "0.7.18",
+  "version": "0.7.19",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -36,13 +36,13 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/analytics": "workspace:^0.7.17",
-    "@hcengineering/core": "workspace:^0.7.24",
-    "@hcengineering/platform": "workspace:^0.7.19",
-    "@hcengineering/query": "workspace:^0.7.17",
-    "@hcengineering/rpc": "workspace:^0.7.17",
-    "@hcengineering/server-token": "workspace:^0.7.17",
-    "@hcengineering/storage": "workspace:^0.7.17",
+    "@hcengineering/analytics": "workspace:^0.7.19",
+    "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/platform": "workspace:^0.7.20",
+    "@hcengineering/query": "workspace:^0.7.18",
+    "@hcengineering/rpc": "workspace:^0.7.18",
+    "@hcengineering/server-token": "workspace:^0.7.18",
+    "@hcengineering/storage": "workspace:^0.7.18",
     "fast-equals": "^5.2.2",
     "uuid": "^8.3.2"
   },
