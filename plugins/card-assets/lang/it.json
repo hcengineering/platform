@@ -74,6 +74,8 @@
     "CardUpdated": "Scheda aggiornata",
     "CardCreated": "Scheda creata",
     "MyCards": "Le mie carte",
-    "GotoMyCards": "Vai alle mie carte"
+    "GotoMyCards": "Vai alle mie carte",
+    "LockSection": "Blocca sezione",
+    "UnLockSection": "Sblocca sezione"
   }
 }

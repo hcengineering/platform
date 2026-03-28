@@ -74,6 +74,8 @@
     "CardUpdated": "Kart güncellendi",
     "CardCreated": "Kart oluşturuldu",
     "MyCards": "Benim kartlarım",
-    "GotoMyCards": "Benim kartlarıma git"
+    "GotoMyCards": "Benim kartlarıma git",
+    "LockSection": "Bölümü kilitle",
+    "UnLockSection": "Bölümü kilitle"
   }
 }

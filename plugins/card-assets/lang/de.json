@@ -74,6 +74,8 @@
     "CardUpdated": "Karte aktualisiert",
     "CardCreated": "Karte erstellt",
     "MyCards": "Meine Karten",
-    "GotoMyCards": "Zu meinen Karten"
+    "GotoMyCards": "Zu meinen Karten",
+    "LockSection": "Sperren",
+    "UnLockSection": "Entsperren"
   }
 }

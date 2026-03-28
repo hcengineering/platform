@@ -14,6 +14,7 @@
 //
 
 import card, { Card, cardId, MasterTag, Tag } from '@hcengineering/card'
+import activity from '@hcengineering/activity'
 import core, {
   AccountUuid,
   AnyAttribute,
@@ -61,7 +62,7 @@ import { getEmployee, getPersonSpaces } from '@hcengineering/server-contact'
 import contact, { Employee, formatName, Person } from '@hcengineering/contact'
 import communication, { Direct } from '@hcengineering/communication'
 import { CardPeer } from '@hcengineering/communication-types'
-import { getMetadata } from '@hcengineering/platform'
+import { getMetadata, translate, translateCB } from '@hcengineering/platform'
 
 async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerControl): Promise<Tx[]> {
   const attr = TxProcessor.createDoc2Doc(ctx[0])
@@ -420,6 +421,24 @@ async function OnCardUpdate (ctx: TxUpdateDoc<Card>[], control: TriggerControl):
   res.push(...(await updatePeers(control, doc, updateTx)))
 
   await updateCollaborators(control, updateTx.operations, doc._class, doc, updateTx.modifiedBy)
+
+  const push = (updateTx.operations as any).$push?.readonlySections
+  const pull = (updateTx.operations as any).$pull?.readonlySections
+  const sectionId = push || pull
+  if (sectionId) {
+    const sectionClass = control.hierarchy.getClass(sectionId)
+    const label = sectionClass?.label ?? sectionId
+    const section = await translate(label, {})
+    res.push(
+      control.txFactory.createTxCreateDoc(activity.class.ActivityInfoMessage, doc.space, {
+        attachedTo: doc._id,
+        attachedToClass: doc._class,
+        message: push ? card.string.SectionLocked : card.string.SectionUnlocked,
+        props: { section: section },
+        collection: 'activity'
+      })
+    )
+  }
   return res
 }
 

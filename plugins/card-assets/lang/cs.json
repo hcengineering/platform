@@ -74,6 +74,8 @@
     "CardUpdated": "Karta aktualizována",
     "CardCreated": "Karta vytvořena",
     "MyCards": "Moje karty",
-    "GotoMyCards": "Přejít na moje karty"
+    "GotoMyCards": "Přejít na moje karty",
+    "LockSection": "Zamknout sekci",
+    "UnLockSection": "Odemknout sekci"
   }
 }

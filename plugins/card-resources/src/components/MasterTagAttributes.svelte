@@ -29,6 +29,11 @@
   import CardAttributes from './CardAttributes.svelte'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import CardIcon from './CardIcon.svelte'
+  import { canLockSection, canUnlockSection } from '../utils'
+  import { permissionsStore } from '@hcengineering/contact-resources'
+  import Lock from './icons/Lock.svelte'
+  import Unlock from './icons/Unlock.svelte'
+  import card from '../plugin'
 
   export let value: Card
   export let readonly: boolean = false
@@ -49,6 +54,16 @@
   export function expand (): void {
     isCollapsed = false
   }
+
+  $: isLocked = value.readonlySections?.includes(value._class) ?? false
+  $: canLock = canLockSection(value.space, $permissionsStore)
+  $: canUnlock = canUnlockSection(value.space, $permissionsStore)
+
+  async function toggleLock (ev: MouseEvent): Promise<void> {
+    ev.stopPropagation()
+    const op = isLocked ? '$pull' : '$push'
+    await client.update(value, { [op]: { readonlySections: value._class } })
+  }
 </script>
 
 <div class="header flex flex-gap-2">
@@ -57,8 +72,19 @@
     <Label {label} />
     <Chevron expanded={!isCollapsed} outline fill={'var(--content-color)'} />
   </div>
-  {#if hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)}
-    <div class="btns">
+  <div class="btns">
+    {#if (isLocked && canUnlock) || (!isLocked && canLock)}
+      <div class="lock-btn">
+        <Button
+          icon={isLocked ? Unlock : Lock}
+          kind={'link'}
+          size={'medium'}
+          showTooltip={{ label: isLocked ? card.string.UnLockSection : card.string.LockSection }}
+          on:click={toggleLock}
+        />
+      </div>
+    {/if}
+    {#if hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)}
       <Button
         icon={IconAdd}
         kind={'link'}
@@ -84,8 +110,8 @@
           navigate(loc)
         }}
       />
-    </div>
-  {/if}
+    {/if}
+  </div>
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
   <CardAttributes object={value} _class={value._class} {readonly} {ignoreKeys} {fourRows} showCollaborators />
@@ -116,6 +142,14 @@
       display: flex;
       align-items: center;
       visibility: hidden;
+
+      .lock-btn {
+        opacity: 0.5;
+        transition: opacity 0.2s;
+        &:hover {
+          opacity: 1;
+        }
+      }
     }
   }
 </style>

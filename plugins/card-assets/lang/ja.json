@@ -74,6 +74,8 @@
     "CardUpdated": "カードが更新されました",
     "CardCreated": "カードが作成されました",
     "MyCards": "マイカード",
-    "GotoMyCards": "マイカードへ移動"
+    "GotoMyCards": "マイカードへ移動",
+    "LockSection": "セクションをロック",
+    "UnLockSection": "セクションをアンロック"
   }
 }
