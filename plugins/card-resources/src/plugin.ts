@@ -73,7 +73,9 @@ export default mergeIds(cardId, card, {
     ForbidRemoveCard: '' as Ref<Permission>,
     ForbidUpdateCard: '' as Ref<Permission>,
     ForbidAddTag: '' as Ref<Permission>,
-    ForbidRemoveTag: '' as Ref<Permission>
+    ForbidRemoveTag: '' as Ref<Permission>,
+    LockSection: '' as Ref<Permission>,
+    UnlockSection: '' as Ref<Permission>
   },
   sectionComponent: {
     AttachmentsSection: '' as AnyComponent,
