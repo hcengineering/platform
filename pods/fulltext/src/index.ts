@@ -108,7 +108,11 @@ const config: FulltextDBConfiguration = {
   defaultContentAdapter: 'Rekoni'
 }
 
-const elasticIndexName = process.env.ELASTIC_INDEX_NAME ?? 'huly_storage_index'
+const elasticIndexName = process.env.ELASTIC_INDEX_NAME
+if (elasticIndexName === undefined) {
+  console.error('ELASTIC_INDEX_NAME should be specified')
+  process.exit(1)
+}
 
 const servicePort = parseInt(process.env.PORT ?? '4700')
 metricsContext.info('Starting stats service')
