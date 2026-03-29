@@ -738,7 +738,7 @@ export async function CancelToDo (
   if (params._id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
   const todo = await control.client.findOne(process.class.ProcessToDo, { _id: params._id as any })
   if (todo === undefined) return { txes: [], rollback: [], context: null }
-  if (todo.doneOn !== null) throw processError(process.error.ToDoAlreadyCompleted, { _id: params._id })
+  if (todo.doneOn !== null) return { txes: [], rollback: [], context: null }
   const res: Tx[] = [control.client.txFactory.createTxRemoveDoc(todo._class, todo.space, todo._id)]
   const rollback: Tx[] = [
     control.client.txFactory.createTxCreateDoc(
