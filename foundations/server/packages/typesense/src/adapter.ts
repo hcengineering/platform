@@ -45,19 +45,6 @@ function getIndexVersion (): string {
   return getMetadata(serverCore.metadata.ElasticIndexVersion) ?? 'v2'
 }
 
-/** Fields that are defined in the schema and are facet-capable (keyword-like). */
-const FACET_FIELDS = new Set([
-  'id',
-  'workspaceId',
-  '_class',
-  'space',
-  'attachedTo',
-  'attachedToClass',
-  'modifiedBy',
-  'core:class:Doc%createdBy',
-  'core:class:Doc%modifiedBy'
-])
-
 function buildCollectionSchema (collectionName: string): {
   name: string
   fields: CollectionFieldSchema[]
@@ -101,9 +88,32 @@ function isConnectionError (err: any): boolean {
   return false
 }
 
+/** Fields that are known to be string arrays in the schema. */
+const ARRAY_FIELDS = new Set(['_class'])
+
 /** Escape a value for use inside a Typesense filter_by backtick-quoted string. */
 function escapeFilterValue (val: string): string {
   return val.replace(/`/g, '\\`')
+}
+
+/**
+ * Sanitize a document for Typesense upsert.
+ * - Removes binary `data` field
+ * - Coerces fields ending in `_fields` to string arrays (dynamic ES fields)
+ * - Ensures `_class` is always an array
+ */
+function sanitizeDoc (doc: Record<string, any>): Record<string, any> {
+  const result: Record<string, any> = {}
+  for (const [key, value] of Object.entries(doc)) {
+    if (key === 'data') continue
+    // Coerce _class and *_fields to arrays
+    if (ARRAY_FIELDS.has(key) || key.endsWith('_fields')) {
+      result[key] = Array.isArray(value) ? value : value != null ? [String(value)] : []
+    } else {
+      result[key] = value
+    }
+  }
+  return result
 }
 
 /**
@@ -216,32 +226,25 @@ class TypesenseAdapter implements FullTextAdapter {
       // Require searchTitle to exist (non-empty)
       filterParts.push('searchTitle:!=""')
 
-      // Scoring: boost documents where a facet field matches a specific value.
-      // Typesense doesn't support per-term boosting like ES function_score,
-      // so we use optional filter clauses that prefer matching documents.
-      if (options.scoring !== undefined && options.scoring.length > 0) {
-        const optionalParts: string[] = []
-        for (const scoring of options.scoring) {
-          if (FACET_FIELDS.has(scoring.attr)) {
-            optionalParts.push(`${scoring.attr}:=\`${escapeFilterValue(String(scoring.value))}\``)
-          }
-        }
-        if (optionalParts.length > 0) {
-          // Use optional filter_by syntax: main filters && (optional1 || optional2)
-          // Documents matching optional filters rank higher via _text_match + filter proximity
-          filterParts.push(`(${optionalParts.join(' || ')})`)
-        }
-      }
+      // Scoring: ES uses function_score with should clauses (soft boosts).
+      // Typesense has no equivalent — filter_by is always mandatory (AND).
+      // We skip scoring filters entirely and rely on text_match ranking,
+      // which already prioritizes title matches via query_by_weights.
+      // Adding scoring fields to filter_by would incorrectly EXCLUDE
+      // documents that don't match, instead of just ranking them lower.
 
       const filterBy = filterParts.join(' && ')
 
       const searchParams: any = {
         q: query.query,
         query_by: 'searchTitle,searchShortTitle,fulltextSummary',
-        query_by_weights: '50,50,1',
+        query_by_weights: '100,100,1',
         filter_by: filterBy,
         limit: options.limit ?? DEFAULT_LIMIT,
         prefix: 'true,true,false',
+        num_typos: '2,2,1',
+        typo_tokens_threshold: 1,
+        drop_tokens_threshold: 1,
         sort_by: '_text_match:desc'
       }
 
@@ -257,7 +260,7 @@ class TypesenseAdapter implements FullTextAdapter {
           return {
             ...doc,
             id: this.getDocId(workspaceId, doc.id),
-            _score: hit.text_match ?? 0
+            _score: hit.text_match_info?.best_field_score ?? hit.text_match ?? 0
           }
         })
       }
@@ -291,34 +294,24 @@ class TypesenseAdapter implements FullTextAdapter {
       }
 
       // In Elastic, additional query fields are soft boosts (should clauses).
-      // Typesense has no direct equivalent, so we add them as optional filter
-      // clauses — documents matching them rank higher but aren't excluded.
-      const optionalParts: string[] = []
-      for (const [q, v] of Object.entries(query)) {
-        if (q.startsWith('$')) continue
-        if (typeof v === 'object' && v !== null) {
-          if (v.$in !== undefined && Array.isArray(v.$in)) {
-            optionalParts.push(`${q}:=[${v.$in.map((val: string) => `\`${escapeFilterValue(val)}\``).join(',')}]`)
-          }
-        } else {
-          optionalParts.push(`${q}:=\`${escapeFilterValue(String(v))}\``)
-        }
-      }
-      if (optionalParts.length > 0) {
-        filterParts.push(`(${optionalParts.join(' || ')})`)
-      }
+      // Typesense filter_by is always mandatory (AND), so adding these as
+      // filters would incorrectly exclude non-matching documents instead of
+      // just ranking them lower. We skip them and rely on text_match ranking.
 
       const filterBy = filterParts.join(' && ')
 
       const searchParams: any = {
         q: query.$search,
         query_by: 'searchTitle,searchShortTitle,fulltextSummary',
-        query_by_weights: '50,50,1',
+        query_by_weights: '100,100,1',
         filter_by: filterBy,
         limit: size ?? DEFAULT_LIMIT,
         offset: from ?? 0,
         sort_by: '_text_match:desc',
-        prefix: 'true,true,false'
+        prefix: 'true,true,false',
+        num_typos: '2,2,1',
+        typo_tokens_threshold: 1,
+        drop_tokens_threshold: 1
       }
 
       const result = await ctx.with(
@@ -334,7 +327,7 @@ class TypesenseAdapter implements FullTextAdapter {
         return {
           ...doc,
           id: this.getDocId(workspaceId, doc.id),
-          _score: hit.text_match ?? 0
+          _score: hit.text_match_info?.best_field_score ?? hit.text_match ?? 0
         }
       })
     } catch (err: any) {
@@ -356,13 +349,7 @@ class TypesenseAdapter implements FullTextAdapter {
     }
 
     const fulltextId = this.getFulltextDocId(workspaceId, doc.id)
-    const tsDoc: Record<string, any> = {
-      ...doc,
-      id: fulltextId,
-      workspaceId
-    }
-    // Remove binary data — Typesense cannot process it
-    delete tsDoc.data
+    const tsDoc = sanitizeDoc({ ...doc, id: fulltextId, workspaceId })
 
     try {
       await this.client.collections(this.collectionName).documents().upsert(tsDoc)
@@ -406,12 +393,7 @@ class TypesenseAdapter implements FullTextAdapter {
       const batch = parts.splice(0, BATCH_SIZE)
       const jsonlLines = batch
         .map((doc) => {
-          const tsDoc: Record<string, any> = {
-            ...doc,
-            id: this.getFulltextDocId(workspaceId, doc.id),
-            workspaceId
-          }
-          delete tsDoc.data
+          const tsDoc = sanitizeDoc({ ...doc, id: this.getFulltextDocId(workspaceId, doc.id), workspaceId })
           return JSON.stringify(tsDoc)
         })
         .join('\n')
@@ -479,7 +461,16 @@ class TypesenseAdapter implements FullTextAdapter {
       while (remaining.length > 0) {
         const batch = remaining.splice(0, BATCH_SIZE)
         const jsonlLines = batch.map((doc: any) => JSON.stringify(doc)).join('\n')
-        await this.client.collections(this.collectionName).documents().import(jsonlLines, { action: 'upsert' })
+        const results = await this.client
+          .collections(this.collectionName)
+          .documents()
+          .import(jsonlLines, { action: 'upsert' })
+        const errors = (
+          typeof results === 'string' ? results.split('\n').map((l: string) => JSON.parse(l)) : results
+        ).filter((r: any) => r.success === false)
+        if (errors.length > 0) {
+          console.error(`updateByQuery upsert errors: ${errors.map((e: any) => e.error).join('; ')}`)
+        }
       }
     } catch (err: any) {
       if (isConnectionError(err)) {
