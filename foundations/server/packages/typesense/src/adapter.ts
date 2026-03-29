@@ -207,6 +207,21 @@ class TypesenseAdapter implements FullTextAdapter {
     // Typesense client does not require explicit close
   }
 
+  async getDocCount (ctx: MeasureContext): Promise<number> {
+    try {
+      const col = await this.client.collections(this.collectionName).retrieve()
+      return (col as any).num_documents ?? 0
+    } catch (err: any) {
+      if (isConnectionError(err)) {
+        ctx.warn('Typesense DB is not available for doc count check')
+        return -1
+      }
+      Analytics.handleError(err)
+      ctx.error('Typesense getDocCount error', { error: err })
+      return -1
+    }
+  }
+
   async searchString (
     ctx: MeasureContext,
     workspaceId: WorkspaceUuid,
