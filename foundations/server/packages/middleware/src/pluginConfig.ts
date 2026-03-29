@@ -30,7 +30,7 @@ import {
   type TxMiddlewareResult,
   type PipelineContext
 } from '@hcengineering/server-core'
-import { aiBotAccountEmail } from './identity'
+import { getAiBotAccountEmail } from '@hcengineering/ai-bot'
 
 /**
  * @public
@@ -50,7 +50,7 @@ export class PluginConfigurationMiddleware extends BaseMiddleware implements Mid
 
   tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     const account = ctx.contextData.account
-    if (account.uuid === systemAccountUuid || account.fullSocialIds.some((it) => it.value === aiBotAccountEmail)) {
+    if (account.uuid === systemAccountUuid || account.fullSocialIds.some((it) => it.value === getAiBotAccountEmail())) {
       // We pass for system accounts and services.
       return this.provideTx(ctx, txes)
     }

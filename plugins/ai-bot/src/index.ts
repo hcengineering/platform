@@ -15,7 +15,7 @@
 
 import { buildSocialIdString, SocialIdType } from '@hcengineering/core'
 import type { Metadata, Plugin } from '@hcengineering/platform'
-import { plugin } from '@hcengineering/platform'
+import { getMetadata, plugin } from '@hcengineering/platform'
 
 export * from './rest'
 
@@ -27,9 +27,21 @@ export const aiBotEmailSocialKey = buildSocialIdString({
   value: aiBotAccountEmail
 })
 
+export function getAiBotAccountEmail (): string {
+  return getMetadata(aiBot.metadata.BotEmail) ?? aiBotAccountEmail
+}
+
+export function getAiBotEmailSocialKey (): string {
+  return buildSocialIdString({
+    type: SocialIdType.EMAIL,
+    value: getAiBotAccountEmail()
+  })
+}
+
 const aiBot = plugin(aiBotId, {
   metadata: {
-    EndpointURL: '' as Metadata<string>
+    EndpointURL: '' as Metadata<string>,
+    BotEmail: '' as Metadata<string>
   }
 })
 

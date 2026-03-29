@@ -16,7 +16,7 @@ import core, { Client, Ref, TxOperations, AccountUuid } from '@hcengineering/cor
 import { createClient } from '@hcengineering/server-client'
 import contact, { Employee, Person } from '@hcengineering/contact'
 import chunter, { DirectMessage } from '@hcengineering/chunter'
-import { aiBotEmailSocialKey } from '@hcengineering/ai-bot'
+import { getAiBotEmailSocialKey } from '@hcengineering/ai-bot'
 import notification from '@hcengineering/notification'
 
 export async function connectPlatform (token: string, endpoint: string): Promise<Client> {
@@ -40,7 +40,7 @@ export async function getDirect (
   account: AccountUuid,
   aiPerson?: Ref<Person>
 ): Promise<Ref<DirectMessage> | undefined> {
-  const aibotAccount = await getAccountBySocialKey(client, aiBotEmailSocialKey)
+  const aibotAccount = await getAccountBySocialKey(client, getAiBotEmailSocialKey())
   if (aibotAccount == null) return undefined
 
   const existingDm = (await client.findAll(chunter.class.DirectMessage, { members: aibotAccount })).find((dm) =>

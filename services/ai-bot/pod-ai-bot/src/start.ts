@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import aiBot from '@hcengineering/ai-bot'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient, { withRetry } from '@hcengineering/server-client'
 import { initStatisticsContext } from '@hcengineering/server-core'
@@ -34,6 +35,9 @@ export const start = async (): Promise<void> => {
   setMetadata(serverToken.metadata.Service, 'ai-bot-service')
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
   setMetadata(serverClient.metadata.Endpoint, config.AccountsURL)
+  if (process.env.AI_BOT_EMAIL !== undefined && process.env.AI_BOT_EMAIL !== '') {
+    setMetadata(aiBot.metadata.BotEmail, process.env.AI_BOT_EMAIL)
+  }
 
   registerLoaders()
 
