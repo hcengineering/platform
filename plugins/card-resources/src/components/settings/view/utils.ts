@@ -1,9 +1,8 @@
 import { type Data } from '@hcengineering/core'
 import { type Viewlet } from '@hcengineering/view'
+import { type AttributeConfig, type Config, isAttribute } from '@hcengineering/view-resources'
 
-export function updateViewletConfig (viewlet: Data<Viewlet> | Viewlet, items: any[]): void {
-  const enabledAttributes = items.filter((it) => it.type === 'attribute' && it.enabled).map((it) => it.value)
-
+export function updateViewletConfig (viewlet: Data<Viewlet> | Viewlet, items: Array<Config | AttributeConfig>): void {
   const getKey = (item: any): string | undefined => {
     return typeof item === 'string' ? item : item?.key
   }
@@ -18,14 +17,11 @@ export function updateViewletConfig (viewlet: Data<Viewlet> | Viewlet, items: an
     return true
   }
 
-  viewlet.config = viewlet.config.filter((configItem) => {
-    if (configItem === undefined) return false
-    return enabledAttributes.some((attr) => isMatch(configItem, attr))
-  })
-
-  const newAttributes = enabledAttributes.filter((attr) => {
-    return !viewlet.config.some((configItem) => isMatch(configItem, attr))
-  })
-
-  viewlet.config = viewlet.config.concat(newAttributes)
+  viewlet.config = items
+    .filter((it) => (isAttribute(it) && it.enabled) || it.type === 'divider')
+    .map((it) => {
+      const existing = viewlet.config.find((configItem) => isMatch(configItem, it.value))
+      return existing ?? it.value
+    })
+    .filter((it) => it !== undefined)
 }

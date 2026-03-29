@@ -16,17 +16,18 @@
   import { createEventDispatcher } from 'svelte'
 
   import { MasterTag, Tag } from '@hcengineering/card'
-  import core, { Association, Data, Ref, generateId } from '@hcengineering/core'
+  import core, { Data, generateId, Ref } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
   import { EditBox, Label } from '@hcengineering/ui'
   import view, { MasterDetailConfig, Viewlet, ViewletDescriptor, ViewOptionsModel } from '@hcengineering/view'
-  import setting from '@hcengineering/setting'
 
-  import DescriptorBox from './DescriptorBox.svelte'
-  import ViewSettingButton from './ViewSettingButton.svelte'
+  import { AttributeConfig, Config } from '@hcengineering/view-resources'
   import card from '../../../plugin'
+  import DescriptorBox from './DescriptorBox.svelte'
   import { updateViewletConfig } from './utils'
   import ViewConfigSection from './ViewConfigSection.svelte'
+  import ViewSettingButton from './ViewSettingButton.svelte'
 
   export let tag: MasterTag | Tag
 
@@ -89,7 +90,7 @@
       views: viewConfigs
     }
   }
-  function onConfigUpdate (items: any[]): void {
+  function onConfigUpdate (items: (Config | AttributeConfig)[]): void {
     if (viewletConfig === undefined) return
     updateViewletConfig(viewletConfig, items)
   }

@@ -36,6 +36,8 @@
     dispatch('close', { value: values })
   }
 
+  $: canSaveValue = inputs.every((input) => values[input.id] != null)
+
   export function canClose (): boolean {
     return false
   }
@@ -48,8 +50,9 @@
   on:close
   width={'small'}
   label={plugin.string.EnterValue}
-  canSave
+  canSave={canSaveValue}
   okAction={save}
+  hideClose
   okLabel={presentation.string.Save}
 >
   {#if processVal !== undefined}
@@ -67,8 +70,10 @@
         key={input.key}
         _class={input._class}
         {space}
+        value={values[input.id]}
         on:change={(e) => {
           values[input.id] = e.detail
+          values = values
         }}
       />
     {/each}

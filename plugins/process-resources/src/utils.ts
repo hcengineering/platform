@@ -547,7 +547,7 @@ export async function getTransitionUserInput (
       }
     }
     if (inputs.length > 0) {
-      const promise = new Promise<void>((resolve) => {
+      const promise = new Promise<void>((resolve, reject) => {
         showPopup(
           process.component.RequestUserInput,
           {
@@ -559,13 +559,16 @@ export async function getTransitionUserInput (
           },
           undefined,
           (res) => {
-            if (res?.value !== undefined) {
+            const isComplete = res?.value !== undefined && inputs.every((input) => res.value[input.id] != null)
+            if (isComplete) {
               changed = true
               for (const [key, value] of Object.entries(res.value)) {
                 userContext[key as ContextId] = value
               }
+              resolve()
+            } else {
+              reject(new PlatformError(new Status(Severity.ERROR, process.error.ResultNotProvided, {})))
             }
-            resolve()
           }
         )
       })
