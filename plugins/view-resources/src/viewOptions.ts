@@ -8,7 +8,7 @@ import {
   SortingOrder,
   type Space
 } from '@hcengineering/core'
-import { getResource } from '@hcengineering/platform'
+import { type Asset, getResource, type IntlString } from '@hcengineering/platform'
 import { type LiveQuery, createQuery, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
 import { locationToUrl, getCurrentResolvedLocation } from '@hcengineering/ui'
 import {
@@ -20,7 +20,8 @@ import {
   type ViewOptionModel,
   type ViewOptions,
   type Viewlet,
-  type ViewletDescriptor
+  type ViewletDescriptor,
+  type BuildModelKey
 } from '@hcengineering/view'
 import { get, writable } from 'svelte/store'
 import view from './plugin'
@@ -234,4 +235,22 @@ export async function getResultQuery (
     }
   }
   return result
+}
+
+export interface Config {
+  value: string | BuildModelKey | undefined
+  type: 'divider' | 'attribute'
+}
+
+export interface AttributeConfig extends Config {
+  type: 'attribute'
+  enabled: boolean
+  label: IntlString
+  _class: Ref<Class<Doc>>
+  icon: Asset | undefined
+  order?: number
+}
+
+export function isAttribute (val: Config): val is AttributeConfig {
+  return val.type === 'attribute'
 }
