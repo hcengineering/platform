@@ -61,6 +61,7 @@
   export let component: AnyComponent | AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined
   export let autoSelect = true
+  export let clearInvalidValue = false
   export let readonly = false
   export let ignoreFill = false
   export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = view.ids.IconWithEmoji
@@ -87,12 +88,17 @@
         value = selected._id ?? undefined
       }
     }
+
+    // If a value is provided but can't be resolved, optionally clear the bound value.
+    if (selected === undefined && clearInvalidValue && _value !== undefined && value === _value) {
+      value = undefined
+    }
     dispatch('object', selected)
   })
 
   $: void updateSelected(value, spaceQuery)
 
-  const showSpacesPopup = (ev: MouseEvent) => {
+  const showSpacesPopup = (ev: MouseEvent): void => {
     if (readonly) {
       return
     }
@@ -136,8 +142,8 @@
     {shape}
     disabled={readonly}
     {focusIndex}
-    icon={selected?.icon === iconWithEmoji && iconWithEmoji ? IconWithEmoji : (selected?.icon ?? defaultIcon)}
-    iconProps={selected?.icon === iconWithEmoji && iconWithEmoji
+    icon={selected?.icon === iconWithEmoji && iconWithEmoji != null ? IconWithEmoji : (selected?.icon ?? defaultIcon)}
+    iconProps={selected?.icon === iconWithEmoji && iconWithEmoji != null
       ? { icon: selected?.color }
       : ignoreFill
         ? undefined
