@@ -1172,11 +1172,13 @@ export function canResolveAttribute<T extends Doc> (
     }
   }
   if (key.length === 0) return true
-  try {
+  const parts = key.split('.')
+  if (parts.length === 1) {
     return hierarchy.findAttribute(_class, key) !== undefined
-  } catch {
-    return false
+  } else if (hierarchy.isDerived(parts[0] as Ref<Class<Doc>>, _class)) {
+    return hierarchy.findAttribute(parts[0] as Ref<Class<Doc>>, parts[1]) !== undefined
   }
+  return false
 }
 
 export function getKeyLabel<T extends Doc> (
@@ -1206,6 +1208,11 @@ export function getKeyLabel<T extends Doc> (
     const clazz = client.getHierarchy().getClass(_class)
     return clazz.label
   } else {
+    const parts = key.split('.')
+    if (parts.length === 2 && client.getHierarchy().isDerived(parts[0] as Ref<Class<Doc>>, _class)) {
+      const attribute = client.getHierarchy().getAttribute(parts[0] as Ref<Class<Doc>>, parts[1])
+      return attribute.label
+    }
     const attribute = client.getHierarchy().getAttribute(_class, key)
     return attribute.label
   }
