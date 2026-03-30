@@ -35,6 +35,7 @@
   export let component: AnyComponent | AnySvelteComponent | undefined = undefined
   export let componentProps: any | undefined = undefined
   export let autoSelect = true
+  export let clearInvalidValue = false
   export let iconWithEmoji: AnySvelteComponent | Asset | ComponentType | undefined = undefined
   export let defaultIcon: AnySvelteComponent | Asset | ComponentType | undefined = undefined
   export let readonly: boolean = false
@@ -66,6 +67,7 @@
   {component}
   {componentProps}
   {autoSelect}
+  {clearInvalidValue}
   {readonly}
   {iconWithEmoji}
   {defaultIcon}
