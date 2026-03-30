@@ -16,6 +16,7 @@ import { Analytics } from '@hcengineering/analytics'
 import { type Card, CardEvents, cardId, type CardSpace, type MasterTag, type Tag } from '@hcengineering/card'
 import { chatId } from '@hcengineering/chat'
 import communication from '@hcengineering/communication'
+import { type PermissionsStore } from '@hcengineering/contact'
 import core, {
   AccountRole,
   type Class,
@@ -762,4 +763,20 @@ export async function canGetSpaceAccessPublicLink (doc?: Doc | Doc[]): Promise<b
   }
 
   return await canCopyLink(doc)
+}
+
+export function canLockSection (space: Ref<Space>, store: PermissionsStore): boolean {
+  if (getMetadata(core.metadata.DisablePermissions) === true) return true
+  if (store.whitelist.has(space)) return true
+  const allowed = store.ps[space]?.has(card.permission.LockSection)
+  if (allowed) return true
+  return !store.restrictedSpaces.has(space)
+}
+
+export function canUnlockSection (space: Ref<Space>, store: PermissionsStore): boolean {
+  if (getMetadata(core.metadata.DisablePermissions) === true) return true
+  if (store.whitelist.has(space)) return true
+  const allowed = store.ps[space]?.has(card.permission.UnlockSection)
+  if (allowed) return true
+  return !store.restrictedSpaces.has(space)
 }

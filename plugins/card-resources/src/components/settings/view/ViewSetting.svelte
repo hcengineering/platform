@@ -20,7 +20,12 @@
   import { getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
   import { resizeObserver } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { buildConfigLookup, getKeyLabel, ViewletClassSettings } from '@hcengineering/view-resources'
+  import {
+    buildConfigLookup,
+    canResolveAttribute,
+    getKeyLabel,
+    ViewletClassSettings
+  } from '@hcengineering/view-resources'
 
   export let viewlet: Viewlet
 
@@ -94,6 +99,7 @@
           }
           result.push(assocConfig)
         } else {
+          if (!canResolveAttribute(hierarchy, viewlet.attachTo, param, lookup)) continue
           const attrCfg: AttributeConfig = {
             type: 'attribute',
             value: param,
@@ -119,6 +125,7 @@
               value: ''
             })
           }
+          if (!canResolveAttribute(hierarchy, viewlet.attachTo, param.key, lookup)) continue
           const attrCfg: AttributeConfig = {
             type: 'attribute',
             value: param,

@@ -206,7 +206,11 @@ const cardPlugin = plugin(cardId, {
     Favorites: '' as IntlString,
     CreateCard: '' as IntlString,
     Version: '' as IntlString,
-    Versions: '' as IntlString
+    Versions: '' as IntlString,
+    LockSection: '' as IntlString,
+    UnLockSection: '' as IntlString,
+    SectionLocked: '' as IntlString,
+    SectionUnlocked: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,
