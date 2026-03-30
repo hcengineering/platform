@@ -196,11 +196,10 @@
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
     const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
     const value = getValue(attribute.name, attribute.type, attrClass)
-    const proxiedValue = attribute.attributeOf + '.' + attribute.name
     for (const res of result) {
       const key = getKey(res.value)
       if (key === undefined) continue
-      if (key === attribute.name || key === value || key === proxiedValue) return
+      if (key === attribute.name || key === value) return
       if (key === '' && isAttribute(res) && res.label === attribute.label) return
     }
     const mixin =
