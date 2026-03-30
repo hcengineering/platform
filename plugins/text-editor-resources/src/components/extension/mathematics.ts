@@ -19,6 +19,7 @@ import katex from 'katex'
 import { type Node } from '@tiptap/pm/model'
 import { type EditorState, Plugin, PluginKey, type Transaction, TextSelection } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
+import { hasTableMetadataMarker } from './shortcuts/tableMetadata'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -216,8 +217,15 @@ function createMathPlugin (
   })
 }
 
+// Handle paste as math only when the full payload is a standalone inline/block expression.
+// This avoids intercepting rich text/table markdown that may contain incidental '$' chars.
+const LATEX_RE = /^\s*(?:\$\$[\s\S]+\$\$|\$(?:\\.|[^\n$\\])+\$)\s*$/
+
+export function isStandaloneMathExpression (text: string): boolean {
+  return text !== '' && LATEX_RE.test(text)
+}
+
 function MathPastePlugin (): Plugin {
-  const LATEX_RE = /\$\$?[^$]+\$\$?/
   return new Plugin({
     props: {
       handleDOMEvents: {
@@ -225,8 +233,15 @@ function MathPastePlugin (): Plugin {
           const clipboardData = event.clipboardData
           if (clipboardData === null) return false
 
-          const text = clipboardData.getData('text/plain')
-          if (text === '' || !LATEX_RE.test(text)) return false
+          // Let table metadata paste handlers process this payload.
+          const plainText = clipboardData.getData('text/plain')
+          const markdownText = clipboardData.getData('text/markdown')
+          if (hasTableMetadataMarker(plainText) || hasTableMetadataMarker(markdownText)) {
+            return false
+          }
+
+          const text = plainText
+          if (!isStandaloneMathExpression(text)) return false
 
           event.preventDefault()
           view.dispatch(view.state.tr.insertText(text))

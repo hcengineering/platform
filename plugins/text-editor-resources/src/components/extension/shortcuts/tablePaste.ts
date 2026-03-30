@@ -17,6 +17,7 @@ import { Extension } from '@tiptap/core'
 import { Fragment, Node } from '@tiptap/pm/model'
 import { Plugin } from '@tiptap/pm/state'
 import type { TableMetadata } from '@hcengineering/view'
+import { TABLE_METADATA_MIME_TYPE, TABLE_METADATA_TOKEN } from './tableMetadata'
 
 export const TableMetadataPasteExtension = Extension.create({
   name: 'tableMetadataPaste',
@@ -33,7 +34,7 @@ export const TableMetadataPasteExtension = Extension.create({
  */
 function extractMetadataFromHtmlComments (text: string): { metadata: TableMetadata | null, cleanedText: string } {
   // Look for HTML comment with pattern: <!-- huly-table-metadata:{json} -->
-  const commentRegex = /<!--\s*huly-table-metadata:(.+?)\s*-->/s
+  const commentRegex = new RegExp(`<!--\\s*${TABLE_METADATA_TOKEN}(.+?)\\s*-->`, 's')
   const match = text.match(commentRegex)
   if (match?.[1] !== undefined) {
     try {
@@ -79,7 +80,7 @@ function TableMetadataPastePlugin (): Plugin {
         let metadata: TableMetadata | null = null
 
         // 1. Try custom MIME type (fastest, most reliable for internal paste)
-        const metadataType = 'application/x-huly-table-metadata'
+        const metadataType = TABLE_METADATA_MIME_TYPE
         if (clipboardData.types.includes(metadataType)) {
           try {
             const metadataJsonStr = clipboardData.getData(metadataType)
