@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",
@@ -38,13 +38,13 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.19",
+    "@hcengineering/platform": "workspace:^0.7.20",
     "svelte": "^4.2.20",
     "@hcengineering/gmail": "workspace:^0.7.0",
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/presentation": "workspace:^0.7.0",
-    "@hcengineering/text": "workspace:^0.7.18",
-    "@hcengineering/text-html": "workspace:^0.7.18",
+    "@hcengineering/text": "workspace:^0.7.19",
+    "@hcengineering/text-html": "workspace:^0.7.19",
     "@hcengineering/text-editor": "workspace:^0.7.0",
     "@hcengineering/text-editor-resources": "workspace:^0.7.0",
     "@hcengineering/card": "workspace:^0.7.0",
@@ -57,12 +57,12 @@
     "@hcengineering/attachment": "workspace:^0.7.0",
     "@hcengineering/attachment-resources": "workspace:^0.7.0",
     "@hcengineering/login": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.24",
+    "@hcengineering/core": "workspace:^0.7.26",
     "@hcengineering/panel": "workspace:^0.7.0",
-    "@hcengineering/analytics": "workspace:^0.7.17",
+    "@hcengineering/analytics": "workspace:^0.7.19",
     "@hcengineering/templates": "workspace:^0.7.0",
     "@hcengineering/integration-client": "workspace:^0.7.0",
-    "@hcengineering/account-client": "workspace:^0.7.21",
+    "@hcengineering/account-client": "workspace:^0.7.25",
     "@hcengineering/setting-resources": "workspace:^0.7.0"
   }
 }

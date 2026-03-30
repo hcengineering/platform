@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-use actix_ws;
 use futures_util::StreamExt;
 
 use futures::future::{AbortHandle, Abortable};
@@ -187,7 +186,7 @@ async fn handle_command(
             tracing::debug!("PERSONAL from {} to {}", &client_name, &to);
             let payload =
                 json!({ "personal": client_name, "correlation": correlation, "data": data });
-            if !send_to_name(&hub_state, &to, payload).await {
+            if !send_to_name(hub_state, &to, payload).await {
                 tracing::debug!("PERSONAL send from [{}] to [{}] failed", &client_name, &to);
                 result_err("failed", &correlation, ws).await;
             }
@@ -201,7 +200,7 @@ async fn handle_command(
         } => {
             tracing::debug!("ANSWER from {} to {}", &client_name, &to);
             let payload = json!({ "correlation": correlation, "data": data });
-            if !send_to_name(&hub_state, &to, payload).await {
+            if !send_to_name(hub_state, &to, payload).await {
                 tracing::debug!("PERSONAL send_to failed: no such session {}", to);
             }
         }
@@ -233,10 +232,8 @@ async fn handle_command(
             // TTL logic
             let real_ttl = if let Some(secs) = ttl {
                 Some(Ttl::Sec(secs as usize))
-            } else if let Some(timestamp) = expires_at {
-                Some(Ttl::At(timestamp))
             } else {
-                None
+                expires_at.map(Ttl::At)
             };
 
             // SaveMode logic
@@ -447,11 +444,11 @@ pub async fn handler(
                                     _ => "",
                                 };
 
-                                if let Some(ref claim) = claims {
-                                    if !test_rego_claims(claim, cmd.as_ref(), key) {
-                                        let _ = session.text("Unauthorized: Rego policy").await;
-                                        break;
-                                    }
+                                if let Some(ref claim) = claims
+                                    && !test_rego_claims(claim, cmd.as_ref(), key)
+                                {
+                                    let _ = session.text("Unauthorized: Rego policy").await;
+                                    break;
                                 }
                             }
 
@@ -470,7 +467,7 @@ pub async fn handler(
                         }
 
                         Err(err) => {
-                            let _ = session.text(format!("Invalid JSON: {}", err)).await;
+                            let _ = session.text(format!("Invalid JSON: {err}")).await;
                         }
                     },
 

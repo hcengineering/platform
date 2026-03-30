@@ -1,11 +1,11 @@
 {
   "name": "@hcengineering/scripts",
-  "version": "0.7.17",
+  "version": "0.7.18",
   "scripts": {
     "format": "echo \"No format specified\""
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
