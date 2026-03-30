@@ -72,6 +72,7 @@ import EditRelation from './components/EditRelation.svelte'
 import AddSocialId from './components/socialIds/AddSocialId.svelte'
 import AddEmailSocialId from './components/socialIds/AddEmailSocialId.svelte'
 import Mailboxes from './components/Mailboxes.svelte'
+import ApiTokens from './components/ApiTokens.svelte'
 import OfficeSettings from './components/OfficeSettings.svelte'
 import BaseIntegrationState from './components/integrations/BaseIntegrationState.svelte'
 import IntegrationStateRow from './components/integrations/IntegrationStateRow.svelte'
@@ -97,7 +98,7 @@ export {
   IntegrationStateRow
 }
 
-async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {
+async function DeleteMixin(object: Mixin<Class<Doc>>): Promise<void> {
   const docs = await getClient().findAll(object._id, {}, { limit: 1 })
 
   showPopup(MessageBox, {
@@ -169,7 +170,8 @@ export default async (): Promise<Resources> => ({
     AddEmailSocialId,
     EmployeeRefEditor,
     UserRoleSelect,
-    TwoFactorSettings
+    TwoFactorSettings,
+    ApiTokens
   },
   actionImpl: {
     DeleteMixin

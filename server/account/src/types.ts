@@ -157,6 +157,35 @@ export interface WorkspaceJoinInfo {
   invite?: WorkspaceInvite | null
 }
 
+/**
+ * Represents an API token record in the database.
+ * Timestamps are in milliseconds since Unix epoch.
+ *
+ * ## Token Scopes
+ *
+ * Phase 1 (coarse): `read:*`, `write:*`, `delete:*`
+ * Phase 2 (planned): domain-scoped like `read:tracker`, `write:chunter`
+ *
+ * NULL/undefined scopes = full access (backward compatible with legacy tokens).
+ * Scopes are embedded in the JWT via `extra.scopes` (JSON-serialized array)
+ * and enforced server-side in `pods/server/src/rpc.ts`.
+ *
+ * @public
+ */
+export interface ApiToken {
+  id: string
+  accountUuid: PersonUuid
+  name: string
+  workspaceUuid: WorkspaceUuid
+  /** Milliseconds since epoch */
+  createdOn: number
+  /** Milliseconds since epoch */
+  expiresOn: number
+  revoked: boolean
+  /** Token scopes. NULL/undefined = full access (legacy). e.g. ['read:*', 'write:tracker'] */
+  scopes?: string[]
+}
+
 export interface Mailbox {
   accountUuid: PersonUuid
   mailbox: string
@@ -324,6 +353,7 @@ export interface AccountDB {
   userProfile: DbCollection<UserProfile>
   subscription: DbCollection<Subscription>
   workspacePermission: DbCollection<WorkspacePermission>
+  apiToken: DbCollection<ApiToken>
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>

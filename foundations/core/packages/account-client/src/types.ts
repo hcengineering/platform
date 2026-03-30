@@ -112,6 +112,23 @@ export interface MailboxInfo {
   appPasswords: string[]
 }
 
+export interface ApiTokenInfo {
+  id: string
+  name: string
+  workspaceUuid: WorkspaceUuid
+  workspaceName: string
+  createdOn: number
+  expiresOn: number
+  revoked: boolean
+  scopes?: string[]
+}
+
+export interface ApiTokenResult {
+  id: string
+  token: string
+  expiresOn: number
+}
+
 export interface MailboxSecret {
   mailbox: string
   app?: string
