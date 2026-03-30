@@ -158,11 +158,10 @@
     if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
     const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
     const value = getValue(attribute.name, attribute.type, attrClass)
-    const proxiedValue = attribute.attributeOf + '.' + attribute.name
     for (const res of result) {
       const key = getKey(res.value)
       if (key === undefined) continue
-      if (key === attribute.name || key === value || key === proxiedValue) return
+      if (key === attribute.name || key === value) return
       if (key === '' && isAttribute(res) && res.label === attribute.label) return
     }
     const mixin =
@@ -235,18 +234,11 @@
 
   function getConfig (viewlet: Viewlet, preference: ViewletPreference | undefined): Config[] {
     const result = getBaseConfig(viewlet)
-
     if (viewlet.configOptions?.strict !== true) {
       const allAttributes = hierarchy.getAllAttributes(viewlet.attachTo)
       for (const [, attribute] of allAttributes) {
         processAttribute(attribute, result)
       }
-
-      hierarchy.getDescendants(viewlet.attachTo).forEach((it) => {
-        hierarchy.getOwnAttributes(it).forEach((attr) => {
-          processAttribute(attr, result, true)
-        })
-      })
 
       const desc = hierarchy.getDescendants(viewlet.attachTo)
       for (const d of desc) {
