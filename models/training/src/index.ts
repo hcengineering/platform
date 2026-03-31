@@ -903,7 +903,7 @@ function defineSettings (builder: Builder): void {
     core.class.ClassPermission,
     core.space.Model,
     {
-      label: training.string.TrainingApplication,
+      label: training.string.AllowToTakeTraining,
       scope: 'space',
       targetClass: training.class.TrainingAttempt
     },

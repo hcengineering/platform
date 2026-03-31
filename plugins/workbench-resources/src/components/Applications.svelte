@@ -46,14 +46,32 @@
   }
 
   let loaded: boolean = false
+  let permissionsLoaded: boolean = false
   let hiddenAppsIds: Array<Ref<Application>> = []
   let excludedApps: string[] = []
-  let modulePermissionGroups: ModulePermissionGroup[] = []
+  let disabledApplications: Set<Ref<Application>> = new Set<Ref<Application>>()
 
   const hiddenAppsIdsQuery = createQuery()
   const modulePermissionGroupsQuery = createQuery()
   modulePermissionGroupsQuery.query(core.class.ModulePermissionGroup, {}, (res) => {
-    modulePermissionGroups = res as ModulePermissionGroup[]
+    try {
+      const modulePermissionGroups = res as ModulePermissionGroup[]
+      disabledApplications = new Set<Ref<Application>>(
+        modulePermissionGroups
+          .filter((g) => {
+            if (g.enabled ?? true) return false
+            const role = getCurrentAccount().role
+            if (role === g.role) return true
+            // DocGuest / ReadOnlyGuest should also respect Guest module disables.
+            return (role === AccountRole.DocGuest || role === AccountRole.ReadOnlyGuest) && g.role === AccountRole.Guest
+          })
+          .map((g) => g.application as Ref<Application>)
+      )
+    } catch (error) {
+      console.error('Error loading module permission groups:', error)
+    } finally {
+      permissionsLoaded = true
+    }
   })
 
   hiddenAppsIdsQuery.query(
@@ -92,32 +110,20 @@
 
   updateExcludedApps()
 
-  /** Applications hidden for this account when a matching ModulePermissionGroup exists and is disabled. */
-  $: disabledByModulePermissionGroup = new Set<Ref<Application>>(
-    modulePermissionGroups
-      .filter((g) => {
-        if (g.enabled ?? true) return false
-        return getCurrentAccount().role === g.role
-      })
-      .map((g) => g.application as Ref<Application>)
-  )
-
-  function isAppVisibleInSwitcher (app: Application): boolean {
-    return (
-      !hiddenAppsIds.includes(app._id) &&
-      !excludedApps.includes(app.alias) &&
-      !disabledByModulePermissionGroup.has(app._id)
-    )
+  function isAppVisibleInSwitcher (app: Application, disabledModules: Set<Ref<Application>>): boolean {
+    return !hiddenAppsIds.includes(app._id) && !excludedApps.includes(app.alias) && !disabledModules.has(app._id)
   }
 
   $: topApps = apps
-    .filter((it) => it.position === 'top' && isAppVisibleInSwitcher(it))
+    .filter((it) => it.position === 'top' && isAppVisibleInSwitcher(it, disabledApplications))
     .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
   $: midApps = apps
-    .filter((it) => it.position !== 'top' && it.position !== 'bottom' && isAppVisibleInSwitcher(it))
+    .filter(
+      (it) => it.position !== 'top' && it.position !== 'bottom' && isAppVisibleInSwitcher(it, disabledApplications)
+    )
     .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
 
-  $: bottomApps = apps.filter((it) => it.position === 'bottom' && isAppVisibleInSwitcher(it))
+  $: bottomApps = apps.filter((it) => it.position === 'bottom' && isAppVisibleInSwitcher(it, disabledApplications))
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
@@ -151,7 +157,7 @@
 </script>
 
 <div class="flex-{direction === 'horizontal' ? 'row-center' : 'col-center'} clear-mins apps-{direction} relative">
-  {#if loaded}
+  {#if loaded && permissionsLoaded}
     <Scroller
       invertScroll
       padding={direction === 'horizontal' ? '.75rem .5rem' : '.5rem .75rem'}
