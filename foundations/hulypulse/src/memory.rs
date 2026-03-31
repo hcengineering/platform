@@ -110,9 +110,7 @@ pub async fn memory_list(backend: &MemoryBackend, key_prefix: &str) -> DbResult<
             continue;
         }
 
-        if k.strip_prefix(key_prefix)
-            .map_or(false, |s| s.contains('$'))
-        {
+        if k.strip_prefix(key_prefix).is_some_and(|s| s.contains('$')) {
             continue;
         }
 
@@ -138,7 +136,7 @@ pub async fn memory_info(backend: &MemoryBackend) -> DbResult<String> {
     let map = backend.inner.read().await;
     let keys = map.len();
     let memory: usize = map.values().map(|v| v.data.len()).sum();
-    Ok(format!("{} keys, {} bytes", keys, memory))
+    Ok(format!("{keys} keys, {memory} bytes"))
 }
 
 /// memory_read(&backend, "key")
@@ -215,7 +213,7 @@ pub async fn memory_save<V: AsRef<[u8]>>(
     if max_size != 0 && value.len() > max_size {
         return error(
             400,
-            format!("Value in memory mode must be less than {} bytes", max_size),
+            format!("Value in memory mode must be less than {max_size} bytes"),
         );
     }
 
@@ -273,10 +271,7 @@ pub async fn memory_save<V: AsRef<[u8]>>(
             if &actual_md5 != expected_md5 {
                 return error(
                     412,
-                    format!(
-                        "md5 mismatch, current: {}, expected: {}",
-                        actual_md5, expected_md5
-                    ),
+                    format!("md5 mismatch, current: {actual_md5}, expected: {expected_md5}"),
                 );
             }
             *existing = Entry {
@@ -304,9 +299,7 @@ pub async fn memory_delete(
     let mode = mode.unwrap_or(SaveMode::Upsert);
 
     match mode {
-        SaveMode::Insert => {
-            return error(412, "Insert mode is not supported for delete");
-        }
+        SaveMode::Insert => error(412, "Insert mode is not supported for delete"),
         SaveMode::Update | SaveMode::Upsert => {
             let existed = map.remove(key).is_some();
             Ok(existed)
@@ -320,8 +313,7 @@ pub async fn memory_delete(
                         return error(
                             412,
                             format!(
-                                "md5 mismatch, current: {}, expected: {}",
-                                actual_md5, expected_md5
+                                "md5 mismatch, current: {actual_md5}, expected: {expected_md5}"
                             ),
                         );
                     }

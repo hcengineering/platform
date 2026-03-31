@@ -35,16 +35,16 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.19",
+    "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@hcengineering/questions": "workspace:^0.7.0",
     "@hcengineering/questions-resources": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
-    "@hcengineering/core": "workspace:^0.7.24",
+    "@hcengineering/core": "workspace:^0.7.26",
     "@hcengineering/model": "workspace:^0.7.17",
     "@hcengineering/model-core": "workspace:^0.7.0",
     "@hcengineering/model-tracker": "workspace:^0.7.0",
     "@hcengineering/model-view": "workspace:^0.7.0",
-    "@hcengineering/platform": "workspace:^0.7.19",
+    "@hcengineering/platform": "workspace:^0.7.20",
     "@hcengineering/view": "workspace:^0.7.0"
   }
 }

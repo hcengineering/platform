@@ -5,7 +5,7 @@ use crate::memory::{
     MemoryBackend, memory_delete, memory_info, memory_list, memory_read, memory_save,
 };
 use crate::redis::{redis_delete, redis_info, redis_list, redis_read, redis_save};
-use redis::aio::MultiplexedConnection;
+use redis::aio::ConnectionManager;
 use serde::Serialize;
 use tokio::sync::RwLock;
 
@@ -80,7 +80,7 @@ pub fn deprecated_symbol_error(s: &str) -> DbResult<()> {
 
 #[derive(Clone)]
 enum DbBackend {
-    Redis(MultiplexedConnection),
+    Redis(ConnectionManager),
     Memory {
         db: MemoryBackend,
         hub: Arc<RwLock<HubState>>,
@@ -93,7 +93,7 @@ pub struct Db {
 }
 
 impl Db {
-    pub fn new_redis(db: MultiplexedConnection) -> Self {
+    pub fn new_redis(db: ConnectionManager) -> Self {
         Self {
             backend: DbBackend::Redis(db),
         }
