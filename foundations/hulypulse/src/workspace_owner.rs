@@ -58,7 +58,7 @@ pub fn check_workspace_core(claims_opt: Option<Claims>, key: &str) -> Result<(),
 }
 
 pub fn test_rego_claims(claim: &Claims, command: &str, key: &str) -> bool {
-    let data = serde_json::to_value(&claim).unwrap_or_default();
+    let data = serde_json::to_value(claim).unwrap_or_default();
     let mut rego = REGORUS_ENGINE.clone();
 
     rego.set_input(regorus::Value::from(json!({
@@ -88,13 +88,13 @@ pub static POLICY_TEXT: LazyLock<String> = LazyLock::new(|| {
     if !path.exists() {
         panic!("Policy file not found: {}", path.display());
     }
-    let policy_text = match fs::read_to_string(path) {
-        Ok(text) => format!("package main\n\n{}", text),
+
+    match fs::read_to_string(path) {
+        Ok(text) => format!("package main\n\n{text}"),
         Err(e) => {
             panic!("Failed to read policy file {}: {}", path.display(), e);
         }
-    };
-    policy_text
+    }
 });
 
 pub static REGORUS_ENGINE: LazyLock<regorus::Engine> = LazyLock::new(|| {

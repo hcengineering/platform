@@ -15,7 +15,7 @@
   import card, { Card, CardSpace, MasterTag } from '@hcengineering/card'
   import presentation, { getClient, getCommunicationClient, SpaceSelector } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
-  import core, { Data, generateId, Ref, Markup, notEmpty } from '@hcengineering/core'
+  import core, { Data, generateId, Ref, Markup, notEmpty, getCurrentAccount } from '@hcengineering/core'
   import { getResource, translate, getEmbeddedLabel } from '@hcengineering/platform'
   import { Label, Modal, ModernEditbox, languageStore, showPopup, Component } from '@hcengineering/ui'
   import { AttachmentStyledBox } from '@hcengineering/attachment-resources'
@@ -142,7 +142,7 @@
     }
   }
 
-  $: allowed = _space && canCreateObject(type, _space, $permissionsStore)
+  $: allowed = _space != null && canCreateObject(type, _space, $permissionsStore)
 </script>
 
 <Modal
@@ -194,10 +194,14 @@
         <span class="label"><Label label={core.string.Space} /></span>
         <SpaceSelector
           _class={card.class.CardSpace}
-          query={{ archived: false }}
+          query={{
+            archived: false,
+            members: getCurrentAccount().uuid
+          }}
           label={core.string.Space}
           bind:space={_space}
           focus={false}
+          clearInvalidValue={true}
           kind={'regular'}
           size={'large'}
         />

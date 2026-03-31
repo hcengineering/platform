@@ -117,7 +117,7 @@ async fn check_workspace(
     let workspace = Uuid::parse_str(&request.extract::<Path<String>>().await?);
     let claims = request.extensions().get::<Claims>().cloned().unwrap();
 
-    if claims.is_system() || Ok(claims.workspace.clone()) == workspace.clone().map(Some) {
+    if claims.is_system() || Ok(claims.workspace) == workspace.clone().map(Some) {
         next.call(request).await
     } else {
         warn!(
@@ -125,7 +125,7 @@ async fn check_workspace(
             actual = ?workspace,
             "Unauthorized request, workspace mismatch"
         );
-        Err(actix_web::error::ErrorUnauthorized("Unauthorized").into())
+        Err(actix_web::error::ErrorUnauthorized("Unauthorized"))
     }
 }
 
@@ -145,9 +145,9 @@ async fn main() -> anyhow::Result<()> {
         BackendType::Redis => {
             let redis_client = redis::client().await?;
             let db_connection = redis_client
-                .get_multiplexed_async_connection()
+                .get_connection_manager()
                 .await
-                .map_err(|e| {
+                .inspect_err(|_e| {
                     tracing::error!(
                         "REDIS not found: {:?}",
                         &CONFIG
@@ -157,14 +157,11 @@ async fn main() -> anyhow::Result<()> {
                             .collect::<Vec<_>>()
                             .join(", ")
                     );
-                    e
                 })?;
             tokio::spawn({
                 let hub_state = hub_state.clone();
                 async move {
-                    if let Err(err) = crate::redis::receiver(redis_client, hub_state).await {
-                        tracing::error!("Redis receiver stopped: {err}");
-                    }
+                    crate::redis::receiver(redis_client, hub_state).await;
                 }
             });
             Db::new_redis(db_connection)

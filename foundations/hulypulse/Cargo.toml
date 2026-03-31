@@ -1,6 +1,6 @@
 [package]
 name = "hulypulse"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2024"
 
 [dependencies]
@@ -30,7 +30,7 @@ hulyrs = { git = "https://github.com/hcengineering/hulyrs.git", features = [ "ac
 secrecy = { version = "0.10.3", optional = true }
 
 #redis
-redis = { version = "=0.32.5", features = ["aio", "tokio-comp", "sentinel"] }
+redis = { version = "=0.32.5", features = ["aio", "tokio-comp", "sentinel", "connection-manager"] }
 
 [[bin]]
 name = "hulypulse"
