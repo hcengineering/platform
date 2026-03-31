@@ -919,7 +919,7 @@ function defineSettings (builder: Builder): void {
       permissions: [training.ids.GuestTrainingAttemptClassPermission],
       spaceClass: core.class.TypedSpace,
       enabled: true,
-      order: 80
+      order: 25
     },
     training.ids.ModulePermissionGroup
   )

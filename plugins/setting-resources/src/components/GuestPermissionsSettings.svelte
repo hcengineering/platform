@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -17,7 +17,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import workbench, { type Application } from '@hcengineering/workbench'
   import { Breadcrumb, Header, Icon, Label, Loading, Scroller, Toggle } from '@hcengineering/ui'
-  import settingsRes from '../plugin'
+  import setting from '@hcengineering/setting'
 
   let loadingSettings = true
   let loadingPermissions = true
@@ -141,7 +141,7 @@
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
-    <Breadcrumb label={settingsRes.string.AccountPermissionsSettings} size={'large'} isCurrent />
+    <Breadcrumb label={setting.string.GuestPermissionsSettings} size={'large'} isCurrent />
   </Header>
   <div class="hulyComponent-content__column content">
     {#if loading}
@@ -154,10 +154,10 @@
           <section class="section">
             <div class="sectionHeader">
               <div class="sectionTitle">
-                <Label label={settingsRes.string.AccountPermissionsModulePermissions} />
+                <Label label={setting.string.GuestPermissionsModulePermissions} />
               </div>
               <div class="sectionHint">
-                <Label label={settingsRes.string.AccountPermissionsModulePermissionsHint} />
+                <Label label={setting.string.GuestPermissionsModulePermissionsHint} />
               </div>
             </div>
 

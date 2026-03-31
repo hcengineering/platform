@@ -31,7 +31,7 @@ export default mergeIds(settingId, setting, {
     ManageSpaceTypeContent: '' as AnyComponent,
     Spaces: '' as AnyComponent,
     AddSocialId: '' as AnyComponent,
-    AccountPermissionsSettings: '' as AnyComponent
+    GuestPermissionsSettings: '' as AnyComponent
   },
   string: {
     IntegrationDisabled: '' as IntlString,
