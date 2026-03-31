@@ -548,7 +548,8 @@ export function createModel (builder: Builder): void {
       role: AccountRole.Guest,
       permissions: [],
       spaceClass: document.class.Teamspace,
-      enabled: true
+      enabled: true,
+      order: 40
     },
     document.ids.ModulePermissionGroup
   )

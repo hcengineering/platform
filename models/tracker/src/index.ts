@@ -676,7 +676,8 @@ export function createModel (builder: Builder): void {
       role: AccountRole.Guest,
       permissions: [tracker.ids.GuestIssueClassPermission],
       spaceClass: tracker.class.Project,
-      enabled: true
+      enabled: true,
+      order: 10
     },
     tracker.ids.ModulePermissionGroup
   )

@@ -918,7 +918,8 @@ function defineSettings (builder: Builder): void {
       role: AccountRole.Guest,
       permissions: [training.ids.GuestTrainingAttemptClassPermission],
       spaceClass: core.class.TypedSpace,
-      enabled: true
+      enabled: true,
+      order: 80
     },
     training.ids.ModulePermissionGroup
   )

@@ -1119,7 +1119,8 @@ export function createModel (builder: Builder): void {
       role: AccountRole.Guest,
       permissions: [],
       spaceClass: documents.class.OrgSpace,
-      enabled: true
+      enabled: true,
+      order: 42
     },
     documents.ids.ModulePermissionGroup
   )

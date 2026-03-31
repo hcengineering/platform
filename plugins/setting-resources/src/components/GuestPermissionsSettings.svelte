@@ -12,7 +12,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { ModulePermissionGroup, type Class, type Doc, type Permission, type Ref } from '@hcengineering/core'
+  import core, { ModulePermissionGroup, type Doc, type Permission, type Ref } from '@hcengineering/core'
   import { getEmbeddedLabel, getMetadata, type IntlString } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import workbench, { type Application } from '@hcengineering/workbench'
@@ -66,6 +66,8 @@
 
   /** Ignore permission groups for applications not enabled in this workspace. */
   $: visibleModuleGroups = moduleGroups.filter((group) => applicationsMap.has(group.application))
+
+  $: sortedVisibleModuleGroups = [...visibleModuleGroups].sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
 
   function getApplicationLabel (applicationId: Ref<Doc>): IntlString {
     return applicationsMap.get(applicationId)?.label ?? getEmbeddedLabel(applicationId)
@@ -160,7 +162,7 @@
             </div>
 
             <div class="cardStack">
-              {#each visibleModuleGroups as group}
+              {#each sortedVisibleModuleGroups as group}
                 {@const app = getApplication(group.application)}
                 {@const moduleOn = isModuleEnabled(group)}
                 {@const permissionCount = (group.permissions ?? []).length}

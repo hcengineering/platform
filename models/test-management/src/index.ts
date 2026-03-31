@@ -210,7 +210,8 @@ export function createModel (builder: Builder): void {
       role: AccountRole.Guest,
       permissions: [],
       spaceClass: testManagement.class.TestProject,
-      enabled: false
+      enabled: false,
+      order: 70
     },
     testManagement.ids.ModulePermissionGroup
   )

@@ -937,7 +937,8 @@ export function createModel (builder: Builder): void {
       role: AccountRole.Guest,
       permissions: [card.ids.GuestCardClassPermission],
       spaceClass: card.class.CardSpace,
-      enabled: true
+      enabled: true,
+      order: 20
     },
     card.ids.ModulePermissionGroup
   )

@@ -94,7 +94,8 @@ export default mergeIds(chunterId, chunter, {
     Channels: '' as Ref<Viewlet>
   },
   ids: {
-    ChunterNotificationGroup: '' as Ref<NotificationGroup>
+    ChunterNotificationGroup: '' as Ref<NotificationGroup>,
+    ModulePermissionGroup: '' as Ref<Doc>
   },
   space: {
     General: '' as Ref<Channel>,

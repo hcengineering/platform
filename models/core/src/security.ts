@@ -47,6 +47,7 @@ import {
   Prop,
   TypeAccountUuid,
   TypeBoolean,
+  TypeNumber,
   TypeRef,
   TypeString,
   UX
@@ -214,4 +215,7 @@ export class TModulePermissionGroup extends TDoc implements ModulePermissionGrou
 
   @Prop(TypeBoolean(), core.string.Name)
     enabled!: boolean
+
+  @Prop(TypeNumber(), core.string.Order)
+    order?: number
 }

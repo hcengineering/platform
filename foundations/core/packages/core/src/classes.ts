@@ -592,6 +592,7 @@ export interface ModulePermissionGroup extends Doc {
   disabledPermissions?: Ref<Permission>[]
   spaceClass: Ref<Class<Space>>
   enabled: boolean
+  order?: number
 }
 
 /**

@@ -850,7 +850,8 @@ export function createModel (builder: Builder): void {
       role: AccountRole.Guest,
       permissions: [],
       spaceClass: drive.class.Drive,
-      enabled: false
+      enabled: false,
+      order: 60
     },
     drive.ids.ModulePermissionGroup
   )
