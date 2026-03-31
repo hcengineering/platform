@@ -89,6 +89,18 @@ describe('URL Validation', () => {
     it('should reject invalid URLs', async () => {
       await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'not-a-valid-url')).rejects.toThrow(LinkPreviewError)
     })
+
+    it('should set INVALID_URL code for malformed URLs', async () => {
+      await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'not-a-valid-url')).rejects.toMatchObject({
+        code: 'INVALID_URL'
+      })
+    })
+
+    it('should set INVALID_PROTOCOL code for non-http protocols', async () => {
+      await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'javascript:alert(1)')).rejects.toMatchObject({
+        code: 'INVALID_PROTOCOL'
+      })
+    })
   })
 
   describe('SSRF protection', () => {
@@ -103,7 +115,13 @@ describe('URL Validation', () => {
       '192.168.255.255',
       '169.254.0.1',
       '0.0.0.0',
-      'localhost'
+      'localhost',
+      'localhost.',
+      '[::1]',
+      // IPv6-mapped IPv4 loopback (hex form used in the report)
+      '[::ffff:7f00:1]',
+      // IPv6-mapped IPv4 loopback (dotted form)
+      '[::ffff:127.0.0.1]'
     ]
 
     it.each(blockedAddresses)('should block access to %s', async (host) => {
@@ -119,6 +137,24 @@ describe('URL Validation', () => {
       // These should not throw BLOCKED_URL
       const result = await parseLinkPreviewDetails(ctx, defaultConfig, 'https://8.8.8.8')
       expect(result).toBeDefined()
+    })
+
+    it('should block unique-local and link-local IPv6 addresses', async () => {
+      await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'https://[fc00::1]/path')).rejects.toThrow(
+        LinkPreviewError
+      )
+      await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'https://[fd12::abcd]/path')).rejects.toThrow(
+        LinkPreviewError
+      )
+      await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'https://[fe80::1]/path')).rejects.toThrow(
+        LinkPreviewError
+      )
+    })
+
+    it('should set BLOCKED_URL code for blocked hosts', async () => {
+      await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'https://localhost./path')).rejects.toMatchObject({
+        code: 'BLOCKED_URL'
+      })
     })
   })
 })
@@ -469,6 +505,50 @@ describe('oEmbed Integration', () => {
     expect(result.imageWidth).toBe(1920)
     expect(result.imageHeight).toBe(1080)
   })
+
+  it('should block SSRF via oEmbed discovery URL (internal destination)', async () => {
+    const html = `
+      <html>
+        <head>
+          <link type="application/json+oembed" href="http://[::ffff:7f00:1]:7777/oembed-ssrf">
+          <meta property="og:title" content="OG Title">
+        </head>
+      </html>
+    `
+
+    global.fetch = jest.fn().mockImplementation((url: string, init?: RequestInit) => {
+      // Implementation should not rely on automatic redirect following.
+      if (init?.redirect === 'follow') return Promise.reject(new Error('redirect: follow should not be used'))
+
+      if (url === 'https://example.com/attacker') return Promise.resolve(createHtmlResponse(html))
+      // oEmbed fetch must not happen (blocked by URL validation).
+      return Promise.reject(new Error(`Unexpected fetch to ${url}`))
+    })
+
+    await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'https://example.com/attacker')).rejects.toThrow(
+      LinkPreviewError
+    )
+  })
+
+  it('should fall back to OG when oEmbed request throws network error', async () => {
+    const html = `
+      <html>
+        <head>
+          <link type="application/json+oembed" href="https://example.com/oembed">
+          <meta property="og:title" content="OG Fallback Title">
+        </head>
+      </html>
+    `
+
+    global.fetch = jest.fn().mockImplementation((url: string) => {
+      if (url === 'https://example.com/oembed') return Promise.reject(new Error('oEmbed network down'))
+      if (url === 'https://example.com/page') return Promise.resolve(createHtmlResponse(html))
+      return Promise.reject(new Error(`Unexpected fetch to ${url}`))
+    })
+
+    const result = await parseLinkPreviewDetails(ctx, defaultConfig, 'https://example.com/page')
+    expect(result.title).toBe('OG Fallback Title')
+  })
 })
 
 // ============================================================================
@@ -566,6 +646,14 @@ describe('Error Handling', () => {
     global.fetch = jest.fn().mockRejectedValue(new Error('Network error'))
 
     await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'https://example.com')).rejects.toThrow(LinkPreviewError)
+  })
+
+  it('should set FETCH_FAILED code on network errors', async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error('Network error'))
+
+    await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'https://example.com')).rejects.toMatchObject({
+      code: 'FETCH_FAILED'
+    })
   })
 
   it('should handle malformed HTML gracefully', async () => {
@@ -724,6 +812,72 @@ describe('Edge Cases', () => {
 
     const result = await parseLinkPreviewDetails(ctx, defaultConfig, 'https://example.com/redirect')
     expect(result.title).toBe('Redirected')
+  })
+
+  it('should block SSRF via redirects to internal addresses', async () => {
+    global.fetch = jest.fn().mockImplementation((url: string, init?: RequestInit) => {
+      if (init?.redirect === 'follow') return Promise.reject(new Error('redirect: follow should not be used'))
+
+      if (url === 'https://example.com/start') {
+        return Promise.resolve(
+          new Response(null, {
+            status: 302,
+            headers: { location: 'http://[::ffff:7f00:1]:9999/' }
+          })
+        )
+      }
+
+      // Redirect target should never be fetched if validation is correct.
+      return Promise.reject(new Error(`Unexpected fetch to ${url}`))
+    })
+
+    await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'https://example.com/start')).rejects.toThrow(
+      LinkPreviewError
+    )
+  })
+
+  it('should keep current URL when redirect response has no location', async () => {
+    const html = '<html><head><title>No Location Redirect</title></head></html>'
+    global.fetch = jest.fn().mockImplementation((url: string) => {
+      if (url === 'https://example.com/start') return Promise.resolve(new Response(null, { status: 302 }))
+      return Promise.resolve(createHtmlResponse(html))
+    })
+
+    await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'https://example.com/start')).rejects.toThrow(
+      LinkPreviewError
+    )
+  })
+
+  it('should resolve relative redirect locations', async () => {
+    const html = '<html><head><title>Relative Redirect</title></head></html>'
+    global.fetch = jest.fn().mockImplementation((url: string) => {
+      if (url === 'https://example.com/start') {
+        return Promise.resolve(
+          new Response(null, {
+            status: 302,
+            headers: { location: '/next' }
+          })
+        )
+      }
+      if (url === 'https://example.com/next') return Promise.resolve(createHtmlResponse(html))
+      return Promise.reject(new Error(`Unexpected fetch to ${url}`))
+    })
+
+    const result = await parseLinkPreviewDetails(ctx, defaultConfig, 'https://example.com/start')
+    expect(result.title).toBe('Relative Redirect')
+  })
+
+  it('should fail after too many redirects', async () => {
+    global.fetch = jest.fn().mockResolvedValue(
+      new Response(null, {
+        status: 302,
+        headers: { location: '/loop' }
+      })
+    )
+
+    await expect(parseLinkPreviewDetails(ctx, defaultConfig, 'https://example.com/start')).rejects.toThrow(
+      'Too many redirects'
+    )
   })
 
   it('should sanitize HTML entities in titles', async () => {

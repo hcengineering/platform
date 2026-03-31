@@ -75,6 +75,10 @@
     "CardUpdated": "Cartão atualizado",
     "CardCreated": "Cartão criado",
     "MyCards": "Meus cartões",
-    "GotoMyCards": "Ir para meus cartões"
+    "GotoMyCards": "Ir para meus cartões",
+    "LockSection": "Bloquear seção",
+    "UnLockSection": "Desbloquear seção",
+    "SectionLocked": "Seção {section} bloqueada",
+    "SectionUnlocked": "Seção {section} desbloqueada"
   }
 }

@@ -14,15 +14,16 @@
 -->
 <script lang="ts">
   import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
+  import setting from '@hcengineering/setting'
+  import { clearSettingsStore } from '@hcengineering/setting-resources'
   import { Button, IconDelete, Label, Modal, ModernEditbox, showPopup } from '@hcengineering/ui'
   import view, { Viewlet } from '@hcengineering/view'
-  import { clearSettingsStore } from '@hcengineering/setting-resources'
-  import setting from '@hcengineering/setting'
 
-  import DescriptorBox from './DescriptorBox.svelte'
-  import ViewSettingButton from './ViewSettingButton.svelte'
+  import { AttributeConfig, Config } from '@hcengineering/view-resources'
   import card from '../../../plugin'
+  import DescriptorBox from './DescriptorBox.svelte'
   import { updateViewletConfig } from './utils'
+  import ViewSettingButton from './ViewSettingButton.svelte'
 
   export let viewlet: Viewlet
 
@@ -54,7 +55,7 @@
       }
     })
   }
-  function onSave (items: any[]): void {
+  function onSave (items: (Config | AttributeConfig)[]): void {
     updateViewletConfig(viewlet, items)
   }
 </script>

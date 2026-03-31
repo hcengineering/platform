@@ -19,10 +19,12 @@ import {
   getWorkspaceToken,
   loadServerConfig,
   type RestClient,
+  type ServerConfig,
   type WorkspaceToken
 } from '@hcengineering/api-client'
 import core, {
   buildSocialIdString,
+  concatLink,
   generateId,
   MeasureMetricsContext,
   type PersonId,
@@ -34,23 +36,29 @@ import core, {
   type SocialId,
   type Space,
   type TxCreateDoc,
-  type TxOperations
+  type TxOperations,
+  type WorkspaceUuid
 } from '@hcengineering/core'
+import platform from '@hcengineering/platform'
+import { RPCHandler } from '@hcengineering/rpc'
 import { type AccountClient, getClient as getAccountClient } from '@hcengineering/account-client'
 import chunter from '@hcengineering/chunter'
 import contact, { ensureEmployee, type SocialIdentityRef, type Person } from '@hcengineering/contact'
 import { generateToken } from '@hcengineering/server-token'
+import WebSocket from 'ws'
 
 describe('rest-api-server', () => {
   const testCtx = new MeasureMetricsContext('test', {})
   const wsName = 'api-tests'
+  let serverConfig: ServerConfig
   let apiWorkspace1: WorkspaceToken
   let apiWorkspace2: WorkspaceToken
   let accountClient: AccountClient
   let adminAccountClient: AccountClient
 
   beforeAll(async () => {
-    const config = await loadServerConfig('http://huly.local:8083')
+    serverConfig = await loadServerConfig('http://huly.local:8083')
+    const config = serverConfig
 
     apiWorkspace1 = await getWorkspaceToken(
       'http://huly.local:8083',
@@ -278,6 +286,57 @@ describe('rest-api-server', () => {
 
       await expectPerson(conn, socialType, socialValue, uuid, socialId, localPerson)
     })
+  })
+
+  describe('workspace-not-found', () => {
+    it('getWorkspaceInfo rejects WorkspaceNotFound for unknown workspace (system token)', async () => {
+      const unknownWorkspaceId = 'd388f8f8-915c-4ef8-96f7-018147ce1234' as unknown as WorkspaceUuid
+      const token = generateToken(systemAccountUuid, unknownWorkspaceId, undefined, 'secret')
+      const client = getAccountClient(serverConfig.ACCOUNTS_URL, token)
+
+      await expect(client.getWorkspaceInfo(false)).rejects.toMatchObject({
+        status: expect.objectContaining({
+          code: platform.status.WorkspaceNotFound,
+          params: expect.objectContaining({
+            workspaceUuid: unknownWorkspaceId
+          })
+        })
+      })
+    })
+
+    it('transactor WebSocket sends WorkspaceNotFound RPC error for unknown workspace (system token)', async () => {
+      const unknownWorkspaceId = 'd388f8f8-915c-4ef8-96f7-018147ce1234' as unknown as WorkspaceUuid
+      const token = generateToken(systemAccountUuid, unknownWorkspaceId, undefined, 'secret')
+      const url = concatLink(apiWorkspace1.endpoint, `/${token}`)
+      const rpc = new RPCHandler()
+
+      const firstMessage = await new Promise<Buffer>((resolve, reject) => {
+        const ws = new WebSocket(url)
+        const timer = setTimeout(() => {
+          ws.close()
+          reject(new Error('timeout waiting for first WebSocket message'))
+        }, 15000)
+        ws.on('message', (data: WebSocket.RawData) => {
+          clearTimeout(timer)
+          ws.close()
+          resolve(Buffer.isBuffer(data) ? data : Buffer.from(data as ArrayBuffer))
+        })
+        ws.on('error', (err) => {
+          clearTimeout(timer)
+          reject(err)
+        })
+      })
+
+      const resp = rpc.readResponse(firstMessage, false)
+      expect(resp.id).toBe(-1)
+      expect(resp.terminate).toBe(true)
+      expect(resp.error).toMatchObject({
+        code: platform.status.WorkspaceNotFound,
+        params: expect.objectContaining({
+          workspaceUuid: unknownWorkspaceId
+        })
+      })
+    }, 20000)
   })
 })
 

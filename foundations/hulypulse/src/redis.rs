@@ -15,11 +15,12 @@
 
 use std::{
     sync::Arc,
-    time::{SystemTime, UNIX_EPOCH},
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 use ::redis::Msg;
 use tokio::sync::RwLock;
+use tokio::time::sleep;
 use tokio_stream::StreamExt;
 use tracing::*;
 
@@ -31,7 +32,7 @@ use crate::{
 
 use redis::{
     Client, ConnectionInfo, ProtocolVersion, RedisConnectionInfo, ToRedisArgs,
-    aio::MultiplexedConnection,
+    aio::ConnectionManager,
 };
 // use serde::Serialize;
 
@@ -41,7 +42,7 @@ static MAX_LOOP_COUNT: usize = 1000; // to avoid infinite loops
 
 pub async fn push_event(
     hub_state: &Arc<RwLock<HubState>>,
-    redis: &mut MultiplexedConnection,
+    redis: &mut ConnectionManager,
     ev: RedisEvent,
 ) {
     // Value only for Set
@@ -61,7 +62,7 @@ pub async fn push_event(
 }
 
 /// redis_info(&connection)
-pub async fn redis_info(conn: &mut MultiplexedConnection) -> DbResult<String> {
+pub async fn redis_info(conn: &mut ConnectionManager) -> DbResult<String> {
     let info: String = redis::cmd("INFO").query_async(conn).await?;
 
     let mut redis_keys: Option<usize> = None;
@@ -70,16 +71,16 @@ pub async fn redis_info(conn: &mut MultiplexedConnection) -> DbResult<String> {
     for line in info.lines() {
         if line.starts_with("db0:") {
             // parsing: db0:keys=152,expires=10,avg_ttl=456789
-            if let Some(keys_part) = line.split(',').find(|s| s.starts_with("keys=")) {
-                if let Some(val) = keys_part.strip_prefix("keys=") {
-                    redis_keys = val.parse::<usize>().ok();
-                }
+            if let Some(keys_part) = line.split(',').find(|s| s.starts_with("keys="))
+                && let Some(val) = keys_part.strip_prefix("keys=")
+            {
+                redis_keys = val.parse::<usize>().ok();
             }
         }
-        if line.starts_with("used_memory:") {
-            if let Some(val) = line.strip_prefix("used_memory:") {
-                redis_bytes = val.parse::<usize>().ok();
-            }
+        if line.starts_with("used_memory:")
+            && let Some(val) = line.strip_prefix("used_memory:")
+        {
+            redis_bytes = val.parse::<usize>().ok();
         }
     }
 
@@ -91,7 +92,7 @@ pub async fn redis_info(conn: &mut MultiplexedConnection) -> DbResult<String> {
 }
 
 /// redis_list(&connection,prefix)
-pub async fn redis_list(conn: &mut MultiplexedConnection, key: &str) -> DbResult<Vec<DbArray>> {
+pub async fn redis_list(conn: &mut ConnectionManager, key: &str) -> DbResult<Vec<DbArray>> {
     deprecated_symbol_error(key)?;
     if !key.ends_with('/') {
         return error(412, "Key must end with slash");
@@ -111,7 +112,7 @@ pub async fn redis_list(conn: &mut MultiplexedConnection, key: &str) -> DbResult
 
         for k in keys {
             // Check for $-security path
-            if k.strip_prefix(key).map_or(false, |s| s.contains('$')) {
+            if k.strip_prefix(key).is_some_and(|s| s.contains('$')) {
                 continue;
             }
 
@@ -143,7 +144,7 @@ pub async fn redis_list(conn: &mut MultiplexedConnection, key: &str) -> DbResult
 }
 
 /// redis_read(&connection,key)
-pub async fn redis_read(conn: &mut MultiplexedConnection, key: &str) -> DbResult<Option<DbArray>> {
+pub async fn redis_read(conn: &mut ConnectionManager, key: &str) -> DbResult<Option<DbArray>> {
     deprecated_symbol_error(key)?;
 
     if key.ends_with('/') {
@@ -174,13 +175,13 @@ pub async fn redis_read(conn: &mut MultiplexedConnection, key: &str) -> DbResult
 
 /// redis_save(&connection,key,value,[ttl?],[mode?])
 pub async fn redis_save<T: ToRedisArgs>(
-    conn: &mut MultiplexedConnection,
+    conn: &mut ConnectionManager,
     key: &str,
     value: T,
     ttl: Option<Ttl>,
     mode: Option<SaveMode>,
 ) -> DbResult<()> {
-    deprecated_symbol_error(&key)?;
+    deprecated_symbol_error(key)?;
 
     if key.ends_with('/') {
         return error(412, "Key must not end with a slash");
@@ -191,7 +192,7 @@ pub async fn redis_save<T: ToRedisArgs>(
     if max_size != 0 && value.to_redis_args().iter().map(|a| a.len()).sum::<usize>() > max_size {
         return error(
             400,
-            format!("Value in memory mode must be less than {} bytes", max_size),
+            format!("Value in memory mode must be less than {max_size} bytes"),
         );
     }
 
@@ -262,10 +263,7 @@ pub async fn redis_save<T: ToRedisArgs>(
                     let _: () = redis::cmd("UNWATCH").query_async(conn).await?;
                     return error(
                         412,
-                        format!(
-                            "md5 mismatch, current: {}, expected: {}",
-                            actual_md5, expected_md5
-                        ),
+                        format!("md5 mismatch, current: {actual_md5}, expected: {expected_md5}"),
                     );
                 }
 
@@ -297,7 +295,7 @@ pub async fn redis_save<T: ToRedisArgs>(
 
 /// redis_delete(&connection,key)
 pub async fn redis_delete(
-    conn: &mut MultiplexedConnection,
+    conn: &mut ConnectionManager,
     key: &str,
     mode: Option<SaveMode>,
 ) -> DbResult<bool> {
@@ -312,7 +310,7 @@ pub async fn redis_delete(
     match mode {
         SaveMode::Update | SaveMode::Upsert => {
             let deleted: i32 = redis::cmd("DEL").arg(key).query_async(conn).await?;
-            return Ok(deleted > 0);
+            Ok(deleted > 0)
         }
 
         SaveMode::Equal(ref expected_md5) => {
@@ -335,10 +333,7 @@ pub async fn redis_delete(
                     let _: () = redis::cmd("UNWATCH").query_async(conn).await?;
                     return error(
                         412,
-                        format!(
-                            "md5 mismatch, current: {}, expected: {}",
-                            actual_md5, expected_md5
-                        ),
+                        format!("md5 mismatch, current: {actual_md5}, expected: {expected_md5}"),
                     );
                 }
 
@@ -358,9 +353,7 @@ pub async fn redis_delete(
             }
         }
 
-        SaveMode::Insert => {
-            return error(412, "Insert mode is not supported for delete");
-        }
+        SaveMode::Insert => error(412, "Insert mode is not supported for delete"),
     }
 }
 
@@ -399,43 +392,80 @@ impl TryFrom<Msg> for RedisEvent {
     }
 }
 
-pub async fn receiver(
-    redis_client: Client,
-    hub_state: Arc<RwLock<HubState>>,
-) -> anyhow::Result<()> {
-    let mut redis = redis_client.get_multiplexed_async_connection().await?;
-    let mut pubsub = redis_client.get_async_pubsub().await?;
+pub async fn receiver(redis_client: Client, hub_state: Arc<RwLock<HubState>>) {
+    let mut backoff_secs = 1_u64;
 
-    let _: String = ::redis::cmd("CONFIG")
-        .arg("SET")
-        .arg("notify-keyspace-events")
-        .arg("E$gx")
-        .query_async(&mut redis)
-        .await?;
-
-    for pattern in [
-        "__keyevent@*__:set",
-        "__keyevent@*__:del",
-        "__keyevent@*__:unlink",
-        "__keyevent@*__:expired",
-    ] {
-        pubsub.psubscribe(pattern).await?;
-    }
-
-    let mut messages = pubsub.on_message();
-
-    while let Some(message) = messages.next().await {
-        match RedisEvent::try_from(message) {
-            Ok(ev) => {
-                push_event(&hub_state, &mut redis, ev).await;
-            }
+    'subscriber: loop {
+        let cmd_conn = match redis_client.get_connection_manager().await {
+            Ok(c) => c,
             Err(e) => {
-                warn!("invalid redis message: {e}");
+                error!("Redis connection manager (keyspace subscriber): {e}");
+                sleep(Duration::from_secs(backoff_secs)).await;
+                backoff_secs = (backoff_secs * 2).min(60);
+                continue;
+            }
+        };
+
+        {
+            let mut c = cmd_conn.clone();
+            if let Err(e) = ::redis::cmd("CONFIG")
+                .arg("SET")
+                .arg("notify-keyspace-events")
+                .arg("E$gx")
+                .query_async::<String>(&mut c)
+                .await
+            {
+                error!("Redis CONFIG SET notify-keyspace-events failed: {e}");
+                sleep(Duration::from_secs(backoff_secs)).await;
+                backoff_secs = (backoff_secs * 2).min(60);
+                continue;
             }
         }
-    }
 
-    Ok(())
+        let mut pubsub = match redis_client.get_async_pubsub().await {
+            Ok(p) => p,
+            Err(e) => {
+                error!("Redis pub/sub connect failed: {e}");
+                sleep(Duration::from_secs(backoff_secs)).await;
+                backoff_secs = (backoff_secs * 2).min(60);
+                continue;
+            }
+        };
+
+        for pattern in [
+            "__keyevent@*__:set",
+            "__keyevent@*__:del",
+            "__keyevent@*__:unlink",
+            "__keyevent@*__:expired",
+        ] {
+            if let Err(e) = pubsub.psubscribe(pattern).await {
+                error!("Redis PSUBSCRIBE {pattern} failed: {e}");
+                sleep(Duration::from_secs(backoff_secs)).await;
+                backoff_secs = (backoff_secs * 2).min(60);
+                continue 'subscriber;
+            }
+        }
+
+        info!("Redis keyspace subscriber connected");
+        backoff_secs = 1;
+
+        let mut messages = pubsub.on_message();
+        while let Some(message) = messages.next().await {
+            match RedisEvent::try_from(message) {
+                Ok(ev) => {
+                    let mut c = cmd_conn.clone();
+                    push_event(&hub_state, &mut c, ev).await;
+                }
+                Err(e) => {
+                    warn!("invalid redis message: {e}");
+                }
+            }
+        }
+
+        warn!("Redis keyspace message stream ended; reconnecting after {backoff_secs}s");
+        sleep(Duration::from_secs(backoff_secs)).await;
+        backoff_secs = (backoff_secs * 2).min(60);
+    }
 }
 
 /// redis_connect()

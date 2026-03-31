@@ -767,8 +767,13 @@ export function getLookupLabel<T extends Doc> (
     const clazz = client.getHierarchy().getClass(lookupClass)
     return clazz.label
   } else {
-    const attribute = client.getHierarchy().getAttribute(lookupClass, key.key)
-    return attribute.label
+    try {
+      const attribute = client.getHierarchy().getAttribute(lookupClass, key.key)
+      return attribute.label
+    } catch {
+      console.log('attribute not found for ' + key.key + ' in class ' + lookupClass)
+      return getEmbeddedLabel(key.key)
+    }
   }
 }
 
@@ -1147,6 +1152,35 @@ export async function sortCategories (
   return await f(client, existingCategories, space, viewletDescriptorId)
 }
 
+/**
+ * @public
+ */
+export function canResolveAttribute<T extends Doc> (
+  hierarchy: Hierarchy,
+  _class: Ref<Class<T>>,
+  key: string,
+  lookup: Lookup<T> | undefined
+): boolean {
+  if (key.startsWith('$relation') || key.startsWith('$associations')) return true
+  if (key.startsWith('$lookup')) {
+    if (lookup === undefined) return false
+    try {
+      getLookupClass(key, lookup, _class)
+      return true
+    } catch {
+      return false
+    }
+  }
+  if (key.length === 0) return true
+  const parts = key.split('.')
+  if (parts.length === 1) {
+    return hierarchy.findAttribute(_class, key) !== undefined
+  } else if (hierarchy.isDerived(parts[0] as Ref<Class<Doc>>, _class)) {
+    return hierarchy.findAttribute(parts[0] as Ref<Class<Doc>>, parts[1]) !== undefined
+  }
+  return false
+}
+
 export function getKeyLabel<T extends Doc> (
   client: TxOperations,
   _class: Ref<Class<T>>,
@@ -1174,6 +1208,11 @@ export function getKeyLabel<T extends Doc> (
     const clazz = client.getHierarchy().getClass(_class)
     return clazz.label
   } else {
+    const parts = key.split('.')
+    if (parts.length === 2 && client.getHierarchy().isDerived(parts[0] as Ref<Class<Doc>>, _class)) {
+      const attribute = client.getHierarchy().getAttribute(parts[0] as Ref<Class<Doc>>, parts[1])
+      return attribute.label
+    }
     const attribute = client.getHierarchy().getAttribute(_class, key)
     return attribute.label
   }

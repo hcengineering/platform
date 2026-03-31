@@ -122,6 +122,19 @@ export class HulypulseClient implements Disposable {
 
   private constructor (private readonly url: string | URL) {}
 
+  /** Matches errors from Pulse when Redis/backend TCP is dead while WS still looks open. */
+  private static isConnectionLikeError (err: string): boolean {
+    const s = err.toLowerCase()
+    return (
+      s.includes('broken pipe') ||
+      s.includes('connection reset') ||
+      s.includes('connection refused') ||
+      s.includes('connection aborted') ||
+      s.includes('unexpected eof') ||
+      s.includes('io error')
+    )
+  }
+
   private async connect (): Promise<void> {
     await new Promise((resolve, reject) => {
       const ws = new WebSocket(this.url.toString())
@@ -148,6 +161,10 @@ export class HulypulseClient implements Disposable {
             return
           }
           if (event.data === 'pong') {
+            if (this.pingTimeout !== undefined) {
+              clearTimeout(this.pingTimeout)
+              this.pingTimeout = undefined
+            }
             return
           }
 
@@ -175,6 +192,10 @@ export class HulypulseClient implements Disposable {
                 clearTimeout(pending.send_timeout)
                 this.pending.delete(id)
                 if ('error' in msg) {
+                  if (typeof msg.error === 'string' && HulypulseClient.isConnectionLikeError(msg.error)) {
+                    console.warn('Pulse server reported connection-like error; reconnecting')
+                    this.reconnect()
+                  }
                   pending.reject(new Error(msg.error))
                 } else {
                   pending.resolve(msg)

@@ -13,35 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
-  import { Asset, IntlString } from '@hcengineering/platform'
   import { Button, ToggleWithLabel } from '@hcengineering/ui'
-  import { BuildModelKey, Viewlet } from '@hcengineering/view'
+  import { Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
+  import { AttributeConfig, Config, isAttribute } from '../viewOptions'
 
   export let viewlet: Viewlet
   export let items: Array<Config | AttributeConfig> = []
 
   const dispatch = createEventDispatcher()
-
-  interface Config {
-    value: string | BuildModelKey | undefined
-    type: 'divider' | 'attribute'
-  }
-
-  interface AttributeConfig extends Config {
-    type: 'attribute'
-    enabled: boolean
-    label: IntlString
-    _class: Ref<Class<Doc>>
-    icon: Asset | undefined
-    order?: number
-  }
-
-  function isAttribute (val: Config): val is AttributeConfig {
-    return val.type === 'attribute'
-  }
 
   function dragEnd () {
     selected = undefined
