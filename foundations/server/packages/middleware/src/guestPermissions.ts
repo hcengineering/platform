@@ -178,6 +178,21 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
     return undefined
   }
 
+  private isCreatedByAccount (doc: Doc, account: Account): boolean {
+    const creator = doc.createdBy
+    if (creator === undefined) return false
+    if (creator === account.primarySocialId) return true
+    return account.socialIds.includes(creator)
+  }
+
+  private async isGuestMutationOnOwnDoc (ctx: MeasureContext, tx: TxCUD<Doc>, account: Account): Promise<boolean> {
+    if (tx._class !== core.class.TxUpdateDoc && tx._class !== core.class.TxRemoveDoc) return false
+    const docs = await this.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 })
+    const doc = docs[0] as Doc | undefined
+    if (doc === undefined) return false
+    return this.isCreatedByAccount(doc, account)
+  }
+
   private async isForbiddenTx (ctx: MeasureContext, tx: TxCUD<Doc>, account: Account): Promise<boolean> {
     if (tx._class === core.class.TxMixin) return false
 
@@ -192,7 +207,17 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
       // Uncovered class: fall through to TxAccessLevel check.
     }
 
-    return !(await this.hasMixinAccessLevel(ctx, tx, account))
+    if (await this.hasMixinAccessLevel(ctx, tx, account)) {
+      return false
+    }
+
+    if (tx._class === core.class.TxUpdateDoc || tx._class === core.class.TxRemoveDoc) {
+      if (await this.isGuestMutationOnOwnDoc(ctx, tx, account)) {
+        return false
+      }
+    }
+
+    return true
   }
 
   private async isForbiddenSpaceTx (ctx: MeasureContext, tx: TxCUD<Space>, account: Account): Promise<boolean> {

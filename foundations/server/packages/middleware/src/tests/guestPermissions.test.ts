@@ -344,6 +344,112 @@ describe('GuestPermissionsMiddleware', () => {
     })
   })
 
+  // ─── Own-document mutations for guests ───────────────────────────────────────
+  describe('guest update/remove own documents', () => {
+    const GUEST_SOCIAL = 'test:guest-social' as PersonId
+
+    function makeGuestAccountWithSocial (): Account {
+      return {
+        uuid: generateId() as any,
+        role: AccountRole.Guest,
+        primarySocialId: GUEST_SOCIAL,
+        socialIds: [GUEST_SOCIAL],
+        fullSocialIds: []
+      }
+    }
+
+    function patchHierarchyNoTxAccessLevel (mw: GuestPermissionsMiddleware): void {
+      ;(mw as any).context.hierarchy.classHierarchyMixin = () => undefined
+      ;(mw as any).context.hierarchy.isDerived = (a: any, b: any) => {
+        if (b === core.class.Space) return false
+        return a === b
+      }
+    }
+
+    it('allows guest to update document created by same account', async () => {
+      const objectId = generateId()
+      const findAll: FindAllFn = async (_ctx, _class, query: any) => {
+        if (_class === UNCOVERED_CLASS && query?._id === objectId) {
+          return [
+            {
+              _id: objectId,
+              _class: UNCOVERED_CLASS,
+              space: ALLOWED_SPACE,
+              modifiedOn: Date.now(),
+              modifiedBy: GUEST_SOCIAL,
+              createdBy: GUEST_SOCIAL
+            } as any
+          ]
+        }
+        return []
+      }
+      let nextCalled = false
+      const mw = makeMiddleware(findAll, async () => {
+        nextCalled = true
+        return {}
+      })
+      patchHierarchyNoTxAccessLevel(mw)
+      const factory = new TxFactory(GUEST_SOCIAL)
+      const tx = factory.createTxUpdateDoc(UNCOVERED_CLASS, ALLOWED_SPACE, objectId, { name: 'x' } as any)
+      await mw.tx(makeCtx(makeGuestAccountWithSocial()), [tx])
+      expect(nextCalled).toBe(true)
+    })
+
+    it('allows guest to remove document created by same account', async () => {
+      const objectId = generateId()
+      const findAll: FindAllFn = async (_ctx, _class, query: any) => {
+        if (_class === UNCOVERED_CLASS && query?._id === objectId) {
+          return [
+            {
+              _id: objectId,
+              _class: UNCOVERED_CLASS,
+              space: ALLOWED_SPACE,
+              modifiedOn: Date.now(),
+              modifiedBy: GUEST_SOCIAL,
+              createdBy: GUEST_SOCIAL
+            } as any
+          ]
+        }
+        return []
+      }
+      let nextCalled = false
+      const mw = makeMiddleware(findAll, async () => {
+        nextCalled = true
+        return {}
+      })
+      patchHierarchyNoTxAccessLevel(mw)
+      const factory = new TxFactory(GUEST_SOCIAL)
+      const tx = factory.createTxRemoveDoc(UNCOVERED_CLASS, ALLOWED_SPACE, objectId)
+      await mw.tx(makeCtx(makeGuestAccountWithSocial()), [tx])
+      expect(nextCalled).toBe(true)
+    })
+
+    it('forbids guest to update document created by another account', async () => {
+      const objectId = generateId()
+      const otherSocial = 'test:other-social' as PersonId
+      const findAll: FindAllFn = async (_ctx, _class, query: any) => {
+        if (_class === UNCOVERED_CLASS && query?._id === objectId) {
+          return [
+            {
+              _id: objectId,
+              _class: UNCOVERED_CLASS,
+              space: ALLOWED_SPACE,
+              modifiedOn: Date.now(),
+              modifiedBy: otherSocial,
+              createdBy: otherSocial
+            } as any
+          ]
+        }
+        return []
+      }
+      const mw = makeMiddleware(findAll)
+      patchHierarchyNoTxAccessLevel(mw)
+      const factory = new TxFactory(GUEST_SOCIAL)
+      const tx = factory.createTxUpdateDoc(UNCOVERED_CLASS, ALLOWED_SPACE, objectId, { name: 'x' } as any)
+      await expect(mw.tx(makeCtx(makeGuestAccountWithSocial()), [tx])).rejects.toThrow()
+    })
+  })
+
   // ─── Cache invalidation ──────────────────────────────────────────────────────
   describe('cache invalidation', () => {
     it('invalidates cache when GuestPermissionsSettings is updated', async () => {
