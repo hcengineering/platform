@@ -96,6 +96,7 @@
   export let refActions: RefAction[] = []
 
   export let editorAttributes: Record<string, string> = {}
+  export let spellcheck: boolean = true
   export let overflow: 'auto' | 'none' = 'none'
   export let boundary: HTMLElement | undefined = undefined
 
@@ -434,7 +435,8 @@
       editorProps: {
         attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, {
           class: 'flex-grow',
-          translate: readonly ? 'yes' : 'no'
+          translate: readonly ? 'yes' : 'no',
+          spellcheck: spellcheck ? 'true' : 'false'
         })
       },
       enableContentCheck: true,

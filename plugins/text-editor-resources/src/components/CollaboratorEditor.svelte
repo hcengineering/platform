@@ -39,6 +39,7 @@
 
   export let overflow: 'auto' | 'none' = 'auto'
   export let editorAttributes: Record<string, string> = {}
+  export let spellcheck: boolean = true
   export let boundary: HTMLElement | undefined = undefined
 
   export let attachFile: FileAttachFunction | undefined = undefined
@@ -93,6 +94,7 @@
     {boundary}
     {attachFile}
     {editorAttributes}
+    {spellcheck}
     {kitOptions}
     {requestSideSpace}
     on:editor
