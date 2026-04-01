@@ -127,8 +127,6 @@ export async function connect (title: string): Promise<Client | undefined> {
     break
   }
 
-  console.log('workspaceLoginInfo', workspaceLoginInfo)
-
   const token = workspaceLoginInfo.token
 
   setMetadata(presentation.metadata.Token, workspaceLoginInfo.token)
