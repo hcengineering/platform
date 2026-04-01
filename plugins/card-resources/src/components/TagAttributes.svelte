@@ -87,7 +87,7 @@
     {#if (isLocked && canUnlock) || (!isLocked && canLock)}
       <div class="lock-btn">
         <Button
-          icon={isLocked ? Unlock : Lock}
+          icon={isLocked ? Lock : Unlock}
           kind={'link'}
           size={'medium'}
           showTooltip={{ label: isLocked ? card.string.UnLockSection : card.string.LockSection }}
