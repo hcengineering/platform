@@ -121,7 +121,7 @@ export class TInviteSettings extends TConfiguration implements InviteSettings {
 @UX(setting.string.RoleCapabilitySettings)
 export class TRoleCapabilitySettings extends TConfiguration implements RoleCapabilitySettings {
   @Prop(TypeRecord(), setting.string.RoleCapabilitySettings)
-    roleByCapability!: Record<string, AccountRole[]>
+  roleByCapability!: Record<string, AccountRole[]>
 }
 
 @Model(setting.class.OfficeSettings, core.class.Configuration, DOMAIN_SETTING)
@@ -147,7 +147,7 @@ export class TSpaceTypeCreator extends TClass implements SpaceTypeCreator {
   extraComponent!: AnyComponent
 }
 
-export function createModel (builder: Builder): void {
+export function createModel(builder: Builder): void {
   builder.createModel(
     TIntegration,
     TIntegrationType,
@@ -425,6 +425,19 @@ export function createModel (builder: Builder): void {
       order: 4900
     },
     setting.ids.OfficeSettings
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'apiTokens',
+      label: setting.string.ApiTokens,
+      icon: setting.icon.ApiToken,
+      component: setting.component.ApiTokens,
+      order: 1050,
+      role: AccountRole.Owner
+    },
+    setting.ids.ApiTokens
   )
   // Currently remove Support item from settings
   // builder.createDoc(
