@@ -34,6 +34,7 @@
   export let placeholderParams: Record<string, any> = {}
   export let supportSubmit = true
   export let editorAttributes: Record<string, string> = {}
+  export let spellcheck: boolean = true
   export let boundary: HTMLElement | undefined = undefined
   export let autofocus: FocusPosition = false
   export let onPaste: ((view: EditorView, event: ClipboardEvent) => boolean) | undefined = undefined
@@ -159,7 +160,9 @@
       enableContentCheck: true,
       element,
       editorProps: {
-        attributes: mergeAttributes(defaultEditorAttributes, editorAttributes),
+        attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, {
+          spellcheck: spellcheck ? 'true' : 'false'
+        }),
         handlePaste: onPaste,
         handleKeyDown: (view, event) => {
           if (onKeyDown !== undefined) {
