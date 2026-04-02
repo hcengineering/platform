@@ -66,6 +66,12 @@
     }
 
     if (getMetadata(presentation.metadata.Token) == null) {
+      const storedToken = fetchMetadataLocalStorage(login.metadata.LoginToken)
+      if (storedToken != null) {
+        setMetadata(presentation.metadata.Token, storedToken)
+        updatePageLoc(getCurrentLocation())
+      }
+
       const lastAccount = fetchMetadataLocalStorage(login.metadata.LastAccount)
       if (lastAccount != null) {
         try {

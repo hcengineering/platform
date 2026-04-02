@@ -1,5 +1,5 @@
-FROM --platform=$BUILDPLATFORM rust:1.88 AS builder
-ARG TARGETPLATFORM
+FROM rust:1.88 AS builder
+ARG TARGETPLATFORM=linux/amd64
 
 WORKDIR /tmp/build
 

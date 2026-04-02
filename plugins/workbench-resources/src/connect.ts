@@ -49,6 +49,7 @@ import presentation, {
 } from '@hcengineering/presentation'
 import {
   desktopPlatform,
+  fetchMetadataLocalStorage,
   getCurrentLocation,
   locationStorageKeyId,
   navigate,
@@ -86,6 +87,14 @@ export async function connect (title: string): Promise<Client | undefined> {
   const ctx = uiContext.newChild('connect', {})
   const loc = getCurrentLocation()
   const wsUrl = loc.path[1]
+
+  if (getMetadata(presentation.metadata.Token) == null) {
+    const storedToken = fetchMetadataLocalStorage(login.metadata.LoginToken)
+    if (storedToken != null) {
+      setMetadata(presentation.metadata.Token, storedToken)
+    }
+  }
+
   if (wsUrl === undefined) {
     const lastLoc = localStorage.getItem(locationStorageKeyId)
     if (lastLoc !== null) {
