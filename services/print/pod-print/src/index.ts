@@ -14,8 +14,6 @@
 // limitations under the License.
 //
 
-import { config } from 'dotenv'
 import { main } from './main'
 
-config()
 void main()
