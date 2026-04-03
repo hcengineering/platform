@@ -33,6 +33,12 @@
     font-size: 7pt;
   `
 
+  const uncontrolledStyle = /* css */ `
+    font-size: 7pt;
+    font-weight: 600;
+    margin-bottom: 0.25em;
+  `
+
   // Note: cannot use standard puppeteer "date" class as format cannot be easily adjusted for it
   const dtf = new Intl.DateTimeFormat('default', {
     day: 'numeric',
@@ -47,6 +53,9 @@
 
 <footer style={rootStyle}>
   <div style:flex="1 1 0">
+    <div style={uncontrolledStyle}>
+      <Label label={plugin.string.UncontrolledVersion} />
+    </div>
     {#if templateReference !== ''}
       <Label label={plugin.string.CreatedFromTemplate} />
       <span>{templateReference}</span>

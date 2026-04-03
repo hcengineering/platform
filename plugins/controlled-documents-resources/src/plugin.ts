@@ -204,6 +204,7 @@ export default mergeIds(documentsId, documents, {
     Page: '' as IntlString,
     Of: '' as IntlString,
     CreatedFromTemplate: '' as IntlString,
+    UncontrolledVersion: '' as IntlString,
 
     NewDocumentSpace: '' as IntlString,
     EditDocumentSpace: '' as IntlString,

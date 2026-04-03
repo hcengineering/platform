@@ -101,6 +101,7 @@
     "CreateFolder": "Criar nova pasta",
     "RenameFolder": "Renomear pasta",
     "CreateChildFolder": "Criar subpasta",
+    "UncontrolledVersion": "Versão não controlada",
     "AllDocumentSpaces": "Todos os espaços de documentos"
   },
   "controlledDocStates": {
