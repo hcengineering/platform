@@ -40,7 +40,6 @@
   export let draggedItem: Ref<DocumentMeta> | undefined = undefined
   export let draggedOver: Ref<DocumentMeta> | undefined = undefined
 
-  /** When set, folder and document icons use this fill (e.g. space color from `getPlatformColorForTextDef`). */
   export let spaceIconFill: string | undefined = undefined
 
   import DropArea from './DropArea.svelte'
