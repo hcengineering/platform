@@ -78,6 +78,8 @@
 
   $: selected = getDocumentIdFromFragment(currentFragment ?? '')
 
+  $: spaceIconFill = getPlatformColorForTextDef(space.name, $themeStore.dark).icon
+
   let project: Ref<Project> = documents.ids.NoProject
   $: void selectProject(space)
 
@@ -315,7 +317,7 @@
     _id={space?._id}
     folderIcon
     iconProps={{
-      fill: getPlatformColorForTextDef(space.name, $themeStore.dark).icon
+      fill: spaceIconFill
     }}
     title={space.name}
     highlighted={space._id === currentSpace && currentFragment !== undefined && !deselect}
@@ -358,6 +360,7 @@
         {tree}
         documentIds={root}
         {selected}
+        {spaceIconFill}
         getMoreActions={getDocumentActions}
         on:selected={(e) => {
           handleDocumentSelected(e.detail)
@@ -382,7 +385,7 @@
           _id={doc._id}
           icon={documents.icon.Document}
           iconProps={{
-            fill: 'currentColor'
+            fill: spaceIconFill
           }}
           title={getDocumentName(doc)}
           actions={() => getDocumentActions(doc)}
