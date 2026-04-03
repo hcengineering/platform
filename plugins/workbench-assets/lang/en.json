@@ -25,8 +25,6 @@
     "NewVersionAvailable": "New version is available",
     "PleaseUpdate": "Please update",
     "ServerUnderMaintenance": "Preparing workspace for new version...",
-    "MobileNotSupported": "Sorry, mobile devices support coming soon. In the meantime, please use Desktop",
-    "LogInAnyway": "Log in anyway",
     "WorkspaceCreating": "Creation in progress...",
     "AccessDenied": "Object doesn't exist or you are not permitted to access it.",
     "UpgradeDownloadProgress": "Downloading upgrade: {percent}%",
