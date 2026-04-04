@@ -78,6 +78,9 @@
     "LockSection": "Lock section",
     "UnLockSection": "Unlock section",
     "SectionLocked": "Section {section} locked",
-    "SectionUnlocked": "Section {section} unlocked"
+    "SectionUnlocked": "Section {section} unlocked",
+    "LayoutAuto": "Auto",
+    "SingleColumn": "Single column",
+    "TwoColumns": "Two columns"
   }
 }

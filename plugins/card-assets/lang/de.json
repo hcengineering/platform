@@ -78,6 +78,9 @@
     "LockSection": "Sperren",
     "UnLockSection": "Entsperren",
     "SectionLocked": "Sektion {section} gesperrt",
-    "SectionUnlocked": "Sektion {section} entsperrt"
+    "SectionUnlocked": "Sektion {section} entsperrt",
+    "LayoutAuto": "Auto",
+    "SingleColumn": "Einspaltig",
+    "TwoColumns": "Zwei spaltig"
   }
 }

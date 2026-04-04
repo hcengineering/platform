@@ -78,6 +78,9 @@
     "LockSection": "Bloquear seção",
     "UnLockSection": "Desbloquear seção",
     "SectionLocked": "Seção {section} bloqueada",
-    "SectionUnlocked": "Seção {section} desbloqueada"
+    "SectionUnlocked": "Seção {section} desbloqueada",
+    "LayoutAuto": "Automático",
+    "SingleColumn": "Uma coluna",
+    "TwoColumns": "Duas colunas"
   }
 }
