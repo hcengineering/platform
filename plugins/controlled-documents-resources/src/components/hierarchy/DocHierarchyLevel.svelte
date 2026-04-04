@@ -40,6 +40,8 @@
   export let draggedItem: Ref<DocumentMeta> | undefined = undefined
   export let draggedOver: Ref<DocumentMeta> | undefined = undefined
 
+  export let spaceIconFill: string | undefined = undefined
+
   import DropArea from './DropArea.svelte'
 
   const removeStates = [DocumentState.Obsolete, DocumentState.Deleted]
@@ -72,7 +74,7 @@
         _id={docid}
         icon={isFolder ? documents.icon.Folder : documents.icon.Document}
         iconProps={{
-          fill: isRemoved ? 'var(--dangerous-bg-color)' : 'currentColor'
+          fill: isRemoved ? 'var(--dangerous-bg-color)' : (spaceIconFill ?? 'currentColor')
         }}
         {title}
         selected={selected === docid || selected === prjdoc._id}
@@ -108,6 +110,7 @@
               {collapsedPrefix}
               {getMoreActions}
               level={level + 1}
+              {spaceIconFill}
               {onDragStart}
               {onDragOver}
               {onDragEnd}

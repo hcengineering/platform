@@ -39,13 +39,15 @@
   }
 
   $: root = tree.childrenOf(documents.ids.NoParent)
+
+  $: spaceIconFill = getPlatformColorForTextDef(space.name, $themeStore.dark).icon
 </script>
 
 <TreeNode
   _id={space?._id}
   folderIcon
   iconProps={{
-    fill: getPlatformColorForTextDef(space.name, $themeStore.dark).icon
+    fill: spaceIconFill
   }}
   title={space.name}
   highlighted={selected !== undefined}
@@ -57,5 +59,5 @@
     dispatch('selected', space)
   }}
 >
-  <DocHierarchyLevel documentIds={root} {tree} {selected} {collapsedPrefix} on:selected />
+  <DocHierarchyLevel documentIds={root} {tree} {selected} {collapsedPrefix} {spaceIconFill} on:selected />
 </TreeNode>
