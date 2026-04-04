@@ -18,6 +18,7 @@ import { OptionValues, program } from 'commander'
 program
   .name('Huly')
   .allowUnknownOption()
+  .allowExcessArguments(true)
   .option('-s, --server <url>', 'Remote server URL (front). E.g. https://huly.app')
 
 let opts: OptionValues | null = null
