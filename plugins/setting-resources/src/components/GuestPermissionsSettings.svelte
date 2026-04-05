@@ -325,15 +325,18 @@
                       <Label label={settingsRes.string.GuestChannelsDescription} />
                     </div>
                     <div class="guestAccessRow-editorCell">
-                      <Component
-                        is={card.component.CardArrayEditor}
-                        props={{
-                          _class: chat.masterTag.Thread,
-                          value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
-                          label: settingsRes.string.GuestChannelsArrayLabel,
-                          onChange: onAllowedCardsChange
-                        }}
-                      />
+                      <div class="guestAccessRow-editorInner">
+                        <Component
+                          is={card.component.CardArrayEditor}
+                          props={{
+                            _class: chat.masterTag.Thread,
+                            value:
+                              existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
+                            label: settingsRes.string.GuestChannelsArrayLabel,
+                            onChange: onAllowedCardsChange
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 {/if}
@@ -435,6 +438,7 @@
     flex-direction: column;
     gap: 0;
     padding: 0.25rem 1rem 0;
+    overflow: visible;
   }
 
   .guestAccessRow {
@@ -451,11 +455,28 @@
   }
 
   .guestAccessRow--editor {
-    grid-template-columns: minmax(0, 1fr) 1fr;
     align-items: start;
     min-height: auto;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
+    overflow: visible;
+  }
+
+  /* Same two columns as toggle rows; editor sits in col 2 and grows left so its right edge matches toggles */
+  .guestAccessRow--editor .guestAccessRow-editorCell {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    width: max-content;
+    max-width: min(22rem, calc(100vw - 3rem));
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .guestAccessRow-editorInner {
+    min-width: 0;
+    max-width: 100%;
   }
 
   .guestAccessRow-label {
@@ -469,10 +490,6 @@
     align-items: center;
     width: $toggleTrackWidth;
     justify-self: end;
-  }
-
-  .guestAccessRow-editorCell {
-    min-width: 0;
   }
 
   .guestPermissionsHeaderTabs {
