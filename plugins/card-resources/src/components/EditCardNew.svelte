@@ -36,7 +36,6 @@
     eventToHTMLElement,
     FocusHandler,
     getCurrentLocation,
-    Icon,
     IconDetailsFilled,
     IconMaxWidth,
     IconMoreH,
@@ -49,7 +48,7 @@
   import { canChangeDoc, showMenu } from '@hcengineering/view-resources'
 
   import { permissionsStore } from '@hcengineering/contact-resources'
-  import { afterUpdate, getContext, setContext } from 'svelte'
+  import { afterUpdate } from 'svelte'
   import card from '../plugin'
   import { openCardInSidebar, setViewMode, viewStore } from '../utils'
   import CardIcon from './CardIcon.svelte'
