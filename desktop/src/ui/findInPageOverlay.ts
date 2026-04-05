@@ -1,5 +1,5 @@
 //
-// Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,13 +13,13 @@
 // limitations under the License.
 //
 
-import { app } from 'electron'
-import * as nodePath from 'path'
+import { setupDesktopFindInPageBar } from './findInPageBar'
+import { ipcMainExposed } from './typesUtils'
 
-export function getBundledUiDistPath (): string {
-  return nodePath.join(app.getAppPath(), 'dist', 'ui')
-}
-
-export function getFileInPublicBundledFolder (fileName: string): string {
-  return nodePath.join(getBundledUiDistPath(), 'public', fileName)
-}
+window.addEventListener('DOMContentLoaded', () => {
+  try {
+    setupDesktopFindInPageBar(ipcMainExposed())
+  } catch (err) {
+    console.error('[find] Overlay UI failed to initialize:', err)
+  }
+})

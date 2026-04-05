@@ -111,6 +111,7 @@ export function buildHulyApplicationMenu (minimizeToTrayEnabled: boolean, autoLa
     .addMenuItem(MenuEditIndex, 'Paste', 'paste', 'Ctrl+V', 'p')
     .addMenuItem(MenuEditIndex, 'Delete', 'delete', 'Delete', 'd')
     .addSeparator(MenuEditIndex)
+    .addMenuItem(MenuEditIndex, 'Find', 'find', 'Ctrl+F', 'f')
     .addMenuItem(MenuEditIndex, 'Select All', 'select-all', 'Ctrl+A', 'a')
 
   const MenuViewIndex = 2

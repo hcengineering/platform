@@ -28,10 +28,21 @@ export interface PackedConfig {
 function readConfigFile (filePath: string): PackedConfig | undefined {
   try {
     return JSON.parse(fs.readFileSync(filePath, 'utf8')) as PackedConfig
-  } catch (err) {
-    console.error(`Failed to read config from ${filePath}:`, err)
+  } catch (err: unknown) {
+    const code = err != null && typeof err === 'object' && 'code' in err ? (err as NodeJS.ErrnoException).code : undefined
+    if (code !== 'ENOENT') {
+      console.error(`Failed to read config from ${filePath}:`, err)
+    }
     return undefined
   }
+}
+
+/** Packaged app: extraResources `config/config.json`. Dev: webpack `public/` → `dist/ui/public/`. */
+function getBundledResourcesConfigPath (): string {
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, 'config', 'config.json')
+  }
+  return path.join(app.getAppPath(), 'dist', 'ui', 'public', 'config', 'config.json')
 }
 
 /**
@@ -55,7 +66,7 @@ function writeConfigFile (filePath: string, config: PackedConfig): boolean {
 function migrateConfigIfNeeded (): void {
   try {
     const userDataConfigPath = path.join(app.getPath('userData'), 'config.json')
-    const resourcesConfigPath = path.join(process.resourcesPath, 'config', 'config.json')
+    const resourcesConfigPath = getBundledResourcesConfigPath()
 
     const userDataDir = app.getPath('userData')
     if (!fs.existsSync(userDataDir)) {
@@ -109,6 +120,5 @@ export function readPackedConfig (): PackedConfig | undefined {
   }
 
   // Fallback to bundled config if userData config doesn't exist
-  const resourcesConfigPath = path.join(process.resourcesPath, 'config', 'config.json')
-  return readConfigFile(resourcesConfigPath)
+  return readConfigFile(getBundledResourcesConfigPath())
 }

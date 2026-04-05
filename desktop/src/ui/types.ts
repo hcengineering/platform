@@ -140,6 +140,7 @@ export const MenuBarActions = [
   'copy',
   'paste',
   'delete',
+  'find',
   'select-all',
   'reload',
   'force-reload',
@@ -200,7 +201,31 @@ export interface IPCMainExposed {
   onMinimizeToTraySettingChanged: (callback: (enabled: boolean) => void) => void
   isAutoLaunchEnabled: () => Promise<boolean>
   onAutoLaunchSettingChanged: (callback: (enabled: boolean) => void) => void
+
+  onOpenFindBar: (callback: () => void) => void
+  findInPage: (text: string, options?: DesktopFindInPageOptions) => Promise<number>
+  stopFindInPage: (action: 'clearSelection' | 'keepSelection' | 'activateSelection') => Promise<void>
+  onFindInPageResult: (callback: (result: DesktopFoundInPageResult) => void) => void
+  /** Resize the find BrowserView hit target (main process); overlay document only. */
+  notifyFindOverlayLayout: (visible: boolean) => void
 }
 
 export type SendCommandDelegate = (cmd: Command, ...args: any[]) => void
 export type WindowAction = () => void
+
+/** Options passed to `webContents.findInPage` from the renderer. */
+export interface DesktopFindInPageOptions {
+  forward?: boolean
+  findNext?: boolean
+  matchCase?: boolean
+  wordStart?: boolean
+  medialCapitalAsWordStart?: boolean
+}
+
+/** Payload mirrored from Electron `found-in-page` (subset used by the find bar UI). */
+export interface DesktopFoundInPageResult {
+  requestId: number
+  activeMatchOrdinal: number
+  matches: number
+  finalUpdate: boolean
+}

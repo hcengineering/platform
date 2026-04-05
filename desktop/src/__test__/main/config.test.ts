@@ -21,7 +21,9 @@ const mockApp = {
     }
     return `/mock/${name}`
   }),
-  getName: jest.fn(() => 'TestApp')
+  getName: jest.fn(() => 'TestApp'),
+  isPackaged: true,
+  getAppPath: jest.fn(() => '/mock/appPath')
 }
 
 jest.mock('electron', () => ({
