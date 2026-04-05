@@ -61,6 +61,7 @@ import {
   Model,
   Prop,
   ReadOnly,
+  TypeBoolean,
   TypeCollaborativeDoc,
   TypeNumber,
   TypeRank,
@@ -94,6 +95,9 @@ export class TMasterTag extends TClass implements MasterTag {
   color?: number
   background?: number
   removed?: boolean
+
+  @Prop(TypeBoolean(), card.string.SingleColumn)
+    singleColumn?: boolean
 }
 
 @Model(card.class.Tag, core.class.Mixin)

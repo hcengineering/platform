@@ -13,13 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Card } from '@hcengineering/card'
+  import { Card, MasterTag } from '@hcengineering/card'
   import { Doc, Mixin } from '@hcengineering/core'
-  import { Button, Grid, IconDownOutline, IconUpOutline, resizeObserver } from '@hcengineering/ui'
+  import { getClient } from '@hcengineering/presentation'
+  import { Button, Grid, IconDownOutline, IconUpOutline, Switcher, resizeObserver } from '@hcengineering/ui'
+  import { onMount } from 'svelte'
   import card from '../plugin'
   import MasterTagAttributes from './MasterTagAttributes.svelte'
   import TagAttributes from './TagAttributes.svelte'
-  import { getClient } from '@hcengineering/presentation'
+  import { viewStore } from '../utils'
 
   export let value: Card
   export let readonly: boolean = false
@@ -30,9 +32,20 @@
   const h = client.getHierarchy()
 
   let width: number = 0
+  let layoutMode: 'auto' | '1' | '2' = 'auto'
 
-  let columns = 1
-  $: columns = width > 600 ? 2 : 1
+  viewStore.subscribe((views) => {
+    if (views[value._class] !== undefined) {
+      layoutMode = views[value._class] as any
+    } else {
+      const masterTag = h.getClass(value._class) as MasterTag
+      if (masterTag.singleColumn) {
+        layoutMode = '1'
+      }
+    }
+  })
+
+  $: columns = layoutMode === 'auto' ? (width > 600 ? 2 : 1) : parseInt(layoutMode)
 
   const tagAttributes: TagAttributes[] = []
   $: tagAttributes.length = mixins.length
@@ -88,6 +101,7 @@
 <style lang="scss">
   .btn {
     margin-top: 1rem;
+    align-items: center;
   }
 
   .tag {

@@ -78,6 +78,9 @@
     "LockSection": "锁定部分",
     "UnLockSection": "解锁部分",
     "SectionLocked": "部分 {section} 已锁定",
-    "SectionUnlocked": "部分 {section} 已解锁"
+    "SectionUnlocked": "部分 {section} 已解锁",
+    "LayoutAuto": "自动",
+    "SingleColumn": "单列",
+    "TwoColumns": "两列"
   }
 }
