@@ -1,3 +1,6 @@
+import { get } from 'svelte/store'
+import { themeStore } from '@hcengineering/theme'
+
 /**
  * @public
  */
@@ -19,6 +22,16 @@ export interface ColorDefinition {
   background?: string
 }
 
+/** Main surfaces for alpha-blending tag colors (see `.theme-dark` / `.theme-dark-gray` in `_colors.scss`). */
+const DARK_BLEND_CLASSIC = '#1A1A28'
+const DARK_BLEND_GRAY = '#161719'
+
+function resolveDarkGray (explicit: boolean | undefined, darkTheme: boolean): boolean {
+  if (!darkTheme) return false
+  if (explicit !== undefined) return explicit
+  return get(themeStore)?.darkGray ?? false
+}
+
 const define = (
   name: string,
   color: string,
@@ -27,18 +40,24 @@ const define = (
   number: string,
   background: string,
   percents: number[],
-  dark: boolean = false
+  dark: boolean = false,
+  darkGray: boolean = false
 ): ColorDefinition => {
   return {
     name,
-    color: defineAlpha(dark, color),
-    icon: defineAlpha(dark, icon),
-    title: defineAlpha(dark, title),
-    number: defineAlpha(dark, number, percents[0]),
+    color: defineAlpha(dark, color, 100, darkGray),
+    icon: defineAlpha(dark, icon, 100, darkGray),
+    title: defineAlpha(dark, title, 100, darkGray),
+    number: defineAlpha(dark, number, percents[0], darkGray),
     background:
       percents.length > 2
-        ? `linear-gradient(90deg, ${defineAlpha(dark, color, percents[1])}, ${defineAlpha(dark, color, percents[2])})`
-        : defineAlpha(dark, color, percents[1])
+        ? `linear-gradient(90deg, ${defineAlpha(dark, color, percents[1], darkGray)}, ${defineAlpha(
+            dark,
+            color,
+            percents[2],
+            darkGray
+          )})`
+        : defineAlpha(dark, color, percents[1], darkGray)
   }
 }
 
@@ -48,7 +67,8 @@ const defineAvatarColor = (
   s: number,
   l: number,
   gradient: number[],
-  dark: boolean = false
+  dark: boolean = false,
+  darkGray: boolean = false
 ): ColorDefinition => {
   const background = rgbToHex(hslToRgb(h / 360, s / 100, l / 100))
   const icon = rgbToHex(hslToRgb(h / 360, 0.5, 0.6))
@@ -62,8 +82,8 @@ const defineAvatarColor = (
     number: undefined,
     background:
       gradient.length === 1
-        ? defineAlpha(dark, background)
-        : `linear-gradient(90deg, ${gradient.map((it) => defineAlpha(dark, background, it)).join(',')})`
+        ? defineAlpha(dark, background, 100, darkGray)
+        : `linear-gradient(90deg, ${gradient.map((it) => defineAlpha(dark, background, it, darkGray)).join(',')})`
   }
 }
 
@@ -127,35 +147,75 @@ export const whitePalette = Object.freeze<ColorDefinition[]>([
   define('Porpoise', '758595', '758595', '5D6B79', '5D6B79', '5D6B79', [60, 20])
 ])
 
+function buildDarkPalette (darkGray: boolean): ColorDefinition[] {
+  return [
+    define('Firework', 'D15045', 'D15045', 'FFFFFF', 'FFFFFF', 'C03B2F', [60, 15, 0], true, darkGray),
+    define('Watermelon', 'DB877D', 'DB877D', 'FFFFFF', 'FFFFFF', 'D2685B', [60, 15, 0], true, darkGray),
+    define('Pink', 'EF86AA', 'EF86AA', 'FFFFFF', 'FFFFFF', 'E9588A', [60, 15, 0], true, darkGray),
+    define('Fuchsia', 'EB5181', 'EB5181', 'FFFFFF', 'FFFFFF', 'E62360', [60, 15, 0], true, darkGray),
+    define('Lavander', 'DC85F5', 'DC85F5', 'FFFFFF', 'FFFFFF', 'CE55F1', [60, 15, 0], true, darkGray),
+    define('Mauve', '925CB1', '925CB1', 'FFFFFF', 'FFFFFF', '784794', [60, 15, 0], true, darkGray),
+    define('Heather', '7B86C6', '7B86C6', 'FFFFFF', 'FFFFFF', '5866B7', [60, 15, 0], true, darkGray),
+    define('Orchid', '8862D9', '8862D9', 'FFFFFF', 'FFFFFF', '6A3ACF', [60, 15, 0], true, darkGray),
+    define('Blueberry', '6260C2', '6260C2', 'FFFFFF', 'FFFFFF', '4542AD', [60, 15, 0], true, darkGray),
+    define('Arctic', '8BB0F9', '8BB0F9', 'FFFFFF', 'FFFFFF', '5A8FF6', [60, 15, 0], true, darkGray),
+    define('Sky', '4CA6EE', '4CA6EE', 'FFFFFF', 'FFFFFF', '1F90EA', [60, 15, 0], true, darkGray),
+    define('Cerulean', '5195D7', '5195D7', 'FFFFFF', 'FFFFFF', '2E7CC7', [60, 15, 0], true, darkGray),
+    define('Waterway', '1467B3', '1467B3', 'FFFFFF', 'FFFFFF', '0F4C85', [60, 15, 0], true, darkGray),
+    define('Ocean', '167B82', '167B82', 'FFFFFF', 'FFFFFF', '0F5357', [60, 15, 0], true, darkGray),
+    define('Turquoise', '58B99D', '58B99D', 'FFFFFF', 'FFFFFF', '429E84', [60, 15, 0], true, darkGray),
+    define('Houseplant', '46A44F', '46A44F', 'FFFFFF', 'FFFFFF', '37813E', [60, 15, 0], true, darkGray),
+    define('Crocodile', '709A3F', '709A3F', 'FFFFFF', 'FFFFFF', '577731', [60, 15, 0], true, darkGray),
+    define('Grass', '83AF12', '83AF12', 'FFFFFF', 'FFFFFF', '83AF12', [60, 15, 0], true, darkGray),
+    define('Sunshine', 'D29840', 'D29840', 'FFFFFF', 'FFFFFF', 'B67E2B', [60, 15, 0], true, darkGray),
+    define('Orange', 'D27540', 'D27540', 'FFFFFF', 'FFFFFF', 'B65D2B', [60, 15, 0], true, darkGray),
+    define('Pumpkin', 'BF5C24', 'BF5C24', 'FFFFFF', 'FFFFFF', '96481C', [60, 15, 0], true, darkGray),
+    define('Cloud', 'A1A1A1', 'A1A1A1', 'FFFFFF', 'FFFFFF', '878787', [60, 15, 0], true, darkGray),
+    define('Coin', '939395', '939395', 'FFFFFF', 'FFFFFF', '79797C', [60, 15, 0], true, darkGray),
+    define('Porpoise', '758595', '758595', 'FFFFFF', 'FFFFFF', '5D6B79', [60, 15, 0], true, darkGray)
+  ]
+}
+
 /**
+ * Classic `.theme-dark` platform / tag colors (blended against {@link DARK_BLEND_CLASSIC}).
  * @public
  */
-export const darkPalette = Object.freeze<ColorDefinition[]>([
-  define('Firework', 'D15045', 'D15045', 'FFFFFF', 'FFFFFF', 'C03B2F', [60, 15, 0], true),
-  define('Watermelon', 'DB877D', 'DB877D', 'FFFFFF', 'FFFFFF', 'D2685B', [60, 15, 0], true),
-  define('Pink', 'EF86AA', 'EF86AA', 'FFFFFF', 'FFFFFF', 'E9588A', [60, 15, 0], true),
-  define('Fuchsia', 'EB5181', 'EB5181', 'FFFFFF', 'FFFFFF', 'E62360', [60, 15, 0], true),
-  define('Lavander', 'DC85F5', 'DC85F5', 'FFFFFF', 'FFFFFF', 'CE55F1', [60, 15, 0], true),
-  define('Mauve', '925CB1', '925CB1', 'FFFFFF', 'FFFFFF', '784794', [60, 15, 0], true),
-  define('Heather', '7B86C6', '7B86C6', 'FFFFFF', 'FFFFFF', '5866B7', [60, 15, 0], true),
-  define('Orchid', '8862D9', '8862D9', 'FFFFFF', 'FFFFFF', '6A3ACF', [60, 15, 0], true),
-  define('Blueberry', '6260C2', '6260C2', 'FFFFFF', 'FFFFFF', '4542AD', [60, 15, 0], true),
-  define('Arctic', '8BB0F9', '8BB0F9', 'FFFFFF', 'FFFFFF', '5A8FF6', [60, 15, 0], true),
-  define('Sky', '4CA6EE', '4CA6EE', 'FFFFFF', 'FFFFFF', '1F90EA', [60, 15, 0], true),
-  define('Cerulean', '5195D7', '5195D7', 'FFFFFF', 'FFFFFF', '2E7CC7', [60, 15, 0], true),
-  define('Waterway', '1467B3', '1467B3', 'FFFFFF', 'FFFFFF', '0F4C85', [60, 15, 0], true),
-  define('Ocean', '167B82', '167B82', 'FFFFFF', 'FFFFFF', '0F5357', [60, 15, 0], true),
-  define('Turquoise', '58B99D', '58B99D', 'FFFFFF', 'FFFFFF', '429E84', [60, 15, 0], true),
-  define('Houseplant', '46A44F', '46A44F', 'FFFFFF', 'FFFFFF', '37813E', [60, 15, 0], true),
-  define('Crocodile', '709A3F', '709A3F', 'FFFFFF', 'FFFFFF', '577731', [60, 15, 0], true),
-  define('Grass', '83AF12', '83AF12', 'FFFFFF', 'FFFFFF', '83AF12', [60, 15, 0], true),
-  define('Sunshine', 'D29840', 'D29840', 'FFFFFF', 'FFFFFF', 'B67E2B', [60, 15, 0], true),
-  define('Orange', 'D27540', 'D27540', 'FFFFFF', 'FFFFFF', 'B65D2B', [60, 15, 0], true),
-  define('Pumpkin', 'BF5C24', 'BF5C24', 'FFFFFF', 'FFFFFF', '96481C', [60, 15, 0], true),
-  define('Cloud', 'A1A1A1', 'A1A1A1', 'FFFFFF', 'FFFFFF', '878787', [60, 15, 0], true),
-  define('Coin', '939395', '939395', 'FFFFFF', 'FFFFFF', '79797C', [60, 15, 0], true),
-  define('Porpoise', '758595', '758595', 'FFFFFF', 'FFFFFF', '5D6B79', [60, 15, 0], true)
-])
+export const darkPalette = Object.freeze(buildDarkPalette(false))
+
+/**
+ * `.theme-dark-gray` platform / tag colors (blended against {@link DARK_BLEND_GRAY}).
+ * @public
+ */
+export const darkGrayPalette = Object.freeze(buildDarkPalette(true))
+
+function buildAvatarDarkColors (darkGray: boolean): ColorDefinition[] {
+  return [
+    defineAvatarColor('Unassigned', 0, 0, 91, [20, 0, 0], true, darkGray),
+    defineAvatarColor('Magic', 235, 14 + 50, 89 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Waterlily', 222, 16 + 50, 87 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Light', 216, 16 + 50, 87 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Aqua', 200, 8 + 50, 85 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Turtle', 192, 14 + 50, 85 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Ocean', 186, 13 + 50, 85 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Heather', 153, 11 + 50, 86 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Juice', 108, 10 + 50, 90 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Lime', 70, 9 + 50, 87 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Warmth', 45, 13 + 50, 88 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Desert', 30, 14 + 50, 89 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Sand', 25, 14 + 50, 89 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Rust', 23, 12 + 50, 87 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Magnolia', 334, 11 + 50, 88 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Blossom', 300, 14 + 50, 89 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Unicorn', 274, 11 + 50, 88 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Violet', 252, 16 + 50, 87 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Happy', 232, 16 + 50, 87 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Blueish', 222, 13 + 50, 85 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Baby blue', 210, 12 + 50, 87 - 20, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Grey 3', 213, 9, 81, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Grey 2', 210, 10, 84, [20, 2, 0], true, darkGray),
+    defineAvatarColor('Grey 1', 210, 11, 89, [20, 2, 0], true, darkGray)
+  ]
+}
 
 export const avatarWhiteColors = Object.freeze<ColorDefinition[]>([
   defineAvatarColor('Unassigned', 0, 0, 91, [20]),
@@ -184,35 +244,17 @@ export const avatarWhiteColors = Object.freeze<ColorDefinition[]>([
   defineAvatarColor('Grey 1', 210, 11, 89, [20])
 ])
 
-export const avatarDarkColors = Object.freeze<ColorDefinition[]>([
-  defineAvatarColor('Unassigned', 0, 0, 91, [20, 0, 0], true),
-  defineAvatarColor('Magic', 235, 14 + 50, 89 - 20, [20, 2, 0], true),
-  defineAvatarColor('Waterlily', 222, 16 + 50, 87 - 20, [20, 2, 0], true),
-  defineAvatarColor('Light', 216, 16 + 50, 87 - 20, [20, 2, 0], true),
-  defineAvatarColor('Aqua', 200, 8 + 50, 85 - 20, [20, 2, 0], true),
-  defineAvatarColor('Turtle', 192, 14 + 50, 85 - 20, [20, 2, 0], true),
-  defineAvatarColor('Ocean', 186, 13 + 50, 85 - 20, [20, 2, 0], true),
-  defineAvatarColor('Heather', 153, 11 + 50, 86 - 20, [20, 2, 0], true),
-  defineAvatarColor('Juice', 108, 10 + 50, 90 - 20, [20, 2, 0], true),
-  defineAvatarColor('Lime', 70, 9 + 50, 87 - 20, [20, 2, 0], true),
-  defineAvatarColor('Warmth', 45, 13 + 50, 88 - 20, [20, 2, 0], true),
-  defineAvatarColor('Desert', 30, 14 + 50, 89 - 20, [20, 2, 0], true),
-  defineAvatarColor('Sand', 25, 14 + 50, 89 - 20, [20, 2, 0], true),
-  defineAvatarColor('Rust', 23, 12 + 50, 87 - 20, [20, 2, 0], true),
-  defineAvatarColor('Magnolia', 334, 11 + 50, 88 - 20, [20, 2, 0], true),
-  defineAvatarColor('Blossom', 300, 14 + 50, 89 - 20, [20, 2, 0], true),
-  defineAvatarColor('Unicorn', 274, 11 + 50, 88 - 20, [20, 2, 0], true),
-  defineAvatarColor('Violet', 252, 16 + 50, 87 - 20, [20, 2, 0], true),
-  defineAvatarColor('Happy', 232, 16 + 50, 87 - 20, [20, 2, 0], true),
-  defineAvatarColor('Blueish', 222, 13 + 50, 85 - 20, [20, 2, 0], true),
-  defineAvatarColor('Baby blue', 210, 12 + 50, 87 - 20, [20, 2, 0], true),
-  defineAvatarColor('Grey 3', 213, 9, 81, [20, 2, 0], true),
-  defineAvatarColor('Grey 2', 210, 10, 84, [20, 2, 0], true),
-  defineAvatarColor('Grey 1', 210, 11, 89, [20, 2, 0], true)
-])
+/** @public */
+export const avatarDarkColors = Object.freeze(buildAvatarDarkColors(false))
 
-export function defaultBackground (dark: boolean): string {
-  return dark ? 'linear-gradient(90deg, #262634, #1A1A28)' : '#FFFFFF'
+/** @public */
+export const avatarDarkGrayColors = Object.freeze(buildAvatarDarkColors(true))
+
+export function defaultBackground (dark: boolean, darkGray?: boolean): string {
+  if (!dark) return '#FFFFFF'
+  return resolveDarkGray(darkGray, dark)
+    ? 'linear-gradient(90deg, #22242A, #161719)'
+    : 'linear-gradient(90deg, #282834, #1A1A28)'
 }
 
 export const FeijoaColor = '#A5D179'
@@ -240,48 +282,67 @@ export const CadetGreyColor = '#95A2B3'
 /**
  * @public
  */
-export function getPlatformColor (hash: number | number[], darkTheme: boolean): string {
-  const palette = darkTheme ? darkPalette : whitePalette
+export function getPlatformColor (hash: number | number[], darkTheme: boolean, darkGray?: boolean): string {
+  const dg = resolveDarkGray(darkGray, darkTheme)
+  const palette = darkTheme ? (dg ? darkGrayPalette : darkPalette) : whitePalette
   return (palette[Math.abs(Array.isArray(hash) ? hash[0] : hash) % palette.length] ?? palette[0]).color
 }
 
 /**
  * @public
  */
-export function getPlatformColorDef (hash: number | number[], darkTheme: boolean): ColorDefinition {
-  const palette = darkTheme ? darkPalette : whitePalette
+export function getPlatformColorDef (hash: number | number[], darkTheme: boolean, darkGray?: boolean): ColorDefinition {
+  const dg = resolveDarkGray(darkGray, darkTheme)
+  const palette = darkTheme ? (dg ? darkGrayPalette : darkPalette) : whitePalette
   return palette[Math.abs(Array.isArray(hash) ? hash[0] : hash) % palette.length] ?? palette[0]
 }
 
 /**
  * @public
  */
-export function getPlatformAvatarColorDef (hash: number, darkTheme: boolean): ColorDefinition {
-  const palette = darkTheme ? avatarDarkColors : avatarWhiteColors
+export function getPlatformAvatarColorDef (hash: number, darkTheme: boolean, darkGray?: boolean): ColorDefinition {
+  const dg = resolveDarkGray(darkGray, darkTheme)
+  const palette = darkTheme ? (dg ? avatarDarkGrayColors : avatarDarkColors) : avatarWhiteColors
   return palette[Math.abs(hash) % palette.length] ?? palette[0]
 }
 
 /**
  * @public
  */
-export function getPlatformAvatarColorForTextDef (text: string, darkTheme: boolean): ColorDefinition {
-  return getPlatformAvatarColorDef(hashCode(text), darkTheme)
+export function getPlatformAvatarColorForTextDef (
+  text: string,
+  darkTheme: boolean,
+  darkGray?: boolean
+): ColorDefinition {
+  return getPlatformAvatarColorDef(hashCode(text), darkTheme, darkGray)
 }
 
 /**
  * @public
  */
-export function getPlatformAvatarColorByName (name: string, darkTheme: boolean): ColorDefinition {
+export function getPlatformAvatarColorByName (name: string, darkTheme: boolean, darkGray?: boolean): ColorDefinition {
   const defaultIndex = 0
-  return getColorByName(name, darkTheme, avatarWhiteColors, avatarDarkColors, defaultIndex)
+  return getColorByName(
+    name,
+    darkTheme,
+    avatarWhiteColors,
+    avatarDarkColors,
+    avatarDarkGrayColors,
+    defaultIndex,
+    darkGray
+  )
 }
 
 /**
  * @public
  */
-export function getPlatformColorByName (name: string, darkTheme: boolean): ColorDefinition | undefined {
+export function getPlatformColorByName (
+  name: string,
+  darkTheme: boolean,
+  darkGray?: boolean
+): ColorDefinition | undefined {
   const defaultIndex: number | undefined = undefined
-  return getColorByName(name, darkTheme, whitePalette, darkPalette, defaultIndex)
+  return getColorByName(name, darkTheme, whitePalette, darkPalette, darkGrayPalette, defaultIndex, darkGray)
 }
 
 function getColorByName (
@@ -289,23 +350,30 @@ function getColorByName (
   darkTheme: boolean,
   paletteLight: readonly ColorDefinition[],
   paletteDark: readonly ColorDefinition[],
-  defaultIndex: number
+  paletteDarkGray: readonly ColorDefinition[],
+  defaultIndex: number,
+  darkGray?: boolean
 ): ColorDefinition
 function getColorByName (
   name: string,
   darkTheme: boolean,
   paletteLight: readonly ColorDefinition[],
   paletteDark: readonly ColorDefinition[],
-  defaultIndex: undefined
+  paletteDarkGray: readonly ColorDefinition[],
+  defaultIndex: undefined,
+  darkGray?: boolean
 ): ColorDefinition | undefined
 function getColorByName (
   name: string,
   darkTheme: boolean,
   paletteLight: readonly ColorDefinition[],
   paletteDark: readonly ColorDefinition[],
-  defaultIndex: number | undefined
+  paletteDarkGray: readonly ColorDefinition[],
+  defaultIndex: number | undefined,
+  darkGray?: boolean
 ): ColorDefinition | undefined {
-  const targetPalette = darkTheme ? paletteDark : paletteLight
+  const dg = resolveDarkGray(darkGray, darkTheme)
+  const targetPalette = darkTheme ? (dg ? paletteDarkGray : paletteDark) : paletteLight
   const found = targetPalette.find((col) => col.name === name)
   if (found != null) {
     return found
@@ -316,28 +384,30 @@ function getColorByName (
 /**
  * @public
  */
-export function getPlatformAvatarColors (darkTheme: boolean): readonly ColorDefinition[] {
-  return darkTheme ? avatarDarkColors : avatarWhiteColors
+export function getPlatformAvatarColors (darkTheme: boolean, darkGray?: boolean): readonly ColorDefinition[] {
+  const dg = resolveDarkGray(darkGray, darkTheme)
+  return darkTheme ? (dg ? avatarDarkGrayColors : avatarDarkColors) : avatarWhiteColors
 }
 
 /**
  * @public
  */
-export function getPlatformColorForText (text: string, darkTheme: boolean): string {
-  return getPlatformColor(hashCode(text), darkTheme)
+export function getPlatformColorForText (text: string, darkTheme: boolean, darkGray?: boolean): string {
+  return getPlatformColor(hashCode(text), darkTheme, darkGray)
 }
 /**
  * @public
  */
-export function getPlatformColorForTextDef (text: string, darkTheme: boolean): ColorDefinition {
-  return getPlatformColorDef(hashCode(text), darkTheme)
+export function getPlatformColorForTextDef (text: string, darkTheme: boolean, darkGray?: boolean): ColorDefinition {
+  return getPlatformColorDef(hashCode(text), darkTheme, darkGray)
 }
 
 /**
  * @public
  */
-export function getPlatformColors (darkTheme: boolean): readonly ColorDefinition[] {
-  return darkTheme ? darkPalette : whitePalette
+export function getPlatformColors (darkTheme: boolean, darkGray?: boolean): readonly ColorDefinition[] {
+  const dg = resolveDarkGray(darkGray, darkTheme)
+  return darkTheme ? (dg ? darkGrayPalette : darkPalette) : whitePalette
 }
 
 function hashCode (str: string): number {
@@ -406,7 +476,7 @@ function addZero (d: string): string {
 /**
  * @public
  */
-export function defineAlpha (dark: boolean, color: string, percent = 100): string {
+export function defineAlpha (dark: boolean, color: string, percent = 100, darkGray?: boolean): string {
   let rgb = color
   if (!rgb.startsWith('#')) {
     rgb = '#' + rgb
@@ -418,7 +488,9 @@ export function defineAlpha (dark: boolean, color: string, percent = 100): strin
 
   const p1 = percent / 100
 
-  const bg = dark ? hexToRgb('#1A1A28') : hexToRgb('#F1F1F4')
+  const dg = resolveDarkGray(darkGray, dark)
+  const bgHex = dark ? (dg ? DARK_BLEND_GRAY : DARK_BLEND_CLASSIC) : '#F1F1F4'
+  const bg = hexToRgb(bgHex)
 
   return rgbToHex({
     r: r * p1 + bg.r * (1 - p1),

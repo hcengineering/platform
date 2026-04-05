@@ -609,7 +609,8 @@ pre.proseCodeBlock>pre.proseCode {
   }
 }
 
-.theme-dark {
+.theme-dark,
+.theme-dark-gray {
   @include meta.load-css('./github-dark.scss');
 }
 

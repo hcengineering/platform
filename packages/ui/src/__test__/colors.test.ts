@@ -15,6 +15,14 @@
 
 import { getPlatformColorByName, getPlatformAvatarColorByName, avatarWhiteColors, avatarDarkColors } from '../colors'
 
+jest.mock('svelte/store', () => ({
+  get: jest.fn(() => undefined)
+}))
+
+jest.mock('@hcengineering/theme', () => ({
+  themeStore: {}
+}))
+
 describe('colors module tests', () => {
   describe('getPlatformColorByName', () => {
     it('get existing color, light theme', () => {

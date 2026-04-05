@@ -18,18 +18,12 @@
   --button-disabled-LabelColor: #8b97ad;
   --button-accent-IconColor: #fff;
   --button-disabled-IconColor: #8b97ad;
-  --button-primary-BackgroundColor: #3364e2;
-  --button-primary-BorderColor: #d1d5de1a;
-  --button-primary-hover-BackgroundColor: #6191fe;
-  --button-primary-active-BackgroundColor: #2553cf;
-  --button-primary-loading-LabelColor: #6191fe;
   --button-negative-loading-LabelColor: #ff9187;
   --button-negative-BackgroundColor: #CB4B42;
   --button-negative-BorderColor: #d1d5de26;
   --button-negative-hover-BackgroundColor: #DC5148;
   --button-negative-active-BackgroundColor: #B34139;
 
-  --selector-active-BackgroundColor: #3364e2;
   --selector-IconColor: #ffffff;
   --selector-disabled-IconColor: #8b97ad;
 
@@ -96,8 +90,13 @@
   /** Buttons **/
   --button-subtle-LabelColor: #fff;
   --button-subtle-IconColor: #fff;
-  --button-disabled-BackgroundColor: #d1d5de0d;
+  --button-primary-BackgroundColor: #3364e2;
+  --button-primary-BorderColor: #d1d5de1a;
+  --button-primary-hover-BackgroundColor: #6191fe;
+  --button-primary-active-BackgroundColor: #2553cf;
   --button-primary-loading-LabelColor: #6191fe;
+  --selector-active-BackgroundColor: #3364e2;
+  --button-disabled-BackgroundColor: #d1d5de0d;
   --button-secondary-BackgroundColor: #d1d5de0d;
   --button-secondary-BorderColor: #d1d5de1a;
   --button-secondary-hover-BackgroundColor: #A5BDFF1A;
@@ -105,6 +104,108 @@
   --button-tertiary-hover-BackgroundColor: #d1d5de1a;
   --button-tertiary-active-BackgroundColor: #d1d5de26;
   --button-menu-active-BorderColor: #d9dee6;
+
+  /** Editbox **/
+  --input-BackgroundColor: #a5bdff0d;
+  --input-hover-BackgroundColor: #a5bdff1a;
+  --input-BorderColor: #a5bdff0d;
+  --input-TextColor: #ffffff;
+  --input-LabelColor: #ffffff;
+  --input-filled-LabelColor: #8b97ad;
+  --input-PlaceholderColor: #8b97ad;
+  --input-hover-PlaceholderColor: #ffffff;
+  --input-focus-PlaceholderColor: #556178;
+  --input-HelperColor: #8b97ad;
+  --input-error-BorderColor: #fb6863;
+  --input-search-IconColor: #ffffff;
+
+  /** Checkboxes **/
+  --selector-BackgroundColor: #a5bdff0d;
+  --selector-BorderColor: #d9dee6;
+  --selector-off-BackgroundColor: #556178;
+  --selector-hover-overlay-BackgroundColor: #a5bdff1a;
+  --selector-disabled-BackgroundColor: #a5bdff1a;
+  --selector-disabled-BorderColor: #a5bdff0d;
+
+  --love-active-call-color-1: #5190EC;
+  --love-active-call-color-2: #F47758;
+  --love-active-call-transform: scaleY(0.25) scaleX(0.4);
+  --love-active-call-filter: blur(17px);
+
+  --global-offline-color: #d1d5de;
+
+  --avatar-counter-BackgroundColor: #141523
+}
+
+.theme-dark-gray {
+  --border-talk-indication-primary: #6366F1;
+  --global-ui-BackgroundColor: 1530720D;
+  --global-ui-BorderColor: #A5BDFF1A;
+  --global-ui-hover-BackgroundColor: #A5BDFF1A;
+  --global-ui-active-BackgroundColor: #A5BDFF26;
+  --global-ui-highlight-BackgroundColor: #A5BDFF0D;
+  --global-ui-hover-highlight-BackgroundColor: #A5BDFF26;
+  --global-surface-01-BackgroundColor: #0E0F10;
+  --global-surface-01-BorderColor: #1F2737;
+  --global-surface-01-hover-BackgroundColor: #121314;
+  --global-surface-02-BackgroundColor: #161719;
+  --global-surface-02-BorderColor: #262F40;
+  --global-surface-03-hover-BackgroundColor: #1A1C1F;
+  --global-subtle-ui-BorderColor: #A5BDFF0D;
+  --global-subtle-BackgroundColor: #072790;
+  --global-popover-BackgroundColor: #1F2328;
+  --global-popover-hover-BackgroundColor: #2C3139;
+  --global-popover-BorderColor: #FFFFFF14;
+  --global-primary-LinkColor: #A5B4FC;
+  --global-primary-IconColor: #ffffff;
+  --global-primary-TextColor: #FFFFFF;
+  --global-secondary-TextColor: #C1C9D6;
+  --global-tertiary-TextColor: #8E99AF;
+  --global-disabled-TextColor: #5A667E;
+  --global-accent-TextColor: #A5B4FC;
+  --global-error-TextColor: #FF6359;
+  --global-focus-BorderColor: #6366F1;
+  --global-focus-inset-BorderColor: #0D121C;
+  --global-popover-ShadowColor: #0E131E59;
+  --global-modal-ShadowColor: #0E131E73;
+  --global-accent-SkyText: #C7D2FE;
+  --global-accent-BackgroundColor: #6366F1;
+  --global-on-nuance-TextColor: #041d7d;
+
+  --global-no-priority-PriorityColor: #8E99AF;
+  --global-low-PriorityColor: #818CF8;
+  --global-medium-PriorityColor: #FFBD2E;
+  --global-high-PriorityColor: #F6684B;
+  --global-urgent-PriorityColor: #F6684B;
+  --global-disabled-PriorityColor: #5A667E;
+
+  --tag-on-subtle-PorpoiseText: #F2F4F6;
+  --tag-subtle-PorpoiseBackground: #343F49;
+  --tag-nuance-SunshineBackground: #262F40;
+  --tag-accent-SunshineText: #FFBD2E;
+  --tag-nuance-SkyBackground: #1F2737;
+
+  --icon-disabled-IconColor: #394358;
+
+  --border-talk-indication-secondary: #22262B;
+
+  /** Buttons **/
+  --button-subtle-LabelColor: #fff;
+  --button-subtle-IconColor: #fff;
+  --button-primary-BackgroundColor: #6366F1;
+  --button-primary-BorderColor: #d1d5de1a;
+  --button-primary-hover-BackgroundColor: #818CF8;
+  --button-primary-active-BackgroundColor: #4F46E5;
+  --button-primary-loading-LabelColor: #C7D2FE;
+  --button-disabled-BackgroundColor: #d1d5de12;
+  --button-secondary-BackgroundColor: #d1d5de12;
+  --button-secondary-BorderColor: #d1d5de1f;
+  --button-secondary-hover-BackgroundColor: #C7D2FE26;
+  --button-secondary-active-BackgroundColor: #d1d5de33;
+  --button-tertiary-hover-BackgroundColor: #d1d5de24;
+  --button-tertiary-active-BackgroundColor: #d1d5de33;
+  --button-menu-active-BorderColor: #d9dee6;
+  --selector-active-BackgroundColor: #6366F1;
 
   /** Editbox **/
   --input-BackgroundColor: #a5bdff0d;
@@ -193,8 +294,13 @@
   /** Buttons **/
   --button-subtle-LabelColor: #000;
   --button-subtle-IconColor: #000;
-  --button-disabled-BackgroundColor: #1725470d;
+  --button-primary-BackgroundColor: #3364e2;
+  --button-primary-BorderColor: #d1d5de1a;
+  --button-primary-hover-BackgroundColor: #6191fe;
+  --button-primary-active-BackgroundColor: #2553cf;
   --button-primary-loading-LabelColor: #95baff;
+  --selector-active-BackgroundColor: #3364e2;
+  --button-disabled-BackgroundColor: #1725470d;
   --button-secondary-BackgroundColor: #1725470d;
   --button-secondary-BorderColor: #1725471a;
   --button-secondary-hover-BackgroundColor: #1725471a;

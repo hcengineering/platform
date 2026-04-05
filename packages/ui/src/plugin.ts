@@ -134,6 +134,7 @@ export const uis = plugin(uiId, {
     Compact: '' as IntlString,
     ThemeLight: '' as IntlString,
     ThemeDark: '' as IntlString,
+    ThemeDarkGray: '' as IntlString,
     ThemeSystem: '' as IntlString,
     NoTimeZonesFound: '' as IntlString,
     Selected: '' as IntlString,

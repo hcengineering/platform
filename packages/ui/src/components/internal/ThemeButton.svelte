@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { ThemeId } from '@hcengineering/theme'
   import { onMount } from 'svelte'
   import FontSize from './icons/FontSize.svelte'
   import CheckCircled from './icons/CheckCircled.svelte'
@@ -31,14 +32,14 @@
   bind:this={btn}
   class="antiButton regular sh-no-shape jf-center bs-none no-focus statusPopupThemeButton"
   class:focused={theme === focused}
-  class:both={theme === 'theme-system'}
+  class:both={theme === ThemeId.System}
 >
-  {#if theme === 'theme-light' || theme === 'theme-system'}
+  {#if theme === ThemeId.Light || theme === ThemeId.System}
     <div class="light-container">
       <div class="paper"><FontSize size={'small'} /></div>
     </div>
   {/if}
-  {#if theme === 'theme-dark' || theme === 'theme-system'}
+  {#if theme === ThemeId.Dark || theme === ThemeId.DarkGray || theme === ThemeId.System}
     <div class="dark-container">
       <div class="paper"><FontSize size={'small'} /></div>
     </div>

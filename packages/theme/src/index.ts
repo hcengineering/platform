@@ -16,11 +16,19 @@
 import { Analytics } from '@hcengineering/analytics'
 import '@hcengineering/platform-rig/profiles/ui/svelte'
 import { derived, writable } from 'svelte/store'
-import { ThemeVariant, type ThemeVariantType } from './variants'
+import { ThemeId, ThemeVariant, isStoredThemeDark, type ThemeVariantType } from './variants'
 
 export { default as Theme } from './Theme.svelte'
 export { default as InvertedTheme } from './InvertedTheme.svelte'
-export { ThemeVariant, type ThemeVariantType } from './variants'
+export {
+  ThemeId,
+  ThemeVariant,
+  THEME_IDS_DARK,
+  isStoredThemeDark,
+  type ThemeIdType,
+  type ThemeVariantType
+} from './variants'
+export { getThemeRootClass } from './themeClass'
 
 /**
  * @public
@@ -44,11 +52,11 @@ export const isSystemThemeDark = (): boolean => window.matchMedia('(prefers-colo
  * @public
  */
 export const isThemeDark = (theme: string): boolean =>
-  theme === 'theme-dark' || (theme === 'theme-system' && isSystemThemeDark())
+  isStoredThemeDark(theme) || (theme === ThemeId.System && isSystemThemeDark())
 /**
  * @public
  */
-export const getCurrentTheme = (): string => localStorage.getItem('theme') ?? getDefaultProps('theme', 'theme-system')
+export const getCurrentTheme = (): string => localStorage.getItem('theme') ?? getDefaultProps('theme', ThemeId.System)
 /**
  * @public
  */
@@ -69,24 +77,30 @@ export const getCurrentEmoji = (): string => localStorage.getItem('emoji') ?? ge
 
 export class ThemeOptions {
   readonly variant: ThemeVariantType
+  /** True when the stored theme is {@link ThemeId.DarkGray} (distinct platform palette from classic dark). */
+  readonly darkGray: boolean
   constructor (
     readonly fontSize: number,
     readonly dark: boolean,
     readonly language: string,
-    readonly emoji: string
+    readonly emoji: string,
+    readonly themeId: string
   ) {
     this.variant = dark ? ThemeVariant.Dark : ThemeVariant.Light
+    this.darkGray = dark && themeId === ThemeId.DarkGray
   }
 }
 export const themeStore = writable<ThemeOptions>()
 
 export function initThemeStore (): void {
+  const theme = getCurrentTheme()
   themeStore.set(
     new ThemeOptions(
       getCurrentFontSize() === 'normal-font' ? 16 : 14,
-      isThemeDark(getCurrentTheme()),
+      isThemeDark(theme),
       getCurrentLanguage(),
-      getCurrentEmoji()
+      getCurrentEmoji(),
+      theme
     )
   )
 }

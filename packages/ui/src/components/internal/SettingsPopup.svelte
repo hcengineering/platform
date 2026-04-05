@@ -21,6 +21,7 @@
   import Language from './icons/Language.svelte'
 
   import ThemeButton from './ThemeButton.svelte'
+  import { ThemeId } from '@hcengineering/theme'
   import ui, {
     Html,
     Icon,
@@ -58,9 +59,10 @@
   ]
 
   const themes: Array<{ id: string, label: IntlString }> = [
-    { id: 'theme-light', label: ui.string.ThemeLight },
-    { id: 'theme-dark', label: ui.string.ThemeDark },
-    { id: 'theme-system', label: ui.string.ThemeSystem }
+    { id: ThemeId.Light, label: ui.string.ThemeLight },
+    { id: ThemeId.Dark, label: ui.string.ThemeDark },
+    { id: ThemeId.DarkGray, label: ui.string.ThemeDarkGray },
+    { id: ThemeId.System, label: ui.string.ThemeSystem }
   ]
 
   const emojis: Array<{ id: string, label: IntlString }> = [

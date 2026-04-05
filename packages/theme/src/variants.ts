@@ -13,9 +13,28 @@
 // limitations under the License.
 //
 
-export const ThemeVariant = {
+/** All values persisted in `localStorage` / passed as the app theme id. */
+export const ThemeId = {
   Light: 'theme-light',
-  Dark: 'theme-dark'
+  Dark: 'theme-dark',
+  DarkGray: 'theme-dark-gray',
+  System: 'theme-system'
+} as const
+
+export type ThemeIdType = (typeof ThemeId)[keyof typeof ThemeId]
+
+/** Binary appearance (native chrome, drawing, `ThemeOptions`); maps from any dark {@link ThemeId} to {@link ThemeVariant.Dark}. */
+export const ThemeVariant = {
+  Light: ThemeId.Light,
+  Dark: ThemeId.Dark
 } as const
 
 export type ThemeVariantType = (typeof ThemeVariant)[keyof typeof ThemeVariant]
+
+/** Stored ids that use a dark root palette (add new dark themes here only). */
+export const THEME_IDS_DARK = [ThemeId.Dark, ThemeId.DarkGray] as const
+
+/** True when `theme` is a stored id that always uses a dark root palette (not {@link ThemeId.System}). */
+export function isStoredThemeDark (theme: string): boolean {
+  return (THEME_IDS_DARK as readonly string[]).includes(theme)
+}

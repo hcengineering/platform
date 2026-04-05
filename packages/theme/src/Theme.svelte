@@ -17,12 +17,13 @@
   import platform, { loadPluginStrings, setMetadata } from '@hcengineering/platform'
   import { onMount, setContext } from 'svelte'
   import { writable } from 'svelte/store'
-  import { ThemeVariant } from './variants'
   import {
+    ThemeId,
     ThemeOptions,
     getCurrentFontSize,
     getCurrentLanguage,
     getCurrentTheme,
+    getThemeRootClass,
     isSystemThemeDark,
     isThemeDark,
     themeStore as themeOptions,
@@ -35,10 +36,12 @@
   const currentEmoji = writable<string>(getCurrentEmoji())
 
   const setOptions = (currentFont: string, theme: string, language: string, emoji: string) => {
-    themeOptions.set(new ThemeOptions(currentFont === 'normal-font' ? 16 : 14, isThemeDark(theme), language, emoji))
+    themeOptions.set(
+      new ThemeOptions(currentFont === 'normal-font' ? 16 : 14, isThemeDark(theme), language, emoji, theme)
+    )
   }
 
-  const getRealTheme = (theme: string): string => (isThemeDark(theme) ? ThemeVariant.Dark : ThemeVariant.Light)
+  const rootThemeClass = (theme: string): string => getThemeRootClass(theme, isSystemThemeDark())
   const setRootColors = (theme: string, set = true) => {
     currentTheme.set(theme)
     if (set) {
@@ -46,7 +49,7 @@
     }
     document.documentElement.setAttribute(
       'class',
-      `${getRealTheme(theme)} ${getCurrentFontSize()} ${getCurrentEmoji()}`
+      `${rootThemeClass(theme)} ${getCurrentFontSize()} ${getCurrentEmoji()}`
     )
     setOptions(getCurrentFontSize(), theme, getCurrentLanguage(), getCurrentEmoji())
   }
@@ -57,7 +60,7 @@
     }
     document.documentElement.setAttribute(
       'class',
-      `${getRealTheme(getCurrentTheme())} ${fontsize} ${getCurrentEmoji()}`
+      `${rootThemeClass(getCurrentTheme())} ${fontsize} ${getCurrentEmoji()}`
     )
     setOptions(fontsize, getCurrentTheme(), getCurrentLanguage(), getCurrentEmoji())
   }
@@ -78,7 +81,7 @@
     }
     document.documentElement.setAttribute(
       'class',
-      `${getRealTheme(getCurrentTheme())} ${getCurrentFontSize()} ${emoji}`
+      `${rootThemeClass(getCurrentTheme())} ${getCurrentFontSize()} ${emoji}`
     )
     setOptions(getCurrentFontSize(), getCurrentTheme(), getCurrentLanguage(), emoji)
   }
@@ -104,7 +107,7 @@
 
   function checkSystemTheme (): void {
     const theme = $currentTheme
-    if (remove !== null || theme !== 'theme-system') {
+    if (remove !== null || theme !== ThemeId.System) {
       remove()
       remove = null
     }
@@ -118,7 +121,7 @@
     }
   }
 
-  $: if ($currentTheme === 'theme-system') {
+  $: if ($currentTheme === ThemeId.System) {
     checkSystemTheme()
   }
 

@@ -21,10 +21,6 @@
   --primary-button-outline: #5190EC;
   --primary-button-transparent: rgba(43, 81, 144, 0.2);
 
-  --primary-button-default: #205DC2;
-  --primary-button-hovered: #3575de;
-  --primary-button-pressed: #1C52AB;
-  --primary-button-focused: #205DC2;
   --secondary-button-color: rgba(0, 0, 0, .8);
   --secondary-button-default: #D3E1F8;
   --secondary-button-hovered: #BDD2F5;
@@ -110,6 +106,10 @@
 
   --primary-button-disabled: rgba(255, 255, 255, .12);
   --primary-button-disabled-color: rgba(255, 255, 255, .4);
+  --primary-button-default: #205DC2;
+  --primary-button-hovered: #3575de;
+  --primary-button-pressed: #1C52AB;
+  --primary-button-focused: #205DC2;
   --secondary-button-disabled: rgba(255, 255, 255, .12);
   --secondary-button-disabled-color: rgba(255, 255, 255, .4);
 
@@ -421,6 +421,330 @@
   --theme-label-gray-border-color: rgba(255, 255, 255, .09);
 }
 
+.theme-dark-gray {
+  --theme-drawing-bg-color: #282834;
+
+  --theme-text-primary-color: rgba(255, 255, 255, .8);
+  --theme-text-placeholder-color: rgba(255, 255, 255, .4);
+
+  --primary-button-disabled: rgba(255, 255, 255, .12);
+  --primary-button-disabled-color: rgba(255, 255, 255, .4);
+  --secondary-button-disabled: rgba(255, 255, 255, .12);
+  --secondary-button-disabled-color: rgba(255, 255, 255, .4);
+
+  --primary-button-default: #6366F1;
+  --primary-button-hovered: #818CF8;
+  --primary-button-pressed: #4F46E5;
+  --primary-button-focused: #6366F1;
+
+  --theme-button-default: rgba(255, 255, 255, .03);
+  --theme-button-hovered: rgba(255, 255, 255, .07);
+  --theme-button-pressed: rgba(255, 255, 255, .11);
+  --theme-button-focused: rgba(255, 255, 255, .07);
+  --theme-button-focused-border: rgba(255, 255, 255, .09);
+  --theme-button-disabled: transparent;
+  --theme-button-border: rgba(255, 255, 255, .09);
+
+  --theme-breadcrumb-default: rgba(255, 255, 255, 0);
+  --theme-breadcrumb-hovered: rgba(255, 255, 255, .08);
+  --theme-breadcrumb-pressed: rgba(255, 255, 255, .1);
+  --theme-button-icon-default: rgba(255, 255, 255, 0);
+  --theme-button-icon-hovered: rgba(255, 255, 255, .08);
+  --theme-button-icon-pressed: rgba(255, 255, 255, .12);
+
+  --theme-button-contrast-color: #000;
+  --theme-button-contrast-enabled: rgba(255, 255, 255, .8);
+  --theme-button-contrast-hovered: #fff;
+  --theme-button-contrast-pressed: rgba(255, 255, 255, .6);
+  --theme-button-contrast-disabled: rgba(255, 255, 255, .6);
+  --theme-button-contrast-disabled-color: rgba(0, 0, 0, .5);
+  --theme-button-contrast-border: rgba(255, 255, 255, .2);
+
+  --theme-button-container-color: #22262B;
+
+  --theme-button-attention-gradient: linear-gradient(135deg, #7C3AED, #A855F7);
+  --theme-button-attention-border: #A855F7;
+  --theme-button-attention-hover-gradient: linear-gradient(135deg, #8B5CF6, #7C3AED);
+  --theme-button-attention-hover-border: #7C3AED;
+  --theme-button-attention-active-gradient: linear-gradient(135deg, #6D28D9, #7C3AED);
+  --theme-button-attention-hover-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+  --theme-button-attention-active-shadow: 0 4px 12px rgba(124, 58, 237, 0.6);
+  --theme-button-attention-focus-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
+
+  --theme-refinput-divider: rgba(255, 255, 255, .07);
+  --theme-refinput-border: rgba(255, 255, 255, .1);
+
+  // Be aware to update defineAlpha() function in colors.ts
+  --theme-bg-color: #161719;
+  --theme-bg-accent-color: rgba(0, 0, 0, .08);
+  --theme-bg-dark-color: rgba(0, 0, 0, .2);
+  --theme-back-color: #0E0F10;
+  --theme-overlay-color: rgba(0, 0, 0, .3);
+  --theme-statusbar-color: #0E0F10;
+  --theme-navpanel-color: #0E0F10;
+  --theme-navpanel-hovered: rgba(255, 255, 255, .04);
+  --theme-navpanel-selected: rgba(255, 255, 255, .08);
+  --theme-navpanel-divider: rgba(255, 255, 255, .1);
+  --theme-navpanel-border: rgba(255, 255, 255, .1);
+  --theme-navpanel-icons-color: #7F7F7F;
+  --theme-navpanel-icons-divider: rgba(255, 255, 255, .11);
+  --theme-navpanel-shadow-mobile: drop-shadow(0 0 3px rgba(0, 0, 0, .5));
+  --theme-comp-header-color: #1E2024;
+  --theme-divider-color: rgba(255, 255, 255, .06);
+  --theme-bg-divider-color: #22242A;
+  --theme-mention-bg-color: rgba(55, 122, 230, 0.1);
+  --theme-mention-focused-bg-color: rgba(55, 122, 230, 0.2);
+  --theme-broken-mention-color: rgba(255, 255, 255, .4);
+  --theme-broken-mention-bg-color: rgba(255, 255, 255, .12);
+  --theme-broken-mention-focused-bg-color: rgba(255, 255, 255, .2);
+
+  --theme-trans-color: rgba(255, 255, 255, .3);
+  --theme-darker-color: rgba(255, 255, 255, .4);
+  --theme-halfcontent-color: rgba(255, 255, 255, .5);
+  --theme-dark-color: rgba(255, 255, 255, .6);
+  --theme-content-color: rgba(255, 255, 255, .8);
+  --theme-caption-color: #FFF;
+  --theme-link-color: #377AE6;
+
+  --theme-list-border-color: rgba(255, 255, 255, .05);
+  --theme-list-header-color: #C88C65;
+  --theme-list-subheader-color: #22242A;
+  --theme-list-row-color: #1D1F23;
+  --theme-list-divider-color: rgba(255, 255, 255, .09);
+  --theme-list-subheader-divider: rgba(255, 255, 255, .06);
+  
+  --theme-list-button-color: #22242A;
+  --theme-list-button-hover: #2A2C32;
+  --theme-link-button-color: #22242A;
+  --theme-link-button-hover: #2A2C33;
+
+  --theme-table-border-color: rgba(255, 255, 255, .1);
+  --theme-table-header-color: #1A1C20;
+  --theme-table-row-color: #1D1F23;
+
+  --theme-kanban-card-bg-color: rgba(222, 222, 240, .055);
+  --theme-kanban-card-border: rgba(255, 255, 255, .06);
+  --theme-kanban-card-footer: rgba(217, 217, 217, .07);
+
+  --theme-editbox-focus-color: rgba(255, 255, 255, .04);
+  --theme-editbox-focus-border: #818CF8;
+  --theme-tablist-color: rgba(0, 0, 0, .02);
+  --theme-tablist-plain-color: #6366F1;
+  --theme-tablist-plain-divider: rgba(255, 255, 255, .07); // Light invert
+  --theme-checkbox-color: #000;
+  --theme-checkbox-bg-color: #FFF;
+  --theme-checkbox-border: rgba(0, 0, 0, .12);
+  --theme-checkbox-disabled: #999;
+  --theme-progress-color: #FFFFFF;
+  --theme-popup-color: #1F2328;
+  --theme-popup-trans-color: #1F2328ee;
+  --theme-popup-trans-gradient: linear-gradient(to bottom, #1F2328ff, #1F232800);
+  --theme-popup-hover: #2C3139;
+  --theme-popup-divider: rgba(255, 255, 255, .08);
+  --theme-popup-header: #323842;
+  --theme-popup-shadow: 0 0 .5rem rgba(0, 0, 0, .2);
+  --theme-popup-checkicon: #FFFFFF99;
+  --theme-popup-deactivated: #161719;
+  --theme-panel-color: #161719;
+  --theme-calendar-today-color: #fff;
+  --theme-calendar-holiday-color: #eb5757;
+  --theme-calendar-weekend-color: rgba(242, 153, 74, 1);
+  --theme-calendar-today-bgcolor: rgba(32, 93, 194, .1);
+  --theme-calendar-holiday-bgcolor: rgba(235, 87, 87, .1);
+  --theme-calendar-weekend-bgcolor: rgba(242, 153, 74, .05);
+  --theme-calendar-weekend-stroke-color: #444;
+  --theme-calendar-event-caption-color: rgba(0, 0, 0, .6);
+  --theme-calendar-event-available-color: rgba(55, 122, 230, .2);
+  --theme-calendar-event-available-bgcolor: #f6f9fe;
+  --theme-calendar-event-unavailable-color: rgba(244, 119, 88, .2);
+  --theme-calendar-event-unavailable-bgcolor: #fdece7;
+  --theme-calendar-zone: rgba(64, 109, 223, 0.1);
+
+  --theme-diffview-block-header-color: rgba(56,139,253,0.1);
+  --theme-diffview-line-color: var(--theme-content-color);
+  --theme-diffview-insert-line-color: rgba(46, 160, 67, 0.15);
+  --theme-diffview-delete-line-color: rgba(248, 81, 73, 0.1);
+  --theme-diffview-empty-line-color: rgba(110, 118, 129, 0.1);
+  --theme-diffview-insert-color: rgb(63, 185, 80);
+  --theme-diffview-delete-color: rgb(248, 81, 73);
+
+  --theme-tooltip-color: rgba(255, 255, 255, .8);
+  --theme-tooltip-bg: #2C3139;
+  --theme-tooltip-key-bg: rgba(255, 255, 255, .08);
+
+  --theme-inbox-notify: #F47758;
+  --theme-inbox-people-notify: #2B5190;
+  --theme-inbox-activity-bgcolor: #0E0F10;
+  --theme-inbox-activitymsg-bgcolor: rgba(255, 255, 255, .03);
+  --theme-inbox-activitymsg-divider: rgba(255, 255, 255, .1);
+  --theme-inbox-activitymsg-border: rgba(255, 255, 255, .03);
+  --theme-inbox-counter-bgcolor: rgba(255, 255, 255, .06);
+  --theme-inbox-people-counter-bgcolor: rgba(99, 102, 241, .12);
+
+  --theme-toggle-sw-color: #fff;
+  --theme-toggle-on-sw-color: #fff;
+  --theme-toggle-bg-color: rgba(120, 120, 128, 0.32);
+  --theme-toggle-bg-hover: rgba(120, 120, 128, 0.64);
+  --theme-toggle-on-bg-color: #6366F1;
+  --theme-toggle-on-bg-hover: #4F46E5;
+  --theme-radio-bg-color: #343442;
+
+  --theme-error-color: #eb5757;
+  --theme-urgent-color: #F5694A;
+  --theme-warning-color: #f2994a;
+  --theme-lost-color: #eb5757;
+  --theme-won-color: #34DB80;
+  --theme-caret-color: #fff;
+  --theme-code-color: #DD812B;
+  --theme-code-bg-color: #262F40;
+
+  --theme-text-editor-note-anchor-bg-neutral: #2C2C2C; /* Gray, no saturation change needed */
+  --theme-text-editor-note-anchor-bg-dangerous: #8F4040;
+  --theme-text-editor-note-anchor-bg-dangerous-light: #8E6464;
+  --theme-text-editor-note-anchor-bg-warning: #A88D4E;
+  --theme-text-editor-note-anchor-bg-warning-light: #8A8666;
+  --theme-text-editor-note-anchor-bg-positive: #596941;
+  --theme-text-editor-note-anchor-bg-positive-light: #7B9589;
+  --theme-text-editor-note-anchor-bg-primary: #688797;
+  --theme-text-editor-note-anchor-bg-primary-light: #747C81;
+
+  --text-editor-block-quote-color: #DA5701;
+  --text-edtior-hr-border-color: rgba(255, 255, 255, 0.1);
+  --text-editor-table-border-color: hsl(220, 6%, 40%);
+  --text-editor-color-picker-outline: rgba(250, 222, 201, 0.3);
+
+  --theme-text-editor-palette-text-gray: rgba(155, 155, 155, 1);
+  --theme-text-editor-palette-text-brown: rgba(186, 133, 111, 1);
+  --theme-text-editor-palette-text-orange: rgba(199, 125, 72, 1);
+  --theme-text-editor-palette-text-yellow: rgba(202, 152, 73, 1);
+  --theme-text-editor-palette-text-green: rgba(82, 158, 114, 1);
+  --theme-text-editor-palette-text-blue: rgba(94, 135, 201, 1);
+  --theme-text-editor-palette-text-purple: rgba(157, 104, 211, 1);
+  --theme-text-editor-palette-text-pink: rgba(209, 87, 150, 1);
+  --theme-text-editor-palette-text-red: rgba(223, 84, 82, 1);
+  
+  --theme-text-editor-palette-bg-gray: rgba(47, 47, 47, 1);
+  --theme-text-editor-palette-bg-brown: rgba(74, 50, 40, 1);
+  --theme-text-editor-palette-bg-orange: rgba(92, 59, 35, 1);
+  --theme-text-editor-palette-bg-yellow: rgba(86, 67, 40, 1);
+  --theme-text-editor-palette-bg-green: rgba(36, 61, 48, 1);
+  --theme-text-editor-palette-bg-blue: rgba(20, 58, 78, 1);
+  --theme-text-editor-palette-bg-purple: rgba(60, 45, 73, 1);
+  --theme-text-editor-palette-bg-pink: rgba(78, 44, 60, 1);
+  --theme-text-editor-palette-bg-red:rgba(82, 46, 42, 1);
+
+  --accent-bg-color: #22262B;
+  --accent-shadow: rgb(0 0 0 / 10%) 0px 2px 4px;
+
+  --highlight-hover: #2A2E34;
+  --highlight-select: #2C3139;
+  --highlight-select-border: #3D4450;
+  --highlight-select-hover: #323842;
+
+  --scrollbar-bar-color: #35354a;
+  --scrollbar-bar-hover: #8a8aa5;
+  --scrollbar-track-color: #35354a;
+
+  --dark-color: #62666d;
+  --content-color: #8a8f98;
+  --theme-accent-color: rgba(255, 255, 255, .8);
+  --accent-color: #d7d8db;
+  --caption-color: #f7f8f8;
+  --white-color: #fff;
+
+  --divider-color: #303236;
+  --divider-trans-color: rgba(255, 255, 255, .12);
+  --menu-bg-select: #2C3139;
+  --menu-bg-select-trans: #2C313965;
+  --menu-icon-hover: #f3f3f8;
+  --header-bg-color: linear-gradient(0deg, var(--accent-bg-color), #2A2E34);
+  --popup-bg-color: linear-gradient(136.61deg, var(--accent-bg-color) 13.72%, #2C3139 74.3%);
+  --popup-bg-hover: #323842;
+  --popup-divider: #2E333C;
+  --popup-shadow: rgb(0 0 0 / 50%) 0px 4px 24px;
+  --popup-panel-shadow: rgb(0 0 0 / 55%) 0px 7px 24px;
+  --popup-aside-shadow: rgb(0 0 0 / 25%) 0px 8px 16px;
+  --card-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
+  --card-overlay-color: rgba(28, 29, 31, .5);
+  --avatar-bg-color: #4f5358;
+  --avatar-border-color: rgba(255, 255, 255, .1);
+  --tooltip-bg-color: #1f2023f0;
+
+  --button-bg-color: #303236;
+  --button-bg-hover: #37383b;
+  --button-border-color: #3c3f44;
+  --button-border-hover: #45484e;
+  --button-shadow: rgb(0 0 0 / 15%) 0px 1px 1px 1px;
+  --button-disabled-color: #313236;
+  --noborder-bg-color: #313236;
+  --noborder-bg-hover: #37383b;
+  --primary-bg-color: #6366F1;
+  --primary-bg-hover: #818CF8;
+  --primary-edit-border-color: #A5B4FC;
+  --primary-shadow: rgb(0 0 0 / 25%) 0px 1px 2px;
+  --dangerous-bg-color: #eb5757;
+  --dangerous-bg-hover: #ff6464;
+  --dangerous-shadow: var(--dangerous-bg-color) 0px 0px 12px -1px;
+
+  --incoming-msg: rgba(67, 67, 72, .3);
+  --outcoming-msg: rgba(67, 67, 72, .6);
+
+  --trans-content-05: rgba(138, 143, 152, .05);
+  --trans-content-10: rgba(138, 143, 152, .1);
+  --trans-content-20: rgba(138, 143, 152, .2);
+
+  --text-editor-toc-default-color: rgba(255, 255, 255, 0.1);
+  --text-editor-toc-hovered-color: rgba(255, 255, 255, 0.4);
+  --text-editor-table-header-color: rgba(255, 255, 255, 0.06);
+
+  --theme-clockface-back: radial-gradient(farthest-corner at 50% 0%, #bbb, #fff 100%);
+  --theme-clockface-shadow: inset 0 -3px 10px #aaa;
+  --theme-clockface-hours: #666;
+  --theme-clockface-quarter: #31302e;
+  --theme-clockface-min-arrow: conic-gradient(at 50% -10px, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0) 49%, #2F2F3A 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0) 100%);
+  --theme-clockface-arrows-holder: radial-gradient(at top center, #2F2F3A, #555555);
+  --theme-clockface-arrows-shadow: 0 0 1px white;
+
+  --theme-link-preview-bg-color: #252A32;
+  --theme-link-preview-description-color: #C1C9D6;
+  --theme-link-preview-text-color:#FFFFFF;
+
+  --theme-dialog-border-color: rgba(255, 255, 255, 0.1);
+  --theme-dialog-background-color: #1F2328;
+  --theme-dialog-back-color: #848484;
+  --theme-icon-stroke: #e8e9e9;
+  --theme-state-ghost-color: rgba(123, 123, 123, 0.6);
+  --theme-state-ghost-background-color: rgba(123, 123, 123, 0.1);
+  --theme-state-ghost-border-color: transparent;
+  --theme-state-primary-color: #818CF8;
+  --theme-state-primary-background-color: rgba(99, 102, 241, 0.12);
+  --theme-state-primary-border-color: rgba(99, 102, 241, 0.22);
+  --theme-state-regular-color: #7b7b7b;
+  --theme-state-regular-background-color: rgba(123, 123, 123, 0.1);
+  --theme-state-regular-border-color: rgba(123, 123, 123, 0.15);
+  --theme-wizard-not-visited-color: #34343c;
+
+  --calendar-event-back-color: #252A32;
+  --calendar-event-border-color: rgba(99, 102, 241, 0.25);
+  --calendar-event-handle-color: #6366F1;
+
+  --theme-label-green-color: rgba(34, 197, 94, .8);
+  --theme-label-green-bg-color: rgba(34, 197, 94, .08);
+  --theme-label-green-border-color: rgba(34, 197, 94, .2);
+
+  --theme-label-blue-color: rgba(59, 130, 246, .8);
+  --theme-label-blue-bg-color: rgba(59, 130, 246, .08);
+  --theme-label-blue-border-color: rgba(59, 130, 246, .2);
+
+  --theme-label-orange-color: rgba(249, 115, 22, .8);
+  --theme-label-orange-bg-color: rgba(249, 115, 22, .08);
+  --theme-label-orange-border-color: rgba(249, 115, 22, .2);
+
+  --theme-label-gray-color: rgba(255, 255, 255, .6);
+  --theme-label-gray-bg-color: rgba(255, 255, 255, .02);
+  --theme-label-gray-border-color: rgba(255, 255, 255, .09);
+}
+
 /* Light Theme */
 .theme-light {
   --theme-drawing-bg-color: #EEEEEE;
@@ -432,6 +756,11 @@
   --primary-button-disabled-color: rgba(0, 0, 0, .4);
   --secondary-button-disabled: rgba(0, 0, 0, .12);
   --secondary-button-disabled-color: rgba(0, 0, 0, .4);
+
+  --primary-button-default: #205DC2;
+  --primary-button-hovered: #3575de;
+  --primary-button-pressed: #1C52AB;
+  --primary-button-focused: #205DC2;
 
   --theme-button-default: rgba(0, 0, 0, .02);
   --theme-button-hovered: rgba(0, 0, 0, .04);
