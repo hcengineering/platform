@@ -216,6 +216,20 @@ export function createModel (builder: Builder): void {
     testManagement.ids.ModulePermissionGroup
   )
 
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: testManagement.app.TestManagement,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: testManagement.class.TestProject,
+      enabled: false,
+      order: 70
+    },
+    testManagement.ids.ModulePermissionGroupReadOnlyGuest
+  )
+
   builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectIcon, {
     component: testManagement.component.TestCaseStatusPresenter
   })
