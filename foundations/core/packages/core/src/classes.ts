@@ -585,6 +585,19 @@ export interface ClassPermission extends Permission {
 /**
  * @public
  */
+export interface ModulePermissionGroup extends Doc {
+  application: Ref<Doc>
+  role: AccountRole
+  permissions: Ref<Permission>[]
+  disabledPermissions?: Ref<Permission>[]
+  spaceClass: Ref<Class<Space>>
+  enabled: boolean
+  order?: number
+}
+
+/**
+ * @public
+ */
 export enum AccountRole {
   ReadOnlyGuest = 'READONLYGUEST',
   DocGuest = 'DocGuest',

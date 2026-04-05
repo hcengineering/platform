@@ -33,6 +33,10 @@ export default mergeIds(trainingId, training, {
     TrainingGroup: '' as Ref<NotificationGroup>,
     TrainingRequest: '' as Ref<NotificationType>
   },
+  ids: {
+    GuestTrainingAttemptClassPermission: '' as Ref<Doc>,
+    ModulePermissionGroup: '' as Ref<Doc>
+  },
 
   // TODO: Move function resources declarations to plugins/*-resources
   //  Currently, dependencies look like this:

@@ -17,6 +17,7 @@ import {
   DOMAIN_MODEL,
   DOMAIN_SPACE,
   IndexKind,
+  type ModulePermissionGroup,
   type AccountRole,
   type AccountUuid,
   type AnyAttribute,
@@ -46,6 +47,7 @@ import {
   Prop,
   TypeAccountUuid,
   TypeBoolean,
+  TypeNumber,
   TypeRef,
   TypeString,
   UX
@@ -192,4 +194,28 @@ export class TTxAccessLevel extends TClass implements TxAccessLevel {
   removeAccessLevel?: AccountRole
   updateAccessLevel?: AccountRole
   isIdentity?: boolean
+}
+
+@Model(core.class.ModulePermissionGroup, core.class.Doc, DOMAIN_MODEL)
+export class TModulePermissionGroup extends TDoc implements ModulePermissionGroup {
+  @Prop(TypeRef(core.class.Doc), core.string.AttachedTo)
+    application!: Ref<Doc>
+
+  @Prop(TypeString(), core.string.Roles)
+    role!: AccountRole
+
+  @Prop(ArrOf(TypeRef(core.class.Permission)), core.string.Permission)
+    permissions!: Ref<Permission>[]
+
+  @Prop(ArrOf(TypeRef(core.class.Permission)), core.string.Permission)
+    disabledPermissions?: Ref<Permission>[]
+
+  @Prop(TypeRef(core.class.Class), core.string.Class)
+    spaceClass!: Ref<Class<Space>>
+
+  @Prop(TypeBoolean(), core.string.Name)
+    enabled!: boolean
+
+  @Prop(TypeNumber(), core.string.Order)
+    order?: number
 }

@@ -16,7 +16,7 @@
 import activity from '@hcengineering/activity'
 import chunter from '@hcengineering/chunter'
 import core from '@hcengineering/model-core'
-import { SortingOrder, type FindOptions } from '@hcengineering/core'
+import { AccountRole, SortingOrder, type FindOptions } from '@hcengineering/core'
 
 import { type Builder } from '@hcengineering/model'
 import view, { createAction } from '@hcengineering/model-view'
@@ -202,6 +202,19 @@ export function createModel (builder: Builder): void {
   definePresenters(builder)
 
   defineApplication(builder)
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: testManagement.app.TestManagement,
+      role: AccountRole.Guest,
+      permissions: [],
+      spaceClass: testManagement.class.TestProject,
+      enabled: false,
+      order: 70
+    },
+    testManagement.ids.ModulePermissionGroup
+  )
 
   builder.mixin(testManagement.class.TestCase, core.class.Class, view.mixin.ObjectIcon, {
     component: testManagement.component.TestCaseStatusPresenter

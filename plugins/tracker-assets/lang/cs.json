@@ -279,7 +279,8 @@
     "Extensions": "Rozšíření",
     "UnsetParentIssue": "Odebrat nadřazený úkol",
     "ForbidCreateProjectPermission": "Zakázat vytvoření projektu",
-    "ForbidCreateProjectPermissionDescription": "Zakazuje uživatelům vytvářet nové projekty"
+    "ForbidCreateProjectPermissionDescription": "Zakazuje uživatelům vytvářet nové projekty",
+    "AllowCreatingIssues": "Povolit vytváření úkolů"
   },
   "status": {}
 }

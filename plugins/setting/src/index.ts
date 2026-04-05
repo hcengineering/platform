@@ -311,6 +311,9 @@ export default plugin(settingId, {
     OfficeDefaultSettings: '' as IntlString,
     DefaultStartWithTranscription: '' as IntlString,
     DefaultStartWithRecording: '' as IntlString,
+    GuestPermissionsSettings: '' as IntlString,
+    GuestPermissionsModulePermissions: '' as IntlString,
+    GuestPermissionsModulePermissionsHint: '' as IntlString,
     MailboxErrorInvalidName: '' as IntlString,
     MailboxErrorDomainNotFound: '' as IntlString,
     MailboxErrorNameRulesViolated: '' as IntlString,
@@ -352,6 +355,7 @@ export default plugin(settingId, {
   icon: {
     AccountSettings: '' as Asset,
     Owners: '' as Asset,
+    Members: '' as Asset,
     Password: '' as Asset,
     Setting: '' as Asset,
     Integrations: '' as Asset,

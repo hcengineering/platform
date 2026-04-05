@@ -116,6 +116,7 @@ export default plugin(trainingId, {
     TrainingTake: '' as IntlString,
     TrainingTitle: '' as IntlString,
     Trainings: '' as IntlString,
+    AllowToTakeTraining: '' as IntlString,
     ViewAllTrainings: '' as IntlString,
     ViewAllTrainingsAll: '' as IntlString,
     ViewAllTrainingsArchived: '' as IntlString,

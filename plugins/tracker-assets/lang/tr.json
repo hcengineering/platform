@@ -270,7 +270,8 @@
     "DefaultIssueStatus": "Varsayılan sorun durumu",
     "IssueStatus": "Durum",
     "Extensions": "Uzantılar",
-    "UnsetParentIssue": "Üst sorunu kaldır"
+    "UnsetParentIssue": "Üst sorunu kaldır",
+    "AllowCreatingIssues": "Sorun oluşturmaya izin ver"
   },
   "status": {}
 }

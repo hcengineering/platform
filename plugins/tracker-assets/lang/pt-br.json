@@ -272,7 +272,8 @@
     "Extensions": "Extensions",
     "UnsetParentIssue": "Desmarcar problema pai",
     "ForbidCreateProjectPermission": "Proibir criação de projeto",
-    "ForbidCreateProjectPermissionDescription": "Proíbe os usuários de criar novos projetos"
+    "ForbidCreateProjectPermissionDescription": "Proíbe os usuários de criar novos projetos",
+    "AllowCreatingIssues": "Permitir criar problemas"
   },
   "status": {}
 }
