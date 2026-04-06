@@ -73,6 +73,7 @@ import CardSearchItem from './components/CardSearchItem.svelte'
 import CreateSpace from './components/navigator/CreateSpace.svelte'
 import card from './plugin'
 import { type NavigatorConfig } from './types'
+import { writable } from 'svelte/store'
 
 export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: () => void): Promise<void> {
   if (tag !== undefined) {
@@ -779,4 +780,16 @@ export function canUnlockSection (space: Ref<Space>, store: PermissionsStore): b
   const allowed = store.ps[space]?.has(card.permission.UnlockSection)
   if (allowed) return true
   return !store.restrictedSpaces.has(space)
+}
+
+export const viewStore = writable<Record<Ref<MasterTag>, string>>(
+  JSON.parse(localStorage.getItem('card.layout') ?? '{}')
+)
+
+export function setViewMode (type: Ref<MasterTag>, mode: string): void {
+  viewStore.update((views) => {
+    views[type] = mode
+    localStorage.setItem('card.layout', JSON.stringify(views))
+    return views
+  })
 }

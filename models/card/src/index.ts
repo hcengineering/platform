@@ -61,6 +61,7 @@ import {
   Model,
   Prop,
   ReadOnly,
+  TypeBoolean,
   TypeCollaborativeDoc,
   TypeNumber,
   TypeRank,
@@ -94,6 +95,9 @@ export class TMasterTag extends TClass implements MasterTag {
   color?: number
   background?: number
   removed?: boolean
+
+  @Prop(TypeBoolean(), card.string.SingleColumn)
+    singleColumn?: boolean
 }
 
 @Model(card.class.Tag, core.class.Mixin)
@@ -916,6 +920,31 @@ export function createModel (builder: Builder): void {
       expandable: true
     },
     card.ids.ManageMasterTags
+  )
+
+  builder.createDoc(
+    core.class.ClassPermission,
+    core.space.Model,
+    {
+      label: card.string.AllowCreatingCards,
+      scope: 'space',
+      targetClass: card.class.Card
+    },
+    card.ids.GuestCardClassPermission
+  )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: card.app.Card,
+      role: AccountRole.Guest,
+      permissions: [card.ids.GuestCardClassPermission],
+      spaceClass: card.class.CardSpace,
+      enabled: true,
+      order: 20
+    },
+    card.ids.ModulePermissionGroup
   )
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ClassFilters, {

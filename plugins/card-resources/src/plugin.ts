@@ -167,6 +167,9 @@ export default mergeIds(cardId, card, {
     CardUpdated: '' as IntlString,
     CardCreated: '' as IntlString,
     MyCards: '' as IntlString,
-    GotoMyCards: '' as IntlString
+    GotoMyCards: '' as IntlString,
+    SingleColumn: '' as IntlString,
+    TwoColumns: '' as IntlString,
+    LayoutAuto: '' as IntlString
   }
 })

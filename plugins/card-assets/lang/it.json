@@ -5,6 +5,7 @@
     "Cards": "Carte",
     "Content": "Contenuto",
     "CreateCard": "Crea Carta",
+    "AllowCreatingCards": "Consenti la creazione di carte",
     "CreateMasterTag": "Crea Tipo",
     "CreateTag": "Crea Tag",
     "MasterTag": "Tipo",
@@ -78,6 +79,9 @@
     "LockSection": "Blocca sezione",
     "UnLockSection": "Sblocca sezione",
     "SectionLocked": "Sezione {section} bloccata",
-    "SectionUnlocked": "Sezione {section} sbloccata"
+    "SectionUnlocked": "Sezione {section} sbloccata",
+    "LayoutAuto": "Auto",
+    "SingleColumn": "Una colonna",
+    "TwoColumns": "Due colonne"
   }
 }

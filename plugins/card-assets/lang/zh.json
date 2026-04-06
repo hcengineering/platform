@@ -5,6 +5,7 @@
     "Cards": "卡片",
     "Content": "内容",
     "CreateCard": "创建卡片",
+    "AllowCreatingCards": "允许创建卡片",
     "CreateMasterTag": "创建类型",
     "CreateTag": "创建标签",
     "MasterTag": "类型",
@@ -78,6 +79,9 @@
     "LockSection": "锁定部分",
     "UnLockSection": "解锁部分",
     "SectionLocked": "部分 {section} 已锁定",
-    "SectionUnlocked": "部分 {section} 已解锁"
+    "SectionUnlocked": "部分 {section} 已解锁",
+    "LayoutAuto": "自动",
+    "SingleColumn": "单列",
+    "TwoColumns": "两列"
   }
 }

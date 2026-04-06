@@ -5,6 +5,7 @@
     "Cards": "Карты",
     "Content": "Содержание",
     "CreateCard": "Создать карту",
+    "AllowCreatingCards": "Разрешить создание карт",
     "CreateMasterTag": "Создать тип",
     "CreateTag": "Создать тег",
     "MasterTag": "Тип",
@@ -78,6 +79,9 @@
     "LockSection": "Заблокировать секцию",
     "UnLockSection": "Разблокировать секцию",
     "SectionLocked": "Секция {section} заблокирована",
-    "SectionUnlocked": "Секция {section} разблокирована"
+    "SectionUnlocked": "Секция {section} разблокирована",
+    "LayoutAuto": "Авто",
+    "SingleColumn": "Один столбец",
+    "TwoColumns": "Два столбца"
   }
 }

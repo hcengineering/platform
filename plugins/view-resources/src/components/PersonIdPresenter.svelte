@@ -39,13 +39,15 @@
 </script>
 
 {#if person}
-  <ObjectPresenter
-    objectId={person}
-    _class={contact.class.Person}
-    {shouldShowName}
-    {shouldShowAvatar}
-    {noUnderline}
-    shrink={shrink ? 1 : 0}
-    props={{ avatarSize }}
-  />
+  <div class="pl-3">
+    <ObjectPresenter
+      objectId={person}
+      _class={contact.class.Person}
+      {shouldShowName}
+      {shouldShowAvatar}
+      {noUnderline}
+      shrink={shrink ? 1 : 0}
+      props={{ avatarSize }}
+    />
+  </div>
 {/if}

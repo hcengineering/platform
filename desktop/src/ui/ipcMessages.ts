@@ -43,5 +43,10 @@ export const IpcMessage = {
   OnDeepLinkHandler: 'on-deep-link-handler',
   HandleNotificationNavigation: 'handle-notification-navigation',
   HandleUpdateDownloadProgress: 'handle-update-download-progress',
-  HandleAuth: 'handle-auth'
+  HandleAuth: 'handle-auth',
+  OpenFindBar: 'open-find-bar',
+  FindInPage: 'find-in-page',
+  StopFindInPage: 'stop-find-in-page',
+  FindInPageResult: 'find-in-page-result',
+  FindOverlayLayout: 'find-overlay-layout'
 } as const

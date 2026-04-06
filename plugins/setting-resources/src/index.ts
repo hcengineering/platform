@@ -72,6 +72,7 @@ import EditRelation from './components/EditRelation.svelte'
 import AddSocialId from './components/socialIds/AddSocialId.svelte'
 import AddEmailSocialId from './components/socialIds/AddEmailSocialId.svelte'
 import Mailboxes from './components/Mailboxes.svelte'
+import GuestPermissionsSettings from './components/GuestPermissionsSettings.svelte'
 import OfficeSettings from './components/OfficeSettings.svelte'
 import BaseIntegrationState from './components/integrations/BaseIntegrationState.svelte'
 import IntegrationStateRow from './components/integrations/IntegrationStateRow.svelte'
@@ -164,6 +165,7 @@ export default async (): Promise<Resources> => ({
     CreateRelation,
     EditRelation,
     Mailboxes,
+    GuestPermissionsSettings,
     OfficeSettings,
     AddSocialId,
     AddEmailSocialId,

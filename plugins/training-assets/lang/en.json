@@ -81,6 +81,7 @@
     "TrainingStateDraft": "Draft",
     "TrainingStateReleased": "Released",
     "TrainingTake": "Take training",
+    "AllowToTakeTraining": "Allow to take training",
     "TrainingTitle": "Title",
     "Trainings": "Trainings",
     "ViewAllTrainings": "All Trainings",

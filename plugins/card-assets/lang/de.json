@@ -5,6 +5,7 @@
     "Cards": "Karten",
     "Content": "Inhalt",
     "CreateCard": "Karte erstellen",
+    "AllowCreatingCards": "Erstellen von Karten erlauben",
     "CreateMasterTag": "Typ erstellen",
     "CreateTag": "Tag erstellen",
     "MasterTag": "Typ",
@@ -78,6 +79,9 @@
     "LockSection": "Sperren",
     "UnLockSection": "Entsperren",
     "SectionLocked": "Sektion {section} gesperrt",
-    "SectionUnlocked": "Sektion {section} entsperrt"
+    "SectionUnlocked": "Sektion {section} entsperrt",
+    "LayoutAuto": "Auto",
+    "SingleColumn": "Einspaltig",
+    "TwoColumns": "Zwei spaltig"
   }
 }

@@ -2,6 +2,10 @@
 // Copyright © 2024 Hardcore Engineering Inc.
 //
 
+import { config as dotenvConfig } from 'dotenv'
+
+dotenvConfig()
+
 export interface Config {
   Port: number
   Secret: string

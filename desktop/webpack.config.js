@@ -126,7 +126,8 @@ module.exports = [
   {
     entry: {
       bundle: ['@hcengineering/theme/styles/global.scss', ...['./src/ui/index.ts']],
-      'recorder-worker': '@hcengineering/recorder-resources/src/recorder-worker.ts'
+      'recorder-worker': '@hcengineering/recorder-resources/src/recorder-worker.ts',
+      findInPageOverlay: './src/ui/findInPageOverlay.ts'
     },
     ignoreWarnings: [
       {
@@ -339,6 +340,14 @@ module.exports = [
         templateParameters: {
           isWindows: true
         }
+      }),
+      new HtmlWebpackPlugin({
+        template: './src/ui/find-in-page-overlay.ejs',
+        filename: 'find-in-page-overlay.html',
+        chunks: ['findInPageOverlay'],
+        inject: 'body',
+        publicPath: '',
+        scriptLoading: 'blocking'
       }),
       ...(!dev ? [new CompressionPlugin()] : []),
       // new MiniCssExtractPlugin({

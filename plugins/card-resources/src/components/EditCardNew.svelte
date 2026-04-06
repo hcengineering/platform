@@ -16,41 +16,46 @@
 -->
 <script lang="ts">
   import { Card } from '@hcengineering/card'
+  import { NotificationContext } from '@hcengineering/communication-types'
   import { Ref, WithLookup } from '@hcengineering/core'
+  import presence from '@hcengineering/presence'
+  import {
+    ComponentExtensions,
+    createNotificationContextsQuery,
+    createQuery,
+    getClient
+  } from '@hcengineering/presentation'
   import {
     Button,
     Component,
     createFocusManager,
+    deviceOptionsStore as deviceInfo,
+    DropdownIntlItem,
+    DropdownLabelsPopupIntl,
     EditBox,
+    eventToHTMLElement,
     FocusHandler,
     getCurrentLocation,
     IconDetailsFilled,
+    IconMaxWidth,
     IconMoreH,
+    IPanelState,
     navigate,
     Panel,
-    IPanelState,
-    deviceOptionsStore as deviceInfo
+    showPopup
   } from '@hcengineering/ui'
-  import presence from '@hcengineering/presence'
-  import {
-    createQuery,
-    createNotificationContextsQuery,
-    getClient,
-    ComponentExtensions
-  } from '@hcengineering/presentation'
-  import { canChangeDoc, showMenu } from '@hcengineering/view-resources'
   import view from '@hcengineering/view'
-  import { NotificationContext } from '@hcengineering/communication-types'
+  import { canChangeDoc, showMenu } from '@hcengineering/view-resources'
 
+  import { permissionsStore } from '@hcengineering/contact-resources'
+  import { afterUpdate } from 'svelte'
   import card from '../plugin'
+  import { openCardInSidebar, setViewMode, viewStore } from '../utils'
   import CardIcon from './CardIcon.svelte'
-  import TagsEditor from './TagsEditor.svelte'
+  import CardVersionSelector from './CardVersionSelector.svelte'
   import EditCardNewContent from './EditCardNewContent.svelte'
   import ParentNamesPresenter from './ParentNamesPresenter.svelte'
-  import { openCardInSidebar } from '../utils'
-  import { afterUpdate } from 'svelte'
-  import { permissionsStore } from '@hcengineering/contact-resources'
-  import CardVersionSelector from './CardVersionSelector.svelte'
+  import TagsEditor from './TagsEditor.svelte'
 
   export let _id: Ref<Card>
   export let readonly: boolean = false
@@ -155,6 +160,35 @@
 
   $: _readonly = (readonly || doc?.readonly || doc?.readonlyFields?.includes('title')) ?? false
   $: updatePermissionForbidden = doc && !canChangeDoc(doc?._class, doc?.space, $permissionsStore)
+
+  function setLayout (mode: 'auto' | '1' | '2'): void {
+    if (doc === undefined) return
+    setViewMode(doc?._class, mode)
+  }
+
+  function showViewPopup (ev: MouseEvent): void {
+    if (doc === undefined) return
+    const items: DropdownIntlItem[] = [
+      {
+        id: 'auto',
+        label: card.string.LayoutAuto
+      },
+      {
+        id: '1',
+        label: card.string.SingleColumn
+      },
+      {
+        id: '2',
+        label: card.string.TwoColumns
+      }
+    ]
+    const selected = $viewStore[doc._class] ?? 'auto'
+    showPopup(DropdownLabelsPopupIntl, { items, selected }, eventToHTMLElement(ev), async (result) => {
+      if (result != null && result !== '') {
+        setLayout(result)
+      }
+    })
+  }
 </script>
 
 <FocusHandler {manager} />
@@ -224,6 +258,14 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
+      <Button
+        kind="icon"
+        icon={IconMaxWidth}
+        iconProps={{ size: 'medium' }}
+        on:click={(ev) => {
+          showViewPopup(ev)
+        }}
+      />
       <Button
         icon={IconDetailsFilled}
         iconProps={{ size: 'medium' }}

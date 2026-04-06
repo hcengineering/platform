@@ -5,6 +5,7 @@
     "Cards": "カード",
     "Content": "コンテンツ",
     "CreateCard": "カードを作成",
+    "AllowCreatingCards": "カードの作成を許可",
     "CreateMasterTag": "タイプを作成",
     "CreateTag": "タグを作成",
     "MasterTag": "タイプ",
@@ -78,6 +79,9 @@
     "LockSection": "セクションをロック",
     "UnLockSection": "セクションをアンロック",
     "SectionLocked": "セクション {section} ロック済み",
-    "SectionUnlocked": "セクション {section} アンロック済み"
+    "SectionUnlocked": "セクション {section} アンロック済み",
+    "LayoutAuto": "自動",
+    "SingleColumn": "1列",
+    "TwoColumns": "2列"
   }
 }

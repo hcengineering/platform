@@ -17,7 +17,7 @@ import { MarkupMarkType, MarkupNodeType, type MarkupNode } from '@hcengineering/
 import { markdownToMarkup } from '@hcengineering/text-markdown'
 import { Extension } from '@tiptap/core'
 import { Node, type Schema } from '@tiptap/pm/model'
-import { Plugin } from '@tiptap/pm/state'
+import { NodeSelection, Plugin } from '@tiptap/pm/state'
 import { CodeBlockHighlighExtension } from '../codeSnippets/codeblock'
 import { hasTableMetadataMarker } from './tableMetadata'
 
@@ -29,7 +29,7 @@ export const SmartPasteExtension = Extension.create({
   }
 })
 
-function PasteTextAsMarkdownPlugin (): Plugin {
+export function PasteTextAsMarkdownPlugin (): Plugin {
   return new Plugin({
     props: {
       handlePaste (view, event, slice) {
@@ -39,12 +39,16 @@ function PasteTextAsMarkdownPlugin (): Plugin {
         const pastedText = clipboardData.getData('text/plain')
         const pastedMarkdown = clipboardData.getData('text/markdown')
 
-        // check if we are in code block
-        const { $from } = view.state.selection
+        // Ignore smart paste inside code blocks / mermaid blocks (keep default paste behavior).
+        const selection = view.state.selection
+        const ignoredNodeTypes = new Set<string>([CodeBlockHighlighExtension.name, 'mermaid'])
+        if (selection instanceof NodeSelection && ignoredNodeTypes.has(selection.node.type.name)) {
+          return false
+        }
+        const { $from } = selection
         for (let d = $from.depth; d > 0; d--) {
           const node = $from.node(d)
-          if (node.type.name === CodeBlockHighlighExtension.name) {
-            // paste as plain text in code blocks
+          if (ignoredNodeTypes.has(node.type.name)) {
             return false
           }
         }

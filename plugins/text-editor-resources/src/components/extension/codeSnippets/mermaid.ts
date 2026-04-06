@@ -44,6 +44,7 @@ const mermaidMetaTxField = 'mermaid-meta-tx'
 
 interface TxMetaContainer {
   nodePatch?: NodePatchSpec
+  nodePatches?: NodePatchSpec[]
   renderResult?: MermaidRenderResult
   updateDecorations?: boolean
 }
@@ -122,7 +123,7 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
 
   addProseMirrorPlugins () {
     const parent = (this.parent?.() ?? []).filter((p) => p.props.handlePaste === undefined)
-    return [...parent, MermaidDecorator(this.options)]
+    return [...parent, MermaidCodeBlockNormalizer(), MermaidDecorator(this.options)]
   },
 
   addNodeView () {
@@ -358,6 +359,75 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
   }
 })
 
+/**
+ * Normalizes pasted/imported content so that Mermaid blocks render.
+ *
+ * There are multiple ways Mermaid content can enter the editor (markdown paste, html paste,
+ * programmatic inserts). Some of those paths produce a regular `codeBlock` with
+ * `attrs.language === 'mermaid'` instead of a dedicated `mermaid` node.
+ *
+ * Our rendering pipeline only targets `mermaid` nodes, so we convert such `codeBlock`s
+ * into `mermaid` nodes on any doc-changing transaction.
+ */
+function MermaidCodeBlockNormalizer (): Plugin {
+  return new Plugin({
+    key: new PluginKey('mermaid-codeblock-normalizer'),
+    appendTransaction (transactions, oldState, newState) {
+      if (!transactions.some((tr) => tr.docChanged)) return
+
+      const { schema } = newState
+      const mermaidType = schema.nodes[MermaidExtension.name]
+      const codeBlockType = schema.nodes.codeBlock
+
+      if (mermaidType == null || codeBlockType == null) return
+
+      const targets: Array<{ pos: number, node: ProseMirrorNode }> = []
+      newState.doc.descendants((node, pos) => {
+        if (node.type !== codeBlockType) return
+        if ((node.attrs as any)?.language !== 'mermaid') return
+        targets.push({ pos, node })
+      })
+
+      if (targets.length === 0) return
+
+      // Replace from end to start to keep positions stable.
+      const tr = newState.tr
+      const selectionPos = newState.selection.from
+      const nodePatches: NodePatchSpec[] = []
+      let shouldMoveSelection = false
+      let selectionTargetPos = 0
+      for (let i = targets.length - 1; i >= 0; i--) {
+        const { pos, node } = targets[i]
+        const attrs = { ...(node.attrs ?? {}), language: 'mermaid' }
+        tr.replaceRangeWith(pos, pos + node.nodeSize, mermaidType.create(attrs, node.content, node.marks))
+
+        // If the user selection is inside the normalized block, keep it editable (unfolded)
+        // and keep the cursor inside the new node.
+        if (selectionPos >= pos && selectionPos <= pos + node.nodeSize) {
+          nodePatches.push({ pos, folded: false, selected: false })
+          shouldMoveSelection = true
+          selectionTargetPos = pos
+        }
+      }
+
+      if (nodePatches.length > 0) {
+        setTxMeta(tr, { nodePatches })
+      }
+
+      if (shouldMoveSelection) {
+        // Place the cursor into the code content of the mermaid node.
+        // Node content starts at `pos + 1`.
+        const nextSelection =
+          TextSelection.findFrom(tr.doc.resolve(selectionTargetPos + 1), 1) ??
+          TextSelection.create(tr.doc, selectionTargetPos + 1)
+        tr.setSelection(nextSelection)
+      }
+
+      return tr
+    }
+  })
+}
+
 interface MermaidPluginState {
   decorationSet: DecorationSet
   decorationCache: Map<number | string, NodeDecorationState>
@@ -554,6 +624,11 @@ function buildState (
   const lastDecorationSet = tr !== undefined ? prev.decorationSet.map(tr.mapping, tr.doc) : prev.decorationSet
 
   const nodeStatePatch = getTxMeta(tr)?.nodePatch
+  const nodeStatePatches = getTxMeta(tr)?.nodePatches
+  const nodeStatePatchByPos =
+    nodeStatePatches !== undefined && nodeStatePatches.length > 0
+      ? new Map<number, NodePatchSpec>(nodeStatePatches.map((p) => [p.pos, p]))
+      : undefined
 
   let mIndex = 0
   doc.descendants((node, pos, parent, index) => {
@@ -584,9 +659,12 @@ function buildState (
       textContent: node.textContent
     }
 
-    if (nodeStatePatch !== undefined && pos === nodeStatePatch.pos) {
-      newState.folded = nodeStatePatch.folded
-      newState.selected = nodeStatePatch.selected
+    const patch =
+      nodeStatePatchByPos?.get(pos) ??
+      (nodeStatePatch !== undefined && pos === nodeStatePatch.pos ? nodeStatePatch : undefined)
+    if (patch !== undefined) {
+      newState.folded = patch.folded
+      newState.selected = patch.selected
     }
 
     if (yid !== undefined) decorationCache.set(yid, newState)

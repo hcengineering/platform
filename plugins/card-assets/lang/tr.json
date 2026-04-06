@@ -5,6 +5,7 @@
     "Cards": "Kartlar",
     "Content": "İçerik",
     "CreateCard": "Kart Oluştur",
+    "AllowCreatingCards": "Kart oluşturmaya izin ver",
     "CreateMasterTag": "Tip Oluştur",
     "CreateTag": "Etiket Oluştur",
     "MasterTag": "Tip",
@@ -78,6 +79,9 @@
     "LockSection": "Bölümü kilitle",
     "UnLockSection": "Bölümü kilitle",
     "SectionLocked": "Bölüm {section} kilitli",
-    "SectionUnlocked": "Bölüm {section} kilidi açıldı"
+    "SectionUnlocked": "Bölüm {section} kilidi açıldı",
+    "LayoutAuto": "Otomatik",
+    "SingleColumn": "Tek sütun",
+    "TwoColumns": "İki sütun"
   }
 }
