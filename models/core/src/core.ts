@@ -150,6 +150,8 @@ export class TAssociation extends TDoc implements Association {
   nameB!: string
 
   type!: '1:1' | '1:N' | 'N:N'
+
+  automationOnly?: boolean
 }
 
 @Model(core.class.Relation, core.class.Doc, DOMAIN_RELATION)
