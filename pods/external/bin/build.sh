@@ -1,5 +1,26 @@
 set -e
 
+retry_pull() {
+    image="$1"
+    retries="${2:-5}"
+    delay="${3:-5}"
+    attempt=1
+
+    while [ "$attempt" -le "$retries" ]; do
+        if docker pull --quiet "$image" > /dev/null; then
+            return 0
+        fi
+
+        if [ "$attempt" -eq "$retries" ]; then
+            return 1
+        fi
+
+        echo "Pull failed (attempt $attempt/$retries): $image"
+        sleep "$delay"
+        attempt=$((attempt + 1))
+    done
+}
+
 registry=hardcoreeng
 tag=latest
 
@@ -29,7 +50,7 @@ find services.d/ -type f -name "*.service" ! -name "-*" | sort | while read -r f
             continue
         fi
 
-        docker pull --quiet $source > /dev/null
+        retry_pull "$source"
         docker tag $source $target
 
         echo "Pull&Tag: $source -> $target"

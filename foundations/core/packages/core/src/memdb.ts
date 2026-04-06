@@ -338,7 +338,7 @@ export class ModelDb extends MemDb {
             this.updateDoc(cud.objectId, doc, cud)
             TxProcessor.updateDoc2Doc(doc, cud)
           } else {
-            ctx.warn('no document found, failed to apply model transaction, skipping', {
+            ctx.info('no document found, failed to apply model transaction, skipping', {
               _id: tx._id,
               _class: tx._class,
               objectId: cud.objectId
@@ -350,7 +350,7 @@ export class ModelDb extends MemDb {
           try {
             this.delDoc((tx as TxRemoveDoc<Doc>).objectId)
           } catch (err: any) {
-            ctx.warn('no document found, failed to apply model transaction, skipping', {
+            ctx.info('no document found, failed to apply model transaction, skipping', {
               _id: tx._id,
               _class: tx._class,
               objectId: (tx as TxRemoveDoc<Doc>).objectId
@@ -364,7 +364,7 @@ export class ModelDb extends MemDb {
             this.updateDoc(mix.objectId, doc, mix)
             TxProcessor.updateMixin4Doc(doc, mix)
           } else {
-            ctx.warn('no document found, failed to apply model transaction, skipping', {
+            ctx.info('no document found, failed to apply model transaction, skipping', {
               _id: tx._id,
               _class: tx._class,
               objectId: mix.objectId

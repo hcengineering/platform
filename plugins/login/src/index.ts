@@ -49,6 +49,7 @@ export default plugin(loginId, {
   metadata: {
     AccountsUrl: '' as Asset,
     LastAccount: '' as Metadata<string>,
+    LoginToken: '' as Metadata<string>,
     LoginEndpoint: '' as Metadata<string>,
     LoginAccount: '' as Metadata<string>,
     DisableSignUp: '' as Metadata<boolean>,

@@ -212,6 +212,7 @@ export async function logIn (loginInfo: { account: string, token?: string }): Pr
   await getAccountClient(accountsUrl, loginInfo.token).setCookie()
 
   setMetadata(presentation.metadata.Token, loginInfo.token)
+  setMetadataLocalStorage(login.metadata.LoginToken, loginInfo.token ?? null)
   setMetadataLocalStorage(login.metadata.LastAccount, loginInfo.account)
   setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
 }
@@ -230,6 +231,7 @@ export async function logOut (): Promise<void> {
   setMetadata(presentation.metadata.Token, null)
   setMetadata(presentation.metadata.WorkspaceUuid, null)
   setMetadata(presentation.metadata.WorkspaceDataId, null)
+  setMetadataLocalStorage(login.metadata.LoginToken, null)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   setMetadataLocalStorage(login.metadata.LoginAccount, null)
 

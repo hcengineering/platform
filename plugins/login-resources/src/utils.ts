@@ -364,6 +364,7 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
 
       if (err.status.code === platform.status.Unauthorized) {
         setMetadata(presentation.metadata.Token, null)
+        setMetadataLocalStorage(login.metadata.LoginToken, null)
         setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
 
         if (doNavigate) {
@@ -506,6 +507,7 @@ export async function getPerson (): Promise<[Status, Person | null]> {
 
 export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
   setMetadata(presentation.metadata.Token, loginInfo.token)
+  setMetadataLocalStorage(login.metadata.LoginToken, loginInfo.token ?? null)
   setMetadata(presentation.metadata.WorkspaceUuid, loginInfo.workspace)
   setMetadata(presentation.metadata.WorkspaceDataId, loginInfo.workspaceDataId)
   setMetadataLocalStorage(login.metadata.LoginEndpoint, loginInfo.endpoint)

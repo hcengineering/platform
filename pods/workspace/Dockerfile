@@ -3,8 +3,6 @@ WORKDIR /usr/src/app
 
 COPY bundle/bundle.js ./
 COPY bundle/bundle.js.map ./
-
-COPY ini[t]/ ./init-scripts/
+RUN mkdir -p ./init-scripts/
 
 CMD [ "node", "bundle.js" ]
-
