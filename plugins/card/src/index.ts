@@ -226,7 +226,8 @@ const cardPlugin = plugin(cardId, {
   ids: {
     CardWidget: '' as Ref<Doc>,
     GuestCardClassPermission: '' as Ref<Doc>,
-    ModulePermissionGroup: '' as Ref<Doc>
+    ModulePermissionGroup: '' as Ref<Doc>,
+    ModulePermissionGroupReadOnlyGuest: '' as Ref<Doc>
   },
   component: {
     LabelsPresenter: '' as AnyComponent,
