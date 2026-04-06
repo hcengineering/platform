@@ -19,7 +19,6 @@ import setting from '@hcengineering/setting'
 const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(setting.icon, {
   AccountSettings: `${icons}#accountSettings`,
-  Owners: `${icons}#owners`,
   Members: `${icons}#members`,
   Password: `${icons}#password`,
   Setting: `${icons}#settings`,

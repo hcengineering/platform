@@ -2,7 +2,7 @@ import { type Locator, type Page } from '@playwright/test'
 
 export enum ButtonType {
   General,
-  Owners,
+  Members,
   Spaces,
   TextTemplate,
   RelatedIssues,
@@ -19,7 +19,7 @@ export class WorkspaceSettingsPage {
   }
 
   general = (): Locator => this.page.getByRole('button', { name: 'General' })
-  owners = (): Locator => this.page.getByRole('button', { name: 'Owners' })
+  members = (): Locator => this.page.getByRole('button', { name: 'Members' })
   spaces = (): Locator => this.page.getByRole('button', { name: 'Spaces', exact: true })
   textTemplate = (): Locator => this.page.getByRole('button', { name: 'Text Templates' })
   relatedIssues = (): Locator => this.page.getByRole('button', { name: 'Related issues' })
@@ -32,8 +32,8 @@ export class WorkspaceSettingsPage {
       case ButtonType.General:
         await this.general().click()
         break
-      case ButtonType.Owners:
-        await this.owners().click()
+      case ButtonType.Members:
+        await this.members().click()
         break
       case ButtonType.Spaces:
         await this.spaces().click()
