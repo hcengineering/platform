@@ -863,9 +863,9 @@ export async function subProcessMatchCheck (
   params: Record<string, any>,
   context: Record<string, any>
 ): Promise<boolean> {
-  const { process: _process, ...otherCritera } = params
+  const { process: _process, currentState } = params
   if (_process === undefined) return false
-  if (Object.keys(otherCritera).length === 0) return true
+  if (currentState === undefined) return true
 
   const subProcesses = await client.findAll(process.class.Execution, {
     parentId: execution._id,
@@ -874,18 +874,18 @@ export async function subProcessMatchCheck (
 
   if (subProcesses.length === 0) return false
 
-  const [predicate, value] = Object.entries(otherCritera)[0]
+  const [predicate, value] = Object.entries(currentState)[0]
 
   const res = matchQuery(
     subProcesses,
-    { currentState: { $in: value } },
+    { currentState: { $in: value as any } },
     process.class.Execution,
     client.getHierarchy(),
     true
   )
   if (predicate === '$all') {
     return res.length === subProcesses.length
-  } else if (predicate === '$any') {
+  } else if (predicate === '$in') {
     return res.length > 0
   } else if (predicate === '$nin') {
     return res.length === 0
