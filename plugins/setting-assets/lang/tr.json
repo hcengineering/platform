@@ -214,7 +214,7 @@
     "OfficeDefaultSettings": "Toplantı odaları için varsayılan ayarlar",
     "DefaultStartWithTranscription": "Yeni ofis odalarında transkripsiyonu etkinleştir",
     "DefaultStartWithRecording": "Yeni ofis odalarında kaydı etkinleştir",
-    "GuestPermissionsSettings": "Misafir izinleri",
+    "GuestPermissionsSettings": "Misafirler",
     "GuestPermissionsApplicationPermissions": "Uygulama izinleri",
     "GuestPermissionsApplicationPermissionsHint": "Misafirlerin hangi uygulamaları kullanabileceğini seçin, ardından her uygulama için izinleri aşağıdan ayarlayın.",
     "GuestPermissionsTabGuest": "Misafir",

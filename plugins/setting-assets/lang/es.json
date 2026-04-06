@@ -205,7 +205,7 @@
     "OfficeDefaultSettings": "Configuración predeterminada para salas de reuniones",
     "DefaultStartWithTranscription": "Habilitar transcripción en nuevas oficinas",
     "DefaultStartWithRecording": "Habilitar grabación en nuevas oficinas",
-    "GuestPermissionsSettings": "Permisos de invitados",
+    "GuestPermissionsSettings": "Invitados",
     "GuestPermissionsApplicationPermissions": "Permisos de aplicaciones",
     "GuestPermissionsApplicationPermissionsHint": "Elija qué aplicaciones pueden usar los invitados y luego ajuste los permisos de cada aplicación a continuación.",
     "GuestPermissionsTabGuest": "Invitado",

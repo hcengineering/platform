@@ -214,7 +214,7 @@
     "OfficeDefaultSettings": "Standardeinstellungen für Besprechungsräume",
     "DefaultStartWithTranscription": "Transkription in neuen Büroräumen aktivieren",
     "DefaultStartWithRecording": "Aufnahme in neuen Büroräumen aktivieren",
-    "GuestPermissionsSettings": "Gastberechtigungen",
+    "GuestPermissionsSettings": "Gäste",
     "GuestPermissionsApplicationPermissions": "Anwendungsberechtigungen",
     "GuestPermissionsApplicationPermissionsHint": "Wählen Sie, welche Anwendungen Gäste nutzen dürfen, und passen Sie unten die Berechtigungen für jede Anwendung an.",
     "GuestPermissionsTabGuest": "Gast",

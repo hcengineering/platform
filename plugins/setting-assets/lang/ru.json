@@ -215,7 +215,7 @@
     "OfficeDefaultSettings": "Настройки по умолчанию для переговорных",
     "DefaultStartWithTranscription": "Включить транскрипцию в новых комнатах",
     "DefaultStartWithRecording": "Включить запись в новых комнатах",
-    "GuestPermissionsSettings": "Права гостей",
+    "GuestPermissionsSettings": "Гости",
     "GuestPermissionsApplicationPermissions": "Права приложений",
     "GuestPermissionsApplicationPermissionsHint": "Выберите, какие приложения доступны гостям, затем настройте права для каждого приложения ниже.",
     "GuestPermissionsTabGuest": "Гость",

@@ -32,8 +32,20 @@
   import { getEmbeddedLabel, getMetadata, type IntlString } from '@hcengineering/platform'
   import { createQuery, getClient, uiContext } from '@hcengineering/presentation'
   import workbench, { type Application } from '@hcengineering/workbench'
-  import { Breadcrumb, Component, Header, Icon, Label, Loading, Scroller, Switcher, Toggle } from '@hcengineering/ui'
-  import type { TabItem } from '@hcengineering/ui'
+  import {
+    Breadcrumb,
+    Component,
+    defineSeparators,
+    Header,
+    Icon,
+    Label,
+    Loading,
+    NavItem,
+    Scroller,
+    Separator,
+    Toggle,
+    twoPanelsSeparators
+  } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
   import { onMount } from 'svelte'
   import settingsRes from '../plugin'
@@ -57,18 +69,6 @@
   const communicationApiEnabled = getMetadata(communication.metadata.Enabled) === true
 
   let guestPermissionsTab: 'guest' | 'anonymous' = 'guest'
-
-  const modulePermissionsTabItems: TabItem[] = [
-    { id: 'guest', labelIntl: setting.string.GuestPermissionsTabGuest },
-    { id: 'anonymous', labelIntl: setting.string.GuestPermissionsTabAnonymousGuest }
-  ]
-
-  function onGuestModuleTabSelect (ev: CustomEvent<TabItem>): void {
-    const id = ev.detail.id
-    if (id === 'guest' || id === 'anonymous') {
-      guestPermissionsTab = id
-    }
-  }
 
   const client = getClient()
   const moduleGroupsQuery = createQuery()
@@ -259,166 +259,182 @@
       )
     }
   }
+
+  defineSeparators('guestPermissionsSettings', twoPanelsSeparators)
 </script>
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
     <Breadcrumb label={setting.string.GuestPermissionsSettings} size={'large'} isCurrent />
-    <svelte:fragment slot="extra">
-      <div class="guestPermissionsHeaderTabs">
-        <Switcher
-          name={'guest-permissions-module-tab'}
-          items={modulePermissionsTabItems}
-          kind={'nuance'}
-          selected={guestPermissionsTab}
-          on:select={onGuestModuleTabSelect}
-        />
-      </div>
-    </svelte:fragment>
   </Header>
-  <div class="hulyComponent-content__column content">
-    {#if loading}
-      <div class="w-full h-full flex-col-center justify-center">
-        <Loading />
-      </div>
-    {:else}
-      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
-        <div class="hulyComponent-content guestPermissionsRoot flex-col">
-          {#if guestPermissionsTab === 'anonymous'}
-            <section class="section">
-              <div class="sectionHeader">
-                <div class="sectionTitle">
-                  <Label label={settingsRes.string.GuestAccess} />
-                </div>
-              </div>
-              <div class="guestAccessBlock">
-                <div class="guestAccessRow">
-                  <div class="guestAccessRow-label">
-                    <Label label={settingsRes.string.GuestAccessDescription} />
-                  </div>
-                  <div class="guestAccessRow-toggleCell">
-                    <Toggle
-                      on={allowReadOnlyGuests}
-                      on:change={(e) => {
-                        void handleToggleReadonlyAccess(e)
-                      }}
-                    />
-                  </div>
-                </div>
-                <div class="guestAccessRow">
-                  <div class="guestAccessRow-label">
-                    <Label label={settingsRes.string.GuestSignUpDescription} />
-                  </div>
-                  <div class="guestAccessRow-toggleCell">
-                    <Toggle
-                      disabled={!allowReadOnlyGuests}
-                      on={allowGuestSignUp}
-                      on:change={(e) => {
-                        void handleToggleGuestSignUp(e)
-                      }}
-                    />
+  <div class="hulyComponent-content__container columns">
+    <div class="hulyComponent-content__column navigation py-2">
+      <Scroller shrink>
+        <NavItem
+          icon={contact.icon.Person}
+          label={setting.string.GuestPermissionsTabGuest}
+          selected={guestPermissionsTab === 'guest'}
+          on:click={() => {
+            guestPermissionsTab = 'guest'
+          }}
+        />
+        <NavItem
+          icon={contact.icon.Persona}
+          label={setting.string.GuestPermissionsTabAnonymousGuest}
+          selected={guestPermissionsTab === 'anonymous'}
+          on:click={() => {
+            guestPermissionsTab = 'anonymous'
+          }}
+        />
+      </Scroller>
+    </div>
+
+    <Separator name={'guestPermissionsSettings'} index={0} color={'var(--theme-divider-color)'} />
+
+    <div class="hulyComponent-content__column content">
+      {#if loading}
+        <div class="w-full h-full flex-col-center justify-center">
+          <Loading />
+        </div>
+      {:else}
+        <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+          <div class="hulyComponent-content guestPermissionsRoot flex-col">
+            {#if guestPermissionsTab === 'anonymous'}
+              <section class="section">
+                <div class="sectionHeader">
+                  <div class="sectionTitle">
+                    <Label label={settingsRes.string.GuestAccess} />
                   </div>
                 </div>
-                {#if communicationApiEnabled}
-                  <div class="guestAccessRow guestAccessRow--editor">
+                <div class="guestAccessBlock">
+                  <div class="guestAccessRow">
                     <div class="guestAccessRow-label">
-                      <Label label={settingsRes.string.GuestChannelsDescription} />
+                      <Label label={settingsRes.string.GuestAccessDescription} />
                     </div>
-                    <div class="guestAccessRow-editorCell">
-                      <div class="guestAccessRow-editorInner">
-                        <Component
-                          is={card.component.CardArrayEditor}
-                          props={{
-                            _class: chat.masterTag.Thread,
-                            value:
-                              existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
-                            label: settingsRes.string.GuestChannelsArrayLabel,
-                            onChange: onAllowedCardsChange
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                {/if}
-              </div>
-            </section>
-          {/if}
-
-          <section class="section">
-            <div class="sectionHeader">
-              <div class="sectionTitle">
-                <Label label={setting.string.GuestPermissionsApplicationPermissions} />
-              </div>
-              <div class="sectionHint">
-                {#if guestPermissionsTab === 'anonymous'}
-                  <Label label={setting.string.GuestPermissionsAnonymousApplicationHint} />
-                {:else}
-                  <Label label={setting.string.GuestPermissionsApplicationPermissionsHint} />
-                {/if}
-              </div>
-            </div>
-
-            <div class="cardStack" class:cardStack-readonly={anonymousModulePermissionsReadOnly}>
-              {#each sortedVisibleModuleGroups as group}
-                {@const app = getApplication(group.application)}
-                {@const moduleOn = isModuleEnabled(group)}
-                {@const permissionCount = (group.permissions ?? []).length}
-                <div class="permissionModuleCard" class:permissionModuleCard-off={!moduleOn}>
-                  <div
-                    class="permissionModuleCard-header"
-                    class:permissionModuleCard-headerOnly={permissionCount === 0}
-                  >
-                    <div class="permissionModuleCard-headerMain">
-                      {#if app}
-                        <div class="appIcon appIcon-sm">
-                          <Icon icon={app.icon} size={'small'} />
-                        </div>
-                      {:else}
-                        <div class="appIcon appIcon-sm appIcon-placeholder" />
-                      {/if}
-                      <div class="permissionModuleCard-titles">
-                        <div class="permissionModuleCard-name">
-                          <Label label={getApplicationLabel(group.application)} />
-                        </div>
-                      </div>
-                    </div>
-                    <div class="permissionModuleCard-toggleCell">
+                    <div class="guestAccessRow-toggleCell">
                       <Toggle
-                        disabled={anonymousModulePermissionsReadOnly}
-                        on={moduleOn}
-                        on:change={handleAccessToggle(group)}
+                        on={allowReadOnlyGuests}
+                        on:change={(e) => {
+                          void handleToggleReadonlyAccess(e)
+                        }}
                       />
                     </div>
                   </div>
-
-                  {#if permissionCount > 0}
-                    <div class="permissionRows">
-                      {#each group.permissions ?? [] as permissionId}
-                        <div class="permissionRow">
-                          <div class="permissionRow-label">
-                            <Label label={getPermissionLabel(permissionId)} />
-                          </div>
-                          <div class="permissionRow-toggleCell">
-                            <Toggle
-                              disabled={!moduleOn || anonymousModulePermissionsReadOnly}
-                              on={isPermissionActive(group, permissionId)}
-                              on:change={handlePermissionToggle(group, permissionId)}
-                            />
-                          </div>
+                  <div class="guestAccessRow">
+                    <div class="guestAccessRow-label">
+                      <Label label={settingsRes.string.GuestSignUpDescription} />
+                    </div>
+                    <div class="guestAccessRow-toggleCell">
+                      <Toggle
+                        disabled={!allowReadOnlyGuests}
+                        on={allowGuestSignUp}
+                        on:change={(e) => {
+                          void handleToggleGuestSignUp(e)
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {#if communicationApiEnabled}
+                    <div class="guestAccessRow guestAccessRow--editor">
+                      <div class="guestAccessRow-label">
+                        <Label label={settingsRes.string.GuestChannelsDescription} />
+                      </div>
+                      <div class="guestAccessRow-editorCell">
+                        <div class="guestAccessRow-editorInner">
+                          <Component
+                            is={card.component.CardArrayEditor}
+                            props={{
+                              _class: chat.masterTag.Thread,
+                              value:
+                                existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
+                              label: settingsRes.string.GuestChannelsArrayLabel,
+                              onChange: onAllowedCardsChange
+                            }}
+                          />
                         </div>
-                      {/each}
+                      </div>
                     </div>
                   {/if}
                 </div>
-              {/each}
-              {#if visibleModuleGroups.length === 0}
-                <div class="emptyState emptyState-block">—</div>
-              {/if}
-            </div>
-          </section>
-        </div>
-      </Scroller>
-    {/if}
+              </section>
+            {/if}
+
+            <section class="section">
+              <div class="sectionHeader">
+                <div class="sectionTitle">
+                  <Label label={setting.string.GuestPermissionsApplicationPermissions} />
+                </div>
+                <div class="sectionHint">
+                  {#if guestPermissionsTab === 'anonymous'}
+                    <Label label={setting.string.GuestPermissionsAnonymousApplicationHint} />
+                  {:else}
+                    <Label label={setting.string.GuestPermissionsApplicationPermissionsHint} />
+                  {/if}
+                </div>
+              </div>
+
+              <div class="cardStack" class:cardStack-readonly={anonymousModulePermissionsReadOnly}>
+                {#each sortedVisibleModuleGroups as group}
+                  {@const app = getApplication(group.application)}
+                  {@const moduleOn = isModuleEnabled(group)}
+                  {@const permissionCount = (group.permissions ?? []).length}
+                  <div class="permissionModuleCard" class:permissionModuleCard-off={!moduleOn}>
+                    <div
+                      class="permissionModuleCard-header"
+                      class:permissionModuleCard-headerOnly={permissionCount === 0}
+                    >
+                      <div class="permissionModuleCard-headerMain">
+                        {#if app}
+                          <div class="appIcon appIcon-sm">
+                            <Icon icon={app.icon} size={'small'} />
+                          </div>
+                        {:else}
+                          <div class="appIcon appIcon-sm appIcon-placeholder" />
+                        {/if}
+                        <div class="permissionModuleCard-titles">
+                          <div class="permissionModuleCard-name">
+                            <Label label={getApplicationLabel(group.application)} />
+                          </div>
+                        </div>
+                      </div>
+                      <div class="permissionModuleCard-toggleCell">
+                        <Toggle
+                          disabled={anonymousModulePermissionsReadOnly}
+                          on={moduleOn}
+                          on:change={handleAccessToggle(group)}
+                        />
+                      </div>
+                    </div>
+
+                    {#if permissionCount > 0}
+                      <div class="permissionRows">
+                        {#each group.permissions ?? [] as permissionId}
+                          <div class="permissionRow">
+                            <div class="permissionRow-label">
+                              <Label label={getPermissionLabel(permissionId)} />
+                            </div>
+                            <div class="permissionRow-toggleCell">
+                              <Toggle
+                                disabled={!moduleOn || anonymousModulePermissionsReadOnly}
+                                on={isPermissionActive(group, permissionId)}
+                                on:change={handlePermissionToggle(group, permissionId)}
+                              />
+                            </div>
+                          </div>
+                        {/each}
+                      </div>
+                    {/if}
+                  </div>
+                {/each}
+                {#if visibleModuleGroups.length === 0}
+                  <div class="emptyState emptyState-block">—</div>
+                {/if}
+              </div>
+            </section>
+          </div>
+        </Scroller>
+      {/if}
+    </div>
   </div>
 </div>
 
@@ -437,7 +453,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 0.25rem 1rem 0;
+    padding-right: 1rem;
     overflow: visible;
   }
 
@@ -490,10 +506,6 @@
     align-items: center;
     width: $toggleTrackWidth;
     justify-self: end;
-  }
-
-  .guestPermissionsHeaderTabs {
-    flex-shrink: 0;
   }
 
   .section {

@@ -214,7 +214,7 @@
     "OfficeDefaultSettings": "会议室的默认设置",
     "DefaultStartWithTranscription": "在新办公室启用转录",
     "DefaultStartWithRecording": "在新办公室启用录制",
-    "GuestPermissionsSettings": "访客权限",
+    "GuestPermissionsSettings": "访客",
     "GuestPermissionsApplicationPermissions": "应用权限",
     "GuestPermissionsApplicationPermissionsHint": "选择访客可以使用哪些应用，然后在下方调整每个应用的权限。",
     "GuestPermissionsTabGuest": "访客",

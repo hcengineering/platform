@@ -215,7 +215,7 @@
     "OfficeDefaultSettings": "Default settings for meeting rooms",
     "DefaultStartWithTranscription": "Enable transcription in new office rooms",
     "DefaultStartWithRecording": "Enable recording in new office rooms",
-    "GuestPermissionsSettings": "Guest permissions",
+    "GuestPermissionsSettings": "Guests",
     "GuestPermissionsApplicationPermissions": "Application permissions",
     "GuestPermissionsApplicationPermissionsHint": "Choose which applications guests can use, then adjust permissions for each application below.",
     "GuestPermissionsTabGuest": "Guest",

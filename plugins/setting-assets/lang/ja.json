@@ -214,7 +214,7 @@
     "OfficeDefaultSettings": "会議室のデフォルト設定",
     "DefaultStartWithTranscription": "新しいオフィスルームで文字起こしを有効にする",
     "DefaultStartWithRecording": "新しいオフィスルームで録画を有効にする",
-    "GuestPermissionsSettings": "ゲストの権限",
+    "GuestPermissionsSettings": "ゲスト",
     "GuestPermissionsApplicationPermissions": "アプリケーションの権限",
     "GuestPermissionsApplicationPermissionsHint": "ゲストが利用できるアプリケーションを選び、その下で各アプリケーションの権限を調整します。",
     "GuestPermissionsTabGuest": "ゲスト",
