@@ -33,7 +33,7 @@ export class STT implements Stt {
   private readonly deepgram: DeepgramClient
 
   private isInProgress = false
-  // private language: string = 'en'
+  private language: string = 'multi'
 
   private readonly trackBySid = new Map<string, RemoteTrack>()
   private readonly streamBySid = new Map<string, AudioStream>()
@@ -52,12 +52,12 @@ export class STT implements Stt {
   }
 
   updateLanguage (language: string): void {
-    // const shouldRestart = (this.language ?? 'en') !== language
-    // this.language = language
-    // if (shouldRestart) {
-    //   this.stop()
-    //   this.start()
-    // }
+    const shouldRestart = this.language !== language
+    this.language = language
+    if (shouldRestart) {
+      this.stop()
+      this.start()
+    }
   }
 
   start (): void {
@@ -161,7 +161,7 @@ export class STT implements Stt {
       encoding: 'linear16',
       channels: stream.numChannels,
       sample_rate: stream.sampleRate,
-      language: 'multi',
+      language: this.language,
       model: config.DeepgramModel
     }
   }
@@ -172,7 +172,6 @@ export class STT implements Stt {
     if (this.dgConnectionBySid.has(sid)) return
 
     const stream = new AudioStream(track, config.DgSampleRate)
-    // const language = this.language ?? 'en'
     const options = this.getOptions(stream)
     const dgConnection = this.deepgram.listen.live(options)
     console.log('Starting deepgram for track', this.room.name, sid, options)
