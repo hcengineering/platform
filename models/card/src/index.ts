@@ -947,6 +947,20 @@ export function createModel (builder: Builder): void {
     card.ids.ModulePermissionGroup
   )
 
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: card.app.Card,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: card.class.CardSpace,
+      enabled: false,
+      order: 20
+    },
+    card.ids.ModulePermissionGroupReadOnlyGuest
+  )
+
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ClassFilters, {
     filters: ['space'],
     ignoreKeys: ['parent']

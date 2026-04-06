@@ -62,7 +62,8 @@ export default mergeIds(documentId, document, {
     Other: '' as Ref<TagCategory>
   },
   ids: {
-    ModulePermissionGroup: '' as Ref<Doc>
+    ModulePermissionGroup: '' as Ref<Doc>,
+    ModulePermissionGroupReadOnlyGuest: '' as Ref<Doc>
   },
   string: {
     ConfigDescription: '' as IntlString,

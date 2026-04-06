@@ -13,30 +13,16 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import card, { Card } from '@hcengineering/card'
-  import chat from '@hcengineering/chat'
-  import communication, { GuestCommunicationSettings } from '@hcengineering/communication'
-  import contact, { AvatarType, ensureEmployeeForPerson } from '@hcengineering/contact'
+  import { AvatarType } from '@hcengineering/contact'
   import { EditableAvatar, getAccountClient } from '@hcengineering/contact-resources'
-  import core, {
-    type Account,
-    AccountRole,
-    AccountUuid,
-    Configuration,
-    getCurrentAccount,
-    pickPrimarySocialId,
-    readOnlyGuestAccountUuid,
-    Ref,
-    WorkspaceAccountPermission
-  } from '@hcengineering/core'
+  import core, { Configuration, WorkspaceAccountPermission } from '@hcengineering/core'
   import { loginId } from '@hcengineering/login'
   import { translateCB } from '@hcengineering/platform'
-  import { createQuery, getClient, MessageBox, uiContext } from '@hcengineering/presentation'
+  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import { WorkspaceSetting } from '@hcengineering/setting'
   import {
     Breadcrumb,
     Button,
-    Component,
     deviceOptionsStore as deviceInfo,
     DropdownLabels,
     type DropdownTextItem,
@@ -65,8 +51,6 @@
   let oldName: string
   let name: string = ''
   let workspaceUrl = ''
-  let allowReadOnlyGuests: boolean
-  let allowGuestSignUp: boolean
   let passwordAgingRule: number | undefined = undefined
 
   const accountClient = getAccountClient()
@@ -87,8 +71,6 @@
     workspaceUrl = res.url
     oldName = res.name
     name = oldName
-    allowReadOnlyGuests = res.allowReadOnlyGuest ?? false
-    allowGuestSignUp = res.allowGuestSignUp ?? false
     passwordAgingRule = res.passwordAgingRule ?? undefined
     loading = false
   }
@@ -166,40 +148,6 @@
     }
   )
 
-  async function handleToggleReadonlyAccess (e: CustomEvent<boolean>): Promise<void> {
-    const enabled = e.detail
-    const guestUserInfo = await accountClient.updateAllowReadOnlyGuests(enabled)
-    allowReadOnlyGuests = enabled
-    if (guestUserInfo !== undefined) {
-      const guestAccount: Account = {
-        uuid: guestUserInfo.guestPerson.uuid as AccountUuid,
-        role: AccountRole.ReadOnlyGuest,
-        primarySocialId: pickPrimarySocialId(guestUserInfo.guestSocialIds)._id,
-        socialIds: guestUserInfo.guestSocialIds.map((si) => si._id),
-        fullSocialIds: guestUserInfo.guestSocialIds
-      }
-      const myAccount = getCurrentAccount()
-      const ctx = uiContext.newChild('connect', {})
-      await ensureEmployeeForPerson(
-        ctx,
-        myAccount,
-        guestAccount,
-        client,
-        guestUserInfo.guestSocialIds,
-        guestUserInfo.guestPerson
-      )
-    } else {
-      const readonlyEmployee = await client.findOne(contact.mixin.Employee, { personUuid: readOnlyGuestAccountUuid })
-      if (readonlyEmployee !== undefined) {
-        await client.update(readonlyEmployee, { active: false })
-      }
-    }
-  }
-
-  async function handleToggleGuestSignUp (e: CustomEvent<boolean>): Promise<void> {
-    await accountClient.updateAllowGuestSignUp(e.detail)
-  }
-
   async function changePasswordAgingRules (val: number | undefined): Promise<void> {
     passwordAgingRule = Math.max(val ?? 1, 1)
     await accountClient.updatePasswordAgingRule(passwordAgingRule)
@@ -252,29 +200,6 @@
       selected = items[savedFirstDayOfWeek === 'system' ? 0 : $deviceInfo.firstDayOfWeek + 1].id
     }
   )
-
-  let existingGuestChatSettings: GuestCommunicationSettings | undefined = undefined
-  const query = createQuery()
-
-  $: query.query(communication.class.GuestCommunicationSettings, {}, (settings) => {
-    existingGuestChatSettings = settings[0]
-  })
-
-  async function onAllowedCardsChange (value: Ref<Card>[]): Promise<void> {
-    if (existingGuestChatSettings === undefined) {
-      await client.createDoc(communication.class.GuestCommunicationSettings, core.space.Workspace, {
-        allowedCards: value,
-        enabled: true
-      })
-    } else {
-      await client.updateDoc(
-        communication.class.GuestCommunicationSettings,
-        core.space.Workspace,
-        existingGuestChatSettings._id,
-        { allowedCards: value, enabled: true }
-      )
-    }
-  }
 
   const onSelected = (e: CustomEvent<string>): void => {
     selected = e.detail
@@ -369,43 +294,6 @@
                 {selected}
                 enableSearch={false}
                 on:selected={onSelected}
-              />
-            </div>
-          </div>
-
-          <div class="flex-col flex-gap-4 mt-6">
-            <div class="title"><Label label={settingsRes.string.GuestAccess} /></div>
-            <div class="flex-row-center flex-gap-4">
-              <Label label={settingsRes.string.GuestAccessDescription} />
-              <Toggle
-                on={allowReadOnlyGuests}
-                on:change={(e) => {
-                  void handleToggleReadonlyAccess(e)
-                }}
-              />
-            </div>
-
-            <div class="flex-row-center flex-gap-4">
-              <Label label={settingsRes.string.GuestSignUpDescription} />
-              <Toggle
-                disabled={!allowReadOnlyGuests}
-                on={allowGuestSignUp}
-                on:change={(e) => {
-                  void handleToggleGuestSignUp(e)
-                }}
-              />
-            </div>
-
-            <div class="flex-row-center flex-gap-4">
-              <Label label={settingsRes.string.GuestChannelsDescription} />
-              <Component
-                is={card.component.CardArrayEditor}
-                props={{
-                  _class: chat.masterTag.Thread,
-                  value: existingGuestChatSettings !== undefined ? existingGuestChatSettings.allowedCards : [],
-                  label: settingsRes.string.GuestChannelsArrayLabel,
-                  onChange: onAllowedCardsChange
-                }}
               />
             </div>
           </div>

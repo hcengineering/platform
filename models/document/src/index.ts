@@ -553,6 +553,20 @@ export function createModel (builder: Builder): void {
     },
     document.ids.ModulePermissionGroup
   )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: document.app.Documents,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: document.class.Teamspace,
+      enabled: false,
+      order: 40
+    },
+    document.ids.ModulePermissionGroupReadOnlyGuest
+  )
   definePermissions(builder)
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {

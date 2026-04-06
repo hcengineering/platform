@@ -35,7 +35,8 @@ export default mergeIds(trainingId, training, {
   },
   ids: {
     GuestTrainingAttemptClassPermission: '' as Ref<Doc>,
-    ModulePermissionGroup: '' as Ref<Doc>
+    ModulePermissionGroup: '' as Ref<Doc>,
+    ModulePermissionGroupReadOnlyGuest: '' as Ref<Doc>
   },
 
   // TODO: Move function resources declarations to plugins/*-resources
