@@ -1,6 +1,3 @@
-import { get } from 'svelte/store'
-import { themeStore } from '@hcengineering/theme'
-
 /**
  * @public
  */
@@ -26,10 +23,22 @@ export interface ColorDefinition {
 const DARK_BLEND_CLASSIC = '#1A1A28'
 const DARK_BLEND_GRAY = '#161719'
 
+/** Persisted `localStorage` theme id for dark gray; keep in sync with `ThemeId.DarkGray` in `@hcengineering/theme`. */
+const STORED_THEME_DARK_GRAY = 'theme-dark-gray'
+
+function isStoredDarkGrayTheme (): boolean {
+  if (typeof localStorage === 'undefined') return false
+  try {
+    return localStorage.getItem('theme') === STORED_THEME_DARK_GRAY
+  } catch {
+    return false
+  }
+}
+
 function resolveDarkGray (explicit: boolean | undefined, darkTheme: boolean): boolean {
   if (!darkTheme) return false
   if (explicit !== undefined) return explicit
-  return get(themeStore)?.darkGray ?? false
+  return isStoredDarkGrayTheme()
 }
 
 const define = (

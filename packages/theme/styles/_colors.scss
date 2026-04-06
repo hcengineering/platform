@@ -432,10 +432,12 @@
   --secondary-button-disabled: rgba(255, 255, 255, .12);
   --secondary-button-disabled-color: rgba(255, 255, 255, .4);
 
-  --primary-button-default: #6366F1;
-  --primary-button-hovered: #818CF8;
-  --primary-button-pressed: #4F46E5;
-  --primary-button-focused: #6366F1;
+  --primary-button-outline: #6F71D4;
+  --primary-button-transparent: rgba(81, 83, 181, 0.22);
+  --primary-button-default: #5153b5;
+  --primary-button-hovered: #686bd4;
+  --primary-button-pressed: #3d3f94;
+  --primary-button-focused: #5153b5;
 
   --theme-button-default: rgba(255, 255, 255, .03);
   --theme-button-hovered: rgba(255, 255, 255, .07);
@@ -527,9 +529,9 @@
   --theme-kanban-card-footer: rgba(217, 217, 217, .07);
 
   --theme-editbox-focus-color: rgba(255, 255, 255, .04);
-  --theme-editbox-focus-border: #818CF8;
+  --theme-editbox-focus-border: #6F71D4;
   --theme-tablist-color: rgba(0, 0, 0, .02);
-  --theme-tablist-plain-color: #6366F1;
+  --theme-tablist-plain-color: #5153b5;
   --theme-tablist-plain-divider: rgba(255, 255, 255, .07); // Light invert
   --theme-checkbox-color: #000;
   --theme-checkbox-bg-color: #FFF;
@@ -579,14 +581,14 @@
   --theme-inbox-activitymsg-divider: rgba(255, 255, 255, .1);
   --theme-inbox-activitymsg-border: rgba(255, 255, 255, .03);
   --theme-inbox-counter-bgcolor: rgba(255, 255, 255, .06);
-  --theme-inbox-people-counter-bgcolor: rgba(99, 102, 241, .12);
+  --theme-inbox-people-counter-bgcolor: rgba(81, 83, 181, .14);
 
   --theme-toggle-sw-color: #fff;
   --theme-toggle-on-sw-color: #fff;
   --theme-toggle-bg-color: rgba(120, 120, 128, 0.32);
   --theme-toggle-bg-hover: rgba(120, 120, 128, 0.64);
-  --theme-toggle-on-bg-color: #6366F1;
-  --theme-toggle-on-bg-hover: #4F46E5;
+  --theme-toggle-on-bg-color: #5153b5;
+  --theme-toggle-on-bg-hover: #3d3f94;
   --theme-radio-bg-color: #343442;
 
   --theme-error-color: #eb5757;
@@ -678,9 +680,9 @@
   --button-disabled-color: #313236;
   --noborder-bg-color: #313236;
   --noborder-bg-hover: #37383b;
-  --primary-bg-color: #6366F1;
-  --primary-bg-hover: #818CF8;
-  --primary-edit-border-color: #A5B4FC;
+  --primary-bg-color: #5153b5;
+  --primary-bg-hover: #686bd4;
+  --primary-edit-border-color: #9b9de8;
   --primary-shadow: rgb(0 0 0 / 25%) 0px 1px 2px;
   --dangerous-bg-color: #eb5757;
   --dangerous-bg-hover: #ff6464;
@@ -716,17 +718,17 @@
   --theme-state-ghost-color: rgba(123, 123, 123, 0.6);
   --theme-state-ghost-background-color: rgba(123, 123, 123, 0.1);
   --theme-state-ghost-border-color: transparent;
-  --theme-state-primary-color: #818CF8;
-  --theme-state-primary-background-color: rgba(99, 102, 241, 0.12);
-  --theme-state-primary-border-color: rgba(99, 102, 241, 0.22);
+  --theme-state-primary-color: #686bd4;
+  --theme-state-primary-background-color: rgba(81, 83, 181, 0.14);
+  --theme-state-primary-border-color: rgba(81, 83, 181, 0.26);
   --theme-state-regular-color: #7b7b7b;
   --theme-state-regular-background-color: rgba(123, 123, 123, 0.1);
   --theme-state-regular-border-color: rgba(123, 123, 123, 0.15);
   --theme-wizard-not-visited-color: #34343c;
 
   --calendar-event-back-color: #252A32;
-  --calendar-event-border-color: rgba(99, 102, 241, 0.25);
-  --calendar-event-handle-color: #6366F1;
+  --calendar-event-border-color: rgba(81, 83, 181, 0.28);
+  --calendar-event-handle-color: #5153b5;
 
   --theme-label-green-color: rgba(34, 197, 94, .8);
   --theme-label-green-bg-color: rgba(34, 197, 94, .08);
