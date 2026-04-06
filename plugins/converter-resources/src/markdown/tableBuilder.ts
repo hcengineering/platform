@@ -28,7 +28,7 @@ import type { CopyAsMarkdownTableProps, CopyRelationshipTableAsMarkdownProps } f
 import { formatValue } from '../formatter'
 import { generateHeaders, loadViewletConfig, buildTableModel } from '../model'
 import { rebuildRelationshipTableViewModel, isRelationshipTable } from '../data'
-import { escapeMarkdownLinkText } from './escape'
+import { escapeMarkdownTableCellContent } from './escape'
 import { createMarkdownLink } from './link'
 
 async function preloadRefLookups (
@@ -99,6 +99,32 @@ async function preloadRefLookups (
   }
 }
 
+function collectRelationshipDocsForRefPreload (
+  props: CopyRelationshipTableAsMarkdownProps,
+  hierarchy: Hierarchy
+): Doc[] {
+  const byId = new Map<string, Doc>()
+  const add = (d: Doc | undefined): void => {
+    if (d !== undefined) byId.set(d._id as string, d)
+  }
+
+  for (const o of props.objects) add(o)
+  for (const row of props.viewModel) {
+    for (const cell of row.cells) {
+      add(cell.object)
+      add(cell.parentObject)
+      const isAssociationKey = cell.attribute.key.startsWith('$associations')
+      if (isAssociationKey && cell.object !== undefined) {
+        const raw = getAttributeValue(cell.attribute, cell.object, hierarchy)
+        if (raw !== undefined && raw !== null && typeof raw === 'object' && '_class' in raw) {
+          add(raw as Doc)
+        }
+      }
+    }
+  }
+  return Array.from(byId.values())
+}
+
 async function buildRelationshipTablePropsFromMetadata (
   docs: Doc[],
   metadata: BuildMarkdownTableMetadata,
@@ -139,7 +165,7 @@ async function buildRelationshipTableFromMetadata (
   const hierarchy = client.getHierarchy()
   const props = await buildRelationshipTablePropsFromMetadata(docs, metadata, client)
   const language = getCurrentLanguage()
-  return await buildRelationshipTableMarkdown(props, hierarchy, language)
+  return await buildRelationshipTableMarkdown(props, hierarchy, language, client)
 }
 
 /**
@@ -253,7 +279,7 @@ export async function buildMarkdownTableFromDocs (
         const linkValue = await createMarkdownLink(hierarchy, card, value)
         row.push(linkValue)
       } else {
-        row.push(escapeMarkdownLinkText(value == null ? '' : String(value)))
+        row.push(escapeMarkdownTableCellContent(value == null ? '' : String(value)))
       }
     }
     rows.push(row)
@@ -274,11 +300,15 @@ export async function buildMarkdownTableFromDocs (
 export async function buildRelationshipTableMarkdown (
   props: CopyRelationshipTableAsMarkdownProps,
   hierarchy: Hierarchy,
-  language: string | undefined
+  language: string | undefined,
+  client: Client
 ): Promise<string> {
   if (props.viewModel.length === 0 || props.model.length === 0) {
     return ''
   }
+
+  const docsForPreload = collectRelationshipDocsForRefPreload(props, hierarchy)
+  await preloadRefLookups(docsForPreload, props.model, hierarchy, client)
 
   const userCache = new Map<PersonId, string>()
   const firstDocClass = props.objects.length > 0 ? props.objects[0]._class : props.cardClass
@@ -375,7 +405,7 @@ export async function buildRelationshipTableMarkdown (
       if (isDocumentTitle) {
         value = await createMarkdownLink(hierarchy, docToUse, value)
       } else {
-        value = escapeMarkdownLinkText(value == null ? '' : String(value))
+        value = escapeMarkdownTableCellContent(value == null ? '' : String(value))
       }
 
       row[attrIndex] = value

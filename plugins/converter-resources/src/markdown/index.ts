@@ -13,7 +13,12 @@
 // limitations under the License.
 //
 
-export { escapeMarkdownLinkText, escapeMarkdownLinkUrl } from './escape'
+export {
+  escapeMarkdownLinkText,
+  escapeMarkdownLinkUrl,
+  escapeMarkdownTableCellContent,
+  looksLikeHttpOrRefMarkdownLink
+} from './escape'
 export { createMarkdownLink } from './link'
 export {
   buildMarkdownTableFromDocs,
