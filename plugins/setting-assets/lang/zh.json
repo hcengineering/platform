@@ -66,7 +66,7 @@
     "NewValue": "新值",
     "Leave": "离开工作区",
     "LeaveDescr": "您确定要离开工作区吗？此操作无法撤销。",
-    "Owners": "所有者",
+    "Members": "成员",
     "WorkspaceSettings": "工作区设置",
     "Select": "选择",
     "AddOwner": "添加所有者",

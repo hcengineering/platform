@@ -25,7 +25,7 @@ import EnumSetting from './components/EnumSetting.svelte'
 import Integrations from './components/integrations/Integrations.svelte'
 import General from './components/General.svelte'
 import Backup from './components/Backup.svelte'
-import Owners from './components/Owners.svelte'
+import Members from './components/Members.svelte'
 import Password from './components/Password.svelte'
 import Privacy from './components/Privacy.svelte'
 import Profile from './components/Profile.svelte'
@@ -144,7 +144,7 @@ export default async (): Promise<Resources> => ({
     EnumSetting,
     General,
     Backup,
-    Owners,
+    Members,
     CreateMixin,
     InviteSetting,
     Configure,
