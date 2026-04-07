@@ -265,7 +265,12 @@
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
-    <Breadcrumb label={setting.string.GuestPermissionsSettings} size={'large'} isCurrent />
+    <Breadcrumb
+      icon={setting.icon.GuestPermissions}
+      label={setting.string.GuestPermissionsSettings}
+      size={'large'}
+      isCurrent
+    />
   </Header>
   <div class="hulyComponent-content__container columns">
     <div class="hulyComponent-content__column navigation py-2">

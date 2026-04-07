@@ -318,7 +318,7 @@ export function createModel (builder: Builder): void {
     {
       name: 'guestPermissions',
       label: setting.string.GuestPermissionsSettings,
-      icon: setting.icon.Members,
+      icon: setting.icon.GuestPermissions,
       component: setting.component.GuestPermissionsSettings,
       role: AccountRole.Owner,
       order: 1050
