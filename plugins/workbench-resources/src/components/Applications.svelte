@@ -62,8 +62,8 @@
             if (g.enabled ?? true) return false
             const role = getCurrentAccount().role
             if (role === g.role) return true
-            // DocGuest / ReadOnlyGuest should also respect Guest module disables.
-            return (role === AccountRole.DocGuest || role === AccountRole.ReadOnlyGuest) && g.role === AccountRole.Guest
+            // DocGuest should also respect Guest module disables.
+            return role === AccountRole.DocGuest && g.role === AccountRole.Guest
           })
           .map((g) => g.application as Ref<Application>)
       )

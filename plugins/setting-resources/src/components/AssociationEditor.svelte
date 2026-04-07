@@ -24,7 +24,8 @@
     DropdownLabelsIntl,
     EditBox,
     Label,
-    NestedDropdown
+    NestedDropdown,
+    Toggle
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import card from '@hcengineering/card'
@@ -96,6 +97,7 @@
   let classBRef: Ref<Class<Doc>> | undefined = undefined
   let nameA = association.nameA
   let nameB = association.nameB
+  let automationOnly = association.automationOnly ?? false
 
   $: classA = isEmptyClass(classARef) ? undefined : hierarchy.getClass(classARef as Ref<Class<Doc>>)
   $: classB = isEmptyClass(classBRef) ? undefined : hierarchy.getClass(classBRef as Ref<Class<Doc>>)
@@ -113,6 +115,7 @@
     classARef = !isEmptyClass(association.classA) ? association.classA : undefined
     nameA = association.nameA
     nameB = association.nameB
+    automationOnly = association.automationOnly ?? false
   }
 
   function isAssociation (data: Data<Association> | Association): data is Association {
@@ -128,7 +131,8 @@
     if (association !== undefined && isAssociation(association)) {
       await client.diffUpdate(association, {
         nameA,
-        nameB
+        nameB,
+        automationOnly
       })
     } else {
       await client.createDoc(core.class.Association, core.space.Model, {
@@ -136,7 +140,8 @@
         classB: classBRef,
         type: mode,
         nameA,
-        nameB
+        nameB,
+        automationOnly
       })
       dispatch('create')
       dispatch('close')
@@ -223,6 +228,13 @@
           <Label label={classB.label} />
         {/if}
       </div>
+    </div>
+
+    <div class="flex-col p-4 flex-gap-2">
+      <span class="label">
+        <Label label={view.string.AutomationOnly} />
+      </span>
+      <Toggle bind:on={automationOnly} />
     </div>
   </div>
 

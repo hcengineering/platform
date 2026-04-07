@@ -923,6 +923,20 @@ function defineSettings (builder: Builder): void {
     },
     training.ids.ModulePermissionGroup
   )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: training.app.Training,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: core.class.TypedSpace,
+      enabled: false,
+      order: 25
+    },
+    training.ids.ModulePermissionGroupReadOnlyGuest
+  )
 }
 
 const columns = {

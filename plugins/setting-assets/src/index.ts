@@ -21,6 +21,7 @@ loadMetadata(setting.icon, {
   AccountSettings: `${icons}#accountSettings`,
   Owners: `${icons}#owners`,
   Members: `${icons}#members`,
+  GuestPermissions: `${icons}#guestPermissions`,
   Password: `${icons}#password`,
   Setting: `${icons}#settings`,
   Integrations: `${icons}#integration`,

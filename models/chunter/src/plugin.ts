@@ -95,7 +95,8 @@ export default mergeIds(chunterId, chunter, {
   },
   ids: {
     ChunterNotificationGroup: '' as Ref<NotificationGroup>,
-    ModulePermissionGroup: '' as Ref<Doc>
+    ModulePermissionGroup: '' as Ref<Doc>,
+    ModulePermissionGroupReadOnlyGuest: '' as Ref<Doc>
   },
   space: {
     General: '' as Ref<Channel>,

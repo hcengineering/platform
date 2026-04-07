@@ -310,7 +310,7 @@ services:
       - PAYMENT_URL=http://huly.local:3040
       - COMMUNICATION_API_ENABLED=true
       - BACKUP_URL=http://huly.local:4039/api/backup,
-      - EXCLUDED_APPLICATIONS_FOR_ANONYMOUS=["chunter", "notification"]
+      - EXCLUDED_APPLICATIONS_FOR_ANONYMOUS=[]
       # - DISABLE_SIGNUP=true
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
       - PULSE_URL=ws://huly.local:8099/ws
