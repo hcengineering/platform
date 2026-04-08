@@ -15,7 +15,7 @@
     "Scheduled": "Programado",
     "Schedule": "Programa",
     "WithoutProject": "Sin proyecto",
-    "TotalGroupTime": "{días, plural, =0 {} other {#d}} {horas, plural, =0 {} other {#h}} {minutos, plural, =0 {} other {#m}}",
+    "TotalGroupTime": "{days, plural, =0 {} other {#d}} {hours, plural, =0 {} other {#h}} {minutes, plural, =0 {} other {#m}}",
     "Tasks": "Tareas",
     "WorkSlot": "Intervalo de trabajo",
     "WorkItem": "Elemento de trabajo",

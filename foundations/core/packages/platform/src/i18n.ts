@@ -70,6 +70,28 @@ async function setStatus (status: Status, skipError?: boolean): Promise<void> {
   }
 }
 
+/** Notify platform and return a Status for load/resolve paths that do not use the per-message format cache. */
+async function pipelineErrorToStatus (err: unknown, skipError?: boolean): Promise<Status> {
+  const status = unknownError(err)
+  await setStatus(status, skipError)
+  return status
+}
+
+/**
+ * On compile/resolve failure: cache failure for this intl id, notify platform, return `message` as UI fallback.
+ */
+async function handleIntlPipelineFailure (
+  err: unknown,
+  message: IntlString,
+  localeCache: Map<IntlString, IntlMessageFormat | Status>,
+  skipError?: boolean
+): Promise<IntlString> {
+  const status = unknownError(err)
+  localeCache.set(message, status)
+  await setStatus(status, skipError)
+  return message
+}
+
 async function loadTranslationsForComponent (
   plugin: Plugin,
   locale: string,
@@ -88,9 +110,7 @@ async function loadTranslationsForComponent (
     try {
       return (await loader('en')) as Record<string, IntlString> | Status
     } catch (err: any) {
-      const status = unknownError(err)
-      await setStatus(status, skipError)
-      return status
+      return await pipelineErrorToStatus(err, skipError)
     }
   }
 }
@@ -150,9 +170,7 @@ async function getTranslation (
       return messages[id.name] as IntlString
     }
   } catch (err) {
-    const status = unknownError(err)
-    await setStatus(status, skipError)
-    return status
+    return await pipelineErrorToStatus(err, skipError)
   }
 }
 
@@ -173,33 +191,29 @@ export async function translate<P extends Record<string, any>> (
   if (!cache.has(locale)) {
     cache.set(locale, localCache)
   }
-  const compiled = localCache.get(message)
+  try {
+    const compiled = localCache.get(message)
 
-  if (compiled !== undefined) {
-    if (compiled instanceof Status) {
-      return message
-    }
-    return compiled.format(params)
-  } else {
-    try {
-      const id = _parseId(message)
-      if (id.component === _EmbeddedId) {
-        return id.name
+    if (compiled !== undefined) {
+      if (compiled instanceof Status) {
+        return message as string
       }
-      const translation = getCachedTranslation(id, locale) ?? (await getTranslation(id, locale, skipError)) ?? message
-      if (translation instanceof Status) {
-        localCache.set(message, translation)
-        return message
-      }
-      const compiled = new IntlMessageFormat(translation, locale, undefined, { ignoreTag: true })
-      localCache.set(message, compiled)
       return compiled.format(params)
-    } catch (err) {
-      const status = unknownError(err)
-      await setStatus(status, skipError)
-      localCache.set(message, status)
-      return message
     }
+    const id = _parseId(message)
+    if (id.component === _EmbeddedId) {
+      return id.name
+    }
+    const translation = getCachedTranslation(id, locale) ?? (await getTranslation(id, locale, skipError)) ?? message
+    if (translation instanceof Status) {
+      localCache.set(message, translation)
+      return message as string
+    }
+    const compiledNew = new IntlMessageFormat(translation, locale, undefined, { ignoreTag: true })
+    localCache.set(message, compiledNew)
+    return compiledNew.format(params)
+  } catch (err) {
+    return (await handleIntlPipelineFailure(err, message, localCache, skipError)) as string
   }
 }
 /**
@@ -217,46 +231,38 @@ export function translateCB<P extends Record<string, any>> (
   if (!cache.has(locale)) {
     cache.set(locale, localCache)
   }
-  const compiled = localCache.get(message)
+  try {
+    const compiled = localCache.get(message)
 
-  if (compiled !== undefined) {
-    if (compiled instanceof Status) {
-      resolve(message)
-      return
-    }
-    resolve(compiled.format(params))
-  } else {
-    let id: _IdInfo
-    try {
-      id = _parseId(message)
-      if (id.component === _EmbeddedId) {
-        resolve(id.name)
+    if (compiled !== undefined) {
+      if (compiled instanceof Status) {
+        resolve(message)
         return
       }
-    } catch (err) {
-      const status = unknownError(err)
-      void setStatus(status, skipError)
-      localCache.set(message, status)
-      resolve(message)
+      resolve(compiled.format(params))
+      return
+    }
+    const id = _parseId(message)
+    if (id.component === _EmbeddedId) {
+      resolve(id.name)
       return
     }
     const translation = getCachedTranslation(id, locale)
     if (translation === undefined || translation instanceof Status) {
-      void translate(message, params, language)
+      void translate(message, params, language, skipError)
         .then((res) => {
           resolve(res)
         })
         .catch((err) => {
-          const status = unknownError(err)
-          void setStatus(status, skipError)
-          localCache.set(message, status)
-          resolve(message)
+          void handleIntlPipelineFailure(err, message, localCache, skipError).then(resolve)
         })
       return
     }
 
-    const compiled = new IntlMessageFormat(translation, locale, undefined, { ignoreTag: true })
-    localCache.set(message, compiled)
-    resolve(compiled.format(params))
+    const compiledNew = new IntlMessageFormat(translation, locale, undefined, { ignoreTag: true })
+    localCache.set(message, compiledNew)
+    resolve(compiledNew.format(params))
+  } catch (err) {
+    void handleIntlPipelineFailure(err, message, localCache, skipError).then(resolve)
   }
 }
