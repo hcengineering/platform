@@ -15,11 +15,21 @@
 //
 
 import type { Plugin, IntlString } from '../platform'
-import platform, { plugin } from '../platform'
+import platform, { getEmbeddedLabel, plugin } from '../platform'
 import { Severity, Status } from '../status'
 
-import { addStringsLoader, translate } from '../i18n'
+import { addStringsLoader, loadPluginStrings, translate, translateCB } from '../i18n'
 import { addEventListener, PlatformEvent, removeEventListener } from '../event'
+
+function translateCBAsync (
+  message: IntlString,
+  params: Record<string, any>,
+  language: string | undefined
+): Promise<string> {
+  return new Promise((resolve) => {
+    translateCB(message, params, language, resolve)
+  })
+}
 
 const testId = 'test-strings' as Plugin
 
@@ -111,5 +121,94 @@ describe('i18n', () => {
     const translated = await translate(message, {})
     expect(translated).toBe(message)
     removeEventListener(PlatformEvent, eventListener)
+  })
+
+  it('translateCB should match translate for loaded string', async () => {
+    const fromTranslate = await translate(test.string.loadingPlugin, { plugin: 'cb' })
+    const fromCB = await translateCBAsync(test.string.loadingPlugin, { plugin: 'cb' }, 'en')
+    expect(fromCB).toBe(fromTranslate)
+  })
+
+  it('translate and translateCB should return embedded label text', async () => {
+    const embedded = getEmbeddedLabel('Embedded copy')
+    expect(await translate(embedded, {})).toBe('Embedded copy')
+    expect(await translateCBAsync(embedded, {}, 'en')).toBe('Embedded copy')
+  })
+
+  it('loadPluginStrings(force) should clear format cache so strings still resolve', async () => {
+    await translate(test.string.loadingPlugin, { plugin: 'before' })
+    await loadPluginStrings('en', true)
+    const after = await translate(test.string.loadingPlugin, { plugin: 'after' })
+    expect(after).toContain('after')
+  })
+
+  it('translate with skipError should not broadcast platform status (no loader)', async () => {
+    const pluginId = 'plugin-skip-error-no-loader'
+    const message = `${pluginId}:string:any` as IntlString
+    let events = 0
+    const listener = async (): Promise<void> => {
+      events++
+    }
+    addEventListener(PlatformEvent, listener)
+    await translate(message, {}, 'en', true)
+    removeEventListener(PlatformEvent, listener)
+    expect(events).toBe(0)
+  })
+
+  it('translate should return message id and emit status when ICU format params are missing', async () => {
+    const fmtPlugin = 'i18n-icu-format-test' as Plugin
+    addStringsLoader(fmtPlugin, async () => ({
+      string: {
+        badPlural: '{dias, plural, =0 {} other {#d}} {horas, plural, =0 {} other {#h}}'
+      }
+    }))
+    const message = `${fmtPlugin}:string:badPlural` as IntlString
+    expect.assertions(2)
+    let gotStatus = false
+    const listener = async (_event: string, data: any): Promise<void> => {
+      if (data instanceof Status) {
+        gotStatus = true
+      }
+    }
+    addEventListener(PlatformEvent, listener)
+    const out = await translate(message, { days: 1, hours: 2 } as any, 'en')
+    removeEventListener(PlatformEvent, listener)
+    expect(out).toBe(message)
+    expect(gotStatus).toBe(true)
+  })
+
+  it('translateCB should resolve to message id when ICU format params are missing', async () => {
+    const fmtPlugin = 'i18n-icu-format-test-cb' as Plugin
+    addStringsLoader(fmtPlugin, async () => ({
+      string: {
+        badPlural: '{dias, plural, =0 {} other {#d}}'
+      }
+    }))
+    const message = `${fmtPlugin}:string:badPlural` as IntlString
+    expect.assertions(2)
+    let gotStatus = false
+    const listener = async (_event: string, data: any): Promise<void> => {
+      if (data instanceof Status) {
+        gotStatus = true
+      }
+    }
+    addEventListener(PlatformEvent, listener)
+    const out = await translateCBAsync(message, { days: 1 }, 'en')
+    removeEventListener(PlatformEvent, listener)
+    expect(out).toBe(message)
+    expect(gotStatus).toBe(true)
+  })
+
+  it('translateCB should defer to translate when translation is not yet cached', async () => {
+    const deferPlugin = 'i18n-defer-translate' as Plugin
+    const deferMsg = `${deferPlugin}:string:only` as IntlString
+    addStringsLoader(deferPlugin, async (locale: string) => {
+      if (locale === 'en') {
+        return { string: { only: 'Deferred {v}' } }
+      }
+      return { string: { only: 'Deferred {v}' } }
+    })
+    const out = await translateCBAsync(deferMsg, { v: 'ok' }, 'en')
+    expect(out).toBe('Deferred ok')
   })
 })
