@@ -42,11 +42,7 @@ function mergeDocIdRestriction<T extends Doc> (query: DocumentQuery<T>, allowed:
   }
   type WithAnd = DocumentQuery<T> & { $and?: DocumentQuery<T>[] }
   const { _id: _drop, $and, ...rest } = query as WithAnd
-  const andParts: DocumentQuery<T>[] = [
-    ...($and ?? []),
-    { _id: prevId },
-    { _id: allowedIds }
-  ]
+  const andParts: DocumentQuery<T>[] = [...($and ?? []), { _id: prevId }, { _id: allowedIds }]
   // Spreading rest + $and is not inferred as DocumentQuery<T> (mapped type + index signature).
   const merged: DocumentQuery<T> = { ...rest, $and: andParts }
   return merged

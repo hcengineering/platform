@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-assertions */
 //
 // Copyright © 2026 Hardcore Engineering Inc.
 //
@@ -29,10 +30,9 @@ import core, {
   type SearchResult,
   type SessionData,
   systemAccountUuid,
-  Timestamp,
   toFindResult
 } from '@hcengineering/core'
-import type { Middleware, PipelineContext } from '@hcengineering/server-core'
+import type { Middleware, PipelineContext, ServerFindOptions } from '@hcengineering/server-core'
 import { GuestCollaboratorClassReadMiddleware } from '../guestCollaboratorClassRead'
 
 const MEETING_MINUTES_CLASS = 'test:love:class:MeetingMinutes' as Ref<Class<Doc>>
@@ -40,7 +40,7 @@ const DOC_CLASS = core.class.Doc
 
 function makeAccount (role: AccountRole, uuid?: ReturnType<typeof generateId>): Account {
   return {
-    uuid: (uuid ?? generateId()) as Account['uuid'],
+    uuid: (uuid ?? (generateId() as unknown as Account['uuid'])) as Account['uuid'],
     role,
     primarySocialId: 'test-social' as PersonId,
     socialIds: ['test-social' as PersonId],
@@ -106,7 +106,7 @@ function makePipelineContext (): PipelineContext {
     adapterManager: {} as any,
     storageAdapter: {} as any,
     contextVars: {},
-    lastTx: '' as Timestamp,
+    lastTx: '',
     lastHash: '',
     broadcastEvent: async () => {}
   } as PipelineContext
@@ -127,18 +127,22 @@ function stubMiddleware (): Middleware {
 }
 
 describe('GuestCollaboratorClassReadMiddleware', () => {
-  const MM_ID = generateId() as Ref<Doc>
+  const MM_ID = generateId()
 
   it('User: passes original query in a single findAll', async () => {
-    const captured: Array<{ cls: string; query: unknown }> = []
+    const captured: Array<{ cls: string, query: unknown }> = []
     const next: Middleware = {
       ...stubMiddleware(),
-      findAll: async (ctx, _class, query, options) => {
+      findAll: async <T extends Doc>(ctx: MeasureContext<SessionData>, _class: Ref<Class<T>>, query: any) => {
         captured.push({ cls: _class as string, query: { ...query } })
-        return toFindResult([])
+        return toFindResult([]) as any
       }
     }
-    const mw = new GuestCollaboratorClassReadMiddleware(makePipelineContext(), next)
+    const mw = await GuestCollaboratorClassReadMiddleware.create(
+      new MeasureMetricsContext('test', {}),
+      makePipelineContext(),
+      next
+    )
     const ctx = makeCtx(makeAccount(AccountRole.User))
     await mw.findAll(ctx, MEETING_MINUTES_CLASS, { attachedTo: MM_ID })
     expect(captured).toHaveLength(1)
@@ -149,18 +153,27 @@ describe('GuestCollaboratorClassReadMiddleware', () => {
   it('Guest: loads collaborators then restricts MeetingMinutes to collaborator attachedTo ids', async () => {
     const guest = makeAccount(AccountRole.Guest)
     const collabDoc = makeCollaboratorDoc(MM_ID, guest.uuid)
-    const captured: Array<{ cls: string; query: unknown }> = []
+    const captured: Array<{ cls: string, query: unknown }> = []
     const next: Middleware = {
       ...stubMiddleware(),
-      findAll: async (c, _class, query) => {
+      findAll: async <T extends Doc>(
+        c: MeasureContext<SessionData>,
+        _class: Ref<Class<T>>,
+        query: any,
+        _options?: ServerFindOptions<T>
+      ) => {
         captured.push({ cls: _class as string, query: JSON.parse(JSON.stringify(query)) })
-        if (_class === core.class.Collaborator) {
-          return toFindResult([collabDoc])
+        if (_class === (core.class.Collaborator as unknown as Ref<Class<T>>)) {
+          return toFindResult([collabDoc as any]) as any
         }
-        return toFindResult([])
+        return toFindResult([]) as any
       }
     }
-    const mw = new GuestCollaboratorClassReadMiddleware(makePipelineContext(), next)
+    const mw = await GuestCollaboratorClassReadMiddleware.create(
+      new MeasureMetricsContext('test', {}),
+      makePipelineContext(),
+      next
+    )
     const ctx = makeCtx(guest)
     await mw.findAll(ctx, MEETING_MINUTES_CLASS, { space: core.space.Workspace })
     expect(captured).toHaveLength(2)
@@ -172,18 +185,22 @@ describe('GuestCollaboratorClassReadMiddleware', () => {
 
   it('Guest: empty collaborator list yields _id $in []', async () => {
     const guest = makeAccount(AccountRole.Guest)
-    const captured: Array<{ cls: string; query: unknown }> = []
+    const captured: Array<{ cls: string, query: unknown }> = []
     const next: Middleware = {
       ...stubMiddleware(),
-      findAll: async (c, _class, query) => {
+      findAll: async <T extends Doc>(c: MeasureContext<SessionData>, _class: Ref<Class<T>>, query: any) => {
         captured.push({ cls: _class as string, query: JSON.parse(JSON.stringify(query)) })
-        if (_class === core.class.Collaborator) {
-          return toFindResult([])
+        if (_class === (core.class.Collaborator as unknown as Ref<Class<T>>)) {
+          return toFindResult([]) as any
         }
-        return toFindResult([])
+        return toFindResult([]) as any
       }
     }
-    const mw = new GuestCollaboratorClassReadMiddleware(makePipelineContext(), next)
+    const mw = await GuestCollaboratorClassReadMiddleware.create(
+      new MeasureMetricsContext('test', {}),
+      makePipelineContext(),
+      next
+    )
     const ctx = makeCtx(guest)
     await mw.findAll(ctx, MEETING_MINUTES_CLASS, {})
     expect(captured).toHaveLength(2)
@@ -196,18 +213,22 @@ describe('GuestCollaboratorClassReadMiddleware', () => {
       ...makePipelineContext(),
       modelDb: {
         findAllSync: () => []
-      } as PipelineContext['modelDb']
+      } as unknown as PipelineContext['modelDb']
     } as PipelineContext
 
     const captured: unknown[] = []
     const next: Middleware = {
       ...stubMiddleware(),
-      findAll: async (c, _class, query) => {
+      findAll: async <T extends Doc>(c: MeasureContext<SessionData>, _class: Ref<Class<T>>, query: any) => {
         captured.push(query)
-        return toFindResult([])
+        return toFindResult([]) as any
       }
     }
-    const mw = new GuestCollaboratorClassReadMiddleware(bareContext, next)
+    const mw = await GuestCollaboratorClassReadMiddleware.create(
+      new MeasureMetricsContext('test', {}),
+      bareContext,
+      next
+    )
     const ctx = makeCtx(makeAccount(AccountRole.Guest))
     await mw.findAll(ctx, MEETING_MINUTES_CLASS, { space: core.space.Workspace })
     expect(captured).toHaveLength(1)
@@ -220,10 +241,14 @@ describe('GuestCollaboratorClassReadMiddleware', () => {
       ...stubMiddleware(),
       findAll: async () => {
         calls++
-        return toFindResult([])
+        return toFindResult([]) as any
       }
     }
-    const mw = new GuestCollaboratorClassReadMiddleware(makePipelineContext(), next)
+    const mw = await GuestCollaboratorClassReadMiddleware.create(
+      new MeasureMetricsContext('test', {}),
+      makePipelineContext(),
+      next
+    )
     const ctx = makeCtx({
       uuid: systemAccountUuid,
       role: AccountRole.Owner,
@@ -237,26 +262,28 @@ describe('GuestCollaboratorClassReadMiddleware', () => {
 
   it('Guest: merges existing _id constraint with $and', async () => {
     const guest = makeAccount(AccountRole.Guest)
-    const otherId = generateId() as Ref<Doc>
+    const otherId = generateId()
     const collabDoc = makeCollaboratorDoc(MM_ID, guest.uuid)
     const captured: unknown[] = []
     const next: Middleware = {
       ...stubMiddleware(),
-      findAll: async (c, _class, query) => {
+      findAll: async <T extends Doc>(c: MeasureContext<SessionData>, _class: Ref<Class<T>>, query: any) => {
         captured.push(JSON.parse(JSON.stringify(query)))
-        if (_class === core.class.Collaborator) {
-          return toFindResult([collabDoc])
+        if (_class === (core.class.Collaborator as unknown as Ref<Class<T>>)) {
+          return toFindResult([collabDoc as any]) as any
         }
-        return toFindResult([])
+        return toFindResult([]) as any
       }
     }
-    const mw = new GuestCollaboratorClassReadMiddleware(makePipelineContext(), next)
+    const mw = await GuestCollaboratorClassReadMiddleware.create(
+      new MeasureMetricsContext('test', {}),
+      makePipelineContext(),
+      next
+    )
     const ctx = makeCtx(guest)
     await mw.findAll(ctx, MEETING_MINUTES_CLASS, { _id: otherId })
     const mmQuery = captured[1] as any
     expect(mmQuery.$and).toBeDefined()
-    expect(mmQuery.$and).toEqual(
-      expect.arrayContaining([{ _id: otherId }, { _id: { $in: [MM_ID] } }])
-    )
+    expect(mmQuery.$and).toEqual(expect.arrayContaining([{ _id: otherId }, { _id: { $in: [MM_ID] } }]))
   })
 })
