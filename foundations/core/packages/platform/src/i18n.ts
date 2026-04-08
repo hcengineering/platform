@@ -196,7 +196,7 @@ export async function translate<P extends Record<string, any>> (
 
     if (compiled !== undefined) {
       if (compiled instanceof Status) {
-        return message as string
+        return message
       }
       return compiled.format(params)
     }
@@ -207,13 +207,13 @@ export async function translate<P extends Record<string, any>> (
     const translation = getCachedTranslation(id, locale) ?? (await getTranslation(id, locale, skipError)) ?? message
     if (translation instanceof Status) {
       localCache.set(message, translation)
-      return message as string
+      return message
     }
     const compiledNew = new IntlMessageFormat(translation, locale, undefined, { ignoreTag: true })
     localCache.set(message, compiledNew)
     return compiledNew.format(params)
   } catch (err) {
-    return (await handleIntlPipelineFailure(err, message, localCache, skipError)) as string
+    return await handleIntlPipelineFailure(err, message, localCache, skipError)
   }
 }
 /**
