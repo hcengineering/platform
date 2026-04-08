@@ -32,6 +32,7 @@ echo "Creating user accounts..."
 ./tool.sh create-account admin -f Super -l Admin -p 1234
 ./tool.sh create-account user1 -f John -l Appleseed -p 1234
 ./tool.sh create-account user2 -f Kainin -l Dirak -p 1234
+./tool.sh create-account guest1 -f Guest -l One -p 1234
 
 echo "Creating workspace api-tests..."
 ./tool.sh create-workspace api-tests email:user1
@@ -42,5 +43,9 @@ echo "Creating workspace api-tests-cr..."
 echo "Assigning user1 to workspaces..."
 ./tool.sh assign-workspace user1 api-tests
 ./tool.sh assign-workspace user1 api-tests-cr
+
+echo "Assigning guest1 to api-tests as Guest..."
+./tool.sh assign-workspace guest1 api-tests --role Guest
+./tool.sh assign-workspace guest1 api-tests-cr --role Guest
 
 rm -rf ./sanity/.auth

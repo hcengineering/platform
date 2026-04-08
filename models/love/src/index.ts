@@ -644,7 +644,8 @@ export function createModel (builder: Builder): void {
   builder.createDoc<ClassCollaborators<MeetingMinutes>>(core.class.ClassCollaborators, core.space.Model, {
     attachedTo: love.class.MeetingMinutes,
     fields: ['createdBy'],
-    provideSecurity: true
+    provideSecurity: true,
+    guestReadCollaboratorOnly: true
   })
 
   builder.mixin(love.class.Room, core.class.Class, core.mixin.IndexConfiguration, {

@@ -985,6 +985,11 @@ export interface ClassCollaborators<T extends Doc> extends Doc {
   fields: (keyof T)[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
   provideSecurity?: boolean // If true, will provide security for collaborators
   provideAttachedSecurity?: boolean // If true, will provide security for collaborators of attached doc
+  /**
+   * When true with provideSecurity, workspace guests may read instances of this class only as collaborators,
+   * not via space membership alone (see guest collaborator read middleware / Postgres addSecurity).
+   */
+  guestReadCollaboratorOnly?: boolean
 }
 
 export interface Collaborator extends AttachedDoc {

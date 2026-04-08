@@ -33,8 +33,10 @@
   let preference: ViewletPreference | undefined
   let loading = true
 
+  /** Full members see all minutes in context; guests see only rows the server allows (collaborator-only reads). */
   let canViewMinutes: boolean = false
-  $: canViewMinutes = hasAccountRole(me, AccountRole.User)
+  $: canViewMinutes =
+    hasAccountRole(me, AccountRole.User) || me.role === AccountRole.Guest || me.role === AccountRole.ReadOnlyGuest
 </script>
 
 {#if canViewMinutes}

@@ -331,10 +331,30 @@ export function devTool (
   //   })
   // })
 
+  function parseAccountRole (raw: unknown): AccountRole {
+    const rawRole = typeof raw === 'string' ? raw.trim() : String(raw ?? 'User').trim()
+    const normalized = rawRole.trim().toLowerCase()
+
+    const match = Object.values(AccountRole).find(
+      (v) => v.toLowerCase() === normalized
+    )
+    if (match !== undefined) return match
+
+    switch (normalized) {
+      case 'readonly':
+        return AccountRole.ReadOnlyGuest
+      case 'docguest':
+        return AccountRole.DocGuest
+      default:
+        throw new Error(`Unknown role: ${rawRole}`)
+    }
+  }
+
   program
     .command('assign-workspace <email> <workspace>')
     .description('assign workspace')
-    .action(async (email: string, workspace: string, cmd) => {
+    .option('--role <role>', 'Workspace role (User, Guest, ReadOnlyGuest, DocGuest, Maintainer, Owner, Admin)', 'User')
+    .action(async (email: string, workspace: string, cmd: { role: string }) => {
       await withAccountDatabase(async (db) => {
         console.log(`assigning user ${email} to ${workspace}...`)
         try {
@@ -343,10 +363,12 @@ export function devTool (
             throw new Error(`Workspace ${workspace} not found`)
           }
 
+          const role = cmd.role != null ? parseAccountRole(cmd.role) : AccountRole.User
+
           await assignWorkspace(toolCtx, db, null, getToolToken(), {
             email,
             workspaceUuid: ws.uuid,
-            role: AccountRole.User
+            role
           })
         } catch (err: any) {
           console.error(err)
