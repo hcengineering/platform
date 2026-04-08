@@ -335,9 +335,7 @@ export function devTool (
     const rawRole = typeof raw === 'string' ? raw.trim() : String(raw ?? 'User').trim()
     const normalized = rawRole.trim().toLowerCase()
 
-    const match = Object.values(AccountRole).find(
-      (v) => v.toLowerCase() === normalized
-    )
+    const match = Object.values(AccountRole).find((v) => v.toLowerCase() === normalized)
     if (match !== undefined) return match
 
     switch (normalized) {
