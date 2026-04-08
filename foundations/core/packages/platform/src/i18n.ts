@@ -240,28 +240,34 @@ export function translateCB<P extends Record<string, any>> (
         return
       }
       resolve(compiled.format(params))
-      return
-    }
-    const id = _parseId(message)
-    if (id.component === _EmbeddedId) {
-      resolve(id.name)
-      return
-    }
-    const translation = getCachedTranslation(id, locale)
-    if (translation === undefined || translation instanceof Status) {
-      void translate(message, params, language, skipError)
-        .then((res) => {
-          resolve(res)
-        })
-        .catch((err) => {
-          void handleIntlPipelineFailure(err, message, localCache, skipError).then(resolve)
-        })
-      return
-    }
+    } else {
+      let id: _IdInfo
+      try {
+        id = _parseId(message)
+        if (id.component === _EmbeddedId) {
+          resolve(id.name)
+          return
+        }
+      } catch (err) {
+        void handleIntlPipelineFailure(err, message, localCache, skipError)
+        return
+      }
+      const translation = getCachedTranslation(id, locale)
+      if (translation === undefined || translation instanceof Status) {
+        void translate(message, params, language, skipError)
+          .then((res) => {
+            resolve(res)
+          })
+          .catch((err) => {
+            void handleIntlPipelineFailure(err, message, localCache, skipError).then(resolve)
+          })
+        return
+      }
 
-    const compiledNew = new IntlMessageFormat(translation, locale, undefined, { ignoreTag: true })
-    localCache.set(message, compiledNew)
-    resolve(compiledNew.format(params))
+      const compiledNew = new IntlMessageFormat(translation, locale, undefined, { ignoreTag: true })
+      localCache.set(message, compiledNew)
+      resolve(compiledNew.format(params))
+    }
   } catch (err) {
     void handleIntlPipelineFailure(err, message, localCache, skipError).then(resolve)
   }
