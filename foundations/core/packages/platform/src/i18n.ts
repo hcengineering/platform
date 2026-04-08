@@ -249,7 +249,7 @@ export function translateCB<P extends Record<string, any>> (
           return
         }
       } catch (err) {
-        void handleIntlPipelineFailure(err, message, localCache, skipError)
+        void handleIntlPipelineFailure(err, message, localCache, skipError).then(resolve)
         return
       }
       const translation = getCachedTranslation(id, locale)

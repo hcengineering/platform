@@ -123,6 +123,19 @@ describe('i18n', () => {
     removeEventListener(PlatformEvent, eventListener)
   })
 
+  it('translateCB should resolve with message when bad id (_parseId throws)', async () => {
+    expect.assertions(2)
+    const message = 'invalidIntlIdCB' as IntlString
+    const checkStatus = new Status(Severity.ERROR, platform.status.InvalidId, { id: message })
+    const eventListener = async (event: string, data: any): Promise<void> => {
+      expect(data).toEqual(checkStatus)
+    }
+    addEventListener(PlatformEvent, eventListener)
+    const out = await translateCBAsync(message, {}, 'en')
+    expect(out).toBe(message)
+    removeEventListener(PlatformEvent, eventListener)
+  })
+
   it('translateCB should match translate for loaded string', async () => {
     const fromTranslate = await translate(test.string.loadingPlugin, { plugin: 'cb' })
     const fromCB = await translateCBAsync(test.string.loadingPlugin, { plugin: 'cb' }, 'en')
