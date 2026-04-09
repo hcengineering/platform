@@ -9,7 +9,15 @@ export class OwnersPage {
 
   owner = (ownerName: string): Locator => this.page.getByRole('link', { name: ownerName })
   spacesAdminText = (): Locator => this.page.getByText('Admin Members')
-  addMemberButton = (): Locator => this.page.getByRole('button', { name: 'Members' })
+  // Sidebar "Members" nav item clashes with Spaces role pickers (label "Members"). Scope to settings content
+  // and the "Admin" role row — Spaces.svelte renders one AccountArrayEditor per role.
+  addMemberButton = (): Locator =>
+    this.page
+      .locator('.antiPanel-component.filledNav')
+      .locator('.antiGrid-row')
+      .filter({ has: this.page.locator('.antiGrid-row__header', { hasText: /^Admin$/ }) })
+      .getByRole('button', { name: 'Members' })
+
   selectMember = (memberName: string): Locator => this.page.getByRole('button', { name: memberName })
   workspaceLogo = (): Locator => this.page.locator('.hulyComponent .hulyAvatar-container')
   publicTemplate = (): Locator => this.page.getByText('Public templates')

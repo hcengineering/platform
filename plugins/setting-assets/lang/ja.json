@@ -66,7 +66,7 @@
     "NewValue": "新しい値",
     "Leave": "ワークスペースを退出",
     "LeaveDescr": "本当にワークスペースを退出しますか？この操作は元に戻せません。",
-    "Owners": "所有者",
+    "Members": "メンバー",
     "WorkspaceSettings": "ワークスペース設定",
     "Select": "選択",
     "AddOwner": "所有者を追加",

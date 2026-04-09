@@ -304,13 +304,13 @@ export function createModel (builder: Builder): void {
     core.space.Model,
     {
       name: 'owners',
-      label: setting.string.Owners,
-      icon: setting.icon.Owners,
-      component: setting.component.Owners,
+      label: setting.string.Members,
+      icon: setting.icon.Members,
+      component: setting.component.Members,
       order: 1000,
       role: AccountRole.Maintainer
     },
-    setting.ids.Owners
+    setting.ids.Members
   )
   builder.createDoc(
     setting.class.WorkspaceSettingCategory,
