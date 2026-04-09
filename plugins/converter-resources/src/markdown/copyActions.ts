@@ -98,7 +98,7 @@ export async function copyRelationshipTableAsMarkdown (
     }
 
     const language = getCurrentLanguage()
-    const markdown = await buildRelationshipTableMarkdown(props, hierarchy, language)
+    const markdown = await buildRelationshipTableMarkdown(props, hierarchy, language, client)
 
     if (markdown.length === 0) {
       return
