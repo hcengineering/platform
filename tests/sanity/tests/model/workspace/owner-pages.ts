@@ -17,6 +17,7 @@ export class OwnersPage {
       .locator('.antiGrid-row')
       .filter({ has: this.page.locator('.antiGrid-row__header', { hasText: /^Admin$/ }) })
       .getByRole('button', { name: 'Members' })
+
   selectMember = (memberName: string): Locator => this.page.getByRole('button', { name: memberName })
   workspaceLogo = (): Locator => this.page.locator('.hulyComponent .hulyAvatar-container')
   publicTemplate = (): Locator => this.page.getByText('Public templates')
