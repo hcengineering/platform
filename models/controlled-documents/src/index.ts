@@ -1124,6 +1124,20 @@ export function createModel (builder: Builder): void {
     },
     documents.ids.ModulePermissionGroup
   )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: documents.app.Documents,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: documents.class.OrgSpace,
+      enabled: false,
+      order: 42
+    },
+    documents.ids.ModulePermissionGroupReadOnlyGuest
+  )
   definePermissions(builder)
   defineNotifications(builder)
   defineSearch(builder)

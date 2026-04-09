@@ -26,8 +26,6 @@
     "NewVersionAvailable": "Nuova versione disponibile",
     "PleaseUpdate": "Si prega di aggiornare",
     "ServerUnderMaintenance": "Il server è in manutenzione",
-    "MobileNotSupported": "Spiacenti, il supporto per i dispositivi mobili arriverà presto. Nel frattempo, si prega di utilizzare un computer desktop",
-    "LogInAnyway": "Accedi comunque",
     "WorkspaceCreating": "Creazione in corso...",
     "AccessDenied": "L'oggetto non esiste o non hai autorizzazione per accedervi.",
     "WorkspaceIsMigrating": "Il workspace è in fase di aggiornamento. Attendi..."

@@ -102,7 +102,8 @@ export default mergeIds(driveId, drive, {
     RestoreFileVersion: '' as ViewAction
   },
   ids: {
-    ModulePermissionGroup: '' as Ref<Doc>
+    ModulePermissionGroup: '' as Ref<Doc>,
+    ModulePermissionGroupReadOnlyGuest: '' as Ref<Doc>
   },
   string: {
     Grid: '' as IntlString,

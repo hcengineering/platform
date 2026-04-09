@@ -25,8 +25,6 @@
     "NewVersionAvailable": "Je k dispozici nová verze",
     "PleaseUpdate": "Aktualizujte prosím",
     "ServerUnderMaintenance": "Příprava pracovního prostoru na novou verzi...",
-    "MobileNotSupported": "Omlouváme se, podpora mobilních zařízení bude brzy dostupná. Zatím prosím použijte počítač",
-    "LogInAnyway": "Přihlásit se přesto",
     "WorkspaceCreating": "Vytváření probíhá...",
     "AccessDenied": "Objekt neexistuje nebo k němu nemáte oprávnění.",
     "UpgradeDownloadProgress": "Stahování aktualizace: {percent}%",

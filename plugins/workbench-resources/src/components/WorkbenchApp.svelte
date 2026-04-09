@@ -15,17 +15,7 @@
 <script lang="ts">
   import { getMetadata } from '@hcengineering/platform'
   import { upgradeDownloadProgress } from '@hcengineering/presentation'
-  import {
-    Button,
-    Component,
-    AppLoading,
-    Label,
-    Notifications,
-    deviceOptionsStore,
-    fetchMetadataLocalStorage,
-    location,
-    setMetadataLocalStorage
-  } from '@hcengineering/ui'
+  import { Button, Component, AppLoading, Label, Notifications, location } from '@hcengineering/ui'
   import { connect, disconnect, error, errorActions } from '../connect'
 
   import workbench, { workbenchId } from '@hcengineering/workbench'
@@ -35,83 +25,67 @@
 
   const isNeedUpgrade = window.location.host === ''
 
-  let mobileAllowed = fetchMetadataLocalStorage(workbenchRes.metadata.MobileAllowed)
-
-  function allowMobile () {
-    setMetadataLocalStorage(workbenchRes.metadata.MobileAllowed, true)
-    mobileAllowed = true
-  }
-
   onDestroy(disconnect)
 </script>
 
 {#if $location.path[0] === workbenchId || $location.path[0] === workbenchRes.component.WorkbenchApp}
-  {#if $deviceOptionsStore.isMobile && mobileAllowed !== true}
-    <div class="version-wrapper">
-      <div class="antiPopup version-popup">
-        <h1><Label label={workbenchRes.string.MobileNotSupported} /></h1>
-        <Button label={workbenchRes.string.LogInAnyway} on:click={allowMobile} />
-      </div>
-    </div>
-  {:else}
-    {#key $location.path[1]}
-      {#await connect(getMetadata(workbenchRes.metadata.PlatformTitle) ?? 'Platform')}
-        <AppLoading>
-          {#if ($workspaceCreating ?? -1) >= 0}
-            <div class="ml-1">
-              <Label label={workbenchRes.string.WorkspaceCreating} />
-              {$workspaceCreating} %
-            </div>
-          {/if}
-          {#if $error}
-            <div class="ml-2">
-              {$error}
-            </div>
-          {/if}
-          {#if $upgradeDownloadProgress >= 0}
-            <div class="ml-1" class:ml-2={$error === undefined}>
-              <Label label={workbench.string.UpgradeDownloadProgress} params={{ percent: $upgradeDownloadProgress }} />
-            </div>
-          {/if}
-          <svelte:fragment slot="actions">
-            {#if $error && $errorActions.length > 0}
-              {#each $errorActions as action}
-                <Button label={action.label} on:click={action.action} />
-              {/each}
-            {/if}
-          </svelte:fragment>
-        </AppLoading>
-      {:then client}
-        {#if $error}
-          <div class="version-wrapper">
-            <div class="antiPopup version-popup">
-              {#if isNeedUpgrade}
-                <h1><Label label={workbenchRes.string.NewVersionAvailable} /></h1>
-                <span class="please-update"><Label label={workbenchRes.string.PleaseUpdate} /></span>
-              {:else}
-                <h1><Label label={workbenchRes.string.ServerUnderMaintenance} /></h1>
-              {/if}
-              {$error}
-              {#if $upgradeDownloadProgress >= 0}
-                <div class="mt-1">
-                  <Label
-                    label={workbench.string.UpgradeDownloadProgress}
-                    params={{ percent: $upgradeDownloadProgress }}
-                  />
-                </div>
-              {/if}
-            </div>
+  {#key $location.path[1]}
+    {#await connect(getMetadata(workbenchRes.metadata.PlatformTitle) ?? 'Platform')}
+      <AppLoading>
+        {#if ($workspaceCreating ?? -1) >= 0}
+          <div class="ml-1">
+            <Label label={workbenchRes.string.WorkspaceCreating} />
+            {$workspaceCreating} %
           </div>
-        {:else if client}
-          <Notifications>
-            <Component is={workbenchRes.component.Workbench} />
-          </Notifications>
         {/if}
-      {:catch error}
-        <div>{error} -- {error.stack}</div>
-      {/await}
-    {/key}
-  {/if}
+        {#if $error}
+          <div class="ml-2">
+            {$error}
+          </div>
+        {/if}
+        {#if $upgradeDownloadProgress >= 0}
+          <div class="ml-1" class:ml-2={$error === undefined}>
+            <Label label={workbench.string.UpgradeDownloadProgress} params={{ percent: $upgradeDownloadProgress }} />
+          </div>
+        {/if}
+        <svelte:fragment slot="actions">
+          {#if $error && $errorActions.length > 0}
+            {#each $errorActions as action}
+              <Button label={action.label} on:click={action.action} />
+            {/each}
+          {/if}
+        </svelte:fragment>
+      </AppLoading>
+    {:then client}
+      {#if $error}
+        <div class="version-wrapper">
+          <div class="antiPopup version-popup">
+            {#if isNeedUpgrade}
+              <h1><Label label={workbenchRes.string.NewVersionAvailable} /></h1>
+              <span class="please-update"><Label label={workbenchRes.string.PleaseUpdate} /></span>
+            {:else}
+              <h1><Label label={workbenchRes.string.ServerUnderMaintenance} /></h1>
+            {/if}
+            {$error}
+            {#if $upgradeDownloadProgress >= 0}
+              <div class="mt-1">
+                <Label
+                  label={workbench.string.UpgradeDownloadProgress}
+                  params={{ percent: $upgradeDownloadProgress }}
+                />
+              </div>
+            {/if}
+          </div>
+        </div>
+      {:else if client}
+        <Notifications>
+          <Component is={workbenchRes.component.Workbench} />
+        </Notifications>
+      {/if}
+    {:catch error}
+      <div>{error} -- {error.stack}</div>
+    {/await}
+  {/key}
 {/if}
 
 <style lang="scss">

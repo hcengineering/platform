@@ -84,6 +84,20 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: chunter.app.Chunter,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: chunter.class.ChunterSpace,
+      enabled: true,
+      order: 15
+    },
+    chunter.ids.ModulePermissionGroupReadOnlyGuest
+  )
+
+  builder.createDoc(
     workbench.class.Widget,
     core.space.Model,
     {

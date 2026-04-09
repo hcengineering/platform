@@ -20,6 +20,7 @@ const icons = require('../assets/icons.svg') as string // eslint-disable-line
 loadMetadata(setting.icon, {
   AccountSettings: `${icons}#accountSettings`,
   Members: `${icons}#members`,
+  GuestPermissions: `${icons}#guestPermissions`,
   Password: `${icons}#password`,
   Setting: `${icons}#settings`,
   Integrations: `${icons}#integration`,
