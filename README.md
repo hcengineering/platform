@@ -88,6 +88,12 @@ For detailed information about the platform architecture, services, and their in
   - [Docker](https://docs.docker.com/get-docker/)
   - [Docker Compose](https://docs.docker.com/compose/install/)
 
+If you use `nvm`, run this after entering the repo to align your shell with the repository Node version:
+
+```bash
+nvm use
+```
+
 ## Verification
 
 To verify the installation, perform the following checks in your terminal:
@@ -268,6 +274,18 @@ It includes build and validate phases in watch mode.
 rush test # To execute all tests
 
 rushx test # For individual test execution inside a package directory
+```
+
+For fastest local loop, verify only packages touched by your current local changes (unstaged/staged/untracked):
+
+```bash
+./scripts/verify-changed.sh
+```
+
+Validate-only mode (skip tests) is available:
+
+```bash
+SKIP_TESTS=1 ./scripts/verify-changed.sh
 ```
 
 ### UI tests

@@ -394,6 +394,41 @@ export function createModel (builder: Builder): void {
     enabledTypes: [time.ids.ToDoCreated]
   })
 
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      allowedForAuthor: true,
+      label: time.string.ToDo,
+      group: time.ids.TimeNotificationGroup as Ref<NotificationGroup>,
+      // Scheduled notifications are created by a worker, but provider/type settings still expect a tx class list.
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: time.class.ToDo,
+      onlyOwn: true,
+      defaultEnabled: true,
+      templates: {
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p><p>{link}</p>',
+        subjectTemplate: '{title}'
+      }
+    },
+    time.ids.ToDoReminder
+  )
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [time.ids.ToDoReminder]
+  })
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.PushNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [time.ids.ToDoReminder]
+  })
+
   builder.createDoc<ClassCollaborators<ToDo>>(core.class.ClassCollaborators, core.space.Model, {
     attachedTo: time.class.ToDo,
     fields: ['user']

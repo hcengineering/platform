@@ -56,7 +56,8 @@ export default mergeIds(timeId, time, {
     Team: '' as Ref<Application>
   },
   ids: {
-    ToDoCreated: '' as Ref<NotificationType>
+    ToDoCreated: '' as Ref<NotificationType>,
+    ToDoReminder: '' as Ref<NotificationType>
   },
   function: {
     ToDoTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
