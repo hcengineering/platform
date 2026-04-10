@@ -44,7 +44,7 @@ test.describe('Workspace tests', () => {
     await selectWorkspacePage.createWorkspace(newWorkspaceName)
     await userProfilePage.openProfileMenu()
     await userProfilePage.clickSettings()
-    await workspaceSettingsPage.selectWorkspaceSettingsTab(ButtonType.Owners)
+    await workspaceSettingsPage.selectWorkspaceSettingsTab(ButtonType.Members)
     await ownersPage.checkIfOwnerExists(newUser.firstName)
   })
 

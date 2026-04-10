@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -88,7 +88,7 @@
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
-    <Breadcrumb icon={setting.icon.Owners} label={setting.string.Owners} size={'large'} isCurrent />
+    <Breadcrumb icon={setting.icon.Members} label={setting.string.Members} size={'large'} isCurrent />
     <svelte:fragment slot="search">
       <SearchInput bind:value={search} collapsed />
     </svelte:fragment>

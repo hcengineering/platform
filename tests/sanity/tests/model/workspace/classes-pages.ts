@@ -7,7 +7,7 @@ export class ClassesPage {
     this.page = page
   }
 
-  member = (): Locator => this.page.getByRole('button', { name: 'Member' })
+  member = (): Locator => this.page.getByRole('button', { name: 'Member', exact: true })
   contact = (): Locator => this.page.getByRole('button', { name: 'Contact' })
   person = (): Locator => this.page.getByRole('button', { name: 'Person' })
   employee = (): Locator => this.page.getByRole('button', { name: 'Employee' })
