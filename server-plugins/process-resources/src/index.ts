@@ -21,6 +21,7 @@ import core, {
   generateId,
   Ref,
   RefTo,
+  Space,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -33,6 +34,7 @@ import process, {
   ApproveRequest,
   ContextId,
   Execution,
+  ExecutionContext,
   ExecutionStatus,
   isUpdateTx,
   Method,
@@ -349,7 +351,7 @@ export async function OnExecutionRemove (txes: Tx[], control: TriggerControl): P
   return res
 }
 
-async function getExecutionReassignTxes (card: Card, control: TriggerControl): Promise<Tx[]> {
+async function getVersionExecutionTxes (card: Card, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   const cards = await control.findAll(control.ctx, cardPlugin.class.Card, { baseId: card.baseId })
   const ids = cards.map((p) => p._id).filter((p) => p !== card._id)
@@ -357,12 +359,27 @@ async function getExecutionReassignTxes (card: Card, control: TriggerControl): P
     card: { $in: ids },
     status: ExecutionStatus.Active
   })
+  const alreadyStarted = new Set<Ref<Process>>()
   for (const execution of executions) {
     res.push(
       control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
         card: card._id
       })
     )
+    alreadyStarted.add(execution.process)
+  }
+  const ancestors = control.hierarchy
+    .getAncestors(card._class)
+    .filter((p) => control.hierarchy.isDerived(p, cardPlugin.class.Card))
+
+  const processes = control.modelDb.findAllSync(process.class.Process, {
+    masterTag: { $in: ancestors },
+    autoStart: true
+  })
+  for (const proc of processes) {
+    if (alreadyStarted.has(proc._id)) continue
+    const tx = createExecution(control, proc._id, card._id, card.space)
+    if (tx !== undefined) res.push(tx)
   }
   return res
 }
@@ -465,7 +482,7 @@ export async function OnCardCreate (txes: Tx[], control: TriggerControl): Promis
     const obj = TxProcessor.createDoc2Doc(createTx)
 
     if (obj.baseId !== obj._id) {
-      const reassignTxes = await getExecutionReassignTxes(obj, control)
+      const reassignTxes = await getVersionExecutionTxes(obj, control)
       res.push(...reassignTxes)
     }
   }
@@ -698,3 +715,34 @@ export default async () => ({
     OnCardCreate
   }
 })
+
+function createExecution (
+  control: TriggerControl,
+  proc: Ref<Process>,
+  card: Ref<Card>,
+  space: Ref<Space>
+): TxCreateDoc<Execution> | undefined {
+  const initTransition = control.modelDb.findAllSync(process.class.Transition, {
+    process: proc,
+    from: null
+  })[0]
+  if (initTransition === undefined) return
+  const execId = generateId<Execution>()
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const context = {} as ExecutionContext
+  const tx = control.txFactory.createTxCreateDoc<Execution>(
+    process.class.Execution,
+    space,
+    {
+      process: proc,
+      currentState: null as any,
+      card,
+      rollback: [],
+      context,
+      status: ExecutionStatus.Active
+    },
+    execId
+  )
+
+  return tx
+}
