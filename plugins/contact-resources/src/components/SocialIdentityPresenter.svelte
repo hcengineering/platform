@@ -35,8 +35,7 @@
 
   $: icon = socialIdProvider?.icon ?? contact.icon.Profile
   $: {
-    isOwner =
-      isSocialIdOwnedByCurrentUser(value) || getCurrentAccount().role === AccountRole.Owner
+    isOwner = isSocialIdOwnedByCurrentUser(value) || getCurrentAccount().role === AccountRole.Owner
   }
 </script>
 
