@@ -17,7 +17,7 @@
   import { Icon, Label, tooltip } from '@hcengineering/ui'
   import contact, { type SocialIdentity, type SocialIdentityProvider } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
-  import { type SocialId } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, type SocialId } from '@hcengineering/core'
   import { isSocialIdOwnedByCurrentUser } from '../utils'
 
   export let value: SocialIdentity | SocialId
@@ -35,7 +35,8 @@
 
   $: icon = socialIdProvider?.icon ?? contact.icon.Profile
   $: {
-    isOwner = isSocialIdOwnedByCurrentUser(value)
+    isOwner =
+      isSocialIdOwnedByCurrentUser(value) || getCurrentAccount().role === AccountRole.Owner
   }
 </script>
 
