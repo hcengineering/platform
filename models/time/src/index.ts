@@ -211,6 +211,36 @@ export function createModel (builder: Builder): void {
     time.app.Me
   )
 
+  // Module permissions for guests/anonymous guests.
+  // Planner is allowed for guests, but disabled for anonymous guests, and placed after modules enabled by default.
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: time.app.Me,
+      role: AccountRole.Guest,
+      permissions: [],
+      spaceClass: core.class.TypedSpace,
+      enabled: true,
+      order: 55
+    },
+    time.ids.ModulePermissionGroup
+  )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: time.app.Me,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: core.class.TypedSpace,
+      enabled: false,
+      order: 55
+    },
+    time.ids.ModulePermissionGroupReadOnlyGuest
+  )
+
   builder.createDoc(
     workbench.class.Application,
     core.space.Model,

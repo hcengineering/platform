@@ -25,6 +25,10 @@ export default mergeIds(productsId, products, {
   action: {
     DeleteProductVersion: '' as Ref<Action<Doc, any>>
   },
+  ids: {
+    ModulePermissionGroup: '' as Ref<Doc>,
+    ModulePermissionGroupReadOnlyGuest: '' as Ref<Doc>
+  },
   component: {
     CreateProduct: '' as AnyComponent,
     ProductPresenter: '' as AnyComponent,
