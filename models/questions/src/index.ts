@@ -19,7 +19,7 @@ import type {
   SingleChoiceQuestion,
   SingleChoiceQuestionAnswer
 } from '@hcengineering/questions'
-import { type Class, type MixinData, type Ref } from '@hcengineering/core'
+import { AccountRole, type Class, type MixinData, type Ref } from '@hcengineering/core'
 import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import tracker from '@hcengineering/model-tracker'
@@ -72,6 +72,10 @@ export function createModel (builder: Builder): void {
   builder.createModel(TTypeQuestionOption)
   builder.createModel(TQuestion, TAssessment, TAnswer)
   builder.createModel(TQuestionMixin)
+
+  builder.mixin(questions.class.Answer, core.class.Class, core.mixin.TxAccessLevel, {
+    createAccessLevel: AccountRole.Guest
+  })
 
   defineActions(builder)
   defineSingleChoice(builder)
