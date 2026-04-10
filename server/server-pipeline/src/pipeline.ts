@@ -28,7 +28,6 @@ import {
   DomainTxMiddleware,
   FindSecurityMiddleware,
   FullTextMiddleware,
-  GuestCollaboratorClassReadMiddleware,
   GuestPermissionsMiddleware,
   IdentityMiddleware,
   LiveQueryMiddleware,
@@ -151,7 +150,6 @@ export function createServerPipeline (
       PrivateMiddleware.create,
       (ctx: MeasureContext, context: PipelineContext, next?: Middleware) =>
         SpaceSecurityMiddleware.create(opt.adapterSecurity ?? false, ctx, context, next),
-      GuestCollaboratorClassReadMiddleware.create,
       SpacePermissionsMiddleware.create,
       GuestPermissionsMiddleware.create,
       ConfigurationMiddleware.create,
