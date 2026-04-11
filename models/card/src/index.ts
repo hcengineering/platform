@@ -394,6 +394,15 @@ export function createSystemType (
     config: listConfig
   })
 
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: type,
+    descriptor: card.viewlet.CardGridDescriptor,
+    baseQuery: {
+      isLatest: true
+    },
+    config: []
+  })
+
   if (viewDefaults !== undefined) {
     builder.mixin(type, card.class.MasterTag, card.mixin.CardViewDefaults, viewDefaults)
   }
@@ -779,6 +788,43 @@ export function createModel (builder: Builder): void {
       config: ['']
     },
     card.viewlet.CardRelationshipTable
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: card.string.Grid,
+      icon: card.icon.Grid,
+      component: card.component.CardGridView
+    },
+    card.viewlet.CardGridDescriptor
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: card.class.Card,
+      descriptor: card.viewlet.CardGridDescriptor,
+      baseQuery: {
+        isLatest: true
+      },
+      config: [''],
+      configOptions: {
+        strict: true
+      },
+      viewOptions: {
+        groupBy: [],
+        orderBy: [
+          ['modifiedOn', SortingOrder.Descending],
+          ['rank', SortingOrder.Ascending],
+          ['title', SortingOrder.Descending]
+        ],
+        other: []
+      }
+    },
+    card.viewlet.CardGrid
   )
 
   builder.createDoc(

@@ -82,6 +82,7 @@
     "SectionUnlocked": "セクション {section} アンロック済み",
     "LayoutAuto": "自動",
     "SingleColumn": "1列",
-    "TwoColumns": "2列"
+    "TwoColumns": "2列",
+    "Grid": "グリッド"
   }
 }

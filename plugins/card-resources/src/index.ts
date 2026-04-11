@@ -40,6 +40,7 @@ import {
   createChildAction
 } from './utils'
 import { formatCardValue } from './cardTableFormatter'
+import CardGridView from './components/CardGridView.svelte'
 import ManageMasterTagsContent from './components/settings/ManageMasterTagsContent.svelte'
 import ManageMasterTagsTools from './components/settings/ManageMasterTagsTools.svelte'
 import ManageMasterTags from './components/settings/ManageMasterTags.svelte'
@@ -135,6 +136,7 @@ export default async (): Promise<Resources> => ({
     CardTagsColored,
     CardIcon,
     CardFeedView,
+    CardGridView,
     CreateSpace,
     CardHeaderButton,
     CreateRolePopup,
