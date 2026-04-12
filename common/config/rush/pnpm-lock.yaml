@@ -32754,6 +32754,9 @@ importers:
       '@hcengineering/card':
         specifier: workspace:^0.7.0
         version: link:../../plugins/card
+      '@hcengineering/chunter':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/chunter
       '@hcengineering/contact':
         specifier: workspace:^0.7.0
         version: link:../../plugins/contact

@@ -499,6 +499,8 @@ export interface Space extends Doc {
   archived: boolean
   owners?: AccountUuid[]
   autoJoin?: boolean
+  /** If it includes {@link AccountRole.Guest}, that guest is auto-added to members on activation (see OnEmployeeCreate). */
+  autoJoinForRoles?: AccountRole[]
 }
 
 /**

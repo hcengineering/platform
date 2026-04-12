@@ -15,6 +15,7 @@
 import core from './component'
 
 export * from './classes'
+export * from './autoJoinRoles'
 export * from './client'
 export * from './collaboration'
 export {
