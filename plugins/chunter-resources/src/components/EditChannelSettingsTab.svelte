@@ -55,6 +55,7 @@
       <div class="flex-row-center gap-2">
         <Label label={core.string.AutoJoin} />
         <Toggle
+          data-id="channel-auto-join-toggle"
           bind:on={autoJoin}
           on:change={() => {
             void persistAutoJoin()
@@ -67,6 +68,7 @@
       <div class="flex-row-center gap-2">
         <Label label={core.string.AutoJoinGuests} />
         <Toggle
+          data-id="channel-guest-auto-join-toggle"
           on={autoJoinForRoles.includes(AccountRole.Guest)}
           on:change={(ev) => {
             setGuestAutoJoin(ev.detail)

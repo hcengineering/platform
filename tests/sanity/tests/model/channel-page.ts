@@ -2,6 +2,8 @@ import { expect, type Locator, type Page } from '@playwright/test'
 import { CommonPage } from './common-page'
 import { LinkedChannelTypes } from './types'
 
+const CHANNEL_AUTO_JOIN_TOGGLE_TEST_ID = 'channel-auto-join-toggle'
+
 export class ChannelPage extends CommonPage {
   readonly page: Page
 
@@ -79,6 +81,12 @@ export class ChannelPage extends CommonPage {
   readonly privateOrPublicPopupButton = (change: string): Locator =>
     this.page.locator('div.popup div.menu-item', { hasText: change })
 
+  readonly channelAutoJoinToggleInput = (): Locator =>
+    this.page.getByTestId(CHANNEL_AUTO_JOIN_TOGGLE_TEST_ID).locator('input[type="checkbox"]')
+
+  readonly channelGuestAutoJoinToggleInput = (): Locator =>
+    this.page.getByTestId(CHANNEL_GUEST_AUTO_JOIN_TOGGLE_TEST_ID).locator('input[type="checkbox"]')
+
   readonly userAdded = (user: string): Locator => this.page.locator('.members').getByText(user)
   private readonly addMemberPreview = (): Locator => this.page.getByRole('button', { name: 'Add members' })
   private readonly addButtonPreview = (): Locator => this.page.getByRole('button', { name: 'Add', exact: true })
@@ -142,6 +150,17 @@ export class ChannelPage extends CommonPage {
     changed: string,
     autoJoin: boolean = false
   ): Promise<void> {
+    if (autoJoin) {
+      const checkbox = this.channelAutoJoinToggleInput()
+      const wantOn = changed === 'Yes'
+      await checkbox.setChecked(wantOn)
+      if (wantOn) {
+        await expect(checkbox).toBeChecked()
+      } else {
+        await expect(checkbox).not.toBeChecked()
+      }
+      return
+    }
     await this.privateOrPublicChangeButton(change, autoJoin).click()
     await this.page.waitForTimeout(200)
     await this.privateOrPublicPopupButton(YesNo).click()

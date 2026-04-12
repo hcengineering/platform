@@ -124,7 +124,7 @@
     <div class="hulyModal-content__settingsSet-line flex-col items-start gap-2">
       <div class="flex-row-center gap-2">
         <span class="label"><Label label={core.string.AutoJoin} /></span>
-        <Toggle bind:on={autoJoin} />
+        <Toggle data-id="channel-auto-join-toggle" bind:on={autoJoin} />
       </div>
       <span class="text-sm content-dark-color"><Label label={core.string.AutoJoinDescr} /></span>
     </div>
@@ -132,6 +132,7 @@
       <div class="flex-row-center gap-2">
         <span class="label"><Label label={core.string.AutoJoinGuests} /></span>
         <Toggle
+          data-id="channel-guest-auto-join-toggle"
           on={autoJoinForRoles.includes(AccountRole.Guest)}
           on:change={(ev) => {
             setGuestAutoJoin(ev.detail)
