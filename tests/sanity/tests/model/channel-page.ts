@@ -22,7 +22,10 @@ export class ChannelPage extends CommonPage {
       ? this.page.locator('#sidebar .activityMessage div[data-delivered]', { hasText: messageText })
       : this.page.locator('#sidebar .activityMessage', { hasText: messageText })
 
-  readonly channelName = (channel: string): Locator => this.page.getByText('general random').getByText(channel)
+  /** Channel button in the left navigator; use exact name to avoid substring matches (e.g. "and" inside "random"). */
+  readonly channelName = (channel: string): Locator =>
+    this.page.locator('div.antiPanel-navigator').getByRole('button', { name: channel, exact: true })
+
   readonly channelTab = (): Locator => this.page.getByRole('link', { name: 'Channels' }).getByRole('button')
   readonly channelTable = (): Locator => this.page.getByRole('table')
   readonly channel = (channel: string): Locator => this.page.getByRole('button', { name: channel })
@@ -70,9 +73,12 @@ export class ChannelPage extends CommonPage {
   readonly updateButton = (): Locator => this.page.getByRole('button', { name: 'Update' })
   readonly openChannelDetails = (): Locator => this.page.getByTestId('aside-toggle')
   readonly changeChannelNameConfirm = (): Locator => this.page.locator('.selectPopup button')
+  /** Space/channel privacy uses AttributeBarEditor (labelOnPanel). Auto join in channel settings uses Toggle instead. */
   readonly privateOrPublicChangeButton = (change: string, autoJoin: boolean): Locator =>
     this.page
-      .locator('span.labelOnPanel', { hasText: autoJoin ? 'Auto join' : 'Private' })
+      .locator('span.labelOnPanel')
+      // Substring match would also hit "Auto join guests"; keep row labels unique.
+      .filter({ hasText: autoJoin ? /^Auto join$/ : /^Private$/ })
       .locator('xpath=following-sibling::div[1]')
       .locator('button', { hasText: change })
 
@@ -142,6 +148,20 @@ export class ChannelPage extends CommonPage {
     changed: string,
     autoJoin: boolean = false
   ): Promise<void> {
+    if (autoJoin) {
+      const row = this.page
+        .locator('div.flex-row-center.gap-2')
+        .filter({ has: this.page.getByText('Auto join', { exact: true }) })
+      const checkbox = row.locator('label.toggle input[type="checkbox"]')
+      const wantOn = changed === 'Yes'
+      await checkbox.setChecked(wantOn)
+      if (wantOn) {
+        await expect(checkbox).toBeChecked()
+      } else {
+        await expect(checkbox).not.toBeChecked()
+      }
+      return
+    }
     await this.privateOrPublicChangeButton(change, autoJoin).click()
     await this.page.waitForTimeout(200)
     await this.privateOrPublicPopupButton(YesNo).click()
