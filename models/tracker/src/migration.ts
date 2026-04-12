@@ -200,10 +200,12 @@ async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLog
     // 1. defaultIssueStatus
     // 2. DocUpdateMessage:update:defaultIssueStatus
     for (const project of projects) {
-      const newDefaultIssueStatus = getNewStatus(project.defaultIssueStatus)
+      if (project.defaultIssueStatus != null) {
+        const newDefaultIssueStatus = getNewStatus(project.defaultIssueStatus)
 
-      if (project.defaultIssueStatus !== newDefaultIssueStatus) {
-        await client.update(DOMAIN_SPACE, { _id: project._id }, { defaultIssueStatus: newDefaultIssueStatus })
+        if (project.defaultIssueStatus !== newDefaultIssueStatus) {
+          await client.update(DOMAIN_SPACE, { _id: project._id }, { defaultIssueStatus: newDefaultIssueStatus })
+        }
       }
 
       const projectUpdateMessages = await client.find<DocUpdateMessage>(DOMAIN_ACTIVITY, {

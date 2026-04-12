@@ -264,6 +264,7 @@
     "SevenHoursLength": "七小时",
     "EightHoursLength": "八小时",
     "HourLabel": "小时",
+    "MinuteLabel": "分",
     "Saved": "已保存...",
     "CreatedIssue": "已创建问题",
     "CreatedSubIssue": "已创建子问题",
@@ -288,7 +289,8 @@
     "Extensions": "扩展",
     "UnsetParentIssue": "取消父问题",
     "ForbidCreateProjectPermission": "禁止创建项目",
-    "ForbidCreateProjectPermissionDescription": "禁止用户创建新项目"
+    "ForbidCreateProjectPermissionDescription": "禁止用户创建新项目",
+    "AllowCreatingIssues": "允许创建问题"
   },
   "status": {}
 }

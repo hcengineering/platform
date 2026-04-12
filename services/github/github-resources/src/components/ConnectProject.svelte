@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import core, { ClassifierKind, Ref, WithLookup, generateId } from '@hcengineering/core'
-  import { getEmbeddedLabel, getMetadata, translate } from '@hcengineering/platform'
+  import core, { Ref, WithLookup, generateId } from '@hcengineering/core'
+  import { getMetadata, translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import task, { TaskType, updateProjectType, type TaskStatusFactory } from '@hcengineering/task'
   import tracker, { Project, createStatesData } from '@hcengineering/tracker'
@@ -63,13 +63,6 @@
 
     if (!client.getHierarchy().hasMixin(projectInst, github.mixin.GithubProject)) {
       // We need to add GithubProject mixin
-      const mixinId = await getClient().createDoc(core.class.Mixin, core.space.Model, {
-        extends: github.mixin.GithubIssue,
-        kind: ClassifierKind.MIXIN,
-        label: getEmbeddedLabel(projectInst.name),
-        hidden: false,
-        icon: github.icon.Github
-      })
       await getClient().createMixin(
         projectInst._id,
         tracker.class.Project,
@@ -77,9 +70,7 @@
         github.mixin.GithubProject,
         {
           integration: integration._id,
-          repositories: [],
-          mixinClass: mixinId,
-          mappings: []
+          repositories: []
         }
       )
     }

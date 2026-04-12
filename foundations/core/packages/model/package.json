@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/model",
-  "version": "0.7.382",
+  "version": "0.7.411",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -18,7 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.382",
+    "@hcengineering/platform-rig": "workspace:^0.7.411",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -36,16 +36,19 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.382",
-    "@hcengineering/platform": "workspace:^0.7.382",
-    "@hcengineering/storage": "workspace:^0.7.382",
-    "@hcengineering/analytics": "workspace:^0.7.382",
-    "@hcengineering/rank": "workspace:^0.7.382",
-    "@hcengineering/account-client": "workspace:^0.7.382",
+    "@hcengineering/core": "workspace:^0.7.411",
+    "@hcengineering/platform": "workspace:^0.7.411",
+    "@hcengineering/storage": "workspace:^0.7.411",
+    "@hcengineering/analytics": "workspace:^0.7.411",
+    "@hcengineering/rank": "workspace:^0.7.411",
+    "@hcengineering/account-client": "workspace:^0.7.411",
     "toposort": "^2.0.2",
     "fast-equals": "^5.2.2"
   },
-  "repository": "https://github.com/hcengineering/huly.core",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/huly.core.git"
+  },
   "publishConfig": {
     "access": "public"
   },

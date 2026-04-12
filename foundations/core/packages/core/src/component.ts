@@ -43,6 +43,7 @@ import type {
   MarkupBlobRef,
   MigrationState,
   Mixin,
+  ModulePermissionGroup,
   Obj,
   Permission,
   PersonId,
@@ -52,6 +53,7 @@ import type {
   RefTo,
   RelatedDocument,
   Relation,
+  RelationMetadata,
   Role,
   Sequence,
   Space,
@@ -175,10 +177,12 @@ export default plugin(coreId, {
     FullTextSearchContext: '' as Ref<Mixin<FullTextSearchContext>>,
     Association: '' as Ref<Class<Association>>,
     Relation: '' as Ref<Class<Relation>>,
+    RelationMetadata: '' as Ref<Class<RelationMetadata>>,
     Sequence: '' as Ref<Class<Sequence>>,
     CustomSequence: '' as Ref<Class<CustomSequence>>,
     ClassCollaborators: '' as Ref<Class<ClassCollaborators<Doc>>>,
-    Collaborator: '' as Ref<Class<Collaborator>>
+    Collaborator: '' as Ref<Class<Collaborator>>,
+    ModulePermissionGroup: '' as Ref<Class<ModulePermissionGroup>>
   },
   icon: {
     TypeString: '' as Asset,
@@ -277,6 +281,7 @@ export default plugin(coreId, {
     Account: '' as IntlString,
     StatusCategory: '' as IntlString,
     Rank: '' as IntlString,
+    Order: '' as IntlString,
     Members: '' as IntlString,
     Owners: '' as IntlString,
     Permission: '' as IntlString,
@@ -294,6 +299,8 @@ export default plugin(coreId, {
     ArchiveSpaceDescription: '' as IntlString,
     AutoJoin: '' as IntlString,
     AutoJoinDescr: '' as IntlString,
+    AutoJoinGuests: '' as IntlString,
+    AutoJoinGuestsDescr: '' as IntlString,
     RBAC: '' as IntlString,
     RBACDescr: '' as IntlString,
     Version: '' as IntlString

@@ -5,6 +5,7 @@
     "Cards": "Carte",
     "Content": "Contenuto",
     "CreateCard": "Crea Carta",
+    "AllowCreatingCards": "Consenti la creazione di carte",
     "CreateMasterTag": "Crea Tipo",
     "CreateTag": "Crea Tag",
     "MasterTag": "Tipo",
@@ -72,6 +73,15 @@
     "Import": "Importa",
     "Export": "Esporta",
     "CardUpdated": "Scheda aggiornata",
-    "CardCreated": "Scheda creata"
+    "CardCreated": "Scheda creata",
+    "MyCards": "Le mie carte",
+    "GotoMyCards": "Vai alle mie carte",
+    "LockSection": "Blocca sezione",
+    "UnLockSection": "Sblocca sezione",
+    "SectionLocked": "Sezione {section} bloccata",
+    "SectionUnlocked": "Sezione {section} sbloccata",
+    "LayoutAuto": "Auto",
+    "SingleColumn": "Una colonna",
+    "TwoColumns": "Due colonne"
   }
 }

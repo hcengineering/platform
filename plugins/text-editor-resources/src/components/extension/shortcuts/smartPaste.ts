@@ -17,8 +17,9 @@ import { MarkupMarkType, MarkupNodeType, type MarkupNode } from '@hcengineering/
 import { markdownToMarkup } from '@hcengineering/text-markdown'
 import { Extension } from '@tiptap/core'
 import { Node, type Schema } from '@tiptap/pm/model'
-import { Plugin } from '@tiptap/pm/state'
+import { NodeSelection, Plugin } from '@tiptap/pm/state'
 import { CodeBlockHighlighExtension } from '../codeSnippets/codeblock'
+import { hasTableMetadataMarker } from './tableMetadata'
 
 export const SmartPasteExtension = Extension.create({
   name: 'transformPastedContent',
@@ -28,7 +29,7 @@ export const SmartPasteExtension = Extension.create({
   }
 })
 
-function PasteTextAsMarkdownPlugin (): Plugin {
+export function PasteTextAsMarkdownPlugin (): Plugin {
   return new Plugin({
     props: {
       handlePaste (view, event, slice) {
@@ -36,23 +37,36 @@ function PasteTextAsMarkdownPlugin (): Plugin {
         if (clipboardData === null) return false
 
         const pastedText = clipboardData.getData('text/plain')
+        const pastedMarkdown = clipboardData.getData('text/markdown')
 
-        // check if we are in code block
-        const { $from } = view.state.selection
+        // Ignore smart paste inside code blocks / mermaid blocks (keep default paste behavior).
+        const selection = view.state.selection
+        const ignoredNodeTypes = new Set<string>([CodeBlockHighlighExtension.name, 'mermaid'])
+        if (selection instanceof NodeSelection && ignoredNodeTypes.has(selection.node.type.name)) {
+          return false
+        }
+        const { $from } = selection
         for (let d = $from.depth; d > 0; d--) {
           const node = $from.node(d)
-          if (node.type.name === CodeBlockHighlighExtension.name) {
-            // paste as plain text in code blocks
+          if (ignoredNodeTypes.has(node.type.name)) {
             return false
           }
         }
 
+        // If the clipboard explicitly provides markdown, prefer it even if other types (e.g. html) exist.
+        const hasMarkdown = pastedMarkdown.trim().length > 0
+        const markdownSource = hasMarkdown ? pastedMarkdown : pastedText
+
+        // Table copies include metadata comment; treat as markdown even when clipboard has rich types.
+        const hasTableMetadata = hasTableMetadataMarker(pastedText) || hasTableMetadataMarker(pastedMarkdown)
+
         const isPlainPaste = clipboardData.types.length === 1 && clipboardData.types[0] === 'text/plain'
 
-        if (!isPlainPaste) return false
+        // Keep default paste behavior for rich clipboard formats, unless markdown is explicitly present.
+        if (!hasMarkdown && !hasTableMetadata && !isPlainPaste) return false
 
         try {
-          const markupNode = cleanUnknownContent(view.state.schema, markdownToMarkup(pastedText))
+          const markupNode = cleanUnknownContent(view.state.schema, markdownToMarkup(markdownSource))
           if (shouldUseMarkdownOutput(markupNode)) {
             const content = Node.fromJSON(view.state.schema, markupNode)
             content.check()

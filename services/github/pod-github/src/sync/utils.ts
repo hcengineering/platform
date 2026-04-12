@@ -51,6 +51,17 @@ export function ensureGraphQLOctokit (okit: Octokit | undefined, container: Cont
 }
 
 /**
+ * Ensures an Octokit instance has the REST API available.
+ * If the provided okit doesn't have rest.issues, falls back to container.octokit which is guaranteed to have it.
+ */
+export function ensureRESTOctokit (okit: Octokit | undefined, container: ContainerFocus): Octokit {
+  if (okit !== undefined && typeof (okit as any).rest?.issues?.createComment === 'function') {
+    return okit
+  }
+  return container.container.octokit
+}
+
+/**
  * @public
  */
 export function collectUpdate<T extends Doc> (

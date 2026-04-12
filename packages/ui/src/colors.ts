@@ -212,7 +212,7 @@ export const avatarDarkColors = Object.freeze<ColorDefinition[]>([
 ])
 
 export function defaultBackground (dark: boolean): string {
-  return dark ? 'linear-gradient(90deg, #262634, #1A1A28)' : '#FFFFFF'
+  return dark ? 'linear-gradient(90deg, #22242A, #161719)' : '#FFFFFF'
 }
 
 export const FeijoaColor = '#A5D179'
@@ -418,7 +418,7 @@ export function defineAlpha (dark: boolean, color: string, percent = 100): strin
 
   const p1 = percent / 100
 
-  const bg = dark ? hexToRgb('#1A1A28') : hexToRgb('#F1F1F4')
+  const bg = dark ? hexToRgb('#161719') : hexToRgb('#F1F1F4')
 
   return rgbToHex({
     r: r * p1 + bg.r * (1 - p1),

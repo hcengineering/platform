@@ -215,7 +215,7 @@ jobs:
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         continue-on-error: true
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
@@ -265,7 +265,7 @@ jobs:
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         continue-on-error: true
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
@@ -397,7 +397,7 @@ jobs:
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         continue-on-error: true
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
@@ -494,7 +494,7 @@ jobs:
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         continue-on-error: true
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
@@ -578,7 +578,7 @@ jobs:
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         continue-on-error: true
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
@@ -649,9 +649,9 @@ jobs:
       - name: Free space
         uses: ./.github/actions/free-disk-space
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Configure docker
-        uses: docker/setup-docker-action@v4
+        uses: docker/setup-docker-action@v5
         with:
           daemon-config: |
             {
@@ -670,7 +670,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: latest
       - name: Cache node modules
@@ -693,7 +693,7 @@ jobs:
       - name: Login to Docker Hub
         if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
         continue-on-error: true
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
@@ -718,7 +718,7 @@ jobs:
           DOCKER_BUILDKIT: 1
       - name: Login to Docker Hub
         if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') || startsWith(github.ref, 'refs/tags/s') }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
@@ -971,12 +971,12 @@ jobs:
       - name: Publish to npm
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_USERCONFIG: ${{ github.workspace }}/common/config/rush/.npmrc-publish
         run: |
           if [ -z "$NPM_TOKEN" ]; then
             echo "::error::NPM_TOKEN secret is not set. Add it in repository Settings > Secrets and variables > Actions."
             exit 1
           fi
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
           REF="${{ github.event.inputs.ref || github.ref }}"
           VERSION="${REF#refs/tags/v}"
           VERSION="${VERSION#v}"

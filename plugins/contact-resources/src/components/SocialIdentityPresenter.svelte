@@ -15,10 +15,12 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { Icon, Label, tooltip } from '@hcengineering/ui'
-  import contact, { SocialIdentity, SocialIdentityProvider, getCurrentEmployee } from '@hcengineering/contact'
+  import contact, { type SocialIdentity, type SocialIdentityProvider } from '@hcengineering/contact'
   import { getClient } from '@hcengineering/presentation'
+  import { AccountRole, getCurrentAccount, type SocialId } from '@hcengineering/core'
+  import { isSocialIdOwnedByCurrentUser } from '../utils'
 
-  export let value: SocialIdentity
+  export let value: SocialIdentity | SocialId
   export let socialIdProvider: SocialIdentityProvider | undefined = undefined
   export let shouldShowAvatar = true
 
@@ -33,8 +35,7 @@
 
   $: icon = socialIdProvider?.icon ?? contact.icon.Profile
   $: {
-    const me = getCurrentEmployee()
-    isOwner = me != null && value.attachedTo === me
+    isOwner = isSocialIdOwnedByCurrentUser(value) || getCurrentAccount().role === AccountRole.Owner
   }
 </script>
 

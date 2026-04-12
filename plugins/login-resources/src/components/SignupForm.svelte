@@ -95,7 +95,14 @@
         status = loginStatus
 
         if (result != null) {
-          await logIn(result)
+          // Only log in immediately when the server issued a token.
+          // When MAIL_URL is configured the server returns token: undefined
+          // to enforce email confirmation — calling logIn() without a token
+          // triggers PUT /cookie with no Authorization header which crashes
+          // the client's JSON parser (issue #10518).
+          if (result.token != null) {
+            await logIn(result)
+          }
           goTo('confirmationSend')
         }
       }

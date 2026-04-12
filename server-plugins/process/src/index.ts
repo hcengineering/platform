@@ -113,7 +113,18 @@ export default plugin(serverProcessId, {
     Filter: '' as Resource<TransformFunc>,
     FirstMatchValue: '' as Resource<TransformFunc>,
     ExecutionInitiator: '' as Resource<TransformFunc>,
-    ExecutionStarted: '' as Resource<TransformFunc>
+    ExecutionStarted: '' as Resource<TransformFunc>,
+    StringFromNumber: '' as Resource<TransformFunc>,
+    StringFromDate: '' as Resource<TransformFunc>,
+    StringFromBoolean: '' as Resource<TransformFunc>,
+    NumberFromDate: '' as Resource<TransformFunc>,
+    DateFromNumber: '' as Resource<TransformFunc>,
+    NumberFromString: '' as Resource<TransformFunc>,
+    DateFromString: '' as Resource<TransformFunc>,
+    YearFromDate: '' as Resource<TransformFunc>,
+    MonthFromDate: '' as Resource<TransformFunc>,
+    DayFromDate: '' as Resource<TransformFunc>,
+    DateDifference: '' as Resource<TransformFunc>
   },
   trigger: {
     OnTransition: '' as Resource<TriggerFunc>,

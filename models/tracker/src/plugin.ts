@@ -41,7 +41,8 @@ export default mergeIds(trackerId, tracker, {
     ConfigDescription: '' as IntlString,
     AllProjects: '' as IntlString,
     MapRelatedIssues: '' as IntlString,
-    Extensions: '' as IntlString
+    Extensions: '' as IntlString,
+    AllowCreatingIssues: '' as IntlString
   },
   activity: {
     StatusIcon: '' as AnyComponent,
@@ -79,6 +80,9 @@ export default mergeIds(trackerId, tracker, {
     TrackerNotificationGroup: '' as Ref<NotificationGroup>,
     AssigneeNotification: '' as Ref<NotificationType>,
     BaseProjectType: '' as Ref<ProjectType>,
+    GuestIssueClassPermission: '' as Ref<Doc>,
+    ModulePermissionGroup: '' as Ref<Doc>,
+    ModulePermissionGroupReadOnlyGuest: '' as Ref<Doc>,
     IssueUpdatedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
     IssueCreatedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,
     IssueRemovedActivityViewlet: '' as Ref<DocUpdateMessageViewlet>,

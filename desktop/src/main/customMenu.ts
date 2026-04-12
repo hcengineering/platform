@@ -15,8 +15,9 @@
 
 import { BrowserWindow } from 'electron'
 import { MenuBarAction, CommandLogout, CommandSelectWorkspace, CommandOpenSettings } from '../ui/types'
-import { OsIntegration } from './osIntegration'
 import { IpcMessage } from '../ui/ipcMessages'
+import { OsIntegration } from './osIntegration'
+import { openFindInPageBar } from './findInPage'
 
 export function dispatchMenuBarAction (mainWindow: BrowserWindow | undefined, action: MenuBarAction, os: OsIntegration | undefined): void {
   if (mainWindow == null) {
@@ -66,6 +67,9 @@ export function dispatchMenuBarAction (mainWindow: BrowserWindow | undefined, ac
       break
     case 'select-all':
       mainWindow.webContents.selectAll()
+      break
+    case 'find':
+      openFindInPageBar(mainWindow)
       break
     case 'reload':
       mainWindow?.reload()

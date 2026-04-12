@@ -40,7 +40,7 @@
 
   $: presenterClass = getAttributePresenterClass(h, attribute.type)
 
-  $: elementContext = getContext(client, process, presenterClass.attrClass, 'attribute')
+  $: elementContext = getContext(client, process, presenterClass.attrClass, 'attribute', undefined, true)
 </script>
 
 <Card on:close width={'x-small'} label={func.label} canSave okAction={save} okLabel={presentation.string.Save}>

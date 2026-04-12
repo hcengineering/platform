@@ -21,9 +21,9 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Configure docker
-        uses: crazy-max/ghaction-setup-docker@v3
+        uses: crazy-max/ghaction-setup-docker@v5
         with:
           daemon-config: |
             {
@@ -39,7 +39,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: latest
       - name: Docker build
@@ -51,7 +51,7 @@ jobs:
           DOCKER_EXTRA: --platform=linux/amd64,linux/arm64
           VERSION: ${{ inputs.version }}
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: hardcoreeng
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}

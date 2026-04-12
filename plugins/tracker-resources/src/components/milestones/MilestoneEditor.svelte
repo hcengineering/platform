@@ -117,14 +117,19 @@
 {:else}
   <div
     bind:this={element}
-    class="flex flex-wrap clear-mins"
+    class="flex flex-wrap clear-mins overflow-hidden"
     style:max-width={maxWidth}
     class:minus-margin={kind === 'list-header'}
     class:label-wrapper={compression}
     style:flex-direction={twoRows ? 'column' : 'row'}
   >
     {#if (!Array.isArray(value) && value.milestone && value.milestone !== $activeMilestone && groupBy !== 'milestone') || shouldShowPlaceholder}
-      <div class="flex-row-center" class:minus-margin-vSpace={kind === 'list-header'} class:compression style:width>
+      <div
+        class="flex-row-center clear-mins"
+        class:minus-margin-vSpace={kind === 'list-header'}
+        class:compression
+        style:width
+      >
         <MilestoneSelector
           {kind}
           {size}

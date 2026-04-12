@@ -5,6 +5,7 @@
     "Cards": "Карты",
     "Content": "Содержание",
     "CreateCard": "Создать карту",
+    "AllowCreatingCards": "Разрешить создание карт",
     "CreateMasterTag": "Создать тип",
     "CreateTag": "Создать тег",
     "MasterTag": "Тип",
@@ -72,6 +73,15 @@
     "Import": "Импортировать",
     "Export": "Экспортировать",
     "CardUpdated": "Карточка обновлена",
-    "CardCreated": "Карточка создана"
+    "CardCreated": "Карточка создана",
+    "MyCards": "Мои карты",
+    "GotoMyCards": "Перейти к моим картам",
+    "LockSection": "Заблокировать секцию",
+    "UnLockSection": "Разблокировать секцию",
+    "SectionLocked": "Секция {section} заблокирована",
+    "SectionUnlocked": "Секция {section} разблокирована",
+    "LayoutAuto": "Авто",
+    "SingleColumn": "Один столбец",
+    "TwoColumns": "Два столбца"
   }
 }

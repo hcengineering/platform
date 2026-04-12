@@ -30,7 +30,12 @@
     themeStore,
     tooltip
   } from '@hcengineering/ui'
+  import { permissionsStore } from '@hcengineering/contact-resources'
+  import { canLockSection, canUnlockSection } from '../utils'
   import CardAttributes from './CardAttributes.svelte'
+  import Lock from './icons/Lock.svelte'
+  import Unlock from './icons/Unlock.svelte'
+  import card from '../plugin'
 
   export let value: Card
   export let tag: Tag
@@ -54,6 +59,16 @@
   $: color = getPlatformColorDef(tag.background ?? 0, $themeStore.dark).color
 
   $: isEditable = h.hasMixin(tag, setting.mixin.Editable) && h.as(tag, setting.mixin.Editable).value
+
+  $: isLocked = value.readonlySections?.includes(tag._id) ?? false
+  $: canLock = canLockSection(value.space, $permissionsStore)
+  $: canUnlock = canUnlockSection(value.space, $permissionsStore)
+
+  async function toggleLock (ev: MouseEvent): Promise<void> {
+    ev.stopPropagation()
+    const op = isLocked ? '$pull' : '$push'
+    await client.update(value, { [op]: { readonlySections: tag._id } })
+  }
 </script>
 
 <div class="header flex flex-gap-2">
@@ -68,8 +83,19 @@
     </span>
     <Chevron expanded={!isCollapsed} outline fill={'var(--content-color'} />
   </div>
-  {#if hasAccountRole(getCurrentAccount(), AccountRole.Maintainer) && isEditable}
-    <div class="btns">
+  <div class="btns">
+    {#if (isLocked && canUnlock) || (!isLocked && canLock)}
+      <div class="lock-btn">
+        <Button
+          icon={isLocked ? Lock : Unlock}
+          kind={'link'}
+          size={'medium'}
+          showTooltip={{ label: isLocked ? card.string.UnLockSection : card.string.LockSection }}
+          on:click={toggleLock}
+        />
+      </div>
+    {/if}
+    {#if hasAccountRole(getCurrentAccount(), AccountRole.Maintainer) && isEditable}
       <Button
         icon={IconAdd}
         kind={'link'}
@@ -95,8 +121,8 @@
           navigate(loc)
         }}
       />
-    </div>
-  {/if}
+    {/if}
+  </div>
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
   <CardAttributes object={value} _class={tag._id} to={tag.extends} {readonly} {ignoreKeys} />
@@ -134,6 +160,14 @@
       display: flex;
       align-items: center;
       visibility: hidden;
+
+      .lock-btn {
+        opacity: 0.5;
+        transition: opacity 0.2s;
+        &:hover {
+          opacity: 1;
+        }
+      }
     }
   }
 </style>

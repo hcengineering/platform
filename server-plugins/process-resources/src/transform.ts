@@ -246,6 +246,34 @@ export function Offset (val: Timestamp, props: Record<string, any>): Timestamp {
   return val
 }
 
+export async function DateDifference (
+  value: Timestamp,
+  props: Record<string, any>,
+  control: ProcessControl,
+  execution: Execution
+): Promise<number> {
+  if (typeof value !== 'number') return 0
+  const otherDate = await getContextValue(props.otherDate, control, execution)
+  if (typeof otherDate !== 'number') return 0
+
+  const diff = value - otherDate
+  const v = new Date(value)
+  const o = new Date(otherDate)
+  switch (props.unit) {
+    case 'hours':
+      return Math.floor(diff / (1000 * 60 * 60))
+    case 'weeks':
+      return Math.floor(diff / (1000 * 60 * 60 * 24 * 7))
+    case 'months':
+      return (v.getUTCFullYear() - o.getUTCFullYear()) * 12 + (v.getUTCMonth() - o.getUTCMonth())
+    case 'years':
+      return v.getUTCFullYear() - o.getUTCFullYear()
+    case 'days':
+    default:
+      return Math.floor(diff / (1000 * 60 * 60 * 24))
+  }
+}
+
 // #endregion
 
 // #region Numbers
@@ -458,6 +486,53 @@ export async function ExecutionStarted (
   execution: Execution
 ): Promise<Timestamp> {
   return execution.createdOn ?? execution.modifiedOn
+}
+
+// #endregion
+
+// #region Convert
+
+export function StringFromNumber (value: number): string {
+  if (value == null) return ''
+  return String(value)
+}
+
+export function StringFromDate (value: Timestamp): string {
+  if (value == null) return ''
+  return new Date(value).toISOString()
+}
+
+export function StringFromBoolean (value: boolean): string {
+  if (value == null) return ''
+  return String(value)
+}
+
+export function NumberFromDate (value: Timestamp): number {
+  return value
+}
+
+export function DateFromNumber (value: number): Date {
+  return new Date(value)
+}
+
+export function NumberFromString (value: string): number {
+  return Number(value)
+}
+
+export function DateFromString (value: string): Date {
+  return new Date(value)
+}
+
+export function YearFromDate (value: Date): number {
+  return new Date(value).getFullYear()
+}
+
+export function MonthFromDate (value: Date): number {
+  return new Date(value).getMonth() + 1
+}
+
+export function DayFromDate (value: Date): number {
+  return new Date(value).getDate()
 }
 
 // #endregion

@@ -247,6 +247,7 @@
     "SevenHoursLength": "Yedi Saat",
     "EightHoursLength": "Sekiz Saat",
     "HourLabel": "s",
+    "MinuteLabel": "dk",
     "Saved": "Kaydedildi...",
     "CreatedIssue": "Sorun oluşturuldu",
     "CreatedSubIssue": "Alt sorun oluşturuldu",
@@ -269,7 +270,8 @@
     "DefaultIssueStatus": "Varsayılan sorun durumu",
     "IssueStatus": "Durum",
     "Extensions": "Uzantılar",
-    "UnsetParentIssue": "Üst sorunu kaldır"
+    "UnsetParentIssue": "Üst sorunu kaldır",
+    "AllowCreatingIssues": "Sorun oluşturmaya izin ver"
   },
   "status": {}
 }

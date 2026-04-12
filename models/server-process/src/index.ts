@@ -171,6 +171,50 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.LastValue
   })
 
+  builder.mixin(process.function.StringFromNumber, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.StringFromNumber
+  })
+
+  builder.mixin(process.function.StringFromDate, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.StringFromDate
+  })
+
+  builder.mixin(process.function.StringFromBoolean, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.StringFromBoolean
+  })
+
+  builder.mixin(process.function.NumberFromDate, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.NumberFromDate
+  })
+
+  builder.mixin(process.function.DateFromNumber, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.DateFromNumber
+  })
+
+  builder.mixin(process.function.NumberFromString, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.NumberFromString
+  })
+
+  builder.mixin(process.function.DateFromString, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.DateFromString
+  })
+
+  builder.mixin(process.function.YearFromDate, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.YearFromDate
+  })
+
+  builder.mixin(process.function.MonthFromDate, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.MonthFromDate
+  })
+
+  builder.mixin(process.function.DayFromDate, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.DayFromDate
+  })
+
+  builder.mixin(process.function.DateDifference, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.DateDifference
+  })
+
   builder.mixin(process.function.Random, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Random
   })

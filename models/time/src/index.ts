@@ -44,7 +44,8 @@ import {
   TypeString,
   UX,
   type Builder,
-  TypeMarkup
+  TypeMarkup,
+  TypeRank
 } from '@hcengineering/model'
 import { TEvent } from '@hcengineering/model-calendar'
 import core, { TAttachedDoc, TClass, TDoc, TType } from '@hcengineering/model-core'
@@ -131,6 +132,7 @@ export class TToDo extends TAttachedDoc implements ToDo {
   @Prop(Collection(tags.class.TagReference, tags.string.TagLabel), tags.string.Tags)
     labels?: number | undefined
 
+  @Prop(TypeRank(), core.string.Rank)
   @Index(IndexKind.Indexed)
   @Hidden()
     rank!: Rank
@@ -207,6 +209,36 @@ export function createModel (builder: Builder): void {
       order: 300
     },
     time.app.Me
+  )
+
+  // Module permissions for guests/anonymous guests.
+  // Planner is allowed for guests, but disabled for anonymous guests, and placed after modules enabled by default.
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: time.app.Me,
+      role: AccountRole.Guest,
+      permissions: [],
+      spaceClass: core.class.TypedSpace,
+      enabled: true,
+      order: 55
+    },
+    time.ids.ModulePermissionGroup
+  )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: time.app.Me,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: core.class.TypedSpace,
+      enabled: false,
+      order: 55
+    },
+    time.ids.ModulePermissionGroupReadOnlyGuest
   )
 
   builder.createDoc(

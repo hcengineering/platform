@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-types",
-  "version": "0.7.382",
+  "version": "0.7.411",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -20,7 +20,7 @@
     "clean": "rm -rf lib && rm -rf types rm -rf node_modules"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.382",
+    "@hcengineering/platform-rig": "workspace:^0.7.411",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "esbuild": "^0.25.10",
@@ -36,7 +36,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.382"
+    "@hcengineering/core": "workspace:^0.7.411"
   },
   "repository": {
     "type": "git",

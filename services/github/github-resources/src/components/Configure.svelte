@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Integration } from '@hcengineering/setting'
+  import type { Integration as AccountIntegration } from '@hcengineering/account-client'
   import Connect from './Connect.svelte'
 
-  export let integration: Integration
+  export let integration: AccountIntegration | undefined
 </script>
 
 <Connect bind:integration on:close />

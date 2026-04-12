@@ -189,7 +189,7 @@ export default plugin(settingId, {
     Terms: '' as Ref<Doc>,
     ClassSetting: '' as Ref<Doc>,
     General: '' as Ref<Doc>,
-    Owners: '' as Ref<Doc>,
+    Members: '' as Ref<Doc>,
     InviteSettings: '' as Ref<Doc>,
     RoleCapabilitySettings: '' as Ref<Doc>,
     WorkspaceSetting: '' as Ref<Doc>,
@@ -199,7 +199,8 @@ export default plugin(settingId, {
     Export: '' as Ref<Doc>,
     OfficeSettings: '' as Ref<Doc>,
     DisablePermissionsConfiguration: '' as Ref<Configuration>,
-    Mailboxes: '' as Ref<Doc>
+    Mailboxes: '' as Ref<Doc>,
+    Security: '' as Ref<Doc>
   },
   mixin: {
     Editable: '' as Ref<Mixin<Editable>>,
@@ -244,7 +245,8 @@ export default plugin(settingId, {
     Mailboxes: '' as AnyComponent,
     AddEmailSocialId: '' as AnyComponent,
     OfficeSettings: '' as AnyComponent,
-    UserRoleSelect: '' as AnyComponent
+    UserRoleSelect: '' as AnyComponent,
+    TwoFactorSettings: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -273,7 +275,7 @@ export default plugin(settingId, {
     Reconnect: '' as IntlString,
     ClassSetting: '' as IntlString,
     Classes: '' as IntlString,
-    Owners: '' as IntlString,
+    Members: '' as IntlString,
     Configure: '' as IntlString,
     InviteSettings: '' as IntlString,
     RoleCapabilitySettings: '' as IntlString,
@@ -309,6 +311,12 @@ export default plugin(settingId, {
     OfficeDefaultSettings: '' as IntlString,
     DefaultStartWithTranscription: '' as IntlString,
     DefaultStartWithRecording: '' as IntlString,
+    GuestPermissionsSettings: '' as IntlString,
+    GuestPermissionsApplicationPermissions: '' as IntlString,
+    GuestPermissionsApplicationPermissionsHint: '' as IntlString,
+    GuestPermissionsTabGuest: '' as IntlString,
+    GuestPermissionsTabAnonymousGuest: '' as IntlString,
+    GuestPermissionsAnonymousApplicationHint: '' as IntlString,
     MailboxErrorInvalidName: '' as IntlString,
     MailboxErrorDomainNotFound: '' as IntlString,
     MailboxErrorNameRulesViolated: '' as IntlString,
@@ -316,6 +324,15 @@ export default plugin(settingId, {
     MailboxErrorMailboxCountLimit: '' as IntlString,
     DeleteMailbox: '' as IntlString,
     MailboxDeleteConfirmation: '' as IntlString,
+    Security: '' as IntlString,
+    TwoFactorAuth: '' as IntlString,
+    TwoFactorAuthDescription: '' as IntlString,
+    EnableTwoFactorAuth: '' as IntlString,
+    DisableTwoFactorAuth: '' as IntlString,
+    TwoFactorAuthEnabled: '' as IntlString,
+    TwoFactorAuthDisabled: '' as IntlString,
+    ShowQRCode: '' as IntlString,
+    EnterVerificationCode: '' as IntlString,
     IntegrationFailed: '' as IntlString,
     IntegrationError: '' as IntlString,
     EmailIsUsed: '' as IntlString,
@@ -340,7 +357,8 @@ export default plugin(settingId, {
   },
   icon: {
     AccountSettings: '' as Asset,
-    Owners: '' as Asset,
+    Members: '' as Asset,
+    GuestPermissions: '' as Asset,
     Password: '' as Asset,
     Setting: '' as Asset,
     Integrations: '' as Asset,
@@ -356,7 +374,8 @@ export default plugin(settingId, {
     Views: '' as Asset,
     Relations: '' as Asset,
     Mailbox: '' as Asset,
-    OfficeSettings: '' as Asset
+    OfficeSettings: '' as Asset,
+    Reset: '' as Asset
   },
   templateFieldCategory: {
     Integration: '' as Ref<TemplateFieldCategory>
@@ -368,7 +387,9 @@ export default plugin(settingId, {
     Value: '' as Ref<TemplateField>
   },
   metadata: {
-    BackupUrl: '' as Metadata<string>
+    BackupUrl: '' as Metadata<string>,
+    DefaultInviteRole: '' as Metadata<string | undefined>,
+    DefaultInviteLinkGeneratorRoles: '' as Metadata<string[] | undefined>
   },
   function: {
     HasRoleCapability: '' as Resource<(capabilityId: RoleCapabilityId | string) => Promise<boolean>>

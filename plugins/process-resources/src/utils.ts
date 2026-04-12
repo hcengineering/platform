@@ -173,22 +173,23 @@ export async function initState<T extends Doc> (methodId: Ref<Method<T>>): Promi
 // I think one step depth should be enough for now
 export function getContext (
   client: Client,
-  process: Process,
+  _process: Process,
   target: Ref<Class<Type<any>>>,
   category: AttributeCategory,
-  attr?: Ref<AnyAttribute>
+  attr?: Ref<AnyAttribute>,
+  includeConvertible: boolean = false
 ): Context {
-  let attributes = getClassAttributes(client, process.masterTag, target, category)
+  let attributes = getClassAttributes(client, _process.masterTag, target, category)
   if (attr !== undefined && category === 'object') {
     attributes = attributes.filter((it) => it._id !== attr)
   }
 
-  const functions = getContextFunctions(client, process.masterTag, target, category)
+  const functions = getContextFunctions(client, _process.masterTag, target, category)
   const nested: Record<string, NestedContext> = {}
   const relations: Record<string, RelatedContext> = {}
   const executionContext: Record<string, ProcessExecutionContext> = {}
 
-  const refs = getClassAttributes(client, process.masterTag, core.class.RefTo, 'attribute')
+  const refs = getClassAttributes(client, _process.masterTag, core.class.RefTo, 'attribute')
   for (const ref of refs) {
     const refAttributes = getClassAttributes(client, (ref.type as RefTo<Doc>).to, target, 'attribute')
     if (refAttributes.length === 0) continue
@@ -198,7 +199,7 @@ export function getContext (
     }
   }
 
-  const arrs = getClassAttributes(client, process.masterTag, core.class.ArrOf, 'attribute')
+  const arrs = getClassAttributes(client, _process.masterTag, core.class.ArrOf, 'attribute')
   for (const arr of arrs) {
     const arrOf = (arr.type as ArrOf<Doc>).of
     if (arrOf._class !== core.class.RefTo) continue
@@ -211,7 +212,7 @@ export function getContext (
     }
   }
   const allRelations = client.getModel().findAllSync(core.class.Association, {})
-  const ancestors = new Set(client.getHierarchy().getAncestors(process.masterTag))
+  const ancestors = new Set(client.getHierarchy().getAncestors(_process.masterTag))
 
   const relationsA = allRelations.filter((it) => ancestors.has(it.classA))
   for (const rel of relationsA) {
@@ -257,9 +258,9 @@ export function getContext (
     }
   }
 
-  for (const key in process.context) {
+  for (const key in _process.context) {
     const contextId = key as ContextId
-    const value = process.context[contextId]
+    const value = _process.context[contextId]
     if (client.getHierarchy().isDerived(value._class, target)) {
       executionContext[key] = {
         attributes: [],
@@ -280,12 +281,33 @@ export function getContext (
     }
   }
 
+  const convertible: Array<{ func: Ref<ProcessFunction>, context: Context }> = []
+  if (includeConvertible) {
+    const funcs = client.getModel().findAllSync(process.class.ProcessFunction, { type: 'convert', to: target })
+    for (const func of funcs) {
+      const convContext = getContext(client, _process, func.of as Ref<Class<Type<any>>>, category, attr, false)
+      if (
+        convContext.attributes.length > 0 ||
+        Object.keys(convContext.executionContext).length > 0 ||
+        Object.keys(convContext.nested).length > 0 ||
+        Object.keys(convContext.relations).length > 0 ||
+        convContext.functions.length > 0
+      ) {
+        convertible.push({
+          func: func._id,
+          context: convContext
+        })
+      }
+    }
+  }
+
   return {
     functions,
     attributes,
     nested,
     relations,
-    executionContext
+    executionContext,
+    convertible: convertible.length > 0 ? convertible : undefined
   }
 }
 
@@ -298,7 +320,7 @@ function getContextFunctions (
   const matched: Array<Ref<ProcessFunction>> = []
   const hierarchy = client.getHierarchy()
   const funcs = client.getModel().findAllSync(process.class.ProcessFunction, { type: 'context' })
-  for (const func of funcs) {
+  for (const func of funcs as unknown as ProcessFunction[]) {
     switch (category) {
       case 'array': {
         if (func.category === 'array') {
@@ -441,11 +463,12 @@ export async function requestUserInput (
   target: Transition,
   execution: Execution,
   userContext: ExecutionContext,
-  inputContext: Record<string, any> = {}
+  inputContext: Record<string, any> = {},
+  skipExisting: boolean = false
 ): Promise<{ context: ExecutionContext, state: Ref<State>, changed: boolean }> {
   const client = getClient()
   let changed = false
-  const tr = await getTransitionUserInput(processId, space, target, userContext)
+  const tr = await getTransitionUserInput(processId, space, target, userContext, skipExisting)
   if (tr !== undefined) {
     userContext = { ...userContext, ...tr }
     changed = true
@@ -463,7 +486,9 @@ export async function requestUserInput (
       process: processId,
       from: target.to
     })
-    .filter((t) => client.getModel().findObject(t.trigger)?.auto === true)
+    .filter(
+      (t) => client.getModel().findObject(t.trigger)?.auto === true && t.trigger !== process.trigger.OnSubProcessesDone
+    )
 
   if (nextAutoTransitions.length > 0) {
     const newExecution = {
@@ -496,7 +521,8 @@ export async function getTransitionUserInput (
   processId: Ref<Process>,
   space: Ref<Space>,
   transition: Transition,
-  userContext: ExecutionContext
+  userContext: ExecutionContext,
+  skipExisting: boolean = false
 ): Promise<ExecutionContext | undefined> {
   let changed = false
   for (const action of transition.actions) {
@@ -504,13 +530,24 @@ export async function getTransitionUserInput (
     const inputs: SelectedUserRequest[] = []
     for (const key in action.params) {
       const value = (action.params as any)[key]
-      const context = parseContext(value)
-      if (context !== undefined && context.type === 'userRequest') {
-        inputs.push(context)
+      if (typeof value === 'string') {
+        const context = parseContext(value)
+        if (context !== undefined && context.type === 'userRequest') {
+          if (skipExisting && userContext[context.id] !== undefined) continue
+          inputs.push(context)
+        }
+      } else if (typeof value === 'object' && !Array.isArray(value)) {
+        for (const element of Object.values(value)) {
+          const context = parseContext(element)
+          if (context !== undefined && context.type === 'userRequest') {
+            if (skipExisting && userContext[context.id] !== undefined) continue
+            inputs.push(context)
+          }
+        }
       }
     }
     if (inputs.length > 0) {
-      const promise = new Promise<void>((resolve) => {
+      const promise = new Promise<void>((resolve, reject) => {
         showPopup(
           process.component.RequestUserInput,
           {
@@ -522,13 +559,16 @@ export async function getTransitionUserInput (
           },
           undefined,
           (res) => {
-            if (res?.value !== undefined) {
+            const isComplete = res?.value !== undefined && inputs.every((input) => res.value[input.id] != null)
+            if (isComplete) {
               changed = true
               for (const [key, value] of Object.entries(res.value)) {
                 userContext[key as ContextId] = value
               }
+              resolve()
+            } else {
+              reject(new PlatformError(new Status(Severity.ERROR, process.error.ResultNotProvided, {})))
             }
-            resolve()
           }
         )
       })
@@ -554,7 +594,14 @@ export async function getSubProcessesUserInput (
     if (action.methodId !== process.method.RunSubProcess) continue
     const processId = action.params._id as Ref<Process>
     if (processId === undefined) continue
-    const context: ExecutionContext = action.params.context ?? getEmptyContext()
+    const context: ExecutionContext = JSON.parse(JSON.stringify(action.params.context ?? getEmptyContext()))
+    for (const [k, v] of Object.entries(context)) {
+      const c = parseContext(v)
+      if (c !== undefined && c.type === 'userRequest') {
+        if (userContext[c.id] !== undefined) continue
+        ;(context as any)[k] = userContext[c.id]
+      }
+    }
     const initTransition = getClient().getModel().findAllSync(process.class.Transition, {
       process: processId,
       from: null
@@ -575,9 +622,10 @@ export async function getSubProcessesUserInput (
       modifiedOn: 0,
       modifiedBy: client.user
     }
-    const res = await newExecutionUserInput(processId, space, mockExecution)
+    const res = await newExecutionUserInput(processId, space, mockExecution, true)
     if (action.context == null || res === undefined) continue
     userContext[action.context._id] = res
+    userContext = { ...userContext, ...res.context }
     changed = true
   }
   return changed ? userContext : undefined
@@ -586,7 +634,8 @@ export async function getSubProcessesUserInput (
 export async function newExecutionUserInput (
   _id: Ref<Process>,
   space: Ref<Space>,
-  execution: Execution
+  execution: Execution,
+  skipExisting: boolean = false
 ): Promise<{ context: ExecutionContext, state: Ref<State>, changed: boolean } | undefined> {
   const client = getClient()
   const initTransition = client.getModel().findAllSync(process.class.Transition, {
@@ -594,7 +643,7 @@ export async function newExecutionUserInput (
     from: null
   })[0]
   if (initTransition === undefined) return undefined
-  return await requestUserInput(_id, space, initTransition, execution, execution.context)
+  return await requestUserInput(_id, space, initTransition, execution, execution.context, {}, skipExisting)
 }
 
 export async function getNextStateUserInput (
@@ -769,8 +818,13 @@ export function matchCardCheck (
   params: Record<string, any>,
   context: Record<string, any>
 ): boolean {
-  const doc = context.card
+  let doc = context.card
   if (doc === undefined) return false
+  const process = client.getModel().findObject(execution.process)
+  if (process === undefined) return false
+  if (client.getHierarchy().isMixin(process.masterTag)) {
+    doc = client.getHierarchy().as(doc, process.masterTag)
+  }
   const res = matchQuery([doc], params, doc._class, client.getHierarchy(), true)
   return res.length > 0
 }
@@ -809,9 +863,9 @@ export async function subProcessMatchCheck (
   params: Record<string, any>,
   context: Record<string, any>
 ): Promise<boolean> {
-  const { process: _process, ...otherCritera } = params
+  const { process: _process, currentState } = params
   if (_process === undefined) return false
-  if (Object.keys(otherCritera).length === 0) return true
+  if (currentState === undefined) return true
 
   const subProcesses = await client.findAll(process.class.Execution, {
     parentId: execution._id,
@@ -820,18 +874,18 @@ export async function subProcessMatchCheck (
 
   if (subProcesses.length === 0) return false
 
-  const [predicate, value] = Object.entries(otherCritera)[0]
+  const [predicate, value] = Object.entries(currentState)[0]
 
   const res = matchQuery(
     subProcesses,
-    { currentState: { $in: value } },
+    { currentState: { $in: value as any } },
     process.class.Execution,
     client.getHierarchy(),
     true
   )
   if (predicate === '$all') {
     return res.length === subProcesses.length
-  } else if (predicate === '$any') {
+  } else if (predicate === '$in') {
     return res.length > 0
   } else if (predicate === '$nin') {
     return res.length === 0
@@ -876,10 +930,4 @@ export async function checkProcessSectionVisibility (doc: Card): Promise<boolean
   const anc = client.getHierarchy().getAncestors(doc._class)
   const processes = client.getModel().findAllSync(process.class.Process, { masterTag: { $in: anc } })
   return processes.length > 0
-}
-
-export async function checkRequestsSectionVisibility (doc: Card): Promise<boolean> {
-  const client = getClient()
-  const requests = await client.findOne(process.class.ApproveRequest, { card: doc._id })
-  return requests !== undefined
 }

@@ -82,17 +82,23 @@
         : { docA: doc._id, docB: object._id, association: association._id }
     const relation = await client.findOne(core.class.Relation, q)
     const overrides = new Map()
+    const excludedActions: string[] = []
     if (relation !== undefined) {
-      overrides.set(view.action.Delete, async (obj: Doc | Doc[], ev?: Event) => {
-        if (relation !== undefined) {
-          await client.remove(relation)
-        }
-      })
+      if (association.automationOnly) {
+        excludedActions.push(view.action.Delete)
+      } else {
+        overrides.set(view.action.Delete, async (obj: Doc | Doc[], ev?: Event) => {
+          if (relation !== undefined) {
+            await client.remove(relation)
+          }
+        })
+      }
     }
-    showMenu(ev, { object: doc, overrides })
+    showMenu(ev, { object: doc, overrides, excludedActions })
   }
 
   function isAllowedToCreate (association: Association, docs: Doc[], direction: 'A' | 'B'): boolean {
+    if (association.automationOnly) return false
     if (docs.length === 0 || association.type === 'N:N') return true
     if (association.type === '1:1') return false
     return direction === 'B'

@@ -61,8 +61,10 @@ import {
   Model,
   Prop,
   ReadOnly,
+  TypeBoolean,
   TypeCollaborativeDoc,
   TypeNumber,
+  TypeRank,
   TypeRef,
   TypeString,
   UX
@@ -82,7 +84,7 @@ import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type BuildModelKey } from '@hcengineering/view'
 import { createActions } from './actions'
-import { definePermissions } from './permissions'
+import { defineActionPermissions, definePermissions } from './permissions'
 import card from './plugin'
 import notification from '@hcengineering/notification'
 
@@ -93,6 +95,9 @@ export class TMasterTag extends TClass implements MasterTag {
   color?: number
   background?: number
   removed?: boolean
+
+  @Prop(TypeBoolean(), card.string.SingleColumn)
+    singleColumn?: boolean
 }
 
 @Model(card.class.Tag, core.class.Mixin)
@@ -127,7 +132,9 @@ export class TCard extends TDoc implements Card {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  rank!: Rank
+  @Prop(TypeRank(), core.string.Rank)
+  @Hidden()
+    rank!: Rank
 
   @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
     todos?: CollectionSize<ToDo>
@@ -423,6 +430,7 @@ export function createModel (builder: Builder): void {
 
   defineTabs(builder)
   definePermissions(builder)
+  defineActionPermissions(builder)
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectIcon, {
     component: card.component.CardIcon
@@ -565,6 +573,21 @@ export function createModel (builder: Builder): void {
       locationDataResolver: card.resolver.LocationData,
       navigatorModel: {
         specials: [
+          {
+            id: 'my-cards',
+            label: card.string.MyCards,
+            icon: card.icon.Card,
+            component: card.component.MyCards,
+            componentProps: {
+              icon: card.icon.Card,
+              config: [
+                ['assigned', view.string.Assigned, {}],
+                ['created', view.string.Created, {}],
+                ['subscribed', view.string.Subscribed, {}]
+              ]
+            },
+            position: 'top'
+          },
           {
             id: 'all',
             label: card.string.AllCards,
@@ -899,6 +922,45 @@ export function createModel (builder: Builder): void {
     card.ids.ManageMasterTags
   )
 
+  builder.createDoc(
+    core.class.ClassPermission,
+    core.space.Model,
+    {
+      label: card.string.AllowCreatingCards,
+      scope: 'space',
+      targetClass: card.class.Card
+    },
+    card.ids.GuestCardClassPermission
+  )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: card.app.Card,
+      role: AccountRole.Guest,
+      permissions: [card.ids.GuestCardClassPermission],
+      spaceClass: card.class.CardSpace,
+      enabled: true,
+      order: 20
+    },
+    card.ids.ModulePermissionGroup
+  )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: card.app.Card,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: card.class.CardSpace,
+      enabled: false,
+      order: 20
+    },
+    card.ids.ModulePermissionGroupReadOnlyGuest
+  )
+
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ClassFilters, {
     filters: ['space'],
     ignoreKeys: ['parent']
@@ -1035,7 +1097,8 @@ function defineTabs (builder: Builder): void {
       label: card.string.Children,
       component: card.sectionComponent.ChildrenSection,
       order: 400,
-      navigation: []
+      navigation: [],
+      checkVisibility: card.function.CheckChildrenSectionVisibility
     },
     card.section.Children
   )

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/middleware",
-  "version": "0.7.382",
+  "version": "0.7.411",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -18,7 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.382",
+    "@hcengineering/platform-rig": "workspace:^0.7.411",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -35,15 +35,19 @@
     "eslint-plugin-svelte": "^2.35.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.382",
-    "@hcengineering/contact": "workspace:^0.7.382",
-    "@hcengineering/platform": "workspace:^0.7.382",
-    "@hcengineering/server-core": "workspace:^0.7.382",
-    "@hcengineering/query": "workspace:^0.7.382",
-    "@hcengineering/analytics": "workspace:^0.7.382",
+    "@hcengineering/core": "workspace:^0.7.411",
+    "@hcengineering/contact": "workspace:^0.7.411",
+    "@hcengineering/platform": "workspace:^0.7.411",
+    "@hcengineering/rank": "workspace:^0.7.411",
+    "@hcengineering/server-core": "workspace:^0.7.411",
+    "@hcengineering/query": "workspace:^0.7.411",
+    "@hcengineering/analytics": "workspace:^0.7.411",
     "fast-equals": "^5.2.2"
   },
-  "repository": "https://github.com/hcengineering/huly.server",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/huly.server.git"
+  },
   "publishConfig": {
     "access": "public"
   },

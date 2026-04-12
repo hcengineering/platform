@@ -54,6 +54,7 @@ function hasSubscriptionChanged (ourSub: SubscriptionData, newData: Subscription
 export class StripeProvider implements PaymentProvider {
   readonly providerName = 'stripe'
   private readonly stripe: StripeClient
+  private readonly stripeApiKey: string
   private readonly webhookSecret: string
   // Map: plan@type (Huly) -> priceId (Stripe)
   private readonly subscriptionPlans: Record<string, string>
@@ -67,10 +68,11 @@ export class StripeProvider implements PaymentProvider {
     frontUrl: string,
     accountClient: AccountClient
   ) {
+    this.stripeApiKey = apiKey
     this.stripe = new StripeClient(apiKey)
     this.webhookSecret = webhookSecret
     // TODO: support branding
-    this.frontUrl = frontUrl
+    this.frontUrl = frontUrl.replace(/\/+$/, '')
     this.subscriptionPlans = {}
     this.accountClient = accountClient
     const plans = subscriptionPlans.split(';')
@@ -113,7 +115,8 @@ export class StripeProvider implements PaymentProvider {
       metadata: {
         workspaceUuid,
         subscriptionType: request.type,
-        subscriptionPlan: request.plan
+        subscriptionPlan: request.plan,
+        accountUuid
       }
     })
 
@@ -125,7 +128,7 @@ export class StripeProvider implements PaymentProvider {
 
   async getSubscription (ctx: MeasureContext, subscriptionId: string): Promise<SubscriptionData | null> {
     const stripeSubscription = await this.stripe.getSubscription(ctx, subscriptionId)
-    const subscriptionData = transformStripeSubscriptionToData(stripeSubscription)
+    const subscriptionData = transformStripeSubscriptionToData(ctx, stripeSubscription)
 
     if (subscriptionData === null) {
       return null
@@ -140,6 +143,10 @@ export class StripeProvider implements PaymentProvider {
 
       // If checkout is not complete, no subscription yet
       if (checkout.status !== 'complete') {
+        ctx.info('Cannot get subscription by checkout: checkout is not complete', {
+          checkoutId,
+          status: checkout.status
+        })
         return null
       }
 
@@ -148,9 +155,10 @@ export class StripeProvider implements PaymentProvider {
         const subscriptionId =
           typeof checkout.subscription === 'string' ? checkout.subscription : checkout.subscription.id
         const subscription = await this.stripe.getSubscription(ctx, subscriptionId)
-        const subscriptionData = transformStripeSubscriptionToData(subscription)
+        const subscriptionData = transformStripeSubscriptionToData(ctx, subscription)
 
         if (subscriptionData !== null) {
+          ctx.info('Found subscription by checkout: subscription ID', { checkoutId, subscriptionId })
           return subscriptionData
         }
       }
@@ -168,13 +176,19 @@ export class StripeProvider implements PaymentProvider {
       if (activeSubscriptions.length > 0) {
         // Sort by created date, most recent first
         activeSubscriptions.sort((a, b) => b.created - a.created)
-        const subscriptionData = transformStripeSubscriptionToData(activeSubscriptions[0])
+        const subscriptionData = transformStripeSubscriptionToData(ctx, activeSubscriptions[0])
 
         if (subscriptionData !== null) {
           return subscriptionData
+        } else {
+          ctx.error('Cannot get subscription by checkout: subscription is in irrelevant state', {
+            checkoutId,
+            subscriptionId: activeSubscriptions[0].id
+          })
         }
       }
 
+      ctx.error('Cannot get subscription by checkout: no subscriptions found', { checkoutId })
       return null
     } catch (err) {
       ctx.error('Failed to get subscription by checkout', { checkoutId, err })
@@ -199,7 +213,7 @@ export class StripeProvider implements PaymentProvider {
       let upsertCount = 0
       for (const stripeSub of stripeActiveSubscriptions) {
         try {
-          const subscriptionData = transformStripeSubscriptionToData(stripeSub)
+          const subscriptionData = transformStripeSubscriptionToData(ctx, stripeSub)
           if (subscriptionData === null) {
             continue
           }
@@ -227,7 +241,7 @@ export class StripeProvider implements PaymentProvider {
           try {
             // Fetch the current state from Stripe directly
             const currentState = await this.stripe.getSubscription(ctx, stripeSubId)
-            const subscriptionData = transformStripeSubscriptionToData(currentState)
+            const subscriptionData = transformStripeSubscriptionToData(ctx, currentState)
 
             // Update our database with current state (may have changed to canceled/ended)
             if (subscriptionData !== null) {
@@ -257,7 +271,7 @@ export class StripeProvider implements PaymentProvider {
 
   async cancelSubscription (ctx: MeasureContext, providerSubscriptionId: string): Promise<SubscriptionData> {
     const stripeSubscription = await this.stripe.cancelSubscription(ctx, providerSubscriptionId)
-    const subscriptionData = transformStripeSubscriptionToData(stripeSubscription)
+    const subscriptionData = transformStripeSubscriptionToData(ctx, stripeSubscription)
 
     if (subscriptionData == null) {
       throw new Error(`Failed to cancel subscription ${providerSubscriptionId}`)
@@ -268,7 +282,7 @@ export class StripeProvider implements PaymentProvider {
 
   async uncancelSubscription (ctx: MeasureContext, providerSubscriptionId: string): Promise<SubscriptionData> {
     const stripeSubscription = await this.stripe.uncancelSubscription(ctx, providerSubscriptionId)
-    const subscriptionData = transformStripeSubscriptionToData(stripeSubscription)
+    const subscriptionData = transformStripeSubscriptionToData(ctx, stripeSubscription)
     if (subscriptionData == null) {
       throw new Error(`Failed to uncancel subscription ${providerSubscriptionId}`)
     }
@@ -280,7 +294,8 @@ export class StripeProvider implements PaymentProvider {
     ctx: MeasureContext,
     subscriptionId: string,
     newPlan: string,
-    workspaceUrl: string
+    workspaceUrl: string,
+    accountUuid: string
   ): Promise<SubscriptionData | CheckoutResponse | null> {
     // Get the current subscription to check if it's free
     const currentSub = await this.stripe.getSubscription(ctx, subscriptionId)
@@ -313,7 +328,8 @@ export class StripeProvider implements PaymentProvider {
         metadata: {
           workspaceUuid: metadata.workspaceUuid,
           subscriptionType: SubscriptionType.Tier,
-          subscriptionPlan: newPlan
+          subscriptionPlan: newPlan,
+          accountUuid
         }
       })
 
@@ -327,7 +343,7 @@ export class StripeProvider implements PaymentProvider {
     const updatedSub = await this.stripe.updateSubscription(ctx, subscriptionId, priceId)
 
     // Transform and return the updated subscription data
-    const subscriptionData = transformStripeSubscriptionToData(updatedSub)
+    const subscriptionData = transformStripeSubscriptionToData(ctx, updatedSub)
     return subscriptionData
   }
 
@@ -336,7 +352,7 @@ export class StripeProvider implements PaymentProvider {
 
     // Register Stripe-specific webhook endpoint (body parsing handled by server middleware)
     app.post('/api/v1/webhooks/stripe', (req: Request, res: Response) => {
-      void handleStripeWebhook(ctx, accountsUrl, serviceToken, this.webhookSecret, req, res)
+      void handleStripeWebhook(ctx, accountsUrl, serviceToken, this.webhookSecret, this.stripeApiKey, req, res)
     })
   }
 }

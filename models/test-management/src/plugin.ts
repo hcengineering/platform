@@ -15,7 +15,7 @@
 
 import { testManagementId } from '@hcengineering/test-management'
 import testManganement from '@hcengineering/test-management-resources/src/plugin'
-import type { Ref } from '@hcengineering/core'
+import type { Doc, Ref } from '@hcengineering/core'
 import { mergeIds } from '@hcengineering/platform'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import type { ActionCategory } from '@hcengineering/view'
@@ -48,5 +48,9 @@ export default mergeIds(testManagementId, testManganement, {
     TestPlanItemPresenter: '' as AnyComponent,
     CreateTestRunButton: '' as AnyComponent,
     RunTestPlanButton: '' as AnyComponent
+  },
+  ids: {
+    ModulePermissionGroup: '' as Ref<Doc>,
+    ModulePermissionGroupReadOnlyGuest: '' as Ref<Doc>
   }
 })

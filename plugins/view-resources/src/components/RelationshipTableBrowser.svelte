@@ -13,13 +13,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, FindOptions, Ref, generateId } from '@hcengineering/core'
+  import { Class, Doc, DocumentQuery, FindOptions, Ref, generateId, SortingOrder } from '@hcengineering/core'
   import { ActionContext } from '@hcengineering/presentation'
   import { Scroller, tableSP } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewOptionModel, ViewOptions } from '@hcengineering/view'
   import { onDestroy, onMount } from 'svelte'
   import { type ViewletContext, ViewletContextStore, viewletContextStore } from '../viewletContextStore'
   import RelationshipTable from './RelationshipTable.svelte'
+  import { setViewOptions } from '../viewOptions'
 
   export let _class: Ref<Class<Doc>>
   export let query: DocumentQuery<Doc>
@@ -33,6 +34,13 @@
   export let readonly = false
 
   const contextId = generateId()
+  async function onSort (event: CustomEvent<{ key: string, order: SortingOrder }>) {
+    const { key, order } = event.detail
+    if (viewlet && viewOptions) {
+      viewOptions.orderBy = [key, order]
+      setViewOptions(viewlet, viewOptions)
+    }
+  }
 
   // Set viewlet context in store when component mounts/updates
   $: {
@@ -92,5 +100,6 @@
     {viewOptions}
     viewOptionsConfig={viewOptionsConfig ?? viewlet?.viewOptions?.other}
     {readonly}
+    on:sort={onSort}
   />
 </Scroller>

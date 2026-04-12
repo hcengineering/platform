@@ -14,11 +14,14 @@
 //
 
 import core, {
+  type Class,
   type Doc,
   type MeasureContext,
+  type Ref,
   type SessionData,
   type Tx,
   type TxCreateDoc,
+  type TxUpdateDoc,
   TxFactory,
   type TypeIdentifier
 } from '@hcengineering/core'
@@ -49,7 +52,11 @@ export class IdentifierMiddleware extends BaseMiddleware implements Middleware {
   async tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     for (const tx of txes) {
       if (isTargetTx(tx)) {
-        await this.setIdentifiers(ctx, tx as TxCreateDoc<Doc>)
+        if (tx._class === core.class.TxUpdateDoc) {
+          await this.setIdentifiersInUpdate(ctx, tx as TxUpdateDoc<Doc>)
+        } else {
+          await this.setIdentifiers(ctx, tx as TxCreateDoc<Doc>)
+        }
       }
     }
     return await this.provideTx(ctx, txes)
@@ -67,30 +74,69 @@ export class IdentifierMiddleware extends BaseMiddleware implements Middleware {
       if (attr[1].type._class === core.class.TypeIdentifier) {
         const value = (tx.attributes as any)[attr[1].name]
         if ((value == null && tx._class === core.class.TxCreateDoc) || Object.keys(tx.attributes).length === 0) {
-          const sequence = (
-            await this.findAll(ctx, core.class.CustomSequence, { _id: (attr[1].type as TypeIdentifier).of })
-          )[0]
-          if (sequence === undefined) {
-            continue
+          const idValue = await this.generateIdentifier(ctx, tx, attr[1].type as TypeIdentifier)
+          if (idValue != null) {
+            ;(tx.attributes as any)[attr[1].name] = idValue
           }
-          const factory = new TxFactory(tx.modifiedBy, true)
-          const incrementTx = factory.createTxUpdateDoc(
-            sequence._class,
-            sequence.space,
-            sequence._id,
-            {
-              $inc: { sequence: 1 }
-            },
-            true
-          )
-          const incResult = await this.provideTx(ctx, [incrementTx])
-          ;(tx.attributes as any)[attr[1].name] = `${sequence.prefix}-${(incResult as any).object.sequence}`
         }
       }
     }
   }
+
+  private async setIdentifiersInUpdate (ctx: MeasureContext<SessionData>, tx: TxUpdateDoc<Doc>): Promise<void> {
+    const newClass = (tx.operations as any)._class as Ref<Class<Doc>> | undefined
+    if (newClass === undefined) {
+      return
+    }
+    const oldClass = tx.objectClass
+    const newAttributes = this.context.hierarchy.getAllAttributes(newClass)
+    const oldAttributes = this.context.hierarchy.getAllAttributes(oldClass)
+
+    for (const attr of newAttributes) {
+      if (attr[1].type._class === core.class.TypeIdentifier) {
+        if (!oldAttributes.has(attr[0])) {
+          // This is a new identifier
+          const name = attr[1].name
+          const operations = tx.operations as any
+          if (operations[name] == null) {
+            const idValue = await this.generateIdentifier(ctx, tx, attr[1].type as TypeIdentifier)
+            if (idValue != null) {
+              operations[name] = idValue
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private async generateIdentifier (
+    ctx: MeasureContext<SessionData>,
+    tx: Tx,
+    type: TypeIdentifier
+  ): Promise<string | undefined> {
+    const sequence = (await this.findAll(ctx, core.class.CustomSequence, { _id: type.of }))[0]
+    if (sequence === undefined) {
+      return undefined
+    }
+    const factory = new TxFactory(tx.modifiedBy, true)
+    const incrementTx = factory.createTxUpdateDoc(
+      sequence._class,
+      sequence.space,
+      sequence._id,
+      {
+        $inc: { sequence: 1 }
+      },
+      true
+    )
+    const incResult = await this.provideTx(ctx, [incrementTx])
+    return `${sequence.prefix}-${(incResult as any).object.sequence}`
+  }
 }
 
 function isTargetTx (tx: Tx): boolean {
-  return tx._class === core.class.TxCreateDoc || tx._class === core.class.TxMixin
+  return (
+    tx._class === core.class.TxCreateDoc ||
+    tx._class === core.class.TxMixin ||
+    (tx._class === core.class.TxUpdateDoc && (tx as any).operations._class !== undefined)
+  )
 }

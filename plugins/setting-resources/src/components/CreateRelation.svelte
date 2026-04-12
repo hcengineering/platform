@@ -17,7 +17,7 @@
   import core, { Class, Doc, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
-  import { DropdownIntlItem, DropdownLabelsIntl, EditBox, Label, NestedDropdown } from '@hcengineering/ui'
+  import { DropdownIntlItem, DropdownLabelsIntl, EditBox, Label, NestedDropdown, Toggle } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
@@ -96,6 +96,7 @@
   let classBRef: Ref<Class<Doc>> | undefined = undefined
   let nameA: string = ''
   let nameB: string = ''
+  let automationOnly = false
 
   async function save (): Promise<void> {
     if (classBRef === undefined || classARef === undefined) {
@@ -106,7 +107,8 @@
       classB: classBRef,
       type: mode,
       nameA,
-      nameB
+      nameB,
+      automationOnly
     })
     dispatch('close', _id)
   }
@@ -199,6 +201,13 @@
           }}
         />
       </div>
+    </div>
+
+    <div class="flex p-4 flex-gap-2">
+      <span class="label">
+        <Label label={view.string.AutomationOnly} />
+      </span>
+      <Toggle bind:on={automationOnly} />
     </div>
   </div>
 </Card>

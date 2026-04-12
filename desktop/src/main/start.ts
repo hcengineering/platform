@@ -26,6 +26,8 @@ import { Config, MenuBarAction, NotificationParams, JumpListSpares, CommandClose
 import { getOptions } from './args'
 import { addMenus } from './standardMenu'
 import { dispatchMenuBarAction } from './customMenu'
+import { registerFindInPageIpcHandlers } from './findInPage'
+import { setupFindInPageOverlayForWindow } from './findInPageOverlayHost'
 import { addPermissionHandlers } from './permissions'
 import autoUpdater from './updater'
 import { generateId } from '@hcengineering/core'
@@ -163,6 +165,11 @@ function runTheApp (): void {
           }
           setupWindowTitleBar(windowOptions)
           const childWindow = new BrowserWindow(windowOptions)
+          try {
+            await setupFindInPageOverlayForWindow(childWindow, sessionPartition, preloadScriptPath)
+          } catch (err) {
+            log.error('Find overlay setup failed (child window)', err)
+          }
           await childWindow.loadFile(containerPagePath)
           hookOpenWindow(childWindow)
         })()
@@ -263,6 +270,11 @@ function runTheApp (): void {
     }
     setupWindowTitleBar(windowOptions)
     mainWindow = new BrowserWindow(windowOptions)
+    try {
+      await setupFindInPageOverlayForWindow(mainWindow, sessionPartition, preloadScriptPath)
+    } catch (err) {
+      log.error('Find overlay setup failed (main window)', err)
+    }
     app.dock?.setIcon(nativeImage.createFromPath(iconKey))
     if (isDev) {
       mainWindow.webContents.openDevTools()
@@ -381,6 +393,8 @@ function runTheApp (): void {
     showInspectElement: false,
     showSelectAll: false
   })
+
+  registerFindInPageIpcHandlers()
 
   ipcMain.on(IpcMessage.SetBadge, (_event: any, badge: number) => {
     app.dock?.setBadge(badge > 0 ? `${badge}` : '')

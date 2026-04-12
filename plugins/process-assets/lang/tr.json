@@ -154,7 +154,16 @@
     "ReviewAction": "Gözden geçir",
     "Review": "Gözden geçir",
     "LockField": "Alanı kilitle",
-    "UnlockField": "Alanı kilitle"
+    "UnlockField": "Alanı kilitle",
+    "TextFromCheckbox": "Checkbox'tan metin",
+    "NumberFromDate": "Tarihten sayı",
+    "DateFromNumber": "Sayıdan tarih",
+    "NumberFromText": "Metinden sayı",
+    "DateFromText": "Metinden tarih",
+    "YearFromDate": "Tarihten yıl",
+    "MonthFromDate": "Tarihten ay",
+    "DayFromDate": "Tarihten gün",
+    "DateDifference": "Tarih farkı"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

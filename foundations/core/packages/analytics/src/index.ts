@@ -78,7 +78,8 @@ export const Analytics = {
 
 addEventListener(PlatformEvent, async (_event, _status: Status) => {
   if (_status.severity === Severity.ERROR) {
-    const label = await translate(_status.code, _status.params, 'en')
+    // Skip error broadcast in translate to avoid infinite loop
+    const label = await translate(_status.code, _status.params, 'en', true)
     Analytics.handleError(new Error(label))
   }
 })

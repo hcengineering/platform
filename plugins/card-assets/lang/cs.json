@@ -5,6 +5,7 @@
     "Cards": "Karty",
     "Content": "Obsah",
     "CreateCard": "Vytvořit kartu",
+    "AllowCreatingCards": "Povolit vytváření karet",
     "CreateMasterTag": "Vytvořit typ",
     "CreateTag": "Vytvořit štítek",
     "MasterTag": "Typ",
@@ -72,6 +73,15 @@
     "Import": "Importovat",
     "Export": "Exportovat",
     "CardUpdated": "Karta aktualizována",
-    "CardCreated": "Karta vytvořena"
+    "CardCreated": "Karta vytvořena",
+    "MyCards": "Moje karty",
+    "GotoMyCards": "Přejít na moje karty",
+    "LockSection": "Zamknout sekci",
+    "UnLockSection": "Odemknout sekci",
+    "SectionLocked": "Sekce {section} zamknuta",
+    "SectionUnlocked": "Sekce {section} odemknuta",
+    "LayoutAuto": "Auto",
+    "SingleColumn": "Jeden sloupec",
+    "TwoColumns": "Dva sloupce"
   }
 }

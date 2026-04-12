@@ -202,8 +202,9 @@ export interface CreatedContext {
 }
 
 export interface ProcessFunction extends Doc {
-  type: 'transform' | 'reduce' | 'context'
+  type: 'transform' | 'reduce' | 'context' | 'convert'
   of: Ref<Class<Doc>>
+  to?: Ref<Class<Doc>>
   editor?: AnyComponent
   presenter?: AnyComponent
   category: AttributeCategory | undefined
@@ -374,8 +375,18 @@ export default plugin(processId, {
     ExecutionInitiator: '' as Ref<ProcessFunction>,
     EmptyArray: '' as Ref<ProcessFunction>,
     CurrentDate: '' as Ref<ProcessFunction>,
+    StringFromNumber: '' as Ref<ProcessFunction>,
+    StringFromDate: '' as Ref<ProcessFunction>,
+    StringFromBoolean: '' as Ref<ProcessFunction>,
+    NumberFromDate: '' as Ref<ProcessFunction>,
+    DateFromNumber: '' as Ref<ProcessFunction>,
+    NumberFromString: '' as Ref<ProcessFunction>,
+    DateFromString: '' as Ref<ProcessFunction>,
+    YearFromDate: '' as Ref<ProcessFunction>,
+    MonthFromDate: '' as Ref<ProcessFunction>,
+    DayFromDate: '' as Ref<ProcessFunction>,
+    DateDifference: '' as Ref<ProcessFunction>,
     ExportProcess: '' as Resource<ExportFunc>,
-    CheckProcessSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>,
-    CheckRequestsSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
+    CheckProcessSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
   }
 })

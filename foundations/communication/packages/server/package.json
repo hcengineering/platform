@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/communication-server",
-  "version": "0.7.382",
+  "version": "0.7.411",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -22,7 +22,7 @@
     "_phase:test": "jest --passWithNoTests --silent --forceExit"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.382",
+    "@hcengineering/platform-rig": "workspace:^0.7.411",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.18.1",
     "@types/uuid": "^8.3.1",
@@ -41,16 +41,16 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/account-client": "workspace:^0.7.382",
-    "@hcengineering/communication-cockroach": "workspace:^0.7.382",
-    "@hcengineering/communication-sdk-types": "workspace:^0.7.382",
-    "@hcengineering/communication-shared": "workspace:^0.7.382",
-    "@hcengineering/communication-types": "workspace:^0.7.382",
-    "@hcengineering/core": "workspace:^0.7.382",
-    "@hcengineering/server-token": "workspace:^0.7.382",
-    "@hcengineering/text-core": "workspace:^0.7.382",
-    "@hcengineering/text-markdown": "workspace:^0.7.382",
-    "@hcengineering/hulylake-client": "workspace:^0.7.382",
+    "@hcengineering/account-client": "workspace:^0.7.411",
+    "@hcengineering/communication-cockroach": "workspace:^0.7.411",
+    "@hcengineering/communication-sdk-types": "workspace:^0.7.411",
+    "@hcengineering/communication-shared": "workspace:^0.7.411",
+    "@hcengineering/communication-types": "workspace:^0.7.411",
+    "@hcengineering/core": "workspace:^0.7.411",
+    "@hcengineering/server-token": "workspace:^0.7.411",
+    "@hcengineering/text-core": "workspace:^0.7.411",
+    "@hcengineering/text-markdown": "workspace:^0.7.411",
+    "@hcengineering/hulylake-client": "workspace:^0.7.411",
     "uuid": "^8.3.2",
     "zod": "^3.22.4"
   },

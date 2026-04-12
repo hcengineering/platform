@@ -18,6 +18,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { type InviteSettings, type RoleCapabilitySettings, RoleCapability } from '@hcengineering/setting'
   import { hasRoleCapability } from '../roleCapability'
+  import { getDefaultInviterRoles, getDefaultInviteRole, resolveInviteSettings } from '../inviteSettingsUtils'
   import { translate } from '@hcengineering/platform'
   import {
     Breadcrumb,
@@ -35,12 +36,14 @@
   import UserRoleSelect from './UserRoleSelect.svelte'
 
   const client = getClient()
+
   let loading = true
   let expTime: number = 48
   let mask: string = ''
   let limit: number | undefined = -1
-  let defaultInviteRole: AccountRole = AccountRole.User
-  let inviteLinkGeneratorRoles: AccountRole[] = [AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]
+
+  let defaultInviteRole: AccountRole = getDefaultInviteRole()
+  let inviteLinkGeneratorRoles: AccountRole[] = getDefaultInviterRoles()
   let noLimit: boolean = true
   let existingInviteSettings: InviteSettings[] = []
   let existingRoleCapabilitySettings: {
@@ -60,8 +63,6 @@
     roleByCapability,
     undefined
   )
-  const defaultGeneratorRoles: AccountRole[] = [AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]
-
   let inviteLinkGeneratorRolesItems: DropdownTextItem[] = []
   $: lang = $themeStore?.language
   $: if (typeof lang === 'string') {
@@ -80,24 +81,13 @@
 
   function applyInviteSettings (set: InviteSettings[]): void {
     existingInviteSettings = set
-    if (existingInviteSettings.length > 0) {
-      const first = existingInviteSettings[0]
-      expTime = first.expirationTime
-      mask = first.emailMask
-      limit = first.limit
-      defaultInviteRole = first.defaultInviteRole ?? AccountRole.User
-      inviteLinkGeneratorRoles =
-        first.inviteLinkGeneratorRoles != null && first.inviteLinkGeneratorRoles.length > 0
-          ? [...first.inviteLinkGeneratorRoles]
-          : [...defaultGeneratorRoles]
-    } else {
-      expTime = 48
-      mask = ''
-      limit = -1
-      defaultInviteRole = AccountRole.User
-      inviteLinkGeneratorRoles = [...defaultGeneratorRoles]
-    }
-    noLimit = limit === -1
+    const state = resolveInviteSettings(set[0])
+    expTime = state.expirationTime
+    mask = state.emailMask
+    limit = state.limit
+    defaultInviteRole = state.defaultInviteRole
+    inviteLinkGeneratorRoles = state.inviteLinkGeneratorRoles
+    noLimit = state.noLimit
     loading = false
   }
 
@@ -255,7 +245,6 @@
                     autoSelect={false}
                     kind={'regular'}
                     size={'medium'}
-                    width={'100%'}
                     on:selected={handleGeneratorRolesSelected}
                   />
                 </div>

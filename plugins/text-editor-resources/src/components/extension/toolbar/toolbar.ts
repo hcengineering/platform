@@ -261,7 +261,7 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
         getReferenceClientRect,
         inertia: true,
         content: container,
-        maxWidth: 800,
+        maxWidth: 1000,
         interactive: true,
         trigger: 'manual',
         placement: viewOptions?.placement,

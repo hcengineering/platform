@@ -247,6 +247,7 @@
     "SevenHoursLength": "Sette ore",
     "EightHoursLength": "Otto ore",
     "HourLabel": "h",
+    "MinuteLabel": "m",
     "Saved": "Salvato...",
     "CreatedIssue": "Issue creata",
     "CreatedSubIssue": "Subissue creata",
@@ -271,7 +272,8 @@
     "Extensions": "Estensioni",
     "UnsetParentIssue": "Annulla l'issue genitore",
     "ForbidCreateProjectPermission": "Vieta creazione progetto",
-    "ForbidCreateProjectPermissionDescription": "Vieta agli utenti di creare nuovi progetti"
+    "ForbidCreateProjectPermissionDescription": "Vieta agli utenti di creare nuovi progetti",
+    "AllowCreatingIssues": "Consenti la creazione di issue"
   },
   "status": {}
 }

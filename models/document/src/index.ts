@@ -38,6 +38,7 @@ import {
   TypeAccountUuid,
   TypeCollaborativeDoc,
   TypeNumber,
+  TypeRank,
   TypeRef,
   TypeString,
   UX
@@ -116,6 +117,7 @@ export class TDocument extends TDoc implements Document, Todoable {
   @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
     todos?: CollectionSize<ToDo>
 
+  @Prop(TypeRank(), core.string.Rank)
   @Index(IndexKind.Indexed)
   @Hidden()
     rank!: Rank
@@ -538,6 +540,33 @@ export function createModel (builder: Builder): void {
   defineDocument(builder)
 
   defineApplication(builder)
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: document.app.Documents,
+      role: AccountRole.Guest,
+      permissions: [],
+      spaceClass: document.class.Teamspace,
+      enabled: true,
+      order: 40
+    },
+    document.ids.ModulePermissionGroup
+  )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: document.app.Documents,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: document.class.Teamspace,
+      enabled: false,
+      order: 40
+    },
+    document.ids.ModulePermissionGroupReadOnlyGuest
+  )
   definePermissions(builder)
 
   builder.createDoc(core.class.DomainIndexConfiguration, core.space.Model, {

@@ -17,7 +17,7 @@
   import { Card } from '@hcengineering/card'
   import communication from '@hcengineering/communication'
   import { NotificationContext } from '@hcengineering/communication-types'
-  import { Ref } from '@hcengineering/core'
+  import { AccountRole, getCurrentAccount, hasAccountRole, Ref } from '@hcengineering/core'
   import { resizeObserver } from '@hcengineering/ui'
 
   import { MessageInput } from '@hcengineering/communication-resources'
@@ -57,7 +57,7 @@
     <EditCardTableOfContents bind:this={content} bind:scrollDiv {doc} {readonly} {context} {isContextLoaded} />
   {/key}
 {/if}
-{#if !readonly && getMetadata(communication.metadata.Enabled) === true}
+{#if !readonly && getMetadata(communication.metadata.Enabled) === true && hasAccountRole(getCurrentAccount(), AccountRole.User)}
   <div class="message-input" use:resizeObserver={onInputResize}>
     <MessageInput
       card={doc}

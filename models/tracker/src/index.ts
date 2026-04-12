@@ -658,6 +658,45 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(
+    core.class.ClassPermission,
+    core.space.Model,
+    {
+      label: tracker.string.AllowCreatingIssues,
+      scope: 'space',
+      targetClass: tracker.class.Issue
+    },
+    tracker.ids.GuestIssueClassPermission
+  )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: tracker.app.Tracker,
+      role: AccountRole.Guest,
+      permissions: [tracker.ids.GuestIssueClassPermission],
+      spaceClass: tracker.class.Project,
+      enabled: true,
+      order: 10
+    },
+    tracker.ids.ModulePermissionGroup
+  )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: tracker.app.Tracker,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: tracker.class.Project,
+      enabled: true,
+      order: 10
+    },
+    tracker.ids.ModulePermissionGroupReadOnlyGuest
+  )
+
+  builder.createDoc(
     chunter.class.ChatMessageViewlet,
     core.space.Model,
     {

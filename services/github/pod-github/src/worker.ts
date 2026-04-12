@@ -87,6 +87,7 @@ import { ReviewThreadSyncManager } from './sync/reviewThreads'
 import { ReviewSyncManager } from './sync/reviews'
 import { appendGuestLinkToImage } from './sync/guest'
 import { UsersSyncManager, fetchViewerDetails } from './sync/users'
+import { appendGuestLinkToImage } from './sync/guest'
 import { errorToObj } from './sync/utils'
 import {
   ContainerFocus,

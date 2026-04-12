@@ -1,5 +1,5 @@
 //
-// Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,47 +13,34 @@
 // limitations under the License.
 //
 
-import type { Ref } from '@hcengineering/core'
+import type { MeasureContext } from '@hcengineering/core'
 import { PushSubscription, type PushData } from '@hcengineering/notification'
 import type { Request, Response } from 'express'
-import webpush, { WebPushError } from 'web-push'
+import webpush from 'web-push'
 import config from './config'
+import { sendPushToSubscription } from './push'
 import { createServer, listen } from './server'
 import { Endpoint } from './types'
 
-const errorMessages = ['expired', 'Unregistered', 'No such subscription']
-async function sendPushToSubscription (
-  subscriptions: PushSubscription[],
-  data: PushData
-): Promise<Ref<PushSubscription>[]> {
-  const result: Ref<PushSubscription>[] = []
-  for (const subscription of subscriptions) {
-    try {
-      await webpush.sendNotification(subscription, JSON.stringify(data))
-    } catch (err: any) {
-      if (err instanceof WebPushError) {
-        if (errorMessages.some((p) => JSON.stringify(err.body).includes(p))) {
-          result.push(subscription._id)
-        }
-      }
-    }
-  }
-  return result
-}
-
-export const main = async (): Promise<void> => {
-  console.log('Notification service has been started')
+export const main = async (ctx: MeasureContext): Promise<void> => {
+  ctx.info('Notification service starting')
   let webpushInitDone = false
 
   if (config.PushPublicKey !== undefined && config.PushPrivateKey !== undefined) {
     try {
       const subj = config.PushSubject ?? 'mailto:hey@huly.io'
-      console.log('Setting VAPID details', subj, config.PushPublicKey.length, config.PushPrivateKey.length)
-      webpush.setVapidDetails(config.PushSubject ?? 'mailto:hey@huly.io', config.PushPublicKey, config.PushPrivateKey)
+      ctx.info('Setting VAPID details', {
+        subject: subj,
+        publicKeyLen: config.PushPublicKey.length,
+        privateKeyLen: config.PushPrivateKey.length
+      })
+      webpush.setVapidDetails(subj, config.PushPublicKey, config.PushPrivateKey)
       webpushInitDone = true
-    } catch (err: any) {
-      console.error(err)
+    } catch (err: unknown) {
+      ctx.error('Failed to set VAPID details', { error: err })
     }
+  } else {
+    ctx.warn('VAPID keys not configured; /web-push will return empty results until keys are set')
   }
 
   const checkAuth = (req: Request<any>, res: Response<any>): boolean => {
@@ -92,15 +79,18 @@ export const main = async (): Promise<void> => {
           return
         }
 
-        const result = await sendPushToSubscription(subscriptions, data)
+        const result = await sendPushToSubscription(ctx, subscriptions, data)
         res.json({ result }).end()
       }
     }
   ]
 
-  const server = listen(createServer(endpoints), config.Port)
+  const server = listen(createServer(endpoints), config.Port, undefined, () => {
+    ctx.info('Notification service listening', { port: config.Port })
+  })
 
   const shutdown = (): void => {
+    ctx.info('Closed')
     server.close(() => {
       process.exit()
     })
@@ -108,10 +98,4 @@ export const main = async (): Promise<void> => {
 
   process.on('SIGINT', shutdown)
   process.on('SIGTERM', shutdown)
-  process.on('uncaughtException', (e) => {
-    console.error(e)
-  })
-  process.on('unhandledRejection', (e) => {
-    console.error(e)
-  })
 }

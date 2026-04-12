@@ -154,3 +154,35 @@ export function definePermissions (builder: Builder): void {
     card.permission.ForbidRemoveCard
   )
 }
+
+export function defineActionPermissions (builder: Builder): void {
+  builder.createDoc(
+    core.class.Permission,
+    core.space.Model,
+    {
+      label: card.string.LockSection,
+      txClass: core.class.TxUpdateDoc,
+      objectClass: card.class.Card,
+      txMatch: {
+        'operations.$push.readonlySections': { $exists: true }
+      },
+      scope: 'space'
+    },
+    card.permission.LockSection
+  )
+
+  builder.createDoc(
+    core.class.Permission,
+    core.space.Model,
+    {
+      label: card.string.UnLockSection,
+      txClass: core.class.TxUpdateDoc,
+      objectClass: card.class.Card,
+      txMatch: {
+        'operations.$pull.readonlySections': { $exists: true }
+      },
+      scope: 'space'
+    },
+    card.permission.UnlockSection
+  )
+}

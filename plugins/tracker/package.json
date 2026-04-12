@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/tracker",
-  "version": "0.7.382",
+  "version": "0.7.411",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.382",
+    "@hcengineering/platform-rig": "workspace:^0.7.411",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -37,20 +37,23 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.382",
-    "@hcengineering/platform": "workspace:^0.7.382",
-    "@hcengineering/ui": "workspace:^0.7.382",
-    "@hcengineering/view": "workspace:^0.7.382",
-    "@hcengineering/contact": "workspace:^0.7.382",
-    "@hcengineering/chunter": "workspace:^0.7.382",
-    "@hcengineering/attachment": "workspace:^0.7.382",
-    "@hcengineering/task": "workspace:^0.7.382",
-    "@hcengineering/time": "workspace:^0.7.382",
-    "@hcengineering/tags": "workspace:^0.7.382",
-    "@hcengineering/preference": "workspace:^0.7.382",
+    "@hcengineering/core": "workspace:^0.7.411",
+    "@hcengineering/platform": "workspace:^0.7.411",
+    "@hcengineering/ui": "workspace:^0.7.411",
+    "@hcengineering/view": "workspace:^0.7.411",
+    "@hcengineering/contact": "workspace:^0.7.411",
+    "@hcengineering/chunter": "workspace:^0.7.411",
+    "@hcengineering/attachment": "workspace:^0.7.411",
+    "@hcengineering/task": "workspace:^0.7.411",
+    "@hcengineering/time": "workspace:^0.7.411",
+    "@hcengineering/tags": "workspace:^0.7.411",
+    "@hcengineering/preference": "workspace:^0.7.411",
     "lexorank": "~1.0.4"
   },
-  "repository": "https://github.com/hcengineering/platform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/platform.git"
+  },
   "publishConfig": {
     "access": "public"
   }

@@ -1,11 +1,18 @@
 #!/usr/bin/env node
 
 /**
- * Safe publish script that skips packages that are already published
- * Usage: node safe-publish.js [--include <package-name>]
+ * Safe publish script that skips packages that are already published.
+ *
+ * Usage:
+ *   node safe-publish.js [--include <package-name>]
+ *
+ * Options:
+ *   --include <name>  Only consider packages whose name includes <name>
  */
 
 const { execSync, spawnSync } = require('child_process')
+const fs = require('fs')
+const path = require('path')
 const https = require('https')
 const http = require('http')
 
@@ -85,9 +92,50 @@ function getPublishablePackages(includePattern) {
 }
 
 /**
+ * Normalize workspace: dependency ranges in package.json to plain semver
+ * so that consumers without workspace support can install the package.
+ * Returns the original package.json string so it can be restored.
+ */
+function normalizeWorkspaceDeps(packagePath) {
+  const packageJsonPath = path.join(packagePath, 'package.json')
+  let original = null
+
+  try {
+    original = fs.readFileSync(packageJsonPath, 'utf8')
+    const pkg = JSON.parse(original)
+
+    const depFields = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']
+
+    let changed = false
+    for (const field of depFields) {
+      const deps = pkg[field]
+      if (!deps || typeof deps !== 'object') continue
+
+      for (const [name, range] of Object.entries(deps)) {
+        if (typeof range === 'string' && range.startsWith('workspace:')) {
+          const normalized = range.replace(/^workspace:/, '')
+          deps[name] = normalized
+          changed = true
+        }
+      }
+    }
+
+    if (changed) {
+      fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8')
+    }
+  } catch (err) {
+    console.warn(`Warning: could not normalize workspace dependencies for ${packagePath}: ${err.message}`)
+  }
+
+  return original
+}
+
+/**
  * Publish a single package
  */
 function publishPackage(packagePath, packageName) {
+  const originalPackageJson = normalizeWorkspaceDeps(packagePath)
+
   try {
     try {
       execSync('npm pkg fix', { cwd: packagePath, encoding: 'utf-8', stdio: 'pipe' })
@@ -105,6 +153,15 @@ function publishPackage(packagePath, packageName) {
   } catch (err) {
     console.error(`✗ Failed to publish ${packageName}:`, err.message)
     return false
+  } finally {
+    if (originalPackageJson != null) {
+      try {
+        const packageJsonPath = path.join(packagePath, 'package.json')
+        fs.writeFileSync(packageJsonPath, originalPackageJson, 'utf8')
+      } catch (err) {
+        console.warn(`Warning: could not restore original package.json for ${packagePath}: ${err.message}`)
+      }
+    }
   }
 }
 

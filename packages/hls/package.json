@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/hls",
-  "version": "0.7.382",
+  "version": "0.7.411",
   "main": "src/index.ts",
   "author": "Hardcore Engineering Inc.",
   "license": "EPL-2.0",
@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.382",
+    "@hcengineering/platform-rig": "workspace:^0.7.411",
     "@types/dompurify": "^3.0.5",
     "@types/jest": "^29.5.5",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -39,14 +39,17 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.382",
-    "@hcengineering/platform": "workspace:^0.7.382",
-    "@hcengineering/presentation": "workspace:^0.7.382",
+    "@hcengineering/core": "workspace:^0.7.411",
+    "@hcengineering/platform": "workspace:^0.7.411",
+    "@hcengineering/presentation": "workspace:^0.7.411",
     "hls.js": "^1.5.20",
     "plyr": "3.7.8",
     "svelte": "^4.2.20"
   },
-  "repository": "https://github.com/hcengineering/platform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/platform.git"
+  },
   "publishConfig": {
     "access": "public"
   }

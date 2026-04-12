@@ -720,12 +720,37 @@ export async function signUpJoin (
   }
 }
 
+export async function checkHasPassword (): Promise<boolean> {
+  try {
+    return await getAccountClient().checkHasPassword()
+  } catch (err: any) {
+    Analytics.handleError(err)
+    throw err
+  }
+}
+
 export async function changePassword (oldPassword: string, password: string): Promise<void> {
   try {
     await getAccountClient().changePassword(oldPassword, password)
   } catch (err: any) {
     if (err instanceof PlatformError) {
       await handleStatusError('Change password error', err.status)
+    } else {
+      Analytics.handleError(err)
+    }
+    throw err
+  }
+}
+
+export async function requestPasswordSetup (): Promise<void> {
+  try {
+    await getAccountClient().requestPasswordSetup()
+  } catch (err: any) {
+    if (err instanceof PlatformError) {
+      // SocialIdNotFound is an expected state (OIDC account with no email), not an error
+      if (err.status.code !== platform.status.SocialIdNotFound) {
+        await handleStatusError('Request password setup error', err.status)
+      }
     } else {
       Analytics.handleError(err)
     }
@@ -1000,12 +1025,56 @@ export async function doValidateOtp (
   }
 }
 
+export async function verify2fa (code: string, token: string | undefined): Promise<[Status, LoginInfo | null]> {
+  if (token === undefined) {
+    return [new Status(Severity.ERROR, platform.status.Unauthorized, {}), null]
+  }
+
+  try {
+    const loginInfo = await getAccountClient(token).verify2fa(code)
+
+    Analytics.handleEvent('verify2fa', { ok: true })
+
+    return [OK, loginInfo]
+  } catch (err: any) {
+    Analytics.handleEvent('verify2fa', { ok: false })
+    if (err instanceof PlatformError) {
+      await handleStatusError('Verify 2fa error', err.status)
+
+      return [err.status, null]
+    } else {
+      console.error('Verify 2fa error', err)
+      Analytics.handleError(err)
+
+      return [unknownError(err), null]
+    }
+  }
+}
+
 export async function doLoginNavigate (
   result: LoginInfo | null,
   updateStatus: (status: Status) => void,
   navigateUrl?: string
 ): Promise<void> {
   if (result != null) {
+    if (result.tfaRequired === true) {
+      const currentLoc = getCurrentLocation()
+      const loc = getCurrentLocation()
+      loc.path[1] = 'tfa'
+      loc.path.length = 2
+      if (navigateUrl !== undefined || result.token != null) {
+        loc.query = { ...loc.query, navigateUrl: navigateUrl ?? null, token: result.token ?? null }
+      }
+
+      if (loc.path.length === currentLoc.path.length && isSameSegments(currentLoc, loc, loc.path.length)) {
+        window.location.reload()
+        return
+      }
+
+      navigate(loc)
+      return
+    }
+
     if (result.token != null) {
       await logIn(result)
     }

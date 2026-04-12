@@ -17,6 +17,7 @@ import { getCurrentAccount } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import setting, { RoleCapability } from '@hcengineering/setting'
 import { hasRoleCapability } from './roleCapability'
+import { resolveInviteSettings } from './inviteSettingsUtils'
 
 /**
  * Returns whether the current account has the given role capability.
@@ -32,10 +33,8 @@ export async function hasRoleCapabilityAsync (capabilityId: RoleCapabilityId | s
   const firstInvite = inviteSettings[0] as InviteSettings | undefined
   const firstRoleCap = roleCapabilitySettings[0] as RoleCapabilitySettings | undefined
   const inviteLinkGeneratorRoles =
-    capabilityId === RoleCapability.GenerateInviteLink &&
-    firstInvite?.inviteLinkGeneratorRoles != null &&
-    firstInvite.inviteLinkGeneratorRoles.length > 0
-      ? firstInvite.inviteLinkGeneratorRoles
+    capabilityId === RoleCapability.GenerateInviteLink
+      ? resolveInviteSettings(firstInvite).inviteLinkGeneratorRoles
       : undefined
   const roleByCapability = firstRoleCap?.roleByCapability
   const account = getCurrentAccount()

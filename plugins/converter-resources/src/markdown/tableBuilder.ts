@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { Class, Client, Doc, Hierarchy, Ref, PersonId } from '@hcengineering/core'
+import core, { type Class, type Client, type Doc, type Hierarchy, type Ref, type PersonId } from '@hcengineering/core'
 import { getCurrentLanguage } from '@hcengineering/theme'
 import type {
   AttributeModel,
@@ -28,8 +28,102 @@ import type { CopyAsMarkdownTableProps, CopyRelationshipTableAsMarkdownProps } f
 import { formatValue } from '../formatter'
 import { generateHeaders, loadViewletConfig, buildTableModel } from '../model'
 import { rebuildRelationshipTableViewModel, isRelationshipTable } from '../data'
-import { escapeMarkdownLinkText } from './escape'
+import { escapeMarkdownTableCellContent } from './escape'
 import { createMarkdownLink } from './link'
+
+async function preloadRefLookups (
+  docs: Doc[],
+  model: AttributeModel[],
+  hierarchy: Hierarchy,
+  client: Client
+): Promise<void> {
+  const refAttrs = model.filter((attr) => {
+    const a = attr.attribute as any
+    if (a?.type === undefined || a.type === null) return false
+    const t = a.type
+    if (t._class === core.class.RefTo) return true
+    if (t._class === core.class.ArrOf && t.of?._class === core.class.RefTo) return true
+    return false
+  })
+
+  if (refAttrs.length === 0) return
+
+  for (const attr of refAttrs) {
+    const a = attr.attribute as any
+    const t = a.type
+    const isArray = t._class === core.class.ArrOf
+    const refType = isArray ? t.of : t
+    const targetClass = refType.to as Ref<Class<Doc>>
+
+    const idSet = new Set<string>()
+    for (const doc of docs) {
+      const raw = getAttributeValue(attr, doc, hierarchy)
+      if (raw === undefined || raw === null) continue
+      if (Array.isArray(raw)) {
+        for (const v of raw) {
+          if (typeof v === 'string' && v.trim() !== '') idSet.add(v)
+        }
+      } else if (typeof raw === 'string' && raw.trim() !== '') {
+        idSet.add(raw)
+      }
+    }
+
+    if (idSet.size === 0) continue
+
+    const ids = Array.from(idSet)
+    const refDocs = await client.findAll(targetClass, { _id: { $in: ids as any } })
+    const byId = new Map<string, Doc>()
+    for (const d of refDocs) {
+      byId.set(d._id as string, d)
+    }
+
+    for (const doc of docs) {
+      const raw = getAttributeValue(attr, doc, hierarchy)
+      if (raw === undefined || raw === null) continue
+      const cardWithLookup = doc as any
+      cardWithLookup.$lookup ??= {}
+      if (isArray && Array.isArray(raw)) {
+        const resolved = raw
+          .map((v: any) => (typeof v === 'string' ? byId.get(v) : undefined))
+          .filter((v): v is Doc => v !== undefined)
+        if (resolved.length > 0) {
+          cardWithLookup.$lookup[a.name] = resolved
+        }
+      } else if (!isArray && typeof raw === 'string') {
+        const resolved = byId.get(raw)
+        if (resolved !== undefined) {
+          cardWithLookup.$lookup[a.name] = resolved
+        }
+      }
+    }
+  }
+}
+
+function collectRelationshipDocsForRefPreload (
+  props: CopyRelationshipTableAsMarkdownProps,
+  hierarchy: Hierarchy
+): Doc[] {
+  const byId = new Map<string, Doc>()
+  const add = (d: Doc | undefined): void => {
+    if (d !== undefined) byId.set(d._id as string, d)
+  }
+
+  for (const o of props.objects) add(o)
+  for (const row of props.viewModel) {
+    for (const cell of row.cells) {
+      add(cell.object)
+      add(cell.parentObject)
+      const isAssociationKey = cell.attribute.key.startsWith('$associations')
+      if (isAssociationKey && cell.object !== undefined) {
+        const raw = getAttributeValue(cell.attribute, cell.object, hierarchy)
+        if (raw !== undefined && raw !== null && typeof raw === 'object' && '_class' in raw) {
+          add(raw as Doc)
+        }
+      }
+    }
+  }
+  return Array.from(byId.values())
+}
 
 async function buildRelationshipTablePropsFromMetadata (
   docs: Doc[],
@@ -71,7 +165,7 @@ async function buildRelationshipTableFromMetadata (
   const hierarchy = client.getHierarchy()
   const props = await buildRelationshipTablePropsFromMetadata(docs, metadata, client)
   const language = getCurrentLanguage()
-  return await buildRelationshipTableMarkdown(props, hierarchy, language)
+  return await buildRelationshipTableMarkdown(props, hierarchy, language, client)
 }
 
 /**
@@ -156,6 +250,9 @@ export async function buildMarkdownTableFromDocs (
     return ''
   }
 
+  // Preload referenced documents for RefTo / ArrOf<RefTo> attributes into $lookup
+  await preloadRefLookups(docs, displayableModel, hierarchy, client)
+
   const language = getCurrentLanguage()
   const userCache = new Map<PersonId, string>()
   const firstDocClass = docs.length > 0 ? docs[0]._class : props.cardClass
@@ -182,7 +279,7 @@ export async function buildMarkdownTableFromDocs (
         const linkValue = await createMarkdownLink(hierarchy, card, value)
         row.push(linkValue)
       } else {
-        row.push(escapeMarkdownLinkText(value))
+        row.push(escapeMarkdownTableCellContent(value == null ? '' : String(value)))
       }
     }
     rows.push(row)
@@ -203,11 +300,15 @@ export async function buildMarkdownTableFromDocs (
 export async function buildRelationshipTableMarkdown (
   props: CopyRelationshipTableAsMarkdownProps,
   hierarchy: Hierarchy,
-  language: string | undefined
+  language: string | undefined,
+  client: Client
 ): Promise<string> {
   if (props.viewModel.length === 0 || props.model.length === 0) {
     return ''
   }
+
+  const docsForPreload = collectRelationshipDocsForRefPreload(props, hierarchy)
+  await preloadRefLookups(docsForPreload, props.model, hierarchy, client)
 
   const userCache = new Map<PersonId, string>()
   const firstDocClass = props.objects.length > 0 ? props.objects[0]._class : props.cardClass
@@ -304,7 +405,7 @@ export async function buildRelationshipTableMarkdown (
       if (isDocumentTitle) {
         value = await createMarkdownLink(hierarchy, docToUse, value)
       } else {
-        value = escapeMarkdownLinkText(value)
+        value = escapeMarkdownTableCellContent(value == null ? '' : String(value))
       }
 
       row[attrIndex] = value

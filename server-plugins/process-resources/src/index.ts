@@ -21,6 +21,7 @@ import core, {
   generateId,
   Ref,
   RefTo,
+  Space,
   Tx,
   TxCreateDoc,
   TxCUD,
@@ -30,25 +31,54 @@ import core, {
   TxUpdateDoc
 } from '@hcengineering/core'
 import process, {
+  ApproveRequest,
   ContextId,
   Execution,
+  ExecutionContext,
+  ExecutionStatus,
+  isUpdateTx,
   Method,
   parseContext,
   Process,
   ProcessContext,
+  ProcessCustomEvent,
   ProcessToDo,
   SelectedExecutionContext,
   State,
   Step,
   Transition,
-  isUpdateTx,
-  ProcessCustomEvent,
-  ApproveRequest,
-  ExecutionStatus,
   Trigger
 } from '@hcengineering/process'
 import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
 import { ProcessMessage } from '@hcengineering/server-process'
+import {
+  AddRelation,
+  AddTag,
+  ApproveRequestApproved,
+  ApproveRequestRejected,
+  CancelSubProcess,
+  CancelToDo,
+  CheckSubProcessesDone,
+  CheckSubProcessMatch,
+  CheckTime,
+  CheckToDoCancelled,
+  CheckToDoDone,
+  CreateCard,
+  CreateToDo,
+  EventCheck,
+  FieldChangedCheck,
+  LockCard,
+  LockField,
+  LockSection,
+  MatchCardCheck,
+  RequestApproval,
+  RunSubProcess,
+  UnlockCard,
+  UnlockField,
+  UnlockSection,
+  UpdateCard
+} from './functions'
+import { FieldChangedRollback, ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 import {
   Absolute,
   Add,
@@ -58,7 +88,16 @@ import {
   CurrentDate,
   CurrentUser,
   Cut,
+  DateDifference,
+  DateFromNumber,
+  DateFromString,
+  DayFromDate,
   Divide,
+  EmptyArray,
+  ExecutionInitiator,
+  ExecutionStarted,
+  Filter,
+  FirstMatchValue,
   FirstValue,
   FirstWorkingDayAfter,
   Floor,
@@ -66,10 +105,12 @@ import {
   LastValue,
   LowerCase,
   Modulo,
+  MonthFromDate,
   Multiply,
+  NumberFromDate,
+  NumberFromString,
   Offset,
   Power,
-  Sqrt,
   Prepend,
   Random,
   Remove,
@@ -80,43 +121,15 @@ import {
   RoleContext,
   Round,
   Split,
+  Sqrt,
+  StringFromBoolean,
+  StringFromDate,
+  StringFromNumber,
   Subtract,
   Trim,
   UpperCase,
-  EmptyArray,
-  ExecutionInitiator,
-  ExecutionStarted,
-  FirstMatchValue,
-  Filter
+  YearFromDate
 } from './transform'
-import {
-  RunSubProcess,
-  CancelSubProcess,
-  CreateToDo,
-  UpdateCard,
-  CreateCard,
-  AddRelation,
-  AddTag,
-  CheckToDoDone,
-  CheckToDoCancelled,
-  MatchCardCheck,
-  CheckSubProcessesDone,
-  CheckSubProcessMatch,
-  CheckTime,
-  FieldChangedCheck,
-  EventCheck,
-  RequestApproval,
-  ApproveRequestApproved,
-  ApproveRequestRejected,
-  CancelToDo,
-  LockCard,
-  LockSection,
-  UnlockCard,
-  UnlockSection,
-  LockField,
-  UnlockField
-} from './functions'
-import { FieldChangedRollback, ToDoCancellRollback, ToDoCloseRollback } from './rollback'
 
 async function putEventToQueue (value: Omit<ProcessMessage, 'account'>, control: TriggerControl): Promise<void> {
   if (control.queue === undefined) return
@@ -338,7 +351,7 @@ export async function OnExecutionRemove (txes: Tx[], control: TriggerControl): P
   return res
 }
 
-async function getExecutionReassignTxes (card: Card, control: TriggerControl): Promise<Tx[]> {
+async function getVersionExecutionTxes (card: Card, control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   const cards = await control.findAll(control.ctx, cardPlugin.class.Card, { baseId: card.baseId })
   const ids = cards.map((p) => p._id).filter((p) => p !== card._id)
@@ -346,12 +359,27 @@ async function getExecutionReassignTxes (card: Card, control: TriggerControl): P
     card: { $in: ids },
     status: ExecutionStatus.Active
   })
+  const alreadyStarted = new Set<Ref<Process>>()
   for (const execution of executions) {
     res.push(
       control.txFactory.createTxUpdateDoc(execution._class, execution.space, execution._id, {
         card: card._id
       })
     )
+    alreadyStarted.add(execution.process)
+  }
+  const ancestors = control.hierarchy
+    .getAncestors(card._class)
+    .filter((p) => control.hierarchy.isDerived(p, cardPlugin.class.Card))
+
+  const processes = control.modelDb.findAllSync(process.class.Process, {
+    masterTag: { $in: ancestors },
+    autoStart: true
+  })
+  for (const proc of processes) {
+    if (alreadyStarted.has(proc._id)) continue
+    const tx = createExecution(control, proc._id, card._id, card.space)
+    if (tx !== undefined) res.push(tx)
   }
   return res
 }
@@ -363,6 +391,7 @@ async function reassignToDos (card: Card, ops: DocumentUpdate<Card>, control: Tr
     doneOn: null,
     field: { $ne: null }
   } as any)
+  const cache = new Map<Ref<Execution>, Execution>()
   const handledGroups = new Set<string>()
   for (const todo of todos as any[]) {
     if (todo.field === undefined || !TxProcessor.hasUpdate(ops, todo.field)) continue
@@ -372,7 +401,18 @@ async function reassignToDos (card: Card, ops: DocumentUpdate<Card>, control: Tr
       if (handledGroups.has(request.group)) continue
       handledGroups.add(request.group)
 
-      const newUsers = (card[todo.field as keyof Card] as any[]) ?? []
+      const execution =
+        cache.get(todo.execution) ??
+        (await control.findAll(control.ctx, process.class.Execution, { _id: todo.execution }, { limit: 1 }))[0]
+      if (execution === undefined) continue
+      cache.set(todo.execution, execution)
+      const _process = control.modelDb.findObject(execution.process)
+      if (_process === undefined) continue
+      const h = control.hierarchy
+
+      const target = h.isMixin(_process.masterTag) ? h.asIf(card, _process.masterTag) : card
+      if (target === undefined) continue
+      const newUsers = (target[todo.field as keyof Card] as any[]) ?? []
       if (newUsers.length === 0) {
         continue
       }
@@ -442,7 +482,7 @@ export async function OnCardCreate (txes: Tx[], control: TriggerControl): Promis
     const obj = TxProcessor.createDoc2Doc(createTx)
 
     if (obj.baseId !== obj._id) {
-      const reassignTxes = await getExecutionReassignTxes(obj, control)
+      const reassignTxes = await getVersionExecutionTxes(obj, control)
       res.push(...reassignTxes)
     }
   }
@@ -643,7 +683,18 @@ export default async () => ({
     ExecutionInitiator,
     ExecutionStarted,
     FirstMatchValue,
-    Filter
+    Filter,
+    StringFromNumber,
+    StringFromDate,
+    StringFromBoolean,
+    NumberFromDate,
+    DateFromNumber,
+    NumberFromString,
+    DateFromString,
+    YearFromDate,
+    MonthFromDate,
+    DayFromDate,
+    DateDifference
   },
   rollbacks: {
     ToDoCloseRollback,
@@ -664,3 +715,34 @@ export default async () => ({
     OnCardCreate
   }
 })
+
+function createExecution (
+  control: TriggerControl,
+  proc: Ref<Process>,
+  card: Ref<Card>,
+  space: Ref<Space>
+): TxCreateDoc<Execution> | undefined {
+  const initTransition = control.modelDb.findAllSync(process.class.Transition, {
+    process: proc,
+    from: null
+  })[0]
+  if (initTransition === undefined) return
+  const execId = generateId<Execution>()
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const context = {} as ExecutionContext
+  const tx = control.txFactory.createTxCreateDoc<Execution>(
+    process.class.Execution,
+    space,
+    {
+      process: proc,
+      currentState: null as any,
+      card,
+      rollback: [],
+      context,
+      status: ExecutionStatus.Active
+    },
+    execId
+  )
+
+  return tx
+}

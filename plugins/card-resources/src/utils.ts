@@ -13,8 +13,10 @@
 
 import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
-import communication from '@hcengineering/communication'
 import { type Card, CardEvents, cardId, type CardSpace, type MasterTag, type Tag } from '@hcengineering/card'
+import { chatId } from '@hcengineering/chat'
+import communication from '@hcengineering/communication'
+import { type PermissionsStore } from '@hcengineering/contact'
 import core, {
   AccountRole,
   type Class,
@@ -34,7 +36,6 @@ import core, {
   type MarkupBlobRef,
   type Ref,
   type RelatedDocument,
-  SortingOrder,
   type Space,
   toRank,
   type TxOperations,
@@ -50,7 +51,6 @@ import presentation, {
   MessageBox,
   type ObjectSearchResult
 } from '@hcengineering/presentation'
-import { makeRank } from '@hcengineering/rank'
 import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
 import {
   getCurrentLocation,
@@ -73,6 +73,7 @@ import CardSearchItem from './components/CardSearchItem.svelte'
 import CreateSpace from './components/navigator/CreateSpace.svelte'
 import card from './plugin'
 import { type NavigatorConfig } from './types'
+import { writable } from 'svelte/store'
 
 export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: () => void): Promise<void> {
   if (tag !== undefined) {
@@ -537,7 +538,6 @@ export async function createCard (
 ): Promise<Ref<Card>> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const lastOne = await client.findOne(card.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
   const title = data.title ?? (await translate(card.string.Card, {}))
 
   const _id = id ?? generateId()
@@ -550,7 +550,7 @@ export async function createCard (
     blobs: {},
     ...data,
     title,
-    rank: makeRank(lastOne?.rank, undefined),
+    rank: '',
     content
   }
 
@@ -560,6 +560,50 @@ export async function createCard (
 
   Analytics.handleEvent(CardEvents.CardCreated)
   return _id
+}
+
+export async function createChildCard (object: Card): Promise<void> {
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+  const title = await translate(card.string.Card, {})
+
+  const data: Data<Card> = {
+    parent: object._id,
+    title,
+    rank: '',
+    content: '' as MarkupBlobRef,
+    blobs: {},
+    parentInfo: [
+      ...(object.parentInfo ?? []),
+      {
+        _id: object._id,
+        _class: object._class,
+        title: object.title
+      }
+    ]
+  }
+
+  const filledData = fillDefaults(hierarchy, data, object._class)
+
+  const _id = await client.createDoc(object._class, object.space, filledData)
+
+  Analytics.handleEvent(CardEvents.CardCreated)
+
+  const loc = getCurrentLocation()
+  if (loc.path[2] === chatId) {
+    loc.path[3] = encodeObjectURI(_id, card.class.Card)
+  } else {
+    loc.path[2] = cardId
+    loc.path[3] = _id
+  }
+  loc.path.length = 4
+  navigate(loc)
+}
+
+export async function createChildAction (doc: Card | Card[]): Promise<void> {
+  if (doc !== undefined && !Array.isArray(doc)) {
+    await createChildCard(doc)
+  }
 }
 
 export function getRootType (hierarchy: Hierarchy, type: Ref<MasterTag>): Ref<MasterTag> {
@@ -617,11 +661,23 @@ export function cardCustomLinkEncode (doc: Card): Location {
 }
 
 export async function checkOldMessagesSectionVisibility (doc: Card): Promise<boolean> {
+  if (!hasAccountRole(getCurrentAccount(), AccountRole.User)) {
+    return false
+  }
+
   return getMetadata(communication.metadata.Enabled) !== true
 }
 
 export async function checkCommunicationMessagesSectionVisibility (doc: Card): Promise<boolean> {
+  if (!hasAccountRole(getCurrentAccount(), AccountRole.User)) {
+    return false
+  }
+
   return getMetadata(communication.metadata.Enabled) === true
+}
+
+export async function checkChildrenSectionVisibility (doc: Card): Promise<boolean> {
+  return (doc.children ?? 0) > 0
 }
 
 export async function checkRelationsSectionVisibility (doc: Card): Promise<boolean> {
@@ -708,4 +764,32 @@ export async function canGetSpaceAccessPublicLink (doc?: Doc | Doc[]): Promise<b
   }
 
   return await canCopyLink(doc)
+}
+
+export function canLockSection (space: Ref<Space>, store: PermissionsStore): boolean {
+  if (getMetadata(core.metadata.DisablePermissions) === true) return true
+  if (store.whitelist.has(space)) return true
+  const allowed = store.ps[space]?.has(card.permission.LockSection)
+  if (allowed) return true
+  return !store.restrictedSpaces.has(space)
+}
+
+export function canUnlockSection (space: Ref<Space>, store: PermissionsStore): boolean {
+  if (getMetadata(core.metadata.DisablePermissions) === true) return true
+  if (store.whitelist.has(space)) return true
+  const allowed = store.ps[space]?.has(card.permission.UnlockSection)
+  if (allowed) return true
+  return !store.restrictedSpaces.has(space)
+}
+
+export const viewStore = writable<Record<Ref<MasterTag>, string>>(
+  JSON.parse(localStorage.getItem('card.layout') ?? '{}')
+)
+
+export function setViewMode (type: Ref<MasterTag>, mode: string): void {
+  viewStore.update((views) => {
+    views[type] = mode
+    localStorage.setItem('card.layout', JSON.stringify(views))
+    return views
+  })
 }

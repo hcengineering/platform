@@ -278,4 +278,22 @@ export function createActions (builder: Builder): void {
     },
     card.action.Duplicate
   )
+
+  createAction(
+    builder,
+    {
+      action: card.actionImpl.CreateChild,
+      label: card.string.CreateChild,
+      icon: view.icon.Add,
+      input: 'focus',
+      category: card.category.Card,
+      target: card.class.Card,
+      context: {
+        mode: ['context', 'browser'],
+        application: card.app.Card,
+        group: 'edit'
+      }
+    },
+    card.action.CreateChild
+  )
 }

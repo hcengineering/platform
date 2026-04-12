@@ -199,6 +199,13 @@
         on:change={enableVersioning}
       />
     </div>
+    <div class="mx-2">
+      <ToggleWithLabel
+        label={card.string.SingleColumn}
+        on={masterTag.singleColumn}
+        on:change={(e) => attributeUpdated('singleColumn', e.detail)}
+      />
+    </div>
   {/if}
 </div>
 

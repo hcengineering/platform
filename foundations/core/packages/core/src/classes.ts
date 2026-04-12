@@ -139,6 +139,7 @@ export interface Association extends Doc {
   nameA: string
   nameB: string
   type: '1:1' | '1:N' | 'N:N'
+  automationOnly?: boolean
 }
 
 /**
@@ -148,6 +149,21 @@ export interface Relation extends Doc {
   docA: Ref<Doc>
   docB: Ref<Doc>
   association: Ref<Association>
+}
+
+/**
+ * Describes an existing class field with reference to other document: which relations to follow when building documents graph.
+ * @public
+ */
+export interface RelationMetadata extends Doc {
+  /** Class (source) */
+  sourceClass: Ref<Class<Doc>>
+  /** Class referenced by the field (target) */
+  targetClass: Ref<Class<Doc>>
+  /** Field on the source class */
+  field: string
+  /** Whether this is a forward (source→target) or inverse (target→source) relation */
+  direction?: 'forward' | 'inverse'
 }
 
 /**
@@ -396,6 +412,13 @@ export interface TypeHyperlink extends Type<Hyperlink> {}
 
 /**
  * @public
+ */
+export interface TypeRank extends Type<Rank> {
+  pos?: 'start' | 'end'
+}
+
+/**
+ * @public
  *
  * A type for some custom serialized field with a set of editors
  */
@@ -476,6 +499,8 @@ export interface Space extends Doc {
   archived: boolean
   owners?: AccountUuid[]
   autoJoin?: boolean
+  /** If it includes {@link AccountRole.Guest}, that guest is auto-added to members on activation (see OnEmployeeCreate). */
+  autoJoinForRoles?: AccountRole[]
 }
 
 /**
@@ -558,6 +583,19 @@ export interface AttributePermission extends Permission {
 
 export interface ClassPermission extends Permission {
   targetClass: Ref<Class<Doc>>
+}
+
+/**
+ * @public
+ */
+export interface ModulePermissionGroup extends Doc {
+  application: Ref<Doc>
+  role: AccountRole
+  permissions: Ref<Permission>[]
+  disabledPermissions?: Ref<Permission>[]
+  spaceClass: Ref<Class<Space>>
+  enabled: boolean
+  order?: number
 }
 
 /**
@@ -938,6 +976,7 @@ export interface SocialId {
 export interface AccountInfo {
   timezone?: string
   locale?: string
+  tfaEnabled?: boolean
 }
 
 export type SocialKey = Pick<SocialId, 'type' | 'value'>

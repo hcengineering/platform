@@ -22,8 +22,18 @@ import { type Attachment } from '@hcengineering/attachment'
 import contact from '@hcengineering/contact'
 import chunter from '@hcengineering/chunter'
 import { getRoleAttributeProps } from '@hcengineering/setting'
-import type { Type, Ref, CollectionSize, Markup, RolesAssignment, Permission, Role } from '@hcengineering/core'
-import { IndexKind, AccountUuid } from '@hcengineering/core'
+import type {
+  Type,
+  Ref,
+  CollectionSize,
+  Markup,
+  RolesAssignment,
+  Permission,
+  Role,
+  Class,
+  Doc
+} from '@hcengineering/core'
+import { AccountRole, IndexKind, AccountUuid } from '@hcengineering/core'
 import {
   type Builder,
   Model,
@@ -418,6 +428,25 @@ function defineProductVersionState (builder: Builder): void {
   })
 }
 
+function defineRelationMetadata (builder: Builder): void {
+  const rel = (
+    sourceClass: Ref<Class<Doc>>,
+    field: string,
+    targetClass: Ref<Class<Doc>>,
+    direction: 'forward' | 'inverse' = 'forward'
+  ): void => {
+    builder.createDoc(core.class.RelationMetadata, core.space.Model, {
+      sourceClass,
+      field,
+      targetClass,
+      direction
+    })
+  }
+
+  // Product → ProductVersion via `space` (inverse: versions that belong to this product)
+  rel(products.class.Product, 'space', products.class.ProductVersion, 'inverse')
+}
+
 function defineApplication (builder: Builder): void {
   builder.createDoc(
     workbench.class.Application,
@@ -467,7 +496,38 @@ export function createModel (builder: Builder): void {
   defineProduct(builder)
   defineProductVersion(builder)
   defineProductVersionState(builder)
+  defineRelationMetadata(builder)
   defineApplication(builder)
+
+  // Module permissions for guests/anonymous guests.
+  // Product should appear after Controlled Docs in the guest modules list and be disabled by default.
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: products.app.Products,
+      role: AccountRole.Guest,
+      permissions: [],
+      spaceClass: products.class.Product,
+      enabled: false,
+      order: 45
+    },
+    products.ids.ModulePermissionGroup
+  )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: products.app.Products,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: products.class.Product,
+      enabled: false,
+      order: 45
+    },
+    products.ids.ModulePermissionGroupReadOnlyGuest
+  )
 }
 
 export { productsOperation } from './migration'

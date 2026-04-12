@@ -264,6 +264,7 @@
     "SevenHoursLength": "Семь Часов",
     "EightHoursLength": "Восемь Часов",
     "HourLabel": "ч",
+    "MinuteLabel": "м",
     "Saved": "Сохранено...",
     "CreatedIssue": "Создал(а) задачу",
     "CreatedSubIssue": "Создал(а) подзадачу",
@@ -288,7 +289,8 @@
     "Extensions": "Дополнительно",
     "UnsetParentIssue": "Снять родительскую задачу",
     "ForbidCreateProjectPermission": "Запретить создание проекта",
-    "ForbidCreateProjectPermissionDescription": "Запрещает пользователям создавать новые проекты"
+    "ForbidCreateProjectPermissionDescription": "Запрещает пользователям создавать новые проекты",
+    "AllowCreatingIssues": "Разрешить создание задач"
   },
   "status": {}
 }

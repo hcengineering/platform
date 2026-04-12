@@ -38,6 +38,7 @@
     imageSizeToRatio,
     KeyedAttribute
   } from '@hcengineering/presentation'
+  import { isDocCreatedByAccount } from '@hcengineering/contact'
   import { markupToJSON } from '@hcengineering/text'
   import {
     AnySvelteComponent,
@@ -95,6 +96,7 @@
   export let refActions: RefAction[] = []
 
   export let editorAttributes: Record<string, string> = {}
+  export let spellcheck: boolean = true
   export let overflow: 'auto' | 'none' = 'none'
   export let boundary: HTMLElement | undefined = undefined
 
@@ -131,7 +133,13 @@
   let editorReady = false
 
   $: loading = !synced
-  $: editable = !readonly && !contentError && synced && editorReady && hasAccountRole(account, AccountRole.User)
+  $: canEditAsGuestCreator = account.role === AccountRole.Guest && isDocCreatedByAccount(object, account)
+  $: editable =
+    !readonly &&
+    !contentError &&
+    synced &&
+    editorReady &&
+    (hasAccountRole(account, AccountRole.User) || canEditAsGuestCreator)
 
   void provider.loaded.then(() => (synced = true))
   void provider.loaded.then(() => dispatch('loaded'))
@@ -427,7 +435,8 @@
       editorProps: {
         attributes: mergeAttributes(defaultEditorAttributes, editorAttributes, {
           class: 'flex-grow',
-          translate: readonly ? 'yes' : 'no'
+          translate: readonly ? 'yes' : 'no',
+          spellcheck: spellcheck ? 'true' : 'false'
         })
       },
       enableContentCheck: true,

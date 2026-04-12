@@ -39,6 +39,7 @@ export interface MasterTag extends Class<Card> {
   background?: number
   removed?: boolean
   roles?: CollectionSize<Role>
+  singleColumn?: boolean
 }
 
 export interface Tag extends MasterTag, Mixin<Card> {}
@@ -205,8 +206,13 @@ const cardPlugin = plugin(cardId, {
     AllCards: '' as IntlString,
     Favorites: '' as IntlString,
     CreateCard: '' as IntlString,
+    AllowCreatingCards: '' as IntlString,
     Version: '' as IntlString,
-    Versions: '' as IntlString
+    Versions: '' as IntlString,
+    LockSection: '' as IntlString,
+    UnLockSection: '' as IntlString,
+    SectionLocked: '' as IntlString,
+    SectionUnlocked: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,
@@ -218,7 +224,10 @@ const cardPlugin = plugin(cardId, {
     CommunicationMessages: '' as Ref<CardSection>
   },
   ids: {
-    CardWidget: '' as Ref<Doc>
+    CardWidget: '' as Ref<Doc>,
+    GuestCardClassPermission: '' as Ref<Doc>,
+    ModulePermissionGroup: '' as Ref<Doc>,
+    ModulePermissionGroupReadOnlyGuest: '' as Ref<Doc>
   },
   component: {
     LabelsPresenter: '' as AnyComponent,

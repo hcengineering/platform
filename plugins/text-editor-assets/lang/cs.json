@@ -81,6 +81,11 @@
     "UnableToLoadEmbeddedContent": "Náhled odkazu nelze načíst kvůli nastavení oprávnění nebo nepodporovanému obsahu",
     "CannotConnectToCollaborationService": "Nelze se připojit k službě spolupráce",
     "SourceURL": "Zdrojová URL",
-    "SelectedDocuments": "Vybrané dokumenty ({count, plural, =1 {1 položka} other {# položek}})"
+    "SelectedDocuments": "Vybrané dokumenty ({count, plural, =1 {1 položka} other {# položek}})",
+    "Highlight": "Highlight",
+    "Subscript": "Subscript",
+    "Superscript": "Superscript",
+    "Mathematics": "Mathematics",
+    "MathematicsBlock": "Mathematics block"
   }
 }

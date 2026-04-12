@@ -18,7 +18,8 @@
     ActivityMessagePresenter,
     canGroupMessages,
     messageInFocus,
-    editingMessageStore
+    editingMessageStore,
+    clearMessageInLocation
   } from '@hcengineering/activity-resources'
   import core, { Doc, generateId, getCurrentAccount, Ref, Space, Timestamp, Tx, TxCUD } from '@hcengineering/core'
   import { DocNotifyContext } from '@hcengineering/notification'
@@ -131,8 +132,8 @@
     }
   })
 
-  $: void initializeScroll($isLoadingStore, separatorDiv, separatorIndex)
   $: adjustScrollPosition(selectedMessageId)
+  $: void initializeScroll($isLoadingStore, separatorDiv, separatorIndex)
   $: void handleMessagesUpdated(messages.length)
 
   function adjustScrollPosition (selectedMessageId?: Ref<ActivityMessage>): void {
@@ -147,9 +148,6 @@
       } else {
         scrollToMessage()
       }
-    } else if (selectedMessageId === undefined) {
-      provider.jumpToEnd()
-      reinitializeScroll()
     }
   }
 
@@ -392,6 +390,7 @@
   async function handleScrollToLatestMessage (): Promise<void> {
     selectedMessageId = undefined
     messageInFocus.set(undefined)
+    clearMessageInLocation()
 
     const metadata = $metadataStore
     const lastMetadata = metadata[metadata.length - 1]
@@ -579,7 +578,9 @@
   $: showBlankView = !$isLoadingStore && messages.length === 0 && !isThread
 
   export function editLastMessage (): void {
-    if ($isLoadingStore || !isScrollInitialized || !$isTailLoadedStore || scrollDiv == null) return
+    if ($isLoadingStore || !isScrollInitialized || !$isTailLoadedStore || scrollDiv == null) {
+      return
+    }
     if (!isScrollAtBottom) return
     const me = getCurrentAccount()
     let lastMessage: ChatMessage | undefined = undefined

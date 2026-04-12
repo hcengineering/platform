@@ -38,7 +38,7 @@ import core, {
   type Obj,
   type PersonId,
   type PropertyType,
-  type Rank,
+  type TypeRank as TypeRankType,
   type Ref,
   type RefTo,
   type Space,
@@ -531,8 +531,8 @@ export function TypeCollaborativeDoc (): Type<MarkupBlobRef> {
 /**
  * @public
  */
-export function TypeRank (): Type<Rank> {
-  return { _class: core.class.TypeRank, label: core.string.Rank, icon: core.icon.TypeRank }
+export function TypeRank (pos: 'start' | 'end' = 'end'): TypeRankType {
+  return { _class: core.class.TypeRank, label: core.string.Rank, icon: core.icon.TypeRank, pos }
 }
 
 export function TypePersonId (): Type<PersonId> {

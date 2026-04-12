@@ -1,28 +1,27 @@
 import { type Data } from '@hcengineering/core'
 import { type Viewlet } from '@hcengineering/view'
+import { type AttributeConfig, type Config, isAttribute } from '@hcengineering/view-resources'
 
-export function updateViewletConfig (viewlet: Data<Viewlet> | Viewlet, items: any[]): void {
-  const enabledAttibutes = items.filter((it) => it.type === 'attribute' && it.enabled).map((it) => it.value)
-  viewlet.config = viewlet.config.filter((configItem) => {
-    if (configItem === undefined) return false
-    if (typeof configItem === 'string') {
-      return enabledAttibutes.includes(configItem)
-    } else if (configItem !== undefined && typeof configItem === 'object') {
-      return enabledAttibutes.includes(configItem.key)
-    }
-    return false
-  })
+export function updateViewletConfig (viewlet: Data<Viewlet> | Viewlet, items: Array<Config | AttributeConfig>): void {
+  const getKey = (item: any): string | undefined => {
+    return typeof item === 'string' ? item : item?.key
+  }
 
-  const newAttributes = enabledAttibutes.filter((attr) => {
-    if (
-      viewlet.config.some((configItem) => {
-        return typeof configItem === 'string' ? configItem === attr : configItem.key === attr
-      })
-    ) {
-      return false
+  const isMatch = (a: any, b: any): boolean => {
+    const keyA = getKey(a)
+    const keyB = getKey(b)
+    if (keyA !== keyB) return false
+    if (keyA === '' || keyA === undefined) {
+      return a === b
     }
     return true
-  })
+  }
 
-  viewlet.config = viewlet.config.concat(newAttributes)
+  viewlet.config = items
+    .filter((it) => (isAttribute(it) && it.enabled) || it.type === 'divider')
+    .map((it) => {
+      const existing = viewlet.config.find((configItem) => isMatch(configItem, it.value))
+      return existing ?? it.value
+    })
+    .filter((it) => it !== undefined)
 }

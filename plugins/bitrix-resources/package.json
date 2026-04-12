@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/bitrix-resources",
-  "version": "0.7.382",
+  "version": "0.7.411",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -14,7 +14,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.382",
+    "@hcengineering/platform-rig": "workspace:^0.7.411",
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",
@@ -37,31 +37,34 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.382",
+    "@hcengineering/platform": "workspace:^0.7.411",
     "svelte": "^4.2.20",
-    "@hcengineering/bitrix": "workspace:^0.7.382",
-    "@hcengineering/ui": "workspace:^0.7.382",
-    "@hcengineering/presentation": "workspace:^0.7.382",
-    "@hcengineering/contact": "workspace:^0.7.382",
-    "@hcengineering/lead": "workspace:^0.7.382",
-    "@hcengineering/login": "workspace:^0.7.382",
-    "@hcengineering/setting": "workspace:^0.7.382",
-    "@hcengineering/core": "workspace:^0.7.382",
-    "@hcengineering/attachment": "workspace:^0.7.382",
-    "@hcengineering/attachment-resources": "workspace:^0.7.382",
-    "@hcengineering/view": "workspace:^0.7.382",
-    "@hcengineering/view-resources": "workspace:^0.7.382",
-    "@hcengineering/setting-resources": "workspace:^0.7.382",
-    "@hcengineering/chunter": "workspace:^0.7.382",
+    "@hcengineering/bitrix": "workspace:^0.7.411",
+    "@hcengineering/ui": "workspace:^0.7.411",
+    "@hcengineering/presentation": "workspace:^0.7.411",
+    "@hcengineering/contact": "workspace:^0.7.411",
+    "@hcengineering/lead": "workspace:^0.7.411",
+    "@hcengineering/login": "workspace:^0.7.411",
+    "@hcengineering/setting": "workspace:^0.7.411",
+    "@hcengineering/core": "workspace:^0.7.411",
+    "@hcengineering/attachment": "workspace:^0.7.411",
+    "@hcengineering/attachment-resources": "workspace:^0.7.411",
+    "@hcengineering/view": "workspace:^0.7.411",
+    "@hcengineering/view-resources": "workspace:^0.7.411",
+    "@hcengineering/setting-resources": "workspace:^0.7.411",
+    "@hcengineering/chunter": "workspace:^0.7.411",
     "p-queue": "~7.3.0",
     "qs": "~6.11.0",
-    "@hcengineering/tags": "workspace:^0.7.382",
-    "@hcengineering/tags-resources": "workspace:^0.7.382",
+    "@hcengineering/tags": "workspace:^0.7.411",
+    "@hcengineering/tags-resources": "workspace:^0.7.411",
     "fast-equals": "^5.2.2",
-    "@hcengineering/recruit": "workspace:^0.7.382",
-    "@hcengineering/task": "workspace:^0.7.382"
+    "@hcengineering/recruit": "workspace:^0.7.411",
+    "@hcengineering/task": "workspace:^0.7.411"
   },
-  "repository": "https://github.com/hcengineering/platform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hcengineering/platform.git"
+  },
   "publishConfig": {
     "access": "public"
   }

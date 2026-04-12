@@ -898,6 +898,45 @@ function defineSettings (builder: Builder): void {
     },
     training.setting.Trainings
   )
+
+  builder.createDoc(
+    core.class.ClassPermission,
+    core.space.Model,
+    {
+      label: training.string.AllowToTakeTraining,
+      scope: 'space',
+      targetClass: training.class.TrainingAttempt
+    },
+    training.ids.GuestTrainingAttemptClassPermission
+  )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: training.app.Training,
+      role: AccountRole.Guest,
+      permissions: [training.ids.GuestTrainingAttemptClassPermission],
+      spaceClass: core.class.TypedSpace,
+      enabled: true,
+      order: 25
+    },
+    training.ids.ModulePermissionGroup
+  )
+
+  builder.createDoc(
+    core.class.ModulePermissionGroup,
+    core.space.Model,
+    {
+      application: training.app.Training,
+      role: AccountRole.ReadOnlyGuest,
+      permissions: [],
+      spaceClass: core.class.TypedSpace,
+      enabled: false,
+      order: 25
+    },
+    training.ids.ModulePermissionGroupReadOnlyGuest
+  )
 }
 
 const columns = {

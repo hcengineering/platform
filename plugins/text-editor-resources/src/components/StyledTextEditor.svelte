@@ -37,6 +37,7 @@
   export let autofocus = false
   export let full = false
   export let editorAttributes: Record<string, string> = {}
+  export let spellcheck: boolean = true
   export let extraActions: RefAction[] = []
   export let boundary: HTMLElement | undefined = undefined
   export let kitOptions: Partial<EditorKitOptions> = {}
@@ -168,6 +169,7 @@
             editorAttributes={mergedEditorAttributes}
             bind:content
             {placeholder}
+            {spellcheck}
             bind:this={editor}
             on:value
             on:content={(ev) => {

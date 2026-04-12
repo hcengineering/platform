@@ -18,7 +18,7 @@
   import core, { AttachedData, Ref, SortingOrder, Space, generateId } from '@hcengineering/core'
   import { OK, Status } from '@hcengineering/platform'
   import { Card, SpaceSelector, createQuery, getClient } from '@hcengineering/presentation'
-  import task, { TaskType, makeRank } from '@hcengineering/task'
+  import { TaskType } from '@hcengineering/task'
   import { EditBox, Grid, Status as StatusControl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import board from '../plugin'
@@ -62,7 +62,6 @@
       throw new Error('sequence object not found')
     }
 
-    const lastOne = await client.findOne(board.class.Card, {}, { sort: { rank: SortingOrder.Descending } })
     const incResult = await client.update(sequence, { $inc: { sequence: 1 } }, true)
 
     const number = (incResult as any).object.sequence
@@ -73,7 +72,7 @@
       title,
       kind,
       identifier: `CARD-${number}`,
-      rank: makeRank(lastOne?.rank, undefined),
+      rank: '',
       assignee: null,
       description: '',
       members: [],

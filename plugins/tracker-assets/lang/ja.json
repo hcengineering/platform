@@ -247,6 +247,7 @@
     "SevenHoursLength": "7時間",
     "EightHoursLength": "8時間",
     "HourLabel": "時間",
+    "MinuteLabel": "分",
     "Saved": "保存済み...",
     "CreatedIssue": "イシューを作成しました",
     "CreatedSubIssue": "子イシューを作成しました",
@@ -271,7 +272,8 @@
     "Extensions": "拡張機能",
     "UnsetParentIssue": "親イシューの設定を解除",
     "ForbidCreateProjectPermission": "プロジェクト作成禁止",
-    "ForbidCreateProjectPermissionDescription": "ユーザーが新しいプロジェクトを作成することを禁止します"
+    "ForbidCreateProjectPermissionDescription": "ユーザーが新しいプロジェクトを作成することを禁止します",
+    "AllowCreatingIssues": "イシューの作成を許可"
   },
   "status": {}
 }

@@ -14,8 +14,12 @@
 //
 
 import { app } from 'electron'
-import path from 'path'
+import * as nodePath from 'path'
+
+export function getBundledUiDistPath (): string {
+  return nodePath.join(app.getAppPath(), 'dist', 'ui')
+}
 
 export function getFileInPublicBundledFolder (fileName: string): string {
-  return path.join(app.getAppPath(), 'dist', 'ui', 'public', fileName)
+  return nodePath.join(getBundledUiDistPath(), 'public', fileName)
 }

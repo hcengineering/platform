@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/pod-media",
-  "version": "0.7.382",
+  "version": "0.7.411",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -31,7 +31,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.382",
+    "@hcengineering/platform-rig": "workspace:^0.7.411",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.18.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -51,21 +51,21 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/account-client": "workspace:^0.7.382",
-    "@hcengineering/analytics-service": "workspace:^0.7.382",
-    "@hcengineering/analytics": "workspace:^0.7.382",
-    "@hcengineering/core": "workspace:^0.7.382",
-    "@hcengineering/kafka": "workspace:^0.7.382",
-    "@hcengineering/platform": "workspace:^0.7.382",
-    "@hcengineering/api-client": "workspace:^0.7.382",
-    "@hcengineering/server-client": "workspace:^0.7.382",
-    "@hcengineering/server-core": "workspace:^0.7.382",
-    "@hcengineering/server-storage": "workspace:^0.7.382",
-    "@hcengineering/server-token": "workspace:^0.7.382",
-    "@hcengineering/attachment": "workspace:^0.7.382",
-    "@hcengineering/drive": "workspace:^0.7.382",
-    "@hcengineering/communication-types": "workspace:^0.7.382",
-    "@hcengineering/communication-sdk-types": "workspace:^0.7.382",
+    "@hcengineering/account-client": "workspace:^0.7.411",
+    "@hcengineering/analytics-service": "workspace:^0.7.411",
+    "@hcengineering/analytics": "workspace:^0.7.411",
+    "@hcengineering/core": "workspace:^0.7.411",
+    "@hcengineering/kafka": "workspace:^0.7.411",
+    "@hcengineering/platform": "workspace:^0.7.411",
+    "@hcengineering/api-client": "workspace:^0.7.411",
+    "@hcengineering/server-client": "workspace:^0.7.411",
+    "@hcengineering/server-core": "workspace:^0.7.411",
+    "@hcengineering/server-storage": "workspace:^0.7.411",
+    "@hcengineering/server-token": "workspace:^0.7.411",
+    "@hcengineering/attachment": "workspace:^0.7.411",
+    "@hcengineering/drive": "workspace:^0.7.411",
+    "@hcengineering/communication-types": "workspace:^0.7.411",
+    "@hcengineering/communication-sdk-types": "workspace:^0.7.411",
     "dotenv": "^16.4.5",
     "kafkajs": "^2.2.4"
   }

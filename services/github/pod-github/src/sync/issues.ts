@@ -29,7 +29,6 @@ import github, {
   GithubIntegrationRepository,
   GithubIssueStateReason,
   GithubProject,
-  IntegrationRepositoryData,
   GithubIssue as TGithubIssue
 } from '@hcengineering/github'
 import task, { TaskType, calcRank } from '@hcengineering/task'
@@ -523,9 +522,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
               info.repository as Ref<GithubIntegrationRepository>,
               container.project,
               taskTypes[0]._id,
-              repo as GithubIntegrationRepository & {
-                repository: IntegrationRepositoryData
-              },
+              repo,
               !markdownCompatible
             )
           },

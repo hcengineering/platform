@@ -156,7 +156,18 @@
     "ReviewAction": "レビュー",
     "Review": "レビュー",
     "LockField": "フィールドをロック",
-    "UnlockField": "フィールドのロックを解除"
+    "UnlockField": "フィールドのロックを解除",
+    "TextFromNumber": "テキストから数値",
+    "TextFromDate": "テキストから日付",
+    "TextFromCheckbox": "チェックボックスからテキスト",
+    "NumberFromDate": "日付から数値",
+    "DateFromNumber": "数値から日付",
+    "NumberFromText": "テキストから数値",
+    "DateFromText": "テキストから日付",
+    "YearFromDate": "日付から年",
+    "MonthFromDate": "日付から月",
+    "DayFromDate": "日付から日",
+    "DateDifference": "日付の差"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

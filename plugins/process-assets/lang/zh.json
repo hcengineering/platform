@@ -157,7 +157,18 @@
     "ReviewAction": "审查",
     "Review": "审查",
     "LockField": "锁定字段",
-    "UnlockField": "解锁字段"
+    "UnlockField": "解锁字段",
+    "TextFromNumber": "数字到文本",
+    "TextFromDate": "日期到文本",
+    "TextFromCheckbox": "复选框到文本",
+    "NumberFromDate": "日期到数字",
+    "DateFromNumber": "数字到日期",
+    "NumberFromText": "文本到数字",
+    "DateFromText": "文本到日期",
+    "YearFromDate": "日期到年份",
+    "MonthFromDate": "日期到月份",
+    "DayFromDate": "日期到天",
+    "DateDifference": "日期差异"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

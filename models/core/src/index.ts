@@ -52,6 +52,7 @@ import {
   TPluginConfiguration,
   TRefTo,
   TRelation,
+  TRelationMetadata,
   TSequence,
   TTransientConfiguration,
   TType,
@@ -79,6 +80,7 @@ import {
 import { definePermissions } from './permissions'
 import {
   TAttributePermission,
+  TModulePermissionGroup,
   TClassPermission,
   TPermission,
   TRole,
@@ -135,6 +137,7 @@ export function createModel (builder: Builder): void {
     TSpaceTypeDescriptor,
     TRole,
     TPermission,
+    TModulePermissionGroup,
     TAttributePermission,
     TClassPermission,
     TAttribute,
@@ -177,6 +180,7 @@ export function createModel (builder: Builder): void {
     TMigrationState,
     TBlob,
     TRelation,
+    TRelationMetadata,
     TAssociation,
     TDomainIndexConfiguration,
     TBenchmarkDoc,

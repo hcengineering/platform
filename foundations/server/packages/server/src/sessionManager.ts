@@ -51,7 +51,7 @@ import core, {
   type WorkspaceInfoWithStatus,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import platform, { Severity, Status, UNAUTHORIZED, unknownError } from '@hcengineering/platform'
+import platform, { PlatformError, Severity, Status, UNAUTHORIZED, unknownError } from '@hcengineering/platform'
 import {
   type HelloRequest,
   type HelloResponse,
@@ -701,110 +701,140 @@ export class TSessionManager implements SessionManager {
   ): Promise<AddSessionResponse> {
     return await this.counters.withCounter('addSession', 1, () =>
       ctx.with('📲 add-session', { source: token.extra?.service ?? '🤦‍♂️user' }, async (ctx) => {
-        let account: LoginInfoWithWorkspaces | undefined
-
         try {
-          if (token.account === undefined) {
-            return { error: UNAUTHORIZED, terminate: true }
+          let account: LoginInfoWithWorkspaces | undefined
+
+          try {
+            if (token.account === undefined) {
+              return { error: UNAUTHORIZED, terminate: true }
+            }
+            account =
+              token.account === systemAccountUuid
+                ? this.sysAccount
+                : await this.getLoginWithWorkspaceInfo(ctx, rawToken)
+          } catch (err: any) {
+            if (err instanceof PlatformError) {
+              return { error: err.status, terminate: true }
+            }
+            return { error: err, terminate: true }
           }
-          account =
-            token.account === systemAccountUuid ? this.sysAccount : await this.getLoginWithWorkspaceInfo(ctx, rawToken)
-        } catch (err: any) {
-          return { error: err }
-        }
 
-        if (account === undefined) {
-          return { error: new Error('Account not found or not available'), terminate: true }
-        }
+          if (account === undefined) {
+            return { error: new Error('Account not found or not available'), terminate: true }
+          }
 
-        let wsInfo = account.workspaces[token.workspace]
+          let wsInfo = account.workspaces[token.workspace]
 
-        if (wsInfo === undefined) {
-          // In case of guest or system account
-          // We need to get workspace info for system account.
-          const workspaceInfo =
-            this.workspaceInfoCache.get(token.workspace) ?? (await this.getWorkspaceInfo(ctx, rawToken, false))
-          if (workspaceInfo === undefined) {
+          if (wsInfo === undefined) {
+            // In case of guest or system account
+            // We need to get workspace info for system account.
+            let workspaceInfo: WorkspaceInfoWithStatus | undefined
+            try {
+              workspaceInfo =
+                this.workspaceInfoCache.get(token.workspace) ?? (await this.getWorkspaceInfo(ctx, rawToken, false))
+            } catch (err: unknown) {
+              if (err instanceof PlatformError) {
+                ctx.warn('addSession: getWorkspaceInfo failed', {
+                  workspaceUuid: token.workspace,
+                  code: err.status.code,
+                  source: token.extra?.service ?? '🤦‍♂️user'
+                })
+                return { error: err.status, terminate: true }
+              }
+              throw err
+            }
+            if (workspaceInfo === undefined) {
+              return { error: new Error('Workspace not found or not available'), terminate: true }
+            }
+            this.workspaceInfoCache.set(token.workspace, workspaceInfo)
+
+            wsInfo = {
+              url: workspaceInfo.url,
+              mode: workspaceInfo.mode,
+              dataId: workspaceInfo.dataId,
+              version: {
+                versionMajor: workspaceInfo.versionMajor,
+                versionMinor: workspaceInfo.versionMinor,
+                versionPatch: workspaceInfo.versionPatch
+              },
+              role: AccountRole.Owner,
+              endpoint: { externalUrl: '', internalUrl: '', region: workspaceInfo.region ?? '' },
+              progress: workspaceInfo.processingProgress,
+              branding: workspaceInfo.branding
+            }
+          } else {
+            this.workspaceInfoCache.delete(token.workspace)
+          }
+
+          if (wsInfo.passwordAgingRule !== undefined && wsInfo.passwordAgingRule > 0) {
+            const isPasswordAgingOk = await this.checkPasswordAging(ctx, rawToken)
+            if (!isPasswordAgingOk) {
+              return { error: new Status(Severity.ERROR, platform.status.PasswordExpired, {}), terminate: true }
+            }
+          }
+
+          const { workspace, resp } = await this.getWorkspace(ctx.parent ?? ctx, token.workspace, wsInfo, token, ws)
+          if (resp !== undefined) {
+            return resp
+          }
+
+          if (workspace === undefined || account === undefined) {
+            // Should not happen
             return { error: new Error('Workspace not found or not available'), terminate: true }
           }
-          this.workspaceInfoCache.set(token.workspace, workspaceInfo)
 
-          wsInfo = {
-            url: workspaceInfo.url,
-            mode: workspaceInfo.mode,
-            dataId: workspaceInfo.dataId,
-            version: {
-              versionMajor: workspaceInfo.versionMajor,
-              versionMinor: workspaceInfo.versionMinor,
-              versionPatch: workspaceInfo.versionPatch
-            },
-            role: AccountRole.Owner,
-            endpoint: { externalUrl: '', internalUrl: '', region: workspaceInfo.region ?? '' },
-            progress: workspaceInfo.processingProgress,
-            branding: workspaceInfo.branding
+          const oldSession = sessionId !== undefined ? workspace.sessions?.get(sessionId) : undefined
+          if (oldSession !== undefined) {
+            // Just close old socket for old session id.
+            await this.close(ctx, oldSession.socket, workspace.wsId.uuid)
           }
-        } else {
-          this.workspaceInfoCache.delete(token.workspace)
-        }
 
-        if (wsInfo.passwordAgingRule !== undefined && wsInfo.passwordAgingRule > 0) {
-          const isPasswordAgingOk = await this.checkPasswordAging(ctx, rawToken)
-          if (!isPasswordAgingOk) {
-            return { error: new Status(Severity.ERROR, platform.status.PasswordExpired, {}), terminate: true }
+          const session = this.createSession(token, workspace.wsId, account)
+
+          session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
+          session.sessionInstanceId = generateId()
+          const tickHash = this.tickCounter % ticksPerSecond
+
+          this.sessions.set(ws.id, { session, socket: ws, tickHash })
+          // We need to delete previous session with Id if found.
+          this.tickCounter++
+          workspace.sessions.set(session.sessionId, { session, socket: ws, tickHash })
+
+          const accountUuid = account.account
+          if (accountUuid !== systemAccountUuid && accountUuid !== guestAccount) {
+            await this.usersProducer.send(ctx, workspace.wsId.uuid, [
+              userEvents.login({
+                user: accountUuid,
+                sessions: this.countUserSessions(workspace, accountUuid),
+                socialIds: account.socialIds.map((it) => it._id)
+              })
+            ])
           }
-        }
 
-        const { workspace, resp } = await this.getWorkspace(ctx.parent ?? ctx, token.workspace, wsInfo, token, ws)
-        if (resp !== undefined) {
-          return resp
-        }
+          // Mark workspace as init completed and we had at least one client.
+          if (!workspace.workspaceInitCompleted) {
+            workspace.workspaceInitCompleted = true
+          }
 
-        if (workspace === undefined || account === undefined) {
-          // Should not happen
-          return { error: new Error('Workspace not found or not available'), terminate: true }
-        }
-
-        const oldSession = sessionId !== undefined ? workspace.sessions?.get(sessionId) : undefined
-        if (oldSession !== undefined) {
-          // Just close old socket for old session id.
-          await this.close(ctx, oldSession.socket, workspace.wsId.uuid)
-        }
-
-        const session = this.createSession(token, workspace.wsId, account)
-
-        session.sessionId = sessionId !== undefined && (sessionId ?? '').trim().length > 0 ? sessionId : generateId()
-        session.sessionInstanceId = generateId()
-        const tickHash = this.tickCounter % ticksPerSecond
-
-        this.sessions.set(ws.id, { session, socket: ws, tickHash })
-        // We need to delete previous session with Id if found.
-        this.tickCounter++
-        workspace.sessions.set(session.sessionId, { session, socket: ws, tickHash })
-
-        const accountUuid = account.account
-        if (accountUuid !== systemAccountUuid && accountUuid !== guestAccount) {
-          await this.usersProducer.send(ctx, workspace.wsId.uuid, [
-            userEvents.login({
-              user: accountUuid,
-              sessions: this.countUserSessions(workspace, accountUuid),
-              socialIds: account.socialIds.map((it) => it._id)
+          if (this.timeMinutes > 0) {
+            void ws
+              .send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
+              .catch((err) => {
+                ctx.error('failed to send maintenance warning', err)
+              })
+          }
+          return { session, context: workspace.context, workspaceId: workspace.wsId.uuid }
+        } catch (err: unknown) {
+          if (err instanceof PlatformError) {
+            ctx.warn('addSession: rejected by account service', {
+              workspaceUuid: token.workspace,
+              code: err.status.code,
+              source: token.extra?.service ?? '🤦‍♂️user'
             })
-          ])
+            return { error: err.status, terminate: true }
+          }
+          throw err
         }
-
-        // Mark workspace as init completed and we had at least one client.
-        if (!workspace.workspaceInitCompleted) {
-          workspace.workspaceInitCompleted = true
-        }
-
-        if (this.timeMinutes > 0) {
-          void ws
-            .send(ctx, { result: this.createMaintenanceWarning() }, session.binaryMode, session.useCompression)
-            .catch((err) => {
-              ctx.error('failed to send maintenance warning', err)
-            })
-        }
-        return { session, context: workspace.context, workspaceId: workspace.wsId.uuid }
       })
     )
   }

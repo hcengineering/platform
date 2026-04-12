@@ -33,21 +33,44 @@ export interface PrintAllOptions {
   getCancelled: () => boolean
 }
 
+const PUBLIC_LINK_RETRY_COUNT = 10
+const PUBLIC_LINK_RETRY_DELAY_MS = 250
+
+async function sleep (ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 /**
  * Get or create a public link for a document (for print/share).
  * Returns the link if it exists or after creating it; the link's url may be set asynchronously by the server.
  */
 export async function ensurePublicLink (client: Client, doc: Doc): Promise<PublicLink | undefined> {
-  const existing = await client.findOne(guest.class.PublicLink, { attachedTo: doc._id })
-  if (existing?.url !== undefined && existing.url !== '') {
+  const readLink = async (): Promise<PublicLink | undefined> => {
+    const current = await client.findOne(guest.class.PublicLink, { attachedTo: doc._id })
+    return current?.url !== undefined && current.url !== '' ? current : undefined
+  }
+
+  const existing = await readLink()
+  if (existing !== undefined) {
     return existing
   }
-  if (existing === undefined) {
+
+  const created = await client.findOne(guest.class.PublicLink, { attachedTo: doc._id })
+  if (created === undefined) {
     const location = await getObjectLocation(client, doc)
     await createPublicLink(client as any, doc, location)
   }
-  const link = await client.findOne(guest.class.PublicLink, { attachedTo: doc._id })
-  return link?.url !== undefined && link.url !== '' ? link : undefined
+
+  // Public link URL is filled by server trigger asynchronously.
+  for (let i = 0; i < PUBLIC_LINK_RETRY_COUNT; i++) {
+    const link = await readLink()
+    if (link !== undefined) {
+      return link
+    }
+    await sleep(PUBLIC_LINK_RETRY_DELAY_MS)
+  }
+
+  return undefined
 }
 
 async function getObjectLocation (client: Client, obj: Doc): Promise<Location> {
@@ -88,7 +111,12 @@ export async function printAll (
     try {
       const link = await ensurePublicLink(client, doc)
       if (link?.url === undefined || link.url === '') {
-        results.push({ blobId: '', title: '', error: 'Could not get public link' })
+        const title = await getDocTitleForPdf(client, doc._id, doc._class, doc).catch(() => 'document.pdf')
+        results.push({
+          blobId: '',
+          title,
+          error: `Could not get public link for doc ${doc._id} (${doc._class})`
+        })
         continue
       }
       let blobId: string = await printToPDF(link.url, token)
@@ -100,7 +128,8 @@ export async function printAll (
     } catch (err: any) {
       Analytics.handleError(err)
       const title = await getDocTitleForPdf(client, doc._id, doc._class, doc).catch(() => 'document')
-      results.push({ blobId: '', title, error: err?.message ?? String(err) })
+      const errMessage = err?.message ?? String(err)
+      results.push({ blobId: '', title, error: `${errMessage} (doc ${doc._id}, class ${doc._class})` })
     }
   }
   return results

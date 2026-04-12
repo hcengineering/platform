@@ -24,7 +24,15 @@ import {
   githubExternalSyncVersion,
   githubSyncVersion
 } from '../types'
-import { collectUpdate, deleteObjects, ensureGraphQLOctokit, errorToObj, getSince, isGHWriteAllowed } from './utils'
+import {
+  collectUpdate,
+  deleteObjects,
+  ensureGraphQLOctokit,
+  ensureRESTOctokit,
+  errorToObj,
+  getSince,
+  isGHWriteAllowed
+} from './utils'
 
 import { Analytics } from '@hcengineering/analytics'
 import { IssueComment, IssueCommentCreatedEvent, IssueCommentEvent } from '@octokit/webhooks-types'
@@ -353,7 +361,10 @@ export class CommentSyncManager implements DocSyncManager {
 
     if (Object.keys(platformUpdate).length > 0) {
       // Check and update body with external
-      const okit = (await this.provider.getOctokit(ctx, existing.modifiedBy)) ?? container.container.octokit
+      const okit = ensureRESTOctokit(
+        (await this.provider.getOctokit(ctx, existing.modifiedBy)) ?? container.container.octokit,
+        container
+      )
       const mdown = await this.provider.getMarkdown(existingComment.message)
       if (mdown.trim().length > 0) {
         await okit.rest.issues.updateComment({
@@ -426,7 +437,10 @@ export class CommentSyncManager implements DocSyncManager {
       return {}
     }
     const chatMessage = existing as ChatMessage
-    const okit = (await this.provider.getOctokit(ctx, chatMessage.modifiedBy)) ?? container.container.octokit
+    const okit = ensureRESTOctokit(
+      (await this.provider.getOctokit(ctx, chatMessage.modifiedBy)) ?? container.container.octokit,
+      container
+    )
 
     // No external version yet, create it.
     try {

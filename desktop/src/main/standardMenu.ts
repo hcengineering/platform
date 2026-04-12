@@ -13,8 +13,9 @@
 // limitations under the License.
 //
 
-import { Menu, MenuItemConstructorOptions } from 'electron'
+import { BrowserWindow, Menu, MenuItemConstructorOptions } from 'electron'
 import { Command, CommandOpenSettings, CommandSelectWorkspace, CommandLogout } from '../ui/types'
+import { openFindInPageBar } from './findInPage'
 
 const isMac = process.platform === 'darwin'
 const isLinux = process.platform === 'linux'
@@ -38,6 +39,17 @@ export const addMenus = (sendCommand: (cmd: Command, ...args: any[]) => void): v
           click: () => { sendCommand(CommandLogout) }
         },
         { role: isMac ? 'close' : 'quit' }
+      ]
+    },
+    {
+      label: 'Search',
+      submenu: [
+        {
+          label: 'Find…',
+          click: (_item, browserWindow) => {
+            openFindInPageBar(browserWindow as BrowserWindow | undefined)
+          }
+        }
       ]
     },
     { role: 'editMenu' },

@@ -14,7 +14,7 @@
 //
 
 import { contextBridge, ipcRenderer } from 'electron'
-import { BrandingMap, Config, IPCMainExposed, JumpListSpares, MenuBarAction, NotificationParams } from './types'
+import { BrandingMap, Config, DesktopFoundInPageResult, IPCMainExposed, JumpListSpares, MenuBarAction, NotificationParams } from './types'
 import { IpcMessage } from './ipcMessages'
 
 export function concatLink (host: string, path: string): string {
@@ -201,6 +201,32 @@ const expose: IPCMainExposed = {
   },
   onAutoLaunchSettingChanged: (callback: (enabled: boolean) => void) => {
     ipcRenderer.on(IpcMessage.AutoLaunchSettingChanged, (_event, enabled: boolean) => { callback(enabled) })
+  },
+
+  onOpenFindBar: (callback: () => void) => {
+    ipcRenderer.removeAllListeners(IpcMessage.OpenFindBar)
+    ipcRenderer.on(IpcMessage.OpenFindBar, () => {
+      callback()
+    })
+  },
+
+  findInPage: async (text, options) => {
+    return await ipcRenderer.invoke(IpcMessage.FindInPage, text, options ?? {})
+  },
+
+  stopFindInPage: async (action) => {
+    await ipcRenderer.invoke(IpcMessage.StopFindInPage, action)
+  },
+
+  onFindInPageResult: (callback: (result: DesktopFoundInPageResult) => void) => {
+    ipcRenderer.removeAllListeners(IpcMessage.FindInPageResult)
+    ipcRenderer.on(IpcMessage.FindInPageResult, (_event, result: DesktopFoundInPageResult) => {
+      callback(result)
+    })
+  },
+
+  notifyFindOverlayLayout: (visible: boolean) => {
+    ipcRenderer.send(IpcMessage.FindOverlayLayout, visible)
   }
 }
 contextBridge.exposeInMainWorld('electron', expose)

@@ -80,10 +80,11 @@
       background-color: var(--global-accent-BackgroundColor);
 
       .icon {
-        color: var(--global-on-nuance-TextColor);
+        color: var(--global-on-accent-TextColor);
       }
       span {
-        color: var(--global-on-nuance-TextColor);
+        color: var(--global-on-accent-TextColor);
+        font-weight: 500;
       }
     }
     &:checked + .switcher-element.subtle {

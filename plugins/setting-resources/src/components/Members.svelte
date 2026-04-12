@@ -1,5 +1,5 @@
 <!--
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,7 +16,7 @@
   import contact, { Employee, formatName } from '@hcengineering/contact'
   import { EmployeePresenter } from '@hcengineering/contact-resources'
   import { Account, AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Breadcrumb, DropdownIntlItem, DropdownLabelsIntl, Header, Scroller, SearchInput } from '@hcengineering/ui'
   import { onMount } from 'svelte'
 
@@ -26,6 +26,7 @@
 
   const query = createQuery()
   const currentAccount = getCurrentAccount()
+  const client = getClient()
 
   const items: DropdownIntlItem[] = [
     { id: AccountRole.ReadOnlyGuest, label: setting.string.ReadonlyGuest },
@@ -34,6 +35,8 @@
     { id: AccountRole.Maintainer, label: setting.string.Maintainer },
     { id: AccountRole.Owner, label: setting.string.Owner }
   ]
+
+  const guestRoles = [AccountRole.ReadOnlyGuest, AccountRole.DocGuest, AccountRole.Guest]
 
   const accountClient = getAccountClient()
   let workspaceMembers: Record<string, AccountRole> = {}
@@ -62,6 +65,12 @@
     try {
       await accountClient.updateWorkspaceRole(personUuid, value)
       workspaceMembers[personUuid] = value
+
+      const employee = employees.find((e) => e.personUuid === personUuid)
+      if (employee !== undefined) {
+        const employeeRole = guestRoles.includes(value) ? 'GUEST' : 'USER'
+        await client.update(employee, { role: employeeRole })
+      }
     } catch (e: any) {
       Analytics.handleError(e)
     }
@@ -79,7 +88,7 @@
 
 <div class="hulyComponent">
   <Header adaptive={'disabled'}>
-    <Breadcrumb icon={setting.icon.Owners} label={setting.string.Owners} size={'large'} isCurrent />
+    <Breadcrumb icon={setting.icon.Members} label={setting.string.Members} size={'large'} isCurrent />
     <svelte:fragment slot="search">
       <SearchInput bind:value={search} collapsed />
     </svelte:fragment>

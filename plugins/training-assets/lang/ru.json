@@ -81,6 +81,7 @@
     "TrainingStateDraft": "Рабочая копия",
     "TrainingStateReleased": "Актуальный",
     "TrainingTake": "Пройти тренинг ещё раз",
+    "AllowToTakeTraining": "Разрешить проходить тренинг",
     "TrainingTitle": "Заголовок",
     "Trainings": "Тренинги",
     "ViewAllTrainings": "Все тренинги",

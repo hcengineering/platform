@@ -16,7 +16,7 @@
   import core, { Association } from '@hcengineering/core'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
-  import { Button, DropdownIntlItem, EditBox, IconDelete, Label, Modal, showPopup } from '@hcengineering/ui'
+  import { Button, DropdownIntlItem, EditBox, IconDelete, Label, Modal, showPopup, Toggle } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import setting from '../plugin'
   import { clearSettingsStore } from '../store'
@@ -30,11 +30,13 @@
   const classB = hierarchy.getClass(association.classB)
   let nameA = association.nameA
   let nameB = association.nameB
+  let automationOnly = association.automationOnly ?? false
 
   async function save (): Promise<void> {
     await client.diffUpdate(association, {
       nameA,
-      nameB
+      nameB,
+      automationOnly
     })
     clearSettingsStore()
   }
@@ -107,6 +109,12 @@
           <Label label={classB.label} />
         </div>
       </div>
+    </div>
+    <div class="flex-between p-4 flex-gap-2">
+      <span class="label">
+        <Label label={view.string.AutomationOnly} />
+      </span>
+      <Toggle bind:on={automationOnly} />
     </div>
   </div>
 </Modal>

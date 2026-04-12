@@ -25,11 +25,12 @@ import EnumSetting from './components/EnumSetting.svelte'
 import Integrations from './components/integrations/Integrations.svelte'
 import General from './components/General.svelte'
 import Backup from './components/Backup.svelte'
-import Owners from './components/Owners.svelte'
+import Members from './components/Members.svelte'
 import Password from './components/Password.svelte'
 import Privacy from './components/Privacy.svelte'
 import Profile from './components/Profile.svelte'
 import Settings from './components/Settings.svelte'
+import TwoFactorSettings from './components/TwoFactorSettings.svelte'
 
 import { Analytics } from '@hcengineering/analytics'
 import ClassAttributes from './components/ClassAttributes.svelte'
@@ -71,6 +72,7 @@ import EditRelation from './components/EditRelation.svelte'
 import AddSocialId from './components/socialIds/AddSocialId.svelte'
 import AddEmailSocialId from './components/socialIds/AddEmailSocialId.svelte'
 import Mailboxes from './components/Mailboxes.svelte'
+import GuestPermissionsSettings from './components/GuestPermissionsSettings.svelte'
 import OfficeSettings from './components/OfficeSettings.svelte'
 import BaseIntegrationState from './components/integrations/BaseIntegrationState.svelte'
 import IntegrationStateRow from './components/integrations/IntegrationStateRow.svelte'
@@ -82,6 +84,7 @@ import { hasRoleCapabilityAsync } from './hasRoleCapabilityAsync'
 export * from './store'
 export { hasRoleCapability, getRolesForCapability } from './roleCapability'
 export { hasRoleCapabilityAsync } from './hasRoleCapabilityAsync'
+export * from './inviteSettingsUtils'
 export {
   ClassAttributes,
   ClassAttributesList,
@@ -141,7 +144,7 @@ export default async (): Promise<Resources> => ({
     EnumSetting,
     General,
     Backup,
-    Owners,
+    Members,
     CreateMixin,
     InviteSetting,
     Configure,
@@ -162,11 +165,13 @@ export default async (): Promise<Resources> => ({
     CreateRelation,
     EditRelation,
     Mailboxes,
+    GuestPermissionsSettings,
     OfficeSettings,
     AddSocialId,
     AddEmailSocialId,
     EmployeeRefEditor,
-    UserRoleSelect
+    UserRoleSelect,
+    TwoFactorSettings
   },
   actionImpl: {
     DeleteMixin

@@ -16,6 +16,7 @@
   import { AccountRole, getCurrentAccount, hasAccountRole, Timestamp } from '@hcengineering/core'
   import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
   import setting, { RoleCapability } from '@hcengineering/setting'
+  import { getDefaultInviteRole, resolveInviteSettings } from '@hcengineering/setting-resources'
   import { getResource } from '@hcengineering/platform'
   import { AnySvelteComponent, Button, EditBox, Grid, Label, Loading, MiniToggle, ticker } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -38,24 +39,18 @@
     limit: number | undefined
   }
 
+  const defaultInviteRole: AccountRole = getDefaultInviteRole()
+
   $: !ignoreSettings &&
     query.query(setting.class.InviteSettings, {}, (set) => {
-      if (set !== undefined && set.length > 0) {
-        expHours = set[0].expirationTime
-        emailMask = set[0].emailMask
-        limit = set[0].limit
-        if (role == null) {
-          role = set[0].defaultInviteRole ?? AccountRole.User
-        }
-      } else {
-        expHours = 48
-        limit = -1
-        if (role == null) {
-          role = AccountRole.User
-        }
+      const state = resolveInviteSettings(set?.[0])
+      expHours = state.expirationTime
+      emailMask = state.emailMask
+      limit = state.limit
+      if (role == null) {
+        role = state.defaultInviteRole
       }
-
-      if (limit === -1) noLimit = true
+      if (state.noLimit) noLimit = true
 
       defaultValues = {
         expirationTime: expHours,
@@ -163,7 +158,7 @@
         {#if userRoleSelectComponent}
           <svelte:component
             this={userRoleSelectComponent}
-            selected={role ?? AccountRole.User}
+            selected={role ?? defaultInviteRole}
             on:selected={handleInviteRoleSelected}
           />
         {/if}
@@ -201,7 +196,7 @@
           if (!canGenerateInviteLinks) return
           const effectiveLimit = limit ?? 0
           if (effectiveLimit > 0 || noLimit) {
-            void getLink(expHours, emailMask, limit, role ?? AccountRole.User)
+            void getLink(expHours, emailMask, limit, role ?? defaultInviteRole)
           }
         }}
       />

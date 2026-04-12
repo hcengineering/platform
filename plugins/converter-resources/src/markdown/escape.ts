@@ -14,6 +14,30 @@
 //
 
 /**
+ * True when the string is a single inline markdown link with an absolute http(s) or ref:// URL,
+ * as produced by createMarkdownLink — must not be passed through escapeMarkdownLinkText or brackets break the link.
+ */
+export function looksLikeHttpOrRefMarkdownLink (s: string): boolean {
+  const t = s.trim()
+  if (!t.startsWith('[') || !t.endsWith(')')) return false
+  const mid = t.indexOf('](')
+  if (mid <= 0) return false
+  const urlPart = t.slice(mid + 2, -1)
+  return /^(https?:\/\/|ref:\/\/)/i.test(urlPart)
+}
+
+/**
+ * Escape plain text for a pipe-table cell. Leaves full document links untouched (RefTo cells from formatValue).
+ */
+export function escapeMarkdownTableCellContent (value: string): string {
+  const s = value == null ? '' : String(value)
+  if (looksLikeHttpOrRefMarkdownLink(s)) {
+    return s.trim()
+  }
+  return escapeMarkdownLinkText(s)
+}
+
+/**
  * Escape markdown link text (brackets, pipes, backslashes, newlines)
  */
 export function escapeMarkdownLinkText (text: string): string {
@@ -29,5 +53,11 @@ export function escapeMarkdownLinkText (text: string): string {
  * Escape markdown link URL (backslashes and closing parentheses)
  */
 export function escapeMarkdownLinkUrl (url: string): string {
-  return url.replace(/\\/g, '\\\\').replace(/\)/g, '\\)')
+  return (
+    url
+      .replace(/\\/g, '\\\\')
+      .replace(/\)/g, '\\)')
+      // Pipes break markdown tables unless escaped, and are safe to escape in URLs.
+      .replace(/\|/g, '\\|')
+  )
 }
