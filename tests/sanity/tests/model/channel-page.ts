@@ -84,9 +84,6 @@ export class ChannelPage extends CommonPage {
   readonly channelAutoJoinToggleInput = (): Locator =>
     this.page.getByTestId(CHANNEL_AUTO_JOIN_TOGGLE_TEST_ID).locator('input[type="checkbox"]')
 
-  readonly channelGuestAutoJoinToggleInput = (): Locator =>
-    this.page.getByTestId(CHANNEL_GUEST_AUTO_JOIN_TOGGLE_TEST_ID).locator('input[type="checkbox"]')
-
   readonly userAdded = (user: string): Locator => this.page.locator('.members').getByText(user)
   private readonly addMemberPreview = (): Locator => this.page.getByRole('button', { name: 'Add members' })
   private readonly addButtonPreview = (): Locator => this.page.getByRole('button', { name: 'Add', exact: true })

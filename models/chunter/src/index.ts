@@ -237,7 +237,17 @@ export function createModel (builder: Builder): void {
   )
 
   builder.mixin(chunter.class.Channel, core.class.Class, chunter.mixin.ObjectChatPanel, {
-    ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'description', 'members', 'owners']
+    ignoreKeys: [
+      'archived',
+      'collaborators',
+      'lastMessage',
+      'pinned',
+      'description',
+      'members',
+      'owners',
+      'autoJoin',
+      'autoJoinForRoles'
+    ]
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, chunter.mixin.ObjectChatPanel, {
