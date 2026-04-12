@@ -121,15 +121,15 @@
         }}
       />
     </div>
-    <div class="hulyModal-content__settingsSet-line flex-col items-start gap-2">
-      <div class="flex-row-center gap-2">
+    <div class="hulyModal-content__settingsSet-line create-channel-join-line flex-col items-start w-full">
+      <div class="flex-row-center gap-2 w-full justify-start">
         <span class="label"><Label label={core.string.AutoJoin} /></span>
         <Toggle data-id="channel-auto-join-toggle" bind:on={autoJoin} />
       </div>
-      <span class="text-sm content-dark-color"><Label label={core.string.AutoJoinDescr} /></span>
+      <span class="text-sm content-dark-color text-left w-full"><Label label={core.string.AutoJoinDescr} /></span>
     </div>
-    <div class="hulyModal-content__settingsSet-line flex-col items-start gap-2">
-      <div class="flex-row-center gap-2">
+    <div class="hulyModal-content__settingsSet-line create-channel-join-line flex-col items-start w-full">
+      <div class="flex-row-center gap-2 w-full justify-start">
         <span class="label"><Label label={core.string.AutoJoinGuests} /></span>
         <Toggle
           data-id="channel-guest-auto-join-toggle"
@@ -139,7 +139,14 @@
           }}
         />
       </div>
-      <span class="text-sm content-dark-color"><Label label={core.string.AutoJoinGuestsDescr} /></span>
+      <span class="text-sm content-dark-color text-left w-full"><Label label={core.string.AutoJoinGuestsDescr} /></span>
     </div>
   </div>
 </Modal>
+
+<style lang="scss">
+  .create-channel-join-line:global(.hulyModal-content__settingsSet-line) {
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+</style>
