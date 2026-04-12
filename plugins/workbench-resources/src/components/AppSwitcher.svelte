@@ -99,6 +99,7 @@
             bind:this={btns[i]}
             class="ap-menuItem withIcon flex-row-center flex-grow"
             class:hover={btns[i] === activeElement}
+            data-id={`app-switcher-row-${app.alias}`}
             on:click={() => {
               if (hiddenAppsIds.includes(app._id)) showApplication(app)
               else hideApplication(app)
