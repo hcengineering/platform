@@ -15,6 +15,7 @@
 //
 
 import card from '@hcengineering/card'
+import chunter from '@hcengineering/chunter'
 import contact, {
   Channel,
   Contact,
@@ -164,12 +165,29 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
       for (const space of [...readOnlyGuestSpaces, ...grantSpaces]) {
         if (space._class === contact.class.PersonSpace || space.members.includes(account)) continue
 
-        const pushTx = systemTxFactory.createTxUpdateDoc(space._class, space.space, space._id, {
-          $push: {
-            members: account
-          }
-        })
-        systemTxes.push(pushTx)
+        systemTxes.push(
+          systemTxFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+            $push: {
+              members: account
+            }
+          })
+        )
+      }
+
+      const guestAutoJoinSpaces = await control.findAll(control.ctx, core.class.Space, {
+        autoJoinForRoles: AccountRole.Guest
+      })
+      for (const space of guestAutoJoinSpaces) {
+        if (space._class === contact.class.PersonSpace || space.members.includes(account)) continue
+        if (control.hierarchy.isDerived(space._class, chunter.class.DirectMessage)) continue
+
+        systemTxes.push(
+          systemTxFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+            $push: {
+              members: account
+            }
+          })
+        )
       }
 
       const collabs = await control.findAll(control.ctx, core.class.Collaborator, {
@@ -195,12 +213,13 @@ export async function OnEmployeeCreate (_txes: Tx[], control: TriggerControl): P
     for (const space of [...spaces, ...grantSpaces]) {
       if (space.members.includes(account)) continue
 
-      const pushTx = systemTxFactory.createTxUpdateDoc(space._class, space.space, space._id, {
-        $push: {
-          members: account
-        }
-      })
-      systemTxes.push(pushTx)
+      systemTxes.push(
+        systemTxFactory.createTxUpdateDoc(space._class, space.space, space._id, {
+          $push: {
+            members: account
+          }
+        })
+      )
     }
   }
 

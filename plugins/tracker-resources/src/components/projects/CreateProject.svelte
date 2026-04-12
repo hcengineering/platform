@@ -17,6 +17,8 @@
   import { Employee } from '@hcengineering/contact'
   import { AccountArrayEditor, AssigneeBox, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import core, {
+    AccountRole,
+    AccountUuid,
     Data,
     DocumentUpdate,
     Ref,
@@ -27,7 +29,7 @@
     generateId,
     getCurrentAccount,
     notEmpty,
-    AccountUuid
+    setWorkspaceGuestAutoJoinRoles
   } from '@hcengineering/core'
   import { Asset } from '@hcengineering/platform'
   import presentation, { IconWithEmoji, Card, createQuery, getClient } from '@hcengineering/presentation'
@@ -82,8 +84,22 @@
   $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
   $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
   let autoJoin = project?.autoJoin ?? typeType?.autoJoin ?? false
+  let autoJoinForRoles: AccountRole[] =
+    project?.autoJoinForRoles != null ? hierarchy.clone(project.autoJoinForRoles) : []
 
   const dispatch = createEventDispatcher()
+
+  function normalizeAutoJoinForRoles (roles: AccountRole[]): AccountRole[] | undefined {
+    return roles.length > 0 ? [...roles] : undefined
+  }
+
+  function autoJoinRolesEqual (a: AccountRole[] | undefined, b: AccountRole[] | undefined): boolean {
+    return deepEqual([...(a ?? [])].sort(), [...(b ?? [])].sort())
+  }
+
+  function setGuestAutoJoin (enabled: boolean): void {
+    autoJoinForRoles = setWorkspaceGuestAutoJoinRoles(autoJoinForRoles, enabled)
+  }
 
   $: isNew = project == null
 
@@ -112,7 +128,8 @@
       icon,
       color,
       defaultIssueStatus: defaultStatus ?? ('' as Ref<IssueStatus>),
-      defaultTimeReportDay: project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay
+      defaultTimeReportDay: project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay,
+      autoJoinForRoles: normalizeAutoJoinForRoles(autoJoinForRoles)
     }
   }
 
@@ -163,6 +180,9 @@
     }
     if (projectData.autoJoin !== project?.autoJoin) {
       update.autoJoin = projectData.autoJoin
+    }
+    if (!autoJoinRolesEqual(projectData.autoJoinForRoles, project?.autoJoinForRoles)) {
+      update.autoJoinForRoles = projectData.autoJoinForRoles
     }
     if (projectData.members.length !== project?.members.length) {
       update.members = projectData.members
@@ -528,6 +548,19 @@
         <span><Label label={core.string.AutoJoinDescr} /></span>
       </div>
       <Toggle bind:on={autoJoin} />
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header withDesciption">
+        <Label label={core.string.AutoJoinGuests} />
+        <span><Label label={core.string.AutoJoinGuestsDescr} /></span>
+      </div>
+      <Toggle
+        on={autoJoinForRoles.includes(AccountRole.Guest)}
+        on:change={(ev) => {
+          setGuestAutoJoin(ev.detail)
+        }}
+      />
     </div>
 
     {#each roles as role}
