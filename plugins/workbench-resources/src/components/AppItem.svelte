@@ -25,6 +25,7 @@
   export let loading: boolean = false
   export let notify: boolean = false
   export let navigator: boolean = false
+  export let dataId: string | undefined = undefined
 </script>
 
 <button
@@ -33,6 +34,7 @@
   class:selected
   class:navigator
   id={'app-' + label}
+  data-id={dataId}
   disabled={loading}
   use:tooltip={{ label }}
   on:click

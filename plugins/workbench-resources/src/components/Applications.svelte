@@ -110,20 +110,27 @@
 
   updateExcludedApps()
 
-  function isAppVisibleInSwitcher (app: Application, disabledModules: Set<Ref<Application>>): boolean {
-    return !hiddenAppsIds.includes(app._id) && !excludedApps.includes(app.alias) && !disabledModules.has(app._id)
+  let topApps: Application[] = []
+  let midApps: Application[] = []
+  let bottomApps: Application[] = []
+
+  // Single reactive block so reads of hiddenAppsIds / excludedApps / disabledApplications
+  $: {
+    const hidden = hiddenAppsIds
+    const excluded = excludedApps
+    const disabled = disabledApplications
+
+    const isApplicationVisibleInSidebar = (app: Application): boolean =>
+      !hidden.includes(app._id) && !excluded.includes(app.alias) && !disabled.has(app._id)
+
+    topApps = apps
+      .filter((it) => it.position === 'top' && isApplicationVisibleInSidebar(it))
+      .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
+    midApps = apps
+      .filter((it) => it.position !== 'top' && it.position !== 'bottom' && isApplicationVisibleInSidebar(it))
+      .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
+    bottomApps = apps.filter((it) => it.position === 'bottom' && isApplicationVisibleInSidebar(it))
   }
-
-  $: topApps = apps
-    .filter((it) => it.position === 'top' && isAppVisibleInSwitcher(it, disabledApplications))
-    .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
-  $: midApps = apps
-    .filter(
-      (it) => it.position !== 'top' && it.position !== 'bottom' && isAppVisibleInSwitcher(it, disabledApplications)
-    )
-    .sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
-
-  $: bottomApps = apps.filter((it) => it.position === 'bottom' && isAppVisibleInSwitcher(it, disabledApplications))
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
   const inboxNotificationsByContextStore = inboxClient.inboxNotificationsByContext
@@ -177,6 +184,7 @@
             navigator={app._id === active && $deviceInfo.navigator.visible}
             notify={showNotify(app.alias, hasInboxNotifications, hasNewInboxNotifications, hasNewMessagesNotification)}
             {...customProps}
+            dataId={`app-sidebar-${app.alias}`}
             on:click={getClickHandler(app, customProps)}
           />
         </NavLink>
@@ -193,6 +201,7 @@
             label={app.label}
             navigator={app._id === active && $deviceInfo.navigator.visible}
             {...customProps}
+            dataId={`app-sidebar-${app.alias}`}
             on:click={getClickHandler(app, customProps)}
           />
         </NavLink>
@@ -209,6 +218,7 @@
               navigator={app._id === active && $deviceInfo.navigator.visible}
               notify={app.alias === chatId && hasNewInboxNotifications}
               {...customProps}
+              dataId={`app-sidebar-${app.alias}`}
               on:click={getClickHandler(app, customProps)}
             />
           </NavLink>
