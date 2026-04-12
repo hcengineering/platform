@@ -247,12 +247,12 @@ async function getFunctionValue (
     const funcImpl = control.client.getHierarchy().as(transform, serverProcess.mixin.FuncImpl)
     const f = await getResource(funcImpl.func)
     const val = await f(res, {}, control, execution)
-    if (val == null) {
+    if (val == null && context.func !== process.function.EmptyValue) {
       throw processError(process.error.EmptyFunctionResult, {}, { func: func.label })
     }
     return val
   }
-  if (res == null) {
+  if (res == null && context.func !== process.function.EmptyValue) {
     throw processError(process.error.EmptyFunctionResult, {}, { func: func.label })
   }
   return res

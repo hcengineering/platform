@@ -465,6 +465,18 @@ export function defineFunctions (builder: Builder): void {
     process.class.ProcessFunction,
     core.space.Model,
     {
+      of: core.class.TypeAny,
+      category: 'attribute',
+      label: process.string.EmptyValue,
+      type: 'context'
+    },
+    process.function.EmptyValue
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
       of: core.class.ArrOf,
       category: 'array',
       label: process.string.EmptyArray,
