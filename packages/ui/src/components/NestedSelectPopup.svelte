@@ -26,7 +26,7 @@
     resizeObserver,
     Submenu
   } from '..'
-    import type { NestedSelectItem } from '../types'
+  import type { NestedSelectItem } from '../types'
 
   export let items: NestedSelectItem[] = []
   export let selectedValues: (string | number)[] = []
@@ -106,8 +106,19 @@
               component: NestedSelectPopup
             }}
           >
-            <div slot="item" class="flex-row-center w-full" on:click={() => { toggle(item.id) }}>
-              <div class="check ml-0 mr-2" on:click|stopPropagation={() => { toggle(item.id) }}>
+            <div
+              slot="item"
+              class="flex-row-center w-full"
+              on:click={() => {
+                toggle(item.id)
+              }}
+            >
+              <div
+                class="check ml-0 mr-2"
+                on:click|stopPropagation={() => {
+                  toggle(item.id)
+                }}
+              >
                 {#if selectedValues.includes(item.id)}
                   <Icon icon={IconCheck} size="small" />
                 {/if}
@@ -121,7 +132,12 @@
             </div>
           </Submenu>
         {:else}
-          <button class="menu-item flex-row-center w-full" on:click={() => { toggle(item.id) }}>
+          <button
+            class="menu-item flex-row-center w-full"
+            on:click={() => {
+              toggle(item.id)
+            }}
+          >
             <div class="check ml-0 mr-2">
               {#if selectedValues.includes(item.id)}
                 <Icon icon={IconCheck} size="small" />
