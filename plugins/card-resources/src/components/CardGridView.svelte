@@ -72,11 +72,7 @@
 
 <ActionContext context={{ mode: 'browser' }} />
 
-<Scroller
-  fade={{ multipler: { top: 3, bottom: 2.5 } }}
-  padding={'0 1rem'}
-  checkForHeaders
->
+<Scroller fade={{ multipler: { top: 3, bottom: 2.5 } }} padding={'0 1rem'} checkForHeaders>
   <div class="grid-container">
     {#each objects as object, i}
       {@const selected = selection === i}
