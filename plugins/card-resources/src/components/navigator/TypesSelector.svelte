@@ -43,7 +43,9 @@
         cls.kind !== ClassifierKind.CLASS ||
         cls.removed === true ||
         cls.extends !== card.class.Card
-      ) { continue }
+      ) {
+        continue
+      }
 
       items.push({
         id: cls._id,
