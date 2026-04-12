@@ -613,6 +613,54 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return domain === 'tx' ? 'objectSpace' : domain === 'space' ? '_id' : 'space'
   }
 
+  private mergeDocIdRestriction<T extends Doc>(query: DocumentQuery<T>, allowed: Ref<T>[]): DocumentQuery<T> {
+    const allowedIds: DocumentQuery<T>['_id'] = { $in: allowed.length === 0 ? [] : allowed }
+    const prevId = query._id
+    if (prevId === undefined) {
+      return { ...query, _id: allowedIds }
+    }
+    type WithAnd = DocumentQuery<T> & { $and?: DocumentQuery<T>[] }
+    const { _id: _drop, $and, ...rest } = query as WithAnd
+    const andParts: DocumentQuery<T>[] = [...($and ?? []), { _id: prevId }, { _id: allowedIds }]
+    const merged: DocumentQuery<T> = { ...rest, $and: andParts }
+    return merged
+  }
+
+  private async applyGuestCollaboratorReadRestriction<T extends Doc>(
+    ctx: MeasureContext<SessionData>,
+    _class: Ref<Class<T>>,
+    domain: Domain,
+    query: DocumentQuery<T>
+  ): Promise<DocumentQuery<T>> {
+    const account = ctx.contextData.account
+    if (
+      ![AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role) ||
+      isSystem(account, ctx) ||
+      domain === DOMAIN_MODEL
+    ) {
+      return query
+    }
+
+    const collabSec = getClassCollaborators(this.context.modelDb, this.context.hierarchy, _class)
+    if (collabSec?.provideSecurity !== true) {
+      return query
+    }
+
+    const rootClass = collabSec.attachedTo
+    const docClasses = [...this.context.hierarchy.getDescendants(rootClass), rootClass]
+    const collabs = (await this.provideFindAll(
+      ctx,
+      core.class.Collaborator,
+      {
+        collaborator: account.uuid,
+        attachedToClass: { $in: docClasses }
+      },
+      { projection: { attachedTo: 1 }, limit: 10_000 }
+    )) as Collaborator[]
+    const allowed = collabs.map((c) => c.attachedTo) as Ref<T>[]
+    return this.mergeDocIdRestriction(query, allowed)
+  }
+
   override async findAll<T extends Doc>(
     ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
@@ -679,7 +727,10 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       }
     }
 
-    let findResult = await this.provideFindAll(ctx, _class, !this.skipFindCheck ? newQuery : query, options)
+    let queryToUse = !this.skipFindCheck ? newQuery : query
+    queryToUse = await this.applyGuestCollaboratorReadRestriction(ctx, _class, domain, queryToUse)
+
+    let findResult = await this.provideFindAll(ctx, _class, queryToUse, options)
     if (clientFilterSpaces !== undefined) {
       const cfs = clientFilterSpaces
       findResult = toFindResult(
