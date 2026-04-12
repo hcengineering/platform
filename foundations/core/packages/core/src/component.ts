@@ -299,6 +299,8 @@ export default plugin(coreId, {
     ArchiveSpaceDescription: '' as IntlString,
     AutoJoin: '' as IntlString,
     AutoJoinDescr: '' as IntlString,
+    AutoJoinGuests: '' as IntlString,
+    AutoJoinGuestsDescr: '' as IntlString,
     RBAC: '' as IntlString,
     RBACDescr: '' as IntlString,
     Version: '' as IntlString

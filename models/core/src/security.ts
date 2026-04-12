@@ -84,6 +84,9 @@ export class TSpace extends TDoc implements Space {
 
   @Prop(TypeBoolean(), core.string.AutoJoin)
     autoJoin?: boolean
+
+  @Prop(ArrOf(TypeString()), core.string.AutoJoinGuests)
+    autoJoinForRoles?: AccountRole[]
 }
 
 @Model(core.class.SystemSpace, core.class.Space)

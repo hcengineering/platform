@@ -61,6 +61,8 @@
     "ArchiveSpaceDescription": "Umožňuje uživatelům archivovat prostor",
     "AutoJoin": "Automatické připojení",
     "AutoJoinDescr": "Automaticky připojit nové zaměstnance k tomuto prostoru",
+    "AutoJoinGuests": "Automaticky připojit hosty",
+    "AutoJoinGuestsDescr": "Pokud je zapnuto, hosté pracovního prostoru se při aktivaci přidají do tohoto prostoru",
     "RBAC": "Řízení přístupu na základě rolí",
     "RBACDescr": "Vyžadovat řízení přístupu na základě rolí pro provádění akcí v tomto prostoru",
     "BlobSize": "Velikost",

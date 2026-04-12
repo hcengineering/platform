@@ -61,6 +61,8 @@
     "ArchiveSpaceDescription": "Grants users ability to archive the space",
     "AutoJoin": "Auto join",
     "AutoJoinDescr": "Automatically join new employees to this space",
+    "AutoJoinGuests": "Auto-join guests",
+    "AutoJoinGuestsDescr": "When enabled, workspace guests are added to this space on activation",
     "RBAC": "Role-based access control",
     "RBACDescr": "Require role-based access to perform actions in this space",
     "BlobSize": "Size",

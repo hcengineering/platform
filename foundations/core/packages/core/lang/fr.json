@@ -61,6 +61,8 @@
     "ArchiveSpaceDescription": "Accorde aux utilisateurs la capacité d'archiver l'espace",
     "AutoJoin": "Rejoindre automatiquement",
     "AutoJoinDescr": "Ajouter automatiquement les nouveaux employés à cet espace",
+    "AutoJoinGuests": "Rejoindre automatiquement les invités",
+    "AutoJoinGuestsDescr": "Si activé, les invités de l’espace de travail sont ajoutés à cet espace à l’activation",
     "RBAC": "Contrôle d'accès basé sur les rôles",
     "RBACDescr": "Exiger un accès basé sur les rôles pour effectuer des actions dans cet espace",
     "BlobSize": "Taille",
