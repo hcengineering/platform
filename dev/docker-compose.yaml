@@ -415,6 +415,7 @@ services:
       - STATS_URL=http://huly.local:4900
       - ACCOUNTS_URL=http://huly.local:3000
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - FRONT_URL=http://huly.local:8087
   sign:
     image: hardcoreeng/sign
     extra_hosts:
