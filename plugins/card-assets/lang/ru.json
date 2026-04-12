@@ -82,6 +82,7 @@
     "SectionUnlocked": "Секция {section} разблокирована",
     "LayoutAuto": "Авто",
     "SingleColumn": "Один столбец",
-    "TwoColumns": "Два столбца"
+    "TwoColumns": "Два столбца",
+    "Grid": "Сетка"
   }
 }

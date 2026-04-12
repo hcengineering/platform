@@ -82,6 +82,7 @@
     "SectionUnlocked": "Bölüm {section} kilidi açıldı",
     "LayoutAuto": "Otomatik",
     "SingleColumn": "Tek sütun",
-    "TwoColumns": "İki sütun"
+    "TwoColumns": "İki sütun",
+    "Grid": "Izgara"
   }
 }

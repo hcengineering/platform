@@ -82,6 +82,7 @@
     "SectionUnlocked": "Seção {section} desbloqueada",
     "LayoutAuto": "Automático",
     "SingleColumn": "Uma coluna",
-    "TwoColumns": "Duas colunas"
+    "TwoColumns": "Duas colunas",
+    "Grid": "Grade"
   }
 }
