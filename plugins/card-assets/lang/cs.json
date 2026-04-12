@@ -82,6 +82,7 @@
     "SectionUnlocked": "Sekce {section} odemknuta",
     "LayoutAuto": "Auto",
     "SingleColumn": "Jeden sloupec",
-    "TwoColumns": "Dva sloupce"
+    "TwoColumns": "Dva sloupce",
+    "Grid": "Mřížka"
   }
 }

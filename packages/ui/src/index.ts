@@ -288,6 +288,7 @@ export { default as EmbeddedHTML } from './components/EmbeddedHTML.svelte'
 export { default as EmbeddedPDF } from './components/EmbeddedPDF.svelte'
 export { default as NestedMenu } from './components/NestedMenu.svelte'
 export { default as NestedDropdown } from './components/NestedDropdown.svelte'
+export { default as NestedSelectPopup } from './components/NestedSelectPopup.svelte'
 export { default as StatusBarButton } from './components/StatusBarButton.svelte'
 export { default as AppLoading } from './components/AppLoading.svelte'
 

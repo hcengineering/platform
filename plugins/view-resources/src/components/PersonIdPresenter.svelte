@@ -26,6 +26,7 @@
   export let noUnderline = false
   export let shrink: boolean = false
   export let avatarSize: IconSize = 'x-small'
+  export let withPadding: boolean = true
 
   const client = getClient()
   let person: Ref<Person> | undefined
@@ -39,7 +40,7 @@
 </script>
 
 {#if person}
-  <div class="pl-3">
+  <div class={withPadding ? 'pl-3' : ''}>
     <ObjectPresenter
       objectId={person}
       _class={contact.class.Person}

@@ -9,5 +9,5 @@
 
 <div class="flex-presenter flex-gap-3">
   <DatePresenter value={value.createdOn} mode={DateRangeMode.DATETIME} kind="list" icon={IconScribble} />
-  <PersonIdPresenter value={value.createdBy} shouldShowName={false} />
+  <PersonIdPresenter value={value.createdBy} withPadding={false} shouldShowName={false} />
 </div>
