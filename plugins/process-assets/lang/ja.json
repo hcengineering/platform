@@ -167,7 +167,8 @@
     "YearFromDate": "日付から年",
     "MonthFromDate": "日付から月",
     "DayFromDate": "日付から日",
-    "DateDifference": "日付の差"
+    "DateDifference": "日付の差",
+    "EmptyValue": "空の値"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

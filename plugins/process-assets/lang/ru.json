@@ -168,7 +168,8 @@
     "YearFromDate": "Год из даты",
     "MonthFromDate": "Месяц из даты",
     "DayFromDate": "День из даты",
-    "DateDifference": "Разница дат"
+    "DateDifference": "Разница дат",
+    "EmptyValue": "Пустое значение"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

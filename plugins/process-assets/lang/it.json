@@ -168,7 +168,8 @@
     "YearFromDate": "Anno da data",
     "MonthFromDate": "Mese da data",
     "DayFromDate": "Giorno da data",
-    "DateDifference": "Differenza di date"
+    "DateDifference": "Differenza di date",
+    "EmptyValue": "Valore vuoto"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",

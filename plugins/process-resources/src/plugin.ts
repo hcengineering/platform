@@ -233,6 +233,7 @@ export default mergeIds(processId, process, {
     For: '' as IntlString,
     Attribute: '' as IntlString,
     Context: '' as IntlString,
+    EmptyValue: '' as IntlString,
     EmptyArray: '' as IntlString,
     ExecutionInitiator: '' as IntlString,
     ExecutionStarted: '' as IntlString,

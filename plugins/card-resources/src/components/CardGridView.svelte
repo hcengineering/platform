@@ -13,9 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, FindOptions, Ref, WithLookup } from '@hcengineering/core'
   import { type Card } from '@hcengineering/card'
+  import type { Class, Doc, DocumentQuery, FindOptions, Ref, WithLookup } from '@hcengineering/core'
   import { ActionContext, createQuery, getClient } from '@hcengineering/presentation'
+  import { Scroller } from '@hcengineering/ui'
   import { BuildModelKey, ViewOptions } from '@hcengineering/view'
   import { ListSelectionProvider, SelectDirection, buildConfigLookup, focusStore } from '@hcengineering/view-resources'
   import CardGridItem from './CardGridItem.svelte'
@@ -71,20 +72,22 @@
 
 <ActionContext context={{ mode: 'browser' }} />
 
-<div class="grid-container">
-  {#each objects as object, i}
-    {@const selected = selection === i}
-    <div class="grid-cell">
-      <CardGridItem
-        {object}
-        {selected}
-        on:obj-focus={(evt) => {
-          listProvider.updateFocus(evt.detail)
-        }}
-      />
-    </div>
-  {/each}
-</div>
+<Scroller fade={{ multipler: { top: 3, bottom: 2.5 } }} padding={'0 1rem'} checkForHeaders>
+  <div class="grid-container">
+    {#each objects as object, i}
+      {@const selected = selection === i}
+      <div class="grid-cell">
+        <CardGridItem
+          {object}
+          {selected}
+          on:obj-focus={(evt) => {
+            listProvider.updateFocus(evt.detail)
+          }}
+        />
+      </div>
+    {/each}
+  </div>
+</Scroller>
 
 <style lang="scss">
   .grid-container {
