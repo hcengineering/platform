@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/pod-calendar-mailer",
-  "version": "0.7.411",
+  "version": "0.7.413",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -30,7 +30,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.411",
+    "@hcengineering/platform-rig": "workspace:^0.7.413",
     "@tsconfig/node16": "^1.0.4",
     "@types/node": "^22.18.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -51,19 +51,19 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/account-client": "workspace:^0.7.411",
-    "@hcengineering/analytics": "workspace:^0.7.411",
-    "@hcengineering/analytics-service": "workspace:^0.7.411",
-    "@hcengineering/api-client": "workspace:^0.7.411",
-    "@hcengineering/calendar": "workspace:^0.7.411",
-    "@hcengineering/contact": "workspace:^0.7.411",
-    "@hcengineering/core": "workspace:^0.7.411",
-    "@hcengineering/kafka": "workspace:^0.7.411",
-    "@hcengineering/love": "workspace:^0.7.411",
-    "@hcengineering/notification": "workspace:^0.7.411",
-    "@hcengineering/platform": "workspace:^0.7.411",
-    "@hcengineering/server-core": "workspace:^0.7.411",
-    "@hcengineering/server-token": "workspace:^0.7.411",
+    "@hcengineering/account-client": "workspace:^0.7.413",
+    "@hcengineering/analytics": "workspace:^0.7.413",
+    "@hcengineering/analytics-service": "workspace:^0.7.413",
+    "@hcengineering/api-client": "workspace:^0.7.413",
+    "@hcengineering/calendar": "workspace:^0.7.413",
+    "@hcengineering/contact": "workspace:^0.7.413",
+    "@hcengineering/core": "workspace:^0.7.413",
+    "@hcengineering/kafka": "workspace:^0.7.413",
+    "@hcengineering/love": "workspace:^0.7.413",
+    "@hcengineering/notification": "workspace:^0.7.413",
+    "@hcengineering/platform": "workspace:^0.7.413",
+    "@hcengineering/server-core": "workspace:^0.7.413",
+    "@hcengineering/server-token": "workspace:^0.7.413",
     "dotenv": "^16.4.5"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/server-tracker-resources",
-  "version": "0.7.411",
+  "version": "0.7.413",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -22,7 +22,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.411",
+    "@hcengineering/platform-rig": "workspace:^0.7.413",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -37,20 +37,20 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/chunter": "workspace:^0.7.411",
-    "@hcengineering/contact": "workspace:^0.7.411",
-    "@hcengineering/server-contact": "workspace:^0.7.411",
-    "@hcengineering/core": "workspace:^0.7.411",
-    "@hcengineering/login": "workspace:^0.7.411",
-    "@hcengineering/notification": "workspace:^0.7.411",
-    "@hcengineering/platform": "workspace:^0.7.411",
-    "@hcengineering/server-core": "workspace:^0.7.411",
-    "@hcengineering/server-notification": "workspace:^0.7.411",
-    "@hcengineering/server-task-resources": "workspace:^0.7.411",
-    "@hcengineering/task": "workspace:^0.7.411",
-    "@hcengineering/text-core": "workspace:^0.7.411",
-    "@hcengineering/tracker": "workspace:^0.7.411",
-    "@hcengineering/view": "workspace:^0.7.411",
-    "@hcengineering/workbench": "workspace:^0.7.411"
+    "@hcengineering/chunter": "workspace:^0.7.413",
+    "@hcengineering/contact": "workspace:^0.7.413",
+    "@hcengineering/server-contact": "workspace:^0.7.413",
+    "@hcengineering/core": "workspace:^0.7.413",
+    "@hcengineering/login": "workspace:^0.7.413",
+    "@hcengineering/notification": "workspace:^0.7.413",
+    "@hcengineering/platform": "workspace:^0.7.413",
+    "@hcengineering/server-core": "workspace:^0.7.413",
+    "@hcengineering/server-notification": "workspace:^0.7.413",
+    "@hcengineering/server-task-resources": "workspace:^0.7.413",
+    "@hcengineering/task": "workspace:^0.7.413",
+    "@hcengineering/text-core": "workspace:^0.7.413",
+    "@hcengineering/tracker": "workspace:^0.7.413",
+    "@hcengineering/view": "workspace:^0.7.413",
+    "@hcengineering/workbench": "workspace:^0.7.413"
   }
 }

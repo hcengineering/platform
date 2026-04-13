@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/activity-resources",
-  "version": "0.7.411",
+  "version": "0.7.413",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -15,7 +15,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.411",
+    "@hcengineering/platform-rig": "workspace:^0.7.413",
     "@types/jest": "^29.5.5",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -37,23 +37,23 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/analytics": "workspace:^0.7.411",
-    "@hcengineering/activity": "workspace:^0.7.411",
-    "@hcengineering/card": "workspace:^0.7.411",
-    "@hcengineering/contact": "workspace:^0.7.411",
-    "@hcengineering/contact-resources": "workspace:^0.7.411",
-    "@hcengineering/core": "workspace:^0.7.411",
-    "@hcengineering/notification": "workspace:^0.7.411",
-    "@hcengineering/platform": "workspace:^0.7.411",
-    "@hcengineering/preference": "workspace:^0.7.411",
-    "@hcengineering/presentation": "workspace:^0.7.411",
-    "@hcengineering/text": "workspace:^0.7.411",
-    "@hcengineering/ui": "workspace:^0.7.411",
-    "@hcengineering/view": "workspace:^0.7.411",
-    "@hcengineering/view-resources": "workspace:^0.7.411",
-    "@hcengineering/communication-types": "workspace:^0.7.411",
-    "@hcengineering/emoji": "workspace:^0.7.411",
-    "@hcengineering/emoji-resources": "workspace:^0.7.411",
+    "@hcengineering/analytics": "workspace:^0.7.413",
+    "@hcengineering/activity": "workspace:^0.7.413",
+    "@hcengineering/card": "workspace:^0.7.413",
+    "@hcengineering/contact": "workspace:^0.7.413",
+    "@hcengineering/contact-resources": "workspace:^0.7.413",
+    "@hcengineering/core": "workspace:^0.7.413",
+    "@hcengineering/notification": "workspace:^0.7.413",
+    "@hcengineering/platform": "workspace:^0.7.413",
+    "@hcengineering/preference": "workspace:^0.7.413",
+    "@hcengineering/presentation": "workspace:^0.7.413",
+    "@hcengineering/text": "workspace:^0.7.413",
+    "@hcengineering/ui": "workspace:^0.7.413",
+    "@hcengineering/view": "workspace:^0.7.413",
+    "@hcengineering/view-resources": "workspace:^0.7.413",
+    "@hcengineering/communication-types": "workspace:^0.7.413",
+    "@hcengineering/emoji": "workspace:^0.7.413",
+    "@hcengineering/emoji-resources": "workspace:^0.7.413",
     "svelte": "^4.2.20"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/emoji-assets",
-  "version": "0.7.411",
+  "version": "0.7.413",
   "main": "./lib/index.js",
   "types": "./types/index.d.ts",
   "files": [
@@ -25,7 +25,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.411",
+    "@hcengineering/platform-rig": "workspace:^0.7.413",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -41,8 +41,8 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.411",
-    "@hcengineering/emoji": "workspace:^0.7.411"
+    "@hcengineering/platform": "workspace:^0.7.413",
+    "@hcengineering/emoji": "workspace:^0.7.413"
   },
   "exports": {
     ".": {

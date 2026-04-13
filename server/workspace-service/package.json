@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/workspace-service",
-  "version": "0.7.411",
+  "version": "0.7.413",
   "main": "lib/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "cross-env": "~7.0.3",
-    "@hcengineering/platform-rig": "workspace:^0.7.411",
+    "@hcengineering/platform-rig": "workspace:^0.7.413",
     "@types/node": "^22.18.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint-plugin-import": "^2.26.0",
@@ -41,24 +41,24 @@
     "@types/jest": "^29.5.5"
   },
   "dependencies": {
-    "@hcengineering/model": "workspace:^0.7.411",
-    "@hcengineering/platform": "workspace:^0.7.411",
-    "@hcengineering/core": "workspace:^0.7.411",
+    "@hcengineering/model": "workspace:^0.7.413",
+    "@hcengineering/platform": "workspace:^0.7.413",
+    "@hcengineering/core": "workspace:^0.7.413",
     "koa": "^2.15.4",
     "koa-router": "^12.0.1",
     "koa-bodyparser": "^4.4.1",
     "@koa/cors": "^5.0.0",
-    "@hcengineering/server-core": "workspace:^0.7.411",
-    "@hcengineering/server-tool": "workspace:^0.7.411",
-    "@hcengineering/server-storage": "workspace:^0.7.411",
-    "@hcengineering/server-pipeline": "workspace:^0.7.411",
-    "@hcengineering/server-client": "workspace:^0.7.411",
-    "@hcengineering/server-token": "workspace:^0.7.411",
-    "@hcengineering/server-notification": "workspace:^0.7.411",
-    "@hcengineering/analytics": "workspace:^0.7.411",
-    "@hcengineering/account-client": "workspace:^0.7.411",
-    "@hcengineering/server-backup": "workspace:^0.7.411",
-    "@hcengineering/postgres": "workspace:^0.7.411",
-    "@hcengineering/mongo": "workspace:^0.7.411"
+    "@hcengineering/server-core": "workspace:^0.7.413",
+    "@hcengineering/server-tool": "workspace:^0.7.413",
+    "@hcengineering/server-storage": "workspace:^0.7.413",
+    "@hcengineering/server-pipeline": "workspace:^0.7.413",
+    "@hcengineering/server-client": "workspace:^0.7.413",
+    "@hcengineering/server-token": "workspace:^0.7.413",
+    "@hcengineering/server-notification": "workspace:^0.7.413",
+    "@hcengineering/analytics": "workspace:^0.7.413",
+    "@hcengineering/account-client": "workspace:^0.7.413",
+    "@hcengineering/server-backup": "workspace:^0.7.413",
+    "@hcengineering/postgres": "workspace:^0.7.413",
+    "@hcengineering/mongo": "workspace:^0.7.413"
   }
 }

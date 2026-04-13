@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/billing-resources",
-  "version": "0.7.411",
+  "version": "0.7.413",
   "main": "src/index.ts",
   "author": "Hardcore Engineering Inc.",
   "license": "EPL-2.0",
@@ -16,7 +16,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.411",
+    "@hcengineering/platform-rig": "workspace:^0.7.413",
     "@types/jest": "^29.5.5",
     "@types/node": "^22.18.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -39,21 +39,21 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@hcengineering/platform": "workspace:^0.7.411",
-    "@hcengineering/presentation": "workspace:^0.7.411",
-    "@hcengineering/theme": "workspace:^0.7.411",
-    "@hcengineering/core": "workspace:^0.7.411",
-    "@hcengineering/ui": "workspace:^0.7.411",
-    "@hcengineering/billing": "workspace:^0.7.411",
-    "@hcengineering/view": "workspace:^0.7.411",
-    "@hcengineering/view-resources": "workspace:^0.7.411",
-    "@hcengineering/billing-client": "workspace:^0.7.411",
-    "@hcengineering/drive": "workspace:^0.7.411",
-    "@hcengineering/love": "workspace:^0.7.411",
-    "@hcengineering/login": "workspace:^0.7.411",
-    "@hcengineering/account-client": "workspace:^0.7.411",
-    "@hcengineering/payment-client": "workspace:^0.7.411",
-    "@hcengineering/workbench": "workspace:^0.7.411",
+    "@hcengineering/platform": "workspace:^0.7.413",
+    "@hcengineering/presentation": "workspace:^0.7.413",
+    "@hcengineering/theme": "workspace:^0.7.413",
+    "@hcengineering/core": "workspace:^0.7.413",
+    "@hcengineering/ui": "workspace:^0.7.413",
+    "@hcengineering/billing": "workspace:^0.7.413",
+    "@hcengineering/view": "workspace:^0.7.413",
+    "@hcengineering/view-resources": "workspace:^0.7.413",
+    "@hcengineering/billing-client": "workspace:^0.7.413",
+    "@hcengineering/drive": "workspace:^0.7.413",
+    "@hcengineering/love": "workspace:^0.7.413",
+    "@hcengineering/login": "workspace:^0.7.413",
+    "@hcengineering/account-client": "workspace:^0.7.413",
+    "@hcengineering/payment-client": "workspace:^0.7.413",
+    "@hcengineering/workbench": "workspace:^0.7.413",
     "filesize": "^8.0.3",
     "svelte": "^4.2.20"
   }

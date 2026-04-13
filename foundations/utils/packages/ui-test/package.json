@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/ui-test",
-  "version": "0.7.411",
+  "version": "0.7.413",
   "author": "Copyright © Hardcore Engineering Inc.",
   "template": "@hcengineering/node-package",
   "license": "EPL-2.0",
@@ -32,7 +32,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.411",
+    "@hcengineering/platform-rig": "workspace:^0.7.413",
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",

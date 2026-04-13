@@ -1,6 +1,6 @@
 {
   "name": "@hcengineering/support-resources",
-  "version": "0.7.411",
+  "version": "0.7.413",
   "main": "src/index.ts",
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
@@ -14,7 +14,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
-    "@hcengineering/platform-rig": "workspace:^0.7.411",
+    "@hcengineering/platform-rig": "workspace:^0.7.413",
     "svelte-loader": "^3.2.0",
     "sass": "^1.80.0",
     "svelte-preprocess": "^5.1.4",
@@ -36,11 +36,11 @@
     "svelte-eslint-parser": "^0.33.1"
   },
   "dependencies": {
-    "@hcengineering/core": "workspace:^0.7.411",
-    "@hcengineering/platform": "workspace:^0.7.411",
-    "@hcengineering/presentation": "workspace:^0.7.411",
-    "@hcengineering/support": "workspace:^0.7.411",
-    "@hcengineering/ui": "workspace:^0.7.411",
+    "@hcengineering/core": "workspace:^0.7.413",
+    "@hcengineering/platform": "workspace:^0.7.413",
+    "@hcengineering/presentation": "workspace:^0.7.413",
+    "@hcengineering/support": "workspace:^0.7.413",
+    "@hcengineering/ui": "workspace:^0.7.413",
     "svelte": "^4.2.20"
   },
   "repository": {
