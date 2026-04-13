@@ -1094,12 +1094,29 @@ abstract class PostgresAdapterBase implements DbAdapter {
     joins: JoinProps[],
     options?: ServerFindOptions<T>
   ): string {
-    const res: string[] = []
     const query = { ..._query }
+    const res: string[] = []
     res.push(`${baseDomain}."workspaceId" = ${vars.add(this.workspaceId, '::uuid')}`)
     if (options?.skipClass !== true) {
       query._class = this.fillClass(_class, query) as any
     }
+    res.push(...this.buildQueryClauses(vars, _class, baseDomain, query, joins, options))
+    return res.join(' AND ')
+  }
+
+  /**
+   * Builds AND fragments for a query object (workspace filter is handled in {@link buildQuery}).
+   * Supports top-level `$and` (e.g. from security middleware) as nested conjunctions.
+   */
+  private buildQueryClauses<T extends Doc>(
+    vars: ValuesVariables,
+    _class: Ref<Class<T>>,
+    baseDomain: string,
+    query: DocumentQuery<T>,
+    joins: JoinProps[],
+    options?: ServerFindOptions<T>
+  ): string[] {
+    const res: string[] = []
     for (const _key in query) {
       if (options?.skipSpace === true && _key === 'space') {
         continue
@@ -1109,6 +1126,23 @@ abstract class PostgresAdapterBase implements DbAdapter {
       }
       const value = query[_key]
       if (value === undefined) continue
+
+      if (_key === '$and') {
+        if (!Array.isArray(value)) continue
+        for (const rawSub of value as DocumentQuery<T>[]) {
+          if (rawSub == null || typeof rawSub !== 'object') continue
+          const sub: DocumentQuery<T> = { ...rawSub }
+          if (sub._class === undefined && query._class !== undefined) {
+            ;(sub as any)._class = query._class
+          }
+          const nested = this.buildQueryClauses(vars, _class, baseDomain, sub, joins, options)
+          if (nested.length > 0) {
+            res.push(`(${nested.join(' AND ')})`)
+          }
+        }
+        continue
+      }
+
       const key = escape(_key)
       const valueType = this.getValueType(_class, key)
       const tkey = this.getKey(_class, baseDomain, key, joins, valueType === 'dataArray')
@@ -1117,7 +1151,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
         res.push(translated)
       }
     }
-    return res.join(' AND ')
+    return res
   }
 
   private getValueType<T extends Doc>(_class: Ref<Class<T>>, key: string): ValueType {
@@ -1335,7 +1369,7 @@ abstract class PostgresAdapterBase implements DbAdapter {
                   if (val.length > 0) {
                     res.push(`${tlkey} = ANY(${vars.addArray(val, valType)})`)
                   } else {
-                    res.push(`${tlkey} IN ('NULL')`)
+                    res.push('FALSE')
                   }
                 }
                 break
