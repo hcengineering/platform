@@ -45,7 +45,8 @@
     "@playwright/test": "^1.48.2",
     "allure-playwright": "^3.0.6",
     "allure-js-commons": "^3.0.6",
-    "@faker-js/faker": "^8.4.1"
+    "@faker-js/faker": "^8.4.1",
+    "pdf-lib": "^1.12.0"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

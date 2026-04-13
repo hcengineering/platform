@@ -1,5 +1,6 @@
 import { devices, test } from '@playwright/test'
-import { attachScreenshot, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
+import { faker } from '@faker-js/faker'
+import { attachScreenshot, generateId, HomepageURI, PlatformSetting, PlatformURI } from '../utils'
 import { allure } from 'allure-playwright'
 import { DocumentDetails, DocumentRights, DocumentStatus, NewDocument } from '../model/types'
 import { DocumentContentPage } from '../model/documents/document-content-page'
@@ -78,9 +79,67 @@ test.describe('@PDF. QMS. PDF Download and Preview', () => {
       await documentContentPage.clickDocumentThreeDots()
       const pdfPages = new PdfPages(page)
       await pdfPages.printToPdfClick()
-      await pdfPages.downloadAndVerifyPdf()
+      await pdfPages.downloadAndVerifyPdf(1)
     })
     await attachScreenshot('TESTS-271_ddownloaded_document.png', page)
+  })
+
+  test('@PDF Printed controlled document PDF is non-empty (multi-page when body is long)', async ({ page }) => {
+    await allure.description(
+      'Requirement\nAfter print, the downloaded PDF must contain real content (parsed page count, not only UI preview).'
+    )
+    test.setTimeout(120000)
+
+    const title = `Print PDF body pages-${generateId()}`
+    const approveDocument: NewDocument = {
+      template: 'HR (HR)',
+      title,
+      description: 'Controlled HR document — long body for multi-page PDF'
+    }
+    const documentDetails: DocumentDetails = {
+      type: 'HR',
+      category: 'Human Resources',
+      version: 'v1.0',
+      status: DocumentStatus.DRAFT,
+      owner: 'Appleseed John',
+      author: 'Appleseed John'
+    }
+
+    await prepareDocumentStep(page, approveDocument)
+    const documentContentPage = new DocumentContentPage(page)
+    await documentContentPage.addContent(faker.lorem.paragraphs(40))
+
+    await test.step('2. Send for Approval', async () => {
+      await documentContentPage.buttonSendForApproval.click()
+      await documentContentPage.fillSelectApproversForm([documentDetails.owner])
+      await documentContentPage.checkDocumentStatus(DocumentStatus.IN_APPROVAL)
+      await documentContentPage.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.IN_APPROVAL
+      })
+      await documentContentPage.checkCurrentRights(DocumentRights.VIEWING)
+    })
+
+    await test.step('3. Approve document', async () => {
+      await documentContentPage.confirmApproval()
+    })
+
+    await test.step('4. Effective document', async () => {
+      await documentContentPage.checkDocumentStatus(DocumentStatus.EFFECTIVE)
+      await documentContentPage.checkDocument({
+        ...documentDetails,
+        status: DocumentStatus.EFFECTIVE,
+        version: 'v1.0'
+      })
+    })
+
+    await test.step('5. Download PDF and assert multiple pages', async () => {
+      await documentContentPage.clickDocumentThreeDots()
+      const pdfPages = new PdfPages(page)
+      await pdfPages.printToPdfClick()
+      const pages = await pdfPages.downloadAndVerifyPdf(2)
+      await allure.parameter('pdf-page-count', String(pages))
+    })
   })
 
   test('TESTS-272. Check PDF Preview', async ({ page }) => {

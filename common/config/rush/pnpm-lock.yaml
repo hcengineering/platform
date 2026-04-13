@@ -31621,6 +31621,9 @@ importers:
       eslint-plugin-promise:
         specifier: ^6.1.1
         version: 6.6.0(eslint@8.57.1)
+      pdf-lib:
+        specifier: ^1.12.0
+        version: 1.17.1
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
