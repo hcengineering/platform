@@ -521,6 +521,11 @@ jobs:
         run: |
           cd ./qms-tests/sanity
           node ../../common/scripts/install-run-rushx.js uitest
+      - name: Run PDF UI tests
+        run: |
+          cd ./qms-tests/sanity
+          if [ -d playwright-report ]; then mv playwright-report playwright-report-uitest; fi
+          node ../../common/scripts/install-run-rushx.js uitest-pdf
       - name: 'Store docker logs'
         if: always()
         run: |
@@ -533,7 +538,10 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: playwright-results-qms
-          path: ./qms-tests/sanity/playwright-report/
+          if-no-files-found: warn
+          path: |
+            ./qms-tests/sanity/playwright-report/
+            ./qms-tests/sanity/playwright-report-uitest/
       - name: Upload Logs
         if: always()
         uses: actions/upload-artifact@v6
