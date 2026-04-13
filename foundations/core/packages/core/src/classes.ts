@@ -987,13 +987,7 @@ export interface ClassCollaborators<T extends Doc> extends Doc {
   fields: (keyof T)[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
   provideSecurity?: boolean // If true, will provide security for collaborators
   provideAttachedSecurity?: boolean // If true, will provide security for collaborators of attached doc
-  /**
-   * If true, guest / read-only-guest `findAll` queries for this class are intersected with
-   * document ids the account has as {@link Collaborator} (middleware), in addition to DB-level
-   * checks when {@link provideSecurity} is enabled. Prefer this over overloading `provideSecurity`
-   * when only meeting-minutes-style id filtering is needed.
-   */
-  restrictGuestReadToCollaborators?: boolean
+  restrictGuestReadToCollaborators?: boolean // If true, will restrict guest read to collaborators only
 }
 
 export interface Collaborator extends AttachedDoc {
