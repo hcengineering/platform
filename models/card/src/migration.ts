@@ -16,6 +16,7 @@
 import cardPlugin, { cardId, DOMAIN_CARD, type Card, type Role } from '@hcengineering/card'
 import core, {
   DOMAIN_MODEL,
+  SortingOrder,
   TxOperations,
   type Class,
   type ClassPermission,
@@ -71,7 +72,7 @@ export const cardOperation: MigrateOperation = {
   async upgrade (state: Map<string, Set<string>>, client: () => Promise<MigrationUpgradeClient>, mode): Promise<void> {
     await tryUpgrade(mode, state, client, cardId, [
       {
-        state: 'migrateViewlets-v7',
+        state: 'migrateViewlets-6',
         func: migrateViewlets
       },
       {
@@ -128,6 +129,11 @@ export const cardOperation: MigrateOperation = {
         state: 'migrate-restricted-permissions',
         mode: 'upgrade',
         func: migrateRestrictedPermissions
+      },
+      {
+        state: 'add-grid-viewlet',
+        mode: 'upgrade',
+        func: addGridViewlet
       }
     ])
   }
@@ -282,6 +288,40 @@ async function migrateRestrictedPermissions (_client: MigrationUpgradeClient): P
         },
         `${masterTag._id}_remove_forbidden` as Ref<ClassPermission>
       )
+    }
+  }
+}
+
+async function addGridViewlet (client: MigrationUpgradeClient): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const masterTags = await client.findAll(card.class.MasterTag, {})
+  const currentViewlets = await client.findAll(view.class.Viewlet, {
+    descriptor: card.viewlet.CardGridDescriptor,
+    attachTo: { $in: masterTags.map((p) => p._id) }
+  })
+  for (const masterTag of masterTags) {
+    const current = currentViewlets.find((p) => p.attachTo === masterTag._id)
+    if (current === undefined) {
+      await txOp.createDoc(view.class.Viewlet, core.space.Model, {
+        descriptor: card.viewlet.CardGridDescriptor,
+        baseQuery: {
+          isLatest: true
+        },
+        config: [''],
+        configOptions: {
+          strict: true
+        },
+        viewOptions: {
+          groupBy: [],
+          orderBy: [
+            ['modifiedOn', SortingOrder.Descending],
+            ['rank', SortingOrder.Ascending],
+            ['title', SortingOrder.Descending]
+          ],
+          other: []
+        },
+        attachTo: masterTag._id
+      })
     }
   }
 }
