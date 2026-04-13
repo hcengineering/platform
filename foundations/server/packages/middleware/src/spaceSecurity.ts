@@ -27,6 +27,7 @@ import core, {
   type FindResult,
   generateId,
   getClassCollaborators,
+  mergeQueries,
   type LookupData,
   type MeasureContext,
   type ObjQueryType,
@@ -613,19 +614,6 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return domain === 'tx' ? 'objectSpace' : domain === 'space' ? '_id' : 'space'
   }
 
-  private mergeDocIdRestriction<T extends Doc>(query: DocumentQuery<T>, allowed: Ref<T>[]): DocumentQuery<T> {
-    const allowedIds: DocumentQuery<T>['_id'] = { $in: allowed.length === 0 ? [] : allowed }
-    const prevId = query._id
-    if (prevId === undefined) {
-      return { ...query, _id: allowedIds }
-    }
-    type WithAnd = DocumentQuery<T> & { $and?: DocumentQuery<T>[] }
-    const { _id: _drop, $and, ...rest } = query as WithAnd
-    const andParts: DocumentQuery<T>[] = [...($and ?? []), { _id: prevId }, { _id: allowedIds }]
-    const merged: DocumentQuery<T> = { ...rest, $and: andParts }
-    return merged
-  }
-
   private async applyGuestCollaboratorReadRestriction<T extends Doc>(
     ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
@@ -642,7 +630,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
 
     const collabSec = getClassCollaborators(this.context.modelDb, this.context.hierarchy, _class)
-    if (collabSec?.provideSecurity !== true) {
+    if (collabSec?.restrictGuestReadToCollaborators !== true) {
       return query
     }
 
@@ -658,7 +646,9 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       { projection: { attachedTo: 1 }, limit: 10_000 }
     )) as Collaborator[]
     const allowed = collabs.map((c) => c.attachedTo) as Ref<T>[]
-    return this.mergeDocIdRestriction(query, allowed)
+    const allowedIds: DocumentQuery<T>['_id'] = { $in: allowed.length === 0 ? [] : allowed }
+    const restriction: DocumentQuery<T> = { _id: allowedIds }
+    return mergeQueries(query, restriction)
   }
 
   override async findAll<T extends Doc>(

@@ -60,7 +60,7 @@ function makeCtx (account: Account): MeasureContext<SessionData> {
 
 function makeMiddleware (
   role: AccountRole,
-  opts: { provideSecurity: boolean } = { provideSecurity: false }
+  opts: { restrictGuestReadToCollaborators: boolean } = { restrictGuestReadToCollaborators: false }
 ): { mw: SpaceSecurityMiddleware, account: Account, calls: Array<{ cls: Ref<Class<Doc>>, query: any }> } {
   const account = makeAccount(role)
   const calls: Array<{ cls: Ref<Class<Doc>>, query: any }> = []
@@ -70,7 +70,8 @@ function makeMiddleware (
     space: core.space.Model,
     attachedTo: DOC_CLASS,
     fields: ['createdBy'],
-    provideSecurity: opts.provideSecurity,
+    provideSecurity: false,
+    restrictGuestReadToCollaborators: opts.restrictGuestReadToCollaborators,
     modifiedOn: Date.now(),
     modifiedBy: core.account.System
   } as unknown as ClassCollaborators<Doc>
@@ -144,8 +145,8 @@ function makeMiddleware (
 }
 
 describe('SpaceSecurityMiddleware guest collaborator read restriction', () => {
-  it('applies collaborator _id filter for guest when provideSecurity is enabled', async () => {
-    const { mw, account, calls } = makeMiddleware(AccountRole.Guest, { provideSecurity: true })
+  it('applies collaborator _id filter for guest when restrictGuestReadToCollaborators is enabled', async () => {
+    const { mw, account, calls } = makeMiddleware(AccountRole.Guest, { restrictGuestReadToCollaborators: true })
     const ctx = makeCtx(account)
 
     await mw.findAll(ctx, DOC_CLASS, { title: 'Meeting minutes' })
@@ -160,7 +161,7 @@ describe('SpaceSecurityMiddleware guest collaborator read restriction', () => {
   })
 
   it('keeps query unchanged for regular user', async () => {
-    const { mw, account, calls } = makeMiddleware(AccountRole.User, { provideSecurity: true })
+    const { mw, account, calls } = makeMiddleware(AccountRole.User, { restrictGuestReadToCollaborators: true })
     const ctx = makeCtx(account)
 
     await mw.findAll(ctx, DOC_CLASS, { title: 'Meeting minutes' })

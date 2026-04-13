@@ -14,7 +14,7 @@
 //
 
 import contact from '@hcengineering/contact'
-import { TxOperations, type Ref, type Space } from '@hcengineering/core'
+import { DOMAIN_MODEL, TxOperations, type Ref, type Space } from '@hcengineering/core'
 import drive from '@hcengineering/drive'
 import {
   MeetingStatus,
@@ -178,6 +178,21 @@ export const loveOperation: MigrateOperation = {
         state: 'meeting-minutes-reindex-v1',
         func: async (client) => {
           await client.reindex(DOMAIN_MEETING_MINUTES, [love.class.MeetingMinutes])
+        }
+      },
+      {
+        state: 'meeting-minutes-restrict-guest-read-to-collaborators',
+        mode: 'upgrade',
+        func: async (client: MigrationClient) => {
+          await client.update(
+            DOMAIN_MODEL,
+            {
+              _class: core.class.ClassCollaborators,
+              attachedTo: love.class.MeetingMinutes,
+              restrictGuestReadToCollaborators: { $exists: false }
+            },
+            { restrictGuestReadToCollaborators: true }
+          )
         }
       }
     ])
