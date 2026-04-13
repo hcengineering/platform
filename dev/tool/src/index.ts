@@ -73,7 +73,7 @@ import { updateField } from './workspace'
 
 import { RatingCalculator, ratingEvents, type QueueRatingMessage } from '@hcengineering/pod-rating'
 
-import {
+import core, {
   AccountRole,
   isArchivingMode,
   isDeletingMode,
@@ -82,6 +82,7 @@ import {
   SocialIdType,
   systemAccountEmail,
   systemAccountUuid,
+  TxOperations,
   type AccountUuid,
   type Data,
   type Doc,
@@ -125,13 +126,14 @@ import {
   restoreFromv6All,
   restoreTrustedV6Workspace
 } from './db'
+import { ensureMissingSocialIdentities } from './contact'
 import { performGithubAccountMigrations } from './github'
 import { performGmailAccountMigrations } from './gmail'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
 
 import { createRestClient } from '@hcengineering/api-client'
 import { type CardID } from '@hcengineering/communication-types'
-import { sendTransactorEvent } from '@hcengineering/server-tool'
+import { connect, sendTransactorEvent } from '@hcengineering/server-tool'
 import { existsSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { dirname } from 'path'
@@ -2994,6 +2996,41 @@ export function devTool (
           await calculator.recalculateAll(toolCtx)
 
           await calculator.close()
+        }
+      })
+    })
+
+  program
+    .command('ensure-missing-social-identities <workspace>')
+    .description(
+      'Create contact.class.SocialIdentity in the workspace for account social ids missing on the person (see contact migration createSocialIdentities)'
+    )
+    .option('-d, --dry-run', 'Only log persons/social ids that would be created', false)
+    .action(async (workspace: string, cmd: { dryRun: boolean }) => {
+      await withAccountDatabase(async (db) => {
+        const info = await getWorkspace(db, workspace)
+        if (info === null) {
+          throw new Error(`Workspace ${workspace} not found`)
+        }
+        const wsUuid = info.uuid
+        const endpoint = await getWorkspaceTransactorEndpoint(wsUuid)
+        const accountClient = getAccountClient(getToolToken(wsUuid))
+        const connection = await connect(endpoint, wsUuid, undefined, { model: 'upgrade' })
+        const ops = new TxOperations(connection, core.account.ConfigUser)
+        try {
+          const { skippedPersons, wouldCreate, created } = await ensureMissingSocialIdentities(
+            toolCtx,
+            ops,
+            accountClient,
+            cmd.dryRun
+          )
+          console.log(
+            cmd.dryRun
+              ? `ensure-missing-social-identities dry-run: persons without personUuid skipped=${skippedPersons}, social identities that would be created=${wouldCreate}`
+              : `ensure-missing-social-identities: persons without personUuid skipped=${skippedPersons}, SocialIdentity docs created=${created}`
+          )
+        } finally {
+          await connection.close()
         }
       })
     })
