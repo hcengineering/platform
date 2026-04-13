@@ -68,7 +68,7 @@ describe('PostgresAdapter findAll SQL (top-level $and, empty $in)', () => {
       space: { $in: noSpaces }
     }
 
-    await adapter.findAll(ctx, test.class.ComplexClass, query)
+    await adapter.findAll(ctx as any, test.class.ComplexClass, query)
 
     expect(queries.length).toBeGreaterThan(0)
     const sql = queries[queries.length - 1]?.query ?? ''
@@ -84,7 +84,7 @@ describe('PostgresAdapter findAll SQL (top-level $and, empty $in)', () => {
 
     const noSpaces: Ref<Space>[] = []
     const q: DocumentQuery<ComplexClass> = { space: { $in: noSpaces } }
-    await adapter.findAll(ctx, test.class.ComplexClass, q)
+    await adapter.findAll(ctx as any, test.class.ComplexClass, q)
 
     const sql = queries[queries.length - 1]?.query ?? ''
     expect(sql).toContain('FALSE')
@@ -96,7 +96,7 @@ describe('PostgresAdapter findAll SQL (top-level $and, empty $in)', () => {
 
     const noIds: Ref<ComplexClass>[] = []
     const q: DocumentQuery<ComplexClass> = { _id: { $in: noIds } }
-    await adapter.findAll(ctx, test.class.ComplexClass, q)
+    await adapter.findAll(ctx as any, test.class.ComplexClass, q)
 
     const sql = queries[queries.length - 1]?.query ?? ''
     expect(sql).toContain('FALSE')
