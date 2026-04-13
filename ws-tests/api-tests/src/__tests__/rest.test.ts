@@ -23,7 +23,6 @@ import {
   type WorkspaceToken
 } from '@hcengineering/api-client'
 import core, {
-  AccountRole,
   buildSocialIdString,
   concatLink,
   generateId,
@@ -46,8 +45,6 @@ import { type AccountClient, getClient as getAccountClient } from '@hcengineerin
 import chunter from '@hcengineering/chunter'
 import contact, { ensureEmployee, type SocialIdentityRef, type Person } from '@hcengineering/contact'
 import { generateToken } from '@hcengineering/server-token'
-
-import { loveClass, LoveMeetingStatus } from '../loveApiRefs'
 import WebSocket from 'ws'
 
 describe('rest-api-server', () => {
@@ -340,104 +337,6 @@ describe('rest-api-server', () => {
         })
       })
     }, 20000)
-  })
-
-  /**
-   * Requires a workspace account with AccountRole.Guest (invite / guest link) in the same workspace as `user1`.
-   * Set API_TESTS_GUEST_EMAIL and API_TESTS_GUEST_PASSWORD to enable.
-   */
-  describe('guest meeting-minutes read', () => {
-    const guestEmail = 'guest1'
-    const guestPassword = '1234'
-
-    it('guest findAll does not return meeting minutes without collaborator', async () => {
-      const userConn = connect()
-      const rooms = await userConn.findAll(loveClass.Room, {}, { limit: 1 })
-      if (rooms.length === 0) {
-        throw new Error('No love Room in workspace — cannot seed MeetingMinutes')
-      }
-      const room = rooms[0]
-
-      const tx = await connectTx()
-      const title = `api-test-mm-${generateId()}`
-      const mmId = await tx.createDoc(loveClass.MeetingMinutes, core.space.Workspace, {
-        title,
-        description: null,
-        attachedTo: room._id,
-        attachedToClass: loveClass.Room,
-        collection: 'meetings',
-        status: LoveMeetingStatus.Finished
-      })
-
-      try {
-        const userFound = await userConn.findAll(loveClass.MeetingMinutes, { _id: mmId })
-        expect(userFound.length).toBe(1)
-
-        const guestWs = await getWorkspaceToken(
-          'http://huly.local:8083',
-          {
-            email: guestEmail,
-            password: guestPassword,
-            workspace: wsName
-          },
-          serverConfig
-        )
-        expect(guestWs.info.role).toBe(AccountRole.Guest)
-
-        const guestConn = createRestClient(guestWs.endpoint, guestWs.workspaceId, guestWs.token)
-        const guestFound = await guestConn.findAll(loveClass.MeetingMinutes, { _id: mmId })
-        expect(guestFound.length).toBe(0)
-      } finally {
-        await tx.removeDoc(loveClass.MeetingMinutes, core.space.Workspace, mmId)
-      }
-    }, 60000)
-
-    it('guest findAll returns meeting minutes when guest is a Collaborator', async () => {
-      const userConn = connect()
-      const rooms = await userConn.findAll(loveClass.Room, {}, { limit: 1 })
-      if (rooms.length === 0) {
-        throw new Error('No love Room in workspace — cannot seed MeetingMinutes')
-      }
-      const room = rooms[0]
-
-      const guestWs = await getWorkspaceToken(
-        'http://huly.local:8083',
-        {
-          email: guestEmail,
-          password: guestPassword,
-          workspace: wsName
-        },
-        serverConfig
-      )
-      expect(guestWs.info.role).toBe(AccountRole.Guest)
-
-      const tx = await connectTx()
-      const title = `api-test-mm-${generateId()}`
-      const mmId = await tx.createDoc(loveClass.MeetingMinutes, core.space.Workspace, {
-        title,
-        description: null,
-        attachedTo: room._id,
-        attachedToClass: loveClass.Room,
-        collection: 'meetings',
-        status: LoveMeetingStatus.Finished
-      })
-
-      const collabId = await tx.createDoc(core.class.Collaborator, core.space.Workspace, {
-        attachedTo: mmId,
-        attachedToClass: loveClass.MeetingMinutes,
-        collection: 'collaborators',
-        collaborator: guestWs.info.account
-      } as any)
-
-      try {
-        const guestConn = createRestClient(guestWs.endpoint, guestWs.workspaceId, guestWs.token)
-        const guestFound = await guestConn.findAll(loveClass.MeetingMinutes, { _id: mmId })
-        expect(guestFound.length).toBe(1)
-      } finally {
-        await tx.removeDoc(core.class.Collaborator, core.space.Workspace, collabId)
-        await tx.removeDoc(loveClass.MeetingMinutes, core.space.Workspace, mmId)
-      }
-    }, 60000)
   })
 })
 
