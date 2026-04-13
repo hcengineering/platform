@@ -463,6 +463,10 @@ export async function CurrentDate (): Promise<Timestamp> {
   return Date.now()
 }
 
+export function EmptyValue (): null {
+  return null
+}
+
 export function EmptyArray (): any[] {
   return []
 }

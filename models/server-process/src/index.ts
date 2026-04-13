@@ -343,6 +343,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.RemoveLast
   })
 
+  builder.mixin(process.function.EmptyValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.EmptyValue
+  })
+
   builder.mixin(process.function.EmptyArray, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.EmptyArray
   })
