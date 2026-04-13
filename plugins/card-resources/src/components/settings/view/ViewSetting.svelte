@@ -19,7 +19,7 @@
   import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import { getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
   import { resizeObserver } from '@hcengineering/ui'
-  import view, { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
+  import view, { BuildModelKey, Viewlet } from '@hcengineering/view'
   import {
     buildConfigLookup,
     canResolveAttribute,
@@ -34,7 +34,7 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: citems = getConfig(viewlet, undefined)
+  $: citems = getConfig(viewlet)
 
   interface Config {
     value: string | BuildModelKey | undefined
@@ -232,7 +232,7 @@
     return false
   }
 
-  function getConfig (viewlet: Viewlet, preference: ViewletPreference | undefined): Config[] {
+  function getConfig (viewlet: Viewlet): Config[] {
     const result = getBaseConfig(viewlet)
     if (viewlet.configOptions?.strict !== true) {
       const allAttributes = hierarchy.getAllAttributes(viewlet.attachTo)
@@ -248,15 +248,10 @@
         })
       }
 
-      addAssociations(result, viewlet.attachTo, preference)
+      addAssociations(result, viewlet.attachTo)
     }
 
-    function addAssociations (
-      result: Config[],
-      _class: Ref<Class<Doc>>,
-      preference: ViewletPreference | undefined,
-      parents: AssociationQuery[] = []
-    ): void {
+    function addAssociations (result: Config[], _class: Ref<Class<Doc>>, parents: AssociationQuery[] = []): void {
       const ancestors = new Set(hierarchy.getAncestors(_class))
       const parent = hierarchy.getParentClass(_class)
       const parentMixins = hierarchy
@@ -276,10 +271,10 @@
       const associationsA = client.getModel().findAllSync(core.class.Association, { classB: { $in: allClasses } })
 
       associationsB.forEach((a) => {
-        processAssociation(a, 'b', result, preference, parents)
+        processAssociation(a, 'b', result, parents)
       })
       associationsA.forEach((a) => {
-        processAssociation(a, 'a', result, preference, parents)
+        processAssociation(a, 'a', result, parents)
       })
     }
 
@@ -291,7 +286,6 @@
       association: Association,
       direction: 'a' | 'b',
       result: Config[],
-      preference: ViewletPreference | undefined,
       parents: AssociationQuery[]
     ): void {
       const associationName = `$associations.${association._id}_${direction}`
@@ -327,17 +321,16 @@
         result.push(newValue)
       }
 
-      if (preference === undefined) return
-      const exists = preference.config.find((p) => {
-        const key = typeof p === 'string' ? p : p.key
+      const exists = result.find((p) => {
+        const key = typeof p.value === 'string' ? p.value : p.value?.key
         return key === resultName
       })
-      if (exists) {
-        addAssociations(result, targetClass, preference, [...parents, [association._id, direction === 'a' ? 1 : -1]])
+      if ((exists as AttributeConfig)?.enabled) {
+        addAssociations(result, targetClass, [...parents, [association._id, direction === 'a' ? 1 : -1]])
       }
     }
 
-    return preference === undefined ? result : []
+    return result
   }
 </script>
 
@@ -353,6 +346,8 @@
             // TODO UBERF-9639: restore defaults
           }}
           on:save={(event) => {
+            viewlet.config = event.detail
+            viewlet = viewlet
             dispatch('update', event.detail)
           }}
         />
