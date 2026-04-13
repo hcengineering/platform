@@ -28,6 +28,7 @@
         view.viewlet.List,
         view.viewlet.Tree,
         view.viewlet.MasterDetail,
+        card.viewlet.CardGrid,
         card.viewlet.CardFeedDescriptor,
         view.viewlet.RelationshipTable,
         view.viewlet.Document
@@ -37,6 +38,7 @@
         view.viewlet.List,
         view.viewlet.Tree,
         view.viewlet.MasterDetail,
+        card.viewlet.CardGrid,
         card.viewlet.CardFeedDescriptor,
         view.viewlet.RelationshipTable
       ]

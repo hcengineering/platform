@@ -13,12 +13,8 @@
 // limitations under the License.
 //
 import type { AccountRole, Blob, Permission, Ref, Timestamp, TypedSpace } from '@hcengineering/core'
-import type {
-  Asset,
-  IntlString,
-  /* Metadata, Plugin, plugin, */ Resource /*, Service */
-} from '@hcengineering/platform'
-import { /* getContext, */ type ComponentType } from 'svelte'
+import type { Asset, IntlString, Resource } from '@hcengineering/platform'
+import { type ComponentType } from 'svelte'
 
 /**
  * Describe a browser URI location parsed to path, query and fragment.
@@ -341,6 +337,10 @@ export interface DropdownIntlItem {
   description?: IntlString
   paramsDescription?: Record<string, any>
   keys?: string[]
+}
+
+export interface NestedSelectItem extends DropdownIntlItem {
+  children?: NestedSelectItem[]
 }
 
 export interface PopupOptions {

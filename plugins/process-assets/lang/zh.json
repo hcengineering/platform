@@ -168,7 +168,8 @@
     "YearFromDate": "日期到年份",
     "MonthFromDate": "日期到月份",
     "DayFromDate": "日期到天",
-    "DateDifference": "日期差异"
+    "DateDifference": "日期差异",
+    "EmptyValue": "空值"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

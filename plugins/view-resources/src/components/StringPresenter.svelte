@@ -17,14 +17,14 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { LabelAndProps, LinkWrapper, tooltip } from '@hcengineering/ui'
 
-  export let value: string | string[] | undefined
+  export let value: string | string[] | null | undefined
   export let accent: boolean = false
   export let oneLine: boolean = false
 
   $: tooltipParams = getTooltip(value)
 
-  function getTooltip (value: string | string[] | undefined): LabelAndProps | undefined {
-    if (value === undefined) return
+  function getTooltip (value: string | string[] | null | undefined): LabelAndProps | undefined {
+    if (value == null) return
     let str = ''
     if (Array.isArray(value)) {
       str = value.reduce((acc, curr, i) => (acc += i === 0 ? curr : ` ${curr}`), '')

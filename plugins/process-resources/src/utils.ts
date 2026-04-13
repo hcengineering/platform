@@ -331,7 +331,7 @@ function getContextFunctions (
         break
       }
       default: {
-        if (hierarchy.isDerived(func.of, target)) {
+        if (hierarchy.isDerived(func.of, target) || func.of === core.class.TypeAny) {
           matched.push(func._id)
         }
       }

@@ -82,6 +82,7 @@
     "SectionUnlocked": "Section {section} unlocked",
     "LayoutAuto": "Auto",
     "SingleColumn": "Single column",
-    "TwoColumns": "Two columns"
+    "TwoColumns": "Two columns",
+    "Grid": "Grid"
   }
 }

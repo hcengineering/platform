@@ -30,5 +30,6 @@ loadMetadata(card.icon, {
   Feed: `${icons}#feed`,
   All: `${icons}#all`,
   Duplicate: `${icons}#duplicate`,
-  Lock: `${icons}#lock`
+  Lock: `${icons}#lock`,
+  Grid: `${icons}#grid`
 })

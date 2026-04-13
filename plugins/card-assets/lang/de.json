@@ -82,6 +82,7 @@
     "SectionUnlocked": "Sektion {section} entsperrt",
     "LayoutAuto": "Auto",
     "SingleColumn": "Einspaltig",
-    "TwoColumns": "Zwei spaltig"
+    "TwoColumns": "Zwei spaltig",
+    "Grid": "Gitter"
   }
 }
