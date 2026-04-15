@@ -12,7 +12,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Analytics } from '@hcengineering/analytics'
   import card, { Card } from '@hcengineering/card'
   import chat from '@hcengineering/chat'
   import communication, { GuestCommunicationSettings } from '@hcengineering/communication'
@@ -26,11 +25,9 @@
     getCurrentAccount,
     pickPrimarySocialId,
     readOnlyGuestAccountUuid,
-    setWorkspaceGuestAutoJoinRoles,
     type Doc,
     type Permission,
-    type Ref,
-    type Space
+    type Ref
   } from '@hcengineering/core'
   import { getEmbeddedLabel, getMetadata, type IntlString } from '@hcengineering/platform'
   import { createQuery, getClient, uiContext } from '@hcengineering/presentation'
@@ -39,7 +36,6 @@
     Breadcrumb,
     Component,
     defineSeparators,
-    DropdownLabels,
     Header,
     Icon,
     Label,
@@ -48,11 +44,11 @@
     Scroller,
     Separator,
     Toggle,
-    twoPanelsSeparators,
-    type DropdownTextItem
+    twoPanelsSeparators
   } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
   import { onMount } from 'svelte'
+  import AvailableSpacesInput from './AvailableSpacesInput.svelte'
   import settingsRes from '../plugin'
 
   let loadingSettings = true
@@ -80,21 +76,6 @@
   const permissionsQuery = createQuery()
   const hiddenAppsQuery = createQuery()
   const guestCommunicationQuery = createQuery()
-
-  function normalizeAutoJoinForRoles (roles: AccountRole[]): AccountRole[] | undefined {
-    return roles.length > 0 ? [...roles] : undefined
-  }
-
-  interface GuestAutoJoinGroupState {
-    dropdownItems: DropdownTextItem[]
-    selectedKeys: string[]
-    docById: Map<string, Space>
-  }
-
-  let guestAutoJoinByGroupId = new Map<string, GuestAutoJoinGroupState>()
-  let guestAutoJoinRowsLoadGen = 0
-  let guestAutoJoinPostSaveBump = 0
-  let guestAutoJoinSavingGroupId: string | undefined
 
   onMount(() => {
     void (async (): Promise<void> => {
@@ -154,114 +135,6 @@
   )
 
   $: sortedVisibleModuleGroups = [...visibleModuleGroups].sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity))
-
-  $: guestAutoJoinTargetGroups =
-    guestPermissionsTab === 'guest'
-      ? sortedVisibleModuleGroups.filter((g) => g.role === AccountRole.Guest)
-      : []
-
-  $: void refreshGuestAutoJoinByApplication(guestAutoJoinTargetGroups, guestAutoJoinPostSaveBump)
-
-  async function refreshGuestAutoJoinByApplication (
-    groups: ModulePermissionGroup[],
-    _bump: number
-  ): Promise<void> {
-    void _bump
-    const gen = ++guestAutoJoinRowsLoadGen
-    const next = new Map<string, GuestAutoJoinGroupState>()
-
-    await Promise.all(
-      groups.map(async (g) => {
-        const docById = new Map<string, Space>()
-        try {
-          const res = await client.findAll(g.spaceClass, { archived: false })
-          for (const d of res) {
-            const s = d as Space
-            docById.set(s._id, s)
-          }
-        } catch (err) {
-          Analytics.handleError(err as Error)
-        }
-        if (gen !== guestAutoJoinRowsLoadGen) {
-          return
-        }
-        const docs = [...docById.values()]
-        next.set(g._id, {
-          dropdownItems: docs
-            .map((d) => ({ id: d._id, label: d.name }))
-            .sort((a, b) => a.label.localeCompare(b.label)),
-          selectedKeys: docs
-            .filter((d) => d.autoJoinForRoles?.includes(AccountRole.Guest) === true)
-            .map((d) => d._id)
-            .sort(),
-          docById
-        })
-      })
-    )
-
-    if (gen !== guestAutoJoinRowsLoadGen) {
-      return
-    }
-    guestAutoJoinByGroupId = next
-  }
-
-  function handleGuestAutoJoinForGroupSelected (
-    group: ModulePermissionGroup
-  ): (e: CustomEvent<string[]>) => void {
-    return (e) => {
-      void handleGuestAutoJoinForGroup(group, e)
-    }
-  }
-
-  async function handleGuestAutoJoinForGroup (
-    group: ModulePermissionGroup,
-    e: CustomEvent<string[]>
-  ): Promise<void> {
-    const state = guestAutoJoinByGroupId.get(group._id)
-    if (state === undefined) {
-      return
-    }
-
-    const nextKeys = new Set(e.detail)
-    const prevKeys = new Set(state.selectedKeys)
-
-    const toEnable = [...nextKeys].filter((k) => !prevKeys.has(k))
-    const toDisable = [...prevKeys].filter((k) => !nextKeys.has(k))
-
-    if (toEnable.length === 0 && toDisable.length === 0) {
-      return
-    }
-
-    guestAutoJoinSavingGroupId = group._id
-    try {
-      const ops: Array<Promise<unknown>> = []
-
-      for (const key of toEnable) {
-        const doc = state.docById.get(key)
-        if (doc === undefined) {
-          continue
-        }
-        const roles = setWorkspaceGuestAutoJoinRoles(doc.autoJoinForRoles, true)
-        ops.push(client.diffUpdate(doc, { autoJoinForRoles: normalizeAutoJoinForRoles(roles) }))
-      }
-
-      for (const key of toDisable) {
-        const doc = state.docById.get(key)
-        if (doc === undefined) {
-          continue
-        }
-        const roles = setWorkspaceGuestAutoJoinRoles(doc.autoJoinForRoles, false)
-        ops.push(client.diffUpdate(doc, { autoJoinForRoles: normalizeAutoJoinForRoles(roles) }))
-      }
-
-      await Promise.all(ops)
-    } catch (err) {
-      Analytics.handleError(err as Error)
-    } finally {
-      guestAutoJoinSavingGroupId = undefined
-      guestAutoJoinPostSaveBump++
-    }
-  }
 
   /** Anonymous (read-only guest) module rows are view-only until workspace allows anonymous guests. */
   $: anonymousModulePermissionsReadOnly = guestPermissionsTab === 'anonymous' && !allowReadOnlyGuests
@@ -453,10 +326,7 @@
                       <Label label={settingsRes.string.GuestAccessDescription} />
                     </div>
                     <div class="guestAccessRow-toggleCell">
-                      <Toggle
-                        on={allowReadOnlyGuests}
-                        on:change={onReadonlyGuestsToggle}
-                      />
+                      <Toggle on={allowReadOnlyGuests} on:change={onReadonlyGuestsToggle} />
                     </div>
                   </div>
                   <div class="guestAccessRow">
@@ -464,11 +334,7 @@
                       <Label label={settingsRes.string.GuestSignUpDescription} />
                     </div>
                     <div class="guestAccessRow-toggleCell">
-                      <Toggle
-                        disabled={!allowReadOnlyGuests}
-                        on={allowGuestSignUp}
-                        on:change={onGuestSignUpToggle}
-                      />
+                      <Toggle disabled={!allowReadOnlyGuests} on={allowGuestSignUp} on:change={onGuestSignUpToggle} />
                     </div>
                   </div>
                   {#if communicationApiEnabled}
@@ -524,8 +390,9 @@
                   {@const moduleOn = isModuleEnabled(group)}
                   {@const permissionCount = (group.permissions ?? []).length}
                   {@const hasGuestAutoJoinRow =
-                    guestPermissionsTab === 'guest' && group.role === AccountRole.Guest}
-                  {@const guestAutoJoinState = guestAutoJoinByGroupId.get(group._id)}
+                    guestPermissionsTab === 'guest' &&
+                    group.role === AccountRole.Guest &&
+                    group.spaceClass !== undefined}
                   {@const hasPermissionRowsBlock = permissionCount > 0 || hasGuestAutoJoinRow}
                   <div class="permissionModuleCard" class:permissionModuleCard-off={!moduleOn}>
                     <div
@@ -579,23 +446,9 @@
                               <Label label={settingsRes.string.GuestAutoJoinAvailableSpaces} />
                             </div>
                             <div class="permissionRow-editorCell">
-                              <DropdownLabels
-                                multiselect
-                                autoSelect={false}
-                                items={guestAutoJoinState?.dropdownItems ?? []}
-                                selected={guestAutoJoinState?.selectedKeys ?? []}
-                                label={settingsRes.string.GuestAutoJoinAvailableSpaces}
-                                showDropdownIcon
-                                kind={'no-border'}
-                                size={'large'}
-                                width={'min(18rem, 100%)'}
-                                disabled={!moduleOn ||
-                                  anonymousModulePermissionsReadOnly ||
-                                  guestAutoJoinState === undefined ||
-                                  guestAutoJoinSavingGroupId === group._id ||
-                                  (guestAutoJoinState?.dropdownItems.length ?? 0) === 0}
-                                loading={guestAutoJoinSavingGroupId === group._id}
-                                on:selected={handleGuestAutoJoinForGroupSelected(group)}
+                              <AvailableSpacesInput
+                                {group}
+                                disabled={!moduleOn || anonymousModulePermissionsReadOnly}
                               />
                             </div>
                           </div>
