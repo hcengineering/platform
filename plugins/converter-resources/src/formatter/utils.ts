@@ -34,7 +34,6 @@ export enum DateFormatOption {
  * Check if a value is an IntlString id ({@link Id}: {@code plugin:resourceKind:key}) or
  * {@link getEmbeddedLabel} output ({@code embedded:embedded:...}).
  *
- * Rejects colon-heavy free text and URLs (e.g. {@code https://host/path?uri=a:b}) that are not platform ids.
  */
 export function isIntlString (value: unknown): value is string {
   if (typeof value !== 'string' || value.length === 0) {
@@ -56,9 +55,6 @@ export function isIntlString (value: unknown): value is string {
     return false
   }
   if (/^https?$/i.test(plugin)) {
-    return false
-  }
-  if (rest.includes('/') || rest.includes('?') || rest.includes('#')) {
     return false
   }
   return true

@@ -50,6 +50,40 @@ describe('formatter/utils', () => {
     it('returns false for non-string', () => {
       expect(isIntlString(null as any)).toBe(false)
       expect(isIntlString(undefined as any)).toBe(false)
+      expect(isIntlString(42 as any)).toBe(false)
+      expect(isIntlString({} as any)).toBe(false)
+      expect(isIntlString([] as any)).toBe(false)
+    })
+
+    it('returns false when value looks like a URL (contains ://)', () => {
+      expect(isIntlString('https://example.com/path')).toBe(false)
+      expect(isIntlString('http://localhost:8080')).toBe(false)
+      expect(isIntlString('card:string:https://oops')).toBe(false)
+    })
+
+    it('returns true for embedded label prefix when non-empty after prefix', () => {
+      expect(isIntlString('embedded:embedded:Hello')).toBe(true)
+      expect(isIntlString('embedded:embedded:x')).toBe(true)
+    })
+
+    it('returns false for embedded label prefix only', () => {
+      expect(isIntlString('embedded:embedded:')).toBe(false)
+    })
+
+    it('returns false when plugin looks like http or https scheme', () => {
+      expect(isIntlString('http:string:Something')).toBe(false)
+      expect(isIntlString('https:string:Something')).toBe(false)
+      expect(isIntlString('HTTP:string:Something')).toBe(false)
+    })
+
+    it('returns false when plugin or resource kind does not match id pattern', () => {
+      expect(isIntlString('Card:string:Card')).toBe(false)
+      expect(isIntlString('plugin:1kind:Key')).toBe(false)
+      expect(isIntlString('plugin:_kind:Key')).toBe(false)
+    })
+
+    it('returns true for hyphenated plugin and underscore in resource id', () => {
+      expect(isIntlString('my-plugin:string:My_Key')).toBe(true)
     })
   })
 
