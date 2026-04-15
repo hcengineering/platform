@@ -348,7 +348,7 @@ async function formatValueFallback (
       try {
         return await translate(value as unknown as IntlString, {}, language)
       } catch {
-        // Not a registered intl id or loader failure — fall through.
+        console.warn('Failed to translate intl string', value)
       }
     }
     if (attr.key === DocumentAttributeKey.CreatedBy || attr.key === DocumentAttributeKey.ModifiedBy) {
