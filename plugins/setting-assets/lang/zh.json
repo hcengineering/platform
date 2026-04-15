@@ -174,6 +174,8 @@
     "GuestSignUpDescription": "允许匿名用户以访客身份加入您的工作区，获得有限的编辑权限",
     "GuestChannelsDescription": "访客加入后可以发送消息的频道",
     "GuestChannelsArrayLabel": "选择频道",
+    "GuestAutoJoinAvailableSpaces": "可用空间",
+    "GuestAutoJoinAvailableSpacesHint": "每个应用卡片都有各自的「可用空间」行，用于选择在激活时添加工作区访客的位置；更改会立即生效。",
     "ManageIdentities": "管理身份",
     "Release": "释放",
     "ReleaseSocialId": "释放社交ID",

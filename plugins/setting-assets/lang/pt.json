@@ -165,6 +165,8 @@
     "GuestSignUpDescription": "Permite que usuários anônimos entrem em seu espaço de trabalho como convidados com direitos de edição limitados",
     "GuestChannelsDescription": "Canais onde convidados podem escrever mensagens após ingressar",
     "GuestChannelsArrayLabel": "Selecionar canais",
+    "GuestAutoJoinAvailableSpaces": "Espaços disponíveis",
+    "GuestAutoJoinAvailableSpacesHint": "Cada cartão de aplicação tem a sua própria linha « Espaços disponíveis » para adesão automática de convidados; as alterações aplicam-se de imediato.",
     "ManageIdentities": "Gerenciar identidades",
     "Release": "Libertação",
     "ReleaseSocialId": "Liberar ID social",
