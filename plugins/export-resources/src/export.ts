@@ -60,6 +60,11 @@ export async function exportToWorkspace (
       'documents:class:DocumentMeta': {
         author: '$currentUser',
         owner: '$currentUser'
+      },
+      'products:class:ProductVersion': {
+        major: 1,
+        minor: 0,
+        patch: 0
       }
     }
 
