@@ -15,8 +15,11 @@
 //
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { Class, Doc, Ref } from '@hcengineering/core'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { jsonToPmNode, MarkupNode } from '@hcengineering/text'
+  import { Label } from '@hcengineering/ui'
   import { Editor, Extension, mergeAttributes } from '@tiptap/core'
   import { Plugin, PluginKey } from '@tiptap/pm/state'
   import { DecorationSet } from '@tiptap/pm/view'
@@ -31,21 +34,29 @@
   export let objectClass: Ref<Class<Doc>> | undefined = undefined
 
   let element: HTMLElement
-  let editor: Editor
+  let editor: Editor | undefined
 
   let _decoration = DecorationSet.empty
   let oldContent: MarkupNode | undefined
+  let decorateFailed = false
+  let editorMountFailed = false
 
   function updateEditor (editor: Editor, comparedVersion?: MarkupNode): void {
     if (comparedVersion === undefined) {
       return
     }
 
-    const node = jsonToPmNode(comparedVersion, editor.schema)
-    const r = calculateDecorations(editor, oldContent, node)
-    if (r !== undefined) {
-      oldContent = r.oldContent
-      _decoration = r.decorations
+    try {
+      const node = jsonToPmNode(comparedVersion, editor.schema)
+      const r = calculateDecorations(editor, oldContent, node)
+      if (r !== undefined) {
+        oldContent = r.oldContent
+        _decoration = r.decorations
+      }
+      decorateFailed = false
+    } catch (err: unknown) {
+      decorateFailed = true
+      Analytics.handleError(err instanceof Error ? err : new Error(String(err)))
     }
   }
 
@@ -77,33 +88,66 @@
   }
 
   onMount(async () => {
-    const kit = await getEditorKit({
-      objectClass,
-      commentNode: true
-    })
+    try {
+      const kit = await getEditorKit({
+        objectClass,
+        commentNode: true,
+        qms: {
+          qmsInlineComment: {
+            isHighlightModeOn: () => false,
+            getNodeHighlight: () => null
+          }
+        }
+      })
 
-    editor = new Editor({
-      editorProps: { attributes: mergeAttributes(defaultEditorAttributes, { class: 'flex-grow' }) },
-      element,
-      content,
-      editable: false,
-      extensions: [kit, DecorationExtension],
-      onTransaction: () => {
-        // force re-render so `editor.isActive` works as expected
-        editor = editor
-      }
-    })
+      editor = new Editor({
+        editorProps: { attributes: mergeAttributes(defaultEditorAttributes, { class: 'flex-grow' }) },
+        element,
+        content,
+        editable: false,
+        extensions: [kit, DecorationExtension],
+        onContentError: ({ error, disableCollaboration }) => {
+          disableCollaboration()
+          Analytics.handleError(error)
+          editorMountFailed = true
+        },
+        onTransaction: () => {
+          // force re-render so `editor.isActive` works as expected
+          editor = editor
+        }
+      })
+    } catch (err: unknown) {
+      editorMountFailed = true
+      Analytics.handleError(err instanceof Error ? err : new Error(String(err)))
+    }
   })
 
   onDestroy(() => {
-    if (editor !== undefined) {
-      editor.destroy()
-    }
+    editor?.destroy()
+    editor = undefined
   })
 </script>
 
 <div class="ref-container">
-  <div class="textInput">
+  <div class="textInput" hidden={editorMountFailed}>
     <div class="select-text" style="width: 100%;" bind:this={element} />
   </div>
+  {#if editorMountFailed}
+    <div class="error-fallback">
+      <Label label={getEmbeddedLabel('Unable to show this diff.')} />
+    </div>
+  {/if}
+  {#if decorateFailed && !editorMountFailed}
+    <div class="error-fallback">
+      <Label label={getEmbeddedLabel('Unable to show this diff.')} />
+    </div>
+  {/if}
 </div>
+
+<style lang="scss">
+  .error-fallback {
+    padding: 0.5rem 0;
+    color: var(--theme-caption-color);
+    font-size: 0.875rem;
+  }
+</style>
