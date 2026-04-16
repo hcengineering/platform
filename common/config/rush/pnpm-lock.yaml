@@ -18563,6 +18563,9 @@ importers:
       '@hcengineering/core':
         specifier: workspace:^0.7.26
         version: link:../../foundations/core/packages/core
+      '@hcengineering/emoji-resources':
+        specifier: workspace:^0.7.0
+        version: link:../emoji-resources
       '@hcengineering/image-cropper':
         specifier: workspace:^0.7.0
         version: link:../image-cropper

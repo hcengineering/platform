@@ -45,6 +45,7 @@
     "@hcengineering/attachment-resources": "workspace:^0.7.0",
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/core": "workspace:^0.7.26",
+    "@hcengineering/emoji-resources": "workspace:^0.7.0",
     "@hcengineering/image-cropper": "workspace:^0.7.0",
     "@hcengineering/login": "workspace:^0.7.0",
     "@hcengineering/notification": "workspace:^0.7.0",
