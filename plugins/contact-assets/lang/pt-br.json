@@ -129,6 +129,26 @@
     "TranslateTo": "Traduzir para",
     "DontTranslate": "Não traduzir",
     "SelectLanguage": "Selecionar idioma",
-    "SelectLanguages": "Selecionar idiomas"
+    "SelectLanguages": "Selecionar idiomas",
+    "WorkspaceStatusNote": "Status do usuário",
+    "WorkspaceStatusUntil": "Mostrar até",
+    "WorkspaceStatusMenu": "Seu status",
+    "WorkspaceStatusSetYour": "Definir seu status",
+    "WorkspaceStatusUpdateYour": "Atualizar seu status",
+    "WorkspaceStatusMessage": "Qual é o seu status?",
+    "WorkspaceStatusAway": "Ausente",
+    "WorkspaceStatusVacation": "De férias",
+    "WorkspaceStatusOutSick": "Afastado por saúde",
+    "WorkspaceStatusClear": "Limpar status",
+    "WorkspaceStatusSave": "Salvar",
+    "WorkspaceStatusQuickPick": "Status rápidos",
+    "WorkspaceStatusComposeHint": "Adicione uma nota curta (opcional)",
+    "WorkspaceStatusClearUntil": "Limpar data",
+    "WorkspaceStatusDoNotClear": "Não limpar o status automaticamente",
+    "WorkspaceStatusIn30Min": "Em 30 minutos",
+    "WorkspaceStatusIn1Hour": "Em 1 hora",
+    "WorkspaceStatusIn4Hours": "Em 4 horas",
+    "WorkspaceStatusEndOfDay": "Fim do dia",
+    "WorkspaceStatusPickDate": "Escolher data"
   }
 }

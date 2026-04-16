@@ -14,6 +14,8 @@
 // limitations under the License.
 //
 
+import { loadWorkspaceMemberStatuses } from './workspaceMemberStatus'
+
 import { type AccountClient, getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import {
   addEmployeeListenrer,
@@ -410,6 +412,8 @@ onClient(() => {
   providerQuery.query(contact.class.ChannelProvider, {}, (res) => {
     channelProviders.set(res)
   })
+
+  loadWorkspaceMemberStatuses()
 
   employeesQuery.query(
     contact.mixin.Employee,
