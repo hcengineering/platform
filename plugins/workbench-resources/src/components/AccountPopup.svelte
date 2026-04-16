@@ -14,7 +14,11 @@
 -->
 <script lang="ts">
   import contact, { formatName, getCurrentEmployee, isWorkspaceMemberStatusVisible } from '@hcengineering/contact'
-  import { myEmployeeStore, loadWorkspaceMemberStatuses, workspaceMemberStatusByAccountStore } from '@hcengineering/contact-resources'
+  import {
+    myEmployeeStore,
+    loadWorkspaceMemberStatuses,
+    workspaceMemberStatusByAccountStore
+  } from '@hcengineering/contact-resources'
   import contactResources from '@hcengineering/contact-resources/src/plugin'
   import core, { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import rating, { type PersonRating } from '@hcengineering/rating'
