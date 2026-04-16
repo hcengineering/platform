@@ -174,6 +174,8 @@
     "GuestSignUpDescription": "Allows anonymous users to join your workspace as guests with limited editing rights",
     "GuestChannelsDescription": "Channels where guests can write messages after joining",
     "GuestChannelsArrayLabel": "Select channels",
+    "GuestAutoJoinAvailableSpaces": "Available spaces",
+    "GuestAutoJoinAvailableSpacesHint": "Each application card has its own “Available spaces” row to pick where workspace guests are added on activation. Changes apply immediately.",
     "ManageIdentities": "Manage identities",
     "Release": "Release",
     "ReleaseSocialId": "Release social ID",

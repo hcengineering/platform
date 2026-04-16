@@ -273,7 +273,6 @@ export function createModel (builder: Builder): void {
       application: love.app.Love,
       role: AccountRole.Guest,
       permissions: [],
-      spaceClass: love.class.Office,
       enabled: true,
       order: 50
     },
@@ -287,7 +286,6 @@ export function createModel (builder: Builder): void {
       application: love.app.Love,
       role: AccountRole.ReadOnlyGuest,
       permissions: [],
-      spaceClass: love.class.Office,
       enabled: false,
       order: 50
     },

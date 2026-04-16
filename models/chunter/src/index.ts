@@ -76,7 +76,7 @@ export function createModel (builder: Builder): void {
       application: chunter.app.Chunter,
       role: AccountRole.Guest,
       permissions: [],
-      spaceClass: chunter.class.ChunterSpace,
+      spaceClass: chunter.class.Channel,
       enabled: true,
       order: 30
     },
@@ -90,7 +90,7 @@ export function createModel (builder: Builder): void {
       application: chunter.app.Chunter,
       role: AccountRole.ReadOnlyGuest,
       permissions: [],
-      spaceClass: chunter.class.ChunterSpace,
+      spaceClass: chunter.class.Channel,
       enabled: true,
       order: 15
     },
