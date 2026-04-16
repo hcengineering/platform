@@ -96,12 +96,19 @@ function defineRelationMetadata (builder: Builder): void {
 
   rel(documents.class.Document, 'category', documents.class.DocumentCategory, 'forward')
   rel(documents.class.Document, 'template', documents.class.Document, 'forward')
-  rel(documents.class.Document, 'meta', documents.class.ProjectMeta, 'inverse')
   rel(documents.class.Document, 'document', documents.class.ProjectDocument, 'inverse')
   rel(documents.class.HierarchyDocument, 'attachedTo', documents.class.DocumentMeta, 'forward')
   rel(documents.class.ControlledDocument, 'changeControl', documents.class.ChangeControl, 'forward')
-  rel(documents.class.ProjectMeta, 'meta', documents.class.ProjectMeta, 'inverse')
-  rel(documents.class.ProjectMeta, 'document', documents.class.ProjectDocument, 'inverse')
+  rel(documents.class.DocumentMeta, 'meta', documents.class.ProjectMeta, 'inverse')
+  rel(documents.class.Project, 'project', documents.class.ProjectMeta, 'inverse')
+  rel(documents.class.ProjectMeta, 'meta', documents.class.DocumentMeta, 'forward')
+  rel(documents.class.ProjectMeta, 'parent', documents.class.DocumentMeta, 'forward')
+  rel(documents.class.ProjectMeta, 'path', documents.class.DocumentMeta, 'forward')
+  rel(documents.class.ProjectMeta, 'project', documents.class.Project, 'forward')
+  rel(documents.class.ProjectDocument, 'project', documents.class.Project, 'forward')
+  rel(documents.class.ProjectDocument, 'initial', documents.class.Project, 'forward')
+  rel(documents.class.ProjectDocument, 'attachedTo', documents.class.ProjectMeta, 'forward')
+  rel(documents.class.ProjectDocument, 'document', documents.class.Document, 'forward')
 }
 
 export function createModel (builder: Builder): void {
