@@ -17,8 +17,8 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { Class, Doc, Ref } from '@hcengineering/core'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { jsonToPmNode, MarkupNode } from '@hcengineering/text'
+  import presentation from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import { Editor, Extension, mergeAttributes } from '@tiptap/core'
   import { Plugin, PluginKey } from '@tiptap/pm/state'
@@ -134,12 +134,12 @@
   </div>
   {#if editorMountFailed}
     <div class="error-fallback">
-      <Label label={getEmbeddedLabel('Unable to show this diff.')} />
+      <Label label={presentation.string.FailedToPreview} />
     </div>
   {/if}
   {#if decorateFailed && !editorMountFailed}
     <div class="error-fallback">
-      <Label label={getEmbeddedLabel('Unable to show this diff.')} />
+      <Label label={presentation.string.FailedToPreview} />
     </div>
   {/if}
 </div>
