@@ -129,6 +129,26 @@
     "TranslateTo": "翻译为",
     "DontTranslate": "不翻译",
     "SelectLanguage": "选择语言",
-    "SelectLanguages": "选择语言"
+    "SelectLanguages": "选择语言",
+    "WorkspaceStatusNote": "用户状态",
+    "WorkspaceStatusUntil": "显示截止日期",
+    "WorkspaceStatusMenu": "你的状态",
+    "WorkspaceStatusSetYour": "设置你的状态",
+    "WorkspaceStatusUpdateYour": "更新你的状态",
+    "WorkspaceStatusMessage": "你的状态是什么？",
+    "WorkspaceStatusAway": "离开",
+    "WorkspaceStatusVacation": "休假中",
+    "WorkspaceStatusOutSick": "病假",
+    "WorkspaceStatusClear": "清除状态",
+    "WorkspaceStatusSave": "保存",
+    "WorkspaceStatusQuickPick": "快捷状态",
+    "WorkspaceStatusComposeHint": "添加简短备注（可选）",
+    "WorkspaceStatusClearUntil": "清除日期",
+    "WorkspaceStatusDoNotClear": "不自动清除状态",
+    "WorkspaceStatusIn30Min": "30 分钟后",
+    "WorkspaceStatusIn1Hour": "1 小时后",
+    "WorkspaceStatusIn4Hours": "4 小时后",
+    "WorkspaceStatusEndOfDay": "今天结束",
+    "WorkspaceStatusPickDate": "选择日期"
   }
 }

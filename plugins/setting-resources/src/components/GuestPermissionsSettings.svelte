@@ -48,6 +48,7 @@
   } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
   import { onMount } from 'svelte'
+  import AvailableSpacesInput from './AvailableSpacesInput.svelte'
   import settingsRes from '../plugin'
 
   let loadingSettings = true
@@ -244,6 +245,14 @@
     allowGuestSignUp = e.detail
   }
 
+  function onReadonlyGuestsToggle (e: CustomEvent<boolean>): void {
+    void handleToggleReadonlyAccess(e)
+  }
+
+  function onGuestSignUpToggle (e: CustomEvent<boolean>): void {
+    void handleToggleGuestSignUp(e)
+  }
+
   async function onAllowedCardsChange (value: Ref<Card>[]): Promise<void> {
     if (existingGuestChatSettings === undefined) {
       await client.createDoc(communication.class.GuestCommunicationSettings, core.space.Workspace, {
@@ -317,12 +326,7 @@
                       <Label label={settingsRes.string.GuestAccessDescription} />
                     </div>
                     <div class="guestAccessRow-toggleCell">
-                      <Toggle
-                        on={allowReadOnlyGuests}
-                        on:change={(e) => {
-                          void handleToggleReadonlyAccess(e)
-                        }}
-                      />
+                      <Toggle on={allowReadOnlyGuests} on:change={onReadonlyGuestsToggle} />
                     </div>
                   </div>
                   <div class="guestAccessRow">
@@ -330,13 +334,7 @@
                       <Label label={settingsRes.string.GuestSignUpDescription} />
                     </div>
                     <div class="guestAccessRow-toggleCell">
-                      <Toggle
-                        disabled={!allowReadOnlyGuests}
-                        on={allowGuestSignUp}
-                        on:change={(e) => {
-                          void handleToggleGuestSignUp(e)
-                        }}
-                      />
+                      <Toggle disabled={!allowReadOnlyGuests} on={allowGuestSignUp} on:change={onGuestSignUpToggle} />
                     </div>
                   </div>
                   {#if communicationApiEnabled}
@@ -376,6 +374,14 @@
                     <Label label={setting.string.GuestPermissionsApplicationPermissionsHint} />
                   {/if}
                 </div>
+                {#if guestPermissionsTab === 'guest'}
+                  <div class="sectionHint">
+                    <Label label={core.string.AutoJoinGuestsDescr} />
+                  </div>
+                  <div class="sectionHint">
+                    <Label label={settingsRes.string.GuestAutoJoinAvailableSpacesHint} />
+                  </div>
+                {/if}
               </div>
 
               <div class="cardStack" class:cardStack-readonly={anonymousModulePermissionsReadOnly}>
@@ -383,10 +389,15 @@
                   {@const app = getApplication(group.application)}
                   {@const moduleOn = isModuleEnabled(group)}
                   {@const permissionCount = (group.permissions ?? []).length}
+                  {@const hasGuestAutoJoinRow =
+                    guestPermissionsTab === 'guest' &&
+                    group.role === AccountRole.Guest &&
+                    group.spaceClass !== undefined}
+                  {@const hasPermissionRowsBlock = permissionCount > 0 || hasGuestAutoJoinRow}
                   <div class="permissionModuleCard" class:permissionModuleCard-off={!moduleOn}>
                     <div
                       class="permissionModuleCard-header"
-                      class:permissionModuleCard-headerOnly={permissionCount === 0}
+                      class:permissionModuleCard-headerOnly={!hasPermissionRowsBlock}
                     >
                       <div class="permissionModuleCard-headerMain">
                         {#if app}
@@ -411,22 +422,37 @@
                       </div>
                     </div>
 
-                    {#if permissionCount > 0}
+                    {#if hasPermissionRowsBlock}
                       <div class="permissionRows">
-                        {#each group.permissions ?? [] as permissionId}
-                          <div class="permissionRow">
-                            <div class="permissionRow-label">
-                              <Label label={getPermissionLabel(permissionId)} />
+                        {#if permissionCount > 0}
+                          {#each group.permissions ?? [] as permissionId}
+                            <div class="permissionRow">
+                              <div class="permissionRow-label">
+                                <Label label={getPermissionLabel(permissionId)} />
+                              </div>
+                              <div class="permissionRow-toggleCell">
+                                <Toggle
+                                  disabled={!moduleOn || anonymousModulePermissionsReadOnly}
+                                  on={isPermissionActive(group, permissionId)}
+                                  on:change={handlePermissionToggle(group, permissionId)}
+                                />
+                              </div>
                             </div>
-                            <div class="permissionRow-toggleCell">
-                              <Toggle
+                          {/each}
+                        {/if}
+                        {#if hasGuestAutoJoinRow}
+                          <div class="permissionRow permissionRow--guestSpaces">
+                            <div class="permissionRow-label">
+                              <Label label={settingsRes.string.GuestAutoJoinAvailableSpaces} />
+                            </div>
+                            <div class="permissionRow-editorCell">
+                              <AvailableSpacesInput
+                                {group}
                                 disabled={!moduleOn || anonymousModulePermissionsReadOnly}
-                                on={isPermissionActive(group, permissionId)}
-                                on:change={handlePermissionToggle(group, permissionId)}
                               />
                             </div>
                           </div>
-                        {/each}
+                        {/if}
                       </div>
                     {/if}
                   </div>
@@ -642,6 +668,24 @@
   .permissionRow-label {
     min-width: 0;
     color: var(--theme-content-color);
+  }
+
+  .permissionRow--guestSpaces {
+    align-items: start;
+    min-height: auto;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    grid-template-columns: minmax(0, 1fr) minmax(8rem, max-content);
+  }
+
+  .permissionRow--guestSpaces .permissionRow-editorCell {
+    grid-column: 2;
+    justify-self: end;
+    align-self: start;
+    width: max-content;
+    max-width: min(18rem, calc(100vw - 4rem));
+    min-width: 0;
+    overflow: visible;
   }
 
   .emptyState {

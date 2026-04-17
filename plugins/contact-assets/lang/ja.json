@@ -129,6 +129,26 @@
     "TranslateTo": "翻訳先",
     "DontTranslate": "翻訳しない",
     "SelectLanguage": "言語を選択",
-    "SelectLanguages": "言語を選択"
+    "SelectLanguages": "言語を選択",
+    "WorkspaceStatusNote": "ユーザーステータス",
+    "WorkspaceStatusUntil": "表示期限",
+    "WorkspaceStatusMenu": "あなたのステータス",
+    "WorkspaceStatusSetYour": "ステータスを設定",
+    "WorkspaceStatusUpdateYour": "ステータスを更新",
+    "WorkspaceStatusMessage": "ステータスは何ですか？",
+    "WorkspaceStatusAway": "離席中",
+    "WorkspaceStatusVacation": "休暇中",
+    "WorkspaceStatusOutSick": "病欠",
+    "WorkspaceStatusClear": "ステータスをクリア",
+    "WorkspaceStatusSave": "保存",
+    "WorkspaceStatusQuickPick": "クイックステータス",
+    "WorkspaceStatusComposeHint": "短いメモを追加（任意）",
+    "WorkspaceStatusClearUntil": "日付をクリア",
+    "WorkspaceStatusDoNotClear": "ステータスを自動ではクリアしない",
+    "WorkspaceStatusIn30Min": "30分後",
+    "WorkspaceStatusIn1Hour": "1時間後",
+    "WorkspaceStatusIn4Hours": "4時間後",
+    "WorkspaceStatusEndOfDay": "今日の終わりまで",
+    "WorkspaceStatusPickDate": "日付を選択"
   }
 }
