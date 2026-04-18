@@ -177,6 +177,8 @@ export default mergeIds(processId, process, {
     Absolute: '' as IntlString,
     Ceil: '' as IntlString,
     Floor: '' as IntlString,
+    Min: '' as IntlString,
+    Max: '' as IntlString,
     Offset: '' as IntlString,
     Value: '' as IntlString,
     FirstWorkingDayAfter: '' as IntlString,

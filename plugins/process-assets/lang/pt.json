@@ -93,6 +93,8 @@
     "Round": "Arredondar",
     "Floor": "Arredondar para baixo",
     "Ceil": "Arredondar para cima",
+    "Min": "Min",
+    "Max": "Max",
     "Absolute": "Valor absoluto",
     "LogAction": "Evento",
     "Started": "Iniciado",

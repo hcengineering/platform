@@ -360,6 +360,8 @@ export default plugin(processId, {
     Absolute: '' as Ref<ProcessFunction>,
     Ceil: '' as Ref<ProcessFunction>,
     Floor: '' as Ref<ProcessFunction>,
+    Min: '' as Ref<ProcessFunction>,
+    Max: '' as Ref<ProcessFunction>,
     Offset: '' as Ref<ProcessFunction>,
     FirstWorkingDayAfter: '' as Ref<ProcessFunction>,
     RoleContext: '' as Ref<ProcessFunction>,

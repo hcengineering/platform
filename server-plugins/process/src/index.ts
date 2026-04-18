@@ -100,6 +100,8 @@ export default plugin(serverProcessId, {
     Absolute: '' as Resource<TransformFunc>,
     Ceil: '' as Resource<TransformFunc>,
     Floor: '' as Resource<TransformFunc>,
+    Min: '' as Resource<TransformFunc>,
+    Max: '' as Resource<TransformFunc>,
     Offset: '' as Resource<TransformFunc>,
     FirstWorkingDayAfter: '' as Resource<TransformFunc>,
     RoleContext: '' as Resource<TransformFunc>,

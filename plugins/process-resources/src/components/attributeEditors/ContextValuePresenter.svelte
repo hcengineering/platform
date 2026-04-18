@@ -32,7 +32,7 @@
 <div class="container flex-row-center">
   <div class="internal">
     {#if contextValue.type === 'attribute'}
-      <AttrContextPresenter {contextValue} {context} />
+      <AttrContextPresenter {contextValue} {context} {process} />
     {:else if contextValue.type === 'relation'}
       <RelContextPresenter {contextValue} {context} />
     {:else if contextValue.type === 'nested'}
