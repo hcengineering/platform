@@ -93,6 +93,8 @@
     "Round": "Arrotondare",
     "Floor": "Arrotondare per difetto",
     "Ceil": "Arrotondare per eccesso",
+    "Min": "Min",
+    "Max": "Max",
     "Absolute": "Valore assoluto",
     "LogAction": "Evento",
     "Started": "Avviato",

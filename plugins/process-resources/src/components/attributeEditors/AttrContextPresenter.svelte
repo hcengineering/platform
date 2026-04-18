@@ -14,12 +14,17 @@
 -->
 <script lang="ts">
   import { Label } from '@hcengineering/ui'
-  import { Context, SelectedAttribute } from '@hcengineering/process'
+  import { Context, Process, SelectedAttribute } from '@hcengineering/process'
+  import { getClient } from '@hcengineering/presentation'
 
+  export let process: Process
   export let contextValue: SelectedAttribute
   export let context: Context
 
-  $: attr = context.attributes.find((p) => p.name === contextValue.key)
+  const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  $: attr = context.attributes.find((p) => p.name === contextValue.key) ?? hierarchy.findAttribute(process.masterTag, contextValue.key)
 </script>
 
 {#if attr}

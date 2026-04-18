@@ -105,6 +105,8 @@ import {
   Insert,
   LastValue,
   LowerCase,
+  Max,
+  Min,
   Modulo,
   MonthFromDate,
   Multiply,
@@ -696,7 +698,9 @@ export default async () => ({
     YearFromDate,
     MonthFromDate,
     DayFromDate,
-    DateDifference
+    DateDifference,
+    Min,
+    Max
   },
   rollbacks: {
     ToDoCloseRollback,

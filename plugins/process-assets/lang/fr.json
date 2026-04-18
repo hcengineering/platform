@@ -93,6 +93,8 @@
     "Round": "Arrondir",
     "Floor": "Arrondir vers le bas",
     "Ceil": "Arrondir vers le haut",
+    "Min": "Min",
+    "Max": "Max",
     "Absolute": "Valeur absolue",
     "LogAction": "Événement",
     "Started": "Démarré",

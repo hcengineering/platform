@@ -19,6 +19,7 @@
   import { createEventDispatcher } from 'svelte'
   import { generateContextId } from '../../utils'
   import ResultTypeSelector from './ResultTypeSelector.svelte'
+  import { getClient } from '@hcengineering/presentation'
 
   export let result: UserResult | null
   export let process: Process
@@ -29,6 +30,8 @@
 
   const dispatch = createEventDispatcher()
 
+  const client = getClient()
+
   function update (): void {
     if (type == null) {
       result = null
@@ -38,6 +41,13 @@
         name,
         key,
         type
+      }
+      if (key !== undefined) {
+        const attr = client.getHierarchy().findAttribute(process.masterTag, key)
+        if (attr) {
+          name = attr.label
+          result.name = name
+        }
       }
     }
     dispatch('change', result)
