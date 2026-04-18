@@ -27,7 +27,7 @@ import core, {
 } from '@hcengineering/core'
 import { rpcJSONReplacer, type RateLimitInfo } from '@hcengineering/rpc'
 import type { ClientSessionCtx, ConnectionSocket, Session, SessionManager } from '@hcengineering/server-core'
-import { decodeToken } from '@hcengineering/server-token'
+import { decodeToken, generateToken } from '@hcengineering/server-token'
 
 import { createHash } from 'crypto'
 import { type Express, type Response as ExpressResponse, type Request } from 'express'
@@ -227,7 +227,12 @@ export function registerRPC(app: Express, sessions: SessionManager, ctx: Measure
       // Reject revoked API tokens (cached check, ~60s TTL)
       const apiTokenId = decodedToken.extra?.apiTokenId
       if (apiTokenId !== undefined) {
-        if (await isApiTokenRevoked(apiTokenId, getAccountClient(token))) {
+        if (
+          await isApiTokenRevoked(
+            apiTokenId,
+            getAccountClient(generateToken(systemAccountUuid, undefined, { service: 'server' }))
+          )
+        ) {
           sendError(res, 401, { message: 'Token has been revoked' })
           return
         }
