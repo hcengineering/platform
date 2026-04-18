@@ -5219,23 +5219,23 @@ importers:
   ../../foundations/server/packages/opensearch:
     dependencies:
       '@hcengineering/analytics':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.19
         version: link:../../../core/packages/analytics
       '@hcengineering/core':
-        specifier: workspace:^0.7.24
+        specifier: workspace:^0.7.26
         version: link:../../../core/packages/core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../../core/packages/platform
       '@hcengineering/server-core':
-        specifier: workspace:^0.7.18
+        specifier: workspace:^0.7.19
         version: link:../core
       '@opensearch-project/opensearch':
         specifier: ^2.12.0
         version: 2.13.0
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.21
         version: link:../../../utils/packages/platform-rig
       '@types/jest':
         specifier: ^29.5.5
@@ -5581,23 +5581,23 @@ importers:
   ../../foundations/server/packages/typesense:
     dependencies:
       '@hcengineering/analytics':
-        specifier: workspace:^0.7.17
+        specifier: workspace:^0.7.19
         version: link:../../../core/packages/analytics
       '@hcengineering/core':
-        specifier: workspace:^0.7.24
+        specifier: workspace:^0.7.26
         version: link:../../../core/packages/core
       '@hcengineering/platform':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.20
         version: link:../../../core/packages/platform
       '@hcengineering/server-core':
-        specifier: workspace:^0.7.18
+        specifier: workspace:^0.7.19
         version: link:../core
       typesense:
         specifier: ^2.0.0
         version: 2.1.0(@babel/runtime@7.28.4)
     devDependencies:
       '@hcengineering/platform-rig':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.21
         version: link:../../../utils/packages/platform-rig
       '@types/jest':
         specifier: ^29.5.5
