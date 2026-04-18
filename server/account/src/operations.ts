@@ -146,7 +146,7 @@ const workspaceLimitPerUser =
 /**
  * Given an email and password, logs the user in and returns the account information and token.
  */
-export async function loginAsGuest (
+export async function loginAsGuest(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -167,7 +167,7 @@ export async function loginAsGuest (
  * If the account has too many failed login attempts, password login is blocked.
  * The user must use an alternative method (e.g., OTP) to unlock the account.
  */
-export async function login (
+export async function login(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -237,10 +237,10 @@ export async function login (
       account: existingAccount.uuid,
       token: isConfirmed
         ? generateToken(
-          existingAccount.tfaSecret != null ? NIL_UUID : existingAccount.uuid,
-          undefined,
-          existingAccount.tfaSecret != null ? { ...extraToken, tfaAccount: existingAccount.uuid } : extraToken
-        )
+            existingAccount.tfaSecret != null ? NIL_UUID : existingAccount.uuid,
+            undefined,
+            existingAccount.tfaSecret != null ? { ...extraToken, tfaAccount: existingAccount.uuid } : extraToken
+          )
         : undefined,
       name: getPersonName(person),
       socialId: emailSocialId._id,
@@ -256,7 +256,7 @@ export async function login (
 /**
  * Given an email sends an OTP code to the existing user and returns the OTP information.
  */
-export async function loginOtp (
+export async function loginOtp(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -292,7 +292,7 @@ export async function loginOtp (
  *
  * ---------DEPRECATED. Only to be used for dev setups without mail service. Use signUpOtp instead.
  */
-export async function signUp (
+export async function signUp(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -338,7 +338,7 @@ export async function signUp (
   }
 }
 
-export async function signUpOtp (
+export async function signUpOtp(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -385,7 +385,7 @@ export async function signUpOtp (
 /**
  * Validates email OTP for login/sign up/new social id
  */
-export async function validateOtp (
+export async function validateOtp(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -529,10 +529,10 @@ export async function validateOtp (
 
     const _token = isConfirmed
       ? generateToken(
-        targetAccount?.tfaSecret != null ? NIL_UUID : emailSocialId.personUuid,
-        undefined,
-        targetAccount?.tfaSecret != null ? { ...extraToken, tfaAccount: emailSocialId.personUuid } : extraToken
-      )
+          targetAccount?.tfaSecret != null ? NIL_UUID : emailSocialId.personUuid,
+          undefined,
+          targetAccount?.tfaSecret != null ? { ...extraToken, tfaAccount: emailSocialId.personUuid } : extraToken
+        )
       : undefined
 
     return {
@@ -549,7 +549,7 @@ export async function validateOtp (
   }
 }
 
-export async function createWorkspace (
+export async function createWorkspace(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -615,7 +615,7 @@ export async function createWorkspace (
   }
 }
 
-export async function createInvite (
+export async function createInvite(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -669,14 +669,14 @@ export async function createInvite (
 
 // TODO: Temporary solution to prevent spam using sendInvite
 const invitesSend = new Map<
-string,
-{
-  lastSend: number
-  totalSend: number
-}
+  string,
+  {
+    lastSend: number
+    totalSend: number
+  }
 >()
 
-export async function sendInvite (
+export async function sendInvite(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -716,7 +716,7 @@ export async function sendInvite (
   ctx.info('Invite has been sent', { to: inviteEmail.to, workspaceUuid: workspace.uuid, workspaceName: workspace.name })
 }
 
-export async function createAccessLink (
+export async function createAccessLink(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -817,7 +817,7 @@ export async function createAccessLink (
   }
 }
 
-export async function createInviteLink (
+export async function createInviteLink(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -891,7 +891,7 @@ export async function createInviteLink (
   return link
 }
 
-function checkRateLimit (email: string, workspaceName: string): void {
+function checkRateLimit(email: string, workspaceName: string): void {
   const now = Date.now()
   const lastInvites = invitesSend.get(email)
   if (lastInvites !== undefined) {
@@ -919,7 +919,7 @@ function checkRateLimit (email: string, workspaceName: string): void {
   }
 }
 
-export async function resendInvite (
+export async function resendInvite(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -981,7 +981,7 @@ export async function resendInvite (
  * If already a member, updates the role if necessary.
  * Returns the workspace login information.
  */
-export async function join (
+export async function join(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1022,7 +1022,7 @@ export async function join (
  * Returns public invite details (e.g. workspace name) for a valid invite. No auth required.
  * Returns { workspaceName: null } for invalid or expired invites.
  */
-export async function getInviteInfo (
+export async function getInviteInfo(
   ctx: MeasureContext,
   db: AccountDB,
   _branding: Branding | null,
@@ -1054,7 +1054,7 @@ export async function getInviteInfo (
  * Given an invite and a token, checks if the user has already joined the workspace and updates the role if necessary.
  * Returns the workspace login information if the user has already joined. Otherwise, throws an error.
  */
-export async function checkJoin (
+export async function checkJoin(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1103,7 +1103,7 @@ export async function checkJoin (
  * Joins the workspace using the current session token (no password).
  * Called only when the user explicitly clicks "Join with this account".
  */
-export async function joinByToken (
+export async function joinByToken(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1139,12 +1139,12 @@ export async function joinByToken (
   return await doJoinByInvite(ctx, db, branding, token, accountUuid, workspace, invite)
 }
 
-export async function checkAutoJoin (
+export async function checkAutoJoin(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { inviteId: string, firstName?: string, lastName?: string }
+  params: { inviteId: string; firstName?: string; lastName?: string }
 ): Promise<WorkspaceLoginInfo | WorkspaceInviteInfo> {
   const { inviteId, firstName, lastName } = params
 
@@ -1255,7 +1255,7 @@ export async function checkAutoJoin (
 /**
  * Given an invite and sign up information, creates an account and assigns it to the workspace.
  */
-export async function signUpJoin (
+export async function signUpJoin(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1299,7 +1299,7 @@ export async function signUpJoin (
   )
 }
 
-export async function confirm (
+export async function confirm(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1338,7 +1338,7 @@ export async function confirm (
  * Checks whether the authenticated account has a password set.
  * SSO-only accounts (Google, GitHub, OIDC) have no password hash.
  */
-export async function checkHasPassword (
+export async function checkHasPassword(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1352,7 +1352,7 @@ export async function checkHasPassword (
   return account.hash != null && account.salt != null
 }
 
-export async function changePassword (
+export async function changePassword(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1387,7 +1387,7 @@ export async function changePassword (
   ctx.info('Password changed', { accountUuid })
 }
 
-export async function requestPasswordReset (
+export async function requestPasswordReset(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1466,7 +1466,7 @@ export async function requestPasswordReset (
  * Requires authentication (session token). Only valid for accounts that have
  * no password set — accounts with an existing password must use changePassword.
  */
-export async function requestPasswordSetup (
+export async function requestPasswordSetup(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1525,7 +1525,7 @@ export async function requestPasswordSetup (
   }
 }
 
-export async function restorePassword (
+export async function restorePassword(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1565,7 +1565,7 @@ export async function restorePassword (
   return await login(ctx, db, branding, token, { email, password })
 }
 
-export async function leaveWorkspace (
+export async function leaveWorkspace(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1643,7 +1643,7 @@ export async function leaveWorkspace (
   return null
 }
 
-export async function changeUsername (
+export async function changeUsername(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1666,7 +1666,7 @@ export async function changeUsername (
   ctx.info('Person name changed', { account, first, last })
 }
 
-export async function updateWorkspaceName (
+export async function updateWorkspaceName(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1695,7 +1695,7 @@ export async function updateWorkspaceName (
   )
 }
 
-export async function deleteWorkspace (
+export async function deleteWorkspace(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1718,12 +1718,12 @@ export async function deleteWorkspace (
   )
 }
 
-export async function generate2faSecret (
+export async function generate2faSecret(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string
-): Promise<{ secret: string, url: string }> {
+): Promise<{ secret: string; url: string }> {
   const { account: accountUuid } = decodeTokenVerbose(ctx, token)
   const account = await getAccount(db, accountUuid)
   if (account == null) {
@@ -1742,12 +1742,12 @@ export async function generate2faSecret (
   return { secret, url }
 }
 
-export async function enable2fa (
+export async function enable2fa(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { secret: string, code: string }
+  params: { secret: string; code: string }
 ): Promise<void> {
   const { secret, code } = params
   const { account: accountUuid } = decodeTokenVerbose(ctx, token)
@@ -1760,7 +1760,7 @@ export async function enable2fa (
   ctx.info('2FA enabled', { accountUuid })
 }
 
-export async function disable2fa (
+export async function disable2fa(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1783,7 +1783,7 @@ export async function disable2fa (
   ctx.info('2FA disabled', { accountUuid })
 }
 
-export async function verify2fa (
+export async function verify2fa(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1828,7 +1828,7 @@ export async function verify2fa (
 /* ==========READ OPERATIONS========== */
 /* =================================== */
 
-export async function getRegionInfo (
+export async function getRegionInfo(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1837,7 +1837,7 @@ export async function getRegionInfo (
   return getRegions()
 }
 
-export async function getUserWorkspaces (
+export async function getUserWorkspaces(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1853,7 +1853,7 @@ export async function getUserWorkspaces (
 /**
  * @public
  */
-export async function getWorkspacesInfo (
+export async function getWorkspacesInfo(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1882,7 +1882,7 @@ export async function getWorkspacesInfo (
 /**
  * @public
  */
-export async function updateLastVisit (
+export async function updateLastVisit(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1905,7 +1905,7 @@ export async function updateLastVisit (
   await db.workspaceStatus.update({ workspaceUuid: { $in: ids } }, { lastVisit: Date.now() })
 }
 
-export async function getWorkspaceInfo (
+export async function getWorkspaceInfo(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -1954,7 +1954,7 @@ export async function getWorkspaceInfo (
 /**
  * Validates the token and returns the decoded account information.
  */
-export async function getLoginInfoByToken (
+export async function getLoginInfoByToken(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2153,7 +2153,7 @@ export async function getLoginInfoByToken (
 /**
  * Validates the token and returns the decoded account information.
  */
-export async function getLoginWithWorkspaceInfo (
+export async function getLoginWithWorkspaceInfo(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2224,23 +2224,23 @@ export async function getLoginWithWorkspaceInfo (
       isSystem || isDocGuest
         ? []
         : userWorkspaces.map((it, idx) => [
-          it.uuid,
-          {
-            url: it.url,
-            dataId: it.dataId,
-            mode: it.status.mode,
-            endpoint: getWorkspaceEndpoint(info, it.uuid, it.region),
-            role: roles.get(it.uuid) ?? null,
-            version: {
-              versionMajor: it.status.versionMajor,
-              versionMinor: it.status.versionMinor,
-              versionPatch: it.status.versionPatch
-            },
-            progress: it.status.processingProgress,
-            branding: it.branding,
-            passwordAgingRule: it.passwordAgingRule
-          }
-        ])
+            it.uuid,
+            {
+              url: it.url,
+              dataId: it.dataId,
+              mode: it.status.mode,
+              endpoint: getWorkspaceEndpoint(info, it.uuid, it.region),
+              role: roles.get(it.uuid) ?? null,
+              version: {
+                versionMajor: it.status.versionMajor,
+                versionMinor: it.status.versionMinor,
+                versionPatch: it.status.versionPatch
+              },
+              progress: it.status.processingProgress,
+              branding: it.branding,
+              passwordAgingRule: it.passwordAgingRule
+            }
+          ])
     ),
     socialIds
   }
@@ -2255,12 +2255,12 @@ export async function getLoginWithWorkspaceInfo (
   return loginInfo
 }
 
-export async function getSocialIds (
+export async function getSocialIds(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { confirmed: boolean, includeDeleted: boolean }
+  params: { confirmed: boolean; includeDeleted: boolean }
 ): Promise<SocialId[]> {
   const { confirmed = true, includeDeleted = false } = params
   const { account: accountUuid, sub } = decodeTokenVerbose(ctx, token)
@@ -2276,7 +2276,7 @@ export async function getSocialIds (
   return includeDeleted ? socialIds : socialIds.filter((si) => si.isDeleted !== true)
 }
 
-export async function isReadOnlyGuest (
+export async function isReadOnlyGuest(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2286,7 +2286,7 @@ export async function isReadOnlyGuest (
   return account === readOnlyGuestAccountUuid
 }
 
-export async function getPerson (
+export async function getPerson(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2303,12 +2303,12 @@ export async function getPerson (
   return person
 }
 
-export async function findPersonBySocialId (
+export async function findPersonBySocialId(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { socialId: PersonId, requireAccount?: boolean }
+  params: { socialId: PersonId; requireAccount?: boolean }
 ): Promise<PersonUuid | undefined> {
   const { socialId, requireAccount } = params
 
@@ -2335,12 +2335,12 @@ export async function findPersonBySocialId (
   return socialIdObj.personUuid
 }
 
-export async function findSocialIdBySocialKey (
+export async function findSocialIdBySocialKey(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { socialKey: string, requireAccount?: boolean }
+  params: { socialKey: string; requireAccount?: boolean }
 ): Promise<PersonId | undefined> {
   const { socialKey, requireAccount } = params
   decodeTokenVerbose(ctx, token)
@@ -2366,7 +2366,7 @@ export async function findSocialIdBySocialKey (
   return socialIdObj._id
 }
 
-export async function getWorkspaceMembers (
+export async function getWorkspaceMembers(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2387,7 +2387,7 @@ export async function getWorkspaceMembers (
   return await db.getWorkspaceMembers(workspace)
 }
 
-export async function getAccountInfo (
+export async function getAccountInfo(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2407,7 +2407,7 @@ export async function getAccountInfo (
   return { timezone: account?.timezone, locale: account?.locale, tfaEnabled: account?.tfaSecret != null }
 }
 
-export async function ensurePerson (
+export async function ensurePerson(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2418,7 +2418,7 @@ export async function ensurePerson (
     firstName: string
     lastName: string
   }
-): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
+): Promise<{ uuid: PersonUuid; socialId: PersonId }> {
   const { account, workspace, extra } = decodeTokenVerbose(ctx, token)
   const allowedService = verifyAllowedServices(
     ['tool', 'workspace', 'schedule', 'mail', 'github', 'hulygram'],
@@ -2451,7 +2451,7 @@ export async function ensurePerson (
   return { uuid: personUuid, socialId: newSocialId }
 }
 
-async function getMailboxOptions (
+async function getMailboxOptions(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2467,7 +2467,7 @@ async function getMailboxOptions (
   }
 }
 
-async function createMailbox (
+async function createMailbox(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2476,7 +2476,7 @@ async function createMailbox (
     name: string
     domain: string
   }
-): Promise<{ mailbox: string, socialId: PersonId }> {
+): Promise<{ mailbox: string; socialId: PersonId }> {
   const { name, domain } = params
 
   if (name == null || name === '' || domain == null || domain === '') {
@@ -2514,7 +2514,7 @@ async function createMailbox (
   return { mailbox, socialId }
 }
 
-async function getMailboxes (
+async function getMailboxes(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2524,7 +2524,7 @@ async function getMailboxes (
   return await db.mailbox.find({ accountUuid: account })
 }
 
-async function getMailboxSecret (
+async function getMailboxSecret(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2538,7 +2538,7 @@ async function getMailboxSecret (
   return await db.mailboxSecret.findOne({ mailbox: params.mailbox })
 }
 
-async function deleteMailbox (
+async function deleteMailbox(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2579,7 +2579,7 @@ async function deleteMailbox (
  * @throws BadRequest if validation fails
  * @throws Forbidden if user lacks workspace access
  */
-async function createApiToken (
+async function createApiToken(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2590,7 +2590,7 @@ async function createApiToken (
     expiryDays: number
     scopes?: string[]
   }
-): Promise<{ id: string, token: string, expiresOn: number }> {
+): Promise<{ id: string; token: string; expiresOn: number }> {
   const { name, workspaceUuid, expiryDays, scopes } = params
 
   if (
@@ -2671,7 +2671,7 @@ async function createApiToken (
  * Lists all API tokens for the authenticated user across all workspaces.
  * Includes workspace names resolved from workspace UUIDs.
  */
-async function listApiTokens (
+async function listApiTokens(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2686,7 +2686,7 @@ async function listApiTokens (
     expiresOn: number
     revoked: boolean
   }>
-  > {
+> {
   const { account } = decodeTokenVerbose(ctx, token)
 
   const tokens = await db.apiToken.find({ accountUuid: account })
@@ -2711,7 +2711,7 @@ async function listApiTokens (
  * The JWT itself remains valid until expiry — full revocation requires
  * a denylist check at the transactor level (future enhancement).
  */
-async function revokeApiToken (
+async function revokeApiToken(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2738,7 +2738,7 @@ async function revokeApiToken (
  * Checks if a specific API token has been revoked.
  * Used by the transactor to enforce revocation at the request level.
  */
-async function checkApiTokenRevoked (
+async function checkApiTokenRevoked(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2757,7 +2757,7 @@ async function checkApiTokenRevoked (
  * Lists all API tokens for a workspace. Requires OWNER role.
  * Returns tokens from all members, with account UUIDs for attribution.
  */
-async function listWorkspaceApiTokens (
+async function listWorkspaceApiTokens(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2773,7 +2773,7 @@ async function listWorkspaceApiTokens (
     expiresOn: number
     revoked: boolean
   }>
-  > {
+> {
   const { account } = decodeTokenVerbose(ctx, token)
   const { workspaceUuid } = params
 
@@ -2798,12 +2798,12 @@ async function listWorkspaceApiTokens (
 /**
  * Revoke any token in the workspace. Requires OWNER role.
  */
-async function revokeWorkspaceApiToken (
+async function revokeWorkspaceApiToken(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { tokenId: string, workspaceUuid: WorkspaceUuid }
+  params: { tokenId: string; workspaceUuid: WorkspaceUuid }
 ): Promise<void> {
   const { account } = decodeTokenVerbose(ctx, token)
   const { tokenId, workspaceUuid } = params
@@ -2822,7 +2822,7 @@ async function revokeWorkspaceApiToken (
   ctx.info('Workspace API token revoked by owner', { tokenId, account, workspaceUuid })
 }
 
-async function exchangeGuestToken (
+async function exchangeGuestToken(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2852,7 +2852,7 @@ async function exchangeGuestToken (
   return token
 }
 
-async function addEmailSocialId (
+async function addEmailSocialId(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2903,7 +2903,7 @@ async function addEmailSocialId (
   return await sendOtp(ctx, db, branding, targetSocialId)
 }
 
-async function addHulyAssistantSocialId (
+async function addHulyAssistantSocialId(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2914,7 +2914,7 @@ async function addHulyAssistantSocialId (
   return await addSocialIdBase(db, account, SocialIdType.HULY_ASSISTANT, account, true)
 }
 
-export async function refreshHulyAssistantToken (
+export async function refreshHulyAssistantToken(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2954,12 +2954,12 @@ export async function refreshHulyAssistantToken (
   }
 }
 
-export async function releaseSocialId (
+export async function releaseSocialId(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { personUuid?: PersonUuid, type: SocialIdType, value: string, deleteIntegrations?: boolean }
+  params: { personUuid?: PersonUuid; type: SocialIdType; value: string; deleteIntegrations?: boolean }
 ): Promise<SocialId> {
   const { account, extra } = decodeTokenVerbose(ctx, token)
   let { personUuid } = params
@@ -3001,7 +3001,7 @@ export async function releaseSocialId (
   return await doReleaseSocialId(db, personUuid, type, value, extra?.service ?? account, deleteIntegrations)
 }
 
-export async function deleteAccount (
+export async function deleteAccount(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3030,7 +3030,7 @@ export async function deleteAccount (
   })
 }
 
-export async function canMergeSpecifiedPersons (
+export async function canMergeSpecifiedPersons(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3071,7 +3071,7 @@ export async function canMergeSpecifiedPersons (
   return verifiedSecondaryIds.length === 0
 }
 
-export async function mergeSpecifiedPersons (
+export async function mergeSpecifiedPersons(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3091,7 +3091,7 @@ export async function mergeSpecifiedPersons (
   await doMergePersons(db, primaryPerson, secondaryPerson)
 }
 
-async function setMyProfile (
+async function setMyProfile(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3141,7 +3141,7 @@ async function setMyProfile (
   }
 }
 
-async function getUserProfile (
+async function getUserProfile(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3208,7 +3208,7 @@ async function getUserProfile (
  * By default returns only active subscriptions. Set activeOnly=false to include historical subscriptions.
  * @public
  */
-export async function getSubscriptions (
+export async function getSubscriptions(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3267,7 +3267,7 @@ export async function getSubscriptions (
  * - Regular users: Can only query subscriptions from their workspace (from token)
  * @public
  */
-export async function getSubscriptionById (
+export async function getSubscriptionById(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3320,7 +3320,7 @@ export async function getSubscriptionById (
   return subscription
 }
 
-export async function batchAssignWorkspacePermission (
+export async function batchAssignWorkspacePermission(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3345,7 +3345,7 @@ export async function batchAssignWorkspacePermission (
   await db.batchAssignWorkspacePermission(workspace, accountIds, permission)
 }
 
-export async function batchRevokeWorkspacePermission (
+export async function batchRevokeWorkspacePermission(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3370,7 +3370,7 @@ export async function batchRevokeWorkspacePermission (
   await db.batchRevokeWorkspacePermission(workspace, accountIds, permission)
 }
 
-export async function hasWorkspacePermission (
+export async function hasWorkspacePermission(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3390,7 +3390,7 @@ export async function hasWorkspacePermission (
   return await db.hasWorkspacePermission(accountId, workspace, permission)
 }
 
-export async function getWorkspacePermissions (
+export async function getWorkspacePermissions(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3419,7 +3419,7 @@ export async function getWorkspacePermissions (
   return await db.getWorkspacePermissions(accountId, permission)
 }
 
-export async function getWorkspaceUsersWithPermission (
+export async function getWorkspaceUsersWithPermission(
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3530,7 +3530,7 @@ export type AccountMethods =
 /**
  * @public
  */
-export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMethods, AccountMethodHandler>> {
+export function getMethods(hasSignUp: boolean = true): Partial<Record<AccountMethods, AccountMethodHandler>> {
   return {
     /* OPERATIONS */
     login: wrap(login),
