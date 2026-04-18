@@ -159,6 +159,14 @@ export function getFormattedDate (value: number | null, options?: Intl.DateTimeF
   return value === null ? '' : new Date(value).toLocaleString('default', options ?? { month: 'short', day: 'numeric' })
 }
 
+export function formatDate (date: Date, showYear: boolean): string {
+  const locale = new Intl.NumberFormat().resolvedOptions().locale
+  const options: Intl.DateTimeFormatOptions = showYear
+    ? { year: 'numeric', month: 'short', day: 'numeric' }
+    : { month: 'short', day: 'numeric' }
+  return new Intl.DateTimeFormat(locale, options).format(date)
+}
+
 export const getTimeZoneName = (
   val: string = Intl.DateTimeFormat().resolvedOptions().timeZoneName ?? Intl.DateTimeFormat().resolvedOptions().timeZone
 ): string => {
