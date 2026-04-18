@@ -15,70 +15,55 @@
 <script lang="ts">
   import { type Timestamp, type WorkspaceUuid } from '@hcengineering/core'
   import presentation, { copyTextToClipboard } from '@hcengineering/presentation'
-  import { translate } from '@hcengineering/platform'
+  import { type IntlString } from '@hcengineering/platform'
   import view from '@hcengineering/view'
-  import { Dropdown, Label, ListItem, Modal, ModernEditbox, ticker } from '@hcengineering/ui'
+  import {
+    DropdownLabelsIntl,
+    type DropdownIntlItem,
+    Label,
+    ListItem,
+    Modal,
+    ModernEditbox,
+    Dropdown,
+    ticker
+  } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
   import { createEventDispatcher, onMount } from 'svelte'
-  import { themeStore } from '@hcengineering/theme'
   import { getAccountClient } from '../utils'
 
   let name = ''
   let loading = false
-  let error: string | undefined
+  let error: IntlString | undefined
   let wsItems: ListItem[] = []
   let selectedWs: ListItem | undefined
   let createdToken: string | undefined
   let copiedTime: Timestamp | undefined
   let copied = false
 
-  const scopePresets = [
-    { _id: 'read-only', label: 'Read Only', scopes: ['read:*'] },
-    { _id: 'read-write', label: 'Read & Write', scopes: ['read:*', 'write:*'] },
-    { _id: 'full-access', label: 'Full Access', scopes: ['read:*', 'write:*', 'delete:*'] }
+  const scopePresetItems: DropdownIntlItem[] = [
+    { id: 'read-only', label: setting.string.ApiTokenScopeReadOnly },
+    { id: 'read-write', label: setting.string.ApiTokenScopeReadWrite },
+    { id: 'full-access', label: setting.string.ApiTokenScopeFullAccess }
   ]
-  let scopePresetItems: ListItem[] = scopePresets.map((p) => ({ _id: p._id, label: p.label }))
-  let selectedScopePreset: ListItem = scopePresetItems[0]
-
-  async function resolveScopeLabels(): Promise<void> {
-    const lang = $themeStore.language
-    const labels = await Promise.all([
-      translate(setting.string.ApiTokenScopeReadOnly, {}, lang),
-      translate(setting.string.ApiTokenScopeReadWrite, {}, lang),
-      translate(setting.string.ApiTokenScopeFullAccess, {}, lang)
-    ])
-    const prevId = selectedScopePreset._id
-    scopePresetItems = [
-      { _id: 'read-only', label: labels[0] },
-      { _id: 'read-write', label: labels[1] },
-      { _id: 'full-access', label: labels[2] }
-    ]
-    selectedScopePreset = scopePresetItems.find((o) => o._id === prevId) ?? scopePresetItems[0]
+  const scopeScopes: Record<string, string[]> = {
+    'read-only': ['read:*'],
+    'read-write': ['read:*', 'write:*'],
+    'full-access': ['read:*', 'write:*', 'delete:*']
   }
+  let selectedScopePreset: string = 'read-only'
 
   function getSelectedScopes(): string[] {
-    const preset = scopePresets.find((p) => p._id === selectedScopePreset._id)
-    return preset?.scopes ?? ['read:*']
+    return scopeScopes[selectedScopePreset] ?? ['read:*']
   }
 
-  const expiryKeys = [
-    { _id: '7', intl: setting.string.ApiTokenExpiry7Days },
-    { _id: '30', intl: setting.string.ApiTokenExpiry30Days },
-    { _id: '90', intl: setting.string.ApiTokenExpiry90Days },
-    { _id: '180', intl: setting.string.ApiTokenExpiry180Days },
-    { _id: '365', intl: setting.string.ApiTokenExpiry365Days }
+  const expiryItems: DropdownIntlItem[] = [
+    { id: '7', label: setting.string.ApiTokenExpiry7Days },
+    { id: '30', label: setting.string.ApiTokenExpiry30Days },
+    { id: '90', label: setting.string.ApiTokenExpiry90Days },
+    { id: '180', label: setting.string.ApiTokenExpiry180Days },
+    { id: '365', label: setting.string.ApiTokenExpiry365Days }
   ]
-  let expiryOptions: ListItem[] = expiryKeys.map((k) => ({ _id: k._id, label: k._id + ' days' }))
-  let selectedExpiry: ListItem = expiryOptions[1]
-
-  async function resolveExpiryLabels(): Promise<void> {
-    const lang = $themeStore.language
-    const prevId = selectedExpiry._id
-    expiryOptions = await Promise.all(
-      expiryKeys.map(async (k) => ({ _id: k._id, label: await translate(k.intl, {}, lang) }))
-    )
-    selectedExpiry = expiryOptions.find((o) => o._id === prevId) ?? expiryOptions[1]
-  }
+  let selectedExpiry: string = '30'
 
   const dispatch = createEventDispatcher()
 
@@ -105,16 +90,13 @@
       const result = await getAccountClient().createApiToken(
         name.trim(),
         selectedWs._id as WorkspaceUuid,
-        parseInt(selectedExpiry._id, 10),
+        parseInt(selectedExpiry, 10),
         scopes
       )
       createdToken = result.token
     } catch (err: any) {
       console.error('Failed to create API token', err)
-      error = undefined
-      void translate(setting.string.ApiTokenCreateError, {}).then((msg) => {
-        error = msg
-      })
+      error = setting.string.ApiTokenCreateError
     } finally {
       loading = false
     }
@@ -129,8 +111,6 @@
 
   onMount(() => {
     void loadWorkspaces()
-    void resolveExpiryLabels()
-    void resolveScopeLabels()
   })
 </script>
 
@@ -173,18 +153,30 @@
     </div>
     <div class="antiPopup-msg">
       <span class="label"><Label label={setting.string.ApiTokenScopePreset} /></span>
-      <Dropdown
-        placeholder={setting.string.ApiTokenScopePreset}
+      <DropdownLabelsIntl
+        kind="regular"
+        size="medium"
         items={scopePresetItems}
-        bind:selected={selectedScopePreset}
+        selected={selectedScopePreset}
+        on:selected={(e) => {
+          selectedScopePreset = e.detail
+        }}
       />
     </div>
     <div class="antiPopup-msg">
       <span class="label"><Label label={setting.string.ApiTokenExpiry} /></span>
-      <Dropdown placeholder={setting.string.ApiTokenExpiry} items={expiryOptions} bind:selected={selectedExpiry} />
+      <DropdownLabelsIntl
+        kind="regular"
+        size="medium"
+        items={expiryItems}
+        selected={selectedExpiry}
+        on:selected={(e) => {
+          selectedExpiry = e.detail
+        }}
+      />
     </div>
     {#if error !== undefined}
-      <div class="antiPopup-msg error">{error}</div>
+      <div class="antiPopup-msg error"><Label label={error} /></div>
     {/if}
   {/if}
 </Modal>

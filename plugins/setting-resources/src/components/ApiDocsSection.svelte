@@ -13,17 +13,18 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label } from '@hcengineering/ui'
+  import { fetchMetadataLocalStorage, Label } from '@hcengineering/ui'
   import { copyTextToClipboard } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
+  import login from '@hcengineering/login'
 
   let showApiDocs = false
 
-  function getBaseUrl(): string {
-    return window.location.origin
+  $: {
+    const endpoint = fetchMetadataLocalStorage(login.metadata.LoginEndpoint) ?? ''
+    baseApiUrl = (endpoint !== '' ? endpoint : window.location.origin) + '/api/v1'
   }
-
-  $: baseApiUrl = getBaseUrl() + '/_transactor/api/v1'
+  let baseApiUrl: string
   $: curlExample = `curl -H "Authorization: Bearer YOUR_TOKEN" \\\n  "${baseApiUrl}/find-all/WORKSPACE_ID?class=tracker:class:Project"`
 
   async function copySnippet(text: string): Promise<void> {
