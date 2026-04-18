@@ -14,12 +14,13 @@
 -->
 <script lang="ts">
   import core, { Type } from '@hcengineering/core'
+  import { translate } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import { Process, UserResult } from '@hcengineering/process'
   import { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { generateContextId } from '../../utils'
   import ResultTypeSelector from './ResultTypeSelector.svelte'
-  import { getClient } from '@hcengineering/presentation'
 
   export let result: UserResult | null
   export let process: Process
@@ -32,7 +33,7 @@
 
   const client = getClient()
 
-  function update (): void {
+  async function update (): Promise<void> {
     if (type == null) {
       result = null
     } else {
@@ -44,8 +45,8 @@
       }
       if (key !== undefined) {
         const attr = client.getHierarchy().findAttribute(process.masterTag, key)
-        if (attr) {
-          name = attr.label
+        if (attr?.label !== undefined) {
+          name = await translate(attr.label, {})
           result.name = name
         }
       }

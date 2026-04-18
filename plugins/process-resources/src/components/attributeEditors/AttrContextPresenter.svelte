@@ -24,7 +24,9 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  $: attr = context.attributes.find((p) => p.name === contextValue.key) ?? hierarchy.findAttribute(process.masterTag, contextValue.key)
+  $: attr =
+    context.attributes.find((p) => p.name === contextValue.key) ??
+    hierarchy.findAttribute(process.masterTag, contextValue.key)
 </script>
 
 {#if attr}
