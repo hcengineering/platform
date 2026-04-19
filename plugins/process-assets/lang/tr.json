@@ -90,6 +90,8 @@
     "Absolute": "Mutlak",
     "Ceil": "Yukarı yuvarla",
     "Floor": "Aşağı yuvarla",
+    "Min": "Min",
+    "Max": "Max",
     "LogAction": "Olay",
     "Started": "Başlatıldı",
     "Each": "Her biri",

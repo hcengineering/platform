@@ -425,6 +425,40 @@ export function Floor (value: number): number {
   return value
 }
 
+export async function Min (
+  value: number,
+  props: Record<string, any>,
+  control: ProcessControl,
+  execution: Execution
+): Promise<number> {
+  const context = parseContext(props.value)
+  if (context !== undefined) {
+    const val = await getContextValue(props.value, control, execution)
+    if (typeof val !== 'number') return value
+    return Math.min(value, val)
+  } else if (typeof value === 'number' && typeof props.value === 'number') {
+    return Math.min(value, props.value)
+  }
+  return value
+}
+
+export async function Max (
+  value: number,
+  props: Record<string, any>,
+  control: ProcessControl,
+  execution: Execution
+): Promise<number> {
+  const context = parseContext(props.value)
+  if (context !== undefined) {
+    const val = await getContextValue(props.value, control, execution)
+    if (typeof val !== 'number') return value
+    return Math.max(value, val)
+  } else if (typeof value === 'number' && typeof props.value === 'number') {
+    return Math.max(value, props.value)
+  }
+  return value
+}
+
 // #endregion
 
 // #region Func

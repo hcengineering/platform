@@ -90,6 +90,8 @@
     "Absolute": "Absolute",
     "Ceil": "Ceil",
     "Floor": "Floor",
+    "Min": "Min",
+    "Max": "Max",
     "LogAction": "Event",
     "Started": "Started",
     "Each": "Each",

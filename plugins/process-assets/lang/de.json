@@ -164,7 +164,9 @@
     "MonthFromDate": "Monat aus Datum",
     "DayFromDate": "Tag aus Datum",
     "DateDifference": "Datumsdifferenz",
-    "EmptyValue": "Leerer Wert"
+    "EmptyValue": "Leerer Wert",
+    "Min": "Min",
+    "Max": "Max"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

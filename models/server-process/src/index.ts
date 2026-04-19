@@ -303,6 +303,14 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.Floor
   })
 
+  builder.mixin(process.function.Min, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Min
+  })
+
+  builder.mixin(process.function.Max, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.Max
+  })
+
   builder.mixin(process.function.Offset, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Offset
   })
