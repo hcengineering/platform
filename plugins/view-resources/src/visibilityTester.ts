@@ -27,16 +27,6 @@ import { getClient } from '@hcengineering/presentation'
 import { get } from 'svelte/store'
 import { spaceSpace } from './utils'
 
-function convertToSingleDoc (doc?: Doc | Doc[]): Doc | undefined {
-  if (doc === undefined) {
-    return undefined
-  }
-  if (Array.isArray(doc)) {
-    return doc.length === 1 ? doc[0] : undefined
-  }
-  return doc
-}
-
 function isTypedSpace (space: Space): space is TypedSpace {
   return getClient().getHierarchy().isDerived(space._class, core.class.TypedSpace)
 }
@@ -68,12 +58,11 @@ export async function canDeleteObject (doc?: Doc | Doc[]): Promise<boolean> {
 }
 
 export async function canEditSpace (doc?: Doc | Doc[]): Promise<boolean> {
-  const one = convertToSingleDoc(doc)
-  if (one === undefined) {
+  if (doc === undefined || Array.isArray(doc)) {
     return false
   }
 
-  const space = one as Space
+  const space = doc as Space
 
   if (isSpaceOwner(space)) {
     return true
@@ -95,12 +84,11 @@ export async function canEditSpace (doc?: Doc | Doc[]): Promise<boolean> {
 }
 
 export async function canArchiveSpace (doc?: Doc | Doc[]): Promise<boolean> {
-  const one = convertToSingleDoc(doc)
-  if (one === undefined) {
+  if (doc === undefined || Array.isArray(doc)) {
     return false
   }
 
-  const space = one as Space
+  const space = doc as Space
 
   if (isSpaceOwner(space)) {
     return true
@@ -122,12 +110,11 @@ export async function canArchiveSpace (doc?: Doc | Doc[]): Promise<boolean> {
 }
 
 export async function canDeleteSpace (doc?: Doc | Doc[]): Promise<boolean> {
-  const one = convertToSingleDoc(doc)
-  if (one === undefined) {
+  if (doc === undefined || Array.isArray(doc)) {
     return false
   }
 
-  const space = one as Space
+  const space = doc as Space
 
   if (isSpaceOwner(space)) {
     return true
@@ -145,23 +132,21 @@ export async function canDeleteSpace (doc?: Doc | Doc[]): Promise<boolean> {
 }
 
 export async function canJoinSpace (doc?: Doc | Doc[]): Promise<boolean> {
-  const one = convertToSingleDoc(doc)
-  if (one === undefined) {
+  if (doc === undefined || Array.isArray(doc)) {
     return false
   }
 
-  const space = one as Space
+  const space = doc as Space
 
   return !(space.members ?? []).includes(getCurrentAccount().uuid)
 }
 
 export async function canLeaveSpace (doc?: Doc | Doc[]): Promise<boolean> {
-  const one = convertToSingleDoc(doc)
-  if (one === undefined) {
+  if (doc === undefined || Array.isArray(doc)) {
     return false
   }
 
-  const space = one as Space
+  const space = doc as Space
 
   return (space.members ?? []).includes(getCurrentAccount().uuid)
 }
