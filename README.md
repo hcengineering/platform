@@ -276,18 +276,6 @@ rush test # To execute all tests
 rushx test # For individual test execution inside a package directory
 ```
 
-For fastest local loop, verify only packages touched by your current local changes (unstaged/staged/untracked):
-
-```bash
-./scripts/verify-changed.sh
-```
-
-Validate-only mode (skip tests) is available:
-
-```bash
-SKIP_TESTS=1 ./scripts/verify-changed.sh
-```
-
 ### UI tests
 
 ```bash
