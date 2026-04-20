@@ -163,7 +163,8 @@ const view = plugin(viewId, {
     RemoveRelation: '' as Ref<Action>,
 
     CopyLink: '' as Ref<Action<Doc, any>>,
-    CopyDocumentMarkdown: '' as Ref<Action<Doc, any>>
+    CopyDocumentMarkdown: '' as Ref<Action<Doc, any>>,
+    AddRelation: '' as Ref<Action<Doc, any>>
   },
   viewlet: {
     Table: '' as Ref<ViewletDescriptor>,
