@@ -9666,6 +9666,9 @@ importers:
       '@hcengineering/model-core':
         specifier: workspace:^0.7.0
         version: link:../core
+      '@hcengineering/model-print':
+        specifier: workspace:^0.7.0
+        version: link:../print
       '@hcengineering/model-tracker':
         specifier: workspace:^0.7.0
         version: link:../tracker
