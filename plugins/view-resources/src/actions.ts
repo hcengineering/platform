@@ -42,7 +42,7 @@ import { type FocusSelection, type SelectionStore } from './selection'
 import { restrictionStore } from './utils'
 
 /**
- * Collapses a single-element array to the element for action visibility testers (aligned with {@link invokeAction}).
+ * Collapses a single-element array to the element, otherwise returns the original value.
  *
  * @public
  */
@@ -144,7 +144,7 @@ export async function invokeAction (
 ): Promise<void> {
   const impl = await getResource(action.action)
   Analytics.handleEvent(action.analyticsEvent ?? action._id)
-  await impl(Array.isArray(object) && object.length === 1 ? object[0] : object, evt, {
+  await impl(normalizeActionContext(object), evt, {
     ...action.actionProps,
     ...props
   })
