@@ -156,7 +156,7 @@ import {
   canLeaveSpace,
   isClipboardAvailable
 } from './visibilityTester'
-export { getActions, getContextActions, invokeAction, showMenu } from './actions'
+export { getActions, getContextActions, invokeAction, normalizeActionContext, showMenu } from './actions'
 export { default as ActionButton } from './components/ActionButton.svelte'
 export { default as ActionHandler } from './components/ActionHandler.svelte'
 export { default as BaseDocPresenter } from './components/BaseDocPresenter.svelte'
