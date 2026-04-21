@@ -19,6 +19,7 @@ import core, {
   Doc,
   DocumentUpdate,
   generateId,
+  Mixin,
   Ref,
   RefTo,
   Space,
@@ -487,7 +488,54 @@ export async function OnCardCreate (txes: Tx[], control: TriggerControl): Promis
     if (obj.baseId !== obj._id) {
       const reassignTxes = await getVersionExecutionTxes(obj, control)
       res.push(...reassignTxes)
+    } else {
+      const newCardTxes = await getNewCardExecutionTxes(obj, control)
+      res.push(...newCardTxes)
     }
+  }
+  return res
+}
+
+async function getNewCardExecutionTxes (card: Card, control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  const executions = await control.findAll(control.ctx, process.class.Execution, {
+    card: card._id
+  })
+
+  const alreadyStarted = new Set(executions.map((e) => e.process))
+
+  const ancestors = control.hierarchy
+    .getAncestors(card._class)
+    .filter((p) => control.hierarchy.isDerived(p, cardPlugin.class.Card))
+
+  const processes = control.modelDb.findAllSync(process.class.Process, {
+    masterTag: { $in: ancestors },
+    autoStart: true
+  })
+
+  for (const proc of processes) {
+    if (alreadyStarted.has(proc._id)) continue
+    const tx = createExecution(control, proc._id, card._id, card.space)
+    if (tx !== undefined) res.push(tx)
+  }
+  return res
+}
+
+async function getTagAddExecutionTxes (card: Card, mixin: Ref<Mixin<Card>>, control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  const executions = await control.findAll(control.ctx, process.class.Execution, {
+    card: card._id,
+    status: ExecutionStatus.Active
+  })
+
+  const alreadyStarted = new Set(executions.map((e) => e.process))
+
+  const processes = control.modelDb.findAllSync(process.class.Process, { masterTag: mixin, autoStart: true })
+
+  for (const proc of processes) {
+    if (alreadyStarted.has(proc._id)) continue
+    const tx = createExecution(control, proc._id, card._id, card.space)
+    if (tx !== undefined) res.push(tx)
   }
   return res
 }
@@ -536,6 +584,14 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
     )
     const reassignTxes = await reassignToDos(card[0], ops ?? {}, control)
     res.push(...reassignTxes)
+
+    if (tx._class === core.class.TxMixin) {
+      const mixinTx = tx as TxMixin<Card, Card>
+      if (Object.keys(mixinTx.attributes).length === 0) {
+        const mixinTxes = await getTagAddExecutionTxes(card[0], mixinTx.mixin, control)
+        res.push(...mixinTxes)
+      }
+    }
   }
   return res
 }
