@@ -739,8 +739,14 @@ export async function requestResult (
   const client = getClient()
   const doc = await client.findOne(card.class.Card, { _id: execution.card })
   if (doc === undefined) return
+  const _process = client.getModel().findObject(execution.process)
+  if (_process === undefined) return
+  const h = client.getHierarchy()
+  const isMixin = h.isMixin(_process.masterTag)
+  const targetDoc = isMixin ? h.as(doc, _process.masterTag) : doc
+
   const promise = new Promise<void>((resolve, reject) => {
-    showPopup(process.component.ResultInput, { results, context, doc }, undefined, (res) => {
+    showPopup(process.component.ResultInput, { results, context, doc: targetDoc }, undefined, (res) => {
       if (res !== undefined) {
         for (const contextId in res) {
           const val = res[contextId]
