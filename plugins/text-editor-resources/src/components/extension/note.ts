@@ -7,6 +7,7 @@ import { NoteBaseExtension, type NoteKind, name as noteName } from '@hcengineeri
 
 import ConfigureNotePopup from '../note/ConfigureNotePopup.svelte'
 import DisplayNotePopup from '../note/DisplayNotePopup.svelte'
+import { hideTextEditorToolbar } from './toolbar/toolbar'
 
 export interface NoteOptions {
   readonly: boolean
@@ -195,6 +196,7 @@ export function displayNote (text: string, event: MouseEvent): void {
 }
 
 export async function configureNote (editor: Editor, event: MouseEvent): Promise<void> {
+  hideTextEditorToolbar(editor)
   const attributes = editor.getAttributes(noteName)
   const text = attributes.title
   const kind = attributes.kind

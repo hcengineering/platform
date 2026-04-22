@@ -267,7 +267,8 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
         placement: viewOptions?.placement,
         hideOnClick: 'toggle',
         appendTo: viewOptions?.floating !== true ? (options.popupContainer ?? document.body) : document.body,
-        zIndex: 10001,
+        // Stay below application popups (base z-index 10000 in packages/ui Popup.svelte) so Link, Note, etc. are usable.
+        zIndex: 9999,
         offset: viewOptions?.offset,
         popperOptions: {
           modifiers: [
@@ -473,6 +474,15 @@ export function getToolbarControlPluginState (editorState: EditorState): Toolbar
 export function getToolbarCursor<T> (editorState: EditorState): ToolbarCursor<T> | null {
   const state = getToolbarControlPluginState(editorState)
   return state?.cursor ?? null
+}
+
+/** Dismiss the floating text toolbar (e.g. before opening a popup so it does not cover it). */
+export function hideTextEditorToolbar (editor: Editor): void {
+  const pluginState = getToolbarControlPluginState(editor.state)
+  if (pluginState?.cursor == null) {
+    return
+  }
+  editor.view.dispatch(updateCursor(editor.state.tr, null, pluginState, 'hide-for-popup'))
 }
 
 function resolveCursor (props: ResolveCursorProps): ToolbarCursor<any> | null {
