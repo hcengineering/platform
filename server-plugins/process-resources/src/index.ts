@@ -351,6 +351,18 @@ export async function OnExecutionRemove (txes: Tx[], control: TriggerControl): P
     for (const todo of todos) {
       res.push(control.txFactory.createTxRemoveDoc(todo._class, todo.space, todo._id))
     }
+    const logs = await control.findAll(control.ctx, process.class.ExecutionLog, {
+      execution: cudTx.objectId
+    })
+    for (const log of logs) {
+      res.push(control.txFactory.createTxRemoveDoc(log._class, log.space, log._id))
+    }
+    const buttons = await control.findAll(control.ctx, process.class.EventButton, {
+      execution: cudTx.objectId
+    })
+    for (const button of buttons) {
+      res.push(control.txFactory.createTxRemoveDoc(button._class, button.space, button._id))
+    }
   }
   return res
 }
@@ -596,6 +608,31 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
   return res
 }
 
+export async function OnCardRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxRemoveDoc) continue
+    const removeTx = tx as TxRemoveDoc<Card>
+    if (!control.hierarchy.isDerived(removeTx.objectClass, cardPlugin.class.Card)) continue
+
+    const executions = await control.findAll(control.ctx, process.class.Execution, { card: removeTx.objectId })
+    for (const execution of executions) {
+      res.push(control.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
+    }
+
+    const logs = await control.findAll(control.ctx, process.class.ExecutionLog, { card: removeTx.objectId })
+    for (const log of logs) {
+      res.push(control.txFactory.createTxRemoveDoc(log._class, log.space, log._id))
+    }
+
+    const buttons = await control.findAll(control.ctx, process.class.EventButton, { card: removeTx.objectId })
+    for (const button of buttons) {
+      res.push(control.txFactory.createTxRemoveDoc(button._class, button.space, button._id))
+    }
+  }
+  return res
+}
+
 function getName (current: ProcessContext | undefined, method: Method<Doc>, action: Step<Doc>): string {
   const nameField = method.createdContext?.nameField
   if (nameField !== undefined) {
@@ -774,7 +811,8 @@ export default async () => ({
     OnExecutionContinue,
     OnCustomEvent,
     OnExecutionRemove,
-    OnCardCreate
+    OnCardCreate,
+    OnCardRemove
   }
 })
 

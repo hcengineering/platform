@@ -482,4 +482,13 @@ export function createModel (builder: Builder): void {
     },
     isAsync: true
   })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnCardRemove,
+    txMatch: {
+      _class: core.class.TxRemoveDoc,
+      objectClass: cardPlugin.class.Card
+    },
+    isAsync: true
+  })
 }
