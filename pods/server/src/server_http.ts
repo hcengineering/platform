@@ -515,11 +515,9 @@ export function startHttpServer (
           }, 1000)
         }
         if ('upgrade' in s) {
-          void cs
-            .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
-            .then(() => {
-              cs.close()
-            })
+          void cs.send(ctx, { id: -1, result: { state: 'upgrading', stats: s.upgradeInfo } }, false, false).then(() => {
+            cs.close()
+          })
         }
       })
       void webSocketData.session.catch((err) => {

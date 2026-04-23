@@ -31,7 +31,7 @@ jest.mock('@hcengineering/platform', () => {
 
 jest.mock('@hcengineering/server-token', () => {
   class TokenError extends Error {
-    constructor(msg: string) {
+    constructor (msg: string) {
       super(msg)
       this.name = 'TokenError'
     }

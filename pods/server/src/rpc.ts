@@ -63,7 +63,7 @@ const sendError = (res: ExpressResponse, code: number, data: any): void => {
   res.end(JSON.stringify(data))
 }
 
-function rateLimitToHeaders(rateLimit?: RateLimitInfo): OutgoingHttpHeaders {
+function rateLimitToHeaders (rateLimit?: RateLimitInfo): OutgoingHttpHeaders {
   if (rateLimit === undefined) {
     return {}
   }
@@ -77,7 +77,7 @@ function rateLimitToHeaders(rateLimit?: RateLimitInfo): OutgoingHttpHeaders {
   }
 }
 
-async function sendJson(
+async function sendJson (
   req: Request,
   res: ExpressResponse,
   result: any,
@@ -134,9 +134,9 @@ async function sendJson(
 // stays cached permanently (revocation is irreversible). Non-revoked
 // tokens are re-checked every TTL interval.
 const REVOCATION_CACHE_TTL_MS = 60_000
-const revocationCache = new Map<string, { revoked: boolean; checkedAt: number }>()
+const revocationCache = new Map<string, { revoked: boolean, checkedAt: number }>()
 
-async function isApiTokenRevoked(apiTokenId: string, accountClient: AccountClient): Promise<boolean> {
+async function isApiTokenRevoked (apiTokenId: string, accountClient: AccountClient): Promise<boolean> {
   const now = Date.now()
   const cached = revocationCache.get(apiTokenId)
 
@@ -161,11 +161,11 @@ async function isApiTokenRevoked(apiTokenId: string, accountClient: AccountClien
 // ── Token Scope Enforcement ─────────────────────────────────────────
 // Phase 1: coarse scopes only (read:*, write:*, delete:*)
 
-export function hasScope(scopes: string[], required: string): boolean {
+export function hasScope (scopes: string[], required: string): boolean {
   return scopes.includes(required)
 }
 
-export function getRequiredScope(method: string): string | null {
+export function getRequiredScope (method: string): string | null {
   switch (method) {
     case 'ping':
     case 'generateId':
@@ -186,14 +186,14 @@ export function getRequiredScope(method: string): string | null {
   }
 }
 
-export function registerRPC(app: Express, sessions: SessionManager, ctx: MeasureContext, accountsUrl: string): void {
+export function registerRPC (app: Express, sessions: SessionManager, ctx: MeasureContext, accountsUrl: string): void {
   const rpcSessions = new Map<string, RPCClientInfo>()
 
-  function getAccountClient(token?: string): AccountClient {
+  function getAccountClient (token?: string): AccountClient {
     return getAccountClientRaw(accountsUrl, token)
   }
 
-  async function withSession(
+  async function withSession (
     req: Request,
     res: ExpressResponse,
     method: string,
@@ -556,7 +556,7 @@ export function registerRPC(app: Express, sessions: SessionManager, ctx: Measure
   })
 }
 
-function createClosingSocket(rawToken: string, rpcSessions: Map<string, RPCClientInfo>): ConnectionSocket {
+function createClosingSocket (rawToken: string, rpcSessions: Map<string, RPCClientInfo>): ConnectionSocket {
   return {
     id: rawToken,
     isClosed: false,
