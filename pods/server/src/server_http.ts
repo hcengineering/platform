@@ -515,7 +515,8 @@ export function startHttpServer (
           }, 1000)
         }
         if ('upgrade' in s) {
-          void cs.send(ctx, { id: -1, result: { state: 'upgrading', stats: s.upgradeInfo } }, false, false).then(() => {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+          void cs.send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false).then(() => {
             cs.close()
           })
         }
