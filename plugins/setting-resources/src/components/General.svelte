@@ -64,7 +64,7 @@
 
   void loadWorkspaceName()
 
-  async function loadWorkspaceName(): Promise<void> {
+  async function loadWorkspaceName (): Promise<void> {
     const res = await accountClient.getWorkspaceInfo()
 
     workspaceUrl = res.url
@@ -74,7 +74,7 @@
     loading = false
   }
 
-  async function handleEditName(): Promise<void> {
+  async function handleEditName (): Promise<void> {
     if (editNameDisabled) {
       return
     }
@@ -86,12 +86,12 @@
     isEditingName = !isEditingName
   }
 
-  function handleCancelEditName(): void {
+  function handleCancelEditName (): void {
     name = oldName
     isEditingName = false
   }
 
-  async function handleDelete(): Promise<void> {
+  async function handleDelete (): Promise<void> {
     showPopup(MessageBox, {
       label: settingsRes.string.DeleteWorkspace,
       message: settingsRes.string.DeleteWorkspaceConfirm,
@@ -112,7 +112,7 @@
     workspaceSettings = r
   })
 
-  async function handleAvatarDone(): Promise<void> {
+  async function handleAvatarDone (): Promise<void> {
     const existing = await client.findOne(settingsRes.class.WorkspaceSetting, { _id: settingsRes.ids.WorkspaceSetting })
     if (existing !== undefined) {
       const avatar = await avatarEditor.createAvatar()
@@ -147,12 +147,12 @@
     }
   )
 
-  async function changePasswordAgingRules(val: number | undefined): Promise<void> {
+  async function changePasswordAgingRules (val: number | undefined): Promise<void> {
     passwordAgingRule = Math.max(val ?? 1, 1)
     await accountClient.updatePasswordAgingRule(passwordAgingRule)
   }
 
-  function handleTogglePermissions(): void {
+  function handleTogglePermissions (): void {
     const newState = !arePermissionsDisabled
     showPopup(MessageBox, {
       label: newState ? settingsRes.string.DisablePermissions : settingsRes.string.EnablePermissions,

@@ -35,7 +35,7 @@
     expired: setting.string.ApiTokenStatusExpired
   } as const
 
-  function loadTokens(): void {
+  function loadTokens (): void {
     loading = true
     loadError = false
     getAccountClient()
@@ -52,7 +52,7 @@
       })
   }
 
-  function create(): void {
+  function create (): void {
     showPopup(ApiTokenCreatePopup, {}, 'top', (res) => {
       if (res === true) {
         loadTokens()
@@ -60,7 +60,7 @@
     })
   }
 
-  function revoke(token: ApiTokenInfo): void {
+  function revoke (token: ApiTokenInfo): void {
     showPopup(MessageBox, {
       label: setting.string.ApiTokenRevoke,
       message: setting.string.ApiTokenRevokeConfirm,
@@ -76,7 +76,7 @@
     })
   }
 
-  function formatDate(ts: number): string {
+  function formatDate (ts: number): string {
     return new Date(ts).toLocaleDateString($themeStore.language ?? 'en', {
       month: 'short',
       day: 'numeric',
@@ -90,7 +90,7 @@
     fullAccess: 'Full Access'
   }
 
-  async function resolveScopeLabels(): Promise<void> {
+  async function resolveScopeLabels (): Promise<void> {
     const lang = $themeStore.language
     scopeLabels = {
       readOnly: await translate(setting.string.ApiTokenScopeReadOnly, {}, lang),
@@ -99,7 +99,7 @@
     }
   }
 
-  function getScopeLabel(token: ApiTokenInfo): string {
+  function getScopeLabel (token: ApiTokenInfo): string {
     const scopes = token.scopes
     if (scopes == null || scopes.length === 0) return scopeLabels.fullAccess
     const hasRead = scopes.includes('read:*')
@@ -111,7 +111,7 @@
     return `${scopes.length} scopes`
   }
 
-  function getStatus(token: ApiTokenInfo): 'active' | 'expiring' | 'revoked' | 'expired' {
+  function getStatus (token: ApiTokenInfo): 'active' | 'expiring' | 'revoked' | 'expired' {
     if (token.revoked) return 'revoked'
     const now = Date.now()
     if (token.expiresOn < now) return 'expired'

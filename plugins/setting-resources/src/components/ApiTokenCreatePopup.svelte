@@ -52,7 +52,7 @@
   }
   let selectedScopePreset: string = 'read-only'
 
-  function getSelectedScopes(): string[] {
+  function getSelectedScopes (): string[] {
     return scopeScopes[selectedScopePreset] ?? ['read:*']
   }
 
@@ -73,7 +73,7 @@
     copied = false
   }
 
-  async function loadWorkspaces(): Promise<void> {
+  async function loadWorkspaces (): Promise<void> {
     const workspaces = await getAccountClient().getUserWorkspaces()
     wsItems = workspaces.map((w) => ({ _id: w.uuid, label: w.name ?? w.url }))
     if (wsItems.length > 0) {
@@ -81,7 +81,7 @@
     }
   }
 
-  async function create(): Promise<void> {
+  async function create (): Promise<void> {
     if (selectedWs === undefined) return
     loading = true
     error = undefined
@@ -102,7 +102,7 @@
     }
   }
 
-  async function copyToken(): Promise<void> {
+  async function copyToken (): Promise<void> {
     if (createdToken === undefined || !window.isSecureContext) return
     await copyTextToClipboard(createdToken)
     copied = true

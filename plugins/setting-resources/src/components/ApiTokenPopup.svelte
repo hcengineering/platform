@@ -33,7 +33,7 @@
     copied = false
   }
 
-  async function copy(): Promise<void> {
+  async function copy (): Promise<void> {
     if (!isSecureContext) return
     if (token === undefined) return
 
