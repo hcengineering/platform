@@ -56,7 +56,7 @@
   let owners: AccountUuid[] = funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount().uuid]
 
   $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
-  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore)
+  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore, owners)
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
     spaceType =

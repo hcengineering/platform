@@ -51,7 +51,7 @@
   let roles = client.getModel().findAllSync(card.class.Role, { types: { $in: types } })
   $: roles = client.getModel().findAllSync(card.class.Role, { types: { $in: types } })
 
-  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore)
+  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore, owners)
 
   let name: string = space?.name ?? ''
 

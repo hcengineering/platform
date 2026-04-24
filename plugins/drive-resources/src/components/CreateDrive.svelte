@@ -58,7 +58,7 @@
   let spaceType: WithLookup<SpaceType> | undefined
 
   $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
-  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore)
+  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore, owners)
   $: void loadSpaceType(typeId)
   const loadSpaceType = reduceCalls(async (id: typeof typeId): Promise<void> => {
     spaceType =

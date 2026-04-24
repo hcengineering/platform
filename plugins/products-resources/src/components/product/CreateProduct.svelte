@@ -72,7 +72,7 @@
   let spaceType: WithLookup<SpaceType> | undefined
 
   $: membersPersons = object.members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
-  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore)
+  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore, object.owners ?? [])
 
   let roles: Role[] = []
   const rolesQuery = createQuery()
