@@ -110,6 +110,7 @@ import SelectAvatars from './components/SelectAvatars.svelte'
 import SelectUsersPopup from './components/SelectUsersPopup.svelte'
 import SocialEditor from './components/SocialEditor.svelte'
 import SpaceMembers from './components/SpaceMembers.svelte'
+import WorkspaceMemberStatusEditor from './components/WorkspaceMemberStatusEditor.svelte'
 import SpaceMembersEditor from './components/SpaceMembersEditor.svelte'
 import SystemAvatar from './components/SystemAvatar.svelte'
 import UserBox from './components/UserBox.svelte'
@@ -155,6 +156,7 @@ import {
 } from './utils'
 
 export * from './utils'
+export * from './workspaceMemberStatus'
 export { employeeByIdStore } from './utils'
 export * from './assignee'
 export * from './translation'
@@ -199,6 +201,7 @@ export {
   SelectAvatars,
   SelectUsersPopup,
   SpaceMembers,
+  WorkspaceMemberStatusEditor,
   SystemAvatar,
   UserBox,
   UserBoxItems,
@@ -403,7 +406,8 @@ export default async (): Promise<Resources> => ({
     PersonIdFilter,
     AssigneePopup,
     TranslationSettings,
-    SocialIdentityPresenter
+    SocialIdentityPresenter,
+    WorkspaceMemberStatusEditor
   },
   completion: {
     EmployeeQuery: async (

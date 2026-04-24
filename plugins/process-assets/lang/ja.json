@@ -92,6 +92,8 @@
     "Round": "四捨五入",
     "Floor": "切り捨て",
     "Ceil": "切り上げ",
+    "Min": "最小値",
+    "Max": "最大値",
     "Absolute": "絶対値",
     "LogAction": "イベント",
     "Started": "開始",
@@ -167,7 +169,8 @@
     "YearFromDate": "日付から年",
     "MonthFromDate": "日付から月",
     "DayFromDate": "日付から日",
-    "DateDifference": "日付の差"
+    "DateDifference": "日付の差",
+    "EmptyValue": "空の値"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

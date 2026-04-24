@@ -926,6 +926,7 @@
         <AppItem
           icon={IconSettings}
           label={setting.string.Customize}
+          dataId="workbench-app-customize"
           size={appsMini ? 'small' : 'large'}
           on:click={() => showPopup(AppSwitcher, { apps }, popupPosition)}
         />

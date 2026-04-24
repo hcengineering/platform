@@ -31,7 +31,7 @@
   <span class="flex-presenter">
     <span class="mr-1"><Icon {icon} size="small" /></span>
     <Label label={communication.string.Unset} />
-    <span class="lower"><Label label={model.label} /></span>
+    <span class="lower ml-1"><Label label={model.label} /></span>
   </span>
 {:else}
   <ActivityAttributeValue {model} {icon} values={value}>

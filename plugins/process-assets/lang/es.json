@@ -93,6 +93,8 @@
     "Round": "Redondear",
     "Floor": "Redondear hacia abajo",
     "Ceil": "Redondear hacia arriba",
+    "Min": "Min",
+    "Max": "Max",
     "Absolute": "Valor absoluto",
     "LogAction": "Evento",
     "Started": "Iniciado",
@@ -168,7 +170,8 @@
     "YearFromDate": "Año desde fecha",
     "MonthFromDate": "Mes desde fecha",
     "DayFromDate": "Día desde fecha",
-    "DateDifference": "Diferencia de fechas"
+    "DateDifference": "Diferencia de fechas",
+    "EmptyValue": "Valor vacío"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",

@@ -14,6 +14,8 @@
 -->
 <script lang="ts">
   import core, { Type } from '@hcengineering/core'
+  import { translate } from '@hcengineering/platform'
+  import { getClient } from '@hcengineering/presentation'
   import { Process, UserResult } from '@hcengineering/process'
   import { Button, EditBox, IconClose, Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -29,7 +31,9 @@
 
   const dispatch = createEventDispatcher()
 
-  function update (): void {
+  const client = getClient()
+
+  async function update (): Promise<void> {
     if (type == null) {
       result = null
     } else {
@@ -38,6 +42,13 @@
         name,
         key,
         type
+      }
+      if (key !== undefined) {
+        const attr = client.getHierarchy().findAttribute(process.masterTag, key)
+        if (attr?.label !== undefined) {
+          name = await translate(attr.label, {})
+          result.name = name
+        }
       }
     }
     dispatch('change', result)

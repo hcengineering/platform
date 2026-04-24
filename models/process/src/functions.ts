@@ -358,6 +358,36 @@ export function defineFunctions (builder: Builder): void {
     process.class.ProcessFunction,
     core.space.Model,
     {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Min,
+      presenter: process.transformPresenter.NumberPresenter,
+      type: 'transform',
+      allowMany: true,
+      editor: process.transformEditor.NumberEditor
+    },
+    process.function.Min
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeNumber,
+      category: 'attribute',
+      label: process.string.Max,
+      presenter: process.transformPresenter.NumberPresenter,
+      type: 'transform',
+      allowMany: true,
+      editor: process.transformEditor.NumberEditor
+    },
+    process.function.Max
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
       of: core.class.TypeDate,
       category: 'attribute',
       label: process.string.Offset,
@@ -459,6 +489,18 @@ export function defineFunctions (builder: Builder): void {
       type: 'context'
     },
     process.function.RoleContext
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeAny,
+      category: 'attribute',
+      label: process.string.EmptyValue,
+      type: 'context'
+    },
+    process.function.EmptyValue
   )
 
   builder.createDoc(

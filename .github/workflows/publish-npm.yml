@@ -34,6 +34,8 @@ jobs:
         run: node common/scripts/install-run-rush.js install
       - name: Building...
         run: node common/scripts/install-run-rush.js build
+      - name: Emit TypeScript declarations
+        run: node common/scripts/install-run-rush.js validate
       - name: Publish to npm
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

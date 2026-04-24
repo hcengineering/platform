@@ -137,6 +137,8 @@ export default mergeIds(settingId, setting, {
     GuestSignUpDescription: '' as IntlString,
     GuestChannelsDescription: '' as IntlString,
     GuestChannelsArrayLabel: '' as IntlString,
+    GuestAutoJoinAvailableSpaces: '' as IntlString,
+    GuestAutoJoinAvailableSpacesHint: '' as IntlString,
     ApiAccess: '' as IntlString,
     ApiToken: '' as IntlString,
     GenerateApiToken: '' as IntlString,

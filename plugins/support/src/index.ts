@@ -21,7 +21,7 @@ import { SupportClientFactory, SupportConversation, SupportSystem } from './type
 export * from './types'
 export { deleteSupportConversation, updateSupportConversation } from './utils'
 
-export const supportLink = 'https://huly.link/slack'
+export const supportLink = 'https://link.huly.io/slack'
 export const reportBugLink = 'https://github.com/hcengineering/platform/issues/new'
 export const docsLink = 'http://docs.huly.io/'
 export const privacyPolicyLink = 'https://v1.huly.io/legal/privacy/'

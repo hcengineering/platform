@@ -219,6 +219,7 @@ services:
       - SECRET=secret
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - ACCOUNTS_URL=http://account:3003
+      - FRONT_URL=http://huly.local:8087
     deploy:
       resources:
         limits:

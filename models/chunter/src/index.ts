@@ -76,7 +76,7 @@ export function createModel (builder: Builder): void {
       application: chunter.app.Chunter,
       role: AccountRole.Guest,
       permissions: [],
-      spaceClass: chunter.class.ChunterSpace,
+      spaceClass: chunter.class.Channel,
       enabled: true,
       order: 30
     },
@@ -90,7 +90,7 @@ export function createModel (builder: Builder): void {
       application: chunter.app.Chunter,
       role: AccountRole.ReadOnlyGuest,
       permissions: [],
-      spaceClass: chunter.class.ChunterSpace,
+      spaceClass: chunter.class.Channel,
       enabled: true,
       order: 15
     },
@@ -241,7 +241,18 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(chunter.class.DirectMessage, core.class.Class, chunter.mixin.ObjectChatPanel, {
-    ignoreKeys: ['archived', 'collaborators', 'lastMessage', 'pinned', 'topic', 'description', 'members', 'owners']
+    ignoreKeys: [
+      'archived',
+      'collaborators',
+      'lastMessage',
+      'pinned',
+      'topic',
+      'description',
+      'members',
+      'owners',
+      'autoJoin',
+      'autoJoinForRoles'
+    ]
   })
 
   builder.createDoc(activity.class.ReplyProvider, core.space.Model, {

@@ -90,6 +90,8 @@
     "Absolute": "Mutlak",
     "Ceil": "Yukarı yuvarla",
     "Floor": "Aşağı yuvarla",
+    "Min": "Min",
+    "Max": "Max",
     "LogAction": "Olay",
     "Started": "Başlatıldı",
     "Each": "Her biri",
@@ -163,7 +165,8 @@
     "YearFromDate": "Tarihten yıl",
     "MonthFromDate": "Tarihten ay",
     "DayFromDate": "Tarihten gün",
-    "DateDifference": "Tarih farkı"
+    "DateDifference": "Tarih farkı",
+    "EmptyValue": "Boş değer"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

@@ -11,7 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { type Card, type MasterTag } from '@hcengineering/card'
+import card, { type Card, type MasterTag } from '@hcengineering/card'
 import core, {
   type AnyAttribute,
   type ArrOf,
@@ -331,7 +331,7 @@ function getContextFunctions (
         break
       }
       default: {
-        if (hierarchy.isDerived(func.of, target)) {
+        if (hierarchy.isDerived(func.of, target) || func.of === core.class.TypeAny) {
           matched.push(func._id)
         }
       }
@@ -736,8 +736,17 @@ export async function requestResult (
   context: ExecutionContext
 ): Promise<ExecutionContext | undefined> {
   if (results == null || results.length === 0) return
+  const client = getClient()
+  const doc = await client.findOne(card.class.Card, { _id: execution.card })
+  if (doc === undefined) return
+  const _process = client.getModel().findObject(execution.process)
+  if (_process === undefined) return
+  const h = client.getHierarchy()
+  const isMixin = h.isMixin(_process.masterTag)
+  const targetDoc = isMixin ? h.as(doc, _process.masterTag) : doc
+
   const promise = new Promise<void>((resolve, reject) => {
-    showPopup(process.component.ResultInput, { results, context }, undefined, (res) => {
+    showPopup(process.component.ResultInput, { results, context, doc: targetDoc }, undefined, (res) => {
       if (res !== undefined) {
         for (const contextId in res) {
           const val = res[contextId]

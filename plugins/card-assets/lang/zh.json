@@ -82,6 +82,7 @@
     "SectionUnlocked": "部分 {section} 已解锁",
     "LayoutAuto": "自动",
     "SingleColumn": "单列",
-    "TwoColumns": "两列"
+    "TwoColumns": "两列",
+    "Grid": "网格"
   }
 }

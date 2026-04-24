@@ -31,15 +31,33 @@ export enum DateFormatOption {
 }
 
 /**
- * Check if a value is an IntlString (format: "plugin:resource:key").
- * Type guard: narrows unknown to string when true.
+ * Check if a value is an IntlString id ({@link Id}: {@code plugin:resourceKind:key}) or
+ * {@link getEmbeddedLabel} output ({@code embedded:embedded:...}).
+ *
  */
 export function isIntlString (value: unknown): value is string {
   if (typeof value !== 'string' || value.length === 0) {
     return false
   }
-  const parts = value.split(':')
-  return parts.length >= 3 && parts.every((part) => part.length > 0)
+  if (value.includes('://')) {
+    return false
+  }
+  if (value.startsWith('embedded:embedded:')) {
+    return value.length > 'embedded:embedded:'.length
+  }
+  const m = /^([a-z][a-z0-9-]*):([a-zA-Z][a-zA-Z0-9_]*):(.+)$/.exec(value)
+  if (m === null) {
+    return false
+  }
+  const plugin = m[1]
+  const rest = m[3]
+  if (rest.length === 0) {
+    return false
+  }
+  if (/^https?$/i.test(plugin)) {
+    return false
+  }
+  return true
 }
 
 /**

@@ -163,7 +163,10 @@
     "YearFromDate": "Rok z data",
     "MonthFromDate": "Měsíc z data",
     "DayFromDate": "Den z data",
-    "DateDifference": "Rozdíl dat"
+    "DateDifference": "Rozdíl dat",
+    "EmptyValue": "Prázdná hodnota",
+    "Min": "Min",
+    "Max": "Max"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

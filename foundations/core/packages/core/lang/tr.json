@@ -61,6 +61,8 @@
     "ArchiveSpaceDescription": "Kullanıcılara alanı arşivleme yetkisi verir",
     "AutoJoin": "Otomatik katıl",
     "AutoJoinDescr": "Yeni çalışanları bu alana otomatik olarak ekle",
+    "AutoJoinGuests": "Misafirleri otomatik katıl",
+    "AutoJoinGuestsDescr": "Etkinleştirilirse, çalışma alanı misafirleri etkinleştirmede bu alana eklenir",
     "RBAC": "Rol tabanlı erişim kontrolü",
     "RBACDescr": "Bu alanda işlemleri gerçekleştirmek için rol tabanlı erişim gerektir",
     "BlobSize": "Boyut",

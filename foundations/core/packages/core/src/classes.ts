@@ -499,6 +499,8 @@ export interface Space extends Doc {
   archived: boolean
   owners?: AccountUuid[]
   autoJoin?: boolean
+  /** If it includes {@link AccountRole.Guest}, that guest is auto-added to members on activation (see OnEmployeeCreate). */
+  autoJoinForRoles?: AccountRole[]
 }
 
 /**
@@ -591,7 +593,7 @@ export interface ModulePermissionGroup extends Doc {
   role: AccountRole
   permissions: Ref<Permission>[]
   disabledPermissions?: Ref<Permission>[]
-  spaceClass: Ref<Class<Space>>
+  spaceClass?: Ref<Class<Space>>
   enabled: boolean
   order?: number
 }

@@ -311,6 +311,7 @@ services:
       - COMMUNICATION_API_ENABLED=true
       - BACKUP_URL=http://huly.local:4039/api/backup,
       - EXCLUDED_APPLICATIONS_FOR_ANONYMOUS=[]
+      - DISABLED_FEATURES=auto-translate,mailboxes
       # - DISABLE_SIGNUP=true
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
       - PULSE_URL=ws://huly.local:8099/ws
@@ -415,6 +416,7 @@ services:
       - STATS_URL=http://huly.local:4900
       - ACCOUNTS_URL=http://huly.local:3000
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - FRONT_URL=http://huly.local:8087
   sign:
     image: hardcoreeng/sign
     extra_hosts:

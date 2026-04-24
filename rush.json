@@ -623,7 +623,7 @@
     {
       "packageName": "@hcengineering/uploader",
       "projectFolder": "plugins/uploader",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/uploader-assets",
@@ -683,7 +683,7 @@
     {
       "packageName": "@hcengineering/presence",
       "projectFolder": "plugins/presence",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/presence-resources",
@@ -768,7 +768,7 @@
     {
       "packageName": "@hcengineering/presentation",
       "projectFolder": "packages/presentation",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/model-presentation",
@@ -1043,7 +1043,7 @@
     {
       "packageName": "@hcengineering/activity",
       "projectFolder": "plugins/activity",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/activity-assets",
@@ -1183,7 +1183,7 @@
     {
       "packageName": "@hcengineering/global-profile-assets",
       "projectFolder": "plugins/global-profile-assets",
-      "shouldPublish": true
+      "shouldPublish": false
     },
     {
       "packageName": "@hcengineering/global-profile-resources",
@@ -1794,7 +1794,7 @@
     {
       "packageName": "@hcengineering/time",
       "projectFolder": "plugins/time",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/time-assets",
@@ -1899,7 +1899,7 @@
     {
       "packageName": "@hcengineering/drive",
       "projectFolder": "plugins/drive",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/drive-assets",
@@ -2124,7 +2124,7 @@
     {
       "packageName": "@hcengineering/diffview",
       "projectFolder": "plugins/diffview",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/diffview-assets",
@@ -2399,7 +2399,7 @@
     {
       "packageName": "@hcengineering/survey",
       "projectFolder": "plugins/survey",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/model-survey",
@@ -2419,7 +2419,7 @@
     {
       "packageName": "@hcengineering/card",
       "projectFolder": "plugins/card",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/model-card",
@@ -2579,7 +2579,7 @@
     {
       "packageName": "@hcengineering/hulypulse-client",
       "projectFolder": "packages/hulypulse-client",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/communication",
@@ -2609,7 +2609,7 @@
     {
       "packageName": "@hcengineering/emoji",
       "projectFolder": "plugins/emoji",
-      "shouldPublish": false
+      "shouldPublish": true
     },
     {
       "packageName": "@hcengineering/emoji-assets",
