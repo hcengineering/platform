@@ -27,6 +27,7 @@
   import BottomActionComponent from './BottomAction.svelte'
   import Providers from './Providers.svelte'
   import Tabs from './Tabs.svelte'
+  import { loginFormMinHeight, loginFormPadding } from '../loginFormLayout'
 
   interface Action {
     i18n: IntlString
@@ -125,8 +126,8 @@
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <form
   class="container"
-  style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}
-  style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
+  style:padding={loginFormPadding($deviceInfo.docWidth, $deviceInfo.docHeight)}
+  style:min-height={loginFormMinHeight($deviceInfo.docHeight)}
   on:keydown={(evt) => {
     if (evt.key === 'Enter') {
       evt.preventDefault()
@@ -225,7 +226,8 @@
 
 <style lang="scss">
   .container {
-    overflow: hidden;
+    overflow-x: hidden;
+    min-height: 0;
     display: flex;
     flex-direction: column;
 
@@ -252,31 +254,14 @@
         grid-column-end: 3;
       }
 
-      .hint {
-        margin-top: 1rem;
-        font-size: 0.8rem;
-        color: var(--theme-content-color);
-      }
-
       .send {
         margin-top: 0rem;
       }
-    }
-    .grow-separator {
-      flex-grow: 1;
     }
     .footer {
       margin-top: 1.75rem;
       font-size: 0.8rem;
       color: var(--theme-content-color);
-      span {
-        color: var(--theme-darker-color);
-      }
-      a {
-        font-weight: 500;
-        text-decoration: underline;
-        color: var(--theme-content-color);
-      }
     }
   }
 </style>

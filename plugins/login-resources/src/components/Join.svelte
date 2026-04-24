@@ -42,6 +42,7 @@
   import { logIn, workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import { loginAction, recoveryAction } from '../actions'
+  import { loginFormMinHeight, loginFormPadding } from '../loginFormLayout'
   import login from '../plugin'
 
   const location = getCurrentLocation()
@@ -259,8 +260,8 @@
 {:else if showJoinWithAccount}
   <div
     class="join-with-account-container"
-    style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}
-    style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
+    style:padding={loginFormPadding($deviceInfo.docWidth, $deviceInfo.docHeight)}
+    style:min-height={loginFormMinHeight($deviceInfo.docHeight)}
   >
     <div class="join-with-account">
       <div class="join-title">

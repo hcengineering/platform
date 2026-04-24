@@ -16,7 +16,10 @@
 <script lang="ts">
   import { type IntlString, Severity, Status } from '@hcengineering/platform'
   import { signupStore } from '@hcengineering/analytics-providers'
+  import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onMount } from 'svelte'
+
+  import { loginFormPaddingInline } from '../loginFormLayout'
 
   import { type BottomAction, doLoginAsGuest, doLoginNavigate, LoginMethods } from '../index'
   import LoginPasswordForm from './LoginPasswordForm.svelte'
@@ -88,7 +91,7 @@
 {:else}
   <LoginPasswordForm {navigateUrl} {signUpDisabled} {email} {caption} {subtitle} {onLogin} on:change={changeMethod} />
 {/if}
-<div class="actions">
+<div class="actions" style:margin-inline-start={loginFormPaddingInline($deviceInfo.docWidth, $deviceInfo.docHeight)}>
   <BottomActionComponent action={method === LoginMethods.Otp ? loginWithPasswordAction : loginWithCodeAction} />
   <div class="login-as-guest">
     <BottomActionComponent action={loginAsGuest} />
@@ -96,9 +99,6 @@
 </div>
 
 <style lang="scss">
-  .actions {
-    margin-left: 5rem;
-  }
   .login-as-guest {
     margin-top: 1rem;
   }
