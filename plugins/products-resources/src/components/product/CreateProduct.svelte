@@ -23,7 +23,7 @@
   import { type Product, ProductVersionState } from '@hcengineering/products'
   import { type Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
-  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore, getAnonymousRefs } from '@hcengineering/contact-resources'
   import core, {
     AccountUuid,
     Data,
@@ -72,6 +72,7 @@
   let spaceType: WithLookup<SpaceType> | undefined
 
   $: membersPersons = object.members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
+  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore)
 
   let roles: Role[] = []
   const rolesQuery = createQuery()
@@ -327,6 +328,7 @@
 
     <AccountArrayEditor
       value={object.owners ?? []}
+      excludeItems={readOnlyGuestOwnerExcludeItems}
       label={core.string.Owners}
       emptyLabel={core.string.Owners}
       onChange={handleOwnersChanged}

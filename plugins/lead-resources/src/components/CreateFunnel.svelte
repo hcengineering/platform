@@ -14,7 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore, getAnonymousRefs } from '@hcengineering/contact-resources'
   import core, {
     getCurrentAccount,
     Ref,
@@ -56,6 +56,7 @@
   let owners: AccountUuid[] = funnel?.owners !== undefined ? hierarchy.clone(funnel.owners) : [getCurrentAccount().uuid]
 
   $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
+  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore)
   $: void loadSpaceType(typeId)
   async function loadSpaceType (id: typeof typeId): Promise<void> {
     spaceType =
@@ -230,6 +231,7 @@
     </div>
     <AccountArrayEditor
       value={owners}
+      excludeItems={readOnlyGuestOwnerExcludeItems}
       label={core.string.Owners}
       onChange={handleOwnersChanged}
       kind={'regular'}

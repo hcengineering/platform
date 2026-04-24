@@ -67,6 +67,7 @@ import core, {
   type Permission,
   type PersonId,
   pickPrimarySocialId,
+  readOnlyGuestAccountUuid,
   type Ref,
   type SocialId,
   SocialIdType,
@@ -372,6 +373,15 @@ export const primarySocialIdByEmployeeRefStore = writable<Map<Ref<Employee>, Per
  * [AccountUuid => Ref<Person>] mapping
  */
 export const employeeRefByAccountUuidStore = writable<Map<AccountUuid, Ref<Employee>>>(new Map())
+
+/**
+ * {@link Ref}<{@link Person}>[] for `excludeItems` so the read-only anonymous guest never appears in pickers.
+ * Uses the same {@link employeeRefByAccountUuidStore} map as other account-based employee lookups.
+ */
+export function getAnonymousRefs (byAccount: Map<AccountUuid, Ref<Employee>>): Array<Ref<Person>> {
+  const ref = byAccount.get(readOnlyGuestAccountUuid)
+  return ref !== undefined ? [ref as unknown as Ref<Person>] : []
+}
 
 /**
  * [PersonId (social ID) => Employee] mapping

@@ -15,7 +15,12 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { Employee } from '@hcengineering/contact'
-  import { AccountArrayEditor, AssigneeBox, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import {
+    AccountArrayEditor,
+    AssigneeBox,
+    employeeRefByAccountUuidStore,
+    getAnonymousRefs
+  } from '@hcengineering/contact-resources'
   import core, {
     AccountRole,
     AccountUuid,
@@ -83,6 +88,7 @@
   let typeId: Ref<ProjectType> | undefined = project?.type
   $: typeType = typeId !== undefined ? $typeStore.get(typeId) : undefined
   $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
+  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore)
   let autoJoin = project?.autoJoin ?? typeType?.autoJoin ?? false
   let autoJoinForRoles: AccountRole[] =
     project?.autoJoinForRoles != null ? hierarchy.clone(project.autoJoinForRoles) : []
@@ -512,6 +518,7 @@
       </div>
       <AccountArrayEditor
         value={owners}
+        excludeItems={readOnlyGuestOwnerExcludeItems}
         label={core.string.Owners}
         allowGuests
         onChange={handleOwnersChanged}

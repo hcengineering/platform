@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore, getAnonymousRefs } from '@hcengineering/contact-resources'
   import core, {
     AccountRole,
     AccountUuid,
@@ -50,6 +50,8 @@
 
   let roles = client.getModel().findAllSync(card.class.Role, { types: { $in: types } })
   $: roles = client.getModel().findAllSync(card.class.Role, { types: { $in: types } })
+
+  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore)
 
   let name: string = space?.name ?? ''
 
@@ -247,6 +249,7 @@
       </div>
       <AccountArrayEditor
         value={owners}
+        excludeItems={readOnlyGuestOwnerExcludeItems}
         label={core.string.Owners}
         onChange={handleOwnersChanged}
         kind={'regular'}

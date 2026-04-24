@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
-  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore, getAnonymousRefs } from '@hcengineering/contact-resources'
   import core, {
     Data,
     DocumentUpdate,
@@ -71,6 +71,7 @@
 
   $: isNew = teamspace === undefined
   $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
+  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore)
 
   let typeId: Ref<SpaceType> | undefined = teamspace?.type ?? document.spaceType.DefaultTeamspaceType
   let spaceType: WithLookup<SpaceType> | undefined
@@ -377,6 +378,7 @@
       </div>
       <AccountArrayEditor
         value={owners}
+        excludeItems={readOnlyGuestOwnerExcludeItems}
         label={core.string.Owners}
         onChange={handleOwnersChanged}
         kind={'regular'}
