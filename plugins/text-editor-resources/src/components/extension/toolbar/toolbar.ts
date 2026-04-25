@@ -267,8 +267,7 @@ export function ToolbarControlPlugin (editor: Editor, options: ToolbarOptions): 
         placement: viewOptions?.placement,
         hideOnClick: 'toggle',
         appendTo: viewOptions?.floating !== true ? (options.popupContainer ?? document.body) : document.body,
-        // Stay below application popups (base z-index 10000 in packages/ui Popup.svelte) so Link, Note, etc. are usable.
-        zIndex: 9999,
+        zIndex: 10001,
         offset: viewOptions?.offset,
         popperOptions: {
           modifiers: [
