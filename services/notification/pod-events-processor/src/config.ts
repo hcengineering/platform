@@ -25,7 +25,7 @@ interface Config {
 }
 
 const config: Config = {
-  ServiceId: process.env.SERVICE_ID ?? 'notification-scheduler',
+  ServiceId: process.env.SERVICE_ID ?? 'events-processor',
   Secret: process.env.SECRET ?? 'secret',
   AccountsUrl: process.env.ACCOUNTS_URL ?? 'http://localhost:3000',
   QueueRegion: process.env.QUEUE_REGION ?? 'localhost'

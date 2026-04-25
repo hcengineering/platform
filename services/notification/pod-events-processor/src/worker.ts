@@ -15,6 +15,7 @@
 
 import contact from '@hcengineering/contact'
 import { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
+import type { ConsumerControl } from '@hcengineering/server-core'
 import notification from '@hcengineering/notification'
 import modelTime from '@hcengineering/model-time'
 import { jsonToMarkup, nodeDoc, nodeParagraph, nodeText } from '@hcengineering/text-core'
@@ -25,14 +26,18 @@ import type { ScheduledNotificationMessage } from './types'
 export async function handleScheduledNotification (
   ctx: MeasureContext,
   workspaceUuid: WorkspaceUuid,
-  msg: ScheduledNotificationMessage
+  msg: ScheduledNotificationMessage,
+  control: ConsumerControl
 ): Promise<void> {
   if (msg.kind !== 'todoReminder') return
 
+  await control.heartbeat()
   const { client } = await getClient(workspaceUuid)
+  await control.heartbeat()
 
   const workslot = await client.findOne(time.class.WorkSlot, { _id: msg.workSlotId })
   if (workslot === undefined) return
+  await control.heartbeat()
   const todo = await client.findOne(time.class.ToDo, { _id: msg.todoId })
   if (todo === undefined) return
   if (todo.doneOn != null) return
@@ -43,6 +48,7 @@ export async function handleScheduledNotification (
 
   const space = await client.findOne(contact.class.PersonSpace, { person: todo.user }, { projection: { _id: 1 } })
   if (space === undefined) return
+  await control.heartbeat()
 
   const objectId = todo._id
   const objectClass = todo._class
@@ -76,6 +82,7 @@ export async function handleScheduledNotification (
   } as any)
   if (existing !== undefined) return
 
+  await control.heartbeat()
   await client.createDoc(notification.class.CommonInboxNotification, space._id, {
     user,
     objectId,

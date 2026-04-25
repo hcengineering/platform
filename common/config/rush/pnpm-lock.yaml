@@ -40303,7 +40303,7 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  ../../services/notification/pod-notification-scheduler:
+  ../../services/notification/pod-events-processor:
     dependencies:
       '@hcengineering/account-client':
         specifier: workspace:^0.7.25

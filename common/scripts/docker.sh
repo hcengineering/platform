@@ -59,5 +59,5 @@ else
     --to @hcengineering/pod-rating \
     --to @hcengineering/pod-payment \
     --to @hcengineering/pod-worker \
-    --to @hcengineering/pod-notification-scheduler
+    --to @hcengineering/pod-events-processor
 fi

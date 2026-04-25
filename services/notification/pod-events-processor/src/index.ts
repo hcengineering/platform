@@ -19,7 +19,7 @@ import { newMetrics } from '@hcengineering/core'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient from '@hcengineering/server-client'
-import { initStatisticsContext } from '@hcengineering/server-core'
+import { initStatisticsContext, type ConsumerControl } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
 import { join } from 'path'
 import config from './config'
@@ -55,8 +55,8 @@ async function main (): Promise<void> {
     ctx,
     scheduledNotificationTopic,
     queue.getClientId(),
-    async (ctx, message) => {
-      await handleScheduledNotification(ctx, message.workspace, message.value)
+    async (ctx, message, control: ConsumerControl) => {
+      await handleScheduledNotification(ctx, message.workspace, message.value, control)
     }
   )
 

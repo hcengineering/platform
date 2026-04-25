@@ -612,8 +612,8 @@ services:
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - QUEUE_REGION=cockroach
     restart: unless-stopped
-  notification-scheduler:
-    image: hardcoreeng/notification-scheduler
+  events-processor:
+    image: hardcoreeng/events-processor
     extra_hosts:
       - 'huly.local:host-gateway'
     depends_on:
@@ -622,7 +622,7 @@ services:
       account:
         condition: service_started
     environment:
-      - SERVICE_ID=notification-scheduler
+      - SERVICE_ID=events-processor
       - SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
       - QUEUE_CONFIG=${QUEUE_CONFIG}

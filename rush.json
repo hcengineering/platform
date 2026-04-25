@@ -2222,8 +2222,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@hcengineering/pod-notification-scheduler",
-      "projectFolder": "services/notification/pod-notification-scheduler",
+      "packageName": "@hcengineering/pod-events-processor",
+      "projectFolder": "services/notification/pod-events-processor",
       "shouldPublish": false
     },
     {
