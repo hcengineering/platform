@@ -630,6 +630,32 @@ export function defineFunctions (builder: Builder): void {
     process.class.ProcessFunction,
     core.space.Model,
     {
+      of: core.class.TypeMarkup,
+      to: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.TextFromMarkup,
+      type: 'convert'
+    },
+    process.function.StringFromMarkup
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeString,
+      to: core.class.TypeMarkup,
+      category: 'attribute',
+      label: process.string.MarkupFromText,
+      type: 'convert'
+    },
+    process.function.MarkupFromString
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
       of: core.class.TypeDate,
       to: core.class.TypeNumber,
       category: 'attribute',

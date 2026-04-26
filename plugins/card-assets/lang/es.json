@@ -83,6 +83,7 @@
     "LayoutAuto": "Auto",
     "SingleColumn": "Una columna",
     "TwoColumns": "Dos columnas",
-    "Grid": "Cuadrícula"
+    "Grid": "Cuadrícula",
+    "RichtextProperties": "Campos de texto"
   }
 }

@@ -171,7 +171,9 @@
     "MonthFromDate": "Mese da data",
     "DayFromDate": "Giorno da data",
     "DateDifference": "Differenza di date",
-    "EmptyValue": "Valore vuoto"
+    "EmptyValue": "Valore vuoto",
+    "TextFromMarkup": "Testo da markup",
+    "MarkupFromText": "Markup da testo"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",

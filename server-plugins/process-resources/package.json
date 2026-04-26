@@ -42,6 +42,7 @@
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/card": "workspace:^0.7.0",
     "@hcengineering/server-process": "workspace:^0.7.0",
+    "@hcengineering/text-core": "workspace:^0.7.19",
     "@hcengineering/server-core": "workspace:^0.7.19",
     "@hcengineering/platform": "workspace:^0.7.20",
     "@hcengineering/process": "workspace:^0.7.0"

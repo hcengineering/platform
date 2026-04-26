@@ -108,7 +108,7 @@
           this={editor}
           label={attribute?.label}
           placeholder={attribute?.label}
-          kind={'ghost'}
+          kind={'link'}
           size={'large'}
           width={'100%'}
           justify={'left'}

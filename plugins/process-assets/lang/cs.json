@@ -166,7 +166,9 @@
     "DateDifference": "Rozdíl dat",
     "EmptyValue": "Prázdná hodnota",
     "Min": "Min",
-    "Max": "Max"
+    "Max": "Max",
+    "TextFromRichtext": "Text z rich textu",
+    "RichtextFromText": "Rich text z textu"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

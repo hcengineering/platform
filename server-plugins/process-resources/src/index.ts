@@ -106,6 +106,7 @@ import {
   Insert,
   LastValue,
   LowerCase,
+  MarkupFromString,
   Max,
   Min,
   Modulo,
@@ -128,6 +129,7 @@ import {
   Sqrt,
   StringFromBoolean,
   StringFromDate,
+  StringFromMarkup,
   StringFromNumber,
   Subtract,
   Trim,
@@ -793,7 +795,9 @@ export default async () => ({
     DayFromDate,
     DateDifference,
     Min,
-    Max
+    Max,
+    StringFromMarkup,
+    MarkupFromString
   },
   rollbacks: {
     ToDoCloseRollback,
