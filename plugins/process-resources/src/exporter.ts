@@ -4,7 +4,6 @@ import core, {
   type Doc,
   type Ref,
   type Class,
-  generateId,
   type EnumOf,
   type RefTo,
   type ArrOf,
@@ -13,6 +12,7 @@ import core, {
   type Type
 } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
+import { deepEqual } from 'fast-equals'
 import { type Process, type Transition } from '@hcengineering/process'
 import processPlugin from './plugin'
 
@@ -131,15 +131,27 @@ function processParams (
 
 export async function importProcess (masterTag: Ref<MasterTag>, json: string): Promise<void> {
   try {
-    const data = JSON.parse(json) as Doc[]
-    if (data[0] === undefined) return
+    const rawData = JSON.parse(json) as Doc[]
+    const data = Array.from(new Map(rawData.map((d) => [d._id, d])).values())
+    if (data.length === 0) return
     const client = getClient()
     const m = client.getModel()
     const apply = client.apply('Import process')
-    ;(data[0] as any).masterTag = masterTag
-    ;(data[0] as any)._id = generateId()
     for (const elem of data) {
-      if (m.findObject(elem._id) !== undefined) continue
+      if (elem._class === processPlugin.class.Process) {
+        ;(elem as any).masterTag = masterTag
+      }
+    }
+    for (const elem of data) {
+      const existing = m.findObject(elem._id)
+      if (existing !== undefined) {
+        const newData = stripData(elem)
+        const oldData = stripData(existing)
+        if (!deepEqual(newData, oldData)) {
+          await apply.updateDoc(elem._class, existing.space, elem._id, newData)
+        }
+        continue
+      }
       await apply.createDoc(elem._class, core.space.Model, stripData(elem), elem._id)
     }
     await apply.commit(true)
