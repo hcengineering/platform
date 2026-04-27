@@ -172,8 +172,8 @@
     "DayFromDate": "День из даты",
     "DateDifference": "Разница дат",
     "EmptyValue": "Пустое значение",
-    "RichtextFromText": "Текст из разметки",
-    "TextFromRichtext": "Разметка из текста"
+    "MarkupFromText": "Текст из разметки",
+    "TextFromMarkup": "Разметка из текста"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
