@@ -270,6 +270,8 @@ export default mergeIds(processId, process, {
     TextFromNumber: '' as IntlString,
     TextFromDate: '' as IntlString,
     TextFromCheckbox: '' as IntlString,
+    TextFromMarkup: '' as IntlString,
+    MarkupFromText: '' as IntlString,
     NumberFromDate: '' as IntlString,
     DateFromNumber: '' as IntlString,
     NumberFromText: '' as IntlString,

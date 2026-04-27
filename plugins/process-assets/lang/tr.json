@@ -166,7 +166,9 @@
     "MonthFromDate": "Tarihten ay",
     "DayFromDate": "Tarihten gün",
     "DateDifference": "Tarih farkı",
-    "EmptyValue": "Boş değer"
+    "EmptyValue": "Boş değer",
+    "TextFromMarkup": "Metinden işaretleme",
+    "MarkupFromText": "İşaretlemeden metin"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

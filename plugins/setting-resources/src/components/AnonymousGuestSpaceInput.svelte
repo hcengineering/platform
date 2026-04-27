@@ -13,12 +13,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import {
-    AccountRole,
-    setWorkspaceGuestAutoJoinRoles,
-    type ModulePermissionGroup,
-    type Space
-  } from '@hcengineering/core'
+  import { readOnlyGuestAccountUuid, type ModulePermissionGroup, type Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { DropdownLabels, type DropdownTextItem } from '@hcengineering/ui'
   import settingsRes from '../plugin'
@@ -35,10 +30,6 @@
   let selectedKeys: string[] = []
   let persistedSelectedKeys: string[] = []
   let docById: Map<string, Space> = new Map<string, Space>()
-
-  function normalizeAutoJoinForRoles (roles: AccountRole[]): AccountRole[] | undefined {
-    return roles.length > 0 ? [...roles] : undefined
-  }
 
   async function loadSpaces (): Promise<void> {
     if (group.spaceClass === undefined) {
@@ -57,7 +48,7 @@
       const docs = [...docById.values()]
       dropdownItems = docs.map((d) => ({ id: d._id, label: d.name })).sort((a, b) => a.label.localeCompare(b.label))
       selectedKeys = docs
-        .filter((d) => d.autoJoinForRoles?.includes(AccountRole.Guest) === true)
+        .filter((d) => (d.members ?? []).includes(readOnlyGuestAccountUuid))
         .map((d) => d._id)
         .sort()
       persistedSelectedKeys = [...selectedKeys]
@@ -88,25 +79,17 @@
       for (const key of toEnable) {
         const doc = docById.get(key)
         if (doc === undefined) continue
-        const roles = setWorkspaceGuestAutoJoinRoles(doc.autoJoinForRoles, true)
-        const autoJoinForRoles = normalizeAutoJoinForRoles(roles)
-        if (autoJoinForRoles === undefined) {
-          ops.push(client.update(doc, { $unset: { autoJoinForRoles: true } } as any))
-        } else {
-          ops.push(client.diffUpdate(doc, { autoJoinForRoles }))
+        const members = [...(doc.members ?? [])]
+        if (!members.includes(readOnlyGuestAccountUuid)) {
+          members.push(readOnlyGuestAccountUuid)
+          ops.push(client.diffUpdate(doc, { members }))
         }
       }
-
       for (const key of toDisable) {
         const doc = docById.get(key)
         if (doc === undefined) continue
-        const roles = setWorkspaceGuestAutoJoinRoles(doc.autoJoinForRoles, false)
-        const autoJoinForRoles = normalizeAutoJoinForRoles(roles)
-        if (autoJoinForRoles === undefined) {
-          ops.push(client.update(doc, { $unset: { autoJoinForRoles: true } } as any))
-        } else {
-          ops.push(client.diffUpdate(doc, { autoJoinForRoles }))
-        }
+        const members = (doc.members ?? []).filter((m) => m !== readOnlyGuestAccountUuid)
+        ops.push(client.diffUpdate(doc, { members }))
       }
 
       await Promise.all(ops)

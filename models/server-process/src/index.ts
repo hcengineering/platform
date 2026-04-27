@@ -179,8 +179,16 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.StringFromDate
   })
 
+  builder.mixin(process.function.StringFromMarkup, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.StringFromMarkup
+  })
+
   builder.mixin(process.function.StringFromBoolean, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.StringFromBoolean
+  })
+
+  builder.mixin(process.function.MarkupFromString, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.MarkupFromString
   })
 
   builder.mixin(process.function.NumberFromDate, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {

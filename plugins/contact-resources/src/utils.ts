@@ -67,6 +67,7 @@ import core, {
   type Permission,
   type PersonId,
   pickPrimarySocialId,
+  readOnlyGuestAccountUuid,
   type Ref,
   type SocialId,
   SocialIdType,
@@ -372,6 +373,21 @@ export const primarySocialIdByEmployeeRefStore = writable<Map<Ref<Employee>, Per
  * [AccountUuid => Ref<Person>] mapping
  */
 export const employeeRefByAccountUuidStore = writable<Map<AccountUuid, Ref<Employee>>>(new Map())
+
+/**
+ * {@link Ref}<{@link Person}>[] for `excludeItems` so the read-only anonymous guest does not appear in the picker
+ * when not already selected. If they are in `selectedAccountUuids`, returns [] so they stay visible among chips.
+ */
+export function getAnonymousRefs (
+  byAccount: Map<AccountUuid, Ref<Employee>>,
+  selectedAccountUuids: readonly AccountUuid[] = []
+): Array<Ref<Person>> {
+  if (selectedAccountUuids.includes(readOnlyGuestAccountUuid)) {
+    return []
+  }
+  const ref = byAccount.get(readOnlyGuestAccountUuid)
+  return ref !== undefined ? [ref as unknown as Ref<Person>] : []
+}
 
 /**
  * [PersonId (social ID) => Employee] mapping

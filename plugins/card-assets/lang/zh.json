@@ -83,6 +83,7 @@
     "LayoutAuto": "自动",
     "SingleColumn": "单列",
     "TwoColumns": "两列",
-    "Grid": "网格"
+    "Grid": "网格",
+    "RichtextProperties": "富文本字段"
   }
 }
