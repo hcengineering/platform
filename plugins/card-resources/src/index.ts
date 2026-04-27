@@ -77,6 +77,7 @@ import PropertiesCardSection from './components/sections/PropertiesSection.svelt
 import RelationsCardSection from './components/sections/RelationsSection.svelte'
 import CardCommunicatiomMessages from './components/sections/CardCommunicatiomMessages.svelte'
 import OldMessagesCardSection from './components/sections/OldMessagesCardSection.svelte'
+import MarkupPropertiesCardSection from './components/sections/MarkupPropertiesSection.svelte'
 
 import FavoriteCardPresenter from './components/FavoriteCardPresenter.svelte'
 import CardTagsColored from './components/CardTagsColored.svelte'
@@ -149,7 +150,8 @@ export default async (): Promise<Resources> => ({
     PropertiesSection: PropertiesCardSection,
     RelationsSection: RelationsCardSection,
     OldMessagesSection: OldMessagesCardSection,
-    CommunicationMessagesSection: CardCommunicatiomMessages
+    CommunicationMessagesSection: CardCommunicatiomMessages,
+    MarkupPropertiesSection: MarkupPropertiesCardSection
   },
   completion: {
     CardQuery: queryCard

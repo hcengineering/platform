@@ -18,9 +18,11 @@
   import { MessageViewer } from '@hcengineering/presentation'
   import { Button, eventToHTMLElement, Label, showPopup } from '@hcengineering/ui'
   import MarkupEditorPopup from './MarkupEditorPopup.svelte'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
+  import textEditorPlugin from '@hcengineering/text-editor'
 
   // export let label: IntlString
-  export let placeholder: IntlString
+  export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let value: string
   // export let focus: boolean = false
   export let onChange: (value: string) => void
@@ -62,10 +64,14 @@
       </div>
     </svelte:fragment>
   </Button>
-{:else if readonly}
-  {#if value}
-    <span class="overflow-label">{value}</span>
-  {:else}
-    <span class="content-dark-color"><Label label={placeholder} /></span>
-  {/if}
+{:else}
+  <StyledTextBox
+    content={value}
+    {placeholder}
+    alwaysEdit
+    mode={2}
+    on:value={(e) => {
+      onChange(e.detail)
+    }}
+  />
 {/if}

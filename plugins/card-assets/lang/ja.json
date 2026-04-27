@@ -83,6 +83,7 @@
     "LayoutAuto": "自動",
     "SingleColumn": "1列",
     "TwoColumns": "2列",
-    "Grid": "グリッド"
+    "Grid": "グリッド",
+    "RichtextProperties": "リッチテキストフィールド"
   }
 }

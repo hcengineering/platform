@@ -83,6 +83,7 @@
     "LayoutAuto": "Auto",
     "SingleColumn": "Single column",
     "TwoColumns": "Two columns",
-    "Grid": "Grid"
+    "Grid": "Grid",
+    "RichtextProperties": "Richtext Properties"
   }
 }
