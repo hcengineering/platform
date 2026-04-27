@@ -167,8 +167,8 @@
     "EmptyValue": "Prázdná hodnota",
     "Min": "Min",
     "Max": "Max",
-    "TextFromRichtext": "Text z rich textu",
-    "RichtextFromText": "Rich text z textu"
+    "MarkupFromText": "MarkUp z textu",
+    "TextFromMarkup": "Text z MarkUp"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",
