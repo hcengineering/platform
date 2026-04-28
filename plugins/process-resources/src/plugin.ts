@@ -279,7 +279,9 @@ export default mergeIds(processId, process, {
     YearFromDate: '' as IntlString,
     MonthFromDate: '' as IntlString,
     DayFromDate: '' as IntlString,
-    DateDifference: '' as IntlString
+    DateDifference: '' as IntlString,
+    TextFromSelect: '' as IntlString,
+    SelectFromText: '' as IntlString
   },
   permission: {
     RunProcess: '' as Ref<Permission>,

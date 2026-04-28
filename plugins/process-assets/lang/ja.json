@@ -172,7 +172,9 @@
     "DateDifference": "日付の差",
     "EmptyValue": "空の値",
     "TextFromMarkup": "テキストからマークアップ",
-    "MarkupFromText": "マークアップからテキスト"
+    "MarkupFromText": "マークアップからテキスト",
+    "TextFromSelect": "テキストから選択",
+    "SelectFromText": "選択からテキスト"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

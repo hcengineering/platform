@@ -134,7 +134,9 @@ import {
   Subtract,
   Trim,
   UpperCase,
-  YearFromDate
+  YearFromDate,
+  StringFromEnum,
+  EnumFromString
 } from './transform'
 
 async function putEventToQueue (value: Omit<ProcessMessage, 'account'>, control: TriggerControl): Promise<void> {
@@ -797,7 +799,9 @@ export default async () => ({
     Min,
     Max,
     StringFromMarkup,
-    MarkupFromString
+    MarkupFromString,
+    StringFromEnum,
+    EnumFromString
   },
   rollbacks: {
     ToDoCloseRollback,
