@@ -173,7 +173,9 @@
     "DateDifference": "日期差异",
     "EmptyValue": "空值",
     "TextFromMarkup": "标记到文本",
-    "MarkupFromText": "文本到标记"
+    "MarkupFromText": "文本到标记",
+    "TextFromSelect": "选择到文本",
+    "SelectFromText": "文本到选择"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

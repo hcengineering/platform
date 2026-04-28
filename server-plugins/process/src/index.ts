@@ -129,7 +129,9 @@ export default plugin(serverProcessId, {
     YearFromDate: '' as Resource<TransformFunc>,
     MonthFromDate: '' as Resource<TransformFunc>,
     DayFromDate: '' as Resource<TransformFunc>,
-    DateDifference: '' as Resource<TransformFunc>
+    DateDifference: '' as Resource<TransformFunc>,
+    StringFromEnum: '' as Resource<TransformFunc>,
+    EnumFromString: '' as Resource<TransformFunc>
   },
   trigger: {
     OnTransition: '' as Resource<TriggerFunc>,

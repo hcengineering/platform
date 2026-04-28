@@ -168,7 +168,9 @@
     "Min": "Min",
     "Max": "Max",
     "MarkupFromText": "MarkUp z textu",
-    "TextFromMarkup": "Text z MarkUp"
+    "TextFromMarkup": "Text z MarkUp",
+    "TextFromSelect": "Text z výběru",
+    "SelectFromText": "Výběr z textu"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

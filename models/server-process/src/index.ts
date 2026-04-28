@@ -191,6 +191,14 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.MarkupFromString
   })
 
+  builder.mixin(process.function.StringFromEnum, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.StringFromEnum
+  })
+
+  builder.mixin(process.function.EnumFromString, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.EnumFromString
+  })
+
   builder.mixin(process.function.NumberFromDate, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.NumberFromDate
   })

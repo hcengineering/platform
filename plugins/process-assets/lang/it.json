@@ -173,7 +173,9 @@
     "DateDifference": "Differenza di date",
     "EmptyValue": "Valore vuoto",
     "TextFromMarkup": "Testo da markup",
-    "MarkupFromText": "Markup da testo"
+    "MarkupFromText": "Markup da testo",
+    "TextFromSelect": "Testo da selezione",
+    "SelectFromText": "Selezione da testo"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",
