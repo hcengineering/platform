@@ -17,31 +17,62 @@ import { getClient as getAccountClient, type AccountClient } from '@hcengineerin
 import { createRestTxOperations } from '@hcengineering/api-client'
 import core, { PersonId, systemAccountUuid, type TxOperations, type WorkspaceUuid } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
+import {
+  clearInFlightClientCreation,
+  getCacheKey,
+  getCachedClient,
+  getInFlightClientCreation,
+  setCachedClient,
+  setInFlightClientCreation
+} from './clientCache'
 import config from './config'
+
+export interface ClientBundle {
+  client: TxOperations
+  accountClient: AccountClient
+}
 
 export async function getClient (
   workspaceUuid: WorkspaceUuid,
   socialId?: PersonId,
   serviceTag: string = config.ServiceId
-): Promise<{ client: TxOperations, accountClient: AccountClient }> {
-  const token = generateToken(systemAccountUuid, workspaceUuid, { service: serviceTag })
-  let accountClient = getAccountClient(config.AccountsUrl, token)
+): Promise<ClientBundle> {
+  const cached = getCachedClient(workspaceUuid, socialId, serviceTag)
+  if (cached !== undefined) return cached
 
-  // If we want the notification author to be a specific user, we can obtain a workspace token for that person.
-  if (socialId !== undefined && socialId !== core.account.System) {
-    const personUuid = await accountClient.findPersonBySocialId(socialId, true)
-    if (personUuid === undefined) {
-      throw new Error(`Global person not found for social-id ${socialId}`)
+  const cacheKey = getCacheKey(workspaceUuid, socialId, serviceTag)
+  const inFlight = getInFlightClientCreation(cacheKey)
+  if (inFlight !== undefined) return await inFlight
+
+  const creation = (async () => {
+    const token = generateToken(systemAccountUuid, workspaceUuid, { service: serviceTag })
+    let accountClient = getAccountClient(config.AccountsUrl, token)
+
+    // If we want the notification author to be a specific user, we can obtain a workspace token for that person.
+    if (socialId !== undefined && socialId !== core.account.System) {
+      const personUuid = await accountClient.findPersonBySocialId(socialId, true)
+      if (personUuid === undefined) {
+        throw new Error(`Global person not found for social-id ${socialId}`)
+      }
+      const token = generateToken(personUuid, workspaceUuid, { service: serviceTag })
+      accountClient = getAccountClient(config.AccountsUrl, token)
     }
-    const token = generateToken(personUuid, workspaceUuid, { service: serviceTag })
-    accountClient = getAccountClient(config.AccountsUrl, token)
-  }
 
-  const wsInfo = await accountClient.getLoginInfoByToken()
-  if (wsInfo == null || !('endpoint' in wsInfo)) {
-    throw new Error('Invalid login info')
+    const wsInfo = await accountClient.getLoginInfoByToken()
+    if (wsInfo == null || !('endpoint' in wsInfo)) {
+      throw new Error('Invalid login info')
+    }
+    const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
+    const client = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
+    const bundle = { client, accountClient }
+    setCachedClient(workspaceUuid, socialId, serviceTag, bundle)
+    return bundle
+  })()
+
+  setInFlightClientCreation(cacheKey, creation)
+  try {
+    return await creation
+  } finally {
+    clearInFlightClientCreation(cacheKey)
   }
-  const transactorUrl = wsInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
-  const client = await createRestTxOperations(transactorUrl, wsInfo.workspace, wsInfo.token)
-  return { client, accountClient }
 }

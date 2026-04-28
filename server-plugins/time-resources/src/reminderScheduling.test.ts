@@ -130,7 +130,7 @@ describe('todo reminder scheduling (TimeMachine)', () => {
     // First call cancels `todoReminder_<workSlotId>_%`, second schedules the specific reminder.
     expect(send).toHaveBeenCalled()
     // Producer send signature: (ctx, workspace, msgs)
-    const msgs = (send.mock.calls).map((c: any[]) => c[2]).flat()
+    const msgs = send.mock.calls.map((c: any[]) => c[2]).flat()
     expect(msgs.find((m: any) => m.type === 'cancel')).toBeDefined()
     expect(msgs.find((m: any) => m.type === 'schedule' && m.topic === 'scheduledNotification')).toBeDefined()
   })
@@ -152,7 +152,7 @@ describe('todo reminder scheduling (TimeMachine)', () => {
 
     await OnWorkSlotRemove([tx], control)
 
-    const msgs = (send.mock.calls).map((c: any[]) => c[2]).flat()
+    const msgs = send.mock.calls.map((c: any[]) => c[2]).flat()
     expect(msgs.find((m: any) => m.type === 'cancel')).toBeDefined()
   })
 
@@ -227,7 +227,7 @@ describe('todo reminder scheduling (TimeMachine)', () => {
 
     await OnToDoUpdate([tx], control)
 
-    const msgs = (send.mock.calls).map((c: any[]) => c[2]).flat()
+    const msgs = send.mock.calls.map((c: any[]) => c[2]).flat()
     const cancelMsgs = msgs.filter((m: any) => m.type === 'cancel')
     expect(cancelMsgs.length).toBeGreaterThanOrEqual(2)
   })

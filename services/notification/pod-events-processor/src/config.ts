@@ -22,13 +22,17 @@ interface Config {
   Secret: string
   AccountsUrl: string
   QueueRegion: string
+  LogLevel: 'info' | 'debug'
+  ClientCacheTtlMs: number
 }
 
 const config: Config = {
   ServiceId: process.env.SERVICE_ID ?? 'events-processor',
   Secret: process.env.SECRET ?? 'secret',
   AccountsUrl: process.env.ACCOUNTS_URL ?? 'http://localhost:3000',
-  QueueRegion: process.env.QUEUE_REGION ?? 'localhost'
+  QueueRegion: process.env.QUEUE_REGION ?? 'localhost',
+  LogLevel: process.env.LOG_LEVEL === 'debug' ? 'debug' : 'info',
+  ClientCacheTtlMs: Number(process.env.CLIENT_CACHE_TTL_MS ?? 60_000)
 }
 
 export default config

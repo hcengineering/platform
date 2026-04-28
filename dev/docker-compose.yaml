@@ -623,6 +623,7 @@ services:
         condition: service_started
     environment:
       - SERVICE_ID=events-processor
+      - LOG_LEVEL=debug
       - SECRET=secret
       - ACCOUNTS_URL=http://huly.local:3000
       - QUEUE_CONFIG=${QUEUE_CONFIG}

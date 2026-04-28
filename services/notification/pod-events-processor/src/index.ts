@@ -27,6 +27,7 @@ import type { ScheduledNotificationMessage } from './types'
 import { handleScheduledNotification } from './worker'
 
 const scheduledNotificationTopic = 'scheduledNotification'
+const isDebugLoggingEnabled = config.LogLevel === 'debug'
 
 async function main (): Promise<void> {
   configureAnalytics(config.ServiceId, process.env.VERSION ?? '0.7.0')
@@ -56,6 +57,14 @@ async function main (): Promise<void> {
     scheduledNotificationTopic,
     queue.getClientId(),
     async (ctx, message, control: ConsumerControl) => {
+      if (isDebugLoggingEnabled) {
+        ctx.info('Received scheduled notification event', {
+          topic: scheduledNotificationTopic,
+          workspace: message.workspace,
+          kind: message.value?.kind,
+          id: message.value?.id
+        })
+      }
       await handleScheduledNotification(ctx, message.workspace, message.value, control)
     }
   )
