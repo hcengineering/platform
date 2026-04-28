@@ -281,7 +281,7 @@
       {isScrollable}
       {extraActions}
       {boundary}
-      kitOptions={mergeKitOptions({
+      kitOptions={{
         emoji: true,
         textColorStyling: true,
         hooks: {
@@ -320,7 +320,7 @@
           ],
           handleSelect: handleCommandSelected
         }
-      })}
+      }}
       bind:content={rawValue}
       bind:this={editor}
       on:value={(evt) => {
