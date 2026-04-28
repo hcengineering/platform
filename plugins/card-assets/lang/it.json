@@ -83,6 +83,7 @@
     "LayoutAuto": "Auto",
     "SingleColumn": "Una colonna",
     "TwoColumns": "Due colonne",
-    "Grid": "Griglia"
+    "Grid": "Griglia",
+    "RichtextProperties": "Campo di testo"
   }
 }

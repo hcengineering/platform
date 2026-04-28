@@ -15,6 +15,8 @@
 
 import { showPopup } from '@hcengineering/ui'
 import { Extension } from '@tiptap/core'
+
+import { hideTextEditorToolbar } from '../toolbar/toolbar'
 import { type MarkType } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import LinkPopup from '../../LinkPopup.svelte'
@@ -30,6 +32,7 @@ export const LinkKeymapExtension = Extension.create<any>({
 
         const link = this.editor.getAttributes('link').href
 
+        hideTextEditorToolbar(this.editor)
         showPopup(LinkPopup, { link }, undefined, undefined, (newLink) => {
           if (newLink === '') {
             this.editor.chain().focus().extendMarkRange('link').unsetLink().run()

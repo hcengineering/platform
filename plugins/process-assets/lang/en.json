@@ -171,7 +171,11 @@
     "MonthFromDate": "Month from date",
     "DayFromDate": "Day from date",
     "DateDifference": "Date difference",
-    "EmptyValue": "Empty value"
+    "EmptyValue": "Empty value",
+    "TextFromMarkup": "Text from markup",
+    "MarkupFromText": "Markup from text",
+    "TextFromSelect": "Text from select",
+    "SelectFromText": "Select from text"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

@@ -16,6 +16,7 @@ import core, {
 import { getResource } from '@hcengineering/platform'
 import { getClient } from '@hcengineering/presentation'
 import view from '@hcengineering/view'
+import { deepEqual } from 'fast-equals'
 import card from './plugin'
 
 export async function importModule (json: string): Promise<void> {
@@ -27,7 +28,15 @@ export async function importModule (json: string): Promise<void> {
     const h = client.getHierarchy()
     const apply = client.apply('Import')
     for (const elem of data) {
-      if (m.findObject(elem._id) !== undefined) continue
+      const existing = m.findObject(elem._id)
+      if (existing !== undefined) {
+        const newData = stripData(elem)
+        const oldData = stripData(existing)
+        if (!deepEqual(newData, oldData)) {
+          await apply.updateDoc(elem._class, existing.space, elem._id, newData)
+        }
+        continue
+      }
       if (h.isDerived(elem._class, core.class.AttachedDoc)) {
         const attachedDoc = elem as AttachedDoc
         await apply.addCollection(

@@ -166,7 +166,11 @@
     "DateDifference": "Rozdíl dat",
     "EmptyValue": "Prázdná hodnota",
     "Min": "Min",
-    "Max": "Max"
+    "Max": "Max",
+    "MarkupFromText": "MarkUp z textu",
+    "TextFromMarkup": "Text z MarkUp",
+    "TextFromSelect": "Text z výběru",
+    "SelectFromText": "Výběr z textu"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

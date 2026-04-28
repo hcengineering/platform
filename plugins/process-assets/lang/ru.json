@@ -171,7 +171,11 @@
     "MonthFromDate": "Месяц из даты",
     "DayFromDate": "День из даты",
     "DateDifference": "Разница дат",
-    "EmptyValue": "Пустое значение"
+    "EmptyValue": "Пустое значение",
+    "MarkupFromText": "Текст из разметки",
+    "TextFromMarkup": "Разметка из текста",
+    "TextFromSelect": "Текст из выбора",
+    "SelectFromText": "Выбор из текста"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

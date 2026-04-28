@@ -83,6 +83,7 @@ export default mergeIds(cardId, card, {
     ChildrenSection: '' as AnyComponent,
     ContentSection: '' as AnyComponent,
     PropertiesSection: '' as AnyComponent,
+    MarkupPropertiesSection: '' as AnyComponent,
     RelationsSection: '' as AnyComponent,
     CommunicationMessagesSection: '' as AnyComponent,
     OldMessagesSection: '' as AnyComponent
@@ -132,6 +133,7 @@ export default mergeIds(cardId, card, {
     CreateSpace: '' as IntlString,
     NumberTypes: '' as IntlString,
     Properties: '' as IntlString,
+    RichtextProperties: '' as IntlString,
     NoChildren: '' as IntlString,
     AddCollaborators: '' as IntlString,
     CardTitle: '' as IntlString,

@@ -171,7 +171,11 @@
     "MonthFromDate": "日期到月份",
     "DayFromDate": "日期到天",
     "DateDifference": "日期差异",
-    "EmptyValue": "空值"
+    "EmptyValue": "空值",
+    "TextFromMarkup": "标记到文本",
+    "MarkupFromText": "文本到标记",
+    "TextFromSelect": "选择到文本",
+    "SelectFromText": "文本到选择"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

@@ -69,6 +69,8 @@
     <s><slot /></s>
   {:else if mark.type === MarkupMarkType.underline}
     <u><slot /></u>
+  {:else if mark.type === MarkupMarkType.highlight}
+    <mark><slot /></mark>
   {:else}
     unknown mark: "{mark.type}"
     <slot />

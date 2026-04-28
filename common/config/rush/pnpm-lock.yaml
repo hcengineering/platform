@@ -34283,6 +34283,9 @@ importers:
       '@hcengineering/server-process':
         specifier: workspace:^0.7.0
         version: link:../process
+      '@hcengineering/text-core':
+        specifier: workspace:^0.7.19
+        version: link:../../foundations/core/packages/text-core
       '@hcengineering/time':
         specifier: workspace:^0.7.0
         version: link:../../plugins/time
@@ -61696,7 +61699,7 @@ snapshots:
   node-loader@2.0.0(webpack@5.102.1):
     dependencies:
       loader-utils: 2.0.4
-      webpack: 5.102.1(esbuild@0.25.12)(webpack-cli@5.1.4)
+      webpack: 5.102.1
 
   node-localstorage@2.2.1:
     dependencies:

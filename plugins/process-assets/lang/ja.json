@@ -170,7 +170,11 @@
     "MonthFromDate": "日付から月",
     "DayFromDate": "日付から日",
     "DateDifference": "日付の差",
-    "EmptyValue": "空の値"
+    "EmptyValue": "空の値",
+    "TextFromMarkup": "テキストからマークアップ",
+    "MarkupFromText": "マークアップからテキスト",
+    "TextFromSelect": "テキストから選択",
+    "SelectFromText": "選択からテキスト"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
