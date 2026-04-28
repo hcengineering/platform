@@ -37,7 +37,8 @@ import {
   cardFactory,
   duplicateCard,
   checkChildrenSectionVisibility,
-  createChildAction
+  createChildAction,
+  showAllVersions
 } from './utils'
 import { formatCardValue } from './cardTableFormatter'
 import CardGridView from './components/CardGridView.svelte'
@@ -179,6 +180,7 @@ export default async (): Promise<Resources> => ({
     GetSpaceAccessPublicLink: getSpaceAccessPublicLink,
     CanGetSpaceAccessPublicLink: canGetSpaceAccessPublicLink,
     CardFactory: cardFactory,
-    FormatCardMarkdownValue: formatCardValue
+    FormatCardMarkdownValue: formatCardValue,
+    ShowAllVersions: showAllVersions
   }
 })

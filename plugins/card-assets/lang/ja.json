@@ -84,6 +84,7 @@
     "SingleColumn": "1列",
     "TwoColumns": "2列",
     "Grid": "グリッド",
-    "RichtextProperties": "リッチテキストフィールド"
+    "RichtextProperties": "リッチテキストフィールド",
+    "ShowAllVersions": "すべてのバージョンを表示"
   }
 }

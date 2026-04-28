@@ -84,6 +84,7 @@
     "SingleColumn": "Jeden sloupec",
     "TwoColumns": "Dva sloupce",
     "Grid": "Mřížka",
-    "RichtextProperties": "Textová pole"
+    "RichtextProperties": "Textová pole",
+    "ShowAllVersions": "Ukázat všechny verze"
   }
 }

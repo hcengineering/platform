@@ -84,6 +84,7 @@
     "SingleColumn": "Uma coluna",
     "TwoColumns": "Duas colunas",
     "Grid": "Grade",
-    "RichtextProperties": "Campo de texto"
+    "RichtextProperties": "Campo de texto",
+    "ShowAllVersions": "Todas as versões"
   }
 }
