@@ -84,6 +84,7 @@
     "SingleColumn": "Один столбец",
     "TwoColumns": "Два столбца",
     "Grid": "Сетка",
-    "RichtextProperties": "Текстовые поля"
+    "RichtextProperties": "Текстовые поля",
+    "ShowAllVersions": "Показывать все версии"
   }
 }

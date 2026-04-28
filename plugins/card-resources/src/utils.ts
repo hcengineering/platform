@@ -778,6 +778,13 @@ export function canUnlockSection (space: Ref<Space>, store: PermissionsStore): b
   return !store.restrictedSpaces.has(space)
 }
 
+export function showAllVersions (value: any, query: DocumentQuery<Doc>): DocumentQuery<Doc> {
+  if (value === true) {
+    return { ...query, isLatest: { $in: [true, false] } }
+  }
+  return query
+}
+
 export const viewStore = writable<Record<Ref<MasterTag>, string>>(
   JSON.parse(localStorage.getItem('card.layout') ?? '{}')
 )

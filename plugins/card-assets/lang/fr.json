@@ -84,6 +84,7 @@
     "SingleColumn": "Une colonne",
     "TwoColumns": "Deux colonnes",
     "Grid": "Grille",
-    "RichtextProperties": "Champs de texte"
+    "RichtextProperties": "Champs de texte",
+    "ShowAllVersions": "Toutes les versions"
   }
 }

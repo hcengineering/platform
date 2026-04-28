@@ -84,6 +84,7 @@
     "SingleColumn": "单列",
     "TwoColumns": "两列",
     "Grid": "网格",
-    "RichtextProperties": "富文本字段"
+    "RichtextProperties": "富文本字段",
+    "ShowAllVersions": "显示所有版本"
   }
 }
