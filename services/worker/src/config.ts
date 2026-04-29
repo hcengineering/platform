@@ -21,13 +21,15 @@ export interface Config {
   PollInterval: number
   QueueRegion: string
   QueueConfig: string
+  LogLevel: 'info' | 'debug'
 }
 
 const config: Config = {
   DbUrl: process.env.DB_URL ?? 'postgres://localhost:5432/huly',
   PollInterval: process.env.POLL_INTERVAL != null ? Number(process.env.POLL_INTERVAL) : 20000,
   QueueRegion: process.env.QUEUE_REGION ?? '',
-  QueueConfig: process.env.QUEUE_CONFIG ?? ''
+  QueueConfig: process.env.QUEUE_CONFIG ?? '',
+  LogLevel: process.env.LOG_LEVEL === 'debug' ? 'debug' : 'info'
 }
 
 export default config

@@ -75,6 +75,10 @@ describe('todo reminder scheduling (TimeMachine)', () => {
 
     const { control, send } = makeControlBase()
 
+    // WorkSlot start one hour from now so a 5-minute "before" reminder is in the future.
+    const workSlotDate = Date.now() + 60 * 60_000
+    const shiftMs = 5 * 60_000
+
     // WorkSlot lookup inside scheduler.
     ;(control.findAll as jest.Mock).mockImplementation(async (_ctx: any, _class: any, query: any) => {
       if (_class === time.class.WorkSlot && query?._id === workSlotId) {
@@ -85,9 +89,9 @@ describe('todo reminder scheduling (TimeMachine)', () => {
             space: core.space.Workspace,
             attachedTo: todoId,
             attachedToClass: time.class.ToDo,
-            date: Date.now() + 60_000,
-            reminders: [-5 * 60_000],
-            dueDate: Date.now() + 120_000
+            date: workSlotDate,
+            reminders: [shiftMs],
+            dueDate: workSlotDate + 60_000
           }
         ]
       }
@@ -122,7 +126,7 @@ describe('todo reminder scheduling (TimeMachine)', () => {
       space: core.space.Tx,
       modifiedBy: core.account.System,
       modifiedOn: Date.now(),
-      operations: { reminders: [-5 * 60_000] }
+      operations: { reminders: [shiftMs] }
     } as unknown as TxUpdateDoc<WorkSlot>
 
     await OnWorkSlotUpdate([tx], control)
@@ -132,7 +136,13 @@ describe('todo reminder scheduling (TimeMachine)', () => {
     // Producer send signature: (ctx, workspace, msgs)
     const msgs = send.mock.calls.map((c: any[]) => c[2]).flat()
     expect(msgs.find((m: any) => m.type === 'cancel')).toBeDefined()
-    expect(msgs.find((m: any) => m.type === 'schedule' && m.topic === 'scheduledNotification')).toBeDefined()
+    const scheduleMsg = msgs.find((m: any) => m.type === 'schedule' && m.topic === 'scheduledNotification')
+    expect(scheduleMsg).toBeDefined()
+    // Reminder must fire BEFORE the workslot starts, exactly `shiftMs` earlier.
+    expect(scheduleMsg.targetDate).toBe(workSlotDate - shiftMs)
+    expect(scheduleMsg.data.targetDate).toBe(workSlotDate - shiftMs)
+    expect(scheduleMsg.data.shiftMs).toBe(shiftMs)
+    expect(scheduleMsg.id).toBe(`todoReminder_${workSlotId}_${shiftMs}`)
   })
 
   it('OnWorkSlotRemove: cancels reminders', async () => {
@@ -196,7 +206,7 @@ describe('todo reminder scheduling (TimeMachine)', () => {
             attachedToClass: time.class.ToDo,
             date: Date.now() + 60_000,
             dueDate: Date.now() + 120_000,
-            reminders: [-5 * 60_000]
+            reminders: [5 * 60_000]
           },
           {
             _id: ws2,
@@ -206,7 +216,7 @@ describe('todo reminder scheduling (TimeMachine)', () => {
             attachedToClass: time.class.ToDo,
             date: Date.now() + 60_000,
             dueDate: Date.now() + 120_000,
-            reminders: [-5 * 60_000]
+            reminders: [5 * 60_000]
           }
         ]
       }

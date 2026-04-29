@@ -76,6 +76,8 @@ type TimeMachineMessage =
     id: string
   }
 
+type TimeMachineScheduleMessage = Extract<TimeMachineMessage, { type: 'schedule' }>
+
 function workSlotReminderPrefix (workSlotId: Ref<WorkSlot>): string {
   return `todoReminder_${workSlotId}_`
 }
@@ -90,12 +92,13 @@ async function cancelWorkSlotReminders (control: TriggerControl, workSlotId: Ref
     const queue = control.queue
     if (queue === undefined) return
     const producer = queue.getProducer<TimeMachineMessage>(control.ctx, QueueTopic.TimeMachine)
-    await producer.send(control.ctx, control.workspace.uuid, [
-      {
-        type: 'cancel',
-        id: `${workSlotReminderPrefix(workSlotId)}%`
-      }
-    ])
+    const cancelId = `${workSlotReminderPrefix(workSlotId)}%`
+    await producer.send(control.ctx, control.workspace.uuid, [{ type: 'cancel', id: cancelId }])
+    control.ctx.info('Queued todo reminder cancel', {
+      queueTopic: QueueTopic.TimeMachine,
+      workSlotId,
+      timerIdPattern: cancelId
+    })
   } catch (err) {
     control.ctx.error('Failed to cancel WorkSlot reminders', { err, workSlotId })
   }
@@ -121,11 +124,13 @@ async function scheduleWorkSlotReminders (control: TriggerControl, workSlotId: R
     if (todo.doneOn != null) return
 
     const now = Date.now()
-    const msgs: TimeMachineMessage[] = []
+    const msgs: TimeMachineScheduleMessage[] = []
 
     for (const shiftMs of reminders) {
       if (typeof shiftMs !== 'number' || Number.isNaN(shiftMs)) continue
-      const targetDate = workslot.date + shiftMs
+      // `shiftMs` is the positive offset before the event (in ms), matching
+      // the convention used by ReminderPopup and pod-calendar Google export.
+      const targetDate = workslot.date - shiftMs
       if (targetDate <= now) continue
 
       const id = workSlotReminderTimerId(workSlotId, shiftMs)
@@ -146,9 +151,27 @@ async function scheduleWorkSlotReminders (control: TriggerControl, workSlotId: R
       })
     }
 
-    if (msgs.length === 0) return
+    if (msgs.length === 0) {
+      control.ctx.info('Skipped todo reminder scheduling', {
+        queueTopic: QueueTopic.TimeMachine,
+        workSlotId,
+        todoId: todo._id,
+        reminderCount: reminders.length,
+        reason: 'no-future-reminders'
+      })
+      return
+    }
     const producer = queue.getProducer<TimeMachineMessage>(control.ctx, QueueTopic.TimeMachine)
     await producer.send(control.ctx, control.workspace.uuid, msgs)
+    control.ctx.info('Queued todo reminders', {
+      queueTopic: QueueTopic.TimeMachine,
+      workSlotId,
+      todoId: todo._id,
+      reminderCount: reminders.length,
+      enqueuedCount: msgs.length,
+      timerIds: msgs.map((msg) => msg.id),
+      targetDates: msgs.map((msg) => msg.targetDate)
+    })
   } catch (err) {
     control.ctx.error('Failed to schedule WorkSlot reminders', { err, workSlotId })
   }
