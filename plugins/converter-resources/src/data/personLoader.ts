@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
-import type { Hierarchy, PersonId } from '@hcengineering/core'
+import { getName, getPersonByPersonId, getPersonByPersonRef } from '@hcengineering/contact'
+import { type Doc, type Hierarchy, type PersonId, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { getName, getPersonByPersonId } from '@hcengineering/contact'
 
 /**
  * Load person display name by PersonId with optional caching
@@ -47,4 +47,36 @@ export async function loadPersonName (
   }
 
   return personId
+}
+
+/**
+ * Load person display name by Person Ref (Person document ID)
+ */
+export async function loadPersonNameByRef (
+  personRef: Ref<Doc>,
+  hierarchy: Hierarchy,
+  userCache?: Map<string, string>
+): Promise<string> {
+  if (userCache !== undefined) {
+    const cachedName = userCache.get(personRef)
+    if (cachedName !== undefined) {
+      return cachedName
+    }
+  }
+
+  try {
+    const client = getClient()
+    const person = await getPersonByPersonRef(client, personRef as any)
+    if (person !== null) {
+      const name = getName(hierarchy, person)
+      if (userCache !== undefined) {
+        userCache.set(personRef, name)
+      }
+      return name
+    }
+  } catch (error) {
+    console.warn('Failed to lookup user name for Person Ref:', personRef, error)
+  }
+
+  return personRef
 }
