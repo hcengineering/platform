@@ -808,6 +808,18 @@ export function getBranding (brandings: BrandingMap, key: string | undefined): B
   return Object.values(brandings).find((branding) => branding.key === key) ?? null
 }
 
+/**
+ * Returns the full set of `PluginConfiguration` documents that the given model
+ * would create in a freshly-initialized workspace.
+ *
+ * @public
+ */
+export function getDefaultPluginConfigurations (systemTx: Tx[]): PluginConfiguration[] {
+  const configs = new Map<Ref<PluginConfiguration>, PluginConfiguration>()
+  fillConfiguration(systemTx, configs)
+  return Array.from(configs.values())
+}
+
 export function fillConfiguration (systemTx: Tx[], configs: Map<Ref<PluginConfiguration>, PluginConfiguration>): void {
   for (const t of systemTx) {
     if (t._class === core.class.TxCreateDoc) {

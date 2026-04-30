@@ -100,6 +100,16 @@
     "SSOPasswordDescription": "Tu cuenta utiliza inicio de sesión externo. Configura una contraseña mediante confirmación por correo electrónico.",
     "SendSetupLink": "Enviar enlace de configuración",
     "SSOPasswordEmailSent": "Revisa tu correo electrónico para encontrar un enlace para configurar la contraseña.",
-    "SSONoEmailLinked": "No hay dirección de correo electrónico vinculada a tu cuenta. Añade una en Configuración de la cuenta → Gestionar identidades primero."
+    "SSONoEmailLinked": "No hay dirección de correo electrónico vinculada a tu cuenta. Añade una en Configuración de la cuenta → Gestionar identidades primero.",
+    "CustomizeWorkspace": "Personalizar workspace…",
+    "InitialContent": "Contenido inicial",
+    "CreateSampleProjects": "Crear proyectos de ejemplo y contenido de demostración",
+    "CreateSampleProjectsDesc": "Añadiremos algunos proyectos, documentos y tareas de ejemplo para ayudarte a empezar. Puedes eliminarlos en cualquier momento.",
+    "Modules": "Módulos",
+    "ModulesDesc": "Elige qué aplicaciones estarán activas en este workspace. Puedes cambiarlo más tarde en la configuración del workspace.",
+    "ModuleListUnavailable": "La lista de módulos aún no está disponible — se usarán los valores predeterminados. Puedes ajustar los módulos en la configuración del workspace después de crearlo.",
+    "ModuleEnable": "Habilitar",
+    "ModuleDisable": "Deshabilitar",
+    "BackToCreate": "Atrás"
   }
 }

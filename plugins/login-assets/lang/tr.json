@@ -100,6 +100,16 @@
     "SSOPasswordDescription": "Hesabınız harici girişi kullanıyor. E-posta onayı ile bir şifre belirleyin.",
     "SendSetupLink": "Kurulum bağlantısı gönder",
     "SSOPasswordEmailSent": "Şifrenizi belirlemek için bir bağlantı içeren e-postayı kontrol edin.",
-    "SSONoEmailLinked": "Hesabınıza bağlı bir e-posta adresi yok. Önce Hesap Ayarları → Kimlikleri Yönet bölümünden bir tane ekleyin."
+    "SSONoEmailLinked": "Hesabınıza bağlı bir e-posta adresi yok. Önce Hesap Ayarları → Kimlikleri Yönet bölümünden bir tane ekleyin.",
+    "CustomizeWorkspace": "Çalışma alanını özelleştir…",
+    "InitialContent": "Başlangıç içeriği",
+    "CreateSampleProjects": "Örnek projeler ve demo içerik oluştur",
+    "CreateSampleProjectsDesc": "Başlamanıza yardımcı olmak için birkaç örnek proje, belge ve görev ekleyeceğiz. Dilediğiniz zaman silebilirsiniz.",
+    "Modules": "Modüller",
+    "ModulesDesc": "Bu çalışma alanında hangi uygulamaların aktif olacağını seçin. Bunu daha sonra çalışma alanı ayarlarından değiştirebilirsiniz.",
+    "ModuleListUnavailable": "Modül listesi henüz mevcut değil — varsayılanlar kullanılacak. Oluşturduktan sonra çalışma alanı ayarlarından modülleri ayarlayabilirsiniz.",
+    "ModuleEnable": "Etkinleştir",
+    "ModuleDisable": "Devre dışı bırak",
+    "BackToCreate": "Geri"
   }
 }

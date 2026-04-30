@@ -246,6 +246,7 @@ export default function buildModel (): Builder {
         description: telegram.string.ConfigDescription,
         enabled: true,
         beta: true,
+        icon: contact.icon.Telegram,
         classFilter: defaultFilter
       }
     ],
@@ -269,6 +270,7 @@ export default function buildModel (): Builder {
         description: gmail.string.ConfigDescription,
         enabled: true,
         beta: true,
+        icon: contact.icon.Email,
         classFilter: defaultFilter
       }
     ],
@@ -420,6 +422,7 @@ export default function buildModel (): Builder {
         description: documents.string.ConfigDescription,
         enabled: false,
         beta: false,
+        icon: documents.icon.DocumentApplication,
         classFilter: defaultFilter
       }
     ],
@@ -442,6 +445,7 @@ export default function buildModel (): Builder {
         description: trainings.string.ConfigDescription,
         enabled: false,
         beta: false,
+        icon: trainings.icon.TrainingApplication,
         classFilter: defaultFilter
       }
     ],
@@ -453,6 +457,7 @@ export default function buildModel (): Builder {
         description: products.string.ConfigDescription,
         enabled: false,
         beta: false,
+        icon: products.icon.ProductsApplication,
         classFilter: defaultFilter
       }
     ],
@@ -464,6 +469,7 @@ export default function buildModel (): Builder {
         description: testManagement.string.ConfigDescription,
         enabled: true,
         beta: true,
+        icon: testManagement.icon.TestManagementApplication,
         classFilter: defaultFilter
       }
     ],
@@ -475,6 +481,7 @@ export default function buildModel (): Builder {
         description: survey.string.ConfigDescription,
         enabled: false,
         beta: true,
+        icon: survey.icon.Survey,
         classFilter: defaultFilter
       }
     ],

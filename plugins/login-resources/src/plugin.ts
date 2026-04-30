@@ -83,6 +83,16 @@ export default mergeIds(loginId, login, {
     LogInAndJoin: '' as IntlString,
     SignUpAndJoin: '' as IntlString,
     CreateNewAccount: '' as IntlString,
-    SignedInAs: '' as IntlString<{ name: string }>
+    SignedInAs: '' as IntlString<{ name: string }>,
+    CustomizeWorkspace: '' as IntlString,
+    InitialContent: '' as IntlString,
+    CreateSampleProjects: '' as IntlString,
+    CreateSampleProjectsDesc: '' as IntlString,
+    Modules: '' as IntlString,
+    ModulesDesc: '' as IntlString,
+    ModuleListUnavailable: '' as IntlString,
+    ModuleEnable: '' as IntlString,
+    ModuleDisable: '' as IntlString,
+    BackToCreate: '' as IntlString
   }
 })

@@ -100,6 +100,16 @@
     "TwoFactorAuth": "Two-factor authentication",
     "EnterTwoFactorCode": "Enter two-factor authentication code",
     "TwoFactorCode": "Two-factor authentication code",
-    "Verify": "Verify"
+    "Verify": "Verify",
+    "CustomizeWorkspace": "Customize workspace…",
+    "InitialContent": "Initial content",
+    "CreateSampleProjects": "Create sample projects and demo content",
+    "CreateSampleProjectsDesc": "We'll add a few example projects, documents and tasks to help you get started. You can delete them at any time.",
+    "Modules": "Modules",
+    "ModulesDesc": "Pick which apps will be active in this workspace. You can change this later in workspace settings.",
+    "ModuleListUnavailable": "Module list is not available yet — defaults will be used. You can adjust modules in workspace settings after creation.",
+    "ModuleEnable": "Enable",
+    "ModuleDisable": "Disable",
+    "BackToCreate": "Back"
   }
 }

@@ -56,7 +56,8 @@
     "LineTool": "Çizgi",
     "RectangleTool": "Dikdörtgen",
     "EllipseTool": "Elips",
-    "PaletteManagementMenu": "Renk önayarlarını yönet"
+    "PaletteManagementMenu": "Renk önayarlarını yönet",
+    "BetaVersion": "Beta sürümü"
   },
   "status": {
     "FileTooLarge": "Dosya çok büyük"

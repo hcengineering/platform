@@ -100,6 +100,16 @@
     "SSOPasswordDescription": "アカウントは外部ログインを使用しています。メール確認でパスワードを設定してください。",
     "SendSetupLink": "セットアップリンクを送信",
     "SSOPasswordEmailSent": "パスワードを設定するためのリンクが記載されたメールを確認してください。",
-    "SSONoEmailLinked": "アカウントにメールアドレスがリンクされていません。まず、アカウント設定 → IDの管理 で追加してください。"
+    "SSONoEmailLinked": "アカウントにメールアドレスがリンクされていません。まず、アカウント設定 → IDの管理 で追加してください。",
+    "CustomizeWorkspace": "ワークスペースをカスタマイズ…",
+    "InitialContent": "初期コンテンツ",
+    "CreateSampleProjects": "サンプルプロジェクトとデモコンテンツを作成",
+    "CreateSampleProjectsDesc": "始めやすいように、サンプルのプロジェクト、ドキュメント、タスクをいくつか追加します。いつでも削除できます。",
+    "Modules": "モジュール",
+    "ModulesDesc": "このワークスペースで有効にするアプリを選択してください。ワークスペース設定から後で変更できます。",
+    "ModuleListUnavailable": "モジュール一覧はまだ利用できません — デフォルトが使用されます。作成後にワークスペース設定でモジュールを調整できます。",
+    "ModuleEnable": "有効にする",
+    "ModuleDisable": "無効にする",
+    "BackToCreate": "戻る"
   }
 }
