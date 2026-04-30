@@ -53,10 +53,9 @@
         </button>
       {/if}
       {#if beta}
-        <span
-          class="plugin-card__beta"
-          use:tooltip={{ label: presentation.string.BetaVersion, direction: 'top' }}
-        >β</span>
+        <span class="plugin-card__beta" use:tooltip={{ label: presentation.string.BetaVersion, direction: 'top' }}
+          >β</span
+        >
       {/if}
     </span>
     <span class="plugin-card__spacer" />
