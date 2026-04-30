@@ -108,8 +108,6 @@
     "Modules": "Modules",
     "ModulesDesc": "Choisissez quelles applications seront actives dans ce workspace. Vous pourrez le modifier plus tard dans les paramètres du workspace.",
     "ModuleListUnavailable": "La liste des modules n'est pas encore disponible — les valeurs par défaut seront utilisées. Vous pourrez ajuster les modules dans les paramètres du workspace après la création.",
-    "ModuleEnable": "Activer",
-    "ModuleDisable": "Désactiver",
     "BackToCreate": "Retour"
   }
 }

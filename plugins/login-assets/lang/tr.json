@@ -108,8 +108,6 @@
     "Modules": "Modüller",
     "ModulesDesc": "Bu çalışma alanında hangi uygulamaların aktif olacağını seçin. Bunu daha sonra çalışma alanı ayarlarından değiştirebilirsiniz.",
     "ModuleListUnavailable": "Modül listesi henüz mevcut değil — varsayılanlar kullanılacak. Oluşturduktan sonra çalışma alanı ayarlarından modülleri ayarlayabilirsiniz.",
-    "ModuleEnable": "Etkinleştir",
-    "ModuleDisable": "Devre dışı bırak",
     "BackToCreate": "Geri"
   }
 }

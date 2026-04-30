@@ -91,8 +91,6 @@ export default mergeIds(loginId, login, {
     Modules: '' as IntlString,
     ModulesDesc: '' as IntlString,
     ModuleListUnavailable: '' as IntlString,
-    ModuleEnable: '' as IntlString,
-    ModuleDisable: '' as IntlString,
     BackToCreate: '' as IntlString
   }
 })

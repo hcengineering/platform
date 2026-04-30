@@ -108,8 +108,6 @@
     "Modules": "模块",
     "ModulesDesc": "选择此工作区中要启用的应用。您可以稍后在工作区设置中更改。",
     "ModuleListUnavailable": "模块列表尚不可用 — 将使用默认值。创建后可在工作区设置中调整模块。",
-    "ModuleEnable": "启用",
-    "ModuleDisable": "禁用",
     "BackToCreate": "返回"
   }
 }

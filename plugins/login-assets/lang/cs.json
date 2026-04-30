@@ -109,8 +109,6 @@
     "Modules": "Moduly",
     "ModulesDesc": "Vyberte, které aplikace budou v tomto pracovním prostoru aktivní. Můžete to později změnit v nastavení pracovního prostoru.",
     "ModuleListUnavailable": "Seznam modulů ještě není k dispozici — budou použity výchozí hodnoty. Moduly můžete upravit v nastavení pracovního prostoru po vytvoření.",
-    "ModuleEnable": "Povolit",
-    "ModuleDisable": "Zakázat",
     "BackToCreate": "Zpět"
   }
 }

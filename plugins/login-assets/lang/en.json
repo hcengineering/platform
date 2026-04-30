@@ -108,8 +108,6 @@
     "Modules": "Modules",
     "ModulesDesc": "Pick which apps will be active in this workspace. You can change this later in workspace settings.",
     "ModuleListUnavailable": "Module list is not available yet — defaults will be used. You can adjust modules in workspace settings after creation.",
-    "ModuleEnable": "Enable",
-    "ModuleDisable": "Disable",
     "BackToCreate": "Back"
   }
 }
