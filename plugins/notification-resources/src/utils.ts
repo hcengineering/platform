@@ -738,8 +738,19 @@ export function pushAvailable (): boolean {
 export async function subscribePush (): Promise<boolean> {
   const client = getClient()
   const publicKey = getMetadata(notification.metadata.PushPublicKey)
-  if ('serviceWorker' in navigator && 'PushManager' in window && publicKey !== undefined) {
+  if ('serviceWorker' in navigator && 'PushManager' in window && publicKey !== undefined && 'Notification' in window) {
     try {
+      if (Notification.permission === 'denied') {
+        pushAllowed.set(false)
+        return false
+      }
+      if (Notification.permission === 'default') {
+        const granted = await Notification.requestPermission()
+        if (granted !== 'granted') {
+          pushAllowed.set(false)
+          return false
+        }
+      }
       const loc = getCurrentLocation()
       let registration = await navigator.serviceWorker.getRegistration(`/${loc.path[0]}/${loc.path[1]}`)
       if (registration !== undefined) {

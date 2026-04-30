@@ -69,7 +69,7 @@
   </div>
 
   {#if $$slots.buttons}
-    <div class="flex-between gap-2">
+    <div class="toast-buttons">
       <slot name="buttons" />
     </div>
   {/if}
@@ -82,7 +82,7 @@
     flex-direction: column;
     margin: 0.75rem;
     padding: 0.5rem;
-    min-width: 25rem;
+    min-width: min(35rem, calc(100vw - 1.75rem));
     max-width: 35rem;
     min-height: 7rem;
     color: var(--theme-caption-color);
@@ -107,6 +107,26 @@
     .content {
       flex-grow: 1;
       margin: 1rem 0 1.25rem;
+    }
+
+    .toast-buttons {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+
+      /* Stack primary actions under title on narrow screens (mobile PWA toast) */
+      @media (max-width: 30rem) {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+
+        :global(button.antiButton) {
+          width: 100%;
+          box-sizing: border-box;
+        }
+      }
     }
   }
 </style>

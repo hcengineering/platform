@@ -26,6 +26,19 @@
   import { checkPermission, pushAllowed, subscribePush } from '../utils'
   import Notification from './Notification.svelte'
 
+  /**
+   * iOS Safari Web App (Add to Home Screen): never subscribe from this boot path—
+   * `subscribePush()` also syncs PushSubscription docs; success turns off BrowserNotification ingestion
+   * while permission can already be `"granted"`, so restricting skip to `"default"` only recreates subs on launch.
+   */
+  function isIosHomeScreenPwa (): boolean {
+    return (
+      typeof window !== 'undefined' &&
+      typeof (navigator as Navigator & { standalone?: boolean }).standalone !== 'undefined' &&
+      Boolean((navigator as Navigator & { standalone?: boolean }).standalone)
+    )
+  }
+
   async function check (allowed: boolean): Promise<void> {
     if (allowed) {
       query.unsubscribe()
@@ -36,10 +49,13 @@
       query.unsubscribe()
       return
     }
-    const isSubscribed = await subscribePush()
-    if (isSubscribed) {
-      query.unsubscribe()
-      return
+    const skipStartupSubscribe = 'Notification' in window && isIosHomeScreenPwa()
+    if (!skipStartupSubscribe) {
+      const isSubscribed = await subscribePush()
+      if (isSubscribed) {
+        query.unsubscribe()
+        return
+      }
     }
     query.query(
       notification.class.BrowserNotification,
