@@ -101,11 +101,6 @@ export interface RegionInfo {
 
 export type WorkspaceOperation = 'create' | 'upgrade' | 'all' | 'all+backup'
 
-// `WorkspaceConfiguration` lives in `@hcengineering/core` so that `WorkspaceInfo`
-// can carry it across the wire to non-account services (workspace-service).
-// It is re-exported from this module above for callers who prefer the
-// account-client surface.
-
 export interface MailboxOptions {
   availableDomains: string[]
   minNameLength: number

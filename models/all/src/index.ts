@@ -103,7 +103,7 @@ import documents, { documentsId, createModel as documentsModel } from '@hcengine
 import { hulyMailId, createModel as hulyMailModel } from '@hcengineering/model-huly-mail'
 import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
 import products, { productsId, createModel as productsModel } from '@hcengineering/model-products'
-import { questionsId, createModel as questionsModel } from '@hcengineering/model-questions'
+import questions, { questionsId, createModel as questionsModel } from '@hcengineering/model-questions'
 import { serverProductsId, createModel as serverProductsModel } from '@hcengineering/model-server-products'
 import { serverTrainingId, createModel as serverTrainingModel } from '@hcengineering/model-server-training'
 import testManagement, {
@@ -430,10 +430,11 @@ export default function buildModel (): Builder {
       questionsModel,
       questionsId,
       {
-        label: setting.string.Configure,
+        label: questions.string.ConfigLabel,
+        description: questions.string.ConfigDescription,
         enabled: true,
         beta: false,
-        hidden: false,
+        icon: questions.icon.Question,
         classFilter: defaultFilter
       }
     ],

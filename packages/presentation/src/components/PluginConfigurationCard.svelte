@@ -13,24 +13,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  // Card representing a single plugin configuration. Used by the workspace
-  // settings page (`Configure.svelte`) and the workspace creation customize
-  // step. Two layouts share a single component:
-  //
-  //   compact = false  (default — Configuration page):
-  //     ┌──────────────────────────────────────────────┐
-  //     │ [icon] Label  ([β])              [toggle]    │
-  //     │   Description text on its own line below     │
-  //     └──────────────────────────────────────────────┘
-  //   compact = true   (workspace creation customize step):
-  //     ┌──────────────────────────────────────────────┐
-  //     │ [icon] Label [(?)] ([β])         [toggle]    │
-  //     └──────────────────────────────────────────────┘
-  //
-  // Compact mode hides the description body and reveals it via tooltip on a
-  // (?) info icon — used in the tight login-panel customize step where every
-  // line of vertical space matters.
-
   import type { Asset, IntlString } from '@hcengineering/platform'
   import { Icon, IconInfo, Label, Toggle, tooltip } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
@@ -42,13 +24,7 @@
   export let icon: Asset | undefined = undefined
   export let enabled: boolean = true
   export let beta: boolean = false
-  /** Optional small text rendered next to the label, e.g. usage rating "(45%)". */
   export let suffix: string | undefined = undefined
-  /**
-   * When true, hides the description body and surfaces it through a tooltip
-   * on an info (?) icon next to the label. Used by the workspace creation
-   * customize step where vertical space is tight.
-   */
   export let compact: boolean = false
 
   const dispatch = createEventDispatcher<{ toggle: { enabled: boolean } }>()

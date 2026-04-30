@@ -30,6 +30,8 @@
     "SingleChoiceQuestion": "Einzelauswahl (nicht bewertet)",
     "TypePercentage": "Prozentsatz",
     "TypeQuestionOption": "Option",
-    "TypeRank": "Rang"
+    "TypeRank": "Rang",
+    "ConfigLabel": "Fragen",
+    "ConfigDescription": "Erstellung von Fragen und Bewertungen für Schulungen, Quizze und Umfragen"
   }
 }
