@@ -99,11 +99,7 @@ async function preloadRefLookups (
   }
 }
 
-async function preloadAssociations (
-  docs: Doc[],
-  model: AttributeModel[],
-  client: Client
-): Promise<void> {
+async function preloadAssociations (docs: Doc[], model: AttributeModel[], client: Client): Promise<void> {
   const associationQueries = buildConfigAssociation(model.map((m) => m.key))
   if (associationQueries === undefined || associationQueries.length === 0) return
 
@@ -112,9 +108,13 @@ async function preloadAssociations (
   if (firstDoc === undefined) return
 
   try {
-    const refreshedDocs = await client.findAll(firstDoc._class, { _id: { $in: ids as any } }, {
-      associations: associationQueries
-    })
+    const refreshedDocs = await client.findAll(
+      firstDoc._class,
+      { _id: { $in: ids as any } },
+      {
+        associations: associationQueries
+      }
+    )
 
     const refreshedMap = new Map(refreshedDocs.map((d) => [d._id, d]))
 
@@ -390,7 +390,7 @@ export async function buildRelationshipTableMarkdown (
         continue
       }
 
-      let docToUse = doc
+      let docToUse: Doc | undefined = doc
       let docClass = props.cardClass
       let attributeToUse = cell.attribute
 
