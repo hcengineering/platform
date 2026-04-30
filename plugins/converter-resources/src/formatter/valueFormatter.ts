@@ -20,9 +20,11 @@ import core, {
   type Hierarchy,
   type Ref,
   type PersonId,
+  type Association,
   getDisplayTime,
   getObjectValue
 } from '@hcengineering/core'
+import { getClient } from '@hcengineering/presentation'
 import { translate, type IntlString, getResource } from '@hcengineering/platform'
 import type { AttributeModel } from '@hcengineering/view'
 import converter from '@hcengineering/converter'
@@ -187,6 +189,49 @@ function resolveDisplayContext (
       }
     } else {
       value = undefined
+    }
+  } else if (attr.key.startsWith('$associations')) {
+    const parts = attr.key.split('.')
+    // Find the last association segment
+    let lastAssocIndex = -1
+    for (let i = 0; i < parts.length; i++) {
+      if (parts[i] === '$associations' && i + 1 < parts.length) {
+        lastAssocIndex = i
+      }
+    }
+    if (lastAssocIndex !== -1) {
+      const assocIdWithDirection = parts[lastAssocIndex + 1]
+      const fragments = assocIdWithDirection.split('_')
+      const assocId = fragments[0] as Ref<Association>
+      const direction = fragments[1] === 'a' ? -1 : 1
+
+      const client = getClient()
+      const assoc = client.getModel().findObject(assocId)
+      if (assoc !== undefined) {
+        const targetClass = direction === -1 ? assoc.classA : assoc.classB
+        const subFieldParts = parts.slice(lastAssocIndex + 2)
+
+        const cardWithAssociations = card as any
+        const assocData = cardWithAssociations.$associations?.[assocIdWithDirection]
+
+        if (assocData !== undefined) {
+          const firstDoc = Array.isArray(assocData) ? assocData[0] : assocData
+          if (firstDoc !== undefined) {
+            if (subFieldParts.length > 0) {
+              const subKey = subFieldParts.join('.')
+              if (Array.isArray(assocData)) {
+                value = assocData.map((d) => getObjectValue(subKey, d)).filter((v) => v !== undefined)
+              } else {
+                value = getObjectValue(subKey, assocData)
+              }
+            } else {
+              value = assocData
+            }
+            displayDoc = firstDoc
+            displayClass = targetClass
+          }
+        }
+      }
     }
   } else {
     value = getObjectValue(attr.key, card)
