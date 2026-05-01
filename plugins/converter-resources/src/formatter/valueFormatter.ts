@@ -208,7 +208,7 @@ function resolveDisplayContext (
   }
 
   const attributeKey = getAttributeKey(attr)
-  const attribute = hierarchy.findAttribute(displayClass, attributeKey)
+  const attribute = hierarchy.findAttribute(displayClass, attributeKey) ?? (attr as any).attribute
 
   const lookupKey = attribute?.name ?? attributeKey
   return { value, displayDoc, displayClass, attribute, lookupKey }
