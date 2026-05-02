@@ -69,6 +69,7 @@ export const CommonKitFactory = (e: ExtensionFactory) =>
     blockquote: e(Blockquote, { HTMLAttributes: { class: 'proseBlockQuote' } }),
     link: e(Link.extend({ inclusive: false }), {
       openOnClick: false,
+      protocols: ['ref'],
       HTMLAttributes: { class: 'cursor-pointer', rel: 'noopener noreferrer', target: '_blank' }
     }),
     textAlign: e(TextAlign, {
