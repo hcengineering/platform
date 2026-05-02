@@ -59,6 +59,7 @@
     "@hcengineering/platform": "workspace:^0.7.20",
     "@hcengineering/process": "workspace:^0.7.0",
     "@hcengineering/login": "workspace:^0.7.0",
+    "@hcengineering/text-core": "workspace:^0.7.19",
     "@hcengineering/account-client": "workspace:^0.7.25",
     "svelte": "^4.2.20",
     "fast-equals": "^5.2.2"

@@ -24762,6 +24762,9 @@ importers:
       '@hcengineering/setting-resources':
         specifier: workspace:^0.7.0
         version: link:../setting-resources
+      '@hcengineering/text-core':
+        specifier: workspace:^0.7.19
+        version: link:../../foundations/core/packages/text-core
       '@hcengineering/time':
         specifier: workspace:^0.7.0
         version: link:../time
