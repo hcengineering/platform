@@ -36,7 +36,7 @@ import core, {
 } from '@hcengineering/core'
 import notification, { CommonInboxNotification } from '@hcengineering/notification'
 import { getResource } from '@hcengineering/platform'
-import type { TriggerControl } from '@hcengineering/server-core'
+import { QueueTopic, type TriggerControl } from '@hcengineering/server-core'
 import { getSocialStrings } from '@hcengineering/server-contact'
 import { ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import {
@@ -51,6 +51,131 @@ import task, { makeRank } from '@hcengineering/task'
 import { jsonToMarkup, nodeDoc, nodeParagraph, nodeText } from '@hcengineering/text-core'
 import time, { ProjectToDo, ToDo, ToDoPriority, TodoAutomationHelper, WorkSlot } from '@hcengineering/time'
 import tracker, { Issue, IssueStatus, Project, TimeSpendReport } from '@hcengineering/tracker'
+
+const scheduledNotificationTopic = 'scheduledNotification'
+
+interface ScheduledNotificationMessage {
+  kind: 'todoReminder'
+  id: string
+  workSlotId: Ref<WorkSlot>
+  todoId: Ref<ToDo>
+  shiftMs: number
+  targetDate: number
+}
+
+type TimeMachineMessage =
+  | {
+    type: 'schedule'
+    id: string
+    targetDate: number
+    topic: string
+    data: ScheduledNotificationMessage
+  }
+  | {
+    type: 'cancel'
+    id: string
+  }
+
+type TimeMachineScheduleMessage = Extract<TimeMachineMessage, { type: 'schedule' }>
+
+function workSlotReminderPrefix (workSlotId: Ref<WorkSlot>): string {
+  return `todoReminder_${workSlotId}_`
+}
+
+function workSlotReminderTimerId (workSlotId: Ref<WorkSlot>, shiftMs: number): string {
+  // Make sure this is stable and easy to cancel with `${prefix}%`.
+  return `${workSlotReminderPrefix(workSlotId)}${shiftMs}`
+}
+
+async function cancelWorkSlotReminders (control: TriggerControl, workSlotId: Ref<WorkSlot>): Promise<void> {
+  try {
+    const queue = control.queue
+    if (queue === undefined) return
+    const producer = queue.getProducer<TimeMachineMessage>(control.ctx, QueueTopic.TimeMachine)
+    const cancelId = `${workSlotReminderPrefix(workSlotId)}%`
+    await producer.send(control.ctx, control.workspace.uuid, [{ type: 'cancel', id: cancelId }])
+    control.ctx.info('Queued todo reminder cancel', {
+      queueTopic: QueueTopic.TimeMachine,
+      workSlotId,
+      timerIdPattern: cancelId
+    })
+  } catch (err) {
+    control.ctx.error('Failed to cancel WorkSlot reminders', { err, workSlotId })
+  }
+}
+
+async function scheduleWorkSlotReminders (control: TriggerControl, workSlotId: Ref<WorkSlot>): Promise<void> {
+  try {
+    const queue = control.queue
+    if (queue === undefined) return
+
+    const workslot = (await control.findAll(control.ctx, time.class.WorkSlot, { _id: workSlotId }, { limit: 1 }))[0]
+    if (workslot === undefined) return
+
+    // Reset existing timers for this WorkSlot on any relevant change.
+    await cancelWorkSlotReminders(control, workSlotId)
+
+    const reminders = workslot.reminders ?? []
+    if (reminders.length === 0) return
+
+    // Skip scheduling for completed todos.
+    const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: workslot.attachedTo }, { limit: 1 }))[0]
+    if (todo === undefined) return
+    if (todo.doneOn != null) return
+
+    const now = Date.now()
+    const msgs: TimeMachineScheduleMessage[] = []
+
+    for (const shiftMs of reminders) {
+      if (typeof shiftMs !== 'number' || Number.isNaN(shiftMs)) continue
+      // `shiftMs` is the positive offset before the event (in ms), matching
+      // the convention used by ReminderPopup and pod-calendar Google export.
+      const targetDate = workslot.date - shiftMs
+      if (targetDate <= now) continue
+
+      const id = workSlotReminderTimerId(workSlotId, shiftMs)
+      const data: ScheduledNotificationMessage = {
+        kind: 'todoReminder',
+        id,
+        workSlotId,
+        todoId: todo._id,
+        shiftMs,
+        targetDate
+      }
+      msgs.push({
+        type: 'schedule',
+        id,
+        targetDate,
+        topic: scheduledNotificationTopic,
+        data
+      })
+    }
+
+    if (msgs.length === 0) {
+      control.ctx.info('Skipped todo reminder scheduling', {
+        queueTopic: QueueTopic.TimeMachine,
+        workSlotId,
+        todoId: todo._id,
+        reminderCount: reminders.length,
+        reason: 'no-future-reminders'
+      })
+      return
+    }
+    const producer = queue.getProducer<TimeMachineMessage>(control.ctx, QueueTopic.TimeMachine)
+    await producer.send(control.ctx, control.workspace.uuid, msgs)
+    control.ctx.info('Queued todo reminders', {
+      queueTopic: QueueTopic.TimeMachine,
+      workSlotId,
+      todoId: todo._id,
+      reminderCount: reminders.length,
+      enqueuedCount: msgs.length,
+      timerIds: msgs.map((msg) => msg.id),
+      targetDates: msgs.map((msg) => msg.targetDate)
+    })
+  } catch (err) {
+    control.ctx.error('Failed to schedule WorkSlot reminders', { err, workSlotId })
+  }
+}
 
 /**
  * @public
@@ -88,6 +213,8 @@ export async function OnWorkSlotUpdate (txes: Tx[], control: TriggerControl): Pr
     }
     const updTx = actualTx as TxUpdateDoc<WorkSlot>
     const visibility = updTx.operations.visibility
+    const date = updTx.operations.date
+    const reminders = updTx.operations.reminders
     if (visibility !== undefined) {
       const workslot = (
         await control.findAll(control.ctx, time.class.WorkSlot, { _id: updTx.objectId }, { limit: 1 })
@@ -97,6 +224,10 @@ export async function OnWorkSlotUpdate (txes: Tx[], control: TriggerControl): Pr
       }
       const todo = (await control.findAll(control.ctx, time.class.ToDo, { _id: workslot.attachedTo }))[0]
       result.push(control.txFactory.createTxUpdateDoc(todo._class, todo.space, todo._id, { visibility }))
+    }
+
+    if (date !== undefined || reminders !== undefined) {
+      await scheduleWorkSlotReminders(control, updTx.objectId)
     }
   }
   return result
@@ -112,6 +243,10 @@ export async function OnWorkSlotCreate (txes: Tx[], control: TriggerControl): Pr
       continue
     }
     const workslot = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<WorkSlot>)
+
+    // Ensure reminders are scheduled immediately on create.
+    await scheduleWorkSlotReminders(control, workslot._id)
+
     const workslots = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: workslot.attachedTo })
     if (workslots.length > 1) {
       continue
@@ -161,6 +296,20 @@ export async function OnWorkSlotCreate (txes: Tx[], control: TriggerControl): Pr
         }
       }
     }
+  }
+  return []
+}
+
+export async function OnWorkSlotRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  for (const tx of txes) {
+    const actualTx = tx as TxCUD<WorkSlot>
+    if (!control.hierarchy.isDerived(actualTx.objectClass, time.class.WorkSlot)) {
+      continue
+    }
+    if (!control.hierarchy.isDerived(actualTx._class, core.class.TxRemoveDoc)) {
+      continue
+    }
+    await cancelWorkSlotReminders(control, actualTx.objectId)
   }
   return []
 }
@@ -373,6 +522,9 @@ export async function OnToDoUpdate (txes: Tx[], control: TriggerControl): Promis
       const events = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: updTx.objectId })
       const resEvents: WorkSlot[] = []
       for (const event of events) {
+        // Cancel any pending reminder timers as soon as the todo is completed.
+        await cancelWorkSlotReminders(control, event._id)
+
         if (event.date > doneOn) {
           const innerTx = control.txFactory.createTxRemoveDoc(event._class, event.space, event._id)
           const outerTx = control.txFactory.createTxCollectionCUD(
@@ -792,6 +944,7 @@ export default async () => ({
     OnToDoRemove,
     OnToDoCreate,
     OnWorkSlotCreate,
-    OnWorkSlotUpdate
+    OnWorkSlotUpdate,
+    OnWorkSlotRemove
   }
 })

@@ -150,6 +150,7 @@ const mockContext: MeasureContext = {
   info: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
+  debug: jest.fn(),
   with: jest.fn().mockImplementation((name, params, fn) => fn()),
   withSync: jest.fn().mockImplementation((name, params, fn) => fn()),
   measure: jest.fn(),
