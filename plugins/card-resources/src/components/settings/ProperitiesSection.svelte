@@ -62,6 +62,7 @@
   showHeader={false}
   disabled={false}
   isCard
+  showAll
 >
   <div slot="header">
     <ButtonIcon
