@@ -209,7 +209,6 @@ export async function AddRelation (
   execution: Execution,
   control: ProcessControl
 ): Promise<ExecuteResult> {
-  const _id = generateId<Relation>()
   const association = params.association as Ref<Association>
   if (isEmpty(association)) {
     throw processError(process.error.RequiredParamsNotProvided, { params: 'association' })
@@ -220,35 +219,34 @@ export async function AddRelation (
   if (isEmpty(params.direction)) {
     throw processError(process.error.RequiredParamsNotProvided, { params: 'direction' })
   }
-  const targetId = params._id as Ref<Doc>
+  const targetIds = Array.isArray(params._id) ? params._id : [params._id]
   const direction = params.direction as 'A' | 'B'
-  const docA = direction === 'A' ? targetId : execution.card
-  const docB = direction === 'A' ? execution.card : targetId
-  const data: Data<Relation> = {
-    association,
-    docA,
-    docB
-  }
-  const exists = await control.client.findOne(core.class.Relation, { docA, docB, association })
-  if (exists !== undefined) {
-    return {
-      txes: [],
-      rollback: [],
-      context: []
+  const res: Tx[] = []
+  const rollback: Tx[] = []
+  const context: SuccessExecutionContext[] = []
+  for (const targetId of targetIds) {
+    const docA = direction === 'A' ? targetId : execution.card
+    const docB = direction === 'A' ? execution.card : targetId
+    const data: Data<Relation> = {
+      association,
+      docA,
+      docB
     }
+    const exists = await control.client.findOne(core.class.Relation, { docA, docB, association })
+    if (exists !== undefined) continue
+    const _id = generateId<Relation>()
+    const resTx = control.client.txFactory.createTxCreateDoc(core.class.Relation, core.space.Workspace, data, _id)
+    res.push(resTx)
+    rollback.push(control.client.txFactory.createTxRemoveDoc(core.class.Relation, core.space.Workspace, _id))
+    context.push({
+      _id,
+      value: TxProcessor.createDoc2Doc(resTx, true)
+    })
   }
-  const resTx = control.client.txFactory.createTxCreateDoc(core.class.Relation, core.space.Workspace, data, _id)
-  const res: Tx[] = [resTx]
-  const rollback: Tx[] = [control.client.txFactory.createTxRemoveDoc(core.class.Relation, core.space.Workspace, _id)]
   return {
     txes: res,
     rollback,
-    context: [
-      {
-        _id,
-        value: TxProcessor.createDoc2Doc(resTx, true)
-      }
-    ]
+    context
   }
 }
 
