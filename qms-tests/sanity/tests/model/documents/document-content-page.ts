@@ -250,8 +250,15 @@ export class DocumentContentPage extends DocumentCommonPage {
     await this.confirmKickEmployee.click()
   }
 
+  async toggleHideInactive (): Promise<void> {
+    await this.page.locator('[data-id="btn-viewOptions"]').click()
+    await this.page.locator('.antiCard-menu__item', { hasText: 'Hide inactive' }).click()
+    await this.page.keyboard.press('Escape')
+  }
+
   async checkIfEmployeeIsKicked (employee: string): Promise<void> {
     await this.page.getByRole('link', { name: 'Employee' }).getByRole('button').first().click()
+    await this.toggleHideInactive()
     await expect(this.page.getByText(employee + ' Inactive')).toBeVisible()
   }
 

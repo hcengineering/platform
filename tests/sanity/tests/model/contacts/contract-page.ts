@@ -209,6 +209,12 @@ export class ContractPage {
     }
   }
 
+  async toggleHideInactive (): Promise<void> {
+    await this.page.locator('[data-id="btn-viewOptions"]').click()
+    await this.page.locator('.antiCard-menu__item', { hasText: 'Hide inactive' }).click()
+    await this.page.keyboard.press('Escape')
+  }
+
   // ASSERTIONS
 
   async expectKickEmployeeShowsInactiveStatus (first: string, last: string): Promise<void> {
