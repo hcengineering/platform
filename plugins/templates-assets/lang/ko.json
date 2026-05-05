@@ -1,0 +1,21 @@
+{
+    "string": {
+        "Cancel": "취소",
+        "Templates": "텍스트 템플릿",
+        "TemplatesHeader": "텍스트 템플릿",
+        "CreateTemplate": "템플릿 만들기",
+        "SaveTemplate": "템플릿 저장",
+        "EditTemplate": "템플릿 편집",
+        "ViewTemplate": "템플릿 보기",
+        "Suggested": "추천",
+        "SearchTemplate": "템플릿 검색",
+        "TemplatePlaceholder": "새 템플릿",
+        "Title": "제목",
+        "Message": "메시지",
+        "Field": "필드",
+        "TemplateCategory": "템플릿 그룹",
+        "CreateTemplateCategory": "그룹 만들기",
+        "Copy": "복사",
+        "Template": "템플릿"
+    }
+}

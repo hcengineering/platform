@@ -1,0 +1,8 @@
+{
+    "string": {
+        "PrintToPDF": "PDF로 인쇄",
+        "PrintingDocumentOf": "문서 {current} / {total} 인쇄 중",
+        "DownloadAll": "모두 다운로드",
+        "PrintFailed": "인쇄 실패"
+    }
+}

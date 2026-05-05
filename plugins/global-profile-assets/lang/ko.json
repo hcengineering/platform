@@ -1,0 +1,29 @@
+{
+    "string": {
+        "GlobalProfile": "글로벌 프로필",
+        "EditProfile": "프로필 편집",
+        "GeneralInformation": "일반 정보",
+        "FirstName": "이름",
+        "LastName": "성",
+        "City": "도시",
+        "Country": "국가",
+        "Bio": "자기소개",
+        "FirstNamePlaceholder": "이름 입력",
+        "LastNamePlaceholder": "성 입력",
+        "CityPlaceholder": "도시 입력",
+        "CountryPlaceholder": "국가 입력",
+        "BioPlaceholder": "자기소개를 입력하세요...",
+        "Save": "저장",
+        "Cancel": "취소",
+        "MaximumLength": "최대 {count}자",
+        "Required": "필수 항목입니다",
+        "ProfileVisibility": "프로필 공개 범위",
+        "PublicProfile": "공개",
+        "PrivateProfile": "비공개",
+        "PublicProfileDescription": "모두에게 프로필이 표시됩니다",
+        "PrivateProfileDescription": "본인에게만 프로필이 표시됩니다",
+        "AddBioPlaceholder": "자기소개를 입력해 자신을 소개해 보세요...",
+        "AddLocationPlaceholder": "위치 추가...",
+        "ProfileNotAvailable": "프로필을 사용할 수 없습니다"
+    }
+}

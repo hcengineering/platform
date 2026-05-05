@@ -1,0 +1,20 @@
+{
+    "string": {
+        "IntegrationLabel": "Huly Mail",
+        "IntegrationDescription": "Huly 메일함을 연결하여 이메일을 보내고, 받고, 관리합니다",
+        "Connect": "연결",
+        "ConnectHulyMail": "Huly 메일함 연결",
+        "Cancel": "취소",
+        "Email": "이메일",
+        "Status": "상태",
+        "FailedToConnect": "Huly 메일 서비스를 사용할 수 없습니다",
+        "TotalMessages": "전체 메시지:",
+        "Configure": "Huly Mail 설정",
+        "ChannelSpace": "메시지 채널 스페이스",
+        "PersonSpaceInfo": "본인만 메일을 사용할 수 있습니다",
+        "SharedSpaceInfo": "모든 스페이스 참가자가 메일을 사용할 수 있습니다",
+        "Mailbox": "메일함",
+        "MailboxesNotConfigured": "메일함이 없습니다",
+        "ConfigureMailBoxes": "시작하려면 `메일함` 섹션에서 메일함을 추가하세요"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "string": {
+        "BitrixTokenUrl": "Bitrix24 토큰 URL",
+        "Bitrix": "",
+        "BitrixDesc": "Bitrix 24 연동",
+        "Settings": "설정",
+        "NotAllowed": "관리자 권한이 없어 허용되지 않습니다",
+        "BitrixEntityType": "엔티티 매핑",
+        "FieldMapping": "필드 매핑",
+        "AddField": "매핑 추가",
+        "Attribute": "속성",
+        "MapField": "매핑...",
+        "BitrixImport": "Bitrix와 동기화",
+        "AddMapping": "엔티티 매핑 추가",
+        "ConfigLabel": "Bitrix24",
+        "ConfigDescription": "Bitrix 24 연동 확장 기능"
+    }
+}
