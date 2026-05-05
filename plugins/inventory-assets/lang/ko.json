@@ -1,0 +1,25 @@
+{
+    "status": {
+        "CategoryRequired": "카테고리는 필수입니다",
+        "NameRequired": "이름은 필수입니다"
+    },
+    "string": {
+        "Categories": "카테고리",
+        "Category": "카테고리",
+        "CategoryCreateLabel": "카테고리",
+        "CreateCategory": "카테고리 만들기",
+        "CreateSubcategory": "하위 카테고리 만들기",
+        "Inventory": "재고",
+        "ProductCreateLabel": "제품",
+        "CreateProduct": "제품 만들기",
+        "Products": "제품",
+        "Product": "제품",
+        "Variant": "변형",
+        "SKU": "SKU",
+        "Variants": "변형",
+        "NoVariantsForProduct": "이 제품에 변형 없음",
+        "CreateVariant": "변형 만들기",
+        "ConfigLabel": "재고",
+        "ConfigDescription": "재고 관리 확장 기능"
+    }
+}

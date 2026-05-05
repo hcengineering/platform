@@ -1,0 +1,22 @@
+{
+    "string": {
+        "OnboardingChannelDescription": "사용자: {user}; 워크스페이스: {workspace}",
+        "Error": "오류: ",
+        "InProject": " 프로젝트에서 ",
+        "NavigateToSpecial": "{app}: {special} 열기",
+        "OpenSpecial": "{special} 열기 ",
+        "Set": "설정 ",
+        "To": " → ",
+        "Open": "열기 ",
+        "Workbench": "워크벤치: ",
+        "OnboardingChannel": "온보딩 채널",
+        "OnboardingChannels": "온보딩 채널",
+        "WorkspaceId": "워크스페이스 ID",
+        "WorkspaceName": "워크스페이스 이름",
+        "WorkspaceUrl": "워크스페이스 URL",
+        "Account": "계정",
+        "UserName": "사용자 이름",
+        "DisableAIReplies": "AI 답변 비활성화",
+        "ShowAIReplies": "AI 답변 표시"
+    }
+}
