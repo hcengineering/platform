@@ -15,7 +15,6 @@
 
 import { getEmbeddedLabel, getMetadata, type IntlString } from '@hcengineering/platform'
 import { deepEqual } from 'fast-equals'
-import { randomBytes } from 'crypto'
 import { DOMAIN_BENCHMARK } from './benchmark'
 import {
   type Account,
@@ -64,9 +63,8 @@ function toHex (value: number, chars: number): string {
   return result
 }
 
-let counter = randomBytes(4).readUInt32BE(0) & 0xffffff
-const randomBytesValue = randomBytes(5)
-const random = toHex(randomBytesValue.readUIntBE(0, 3), 6) + toHex(randomBytesValue.readUIntBE(3, 2), 4)
+let counter = (Math.random() * (1 << 24)) | 0
+const random = toHex((Math.random() * (1 << 24)) | 0, 6) + toHex((Math.random() * (1 << 16)) | 0, 4)
 
 function timestamp (): string {
   const time = (Date.now() / 1000) | 0
