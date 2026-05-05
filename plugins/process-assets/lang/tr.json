@@ -170,7 +170,8 @@
     "TextFromMarkup": "Metinden işaretleme",
     "MarkupFromText": "İşaretlemeden metin",
     "TextFromSelect": "Seçimden metin",
-    "SelectFromText": "Metinden seçim"
+    "SelectFromText": "Metinden seçim",
+    "AskSubclass": "Alt sınıfı sor"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

@@ -170,7 +170,8 @@
     "MarkupFromText": "MarkUp z textu",
     "TextFromMarkup": "Text z MarkUp",
     "TextFromSelect": "Text z výběru",
-    "SelectFromText": "Výběr z textu"
+    "SelectFromText": "Výběr z textu",
+    "AskSubclass": "Zeptat se na podtřídu"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",
