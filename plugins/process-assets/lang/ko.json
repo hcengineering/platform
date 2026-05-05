@@ -175,7 +175,8 @@
         "TextFromMarkup": "마크업에서 텍스트로",
         "MarkupFromText": "텍스트에서 마크업으로",
         "TextFromSelect": "선택에서 텍스트로",
-        "SelectFromText": "텍스트에서 선택으로"
+        "SelectFromText": "텍스트에서 선택으로",
+        "AskSubclass": "하위 클래스 선택"
     },
     "error": {
         "MethodNotFound": "메서드를 찾을 수 없습니다: {methodId}",

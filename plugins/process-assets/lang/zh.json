@@ -175,7 +175,8 @@
     "TextFromMarkup": "标记到文本",
     "MarkupFromText": "文本到标记",
     "TextFromSelect": "选择到文本",
-    "SelectFromText": "文本到选择"
+    "SelectFromText": "文本到选择",
+    "AskSubclass": "询问子类"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",
