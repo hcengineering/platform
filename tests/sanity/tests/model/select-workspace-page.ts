@@ -86,8 +86,12 @@ export class SelectWorkspacePage extends CommonPage {
     if (options.withDemoContent === false) {
       const toggle = this.createSampleProjectsToggle()
       // The Toggle starts in the "on" state; click only if it's currently checked.
+      // The underlying <input type="checkbox"> is visually hidden (width: 1px,
+      // replaced by a styled span), so a regular click is rejected as
+      // not-actionable. `force: true` bypasses the visibility check; the
+      // checkbox state still flips correctly through the bound handler.
       if (await toggle.isChecked()) {
-        await toggle.click()
+        await toggle.click({ force: true })
       }
     }
 
@@ -95,9 +99,10 @@ export class SelectWorkspacePage extends CommonPage {
       const card = this.moduleCardByLabel(label)
       await card.waitFor({ state: 'visible' })
       // Each card has a single Toggle (<input type="checkbox">) — click flips it.
+      // Same visibility caveat as above; use force to click the hidden input.
       // The card may also contain an info (?) <button>, so we target the toggle
       // checkbox specifically rather than the first interactive element.
-      await card.locator('input[type="checkbox"]').click()
+      await card.locator('input[type="checkbox"]').click({ force: true })
     }
 
     await this.customizeDoneButton().click()
