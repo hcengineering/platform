@@ -440,6 +440,19 @@ export function createModel (builder: Builder): void {
     setting.ids.OfficeSettings
   )
 
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
+      name: 'apiTokens',
+      label: setting.string.ApiTokens,
+      icon: setting.icon.ApiToken,
+      component: setting.component.ApiTokens,
+      order: 1050,
+      role: AccountRole.Owner
+    },
+    setting.ids.ApiTokens
+  )
   // Currently remove Support item from settings
   // builder.createDoc(
   //   setting.class.SettingsCategory,
