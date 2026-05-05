@@ -898,6 +898,29 @@ export type WorkspaceUpdateEvent =
   | 'delete-started'
   | 'delete-done'
 
+/**
+ * Initial-state configuration captured at workspace creation: which apps to
+ * disable on first run and whether to populate with demo content. Lives on
+ * `WorkspaceInfo.pendingConfiguration` until consumed by workspace-service
+ * after model init, then cleared back to `null`.
+ *
+ * @public
+ */
+export interface WorkspaceConfiguration {
+  /**
+   * Whether to run the workspace init script (sample projects and other demo content).
+   * Defaults to `true` on the server side to preserve legacy behavior.
+   */
+  withDemoContent?: boolean
+
+  /**
+   * List of `pluginId`s to mark as `enabled: false` in the new workspace's
+   * `core.class.PluginConfiguration` documents right after model initialization.
+   * Only non-system, non-hidden plugins are honored; unknown ids are ignored.
+   */
+  disabledPlugins?: Plugin[]
+}
+
 export interface WorkspaceInfo {
   uuid: WorkspaceUuid
   dataId?: WorkspaceDataId // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
@@ -911,6 +934,9 @@ export interface WorkspaceInfo {
   allowReadOnlyGuest?: boolean // Should always be set for NEW workspaces
   allowGuestSignUp?: boolean // Should always be set for NEW workspaces
   passwordAgingRule?: number // in days
+  // Initial-state configuration set by the user at workspace creation. Read once
+  // by workspace-service after model init, then cleared back to `null`.
+  pendingConfiguration?: WorkspaceConfiguration | null
 }
 
 export interface BackupStatus {

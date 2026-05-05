@@ -73,7 +73,9 @@ export default plugin(questionsId, {
     SingleChoiceQuestion: '' as IntlString,
     TypePercentage: '' as IntlString,
     TypeQuestionOption: '' as IntlString,
-    TypeRank: '' as IntlString
+    TypeRank: '' as IntlString,
+    ConfigLabel: '' as IntlString,
+    ConfigDescription: '' as IntlString
   },
   icon: {
     ArrowDown: '' as Asset,

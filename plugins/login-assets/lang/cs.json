@@ -101,6 +101,14 @@
     "SSOPasswordDescription": "Váš účet používá externí přihlášení. Nastavte si heslo prostřednictvím e-mailové potvrzení.",
     "SendSetupLink": "Odeslat odkaz na nastavení",
     "SSOPasswordEmailSent": "Zkontrolujte svůj e-mail, zda neobsahuje odkaz pro nastavení hesla.",
-    "SSONoEmailLinked": "K vašemu účtu není přidružena žádná e-mailová adresa. Nejprve ji přidejte v Nastavení účtu → Spravovat identity."
+    "SSONoEmailLinked": "K vašemu účtu není přidružena žádná e-mailová adresa. Nejprve ji přidejte v Nastavení účtu → Spravovat identity.",
+    "CustomizeWorkspace": "Přizpůsobit pracovní prostor…",
+    "InitialContent": "Počáteční obsah",
+    "CreateSampleProjects": "Vytvořit ukázkové projekty a demo obsah",
+    "CreateSampleProjectsDesc": "Přidáme několik ukázkových projektů, dokumentů a úkolů, abyste mohli rychle začít. Můžete je kdykoli smazat.",
+    "Modules": "Moduly",
+    "ModulesDesc": "Vyberte, které aplikace budou v tomto pracovním prostoru aktivní. Můžete to později změnit v nastavení pracovního prostoru.",
+    "ModuleListUnavailable": "Seznam modulů ještě není k dispozici — budou použity výchozí hodnoty. Moduly můžete upravit v nastavení pracovního prostoru po vytvoření.",
+    "BackToCreate": "Zpět"
   }
 }

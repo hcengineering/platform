@@ -30,6 +30,8 @@
     "SingleChoiceQuestion": "単一選択 (評価なし)",
     "TypePercentage": "割合",
     "TypeQuestionOption": "選択肢",
-    "TypeRank": "順位"
+    "TypeRank": "順位",
+    "ConfigLabel": "質問",
+    "ConfigDescription": "トレーニング、クイズ、アンケートで使用される質問と評価のオーサリング"
   }
 }

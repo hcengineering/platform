@@ -30,6 +30,8 @@
     "SingleChoiceQuestion": "Jedna možnost (nebodované)",
     "TypePercentage": "Procento",
     "TypeQuestionOption": "Možnost",
-    "TypeRank": "Pořadí"
+    "TypeRank": "Pořadí",
+    "ConfigLabel": "Otázky",
+    "ConfigDescription": "Tvorba otázek a hodnocení používaná pro školení, kvízy a průzkumy"
   }
 }

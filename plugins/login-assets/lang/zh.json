@@ -100,6 +100,14 @@
     "SSOPasswordDescription": "您的账户使用外部登录。请通过电子邮件确认设置密码。",
     "SendSetupLink": "发送设置链接",
     "SSOPasswordEmailSent": "请检查您的电子邮件，获取设置密码的链接。",
-    "SSONoEmailLinked": "您的账户没有关联的电子邮件地址。请先在账户设置 → 管理身份中添加。"
+    "SSONoEmailLinked": "您的账户没有关联的电子邮件地址。请先在账户设置 → 管理身份中添加。",
+    "CustomizeWorkspace": "自定义工作区…",
+    "InitialContent": "初始内容",
+    "CreateSampleProjects": "创建示例项目和演示内容",
+    "CreateSampleProjectsDesc": "我们将添加一些示例项目、文档和任务以帮助您快速开始。您可以随时删除它们。",
+    "Modules": "模块",
+    "ModulesDesc": "选择此工作区中要启用的应用。您可以稍后在工作区设置中更改。",
+    "ModuleListUnavailable": "模块列表尚不可用 — 将使用默认值。创建后可在工作区设置中调整模块。",
+    "BackToCreate": "返回"
   }
 }

@@ -11,13 +11,14 @@ import account, {
   getAccountDB,
   getAllTransactors,
   getMethods,
-  cleanExpiredOtp
+  cleanExpiredOtp,
+  initDefaultPluginConfigurations
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
-import { metricsAggregate, type Branding, type BrandingMap, type MeasureContext } from '@hcengineering/core'
+import { metricsAggregate, type Branding, type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
 import platform, { Severity, Status, addStringsLoader, setMetadata, unknownStatus } from '@hcengineering/platform'
 import serverToken, { decodeToken, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 import cors from '@koa/cors'
@@ -43,8 +44,14 @@ const KEEP_ALIVE_HEADERS = {
 /**
  * @public
  */
-export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap, onClose?: () => void): void {
+export function serveAccount (
+  measureCtx: MeasureContext,
+  brandings: BrandingMap,
+  txes: Tx[],
+  onClose?: () => void
+): void {
   console.log('Starting account service with brandings: ', brandings)
+  initDefaultPluginConfigurations(txes)
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUrl = process.env.DB_URL
   if (dbUrl === undefined) {

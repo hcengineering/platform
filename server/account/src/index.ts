@@ -15,6 +15,7 @@
 
 import { accountPlugin } from './plugin'
 
+export { initDefaultPluginConfigurations } from './defaultPluginConfigurations'
 export * from './operations'
 export * from './plugin'
 export * from './utils'

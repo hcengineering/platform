@@ -14,6 +14,8 @@ import {
   IntegrationKind
 } from '@hcengineering/core'
 
+export type { WorkspaceConfiguration } from '@hcengineering/core'
+
 export interface LoginInfo {
   account: AccountUuid
   name?: string

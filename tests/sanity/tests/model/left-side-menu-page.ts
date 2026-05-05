@@ -47,6 +47,10 @@ export class LeftSideMenuPage extends CommonPage {
     await this.buttonTracker().click()
   }
 
+  async checkTrackerNotVisible (): Promise<void> {
+    await this.buttonTracker().waitFor({ state: 'detached', timeout: 5_000 })
+  }
+
   async clickNotification (): Promise<void> {
     await this.buttonNotification().click()
   }

@@ -362,6 +362,7 @@ export async function updateWorkspaceInfo (
       update.versionMinor = version.minor
       update.versionPatch = version.patch
       update.processingProgress = progress
+      wsUpdate.pendingConfiguration = null
       break
     case 'upgrade-done':
       ctx.info('Updating workspace info on upgrade-done', { workspaceUuid, event, version, progress })

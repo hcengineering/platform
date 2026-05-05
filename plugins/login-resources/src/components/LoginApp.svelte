@@ -20,6 +20,7 @@
     Location,
     Popup,
     Scroller,
+    TooltipInstance,
     deviceOptionsStore as deviceInfo,
     fetchMetadataLocalStorage,
     getCurrentLocation,
@@ -192,6 +193,7 @@
       </div>
 
       <Popup />
+      <TooltipInstance />
     </div>
   </div>
 {/if}
