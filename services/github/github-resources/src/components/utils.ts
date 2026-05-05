@@ -13,13 +13,63 @@ import {
   type GithubProject
 } from '@hcengineering/github'
 import login from '@hcengineering/login'
-import { PlatformError, getMetadata, unknownError } from '@hcengineering/platform'
+import { PlatformError, getMetadata, setMetadata, unknownError } from '@hcengineering/platform'
 import presentation, { createQuery, getClient } from '@hcengineering/presentation'
 import { location } from '@hcengineering/ui'
 import { get, writable } from 'svelte/store'
 import github from '../plugin'
 
+type GithubFrontendConfigKey = 'GITHUB_APP' | 'GITHUB_CLIENTID' | 'GITHUB_URL'
+
+let githubFrontendConfigPromise: Promise<Partial<Record<GithubFrontendConfigKey, string>>> | undefined
+
+async function getGithubFrontendConfig (): Promise<Partial<Record<GithubFrontendConfigKey, string>>> {
+  if (githubFrontendConfigPromise == null) {
+    githubFrontendConfigPromise = fetch('/config.json')
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to load /config.json: ${response.status}`)
+        }
+        return (await response.json()) as Partial<Record<GithubFrontendConfigKey, string>>
+      })
+      .catch((err) => {
+        console.warn('Failed to load GitHub frontend config fallback', err)
+        return {}
+      })
+  }
+
+  return await githubFrontendConfigPromise
+}
+
+export async function getGithubConfigValue (
+  metadataKey: string,
+  metadataValue: string | undefined,
+  configKey: GithubFrontendConfigKey
+): Promise<string | undefined> {
+  if (metadataValue != null && metadataValue !== '') {
+    return metadataValue
+  }
+
+  const config = await getGithubFrontendConfig()
+  const configValue = config[configKey]
+  if (typeof configValue === 'string' && configValue !== '') {
+    setMetadata(metadataKey as any, configValue)
+    return configValue
+  }
+
+  return undefined
+}
+
 export async function onAuthorize (login?: string): Promise<void> {
+  const clientId = await getGithubConfigValue(
+    github.metadata.GithubClientID,
+    getMetadata(github.metadata.GithubClientID),
+    'GITHUB_CLIENTID'
+  )
+  if (clientId == null) {
+    throw new PlatformError(unknownError('Github OAuth client ID is not configured'))
+  }
+
   const state = btoa(
     JSON.stringify({
       accountId: getCurrentAccount().primarySocialId,
@@ -40,7 +90,7 @@ export async function onAuthorize (login?: string): Promise<void> {
   const url =
     'https://github.com/login/oauth/authorize?' +
     makeQuery({
-      client_id: getMetadata(github.metadata.GithubClientID),
+      client_id: clientId,
       login: '',
       state,
       allow_signup: 'true'
@@ -115,7 +165,7 @@ authQuery.query(github.class.GithubAuthentication, {}, (res) => {
  * @public
  */
 export async function sendGHServiceRequest (path: string, args: Record<string, any>): Promise<any> {
-  const githubURL = getMetadata(github.metadata.GithubURL)
+  const githubURL = await getGithubConfigValue(github.metadata.GithubURL, getMetadata(github.metadata.GithubURL), 'GITHUB_URL')
   if (githubURL === undefined) {
     // We could try use recognition service to find some document properties.
     throw new PlatformError(unknownError('Github integration is not configured'))

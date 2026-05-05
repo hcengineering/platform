@@ -18,7 +18,7 @@
   import ui, { Button, Label, Loading, TabItem, TabList, location, ticker } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import github from '../plugin'
-  import { onAuthorize, updateGithubAccountIntegrationLogin } from './utils'
+  import { getGithubConfigValue, onAuthorize, updateGithubAccountIntegrationLogin } from './utils'
 
   export let integration: AccountIntegration | undefined
 
@@ -60,7 +60,7 @@
   function save (): void {
     void updateGithubAccountIntegrationLogin(auth?.login ?? '', integration)
   }
-  function onConnect (): void {
+  async function onConnect (): Promise<void> {
     const state = btoa(
       JSON.stringify({
         accountId: getCurrentAccount().primarySocialId,
@@ -70,7 +70,12 @@
       })
     )
     Analytics.handleEvent('Install github app clicked')
-    const githubApp = getMetadata(github.metadata.GithubApplication) ?? ''
+    const githubApp =
+      (await getGithubConfigValue(
+        github.metadata.GithubApplication,
+        getMetadata(github.metadata.GithubApplication),
+        'GITHUB_APP'
+      )) ?? ''
     window.open(`https://github.com/apps/${githubApp}/installations/new?state=${state}`)
   }
 
@@ -159,7 +164,9 @@
       <Button
         label={integrations.length === 0 ? github.string.InstallApp : github.string.Configure}
         labelParams={{ title: getMetadata(ui.metadata.PlatformTitle) }}
-        on:click={onConnect}
+        on:click={() => {
+          void onConnect()
+        }}
         size={'large'}
         kind={'primary'}
       />
