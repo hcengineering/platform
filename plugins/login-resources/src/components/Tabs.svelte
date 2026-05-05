@@ -26,49 +26,57 @@
 
 <div class="flex-row-center caption">
   {#if !signUpDisabled}
-    <NavLink
-      class="title"
-      class:selected={loginState === 'signup'}
-      href={getHref('signup')}
-    >
-      <Label label={login.string.SignUp} />
-    </NavLink>
+    <span class="title" class:selected={loginState === 'signup'}>
+      <NavLink href={getHref('signup')}>
+        <Label label={login.string.SignUp} />
+      </NavLink>
+    </span>
   {/if}
-  <NavLink
-    class="title"
-    class:selected={loginState === 'login'}
-    href={getHref('login')}
-  >
-    <Label label={login.string.LogIn} />
-  </NavLink>
+  <span class="title" class:selected={loginState === 'login'}>
+    <NavLink href={getHref('login')}>
+      <Label label={login.string.LogIn} />
+    </NavLink>
+  </span>
 </div>
 
 <style>
   .title {
+    display: inline-flex;
     font-weight: 500;
     font-size: 1.25rem;
     color: var(--theme-caption-color);
-  }
-  .caption a {
     padding-bottom: 0.375rem;
     border-bottom: 2px solid var(--theme-caption-color);
+  }
 
-    &:not(.selected) {
-      color: var(--theme-dark-color);
-      border-bottom-color: transparent;
+  .caption .title :global(a) {
+    color: inherit;
 
-      &:hover {
-        color: var(--theme-caption-color);
-      }
-    }
-    &.selected {
-      cursor: default;
-    }
-    &:first-child {
-      margin-right: 1.75rem;
-    }
     &:hover {
       text-decoration: none;
+    }
+  }
+
+  .caption .title:not(.selected) {
+    color: var(--theme-dark-color);
+    border-bottom-color: transparent;
+
+    &:hover {
+      color: var(--theme-caption-color);
+    }
+  }
+
+  .caption .title.selected {
+    cursor: default;
+  }
+
+  .caption .title:first-child {
+    margin-right: 1.75rem;
+  }
+
+  .caption .title :global(a) {
+    &:active {
+      color: var(--theme-dark-color);
     }
   }
 </style>
