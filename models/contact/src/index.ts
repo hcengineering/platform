@@ -621,6 +621,20 @@ export function createModel (builder: Builder): void {
       configOptions: {
         hiddenKeys: ['name'],
         sortable: true
+      },
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [
+          {
+            key: 'hideInactive',
+            type: 'toggle',
+            defaultValue: true,
+            actionTarget: 'query',
+            action: contact.function.HideInactive,
+            label: contact.string.HideInactive
+          }
+        ]
       }
     },
     contact.viewlet.TableEmployee

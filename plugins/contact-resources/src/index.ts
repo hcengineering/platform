@@ -150,6 +150,7 @@ import {
   getCurrentEmployeePosition,
   getPersonTooltip,
   grouppingPersonManager,
+  hideInactive,
   permissionsStore,
   resolveLocation,
   resolveLocationData
@@ -469,7 +470,8 @@ export default async (): Promise<Resources> => ({
     ChannelTitleProvider: channelTitleProvider,
     ChannelIdentifierProvider: channelIdentifierProvider,
     CanResendInvitation: canResendInvitation,
-    CanMergePersons: canMergePersons
+    CanMergePersons: canMergePersons,
+    HideInactive: hideInactive
   },
   resolver: {
     Location: resolveLocation,

@@ -149,6 +149,7 @@
     "WorkspaceStatusIn1Hour": "1 小时后",
     "WorkspaceStatusIn4Hours": "4 小时后",
     "WorkspaceStatusEndOfDay": "今天结束",
-    "WorkspaceStatusPickDate": "选择日期"
+    "WorkspaceStatusPickDate": "选择日期",
+    "HideInactive": "隐藏非活跃"
   }
 }

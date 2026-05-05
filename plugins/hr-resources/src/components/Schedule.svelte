@@ -37,7 +37,7 @@
     tableToCSV,
     showPopup
   } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import view, { Viewlet, ViewletPreference, type ViewOptions } from '@hcengineering/view'
   import { ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import { getCurrentEmployee } from '@hcengineering/contact'
 
@@ -65,9 +65,12 @@
   let search = ''
   let resultQuery: DocumentQuery<Staff> = {}
 
-  function updateResultQuery (search: string): void {
-    resultQuery = search === '' ? {} : { name: { $like: '%' + search + '%' } }
+  function updateResultQuery (search: string, viewOptions: ViewOptions | undefined): void {
+    const q: DocumentQuery<Staff> = search === '' ? {} : { name: { $like: '%' + search + '%' } }
+    resultQuery = viewOptions?.hideInactive !== false ? { ...q, active: true } : q
   }
+
+  $: updateResultQuery(search, viewOptions)
 
   const query = createQuery()
 
@@ -131,6 +134,7 @@
   ]
 
   let viewlet: Viewlet | undefined
+  let viewOptions: ViewOptions | undefined
   let preference: ViewletPreference | undefined
   let loading = false
 
@@ -220,29 +224,21 @@
               if (result.detail !== undefined) display = result.detail.id
             }}
           />
-          {#if display === 'stats'}
-            <ViewletSelector
-              hidden
-              bind:viewlet
-              bind:preference
-              bind:loading
-              viewletQuery={{ _id: hr.viewlet.StaffStats }}
-            />
-            <ViewletSettingButton bind:viewlet />
-          {/if}
+          <ViewletSelector
+            hidden
+            bind:viewlet
+            bind:preference
+            bind:loading
+            viewletQuery={{ _id: hr.viewlet.StaffStats }}
+          />
+          <ViewletSettingButton bind:viewOptions bind:viewlet />
         {/if}
       </svelte:fragment>
 
       <Breadcrumb icon={hr.icon.HR} label={hr.string.Schedule} size={'large'} isCurrent />
 
       <svelte:fragment slot="search">
-        <SearchInput
-          bind:value={search}
-          collapsed
-          on:change={() => {
-            updateResultQuery(search)
-          }}
-        />
+        <SearchInput bind:value={search} collapsed />
       </svelte:fragment>
       <svelte:fragment slot="actions">
         {#if mode === CalendarMode.Month && display === 'stats'}

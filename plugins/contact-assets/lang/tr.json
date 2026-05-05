@@ -149,6 +149,7 @@
     "WorkspaceStatusIn1Hour": "1 saat içinde",
     "WorkspaceStatusIn4Hours": "4 saat içinde",
     "WorkspaceStatusEndOfDay": "Gün sonu",
-    "WorkspaceStatusPickDate": "Tarih seç"
+    "WorkspaceStatusPickDate": "Tarih seç",
+    "HideInactive": "Etkin olmayanları gizle"
   }
 }
