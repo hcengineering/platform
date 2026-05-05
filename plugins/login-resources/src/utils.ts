@@ -64,6 +64,7 @@ import { logIn, workbenchId } from '@hcengineering/workbench'
 import { LoginEvents } from './analytics'
 import { type Pages } from './index'
 import login from './plugin'
+import { hasSessionToken } from './token'
 
 /**
  * Constructs an account client.
@@ -1075,7 +1076,7 @@ export async function doLoginNavigate (
       return
     }
 
-    if (result.token != null) {
+    if (hasSessionToken(result.token)) {
       await logIn(result)
     }
 
@@ -1104,7 +1105,7 @@ export async function doLoginNavigate (
     const currentLoc = getCurrentLocation()
 
     const loc = getCurrentLocation()
-    loc.path[1] = result.token != null ? 'selectWorkspace' : 'confirmationSend'
+    loc.path[1] = hasSessionToken(result.token) ? 'selectWorkspace' : 'confirmationSend'
     loc.path.length = 2
     if (navigateUrl !== undefined) {
       loc.query = { ...loc.query, navigateUrl }

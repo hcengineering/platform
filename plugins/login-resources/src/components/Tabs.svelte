@@ -14,44 +14,33 @@
 -->
 
 <script lang="ts">
-  import { getCurrentLocation, Label, navigate } from '@hcengineering/ui'
+  import { Label } from '@hcengineering/ui'
+  import { NavLink } from '@hcengineering/presentation'
 
   import login from '../plugin'
+  import { getHref } from '../utils'
 
   export let loginState: 'login' | 'signup' | 'none' = 'none'
   export let signUpDisabled = false
-
-  const goTab = (path: string): void => {
-    const loc = getCurrentLocation()
-    loc.path[1] = path
-    loc.path.length = 2
-    navigate(loc)
-  }
 </script>
 
 <div class="flex-row-center caption">
   {#if !signUpDisabled}
-    <a
+    <NavLink
       class="title"
       class:selected={loginState === 'signup'}
-      href="."
-      on:click|preventDefault={() => {
-        if (loginState !== 'signup') goTab('signup')
-      }}
+      href={getHref('signup')}
     >
       <Label label={login.string.SignUp} />
-    </a>
+    </NavLink>
   {/if}
-  <a
+  <NavLink
     class="title"
     class:selected={loginState === 'login'}
-    href="."
-    on:click|preventDefault={() => {
-      if (loginState !== 'login') goTab('login')
-    }}
+    href={getHref('login')}
   >
     <Label label={login.string.LogIn} />
-  </a>
+  </NavLink>
 </div>
 
 <style>

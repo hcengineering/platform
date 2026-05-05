@@ -23,7 +23,9 @@
   export let password: boolean | undefined = undefined
   export let id: string | undefined = undefined
   export let name: string | undefined = undefined
+  export let autocomplete: string | undefined = undefined
   export let disabled: boolean = false
+  export let disableAutofill: boolean = false
 </script>
 
 <div class="editbox{error ? ' error' : ''}" style={width ? 'width: ' + width : ''}>
@@ -38,7 +40,9 @@
       on:change
       on:keyup
       on:input
-      autocomplete="off"
+      autocomplete={disableAutofill ? 'new-password' : autocomplete ?? 'off'}
+      data-1p-ignore={disableAutofill ? 'true' : undefined}
+      data-lpignore={disableAutofill ? 'true' : undefined}
       placeholder=" "
       spellcheck="false"
       autocapitalize="off"
@@ -55,7 +59,9 @@
       on:change
       on:keyup
       on:input
-      autocomplete="off"
+      autocomplete={disableAutofill ? 'off' : autocomplete ?? 'off'}
+      data-1p-ignore={disableAutofill ? 'true' : undefined}
+      data-lpignore={disableAutofill ? 'true' : undefined}
       placeholder=" "
       spellcheck="false"
       autocapitalize="off"

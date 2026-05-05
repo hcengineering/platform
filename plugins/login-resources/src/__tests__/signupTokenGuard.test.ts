@@ -17,7 +17,7 @@
  *
  * When MAIL_URL is configured the account service returns token: undefined to
  * enforce email confirmation. The signup handler must skip logIn() in that
- * case — calling logIn() without a token triggers PUT /cookie with no
+ * case — and also for blank tokens — because calling logIn() without a usable token triggers PUT /cookie with no
  * Authorization header, which returns a non-JSON 401 body that crashes the
  * client with "Unexpected token".
  */
@@ -35,7 +35,7 @@ async function handleSignupResult (
   goTo: (page: string) => void
 ): Promise<void> {
   if (result != null) {
-    if (result.token != null) {
+    if (result.token != null && result.token.trim() !== '') {
       await logIn(result)
     }
     goTo('confirmationSend')
@@ -73,10 +73,17 @@ describe('SignupForm token guard (#10518)', () => {
     expect(goTo).toHaveBeenCalledWith('confirmationSend')
   })
 
-  it('calls logIn and redirects when token is an empty string (malformed response)', async () => {
+  it('skips logIn when token is an empty string', async () => {
     const result: LoginInfo = { account: 'acc-uuid', token: '' }
     await handleSignupResult(result, logIn, goTo)
-    expect(logIn).toHaveBeenCalledTimes(1)
+    expect(logIn).not.toHaveBeenCalled()
+    expect(goTo).toHaveBeenCalledWith('confirmationSend')
+  })
+
+  it('skips logIn when token is only whitespace', async () => {
+    const result: LoginInfo = { account: 'acc-uuid', token: '   ' }
+    await handleSignupResult(result, logIn, goTo)
+    expect(logIn).not.toHaveBeenCalled()
     expect(goTo).toHaveBeenCalledWith('confirmationSend')
   })
 

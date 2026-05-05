@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { OK, PlatformError, Severity, Status, getMetadata, setMetadata } from '@hcengineering/platform'
+  import platform, { OK, PlatformError, Severity, Status, getMetadata, setMetadata } from '@hcengineering/platform'
   import {
     Button,
     Label,
@@ -34,6 +34,7 @@
     signUpJoin,
     getLoginInfo
   } from '../utils'
+  import { hasSessionToken } from '../token'
   import Form from './Form.svelte'
   import StatusControl from './StatusControl.svelte'
 
@@ -61,20 +62,27 @@
   $: fields =
     page === 'login'
       ? [
-          { id: 'email', name: 'username', i18n: login.string.Email },
+          { id: 'email', name: 'username', i18n: login.string.Email, autocomplete: 'email' },
           {
             id: 'current-password',
             name: 'password',
             i18n: login.string.Password,
+            autocomplete: 'current-password',
             password: true
           }
         ]
       : [
-          { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
-          { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
-          { id: 'email', name: 'username', i18n: login.string.Email },
-          { id: 'new-password', name: 'password', i18n: login.string.Password, password: true },
-          { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
+          { id: 'given-name', name: 'first', i18n: login.string.FirstName, autocomplete: 'given-name', short: true },
+          { id: 'family-name', name: 'last', i18n: login.string.LastName, autocomplete: 'family-name', short: true },
+          { id: 'email', name: 'username', i18n: login.string.Email, autocomplete: 'email' },
+          { id: 'new-password', name: 'password', i18n: login.string.Password, autocomplete: 'new-password', password: true },
+          {
+            id: 'new-password',
+            name: 'password2',
+            i18n: login.string.PasswordRepeat,
+            autocomplete: 'new-password',
+            password: true
+          }
         ]
 
   $: object = {
@@ -110,7 +118,7 @@
           )
       status = loginStatus
 
-      if (result != null) {
+      if (result != null && hasSessionToken(result.token)) {
         await logIn(result)
         setLoginInfo(result)
 
@@ -127,6 +135,8 @@
         }
 
         navigate({ path: [workbenchId, result.workspaceUrl] })
+      } else if (result != null) {
+        status = new Status(Severity.ERROR, platform.status.Unauthorized, {})
       }
     }
   }
@@ -199,6 +209,11 @@
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
     try {
       const result = await joinByToken(inviteId)
+      if (!hasSessionToken(result.token)) {
+        status = new Status(Severity.ERROR, platform.status.Unauthorized, {})
+        return
+      }
+
       await logIn(result)
       setLoginInfo(result)
 

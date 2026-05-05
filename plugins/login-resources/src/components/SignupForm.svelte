@@ -24,6 +24,7 @@
   import login from '../plugin'
   import { getPasswordValidationRules } from '../validations'
   import { goTo } from '../utils'
+  import { hasSessionToken } from '../token'
   import Form from './Form.svelte'
   import { OtpLoginSteps, signUp, signUpOtp, type BottomAction } from '../index'
   import type { Field } from '../types'
@@ -41,9 +42,9 @@
 
   $: {
     fields = [
-      { id: 'given-name', name: 'first', i18n: login.string.FirstName, short: true },
-      { id: 'family-name', name: 'last', i18n: login.string.LastName, short: true },
-      { id: 'email', name: 'username', i18n: login.string.Email }
+      { id: 'given-name', name: 'first', i18n: login.string.FirstName, autocomplete: 'given-name', short: true },
+      { id: 'family-name', name: 'last', i18n: login.string.LastName, autocomplete: 'family-name', short: true },
+      { id: 'email', name: 'username', i18n: login.string.Email, autocomplete: 'email' }
     ]
 
     if (withPassword) {
@@ -51,10 +52,17 @@
         id: 'new-password',
         name: 'password',
         i18n: login.string.Password,
+        autocomplete: 'new-password',
         password: true,
         rules: getPasswordValidationRules()
       })
-      fields.push({ id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true })
+      fields.push({
+        id: 'new-password',
+        name: 'password2',
+        i18n: login.string.PasswordRepeat,
+        autocomplete: 'new-password',
+        password: true
+      })
     }
   }
 
@@ -97,12 +105,11 @@
         status = loginStatus
 
         if (result != null) {
-          // Only log in immediately when the server issued a token.
-          // When MAIL_URL is configured the server returns token: undefined
-          // to enforce email confirmation — calling logIn() without a token
-          // triggers PUT /cookie with no Authorization header which crashes
-          // the client's JSON parser (issue #10518).
-          if (result.token != null) {
+          // Only log in immediately when the server issued a usable token.
+          // Email-confirmation and malformed responses can omit the token or
+          // send it as blank, and attempting logIn() in that state triggers
+          // the failing /cookie auth path (issue #10518).
+          if (hasSessionToken(result.token)) {
             await logIn(result)
           }
           goTo('confirmationSend')

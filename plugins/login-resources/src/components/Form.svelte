@@ -50,6 +50,7 @@
   export let isLoading: boolean = false
   export let actionButtonDataId: string | undefined = undefined
   export let secondaryButtonDataId: string | undefined = undefined
+  let formElement: HTMLFormElement | undefined
 
   const validate = makeSequential(async function validateAsync (language: string): Promise<boolean> {
     if (ignoreInitialValidation || isLoading) return true
@@ -102,6 +103,34 @@
 
   let inAction = false
 
+  function syncAutofilledFields (): void {
+    if (formElement == null) {
+      return
+    }
+
+    let changed = false
+    for (const field of fields) {
+      if (field.id == null) {
+        continue
+      }
+
+      const input = formElement.querySelector(`input[name="${field.id}"]`) as HTMLInputElement | null
+      if (input == null) {
+        continue
+      }
+
+      const nextValue = input.value.trim()
+      if (nextValue !== '' && object[field.name] !== nextValue) {
+        object[field.name] = nextValue
+        changed = true
+      }
+    }
+
+    if (changed || ignoreInitialValidation) {
+      void validate($themeStore.language)
+    }
+  }
+
   function performAction (action: Action): void {
     if (inAction) return
 
@@ -113,7 +142,22 @@
       inAction = false
     })
   }
-  onMount(() => (ignoreInitialValidation = false))
+  onMount(() => {
+    ignoreInitialValidation = false
+    syncAutofilledFields()
+
+    const autofillChecks = [150, 600, 1500].map((delay) =>
+      window.setTimeout(() => {
+        syncAutofilledFields()
+      }, delay)
+    )
+
+    return () => {
+      for (const timeout of autofillChecks) {
+        window.clearTimeout(timeout)
+      }
+    }
+  })
 
   function trim (field: string): void {
     object[field] = (object[field] as string).trim()
@@ -125,6 +169,7 @@
 
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <form
+  bind:this={formElement}
   class="container"
   style:padding={loginFormPadding($deviceInfo.docWidth, $deviceInfo.docHeight)}
   style:min-height={loginFormMinHeight($deviceInfo.docHeight)}
@@ -161,10 +206,12 @@
         <StylishEdit
           label={field.i18n}
           name={field.id}
+          autocomplete={field.autocomplete}
           password={field.password}
           disabled={inAction || field.disabled}
           bind:value={object[field.name]}
           on:input={() => validate($themeStore.language)}
+          on:change={() => validate($themeStore.language)}
           on:blur={() => {
             trim(field.name)
           }}

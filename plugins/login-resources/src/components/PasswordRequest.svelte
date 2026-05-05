@@ -25,7 +25,7 @@
 
   export let signUpDisabled = false
 
-  const fields = [{ id: 'email', name: 'username', i18n: login.string.Email }]
+  const fields = [{ id: 'email', name: 'username', i18n: login.string.Email, autocomplete: 'email' }]
   const object = {
     username: ''
   }

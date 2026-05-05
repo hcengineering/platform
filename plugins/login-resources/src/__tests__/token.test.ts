@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,21 +13,17 @@
 // limitations under the License.
 //
 
-import { type IntlString } from '@hcengineering/platform'
+import { hasSessionToken } from '../token'
 
-export interface Field {
-  id?: string
-  name: string
-  i18n: IntlString
-  autocomplete?: string
-  password?: boolean
-  optional?: boolean
-  short?: boolean
-  disabled?: boolean
-  rules?: Array<{
-    rule: RegExp | ((value: string) => boolean)
-    notMatch: boolean
-    ruleDescr: IntlString | IntlString<Record<string, any>>
-    ruleDescrParams?: Record<string, any>
-  }>
-}
+describe('hasSessionToken', () => {
+  it.each([
+    [undefined, false],
+    [null, false],
+    ['', false],
+    ['   ', false],
+    ['token', true],
+    [' token ', true]
+  ])('returns %s for %p', (token, expected) => {
+    expect(hasSessionToken(token as string | null | undefined)).toBe(expected)
+  })
+})

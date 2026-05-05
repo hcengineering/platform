@@ -16,6 +16,7 @@
     navigateToWorkspace,
     isLoginInfoRequest
   } from '../utils'
+  import { hasSessionToken } from '../token'
   import Form from './Form.svelte'
   import login from '../plugin'
 
@@ -64,6 +65,8 @@
       goTo('login', true)
     } else if (isLoginInfoRequest(result)) {
       request = result
+    } else if (!hasSessionToken(result.token)) {
+      goTo('login', true)
     } else {
       await logIn(result)
 

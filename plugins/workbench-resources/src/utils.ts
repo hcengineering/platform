@@ -209,11 +209,17 @@ export async function buildNavModel (
 
 export async function logIn (loginInfo: { account: string, token?: string }): Promise<void> {
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
-  await getAccountClient(accountsUrl, loginInfo.token).setCookie()
-
-  setMetadata(presentation.metadata.Token, loginInfo.token)
   setMetadataLocalStorage(login.metadata.LastAccount, loginInfo.account)
   setMetadataLocalStorage(login.metadata.LoginAccount, loginInfo.account)
+
+  const token = loginInfo.token?.trim()
+  if (token == null || token === '') {
+    setMetadata(presentation.metadata.Token, null)
+    return
+  }
+
+  await getAccountClient(accountsUrl, token).setCookie()
+  setMetadata(presentation.metadata.Token, token)
 }
 
 export async function logOut (): Promise<void> {

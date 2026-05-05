@@ -39,7 +39,7 @@
       }}><Label label={action.i18n} /></NavLink
     >
   {:else}
-    <a href="." on:click|preventDefault={action.func}><Label label={action.i18n} /></a>
+    <button type="button" class="link-button" on:click={action.func}><Label label={action.i18n} /></button>
   {/if}
 </div>
 
@@ -47,8 +47,16 @@
   span {
     color: var(--theme-darker-color);
   }
-  a {
+  a,
+  .link-button {
     font-weight: 400;
     color: var(--theme-content-color);
+  }
+  .link-button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
   }
 </style>

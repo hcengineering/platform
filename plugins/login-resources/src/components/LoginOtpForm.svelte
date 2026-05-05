@@ -29,7 +29,13 @@
   export let onLogin: ((loginInfo: LoginInfo | null, status: Status) => void | Promise<void>) | undefined = undefined
 
   $: fields = [
-    { id: 'email', name: 'username', i18n: login.string.Email, disabled: email !== undefined && email !== '' }
+    {
+      id: 'email',
+      name: 'username',
+      i18n: login.string.Email,
+      autocomplete: 'email',
+      disabled: email !== undefined && email !== ''
+    }
   ]
   const formData = {
     username: '' as string

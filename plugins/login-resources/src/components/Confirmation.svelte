@@ -19,6 +19,7 @@
   import { logIn } from '@hcengineering/workbench'
 
   import login from '../plugin'
+  import { hasSessionToken } from '../token'
   import { afterConfirm, confirm, goTo } from '../utils'
 
   export let status: Status<any> = OK
@@ -32,7 +33,7 @@
 
     status = loginStatus
 
-    if (result != null) {
+    if (result != null && hasSessionToken(result.token)) {
       await logIn(result)
       await afterConfirm()
     } else {

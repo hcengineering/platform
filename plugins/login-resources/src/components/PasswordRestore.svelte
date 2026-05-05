@@ -18,6 +18,7 @@
   import { getCurrentLocation } from '@hcengineering/ui'
   import { logIn } from '@hcengineering/workbench'
   import login from '../plugin'
+  import { hasSessionToken } from '../token'
   import type { Field } from '../types'
   import { goTo, restorePassword } from '../utils'
   import Form from './Form.svelte'
@@ -28,10 +29,17 @@
       id: 'new-password',
       name: 'password',
       i18n: login.string.Password,
+      autocomplete: 'new-password',
       password: true,
       rules: getPasswordValidationRules()
     },
-    { id: 'new-password', name: 'password2', i18n: login.string.PasswordRepeat, password: true }
+    {
+      id: 'new-password',
+      name: 'password2',
+      i18n: login.string.PasswordRepeat,
+      autocomplete: 'new-password',
+      password: true
+    }
   ]
 
   const object = {
@@ -52,9 +60,11 @@
 
       status = loginStatus
 
-      if (result != null) {
+      if (result != null && hasSessionToken(result.token)) {
         await logIn(result)
         goTo('selectWorkspace')
+      } else {
+        goTo('login')
       }
     }
   }

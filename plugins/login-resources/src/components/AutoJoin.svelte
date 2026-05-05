@@ -24,6 +24,7 @@
   import presentation from '@hcengineering/presentation'
 
   import { checkAutoJoin, isWorkspaceLoginInfo, navigateToWorkspace } from '../utils'
+  import { hasSessionToken } from '../token'
   import login from '../plugin'
   import LoginForm from './LoginForm.svelte'
 
@@ -66,6 +67,11 @@
 
       if (result != null) {
         if (isWorkspaceLoginInfo(result)) {
+          if (!hasSessionToken(result.token)) {
+            navigate({ path: [loginId] })
+            return
+          }
+
           await logIn(result)
           navigateToWorkspace(result.workspaceUrl, result, location.query?.navigateUrl)
           return
