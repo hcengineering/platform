@@ -120,11 +120,22 @@ export async function sendGHServiceRequest (path: string, args: Record<string, a
     // We could try use recognition service to find some document properties.
     throw new PlatformError(unknownError('Github integration is not configured'))
   }
-  return await fetch(concatLink(concatLink(githubURL, '/api/v1/'), path), {
+  const response = await fetch(concatLink(concatLink(githubURL, '/api/v1/'), path), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(args)
   })
+  const result = await response.json().catch(() => undefined)
+
+  if (!response.ok) {
+    const errorMessage =
+      typeof result?.error === 'string'
+        ? result.error
+        : `Github integration request failed with status ${response.status}`
+    throw new Error(errorMessage)
+  }
+
+  return result
 }

@@ -4,12 +4,12 @@
 //
 -->
 <script lang="ts">
-  import { PersonId } from '@hcengineering/core'
   import ui, { Label, Location, Spinner, Button, location } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import github from '../plugin'
   import { sendGHServiceRequest } from './utils'
   import { getMetadata } from '@hcengineering/platform'
+  import { resolveGithubConnectAction } from './connectAppUtils'
 
   let autoClose = 10
 
@@ -21,24 +21,6 @@
   let showSelector = false
 
   async function createIntegration (loc: Location): Promise<void> {
-    if (loc.query?.error != null) {
-      window.close()
-      return
-    }
-    installationId = parseInt(loc.query?.installation_id ?? '-1')
-    const state = loc.query?.state
-    const code = loc.query?.code
-    const setupAction = loc.query?.setup_action
-
-    if (state == null) {
-      // we need to show a list of workspaces available to install application ito.
-      if (setupAction === 'install') {
-        // Show error
-        showSelector = true
-      }
-      return
-    }
-
     function doAutoClose (): void {
       autoClose = 3
       clearInterval(interval)
@@ -51,29 +33,27 @@
       }, 1000)
     }
 
-    const rawState = JSON.parse(atob(state))
-    const { accountId, op, workspace, token }: { accountId: PersonId, workspace: string, op: string, token: string } =
-      rawState
+    showSelector = false
+    const action = resolveGithubConnectAction(loc)
+    installationId = action.action === 'selector' ? action.installationId : undefined
 
-    if (op === 'installation') {
-      if (installationId == null || setupAction === null) {
-        window.close()
-        return
-      }
-      promise = sendGHServiceRequest('installation', {
-        installationId,
-        workspace,
-        accountId,
-        token
-      }).then(doAutoClose)
+    if (action.action === 'close') {
+      window.close()
+      return
     }
-    if (code !== null) {
-      promise = sendGHServiceRequest('auth', {
-        code,
-        state,
-        workspace,
-        accountId
-      }).then(doAutoClose)
+
+    if (action.action === 'selector') {
+      showSelector = true
+      return
+    }
+
+    if (action.action === 'installation') {
+      promise = sendGHServiceRequest('installation', action.payload).then(doAutoClose)
+      return
+    }
+
+    if (action.action === 'authorize') {
+      promise = sendGHServiceRequest('auth', action.payload).then(doAutoClose)
     }
   }
 
