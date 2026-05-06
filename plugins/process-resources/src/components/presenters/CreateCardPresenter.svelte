@@ -33,9 +33,8 @@
   $: contextValue = params.title !== undefined ? parseContext(params.title) : undefined
   $: context = getContext(client, process, core.class.TypeString, 'attribute')
 
-  $: _class = params?._class
-    ? (client.getHierarchy().getClass(params._class as Ref<MasterTag>) as MasterTag)
-    : undefined
+  $: target = params?.targetClass ?? params?._class
+  $: _class = target !== undefined ? (client.getHierarchy().getClass(target as Ref<MasterTag>) as MasterTag) : undefined
   $: icon = _class?.icon
 </script>
 

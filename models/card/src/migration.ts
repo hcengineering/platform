@@ -36,7 +36,7 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import tags from '@hcengineering/tags'
-import view, { type Viewlet } from '@hcengineering/view'
+import view, { type ViewOptionModel, type Viewlet } from '@hcengineering/view'
 import card from '.'
 
 export const cardOperation: MigrateOperation = {
@@ -134,6 +134,11 @@ export const cardOperation: MigrateOperation = {
         state: 'add-grid-viewlet',
         mode: 'upgrade',
         func: addGridViewlet
+      },
+      {
+        state: 'add-show-all-versions-view-option',
+        mode: 'upgrade',
+        func: addShowAllVersionsViewOption
       }
     ])
   }
@@ -666,5 +671,41 @@ async function fillVersioning (client: MigrationClient): Promise<void> {
     }
   } finally {
     await iterator.close()
+  }
+}
+
+async function addShowAllVersionsViewOption (client: MigrationUpgradeClient): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const masterTags = await client.findAll(card.class.MasterTag, {})
+  const cardDescendants = client.getHierarchy().getDescendants(card.class.Card)
+  const allViewletTargets = [...masterTags.map((p) => p._id), ...cardDescendants, card.class.Card]
+
+  const viewlets = await client.findAll(view.class.Viewlet, {
+    attachTo: { $in: allViewletTargets }
+  })
+
+  const showAllVersionsOption: ViewOptionModel = {
+    key: 'showAllVersions',
+    type: 'toggle',
+    defaultValue: false,
+    actionTarget: 'query',
+    action: card.function.ShowAllVersions,
+    label: card.string.ShowAllVersions
+  }
+
+  for (const v of viewlets) {
+    // Skip CardSpace viewlets if any (though they shouldn't be in allViewletTargets)
+    if (v.attachTo === card.class.CardSpace) continue
+
+    const viewOptions = v.viewOptions ?? { groupBy: [], orderBy: [], other: [] }
+    const other = viewOptions.other ?? []
+    if (other.find((o: any) => o.key === 'showAllVersions') === undefined) {
+      await txOp.update(v, {
+        viewOptions: {
+          ...viewOptions,
+          other: [...other, showAllVersionsOption]
+        }
+      })
+    }
   }
 }

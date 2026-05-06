@@ -25,13 +25,14 @@
   export let width: string | undefined = undefined
   export let kind: ButtonKind | undefined = undefined
   export let size: ButtonSize | undefined = undefined
+  export let parent: Ref<MasterTag> = card.class.Card
   export let disabled: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
   function filterClasses (): [DropdownIntlItem, DropdownIntlItem[]][] {
-    const descendants = hierarchy.getDescendants(card.class.Card).filter((p) => p !== card.class.Card)
+    const descendants = hierarchy.getDescendants(parent).filter((p) => p !== card.class.Card)
     const added = new Set<Ref<Class<Doc>>>()
     const base = new Map<Ref<Class<Doc>>, Class<Doc>[]>()
     for (const _id of descendants) {

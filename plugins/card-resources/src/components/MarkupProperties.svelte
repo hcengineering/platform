@@ -33,7 +33,6 @@
   const hierarchy = client.getHierarchy()
 
   function updateKeys (_class: Ref<Class<Doc>>, to: Ref<Class<Doc>> | undefined): void {
-    console.log('tag', _class, to)
     const filtredKeys = [...hierarchy.getAllAttributes(_class, to).entries()]
       .filter(([key, value]) => value.hidden !== true && value.type._class === core.class.TypeMarkup)
       .map(([key, attr]) => ({ key, attr }))

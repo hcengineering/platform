@@ -16,6 +16,7 @@
 <script lang="ts">
   import { Card } from '@hcengineering/card'
   import { Doc, Mixin } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { getDocMixins } from '@hcengineering/view-resources'
   import { createEventDispatcher, onMount } from 'svelte'
   import MarkupProperties from '../MarkupProperties.svelte'
@@ -25,6 +26,8 @@
   export let hidden: boolean = false
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
+  const h = client.getHierarchy()
 
   let mixins: Array<Mixin<Doc>> = []
   $: mixins = getDocMixins(doc)
@@ -35,9 +38,14 @@
 
 {#if !hidden}
   <div class="w-full flex flex-col flex-gap-4">
-    <MarkupProperties {doc} {readonly} tag={undefined} on:update />
+    <MarkupProperties
+      {doc}
+      readonly={readonly || h.getAncestors(doc._class).some((p) => doc.readonlySections?.includes(p))}
+      tag={undefined}
+      on:update
+    />
     {#each mixins as mixin}
-      <MarkupProperties {doc} {readonly} tag={mixin} on:update />
+      <MarkupProperties {doc} readonly={readonly || doc.readonlySections?.includes(mixin._id)} tag={mixin} on:update />
     {/each}
   </div>
 {/if}

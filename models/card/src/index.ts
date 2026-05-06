@@ -82,7 +82,7 @@ import { type Asset, getEmbeddedLabel, type IntlString, type Resource } from '@h
 import time, { type ToDo } from '@hcengineering/time'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import { type BuildModelKey } from '@hcengineering/view'
+import { type BuildModelKey, type ViewOptionModel } from '@hcengineering/view'
 import { createActions } from './actions'
 import { defineActionPermissions, definePermissions } from './permissions'
 import card from './plugin'
@@ -225,6 +225,15 @@ export class TExportExtension extends TDoc implements ExportExtension {
 
 export * from './migration'
 
+const showAllVersionsOption: ViewOptionModel = {
+  key: 'showAllVersions',
+  type: 'toggle',
+  defaultValue: false,
+  actionTarget: 'query',
+  action: card.function.ShowAllVersions,
+  label: card.string.ShowAllVersions
+}
+
 const listConfig: (BuildModelKey | string)[] = [
   { key: '' },
   { key: '_class' },
@@ -350,6 +359,11 @@ export function createSystemType (
       hiddenKeys: ['content', 'title'],
       sortable: true
     },
+    viewOptions: {
+      groupBy: [],
+      orderBy: [],
+      other: [showAllVersionsOption]
+    },
     baseQuery: {
       isLatest: true
     },
@@ -383,7 +397,7 @@ export function createSystemType (
         ['modifiedOn', SortingOrder.Descending],
         ['rank', SortingOrder.Ascending]
       ],
-      other: []
+      other: [showAllVersionsOption]
     },
     baseQuery: {
       isLatest: true
@@ -397,6 +411,11 @@ export function createSystemType (
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: type,
     descriptor: card.viewlet.CardGridDescriptor,
+    viewOptions: {
+      groupBy: [],
+      orderBy: [],
+      other: [showAllVersionsOption]
+    },
     baseQuery: {
       isLatest: true
     },
@@ -681,6 +700,11 @@ export function createModel (builder: Builder): void {
         hiddenKeys: ['content', 'title'],
         sortable: true
       },
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [showAllVersionsOption]
+      },
       baseQuery: {
         isLatest: true
       },
@@ -713,7 +737,7 @@ export function createModel (builder: Builder): void {
           ['modifiedOn', SortingOrder.Descending],
           ['rank', SortingOrder.Ascending]
         ],
-        other: []
+        other: [showAllVersionsOption]
       },
       configOptions: {
         hiddenKeys: ['content', 'title']
@@ -739,7 +763,7 @@ export function createModel (builder: Builder): void {
           ['modifiedOn', SortingOrder.Descending],
           ['rank', SortingOrder.Ascending]
         ],
-        other: []
+        other: [showAllVersionsOption]
       },
       configOptions: {
         strict: true,
@@ -782,6 +806,11 @@ export function createModel (builder: Builder): void {
         hiddenKeys: ['content', 'title'],
         sortable: true
       },
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [showAllVersionsOption]
+      },
       baseQuery: {
         isLatest: true
       },
@@ -821,7 +850,7 @@ export function createModel (builder: Builder): void {
           ['rank', SortingOrder.Ascending],
           ['title', SortingOrder.Descending]
         ],
-        other: []
+        other: [showAllVersionsOption]
       }
     },
     card.viewlet.CardGrid

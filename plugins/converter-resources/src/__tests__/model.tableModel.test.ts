@@ -16,6 +16,15 @@
 import type { AttributeModel } from '@hcengineering/view'
 import { modelToConfig } from '../model/tableModel'
 
+jest.mock('@hcengineering/presentation', () => ({
+  getClient: jest.fn(() => ({
+    getModel: jest.fn(() => ({
+      findObject: jest.fn()
+    })),
+    getHierarchy: jest.fn()
+  }))
+}))
+
 jest.mock('@hcengineering/view-resources', () => ({
   buildModel: jest.fn(),
   buildConfigLookup: jest.fn()

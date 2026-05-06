@@ -390,6 +390,8 @@ export default plugin(processId, {
     YearFromDate: '' as Ref<ProcessFunction>,
     MonthFromDate: '' as Ref<ProcessFunction>,
     DayFromDate: '' as Ref<ProcessFunction>,
+    StringFromEnum: '' as Ref<ProcessFunction>,
+    EnumFromString: '' as Ref<ProcessFunction>,
     DateDifference: '' as Ref<ProcessFunction>,
     ExportProcess: '' as Resource<ExportFunc>,
     CheckProcessSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>

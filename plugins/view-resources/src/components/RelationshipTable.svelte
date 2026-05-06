@@ -16,6 +16,7 @@
   import contact, { PermissionsStore } from '@hcengineering/contact'
   import core, {
     AnyAttribute,
+    Association,
     AssociationQuery,
     Class,
     Doc,
@@ -490,9 +491,27 @@
     }
   }
 
+  function isAssociationKey (key: string): boolean {
+    // A valid association key ends with `$associations.{assocId}_{direction}`
+    // Sub-field keys like `$associations.assocId_b.fieldName` should NOT be treated as associations
+    const parts = key.split('.')
+    // Find the last $associations segment
+    let lastAssocIdx = -1
+    for (let i = 0; i < parts.length; i++) {
+      if (parts[i] === '$associations') {
+        lastAssocIdx = i
+      }
+    }
+    if (lastAssocIdx === -1) return false
+    // The association identifier should be right after the last $associations
+    // and there should be no additional parts after it
+    return lastAssocIdx + 1 === parts.length - 1
+  }
+
   function getAssociations (model: AttributeModel[], associationId?: string): string[] {
     return model
       .filter((p) => {
+        if (!isAssociationKey(p.key)) return false
         if (associationId) {
           return (
             p.key.startsWith(`${associationId}.${assoc}`) &&
@@ -533,7 +552,18 @@
   function clickHandler (e: MouseEvent, cell: CellModel): void {
     if (cell.parentObject === undefined) return
     const parts = cell.attribute.key.split('$associations.')
-    const association = parts.pop()
+    let association = parts.pop()
+    if (association === undefined) return
+    // Strip sub-field suffix if present (e.g., 'assocId_b.name' -> 'assocId_b')
+    const dotIndex = association.indexOf('.')
+    if (dotIndex !== -1) {
+      association = association.substring(0, dotIndex)
+    }
+    const p = association.split('_')
+    const associationId = p[0] as Ref<Association>
+    const assoc = client.getModel().findObject(associationId)
+    if (assoc === undefined) return
+    if (assoc.automationOnly === true) return
     showPopup(
       RelationsSelectorPopup,
       {
