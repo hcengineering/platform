@@ -37,7 +37,8 @@ import {
   cardFactory,
   duplicateCard,
   checkChildrenSectionVisibility,
-  createChildAction
+  createChildAction,
+  showAllVersions
 } from './utils'
 import { formatCardValue } from './cardTableFormatter'
 import CardGridView from './components/CardGridView.svelte'
@@ -77,7 +78,6 @@ import PropertiesCardSection from './components/sections/PropertiesSection.svelt
 import RelationsCardSection from './components/sections/RelationsSection.svelte'
 import CardCommunicatiomMessages from './components/sections/CardCommunicatiomMessages.svelte'
 import OldMessagesCardSection from './components/sections/OldMessagesCardSection.svelte'
-import MarkupPropertiesCardSection from './components/sections/MarkupPropertiesSection.svelte'
 
 import FavoriteCardPresenter from './components/FavoriteCardPresenter.svelte'
 import CardTagsColored from './components/CardTagsColored.svelte'
@@ -150,8 +150,7 @@ export default async (): Promise<Resources> => ({
     PropertiesSection: PropertiesCardSection,
     RelationsSection: RelationsCardSection,
     OldMessagesSection: OldMessagesCardSection,
-    CommunicationMessagesSection: CardCommunicatiomMessages,
-    MarkupPropertiesSection: MarkupPropertiesCardSection
+    CommunicationMessagesSection: CardCommunicatiomMessages
   },
   completion: {
     CardQuery: queryCard
@@ -179,6 +178,7 @@ export default async (): Promise<Resources> => ({
     GetSpaceAccessPublicLink: getSpaceAccessPublicLink,
     CanGetSpaceAccessPublicLink: canGetSpaceAccessPublicLink,
     CardFactory: cardFactory,
-    FormatCardMarkdownValue: formatCardValue
+    FormatCardMarkdownValue: formatCardValue,
+    ShowAllVersions: showAllVersions
   }
 })

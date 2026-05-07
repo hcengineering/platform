@@ -886,3 +886,7 @@ export function getPersonByPersonRefStore (
 ): Readable<Map<Ref<Person>, Readonly<Person>>> {
   return contactCacheStoreManager.getPersonByPersonRefStore(personRefs)
 }
+
+export function hideInactive (value: any, query: DocumentQuery<Doc>): DocumentQuery<Doc> {
+  return value === true ? { ...query, active: true } : query
+}

@@ -1,0 +1,30 @@
+{
+    "status": {
+        "LoadingPlugin": "{plugin} 플러그인 로딩 중...",
+        "UnknownError": "알 수 없는 오류: {message}",
+        "InvalidId": "잘못된 ID: {id}",
+        "BadRequest": "잘못된 요청",
+        "Forbidden": "접근 권한이 없습니다",
+        "Conflict": "충돌",
+        "ExpiredLink": "만료된 초대 링크입니다",
+        "Unauthorized": "인증되지 않음",
+        "UnknownMethod": "알 수 없는 메서드: {method}",
+        "InternalServerError": "서버 내부 오류",
+        "MaintenanceWarning": "점검 예정 시각",
+        "MaintenanceWarningTime": "{time, plural, =1 {1분 이내} other {#분 후}}",
+        "AccountNotFound": "계정을 찾을 수 없거나 인증 정보가 올바르지 않습니다",
+        "AccountNotConfirmed": "확인되지 않은 계정입니다",
+        "WorkspaceNotFound": "워크스페이스를 찾을 수 없습니다",
+        "AccountAlreadyExists": "이미 존재하는 계정입니다",
+        "WorkspaceRateLimit": "서버가 혼잡합니다. 잠시 후 다시 시도해 주세요",
+        "AccountAlreadyConfirmed": "이미 확인된 계정입니다",
+        "WorkspaceAlreadyExists": "이미 존재하는 워크스페이스입니다",
+        "InvalidOtp": "잘못된 코드",
+        "PasswordLoginLocked": "로그인 시도가 너무 많아 비밀번호 로그인이 잠겼습니다. OTP 로그인으로 계정 잠금을 해제하세요.",
+        "InviteNotFound": "{email}로 보낸 초대를 찾을 수 없습니다.",
+        "WorkspaceLimitReached": "워크스페이스 한도에 도달했습니다. 문의해 주세요...",
+        "ReadOnlyAccount": "익명 게스트 데모",
+        "SystemAccount": "시스템 계정",
+        "SocialIdAlreadyExists": "이미 존재하는 소셜 ID입니다"
+    }
+}

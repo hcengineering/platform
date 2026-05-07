@@ -26,6 +26,10 @@ jest.mock('@hcengineering/platform', () => {
   }
 })
 
+jest.mock('@hcengineering/presentation', () => ({
+  getClient: jest.fn()
+}))
+
 jest.mock('../data/personLoader', () => ({
   loadPersonName: jest.fn(async (personId: string) => personId)
 }))

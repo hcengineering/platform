@@ -84,6 +84,7 @@
     "SingleColumn": "Single column",
     "TwoColumns": "Two columns",
     "Grid": "Grid",
-    "RichtextProperties": "Richtext Properties"
+    "RichtextProperties": "Richtext Properties",
+    "ShowAllVersions": "Show all versions"
   }
 }
