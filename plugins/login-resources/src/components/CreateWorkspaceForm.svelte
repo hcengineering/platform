@@ -41,8 +41,6 @@
   let loginInfo: LoginInfo | null | undefined
   let regions: RegionInfo[] = []
   let selectedRegion: string = ''
-  // Default-on, mirrors current platform behavior. If the user opts out we send
-  // `withDemoContent: false` and workspace-service skips the init script.
   let withDemoContent: boolean = true
 
   onMount(async () => {

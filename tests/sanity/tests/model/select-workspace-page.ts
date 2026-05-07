@@ -18,9 +18,6 @@ export class SelectWorkspacePage extends CommonPage {
   createAnotherWorkspace = (): Locator => this.page.getByRole('link', { name: 'Create workspace' })
   workspaceLogo = (): Locator => this.page.getByText('N', { exact: true })
   workspaceList = (workspaceName: string): Locator => this.page.getByRole('button', { name: workspaceName })
-
-  // Inline demo-content toggle on the create-workspace form. Wrapping <label>
-  // contains the descriptive text and Toggle's hidden <input type="checkbox">.
   createSampleProjectsToggle = (): Locator =>
     this.page.locator('label', { hasText: 'Create sample projects and demo content' }).locator('input[type="checkbox"]')
 
