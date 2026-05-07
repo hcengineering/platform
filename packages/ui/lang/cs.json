@@ -49,6 +49,7 @@
         "DueDatePopupOverdueDescription": "{value, plural, =1 {1 den po termínu} other {# dní po termínu}}",
         "English": "English",
         "Russian": "Русский",
+        "Polish": "Polski",
         "Portuguese": "Português",
         "PortugueseBrazil": "Português (Brasil)",
         "Spanish": "Español",
