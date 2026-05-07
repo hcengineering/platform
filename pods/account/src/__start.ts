@@ -4,13 +4,9 @@
 import { serveAccount } from '@hcengineering/account-service'
 import { Analytics } from '@hcengineering/analytics'
 import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
-import { newMetrics, type Tx } from '@hcengineering/core'
-import builder from '@hcengineering/model-all'
+import { newMetrics } from '@hcengineering/core'
 import { initStatisticsContext, loadBrandingMap } from '@hcengineering/server-core'
 import { join } from 'path'
-
-// Build the platform model once at startup.
-const txes = JSON.parse(JSON.stringify(builder().getTxes())) as Tx[]
 
 configureAnalytics('account', process.env.VERSION ?? '0.7.0')
 Analytics.setTag('application', 'account')
@@ -31,4 +27,4 @@ const metricsContext = initStatisticsContext('account', {
 
 const brandingPath = process.env.BRANDING_PATH
 
-serveAccount(metricsContext, loadBrandingMap(brandingPath), txes, () => {})
+serveAccount(metricsContext, loadBrandingMap(brandingPath), () => {})

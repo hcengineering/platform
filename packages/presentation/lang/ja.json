@@ -56,8 +56,7 @@
     "LineTool": "直線",
     "RectangleTool": "長方形",
     "EllipseTool": "楕円",
-    "PaletteManagementMenu": "カラープリセットを管理",
-    "BetaVersion": "ベータ版"
+    "PaletteManagementMenu": "カラープリセットを管理"
   },
   "status": {
     "FileTooLarge": "ファイルサイズが大きすぎます"

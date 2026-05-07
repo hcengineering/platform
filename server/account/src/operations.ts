@@ -20,7 +20,6 @@ import {
   type Branding,
   buildSocialIdString,
   concatLink,
-  type Data,
   isActiveMode,
   isDeletingMode,
   isWorkspaceCreating,
@@ -29,7 +28,6 @@ import {
   type Person,
   type PersonId,
   type PersonUuid,
-  type PluginConfiguration,
   SocialIdType,
   systemAccountUuid,
   readOnlyGuestAccountUuid,
@@ -42,10 +40,6 @@ import platform, { getMetadata, PlatformError, Severity, Status, translate } fro
 import { decodeToken, decodeTokenVerbose, generateToken, type PermissionsGrant } from '@hcengineering/server-token'
 
 import { isAdminEmail } from './admin'
-import {
-  getDefaultPluginConfigurations as getDefaultPluginConfigurationsSnapshot,
-  validateWorkspaceConfiguration
-} from './defaultPluginConfigurations'
 import { accountPlugin } from './plugin'
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
 import {
@@ -604,10 +598,13 @@ export async function createWorkspace (
     )
   }
 
-  // Sanitize the client-provided configuration: drops unknown / system / hidden
-  // pluginIds in `disabledPlugins`. Returns `undefined` if there is nothing left
-  // to apply, in which case we behave exactly like a legacy createWorkspace call.
-  const pendingConfiguration = validateWorkspaceConfiguration(configuration)
+  // Persist the client-provided configuration as-is. The only currently
+  // supported field is `withDemoContent`; future fields can be added without
+  // changing the wire shape.
+  const pendingConfiguration =
+    configuration?.withDemoContent !== undefined
+      ? { withDemoContent: configuration.withDemoContent }
+      : undefined
 
   const { workspaceUuid, workspaceUrl } = await createWorkspaceRecord(
     ctx,
@@ -1857,25 +1854,6 @@ export async function getRegionInfo (
   token: string
 ): Promise<RegionInfo[]> {
   return getRegions()
-}
-
-/**
- * Returns the list of `PluginConfiguration` documents that will be created in the
- * model of any new workspace (filtered to non-system, non-hidden plugins). Used by
- * the workspace creation UI to render module toggles before the workspace exists.
- *
- * The snapshot is built from the platform model at service startup
- * ({@link initDefaultPluginConfigurations}); returns `null` only if the snapshot
- * was never initialized (older account-pod that doesn't pass `txes`). The
- * frontend treats `null` as "fall back to platform defaults".
- */
-export async function getDefaultPluginConfigurations (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string
-): Promise<Data<PluginConfiguration>[] | null> {
-  return getDefaultPluginConfigurationsSnapshot()
 }
 
 export async function getUserWorkspaces (
@@ -3265,7 +3243,6 @@ export type AccountMethods =
   | 'disable2fa'
   | 'verify2fa'
   | 'getRegionInfo'
-  | 'getDefaultPluginConfigurations'
   | 'getUserWorkspaces'
   | 'getWorkspaceInfo'
   | 'getWorkspacesInfo'
@@ -3376,7 +3353,6 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
-    getDefaultPluginConfigurations: wrap(getDefaultPluginConfigurations),
     getUserWorkspaces: wrap(getUserWorkspaces),
     getWorkspaceInfo: wrap(getWorkspaceInfo),
     getWorkspacesInfo: wrap(getWorkspacesInfo),

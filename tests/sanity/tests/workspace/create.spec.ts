@@ -149,7 +149,7 @@ test.describe('Workspace tests', () => {
     }
   })
 
-  test('Create a workspace without demo content (Customize → withDemoContent: false)', async ({ page }) => {
+  test('Create a workspace without demo content (withDemoContent: false)', async ({ page }) => {
     const newUser: SignUpData = {
       firstName: `FirstName-${generateId()}`,
       lastName: `LastName-${generateId()}`,
@@ -160,34 +160,13 @@ test.describe('Workspace tests', () => {
     await loginPage.goto()
     await loginPage.clickSignUp()
     await signUpPage.signUp(newUser)
-    await selectWorkspacePage.createWorkspaceCustomized(newWorkspaceName, { withDemoContent: false })
+    await selectWorkspacePage.createWorkspaceWithoutDemoContent(newWorkspaceName)
 
     // The init script normally seeds a "Default" project in Tracker. With demo
     // content disabled, no sample project should be created — so navigating to
     // Tracker should not show the canned project list.
     await leftSideMenuPage.clickTracker()
     await trackerNavigationMenuPage.checkProjectNotExist('Default')
-  })
-
-  test('Create a workspace with a module disabled (Customize → disabledPlugins includes Tracker)', async () => {
-    const newUser: SignUpData = {
-      firstName: `FirstName-${generateId()}`,
-      lastName: `LastName-${generateId()}`,
-      email: `sanity-email+${generateId()}@gmail.com`,
-      password: '1234'
-    }
-    const newWorkspaceName = `WS No Tracker - ${generateId(2)}`
-    await loginPage.goto()
-    await loginPage.clickSignUp()
-    await signUpPage.signUp(newUser)
-    await selectWorkspacePage.createWorkspaceCustomized(newWorkspaceName, {
-      disableModuleLabels: ['Tracker']
-    })
-
-    // Tracker has been disabled at workspace creation; the icon should not
-    // appear in the left sidebar. The user can still re-enable it later via
-    // /setting/setting/configuration.
-    await leftSideMenuPage.checkTrackerNotVisible()
   })
 
   test('Create a workspace with join link - existing account', async ({ page, browser }) => {

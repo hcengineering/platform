@@ -23,7 +23,6 @@ import {
   type PersonId,
   type PersonInfo,
   type PersonUuid,
-  type PluginConfiguration,
   type SocialIdType,
   Version,
   type UsageStatus,
@@ -141,7 +140,6 @@ export interface AccountClient {
     region?: string,
     configuration?: WorkspaceConfiguration
   ) => Promise<WorkspaceLoginInfo>
-  getDefaultPluginConfigurations: () => Promise<Data<PluginConfiguration>[] | null>
   signUpOtp: (email: string, first: string, last: string) => Promise<OtpInfo>
   /**
    * Deprecated. Only to be used for dev setups without mail service.
@@ -683,15 +681,6 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'createWorkspace' as const,
       params: { workspaceName, region, configuration }
-    }
-
-    return await this.rpc(request)
-  }
-
-  async getDefaultPluginConfigurations (): Promise<Data<PluginConfiguration>[] | null> {
-    const request = {
-      method: 'getDefaultPluginConfigurations' as const,
-      params: {}
     }
 
     return await this.rpc(request)

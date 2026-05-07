@@ -13,35 +13,7 @@
 // limitations under the License.
 //
 
-import core, { type MeasureContext, type TxOperations, type WorkspaceConfiguration } from '@hcengineering/core'
-import type { Plugin } from '@hcengineering/platform'
-
-/**
- * Applies the user's initial-state choices captured at workspace creation to a
- * freshly-initialized workspace. Currently only honors `disabledPlugins`:
- * marks each requested `core.class.PluginConfiguration` as `enabled: false`.
- * @public
- */
-export async function applyWorkspaceConfiguration (
-  ctx: MeasureContext,
-  client: TxOperations,
-  config: WorkspaceConfiguration | null | undefined
-): Promise<void> {
-  const disabledPlugins = config?.disabledPlugins
-  if (disabledPlugins === undefined || disabledPlugins === null || disabledPlugins.length === 0) {
-    return
-  }
-
-  const requested = new Set<Plugin>(disabledPlugins)
-  const allConfigs = await client.findAll(core.class.PluginConfiguration, {})
-
-  for (const pc of allConfigs) {
-    if (!requested.has(pc.pluginId)) continue
-    if (pc.system === true) continue
-    if (!pc.enabled) continue
-    await client.update(pc, { enabled: false })
-  }
-}
+import { type WorkspaceConfiguration } from '@hcengineering/core'
 
 /**
  * Returns whether the workspace init script should be executed for a freshly

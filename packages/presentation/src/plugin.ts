@@ -158,8 +158,7 @@ export default plugin(presentationId, {
     LineTool: '' as IntlString,
     RectangleTool: '' as IntlString,
     EllipseTool: '' as IntlString,
-    PaletteManagementMenu: '' as IntlString,
-    BetaVersion: '' as IntlString
+    PaletteManagementMenu: '' as IntlString
   },
   extension: {
     FilePreviewExtension: '' as ComponentExtensionId,

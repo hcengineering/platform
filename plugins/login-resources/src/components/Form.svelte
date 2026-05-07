@@ -171,6 +171,8 @@
       </div>
     {/each}
 
+    <slot name="extra-fields" />
+
     <div class="status">
       <StatusControl {status} />
     </div>

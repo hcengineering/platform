@@ -14,16 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type RegionInfo, type WorkspaceConfiguration } from '@hcengineering/account-client'
+  import { type RegionInfo } from '@hcengineering/account-client'
   import { OK, Severity, Status, getEmbeddedLabel } from '@hcengineering/platform'
   import { LoginInfo } from '@hcengineering/login'
-  import { ButtonMenu, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { ButtonMenu, Label, MiniToggle, getCurrentLocation, navigate } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import login from '../plugin'
   import { createWorkspace, getAccount, getRegionInfo, goTo, setLoginInfo, getAccountDisplayName } from '../utils'
   import Form from './Form.svelte'
-  import WorkspaceConfigurationStep from './WorkspaceConfigurationStep.svelte'
 
   const fields = [
     {
@@ -42,10 +41,9 @@
   let loginInfo: LoginInfo | null | undefined
   let regions: RegionInfo[] = []
   let selectedRegion: string = ''
-
-  // When `customizing` is true, the user has expanded the optional second step (modules + demo content).
-  let customizing: boolean = false
-  let configuration: WorkspaceConfiguration = {}
+  // Default-on, mirrors current platform behavior. If the user opts out we send
+  // `withDemoContent: false` and workspace-service skips the init script.
+  let withDemoContent: boolean = true
 
   onMount(async () => {
     loginInfo = await getAccount()
@@ -61,82 +59,67 @@
     }
   })
 
-  async function submit (effectiveConfig: WorkspaceConfiguration | undefined): Promise<void> {
-    status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
-
-    const [loginStatus, result] = await createWorkspace(object.workspace, selectedRegion ?? '', effectiveConfig)
-    status = loginStatus
-
-    if (result != null) {
-      setLoginInfo(result as any)
-      navigate({ path: [workbenchId, result.workspaceUrl] })
-    }
-  }
-
   const action = {
     i18n: login.string.CreateWorkspace,
     func: async () => {
-      await submit(undefined)
+      status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
+
+      const [loginStatus, result] = await createWorkspace(object.workspace, selectedRegion ?? '', {
+        withDemoContent
+      })
+      status = loginStatus
+
+      if (result != null) {
+        setLoginInfo(result as any)
+        navigate({ path: [workbenchId, result.workspaceUrl] })
+      }
     }
-  }
-
-  function openCustomize (): void {
-    customizing = true
-  }
-
-  function closeCustomize (): void {
-    customizing = false
-  }
-
-  async function customizeDone (event: CustomEvent<{ configuration: WorkspaceConfiguration }>): Promise<void> {
-    configuration = event.detail.configuration
-    customizing = false
-    await submit(configuration)
   }
 </script>
 
-{#if customizing}
-  <WorkspaceConfigurationStep
-    bind:configuration
-    bind:workspaceName={object.workspace}
-    on:back={closeCustomize}
-    on:done={customizeDone}
-  />
-{:else}
-  <Form
-    caption={login.string.CreateWorkspace}
-    {status}
-    {fields}
-    {object}
-    {action}
-    subtitle={getAccountDisplayName(loginInfo)}
-    secondaryButtonLabel={login.string.CustomizeWorkspace}
-    secondaryButtonAction={openCustomize}
-    bottomActions={[
-      {
-        caption: login.string.HaveWorkspace,
-        i18n: login.string.SelectWorkspace,
-        page: 'selectWorkspace',
-        func: () => {
-          goTo('selectWorkspace')
-        }
+<Form
+  caption={login.string.CreateWorkspace}
+  {status}
+  {fields}
+  {object}
+  {action}
+  subtitle={getAccountDisplayName(loginInfo)}
+  bottomActions={[
+    {
+      caption: login.string.HaveWorkspace,
+      i18n: login.string.SelectWorkspace,
+      page: 'selectWorkspace',
+      func: () => {
+        goTo('selectWorkspace')
       }
-    ]}
-  >
-    <svelte:fragment slot="region-selector">
-      {#if regions.length > 1}
-        <div class="flex flex-grow flex-reverse">
-          <ButtonMenu
-            bind:selected={selectedRegion}
-            autoSelectionIfOne
-            title={regions.find((it) => it.region === selectedRegion)?.name}
-            items={regions.map((it) => ({ id: it.region, label: getEmbeddedLabel(it.name) }))}
-            on:selected={(it) => {
-              selectedRegion = it.detail
-            }}
-          />
-        </div>
-      {/if}
-    </svelte:fragment>
-  </Form>
-{/if}
+    }
+  ]}
+>
+  <svelte:fragment slot="region-selector">
+    {#if regions.length > 1}
+      <div class="flex flex-grow flex-reverse">
+        <ButtonMenu
+          bind:selected={selectedRegion}
+          autoSelectionIfOne
+          title={regions.find((it) => it.region === selectedRegion)?.name}
+          items={regions.map((it) => ({ id: it.region, label: getEmbeddedLabel(it.name) }))}
+          on:selected={(it) => {
+            selectedRegion = it.detail
+          }}
+        />
+      </div>
+    {/if}
+  </svelte:fragment>
+  <svelte:fragment slot="extra-fields">
+    <div class="demo-toggle flex-row-center">
+      <MiniToggle bind:on={withDemoContent} label={login.string.CreateSampleProjects} />
+    </div>
+  </svelte:fragment>
+</Form>
+
+<style lang="scss">
+  .demo-toggle {
+    margin: 0.5rem 0 0;
+    color: var(--theme-content-color);
+  }
+</style>

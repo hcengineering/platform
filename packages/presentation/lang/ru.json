@@ -56,8 +56,7 @@
     "LineTool": "Линия",
     "RectangleTool": "Прямоугольник",
     "EllipseTool": "Эллипс",
-    "PaletteManagementMenu": "Управление цветовыми пресетами",
-    "BetaVersion": "Бета-версия"
+    "PaletteManagementMenu": "Управление цветовыми пресетами"
   },
   "status": {
     "FileTooLarge": "Файл слишком большой"

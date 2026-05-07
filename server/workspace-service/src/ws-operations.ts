@@ -30,7 +30,7 @@ import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/ser
 import { generateToken } from '@hcengineering/server-token'
 import { initializeWorkspace, initModel, prepareTools, updateModel, upgradeModel } from '@hcengineering/server-tool'
 
-import { applyWorkspaceConfiguration, shouldRunInitScript } from './configuration'
+import { shouldRunInitScript } from './configuration'
 
 /**
  * @public
@@ -118,7 +118,6 @@ export async function createWorkspace (
       )
 
       const pendingConfiguration = workspaceInfo.pendingConfiguration ?? null
-      await applyWorkspaceConfiguration(childLogger, client, pendingConfiguration)
 
       if (shouldRunInitScript(pendingConfiguration)) {
         ctx.info('Starting init script if any')

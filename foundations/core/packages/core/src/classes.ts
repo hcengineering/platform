@@ -899,10 +899,13 @@ export type WorkspaceUpdateEvent =
   | 'delete-done'
 
 /**
- * Initial-state configuration captured at workspace creation: which apps to
- * disable on first run and whether to populate with demo content. Lives on
- * `WorkspaceInfo.pendingConfiguration` until consumed by workspace-service
+ * Initial-state configuration captured at workspace creation. Currently only
+ * carries whether the workspace should be populated with demo content. Lives
+ * on `WorkspaceInfo.pendingConfiguration` until consumed by workspace-service
  * after model init, then cleared back to `null`.
+ *
+ * Kept as a struct (rather than a bare boolean) so future opt-in fields can
+ * be added without breaking the wire format.
  *
  * @public
  */
@@ -912,13 +915,6 @@ export interface WorkspaceConfiguration {
    * Defaults to `true` on the server side to preserve legacy behavior.
    */
   withDemoContent?: boolean
-
-  /**
-   * List of `pluginId`s to mark as `enabled: false` in the new workspace's
-   * `core.class.PluginConfiguration` documents right after model initialization.
-   * Only non-system, non-hidden plugins are honored; unknown ids are ignored.
-   */
-  disabledPlugins?: Plugin[]
 }
 
 export interface WorkspaceInfo {

@@ -33,9 +33,7 @@ import {
   concatLink,
   getCurrentAccount,
   type AccountUuid,
-  type Data,
   type Person,
-  type PluginConfiguration,
   type WorkspaceUuid,
   type WorkspaceInfoWithStatus,
   type WorkspaceUserOperation
@@ -412,26 +410,6 @@ export async function getRegionInfo (doNavigate: boolean = true): Promise<Region
 
       return null
     }
-  }
-}
-
-/**
- * Returns the platform's default `PluginConfiguration` set (filtered to
- * non-system, non-hidden plugins).
- *
- * Returns `null` when the list cannot be obtained.
- */
-export async function getDefaultPluginConfigurations (): Promise<Array<Data<PluginConfiguration>> | null> {
-  const token = getMetadata(presentation.metadata.Token)
-  try {
-    return await getAccountClient(token ?? undefined).getDefaultPluginConfigurations()
-  } catch (err: any) {
-    if (err instanceof PlatformError) {
-      await handleStatusError('Get default plugin configurations error', err.status)
-    } else {
-      Analytics.handleError(err)
-    }
-    return null
   }
 }
 
