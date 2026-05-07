@@ -87,7 +87,7 @@ export function defineMethods (builder: Builder): void {
       editor: process.component.CreateCardEditor,
       presenter: process.component.CreateCardPresenter,
       createdContext: { _class: card.class.Card },
-      requiredParams: ['title', '_class']
+      requiredParams: ['title', 'targetClass']
     },
     process.method.CreateCard
   )

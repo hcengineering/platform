@@ -149,6 +149,7 @@
     "WorkspaceStatusIn1Hour": "Za 1 hodinu",
     "WorkspaceStatusIn4Hours": "Za 4 hodiny",
     "WorkspaceStatusEndOfDay": "Do konce dne",
-    "WorkspaceStatusPickDate": "Vyberte datum"
+    "WorkspaceStatusPickDate": "Vyberte datum",
+    "HideInactive": "Skrýt neaktivní"
   }
 }

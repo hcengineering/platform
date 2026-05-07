@@ -149,6 +149,7 @@
     "WorkspaceStatusIn1Hour": "Через 1 час",
     "WorkspaceStatusIn4Hours": "Через 4 часа",
     "WorkspaceStatusEndOfDay": "До конца дня",
-    "WorkspaceStatusPickDate": "Выбрать дату"
+    "WorkspaceStatusPickDate": "Выбрать дату",
+    "HideInactive": "Скрыть неактивных"
   }
 }

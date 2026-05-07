@@ -17,6 +17,7 @@ import { SelectPopup, showPopup, type PopupAlignment } from '@hcengineering/ui'
 import { type Editor, type Attribute } from '@tiptap/core'
 
 import { type ActionContext } from '@hcengineering/text-editor'
+import { hideTextEditorToolbar } from './components/extension/toolbar/toolbar'
 import { mInsertTable } from './components/extensions'
 import LinkPopup from './components/LinkPopup.svelte'
 
@@ -76,6 +77,7 @@ export async function isHeadingVisible (editor: Editor, ctx: ActionContext): Pro
 }
 
 export async function formatLink (editor: Editor): Promise<void> {
+  hideTextEditorToolbar(editor)
   const link = editor.getAttributes('link').href
 
   // give editor some time to handle blur event

@@ -800,6 +800,24 @@ export function createModel (builder: Builder): void {
   builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
     category: 'attribute',
     editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeMarkup,
+    props: {
+      modes: ['StringContains', 'Exists']
+    }
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'inplace',
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeMarkup,
+    props: {
+      modes: ['StringContains', 'Exists']
+    }
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.BaseCriteria,
     of: core.class.TypeHyperlink,
     props: {
       modes: ['Equal', 'StringContains', 'Exists']

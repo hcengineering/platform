@@ -166,7 +166,12 @@
     "MonthFromDate": "Tarihten ay",
     "DayFromDate": "Tarihten gün",
     "DateDifference": "Tarih farkı",
-    "EmptyValue": "Boş değer"
+    "EmptyValue": "Boş değer",
+    "TextFromMarkup": "Metinden işaretleme",
+    "MarkupFromText": "İşaretlemeden metin",
+    "TextFromSelect": "Seçimden metin",
+    "SelectFromText": "Metinden seçim",
+    "AskSubclass": "Alt sınıfı sor"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

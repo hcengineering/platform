@@ -106,6 +106,7 @@ import {
   Insert,
   LastValue,
   LowerCase,
+  MarkupFromString,
   Max,
   Min,
   Modulo,
@@ -128,11 +129,14 @@ import {
   Sqrt,
   StringFromBoolean,
   StringFromDate,
+  StringFromMarkup,
   StringFromNumber,
   Subtract,
   Trim,
   UpperCase,
-  YearFromDate
+  YearFromDate,
+  StringFromEnum,
+  EnumFromString
 } from './transform'
 
 async function putEventToQueue (value: Omit<ProcessMessage, 'account'>, control: TriggerControl): Promise<void> {
@@ -793,7 +797,11 @@ export default async () => ({
     DayFromDate,
     DateDifference,
     Min,
-    Max
+    Max,
+    StringFromMarkup,
+    MarkupFromString,
+    StringFromEnum,
+    EnumFromString
   },
   rollbacks: {
     ToDoCloseRollback,

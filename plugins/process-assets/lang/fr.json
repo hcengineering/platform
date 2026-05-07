@@ -171,7 +171,12 @@
     "MonthFromDate": "Mois depuis date",
     "DayFromDate": "Jour depuis date",
     "DateDifference": "Différence de dates",
-    "EmptyValue": "Valeur vide"
+    "EmptyValue": "Valeur vide",
+    "TextFromMarkup": "Texte depuis markup",
+    "MarkupFromText": "Markup depuis texte",
+    "TextFromSelect": "Texte depuis sélection",
+    "SelectFromText": "Sélection depuis texte",
+    "AskSubclass": "Demander la sous-classe"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",
