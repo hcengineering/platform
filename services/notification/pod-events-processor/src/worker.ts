@@ -14,14 +14,18 @@
 //
 
 import contact from '@hcengineering/contact'
-import { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
+import core, { type MeasureContext, type Ref, type WorkspaceUuid } from '@hcengineering/core'
 import type { ConsumerControl } from '@hcengineering/server-core'
-import notification from '@hcengineering/notification'
+import notification, { type CommonInboxNotification, type DocNotifyContext } from '@hcengineering/notification'
 import modelTime from '@hcengineering/model-time'
 import { jsonToMarkup, nodeDoc, nodeParagraph, nodeText } from '@hcengineering/text-core'
 import time from '@hcengineering/time'
 import { getClient } from './client'
 import type { ScheduledNotificationMessage } from './types'
+
+export function buildReminderNotificationId (timerId: string): Ref<CommonInboxNotification> {
+  return `todoReminderInbox:${timerId}` as Ref<CommonInboxNotification>
+}
 
 export async function handleScheduledNotification (
   ctx: MeasureContext,
@@ -54,57 +58,93 @@ export async function handleScheduledNotification (
   const objectClass = todo._class
   const objectSpace = todo.space
 
-  // Ensure doc notify context exists.
-  let docNotifyContext = await client.findOne(notification.class.DocNotifyContext, { objectId, user })
-  if (docNotifyContext === undefined) {
-    const id = await client.createDoc(notification.class.DocNotifyContext, space._id, {
-      objectId,
-      objectClass,
-      objectSpace,
-      user,
-      isPinned: false,
-      hidden: false
-    })
-    docNotifyContext = await client.findOne(
-      notification.class.DocNotifyContext,
-      { _id: id },
-      { projection: { _id: 1 } }
-    )
-    if (docNotifyContext === undefined) return
-  }
-
-  // Idempotency: if this timer already created a notification, skip.
-  // We key by (docNotifyContext,user,msg.id) via intlParams; this avoids needing deterministic _id.
-  const existing = await client.findOne(notification.class.CommonInboxNotification, {
-    docNotifyContext: docNotifyContext._id,
-    user,
-    'intlParams.timerId': msg.id
-  } as any)
+  // Idempotency: short-circuit if a notification for this exact timer was already created.
+  const notificationId = buildReminderNotificationId(msg.id)
+  const existing = await client.findOne(
+    notification.class.CommonInboxNotification,
+    { _id: notificationId },
+    { projection: { _id: 1 } }
+  )
   if (existing !== undefined) return
 
+  // Ensure doc notify context exists.
+  let docNotifyContext: Pick<DocNotifyContext, '_id'> | undefined = await client.findOne(
+    notification.class.DocNotifyContext,
+    { objectId, user },
+    { projection: { _id: 1 } }
+  )
+  if (docNotifyContext === undefined) {
+    try {
+      const id = await client.createDoc(
+        notification.class.DocNotifyContext,
+        space._id,
+        {
+          objectId,
+          objectClass,
+          objectSpace,
+          user,
+          isPinned: false,
+          hidden: false
+        },
+        undefined,
+        undefined,
+        core.account.System
+      )
+      docNotifyContext = { _id: id }
+    } catch (err) {
+      ctx.error('Failed to create DocNotifyContext for todo reminder', {
+        err,
+        timerId: msg.id,
+        workSlotId: msg.workSlotId,
+        todoId: msg.todoId,
+        spaceId: space._id,
+        user
+      })
+      throw err
+    }
+  }
+
   await control.heartbeat()
-  await client.createDoc(notification.class.CommonInboxNotification, space._id, {
-    user,
-    objectId,
-    objectClass,
-    icon: time.icon.Planned,
-    header: time.string.ToDo,
-    message: time.string.ToDo,
-    messageHtml: jsonToMarkup(nodeDoc(nodeParagraph(nodeText(todo.title)))),
-    intlParams: {
-      timerId: msg.id
-    },
-    types: [modelTime.ids.ToDoReminder],
-    isViewed: false,
-    archived: false,
-    docNotifyContext: docNotifyContext._id
-  } as any)
+  try {
+    await client.createDoc(
+      notification.class.CommonInboxNotification,
+      space._id,
+      {
+        user,
+        objectId,
+        objectClass,
+        headerIcon: time.icon.Planned,
+        header: time.string.ToDo,
+        message: time.string.ToDo,
+        messageHtml: jsonToMarkup(nodeDoc(nodeParagraph(nodeText(todo.title ?? '')))),
+        types: [modelTime.ids.ToDoReminder],
+        isViewed: false,
+        archived: false,
+        docNotifyContext: docNotifyContext._id
+      },
+      notificationId,
+      undefined,
+      core.account.System
+    )
+  } catch (err) {
+    ctx.error('Failed to create CommonInboxNotification for todo reminder', {
+      err,
+      timerId: msg.id,
+      workSlotId: msg.workSlotId,
+      todoId: msg.todoId,
+      notificationId,
+      spaceId: space._id,
+      user
+    })
+    throw err
+  }
 
   ctx.info('Scheduled notification created', {
     kind: msg.kind,
     id: msg.id,
     workSlotId: msg.workSlotId,
     todoId: msg.todoId,
+    notificationId,
     user,
     spaceId: space._id
   })

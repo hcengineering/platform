@@ -14,14 +14,15 @@
 //
 
 import { type PersonId, type WorkspaceUuid } from '@hcengineering/core'
-import { LRUCache } from 'lru-cache'
 import type { ClientBundle } from './client'
 import config from './config'
 
-const clientCache = new LRUCache<string, ClientBundle>({
-  ttl: config.ClientCacheTtlMs,
-  ttlAutopurge: true
-})
+interface CacheEntry {
+  value: ClientBundle
+  expiresAt: number
+}
+
+const clientCache = new Map<string, CacheEntry>()
 const inFlightClientCreations = new Map<string, Promise<ClientBundle>>()
 
 export function getCacheKey (workspaceUuid: WorkspaceUuid, socialId: PersonId | undefined, serviceTag: string): string {
@@ -34,7 +35,13 @@ export function getCachedClient (
   serviceTag: string
 ): ClientBundle | undefined {
   const key = getCacheKey(workspaceUuid, socialId, serviceTag)
-  return clientCache.get(key)
+  const entry = clientCache.get(key)
+  if (entry === undefined) return undefined
+  if (entry.expiresAt <= Date.now()) {
+    clientCache.delete(key)
+    return undefined
+  }
+  return entry.value
 }
 
 export function setCachedClient (
@@ -44,7 +51,7 @@ export function setCachedClient (
   value: ClientBundle
 ): void {
   const key = getCacheKey(workspaceUuid, socialId, serviceTag)
-  clientCache.set(key, value)
+  clientCache.set(key, { value, expiresAt: Date.now() + config.ClientCacheTtlMs })
 }
 
 export function getInFlightClientCreation (key: string): Promise<ClientBundle> | undefined {

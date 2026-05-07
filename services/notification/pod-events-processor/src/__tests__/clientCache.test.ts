@@ -57,10 +57,10 @@ describe('clientCache', () => {
 
   it('evicts cached value after ttl expires', () => {
     const now = 1_000
-    jest.spyOn(Date, 'now').mockReturnValue(now)
+    const dateNow = jest.spyOn(Date, 'now').mockReturnValue(now)
     setCachedClient(workspace, socialId, serviceTag, bundle)
 
-    jest.spyOn(Date, 'now').mockReturnValue(now + config.ClientCacheTtlMs + 1)
+    dateNow.mockReturnValue(now + config.ClientCacheTtlMs + 1)
     expect(getCachedClient(workspace, socialId, serviceTag)).toBeUndefined()
   })
 

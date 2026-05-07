@@ -28,9 +28,10 @@ import { handleScheduledNotification } from './worker'
 
 const scheduledNotificationTopic = 'scheduledNotification'
 const isDebugLoggingEnabled = config.LogLevel === 'debug'
+const serviceVersion = process.env.VERSION ?? '0.7.0'
 
 async function main (): Promise<void> {
-  configureAnalytics(config.ServiceId, process.env.VERSION ?? '0.7.0')
+  configureAnalytics(config.ServiceId, serviceVersion)
   const ctx = initStatisticsContext(config.ServiceId, {
     factory: () =>
       createOpenTelemetryMetricsContext(
@@ -68,6 +69,14 @@ async function main (): Promise<void> {
       await handleScheduledNotification(ctx, message.workspace, message.value, control)
     }
   )
+
+  ctx.info(`Started events processor: version ${serviceVersion}`, {
+    serviceId: config.ServiceId,
+    version: serviceVersion,
+    topic: scheduledNotificationTopic,
+    queueRegion: config.QueueRegion,
+    logLevel: config.LogLevel
+  })
 
   const shutdown = (): void => {
     void Promise.all([consumer.close()]).then(() => process.exit())
