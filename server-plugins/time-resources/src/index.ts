@@ -36,7 +36,7 @@ import core, {
 } from '@hcengineering/core'
 import notification, { CommonInboxNotification } from '@hcengineering/notification'
 import { getResource } from '@hcengineering/platform'
-import { type TriggerControl } from '@hcengineering/server-core'
+import type { TriggerControl } from '@hcengineering/server-core'
 import { getSocialStrings } from '@hcengineering/server-contact'
 import { ReceiverInfo, SenderInfo } from '@hcengineering/server-notification'
 import {
@@ -112,7 +112,6 @@ export async function OnWorkSlotCreate (txes: Tx[], control: TriggerControl): Pr
       continue
     }
     const workslot = TxProcessor.createDoc2Doc(actualTx as TxCreateDoc<WorkSlot>)
-
     const workslots = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: workslot.attachedTo })
     if (workslots.length > 1) {
       continue
@@ -374,7 +373,6 @@ export async function OnToDoUpdate (txes: Tx[], control: TriggerControl): Promis
       const events = await control.findAll(control.ctx, time.class.WorkSlot, { attachedTo: updTx.objectId })
       const resEvents: WorkSlot[] = []
       for (const event of events) {
-        // Pending reminders are dropped at fire time by the events-processor (skip-if-doneOn check).
         if (event.date > doneOn) {
           const innerTx = control.txFactory.createTxRemoveDoc(event._class, event.space, event._id)
           const outerTx = control.txFactory.createTxCollectionCUD(
