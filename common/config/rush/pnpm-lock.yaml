@@ -40239,7 +40239,7 @@ importers:
         specifier: workspace:^0.7.20
         version: link:../../../foundations/core/packages/platform
       '@hcengineering/server-client':
-        specifier: workspace:^0.7.19
+        specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/client
       '@hcengineering/server-core':
         specifier: workspace:^0.7.19
