@@ -422,7 +422,21 @@ export function createModel (builder: Builder): void {
     {
       attachTo: hr.mixin.Staff,
       descriptor: view.viewlet.Table,
-      config: ['']
+      config: [''],
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [
+          {
+            key: 'hideInactive',
+            type: 'toggle',
+            defaultValue: true,
+            actionTarget: 'query',
+            action: contact.function.HideInactive,
+            label: contact.string.HideInactive
+          }
+        ]
+      }
     },
     hr.viewlet.StaffStats
   )

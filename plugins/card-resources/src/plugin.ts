@@ -132,6 +132,7 @@ export default mergeIds(cardId, card, {
     CreateSpace: '' as IntlString,
     NumberTypes: '' as IntlString,
     Properties: '' as IntlString,
+    RichtextProperties: '' as IntlString,
     NoChildren: '' as IntlString,
     AddCollaborators: '' as IntlString,
     CardTitle: '' as IntlString,

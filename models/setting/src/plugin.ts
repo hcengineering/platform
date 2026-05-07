@@ -40,6 +40,7 @@ export default mergeIds(settingId, setting, {
     IdentifierTypeEditor: '' as AnyComponent,
     EmployeeRefEditor: '' as AnyComponent,
     DateTypeEditor: '' as AnyComponent,
+    MarkupTypeEditor: '' as AnyComponent,
     RefEditor: '' as AnyComponent,
     AssociationEditor: '' as AnyComponent,
     EnumTypeEditor: '' as AnyComponent,

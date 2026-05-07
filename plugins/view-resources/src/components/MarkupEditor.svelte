@@ -18,9 +18,12 @@
   import { MessageViewer } from '@hcengineering/presentation'
   import { Button, eventToHTMLElement, Label, showPopup } from '@hcengineering/ui'
   import MarkupEditorPopup from './MarkupEditorPopup.svelte'
+  import { StyledTextBox } from '@hcengineering/text-editor-resources'
+  import type { EditorKitOptions } from '@hcengineering/text-editor-resources'
+  import textEditorPlugin from '@hcengineering/text-editor'
 
   // export let label: IntlString
-  export let placeholder: IntlString
+  export let placeholder: IntlString = textEditorPlugin.string.EditorPlaceholder
   export let value: string
   // export let focus: boolean = false
   export let onChange: (value: string) => void
@@ -29,6 +32,7 @@
   // export let size: ButtonSize = 'x-large'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'fit-content'
+  export let kitOptions: Partial<EditorKitOptions> = { reference: true, emoji: true }
 
   let shown: boolean = false
 </script>
@@ -42,7 +46,7 @@
     height={value ? 'auto' : undefined}
     on:click={(ev) => {
       if (!shown && !readonly) {
-        showPopup(MarkupEditorPopup, { value }, eventToHTMLElement(ev), (res) => {
+        showPopup(MarkupEditorPopup, { value, kitOptions }, eventToHTMLElement(ev), (res) => {
           if (res != null) {
             value = res
             onChange(value)
@@ -62,10 +66,15 @@
       </div>
     </svelte:fragment>
   </Button>
-{:else if readonly}
-  {#if value}
-    <span class="overflow-label">{value}</span>
-  {:else}
-    <span class="content-dark-color"><Label label={placeholder} /></span>
-  {/if}
+{:else}
+  <StyledTextBox
+    content={value}
+    {placeholder}
+    alwaysEdit
+    {kitOptions}
+    mode={2}
+    on:value={(e) => {
+      onChange(e.detail)
+    }}
+  />
 {/if}

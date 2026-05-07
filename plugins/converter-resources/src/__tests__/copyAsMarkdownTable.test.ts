@@ -49,6 +49,7 @@ jest.mock('@hcengineering/view-resources', () => ({
   copyMarkdown: jest.fn(),
   buildModel: jest.fn(),
   buildConfigLookup: jest.fn(() => ({})),
+  buildConfigAssociation: jest.fn(),
   getObjectLinkFragment: jest.fn()
 }))
 

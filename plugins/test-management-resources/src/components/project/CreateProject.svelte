@@ -15,7 +15,7 @@
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
-  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore, getAnonymousRefs } from '@hcengineering/contact-resources'
   import { Asset } from '@hcengineering/platform'
   import core, {
     Data,
@@ -64,6 +64,7 @@
   let members: AccountUuid[] =
     project?.members !== undefined ? hierarchy.clone(project.members) : [getCurrentAccount().uuid]
   $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
+  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore, owners)
   let owners: AccountUuid[] =
     project?.owners !== undefined ? hierarchy.clone(project.owners) : [getCurrentAccount().uuid]
   let rolesAssignment: RolesAssignment = {}
@@ -343,6 +344,7 @@
         </div>
         <AccountArrayEditor
           value={owners}
+          excludeItems={readOnlyGuestOwnerExcludeItems}
           label={core.string.Owners}
           onChange={handleOwnersChanged}
           kind={'regular'}

@@ -62,6 +62,7 @@ import RefEditor from './components/typeEditors/RefEditor.svelte'
 import IdentifierTypeEditor from './components/typeEditors/IdentifierTypeEditor.svelte'
 import RelationSetting from './components/RelationSetting.svelte'
 import RoleAssignmentEditor from './components/typeEditors/RoleAssignmentEditor.svelte'
+import MarkupTypeEditor from './components/typeEditors/MarkupTypeEditor.svelte'
 import StringTypeEditor from './components/typeEditors/StringTypeEditor.svelte'
 import WorkspaceSettings from './components/WorkspaceSettings.svelte'
 import SettingsWidget from './components/SettingsWidget.svelte'
@@ -156,6 +157,7 @@ export default async (): Promise<Resources> => ({
     ClassPermissionPresenter,
     SpaceTypeDescriptorPresenter,
     SpaceTypeGeneralSectionEditor,
+    MarkupTypeEditor,
     SpaceTypePropertiesSectionEditor,
     SpaceTypeRolesSectionEditor,
     RoleEditor,

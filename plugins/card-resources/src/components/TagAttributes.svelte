@@ -36,6 +36,7 @@
   import Lock from './icons/Lock.svelte'
   import Unlock from './icons/Unlock.svelte'
   import card from '../plugin'
+  import MarkupProperties from './MarkupProperties.svelte'
 
   export let value: Card
   export let tag: Tag
@@ -126,6 +127,7 @@
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
   <CardAttributes object={value} _class={tag._id} to={tag.extends} {readonly} {ignoreKeys} />
+  <MarkupProperties doc={value} {readonly} {tag} />
 </ExpandCollapse>
 
 <style lang="scss">

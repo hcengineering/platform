@@ -1,0 +1,25 @@
+{
+    "string": {
+        "Requests": "요청",
+        "Request": "요청",
+        "Approve": "승인",
+        "Approved": "승인됨",
+        "CreatedRequest": "다음 항목 생성: ",
+        "For": "대상",
+        "Change": "변경",
+        "Add": "추가",
+        "Remove": "제거",
+        "Status": "상태",
+        "Requested": "요청됨",
+        "Completed": "완료됨",
+        "Reject": "반려",
+        "Rejected": "반려됨",
+        "Comment": "댓글",
+        "PleaseTypeMessage": "계속하려면 댓글을 입력하세요...",
+        "NoRequests": "요청 없음",
+        "Cancel": "취소",
+        "Cancelled": "취소됨",
+        "NewRequest": "새 요청",
+        "CancelRequest": "요청 취소"
+    }
+}

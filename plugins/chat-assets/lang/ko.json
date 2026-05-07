@@ -1,0 +1,19 @@
+{
+    "string": {
+        "Channel": "채널",
+        "Channels": "채널",
+        "Chat": "채팅",
+        "Description": "설명",
+        "Loading": "로딩 중...",
+        "MessageIn": "메시지 #{title}",
+        "Thread": "스레드",
+        "Threads": "스레드",
+        "Title": "제목",
+        "All": "모든 업데이트",
+        "Inbox": "수신함",
+        "ReactedToYourMessage": "내 메시지에 반응함",
+        "ClearAll": "모두 지우기",
+        "InboxIsClear": "수신함이 비어 있습니다",
+        "YouDontHaveAnyNewMessages": "새 메시지가 없습니다"
+    }
+}

@@ -15,10 +15,20 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import core, { AnyAttribute, Association, AssociationQuery, Class, Client, Doc, Ref, Type } from '@hcengineering/core'
-  import { Asset, getEmbeddedLabel, IntlString } from '@hcengineering/platform'
+  import core, {
+    AnyAttribute,
+    Association,
+    AssociationQuery,
+    Class,
+    Client,
+    Doc,
+    Ref,
+    TxOperations,
+    Type
+  } from '@hcengineering/core'
+  import { Asset, getEmbeddedLabel, IntlString, translate } from '@hcengineering/platform'
   import { getAttributePresenterClass, getClient, hasResource } from '@hcengineering/presentation'
-  import { resizeObserver } from '@hcengineering/ui'
+  import { Loading, resizeObserver } from '@hcengineering/ui'
   import view, { BuildModelKey, Viewlet } from '@hcengineering/view'
   import {
     buildConfigLookup,
@@ -62,20 +72,8 @@
     }
   }
 
-  function getAssoctiationLabel (client: Client, param: string): IntlString {
-    const model = client.getModel()
-    const associations = param.split('$associations.')
-    const resultLabels = associations
-      .map((r) => {
-        const parts = r.split('_')
-        if (parts.length !== 2) return ''
-        const assoc = model.findObject(parts[0] as Ref<Association>)
-        if (assoc === undefined) return ''
-        return parts[1] === '1' ? assoc.nameA : assoc.nameB
-      })
-      .filter((it) => it.length > 0)
-
-    return getEmbeddedLabel(resultLabels.join(' › '))
+  function getAssociationLabel (client: TxOperations, param: string): IntlString {
+    return getKeyLabel(client, viewlet.attachTo, param, undefined)
   }
 
   function getBaseConfig (viewlet: Viewlet): Config[] {
@@ -93,7 +91,7 @@
             type: 'attribute',
             value: param,
             enabled: true,
-            label: getAssoctiationLabel(client, param),
+            label: getAssociationLabel(client, param),
             _class: viewlet.attachTo,
             icon: clazz.icon
           }
@@ -232,7 +230,7 @@
     return false
   }
 
-  function getConfig (viewlet: Viewlet): Config[] {
+  async function getConfig (viewlet: Viewlet): Promise<Config[]> {
     const result = getBaseConfig(viewlet)
     if (viewlet.configOptions?.strict !== true) {
       const allAttributes = hierarchy.getAllAttributes(viewlet.attachTo)
@@ -248,10 +246,14 @@
         })
       }
 
-      addAssociations(result, viewlet.attachTo)
+      await addAssociations(result, viewlet.attachTo)
     }
 
-    function addAssociations (result: Config[], _class: Ref<Class<Doc>>, parents: AssociationQuery[] = []): void {
+    async function addAssociations (
+      result: Config[],
+      _class: Ref<Class<Doc>>,
+      parents: AssociationQuery[] = []
+    ): Promise<void> {
       const ancestors = new Set(hierarchy.getAncestors(_class))
       const parent = hierarchy.getParentClass(_class)
       const parentMixins = hierarchy
@@ -270,24 +272,24 @@
       const associationsB = client.getModel().findAllSync(core.class.Association, { classA: { $in: allClasses } })
       const associationsA = client.getModel().findAllSync(core.class.Association, { classB: { $in: allClasses } })
 
-      associationsB.forEach((a) => {
-        processAssociation(a, 'b', result, parents)
-      })
-      associationsA.forEach((a) => {
-        processAssociation(a, 'a', result, parents)
-      })
+      for (const a of associationsB) {
+        await processAssociation(a, 'b', result, parents)
+      }
+      for (const a of associationsA) {
+        await processAssociation(a, 'a', result, parents)
+      }
     }
 
     function getParentsString (parents: AssociationQuery[]): string {
       return parents.map(([assocId, direction]) => `$associations.${assocId}_${direction === 1 ? 'a' : 'b'}`).join('.')
     }
 
-    function processAssociation (
+    async function processAssociation (
       association: Association,
       direction: 'a' | 'b',
       result: Config[],
       parents: AssociationQuery[]
-    ): void {
+    ): Promise<void> {
       const associationName = `$associations.${association._id}_${direction}`
       const resultName = parents.length > 0 ? `${getParentsString(parents)}.${associationName}` : associationName
 
@@ -326,7 +328,50 @@
         return key === resultName
       })
       if ((exists as AttributeConfig)?.enabled) {
-        addAssociations(result, targetClass, [...parents, [association._id, direction === 'a' ? 1 : -1]])
+        await addAssociations(result, targetClass, [...parents, [association._id, direction === 'a' ? 1 : -1]])
+        await addAssociationAttributes(result, targetClass, resultName, fullLabel)
+      }
+    }
+
+    async function addAssociationAttributes (
+      result: Config[],
+      targetClass: Ref<Class<Doc>>,
+      associationKey: string,
+      associationLabel: string
+    ): Promise<void> {
+      const allAttributes = hierarchy.getAllAttributes(targetClass)
+      for (const [, attribute] of allAttributes) {
+        if (attribute.hidden || attribute.label === undefined) continue
+        if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) continue
+        const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
+        const mixin =
+          category === 'object'
+            ? view.mixin.ObjectPresenter
+            : category === 'collection'
+              ? view.mixin.CollectionPresenter
+              : view.mixin.AttributePresenter
+        const presenter = hierarchy.classHierarchyMixin(
+          attrClass,
+          mixin,
+          (m) => hasResource(m.presenter) ?? false
+        )?.presenter
+        if (presenter === undefined) continue
+
+        const fieldKey = `${associationKey}.${attribute.name}`
+        const fieldLabel = getAssociationLabel(client, fieldKey)
+        const translatedLabel = await translate(fieldLabel, {})
+        const clazz = hierarchy.getClass(targetClass)
+        const newValue: AttributeConfig = {
+          type: 'attribute',
+          value: fieldKey,
+          label: getEmbeddedLabel(associationLabel + ' > ' + translatedLabel),
+          enabled: false,
+          _class: targetClass,
+          icon: clazz.icon
+        }
+        if (!isExist(result, newValue)) {
+          result.push(newValue)
+        }
       }
     }
 
@@ -338,20 +383,24 @@
   <div class="menu-space" />
   <div class="scroll">
     <div class="box">
-      {#if citems !== undefined}
-        <ViewletClassSettings
-          {viewlet}
-          items={citems}
-          on:restoreDefaults={() => {
-            // TODO UBERF-9639: restore defaults
-          }}
-          on:save={(event) => {
-            viewlet.config = event.detail
-            viewlet = viewlet
-            dispatch('update', event.detail)
-          }}
-        />
-      {/if}
+      {#await citems}
+        <Loading />
+      {:then items}
+        {#if items !== undefined}
+          <ViewletClassSettings
+            {viewlet}
+            {items}
+            on:restoreDefaults={() => {
+              // TODO UBERF-9639: restore defaults
+            }}
+            on:save={(event) => {
+              viewlet.config = event.detail
+              viewlet = viewlet
+              dispatch('update', event.detail)
+            }}
+          />
+        {/if}
+      {/await}
     </div>
   </div>
   <div class="menu-space" />

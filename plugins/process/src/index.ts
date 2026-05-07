@@ -380,6 +380,8 @@ export default plugin(processId, {
     CurrentDate: '' as Ref<ProcessFunction>,
     StringFromNumber: '' as Ref<ProcessFunction>,
     StringFromDate: '' as Ref<ProcessFunction>,
+    StringFromMarkup: '' as Ref<ProcessFunction>,
+    MarkupFromString: '' as Ref<ProcessFunction>,
     StringFromBoolean: '' as Ref<ProcessFunction>,
     NumberFromDate: '' as Ref<ProcessFunction>,
     DateFromNumber: '' as Ref<ProcessFunction>,
@@ -388,6 +390,8 @@ export default plugin(processId, {
     YearFromDate: '' as Ref<ProcessFunction>,
     MonthFromDate: '' as Ref<ProcessFunction>,
     DayFromDate: '' as Ref<ProcessFunction>,
+    StringFromEnum: '' as Ref<ProcessFunction>,
+    EnumFromString: '' as Ref<ProcessFunction>,
     DateDifference: '' as Ref<ProcessFunction>,
     ExportProcess: '' as Resource<ExportFunc>,
     CheckProcessSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
