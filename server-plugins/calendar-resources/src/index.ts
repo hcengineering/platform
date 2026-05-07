@@ -44,6 +44,128 @@ import { QueueTopic, TriggerControl } from '@hcengineering/server-core'
 import { getHTMLPresenter, getTextPresenter } from '@hcengineering/server-notification-resources'
 import { generateToken } from '@hcengineering/server-token'
 
+const scheduledNotificationTopic = 'scheduledNotification'
+
+interface ScheduledNotificationMessage {
+  kind: 'eventReminder'
+  id: string
+  eventId: Ref<Event>
+  eventClass: Ref<Class<Event>>
+  shiftMs: number
+  targetDate: number
+}
+
+type TimeMachineMessage =
+  | {
+    type: 'schedule'
+    id: string
+    targetDate: number
+    topic: string
+    data: ScheduledNotificationMessage
+  }
+  | {
+    type: 'cancel'
+    id: string
+  }
+
+type TimeMachineScheduleMessage = Extract<TimeMachineMessage, { type: 'schedule' }>
+
+function eventReminderPrefix (eventId: Ref<Event>): string {
+  return `eventReminder_${eventId}_`
+}
+
+function eventReminderTimerId (eventId: Ref<Event>, shiftMs: number): string {
+  // Stable so we can cancel by `${prefix}%`.
+  return `${eventReminderPrefix(eventId)}${shiftMs}`
+}
+
+async function cancelEventReminders (control: TriggerControl, eventId: Ref<Event>): Promise<void> {
+  try {
+    const queue = control.queue
+    if (queue === undefined) return
+    const producer = queue.getProducer<TimeMachineMessage>(control.ctx, QueueTopic.TimeMachine)
+    const cancelId = `${eventReminderPrefix(eventId)}%`
+    await producer.send(control.ctx, control.workspace.uuid, [{ type: 'cancel', id: cancelId }])
+    control.ctx.info('Queued event reminder cancel', {
+      queueTopic: QueueTopic.TimeMachine,
+      eventId,
+      timerIdPattern: cancelId
+    })
+  } catch (err) {
+    control.ctx.error('Failed to cancel Event reminders', { err, eventId })
+  }
+}
+
+async function scheduleEventReminders (control: TriggerControl, eventId: Ref<Event>): Promise<void> {
+  try {
+    const queue = control.queue
+    if (queue === undefined) return
+
+    const event = (await control.findAll(control.ctx, calendar.class.Event, { _id: eventId }, { limit: 1 }))[0]
+    if (event === undefined) return
+
+    // Reset existing timers for this Event on any relevant change.
+    await cancelEventReminders(control, eventId)
+
+    const reminders = event.reminders ?? []
+    if (reminders.length === 0) return
+
+    const now = Date.now()
+    const msgs: TimeMachineScheduleMessage[] = []
+
+    for (const shiftMs of reminders) {
+      if (typeof shiftMs !== 'number' || Number.isNaN(shiftMs)) continue
+      // `shiftMs` is the positive offset before the event (in ms), matching the convention used by
+      // ReminderPopup and pod-calendar Google export.
+      const targetDate = event.date - shiftMs
+      if (targetDate <= now) continue
+
+      const id = eventReminderTimerId(eventId, shiftMs)
+      const data: ScheduledNotificationMessage = {
+        kind: 'eventReminder',
+        id,
+        eventId,
+        eventClass: event._class,
+        shiftMs,
+        targetDate
+      }
+      msgs.push({
+        type: 'schedule',
+        id,
+        targetDate,
+        topic: scheduledNotificationTopic,
+        data
+      })
+    }
+
+    if (msgs.length === 0) {
+      control.ctx.info('Skipped event reminder scheduling', {
+        queueTopic: QueueTopic.TimeMachine,
+        eventId,
+        eventClass: event._class,
+        reminderCount: reminders.length,
+        reason: 'no-future-reminders'
+      })
+      return
+    }
+    const producer = queue.getProducer<TimeMachineMessage>(control.ctx, QueueTopic.TimeMachine)
+    await producer.send(control.ctx, control.workspace.uuid, msgs)
+    control.ctx.info('Queued event reminders', {
+      queueTopic: QueueTopic.TimeMachine,
+      eventId,
+      eventClass: event._class,
+      reminderCount: reminders.length,
+      enqueuedCount: msgs.length,
+      timerIds: msgs.map((msg) => msg.id),
+      targetDates: msgs.map((msg) => msg.targetDate)
+    })
+  } catch (err) {
+    control.ctx.error('Failed to schedule Event reminders', { err, eventId })
+  }
+}
+
+export { scheduleEventReminders, cancelEventReminders }
+
 /**
  * @public
  */
@@ -214,6 +336,10 @@ async function onEventUpdate (ctx: TxUpdateDoc<Event>, control: TriggerControl):
     void sendEventToService(event, 'update', control)
   }
   void putEventToQueue(control, 'update', event, ctx.modifiedBy, ops)
+  // Reschedule reminders if the event start time or the reminder offsets changed.
+  if (ops.date !== undefined || ops.reminders !== undefined) {
+    void scheduleEventReminders(control, ctx.objectId)
+  }
   if (event.access !== 'owner') return []
   const events = await control.findAll(control.ctx, calendar.class.Event, { eventId: event.eventId })
   const res: Tx[] = []
@@ -363,6 +489,8 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
     void sendEventToService(event, 'create', control)
   }
   void putEventToQueue(control, 'create', event, ctx.modifiedBy)
+  // Schedule reminders for any newly created event (including WorkSlots, since those are Events too).
+  void scheduleEventReminders(control, event._id)
   if (event.access !== 'owner') return []
   const res: Tx[] = []
   const { _class, space, ...attr } = event
@@ -398,6 +526,7 @@ async function onEventCreate (ctx: TxCreateDoc<Event>, control: TriggerControl):
 async function onRemoveEvent (ctx: TxRemoveDoc<Event>, control: TriggerControl): Promise<Tx[]> {
   const removed = control.removedMap.get(ctx.objectId) as Event
   const res: Tx[] = []
+  void cancelEventReminders(control, ctx.objectId)
   if (removed !== undefined) {
     if (ctx.modifiedBy !== core.account.System && removed.access === 'owner') {
       void sendEventToService(removed, 'delete', control)

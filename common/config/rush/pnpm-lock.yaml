@@ -40256,9 +40256,6 @@ importers:
       dotenv:
         specifier: ^16.4.5
         version: 16.6.1
-      lru-cache:
-        specifier: ^11.1.0
-        version: 11.2.2
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: workspace:^0.7.21

@@ -13,14 +13,19 @@
 // limitations under the License.
 //
 
-import type { Ref } from '@hcengineering/core'
-import type { WorkSlot, ToDo } from '@hcengineering/time'
+import type { Class, Doc, Ref } from '@hcengineering/core'
 
+/**
+ * Scheduled notification fired by the time-machine consumer.
+ *
+ * `kind === 'eventReminder'` covers any `calendar.Event` subclass — including `WorkSlot`,
+ * which is handled with a small ToDo-specific branch in the worker.
+ */
 export interface ScheduledNotificationMessage {
-  kind: 'todoReminder'
+  kind: 'eventReminder'
   id: string
-  workSlotId: Ref<WorkSlot>
-  todoId: Ref<ToDo>
+  eventId: Ref<Doc>
+  eventClass: Ref<Class<Doc>>
   shiftMs: number
   targetDate: number
 }

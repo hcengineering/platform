@@ -13,18 +13,43 @@
 // limitations under the License.
 //
 
-import contact from '@hcengineering/contact'
-import core, { type MeasureContext, type Ref, type WorkspaceUuid } from '@hcengineering/core'
+import contact, { type Person, type PersonSpace } from '@hcengineering/contact'
+import core, {
+  type AccountUuid,
+  type Class,
+  type Doc,
+  type MeasureContext,
+  type PersonId,
+  type Ref,
+  type Space,
+  type WorkspaceUuid
+} from '@hcengineering/core'
 import type { ConsumerControl } from '@hcengineering/server-core'
 import notification, { type CommonInboxNotification, type DocNotifyContext } from '@hcengineering/notification'
 import modelTime from '@hcengineering/model-time'
 import { jsonToMarkup, nodeDoc, nodeParagraph, nodeText } from '@hcengineering/text-core'
-import time from '@hcengineering/time'
-import { getClient } from './client'
+import time, { type ToDo } from '@hcengineering/time'
+import { getClient, type ClientBundle } from './client'
 import type { ScheduledNotificationMessage } from './types'
 
+interface MinimalEvent extends Doc {
+  attachedTo?: Ref<Doc>
+  attachedToClass?: Ref<Class<Doc>>
+  user?: PersonId
+  title?: string
+}
+
 export function buildReminderNotificationId (timerId: string): Ref<CommonInboxNotification> {
-  return `todoReminderInbox:${timerId}` as Ref<CommonInboxNotification>
+  return `eventReminderInbox:${timerId}` as Ref<CommonInboxNotification>
+}
+
+interface ReminderTarget {
+  objectId: Ref<any>
+  objectClass: Ref<Class<any>>
+  objectSpace: Ref<Space>
+  titleText: string
+  receiverAccount: AccountUuid
+  receiverSpace: Ref<PersonSpace>
 }
 
 export async function handleScheduledNotification (
@@ -33,30 +58,20 @@ export async function handleScheduledNotification (
   msg: ScheduledNotificationMessage,
   control: ConsumerControl
 ): Promise<void> {
-  if (msg.kind !== 'todoReminder') return
+  if (msg.kind !== 'eventReminder') return
 
   await control.heartbeat()
-  const { client } = await getClient(workspaceUuid)
+  const bundle = await getClient(workspaceUuid)
+  const { client } = bundle
   await control.heartbeat()
 
-  const workslot = await client.findOne(time.class.WorkSlot, { _id: msg.workSlotId })
-  if (workslot === undefined) return
-  await control.heartbeat()
-  const todo = await client.findOne(time.class.ToDo, { _id: msg.todoId })
-  if (todo === undefined) return
-  if (todo.doneOn != null) return
-
-  const employee = await client.findOne(contact.mixin.Employee, { _id: todo.user, active: true })
-  if (employee?.personUuid == null) return
-  const user = employee.personUuid
-
-  const space = await client.findOne(contact.class.PersonSpace, { person: todo.user }, { projection: { _id: 1 } })
-  if (space === undefined) return
+  const event = (await client.findOne(msg.eventClass, { _id: msg.eventId })) as MinimalEvent | undefined
+  if (event === undefined) return
   await control.heartbeat()
 
-  const objectId = todo._id
-  const objectClass = todo._class
-  const objectSpace = todo.space
+  const target = await resolveReminderTarget(bundle, event)
+  if (target === undefined) return
+  await control.heartbeat()
 
   // Idempotency: short-circuit if a notification for this exact timer was already created.
   const notificationId = buildReminderNotificationId(msg.id)
@@ -70,35 +85,38 @@ export async function handleScheduledNotification (
   // Ensure doc notify context exists.
   let docNotifyContext: Pick<DocNotifyContext, '_id'> | undefined = await client.findOne(
     notification.class.DocNotifyContext,
-    { objectId, user },
+    { objectId: target.objectId, user: target.receiverAccount },
     { projection: { _id: 1 } }
   )
   if (docNotifyContext === undefined) {
     try {
       const id = await client.createDoc(
         notification.class.DocNotifyContext,
-        space._id,
+        target.receiverSpace,
         {
-          objectId,
-          objectClass,
-          objectSpace,
-          user,
+          objectId: target.objectId,
+          objectClass: target.objectClass,
+          objectSpace: target.objectSpace,
+          user: target.receiverAccount,
           isPinned: false,
           hidden: false
         },
         undefined,
         undefined,
+        // System tokens may not have a populated `socialIds[0]`; if we let the rest tx client default
+        // to that, `Tx.modifiedBy` becomes `undefined` and the transactor rejects the request with
+        // HTTP 400 "Bad Request" out of `NormalizeTxMiddleware.parseBaseTx`. Always pin to a known PersonId.
         core.account.System
       )
       docNotifyContext = { _id: id }
     } catch (err) {
-      ctx.error('Failed to create DocNotifyContext for todo reminder', {
+      ctx.error('Failed to create DocNotifyContext for event reminder', {
         err,
         timerId: msg.id,
-        workSlotId: msg.workSlotId,
-        todoId: msg.todoId,
-        spaceId: space._id,
-        user
+        eventId: msg.eventId,
+        eventClass: msg.eventClass,
+        spaceId: target.receiverSpace,
+        user: target.receiverAccount
       })
       throw err
     }
@@ -108,15 +126,15 @@ export async function handleScheduledNotification (
   try {
     await client.createDoc(
       notification.class.CommonInboxNotification,
-      space._id,
+      target.receiverSpace,
       {
-        user,
-        objectId,
-        objectClass,
+        user: target.receiverAccount,
+        objectId: target.objectId,
+        objectClass: target.objectClass,
         headerIcon: time.icon.Planned,
         header: time.string.ToDo,
         message: time.string.ToDo,
-        messageHtml: jsonToMarkup(nodeDoc(nodeParagraph(nodeText(todo.title ?? '')))),
+        messageHtml: jsonToMarkup(nodeDoc(nodeParagraph(nodeText(target.titleText)))),
         types: [modelTime.ids.ToDoReminder],
         isViewed: false,
         archived: false,
@@ -127,14 +145,14 @@ export async function handleScheduledNotification (
       core.account.System
     )
   } catch (err) {
-    ctx.error('Failed to create CommonInboxNotification for todo reminder', {
+    ctx.error('Failed to create CommonInboxNotification for event reminder', {
       err,
       timerId: msg.id,
-      workSlotId: msg.workSlotId,
-      todoId: msg.todoId,
+      eventId: msg.eventId,
+      eventClass: msg.eventClass,
       notificationId,
-      spaceId: space._id,
-      user
+      spaceId: target.receiverSpace,
+      user: target.receiverAccount
     })
     throw err
   }
@@ -142,10 +160,69 @@ export async function handleScheduledNotification (
   ctx.info('Scheduled notification created', {
     kind: msg.kind,
     id: msg.id,
-    workSlotId: msg.workSlotId,
-    todoId: msg.todoId,
+    eventId: msg.eventId,
+    eventClass: msg.eventClass,
     notificationId,
-    user,
-    spaceId: space._id
+    user: target.receiverAccount,
+    spaceId: target.receiverSpace
   })
+}
+
+async function resolveReminderTarget (bundle: ClientBundle, event: MinimalEvent): Promise<ReminderTarget | undefined> {
+  const { client, accountClient } = bundle
+
+  if (event.attachedToClass === time.class.ToDo) {
+    const todo = await client.findOne(time.class.ToDo, { _id: event.attachedTo as Ref<ToDo> })
+    if (todo === undefined) return undefined
+    if (todo.doneOn != null) return undefined
+
+    const employee = await client.findOne(contact.mixin.Employee, { _id: todo.user, active: true })
+    if (employee?.personUuid == null) return undefined
+
+    const space = await client.findOne(
+      contact.class.PersonSpace,
+      { person: todo.user },
+      { projection: { _id: 1 } }
+    )
+    if (space === undefined) return undefined
+
+    return {
+      objectId: todo._id,
+      objectClass: todo._class,
+      objectSpace: todo.space,
+      titleText: todo.title ?? '',
+      receiverAccount: employee.personUuid,
+      receiverSpace: space._id
+    }
+  }
+
+  // Plain calendar event: receiver is identified by `event.user` (a PersonId / social id).
+  const receiverSocialId = event.user
+  if (receiverSocialId == null) return undefined
+
+  const personUuid = await accountClient.findPersonBySocialId(receiverSocialId, true)
+  if (personUuid == null) return undefined
+
+  const person = await client.findOne(
+    contact.class.Person,
+    { personUuid },
+    { projection: { _id: 1 } }
+  )
+  if (person === undefined) return undefined
+
+  const space = await client.findOne(
+    contact.class.PersonSpace,
+    { person: person._id as Ref<Person> },
+    { projection: { _id: 1 } }
+  )
+  if (space === undefined) return undefined
+
+  return {
+    objectId: event._id,
+    objectClass: event._class,
+    objectSpace: event.space,
+    titleText: event.title ?? '',
+    receiverAccount: personUuid as AccountUuid,
+    receiverSpace: space._id
+  }
 }
