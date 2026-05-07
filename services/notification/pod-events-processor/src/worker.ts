@@ -18,6 +18,7 @@ import core, {
   type AccountUuid,
   type Class,
   type Doc,
+  type Hierarchy,
   type MeasureContext,
   type PersonId,
   type Ref,
@@ -69,7 +70,8 @@ export async function handleScheduledNotification (
   if (event === undefined) return
   await control.heartbeat()
 
-  const target = await resolveReminderTarget(bundle, event)
+  const hierarchy = client.getHierarchy()
+  const target = await resolveReminderTarget(bundle, event, hierarchy)
   if (target === undefined) return
   await control.heartbeat()
 
@@ -168,22 +170,29 @@ export async function handleScheduledNotification (
   })
 }
 
-async function resolveReminderTarget (bundle: ClientBundle, event: MinimalEvent): Promise<ReminderTarget | undefined> {
+// Resolves where a reminder fires:
+//  - For Events whose `attachedToClass` is `time:class:ToDo` (or a subclass like `ProjectToDo`),
+//    the notification points at the parent ToDo and is suppressed when the ToDo is already done.
+//  - For any other Event the notification points at the Event itself.
+async function resolveReminderTarget (
+  bundle: ClientBundle,
+  event: MinimalEvent,
+  hierarchy: Hierarchy
+): Promise<ReminderTarget | undefined> {
   const { client, accountClient } = bundle
 
-  if (event.attachedToClass === time.class.ToDo) {
-    const todo = await client.findOne(time.class.ToDo, { _id: event.attachedTo as Ref<ToDo> })
+  const isToDoBacked = event.attachedToClass != null && hierarchy.isDerived(event.attachedToClass, time.class.ToDo)
+  if (isToDoBacked && event.attachedTo != null && event.attachedToClass != null) {
+    const todo = (await client.findOne(event.attachedToClass as Ref<Class<ToDo>>, {
+      _id: event.attachedTo as Ref<ToDo>
+    })) as ToDo | undefined
     if (todo === undefined) return undefined
     if (todo.doneOn != null) return undefined
 
     const employee = await client.findOne(contact.mixin.Employee, { _id: todo.user, active: true })
     if (employee?.personUuid == null) return undefined
 
-    const space = await client.findOne(
-      contact.class.PersonSpace,
-      { person: todo.user },
-      { projection: { _id: 1 } }
-    )
+    const space = await client.findOne(contact.class.PersonSpace, { person: todo.user }, { projection: { _id: 1 } })
     if (space === undefined) return undefined
 
     return {
@@ -203,11 +212,7 @@ async function resolveReminderTarget (bundle: ClientBundle, event: MinimalEvent)
   const personUuid = await accountClient.findPersonBySocialId(receiverSocialId, true)
   if (personUuid == null) return undefined
 
-  const person = await client.findOne(
-    contact.class.Person,
-    { personUuid },
-    { projection: { _id: 1 } }
-  )
+  const person = await client.findOne(contact.class.Person, { personUuid }, { projection: { _id: 1 } })
   if (person === undefined) return undefined
 
   const space = await client.findOne(

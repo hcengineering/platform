@@ -15,8 +15,6 @@
 
 import contact from '@hcengineering/contact'
 import core, { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
-
-const eventClassRef = 'calendar:class:Event' as any
 import modelTime from '@hcengineering/model-time'
 import notification from '@hcengineering/notification'
 import { PlatformError, Severity, Status } from '@hcengineering/platform'
@@ -25,6 +23,8 @@ import time from '@hcengineering/time'
 import { getClient } from '../client'
 import type { ScheduledNotificationMessage } from '../types'
 import { buildReminderNotificationId, handleScheduledNotification } from '../worker'
+
+const eventClassRef = 'calendar:class:Event' as any
 
 jest.mock('../client', () => ({
   getClient: jest.fn()
@@ -46,7 +46,16 @@ describe('handleScheduledNotification', () => {
   const findOne = jest.fn()
   const createDoc = jest.fn()
   const findPersonBySocialId = jest.fn()
-  const client = { findOne, createDoc }
+  const isDerived = jest.fn((child: any, parent: any) => {
+    if (child === parent) return true
+    if (parent === time.class.ToDo) {
+      // ToDo and its known subclasses.
+      return child === time.class.ToDo || child === 'time:class:ProjectToDo'
+    }
+    return false
+  })
+  const getHierarchy = jest.fn(() => ({ isDerived }))
+  const client = { findOne, createDoc, getHierarchy }
   const accountClient = { findPersonBySocialId }
 
   beforeEach(() => {
@@ -200,6 +209,59 @@ describe('handleScheduledNotification', () => {
       // accountClient is NOT consulted on the ToDo path — it's the plain-event path that uses it.
       expect(findPersonBySocialId).not.toHaveBeenCalled()
     })
+
+    // Regression: tracker-issue WorkSlots have `attachedToClass = 'time:class:ProjectToDo'` (a
+    // ToDo subclass created by `IssueToDoFactory`). Strict equality `attachedToClass === ToDo`
+    // would silently take the plain-event branch and route the notification at the WorkSlot
+    // instead of the parent ProjectToDo.
+    it('treats a ProjectToDo-backed WorkSlot as ToDo-backed (subclass via isDerived)', async () => {
+      const projectTodoClass = 'time:class:ProjectToDo' as any
+      findOne.mockImplementation(async (klass: any, query: any) => {
+        if (klass === time.class.WorkSlot) {
+          return {
+            _id: workSlotMessage.eventId,
+            _class: time.class.WorkSlot,
+            space: 'space-1',
+            attachedTo: 'project-todo-1',
+            attachedToClass: projectTodoClass
+          }
+        }
+        if (klass === projectTodoClass) {
+          return {
+            _id: 'project-todo-1',
+            _class: projectTodoClass,
+            space: 'space-1',
+            user: 'employee-1',
+            title: 'Issue ToDo',
+            doneOn: null
+          }
+        }
+        if (klass === contact.mixin.Employee) return { personUuid: 'person-1' }
+        if (klass === contact.class.PersonSpace) return { _id: 'person-space-1' }
+        if (klass === notification.class.CommonInboxNotification) return undefined
+        if (klass === notification.class.DocNotifyContext) return undefined
+        return undefined
+      })
+      createDoc
+        .mockResolvedValueOnce('doc-notify-created-id')
+        .mockResolvedValueOnce(buildReminderNotificationId(workSlotMessage.id))
+
+      await handleScheduledNotification(ctx, workspaceUuid, workSlotMessage, control)
+
+      // hierarchy.isDerived must have been consulted to recognize ProjectToDo as a ToDo.
+      expect(isDerived).toHaveBeenCalledWith(projectTodoClass, time.class.ToDo)
+
+      // The notification points at the ProjectToDo, not at the WorkSlot.
+      expect(createDoc.mock.calls[1][0]).toBe(notification.class.CommonInboxNotification)
+      expect(createDoc.mock.calls[1][2]).toEqual(
+        expect.objectContaining({
+          objectId: 'project-todo-1',
+          objectClass: projectTodoClass
+        })
+      )
+      // accountClient is NOT consulted — the ToDo-backed path doesn't need it.
+      expect(findPersonBySocialId).not.toHaveBeenCalled()
+    })
   })
 
   // --------------------------------------------------------------------------------
@@ -297,6 +359,29 @@ describe('handleScheduledNotification', () => {
 
       await handleScheduledNotification(ctx, workspaceUuid, eventMessage, control)
       expect(createDoc).not.toHaveBeenCalled()
+    })
+
+    it('skips when the event has no `user` (social id) — silently, no error', async () => {
+      findOne.mockImplementation(async (klass: any) => {
+        if (klass === eventClassRef) {
+          return {
+            _id: eventMessage.eventId,
+            _class: eventClassRef,
+            space: 'event-space-1',
+            attachedTo: 'some-doc',
+            attachedToClass: 'some:class:Doc',
+            user: undefined,
+            title: 'Untitled'
+          }
+        }
+        return undefined
+      })
+
+      await handleScheduledNotification(ctx, workspaceUuid, eventMessage, control)
+
+      expect(findPersonBySocialId).not.toHaveBeenCalled()
+      expect(createDoc).not.toHaveBeenCalled()
+      expect(ctx.error).not.toHaveBeenCalled()
     })
 
     it('skips when the receiver has no PersonSpace', async () => {
