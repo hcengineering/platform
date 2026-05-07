@@ -602,9 +602,7 @@ export async function createWorkspace (
   // supported field is `withDemoContent`; future fields can be added without
   // changing the wire shape.
   const pendingConfiguration =
-    configuration?.withDemoContent !== undefined
-      ? { withDemoContent: configuration.withDemoContent }
-      : undefined
+    configuration?.withDemoContent !== undefined ? { withDemoContent: configuration.withDemoContent } : undefined
 
   const { workspaceUuid, workspaceUrl } = await createWorkspaceRecord(
     ctx,

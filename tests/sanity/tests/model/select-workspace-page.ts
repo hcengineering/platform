@@ -22,9 +22,7 @@ export class SelectWorkspacePage extends CommonPage {
   // Inline demo-content toggle on the create-workspace form. Wrapping <label>
   // contains the descriptive text and Toggle's hidden <input type="checkbox">.
   createSampleProjectsToggle = (): Locator =>
-    this.page
-      .locator('label', { hasText: 'Create sample projects and demo content' })
-      .locator('input[type="checkbox"]')
+    this.page.locator('label', { hasText: 'Create sample projects and demo content' }).locator('input[type="checkbox"]')
 
   async selectWorkspace (workspace: string): Promise<void> {
     await this.workspaceButtonByName(workspace).click()
