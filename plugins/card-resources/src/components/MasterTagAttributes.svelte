@@ -56,7 +56,7 @@
     isCollapsed = false
   }
 
-  $: isLocked = value.readonlySections?.includes(value._class) ?? false
+  $: isLocked = hierarchy.getAncestors(value._class).some((p) => value.readonlySections?.includes(p)) ?? false
   $: canLock = canLockSection(value.space, $permissionsStore)
   $: canUnlock = canUnlockSection(value.space, $permissionsStore)
 

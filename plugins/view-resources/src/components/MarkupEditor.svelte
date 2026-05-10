@@ -73,6 +73,7 @@
     alwaysEdit
     {kitOptions}
     mode={2}
+    {readonly}
     on:value={(e) => {
       onChange(e.detail)
     }}
