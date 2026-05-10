@@ -668,6 +668,7 @@ export interface Version extends Doc {
 export interface MigrationState extends Doc {
   plugin: string
   state: string
+  durationMs?: number
 }
 
 /**
