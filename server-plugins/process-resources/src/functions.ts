@@ -574,7 +574,8 @@ export async function LockSection (
   if (params._id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
   const res: Tx[] = []
   const rollback: Tx[] = []
-  const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+  const card: Card =
+    control.cache.get(execution.card) ?? (await control.client.findOne(cardPlugin.class.Card, { _id: execution.card }))
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
   const readonlySections = new Set(card.readonlySections ?? [])
   const target = params._id as Ref<MasterTag>
@@ -618,7 +619,8 @@ export async function UnlockSection (
   if (params._id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
   const res: Tx[] = []
   const rollback: Tx[] = []
-  const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+  const card: Card =
+    control.cache.get(execution.card) ?? (await control.client.findOne(cardPlugin.class.Card, { _id: execution.card }))
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
   const target = params._id as Ref<MasterTag>
   const readonlySections = new Set(card.readonlySections ?? [])
@@ -643,7 +645,8 @@ export async function LockField (
   if (params.value === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: 'value' })
   const res: Tx[] = []
   const rollback: Tx[] = []
-  const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+  const card: Card =
+    control.cache.get(execution.card) ?? (await control.client.findOne(cardPlugin.class.Card, { _id: execution.card }))
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
   const oldReadonlyFields = card.readonlyFields ?? []
   const readonlyFields = [...oldReadonlyFields]
@@ -678,7 +681,8 @@ export async function UnlockField (
   if (params.value === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: 'value' })
   const res: Tx[] = []
   const rollback: Tx[] = []
-  const card = await control.client.findOne(cardPlugin.class.Card, { _id: execution.card })
+  const card: Card =
+    control.cache.get(execution.card) ?? (await control.client.findOne(cardPlugin.class.Card, { _id: execution.card }))
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
   const oldReadonlyFields = card.readonlyFields ?? []
   const targets = Array.isArray(params.value) ? params.value : [params.value]
