@@ -63,7 +63,9 @@
   async function toggleLock (ev: MouseEvent): Promise<void> {
     ev.stopPropagation()
     const op = isLocked ? '$pull' : '$push'
-    const targets = isLocked ? (hierarchy.getAncestors(value._class).filter((p) => value.readonlySections?.includes(p))) : [value._class]
+    const targets = isLocked
+      ? hierarchy.getAncestors(value._class).filter((p) => value.readonlySections?.includes(p))
+      : [value._class]
     for (const target of targets) {
       await client.update(value, { [op]: { readonlySections: target } })
     }
