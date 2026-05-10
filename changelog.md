@@ -2,6 +2,12 @@
 
 Changelog.
 
+## [unreleased]
+
+* 🚀 FEATURES: · Add StringFromEnum and EnumFromString process functions ([#10806](https://github.com/hcengineering/platform/issues/10806)) · Add left menu for styled text ([#10807](https://github.com/hcengineering/platform/issues/10807)) · Add show all versions toggle to card view options and implement version query filtering ([#10809](https://github.com/hcengineering/platform/issues/10809)) · To sort attributes for parent and sub class together ([#10816](https://github.com/hcengineering/platform/issues/10816)) · To copy controlled document content ([#10819](https://github.com/hcengineering/platform/issues/10819)) · Korean (ko) translation ([#10820](https://github.com/hcengineering/platform/issues/10820)) · Hide inactive employees ([#10821](https://github.com/hcengineering/platform/issues/10821)) · Array for relation ([#10827](https://github.com/hcengineering/platform/issues/10827)) 
+* 🐛 BUG FIXES: · Link action ([#10793](https://github.com/hcengineering/platform/issues/10793)) · Tables ([#10813](https://github.com/hcengineering/platform/issues/10813)) · Label overflow ([#10829](https://github.com/hcengineering/platform/issues/10829)) · Docker build ([#10831](https://github.com/hcengineering/platform/issues/10831)) · Set migration state in case of mode mismatch and add duration ([#10801](https://github.com/hcengineering/platform/issues/10801)) 
+* ⚙️ MISCELLANEOUS TASKS: · Changelog 
+
 ## [0.7.423] - 2026-05-10
 
 * 🚀 FEATURES: · Print documents by class and id ([#10753](https://github.com/hcengineering/platform/issues/10753)) · Add tool to create missing SocialIdentity ([#10758](https://github.com/hcengineering/platform/issues/10758)) · User statuses ([#10774](https://github.com/hcengineering/platform/issues/10774)) · Add ability to configure guest spaces in settings ([#10770](https://github.com/hcengineering/platform/issues/10770)) · Add min and max transformation functions ([#10782](https://github.com/hcengineering/platform/issues/10782)) · Add trigger to remove associated execution data when a card is deleted ([#10795](https://github.com/hcengineering/platform/issues/10795)) · Add found elements count in desktop ([#10799](https://github.com/hcengineering/platform/issues/10799)) 
