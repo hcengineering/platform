@@ -220,7 +220,7 @@ export function createModel (builder: Builder): void {
       application: time.app.Me,
       role: AccountRole.Guest,
       permissions: [],
-      spaceClass: core.class.TypedSpace,
+      spaceClass: tracker.class.Project,
       enabled: true,
       order: 55
     },
@@ -234,7 +234,7 @@ export function createModel (builder: Builder): void {
       application: time.app.Me,
       role: AccountRole.ReadOnlyGuest,
       permissions: [],
-      spaceClass: core.class.TypedSpace,
+      spaceClass: tracker.class.Project,
       enabled: false,
       order: 55
     },

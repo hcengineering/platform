@@ -428,9 +428,9 @@ export default function buildModel (): Builder {
       questionsId,
       {
         label: setting.string.Configure,
-        enabled: false,
+        enabled: true,
         beta: false,
-        hidden: true,
+        hidden: false,
         classFilter: defaultFilter
       }
     ],

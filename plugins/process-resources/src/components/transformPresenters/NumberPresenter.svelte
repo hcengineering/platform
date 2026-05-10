@@ -28,7 +28,9 @@
     [plugin.function.Divide]: '/',
     [plugin.function.Modulo]: '%',
     [plugin.function.Power]: '^',
-    [plugin.function.Sqrt]: '√'
+    [plugin.function.Sqrt]: '√',
+    [plugin.function.Min]: 'min',
+    [plugin.function.Max]: 'max'
   }
 
   $: op = ops[value.func as keyof typeof ops]

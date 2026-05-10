@@ -154,6 +154,10 @@ export class RelationExporter {
     sourceLowLevel: LowLevelStorage,
     relations: RelationDefinition[]
   ): Promise<void> {
+    if (relation.sourceClass !== undefined && !sourceHierarchy.isDerived(doc._class, relation.sourceClass)) {
+      return
+    }
+
     const value = (doc as any)[relation.field]
     if (value === undefined || value === null) {
       return
@@ -195,6 +199,10 @@ export class RelationExporter {
     sourceLowLevel: LowLevelStorage,
     relations: RelationDefinition[]
   ): Promise<void> {
+    if (relation.sourceClass !== undefined && !sourceHierarchy.isDerived(doc._class, relation.sourceClass)) {
+      return
+    }
+
     const domain = sourceHierarchy.findDomain(relation.class)
     if (domain === undefined) {
       this.context.warn(`Domain not found for relation class ${relation.class}`)

@@ -394,6 +394,15 @@ export function createSystemType (
     config: listConfig
   })
 
+  builder.createDoc(view.class.Viewlet, core.space.Model, {
+    attachTo: type,
+    descriptor: card.viewlet.CardGridDescriptor,
+    baseQuery: {
+      isLatest: true
+    },
+    config: []
+  })
+
   if (viewDefaults !== undefined) {
     builder.mixin(type, card.class.MasterTag, card.mixin.CardViewDefaults, viewDefaults)
   }
@@ -782,6 +791,43 @@ export function createModel (builder: Builder): void {
   )
 
   builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: card.string.Grid,
+      icon: card.icon.Grid,
+      component: card.component.CardGridView
+    },
+    card.viewlet.CardGridDescriptor
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: card.class.Card,
+      descriptor: card.viewlet.CardGridDescriptor,
+      baseQuery: {
+        isLatest: true
+      },
+      config: [''],
+      configOptions: {
+        strict: true
+      },
+      viewOptions: {
+        groupBy: [],
+        orderBy: [
+          ['modifiedOn', SortingOrder.Descending],
+          ['rank', SortingOrder.Ascending],
+          ['title', SortingOrder.Descending]
+        ],
+        other: []
+      }
+    },
+    card.viewlet.CardGrid
+  )
+
+  builder.createDoc(
     presentation.class.ComponentPointExtension,
     core.space.Model,
     {
@@ -1076,6 +1122,18 @@ function defineTabs (builder: Builder): void {
       navigation: []
     },
     card.section.Properties
+  )
+
+  builder.createDoc(
+    card.class.CardSection,
+    core.space.Model,
+    {
+      label: card.string.RichtextProperties,
+      component: card.sectionComponent.MarkupPropertiesSection,
+      order: 150,
+      navigation: []
+    },
+    card.section.MarkupProperties
   )
 
   builder.createDoc(

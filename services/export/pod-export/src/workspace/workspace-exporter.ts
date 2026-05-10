@@ -184,6 +184,7 @@ export class CrossWorkspaceExporter {
         if (resolvedRelations.length === 0) {
           const relations = await sourcePipeline.findAll(this.context, core.class.RelationMetadata, {})
           resolvedRelations = relations.map((doc) => ({
+            sourceClass: doc.sourceClass,
             field: doc.field,
             class: doc.targetClass,
             direction: (doc.direction ?? 'forward') as 'forward' | 'inverse'

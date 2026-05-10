@@ -66,6 +66,8 @@ export interface TransformConfig {
 }
 
 export interface RelationDefinition {
+  /** When set, this relation applies only to documents of this class (or its subclasses). */
+  sourceClass?: Ref<Class<Doc>>
   field: string
   class: Ref<Class<Doc>>
   direction?: 'forward' | 'inverse'

@@ -40,6 +40,7 @@ import {
   createChildAction
 } from './utils'
 import { formatCardValue } from './cardTableFormatter'
+import CardGridView from './components/CardGridView.svelte'
 import ManageMasterTagsContent from './components/settings/ManageMasterTagsContent.svelte'
 import ManageMasterTagsTools from './components/settings/ManageMasterTagsTools.svelte'
 import ManageMasterTags from './components/settings/ManageMasterTags.svelte'
@@ -76,6 +77,7 @@ import PropertiesCardSection from './components/sections/PropertiesSection.svelt
 import RelationsCardSection from './components/sections/RelationsSection.svelte'
 import CardCommunicatiomMessages from './components/sections/CardCommunicatiomMessages.svelte'
 import OldMessagesCardSection from './components/sections/OldMessagesCardSection.svelte'
+import MarkupPropertiesCardSection from './components/sections/MarkupPropertiesSection.svelte'
 
 import FavoriteCardPresenter from './components/FavoriteCardPresenter.svelte'
 import CardTagsColored from './components/CardTagsColored.svelte'
@@ -135,6 +137,7 @@ export default async (): Promise<Resources> => ({
     CardTagsColored,
     CardIcon,
     CardFeedView,
+    CardGridView,
     CreateSpace,
     CardHeaderButton,
     CreateRolePopup,
@@ -147,7 +150,8 @@ export default async (): Promise<Resources> => ({
     PropertiesSection: PropertiesCardSection,
     RelationsSection: RelationsCardSection,
     OldMessagesSection: OldMessagesCardSection,
-    CommunicationMessagesSection: CardCommunicatiomMessages
+    CommunicationMessagesSection: CardCommunicatiomMessages,
+    MarkupPropertiesSection: MarkupPropertiesCardSection
   },
   completion: {
     CardQuery: queryCard

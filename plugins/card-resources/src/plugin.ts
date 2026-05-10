@@ -56,7 +56,8 @@ export default mergeIds(cardId, card, {
     CreateCard: '' as AnyComponent,
     CardHeaderButton: '' as AnyComponent,
     CreateRolePopup: '' as AnyComponent,
-    MyCards: '' as AnyComponent
+    MyCards: '' as AnyComponent,
+    CardGridView: '' as AnyComponent
   },
   function: {
     CardFactory: '' as Resource<(props?: Record<string, any>) => Promise<Ref<Doc> | undefined>>,
@@ -82,6 +83,7 @@ export default mergeIds(cardId, card, {
     ChildrenSection: '' as AnyComponent,
     ContentSection: '' as AnyComponent,
     PropertiesSection: '' as AnyComponent,
+    MarkupPropertiesSection: '' as AnyComponent,
     RelationsSection: '' as AnyComponent,
     CommunicationMessagesSection: '' as AnyComponent,
     OldMessagesSection: '' as AnyComponent
@@ -96,6 +98,8 @@ export default mergeIds(cardId, card, {
     CardChildList: '' as Ref<Viewlet>,
     CardFeedDescriptor: '' as Ref<ViewletDescriptor>,
     CardFeed: '' as Ref<Viewlet>,
+    CardGridDescriptor: '' as Ref<ViewletDescriptor>,
+    CardGrid: '' as Ref<Viewlet>,
     CardRelationshipTable: '' as Ref<Viewlet>
   },
   string: {
@@ -129,6 +133,7 @@ export default mergeIds(cardId, card, {
     CreateSpace: '' as IntlString,
     NumberTypes: '' as IntlString,
     Properties: '' as IntlString,
+    RichtextProperties: '' as IntlString,
     NoChildren: '' as IntlString,
     AddCollaborators: '' as IntlString,
     CardTitle: '' as IntlString,

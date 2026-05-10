@@ -15,7 +15,7 @@
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
-  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore, getAnonymousRefs } from '@hcengineering/contact-resources'
   import core, {
     Data,
     RolesAssignment,
@@ -58,6 +58,7 @@
   let spaceType: WithLookup<SpaceType> | undefined
 
   $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
+  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore, owners)
   $: void loadSpaceType(typeId)
   const loadSpaceType = reduceCalls(async (id: typeof typeId): Promise<void> => {
     spaceType =
@@ -248,6 +249,7 @@
       </div>
       <AccountArrayEditor
         value={owners}
+        excludeItems={readOnlyGuestOwnerExcludeItems}
         label={core.string.Owners}
         onChange={handleOwnersChanged}
         kind={'regular'}

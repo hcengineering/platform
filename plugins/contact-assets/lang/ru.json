@@ -129,6 +129,26 @@
     "TranslateTo": "Переводить на",
     "DontTranslate": "Не переводить",
     "SelectLanguage": "Выберите язык",
-    "SelectLanguages": "Выберите языки"
+    "SelectLanguages": "Выберите языки",
+    "WorkspaceStatusNote": "Статус пользователя",
+    "WorkspaceStatusUntil": "Показывать до",
+    "WorkspaceStatusMenu": "Ваш статус",
+    "WorkspaceStatusSetYour": "Установить статус",
+    "WorkspaceStatusUpdateYour": "Обновить статус",
+    "WorkspaceStatusMessage": "Какой ваш статус?",
+    "WorkspaceStatusAway": "Отошёл",
+    "WorkspaceStatusVacation": "В отпуске",
+    "WorkspaceStatusOutSick": "На больничном",
+    "WorkspaceStatusClear": "Очистить статус",
+    "WorkspaceStatusSave": "Сохранить",
+    "WorkspaceStatusQuickPick": "Быстрые статусы",
+    "WorkspaceStatusComposeHint": "Краткая заметка (необязательно)",
+    "WorkspaceStatusClearUntil": "Сбросить дату",
+    "WorkspaceStatusDoNotClear": "Не сбрасывать статус автоматически",
+    "WorkspaceStatusIn30Min": "Через 30 минут",
+    "WorkspaceStatusIn1Hour": "Через 1 час",
+    "WorkspaceStatusIn4Hours": "Через 4 часа",
+    "WorkspaceStatusEndOfDay": "До конца дня",
+    "WorkspaceStatusPickDate": "Выбрать дату"
   }
 }

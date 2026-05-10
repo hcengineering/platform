@@ -184,6 +184,7 @@ const cardPlugin = plugin(cardId, {
     Feed: '' as Asset,
     All: '' as Asset,
     Duplicate: '' as Asset,
+    Grid: '' as Asset,
     Lock: '' as Asset
   },
   extensions: {
@@ -204,6 +205,7 @@ const cardPlugin = plugin(cardId, {
     AddTag: '' as IntlString,
     Feed: '' as IntlString,
     AllCards: '' as IntlString,
+    Grid: '' as IntlString,
     Favorites: '' as IntlString,
     CreateCard: '' as IntlString,
     AllowCreatingCards: '' as IntlString,
@@ -219,6 +221,7 @@ const cardPlugin = plugin(cardId, {
     Children: '' as Ref<CardSection>,
     Content: '' as Ref<CardSection>,
     Properties: '' as Ref<CardSection>,
+    MarkupProperties: '' as Ref<CardSection>,
     Relations: '' as Ref<CardSection>,
     OldMessages: '' as Ref<CardSection>,
     CommunicationMessages: '' as Ref<CardSection>

@@ -92,7 +92,7 @@
 
       <div class="flex-between flex-gap-2 h-4">
         <div class="flex-row-center flex-gap-2 font-regular-12">
-          <PersonIdPresenter value={object.createdBy} noUnderline avatarSize="tiny" />
+          <PersonIdPresenter value={object.createdBy} withPadding={false} noUnderline avatarSize="tiny" />
           <span>•</span>
           <span class="flex-no-shrink">
             <TimestampPresenter value={version?.lastModified ?? object.createdOn ?? object.modifiedOn} />

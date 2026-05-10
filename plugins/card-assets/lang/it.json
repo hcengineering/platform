@@ -82,6 +82,8 @@
     "SectionUnlocked": "Sezione {section} sbloccata",
     "LayoutAuto": "Auto",
     "SingleColumn": "Una colonna",
-    "TwoColumns": "Due colonne"
+    "TwoColumns": "Due colonne",
+    "Grid": "Griglia",
+    "RichtextProperties": "Campo di testo"
   }
 }

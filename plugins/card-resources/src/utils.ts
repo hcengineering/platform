@@ -294,12 +294,10 @@ async function cloneCard (
     : [core.class.TypeCollaborativeDoc, core.class.TypeIdentifier]
 
   for (const [key, attr] of attrs) {
-    if (attr.hidden !== true) {
-      if (attr.type._class === core.class.Collection) {
-        ;(props as any)[key] = 0
-      } else if (!skipClasses.includes(attr.type._class)) {
-        ;(props as any)[key] = (origin as any)[key]
-      }
+    if (attr.type._class === core.class.Collection) {
+      ;(props as any)[key] = 0
+    } else if (!skipClasses.includes(attr.type._class)) {
+      ;(props as any)[key] = (origin as any)[key]
     }
   }
   for (const [k, v] of Object.entries(overrideProps)) {
@@ -321,10 +319,8 @@ async function cloneCard (
     const mixinAttrs = h.getOwnAttributes(mixin)
     const as = h.as(origin, mixin)
     const attributes: Partial<Data<Doc>> = {}
-    for (const [key, attr] of mixinAttrs) {
-      if (attr.readonly !== true && attr.hidden !== true) {
-        ;(attributes as any)[key] = (as as any)[key]
-      }
+    for (const [key] of mixinAttrs) {
+      ;(attributes as any)[key] = (as as any)[key]
     }
     await ops.createMixin(targetId, base, origin.space, mixin, attributes)
   }

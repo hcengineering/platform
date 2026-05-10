@@ -14,10 +14,17 @@
 // limitations under the License.
 //
 
-import { generateId, newMetrics, type WorkspaceIds } from '@hcengineering/core'
+import { createRestTxOperations } from '@hcengineering/api-client'
+import { type Class, type Doc, generateId, newMetrics, type Ref, type WorkspaceIds } from '@hcengineering/core'
 import { StorageConfiguration, initStatisticsContext } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
-import { getClient as getAccountClientRaw, AccountClient, isWorkspaceLoginInfo } from '@hcengineering/account-client'
+import {
+  getClient as getAccountClientRaw,
+  AccountClient,
+  isWorkspaceLoginInfo,
+  type WorkspaceLoginInfo
+} from '@hcengineering/account-client'
+import { getPublicLink } from '@hcengineering/server-guest-resources'
 import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
@@ -97,7 +104,13 @@ const extractToken = (headers: IncomingHttpHeaders, queryParams: any): string =>
   }
 }
 
-type AsyncRequestHandler = (req: Request, res: Response, wsIds: WorkspaceIds, next: NextFunction) => Promise<void>
+type AsyncRequestHandler = (
+  req: Request,
+  res: Response,
+  wsIds: WorkspaceIds,
+  wsLoginInfo: WorkspaceLoginInfo,
+  next: NextFunction
+) => Promise<void>
 
 const handleRequest = async (
   fn: AsyncRequestHandler,
@@ -116,7 +129,7 @@ const handleRequest = async (
       dataId: wsLoginInfo.workspaceDataId,
       url: wsLoginInfo.workspaceUrl
     }
-    await fn(req, res, wsIds, next)
+    await fn(req, res, wsIds, wsLoginInfo, next)
   } catch (err: unknown) {
     next(err)
   }
@@ -125,6 +138,33 @@ const handleRequest = async (
 const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, next: NextFunction) => {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   handleRequest(fn, req, res, next)
+}
+
+function parsePrintOptions (query: Request['query']): PrintOptions {
+  const kind = query.kind as PrintOptions['kind']
+
+  if (kind !== undefined && !validKinds.includes(kind as any)) {
+    throw new ApiError(400, `Invalid print kind: ${kind}`)
+  }
+
+  const rawWidth = (query.width ?? '') as string
+  const rawHeight = (query.height ?? '') as string
+
+  let viewport: PrintOptions['viewport'] | undefined
+  if (rawWidth.length > 0 && rawHeight.length > 0) {
+    viewport = {
+      width: parseInt(rawWidth, 10),
+      height: parseInt(rawHeight, 10)
+    }
+
+    if (Number.isNaN(viewport.width) || Number.isNaN(viewport.height)) {
+      throw new ApiError(400, 'Invalid width or height')
+    }
+  } else if (rawWidth.length > 0 || rawHeight.length > 0) {
+    throw new ApiError(400, 'Both width and height must be provided')
+  }
+
+  return { kind, viewport }
 }
 
 export function createServer (
@@ -154,7 +194,7 @@ export function createServer (
 
   app.get(
     '/print',
-    wrapRequest(async (req, res, wsIds, token) => {
+    wrapRequest(async (req, res, wsIds, wsLoginInfo) => {
       const ctx = req.ctx
       const rawlink = req.query.link as string
       const link = decodeURIComponent(rawlink)
@@ -165,36 +205,15 @@ export function createServer (
         !['http:', 'https:'].includes(url.protocol) ||
         (whitelistedHostnames != null && !whitelistedHostnames.has(url.hostname))
       ) {
-        ctx.error('Rejected processing unexpected link', { link, token })
+        ctx.error('Rejected processing unexpected link', { link })
         throw new ApiError(403, 'Cannot process provided link')
       }
 
-      const kind = req.query.kind as PrintOptions['kind']
+      const options = parsePrintOptions(req.query)
 
-      if (kind !== undefined && !validKinds.includes(kind as any)) {
-        throw new ApiError(400, `Invalid print kind: ${kind}`)
-      }
-
-      const rawWidth = (req.query.width ?? '') as string
-      const rawHeight = (req.query.height ?? '') as string
-
-      let viewport: PrintOptions['viewport'] | undefined
-      if (rawWidth.length > 0 && rawHeight.length > 0) {
-        viewport = {
-          width: parseInt(rawWidth, 10),
-          height: parseInt(rawHeight, 10)
-        }
-
-        if (Number.isNaN(viewport.width) || Number.isNaN(viewport.height)) {
-          throw new ApiError(400, 'Invalid width or height')
-        }
-      } else if (rawWidth.length > 0 || rawHeight.length > 0) {
-        throw new ApiError(400, 'Both width and height must be provided')
-      }
-
-      const printRes = await ctx.with('print', { kind }, (ctx) => print(ctx, link, { kind, viewport }), {
+      const printRes = await ctx.with('print', { kind: options.kind }, (ctx) => print(ctx, link, options), {
         url,
-        viewport
+        viewport: options.viewport
       })
 
       if (printRes === undefined) {
@@ -203,7 +222,7 @@ export function createServer (
 
       const printId = `print-${generateId()}`
 
-      await storageAdapter.put(ctx, wsIds, printId, printRes, `application/${kind}`, printRes.length)
+      await storageAdapter.put(ctx, wsIds, printId, printRes, `application/${options.kind}`, printRes.length)
 
       res.contentType('application/json')
       res.send({ id: printId })
@@ -249,6 +268,44 @@ export function createServer (
 
       res.contentType('application/json')
       res.send({ id: convertId })
+    })
+  )
+
+  app.get(
+    '/print/:objectClass/:objectId',
+    wrapRequest(async (req, res, wsIds, wsLoginInfo) => {
+      const ctx = req.ctx
+      const objectId = req.params.objectId
+      const objectClass = req.params.objectClass
+      const options = parsePrintOptions(req.query)
+
+      const transactorUrl = wsLoginInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
+      const client = await createRestTxOperations(transactorUrl, wsLoginInfo.workspace, wsLoginInfo.token)
+
+      try {
+        const doc = await client.findOne(objectClass as Ref<Class<Doc>>, { _id: objectId as Ref<Doc> })
+        if (doc === undefined) {
+          throw new ApiError(404, 'Document not found')
+        }
+
+        const link = await getPublicLink(doc, client, wsIds, true, null)
+
+        const printRes = await ctx.with('print', { kind: options.kind }, (ctx) => print(ctx, link, options), {
+          link,
+          viewport: options.viewport
+        })
+
+        if (printRes === undefined) {
+          throw new ApiError(400, 'Failed to print')
+        }
+
+        const kind = options.kind
+        const contentType = kind === 'pdf' || kind === undefined ? 'application/pdf' : `image/${kind}`
+        res.contentType(contentType)
+        res.send(printRes)
+      } finally {
+        await client.close()
+      }
     })
   )
 

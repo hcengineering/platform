@@ -93,6 +93,8 @@
     "Round": "Arrondir",
     "Floor": "Arrondir vers le bas",
     "Ceil": "Arrondir vers le haut",
+    "Min": "Min",
+    "Max": "Max",
     "Absolute": "Valeur absolue",
     "LogAction": "Événement",
     "Started": "Démarré",
@@ -168,7 +170,10 @@
     "YearFromDate": "Année depuis date",
     "MonthFromDate": "Mois depuis date",
     "DayFromDate": "Jour depuis date",
-    "DateDifference": "Différence de dates"
+    "DateDifference": "Différence de dates",
+    "EmptyValue": "Valeur vide",
+    "TextFromMarkup": "Texte depuis markup",
+    "MarkupFromText": "Markup depuis texte"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

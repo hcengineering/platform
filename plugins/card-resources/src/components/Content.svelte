@@ -14,7 +14,15 @@
 -->
 <script lang="ts">
   import card, { Card } from '@hcengineering/card'
-  import { getClient, FilePreview } from '@hcengineering/presentation'
+  import { BlobType } from '@hcengineering/core'
+  import presentation, {
+    deleteFile,
+    FilePreview,
+    getClient,
+    getFileUrl,
+    IconDownload
+  } from '@hcengineering/presentation'
+  import { getEventPositionElement, IconDelete, Menu, showPopup, type Action } from '@hcengineering/ui'
   import Description from './Description.svelte'
   import FilePlaceholder from './FilePlaceholder.svelte'
 
@@ -27,6 +35,44 @@
   const hierarchy = client.getHierarchy()
 
   $: isFile = hierarchy.isDerived(doc._class, card.types.File)
+
+  async function showContextMenu (blob: BlobType, ev: MouseEvent) {
+    ev.preventDefault()
+    ev.stopPropagation()
+    const actions: Action[] = [
+      {
+        label: presentation.string.Download,
+        icon: IconDownload,
+        action: async () => {
+          const url = getFileUrl(blob.file, blob.name)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = blob.name
+          a.target = '_blank'
+          a.click()
+        }
+      }
+    ]
+
+    if (!readonly) {
+      actions.push({
+        label: presentation.string.Delete,
+        icon: IconDelete,
+        action: async () => {
+          const blobs = { ...doc.blobs }
+          const key = Object.keys(blobs).find((k) => blobs[k] === blob)
+          if (key) {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete blobs[key]
+            await client.update(doc, { blobs })
+            await deleteFile(blob.file)
+          }
+        }
+      })
+    }
+
+    showPopup(Menu, { actions }, getEventPositionElement(ev))
+  }
 </script>
 
 {#if isFile && Object.keys(doc.blobs ?? {}).length === 0 && !readonly}
@@ -40,6 +86,7 @@
     name={blob.name}
     metadata={blob.metadata}
     fit={blob.type !== 'application/pdf'}
+    on:contextmenu={(ev) => showContextMenu(blob, ev)}
   />
 {/each}
 

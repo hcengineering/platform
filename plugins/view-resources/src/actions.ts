@@ -42,6 +42,18 @@ import { type FocusSelection, type SelectionStore } from './selection'
 import { restrictionStore } from './utils'
 
 /**
+ * Collapses a single-element array to the element, otherwise returns the original value.
+ *
+ * @public
+ */
+export function normalizeActionContext<T extends Doc> (doc: T | T[] | undefined): T | T[] | undefined {
+  if (Array.isArray(doc) && doc.length === 1) {
+    return doc[0]
+  }
+  return doc
+}
+
+/**
  * @public
  */
 export function getSelection (focus: FocusSelection, selection: SelectionStore): Doc[] {
@@ -114,7 +126,7 @@ export async function filterAvailableActions (
     } else {
       const visibilityTester = await getResource(action.visibilityTester)
 
-      if (await visibilityTester(doc)) {
+      if (await visibilityTester(normalizeActionContext(doc))) {
         result.push(action)
       }
     }
@@ -132,7 +144,7 @@ export async function invokeAction (
 ): Promise<void> {
   const impl = await getResource(action.action)
   Analytics.handleEvent(action.analyticsEvent ?? action._id)
-  await impl(Array.isArray(object) && object.length === 1 ? object[0] : object, evt, {
+  await impl(normalizeActionContext(object), evt, {
     ...action.actionProps,
     ...props
   })

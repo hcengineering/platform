@@ -95,6 +95,7 @@
   class:content-default={!embedded}
   class:content-embedded={embedded}
   class:flex-center={fit && !audio}
+  on:contextmenu
   style:min-height={fit ? '0' : `${minHeight ?? 0}px`}
 >
   {#await srcRef then src}

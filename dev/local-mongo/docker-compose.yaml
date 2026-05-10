@@ -153,6 +153,7 @@ services:
       - MONGO_URL=mongodb://huly.local:27017?compressors=snappy
       - 'MONGO_OPTIONS={"appName":"print","maxPoolSize":1}'
       - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - FRONT_URL=http://huly.local:8087
     deploy:
       resources:
         limits:

@@ -42,7 +42,9 @@
 
 <span class="emoji-{size} flex-row-center emoji" class:inline class:fitSize={inline}>
   {#if value !== undefined}
-    {value}
+    <span class="value">
+      {value}
+    </span>
   {:else}
     {#await getBlobRef(asRef(icon)) then iconBlob}
       <img src={iconBlob.src} srcset={iconBlob.srcset} alt="icon" />
@@ -103,8 +105,19 @@
     font-size: 1.5rem;
   }
   .emoji-full {
-    width: inherit;
-    height: inherit;
+    width: 100%;
+    height: 100%;
+    container-type: size;
+
+    .value {
+      font-size: 70cqmin;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
   }
   .emoji-smaller,
   .emoji-x-small,

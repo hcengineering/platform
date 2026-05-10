@@ -917,7 +917,6 @@ function defineSettings (builder: Builder): void {
       application: training.app.Training,
       role: AccountRole.Guest,
       permissions: [training.ids.GuestTrainingAttemptClassPermission],
-      spaceClass: core.class.TypedSpace,
       enabled: true,
       order: 25
     },
@@ -931,7 +930,6 @@ function defineSettings (builder: Builder): void {
       application: training.app.Training,
       role: AccountRole.ReadOnlyGuest,
       permissions: [],
-      spaceClass: core.class.TypedSpace,
       enabled: false,
       order: 25
     },

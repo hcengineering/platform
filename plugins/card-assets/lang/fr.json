@@ -82,6 +82,8 @@
     "SectionUnlocked": "Section {section} déverrouillée",
     "LayoutAuto": "Auto",
     "SingleColumn": "Une colonne",
-    "TwoColumns": "Deux colonnes"
+    "TwoColumns": "Deux colonnes",
+    "Grid": "Grille",
+    "RichtextProperties": "Champs de texte"
   }
 }

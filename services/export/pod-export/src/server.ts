@@ -126,6 +126,7 @@ const extractQueryToken = (queryParams: any): string | null => {
 }
 
 interface RelationPayloadEntry {
+  sourceClass?: Ref<Class<Doc>>
   field?: string
   class?: Ref<Class<Doc>>
   direction?: 'forward' | 'inverse'
@@ -154,6 +155,7 @@ const normalizeRelations = (input: unknown): RelationDefinition[] | undefined =>
       }
 
       result.push({
+        ...(item.sourceClass !== undefined ? { sourceClass: item.sourceClass } : {}),
         field: item.field,
         class: item.class,
         direction: item.direction ?? 'forward'
@@ -180,7 +182,12 @@ const normalizeRelations = (input: unknown): RelationDefinition[] | undefined =>
       }
 
       const field = typeof value.field === 'string' ? value.field : key
-      result.push({ field, class: value.class, direction: value.direction ?? 'forward' })
+      result.push({
+        ...(value.sourceClass !== undefined ? { sourceClass: value.sourceClass } : {}),
+        field,
+        class: value.class,
+        direction: value.direction ?? 'forward'
+      })
     }
 
     return result.length > 0 ? result : undefined

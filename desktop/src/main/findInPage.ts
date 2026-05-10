@@ -27,7 +27,7 @@ const pagesWithFoundInPageListener = new WeakSet<WebContents>()
 const overlayViewsByWindowId = new Map<number, BrowserView>()
 const overlayVisibleByWindowId = new Map<number, boolean>()
 
-const OVERLAY_WIDTH = 392
+const OVERLAY_WIDTH = 432
 const OVERLAY_HEIGHT = 64
 
 function resolveFindTarget (sender: WebContents): WebContents {

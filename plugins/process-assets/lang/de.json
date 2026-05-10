@@ -163,7 +163,12 @@
     "YearFromDate": "Jahr aus Datum",
     "MonthFromDate": "Monat aus Datum",
     "DayFromDate": "Tag aus Datum",
-    "DateDifference": "Datumsdifferenz"
+    "DateDifference": "Datumsdifferenz",
+    "EmptyValue": "Leerer Wert",
+    "Min": "Min",
+    "Max": "Max",
+    "TextFromMarkup": "Text aus Markup",
+    "MarkupFromText": "Markup aus Text"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

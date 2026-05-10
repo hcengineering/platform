@@ -92,6 +92,8 @@
     "Sqrt": "Квадратный корень",
     "Round": "Округлить",
     "Floor": "Округлить вниз",
+    "Min": "Минимум",
+    "Max": "Максимум",
     "Ceil": "Округлить вверх",
     "Absolute": "Абсолютное значение",
     "LogAction": "Событие",
@@ -168,7 +170,10 @@
     "YearFromDate": "Год из даты",
     "MonthFromDate": "Месяц из даты",
     "DayFromDate": "День из даты",
-    "DateDifference": "Разница дат"
+    "DateDifference": "Разница дат",
+    "EmptyValue": "Пустое значение",
+    "MarkupFromText": "Текст из разметки",
+    "TextFromMarkup": "Разметка из текста"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",
