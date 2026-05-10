@@ -58,6 +58,7 @@ import {
   type UpdateCriteriaComponent,
   type UserResult
 } from '@hcengineering/process'
+import { isEmptyMarkup } from '@hcengineering/text-core'
 import { showPopup } from '@hcengineering/ui'
 import { type AttributeCategory } from '@hcengineering/view'
 import process from './plugin'
@@ -821,6 +822,17 @@ export async function approveRequestRejected (
   return context.todo?.group === params._id && context.todo?.approved === false
 }
 
+function getMarkupParams (card: Card, params: Record<string, any>, client: Client): Record<string, any> {
+  const markup: Record<string, any> = {}
+  for (const [key, value] of Object.entries(params)) {
+    const attr = client.getHierarchy().findAttribute(card._class, key)
+    if (attr?.type?._class === core.class.TypeMarkup) {
+      markup[key] = value
+    }
+  }
+  return markup
+}
+
 export function matchCardCheck (
   client: Client,
   execution: Execution,
@@ -834,6 +846,11 @@ export function matchCardCheck (
   if (client.getHierarchy().isMixin(process.masterTag)) {
     doc = client.getHierarchy().as(doc, process.masterTag)
   }
+  const markup = getMarkupParams(doc, params, client)
+  for (const key of Object.keys(markup)) {
+    if (isEmptyMarkup(doc[key])) return false
+  }
+
   const res = matchQuery([doc], params, doc._class, client.getHierarchy(), true)
   return res.length > 0
 }
@@ -849,6 +866,11 @@ export function fieldChangesCheck (
   const operations = (context.operations ?? {}) as DocumentUpdate<Doc>
   const target = Object.keys(params)[0]
   if (!TxProcessor.hasUpdate(operations, target)) return false
+  const markup = getMarkupParams(doc, params, client)
+  for (const key of Object.keys(markup)) {
+    if (isEmptyMarkup(doc[key])) return false
+  }
+
   const res = matchQuery([doc], params, doc._class, client.getHierarchy(), true)
   return res.length > 0
 }
@@ -937,6 +959,9 @@ export function getMockAttribute (_class: Ref<Class<Doc>>, label: IntlString, ty
 export async function checkProcessSectionVisibility (doc: Card): Promise<boolean> {
   const client = getClient()
   const anc = client.getHierarchy().getAncestors(doc._class)
-  const processes = client.getModel().findAllSync(process.class.Process, { masterTag: { $in: anc } })
+  const processes = client.getModel().findAllSync(process.class.Process, {
+    masterTag: { $in: anc },
+    automationOnly: { $ne: true }
+  })
   return processes.length > 0
 }

@@ -188,10 +188,13 @@ export async function rebuildRelationshipTableViewModel (
           continue
         }
 
+        const span = rowSpanByLevel[0][rowIdx]
+        const isFirstInSpan =
+          rowIdx === 0 || expandedRows[rowIdx - 1].docsByLevel[0]?._id !== rowData.docsByLevel[0]?._id
         cells.push({
           attribute: attr,
-          rowSpan: 1,
-          object: rowIdx === 0 ? parentDoc : undefined,
+          rowSpan: isFirstInSpan ? span : 0,
+          object: isFirstInSpan ? parentDoc : undefined,
           parentObject: undefined
         })
       }

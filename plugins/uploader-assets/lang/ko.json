@@ -1,0 +1,15 @@
+{
+    "string": {
+        "Cancel": "취소",
+        "Retry": "다시 시도",
+        "UploadFiles": "파일 업로드",
+        "UploadFolders": "폴더 업로드",
+        "UploadingTo": "{files, plural, =1 {파일 1개} other {파일 #개}} 업로드 중 — 대상:"
+    },
+    "status": {
+        "Error": "오류",
+        "Waiting": "대기 중",
+        "Uploading": "업로드 중",
+        "Completed": "완료됨"
+    }
+}

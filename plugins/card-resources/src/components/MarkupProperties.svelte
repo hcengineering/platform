@@ -33,7 +33,6 @@
   const hierarchy = client.getHierarchy()
 
   function updateKeys (_class: Ref<Class<Doc>>, to: Ref<Class<Doc>> | undefined): void {
-    console.log('tag', _class, to)
     const filtredKeys = [...hierarchy.getAllAttributes(_class, to).entries()]
       .filter(([key, value]) => value.hidden !== true && value.type._class === core.class.TypeMarkup)
       .map(([key, attr]) => ({ key, attr }))
@@ -64,14 +63,9 @@
 </script>
 
 {#each keys as key}
-  <div class="px-4 w-full">
+  <div class="w-full mt-2">
     <span>
       <Label label={key.attr.label} />
-      {#if tag}
-        <span class="text-xs">
-          (<Label label={tag.label} />)
-        </span>
-      {/if}
     </span>
     <MarkupEditor
       value={getValue(doc, key.key)}

@@ -24,6 +24,7 @@
 
   import { EditorKitOptions } from '../kits/editor-kit'
   import { addTableHandler } from '../utils'
+  import view from '@hcengineering/view'
   import { type FileAttachFunction } from './extension/types'
   import { inlineCommandsConfig } from './extensions'
 
@@ -280,28 +281,46 @@
       {isScrollable}
       {extraActions}
       {boundary}
-      kitOptions={mergeKitOptions(
-        {
-          emoji: true,
-          hooks: {
-            focus: {
-              onCanBlur: (value) => (canBlur = value),
-              onFocus: handleFocus
-            }
-          },
-          shortcuts: {
-            imageUpload: {
-              attachFile,
-              getFileUrl
-            }
-          },
-          inlineCommands: inlineCommandsConfig(
-            handleCommandSelected,
-            attachFile == null ? ['drawing-board', 'todo-list', 'image'] : ['drawing-board', 'todo-list']
-          )
+      kitOptions={{
+        emoji: true,
+        textColorStyling: true,
+        hooks: {
+          focus: {
+            onCanBlur: (value) => (canBlur = value),
+            onFocus: handleFocus
+          }
         },
-        kitOptions
-      )}
+        shortcuts: {
+          imageUpload: {
+            attachFile,
+            getFileUrl
+          }
+        },
+        inlineCommands: inlineCommandsConfig(
+          handleCommandSelected,
+          attachFile == null ? ['drawing-board', 'todo-list', 'image'] : ['drawing-board', 'todo-list']
+        ),
+        ...kitOptions,
+        leftMenu: {
+          width: 20,
+          height: 20,
+          marginX: 8,
+          className: 'tiptap-left-menu',
+          icon: view.icon.Add,
+          iconProps: {
+            className: 'svg-tiny',
+            fill: 'currentColor'
+          },
+          items: [
+            { id: 'image', label: textEditor.string.Image, icon: view.icon.Image },
+            { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
+            { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
+            { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
+            { id: 'mermaid', label: textEditor.string.MermaidDiargram, icon: view.icon.Model }
+          ],
+          handleSelect: handleCommandSelected
+        }
+      }}
       bind:content={rawValue}
       bind:this={editor}
       on:value={(evt) => {
@@ -355,6 +374,33 @@
 </div>
 
 <style lang="scss">
+  :global(.tiptap-left-menu) {
+    display: flex;
+    color: var(--theme-trans-color);
+    width: 20px;
+    height: 20px;
+    border-radius: 20%;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition:
+      background-color 0.2s,
+      opacity 0.2s;
+    position: absolute;
+    cursor: pointer;
+    transform: translateX(34px); /* Сдвигаем внутрь видимой зоны */
+
+    &:hover {
+      background-color: var(--theme-button-hovered);
+      color: var(--theme-content-color);
+    }
+
+    &.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+
   .styled-box {
     flex-grow: 1;
 
@@ -364,6 +410,18 @@
       transition: top 200ms;
       pointer-events: none;
       user-select: none;
+    }
+
+    :global(.textInput),
+    :global(.inputMsg),
+    :global(.select-text),
+    :global(.inputMsg > div) {
+      overflow: visible !important;
+    }
+
+    :global(.select-text) {
+      padding-left: 40px; /* Увеличил отступ */
+      position: relative;
     }
   }
 </style>

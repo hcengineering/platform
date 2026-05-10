@@ -756,4 +756,30 @@ export function defineFunctions (builder: Builder): void {
     },
     process.function.DayFromDate
   )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.EnumOf,
+      to: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.TextFromSelect,
+      type: 'convert'
+    },
+    process.function.StringFromEnum
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeString,
+      to: core.class.EnumOf,
+      category: 'attribute',
+      label: process.string.SelectFromText,
+      type: 'convert'
+    },
+    process.function.EnumFromString
+  )
 }

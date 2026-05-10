@@ -16,10 +16,12 @@
 <script lang="ts">
   import { Card } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor-resources'
+  import type { EditorKitOptions } from '@hcengineering/text-editor-resources'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
 
   export let value: string
+  export let kitOptions: Partial<EditorKitOptions> = { reference: true, emoji: true }
 
   const dispatch = createEventDispatcher()
   export let maxHeight: string = '40vh'
@@ -43,6 +45,15 @@
   on:changeContent
 >
   <div class="flex-grow mt-4">
-    <StyledTextBox autofocus content={value} alwaysEdit mode={2} hideExtraButtons {maxHeight} on:value={checkValue} />
+    <StyledTextBox
+      autofocus
+      content={value}
+      alwaysEdit
+      {kitOptions}
+      mode={2}
+      hideExtraButtons
+      {maxHeight}
+      on:value={checkValue}
+    />
   </div>
 </Card>

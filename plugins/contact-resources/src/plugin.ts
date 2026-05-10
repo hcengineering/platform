@@ -28,6 +28,7 @@ import {
 
 export default mergeIds(contactId, contact, {
   string: {
+    HideInactive: '' as IntlString,
     Apply: '' as IntlString,
     CreatePerson: '' as IntlString,
     OrganizationNamePlaceholder: '' as IntlString,

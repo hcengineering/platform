@@ -168,7 +168,10 @@
     "DateDifference": "Tarih farkı",
     "EmptyValue": "Boş değer",
     "TextFromMarkup": "Metinden işaretleme",
-    "MarkupFromText": "İşaretlemeden metin"
+    "MarkupFromText": "İşaretlemeden metin",
+    "TextFromSelect": "Seçimden metin",
+    "SelectFromText": "Metinden seçim",
+    "AskSubclass": "Alt sınıfı sor"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

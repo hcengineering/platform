@@ -550,7 +550,7 @@ export function createModel (builder: Builder): void {
           {
             key: 'showDone',
             type: 'toggle',
-            defaultValue: true,
+            defaultValue: false,
             actionTarget: 'query',
             action: process.function.ShowDoneQuery,
             label: process.string.ShowDone
@@ -794,6 +794,24 @@ export function createModel (builder: Builder): void {
     of: core.class.TypeString,
     props: {
       modes: ['Equal', 'StringContains', 'Exists']
+    }
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'attribute',
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeMarkup,
+    props: {
+      modes: ['StringContains', 'Exists']
+    }
+  })
+
+  builder.createDoc(process.class.UpdateCriteriaComponent, core.space.Model, {
+    category: 'inplace',
+    editor: process.criteriaEditor.BaseCriteria,
+    of: core.class.TypeMarkup,
+    props: {
+      modes: ['StringContains', 'Exists']
     }
   })
 

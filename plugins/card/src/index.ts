@@ -214,14 +214,14 @@ const cardPlugin = plugin(cardId, {
     LockSection: '' as IntlString,
     UnLockSection: '' as IntlString,
     SectionLocked: '' as IntlString,
-    SectionUnlocked: '' as IntlString
+    SectionUnlocked: '' as IntlString,
+    ShowAllVersions: '' as IntlString
   },
   section: {
     Attachments: '' as Ref<CardSection>,
     Children: '' as Ref<CardSection>,
     Content: '' as Ref<CardSection>,
     Properties: '' as Ref<CardSection>,
-    MarkupProperties: '' as Ref<CardSection>,
     Relations: '' as Ref<CardSection>,
     OldMessages: '' as Ref<CardSection>,
     CommunicationMessages: '' as Ref<CardSection>
