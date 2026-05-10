@@ -66,7 +66,6 @@
   <div class="w-full mt-2">
     <span>
       <Label label={key.attr.label} />
-      {readonly}
     </span>
     <MarkupEditor
       value={getValue(doc, key.key)}
