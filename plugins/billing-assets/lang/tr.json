@@ -56,6 +56,12 @@
     "Of": "/",
     "UpgradePlan": "Planı Yükselt",
     "LimitReached": "Çalışma alanı limiti aşıldı, bazı işlevler devre dışı bırakılabilir. Tam erişimi geri yüklemek için yükseltin.",
+    "LimitExceededWarningTitle": "Limitler aşıldı — kısıtlamalar {date} tarihinden itibaren",
+    "LimitExceededWarningHint": "Çalışma alanınız plan limitlerini aşıyor. Yükseltme yapmazsanız bazı özellikler {date} tarihinden itibaren kısıtlanacaktır.",
+    "LimitExceededRestrictedTitle": "Bazı özellikler kısıtlandı",
+    "LimitExceededRestrictedHint": "Çalışma alanınız plan limitlerini aşıyor. Tam erişimi geri yüklemek için planı yükseltin.",
+    "UploadRestrictedToast": "Dosya yükleme kullanılamıyor: plan limiti aşıldı. Devam etmek için planı yükseltin.",
+    "UpgradePlanCta": "Planı yükselt",
     "RestrictedPlans": "Abonelik planını yalnızca çalışma alanı sahibi veya faturalama yöneticisi değiştirebilir.",
     "SubscriptionOperationFailed": "Abonelik işlemi başarısız oldu",
     "SubscriptionErrorMessage": "Bir şeyler yanlış gitti. Lütfen tekrar deneyin veya destek ile iletişime geçin."

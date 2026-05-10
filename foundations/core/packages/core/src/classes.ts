@@ -927,6 +927,7 @@ export interface UsageStatus {
   usage: Record<string, number>
   startTime: Timestamp
   updateTime: Timestamp
+  limitsExceededSince?: Timestamp // Timestamp when current usage first exceeded the workspace plan limits.
 }
 
 export interface WorkspaceInfoWithStatus extends WorkspaceInfo {

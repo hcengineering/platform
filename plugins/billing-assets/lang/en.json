@@ -56,6 +56,12 @@
     "Of": "of",
     "UpgradePlan": "Upgrade Plan",
     "LimitReached": "Workspace limit reached, some functionality may be disabled. Upgrade to restore full access.",
+    "LimitExceededWarningTitle": "Limits exceeded — restrictions from {date}",
+    "LimitExceededWarningHint": "Your workspace is over the plan limits. Some features will be restricted starting {date} unless you upgrade.",
+    "LimitExceededRestrictedTitle": "Some features are restricted",
+    "LimitExceededRestrictedHint": "Your workspace exceeds the plan limits. Upgrade your plan to restore full access.",
+    "UploadRestrictedToast": "File upload is unavailable: workspace plan limit reached. Upgrade your plan to keep uploading new files.",
+    "UpgradePlanCta": "Upgrade plan",
     "RestrictedPlans": "Only the workspace owner or billing manager can change the subscription plan",
     "SubscriptionOperationFailed": "Subscription operation failed",
     "SubscriptionErrorMessage": "Something went wrong. Please try again or contact support."

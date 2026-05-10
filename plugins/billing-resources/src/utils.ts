@@ -33,9 +33,10 @@ import {
   hasAccountRole
 } from '@hcengineering/core'
 import { showPopup } from '@hcengineering/ui'
-import { type Tier } from '@hcengineering/billing'
+import { getTierLimitsBytes, type RestrictedFeature, type Tier } from '@hcengineering/billing'
 
 import { setSubscriptionState, updateLimitExceeded, subscriptionStore } from './stores/subscription'
+import { restrictionStore, isFeatureRestricted as isFeatureRestrictedIn } from './stores/restriction'
 import SubscriptionsModal from './components/SubscriptionsModal.svelte'
 
 export function getAccountClient (): AccountClient | null {
@@ -67,33 +68,8 @@ export function getPaymentClient (): PaymentClient | null {
   return getPaymentClientRaw(paymentUrl, token)
 }
 
-export async function isLimitExceeded (): Promise<boolean> {
-  try {
-    const accountClient = getAccountClient()
-    if (accountClient == null) return false
-
-    const workspaceInfo = await accountClient.getWorkspaceInfo(false)
-    const usageInfo = workspaceInfo?.usageInfo ?? null
-
-    if (usageInfo === null) {
-      return false
-    }
-
-    const subscription = await getCurrentSubscription(accountClient)
-    if (subscription == null) {
-      return true
-    }
-
-    const tier = await getTierByPlan(subscription.plan)
-    if (tier == null) {
-      return true
-    }
-
-    return checkUsageAgainstLimits(usageInfo, tier)
-  } catch (error) {
-    console.error('Error checking usage limits:', error)
-    return false
-  }
+export function isFeatureRestricted (feature: RestrictedFeature): boolean {
+  return isFeatureRestrictedIn(feature, get(restrictionStore))
 }
 
 export async function checkWorkspaceLimits (): Promise<void> {
@@ -150,12 +126,16 @@ function getTierPlan (tierId: string): string {
 }
 
 export function calculateLimits (tier: Tier | undefined): { storageLimit: number, trafficLimit: number } {
-  const DEFAULT_STORAGE_GB = 10
-  const DEFAULT_TRAFFIC_GB = 10
-
+  if (tier !== undefined) {
+    return {
+      storageLimit: tier.storageLimitGB * 1e9,
+      trafficLimit: tier.trafficLimitGB * 1e9
+    }
+  }
+  const fallback = getTierLimitsBytes(undefined)
   return {
-    storageLimit: (tier?.storageLimitGB ?? DEFAULT_STORAGE_GB) * 1e9,
-    trafficLimit: (tier?.trafficLimitGB ?? DEFAULT_TRAFFIC_GB) * 1e9
+    storageLimit: fallback.storageBytes,
+    trafficLimit: fallback.trafficBytes
   }
 }
 

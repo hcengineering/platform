@@ -56,6 +56,12 @@
     "Of": "/",
     "UpgradePlan": "プランをアップグレード",
     "LimitReached": "ワークスペースの制限に達しました。一部の機能が無効になる場合があります。アップグレードして完全アクセスを復元してください。",
+    "LimitExceededWarningTitle": "制限を超過しました — {date} から制限が適用されます",
+    "LimitExceededWarningHint": "ワークスペースがプランの制限を超えています。アップグレードしない場合、{date} から一部の機能が制限されます。",
+    "LimitExceededRestrictedTitle": "一部の機能が制限されています",
+    "LimitExceededRestrictedHint": "ワークスペースがプランの制限を超えています。プランをアップグレードして完全アクセスを復元してください。",
+    "UploadRestrictedToast": "ファイルのアップロードはご利用いただけません: プラン制限に達しました。プランをアップグレードして続行してください。",
+    "UpgradePlanCta": "プランをアップグレード",
     "RestrictedPlans": "ワークスペースの所有者または請求管理者のみがサブスクリプションプランを変更できます。",
     "SubscriptionOperationFailed": "サブスクリプション操作に失敗しました",
     "SubscriptionErrorMessage": "問題が発生しました。もう一度お試しいただくか、サポートにお問い合わせください。"

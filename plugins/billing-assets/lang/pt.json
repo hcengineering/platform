@@ -56,6 +56,12 @@
     "Of": "de",
     "UpgradePlan": "Atualizar Plano",
     "LimitReached": "Limite do workspace atingido, algumas funcionalidades podem estar desabilitadas. Atualize para restaurar acesso completo.",
+    "LimitExceededWarningTitle": "Limites excedidos — restrições a partir de {date}",
+    "LimitExceededWarningHint": "O seu workspace excede os limites do plano. Algumas funcionalidades serão restritas a partir de {date} se não atualizar.",
+    "LimitExceededRestrictedTitle": "Algumas funcionalidades estão restritas",
+    "LimitExceededRestrictedHint": "O seu workspace excede os limites do plano. Atualize o plano para restaurar o acesso completo.",
+    "UploadRestrictedToast": "Carregamento de ficheiros indisponível: limite do plano atingido. Atualize o plano para continuar.",
+    "UpgradePlanCta": "Atualizar plano",
     "RestrictedPlans": "Apenas o proprietário do workspace ou o administrador de faturamento podem alterar o plano de assinatura.",
     "SubscriptionOperationFailed": "Falha na operação de assinatura",
     "SubscriptionErrorMessage": "Algo deu errado. Tente novamente ou entre em contato com o suporte."

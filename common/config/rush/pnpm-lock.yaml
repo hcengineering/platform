@@ -37730,6 +37730,9 @@ importers:
       '@hcengineering/analytics-service':
         specifier: workspace:^0.7.19
         version: link:../../../foundations/core/packages/analytics-service
+      '@hcengineering/billing':
+        specifier: workspace:^0.7.0
+        version: link:../../../plugins/billing
       '@hcengineering/core':
         specifier: workspace:^0.7.26
         version: link:../../../foundations/core/packages/core

@@ -56,6 +56,12 @@
     "Of": "z",
     "UpgradePlan": "Upgradovat plán",
     "LimitReached": "Dosažen limit pracovního prostoru, některé funkce mohou být zakázány. Upgradujte pro obnovení plného přístupu.",
+    "LimitExceededWarningTitle": "Limity překročeny — omezení od {date}",
+    "LimitExceededWarningHint": "Pracovní prostor překračuje limity tarifu. Některé funkce budou omezeny od {date}, pokud plán neaktualizujete.",
+    "LimitExceededRestrictedTitle": "Některé funkce jsou omezeny",
+    "LimitExceededRestrictedHint": "Pracovní prostor překračuje limity tarifu. Aktualizujte plán pro obnovení plného přístupu.",
+    "UploadRestrictedToast": "Nahrávání souborů není dostupné: dosažen limit tarifu. Aktualizujte plán pro pokračování.",
+    "UpgradePlanCta": "Upgradovat plán",
     "RestrictedPlans": "Pouze vlastník pracovního prostoru nebo správce fakturace může změnit plán předplatného.",
     "SubscriptionOperationFailed": "Operace s předplatným se nezdařila",
     "SubscriptionErrorMessage": "Něco se pokazilo. Zkuste to znovu nebo kontaktujte podporu."

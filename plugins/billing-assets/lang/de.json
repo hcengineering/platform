@@ -56,6 +56,12 @@
     "Of": "von",
     "UpgradePlan": "Plan upgraden",
     "LimitReached": "Arbeitsbereich-Limit erreicht, einige Funktionen könnten deaktiviert sein. Upgraden Sie für vollen Zugriff.",
+    "LimitExceededWarningTitle": "Limits überschritten — Einschränkungen ab {date}",
+    "LimitExceededWarningHint": "Der Arbeitsbereich überschreitet die Plan-Limits. Einige Funktionen werden ab {date} eingeschränkt, sofern Sie nicht upgraden.",
+    "LimitExceededRestrictedTitle": "Einige Funktionen sind eingeschränkt",
+    "LimitExceededRestrictedHint": "Der Arbeitsbereich überschreitet die Plan-Limits. Upgraden Sie Ihren Plan für vollen Zugriff.",
+    "UploadRestrictedToast": "Datei-Upload nicht verfügbar: Plan-Limit erreicht. Upgraden Sie Ihren Plan, um weiter Dateien hochzuladen.",
+    "UpgradePlanCta": "Plan upgraden",
     "RestrictedPlans": "Nur der Arbeitsbereichsbesitzer oder Abrechnungsmanager kann den Abonnementplan ändern.",
     "SubscriptionOperationFailed": "Abonnementvorgang fehlgeschlagen",
     "SubscriptionErrorMessage": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support."

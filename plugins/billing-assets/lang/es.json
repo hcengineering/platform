@@ -56,6 +56,12 @@
     "Of": "de",
     "UpgradePlan": "Actualizar Plan",
     "LimitReached": "Límite del espacio de trabajo alcanzado, algunas funciones pueden estar deshabilitadas. Actualiza para restaurar acceso completo.",
+    "LimitExceededWarningTitle": "Límites superados — restricciones desde {date}",
+    "LimitExceededWarningHint": "Tu espacio de trabajo supera los límites del plan. Algunas funciones se restringirán a partir de {date} a menos que actualices.",
+    "LimitExceededRestrictedTitle": "Algunas funciones están restringidas",
+    "LimitExceededRestrictedHint": "Tu espacio de trabajo supera los límites del plan. Actualiza tu plan para restaurar el acceso completo.",
+    "UploadRestrictedToast": "Subida de archivos no disponible: límite del plan alcanzado. Actualiza tu plan para seguir subiendo archivos.",
+    "UpgradePlanCta": "Actualizar plan",
     "RestrictedPlans": "Solo el propietario del espacio de trabajo o el administrador de facturación pueden cambiar el plan de suscripción.",
     "SubscriptionOperationFailed": "Error en la operación de suscripción",
     "SubscriptionErrorMessage": "Algo ha ido mal. Inténtelo de nuevo o contacte con soporte."

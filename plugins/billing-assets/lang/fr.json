@@ -56,6 +56,12 @@
     "Of": "de",
     "UpgradePlan": "Mettre à niveau le plan",
     "LimitReached": "Limite de l'espace de travail atteinte, certaines fonctionnalités peuvent être désactivées. Mettez à niveau pour restaurer l'accès complet.",
+    "LimitExceededWarningTitle": "Limites dépassées — restrictions à partir du {date}",
+    "LimitExceededWarningHint": "Votre espace de travail dépasse les limites du forfait. Certaines fonctionnalités seront restreintes à partir du {date} sauf si vous passez à un forfait supérieur.",
+    "LimitExceededRestrictedTitle": "Certaines fonctionnalités sont restreintes",
+    "LimitExceededRestrictedHint": "Votre espace de travail dépasse les limites du forfait. Passez à un forfait supérieur pour rétablir l'accès complet.",
+    "UploadRestrictedToast": "Téléversement de fichiers indisponible : limite du forfait atteinte. Passez à un forfait supérieur pour continuer.",
+    "UpgradePlanCta": "Mettre à niveau",
     "RestrictedPlans": "Seul le propriétaire de l'espace de travail ou le gestionnaire de facturation peut modifier le plan d'abonnement.",
     "SubscriptionOperationFailed": "Échec de l'opération d'abonnement",
     "SubscriptionErrorMessage": "Une erreur s'est produite. Veuillez réessayer ou contacter le support."

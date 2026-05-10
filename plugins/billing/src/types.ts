@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Doc } from '@hcengineering/core'
+import { Doc, Timestamp } from '@hcengineering/core'
 import { IntlString } from '@hcengineering/platform'
 
 /** @public */
@@ -27,3 +27,25 @@ export interface Tier extends Doc {
   index: number
   color?: string
 }
+
+/** @public */
+export type RestrictionMode = 'ok' | 'warning' | 'restricted'
+
+/** @public */
+export type RestrictedFeature = 'fileUpload'
+
+/** @public */
+export interface RestrictionState {
+  mode: RestrictionMode
+  limitsExceededSince?: Timestamp // When the workspace first observed an over-limit state.
+  gracePeriodEndsAt?: Timestamp // When the warning grace period ends and restrictions kick in.
+  restrictedFeatures: ReadonlySet<RestrictedFeature> // Set of features currently restricted in 'restricted' mode. Empty otherwise.
+}
+
+/**
+ * Default grace period between the moment a workspace exceeds its plan limits
+ * and the moment functionality starts to be restricted.
+ *
+ * @public
+ */
+export const GRACE_PERIOD_MS = 7 * 24 * 60 * 60 * 1000
