@@ -144,22 +144,27 @@ export function MatchCardCheck (
   params: Record<string, any>,
   context: Record<string, any>
 ): boolean {
-  if (context.card === undefined) return false
+  let card = context.card
+  if (card === undefined) return false
   const process = control.client.getModel().findObject(execution.process)
   if (process === undefined) return false
-  const markup = getMarkupParams(context.card, params, control)
+  const markup = getMarkupParams(process, params, control)
+  const h = control.client.getHierarchy()
+  if (h.isMixin(process.masterTag)) {
+    card = h.as(card, process.masterTag)
+  }
   for (const key of Object.keys(markup)) {
-    if (isEmptyMarkup(context.card[key])) return false
+    if (isEmptyMarkup(card[key])) return false
   }
 
-  const res = matchQuery([context.card], params, process.masterTag, control.client.getHierarchy(), true)
+  const res = matchQuery([card], params, process.masterTag, control.client.getHierarchy(), true)
   return res.length > 0
 }
 
-function getMarkupParams (card: Card, params: Record<string, any>, control: ProcessControl): Record<string, any> {
+function getMarkupParams (process: Process, params: Record<string, any>, control: ProcessControl): Record<string, any> {
   const markup: Record<string, any> = {}
   for (const [key, value] of Object.entries(params)) {
-    const attr = control.client.getHierarchy().findAttribute(card._class, key)
+    const attr = control.client.getHierarchy().findAttribute(process.masterTag, key)
     if (attr?.type?._class === core.class.TypeMarkup) {
       markup[key] = value
     }
@@ -190,12 +195,17 @@ export function FieldChangedCheck (
   const operations = context.operations as DocumentUpdate<Doc>
   const target = Object.keys(params)[0]
   if (!TxProcessor.hasUpdate(operations, target)) return false
-  const markup = getMarkupParams(context.card, params, control)
+  const markup = getMarkupParams(process, params, control)
+  const h = control.client.getHierarchy()
+  let card = context.card
+  if (h.isMixin(process.masterTag)) {
+    card = h.as(card, process.masterTag)
+  }
   for (const key of Object.keys(markup)) {
-    if (isEmptyMarkup(context.card[key])) return false
+    if (isEmptyMarkup(card[key])) return false
   }
 
-  const res = matchQuery([context.card], params, process.masterTag, control.client.getHierarchy(), true)
+  const res = matchQuery([card], params, process.masterTag, control.client.getHierarchy(), true)
   return res.length > 0
 }
 

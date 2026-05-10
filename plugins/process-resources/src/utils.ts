@@ -822,10 +822,10 @@ export async function approveRequestRejected (
   return context.todo?.group === params._id && context.todo?.approved === false
 }
 
-function getMarkupParams (card: Card, params: Record<string, any>, client: Client): Record<string, any> {
+function getMarkupParams (process: Process, params: Record<string, any>, client: Client): Record<string, any> {
   const markup: Record<string, any> = {}
   for (const [key, value] of Object.entries(params)) {
-    const attr = client.getHierarchy().findAttribute(card._class, key)
+    const attr = client.getHierarchy().findAttribute(process.masterTag, key)
     if (attr?.type?._class === core.class.TypeMarkup) {
       markup[key] = value
     }
@@ -846,7 +846,7 @@ export function matchCardCheck (
   if (client.getHierarchy().isMixin(process.masterTag)) {
     doc = client.getHierarchy().as(doc, process.masterTag)
   }
-  const markup = getMarkupParams(doc, params, client)
+  const markup = getMarkupParams(process, params, client)
   for (const key of Object.keys(markup)) {
     if (isEmptyMarkup(doc[key])) return false
   }
@@ -861,12 +861,17 @@ export function fieldChangesCheck (
   params: Record<string, any>,
   context: Record<string, any>
 ): boolean {
-  const doc = context.card
+  let doc = context.card
   if (doc === undefined) return false
+  const process = client.getModel().findObject(execution.process)
+  if (process === undefined) return false
+  if (client.getHierarchy().isMixin(process.masterTag)) {
+    doc = client.getHierarchy().as(doc, process.masterTag)
+  }
   const operations = (context.operations ?? {}) as DocumentUpdate<Doc>
   const target = Object.keys(params)[0]
   if (!TxProcessor.hasUpdate(operations, target)) return false
-  const markup = getMarkupParams(doc, params, client)
+  const markup = getMarkupParams(process, params, client)
   for (const key of Object.keys(markup)) {
     if (isEmptyMarkup(doc[key])) return false
   }
