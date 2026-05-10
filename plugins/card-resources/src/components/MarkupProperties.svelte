@@ -63,14 +63,9 @@
 </script>
 
 {#each keys as key}
-  <div class="px-4 w-full">
+  <div class="w-full mt-2">
     <span>
       <Label label={key.attr.label} />
-      {#if tag}
-        <span class="text-xs">
-          (<Label label={tag.label} />)
-        </span>
-      {/if}
     </span>
     <MarkupEditor
       value={getValue(doc, key.key)}

@@ -32,7 +32,7 @@
   const hierarchy = client.getHierarchy()
 
   function filterClasses (): [DropdownIntlItem, DropdownIntlItem[]][] {
-    const descendants = hierarchy.getDescendants(parent).filter((p) => p !== card.class.Card)
+    const descendants = hierarchy.getDescendants(parent).filter((p) => p !== parent)
     const added = new Set<Ref<Class<Doc>>>()
     const base = new Map<Ref<Class<Doc>>, Class<Doc>[]>()
     for (const _id of descendants) {

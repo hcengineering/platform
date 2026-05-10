@@ -34,6 +34,7 @@
   import Lock from './icons/Lock.svelte'
   import Unlock from './icons/Unlock.svelte'
   import card from '../plugin'
+  import MarkupProperties from './MarkupProperties.svelte'
 
   export let value: Card
   export let readonly: boolean = false
@@ -115,6 +116,7 @@
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
   <CardAttributes object={value} _class={value._class} {readonly} {ignoreKeys} {fourRows} showCollaborators />
+  <MarkupProperties doc={value} {readonly} tag={undefined} />
 </ExpandCollapse>
 
 <style lang="scss">

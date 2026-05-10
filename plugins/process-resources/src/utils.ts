@@ -959,6 +959,9 @@ export function getMockAttribute (_class: Ref<Class<Doc>>, label: IntlString, ty
 export async function checkProcessSectionVisibility (doc: Card): Promise<boolean> {
   const client = getClient()
   const anc = client.getHierarchy().getAncestors(doc._class)
-  const processes = client.getModel().findAllSync(process.class.Process, { masterTag: { $in: anc } })
+  const processes = client.getModel().findAllSync(process.class.Process, {
+    masterTag: { $in: anc },
+    automationOnly: { $ne: true }
+  })
   return processes.length > 0
 }
