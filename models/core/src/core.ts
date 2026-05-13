@@ -358,6 +358,7 @@ export class TVersion extends TDoc implements Version {
 export class TMigrationState extends TDoc implements MigrationState {
   plugin!: string
   state!: string
+  durationMs?: number
 }
 
 @Model(core.class.PluginConfiguration, core.class.Doc, DOMAIN_MODEL)

@@ -56,14 +56,19 @@
     isCollapsed = false
   }
 
-  $: isLocked = value.readonlySections?.includes(value._class) ?? false
+  $: isLocked = hierarchy.getAncestors(value._class).some((p) => value.readonlySections?.includes(p)) ?? false
   $: canLock = canLockSection(value.space, $permissionsStore)
   $: canUnlock = canUnlockSection(value.space, $permissionsStore)
 
   async function toggleLock (ev: MouseEvent): Promise<void> {
     ev.stopPropagation()
     const op = isLocked ? '$pull' : '$push'
-    await client.update(value, { [op]: { readonlySections: value._class } })
+    const targets = isLocked
+      ? hierarchy.getAncestors(value._class).filter((p) => value.readonlySections?.includes(p))
+      : [value._class]
+    for (const target of targets) {
+      await client.update(value, { [op]: { readonlySections: target } })
+    }
   }
 </script>
 

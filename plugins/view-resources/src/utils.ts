@@ -1245,7 +1245,7 @@ export async function sortCategories (
  * @public
  */
 export function canResolveAttribute<T extends Doc> (
-  hierarchy: Hierarchy,
+  h: Hierarchy,
   _class: Ref<Class<T>>,
   key: string,
   lookup: Lookup<T> | undefined
@@ -1263,9 +1263,13 @@ export function canResolveAttribute<T extends Doc> (
   if (key.length === 0) return true
   const parts = key.split('.')
   if (parts.length === 1) {
-    return hierarchy.findAttribute(_class, key) !== undefined
-  } else if (hierarchy.isDerived(parts[0] as Ref<Class<Doc>>, _class)) {
-    return hierarchy.findAttribute(parts[0] as Ref<Class<Doc>>, parts[1]) !== undefined
+    return h.findAttribute(_class, key) !== undefined
+  } else {
+    const target = parts[0] as Ref<Class<Doc>>
+    const attr = parts[1]
+    if (h.isDerived(target, _class) || (h.isMixin(target) && h.isDerived(_class, h.getBaseClass(target)))) {
+      return h.findAttribute(target, attr) !== undefined
+    }
   }
   return false
 }
@@ -1276,6 +1280,7 @@ export function getKeyLabel<T extends Doc> (
   key: string,
   lookup: Lookup<T> | undefined
 ): IntlString {
+  const h = client.getHierarchy()
   if (key.startsWith('$relation')) {
     // Handle association: $relation.[associationId]
     const parts = key.split('.')
@@ -1311,15 +1316,18 @@ export function getKeyLabel<T extends Doc> (
     }
     return getEmbeddedLabel(assocName)
   } else if (key.length === 0) {
-    const clazz = client.getHierarchy().getClass(_class)
+    const clazz = h.getClass(_class)
     return clazz.label
   } else {
     const parts = key.split('.')
-    if (parts.length === 2 && client.getHierarchy().isDerived(parts[0] as Ref<Class<Doc>>, _class)) {
-      const attribute = client.getHierarchy().getAttribute(parts[0] as Ref<Class<Doc>>, parts[1])
-      return attribute.label
+    if (parts.length === 2) {
+      const target = parts[0] as Ref<Class<Doc>>
+      if (h.isDerived(target, _class) || (h.isMixin(target) && h.isDerived(_class, h.getBaseClass(target)))) {
+        const attribute = h.getAttribute(target, parts[1])
+        return attribute.label
+      }
     }
-    const attribute = client.getHierarchy().getAttribute(_class, key)
+    const attribute = h.getAttribute(_class, key)
     return attribute.label
   }
 }
