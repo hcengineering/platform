@@ -550,7 +550,7 @@ export function createModel (builder: Builder): void {
           {
             key: 'showDone',
             type: 'toggle',
-            defaultValue: true,
+            defaultValue: false,
             actionTarget: 'query',
             action: process.function.ShowDoneQuery,
             label: process.string.ShowDone
