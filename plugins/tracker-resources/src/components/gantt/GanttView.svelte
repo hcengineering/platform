@@ -16,6 +16,7 @@
   import { createTimeScale } from './lib/time-scale'
   import { type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import { Label, showPanel, tooltip } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export let _class: Ref<Class<Doc>>
@@ -107,11 +108,22 @@
     }
   )
 
-  $: dateRange = computeDateRange(issues, milestones)
+  $: dateRange = computeDateRange(issues, milestones, zoom)
+
+  function paddingDays (z: ZoomLevel): number {
+    switch (z) {
+      case 'day': return 1
+      case 'week': return 7
+      case 'month': return 30
+      case 'quarter': return 90
+      default: return 7
+    }
+  }
 
   function computeDateRange (
     iss: Issue[],
-    ms: Milestone[]
+    ms: Milestone[],
+    z: ZoomLevel
   ): { from: number, to: number } {
     const all: number[] = []
     for (const i of iss) {
@@ -124,11 +136,14 @@
     const dayMs = 86_400_000
     if (all.length === 0) {
       const today = Date.now()
-      return { from: today - 30 * dayMs, to: today + 60 * dayMs }
+      return { from: today - 7 * dayMs, to: today + 30 * dayMs }
     }
+    // Pad by exactly one zoom-unit on each side so the visible timeline
+    // never extends far past the actual issue range.
+    const pad = paddingDays(z) * dayMs
     return {
-      from: Math.min(...all) - 14 * dayMs,
-      to: Math.max(...all) + 14 * dayMs
+      from: Math.min(...all) - pad,
+      to: Math.max(...all) + pad
     }
   }
 
@@ -150,6 +165,14 @@
 
   $: rows = buildLayout(issues, milestoneMarkers, 'none', { rowHeight: ROW_HEIGHT, collapsedIds })
   $: summaryRanges = computeSummaryRanges(rows, issues)
+  $: statusCategoryMap = buildStatusCategoryMap($statusStore.byId)
+  function buildStatusCategoryMap (byId: Map<any, any>): Map<string, string> {
+    const out = new Map<string, string>()
+    for (const [id, status] of byId.entries()) {
+      out.set(String(id), String(status.category ?? ''))
+    }
+    return out
+  }
 
   function computeSummaryRanges (
     layoutRows: LayoutRow[],
@@ -199,11 +222,13 @@
     return result
   }
 
-  $: totalCanvasWidth = Math.max(viewportWidth(), timeScale.toX(dateRange.to) - timeScale.toX(dateRange.from))
-
-  function viewportWidth (): number {
-    return containerEl !== undefined ? containerEl.clientWidth - sidebarWidthPx : 1200
-  }
+  // totalCanvasWidth is the data-range width only — never inflated to fit
+  // the viewport. If the issue range is short, the canvas fits entirely
+  // on screen and the horizontal scrollbar hides itself.
+  $: totalCanvasWidth = Math.max(
+    1,
+    Math.ceil(timeScale.toX(dateRange.to) - timeScale.toX(dateRange.from))
+  )
 
   function handleVScroll (e: Event): void {
     const t = e.target as HTMLDivElement
@@ -269,6 +294,44 @@
   $: hThumbMax = Math.max(0, hTrackWidth - hThumbWidth)
   $: hScrollMax = Math.max(1, totalCanvasWidth - hTrackWidth)
   $: hThumbLeft = canvasViewportLeft <= 0 ? 0 : (canvasViewportLeft / hScrollMax) * hThumbMax
+  $: hHasOverflow = totalCanvasWidth > hTrackWidth + 1
+
+  // Custom vertical scrollbar thumb geometry (proxy for the existing
+  // gantt-scroller native scrollTop — Huly globally hides native bars
+  // so we render our own in DOM and let the native bar drive scrollTop).
+  $: vTrackHeight = viewportHeight > 0 ? viewportHeight : 1
+  $: vTotalHeight = ROW_HEIGHT * rows.length + HEADER_HEIGHT
+  $: vThumbHeight = vTotalHeight > 0
+    ? Math.max(40, (vTrackHeight * vTrackHeight) / vTotalHeight)
+    : vTrackHeight
+  $: vThumbMax = Math.max(0, vTrackHeight - vThumbHeight)
+  $: vScrollMax = Math.max(1, vTotalHeight - vTrackHeight)
+  $: vThumbTop = scrollTop <= 0 ? 0 : (scrollTop / vScrollMax) * vThumbMax
+  $: vHasOverflow = vTotalHeight > vTrackHeight + 1
+
+  let dragVThumb = false
+  let dragVThumbStartY = 0
+  let dragVThumbStartScroll = 0
+  function onVThumbDragStart (e: PointerEvent): void {
+    e.stopPropagation()
+    e.preventDefault()
+    if (scrollerEl === undefined) return
+    dragVThumb = true
+    dragVThumbStartY = e.clientY
+    dragVThumbStartScroll = scrollerEl.scrollTop
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  }
+  function onVThumbDragMove (e: PointerEvent): void {
+    if (!dragVThumb || scrollerEl === undefined) return
+    const dy = e.clientY - dragVThumbStartY
+    const ratio = vThumbMax > 0 ? dy / vThumbMax : 0
+    scrollerEl.scrollTop = dragVThumbStartScroll + ratio * vScrollMax
+  }
+  function onVThumbDragEnd (e: PointerEvent): void {
+    if (!dragVThumb) return
+    dragVThumb = false
+    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+  }
 
   let dragThumb = false
   let dragThumbStartX = 0
@@ -497,6 +560,7 @@
               totalWidth={totalCanvasWidth}
               milestoneStripHeight={MILESTONE_STRIP_HEIGHT}
               {hoveredRowId}
+              {statusCategoryMap}
               on:openIssue={onIssueOpen}
               on:hoverRow={onRowHover}
             />
@@ -504,6 +568,23 @@
         </div>
       </div>
     </div>
+    <!-- Custom vertical scrollbar — DOM thumb absolutely positioned at
+         the right edge of gantt-root so Huly's globally-hidden native
+         bar doesn't deny the user a visible scroll affordance. -->
+    {#if vHasOverflow}
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div class="gantt-vscrollbar"
+        style="top: {TOOLBAR_HEIGHT}px; bottom: 16px;">
+        <div
+          class="vscroll-thumb"
+          style="top: {vThumbTop}px; height: {vThumbHeight}px;"
+          on:pointerdown={onVThumbDragStart}
+          on:pointermove={onVThumbDragMove}
+          on:pointerup={onVThumbDragEnd}
+          on:pointercancel={onVThumbDragEnd}
+        />
+      </div>
+    {/if}
     <!-- Sticky-bottom horizontal scrollbar proxy. Thumb is a sibling
          of the (hidden-native-scrollbar) track so it stays in viewport
          coordinates instead of being carried by track.scrollLeft. -->
@@ -574,6 +655,7 @@
     height: 100%;
     width: 100%;
     overflow: hidden;
+    position: relative;
   }
   .gantt-toolbar {
     flex: 0 0 auto;
@@ -670,6 +752,10 @@
     min-width: 0;
     min-height: 0;
     cursor: grab;
+    /* Reserve space at the bottom + right so the absolute scrollbars
+       never paint over the canvas area. */
+    padding-bottom: 16px;
+    padding-right: 14px;
   }
   .gantt-scroller.panning {
     cursor: grabbing;
@@ -682,8 +768,16 @@
   }
   .header-cell, .canvas-cell { overflow: hidden; }
   .hscroll-inner { will-change: transform; }
+  /* Codex robustness fix: absolutely-pin the bar at the bottom of
+     gantt-root instead of relying on the flex chain to enforce a
+     constrained height. This way the bar can never slip below the
+     visible viewport even if a parent forgets to set min-height:0. */
   .gantt-hscrollbar {
-    flex: 0 0 auto;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
     height: 16px;
     border-top: 1px solid var(--theme-divider-color);
     background: var(--theme-divider-color);
@@ -722,6 +816,29 @@
   }
   .hscroll-thumb:hover { background: var(--theme-state-info-color, #6366f1); }
   .hscroll-thumb:active { cursor: grabbing; background: var(--theme-state-info-color, #6366f1); }
+  /* Vertical scrollbar — same DOM-thumb pattern, anchored at the right
+     edge of gantt-root between the toolbar and the horizontal bar. */
+  .gantt-vscrollbar {
+    position: absolute;
+    right: 0;
+    width: 14px;
+    background: var(--theme-divider-color);
+    border-left: 1px solid var(--theme-divider-color);
+    box-sizing: border-box;
+    z-index: 10;
+  }
+  .vscroll-thumb {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    background: var(--theme-content-color, #4b5563);
+    border-radius: 6px;
+    cursor: grab;
+    pointer-events: auto;
+    transition: background 100ms ease;
+  }
+  .vscroll-thumb:hover { background: var(--theme-state-info-color, #6366f1); }
+  .vscroll-thumb:active { cursor: grabbing; background: var(--theme-state-info-color, #6366f1); }
   .cell {
     box-sizing: border-box;
   }

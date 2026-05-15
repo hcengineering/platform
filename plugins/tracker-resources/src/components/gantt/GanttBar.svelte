@@ -11,6 +11,28 @@
   export let timeScale: TimeScale
   export let isSummary: boolean = false
   export let summaryRange: { startDate: number | null; dueDate: number | null } | null = null
+  // Status category drives bar fill: backlog grey, todo blue, in-progress
+  // amber, completed green, cancelled muted. null = no status info.
+  export let statusCategory: string | null = null
+
+  $: barColors = statusFill(statusCategory)
+  function statusFill (cat: string | null): { fill: string, border: string } {
+    switch (cat) {
+      case 'task:statusCategory:UnStarted':
+      case 'tracker:statusCategory:Backlog':
+        return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)' }
+      case 'task:statusCategory:ToDo':
+        return { fill: '#3b82f6', border: '#2563eb' }
+      case 'task:statusCategory:Active':
+        return { fill: '#f59e0b', border: '#d97706' }
+      case 'task:statusCategory:Won':
+        return { fill: '#10b981', border: '#059669' }
+      case 'task:statusCategory:Lost':
+        return { fill: '#9ca3af', border: '#6b7280' }
+      default:
+        return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)' }
+    }
+  }
 
   $: effectiveStart = isSummary ? summaryRange?.startDate ?? issue.startDate : issue.startDate
   $: effectiveDue = isSummary ? summaryRange?.dueDate ?? issue.dueDate : issue.dueDate
@@ -74,8 +96,8 @@
       height={barH}
       rx={3}
       ry={3}
-      fill="var(--theme-button-default)"
-      stroke="var(--theme-button-border)"
+      fill={barColors.fill}
+      stroke={barColors.border}
       stroke-width={1}
       class="bar"
     />
