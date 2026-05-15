@@ -70,7 +70,7 @@
     'relations',
     'blockedBy',
     'identifier',
-    // Tier-2 Item 5 — rendered via dedicated SchedulingModeEditor below.
+    //  — rendered via dedicated SchedulingModeEditor below.
     'schedulingMode'
   ]
 

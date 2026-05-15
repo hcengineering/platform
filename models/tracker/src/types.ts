@@ -278,7 +278,7 @@ export class TIssue extends TTask implements Issue {
     todos?: CollectionSize<ToDo>
 
   /**
-   * Tier-2 Item 5 — Auto-Scheduling-Toggle.
+   *  — Auto-Scheduling-Toggle.
    *
    * Optional property so existing issues stay on the default cascade
    * behaviour with no migration. `@Hidden` keeps the field out of the

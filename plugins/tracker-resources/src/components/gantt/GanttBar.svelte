@@ -11,7 +11,7 @@
   import GanttConnectorDot from './GanttConnectorDot.svelte'
   import { activeDragTargetId } from './lib/drag-state'
   import { resolveBarLabel, type BarLabelSlot } from './lib/bar-labels'
-  // Tier-4 Item 13 — Mobile-Friendly Gantt.
+  //  — Mobile-Friendly Gantt.
   import type { LayoutMode } from './lib/breakpoint'
   import { classifyPointer, type PointerKind } from './lib/pointer-classify'
   import { LONG_PRESS_MS, MOVE_THRESHOLD_PX } from './lib/long-press'
@@ -39,7 +39,7 @@
   export let dragTarget: DragTarget | undefined = undefined
   export let focused: boolean = false
   export let selected: boolean = false
-  // Tier-2 Item 6 — Bulk-Select + Bulk-Drag.
+  //  — Bulk-Select + Bulk-Drag.
   // `multiSelected` is true for every bar that belongs to the active
   // multi-selection (Spec §"Visual"). Paints the same 2-px solid outline
   // as `selected`. The single-selection `selected` flag stays separate
@@ -50,13 +50,13 @@
   export let isViolated: boolean = false
   export let slackMs: number = 0
   export let showSlackGlyph: boolean = false
-  // Tier-2 Item 5 — Auto-Scheduling-Toggle. `'manual'` paints a small
+  //  — Auto-Scheduling-Toggle. `'manual'` paints a small
   // pin glyph in the leading edge of the bar so the user can see at a
   // glance that this issue is protected from cascade. `'auto'` / `undefined`
   // → no glyph (Bestand-Default).
   export let schedulingMode: 'auto' | 'manual' | undefined = undefined
 
-  // Tier-4 Item 13 — Mobile-Friendly Gantt. layoutMode threads through
+  //  — Mobile-Friendly Gantt. layoutMode threads through
   // from GanttView so the pointer-classifier can route touch on Tablet
   // through a long-press timer (Spec §"Tablet"). Default 'desktop'
   // preserves the legacy Mouse-direct behaviour for any caller that
@@ -80,7 +80,7 @@
     barClick: {
       target: DragTarget
       /**
-       * Tier-2 Item 6 — modifier keys are surfaced on the event payload
+       *  — modifier keys are surfaced on the event payload
        * so GanttView can route Cmd/Shift-click into the bulk-selection
        * helpers without leaking a DOM event through the dispatcher.
        */
@@ -106,7 +106,7 @@
   }
 
   /**
-   * Tier-4 Item 13 — Mobile-Friendly Gantt.
+   *  — Mobile-Friendly Gantt.
    *
    * Long-press timer state. Pointer-classify returns 'long-press' on
    * touch-input at Tablet/Desktop scope; we hold an in-flight
@@ -146,7 +146,7 @@
   }
 
   /**
-   * Tier-4 Item 13 — pointer-events replace the legacy mousedown handler.
+   *  — pointer-events replace the legacy mousedown handler.
    * Pointer-events fire uniformly across mouse / pen / touch, eliminating
    * the previous mouse+pointer double-dispatch issue called out in the
    * Pre-Flight (Item 9).
@@ -269,7 +269,7 @@
     (dragState.kind === 'connector-drawing' || dragState.kind === 'connector-target-hover') &&
     String(dragState.source._id) === String(issueRef)
   /**
-   * Tier-2 Item 6 — co-drag membership. True iff THIS bar is a follower
+   *  — co-drag membership. True iff THIS bar is a follower
    * member of an active bulk-drag (the leading bar uses `isThisBarActive`
    * instead). The reducer keeps `coDrag.members` immutable for the
    * duration of the drag, so the lookup is safe to do every frame.
@@ -545,7 +545,7 @@
          click target. The overlay is the single source of truth. -->
 
     {#if manualPinVisible}
-      <!-- Tier-2 Item 5 — Manual-pin glyph (inline SVG: small map-pin
+      <!--  — Manual-pin glyph (inline SVG: small map-pin
            shape rotated to point left). Sized 10 px tall, centred vertically
            in the bar with 4 px of leading padding. pointer-events: none so
            drag/click stays routed to the underlying bar rect. -->

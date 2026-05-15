@@ -4,7 +4,7 @@
 //
 
 /**
- * Tier-3 Item 5 — Y-Viewport manager for the Gantt sidebar + canvas + arrow
+ *  — Y-Viewport manager for the Gantt sidebar + canvas + arrow
  * layer. Single source of truth: given the outer scroller's `scrollTop` +
  * `viewportHeight` + the flattened row geometry, returns:
  *

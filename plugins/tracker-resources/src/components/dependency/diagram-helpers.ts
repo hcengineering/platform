@@ -4,7 +4,7 @@
 //
 
 /**
- * Helpers for the Visual DependencyEditor (Tier-4 #11).
+ * Helpers for the Visual DependencyEditor.
  *
  * The picker shows four mini SVG diagrams in a 2×2 grid:
  *

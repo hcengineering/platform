@@ -51,14 +51,14 @@
   export let widths: Record<string, number> = { ...DEFAULT_WIDTHS }
   export let sort: GanttSortState = { column: null, direction: 'asc' }
   /**
-   * v121.2 fix — when true, render ONLY the extended grid header row (no
+   *  fix — when true, render ONLY the extended grid header row (no
    * body, no add-issue row). GanttView mounts this variant inside the
    * sticky corner cell so the column headings stay pinned above the
    * body and the user can sort/resize from the same row. Only meaningful
    * when {@link extendedColumns} is also true.
    */
   export let headerOnly: boolean = false
-  // Tier-3 Item 5 — Y-axis virtualization. When all three are set, only rows
+  //  — Y-axis virtualization. When all three are set, only rows
   // intersecting the [scrollTop, scrollTop+viewportHeight] band are rendered,
   // with absolute-positioning so the DOM aligns with the canvas bars at the
   // same y. When any is omitted (e.g. fixtures/tests), the legacy render
@@ -118,7 +118,7 @@
   $: activeIssueIdStr = activeDragTargetId(dragState)
   $: anyDragActive = dragState.kind !== 'idle' && dragState.kind !== 'hover-bar'
 
-  // Tier-3 Item 5 — virtualization is "on" when the parent wires the three
+  //  — virtualization is "on" when the parent wires the three
   // viewport props. Off → render every row (legacy path, preserved for
   // tests / embed previews).
   $: virtualizationOn = rowHeight > 0 && viewportHeight > 0
@@ -196,7 +196,7 @@
   }
 
   /**
-   * Tier-4 Item 12 — Tree-View — produce a tooltip-options object only when
+   *  — Tree-View — produce a tooltip-options object only when
    * the row is a filter breadcrumb (parent of a matching child). Returning a
    * typed `null` (instead of an inline `... ? {} : undefined` ternary) keeps
    * svelte-check from flattening the surrounding event handlers' parameter
@@ -272,7 +272,7 @@
 </script>
 
 {#if extendedColumns && headerOnly}
-  <!-- v121.2 — corner-only header variant. Renders the sortable/resizable
+  <!--  — corner-only header variant. Renders the sortable/resizable
        column header inside the GanttView corner cell so the headings are
        always visible (sticky-top) instead of scrolling away with the body. -->
   <div class="sidebar-grid header-only" style="width: {gridWidthPx}px;">
@@ -295,7 +295,7 @@
   <!-- Phase 3a extended grid: sortable header row + per-column cells.
        Width comes from the sum of visible column widths; the parent's
        sidebar-cell still clips us via overflow:hidden.
-       v121.2 — the header row is rendered by the corner cell instead
+        — the header row is rendered by the corner cell instead
        (headerOnly variant above) so it stays sticky-top; the body keeps
        the per-column cells aligned to the same column widths. -->
   <div class="sidebar-grid" style="width: {gridWidthPx}px;">
@@ -496,7 +496,7 @@
             on:click={() => row.issue !== null && openIssue(row.issue)}
             on:keydown={(e) => { if (e.key === 'Enter' && row.issue !== null) openIssue(row.issue) }}
           >
-            <!-- Tier-4 Item 12 — Tree-View — wrap the label in an inner span
+            <!--  — Tree-View — wrap the label in an inner span
                  carrying the breadcrumb tooltip. Putting `use:tooltip` on the
                  outer link breaks Svelte's TS inference for the sibling event
                  handlers. -->
@@ -584,7 +584,7 @@
     display: flex;
     flex-direction: column;
   }
-  /* Tier-3 Item 5 — when virtualized, the body acts as a positioning
+  /*  — when virtualized, the body acts as a positioning
      ancestor for absolute-positioned rows. `display: block` cancels the
      flex layout so absolute children honour `top: N px`. */
   .sidebar-grid-body.virtualized {
@@ -665,7 +665,7 @@
   }
   .cell-title.clickable { cursor: pointer; }
   .cell-title.clickable:hover { text-decoration: underline; }
-  /* Tier-4 Item 12 — inner label span (carries breadcrumb tooltip) inherits
+  /*  — inner label span (carries breadcrumb tooltip) inherits
      ellipsis from the parent cell-title via display:inline-block + overflow. */
   .cell-title-label {
     display: inline-block;
@@ -724,7 +724,7 @@
     opacity: 0.55;
   }
   .sidebar-row.drag-dimmed { opacity: 0.55; }
-  /* Tier-4 Item 12 — Tree-View — breadcrumb (parent of matching child)
+  /*  — Tree-View — breadcrumb (parent of matching child)
      is dimmed + italic so the user can read it as filter-context, not as
      a regular result. */
   .sidebar-row.tree-breadcrumb,
@@ -736,7 +736,7 @@
   .sidebar-grid-row.tree-breadcrumb .cell-title {
     font-style: italic;
   }
-  /* Tier-4 Item 12 — Tree-View — dashed depth guide-line so siblings of
+  /*  — Tree-View — dashed depth guide-line so siblings of
      the same parent share a visual rail. Drawn 10px from the row's left
      edge (half an indent-step) to land inside the row's padding. */
   .sidebar-row.tree-indented {

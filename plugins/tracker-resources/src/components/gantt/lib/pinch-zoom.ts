@@ -6,7 +6,7 @@
 import { MIN_PPD, MAX_PPD } from './zoom'
 
 /**
- * Tier-4 Item 13 — Mobile-Friendly Gantt — pinch-zoom tracker.
+ *  — Mobile-Friendly Gantt — pinch-zoom tracker.
  *
  * Pure pointer-tracking reducer for 2-finger pinch on the Gantt canvas.
  * The DOM layer wires it to `pointerdown` / `pointermove` / `pointerup`
@@ -61,7 +61,7 @@ export function computeCenter (a: Point, b: Point): Point {
 /**
  * Map a pinch distance-ratio to a new px-per-day, clamped to the same
  * [MIN_PPD, MAX_PPD] range that Ctrl+Wheel-zoom uses (Spec §"Pinch":
- * Δ-Distanz mapped auf pxPerDay-Ratio analog Ctrl+Wheel aus v121.3).
+ * Δ-Distanz mapped auf pxPerDay-Ratio analog Ctrl+Wheel aus ).
  *
  * Defensive: non-finite or zero ratios are treated as "no change".
  */

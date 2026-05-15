@@ -414,7 +414,7 @@ async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
 }
 
 /**
- * Tier-2 Item 8 — Activity-Log Remove-Detail Fix.
+ *  — Activity-Log Remove-Detail Fix.
  *
  * Legacy IssueRelation removals went through `ops.removeDoc`, which emits
  * a bare TxRemoveDoc without parent-issue attachment. The activity
@@ -535,7 +535,7 @@ export const trackerOperation: MigrateOperation = {
         func: async () => {}
       },
       {
-        // Tier-2 Item 8 — Activity-Log Remove-Detail Fix.
+        //  — Activity-Log Remove-Detail Fix.
         state: 'relation-activity-attached-v1',
         mode: 'upgrade',
         func: migrateRelationActivityAttachment

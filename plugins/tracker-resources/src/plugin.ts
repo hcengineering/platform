@@ -322,7 +322,7 @@ export default mergeIds(trackerId, tracker, {
     GanttJumpToStart: '' as IntlString,
     GanttJumpToEnd: '' as IntlString,
     GanttJumpToDate: '' as IntlString,
-    // v121.17 — Zoom dropdown + numeric range input replacing the 4
+    //  — Zoom dropdown + numeric range input replacing the 4
     // separate preset buttons in the Gantt toolbar center cluster.
     GanttZoomDay: '' as IntlString,
     GanttZoomWeek: '' as IntlString,
@@ -394,14 +394,14 @@ export default mergeIds(trackerId, tracker, {
     GanttFullscreen: '' as IntlString,
     GanttExportPng: '' as IntlString,
     GanttExportPdf: '' as IntlString,
-    // v121.12 / Refactor D — hamburger "More actions" menu in the toolbar.
+    //  / Refactor D — hamburger "More actions" menu in the toolbar.
     GanttMoreActions: '' as IntlString,
     GanttSavedViewLoad: '' as IntlString,
     GanttSavedViewLoadGroup: '' as IntlString,
     GanttSavedViewLoadDefault: '' as IntlString,
     GanttSavedViewMine: '' as IntlString,
     GanttSavedViewShared: '' as IntlString,
-    // Tier-2 #7 — Saved Gantt-Views
+    //  — Saved Gantt-Views
     GanttSavedViews: '' as IntlString,
     GanttSavedView: '' as IntlString,
     GanttSavedViewNew: '' as IntlString,
@@ -416,7 +416,7 @@ export default mergeIds(trackerId, tracker, {
     GanttSavedViewEmpty: '' as IntlString,
     GanttSavedViewSelect: '' as IntlString,
     GanttSavedViewDefault: '' as IntlString,
-    // Tier-4 Item 13 — Mobile-Friendly Gantt
+    //  — Mobile-Friendly Gantt
     GanttMobileMenu: '' as IntlString,
     GanttMobileOpenSidebar: '' as IntlString,
     GanttMobileCloseSidebar: '' as IntlString,

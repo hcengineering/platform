@@ -65,7 +65,7 @@
     <DueDateEditor value={issueWithLookup} width="100%" editable={true} />
   </div>
 
-  <!-- v121.11 / Bug 4 — Spec calls for Status / Priority / Assignee /
+  <!--  / Bug 4 — Spec calls for Status / Priority / Assignee /
        Estimation in the quick-info popover. The first three were already
        wired in Phase 1.E; Estimation completes the row-set so the popover
        matches the docs. Reuses the existing EstimationEditor from

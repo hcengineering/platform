@@ -2,7 +2,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 // SPDX-License-Identifier: EPL-2.0
 //
-// Tier-2 #7 — Saved Gantt-Views.
+//  — Saved Gantt-Views.
 // Modal popup for creating a new Gantt-saved-view from the current state.
 // Fields: name (required), "Zeitfenster fixieren" checkbox, public toggle.
 // The GanttView toolbar opens this popup via showPopup() and reads the
@@ -30,7 +30,7 @@
 
   const dispatch = createEventDispatcher()
 
-  // v121.12 / Refactor A — the close-handling has to be explicit on
+  //  / Refactor A — the close-handling has to be explicit on
   // both the X-button (via `onCancel`) AND the OK-button (via `onSave`),
   // because the platform Card.svelte handles them on separate paths:
   //  • OK-click → calls `okAction` and AFTER its Promise resolves
@@ -41,7 +41,7 @@
   //    dispatches close (no detail) on Card → forwarded out. Wiring
   //    `onCancel` directly bypasses the `<Card on:close={...}>` chain
   //    which was empirically not closing the popup on X-click in
-  //    v121.11 (user report Refactor A).
+  //     (user report Refactor A).
   async function onSave (): Promise<void> {
     const trimmed = viewName.trim()
     if (trimmed.length === 0) return

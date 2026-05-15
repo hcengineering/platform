@@ -291,7 +291,7 @@ export class UndoManager {
       }
       case 'relation-create': {
         // inverse of create = delete; use removeCollection so the
-        // activity DUM keeps Issue-side attachment (Tier-2 Item 8).
+        // activity DUM keeps Issue-side attachment.
         await ops.removeCollection(
           entry.relation._class,
           entry.relation.space,
@@ -380,7 +380,7 @@ export class UndoManager {
         break
       }
       case 'relation-delete': {
-        // redo delete = remove again, see Tier-2 Item 8 above.
+        // redo delete = remove again, see  above.
         await ops.removeCollection(
           entry.relation._class,
           entry.relation.space,

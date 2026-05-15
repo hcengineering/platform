@@ -4,7 +4,7 @@
 //
 
 /**
- * Tier-4 Item 12 — Tree-View — persisted expand/collapse state for the Gantt
+ *  — Tree-View — persisted expand/collapse state for the Gantt
  * sidebar hierarchy.
  *
  * Spec decisions implemented here:

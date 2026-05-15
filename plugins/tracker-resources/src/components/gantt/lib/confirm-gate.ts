@@ -4,14 +4,13 @@
 //
 
 /**
- * v121.2 fix — drag-commit confirmation gate.
+ *  fix — drag-commit confirmation gate.
  *
  * Background. After a Gantt bar drag ends, the user-configurable
  * confirmation popup (GanttConfirmCommitPopup or ConfirmCascadePopup)
  * runs as a non-modal showPopup. The window-level pointer listeners that
  * GanttView attaches while the drag is active stay wired the whole time
- * the popup is open — which produced two bugs reported in v121.1:
- *
+ * the popup is open — which produced two bugs reported in *
  *   1. Hover-bug: pointermove kept calling the drag reducer, so the bar
  *      visually trailed the cursor while the popup was up.
  *   2. Double-popup-bug: clicking the popup's Cancel/Apply button bubbled

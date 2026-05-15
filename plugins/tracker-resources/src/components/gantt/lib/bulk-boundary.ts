@@ -9,7 +9,7 @@ import { fsAnchor, ssAnchor, ffAnchor, sfAnchor } from './working-days'
 import { detectCycle } from './scheduler'
 
 /**
- * Tier-2 Item 6 — Bulk-Select + Bulk-Drag.
+ *  — Bulk-Select + Bulk-Drag.
  *
  * Computes the shared `[min, max]` Δ-window in milliseconds that the
  * common drag-delta is allowed to roam without any member of the bulk

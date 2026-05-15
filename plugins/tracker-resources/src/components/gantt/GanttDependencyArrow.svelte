@@ -36,7 +36,7 @@
   export let isCritical: boolean = false
   export let isViolated: boolean = false
   /**
-   * Tier-3 Item 5 — visibility classification from the dependency-layer.
+   *  — visibility classification from the dependency-layer.
    * When kind !== 'both-visible', one or both endpoints are off-screen
    * and the arrow is drawn to / from a synthetic indicator endpoint at
    * the viewport edge.
@@ -191,7 +191,7 @@
       </g>
     {/if}
     {#if sourceIndicator !== null && sourceIndicatorEdge !== null}
-      <!-- Tier-3 Item 5 — off-viewport indicator pointing at the source bar
+      <!--  — off-viewport indicator pointing at the source bar
            which is above (▲) or below (▼) the visible band. Click scrolls
            to the source row. -->
       <polygon
@@ -207,7 +207,7 @@
       </polygon>
     {/if}
     {#if targetIndicator !== null && targetIndicatorEdge !== null}
-      <!-- Tier-3 Item 5 — off-viewport indicator pointing at the target bar
+      <!--  — off-viewport indicator pointing at the target bar
            which is above (▲) or below (▼) the visible band. Click scrolls
            to the target row. -->
       <polygon

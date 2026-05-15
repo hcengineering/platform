@@ -201,7 +201,7 @@ describe('adaptiveWheelFactor', () => {
   })
 
   it('produces same zoom in high-density (week=14)', () => {
-    // Adaptive factor for ppd=14 is 0.006, identical to the v121.13 fixed value
+    // Adaptive factor for ppd=14 is 0.006, identical to the  fixed value
     const adaptive = applyWheelZoom(14, 100)
     const fixed = applyWheelZoom(14, 100, 0.006)
     expect(adaptive).toBe(fixed)

@@ -2,7 +2,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 // SPDX-License-Identifier: EPL-2.0
 //
-// Tier-2 #7 — Saved Gantt-Views.
+//  — Saved Gantt-Views.
 // Pure helpers that filter and partition a flat `FilteredView[]` list
 // (as delivered by a live `view.class.FilteredView` query) for the
 // Gantt toolbar dropdown:

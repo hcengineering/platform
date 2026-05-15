@@ -6,7 +6,7 @@
 import type { LayoutMode } from './breakpoint'
 
 /**
- * Tier-4 Item 13 — Mobile-Friendly Gantt — pointer-classification.
+ *  — Mobile-Friendly Gantt — pointer-classification.
  *
  * Given the current layout mode, the originating PointerEvent's
  * `pointerType` and the user-visible action ("what is the user trying to

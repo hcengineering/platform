@@ -4,7 +4,7 @@
 //
 
 /**
- * Tier-4 Item 13 — Mobile-Friendly Gantt — long-press timer state machine.
+ *  — Mobile-Friendly Gantt — long-press timer state machine.
  *
  * Pure reducer used by the touch-aware drag entry-points on Tablet/Desktop.
  * The DOM layer feeds it `start` / `tick` / `move` / `cancel` events and

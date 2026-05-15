@@ -59,7 +59,7 @@ export interface LayoutRow {
   groupLabel?: string
   groupCount?: number
   /**
-   * Tier-4 Item 12 — Tree-View — true when the row is rendered solely as a
+   *  — Tree-View — true when the row is rendered solely as a
    * filter-breadcrumb (i.e. the issue itself does not match the active filter
    * but at least one descendant does). The sidebar dims breadcrumb rows and
    * shows a tooltip explaining their presence. Undefined / false on rows that

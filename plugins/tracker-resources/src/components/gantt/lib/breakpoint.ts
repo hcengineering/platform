@@ -4,7 +4,7 @@
 //
 
 /**
- * Tier-4 Item 13 — Mobile-Friendly Gantt — layout-mode detection.
+ *  — Mobile-Friendly Gantt — layout-mode detection.
  *
  * Pure helper module: maps a viewport width (typically `window.innerWidth`)
  * to one of the three mode buckets the Gantt UI cares about:
