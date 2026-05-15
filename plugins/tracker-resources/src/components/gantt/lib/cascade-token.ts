@@ -17,12 +17,17 @@
  *     can build a single visual undo entry per bulk operation instead
  *     of N entries (which would over-count in the undo stack).
  *
- *   •  (Dependency-Shift-Notification) — the server-side
- *     trigger reads `TxApplyIf.scope` and aggregates all Txes sharing
- *     a `gantt-cascade-*:<id>` prefix into one notification per user.
- *     Without the token a 20-issue cascade fires 20 generic update
- *     notifications (or 20 dependency-shift ones), which is exactly
- *     the spam the spec §3 calls out.
+ *   • Tier-4 Item 14 (Dependency-Shift-Notification) — the cascade-commit
+ *     in GanttView.svelte forwards the freshly-minted token to
+ *     `sendDependencyShiftedNotifications`, which uses it as the
+ *     `cascadeToken` field on every `DependencyShiftedNotification` so
+ *     downstream consumers can correlate the bundle with the Tx batch.
+ *     The token is *also* the `TxApplyIf.scope` of the commit; a future
+ *     server-side trigger could read it to suppress the auto-generated
+ *     `dueDate` notifications, but that pathway is consumed inside
+ *     `ApplyTxMiddleware` today (see `dependency-shift-send.ts` notes for
+ *     details) — so v1 emits the bundle as a sibling notification rather
+ *     than replacing the generic ping.
  *
  * The token is intentionally a *string* and not a Tx-Mixin, because:
  *   1. No schema change → no migration cost.
