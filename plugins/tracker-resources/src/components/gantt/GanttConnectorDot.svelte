@@ -3,14 +3,28 @@
 // SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
 
   /**
-   * Anchored to the right edge of the source bar (the FS / FF anchor). The
-   * canvas overlay layer reads cx/cy to position both the dot and the live
-   * bezier endpoint while the user is drawing a new dependency. Mounted by
-   * GanttBar (see Task 14) when the bar is hovered AND editable, so the
-   * permission gate is handled by the caller.
+   * Anchored to the right edge of the source bar (the FS / FF anchor).
+   * The canvas overlay reads cx/cy to position both the visible dot and
+   * the live bezier endpoint while the user is drawing a new dependency.
+   * Permission gating is handled by the caller (GanttCanvas only renders
+   * the dot for editable issue rows).
+   *
+   * Event flow (single path — Codex round-14 cleanup):
+   *   <circle class="gantt-connector-hit" on:mousedown> → onDown()
+   *     → dispatch('connectorDown', …) (Svelte CustomEvent)
+   *     → bubbles up to GanttCanvas on:connectorDown forwarder
+   *     → bubbles up to GanttView on:connectorDown handler
+   *
+   * Earlier drafts had three parallel pathways (template binding,
+   * direct addEventListener, document-level capture-phase delegation
+   * looking for .closest('.gantt-connector')) plus a synthetic
+   * 'gantt-connector-start' CustomEvent. The 30 ms `lastDownAt` debounce
+   * was a band-aid for the resulting double-fires. With one source of
+   * truth the debounce becomes a no-op but is kept as a defensive guard
+   * against the rare browser-double-fire of `mousedown`.
    */
   export let cx: number
   export let cy: number
@@ -24,49 +38,24 @@
   }>()
 
   let lastDownAt = 0
-  let hitCircle: SVGCircleElement | null = null
 
-  function onDown (evt: PointerEvent | MouseEvent): void {
+  function onDown (evt: MouseEvent): void {
     if (evt.button !== 0) return
     const now = Date.now()
     if (now - lastDownAt < 30) return
     lastDownAt = now
     evt.preventDefault()
+    evt.stopPropagation()
     dispatch('connectorDown', { cursorX: evt.clientX, cursorY: evt.clientY })
-    hitCircle?.dispatchEvent(new CustomEvent('gantt-connector-start', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        sourceId,
-        sourceSpace,
-        originPx: { x: cx, y: cy }
-      }
-    }))
   }
-
-  onMount(() => {
-    if (hitCircle === null) return
-    hitCircle.addEventListener('pointerdown', onDown)
-    hitCircle.addEventListener('mousedown', onDown)
-  })
-
-  onDestroy(() => {
-    if (hitCircle === null) return
-    hitCircle.removeEventListener('pointerdown', onDown)
-    hitCircle.removeEventListener('mousedown', onDown)
-  })
 </script>
 
 <g
   class="gantt-connector"
   data-source-id={sourceId}
   data-source-space={sourceSpace}
-  on:pointerdown={onDown}
-  on:mousedown={onDown}
-  on:click|stopPropagation={() => {}}
 >
   <circle
-    bind:this={hitCircle}
     class="gantt-connector-hit"
     {cx}
     {cy}
@@ -74,7 +63,6 @@
     fill="transparent"
     data-source-id={sourceId}
     data-source-space={sourceSpace}
-    on:pointerdown={onDown}
     on:mousedown={onDown}
   />
   <circle
@@ -86,8 +74,6 @@
     stroke="#ffffff"
     stroke-width={1.5}
     pointer-events="none"
-    on:pointerdown={onDown}
-    on:mousedown={onDown}
   />
 </g>
 

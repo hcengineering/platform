@@ -501,52 +501,14 @@
     attachWindowDragListeners()
   }
 
-  function handleNativeConnectorDown (e: MouseEvent | PointerEvent): void {
-    const target = e.target as Element | null
-    const connector = target?.closest('.gantt-connector') as SVGElement | null
-    if (connector === null) return
-    const sourceId = connector.getAttribute('data-source-id')
-    if (sourceId === null) return
-    const sourceSpace = connector.getAttribute('data-source-space')
-    const source = issues.find((issue) => String(issue._id) === sourceId) ??
-      (sourceSpace !== null
-        ? ({ _id: sourceId as Ref<Issue>, space: sourceSpace as Issue['space'] } as Issue)
-        : undefined)
-    if (source === undefined) return
-    const anchor = connector.querySelector('.gantt-connector-hit') as SVGCircleElement | null
-    const originPx = {
-      x: Number(anchor?.getAttribute('cx') ?? 0),
-      y: Number(anchor?.getAttribute('cy') ?? 0)
-    }
-    if (!Number.isFinite(originPx.x) || !Number.isFinite(originPx.y)) return
-    e.preventDefault()
-    e.stopPropagation()
-    activeDrag.update((s) => reduce(s, {
-      type: 'mousedown-connector',
-      source,
-      originPx,
-      cursorPx: originPx
-    }, timeScale))
-    attachWindowDragListeners()
-  }
-
-  function handleConnectorStartEvent (e: Event): void {
-    const detail = (e as CustomEvent<{
-      sourceId: string
-      sourceSpace: string
-      originPx: { x: number, y: number }
-    }>).detail
-    if (detail === undefined) return
-    const source = issues.find((issue) => String(issue._id) === detail.sourceId) ??
-      ({ _id: detail.sourceId as Ref<Issue>, space: detail.sourceSpace as Issue['space'] } as Issue)
-    activeDrag.update((s) => reduce(s, {
-      type: 'mousedown-connector',
-      source,
-      originPx: detail.originPx,
-      cursorPx: detail.originPx
-    }, timeScale))
-    attachWindowDragListeners()
-  }
+  // Codex round-14: previous drafts of the connector-drag flow had
+  // three parallel event paths — Svelte template binding, direct
+  // addEventListener inside GanttConnectorDot, and a document-level
+  // capture-phase delegate scanning .closest('.gantt-connector'). With
+  // the connector dot now rendered in the canvas overlay (where Svelte's
+  // event flow is reliable) and the GanttConnectorDot using one
+  // on:mousedown binding, the document-capture delegate is redundant
+  // and was removed. handleConnectorDown is the single entry point.
 
   function handleBarHover (e: CustomEvent<{ issue: Issue | null }>): void {
     hoveredIssue = (e.detail.issue?._id ?? null) as Ref<Issue> | null
@@ -1400,19 +1362,9 @@
 
   onMount(() => {
     window.addEventListener('keydown', onKey)
-    containerEl?.addEventListener('pointerdown', handleNativeConnectorDown, true)
-    containerEl?.addEventListener('mousedown', handleNativeConnectorDown, true)
-    document.addEventListener('pointerdown', handleNativeConnectorDown, true)
-    document.addEventListener('mousedown', handleNativeConnectorDown, true)
-    document.addEventListener('gantt-connector-start', handleConnectorStartEvent)
   })
   onDestroy(() => {
     window.removeEventListener('keydown', onKey)
-    containerEl?.removeEventListener('pointerdown', handleNativeConnectorDown, true)
-    containerEl?.removeEventListener('mousedown', handleNativeConnectorDown, true)
-    document.removeEventListener('pointerdown', handleNativeConnectorDown, true)
-    document.removeEventListener('mousedown', handleNativeConnectorDown, true)
-    document.removeEventListener('gantt-connector-start', handleConnectorStartEvent)
     // PR5 cleanup: the critical-path recompute is debounced via
     // setTimeout. If the view unmounts while a pending recompute is
     // queued, the timer would fire after our reactive store handles
@@ -1674,8 +1626,6 @@
   class="gantt-root"
   tabindex="0"
   bind:this={containerEl}
-  on:pointerdown|capture={handleNativeConnectorDown}
-  on:mousedown|capture={handleNativeConnectorDown}
   on:click={onBackgroundClick}
 >
   {#if loading}
