@@ -87,7 +87,7 @@
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import { type BarLabelSlot } from './lib/bar-labels'
   import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
-  import { Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
+  import { Icon, IconChevronDown, IconChevronRight, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
   import { showMenu, statusStore } from '@hcengineering/view-resources'
   import { getEventPositionElement } from '@hcengineering/ui'
@@ -4144,6 +4144,12 @@
           <!-- v121 fix — order was Expand → Collapse, swapped per user
                feedback so Collapse-all comes first (matches the visual
                left-to-right "compact ⇒ wide" reading order). -->
+          <!-- v121.11 / Bug 5 — Tree-Glyphs. Replaced double-caret text
+               glyphs (▶▶ / ▼▼) with the standard huly ChevronRight /
+               ChevronDown icons. The double-caret looked like a "fast
+               forward" / jump-to-today control rather than a hierarchy
+               toggle. Same icons are used in AccordionItem and the
+               sidebar tree rows so the affordance is consistent. -->
           <button
             type="button"
             class="gantt-toolbar-icon-btn gantt-tree-btn"
@@ -4151,7 +4157,7 @@
             aria-label={tracker.string.GanttCollapseAll}
             on:click={collapseAllTree}
           >
-            <span class="gantt-tree-glyph" aria-hidden="true">▶▶</span>
+            <Icon icon={IconChevronRight} size="small" />
           </button>
           <button
             type="button"
@@ -4160,7 +4166,7 @@
             aria-label={tracker.string.GanttExpandAll}
             on:click={expandAllTree}
           >
-            <span class="gantt-tree-glyph" aria-hidden="true">▼▼</span>
+            <Icon icon={IconChevronDown} size="small" />
           </button>
         {/if}
         <!-- Phase 3c: Undo/Redo. The buttons mirror the Cmd+Z / Cmd+Shift+Z
