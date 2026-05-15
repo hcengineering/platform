@@ -6,6 +6,9 @@
 import type { DependencyKind } from '@hcengineering/tracker'
 import { anchorOf, endpointPx, type BarRect } from '../dependency-router'
 import { bezierPath, pathMidpoint, arrowheadPoints } from '../dependency-router'
+import { connectedIssueIds } from '../dependency-router'
+import type { Issue, IssueRelation } from '@hcengineering/tracker'
+import type { Ref } from '@hcengineering/core'
 
 describe('anchorOf', () => {
   it.each<[DependencyKind, 'finish' | 'start', 'finish' | 'start']>([
@@ -78,5 +81,53 @@ describe('arrowheadPoints', () => {
     expect(tri[1].x).toBeCloseTo(92, 1)
     expect(tri[2].x).toBeCloseTo(92, 1)
     expect(Math.abs(tri[1].y - tri[2].y)).toBeCloseTo(8, 1)
+  })
+})
+
+function mkRel (from: string, to: string): IssueRelation {
+  return {
+    _id: `${from}->${to}` as Ref<IssueRelation>,
+    attachedTo: from as Ref<Issue>,
+    target: to as Ref<Issue>,
+    kind: 'finish-to-start',
+    lag: 0,
+    space: 'sp' as IssueRelation['space']
+  } as unknown as IssueRelation
+}
+
+describe('connectedIssueIds', () => {
+  const A = 'A' as Ref<Issue>
+  const B = 'B' as Ref<Issue>
+  const C = 'C' as Ref<Issue>
+  const D = 'D' as Ref<Issue>
+
+  it('returns empty set when nothing is hovered', () => {
+    const s = connectedIssueIds(null, null, [mkRel('A', 'B')])
+    expect(s.size).toBe(0)
+  })
+
+  it('hoveredIssue alone returns issue + its direct neighbors', () => {
+    const s = connectedIssueIds(B, null, [mkRel('A', 'B'), mkRel('B', 'C')])
+    expect([...s].sort()).toEqual(['A', 'B', 'C'])
+  })
+
+  it('isolated hover (no relations) returns just the issue itself', () => {
+    const s = connectedIssueIds(A, null, [mkRel('B', 'C')])
+    expect([...s]).toEqual(['A'])
+  })
+
+  it('hoveredEdge returns both endpoints (no neighbor expansion on edges)', () => {
+    const s = connectedIssueIds(null, { source: A, target: B }, [mkRel('A', 'B'), mkRel('B', 'C')])
+    expect([...s].sort()).toEqual(['A', 'B'])
+  })
+
+  it('hoveredIssue + hoveredEdge combine into the same set', () => {
+    const s = connectedIssueIds(B, { source: A, target: B }, [mkRel('A', 'B'), mkRel('B', 'C')])
+    expect([...s].sort()).toEqual(['A', 'B', 'C'])
+  })
+
+  it('ignores unrelated issues', () => {
+    const s = connectedIssueIds(A, null, [mkRel('A', 'B'), mkRel('B', 'C'), mkRel('D', 'D')])
+    expect(s.has(D)).toBe(false)
   })
 })
