@@ -192,6 +192,21 @@ export function issueConfig (
       props: { kind: 'list' }
     },
     {
+      // Tier-4 Item 10 — Predecessors column. Opt-in via "Configure columns"
+      // (displayProps.optional = true) because the vast majority of issues
+      // have zero predecessors and the cell would otherwise be permanently
+      // empty in a default list. Renders the upstream Issue identifier
+      // followed by kind+lag in the spec notation, e.g. "PROJ-3 FS+2d";
+      // multiple predecessors collapse to "first +N more" with a hover
+      // tooltip showing every dependency. Sortable is intentionally NOT
+      // enabled — there is no meaningful total order across predecessor
+      // lists. See spec 2026-05-14-huly-gantt-predecessor-column-design.md.
+      key: '',
+      label: tracker.string.Predecessors,
+      presenter: tracker.component.PredecessorsColumn,
+      displayProps: { key: key + 'predecessors', optional: true }
+    },
+    {
       key: '',
       label: tracker.string.Estimation,
       presenter: tracker.component.EstimationEditor,
