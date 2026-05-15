@@ -49,6 +49,7 @@
     "Editor": "Editor",
     "MarkdownFormatting": "Formatting",
     "CustomizeView": "Customize view",
+    "ConfigureColumns": "Configure columns",
     "Filter": "Filter",
     "ClearFilters": "Clear filters",
     "FilterLessThan": "Less than",
