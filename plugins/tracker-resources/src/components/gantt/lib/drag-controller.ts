@@ -29,6 +29,9 @@ export function reduce (state: DragState, event: DragEvent, timeScale: TimeScale
     case 'resizing-left':
     case 'resizing-right':
       return reduceFromActive(state, event, timeScale)
+    case 'connector-drawing':
+    case 'connector-target-hover':
+      return reduceFromConnector(state, event)
   }
 }
 
@@ -81,6 +84,14 @@ function reduceFromIdle (state: DragState & { kind: 'idle' }, event: DragEvent):
       hasCanvasTarget: false
     }
   }
+  if (event.type === 'mousedown-connector') {
+    return {
+      kind: 'connector-drawing',
+      source: event.source,
+      originPx: event.originPx,
+      cursorPx: event.cursorPx
+    }
+  }
   return state
 }
 
@@ -112,6 +123,14 @@ function reduceFromHover (
     }
     if (event.edge === 'right') {
       return { kind: 'resizing-right', ...base, previewEnd: event.originEnd }
+    }
+  }
+  if (event.type === 'mousedown-connector') {
+    return {
+      kind: 'connector-drawing',
+      source: event.source,
+      originPx: event.originPx,
+      cursorPx: event.cursorPx
     }
   }
   void timeScale
@@ -162,6 +181,35 @@ function reduceFromActive (state: DragState, event: DragEvent, timeScale: TimeSc
   }
 
   return state
+}
+
+function reduceFromConnector (
+  state: DragState & { kind: 'connector-drawing' | 'connector-target-hover' },
+  event: DragEvent
+): DragState {
+  if (event.type === 'mouseup-connector' || event.type === 'cancel') {
+    return { kind: 'idle' }
+  }
+  if (event.type !== 'mousemove-connector') return state
+
+  // Drag self → keep drawing (a relation from a bar to itself is meaningless;
+  // we don't even attempt a target-hover state, so wouldCreateCycle never
+  // sees that edge).
+  if (event.hoveredBar !== null && event.hoveredBar._id === state.source._id) {
+    return { ...state, kind: 'connector-drawing', cursorPx: event.cursorPx }
+  }
+
+  if (event.hoveredBar === null) {
+    return { ...state, kind: 'connector-drawing', cursorPx: event.cursorPx }
+  }
+
+  return {
+    kind: 'connector-target-hover',
+    source: state.source,
+    originPx: state.originPx,
+    cursorPx: event.cursorPx,
+    target: event.hoveredBar
+  }
 }
 
 /** Convenience helper used by later tasks to clamp a date to a UTC midnight. */

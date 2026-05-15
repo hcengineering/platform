@@ -324,6 +324,106 @@ describe('drag-controller — direct idle → drag (Playwright + edge-case)', ()
   })
 })
 
+describe('drag-controller — connector states (PR4a)', () => {
+  const source: Issue = {
+    _id: 'S' as Ref<Issue>,
+    _class: 'tracker:class:Issue' as Issue['_class'],
+    space: 'sp' as Issue['space'],
+    startDate: 0,
+    dueDate: 86_400_000
+  } as unknown as Issue
+  const target: Issue = {
+    _id: 'T' as Ref<Issue>,
+    _class: 'tracker:class:Issue' as Issue['_class'],
+    space: 'sp' as Issue['space'],
+    startDate: 86_400_000,
+    dueDate: 86_400_000 * 2
+  } as unknown as Issue
+
+  it('idle + mousedown-connector → connector-drawing', () => {
+    const next = reduce(
+      { kind: 'idle' },
+      { type: 'mousedown-connector', source, originPx: { x: 100, y: 50 }, cursorPx: { x: 100, y: 50 } },
+      ts
+    )
+    expect(next.kind).toBe('connector-drawing')
+    if (next.kind !== 'connector-drawing') return
+    expect(next.source._id).toBe(source._id)
+    expect(next.originPx).toEqual({ x: 100, y: 50 })
+    expect(next.cursorPx).toEqual({ x: 100, y: 50 })
+  })
+
+  it('connector-drawing + mousemove with no target stays connector-drawing, updates cursorPx', () => {
+    const drawing: DragState = {
+      kind: 'connector-drawing',
+      source,
+      originPx: { x: 100, y: 50 },
+      cursorPx: { x: 100, y: 50 }
+    }
+    const next = reduce(drawing, { type: 'mousemove-connector', cursorPx: { x: 250, y: 80 }, hoveredBar: null }, ts)
+    expect(next.kind).toBe('connector-drawing')
+    if (next.kind !== 'connector-drawing') return
+    expect(next.cursorPx).toEqual({ x: 250, y: 80 })
+  })
+
+  it('connector-drawing + mousemove over a bar → connector-target-hover', () => {
+    const drawing: DragState = {
+      kind: 'connector-drawing',
+      source,
+      originPx: { x: 100, y: 50 },
+      cursorPx: { x: 100, y: 50 }
+    }
+    const next = reduce(drawing, { type: 'mousemove-connector', cursorPx: { x: 300, y: 80 }, hoveredBar: target }, ts)
+    expect(next.kind).toBe('connector-target-hover')
+    if (next.kind !== 'connector-target-hover') return
+    expect(next.target._id).toBe(target._id)
+    expect(next.cursorPx).toEqual({ x: 300, y: 80 })
+  })
+
+  it('connector-target-hover + mousemove off any bar → back to connector-drawing', () => {
+    const hover: DragState = {
+      kind: 'connector-target-hover',
+      source,
+      originPx: { x: 100, y: 50 },
+      cursorPx: { x: 300, y: 80 },
+      target
+    }
+    const next = reduce(hover, { type: 'mousemove-connector', cursorPx: { x: 400, y: 90 }, hoveredBar: null }, ts)
+    expect(next.kind).toBe('connector-drawing')
+  })
+
+  it('source bar itself does NOT become a valid target (self-hover stays drawing)', () => {
+    const drawing: DragState = {
+      kind: 'connector-drawing',
+      source,
+      originPx: { x: 100, y: 50 },
+      cursorPx: { x: 110, y: 55 }
+    }
+    const next = reduce(drawing, { type: 'mousemove-connector', cursorPx: { x: 120, y: 55 }, hoveredBar: source }, ts)
+    expect(next.kind).toBe('connector-drawing')
+  })
+
+  it('connector-drawing + mouseup → idle', () => {
+    const drawing: DragState = {
+      kind: 'connector-drawing',
+      source,
+      originPx: { x: 100, y: 50 },
+      cursorPx: { x: 250, y: 80 }
+    }
+    expect(reduce(drawing, { type: 'mouseup-connector' }, ts)).toEqual({ kind: 'idle' })
+  })
+
+  it('connector-drawing + cancel → idle', () => {
+    const drawing: DragState = {
+      kind: 'connector-drawing',
+      source,
+      originPx: { x: 100, y: 50 },
+      cursorPx: { x: 250, y: 80 }
+    }
+    expect(reduce(drawing, { type: 'cancel' }, ts)).toEqual({ kind: 'idle' })
+  })
+})
+
 describe('drag-controller — milestone target (PR3.3)', () => {
   const milestone: Milestone = {
     _id: 'ms-1' as Ref<Milestone>,
