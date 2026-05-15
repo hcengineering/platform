@@ -27,8 +27,8 @@
   import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
   import DependencyEditor from '../DependencyEditor.svelte'
   import EditMilestone from '../milestones/EditMilestone.svelte'
-  import { Loading, addNotification, NotificationSeverity } from '@hcengineering/ui'
-  import { translate } from '@hcengineering/platform'
+  import { Loading, addNotification, NotificationSeverity, themeStore } from '@hcengineering/ui'
+  import { translate, translateCB, type IntlString } from '@hcengineering/platform'
   import { type FilteredView, type Viewlet, type ViewOptions } from '@hcengineering/view'
   import view from '@hcengineering/view'
   import { selectedFilterStore } from '@hcengineering/view-resources'
@@ -87,7 +87,7 @@
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import { type BarLabelSlot } from './lib/bar-labels'
   import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
-  import { Icon, IconChevronDown, IconChevronRight, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
+  import { Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
   import { showMenu, statusStore } from '@hcengineering/view-resources'
   import { getEventPositionElement } from '@hcengineering/ui'
@@ -119,6 +119,46 @@
   // starts directly with the canvas. Kept as 0 so the v-scrollbar
   // top offset math below stays simple.
   const TOOLBAR_HEIGHT = 0
+
+  // v121.11 / Bug 2 — i18n raw-keys in aria-labels. `aria-label={tracker.string.Foo}`
+  // sets the literal IntlString id ("tracker:string:Foo"), it does not
+  // resolve via the <Label/> fallback chain. `translateCB` fills the
+  // `ariaLabels` map asynchronously for every key we register; the
+  // returned getter falls back to an empty string so the DOM never
+  // shows the raw key (and screen-readers do not announce it either).
+  // Keys are re-translated whenever the language changes.
+  const ariaLabelKeys: IntlString[] = [
+    tracker.string.GanttCollapseAll,
+    tracker.string.GanttExpandAll,
+    tracker.string.GanttSavedViewUpdate,
+    tracker.string.GanttExportPng,
+    tracker.string.GanttExportPdf,
+    tracker.string.GanttFullscreen,
+    tracker.string.GanttMobileOpenSidebar,
+    tracker.string.GanttMobileCloseSidebar,
+    tracker.string.GanttJumpToStart,
+    tracker.string.GanttJumpToEnd,
+    tracker.string.GanttJumpToDate,
+    tracker.string.GanttPreviousPeriod,
+    tracker.string.GanttNextPeriod,
+    tracker.string.GanttUndo,
+    tracker.string.GanttRedo
+  ]
+  let ariaLabels: Record<string, string> = {}
+  $: {
+    // touch the language store so the reactive block re-runs on switch
+    const lang = $themeStore.language
+    const next: Record<string, string> = {}
+    for (const key of ariaLabelKeys) {
+      translateCB(key, {}, lang, (res) => {
+        next[key] = res
+        ariaLabels = { ...next }
+      })
+    }
+  }
+  function ariaLabelOf (key: IntlString): string {
+    return ariaLabels[key] ?? ''
+  }
 
   let hoveredRowId: string | null = null
   let tooltipState: { visible: boolean, x: number, y: number, row: LayoutRow | null } = {
@@ -957,6 +997,10 @@
       // dependency-arrow visibility re-runs without waiting on pointermove.
       queueMicrotask(syncViewport)
     }
+    // Tier-4 Item 13 — close the mobile drawer once the user has jumped
+    // to a row. Spec §"Phone": Tap auf einen Drawer-Eintrag scrollt
+    // Canvas zur Bar + schließt Drawer.
+    if (layoutMode === 'phone') mobileDrawerOpen = false
   }
 
   function issueCode (i: Issue): string {
@@ -4100,28 +4144,84 @@
       bind:clientHeight={toolbarHeightPx}
     >
       <div class="toolbar-left">
-        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToStart }} on:click={jumpToStart}>
+        {#if layoutMode === 'phone'}
+          <!-- Tier-4 Item 13 — Mobile-Friendly Gantt. Hamburger button
+               toggles the slide-out drawer that hosts the issue list on
+               Phone. The legacy sidebar grid is hidden behind a CSS
+               @media (max-width: 640px) rule below. -->
+          <button
+            class="nav-btn icon-btn mobile-hamburger"
+            type="button"
+            use:tooltip={{ label: mobileDrawerOpen ? tracker.string.GanttMobileCloseSidebar : tracker.string.GanttMobileOpenSidebar }}
+            aria-label={ariaLabelOf(mobileDrawerOpen ? tracker.string.GanttMobileCloseSidebar : tracker.string.GanttMobileOpenSidebar)}
+            aria-expanded={mobileDrawerOpen}
+            on:click={() => { mobileDrawerOpen = !mobileDrawerOpen }}
+          >
+            <span class="hamburger-glyph" aria-hidden="true">≡</span>
+          </button>
+        {/if}
+        <!-- v121.11 / Bug 3 — Date-Nav buttons. The four icon-only nav
+             buttons (jumpToStart, prev, next, jumpToEnd) had only a
+             tooltip but no accessible name.  Set both aria-label and
+             title from the resolved translation so screen-readers and
+             native browser tooltips both work; the existing huly
+             tooltip via use:tooltip stays untouched. -->
+        <button
+          class="nav-btn icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttJumpToStart }}
+          on:click={jumpToStart}
+          aria-label={ariaLabelOf(tracker.string.GanttJumpToStart)}
+          title={ariaLabelOf(tracker.string.GanttJumpToStart)}
+        >
           <Icon icon={ArrowLeft} size="small" />
         </button>
-        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttPreviousPeriod }} on:click={() => pageScroll(-1)}>
+        <button
+          class="nav-btn icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
+          on:click={() => pageScroll(-1)}
+          aria-label={ariaLabelOf(tracker.string.GanttPreviousPeriod)}
+          title={ariaLabelOf(tracker.string.GanttPreviousPeriod)}
+        >
           <Icon icon={NavPrev} size="small" />
         </button>
         <button class="nav-btn today-btn" type="button" on:click={jumpToToday}>
           <Label label={tracker.string.GanttToday} />
         </button>
-        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttNextPeriod }} on:click={() => pageScroll(1)}>
+        <button
+          class="nav-btn icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttNextPeriod }}
+          on:click={() => pageScroll(1)}
+          aria-label={ariaLabelOf(tracker.string.GanttNextPeriod)}
+          title={ariaLabelOf(tracker.string.GanttNextPeriod)}
+        >
           <Icon icon={NavNext} size="small" />
         </button>
-        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToEnd }} on:click={jumpToEnd}>
+        <button
+          class="nav-btn icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttJumpToEnd }}
+          on:click={jumpToEnd}
+          aria-label={ariaLabelOf(tracker.string.GanttJumpToEnd)}
+          title={ariaLabelOf(tracker.string.GanttJumpToEnd)}
+        >
           <Icon icon={ArrowRight} size="small" />
         </button>
-        <label class="date-input-wrap" use:tooltip={{ label: tracker.string.GanttJumpToDate }}>
+        <label
+          class="date-input-wrap"
+          use:tooltip={{ label: tracker.string.GanttJumpToDate }}
+          aria-label={ariaLabelOf(tracker.string.GanttJumpToDate)}
+          title={ariaLabelOf(tracker.string.GanttJumpToDate)}
+        >
           <Icon icon={Calendar} size="small" />
           <input
             type="date"
             class="date-input"
             bind:value={datePickerValue}
             on:change={() => jumpToDate(datePickerValue)}
+            aria-label={ariaLabelOf(tracker.string.GanttJumpToDate)}
           />
         </label>
       </div>
@@ -4144,29 +4244,25 @@
           <!-- v121 fix — order was Expand → Collapse, swapped per user
                feedback so Collapse-all comes first (matches the visual
                left-to-right "compact ⇒ wide" reading order). -->
-          <!-- v121.11 / Bug 5 — Tree-Glyphs. Replaced double-caret text
-               glyphs (▶▶ / ▼▼) with the standard huly ChevronRight /
-               ChevronDown icons. The double-caret looked like a "fast
-               forward" / jump-to-today control rather than a hierarchy
-               toggle. Same icons are used in AccordionItem and the
-               sidebar tree rows so the affordance is consistent. -->
           <button
             type="button"
             class="gantt-toolbar-icon-btn gantt-tree-btn"
             use:tooltip={{ label: tracker.string.GanttCollapseAll }}
-            aria-label={tracker.string.GanttCollapseAll}
+            aria-label={ariaLabelOf(tracker.string.GanttCollapseAll)}
+            title={ariaLabelOf(tracker.string.GanttCollapseAll)}
             on:click={collapseAllTree}
           >
-            <Icon icon={IconChevronRight} size="small" />
+            <span class="gantt-tree-glyph" aria-hidden="true">▶▶</span>
           </button>
           <button
             type="button"
             class="gantt-toolbar-icon-btn gantt-tree-btn"
             use:tooltip={{ label: tracker.string.GanttExpandAll }}
-            aria-label={tracker.string.GanttExpandAll}
+            aria-label={ariaLabelOf(tracker.string.GanttExpandAll)}
+            title={ariaLabelOf(tracker.string.GanttExpandAll)}
             on:click={expandAllTree}
           >
-            <Icon icon={IconChevronDown} size="small" />
+            <span class="gantt-tree-glyph" aria-hidden="true">▼▼</span>
           </button>
         {/if}
         <!-- Phase 3c: Undo/Redo. The buttons mirror the Cmd+Z / Cmd+Shift+Z
@@ -4180,7 +4276,7 @@
           disabled={!$canUndo}
           use:tooltip={{ label: tracker.string.GanttUndo }}
           on:click={() => { void handleUndo() }}
-          aria-label={$nextUndoDescription ?? ''}
+          aria-label={$nextUndoDescription ?? ariaLabelOf(tracker.string.GanttUndo)}
         >
           <Icon icon={IconUndo} size="small" />
         </button>
@@ -4190,7 +4286,7 @@
           disabled={!$canRedo}
           use:tooltip={{ label: tracker.string.GanttRedo }}
           on:click={() => { void handleRedo() }}
-          aria-label={$nextRedoDescription ?? ''}
+          aria-label={$nextRedoDescription ?? ariaLabelOf(tracker.string.GanttRedo)}
         >
           <Icon icon={IconRedo} size="small" />
         </button>
@@ -4240,7 +4336,7 @@
               type="button"
               class="gantt-toolbar-icon-btn"
               use:tooltip={{ label: tracker.string.GanttSavedViewUpdate }}
-              aria-label={tracker.string.GanttSavedViewUpdate}
+              aria-label={ariaLabelOf(tracker.string.GanttSavedViewUpdate)}
               on:click={onUpdateSavedViewClick}
             >
               <span class="gantt-toolbar-text-glyph" aria-hidden="true">↻</span>
@@ -4347,7 +4443,10 @@
           </div>
         </div>
         <!-- Row 2: sidebar (sticky-left) / resize handle (sticky-left) / canvas -->
-        <div class="cell sidebar-cell">
+        <!-- Tier-4 Item 13 — Mobile-Friendly Gantt. On Phone the cell is
+             absolutely positioned and slides in via .drawer-open. On
+             Tablet/Desktop the class is inert. -->
+        <div class="cell sidebar-cell" class:drawer-open={mobileDrawerOpen}>
           <GanttSidebar
             rows={sortedRows}
             width={sidebarWidthPx}
@@ -4437,6 +4536,20 @@
             />
           </div>
         </div>
+        <!-- Tier-4 Item 13 — Mobile-Friendly Gantt. Backdrop overlay
+             closes the drawer on tap. Rendered inside .gantt-grid so it
+             paints above the canvas-cell but below the absolute-
+             positioned .sidebar-cell.drawer-open (which has z-index 30).
+             a11y-no-static-element-interactions is acceptable here — the
+             backdrop is purely a tap-to-dismiss affordance; the
+             hamburger button below is the keyboard-accessible toggle. -->
+        {#if layoutMode === 'phone' && mobileDrawerOpen}
+          <!-- svelte-ignore a11y-no-static-element-interactions a11y-click-events-have-key-events -->
+          <div
+            class="mobile-drawer-backdrop"
+            on:click={() => { mobileDrawerOpen = false }}
+          />
+        {/if}
       </div>
     </div>
     <!-- Custom vertical scrollbar — DOM thumb absolutely positioned at
