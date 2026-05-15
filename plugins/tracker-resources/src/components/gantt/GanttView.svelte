@@ -979,15 +979,32 @@
     }, 200)
   }
 
+  // v121.14 — Firefox emits a "scroll-linked positioning effect" warning when
+  // a scroll handler synchronously mutates layout-affecting CSS (here:
+  // `transform: translateX(...)` on `.hscroll-inner`). Defer the reactive
+  // update into the next animation frame so the compositor finishes the pan
+  // frame uninterrupted; updates within the same frame coalesce on the latest
+  // scrollLeft/scrollTop, matching the previous behaviour visually but
+  // decoupling from the scroll event itself.
+  let vScrollRaf: number | null = null
+  let hScrollRaf: number | null = null
   function handleVScroll (e: Event): void {
     const t = e.target as HTMLDivElement
-    scrollTop = t.scrollTop
-    viewportHeight = t.clientHeight
+    if (vScrollRaf !== null) return
+    vScrollRaf = requestAnimationFrame(() => {
+      vScrollRaf = null
+      scrollTop = t.scrollTop
+      viewportHeight = t.clientHeight
+    })
   }
   function handleHScroll (e: Event): void {
     const t = e.target as HTMLDivElement
-    canvasViewportLeft = t.scrollLeft
-    canvasViewportWidth = t.clientWidth
+    if (hScrollRaf !== null) return
+    hScrollRaf = requestAnimationFrame(() => {
+      hScrollRaf = null
+      canvasViewportLeft = t.scrollLeft
+      canvasViewportWidth = t.clientWidth
+    })
   }
 
   function onJump (e: CustomEvent<{ x: number }>): void {
@@ -2735,6 +2752,16 @@
   })
   onDestroy(() => {
     resizeObs?.disconnect()
+    // v121.14 — cancel pending rAFs so a late-fire never targets a destroyed
+    // component (would reactively read scrollerEl/hScrollEl after teardown).
+    if (vScrollRaf !== null) {
+      cancelAnimationFrame(vScrollRaf)
+      vScrollRaf = null
+    }
+    if (hScrollRaf !== null) {
+      cancelAnimationFrame(hScrollRaf)
+      hScrollRaf = null
+    }
   })
 
   function onJump (e: CustomEvent<{ x: number }>): void {
