@@ -371,7 +371,26 @@ export default mergeIds(trackerId, tracker, {
     GanttHelpTitle: '' as IntlString,
     GanttHelpEsc: '' as IntlString,
     GanttExport: '' as IntlString,
-    GanttExportFailed: '' as IntlString
+    GanttExportFailed: '' as IntlString,
+    // Phase 3a — sidebar inline-grid columns
+    GanttSidebarColumnsExtended: '' as IntlString,
+    GanttSortBreaksHierarchy: '' as IntlString,
+    GanttSidebarColIdentifier: '' as IntlString,
+    GanttSidebarColTitle: '' as IntlString,
+    GanttSidebarColStatus: '' as IntlString,
+    GanttSidebarColPriority: '' as IntlString,
+    GanttSidebarColAssignee: '' as IntlString,
+    GanttSidebarColEstimation: '' as IntlString,
+    GanttSidebarColComponent: '' as IntlString,
+    GanttSidebarColMilestone: '' as IntlString,
+    GanttSidebarColPredecessors: '' as IntlString,
+    GanttSidebarColSlack: '' as IntlString,
+    GanttSidebarColStartDate: '' as IntlString,
+    GanttSidebarColDueDate: '' as IntlString,
+    GanttSidebarColDeadline: '' as IntlString,
+    GanttSidebarColProgress: '' as IntlString,
+    GanttSidebarColModifiedOn: '' as IntlString,
+    GanttSidebarColCreatedOn: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

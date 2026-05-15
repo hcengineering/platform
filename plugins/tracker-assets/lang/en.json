@@ -391,7 +391,25 @@
     "GanttHelpTitle": "Keyboard shortcuts",
     "GanttHelpEsc": "Press Esc or ? to close",
     "GanttExport": "Export to PNG",
-    "GanttExportFailed": "Export failed"
+    "GanttExportFailed": "Export failed",
+    "GanttSidebarColumnsExtended": "Extended sidebar columns",
+    "GanttSortBreaksHierarchy": "Sorting breaks the hierarchy view — sub-issues are detached from their parent.",
+    "GanttSidebarColIdentifier": "ID",
+    "GanttSidebarColTitle": "Title",
+    "GanttSidebarColStatus": "Status",
+    "GanttSidebarColPriority": "Priority",
+    "GanttSidebarColAssignee": "Assignee",
+    "GanttSidebarColEstimation": "Estimation",
+    "GanttSidebarColComponent": "Component",
+    "GanttSidebarColMilestone": "Milestone",
+    "GanttSidebarColPredecessors": "Predecessors",
+    "GanttSidebarColSlack": "Slack",
+    "GanttSidebarColStartDate": "Start",
+    "GanttSidebarColDueDate": "Due",
+    "GanttSidebarColDeadline": "Deadline",
+    "GanttSidebarColProgress": "Progress",
+    "GanttSidebarColModifiedOn": "Modified",
+    "GanttSidebarColCreatedOn": "Created"
   },
   "status": {}
 }
