@@ -31,6 +31,34 @@ function reduceFromIdle (state: DragState & { kind: 'idle' }, event: DragEvent):
   if (event.type === 'mouseenter-bar') {
     return { kind: 'hover-bar', issueId: event.issueId, edge: event.edge }
   }
+  // PR 3: allow direct idle → drag in one step. Real users always pass through
+  // hover-bar first (mouseenter fires before mousedown), but synthetic event
+  // dispatch (Playwright tests) and edge-cases where the bar is summoned under
+  // the cursor (e.g. after a re-render) can skip the hover state. Treat
+  // mousedown-bar as the start of a drag regardless.
+  if (event.type === 'mousedown-bar') {
+    if (event.issue.startDate == null || event.issue.dueDate == null) return state
+    const base = {
+      issue: event.issue,
+      originStart: event.issue.startDate,
+      originDue: event.issue.dueDate,
+      cursorStartX: event.cursorX
+    }
+    if (event.edge === 'body') {
+      return {
+        kind: 'dragging-body',
+        ...base,
+        previewStart: event.issue.startDate,
+        previewDue: event.issue.dueDate
+      }
+    }
+    if (event.edge === 'left') {
+      return { kind: 'resizing-left', ...base, previewStart: event.issue.startDate }
+    }
+    if (event.edge === 'right') {
+      return { kind: 'resizing-right', ...base, previewDue: event.issue.dueDate }
+    }
+  }
   if (event.type === 'mousedown-unscheduled') {
     // Default to "today" for both dates; cursor movement during the drag
     // shifts them in lockstep just like dragging-body. originStart/originDue
