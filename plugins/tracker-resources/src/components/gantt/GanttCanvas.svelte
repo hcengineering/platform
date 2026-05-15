@@ -17,15 +17,22 @@
   export let scrollTop: number = 0
   export let viewportHeight: number = 600
   export let viewport: { left: number; right: number }
+  // Vertical band reserved at the top of the canvas for milestone-flag
+  // labels, so they don't collide with the first issue row.
+  export let milestoneStripHeight: number = 22
 
   $: visibleRows = filterVisibleRows(rows, scrollTop, viewportHeight)
-  $: totalHeight = rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0
+  $: rowsHeight = rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0
+  $: totalHeight = rowsHeight + milestoneStripHeight
 
   function rowKey (row: LayoutRow): string {
-    return row.issue !== null ? (row.issue._id as unknown as string) : `swimlane-${row.y}`
+    return row.id
   }
 
   function summaryFor (row: LayoutRow): SummaryRange | null {
+    if (row.kind === 'milestone' && row.milestone !== null) {
+      return summaryRanges.get(row.id) ?? null
+    }
     if (row.issue === null) return null
     const id = row.issue._id as unknown as string
     return summaryRanges.get(id) ?? null
@@ -39,9 +46,24 @@
   viewBox="{viewport.left} 0 {viewport.right - viewport.left} {totalHeight}"
   preserveAspectRatio="none"
 >
-  <g class="bars">
+  <g class="bars" transform="translate(0, {milestoneStripHeight})">
     {#each visibleRows as row (rowKey(row))}
-      {#if row.issue !== null}
+      {#if row.kind === 'milestone' && row.milestone !== null}
+        {@const range = summaryFor(row)}
+        {#if range !== null && range.startDate !== null && range.dueDate !== null}
+          <GanttBar
+            issue={{
+              title: row.milestone.label,
+              startDate: range.startDate,
+              dueDate: range.dueDate
+            }}
+            row={{ y: row.y, height: row.height }}
+            {timeScale}
+            isSummary
+            summaryRange={range}
+          />
+        {/if}
+      {:else if row.issue !== null}
         <GanttBar
           issue={row.issue}
           row={{ y: row.y, height: row.height }}
@@ -60,6 +82,7 @@
         {timeScale}
         canvasHeight={totalHeight}
         {viewport}
+        labelStripHeight={milestoneStripHeight - 2}
       />
     {/each}
   </g>
