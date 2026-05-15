@@ -566,7 +566,9 @@ export default mergeIds(trackerId, tracker, {
     // Notification on Dependency-Shift.
     DependencyShiftedPresenter: '' as AnyComponent,
     // Activity-Log
-    RelationActivityPresenter: '' as AnyComponent
+    RelationActivityPresenter: '' as AnyComponent,
+    // Predecessor column in the Tracker list view.
+    PredecessorsColumn: '' as AnyComponent
   },
   metadata: {
     CreateIssueDraft: '' as Metadata<IssueDraft>
