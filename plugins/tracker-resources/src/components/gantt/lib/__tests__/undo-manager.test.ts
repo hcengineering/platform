@@ -548,3 +548,96 @@ describe('UndoManager — relation entries', () => {
     expect(client.state.mockOps.removed).toHaveLength(0)
   })
 })
+
+// v121.3-D — explicit coverage for the spec'd cascade-undo atomicity and
+// the conflict-drops-frame contract that GanttView's notification path
+// relies on.
+describe('UndoManager — cascade atomicity & conflict-drops-frame', () => {
+  it('undo of a 5-issue cascade-frame applies all 5 tx in ONE commit', async () => {
+    const issues: Issue[] = []
+    for (let i = 0; i < 5; i++) issues.push(makeIssue(`i${i}`, 100 + i * 10, 200 + i * 10))
+    const client = makeClient({ issues })
+    const mgr = new UndoManager(client)
+    mgr.push({
+      kind: 'date-batch',
+      changes: issues.map((iss, idx) => ({
+        issueId: String(iss._id) as Ref<Issue>,
+        issueSpace: space,
+        before: { startDate: 50 + idx * 10, dueDate: 150 + idx * 10 },
+        after: { startDate: 100 + idx * 10, dueDate: 200 + idx * 10 }
+      })),
+      description: 'Cascade: 5 issues shifted'
+    })
+    const r = await mgr.undo()
+    expect(r.kind).toBe('success')
+    // All 5 updates land in the same apply() / single commit
+    expect(client.state.mockOps.updates).toHaveLength(5)
+    // Every issue rolled back to its "before"
+    for (let i = 0; i < 5; i++) {
+      expect(client.state.issues.get(`i${i}`)?.startDate).toBe(50 + i * 10)
+      expect(client.state.issues.get(`i${i}`)?.dueDate).toBe(150 + i * 10)
+    }
+  })
+
+  it('cascade-undo fails atomically: commit throw leaves no partial state change', async () => {
+    const issues: Issue[] = []
+    for (let i = 0; i < 4; i++) issues.push(makeIssue(`i${i}`, 100 + i, 200 + i))
+    const snapshotBefore = issues.map((i) => ({ ...i }))
+    const client = makeClient({ issues })
+    client.state.failNextCommit = true
+    const mgr = new UndoManager(client)
+    mgr.push({
+      kind: 'date-batch',
+      changes: issues.map((iss, idx) => ({
+        issueId: String(iss._id) as Ref<Issue>,
+        issueSpace: space,
+        before: { startDate: 50 + idx, dueDate: 150 + idx },
+        after: { startDate: 100 + idx, dueDate: 200 + idx }
+      })),
+      description: 'Cascade: 4 issues shifted'
+    })
+    const r = await mgr.undo()
+    expect(r.kind).toBe('error')
+    // None of the issues mutated — pending writes never ran because
+    // commit threw before applying them.
+    for (let i = 0; i < 4; i++) {
+      const cur = client.state.issues.get(`i${i}`)
+      expect(cur?.startDate).toBe(snapshotBefore[i].startDate)
+      expect(cur?.dueDate).toBe(snapshotBefore[i].dueDate)
+    }
+    // Errored frame is dropped from the undo stack — NOT re-pushed.
+    expect(mgr.undoStackDepthForTest()).toBe(0)
+    expect(mgr.canUndo.get()).toBe(false)
+  })
+
+  it('conflict drops the frame from the stack (no re-push, no redo entry)', async () => {
+    const issue = makeIssue('a', 9999, 9999) // current diverges from after
+    const client = makeClient({ issues: [issue] })
+    const mgr = new UndoManager(client)
+    mgr.push(dateChange('a', 50, 150, 100, 200))
+    expect(mgr.undoStackDepthForTest()).toBe(1)
+    const r = await mgr.undo()
+    expect(r.kind).toBe('conflicted')
+    // Frame is consumed (not requeued) so a second Ctrl-Z does NOT loop
+    // on the same toast — see GanttView.showUndoResultToast comment.
+    expect(mgr.undoStackDepthForTest()).toBe(0)
+    expect(mgr.redoStackDepthForTest()).toBe(0)
+    expect(mgr.canUndo.get()).toBe(false)
+    expect(mgr.canRedo.get()).toBe(false)
+  })
+
+  it('conflicted result carries the original entry (for debug logging)', async () => {
+    const issue = makeIssue('a', 9999, 9999)
+    const client = makeClient({ issues: [issue] })
+    const mgr = new UndoManager(client)
+    const entry = dateChange('a', 50, 150, 100, 200)
+    mgr.push(entry)
+    const r = await mgr.undo()
+    expect(r.kind).toBe('conflicted')
+    if (r.kind === 'conflicted') {
+      // GanttView's showUndoResultToast walks `r.entry` for `console.warn`
+      // payload — this contract must not regress.
+      expect(r.entry).toBe(entry)
+    }
+  })
+})

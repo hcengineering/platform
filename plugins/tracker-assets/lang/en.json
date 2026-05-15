@@ -459,6 +459,7 @@
     "GanttUndoEmpty": "Nothing to undo",
     "GanttRedoEmpty": "Nothing to redo",
     "GanttUndoConflict": "Cannot undo: data was changed externally since this action",
+    "GanttUndoConflictHint": "The conflicting change has been kept; this undo step was dropped to avoid an infinite loop.",
     "GanttUndoFailed": "Undo failed",
     "GanttUndoDescMove": "Move {title} by {days} days",
     "GanttUndoDescResize": "Resize {title}",
