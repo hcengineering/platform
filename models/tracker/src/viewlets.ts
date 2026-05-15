@@ -293,6 +293,19 @@ export function ganttViewOptions (): ViewOptionsModel {
         defaultValue: false,
         actionTarget: 'display',
         label: tracker.string.SlackColumn
+      },
+      {
+        // Phase 3a: extended sidebar grid. When on, the sidebar renders a
+        // sortable header row + per-column cells (identifier, title, status,
+        // priority, estimation, dates, predecessors, slack, etc.). When off,
+        // the legacy compact 4-column layout is preserved bit-for-bit.
+        // Per-column visibility / order / width customisation is staged for
+        // Phase 3a.v2 — v1 ships with a sensible default column set.
+        key: 'ganttSidebarColumnsExtended',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarColumnsExtended
       }
     ]
   }
