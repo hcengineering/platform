@@ -239,27 +239,46 @@ export function simulateCascade (
         continue
       }
       const targetDates = current.get(r.target) as WorkingDates
-      // Only FS implemented in this task; others come in Task 5.
+      const lag = r.lag ?? 0
+      let requiredAnchor: number
+      let targetAnchorIsStart: boolean
       if (r.kind === 'finish-to-start') {
-        const snap = addScheduleDays(curDates.due, r.lag ?? 0)
-        if (snap > targetDates.start) {
-          // max: take the larger of (a) snap to constraint, (b) carry-forward
-          // the cur start-delta to preserve the original gap between issues.
-          const newStart = Math.max(snap, targetDates.start + curStartDelta)
-          const delta = newStart - targetDates.start
-          const newDue = targetDates.due + delta
-          current.set(r.target, { start: newStart, due: newDue })
-          shifts.set(r.target, {
-            issue: targetIssue,
-            oldStart: targetIssue.startDate,
-            oldDue: targetIssue.dueDate,
-            newStart,
-            newDue,
-            reason: 'push-successor',
-            triggeredBy: cur
-          })
-          queue.push(r.target)
-        }
+        requiredAnchor = addScheduleDays(curDates.due, lag)
+        targetAnchorIsStart = true
+      } else if (r.kind === 'start-to-start') {
+        requiredAnchor = addScheduleDays(curDates.start, lag)
+        targetAnchorIsStart = true
+      } else if (r.kind === 'finish-to-finish') {
+        requiredAnchor = addScheduleDays(curDates.due, lag)
+        targetAnchorIsStart = false
+      } else /* start-to-finish */ {
+        requiredAnchor = addScheduleDays(curDates.start, lag)
+        targetAnchorIsStart = false
+      }
+
+      const targetAnchor = targetAnchorIsStart ? targetDates.start : targetDates.due
+      if (requiredAnchor > targetAnchor) {
+        // For FS: carry the cur start-delta forward to preserve relative gap
+        // (snap wins when constraint requires a larger shift).
+        // For other relation types: snap only (start-delta is not propagated).
+        const snap = requiredAnchor
+        const newAnchor = r.kind === 'finish-to-start'
+          ? Math.max(snap, targetAnchor + curStartDelta)
+          : snap
+        const delta = newAnchor - targetAnchor
+        const newStart = targetAnchorIsStart ? newAnchor : targetDates.start + delta
+        const newDue = targetAnchorIsStart ? targetDates.due + delta : newAnchor
+        current.set(r.target, { start: newStart, due: newDue })
+        shifts.set(r.target, {
+          issue: targetIssue,
+          oldStart: targetIssue.startDate,
+          oldDue: targetIssue.dueDate,
+          newStart,
+          newDue,
+          reason: 'push-successor',
+          triggeredBy: cur
+        })
+        queue.push(r.target)
       }
     }
   }
