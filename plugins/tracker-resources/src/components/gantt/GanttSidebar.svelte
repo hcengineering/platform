@@ -8,7 +8,7 @@
   import type { IntlString } from '@hcengineering/platform'
   import type { Issue, IssueRelation, Milestone } from '@hcengineering/tracker'
   import { formatPredecessors } from './lib/predecessor-format'
-  import { Label, tooltip } from '@hcengineering/ui'
+  import { Icon, IconChevronDown, IconChevronRight, Label, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import type { DragState, LayoutRow } from './lib/types'
   import type { TimeScale } from './lib/time-scale'
@@ -325,7 +325,7 @@
               use:tooltip={{ label: row.collapsed ? tracker.string.GanttExpand : tracker.string.GanttCollapse }}
               on:click={() => dispatch('toggle', { id: row.id })}
             >
-              {row.collapsed ? '▶' : '▼'}
+              <Icon icon={row.collapsed ? IconChevronRight : IconChevronDown} size="small" />
             </button>
             <span class="gantt-group-label" title={row.groupLabel ?? ''}>{row.groupLabel ?? ''}</span>
             <span class="gantt-group-count">{row.groupCount ?? 0}</span>
@@ -408,7 +408,7 @@
             use:tooltip={{ label: row.collapsed ? tracker.string.GanttExpand : tracker.string.GanttCollapse }}
             on:click={() => dispatch('toggle', { id: row.id })}
           >
-            {row.collapsed ? '▶' : '▼'}
+            <Icon icon={row.collapsed ? IconChevronRight : IconChevronDown} size="small" />
           </button>
         </span>
         <span class="gantt-group-label" title={row.groupLabel ?? ''}>{row.groupLabel ?? ''}</span>
@@ -444,7 +444,7 @@
             use:tooltip={{ label: row.collapsed ? tracker.string.GanttExpand : tracker.string.GanttCollapse }}
             on:click={() => dispatch('toggle', { id: row.id })}
           >
-            {row.collapsed ? '▶' : '▼'}
+            <Icon icon={row.collapsed ? IconChevronRight : IconChevronDown} size="small" />
           </button>
         {/if}
       </span>
