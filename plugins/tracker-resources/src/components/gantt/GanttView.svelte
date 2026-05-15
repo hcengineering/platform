@@ -22,7 +22,9 @@
   import { type DragState, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import { Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
-  import { statusStore } from '@hcengineering/view-resources'
+  import { showMenu, statusStore } from '@hcengineering/view-resources'
+  import { getEventPositionElement } from '@hcengineering/ui'
+  import { ganttExtraActions } from './lib/menu-actions'
   import ArrowLeft from '@hcengineering/ui/src/components/icons/ArrowLeft.svelte'
   import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
   import NavPrev from '@hcengineering/ui/src/components/icons/NavPrev.svelte'
@@ -388,6 +390,30 @@
     window.removeEventListener('mouseup', handleCanvasMouseUp)
   })
 
+  function handleBarContextMenu (e: CustomEvent<{ issue: Issue, event: MouseEvent }>): void {
+    const anchor = getEventPositionElement(e.detail.event)
+    const editable = editableIssueIds.has(String(e.detail.issue._id))
+    const extra = editable ? ganttExtraActions(e.detail.issue, anchor) : []
+    showMenu(e.detail.event, {
+      object: e.detail.issue,
+      baseMenuClass: tracker.class.Issue,
+      actions: extra
+    })
+  }
+
+  function handleRowContextMenu (e: CustomEvent<{ issue: { _id: string, _class: string }, event: MouseEvent }>): void {
+    const found = issues.find((i) => String(i._id) === e.detail.issue._id)
+    if (found === undefined) return
+    const anchor = getEventPositionElement(e.detail.event)
+    const editable = editableIssueIds.has(String(found._id))
+    const extra = editable ? ganttExtraActions(found, anchor) : []
+    showMenu(e.detail.event, {
+      object: found,
+      baseMenuClass: tracker.class.Issue,
+      actions: extra
+    })
+  }
+
   function jumpToToday (): void {
     if (hScrollEl === undefined) return
     const x = timeScale.toX(Date.now())
@@ -697,6 +723,7 @@
             on:openIssue={onIssueOpen}
             on:hoverRow={onRowHover}
             on:addIssue={newIssue}
+            on:rowContextMenu={handleRowContextMenu}
           />
         </div>
         <div
@@ -726,6 +753,7 @@
               on:openIssue={onIssueOpen}
               on:hoverRow={onRowHover}
               on:barMouseDown={handleBarMouseDown}
+              on:contextMenu={handleBarContextMenu}
             />
           </div>
         </div>
