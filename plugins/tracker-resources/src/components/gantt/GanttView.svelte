@@ -76,6 +76,14 @@
     pxPerDayToTickZoom,
     ZOOM_PX_PER_DAY
   } from './lib/zoom'
+  import {
+    dropdownSelectionForPxPerDay,
+    visibleDaysFromPxPerDay,
+    pxPerDayFromVisibleDays,
+    MIN_VISIBLE_DAYS,
+    MAX_VISIBLE_DAYS,
+    type DropdownSelection
+  } from './lib/zoom-dropdown'
   // Tier-4 Item 13 — Mobile-Friendly Gantt.
   import { detectLayoutMode, type LayoutMode } from './lib/breakpoint'
   import {
@@ -87,7 +95,8 @@
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import { type BarLabelSlot } from './lib/bar-labels'
   import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
-  import { Icon, IconChevronDown, IconChevronRight, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
+  import { DropdownLabelsIntl, EditBox, Icon, IconChevronDown, IconChevronRight, IconMoreV, Label, SelectPopup, eventToHTMLElement, showPanel, showPopup, tooltip } from '@hcengineering/ui'
+  import type { DropdownIntlItem, SelectPopupValueType } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
   import { showMenu, statusStore } from '@hcengineering/view-resources'
   import { getEventPositionElement } from '@hcengineering/ui'
@@ -260,7 +269,6 @@
   let pinchState: PinchState = pinchInitial()
 
   let zoom: ZoomLevel = 'week'
-  const ZOOM_LEVELS: readonly ZoomLevel[] = ['day', 'week', 'month', 'quarter']
   // v121.3-C — continuous Ctrl+Wheel zoom. `userPxPerDay` is the
   // single-source-of-truth for the horizontal scale when set; when null
   // we fall back to the preset table (`ZOOM_PX_PER_DAY[zoom]`). The
@@ -359,6 +367,78 @@
   // this resolves back to the matching ZoomLevel via the same table.
   $: tickZoomLevel = userPxPerDay !== null ? pxPerDayToTickZoom(userPxPerDay) : zoom
 
+  // v121.17 — Toolbar zoom dropdown + visible-days input.
+  // The dropdown selection follows wheel-zoom: when `userPxPerDay` snaps
+  // back exactly onto a preset (Day=32, Week=14, Month=4, Quarter=1.5) the
+  // preset label shows; otherwise Custom appears as the active row.
+  $: zoomDropdownSelection = dropdownSelectionForPxPerDay(userPxPerDay, zoom) as DropdownSelection
+  // Custom is *not* directly user-selectable from the dropdown — wheel-zoom
+  // is the only way to enter that state. We therefore include the Custom
+  // item only while it's currently active, so clicking the dropdown still
+  // shows the user *what* their current state is, without offering Custom
+  // as an explicit choice that wouldn't change anything.
+  $: zoomDropdownItems = (() => {
+    const items: DropdownIntlItem[] = [
+      { id: 'day',     label: tracker.string.GanttZoomDay },
+      { id: 'week',    label: tracker.string.GanttZoomWeek },
+      { id: 'month',   label: tracker.string.GanttZoomMonth },
+      { id: 'quarter', label: tracker.string.GanttZoomQuarter }
+    ]
+    if (zoomDropdownSelection === 'custom') {
+      items.push({ id: 'custom', label: tracker.string.GanttZoomCustom })
+    }
+    return items
+  })()
+  // Visible-day count shown in the EditBox next to the dropdown. Round so
+  // the user sees a stable integer; the underlying pxPerDay stays continuous.
+  $: visibleDays = visibleDaysFromPxPerDay(canvasViewportWidth, effectivePxPerDay)
+  // Locally edited value bound to the EditBox. We do *not* sync
+  // automatically from `visibleDays` (it would steal keystrokes from the
+  // user mid-edit) — instead `applyVisibleDaysInput()` writes back the
+  // pxPerDay, the reactive `visibleDays` follows, and we re-sync the
+  // input on the next blur/Enter/Escape.
+  let visibleDaysInput: number = visibleDays
+  // Sync the input *only* when the underlying viewport changed externally
+  // (wheel-zoom, preset click, resize) and the input is empty/uninitialized.
+  // We detect "external change" by tracking the last value we wrote out.
+  let lastVisibleDaysOut: number = visibleDays
+  $: if (visibleDays !== lastVisibleDaysOut) {
+    visibleDaysInput = visibleDays
+    lastVisibleDaysOut = visibleDays
+  }
+
+  function onZoomDropdownSelected (e: CustomEvent<DropdownSelection | undefined>): void {
+    const id = e.detail
+    if (id === undefined || id === 'custom') return
+    setZoom(id)
+  }
+
+  function applyVisibleDaysInput (): void {
+    const days = Number(visibleDaysInput)
+    if (!Number.isFinite(days) || days < MIN_VISIBLE_DAYS) {
+      visibleDaysInput = visibleDays
+      return
+    }
+    if (canvasViewportWidth <= 0) return
+    const nextPpd = pxPerDayFromVisibleDays(canvasViewportWidth, days)
+    // Editing the day count puts the toolbar into Custom-state by design —
+    // we set `userPxPerDay` directly, which the reactive block above maps
+    // back to a Custom selection unless the value happens to round to a
+    // preset (in which case the dropdown re-snaps automatically).
+    userPxPerDay = nextPpd
+    queueMicrotask(syncViewport)
+  }
+
+  function onVisibleDaysKeyDown (e: KeyboardEvent): void {
+    if (e.key === 'Enter') {
+      applyVisibleDaysInput()
+      ;(e.target as HTMLElement | null)?.blur?.()
+    } else if (e.key === 'Escape') {
+      visibleDaysInput = visibleDays
+      ;(e.target as HTMLElement | null)?.blur?.()
+    }
+  }
+
   // Tier-2 #7 — Saved Gantt-Views.
   // Re-hydrate the Gantt zoom + optional pan anchor from a FilteredView's
   // viewOptions blob. Called from the reactive `$selectedFilterStore`
@@ -456,37 +536,101 @@
       ? ((cur?.viewOptions as Record<string, unknown> | undefined)?.ganttPanAnchorDate !== undefined)
       : false
     showPopup(GanttSaveViewPopup, { fixTimeWindow: currentlyFixed }, 'top', (result) => {
-      if (result === undefined) return
+      if (result == null) return
       const r = result as { name?: string, fixTimeWindow?: boolean, sharable?: boolean }
-      if (r.name === undefined) return
+      if (r == null || r.name === undefined) return
       void saveCurrentGanttView(r.name, r.fixTimeWindow === true, r.sharable !== false)
     })
   }
 
-  function onSavedViewSelectChange (e: Event): void {
-    const target = e.target
-    if (!(target instanceof HTMLSelectElement)) return
-    const value = target.value
-    if (value === '__NEW__') {
-      // Reset the select before opening the popup so the dropdown reflects
-      // the previous (or default) selection while the popup is open. The
-      // popup callback re-sets selectedFilterStore on success.
-      target.value = $selectedFilterStore?._id !== undefined && $selectedFilterStore.viewletId === viewlet?._id
-        ? String($selectedFilterStore._id)
-        : '__DEFAULT__'
-      openSaveViewPopup()
-      return
+  /**
+   * v121.12 / Refactor D — open a nested SelectPopup listing the current
+   * account's saved Gantt views (mine first, then shared). Clicking an
+   * item sets `selectedFilterStore` which the existing reactive block
+   * picks up and applies via `applyGanttSavedView`. A "__DEFAULT__"
+   * sentinel clears the selection.
+   */
+  function openLoadViewMenu (anchor: HTMLElement): void {
+    const items: SelectPopupValueType[] = []
+    items.push({
+      id: '__DEFAULT__',
+      label: tracker.string.GanttSavedViewLoadDefault,
+      category: { label: tracker.string.GanttSavedViewLoadGroup }
+    })
+    for (const fv of ganttBuckets.mine) {
+      items.push({
+        id: String(fv._id),
+        text: fv.name,
+        isSelected: $selectedFilterStore?._id === fv._id,
+        category: { label: tracker.string.GanttSavedViewMine }
+      })
     }
-    if (value === '__DEFAULT__') {
-      selectedFilterStore.set(undefined)
-      lastAppliedSavedViewId = null
-      return
+    for (const fv of ganttBuckets.shared) {
+      items.push({
+        id: String(fv._id),
+        text: fv.name + ' ★',
+        isSelected: $selectedFilterStore?._id === fv._id,
+        category: { label: tracker.string.GanttSavedViewShared }
+      })
     }
-    const next = allFilteredViews.find((v) => String(v._id) === value)
-    if (next !== undefined) {
-      selectedFilterStore.set(next)
-    }
+    showPopup(SelectPopup, { value: items }, anchor, (selectedId) => {
+      if (selectedId === undefined || selectedId === null) return
+      const sid = String(selectedId)
+      if (sid === '__DEFAULT__') {
+        selectedFilterStore.set(undefined)
+        lastAppliedSavedViewId = null
+        return
+      }
+      const next = allFilteredViews.find((v) => String(v._id) === sid)
+      if (next !== undefined) {
+        selectedFilterStore.set(next)
+      }
+    })
   }
+
+  /**
+   * v121.12 / Refactor D — hamburger "More actions" popup. Consolidates
+   * Save / Load / PNG / PDF so they no longer crowd toolbar row 2. The
+   * menu is positioned relative to the trigger button so it sits below
+   * the toolbar (SelectPopup honours `eventToHTMLElement(event)` as
+   * anchor). Fullscreen stays in the toolbar as a frequent affordance.
+   */
+  function openMoreActionsMenu (event: MouseEvent): void {
+    const SAVE_ID = '__gantt_save__'
+    const LOAD_ID = '__gantt_load__'
+    const PNG_ID = '__gantt_png__'
+    const PDF_ID = '__gantt_pdf__'
+    const items: SelectPopupValueType[] = [
+      { id: SAVE_ID, label: tracker.string.GanttSavedViewNew },
+      { id: LOAD_ID, label: tracker.string.GanttSavedViewLoad },
+      { id: PNG_ID, label: tracker.string.GanttExportPng },
+      { id: PDF_ID, label: tracker.string.GanttExportPdf }
+    ]
+    const anchor = eventToHTMLElement(event)
+    showPopup(SelectPopup, { value: items }, anchor, (selectedId) => {
+      if (selectedId === undefined || selectedId === null) return
+      switch (selectedId) {
+        case SAVE_ID:
+          openSaveViewPopup()
+          break
+        case LOAD_ID:
+          // Re-anchor on the same trigger element so the submenu lines up
+          // with the closed parent menu.
+          openLoadViewMenu(anchor)
+          break
+        case PNG_ID:
+          void exportToPng()
+          break
+        case PDF_ID:
+          void exportToPdf()
+          break
+      }
+    })
+  }
+
+  // v121.12 / Refactor D — onSavedViewSelectChange() removed alongside
+  // the toolbar's <select>-element dropdown. Save/Load now route
+  // through openMoreActionsMenu → openSaveViewPopup / openLoadViewMenu.
 
   function isCurrentGanttViewModified (fv: FilteredView | undefined): boolean {
     if (fv === undefined || fv.viewletId !== viewlet?._id) return false
@@ -2388,13 +2532,26 @@
   // horizontal). All math lives in lib/zoom.ts for unit-testability.
   function onScrollerWheel (e: WheelEvent): void {
     if (!(e.ctrlKey || e.metaKey)) return
-    if (hScrollEl == null) return
+    // v121.14 — preventDefault FIRST (before any other early-return) so
+    // hitting MIN_PPD / MAX_PPD limits or a missing hScrollEl never lets
+    // the wheel-event fall through to the browser's page-zoom handler.
+    // User-report v121.13: after several Ctrl+Wheel operations the page
+    // started zooming itself and the Gantt became unscrollable until a
+    // hard reload. Root cause was three early-returns AFTER the
+    // `ctrlKey`-check that skipped preventDefault when the zoom reached
+    // the max/min clamp (newPpd === oldPpd path).
     e.preventDefault()
+    if (hScrollEl == null) return
     const rect = hScrollEl.getBoundingClientRect()
     const cursorX = Math.max(0, e.clientX - rect.left)
     const oldPpd = effectivePxPerDay
     const oldScrollLeft = hScrollEl.scrollLeft
-    const newPpd = applyWheelZoom(oldPpd, e.deltaY)
+    // v121.13 — sensitivity bumped from default 0.001 to 0.006 after user
+    // feedback "zoom viel zu langsam". Empirically, 0.006 lets a single
+    // wheel notch (deltaY=100) move pxPerDay by ~45 % which matches Figma /
+    // MS Project responsiveness; trackpad pixel-deltas (~20-40 per gesture)
+    // get smooth incremental zoom without overshoot.
+    const newPpd = applyWheelZoom(oldPpd, e.deltaY, 0.006)
     if (newPpd === oldPpd) return
     userPxPerDay = newPpd
     // Apply scrollLeft on the next tick so the new layout (driven by the
@@ -4253,15 +4410,37 @@
         </label>
       </div>
       <div class="toolbar-center">
-        {#each ZOOM_LEVELS as z (z)}
-          <button
-            type="button"
-            class="zoom-btn"
-            class:active={userPxPerDay === null && zoom === z}
-            class:closest={userPxPerDay !== null && tickZoomLevel === z}
-            on:click={() => setZoom(z)}
-          >{z[0].toUpperCase() + z.slice(1)}</button>
-        {/each}
+        <!-- v121.17 — Four preset buttons replaced by a single Dropdown +
+             numeric range input. Custom is only shown in the list while
+             active (set via Ctrl+Wheel zoom or via the days-input); it is
+             never a directly-selectable preset. Keyboard shortcuts D/W/M/Q
+             remain wired in onKey() below for power users. -->
+        <DropdownLabelsIntl
+          kind={'regular'}
+          size={'small'}
+          justify={'left'}
+          label={tracker.string.GanttZoomLabel}
+          items={zoomDropdownItems}
+          selected={zoomDropdownSelection}
+          shouldUpdateUndefined={false}
+          on:selected={onZoomDropdownSelected}
+        />
+        <div
+          class="zoom-days-input"
+          use:tooltip={{ label: tracker.string.GanttZoomVisibleDays, props: { days: visibleDays } }}
+          aria-label={ariaLabelOf(tracker.string.GanttZoomDaysAria)}
+        >
+          <EditBox
+            bind:value={visibleDaysInput}
+            format={'number'}
+            minValue={MIN_VISIBLE_DAYS}
+            maxValue={MAX_VISIBLE_DAYS}
+            kind={'editbox'}
+            on:blur={applyVisibleDaysInput}
+            on:keydown={onVisibleDaysKeyDown}
+          />
+          <span class="zoom-days-suffix"><Label label={tracker.string.GanttZoomDaysSuffix} /></span>
+        </div>
       </div>
       <div class="toolbar-right">
         <!-- v121.12 / Refactor C — Tree-View Expand-/Collapse-all moved
@@ -4303,36 +4482,17 @@
              priority-chips popup. Group-By stays here because it is a
              gantt-specific layout concern (swimlanes), not a filter. -->
 
-        <!-- Tier-2 #7 — Saved Gantt-Views.
-             Dropdown lists FilteredViews scoped to this viewlet (mine then
-             shared); "__DEFAULT__" clears the selection, "__NEW__" opens
-             the save popup. A "Modified" hint + circular-arrow button
-             appears when the live state differs from the persisted
-             zoomLevel of the selected view. -->
-        <div class="gantt-savedview-wrap" use:tooltip={{ label: tracker.string.GanttSavedViewSelect }}>
-          <Label label={tracker.string.GanttSavedViewSelect} />
-          <!-- svelte-ignore a11y-no-onchange -->
-          <select
-            class="gantt-savedview-select"
-            value={$selectedFilterStore?._id !== undefined && $selectedFilterStore.viewletId === viewlet?._id
-              ? String($selectedFilterStore._id)
-              : '__DEFAULT__'}
-            on:change={onSavedViewSelectChange}
-          >
-            <option value="__DEFAULT__">— —</option>
-            {#each ganttBuckets.mine as fv (fv._id)}
-              <option value={String(fv._id)}>{fv.name}</option>
-            {/each}
-            {#if ganttBuckets.shared.length > 0}
-              <option disabled>──────────</option>
-              {#each ganttBuckets.shared as fv (fv._id)}
-                <option value={String(fv._id)}>{fv.name} ★</option>
-              {/each}
-            {/if}
-            <option disabled>──────────</option>
-            <option value="__NEW__">+ …</option>
-          </select>
-          {#if savedViewModified}
+        <!-- v121.12 / Refactor D — Saved-View dropdown moved into the
+             "More actions" hamburger menu (rendered at the trailing edge
+             of the toolbar). Only the inline "Modified" indicator +
+             update-button remain visible when a saved view is currently
+             applied AND has unsaved changes — those are status, not
+             actions, and stay inline so the user sees them at a glance. -->
+        {#if savedViewModified}
+          <div class="gantt-savedview-wrap" use:tooltip={{ label: tracker.string.GanttSavedView }}>
+            <span class="gantt-savedview-name">
+              {$selectedFilterStore?.name ?? ''}
+            </span>
             <span class="gantt-savedview-modified">
               <Label label={tracker.string.GanttSavedViewModified} />
             </span>
@@ -4345,8 +4505,8 @@
             >
               <span class="gantt-toolbar-text-glyph" aria-hidden="true">↻</span>
             </button>
-          {/if}
-        </div>
+          </div>
+        {/if}
 
         <div class="gantt-groupby-wrap" use:tooltip={{ label: tracker.string.GanttGroupOverridesHierarchy }}>
           <Label label={tracker.string.GanttGroupBy} />
@@ -4705,11 +4865,25 @@
       gap: 4px 8px;
       padding: 4px 8px;
     }
+    /* v121.15 fix — clusters stay nowrap so the wrap-points are BETWEEN
+       clusters, not WITHIN them. Previously each cluster wrapped its
+       own items independently which produced items "floating" mid-row
+       between two visual rows (user-report 2026-05-15). Now each
+       cluster stays as a single horizontal block and the toolbar wraps
+       only when a full cluster cannot fit on the current line. */
     .toolbar-left,
     .toolbar-center,
     .toolbar-right {
       justify-self: start;
       flex: 0 1 auto;
+      flex-wrap: nowrap;
+    }
+    /* v121.15 fix #2 — Hamburger + Fullscreen sollen ALWAYS rechts außen
+       sein, auch wenn die Toolbar mehrzeilig wrappt. margin-left: auto
+       pusht toolbar-right ans Ende seiner aktuellen Flex-Zeile —
+       unabhängig davon ob das Zeile 1 oder Zeile 2 ist. */
+    .toolbar-right {
+      margin-left: auto;
     }
   }
   /* v121.3-E — Group-By controls. The Filter-related `.gantt-filter-*`
@@ -4843,15 +5017,17 @@
     font-size: 12px;
     border-radius: 4px;
   }
-  .gantt-savedview-select {
-    height: 22px;
-    border: none;
-    background: transparent;
-    color: var(--theme-content-color);
+  /* v121.12 / Refactor D — inline saved-view name shown only when a
+     view is currently applied AND has unsaved changes. The legacy
+     `.gantt-savedview-select` styles were dropped together with the
+     toolbar's <select>-element dropdown. */
+  .gantt-savedview-name {
     font-size: 12px;
-    cursor: pointer;
-    outline: none;
+    color: var(--theme-content-color);
     max-width: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .gantt-savedview-modified {
     font-size: 11px;
@@ -4904,30 +5080,31 @@
     cursor: pointer;
     outline: none;
   }
-  .zoom-btn {
+  /* v121.17 — `.zoom-btn` style block removed alongside the 4 preset
+     buttons that previously lived in `.toolbar-center`. The zoom-cluster
+     is now a Dropdown + numeric days-input; see `.zoom-days-input` below. */
+  .zoom-days-input {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     height: 26px;
-    padding: 0 12px;
+    padding: 0 8px;
     border: 1px solid var(--theme-divider-color);
     background: var(--theme-button-default);
     color: var(--theme-content-color);
     font-size: 12px;
-    cursor: pointer;
+    border-radius: 4px;
   }
-  .zoom-btn:first-child { border-radius: 4px 0 0 4px; }
-  .zoom-btn:last-child  { border-radius: 0 4px 4px 0; }
-  .zoom-btn:not(:first-child) { border-left: none; }
-  .zoom-btn:hover { background: var(--theme-button-hovered); }
-  .zoom-btn.active {
-    background: var(--theme-button-pressed);
-    font-weight: 600;
+  .zoom-days-input :global(.antiEditBoxInput) {
+    width: 3rem;
+    max-width: 3rem;
+    text-align: right;
+    background: transparent;
+    color: var(--theme-content-color);
   }
-  /* v121.3-C — `closest` is set while the user is in continuous (Ctrl+Wheel)
-     zoom; it highlights which preset the current pxPerDay is closest to,
-     with a softer style than `active` so the user can tell the two
-     states apart. */
-  .zoom-btn.closest {
-    background: var(--theme-button-hovered);
-    font-weight: 500;
+  .zoom-days-suffix {
+    color: var(--theme-content-color);
+    opacity: 0.7;
   }
   /* .settings-btn / .settings-popover removed — replaced by Huly's
      Customize-View ViewOption pattern (ToggleViewOption) which renders
