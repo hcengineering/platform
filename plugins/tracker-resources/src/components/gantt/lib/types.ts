@@ -24,9 +24,10 @@ export interface Tick {
   secondaryLabel?: string
 }
 
-/** A row in the flattened layout. May be an issue, milestone, or swimlane header. */
+/** A row in the flattened layout. May be an issue, milestone, swimlane header,
+ *  or — when Phase-3b Group-By is active — a synthetic group-header row. */
 export interface LayoutRow {
-  kind: 'issue' | 'milestone' | 'component-swimlane'
+  kind: 'issue' | 'milestone' | 'component-swimlane' | 'group-header'
   /** Stable key for keyed each-blocks and the collapsed-set. */
   id: string
   /** Y-coord top-edge of the row in canvas pixels. */
@@ -37,9 +38,9 @@ export interface LayoutRow {
   depth: number
   /** Whether this row is currently rendered (vs virtually skipped). */
   visible: boolean
-  /** The issue this row represents — null for milestone/swimlane rows. */
+  /** The issue this row represents — null for milestone/swimlane/group rows. */
   issue: Issue | null
-  /** The milestone this row represents — null for issue/swimlane rows. */
+  /** The milestone this row represents — null for issue/swimlane/group rows. */
   milestone: MilestoneMarker | null
   /** The component this swimlane represents — null otherwise. */
   component: Ref<TrackerComponent> | null
@@ -49,6 +50,14 @@ export interface LayoutRow {
   collapsible: boolean
   /** True iff currently collapsed (children hidden). */
   collapsed: boolean
+  /**
+   * Phase 3b — Group-by metadata. Only present on `kind === 'group-header'`
+   * rows AND on the issue rows that belong to a group (so the canvas can
+   * tint the lane). Undefined when group-by is off (legacy view).
+   */
+  groupKey?: string
+  groupLabel?: string
+  groupCount?: number
 }
 
 /** Cached aggregate dates of a parent issue's children, for summary-bar rendering. */
