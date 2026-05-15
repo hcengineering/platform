@@ -7,6 +7,7 @@
   import { Button, Label } from '@hcengineering/ui'
   import type { Issue } from '@hcengineering/tracker'
   import type { PrimaryEdit, CascadeShift } from './lib/types'
+  import { computeCascadeBodyHeight } from './lib/cascade-popup-layout'
   import tracker from '../../plugin'
 
   /**
@@ -27,6 +28,15 @@
   const LABEL_WIDTH = 220
   const LABEL_TEXT_PAD = 8
   const BAR_TOP_PADDING = 32
+  // v121.2 — last bar bottom is `BAR_TOP_PADDING + (rows-1) * ROW_HEIGHT
+  // + 4 (bar top offset) + 14 (bar height)` = svg_height - 4. Pair that
+  // with the 4px top/bottom CSS padding of .body and the previous
+  // bodyHeight clipped the bottom 8 px of the last row, so the lower
+  // edge of the last bar disappeared (visible at 3 rows in the v121.1
+  // test). Reserve that padding explicitly so the body fits without
+  // a scrollbar in the typical N<10 case and only scrolls when needed.
+  const BODY_VERTICAL_PADDING = 8
+  const BODY_BOTTOM_SAFETY = 8
   const BODY_MAX_HEIGHT = 360
   const POPUP_WIDTH = 760
 
@@ -51,7 +61,14 @@
   // user sees "N issues will be shifted" reflecting the multi-issue move.
   $: titleCount = shifts.length > 0 ? shifts.length : primary.length
   $: dateRange = computeDateRange(rows)
-  $: bodyHeight = Math.min(rows.length * ROW_HEIGHT + BAR_TOP_PADDING, BODY_MAX_HEIGHT)
+  $: bodyHeight = computeCascadeBodyHeight({
+    rowCount: rows.length,
+    rowHeight: ROW_HEIGHT,
+    barTopPadding: BAR_TOP_PADDING,
+    bodyVerticalPadding: BODY_VERTICAL_PADDING,
+    bodyBottomSafety: BODY_BOTTOM_SAFETY,
+    bodyMaxHeight: BODY_MAX_HEIGHT
+  })
   $: barAreaWidth = POPUP_WIDTH - LABEL_WIDTH - 32
 
   function labelFor (i: Issue): string {
