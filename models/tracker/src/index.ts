@@ -598,6 +598,35 @@ export function createModel (builder: Builder): void {
     tracker.ids.IssueRemovedActivityViewlet
   )
 
+  // Tier-2 Item 8 — Activity-Log Remove-Detail Fix.
+  // Three symmetric viewlets so IssueRelation add/remove/update show up in
+  // the issue activity feed with a kind+lag+target.title snapshot instead
+  // of the previous empty "removed related to:" row. The
+  // RelationActivityPresenter reuses IssueRelationPresenter, which is
+  // already registered as the ObjectPresenter for tracker.class.IssueRelation
+  // (models/tracker/src/presenters.ts).
+  builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
+    objectClass: tracker.class.IssueRelation,
+    action: 'create',
+    icon: tracker.icon.Issue,
+    label: tracker.string.AddedRelation,
+    component: tracker.component.RelationActivityPresenter
+  })
+  builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
+    objectClass: tracker.class.IssueRelation,
+    action: 'remove',
+    icon: tracker.icon.Issue,
+    label: tracker.string.RemovedRelation,
+    component: tracker.component.RelationActivityPresenter
+  })
+  builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
+    objectClass: tracker.class.IssueRelation,
+    action: 'update',
+    icon: tracker.icon.Issue,
+    label: tracker.string.UpdatedRelation,
+    component: tracker.component.RelationActivityPresenter
+  })
+
   builder.createDoc(
     activity.class.DocUpdateMessageViewlet,
     core.space.Model,
