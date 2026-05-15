@@ -1525,6 +1525,18 @@
       e.preventDefault()
       return
     }
+    // Phase 1.D — direct zoom-level keys (Linear-style) and jump-to-today.
+    // Only fire on bare key (no Ctrl/Cmd/Alt) so we don't hijack browser
+    // shortcuts like Ctrl+D = bookmark. Use setZoom() so the horizontal
+    // scroll + viewport sync match the toolbar buttons exactly.
+    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (e.key === 'd' || e.key === 'D') { setZoom('day');     e.preventDefault(); return }
+      if (e.key === 'w' || e.key === 'W') { setZoom('week');    e.preventDefault(); return }
+      if (e.key === 'm' || e.key === 'M') { setZoom('month');   e.preventDefault(); return }
+      if (e.key === 'q' || e.key === 'Q') { setZoom('quarter'); e.preventDefault(); return }
+      if (e.key === 't' || e.key === 'T') { jumpToToday();      e.preventDefault(); return }
+    }
+
     // PR6: zoom shortcuts. `+` / `=` zoom in, `-` zoom out. The same
     // key positions as the browser's native zoom but scoped to the Gantt.
     if (e.key === '+' || e.key === '=') {
