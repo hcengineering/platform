@@ -195,3 +195,53 @@ describe('buildGroupedRows — sort hook within a group', () => {
     expect((issueRows[1] as any).issue._id).toBe('z')
   })
 })
+
+describe('buildGroupedRows — nameLookup display labels (v121 fix)', () => {
+  it('renders the resolved display name in group-header rows', () => {
+    const issues = [
+      makeIssue('i1', { component: 'comp-1' as any }),
+      makeIssue('i2', { component: 'comp-2' as any })
+    ]
+    const lookup = new Map<string, string>([
+      ['comp-1', 'Backend'],
+      ['comp-2', 'Frontend']
+    ])
+    const rows = buildGroupedRows(issues, 'component', {
+      rowHeight: ROW_HEIGHT,
+      collapsedGroups: new Set(),
+      nameLookup: lookup
+    })
+    const headers = rows.filter(r => r.kind === 'group-header')
+    const labels = headers.map(h => (h as any).label).sort()
+    expect(labels).toEqual(['Backend', 'Frontend'])
+  })
+
+  it('falls back to raw id for keys missing from nameLookup', () => {
+    const issues = [makeIssue('i1', { component: 'comp-1' as any })]
+    const rows = buildGroupedRows(issues, 'component', {
+      rowHeight: ROW_HEIGHT,
+      collapsedGroups: new Set(),
+      nameLookup: new Map()
+    })
+    const header = rows.find(r => r.kind === 'group-header')
+    expect((header as any).label).toBe('comp-1')
+  })
+
+  it('resolves priority numeric keys to translated names', () => {
+    const issues = [
+      makeIssue('i1', { priority: 1 as any }),
+      makeIssue('i2', { priority: 4 as any })
+    ]
+    const lookup = new Map<string, string>([
+      ['1', 'Urgent'],
+      ['4', 'Low']
+    ])
+    const rows = buildGroupedRows(issues, 'priority', {
+      rowHeight: ROW_HEIGHT,
+      collapsedGroups: new Set(),
+      nameLookup: lookup
+    })
+    const labels = rows.filter(r => r.kind === 'group-header').map(h => (h as any).label)
+    expect(labels).toEqual(['Urgent', 'Low'])
+  })
+})
