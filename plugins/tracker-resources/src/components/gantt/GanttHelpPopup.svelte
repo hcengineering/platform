@@ -29,15 +29,15 @@
   interface Row { key: string, label: string }
   const rows: Row[] = [
     { key: '?', label: 'Show this help' },
+    { key: '←  →', label: 'Move selected issue ±1 day' },
+    { key: 'Shift+←  Shift+→', label: 'Move selected issue ±7 days' },
+    { key: '+ / =', label: 'Zoom in' },
+    { key: '−', label: 'Zoom out' },
     { key: 'T', label: 'Jump to today' },
     { key: 'D', label: 'Zoom to day view' },
     { key: 'W', label: 'Zoom to week view' },
     { key: 'M', label: 'Zoom to month view' },
     { key: 'Q', label: 'Zoom to quarter view' },
-    { key: '←  →', label: 'Move selected issue ±1 day' },
-    { key: 'Shift+←  Shift+→', label: 'Move selected issue ±7 days' },
-    { key: '+ / =', label: 'Zoom in' },
-    { key: '−', label: 'Zoom out' },
     { key: 'E', label: 'Export visible view to PNG' },
     { key: 'Esc', label: 'Cancel drag / close popup / dismiss this help' },
     { key: 'Alt + drag', label: 'Bypass cascade simulation (force commit)' }

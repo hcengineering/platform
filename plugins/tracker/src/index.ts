@@ -671,7 +671,29 @@ const pluginState = plugin(trackerId, {
     SchedulingModeHint: '' as IntlString,
     SchedulingModeTooltipAuto: '' as IntlString,
     SchedulingModeTooltipManual: '' as IntlString,
-    GanttBarManualPinTooltip: '' as IntlString
+    GanttBarManualPinTooltip: '' as IntlString,
+    // Phase 1 — Visual Polish
+    Deadline: '' as IntlString,
+    BarLabelNone: '' as IntlString,
+    BarLabelTitle: '' as IntlString,
+    BarLabelIdentifier: '' as IntlString,
+    BarLabelAssignee: '' as IntlString,
+    BarLabelPriority: '' as IntlString,
+    BarLabelStatus: '' as IntlString,
+    BarLabelEstimation: '' as IntlString,
+    BarLabelProgress: '' as IntlString,
+    GanttBarLabelLeft: '' as IntlString,
+    GanttBarLabelInside: '' as IntlString,
+    GanttBarLabelRight: '' as IntlString,
+    GanttQuickInfoOnClick: '' as IntlString,
+    QuickInfoOpenFullEditor: '' as IntlString,
+    // Tier-4 Item 14 — Notification on Dependency-Shift.
+    DependencyShifted: '' as IntlString,
+    DependencyShiftedHeader: '' as IntlString,
+    DependencyShiftedMessage: '' as IntlString,
+    DependencyShiftedSubject: '' as IntlString,
+    DependencyShiftedDeltaDays: '' as IntlString,
+    DependencyShiftedNoChange: '' as IntlString
   },
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,
