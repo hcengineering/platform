@@ -185,3 +185,20 @@ describe('simulateCascade — anchor model SS/FF/SF', () => {
     expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 4))
   })
 })
+
+describe('simulateCascade — pull-predecessor', () => {
+  it('Test 5: drag B earlier so A→B FS violated → A pulled earlier', () => {
+    const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
+    const relations = [rel('A', 'B', 'finish-to-start', 0)]
+    const primary: PrimaryEdit[] = [{ issue: B, newStart: Date.UTC(2026, 4, 2), newDue: Date.UTC(2026, 4, 6) }]
+    const res = simulateCascade(primary, [A, B], relations, () => true)
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    expect(res.shifts).toHaveLength(1)
+    expect(res.shifts[0].issue._id).toBe('A')
+    expect(res.shifts[0].reason).toBe('pull-predecessor')
+    expect(res.shifts[0].newDue).toBe(Date.UTC(2026, 4, 2))
+    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 3, 28)) // A duration 4d → start = 2026-04-28
+  })
+})
