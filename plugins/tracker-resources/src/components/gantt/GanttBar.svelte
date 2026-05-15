@@ -259,8 +259,8 @@
       rx={3}
       ry={3}
       fill={barColors.fill}
-      stroke={isCritical ? '#dc2626' : barColors.border}
-      stroke-width={isCritical ? 2 : 1}
+      stroke={(isCritical || isViolated) ? '#dc2626' : barColors.border}
+      stroke-width={(isCritical || isViolated) ? 2 : 1}
       stroke-dasharray={isViolated ? '4 2' : 'none'}
       class="bar"
       class:editable
@@ -268,6 +268,7 @@
       class:focused
       class:selected
       class:critical={isCritical}
+      class:violated={isViolated}
       role="button"
       tabindex="-1"
       aria-label={issue.title}
