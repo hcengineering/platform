@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { Issue } from '@hcengineering/tracker'
+import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 
 /**
@@ -45,4 +45,51 @@ export function descendantsWithDates (issue: Issue, allIssues: Issue[]): Issue[]
   }
 
   return result
+}
+
+/**
+ * Cycle-detection for IssueRelation graph (PR4a). Returns true iff adding
+ * a `source → target` edge to the current relation set would close a
+ * cycle. BFS from `target` along outgoing relations (`attachedTo === current`
+ * yields edges `current → target` to follow); if we reach `source`, the
+ * proposed edge closes a loop. Self-loops are always cycles.
+ *
+ * Complexity: O(V + E) per call. Called once on drag-release; never in
+ * the render path.
+ *
+ * Spec §4 / brainstorm decision A (block + toast on cycle attempt).
+ */
+export function wouldCreateCycle (
+  source: Ref<Issue>,
+  target: Ref<Issue>,
+  relations: IssueRelation[]
+): boolean {
+  if (source === target) return true
+
+  // Adjacency: predecessor → successors.
+  const out = new Map<Ref<Issue>, Ref<Issue>[]>()
+  for (const r of relations) {
+    const bucket = out.get(r.attachedTo)
+    if (bucket === undefined) {
+      out.set(r.attachedTo, [r.target])
+    } else {
+      bucket.push(r.target)
+    }
+  }
+
+  // BFS forward from target; if we hit source, source→target would loop.
+  const visited = new Set<Ref<Issue>>([target])
+  const queue: Ref<Issue>[] = [target]
+  while (queue.length > 0) {
+    const cur = queue.shift() as Ref<Issue>
+    const succs = out.get(cur)
+    if (succs === undefined) continue
+    for (const next of succs) {
+      if (next === source) return true
+      if (visited.has(next)) continue
+      visited.add(next)
+      queue.push(next)
+    }
+  }
+  return false
 }
