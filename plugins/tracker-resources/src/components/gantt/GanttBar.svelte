@@ -183,7 +183,7 @@
         on:mousedown={onBarDown('body')}
         on:contextmenu={onBarContextMenu}
       />
-      {#if w >= 18}
+      {#if selected && w >= 18}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <rect
           class="resize-handle resize-left"
@@ -267,7 +267,7 @@
       on:mousedown={onBarDown('body')}
       on:contextmenu={onBarContextMenu}
     />
-    {#if editable && w >= 18}
+    {#if editable && selected && w >= 18}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <rect
         class="resize-handle resize-left"
@@ -327,8 +327,22 @@
   .summary-label {
     font-weight: 600;
   }
+  /*
+   * Cursor state machine (user feedback 2026-05-11):
+   *   editable, not selected → pointer  (this bar is clickable to arm it)
+   *   editable + selected    → grab     (now draggable / resizable)
+   *   mid-drag               → grabbing (via .active-drag)
+   * Resize handles only render when selected (see template above), so the
+   * ew-resize cursor only appears once the bar is armed.
+   */
   .bar.editable {
+    cursor: pointer;
+  }
+  .bar.editable.selected {
     cursor: grab;
+  }
+  .bar.editable.active-drag {
+    cursor: grabbing;
   }
   :global(svg.gantt-canvas .resize-handle) {
     cursor: ew-resize;
@@ -343,28 +357,46 @@
     stroke-width: 2px;
     filter: drop-shadow(0 0 4px color-mix(in srgb, var(--theme-state-info-color, #6366f1) 50%, transparent));
   }
+  /*
+   * .focused (keyboard Tab cycle) is intentionally low-contrast — a thin
+   * dashed 1px outline. handleBarMouseDown syncs focusedIssueId to
+   * selectedIssueId on click, so .focused only appears alone for pure
+   * keyboard navigation (rare) and never competes visually with .selected.
+   */
   .bar.focused {
     stroke: var(--theme-state-info-color, #6366f1);
-    stroke-width: 2px;
+    stroke-width: 1px;
     stroke-dasharray: 2,2;
   }
   /*
-   * Click-to-select state: solid blue outline so the user can clearly see
-   * which bar is armed for drag/resize. Distinct from .focused (dashed,
-   * keyboard-only) and .active-drag (glow, mid-drag).
+   * Click-to-select state: thick solid blue outline + glow. Made deliberately
+   * stronger than the previous 2px stroke so the armed state is unmistakable
+   * on every fill color (backlog grey through active orange). Codex review-7
+   * 2026-05-11: user reported the previous treatment was too subtle.
    */
   .bar.selected {
     stroke: var(--theme-state-info-color, #6366f1);
-    stroke-width: 2px;
-    filter: drop-shadow(0 0 2px color-mix(in srgb, var(--theme-state-info-color, #6366f1) 35%, transparent));
+    stroke-width: 3px;
+    paint-order: stroke fill;
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--theme-state-info-color, #6366f1) 60%, transparent));
   }
   /* Parent-issue summary claw: invisible hit-rect with select/drag visual
-     feedback when the user has armed the claw via click. */
+     feedback when the user has armed the claw via click. Same cursor
+     state machine as .bar. */
   :global(svg.gantt-canvas .summary-hit) {
+    cursor: pointer;
+  }
+  :global(svg.gantt-canvas .summary-hit.selected) {
     cursor: grab;
+  }
+  :global(svg.gantt-canvas .summary-hit.active-drag) {
+    cursor: grabbing;
   }
   :global(svg.gantt-canvas .summary-hit.selected),
   :global(svg.gantt-canvas .summary-hit.active-drag) {
-    fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 12%, transparent);
+    fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 18%, transparent);
+    stroke: var(--theme-state-info-color, #6366f1);
+    stroke-width: 1.5px;
+    stroke-dasharray: 4,2;
   }
 </style>
