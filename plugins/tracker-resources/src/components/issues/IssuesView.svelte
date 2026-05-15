@@ -55,10 +55,16 @@
   {modeSelectorProps}
 >
   <svelte:fragment slot="header-tools">
-    <!-- Phase 2 — Gantt date-nav + zoom buttons render here when the
-         Gantt viewlet is active. They were previously in a dedicated
-         toolbar row inside GanttView; consolidating them with the
-         Filter/Search row saves ~40 px of vertical real estate.
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
+  </svelte:fragment>
+
+  <svelte:fragment slot="extra">
+    <!-- Phase 2 — Gantt date-nav + zoom buttons render in the
+         SECOND header row (next to All/Active/Backlog ModeSelector and
+         the Filter/Search) when the Gantt viewlet is active. The
+         controls used to live in a dedicated toolbar row inside
+         GanttView; consolidating them with the existing row saves
+         ~40 px of vertical real estate.
          The controls read their state from `ganttToolbarApi` store
          which GanttView populates on mount and clears on destroy.
          GanttExtraActions on the right adds fullscreen + PDF export
@@ -67,7 +73,6 @@
       <GanttToolbarControls />
       <GanttExtraActions />
     {/if}
-    <ViewletSettingButton bind:viewOptions bind:viewlet />
   </svelte:fragment>
 
   <svelte:fragment slot="extra">
