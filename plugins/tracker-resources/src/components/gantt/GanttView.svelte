@@ -5,6 +5,7 @@
   import { type Class, type Doc, type DocumentQuery, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { type Issue, type Milestone } from '@hcengineering/tracker'
+  import EditMilestone from '../milestones/EditMilestone.svelte'
   import { Loading, addNotification, NotificationSeverity } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
   import { type Viewlet, type ViewOptions } from '@hcengineering/view'
@@ -304,6 +305,13 @@
       e.detail.issue._class as Ref<Class<Doc>>,
       'content'
     )
+  }
+
+  // PR3.2: open the EditMilestone popup when a milestone row is clicked in
+  // the sidebar — user expects parity with the issue row's single-click
+  // open behavior (feedback 2026-05-11).
+  function onMilestoneOpen (e: CustomEvent<{ milestone: Milestone }>): void {
+    showPopup(EditMilestone, { _id: e.detail.milestone._id }, 'middle')
   }
 
   function newIssue (): void {
@@ -945,6 +953,7 @@
             on:jump={onJump}
             on:toggle={onToggle}
             on:openIssue={onIssueOpen}
+            on:openMilestone={onMilestoneOpen}
             on:hoverRow={onRowHover}
             on:addIssue={newIssue}
             on:rowContextMenu={handleRowContextMenu}
