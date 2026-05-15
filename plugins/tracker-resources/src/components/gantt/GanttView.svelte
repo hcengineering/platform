@@ -2,7 +2,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
-  import { type Class, type Doc, type DocumentQuery, type Ref, type Space, SortingOrder } from '@hcengineering/core'
+  import { type ApplyOperations, type Class, type Doc, type DocumentQuery, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { type Issue, type Milestone } from '@hcengineering/tracker'
   import EditMilestone from '../milestones/EditMilestone.svelte'
@@ -12,7 +12,7 @@
   import { onDestroy, onMount } from 'svelte'
   import { writable } from 'svelte/store'
   import tracker from '../../plugin'
-  import { canEditIssue } from '../../utils'
+  import { canEditIssue, canEditMilestone } from '../../utils'
   import GanttCanvas from './GanttCanvas.svelte'
   import GanttConfirmCommitPopup from './GanttConfirmCommitPopup.svelte'
   import GanttHeader from './GanttHeader.svelte'
@@ -21,7 +21,7 @@
   import { buildLayout } from './lib/layout'
   import { descendantsWithDates } from './lib/scheduler'
   import { createTimeScale } from './lib/time-scale'
-  import { type DragState, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
+  import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import { Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
   import { showMenu, statusStore } from '@hcengineering/view-resources'
@@ -74,6 +74,9 @@
   // editableIssueIds gates the resize handles + the Set-start-date menu entry
   // per issue based on canEditIssue() (utils.ts:280).
   const activeDrag = writable<DragState>({ kind: 'idle' })
+  // PR3.3: single Set holds editable Issue _ids AND Milestone _ids — both
+  // are stringified Ref<...> so a single Set lookup serves the bar
+  // editable={} flag for both row kinds without parallel data structures.
   let editableIssueIds: Set<string> = new Set()
 
   /**
@@ -144,6 +147,13 @@
     for (const i of issues) {
       if (await canEditIssue(i)) next.add(i._id as unknown as string)
     }
+    // PR3.3: milestones share the same Set (their _ids are also branded
+    // strings and don't collide with Issue _ids in practice — both are
+    // ObjectId hex strings, and the Set lookup in GanttCanvas is just
+    // 'has(String(id))').
+    for (const m of milestones) {
+      if (await canEditMilestone(m)) next.add(m._id as unknown as string)
+    }
     editableIssueIds = next
   })()
   $: milestoneQuery.query(
@@ -156,6 +166,12 @@
   )
 
   $: dateRange = computeDateRange(issues, milestones, zoom)
+
+  // PR3.3: lookup so GanttCanvas can build a `DragTarget` for a milestone
+  // bar without having to thread the full Milestone[] down.
+  $: milestonesById = new Map<string, Milestone>(
+    milestones.map((m) => [m._id as unknown as string, m])
+  )
 
   function paddingDays (z: ZoomLevel): number {
     switch (z) {
@@ -328,8 +344,8 @@
   // PR 3 edit-mode: bar mousedown → reducer; window mousemove/mouseup; commit.
   // -------------------------------------------------------------------------
 
-  function handleBarMouseDown (e: CustomEvent<{ issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }>): void {
-    const id = String(e.detail.issue._id)
+  function handleBarMouseDown (e: CustomEvent<{ target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }>): void {
+    const id = String(e.detail.target.doc._id)
     // Click-to-select gate: if this bar isn't already selected, the first
     // mousedown just selects it (no drag starts). User has to mousedown a
     // second time on the now-selected bar to actually drag/resize.
@@ -341,9 +357,23 @@
       focusedIssueId = id
       return
     }
+    // PR3.3: capture origin dates at the dispatch boundary so the doc-
+    // agnostic reducer doesn't need to know which field on target.doc to
+    // read. Milestone uses targetDate, Issue uses dueDate.
+    const t = e.detail.target
+    const originStart =
+      t.kind === 'issue' ? (t.doc.startDate as number) : (t.doc.startDate as number)
+    const originEnd =
+      t.kind === 'issue' ? (t.doc.dueDate as number) : (t.doc.targetDate)
+    // Guard: a milestone with startDate=null shouldn't reach this path — the
+    // bar isn't rendered. Issue with null dates was already handled in PR3
+    // (mousedown-unscheduled path).
+    if (originStart == null || originEnd == null) return
     activeDrag.update((s) => reduce(s, {
       type: 'mousedown-bar',
-      issue: e.detail.issue,
+      target: t,
+      originStart,
+      originEnd,
       edge: e.detail.edge,
       cursorX: e.detail.cursorX
     }, timeScale))
@@ -417,10 +447,10 @@
   /** True when the preview window is different from the origin window. */
   function previewChangedFromOrigin (state: DragState): boolean {
     if (state.kind === 'dragging-body' || state.kind === 'dragging-unscheduled') {
-      return state.previewStart !== state.originStart || state.previewDue !== state.originDue
+      return state.previewStart !== state.originStart || state.previewEnd !== state.originEnd
     }
     if (state.kind === 'resizing-left') return state.previewStart !== state.originStart
-    if (state.kind === 'resizing-right') return state.previewDue !== state.originDue
+    if (state.kind === 'resizing-right') return state.previewEnd !== state.originEnd
     return false
   }
 
@@ -428,16 +458,21 @@
    * Open the confirm dialog and resolve true on Apply / false on Cancel.
    * The popup dispatches `close` with a boolean payload, which Huly's
    * showPopup routes to the 4th-arg resultHandler.
+   *
+   * PR3.3: when the target is a Milestone, the confirm popup gets the
+   * Milestone-shaped doc instead of an Issue. GanttConfirmCommitPopup
+   * reads `issue.title` (or `issue.label`) and is already tolerant of
+   * either field name — see its component header.
    */
   async function askConfirm (state: DragState): Promise<boolean> {
     if (state.kind === 'idle' || state.kind === 'hover-bar') return false
     const newStart = (state.kind === 'resizing-right' ? state.originStart : (state as { previewStart: number }).previewStart)
-    const newDue = (state.kind === 'resizing-left' ? state.originDue : (state as { previewDue: number }).previewDue)
+    const newDue = (state.kind === 'resizing-left' ? state.originEnd : (state as { previewEnd: number }).previewEnd)
     const kind: 'move' | 'resize' = state.kind === 'resizing-left' || state.kind === 'resizing-right' ? 'resize' : 'move'
     return await new Promise<boolean>((resolve) => {
       showPopup(
         GanttConfirmCommitPopup,
-        { issue: state.issue, kind, newStart, newDue },
+        { issue: state.target.doc, kind, newStart, newDue },
         'top',
         (result: boolean | undefined) => {
           resolve(result === true)
@@ -446,24 +481,22 @@
     })
   }
 
-  async function commitDrag (state: DragState): Promise<void> {
-    if (state.kind === 'idle' || state.kind === 'hover-bar') return
-    // Guard: an unscheduled-drag that never reached the canvas (e.g. the user
-    // clicked the drag-grip and released without moving) must NOT silently
-    // schedule the issue to "today". review note (2026-05-10):.
-    if (state.kind === 'dragging-unscheduled' && !state.hasCanvasTarget) return
-    const client = getClient()
-    const ops = client.apply('gantt-drag')
+  /**
+   * Commit a drag for an Issue target. Mirrors the PR3 commit path; the
+   * cascade walks descendant issues (parent → children shift by delta).
+   */
+  async function commitIssueDrag (state: DragState, target: { kind: 'issue', doc: Issue }, ops: ApplyOperations): Promise<void> {
     if (state.kind === 'dragging-body') {
-      await ops.update(state.issue, { startDate: state.previewStart, dueDate: state.previewDue })
-      const delta = state.previewStart - state.originStart
+      await ops.update(target.doc, { startDate: (state as any).previewStart, dueDate: (state as any).previewEnd })
+      const delta = (state as any).previewStart - (state as any).originStart
       if (delta !== 0) {
         // Fetch the full space's issues here rather than reusing the
         // view-filtered `issues` array — otherwise children hidden by an
         // active Tracker filter wouldn't shift with the parent and the
-        // tree would drift out of sync. review note 2026-05-11.
-        const allInSpace = await client.findAll(tracker.class.Issue, { space: state.issue.space })
-        for (const child of descendantsWithDates(state.issue, allInSpace)) {
+        // tree would drift out of sync. Codex review-6 2026-05-11.
+        const client = getClient()
+        const allInSpace = await client.findAll(tracker.class.Issue, { space: target.doc.space })
+        for (const child of descendantsWithDates(target.doc, allInSpace)) {
           await ops.update(child, {
             startDate: (child.startDate as number) + delta,
             dueDate: (child.dueDate as number) + delta
@@ -475,11 +508,76 @@
       // synthetic "today" anchor — using its delta to shift existing scheduled
       // descendants would move them by a wildly unrelated amount (internal review) Descendants stay put; the user can drag the
       // (now-scheduled) parent again to do a coordinated shift.
-      await ops.update(state.issue, { startDate: state.previewStart, dueDate: state.previewDue })
+      await ops.update(target.doc, { startDate: (state as any).previewStart, dueDate: (state as any).previewEnd })
     } else if (state.kind === 'resizing-left') {
-      await ops.update(state.issue, { startDate: state.previewStart })
+      await ops.update(target.doc, { startDate: (state as any).previewStart })
     } else if (state.kind === 'resizing-right') {
-      await ops.update(state.issue, { dueDate: state.previewDue })
+      await ops.update(target.doc, { dueDate: (state as any).previewEnd })
+    }
+  }
+
+  /**
+   * Commit a drag for a Milestone target (PR3.3 2026-05-11).
+   * Field mapping: Issue.dueDate ↔ Milestone.targetDate; startDate is shared.
+   * Cascade (brainstorm decision B): when the milestone moves, all issues
+   * assigned to it shift by the same delta along with their descendants.
+   * No cascade for resize — only the milestone bounds change.
+   */
+  async function commitMilestoneDrag (state: DragState, target: { kind: 'milestone', doc: Milestone }, ops: ApplyOperations): Promise<void> {
+    if (state.kind === 'dragging-body') {
+      await ops.update(target.doc, { startDate: (state as any).previewStart, targetDate: (state as any).previewEnd })
+      const delta = (state as any).previewStart - (state as any).originStart
+      if (delta !== 0) {
+        const client = getClient()
+        const allInSpace = await client.findAll(tracker.class.Issue, { space: target.doc.space })
+        const assigned = allInSpace.filter((i) =>
+          (i as unknown as { milestone?: string | null }).milestone === target.doc._id
+        )
+        // Shift assigned issues + their descendants. Same dedup logic as
+        // descendantsWithDates: only issues with both dates set get shifted.
+        const shiftRoots = new Set<string>()
+        const toShift: Issue[] = []
+        for (const a of assigned) {
+          if (a.startDate == null || a.dueDate == null) continue
+          if (!shiftRoots.has(String(a._id))) {
+            shiftRoots.add(String(a._id))
+            toShift.push(a)
+          }
+          for (const child of descendantsWithDates(a, allInSpace)) {
+            if (!shiftRoots.has(String(child._id))) {
+              shiftRoots.add(String(child._id))
+              toShift.push(child)
+            }
+          }
+        }
+        for (const i of toShift) {
+          await ops.update(i, {
+            startDate: (i.startDate as number) + delta,
+            dueDate: (i.dueDate as number) + delta
+          })
+        }
+      }
+    } else if (state.kind === 'resizing-left') {
+      await ops.update(target.doc, { startDate: (state as any).previewStart })
+    } else if (state.kind === 'resizing-right') {
+      await ops.update(target.doc, { targetDate: (state as any).previewEnd })
+    }
+    // Milestones can't enter dragging-unscheduled (no drag-grip in the
+    // sidebar for them), so that branch is unreachable.
+  }
+
+  async function commitDrag (state: DragState): Promise<void> {
+    if (state.kind === 'idle' || state.kind === 'hover-bar') return
+    // Guard: an unscheduled-drag that never reached the canvas (e.g. the user
+    // clicked the drag-grip and released without moving) must NOT silently
+    // schedule the issue to "today". Codex review-3 (2026-05-10).
+    if (state.kind === 'dragging-unscheduled' && !state.hasCanvasTarget) return
+    const client = getClient()
+    const ops = client.apply('gantt-drag')
+    if (state.target.kind === 'issue') {
+      await commitIssueDrag(state, state.target, ops)
+    } else {
+      await commitMilestoneDrag(state, state.target, ops)
     }
     const result = await ops.commit()
     if (!result.result) {
@@ -548,7 +646,7 @@
   function handleRowDragStart (e: CustomEvent<{ issue: Issue, cursorX: number }>): void {
     activeDrag.update((s) => reduce(s, {
       type: 'mousedown-unscheduled',
-      issue: e.detail.issue,
+      target: { kind: 'issue', doc: e.detail.issue },
       cursorX: e.detail.cursorX
     }, timeScale))
   }
@@ -991,6 +1089,7 @@
               {activeDrag}
               {focusedIssueId}
               {selectedIssueId}
+              {milestonesById}
               on:openIssue={onIssueOpen}
               on:hoverRow={onRowHover}
               on:barMouseDown={handleBarMouseDown}

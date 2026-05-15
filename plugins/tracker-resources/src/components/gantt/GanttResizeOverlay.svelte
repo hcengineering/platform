@@ -20,18 +20,18 @@
   function originGeometry (state: DragState): { x: number, w: number } | null {
     if (state.kind === 'dragging-body') {
       const x = timeScale.toX(state.originStart)
-      return { x, w: timeScale.toX(state.originDue) - x + timeScale.pxPerDay }
+      return { x, w: timeScale.toX(state.originEnd) - x + timeScale.pxPerDay }
     }
     // dragging-unscheduled has no meaningful origin until the cursor enters
     // the canvas; before that the "origin" is just today and would mislead
     // the user with a ghost outline at the wrong place.
     if (state.kind === 'dragging-unscheduled' && state.hasCanvasTarget) {
       const x = timeScale.toX(state.originStart)
-      return { x, w: timeScale.toX(state.originDue) - x + timeScale.pxPerDay }
+      return { x, w: timeScale.toX(state.originEnd) - x + timeScale.pxPerDay }
     }
     if (state.kind === 'resizing-left' || state.kind === 'resizing-right') {
       const x = timeScale.toX(state.originStart)
-      return { x, w: timeScale.toX(state.originDue) - x + timeScale.pxPerDay }
+      return { x, w: timeScale.toX(state.originEnd) - x + timeScale.pxPerDay }
     }
     return null
   }
@@ -39,7 +39,7 @@
   function guideX (state: DragState): number | null {
     if (state.kind === 'dragging-body') return timeScale.toX(state.previewStart)
     if (state.kind === 'resizing-left') return timeScale.toX(state.previewStart)
-    if (state.kind === 'resizing-right') return timeScale.toX(state.previewDue) + timeScale.pxPerDay
+    if (state.kind === 'resizing-right') return timeScale.toX(state.previewEnd) + timeScale.pxPerDay
     if (state.kind === 'dragging-unscheduled' && state.hasCanvasTarget) return timeScale.toX(state.previewStart)
     return null
   }
@@ -47,22 +47,22 @@
   function pillDate (state: DragState): number | null {
     if (state.kind === 'dragging-body') return state.previewStart
     if (state.kind === 'resizing-left') return state.previewStart
-    if (state.kind === 'resizing-right') return state.previewDue
+    if (state.kind === 'resizing-right') return state.previewEnd
     if (state.kind === 'dragging-unscheduled' && state.hasCanvasTarget) return state.previewStart
     return null
   }
 
   function durationTooltip (state: DragState): string | null {
     if (state.kind === 'resizing-left') {
-      const before = Math.round((state.originDue - state.originStart) / DAY_MS) + 1
-      const after = Math.round((state.originDue - state.previewStart) / DAY_MS) + 1
+      const before = Math.round((state.originEnd - state.originStart) / DAY_MS) + 1
+      const after = Math.round((state.originEnd - state.previewStart) / DAY_MS) + 1
       const delta = after - before
       const sign = delta >= 0 ? '+' : '−'
       return `${before} days → ${after} days (${sign}${Math.abs(delta)} d)`
     }
     if (state.kind === 'resizing-right') {
-      const before = Math.round((state.originDue - state.originStart) / DAY_MS) + 1
-      const after = Math.round((state.previewDue - state.originStart) / DAY_MS) + 1
+      const before = Math.round((state.originEnd - state.originStart) / DAY_MS) + 1
+      const after = Math.round((state.previewEnd - state.originStart) / DAY_MS) + 1
       const delta = after - before
       const sign = delta >= 0 ? '+' : '−'
       return `${before} days → ${after} days (${sign}${Math.abs(delta)} d)`

@@ -7,10 +7,10 @@
   import { themeStore } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
   import type { Ref } from '@hcengineering/core'
-  import type { Issue } from '@hcengineering/tracker'
+  import type { Issue, Milestone } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import type { TimeScale } from './lib/time-scale'
-  import type { DragState } from './lib/types'
+  import type { DragState, DragTarget } from './lib/types'
 
   // Bar is rendered for both Issues and synthetic milestone summaries; the
   // structural subset below is all the bar geometry needs.
@@ -23,27 +23,32 @@
   // amber, completed green, cancelled muted. null = no status info.
   export let statusCategory: string | null = null
 
-  // PR 3 edit-mode props. issueObj carries the full Issue when this bar
-  // represents one (vs. a synthetic milestone-summary); editable gates the
-  // resize-handle rendering and the mousedown handlers; activeDrag is the
-  // shared store written by the drag-controller reducer.
+  // PR 3 edit-mode props. dragTarget carries the discriminated drag subject
+  // (Issue or Milestone — PR3.3 2026-05-11); editable gates the resize-handle
+  // rendering and the mousedown handlers; activeDrag is the shared store
+  // written by the drag-controller reducer. issueRef is kept for the legacy
+  // active-drag highlight check below; it still works for both Issue and
+  // Milestone _id values.
   export let editable: boolean = false
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
-  export let issueRef: Ref<Issue> | undefined = undefined
-  export let issueObj: Issue | undefined = undefined
+  export let issueRef: Ref<Issue> | Ref<Milestone> | undefined = undefined
+  export let dragTarget: DragTarget | undefined = undefined
   export let focused: boolean = false
   export let selected: boolean = false
 
   const dispatch = createEventDispatcher<{
-    barMouseDown: { issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }
+    barMouseDown: { target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }
     contextMenu: { issue: Issue, event: MouseEvent }
   }>()
 
   function onBarContextMenu (evt: MouseEvent): void {
-    if (issueObj === undefined) return
+    // Context-menu is currently issue-only (PR3 menu wires Issue actions);
+    // milestone bars don't surface it. PR3.3 keeps this gated until the
+    // milestone menu is designed.
+    if (dragTarget === undefined || dragTarget.kind !== 'issue') return
     evt.preventDefault()
     evt.stopPropagation()
-    dispatch('contextMenu', { issue: issueObj, event: evt })
+    dispatch('contextMenu', { issue: dragTarget.doc, event: evt })
   }
 
   /**
@@ -57,9 +62,9 @@
    */
   function onBarDown (edge: 'left' | 'right' | 'body') {
     return (evt: MouseEvent): void => {
-      if (!editable || issueObj === undefined) return
+      if (!editable || dragTarget === undefined) return
       if (evt.button !== 0) return // only left-click starts a drag
-      dispatch('barMouseDown', { issue: issueObj, edge, cursorX: evt.clientX })
+      dispatch('barMouseDown', { target: dragTarget, edge, cursorX: evt.clientX })
       evt.preventDefault()
       evt.stopPropagation()
     }
@@ -95,10 +100,12 @@
   // the cursor without waiting for the server round-trip. Other bars keep
   // their stored geometry.
   $: dragState = $activeDrag
+  // PR3.3: DragState carries `target: { kind, doc }` (Issue or Milestone)
+  // since the refactor. Read doc._id for the active-bar match.
   $: isThisBarActive =
     issueRef !== undefined &&
-    'issue' in dragState &&
-    (dragState as { issue?: Issue }).issue?._id === issueRef
+    'target' in dragState &&
+    (dragState as { target?: DragTarget }).target?.doc._id === issueRef
   $: previewStart = (() => {
     if (!isThisBarActive) return effectiveStart
     if (dragState.kind === 'dragging-body' || dragState.kind === 'dragging-unscheduled') return dragState.previewStart
@@ -108,9 +115,9 @@
   })()
   $: previewDue = (() => {
     if (!isThisBarActive) return effectiveDue
-    if (dragState.kind === 'dragging-body' || dragState.kind === 'dragging-unscheduled') return dragState.previewDue
-    if (dragState.kind === 'resizing-left') return dragState.originDue
-    if (dragState.kind === 'resizing-right') return dragState.previewDue
+    if (dragState.kind === 'dragging-body' || dragState.kind === 'dragging-unscheduled') return dragState.previewEnd
+    if (dragState.kind === 'resizing-left') return dragState.originEnd
+    if (dragState.kind === 'resizing-right') return dragState.previewEnd
     return effectiveDue
   })()
 
