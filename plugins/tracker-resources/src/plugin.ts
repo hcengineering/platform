@@ -315,7 +315,9 @@ export default mergeIds(trackerId, tracker, {
     Gantt: '' as IntlString,
     Month: '' as IntlString,
     Quarter: '' as IntlString,
-    Week: '' as IntlString
+    Week: '' as IntlString,
+    GanttShowIssueCode: '' as IntlString,
+    GanttShowTitle: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

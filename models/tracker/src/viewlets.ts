@@ -213,10 +213,9 @@ export function issueConfig (
 }
 
 export function ganttViewOptions (): ViewOptionsModel {
-  // PR 2 ships a minimal read-only Gantt. Group-by, "Show colors" and other
-  // dropdown ViewOptions are intentionally NOT advertised — the canvas does
-  // not honour them yet. They will be added in PR 3 alongside drag/edit +
-  // Component swimlanes so users never see options that have no effect.
+  // PR 2 ships a minimal read-only Gantt. Group-by + Show-colors are
+  // intentionally NOT advertised — the canvas does not honour them yet.
+  // The two sidebar-column toggles below ARE wired up to GanttSidebar.
   return {
     groupBy: [],
     orderBy: [
@@ -224,7 +223,22 @@ export function ganttViewOptions (): ViewOptionsModel {
       ['rank', SortingOrder.Ascending],
       ['dueDate', SortingOrder.Ascending]
     ],
-    other: []
+    other: [
+      {
+        key: 'ganttShowIssueCode',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowIssueCode
+      },
+      {
+        key: 'ganttShowTitle',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowTitle
+      }
+    ]
   }
 }
 
