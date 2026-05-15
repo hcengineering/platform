@@ -7,6 +7,7 @@
   import { type Issue, type IssueRelation, type Milestone } from '@hcengineering/tracker'
   import { connectedIssueIds } from './lib/dependency-router'
   import { wouldCreateCycle, simulateCascade, addScheduleDays } from './lib/scheduler'
+  import { fsAnchor, ssAnchor, ffAnchor, sfAnchor } from './lib/working-days'
   import { computeCriticalPath } from './lib/critical-path'
   import type { CriticalPathResult } from './lib/types'
   import { exportAndDownload } from './lib/exporter'
@@ -1028,7 +1029,9 @@
   /**
    * Returns true iff the relation `r` is satisfied given the proposed
    * primary edit `pe` and the current dates of the other side. Used for
-   * the Alt-bypass violation count only.
+   * the Alt-bypass violation count only. Routes through the same anchor
+   * helpers as the scheduler so violation counts agree with cascade
+   * decisions in both legacy and working-days mode.
    */
   function relationSatisfied (
     r: IssueRelation,
@@ -1042,10 +1045,10 @@
     const succDue = isOutgoing ? (otherIssue.dueDate as number) : pe.newDue
     const lag = r.lag ?? 0
     switch (r.kind) {
-      case 'finish-to-start': return addScheduleDays(predDue, lag) <= succStart
-      case 'start-to-start': return addScheduleDays(predStart, lag) <= succStart
-      case 'finish-to-finish': return addScheduleDays(predDue, lag) <= succDue
-      case 'start-to-finish': return addScheduleDays(predStart, lag) <= succDue
+      case 'finish-to-start': return fsAnchor(predDue, lag, workingDaysCfg) <= succStart
+      case 'start-to-start': return ssAnchor(predStart, lag, workingDaysCfg) <= succStart
+      case 'finish-to-finish': return ffAnchor(predDue, lag, workingDaysCfg) <= succDue
+      case 'start-to-finish': return sfAnchor(predStart, lag, workingDaysCfg) <= succDue
     }
   }
 
