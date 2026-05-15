@@ -21,6 +21,13 @@
    */
   export let issue: Issue
   export let outgoing: IssueRelation[] = []
+  /**
+   * Direct ids to exclude from the picker. When set, takes precedence
+   * over `outgoing.map(r => r.target)`. Used by the predecessor flow in
+   * IssueDependenciesPanel, where the already-attached side is `incoming`
+   * (attachedTo refs), not `outgoing` (target refs).
+   */
+  export let extraIgnore: Ref<Issue>[] = []
 
   const options: FindOptions<Issue> = {
     lookup: {
@@ -29,7 +36,7 @@
     sort: { modifiedOn: SortingOrder.Descending }
   }
 
-  $: ignoreObjects = [issue._id, ...outgoing.map((r) => r.target)] as Ref<Issue>[]
+  $: ignoreObjects = [issue._id, ...outgoing.map((r) => r.target), ...extraIgnore] as Ref<Issue>[]
 </script>
 
 <ObjectPopup
