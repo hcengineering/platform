@@ -628,8 +628,11 @@
               milestoneStripHeight={MILESTONE_STRIP_HEIGHT}
               {hoveredRowId}
               {statusCategoryMap}
+              {editableIssueIds}
+              {activeDrag}
               on:openIssue={onIssueOpen}
               on:hoverRow={onRowHover}
+              on:barMouseDown
             />
           </div>
         </div>
