@@ -30,7 +30,7 @@
   const viewlets: WithLookup<Viewlet>[] | undefined = undefined
   let viewOptions: ViewOptions | undefined
 
-  // v121.2 — the Gantt viewlet has its own toolbar inside GanttView with
+  //  — the Gantt viewlet has its own toolbar inside GanttView with
   // dedicated Filter / Group-by / Sort / Tree-View / Virtualization
   // controls. The standard ViewletSettingButton renders TWO icon buttons
   // (ViewOptions + Configure) which both carry the "Customize View"

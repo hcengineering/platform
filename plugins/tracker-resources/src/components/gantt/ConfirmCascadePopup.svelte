@@ -28,11 +28,11 @@
   const LABEL_WIDTH = 220
   const LABEL_TEXT_PAD = 8
   const BAR_TOP_PADDING = 32
-  // v121.2 — last bar bottom is `BAR_TOP_PADDING + (rows-1) * ROW_HEIGHT
+  //  — last bar bottom is `BAR_TOP_PADDING + (rows-1) * ROW_HEIGHT
   // + 4 (bar top offset) + 14 (bar height)` = svg_height - 4. Pair that
   // with the 4px top/bottom CSS padding of .body and the previous
   // bodyHeight clipped the bottom 8 px of the last row, so the lower
-  // edge of the last bar disappeared (visible at 3 rows in the v121.1
+  // edge of the last bar disappeared (visible at 3 rows in the 
   // test). Reserve that padding explicitly so the body fits without
   // a scrollbar in the typical N<10 case and only scrolls when needed.
   const BODY_VERTICAL_PADDING = 8
@@ -190,7 +190,7 @@
   </div>
 
   {#if primary.length > 1}
-    <!-- Tier-2 Item 6 — surface the bulk-primary count above the
+    <!--  — surface the bulk-primary count above the
          skipped-unscheduled / locked-successor hints. The user sees at a
          glance that this commit moves N issues directly (in addition to
          any cascade shifts the timeline below shows). -->

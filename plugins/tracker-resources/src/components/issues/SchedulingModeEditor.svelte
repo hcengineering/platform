@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <!--
-  Tier-2 Item 5 — Auto-Scheduling-Toggle.
+   — Auto-Scheduling-Toggle.
 
   Per-issue toggle between cascade-driven scheduling (`'auto'`, the default)
   and user-pinned scheduling (`'manual'`). The pin is reset *only* by an

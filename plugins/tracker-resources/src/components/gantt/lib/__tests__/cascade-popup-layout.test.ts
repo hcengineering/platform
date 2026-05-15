@@ -16,7 +16,7 @@ const baseInput = {
 describe('cascade-popup-layout: computeCascadeBodyHeight', () => {
   it('reserves padding + safety on top of the timeline content', () => {
     // 3 rows × 22 = 66 timeline + 32 header pad = 98 svg height. Plus
-    // 8+8 = 16 padding/safety → 114. Crucially > 98 (the v121.1 bug
+    // 8+8 = 16 padding/safety → 114. Crucially > 98 (the  bug
     // produced exactly 98 and clipped the last 8 px of the last row).
     expect(computeCascadeBodyHeight({ ...baseInput, rowCount: 3 })).toBe(114)
   })
@@ -40,7 +40,7 @@ describe('cascade-popup-layout: computeCascadeBodyHeight', () => {
 
   it('regression: pre-fix formula (no padding) would have clipped 3-row case', () => {
     // Sanity check on the constant the bug fix reasoning depends on.
-    const preFix = 3 * 22 + 32 // 98 — the value that clipped in v121.1
+    const preFix = 3 * 22 + 32 // 98 — the value that clipped in 
     const postFix = computeCascadeBodyHeight({ ...baseInput, rowCount: 3 })
     expect(postFix).toBeGreaterThan(preFix)
     expect(postFix - preFix).toBeGreaterThanOrEqual(8)

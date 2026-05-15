@@ -194,7 +194,7 @@
       async (confirmed?: boolean) => {
         if (confirmed !== true) return
         const ops = client.apply(undefined, 'remove-dependency-from-issue-editor')
-        // Tier-2 Item 8 — Activity-Log Remove-Detail Fix.
+        //  — Activity-Log Remove-Detail Fix.
         // `removeDoc` emits a bare `TxRemoveDoc` without parent-issue
         // attachment; the activity pipeline then drops the message on
         // the IssueRelation itself, which never appears in the issue's

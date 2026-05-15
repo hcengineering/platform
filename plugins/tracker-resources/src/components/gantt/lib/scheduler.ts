@@ -253,7 +253,7 @@ export function simulateCascade (
       if (primarySet.has(r.target)) continue
       const targetIssue = issuesByRef.get(r.target)
       if (targetIssue === undefined) continue
-      // Tier-2 Item 5 — Auto-Scheduling-Toggle.
+      //  — Auto-Scheduling-Toggle.
       // Manual-pinned successors must never be moved by a cascade. We
       // bail out *before* writing to `current` or `shifts` so the
       // Manual issue's pinned dates also keep propagating to its own
@@ -328,7 +328,7 @@ export function simulateCascade (
       if (primarySet.has(r.attachedTo)) continue
       const predIssue = issuesByRef.get(r.attachedTo)
       if (predIssue === undefined) continue
-      // Tier-2 Item 5 — symmetric Manual-skip for reverse-cascade
+      //  — symmetric Manual-skip for reverse-cascade
       // (pull-predecessor). Same rationale as outgoing: pinned dates
       // win over a successor's pull.
       if (predIssue.schedulingMode === 'manual') continue

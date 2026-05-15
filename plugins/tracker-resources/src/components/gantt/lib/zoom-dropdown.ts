@@ -7,7 +7,7 @@ import type { ZoomLevel } from './types'
 import { MIN_PPD, ZOOM_PX_PER_DAY } from './zoom'
 
 /**
- * v121.17 — Dropdown selection model for the Gantt toolbar.
+ *  — Dropdown selection model for the Gantt toolbar.
  *
  * The toolbar's four legacy preset buttons collapse into a single
  * Dropdown + a numeric "X days" input. Selection is one of five tags:

@@ -4,20 +4,20 @@
 //
 
 /**
- * Tier-2 Item 5 — cascadeToken plumbing.
+ *  — cascadeToken plumbing.
  *
  * Every cascade-related commit in the Gantt (single-drag, parent-drag,
- * bypass and the soon-to-arrive bulk-drag from Tier-2 Item 6) attaches
+ * bypass and the soon-to-arrive bulk-drag from ) attaches
  * a fresh token to the `client.apply(undefined, scope)` call. The token
  * is the `scope` string, so downstream consumers can correlate every
  * sub-Tx of the same cascade by scope-string equality:
  *
- *   • Tier-2 Item 6 (Bulk-Drag) — all bulk-moved primaries plus their
+ *   •  (Bulk-Drag) — all bulk-moved primaries plus their
  *     cascade fanout share one token, so the dependency-graph layer
  *     can build a single visual undo entry per bulk operation instead
  *     of N entries (which would over-count in the undo stack).
  *
- *   • Tier-4 Item 14 (Dependency-Shift-Notification) — the server-side
+ *   •  (Dependency-Shift-Notification) — the server-side
  *     trigger reads `TxApplyIf.scope` and aggregates all Txes sharing
  *     a `gantt-cascade-*:<id>` prefix into one notification per user.
  *     Without the token a 20-issue cascade fires 20 generic update

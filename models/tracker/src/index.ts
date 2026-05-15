@@ -598,7 +598,7 @@ export function createModel (builder: Builder): void {
     tracker.ids.IssueRemovedActivityViewlet
   )
 
-  // Tier-2 Item 8 — Activity-Log Remove-Detail Fix.
+  //  — Activity-Log Remove-Detail Fix.
   // Three symmetric viewlets so IssueRelation add/remove/update show up in
   // the issue activity feed with a kind+lag+target.title snapshot instead
   // of the previous empty "removed related to:" row. The

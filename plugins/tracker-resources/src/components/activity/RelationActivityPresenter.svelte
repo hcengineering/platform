@@ -12,7 +12,7 @@
   import IssueRelationPresenter from '../IssueRelationPresenter.svelte'
 
   /**
-   * Tier-2 Item 8 — Activity-Log Remove-Detail Fix.
+   *  — Activity-Log Remove-Detail Fix.
    *
    * Custom DocUpdateMessageViewlet component for IssueRelation events
    * (added / removed / updated). The viewlet label supplies the verb

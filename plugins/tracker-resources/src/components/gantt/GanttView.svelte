@@ -56,7 +56,7 @@
   import { createTreeExpandStore, type TreeExpandStore } from './lib/tree-expand-store'
   import { GROUP_BY_KEYS, type GroupByKey } from './lib/group-by'
   import { buildGroupedRows, groupRowsToLayoutRows } from './lib/build-rows'
-  // v121.3-E — GanttFilter / applyFilter removed in favour of the standard
+  // E — GanttFilter / applyFilter removed in favour of the standard
   // FilterBar (FilterButton in IssuesView.svelte). The standard filter
   // flows into `query` via `resultQuery`, so the issue-side filtering is
   // already done at the data-query layer. `lib/filter-predicate` is
@@ -84,7 +84,7 @@
     MAX_VISIBLE_DAYS,
     type DropdownSelection
   } from './lib/zoom-dropdown'
-  // Tier-4 Item 13 — Mobile-Friendly Gantt.
+  // Mobile-Friendly Gantt.
   import { detectLayoutMode, type LayoutMode } from './lib/breakpoint'
   import {
     initial as pinchInitial,
@@ -124,12 +124,12 @@
   const HEADER_HEIGHT = 56
   const MILESTONE_STRIP_HEIGHT = 0
   const TOOLBAR_HEIGHT = 40
-  // v121.11 / Bug 1 — bound to the toolbar element's clientHeight so the
+  //  / Bug 1 — bound to the toolbar element's clientHeight so the
   // overlaid vertical scrollbar follows the toolbar's true measured height
   // (it may wrap into a second row at narrow viewport widths, see CSS).
   let toolbarHeightPx = TOOLBAR_HEIGHT
 
-  // v121.11 / Bug 2 — i18n raw-keys in aria-labels. `aria-label={tracker.string.Foo}`
+  //  / Bug 2 — i18n raw-keys in aria-labels. `aria-label={tracker.string.Foo}`
   // sets the literal IntlString id ("tracker:string:Foo"), it does not
   // resolve via the <Label/> fallback chain. `translateCB` fills the
   // `ariaLabels` map asynchronously for every key we register; the
@@ -230,7 +230,7 @@
    * Once armed, body drag moves the issue/milestone and edge handles resize.
    */
   let selectedIssueId: string | null = null
-  // Tier-2 Item 6 — Bulk-Select + Bulk-Drag.
+  // Bulk-Select + Bulk-Drag.
   // Holds the multi-selection set as stringified issue ids so it can be
   // diffed cheaply against the bar's `String(row.issue._id)`. The
   // `selectedIssueId` flag stays separate because it governs the
@@ -250,7 +250,7 @@
   let scrollerEl: HTMLDivElement | null = null
   let hScrollEl: HTMLDivElement | null = null
 
-  // Tier-4 Item 13 — Mobile-Friendly Gantt. layoutMode is driven by the
+  // Mobile-Friendly Gantt. layoutMode is driven by the
   // viewport width on mount + on resize. Phone (≤640) hides the sidebar
   // behind a slide-out drawer + gates the canvas to read-only; Tablet
   // (641-1024) keeps the full edit UX but routes touch-drag through a
@@ -269,7 +269,7 @@
   let pinchState: PinchState = pinchInitial()
 
   let zoom: ZoomLevel = 'week'
-  // v121.3-C — continuous Ctrl+Wheel zoom. `userPxPerDay` is the
+  // C — continuous Ctrl+Wheel zoom. `userPxPerDay` is the
   // single-source-of-truth for the horizontal scale when set; when null
   // we fall back to the preset table (`ZOOM_PX_PER_DAY[zoom]`). The
   // preset buttons clear the override; Ctrl+Wheel sets it.
@@ -300,7 +300,7 @@
   $: barLabelInside = (((viewOptions as Record<string, unknown>)?.ganttBarLabelInside as string) ?? 'title') as BarLabelSlot
   $: barLabelRight = (((viewOptions as Record<string, unknown>)?.ganttBarLabelRight as string) ?? 'none') as BarLabelSlot
   // Phase 1.E — opt-in quick-info popover on single click.
-  // v121.19: on phone layout we drop the dblclick → openIssue shortcut
+  // on phone layout we drop the dblclick → openIssue shortcut
   // (mobile OSes intercept double-tap for system zoom). The quick-info
   // popover with its "Open full editor" button becomes the canonical
   // entry point for opening an issue, so force-enable it regardless of
@@ -320,7 +320,7 @@
     return typeof v === 'string' && (GROUP_BY_KEYS as readonly string[]).includes(v) ? v as GroupByKey : 'none'
   })()
   let collapsedGroups: Set<string> = new Set()
-  // v121.3-E — `ganttFilter` / `filterPopupOpen` / `filterCount` removed
+  // E — `ganttFilter` / `filterPopupOpen` / `filterCount` removed
   // with the gantt-toolbar Filter button. Filter state lives on the
   // standard FilterBar in IssuesView.svelte and reaches us via `query`.
 
@@ -366,7 +366,7 @@
 
   function setZoom (z: ZoomLevel): void {
     zoom = z
-    // v121.3-C — preset button clears any wheel-zoom override so the
+    // C — preset button clears any wheel-zoom override so the
     // canonical preset px/day takes over again.
     userPxPerDay = null
     if (hScrollEl != null) {
@@ -375,14 +375,14 @@
     queueMicrotask(syncViewport)
   }
 
-  // v121.3-C — derived px/day used by both the time-scale and the tick
+  // C — derived px/day used by both the time-scale and the tick
   // generator: prefer the wheel-zoom override when set, else the preset.
   $: effectivePxPerDay = userPxPerDay !== null ? userPxPerDay : ZOOM_PX_PER_DAY[zoom]
   // Tick granularity follows pxPerDay (continuous zoom). On preset clicks
   // this resolves back to the matching ZoomLevel via the same table.
   $: tickZoomLevel = userPxPerDay !== null ? pxPerDayToTickZoom(userPxPerDay) : zoom
 
-  // v121.17 — Toolbar zoom dropdown + visible-days input.
+  // Toolbar zoom dropdown + visible-days input.
   // The dropdown selection follows wheel-zoom: when `userPxPerDay` snaps
   // back exactly onto a preset (Day=32, Week=14, Month=4, Quarter=1.5) the
   // preset label shows; otherwise Custom appears as the active row.
@@ -454,7 +454,7 @@
     }
   }
 
-  // Tier-2 #7 — Saved Gantt-Views.
+  // Saved Gantt-Views.
   // Re-hydrate the Gantt zoom + optional pan anchor from a FilteredView's
   // viewOptions blob. Called from the reactive `$selectedFilterStore`
   // block below. The reverse direction (writing) lives in
@@ -559,7 +559,7 @@
   }
 
   /**
-   * v121.12 / Refactor D — open a nested SelectPopup listing the current
+   *  / Refactor D — open a nested SelectPopup listing the current
    * account's saved Gantt views (mine first, then shared). Clicking an
    * item sets `selectedFilterStore` which the existing reactive block
    * picks up and applies via `applyGanttSavedView`. A "__DEFAULT__"
@@ -604,7 +604,7 @@
   }
 
   /**
-   * v121.12 / Refactor D — hamburger "More actions" popup. Consolidates
+   *  / Refactor D — hamburger "More actions" popup. Consolidates
    * Save / Load / PNG / PDF so they no longer crowd toolbar row 2. The
    * menu is positioned relative to the trigger button so it sits below
    * the toolbar (SelectPopup honours `eventToHTMLElement(event)` as
@@ -643,7 +643,7 @@
     })
   }
 
-  // v121.12 / Refactor D — onSavedViewSelectChange() removed alongside
+  //  / Refactor D — onSavedViewSelectChange() removed alongside
   // the toolbar's <select>-element dropdown. Save/Load now route
   // through openMoreActionsMenu → openSaveViewPopup / openLoadViewMenu.
 
@@ -657,8 +657,7 @@
   $: savedViewModified = isCurrentGanttViewModified($selectedFilterStore)
 
   // Inline-extracted handler — keeping the TS cast out of an `on:click={…}`
-  // attribute, which the Svelte 4 parser does not tolerate (Phase-Tier-2
-  // build-fix: inline `as Record<…>` inside an attribute value tripped
+  // attribute, which the Svelte 4 parser does not tolerate (// build-fix: inline `as Record<…>` inside an attribute value tripped
   // `Unexpected token (ts)` during svelte-check).
   function onUpdateSavedViewClick (): void {
     const cur = $selectedFilterStore
@@ -683,7 +682,7 @@
   let persons: Person[] = []
   let tagElements: TagElement[] = []
 
-  // Tier-2 #7 — Saved Gantt-Views.
+  // Saved Gantt-Views.
   // Live-query every FilteredView the current account can see (the server
   // already enforces visibility via FilteredView's `users` field + sharable
   // flag — same as SavedView in workbench-resources). We then partition
@@ -804,7 +803,7 @@
     }
   )
 
-  // v121.3-C — padding follows the active tick granularity, so a
+  // C — padding follows the active tick granularity, so a
   // wheel-zoomed view also gets sensible left/right padding.
   $: dateRange = computeDateRange(issues, milestones, tickZoomLevel)
 
@@ -851,7 +850,7 @@
     }
   }
 
-  // v121.3-C — base scale uses `effectivePxPerDay` (preset OR wheel-zoom
+  // C — base scale uses `effectivePxPerDay` (preset OR wheel-zoom
   // override) and `tickZoomLevel` for tick granularity. When the user has
   // an explicit override (Ctrl+Wheel), we skip the adaptive widen-to-fill
   // pass so the user's chosen scale is respected literally.
@@ -871,7 +870,7 @@
     targetDate: m.targetDate
   }))
 
-  // Tier-4 Item 12 — Tree-View — persisted collapsed-row-id set per project.
+  // Tree-View — persisted collapsed-row-id set per project.
   // The store is bound to the current project's localStorage key; switching
   // projects re-binds via the reactive block below. In SSR / test contexts
   // where `window` is undefined we fall back to an in-memory Set so the
@@ -911,13 +910,13 @@
     collapsedIds = next
   }
 
-  /** Tier-4 — Toolbar "Expand all" — flush every persisted collapsed entry. */
+  /** Toolbar "Expand all" — flush every persisted collapsed entry. */
   function expandAllTree (): void {
     if (treeExpandStore !== null) treeExpandStore.expandAll()
     else collapsedIds = new Set()
   }
   /**
-   * Tier-4 — Toolbar "Collapse all" — collapse every collapsible row in the
+   * Toolbar "Collapse all" — collapse every collapsible row in the
    * current layout. Derived from `rows` so that filter-hidden parents do not
    * get re-collapsed (otherwise re-expand would require digging into the
    * store-state to find ghost ids).
@@ -940,12 +939,12 @@
   // milestone-row overlay path is similarly suppressed because lane-headers
   // already provide the visual grouping affordance.
   //
-  // Tier-4 Item 12 — the legacy `buildLayout` path now receives the *un*-
+  // the legacy `buildLayout` path now receives the *un*-
   // filtered issue list together with a `matchedIds`-set and
   // `includeBreadcrumbs: true`. This lets non-matching parents be rendered
   // as filter-breadcrumbs (Spec §"Filter+Tree"). The group-by path keeps the
   // hard-filter behaviour since swimlanes have no parent-context to preserve.
-  // v121.3-E — `filteredIssues` is now a thin alias for `issues` because
+  // E — `filteredIssues` is now a thin alias for `issues` because
   // server-side filtering already happened in IssuesView.svelte via the
   // standard FilterBar resultQuery → GanttView `query` → issueQuery.query
   // path. `filterMatchIds` is also retired — without a client-side filter
@@ -1005,7 +1004,7 @@
 
   $: rows = (() => {
     if (ganttGroupBy === 'none') {
-      // Tier-4 — within-level sort. Replaces the global post-pass sort that
+      // within-level sort. Replaces the global post-pass sort that
       // previously flattened the hierarchy (`sortedRows` is now an identity
       // pass-through — kept for diff-stability with downstream consumers).
       const withinLevelCompare = extendedColumns && sidebarSort.column !== null
@@ -1138,7 +1137,7 @@
     }, 200)
   }
 
-  // v121.14 — Firefox emits a "scroll-linked positioning effect" warning when
+  // Firefox emits a "scroll-linked positioning effect" warning when
   // a scroll handler synchronously mutates layout-affecting CSS (here:
   // `transform: translateX(...)` on `.hscroll-inner`). Defer the reactive
   // update into the next animation frame so the compositor finishes the pan
@@ -1169,11 +1168,11 @@
   function onJump (e: CustomEvent<{ x: number }>): void {
     if (hScrollEl != null) {
       hScrollEl.scrollTo({ left: Math.max(0, e.detail.x - 80), behavior: 'smooth' })
-      // v121.3-B — see jumpToToday comment; force viewport resync so the
+      // B — see jumpToToday comment; force viewport resync so the
       // dependency-arrow visibility re-runs without waiting on pointermove.
       queueMicrotask(syncViewport)
     }
-    // Tier-4 Item 13 — close the mobile drawer once the user has jumped
+    // close the mobile drawer once the user has jumped
     // to a row. Spec §"Phone": Tap auf einen Drawer-Eintrag scrollt
     // Canvas zur Bar + schließt Drawer.
     if (layoutMode === 'phone') mobileDrawerOpen = false
@@ -1215,7 +1214,7 @@
 
   function handleBarMouseDown (e: CustomEvent<{ target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }>): void {
     const id = String(e.detail.target.doc._id)
-    // Tier-2 Item 6 — Bulk-Drag arm-check.
+    // Bulk-Drag arm-check.
     // If the bar is part of an active multi-selection of size ≥ 2 AND the
     // mousedown is on the body edge, we skip the legacy "arm-then-drag"
     // two-step and go straight to dragging-body with a co-drag payload.
@@ -1295,7 +1294,7 @@
       return
     }
     const id = e.detail.target.doc._id as Ref<Issue>
-    // Tier-2 Item 6 — modifier-key routing.
+    // modifier-key routing.
     //   Cmd / Ctrl  → toggle this id in the multi-selection set.
     //   Shift       → range-select from the last clicked id to this one.
     //   plain       → drop multi-selection, single-select.
@@ -1333,7 +1332,7 @@
         { issue: issueDoc },
         'top',
         (result?: 'openFull') => {
-          // v121.19 — Mobile-A11Y: the quick-info popover is the canonical
+          // Mobile-A11Y: the quick-info popover is the canonical
           // "open issue" entry point on phones (double-tap conflicts with
           // iOS/Android system zoom). When the user clicks "Open full
           // editor", route through the same showPanel path that the
@@ -1377,7 +1376,7 @@
   }
 
   /**
-   * Tier-3 Item 5 — smooth-scroll the outer scroller to the row of the
+   * smooth-scroll the outer scroller to the row of the
    * given issue, called when the user clicks an off-viewport dependency
    * indicator triangle. Looks up the row's y in the current sorted layout
    * and scrolls so the row sits 1/3 down from the top of the viewport
@@ -1390,7 +1389,7 @@
     if (row === undefined) return
     const targetTop = Math.max(0, row.y - scrollerEl.clientHeight / 3)
     scrollerEl.scrollTo({ top: targetTop, behavior: 'smooth' })
-    // v121.3-B — Jump-to-Position arrows previously needed a pointermove
+    // B — Jump-to-Position arrows previously needed a pointermove
     // before dependency arrows to other rows showed up because the
     // programmatic vertical scroll did not always re-fire the scroll event
     // (no-op when target equals current top). Force a viewport resync so
@@ -1418,7 +1417,7 @@
     if (target?.closest('.bar-wrap') !== null) return
     selectedIssueId = null
     focusedIssueId = null
-    // Tier-2 Item 6: a click outside any bar also clears the multi-
+    // a click outside any bar also clears the multi-
     // selection, matching the spec's UI expectation that the "selection
     // mode" exits when the user clicks empty canvas.
     if (multiSelectedIssueIds.size > 0) multiSelectedIssueIds = clearSelection()
@@ -1448,7 +1447,7 @@
   }
 
   function handleCanvasPointerMove (e: MouseEvent): void {
-    // v121.2 — once a confirmation popup is open the drag preview must
+    // once a confirmation popup is open the drag preview must
     // freeze at the position the user released the bar. Without this
     // gate, every pointermove call into the reducer kept moving the
     // preview while the popup was visible (hover-bug).
@@ -1482,7 +1481,7 @@
   }
 
   async function handleCanvasPointerUp (e?: PointerEvent | MouseEvent): Promise<void> {
-    // v121.2 — when a confirmation popup is up the user's click on the
+    // when a confirmation popup is up the user's click on the
     // Cancel / Apply button bubbles pointerup to the window. Without this
     // guard we'd re-enter the commit path while activeDrag is still in
     // `dragging-body`, opening a second popup on top of the first
@@ -1655,7 +1654,7 @@
     const newStart = state.kind === 'resizing-right' ? state.originStart : state.previewStart
     const newDue = state.kind === 'resizing-left' ? state.originEnd : state.previewEnd
     const kind: 'move' | 'resize' = state.kind === 'resizing-left' || state.kind === 'resizing-right' ? 'resize' : 'move'
-    // v121.2 — gate further pointer input + re-entry of handleCanvasPointerUp
+    // gate further pointer input + re-entry of handleCanvasPointerUp
     // while the confirmation popup is visible. Without this, pointermove
     // keeps shoving the preview bar around (hover-bug) and the Cancel/Apply
     // button's mouseup re-fires handleCanvasPointerUp, opening a second
@@ -1767,9 +1766,9 @@
     space: Issue['space'],
     legacyConfirmKind: 'move' | 'resize' | 'none',
     /**
-     * Tier-2 Item 6 — optional cascadeToken scope override. Bulk-drag
+     * optional cascadeToken scope override. Bulk-drag
      * passes `'gantt-bulk-cascade'` so every Tx of one bulk-op shares the
-     * same prefix downstream consumers (Tier-4 Item 14 notification batcher)
+     * same prefix downstream consumers ( notification batcher)
      * can correlate by. Default keeps the legacy scope strings.
      */
     cascadeScope?: string
@@ -1785,9 +1784,9 @@
     for (const i of allInSpace) allByRef.set(i._id, i)
 
     if (altKey) {
-      // Tier-2 Item 5 — cascadeToken plumbing. Tag every cascade-related
-      // commit with a unique token (scope-string) so Tier-2 Item 6 (bulk-
-      // drag) and Tier-4 Item 14 (cascade-shift notification) can correlate
+      // cascadeToken plumbing. Tag every cascade-related
+      // commit with a unique token (scope-string) so  (bulk-
+      // drag) and  (cascade-shift notification) can correlate
       // every sub-Tx of one user-action to a single batch downstream.
       const cascadeToken = newCascadeToken(cascadeScope ?? 'gantt-cascade-bypass')
       const ops = client.apply(undefined, cascadeToken)
@@ -1803,7 +1802,7 @@
         return
       }
       if (undoEntry !== null) undoManager.push(undoEntry)
-      // Tier-4 Item 14 — send dependency-shift bundle notifications. Bypass
+      // send dependency-shift bundle notifications. Bypass
       // path: the user explicitly chose to ignore violations, so we still
       // notify watchers/assignees of the primary moves but skip cascade
       // shifts (there are none on the bypass branch).
@@ -1861,7 +1860,7 @@
           // dragged bars remain at their preview positions while the user
           // decides. activeDrag is only released after the popup resolves —
           // commit → idle on success, cancel → idle on dismiss.
-          // v121.2 — gate pointer input + handleCanvasPointerUp re-entry
+          // gate pointer input + handleCanvasPointerUp re-entry
           // while the cascade popup is up (bulk-drag hover-bug / double-popup).
           setConfirming(true)
           showPopup(
@@ -1888,7 +1887,7 @@
         }
         if (legacyConfirmKind !== 'none') {
           const pe = primaryEdits[0]
-          // v121.2 — same gate around the single-issue legacy popup.
+          // same gate around the single-issue legacy popup.
           setConfirming(true)
           const ok = await new Promise<boolean>((resolve) => {
             showPopup(
@@ -1918,7 +1917,7 @@
           addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
         } else {
           if (undoEntry !== null) undoManager.push(undoEntry)
-          // Tier-4 Item 14 — single-issue / parent-drag with no cascade: still
+          // single-issue / parent-drag with no cascade: still
           // notify collaborators of the primary move.
           void emitDependencyShiftBundles(result.primary, [], cascadeToken)
         }
@@ -1935,7 +1934,7 @@
         // is released only when the popup resolves: idle-after-commit on
         // confirm so the bar transitions cleanly to its new server-state,
         // or idle-on-cancel so the bar springs back to its original dates.
-        // v121.2 — gate pointer input + handleCanvasPointerUp re-entry.
+        // gate pointer input + handleCanvasPointerUp re-entry.
         setConfirming(true)
         showPopup(
           ConfirmCascadePopup,
@@ -2025,7 +2024,7 @@
     primary: PrimaryEdit[],
     shifts: CascadeShift[],
     /**
-     * Tier-2 Item 6 — cascadeToken scope override. Bulk-drag passes
+     * cascadeToken scope override. Bulk-drag passes
      * `'gantt-bulk-cascade'` so the entire batch (primaries + cascade
      * fanout) shares one scope-prefix downstream.
      */
@@ -2048,13 +2047,13 @@
       return
     }
     if (undoEntry !== null) undoManager.push(undoEntry)
-    // Tier-4 Item 14 — full cascade with shifts: emit one bundle per recipient
+    // full cascade with shifts: emit one bundle per recipient
     // covering both the primary moves and the cascade fanout.
     void emitDependencyShiftBundles(primary, shifts, cascadeToken)
   }
 
   /**
-   * Tier-4 Item 14 — emit `DependencyShiftedNotification` bundles for the
+   * emit `DependencyShiftedNotification` bundles for the
    * collaborators of every shifted issue. Fire-and-forget: notification
    * failure must never roll back the commit (the dates are already on the
    * server). Errors are surfaced as a non-blocking toast so a regression is
@@ -2167,7 +2166,7 @@
       return
     }
 
-    // Tier-2 Item 6 — Bulk-Drag commit.
+    // Bulk-Drag commit.
     // When the dragging-body state carries a co-drag payload, fan it into
     // PrimaryEdit[] and route through commitWithCascade. This bypasses the
     // descendant-auto-expand of single-drag's parent path: in bulk mode
@@ -2199,7 +2198,7 @@
       // leaves the selection untouched — only Esc / background-click
       // clear it.
       // cascadeScope `gantt-bulk-cascade` keys every sub-Tx of this bulk
-      // operation so downstream consumers (Tier-4 Item 14 notifications,
+      // operation so downstream consumers ( notifications,
       // future undo-grouping work) can collapse them to a single entry.
       await commitWithCascade(primaryEdits, altKey, primaryEdits[0].issue.space, 'none', 'gantt-bulk-cascade')
       return
@@ -2422,7 +2421,7 @@
     }
     if (r.kind === 'empty') return
     if (r.kind === 'conflicted') {
-      // v121.3-D — add a hint sub-line explaining why this frame was
+      // D — add a hint sub-line explaining why this frame was
       // dropped from the stack (instead of re-queued) so users don't keep
       // mashing Ctrl-Z and seeing the same toast.
       const title = await translate(tracker.string.GanttUndoConflict, {}, undefined)
@@ -2502,7 +2501,7 @@
       e.preventDefault()
       return
     }
-    // Tier-2 Item 6 — Esc clears the multi-selection when no drag is in
+    // Esc clears the multi-selection when no drag is in
     // flight. Sits AFTER the drag-cancel branch so the user's first Esc
     // press still cancels an in-flight drag (Phase 3c behaviour); only
     // the next Esc clears the selection.
@@ -2512,7 +2511,7 @@
       e.preventDefault()
       return
     }
-    // Tier-2 Item 6 — Cmd-A / Ctrl-A selects every visible scheduled
+    // Cmd-A / Ctrl-A selects every visible scheduled
     // issue. Respects the sidebar's filter + sort order via
     // `orderedSelectableIds`. Skips when a text input owns focus so the
     // browser's native Select-All keeps working in CreateIssue / inline
@@ -2560,7 +2559,7 @@
       void exportToPng()
       e.preventDefault()
     }
-    // v121.3-E — Phase-3b Ctrl/Cmd+F toggle removed together with the
+    // E — Phase-3b Ctrl/Cmd+F toggle removed together with the
     // gantt-toolbar Filter button. The standard FilterBar in IssuesView
     // is now the single source of filter truth; the browser's native
     // find dialog (which Ctrl+F was hijacking) is more useful here than
@@ -2576,7 +2575,7 @@
     if (next !== zoom) setZoom(next)
   }
 
-  // v121.3-C — Ctrl+Wheel (Cmd+Wheel on Mac) over the scroller: continuous
+  // C — Ctrl+Wheel (Cmd+Wheel on Mac) over the scroller: continuous
   // zoom with cursor-anchored scroll. Without Ctrl we let the wheel pass
   // through to the native scroller (vertical scroll / shift-wheel
   // horizontal). All math lives in lib/zoom.ts for unit-testability.
@@ -2616,7 +2615,7 @@
     }
   }
 
-  // Tier-4 Item 13 — pinch-zoom on the canvas scroller. Wired via four
+  // pinch-zoom on the canvas scroller. Wired via four
   // pointer handlers (down/move/up/cancel) on the .gantt-scroller element.
   // The pinch reducer is purely pointer-id-bookkeeping; the scroll anchor
   // math reuses cursorAnchoredScrollLeft from the Ctrl+Wheel zoom path so
@@ -2720,10 +2719,10 @@
   // Phase 2.3b — fullscreen toggle. Standard browser Fullscreen API on
   // the containing element. If we fullscreened only .gantt-root the
   // toolbar would still be visible (since it lives inside .gantt-root)
-  // — and that's exactly what we want. Best-effort: silently ignore
+  // and that's exactly what we want. Best-effort: silently ignore
   // failures (e.g. iframes without `allowfullscreen`).
   //
-  // v121.3-A — fullscreen target = document.body so that Huly popups
+  // A — fullscreen target = document.body so that Huly popups
   // (Issue-Editor, QuickInfo, Confirm-Cascade, etc.) remain visible.
   // Showpopup mounts popups in the workbench `<Popup>` portal which
   // sits at workbench-container level; fullscreening only `containerEl`
@@ -2743,7 +2742,7 @@
     void target.requestFullscreen().catch(() => {})
   }
 
-  // Tier-4 Item 13 — Mobile-Friendly Gantt. Recompute layoutMode on every
+  // Mobile-Friendly Gantt. Recompute layoutMode on every
   // window resize. matchMedia would suffice, but resize covers
   // orientation-change on tablets too without listing every breakpoint
   // twice.
@@ -2775,7 +2774,7 @@
     }
   })
 
-  // v121.3-B — programmatic scroll helpers: after any scrollTo / scrollBy
+  // B — programmatic scroll helpers: after any scrollTo / scrollBy
   // we proactively sync the viewport (one frame for smooth scroll to start +
   // one for the final position). Smooth-scroll fires real `scroll` events
   // during animation, but when the requested left equals the current
@@ -3025,7 +3024,7 @@
   })
   onDestroy(() => {
     resizeObs?.disconnect()
-    // v121.14 — cancel pending rAFs so a late-fire never targets a destroyed
+    // cancel pending rAFs so a late-fire never targets a destroyed
     // component (would reactively read scrollerEl/hScrollEl after teardown).
     if (vScrollRaf !== null) {
       cancelAnimationFrame(vScrollRaf)
@@ -3038,7 +3037,7 @@
   })
 
   $: viewport = { left: canvasViewportLeft, right: canvasViewportLeft + canvasViewportWidth }
-  // v121.2 fix — when the extended sidebar grid is on, the per-column resize
+  //  fix — when the extended sidebar grid is on, the per-column resize
   // handles in the header drive width directly, so the outer sidebar-cell
   // must size to the columns sum (not the legacy slider value). Otherwise
   // the extended grid overflows the outer grid column horizontally and
@@ -3069,7 +3068,7 @@
 
   /**
    * Phase 3a — sort had to live as a post-flatten pass to preserve the legacy
-   * `buildLayout` API. Tier-4 Item 12 moved the sort into `buildLayout` itself
+   * `buildLayout` API.  moved the sort into `buildLayout` itself
    * (`withinLevelCompare`), so it now respects the hierarchy: siblings sort,
    * tree-structure preserved (Spec §"Sort within hierarchy level").
    *
@@ -3080,7 +3079,7 @@
    */
   $: sortedRows = rows
 
-  // Tier-2 Item 6 — Bulk-Select. Two derived stores feed downstream:
+  // Bulk-Select. Two derived stores feed downstream:
   //   • `multiSelectedIdStrings` — what GanttCanvas / GanttBar consume as
   //     a Set<string>. Decoupled from the `Ref<Issue>`-typed master set
   //     so the canvas's stringified row keys can do O(1) lookups without
@@ -3111,7 +3110,7 @@
   {#if loading}
     <Loading />
   {:else}
-    <!-- v121.11 / Bug 1 — Toolbar Overflow. Switched fixed `height` to
+    <!--  / Bug 1 — Toolbar Overflow. Switched fixed `height` to
          `min-height` and bound the measured client-height into
          `toolbarHeightPx` so the absolute-positioned vertical scrollbar
          still starts below the toolbar even when the flex-wrap
@@ -3123,7 +3122,7 @@
     >
       <div class="toolbar-left">
         {#if layoutMode === 'phone'}
-          <!-- Tier-4 Item 13 — Mobile-Friendly Gantt. Hamburger button
+          <!--  — Mobile-Friendly Gantt. Hamburger button
                toggles the slide-out drawer that hosts the issue list on
                Phone. The legacy sidebar grid is hidden behind a CSS
                @media (max-width: 640px) rule below. -->
@@ -3138,7 +3137,7 @@
             <span class="hamburger-glyph" aria-hidden="true">≡</span>
           </button>
         {/if}
-        <!-- v121.11 / Bug 3 — Date-Nav buttons. The four icon-only nav
+        <!--  / Bug 3 — Date-Nav buttons. The four icon-only nav
              buttons (jumpToStart, prev, next, jumpToEnd) had only a
              tooltip but no accessible name.  Set both aria-label and
              title from the resolved translation so screen-readers and
@@ -3204,7 +3203,7 @@
         </label>
       </div>
       <div class="toolbar-center">
-        <!-- v121.17 — Four preset buttons replaced by a single Dropdown +
+        <!--  — Four preset buttons replaced by a single Dropdown +
              numeric range input. Custom is only shown in the list while
              active (set via Ctrl+Wheel zoom or via the days-input); it is
              never a directly-selectable preset. Keyboard shortcuts D/W/M/Q
@@ -3237,10 +3236,10 @@
         </div>
       </div>
       <div class="toolbar-right">
-        <!-- v121.12 / Refactor C — Tree-View Expand-/Collapse-all moved
+        <!--  / Refactor C — Tree-View Expand-/Collapse-all moved
              from the top toolbar into the sidebar corner-range strip
              (rendered below) so they sit above the actual sidebar list
-             they operate on. User-report v121.12 #C: the buttons were
+             they operate on. User-report the buttons were
              too far away from the rows in the previous toolbar position. -->
         <!-- Phase 3c: Undo/Redo. The buttons mirror the Cmd+Z / Cmd+Shift+Z
              keyboard shortcuts wired in onKey() below — disabled state and
@@ -3267,7 +3266,7 @@
         >
           <Icon icon={IconRedo} size="small" />
         </button>
-        <!-- v121.3-E — The Phase-3b gantt-toolbar Filter button + popup
+        <!-- E — The Phase-3b gantt-toolbar Filter button + popup
              was removed. The standard Tracker FilterBar (FilterButton in
              IssuesView.svelte's second header row) is now the single
              source of filter truth: its `resultQuery` flows into
@@ -3276,7 +3275,7 @@
              priority-chips popup. Group-By stays here because it is a
              gantt-specific layout concern (swimlanes), not a filter. -->
 
-        <!-- v121.12 / Refactor D — Saved-View dropdown moved into the
+        <!--  / Refactor D — Saved-View dropdown moved into the
              "More actions" hamburger menu (rendered at the trailing edge
              of the toolbar). Only the inline "Modified" indicator +
              update-button remain visible when a saved view is currently
@@ -3324,7 +3323,7 @@
             {/each}
           </select>
         </div>
-        <!-- v121.12 / Refactor D — Toolbar row-2 trailing cluster.
+        <!--  / Refactor D — Toolbar row-2 trailing cluster.
              Fullscreen stays inline (high-frequency, immediate-effect).
              Save view / Load view / Export PNG / Export PDF moved into
              the "More actions" hamburger menu so the toolbar no longer
@@ -3378,8 +3377,8 @@
       >
         <!-- Row 1: corner / resize-corner / time-axis header (all sticky-top).
              The corner shows column labels on the top half + an inline
-             date-range navigation strip on the bottom half (Stitch-style).
-             v121.2 — in extended-grid mode the legacy compact labels are
+             date-range navigation strip on the bottom half ().
+              — in extended-grid mode the legacy compact labels are
              replaced by the sortable/resizable extended header rendered by
              GanttSidebar so the headings actually match the visible cells. -->
         <div class="cell corner" class:extended-corner={extendedColumns} style="height: {HEADER_HEIGHT}px;">
@@ -3408,11 +3407,11 @@
             </div>
           {/if}
           <div class="corner-range">
-            <!-- v121.12 / Refactor C — Expand/Collapse-all buttons live
+            <!--  / Refactor C — Expand/Collapse-all buttons live
                  in the corner cell directly above the sidebar list. Only
                  visible when groupBy is 'none' (tree mode); in swimlane
                  mode the tree-toggle has no rows to act on. Same icon
-                 set + aria-labels as v121.11 to keep the affordance
+                 set + aria-labels as  to keep the affordance
                  consistent with the inline row toggles. -->
             {#if ganttGroupBy === 'none'}
               <button
@@ -3454,7 +3453,7 @@
           </div>
         </div>
         <!-- Row 2: sidebar (sticky-left) / resize handle (sticky-left) / canvas -->
-        <!-- Tier-4 Item 13 — Mobile-Friendly Gantt. On Phone the cell is
+        <!--  — Mobile-Friendly Gantt. On Phone the cell is
              absolutely positioned and slides in via .drawer-open. On
              Tablet/Desktop the class is inert. -->
         <div class="cell sidebar-cell" class:drawer-open={mobileDrawerOpen}>
@@ -3550,7 +3549,7 @@
             />
           </div>
         </div>
-        <!-- Tier-4 Item 13 — Mobile-Friendly Gantt. Backdrop overlay
+        <!--  — Mobile-Friendly Gantt. Backdrop overlay
              closes the drawer on tap. Rendered inside .gantt-grid so it
              paints above the canvas-cell but below the absolute-
              positioned .sidebar-cell.drawer-open (which has z-index 30).
@@ -3673,7 +3672,7 @@
   .toolbar-left { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
   .toolbar-center { display: flex; flex-wrap: wrap; gap: 2px; justify-self: center; align-items: center; }
   .toolbar-right { display: flex; flex-wrap: wrap; gap: 8px; justify-self: end; position: relative; align-items: center; }
-  /* v121.11 / Bug 1 — Toolbar Overflow on small screens. Below 1024px the
+  /*  / Bug 1 — Toolbar Overflow on small screens. Below 1024px the
      fixed 3-column grid (1fr / auto / 1fr) gets cramped: zoom-buttons get
      clipped or undo/redo/saved-views/group-by/PNG/PDF/fullscreen overflow
      past the right edge. We collapse the grid into a single column and
@@ -3687,7 +3686,7 @@
       gap: 4px 8px;
       padding: 4px 8px;
     }
-    /* v121.15 fix — clusters stay nowrap so the wrap-points are BETWEEN
+    /*  fix — clusters stay nowrap so the wrap-points are BETWEEN
        clusters, not WITHIN them. Previously each cluster wrapped its
        own items independently which produced items "floating" mid-row
        between two visual rows (user-report 2026-05-15). Now each
@@ -3700,7 +3699,7 @@
       flex: 0 1 auto;
       flex-wrap: nowrap;
     }
-    /* v121.15 fix #2 — Hamburger + Fullscreen sollen ALWAYS rechts außen
+    /*  fix #2 — Hamburger + Fullscreen sollen ALWAYS rechts außen
        sein, auch wenn die Toolbar mehrzeilig wrappt. margin-left: auto
        pusht toolbar-right ans Ende seiner aktuellen Flex-Zeile —
        unabhängig davon ob das Zeile 1 oder Zeile 2 ist. */
@@ -3708,7 +3707,7 @@
       margin-left: auto;
     }
   }
-  /* v121.3-E — Group-By controls. The Filter-related `.gantt-filter-*`
+  /* E — Group-By controls. The Filter-related `.gantt-filter-*`
      blocks were removed together with the toolbar Filter button; the
      standard FilterBar in IssuesView now owns filter state. */
   .gantt-toolbar-icon-btn {
@@ -3729,7 +3728,7 @@
     opacity: 0.4;
     cursor: not-allowed;
   }
-  /* v121.11 / Bug 5 — the old `.gantt-tree-glyph` rule rendered the
+  /*  / Bug 5 — the old `.gantt-tree-glyph` rule rendered the
      ▶▶ / ▼▼ double-caret text glyphs and was retired together with
      them; expand-/collapse-all now use the standard ChevronRight /
      ChevronDown icons. */
@@ -3763,7 +3762,7 @@
     cursor: pointer;
     outline: none;
   }
-  // Tier-2 #7 — Saved Gantt-Views toolbar widget. Mirrors gantt-groupby-wrap.
+  // Saved Gantt-Views toolbar widget. Mirrors gantt-groupby-wrap.
   .gantt-savedview-wrap {
     display: inline-flex;
     align-items: center;
@@ -3776,7 +3775,7 @@
     font-size: 12px;
     border-radius: 4px;
   }
-  /* v121.12 / Refactor D — inline saved-view name shown only when a
+  /*  / Refactor D — inline saved-view name shown only when a
      view is currently applied AND has unsaved changes. The legacy
      `.gantt-savedview-select` styles were dropped together with the
      toolbar's <select>-element dropdown. */
@@ -3839,7 +3838,7 @@
     cursor: pointer;
     outline: none;
   }
-  /* v121.17 — `.zoom-btn` style block removed alongside the 4 preset
+  /*  — `.zoom-btn` style block removed alongside the 4 preset
      buttons that previously lived in `.toolbar-center`. The zoom-cluster
      is now a Dropdown + numeric days-input; see `.zoom-days-input` below. */
   .zoom-days-input {
@@ -3990,7 +3989,7 @@
     color: var(--theme-darker-color);
     letter-spacing: 0.05em;
   }
-  /* v121.2 — in extended-grid mode the corner hosts the GanttSidebar
+  /*  — in extended-grid mode the corner hosts the GanttSidebar
      header-only variant. Reserve the upper slot for the header row and
      keep the lower date-range strip on its own line. */
   .corner.extended-corner {
@@ -4025,7 +4024,7 @@
     font-size: 14px;
   }
   .range-nav:hover { background: var(--theme-button-hovered); }
-  /* v121.12 / Refactor C — sidebar tree-toggle buttons. Same metrics as
+  /*  / Refactor C — sidebar tree-toggle buttons. Same metrics as
      range-nav so the corner-range strip stays visually balanced; the
      ChevronRight/Down icons match the inline row toggles. min hit area
      bumped to 32px on phones via the existing breakpoint media query. */
@@ -4077,7 +4076,7 @@
     z-index: 2;
     background: var(--theme-comp-header-color);
     border-right: 1px solid var(--theme-divider-color);
-    /* v121.2 — clip the extended sidebar grid to the cell so a stale
+    /*  — clip the extended sidebar grid to the cell so a stale
        column-width override can never paint over the canvas. The grid
        width is already kept in sync via sidebarWidthPx, this is a
        defence-in-depth guard. */
@@ -4131,7 +4130,7 @@
   }
 
   /*
-   * Tier-4 Item 13 — Mobile-Friendly Gantt.
+   * Mobile-Friendly Gantt.
    *
    * Phone layout (≤640 px): the sidebar grid column collapses to 0
    * (hidden), the hamburger button toggles a slide-out drawer that
@@ -4147,7 +4146,7 @@
     }
   }
   /* Phone — overlay drawer.
-     v121.11 / Bug 6 — verify-pass + touch-target boost. The QA note
+      / Bug 6 — verify-pass + touch-target boost. The QA note
      "Mobile-UX should be dedicated, not a hidden sidebar via translate"
      was reviewed: the existing implementation IS a textbook dedicated
      slide-out drawer (translateX(-100%) → translateX(0) with
@@ -4200,7 +4199,7 @@
       z-index: 20;
     }
   }
-  /* Tablet 641-1024px: NO hit-target bump — user reported in v121.13 that
+  /* Tablet 641-1024px: NO hit-target bump — user reported in  that
      this rule inflated buttons whenever the desktop window was resized
      below 1024px. Phone (≤640px) keeps the 44px rule above because Phone
      is touch-only by spec. Tablet-touch users get the same 26px buttons

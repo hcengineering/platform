@@ -2,7 +2,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 // SPDX-License-Identifier: EPL-2.0
 //
-// Tier-2 #7 — Saved Gantt-Views.
+//  — Saved Gantt-Views.
 // Pure (de)serialization helpers for the Gantt-specific keys we tunnel
 // through `FilteredView.viewOptions` (which is itself a
 // `Record<string, any>`). See spec:
