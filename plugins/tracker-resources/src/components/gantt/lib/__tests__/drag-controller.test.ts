@@ -197,3 +197,67 @@ describe('drag-controller — resize-right', () => {
     expect(next.previewDue).toBe(issue.startDate)
   })
 })
+
+describe('drag-controller — unscheduled drag', () => {
+  const undated: Issue = {
+    _id: 'u' as Ref<Issue>,
+    parents: [],
+    startDate: null,
+    dueDate: null
+  } as unknown as Issue
+
+  it('mousedown-unscheduled from idle transitions to dragging-unscheduled with origin fields', () => {
+    const next = reduce(
+      { kind: 'idle' },
+      { type: 'mousedown-unscheduled', issue: undated, cursorX: 100 },
+      ts
+    )
+    expect(next.kind).toBe('dragging-unscheduled')
+    if (next.kind !== 'dragging-unscheduled') return
+    expect(next.previewStart).toBeGreaterThan(0)
+    expect(next.previewDue).toBe(next.previewStart + 86_400_000) // default 1-day span
+    // Origin fields are populated so commitDrag/overlay treat unscheduled like
+    // a regular drag with an implicit "today" anchor.
+    expect(next.originStart).toBe(next.previewStart)
+    expect(next.originDue).toBe(next.previewDue)
+    // Guard against click-without-drag scheduling to today: hasCanvasTarget
+    // is false until a real canvas-X is seen on mousemove.
+    expect(next.hasCanvasTarget).toBe(false)
+  })
+
+  it('mousemove without canvasX keeps hasCanvasTarget false', () => {
+    const start: DragState = {
+      kind: 'dragging-unscheduled',
+      issue: undated,
+      originStart: 1_700_000_000_000,
+      originDue: 1_700_000_000_000 + 86_400_000,
+      cursorStartX: 100,
+      previewStart: 1_700_000_000_000,
+      previewDue: 1_700_000_000_000 + 86_400_000,
+      hasCanvasTarget: false
+    }
+    const next = reduce(start, { type: 'mousemove', cursorX: 200 }, ts)
+    if (next.kind !== 'dragging-unscheduled') throw new Error('expected dragging-unscheduled')
+    expect(next.hasCanvasTarget).toBe(false)
+    expect(next.previewStart).toBe(start.previewStart)
+  })
+
+  it('mousemove with canvasX flips hasCanvasTarget true and snaps previewStart', () => {
+    const start: DragState = {
+      kind: 'dragging-unscheduled',
+      issue: undated,
+      originStart: 1_700_000_000_000,
+      originDue: 1_700_000_000_000 + 86_400_000,
+      cursorStartX: 100,
+      previewStart: 1_700_000_000_000,
+      previewDue: 1_700_000_000_000 + 86_400_000,
+      hasCanvasTarget: false
+    }
+    // canvasX = 7 * pxPerDay (week zoom = 14 px/day) → 7 days past origin
+    const next = reduce(start, { type: 'mousemove', cursorX: 200, canvasX: 7 * 14 }, ts)
+    if (next.kind !== 'dragging-unscheduled') throw new Error('expected dragging-unscheduled')
+    expect(next.hasCanvasTarget).toBe(true)
+    expect(next.previewStart).toBe(snapToUtcMidnight(ts.fromX(7 * 14)))
+    expect(next.previewDue).toBe(next.previewStart + 86_400_000)
+  })
+})

@@ -4,6 +4,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
+  import type { Issue } from '@hcengineering/tracker'
   import { Label, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import type { DragState, LayoutRow } from './lib/types'
@@ -33,6 +34,7 @@
     hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
     addIssue: undefined
     rowContextMenu: { issue: { _id: string, _class: string }, event: MouseEvent }
+    rowDragStart: { issue: Issue, cursorX: number }
   }>()
 
   function openIssue (issue: { _id: any, _class: any }): void {
@@ -130,6 +132,14 @@
           </span>
         {/if}
       {:else if row.issue !== null}
+        {#if row.issue.startDate === null && row.issue.dueDate === null}
+          <!-- svelte-ignore a11y-no-static-element-interactions a11y-no-noninteractive-element-interactions -->
+          <span
+            class="drag-grip"
+            title="Drag to schedule"
+            on:mousedown|stopPropagation={(e) => { if (row.issue !== null) dispatch('rowDragStart', { issue: row.issue, cursorX: e.clientX }) }}
+          >⋮⋮</span>
+        {/if}
         {#if showStatus}
           <span class="cell-status"><StatusBadge issue={row.issue} /></span>
         {/if}
@@ -290,6 +300,14 @@
     opacity: 0.55;
   }
   .sidebar-row.drag-dimmed { opacity: 0.55; }
+  .drag-grip {
+    cursor: grab;
+    color: var(--theme-darker-color);
+    user-select: none;
+    padding: 0 4px;
+    font-size: 14px;
+  }
+  .drag-grip:active { cursor: grabbing; }
   .sidebar-row.milestone.hovered {
     background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);
   }
