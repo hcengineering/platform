@@ -316,6 +316,7 @@
               isViolated={showCriticalPath && hasViolation(row.issue._id)}
               slackMs={cpSlack.get(row.issue._id) ?? 0}
               showSlackGlyph={showCriticalPath}
+              schedulingMode={row.issue.schedulingMode}
               on:barMouseDown
               on:barClick
               on:contextMenu
