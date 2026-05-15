@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
   import { Label, addNotification, NotificationSeverity, showPopup } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
   import type { Ref } from '@hcengineering/core'
@@ -178,9 +178,26 @@
     const source = isOutgoing ? issue : otherIssues.get(String(rel.attachedTo))
     if (source === undefined) return
     if (!await canEditIssue(source)) return
-    const ops = client.apply(undefined, 'remove-dependency-from-issue-editor')
-    await ops.removeDoc(tracker.class.IssueRelation, rel.space, rel._id)
-    await ops.commit()
+    // Confirm via MessageBox to match the in-editor Delete button's
+    // two-step pattern (DependencyEditor.svelte: confirmingDelete state).
+    // Without confirmation, the hover-× shortcut would let a misclick drop
+    // a relation with no undo — inconsistent with how DependencyEditor
+    // treats the same action.
+    showPopup(
+      MessageBox,
+      {
+        label: tracker.string.DependencyDelete,
+        message: tracker.string.DependencyDeleteConfirm,
+        dangerous: true
+      },
+      'top',
+      async (confirmed?: boolean) => {
+        if (confirmed !== true) return
+        const ops = client.apply(undefined, 'remove-dependency-from-issue-editor')
+        await ops.removeDoc(tracker.class.IssueRelation, rel.space, rel._id)
+        await ops.commit()
+      }
+    )
   }
 
   function formatLag (lag: number): string {
