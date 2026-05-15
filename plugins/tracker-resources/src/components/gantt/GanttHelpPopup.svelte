@@ -29,6 +29,11 @@
   interface Row { key: string, label: string }
   const rows: Row[] = [
     { key: '?', label: 'Show this help' },
+    { key: 'T', label: 'Jump to today' },
+    { key: 'D', label: 'Zoom to day view' },
+    { key: 'W', label: 'Zoom to week view' },
+    { key: 'M', label: 'Zoom to month view' },
+    { key: 'Q', label: 'Zoom to quarter view' },
     { key: '←  →', label: 'Move selected issue ±1 day' },
     { key: 'Shift+←  Shift+→', label: 'Move selected issue ±7 days' },
     { key: '+ / =', label: 'Zoom in' },
