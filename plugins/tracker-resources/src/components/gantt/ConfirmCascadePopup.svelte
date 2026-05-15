@@ -149,17 +149,19 @@
     }
   }
 
-  let confirmButtonEl: HTMLElement | undefined
-  let cancelButtonEl: HTMLElement | undefined
+  let confirmWrapperEl: HTMLElement | undefined
+  let cancelWrapperEl: HTMLElement | undefined
 
   onMount(() => {
     window.addEventListener('keydown', onKey)
-    // Focus the appropriate default action: Confirm when actionable,
-    // otherwise Cancel so Enter dismisses the popup safely.
+    // Focus the actual <button> element inside the wrapper so Enter and
+    // Space hit the click handler. Focusing the wrapper div alone has no
+    // effect on keyboard activation. We bind on the wrapper because the
+    // Button component doesn't forward `bind:this` to its inner element.
     if (lockedIssues.length === 0) {
-      confirmButtonEl?.focus()
+      confirmWrapperEl?.querySelector('button')?.focus()
     } else {
-      cancelButtonEl?.focus()
+      cancelWrapperEl?.querySelector('button')?.focus()
     }
     return () => window.removeEventListener('keydown', onKey)
   })
@@ -271,14 +273,14 @@
   </div>
 
   <div class="footer">
-    <div bind:this={cancelButtonEl} tabindex="-1">
+    <div bind:this={cancelWrapperEl}>
       <Button
         label={tracker.string.CascadeConfirmCancel}
         kind="ghost"
         on:click={onCancel}
       />
     </div>
-    <div bind:this={confirmButtonEl} tabindex="-1">
+    <div bind:this={confirmWrapperEl}>
       <Button
         label={tracker.string.CascadeConfirmConfirm}
         kind="primary"
