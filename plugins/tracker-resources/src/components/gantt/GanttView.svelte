@@ -7,6 +7,7 @@
   import { type Issue, type IssueRelation, type Milestone, type Project, type WorkingDaysConfig } from '@hcengineering/tracker'
   import { connectedIssueIds } from './lib/dependency-router'
   import { wouldCreateCycle, simulateCascade, addScheduleDays } from './lib/scheduler'
+  import { newCascadeToken } from './lib/cascade-token'
   import { fsAnchor, ssAnchor, ffAnchor, sfAnchor } from './lib/working-days'
   import { computeCriticalPath } from './lib/critical-path'
   import type { CriticalPathResult } from './lib/types'
@@ -864,7 +865,11 @@
     for (const i of allInSpace) allByRef.set(i._id, i)
 
     if (altKey) {
-      const ops = client.apply(undefined, 'gantt-cascade-bypass')
+      // Tier-2 Item 5 — cascadeToken plumbing. Tag every cascade-related
+      // commit with a unique token (scope-string) so Tier-2 Item 6 (bulk-
+      // drag) and Tier-4 Item 14 (cascade-shift notification) can correlate
+      // every sub-Tx of one user-action to a single batch downstream.
+      const ops = client.apply(undefined, newCascadeToken('gantt-cascade-bypass'))
       for (const pe of primaryEdits) {
         await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
       }
@@ -964,7 +969,7 @@
             return
           }
         }
-        const ops = client.apply(undefined, 'gantt-no-cascade')
+        const ops = client.apply(undefined, newCascadeToken('gantt-no-cascade'))
         for (const pe of result.primary) {
           await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
         }
@@ -1033,7 +1038,7 @@
     shifts: CascadeShift[]
   ): Promise<void> {
     const client = getClient()
-    const ops = client.apply(undefined, 'gantt-cascade-commit')
+    const ops = client.apply(undefined, newCascadeToken('gantt-cascade-commit'))
     for (const pe of primary) {
       await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
     }
