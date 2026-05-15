@@ -1,6 +1,5 @@
 <!--
 // Copyright © 2026 Hardcore Engineering Inc.
-// SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
   import type { TimeScale } from './lib/time-scale'
@@ -29,6 +28,12 @@
   $: tooltipText = visible
     ? `${issue.title} (${new Date(startVal).toISOString().slice(0, 10)} → ${new Date(dueVal).toISOString().slice(0, 10)})`
     : ''
+  // Heuristic: ~7.5px per character at 13px font — leave breathing room.
+  const CHAR_PX = 7.5
+  $: maxChars = Math.floor((w - 12) / CHAR_PX)
+  $: barLabel = maxChars >= 4
+    ? (issue.title.length > maxChars ? issue.title.slice(0, Math.max(1, maxChars - 1)) + '…' : issue.title)
+    : ''
 </script>
 
 {#if visible}
@@ -52,6 +57,15 @@
       points="{x + w - 6},{barY + barH / 2 - 1} {x + w},{barY + barH / 2 - 1} {x + w - 3},{barY + barH / 2 + 5}"
       fill="var(--theme-content-color)"
     />
+    {#if barLabel !== ''}
+      <text
+        x={x + 10}
+        y={barY + barH / 2 - 4}
+        class="bar-label summary-label"
+        fill="var(--theme-content-color)"
+      >{barLabel}</text>
+    {/if}
+    <title>{tooltipText}</title>
   {:else}
     <rect
       x={x}
@@ -65,6 +79,14 @@
       stroke-width={1}
       class="bar"
     />
+    {#if barLabel !== ''}
+      <text
+        x={x + 6}
+        y={barY + barH / 2 + 4}
+        class="bar-label"
+        fill="var(--theme-content-color)"
+      >{barLabel}</text>
+    {/if}
     <title>{tooltipText}</title>
   {/if}
 {/if}
@@ -75,5 +97,14 @@
   }
   .bar:hover {
     filter: brightness(1.1);
+  }
+  .bar-label {
+    font-size: 13px;
+    user-select: none;
+    pointer-events: none;
+    dominant-baseline: alphabetic;
+  }
+  .summary-label {
+    font-weight: 600;
   }
 </style>

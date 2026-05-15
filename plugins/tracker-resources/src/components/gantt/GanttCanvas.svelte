@@ -1,14 +1,21 @@
 <!--
 // Copyright © 2026 Hardcore Engineering Inc.
-// SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { type LayoutRow, type MilestoneMarker, type SummaryRange } from './lib/types'
   import { filterVisibleRows } from './lib/layout'
   import GanttBar from './GanttBar.svelte'
   import GanttTodayMarker from './GanttTodayMarker.svelte'
-  import GanttMilestoneFlag from './GanttMilestoneFlag.svelte'
   import { type TimeScale } from './lib/time-scale'
+
+  const dispatch = createEventDispatcher<{
+    openIssue: { issue: { _id: string, _class: string } }
+    hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
+  }>()
+  function openIssue (i: { _id: any, _class: any }): void {
+    dispatch('openIssue', { issue: { _id: i._id as string, _class: i._class as string } })
+  }
 
   export let rows: LayoutRow[]
   export let milestones: MilestoneMarker[]
@@ -17,13 +24,13 @@
   export let scrollTop: number = 0
   export let viewportHeight: number = 600
   export let viewport: { left: number; right: number }
-  // Vertical band reserved at the top of the canvas for milestone-flag
-  // labels, so they don't collide with the first issue row.
-  export let milestoneStripHeight: number = 22
+  export let milestoneStripHeight: number = 0
+  export let hoveredRowId: string | null = null
 
   $: visibleRows = filterVisibleRows(rows, scrollTop, viewportHeight)
   $: rowsHeight = rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0
   $: totalHeight = rowsHeight + milestoneStripHeight
+  $: ticks = timeScale.ticks([timeScale.fromX(viewport.left), timeScale.fromX(viewport.right)])
 
   function rowKey (row: LayoutRow): string {
     return row.id
@@ -46,44 +53,107 @@
   viewBox="{viewport.left} 0 {viewport.right - viewport.left} {totalHeight}"
   preserveAspectRatio="none"
 >
+  <!-- Vertical gridlines aligned to the time-scale ticks for visual rhythm. -->
+  <g class="gridlines">
+    {#each ticks as tick (tick.date)}
+      {@const x = timeScale.toX(tick.date)}
+      <line
+        x1={x}
+        x2={x}
+        y1={0}
+        y2={totalHeight}
+        stroke="var(--theme-divider-color)"
+        stroke-width={tick.level === 'major' ? 1 : 0.5}
+        opacity={tick.level === 'major' ? 0.7 : 0.35}
+      />
+    {/each}
+  </g>
+
+  <!-- Row backgrounds: alternating zebra + hover highlight. Painted before
+       bars so they appear behind the bar geometry. -->
+  <g class="row-bg" transform="translate(0, {milestoneStripHeight})">
+    {#each visibleRows as row (rowKey(row))}
+      {@const isHover = hoveredRowId === row.id}
+      <rect
+        x={viewport.left}
+        y={row.y}
+        width={viewport.right - viewport.left}
+        height={row.height}
+        class="row-rect"
+        class:hovered={isHover}
+        class:milestone-bg={row.kind === 'milestone'}
+      />
+    {/each}
+  </g>
+
   <g class="bars" transform="translate(0, {milestoneStripHeight})">
     {#each visibleRows as row (rowKey(row))}
-      {#if row.kind === 'milestone' && row.milestone !== null}
-        {@const range = summaryFor(row)}
-        {#if range !== null && range.startDate !== null && range.dueDate !== null}
-          <GanttBar
-            issue={{
-              title: row.milestone.label,
-              startDate: range.startDate,
-              dueDate: range.dueDate
-            }}
-            row={{ y: row.y, height: row.height }}
-            {timeScale}
-            isSummary
-            summaryRange={range}
-          />
-        {/if}
-      {:else if row.issue !== null}
-        <GanttBar
-          issue={row.issue}
-          row={{ y: row.y, height: row.height }}
-          {timeScale}
-          isSummary={row.isSummary}
-          summaryRange={summaryFor(row)}
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <g
+        class="row-hit"
+        on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+        on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+        on:mouseleave={() => dispatch('hoverRow', { id: null })}
+      >
+        <!-- transparent hit-area covering the row width to capture hover -->
+        <rect
+          x={viewport.left}
+          y={row.y}
+          width={viewport.right - viewport.left}
+          height={row.height}
+          fill="transparent"
         />
-      {/if}
+        {#if row.kind === 'milestone' && row.milestone !== null}
+          {@const range = summaryFor(row)}
+          {#if range !== null && range.startDate !== null && range.dueDate !== null}
+            <GanttBar
+              issue={{
+                title: row.milestone.label,
+                startDate: range.startDate,
+                dueDate: range.dueDate
+              }}
+              row={{ y: row.y, height: row.height }}
+              {timeScale}
+              isSummary
+              summaryRange={range}
+            />
+          {/if}
+        {:else if row.issue !== null}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <g
+            class="bar-wrap"
+            on:dblclick|stopPropagation={() => row.issue !== null && openIssue(row.issue)}
+          >
+            <GanttBar
+              issue={row.issue}
+              row={{ y: row.y, height: row.height }}
+              {timeScale}
+              isSummary={row.isSummary}
+              summaryRange={summaryFor(row)}
+            />
+          </g>
+        {/if}
+      </g>
     {/each}
   </g>
 
   <g class="milestones">
     {#each milestones as ms (ms._id)}
-      <GanttMilestoneFlag
-        milestone={ms}
-        {timeScale}
-        canvasHeight={totalHeight}
-        {viewport}
-        labelStripHeight={milestoneStripHeight - 2}
-      />
+      {@const x = timeScale.toX(ms.targetDate)}
+      {#if x >= viewport.left - 16 && x <= viewport.right + 16}
+        <line
+          x1={x}
+          x2={x}
+          y1={0}
+          y2={totalHeight}
+          stroke="var(--theme-state-info-color, #6366f1)"
+          stroke-width={1}
+          stroke-dasharray="3 3"
+          opacity={0.4}
+        >
+          <title>{ms.label}</title>
+        </line>
+      {/if}
     {/each}
   </g>
 
@@ -94,5 +164,21 @@
   .gantt-canvas {
     display: block;
     background: var(--theme-bg-color);
+  }
+  :global(svg.gantt-canvas g.bar-wrap) {
+    cursor: pointer;
+  }
+  :global(svg.gantt-canvas .row-rect) {
+    fill: transparent;
+  }
+  :global(svg.gantt-canvas .row-rect.hovered) {
+    fill: var(--theme-button-hovered);
+    opacity: 0.5;
+  }
+  :global(svg.gantt-canvas .row-rect.milestone-bg) {
+    fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 6%, transparent);
+  }
+  :global(svg.gantt-canvas .row-rect.milestone-bg.hovered) {
+    fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);
   }
 </style>
