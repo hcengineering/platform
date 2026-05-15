@@ -11,6 +11,12 @@
   export let viewlet: Viewlet
   export let config: ViewOptionsModel
   export let viewOptions: ViewOptions
+  // When the viewlet renders its own group-by/sort controls (e.g. the
+  // Gantt toolbar has dedicated Group-by + Order-by dropdowns), the
+  // shared View-Options popup must skip the grouping/ordering rows or
+  // the user sees the same control twice in two places without a wire
+  // between them.
+  export let hideGroupingAndOrdering: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -83,7 +89,7 @@
 
 <div class="antiCard dialog menu">
   <div class="antiCard-menu__spacer" />
-  {#if hasMultipleSelections(config.groupBy)}
+  {#if !hideGroupingAndOrdering && hasMultipleSelections(config.groupBy)}
     {#each groups as group, i}
       <div class="antiCard-menu__item grouping">
         <span class="overflow-label"><Label label={i === 0 ? view.string.Grouping : view.string.Then} /></span>
@@ -102,7 +108,7 @@
       </div>
     {/each}
   {/if}
-  {#if hasMultipleSelections(config.orderBy)}
+  {#if !hideGroupingAndOrdering && hasMultipleSelections(config.orderBy)}
     <div class="antiCard-menu__item ordering">
       <span class="overflow-label"><Label label={view.string.Ordering} /></span>
       <DropdownLabelsIntl
@@ -129,7 +135,7 @@
       />
     </div>
   {/if}
-  {#if visibleOthers.length > 0 && (hasMultipleSelections(config.groupBy) || hasMultipleSelections(config.orderBy))}
+  {#if visibleOthers.length > 0 && !hideGroupingAndOrdering && (hasMultipleSelections(config.groupBy) || hasMultipleSelections(config.orderBy))}
     <div class="antiCard-menu__divider" />
   {/if}
   {#each visibleOthers as model}
