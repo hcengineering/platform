@@ -5,6 +5,7 @@
   import { createEventDispatcher } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
   import type { Ref } from '@hcengineering/core'
+  import type { IntlString } from '@hcengineering/platform'
   import type { Issue, IssueRelation, Milestone } from '@hcengineering/tracker'
   import { formatPredecessors } from './lib/predecessor-format'
   import { Label, tooltip } from '@hcengineering/ui'
@@ -13,7 +14,16 @@
   import type { TimeScale } from './lib/time-scale'
   import IssuePresenter from '../issues/IssuePresenter.svelte'
   import StatusBadge from './StatusBadge.svelte'
+  import GanttSidebarHeaderCell from './GanttSidebarHeaderCell.svelte'
+  import GanttSidebarColumn from './GanttSidebarColumn.svelte'
   import { activeDragTargetId } from './lib/drag-state'
+  import {
+    DEFAULT_COLUMNS,
+    DEFAULT_WIDTHS,
+    type SidebarColumnKey
+  } from './lib/sidebar-columns'
+  import type { GanttSortState, SortDirection } from './lib/sidebar-sort'
+  import { computeYViewport, sliceVisibleRows } from './lib/y-viewport'
 
   export let rows: LayoutRow[]
   export let width: number = 280
@@ -32,6 +42,57 @@
   export let criticalSet: Set<Ref<Issue>> = new Set()
   export let showCriticalPath: boolean = false
   export let showSlackColumn: boolean = false
+  // Phase 3a — extended grid mode. When true, render a sortable header row
+  // and per-column cells via GanttSidebarColumn. When false, the legacy
+  // render path (compact 4-column layout) is preserved bit-for-bit so
+  // existing users see no visual surface change on upgrade.
+  export let extendedColumns: boolean = false
+  export let columns: readonly SidebarColumnKey[] = DEFAULT_COLUMNS
+  export let widths: Record<string, number> = { ...DEFAULT_WIDTHS }
+  export let sort: GanttSortState = { column: null, direction: 'asc' }
+  // Tier-3 Item 5 — Y-axis virtualization. When all three are set, only rows
+  // intersecting the [scrollTop, scrollTop+viewportHeight] band are rendered,
+  // with absolute-positioning so the DOM aligns with the canvas bars at the
+  // same y. When any is omitted (e.g. fixtures/tests), the legacy render
+  // path renders every row in document order — bit-for-bit compatible with
+  // prior phases.
+  export let scrollTop: number = 0
+  export let viewportHeight: number = 0
+  export let rowHeight: number = 0
+  /** Extra rows rendered above + below the visible band. Default 5 (spec §4). */
+  export let overscan: number = 5
+
+  /** Set of columns that have a meaningful comparator — others are non-sortable. */
+  const SORTABLE_COLUMNS: ReadonlySet<SidebarColumnKey> = new Set<SidebarColumnKey>([
+    'title', 'identifier', 'estimation', 'priority', 'modifiedOn', 'createdOn',
+    'startDate', 'dueDate', 'deadline'
+  ])
+
+  const COLUMN_LABELS: Record<SidebarColumnKey, IntlString> = {
+    identifier: tracker.string.GanttSidebarColIdentifier,
+    title: tracker.string.GanttSidebarColTitle,
+    status: tracker.string.GanttSidebarColStatus,
+    priority: tracker.string.GanttSidebarColPriority,
+    assignee: tracker.string.GanttSidebarColAssignee,
+    estimation: tracker.string.GanttSidebarColEstimation,
+    component: tracker.string.GanttSidebarColComponent,
+    milestone: tracker.string.GanttSidebarColMilestone,
+    predecessors: tracker.string.GanttSidebarColPredecessors,
+    slack: tracker.string.GanttSidebarColSlack,
+    startDate: tracker.string.GanttSidebarColStartDate,
+    dueDate: tracker.string.GanttSidebarColDueDate,
+    deadline: tracker.string.GanttSidebarColDeadline,
+    progress: tracker.string.GanttSidebarColProgress,
+    modifiedOn: tracker.string.GanttSidebarColModifiedOn,
+    createdOn: tracker.string.GanttSidebarColCreatedOn
+  }
+
+  /** Total width of all visible columns — used as the explicit grid width. */
+  $: gridWidthPx = columns.reduce((sum, c) => sum + (widths[c] ?? DEFAULT_WIDTHS[c]), 0)
+
+  function sortDirOf (col: SidebarColumnKey): SortDirection | null {
+    return sort.column === col ? sort.direction : null
+  }
 
   const DAY_MS_SIDEBAR = 86_400_000
 
@@ -49,6 +110,44 @@
   $: activeIssueIdStr = activeDragTargetId(dragState)
   $: anyDragActive = dragState.kind !== 'idle' && dragState.kind !== 'hover-bar'
 
+  // Tier-3 Item 5 — virtualization is "on" when the parent wires the three
+  // viewport props. Off → render every row (legacy path, preserved for
+  // tests / embed previews).
+  $: virtualizationOn = rowHeight > 0 && viewportHeight > 0
+  // When the parent applies a sort that re-orders the `rows` array, each
+  // row's `.y` field (set by `buildLayout` on the un-sorted ordering) no
+  // longer matches the sorted position. Re-stamp `y = index × rowHeight`
+  // so the absolute-positioned rows visually appear in the order they're
+  // passed in. This is identical to buildLayout's own y assignment for
+  // uniform-height rows, just keyed on the current (post-sort) index.
+  $: indexedRows = virtualizationOn
+    ? rows.map((r, i) => ({ row: r, vy: i * rowHeight }))
+    : rows.map((r) => ({ row: r, vy: r.y }))
+  // Total scrollable height — rowCount × rowHeight, matching the canvas.
+  $: totalRowsHeight = rows.length * (rowHeight > 0 ? rowHeight : 0) || (rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0)
+  $: yViewport = virtualizationOn
+    ? computeYViewport({
+        rowCount: rows.length,
+        rowHeight,
+        scrollTop,
+        viewportHeight,
+        overscan
+      })
+    : null
+  // Slice on the re-stamped vy (so post-sort order matters) and project the
+  // result back to `{ row, vy }` pairs the template iterates over.
+  $: visibleIndexed = (virtualizationOn && yViewport !== null)
+    ? indexedRows.filter((p) => {
+        return p.vy + (p.row.height ?? rowHeight) > scrollTop - overscan * rowHeight &&
+          p.vy < scrollTop + viewportHeight + overscan * rowHeight
+      })
+    : indexedRows
+  // When virtualizing, render the slice anchored to its re-stamped vy; the
+  // wrapper carries an explicit height so the scroller's scrollHeight
+  // matches the unvirtualized layout. The add-issue-row sits BELOW the
+  // spacer so it always renders at the bottom of the list.
+  $: spacerHeight = virtualizationOn ? totalRowsHeight : 0
+
   const dispatch = createEventDispatcher<{
     jump: { x: number }
     toggle: { id: string }
@@ -58,7 +157,21 @@
     addIssue: undefined
     rowContextMenu: { issue: { _id: string, _class: string }, event: MouseEvent }
     rowDragStart: { issue: Issue, cursorX: number }
+    sortChange: { column: SidebarColumnKey }
+    widthChange: { column: SidebarColumnKey, width: number, commit: boolean }
   }>()
+
+  function handleSort (evt: CustomEvent<{ column: SidebarColumnKey }>): void {
+    dispatch('sortChange', { column: evt.detail.column })
+  }
+
+  function handleResizePreview (evt: CustomEvent<{ column: SidebarColumnKey, width: number }>): void {
+    dispatch('widthChange', { column: evt.detail.column, width: evt.detail.width, commit: false })
+  }
+
+  function handleResizeCommit (evt: CustomEvent<{ column: SidebarColumnKey, width: number }>): void {
+    dispatch('widthChange', { column: evt.detail.column, width: evt.detail.width, commit: true })
+  }
 
   function openIssue (issue: { _id: any, _class: any }): void {
     dispatch('openIssue', { issue: { _id: issue._id as string, _class: issue._class as string } })
@@ -138,8 +251,140 @@
   }
 </script>
 
-<div class="sidebar-rows" class:has-hover={hoveredRowId !== null} style="width: {width}px;">
-  {#each rows as row (row.id)}
+{#if extendedColumns}
+  <!-- Phase 3a extended grid: sortable header row + per-column cells.
+       Width comes from the sum of visible column widths; the parent's
+       sidebar-cell still clips us via overflow:hidden. -->
+  <div class="sidebar-grid" style="width: {gridWidthPx}px;">
+    <div class="sidebar-grid-header" role="row">
+      {#each columns as col (col)}
+        <GanttSidebarHeaderCell
+          column={col}
+          width={widths[col] ?? DEFAULT_WIDTHS[col]}
+          label={COLUMN_LABELS[col]}
+          sortDirection={sortDirOf(col)}
+          sortable={SORTABLE_COLUMNS.has(col)}
+          on:sort={handleSort}
+          on:resizePreview={handleResizePreview}
+          on:resizeCommit={handleResizeCommit}
+        />
+      {/each}
+    </div>
+    <div
+      class="sidebar-grid-body"
+      class:has-hover={hoveredRowId !== null}
+      class:virtualized={virtualizationOn}
+      style={virtualizationOn ? `height: ${spacerHeight}px;` : ''}
+    >
+      {#each visibleIndexed as p (p.row.id)}
+        {@const row = p.row}
+        {#if row.kind === 'group-header'}
+          <!-- Phase 3b — swimlane header in the extended-grid sidebar.
+               Spans the full grid width via grid-column: 1 / -1. -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div
+            class="sidebar-grid-row gantt-group-header"
+            class:collapsed={row.collapsed}
+            role="row"
+            style={virtualizationOn
+              ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px;`
+              : `height: ${row.height}px;`}
+          >
+            <button
+              type="button"
+              class="toggle-btn"
+              use:tooltip={{ label: row.collapsed ? tracker.string.GanttExpand : tracker.string.GanttCollapse }}
+              on:click={() => dispatch('toggle', { id: row.id })}
+            >
+              {row.collapsed ? '▶' : '▼'}
+            </button>
+            <span class="gantt-group-label" title={row.groupLabel ?? ''}>{row.groupLabel ?? ''}</span>
+            <span class="gantt-group-count">{row.groupCount ?? 0}</span>
+          </div>
+        {:else}
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          class="sidebar-grid-row"
+          class:summary={row.isSummary}
+          class:milestone={row.kind === 'milestone'}
+          class:hovered={hoveredRowId === row.id}
+          role="row"
+          style={virtualizationOn
+            ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px;`
+            : `height: ${row.height}px;`}
+          on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+          on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+          on:mouseleave={() => dispatch('hoverRow', { id: null })}
+          on:contextmenu={(e) => onRowContextMenu(e, row)}
+        >
+          {#each columns as col (col)}
+            <GanttSidebarColumn
+              column={col}
+              {row}
+              width={widths[col] ?? DEFAULT_WIDTHS[col]}
+              {relations}
+              {issueNumberOf}
+              {slack}
+              {criticalSet}
+              {showCriticalPath}
+              on:openIssue={(e) => dispatch('openIssue', e.detail)}
+            />
+          {/each}
+        </div>
+        {/if}
+      {/each}
+      <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+      <div
+        class="add-issue-row"
+        role="button"
+        tabindex="0"
+        style={virtualizationOn
+          ? `position: absolute; top: ${spacerHeight}px; left: 0; right: 0;`
+          : ''}
+        on:click={() => dispatch('addIssue')}
+        on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatch('addIssue') }}
+      >
+        <span class="plus-glyph">+</span>
+        <span class="add-issue-label"><Label label={tracker.string.AddIssue} /></span>
+      </div>
+    </div>
+  </div>
+{:else}
+<div
+  class="sidebar-rows"
+  class:has-hover={hoveredRowId !== null}
+  class:virtualized={virtualizationOn}
+  style={virtualizationOn ? `width: ${width}px; height: ${spacerHeight}px;` : `width: ${width}px;`}
+>
+  {#each visibleIndexed as p (p.row.id)}
+    {@const row = p.row}
+    {#if row.kind === 'group-header'}
+      <!-- Phase 3b — swimlane header in the sidebar. Click the chevron to
+           collapse/expand the lane. Label + count occupy the full width of
+           the legacy sidebar; the canvas-side tint band is rendered by
+           GanttCanvas, this row only carries the textual affordance. -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div
+        class="sidebar-row gantt-group-header"
+        class:collapsed={row.collapsed}
+        style={virtualizationOn
+          ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px;`
+          : `height: ${row.height}px;`}
+      >
+        <span class="col-toggle">
+          <button
+            type="button"
+            class="toggle-btn"
+            use:tooltip={{ label: row.collapsed ? tracker.string.GanttExpand : tracker.string.GanttCollapse }}
+            on:click={() => dispatch('toggle', { id: row.id })}
+          >
+            {row.collapsed ? '▶' : '▼'}
+          </button>
+        </span>
+        <span class="gantt-group-label" title={row.groupLabel ?? ''}>{row.groupLabel ?? ''}</span>
+        <span class="gantt-group-count">{row.groupCount ?? 0}</span>
+      </div>
+    {:else}
     {@const indent = row.depth * 16}
     {@const tgt = rowJumpTarget(row)}
     {@const dir = tgt !== null ? jumpDirection(tgt) : null}
@@ -151,7 +396,9 @@
       class:milestone={row.kind === 'milestone'}
       class:hovered={hoveredRowId === row.id}
       class:drag-dimmed={anyDragActive && row.issue !== null && activeIssueIdStr !== null && String(row.issue._id) !== activeIssueIdStr}
-      style="height: {row.height}px; padding-left: {8 + indent}px;"
+      style={virtualizationOn
+        ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px; padding-left: ${8 + indent}px;`
+        : `height: ${row.height}px; padding-left: ${8 + indent}px;`}
       on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
       on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
       on:mouseleave={() => dispatch('hoverRow', { id: null })}
@@ -261,12 +508,16 @@
         {/if}
       </span>
     </div>
+    {/if}
   {/each}
   <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
   <div
     class="add-issue-row"
     role="button"
     tabindex="0"
+    style={virtualizationOn
+      ? `position: absolute; top: ${spacerHeight}px; left: 0; right: 0;`
+      : ''}
     on:click={() => dispatch('addIssue')}
     on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatch('addIssue') }}
   >
@@ -274,10 +525,60 @@
     <span class="add-issue-label"><Label label={tracker.string.AddIssue} /></span>
   </div>
 </div>
+{/if}
 
 <style lang="scss">
+  /* Phase 3a — extended grid styles. */
+  .sidebar-grid {
+    background: var(--theme-comp-header-color);
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-grid-header {
+    display: flex;
+    align-items: stretch;
+    height: 28px;
+    border-bottom: 1px solid var(--theme-divider-color);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  .sidebar-grid-body {
+    display: flex;
+    flex-direction: column;
+  }
+  /* Tier-3 Item 5 — when virtualized, the body acts as a positioning
+     ancestor for absolute-positioned rows. `display: block` cancels the
+     flex layout so absolute children honour `top: N px`. */
+  .sidebar-grid-body.virtualized {
+    display: block;
+    position: relative;
+  }
+  .sidebar-grid-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--theme-divider-color);
+    box-sizing: border-box;
+    background: var(--theme-comp-header-color);
+  }
+  .sidebar-grid-row.summary { font-weight: 600; }
+  .sidebar-grid-row.milestone {
+    background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 6%, transparent);
+  }
+  .sidebar-grid-row.hovered {
+    background: var(--theme-button-hovered);
+  }
+  :global(.sidebar-grid-body.has-hover) .sidebar-grid-row:not(.hovered) {
+    opacity: 0.55;
+  }
+
+  /* Legacy compact mode (default) — preserved bit-for-bit. */
   .sidebar-rows {
     background: var(--theme-comp-header-color);
+  }
+  .sidebar-rows.virtualized {
+    position: relative;
   }
   .col-toggle {
     flex: 0 0 18px;
@@ -447,5 +748,32 @@
     font-size: 9px;
     font-weight: 600;
     letter-spacing: 0.5px;
+  }
+  /* Phase 3b — swimlane header row. Spans both the legacy and the
+     extended-grid sidebar layouts via the .gantt-group-header modifier. */
+  .sidebar-row.gantt-group-header,
+  .sidebar-grid-row.gantt-group-header {
+    background: var(--theme-divider-color);
+    color: var(--theme-content-color);
+    font-weight: 600;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px;
+    grid-column: 1 / -1;
+    border-bottom: 1px solid var(--theme-divider-color);
+  }
+  .gantt-group-label {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .gantt-group-count {
+    flex: 0 0 auto;
+    opacity: 0.7;
+    font-weight: 500;
+    font-size: 11px;
   }
 </style>
