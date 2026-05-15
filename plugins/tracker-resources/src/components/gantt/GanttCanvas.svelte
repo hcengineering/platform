@@ -3,15 +3,19 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { type LayoutRow, type MilestoneMarker, type SummaryRange } from './lib/types'
+  import { writable, type Writable } from 'svelte/store'
+  import type { Issue } from '@hcengineering/tracker'
+  import { type DragState, type LayoutRow, type MilestoneMarker, type SummaryRange } from './lib/types'
   import { filterVisibleRows } from './lib/layout'
   import GanttBar from './GanttBar.svelte'
+  import GanttResizeOverlay from './GanttResizeOverlay.svelte'
   import GanttTodayMarker from './GanttTodayMarker.svelte'
   import { type TimeScale } from './lib/time-scale'
 
   const dispatch = createEventDispatcher<{
     openIssue: { issue: { _id: string, _class: string } }
     hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
+    barMouseDown: { issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }
   }>()
   function openIssue (i: { _id: any, _class: any }): void {
     dispatch('openIssue', { issue: { _id: i._id as string, _class: i._class as string } })
@@ -29,11 +33,20 @@
   export let hoveredRowId: string | null = null
   export let statusCategoryMap: Map<string, string> | undefined = undefined
 
+  // PR 3 edit-mode props. Defaulted so GanttCanvas remains usable from
+  // contexts that don't wire the drag state (e.g. embedded preview).
+  export let editableIssueIds: Set<string> = new Set()
+  export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
+
   function statusCategoryFor (issue: any): string | null {
     if (statusCategoryMap === undefined) return null
     const sid = issue?.status as string | undefined
     if (sid === undefined) return null
     return statusCategoryMap.get(String(sid)) ?? null
+  }
+
+  function isEditable (issueId: unknown): boolean {
+    return editableIssueIds.has(String(issueId))
   }
 
   $: visibleRows = filterVisibleRows(rows, scrollTop, viewportHeight)
@@ -143,6 +156,11 @@
               isSummary={row.isSummary}
               summaryRange={summaryFor(row)}
               statusCategory={statusCategoryFor(row.issue)}
+              editable={isEditable(row.issue._id)}
+              {activeDrag}
+              issueRef={row.issue._id}
+              issueObj={row.issue}
+              on:barMouseDown
             />
           </g>
         {/if}
@@ -171,6 +189,10 @@
   </g>
 
   <GanttTodayMarker {timeScale} canvasHeight={totalHeight} {viewport} />
+
+  <!-- Resize-overlay layer (ghost outline + guide line + date pill + duration
+       tooltip). Reads from $activeDrag — renders nothing in idle/hover state. -->
+  <GanttResizeOverlay {activeDrag} {timeScale} canvasHeight={totalHeight} />
 </svg>
 
 <style lang="scss">
