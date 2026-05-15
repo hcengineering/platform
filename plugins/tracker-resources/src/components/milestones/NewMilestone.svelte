@@ -34,6 +34,7 @@
     status: MilestoneStatus.Planned,
     comments: 0,
     attachments: 0,
+    startDate: null,
     targetDate: Date.now() + 14 * 24 * 60 * 60 * 1000
   }
 
