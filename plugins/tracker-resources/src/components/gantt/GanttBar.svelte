@@ -179,20 +179,19 @@
   {@const barH = row.height - 12}
   {#if isSummary}
     <!-- MS-Project-style claw: thin black bar with downward triangles at
-         both ends. review note (2026-05-11): a transparent hit-rect
-         spanning the full claw width receives mousedown/contextmenu so
-         parent-issues (which render as a claw because they have children)
-         can still be dragged. Without this rect the claw was visually
-         editable but functionally inert — commitDrag's parent-pulls-
-         children path was unreachable from the UI. -->
+         both ends. A transparent hit-rect spanning the full claw width
+         receives mousedown/contextmenu so parent-issues (which render as
+         a claw because they have children) can still be dragged. Without
+         this rect the claw is visually editable but functionally inert —
+         commitDrag's parent-pulls-children path is unreachable from
+         the UI. -->
     {#if editable && !isMilestoneSummary}
       <!--
         role="button" makes the interactive SVG rect addressable by AT
         (screen reader announces "Drag {title} to reschedule"). Keyboard
         access is handled at the GanttView level (Tab/ArrowLeft/Right —
         see onKey handler in GanttView.svelte), so the per-rect
-        a11y-click-events-have-key-events warning is intentionally
-        ignored. review note 2026-05-11.
+        a11y-click-events-have-key-events warning is intentionally ignored.
       -->
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <rect
@@ -413,8 +412,8 @@
   /*
    * Click-to-select state: thick solid blue outline + glow. Made deliberately
    * stronger than the previous 2px stroke so the armed state is unmistakable
-   * on every fill color (backlog grey through active orange). Codex review-7
-   * 2026-05-11: user reported the previous treatment was too subtle.
+   * on every fill color (backlog grey through active orange). The earlier
+   * 2px stroke was too subtle on bright bars.
    */
   .bar.selected {
     stroke: var(--theme-state-info-color, #6366f1);

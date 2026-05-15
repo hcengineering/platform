@@ -362,7 +362,7 @@ export function simulateCascade (
   //
   // This MUST run BEFORE the shifts.size === 0 early-return below: a
   // parent-drag with no external successors would otherwise bypass the
-  // child permission gate and silently commit. (Codex review round 8.)
+  // child permission gate and silently commit.
   const locked: Issue[] = []
   const lockedSet = new Set<Ref<Issue>>()
   for (const pe of primary) {
