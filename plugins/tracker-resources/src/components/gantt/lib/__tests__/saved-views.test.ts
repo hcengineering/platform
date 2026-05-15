@@ -41,9 +41,9 @@ describe('filterGanttFilteredViews', () => {
   })
 
   it('partitions own vs sharable-by-others', () => {
-    const other = 'someone-else'
+    const other = 'someone-else' as any
     const all = [
-      fv({ _id: 'own' as any, users: [ME] }),
+      fv({ _id: 'own' as any, users: [ME as any] }),
       fv({ _id: 'theirs-public' as any, users: [other], sharable: true, createdBy: other }),
       fv({ _id: 'theirs-private' as any, users: [other], sharable: false, createdBy: other })
     ]
@@ -67,7 +67,7 @@ describe('filterGanttFilteredViews', () => {
   })
 
   it('sorts shared alphabetically case-insensitive', () => {
-    const other = 'someone-else'
+    const other = 'someone-else' as any
     const all = [
       fv({ _id: 's2' as any, name: 'Zulu', users: [other], sharable: true, createdBy: other }),
       fv({ _id: 's1' as any, name: 'alpha', users: [other], sharable: true, createdBy: other })
