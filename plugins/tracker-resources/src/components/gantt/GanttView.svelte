@@ -10,7 +10,7 @@
   import { fsAnchor, ssAnchor, ffAnchor, sfAnchor } from './lib/working-days'
   import { computeCriticalPath } from './lib/critical-path'
   import type { CriticalPathResult } from './lib/types'
-  import { exportAndDownload } from './lib/exporter'
+  import { exportElementAndDownloadPng, exportElementToPdf } from './lib/exporter'
   import { ganttToolbarApi } from './lib/gantt-toolbar-bus'
   import GanttHelpPopup from './GanttHelpPopup.svelte'
   import type { PrimaryEdit, SimulateResult, CascadeShift } from './lib/types'
@@ -1580,30 +1580,31 @@
     if (next !== zoom) setZoom(next)
   }
 
+  // PNG export — captures the entire `.gantt-root` (sidebar + sticky
+  // header + canvas SVG) via html2canvas. The lib is dynamically
+  // imported by the exporter so it only lands in the user's browser
+  // when this button is clicked (~750 KB chunk, lazy-loaded).
   async function exportToPng (): Promise<void> {
-    const svg = scrollerEl?.querySelector('svg.gantt-canvas') as SVGSVGElement | null
-    if (svg === null) return
+    if (containerEl == null) return
     try {
-      await exportAndDownload(svg, `gantt-${new Date().toISOString().slice(0, 10)}`)
+      await exportElementAndDownloadPng(containerEl, `gantt-${new Date().toISOString().slice(0, 10)}`)
     } catch (err) {
       const title = await translate(tracker.string.GanttExportFailed, {}, undefined)
       addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
     }
   }
 
-  // PDF export. Uses the browser's print pipeline with
-  // a Gantt-specific print stylesheet so we don't pull in jsPDF.
-  // Caller picks "Save as PDF" in the browser print dialog.
-  function exportToPdf (): void {
+  // PDF export — rasterises the gantt-root with html2canvas at 2× DPI
+  // and embeds the resulting JPEG into a landscape A4 PDF via jsPDF,
+  // then triggers a browser download. Both html2canvas and jsPDF are
+  // dynamic-imported inside the exporter — neither lib bloats the main bundle.
+  async function exportToPdf (): Promise<void> {
     if (containerEl == null) return
-    containerEl.classList.add('gantt-printing')
     try {
-      window.print()
-    } finally {
-      // Defer the cleanup so the browser has time to render the
-      // print stylesheet before the class is removed. afterprint
-      // event would be more correct but isn't reliable cross-browser.
-      setTimeout(() => containerEl?.classList.remove('gantt-printing'), 1000)
+      await exportElementToPdf(containerEl, `gantt-${new Date().toISOString().slice(0, 10)}`)
+    } catch (err) {
+      const title = await translate(tracker.string.GanttExportFailed, {}, undefined)
+      addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
     }
   }
 
