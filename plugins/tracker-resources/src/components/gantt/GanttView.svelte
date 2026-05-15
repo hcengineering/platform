@@ -3861,15 +3861,10 @@
         >
           <Icon icon={IconRedo} size="small" />
         </button>
-        <!-- v121.3-E — The Phase-3b gantt-toolbar Filter button + popup
-             was removed. The standard Tracker FilterBar (FilterButton in
-             IssuesView.svelte's second header row) is now the single
-             source of filter truth: its `resultQuery` flows into
-             GanttView's `query` prop, so server-side filtering is
-             already applied and there's no need for a gantt-local
-             priority-chips popup. Group-By stays here because it is a
-             gantt-specific layout concern (swimlanes), not a filter. -->
-
+        <!-- The standard Tracker FilterBar is the single source of filter truth:
+             its `resultQuery` flows into GanttView's `query` prop, so
+             server-side filtering is already applied. Group-By stays here
+             because it is a gantt-specific layout concern (swimlanes). -->
         <div class="gantt-groupby-wrap" use:tooltip={{ label: tracker.string.GanttGroupOverridesHierarchy }}>
           <Label label={tracker.string.GanttGroupBy} />
           <!-- svelte-ignore a11y-no-onchange -->
