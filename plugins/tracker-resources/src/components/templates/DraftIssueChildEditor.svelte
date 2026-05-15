@@ -71,6 +71,7 @@
       assignee: project.defaultAssignee ?? null,
       status: project.defaultIssueStatus,
       space: project._id,
+      startDate: null,
       dueDate: null,
       subIssues: [],
       attachments: 0,
