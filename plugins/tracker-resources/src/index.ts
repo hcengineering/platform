@@ -122,6 +122,8 @@ import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svel
 import RelatedIssues from './components/issues/related/RelatedIssues.svelte'
 import RelatedIssueTemplates from './components/issues/related/RelatedIssueTemplates.svelte'
 import IssueRelationPresenter from './components/IssueRelationPresenter.svelte'
+import RelationActivityPresenter from './components/activity/RelationActivityPresenter.svelte'
+import DependencyShiftedPresenter from './components/notifications/DependencyShiftedPresenter.svelte'
 
 import ComponentSelector from './components/components/ComponentSelector.svelte'
 
@@ -459,6 +461,8 @@ export default async (): Promise<Resources> => ({
     RelatedIssues,
     RelatedIssueTemplates,
     IssueRelationPresenter,
+    RelationActivityPresenter,
+    DependencyShiftedPresenter,
     ComponentSelector,
     IssueTemplates,
     IssueTemplatePresenter,

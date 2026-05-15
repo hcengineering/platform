@@ -508,7 +508,11 @@ export default mergeIds(trackerId, tracker, {
     SubIssuesSelector: '' as AnyComponent,
     IconWithEmoji: '' as Asset,
     IssueStatusIcon: '' as AnyComponent,
-    MilestoneStatusIcon: '' as AnyComponent
+    MilestoneStatusIcon: '' as AnyComponent,
+    // Notification on Dependency-Shift.
+    DependencyShiftedPresenter: '' as AnyComponent,
+    // Activity-Log
+    RelationActivityPresenter: '' as AnyComponent
   },
   metadata: {
     CreateIssueDraft: '' as Metadata<IssueDraft>
