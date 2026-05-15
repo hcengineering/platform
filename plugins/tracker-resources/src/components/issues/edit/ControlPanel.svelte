@@ -224,6 +224,11 @@
   <DueDateEditor value={issue} width={'100%'} editable={!readonly} />
 
   <span class="labelOnPanel">
+    <Label label={tracker.string.Deadline} />
+  </span>
+  <DeadlineEditor value={issue} width={'100%'} editable={!readonly} />
+
+  <span class="labelOnPanel">
     <Label label={tracker.string.SchedulingMode} />
   </span>
   <SchedulingModeEditor value={issue} width={'100%'} editable={!readonly} />
