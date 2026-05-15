@@ -31,12 +31,14 @@
     return !(connectedIds.has(rel.attachedTo) && connectedIds.has(rel.target))
   }
 
-  function livePath (): string | null {
-    if (dragState === undefined) return null
-    if (dragState.kind !== 'connector-drawing' && dragState.kind !== 'connector-target-hover') return null
-    return bezierPath(dragState.originPx, dragState.cursorPx)
-  }
-  $: live = livePath()
+  // Inline the live-preview calculation so Svelte's reactivity tracker sees
+  // dragState as a direct dependency. Wrapping it in a function hides the
+  // dependency (function-indirection bug — same pattern as PR3.1's reactive
+  // prop helper fix), so the bezier preview wasn't redrawing as the cursor
+  // moved during connector-drag.
+  $: live = (dragState.kind === 'connector-drawing' || dragState.kind === 'connector-target-hover')
+    ? bezierPath(dragState.originPx, dragState.cursorPx)
+    : null
 </script>
 
 <g class="gantt-dep-layer">
