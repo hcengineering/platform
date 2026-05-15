@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import { detectCycle, addScheduleDays } from '../scheduler'
+import { detectCycle, addScheduleDays, simulateCascade } from '../scheduler'
 import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
+import type { PrimaryEdit, CascadeShift, SimulateResult } from '../types'
 
 function issue (id: string, start?: number, due?: number): Issue {
   return {
@@ -78,5 +79,35 @@ describe('addScheduleDays', () => {
   it('returns base unchanged when days = 0', () => {
     const base = Date.UTC(2026, 4, 12)
     expect(addScheduleDays(base, 0)).toBe(base)
+  })
+})
+
+describe('simulateCascade — FS basic', () => {
+  it('Test 1: FS push — drag A 3d later → B shifts 3d later', () => {
+    const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
+    const relations = [rel('A', 'B', 'finish-to-start', 0)]
+    const primary: PrimaryEdit[] = [
+      { issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }
+    ]
+    const res = simulateCascade(primary, [A, B], relations, () => true)
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    expect(res.shifts).toHaveLength(1)
+    expect(res.shifts[0].issue._id).toBe('B')
+    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 9))
+    expect(res.shifts[0].newDue).toBe(Date.UTC(2026, 4, 13))
+    expect(res.shifts[0].reason).toBe('push-successor')
+  })
+
+  it('Test 13: drag A by safe amount → no cascade needed', () => {
+    const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const B = issue('B', Date.UTC(2026, 4, 20), Date.UTC(2026, 4, 25))
+    const relations = [rel('A', 'B', 'finish-to-start', 0)]
+    const primary: PrimaryEdit[] = [
+      { issue: A, newStart: Date.UTC(2026, 4, 2), newDue: Date.UTC(2026, 4, 6) }
+    ]
+    const res = simulateCascade(primary, [A, B], relations, () => true)
+    expect(res.kind).toBe('no-cascade')
   })
 })

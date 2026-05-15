@@ -5,6 +5,7 @@
 
 import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
+import type { PrimaryEdit, CascadeShift, SimulateResult } from './types'
 
 const DAY_MS = 86_400_000
 
@@ -158,4 +159,138 @@ export function detectCycle (relations: IssueRelation[]): Ref<Issue>[] | null {
     if ((color.get(n) ?? WHITE) === WHITE && visit(n)) return cycle
   }
   return null
+}
+
+const DEFAULT_MAX_ITERATIONS = 1000
+
+interface WorkingDates {
+  start: number
+  due: number
+}
+
+export function simulateCascade (
+  primary: PrimaryEdit[],
+  allIssues: Issue[],
+  relations: IssueRelation[],
+  canEdit: (ref: Ref<Issue>) => boolean,
+  options?: { maxIterations?: number }
+): SimulateResult {
+  // Step 0: pre-flight cycle check on the relation graph itself.
+  const cycle = detectCycle(relations)
+  if (cycle !== null) return { kind: 'cycle', cycleNodes: cycle }
+
+  // Step 1: relation index.
+  const bySource = new Map<Ref<Issue>, IssueRelation[]>()
+  for (const r of relations) {
+    const bucket = bySource.get(r.attachedTo)
+    if (bucket === undefined) bySource.set(r.attachedTo, [r])
+    else bucket.push(r)
+  }
+  // byTarget intentionally deferred until pull-predecessor task (Task 6).
+
+  // Step 2: working state.
+  const issuesByRef = new Map<Ref<Issue>, Issue>()
+  for (const i of allIssues) issuesByRef.set(i._id, i)
+  const current = new Map<Ref<Issue>, WorkingDates>()
+  for (const i of allIssues) {
+    if (i.startDate != null && i.dueDate != null) {
+      current.set(i._id, { start: i.startDate, due: i.dueDate })
+    }
+  }
+  const primarySet = new Set<Ref<Issue>>()
+  for (const p of primary) {
+    primarySet.add(p.issue._id)
+    current.set(p.issue._id, { start: p.newStart, due: p.newDue })
+  }
+
+  const shifts = new Map<Ref<Issue>, CascadeShift>()
+  const queue: Ref<Issue>[] = primary.map((p) => p.issue._id)
+  const skippedRefs = new Set<Ref<Issue>>()
+  const maxIter = options?.maxIterations ?? DEFAULT_MAX_ITERATIONS
+
+  // Step 4: BFS.
+  let iterations = 0
+  while (queue.length > 0) {
+    if (++iterations > maxIter) return { kind: 'iteration-overflow' }
+    const cur = queue.shift() as Ref<Issue>
+    const curDates = current.get(cur)
+    if (curDates === undefined) continue
+
+    // Outgoing: cur is predecessor of rel.target.
+    const outgoing = bySource.get(cur) ?? []
+    // The start-delta of cur (vs its original start) is used to preserve
+    // the relative gap when pushing a successor. This ensures that if cur
+    // was itself shifted by N days (body-drag or cascaded), the successor
+    // also shifts by at least N days (floor: constraint minimum wins when
+    // the constraint requires a larger shift).
+    const origCurStart = issuesByRef.get(cur)?.startDate ?? curDates.start
+    const curStartDelta = curDates.start - origCurStart
+    for (const r of outgoing) {
+      // Primary-set protection during BFS: a primary issue's dates are
+      // authoritative — never let a cascade propagation overwrite them.
+      // Without this, a primary further down a chain could be silently
+      // shifted (and trigger further cascades) before the post-loop merge.
+      if (primarySet.has(r.target)) continue
+      const targetIssue = issuesByRef.get(r.target)
+      if (targetIssue === undefined) continue
+      if (targetIssue.startDate == null || targetIssue.dueDate == null) {
+        // Set semantics dedupe multi-path skip counts (DAG fan-in).
+        skippedRefs.add(r.target)
+        continue
+      }
+      const targetDates = current.get(r.target) as WorkingDates
+      // Only FS implemented in this task; others come in Task 5.
+      if (r.kind === 'finish-to-start') {
+        const snap = addScheduleDays(curDates.due, r.lag ?? 0)
+        if (snap > targetDates.start) {
+          // max: take the larger of (a) snap to constraint, (b) carry-forward
+          // the cur start-delta to preserve the original gap between issues.
+          const newStart = Math.max(snap, targetDates.start + curStartDelta)
+          const delta = newStart - targetDates.start
+          const newDue = targetDates.due + delta
+          current.set(r.target, { start: newStart, due: newDue })
+          shifts.set(r.target, {
+            issue: targetIssue,
+            oldStart: targetIssue.startDate,
+            oldDue: targetIssue.dueDate,
+            newStart,
+            newDue,
+            reason: 'push-successor',
+            triggeredBy: cur
+          })
+          queue.push(r.target)
+        }
+      }
+    }
+  }
+
+  // Step 6: defensive merge — with the in-loop primary-set guards above,
+  // shifts should never contain a primary ref. Belt-and-braces in case
+  // a future code path inserts into `shifts` outside the guarded branches.
+  for (const ref of primarySet) shifts.delete(ref)
+
+  // Step 7: empty → no-cascade.
+  if (shifts.size === 0) return { kind: 'no-cascade', primary }
+
+  // Step 8: permission check.
+  const locked: Issue[] = []
+  for (const s of shifts.values()) {
+    if (!canEdit(s.issue._id)) locked.push(s.issue)
+  }
+  if (locked.length > 0) {
+    return {
+      kind: 'permission-denied',
+      lockedIssues: locked,
+      primary,
+      shifts: Array.from(shifts.values()),
+      skippedUnscheduled: skippedRefs.size
+    }
+  }
+
+  return {
+    kind: 'cascade',
+    primary,
+    shifts: Array.from(shifts.values()),
+    skippedUnscheduled: skippedRefs.size
+  }
 }
