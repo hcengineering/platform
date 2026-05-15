@@ -275,11 +275,24 @@
     "Extensions": "Uzantılar",
     "UnsetParentIssue": "Üst sorunu kaldır",
     "AllowCreatingIssues": "Sorun oluşturmaya izin ver",
-    "Day": "Gün",
+    "Day": "Day",
+    "Week": "Week",
+    "Month": "Month",
+    "Quarter": "Quarter",
     "Gantt": "Gantt",
-    "Month": "Ay",
-    "Quarter": "Çeyrek",
-    "Week": "Hafta"
+    "GanttShowIssueCode": "Show issue code",
+    "GanttShowTitle": "Show title",
+    "GanttToday": "Today",
+    "GanttJumpToStart": "Jump to start",
+    "GanttJumpToEnd": "Jump to end",
+    "GanttJumpToDate": "Jump to date",
+    "GanttPreviousPeriod": "Previous period",
+    "GanttNextPeriod": "Next period",
+    "GanttScrollLeftToBar": "Scroll left to bar",
+    "GanttScrollRightToBar": "Scroll right to bar",
+    "GanttExpand": "Expand",
+    "GanttCollapse": "Collapse"
+  
   },
   "status": {}
 }

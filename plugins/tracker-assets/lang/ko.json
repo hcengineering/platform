@@ -277,11 +277,23 @@
         "ForbidCreateProjectPermission": "프로젝트 생성 금지",
         "ForbidCreateProjectPermissionDescription": "사용자의 새 프로젝트 생성을 금지",
         "AllowCreatingIssues": "이슈 생성 허용",
-        "Day": "일",
+        "Day": "Day",
+        "Week": "Week",
+        "Month": "Month",
+        "Quarter": "Quarter",
         "Gantt": "Gantt",
-        "Month": "월",
-        "Quarter": "분기",
-        "Week": "주"
+        "GanttShowIssueCode": "Show issue code",
+        "GanttShowTitle": "Show title",
+        "GanttToday": "Today",
+        "GanttJumpToStart": "Jump to start",
+        "GanttJumpToEnd": "Jump to end",
+        "GanttJumpToDate": "Jump to date",
+        "GanttPreviousPeriod": "Previous period",
+        "GanttNextPeriod": "Next period",
+        "GanttScrollLeftToBar": "Scroll left to bar",
+        "GanttScrollRightToBar": "Scroll right to bar",
+        "GanttExpand": "Expand",
+        "GanttCollapse": "Collapse"
     },
     "status": {}
 }

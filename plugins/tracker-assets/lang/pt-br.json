@@ -277,11 +277,24 @@
     "ForbidCreateProjectPermission": "Proibir criação de projeto",
     "ForbidCreateProjectPermissionDescription": "Proíbe os usuários de criar novos projetos",
     "AllowCreatingIssues": "Permitir criar problemas",
-    "Day": "Dia",
+    "Day": "Day",
+    "Week": "Week",
+    "Month": "Month",
+    "Quarter": "Quarter",
     "Gantt": "Gantt",
-    "Month": "Mês",
-    "Quarter": "Trimestre",
-    "Week": "Semana"
+    "GanttShowIssueCode": "Show issue code",
+    "GanttShowTitle": "Show title",
+    "GanttToday": "Today",
+    "GanttJumpToStart": "Jump to start",
+    "GanttJumpToEnd": "Jump to end",
+    "GanttJumpToDate": "Jump to date",
+    "GanttPreviousPeriod": "Previous period",
+    "GanttNextPeriod": "Next period",
+    "GanttScrollLeftToBar": "Scroll left to bar",
+    "GanttScrollRightToBar": "Scroll right to bar",
+    "GanttExpand": "Expand",
+    "GanttCollapse": "Collapse"
+  
   },
   "status": {}
 }
