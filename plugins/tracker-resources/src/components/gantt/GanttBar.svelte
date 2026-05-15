@@ -292,10 +292,13 @@
         on:mousedown={onBarDown('right')}
       />
     {/if}
-    {#if editable && (hovered || selected || isThisConnectorActive) && dragTarget !== undefined && dragTarget.kind === 'issue' && w >= 18}
+    {#if editable && (selected || isThisConnectorActive) && dragTarget !== undefined && dragTarget.kind === 'issue' && w >= 18}
       <GanttConnectorDot
-        cx={x + w}
-        cy={barY + barH / 2}
+        cx={x + w + 12}
+        cy={barY + barH - 2}
+        sourceId={String(dragTarget.doc._id)}
+        sourceSpace={String(dragTarget.doc.space)}
+        hitR={10}
         on:connectorDown={(e) => {
           if (dragTarget === undefined || dragTarget.kind !== 'issue') return
           dispatch('connectorDown', {

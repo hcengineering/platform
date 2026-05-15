@@ -3,7 +3,12 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import { computeCanvasRenderWidth, computeCanvasViewportWidth, computeTickViewport } from '../viewport'
+import {
+  computeAdaptivePxPerDay,
+  computeCanvasRenderWidth,
+  computeCanvasViewportWidth,
+  computeTickViewport
+} from '../viewport'
 
 describe('viewport', () => {
   it('subtracts the sticky sidebar and resize cell from the visible canvas width', () => {
@@ -23,5 +28,10 @@ describe('viewport', () => {
   it('clamps header and grid tick generation to the data range', () => {
     expect(computeTickViewport(0, 1600, 900)).toEqual({ left: 0, right: 900 })
     expect(computeTickViewport(500, 1600, 900)).toEqual({ left: 400, right: 900 })
+  })
+
+  it('stretches time columns when the data range is narrower than the viewport', () => {
+    expect(computeAdaptivePxPerDay(1.5, 600, 900)).toBeCloseTo(2.25)
+    expect(computeAdaptivePxPerDay(1.5, 1200, 900)).toBe(1.5)
   })
 })

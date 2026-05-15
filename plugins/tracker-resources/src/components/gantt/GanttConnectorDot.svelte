@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
   /**
    * Anchored to the right edge of the source bar (the FS / FF anchor). The
@@ -14,6 +14,8 @@
    */
   export let cx: number
   export let cy: number
+  export let sourceId: string
+  export let sourceSpace: string
   export let r: number = 5
   export let hitR: number = 12
 
@@ -21,25 +23,59 @@
     connectorDown: { cursorX: number, cursorY: number }
   }>()
 
-  function onDown (evt: PointerEvent): void {
+  let lastDownAt = 0
+  let hitCircle: SVGCircleElement | null = null
+
+  function onDown (evt: PointerEvent | MouseEvent): void {
     if (evt.button !== 0) return
+    const now = Date.now()
+    if (now - lastDownAt < 30) return
+    lastDownAt = now
     evt.preventDefault()
-    evt.stopPropagation()
     dispatch('connectorDown', { cursorX: evt.clientX, cursorY: evt.clientY })
+    hitCircle?.dispatchEvent(new CustomEvent('gantt-connector-start', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        sourceId,
+        sourceSpace,
+        originPx: { x: cx, y: cy }
+      }
+    }))
   }
+
+  onMount(() => {
+    if (hitCircle === null) return
+    hitCircle.addEventListener('pointerdown', onDown)
+    hitCircle.addEventListener('mousedown', onDown)
+  })
+
+  onDestroy(() => {
+    if (hitCircle === null) return
+    hitCircle.removeEventListener('pointerdown', onDown)
+    hitCircle.removeEventListener('mousedown', onDown)
+  })
 </script>
 
 <g
   class="gantt-connector"
+  data-source-id={sourceId}
+  data-source-space={sourceSpace}
   on:pointerdown={onDown}
+  on:mousedown={onDown}
   on:click|stopPropagation={() => {}}
 >
   <circle
+    bind:this={hitCircle}
     class="gantt-connector-hit"
     {cx}
     {cy}
     r={hitR}
     fill="transparent"
+    data-source-id={sourceId}
+    data-source-space={sourceSpace}
+    on:pointerdown={onDown}
+    on:mousedown={onDown}
   />
   <circle
     class="gantt-connector-dot"
@@ -50,6 +86,8 @@
     stroke="#ffffff"
     stroke-width={1.5}
     pointer-events="none"
+    on:pointerdown={onDown}
+    on:mousedown={onDown}
   />
 </g>
 

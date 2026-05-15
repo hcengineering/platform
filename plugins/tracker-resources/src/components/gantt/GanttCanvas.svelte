@@ -2,7 +2,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
   import type { Ref } from '@hcengineering/core'
   import type { Issue, IssueRelation, Milestone } from '@hcengineering/tracker'
@@ -28,6 +28,8 @@
     openEditor: { relation: IssueRelation }
     hoverEdge: { source: Ref<Issue>, target: Ref<Issue> } | null
   }>()
+  let canvasEl: SVGSVGElement | null = null
+
   function openIssue (i: { _id: any, _class: any }): void {
     dispatch('openIssue', { issue: { _id: i._id as string, _class: i._class as string } })
   }
@@ -37,9 +39,41 @@
     if (rect === undefined) return
     dispatch('connectorDown', {
       source: e.detail.source,
-      originPx: { x: rect.right, y: (rect.top + rect.bottom) / 2 }
+      originPx: { x: rect.right + 12, y: rect.bottom - 2 }
     })
   }
+
+  function startConnectorFromIssueId (sourceId: string | null): void {
+    if (sourceId === null) return
+    const source = rows.find((row) => row.issue !== null && String(row.issue._id) === sourceId)?.issue
+    const rect = barRects.get(sourceId)
+    if (source === undefined || source === null || rect === undefined) return
+    dispatch('connectorDown', {
+      source,
+      originPx: { x: rect.right + 12, y: rect.bottom - 2 }
+    })
+  }
+
+  function onCanvasConnectorDown (e: MouseEvent | PointerEvent): void {
+    const target = e.target as Element | null
+    const connector = target?.closest('.gantt-connector') as SVGElement | null
+    if (connector === null) return
+    e.preventDefault()
+    e.stopPropagation()
+    startConnectorFromIssueId(connector.getAttribute('data-source-id'))
+  }
+
+  onMount(() => {
+    if (canvasEl === null) return
+    canvasEl.addEventListener('pointerdown', onCanvasConnectorDown)
+    canvasEl.addEventListener('mousedown', onCanvasConnectorDown)
+  })
+
+  onDestroy(() => {
+    if (canvasEl === null) return
+    canvasEl.removeEventListener('pointerdown', onCanvasConnectorDown)
+    canvasEl.removeEventListener('mousedown', onCanvasConnectorDown)
+  })
 
   export let rows: LayoutRow[]
   export let milestones: MilestoneMarker[]
@@ -150,6 +184,7 @@
 </script>
 
 <svg
+  bind:this={canvasEl}
   class="gantt-canvas"
   width={totalWidth}
   height={totalHeight}

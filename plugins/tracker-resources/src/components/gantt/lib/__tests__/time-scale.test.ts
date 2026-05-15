@@ -37,6 +37,12 @@ describe('createTimeScale', () => {
     expect(createTimeScale('quarter', origin).pxPerDay).toBe(1.5)
   })
 
+  it('supports an adaptive pxPerDay override', () => {
+    const ts = createTimeScale('quarter', origin, 2.25)
+    expect(ts.pxPerDay).toBe(2.25)
+    expect(ts.toX(origin + 10 * DAY_MS)).toBe(22.5)
+  })
+
   it('toX(origin) === 0', () => {
     const ts = createTimeScale('week', origin)
     expect(ts.toX(origin)).toBe(0)
