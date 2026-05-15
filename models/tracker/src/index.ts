@@ -196,7 +196,9 @@ function defineFilters (builder: Builder): void {
         key: 'milestone',
         component: view.component.ObjectFilter,
         showNested: false
-      }
+      },
+      'startDate',
+      'dueDate'
     ],
     ignoreKeys: ['number', 'estimation', 'attachedTo'],
     getVisibleFilters: tracker.function.GetVisibleFilters
