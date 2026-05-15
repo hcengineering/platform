@@ -30,9 +30,11 @@ import {
   Status,
   Timestamp,
   Type,
-  type Permission
+  type Permission,
+  type AccountUuid
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
+import { CommonInboxNotification } from '@hcengineering/notification'
 import { Preference } from '@hcengineering/preference'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import { ToDo } from '@hcengineering/time'
@@ -300,6 +302,37 @@ export interface Issue extends Task {
 }
 
 /**
+ * Tier-4 Item 14 — Notification on Dependency-Shift.
+ * One entry per shifted issue in a cascade bundle.
+ * @public
+ */
+export interface ShiftedIssuePayload {
+  issueId: Ref<Issue>
+  identifier: string
+  title: string
+  /** Signed shift in milliseconds. Negative = moved earlier. */
+  deltaMs: number
+  oldStart: Timestamp | null
+  newStart: Timestamp | null
+  oldDue: Timestamp | null
+  newDue: Timestamp | null
+}
+
+/**
+ * Tier-4 Item 14 — Notification on Dependency-Shift.
+ * One bundle per recipient per cascade-commit.
+ * @public
+ */
+export interface DependencyShiftedNotification extends CommonInboxNotification {
+  triggerIssueId: Ref<Issue>
+  triggerIssueIdentifier: string
+  triggerIssueTitle: string
+  triggerUserId: AccountUuid
+  shiftedIssues: ShiftedIssuePayload[]
+  cascadeToken: string
+}
+
+/**
  * @public
  */
 export interface IssueDraft {
@@ -470,7 +503,8 @@ const pluginState = plugin(trackerId, {
     TypeEstimation: '' as Ref<Class<Type<number>>>,
     TypeRemainingTime: '' as Ref<Class<Type<number>>>,
     RelatedIssueTarget: '' as Ref<Class<RelatedIssueTarget>>,
-    ProjectTargetPreference: '' as Ref<Class<ProjectTargetPreference>>
+    ProjectTargetPreference: '' as Ref<Class<ProjectTargetPreference>>,
+    DependencyShiftedNotification: '' as Ref<Class<DependencyShiftedNotification>>
   },
   mixin: {
     ClassicProjectTypeData: '' as Ref<Mixin<Project>>,
