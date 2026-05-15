@@ -14,6 +14,7 @@
   import { kindCode } from '../gantt/lib/predecessor-format'
   import { wouldCreateCycle } from '../gantt/lib/scheduler'
   import SelectDependencyIssuePopup from './SelectDependencyIssuePopup.svelte'
+  import DependencyDirectionPopup from './DependencyDirectionPopup.svelte'
 
   /**
    * Issue-editor side-panel that surfaces every Gantt `IssueRelation`
@@ -94,30 +95,60 @@
   }
 
   function onAddDependency (): void {
-    // Project-scoped picker via SelectDependencyIssuePopup (wraps ObjectPopup
-    // with a slot="item" so the issue rows actually render — bare ObjectPopup
-    // returns docs but renders nothing without that slot). Picker excludes
-    // self and existing successors via ignoreObjects. Cycle detection happens
-    // in the callback because it needs the full relation graph.
+    // Two-step flow: first ask for direction (predecessor vs successor),
+    // then open the project-scoped picker. The chooser pattern mirrors
+    // HierarchyAddPopup so the "+" affordance is consistent across the
+    // hierarchy and dependency panels — neither silently picks a side.
+    showPopup(
+      DependencyDirectionPopup,
+      {},
+      'top',
+      (dir?: 'predecessor' | 'successor') => {
+        if (dir === undefined) return
+        pickAndAttach(dir)
+      }
+    )
+  }
+
+  function pickAndAttach (direction: 'predecessor' | 'successor'): void {
+    // ignoreObjects must exclude the current issue and any already-existing
+    // relations on the chosen side. Outgoing for 'successor', incoming for
+    // 'predecessor' — adding an existing edge would just be a duplicate.
+    const existingOnSide: Ref<Issue>[] = direction === 'successor'
+      ? outgoing.map((r) => r.target)
+      : incoming.map((r) => r.attachedTo)
     showPopup(
       SelectDependencyIssuePopup,
-      { issue, outgoing },
+      { issue, outgoing: [], extraIgnore: existingOnSide },
       'top',
-      async (target: Issue | undefined | null) => {
-        if (target === undefined || target === null) return
-        if (wouldCreateCycle(issue._id, target._id, [...incoming, ...outgoing])) {
+      async (picked: Issue | undefined | null) => {
+        if (picked === undefined || picked === null) return
+        // For 'predecessor' direction, the picked issue is the source and
+        // the current issue is the target. Cycle check flips the args.
+        const sourceId = direction === 'successor' ? issue._id : picked._id
+        const targetId = direction === 'successor' ? picked._id : issue._id
+        if (wouldCreateCycle(sourceId, targetId, [...incoming, ...outgoing])) {
           const title = await translate(tracker.string.DependencyCycle, {}, undefined)
           addNotification(title, '', undefined as any, undefined, NotificationSeverity.Warning)
+          return
+        }
+        // Permission check on the SOURCE side (per spec §1A) — for the
+        // 'predecessor' direction the source is the picked issue, so the
+        // user must have edit rights on it.
+        const sourceIssue = direction === 'successor' ? issue : picked
+        if (!await canEditIssue(sourceIssue)) {
+          const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
+          addNotification(title, 'No permission on source issue', undefined as any, undefined, NotificationSeverity.Warning)
           return
         }
         const ops = client.apply(undefined, 'add-dependency-from-issue-editor')
         await ops.addCollection(
           tracker.class.IssueRelation,
-          issue.space,
-          issue._id,
+          sourceIssue.space,
+          sourceId,
           tracker.class.Issue,
           'relations',
-          { target: target._id, kind: 'finish-to-start', lag: 0 }
+          { target: targetId, kind: 'finish-to-start', lag: 0 }
         )
         await ops.commit()
       }
