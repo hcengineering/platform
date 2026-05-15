@@ -15,8 +15,13 @@
   import { buildLayout } from './lib/layout'
   import { createTimeScale } from './lib/time-scale'
   import { type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
-  import { Label, showPanel, tooltip } from '@hcengineering/ui'
+  import { Icon, Label, showPanel, tooltip } from '@hcengineering/ui'
   import { statusStore } from '@hcengineering/view-resources'
+  import ArrowLeft from '@hcengineering/ui/src/components/icons/ArrowLeft.svelte'
+  import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
+  import NavPrev from '@hcengineering/ui/src/components/icons/NavPrev.svelte'
+  import NavNext from '@hcengineering/ui/src/components/icons/NavNext.svelte'
+  import Calendar from '@hcengineering/ui/src/components/icons/Calendar.svelte'
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export let _class: Ref<Class<Doc>>
@@ -31,7 +36,7 @@
   const MIN_SIDEBAR_WIDTH = 120
   const MAX_SIDEBAR_WIDTH = 600
   const DEFAULT_SIDEBAR_WIDTH = 280
-  const HEADER_HEIGHT = 40
+  const HEADER_HEIGHT = 56
   const MILESTONE_STRIP_HEIGHT = 0
   const TOOLBAR_HEIGHT = 40
 
@@ -287,6 +292,10 @@
   }
   let datePickerValue: string = ''
 
+  function formatRange (ms: number): string {
+    return new Date(ms).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+  }
+
   // Custom horizontal scrollbar thumb geometry (proxy for hScrollEl).
   $: hTrackWidth = canvasViewportWidth > 0 ? canvasViewportWidth : 1
   $: hThumbWidth = totalCanvasWidth > 0
@@ -463,20 +472,30 @@
   {:else}
     <div class="gantt-toolbar" style="height: {TOOLBAR_HEIGHT}px;">
       <div class="toolbar-left">
-        <button class="nav-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToStart }} on:click={jumpToStart}>⏮</button>
-        <button class="nav-btn" type="button" use:tooltip={{ label: tracker.string.GanttPreviousPeriod }} on:click={() => pageScroll(-1)}>«</button>
+        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToStart }} on:click={jumpToStart}>
+          <Icon icon={ArrowLeft} size="small" />
+        </button>
+        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttPreviousPeriod }} on:click={() => pageScroll(-1)}>
+          <Icon icon={NavPrev} size="small" />
+        </button>
         <button class="nav-btn today-btn" type="button" on:click={jumpToToday}>
           <Label label={tracker.string.GanttToday} />
         </button>
-        <button class="nav-btn" type="button" use:tooltip={{ label: tracker.string.GanttNextPeriod }} on:click={() => pageScroll(1)}>»</button>
-        <button class="nav-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToEnd }} on:click={jumpToEnd}>⏭</button>
-        <input
-          type="date"
-          class="date-input"
-          use:tooltip={{ label: tracker.string.GanttJumpToDate }}
-          bind:value={datePickerValue}
-          on:change={() => jumpToDate(datePickerValue)}
-        />
+        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttNextPeriod }} on:click={() => pageScroll(1)}>
+          <Icon icon={NavNext} size="small" />
+        </button>
+        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToEnd }} on:click={jumpToEnd}>
+          <Icon icon={ArrowRight} size="small" />
+        </button>
+        <label class="date-input-wrap" use:tooltip={{ label: tracker.string.GanttJumpToDate }}>
+          <Icon icon={Calendar} size="small" />
+          <input
+            type="date"
+            class="date-input"
+            bind:value={datePickerValue}
+            on:change={() => jumpToDate(datePickerValue)}
+          />
+        </label>
       </div>
       <div class="toolbar-center">
         {#each ZOOM_LEVELS as z (z)}
@@ -510,13 +529,28 @@
         class="gantt-grid"
         style="grid-template-columns: {sidebarWidthPx}px 5px 1fr; --sidebar-w: {sidebarWidthPx}px;"
       >
-        <!-- Row 1: corner / resize-corner / time-axis header (all sticky-top) -->
+        <!-- Row 1: corner / resize-corner / time-axis header (all sticky-top).
+             The corner shows column labels on the top half + an inline
+             date-range navigation strip on the bottom half (Stitch-style). -->
         <div class="cell corner" style="height: {HEADER_HEIGHT}px;">
-          <span class="col-toggle" />
-          {#if showStatus}<span class="col-status" />{/if}
-          {#if showIssueCode}<span class="col-id"><Label label={tracker.string.Issue} /></span>{/if}
-          {#if showTitle}<span class="col-title"><Label label={tracker.string.Title} /></span>{/if}
-          <span class="col-jump" />
+          <div class="corner-cols">
+            <span class="col-toggle" />
+            {#if showStatus}<span class="col-status" />{/if}
+            {#if showIssueCode}<span class="col-id"><Label label={tracker.string.Issue} /></span>{/if}
+            {#if showTitle}<span class="col-title"><Label label={tracker.string.Title} /></span>{/if}
+            <span class="col-jump" />
+          </div>
+          <div class="corner-range">
+            <button class="range-nav" type="button"
+              use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
+              on:click={() => pageScroll(-1)}>«</button>
+            <span class="range-text" on:click={jumpToToday} on:keydown={(e) => { if (e.key === 'Enter') jumpToToday() }} role="button" tabindex="0">
+              {formatRange(dateRange.from)} – {formatRange(dateRange.to)}
+            </span>
+            <button class="range-nav" type="button"
+              use:tooltip={{ label: tracker.string.GanttNextPeriod }}
+              on:click={() => pageScroll(1)}>»</button>
+          </div>
         </div>
         <div class="cell resize-corner" style="height: {HEADER_HEIGHT}px;" />
         <div class="cell header-cell" style="height: {HEADER_HEIGHT}px;">
@@ -577,7 +611,7 @@
     {#if vHasOverflow}
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="gantt-vscrollbar"
-        style="top: {TOOLBAR_HEIGHT}px; bottom: 16px;">
+        style="top: {TOOLBAR_HEIGHT}px; bottom: 11px;">
         <div
           class="vscroll-thumb"
           style="top: {vThumbTop}px; height: {vThumbHeight}px;"
@@ -689,16 +723,34 @@
   .today-btn {
     font-weight: 600;
   }
-  .date-input {
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .date-input-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     height: 26px;
     margin-left: 8px;
     padding: 0 6px;
     border: 1px solid var(--theme-divider-color);
     background: var(--theme-button-default);
     color: var(--theme-content-color);
-    font-size: 12px;
     border-radius: 4px;
     cursor: pointer;
+  }
+  .date-input {
+    height: 22px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--theme-content-color);
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
   }
   .zoom-btn {
     height: 26px;
@@ -757,8 +809,8 @@
     cursor: grab;
     /* Reserve space at the bottom + right so the absolute scrollbars
        never paint over the canvas area. */
-    padding-bottom: 16px;
-    padding-right: 14px;
+    padding-bottom: 11px;
+    padding-right: 10px;
   }
   .gantt-scroller.panning {
     cursor: grabbing;
@@ -781,9 +833,9 @@
     right: 0;
     bottom: 0;
     z-index: 10;
-    height: 16px;
+    height: 10px;
     border-top: 1px solid var(--theme-divider-color);
-    background: var(--theme-divider-color);
+    background: var(--theme-bg-color);
     display: flex;
     box-sizing: border-box;
   }
@@ -809,39 +861,41 @@
   .hscroll-spacer { height: 1px; }
   .hscroll-thumb {
     position: absolute;
-    top: 2px;
-    bottom: 2px;
+    top: 1px;
+    bottom: 1px;
     background: var(--theme-content-color, #4b5563);
-    border-radius: 6px;
+    opacity: 0.45;
+    border-radius: 4px;
     cursor: grab;
     pointer-events: auto;
-    transition: background 100ms ease;
+    transition: opacity 100ms ease, background 100ms ease;
   }
-  .hscroll-thumb:hover { background: var(--theme-state-info-color, #6366f1); }
-  .hscroll-thumb:active { cursor: grabbing; background: var(--theme-state-info-color, #6366f1); }
+  .hscroll-thumb:hover { opacity: 0.85; background: var(--theme-state-info-color, #6366f1); }
+  .hscroll-thumb:active { cursor: grabbing; opacity: 1; background: var(--theme-state-info-color, #6366f1); }
   /* Vertical scrollbar — same DOM-thumb pattern, anchored at the right
      edge of gantt-root between the toolbar and the horizontal bar. */
   .gantt-vscrollbar {
     position: absolute;
     right: 0;
-    width: 14px;
-    background: var(--theme-divider-color);
+    width: 10px;
+    background: var(--theme-bg-color);
     border-left: 1px solid var(--theme-divider-color);
     box-sizing: border-box;
     z-index: 10;
   }
   .vscroll-thumb {
     position: absolute;
-    left: 2px;
-    right: 2px;
+    left: 1px;
+    right: 1px;
     background: var(--theme-content-color, #4b5563);
-    border-radius: 6px;
+    opacity: 0.45;
+    border-radius: 4px;
     cursor: grab;
     pointer-events: auto;
-    transition: background 100ms ease;
+    transition: opacity 100ms ease, background 100ms ease;
   }
-  .vscroll-thumb:hover { background: var(--theme-state-info-color, #6366f1); }
-  .vscroll-thumb:active { cursor: grabbing; background: var(--theme-state-info-color, #6366f1); }
+  .vscroll-thumb:hover { opacity: 0.85; background: var(--theme-state-info-color, #6366f1); }
+  .vscroll-thumb:active { cursor: grabbing; opacity: 1; background: var(--theme-state-info-color, #6366f1); }
   .cell {
     box-sizing: border-box;
   }
@@ -851,18 +905,51 @@
     left: 0;
     z-index: 4;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 8px;
+    flex-direction: column;
     background: var(--theme-comp-header-color);
     border-bottom: 1px solid var(--theme-divider-color);
     border-right: 1px solid var(--theme-divider-color);
+  }
+  .corner-cols {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px 2px;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     color: var(--theme-darker-color);
     letter-spacing: 0.05em;
   }
+  .corner-range {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 2px 8px 4px;
+    font-size: 12px;
+    color: var(--theme-content-color);
+  }
+  .range-nav {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--theme-divider-color);
+    background: transparent;
+    color: var(--theme-darker-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .range-nav:hover { background: var(--theme-button-hovered); }
+  .range-text {
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+  }
+  .range-text:hover { color: var(--theme-state-info-color, #6366f1); text-decoration: underline; }
   .corner .col-toggle { flex: 0 0 18px; }
   .corner .col-status { flex: 0 0 22px; }
   .corner .col-id { flex: 0 0 80px; }

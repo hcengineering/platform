@@ -150,21 +150,23 @@
     {/each}
   </g>
 
+  <!-- Milestone target-date markers as short tick + diamond at the top
+       of the canvas only (Stitch redesign: less visual noise than a
+       full-height dashed line). -->
   <g class="milestones">
     {#each milestones as ms (ms._id)}
       {@const x = timeScale.toX(ms.targetDate)}
       <line
-        x1={x}
-        x2={x}
-        y1={0}
-        y2={totalHeight}
+        x1={x} x2={x} y1={0} y2={14}
         stroke="var(--theme-state-info-color, #6366f1)"
-        stroke-width={1}
-        stroke-dasharray="3 3"
-        opacity={0.4}
+        stroke-width={1.5}
+      />
+      <polygon
+        points="{x - 5},2 {x + 5},2 {x},10"
+        fill="var(--theme-state-info-color, #6366f1)"
       >
         <title>{ms.label}</title>
-      </line>
+      </polygon>
     {/each}
   </g>
 

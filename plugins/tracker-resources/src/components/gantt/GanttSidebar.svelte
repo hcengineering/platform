@@ -68,7 +68,7 @@
   }
 </script>
 
-<div class="sidebar-rows" style="width: {width}px;">
+<div class="sidebar-rows" class:has-hover={hoveredRowId !== null} style="width: {width}px;">
   {#each rows as row (row.id)}
     {@const indent = row.depth * 16}
     {@const tgt = rowJumpTarget(row)}
@@ -252,6 +252,11 @@
   }
   .sidebar-row.hovered {
     background: var(--theme-button-hovered);
+  }
+  /* When ANY row is hovered, dim non-hovered rows for a Stitch-style
+     spotlight effect — implemented by the parent setting a data attr. */
+  :global(.sidebar-rows.has-hover) .sidebar-row:not(.hovered) {
+    opacity: 0.55;
   }
   .sidebar-row.milestone.hovered {
     background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);
