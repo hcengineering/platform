@@ -45,7 +45,7 @@ import {
   TimeReportDayType,
   trackerId
 } from '@hcengineering/tracker'
-import view, { type Viewlet, type ViewOptionModel } from '@hcengineering/view'
+import view, { type ViewOptionModel } from '@hcengineering/view'
 
 import { classicIssueTaskStatuses } from '.'
 import tracker from './plugin'
