@@ -319,10 +319,13 @@
     const id = String(e.detail.issue._id)
     // Click-to-select gate: if this bar isn't already selected, the first
     // mousedown just selects it (no drag starts). User has to mousedown a
-    // second time on the now-selected bar to actually drag/resize. 
-    // safe and matches Plane's UX (user feedback 2026-05-11).
+    // second time on the now-selected bar to actually drag/resize.
+    // Sync focusedIssueId so the keyboard-focus visual never disagrees with
+    // the click-selection visual — otherwise two bars look "marked"
+    // simultaneously (user feedback 2026-05-11).
     if (selectedIssueId !== id) {
       selectedIssueId = id
+      focusedIssueId = id
       return
     }
     activeDrag.update((s) => reduce(s, {
@@ -342,6 +345,7 @@
     const target = e.target as HTMLElement | null
     if (target?.closest('.bar-wrap') !== null) return
     selectedIssueId = null
+    focusedIssueId = null
   }
 
   /**
