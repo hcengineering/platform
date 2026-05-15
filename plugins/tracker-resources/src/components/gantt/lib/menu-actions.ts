@@ -52,7 +52,7 @@ export function openSetStartDate (issue: Issue, anchor: PopupAlignment | undefin
         patch.dueDate = newStart + DAY_MS
       }
       // Surface failures (permission denied, validation, conflict) the same
-      // way commitDrag does (Codex review-4 2026-05-11) so the user gets
+      // way commitDrag does (review note 2026-05-11) so the user gets
       // visible feedback instead of a silent fire-and-forget.
       client.updateDoc(issue._class, issue.space, issue._id, patch).catch(async (err) => {
         const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
