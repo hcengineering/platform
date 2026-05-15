@@ -34,6 +34,12 @@
   export let dragTarget: DragTarget | undefined = undefined
   export let focused: boolean = false
   export let selected: boolean = false
+  // Tier-2 Item 6 — Bulk-Select + Bulk-Drag.
+  // `multiSelected` is true for every bar that belongs to the active
+  // multi-selection (Spec §"Visual"). Paints the same 2-px solid outline
+  // as `selected`. The single-selection `selected` flag stays separate
+  // because it governs cursor + resize-handle exposure.
+  export let multiSelected: boolean = false
   // PR5 critical-path overlay
   export let isCritical: boolean = false
   export let isViolated: boolean = false
@@ -47,7 +53,17 @@
 
   const dispatch = createEventDispatcher<{
     barMouseDown: { target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }
-    barClick: { target: DragTarget }
+    barClick: {
+      target: DragTarget
+      /**
+       * Tier-2 Item 6 — modifier keys are surfaced on the event payload
+       * so GanttView can route Cmd/Shift-click into the bulk-selection
+       * helpers without leaking a DOM event through the dispatcher.
+       */
+      metaKey: boolean
+      ctrlKey: boolean
+      shiftKey: boolean
+    }
     contextMenu: { issue: Issue, event: MouseEvent }
     connectorDown: { source: Issue, cursorClientX: number, cursorClientY: number }
     barHover: { issue: Issue | null }
@@ -69,7 +85,13 @@
     return (evt: MouseEvent): void => {
       if (!editable || dragTarget === undefined) return
       if (evt.button !== 0) return // only left-click starts a drag
-      if (edge === 'body' && !selected) return
+      // Body-drag requires the bar to be "armed" — either single-selected
+      // (legacy single-bar drag) or part of an active multi-selection
+      // (Tier-2 Item 6 bulk-drag). Cmd/Shift-click only toggles selection
+      // and must not arm a drag, so suppress it here too — the click
+      // handler downstream owns the selection mutation.
+      if (edge === 'body' && !selected && !multiSelected) return
+      if (edge === 'body' && (evt.metaKey || evt.ctrlKey || evt.shiftKey)) return
       dispatch('barMouseDown', { target: dragTarget, edge, cursorX: evt.clientX })
       evt.preventDefault()
       evt.stopPropagation()
@@ -83,7 +105,12 @@
   function onBarClick (evt: MouseEvent): void {
     if (!editable || dragTarget === undefined) return
     if (evt.button !== 0) return
-    dispatch('barClick', { target: dragTarget })
+    dispatch('barClick', {
+      target: dragTarget,
+      metaKey: evt.metaKey,
+      ctrlKey: evt.ctrlKey,
+      shiftKey: evt.shiftKey
+    })
     evt.preventDefault()
     evt.stopPropagation()
   }
@@ -127,7 +154,22 @@
     issueRef !== undefined &&
     (dragState.kind === 'connector-drawing' || dragState.kind === 'connector-target-hover') &&
     String(dragState.source._id) === String(issueRef)
+  /**
+   * Tier-2 Item 6 — co-drag membership. True iff THIS bar is a follower
+   * member of an active bulk-drag (the leading bar uses `isThisBarActive`
+   * instead). The reducer keeps `coDrag.members` immutable for the
+   * duration of the drag, so the lookup is safe to do every frame.
+   */
+  $: coDragMember = (() => {
+    if (dragState.kind !== 'dragging-body' || dragState.coDrag === undefined) return undefined
+    if (issueRef === undefined) return undefined
+    if (isThisBarActive) return undefined
+    return dragState.coDrag.members.find((m) => String(m.issueId) === String(issueRef))
+  })()
   $: previewStart = (() => {
+    if (coDragMember !== undefined && dragState.kind === 'dragging-body' && dragState.coDrag !== undefined) {
+      return coDragMember.originStart + dragState.coDrag.anchorDeltaMs
+    }
     if (!isThisBarActive) return effectiveStart
     if (dragState.kind === 'dragging-body' || dragState.kind === 'dragging-unscheduled') return dragState.previewStart
     if (dragState.kind === 'resizing-left') return dragState.previewStart
@@ -135,6 +177,9 @@
     return effectiveStart
   })()
   $: previewDue = (() => {
+    if (coDragMember !== undefined && dragState.kind === 'dragging-body' && dragState.coDrag !== undefined) {
+      return coDragMember.originEnd + dragState.coDrag.anchorDeltaMs
+    }
     if (!isThisBarActive) return effectiveDue
     if (dragState.kind === 'dragging-body' || dragState.kind === 'dragging-unscheduled') return dragState.previewEnd
     if (dragState.kind === 'resizing-left') return dragState.originEnd
@@ -201,8 +246,8 @@
         height={barH}
         fill="transparent"
         class="summary-hit"
-        class:selected
-        class:active-drag={isThisBarActive}
+        class:selected={selected || multiSelected}
+        class:active-drag={isThisBarActive || coDragMember !== undefined}
         role="button"
         tabindex="-1"
         aria-label={issue.title}
@@ -263,9 +308,9 @@
       stroke-dasharray={isViolated ? '4 2' : 'none'}
       class="bar"
       class:editable
-      class:active-drag={isThisBarActive}
+      class:active-drag={isThisBarActive || coDragMember !== undefined}
       class:focused
-      class:selected
+      class:selected={selected || multiSelected}
       class:critical={isCritical}
       class:violated={isViolated}
       role="button"
