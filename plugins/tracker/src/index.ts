@@ -275,6 +275,23 @@ export interface Issue extends Task {
   }
 
   todos?: CollectionSize<ToDo>
+
+  /**
+   * Tier-2 Item 5 — Auto-Scheduling-Toggle.
+   *
+   * Controls whether the cascade scheduler in `gantt/lib/scheduler.ts`
+   * may shift this issue when a predecessor or successor is moved by
+   * the user. `'auto'` (or absent === default) means the issue is part
+   * of the cascade; `'manual'` means the user has pinned the dates and
+   * the cascade must never silently overwrite them. The user pin is
+   * reset only by an explicit toggle back to `'auto'`.
+   *
+   * Field is optional so existing issues (which were created before the
+   * toggle existed) keep their previous cascade behaviour 1:1 without
+   * any migration. The scheduler check is `=== 'manual'`, so `undefined`
+   * cleanly defaults to auto.
+   */
+  schedulingMode?: 'auto' | 'manual'
 }
 
 /**
@@ -642,7 +659,14 @@ const pluginState = plugin(trackerId, {
     NewProject: '' as IntlString,
     UnsetParentIssue: '' as IntlString,
     ForbidCreateProjectPermission: '' as IntlString,
-    ForbidCreateProjectPermissionDescription: '' as IntlString
+    ForbidCreateProjectPermissionDescription: '' as IntlString,
+    SchedulingMode: '' as IntlString,
+    SchedulingModeAuto: '' as IntlString,
+    SchedulingModeManual: '' as IntlString,
+    SchedulingModeHint: '' as IntlString,
+    SchedulingModeTooltipAuto: '' as IntlString,
+    SchedulingModeTooltipManual: '' as IntlString,
+    GanttBarManualPinTooltip: '' as IntlString
   },
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,
