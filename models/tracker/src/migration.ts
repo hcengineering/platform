@@ -47,6 +47,7 @@ import tracker, {
 } from '@hcengineering/tracker'
 
 import { classicIssueTaskStatuses } from '.'
+import { DOMAIN_TRACKER } from './types'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -168,6 +169,22 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
     const identifier = project.identifier + '-' + issue.number
     await client.update(DOMAIN_TASK, { _id: issue._id }, { identifier })
   }
+}
+
+export async function migrateAddStartDate (client: MigrationClient): Promise<void> {
+  // Issues live in DOMAIN_TASK (verified against migrateIdentifiers and
+  // passIdentifierToParentInfo at lines 144 and 159)
+  await client.update(
+    DOMAIN_TASK,
+    { _class: tracker.class.Issue, startDate: { $exists: false } },
+    { startDate: null }
+  )
+  // Milestones live in DOMAIN_TRACKER (verified against TMilestone @Model decorator)
+  await client.update(
+    DOMAIN_TRACKER,
+    { _class: tracker.class.Milestone, startDate: { $exists: false } },
+    { startDate: null }
+  )
 }
 
 async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLogger): Promise<void> {
@@ -398,6 +415,11 @@ export const trackerOperation: MigrateOperation = {
         state: 'migrateDefaultTypeMixins',
         mode: 'upgrade',
         func: migrateDefaultTypeMixins
+      },
+      {
+        state: 'gantt-add-startdate',
+        mode: 'upgrade',
+        func: migrateAddStartDate
       }
     ])
   },
