@@ -3,16 +3,27 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { Issue, IssueRelation } from '@hcengineering/tracker'
+import type { Issue, IssueRelation, WorkingDaysConfig } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 import type { PrimaryEdit, CascadeShift, SimulateResult } from './types'
+import {
+  fsAnchor,
+  ssAnchor,
+  ffAnchor,
+  sfAnchor,
+  fsReverseAnchor,
+  ssReverseAnchor,
+  ffReverseAnchor,
+  sfReverseAnchor
+} from './working-days'
 
 const DAY_MS = 86_400_000
 
 /**
- * Schedule arithmetic — Phase-1 uses calendar days. Phase-2 will replace
- * the body with a working-calendar lookup; the signature is the
- * integration point. All cascade-math callers route through this helper.
+ * Schedule arithmetic helper — kept for callers that need raw calendar-day
+ * math (e.g. summary aggregates). The cascade scheduler itself now routes
+ * through the per-kind anchor helpers in `working-days.ts`, which respect
+ * the optional WorkingDaysConfig.
  */
 export function addScheduleDays (t: number, days: number): number {
   return t + days * DAY_MS
@@ -71,11 +82,15 @@ export function descendantsWithDates (issue: Issue, allIssues: Issue[]): Issue[]
  *
  * Spec §4 / brainstorm decision A (block + toast on cycle attempt).
  */
-export function wouldCreateCycle (source: Ref<Issue>, target: Ref<Issue>, relations: IssueRelation[]): boolean {
+export function wouldCreateCycle (
+  source: Ref<Issue>,
+  target: Ref<Issue>,
+  relations: IssueRelation[]
+): boolean {
   if (source === target) return true
 
   // Adjacency: predecessor → successors.
-  const out = new Map<Ref<Issue>, Array<Ref<Issue>>>()
+  const out = new Map<Ref<Issue>, Ref<Issue>[]>()
   for (const r of relations) {
     const bucket = out.get(r.attachedTo)
     if (bucket === undefined) {
@@ -87,7 +102,7 @@ export function wouldCreateCycle (source: Ref<Issue>, target: Ref<Issue>, relati
 
   // BFS forward from target; if we hit source, source→target would loop.
   const visited = new Set<Ref<Issue>>([target])
-  const queue: Array<Ref<Issue>> = [target]
+  const queue: Ref<Issue>[] = [target]
   while (queue.length > 0) {
     const cur = queue.shift() as Ref<Issue>
     const succs = out.get(cur)
@@ -113,8 +128,8 @@ export function wouldCreateCycle (source: Ref<Issue>, target: Ref<Issue>, relati
  * but if cascade is ever applied to enterprise graphs > 10k linear
  * chains, refactor to an explicit work-stack.
  */
-export function detectCycle (relations: IssueRelation[]): Array<Ref<Issue>> | null {
-  const out = new Map<Ref<Issue>, Array<Ref<Issue>>>()
+export function detectCycle (relations: IssueRelation[]): Ref<Issue>[] | null {
+  const out = new Map<Ref<Issue>, Ref<Issue>[]>()
   const nodes = new Set<Ref<Issue>>()
   for (const r of relations) {
     nodes.add(r.attachedTo)
@@ -133,8 +148,8 @@ export function detectCycle (relations: IssueRelation[]): Array<Ref<Issue>> | nu
   const color = new Map<Ref<Issue>, number>()
   for (const n of nodes) color.set(n, WHITE)
 
-  const stack: Array<Ref<Issue>> = []
-  let cycle: Array<Ref<Issue>> | null = null
+  const stack: Ref<Issue>[] = []
+  let cycle: Ref<Issue>[] | null = null
 
   function visit (n: Ref<Issue>): boolean {
     color.set(n, GREY)
@@ -174,8 +189,9 @@ export function simulateCascade (
   allIssues: Issue[],
   relations: IssueRelation[],
   canEdit: (ref: Ref<Issue>) => boolean,
-  options?: { maxIterations?: number }
+  options?: { maxIterations?: number, workingDays?: WorkingDaysConfig }
 ): SimulateResult {
+  const cfg = options?.workingDays
   // Step 0: pre-flight cycle check on the relation graph itself.
   const cycle = detectCycle(relations)
   if (cycle !== null) return { kind: 'cycle', cycleNodes: cycle }
@@ -208,7 +224,7 @@ export function simulateCascade (
   }
 
   const shifts = new Map<Ref<Issue>, CascadeShift>()
-  const queue: Array<Ref<Issue>> = primary.map((p) => p.issue._id)
+  const queue: Ref<Issue>[] = primary.map((p) => p.issue._id)
   const skippedRefs = new Set<Ref<Issue>>()
   const maxIter = options?.maxIterations ?? DEFAULT_MAX_ITERATIONS
 
@@ -247,16 +263,16 @@ export function simulateCascade (
       let requiredAnchor: number
       let targetAnchorIsStart: boolean
       if (r.kind === 'finish-to-start') {
-        requiredAnchor = addScheduleDays(curDates.due, lag)
+        requiredAnchor = fsAnchor(curDates.due, lag, cfg)
         targetAnchorIsStart = true
       } else if (r.kind === 'start-to-start') {
-        requiredAnchor = addScheduleDays(curDates.start, lag)
+        requiredAnchor = ssAnchor(curDates.start, lag, cfg)
         targetAnchorIsStart = true
       } else if (r.kind === 'finish-to-finish') {
-        requiredAnchor = addScheduleDays(curDates.due, lag)
+        requiredAnchor = ffAnchor(curDates.due, lag, cfg)
         targetAnchorIsStart = false
-      } /* start-to-finish */ else {
-        requiredAnchor = addScheduleDays(curDates.start, lag)
+      } else /* start-to-finish */ {
+        requiredAnchor = sfAnchor(curDates.start, lag, cfg)
         targetAnchorIsStart = false
       }
 
@@ -276,7 +292,9 @@ export function simulateCascade (
         // side, so gap preservation isn't a clean concept there — pure
         // snap is the spec semantics.
         const snap = requiredAnchor
-        const newAnchor = r.kind === 'finish-to-start' ? Math.max(snap, targetAnchor + curStartDelta) : snap
+        const newAnchor = r.kind === 'finish-to-start'
+          ? Math.max(snap, targetAnchor + curStartDelta)
+          : snap
         const delta = newAnchor - targetAnchor
         const newStart = targetAnchorIsStart ? newAnchor : targetDates.start + delta
         const newDue = targetAnchorIsStart ? targetDates.due + delta : newAnchor
@@ -310,16 +328,16 @@ export function simulateCascade (
       let requiredAnchor: number
       let predAnchorIsDue: boolean
       if (r.kind === 'finish-to-start') {
-        requiredAnchor = addScheduleDays(curDates.start, -lag)
+        requiredAnchor = fsReverseAnchor(curDates.start, lag, cfg)
         predAnchorIsDue = true
       } else if (r.kind === 'start-to-start') {
-        requiredAnchor = addScheduleDays(curDates.start, -lag)
+        requiredAnchor = ssReverseAnchor(curDates.start, lag, cfg)
         predAnchorIsDue = false
       } else if (r.kind === 'finish-to-finish') {
-        requiredAnchor = addScheduleDays(curDates.due, -lag)
+        requiredAnchor = ffReverseAnchor(curDates.due, lag, cfg)
         predAnchorIsDue = true
-      } /* start-to-finish */ else {
-        requiredAnchor = addScheduleDays(curDates.due, -lag)
+      } else /* start-to-finish */ {
+        requiredAnchor = sfReverseAnchor(curDates.due, lag, cfg)
         predAnchorIsDue = false
       }
       const predAnchor = predAnchorIsDue ? predDates.due : predDates.start
