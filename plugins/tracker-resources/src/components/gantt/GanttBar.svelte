@@ -15,22 +15,25 @@
   // amber, completed green, cancelled muted. null = no status info.
   export let statusCategory: string | null = null
 
+  // Status-driven fill + matching text color. Active gets the most
+  // emphatic treatment (saturated fill, white text) so the user can
+  // spot in-flight work at a glance — Stitch-redesign feedback.
   $: barColors = statusFill(statusCategory)
-  function statusFill (cat: string | null): { fill: string, border: string } {
+  function statusFill (cat: string | null): { fill: string, border: string, text: string } {
     switch (cat) {
       case 'task:statusCategory:UnStarted':
       case 'tracker:statusCategory:Backlog':
-        return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)' }
+        return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)', text: 'var(--theme-content-color)' }
       case 'task:statusCategory:ToDo':
-        return { fill: '#3b82f6', border: '#2563eb' }
+        return { fill: '#dbeafe', border: '#3b82f6', text: '#1e3a8a' }
       case 'task:statusCategory:Active':
-        return { fill: '#f59e0b', border: '#d97706' }
+        return { fill: '#f59e0b', border: '#d97706', text: '#ffffff' }
       case 'task:statusCategory:Won':
-        return { fill: '#10b981', border: '#059669' }
+        return { fill: '#10b981', border: '#059669', text: '#ffffff' }
       case 'task:statusCategory:Lost':
-        return { fill: '#9ca3af', border: '#6b7280' }
+        return { fill: '#d1d5db', border: '#9ca3af', text: '#374151' }
       default:
-        return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)' }
+        return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)', text: 'var(--theme-content-color)' }
     }
   }
 
@@ -106,7 +109,7 @@
         x={x + 6}
         y={barY + barH / 2 + 4}
         class="bar-label"
-        fill="var(--theme-content-color)"
+        fill={barColors.text}
       >{barLabel}</text>
     {/if}
     <title>{tooltipText}</title>
