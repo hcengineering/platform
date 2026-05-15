@@ -19,6 +19,27 @@ export interface BuildLayoutOptions {
   rowHeight: number
   /** Set of row ids that are currently collapsed (children hidden). */
   collapsedIds?: Set<string>
+  /**
+   * Tier-4 Item 12 — Tree-View — set of issue ids that match the active
+   * filter. When set, only matching issues and their ancestors are emitted
+   * (when {@link includeBreadcrumbs} is true). When undefined, no filtering
+   * is applied at the layout level.
+   */
+  matchedIds?: Set<string>
+  /**
+   * Tier-4 Item 12 — when true together with {@link matchedIds}, non-matching
+   * ancestors of matching issues are emitted as breadcrumb rows
+   * (`isBreadcrumb: true`) for filter-context. When false / undefined, only
+   * matching issues are emitted (hard filter).
+   */
+  includeBreadcrumbs?: boolean
+  /**
+   * Tier-4 Item 12 — optional comparator applied to siblings within the same
+   * hierarchy level (roots, milestone-group members, children of a given
+   * parent). The tree structure is preserved; only sibling order changes.
+   * When undefined, the input order is preserved (legacy behaviour).
+   */
+  withinLevelCompare?: (a: Issue, b: Issue) => number
 }
 
 /**
@@ -43,10 +64,19 @@ export function buildLayout (
     typeof rowHeightOrOpts === 'number' ? { rowHeight: rowHeightOrOpts } : rowHeightOrOpts
   const rowHeight = opts.rowHeight
   const collapsedIds = opts.collapsedIds ?? new Set<string>()
+  const matchedIds = opts.matchedIds
+  const includeBreadcrumbs = opts.includeBreadcrumbs === true && matchedIds !== undefined
+  const withinLevelCompare = opts.withinLevelCompare
+  const hasFilter = matchedIds !== undefined
 
   // 1) Build issue parent/child map, dropping orphan parent refs.
   const visibleIssueIds = new Set<string>(issues.map(i => i._id as unknown as string))
+  const issueById = new Map<string, Issue>()
+  for (const i of issues) {
+    issueById.set(i._id as unknown as string, i)
+  }
   const issueChildrenOf = new Map<string, Issue[]>()
+  const parentOf = new Map<string, string>()
   const issueRoots: Issue[] = []
   for (const i of issues) {
     const parentId = i.parents?.[0]?.parentId as unknown as string | undefined
@@ -54,8 +84,40 @@ export function buildLayout (
       const list = issueChildrenOf.get(parentId) ?? []
       list.push(i)
       issueChildrenOf.set(parentId, list)
+      parentOf.set(i._id as unknown as string, parentId)
     } else {
       issueRoots.push(i)
+    }
+  }
+
+  // Tier-4 Item 12 — compute the breadcrumb-set: every ancestor of every
+  // matching issue. Used to keep filter-context visible (the "why is this
+  // issue under that parent?" affordance).
+  const breadcrumbIds = new Set<string>()
+  if (includeBreadcrumbs && matchedIds !== undefined) {
+    for (const matchId of matchedIds) {
+      let cur = parentOf.get(matchId)
+      while (cur !== undefined && !breadcrumbIds.has(cur)) {
+        breadcrumbIds.add(cur)
+        cur = parentOf.get(cur)
+      }
+    }
+  }
+
+  /** True iff `issueId` should appear under the active filter (match OR breadcrumb). */
+  function isVisibleUnderFilter (issueId: string): boolean {
+    if (!hasFilter) return true
+    if (matchedIds?.has(issueId) === true) return true
+    return breadcrumbIds.has(issueId)
+  }
+
+  // Apply within-level-sort to root collection + milestone-group members + each
+  // children-bucket. Sort happens before any traversal so y-positions reflect
+  // the final order.
+  if (withinLevelCompare !== undefined) {
+    issueRoots.sort(withinLevelCompare)
+    for (const [k, kids] of issueChildrenOf) {
+      issueChildrenOf.set(k, [...kids].sort(withinLevelCompare))
     }
   }
 
@@ -82,10 +144,16 @@ export function buildLayout (
 
   function emitIssue (issue: Issue, depth: number): void {
     const issueId = issue._id as unknown as string
+    if (!isVisibleUnderFilter(issueId)) return
     const kids = issueChildrenOf.get(issueId) ?? []
     const id = `issue:${issueId}`
     const collapsible = kids.length > 0
-    const collapsed = collapsedIds.has(id)
+    const userCollapsed = collapsedIds.has(id)
+    // Breadcrumb ancestors are force-expanded so the matching descendant
+    // remains visible regardless of the user's persisted collapse state.
+    const hasMatchingDescendant = breadcrumbIds.has(issueId)
+    const collapsed = userCollapsed && !hasMatchingDescendant
+    const isBreadcrumb = hasFilter && matchedIds?.has(issueId) !== true && breadcrumbIds.has(issueId)
     rows.push({
       kind: 'issue',
       id,
@@ -98,7 +166,8 @@ export function buildLayout (
       component: null,
       isSummary: kids.length > 0,
       collapsible,
-      collapsed
+      collapsed,
+      isBreadcrumb
     })
     y += rowHeight
     if (!collapsed) {
@@ -110,6 +179,12 @@ export function buildLayout (
   for (const [msId, msIssues] of issuesByMilestone) {
     const ms = milestoneById.get(msId)
     if (ms === undefined) continue
+    // Skip milestone-group entirely when none of its issues are visible under
+    // the current filter (no matches AND no breadcrumb-ancestors inside).
+    if (hasFilter) {
+      const anyVisible = msIssues.some(i => isVisibleUnderFilter(i._id as unknown as string))
+      if (!anyVisible) continue
+    }
     const id = `milestone:${msId}`
     const collapsed = collapsedIds.has(id)
     rows.push({

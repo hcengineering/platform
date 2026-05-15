@@ -157,6 +157,121 @@ describe('buildLayout — collapse', () => {
   })
 })
 
+describe('buildLayout — breadcrumb mode (Tier-4 Item 12)', () => {
+  it('renders parent as breadcrumb when only child matches filter', () => {
+    const parent = fakeIssue('P', undefined, true)
+    const child = fakeIssue('C', 'P')
+    const rows = buildLayout([parent, child], [], 'none', {
+      rowHeight: ROW_H,
+      matchedIds: new Set(['C']),
+      includeBreadcrumbs: true
+    })
+    expect(rows.map(r => r.id)).toEqual(['issue:P', 'issue:C'])
+    expect(rows.find(r => r.id === 'issue:P')?.isBreadcrumb).toBe(true)
+    expect(rows.find(r => r.id === 'issue:C')?.isBreadcrumb).toBe(false)
+  })
+
+  it('hides non-matching root issues that are not breadcrumbs', () => {
+    const a = fakeIssue('A')
+    const b = fakeIssue('B')
+    const rows = buildLayout([a, b], [], 'none', {
+      rowHeight: ROW_H,
+      matchedIds: new Set(['A']),
+      includeBreadcrumbs: true
+    })
+    expect(rows.map(r => r.id)).toEqual(['issue:A'])
+    expect(rows[0].isBreadcrumb).toBe(false)
+  })
+
+  it('forces parents visible even when collapsed if their child matches', () => {
+    const p = fakeIssue('P', undefined, true)
+    const c = fakeIssue('C', 'P')
+    const rows = buildLayout([p, c], [], 'none', {
+      rowHeight: ROW_H,
+      collapsedIds: new Set(['issue:P']),
+      matchedIds: new Set(['C']),
+      includeBreadcrumbs: true
+    })
+    expect(rows.map(r => r.id)).toEqual(['issue:P', 'issue:C'])
+  })
+
+  it('does not flag breadcrumbs when includeBreadcrumbs is undefined', () => {
+    const p = fakeIssue('P', undefined, true)
+    const c = fakeIssue('C', 'P')
+    const rows = buildLayout([p, c], [], 'none', { rowHeight: ROW_H })
+    rows.forEach(r => expect(r.isBreadcrumb ?? false).toBe(false))
+  })
+})
+
+describe('buildLayout — within-level sort (Tier-4 Item 12)', () => {
+  it('sorts siblings without flattening hierarchy', () => {
+    const p1 = fakeIssue('P1', undefined, true)
+    const p2 = fakeIssue('P2')
+    const c1 = fakeIssue('C1', 'P1')
+    const c2 = fakeIssue('C2', 'P1')
+    // Override titles for stable comparison
+    ;(p1 as any).title = 'beta'
+    ;(p2 as any).title = 'alpha'
+    ;(c1 as any).title = 'gamma'
+    ;(c2 as any).title = 'delta'
+    const cmp = (a: Issue, b: Issue): number => (a.title ?? '').localeCompare(b.title ?? '')
+    const rows = buildLayout([p1, p2, c1, c2], [], 'none', {
+      rowHeight: ROW_H,
+      withinLevelCompare: cmp
+    })
+    // P2 (alpha) before P1 (beta); under P1: C2 (delta) before C1 (gamma)
+    expect(rows.map(r => r.issue?._id)).toEqual(['P2', 'P1', 'C2', 'C1'])
+  })
+
+  it('is a no-op when withinLevelCompare is undefined', () => {
+    const p1 = fakeIssue('P1')
+    const p2 = fakeIssue('P2')
+    const rows = buildLayout([p1, p2], [], 'none', { rowHeight: ROW_H })
+    expect(rows.map(r => r.issue?._id)).toEqual(['P1', 'P2'])
+  })
+
+  it('sorts within milestone groups too', () => {
+    const ms = fakeMilestone('m1')
+    const a = fakeIssue('a', undefined, false, 'm1')
+    const b = fakeIssue('b', undefined, false, 'm1')
+    ;(a as any).title = 'zeta'
+    ;(b as any).title = 'eta'
+    const cmp = (x: Issue, y: Issue): number => (x.title ?? '').localeCompare(y.title ?? '')
+    const rows = buildLayout([a, b], [ms], 'none', {
+      rowHeight: ROW_H,
+      withinLevelCompare: cmp
+    })
+    expect(rows.map(r => r.id)).toEqual(['milestone:m1', 'issue:b', 'issue:a'])
+  })
+})
+
+describe('buildLayout — Tier-4 combined breadcrumb + sort + collapse', () => {
+  it('preserves breadcrumb + within-level sort under collapsed sibling', () => {
+    const p1 = fakeIssue('P1', undefined, true)
+    const p2 = fakeIssue('P2', undefined, true)
+    const c1 = fakeIssue('C1', 'P1')
+    const c2 = fakeIssue('C2', 'P1')
+    ;(p1 as any).title = 'beta'
+    ;(p2 as any).title = 'alpha'
+    ;(c1 as any).title = 'gamma'
+    ;(c2 as any).title = 'delta'
+    const cmp = (a: Issue, b: Issue): number => (a.title ?? '').localeCompare(b.title ?? '')
+    const rows = buildLayout([p1, p2, c1, c2], [], 'none', {
+      rowHeight: ROW_H,
+      collapsedIds: new Set(['issue:P2']),
+      matchedIds: new Set(['C2']),
+      includeBreadcrumbs: true,
+      withinLevelCompare: cmp
+    })
+    // P2 has no matched descendants → filtered out. P1 stays as breadcrumb.
+    // Under P1: C2 (delta) sorts before C1 (gamma); C1 is non-match and
+    // non-breadcrumb so it is dropped entirely.
+    expect(rows.map(r => r.issue?._id)).toEqual(['P1', 'C2'])
+    expect(rows[0].isBreadcrumb).toBe(true)
+    expect(rows[1].isBreadcrumb).toBe(false)
+  })
+})
+
 describe('filterVisibleRows', () => {
   function row (y: number): LayoutRow {
     return {

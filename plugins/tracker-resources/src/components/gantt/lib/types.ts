@@ -58,6 +58,14 @@ export interface LayoutRow {
   groupKey?: string
   groupLabel?: string
   groupCount?: number
+  /**
+   * Tier-4 Item 12 — Tree-View — true when the row is rendered solely as a
+   * filter-breadcrumb (i.e. the issue itself does not match the active filter
+   * but at least one descendant does). The sidebar dims breadcrumb rows and
+   * shows a tooltip explaining their presence. Undefined / false on rows that
+   * match the filter normally, or when no filter is active.
+   */
+  isBreadcrumb?: boolean
 }
 
 /** Cached aggregate dates of a parent issue's children, for summary-bar rendering. */
