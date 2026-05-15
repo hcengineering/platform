@@ -12,7 +12,6 @@
  *
  * The function below is a duplicate of the one in
  * `LinkSubIssueActionPopup.svelte` — kept in sync deliberately.
- * review note (2026-05-11): flagged the absence of a cycle test.
  */
 
 import type { Issue } from '@hcengineering/tracker'

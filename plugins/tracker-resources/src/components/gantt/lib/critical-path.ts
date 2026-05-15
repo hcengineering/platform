@@ -204,7 +204,7 @@ export function computeCriticalPath (
   }
 
   // Project finish = max EF over ALL sinks (standard CPM single-project
-  // semantics; Codex review). An isolated issue with EF earlier than the
+  // semantics). An isolated issue with EF earlier than the
   // global maximum gets positive slack and is NOT critical — that matches
   // the user's mental model of a single Gantt = a single project.
   let projectFinish = -Infinity

@@ -47,7 +47,7 @@ export function signedLag (lag: number): string {
  * Render the predecessor notation for an issue, e.g. "12FS+2d, 15SS-1d".
  * Predecessors of `issue` = relations whose `.target === issue._id`. The
  * displayed identifier is the source (`relation.attachedTo`), not the
- * target — Codex review-7 caught the original spec inverting this.
+ * target — predecessor identifier is the upstream side of the edge.
  */
 export function formatPredecessors (
   issue: Issue,

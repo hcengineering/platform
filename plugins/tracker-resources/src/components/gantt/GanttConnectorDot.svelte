@@ -12,7 +12,7 @@
    * Permission gating is handled by the caller (GanttCanvas only renders
    * the dot for editable issue rows).
    *
-   * Event flow (single path — Codex round-14 cleanup):
+   * Event flow (single path):
    *   <circle class="gantt-connector-hit" on:mousedown> → onDown()
    *     → dispatch('connectorDown', …) (Svelte CustomEvent)
    *     → bubbles up to GanttCanvas on:connectorDown forwarder

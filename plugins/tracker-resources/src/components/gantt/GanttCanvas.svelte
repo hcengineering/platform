@@ -34,12 +34,12 @@
     dispatch('openIssue', { issue: { _id: i._id as string, _class: i._class as string } })
   }
 
-  // Codex round-15: the previous canvas-level pointerdown/mousedown
-  // delegation (scanning .closest('.gantt-connector') and dispatching
-  // 'connectorDown' from this layer) is removed. The connector dot
-  // dispatches its own 'connectorDown' event via Svelte from the
-  // overlay <GanttConnectorDot> below, which bubbles directly into
-  // GanttView's handleConnectorDown. One source of truth.
+  // Connector-drag dispatch lives entirely on <GanttConnectorDot>. This
+  // canvas layer used to also delegate via a capture-phase pointerdown
+  // listener (.closest('.gantt-connector')) which double-fired with the
+  // dot's own Svelte event. The dot's event bubbles up through the
+  // overlay <GanttConnectorDot> below straight into GanttView — one
+  // source of truth, no delegation here.
 
   export let rows: LayoutRow[]
   export let milestones: MilestoneMarker[]
