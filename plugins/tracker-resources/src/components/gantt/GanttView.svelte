@@ -751,7 +751,7 @@
     // Sidebar-cell + drag-grip + resize-handle excluded so the sidebar's
     // unscheduled-drag-grip doesn't compete with canvas pan for the same
     // pointerdown. Codex review 2026-05-11.
-    if (target.closest('.bar-wrap, .sidebar-cell, .drag-grip, .resize-handle, button, a, .toggle-btn, .jump-btn, .settings-popover, .resize-cell')) return
+    if (target.closest('.bar-wrap, .sidebar-cell, .drag-grip, .resize-handle, button, a, .toggle-btn, .jump-btn, .resize-cell')) return
     panning = true
     panStartX = e.clientX
     panStartY = e.clientY
@@ -1154,37 +1154,9 @@
     background: var(--theme-button-pressed);
     font-weight: 600;
   }
-  .settings-btn {
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    border: 1px solid var(--theme-divider-color);
-    background: var(--theme-button-default);
-    color: var(--theme-content-color);
-    font-size: 13px;
-    cursor: pointer;
-    border-radius: 4px;
-  }
-  .settings-btn:hover { background: var(--theme-button-hovered); }
-  .settings-popover {
-    position: absolute;
-    top: 32px;
-    right: 0;
-    background: var(--theme-popup-color, var(--theme-comp-header-color));
-    border: 1px solid var(--theme-divider-color);
-    border-radius: 4px;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 12px;
-    color: var(--theme-content-color);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 5;
-  }
-  .settings-popover label {
-    display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap;
-  }
+  /* .settings-btn / .settings-popover removed — replaced by Huly's
+     Customize-View ViewOption pattern (ToggleViewOption) which renders
+     the same toggles in the standard view-settings dropdown. */
   .gantt-scroller {
     flex: 1 1 auto;
     overflow-x: hidden;

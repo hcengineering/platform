@@ -329,7 +329,9 @@
     "GanttConfirmResizeTitle": "Change issue dates?",
     "GanttConfirmMoveBody": "Move {title} to {start} – {due}?",
     "GanttConfirmResizeBody": "Change {title} to {start} – {due}?",
-    "GanttConfirmApply": "Apply"
+    "GanttConfirmApply": "Apply",
+    "GanttAriaResizeStart": "Resize start date",
+    "GanttAriaResizeEnd": "Resize due date"
   },
   "status": {}
 }

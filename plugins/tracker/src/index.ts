@@ -576,6 +576,8 @@ const pluginState = plugin(trackerId, {
     GanttConfirmMoveBody: '' as IntlString,
     GanttConfirmResizeBody: '' as IntlString,
     GanttConfirmApply: '' as IntlString,
+    GanttAriaResizeStart: '' as IntlString,
+    GanttAriaResizeEnd: '' as IntlString,
     GanttDependency: '' as IntlString,
     GanttLag: '' as IntlString,
     NewProject: '' as IntlString,

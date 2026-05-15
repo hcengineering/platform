@@ -4,8 +4,11 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
+  import { themeStore } from '@hcengineering/ui'
+  import { translate } from '@hcengineering/platform'
   import type { Ref } from '@hcengineering/core'
   import type { Issue } from '@hcengineering/tracker'
+  import tracker from '../../plugin'
   import type { TimeScale } from './lib/time-scale'
   import type { DragState } from './lib/types'
 
@@ -129,6 +132,13 @@
   // synthetically — those stay read-only. Parent-issue summaries DO have an
   // issueObj (the parent), and that one is editable.
   $: isMilestoneSummary = isSummary && issueObj === undefined
+
+  // ARIA labels for the resize handles — translated up-front so the rect
+  // can use them as plain strings (svg `aria-label` accepts only strings).
+  let ariaResizeStart = 'Resize start date'
+  let ariaResizeEnd = 'Resize due date'
+  $: void translate(tracker.string.GanttAriaResizeStart, {}, $themeStore.language).then((s) => { ariaResizeStart = s })
+  $: void translate(tracker.string.GanttAriaResizeEnd, {}, $themeStore.language).then((s) => { ariaResizeEnd = s })
   // Heuristic: ~7.5px per character at 13px font — leave breathing room.
   const CHAR_PX = 7.5
   $: maxChars = Math.floor((w - 12) / CHAR_PX)
@@ -185,7 +195,7 @@
           pointer-events="all"
           role="button"
           tabindex="-1"
-          aria-label="Resize start"
+          aria-label={ariaResizeStart}
           on:mousedown={onBarDown('left')}
           on:contextmenu={onBarContextMenu}
         />
@@ -200,7 +210,7 @@
           pointer-events="all"
           role="button"
           tabindex="-1"
-          aria-label="Resize end"
+          aria-label={ariaResizeEnd}
           on:mousedown={onBarDown('right')}
           on:contextmenu={onBarContextMenu}
         />
@@ -269,7 +279,7 @@
         pointer-events="all"
         role="button"
         tabindex="-1"
-        aria-label="Resize start"
+        aria-label={ariaResizeStart}
         on:mousedown={onBarDown('left')}
         on:contextmenu={onBarContextMenu}
       />
@@ -284,7 +294,7 @@
         pointer-events="all"
         role="button"
         tabindex="-1"
-        aria-label="Resize end"
+        aria-label={ariaResizeEnd}
         on:mousedown={onBarDown('right')}
         on:contextmenu={onBarContextMenu}
       />
