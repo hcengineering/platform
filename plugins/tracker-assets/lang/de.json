@@ -457,6 +457,7 @@
     "GanttUndoEmpty": "Nichts zum Rückgängigmachen",
     "GanttRedoEmpty": "Nichts zum Wiederholen",
     "GanttUndoConflict": "Rückgängig nicht möglich: Daten wurden zwischenzeitlich extern geändert",
+    "GanttUndoConflictHint": "Die kollidierende Änderung bleibt erhalten; dieser Undo-Schritt wurde verworfen, um eine Endlosschleife zu vermeiden.",
     "GanttUndoFailed": "Rückgängig fehlgeschlagen",
     "GanttUndoDescMove": "{title} um {days} Tage verschoben",
     "GanttUndoDescResize": "{title} skaliert",
