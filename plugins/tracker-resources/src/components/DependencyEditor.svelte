@@ -21,6 +21,13 @@
    */
   export let relation: IssueRelation
   export let canEdit: boolean
+  /**
+   * Phase 3c — optional UndoManager. When supplied by GanttView, every
+   * successful save/delete pushes a matching UndoEntry. When unset (e.g.
+   * future opening from another view), the editor still works but the
+   * change is not undoable.
+   */
+  export let undoManager: import('./gantt/lib/undo-manager').UndoManager | undefined = undefined
 
   const dispatch = createEventDispatcher<{ close: void }>()
   const client = getClient()
@@ -40,17 +47,40 @@
 
   async function save (): Promise<void> {
     if (!canEdit || !dirty) return
+    const before = { kind: relation.kind, lag: relation.lag }
+    const after = { kind: kindFromCode(kindCodeValue), lag: clampLag(lagValue) }
     const ops = client.apply(undefined, 'gantt-dependency-edit')
-    await ops.update(relation, { kind: kindFromCode(kindCodeValue), lag: clampLag(lagValue) })
-    await ops.commit()
+    await ops.update(relation, after)
+    const result = await ops.commit()
+    if (result.result !== false && undoManager !== undefined) {
+      undoManager.push({
+        kind: 'relation-edit',
+        relationId: relation._id,
+        relationSpace: relation.space,
+        before,
+        after,
+        description: `Edit dependency ${String(relation.attachedTo)} → ${String(relation.target)}`
+      })
+    }
     dispatch('close')
   }
 
   async function doDelete (): Promise<void> {
     if (!canEdit) return
+    // Snapshot the full doc BEFORE delete so undo can re-create it with the
+    // exact same _id (matches the deterministic-id pattern used in
+    // dependency-create).
+    const snapshot = { ...relation }
     const ops = client.apply(undefined, 'gantt-dependency-delete')
     await ops.remove(relation)
-    await ops.commit()
+    const result = await ops.commit()
+    if (result.result !== false && undoManager !== undefined) {
+      undoManager.push({
+        kind: 'relation-delete',
+        relation: snapshot,
+        description: `Delete dependency ${String(snapshot.attachedTo)} → ${String(snapshot.target)}`
+      })
+    }
     dispatch('close')
   }
 
