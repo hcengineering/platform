@@ -4,7 +4,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
-  import type { Issue } from '@hcengineering/tracker'
+  import type { Issue, Milestone } from '@hcengineering/tracker'
   import { Label, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import type { DragState, LayoutRow } from './lib/types'
@@ -31,6 +31,7 @@
     jump: { x: number }
     toggle: { id: string }
     openIssue: { issue: { _id: string, _class: string } }
+    openMilestone: { milestone: Milestone }
     hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
     addIssue: undefined
     rowContextMenu: { issue: { _id: string, _class: string }, event: MouseEvent }
@@ -39,6 +40,10 @@
 
   function openIssue (issue: { _id: any, _class: any }): void {
     dispatch('openIssue', { issue: { _id: issue._id as string, _class: issue._class as string } })
+  }
+
+  function openMilestone (milestone: Milestone): void {
+    dispatch('openMilestone', { milestone })
   }
 
   function onDragGripDown (issue: Issue): (evt: MouseEvent) => void {
@@ -133,7 +138,16 @@
           </span>
         {/if}
         {#if showTitle}
-          <span class="cell-title" title={row.milestone.label}>
+          <!-- PR3.2: single-click opens EditMilestone, matching the issue
+               row affordance. role/tabindex mirror the issue-title link. -->
+          <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+          <span
+            class="cell-title clickable"
+            title={row.milestone.label}
+            role="link"
+            tabindex="0"
+            on:click={() => row.milestone !== null && openMilestone(row.milestone)}
+          >
             {row.milestone.label}
           </span>
         {/if}
