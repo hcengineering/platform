@@ -31,7 +31,15 @@
 
   const dispatch = createEventDispatcher<{
     barMouseDown: { issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }
+    contextMenu: { issue: Issue, event: MouseEvent }
   }>()
+
+  function onBarContextMenu (evt: MouseEvent): void {
+    if (issueObj === undefined) return
+    evt.preventDefault()
+    evt.stopPropagation()
+    dispatch('contextMenu', { issue: issueObj, event: evt })
+  }
 
   /**
    * Each visible region of the bar (body + the two resize handles) gets
@@ -176,6 +184,7 @@
       class:editable
       class:active-drag={isThisBarActive}
       on:mousedown={onBarDown('body')}
+      on:contextmenu={onBarContextMenu}
     />
     {#if editable && w >= 18}
       <rect
@@ -187,6 +196,7 @@
         fill="transparent"
         pointer-events="all"
         on:mousedown={onBarDown('left')}
+        on:contextmenu={onBarContextMenu}
       />
       <rect
         class="resize-handle resize-right"
@@ -197,6 +207,7 @@
         fill="transparent"
         pointer-events="all"
         on:mousedown={onBarDown('right')}
+        on:contextmenu={onBarContextMenu}
       />
     {/if}
     {#if barLabel !== ''}

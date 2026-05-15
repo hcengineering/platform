@@ -26,13 +26,26 @@
     openIssue: { issue: { _id: string, _class: string } }
     hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
     addIssue: undefined
+    rowContextMenu: { issue: { _id: string, _class: string }, event: MouseEvent }
   }>()
 
   function openIssue (issue: { _id: any, _class: any }): void {
     dispatch('openIssue', { issue: { _id: issue._id as string, _class: issue._class as string } })
   }
 
-  function jumpDirection (obj: { startDate: number | null, dueDate: number | null }): 'left' | 'right' | null {
+  function onRowContextMenu (evt: MouseEvent, row: LayoutRow): void {
+    if (row.issue === null) return
+    evt.preventDefault()
+    evt.stopPropagation()
+    dispatch('rowContextMenu', {
+      issue: { _id: String(row.issue._id), _class: String(row.issue._class) },
+      event: evt
+    })
+  }
+
+  function jumpDirection (
+    obj: { startDate: number | null, dueDate: number | null }
+  ): 'left' | 'right' | null {
     if (timeScale === undefined) return null
     if (viewportRight <= viewportLeft) return null
     if (obj.startDate == null && obj.dueDate == null) return null
@@ -81,6 +94,7 @@
       on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
       on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
       on:mouseleave={() => dispatch('hoverRow', { id: null })}
+      on:contextmenu={(e) => onRowContextMenu(e, row)}
     >
       <span class="col-toggle">
         {#if row.collapsible}
