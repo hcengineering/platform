@@ -336,6 +336,10 @@
     "GanttScrollRightToBar": "Nach rechts zum Balken scrollen",
     "GanttExpand": "Aufklappen",
     "GanttCollapse": "Zuklappen",
+    "GanttArrowIndicatorSourceAbove": "Quellzeile liegt oberhalb des Sichtbereichs — Klick zum Scrollen",
+    "GanttArrowIndicatorSourceBelow": "Quellzeile liegt unterhalb des Sichtbereichs — Klick zum Scrollen",
+    "GanttArrowIndicatorTargetAbove": "Zielzeile liegt oberhalb des Sichtbereichs — Klick zum Scrollen",
+    "GanttArrowIndicatorTargetBelow": "Zielzeile liegt unterhalb des Sichtbereichs — Klick zum Scrollen",
 
     "GanttDragToSchedule": "Auf Zeitachse ziehen, um zu terminieren",
     "GanttResizingTooltip": "{start} – {due} ({days} Tage)",
