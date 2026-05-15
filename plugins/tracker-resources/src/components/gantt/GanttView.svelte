@@ -176,29 +176,18 @@
     }
   )
 
-  $: visibleIssueIds = issues.map((i) => i._id)
   $: relationDocQuery = (space !== undefined ? { space } : {}) as DocumentQuery<IssueRelation>
-  $: {
-    // Guard against the empty-array case: $in: [] is rejected by the
-    // CockroachDB adapter with `<string> = <string[]>` (no rows match,
-    // but the cast still fails). Skip the query until there are visible
-    // issues, and clear stale relations explicitly.
-    if (visibleIssueIds.length === 0) {
-      relations = []
-    } else {
-      relationQuery.query(
-        tracker.class.IssueRelation,
-        {
-          ...relationDocQuery,
-          $or: [
-            { attachedTo: { $in: visibleIssueIds } },
-            { target: { $in: visibleIssueIds } }
-          ]
-        } as DocumentQuery<IssueRelation>,
-        (res: IssueRelation[]) => { relations = res }
-      )
-    }
-  }
+  // The Huly/CockroachDB adapter doesn't translate `$or` at the top level
+  // (it stringifies it as a JSONB path and crashes). Query the entire
+  // space's relations instead and let the dependency-layer filter
+  // client-side via barRects (only relations whose endpoints are in
+  // visible barRects get rendered). Relations are typically sparse so
+  // this is cheap. Predecessor column does its own client-side filter.
+  $: relationQuery.query(
+    tracker.class.IssueRelation,
+    relationDocQuery,
+    (res: IssueRelation[]) => { relations = res }
+  )
 
   $: dateRange = computeDateRange(issues, milestones, zoom)
 
