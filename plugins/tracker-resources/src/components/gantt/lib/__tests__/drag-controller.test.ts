@@ -261,3 +261,27 @@ describe('drag-controller — unscheduled drag', () => {
     expect(next.previewDue).toBe(next.previewStart + 86_400_000)
   })
 })
+
+describe('drag-controller — direct idle → drag (Playwright + edge-case)', () => {
+  it('mousedown-bar from idle transitions directly to dragging-body', () => {
+    const next = reduce(
+      { kind: 'idle' },
+      { type: 'mousedown-bar', issue, edge: 'body', cursorX: 200 },
+      ts
+    )
+    expect(next.kind).toBe('dragging-body')
+    if (next.kind !== 'dragging-body') return
+    expect(next.previewStart).toBe(issue.startDate)
+    expect(next.previewDue).toBe(issue.dueDate)
+    expect(next.cursorStartX).toBe(200)
+  })
+
+  it('mousedown-bar (edge=left) from idle goes directly to resizing-left', () => {
+    const next = reduce(
+      { kind: 'idle' },
+      { type: 'mousedown-bar', issue, edge: 'left', cursorX: 50 },
+      ts
+    )
+    expect(next.kind).toBe('resizing-left')
+  })
+})
