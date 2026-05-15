@@ -4,7 +4,7 @@
 <script lang="ts">
   import { type ApplyOperations, type Class, type Doc, type DocumentQuery, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { type Issue, type IssueRelation, type Milestone } from '@hcengineering/tracker'
+  import { type Issue, type IssueRelation, type Milestone, type Project, type WorkingDaysConfig } from '@hcengineering/tracker'
   import { connectedIssueIds } from './lib/dependency-router'
   import { wouldCreateCycle, simulateCascade, addScheduleDays } from './lib/scheduler'
   import { fsAnchor, ssAnchor, ffAnchor, sfAnchor } from './lib/working-days'
@@ -151,8 +151,8 @@
   // Customize-view panel (same pattern as ganttConfirmMove etc.).
   $: showCriticalPath = ((viewOptions as Record<string, unknown>)?.ganttCriticalPath ?? false) === true
   $: showSlackColumn = ((viewOptions as Record<string, unknown>)?.ganttSlackColumn ?? false) === true
-  // 200 ms debounced recompute on issues / relations / toggle change.
-  $: void scheduleCpRecompute(issues, relations, showCriticalPath)
+  // 200 ms debounced recompute on issues / relations / toggle / cfg change.
+  $: void scheduleCpRecompute(issues, relations, showCriticalPath, workingDaysCfg)
 
   function setZoom (z: ZoomLevel): void {
     zoom = z
@@ -165,6 +165,25 @@
   const issueQuery = createQuery()
   const milestoneQuery = createQuery()
   const relationQuery = createQuery()
+  const projectQuery = createQuery()
+
+  // Phase-2 working-days calendar. `undefined` keeps legacy calendar-day
+  // semantics; an explicit config (week mask + holidays) makes the scheduler
+  // and critical-path treat lag/slack in working days and paints non-working
+  // days in the canvas background.
+  let workingDaysCfg: WorkingDaysConfig | undefined = undefined
+  $: if (space !== undefined) {
+    projectQuery.query(
+      tracker.class.Project,
+      { _id: space as Ref<Project> },
+      (res: Project[]) => {
+        workingDaysCfg = res[0]?.workingDaysConfig
+      },
+      { limit: 1 }
+    )
+  } else {
+    workingDaysCfg = undefined
+  }
 
   $: issueDocQuery = (space !== undefined
     ? { space, ...(query as DocumentQuery<Issue>) }
@@ -374,7 +393,8 @@
   function scheduleCpRecompute (
     _issues: Issue[],
     _relations: IssueRelation[],
-    _show: boolean
+    _show: boolean,
+    _cfg: WorkingDaysConfig | undefined
   ): void {
     if (!showCriticalPath) {
       if (cpResult.critical.size > 0 || cpResult.cycle) {
@@ -390,7 +410,7 @@
     }
     if (cpDirtyTimer !== null) clearTimeout(cpDirtyTimer)
     cpDirtyTimer = setTimeout(() => {
-      cpResult = computeCriticalPath(issues, relations)
+      cpResult = computeCriticalPath(issues, relations, workingDaysCfg)
       cpDirtyTimer = null
       if (cpResult.cycle && Date.now() - lastCpCycleNotifiedAt > 60_000) {
         lastCpCycleNotifiedAt = Date.now()
@@ -889,7 +909,8 @@
       primaryEdits,
       allInSpace,
       relations,
-      (ref) => canEditMap.get(ref) ?? false
+      (ref) => canEditMap.get(ref) ?? false,
+      { workingDays: workingDaysCfg }
     )
 
     switch (result.kind) {
