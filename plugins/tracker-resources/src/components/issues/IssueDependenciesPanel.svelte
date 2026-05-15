@@ -4,13 +4,15 @@
 -->
 <script lang="ts">
   import { createQuery, getClient, ObjectSearchPopup, type ObjectSearchResult } from '@hcengineering/presentation'
-  import { Label, showPopup } from '@hcengineering/ui'
+  import { Label, addNotification, NotificationSeverity, showPopup } from '@hcengineering/ui'
+  import { translate } from '@hcengineering/platform'
   import type { Ref } from '@hcengineering/core'
   import type { Issue, IssueRelation } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import { canEditIssue } from '../../utils'
   import DependencyEditor from '../DependencyEditor.svelte'
   import { kindCode } from '../gantt/lib/predecessor-format'
+  import { wouldCreateCycle } from '../gantt/lib/scheduler'
 
   /**
    * Issue-editor side-panel that surfaces every Gantt `IssueRelation`
@@ -91,22 +93,45 @@
   }
 
   function onAddDependency (): void {
-    // Ignore-list keeps the picker from showing the current issue and
-    // anything we already depend on or that depends on us.
-    const ignore: Ref<Issue>[] = [issue._id]
-    for (const r of incoming) ignore.push(r.attachedTo)
-    for (const r of outgoing) ignore.push(r.target)
+    // The CockroachDB persistence adapter chokes on `$nin: <Ref[]>` against
+    // JSONB-stored arrays (`unsupported comparison operator: _id != ALL …`),
+    // so we cannot pass `ignore` to ObjectSearchPopup. We filter
+    // self / duplicate / cross-project in the result callback instead.
+    //
+    // `allowCategory: [tracker.completion.IssueCategory]` opens the popup
+    // pre-focused on the Issue tab — the picker's other tabs (Person,
+    // Project, Document, …) are not relevant for a dependency.
     showPopup(
       ObjectSearchPopup,
       {
         _class: tracker.class.Issue,
-        ignore,
+        allowCategory: [tracker.completion.IssueCategory],
         label: tracker.string.SelectIssue
       },
       'top',
       async (picked: ObjectSearchResult | undefined) => {
         if (picked === undefined) return
         const target = picked.doc as Issue
+        // Reject self-link.
+        if (String(target._id) === String(issue._id)) {
+          const title = await translate(tracker.string.DependencyCycle, {}, undefined)
+          addNotification(title, '', undefined as any, undefined, NotificationSeverity.Warning)
+          return
+        }
+        // Reject cross-project (Phase-1 only allows intra-project deps).
+        if (String(target.space) !== String(issue.space)) {
+          const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
+          addNotification(title, 'Cross-project dependencies are not supported. Pick an issue from this project.', undefined as any, undefined, NotificationSeverity.Warning)
+          return
+        }
+        // Reject duplicate (already a successor) — silent.
+        if (outgoing.some((r) => String(r.target) === String(target._id))) return
+        // Cycle detection: would this new arrow close a loop?
+        if (wouldCreateCycle(issue._id, target._id, [...incoming, ...outgoing])) {
+          const title = await translate(tracker.string.DependencyCycle, {}, undefined)
+          addNotification(title, '', undefined as any, undefined, NotificationSeverity.Warning)
+          return
+        }
         const ops = client.apply(undefined, 'add-dependency-from-issue-editor')
         await ops.addCollection(
           tracker.class.IssueRelation,
@@ -119,6 +144,18 @@
         await ops.commit()
       }
     )
+  }
+
+  async function removeDependency (rel: IssueRelation): Promise<void> {
+    // Same permission check as the editor's Delete button: only the
+    // source-side editable user can drop the relation.
+    const isOutgoing = String(rel.attachedTo) === String(issue._id)
+    const source = isOutgoing ? issue : otherIssues.get(String(rel.attachedTo))
+    if (source === undefined) return
+    if (!await canEditIssue(source)) return
+    const ops = client.apply(undefined, 'remove-dependency-from-issue-editor')
+    await ops.removeDoc(tracker.class.IssueRelation, rel.space, rel._id)
+    await ops.commit()
   }
 
   function formatLag (lag: number): string {
@@ -163,18 +200,27 @@
       </div>
       {#each incoming as rel (rel._id)}
         {@const other = otherIssues.get(String(rel.attachedTo))}
-        <button
-          class="dep-row"
-          type="button"
-          title={other?.title ?? ''}
-          on:click={() => openEditor(rel)}
-        >
-          <span class="kind {kindClass(rel.kind)}">{kindCode(rel.kind)}</span>
-          {#if rel.lag !== 0}<span class="lag">{formatLag(rel.lag).trim()}</span>{/if}
-          <span class="dir">←</span>
-          <span class="ident">{other?.identifier ?? '…'}</span>
-          <span class="title">{other?.title ?? ''}</span>
-        </button>
+        <div class="dep-row-wrap">
+          <button
+            class="dep-row"
+            type="button"
+            title={(other?.identifier ?? '') + (other !== undefined ? ' — ' : '') + (other?.title ?? '')}
+            on:click={() => openEditor(rel)}
+          >
+            <span class="kind {kindClass(rel.kind)}">{kindCode(rel.kind)}</span>
+            {#if rel.lag !== 0}<span class="lag">{formatLag(rel.lag).trim()}</span>{/if}
+            <span class="dir">←</span>
+            <span class="title">{other?.title ?? '…'}</span>
+          </button>
+          {#if !readonly}
+            <button
+              class="del-btn"
+              type="button"
+              title="Remove dependency"
+              on:click|stopPropagation={() => removeDependency(rel)}
+            >×</button>
+          {/if}
+        </div>
       {/each}
     {/if}
     {#if outgoing.length > 0}
@@ -183,18 +229,27 @@
       </div>
       {#each outgoing as rel (rel._id)}
         {@const other = otherIssues.get(String(rel.target))}
-        <button
-          class="dep-row"
-          type="button"
-          title={other?.title ?? ''}
-          on:click={() => openEditor(rel)}
-        >
-          <span class="kind {kindClass(rel.kind)}">{kindCode(rel.kind)}</span>
-          {#if rel.lag !== 0}<span class="lag">{formatLag(rel.lag).trim()}</span>{/if}
-          <span class="dir">→</span>
-          <span class="ident">{other?.identifier ?? '…'}</span>
-          <span class="title">{other?.title ?? ''}</span>
-        </button>
+        <div class="dep-row-wrap">
+          <button
+            class="dep-row"
+            type="button"
+            title={(other?.identifier ?? '') + (other !== undefined ? ' — ' : '') + (other?.title ?? '')}
+            on:click={() => openEditor(rel)}
+          >
+            <span class="kind {kindClass(rel.kind)}">{kindCode(rel.kind)}</span>
+            {#if rel.lag !== 0}<span class="lag">{formatLag(rel.lag).trim()}</span>{/if}
+            <span class="dir">→</span>
+            <span class="title">{other?.title ?? '…'}</span>
+          </button>
+          {#if !readonly}
+            <button
+              class="del-btn"
+              type="button"
+              title="Remove dependency"
+              on:click|stopPropagation={() => removeDependency(rel)}
+            >×</button>
+          {/if}
+        </div>
       {/each}
     {/if}
   </div>
@@ -238,6 +293,12 @@
     color: var(--theme-content-trans-color);
     padding: 6px 0 2px;
   }
+  .dep-row-wrap {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+  }
   .dep-row {
     display: flex;
     align-items: center;
@@ -250,10 +311,30 @@
     cursor: pointer;
     text-align: left;
     font: inherit;
-    width: 100%;
+    flex: 1;
+    min-width: 0;
   }
   .dep-row:hover {
     background: var(--theme-button-hovered);
+  }
+  .del-btn {
+    visibility: hidden;
+    background: transparent;
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 4px;
+    color: var(--theme-content-trans-color);
+    font-size: 14px;
+    line-height: 1;
+    width: 22px;
+    cursor: pointer;
+    padding: 0;
+  }
+  .dep-row-wrap:hover .del-btn {
+    visibility: visible;
+  }
+  .del-btn:hover {
+    background: var(--theme-warning-color, #fef2f2);
+    color: var(--theme-error-color, #dc2626);
   }
   .kind {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
