@@ -45,7 +45,20 @@ export function registerProviders (
   }
 
   app.keys = [serverSecret]
-  app.use(session({}, app))
+  // koa-session defaults the cookie domain to the request host, which
+  // breaks OIDC flows that start on one subdomain (e.g. dev.example.com)
+  // and get the callback on another (e.g. app.example.com) — the session
+  // cookie set on dev isn't sent back to app, so the Passport state lookup
+  // fails with "did not find expected authorization request details in
+  // session". Setting SESSION_COOKIE_DOMAIN=.example.com makes the cookie
+  // span both hosts so the flow completes. Empty / unset preserves prior
+  // behaviour.
+  const sessionCookieDomain = process.env.SESSION_COOKIE_DOMAIN?.trim()
+  const sessionOpts: Partial<session.opts> = {}
+  if (sessionCookieDomain !== undefined && sessionCookieDomain.length > 0) {
+    sessionOpts.domain = sessionCookieDomain
+  }
+  app.use(session(sessionOpts, app))
   app.use(passport.initialize())
   app.use(passport.session())
 
