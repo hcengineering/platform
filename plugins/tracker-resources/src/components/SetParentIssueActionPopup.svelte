@@ -22,7 +22,7 @@
   import IssueStatusIcon from './issues/IssueStatusIcon.svelte'
 
   export let value: Issue | AttachedData<Issue> | Issue[] | IssueDraft
-  export let width: 'medium' | 'large' | 'full' = 'large'
+  export let width: 'medium' | 'large' | 'full' | 'resizable' = 'resizable'
 
   const client = getClient()
   const dispatch = createEventDispatcher()

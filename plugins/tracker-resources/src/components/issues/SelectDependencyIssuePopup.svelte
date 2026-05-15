@@ -43,7 +43,7 @@
   multiSelect={false}
   allowDeselect={false}
   shadows={true}
-  width={'large'}
+  width={'resizable'}
   on:update
   on:close
 >

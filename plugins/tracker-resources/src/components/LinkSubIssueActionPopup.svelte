@@ -29,7 +29,7 @@
    * and by EditIssue's SubIssues panel.
    */
   export let value: Issue
-  export let width: 'medium' | 'large' | 'full' = 'large'
+  export let width: 'medium' | 'large' | 'full' | 'resizable' = 'resizable'
 
   const client = getClient()
   const dispatch = createEventDispatcher()

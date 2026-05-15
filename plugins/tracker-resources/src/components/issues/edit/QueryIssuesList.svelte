@@ -32,6 +32,14 @@
   export let viewletId = tracker.viewlet.SubIssues
   export let createLabel = tracker.string.AddIssue
   export let hasSubIssues = false
+  /**
+   * When provided, the "+ Add" button calls this instead of opening
+   * CreateIssue directly. SubIssues.svelte uses it to inject the
+   * HierarchyAddPopup chooser (create-new vs. link-existing).
+   * Other callers (Milestone, RelatedIssuesSection) keep the default
+   * direct CreateIssue flow.
+   */
+  export let customAddAction: (() => void) | undefined = undefined
 
   let isCollapsed = false
   let listWidth: number
@@ -137,9 +145,7 @@
     {#if hasSubIssues}
       <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
     {/if}
-    {#if hasSubIssues}
-      <slot name="buttons" />
-    {/if}
+    <slot name="buttons" />
     {#if !$restrictionStore.readonly}
       <Button
         id="add-sub-issue"
@@ -151,7 +157,11 @@
         on:click={() => {
           isCollapsed = false
           closeTooltip()
-          openNewIssueDialog()
+          if (customAddAction !== undefined) {
+            customAddAction()
+          } else {
+            openNewIssueDialog()
+          }
         }}
       />
     {/if}
