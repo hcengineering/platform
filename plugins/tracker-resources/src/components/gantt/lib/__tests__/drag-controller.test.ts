@@ -12,6 +12,15 @@ import type { DragState } from '../types'
 const ts = createTimeScale('week', Date.UTC(2026, 0, 1))
 const issueRef = 'issue-1' as Ref<Issue>
 
+const issue: Issue = {
+  _id: 'issue-1' as Ref<Issue>,
+  _class: 'tracker:class:Issue' as Issue['_class'],
+  space: 'space-1' as Issue['space'],
+  startDate: Date.UTC(2026, 0, 5),
+  dueDate: Date.UTC(2026, 0, 12)
+  // The reducer only touches startDate/dueDate; the rest is type-padding.
+} as unknown as Issue
+
 describe('drag-controller — idle transitions', () => {
   const idle: DragState = { kind: 'idle' }
 
@@ -33,5 +42,69 @@ describe('drag-controller — idle transitions', () => {
   it('mouseup stays idle when no drag is active', () => {
     const next = reduce(idle, { type: 'mouseup' }, ts)
     expect(next).toEqual(idle)
+  })
+})
+
+describe('drag-controller — body drag', () => {
+  it('mousedown-bar on edge=body transitions hover → dragging-body', () => {
+    const hover: DragState = { kind: 'hover-bar', issueId: issue._id, edge: 'body' }
+    const next = reduce(
+      hover,
+      { type: 'mousedown-bar', issue, edge: 'body', cursorX: 200 },
+      ts
+    )
+    expect(next.kind).toBe('dragging-body')
+    if (next.kind !== 'dragging-body') return
+    expect(next.issue._id).toBe(issue._id)
+    expect(next.originStart).toBe(issue.startDate)
+    expect(next.originDue).toBe(issue.dueDate)
+    expect(next.cursorStartX).toBe(200)
+    expect(next.previewStart).toBe(issue.startDate)
+    expect(next.previewDue).toBe(issue.dueDate)
+  })
+
+  it('mousemove shifts both preview dates by snapped delta', () => {
+    const dragging: DragState = {
+      kind: 'dragging-body',
+      issue,
+      originStart: issue.startDate as number,
+      originDue: issue.dueDate as number,
+      cursorStartX: 200,
+      previewStart: issue.startDate as number,
+      previewDue: issue.dueDate as number
+    }
+    // Week-zoom = 14 px/day → 28 px = 2 days
+    const next = reduce(dragging, { type: 'mousemove', cursorX: 228 }, ts)
+    if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
+    expect(next.previewStart).toBe((issue.startDate as number) + 2 * 86_400_000)
+    expect(next.previewDue).toBe((issue.dueDate as number) + 2 * 86_400_000)
+  })
+
+  it('mouseup returns dragging-body → idle', () => {
+    const dragging: DragState = {
+      kind: 'dragging-body',
+      issue,
+      originStart: issue.startDate as number,
+      originDue: issue.dueDate as number,
+      cursorStartX: 200,
+      previewStart: issue.startDate as number,
+      previewDue: issue.dueDate as number
+    }
+    const next = reduce(dragging, { type: 'mouseup' }, ts)
+    expect(next).toEqual({ kind: 'idle' })
+  })
+
+  it('cancel returns dragging-body → idle without applying the move', () => {
+    const dragging: DragState = {
+      kind: 'dragging-body',
+      issue,
+      originStart: issue.startDate as number,
+      originDue: issue.dueDate as number,
+      cursorStartX: 200,
+      previewStart: (issue.startDate as number) + 5 * 86_400_000,
+      previewDue: (issue.dueDate as number) + 5 * 86_400_000
+    }
+    const next = reduce(dragging, { type: 'cancel' }, ts)
+    expect(next).toEqual({ kind: 'idle' })
   })
 })
