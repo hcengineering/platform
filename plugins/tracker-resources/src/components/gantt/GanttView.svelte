@@ -15,7 +15,8 @@
   import { buildLayout } from './lib/layout'
   import { createTimeScale } from './lib/time-scale'
   import { type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
-  import { showPanel } from '@hcengineering/ui'
+  import { showPanel, showPopup } from '@hcengineering/ui'
+  import CreateIssue from '../CreateIssue.svelte'
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export let _class: Ref<Class<Doc>>
@@ -257,6 +258,10 @@
   }
   let datePickerValue: string = ''
 
+  function newIssue (): void {
+    showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top')
+  }
+
   // Wheel-forwarding is no longer needed: sidebar lives inside the same
   // .gantt-scroller as the canvas, with position:sticky;left:0. Browser
   // handles native scrolling at the right speed regardless of where the
@@ -366,7 +371,13 @@
           >{z[0].toUpperCase() + z.slice(1)}</button>
         {/each}
       </div>
-      <div class="toolbar-right" />
+      <div class="toolbar-right">
+        <button
+          type="button"
+          class="new-issue-btn"
+          on:click={newIssue}
+        >+ New issue</button>
+      </div>
     </div>
 
     <!-- Single scroll container wraps both sidebar and canvas. Sidebar uses
@@ -498,6 +509,18 @@
   .toolbar-left { display: flex; gap: 4px; }
   .toolbar-center { display: flex; gap: 2px; justify-self: center; }
   .toolbar-right { display: flex; gap: 4px; justify-self: end; position: relative; }
+  .new-issue-btn {
+    height: 26px;
+    padding: 0 14px;
+    border: 1px solid var(--theme-button-border);
+    background: var(--theme-state-info-color, #6366f1);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .new-issue-btn:hover { filter: brightness(1.1); }
   .nav-btn {
     height: 26px;
     min-width: 28px;
