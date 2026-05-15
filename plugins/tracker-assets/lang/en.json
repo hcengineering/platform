@@ -357,7 +357,13 @@
     "CascadeLegendPush": "Push successor",
     "CascadeLegendPull": "Pull predecessor",
     "CascadeLegendOldNew": "Light = original / Solid = new",
-    "Dependencies": "Dependencies"
+    "Dependencies": "Dependencies",
+    "CriticalPath": "Critical path",
+    "CriticalPathOn": "Show critical path",
+    "SlackColumn": "Slack column",
+    "Slack": "Slack",
+    "CriticalPathCycle": "Dependency cycle detected — critical path unavailable until resolved.",
+    "CriticalPathBadge": "CP"
   },
   "status": {}
 }
