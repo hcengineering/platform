@@ -316,10 +316,19 @@
           {/if}
         {:else if row.issue !== null}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- v121.19 — Mobile A11Y: on phones, iOS/Android intercept
+               double-tap for system zoom, which collides with our
+               openIssue trigger. On phone layout we therefore drop the
+               dblclick handler entirely; users open the full editor
+               through the GanttQuickInfoPopup "Open full editor" button
+               (single-tap → quick-info → button). Desktop/tablet keep
+               the dblclick shortcut. -->
           <g
             class="bar-wrap"
             data-issue-id={String(row.issue._id)}
-            on:dblclick|stopPropagation={() => row.issue !== null && openIssue(row.issue)}
+            on:dblclick|stopPropagation={layoutMode === 'phone'
+              ? undefined
+              : () => row.issue !== null && openIssue(row.issue)}
           >
             <GanttBar
               issue={row.issue}
