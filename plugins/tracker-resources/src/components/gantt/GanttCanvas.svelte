@@ -55,6 +55,17 @@
     return focusedIssueId !== null && String(issueId) === focusedIssueId
   }
 
+  // PR 3 spotlight dim: while a drag is active, dim every row that is NOT the
+  // active issue. Keeps the cursor's row at full opacity so the user can see
+  // where the bar is being placed relative to other rows.
+  $: dragState = $activeDrag
+  $: activeIssueIdStr = 'issue' in dragState ? String((dragState as { issue: { _id: unknown } }).issue._id) : null
+  $: anyDragActive = dragState.kind !== 'idle' && dragState.kind !== 'hover-bar'
+
+  function isDimmed (issueId: unknown): boolean {
+    return anyDragActive && activeIssueIdStr !== null && String(issueId) !== activeIssueIdStr
+  }
+
   $: visibleRows = filterVisibleRows(rows, scrollTop, viewportHeight)
   $: rowsHeight = rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0
   $: totalHeight = rowsHeight + milestoneStripHeight
@@ -113,6 +124,7 @@
         class="row-rect"
         class:hovered={isHover}
         class:milestone-bg={row.kind === 'milestone'}
+        class:dimmed={row.issue !== null && isDimmed(row.issue._id)}
       />
     {/each}
   </g>
@@ -220,6 +232,10 @@
   }
   :global(svg.gantt-canvas .row-rect.milestone-bg) {
     fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 6%, transparent);
+  }
+  :global(svg.gantt-canvas .row-rect.dimmed) {
+    fill: var(--theme-bg-color);
+    opacity: 0.55;
   }
   :global(svg.gantt-canvas .row-rect.milestone-bg.hovered) {
     fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);

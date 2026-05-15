@@ -3,9 +3,10 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { writable, type Writable } from 'svelte/store'
   import { Label, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
-  import type { LayoutRow } from './lib/types'
+  import type { DragState, LayoutRow } from './lib/types'
   import type { TimeScale } from './lib/time-scale'
   import IssuePresenter from '../issues/IssuePresenter.svelte'
   import StatusBadge from './StatusBadge.svelte'
@@ -19,6 +20,11 @@
   export let showTitle: boolean = true
   export let showStatus: boolean = true
   export let hoveredRowId: string | null = null
+  export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
+
+  $: dragState = $activeDrag
+  $: activeIssueIdStr = 'issue' in dragState ? String((dragState as { issue: { _id: unknown } }).issue._id) : null
+  $: anyDragActive = dragState.kind !== 'idle' && dragState.kind !== 'hover-bar'
 
   const dispatch = createEventDispatcher<{
     jump: { x: number }
@@ -92,6 +98,7 @@
       class:summary={row.isSummary}
       class:milestone={row.kind === 'milestone'}
       class:hovered={hoveredRowId === row.id}
+      class:drag-dimmed={anyDragActive && row.issue !== null && activeIssueIdStr !== null && String(row.issue._id) !== activeIssueIdStr}
       style="height: {row.height}px; padding-left: {8 + indent}px;"
       on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
       on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
@@ -282,6 +289,7 @@
   :global(.sidebar-rows.has-hover) .sidebar-row:not(.hovered) {
     opacity: 0.55;
   }
+  .sidebar-row.drag-dimmed { opacity: 0.55; }
   .sidebar-row.milestone.hovered {
     background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);
   }

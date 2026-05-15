@@ -793,6 +793,7 @@
             {showTitle}
             {showStatus}
             {hoveredRowId}
+            {activeDrag}
             on:jump={onJump}
             on:toggle={onToggle}
             on:openIssue={onIssueOpen}
