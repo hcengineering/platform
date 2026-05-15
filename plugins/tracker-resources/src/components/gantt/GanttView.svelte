@@ -6,7 +6,9 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { type Issue, type IssueRelation, type Milestone } from '@hcengineering/tracker'
   import { connectedIssueIds } from './lib/dependency-router'
-  import { wouldCreateCycle } from './lib/scheduler'
+  import { wouldCreateCycle, simulateCascade, addScheduleDays } from './lib/scheduler'
+  import type { PrimaryEdit, SimulateResult, CascadeShift } from './lib/types'
+  import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
   import DependencyEditor from '../DependencyEditor.svelte'
   import EditMilestone from '../milestones/EditMilestone.svelte'
   import { Loading, addNotification, NotificationSeverity } from '@hcengineering/ui'
@@ -565,7 +567,7 @@
     )
   }
 
-  async function handleCanvasPointerUp (): Promise<void> {
+  async function handleCanvasPointerUp (e?: PointerEvent | MouseEvent): Promise<void> {
     const state = $activeDrag
     if (state.kind === 'connector-drawing') {
       activeDrag.set({ kind: 'idle' })
@@ -618,12 +620,26 @@
     const needsConfirm =
       ((state.kind === 'dragging-body' || state.kind === 'dragging-unscheduled') && confirmMove) ||
       ((state.kind === 'resizing-left' || state.kind === 'resizing-right') && confirmResize)
+
+    // dragging-unscheduled stays on the legacy confirm path because it does
+    // NOT go through commitWithCascade (the issue had no dates, no relations
+    // to cascade). Only cascade-eligible issue states are rerouted to
+    // ConfirmCascadePopup.
+    const cascadeEligibleIssue =
+      state.kind !== 'idle' && state.kind !== 'hover-bar' &&
+      state.target.kind === 'issue' &&
+      (state.kind === 'dragging-body' || state.kind === 'resizing-left' || state.kind === 'resizing-right')
+
     try {
-      if (needsConfirm) {
+      // For cascade-eligible issue states, ConfirmCascadePopup (or the
+      // legacy GanttConfirmCommitPopup in the no-cascade case) is the single
+      // confirmation point. For milestones and unscheduled-drag the existing
+      // askConfirm path stays untouched.
+      if (needsConfirm && !cascadeEligibleIssue) {
         const proceed = await askConfirm(state)
         if (!proceed) return
       }
-      await commitDrag(state)
+      await commitDrag(state, e)
     } catch (err) {
       const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
       addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
@@ -752,23 +768,301 @@
     // sidebar for them), so that branch is unreachable.
   }
 
-  async function commitDrag (state: DragState): Promise<void> {
+  async function commitWithCascade (
+    primaryEdits: PrimaryEdit[],
+    altKey: boolean,
+    space: Issue['space'],
+    legacyConfirmKind: 'move' | 'resize' | 'none'
+  ): Promise<void> {
+    const client = getClient()
+
+    // Full-space lookup is needed for both branches — the alt-bypass branch
+    // also needs to resolve hidden predecessors/successors when counting
+    // direct violations, otherwise filter-hidden relations are invisible
+    // to the warning banner (Codex review high-4).
+    const allInSpace = await client.findAll(tracker.class.Issue, { space })
+    const allByRef = new Map<Ref<Issue>, Issue>()
+    for (const i of allInSpace) allByRef.set(i._id, i)
+
+    if (altKey) {
+      const ops = client.apply(undefined, 'gantt-cascade-bypass')
+      for (const pe of primaryEdits) {
+        await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
+      }
+      const result = await ops.commit()
+      if (!result.result) {
+        const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
+        addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
+        return
+      }
+      // Count direct violations against full-space relations + full-space issue dates.
+      let violations = 0
+      const primarySet = new Set(primaryEdits.map((p) => String(p.issue._id)))
+      for (const pe of primaryEdits) {
+        for (const r of relations) {
+          const involvesPrimary = String(r.attachedTo) === String(pe.issue._id) || String(r.target) === String(pe.issue._id)
+          if (!involvesPrimary) continue
+          const otherRef = String(r.attachedTo) === String(pe.issue._id) ? r.target : r.attachedTo
+          if (primarySet.has(String(otherRef))) continue
+          const otherIssue = allByRef.get(otherRef as Ref<Issue>)
+          if (otherIssue === undefined || otherIssue.startDate == null || otherIssue.dueDate == null) continue
+          if (!relationSatisfied(r, pe, otherIssue)) violations++
+        }
+      }
+      if (violations > 0) {
+        const t = await translate(tracker.string.CascadeBannerBypass, { count: violations }, undefined)
+        addNotification(t, '', undefined as any, undefined, NotificationSeverity.Warning)
+      }
+      return
+    }
+
+    // Non-bypass path: permission map (allInSpace already fetched above).
+    const canEditMap = new Map<Ref<Issue>, boolean>()
+    await Promise.all(
+      allInSpace.map(async (i) => {
+        canEditMap.set(i._id, await canEditIssue(i))
+      })
+    )
+
+    const result: SimulateResult = simulateCascade(
+      primaryEdits,
+      allInSpace,
+      relations,
+      (ref) => canEditMap.get(ref) ?? false
+    )
+
+    switch (result.kind) {
+      case 'no-cascade': {
+        // Three sub-paths depending on the shape of the edit:
+        //   (a) Single-issue primary + legacy toggle on → GanttConfirmCommitPopup (PR3.3 behaviour preserved)
+        //   (b) Multi-issue primary (parent-drag) → ConfirmCascadePopup with shifts=[]
+        //       so the user sees the children that will move together (Codex
+        //       review round-5 UX decision B)
+        //   (c) Single-issue primary + legacy toggle off → commit directly
+        if (primaryEdits.length > 1) {
+          // Parent-drag (or any multi-primary commit) — show the mini-timeline
+          // confirm so the user sees every issue that will move.
+          activeDrag.set({ kind: 'idle' })
+          showPopup(
+            ConfirmCascadePopup,
+            {
+              primary: result.primary,
+              shifts: [],
+              skippedUnscheduled: 0,
+              lockedIssues: []
+            },
+            'middle',
+            (ok: boolean) => {
+              if (ok !== true) return
+              void commitCascadeBatch(result.primary, [])
+            }
+          )
+          return
+        }
+        if (legacyConfirmKind !== 'none') {
+          const pe = primaryEdits[0]
+          const ok = await new Promise<boolean>((resolve) => {
+            showPopup(
+              GanttConfirmCommitPopup,
+              { issue: pe.issue, kind: legacyConfirmKind, newStart: pe.newStart, newDue: pe.newDue },
+              'top',
+              (r: boolean | undefined) => resolve(r === true)
+            )
+          })
+          if (!ok) {
+            activeDrag.set({ kind: 'idle' })
+            return
+          }
+        }
+        const ops = client.apply(undefined, 'gantt-no-cascade')
+        for (const pe of result.primary) {
+          await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
+        }
+        const r = await ops.commit()
+        if (!r.result) {
+          const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
+          addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
+        }
+        return
+      }
+      case 'cascade':
+      case 'permission-denied': {
+        // Drop the live preview before the modal blocks input.
+        activeDrag.set({ kind: 'idle' })
+        showPopup(
+          ConfirmCascadePopup,
+          {
+            primary: result.primary,
+            shifts: result.shifts,
+            skippedUnscheduled: 'skippedUnscheduled' in result ? result.skippedUnscheduled : 0,
+            lockedIssues: result.kind === 'permission-denied' ? result.lockedIssues : []
+          },
+          'middle',
+          (ok: boolean) => {
+            if (ok !== true) return // Cancel or close
+            if (result.kind === 'permission-denied') return // Confirm disabled, but defensively ignore
+            void commitCascadeBatch(result.primary, result.shifts)
+          }
+        )
+        return
+      }
+      case 'cycle': {
+        activeDrag.set({ kind: 'idle' })
+        const t = await translate(tracker.string.CascadeBannerCycle, {}, undefined)
+        addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
+        return
+      }
+      case 'iteration-overflow': {
+        activeDrag.set({ kind: 'idle' })
+        const t = await translate(tracker.string.CascadeBannerOverflow, { max: 1000 }, undefined)
+        addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
+        return
+      }
+    }
+  }
+
+  async function commitCascadeBatch (
+    primary: PrimaryEdit[],
+    shifts: CascadeShift[]
+  ): Promise<void> {
+    const client = getClient()
+    const ops = client.apply(undefined, 'gantt-cascade-commit')
+    for (const pe of primary) {
+      await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
+    }
+    for (const sh of shifts) {
+      await ops.update(sh.issue, { startDate: sh.newStart, dueDate: sh.newDue })
+    }
+    const r = await ops.commit()
+    if (!r.result) {
+      const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
+      addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
+    }
+  }
+
+  /**
+   * Returns true iff the relation `r` is satisfied given the proposed
+   * primary edit `pe` and the current dates of the other side. Used for
+   * the Alt-bypass violation count only.
+   */
+  function relationSatisfied (
+    r: IssueRelation,
+    pe: PrimaryEdit,
+    otherIssue: Issue
+  ): boolean {
+    const isOutgoing = String(r.attachedTo) === String(pe.issue._id)
+    const predStart = isOutgoing ? pe.newStart : (otherIssue.startDate as number)
+    const predDue = isOutgoing ? pe.newDue : (otherIssue.dueDate as number)
+    const succStart = isOutgoing ? (otherIssue.startDate as number) : pe.newStart
+    const succDue = isOutgoing ? (otherIssue.dueDate as number) : pe.newDue
+    const lag = r.lag ?? 0
+    switch (r.kind) {
+      case 'finish-to-start': return addScheduleDays(predDue, lag) <= succStart
+      case 'start-to-start': return addScheduleDays(predStart, lag) <= succStart
+      case 'finish-to-finish': return addScheduleDays(predDue, lag) <= succDue
+      case 'start-to-finish': return addScheduleDays(predStart, lag) <= succDue
+    }
+  }
+
+  async function commitDrag (state: DragState, event?: PointerEvent | MouseEvent): Promise<void> {
     if (state.kind === 'idle' || state.kind === 'hover-bar') return
     // Guard: an unscheduled-drag that never reached the canvas (e.g. the user
     // clicked the drag-grip and released without moving) must NOT silently
     // schedule the issue to "today". Codex review-3 (2026-05-10).
     if (state.kind === 'dragging-unscheduled' && !state.hasCanvasTarget) return
+    const altKey = event?.altKey === true
     const client = getClient()
-    const ops = client.apply('gantt-drag')
-    if (state.target.kind === 'issue') {
-      await commitIssueDrag(state, state.target, ops)
-    } else {
+
+    // Milestone path — unchanged from PR3.3. The existing
+    // `commitMilestoneDrag(state, target, ops)` signature
+    // (line ~713: state: DragState, target: { kind: 'milestone', doc:
+    // Milestone }, ops: ApplyOperations) handles dragging-body,
+    // resizing-left and resizing-right; dragging-unscheduled is
+    // unreachable for milestones.
+    if (state.target.kind === 'milestone') {
+      const ops = client.apply('gantt-drag')
       await commitMilestoneDrag(state, state.target, ops)
+      const r = await ops.commit()
+      if (!r.result) {
+        const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
+        addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
+      }
+      return
     }
-    const result = await ops.commit()
-    if (!result.result) {
-      const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
-      addNotification(title, '', undefined as any, undefined, NotificationSeverity.Error)
+
+    // Issue dragging-unscheduled — no relations to cascade, keep PR3
+    // single-update commit via commitIssueDrag.
+    if (state.kind === 'dragging-unscheduled') {
+      const ops = client.apply('gantt-drag')
+      await commitIssueDrag(state, state.target, ops)
+      const r = await ops.commit()
+      if (!r.result) {
+        const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
+        addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
+      }
+      return
+    }
+
+    // Cascade-eligible issue states (dragging-body, resizing-*).
+    // Parent-drag detection: check full space for children.
+    if (state.kind === 'dragging-body' && state.target.kind === 'issue') {
+      const parent = state.target.doc
+      const allInSpace = await client.findAll(tracker.class.Issue, { space: parent.space })
+      const isParent = allInSpace.some((i) => i.parents?.[0]?.parentId === parent._id)
+      if (isParent) {
+        const delta = (state as any).previewStart - (state as any).originStart
+        const primaryEdits: PrimaryEdit[] = [{
+          issue: parent,
+          newStart: (state as any).previewStart,
+          newDue: (state as any).previewEnd
+        }]
+        for (const child of descendantsWithDates(parent, allInSpace)) {
+          primaryEdits.push({
+            issue: child,
+            newStart: (child.startDate as number) + delta,
+            newDue: (child.dueDate as number) + delta
+          })
+        }
+        // Parent-drag fans out → primaryEdits.length > 1, so commitWithCascade
+        // will skip the legacy popup branch anyway. Pass 'none' for clarity.
+        await commitWithCascade(primaryEdits, altKey, parent.space, 'none')
+        return
+      }
+      // Childless issue falls through to the leaf branch below.
+    }
+
+    if (state.kind === 'dragging-body') {
+      const target = state.target.doc
+      const primaryEdits: PrimaryEdit[] = [{
+        issue: target,
+        newStart: (state as any).previewStart,
+        newDue: (state as any).previewEnd
+      }]
+      const legacyConfirmKind: 'move' | 'resize' | 'none' = confirmMove ? 'move' : 'none'
+      await commitWithCascade(primaryEdits, altKey, target.space, legacyConfirmKind)
+      return
+    }
+    if (state.kind === 'resizing-left') {
+      const target = state.target.doc
+      const primaryEdits: PrimaryEdit[] = [{
+        issue: target,
+        newStart: (state as any).previewStart,
+        newDue: target.dueDate as number
+      }]
+      const legacyConfirmKind: 'move' | 'resize' | 'none' = confirmResize ? 'resize' : 'none'
+      await commitWithCascade(primaryEdits, altKey, target.space, legacyConfirmKind)
+      return
+    }
+    if (state.kind === 'resizing-right') {
+      const target = state.target.doc
+      const primaryEdits: PrimaryEdit[] = [{
+        issue: target,
+        newStart: target.startDate as number,
+        newDue: (state as any).previewEnd
+      }]
+      const legacyConfirmKind: 'move' | 'resize' | 'none' = confirmResize ? 'resize' : 'none'
+      await commitWithCascade(primaryEdits, altKey, target.space, legacyConfirmKind)
+      return
     }
   }
 
@@ -864,7 +1158,6 @@
   // -------------------------------------------------------------------------
 
   let focusedIssueId: string | null = null
-  const DAY_MS = 86_400_000
 
   $: scheduledIssues = issues.filter((i) => i.startDate != null && i.dueDate != null)
 
@@ -881,26 +1174,26 @@
     const i = scheduledIssues.find((it) => String(it._id) === focusedIssueId)
     if (i === undefined || i.startDate == null || i.dueDate == null) return
     if (!editableIssueIds.has(focusedIssueId)) return
-    const client = getClient()
-    const ops = client.apply('gantt-keyshift')
-    await ops.update(i, {
-      startDate: i.startDate + days * DAY_MS,
-      dueDate: i.dueDate + days * DAY_MS
-    })
-    // Same filter-vs-truth issue as commitDrag: query the full space so
-    // filter-hidden descendants still shift with the parent (internal review)
-    const allInSpace = await client.findAll(tracker.class.Issue, { space: i.space })
+    const allInSpace = await getClient().findAll(tracker.class.Issue, { space: i.space })
+    // All date arithmetic routes through addScheduleDays so the Phase-2
+    // working-calendar swap stays a single integration point (Spec §5.3).
+    const primaryEdits: PrimaryEdit[] = [{
+      issue: i,
+      newStart: addScheduleDays(i.startDate, days),
+      newDue: addScheduleDays(i.dueDate, days)
+    }]
+    // Include descendants (matches PR3 behaviour for parent shifts).
     for (const child of descendantsWithDates(i, allInSpace)) {
-      await ops.update(child, {
-        startDate: (child.startDate as number) + days * DAY_MS,
-        dueDate: (child.dueDate as number) + days * DAY_MS
+      primaryEdits.push({
+        issue: child,
+        newStart: addScheduleDays(child.startDate as number, days),
+        newDue: addScheduleDays(child.dueDate as number, days)
       })
     }
-    const r = await ops.commit()
-    if (!r.result) {
-      const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
-      addNotification(title, '', undefined as any, undefined, NotificationSeverity.Error)
-    }
+    // Keyboard shift has no Alt-modifier path and no legacy-confirm UX
+    // (the toggle is tied to mouse drag, not keyboard). Always run cascade
+    // simulation, never show legacy popup.
+    await commitWithCascade(primaryEdits, false, i.space, 'none')
   }
 
   function onKey (e: KeyboardEvent): void {
