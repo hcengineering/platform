@@ -597,6 +597,13 @@
 <style lang="scss">
   .bar {
     transition: filter 120ms ease;
+    /*
+     * Tier-4 Item 13 — Mobile-Friendly Gantt. touch-action: none stops
+     * iOS Safari from hijacking touch on the bar with native pan-zoom
+     * gestures, so the pointerdown → long-press → drag pipeline gets
+     * the events. Spec §"iOS-Safari Edge-Cases".
+     */
+    touch-action: none;
   }
   .bar:hover {
     filter: brightness(1.1);
