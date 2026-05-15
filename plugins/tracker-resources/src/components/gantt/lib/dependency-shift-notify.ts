@@ -4,7 +4,7 @@
 //
 
 /**
- * Tier-4 Item 14 — Notification on Dependency-Shift.
+ *  — Notification on Dependency-Shift.
  *
  * Pure aggregation helpers that turn the in-memory cascade result
  * (`PrimaryEdit[]` + `CascadeShift[]`) into a per-recipient `ShiftedIssuePayload`

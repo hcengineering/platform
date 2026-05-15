@@ -20,21 +20,21 @@ export interface BuildLayoutOptions {
   /** Set of row ids that are currently collapsed (children hidden). */
   collapsedIds?: Set<string>
   /**
-   * Tier-4 Item 12 — Tree-View — set of issue ids that match the active
+   *  — Tree-View — set of issue ids that match the active
    * filter. When set, only matching issues and their ancestors are emitted
    * (when {@link includeBreadcrumbs} is true). When undefined, no filtering
    * is applied at the layout level.
    */
   matchedIds?: Set<string>
   /**
-   * Tier-4 Item 12 — when true together with {@link matchedIds}, non-matching
+   *  — when true together with {@link matchedIds}, non-matching
    * ancestors of matching issues are emitted as breadcrumb rows
    * (`isBreadcrumb: true`) for filter-context. When false / undefined, only
    * matching issues are emitted (hard filter).
    */
   includeBreadcrumbs?: boolean
   /**
-   * Tier-4 Item 12 — optional comparator applied to siblings within the same
+   *  — optional comparator applied to siblings within the same
    * hierarchy level (roots, milestone-group members, children of a given
    * parent). The tree structure is preserved; only sibling order changes.
    * When undefined, the input order is preserved (legacy behaviour).
@@ -90,7 +90,7 @@ export function buildLayout (
     }
   }
 
-  // Tier-4 Item 12 — compute the breadcrumb-set: every ancestor of every
+  //  — compute the breadcrumb-set: every ancestor of every
   // matching issue. Used to keep filter-context visible (the "why is this
   // issue under that parent?" affordance).
   const breadcrumbIds = new Set<string>()

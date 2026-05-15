@@ -44,7 +44,7 @@
   export let violatedRelations: Set<Ref<IssueRelation>> = new Set()
   export let showCriticalPath: boolean = false
   /**
-   * Tier-3 Item 5 — Y-axis viewport bounds in canvas-pixel space (same
+   *  — Y-axis viewport bounds in canvas-pixel space (same
    * coordinate system as the barRects map above). When `undefined`, every
    * arrow is rendered in full (legacy mode, used by embed previews and
    * fixtures). When set, off-viewport endpoints are clipped to the edge

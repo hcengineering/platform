@@ -157,7 +157,7 @@ describe('buildLayout — collapse', () => {
   })
 })
 
-describe('buildLayout — breadcrumb mode (Tier-4 Item 12)', () => {
+describe('buildLayout — breadcrumb mode', () => {
   it('renders parent as breadcrumb when only child matches filter', () => {
     const parent = fakeIssue('P', undefined, true)
     const child = fakeIssue('C', 'P')
@@ -203,7 +203,7 @@ describe('buildLayout — breadcrumb mode (Tier-4 Item 12)', () => {
   })
 })
 
-describe('buildLayout — within-level sort (Tier-4 Item 12)', () => {
+describe('buildLayout — within-level sort', () => {
   it('sorts siblings without flattening hierarchy', () => {
     const p1 = fakeIssue('P1', undefined, true)
     const p2 = fakeIssue('P2')
@@ -245,7 +245,7 @@ describe('buildLayout — within-level sort (Tier-4 Item 12)', () => {
   })
 })
 
-describe('buildLayout — Tier-4 combined breadcrumb + sort + collapse', () => {
+describe('buildLayout — combined breadcrumb + sort + collapse', () => {
   it('preserves breadcrumb + within-level sort under collapsed sibling', () => {
     const p1 = fakeIssue('P1', undefined, true)
     const p2 = fakeIssue('P2', undefined, true)

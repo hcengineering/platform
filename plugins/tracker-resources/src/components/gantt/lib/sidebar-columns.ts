@@ -124,7 +124,7 @@ export function clampWidth (px: number): number {
 }
 
 /**
- * v121.2 fix — total pixel width of the visible column set. Used by the
+ *  fix — total pixel width of the visible column set. Used by the
  * extended sidebar grid to size the outer container to the actual columns
  * sum, so the outer GanttView sidebar grid-column tracks the inner grid
  * and the resize handle / column headers / overflow line up.

@@ -4,7 +4,7 @@
 //
 
 /**
- * Tier-4 Item 14 — Notification on Dependency-Shift.
+ *  — Notification on Dependency-Shift.
  *
  * Client-side dispatcher: takes a freshly-committed cascade result and emits
  * one `DependencyShiftedNotification` per (non-trigger) recipient. The send

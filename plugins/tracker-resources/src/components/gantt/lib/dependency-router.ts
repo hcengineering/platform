@@ -125,7 +125,7 @@ export function arrowheadPoints (p1: Point, p2: Point): [Point, Point, Point] {
 }
 
 /**
- * Tier-3 Item 5 — Y-axis viewport bounds in canvas coordinate space. Used
+ *  — Y-axis viewport bounds in canvas coordinate space. Used
  * by {@link classifyArrowVisibility} to decide whether a dependency arrow's
  * source / target endpoint is on-screen. Same coordinate space as `BarRect`.
  */

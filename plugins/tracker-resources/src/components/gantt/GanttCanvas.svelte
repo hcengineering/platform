@@ -93,7 +93,7 @@
   // viewport receives a low-alpha background fill so the user sees at a
   // glance which days the scheduler will skip.
   export let workingDaysConfig: WorkingDaysConfig | undefined = undefined
-  /** Tier-4 Item 13 — layout mode for mobile-friendly rendering. */
+  /**  — layout mode for mobile-friendly rendering. */
   export let layoutMode: LayoutMode = 'desktop'
   /** Bulk-select: set of selected issue id strings for co-drag highlighting. */
   export let multiSelectedIssueIds: Set<string> = new Set()
@@ -144,7 +144,7 @@
   }
 
   $: visibleRows = filterVisibleRows(rows, scrollTop, viewportHeight)
-  // Tier-3 Item 5 — Y-viewport bounds in canvas-pixel space so the
+  //  — Y-viewport bounds in canvas-pixel space so the
   // dependency layer can clip arrows to off-viewport bars. Bars in
   // barRects live at `milestoneStripHeight + row.y + 6` etc., already in
   // the canvas coordinate system, so the bounds are just the scroll
@@ -322,7 +322,7 @@
           {/if}
         {:else if row.issue !== null}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <!-- v121.19 — Mobile A11Y: on phones, iOS/Android intercept
+          <!--  — Mobile A11Y: on phones, iOS/Android intercept
                double-tap for system zoom, which collides with our
                openIssue trigger. On phone layout we therefore drop the
                dblclick handler entirely; users open the full editor

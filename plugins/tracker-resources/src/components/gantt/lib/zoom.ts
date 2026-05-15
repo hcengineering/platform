@@ -6,7 +6,7 @@
 import type { ZoomLevel } from './types'
 
 /**
- * v121.3-C — continuous (Ctrl+Wheel) zoom math.
+ * C — continuous (Ctrl+Wheel) zoom math.
  *
  * The 4 toolbar buttons (Day/Week/Month/Quarter) remain the entry-points
  * for "snap to a sensible preset". On top of that, Ctrl+Wheel (Cmd+Wheel

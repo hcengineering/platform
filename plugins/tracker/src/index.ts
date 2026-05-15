@@ -284,7 +284,7 @@ export interface Issue extends Task {
   todos?: CollectionSize<ToDo>
 
   /**
-   * Tier-2 Item 5 — Auto-Scheduling-Toggle.
+   *  — Auto-Scheduling-Toggle.
    *
    * Controls whether the cascade scheduler in `gantt/lib/scheduler.ts`
    * may shift this issue when a predecessor or successor is moved by
@@ -302,7 +302,7 @@ export interface Issue extends Task {
 }
 
 /**
- * Tier-4 Item 14 — Notification on Dependency-Shift.
+ *  — Notification on Dependency-Shift.
  * One entry per shifted issue in a cascade bundle.
  * @public
  */
@@ -319,7 +319,7 @@ export interface ShiftedIssuePayload {
 }
 
 /**
- * Tier-4 Item 14 — Notification on Dependency-Shift.
+ *  — Notification on Dependency-Shift.
  * One bundle per recipient per cascade-commit.
  * @public
  */
@@ -721,7 +721,7 @@ const pluginState = plugin(trackerId, {
     GanttBarLabelRight: '' as IntlString,
     GanttQuickInfoOnClick: '' as IntlString,
     QuickInfoOpenFullEditor: '' as IntlString,
-    // Tier-4 Item 14 — Notification on Dependency-Shift.
+    //  — Notification on Dependency-Shift.
     DependencyShifted: '' as IntlString,
     DependencyShiftedHeader: '' as IntlString,
     DependencyShiftedMessage: '' as IntlString,

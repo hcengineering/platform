@@ -82,9 +82,9 @@
   {#if viewOptions && showViewOptions}
     <ViewOptionsButton {viewlet} {kind} {viewOptions} {viewOptionsConfig} {hideGroupingAndOrdering} />
   {/if}
-  <!-- v121.12 / Refactor B — Configure-columns button gets its own
+  <!--  / Refactor B — Configure-columns button gets its own
        IntlString so the tooltip differs from the sibling ViewOptionsButton
-       (which keeps "Customize view"). Before v121.12 both buttons rendered
+       (which keeps "Customize view"). Before  both buttons rendered
        the same tooltip "Customize view" with no way for the user to tell
        them apart. -->
   <ButtonIcon

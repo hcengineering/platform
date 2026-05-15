@@ -7,7 +7,7 @@ import type { Issue } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 
 /**
- * Tier-2 Item 6 — Bulk-Select + Bulk-Drag.
+ *  — Bulk-Select + Bulk-Drag.
  *
  * Pure selection-state helpers. Every function returns a fresh `Set`; the
  * input is never mutated so the caller can use these helpers from inside a
