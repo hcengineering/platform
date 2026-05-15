@@ -91,6 +91,7 @@
     "SubIssuesList": "Unteraufgaben ({subIssues})",
     "OpenSubIssues": "Unteraufgaben öffnen",
     "AddSubIssues": "Unteraufgabe hinzufügen",
+    "LinkExistingSubIssue": "Bestehende Aufgabe verknüpfen…",
     "BlockedBy": "Blockiert durch",
     "RelatedTo": "Verwandt mit",
     "Comments": "Kommentare",
