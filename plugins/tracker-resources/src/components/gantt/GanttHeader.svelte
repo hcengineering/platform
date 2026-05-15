@@ -11,7 +11,7 @@
 
   // Filter ticks to viewport for performance, but render the SVG at full
   // canvas width so the sticky-header lives in the same coordinate system
-  // as the canvas-stack (Codex review: SVG must extend across the whole
+  // as the canvas-stack (review note: SVG must extend across the whole
   // scroll content, not just the visible viewport).
   $: visibleRange = [
     timeScale.fromX(Math.max(0, viewport.left - 100)),

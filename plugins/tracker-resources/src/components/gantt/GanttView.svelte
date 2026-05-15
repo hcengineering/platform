@@ -537,7 +537,7 @@
       >
         <!-- Row 1: corner / resize-corner / time-axis header (all sticky-top).
              The corner shows column labels on the top half + an inline
-             date-range navigation strip on the bottom half (Stitch-style). -->
+             date-range navigation strip on the bottom half (). -->
         <div class="cell corner" style="height: {HEADER_HEIGHT}px;">
           <div class="corner-cols">
             <span class="col-toggle" />
@@ -835,7 +835,7 @@
   }
   .header-cell, .canvas-cell { overflow: hidden; }
   .hscroll-inner { will-change: transform; }
-  /* Codex robustness fix: absolutely-pin the bar at the bottom of
+  /* robustness fix: absolutely-pin the bar at the bottom of
      gantt-root instead of relying on the flex chain to enforce a
      constrained height. This way the bar can never slip below the
      visible viewport even if a parent forgets to set min-height:0. */

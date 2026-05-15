@@ -151,7 +151,7 @@
   </g>
 
   <!-- Milestone target-date markers as short tick + diamond at the top
-       of the canvas only (Stitch redesign: less visual noise than a
+       of the canvas only (redesign: less visual noise than a
        full-height dashed line). -->
   <g class="milestones">
     {#each milestones as ms (ms._id)}
