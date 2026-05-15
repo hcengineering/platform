@@ -352,6 +352,11 @@ export default mergeIds(trackerId, tracker, {
     CascadeBannerBypass: '' as IntlString,
     CascadeLockedSuccessors: '' as IntlString,
     CascadeSkippedUnscheduled: '' as IntlString,
+    // PR4b: cascade popup color legend
+    CascadeLegendPrimary: '' as IntlString,
+    CascadeLegendPush: '' as IntlString,
+    CascadeLegendPull: '' as IntlString,
+    CascadeLegendOldNew: '' as IntlString,
     // PR4b: issue-editor dependencies panel
     Dependencies: '' as IntlString
   },
