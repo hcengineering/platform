@@ -37,6 +37,7 @@
   stroke="#ffffff"
   stroke-width={1.5}
   on:pointerdown={onDown}
+  on:click|stopPropagation={() => {}}
 />
 
 <style lang="scss">
