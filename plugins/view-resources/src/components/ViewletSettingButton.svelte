@@ -28,10 +28,15 @@
   export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let defaultViewOptions: ViewOptions | undefined = undefined
   export let defaultConfig: (BuildModelKey | string)[] | undefined = undefined
-  // v121.12/v121.16/v121.18 — the previously-exported `showViewOptions` prop
-  // was removed in v121.18 (audit-cleanup) after v121.16 reverted v121.12 §B's
-  // sole caller. Both child buttons (ViewOptionsButton + Configure ButtonIcon)
-  // now always render whenever the viewlet defines them.
+  /**
+   * v121.12 / Refactor B — when false, the ViewOptionsButton (filter / group-by
+   * / sort) is hidden and only the Configure-columns ButtonIcon renders.
+   * Gantt mode passes false because the Gantt toolbar already provides its
+   * own group-by/sort controls (Spec §"Group-By + Tree"), but the column
+   * configuration is still useful for Bar-Label ViewOptions. List mode keeps
+   * the default `true` so both buttons render as before.
+   */
+  export let showViewOptions: boolean = true
 
   let btn: HTMLButtonElement
   let pressed: boolean = false
@@ -67,7 +72,7 @@
 </script>
 
 {#if viewlet}
-  {#if viewOptions}
+  {#if viewOptions && showViewOptions}
     <ViewOptionsButton {viewlet} {kind} {viewOptions} {viewOptionsConfig} />
   {/if}
   <!-- v121.12 / Refactor B — Configure-columns button gets its own

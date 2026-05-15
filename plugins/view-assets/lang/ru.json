@@ -46,6 +46,7 @@
     "ShowActions": "Показать действия",
     "RestoreDefaults": "По умолчанию",
     "CustomizeView": "Настроить отображение",
+    "ConfigureColumns": "Настроить столбцы",
     "Filter": "Фильтр",
     "ClearFilters": "Очистить",
     "FilterLessThan": "Меньше чем",
@@ -115,12 +116,10 @@
     "TableCopiedToClipboard": "Таблица скопирована в буфер обмена",
     "TableCopyFailed": "Не удалось скопировать таблицу в буфер обмена",
     "PublicView": "Публичный",
-
     "ChooseIcon": "Выбрать иконку",
     "IconColor": "Выберите цвет",
     "IconCategory": "Иконка",
     "EmojiCategory": "Эмодзи",
-
     "Type": "Введите",
     "ToViewCommands": "чтобы увидеть команды",
     "UnArchive": "Разархивировать",
