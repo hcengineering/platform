@@ -3,16 +3,27 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { Issue, IssueRelation } from '@hcengineering/tracker'
+import type { Issue, IssueRelation, WorkingDaysConfig } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 import type { PrimaryEdit, CascadeShift, SimulateResult } from './types'
+import {
+  fsAnchor,
+  ssAnchor,
+  ffAnchor,
+  sfAnchor,
+  fsReverseAnchor,
+  ssReverseAnchor,
+  ffReverseAnchor,
+  sfReverseAnchor
+} from './working-days'
 
 const DAY_MS = 86_400_000
 
 /**
- * Schedule arithmetic — Phase-1 uses calendar days. Phase-2 will replace
- * the body with a working-calendar lookup; the signature is the
- * integration point. All cascade-math callers route through this helper.
+ * Schedule arithmetic helper — kept for callers that need raw calendar-day
+ * math (e.g. summary aggregates). The cascade scheduler itself now routes
+ * through the per-kind anchor helpers in `working-days.ts`, which respect
+ * the optional WorkingDaysConfig.
  */
 export function addScheduleDays (t: number, days: number): number {
   return t + days * DAY_MS
@@ -178,8 +189,9 @@ export function simulateCascade (
   allIssues: Issue[],
   relations: IssueRelation[],
   canEdit: (ref: Ref<Issue>) => boolean,
-  options?: { maxIterations?: number }
+  options?: { maxIterations?: number, workingDays?: WorkingDaysConfig }
 ): SimulateResult {
+  const cfg = options?.workingDays
   // Step 0: pre-flight cycle check on the relation graph itself.
   const cycle = detectCycle(relations)
   if (cycle !== null) return { kind: 'cycle', cycleNodes: cycle }
@@ -251,16 +263,16 @@ export function simulateCascade (
       let requiredAnchor: number
       let targetAnchorIsStart: boolean
       if (r.kind === 'finish-to-start') {
-        requiredAnchor = addScheduleDays(curDates.due, lag)
+        requiredAnchor = fsAnchor(curDates.due, lag, cfg)
         targetAnchorIsStart = true
       } else if (r.kind === 'start-to-start') {
-        requiredAnchor = addScheduleDays(curDates.start, lag)
+        requiredAnchor = ssAnchor(curDates.start, lag, cfg)
         targetAnchorIsStart = true
       } else if (r.kind === 'finish-to-finish') {
-        requiredAnchor = addScheduleDays(curDates.due, lag)
+        requiredAnchor = ffAnchor(curDates.due, lag, cfg)
         targetAnchorIsStart = false
       } else /* start-to-finish */ {
-        requiredAnchor = addScheduleDays(curDates.start, lag)
+        requiredAnchor = sfAnchor(curDates.start, lag, cfg)
         targetAnchorIsStart = false
       }
 
@@ -316,16 +328,16 @@ export function simulateCascade (
       let requiredAnchor: number
       let predAnchorIsDue: boolean
       if (r.kind === 'finish-to-start') {
-        requiredAnchor = addScheduleDays(curDates.start, -lag)
+        requiredAnchor = fsReverseAnchor(curDates.start, lag, cfg)
         predAnchorIsDue = true
       } else if (r.kind === 'start-to-start') {
-        requiredAnchor = addScheduleDays(curDates.start, -lag)
+        requiredAnchor = ssReverseAnchor(curDates.start, lag, cfg)
         predAnchorIsDue = false
       } else if (r.kind === 'finish-to-finish') {
-        requiredAnchor = addScheduleDays(curDates.due, -lag)
+        requiredAnchor = ffReverseAnchor(curDates.due, lag, cfg)
         predAnchorIsDue = true
       } else /* start-to-finish */ {
-        requiredAnchor = addScheduleDays(curDates.due, -lag)
+        requiredAnchor = sfReverseAnchor(curDates.due, lag, cfg)
         predAnchorIsDue = false
       }
       const predAnchor = predAnchorIsDue ? predDates.due : predDates.start
