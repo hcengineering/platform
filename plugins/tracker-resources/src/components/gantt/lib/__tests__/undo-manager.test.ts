@@ -556,7 +556,7 @@ describe('UndoManager — relation entries', () => {
   })
 })
 
-// v121.3-D — explicit coverage for the spec'd cascade-undo atomicity and
+// D — explicit coverage for the spec'd cascade-undo atomicity and
 // the conflict-drops-frame contract that GanttView's notification path
 // relies on.
 describe('UndoManager — cascade atomicity & conflict-drops-frame', () => {
