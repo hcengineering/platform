@@ -30,16 +30,33 @@
 
   const dispatch = createEventDispatcher()
 
+  // v121.12 / Refactor A — the close-handling has to be explicit on
+  // both the X-button (via `onCancel`) AND the OK-button (via `onSave`),
+  // because the platform Card.svelte handles them on separate paths:
+  //  • OK-click → calls `okAction` and AFTER its Promise resolves
+  //    dispatches its own (detail-less) close → Card→GanttSaveViewPopup
+  //    forwarder. So returning a result requires `onSave` to dispatch
+  //    close{detail} synchronously BEFORE the Card's tail-close fires.
+  //  • X-click → invokes the `onCancel` prop if provided, otherwise
+  //    dispatches close (no detail) on Card → forwarded out. Wiring
+  //    `onCancel` directly bypasses the `<Card on:close={...}>` chain
+  //    which was empirically not closing the popup on X-click in
+  //    v121.11 (user report Refactor A).
   async function onSave (): Promise<void> {
     const trimmed = viewName.trim()
     if (trimmed.length === 0) return
     dispatch('close', { name: trimmed, fixTimeWindow, sharable })
+  }
+
+  function onCancel (): void {
+    dispatch('close')
   }
 </script>
 
 <Card
   label={tracker.string.GanttSavedViewNew}
   okAction={onSave}
+  {onCancel}
   canSave={viewName.trim().length > 0}
   okLabel={tracker.string.GanttSavedViewSave}
   gap={'gapV-4'}
