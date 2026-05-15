@@ -72,7 +72,9 @@
     stroke-dasharray: 5,4;
   }
   :global(svg.gantt-canvas .live-connector.targeting) {
-    stroke-dasharray: none;
+    /* "0" is the canonical "no dash" reset; "none" is not a valid value
+       for stroke-dasharray and browsers fall back silently. */
+    stroke-dasharray: 0;
     stroke: #475569;
   }
 </style>
