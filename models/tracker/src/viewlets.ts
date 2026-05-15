@@ -244,6 +244,25 @@ export function ganttViewOptions (): ViewOptionsModel {
         defaultValue: true,
         actionTarget: 'display',
         label: tracker.string.GanttShowStatus
+      },
+      {
+        // Default-on safety prompt: when set, dragging an issue's bar to a
+        // new date range shows a confirm dialog before writing the change.
+        // User feedback 2026-05-11: easy to misclick a bar while panning,
+        // and a one-click confirm prevents accidental schedule edits.
+        key: 'ganttConfirmMove',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttConfirmMove
+      },
+      {
+        // Same idea but for left/right resize handles.
+        key: 'ganttConfirmResize',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttConfirmResize
       }
     ]
   }

@@ -29,6 +29,7 @@
   export let issueRef: Ref<Issue> | undefined = undefined
   export let issueObj: Issue | undefined = undefined
   export let focused: boolean = false
+  export let selected: boolean = false
 
   const dispatch = createEventDispatcher<{
     barMouseDown: { issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }
@@ -124,6 +125,10 @@
   $: tooltipText = visible
     ? `${issue.title} (${new Date(startVal).toISOString().slice(0, 10)} → ${new Date(dueVal).toISOString().slice(0, 10)})`
     : ''
+  // Milestone summaries pass no issueObj because they aggregate child dates
+  // synthetically — those stay read-only. Parent-issue summaries DO have an
+  // issueObj (the parent), and that one is editable.
+  $: isMilestoneSummary = isSummary && issueObj === undefined
   // Heuristic: ~7.5px per character at 13px font — leave breathing room.
   const CHAR_PX = 7.5
   $: maxChars = Math.floor((w - 12) / CHAR_PX)
@@ -136,7 +141,51 @@
   {@const barY = row.y + 6}
   {@const barH = row.height - 12}
   {#if isSummary}
-    <!-- MS-Project-style claw: thin black bar with downward triangles at both ends -->
+    <!-- MS-Project-style claw: thin black bar with downward triangles at
+         both ends. Codex review-5 2026-05-11: a transparent hit-rect
+         spanning the full claw width receives mousedown/contextmenu so
+         parent-issues (which render as a claw because they have children)
+         can still be dragged. Without this rect the claw was visually
+         editable but functionally inert — commitDrag's parent-pulls-
+         children path was unreachable from the UI. -->
+    {#if editable && !isMilestoneSummary}
+      <rect
+        x={x}
+        y={barY}
+        width={w}
+        height={barH}
+        fill="transparent"
+        class="summary-hit"
+        class:selected
+        class:active-drag={isThisBarActive}
+        on:mousedown={onBarDown('body')}
+        on:contextmenu={onBarContextMenu}
+      />
+      {#if w >= 18}
+        <rect
+          class="resize-handle resize-left"
+          x={x}
+          y={barY}
+          width={6}
+          height={barH}
+          fill="transparent"
+          pointer-events="all"
+          on:mousedown={onBarDown('left')}
+          on:contextmenu={onBarContextMenu}
+        />
+        <rect
+          class="resize-handle resize-right"
+          x={x + w - 6}
+          y={barY}
+          width={6}
+          height={barH}
+          fill="transparent"
+          pointer-events="all"
+          on:mousedown={onBarDown('right')}
+          on:contextmenu={onBarContextMenu}
+        />
+      {/if}
+    {/if}
     <line
       x1={x + 1}
       x2={x + w - 1}
@@ -144,14 +193,17 @@
       y2={barY + barH / 2}
       stroke="var(--theme-content-color)"
       stroke-width={3}
+      pointer-events="none"
     />
     <polygon
       points="{x},{barY + barH / 2 - 1} {x + 6},{barY + barH / 2 - 1} {x + 3},{barY + barH / 2 + 5}"
       fill="var(--theme-content-color)"
+      pointer-events="none"
     />
     <polygon
       points="{x + w - 6},{barY + barH / 2 - 1} {x + w},{barY + barH / 2 - 1} {x + w - 3},{barY + barH / 2 + 5}"
       fill="var(--theme-content-color)"
+      pointer-events="none"
     />
     {#if barLabel !== ''}
       <text
@@ -177,6 +229,7 @@
       class:editable
       class:active-drag={isThisBarActive}
       class:focused
+      class:selected
       on:mousedown={onBarDown('body')}
       on:contextmenu={onBarContextMenu}
     />
@@ -252,5 +305,24 @@
     stroke: var(--theme-state-info-color, #6366f1);
     stroke-width: 2px;
     stroke-dasharray: 2,2;
+  }
+  /*
+   * Click-to-select state: solid blue outline so the user can clearly see
+   * which bar is armed for drag/resize. Distinct from .focused (dashed,
+   * keyboard-only) and .active-drag (glow, mid-drag).
+   */
+  .bar.selected {
+    stroke: var(--theme-state-info-color, #6366f1);
+    stroke-width: 2px;
+    filter: drop-shadow(0 0 2px color-mix(in srgb, var(--theme-state-info-color, #6366f1) 35%, transparent));
+  }
+  /* Parent-issue summary claw: invisible hit-rect with select/drag visual
+     feedback when the user has armed the claw via click. */
+  :global(svg.gantt-canvas .summary-hit) {
+    cursor: grab;
+  }
+  :global(svg.gantt-canvas .summary-hit.selected),
+  :global(svg.gantt-canvas .summary-hit.active-drag) {
+    fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 12%, transparent);
   }
 </style>
