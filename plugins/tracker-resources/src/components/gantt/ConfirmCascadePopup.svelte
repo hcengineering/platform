@@ -172,6 +172,16 @@
     <Label label={tracker.string.CascadeConfirmTitle} params={{ count: titleCount }} />
   </div>
 
+  {#if primary.length > 1}
+    <!-- Tier-2 Item 6 — surface the bulk-primary count above the
+         skipped-unscheduled / locked-successor hints. The user sees at a
+         glance that this commit moves N issues directly (in addition to
+         any cascade shifts the timeline below shows). -->
+    <div class="hint">
+      <Label label={tracker.string.GanttBulkSelectedCount} params={{ count: primary.length }} />
+    </div>
+  {/if}
+
   {#if skippedUnscheduled > 0}
     <div class="hint">
       <Label label={tracker.string.CascadeSkippedUnscheduled} params={{ count: skippedUnscheduled }} />
