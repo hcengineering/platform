@@ -154,3 +154,43 @@ describe('computeCriticalPath — lag + anchor variants', () => {
     expect(res.slack.has('B' as Ref<Issue>)).toBe(false)
   })
 })
+
+describe('computeCriticalPath — working-days mode', () => {
+  const cfgMonFri = { weekdayMask: 0b0011111, holidays: [] }
+
+  it('FS chain across a weekend: pred Fri → succ next Mon is tight (no slack, no violation)', () => {
+    const A = issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 22)) // Mon..Fri
+    const B = issue('B', Date.UTC(2026, 4, 25), Date.UTC(2026, 4, 29)) // next Mon..Fri
+    const r1 = rel('A', 'B', 'finish-to-start', 0)
+    const res = computeCriticalPath([A, B], [r1], cfgMonFri)
+    expect(res.cycle).toBe(false)
+    expect(res.critical).toEqual(new Set(['A', 'B']))
+    expect(res.criticalRelations.has(r1._id)).toBe(true)
+    expect(res.violatedRelations.size).toBe(0)
+  })
+
+  it('FS lag=2 in working days: Fri + (1+2) wd = Wed → succ pinned to next Mon violates', () => {
+    const A = issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 22))
+    const B = issue('B', Date.UTC(2026, 4, 25), Date.UTC(2026, 4, 29))
+    const r1 = rel('A', 'B', 'finish-to-start', 2)
+    const res = computeCriticalPath([A, B], [r1], cfgMonFri)
+    expect(res.violatedRelations.has(r1._id)).toBe(true)
+  })
+
+  it('holiday between predecessor and successor produces a violation when succ is pinned tight', () => {
+    // Tue is a holiday; FS lag=0 should require succ to start Wed, but succ is pinned to Tue.
+    const cfgWithHoliday = { weekdayMask: 0b0011111, holidays: [Date.UTC(2026, 4, 19)] }
+    const A = issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 18)) // Mon only
+    const B = issue('B', Date.UTC(2026, 4, 19), Date.UTC(2026, 4, 19)) // Tue (holiday)
+    const r1 = rel('A', 'B', 'finish-to-start', 0)
+    const res = computeCriticalPath([A, B], [r1], cfgWithHoliday)
+    expect(res.violatedRelations.has(r1._id)).toBe(true)
+  })
+
+  it('legacy mode unchanged: simple chain still matches existing semantics', () => {
+    const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
+    const res = computeCriticalPath([A, B], [rel('A', 'B')])
+    expect(res.critical).toEqual(new Set(['A', 'B']))
+  })
+})
