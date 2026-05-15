@@ -3,7 +3,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { tooltip } from '@hcengineering/ui'
+  import { Label, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import type { LayoutRow } from './lib/types'
   import type { TimeScale } from './lib/time-scale'
@@ -25,6 +25,7 @@
     toggle: { id: string }
     openIssue: { issue: { _id: string, _class: string } }
     hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
+    addIssue: undefined
   }>()
 
   function openIssue (issue: { _id: any, _class: any }): void {
@@ -154,6 +155,17 @@
       </span>
     </div>
   {/each}
+  <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+  <div
+    class="add-issue-row"
+    role="button"
+    tabindex="0"
+    on:click={() => dispatch('addIssue')}
+    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatch('addIssue') }}
+  >
+    <span class="plus-glyph">+</span>
+    <span class="add-issue-label"><Label label={tracker.string.AddIssue} /></span>
+  </div>
 </div>
 
 <style lang="scss">
@@ -260,5 +272,35 @@
   }
   .sidebar-row.milestone.hovered {
     background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);
+  }
+  .add-issue-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-top: 1px dashed var(--theme-divider-color);
+    color: var(--theme-darker-color);
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+    background: var(--theme-comp-header-color);
+  }
+  .add-issue-row:hover {
+    background: var(--theme-button-hovered);
+    color: var(--theme-content-color);
+  }
+  .add-issue-row .plus-glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 14px;
+    line-height: 1;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--theme-content-color) 8%, transparent);
+  }
+  .add-issue-row:hover .plus-glyph {
+    background: color-mix(in srgb, var(--theme-content-color) 16%, transparent);
   }
 </style>
