@@ -729,7 +729,7 @@ export function pushAvailable (): boolean {
   return (
     'serviceWorker' in navigator &&
     'PushManager' in window &&
-    publicKey !== undefined &&
+    isValidPushPublicKey(publicKey) &&
     'Notification' in window &&
     Notification.permission !== 'denied'
   )
@@ -738,7 +738,7 @@ export function pushAvailable (): boolean {
 export async function subscribePush (): Promise<boolean> {
   const client = getClient()
   const publicKey = getMetadata(notification.metadata.PushPublicKey)
-  if ('serviceWorker' in navigator && 'PushManager' in window && publicKey !== undefined) {
+  if ('serviceWorker' in navigator && 'PushManager' in window && isValidPushPublicKey(publicKey)) {
     try {
       const loc = getCurrentLocation()
       let registration = await navigator.serviceWorker.getRegistration(`/${loc.path[0]}/${loc.path[1]}`)
@@ -753,7 +753,7 @@ export async function subscribePush (): Promise<boolean> {
       if (current == null) {
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: publicKey
+          applicationServerKey: urlBase64ToUint8Array(publicKey)
         })
         await client.createDoc(notification.class.PushSubscription, core.space.Workspace, {
           user: getCurrentAccount().uuid,
@@ -790,6 +790,30 @@ export async function subscribePush (): Promise<boolean> {
   }
   pushAllowed.set(false)
   return false
+}
+
+function isValidPushPublicKey (publicKey: string | undefined): publicKey is string {
+  if (publicKey === undefined || publicKey.trim() === '') return false
+
+  try {
+    const key = urlBase64ToUint8Array(publicKey)
+    return key.length === 65 && key[0] === 4
+  } catch {
+    return false
+  }
+}
+
+function urlBase64ToUint8Array (value: string): Uint8Array {
+  const padding = '='.repeat((4 - (value.length % 4)) % 4)
+  const base64 = `${value}${padding}`.replace(/-/g, '+').replace(/_/g, '/')
+  const rawData = atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+
+  return outputArray
 }
 
 async function cleanTag (_id: Ref<Doc>): Promise<void> {
