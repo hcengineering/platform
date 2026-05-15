@@ -48,17 +48,19 @@
     return statusCategoryMap.get(String(sid)) ?? null
   }
 
-  function isEditable (issueId: unknown): boolean {
-    return editableIssueIds.has(String(issueId))
-  }
-
-  function isFocused (issueId: unknown): boolean {
-    return focusedIssueId !== null && String(issueId) === focusedIssueId
-  }
-
-  function isSelected (issueId: unknown): boolean {
-    return selectedIssueId !== null && String(issueId) === selectedIssueId
-  }
+  // PR3.1 fix (2026-05-11): the previous `function isEditable/isFocused/
+  // isSelected (id)` indirection hid the Set / id dependency from Svelte's
+  // template dependency tracker — `editable={isEditable(row.issue._id)}`
+  // only re-evaluated when `isEditable` or `row.issue._id` changed, never
+  // when the underlying `editableIssueIds` Set mutated. Result: bars stayed
+  // editable=false even after the async canEditIssue loop populated the Set,
+  // so click/drag/resize all silently failed because GanttBar.onBarDown
+  // early-returns on `!editable`. Reactive `$:` declarations make the deps
+  // explicit; closures stay closures, but template re-runs when the inputs
+  // change.
+  $: isEditable = (issueId: unknown): boolean => editableIssueIds.has(String(issueId))
+  $: isFocused = (issueId: unknown): boolean => focusedIssueId !== null && String(issueId) === focusedIssueId
+  $: isSelected = (issueId: unknown): boolean => selectedIssueId !== null && String(issueId) === selectedIssueId
 
   // PR 3 spotlight dim: while a drag is active, dim every row that is NOT the
   // active issue. Keeps the cursor's row at full opacity so the user can see
