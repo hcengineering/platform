@@ -329,6 +329,11 @@ export default mergeIds(trackerId, tracker, {
     GanttScrollRightToBar: '' as IntlString,
     GanttExpand: '' as IntlString,
     GanttCollapse: '' as IntlString,
+    // Tier-3 Item 5 — off-viewport dependency-arrow indicators
+    GanttArrowIndicatorSourceAbove: '' as IntlString,
+    GanttArrowIndicatorSourceBelow: '' as IntlString,
+    GanttArrowIndicatorTargetAbove: '' as IntlString,
+    GanttArrowIndicatorTargetBelow: '' as IntlString,
     // PR4a: dependency arrows + DependencyEditor popup
     DependencyKindFS: '' as IntlString,
     DependencyKindSS: '' as IntlString,
