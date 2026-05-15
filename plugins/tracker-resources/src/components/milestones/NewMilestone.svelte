@@ -78,6 +78,14 @@
   <svelte:fragment slot="pool">
     <MilestoneStatusEditor bind:value={object.status} {object} kind="regular" />
     <DatePresenter
+      bind:value={object.startDate}
+      editable
+      label={tracker.string.StartDate}
+      detail={ui.string.SelectDate}
+      kind={'regular'}
+      size={'large'}
+    />
+    <DatePresenter
       bind:value={object.targetDate}
       editable
       label={tracker.string.TargetDate}
