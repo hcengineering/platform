@@ -212,6 +212,30 @@ export function issueConfig (
   ]
 }
 
+export function ganttViewOptions (): ViewOptionsModel {
+  // PR 2 ships a minimal read-only Gantt. Group-by / dropdown ViewOptions
+  // are intentionally NOT advertised here — the canvas does not honour them
+  // yet. They will be added in PR 3 alongside drag/edit + Component swimlanes
+  // so users never see options that have no effect.
+  return {
+    groupBy: [],
+    orderBy: [
+      ['startDate', SortingOrder.Ascending],
+      ['rank', SortingOrder.Ascending],
+      ['dueDate', SortingOrder.Ascending]
+    ],
+    other: [showColorsViewOption]
+  }
+}
+
+export function ganttConfig (): BuildModelKey[] {
+  // Minimal config — Gantt drives its own column layout.
+  return [
+    { key: '', presenter: tracker.component.PriorityEditor, label: tracker.string.Priority, props: { kind: 'list', size: 'small' } },
+    { key: '', presenter: tracker.component.IssuePresenter, label: tracker.string.Issue }
+  ]
+}
+
 export function defineViewlets (builder: Builder): void {
   builder.createDoc(
     view.class.ViewletDescriptor,
@@ -222,6 +246,30 @@ export function defineViewlets (builder: Builder): void {
       component: tracker.component.KanbanView
     },
     tracker.viewlet.Kanban
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: tracker.string.Gantt,
+      icon: tracker.icon.Issues,
+      component: tracker.component.GanttView
+    },
+    tracker.viewlet.Gantt
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Issue,
+      descriptor: tracker.viewlet.Gantt,
+      viewOptions: ganttViewOptions(),
+      configOptions: { strict: true, hiddenKeys: ['title'] },
+      config: ganttConfig()
+    },
+    tracker.viewlet.IssueGantt
   )
 
   builder.createDoc(

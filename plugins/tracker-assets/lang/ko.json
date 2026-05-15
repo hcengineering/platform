@@ -276,7 +276,12 @@
         "UnsetParentIssue": "상위 이슈 설정 해제",
         "ForbidCreateProjectPermission": "프로젝트 생성 금지",
         "ForbidCreateProjectPermissionDescription": "사용자의 새 프로젝트 생성을 금지",
-        "AllowCreatingIssues": "이슈 생성 허용"
+        "AllowCreatingIssues": "이슈 생성 허용",
+        "Day": "일",
+        "Gantt": "Gantt",
+        "Month": "월",
+        "Quarter": "분기",
+        "Week": "주"
     },
     "status": {}
 }

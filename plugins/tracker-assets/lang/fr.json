@@ -276,7 +276,12 @@
     "UnsetParentIssue": "Désélectionner l'issue parent",
     "ForbidCreateProjectPermission": "Interdire la création de projet",
     "ForbidCreateProjectPermissionDescription": "Interdit aux utilisateurs de créer de nouveaux projets",
-    "AllowCreatingIssues": "Autoriser la création d'issues"
+    "AllowCreatingIssues": "Autoriser la création d'issues",
+    "Day": "Jour",
+    "Gantt": "Gantt",
+    "Month": "Mois",
+    "Quarter": "Trimestre",
+    "Week": "Semaine"
   },
   "status": {}
 }

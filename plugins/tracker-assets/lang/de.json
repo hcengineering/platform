@@ -293,7 +293,12 @@
     "UnsetParentIssue": "Übergeordnete Aufgabe entfernen",
     "ForbidCreateProjectPermission": "Projekterstellung verbieten",
     "ForbidCreateProjectPermissionDescription": "Verbietet Benutzern das Erstellen neuer Projekte",
-    "AllowCreatingIssues": "Erstellen von Aufgaben erlauben"
+    "AllowCreatingIssues": "Erstellen von Aufgaben erlauben",
+    "Day": "Tag",
+    "Gantt": "Gantt",
+    "Month": "Monat",
+    "Quarter": "Quartal",
+    "Week": "Woche"
   },
   "status": {}
 }
