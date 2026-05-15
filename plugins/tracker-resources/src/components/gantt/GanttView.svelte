@@ -94,12 +94,12 @@
   $: showPredecessors = ((viewOptions as Record<string, unknown>)?.ganttShowPredecessors ?? false) !== false
 
   /**
-   * Click-to-select gate (user feedback 2026-05-11): a normal bar-body click
-   * marks the bar (blue outline). Holding and dragging on the bar body pans
-   * the canvas instead of moving/resizing the issue. Clicking outside any bar
-   * clears the selection.
+   * Two-stage edit gate (user feedback 2026-05-11): an unselected bar remains
+   * a canvas-pan surface during click-and-hold, while a plain click arms it.
+   * Once armed, body drag moves the issue/milestone and edge handles resize.
    */
   let selectedIssueId: string | null = null
+  let lastCanvasPanEndedAt = 0
 
   let canvasViewportLeft = 0
   let canvasViewportWidth = 1200
@@ -374,17 +374,6 @@
 
   function handleBarMouseDown (e: CustomEvent<{ target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }>): void {
     const id = String(e.detail.target.doc._id)
-    // Bar-body clicks only select. Dragging from the body is handled by the
-    // scroller's pointer-pan path, so an accidental hold on a bar cannot move
-    // or resize the issue.
-    if (e.detail.edge === 'body') {
-      selectedIssueId = id
-      focusedIssueId = id
-      return
-    }
-    // Resize edges remain explicit controls, but only after the bar is
-    // selected. Sync focusedIssueId so keyboard focus and click-selection
-    // visuals never point at different bars.
     if (selectedIssueId !== id) {
       selectedIssueId = id
       focusedIssueId = id
@@ -410,6 +399,16 @@
       edge: e.detail.edge,
       cursorX: e.detail.cursorX
     }, timeScale))
+  }
+
+  function handleBarClick (e: CustomEvent<{ target: DragTarget }>): void {
+    // Pointer-driven canvas panning may still synthesize a click after
+    // pointerup. Treat that click as part of the pan gesture, not as a
+    // selection, so "hold and drag" does not arm the bar afterwards.
+    if (Date.now() - lastCanvasPanEndedAt < 250) return
+    const id = String(e.detail.target.doc._id)
+    selectedIssueId = id
+    focusedIssueId = id
   }
 
   function handleConnectorDown (e: CustomEvent<{ source: Issue, originPx: { x: number, y: number } }>): void {
@@ -1002,6 +1001,7 @@
     }
     if (!panning) return
     panning = false
+    lastCanvasPanEndedAt = Date.now()
     const el = e.currentTarget as HTMLElement
     if (typeof el.hasPointerCapture === 'function' && el.hasPointerCapture(e.pointerId)) {
       el.releasePointerCapture(e.pointerId)
@@ -1236,6 +1236,7 @@
               on:openIssue={onIssueOpen}
               on:hoverRow={onRowHover}
               on:barMouseDown={handleBarMouseDown}
+              on:barClick={handleBarClick}
               on:contextMenu={handleBarContextMenu}
               on:openEditor={handleOpenEditor}
               on:hoverEdge={handleHoverEdge}
