@@ -59,6 +59,7 @@
 
   let containerEl: HTMLDivElement | undefined
   let scrollerEl: HTMLDivElement | undefined
+  let hScrollEl: HTMLDivElement | undefined
 
   let zoom: ZoomLevel = 'week'
   const ZOOM_LEVELS: readonly ZoomLevel[] = ['day', 'week', 'month', 'quarter']
@@ -73,8 +74,8 @@
 
   function setZoom (z: ZoomLevel): void {
     zoom = z
-    if (scrollerEl !== undefined) {
-      scrollerEl.scrollLeft = 0
+    if (hScrollEl !== undefined) {
+      hScrollEl.scrollLeft = 0
     }
     queueMicrotask(syncViewport)
   }
@@ -204,17 +205,20 @@
     return containerEl !== undefined ? containerEl.clientWidth - sidebarWidthPx : 1200
   }
 
-  function handleScroll (e: Event): void {
+  function handleVScroll (e: Event): void {
     const t = e.target as HTMLDivElement
-    canvasViewportLeft = t.scrollLeft
-    canvasViewportWidth = t.clientWidth
     scrollTop = t.scrollTop
     viewportHeight = t.clientHeight
   }
+  function handleHScroll (e: Event): void {
+    const t = e.target as HTMLDivElement
+    canvasViewportLeft = t.scrollLeft
+    canvasViewportWidth = t.clientWidth
+  }
 
   function onJump (e: CustomEvent<{ x: number }>): void {
-    if (scrollerEl !== undefined) {
-      scrollerEl.scrollTo({ left: Math.max(0, e.detail.x - 80), behavior: 'smooth' })
+    if (hScrollEl !== undefined) {
+      hScrollEl.scrollTo({ left: Math.max(0, e.detail.x - 80), behavior: 'smooth' })
     }
   }
 
@@ -232,28 +236,28 @@
   }
 
   function jumpToToday (): void {
-    if (scrollerEl === undefined) return
+    if (hScrollEl === undefined) return
     const x = timeScale.toX(Date.now())
-    scrollerEl.scrollTo({ left: Math.max(0, x - canvasViewportWidth / 2), behavior: 'smooth' })
+    hScrollEl.scrollTo({ left: Math.max(0, x - canvasViewportWidth / 2), behavior: 'smooth' })
   }
   function pageScroll (dir: -1 | 1): void {
-    if (scrollerEl === undefined) return
-    scrollerEl.scrollBy({ left: dir * canvasViewportWidth * 0.8, behavior: 'smooth' })
+    if (hScrollEl === undefined) return
+    hScrollEl.scrollBy({ left: dir * canvasViewportWidth * 0.8, behavior: 'smooth' })
   }
   function jumpToStart (): void {
-    if (scrollerEl === undefined) return
-    scrollerEl.scrollTo({ left: 0, behavior: 'smooth' })
+    if (hScrollEl === undefined) return
+    hScrollEl.scrollTo({ left: 0, behavior: 'smooth' })
   }
   function jumpToEnd (): void {
-    if (scrollerEl === undefined) return
-    scrollerEl.scrollTo({ left: scrollerEl.scrollWidth, behavior: 'smooth' })
+    if (hScrollEl === undefined) return
+    hScrollEl.scrollTo({ left: hScrollEl.scrollWidth, behavior: 'smooth' })
   }
   function jumpToDate (iso: string): void {
-    if (scrollerEl === undefined || iso === '') return
+    if (hScrollEl === undefined || iso === '') return
     const t = Date.parse(iso)
     if (isNaN(t)) return
     const x = timeScale.toX(t)
-    scrollerEl.scrollTo({ left: Math.max(0, x - canvasViewportWidth / 2), behavior: 'smooth' })
+    hScrollEl.scrollTo({ left: Math.max(0, x - canvasViewportWidth / 2), behavior: 'smooth' })
   }
   let datePickerValue: string = ''
 
@@ -269,7 +273,7 @@
   let panStartScrollLeft = 0
   let panStartScrollTop = 0
   function onCanvasPanStart (e: PointerEvent): void {
-    if (scrollerEl === undefined) return
+    if (scrollerEl === undefined || hScrollEl === undefined) return
     // Only pan with primary mouse button on empty space — let SVG/HTML
     // children (bars, buttons, links, resize-handle) handle their own
     // click/drag without competing with the canvas pan.
@@ -278,13 +282,13 @@
     panning = true
     panStartX = e.clientX
     panStartY = e.clientY
-    panStartScrollLeft = scrollerEl.scrollLeft
+    panStartScrollLeft = hScrollEl.scrollLeft
     panStartScrollTop = scrollerEl.scrollTop
     ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
   }
   function onCanvasPanMove (e: PointerEvent): void {
-    if (!panning || scrollerEl === undefined) return
-    scrollerEl.scrollLeft = panStartScrollLeft - (e.clientX - panStartX)
+    if (!panning || scrollerEl === undefined || hScrollEl === undefined) return
+    hScrollEl.scrollLeft = panStartScrollLeft - (e.clientX - panStartX)
     scrollerEl.scrollTop = panStartScrollTop - (e.clientY - panStartY)
   }
   function onCanvasPanEnd (e: PointerEvent): void {
@@ -320,17 +324,21 @@
 
   let resizeObs: ResizeObserver | undefined
   function syncViewport (): void {
-    if (scrollerEl === undefined) return
-    canvasViewportLeft = scrollerEl.scrollLeft
-    canvasViewportWidth = scrollerEl.clientWidth
-    scrollTop = scrollerEl.scrollTop
-    viewportHeight = scrollerEl.clientHeight
+    if (scrollerEl !== undefined) {
+      scrollTop = scrollerEl.scrollTop
+      viewportHeight = scrollerEl.clientHeight
+    }
+    if (hScrollEl !== undefined) {
+      canvasViewportLeft = hScrollEl.scrollLeft
+      canvasViewportWidth = hScrollEl.clientWidth
+    }
   }
   onMount(() => {
     syncViewport()
-    if (typeof ResizeObserver !== 'undefined' && scrollerEl !== undefined) {
+    if (typeof ResizeObserver !== 'undefined') {
       resizeObs = new ResizeObserver(() => syncViewport())
-      resizeObs.observe(scrollerEl)
+      if (scrollerEl !== undefined) resizeObs.observe(scrollerEl)
+      if (hScrollEl !== undefined) resizeObs.observe(hScrollEl)
     }
   })
   onDestroy(() => {
@@ -377,17 +385,16 @@
       <div class="toolbar-right" />
     </div>
 
-    <!-- Single scroll container wraps both sidebar and canvas. Sidebar uses
-         position:sticky so it stays at the left edge during horizontal scroll
-         while moving vertically with the rows. Same for the time-axis header
-         (sticky:top). Browser handles all wheel events natively — no manual
-         forwarding needed. -->
+    <!-- Plane-style two-axis scrolling: gantt-scroller handles vertical only,
+         while a separate sticky-bottom proxy bar handles horizontal so the
+         user always sees the time-scale scrollbar at the bottom of the
+         visible viewport instead of at the bottom of the entire content. -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="gantt-scroller"
       class:panning
       bind:this={scrollerEl}
-      on:scroll={handleScroll}
+      on:scroll={handleVScroll}
       on:pointerdown={onCanvasPanStart}
       on:pointermove={onCanvasPanMove}
       on:pointerup={onCanvasPanEnd}
@@ -395,7 +402,7 @@
     >
       <div
         class="gantt-grid"
-        style="grid-template-columns: {sidebarWidthPx}px 5px {totalCanvasWidth}px; --sidebar-w: {sidebarWidthPx}px;"
+        style="grid-template-columns: {sidebarWidthPx}px 5px 1fr; --sidebar-w: {sidebarWidthPx}px;"
       >
         <!-- Row 1: corner / resize-corner / time-axis header (all sticky-top) -->
         <div class="cell corner" style="height: {HEADER_HEIGHT}px;">
@@ -406,7 +413,9 @@
         </div>
         <div class="cell resize-corner" style="height: {HEADER_HEIGHT}px;" />
         <div class="cell header-cell" style="height: {HEADER_HEIGHT}px;">
-          <GanttHeader {timeScale} {viewport} totalWidth={totalCanvasWidth} height={HEADER_HEIGHT} />
+          <div class="hscroll-inner" style="width: {totalCanvasWidth}px; transform: translateX(-{canvasViewportLeft}px);">
+            <GanttHeader {timeScale} {viewport} totalWidth={totalCanvasWidth} height={HEADER_HEIGHT} />
+          </div>
         </div>
         <!-- Row 2: sidebar (sticky-left) / resize handle (sticky-left) / canvas -->
         <div class="cell sidebar-cell">
@@ -434,21 +443,38 @@
           on:pointercancel={onResizeEnd}
         />
         <div class="cell canvas-cell">
-          <GanttCanvas
-            {rows}
-            milestones={milestoneMarkers}
-            {timeScale}
-            {summaryRanges}
-            {scrollTop}
-            {viewportHeight}
-            {viewport}
-            totalWidth={totalCanvasWidth}
-            milestoneStripHeight={MILESTONE_STRIP_HEIGHT}
-            {hoveredRowId}
-            on:openIssue={onIssueOpen}
-            on:hoverRow={onRowHover}
-          />
+          <div class="hscroll-inner" style="width: {totalCanvasWidth}px; transform: translateX(-{canvasViewportLeft}px);">
+            <GanttCanvas
+              {rows}
+              milestones={milestoneMarkers}
+              {timeScale}
+              {summaryRanges}
+              {scrollTop}
+              {viewportHeight}
+              {viewport}
+              totalWidth={totalCanvasWidth}
+              milestoneStripHeight={MILESTONE_STRIP_HEIGHT}
+              {hoveredRowId}
+              on:openIssue={onIssueOpen}
+              on:hoverRow={onRowHover}
+            />
+          </div>
         </div>
+      </div>
+    </div>
+    <!-- Sticky-bottom horizontal scrollbar proxy. Always visible at the
+         bottom edge of the viewport regardless of how far the user has
+         scrolled vertically. -->
+    <div
+      class="gantt-hscrollbar"
+      style="padding-left: {sidebarWidthPx + 5}px;"
+    >
+      <div
+        class="hscroll-track"
+        bind:this={hScrollEl}
+        on:scroll={handleHScroll}
+      >
+        <div class="hscroll-spacer" style="width: {totalCanvasWidth}px;" />
       </div>
     </div>
     {#if tooltipState.visible && tooltipState.row !== null}
@@ -584,7 +610,8 @@
   }
   .gantt-scroller {
     flex: 1 1 auto;
-    overflow: scroll;
+    overflow-x: hidden;
+    overflow-y: auto;
     min-width: 0;
     min-height: 0;
     cursor: grab;
@@ -596,8 +623,24 @@
     display: grid;
     /* grid-template-columns set inline */
     grid-template-rows: auto auto;
-    width: max-content;
+    width: 100%;
   }
+  .header-cell, .canvas-cell { overflow: hidden; }
+  .hscroll-inner { will-change: transform; }
+  .gantt-hscrollbar {
+    flex: 0 0 auto;
+    height: 14px;
+    border-top: 1px solid var(--theme-divider-color);
+    background: var(--theme-comp-header-color);
+    display: flex;
+    box-sizing: border-box;
+  }
+  .hscroll-track {
+    flex: 1 1 auto;
+    overflow-x: scroll;
+    overflow-y: hidden;
+  }
+  .hscroll-spacer { height: 1px; }
   .cell {
     box-sizing: border-box;
   }
