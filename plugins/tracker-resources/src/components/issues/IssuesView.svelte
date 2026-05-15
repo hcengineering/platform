@@ -8,6 +8,8 @@
   import { FilterBar, SpaceHeader, ViewletContentView, ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
+  import GanttToolbarControls from '../gantt/GanttToolbarControls.svelte'
+  import GanttExtraActions from '../gantt/GanttExtraActions.svelte'
 
   function newIssue (): void {
     showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top')
@@ -53,6 +55,18 @@
   {modeSelectorProps}
 >
   <svelte:fragment slot="header-tools">
+    <!-- Phase 2 — Gantt date-nav + zoom buttons render here when the
+         Gantt viewlet is active. They were previously in a dedicated
+         toolbar row inside GanttView; consolidating them with the
+         Filter/Search row saves ~40 px of vertical real estate.
+         The controls read their state from `ganttToolbarApi` store
+         which GanttView populates on mount and clears on destroy.
+         GanttExtraActions on the right adds fullscreen + PDF export
+         buttons next to the existing PNG export. -->
+    {#if viewlet?._id === tracker.viewlet.IssueGantt}
+      <GanttToolbarControls />
+      <GanttExtraActions />
+    {/if}
     <ViewletSettingButton bind:viewOptions bind:viewlet />
   </svelte:fragment>
 
