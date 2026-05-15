@@ -88,3 +88,43 @@ describe('descendantsWithDates', () => {
     expect(new Set(result.map((i) => i._id))).toEqual(new Set(['c', 'g']))
   })
 })
+
+import { wouldCreateCycle } from '../scheduler'
+import type { IssueRelation, DependencyKind } from '@hcengineering/tracker'
+
+function mkRel (from: string, to: string, kind: DependencyKind = 'finish-to-start'): IssueRelation {
+  return {
+    _id: `${from}->${to}` as Ref<IssueRelation>,
+    attachedTo: from as Ref<Issue>,
+    target: to as Ref<Issue>,
+    kind,
+    lag: 0,
+    space: 'sp' as IssueRelation['space']
+  } as unknown as IssueRelation
+}
+
+describe('wouldCreateCycle', () => {
+  const A = 'A' as Ref<Issue>
+  const B = 'B' as Ref<Issue>
+  const C = 'C' as Ref<Issue>
+
+  it('self-loop A→A returns true', () => {
+    expect(wouldCreateCycle(A, A, [])).toBe(true)
+  })
+
+  it('two-hop cycle: relations [A→B], query B→A returns true', () => {
+    expect(wouldCreateCycle(B, A, [mkRel('A', 'B')])).toBe(true)
+  })
+
+  it('three-hop cycle: relations [A→B, B→C], query C→A returns true', () => {
+    expect(wouldCreateCycle(C, A, [mkRel('A', 'B'), mkRel('B', 'C')])).toBe(true)
+  })
+
+  it('sibling, not cycle: relations [A→B], query A→C returns false', () => {
+    expect(wouldCreateCycle(A, C, [mkRel('A', 'B')])).toBe(false)
+  })
+
+  it('empty relations: any non-self-loop returns false', () => {
+    expect(wouldCreateCycle(A, B, [])).toBe(false)
+  })
+})
