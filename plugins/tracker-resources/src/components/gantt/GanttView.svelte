@@ -1413,6 +1413,15 @@
     document.removeEventListener('pointerdown', handleNativeConnectorDown, true)
     document.removeEventListener('mousedown', handleNativeConnectorDown, true)
     document.removeEventListener('gantt-connector-start', handleConnectorStartEvent)
+    // PR5 cleanup: the critical-path recompute is debounced via
+    // setTimeout. If the view unmounts while a pending recompute is
+    // queued, the timer would fire after our reactive store handles
+    // were already torn down — clearing the handle prevents both the
+    // dangling reactive write and the late notification banner.
+    if (cpDirtyTimer !== null) {
+      clearTimeout(cpDirtyTimer)
+      cpDirtyTimer = null
+    }
   })
 
   function jumpToToday (): void {
