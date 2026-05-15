@@ -11,26 +11,36 @@
   export let scrollTop: number = 0
   export let viewportHeight: number = 600
   $: void viewportHeight
-  export let width: number = 360
-  export let headerHeight: number = 56
+  export let width: number = 280
+  export let headerHeight: number = 36
   export let timeScale: TimeScale | undefined = undefined
   export let viewportLeft: number = 0
   export let viewportRight: number = 0
+  export let showIssueCode: boolean = true
+  export let showTitle: boolean = true
+  export let hoveredRowId: string | null = null
 
   const dispatch = createEventDispatcher<{
     jump: { x: number }
     toggle: { id: string }
+    openIssue: { issue: { _id: string, _class: string } }
+    hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
   }>()
+
+  function openIssue (issue: { _id: any, _class: any }): void {
+    dispatch('openIssue', { issue: { _id: issue._id as string, _class: issue._class as string } })
+  }
 
   function jumpDirection (
     obj: { startDate: number | null, dueDate: number | null }
   ): 'left' | 'right' | null {
     if (timeScale === undefined) return null
+    if (viewportRight <= viewportLeft) return null
     if (obj.startDate == null && obj.dueDate == null) return null
     const startX = obj.startDate != null ? timeScale.toX(obj.startDate) : null
     const dueX = obj.dueDate != null ? timeScale.toX(obj.dueDate) : null
-    const minX = startX ?? dueX!
-    const maxX = dueX ?? startX!
+    const minX = Math.min(startX ?? Infinity, dueX ?? Infinity)
+    const maxX = Math.max(startX ?? -Infinity, dueX ?? -Infinity)
     if (maxX < viewportLeft) return 'left'
     if (minX > viewportRight) return 'right'
     return null
@@ -47,79 +57,123 @@
     }
     return null
   }
+
+  // Always use the row's true start (or due, if start is null) so "jump" lands
+  // at the bar's left edge regardless of which side is currently offscreen.
+  function rowJumpX (row: LayoutRow): number | null {
+    if (timeScale === undefined) return null
+    const tgt = rowJumpTarget(row)
+    if (tgt === null) return null
+    const start = tgt.startDate ?? tgt.dueDate
+    if (start === null) return null
+    return timeScale.toX(start)
+  }
 </script>
 
 <div class="gantt-sidebar" style="width: {width}px;">
   <div class="sidebar-header" style="height: {headerHeight}px;">
     <span class="col-toggle" />
-    <span class="col-id">Issue</span>
-    <span class="col-title">Title</span>
+    {#if showIssueCode}
+      <span class="col-id">Issue</span>
+    {/if}
+    {#if showTitle}
+      <span class="col-title">Title</span>
+    {/if}
     <span class="col-jump" />
   </div>
-  <div class="sidebar-rows" style="transform: translateY({-scrollTop}px);">
-    {#each rows as row (row.id)}
-      {@const indent = row.depth * 16}
-      {@const tgt = rowJumpTarget(row)}
-      {@const dir = tgt !== null ? jumpDirection(tgt) : null}
-      {@const ts = timeScale}
-      <div
-        class="sidebar-row"
-        class:summary={row.isSummary}
-        class:milestone={row.kind === 'milestone'}
-        style="height: {row.height}px; padding-left: {8 + indent}px;"
-      >
-        <span class="col-toggle">
-          {#if row.collapsible}
-            <button
-              type="button"
-              class="toggle-btn"
-              title={row.collapsed ? 'Expand' : 'Collapse'}
-              on:click={() => dispatch('toggle', { id: row.id })}
-            >
-              {row.collapsed ? '▶' : '▼'}
-            </button>
+  <div class="sidebar-rows-clip">
+    <div class="sidebar-rows" style="transform: translateY({-scrollTop}px);">
+      {#each rows as row (row.id)}
+        {@const indent = row.depth * 16}
+        {@const tgt = rowJumpTarget(row)}
+        {@const dir = tgt !== null ? jumpDirection(tgt) : null}
+        {@const jumpX = rowJumpX(row)}
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          class="sidebar-row"
+          class:summary={row.isSummary}
+          class:milestone={row.kind === 'milestone'}
+          class:hovered={hoveredRowId === row.id}
+          style="height: {row.height}px; padding-left: {8 + indent}px;"
+          on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+          on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+          on:mouseleave={() => dispatch('hoverRow', { id: null })}
+        >
+          <span class="col-toggle">
+            {#if row.collapsible}
+              <button
+                type="button"
+                class="toggle-btn"
+                title={row.collapsed ? 'Expand' : 'Collapse'}
+                on:click={() => dispatch('toggle', { id: row.id })}
+              >
+                {row.collapsed ? '▶' : '▼'}
+              </button>
+            {/if}
+          </span>
+          {#if row.kind === 'milestone' && row.milestone !== null}
+            {#if showIssueCode}
+              <span class="cell-id ms-icon" title="Milestone">◆</span>
+            {/if}
+            {#if showTitle}
+              <span class="cell-title" title={row.milestone.label}>
+                {row.milestone.label}
+              </span>
+            {/if}
+          {:else if row.issue !== null}
+            {#if showIssueCode}
+              <span class="cell-id">
+                <IssuePresenter value={row.issue} disabled={false} />
+              </span>
+            {/if}
+            {#if showTitle}
+              <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+              <span
+                class="cell-title clickable"
+                title={row.issue.title}
+                role="link"
+                tabindex="0"
+                on:click={() => row.issue !== null && openIssue(row.issue)}
+                on:keydown={(e) => { if (e.key === 'Enter' && row.issue !== null) openIssue(row.issue) }}
+              >
+                {row.issue.title}
+              </span>
+            {/if}
+          {:else}
+            {#if showIssueCode}
+              <span class="cell-id" />
+            {/if}
+            {#if showTitle}
+              <span class="cell-title" />
+            {/if}
           {/if}
-        </span>
-        {#if row.kind === 'milestone' && row.milestone !== null}
-          <span class="cell-id ms-icon" title="Milestone">◆</span>
-          <span class="cell-title" title={row.milestone.label}>
-            {row.milestone.label}
+          <span class="cell-jump">
+            {#if dir !== null && jumpX !== null}
+              <button
+                type="button"
+                class="jump-btn"
+                title={dir === 'left' ? 'Scroll left to bar' : 'Scroll right to bar'}
+                on:click={() => dispatch('jump', { x: jumpX })}
+              >
+                {dir === 'left' ? '←' : '→'}
+              </button>
+            {/if}
           </span>
-        {:else if row.issue !== null}
-          <span class="cell-id">
-            <IssuePresenter value={row.issue} disabled={false} />
-          </span>
-          <span class="cell-title" title={row.issue.title}>
-            {row.issue.title}
-          </span>
-        {:else}
-          <span class="cell-id" />
-          <span class="cell-title" />
-        {/if}
-        <span class="cell-jump">
-          {#if dir !== null && ts !== undefined && tgt !== null}
-            {@const targetX = ts.toX(tgt.startDate ?? tgt.dueDate ?? 0)}
-            <button
-              type="button"
-              class="jump-btn"
-              title={dir === 'left' ? 'Scroll left to bar' : 'Scroll right to bar'}
-              on:click={() => dispatch('jump', { x: targetX })}
-            >
-              {dir === 'left' ? '←' : '→'}
-            </button>
-          {/if}
-        </span>
-      </div>
-    {/each}
+        </div>
+      {/each}
+    </div>
   </div>
 </div>
 
 <style lang="scss">
   .gantt-sidebar {
     flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
     border-right: 1px solid var(--theme-divider-color);
-    overflow: hidden;
     background: var(--theme-comp-header-color);
+    overflow: hidden;
+    min-height: 0;
   }
   .sidebar-header {
     display: flex;
@@ -134,6 +188,8 @@
     color: var(--theme-darker-color);
     letter-spacing: 0.05em;
     box-sizing: border-box;
+    flex: 0 0 auto;
+    z-index: 2;
   }
   .col-toggle {
     flex: 0 0 18px;
@@ -142,13 +198,19 @@
     justify-content: center;
   }
   .col-id {
-    flex: 0 0 88px;
+    flex: 0 0 80px;
   }
   .col-title {
     flex: 1 1 auto;
+    overflow: hidden;
   }
   .col-jump {
     flex: 0 0 28px;
+  }
+  .sidebar-rows-clip {
+    flex: 1 1 auto;
+    overflow: hidden;
+    position: relative;
   }
   .sidebar-rows {
     will-change: transform;
@@ -166,7 +228,7 @@
     box-sizing: border-box;
   }
   .cell-id {
-    flex: 0 0 88px;
+    flex: 0 0 80px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -179,6 +241,12 @@
     flex: 1 1 auto;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  .cell-title.clickable {
+    cursor: pointer;
+  }
+  .cell-title.clickable:hover {
+    text-decoration: underline;
   }
   .cell-jump {
     flex: 0 0 28px;
@@ -226,5 +294,11 @@
   }
   .sidebar-row.milestone {
     background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 6%, transparent);
+  }
+  .sidebar-row.hovered {
+    background: var(--theme-button-hovered);
+  }
+  .sidebar-row.milestone.hovered {
+    background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);
   }
 </style>
