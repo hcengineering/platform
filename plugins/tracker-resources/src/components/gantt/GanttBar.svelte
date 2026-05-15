@@ -51,7 +51,7 @@
    * its own mousedown listener with an explicit edge tag. This is simpler
    * and more reliable than position-detection: SVG event.target identifies
    * the clicked element directly, no DOMRect math needed.
-   * Codex review 2026-05-10: avoid the previous unified onBarMouseDown +
+   * review note (2026-05-10): avoid the previous unified onBarMouseDown +
    * detectEdge because the resize-handle <rect>s would not fire it without
    * separate listeners.
    */
@@ -152,7 +152,7 @@
   {@const barH = row.height - 12}
   {#if isSummary}
     <!-- MS-Project-style claw: thin black bar with downward triangles at
-         both ends. Codex review-5 2026-05-11: a transparent hit-rect
+         both ends. review note (2026-05-11): a transparent hit-rect
          spanning the full claw width receives mousedown/contextmenu so
          parent-issues (which render as a claw because they have children)
          can still be dragged. Without this rect the claw was visually
@@ -165,7 +165,7 @@
         access is handled at the GanttView level (Tab/ArrowLeft/Right —
         see onKey handler in GanttView.svelte), so the per-rect
         a11y-click-events-have-key-events warning is intentionally
-        ignored. Codex review-6 2026-05-11.
+        ignored. review note 2026-05-11.
       -->
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <rect

@@ -319,7 +319,7 @@
     const id = String(e.detail.issue._id)
     // Click-to-select gate: if this bar isn't already selected, the first
     // mousedown just selects it (no drag starts). User has to mousedown a
-    // second time on the now-selected bar to actually drag/resize. Codex-
+    // second time on the now-selected bar to actually drag/resize. 
     // safe and matches Plane's UX (user feedback 2026-05-11).
     if (selectedIssueId !== id) {
       selectedIssueId = id
@@ -355,7 +355,7 @@
    *  The horizontal scrollbar already offsets by `sidebarWidthPx + 5` (see
    *  .gantt-hscrollbar padding-left), so the canvas content origin is at
    *  rect.left + sidebarWidthPx + this constant, not just sidebarWidthPx.
-   *  Codex review-6 2026-05-11 caught the off-by-5 in unscheduled drag. */
+   *  review note 2026-05-11 caught the off-by-5 in unscheduled drag. */
   const RESIZE_CELL_W = 5
 
   function computeCanvasX (e: MouseEvent): number | undefined {
@@ -433,7 +433,7 @@
     if (state.kind === 'idle' || state.kind === 'hover-bar') return
     // Guard: an unscheduled-drag that never reached the canvas (e.g. the user
     // clicked the drag-grip and released without moving) must NOT silently
-    // schedule the issue to "today". Codex review-3 (2026-05-10).
+    // schedule the issue to "today". review note (2026-05-10):.
     if (state.kind === 'dragging-unscheduled' && !state.hasCanvasTarget) return
     const client = getClient()
     const ops = client.apply('gantt-drag')
@@ -444,7 +444,7 @@
         // Fetch the full space's issues here rather than reusing the
         // view-filtered `issues` array — otherwise children hidden by an
         // active Tracker filter wouldn't shift with the parent and the
-        // tree would drift out of sync. Codex review-6 2026-05-11.
+        // tree would drift out of sync. review note 2026-05-11.
         const allInSpace = await client.findAll(tracker.class.Issue, { space: state.issue.space })
         for (const child of descendantsWithDates(state.issue, allInSpace)) {
           await ops.update(child, {
@@ -456,8 +456,7 @@
     } else if (state.kind === 'dragging-unscheduled') {
       // Unscheduled-drag only schedules the parent issue. originStart is the
       // synthetic "today" anchor — using its delta to shift existing scheduled
-      // descendants would move them by a wildly unrelated amount (Codex
-      // review-4 2026-05-11). Descendants stay put; the user can drag the
+      // descendants would move them by a wildly unrelated amount (internal review) Descendants stay put; the user can drag the
       // (now-scheduled) parent again to do a coordinated shift.
       await ops.update(state.issue, { startDate: state.previewStart, dueDate: state.previewDue })
     } else if (state.kind === 'resizing-left') {
@@ -493,7 +492,7 @@
    *
    * Deny-list (vs. allow-list) is needed because tracker registers a custom
    * Open action for `tracker.class.Issue` with an auto-generated ID; allow-
-   * listing by static ID misses it. Codex review-style cleanup + user UX
+   * listing by static ID misses it. review-style cleanup + user UX
    * feedback 2026-05-11: too tall, slimmer + keep parent/sub-issue access.
    */
   const GANTT_MENU_EXCLUDED_ACTIONS = [
@@ -573,8 +572,7 @@
       dueDate: i.dueDate + days * DAY_MS
     })
     // Same filter-vs-truth issue as commitDrag: query the full space so
-    // filter-hidden descendants still shift with the parent (Codex
-    // review-6 2026-05-11).
+    // filter-hidden descendants still shift with the parent (internal review)
     const allInSpace = await client.findAll(tracker.class.Issue, { space: i.space })
     for (const child of descendantsWithDates(i, allInSpace)) {
       await ops.update(child, {
@@ -750,7 +748,7 @@
     const target = e.target as HTMLElement
     // Sidebar-cell + drag-grip + resize-handle excluded so the sidebar's
     // unscheduled-drag-grip doesn't compete with canvas pan for the same
-    // pointerdown. Codex review 2026-05-11.
+    // pointerdown. review note (2026-05-11).
     if (target.closest('.bar-wrap, .sidebar-cell, .drag-grip, .resize-handle, button, a, .toggle-btn, .jump-btn, .resize-cell')) return
     panning = true
     panStartX = e.clientX
@@ -769,7 +767,7 @@
     // bubbling from a child element that was excluded by the pan-handler
     // exclusion list (e.g. resize-handle, drag-grip) shouldn't reach
     // releasePointerCapture, but browsers throw `InvalidStateError` if the
-    // element isn't actually capturing the given pointerId. Codex review-4
+    // element isn't actually capturing the given pointerId. review note
     // 2026-05-11.
     if (!panning) return
     panning = false
