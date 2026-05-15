@@ -5,7 +5,8 @@
   import { createEventDispatcher } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
   import type { Ref } from '@hcengineering/core'
-  import type { Issue, Milestone } from '@hcengineering/tracker'
+  import type { Issue, IssueRelation, Milestone } from '@hcengineering/tracker'
+  import { formatPredecessors } from './lib/predecessor-format'
   import { Label, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import type { DragState, LayoutRow } from './lib/types'
@@ -23,6 +24,8 @@
   export let showStatus: boolean = true
   export let hoveredRowId: string | null = null
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
+  export let relations: IssueRelation[] = []
+  export let showPredecessors: boolean = false
 
   $: dragState = $activeDrag
   $: activeIssueIdStr = 'target' in dragState
@@ -95,6 +98,23 @@
     const start = tgt.startDate ?? tgt.dueDate
     if (start === null) return null
     return timeScale.toX(start)
+  }
+
+  /**
+   * Issue identifiers in Huly look like "OSTRO-12". The predecessor column
+   * strips the project prefix so the notation stays compact, matching
+   * MS Project / Asana conventions. Lookup is against the visible `rows`
+   * (passed in as a prop) — predecessors that aren't in the current view
+   * still get rendered, but with the numeric suffix only.
+   */
+  function issueNumberOf (ref: Ref<Issue>): string {
+    for (const r of rows) {
+      if (r.issue !== null && r.issue._id === ref) {
+        const ident = (r.issue as unknown as { identifier?: string }).identifier ?? ''
+        return ident.replace(/^[A-Z]+-/, '')
+      }
+    }
+    return ''
   }
 </script>
 
@@ -187,6 +207,16 @@
             }}
           >
             {row.issue.title}
+          </span>
+        {/if}
+        {#if showPredecessors && row.issue !== null}
+          {@const text = formatPredecessors(row.issue, relations, issueNumberOf)}
+          <span class="cell-predecessors" title={text || ''}>
+            {#if text === ''}
+              <Label label={tracker.string.NoPredecessors} />
+            {:else}
+              {text}
+            {/if}
           </span>
         {/if}
       {:else}
@@ -386,5 +416,16 @@
   }
   .add-issue-row:hover .plus-glyph {
     background: color-mix(in srgb, var(--theme-content-color) 16%, transparent);
+  }
+  .cell-predecessors {
+    display: inline-block;
+    max-width: 14ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+    color: var(--theme-content-color);
+    margin-left: auto;
+    padding-left: 8px;
   }
 </style>
