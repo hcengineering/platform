@@ -2582,36 +2582,38 @@
   // horizontal). All math lives in lib/zoom.ts for unit-testability.
   function onScrollerWheel (e: WheelEvent): void {
     if (!(e.ctrlKey || e.metaKey)) return
-    // v121.14 — preventDefault FIRST (before any other early-return) so
-    // hitting MIN_PPD / MAX_PPD limits or a missing hScrollEl never lets
-    // the wheel-event fall through to the browser's page-zoom handler.
-    // User-report v121.13: after several Ctrl+Wheel operations the page
-    // started zooming itself and the Gantt became unscrollable until a
-    // hard reload. Root cause was three early-returns AFTER the
-    // `ctrlKey`-check that skipped preventDefault when the zoom reached
-    // the max/min clamp (newPpd === oldPpd path).
+    // preventDefault FIRST (before any other early-return) so hitting
+    // MIN_PPD / MAX_PPD limits or a missing hScrollEl never lets the
+    // wheel-event fall through to the browser's page-zoom handler.
     e.preventDefault()
-    if (hScrollEl == null) return
-    const rect = hScrollEl.getBoundingClientRect()
+    // hScrollEl only exists when there is horizontal overflow. At low
+    // pxPerDay (month=4, quarter=1.5) the chart usually fits in the
+    // viewport without overflow, so hScrollEl is not rendered and the
+    // wheel-zoom would early-return. Fall back to scrollerEl for the
+    // cursor-anchor bounding box and skip the scrollLeft-anchor step
+    // (with no overflow, there is nothing to scroll).
+    const anchor = hScrollEl ?? scrollerEl
+    if (anchor == null) return
+    const rect = anchor.getBoundingClientRect()
     const cursorX = Math.max(0, e.clientX - rect.left)
     const oldPpd = effectivePxPerDay
-    const oldScrollLeft = hScrollEl.scrollLeft
-    // v121.13 — sensitivity bumped from default 0.001 to 0.006 after user
-    // feedback "zoom viel zu langsam". Empirically, 0.006 lets a single
-    // wheel notch (deltaY=100) move pxPerDay by ~45 % which matches Figma /
-    // MS Project responsiveness; trackpad pixel-deltas (~20-40 per gesture)
-    // get smooth incremental zoom without overshoot.
-    const newPpd = applyWheelZoom(oldPpd, e.deltaY, 0.006)
+    const oldScrollLeft = hScrollEl?.scrollLeft ?? 0
+    // factor=undefined lets adaptiveWheelFactor pick a per-density value:
+    // 0.012 for ppd<4 (month/quarter), 0.006 for ppd>=4 (week/day). Math is
+    // already multiplicatively adaptive, but in the low-density bands the
+    // absolute pixel-delta per notch is small enough that users perceive
+    // the same exp() step as slower than at high density.
+    const newPpd = applyWheelZoom(oldPpd, e.deltaY)
     if (newPpd === oldPpd) return
     userPxPerDay = newPpd
-    // Apply scrollLeft on the next tick so the new layout (driven by the
-    // updated effectivePxPerDay) has rendered with the new scrollWidth.
-    const nextScroll = cursorAnchoredScrollLeft(cursorX, oldScrollLeft, oldPpd, newPpd)
-    queueMicrotask(() => {
-      if (hScrollEl == null) return
-      hScrollEl.scrollLeft = nextScroll
-      syncViewport()
-    })
+    if (hScrollEl != null) {
+      const nextScroll = cursorAnchoredScrollLeft(cursorX, oldScrollLeft, oldPpd, newPpd)
+      queueMicrotask(() => {
+        if (hScrollEl == null) return
+        hScrollEl.scrollLeft = nextScroll
+        syncViewport()
+      })
+    }
   }
 
   // Tier-4 Item 13 — pinch-zoom on the canvas scroller. Wired via four

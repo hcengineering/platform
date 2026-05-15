@@ -4,6 +4,7 @@
 //
 
 import {
+  adaptiveWheelFactor,
   applyWheelZoom,
   clampPxPerDay,
   cursorAnchoredScrollLeft,
@@ -167,5 +168,42 @@ describe('presetForPxPerDay', () => {
     expect(presetForPxPerDay(14)).toBe('week')
     expect(presetForPxPerDay(4)).toBe('month')
     expect(presetForPxPerDay(1.5)).toBe('quarter')
+  })
+})
+
+describe('adaptiveWheelFactor', () => {
+  it('uses 0.006 for week and day densities (>= 4 ppd)', () => {
+    expect(adaptiveWheelFactor(32)).toBe(0.006) // day preset
+    expect(adaptiveWheelFactor(14)).toBe(0.006) // week preset
+    expect(adaptiveWheelFactor(4)).toBe(0.006) // month preset boundary
+  })
+
+  it('uses 0.012 for month and quarter densities (< 4 ppd)', () => {
+    expect(adaptiveWheelFactor(3.99)).toBe(0.012) // just under boundary
+    expect(adaptiveWheelFactor(1.5)).toBe(0.012) // quarter preset
+    expect(adaptiveWheelFactor(0.1)).toBe(0.012) // very low density
+  })
+
+  it('defaults to 0.012 on invalid input', () => {
+    expect(adaptiveWheelFactor(0)).toBe(0.012)
+    expect(adaptiveWheelFactor(-5)).toBe(0.012)
+    expect(adaptiveWheelFactor(Number.NaN)).toBe(0.012)
+  })
+
+  it('makes low-density zoom subjectively faster than fixed 0.006 would', () => {
+    // One wheel notch (deltaY=100) at quarter density (ppd=1.5):
+    //   fixed 0.006: ppd * exp(-0.6) ≈ ppd * 0.549  → ~45 % zoom-out
+    //   adaptive 0.012: ppd * exp(-1.2) ≈ ppd * 0.301 → ~70 % zoom-out
+    const oldPpd = 1.5
+    const fixed = applyWheelZoom(oldPpd, 100, 0.006)
+    const adaptive = applyWheelZoom(oldPpd, 100) // adaptive default
+    expect(adaptive).toBeLessThan(fixed)
+  })
+
+  it('produces same zoom in high-density (week=14)', () => {
+    // Adaptive factor for ppd=14 is 0.006, identical to the v121.13 fixed value
+    const adaptive = applyWheelZoom(14, 100)
+    const fixed = applyWheelZoom(14, 100, 0.006)
+    expect(adaptive).toBe(fixed)
   })
 })

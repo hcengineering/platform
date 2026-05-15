@@ -40,6 +40,19 @@ export function clampPxPerDay (ppd: number): number {
 }
 
 /**
+ * Adaptive sensitivity for `applyWheelZoom`. Below ~4 px/day (month and
+ * quarter presets) a uniform factor produces visibly slower zoom because
+ * the same per-notch multiplicative step traverses a smaller absolute
+ * pixel range. Bump the factor for the low-density bands so users feel
+ * the same responsiveness at every zoom level.
+ */
+export function adaptiveWheelFactor (currentPpd: number): number {
+  if (!Number.isFinite(currentPpd) || currentPpd <= 0) return 0.012
+  if (currentPpd < 4) return 0.012
+  return 0.006
+}
+
+/**
  * Apply a single wheel-step (typically `event.deltaY`) to a current
  * px-per-day value. Uses an exponential mapping so that scrolling N
  * notches in the same direction zooms by the same factor regardless of
@@ -48,11 +61,16 @@ export function clampPxPerDay (ppd: number): number {
  *
  * Positive `deltaY` (wheel down) zooms out; negative zooms in — matching
  * the convention used by browsers, Figma, MS Project, and Asana.
+ *
+ * When `factor` is omitted the per-density adaptive value from
+ * `adaptiveWheelFactor` is used. Callers that need a fixed sensitivity
+ * (e.g. tests) can pass an explicit factor.
  */
-export function applyWheelZoom (currentPpd: number, deltaY: number, factor: number = 0.001): number {
+export function applyWheelZoom (currentPpd: number, deltaY: number, factor?: number): number {
   if (!Number.isFinite(currentPpd) || currentPpd <= 0) return clampPxPerDay(MIN_PPD)
   if (!Number.isFinite(deltaY) || deltaY === 0) return clampPxPerDay(currentPpd)
-  const next = currentPpd * Math.exp(-deltaY * factor)
+  const f = factor ?? adaptiveWheelFactor(currentPpd)
+  const next = currentPpd * Math.exp(-deltaY * f)
   return clampPxPerDay(next)
 }
 
