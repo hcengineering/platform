@@ -50,14 +50,17 @@ describe('computeCriticalPath — graceful degrade', () => {
     expect(res.slack.size).toBe(0)
   })
 
-  it('returns empty critical set when there are no relations', () => {
+  it('two unrelated issues, no relations — only the latest is critical', () => {
+    // Standard single-project CPM (Codex review round 9): project finish
+    // = max(EF) across all sinks. Issue A (ends May 5) has 5d slack
+    // against the project finish at May 10. Only B is on the CP.
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
     const res = computeCriticalPath([A, B], [])
     expect(res.cycle).toBe(false)
-    // Without relations every issue is its own CP root - both have zero
-    // slack since there's no successor to absorb it.
-    expect(res.critical.size).toBe(2)
+    expect(res.critical).toEqual(new Set(['B']))
+    expect(res.slack.get('A' as Ref<Issue>)).toBe(5 * 86_400_000)
+    expect(res.slack.get('B' as Ref<Issue>)).toBe(0)
   })
 })
 

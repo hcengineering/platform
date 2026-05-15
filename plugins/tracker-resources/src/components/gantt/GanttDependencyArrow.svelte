@@ -26,6 +26,16 @@
   export let sourceBar: BarRect | null
   export let targetBar: BarRect | null
   export let dimmed: boolean = false
+  // PR5 critical-path overlay
+  export let isCritical: boolean = false
+  export let isViolated: boolean = false
+
+  // Critical-relation visual: solid red. Violated-relation visual:
+  // red dashed with '!' hint via title tooltip (Spec §5.4). Violated
+  // wins over critical when both are true.
+  $: arrowStroke = isViolated || isCritical ? '#dc2626' : '#94a3b8'
+  $: arrowStrokeWidth = isViolated || isCritical ? 2 : 1.5
+  $: arrowDash = isViolated ? '4 2' : 'none'
 
   const dispatch = createEventDispatcher<{
     openEditor: { relation: IssueRelation }
@@ -65,11 +75,15 @@
   >
     <!-- Invisible wider stroke for an easier click target -->
     <path d={path} stroke="transparent" stroke-width={12} fill="none" on:click={onOpen} />
-    <path d={path} class="curve" stroke="#94a3b8" stroke-width={1.5} fill="none" pointer-events="none" />
+    <path d={path} class="curve" class:critical={isCritical} class:violated={isViolated}
+      stroke={arrowStroke} stroke-width={arrowStrokeWidth} stroke-dasharray={arrowDash}
+      fill="none" pointer-events="none" />
     <polygon
       points={`${head[0].x},${head[0].y} ${head[1].x},${head[1].y} ${head[2].x},${head[2].y}`}
       class="arrowhead"
-      fill="#94a3b8"
+      class:critical={isCritical}
+      class:violated={isViolated}
+      fill={arrowStroke}
       pointer-events="none"
     />
     {#if signedLag(relation.lag) !== '' }
