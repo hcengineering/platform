@@ -4,7 +4,7 @@
 //
 
 /**
- * Tier-3 Item 5 — synthetic perf gate. Generates 1000 rows in memory and
+ *  — synthetic perf gate. Generates 1000 rows in memory and
  * sweeps `computeYViewport` + `sliceVisibleRows` over 100 scroll positions
  * (≈ a full top-to-bottom scroll). Asserts the total wall-clock stays
  * under 30 ms on the CI box. The pure-logic path is the worst-case render
