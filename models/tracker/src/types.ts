@@ -51,6 +51,8 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-core'
+import notification from '@hcengineering/model-notification'
+import { TCommonInboxNotification } from '@hcengineering/model-notification'
 import task, { TTask, TProject as TTaskProject } from '@hcengineering/model-task'
 import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import tags, { type TagElement } from '@hcengineering/tags'
@@ -59,6 +61,7 @@ import {
   type ProjectTargetPreference,
   type Component,
   type DependencyKind,
+  type DependencyShiftedNotification,
   type Issue,
   type IssueChildInfo,
   type IssueParentInfo,
@@ -73,6 +76,7 @@ import {
   type RelatedClassRule,
   type RelatedIssueTarget,
   type RelatedSpaceRule,
+  type ShiftedIssuePayload,
   type TimeReportDayType,
   type TimeSpendReport,
   type WorkingDaysConfig
@@ -485,3 +489,35 @@ export class TClassicProjectTypeData extends TProject implements RolesAssignment
 @Mixin(tracker.mixin.IssueTypeData, tracker.class.Issue)
 @UX(getEmbeddedLabel('Issue'), tracker.icon.Issue)
 export class TIssueTypeData extends TIssue {}
+
+/**
+ * Tier-4 Item 14 — Notification on Dependency-Shift.
+ *
+ * Persisted model class for the cascade-shift bundle notification. Extends
+ * `CommonInboxNotification` so it inherits inbox/email/push routing for
+ * free; the cascade-specific payload lives in the (un-`@Prop`'d) fields
+ * which are still serialised as part of the Doc body — same pattern that
+ * `TReactionInboxNotification` uses for its `ref`/`emoji` fields.
+ *
+ * @public
+ */
+@Model(tracker.class.DependencyShiftedNotification, notification.class.CommonInboxNotification)
+export class TDependencyShiftedNotification
+  extends TCommonInboxNotification
+  implements DependencyShiftedNotification {
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
+    triggerIssueId!: Ref<Issue>
+
+  @Prop(TypeString(), tracker.string.Issue)
+    triggerIssueIdentifier!: string
+
+  @Prop(TypeString(), tracker.string.Issue)
+    triggerIssueTitle!: string
+
+  triggerUserId!: AccountUuid
+
+  shiftedIssues!: ShiftedIssuePayload[]
+
+  @Prop(TypeString(), tracker.string.DependencyShifted)
+    cascadeToken!: string
+}
