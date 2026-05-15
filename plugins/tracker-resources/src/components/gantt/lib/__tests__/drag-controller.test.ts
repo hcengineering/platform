@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { Issue } from '@hcengineering/tracker'
+import type { Issue, Milestone } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 import { reduce } from '../drag-controller'
 import { createTimeScale, snapToUtcMidnight } from '../time-scale'
-import type { DragState } from '../types'
+import type { DragState, DragTarget } from '../types'
 
 const ts = createTimeScale('week', Date.UTC(2026, 0, 1))
 const issueRef = 'issue-1' as Ref<Issue>
@@ -20,6 +20,8 @@ const issue: Issue = {
   dueDate: Date.UTC(2026, 0, 12)
   // The reducer only touches startDate/dueDate; the rest is type-padding.
 } as unknown as Issue
+
+const issueTarget: DragTarget = { kind: 'issue', doc: issue }
 
 describe('drag-controller — idle transitions', () => {
   const idle: DragState = { kind: 'idle' }
@@ -50,45 +52,52 @@ describe('drag-controller — body drag', () => {
     const hover: DragState = { kind: 'hover-bar', issueId: issue._id, edge: 'body' }
     const next = reduce(
       hover,
-      { type: 'mousedown-bar', issue, edge: 'body', cursorX: 200 },
+      {
+        type: 'mousedown-bar',
+        target: issueTarget,
+        originStart: issue.startDate as number,
+        originEnd: issue.dueDate as number,
+        edge: 'body',
+        cursorX: 200
+      },
       ts
     )
     expect(next.kind).toBe('dragging-body')
     if (next.kind !== 'dragging-body') return
-    expect(next.issue._id).toBe(issue._id)
+    expect(next.target.doc._id).toBe(issue._id)
     expect(next.originStart).toBe(issue.startDate)
-    expect(next.originDue).toBe(issue.dueDate)
+    expect(next.originEnd).toBe(issue.dueDate)
     expect(next.cursorStartX).toBe(200)
     expect(next.previewStart).toBe(issue.startDate)
-    expect(next.previewDue).toBe(issue.dueDate)
+    expect(next.previewEnd).toBe(issue.dueDate)
   })
 
   it('mousemove shifts both preview dates by snapped delta', () => {
     const dragging: DragState = {
       kind: 'dragging-body',
-      issue,
+      target: issueTarget,
       originStart: issue.startDate as number,
-      originDue: issue.dueDate as number,
+      originEnd: issue.dueDate as number,
       cursorStartX: 200,
       previewStart: issue.startDate as number,
-      previewDue: issue.dueDate as number
+      previewEnd: issue.dueDate as number
     }
     // Week-zoom = 14 px/day → 28 px = 2 days
     const next = reduce(dragging, { type: 'mousemove', cursorX: 228 }, ts)
     if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
     expect(next.previewStart).toBe((issue.startDate as number) + 2 * 86_400_000)
-    expect(next.previewDue).toBe((issue.dueDate as number) + 2 * 86_400_000)
+    expect(next.previewEnd).toBe((issue.dueDate as number) + 2 * 86_400_000)
   })
 
   it('mouseup returns dragging-body → idle', () => {
     const dragging: DragState = {
       kind: 'dragging-body',
-      issue,
+      target: issueTarget,
       originStart: issue.startDate as number,
-      originDue: issue.dueDate as number,
+      originEnd: issue.dueDate as number,
       cursorStartX: 200,
       previewStart: issue.startDate as number,
-      previewDue: issue.dueDate as number
+      previewEnd: issue.dueDate as number
     }
     const next = reduce(dragging, { type: 'mouseup' }, ts)
     expect(next).toEqual({ kind: 'idle' })
@@ -97,12 +106,12 @@ describe('drag-controller — body drag', () => {
   it('cancel returns dragging-body → idle without applying the move', () => {
     const dragging: DragState = {
       kind: 'dragging-body',
-      issue,
+      target: issueTarget,
       originStart: issue.startDate as number,
-      originDue: issue.dueDate as number,
+      originEnd: issue.dueDate as number,
       cursorStartX: 200,
       previewStart: (issue.startDate as number) + 5 * 86_400_000,
-      previewDue: (issue.dueDate as number) + 5 * 86_400_000
+      previewEnd: (issue.dueDate as number) + 5 * 86_400_000
     }
     const next = reduce(dragging, { type: 'cancel' }, ts)
     expect(next).toEqual({ kind: 'idle' })
@@ -114,21 +123,28 @@ describe('drag-controller — resize-left', () => {
     const hover: DragState = { kind: 'hover-bar', issueId: issue._id, edge: 'left' }
     const next = reduce(
       hover,
-      { type: 'mousedown-bar', issue, edge: 'left', cursorX: 50 },
+      {
+        type: 'mousedown-bar',
+        target: issueTarget,
+        originStart: issue.startDate as number,
+        originEnd: issue.dueDate as number,
+        edge: 'left',
+        cursorX: 50
+      },
       ts
     )
     expect(next.kind).toBe('resizing-left')
     if (next.kind !== 'resizing-left') return
     expect(next.previewStart).toBe(issue.startDate)
-    expect(next.originDue).toBe(issue.dueDate)
+    expect(next.originEnd).toBe(issue.dueDate)
   })
 
-  it('resize-left mousemove updates previewStart but not originDue', () => {
+  it('resize-left mousemove updates previewStart but not originEnd', () => {
     const resizing: DragState = {
       kind: 'resizing-left',
-      issue,
+      target: issueTarget,
       originStart: issue.startDate as number,
-      originDue: issue.dueDate as number,
+      originEnd: issue.dueDate as number,
       cursorStartX: 50,
       previewStart: issue.startDate as number
     }
@@ -138,12 +154,12 @@ describe('drag-controller — resize-left', () => {
     expect(next.previewStart).toBe((issue.startDate as number) + 1 * 86_400_000)
   })
 
-  it('resize-left clamps previewStart to be ≤ originDue', () => {
+  it('resize-left clamps previewStart to be ≤ originEnd', () => {
     const resizing: DragState = {
       kind: 'resizing-left',
-      issue,
+      target: issueTarget,
       originStart: issue.startDate as number,
-      originDue: issue.dueDate as number,
+      originEnd: issue.dueDate as number,
       cursorStartX: 50,
       previewStart: issue.startDate as number
     }
@@ -159,42 +175,49 @@ describe('drag-controller — resize-right', () => {
     const hover: DragState = { kind: 'hover-bar', issueId: issue._id, edge: 'right' }
     const next = reduce(
       hover,
-      { type: 'mousedown-bar', issue, edge: 'right', cursorX: 250 },
+      {
+        type: 'mousedown-bar',
+        target: issueTarget,
+        originStart: issue.startDate as number,
+        originEnd: issue.dueDate as number,
+        edge: 'right',
+        cursorX: 250
+      },
       ts
     )
     expect(next.kind).toBe('resizing-right')
     if (next.kind !== 'resizing-right') return
-    expect(next.previewDue).toBe(issue.dueDate)
+    expect(next.previewEnd).toBe(issue.dueDate)
     expect(next.originStart).toBe(issue.startDate)
   })
 
-  it('resize-right mousemove updates previewDue but not originStart', () => {
+  it('resize-right mousemove updates previewEnd but not originStart', () => {
     const resizing: DragState = {
       kind: 'resizing-right',
-      issue,
+      target: issueTarget,
       originStart: issue.startDate as number,
-      originDue: issue.dueDate as number,
+      originEnd: issue.dueDate as number,
       cursorStartX: 250,
-      previewDue: issue.dueDate as number
+      previewEnd: issue.dueDate as number
     }
     const next = reduce(resizing, { type: 'mousemove', cursorX: 264 }, ts)
     if (next.kind !== 'resizing-right') throw new Error('expected resizing-right')
-    expect(next.previewDue).toBe((issue.dueDate as number) + 1 * 86_400_000)
+    expect(next.previewEnd).toBe((issue.dueDate as number) + 1 * 86_400_000)
   })
 
-  it('resize-right clamps previewDue to be ≥ originStart', () => {
+  it('resize-right clamps previewEnd to be ≥ originStart', () => {
     const resizing: DragState = {
       kind: 'resizing-right',
-      issue,
+      target: issueTarget,
       originStart: issue.startDate as number,
-      originDue: issue.dueDate as number,
+      originEnd: issue.dueDate as number,
       cursorStartX: 250,
-      previewDue: issue.dueDate as number
+      previewEnd: issue.dueDate as number
     }
     // Move 100 days left — past the start
     const next = reduce(resizing, { type: 'mousemove', cursorX: 250 - 100 * 14 }, ts)
     if (next.kind !== 'resizing-right') throw new Error('expected resizing-right')
-    expect(next.previewDue).toBe(issue.startDate)
+    expect(next.previewEnd).toBe(issue.startDate)
   })
 })
 
@@ -205,21 +228,22 @@ describe('drag-controller — unscheduled drag', () => {
     startDate: null,
     dueDate: null
   } as unknown as Issue
+  const undatedTarget: DragTarget = { kind: 'issue', doc: undated }
 
   it('mousedown-unscheduled from idle transitions to dragging-unscheduled with origin fields', () => {
     const next = reduce(
       { kind: 'idle' },
-      { type: 'mousedown-unscheduled', issue: undated, cursorX: 100 },
+      { type: 'mousedown-unscheduled', target: undatedTarget, cursorX: 100 },
       ts
     )
     expect(next.kind).toBe('dragging-unscheduled')
     if (next.kind !== 'dragging-unscheduled') return
     expect(next.previewStart).toBeGreaterThan(0)
-    expect(next.previewDue).toBe(next.previewStart + 86_400_000) // default 1-day span
+    expect(next.previewEnd).toBe(next.previewStart + 86_400_000) // default 1-day span
     // Origin fields are populated so commitDrag/overlay treat unscheduled like
     // a regular drag with an implicit "today" anchor.
     expect(next.originStart).toBe(next.previewStart)
-    expect(next.originDue).toBe(next.previewDue)
+    expect(next.originEnd).toBe(next.previewEnd)
     // Guard against click-without-drag scheduling to today: hasCanvasTarget
     // is false until a real canvas-X is seen on mousemove.
     expect(next.hasCanvasTarget).toBe(false)
@@ -228,12 +252,12 @@ describe('drag-controller — unscheduled drag', () => {
   it('mousemove without canvasX keeps hasCanvasTarget false', () => {
     const start: DragState = {
       kind: 'dragging-unscheduled',
-      issue: undated,
+      target: undatedTarget,
       originStart: 1_700_000_000_000,
-      originDue: 1_700_000_000_000 + 86_400_000,
+      originEnd: 1_700_000_000_000 + 86_400_000,
       cursorStartX: 100,
       previewStart: 1_700_000_000_000,
-      previewDue: 1_700_000_000_000 + 86_400_000,
+      previewEnd: 1_700_000_000_000 + 86_400_000,
       hasCanvasTarget: false
     }
     const next = reduce(start, { type: 'mousemove', cursorX: 200 }, ts)
@@ -245,12 +269,12 @@ describe('drag-controller — unscheduled drag', () => {
   it('mousemove with canvasX flips hasCanvasTarget true and snaps previewStart', () => {
     const start: DragState = {
       kind: 'dragging-unscheduled',
-      issue: undated,
+      target: undatedTarget,
       originStart: 1_700_000_000_000,
-      originDue: 1_700_000_000_000 + 86_400_000,
+      originEnd: 1_700_000_000_000 + 86_400_000,
       cursorStartX: 100,
       previewStart: 1_700_000_000_000,
-      previewDue: 1_700_000_000_000 + 86_400_000,
+      previewEnd: 1_700_000_000_000 + 86_400_000,
       hasCanvasTarget: false
     }
     // canvasX = 7 * pxPerDay (week zoom = 14 px/day) → 7 days past origin
@@ -258,7 +282,7 @@ describe('drag-controller — unscheduled drag', () => {
     if (next.kind !== 'dragging-unscheduled') throw new Error('expected dragging-unscheduled')
     expect(next.hasCanvasTarget).toBe(true)
     expect(next.previewStart).toBe(snapToUtcMidnight(ts.fromX(7 * 14)))
-    expect(next.previewDue).toBe(next.previewStart + 86_400_000)
+    expect(next.previewEnd).toBe(next.previewStart + 86_400_000)
   })
 })
 
@@ -266,22 +290,87 @@ describe('drag-controller — direct idle → drag (Playwright + edge-case)', ()
   it('mousedown-bar from idle transitions directly to dragging-body', () => {
     const next = reduce(
       { kind: 'idle' },
-      { type: 'mousedown-bar', issue, edge: 'body', cursorX: 200 },
+      {
+        type: 'mousedown-bar',
+        target: issueTarget,
+        originStart: issue.startDate as number,
+        originEnd: issue.dueDate as number,
+        edge: 'body',
+        cursorX: 200
+      },
       ts
     )
     expect(next.kind).toBe('dragging-body')
     if (next.kind !== 'dragging-body') return
     expect(next.previewStart).toBe(issue.startDate)
-    expect(next.previewDue).toBe(issue.dueDate)
+    expect(next.previewEnd).toBe(issue.dueDate)
     expect(next.cursorStartX).toBe(200)
   })
 
   it('mousedown-bar (edge=left) from idle goes directly to resizing-left', () => {
     const next = reduce(
       { kind: 'idle' },
-      { type: 'mousedown-bar', issue, edge: 'left', cursorX: 50 },
+      {
+        type: 'mousedown-bar',
+        target: issueTarget,
+        originStart: issue.startDate as number,
+        originEnd: issue.dueDate as number,
+        edge: 'left',
+        cursorX: 50
+      },
       ts
     )
     expect(next.kind).toBe('resizing-left')
+  })
+})
+
+describe('drag-controller — milestone target (PR3.3)', () => {
+  const milestone: Milestone = {
+    _id: 'ms-1' as Ref<Milestone>,
+    _class: 'tracker:class:Milestone' as Milestone['_class'],
+    space: 'space-1' as Milestone['space'],
+    label: 'Sprint 1',
+    startDate: Date.UTC(2026, 0, 5),
+    targetDate: Date.UTC(2026, 0, 12),
+    status: 0,
+    comments: 0
+  } as unknown as Milestone
+  const milestoneTarget: DragTarget = { kind: 'milestone', doc: milestone }
+
+  it('mousedown-bar on milestone target transitions to dragging-body with kind preserved', () => {
+    const next = reduce(
+      { kind: 'idle' },
+      {
+        type: 'mousedown-bar',
+        target: milestoneTarget,
+        originStart: milestone.startDate as number,
+        originEnd: milestone.targetDate,
+        edge: 'body',
+        cursorX: 200
+      },
+      ts
+    )
+    if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
+    expect(next.target.kind).toBe('milestone')
+    if (next.target.kind !== 'milestone') return
+    expect(next.target.doc._id).toBe(milestone._id)
+    // Reducer is doc-agnostic — same origin / preview semantics as Issue.
+    expect(next.originStart).toBe(milestone.startDate)
+    expect(next.originEnd).toBe(milestone.targetDate)
+  })
+
+  it('milestone resize-right preserves target.kind through reducer', () => {
+    const resizing: DragState = {
+      kind: 'resizing-right',
+      target: milestoneTarget,
+      originStart: milestone.startDate as number,
+      originEnd: milestone.targetDate,
+      cursorStartX: 250,
+      previewEnd: milestone.targetDate
+    }
+    const next = reduce(resizing, { type: 'mousemove', cursorX: 264 }, ts)
+    if (next.kind !== 'resizing-right') throw new Error('expected resizing-right')
+    expect(next.target.kind).toBe('milestone')
+    expect(next.previewEnd).toBe(milestone.targetDate + 1 * 86_400_000)
   })
 })

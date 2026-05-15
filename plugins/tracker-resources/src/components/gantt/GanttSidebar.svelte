@@ -25,7 +25,9 @@
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
 
   $: dragState = $activeDrag
-  $: activeIssueIdStr = 'issue' in dragState ? String((dragState as { issue: { _id: unknown } }).issue._id) : null
+  $: activeIssueIdStr = 'target' in dragState
+    ? String((dragState as { target?: { doc: { _id: unknown } } }).target?.doc._id ?? '') || null
+    : null
   $: anyDragActive = dragState.kind !== 'idle' && dragState.kind !== 'hover-bar'
 
   const dispatch = createEventDispatcher<{
