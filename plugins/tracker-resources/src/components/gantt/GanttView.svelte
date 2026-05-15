@@ -4392,7 +4392,8 @@
               milestoneStripHeight={MILESTONE_STRIP_HEIGHT}
               {hoveredRowId}
               {statusCategoryMap}
-              {editableIssueIds}
+              editableIssueIds={phoneReadOnly ? new Set() : editableIssueIds}
+              {layoutMode}
               {activeDrag}
               {focusedIssueId}
               {selectedIssueId}

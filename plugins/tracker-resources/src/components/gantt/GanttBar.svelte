@@ -2,7 +2,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
   import type { Ref } from '@hcengineering/core'
   import type { Issue, Milestone } from '@hcengineering/tracker'
@@ -11,6 +11,10 @@
   import GanttConnectorDot from './GanttConnectorDot.svelte'
   import { activeDragTargetId } from './lib/drag-state'
   import { resolveBarLabel, type BarLabelSlot } from './lib/bar-labels'
+  // Tier-4 Item 13 — Mobile-Friendly Gantt.
+  import type { LayoutMode } from './lib/breakpoint'
+  import { classifyPointer, type PointerKind } from './lib/pointer-classify'
+  import { LONG_PRESS_MS, MOVE_THRESHOLD_PX } from './lib/long-press'
 
   // Bar is rendered for both Issues and synthetic milestone summaries; the
   // structural subset below is all the bar geometry needs.
@@ -51,6 +55,13 @@
   // glance that this issue is protected from cascade. `'auto'` / `undefined`
   // → no glyph (Bestand-Default).
   export let schedulingMode: 'auto' | 'manual' | undefined = undefined
+
+  // Tier-4 Item 13 — Mobile-Friendly Gantt. layoutMode threads through
+  // from GanttView so the pointer-classifier can route touch on Tablet
+  // through a long-press timer (Spec §"Tablet"). Default 'desktop'
+  // preserves the legacy Mouse-direct behaviour for any caller that
+  // doesn't wire the prop.
+  export let layoutMode: LayoutMode = 'desktop'
 
   // Phase 1.A — configurable bar-label slots driven by ViewOptions.
   // Each slot resolves via resolveBarLabel(); 'none' skips render.
@@ -94,25 +105,99 @@
     dispatch('contextMenu', { issue: dragTarget.doc, event: evt })
   }
 
-  function onBarDown (edge: 'left' | 'right' | 'body') {
-    return (evt: MouseEvent): void => {
+  /**
+   * Tier-4 Item 13 — Mobile-Friendly Gantt.
+   *
+   * Long-press timer state. Pointer-classify returns 'long-press' on
+   * touch-input at Tablet/Desktop scope; we hold an in-flight
+   * setTimeout per bar-rect and clear it on pointermove > 10 px or
+   * pointerup before the threshold. Mouse + pen fire the drag-start
+   * dispatch immediately ('allow' branch) so legacy desktop UX is
+   * unchanged bit-for-bit.
+   */
+  let longPressTimer: ReturnType<typeof setTimeout> | null = null
+  let longPressStartX: number = 0
+  let longPressStartY: number = 0
+  let longPressPointerId: number | null = null
+
+  function clearLongPressTimer (): void {
+    if (longPressTimer !== null) {
+      clearTimeout(longPressTimer)
+      longPressTimer = null
+    }
+    longPressPointerId = null
+  }
+
+  onDestroy(clearLongPressTimer)
+
+  /**
+   * Dispatch the actual drag-start. Extracted so both the 'allow' and
+   * 'long-press' branches can call it with the same payload shape.
+   */
+  function dispatchDragStart (
+    edge: 'left' | 'right' | 'body',
+    cursorX: number,
+    modifiers: { metaKey: boolean, ctrlKey: boolean, shiftKey: boolean }
+  ): void {
+    if (dragTarget === undefined) return
+    if (edge === 'body' && !selected && !multiSelected) return
+    if (edge === 'body' && (modifiers.metaKey || modifiers.ctrlKey || modifiers.shiftKey)) return
+    dispatch('barMouseDown', { target: dragTarget, edge, cursorX })
+  }
+
+  /**
+   * Tier-4 Item 13 — pointer-events replace the legacy mousedown handler.
+   * Pointer-events fire uniformly across mouse / pen / touch, eliminating
+   * the previous mouse+pointer double-dispatch issue called out in the
+   * Pre-Flight (Item 9).
+   */
+  function onBarPointer (edge: 'left' | 'right' | 'body') {
+    return (evt: PointerEvent): void => {
+      // Selected bar swallows the pointerdown so the canvas-pan handler
+      // upstream doesn't also grab it. Preserved from the legacy
+      // onBarPointerDown so the Item 5 (Bulk-Drag) pan-suppression keeps
+      // working.
+      if (selected) evt.stopPropagation()
       if (!editable || dragTarget === undefined) return
-      if (evt.button !== 0) return // only left-click starts a drag
-      // Body-drag requires the bar to be "armed" — either single-selected
-      // (legacy single-bar drag) or part of an active multi-selection
-      // (Tier-2 Item 6 bulk-drag). Cmd/Shift-click only toggles selection
-      // and must not arm a drag, so suppress it here too — the click
-      // handler downstream owns the selection mutation.
-      if (edge === 'body' && !selected && !multiSelected) return
-      if (edge === 'body' && (evt.metaKey || evt.ctrlKey || evt.shiftKey)) return
-      dispatch('barMouseDown', { target: dragTarget, edge, cursorX: evt.clientX })
-      evt.preventDefault()
-      evt.stopPropagation()
+      if (evt.button !== 0) return
+      const action: 'drag' | 'resize' = edge === 'body' ? 'drag' : 'resize'
+      const decision = classifyPointer(layoutMode, evt.pointerType as PointerKind, action)
+      if (decision === 'block') return
+      const modifiers = { metaKey: evt.metaKey, ctrlKey: evt.ctrlKey, shiftKey: evt.shiftKey }
+      if (decision === 'allow') {
+        dispatchDragStart(edge, evt.clientX, modifiers)
+        evt.preventDefault()
+        evt.stopPropagation()
+        return
+      }
+      // decision === 'long-press' — schedule a deferred drag-start; the
+      // capture of cursorX is the touch-down position (anchoring drag-math
+      // from where the finger landed, not where it ends up after the
+      // 300 ms hold).
+      const startCursorX = evt.clientX
+      clearLongPressTimer()
+      longPressStartX = evt.clientX
+      longPressStartY = evt.clientY
+      longPressPointerId = evt.pointerId
+      longPressTimer = setTimeout(() => {
+        longPressTimer = null
+        longPressPointerId = null
+        dispatchDragStart(edge, startCursorX, modifiers)
+      }, LONG_PRESS_MS)
     }
   }
 
-  function onBarPointerDown (evt: PointerEvent): void {
-    if (selected) evt.stopPropagation()
+  function onBarPointerMove (evt: PointerEvent): void {
+    if (longPressTimer === null) return
+    if (longPressPointerId !== null && evt.pointerId !== longPressPointerId) return
+    const dx = evt.clientX - longPressStartX
+    const dy = evt.clientY - longPressStartY
+    if (Math.sqrt(dx * dx + dy * dy) > MOVE_THRESHOLD_PX) clearLongPressTimer()
+  }
+
+  function onBarPointerEnd (evt: PointerEvent): void {
+    if (longPressPointerId !== null && evt.pointerId !== longPressPointerId) return
+    clearLongPressTimer()
   }
 
   function onBarClick (evt: MouseEvent): void {
@@ -292,8 +377,10 @@
         role="button"
         tabindex="-1"
         aria-label={issue.title}
-        on:pointerdown={onBarPointerDown}
-        on:mousedown={onBarDown('body')}
+        on:pointerdown={onBarPointer('body')}
+        on:pointermove={onBarPointerMove}
+        on:pointerup={onBarPointerEnd}
+        on:pointercancel={onBarPointerEnd}
         on:click={onBarClick}
         on:contextmenu={onBarContextMenu}
         on:mouseenter={() => {
@@ -357,8 +444,10 @@
       role="button"
       tabindex="-1"
       aria-label={issue.title}
-      on:pointerdown={onBarPointerDown}
-      on:mousedown={onBarDown('body')}
+      on:pointerdown={onBarPointer('body')}
+      on:pointermove={onBarPointerMove}
+      on:pointerup={onBarPointerEnd}
+      on:pointercancel={onBarPointerEnd}
       on:click={onBarClick}
       on:contextmenu={onBarContextMenu}
       on:mouseenter={() => {

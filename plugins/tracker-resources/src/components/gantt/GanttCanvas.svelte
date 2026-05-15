@@ -307,6 +307,7 @@
                 {barLabelLeft}
                 {barLabelInside}
                 {barLabelRight}
+                {layoutMode}
                 on:barMouseDown
                 on:barClick
               />
