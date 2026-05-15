@@ -353,6 +353,10 @@
     "CascadeBannerBypass": "{count} successors may now violate constraints — Alt-drag bypassed cascade.",
     "CascadeLockedSuccessors": "{count, plural, one {1 successor is locked} other {# successors are locked}} — you cannot edit them. Cancel and contact the owner.",
     "CascadeSkippedUnscheduled": "{count, plural, one {1 other successor has no dates and was not shifted} other {# other successors have no dates and were not shifted}}",
+    "CascadeLegendPrimary": "Primary (you moved this)",
+    "CascadeLegendPush": "Push successor",
+    "CascadeLegendPull": "Pull predecessor",
+    "CascadeLegendOldNew": "Light = original / Solid = new",
     "Dependencies": "Dependencies"
   },
   "status": {}

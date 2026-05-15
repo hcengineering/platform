@@ -635,29 +635,40 @@
       state.target.kind === 'issue' &&
       (state.kind === 'dragging-body' || state.kind === 'resizing-left' || state.kind === 'resizing-right')
 
-    // For cascade-eligible issue drags, defer the idle-reset to either the
-    // popup resultHandler (so the dragged bar stays at its preview position
-    // while the user reads the popup) or to the no-popup exit paths inside
-    // commitWithCascade. For legacy paths (milestone, dragging-unscheduled,
-    // askConfirm) clear the preview now so the bar's animation is consistent
-    // with PR3.3 behaviour.
-    if (!cascadeEligibleIssue) {
-      activeDrag.set({ kind: 'idle' })
-    }
+    // activeDrag is no longer reset at this point — neither for cascade
+    // nor legacy paths. The bar must visually stay at its preview position
+    // while ANY confirmation popup is open (cascade popup OR the legacy
+    // GanttConfirmCommitPopup); springing back only when the user clicks
+    // Cancel. Each downstream exit path (cascade-popup resultHandler,
+    // askConfirm cancel/confirm, commit success/failure) is responsible
+    // for releasing the preview.
 
     try {
       // For cascade-eligible issue states, ConfirmCascadePopup (or the
       // legacy GanttConfirmCommitPopup in the no-cascade case) is the single
       // confirmation point. For milestones and unscheduled-drag the existing
-      // askConfirm path stays untouched.
+      // askConfirm path stays in use — but it now also defers the
+      // bar-springs-back to *after* the popup resolves.
       if (needsConfirm && !cascadeEligibleIssue) {
         const proceed = await askConfirm(state)
-        if (!proceed) return
+        if (!proceed) {
+          // User cancelled: bar springs back now.
+          activeDrag.set({ kind: 'idle' })
+          return
+        }
       }
       await commitDrag(state, e)
+      // commitDrag's legacy branches (milestone, dragging-unscheduled) do
+      // not manage activeDrag themselves — release the preview now that
+      // the server-state has been written (or failed). commitWithCascade
+      // paths release activeDrag internally (popup resultHandler / no-cascade
+      // direct / alt-bypass), so it's safe to call this unconditionally:
+      // setting idle on an already-idle store is a no-op.
+      activeDrag.set({ kind: 'idle' })
     } catch (err) {
       const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
       addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
+      activeDrag.set({ kind: 'idle' })
     }
   }
 
@@ -1271,12 +1282,6 @@
     document.addEventListener('pointerdown', handleNativeConnectorDown, true)
     document.addEventListener('mousedown', handleNativeConnectorDown, true)
     document.addEventListener('gantt-connector-start', handleConnectorStartEvent)
-    // Debug surface for bar-springs-back / relations diagnosis. Removed
-    // before upstream PR; safe in dev because behaviour is purely additive.
-    ;(window as any).__ganttDebug = {
-      activeDrag,
-      lastSetIdleFrom: '<none>'
-    }
   })
   onDestroy(() => {
     window.removeEventListener('keydown', onKey)
