@@ -365,7 +365,12 @@ export default mergeIds(trackerId, tracker, {
     SlackColumn: '' as IntlString,
     Slack: '' as IntlString,
     CriticalPathCycle: '' as IntlString,
-    CriticalPathBadge: '' as IntlString
+    CriticalPathBadge: '' as IntlString,
+    // PR6 — export + keyboard help
+    GanttHelpTitle: '' as IntlString,
+    GanttHelpEsc: '' as IntlString,
+    GanttExport: '' as IntlString,
+    GanttExportFailed: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
