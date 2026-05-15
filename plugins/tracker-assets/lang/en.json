@@ -311,7 +311,13 @@
     "GanttScrollLeftToBar": "Scroll left to bar",
     "GanttScrollRightToBar": "Scroll right to bar",
     "GanttExpand": "Expand",
-    "GanttCollapse": "Collapse"
+    "GanttCollapse": "Collapse",
+    "GanttDragConflict": "Issue was changed by someone else, please retry",
+    "GanttDragFailed": "Failed to apply Gantt edit",
+    "GanttDragNoPermission": "You don't have permission to edit this issue",
+    "GanttDragValidation": "Date is not valid: {reason}",
+    "GanttResizingTooltip": "{from} days → {to} days ({delta} d)",
+    "SetStartDate": "Set start date…"
   },
   "status": {}
 }
