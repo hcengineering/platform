@@ -7,6 +7,7 @@
   import type { Ref } from '@hcengineering/core'
   import type { Issue, IssueRelation, Milestone, WorkingDaysConfig } from '@hcengineering/tracker'
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange } from './lib/types'
+  import { type LayoutMode } from './lib/breakpoint'
   import { type BarLabelSlot } from './lib/bar-labels'
   import { filterVisibleRows } from './lib/layout'
   import GanttBar from './GanttBar.svelte'
@@ -17,6 +18,7 @@
   import GanttDependencyLayer from './GanttDependencyLayer.svelte'
   import GanttConnectorDot from './GanttConnectorDot.svelte'
   import { activeDragTargetId } from './lib/drag-state'
+  import { hasDeadline, isOverdue } from './lib/deadline-marker'
   import { computeTickViewport, nonWorkingDaysInRange } from './lib/viewport'
 
   const dispatch = createEventDispatcher<{
@@ -91,6 +93,10 @@
   // viewport receives a low-alpha background fill so the user sees at a
   // glance which days the scheduler will skip.
   export let workingDaysConfig: WorkingDaysConfig | undefined = undefined
+  /** Tier-4 Item 13 — layout mode for mobile-friendly rendering. */
+  export let layoutMode: LayoutMode = 'desktop'
+  /** Bulk-select: set of selected issue id strings for co-drag highlighting. */
+  export let multiSelectedIssueIds: Set<string> = new Set()
 
   /**
    * Returns true iff any IssueRelation involving this issue is in the
@@ -340,6 +346,7 @@
               editable={isEditable(row.issue._id)}
               focused={isFocused(row.issue._id)}
               selected={isSelected(row.issue._id)}
+              multiSelected={multiSelectedIssueIds.has(String(row.issue._id))}
               {activeDrag}
               issueRef={row.issue._id}
               dragTarget={{ kind: 'issue', doc: row.issue }}
@@ -348,6 +355,7 @@
               slackMs={cpSlack.get(row.issue._id) ?? 0}
               showSlackGlyph={showCriticalPath}
               schedulingMode={row.issue.schedulingMode}
+              {layoutMode}
               on:barMouseDown
               on:barClick
               on:contextMenu
