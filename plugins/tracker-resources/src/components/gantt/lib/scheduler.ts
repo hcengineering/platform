@@ -111,6 +111,11 @@ export function wouldCreateCycle (
  * new edge). Used by `simulateCascade` for the pre-flight safety check.
  * DFS with white/grey/black coloring; returns the refs that participate in
  * the first detected cycle, or null if the graph is a DAG.
+ *
+ * @remarks Recursive DFS — assumes relation chains stay well under V8's
+ * ~10k call-stack ceiling. Realistic Gantt projects are far below that,
+ * but if cascade is ever applied to enterprise graphs > 10k linear
+ * chains, refactor to an explicit work-stack.
  */
 export function detectCycle (relations: IssueRelation[]): Ref<Issue>[] | null {
   const out = new Map<Ref<Issue>, Ref<Issue>[]>()
@@ -261,9 +266,19 @@ export function simulateCascade (
 
       const targetAnchor = targetAnchorIsStart ? targetDates.start : targetDates.due
       if (requiredAnchor > targetAnchor) {
-        // For FS: carry the cur start-delta forward to preserve relative gap
-        // (snap wins when constraint requires a larger shift).
-        // For other relation types: snap only (start-delta is not propagated).
+        // FS gap-preservation: when cur was dragged by Δ days, the successor
+        // should advance by at least Δ — not just enough to clear the FS
+        // constraint. Without max(), dragging A by 3d into a relation with
+        // 1d of slack would push B by only 1d, silently shrinking the
+        // original A→B gap (auto-tightening, which spec §4 decision D
+        // explicitly forbids). The snap term still wins when the
+        // constraint itself requires a larger jump (e.g. lag changed).
+        //
+        // Other kinds don't need this: SS already anchors on cur.start,
+        // so its required anchor naturally moves with curStartDelta. FF
+        // and SF anchor on the cur side that may not match the dragged
+        // side, so gap preservation isn't a clean concept there — pure
+        // snap is the spec semantics.
         const snap = requiredAnchor
         const newAnchor = r.kind === 'finish-to-start'
           ? Math.max(snap, targetAnchor + curStartDelta)
