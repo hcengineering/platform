@@ -31,6 +31,24 @@ function reduceFromIdle (state: DragState & { kind: 'idle' }, event: DragEvent):
   if (event.type === 'mouseenter-bar') {
     return { kind: 'hover-bar', issueId: event.issueId, edge: event.edge }
   }
+  if (event.type === 'mousedown-unscheduled') {
+    // Default to "today" for both dates; cursor movement during the drag
+    // shifts them in lockstep just like dragging-body. originStart/originDue
+    // are recorded so commitDrag() and the resize-overlay can share the same
+    // code path as dragging-body. hasCanvasTarget starts false — only a real
+    // mousemove with canvasX flips it true and unlocks the commit.
+    const today = snapToUtcMidnight(Date.now())
+    return {
+      kind: 'dragging-unscheduled',
+      issue: event.issue,
+      originStart: today,
+      originDue: today + 86_400_000,
+      cursorStartX: event.cursorX,
+      previewStart: today,
+      previewDue: today + 86_400_000,
+      hasCanvasTarget: false
+    }
+  }
   return state
 }
 
@@ -98,6 +116,18 @@ function reduceFromActive (state: DragState, event: DragEvent, timeScale: TimeSc
     const deltaMs = (deltaPx / timeScale.pxPerDay) * 86_400_000
     const candidate = snapToUtcMidnight(state.originDue + deltaMs)
     return { ...state, previewDue: Math.max(candidate, state.originStart) }
+  }
+
+  if (state.kind === 'dragging-unscheduled') {
+    // Only update the preview when the cursor is actually over the canvas.
+    if (event.canvasX === undefined) return state
+    const newStart = snapToUtcMidnight(timeScale.fromX(event.canvasX))
+    return {
+      ...state,
+      previewStart: newStart,
+      previewDue: newStart + 86_400_000,
+      hasCanvasTarget: true
+    }
   }
 
   return state
