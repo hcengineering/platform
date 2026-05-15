@@ -257,18 +257,10 @@
   }
   let datePickerValue: string = ''
 
-  // Forward wheel events from the sidebar to the canvas-scroller so users can
-  // scroll vertically while hovering the issue list. Direct scrollTop/scrollLeft
-  // assignment matches the browser's native wheel-to-scroll speed; smooth
-  // scrolling would feel laggy against the canvas.
-  function forwardSidebarWheel (e: WheelEvent): void {
-    if (scrollerEl === undefined) return
-    e.preventDefault()
-    // deltaMode 1 = lines, 2 = pages; scale to pixels.
-    const factor = e.deltaMode === 1 ? 16 : (e.deltaMode === 2 ? scrollerEl.clientHeight : 1)
-    scrollerEl.scrollTop += e.deltaY * factor
-    scrollerEl.scrollLeft += e.deltaX * factor
-  }
+  // Wheel-forwarding is no longer needed: sidebar lives inside the same
+  // .gantt-scroller as the canvas, with position:sticky;left:0. Browser
+  // handles native scrolling at the right speed regardless of where the
+  // mouse hovers inside the scroller.
 
   // Click-and-drag panning across empty canvas area.
   let panning = false
@@ -377,54 +369,63 @@
       <div class="toolbar-right" />
     </div>
 
-    <div class="gantt-body">
+    <!-- Single scroll container wraps both sidebar and canvas. Sidebar uses
+         position:sticky so it stays at the left edge during horizontal scroll
+         while moving vertically with the rows. Same for the time-axis header
+         (sticky:top). Browser handles all wheel events natively — no manual
+         forwarding needed. -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div
+      class="gantt-scroller"
+      class:panning
+      bind:this={scrollerEl}
+      on:scroll={handleScroll}
+      on:pointerdown={onCanvasPanStart}
+      on:pointermove={onCanvasPanMove}
+      on:pointerup={onCanvasPanEnd}
+      on:pointercancel={onCanvasPanEnd}
+    >
       <div
-        class="sidebar-host"
-        style="width: {sidebarWidthPx}px;"
-        on:wheel|nonpassive={forwardSidebarWheel}
+        class="gantt-grid"
+        style="grid-template-columns: {sidebarWidthPx}px 5px {totalCanvasWidth}px; --sidebar-w: {sidebarWidthPx}px;"
       >
-        <GanttSidebar
-          {rows}
-          {scrollTop}
-          viewportHeight={viewportHeight}
-          width={sidebarWidthPx}
-          headerHeight={HEADER_HEIGHT + MILESTONE_STRIP_HEIGHT}
-          {timeScale}
-          viewportLeft={viewport.left}
-          viewportRight={viewport.right}
-          {showIssueCode}
-          {showTitle}
-          {hoveredRowId}
-          on:jump={onJump}
-          on:toggle={onToggle}
-          on:openIssue={onIssueOpen}
-          on:hoverRow={onRowHover}
+        <!-- Row 1: corner / resize-corner / time-axis header (all sticky-top) -->
+        <div class="cell corner" style="height: {HEADER_HEIGHT}px;">
+          <span class="col-toggle" />
+          {#if showIssueCode}<span class="col-id">Issue</span>{/if}
+          {#if showTitle}<span class="col-title">Title</span>{/if}
+          <span class="col-jump" />
+        </div>
+        <div class="cell resize-corner" style="height: {HEADER_HEIGHT}px;" />
+        <div class="cell header-cell" style="height: {HEADER_HEIGHT}px;">
+          <GanttHeader {timeScale} {viewport} totalWidth={totalCanvasWidth} height={HEADER_HEIGHT} />
+        </div>
+        <!-- Row 2: sidebar (sticky-left) / resize handle (sticky-left) / canvas -->
+        <div class="cell sidebar-cell">
+          <GanttSidebar
+            {rows}
+            width={sidebarWidthPx}
+            {timeScale}
+            viewportLeft={viewport.left}
+            viewportRight={viewport.right}
+            {showIssueCode}
+            {showTitle}
+            {hoveredRowId}
+            on:jump={onJump}
+            on:toggle={onToggle}
+            on:openIssue={onIssueOpen}
+            on:hoverRow={onRowHover}
+          />
+        </div>
+        <div
+          class="cell resize-cell"
+          class:active={resizing}
+          on:pointerdown={onResizeStart}
+          on:pointermove={onResizeMove}
+          on:pointerup={onResizeEnd}
+          on:pointercancel={onResizeEnd}
         />
-      </div>
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        class="resize-handle"
-        class:active={resizing}
-        on:pointerdown={onResizeStart}
-        on:pointermove={onResizeMove}
-        on:pointerup={onResizeEnd}
-        on:pointercancel={onResizeEnd}
-      />
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        class="canvas-scroller"
-        class:panning
-        bind:this={scrollerEl}
-        on:scroll={handleScroll}
-        on:pointerdown={onCanvasPanStart}
-        on:pointermove={onCanvasPanMove}
-        on:pointerup={onCanvasPanEnd}
-        on:pointercancel={onCanvasPanEnd}
-      >
-        <div class="canvas-stack" style="width: {totalCanvasWidth}px;">
-          <div class="header-sticky" style="height: {HEADER_HEIGHT}px;">
-            <GanttHeader {timeScale} {viewport} totalWidth={totalCanvasWidth} height={HEADER_HEIGHT} />
-          </div>
+        <div class="cell canvas-cell">
           <GanttCanvas
             {rows}
             milestones={milestoneMarkers}
@@ -573,52 +574,83 @@
   .settings-popover label {
     display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap;
   }
-  .gantt-body {
-    display: flex;
+  .gantt-scroller {
     flex: 1 1 auto;
-    overflow: hidden;
-    min-height: 0;
-  }
-  /* sidebar-host clips the GanttSidebar's natural height (= 57 rows × 36px)
-     to its own height. Without this clip the sidebar's natural height makes
-     gantt-body's scrollHeight blow up, which breaks page-scroll containment
-     and the wheel-forward logic that depends on the host bounding box. */
-  .sidebar-host {
-    flex: 0 0 auto;
-    min-height: 0;
-    overflow: hidden;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  .resize-handle {
-    flex: 0 0 5px;
-    cursor: col-resize;
-    background: var(--theme-divider-color);
-    transition: background 80ms ease;
-    user-select: none;
-    touch-action: none;
-  }
-  .resize-handle:hover, .resize-handle.active {
-    background: var(--theme-state-info-color, #6366f1);
-  }
-  .canvas-scroller {
-    flex: 1 1 auto;
-    overflow: auto;
+    overflow: scroll;
     min-width: 0;
     min-height: 0;
     cursor: grab;
   }
-  .canvas-scroller.panning {
+  .gantt-scroller.panning {
     cursor: grabbing;
   }
-  .canvas-stack { position: relative; }
-  .header-sticky {
+  .gantt-grid {
+    display: grid;
+    /* grid-template-columns set inline */
+    grid-template-rows: auto auto;
+    width: max-content;
+  }
+  .cell {
+    box-sizing: border-box;
+  }
+  .corner {
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+    background: var(--theme-comp-header-color);
+    border-bottom: 1px solid var(--theme-divider-color);
+    border-right: 1px solid var(--theme-divider-color);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--theme-darker-color);
+    letter-spacing: 0.05em;
+  }
+  .corner .col-toggle { flex: 0 0 18px; }
+  .corner .col-id { flex: 0 0 80px; }
+  .corner .col-title { flex: 1 1 auto; }
+  .corner .col-jump { flex: 0 0 28px; }
+  .resize-corner {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: var(--theme-divider-color);
+    border-bottom: 1px solid var(--theme-divider-color);
+  }
+  .header-cell {
     position: sticky;
     top: 0;
     z-index: 2;
     background: var(--theme-comp-header-color);
     border-bottom: 1px solid var(--theme-divider-color);
+  }
+  .sidebar-cell {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--theme-comp-header-color);
+    border-right: 1px solid var(--theme-divider-color);
+  }
+  .resize-cell {
+    position: sticky;
+    left: var(--sidebar-w, 280px);
+    z-index: 2;
+    background: var(--theme-divider-color);
+    cursor: col-resize;
+    transition: background 80ms ease;
+    user-select: none;
+    touch-action: none;
+  }
+  .resize-cell:hover, .resize-cell.active {
+    background: var(--theme-state-info-color, #6366f1);
+  }
+  .canvas-cell {
+    position: relative;
   }
   .hover-tooltip {
     position: fixed;

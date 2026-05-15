@@ -8,15 +8,11 @@
   import IssuePresenter from '../issues/IssuePresenter.svelte'
 
   export let rows: LayoutRow[]
-  export let scrollTop: number = 0
-  export let viewportHeight: number = 600
-  $: void viewportHeight
   export let width: number = 280
-  export let headerHeight: number = 36
   export let timeScale: TimeScale | undefined = undefined
   export let viewportLeft: number = 0
   export let viewportRight: number = 0
-  export let showIssueCode: boolean = true
+  export let showIssueCode: boolean = false
   export let showTitle: boolean = true
   export let hoveredRowId: string | null = null
 
@@ -58,8 +54,6 @@
     return null
   }
 
-  // Always use the row's true start (or due, if start is null) so "jump" lands
-  // at the bar's left edge regardless of which side is currently offscreen.
   function rowJumpX (row: LayoutRow): number | null {
     if (timeScale === undefined) return null
     const tgt = rowJumpTarget(row)
@@ -70,151 +64,96 @@
   }
 </script>
 
-<div class="gantt-sidebar" style="width: {width}px;">
-  <div class="sidebar-header" style="height: {headerHeight}px;">
-    <span class="col-toggle" />
-    {#if showIssueCode}
-      <span class="col-id">Issue</span>
-    {/if}
-    {#if showTitle}
-      <span class="col-title">Title</span>
-    {/if}
-    <span class="col-jump" />
-  </div>
-  <div class="sidebar-rows-clip">
-    <div class="sidebar-rows" style="transform: translateY({-scrollTop}px);">
-      {#each rows as row (row.id)}
-        {@const indent = row.depth * 16}
-        {@const tgt = rowJumpTarget(row)}
-        {@const dir = tgt !== null ? jumpDirection(tgt) : null}
-        {@const jumpX = rowJumpX(row)}
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="sidebar-row"
-          class:summary={row.isSummary}
-          class:milestone={row.kind === 'milestone'}
-          class:hovered={hoveredRowId === row.id}
-          style="height: {row.height}px; padding-left: {8 + indent}px;"
-          on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
-          on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
-          on:mouseleave={() => dispatch('hoverRow', { id: null })}
-        >
-          <span class="col-toggle">
-            {#if row.collapsible}
-              <button
-                type="button"
-                class="toggle-btn"
-                title={row.collapsed ? 'Expand' : 'Collapse'}
-                on:click={() => dispatch('toggle', { id: row.id })}
-              >
-                {row.collapsed ? '▶' : '▼'}
-              </button>
-            {/if}
+<div class="sidebar-rows" style="width: {width}px;">
+  {#each rows as row (row.id)}
+    {@const indent = row.depth * 16}
+    {@const tgt = rowJumpTarget(row)}
+    {@const dir = tgt !== null ? jumpDirection(tgt) : null}
+    {@const jumpX = rowJumpX(row)}
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div
+      class="sidebar-row"
+      class:summary={row.isSummary}
+      class:milestone={row.kind === 'milestone'}
+      class:hovered={hoveredRowId === row.id}
+      style="height: {row.height}px; padding-left: {8 + indent}px;"
+      on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+      on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+      on:mouseleave={() => dispatch('hoverRow', { id: null })}
+    >
+      <span class="col-toggle">
+        {#if row.collapsible}
+          <button
+            type="button"
+            class="toggle-btn"
+            title={row.collapsed ? 'Expand' : 'Collapse'}
+            on:click={() => dispatch('toggle', { id: row.id })}
+          >
+            {row.collapsed ? '▶' : '▼'}
+          </button>
+        {/if}
+      </span>
+      {#if row.kind === 'milestone' && row.milestone !== null}
+        {#if showIssueCode}
+          <span class="cell-id ms-icon" title="Milestone">◆</span>
+        {/if}
+        {#if showTitle}
+          <span class="cell-title" title={row.milestone.label}>
+            {row.milestone.label}
           </span>
-          {#if row.kind === 'milestone' && row.milestone !== null}
-            {#if showIssueCode}
-              <span class="cell-id ms-icon" title="Milestone">◆</span>
-            {/if}
-            {#if showTitle}
-              <span class="cell-title" title={row.milestone.label}>
-                {row.milestone.label}
-              </span>
-            {/if}
-          {:else if row.issue !== null}
-            {#if showIssueCode}
-              <span class="cell-id">
-                <IssuePresenter value={row.issue} disabled={false} />
-              </span>
-            {/if}
-            {#if showTitle}
-              <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-              <span
-                class="cell-title clickable"
-                title={row.issue.title}
-                role="link"
-                tabindex="0"
-                on:click={() => row.issue !== null && openIssue(row.issue)}
-                on:keydown={(e) => { if (e.key === 'Enter' && row.issue !== null) openIssue(row.issue) }}
-              >
-                {row.issue.title}
-              </span>
-            {/if}
-          {:else}
-            {#if showIssueCode}
-              <span class="cell-id" />
-            {/if}
-            {#if showTitle}
-              <span class="cell-title" />
-            {/if}
-          {/if}
-          <span class="cell-jump">
-            {#if dir !== null && jumpX !== null}
-              <button
-                type="button"
-                class="jump-btn"
-                title={dir === 'left' ? 'Scroll left to bar' : 'Scroll right to bar'}
-                on:click={() => dispatch('jump', { x: jumpX })}
-              >
-                {dir === 'left' ? '←' : '→'}
-              </button>
-            {/if}
+        {/if}
+      {:else if row.issue !== null}
+        {#if showIssueCode}
+          <span class="cell-id">
+            <IssuePresenter value={row.issue} disabled={false} />
           </span>
-        </div>
-      {/each}
+        {/if}
+        {#if showTitle}
+          <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+          <span
+            class="cell-title clickable"
+            title={row.issue.title}
+            role="link"
+            tabindex="0"
+            on:click={() => row.issue !== null && openIssue(row.issue)}
+            on:keydown={(e) => { if (e.key === 'Enter' && row.issue !== null) openIssue(row.issue) }}
+          >
+            {row.issue.title}
+          </span>
+        {/if}
+      {:else}
+        {#if showIssueCode}
+          <span class="cell-id" />
+        {/if}
+        {#if showTitle}
+          <span class="cell-title" />
+        {/if}
+      {/if}
+      <span class="cell-jump">
+        {#if dir !== null && jumpX !== null}
+          <button
+            type="button"
+            class="jump-btn"
+            title={dir === 'left' ? 'Scroll left to bar' : 'Scroll right to bar'}
+            on:click={() => dispatch('jump', { x: jumpX })}
+          >
+            {dir === 'left' ? '←' : '→'}
+          </button>
+        {/if}
+      </span>
     </div>
-  </div>
+  {/each}
 </div>
 
 <style lang="scss">
-  .gantt-sidebar {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--theme-divider-color);
+  .sidebar-rows {
     background: var(--theme-comp-header-color);
-    overflow: hidden;
-    min-height: 0;
-    height: 100%;
-  }
-  .sidebar-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 8px;
-    border-bottom: 1px solid var(--theme-divider-color);
-    background: var(--theme-comp-header-color);
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--theme-darker-color);
-    letter-spacing: 0.05em;
-    box-sizing: border-box;
-    flex: 0 0 auto;
-    z-index: 2;
   }
   .col-toggle {
     flex: 0 0 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-  .col-id {
-    flex: 0 0 80px;
-  }
-  .col-title {
-    flex: 1 1 auto;
-    overflow: hidden;
-  }
-  .col-jump {
-    flex: 0 0 28px;
-  }
-  .sidebar-rows-clip {
-    flex: 1 1 auto;
-    overflow: hidden;
-    position: relative;
-  }
-  .sidebar-rows {
-    will-change: transform;
   }
   .sidebar-row {
     display: flex;
@@ -227,6 +166,7 @@
     overflow: hidden;
     white-space: nowrap;
     box-sizing: border-box;
+    background: var(--theme-comp-header-color);
   }
   .cell-id {
     flex: 0 0 80px;
@@ -243,12 +183,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .cell-title.clickable {
-    cursor: pointer;
-  }
-  .cell-title.clickable:hover {
-    text-decoration: underline;
-  }
+  .cell-title.clickable { cursor: pointer; }
+  .cell-title.clickable:hover { text-decoration: underline; }
   .cell-jump {
     flex: 0 0 28px;
     display: flex;
@@ -269,9 +205,7 @@
     align-items: center;
     justify-content: center;
   }
-  .toggle-btn:hover {
-    color: var(--theme-content-color);
-  }
+  .toggle-btn:hover { color: var(--theme-content-color); }
   .jump-btn {
     width: 22px;
     height: 22px;
@@ -287,12 +221,8 @@
     align-items: center;
     justify-content: center;
   }
-  .jump-btn:hover {
-    filter: brightness(1.1);
-  }
-  .sidebar-row.summary {
-    font-weight: 600;
-  }
+  .jump-btn:hover { filter: brightness(1.1); }
+  .sidebar-row.summary { font-weight: 600; }
   .sidebar-row.milestone {
     background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 6%, transparent);
   }
