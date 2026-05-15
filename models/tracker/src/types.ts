@@ -356,6 +356,8 @@ export class TIssueRelation extends TAttachedDoc implements IssueRelation {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
   declare attachedTo: Ref<Issue>
 
+  declare collection: 'relations'
+
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
   @Index(IndexKind.Indexed)
     target!: Ref<Issue>

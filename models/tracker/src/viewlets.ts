@@ -663,7 +663,7 @@ export function defineViewlets (builder: Builder): void {
       viewOptions: milestoneOptions,
       configOptions: {
         strict: true,
-        hiddenKeys: ['targetDate', 'label', 'description']
+        hiddenKeys: ['startDate', 'targetDate', 'label', 'description']
       },
       config: [
         {
@@ -672,6 +672,12 @@ export function defineViewlets (builder: Builder): void {
         },
         { key: '', presenter: tracker.component.MilestonePresenter, props: { shouldUseMargin: true } },
         { key: '', displayProps: { grow: true } },
+        {
+          key: '',
+          label: tracker.string.StartDate,
+          presenter: tracker.component.MilestoneDatePresenter,
+          props: { field: 'startDate' }
+        },
         {
           key: '',
           label: tracker.string.TargetDate,

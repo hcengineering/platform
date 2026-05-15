@@ -351,8 +351,7 @@ export interface IssueParentInfo {
  *
  * @public
  */
-export interface IssueRelation extends AttachedDoc {
-  attachedTo: Ref<Issue>           // source / predecessor
+export interface IssueRelation extends AttachedDoc<Issue, 'relations'> {
   target: Ref<Issue>               // successor
   kind: DependencyKind
   /** Lag in schedule days; can be negative (overlap). */
@@ -559,10 +558,6 @@ const pluginState = plugin(trackerId, {
     Issue: '' as IntlString,
     IssueStartDate: '' as IntlString,
     GanttDependency: '' as IntlString,
-    GanttDependencyFinishToFinish: '' as IntlString,
-    GanttDependencyFinishToStart: '' as IntlString,
-    GanttDependencyStartToFinish: '' as IntlString,
-    GanttDependencyStartToStart: '' as IntlString,
     GanttLag: '' as IntlString,
     NewProject: '' as IntlString,
     UnsetParentIssue: '' as IntlString,
