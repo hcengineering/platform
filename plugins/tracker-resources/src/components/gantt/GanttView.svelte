@@ -309,9 +309,14 @@
 
   // PR3.2: open the EditMilestone popup when a milestone row is clicked in
   // the sidebar — user expects parity with the issue row's single-click
-  // open behavior (feedback 2026-05-11).
-  function onMilestoneOpen (e: CustomEvent<{ milestone: Milestone }>): void {
-    showPopup(EditMilestone, { _id: e.detail.milestone._id }, 'middle')
+  // open behavior (feedback 2026-05-11). The sidebar carries a compact
+  // MilestoneMarker, so resolve to the full Milestone from the live query
+  // before passing it as the popup's `object` prop (EditMilestone reads
+  // object.label / status / dates synchronously).
+  function onMilestoneOpen (e: CustomEvent<{ milestoneId: Ref<Milestone> }>): void {
+    const full = milestones.find((m) => m._id === e.detail.milestoneId)
+    if (full === undefined) return
+    showPopup(EditMilestone, { object: full }, 'middle')
   }
 
   function newIssue (): void {
