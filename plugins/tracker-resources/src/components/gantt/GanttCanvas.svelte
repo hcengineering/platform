@@ -14,6 +14,7 @@
   import { type TimeScale } from './lib/time-scale'
   import { type BarRect } from './lib/dependency-router'
   import GanttDependencyLayer from './GanttDependencyLayer.svelte'
+  import GanttConnectorDot from './GanttConnectorDot.svelte'
   import { activeDragTargetId } from './lib/drag-state'
   import { computeTickViewport } from './lib/viewport'
 
@@ -344,6 +345,81 @@
     on:openEditor
     on:hoverEdge
   />
+
+  <!--
+    Connector-dot overlay — rendered AFTER GanttDependencyLayer so the dot
+    sits ABOVE arrow paths. The dep-arrow's invisible 12 px click-target
+    (in GanttDependencyArrow.svelte) used to intercept clicks meant for
+    the connector dot when they overlapped, leaving the dot un-grabbable.
+    Rendering the dot in a sibling group later in the document order
+    flips paint order without touching the dep-arrow click target.
+
+    The overlay also renders a "drop here" indicator on every editable
+    target bar's left edge while a connector drag is in progress, growing
+    + colouring up when that bar is the current connector-target-hover.
+  -->
+  <g class="connector-overlay" transform="translate(0, {milestoneStripHeight})">
+    {#each visibleRows as row (rowKey(row))}
+      {#if row.kind === 'issue' && row.issue !== null && row.issue.startDate != null && row.issue.dueDate != null && isEditable(row.issue._id)}
+        {@const rowIssueId = String(row.issue._id)}
+        {@const dragKind = dragState.kind}
+        {@const dragSourceId = dragKind === 'connector-drawing' || dragKind === 'connector-target-hover'
+          ? String(dragState.source._id)
+          : null}
+        {@const dragTargetIssueId = dragKind === 'connector-target-hover'
+          ? String(dragState.target._id)
+          : null}
+        {@const xOv = timeScale.toX(row.issue.startDate)}
+        {@const x2Ov = timeScale.toX(row.issue.dueDate)}
+        {@const wOv = Math.max(2, x2Ov - xOv + timeScale.pxPerDay)}
+        {@const barYOv = row.y + 6}
+        {@const barHOv = row.height - 12}
+        {@const isSource = dragSourceId !== null && dragSourceId === rowIssueId}
+        {@const isCurrentTarget = dragTargetIssueId === rowIssueId}
+        {@const showSourceDot = wOv >= 18 && (isSelected(rowIssueId) || isSource)}
+        {@const showTargetDot = wOv >= 18 &&
+          (dragKind === 'connector-drawing' || dragKind === 'connector-target-hover') &&
+          !isSource}
+        {#if showSourceDot}
+          <GanttConnectorDot
+            cx={xOv + wOv + 12}
+            cy={barYOv + barHOv - 2}
+            sourceId={rowIssueId}
+            sourceSpace={String(row.issue.space)}
+            hitR={10}
+            on:connectorDown={(e) => {
+              if (row.issue === null) return
+              const rect = barRects.get(rowIssueId)
+              if (rect === undefined) return
+              void e
+              dispatch('connectorDown', {
+                source: row.issue,
+                originPx: { x: rect.right + 12, y: rect.bottom - 2 }
+              })
+            }}
+          />
+        {/if}
+        {#if showTargetDot}
+          <!-- Drop-here indicator at the FS target anchor (left edge of bar).
+               Static state: small grey dot, signals "you can drop here".
+               Hovered state: bigger indigo dot matching the source-dot palette,
+               signals "release now to create the dependency". -->
+          <circle
+            class="gantt-connector-target-dot"
+            class:active={isCurrentTarget}
+            cx={xOv - 8}
+            cy={barYOv + barHOv / 2}
+            r={isCurrentTarget ? 6 : 4}
+            fill={isCurrentTarget ? '#6366f1' : '#94a3b8'}
+            stroke="#ffffff"
+            stroke-width={isCurrentTarget ? 1.5 : 1}
+            opacity={isCurrentTarget ? 1 : 0.55}
+            pointer-events="none"
+          />
+        {/if}
+      {/if}
+    {/each}
+  </g>
 
   <!-- Milestone target-date markers as short tick + diamond at the top
        of the canvas only (redesign: less visual noise than a
