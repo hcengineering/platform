@@ -390,15 +390,47 @@
     window.removeEventListener('mouseup', handleCanvasMouseUp)
   })
 
-  function handleBarContextMenu (e: CustomEvent<{ issue: Issue, event: MouseEvent }>): void {
-    const anchor = getEventPositionElement(e.detail.event)
-    const editable = editableIssueIds.has(String(e.detail.issue._id))
-    const extra = editable ? ganttExtraActions(e.detail.issue, anchor) : []
-    showMenu(e.detail.event, {
-      object: e.detail.issue,
+  /**
+   * Curated Gantt context-menu action allow-list. The default Huly menu lists
+   * ~19 actions which is overwhelming for a Gantt-specific right-click. We
+   * keep only the actions that make sense when interacting with a bar:
+   * - Open (Edit issue)
+   * - Status / Priority / Assignee (existing submenu actions with › indicator)
+   * - Set start date / Set due date (date-only, the core Gantt edit)
+   * - Copy issue ID + URL (clipboard utilities, title omitted as redundant)
+   * - Duplicate / Delete
+   *
+   * Component / Milestone / Labels / SubIssue / SetParent / Relations / Move-
+   * to-project / time-report stay accessible from the standard List/Kanban
+   * menu but are hidden from the Gantt context menu (per user feedback
+   * 2026-05-11: too tall, restructure with submenus).
+   */
+  const GANTT_MENU_INCLUDED_ACTIONS = [
+    'view:action:Open',
+    'tracker:action:SetStatus',
+    'tracker:action:SetPriority',
+    'tracker:action:SetAssignee',
+    'tracker:action:SetDueDate',
+    'tracker:action:CopyIssueId',
+    'tracker:action:CopyIssueLink',
+    'tracker:action:Duplicate',
+    'tracker:action:DeleteIssue'
+  ]
+
+  function openGanttMenu (event: MouseEvent, issue: Issue): void {
+    const anchor = getEventPositionElement(event)
+    const editable = editableIssueIds.has(String(issue._id))
+    const extra = editable ? ganttExtraActions(issue, anchor) : []
+    showMenu(event, {
+      object: issue,
       baseMenuClass: tracker.class.Issue,
-      actions: extra
+      actions: extra,
+      includedActions: GANTT_MENU_INCLUDED_ACTIONS
     })
+  }
+
+  function handleBarContextMenu (e: CustomEvent<{ issue: Issue, event: MouseEvent }>): void {
+    openGanttMenu(e.detail.event, e.detail.issue)
   }
 
   function handleRowDragStart (e: CustomEvent<{ issue: Issue, cursorX: number }>): void {
@@ -412,14 +444,7 @@
   function handleRowContextMenu (e: CustomEvent<{ issue: { _id: string, _class: string }, event: MouseEvent }>): void {
     const found = issues.find((i) => String(i._id) === e.detail.issue._id)
     if (found === undefined) return
-    const anchor = getEventPositionElement(e.detail.event)
-    const editable = editableIssueIds.has(String(found._id))
-    const extra = editable ? ganttExtraActions(found, anchor) : []
-    showMenu(e.detail.event, {
-      object: found,
-      baseMenuClass: tracker.class.Issue,
-      actions: extra
-    })
+    openGanttMenu(e.detail.event, found)
   }
 
   // -------------------------------------------------------------------------
@@ -623,7 +648,10 @@
     // children (bars, buttons, links, resize-handle) handle their own
     // click/drag without competing with the canvas pan.
     const target = e.target as HTMLElement
-    if (target.closest('.bar-wrap, button, a, .toggle-btn, .jump-btn, .settings-popover, .resize-cell')) return
+    // Sidebar-cell + drag-grip + resize-handle excluded so the sidebar's
+    // unscheduled-drag-grip doesn't compete with canvas pan for the same
+    // pointerdown. Codex review 2026-05-11.
+    if (target.closest('.bar-wrap, .sidebar-cell, .drag-grip, .resize-handle, button, a, .toggle-btn, .jump-btn, .settings-popover, .resize-cell')) return
     panning = true
     panStartX = e.clientX
     panStartY = e.clientY
