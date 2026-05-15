@@ -2,48 +2,21 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
-  import {
-    type ApplyOperations,
-    type Class,
-    type Doc,
-    type DocumentQuery,
-    type Ref,
-    type Space,
-    SortingOrder
-  } from '@hcengineering/core'
+  import { type ApplyOperations, type Class, type Doc, type DocumentQuery, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { type Issue, type IssueRelation, type Milestone } from '@hcengineering/tracker'
   import { connectedIssueIds } from './lib/dependency-router'
-  import { wouldCreateCycle, simulateCascade, addScheduleDays, descendantsWithDates } from './lib/scheduler'
+  import { wouldCreateCycle, simulateCascade, addScheduleDays } from './lib/scheduler'
+  import { fsAnchor, ssAnchor, ffAnchor, sfAnchor } from './lib/working-days'
   import { computeCriticalPath } from './lib/critical-path'
-  import type {
-    CriticalPathResult,
-    PrimaryEdit,
-    SimulateResult,
-    CascadeShift,
-    DragState,
-    DragTarget,
-    LayoutRow,
-    MilestoneMarker,
-    SummaryRange,
-    ZoomLevel
-  } from './lib/types'
+  import type { CriticalPathResult } from './lib/types'
   import { exportAndDownload } from './lib/exporter'
   import GanttHelpPopup from './GanttHelpPopup.svelte'
+  import type { PrimaryEdit, SimulateResult, CascadeShift } from './lib/types'
   import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
   import DependencyEditor from '../DependencyEditor.svelte'
   import EditMilestone from '../milestones/EditMilestone.svelte'
-  import {
-    Loading,
-    addNotification,
-    NotificationSeverity,
-    Icon,
-    Label,
-    showPanel,
-    showPopup,
-    tooltip,
-    getEventPositionElement
-  } from '@hcengineering/ui'
+  import { Loading, addNotification, NotificationSeverity } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
   import { type Viewlet, type ViewOptions } from '@hcengineering/view'
   import { onDestroy, onMount } from 'svelte'
@@ -57,10 +30,14 @@
   import { reduce } from './lib/drag-controller'
   import { buildLayout } from './lib/layout'
   import { shouldPromoteCanvasPan, shouldStartCanvasPan } from './lib/pan-target'
+  import { descendantsWithDates } from './lib/scheduler'
   import { createTimeScale } from './lib/time-scale'
+  import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
+  import { Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
   import { showMenu, statusStore } from '@hcengineering/view-resources'
+  import { getEventPositionElement } from '@hcengineering/ui'
   import { ganttExtraActions } from './lib/menu-actions'
   import ArrowLeft from '@hcengineering/ui/src/components/icons/ArrowLeft.svelte'
   import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
@@ -87,10 +64,7 @@
 
   let hoveredRowId: string | null = null
   let tooltipState: { visible: boolean, x: number, y: number, row: LayoutRow | null } = {
-    visible: false,
-    x: 0,
-    y: 0,
-    row: null
+    visible: false, x: 0, y: 0, row: null
   }
   function onRowHover (e: CustomEvent<{ id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }>): void {
     hoveredRowId = e.detail.id
@@ -117,7 +91,7 @@
   // PR3.3: single Set holds editable Issue _ids AND Milestone _ids — both
   // are stringified Ref<...> so a single Set lookup serves the bar
   // editable={} flag for both row kinds without parallel data structures.
-  let editableIssueIds = new Set<string>()
+  let editableIssueIds: Set<string> = new Set()
 
   // PR4a: dependency state
   let relations: IssueRelation[] = []
@@ -137,15 +111,9 @@
   let lastCpCycleNotifiedAt = 0
   let hoveredIssue: Ref<Issue> | null = null
   let hoveredEdge: { source: Ref<Issue>, target: Ref<Issue> } | null = null
-  $: displayedRelations = [
-    ...relations,
-    ...optimisticRelations.filter(
-      (pending) =>
-        !relations.some(
-          (rel) => rel.attachedTo === pending.attachedTo && rel.target === pending.target && rel.kind === pending.kind
-        )
-    )
-  ]
+  $: displayedRelations = [...relations, ...optimisticRelations.filter((pending) =>
+    !relations.some((rel) => rel.attachedTo === pending.attachedTo && rel.target === pending.target && rel.kind === pending.kind)
+  )]
   $: connectedIds = connectedIssueIds(hoveredIssue, hoveredEdge, displayedRelations)
   $: showPredecessors = ((viewOptions as Record<string, unknown>)?.ganttShowPredecessors ?? false) !== false
 
@@ -184,7 +152,7 @@
   $: showCriticalPath = ((viewOptions as Record<string, unknown>)?.ganttCriticalPath ?? false) === true
   $: showSlackColumn = ((viewOptions as Record<string, unknown>)?.ganttSlackColumn ?? false) === true
   // 200 ms debounced recompute on issues / relations / toggle change.
-  $: scheduleCpRecompute(issues, relations, showCriticalPath)
+  $: void scheduleCpRecompute(issues, relations, showCriticalPath)
 
   function setZoom (z: ZoomLevel): void {
     zoom = z
@@ -198,9 +166,9 @@
   const milestoneQuery = createQuery()
   const relationQuery = createQuery()
 
-  $: issueDocQuery = (
-    space !== undefined ? { space, ...(query as DocumentQuery<Issue>) } : { ...(query as DocumentQuery<Issue>) }
-  ) as DocumentQuery<Issue>
+  $: issueDocQuery = (space !== undefined
+    ? { space, ...(query as DocumentQuery<Issue>) }
+    : { ...(query as DocumentQuery<Issue>) }) as DocumentQuery<Issue>
   $: milestoneDocQuery = (space !== undefined ? { space } : {}) as DocumentQuery<Milestone>
   $: issueQuery.query(
     tracker.class.Issue,
@@ -233,10 +201,14 @@
     }
     editableIssueIds = next
   })()
-  $: milestoneQuery.query(tracker.class.Milestone, milestoneDocQuery, (res: Milestone[]) => {
-    milestones = res
-    loadingMilestones = false
-  })
+  $: milestoneQuery.query(
+    tracker.class.Milestone,
+    milestoneDocQuery,
+    (res: Milestone[]) => {
+      milestones = res
+      loadingMilestones = false
+    }
+  )
 
   $: relationDocQuery = (space !== undefined ? { space } : {}) as DocumentQuery<IssueRelation>
   // The Huly/CockroachDB adapter doesn't translate `$or` at the top level
@@ -245,38 +217,40 @@
   // client-side via barRects (only relations whose endpoints are in
   // visible barRects get rendered). Relations are typically sparse so
   // this is cheap. Predecessor column does its own client-side filter.
-  $: relationQuery.query(tracker.class.IssueRelation, relationDocQuery, (res: IssueRelation[]) => {
-    relations = res
-    optimisticRelations = optimisticRelations.filter(
-      (pending) =>
-        !res.some(
-          (rel) => rel.attachedTo === pending.attachedTo && rel.target === pending.target && rel.kind === pending.kind
-        )
-    )
-  })
+  $: relationQuery.query(
+    tracker.class.IssueRelation,
+    relationDocQuery,
+    (res: IssueRelation[]) => {
+      relations = res
+      optimisticRelations = optimisticRelations.filter((pending) =>
+        !res.some((rel) => rel.attachedTo === pending.attachedTo && rel.target === pending.target && rel.kind === pending.kind)
+      )
+    }
+  )
 
   $: dateRange = computeDateRange(issues, milestones, zoom)
 
   // PR3.3: lookup so GanttCanvas can build a `DragTarget` for a milestone
   // bar without having to thread the full Milestone[] down.
-  $: milestonesById = new Map<string, Milestone>(milestones.map((m) => [m._id as unknown as string, m]))
+  $: milestonesById = new Map<string, Milestone>(
+    milestones.map((m) => [m._id as unknown as string, m])
+  )
 
   function paddingDays (z: ZoomLevel): number {
     switch (z) {
-      case 'day':
-        return 1
-      case 'week':
-        return 7
-      case 'month':
-        return 30
-      case 'quarter':
-        return 90
-      default:
-        return 7
+      case 'day': return 1
+      case 'week': return 7
+      case 'month': return 30
+      case 'quarter': return 90
+      default: return 7
     }
   }
 
-  function computeDateRange (iss: Issue[], ms: Milestone[], z: ZoomLevel): { from: number, to: number } {
+  function computeDateRange (
+    iss: Issue[],
+    ms: Milestone[],
+    z: ZoomLevel
+  ): { from: number, to: number } {
     const all: number[] = []
     for (const i of iss) {
       if (i.startDate !== null && i.startDate !== undefined) all.push(i.startDate)
@@ -300,17 +274,20 @@
   }
 
   $: baseTimeScale = createTimeScale(zoom, dateRange.from)
-  $: baseDataCanvasWidth = Math.max(1, Math.ceil(baseTimeScale.toX(dateRange.to) - baseTimeScale.toX(dateRange.from)))
+  $: baseDataCanvasWidth = Math.max(
+    1,
+    Math.ceil(baseTimeScale.toX(dateRange.to) - baseTimeScale.toX(dateRange.from))
+  )
   $: adaptivePxPerDay = computeAdaptivePxPerDay(baseTimeScale.pxPerDay, baseDataCanvasWidth, canvasViewportWidth)
   $: timeScale = createTimeScale(zoom, dateRange.from, adaptivePxPerDay)
-  $: milestoneMarkers = milestones.map<MilestoneMarker>((m) => ({
+  $: milestoneMarkers = milestones.map<MilestoneMarker>(m => ({
     _id: m._id,
     label: m.label,
     startDate: (m as Milestone & { startDate: number | null }).startDate ?? null,
     targetDate: m.targetDate
   }))
 
-  let collapsedIds = new Set<string>()
+  let collapsedIds: Set<string> = new Set()
   function onToggle (e: CustomEvent<{ id: string }>): void {
     const next = new Set(collapsedIds)
     if (next.has(e.detail.id)) next.delete(e.detail.id)
@@ -329,7 +306,10 @@
     return out
   }
 
-  function computeSummaryRanges (layoutRows: LayoutRow[], allIssues: Issue[]): Map<string, SummaryRange> {
+  function computeSummaryRanges (
+    layoutRows: LayoutRow[],
+    allIssues: Issue[]
+  ): Map<string, SummaryRange> {
     const result = new Map<string, SummaryRange>()
     const childrenOf = new Map<string, Issue[]>()
     const issuesByMilestone = new Map<string, Issue[]>()
@@ -353,8 +333,8 @@
       if (row.kind === 'milestone' && row.milestone !== null) {
         const msId = row.milestone._id as unknown as string
         const kids = issuesByMilestone.get(msId) ?? []
-        const starts = kids.map((k) => k.startDate).filter((v): v is number => v !== null && v !== undefined)
-        const dues = kids.map((k) => k.dueDate).filter((v): v is number => v !== null && v !== undefined)
+        const starts = kids.map(k => k.startDate).filter((v): v is number => v !== null && v !== undefined)
+        const dues = kids.map(k => k.dueDate).filter((v): v is number => v !== null && v !== undefined)
         result.set(row.id, {
           startDate: starts.length > 0 ? Math.min(...starts) : null,
           dueDate: dues.length > 0 ? Math.max(...dues) : null
@@ -362,10 +342,10 @@
         continue
       }
       if (row.issue === null) continue
-      const id = row.issue._id as unknown as string
+      const id = (row.issue as Issue)._id as unknown as string
       const kids = childrenOf.get(id) ?? []
-      const starts = kids.map((k) => k.startDate).filter((v): v is number => v !== null && v !== undefined)
-      const dues = kids.map((k) => k.dueDate).filter((v): v is number => v !== null && v !== undefined)
+      const starts = kids.map(k => k.startDate).filter((v): v is number => v !== null && v !== undefined)
+      const dues = kids.map(k => k.dueDate).filter((v): v is number => v !== null && v !== undefined)
       result.set(id, {
         startDate: starts.length > 0 ? Math.min(...starts) : null,
         dueDate: dues.length > 0 ? Math.max(...dues) : null
@@ -377,7 +357,10 @@
   // Stretch the time scale when the bounded data range is narrower than the
   // visible canvas. Otherwise the final quarter/month/day area is correct,
   // but empty whitespace still occupies the remaining right side.
-  $: dataCanvasWidth = Math.max(1, Math.ceil(timeScale.toX(dateRange.to) - timeScale.toX(dateRange.from)))
+  $: dataCanvasWidth = Math.max(
+    1,
+    Math.ceil(timeScale.toX(dateRange.to) - timeScale.toX(dateRange.from))
+  )
   $: totalCanvasWidth = computeCanvasRenderWidth(dataCanvasWidth, canvasViewportWidth)
 
   /**
@@ -388,7 +371,11 @@
    * at most once per minute so a long-lived cycle doesn't flood the
    * notification tray.
    */
-  function scheduleCpRecompute (_issues: Issue[], _relations: IssueRelation[], _show: boolean): void {
+  function scheduleCpRecompute (
+    _issues: Issue[],
+    _relations: IssueRelation[],
+    _show: boolean
+  ): void {
     if (!showCriticalPath) {
       if (cpResult.critical.size > 0 || cpResult.cycle) {
         cpResult = {
@@ -466,9 +453,7 @@
   // PR 3 edit-mode: bar mousedown → reducer; window mousemove/mouseup; commit.
   // -------------------------------------------------------------------------
 
-  function handleBarMouseDown (
-    e: CustomEvent<{ target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }>
-  ): void {
+  function handleBarMouseDown (e: CustomEvent<{ target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }>): void {
     const id = String(e.detail.target.doc._id)
     if (selectedIssueId !== id) {
       selectedIssueId = id
@@ -479,26 +464,22 @@
     // agnostic reducer doesn't need to know which field on target.doc to
     // read. Milestone uses targetDate, Issue uses dueDate.
     const t = e.detail.target
-    const originStart = t.kind === 'issue' ? (t.doc.startDate as number) : (t.doc.startDate as number)
-    const originEnd = t.kind === 'issue' ? (t.doc.dueDate as number) : t.doc.targetDate
+    const originStart =
+      t.kind === 'issue' ? (t.doc.startDate as number) : (t.doc.startDate as number)
+    const originEnd =
+      t.kind === 'issue' ? (t.doc.dueDate as number) : (t.doc.targetDate)
     // Guard: a milestone with startDate=null shouldn't reach this path — the
     // bar isn't rendered. Issue with null dates was already handled in PR3
     // (mousedown-unscheduled path).
     if (originStart == null || originEnd == null) return
-    activeDrag.update((s) =>
-      reduce(
-        s,
-        {
-          type: 'mousedown-bar',
-          target: t,
-          originStart,
-          originEnd,
-          edge: e.detail.edge,
-          cursorX: e.detail.cursorX
-        },
-        timeScale
-      )
-    )
+    activeDrag.update((s) => reduce(s, {
+      type: 'mousedown-bar',
+      target: t,
+      originStart,
+      originEnd,
+      edge: e.detail.edge,
+      cursorX: e.detail.cursorX
+    }, timeScale))
   }
 
   function handleBarClick (e: CustomEvent<{ target: DragTarget }>): void {
@@ -512,18 +493,12 @@
   }
 
   function handleConnectorDown (e: CustomEvent<{ source: Issue, originPx: { x: number, y: number } }>): void {
-    activeDrag.update((s) =>
-      reduce(
-        s,
-        {
-          type: 'mousedown-connector',
-          source: e.detail.source,
-          originPx: e.detail.originPx,
-          cursorPx: e.detail.originPx
-        },
-        timeScale
-      )
-    )
+    activeDrag.update((s) => reduce(s, {
+      type: 'mousedown-connector',
+      source: e.detail.source,
+      originPx: e.detail.originPx,
+      cursorPx: e.detail.originPx
+    }, timeScale))
     attachWindowDragListeners()
   }
 
@@ -535,7 +510,7 @@
   // produced double mousedown handling. Keep this handler the only one.
 
   function handleBarHover (e: CustomEvent<{ issue: Issue | null }>): void {
-    hoveredIssue = e.detail.issue?._id ?? null
+    hoveredIssue = (e.detail.issue?._id ?? null) as Ref<Issue> | null
   }
 
   function handleHoverEdge (e: CustomEvent<{ source: Ref<Issue>, target: Ref<Issue> } | null>): void {
@@ -600,19 +575,15 @@
       const cursorPx = { x: e.clientX - svgRect.left, y: e.clientY - svgRect.top }
       const hoveredEl = document.elementFromPoint(e.clientX, e.clientY)
       const issueId = hoveredEl?.closest('.bar-wrap')?.getAttribute('data-issue-id') as Ref<Issue> | null
-      const hoveredBar = issueId !== null ? (issues.find((i) => i._id === issueId) ?? null) : null
-      activeDrag.update((s) =>
-        reduce(
-          s,
-          {
-            type: 'mousemove-connector',
-            cursorPx,
-            hoveredBar: hoveredBar !== null && hoveredBar._id !== state.source._id ? hoveredBar : null
-          },
-          timeScale
-        )
-      )
-      return // Don't also fire mousemove for bar drag
+      const hoveredBar = issueId !== null
+        ? issues.find((i) => i._id === issueId) ?? null
+        : null
+      activeDrag.update((s) => reduce(s, {
+        type: 'mousemove-connector',
+        cursorPx,
+        hoveredBar: hoveredBar !== null && hoveredBar._id !== state.source._id ? hoveredBar : null
+      }, timeScale))
+      return  // Don't also fire mousemove for bar drag
     }
     activeDrag.update((s) =>
       reduce(s, { type: 'mousemove', cursorX: e.clientX, canvasX: computeCanvasX(e) }, timeScale)
@@ -647,11 +618,14 @@
         lag: 0
       } as unknown as IssueRelation
       optimisticRelations = [...optimisticRelations, optimistic]
-      await ops.addCollection(tracker.class.IssueRelation, src.space, src._id, tracker.class.Issue, 'relations', {
-        target: tgt._id,
-        kind: 'finish-to-start',
-        lag: 0
-      })
+      await ops.addCollection(
+        tracker.class.IssueRelation,
+        src.space,
+        src._id,
+        tracker.class.Issue,
+        'relations',
+        { target: tgt._id, kind: 'finish-to-start', lag: 0 }
+      )
       const result = await ops.commit()
       if (!result.result) {
         optimisticRelations = optimisticRelations.filter((rel) => rel !== optimistic)
@@ -751,13 +725,10 @@
       state.kind !== 'dragging-unscheduled' &&
       state.kind !== 'resizing-left' &&
       state.kind !== 'resizing-right'
-    ) {
-      return false
-    }
+    ) return false
     const newStart = state.kind === 'resizing-right' ? state.originStart : state.previewStart
     const newDue = state.kind === 'resizing-left' ? state.originEnd : state.previewEnd
-    const kind: 'move' | 'resize' =
-      state.kind === 'resizing-left' || state.kind === 'resizing-right' ? 'resize' : 'move'
+    const kind: 'move' | 'resize' = state.kind === 'resizing-left' || state.kind === 'resizing-right' ? 'resize' : 'move'
     return await new Promise<boolean>((resolve) => {
       showPopup(
         GanttConfirmCommitPopup,
@@ -774,11 +745,7 @@
    * Commit a drag for an Issue target. Mirrors the PR3 commit path; the
    * cascade walks descendant issues (parent → children shift by delta).
    */
-  async function commitIssueDrag (
-    state: DragState,
-    target: { kind: 'issue', doc: Issue },
-    ops: ApplyOperations
-  ): Promise<void> {
+  async function commitIssueDrag (state: DragState, target: { kind: 'issue', doc: Issue }, ops: ApplyOperations): Promise<void> {
     if (state.kind === 'dragging-body') {
       await ops.update(target.doc, { startDate: (state as any).previewStart, dueDate: (state as any).previewEnd })
       const delta = (state as any).previewStart - (state as any).originStart
@@ -817,19 +784,15 @@
    * assigned to it shift by the same delta along with their descendants.
    * No cascade for resize — only the milestone bounds change.
    */
-  async function commitMilestoneDrag (
-    state: DragState,
-    target: { kind: 'milestone', doc: Milestone },
-    ops: ApplyOperations
-  ): Promise<void> {
+  async function commitMilestoneDrag (state: DragState, target: { kind: 'milestone', doc: Milestone }, ops: ApplyOperations): Promise<void> {
     if (state.kind === 'dragging-body') {
       await ops.update(target.doc, { startDate: (state as any).previewStart, targetDate: (state as any).previewEnd })
       const delta = (state as any).previewStart - (state as any).originStart
       if (delta !== 0) {
         const client = getClient()
         const allInSpace = await client.findAll(tracker.class.Issue, { space: target.doc.space })
-        const assigned = allInSpace.filter(
-          (i) => (i as unknown as { milestone?: string | null }).milestone === target.doc._id
+        const assigned = allInSpace.filter((i) =>
+          (i as unknown as { milestone?: string | null }).milestone === target.doc._id
         )
         // Shift assigned issues + their descendants. Same dedup logic as
         // descendantsWithDates: only issues with both dates set get shifted.
@@ -897,13 +860,12 @@
       const primarySet = new Set(primaryEdits.map((p) => String(p.issue._id)))
       for (const pe of primaryEdits) {
         for (const r of relations) {
-          const involvesPrimary =
-            String(r.attachedTo) === String(pe.issue._id) || String(r.target) === String(pe.issue._id)
+          const involvesPrimary = String(r.attachedTo) === String(pe.issue._id) || String(r.target) === String(pe.issue._id)
           if (!involvesPrimary) continue
           const otherRef = String(r.attachedTo) === String(pe.issue._id) ? r.target : r.attachedTo
           if (primarySet.has(String(otherRef))) continue
-          const otherIssue = allByRef.get(otherRef)
-          if (otherIssue?.startDate == null || otherIssue?.dueDate == null) continue
+          const otherIssue = allByRef.get(otherRef as Ref<Issue>)
+          if (otherIssue === undefined || otherIssue.startDate == null || otherIssue.dueDate == null) continue
           if (!relationSatisfied(r, pe, otherIssue)) violations++
         }
       }
@@ -955,7 +917,7 @@
             },
             'middle',
             (ok: boolean) => {
-              if (!ok) {
+              if (ok !== true) {
                 activeDrag.set({ kind: 'idle' })
                 return
               }
@@ -973,9 +935,7 @@
               GanttConfirmCommitPopup,
               { issue: pe.issue, kind: legacyConfirmKind, newStart: pe.newStart, newDue: pe.newDue },
               'top',
-              (r: boolean | undefined) => {
-                resolve(r === true)
-              }
+              (r: boolean | undefined) => resolve(r === true)
             )
           })
           if (!ok) {
@@ -1015,7 +975,7 @@
           },
           'middle',
           (ok: boolean) => {
-            if (!ok) {
+            if (ok !== true) {
               activeDrag.set({ kind: 'idle' })
               return
             }
@@ -1042,11 +1002,15 @@
         activeDrag.set({ kind: 'idle' })
         const t = await translate(tracker.string.CascadeBannerOverflow, { max: 1000 }, undefined)
         addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
+        return
       }
     }
   }
 
-  async function commitCascadeBatch (primary: PrimaryEdit[], shifts: CascadeShift[]): Promise<void> {
+  async function commitCascadeBatch (
+    primary: PrimaryEdit[],
+    shifts: CascadeShift[]
+  ): Promise<void> {
     const client = getClient()
     const ops = client.apply(undefined, 'gantt-cascade-commit')
     for (const pe of primary) {
@@ -1065,9 +1029,15 @@
   /**
    * Returns true iff the relation `r` is satisfied given the proposed
    * primary edit `pe` and the current dates of the other side. Used for
-   * the Alt-bypass violation count only.
+   * the Alt-bypass violation count only. Routes through the same anchor
+   * helpers as the scheduler so violation counts agree with cascade
+   * decisions in both legacy and working-days mode.
    */
-  function relationSatisfied (r: IssueRelation, pe: PrimaryEdit, otherIssue: Issue): boolean {
+  function relationSatisfied (
+    r: IssueRelation,
+    pe: PrimaryEdit,
+    otherIssue: Issue
+  ): boolean {
     const isOutgoing = String(r.attachedTo) === String(pe.issue._id)
     const predStart = isOutgoing ? pe.newStart : (otherIssue.startDate as number)
     const predDue = isOutgoing ? pe.newDue : (otherIssue.dueDate as number)
@@ -1075,14 +1045,10 @@
     const succDue = isOutgoing ? (otherIssue.dueDate as number) : pe.newDue
     const lag = r.lag ?? 0
     switch (r.kind) {
-      case 'finish-to-start':
-        return addScheduleDays(predDue, lag) <= succStart
-      case 'start-to-start':
-        return addScheduleDays(predStart, lag) <= succStart
-      case 'finish-to-finish':
-        return addScheduleDays(predDue, lag) <= succDue
-      case 'start-to-finish':
-        return addScheduleDays(predStart, lag) <= succDue
+      case 'finish-to-start': return fsAnchor(predDue, lag, workingDaysCfg) <= succStart
+      case 'start-to-start': return ssAnchor(predStart, lag, workingDaysCfg) <= succStart
+      case 'finish-to-finish': return ffAnchor(predDue, lag, workingDaysCfg) <= succDue
+      case 'start-to-finish': return sfAnchor(predStart, lag, workingDaysCfg) <= succDue
     }
   }
 
@@ -1093,9 +1059,7 @@
       state.kind !== 'dragging-unscheduled' &&
       state.kind !== 'resizing-left' &&
       state.kind !== 'resizing-right'
-    ) {
-      return
-    }
+    ) return
     // Guard: an unscheduled-drag that never reached the canvas (e.g. the user
     // clicked the drag-grip and released without moving) must NOT silently
     // schedule the issue to "today".
@@ -1145,13 +1109,11 @@
       const isParent = allInSpace.some((i) => i.parents?.[0]?.parentId === parent._id)
       if (isParent) {
         const delta = (state as any).previewStart - (state as any).originStart
-        const primaryEdits: PrimaryEdit[] = [
-          {
-            issue: parent,
-            newStart: (state as any).previewStart,
-            newDue: (state as any).previewEnd
-          }
-        ]
+        const primaryEdits: PrimaryEdit[] = [{
+          issue: parent,
+          newStart: (state as any).previewStart,
+          newDue: (state as any).previewEnd
+        }]
         for (const child of descendantsWithDates(parent, allInSpace)) {
           primaryEdits.push({
             issue: child,
@@ -1169,66 +1131,53 @@
 
     if (state.kind === 'dragging-body') {
       const target = state.target.doc
-      const primaryEdits: PrimaryEdit[] = [
-        {
-          issue: target,
-          newStart: (state as any).previewStart,
-          newDue: (state as any).previewEnd
-        }
-      ]
+      const primaryEdits: PrimaryEdit[] = [{
+        issue: target,
+        newStart: (state as any).previewStart,
+        newDue: (state as any).previewEnd
+      }]
       const legacyConfirmKind: 'move' | 'resize' | 'none' = confirmMove ? 'move' : 'none'
       await commitWithCascade(primaryEdits, altKey, target.space, legacyConfirmKind)
       return
     }
     if (state.kind === 'resizing-left') {
       const target = state.target.doc
-      const primaryEdits: PrimaryEdit[] = [
-        {
-          issue: target,
-          newStart: (state as any).previewStart,
-          newDue: target.dueDate as number
-        }
-      ]
+      const primaryEdits: PrimaryEdit[] = [{
+        issue: target,
+        newStart: (state as any).previewStart,
+        newDue: target.dueDate as number
+      }]
       const legacyConfirmKind: 'move' | 'resize' | 'none' = confirmResize ? 'resize' : 'none'
       await commitWithCascade(primaryEdits, altKey, target.space, legacyConfirmKind)
       return
     }
     if (state.kind === 'resizing-right') {
       const target = state.target.doc
-      const primaryEdits: PrimaryEdit[] = [
-        {
-          issue: target,
-          newStart: target.startDate as number,
-          newDue: (state as any).previewEnd
-        }
-      ]
+      const primaryEdits: PrimaryEdit[] = [{
+        issue: target,
+        newStart: target.startDate as number,
+        newDue: (state as any).previewEnd
+      }]
       const legacyConfirmKind: 'move' | 'resize' | 'none' = confirmResize ? 'resize' : 'none'
       await commitWithCascade(primaryEdits, altKey, target.space, legacyConfirmKind)
+      return
     }
-  }
-
-  // Stable void-returning wrapper so attach/detach share one reference (a
-  // per-call arrow would leak the listener) while satisfying the void-listener
-  // signature — the pointer-up commit is intentionally fire-and-forget with
-  // its own internal error handling.
-  const onWindowPointerUp = (e: PointerEvent | MouseEvent): void => {
-    void handleCanvasPointerUp(e)
   }
 
   function attachWindowDragListeners (): void {
     window.addEventListener('pointermove', handleCanvasPointerMove)
-    window.addEventListener('pointerup', onWindowPointerUp)
-    window.addEventListener('pointercancel', onWindowPointerUp)
+    window.addEventListener('pointerup', handleCanvasPointerUp)
+    window.addEventListener('pointercancel', handleCanvasPointerUp)
     window.addEventListener('mousemove', handleCanvasPointerMove)
-    window.addEventListener('mouseup', onWindowPointerUp)
+    window.addEventListener('mouseup', handleCanvasPointerUp)
   }
 
   function detachWindowDragListeners (): void {
     window.removeEventListener('pointermove', handleCanvasPointerMove)
-    window.removeEventListener('pointerup', onWindowPointerUp)
-    window.removeEventListener('pointercancel', onWindowPointerUp)
+    window.removeEventListener('pointerup', handleCanvasPointerUp)
+    window.removeEventListener('pointercancel', handleCanvasPointerUp)
     window.removeEventListener('mousemove', handleCanvasPointerMove)
-    window.removeEventListener('mouseup', onWindowPointerUp)
+    window.removeEventListener('mouseup', handleCanvasPointerUp)
   }
 
   // Attach/detach window-level pointer listeners only while a drag is active.
@@ -1289,17 +1238,11 @@
   }
 
   function handleRowDragStart (e: CustomEvent<{ issue: Issue, cursorX: number }>): void {
-    activeDrag.update((s) =>
-      reduce(
-        s,
-        {
-          type: 'mousedown-unscheduled',
-          target: { kind: 'issue', doc: e.detail.issue },
-          cursorX: e.detail.cursorX
-        },
-        timeScale
-      )
-    )
+    activeDrag.update((s) => reduce(s, {
+      type: 'mousedown-unscheduled',
+      target: { kind: 'issue', doc: e.detail.issue },
+      cursorX: e.detail.cursorX
+    }, timeScale))
   }
 
   function handleRowContextMenu (e: CustomEvent<{ issue: { _id: string, _class: string }, event: MouseEvent }>): void {
@@ -1328,18 +1271,16 @@
   async function shiftFocused (days: number): Promise<void> {
     if (focusedIssueId === null) return
     const i = scheduledIssues.find((it) => String(it._id) === focusedIssueId)
-    if (i?.startDate == null || i.dueDate == null) return
+    if (i === undefined || i.startDate == null || i.dueDate == null) return
     if (!editableIssueIds.has(focusedIssueId)) return
     const allInSpace = await getClient().findAll(tracker.class.Issue, { space: i.space })
     // All date arithmetic routes through addScheduleDays so the Phase-2
     // working-calendar swap stays a single integration point (Spec §5.3).
-    const primaryEdits: PrimaryEdit[] = [
-      {
-        issue: i,
-        newStart: addScheduleDays(i.startDate, days),
-        newDue: addScheduleDays(i.dueDate, days)
-      }
-    ]
+    const primaryEdits: PrimaryEdit[] = [{
+      issue: i,
+      newStart: addScheduleDays(i.startDate, days),
+      newDue: addScheduleDays(i.dueDate, days)
+    }]
     // Include descendants (matches PR3 behaviour for parent shifts).
     for (const child of descendantsWithDates(i, allInSpace)) {
       primaryEdits.push({
@@ -1469,7 +1410,9 @@
 
   // Custom horizontal scrollbar thumb geometry (proxy for hScrollEl).
   $: hTrackWidth = canvasViewportWidth > 0 ? canvasViewportWidth : 1
-  $: hThumbWidth = totalCanvasWidth > 0 ? Math.max(40, (hTrackWidth * hTrackWidth) / totalCanvasWidth) : hTrackWidth
+  $: hThumbWidth = totalCanvasWidth > 0
+    ? Math.max(40, (hTrackWidth * hTrackWidth) / totalCanvasWidth)
+    : hTrackWidth
   $: hThumbMax = Math.max(0, hTrackWidth - hThumbWidth)
   $: hScrollMax = Math.max(1, totalCanvasWidth - hTrackWidth)
   $: hThumbLeft = canvasViewportLeft <= 0 ? 0 : (canvasViewportLeft / hScrollMax) * hThumbMax
@@ -1480,7 +1423,9 @@
   // so we render our own in DOM and let the native bar drive scrollTop).
   $: vTrackHeight = viewportHeight > 0 ? viewportHeight : 1
   $: vTotalHeight = ROW_HEIGHT * rows.length + HEADER_HEIGHT
-  $: vThumbHeight = vTotalHeight > 0 ? Math.max(40, (vTrackHeight * vTrackHeight) / vTotalHeight) : vTrackHeight
+  $: vThumbHeight = vTotalHeight > 0
+    ? Math.max(40, (vTrackHeight * vTrackHeight) / vTotalHeight)
+    : vTrackHeight
   $: vThumbMax = Math.max(0, vTrackHeight - vThumbHeight)
   $: vScrollMax = Math.max(1, vTotalHeight - vTrackHeight)
   $: vThumbTop = scrollTop <= 0 ? 0 : (scrollTop / vScrollMax) * vThumbMax
@@ -1662,9 +1607,7 @@
   onMount(() => {
     syncViewport()
     if (typeof ResizeObserver !== 'undefined') {
-      resizeObs = new ResizeObserver(() => {
-        syncViewport()
-      })
+      resizeObs = new ResizeObserver(() => syncViewport())
       if (scrollerEl != null) resizeObs.observe(scrollerEl)
       if (hScrollEl != null) resizeObs.observe(hScrollEl)
     }
@@ -1674,55 +1617,36 @@
   })
 
   $: viewport = { left: canvasViewportLeft, right: canvasViewportLeft + canvasViewportWidth }
-  $: sidebarWidthPx = showIssueCode || showTitle || showStatus ? userSidebarWidth : 60
+  $: sidebarWidthPx = (showIssueCode || showTitle || showStatus) ? userSidebarWidth : 60
 
   $: loading = loadingIssues || loadingMilestones
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-<div class="gantt-root" tabindex="0" bind:this={containerEl} on:click={onBackgroundClick}>
+<div
+  class="gantt-root"
+  tabindex="0"
+  bind:this={containerEl}
+  on:click={onBackgroundClick}
+>
   {#if loading}
     <Loading />
   {:else}
     <div class="gantt-toolbar" style="height: {TOOLBAR_HEIGHT}px;">
       <div class="toolbar-left">
-        <button
-          class="nav-btn icon-btn"
-          type="button"
-          use:tooltip={{ label: tracker.string.GanttJumpToStart }}
-          on:click={jumpToStart}
-        >
+        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToStart }} on:click={jumpToStart}>
           <Icon icon={ArrowLeft} size="small" />
         </button>
-        <button
-          class="nav-btn icon-btn"
-          type="button"
-          use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
-          on:click={() => {
-            pageScroll(-1)
-          }}
-        >
+        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttPreviousPeriod }} on:click={() => pageScroll(-1)}>
           <Icon icon={NavPrev} size="small" />
         </button>
         <button class="nav-btn today-btn" type="button" on:click={jumpToToday}>
           <Label label={tracker.string.GanttToday} />
         </button>
-        <button
-          class="nav-btn icon-btn"
-          type="button"
-          use:tooltip={{ label: tracker.string.GanttNextPeriod }}
-          on:click={() => {
-            pageScroll(1)
-          }}
-        >
+        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttNextPeriod }} on:click={() => pageScroll(1)}>
           <Icon icon={NavNext} size="small" />
         </button>
-        <button
-          class="nav-btn icon-btn"
-          type="button"
-          use:tooltip={{ label: tracker.string.GanttJumpToEnd }}
-          on:click={jumpToEnd}
-        >
+        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToEnd }} on:click={jumpToEnd}>
           <Icon icon={ArrowRight} size="small" />
         </button>
         <label class="date-input-wrap" use:tooltip={{ label: tracker.string.GanttJumpToDate }}>
@@ -1731,9 +1655,7 @@
             type="date"
             class="date-input"
             bind:value={datePickerValue}
-            on:change={() => {
-              jumpToDate(datePickerValue)
-            }}
+            on:change={() => jumpToDate(datePickerValue)}
           />
         </label>
       </div>
@@ -1743,10 +1665,8 @@
             type="button"
             class="zoom-btn"
             class:active={zoom === z}
-            on:click={() => {
-              setZoom(z)
-            }}>{z[0].toUpperCase() + z.slice(1)}</button
-          >
+            on:click={() => setZoom(z)}
+          >{z[0].toUpperCase() + z.slice(1)}</button>
         {/each}
       </div>
       <div class="toolbar-right" />
@@ -1783,48 +1703,21 @@
             <span class="col-jump" />
           </div>
           <div class="corner-range">
-            <button
-              class="range-nav"
-              type="button"
+            <button class="range-nav" type="button"
               use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
-              on:click={() => {
-                pageScroll(-1)
-              }}>«</button
-            >
-            <span
-              class="range-text"
-              on:click={jumpToToday}
-              on:keydown={(e) => {
-                if (e.key === 'Enter') jumpToToday()
-              }}
-              role="button"
-              tabindex="0"
-            >
+              on:click={() => pageScroll(-1)}>«</button>
+            <span class="range-text" on:click={jumpToToday} on:keydown={(e) => { if (e.key === 'Enter') jumpToToday() }} role="button" tabindex="0">
               {formatRange(dateRange.from)} – {formatRange(dateRange.to)}
             </span>
-            <button
-              class="range-nav"
-              type="button"
+            <button class="range-nav" type="button"
               use:tooltip={{ label: tracker.string.GanttNextPeriod }}
-              on:click={() => {
-                pageScroll(1)
-              }}>»</button
-            >
+              on:click={() => pageScroll(1)}>»</button>
           </div>
         </div>
         <div class="cell resize-corner" style="height: {HEADER_HEIGHT}px;" />
         <div class="cell header-cell" style="height: {HEADER_HEIGHT}px;">
-          <div
-            class="hscroll-inner"
-            style="width: {totalCanvasWidth}px; transform: translateX(-{canvasViewportLeft}px);"
-          >
-            <GanttHeader
-              {timeScale}
-              {viewport}
-              totalWidth={totalCanvasWidth}
-              dataWidth={dataCanvasWidth}
-              height={HEADER_HEIGHT}
-            />
+          <div class="hscroll-inner" style="width: {totalCanvasWidth}px; transform: translateX(-{canvasViewportLeft}px);">
+            <GanttHeader {timeScale} {viewport} totalWidth={totalCanvasWidth} dataWidth={dataCanvasWidth} height={HEADER_HEIGHT} />
           </div>
         </div>
         <!-- Row 2: sidebar (sticky-left) / resize handle (sticky-left) / canvas -->
@@ -1865,10 +1758,7 @@
           on:pointercancel={onResizeEnd}
         />
         <div class="cell canvas-cell">
-          <div
-            class="hscroll-inner"
-            style="width: {totalCanvasWidth}px; transform: translateX(-{canvasViewportLeft}px);"
-          >
+          <div class="hscroll-inner" style="width: {totalCanvasWidth}px; transform: translateX(-{canvasViewportLeft}px);">
             <GanttCanvas
               {rows}
               milestones={milestoneMarkers}
@@ -1915,7 +1805,8 @@
          bar doesn't deny the user a visible scroll affordance. -->
     {#if vHasOverflow}
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="gantt-vscrollbar" style="top: {TOOLBAR_HEIGHT}px; bottom: 11px;">
+      <div class="gantt-vscrollbar"
+        style="top: {TOOLBAR_HEIGHT}px; bottom: 11px;">
         <div
           class="vscroll-thumb"
           style="top: {vThumbTop}px; height: {vThumbHeight}px;"
@@ -1934,7 +1825,10 @@
          track.scrollLeft. -->
     {#if hHasOverflow}
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="gantt-hscrollbar" style="padding-left: {sidebarWidthPx + 5}px;">
+      <div
+        class="gantt-hscrollbar"
+        style="padding-left: {sidebarWidthPx + 5}px;"
+      >
         <div class="hscroll-shell">
           <div
             class="hscroll-track-custom"
@@ -1960,37 +1854,29 @@
       {@const row = tooltipState.row}
       {@const issue = row.issue}
       {@const ms = row.milestone}
-      <div class="hover-tooltip" style="left: {tooltipState.x + 14}px; top: {tooltipState.y + 14}px;">
+      <div
+        class="hover-tooltip"
+        style="left: {tooltipState.x + 14}px; top: {tooltipState.y + 14}px;"
+      >
         {#if row.kind === 'milestone' && ms !== null}
           <div class="tt-head">◆ <Label label={tracker.string.Milestone} /></div>
           <div class="tt-title">{ms.label}</div>
           {#if ms.startDate !== null}
-            <div class="tt-line">
-              <Label label={tracker.string.StartDate} />: {new Date(ms.startDate).toISOString().slice(0, 10)}
-            </div>
+            <div class="tt-line"><Label label={tracker.string.StartDate} />: {new Date(ms.startDate).toISOString().slice(0, 10)}</div>
           {/if}
-          <div class="tt-line">
-            <Label label={tracker.string.TargetDate} />: {new Date(ms.targetDate).toISOString().slice(0, 10)}
-          </div>
+          <div class="tt-line"><Label label={tracker.string.TargetDate} />: {new Date(ms.targetDate).toISOString().slice(0, 10)}</div>
         {:else if issue !== null}
           {@const code = issueCode(issue)}
           <div class="tt-head">{code}</div>
           <div class="tt-title">{issue.title}</div>
           {#if issue.startDate !== null}
-            <div class="tt-line">
-              <Label label={tracker.string.StartDate} />: {new Date(issue.startDate).toISOString().slice(0, 10)}
-            </div>
+            <div class="tt-line"><Label label={tracker.string.StartDate} />: {new Date(issue.startDate).toISOString().slice(0, 10)}</div>
           {/if}
           {#if issue.dueDate !== null}
-            <div class="tt-line">
-              <Label label={tracker.string.DueDate} />: {new Date(issue.dueDate).toISOString().slice(0, 10)}
-            </div>
+            <div class="tt-line"><Label label={tracker.string.DueDate} />: {new Date(issue.dueDate).toISOString().slice(0, 10)}</div>
           {/if}
           {#if issue.startDate !== null && issue.dueDate !== null}
-            {@const days =
-              Math.round(
-                (Math.max(issue.dueDate, issue.startDate) - Math.min(issue.dueDate, issue.startDate)) / 86_400_000
-              ) + 1}
+            {@const days = Math.round((Math.max(issue.dueDate, issue.startDate) - Math.min(issue.dueDate, issue.startDate)) / 86_400_000) + 1}
             <div class="tt-line"><Label label={tracker.string.GanttDurationTooltip} params={{ days }} /></div>
           {/if}
         {/if}
@@ -2018,21 +1904,9 @@
     border-bottom: 1px solid var(--theme-divider-color);
     background: var(--theme-comp-header-color);
   }
-  .toolbar-left {
-    display: flex;
-    gap: 4px;
-  }
-  .toolbar-center {
-    display: flex;
-    gap: 2px;
-    justify-self: center;
-  }
-  .toolbar-right {
-    display: flex;
-    gap: 4px;
-    justify-self: end;
-    position: relative;
-  }
+  .toolbar-left { display: flex; gap: 4px; }
+  .toolbar-center { display: flex; gap: 2px; justify-self: center; }
+  .toolbar-right { display: flex; gap: 4px; justify-self: end; position: relative; }
   .nav-btn {
     height: 26px;
     min-width: 28px;
@@ -2088,18 +1962,10 @@
     font-size: 12px;
     cursor: pointer;
   }
-  .zoom-btn:first-child {
-    border-radius: 4px 0 0 4px;
-  }
-  .zoom-btn:last-child {
-    border-radius: 0 4px 4px 0;
-  }
-  .zoom-btn:not(:first-child) {
-    border-left: none;
-  }
-  .zoom-btn:hover {
-    background: var(--theme-button-hovered);
-  }
+  .zoom-btn:first-child { border-radius: 4px 0 0 4px; }
+  .zoom-btn:last-child  { border-radius: 0 4px 4px 0; }
+  .zoom-btn:not(:first-child) { border-left: none; }
+  .zoom-btn:hover { background: var(--theme-button-hovered); }
   .zoom-btn.active {
     background: var(--theme-button-pressed);
     font-weight: 600;
@@ -2128,13 +1994,8 @@
     grid-template-rows: auto auto;
     width: 100%;
   }
-  .header-cell,
-  .canvas-cell {
-    overflow: hidden;
-  }
-  .hscroll-inner {
-    will-change: transform;
-  }
+  .header-cell, .canvas-cell { overflow: hidden; }
+  .hscroll-inner { will-change: transform; }
   /* Absolutely-pin the horizontal-scroll bar at the bottom of gantt-root
      instead of relying on the flex chain to enforce a constrained height.
      This way the bar can never slip below the visible viewport even if a
@@ -2167,14 +2028,10 @@
     height: 100%;
     overflow-x: scroll;
     overflow-y: hidden;
-    scrollbar-width: none; /* Firefox: hide native */
+    scrollbar-width: none;            /* Firefox: hide native */
   }
-  .hscroll-track-custom::-webkit-scrollbar {
-    display: none;
-  } /* WebKit: hide */
-  .hscroll-spacer {
-    height: 1px;
-  }
+  .hscroll-track-custom::-webkit-scrollbar { display: none; } /* WebKit: hide */
+  .hscroll-spacer { height: 1px; }
   .hscroll-thumb {
     position: absolute;
     top: 1px;
@@ -2184,19 +2041,10 @@
     border-radius: 4px;
     cursor: grab;
     pointer-events: auto;
-    transition:
-      opacity 100ms ease,
-      background 100ms ease;
+    transition: opacity 100ms ease, background 100ms ease;
   }
-  .hscroll-thumb:hover {
-    opacity: 0.85;
-    background: var(--theme-state-info-color, #6366f1);
-  }
-  .hscroll-thumb:active {
-    cursor: grabbing;
-    opacity: 1;
-    background: var(--theme-state-info-color, #6366f1);
-  }
+  .hscroll-thumb:hover { opacity: 0.85; background: var(--theme-state-info-color, #6366f1); }
+  .hscroll-thumb:active { cursor: grabbing; opacity: 1; background: var(--theme-state-info-color, #6366f1); }
   /* Vertical scrollbar — same DOM-thumb pattern, anchored at the right
      edge of gantt-root between the toolbar and the horizontal bar. */
   .gantt-vscrollbar {
@@ -2217,19 +2065,10 @@
     border-radius: 4px;
     cursor: grab;
     pointer-events: auto;
-    transition:
-      opacity 100ms ease,
-      background 100ms ease;
+    transition: opacity 100ms ease, background 100ms ease;
   }
-  .vscroll-thumb:hover {
-    opacity: 0.85;
-    background: var(--theme-state-info-color, #6366f1);
-  }
-  .vscroll-thumb:active {
-    cursor: grabbing;
-    opacity: 1;
-    background: var(--theme-state-info-color, #6366f1);
-  }
+  .vscroll-thumb:hover { opacity: 0.85; background: var(--theme-state-info-color, #6366f1); }
+  .vscroll-thumb:active { cursor: grabbing; opacity: 1; background: var(--theme-state-info-color, #6366f1); }
   .cell {
     box-sizing: border-box;
   }
@@ -2277,33 +2116,18 @@
     cursor: pointer;
     font-size: 14px;
   }
-  .range-nav:hover {
-    background: var(--theme-button-hovered);
-  }
+  .range-nav:hover { background: var(--theme-button-hovered); }
   .range-text {
     cursor: pointer;
     user-select: none;
     font-weight: 500;
   }
-  .range-text:hover {
-    color: var(--theme-state-info-color, #6366f1);
-    text-decoration: underline;
-  }
-  .corner .col-toggle {
-    flex: 0 0 18px;
-  }
-  .corner .col-status {
-    flex: 0 0 22px;
-  }
-  .corner .col-id {
-    flex: 0 0 80px;
-  }
-  .corner .col-title {
-    flex: 1 1 auto;
-  }
-  .corner .col-jump {
-    flex: 0 0 28px;
-  }
+  .range-text:hover { color: var(--theme-state-info-color, #6366f1); text-decoration: underline; }
+  .corner .col-toggle { flex: 0 0 18px; }
+  .corner .col-status { flex: 0 0 22px; }
+  .corner .col-id { flex: 0 0 80px; }
+  .corner .col-title { flex: 1 1 auto; }
+  .corner .col-jump { flex: 0 0 28px; }
   .resize-corner {
     position: sticky;
     top: 0;
@@ -2335,8 +2159,7 @@
     user-select: none;
     touch-action: none;
   }
-  .resize-cell:hover,
-  .resize-cell.active {
+  .resize-cell:hover, .resize-cell.active {
     background: var(--theme-state-info-color, #6366f1);
   }
   .canvas-cell {
