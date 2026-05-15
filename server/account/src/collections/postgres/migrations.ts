@@ -82,7 +82,9 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
     getV22Migration(ns, flavor),
     getV23Migration(ns, flavor),
     getV24Migration(ns, flavor),
-    getV25Migration(ns, flavor)
+    getV25Migration(ns, flavor),
+    getV26Migration(ns, flavor),
+    getV27Migration(ns, flavor)
   ]
 }
 
@@ -791,6 +793,47 @@ function getV25Migration (ns: string, flavor: DBFlavor): [string, string] {
     `
     ALTER TABLE ${ns}.account
     ADD COLUMN IF NOT EXISTS tfa_secret ${types.string};
+    `
+  ]
+}
+
+function getV26Migration (ns: string, flavor: DBFlavor): [string, string] {
+  const types = dbTypes[flavor]
+  return [
+    'account_db_v26_add_api_tokens_table',
+    `
+    /* ======= A P I   T O K E N S ======= */
+    CREATE TABLE IF NOT EXISTS ${ns}.api_tokens (
+        id ${types.string} NOT NULL,
+        account_uuid UUID NOT NULL,
+        name ${types.string} NOT NULL,
+        workspace_uuid UUID NOT NULL,
+        created_on ${types.int8} NOT NULL DEFAULT current_epoch_ms(),
+        expires_on ${types.int8} NOT NULL,
+        revoked ${types.bool} NOT NULL DEFAULT false,
+        CONSTRAINT api_tokens_pk PRIMARY KEY (id),
+        CONSTRAINT api_tokens_account_fk FOREIGN KEY (account_uuid) REFERENCES ${ns}.person(uuid),
+        CONSTRAINT api_tokens_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${ns}.workspace(uuid)
+    );
+
+    CREATE INDEX IF NOT EXISTS api_tokens_account_idx
+    ON ${ns}.api_tokens (account_uuid);
+
+    CREATE INDEX IF NOT EXISTS api_tokens_workspace_idx
+    ON ${ns}.api_tokens (workspace_uuid);
+
+    CREATE INDEX IF NOT EXISTS api_tokens_expires_on_idx
+    ON ${ns}.api_tokens (expires_on);
+    `
+  ]
+}
+
+function getV27Migration (ns: string, flavor: DBFlavor): [string, string] {
+  return [
+    'account_db_v27_add_api_token_scopes',
+    `
+    ALTER TABLE ${ns}.api_tokens
+    ADD COLUMN IF NOT EXISTS scopes TEXT[] DEFAULT NULL;
     `
   ]
 }
