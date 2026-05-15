@@ -14,6 +14,8 @@
   import { type TimeScale } from './lib/time-scale'
   import { type BarRect } from './lib/dependency-router'
   import GanttDependencyLayer from './GanttDependencyLayer.svelte'
+  import { activeDragTargetId } from './lib/drag-state'
+  import { computeTickViewport } from './lib/viewport'
 
   const dispatch = createEventDispatcher<{
     openIssue: { issue: { _id: string, _class: string } }
@@ -47,6 +49,7 @@
   export let viewportHeight: number = 600
   export let viewport: { left: number; right: number }
   export let totalWidth: number
+  export let dataWidth: number = totalWidth
   export let milestoneStripHeight: number = 0
   export let hoveredRowId: string | null = null
   export let statusCategoryMap: Map<string, string> | undefined = undefined
@@ -94,7 +97,7 @@
   // active issue. Keeps the cursor's row at full opacity so the user can see
   // where the bar is being placed relative to other rows.
   $: dragState = $activeDrag
-  $: activeIssueIdStr = 'target' in dragState ? String((dragState as { target?: DragTarget }).target?.doc._id ?? '') || null : null
+  $: activeIssueIdStr = activeDragTargetId(dragState)
   $: anyDragActive = dragState.kind !== 'idle' && dragState.kind !== 'hover-bar'
 
   function isDimmed (issueId: unknown): boolean {
@@ -104,9 +107,10 @@
   $: visibleRows = filterVisibleRows(rows, scrollTop, viewportHeight)
   $: rowsHeight = rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0
   $: totalHeight = rowsHeight + milestoneStripHeight
+  $: tickViewport = computeTickViewport(viewport.left, viewport.right, dataWidth)
   $: ticks = timeScale.ticks([
-    timeScale.fromX(Math.max(0, viewport.left - 100)),
-    timeScale.fromX(viewport.right + 100)
+    timeScale.fromX(tickViewport.left),
+    timeScale.fromX(tickViewport.right)
   ])
 
   /**

@@ -26,7 +26,7 @@
   import { descendantsWithDates } from './lib/scheduler'
   import { createTimeScale } from './lib/time-scale'
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
-  import { computeCanvasViewportWidth } from './lib/viewport'
+  import { computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
   import { Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
   import { showMenu, statusStore } from '@hcengineering/view-resources'
@@ -107,8 +107,8 @@
   let viewportHeight = 600
 
   let containerEl: HTMLDivElement | undefined
-  let scrollerEl: HTMLDivElement | undefined
-  let hScrollEl: HTMLDivElement | undefined
+  let scrollerEl: HTMLDivElement | null = null
+  let hScrollEl: HTMLDivElement | null = null
 
   let zoom: ZoomLevel = 'week'
   const ZOOM_LEVELS: readonly ZoomLevel[] = ['day', 'week', 'month', 'quarter']
@@ -126,7 +126,7 @@
 
   function setZoom (z: ZoomLevel): void {
     zoom = z
-    if (hScrollEl !== undefined) {
+    if (hScrollEl != null) {
       hScrollEl.scrollLeft = 0
     }
     queueMicrotask(syncViewport)
@@ -313,13 +313,13 @@
     return result
   }
 
-  // totalCanvasWidth is the data-range width only — never inflated to fit
-  // the viewport. If the issue range is short, the canvas fits entirely
-  // on screen and the horizontal scrollbar hides itself.
-  $: totalCanvasWidth = Math.max(
+  // Render at least the visible canvas width. Otherwise a short date range
+  // leaves a blank band on the right even though the Gantt area has room.
+  $: dataCanvasWidth = Math.max(
     1,
     Math.ceil(timeScale.toX(dateRange.to) - timeScale.toX(dateRange.from))
   )
+  $: totalCanvasWidth = computeCanvasRenderWidth(dataCanvasWidth, canvasViewportWidth)
 
   function handleVScroll (e: Event): void {
     const t = e.target as HTMLDivElement
@@ -333,7 +333,7 @@
   }
 
   function onJump (e: CustomEvent<{ x: number }>): void {
-    if (hScrollEl !== undefined) {
+    if (hScrollEl != null) {
       hScrollEl.scrollTo({ left: Math.max(0, e.detail.x - 80), behavior: 'smooth' })
     }
   }
@@ -465,7 +465,7 @@
   const RESIZE_CELL_W = 5
 
   function computeCanvasX (e: MouseEvent): number | undefined {
-    if (scrollerEl === undefined) return undefined
+    if (scrollerEl == null) return undefined
     const rect = scrollerEl.getBoundingClientRect()
     const sidebarEdge = rect.left + sidebarWidthPx + RESIZE_CELL_W
     if (e.clientX < sidebarEdge) return undefined
@@ -844,24 +844,24 @@
   })
 
   function jumpToToday (): void {
-    if (hScrollEl === undefined) return
+    if (hScrollEl == null) return
     const x = timeScale.toX(Date.now())
     hScrollEl.scrollTo({ left: Math.max(0, x - canvasViewportWidth / 2), behavior: 'smooth' })
   }
   function pageScroll (dir: -1 | 1): void {
-    if (hScrollEl === undefined) return
+    if (hScrollEl == null) return
     hScrollEl.scrollBy({ left: dir * canvasViewportWidth * 0.8, behavior: 'smooth' })
   }
   function jumpToStart (): void {
-    if (hScrollEl === undefined) return
+    if (hScrollEl == null) return
     hScrollEl.scrollTo({ left: 0, behavior: 'smooth' })
   }
   function jumpToEnd (): void {
-    if (hScrollEl === undefined) return
+    if (hScrollEl == null) return
     hScrollEl.scrollTo({ left: hScrollEl.scrollWidth, behavior: 'smooth' })
   }
   function jumpToDate (iso: string): void {
-    if (hScrollEl === undefined || iso === '') return
+    if (hScrollEl == null || iso === '') return
     const t = Date.parse(iso)
     if (isNaN(t)) return
     const x = timeScale.toX(t)
@@ -902,14 +902,14 @@
   function onVThumbDragStart (e: PointerEvent): void {
     e.stopPropagation()
     e.preventDefault()
-    if (scrollerEl === undefined) return
+    if (scrollerEl == null) return
     dragVThumb = true
     dragVThumbStartY = e.clientY
     dragVThumbStartScroll = scrollerEl.scrollTop
     ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
   }
   function onVThumbDragMove (e: PointerEvent): void {
-    if (!dragVThumb || scrollerEl === undefined) return
+    if (!dragVThumb || scrollerEl == null) return
     const dy = e.clientY - dragVThumbStartY
     const ratio = vThumbMax > 0 ? dy / vThumbMax : 0
     scrollerEl.scrollTop = dragVThumbStartScroll + ratio * vScrollMax
@@ -926,14 +926,14 @@
   function onThumbDragStart (e: PointerEvent): void {
     e.stopPropagation()
     e.preventDefault()
-    if (hScrollEl === undefined) return
+    if (hScrollEl == null) return
     dragThumb = true
     dragThumbStartX = e.clientX
     dragThumbStartScroll = hScrollEl.scrollLeft
     ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
   }
   function onThumbDragMove (e: PointerEvent): void {
-    if (!dragThumb || hScrollEl === undefined) return
+    if (!dragThumb || hScrollEl == null) return
     const dx = e.clientX - dragThumbStartX
     const ratio = hThumbMax > 0 ? dx / hThumbMax : 0
     hScrollEl.scrollLeft = dragThumbStartScroll + ratio * hScrollMax
@@ -946,7 +946,7 @@
   function onProxyTrackClick (e: PointerEvent): void {
     // Click on track (not thumb): page-scroll towards click position.
     if ((e.target as HTMLElement).classList.contains('hscroll-thumb')) return
-    if (hScrollEl === undefined) return
+    if (hScrollEl == null) return
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
     const clickX = e.clientX - rect.left
     const dir = clickX < hThumbLeft ? -1 : 1
@@ -966,7 +966,7 @@
   let panStartScrollLeft = 0
   let panStartScrollTop = 0
   function onCanvasPanStart (e: PointerEvent): void {
-    if (scrollerEl === undefined || hScrollEl === undefined) return
+    if (scrollerEl == null || hScrollEl == null) return
     const target = e.target as HTMLElement
     if (!shouldStartCanvasPan(target)) return
     pendingPan = true
@@ -976,7 +976,7 @@
     panStartScrollTop = scrollerEl.scrollTop
   }
   function onCanvasPanMove (e: PointerEvent): void {
-    if ((!pendingPan && !panning) || scrollerEl === undefined || hScrollEl === undefined) return
+    if ((!pendingPan && !panning) || scrollerEl == null || hScrollEl == null) return
     const dx = e.clientX - panStartX
     const dy = e.clientY - panStartY
     if (pendingPan) {
@@ -1035,17 +1035,17 @@
   }
 
   let resizeObs: ResizeObserver | undefined
-  let observedScrollerEl: HTMLDivElement | undefined
-  let observedHScrollEl: HTMLDivElement | undefined
+  let observedScrollerEl: HTMLDivElement | null = null
+  let observedHScrollEl: HTMLDivElement | null = null
   function syncViewport (): void {
-    if (scrollerEl !== undefined) {
+    if (scrollerEl != null) {
       scrollTop = scrollerEl.scrollTop
       viewportHeight = scrollerEl.clientHeight
     }
-    if (hScrollEl !== undefined) {
+    if (hScrollEl != null) {
       canvasViewportLeft = hScrollEl.scrollLeft
       canvasViewportWidth = hScrollEl.clientWidth
-    } else if (scrollerEl !== undefined) {
+    } else if (scrollerEl != null) {
       // Before the horizontal-scroll proxy is rendered, derive the canvas
       // viewport from the visible scroller minus sticky sidebar + resize cell.
       // Otherwise the initial 1200px fallback can suppress hHasOverflow
@@ -1054,24 +1054,28 @@
       canvasViewportWidth = computeCanvasViewportWidth(scrollerEl.clientWidth, sidebarWidthPx, RESIZE_CELL_W)
     }
   }
-  $: if (scrollerEl !== undefined) queueMicrotask(syncViewport)
-  $: if (hScrollEl !== undefined) queueMicrotask(syncViewport)
-  $: if (resizeObs !== undefined && scrollerEl !== undefined && observedScrollerEl !== scrollerEl) {
+  $: if (scrollerEl != null) queueMicrotask(syncViewport)
+  $: if (hScrollEl != null) queueMicrotask(syncViewport)
+  $: if (resizeObs !== undefined && scrollerEl != null && observedScrollerEl !== scrollerEl) {
     resizeObs.observe(scrollerEl)
     observedScrollerEl = scrollerEl
     queueMicrotask(syncViewport)
   }
-  $: if (resizeObs !== undefined && hScrollEl !== undefined && observedHScrollEl !== hScrollEl) {
+  $: if (resizeObs !== undefined && hScrollEl != null && observedHScrollEl !== hScrollEl) {
     resizeObs.observe(hScrollEl)
     observedHScrollEl = hScrollEl
+    queueMicrotask(syncViewport)
+  }
+  $: if (hScrollEl == null && observedHScrollEl !== null) {
+    observedHScrollEl = null
     queueMicrotask(syncViewport)
   }
   onMount(() => {
     syncViewport()
     if (typeof ResizeObserver !== 'undefined') {
       resizeObs = new ResizeObserver(() => syncViewport())
-      if (scrollerEl !== undefined) resizeObs.observe(scrollerEl)
-      if (hScrollEl !== undefined) resizeObs.observe(hScrollEl)
+      if (scrollerEl != null) resizeObs.observe(scrollerEl)
+      if (hScrollEl != null) resizeObs.observe(hScrollEl)
     }
   })
   onDestroy(() => {
@@ -1174,7 +1178,7 @@
         <div class="cell resize-corner" style="height: {HEADER_HEIGHT}px;" />
         <div class="cell header-cell" style="height: {HEADER_HEIGHT}px;">
           <div class="hscroll-inner" style="width: {totalCanvasWidth}px; transform: translateX(-{canvasViewportLeft}px);">
-            <GanttHeader {timeScale} {viewport} totalWidth={totalCanvasWidth} height={HEADER_HEIGHT} />
+            <GanttHeader {timeScale} {viewport} totalWidth={totalCanvasWidth} dataWidth={dataCanvasWidth} height={HEADER_HEIGHT} />
           </div>
         </div>
         <!-- Row 2: sidebar (sticky-left) / resize handle (sticky-left) / canvas -->
@@ -1221,6 +1225,7 @@
               {viewportHeight}
               {viewport}
               totalWidth={totalCanvasWidth}
+              dataWidth={dataCanvasWidth}
               milestoneStripHeight={MILESTONE_STRIP_HEIGHT}
               {hoveredRowId}
               {statusCategoryMap}

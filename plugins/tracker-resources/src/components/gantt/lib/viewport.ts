@@ -10,3 +10,23 @@ export function computeCanvasViewportWidth (
 ): number {
   return Math.max(1, scrollerClientWidth - sidebarWidth - resizeCellWidth)
 }
+
+export function computeCanvasRenderWidth (
+  dataRangeWidth: number,
+  viewportWidth: number
+): number {
+  return Math.max(1, dataRangeWidth, viewportWidth)
+}
+
+export function computeTickViewport (
+  viewportLeft: number,
+  viewportRight: number,
+  dataRangeWidth: number,
+  overscan: number = 100
+): { left: number, right: number } {
+  const maxRight = Math.max(1, dataRangeWidth)
+  return {
+    left: Math.min(Math.max(0, viewportLeft - overscan), maxRight),
+    right: Math.min(Math.max(0, viewportRight + overscan), maxRight)
+  }
+}

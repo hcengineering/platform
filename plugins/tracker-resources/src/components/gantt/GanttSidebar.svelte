@@ -13,6 +13,7 @@
   import type { TimeScale } from './lib/time-scale'
   import IssuePresenter from '../issues/IssuePresenter.svelte'
   import StatusBadge from './StatusBadge.svelte'
+  import { activeDragTargetId } from './lib/drag-state'
 
   export let rows: LayoutRow[]
   export let width: number = 280
@@ -28,9 +29,7 @@
   export let showPredecessors: boolean = false
 
   $: dragState = $activeDrag
-  $: activeIssueIdStr = 'target' in dragState
-    ? String((dragState as { target?: { doc: { _id: unknown } } }).target?.doc._id ?? '') || null
-    : null
+  $: activeIssueIdStr = activeDragTargetId(dragState)
   $: anyDragActive = dragState.kind !== 'idle' && dragState.kind !== 'hover-bar'
 
   const dispatch = createEventDispatcher<{

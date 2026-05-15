@@ -9,6 +9,7 @@
   import type { TimeScale } from './lib/time-scale'
   import type { DragState, DragTarget } from './lib/types'
   import GanttConnectorDot from './GanttConnectorDot.svelte'
+  import { activeDragTargetId } from './lib/drag-state'
 
   // Bar is rendered for both Issues and synthetic milestone summaries; the
   // structural subset below is all the bar geometry needs.
@@ -111,8 +112,11 @@
   // since the refactor. Read doc._id for the active-bar match.
   $: isThisBarActive =
     issueRef !== undefined &&
-    'target' in dragState &&
-    (dragState as { target?: DragTarget }).target?.doc._id === issueRef
+    activeDragTargetId(dragState) === issueRef
+  $: isThisConnectorActive =
+    issueRef !== undefined &&
+    (dragState.kind === 'connector-drawing' || dragState.kind === 'connector-target-hover') &&
+    String(dragState.source._id) === String(issueRef)
   $: previewStart = (() => {
     if (!isThisBarActive) return effectiveStart
     if (dragState.kind === 'dragging-body' || dragState.kind === 'dragging-unscheduled') return dragState.previewStart
@@ -288,7 +292,7 @@
         on:mousedown={onBarDown('right')}
       />
     {/if}
-    {#if editable && hovered && dragTarget !== undefined && dragTarget.kind === 'issue' && w >= 18}
+    {#if editable && (hovered || selected || isThisConnectorActive) && dragTarget !== undefined && dragTarget.kind === 'issue' && w >= 18}
       <GanttConnectorDot
         cx={x + w}
         cy={barY + barH / 2}
