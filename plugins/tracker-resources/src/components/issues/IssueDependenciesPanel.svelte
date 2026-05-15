@@ -194,7 +194,24 @@
       async (confirmed?: boolean) => {
         if (confirmed !== true) return
         const ops = client.apply(undefined, 'remove-dependency-from-issue-editor')
-        await ops.removeDoc(tracker.class.IssueRelation, rel.space, rel._id)
+        // Tier-2 Item 8 — Activity-Log Remove-Detail Fix.
+        // `removeDoc` emits a bare `TxRemoveDoc` without parent-issue
+        // attachment; the activity pipeline then drops the message on
+        // the IssueRelation itself, which never appears in the issue's
+        // activity feed (the bug surfaced as an empty "removed related
+        // to:" row). `removeCollection` wraps the remove in a
+        // TxCollectionCUD that carries attachedTo/attachedToClass back
+        // to the parent issue, where the IssueRelationPresenter (mixed
+        // in as the ObjectPresenter for tracker.class.IssueRelation)
+        // renders kind+lag+target title via buildRemovedDoc.
+        await ops.removeCollection(
+          tracker.class.IssueRelation,
+          rel.space,
+          rel._id,
+          rel.attachedTo,
+          rel.attachedToClass,
+          rel.collection
+        )
         await ops.commit()
       }
     )
