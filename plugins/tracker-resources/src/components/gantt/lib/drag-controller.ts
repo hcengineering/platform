@@ -39,16 +39,38 @@ function reduceFromHover (
   event: DragEvent,
   timeScale: TimeScale
 ): DragState {
-  // Stub implementations filled in by later tasks.
-  void event
+  if (event.type === 'mouseleave-bar') {
+    return { kind: 'idle' }
+  }
+  if (event.type === 'mousedown-bar' && event.edge === 'body') {
+    if (event.issue.startDate == null || event.issue.dueDate == null) return state
+    return {
+      kind: 'dragging-body',
+      issue: event.issue,
+      originStart: event.issue.startDate,
+      originDue: event.issue.dueDate,
+      cursorStartX: event.cursorX,
+      previewStart: event.issue.startDate,
+      previewDue: event.issue.dueDate
+    }
+  }
   void timeScale
   return state
 }
 
 function reduceFromActive (state: DragState, event: DragEvent, timeScale: TimeScale): DragState {
-  // Stub implementations filled in by later tasks.
-  void event
-  void timeScale
+  if (event.type === 'mouseup' || event.type === 'cancel') {
+    return { kind: 'idle' }
+  }
+  if (event.type === 'mousemove' && state.kind === 'dragging-body') {
+    const deltaPx = event.cursorX - state.cursorStartX
+    const deltaMs = (deltaPx / timeScale.pxPerDay) * 86_400_000
+    return {
+      ...state,
+      previewStart: snapToUtcMidnight(state.originStart + deltaMs),
+      previewDue: snapToUtcMidnight(state.originDue + deltaMs)
+    }
+  }
   return state
 }
 
