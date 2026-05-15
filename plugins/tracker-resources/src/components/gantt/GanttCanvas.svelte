@@ -184,6 +184,11 @@
     return row.id
   }
 
+  function getDeadline (issue: Issue): number | null {
+    return issue.deadline ?? null
+  }
+
+
   function summaryFor (row: LayoutRow): SummaryRange | null {
     if (row.kind === 'milestone' && row.milestone !== null) {
       return summaryRanges.get(row.id) ?? null
