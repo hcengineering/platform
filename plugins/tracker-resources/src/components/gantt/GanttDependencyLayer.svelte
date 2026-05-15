@@ -102,7 +102,7 @@
       d={live}
       class="live-connector"
       class:targeting={dragState.kind === 'connector-target-hover'}
-      stroke="#94a3b8"
+      stroke="var(--theme-state-regular-color)"
       stroke-width={1.5}
       fill="none"
       pointer-events="none"
@@ -118,6 +118,6 @@
     /* "0" is the canonical "no dash" reset; "none" is not a valid value
        for stroke-dasharray and browsers fall back silently. */
     stroke-dasharray: 0;
-    stroke: #475569;
+    stroke: var(--theme-content-color);
   }
 </style>

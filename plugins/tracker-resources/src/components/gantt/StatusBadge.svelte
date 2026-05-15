@@ -16,15 +16,15 @@
     switch (cat) {
       case 'task:statusCategory:UnStarted':
       case 'tracker:statusCategory:Backlog':
-        return '#9ca3af'
+        return 'var(--theme-state-regular-color)'
       case 'task:statusCategory:ToDo':
-        return '#3b82f6'
+        return 'var(--theme-state-primary-color)'
       case 'task:statusCategory:Active':
-        return '#f59e0b'
+        return 'var(--theme-warning-color)'
       case 'task:statusCategory:Won':
-        return '#10b981'
+        return 'var(--theme-state-positive-color)'
       case 'task:statusCategory:Lost':
-        return '#9ca3af'
+        return 'var(--theme-state-regular-color)'
       default:
         return 'var(--theme-divider-color)'
     }

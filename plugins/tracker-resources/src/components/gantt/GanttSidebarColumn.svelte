@@ -182,7 +182,7 @@
     display: inline-block;
     padding: 1px 4px;
     border-radius: 3px;
-    background: #dc2626;
+    background: var(--theme-state-negative-color);
     color: white;
     font-size: 9px;
     font-weight: 600;

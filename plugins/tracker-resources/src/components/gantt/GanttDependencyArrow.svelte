@@ -47,7 +47,7 @@
   // Critical-relation visual: solid red. Violated-relation visual:
   // red dashed with '!' hint via title tooltip (Spec §5.4). Violated
   // wins over critical when both are true.
-  $: arrowStroke = isViolated || isCritical ? '#dc2626' : '#94a3b8'
+  $: arrowStroke = isViolated || isCritical ? 'var(--theme-state-negative-color)' : 'var(--theme-state-regular-color)'
   $: arrowStrokeWidth = isViolated || isCritical ? 2 : 1.5
   $: arrowDash = isViolated ? '4 2' : 'none'
 
@@ -186,7 +186,7 @@
         on:click={onOpen}
       >
         <rect width={pillWidth} height={16} rx={8} ry={8}
-          fill="#ffffff" stroke="#94a3b8" stroke-width={1} />
+          fill="var(--theme-bg-color)" stroke="var(--theme-state-regular-color)" stroke-width={1} />
         <text x={pillWidth / 2} y={11} text-anchor="middle" class="lag-pill-text">{pillText}</text>
       </g>
     {/if}
@@ -235,12 +235,12 @@
   :global(svg.gantt-canvas .gantt-dep-arrow .lag-pill) {
     cursor: pointer;
   }
-  :global(svg.gantt-canvas .gantt-dep-arrow:hover .curve) { stroke: #475569; }
-  :global(svg.gantt-canvas .gantt-dep-arrow:hover .arrowhead) { fill: #475569; }
+  :global(svg.gantt-canvas .gantt-dep-arrow:hover .curve) { stroke: var(--theme-content-color); }
+  :global(svg.gantt-canvas .gantt-dep-arrow:hover .arrowhead) { fill: var(--theme-content-color); }
   :global(svg.gantt-canvas .lag-pill-text) {
     font-size: 10px;
     font-weight: 600;
-    fill: #475569;
+    fill: var(--theme-content-color);
     user-select: none;
     pointer-events: none;
   }
