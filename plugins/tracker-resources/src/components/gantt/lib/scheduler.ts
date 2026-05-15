@@ -93,3 +93,58 @@ export function wouldCreateCycle (
   }
   return false
 }
+
+/**
+ * Detects any cycle in the relation graph (without considering a candidate
+ * new edge). Used by `simulateCascade` for the pre-flight safety check.
+ * DFS with white/grey/black coloring; returns the refs that participate in
+ * the first detected cycle, or null if the graph is a DAG.
+ */
+export function detectCycle (relations: IssueRelation[]): Ref<Issue>[] | null {
+  const out = new Map<Ref<Issue>, Ref<Issue>[]>()
+  const nodes = new Set<Ref<Issue>>()
+  for (const r of relations) {
+    nodes.add(r.attachedTo)
+    nodes.add(r.target)
+    const bucket = out.get(r.attachedTo)
+    if (bucket === undefined) {
+      out.set(r.attachedTo, [r.target])
+    } else {
+      bucket.push(r.target)
+    }
+  }
+
+  const WHITE = 0
+  const GREY = 1
+  const BLACK = 2
+  const color = new Map<Ref<Issue>, number>()
+  for (const n of nodes) color.set(n, WHITE)
+
+  const stack: Ref<Issue>[] = []
+  let cycle: Ref<Issue>[] | null = null
+
+  function visit (n: Ref<Issue>): boolean {
+    color.set(n, GREY)
+    stack.push(n)
+    const succs = out.get(n)
+    if (succs !== undefined) {
+      for (const next of succs) {
+        const c = color.get(next) ?? WHITE
+        if (c === GREY) {
+          const idx = stack.indexOf(next)
+          cycle = idx >= 0 ? stack.slice(idx) : [next]
+          return true
+        }
+        if (c === WHITE && visit(next)) return true
+      }
+    }
+    color.set(n, BLACK)
+    stack.pop()
+    return false
+  }
+
+  for (const n of nodes) {
+    if ((color.get(n) ?? WHITE) === WHITE && visit(n)) return cycle
+  }
+  return null
+}
