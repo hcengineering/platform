@@ -287,6 +287,23 @@ describe('simulateCascade — parent-drag and edge cases', () => {
       expect(res.kind).toBe('no-cascade')
     }
   })
+
+  it('Test 18: parent-drag with locked child + no external successors → permission-denied (no silent commit)', () => {
+    // Codex review round 8: permission check must run BEFORE the
+    // shifts.size === 0 no-cascade early-return. Otherwise a user could
+    // move a parent and silently drag a non-editable child with it.
+    const Parent = issue('P', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 15))
+    const Child = issue('Child', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const primary: PrimaryEdit[] = [
+      { issue: Parent, newStart: Date.UTC(2026, 4, 5), newDue: Date.UTC(2026, 4, 19) },
+      { issue: Child, newStart: Date.UTC(2026, 4, 5), newDue: Date.UTC(2026, 4, 9) }
+    ]
+    // No relations at all -> shifts will be empty.
+    const res = simulateCascade(primary, [Parent, Child], [], (ref) => ref !== 'Child')
+    expect(res.kind).toBe('permission-denied')
+    if (res.kind !== 'permission-denied') return
+    expect(res.lockedIssues.map((i) => i._id)).toEqual(['Child'])
+  })
 })
 
 describe('simulateCascade — chain propagation', () => {
