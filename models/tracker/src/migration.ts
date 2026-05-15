@@ -40,6 +40,7 @@ import tags from '@hcengineering/tags'
 import task from '@hcengineering/task'
 import {
   type Issue,
+  type IssueRelation,
   type IssueStatus,
   type Project,
   TimeReportDayType,
@@ -416,6 +417,77 @@ async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
   )
 }
 
+/**
+ * Tier-2 Item 8 — Activity-Log Remove-Detail Fix.
+ *
+ * Legacy IssueRelation removals went through `ops.removeDoc`, which emits
+ * a bare TxRemoveDoc without parent-issue attachment. The activity
+ * pipeline therefore wrote a DocUpdateMessage whose attachedTo is the
+ * relation itself, never showing up in the issue's activity feed. This
+ * migration re-attaches such DUMs to their parent issue by looking up the
+ * original TxCreateDoc of the now-removed IssueRelation. Best-effort:
+ * when the create-tx is missing (db compaction) the DUM still gets
+ * `updateCollection='relations'` so the activity feed at least shows
+ * "removed dependency" without the target detail.
+ *
+ * Idempotent — once a DUM has Issue-side attachment + `updateCollection`,
+ * the predicate skips it on subsequent runs. The predicate is a local
+ * 4-LOC copy of `isBrokenRelationDum` in
+ * `plugins/tracker-resources/src/components/gantt/lib/relation-activity-migration.ts`
+ * (cannot import across package layers — models/tracker is below
+ * tracker-resources). The helper module is the one with unit tests.
+ */
+async function migrateRelationActivityAttachment (client: MigrationClient): Promise<void> {
+  const issueClass = tracker.class.Issue
+  const dums = await client.find<DocUpdateMessage>(
+    DOMAIN_ACTIVITY,
+    {
+      _class: activity.class.DocUpdateMessage,
+      objectClass: tracker.class.IssueRelation,
+      action: 'remove'
+    }
+  )
+  if (dums.length === 0) return
+  for (const dum of dums) {
+    const isBroken = dum.attachedToClass !== issueClass || dum.updateCollection !== 'relations'
+    if (!isBroken) continue
+    // Find the create-tx for this relation. The relation objectId remains
+    // the same across the doc's whole life — that's the key we look up.
+    const createTxes = await client.find<TxCreateDoc<IssueRelation>>(
+      DOMAIN_MODEL_TX,
+      {
+        _class: core.class.TxCreateDoc,
+        objectId: dum.objectId as Ref<IssueRelation>
+      },
+      { limit: 1 }
+    )
+    const createTx = createTxes[0]
+    const patch: Partial<DocUpdateMessage> = {}
+    if (
+      createTx !== undefined &&
+      createTx.attachedTo !== undefined &&
+      createTx.attachedToClass !== undefined
+    ) {
+      patch.attachedTo = createTx.attachedTo
+      patch.attachedToClass = createTx.attachedToClass
+      patch.updateCollection = createTx.collection ?? 'relations'
+    } else {
+      // Placeholder: ensure the DUM at least shows up in the parent
+      // issue's feed by giving it the collection name; we leave
+      // attachedTo as-is (the runtime DocUpdateMessageObjectValue will
+      // still try buildRemovedDoc with objectId, which often succeeds
+      // even when the create-tx for the *DUM's* attachedTo is gone).
+      if (dum.updateCollection === 'relations') continue
+      patch.updateCollection = 'relations'
+    }
+    await client.update<DocUpdateMessage>(
+      DOMAIN_ACTIVITY,
+      { _id: dum._id },
+      patch
+    )
+  }
+}
+
 export const trackerOperation: MigrateOperation = {
   async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
     await tryMigrate(mode, client, trackerId, [
@@ -465,6 +537,12 @@ export const trackerOperation: MigrateOperation = {
         state: 'gantt-add-working-days-config',
         mode: 'upgrade',
         func: async () => {}
+      },
+      {
+        // Tier-2 Item 8 — Activity-Log Remove-Detail Fix.
+        state: 'relation-activity-attached-v1',
+        mode: 'upgrade',
+        func: migrateRelationActivityAttachment
       }
     ])
   },
