@@ -45,6 +45,11 @@
   export let isViolated: boolean = false
   export let slackMs: number = 0
   export let showSlackGlyph: boolean = false
+  // Tier-2 Item 5 — Auto-Scheduling-Toggle. `'manual'` paints a small
+  // pin glyph in the leading edge of the bar so the user can see at a
+  // glance that this issue is protected from cascade. `'auto'` / `undefined`
+  // → no glyph (Bestand-Default).
+  export let schedulingMode: 'auto' | 'manual' | undefined = undefined
 
   const DAY_MS_FOR_SLACK = 86_400_000
   $: slackPx = showSlackGlyph && slackMs > 0
@@ -198,8 +203,16 @@
   $: x = visible ? timeScale.toX(startVal) : 0
   $: x2 = visible ? timeScale.toX(dueVal) : 0
   $: w = Math.max(2, x2 - x + timeScale.pxPerDay) // inclusive duration: see spec §8.0
+  // Manual-pin glyph occupies ~14 px at the leading edge of the bar (10 px
+  // glyph + 4 px gap to the label). Only render it once the bar is wide
+  // enough that the glyph plus at least one label char would fit; on tiny
+  // bars the manual-status falls back to the tooltip suffix only.
+  $: showManualPin = schedulingMode === 'manual' && !isSummary
+  $: manualPinVisible = showManualPin && w >= 24
   $: tooltipText = visible
-    ? `${issue.title} (${new Date(startVal).toISOString().slice(0, 10)} → ${new Date(dueVal).toISOString().slice(0, 10)})`
+    ? `${issue.title} (${new Date(startVal).toISOString().slice(0, 10)} → ${new Date(dueVal).toISOString().slice(0, 10)})${
+        showManualPin ? ' · manual schedule' : ''
+      }`
     : ''
   // Milestone-synthetic-summary claws were dropped in PR3.3 (the milestone
   // is now rendered as its own editable bar). Parent-issue summaries have a
@@ -213,7 +226,9 @@
 
   // Heuristic: ~7.5px per character at 13px font — leave breathing room.
   const CHAR_PX = 7.5
-  $: maxChars = Math.floor((w - 12) / CHAR_PX)
+  // Manual-pin glyph takes 14 px of leading room; subtract that from the
+  // label budget so the title doesn't overlap the glyph.
+  $: maxChars = Math.floor((w - 12 - (manualPinVisible ? 14 : 0)) / CHAR_PX)
   $: barLabel = maxChars >= 4
     ? (issue.title.length > maxChars ? issue.title.slice(0, Math.max(1, maxChars - 1)) + '…' : issue.title)
     : ''
@@ -387,9 +402,35 @@
          dep-layer and therefore occluded by the arrow's 12 px invisible
          click target. The overlay is the single source of truth. -->
 
+    {#if manualPinVisible}
+      <!-- Tier-2 Item 5 — Manual-pin glyph (inline SVG: small map-pin
+           shape rotated to point left). Sized 10 px tall, centred vertically
+           in the bar with 4 px of leading padding. pointer-events: none so
+           drag/click stays routed to the underlying bar rect. -->
+      <g class="manual-pin" pointer-events="none">
+        <circle
+          cx={x + 9}
+          cy={barY + barH / 2}
+          r={4}
+          fill={barColors.text}
+          stroke={barColors.fill}
+          stroke-width={1}
+        />
+        <circle
+          cx={x + 9}
+          cy={barY + barH / 2}
+          r={1.6}
+          fill={barColors.fill}
+        />
+        <path
+          d="M {x + 5} {barY + barH / 2} L {x + 1.5} {barY + barH / 2 - 0.5} L {x + 1.5} {barY + barH / 2 + 0.5} Z"
+          fill={barColors.text}
+        />
+      </g>
+    {/if}
     {#if barLabel !== ''}
       <text
-        x={x + 6}
+        x={x + 6 + (manualPinVisible ? 14 : 0)}
         y={barY + barH / 2 + 4}
         class="bar-label"
         fill={barColors.text}
