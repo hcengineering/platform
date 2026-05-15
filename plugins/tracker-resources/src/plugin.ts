@@ -328,7 +328,21 @@ export default mergeIds(trackerId, tracker, {
     GanttScrollLeftToBar: '' as IntlString,
     GanttScrollRightToBar: '' as IntlString,
     GanttExpand: '' as IntlString,
-    GanttCollapse: '' as IntlString
+    GanttCollapse: '' as IntlString,
+    // PR4a: dependency arrows + DependencyEditor popup
+    DependencyKindFS: '' as IntlString,
+    DependencyKindSS: '' as IntlString,
+    DependencyKindFF: '' as IntlString,
+    DependencyKindSF: '' as IntlString,
+    DependencyLag: '' as IntlString,
+    DependencyKind: '' as IntlString,
+    DependencyDelete: '' as IntlString,
+    DependencyDeleteConfirm: '' as IntlString,
+    DependencyCycle: '' as IntlString,
+    DependencyEditTitle: '' as IntlString,
+    GanttShowPredecessors: '' as IntlString,
+    Predecessors: '' as IntlString,
+    NoPredecessors: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
