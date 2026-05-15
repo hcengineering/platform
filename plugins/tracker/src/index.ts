@@ -57,6 +57,36 @@ export interface IssueStatus extends Status {}
 
 /**
  * @public
+ *
+ * Working-days calendar configuration for a Project.
+ *
+ * When set, the Gantt scheduler and critical-path treat lag and slack in
+ * *working days* rather than calendar days; non-working days are rendered
+ * with a slight background tint in the Gantt canvas.
+ *
+ * Absence of this field (= `undefined`) is the legacy mode and means
+ * "every day is a working day" (calendar-days semantics). There is no
+ * silent migration — the user must opt in by setting this property
+ * explicitly.
+ */
+export interface WorkingDaysConfig {
+  /**
+   * Bitmask of active weekdays.
+   *
+   *   bit 0 = Mon, bit 1 = Tue, …, bit 5 = Sat, bit 6 = Sun.
+   *
+   *   Mon–Fri   = 0b0011111 = 31
+   *   Mon–Sat   = 0b0111111 = 63
+   *   All days  = 0b1111111 = 127
+   */
+  weekdayMask: number
+
+  /** Holidays as UTC-midnight timestamps. Order is irrelevant; duplicates allowed. */
+  holidays: Timestamp[]
+}
+
+/**
+ * @public
  */
 export interface Project extends TaskProject, IconProps {
   identifier: string // Project identifier
@@ -64,6 +94,11 @@ export interface Project extends TaskProject, IconProps {
   defaultIssueStatus?: Ref<IssueStatus>
   defaultAssignee?: Ref<Employee>
   defaultTimeReportDay: TimeReportDayType
+  /**
+   * Optional Gantt working-days calendar. See {@link WorkingDaysConfig}.
+   * `undefined` means "every day is a working day" (legacy behaviour).
+   */
+  workingDaysConfig?: WorkingDaysConfig
 }
 
 /**
