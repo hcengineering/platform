@@ -28,6 +28,7 @@
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
   export let issueRef: Ref<Issue> | undefined = undefined
   export let issueObj: Issue | undefined = undefined
+  export let focused: boolean = false
 
   const dispatch = createEventDispatcher<{
     barMouseDown: { issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }
@@ -175,6 +176,7 @@
       class="bar"
       class:editable
       class:active-drag={isThisBarActive}
+      class:focused
       on:mousedown={onBarDown('body')}
       on:contextmenu={onBarContextMenu}
     />
@@ -245,5 +247,10 @@
     stroke: var(--theme-state-info-color, #6366f1);
     stroke-width: 2px;
     filter: drop-shadow(0 0 4px color-mix(in srgb, var(--theme-state-info-color, #6366f1) 50%, transparent));
+  }
+  .bar.focused {
+    stroke: var(--theme-state-info-color, #6366f1);
+    stroke-width: 2px;
+    stroke-dasharray: 2,2;
   }
 </style>

@@ -414,6 +414,80 @@
     })
   }
 
+  // -------------------------------------------------------------------------
+  // PR 3 keyboard: Tab cycles bars with dates, arrows shift focused bar by 1d
+  // (or 7d with Shift). Escape cancels an active drag.
+  // -------------------------------------------------------------------------
+
+  let focusedIssueId: string | null = null
+  const DAY_MS = 86_400_000
+
+  $: scheduledIssues = issues.filter((i) => i.startDate != null && i.dueDate != null)
+
+  function moveFocus (dir: 1 | -1): void {
+    if (scheduledIssues.length === 0) return
+    const ids = scheduledIssues.map((i) => String(i._id))
+    const cur = focusedIssueId !== null ? ids.indexOf(focusedIssueId) : -1
+    const nextIdx = (cur + dir + ids.length) % ids.length
+    focusedIssueId = ids[nextIdx]
+  }
+
+  async function shiftFocused (days: number): Promise<void> {
+    if (focusedIssueId === null) return
+    const i = scheduledIssues.find((it) => String(it._id) === focusedIssueId)
+    if (i === undefined || i.startDate == null || i.dueDate == null) return
+    if (!editableIssueIds.has(focusedIssueId)) return
+    const client = getClient()
+    const ops = client.apply('gantt-keyshift')
+    await ops.update(i, {
+      startDate: i.startDate + days * DAY_MS,
+      dueDate: i.dueDate + days * DAY_MS
+    })
+    for (const child of descendantsWithDates(i, issues)) {
+      await ops.update(child, {
+        startDate: (child.startDate as number) + days * DAY_MS,
+        dueDate: (child.dueDate as number) + days * DAY_MS
+      })
+    }
+    const r = await ops.commit()
+    if (!r.result) {
+      const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
+      addNotification(title, '', undefined as any, undefined, NotificationSeverity.Error)
+    }
+  }
+
+  function onKey (e: KeyboardEvent): void {
+    // Only react when focus is inside the Gantt root — otherwise we'd hijack
+    // global shortcuts.
+    if (!(containerEl?.contains(document.activeElement) ?? false)) return
+    if (e.key === 'Tab') {
+      moveFocus(e.shiftKey ? -1 : 1)
+      e.preventDefault()
+      return
+    }
+    if (e.key === 'ArrowRight') {
+      void shiftFocused(e.shiftKey ? 7 : 1)
+      e.preventDefault()
+      return
+    }
+    if (e.key === 'ArrowLeft') {
+      void shiftFocused(e.shiftKey ? -7 : -1)
+      e.preventDefault()
+      return
+    }
+    if (e.key === 'Escape' && $activeDrag.kind !== 'idle') {
+      activeDrag.set({ kind: 'idle' })
+      e.preventDefault()
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener('keydown', onKey)
+  })
+  onDestroy(() => {
+    window.removeEventListener('keydown', onKey)
+  })
+
   function jumpToToday (): void {
     if (hScrollEl === undefined) return
     const x = timeScale.toX(Date.now())
@@ -614,7 +688,8 @@
   $: loading = loadingIssues || loadingMilestones
 </script>
 
-<div class="gantt-root" bind:this={containerEl}>
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<div class="gantt-root" tabindex="0" bind:this={containerEl}>
   {#if loading}
     <Loading />
   {:else}
@@ -750,6 +825,7 @@
               {statusCategoryMap}
               {editableIssueIds}
               {activeDrag}
+              {focusedIssueId}
               on:openIssue={onIssueOpen}
               on:hoverRow={onRowHover}
               on:barMouseDown={handleBarMouseDown}
@@ -852,6 +928,7 @@
     width: 100%;
     overflow: hidden;
     position: relative;
+    outline: none;
   }
   .gantt-toolbar {
     flex: 0 0 auto;
