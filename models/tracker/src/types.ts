@@ -407,7 +407,12 @@ export class TMilestone extends TDoc implements Milestone {
   @Prop(TypeMarkup(), tracker.string.Description)
     description?: Markup
 
-  @Prop(TypeMilestoneStatus(), tracker.string.Status)
+  // Rank-based ordering for the auto-generated DocAttributeBar side panel:
+  // Status → Start date → Target date. Without explicit ranks the panel
+  // sorts by toRank(attr._id) (a hash-derived rank), which would put
+  // startDate before status. See plugins/view-resources/src/components/
+  // ClassAttributeBar.svelte:42-47.
+  @Prop(TypeMilestoneStatus(), tracker.string.Status, { rank: '0|a0001:' })
   @Index(IndexKind.Indexed)
     status!: MilestoneStatus
 
@@ -417,10 +422,10 @@ export class TMilestone extends TDoc implements Milestone {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
-  @Prop(TypeDate(), tracker.string.StartDate)
+  @Prop(TypeDate(), tracker.string.StartDate, { rank: '0|a0002:' })
     startDate!: Timestamp | null
 
-  @Prop(TypeDate(), tracker.string.TargetDate)
+  @Prop(TypeDate(), tracker.string.TargetDate, { rank: '0|a0003:' })
     targetDate!: Timestamp
 
   declare space: Ref<Project>
