@@ -8,7 +8,7 @@
   import tracker from '../../plugin'
 
   /**
-   * Tier-4 Item 14 — Dependency-Shifted notification presenter.
+   *  — Dependency-Shifted notification presenter.
    *
    * Used as the ObjectPresenter for `tracker.class.DependencyShiftedNotification`.
    * Renders the bundle as:
