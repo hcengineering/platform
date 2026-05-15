@@ -77,6 +77,8 @@
     "@hcengineering/workbench": "workspace:^0.7.0",
     "@hcengineering/workbench-resources": "workspace:^0.7.0",
     "fast-equals": "^5.2.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.2",
     "svelte": "^4.2.20"
   }
 }
