@@ -476,3 +476,115 @@ describe('drag-controller — milestone target (PR3.3)', () => {
     expect(next.previewEnd).toBe(milestone.targetDate + 1 * 86_400_000)
   })
 })
+
+describe('drag-controller — bulk co-drag (Tier-2 Item 6)', () => {
+  // Two members: the leading bar (`issue` above) and a second issue B that
+  // sits in the bulk-selection. coDrag carries B's origin so the controller
+  // can clamp the shared delta without GanttView needing to do the math.
+  const issueB: Issue = {
+    _id: 'issue-2' as Ref<Issue>,
+    _class: 'tracker:class:Issue' as Issue['_class'],
+    space: 'space-1' as Issue['space'],
+    startDate: Date.UTC(2026, 0, 19),
+    dueDate: Date.UTC(2026, 0, 23)
+  } as unknown as Issue
+
+  it('mousedown-bar with coDrag transitions to dragging-body carrying the co-drag payload', () => {
+    const next = reduce(
+      { kind: 'idle' },
+      {
+        type: 'mousedown-bar',
+        target: issueTarget,
+        originStart: issue.startDate as number,
+        originEnd: issue.dueDate as number,
+        edge: 'body',
+        cursorX: 200,
+        coDrag: {
+          members: [
+            { issueId: issue._id as Ref<Issue>, originStart: issue.startDate as number, originEnd: issue.dueDate as number },
+            { issueId: issueB._id as Ref<Issue>, originStart: issueB.startDate as number, originEnd: issueB.dueDate as number }
+          ],
+          minDeltaMs: -2 * 86_400_000,
+          maxDeltaMs: Infinity
+        }
+      },
+      ts
+    )
+    if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
+    expect(next.coDrag).toBeDefined()
+    expect(next.coDrag?.members).toHaveLength(2)
+    expect(next.coDrag?.anchorDeltaMs).toBe(0)
+    expect(next.coDrag?.minDeltaMs).toBe(-2 * 86_400_000)
+  })
+
+  it('mousemove clamps the shared delta to coDrag.minDeltaMs (hard-stop entire group)', () => {
+    // Week-zoom = 14 px/day. cursorStartX=200, moving to 130 → -5 days.
+    // coDrag.minDeltaMs caps at -2 days. Both preview AND anchorDeltaMs reflect the clamp.
+    const dragging: DragState = {
+      kind: 'dragging-body',
+      target: issueTarget,
+      originStart: issue.startDate as number,
+      originEnd: issue.dueDate as number,
+      cursorStartX: 200,
+      previewStart: issue.startDate as number,
+      previewEnd: issue.dueDate as number,
+      coDrag: {
+        anchorDeltaMs: 0,
+        members: [
+          { issueId: issue._id as Ref<Issue>, originStart: issue.startDate as number, originEnd: issue.dueDate as number },
+          { issueId: issueB._id as Ref<Issue>, originStart: issueB.startDate as number, originEnd: issueB.dueDate as number }
+        ],
+        minDeltaMs: -2 * 86_400_000,
+        maxDeltaMs: Infinity
+      }
+    }
+    // 70 px left of cursorStartX → -5 days raw; clamps to -2.
+    const next = reduce(dragging, { type: 'mousemove', cursorX: 130 }, ts)
+    if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
+    expect(next.coDrag?.anchorDeltaMs).toBe(-2 * 86_400_000)
+    expect(next.previewStart).toBe((issue.startDate as number) - 2 * 86_400_000)
+    expect(next.previewEnd).toBe((issue.dueDate as number) - 2 * 86_400_000)
+  })
+
+  it('mousemove still respects ordinary delta when within coDrag bounds', () => {
+    const dragging: DragState = {
+      kind: 'dragging-body',
+      target: issueTarget,
+      originStart: issue.startDate as number,
+      originEnd: issue.dueDate as number,
+      cursorStartX: 200,
+      previewStart: issue.startDate as number,
+      previewEnd: issue.dueDate as number,
+      coDrag: {
+        anchorDeltaMs: 0,
+        members: [
+          { issueId: issue._id as Ref<Issue>, originStart: issue.startDate as number, originEnd: issue.dueDate as number }
+        ],
+        minDeltaMs: -5 * 86_400_000,
+        maxDeltaMs: Infinity
+      }
+    }
+    // +28 px → +2 days, well within bounds.
+    const next = reduce(dragging, { type: 'mousemove', cursorX: 228 }, ts)
+    if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
+    expect(next.coDrag?.anchorDeltaMs).toBe(2 * 86_400_000)
+    expect(next.previewStart).toBe((issue.startDate as number) + 2 * 86_400_000)
+  })
+
+  it('mousemove without coDrag preserves legacy single-bar behaviour (regression)', () => {
+    const dragging: DragState = {
+      kind: 'dragging-body',
+      target: issueTarget,
+      originStart: issue.startDate as number,
+      originEnd: issue.dueDate as number,
+      cursorStartX: 200,
+      previewStart: issue.startDate as number,
+      previewEnd: issue.dueDate as number
+    }
+    const next = reduce(dragging, { type: 'mousemove', cursorX: 228 }, ts)
+    if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
+    expect(next.coDrag).toBeUndefined()
+    expect(next.previewStart).toBe((issue.startDate as number) + 2 * 86_400_000)
+    void snapToUtcMidnight // keep import alive
+  })
+})
