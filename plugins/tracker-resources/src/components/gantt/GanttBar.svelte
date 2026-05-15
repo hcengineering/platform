@@ -17,7 +17,7 @@
 
   // Status-driven fill + matching text color. Active gets the most
   // emphatic treatment (saturated fill, white text) so the user can
-  // spot in-flight work at a glance — Stitch-redesign feedback.
+  // spot in-flight work at a glance — redesign feedback.
   $: barColors = statusFill(statusCategory)
   function statusFill (cat: string | null): { fill: string, border: string, text: string } {
     switch (cat) {

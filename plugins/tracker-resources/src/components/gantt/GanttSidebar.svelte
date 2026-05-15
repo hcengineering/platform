@@ -265,7 +265,7 @@
   .sidebar-row.hovered {
     background: var(--theme-button-hovered);
   }
-  /* When ANY row is hovered, dim non-hovered rows for a Stitch-style
+  /* When ANY row is hovered, dim non-hovered rows for a 
      spotlight effect — implemented by the parent setting a data attr. */
   :global(.sidebar-rows.has-hover) .sidebar-row:not(.hovered) {
     opacity: 0.55;
