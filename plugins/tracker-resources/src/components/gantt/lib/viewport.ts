@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
+import type { WorkingDaysConfig } from '@hcengineering/tracker'
+import { isWorkingDay } from './working-days'
+
+const DAY_MS = 86_400_000
+
 export function computeCanvasViewportWidth (
   scrollerClientWidth: number,
   sidebarWidth: number,
@@ -39,4 +44,33 @@ export function computeTickViewport (
     left: Math.min(Math.max(0, viewportLeft - overscan), maxRight),
     right: Math.min(Math.max(0, viewportRight + overscan), maxRight)
   }
+}
+
+/**
+ * Returns UTC-midnight timestamps for every non-working day in `[fromMs, toMs]`.
+ * Returns `[]` when `cfg` is undefined (legacy mode — no weekend tint to draw).
+ *
+ * The result is capped at `maxDays` entries as a safety net for unbounded
+ * viewport ranges; the default 366 covers a full year on screen, which is
+ * already beyond the supported zoom-out scenarios.
+ */
+export function nonWorkingDaysInRange (
+  fromMs: number,
+  toMs: number,
+  cfg: WorkingDaysConfig | undefined,
+  maxDays: number = 366
+): number[] {
+  if (cfg === undefined) return []
+  const startMs = Math.min(fromMs, toMs)
+  const endMs = Math.max(fromMs, toMs)
+  const start = Math.floor(startMs / DAY_MS) * DAY_MS
+  const end = Math.floor(endMs / DAY_MS) * DAY_MS
+  const out: number[] = []
+  let cur = start
+  let safety = maxDays
+  while (cur <= end && safety-- > 0) {
+    if (!isWorkingDay(cur, cfg)) out.push(cur)
+    cur += DAY_MS
+  }
+  return out
 }
