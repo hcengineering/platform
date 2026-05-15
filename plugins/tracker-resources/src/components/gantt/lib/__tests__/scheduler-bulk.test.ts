@@ -46,7 +46,7 @@ function rel (
 }
 
 /**
- * Tier-2 Item 6 — Bulk-Select + Bulk-Drag.
+ *  — Bulk-Select + Bulk-Drag.
  *
  * `simulateCascade` already accepts `PrimaryEdit[]` and merges all primary
  * shifts before walking the BFS, which means it has been multi-primary-
@@ -54,7 +54,7 @@ function rel (
  * code path relies on (single Cascade pass, gemeinsamer Successor wird
  * einmal vom maximalen Delta verschoben, etc).
  */
-describe('simulateCascade — bulk-drag multi-primary semantics (Tier-2 Item 6)', () => {
+describe('simulateCascade — bulk-drag multi-primary semantics', () => {
   it('cascades two independent primaries through separate successors', () => {
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
