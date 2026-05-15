@@ -448,12 +448,16 @@ export class HulyFormatImporter {
           const s = String(iso).trim()
           // Phase 2 — relative-date placeholders for the Game Design
           // Example and similar demo workspaces. Forms supported:
-          //   ${today}        — UTC midnight of install day
-          //   ${today+5d}     — N days after install
-          //   ${today-3d}     — N days before install
-          //   ${today+2w}     — N weeks
-          //   ${today+1mo}    — N calendar months
-          const relMatch = s.match(/^\$\{today(?:([+-])(\d+)(d|w|mo))?\}$/)
+          //   today        — UTC midnight of install day
+          //   today+5d     — N days after install
+          //   today-3d     — N days before install
+          //   today+2w     — N weeks
+          //   today+1mo    — N calendar months
+          //
+          // Note: bare `today...` syntax (not `${today...}`) so the
+          // global UnifiedFormatParser doesn't try to resolve it as
+          // a script-level variable and throw 'Variable not found'.
+          const relMatch = s.match(/^today(?:([+-])(\d+)(d|w|mo))?$/)
           if (relMatch !== null) {
             const today = new Date()
             today.setUTCHours(0, 0, 0, 0)
@@ -693,7 +697,7 @@ export class HulyFormatImporter {
     const parseIsoDate = (iso?: string): number | undefined => {
       if (iso === undefined || iso === null || String(iso).trim() === '') return undefined
       const s = String(iso).trim()
-      const relMatch = s.match(/^\$\{today(?:([+-])(\d+)(d|w|mo))?\}$/)
+      const relMatch = s.match(/^today(?:([+-])(\d+)(d|w|mo))?$/)
       if (relMatch !== null) {
         const today = new Date()
         today.setUTCHours(0, 0, 0, 0)
