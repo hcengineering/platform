@@ -1807,6 +1807,7 @@
               violatedRelations={cpResult.violatedRelations}
               cpSlack={cpResult.slack}
               {showCriticalPath}
+              workingDaysConfig={workingDaysCfg}
               on:openIssue={onIssueOpen}
               on:hoverRow={onRowHover}
               on:barMouseDown={handleBarMouseDown}

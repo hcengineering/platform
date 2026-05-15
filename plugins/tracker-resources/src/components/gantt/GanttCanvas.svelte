@@ -5,7 +5,7 @@
   import { createEventDispatcher } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
   import type { Ref } from '@hcengineering/core'
-  import type { Issue, IssueRelation, Milestone } from '@hcengineering/tracker'
+  import type { Issue, IssueRelation, Milestone, WorkingDaysConfig } from '@hcengineering/tracker'
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange } from './lib/types'
   import { filterVisibleRows } from './lib/layout'
   import GanttBar from './GanttBar.svelte'
@@ -16,7 +16,7 @@
   import GanttDependencyLayer from './GanttDependencyLayer.svelte'
   import GanttConnectorDot from './GanttConnectorDot.svelte'
   import { activeDragTargetId } from './lib/drag-state'
-  import { computeTickViewport } from './lib/viewport'
+  import { computeTickViewport, nonWorkingDaysInRange } from './lib/viewport'
 
   const dispatch = createEventDispatcher<{
     openIssue: { issue: { _id: string, _class: string } }
@@ -47,7 +47,7 @@
   export let summaryRanges: Map<string, SummaryRange>
   export let scrollTop: number = 0
   export let viewportHeight: number = 600
-  export let viewport: { left: number, right: number }
+  export let viewport: { left: number; right: number }
   export let totalWidth: number
   export let dataWidth: number = totalWidth
   export let milestoneStripHeight: number = 0
@@ -60,25 +60,31 @@
   // stringified _ids (PR3.3 2026-05-11) so a single Set serves both.
   // milestonesById is a lookup of full Milestone docs (keyed by _id) used
   // to build the DragTarget payload when a milestone bar is clicked.
-  export let editableIssueIds = new Set<string>()
+  export let editableIssueIds: Set<string> = new Set()
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
   export let focusedIssueId: string | null = null
   export let selectedIssueId: string | null = null
-  export let milestonesById = new Map<string, Milestone>()
+  export let milestonesById: Map<string, Milestone> = new Map()
 
   // PR4a dependency-layer props — defaulted so existing call-sites don't break.
   export let relations: IssueRelation[] = []
-  export let connectedIds = new Set<Ref<Issue>>()
+  export let connectedIds: Set<Ref<Issue>> = new Set()
   export let hoveredIssue: Ref<Issue> | null = null
   export let hoveredEdge: { source: Ref<Issue>, target: Ref<Issue> } | null = null
   // PR5 critical-path overlay state (forwarded down to GanttBar +
   // GanttDependencyLayer). showCriticalPath gates rendering so the
   // base view doesn't gain visual weight when the toggle is off.
-  export let criticalSet = new Set<Ref<Issue>>()
-  export let criticalRelations = new Set<Ref<IssueRelation>>()
-  export let violatedRelations = new Set<Ref<IssueRelation>>()
-  export let cpSlack = new Map<Ref<Issue>, number>()
+  export let criticalSet: Set<Ref<Issue>> = new Set()
+  export let criticalRelations: Set<Ref<IssueRelation>> = new Set()
+  export let violatedRelations: Set<Ref<IssueRelation>> = new Set()
+  export let cpSlack: Map<Ref<Issue>, number> = new Map()
   export let showCriticalPath: boolean = false
+
+  // Phase-2 working-days calendar. `undefined` = legacy mode (no tint, all
+  // days treated as working). When set, every non-working day in the
+  // viewport receives a low-alpha background fill so the user sees at a
+  // glance which days the scheduler will skip.
+  export let workingDaysConfig: WorkingDaysConfig | undefined = undefined
 
   /**
    * Returns true iff any IssueRelation involving this issue is in the
@@ -129,7 +135,16 @@
   $: rowsHeight = rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0
   $: totalHeight = rowsHeight + milestoneStripHeight
   $: tickViewport = computeTickViewport(viewport.left, viewport.right, dataWidth)
-  $: ticks = timeScale.ticks([timeScale.fromX(tickViewport.left), timeScale.fromX(tickViewport.right)])
+  $: ticks = timeScale.ticks([
+    timeScale.fromX(tickViewport.left),
+    timeScale.fromX(tickViewport.right)
+  ])
+  // Non-working-day backgrounds. Empty in legacy mode.
+  $: nonWorkingDays = nonWorkingDaysInRange(
+    timeScale.fromX(tickViewport.left),
+    timeScale.fromX(tickViewport.right),
+    workingDaysConfig
+  )
 
   /**
    * Per-bar pixel rectangle for the dependency router. Re-derives from the
@@ -174,6 +189,23 @@
   viewBox="0 0 {totalWidth} {totalHeight}"
   preserveAspectRatio="none"
 >
+  <!-- Phase-2 working-days: paint a soft tint over weekends/holidays so the
+       user can tell at a glance which days the scheduler will skip. Painted
+       BEFORE the gridlines + bars so it forms a true background layer. -->
+  {#if workingDaysConfig !== undefined && nonWorkingDays.length > 0}
+    <g class="non-working-days" pointer-events="none">
+      {#each nonWorkingDays as day (day)}
+        <rect
+          x={timeScale.toX(day)}
+          y={0}
+          width={Math.max(0, timeScale.pxPerDay)}
+          height={totalHeight}
+          class="non-working-day-rect"
+        />
+      {/each}
+    </g>
+  {/if}
+
   <!-- Vertical gridlines aligned to the time-scale ticks for visual rhythm. -->
   <g class="gridlines">
     {#each ticks as tick (tick.date)}
@@ -218,7 +250,13 @@
         on:mouseleave={() => dispatch('hoverRow', { id: null })}
       >
         <!-- transparent hit-area covering the row width to capture hover -->
-        <rect x={0} y={row.y} width={totalWidth} height={row.height} fill="transparent" />
+        <rect
+          x={0}
+          y={row.y}
+          width={totalWidth}
+          height={row.height}
+          fill="transparent"
+        />
         {#if row.kind === 'milestone' && row.milestone !== null}
           {@const ms = row.milestone}
           {@const fullMs = milestonesById.get(String(ms._id))}
@@ -256,9 +294,7 @@
           <g
             class="bar-wrap"
             data-issue-id={String(row.issue._id)}
-            on:dblclick|stopPropagation={() => {
-              if (row.issue !== null) openIssue(row.issue)
-            }}
+            on:dblclick|stopPropagation={() => row.issue !== null && openIssue(row.issue)}
           >
             <GanttBar
               issue={row.issue}
@@ -290,7 +326,7 @@
 
   <GanttDependencyLayer
     {relations}
-    {barRects}
+    barRects={barRects}
     {activeDrag}
     {connectedIds}
     {hoveredIssue}
@@ -316,62 +352,62 @@
   -->
   <g class="connector-overlay" transform="translate(0, {milestoneStripHeight})">
     {#each visibleRows as row (rowKey(row))}
-      {#if row.kind === 'issue' && row.issue !== null}
-        {#if row.issue.startDate != null && row.issue.dueDate != null && isEditable(row.issue._id)}
-          {@const rowIssueId = String(row.issue._id)}
-          {@const dragKind = dragState.kind}
-          {@const dragSourceId =
-            dragKind === 'connector-drawing' || dragKind === 'connector-target-hover'
-              ? String(dragState.source._id)
-              : null}
-          {@const dragTargetIssueId = dragKind === 'connector-target-hover' ? String(dragState.target._id) : null}
-          {@const xOv = timeScale.toX(row.issue.startDate)}
-          {@const x2Ov = timeScale.toX(row.issue.dueDate)}
-          {@const wOv = Math.max(2, x2Ov - xOv + timeScale.pxPerDay)}
-          {@const barYOv = row.y + 6}
-          {@const barHOv = row.height - 12}
-          {@const isSource = dragSourceId !== null && dragSourceId === rowIssueId}
-          {@const isCurrentTarget = dragTargetIssueId === rowIssueId}
-          {@const showSourceDot = wOv >= 18 && (isSelected(rowIssueId) || isSource)}
-          {@const showTargetDot =
-            wOv >= 18 && (dragKind === 'connector-drawing' || dragKind === 'connector-target-hover') && !isSource}
-          {#if showSourceDot}
-            <GanttConnectorDot
-              cx={xOv + wOv + 12}
-              cy={barYOv + barHOv - 2}
-              sourceId={rowIssueId}
-              sourceSpace={String(row.issue.space)}
-              hitR={10}
-              on:connectorDown={(e) => {
-                if (row.issue === null) return
-                const rect = barRects.get(rowIssueId)
-                if (rect === undefined) return
-                void e
-                dispatch('connectorDown', {
-                  source: row.issue,
-                  originPx: { x: rect.right + 12, y: rect.bottom - 2 }
-                })
-              }}
-            />
-          {/if}
-          {#if showTargetDot}
-            <!-- Drop-here indicator at the FS target anchor (left edge of bar).
+      {#if row.kind === 'issue' && row.issue !== null && row.issue.startDate != null && row.issue.dueDate != null && isEditable(row.issue._id)}
+        {@const rowIssueId = String(row.issue._id)}
+        {@const dragKind = dragState.kind}
+        {@const dragSourceId = dragKind === 'connector-drawing' || dragKind === 'connector-target-hover'
+          ? String(dragState.source._id)
+          : null}
+        {@const dragTargetIssueId = dragKind === 'connector-target-hover'
+          ? String(dragState.target._id)
+          : null}
+        {@const xOv = timeScale.toX(row.issue.startDate)}
+        {@const x2Ov = timeScale.toX(row.issue.dueDate)}
+        {@const wOv = Math.max(2, x2Ov - xOv + timeScale.pxPerDay)}
+        {@const barYOv = row.y + 6}
+        {@const barHOv = row.height - 12}
+        {@const isSource = dragSourceId !== null && dragSourceId === rowIssueId}
+        {@const isCurrentTarget = dragTargetIssueId === rowIssueId}
+        {@const showSourceDot = wOv >= 18 && (isSelected(rowIssueId) || isSource)}
+        {@const showTargetDot = wOv >= 18 &&
+          (dragKind === 'connector-drawing' || dragKind === 'connector-target-hover') &&
+          !isSource}
+        {#if showSourceDot}
+          <GanttConnectorDot
+            cx={xOv + wOv + 12}
+            cy={barYOv + barHOv - 2}
+            sourceId={rowIssueId}
+            sourceSpace={String(row.issue.space)}
+            hitR={10}
+            on:connectorDown={(e) => {
+              if (row.issue === null) return
+              const rect = barRects.get(rowIssueId)
+              if (rect === undefined) return
+              void e
+              dispatch('connectorDown', {
+                source: row.issue,
+                originPx: { x: rect.right + 12, y: rect.bottom - 2 }
+              })
+            }}
+          />
+        {/if}
+        {#if showTargetDot}
+          <!-- Drop-here indicator at the FS target anchor (left edge of bar).
                Static state: small grey dot, signals "you can drop here".
                Hovered state: bigger indigo dot matching the source-dot palette,
                signals "release now to create the dependency". -->
-            <circle
-              class="gantt-connector-target-dot"
-              class:active={isCurrentTarget}
-              cx={xOv - 8}
-              cy={barYOv + barHOv / 2}
-              r={isCurrentTarget ? 6 : 4}
-              fill={isCurrentTarget ? '#6366f1' : '#94a3b8'}
-              stroke="#ffffff"
-              stroke-width={isCurrentTarget ? 1.5 : 1}
-              opacity={isCurrentTarget ? 1 : 0.55}
-              pointer-events="none"
-            />
-          {/if}
+          <circle
+            class="gantt-connector-target-dot"
+            class:active={isCurrentTarget}
+            cx={xOv - 8}
+            cy={barYOv + barHOv / 2}
+            r={isCurrentTarget ? 6 : 4}
+            fill={isCurrentTarget ? '#6366f1' : '#94a3b8'}
+            stroke="#ffffff"
+            stroke-width={isCurrentTarget ? 1.5 : 1}
+            opacity={isCurrentTarget ? 1 : 0.55}
+            pointer-events="none"
+          />
         {/if}
       {/if}
     {/each}
@@ -383,8 +419,15 @@
   <g class="milestones">
     {#each milestones as ms (ms._id)}
       {@const x = timeScale.toX(ms.targetDate)}
-      <line x1={x} x2={x} y1={0} y2={14} stroke="var(--theme-state-info-color, #6366f1)" stroke-width={1.5} />
-      <polygon points="{x - 5},2 {x + 5},2 {x},10" fill="var(--theme-state-info-color, #6366f1)">
+      <line
+        x1={x} x2={x} y1={0} y2={14}
+        stroke="var(--theme-state-info-color, #6366f1)"
+        stroke-width={1.5}
+      />
+      <polygon
+        points="{x - 5},2 {x + 5},2 {x},10"
+        fill="var(--theme-state-info-color, #6366f1)"
+      >
         <title>{ms.label}</title>
       </polygon>
     {/each}
@@ -421,5 +464,11 @@
   }
   :global(svg.gantt-canvas .row-rect.milestone-bg.hovered) {
     fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);
+  }
+  /* Phase-2 weekend / holiday tint — theme-aware via divider colour so it
+     stays subtle in both light and dark themes. */
+  :global(svg.gantt-canvas .non-working-day-rect) {
+    fill: var(--theme-divider-color);
+    opacity: 0.10;
   }
 </style>
