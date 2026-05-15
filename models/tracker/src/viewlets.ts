@@ -237,6 +237,13 @@ export function ganttViewOptions (): ViewOptionsModel {
         defaultValue: true,
         actionTarget: 'display',
         label: tracker.string.GanttShowTitle
+      },
+      {
+        key: 'ganttShowStatus',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowStatus
       }
     ]
   }

@@ -8,6 +8,7 @@
   import type { LayoutRow } from './lib/types'
   import type { TimeScale } from './lib/time-scale'
   import IssuePresenter from '../issues/IssuePresenter.svelte'
+  import StatusBadge from './StatusBadge.svelte'
 
   export let rows: LayoutRow[]
   export let width: number = 280
@@ -16,6 +17,7 @@
   export let viewportRight: number = 0
   export let showIssueCode: boolean = false
   export let showTitle: boolean = true
+  export let showStatus: boolean = true
   export let hoveredRowId: string | null = null
 
   const dispatch = createEventDispatcher<{
@@ -96,8 +98,11 @@
         {/if}
       </span>
       {#if row.kind === 'milestone' && row.milestone !== null}
+        {#if showStatus}<span class="cell-status ms-icon" title="Milestone">◆</span>{/if}
         {#if showIssueCode}
-          <span class="cell-id ms-icon" title="Milestone">◆</span>
+          <span class="cell-id">
+            <span class="ms-tag">MS</span>
+          </span>
         {/if}
         {#if showTitle}
           <span class="cell-title" title={row.milestone.label}>
@@ -105,6 +110,9 @@
           </span>
         {/if}
       {:else if row.issue !== null}
+        {#if showStatus}
+          <span class="cell-status"><StatusBadge issue={row.issue} /></span>
+        {/if}
         {#if showIssueCode}
           <span class="cell-id">
             <IssuePresenter value={row.issue} disabled={false} />
@@ -124,6 +132,7 @@
           </span>
         {/if}
       {:else}
+        {#if showStatus}<span class="cell-status" />{/if}
         {#if showIssueCode}
           <span class="cell-id" />
         {/if}
@@ -170,15 +179,28 @@
     box-sizing: border-box;
     background: var(--theme-comp-header-color);
   }
+  .cell-status {
+    flex: 0 0 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cell-status.ms-icon {
+    color: var(--theme-state-info-color, #6366f1);
+    font-size: 14px;
+  }
+  .ms-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 15%, transparent);
+    color: var(--theme-state-info-color, #6366f1);
+  }
   .cell-id {
     flex: 0 0 80px;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-  .cell-id.ms-icon {
-    text-align: center;
-    color: var(--theme-state-info-color, #6366f1);
-    font-size: 14px;
   }
   .cell-title {
     flex: 1 1 auto;
