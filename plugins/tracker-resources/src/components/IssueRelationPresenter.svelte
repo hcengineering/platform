@@ -48,12 +48,11 @@
   }
 </script>
 
-<span class="rel-presenter">
+<span class="rel-presenter" title={targetIdentifier + (targetIdentifier !== '' ? ' — ' : '') + targetTitle}>
   <span class="kind" style="background: {kindBg(value.kind)}">{kindCode(value.kind)}</span>
   {#if value.lag !== 0}<span class="lag">{formatLag(value.lag).trim()}</span>{/if}
   <span class="arrow">→</span>
   {#if target !== undefined}
-    <span class="ident">{targetIdentifier}</span>
     <span class="title">{targetTitle}</span>
   {:else}
     <span class="placeholder">…</span>
