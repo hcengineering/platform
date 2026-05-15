@@ -351,10 +351,17 @@
    * the cursor is outside the canvas (e.g., still over the sidebar) so the
    * reducer keeps its default preview.
    */
+  /** Width of the resize-cell (drag-handle column) between sidebar and canvas.
+   *  The horizontal scrollbar already offsets by `sidebarWidthPx + 5` (see
+   *  .gantt-hscrollbar padding-left), so the canvas content origin is at
+   *  rect.left + sidebarWidthPx + this constant, not just sidebarWidthPx.
+   *  Codex review-6 2026-05-11 caught the off-by-5 in unscheduled drag. */
+  const RESIZE_CELL_W = 5
+
   function computeCanvasX (e: MouseEvent): number | undefined {
     if (scrollerEl === undefined) return undefined
     const rect = scrollerEl.getBoundingClientRect()
-    const sidebarEdge = rect.left + sidebarWidthPx
+    const sidebarEdge = rect.left + sidebarWidthPx + RESIZE_CELL_W
     if (e.clientX < sidebarEdge) return undefined
     return e.clientX - sidebarEdge + canvasViewportLeft
   }
@@ -434,7 +441,12 @@
       await ops.update(state.issue, { startDate: state.previewStart, dueDate: state.previewDue })
       const delta = state.previewStart - state.originStart
       if (delta !== 0) {
-        for (const child of descendantsWithDates(state.issue, issues)) {
+        // Fetch the full space's issues here rather than reusing the
+        // view-filtered `issues` array — otherwise children hidden by an
+        // active Tracker filter wouldn't shift with the parent and the
+        // tree would drift out of sync. Codex review-6 2026-05-11.
+        const allInSpace = await client.findAll(tracker.class.Issue, { space: state.issue.space })
+        for (const child of descendantsWithDates(state.issue, allInSpace)) {
           await ops.update(child, {
             startDate: (child.startDate as number) + delta,
             dueDate: (child.dueDate as number) + delta
@@ -560,7 +572,11 @@
       startDate: i.startDate + days * DAY_MS,
       dueDate: i.dueDate + days * DAY_MS
     })
-    for (const child of descendantsWithDates(i, issues)) {
+    // Same filter-vs-truth issue as commitDrag: query the full space so
+    // filter-hidden descendants still shift with the parent (Codex
+    // review-6 2026-05-11).
+    const allInSpace = await client.findAll(tracker.class.Issue, { space: i.space })
+    for (const child of descendantsWithDates(i, allInSpace)) {
       await ops.update(child, {
         startDate: (child.startDate as number) + days * DAY_MS,
         dueDate: (child.dueDate as number) + days * DAY_MS
