@@ -629,34 +629,39 @@
         />
       </div>
     {/if}
-    <!-- Sticky-bottom horizontal scrollbar proxy. Thumb is a sibling
-         of the (hidden-native-scrollbar) track so it stays in viewport
-         coordinates instead of being carried by track.scrollLeft. -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div
-      class="gantt-hscrollbar"
-      style="padding-left: {sidebarWidthPx + 5}px;"
-    >
-      <div class="hscroll-shell">
-        <div
-          class="hscroll-track-custom"
-          bind:this={hScrollEl}
-          on:scroll={handleHScroll}
-          on:pointerdown={onProxyTrackClick}
-        >
-          <div class="hscroll-spacer" style="width: {totalCanvasWidth}px;" />
+    <!-- Sticky-bottom horizontal scrollbar proxy. Only rendered when
+         the canvas actually overflows; otherwise the track is dead
+         visual noise and the thumb math goes degenerate. Thumb is a
+         sibling of the (hidden-native-scrollbar) track so it stays in
+         viewport coordinates instead of being carried by
+         track.scrollLeft. -->
+    {#if hHasOverflow}
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div
+        class="gantt-hscrollbar"
+        style="padding-left: {sidebarWidthPx + 5}px;"
+      >
+        <div class="hscroll-shell">
+          <div
+            class="hscroll-track-custom"
+            bind:this={hScrollEl}
+            on:scroll={handleHScroll}
+            on:pointerdown={onProxyTrackClick}
+          >
+            <div class="hscroll-spacer" style="width: {totalCanvasWidth}px;" />
+          </div>
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div
+            class="hscroll-thumb"
+            style="left: {hThumbLeft}px; width: {Math.min(hThumbWidth, hTrackWidth)}px;"
+            on:pointerdown={onThumbDragStart}
+            on:pointermove={onThumbDragMove}
+            on:pointerup={onThumbDragEnd}
+            on:pointercancel={onThumbDragEnd}
+          />
         </div>
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="hscroll-thumb"
-          style="left: {hThumbLeft}px; width: {hThumbWidth}px;"
-          on:pointerdown={onThumbDragStart}
-          on:pointermove={onThumbDragMove}
-          on:pointerup={onThumbDragEnd}
-          on:pointercancel={onThumbDragEnd}
-        />
       </div>
-    </div>
+    {/if}
     {#if tooltipState.visible && tooltipState.row !== null}
       {@const row = tooltipState.row}
       {@const issue = row.issue}
