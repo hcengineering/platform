@@ -18,7 +18,7 @@
 
   /**
    * Tracker-list column presenter for the optional 'Predecessors'
-   * column (Tier-4 Item 10).
+   * column.
    *
    * Rendering:
    *   <empty>                              -- 0 predecessors

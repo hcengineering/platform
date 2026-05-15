@@ -162,7 +162,7 @@ function defineNotifications (builder: Builder): void {
     tracker.ids.AssigneeNotification
   )
 
-  // Tier-4 Item 14 — Notification on Dependency-Shift.
+  //  — Notification on Dependency-Shift.
   // The cascade bundle is created client-side as a CommonInboxNotification
   // subclass (see `dependency-shift-send.ts`); this NotificationType wires it
   // into the user's tracker notification group so settings/Inbox provider

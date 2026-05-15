@@ -27,7 +27,7 @@
    * resolved by the caller (GanttView), same check as connector-dot
    * visibility. Spec §5.
    *
-   * Tier-4 #11: kind picker rewritten as a 2×2 grid of mini SVG diagrams
+   * kind picker rewritten as a 2×2 grid of mini SVG diagrams
    * (FS / SS / FF / SF). After a pick, the grid collapses to a compact
    * single-diagram view with an inline lag slider; a "Change kind" button
    * re-expands the grid.
@@ -52,7 +52,7 @@
   })
   let lagValue: number = relation.lag
   let confirmingDelete = false
-  // Tier-4 #11 — picker stays compact when an existing kind is already set
+  //  — picker stays compact when an existing kind is already set
   // (i.e. when editing an existing relation, which is the common case here
   // since the editor opens from a click on an existing arrow). The "Change
   // kind" button re-expands the grid.

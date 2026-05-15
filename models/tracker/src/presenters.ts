@@ -44,7 +44,7 @@ export function definePresenters (builder: Builder): void {
   })
 
   //
-  // Tier-4 Item 14 — Dependency-Shift bundle notification renderer.
+  //  — Dependency-Shift bundle notification renderer.
   //
   builder.mixin(tracker.class.DependencyShiftedNotification, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: tracker.component.DependencyShiftedPresenter

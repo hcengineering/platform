@@ -491,7 +491,7 @@ export class TClassicProjectTypeData extends TProject implements RolesAssignment
 export class TIssueTypeData extends TIssue {}
 
 /**
- * Tier-4 Item 14 — Notification on Dependency-Shift.
+ *  — Notification on Dependency-Shift.
  *
  * Persisted model class for the cascade-shift bundle notification. Extends
  * `CommonInboxNotification` so it inherits inbox/email/push routing for

@@ -192,7 +192,7 @@ export function issueConfig (
       props: { kind: 'list' }
     },
     {
-      // Tier-4 Item 10 — Predecessors column. Opt-in via "Configure columns"
+      //  — Predecessors column. Opt-in via "Configure columns"
       // (displayProps.optional = true) because the vast majority of issues
       // have zero predecessors and the cell would otherwise be permanently
       // empty in a default list. Renders the upstream Issue identifier
