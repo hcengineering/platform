@@ -14,10 +14,10 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import core, { AccountRole, Ref, Space } from '@hcengineering/core'
+  import { Ref, Space } from '@hcengineering/core'
   import { MultipleDraftController, createQuery, getClient } from '@hcengineering/presentation'
   import { TrackerEvents } from '@hcengineering/tracker'
-  import { HeaderButton, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, IconDropdown, Loading, SelectPopup, showPopup, eventToHTMLElement } from '@hcengineering/ui'
   import view from '@hcengineering/view'
 
   import { onDestroy } from 'svelte'
@@ -26,17 +26,18 @@
 
   export let currentSpace: Ref<Space> | undefined
 
-  let closed = true
   let draftExists = false
   let projectExists = false
   let loading = true
+  let keyBinding: string[] | undefined
 
   const query = createQuery()
   const client = getClient()
   const draftController = new MultipleDraftController(tracker.ids.IssueDraft)
-  const newIssueKeyBindingPromise = client
+
+  void client
     .findOne(view.class.Action, { _id: tracker.action.NewIssue })
-    .then((p) => p?.keyBinding)
+    .then((p) => { keyBinding = p?.keyBinding })
 
   onDestroy(
     draftController.hasNext((res) => {
@@ -50,64 +51,104 @@
   })
 
   function newProject (): void {
-    closed = false
-    showPopup(tracker.component.CreateProject, {}, 'top', () => {
-      closed = true
-    })
+    showPopup(tracker.component.CreateProject, {}, 'top')
   }
 
   function newIssue (): void {
-    closed = false
     Analytics.handleEvent(TrackerEvents.NewIssueButtonClicked)
-    showPopup(CreateIssue, { space: currentSpace, shouldSaveDraft: true }, 'top', () => {
-      closed = true
-    })
+    showPopup(CreateIssue, { space: currentSpace, shouldSaveDraft: true }, 'top')
   }
 
-  let mainActionId: string | undefined = undefined
-  let visibleActions: string[] = []
-  function updateActions (draft: boolean, project: boolean, closed: boolean): void {
-    mainActionId = draft || !closed ? tracker.string.ResumeDraft : tracker.string.NewIssue
-    if (project) {
-      visibleActions = [tracker.string.CreateProject, mainActionId, tracker.string.Import]
-    } else {
-      visibleActions = [tracker.string.CreateProject]
+  function openMenu (e: MouseEvent): void {
+    const items: Array<{ id: string, label: any, action: () => void }> = []
+    if (projectExists) {
+      items.push({
+        id: 'resume-draft',
+        label: draftExists ? tracker.string.ResumeDraft : tracker.string.NewIssue,
+        action: newIssue
+      })
+      items.push({
+        id: 'import',
+        label: tracker.string.Import,
+        action: newIssue
+      })
     }
+    items.push({
+      id: 'create-project',
+      label: tracker.string.CreateProject,
+      action: newProject
+    })
+    showPopup(
+      SelectPopup,
+      {
+        value: items.map((i) => ({ id: i.id, label: i.label })),
+        placeholder: undefined,
+        searchable: false
+      },
+      eventToHTMLElement(e),
+      (id) => {
+        const sel = items.find((i) => i.id === id)
+        sel?.action()
+      }
+    )
   }
-
-  $: updateActions(draftExists, projectExists, closed)
 </script>
 
-<HeaderButton
-  {loading}
-  {client}
-  {mainActionId}
-  {visibleActions}
-  actions={[
-    {
-      id: tracker.string.CreateProject,
-      label: tracker.string.CreateProject,
-      accountRole: AccountRole.User,
-      callback: newProject
-    },
-    {
-      id: tracker.string.ResumeDraft,
-      label: tracker.string.ResumeDraft,
-      draft: true,
-      keyBindingPromise: newIssueKeyBindingPromise,
-      callback: newIssue
-    },
-    {
-      id: tracker.string.NewIssue,
-      label: tracker.string.NewIssue,
-      keyBindingPromise: newIssueKeyBindingPromise,
-      callback: newIssue
-    },
-    {
-      id: tracker.string.Import,
-      label: tracker.string.Import,
-      accountRole: AccountRole.User,
-      callback: newIssue
-    }
-  ]}
-/>
+{#if loading}
+  <Loading shrink />
+{:else if projectExists || draftExists}
+  <div class="ni-actions">
+    <Button
+      kind="primary"
+      icon={IconAdd}
+      iconProps={{ size: 'medium' }}
+      shape="round"
+      on:click={newIssue}
+      showTooltip={{ label: tracker.string.NewIssue, keys: keyBinding }}
+    >
+      <div slot="content" class="draft-circle-container">
+        {#if draftExists}<div class="draft-circle" />{/if}
+      </div>
+    </Button>
+    <Button
+      kind="regular"
+      icon={IconDropdown}
+      iconProps={{ size: 'small' }}
+      shape="round"
+      showTooltip={{ label: tracker.string.More }}
+      on:click={openMenu}
+    />
+  </div>
+{:else}
+  <div class="ni-actions">
+    <Button
+      kind="primary"
+      icon={IconAdd}
+      iconProps={{ size: 'medium' }}
+      shape="round"
+      on:click={newProject}
+      showTooltip={{ label: tracker.string.CreateProject }}
+    />
+  </div>
+{/if}
+
+<style lang="scss">
+  .ni-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+  }
+  .draft-circle-container {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+  }
+  .draft-circle {
+    height: 8px;
+    width: 8px;
+    background-color: var(--theme-state-warning-color, #f59e0b);
+    border-radius: 50%;
+    border: 1.5px solid var(--theme-bg-color);
+  }
+</style>
