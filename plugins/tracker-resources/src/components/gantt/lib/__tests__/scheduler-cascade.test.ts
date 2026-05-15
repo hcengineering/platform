@@ -149,7 +149,7 @@ describe('simulateCascade — anchor model SS/FF/SF', () => {
     expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 6))
   })
 
-  it('Test 6: FS with lag=2 — successor starts due+2d', () => {
+  it('Test 6: FS with lag=2 — successor starts due+1+lag (working-days convention)', () => {
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 5), Date.UTC(2026, 4, 10))
     const relations = [rel('A', 'B', 'finish-to-start', 2)]
@@ -157,19 +157,22 @@ describe('simulateCascade — anchor model SS/FF/SF', () => {
     const res = simulateCascade(primary, [A, B], relations, () => true)
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
-    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 7))
+    // Spec §"Datums-Semantik": succ.start = pred.due + (1 + lag) days in legacy mode.
+    // Was May 7 prior to the off-by-one fix that aligned scheduler.ts with critical-path.ts.
+    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 8))
   })
 
-  it('Test 7: FS with lag=-1 — overlap allowed; required start = due - 1d', () => {
+  it('Test 7: FS with lag=-1 — overlap allowed; required start = due + 1d - 1d = due itself', () => {
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 10))
     const B = issue('B', Date.UTC(2026, 4, 5), Date.UTC(2026, 4, 8))
     const relations = [rel('A', 'B', 'finish-to-start', -1)]
     const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 1), newDue: Date.UTC(2026, 4, 12) }]
     const res = simulateCascade(primary, [A, B], relations, () => true)
-    // required B.start = 2026-05-12 - 1d = 2026-05-11. Current is 2026-05-05. Push.
+    // required B.start = 2026-05-12 + (1 + -1) = 2026-05-12 (lead exactly cancels +1-day).
+    // Current is 2026-05-05 → push.
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
-    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 11))
+    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 12))
   })
 
   it('Test 15: FF push with lag=1 — preserves duration', () => {
@@ -198,8 +201,10 @@ describe('simulateCascade — pull-predecessor', () => {
     expect(res.shifts).toHaveLength(1)
     expect(res.shifts[0].issue._id).toBe('A')
     expect(res.shifts[0].reason).toBe('pull-predecessor')
-    expect(res.shifts[0].newDue).toBe(Date.UTC(2026, 4, 2))
-    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 3, 28)) // A duration 4d → start = 2026-04-28
+    // Spec §"Datums-Semantik": pred.due must be B.start - 1 day (the +1-day FS rule).
+    // B.newStart = 2026-05-02 → A.newDue = 2026-05-01. A duration 4d → start = 2026-04-27.
+    expect(res.shifts[0].newDue).toBe(Date.UTC(2026, 4, 1))
+    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 3, 27))
   })
 })
 
@@ -374,5 +379,82 @@ describe('simulateCascade — full-space scope', () => {
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
     expect(res.shifts.map((s) => s.issue._id).sort()).toEqual(['B', 'X'])
+  })
+})
+
+describe('simulateCascade — working-days mode', () => {
+  const cfgMonFri = { weekdayMask: 0b0011111, holidays: [] }
+
+  it('FS lag=0 with Mo-Fr cfg: predecessor ends Friday → successor starts the next Monday (not Saturday)', () => {
+    // A: Mon May 18 .. Fri May 22.  B (stale): Mon May 4 .. Fri May 8.
+    const A = issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 22))
+    const B = issue('B', Date.UTC(2026, 4, 4), Date.UTC(2026, 4, 8))
+    const relations = [rel('A', 'B', 'finish-to-start', 0)]
+    const primary: PrimaryEdit[] = [
+      { issue: A, newStart: Date.UTC(2026, 4, 18), newDue: Date.UTC(2026, 4, 22) }
+    ]
+    const res = simulateCascade(primary, [A, B], relations, () => true, { workingDays: cfgMonFri })
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    // fsAnchor(Fri May 22, 1 wd, Mo-Fr) = Mon May 25.
+    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 25))
+  })
+
+  it('FS lag=2 with Mo-Fr cfg: 2 working days after Friday = Wednesday next week', () => {
+    const A = issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 22))
+    const B = issue('B', Date.UTC(2026, 4, 4), Date.UTC(2026, 4, 8))
+    const relations = [rel('A', 'B', 'finish-to-start', 2)]
+    const primary: PrimaryEdit[] = [
+      { issue: A, newStart: Date.UTC(2026, 4, 18), newDue: Date.UTC(2026, 4, 22) }
+    ]
+    const res = simulateCascade(primary, [A, B], relations, () => true, { workingDays: cfgMonFri })
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    // fsAnchor(Fri May 22, (1 + 2) wd, Mo-Fr) = Wed May 27.
+    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 27))
+  })
+
+  it('legacy (cfg=undefined): FS push uses calendar days with the +1-day rule', () => {
+    const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
+    const relations = [rel('A', 'B', 'finish-to-start', 2)]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 1), newDue: Date.UTC(2026, 4, 5) }]
+    const res = simulateCascade(primary, [A, B], relations, () => true)
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    // legacy fsAnchor: May 5 + (1 + 2) days = May 8.
+    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 8))
+  })
+
+  it('holiday in the middle: pred ends Monday with Tuesday a holiday → successor starts Wednesday (lag=0)', () => {
+    const cfgWithHoliday = { weekdayMask: 0b0011111, holidays: [Date.UTC(2026, 4, 19)] }
+    const A = issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 18))
+    const B = issue('B', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 1))
+    const relations = [rel('A', 'B', 'finish-to-start', 0)]
+    const primary: PrimaryEdit[] = [
+      { issue: A, newStart: Date.UTC(2026, 4, 18), newDue: Date.UTC(2026, 4, 18) }
+    ]
+    const res = simulateCascade(primary, [A, B], relations, () => true, { workingDays: cfgWithHoliday })
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    // Mon + 1 wd (Tue is holiday) = Wed May 20.
+    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 20))
+  })
+
+  it('pull-predecessor in working-days mode: succ pulled before pred.due → pred ends previous Friday', () => {
+    // A ends Mon Jun 8; B currently runs Mon Jun 15 .. Fri Jun 19.
+    const A = issue('A', Date.UTC(2026, 5, 1), Date.UTC(2026, 5, 8))
+    const B = issue('B', Date.UTC(2026, 5, 15), Date.UTC(2026, 5, 19))
+    const relations = [rel('A', 'B', 'finish-to-start', 0)]
+    // Pull B earlier so it starts Mon May 25 — pred (A) ends Mon Jun 8 → must be pulled back.
+    const primary: PrimaryEdit[] = [
+      { issue: B, newStart: Date.UTC(2026, 4, 25), newDue: Date.UTC(2026, 4, 29) }
+    ]
+    const res = simulateCascade(primary, [A, B], relations, () => true, { workingDays: cfgMonFri })
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    // fsReverseAnchor(Mon May 25, 0, cfg) = previous Fri May 22 → A.newDue = May 22.
+    expect(res.shifts[0].issue._id).toBe('A')
+    expect(res.shifts[0].newDue).toBe(Date.UTC(2026, 4, 22))
   })
 })
