@@ -4,6 +4,7 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
+  import type { Ref } from '@hcengineering/core'
   import type { Issue, Milestone } from '@hcengineering/tracker'
   import { Label, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
@@ -31,7 +32,7 @@
     jump: { x: number }
     toggle: { id: string }
     openIssue: { issue: { _id: string, _class: string } }
-    openMilestone: { milestone: Milestone }
+    openMilestone: { milestoneId: Ref<Milestone> }
     hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
     addIssue: undefined
     rowContextMenu: { issue: { _id: string, _class: string }, event: MouseEvent }
@@ -42,8 +43,8 @@
     dispatch('openIssue', { issue: { _id: issue._id as string, _class: issue._class as string } })
   }
 
-  function openMilestone (milestone: Milestone): void {
-    dispatch('openMilestone', { milestone })
+  function openMilestone (milestoneId: Ref<Milestone>): void {
+    dispatch('openMilestone', { milestoneId })
   }
 
   function onDragGripDown (issue: Issue): (evt: MouseEvent) => void {
@@ -146,7 +147,7 @@
             title={row.milestone.label}
             role="link"
             tabindex="0"
-            on:click={() => row.milestone !== null && openMilestone(row.milestone)}
+            on:click={() => row.milestone !== null && openMilestone(row.milestone._id)}
           >
             {row.milestone.label}
           </span>
