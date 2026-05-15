@@ -9,8 +9,7 @@ import type { Issue } from '@hcengineering/tracker'
  * as "no deadline" — `0` is a valid (if degenerate) timestamp.
  */
 export function hasDeadline (issue: Issue): boolean {
-  return (issue as Issue & { deadline?: number | null }).deadline !== undefined &&
-         (issue as Issue & { deadline?: number | null }).deadline !== null
+  return issue.deadline !== undefined && issue.deadline !== null
 }
 
 /**
@@ -21,7 +20,7 @@ export function hasDeadline (issue: Issue): boolean {
  * `dueDate === deadline` is NOT overdue — last-minute delivery is fine.
  */
 export function isOverdue (issue: Issue): boolean {
-  const d = (issue as Issue & { deadline?: number | null }).deadline
+  const d = issue.deadline
   const due = issue.dueDate
   if (d === undefined || d === null) return false
   if (due === undefined || due === null) return false
