@@ -390,7 +390,25 @@
     "GanttHelpTitle": "Tastenkürzel",
     "GanttHelpEsc": "Esc oder ? zum Schließen drücken",
     "GanttExport": "Als PNG exportieren",
-    "GanttExportFailed": "Export fehlgeschlagen"
+    "GanttExportFailed": "Export fehlgeschlagen",
+    "GanttSidebarColumnsExtended": "Erweiterte Sidebar-Spalten",
+    "GanttSortBreaksHierarchy": "Sortierung bricht die Hierarchie — Unter-Issues werden vom Eltern-Issue gelöst.",
+    "GanttSidebarColIdentifier": "ID",
+    "GanttSidebarColTitle": "Titel",
+    "GanttSidebarColStatus": "Status",
+    "GanttSidebarColPriority": "Priorität",
+    "GanttSidebarColAssignee": "Bearbeiter",
+    "GanttSidebarColEstimation": "Schätzung",
+    "GanttSidebarColComponent": "Komponente",
+    "GanttSidebarColMilestone": "Meilenstein",
+    "GanttSidebarColPredecessors": "Vorgänger",
+    "GanttSidebarColSlack": "Puffer",
+    "GanttSidebarColStartDate": "Start",
+    "GanttSidebarColDueDate": "Fällig",
+    "GanttSidebarColDeadline": "Deadline",
+    "GanttSidebarColProgress": "Fortschritt",
+    "GanttSidebarColModifiedOn": "Geändert",
+    "GanttSidebarColCreatedOn": "Erstellt"
   },
   "status": {}
 }
