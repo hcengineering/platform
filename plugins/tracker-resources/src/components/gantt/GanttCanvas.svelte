@@ -27,6 +27,14 @@
   export let totalWidth: number
   export let milestoneStripHeight: number = 0
   export let hoveredRowId: string | null = null
+  export let statusCategoryMap: Map<string, string> | undefined = undefined
+
+  function statusCategoryFor (issue: any): string | null {
+    if (statusCategoryMap === undefined) return null
+    const sid = issue?.status as string | undefined
+    if (sid === undefined) return null
+    return statusCategoryMap.get(String(sid)) ?? null
+  }
 
   $: visibleRows = filterVisibleRows(rows, scrollTop, viewportHeight)
   $: rowsHeight = rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0
@@ -134,6 +142,7 @@
               {timeScale}
               isSummary={row.isSummary}
               summaryRange={summaryFor(row)}
+              statusCategory={statusCategoryFor(row.issue)}
             />
           </g>
         {/if}
