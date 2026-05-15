@@ -331,7 +331,20 @@
     "GanttConfirmResizeBody": "Change {title} to {start} – {due}?",
     "GanttConfirmApply": "Apply",
     "GanttAriaResizeStart": "Resize start date",
-    "GanttAriaResizeEnd": "Resize due date"
+    "GanttAriaResizeEnd": "Resize due date",
+    "DependencyKindFS": "Finish → Start",
+    "DependencyKindSS": "Start → Start",
+    "DependencyKindFF": "Finish → Finish",
+    "DependencyKindSF": "Start → Finish",
+    "DependencyLag": "Lag (days)",
+    "DependencyKind": "Type",
+    "DependencyDelete": "Delete dependency",
+    "DependencyDeleteConfirm": "Delete this dependency?",
+    "DependencyCycle": "This would create a circular dependency",
+    "DependencyEditTitle": "Edit dependency",
+    "GanttShowPredecessors": "Show predecessors column",
+    "Predecessors": "Predecessors",
+    "NoPredecessors": "—"
   },
   "status": {}
 }
