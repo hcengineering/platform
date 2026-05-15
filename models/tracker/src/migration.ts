@@ -38,16 +38,19 @@ import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import task from '@hcengineering/task'
-import tracker, {
+import {
   type Issue,
   type IssueStatus,
   type Project,
   TimeReportDayType,
   trackerId
 } from '@hcengineering/tracker'
+import view, { type Viewlet, type ViewOptionModel } from '@hcengineering/view'
 
 import { classicIssueTaskStatuses } from '.'
+import tracker from './plugin'
 import { DOMAIN_TRACKER } from './types'
+import { ganttViewOptions } from './viewlets'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -183,6 +186,40 @@ export async function migrateAddStartDate (client: MigrationClient): Promise<voi
     { _class: tracker.class.Milestone, startDate: { $exists: false } },
     { startDate: null }
   )
+}
+
+// Phase 1 (Visual Polish) adds four new ViewOptions to the IssueGantt
+// viewlet (ganttBarLabelLeft/Inside/Right + ganttQuickInfoOnClick).
+// builder.createDoc is idempotent, so existing workspaces don't pick
+// up the new entries on upgrade-workspace. Re-add the missing ones by
+// merging on `key`, preserving the user's groupBy/orderBy and any
+// already-stored entries. Idempotent — a re-run is a no-op.
+//
+// Mirrors models/card/src/migration.ts:addShowAllVersionsViewOption.
+async function addGanttPhase1ViewOptions (client: MigrationUpgradeClient): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+
+  const viewlets = await client.findAll(view.class.Viewlet, {
+    _id: tracker.viewlet.IssueGantt
+  })
+  if (viewlets.length === 0) return
+
+  const desiredOther = ganttViewOptions().other ?? []
+
+  for (const v of viewlets) {
+    const current = v.viewOptions ?? { groupBy: [], orderBy: [], other: [] }
+    const currentOther: ViewOptionModel[] = current.other ?? []
+    const existingKeys = new Set(currentOther.map((o) => o.key))
+    const missing = desiredOther.filter((o) => !existingKeys.has(o.key))
+    if (missing.length === 0) continue
+
+    await txOp.update(v, {
+      viewOptions: {
+        ...current,
+        other: [...currentOther, ...missing]
+      }
+    })
+  }
 }
 
 async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLogger): Promise<void> {
@@ -439,6 +476,10 @@ export const trackerOperation: MigrateOperation = {
           const tx = new TxOperations(client, core.account.System)
           await createDefaults(tx)
         }
+      },
+      {
+        state: 'add-gantt-phase1-view-options',
+        func: addGanttPhase1ViewOptions
       }
     ])
   }
