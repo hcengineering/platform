@@ -322,6 +322,17 @@ export default mergeIds(trackerId, tracker, {
     GanttJumpToStart: '' as IntlString,
     GanttJumpToEnd: '' as IntlString,
     GanttJumpToDate: '' as IntlString,
+    // v121.17 — Zoom dropdown + numeric range input replacing the 4
+    // separate preset buttons in the Gantt toolbar center cluster.
+    GanttZoomDay: '' as IntlString,
+    GanttZoomWeek: '' as IntlString,
+    GanttZoomMonth: '' as IntlString,
+    GanttZoomQuarter: '' as IntlString,
+    GanttZoomCustom: '' as IntlString,
+    GanttZoomLabel: '' as IntlString,
+    GanttZoomVisibleDays: '' as IntlString,
+    GanttZoomDaysSuffix: '' as IntlString,
+    GanttZoomDaysAria: '' as IntlString,
     GanttPreviousPeriod: '' as IntlString,
     GanttNextPeriod: '' as IntlString,
     GanttScrollLeftToBar: '' as IntlString,
