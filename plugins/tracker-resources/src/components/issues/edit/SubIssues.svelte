@@ -63,6 +63,7 @@
     -->
     <Button
       icon={IconAdd}
+      label={tracker.string.LinkExistingSubIssue}
       kind={'ghost'}
       showTooltip={{ label: tracker.string.LinkExistingSubIssue, direction: 'bottom' }}
       on:click={() => {
