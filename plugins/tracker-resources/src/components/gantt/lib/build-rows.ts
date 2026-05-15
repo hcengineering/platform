@@ -59,6 +59,13 @@ export interface BuildGroupedRowsOptions {
    * Omitted ⇒ stable insertion order from the input array.
    */
   withinGroupCompare?: (a: Issue, b: Issue) => number
+  /**
+   * Optional id→display-name map (status/priority/assignee/component/
+   * milestone/label resolutions). When provided, group-header labels for
+   * non-sentinel keys are taken from this map instead of echoing the raw
+   * id. v121 fix for the "header shows Mongo-id" feedback.
+   */
+  nameLookup?: ReadonlyMap<string, string>
 }
 
 /**
@@ -74,7 +81,7 @@ export function buildGroupedRows (
   groupBy: GroupByKey,
   opts: BuildGroupedRowsOptions
 ): GanttGroupRow[] {
-  const { rowHeight, collapsedGroups, withinGroupCompare } = opts
+  const { rowHeight, collapsedGroups, withinGroupCompare, nameLookup } = opts
   const rows: GanttGroupRow[] = []
   let y = 0
 
@@ -115,7 +122,7 @@ export function buildGroupedRows (
       kind: 'group-header',
       id: `group:${key}`,
       groupKey: key,
-      label: getGroupLabel(key, groupBy),
+      label: getGroupLabel(key, groupBy, nameLookup),
       count: bucket.length,
       collapsed,
       y,

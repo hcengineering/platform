@@ -125,10 +125,20 @@ export function sortGroupKeys (keys: readonly string[], groupBy: GroupByKey): st
 /**
  * Best-effort English label for a group key. Used as a UI fallback when
  * the i18n layer cannot find a translated string — and as the spec-mandated
- * sentinel labels when the key is a synthetic placeholder. Real id lookup
- * (e.g. status name from the StatusStore) is the caller's responsibility.
+ * sentinel labels when the key is a synthetic placeholder.
+ *
+ * When `nameLookup` is provided, real ids (status, priority, assignee,
+ * component, milestone, label) are resolved to their display name via the
+ * map; missing entries still fall back to the raw key so the UI does not
+ * crash on async store warm-up. v121 user-feedback: previously the sidebar
+ * rendered the raw Mongo-style id for any non-sentinel key, which made
+ * group-by unusable for Component/Milestone/Label/Status/Priority.
  */
-export function getGroupLabel (key: string, _groupBy: GroupByKey): string {
+export function getGroupLabel (
+  key: string,
+  _groupBy: GroupByKey,
+  nameLookup?: ReadonlyMap<string, string>
+): string {
   switch (key) {
     case NONE_KEY:
       return 'All issues'
@@ -142,7 +152,12 @@ export function getGroupLabel (key: string, _groupBy: GroupByKey): string {
       return 'No label'
     case UNKNOWN_GROUP_KEY:
       return '(unknown)'
-    default:
+    default: {
+      if (nameLookup !== undefined) {
+        const resolved = nameLookup.get(key)
+        if (resolved !== undefined && resolved !== '') return resolved
+      }
       return key
+    }
   }
 }
