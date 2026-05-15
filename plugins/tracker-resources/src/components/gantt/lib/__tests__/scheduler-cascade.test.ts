@@ -344,3 +344,18 @@ describe('simulateCascade — permission denied', () => {
     expect(res.shifts.map((s) => s.issue._id)).toEqual(['B'])
   })
 })
+
+describe('simulateCascade — full-space scope', () => {
+  it('Test 16: hidden issue X in space still produces a shift when reached via relations', () => {
+    const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const B_visible = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
+    const X_hidden = issue('X', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 12))
+    const relations = [rel('A', 'B', 'finish-to-start'), rel('A', 'X', 'finish-to-start')]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }]
+    // Caller is responsible for passing all space issues, including X.
+    const res = simulateCascade(primary, [A, B_visible, X_hidden], relations, () => true)
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    expect(res.shifts.map((s) => s.issue._id).sort()).toEqual(['B', 'X'])
+  })
+})
