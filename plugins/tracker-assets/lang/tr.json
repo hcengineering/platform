@@ -274,7 +274,12 @@
     "IssueStatus": "Durum",
     "Extensions": "Uzantılar",
     "UnsetParentIssue": "Üst sorunu kaldır",
-    "AllowCreatingIssues": "Sorun oluşturmaya izin ver"
+    "AllowCreatingIssues": "Sorun oluşturmaya izin ver",
+    "Day": "Gün",
+    "Gantt": "Gantt",
+    "Month": "Ay",
+    "Quarter": "Çeyrek",
+    "Week": "Hafta"
   },
   "status": {}
 }

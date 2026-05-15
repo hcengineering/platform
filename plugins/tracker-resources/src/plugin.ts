@@ -36,6 +36,8 @@ export default mergeIds(trackerId, tracker, {
     SubIssues: '' as Ref<Viewlet>,
     List: '' as Ref<ViewletDescriptor>,
     Kanban: '' as Ref<ViewletDescriptor>,
+    Gantt: '' as Ref<ViewletDescriptor>,
+    IssueGantt: '' as Ref<Viewlet>,
     MilestoneIssuesList: '' as Ref<Viewlet>,
     ComponentIssuesList: '' as Ref<Viewlet>
   },
@@ -307,7 +309,13 @@ export default mergeIds(trackerId, tracker, {
     UnsetParent: '' as IntlString,
     PreviousAssigned: '' as IntlString,
     EditRelatedTargets: '' as IntlString,
-    RelatedIssueTargetDescription: '' as IntlString
+    RelatedIssueTargetDescription: '' as IntlString,
+
+    Day: '' as IntlString,
+    Gantt: '' as IntlString,
+    Month: '' as IntlString,
+    Quarter: '' as IntlString,
+    Week: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
@@ -347,6 +355,7 @@ export default mergeIds(trackerId, tracker, {
     EditComponent: '' as AnyComponent,
     IssuesView: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
+    GanttView: '' as AnyComponent,
     ProjectComponents: '' as AnyComponent,
     IssuePreview: '' as AnyComponent,
     RelationsPopup: '' as AnyComponent,

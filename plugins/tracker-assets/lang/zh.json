@@ -293,7 +293,12 @@
     "UnsetParentIssue": "取消父问题",
     "ForbidCreateProjectPermission": "禁止创建项目",
     "ForbidCreateProjectPermissionDescription": "禁止用户创建新项目",
-    "AllowCreatingIssues": "允许创建问题"
+    "AllowCreatingIssues": "允许创建问题",
+    "Day": "日",
+    "Gantt": "Gantt",
+    "Month": "月",
+    "Quarter": "季度",
+    "Week": "周"
   },
   "status": {}
 }
