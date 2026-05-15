@@ -109,6 +109,11 @@
   export let originalIssue: Issue | undefined
 
   const mDraftController = new MultipleDraftController(tracker.ids.IssueDraft)
+  // Stored across the function/dispatch boundary so the success-path close
+  // (fired by Card after okAction resolves) can forward the new issue's id
+  // to the showPopup callback. Stays undefined on cancel → existing callers
+  // see no behavior change.
+  let createdIssueId: Ref<Issue> | undefined
   const id: Ref<Issue> = generateId()
   const draftController = new DraftController<IssueDraft>(
     shouldSaveDraft ? (mDraftController.getNext() ?? id) : undefined,
@@ -591,6 +596,12 @@
         ...analyticsProps
       })
       console.log('createIssue measure', result, Date.now() - d1)
+      // Surface the new issue's id so popup callers can wire follow-up
+      // edits (e.g. "Create new parent" needs to set the calling issue's
+      // attachedTo to this newly-created issue's _id). The Card's
+      // okAction-success path will dispatch 'close' shortly; our on:close
+      // handler reads this variable as the close payload.
+      createdIssueId = _id
     } catch (err: any) {
       resetObject()
       draftController.remove()
@@ -774,7 +785,7 @@
   okAction={createIssue}
   {canSave}
   okLabel={tracker.string.SaveIssue}
-  on:close={() => dispatch('close')}
+  on:close={() => dispatch('close', createdIssueId)}
   onCancel={showConfirmationDialog}
   hideAttachments={attachments.size === 0}
   hideSubheader={parentIssue == null}
