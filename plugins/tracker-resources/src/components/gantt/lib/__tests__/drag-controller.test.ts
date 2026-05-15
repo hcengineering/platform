@@ -390,6 +390,7 @@ describe('drag-controller — connector states (PR4a)', () => {
     }
     const next = reduce(hover, { type: 'mousemove-connector', cursorPx: { x: 400, y: 90 }, hoveredBar: null }, ts)
     expect(next.kind).toBe('connector-drawing')
+    expect('target' in next).toBe(false)
   })
 
   it('source bar itself does NOT become a valid target (self-hover stays drawing)', () => {
@@ -401,6 +402,7 @@ describe('drag-controller — connector states (PR4a)', () => {
     }
     const next = reduce(drawing, { type: 'mousemove-connector', cursorPx: { x: 120, y: 55 }, hoveredBar: source }, ts)
     expect(next.kind).toBe('connector-drawing')
+    expect('target' in next).toBe(false)
   })
 
   it('connector-drawing + mouseup → idle', () => {
