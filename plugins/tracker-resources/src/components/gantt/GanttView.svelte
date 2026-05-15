@@ -8,13 +8,15 @@
   import { Loading } from '@hcengineering/ui'
   import { type Viewlet, type ViewOptions } from '@hcengineering/view'
   import { onDestroy, onMount } from 'svelte'
+  import { writable } from 'svelte/store'
   import tracker from '../../plugin'
+  import { canEditIssue } from '../../utils'
   import GanttCanvas from './GanttCanvas.svelte'
   import GanttHeader from './GanttHeader.svelte'
   import GanttSidebar from './GanttSidebar.svelte'
   import { buildLayout } from './lib/layout'
   import { createTimeScale } from './lib/time-scale'
-  import { type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
+  import { type DragState, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import { Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
   import { statusStore } from '@hcengineering/view-resources'
@@ -58,6 +60,14 @@
   let milestones: Milestone[] = []
   let loadingIssues = true
   let loadingMilestones = true
+
+  // PR 3 edit-mode state: a single source of truth for the active drag/resize
+  // interaction. GanttBar / GanttCanvas / GanttSidebar / GanttResizeOverlay
+  // subscribe to this store; the reducer in lib/drag-controller.ts mutates it.
+  // editableIssueIds gates the resize handles + the Set-start-date menu entry
+  // per issue based on canEditIssue() (utils.ts:280).
+  const activeDrag = writable<DragState>({ kind: 'idle' })
+  let editableIssueIds: Set<string> = new Set()
 
   let canvasViewportLeft = 0
   let canvasViewportWidth = 1200
@@ -106,6 +116,19 @@
       sort: { startDate: SortingOrder.Ascending, rank: SortingOrder.Ascending }
     }
   )
+
+  // Resolve per-issue edit permission off the async canEditIssue() into a Set
+  // the renderers can hit synchronously. Re-runs each time the issue query
+  // delivers a new array. The IIFE pattern is required because Svelte's `$:`
+  // doesn't await; the Set assignment fires later, which is fine because the
+  // reactive renderers re-run again then.
+  $: void (async () => {
+    const next = new Set<string>()
+    for (const i of issues) {
+      if (await canEditIssue(i)) next.add(i._id as unknown as string)
+    }
+    editableIssueIds = next
+  })()
   $: milestoneQuery.query(
     tracker.class.Milestone,
     milestoneDocQuery,
