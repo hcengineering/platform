@@ -29,14 +29,21 @@
   export let defaultViewOptions: ViewOptions | undefined = undefined
   export let defaultConfig: (BuildModelKey | string)[] | undefined = undefined
   /**
-   * v121.12 / Refactor B — when false, the ViewOptionsButton (filter / group-by
-   * / sort) is hidden and only the Configure-columns ButtonIcon renders.
-   * Gantt mode passes false because the Gantt toolbar already provides its
-   * own group-by/sort controls (Spec §"Group-By + Tree"), but the column
-   * configuration is still useful for Bar-Label ViewOptions. List mode keeps
-   * the default `true` so both buttons render as before.
+   * When false, the ViewOptionsButton (filter / group-by / sort) is hidden
+   * entirely and only the Configure-columns ButtonIcon renders. List mode
+   * leaves this at the default `true`.
    */
   export let showViewOptions: boolean = true
+
+  /**
+   * When true, the ViewOptionsButton is still shown but the popup it
+   * opens hides its grouping + ordering rows. Use this in viewlets that
+   * render dedicated group-by/sort controls of their own (e.g. the Gantt
+   * toolbar) so users do not see the same control twice without a wire.
+   * The popup's "other" toggles (bar labels, confirm-dialogs, etc.) keep
+   * rendering normally.
+   */
+  export let hideGroupingAndOrdering: boolean = false
 
   let btn: HTMLButtonElement
   let pressed: boolean = false
@@ -73,7 +80,7 @@
 
 {#if viewlet}
   {#if viewOptions && showViewOptions}
-    <ViewOptionsButton {viewlet} {kind} {viewOptions} {viewOptionsConfig} />
+    <ViewOptionsButton {viewlet} {kind} {viewOptions} {viewOptionsConfig} {hideGroupingAndOrdering} />
   {/if}
   <!-- v121.12 / Refactor B — Configure-columns button gets its own
        IntlString so the tooltip differs from the sibling ViewOptionsButton

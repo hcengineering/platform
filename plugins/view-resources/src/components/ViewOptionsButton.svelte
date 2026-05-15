@@ -28,6 +28,10 @@
   export let viewOptions: ViewOptions
   export let disabled: boolean = false
   export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
+  // Forwarded to the ViewOptions popup: when true, the popup hides its
+  // group-by + order-by rows (used by viewlets that render dedicated
+  // group/sort controls of their own, e.g. the Gantt toolbar).
+  export let hideGroupingAndOrdering: boolean = false
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -82,7 +86,7 @@
 
     showPopup(
       ViewOptionsEditor,
-      { viewlet, config, viewOptions: h.clone(viewOptions) },
+      { viewlet, config, viewOptions: h.clone(viewOptions), hideGroupingAndOrdering },
       btn,
       () => {
         pressed = false
