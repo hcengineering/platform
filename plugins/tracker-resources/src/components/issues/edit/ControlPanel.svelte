@@ -38,6 +38,7 @@
   import IssueDependenciesPanel from '../IssueDependenciesPanel.svelte'
   import StartDateEditor from '../StartDateEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
+  import SchedulingModeEditor from '../SchedulingModeEditor.svelte'
   import notification from '@hcengineering/notification'
 
   export let issue: Issue
@@ -67,7 +68,9 @@
     'milestone',
     'relations',
     'blockedBy',
-    'identifier'
+    'identifier',
+    // Tier-2 Item 5 — rendered via dedicated SchedulingModeEditor below.
+    'schedulingMode'
   ]
 
   let keys: KeyedAttribute[] = []
@@ -218,6 +221,11 @@
     <Label label={tracker.string.DueDate} />
   </span>
   <DueDateEditor value={issue} width={'100%'} editable={!readonly} />
+
+  <span class="labelOnPanel">
+    <Label label={tracker.string.SchedulingMode} />
+  </span>
+  <SchedulingModeEditor value={issue} width={'100%'} editable={!readonly} />
 
   {#if keys.length > 0}
     <div class="divider" />
