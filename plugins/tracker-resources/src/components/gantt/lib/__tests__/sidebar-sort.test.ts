@@ -3,26 +3,13 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { Ref } from '@hcengineering/core'
 import type { Issue } from '@hcengineering/tracker'
 import { IssuePriority } from '@hcengineering/tracker'
 import { cycleSort, comparatorFor, type GanttSortState } from '../sidebar-sort'
 
-interface IssueOverrides {
-  _id: string
-  title?: string
-  identifier?: string
-  priority?: IssuePriority
-  estimation?: number
-  startDate?: number | null
-  dueDate?: number | null
-  modifiedOn?: number
-  createdOn?: number
-}
-
-function mkIssue (overrides: IssueOverrides): Issue {
+function mkIssue (overrides: Partial<Issue> & { _id: string }): Issue {
   return {
-    _id: overrides._id as Ref<Issue>,
+    _id: overrides._id,
     title: overrides.title ?? '',
     identifier: overrides.identifier ?? '',
     priority: overrides.priority ?? IssuePriority.NoPriority,
@@ -31,12 +18,13 @@ function mkIssue (overrides: IssueOverrides): Issue {
     dueDate: overrides.dueDate ?? null,
     modifiedOn: overrides.modifiedOn ?? 0,
     createdOn: overrides.createdOn ?? 0,
-    assignee: null,
-    component: null,
-    milestone: null,
-    status: 's',
-    rank: '',
-    space: 'sp'
+    assignee: overrides.assignee ?? null,
+    component: overrides.component ?? null,
+    milestone: overrides.milestone ?? null,
+    status: overrides.status ?? ('s' as Issue['status']),
+    rank: overrides.rank ?? '',
+    space: overrides.space ?? ('sp' as Issue['space']),
+    ...overrides
   } as unknown as Issue
 }
 
