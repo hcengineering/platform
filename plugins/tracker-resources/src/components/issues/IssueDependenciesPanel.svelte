@@ -3,16 +3,17 @@
 // SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
-  import { createQuery, getClient, ObjectPopup } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Label, addNotification, NotificationSeverity, showPopup } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
-  import { SortingOrder, type Ref } from '@hcengineering/core'
+  import type { Ref } from '@hcengineering/core'
   import type { Issue, IssueRelation } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import { canEditIssue } from '../../utils'
   import DependencyEditor from '../DependencyEditor.svelte'
   import { kindCode } from '../gantt/lib/predecessor-format'
   import { wouldCreateCycle } from '../gantt/lib/scheduler'
+  import SelectDependencyIssuePopup from './SelectDependencyIssuePopup.svelte'
 
   /**
    * Issue-editor side-panel that surfaces every Gantt `IssueRelation`
@@ -93,32 +94,14 @@
   }
 
   function onAddDependency (): void {
-    // Picker scoped to the current project via `docQuery: { space }` — the
-    // server query never returns issues from other projects, so the user
-    // cannot accidentally pick a cross-project target. Self-link and
-    // already-successor are excluded via `ignoreObjects` so they don't even
-    // appear in the list. Cycle detection happens in the callback because
-    // it depends on the whole relation graph, not just a doc id.
-    //
-    // Matching the SetParent picker (SetParentIssueActionPopup.svelte) so
-    // dependency- and parent-pickers behave consistently: same component,
-    // same project-scoping, same spotlight search mode.
-    const ignoreObjects: Ref<Issue>[] = [issue._id, ...outgoing.map((r) => r.target)]
+    // Project-scoped picker via SelectDependencyIssuePopup (wraps ObjectPopup
+    // with a slot="item" so the issue rows actually render — bare ObjectPopup
+    // returns docs but renders nothing without that slot). Picker excludes
+    // self and existing successors via ignoreObjects. Cycle detection happens
+    // in the callback because it needs the full relation graph.
     showPopup(
-      ObjectPopup,
-      {
-        _class: tracker.class.Issue,
-        docQuery: { space: issue.space },
-        options: { sort: { modifiedOn: SortingOrder.Descending } },
-        ignoreObjects,
-        placeholder: tracker.string.SelectIssue,
-        category: tracker.completion.IssueCategory,
-        searchMode: 'spotlight',
-        multiSelect: false,
-        allowDeselect: false,
-        shadows: true,
-        width: 'large'
-      },
+      SelectDependencyIssuePopup,
+      { issue, outgoing },
       'top',
       async (target: Issue | undefined | null) => {
         if (target === undefined || target === null) return
