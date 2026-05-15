@@ -1,27 +1,30 @@
 <!--
 // Copyright © 2026 Hardcore Engineering Inc.
-// SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
   import { type TimeScale } from './lib/time-scale'
 
   export let timeScale: TimeScale
   export let viewport: { left: number; right: number }   // px
-  export let height: number = 32
+  export let totalWidth: number
+  export let height: number = 36
 
+  // Filter ticks to viewport for performance, but render the SVG at full
+  // canvas width so the sticky-header lives in the same coordinate system
+  // as the canvas-stack (Codex review: SVG must extend across the whole
+  // scroll content, not just the visible viewport).
   $: visibleRange = [
-    timeScale.fromX(viewport.left),
-    timeScale.fromX(viewport.right)
+    timeScale.fromX(Math.max(0, viewport.left - 100)),
+    timeScale.fromX(viewport.right + 100)
   ] as [number, number]
-
   $: ticks = timeScale.ticks(visibleRange)
 </script>
 
 <svg
   class="gantt-header"
-  width={viewport.right - viewport.left}
+  width={totalWidth}
   {height}
-  viewBox="{viewport.left} 0 {viewport.right - viewport.left} {height}"
+  viewBox="0 0 {totalWidth} {height}"
   preserveAspectRatio="none"
 >
   {#each ticks as tick (tick.date)}
@@ -36,7 +39,7 @@
     />
     <text
       x={x + 4}
-      y={height - 8}
+      y={height - 10}
       class="tick-label tick-label-{tick.level}"
       fill="var(--theme-content-color)"
     >
@@ -53,7 +56,7 @@
   }
   .tick-label {
     font-family: var(--mono-font, monospace);
-    font-size: 11px;
+    font-size: 12px;
     user-select: none;
     pointer-events: none;
   }
