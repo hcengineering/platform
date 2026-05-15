@@ -140,10 +140,15 @@
   $: tooltipText = visible
     ? `${issue.title} (${new Date(startVal).toISOString().slice(0, 10)} → ${new Date(dueVal).toISOString().slice(0, 10)})`
     : ''
-  // Milestone summaries pass no issueObj because they aggregate child dates
-  // synthetically — those stay read-only. Parent-issue summaries DO have an
-  // issueObj (the parent), and that one is editable.
-  $: isMilestoneSummary = isSummary && issueObj === undefined
+  // Milestone-synthetic-summary claws were dropped in PR3.3 (the milestone
+  // is now rendered as its own editable bar). Parent-issue summaries have a
+  // dragTarget of kind='issue' carrying the parent Issue. So the only
+  // remaining case for `isMilestoneSummary` is a summary row without an
+  // issue-target — defensive: keeps the gate intact if a future row-kind
+  // mounts GanttBar without a dragTarget. Was `issueObj === undefined`
+  // before PR3.3 renamed `issueObj` → `dragTarget` (latent regression
+  // surfaced during PR4a code review 2026-05-11).
+  $: isMilestoneSummary = isSummary && (dragTarget === undefined || dragTarget.kind !== 'issue')
 
   // ARIA labels for the resize handles — translated up-front so the rect
   // can use them as plain strings (svg `aria-label` accepts only strings).
