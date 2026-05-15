@@ -24,10 +24,11 @@
 
   const DAY_MS = 86_400_000
   const ROW_HEIGHT = 22
-  const LABEL_WIDTH = 120
+  const LABEL_WIDTH = 220
+  const LABEL_TEXT_PAD = 8
   const BAR_TOP_PADDING = 32
   const BODY_MAX_HEIGHT = 360
-  const POPUP_WIDTH = 720
+  const POPUP_WIDTH = 760
 
   type Row = {
     id: string
@@ -55,13 +56,15 @@
 
   function labelFor (i: Issue): string {
     // Match the predecessor-column / sidebar rendering convention: prefix
-    // with identifier (OSTRO-12) and append a truncated title for human
-    // disambiguation. Falls back to the last 6 chars of the _id only if
-    // both fields are missing.
+    // with identifier (OSTRO-12) and append the title for human
+    // disambiguation. CSS clip-path on the <text> element keeps it inside
+    // the label column (LABEL_WIDTH), so the JS truncation here is just a
+    // belt-and-braces fallback for cases where the user has very long
+    // titles that would otherwise hammer the SVG layout engine.
     const identifier = (i as any).identifier as string | undefined
     const title = (i as any).title as string | undefined
     if (identifier !== undefined && title !== undefined) {
-      const t = title.length > 22 ? title.slice(0, 21) + '…' : title
+      const t = title.length > 28 ? title.slice(0, 27) + '…' : title
       return `${identifier} ${t}`
     }
     if (identifier !== undefined) return identifier
@@ -181,7 +184,13 @@
 
   <div class="body" style="max-height: {bodyHeight}px">
     <svg width={POPUP_WIDTH - 32} height={rows.length * ROW_HEIGHT + BAR_TOP_PADDING} class="timeline">
-      {#each ticks() as t, i}
+      <defs>
+        <clipPath id="cascade-label-clip">
+          <rect x="0" y="0" width={LABEL_WIDTH - LABEL_TEXT_PAD} height={rows.length * ROW_HEIGHT + BAR_TOP_PADDING} />
+        </clipPath>
+      </defs>
+
+      {#each ticks() as t}
         <line
           x1={LABEL_WIDTH + xOf(t)}
           y1={BAR_TOP_PADDING - 4}
@@ -199,8 +208,26 @@
         >{fmtTick(t)}</text>
       {/each}
 
+      <!-- Vertical separator between the label column and the timeline.
+           Anchors the eye and prevents truncated labels from appearing to
+           visually merge with the first ghost bar. -->
+      <line
+        x1={LABEL_WIDTH - 2}
+        y1={BAR_TOP_PADDING - 4}
+        x2={LABEL_WIDTH - 2}
+        y2={rows.length * ROW_HEIGHT + BAR_TOP_PADDING}
+        stroke="#cbd5e1"
+        stroke-width="1"
+      />
+
       {#each rows as row, idx}
-        <text x="4" y={BAR_TOP_PADDING + idx * ROW_HEIGHT + 14} font-size="11" fill="#374151">{row.label}</text>
+        <text
+          x={LABEL_TEXT_PAD / 2}
+          y={BAR_TOP_PADDING + idx * ROW_HEIGHT + 14}
+          font-size="11"
+          fill="#374151"
+          clip-path="url(#cascade-label-clip)"
+        >{row.label}</text>
         <rect
           x={LABEL_WIDTH + xOf(row.oldStart)}
           y={BAR_TOP_PADDING + idx * ROW_HEIGHT + 4}
@@ -220,6 +247,27 @@
         />
       {/each}
     </svg>
+  </div>
+
+  <!-- Color legend: explains the role-color (indigo/amber/violet) and the
+       old/new shading. Placed between body and footer so the user sees it
+       without scrolling. -->
+  <div class="legend">
+    <div class="legend-section">
+      <span class="legend-swatch primary"></span>
+      <Label label={tracker.string.CascadeLegendPrimary} />
+      <span class="legend-swatch push"></span>
+      <Label label={tracker.string.CascadeLegendPush} />
+      <span class="legend-swatch pull"></span>
+      <Label label={tracker.string.CascadeLegendPull} />
+    </div>
+    <div class="legend-section">
+      <span class="legend-pair">
+        <span class="legend-swatch sample old"></span>
+        <span class="legend-swatch sample new"></span>
+      </span>
+      <Label label={tracker.string.CascadeLegendOldNew} />
+    </div>
   </div>
 
   <div class="footer">
@@ -272,6 +320,45 @@
     padding: 4px 16px;
   }
   .timeline { display: block; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 16px;
+    font-size: 11px;
+    color: var(--theme-content-trans-color);
+    border-top: 1px solid var(--theme-popup-divider);
+  }
+  .legend-section {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 10px;
+    border-radius: 2px;
+    margin-right: 2px;
+    vertical-align: middle;
+  }
+  .legend-swatch.primary { background: #6366f1; }
+  .legend-swatch.push { background: #f59e0b; }
+  .legend-swatch.pull { background: #8b5cf6; }
+  .legend-pair {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .legend-swatch.sample.old {
+    background: #6b7280;
+    opacity: 0.35;
+  }
+  .legend-swatch.sample.new {
+    background: #6b7280;
+    opacity: 1;
+  }
   .footer {
     display: flex;
     justify-content: flex-end;
