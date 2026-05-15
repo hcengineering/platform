@@ -359,6 +359,7 @@ export default mergeIds(trackerId, tracker, {
     CascadeLegendOldNew: '' as IntlString,
     // PR4b: issue-editor dependencies panel
     Dependencies: '' as IntlString,
+    GanttSuccessors: '' as IntlString,
     // PR5 — critical path + slack visualization
     CriticalPath: '' as IntlString,
     CriticalPathOn: '' as IntlString,

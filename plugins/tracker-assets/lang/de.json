@@ -344,6 +344,7 @@
     "DependencyDeleteConfirm": "Diese Abhängigkeit wirklich löschen?",
     "DependencyCycle": "Zyklus erkannt — diese Abhängigkeit würde eine Schleife erzeugen.",
     "Dependencies": "Abhängigkeiten",
+    "GanttSuccessors": "Nachfolger",
     "CascadeConfirmTitle": "{count, plural, one {1 Issue wird verschoben} other {# Issues werden verschoben}}",
     "CascadeConfirmConfirm": "Bestätigen",
     "CascadeConfirmCancel": "Abbrechen",
