@@ -67,13 +67,11 @@
     "Back": "Zurück",
     "List": "Liste",
     "NumberLabels": "{count, plural, =0 {keine Labels} =1 {1 Label} other {# Labels}}",
-
     "CategoryBacklog": "Backlog",
     "CategoryUnstarted": "Nicht gestartet",
     "CategoryStarted": "Gestartet",
     "CategoryCompleted": "Abgeschlossen",
     "CategoryCanceled": "Abgebrochen",
-
     "Title": "Titel",
     "Name": "Name",
     "Description": "Beschreibung",
@@ -170,14 +168,12 @@
     "ComponentMembersSearchPlaceholder": "Komponentenmitglieder ändern...",
     "MoveToProject": "Zu Projekt verschieben",
     "Duplicate": "Duplizieren",
-
     "GotoIssues": "Zu Aufgaben",
     "GotoActive": "Zu aktiven Aufgaben",
     "GotoBacklog": "Zum Backlog",
     "GotoComponents": "Zu Komponenten",
     "GotoMyIssues": "Zu meinen Aufgaben",
     "GotoTrackerApplication": "Zum Tracker wechseln",
-
     "CreatedOne": "Erstellt",
     "MoveIssues": "Aufgaben verschieben",
     "MoveIssuesDescription": "Wählen Sie das Zielprojekt aus",
@@ -189,7 +185,6 @@
     "Replacement": "ERSATZ",
     "Original": "ORIGINAL",
     "OriginalDescription": "Elemente aus diesem Bereich werden im neuen Projekt erstellt",
-
     "Relations": "Beziehungen",
     "RemoveRelation": "Beziehung entfernen...",
     "AddBlockedBy": "Als blockiert markieren durch...",
@@ -204,7 +199,6 @@
     "Blocks": "Blockiert",
     "Related": "Verwandt",
     "RelatedIssues": "Verwandte Aufgaben",
-
     "EditIssue": "{title} bearbeiten",
     "EditWorkflowStatuses": "Aufgabenstatus bearbeiten",
     "EditProject": "Projekt bearbeiten",
@@ -219,21 +213,17 @@
     "DeleteWorkflowStatus": "Aufgabenstatus löschen",
     "DeleteWorkflowStatusConfirm": "Möchten Sie den Status \"{status}\" löschen?",
     "DeleteWorkflowStatusErrorDescription": "Dem Status \"{status}\" sind {count, plural, =1 {1 Aufgabe} other {# Aufgaben}} zugewiesen. Bitte wählen Sie einen neuen Status",
-
     "Save": "Speichern",
     "IncludeItemsThatMatch": "Elemente einschließen, die übereinstimmen mit",
     "AnyFilter": "einem Filter",
     "AllFilters": "allen Filtern",
     "NoDescription": "Keine Beschreibung",
     "SearchIssue": "Nach Aufgabe suchen...",
-
     "StatusHistory": "Statusverlauf",
     "NewSubIssue": "Unteraufgabe hinzufügen...",
     "AddLabel": "Label hinzufügen",
-
     "DeleteIssue": "{issueCount, plural, =1 {Aufgabe} other {# Aufgaben}} löschen",
     "DeleteIssueConfirm": "Möchten Sie {issueCount, plural, =1 {die Aufgabe} other {die Aufgaben}}{subIssueCount, plural, =0 {} =1 { und Unteraufgabe} other { und Unteraufgaben}} löschen?",
-
     "Milestone": "Meilenstein",
     "NoMilestone": "Kein Meilenstein",
     "MoveToMilestone": "Meilenstein auswählen",
@@ -244,13 +234,10 @@
     "ClosedMilestones": "Abgeschlossen",
     "AddToMilestone": "Zu Meilenstein hinzufügen",
     "MilestoneNamePlaceholder": "Meilensteinname",
-
     "NewMilestone": "Neuer Meilenstein",
     "CreateMilestone": "Erstellen",
-
     "MoveAndDeleteMilestone": "Aufgaben zu {newMilestone} verschieben und {deleteMilestone} löschen",
     "MoveAndDeleteMilestoneConfirm": "Möchten Sie den Meilenstein löschen und die Aufgaben zu einem anderen Meilenstein verschieben?",
-
     "Estimation": "Schätzung",
     "ReportedTime": "Aufgewendete Zeit",
     "RemainingTime": "Verbleibende Zeit",
@@ -269,11 +256,9 @@
     "CapacityValue": "von {value}T",
     "NewRelatedIssue": "Neue verwandte Aufgabe",
     "RelatedIssuesNotFound": "Keine verwandten Aufgaben gefunden",
-
     "AddedReference": "Referenz hinzugefügt",
     "AddedAsBlocked": "Als blockiert markiert",
     "AddedAsBlocking": "Als blockierend markiert",
-
     "IssueTemplate": "Vorlage",
     "IssueTemplates": "Vorlagen",
     "NewProcess": "Neue Vorlage",
@@ -282,12 +267,10 @@
     "TemplateReplace": "Möchten Sie die neue Vorlage anwenden?",
     "TemplateReplaceConfirm": "Alle Felder werden mit den Werten der neuen Vorlage überschrieben",
     "Apply": "Anwenden",
-
     "CurrentWorkDay": "Aktueller Arbeitstag",
     "PreviousWorkDay": "Vorheriger Arbeitstag",
     "TimeReportDayTypeLabel": "Art des Zeiterfassungstags auswählen",
     "DefaultAssignee": "Standardzuweisung für Aufgaben",
-
     "SevenHoursLength": "Sieben Stunden",
     "EightHoursLength": "Acht Stunden",
     "HourLabel": "Std",
@@ -363,7 +346,6 @@
     "GanttArrowIndicatorSourceBelow": "Quellzeile liegt unterhalb des Sichtbereichs — Klick zum Scrollen",
     "GanttArrowIndicatorTargetAbove": "Zielzeile liegt oberhalb des Sichtbereichs — Klick zum Scrollen",
     "GanttArrowIndicatorTargetBelow": "Zielzeile liegt unterhalb des Sichtbereichs — Klick zum Scrollen",
-
     "GanttDragToSchedule": "Auf Zeitachse ziehen, um zu terminieren",
     "GanttResizingTooltip": "{start} – {due} ({days} Tage)",
     "GanttDurationTooltip": "{start} – {due} ({days} Tage)",
@@ -483,7 +465,34 @@
     "GanttBulkClearSelection": "Esc drücken um Auswahl zu leeren",
     "AddedRelation": "Abhängigkeit hinzugefügt",
     "RemovedRelation": "Abhängigkeit entfernt",
-    "UpdatedRelation": "Abhängigkeit geändert"
+    "UpdatedRelation": "Abhängigkeit geändert",
+    "GanttFullscreen": "Vollbild umschalten",
+    "GanttExportPng": "Als PNG exportieren",
+    "GanttExportPdf": "Als PDF exportieren (Browser-Druck)",
+    "GanttMoreActions": "Weitere Aktionen",
+    "GanttSavedViewLoad": "Ansicht laden…",
+    "GanttSavedViewLoadGroup": "Gespeicherte Ansicht laden",
+    "GanttSavedViewLoadDefault": "Standard (keine Ansicht)",
+    "GanttSavedViewMine": "Meine Ansichten",
+    "GanttSavedViewShared": "Geteilt",
+    "GanttSavedViews": "Gespeicherte Ansichten",
+    "GanttSavedView": "Gespeicherte Ansicht",
+    "GanttSavedViewNew": "Aktuelle Ansicht speichern…",
+    "GanttSavedViewNamePlaceholder": "Name der Ansicht",
+    "GanttSavedViewFixTimeWindow": "Zeitfenster fixieren",
+    "GanttSavedViewFixTimeWindowHint": "Den aktuell sichtbaren Datumsbereich mitspeichern, damit diese Ansicht beim Öffnen immer am gleichen Punkt startet",
+    "GanttSavedViewPublic": "Im Workspace teilen",
+    "GanttSavedViewSave": "Ansicht speichern",
+    "GanttSavedViewUpdate": "Ansicht aktualisieren",
+    "GanttSavedViewModified": "Geändert",
+    "GanttSavedViewDelete": "Ansicht löschen",
+    "GanttSavedViewEmpty": "Noch keine gespeicherten Ansichten",
+    "GanttSavedViewSelect": "Ansicht",
+    "GanttSavedViewDefault": "Standard (keine)",
+    "GanttMobileMenu": "Menü",
+    "GanttMobileOpenSidebar": "Issue-Liste öffnen",
+    "GanttMobileCloseSidebar": "Issue-Liste schließen",
+    "GanttMobileReadOnly": "Mobile Ansicht nur lesbar — größeres Display für Bearbeitung verwenden"
   },
   "status": {}
 }

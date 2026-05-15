@@ -522,25 +522,6 @@
             {/if}
           </span>
         {/if}
-        {#if showPredecessors && row.issue !== null}
-          {@const text = formatPredecessors(row.issue, relations, issueNumberOf)}
-          <span class="cell-predecessors" title={text || ''}>
-            {#if text === ''}
-              <Label label={tracker.string.NoPredecessors} />
-            {:else}
-              {text}
-            {/if}
-          </span>
-        {/if}
-        {#if showCriticalPath && showSlackColumn && row.issue !== null}
-          <span class="cell-slack">
-            {#if isCriticalRow(String(row.issue._id))}
-              <span class="cp-badge"><Label label={tracker.string.CriticalPathBadge} /></span>
-            {:else}
-              {slackDaysFor(String(row.issue._id))}d
-            {/if}
-          </span>
-        {/if}
       {:else}
         {#if showStatus}<span class="cell-status" />{/if}
         {#if showIssueCode}
@@ -616,9 +597,6 @@
     border-bottom: 1px solid var(--theme-divider-color);
     box-sizing: border-box;
     background: var(--theme-comp-header-color);
-    overflow: hidden;
-    min-height: 0;
-    height: 100%;
   }
   .sidebar-grid-row.summary { font-weight: 600; }
   .sidebar-grid-row.milestone {
@@ -863,102 +841,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    box-sizing: border-box;
-  }
-  .cell-id {
-    flex: 0 0 80px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .cell-title {
-    flex: 1 1 auto;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .cell-title.clickable { cursor: pointer; }
-  .cell-title.clickable:hover { text-decoration: underline; }
-  .cell-jump {
-    flex: 0 0 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .toggle-btn {
-    width: 18px;
-    height: 18px;
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: var(--theme-darker-color);
-    font-size: 10px;
-    line-height: 1;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .toggle-btn:hover { color: var(--theme-content-color); }
-  .jump-btn {
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    border: 1px solid var(--theme-button-border);
-    border-radius: 3px;
-    background: var(--theme-button-default);
-    color: var(--theme-content-color);
-    font-size: 13px;
-    line-height: 1;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .jump-btn:hover {
-    filter: brightness(1.1);
   }
   .gantt-group-count {
     flex: 0 0 auto;
     opacity: 0.7;
     font-weight: 500;
     font-size: 11px;
-  }
-  .sidebar-row.milestone {
-    background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 6%, transparent);
-  }
-  .sidebar-row.hovered {
-    background: var(--theme-button-hovered);
-  }
-  .sidebar-row.milestone.hovered {
-    background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);
-  }
-  .add-issue-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-top: 1px dashed var(--theme-divider-color);
-    color: var(--theme-darker-color);
-    font-size: 13px;
-    cursor: pointer;
-    user-select: none;
-    background: var(--theme-comp-header-color);
-  }
-  .add-issue-row:hover {
-    background: var(--theme-button-hovered);
-    color: var(--theme-content-color);
-  }
-  .add-issue-row .plus-glyph {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    font-size: 14px;
-    line-height: 1;
-    border-radius: 3px;
-    background: color-mix(in srgb, var(--theme-content-color) 8%, transparent);
-  }
-  .add-issue-row:hover .plus-glyph {
-    background: color-mix(in srgb, var(--theme-content-color) 16%, transparent);
   }
 </style>

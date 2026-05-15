@@ -295,6 +295,77 @@ export function ganttViewOptions (): ViewOptionsModel {
         label: tracker.string.SlackColumn
       },
       {
+        // Phase 1.A — bar label slot (left of bar).
+        // Default 'none' so existing users see no left-side label.
+        key: 'ganttBarLabelLeft',
+        type: 'dropdown',
+        defaultValue: 'none',
+        actionTarget: 'display',
+        label: tracker.string.GanttBarLabelLeft,
+        values: [
+          { id: 'none',       label: tracker.string.BarLabelNone },
+          { id: 'title',      label: tracker.string.BarLabelTitle },
+          { id: 'identifier', label: tracker.string.BarLabelIdentifier },
+          { id: 'assignee',   label: tracker.string.BarLabelAssignee },
+          { id: 'priority',   label: tracker.string.BarLabelPriority },
+          { id: 'status',     label: tracker.string.BarLabelStatus },
+          { id: 'estimation', label: tracker.string.BarLabelEstimation },
+          { id: 'progress',   label: tracker.string.BarLabelProgress }
+        ]
+      },
+      {
+        // Phase 1.A — bar label slot (inside bar, rendered only if bar > 60px wide).
+        // Default 'title' preserves the legacy in-bar title rendering.
+        key: 'ganttBarLabelInside',
+        type: 'dropdown',
+        defaultValue: 'title',
+        actionTarget: 'display',
+        label: tracker.string.GanttBarLabelInside,
+        values: [
+          { id: 'none',       label: tracker.string.BarLabelNone },
+          { id: 'title',      label: tracker.string.BarLabelTitle },
+          { id: 'identifier', label: tracker.string.BarLabelIdentifier },
+          { id: 'assignee',   label: tracker.string.BarLabelAssignee },
+          { id: 'priority',   label: tracker.string.BarLabelPriority },
+          { id: 'status',     label: tracker.string.BarLabelStatus },
+          { id: 'estimation', label: tracker.string.BarLabelEstimation },
+          { id: 'progress',   label: tracker.string.BarLabelProgress }
+        ]
+      },
+      {
+        // Phase 1.A — bar label slot (right of bar).
+        // Default 'none'.
+        key: 'ganttBarLabelRight',
+        type: 'dropdown',
+        defaultValue: 'none',
+        actionTarget: 'display',
+        label: tracker.string.GanttBarLabelRight,
+        values: [
+          { id: 'none',       label: tracker.string.BarLabelNone },
+          { id: 'title',      label: tracker.string.BarLabelTitle },
+          { id: 'identifier', label: tracker.string.BarLabelIdentifier },
+          { id: 'assignee',   label: tracker.string.BarLabelAssignee },
+          { id: 'priority',   label: tracker.string.BarLabelPriority },
+          { id: 'status',     label: tracker.string.BarLabelStatus },
+          { id: 'estimation', label: tracker.string.BarLabelEstimation },
+          { id: 'progress',   label: tracker.string.BarLabelProgress }
+        ]
+      },
+      {
+        // Phase 1.E — opt-in for Quick-Info-Popover.
+        // false (default = legacy) = single-click only selects + focuses
+        //   the bar (no popup, no editor); double-click on the bar opens
+        //   the full editor as before. No behaviour change for existing users.
+        // true = single-click selects + focuses AND opens the lightweight
+        //   Quick-Info popover. Double-click continues to open the full
+        //   editor on top of the popover.
+        key: 'ganttQuickInfoOnClick',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttQuickInfoOnClick
+      },
+      {
         // Phase 3a: extended sidebar grid. When on, the sidebar renders a
         // sortable header row + per-column cells (identifier, title, status,
         // priority, estimation, dates, predecessors, slack, etc.). When off,

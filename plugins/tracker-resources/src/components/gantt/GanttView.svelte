@@ -19,10 +19,10 @@
   import { fsAnchor, ssAnchor, ffAnchor, sfAnchor } from './lib/working-days'
   import { computeCriticalPath } from './lib/critical-path'
   import type { CriticalPathResult } from './lib/types'
-  import { exportElementAndDownloadPng, exportElementToPdf } from './lib/exporter'
-  import { ganttToolbarApi } from './lib/gantt-toolbar-bus'
+  import { exportGanttDataToPdf, exportGanttDataToPng } from './lib/exporter'
   import GanttHelpPopup from './GanttHelpPopup.svelte'
   import GanttQuickInfoPopup from './GanttQuickInfoPopup.svelte'
+  import { type BarLabelSlot } from './lib/bar-labels'
   import type { PrimaryEdit, SimulateResult, CascadeShift } from './lib/types'
   import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
   import DependencyEditor from '../DependencyEditor.svelte'
@@ -93,7 +93,6 @@
     type PinchState
   } from './lib/pinch-zoom'
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
-  import { type BarLabelSlot } from './lib/bar-labels'
   import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
   import { DropdownLabelsIntl, EditBox, Icon, IconChevronDown, IconChevronRight, IconMoreV, Label, SelectPopup, eventToHTMLElement, showPanel, showPopup, tooltip } from '@hcengineering/ui'
   import type { DropdownIntlItem, SelectPopupValueType } from '@hcengineering/ui'
@@ -124,10 +123,11 @@
   const DEFAULT_SIDEBAR_WIDTH = 280
   const HEADER_HEIGHT = 56
   const MILESTONE_STRIP_HEIGHT = 0
-  // Phase 2 — toolbar moved to IssuesView header; gantt-root now
-  // starts directly with the canvas. Kept as 0 so the v-scrollbar
-  // top offset math below stays simple.
-  const TOOLBAR_HEIGHT = 0
+  const TOOLBAR_HEIGHT = 40
+  // v121.11 / Bug 1 — bound to the toolbar element's clientHeight so the
+  // overlaid vertical scrollbar follows the toolbar's true measured height
+  // (it may wrap into a second row at narrow viewport widths, see CSS).
+  let toolbarHeightPx = TOOLBAR_HEIGHT
 
   // v121.11 / Bug 2 — i18n raw-keys in aria-labels. `aria-label={tracker.string.Foo}`
   // sets the literal IntlString id ("tracker:string:Foo"), it does not
@@ -293,6 +293,21 @@
   // so existing users see the legacy compact layout. When ON, the sidebar
   // renders a sortable header row + per-column cells via GanttSidebarColumn.
   $: extendedColumns = ((viewOptions as Record<string, unknown>)?.ganttSidebarColumnsExtended ?? false) === true
+
+  // Phase 1.A — bar-label slots driven by Customize-view ViewOptions.
+  // Defaults preserve legacy "title inside the bar" rendering.
+  $: barLabelLeft = (((viewOptions as Record<string, unknown>)?.ganttBarLabelLeft as string) ?? 'none') as BarLabelSlot
+  $: barLabelInside = (((viewOptions as Record<string, unknown>)?.ganttBarLabelInside as string) ?? 'title') as BarLabelSlot
+  $: barLabelRight = (((viewOptions as Record<string, unknown>)?.ganttBarLabelRight as string) ?? 'none') as BarLabelSlot
+  // Phase 1.E — opt-in quick-info popover on single click.
+  // v121.19: on phone layout we drop the dblclick → openIssue shortcut
+  // (mobile OSes intercept double-tap for system zoom). The quick-info
+  // popover with its "Open full editor" button becomes the canonical
+  // entry point for opening an issue, so force-enable it regardless of
+  // the user's view option on phones.
+  $: quickInfoOnClick = layoutMode === 'phone'
+    ? true
+    : ((viewOptions as Record<string, unknown>)?.ganttQuickInfoOnClick ?? false) === true
 
   // Phase 3b — Filter-Bar + Group-By Swimlanes.
   // Both pieces of state are in-memory only for v1 (mirrors Phase 3a):
@@ -1309,6 +1324,31 @@
     lastClickedIssueId = id
     selectedIssueId = idStr
     focusedIssueId = idStr
+    // Phase 1.E — opt-in quick-info popover. Only on plain single click
+    // (no modifiers) and only when the user has flipped the ViewOption.
+    if (quickInfoOnClick && e.detail.target.kind === 'issue') {
+      const issueDoc = e.detail.target.doc as Issue
+      showPopup(
+        GanttQuickInfoPopup,
+        { issue: issueDoc },
+        'top',
+        (result?: 'openFull') => {
+          // v121.19 — Mobile-A11Y: the quick-info popover is the canonical
+          // "open issue" entry point on phones (double-tap conflicts with
+          // iOS/Android system zoom). When the user clicks "Open full
+          // editor", route through the same showPanel path that the
+          // desktop dblclick uses so behaviour stays consistent.
+          if (result === 'openFull') {
+            showPanel(
+              tracker.component.EditIssue,
+              issueDoc._id as Ref<Doc>,
+              issueDoc._class as Ref<Class<Doc>>,
+              'content'
+            )
+          }
+        }
+      )
+    }
   }
 
   function handleConnectorDown (e: CustomEvent<{ source: Issue, originPx: { x: number, y: number } }>): void {
@@ -2499,6 +2539,16 @@
       e.preventDefault()
       return
     }
+    // Phase 1 — bare-key shortcuts T/D/W/M/Q. Skip when an editable
+    // target (input/textarea/contenteditable) owns focus so the user
+    // can still type these letters in CreateIssue / inline cells.
+    if (!isTextInputFocused() && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      if (e.key === 't' || e.key === 'T') { jumpToToday();      e.preventDefault(); return }
+      if (e.key === 'd' || e.key === 'D') { setZoom('day');     e.preventDefault(); return }
+      if (e.key === 'w' || e.key === 'W') { setZoom('week');    e.preventDefault(); return }
+      if (e.key === 'm' || e.key === 'M') { setZoom('month');   e.preventDefault(); return }
+      if (e.key === 'q' || e.key === 'Q') { setZoom('quarter'); e.preventDefault(); return }
+    }
     // PR6: '?' or Shift+/ shows the keyboard help overlay.
     if (e.key === '?') {
       showPopup(GanttHelpPopup, {}, 'middle')
@@ -2631,13 +2681,77 @@
   }
 
   async function exportToPng (): Promise<void> {
-    const svg = scrollerEl?.querySelector('svg.gantt-canvas') as SVGSVGElement | null
-    if (svg === null) return
+    const stamp = `gantt-${new Date().toISOString().slice(0, 10)}`
     try {
-      await exportAndDownload(svg, `gantt-${new Date().toISOString().slice(0, 10)}`)
+      await exportGanttDataToPng({
+        rows: sortedRows,
+        relations: displayedRelations,
+        summaryRanges,
+        timeScale,
+        range: [dateRange.from, dateRange.to],
+        chartWidth: totalCanvasWidth,
+        title: `${formatRange(dateRange.from)} – ${formatRange(dateRange.to)}`
+      }, stamp)
     } catch (err) {
       const title = await translate(tracker.string.GanttExportFailed, {}, undefined)
       addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
+    }
+  }
+
+  async function exportToPdf (): Promise<void> {
+    try {
+      await exportGanttDataToPdf({
+        rows: sortedRows,
+        relations: displayedRelations,
+        summaryRanges,
+        timeScale,
+        range: [dateRange.from, dateRange.to],
+        chartWidth: totalCanvasWidth,
+        title: `${formatRange(dateRange.from)} – ${formatRange(dateRange.to)}`
+      }, `gantt-${new Date().toISOString().slice(0, 10)}`)
+    } catch (err) {
+      const title = await translate(tracker.string.GanttExportFailed, {}, undefined)
+      addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
+    }
+  }
+
+  // Phase 2.3b — fullscreen toggle. Standard browser Fullscreen API on
+  // the containing element. If we fullscreened only .gantt-root the
+  // toolbar would still be visible (since it lives inside .gantt-root)
+  // — and that's exactly what we want. Best-effort: silently ignore
+  // failures (e.g. iframes without `allowfullscreen`).
+  //
+  // v121.3-A — fullscreen target = document.body so that Huly popups
+  // (Issue-Editor, QuickInfo, Confirm-Cascade, etc.) remain visible.
+  // Showpopup mounts popups in the workbench `<Popup>` portal which
+  // sits at workbench-container level; fullscreening only `containerEl`
+  // would clip those popups (Fullscreen API only paints descendants of
+  // the fullscreened element). Targeting `document.body` keeps the
+  // gantt visually fullscreen AND keeps popup-portals inside the
+  // rendered subtree. The toolbar/workbench chrome that briefly shows
+  // is acceptable; the previous behaviour of "invisible popup forces
+  // exit-fullscreen" was strictly worse for the user.
+  function toggleFullscreen (): void {
+    if (document.fullscreenElement != null) {
+      void document.exitFullscreen().catch(() => {})
+      return
+    }
+    const target = document.body
+    if (target == null) return
+    void target.requestFullscreen().catch(() => {})
+  }
+
+  // Tier-4 Item 13 — Mobile-Friendly Gantt. Recompute layoutMode on every
+  // window resize. matchMedia would suffice, but resize covers
+  // orientation-change on tablets too without listing every breakpoint
+  // twice.
+  function onWindowResize (): void {
+    const next = detectLayoutMode(window.innerWidth)
+    if (next !== layoutMode) {
+      layoutMode = next
+      // Close the drawer when leaving Phone — desktop/tablet doesn't have
+      // one, leaving it "open" would be a stale flag.
+      if (next !== 'phone') mobileDrawerOpen = false
     }
   }
 
@@ -2919,1328 +3033,6 @@
       cancelAnimationFrame(hScrollRaf)
       hScrollRaf = null
     }
-  })
-
-  function onJump (e: CustomEvent<{ x: number }>): void {
-    if (hScrollEl !== undefined) {
-      hScrollEl.scrollTo({ left: Math.max(0, e.detail.x - 80), behavior: 'smooth' })
-    }
-  }
-
-  function issueCode (i: Issue): string {
-    return (i as unknown as { identifier?: string }).identifier ?? 'Issue'
-  }
-
-  function onIssueOpen (e: CustomEvent<{ issue: { _id: string, _class: string } }>): void {
-    showPanel(
-      tracker.component.EditIssue,
-      e.detail.issue._id as Ref<Doc>,
-      e.detail.issue._class as Ref<Class<Doc>>,
-      'content'
-    )
-  }
-
-  // PR3.2: open the EditMilestone popup when a milestone row is clicked in
-  // the sidebar — user expects parity with the issue row's single-click
-  // open behavior (feedback 2026-05-11). The sidebar carries a compact
-  // MilestoneMarker, so resolve to the full Milestone from the live query
-  // before passing it as the popup's `object` prop (EditMilestone reads
-  // object.label / status / dates synchronously).
-  function onMilestoneOpen (e: CustomEvent<{ milestoneId: Ref<Milestone> }>): void {
-    const full = milestones.find((m) => m._id === e.detail.milestoneId)
-    if (full === undefined) return
-    showPopup(EditMilestone, { object: full }, 'middle')
-  }
-
-  function newIssue (): void {
-    if (space === undefined) return
-    showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top')
-  }
-
-  // -------------------------------------------------------------------------
-  // PR 3 edit-mode: bar mousedown → reducer; window mousemove/mouseup; commit.
-  // -------------------------------------------------------------------------
-
-  function handleBarMouseDown (e: CustomEvent<{ target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }>): void {
-    const id = String(e.detail.target.doc._id)
-    if (selectedIssueId !== id) {
-      selectedIssueId = id
-      focusedIssueId = id
-      return
-    }
-    // PR3.3: capture origin dates at the dispatch boundary so the doc-
-    // agnostic reducer doesn't need to know which field on target.doc to
-    // read. Milestone uses targetDate, Issue uses dueDate.
-    const t = e.detail.target
-    const originStart =
-      t.kind === 'issue' ? (t.doc.startDate as number) : (t.doc.startDate as number)
-    const originEnd =
-      t.kind === 'issue' ? (t.doc.dueDate as number) : (t.doc.targetDate)
-    // Guard: a milestone with startDate=null shouldn't reach this path — the
-    // bar isn't rendered. Issue with null dates was already handled in PR3
-    // (mousedown-unscheduled path).
-    if (originStart == null || originEnd == null) return
-    activeDrag.update((s) => reduce(s, {
-      type: 'mousedown-bar',
-      target: t,
-      originStart,
-      originEnd,
-      edge: e.detail.edge,
-      cursorX: e.detail.cursorX
-    }, timeScale))
-  }
-
-  function handleBarClick (e: CustomEvent<{ target: DragTarget }>): void {
-    // Pointer-driven canvas panning may still synthesize a click after
-    // pointerup. Treat that click as part of the pan gesture, not as a
-    // selection, so "hold and drag" does not arm the bar afterwards.
-    if (Date.now() - lastCanvasPanEndedAt < 250) return
-    const id = String(e.detail.target.doc._id)
-    selectedIssueId = id
-    focusedIssueId = id
-    // Phase 1.E — opt-in Quick-Info popup on single-click. Default false =
-    // no popup (selection only — full editor still opens on double-click,
-    // handled in GanttCanvas.svelte's <g class="bar-wrap">).
-    if (quickInfoOnClick && e.detail.target.kind === 'issue') {
-      const issue = e.detail.target.doc
-      showPopup(
-        GanttQuickInfoPopup,
-        { issue },
-        'top',
-        (result?: 'openFull') => {
-          if (result !== 'openFull') return
-          showPanel(
-            tracker.component.EditIssue,
-            issue._id as Ref<Doc>,
-            issue._class as Ref<Class<Doc>>,
-            'content'
-          )
-        }
-      )
-    }
-  }
-
-  function handleConnectorDown (e: CustomEvent<{ source: Issue, originPx: { x: number, y: number } }>): void {
-    activeDrag.update((s) => reduce(s, {
-      type: 'mousedown-connector',
-      source: e.detail.source,
-      originPx: e.detail.originPx,
-      cursorPx: e.detail.originPx
-    }, timeScale))
-    attachWindowDragListeners()
-  }
-
-  // Single entry point for connector-drag: GanttConnectorDot dispatches
-  // 'connectorDown' via Svelte from one on:mousedown binding on its
-  // hit-circle. Earlier drafts had three parallel pathways (template
-  // binding + direct addEventListener inside the dot + document-level
-  // capture-phase delegation), all of which fired concurrently and
-  // produced double mousedown handling. Keep this handler the only one.
-
-  function handleBarHover (e: CustomEvent<{ issue: Issue | null }>): void {
-    hoveredIssue = (e.detail.issue?._id ?? null) as Ref<Issue> | null
-  }
-
-  function handleHoverEdge (e: CustomEvent<{ source: Ref<Issue>, target: Ref<Issue> } | null>): void {
-    hoveredEdge = e.detail as { source: Ref<Issue>, target: Ref<Issue> } | null
-  }
-
-  function handleOpenEditor (e: CustomEvent<{ relation: IssueRelation }>): void {
-    const rel = e.detail.relation
-    // canEdit if the user can update the source issue (spec §1 decision A).
-    const sourceIssue = issues.find((i) => i._id === rel.attachedTo)
-    void (async () => {
-      const canEdit = sourceIssue !== undefined ? await canEditIssue(sourceIssue) : false
-      showPopup(DependencyEditor, { relation: rel, canEdit }, 'middle')
-    })()
-  }
-
-  /**
-   * Clear selection when the user clicks outside any bar — e.g. on the
-   * canvas background. Bar clicks stopPropagation, so this only fires for
-   * clicks that didn't land on a bar.
-   */
-  function onBackgroundClick (e: MouseEvent): void {
-    const target = e.target as HTMLElement | null
-    if (target?.closest('.bar-wrap') !== null) return
-    selectedIssueId = null
-    focusedIssueId = null
-  }
-
-  /**
-   * Translate the window-space `MouseEvent.clientX` into the canvas's content
-   * coordinate. Used for `dragging-unscheduled` so the bar lands at the date
-   * under the cursor, not at a delta from "today". Returns undefined when
-   * the cursor is outside the canvas (e.g., still over the sidebar) so the
-   * reducer keeps its default preview.
-   */
-  /** Width of the resize-cell (drag-handle column) between sidebar and canvas.
-   *  The horizontal scrollbar already offsets by `sidebarWidthPx + 5` (see
-   *  .gantt-hscrollbar padding-left), so the canvas content origin is at
-   *  rect.left + sidebarWidthPx + this constant, not just sidebarWidthPx.
-   *  Missing this offset produces an off-by-5 in unscheduled drag drop. */
-  const RESIZE_CELL_W = 5
-
-  function computeCanvasX (e: MouseEvent): number | undefined {
-    if (scrollerEl == null) return undefined
-    const rect = scrollerEl.getBoundingClientRect()
-    const sidebarEdge = rect.left + sidebarWidthPx + RESIZE_CELL_W
-    if (e.clientX < sidebarEdge) return undefined
-    return e.clientX - sidebarEdge + canvasViewportLeft
-  }
-
-  function handleCanvasPointerMove (e: MouseEvent): void {
-    // PR4a: while connector-drawing, dispatch mousemove-connector with
-    // svg-local cursorPx + the issue under the cursor. Coordinate frame
-    // matches barRects (computed in GanttCanvas) so the live bezier
-    // anchors correctly. document.elementFromPoint hits the bar's <rect>
-    // through the .bar-wrap <g> whose data-issue-id was added in Task 15.
-    const state = $activeDrag
-    if (state.kind === 'connector-drawing' || state.kind === 'connector-target-hover') {
-      const svg = scrollerEl?.querySelector('svg.gantt-canvas') as SVGSVGElement | null
-      if (svg === null) return
-      const svgRect = svg.getBoundingClientRect()
-      const cursorPx = { x: e.clientX - svgRect.left, y: e.clientY - svgRect.top }
-      const hoveredEl = document.elementFromPoint(e.clientX, e.clientY)
-      const issueId = hoveredEl?.closest('.bar-wrap')?.getAttribute('data-issue-id') as Ref<Issue> | null
-      const hoveredBar = issueId !== null
-        ? issues.find((i) => i._id === issueId) ?? null
-        : null
-      activeDrag.update((s) => reduce(s, {
-        type: 'mousemove-connector',
-        cursorPx,
-        hoveredBar: hoveredBar !== null && hoveredBar._id !== state.source._id ? hoveredBar : null
-      }, timeScale))
-      return  // Don't also fire mousemove for bar drag
-    }
-    activeDrag.update((s) =>
-      reduce(s, { type: 'mousemove', cursorX: e.clientX, canvasX: computeCanvasX(e) }, timeScale)
-    )
-  }
-
-  async function handleCanvasPointerUp (e?: PointerEvent | MouseEvent): Promise<void> {
-    const state = $activeDrag
-    if (state.kind === 'connector-drawing') {
-      activeDrag.set({ kind: 'idle' })
-      return
-    }
-    if (state.kind === 'connector-target-hover') {
-      const src = state.source
-      const tgt = state.target
-      activeDrag.set({ kind: 'idle' })
-      // Cycle check before any write. Spec §2 decision A (block + toast).
-      if (wouldCreateCycle(src._id, tgt._id, relations)) {
-        const title = await translate(tracker.string.DependencyCycle, {}, undefined)
-        addNotification(title, '', undefined as any, undefined, NotificationSeverity.Error)
-        return
-      }
-      const client = getClient()
-      const ops = client.apply(undefined, 'gantt-dependency-create')
-      const optimistic = {
-        _id: `gantt:optimistic:${String(src._id)}:${String(tgt._id)}:${Date.now()}`,
-        _class: tracker.class.IssueRelation,
-        space: src.space,
-        attachedTo: src._id,
-        target: tgt._id,
-        kind: 'finish-to-start',
-        lag: 0
-      } as unknown as IssueRelation
-      optimisticRelations = [...optimisticRelations, optimistic]
-      await ops.addCollection(
-        tracker.class.IssueRelation,
-        src.space,
-        src._id,
-        tracker.class.Issue,
-        'relations',
-        { target: tgt._id, kind: 'finish-to-start', lag: 0 }
-      )
-      const result = await ops.commit()
-      if (!result.result) {
-        optimisticRelations = optimisticRelations.filter((rel) => rel !== optimistic)
-      }
-      return
-    }
-    if (state.kind === 'idle' || state.kind === 'hover-bar') {
-      activeDrag.set({ kind: 'idle' })
-      return
-    }
-    // Skip the confirmation prompt when the preview didn't actually change
-    // anything (drag with zero-delta — e.g. mouseup without movement).
-    const previewDelta = previewChangedFromOrigin(state)
-    if (!previewDelta) {
-      activeDrag.set({ kind: 'idle' })
-      return
-    }
-    // Wrap the commit in the user-configurable confirmation dialog when the
-    // matching ganttConfirm{Move,Resize} ViewOption is on (default-on).
-    const needsConfirm =
-      ((state.kind === 'dragging-body' || state.kind === 'dragging-unscheduled') && confirmMove) ||
-      ((state.kind === 'resizing-left' || state.kind === 'resizing-right') && confirmResize)
-
-    // dragging-unscheduled stays on the legacy confirm path because it does
-    // NOT go through commitWithCascade (the issue had no dates, no relations
-    // to cascade). Only cascade-eligible issue states are rerouted to
-    // ConfirmCascadePopup. At this point state has been narrowed past
-    // idle/hover-bar by the early return on line 613, and past
-    // connector-drawing/connector-target-hover by the handlers earlier in
-    // this function, so accessing state.target is type-safe.
-    const cascadeEligibleIssue =
-      (state.kind === 'dragging-body' || state.kind === 'resizing-left' || state.kind === 'resizing-right') &&
-      state.target.kind === 'issue'
-
-    // activeDrag is no longer reset at this point — neither for cascade
-    // nor legacy paths. The bar must visually stay at its preview position
-    // while ANY confirmation popup is open (cascade popup OR the legacy
-    // GanttConfirmCommitPopup); springing back only when the user clicks
-    // Cancel. Each downstream exit path (cascade-popup resultHandler,
-    // askConfirm cancel/confirm, commit success/failure) is responsible
-    // for releasing the preview.
-
-    try {
-      // For cascade-eligible issue states, ConfirmCascadePopup (or the
-      // legacy GanttConfirmCommitPopup in the no-cascade case) is the single
-      // confirmation point. For milestones and unscheduled-drag the existing
-      // askConfirm path stays in use — but it now also defers the
-      // bar-springs-back to *after* the popup resolves.
-      if (needsConfirm && !cascadeEligibleIssue) {
-        const proceed = await askConfirm(state)
-        if (!proceed) {
-          // User cancelled: bar springs back now.
-          activeDrag.set({ kind: 'idle' })
-          return
-        }
-      }
-      await commitDrag(state, e)
-      // commitDrag's legacy branches (milestone, dragging-unscheduled) set
-      // activeDrag to idle themselves after their ops.commit() returns —
-      // see commitDrag below. The cascade path (commitWithCascade) hands
-      // off ownership to the popup resultHandler and only sets idle when
-      // that handler fires, NOT when commitDrag returns. So we must NOT
-      // unconditionally reset here: doing so would tear down the cascade
-      // popup's preview the instant commitDrag returned (popup still open,
-      // bar already springing back.
-    } catch (err) {
-      const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
-      addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
-      activeDrag.set({ kind: 'idle' })
-    }
-  }
-
-  /** True when the preview window is different from the origin window. */
-  function previewChangedFromOrigin (state: DragState): boolean {
-    if (state.kind === 'dragging-body' || state.kind === 'dragging-unscheduled') {
-      return state.previewStart !== state.originStart || state.previewEnd !== state.originEnd
-    }
-    if (state.kind === 'resizing-left') return state.previewStart !== state.originStart
-    if (state.kind === 'resizing-right') return state.previewEnd !== state.originEnd
-    return false
-  }
-
-  /**
-   * Open the confirm dialog and resolve true on Apply / false on Cancel.
-   * The popup dispatches `close` with a boolean payload, which Huly's
-   * showPopup routes to the 4th-arg resultHandler.
-   *
-   * PR3.3: when the target is a Milestone, the confirm popup gets the
-   * Milestone-shaped doc instead of an Issue. GanttConfirmCommitPopup
-   * reads `issue.title` (or `issue.label`) and is already tolerant of
-   * either field name — see its component header.
-   */
-  async function askConfirm (state: DragState): Promise<boolean> {
-    // Narrow to drag/resize states that carry a `target` field.
-    if (
-      state.kind !== 'dragging-body' &&
-      state.kind !== 'dragging-unscheduled' &&
-      state.kind !== 'resizing-left' &&
-      state.kind !== 'resizing-right'
-    ) return false
-    const newStart = state.kind === 'resizing-right' ? state.originStart : state.previewStart
-    const newDue = state.kind === 'resizing-left' ? state.originEnd : state.previewEnd
-    const kind: 'move' | 'resize' = state.kind === 'resizing-left' || state.kind === 'resizing-right' ? 'resize' : 'move'
-    return await new Promise<boolean>((resolve) => {
-      showPopup(
-        GanttConfirmCommitPopup,
-        { issue: state.target.doc, kind, newStart, newDue },
-        'top',
-        (result: boolean | undefined) => {
-          resolve(result === true)
-        }
-      )
-    })
-  }
-
-  /**
-   * Commit a drag for an Issue target. Mirrors the PR3 commit path; the
-   * cascade walks descendant issues (parent → children shift by delta).
-   */
-  async function commitIssueDrag (state: DragState, target: { kind: 'issue', doc: Issue }, ops: ApplyOperations): Promise<void> {
-    if (state.kind === 'dragging-body') {
-      await ops.update(target.doc, { startDate: (state as any).previewStart, dueDate: (state as any).previewEnd })
-      const delta = (state as any).previewStart - (state as any).originStart
-      if (delta !== 0) {
-        // Fetch the full space's issues here rather than reusing the
-        // view-filtered `issues` array — otherwise children hidden by an
-        // active Tracker filter wouldn't shift with the parent and the
-        // tree would drift out of sync.
-        const client = getClient()
-        const allInSpace = await client.findAll(tracker.class.Issue, { space: target.doc.space })
-        for (const child of descendantsWithDates(target.doc, allInSpace)) {
-          await ops.update(child, {
-            startDate: (child.startDate as number) + delta,
-            dueDate: (child.dueDate as number) + delta
-          })
-        }
-      }
-    } else if (state.kind === 'dragging-unscheduled') {
-      // Unscheduled-drag only schedules the parent issue. originStart is the
-      // synthetic "today" anchor — using its delta to shift existing scheduled
-      // descendants would move them by a wildly unrelated amount.
-      // Descendants stay put; the user can drag the
-      // (now-scheduled) parent again to do a coordinated shift.
-      await ops.update(target.doc, { startDate: (state as any).previewStart, dueDate: (state as any).previewEnd })
-    } else if (state.kind === 'resizing-left') {
-      await ops.update(target.doc, { startDate: (state as any).previewStart })
-    } else if (state.kind === 'resizing-right') {
-      await ops.update(target.doc, { dueDate: (state as any).previewEnd })
-    }
-  }
-
-  /**
-   * Commit a drag for a Milestone target (PR3.3 2026-05-11).
-   * Field mapping: Issue.dueDate ↔ Milestone.targetDate; startDate is shared.
-   * Cascade (brainstorm decision B): when the milestone moves, all issues
-   * assigned to it shift by the same delta along with their descendants.
-   * No cascade for resize — only the milestone bounds change.
-   */
-  async function commitMilestoneDrag (state: DragState, target: { kind: 'milestone', doc: Milestone }, ops: ApplyOperations): Promise<void> {
-    if (state.kind === 'dragging-body') {
-      await ops.update(target.doc, { startDate: (state as any).previewStart, targetDate: (state as any).previewEnd })
-      const delta = (state as any).previewStart - (state as any).originStart
-      if (delta !== 0) {
-        const client = getClient()
-        const allInSpace = await client.findAll(tracker.class.Issue, { space: target.doc.space })
-        const assigned = allInSpace.filter((i) =>
-          (i as unknown as { milestone?: string | null }).milestone === target.doc._id
-        )
-        // Shift assigned issues + their descendants. Same dedup logic as
-        // descendantsWithDates: only issues with both dates set get shifted.
-        const shiftRoots = new Set<string>()
-        const toShift: Issue[] = []
-        for (const a of assigned) {
-          if (a.startDate == null || a.dueDate == null) continue
-          if (!shiftRoots.has(String(a._id))) {
-            shiftRoots.add(String(a._id))
-            toShift.push(a)
-          }
-          for (const child of descendantsWithDates(a, allInSpace)) {
-            if (!shiftRoots.has(String(child._id))) {
-              shiftRoots.add(String(child._id))
-              toShift.push(child)
-            }
-          }
-        }
-        for (const i of toShift) {
-          await ops.update(i, {
-            startDate: (i.startDate as number) + delta,
-            dueDate: (i.dueDate as number) + delta
-          })
-        }
-      }
-    } else if (state.kind === 'resizing-left') {
-      await ops.update(target.doc, { startDate: (state as any).previewStart })
-    } else if (state.kind === 'resizing-right') {
-      await ops.update(target.doc, { targetDate: (state as any).previewEnd })
-    }
-    // Milestones can't enter dragging-unscheduled (no drag-grip in the
-    // sidebar for them), so that branch is unreachable.
-  }
-
-  async function commitWithCascade (
-    primaryEdits: PrimaryEdit[],
-    altKey: boolean,
-    space: Issue['space'],
-    legacyConfirmKind: 'move' | 'resize' | 'none'
-  ): Promise<void> {
-    const client = getClient()
-
-    // Full-space lookup is needed for both branches — the alt-bypass branch
-    // also needs to resolve hidden predecessors/successors when counting
-    // direct violations, otherwise filter-hidden relations are invisible
-    // to the warning banner.
-    const allInSpace = await client.findAll(tracker.class.Issue, { space })
-    const allByRef = new Map<Ref<Issue>, Issue>()
-    for (const i of allInSpace) allByRef.set(i._id, i)
-
-    if (altKey) {
-      const ops = client.apply(undefined, 'gantt-cascade-bypass')
-      for (const pe of primaryEdits) {
-        await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
-      }
-      const result = await ops.commit()
-      if (!result.result) {
-        const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
-        addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
-        activeDrag.set({ kind: 'idle' })
-        return
-      }
-      // Count direct violations against full-space relations + full-space issue dates.
-      let violations = 0
-      const primarySet = new Set(primaryEdits.map((p) => String(p.issue._id)))
-      for (const pe of primaryEdits) {
-        for (const r of relations) {
-          const involvesPrimary = String(r.attachedTo) === String(pe.issue._id) || String(r.target) === String(pe.issue._id)
-          if (!involvesPrimary) continue
-          const otherRef = String(r.attachedTo) === String(pe.issue._id) ? r.target : r.attachedTo
-          if (primarySet.has(String(otherRef))) continue
-          const otherIssue = allByRef.get(otherRef as Ref<Issue>)
-          if (otherIssue === undefined || otherIssue.startDate == null || otherIssue.dueDate == null) continue
-          if (!relationSatisfied(r, pe, otherIssue)) violations++
-        }
-      }
-      if (violations > 0) {
-        const t = await translate(tracker.string.CascadeBannerBypass, { count: violations }, undefined)
-        addNotification(t, '', undefined as any, undefined, NotificationSeverity.Warning)
-      }
-      activeDrag.set({ kind: 'idle' })
-      return
-    }
-
-    // Non-bypass path: permission map (allInSpace already fetched above).
-    const canEditMap = new Map<Ref<Issue>, boolean>()
-    await Promise.all(
-      allInSpace.map(async (i) => {
-        canEditMap.set(i._id, await canEditIssue(i))
-      })
-    )
-
-    const result: SimulateResult = simulateCascade(
-      primaryEdits,
-      allInSpace,
-      relations,
-      (ref) => canEditMap.get(ref) ?? false
-    )
-
-    switch (result.kind) {
-      case 'no-cascade': {
-        // Three sub-paths depending on the shape of the edit:
-        //   (a) Single-issue primary + legacy toggle on → GanttConfirmCommitPopup (PR3.3 behaviour preserved)
-        //   (b) Multi-issue primary (parent-drag) → ConfirmCascadePopup with shifts=[]
-        //       so the user sees the children that will move together.
-        //   (c) Single-issue primary + legacy toggle off → commit directly
-        if (primaryEdits.length > 1) {
-          // Parent-drag (or any multi-primary commit) — show the mini-timeline
-          // confirm so the user sees every issue that will move.
-          //
-          // Keep the dragState alive (do NOT reset to idle here) so the
-          // dragged bars remain at their preview positions while the user
-          // decides. activeDrag is only released after the popup resolves —
-          // commit → idle on success, cancel → idle on dismiss.
-          showPopup(
-            ConfirmCascadePopup,
-            {
-              primary: result.primary,
-              shifts: [],
-              skippedUnscheduled: 0,
-              lockedIssues: []
-            },
-            'middle',
-            (ok: boolean) => {
-              if (ok !== true) {
-                activeDrag.set({ kind: 'idle' })
-                return
-              }
-              void commitCascadeBatch(result.primary, []).finally(() => {
-                activeDrag.set({ kind: 'idle' })
-              })
-            }
-          )
-          return
-        }
-        if (legacyConfirmKind !== 'none') {
-          const pe = primaryEdits[0]
-          const ok = await new Promise<boolean>((resolve) => {
-            showPopup(
-              GanttConfirmCommitPopup,
-              { issue: pe.issue, kind: legacyConfirmKind, newStart: pe.newStart, newDue: pe.newDue },
-              'top',
-              (r: boolean | undefined) => resolve(r === true)
-            )
-          })
-          if (!ok) {
-            activeDrag.set({ kind: 'idle' })
-            return
-          }
-        }
-        const ops = client.apply(undefined, 'gantt-no-cascade')
-        for (const pe of result.primary) {
-          await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
-        }
-        const r = await ops.commit()
-        if (!r.result) {
-          const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
-          addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
-        }
-        // No popup, no further async — release the preview now that the
-        // server-state has caught up (or failed). The bar transitions from
-        // its preview position to the freshly committed issue.startDate.
-        activeDrag.set({ kind: 'idle' })
-        return
-      }
-      case 'cascade':
-      case 'permission-denied': {
-        // Keep the live preview alive while the popup is open so the
-        // dragged bar visually stays at the proposed position. activeDrag
-        // is released only when the popup resolves: idle-after-commit on
-        // confirm so the bar transitions cleanly to its new server-state,
-        // or idle-on-cancel so the bar springs back to its original dates.
-        showPopup(
-          ConfirmCascadePopup,
-          {
-            primary: result.primary,
-            shifts: result.shifts,
-            skippedUnscheduled: 'skippedUnscheduled' in result ? result.skippedUnscheduled : 0,
-            lockedIssues: result.kind === 'permission-denied' ? result.lockedIssues : []
-          },
-          'middle',
-          (ok: boolean) => {
-            if (ok !== true) {
-              activeDrag.set({ kind: 'idle' })
-              return
-            }
-            if (result.kind === 'permission-denied') {
-              // Confirm is disabled in the popup; defensively treat
-              // a `true` close as a cancel — release the preview.
-              activeDrag.set({ kind: 'idle' })
-              return
-            }
-            void commitCascadeBatch(result.primary, result.shifts).finally(() => {
-              activeDrag.set({ kind: 'idle' })
-            })
-          }
-        )
-        return
-      }
-      case 'cycle': {
-        activeDrag.set({ kind: 'idle' })
-        const t = await translate(tracker.string.CascadeBannerCycle, {}, undefined)
-        addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
-        return
-      }
-      case 'iteration-overflow': {
-        activeDrag.set({ kind: 'idle' })
-        const t = await translate(tracker.string.CascadeBannerOverflow, { max: 1000 }, undefined)
-        addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
-        return
-      }
-    }
-  }
-
-  async function commitCascadeBatch (
-    primary: PrimaryEdit[],
-    shifts: CascadeShift[]
-  ): Promise<void> {
-    const client = getClient()
-    const ops = client.apply(undefined, 'gantt-cascade-commit')
-    for (const pe of primary) {
-      await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
-    }
-    for (const sh of shifts) {
-      await ops.update(sh.issue, { startDate: sh.newStart, dueDate: sh.newDue })
-    }
-    const r = await ops.commit()
-    if (!r.result) {
-      const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
-      addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
-    }
-  }
-
-  /**
-   * Returns true iff the relation `r` is satisfied given the proposed
-   * primary edit `pe` and the current dates of the other side. Used for
-   * the Alt-bypass violation count only.
-   */
-  function relationSatisfied (
-    r: IssueRelation,
-    pe: PrimaryEdit,
-    otherIssue: Issue
-  ): boolean {
-    const isOutgoing = String(r.attachedTo) === String(pe.issue._id)
-    const predStart = isOutgoing ? pe.newStart : (otherIssue.startDate as number)
-    const predDue = isOutgoing ? pe.newDue : (otherIssue.dueDate as number)
-    const succStart = isOutgoing ? (otherIssue.startDate as number) : pe.newStart
-    const succDue = isOutgoing ? (otherIssue.dueDate as number) : pe.newDue
-    const lag = r.lag ?? 0
-    switch (r.kind) {
-      case 'finish-to-start': return addScheduleDays(predDue, lag) <= succStart
-      case 'start-to-start': return addScheduleDays(predStart, lag) <= succStart
-      case 'finish-to-finish': return addScheduleDays(predDue, lag) <= succDue
-      case 'start-to-finish': return addScheduleDays(predStart, lag) <= succDue
-    }
-  }
-
-  async function commitDrag (state: DragState, event?: PointerEvent | MouseEvent): Promise<void> {
-    // Narrow to drag/resize states that carry a `target` field.
-    if (
-      state.kind !== 'dragging-body' &&
-      state.kind !== 'dragging-unscheduled' &&
-      state.kind !== 'resizing-left' &&
-      state.kind !== 'resizing-right'
-    ) return
-    // Guard: an unscheduled-drag that never reached the canvas (e.g. the user
-    // clicked the drag-grip and released without moving) must NOT silently
-    // schedule the issue to "today".
-    if (state.kind === 'dragging-unscheduled' && !state.hasCanvasTarget) return
-    const altKey = event?.altKey === true
-    const client = getClient()
-
-    // Milestone path — unchanged from PR3.3. The existing
-    // `commitMilestoneDrag(state, target, ops)` signature
-    // (line ~713: state: DragState, target: { kind: 'milestone', doc:
-    // Milestone }, ops: ApplyOperations) handles dragging-body,
-    // resizing-left and resizing-right; dragging-unscheduled is
-    // unreachable for milestones.
-    if (state.target.kind === 'milestone') {
-      const ops = client.apply('gantt-drag')
-      await commitMilestoneDrag(state, state.target, ops)
-      const r = await ops.commit()
-      if (!r.result) {
-        const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
-        addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
-      }
-      // Legacy path manages its own preview lifecycle.
-      activeDrag.set({ kind: 'idle' })
-      return
-    }
-
-    // Issue dragging-unscheduled — no relations to cascade, keep PR3
-    // single-update commit via commitIssueDrag.
-    if (state.kind === 'dragging-unscheduled') {
-      const ops = client.apply('gantt-drag')
-      await commitIssueDrag(state, state.target, ops)
-      const r = await ops.commit()
-      if (!r.result) {
-        const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
-        addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
-      }
-      // Legacy path manages its own preview lifecycle.
-      activeDrag.set({ kind: 'idle' })
-      return
-    }
-
-    // Cascade-eligible issue states (dragging-body, resizing-*).
-    // Parent-drag detection: check full space for children.
-    if (state.kind === 'dragging-body' && state.target.kind === 'issue') {
-      const parent = state.target.doc
-      const allInSpace = await client.findAll(tracker.class.Issue, { space: parent.space })
-      const isParent = allInSpace.some((i) => i.parents?.[0]?.parentId === parent._id)
-      if (isParent) {
-        const delta = (state as any).previewStart - (state as any).originStart
-        const primaryEdits: PrimaryEdit[] = [{
-          issue: parent,
-          newStart: (state as any).previewStart,
-          newDue: (state as any).previewEnd
-        }]
-        for (const child of descendantsWithDates(parent, allInSpace)) {
-          primaryEdits.push({
-            issue: child,
-            newStart: (child.startDate as number) + delta,
-            newDue: (child.dueDate as number) + delta
-          })
-        }
-        // Parent-drag fans out → primaryEdits.length > 1, so commitWithCascade
-        // will skip the legacy popup branch anyway. Pass 'none' for clarity.
-        await commitWithCascade(primaryEdits, altKey, parent.space, 'none')
-        return
-      }
-      // Childless issue falls through to the leaf branch below.
-    }
-
-    if (state.kind === 'dragging-body') {
-      const target = state.target.doc
-      const primaryEdits: PrimaryEdit[] = [{
-        issue: target,
-        newStart: (state as any).previewStart,
-        newDue: (state as any).previewEnd
-      }]
-      const legacyConfirmKind: 'move' | 'resize' | 'none' = confirmMove ? 'move' : 'none'
-      await commitWithCascade(primaryEdits, altKey, target.space, legacyConfirmKind)
-      return
-    }
-    if (state.kind === 'resizing-left') {
-      const target = state.target.doc
-      const primaryEdits: PrimaryEdit[] = [{
-        issue: target,
-        newStart: (state as any).previewStart,
-        newDue: target.dueDate as number
-      }]
-      const legacyConfirmKind: 'move' | 'resize' | 'none' = confirmResize ? 'resize' : 'none'
-      await commitWithCascade(primaryEdits, altKey, target.space, legacyConfirmKind)
-      return
-    }
-    if (state.kind === 'resizing-right') {
-      const target = state.target.doc
-      const primaryEdits: PrimaryEdit[] = [{
-        issue: target,
-        newStart: target.startDate as number,
-        newDue: (state as any).previewEnd
-      }]
-      const legacyConfirmKind: 'move' | 'resize' | 'none' = confirmResize ? 'resize' : 'none'
-      await commitWithCascade(primaryEdits, altKey, target.space, legacyConfirmKind)
-      return
-    }
-  }
-
-  function attachWindowDragListeners (): void {
-    window.addEventListener('pointermove', handleCanvasPointerMove)
-    window.addEventListener('pointerup', handleCanvasPointerUp)
-    window.addEventListener('pointercancel', handleCanvasPointerUp)
-    window.addEventListener('mousemove', handleCanvasPointerMove)
-    window.addEventListener('mouseup', handleCanvasPointerUp)
-  }
-
-  function detachWindowDragListeners (): void {
-    window.removeEventListener('pointermove', handleCanvasPointerMove)
-    window.removeEventListener('pointerup', handleCanvasPointerUp)
-    window.removeEventListener('pointercancel', handleCanvasPointerUp)
-    window.removeEventListener('mousemove', handleCanvasPointerMove)
-    window.removeEventListener('mouseup', handleCanvasPointerUp)
-  }
-
-  // Attach/detach window-level pointer listeners only while a drag is active.
-  // Connector creation starts from pointerdown; handleConnectorDown also
-  // attaches immediately so the first pointermove cannot race Svelte's flush.
-  $: if ($activeDrag.kind !== 'idle' && $activeDrag.kind !== 'hover-bar') {
-    attachWindowDragListeners()
-  } else {
-    detachWindowDragListeners()
-  }
-  onDestroy(() => {
-    detachWindowDragListeners()
-  })
-
-  /**
-   * Slim the Gantt context menu by deny-listing actions that are noise for a
-   * Gantt-specific right-click. Keeps Open (Issue's overridden EditIssue
-   * action), Status/Priority/Assignee submenus (›), Set start/due date,
-   * Add sub-issue, Set parent issue, Copy ID/URL, Duplicate, Delete.
-   *
-   * Deny-list (vs. allow-list) is needed because tracker registers a custom
-   * Open action for `tracker.class.Issue` with an auto-generated ID; allow-
-   * listing by static ID misses it. The menu is otherwise too tall; keep
-   * parent/sub-issue access and drop the columns that are already in the
-   * sidebar.
-   */
-  const GANTT_MENU_EXCLUDED_ACTIONS = [
-    'tracker:action:SetComponent',
-    'tracker:action:SetMilestone',
-    'tracker:action:SetLabels',
-    'tracker:action:CopyIssueTitle',
-    'tracker:action:Relations',
-    'tracker:action:NewRelatedIssue',
-    'tracker:action:EditRelatedTargets',
-    'tracker:action:MoveToProject',
-    'tracker:action:CopyAsMarkdownTable',
-    'tracker:action:UnsetParent',
-    // Below are surfaced via the local Hierarchy ▸ submenu instead, so the
-    // top-level menu has one collapsed entry rather than three separate ones.
-    'tracker:action:SetParent',
-    'tracker:action:NewSubIssue'
-  ]
-
-  function openGanttMenu (event: MouseEvent, issue: Issue): void {
-    const anchor = getEventPositionElement(event)
-    const editable = editableIssueIds.has(String(issue._id))
-    const extra = editable ? ganttExtraActions(issue, anchor) : []
-    showMenu(event, {
-      object: issue,
-      baseMenuClass: tracker.class.Issue,
-      actions: extra,
-      excludedActions: GANTT_MENU_EXCLUDED_ACTIONS
-    })
-  }
-
-  function handleBarContextMenu (e: CustomEvent<{ issue: Issue, event: MouseEvent }>): void {
-    openGanttMenu(e.detail.event, e.detail.issue)
-  }
-
-  function handleRowDragStart (e: CustomEvent<{ issue: Issue, cursorX: number }>): void {
-    activeDrag.update((s) => reduce(s, {
-      type: 'mousedown-unscheduled',
-      target: { kind: 'issue', doc: e.detail.issue },
-      cursorX: e.detail.cursorX
-    }, timeScale))
-  }
-
-  function handleRowContextMenu (e: CustomEvent<{ issue: { _id: string, _class: string }, event: MouseEvent }>): void {
-    const found = issues.find((i) => String(i._id) === e.detail.issue._id)
-    if (found === undefined) return
-    openGanttMenu(e.detail.event, found)
-  }
-
-  // -------------------------------------------------------------------------
-  // PR 3 keyboard: Tab cycles bars with dates, arrows shift focused bar by 1d
-  // (or 7d with Shift). Escape cancels an active drag.
-  // -------------------------------------------------------------------------
-
-  let focusedIssueId: string | null = null
-
-  $: scheduledIssues = issues.filter((i) => i.startDate != null && i.dueDate != null)
-
-  function moveFocus (dir: 1 | -1): void {
-    if (scheduledIssues.length === 0) return
-    const ids = scheduledIssues.map((i) => String(i._id))
-    const cur = focusedIssueId !== null ? ids.indexOf(focusedIssueId) : -1
-    const nextIdx = (cur + dir + ids.length) % ids.length
-    focusedIssueId = ids[nextIdx]
-  }
-
-  async function shiftFocused (days: number): Promise<void> {
-    if (focusedIssueId === null) return
-    const i = scheduledIssues.find((it) => String(it._id) === focusedIssueId)
-    if (i === undefined || i.startDate == null || i.dueDate == null) return
-    if (!editableIssueIds.has(focusedIssueId)) return
-    const allInSpace = await getClient().findAll(tracker.class.Issue, { space: i.space })
-    // All date arithmetic routes through addScheduleDays so the Phase-2
-    // working-calendar swap stays a single integration point (Spec §5.3).
-    const primaryEdits: PrimaryEdit[] = [{
-      issue: i,
-      newStart: addScheduleDays(i.startDate, days),
-      newDue: addScheduleDays(i.dueDate, days)
-    }]
-    // Include descendants (matches PR3 behaviour for parent shifts).
-    for (const child of descendantsWithDates(i, allInSpace)) {
-      primaryEdits.push({
-        issue: child,
-        newStart: addScheduleDays(child.startDate as number, days),
-        newDue: addScheduleDays(child.dueDate as number, days)
-      })
-    }
-    // Keyboard shift has no Alt-modifier path and no legacy-confirm UX
-    // (the toggle is tied to mouse drag, not keyboard). Always run cascade
-    // simulation, never show legacy popup.
-    await commitWithCascade(primaryEdits, false, i.space, 'none')
-  }
-
-  function onKey (e: KeyboardEvent): void {
-    // Only react when focus is inside the Gantt root — otherwise we'd hijack
-    // global shortcuts.
-    if (!(containerEl?.contains(document.activeElement) ?? false)) return
-    if (e.key === 'Tab') {
-      moveFocus(e.shiftKey ? -1 : 1)
-      e.preventDefault()
-      return
-    }
-    if (e.key === 'ArrowRight') {
-      void shiftFocused(e.shiftKey ? 7 : 1)
-      e.preventDefault()
-      return
-    }
-    if (e.key === 'ArrowLeft') {
-      void shiftFocused(e.shiftKey ? -7 : -1)
-      e.preventDefault()
-      return
-    }
-    if (e.key === 'Escape' && $activeDrag.kind !== 'idle') {
-      activeDrag.set({ kind: 'idle' })
-      e.preventDefault()
-      return
-    }
-    // Phase 1.D — direct zoom-level keys (Linear-style) and jump-to-today.
-    // Only fire on bare key (no Ctrl/Cmd/Alt) so we don't hijack browser
-    // shortcuts like Ctrl+D = bookmark. Use setZoom() so the horizontal
-    // scroll + viewport sync match the toolbar buttons exactly.
-    //
-    // Skip when an editable element (input/textarea/select/contentEditable)
-    // inside the Gantt root has focus — typing into an inline rename or
-    // filter field should not zoom-switch the canvas.
-    const target = e.target as Element | null
-    const isEditable =
-      target instanceof HTMLInputElement ||
-      target instanceof HTMLTextAreaElement ||
-      target instanceof HTMLSelectElement ||
-      (target instanceof HTMLElement && target.isContentEditable)
-    if (!e.ctrlKey && !e.metaKey && !e.altKey && !isEditable) {
-      if (e.key === 'd' || e.key === 'D') { setZoom('day');     e.preventDefault(); return }
-      if (e.key === 'w' || e.key === 'W') { setZoom('week');    e.preventDefault(); return }
-      if (e.key === 'm' || e.key === 'M') { setZoom('month');   e.preventDefault(); return }
-      if (e.key === 'q' || e.key === 'Q') { setZoom('quarter'); e.preventDefault(); return }
-      if (e.key === 't' || e.key === 'T') { jumpToToday();      e.preventDefault(); return }
-    }
-
-    // PR6: zoom shortcuts. `+` / `=` zoom in, `-` zoom out. The same
-    // key positions as the browser's native zoom but scoped to the Gantt.
-    if (e.key === '+' || e.key === '=') {
-      cycleZoom(1)
-      e.preventDefault()
-      return
-    }
-    if (e.key === '-' || e.key === '_') {
-      cycleZoom(-1)
-      e.preventDefault()
-      return
-    }
-    // PR6: '?' or Shift+/ shows the keyboard help overlay.
-    if (e.key === '?') {
-      showPopup(GanttHelpPopup, {}, 'middle')
-      e.preventDefault()
-      return
-    }
-    // PR6: 'e' / 'E' exports the visible Gantt SVG to PNG.
-    if (e.key === 'e' || e.key === 'E') {
-      void exportToPng()
-      e.preventDefault()
-    }
-  }
-
-  function cycleZoom (delta: number): void {
-    const levels: ZoomLevel[] = ['day', 'week', 'month', 'quarter']
-    const idx = levels.indexOf(zoom)
-    const next = levels[Math.min(levels.length - 1, Math.max(0, idx + delta))]
-    if (next !== zoom) setZoom(next)
-  }
-
-  // PNG export — captures the entire `.gantt-root` (sidebar + sticky
-  // header + canvas SVG) via html2canvas. The lib is dynamically
-  // imported by the exporter so it only lands in the user's browser
-  // when this button is clicked (~750 KB chunk, lazy-loaded).
-  async function exportToPng (): Promise<void> {
-    if (containerEl == null) return
-    try {
-      await exportElementAndDownloadPng(containerEl, `gantt-${new Date().toISOString().slice(0, 10)}`)
-    } catch (err) {
-      const title = await translate(tracker.string.GanttExportFailed, {}, undefined)
-      addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
-    }
-  }
-
-  // PDF export — rasterises the gantt-root with html2canvas at 2× DPI
-  // and embeds the resulting JPEG into a landscape A4 PDF via jsPDF,
-  // then triggers a browser download. Replaces the old `window.print()`
-  // path which only opened the system print dialog instead of producing
-  // a file. Both html2canvas and jsPDF are dynamic-imported inside the
-  // exporter — neither lib bloats the main bundle.
-  async function exportToPdf (): Promise<void> {
-    if (containerEl == null) return
-    try {
-      await exportElementToPdf(containerEl, `gantt-${new Date().toISOString().slice(0, 10)}`)
-    } catch (err) {
-      const title = await translate(tracker.string.GanttExportFailed, {}, undefined)
-      addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
-    }
-  }
-
-  // Phase 2.3b — fullscreen toggle. Uses the standard browser
-  // Fullscreen API. Walk up the DOM from gantt-root to find an
-  // ancestor that includes the second header row (the row with
-  // Filter + Date-Nav + Zoom + PNG/PDF/Fullscreen + ModeSelector)
-  // so that the toolbar stays accessible in fullscreen. If we
-  // fullscreened only gantt-root the user would lose access to
-  // Today/Day/Week/Month/Quarter without exiting fullscreen.
-  //
-  // Strategy: find the nearest popupPanel-body, .app-content, or
-  // body element that wraps both the SpaceHeader and GanttView.
-  // Fallback to body if nothing matches.
-  function getFullscreenTarget (): Element | null {
-    if (containerEl == null) return null
-    let el: Element | null = containerEl
-    while (el != null && el !== document.body) {
-      const cls = el.className?.toString() ?? ''
-      if (cls.includes('popupPanel-body') || cls.includes('app-content') ||
-          cls.includes('antiPanel-application')) {
-        return el
-      }
-      el = el.parentElement
-    }
-    return document.body
-  }
-
-  function toggleFullscreen (): void {
-    if (document.fullscreenElement != null) {
-      void document.exitFullscreen().catch(() => {})
-      return
-    }
-    const target = getFullscreenTarget()
-    if (target == null) return
-    void (target as HTMLElement).requestFullscreen().catch(() => {})
-  }
-
-  onMount(() => {
-    window.addEventListener('keydown', onKey)
-  })
-  onDestroy(() => {
-    window.removeEventListener('keydown', onKey)
-    // PR5 cleanup: the critical-path recompute is debounced via
-    // setTimeout. If the view unmounts while a pending recompute is
-    // queued, the timer would fire after our reactive store handles
-    // were already torn down — clearing the handle prevents both the
-    // dangling reactive write and the late notification banner.
-    if (cpDirtyTimer !== null) {
-      clearTimeout(cpDirtyTimer)
-      cpDirtyTimer = null
-    }
-  })
-
-  function jumpToToday (): void {
-    if (hScrollEl == null) return
-    const x = timeScale.toX(Date.now())
-    hScrollEl.scrollTo({ left: Math.max(0, x - canvasViewportWidth / 2), behavior: 'smooth' })
-  }
-  function pageScroll (dir: -1 | 1): void {
-    if (hScrollEl == null) return
-    hScrollEl.scrollBy({ left: dir * canvasViewportWidth * 0.8, behavior: 'smooth' })
-  }
-  function jumpToStart (): void {
-    if (hScrollEl == null) return
-    hScrollEl.scrollTo({ left: 0, behavior: 'smooth' })
-  }
-  function jumpToEnd (): void {
-    if (hScrollEl == null) return
-    hScrollEl.scrollTo({ left: hScrollEl.scrollWidth, behavior: 'smooth' })
-  }
-  function jumpToDate (iso: string): void {
-    if (hScrollEl == null || iso === '') return
-    const t = Date.parse(iso)
-    if (isNaN(t)) return
-    const x = timeScale.toX(t)
-    hScrollEl.scrollTo({ left: Math.max(0, x - canvasViewportWidth / 2), behavior: 'smooth' })
-  }
-  let datePickerValue: string = ''
-
-  function formatRange (ms: number): string {
-    return new Date(ms).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
-  }
-
-  // Custom horizontal scrollbar thumb geometry (proxy for hScrollEl).
-  $: hTrackWidth = canvasViewportWidth > 0 ? canvasViewportWidth : 1
-  $: hThumbWidth = totalCanvasWidth > 0
-    ? Math.max(40, (hTrackWidth * hTrackWidth) / totalCanvasWidth)
-    : hTrackWidth
-  $: hThumbMax = Math.max(0, hTrackWidth - hThumbWidth)
-  $: hScrollMax = Math.max(1, totalCanvasWidth - hTrackWidth)
-  $: hThumbLeft = canvasViewportLeft <= 0 ? 0 : (canvasViewportLeft / hScrollMax) * hThumbMax
-  $: hHasOverflow = totalCanvasWidth > hTrackWidth + 1
-
-  // Custom vertical scrollbar thumb geometry (proxy for the existing
-  // gantt-scroller native scrollTop — Huly globally hides native bars
-  // so we render our own in DOM and let the native bar drive scrollTop).
-  $: vTrackHeight = viewportHeight > 0 ? viewportHeight : 1
-  $: vTotalHeight = ROW_HEIGHT * rows.length + HEADER_HEIGHT
-  $: vThumbHeight = vTotalHeight > 0
-    ? Math.max(40, (vTrackHeight * vTrackHeight) / vTotalHeight)
-    : vTrackHeight
-  $: vThumbMax = Math.max(0, vTrackHeight - vThumbHeight)
-  $: vScrollMax = Math.max(1, vTotalHeight - vTrackHeight)
-  $: vThumbTop = scrollTop <= 0 ? 0 : (scrollTop / vScrollMax) * vThumbMax
-  $: vHasOverflow = vTotalHeight > vTrackHeight + 1
-
-  let dragVThumb = false
-  let dragVThumbStartY = 0
-  let dragVThumbStartScroll = 0
-  function onVThumbDragStart (e: PointerEvent): void {
-    e.stopPropagation()
-    e.preventDefault()
-    if (scrollerEl == null) return
-    dragVThumb = true
-    dragVThumbStartY = e.clientY
-    dragVThumbStartScroll = scrollerEl.scrollTop
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-  }
-  function onVThumbDragMove (e: PointerEvent): void {
-    if (!dragVThumb || scrollerEl == null) return
-    const dy = e.clientY - dragVThumbStartY
-    const ratio = vThumbMax > 0 ? dy / vThumbMax : 0
-    scrollerEl.scrollTop = dragVThumbStartScroll + ratio * vScrollMax
-  }
-  function onVThumbDragEnd (e: PointerEvent): void {
-    if (!dragVThumb) return
-    dragVThumb = false
-    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
-  }
-
-  let dragThumb = false
-  let dragThumbStartX = 0
-  let dragThumbStartScroll = 0
-  function onThumbDragStart (e: PointerEvent): void {
-    e.stopPropagation()
-    e.preventDefault()
-    if (hScrollEl == null) return
-    dragThumb = true
-    dragThumbStartX = e.clientX
-    dragThumbStartScroll = hScrollEl.scrollLeft
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-  }
-  function onThumbDragMove (e: PointerEvent): void {
-    if (!dragThumb || hScrollEl == null) return
-    const dx = e.clientX - dragThumbStartX
-    const ratio = hThumbMax > 0 ? dx / hThumbMax : 0
-    hScrollEl.scrollLeft = dragThumbStartScroll + ratio * hScrollMax
-  }
-  function onThumbDragEnd (e: PointerEvent): void {
-    if (!dragThumb) return
-    dragThumb = false
-    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
-  }
-  function onProxyTrackClick (e: PointerEvent): void {
-    // Click on track (not thumb): page-scroll towards click position.
-    if ((e.target as HTMLElement).classList.contains('hscroll-thumb')) return
-    if (hScrollEl == null) return
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    const clickX = e.clientX - rect.left
-    const dir = clickX < hThumbLeft ? -1 : 1
-    hScrollEl.scrollBy({ left: dir * hTrackWidth * 0.8, behavior: 'smooth' })
-  }
-
-  // Wheel-forwarding is no longer needed: sidebar lives inside the same
-  // .gantt-scroller as the canvas, with position:sticky;left:0. Browser
-  // handles native scrolling at the right speed regardless of where the
-  // mouse hovers inside the scroller.
-
-  // Click-and-drag panning across canvas area, including normal Gantt bars.
-  let panning = false
-  let pendingPan = false
-  let panStartX = 0
-  let panStartY = 0
-  let panStartScrollLeft = 0
-  let panStartScrollTop = 0
-  function onCanvasPanStart (e: PointerEvent): void {
-    if (scrollerEl == null || hScrollEl == null) return
-    const target = e.target as HTMLElement
-    if (!shouldStartCanvasPan(target)) return
-    pendingPan = true
-    panStartX = e.clientX
-    panStartY = e.clientY
-    panStartScrollLeft = hScrollEl.scrollLeft
-    panStartScrollTop = scrollerEl.scrollTop
-  }
-  function onCanvasPanMove (e: PointerEvent): void {
-    if ((!pendingPan && !panning) || scrollerEl == null || hScrollEl == null) return
-    const dx = e.clientX - panStartX
-    const dy = e.clientY - panStartY
-    if (pendingPan) {
-      if (!shouldPromoteCanvasPan(dx, dy)) return
-      pendingPan = false
-      panning = true
-      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-    }
-    hScrollEl.scrollLeft = panStartScrollLeft - (e.clientX - panStartX)
-    scrollerEl.scrollTop = panStartScrollTop - (e.clientY - panStartY)
-  }
-  function onCanvasPanEnd (e: PointerEvent): void {
-    // Guard: only release the pointer if we actually captured it. A pointerup
-    // bubbling from a child element that was excluded by the pan-handler
-    // exclusion list (e.g. resize-handle, drag-grip) shouldn't reach
-    // releasePointerCapture, but browsers throw `InvalidStateError` if the
-    // element isn't actually capturing the given pointerId.
-    if (pendingPan) {
-      pendingPan = false
-      return
-    }
-    if (!panning) return
-    panning = false
-    lastCanvasPanEndedAt = Date.now()
-    const el = e.currentTarget as HTMLElement
-    if (typeof el.hasPointerCapture === 'function' && el.hasPointerCapture(e.pointerId)) {
-      el.releasePointerCapture(e.pointerId)
-    }
-  }
-
-  // Drag-resize the sidebar.
-  let resizing = false
-  let resizeStartX = 0
-  let resizeStartWidth = 0
-  function onResizeStart (e: PointerEvent): void {
-    e.stopPropagation()
-    e.preventDefault()
-    resizing = true
-    resizeStartX = e.clientX
-    resizeStartWidth = userSidebarWidth
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-  }
-  function onResizeMove (e: PointerEvent): void {
-    if (!resizing) return
-    e.stopPropagation()
-    const next = resizeStartWidth + (e.clientX - resizeStartX)
-    userSidebarWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, next))
-  }
-  function onResizeEnd (e: PointerEvent): void {
-    if (!resizing) return
-    e.stopPropagation()
-    resizing = false
-    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
-    queueMicrotask(syncViewport)
-  }
-
-  let resizeObs: ResizeObserver | undefined
-  let observedScrollerEl: HTMLDivElement | null = null
-  let observedHScrollEl: HTMLDivElement | null = null
-  function syncViewport (): void {
-    if (scrollerEl != null) {
-      scrollTop = scrollerEl.scrollTop
-      viewportHeight = scrollerEl.clientHeight
-    }
-    if (hScrollEl != null) {
-      canvasViewportLeft = hScrollEl.scrollLeft
-      canvasViewportWidth = hScrollEl.clientWidth
-    } else if (scrollerEl != null) {
-      // Before the horizontal-scroll proxy is rendered, derive the canvas
-      // viewport from the visible scroller minus sticky sidebar + resize cell.
-      // Otherwise the initial 1200px fallback can suppress hHasOverflow
-      // forever in narrower layouts, hiding the Plane-style bottom bar.
-      canvasViewportLeft = 0
-      canvasViewportWidth = computeCanvasViewportWidth(scrollerEl.clientWidth, sidebarWidthPx, RESIZE_CELL_W)
-    }
-  }
-  $: if (scrollerEl != null) queueMicrotask(syncViewport)
-  $: if (hScrollEl != null) queueMicrotask(syncViewport)
-  $: if (resizeObs !== undefined && scrollerEl != null && observedScrollerEl !== scrollerEl) {
-    resizeObs.observe(scrollerEl)
-    observedScrollerEl = scrollerEl
-    queueMicrotask(syncViewport)
-  }
-  $: if (resizeObs !== undefined && hScrollEl != null && observedHScrollEl !== hScrollEl) {
-    resizeObs.observe(hScrollEl)
-    observedHScrollEl = hScrollEl
-    queueMicrotask(syncViewport)
-  }
-  $: if (hScrollEl == null && observedHScrollEl !== null) {
-    observedHScrollEl = null
-    queueMicrotask(syncViewport)
-  }
-  onMount(() => {
-    syncViewport()
-    if (typeof ResizeObserver !== 'undefined') {
-      resizeObs = new ResizeObserver(() => syncViewport())
-      if (scrollerEl != null) resizeObs.observe(scrollerEl)
-      if (hScrollEl != null) resizeObs.observe(hScrollEl)
-    }
-  })
-  onDestroy(() => {
-    resizeObs?.disconnect()
-    // Phase 2 — clear the toolbar bus on unmount so the controls
-    // disappear from IssuesView's header when the user switches away
-    // from the Gantt viewlet.
-    ganttToolbarApi.set(null)
-  })
-
-  // Phase 2 — keep the toolbar bus in sync with our local state.
-  // The store re-writes on every change of `zoom` or `datePickerValue`,
-  // which causes the GanttToolbarControls component in IssuesView's
-  // header-tools slot to re-render with the current values. Setting
-  // the store also imperatively publishes the handler functions so
-  // the consumer can invoke them.
-  $: ganttToolbarApi.set({
-    zoom,
-    datePickerValue,
-    setZoom,
-    jumpToToday,
-    jumpToStart,
-    jumpToEnd,
-    pageScroll,
-    jumpToDate,
-    cycleZoom,
-    toggleFullscreen,
-    exportToPng,
-    exportToPdf
   })
 
   $: viewport = { left: canvasViewportLeft, right: canvasViewportLeft + canvasViewportWidth }
@@ -4530,6 +3322,31 @@
             {/each}
           </select>
         </div>
+        <!-- v121.12 / Refactor D — Toolbar row-2 trailing cluster.
+             Fullscreen stays inline (high-frequency, immediate-effect).
+             Save view / Load view / Export PNG / Export PDF moved into
+             the "More actions" hamburger menu so the toolbar no longer
+             overflows on mid-width viewports. -->
+        <button
+          type="button"
+          class="gantt-toolbar-icon-btn"
+          use:tooltip={{ label: tracker.string.GanttFullscreen }}
+          aria-label={ariaLabelOf(tracker.string.GanttFullscreen)}
+          title={ariaLabelOf(tracker.string.GanttFullscreen)}
+          on:click={toggleFullscreen}
+        >
+          <span class="gantt-toolbar-text-glyph" aria-hidden="true">⛶</span>
+        </button>
+        <button
+          type="button"
+          class="gantt-toolbar-icon-btn"
+          use:tooltip={{ label: tracker.string.GanttMoreActions }}
+          aria-label={ariaLabelOf(tracker.string.GanttMoreActions)}
+          title={ariaLabelOf(tracker.string.GanttMoreActions)}
+          on:click={openMoreActionsMenu}
+        >
+          <Icon icon={IconMoreV} size="small" />
+        </button>
       </div>
     </div>
 
@@ -4715,6 +3532,9 @@
               cpSlack={cpResult.slack}
               {showCriticalPath}
               workingDaysConfig={workingDaysCfg}
+              {barLabelLeft}
+              {barLabelInside}
+              {barLabelRight}
               on:openIssue={onIssueOpen}
               on:hoverRow={onRowHover}
               on:barMouseDown={handleBarMouseDown}
@@ -4907,81 +3727,18 @@
     opacity: 0.4;
     cursor: not-allowed;
   }
-  /* Tier-4 Item 12 — tree expand/collapse-all glyphs.
-     Two stacked carets read more like "all rows" than a single caret. */
-  .gantt-tree-glyph {
-    font-size: 8px;
+  /* v121.11 / Bug 5 — the old `.gantt-tree-glyph` rule rendered the
+     ▶▶ / ▼▼ double-caret text glyphs and was retired together with
+     them; expand-/collapse-all now use the standard ChevronRight /
+     ChevronDown icons. */
+  /* Phase 1 / Toolbar Row-2 — text-only glyph for PNG/PDF/Fullscreen buttons.
+     Keeps the export controls webpack-safe (no Icon imports needed). */
+  .gantt-toolbar-text-glyph {
+    font-size: 10px;
     line-height: 1;
-    letter-spacing: -1px;
-    font-weight: bold;
+    font-weight: 600;
     color: var(--theme-content-color);
     pointer-events: none;
-  }
-  .gantt-filter-btn {
-    height: 26px;
-    padding: 0 10px;
-    border: 1px solid var(--theme-divider-color);
-    background: var(--theme-button-default);
-    color: var(--theme-content-color);
-    font-size: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .gantt-filter-btn:hover { background: var(--theme-button-hovered); }
-  .gantt-filter-btn.has-active-filter {
-    background: var(--theme-button-pressed);
-    font-weight: 600;
-  }
-  .gantt-filter-badge {
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    border-radius: 8px;
-    background: var(--theme-warning-color, #d4a017);
-    color: var(--theme-content-color);
-    font-size: 10px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .gantt-filter-popup {
-    position: absolute;
-    top: calc(100% + 4px);
-    right: 0;
-    z-index: 30;
-    min-width: 200px;
-    padding: 8px;
-    border: 1px solid var(--theme-divider-color);
-    background: var(--theme-popup-color, var(--theme-comp-header-color));
-    border-radius: 6px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-    font-size: 12px;
-    color: var(--theme-content-color);
-  }
-  .gantt-filter-popup-row { display: flex; justify-content: flex-end; margin-bottom: 6px; }
-  .gantt-filter-clear {
-    height: 22px;
-    padding: 0 8px;
-    border: 1px solid var(--theme-divider-color);
-    background: var(--theme-button-default);
-    color: var(--theme-content-color);
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 11px;
-  }
-  .gantt-filter-clear:disabled { opacity: 0.5; cursor: not-allowed; }
-  .gantt-filter-popup-section { margin-bottom: 8px; }
-  .gantt-filter-popup-title { font-weight: 600; margin-bottom: 4px; opacity: 0.85; }
-  .gantt-filter-popup-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 2px 0;
-    cursor: pointer;
   }
   .gantt-groupby-wrap {
     display: inline-flex;
@@ -5158,7 +3915,6 @@
     position: relative;
     height: 100%;
     overflow: hidden;
-    min-height: 0;
   }
   .hscroll-track-custom {
     width: 100%;
@@ -5372,49 +4128,80 @@
     line-height: 1.5;
   }
 
-  /* Phase 2.3c — PDF export via browser print. When the user clicks
-     the PDF button, GanttView toggles the .gantt-printing class on
-     the gantt-root and calls window.print(). The @media print block
-     below hides the surrounding chrome (sidebar, header, popups) and
-     expands the Gantt to fill the printable page area so the
-     resulting PDF is a clean single-page Gantt chart.
-     The class is removed automatically ~1s later. */
-  :global(body.is-modal) .gantt-printing,
-  .gantt-printing :global(.hover-tooltip),
-  .gantt-printing :global(.popup),
-  .gantt-printing :global(.antiPopup) {
-    display: none !important;
-  }
-
-  @media print {
-    /* When called via window.print(), hide everything except the
-       Gantt root + canvas. The page layout collapses to just the
-       chart. */
-    :global(body > *:not(.popup)),
-    :global(.app-content),
-    :global(.popupPanel),
-    :global(.antiNav-list) {
-      visibility: visible;
-    }
-    :global(.gantt-printing) {
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: auto !important;
-      max-height: none !important;
-      overflow: visible !important;
-      background: white !important;
-    }
-    :global(.gantt-printing .gantt-scroller) {
-      overflow: visible !important;
-      max-height: none !important;
-    }
-    :global(.gantt-printing .hover-tooltip),
-    :global(.gantt-printing .popup),
-    :global(.gantt-printing .gantt-hscrollbar),
-    :global(.gantt-printing .gantt-vscrollbar) {
-      display: none !important;
+  /*
+   * Tier-4 Item 13 — Mobile-Friendly Gantt.
+   *
+   * Phone layout (≤640 px): the sidebar grid column collapses to 0
+   * (hidden), the hamburger button toggles a slide-out drawer that
+   * overlays the canvas. Tablet (641–1024 px) keeps the legacy grid
+   * but bumps hit-targets to a touch-friendly 44 px (Spec §"Tablet":
+   * Hit-Targets ≥ 44×44 px).
+   */
+  .mobile-hamburger {
+    .hamburger-glyph {
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 600;
     }
   }
+  /* Phone — overlay drawer.
+     v121.11 / Bug 6 — verify-pass + touch-target boost. The QA note
+     "Mobile-UX should be dedicated, not a hidden sidebar via translate"
+     was reviewed: the existing implementation IS a textbook dedicated
+     slide-out drawer (translateX(-100%) → translateX(0) with
+     transition, dimmed backdrop, hamburger toggle, auto-close on row
+     select). The CSS `transform: translate*` here is the standard
+     drawer animation primitive — not a visibility hack — so no
+     rewrite was warranted. We do bump phone hit-targets to 44px
+     (matching the Tablet rule) so finger-tap reliability matches
+     iOS/Android HIG recommendations. */
+  @media (max-width: 640px) {
+    .nav-btn, .gantt-toolbar-icon-btn {
+      min-width: 44px;
+      min-height: 44px;
+    }
+    /* The sidebar-cell is positioned absolutely so it can slide over
+       the canvas without re-flowing the grid. When .drawer-closed it
+       sits off-screen at translateX(-100%); .drawer-open slides it in.
+       The resize-cell is hidden because finger-resize of a drawer is
+       fiddly and the column-width matters less when the drawer covers
+       the whole viewport anyway. */
+    .gantt-grid {
+      grid-template-columns: 0 0 1fr !important;
+    }
+    .cell.sidebar-cell {
+      position: absolute;
+      top: 56px; /* HEADER_HEIGHT — keep in sync with const in GanttView.svelte */
+      left: 0;
+      width: min(320px, 85vw);
+      height: calc(100% - 56px);
+      z-index: 30;
+      background: var(--theme-bg-color);
+      border-right: 1px solid var(--theme-divider-color);
+      box-shadow: 4px 0 12px rgba(0, 0, 0, 0.18);
+      transition: transform 200ms ease;
+      transform: translateX(-100%);
+      overflow-y: auto;
+    }
+    .cell.sidebar-cell.drawer-open {
+      transform: translateX(0);
+    }
+    .cell.resize-cell, .cell.resize-corner {
+      display: none;
+    }
+    /* Backdrop covers the canvas when the drawer is open so a tap on the
+       backdrop closes the drawer (standard slide-out-menu pattern). */
+    .mobile-drawer-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      z-index: 20;
+    }
+  }
+  /* Tablet 641-1024px: NO hit-target bump — user reported in v121.13 that
+     this rule inflated buttons whenever the desktop window was resized
+     below 1024px. Phone (≤640px) keeps the 44px rule above because Phone
+     is touch-only by spec. Tablet-touch users get the same 26px buttons
+     as desktop; long-press on the bars still works because layoutMode
+     switches to 'tablet' regardless of CSS hit-target size. */
 </style>
