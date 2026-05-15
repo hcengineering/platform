@@ -857,14 +857,22 @@
   let panStartScrollTop = 0
   function onCanvasPanStart (e: PointerEvent): void {
     if (scrollerEl === undefined || hScrollEl === undefined) return
-    // Only pan with primary mouse button on empty space — let SVG/HTML
-    // children (bars, buttons, links, resize-handle) handle their own
-    // click/drag without competing with the canvas pan.
+    // Pan with primary mouse button on empty space OR on a bar that isn't
+    // currently selected — letting users grab anywhere to scroll the canvas
+    // (user feedback 2026-05-11). Controls that own their own click/drag
+    // (drag-grip, resize-handle, buttons, links) are always excluded.
+    // Selected bars are also excluded so the PR3 drag/resize reducer wins —
+    // otherwise the second-click drag never gets a chance to start.
     const target = e.target as HTMLElement
-    // Sidebar-cell + drag-grip + resize-handle excluded so the sidebar's
-    // unscheduled-drag-grip doesn't compete with canvas pan for the same
-    // pointerdown. review note (2026-05-11).
-    if (target.closest('.bar-wrap, .sidebar-cell, .drag-grip, .resize-handle, button, a, .toggle-btn, .jump-btn, .resize-cell')) return
+    if (target.closest('.sidebar-cell, .drag-grip, .resize-handle, button, a, .toggle-btn, .jump-btn, .resize-cell')) return
+    const barWrap = target.closest('.bar-wrap')
+    if (barWrap !== null) {
+      // Only let pan win when the bar isn't selected. The .selected class is
+      // applied to the `rect.bar` (or summary-hit) inside the wrap; checking
+      // for it here avoids threading selectedIssueId through the DOM probe.
+      const selectedBar = barWrap.querySelector('rect.bar.selected, rect.summary-hit.selected')
+      if (selectedBar !== null) return
+    }
     panning = true
     panStartX = e.clientX
     panStartY = e.clientY
