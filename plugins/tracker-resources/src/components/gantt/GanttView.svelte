@@ -22,9 +22,11 @@
   import GanttSidebar from './GanttSidebar.svelte'
   import { reduce } from './lib/drag-controller'
   import { buildLayout } from './lib/layout'
+  import { shouldPromoteCanvasPan, shouldStartCanvasPan } from './lib/pan-target'
   import { descendantsWithDates } from './lib/scheduler'
   import { createTimeScale } from './lib/time-scale'
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
+  import { computeCanvasViewportWidth } from './lib/viewport'
   import { Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
   import { showMenu, statusStore } from '@hcengineering/view-resources'
@@ -71,9 +73,11 @@
   let loadingIssues = true
   let loadingMilestones = true
 
-  // PR 3 edit-mode state: a single source of truth for the active drag/resize
-  // interaction. GanttBar / GanttCanvas / GanttSidebar / GanttResizeOverlay
-  // subscribe to this store; the reducer in lib/drag-controller.ts mutates it.
+  // PR 3 edit-mode state: a single source of truth for explicit drag/resize
+  // interactions. Normal bar-body mouse drags are no longer issue moves; they
+  // pan the canvas like empty-space drags (user feedback 2026-05-11).
+  // GanttCanvas / GanttSidebar / GanttResizeOverlay subscribe to this store;
+  // the reducer in lib/drag-controller.ts mutates it.
   // editableIssueIds gates the resize handles + the Set-start-date menu entry
   // per issue based on canEditIssue() (utils.ts:280).
   const activeDrag = writable<DragState>({ kind: 'idle' })
@@ -90,10 +94,10 @@
   $: showPredecessors = ((viewOptions as Record<string, unknown>)?.ganttShowPredecessors ?? false) !== false
 
   /**
-   * Click-to-select gate (user feedback 2026-05-11): a bar must be clicked
-   * once to become "selected" (blue outline) before drag/resize can begin
-   * on it. Prevents accidentally dragging an issue while panning the
-   * canvas horizontally. Clicking outside any bar clears the selection.
+   * Click-to-select gate (user feedback 2026-05-11): a normal bar-body click
+   * marks the bar (blue outline). Holding and dragging on the bar body pans
+   * the canvas instead of moving/resizing the issue. Clicking outside any bar
+   * clears the selection.
    */
   let selectedIssueId: string | null = null
 
@@ -370,12 +374,17 @@
 
   function handleBarMouseDown (e: CustomEvent<{ target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }>): void {
     const id = String(e.detail.target.doc._id)
-    // Click-to-select gate: if this bar isn't already selected, the first
-    // mousedown just selects it (no drag starts). User has to mousedown a
-    // second time on the now-selected bar to actually drag/resize.
-    // Sync focusedIssueId so the keyboard-focus visual never disagrees with
-    // the click-selection visual — otherwise two bars look "marked"
-    // simultaneously (user feedback 2026-05-11).
+    // Bar-body clicks only select. Dragging from the body is handled by the
+    // scroller's pointer-pan path, so an accidental hold on a bar cannot move
+    // or resize the issue.
+    if (e.detail.edge === 'body') {
+      selectedIssueId = id
+      focusedIssueId = id
+      return
+    }
+    // Resize edges remain explicit controls, but only after the bar is
+    // selected. Sync focusedIssueId so keyboard focus and click-selection
+    // visuals never point at different bars.
     if (selectedIssueId !== id) {
       selectedIssueId = id
       focusedIssueId = id
@@ -432,8 +441,8 @@
 
   /**
    * Clear selection when the user clicks outside any bar — e.g. on the
-   * canvas background. Bar mousedowns stopPropagation, so this only fires
-   * for clicks that didn't land on a bar.
+   * canvas background. Bar clicks stopPropagation, so this only fires for
+   * clicks that didn't land on a bar.
    */
   function onBackgroundClick (e: MouseEvent): void {
     const target = e.target as HTMLElement | null
@@ -950,39 +959,33 @@
   // handles native scrolling at the right speed regardless of where the
   // mouse hovers inside the scroller.
 
-  // Click-and-drag panning across empty canvas area.
+  // Click-and-drag panning across canvas area, including normal Gantt bars.
   let panning = false
+  let pendingPan = false
   let panStartX = 0
   let panStartY = 0
   let panStartScrollLeft = 0
   let panStartScrollTop = 0
   function onCanvasPanStart (e: PointerEvent): void {
     if (scrollerEl === undefined || hScrollEl === undefined) return
-    // Pan with primary mouse button on empty space OR on a bar that isn't
-    // currently selected — letting users grab anywhere to scroll the canvas
-    // (user feedback 2026-05-11). Controls that own their own click/drag
-    // (drag-grip, resize-handle, buttons, links) are always excluded.
-    // Selected bars are also excluded so the PR3 drag/resize reducer wins —
-    // otherwise the second-click drag never gets a chance to start.
     const target = e.target as HTMLElement
-    if (target.closest('.sidebar-cell, .drag-grip, .resize-handle, button, a, .toggle-btn, .jump-btn, .resize-cell')) return
-    const barWrap = target.closest('.bar-wrap')
-    if (barWrap !== null) {
-      // Only let pan win when the bar isn't selected. The .selected class is
-      // applied to the `rect.bar` (or summary-hit) inside the wrap; checking
-      // for it here avoids threading selectedIssueId through the DOM probe.
-      const selectedBar = barWrap.querySelector('rect.bar.selected, rect.summary-hit.selected')
-      if (selectedBar !== null) return
-    }
-    panning = true
+    if (!shouldStartCanvasPan(target)) return
+    pendingPan = true
     panStartX = e.clientX
     panStartY = e.clientY
     panStartScrollLeft = hScrollEl.scrollLeft
     panStartScrollTop = scrollerEl.scrollTop
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
   }
   function onCanvasPanMove (e: PointerEvent): void {
-    if (!panning || scrollerEl === undefined || hScrollEl === undefined) return
+    if ((!pendingPan && !panning) || scrollerEl === undefined || hScrollEl === undefined) return
+    const dx = e.clientX - panStartX
+    const dy = e.clientY - panStartY
+    if (pendingPan) {
+      if (!shouldPromoteCanvasPan(dx, dy)) return
+      pendingPan = false
+      panning = true
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    }
     hScrollEl.scrollLeft = panStartScrollLeft - (e.clientX - panStartX)
     scrollerEl.scrollTop = panStartScrollTop - (e.clientY - panStartY)
   }
@@ -993,6 +996,10 @@
     // releasePointerCapture, but browsers throw `InvalidStateError` if the
     // element isn't actually capturing the given pointerId. review note
     // 2026-05-11.
+    if (pendingPan) {
+      pendingPan = false
+      return
+    }
     if (!panning) return
     panning = false
     const el = e.currentTarget as HTMLElement
@@ -1028,6 +1035,8 @@
   }
 
   let resizeObs: ResizeObserver | undefined
+  let observedScrollerEl: HTMLDivElement | undefined
+  let observedHScrollEl: HTMLDivElement | undefined
   function syncViewport (): void {
     if (scrollerEl !== undefined) {
       scrollTop = scrollerEl.scrollTop
@@ -1036,7 +1045,26 @@
     if (hScrollEl !== undefined) {
       canvasViewportLeft = hScrollEl.scrollLeft
       canvasViewportWidth = hScrollEl.clientWidth
+    } else if (scrollerEl !== undefined) {
+      // Before the horizontal-scroll proxy is rendered, derive the canvas
+      // viewport from the visible scroller minus sticky sidebar + resize cell.
+      // Otherwise the initial 1200px fallback can suppress hHasOverflow
+      // forever in narrower layouts, hiding the Plane-style bottom bar.
+      canvasViewportLeft = 0
+      canvasViewportWidth = computeCanvasViewportWidth(scrollerEl.clientWidth, sidebarWidthPx, RESIZE_CELL_W)
     }
+  }
+  $: if (scrollerEl !== undefined) queueMicrotask(syncViewport)
+  $: if (hScrollEl !== undefined) queueMicrotask(syncViewport)
+  $: if (resizeObs !== undefined && scrollerEl !== undefined && observedScrollerEl !== scrollerEl) {
+    resizeObs.observe(scrollerEl)
+    observedScrollerEl = scrollerEl
+    queueMicrotask(syncViewport)
+  }
+  $: if (resizeObs !== undefined && hScrollEl !== undefined && observedHScrollEl !== hScrollEl) {
+    resizeObs.observe(hScrollEl)
+    observedHScrollEl = hScrollEl
+    queueMicrotask(syncViewport)
   }
   onMount(() => {
     syncViewport()
