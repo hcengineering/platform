@@ -36,6 +36,7 @@
 
   const dispatch = createEventDispatcher<{
     barMouseDown: { target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }
+    barClick: { target: DragTarget }
     contextMenu: { issue: Issue, event: MouseEvent }
     connectorDown: { source: Issue, cursorClientX: number, cursorClientY: number }
     barHover: { issue: Issue | null }
@@ -53,20 +54,27 @@
     dispatch('contextMenu', { issue: dragTarget.doc, event: evt })
   }
 
-  /**
-   * The visible body of the bar is a select target. Pointerdown is allowed to
-   * bubble to the scroller, so click-and-hold/drag on a bar pans the timeline
-   * exactly like dragging on empty canvas. Explicit controls such as the
-   * connector dot still stop their own pointer events.
-   */
   function onBarDown (edge: 'left' | 'right' | 'body') {
     return (evt: MouseEvent): void => {
       if (!editable || dragTarget === undefined) return
       if (evt.button !== 0) return // only left-click starts a drag
+      if (edge === 'body' && !selected) return
       dispatch('barMouseDown', { target: dragTarget, edge, cursorX: evt.clientX })
       evt.preventDefault()
       evt.stopPropagation()
     }
+  }
+
+  function onBarPointerDown (evt: PointerEvent): void {
+    if (selected) evt.stopPropagation()
+  }
+
+  function onBarClick (evt: MouseEvent): void {
+    if (!editable || dragTarget === undefined) return
+    if (evt.button !== 0) return
+    dispatch('barClick', { target: dragTarget })
+    evt.preventDefault()
+    evt.stopPropagation()
   }
 
   // Status-driven fill + matching text color. Active gets the most
@@ -185,8 +193,9 @@
         role="button"
         tabindex="-1"
         aria-label={issue.title}
+        on:pointerdown={onBarPointerDown}
         on:mousedown={onBarDown('body')}
-        on:click|stopPropagation={() => {}}
+        on:click={onBarClick}
         on:contextmenu={onBarContextMenu}
         on:mouseenter={() => {
           hovered = true
@@ -246,8 +255,9 @@
       role="button"
       tabindex="-1"
       aria-label={issue.title}
+      on:pointerdown={onBarPointerDown}
       on:mousedown={onBarDown('body')}
-      on:click|stopPropagation={() => {}}
+      on:click={onBarClick}
       on:contextmenu={onBarContextMenu}
       on:mouseenter={() => {
         hovered = true
@@ -258,6 +268,26 @@
         dispatch('barHover', { issue: null })
       }}
     />
+    {#if editable && selected && w >= 18}
+      <rect
+        x={x - 3}
+        y={barY}
+        width={6}
+        height={barH}
+        class="bar-resize-handle left"
+        on:pointerdown|stopPropagation
+        on:mousedown={onBarDown('left')}
+      />
+      <rect
+        x={x + w - 3}
+        y={barY}
+        width={6}
+        height={barH}
+        class="bar-resize-handle right"
+        on:pointerdown|stopPropagation
+        on:mousedown={onBarDown('right')}
+      />
+    {/if}
     {#if editable && hovered && dragTarget !== undefined && dragTarget.kind === 'issue' && w >= 18}
       <GanttConnectorDot
         cx={x + w}
@@ -314,6 +344,14 @@
   }
   .bar.editable.active-drag {
     cursor: grabbing;
+  }
+  .bar-resize-handle {
+    fill: transparent;
+    cursor: ew-resize;
+    pointer-events: all;
+  }
+  .bar-resize-handle:hover {
+    fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 18%, transparent);
   }
   .bar.active-drag {
     stroke: var(--theme-state-info-color, #6366f1);
