@@ -137,6 +137,18 @@
     }
   }
 
+  /**
+   * Tier-4 Item 12 — Tree-View — produce a tooltip-options object only when
+   * the row is a filter breadcrumb (parent of a matching child). Returning a
+   * typed `null` (instead of an inline `... ? {} : undefined` ternary) keeps
+   * svelte-check from flattening the surrounding event handlers' parameter
+   * types to `any`.
+   */
+  function breadcrumbTooltip (row: LayoutRow): { label: IntlString } | undefined {
+    if (row.isBreadcrumb !== true) return undefined
+    return { label: tracker.string.GanttTreeBreadcrumb }
+  }
+
   function onRowContextMenu (evt: MouseEvent, row: LayoutRow): void {
     if (row.issue === null) return
     evt.preventDefault()
@@ -250,6 +262,7 @@
           class:summary={row.isSummary}
           class:milestone={row.kind === 'milestone'}
           class:hovered={hoveredRowId === row.id}
+          class:tree-breadcrumb={row.isBreadcrumb === true}
           role="row"
           style="height: {row.height}px;"
           on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
@@ -314,7 +327,7 @@
         <span class="gantt-group-count">{row.groupCount ?? 0}</span>
       </div>
     {:else}
-    {@const indent = row.depth * 16}
+    {@const indent = row.depth * 20}
     {@const tgt = rowJumpTarget(row)}
     {@const dir = tgt !== null ? jumpDirection(tgt) : null}
     {@const jumpX = rowJumpX(row)}
@@ -325,7 +338,11 @@
       class:milestone={row.kind === 'milestone'}
       class:hovered={hoveredRowId === row.id}
       class:drag-dimmed={anyDragActive && row.issue !== null && activeIssueIdStr !== null && String(row.issue._id) !== activeIssueIdStr}
-      style="height: {row.height}px; padding-left: {8 + indent}px;"
+      class:tree-breadcrumb={row.isBreadcrumb === true}
+      class:tree-indented={row.depth > 0}
+      style={virtualizationOn
+        ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px; padding-left: ${8 + indent}px;`
+        : `height: ${row.height}px; padding-left: ${8 + indent}px;`}
       on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
       on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
       on:mouseleave={() => dispatch('hoverRow', { id: null })}
@@ -391,7 +408,11 @@
             on:click={() => row.issue !== null && openIssue(row.issue)}
             on:keydown={(e) => { if (e.key === 'Enter' && row.issue !== null) openIssue(row.issue) }}
           >
-            {row.issue.title}
+            <!-- Tier-4 Item 12 — Tree-View — wrap the label in an inner span
+                 carrying the breadcrumb tooltip. Putting `use:tooltip` on the
+                 outer link breaks Svelte's TS inference for the sibling event
+                 handlers. -->
+            <span class="cell-title-label" use:tooltip={breadcrumbTooltip(row)}>{row.issue.title}</span>
           </span>
         {/if}
         {#if showPredecessors && row.issue !== null}
@@ -543,6 +564,15 @@
   }
   .cell-title.clickable { cursor: pointer; }
   .cell-title.clickable:hover { text-decoration: underline; }
+  /* Tier-4 Item 12 — inner label span (carries breadcrumb tooltip) inherits
+     ellipsis from the parent cell-title via display:inline-block + overflow. */
+  .cell-title-label {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+  }
   .cell-jump {
     flex: 0 0 28px;
     display: flex;
@@ -593,6 +623,33 @@
     opacity: 0.55;
   }
   .sidebar-row.drag-dimmed { opacity: 0.55; }
+  /* Tier-4 Item 12 — Tree-View — breadcrumb (parent of matching child)
+     is dimmed + italic so the user can read it as filter-context, not as
+     a regular result. */
+  .sidebar-row.tree-breadcrumb,
+  .sidebar-grid-row.tree-breadcrumb {
+    opacity: 0.6;
+    font-style: italic;
+  }
+  .sidebar-row.tree-breadcrumb .cell-title,
+  .sidebar-grid-row.tree-breadcrumb .cell-title {
+    font-style: italic;
+  }
+  /* Tier-4 Item 12 — Tree-View — dashed depth guide-line so siblings of
+     the same parent share a visual rail. Drawn 10px from the row's left
+     edge (half an indent-step) to land inside the row's padding. */
+  .sidebar-row.tree-indented {
+    position: relative;
+  }
+  .sidebar-row.tree-indented::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 10px;
+    border-left: 1px dashed var(--theme-divider-color);
+    pointer-events: none;
+  }
   .drag-grip {
     cursor: grab;
     color: var(--theme-darker-color);
