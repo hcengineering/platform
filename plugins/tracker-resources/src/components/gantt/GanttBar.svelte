@@ -13,11 +13,11 @@
 
   // Bar is rendered for both Issues and synthetic milestone summaries; the
   // structural subset below is all the bar geometry needs.
-  export let issue: { title: string, startDate: number | null, dueDate: number | null }
-  export let row: { y: number, height: number }
+  export let issue: { title: string; startDate: number | null; dueDate: number | null }
+  export let row: { y: number; height: number }
   export let timeScale: TimeScale
   export let isSummary: boolean = false
-  export let summaryRange: { startDate: number | null, dueDate: number | null } | null = null
+  export let summaryRange: { startDate: number | null; dueDate: number | null } | null = null
   // Status category drives bar fill: backlog grey, todo blue, in-progress
   // amber, completed green, cancelled muted. null = no status info.
   export let statusCategory: string | null = null
@@ -45,9 +45,16 @@
   export let isViolated: boolean = false
   export let slackMs: number = 0
   export let showSlackGlyph: boolean = false
+  // Tier-2 Item 5 — Auto-Scheduling-Toggle. `'manual'` paints a small
+  // pin glyph in the leading edge of the bar so the user can see at a
+  // glance that this issue is protected from cascade. `'auto'` / `undefined`
+  // → no glyph (Bestand-Default).
+  export let schedulingMode: 'auto' | 'manual' | undefined = undefined
 
   const DAY_MS_FOR_SLACK = 86_400_000
-  $: slackPx = showSlackGlyph && slackMs > 0 ? Math.max(2, (slackMs / DAY_MS_FOR_SLACK) * timeScale.pxPerDay) : 0
+  $: slackPx = showSlackGlyph && slackMs > 0
+    ? Math.max(2, (slackMs / DAY_MS_FOR_SLACK) * timeScale.pxPerDay)
+    : 0
 
   const dispatch = createEventDispatcher<{
     barMouseDown: { target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }
@@ -121,11 +128,7 @@
     switch (cat) {
       case 'task:statusCategory:UnStarted':
       case 'tracker:statusCategory:Backlog':
-        return {
-          fill: 'var(--theme-button-default)',
-          border: 'var(--theme-button-border)',
-          text: 'var(--theme-content-color)'
-        }
+        return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)', text: 'var(--theme-content-color)' }
       case 'task:statusCategory:ToDo':
         return { fill: '#dbeafe', border: '#3b82f6', text: '#1e3a8a' }
       case 'task:statusCategory:Active':
@@ -135,16 +138,12 @@
       case 'task:statusCategory:Lost':
         return { fill: '#d1d5db', border: '#9ca3af', text: '#374151' }
       default:
-        return {
-          fill: 'var(--theme-button-default)',
-          border: 'var(--theme-button-border)',
-          text: 'var(--theme-content-color)'
-        }
+        return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)', text: 'var(--theme-content-color)' }
     }
   }
 
-  $: effectiveStart = isSummary ? (summaryRange?.startDate ?? issue.startDate) : issue.startDate
-  $: effectiveDue = isSummary ? (summaryRange?.dueDate ?? issue.dueDate) : issue.dueDate
+  $: effectiveStart = isSummary ? summaryRange?.startDate ?? issue.startDate : issue.startDate
+  $: effectiveDue = isSummary ? summaryRange?.dueDate ?? issue.dueDate : issue.dueDate
 
   // PR 3 edit-mode: while THIS bar is the active drag target, swap the bar
   // geometry over to the reducer's preview values so the bar visually tracks
@@ -153,7 +152,9 @@
   $: dragState = $activeDrag
   // PR3.3: DragState carries `target: { kind, doc }` (Issue or Milestone)
   // since the refactor. Read doc._id for the active-bar match.
-  $: isThisBarActive = issueRef !== undefined && activeDragTargetId(dragState) === issueRef
+  $: isThisBarActive =
+    issueRef !== undefined &&
+    activeDragTargetId(dragState) === issueRef
   $: isThisConnectorActive =
     issueRef !== undefined &&
     (dragState.kind === 'connector-drawing' || dragState.kind === 'connector-target-hover') &&
@@ -192,8 +193,8 @@
   })()
 
   $: visible = previewStart !== null && previewDue !== null
-  $: rawStart = previewStart ?? 0
-  $: rawDue = previewDue ?? 0
+  $: rawStart = (previewStart ?? 0) as number
+  $: rawDue = (previewDue ?? 0) as number
   // Normalise reversed ranges (start > due): render the bar across [min, max]
   // rather than collapsing to a 2px sliver at the start. Tooltip mirrors the
   // visual order so the user sees the same range that's drawn.
@@ -202,8 +203,16 @@
   $: x = visible ? timeScale.toX(startVal) : 0
   $: x2 = visible ? timeScale.toX(dueVal) : 0
   $: w = Math.max(2, x2 - x + timeScale.pxPerDay) // inclusive duration: see spec §8.0
+  // Manual-pin glyph occupies ~14 px at the leading edge of the bar (10 px
+  // glyph + 4 px gap to the label). Only render it once the bar is wide
+  // enough that the glyph plus at least one label char would fit; on tiny
+  // bars the manual-status falls back to the tooltip suffix only.
+  $: showManualPin = schedulingMode === 'manual' && !isSummary
+  $: manualPinVisible = showManualPin && w >= 24
   $: tooltipText = visible
-    ? `${issue.title} (${new Date(startVal).toISOString().slice(0, 10)} → ${new Date(dueVal).toISOString().slice(0, 10)})`
+    ? `${issue.title} (${new Date(startVal).toISOString().slice(0, 10)} → ${new Date(dueVal).toISOString().slice(0, 10)})${
+        showManualPin ? ' · manual schedule' : ''
+      }`
     : ''
   // Milestone-synthetic-summary claws were dropped in PR3.3 (the milestone
   // is now rendered as its own editable bar). Parent-issue summaries have a
@@ -217,13 +226,12 @@
 
   // Heuristic: ~7.5px per character at 13px font — leave breathing room.
   const CHAR_PX = 7.5
-  $: maxChars = Math.floor((w - 12) / CHAR_PX)
-  $: barLabel =
-    maxChars >= 4
-      ? issue.title.length > maxChars
-        ? issue.title.slice(0, Math.max(1, maxChars - 1)) + '…'
-        : issue.title
-      : ''
+  // Manual-pin glyph takes 14 px of leading room; subtract that from the
+  // label budget so the title doesn't overlap the glyph.
+  $: maxChars = Math.floor((w - 12 - (manualPinVisible ? 14 : 0)) / CHAR_PX)
+  $: barLabel = maxChars >= 4
+    ? (issue.title.length > maxChars ? issue.title.slice(0, Math.max(1, maxChars - 1)) + '…' : issue.title)
+    : ''
 </script>
 
 {#if visible}
@@ -247,7 +255,7 @@
       -->
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <rect
-        {x}
+        x={x}
         y={barY}
         width={w}
         height={barH}
@@ -292,23 +300,26 @@
       pointer-events="none"
     />
     {#if barLabel !== ''}
-      <text x={x + 10} y={barY + barH / 2 - 4} class="bar-label summary-label" fill="var(--theme-content-color)"
-        >{barLabel}</text
-      >
+      <text
+        x={x + 10}
+        y={barY + barH / 2 - 4}
+        class="bar-label summary-label"
+        fill="var(--theme-content-color)"
+      >{barLabel}</text>
     {/if}
     <title>{tooltipText}</title>
   {:else}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <rect
-      {x}
+      x={x}
       y={barY}
       width={w}
       height={barH}
       rx={3}
       ry={3}
       fill={barColors.fill}
-      stroke={isCritical || isViolated ? '#dc2626' : barColors.border}
-      stroke-width={isCritical || isViolated ? 2 : 1}
+      stroke={(isCritical || isViolated) ? '#dc2626' : barColors.border}
+      stroke-width={(isCritical || isViolated) ? 2 : 1}
       stroke-dasharray={isViolated ? '4 2' : 'none'}
       class="bar"
       class:editable
@@ -338,7 +349,7 @@
            status fill. pointer-events: none so drag/click stays routed
            to the underlying bar rect. -->
       <rect
-        {x}
+        x={x}
         y={barY}
         width={w}
         height={barH}
@@ -391,8 +402,39 @@
          dep-layer and therefore occluded by the arrow's 12 px invisible
          click target. The overlay is the single source of truth. -->
 
+    {#if manualPinVisible}
+      <!-- Tier-2 Item 5 — Manual-pin glyph (inline SVG: small map-pin
+           shape rotated to point left). Sized 10 px tall, centred vertically
+           in the bar with 4 px of leading padding. pointer-events: none so
+           drag/click stays routed to the underlying bar rect. -->
+      <g class="manual-pin" pointer-events="none">
+        <circle
+          cx={x + 9}
+          cy={barY + barH / 2}
+          r={4}
+          fill={barColors.text}
+          stroke={barColors.fill}
+          stroke-width={1}
+        />
+        <circle
+          cx={x + 9}
+          cy={barY + barH / 2}
+          r={1.6}
+          fill={barColors.fill}
+        />
+        <path
+          d="M {x + 5} {barY + barH / 2} L {x + 1.5} {barY + barH / 2 - 0.5} L {x + 1.5} {barY + barH / 2 + 0.5} Z"
+          fill={barColors.text}
+        />
+      </g>
+    {/if}
     {#if barLabel !== ''}
-      <text x={x + 6} y={barY + barH / 2 + 4} class="bar-label" fill={barColors.text}>{barLabel}</text>
+      <text
+        x={x + 6 + (manualPinVisible ? 14 : 0)}
+        y={barY + barH / 2 + 4}
+        class="bar-label"
+        fill={barColors.text}
+      >{barLabel}</text>
     {/if}
     <title>{tooltipText}</title>
   {/if}
@@ -451,7 +493,7 @@
   .bar.focused {
     stroke: var(--theme-state-info-color, #6366f1);
     stroke-width: 1px;
-    stroke-dasharray: 2, 2;
+    stroke-dasharray: 2,2;
   }
   /*
    * Click-to-select state: thick solid blue outline + glow. Made deliberately
@@ -482,6 +524,6 @@
     fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 18%, transparent);
     stroke: var(--theme-state-info-color, #6366f1);
     stroke-width: 1.5px;
-    stroke-dasharray: 4, 2;
+    stroke-dasharray: 4,2;
   }
 </style>
