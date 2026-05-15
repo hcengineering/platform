@@ -121,7 +121,14 @@ function makeClient (initial: { issues?: Issue[], relations?: IssueRelation[] } 
           })
           return newId
         },
-        async removeDoc (clazz: string, spc: string, id: string) {
+        async removeCollection (
+          clazz: string,
+          spc: string,
+          id: string,
+          _attachedTo: string,
+          _attachedToClass: string,
+          _collection: string
+        ) {
           mockOps.removed.push({ _class: clazz, space: spc, id })
           pending.push(() => {
             relations.delete(id)
@@ -414,7 +421,7 @@ describe('UndoManager — conflict detection', () => {
 })
 
 describe('UndoManager — relation entries', () => {
-  it('undo of relation-create issues a removeDoc', async () => {
+  it('undo of relation-create issues a removeCollection', async () => {
     const rel = makeRelation('r1', 'a', 'b')
     const client = makeClient({ relations: [rel] })
     const mgr = new UndoManager(client)
