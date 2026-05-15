@@ -16,6 +16,7 @@
     openIssue: { issue: { _id: string, _class: string } }
     hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
     barMouseDown: { issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }
+    contextMenu: { issue: Issue, event: MouseEvent }
   }>()
   function openIssue (i: { _id: any, _class: any }): void {
     dispatch('openIssue', { issue: { _id: i._id as string, _class: i._class as string } })
@@ -161,6 +162,7 @@
               issueRef={row.issue._id}
               issueObj={row.issue}
               on:barMouseDown
+              on:contextMenu
             />
           </g>
         {/if}
