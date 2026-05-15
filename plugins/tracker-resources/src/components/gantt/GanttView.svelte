@@ -15,8 +15,7 @@
   import { buildLayout } from './lib/layout'
   import { createTimeScale } from './lib/time-scale'
   import { type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
-  import { showPanel, showPopup } from '@hcengineering/ui'
-  import CreateIssue from '../CreateIssue.svelte'
+  import { Label, showPanel, tooltip } from '@hcengineering/ui'
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export let _class: Ref<Class<Doc>>
@@ -258,10 +257,6 @@
   }
   let datePickerValue: string = ''
 
-  function newIssue (): void {
-    showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top')
-  }
-
   // Wheel-forwarding is no longer needed: sidebar lives inside the same
   // .gantt-scroller as the canvas, with position:sticky;left:0. Browser
   // handles native scrolling at the right speed regardless of where the
@@ -348,15 +343,17 @@
   {:else}
     <div class="gantt-toolbar" style="height: {TOOLBAR_HEIGHT}px;">
       <div class="toolbar-left">
-        <button class="nav-btn" type="button" title="Jump to start" on:click={jumpToStart}>⏮</button>
-        <button class="nav-btn" type="button" title="Previous period" on:click={() => pageScroll(-1)}>«</button>
-        <button class="nav-btn today-btn" type="button" on:click={jumpToToday}>Today</button>
-        <button class="nav-btn" type="button" title="Next period" on:click={() => pageScroll(1)}>»</button>
-        <button class="nav-btn" type="button" title="Jump to end" on:click={jumpToEnd}>⏭</button>
+        <button class="nav-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToStart }} on:click={jumpToStart}>⏮</button>
+        <button class="nav-btn" type="button" use:tooltip={{ label: tracker.string.GanttPreviousPeriod }} on:click={() => pageScroll(-1)}>«</button>
+        <button class="nav-btn today-btn" type="button" on:click={jumpToToday}>
+          <Label label={tracker.string.GanttToday} />
+        </button>
+        <button class="nav-btn" type="button" use:tooltip={{ label: tracker.string.GanttNextPeriod }} on:click={() => pageScroll(1)}>»</button>
+        <button class="nav-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToEnd }} on:click={jumpToEnd}>⏭</button>
         <input
           type="date"
           class="date-input"
-          title="Jump to date"
+          use:tooltip={{ label: tracker.string.GanttJumpToDate }}
           bind:value={datePickerValue}
           on:change={() => jumpToDate(datePickerValue)}
         />
@@ -371,13 +368,7 @@
           >{z[0].toUpperCase() + z.slice(1)}</button>
         {/each}
       </div>
-      <div class="toolbar-right">
-        <button
-          type="button"
-          class="new-issue-btn"
-          on:click={newIssue}
-        >+ New issue</button>
-      </div>
+      <div class="toolbar-right" />
     </div>
 
     <!-- Single scroll container wraps both sidebar and canvas. Sidebar uses
@@ -403,8 +394,8 @@
         <!-- Row 1: corner / resize-corner / time-axis header (all sticky-top) -->
         <div class="cell corner" style="height: {HEADER_HEIGHT}px;">
           <span class="col-toggle" />
-          {#if showIssueCode}<span class="col-id">Issue</span>{/if}
-          {#if showTitle}<span class="col-title">Title</span>{/if}
+          {#if showIssueCode}<span class="col-id"><Label label={tracker.string.Issue} /></span>{/if}
+          {#if showTitle}<span class="col-title"><Label label={tracker.string.Title} /></span>{/if}
           <span class="col-jump" />
         </div>
         <div class="cell resize-corner" style="height: {HEADER_HEIGHT}px;" />
@@ -463,21 +454,21 @@
         style="left: {tooltipState.x + 14}px; top: {tooltipState.y + 14}px;"
       >
         {#if row.kind === 'milestone' && ms !== null}
-          <div class="tt-head">◆ Milestone</div>
+          <div class="tt-head">◆ <Label label={tracker.string.Milestone} /></div>
           <div class="tt-title">{ms.label}</div>
           {#if ms.startDate !== null}
-            <div class="tt-line">Start: {new Date(ms.startDate).toISOString().slice(0, 10)}</div>
+            <div class="tt-line"><Label label={tracker.string.StartDate} />: {new Date(ms.startDate).toISOString().slice(0, 10)}</div>
           {/if}
-          <div class="tt-line">Target: {new Date(ms.targetDate).toISOString().slice(0, 10)}</div>
+          <div class="tt-line"><Label label={tracker.string.TargetDate} />: {new Date(ms.targetDate).toISOString().slice(0, 10)}</div>
         {:else if issue !== null}
           {@const code = issueCode(issue)}
           <div class="tt-head">{code}</div>
           <div class="tt-title">{issue.title}</div>
           {#if issue.startDate !== null}
-            <div class="tt-line">Start: {new Date(issue.startDate).toISOString().slice(0, 10)}</div>
+            <div class="tt-line"><Label label={tracker.string.StartDate} />: {new Date(issue.startDate).toISOString().slice(0, 10)}</div>
           {/if}
           {#if issue.dueDate !== null}
-            <div class="tt-line">Due: {new Date(issue.dueDate).toISOString().slice(0, 10)}</div>
+            <div class="tt-line"><Label label={tracker.string.DueDate} />: {new Date(issue.dueDate).toISOString().slice(0, 10)}</div>
           {/if}
           {#if issue.startDate !== null && issue.dueDate !== null}
             {@const days = Math.round((Math.max(issue.dueDate, issue.startDate) - Math.min(issue.dueDate, issue.startDate)) / 86_400_000) + 1}
@@ -509,18 +500,6 @@
   .toolbar-left { display: flex; gap: 4px; }
   .toolbar-center { display: flex; gap: 2px; justify-self: center; }
   .toolbar-right { display: flex; gap: 4px; justify-self: end; position: relative; }
-  .new-issue-btn {
-    height: 26px;
-    padding: 0 14px;
-    border: 1px solid var(--theme-button-border);
-    background: var(--theme-state-info-color, #6366f1);
-    color: white;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .new-issue-btn:hover { filter: brightness(1.1); }
   .nav-btn {
     height: 26px;
     min-width: 28px;

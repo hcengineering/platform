@@ -295,12 +295,22 @@
     "ForbidCreateProjectPermissionDescription": "Forbid users creating new projects",
     "AllowCreatingIssues": "Allow creating issues",
     "Day": "Day",
-    "Gantt": "Gantt",
+    "Week": "Week",
     "Month": "Month",
     "Quarter": "Quarter",
-    "Week": "Week",
+    "Gantt": "Gantt",
     "GanttShowIssueCode": "Show issue code",
-    "GanttShowTitle": "Show title"
+    "GanttShowTitle": "Show title",
+    "GanttToday": "Today",
+    "GanttJumpToStart": "Jump to start",
+    "GanttJumpToEnd": "Jump to end",
+    "GanttJumpToDate": "Jump to date",
+    "GanttPreviousPeriod": "Previous period",
+    "GanttNextPeriod": "Next period",
+    "GanttScrollLeftToBar": "Scroll left to bar",
+    "GanttScrollRightToBar": "Scroll right to bar",
+    "GanttExpand": "Expand",
+    "GanttCollapse": "Collapse"
   },
   "status": {}
 }
