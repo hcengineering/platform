@@ -51,7 +51,7 @@ describe('computeCriticalPath — graceful degrade', () => {
   })
 
   it('two unrelated issues, no relations — only the latest is critical', () => {
-    // Standard single-project CPM (Codex review round 9): project finish
+    // Standard single-project CPM: project finish
     // = max(EF) across all sinks. Issue A (ends May 5) has 5d slack
     // against the project finish at May 10. Only B is on the CP.
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))

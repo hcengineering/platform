@@ -37,10 +37,19 @@
 
   const incomingQuery = createQuery()
   const outgoingQuery = createQuery()
+  // Project-wide relations query — used only by the cycle check on
+  // add-dependency. The incoming/outgoing slices above still drive the
+  // panel's visible rows. A direct edge that's neither incoming nor
+  // outgoing from the current issue can still close a transitive cycle
+  // (e.g. add A→C when C→B and B→A exist — C→B is invisible from A's
+  // local view), so the DFS in wouldCreateCycle has to walk the full
+  // project graph, matching the Gantt view's project-wide cycle check.
+  const allProjectRelationsQuery = createQuery()
   const client = getClient()
 
   let incoming: IssueRelation[] = []
   let outgoing: IssueRelation[] = []
+  let allProjectRelations: IssueRelation[] = []
   let otherIssues = new Map<string, Issue>()
 
   $: incomingQuery.query(
@@ -57,6 +66,13 @@
     (res: IssueRelation[]) => {
       outgoing = res
       void resolveOtherIssues()
+    }
+  )
+  $: allProjectRelationsQuery.query(
+    tracker.class.IssueRelation,
+    { space: issue.space },
+    (res: IssueRelation[]) => {
+      allProjectRelations = res
     }
   )
 
@@ -127,7 +143,7 @@
         // the current issue is the target. Cycle check flips the args.
         const sourceId = direction === 'successor' ? issue._id : picked._id
         const targetId = direction === 'successor' ? picked._id : issue._id
-        if (wouldCreateCycle(sourceId, targetId, [...incoming, ...outgoing])) {
+        if (wouldCreateCycle(sourceId, targetId, allProjectRelations)) {
           const title = await translate(tracker.string.DependencyCycle, {}, undefined)
           addNotification(title, '', undefined as any, undefined, NotificationSeverity.Warning)
           return

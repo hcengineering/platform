@@ -18,7 +18,7 @@
    * ancestor of `value`, on confirm updates that picked issue's
    * `attachedTo` to point to `value._id`.
    *
-   * Cycle-safe ignore set (review note (2026-05-11)):
+   * Cycle-safe ignore set:
    * - `value._id` itself
    * - all ancestors of `value` (so the picker can't make the parent a child
    *   of its own descendant — would create a cycle)

@@ -501,14 +501,12 @@
     attachWindowDragListeners()
   }
 
-  // Codex round-14: previous drafts of the connector-drag flow had
-  // three parallel event paths — Svelte template binding, direct
-  // addEventListener inside GanttConnectorDot, and a document-level
-  // capture-phase delegate scanning .closest('.gantt-connector'). With
-  // the connector dot now rendered in the canvas overlay (where Svelte's
-  // event flow is reliable) and the GanttConnectorDot using one
-  // on:mousedown binding, the document-capture delegate is redundant
-  // and was removed. handleConnectorDown is the single entry point.
+  // Single entry point for connector-drag: GanttConnectorDot dispatches
+  // 'connectorDown' via Svelte from one on:mousedown binding on its
+  // hit-circle. Earlier drafts had three parallel pathways (template
+  // binding + direct addEventListener inside the dot + document-level
+  // capture-phase delegation), all of which fired concurrently and
+  // produced double mousedown handling. Keep this handler the only one.
 
   function handleBarHover (e: CustomEvent<{ issue: Issue | null }>): void {
     hoveredIssue = (e.detail.issue?._id ?? null) as Ref<Issue> | null
@@ -551,7 +549,7 @@
    *  The horizontal scrollbar already offsets by `sidebarWidthPx + 5` (see
    *  .gantt-hscrollbar padding-left), so the canvas content origin is at
    *  rect.left + sidebarWidthPx + this constant, not just sidebarWidthPx.
-   *  review note 2026-05-11 caught the off-by-5 in unscheduled drag. */
+   *  Missing this offset produces an off-by-5 in unscheduled drag drop. */
   const RESIZE_CELL_W = 5
 
   function computeCanvasX (e: MouseEvent): number | undefined {
@@ -691,7 +689,7 @@
       // that handler fires, NOT when commitDrag returns. So we must NOT
       // unconditionally reset here: doing so would tear down the cascade
       // popup's preview the instant commitDrag returned (popup still open,
-      // bar already springing back — Codex blocker 2).
+      // bar already springing back.
     } catch (err) {
       const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
       addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
@@ -754,7 +752,7 @@
         // Fetch the full space's issues here rather than reusing the
         // view-filtered `issues` array — otherwise children hidden by an
         // active Tracker filter wouldn't shift with the parent and the
-        // tree would drift out of sync. Codex review-6 2026-05-11.
+        // tree would drift out of sync.
         const client = getClient()
         const allInSpace = await client.findAll(tracker.class.Issue, { space: target.doc.space })
         for (const child of descendantsWithDates(target.doc, allInSpace)) {
@@ -767,7 +765,8 @@
     } else if (state.kind === 'dragging-unscheduled') {
       // Unscheduled-drag only schedules the parent issue. originStart is the
       // synthetic "today" anchor — using its delta to shift existing scheduled
-      // descendants would move them by a wildly unrelated amount (internal review) Descendants stay put; the user can drag the
+      // descendants would move them by a wildly unrelated amount.
+      // Descendants stay put; the user can drag the
       // (now-scheduled) parent again to do a coordinated shift.
       await ops.update(target.doc, { startDate: (state as any).previewStart, dueDate: (state as any).previewEnd })
     } else if (state.kind === 'resizing-left') {
@@ -838,7 +837,7 @@
     // Full-space lookup is needed for both branches — the alt-bypass branch
     // also needs to resolve hidden predecessors/successors when counting
     // direct violations, otherwise filter-hidden relations are invisible
-    // to the warning banner (Codex review high-4).
+    // to the warning banner.
     const allInSpace = await client.findAll(tracker.class.Issue, { space })
     const allByRef = new Map<Ref<Issue>, Issue>()
     for (const i of allInSpace) allByRef.set(i._id, i)
@@ -897,8 +896,7 @@
         // Three sub-paths depending on the shape of the edit:
         //   (a) Single-issue primary + legacy toggle on → GanttConfirmCommitPopup (PR3.3 behaviour preserved)
         //   (b) Multi-issue primary (parent-drag) → ConfirmCascadePopup with shifts=[]
-        //       so the user sees the children that will move together (Codex
-        //       review round-5 UX decision B)
+        //       so the user sees the children that will move together.
         //   (c) Single-issue primary + legacy toggle off → commit directly
         if (primaryEdits.length > 1) {
           // Parent-drag (or any multi-primary commit) — show the mini-timeline
@@ -1061,7 +1059,7 @@
     ) return
     // Guard: an unscheduled-drag that never reached the canvas (e.g. the user
     // clicked the drag-grip and released without moving) must NOT silently
-    // schedule the issue to "today". Codex review-3 (2026-05-10).
+    // schedule the issue to "today".
     if (state.kind === 'dragging-unscheduled' && !state.hasCanvasTarget) return
     const altKey = event?.altKey === true
     const client = getClient()
@@ -1199,8 +1197,9 @@
    *
    * Deny-list (vs. allow-list) is needed because tracker registers a custom
    * Open action for `tracker.class.Issue` with an auto-generated ID; allow-
-   * listing by static ID misses it. review-style cleanup + user UX
-   * feedback 2026-05-11: too tall, slimmer + keep parent/sub-issue access.
+   * listing by static ID misses it. The menu is otherwise too tall; keep
+   * parent/sub-issue access and drop the columns that are already in the
+   * sidebar.
    */
   const GANTT_MENU_EXCLUDED_ACTIONS = [
     'tracker:action:SetComponent',
@@ -1526,8 +1525,7 @@
     // bubbling from a child element that was excluded by the pan-handler
     // exclusion list (e.g. resize-handle, drag-grip) shouldn't reach
     // releasePointerCapture, but browsers throw `InvalidStateError` if the
-    // element isn't actually capturing the given pointerId. review note
-    // 2026-05-11.
+    // element isn't actually capturing the given pointerId.
     if (pendingPan) {
       pendingPan = false
       return
@@ -1995,10 +1993,10 @@
   }
   .header-cell, .canvas-cell { overflow: hidden; }
   .hscroll-inner { will-change: transform; }
-  /* robustness fix: absolutely-pin the bar at the bottom of
-     gantt-root instead of relying on the flex chain to enforce a
-     constrained height. This way the bar can never slip below the
-     visible viewport even if a parent forgets to set min-height:0. */
+  /* Absolutely-pin the horizontal-scroll bar at the bottom of gantt-root
+     instead of relying on the flex chain to enforce a constrained height.
+     This way the bar can never slip below the visible viewport even if a
+     parent forgets to set min-height:0. */
   .gantt-hscrollbar {
     position: absolute;
     left: 0;
