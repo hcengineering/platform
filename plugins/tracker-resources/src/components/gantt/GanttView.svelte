@@ -1271,6 +1271,12 @@
     document.addEventListener('pointerdown', handleNativeConnectorDown, true)
     document.addEventListener('mousedown', handleNativeConnectorDown, true)
     document.addEventListener('gantt-connector-start', handleConnectorStartEvent)
+    // Debug surface for bar-springs-back / relations diagnosis. Removed
+    // before upstream PR; safe in dev because behaviour is purely additive.
+    ;(window as any).__ganttDebug = {
+      activeDrag,
+      lastSetIdleFrom: '<none>'
+    }
   })
   onDestroy(() => {
     window.removeEventListener('keydown', onKey)
