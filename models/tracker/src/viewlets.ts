@@ -274,6 +274,25 @@ export function ganttViewOptions (): ViewOptionsModel {
         defaultValue: false,
         actionTarget: 'display',
         label: tracker.string.GanttShowPredecessors
+      },
+      {
+        // PR5: critical-path overlay toggle. When on, critical bars get a red
+        // border and fill overlay; critical relations get red arrows; non-critical
+        // bars show a grey slack glyph.
+        key: 'ganttCriticalPath',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.CriticalPathOn
+      },
+      {
+        // PR5: slack column in the sidebar. Shows numeric slack days or "CP" badge
+        // for critical issues. Requires ganttCriticalPath to be meaningful.
+        key: 'ganttSlackColumn',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.SlackColumn
       }
     ]
   }
