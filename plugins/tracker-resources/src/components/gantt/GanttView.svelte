@@ -4160,68 +4160,28 @@
             <span class="hamburger-glyph" aria-hidden="true">≡</span>
           </button>
         {/if}
-        <!-- v121.11 / Bug 3 — Date-Nav buttons. The four icon-only nav
-             buttons (jumpToStart, prev, next, jumpToEnd) had only a
-             tooltip but no accessible name.  Set both aria-label and
-             title from the resolved translation so screen-readers and
-             native browser tooltips both work; the existing huly
-             tooltip via use:tooltip stays untouched. -->
-        <button
-          class="nav-btn icon-btn"
-          type="button"
-          use:tooltip={{ label: tracker.string.GanttJumpToStart }}
-          on:click={jumpToStart}
-          aria-label={ariaLabelOf(tracker.string.GanttJumpToStart)}
-          title={ariaLabelOf(tracker.string.GanttJumpToStart)}
-        >
+        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToStart }} on:click={jumpToStart}>
           <Icon icon={ArrowLeft} size="small" />
         </button>
-        <button
-          class="nav-btn icon-btn"
-          type="button"
-          use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
-          on:click={() => pageScroll(-1)}
-          aria-label={ariaLabelOf(tracker.string.GanttPreviousPeriod)}
-          title={ariaLabelOf(tracker.string.GanttPreviousPeriod)}
-        >
+        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttPreviousPeriod }} on:click={() => pageScroll(-1)}>
           <Icon icon={NavPrev} size="small" />
         </button>
         <button class="nav-btn today-btn" type="button" on:click={jumpToToday}>
           <Label label={tracker.string.GanttToday} />
         </button>
-        <button
-          class="nav-btn icon-btn"
-          type="button"
-          use:tooltip={{ label: tracker.string.GanttNextPeriod }}
-          on:click={() => pageScroll(1)}
-          aria-label={ariaLabelOf(tracker.string.GanttNextPeriod)}
-          title={ariaLabelOf(tracker.string.GanttNextPeriod)}
-        >
+        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttNextPeriod }} on:click={() => pageScroll(1)}>
           <Icon icon={NavNext} size="small" />
         </button>
-        <button
-          class="nav-btn icon-btn"
-          type="button"
-          use:tooltip={{ label: tracker.string.GanttJumpToEnd }}
-          on:click={jumpToEnd}
-          aria-label={ariaLabelOf(tracker.string.GanttJumpToEnd)}
-          title={ariaLabelOf(tracker.string.GanttJumpToEnd)}
-        >
+        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToEnd }} on:click={jumpToEnd}>
           <Icon icon={ArrowRight} size="small" />
         </button>
-        <label
-          class="date-input-wrap"
-          use:tooltip={{ label: tracker.string.GanttJumpToDate }}
-          aria-label={ariaLabelOf(tracker.string.GanttJumpToDate)}
-          title={ariaLabelOf(tracker.string.GanttJumpToDate)}
-        >
+        <label class="date-input-wrap" use:tooltip={{ label: tracker.string.GanttJumpToDate }}>
           <Icon icon={Calendar} size="small" />
           <input
             type="date"
             class="date-input"
             bind:value={datePickerValue}
             on:change={() => jumpToDate(datePickerValue)}
-            aria-label={ariaLabelOf(tracker.string.GanttJumpToDate)}
           />
         </label>
       </div>
@@ -4249,7 +4209,6 @@
             class="gantt-toolbar-icon-btn gantt-tree-btn"
             use:tooltip={{ label: tracker.string.GanttCollapseAll }}
             aria-label={ariaLabelOf(tracker.string.GanttCollapseAll)}
-            title={ariaLabelOf(tracker.string.GanttCollapseAll)}
             on:click={collapseAllTree}
           >
             <span class="gantt-tree-glyph" aria-hidden="true">▶▶</span>
@@ -4259,7 +4218,6 @@
             class="gantt-toolbar-icon-btn gantt-tree-btn"
             use:tooltip={{ label: tracker.string.GanttExpandAll }}
             aria-label={ariaLabelOf(tracker.string.GanttExpandAll)}
-            title={ariaLabelOf(tracker.string.GanttExpandAll)}
             on:click={expandAllTree}
           >
             <span class="gantt-tree-glyph" aria-hidden="true">▼▼</span>
