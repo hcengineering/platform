@@ -38,6 +38,7 @@ import {
   DOMAIN_TRACKER,
   TClassicProjectTypeData,
   TComponent,
+  TDependencyShiftedNotification,
   TIssue,
   TIssueRelation,
   TIssueStatus,
@@ -159,6 +160,34 @@ function defineNotifications (builder: Builder): void {
       defaultEnabled: true
     },
     tracker.ids.AssigneeNotification
+  )
+
+  // Tier-4 Item 14 — Notification on Dependency-Shift.
+  // The cascade bundle is created client-side as a CommonInboxNotification
+  // subclass (see `dependency-shift-send.ts`); this NotificationType wires it
+  // into the user's tracker notification group so settings/Inbox provider
+  // routing work the same as the assignee type. `field` is bound to the
+  // `cascadeToken` attribute so the auto-`dueDate` generated type stays
+  // distinct (and they don't compete on the same `dueDate` notify channel).
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: tracker.string.DependencyShifted,
+      group: tracker.ids.TrackerNotificationGroup,
+      field: 'cascadeToken',
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: tracker.class.DependencyShiftedNotification,
+      templates: {
+        textTemplate: '{sender} shifted {trigger} — {count} dependent issues moved',
+        htmlTemplate: '<p>{sender} shifted {trigger} — {count} dependent issues moved</p>',
+        subjectTemplate: 'Dependency shift'
+      },
+      defaultEnabled: true
+    },
+    tracker.ids.DependencyShiftedNotification
   )
 
   generateClassNotificationTypes(
@@ -455,7 +484,8 @@ export function createModel (builder: Builder): void {
     TRelatedIssueTarget,
     TTypeEstimation,
     TTypeRemainingTime,
-    TProjectTargetPreference
+    TProjectTargetPreference,
+    TDependencyShiftedNotification
   )
 
   builder.mixin(tracker.class.Project, core.class.Class, activity.mixin.ActivityDoc, {})
