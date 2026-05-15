@@ -7,6 +7,7 @@
   import type { Ref } from '@hcengineering/core'
   import type { Issue, IssueRelation, Milestone, WorkingDaysConfig } from '@hcengineering/tracker'
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange } from './lib/types'
+  import { type BarLabelSlot } from './lib/bar-labels'
   import { filterVisibleRows } from './lib/layout'
   import GanttBar from './GanttBar.svelte'
   import GanttResizeOverlay from './GanttResizeOverlay.svelte'
@@ -80,6 +81,10 @@
   export let violatedRelations: Set<Ref<IssueRelation>> = new Set()
   export let cpSlack: Map<Ref<Issue>, number> = new Map()
   export let showCriticalPath: boolean = false
+  // Phase 1: configurable bar-label slots. Defaults: left=none, inside=title, right=none.
+  export let barLabelLeft: BarLabelSlot = 'none'
+  export let barLabelInside: BarLabelSlot = 'title'
+  export let barLabelRight: BarLabelSlot = 'none'
 
   // Phase-2 working-days calendar. `undefined` = legacy mode (no tint, all
   // days treated as working). When set, every non-working day in the
@@ -294,6 +299,9 @@
                 {activeDrag}
                 issueRef={ms._id}
                 dragTarget={{ kind: 'milestone', doc: fullMs }}
+                {barLabelLeft}
+                {barLabelInside}
+                {barLabelRight}
                 on:barMouseDown
                 on:barClick
               />
