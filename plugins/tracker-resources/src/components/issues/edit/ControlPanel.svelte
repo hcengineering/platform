@@ -33,6 +33,7 @@
   import MilestoneEditor from '../../milestones/MilestoneEditor.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
+  import DeadlineEditor from '../DeadlineEditor.svelte'
   import PriorityEditor from '../PriorityEditor.svelte'
   import RelationEditor from '../RelationEditor.svelte'
   import IssueDependenciesPanel from '../IssueDependenciesPanel.svelte'
