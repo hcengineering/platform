@@ -35,6 +35,7 @@
   import DueDateEditor from '../DueDateEditor.svelte'
   import PriorityEditor from '../PriorityEditor.svelte'
   import RelationEditor from '../RelationEditor.svelte'
+  import IssueDependenciesPanel from '../IssueDependenciesPanel.svelte'
   import StartDateEditor from '../StartDateEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
   import notification from '@hcengineering/notification'
@@ -159,6 +160,8 @@
     </span>
     <RelationEditor value={issue} type="relations" {readonly} disabled={$restrictionStore.disableNavigation} />
   {/if}
+
+  <IssueDependenciesPanel {issue} {readonly} />
 
   <span class="labelOnPanel">
     <Label label={tracker.string.Priority} />

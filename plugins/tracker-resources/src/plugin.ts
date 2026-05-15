@@ -351,7 +351,9 @@ export default mergeIds(trackerId, tracker, {
     CascadeBannerOverflow: '' as IntlString,
     CascadeBannerBypass: '' as IntlString,
     CascadeLockedSuccessors: '' as IntlString,
-    CascadeSkippedUnscheduled: '' as IntlString
+    CascadeSkippedUnscheduled: '' as IntlString,
+    // PR4b: issue-editor dependencies panel
+    Dependencies: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
