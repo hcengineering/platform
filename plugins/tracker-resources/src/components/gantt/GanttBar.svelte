@@ -4,11 +4,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
-  import { themeStore } from '@hcengineering/ui'
-  import { translate } from '@hcengineering/platform'
   import type { Ref } from '@hcengineering/core'
   import type { Issue, Milestone } from '@hcengineering/tracker'
-  import tracker from '../../plugin'
   import type { TimeScale } from './lib/time-scale'
   import type { DragState, DragTarget } from './lib/types'
   import GanttConnectorDot from './GanttConnectorDot.svelte'
@@ -25,11 +22,11 @@
   export let statusCategory: string | null = null
 
   // PR 3 edit-mode props. dragTarget carries the discriminated drag subject
-  // (Issue or Milestone — PR3.3 2026-05-11); editable gates the resize-handle
-  // rendering and the mousedown handlers; activeDrag is the shared store
-  // written by the drag-controller reducer. issueRef is kept for the legacy
-  // active-drag highlight check below; it still works for both Issue and
-  // Milestone _id values.
+  // (Issue or Milestone — PR3.3 2026-05-11); editable gates body selection
+  // and dependency connector controls. activeDrag is the shared store written
+  // by the drag-controller reducer. issueRef is kept for the legacy active-drag
+  // highlight check below; it still works for both Issue and Milestone _id
+  // values.
   export let editable: boolean = false
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
   export let issueRef: Ref<Issue> | Ref<Milestone> | undefined = undefined
@@ -57,13 +54,10 @@
   }
 
   /**
-   * Each visible region of the bar (body + the two resize handles) gets
-   * its own mousedown listener with an explicit edge tag. This is simpler
-   * and more reliable than position-detection: SVG event.target identifies
-   * the clicked element directly, no DOMRect math needed.
-   * review note (2026-05-10): avoid the previous unified onBarMouseDown +
-   * detectEdge because the resize-handle <rect>s would not fire it without
-   * separate listeners.
+   * The visible body of the bar is a select target. Pointerdown is allowed to
+   * bubble to the scroller, so click-and-hold/drag on a bar pans the timeline
+   * exactly like dragging on empty canvas. Explicit controls such as the
+   * connector dot still stop their own pointer events.
    */
   function onBarDown (edge: 'left' | 'right' | 'body') {
     return (evt: MouseEvent): void => {
@@ -150,12 +144,6 @@
   // surfaced during PR4a code review 2026-05-11).
   $: isMilestoneSummary = isSummary && (dragTarget === undefined || dragTarget.kind !== 'issue')
 
-  // ARIA labels for the resize handles — translated up-front so the rect
-  // can use them as plain strings (svg `aria-label` accepts only strings).
-  let ariaResizeStart = 'Resize start date'
-  let ariaResizeEnd = 'Resize due date'
-  $: void translate(tracker.string.GanttAriaResizeStart, {}, $themeStore.language).then((s) => { ariaResizeStart = s })
-  $: void translate(tracker.string.GanttAriaResizeEnd, {}, $themeStore.language).then((s) => { ariaResizeEnd = s })
   // Heuristic: ~7.5px per character at 13px font — leave breathing room.
   const CHAR_PX = 7.5
   $: maxChars = Math.floor((w - 12) / CHAR_PX)
@@ -197,7 +185,6 @@
         role="button"
         tabindex="-1"
         aria-label={issue.title}
-        on:pointerdown|stopPropagation={() => {}}
         on:mousedown={onBarDown('body')}
         on:click|stopPropagation={() => {}}
         on:contextmenu={onBarContextMenu}
@@ -210,42 +197,6 @@
           dispatch('barHover', { issue: null })
         }}
       />
-      {#if selected && w >= 18}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <rect
-          class="resize-handle resize-left"
-          x={x}
-          y={barY}
-          width={6}
-          height={barH}
-          fill="transparent"
-          pointer-events="all"
-          role="button"
-          tabindex="-1"
-          aria-label={ariaResizeStart}
-          on:pointerdown|stopPropagation={() => {}}
-          on:mousedown={onBarDown('left')}
-          on:click|stopPropagation={() => {}}
-          on:contextmenu={onBarContextMenu}
-        />
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <rect
-          class="resize-handle resize-right"
-          x={x + w - 6}
-          y={barY}
-          width={6}
-          height={barH}
-          fill="transparent"
-          pointer-events="all"
-          role="button"
-          tabindex="-1"
-          aria-label={ariaResizeEnd}
-          on:pointerdown|stopPropagation={() => {}}
-          on:mousedown={onBarDown('right')}
-          on:click|stopPropagation={() => {}}
-          on:contextmenu={onBarContextMenu}
-        />
-      {/if}
     {/if}
     <line
       x1={x + 1}
@@ -295,7 +246,6 @@
       role="button"
       tabindex="-1"
       aria-label={issue.title}
-      on:pointerdown|stopPropagation={() => {}}
       on:mousedown={onBarDown('body')}
       on:click|stopPropagation={() => {}}
       on:contextmenu={onBarContextMenu}
@@ -308,42 +258,6 @@
         dispatch('barHover', { issue: null })
       }}
     />
-    {#if editable && selected && w >= 18}
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <rect
-        class="resize-handle resize-left"
-        x={x}
-        y={barY}
-        width={6}
-        height={barH}
-        fill="transparent"
-        pointer-events="all"
-        role="button"
-        tabindex="-1"
-        aria-label={ariaResizeStart}
-        on:pointerdown|stopPropagation={() => {}}
-        on:mousedown={onBarDown('left')}
-        on:click|stopPropagation={() => {}}
-        on:contextmenu={onBarContextMenu}
-      />
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <rect
-        class="resize-handle resize-right"
-        x={x + w - 6}
-        y={barY}
-        width={6}
-        height={barH}
-        fill="transparent"
-        pointer-events="all"
-        role="button"
-        tabindex="-1"
-        aria-label={ariaResizeEnd}
-        on:pointerdown|stopPropagation={() => {}}
-        on:mousedown={onBarDown('right')}
-        on:click|stopPropagation={() => {}}
-        on:contextmenu={onBarContextMenu}
-      />
-    {/if}
     {#if editable && hovered && dragTarget !== undefined && dragTarget.kind === 'issue' && w >= 18}
       <GanttConnectorDot
         cx={x + w}
@@ -388,11 +302,9 @@
   }
   /*
    * Cursor state machine (user feedback 2026-05-11):
-   *   editable, not selected → pointer  (this bar is clickable to arm it)
-   *   editable + selected    → grab     (now draggable / resizable)
-   *   mid-drag               → grabbing (via .active-drag)
-   * Resize handles only render when selected (see template above), so the
-   * ew-resize cursor only appears once the bar is armed.
+   *   editable, not selected → pointer  (single click marks the bar)
+   *   editable + selected    → grab     (click-and-hold pans the canvas)
+   *   mid-drag               → grabbing (legacy/sidebar explicit drags)
    */
   .bar.editable {
     cursor: pointer;
@@ -402,14 +314,6 @@
   }
   .bar.editable.active-drag {
     cursor: grabbing;
-  }
-  :global(svg.gantt-canvas .resize-handle) {
-    cursor: ew-resize;
-  }
-  :global(svg.gantt-canvas .resize-handle.resize-left:hover),
-  :global(svg.gantt-canvas .resize-handle.resize-right:hover) {
-    fill: var(--theme-state-info-color, #6366f1);
-    fill-opacity: 0.35;
   }
   .bar.active-drag {
     stroke: var(--theme-state-info-color, #6366f1);
