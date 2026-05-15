@@ -83,10 +83,14 @@
   $: total = incoming.length + outgoing.length
 </script>
 
-{#if total > 0}
-  <span class="labelTop">
-    <Label label={tracker.string.Dependencies} />
-  </span>
+<span class="labelTop">
+  <Label label={tracker.string.Dependencies} />
+</span>
+{#if total === 0}
+  <div class="empty">
+    <Label label={tracker.string.NoPredecessors} />
+  </div>
+{:else}
   <div class="deps">
     {#each incoming as rel (rel._id)}
       {@const other = otherIssues.get(String(rel.attachedTo))}
@@ -110,6 +114,11 @@
 {/if}
 
 <style lang="scss">
+  .empty {
+    color: var(--theme-content-trans-color);
+    font-size: 12px;
+    padding: 4px 0;
+  }
   .deps {
     display: flex;
     flex-direction: column;
