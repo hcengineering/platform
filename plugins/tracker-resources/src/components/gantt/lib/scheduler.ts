@@ -253,6 +253,15 @@ export function simulateCascade (
       if (primarySet.has(r.target)) continue
       const targetIssue = issuesByRef.get(r.target)
       if (targetIssue === undefined) continue
+      // Tier-2 Item 5 — Auto-Scheduling-Toggle.
+      // Manual-pinned successors must never be moved by a cascade. We
+      // bail out *before* writing to `current` or `shifts` so the
+      // Manual issue's pinned dates also keep propagating to its own
+      // successors (= they see the unchanged pred-end and stay put).
+      // Primary-Manual is unaffected: the `primarySet.has` check above
+      // already returned for primaries, so a user-dragged Manual bar
+      // still commits.
+      if (targetIssue.schedulingMode === 'manual') continue
       if (targetIssue.startDate == null || targetIssue.dueDate == null) {
         // Set semantics dedupe multi-path skip counts (DAG fan-in).
         skippedRefs.add(r.target)
@@ -319,6 +328,10 @@ export function simulateCascade (
       if (primarySet.has(r.attachedTo)) continue
       const predIssue = issuesByRef.get(r.attachedTo)
       if (predIssue === undefined) continue
+      // Tier-2 Item 5 — symmetric Manual-skip for reverse-cascade
+      // (pull-predecessor). Same rationale as outgoing: pinned dates
+      // win over a successor's pull.
+      if (predIssue.schedulingMode === 'manual') continue
       if (predIssue.startDate == null || predIssue.dueDate == null) {
         skippedRefs.add(r.attachedTo)
         continue
