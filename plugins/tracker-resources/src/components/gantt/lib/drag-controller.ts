@@ -52,7 +52,7 @@ function reduceFromIdle (state: DragState & { kind: 'idle' }, event: DragEvent):
       cursorStartX: event.cursorX
     }
     if (event.edge === 'body') {
-      // Tier-2 Item 6: when the mousedown carries a co-drag payload we
+      // when the mousedown carries a co-drag payload we
       // mount it into the dragging-body state with anchorDeltaMs = 0. The
       // reducer's mousemove branch maintains it from there.
       return {
@@ -169,7 +169,7 @@ function reduceFromActive (state: DragState, event: DragEvent, timeScale: TimeSc
   if (state.kind === 'dragging-body') {
     const deltaPx = event.cursorX - state.cursorStartX
     const rawDeltaMs = (deltaPx / timeScale.pxPerDay) * 86_400_000
-    // Tier-2 Item 6: when a co-drag is active, clamp the raw delta to the
+    // when a co-drag is active, clamp the raw delta to the
     // shared min/max window — the hard-stop semantic from the spec. Snap
     // is computed against the clamped delta so the entire group lands on
     // identical UTC-midnight boundaries.

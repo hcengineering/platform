@@ -477,7 +477,7 @@ describe('drag-controller — milestone target (PR3.3)', () => {
   })
 })
 
-describe('drag-controller — bulk co-drag (Tier-2 Item 6)', () => {
+describe('drag-controller — bulk co-drag', () => {
   // Two members: the leading bar (`issue` above) and a second issue B that
   // sits in the bulk-selection. coDrag carries B's origin so the controller
   // can clamp the shared delta without GanttView needing to do the math.
