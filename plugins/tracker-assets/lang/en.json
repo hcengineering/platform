@@ -322,7 +322,14 @@
     "LinkExistingSubIssue": "Link existing as sub-issue…",
     "SetParentIssueLabel": "Set parent issue…",
     "GanttDragToSchedule": "Drag to schedule",
-    "GanttDurationTooltip": "Duration: {days} d"
+    "GanttDurationTooltip": "Duration: {days} d",
+    "GanttConfirmMove": "Confirm before moving an issue",
+    "GanttConfirmResize": "Confirm before resizing an issue",
+    "GanttConfirmMoveTitle": "Move issue?",
+    "GanttConfirmResizeTitle": "Change issue dates?",
+    "GanttConfirmMoveBody": "Move {title} to {start} – {due}?",
+    "GanttConfirmResizeBody": "Change {title} to {start} – {due}?",
+    "GanttConfirmApply": "Apply"
   },
   "status": {}
 }
