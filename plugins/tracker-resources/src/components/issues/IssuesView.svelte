@@ -73,7 +73,11 @@
   {modeSelectorProps}
 >
   <svelte:fragment slot="header-tools">
-    <ViewletSettingButton bind:viewOptions bind:viewlet />
+    <ViewletSettingButton
+      bind:viewOptions
+      bind:viewlet
+      hideGroupingAndOrdering={isGanttMode}
+    />
   </svelte:fragment>
 
   <svelte:fragment slot="extra">
