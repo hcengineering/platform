@@ -80,7 +80,7 @@ export default mergeIds(trackerId, tracker, {
   ids: {
     TrackerNotificationGroup: '' as Ref<NotificationGroup>,
     AssigneeNotification: '' as Ref<NotificationType>,
-    // Tier-4 Item 14 — Notification on Dependency-Shift.
+    //  — Notification on Dependency-Shift.
     DependencyShiftedNotification: '' as Ref<NotificationType>,
     BaseProjectType: '' as Ref<ProjectType>,
     GuestIssueClassPermission: '' as Ref<Doc>,

@@ -63,7 +63,7 @@
     gap: 12px;
     padding: 16px;
     /*
-     * Tier-4 Item 13 — Mobile-Friendly Gantt. Spec §"Confirm-Popup-Layout":
+     *  — Mobile-Friendly Gantt. Spec §"Confirm-Popup-Layout":
      * Auf 320 px überlaufen die alten 600-px-Popups. We constrain
      * max-width to 95vw so the popup never bleeds past the viewport on
      * Phone, and drop min-width on tiny screens. 480 px is still the cap

@@ -15,7 +15,7 @@
 
   /**
    * One of the four mini SVG diagrams used by the Visual DependencyEditor
-   * (Tier-4 #11). Renders predecessor + successor rectangles plus the
+   *. Renders predecessor + successor rectangles plus the
    * kind-specific arrow polyline inside a fixed 80×50 viewBox. The wrapping
    * `<button role="radio">` provides native keyboard focus + click events
    * for the grid; the parent grid forwards arrow-key navigation via

@@ -17,7 +17,7 @@
  *     can build a single visual undo entry per bulk operation instead
  *     of N entries (which would over-count in the undo stack).
  *
- *   • Tier-4 Item 14 (Dependency-Shift-Notification) — the cascade-commit
+ *   •  (Dependency-Shift-Notification) — the cascade-commit
  *     in GanttView.svelte forwards the freshly-minted token to
  *     `sendDependencyShiftedNotifications`, which uses it as the
  *     `cascadeToken` field on every `DependencyShiftedNotification` so
