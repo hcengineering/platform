@@ -24,13 +24,17 @@
   export let scrollTop: number = 0
   export let viewportHeight: number = 600
   export let viewport: { left: number; right: number }
+  export let totalWidth: number
   export let milestoneStripHeight: number = 0
   export let hoveredRowId: string | null = null
 
   $: visibleRows = filterVisibleRows(rows, scrollTop, viewportHeight)
   $: rowsHeight = rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0
   $: totalHeight = rowsHeight + milestoneStripHeight
-  $: ticks = timeScale.ticks([timeScale.fromX(viewport.left), timeScale.fromX(viewport.right)])
+  $: ticks = timeScale.ticks([
+    timeScale.fromX(Math.max(0, viewport.left - 100)),
+    timeScale.fromX(viewport.right + 100)
+  ])
 
   function rowKey (row: LayoutRow): string {
     return row.id
@@ -48,9 +52,9 @@
 
 <svg
   class="gantt-canvas"
-  width={viewport.right - viewport.left}
+  width={totalWidth}
   height={totalHeight}
-  viewBox="{viewport.left} 0 {viewport.right - viewport.left} {totalHeight}"
+  viewBox="0 0 {totalWidth} {totalHeight}"
   preserveAspectRatio="none"
 >
   <!-- Vertical gridlines aligned to the time-scale ticks for visual rhythm. -->
@@ -75,9 +79,9 @@
     {#each visibleRows as row (rowKey(row))}
       {@const isHover = hoveredRowId === row.id}
       <rect
-        x={viewport.left}
+        x={0}
         y={row.y}
-        width={viewport.right - viewport.left}
+        width={totalWidth}
         height={row.height}
         class="row-rect"
         class:hovered={isHover}
@@ -97,9 +101,9 @@
       >
         <!-- transparent hit-area covering the row width to capture hover -->
         <rect
-          x={viewport.left}
+          x={0}
           y={row.y}
-          width={viewport.right - viewport.left}
+          width={totalWidth}
           height={row.height}
           fill="transparent"
         />
@@ -140,20 +144,18 @@
   <g class="milestones">
     {#each milestones as ms (ms._id)}
       {@const x = timeScale.toX(ms.targetDate)}
-      {#if x >= viewport.left - 16 && x <= viewport.right + 16}
-        <line
-          x1={x}
-          x2={x}
-          y1={0}
-          y2={totalHeight}
-          stroke="var(--theme-state-info-color, #6366f1)"
-          stroke-width={1}
-          stroke-dasharray="3 3"
-          opacity={0.4}
-        >
-          <title>{ms.label}</title>
-        </line>
-      {/if}
+      <line
+        x1={x}
+        x2={x}
+        y1={0}
+        y2={totalHeight}
+        stroke="var(--theme-state-info-color, #6366f1)"
+        stroke-width={1}
+        stroke-dasharray="3 3"
+        opacity={0.4}
+      >
+        <title>{ms.label}</title>
+      </line>
     {/each}
   </g>
 

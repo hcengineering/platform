@@ -217,7 +217,7 @@
 
   function onIssueOpen (e: CustomEvent<{ issue: { _id: string, _class: string } }>): void {
     showPanel(
-      'tracker:component:EditIssue' as any,
+      tracker.component.EditIssue,
       e.detail.issue._id as Ref<Doc>,
       e.detail.issue._class as Ref<Class<Doc>>,
       'content'
@@ -233,14 +233,34 @@
     if (scrollerEl === undefined) return
     scrollerEl.scrollBy({ left: dir * canvasViewportWidth * 0.8, behavior: 'smooth' })
   }
+  function jumpToStart (): void {
+    if (scrollerEl === undefined) return
+    scrollerEl.scrollTo({ left: 0, behavior: 'smooth' })
+  }
+  function jumpToEnd (): void {
+    if (scrollerEl === undefined) return
+    scrollerEl.scrollTo({ left: scrollerEl.scrollWidth, behavior: 'smooth' })
+  }
+  function jumpToDate (iso: string): void {
+    if (scrollerEl === undefined || iso === '') return
+    const t = Date.parse(iso)
+    if (isNaN(t)) return
+    const x = timeScale.toX(t)
+    scrollerEl.scrollTo({ left: Math.max(0, x - canvasViewportWidth / 2), behavior: 'smooth' })
+  }
+  let datePickerValue: string = ''
 
   // Forward wheel events from the sidebar to the canvas-scroller so users can
-  // scroll vertically while hovering the issue list (the sidebar itself uses a
-  // transform-based layout and has no native scrollbar).
+  // scroll vertically while hovering the issue list. Direct scrollTop/scrollLeft
+  // assignment matches the browser's native wheel-to-scroll speed; smooth
+  // scrolling would feel laggy against the canvas.
   function forwardSidebarWheel (e: WheelEvent): void {
     if (scrollerEl === undefined) return
     e.preventDefault()
-    scrollerEl.scrollBy({ top: e.deltaY, left: e.deltaX, behavior: 'auto' })
+    // deltaMode 1 = lines, 2 = pages; scale to pixels.
+    const factor = e.deltaMode === 1 ? 16 : (e.deltaMode === 2 ? scrollerEl.clientHeight : 1)
+    scrollerEl.scrollTop += e.deltaY * factor
+    scrollerEl.scrollLeft += e.deltaX * factor
   }
 
   // Click-and-drag panning across empty canvas area.
@@ -324,9 +344,18 @@
   {:else}
     <div class="gantt-toolbar" style="height: {TOOLBAR_HEIGHT}px;">
       <div class="toolbar-left">
+        <button class="nav-btn" type="button" title="Jump to start" on:click={jumpToStart}>⏮</button>
         <button class="nav-btn" type="button" title="Previous period" on:click={() => pageScroll(-1)}>«</button>
         <button class="nav-btn today-btn" type="button" on:click={jumpToToday}>Today</button>
         <button class="nav-btn" type="button" title="Next period" on:click={() => pageScroll(1)}>»</button>
+        <button class="nav-btn" type="button" title="Jump to end" on:click={jumpToEnd}>⏭</button>
+        <input
+          type="date"
+          class="date-input"
+          title="Jump to date"
+          bind:value={datePickerValue}
+          on:change={() => jumpToDate(datePickerValue)}
+        />
       </div>
       <div class="toolbar-center">
         {#each ZOOM_LEVELS as z (z)}
@@ -406,7 +435,7 @@
       >
         <div class="canvas-stack" style="width: {totalCanvasWidth}px;">
           <div class="header-sticky" style="height: {HEADER_HEIGHT}px;">
-            <GanttHeader {timeScale} {viewport} height={HEADER_HEIGHT} />
+            <GanttHeader {timeScale} {viewport} totalWidth={totalCanvasWidth} height={HEADER_HEIGHT} />
           </div>
           <GanttCanvas
             {rows}
@@ -416,6 +445,7 @@
             {scrollTop}
             {viewportHeight}
             {viewport}
+            totalWidth={totalCanvasWidth}
             milestoneStripHeight={MILESTONE_STRIP_HEIGHT}
             {hoveredRowId}
             on:openIssue={onIssueOpen}
@@ -480,6 +510,7 @@
   .toolbar-right { display: flex; gap: 4px; justify-self: end; position: relative; }
   .nav-btn {
     height: 26px;
+    min-width: 28px;
     padding: 0 10px;
     border: 1px solid var(--theme-divider-color);
     background: var(--theme-button-default);
@@ -493,6 +524,17 @@
   }
   .today-btn {
     font-weight: 600;
+  }
+  .date-input {
+    height: 26px;
+    margin-left: 8px;
+    padding: 0 6px;
+    border: 1px solid var(--theme-divider-color);
+    background: var(--theme-button-default);
+    color: var(--theme-content-color);
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
   }
   .zoom-btn {
     height: 26px;
