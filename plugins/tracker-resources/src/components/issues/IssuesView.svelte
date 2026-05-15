@@ -15,9 +15,6 @@
   } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
-  import GanttToolbarControls from '../gantt/GanttToolbarControls.svelte'
-  import GanttExtraActions from '../gantt/GanttExtraActions.svelte'
-
   function newIssue (): void {
     showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top')
   }
@@ -82,35 +79,8 @@
   </svelte:fragment>
 
   <svelte:fragment slot="extra">
-    <!-- Phase 2 — Gantt date-nav + zoom buttons render in the
-         SECOND header row (next to All/Active/Backlog ModeSelector and
-         the Filter/Search) when the Gantt viewlet is active. The
-         controls used to live in a dedicated toolbar row inside
-         GanttView; consolidating them with the existing row saves
-         ~40 px of vertical real estate.
-         The controls read their state from `ganttToolbarApi` store
-         which GanttView populates on mount and clears on destroy.
-         GanttExtraActions on the right adds fullscreen + PDF export
-         buttons next to the existing PNG export. -->
-    {#if viewlet?._id === tracker.viewlet.IssueGantt}
-      <GanttToolbarControls />
-      <GanttExtraActions />
-    {/if}
-  </svelte:fragment>
-
-  <svelte:fragment slot="extra">
-    <!-- Gantt controls render in the SECOND header row when
-         the Gantt viewlet is active. Layout:
-           [centred: date-nav + zoom]   [right: PNG/PDF/Fullscreen]
-         The date-nav+zoom group is wrapped with `margin: auto` so it
-         stays centred regardless of how much All/Active/Backlog
-         (ModeSelector) and PNG/PDF/Fullscreen consume on the sides. -->
-    {#if viewlet?._id === tracker.viewlet.IssueGantt}
-      <div class="gantt-row2-center">
-        <GanttToolbarControls />
-      </div>
-      <GanttExtraActions />
-    {/if}
+    <!-- Gantt toolbar controls are rendered inside GanttView.svelte
+         (the Tier-stack toolbar). No duplicate buttons here. -->
   </svelte:fragment>
 
 
@@ -137,17 +107,6 @@
     />
   </svelte:fragment>
 </SpaceHeader>
-
-<style>
-  /* Phase 2 — center the Gantt date-nav + zoom group between
-     ModeSelector (left) and PNG/PDF/Fullscreen (right) on row 2. */
-  :global(.gantt-row2-center) {
-    display: inline-flex;
-    align-items: center;
-    margin-left: auto;
-    margin-right: auto;
-  }
-</style>
 
 <FilterBar
   _class={tracker.class.Issue}
