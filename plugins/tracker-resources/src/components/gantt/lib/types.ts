@@ -4,7 +4,7 @@
 //
 
 import { type Ref } from '@hcengineering/core'
-import { type Issue, type Component as TrackerComponent, type Milestone } from '@hcengineering/tracker'
+import { type Issue, type IssueRelation, type Component as TrackerComponent, type Milestone } from '@hcengineering/tracker'
 
 /** Zoom presets — controls pxPerDay and header tick density. */
 export type ZoomLevel = 'day' | 'week' | 'month' | 'quarter'
@@ -231,3 +231,20 @@ export type SimulateResult =
   | { kind: 'cycle', cycleNodes: Ref<Issue>[] }
   | { kind: 'iteration-overflow' }
   | { kind: 'permission-denied', lockedIssues: Issue[], primary: PrimaryEdit[], shifts: CascadeShift[], skippedUnscheduled: number }
+
+// ---------------------------------------------------------------------------
+// PR5 — Critical Path types
+// ---------------------------------------------------------------------------
+
+export interface CriticalPathResult {
+  /** Issues whose slack is zero — driving the project end date. */
+  critical: Set<Ref<Issue>>
+  /** Relations that are part of the binding chain (both endpoints critical AND constraint tight). */
+  criticalRelations: Set<Ref<IssueRelation>>
+  /** Slack per issue in milliseconds. Missing entries = unscheduled. */
+  slack: Map<Ref<Issue>, number>
+  /** Relations that the user's pinned dates violate. UI marks these red-dashed with "!" tooltip. */
+  violatedRelations: Set<Ref<IssueRelation>>
+  /** True iff the relation graph contains a cycle — CP is empty, UI shows banner. */
+  cycle: boolean
+}
