@@ -4,8 +4,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
-  import type { Issue } from '@hcengineering/tracker'
-  import { type DragState, type LayoutRow, type MilestoneMarker, type SummaryRange } from './lib/types'
+  import type { Issue, Milestone } from '@hcengineering/tracker'
+  import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange } from './lib/types'
   import { filterVisibleRows } from './lib/layout'
   import GanttBar from './GanttBar.svelte'
   import GanttResizeOverlay from './GanttResizeOverlay.svelte'
@@ -15,7 +15,7 @@
   const dispatch = createEventDispatcher<{
     openIssue: { issue: { _id: string, _class: string } }
     hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
-    barMouseDown: { issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }
+    barMouseDown: { target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }
     contextMenu: { issue: Issue, event: MouseEvent }
   }>()
   function openIssue (i: { _id: any, _class: any }): void {
@@ -36,10 +36,15 @@
 
   // PR 3 edit-mode props. Defaulted so GanttCanvas remains usable from
   // contexts that don't wire the drag state (e.g. embedded preview).
+  // editableIssueIds covers both Issues and Milestones — the Set stores
+  // stringified _ids (PR3.3 2026-05-11) so a single Set serves both.
+  // milestonesById is a lookup of full Milestone docs (keyed by _id) used
+  // to build the DragTarget payload when a milestone bar is clicked.
   export let editableIssueIds: Set<string> = new Set()
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
   export let focusedIssueId: string | null = null
   export let selectedIssueId: string | null = null
+  export let milestonesById: Map<string, Milestone> = new Map()
 
   function statusCategoryFor (issue: any): string | null {
     if (statusCategoryMap === undefined) return null
@@ -66,7 +71,7 @@
   // active issue. Keeps the cursor's row at full opacity so the user can see
   // where the bar is being placed relative to other rows.
   $: dragState = $activeDrag
-  $: activeIssueIdStr = 'issue' in dragState ? String((dragState as { issue: { _id: unknown } }).issue._id) : null
+  $: activeIssueIdStr = 'target' in dragState ? String((dragState as { target?: DragTarget }).target?.doc._id ?? '') || null : null
   $: anyDragActive = dragState.kind !== 'idle' && dragState.kind !== 'hover-bar'
 
   function isDimmed (issueId: unknown): boolean {
@@ -154,19 +159,35 @@
           fill="transparent"
         />
         {#if row.kind === 'milestone' && row.milestone !== null}
-          {@const range = summaryFor(row)}
-          {#if range !== null && range.startDate !== null && range.dueDate !== null}
-            <GanttBar
-              issue={{
-                title: row.milestone.label,
-                startDate: range.startDate,
-                dueDate: range.dueDate
-              }}
-              row={{ y: row.y, height: row.height }}
-              {timeScale}
-              isSummary
-              summaryRange={range}
-            />
+          {@const ms = row.milestone}
+          {@const fullMs = milestonesById.get(String(ms._id))}
+          {#if ms.startDate !== null && fullMs !== undefined}
+            <!-- PR3.3: Milestone row renders an editable bar at the milestone's
+                 OWN [startDate, targetDate]. Synthetic children-aggregate
+                 summary-claw is dropped from milestone rows — the milestone
+                 IS the milestone, not its assigned-issues range. When startDate
+                 is null the milestone is "open-ended" and only the diamond on
+                 the top strip represents it (per brainstorm decision A). -->
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <g class="bar-wrap">
+              <GanttBar
+                issue={{
+                  title: ms.label,
+                  startDate: ms.startDate,
+                  dueDate: ms.targetDate
+                }}
+                row={{ y: row.y, height: row.height }}
+                {timeScale}
+                statusCategory={null}
+                editable={isEditable(ms._id)}
+                focused={isFocused(ms._id)}
+                selected={isSelected(ms._id)}
+                {activeDrag}
+                issueRef={ms._id}
+                dragTarget={{ kind: 'milestone', doc: fullMs }}
+                on:barMouseDown
+              />
+            </g>
           {/if}
         {:else if row.issue !== null}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -186,7 +207,7 @@
               selected={isSelected(row.issue._id)}
               {activeDrag}
               issueRef={row.issue._id}
-              issueObj={row.issue}
+              dragTarget={{ kind: 'issue', doc: row.issue }}
               on:barMouseDown
               on:contextMenu
             />

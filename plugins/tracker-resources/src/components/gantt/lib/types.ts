@@ -68,45 +68,62 @@ export interface MilestoneMarker {
 /** Which part of a bar is being interacted with. */
 export type DragKind = 'body' | 'left' | 'right' | 'unscheduled'
 
+/**
+ * Discriminated union of what's being dragged. Issues and Milestones are
+ * both date-ranged docs but use different field names (Issue: dueDate /
+ * Milestone: targetDate), and Milestone-cascade hits assigned-issues
+ * rather than descendant issues. The drag-controller reducer is doc-
+ * agnostic — it only uses originStart / originEnd / cursor deltas; the
+ * `target` field is preserved verbatim so commitDrag can branch on
+ * `target.kind` to write the right field and run the right cascade.
+ *
+ * Added PR3.3 (2026-05-11). Issue-only payloads from PR3 still work
+ * unchanged: callers wrap with `{ kind: 'issue', doc }` at the dispatch
+ * boundary.
+ */
+export type DragTarget =
+  | { kind: 'issue', doc: Issue }
+  | { kind: 'milestone', doc: Milestone }
+
 /** Discriminated state of the live drag/resize interaction. */
 export type DragState =
   | { kind: 'idle' }
-  | { kind: 'hover-bar', issueId: Ref<Issue>, edge: 'left' | 'right' | 'body' | 'none' }
+  | { kind: 'hover-bar', issueId: Ref<Issue> | Ref<Milestone>, edge: 'left' | 'right' | 'body' | 'none' }
   | {
       kind: 'dragging-body'
-      issue: Issue
+      target: DragTarget
       originStart: number
-      originDue: number
+      originEnd: number
       cursorStartX: number
       previewStart: number
-      previewDue: number
+      previewEnd: number
     }
   | {
       kind: 'resizing-left'
-      issue: Issue
+      target: DragTarget
       originStart: number
-      originDue: number
+      originEnd: number
       cursorStartX: number
       previewStart: number
     }
   | {
       kind: 'resizing-right'
-      issue: Issue
+      target: DragTarget
       originStart: number
-      originDue: number
+      originEnd: number
       cursorStartX: number
-      previewDue: number
+      previewEnd: number
     }
   | {
       kind: 'dragging-unscheduled'
-      issue: Issue
+      target: DragTarget
       /** Anchor date the drag was started from (defaults to today at UTC midnight). */
       originStart: number
       /** originStart + 1 day; used for ghost-outline / commit symmetry with dragging-body. */
-      originDue: number
+      originEnd: number
       cursorStartX: number
       previewStart: number
-      previewDue: number
+      previewEnd: number
       /**
        * True once the cursor has been over the canvas during the drag and a real
        * canvas-X has been observed. Guards against the click-without-drag case
@@ -136,10 +153,21 @@ export type DragState =
  * default ("today") until the cursor enters the canvas.
  */
 export type DragEvent =
-  | { type: 'mouseenter-bar', issueId: Ref<Issue>, edge: 'left' | 'right' | 'body' }
+  | { type: 'mouseenter-bar', issueId: Ref<Issue> | Ref<Milestone>, edge: 'left' | 'right' | 'body' }
   | { type: 'mouseleave-bar' }
-  | { type: 'mousedown-bar', issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }
-  | { type: 'mousedown-unscheduled', issue: Issue, cursorX: number }
+  | {
+      type: 'mousedown-bar'
+      target: DragTarget
+      /** Start / end dates of the target at mousedown; reducer stores these
+       *  as `originStart` / `originEnd` and adds the cursor-delta to compute
+       *  previews. Captured here at the dispatch boundary so the doc-agnostic
+       *  reducer doesn't need to know which field on `target.doc` to read. */
+      originStart: number
+      originEnd: number
+      edge: 'left' | 'right' | 'body'
+      cursorX: number
+    }
+  | { type: 'mousedown-unscheduled', target: DragTarget, cursorX: number }
   | { type: 'mousemove', cursorX: number, canvasX?: number }
   | { type: 'mouseup' }
   | { type: 'cancel' }
