@@ -15,6 +15,7 @@
   export let cx: number
   export let cy: number
   export let r: number = 5
+  export let hitR: number = 12
 
   const dispatch = createEventDispatcher<{
     connectorDown: { cursorX: number, cursorY: number }
@@ -28,24 +29,42 @@
   }
 </script>
 
-<circle
-  class="gantt-connector-dot"
-  {cx}
-  {cy}
-  {r}
-  fill="#6366f1"
-  stroke="#ffffff"
-  stroke-width={1.5}
+<g
+  class="gantt-connector"
   on:pointerdown={onDown}
   on:click|stopPropagation={() => {}}
-/>
+>
+  <circle
+    class="gantt-connector-hit"
+    {cx}
+    {cy}
+    r={hitR}
+    fill="transparent"
+  />
+  <circle
+    class="gantt-connector-dot"
+    {cx}
+    {cy}
+    {r}
+    fill="#6366f1"
+    stroke="#ffffff"
+    stroke-width={1.5}
+    pointer-events="none"
+  />
+</g>
 
 <style lang="scss">
-  :global(svg.gantt-canvas .gantt-connector-dot) {
+  :global(svg.gantt-canvas .gantt-connector) {
     cursor: crosshair;
+    pointer-events: all;
+  }
+  :global(svg.gantt-canvas .gantt-connector-hit) {
+    pointer-events: all;
+  }
+  :global(svg.gantt-canvas .gantt-connector-dot) {
     filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.4));
   }
-  :global(svg.gantt-canvas .gantt-connector-dot:hover) {
+  :global(svg.gantt-canvas .gantt-connector:hover .gantt-connector-dot) {
     fill: #4f46e5;
   }
 </style>

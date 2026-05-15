@@ -3,19 +3,22 @@
 -->
 <script lang="ts">
   import { type TimeScale } from './lib/time-scale'
+  import { computeTickViewport } from './lib/viewport'
 
   export let timeScale: TimeScale
   export let viewport: { left: number; right: number }   // px
   export let totalWidth: number
+  export let dataWidth: number = totalWidth
   export let height: number = 36
 
   // Filter ticks to viewport for performance, but render the SVG at full
   // canvas width so the sticky-header lives in the same coordinate system
   // as the canvas-stack (review note: SVG must extend across the whole
   // scroll content, not just the visible viewport).
+  $: tickViewport = computeTickViewport(viewport.left, viewport.right, dataWidth)
   $: visibleRange = [
-    timeScale.fromX(Math.max(0, viewport.left - 100)),
-    timeScale.fromX(viewport.right + 100)
+    timeScale.fromX(tickViewport.left),
+    timeScale.fromX(tickViewport.right)
   ] as [number, number]
   $: ticks = timeScale.ticks(visibleRange)
 </script>
