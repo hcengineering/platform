@@ -6,6 +6,17 @@
 import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 
+const DAY_MS = 86_400_000
+
+/**
+ * Schedule arithmetic — Phase-1 uses calendar days. Phase-2 will replace
+ * the body with a working-calendar lookup; the signature is the
+ * integration point. All cascade-math callers route through this helper.
+ */
+export function addScheduleDays (t: number, days: number): number {
+  return t + days * DAY_MS
+}
+
 /**
  * Return every descendant of `issue` that has both `startDate` and `dueDate`
  * concretely set. Children/grandchildren are walked recursively via the
