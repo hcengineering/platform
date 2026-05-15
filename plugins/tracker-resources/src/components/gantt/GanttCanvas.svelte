@@ -5,7 +5,7 @@
   import { createEventDispatcher } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
   import type { Ref } from '@hcengineering/core'
-  import type { Issue, IssueRelation, Milestone } from '@hcengineering/tracker'
+  import type { Issue, IssueRelation, Milestone, WorkingDaysConfig } from '@hcengineering/tracker'
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange } from './lib/types'
   import { filterVisibleRows } from './lib/layout'
   import GanttBar from './GanttBar.svelte'
@@ -16,7 +16,7 @@
   import GanttDependencyLayer from './GanttDependencyLayer.svelte'
   import GanttConnectorDot from './GanttConnectorDot.svelte'
   import { activeDragTargetId } from './lib/drag-state'
-  import { computeTickViewport } from './lib/viewport'
+  import { computeTickViewport, nonWorkingDaysInRange } from './lib/viewport'
 
   const dispatch = createEventDispatcher<{
     openIssue: { issue: { _id: string, _class: string } }
@@ -80,6 +80,12 @@
   export let cpSlack: Map<Ref<Issue>, number> = new Map()
   export let showCriticalPath: boolean = false
 
+  // Phase-2 working-days calendar. `undefined` = legacy mode (no tint, all
+  // days treated as working). When set, every non-working day in the
+  // viewport receives a low-alpha background fill so the user sees at a
+  // glance which days the scheduler will skip.
+  export let workingDaysConfig: WorkingDaysConfig | undefined = undefined
+
   /**
    * Returns true iff any IssueRelation involving this issue is in the
    * CP module's violatedRelations set. Used by GanttBar to paint a red
@@ -133,6 +139,12 @@
     timeScale.fromX(tickViewport.left),
     timeScale.fromX(tickViewport.right)
   ])
+  // Non-working-day backgrounds. Empty in legacy mode.
+  $: nonWorkingDays = nonWorkingDaysInRange(
+    timeScale.fromX(tickViewport.left),
+    timeScale.fromX(tickViewport.right),
+    workingDaysConfig
+  )
 
   /**
    * Per-bar pixel rectangle for the dependency router. Re-derives from the
@@ -177,6 +189,23 @@
   viewBox="0 0 {totalWidth} {totalHeight}"
   preserveAspectRatio="none"
 >
+  <!-- Phase-2 working-days: paint a soft tint over weekends/holidays so the
+       user can tell at a glance which days the scheduler will skip. Painted
+       BEFORE the gridlines + bars so it forms a true background layer. -->
+  {#if workingDaysConfig !== undefined && nonWorkingDays.length > 0}
+    <g class="non-working-days" pointer-events="none">
+      {#each nonWorkingDays as day (day)}
+        <rect
+          x={timeScale.toX(day)}
+          y={0}
+          width={Math.max(0, timeScale.pxPerDay)}
+          height={totalHeight}
+          class="non-working-day-rect"
+        />
+      {/each}
+    </g>
+  {/if}
+
   <!-- Vertical gridlines aligned to the time-scale ticks for visual rhythm. -->
   <g class="gridlines">
     {#each ticks as tick (tick.date)}
@@ -435,5 +464,11 @@
   }
   :global(svg.gantt-canvas .row-rect.milestone-bg.hovered) {
     fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);
+  }
+  /* Phase-2 weekend / holiday tint — theme-aware via divider colour so it
+     stays subtle in both light and dark themes. */
+  :global(svg.gantt-canvas .non-working-day-rect) {
+    fill: var(--theme-divider-color);
+    opacity: 0.10;
   }
 </style>
