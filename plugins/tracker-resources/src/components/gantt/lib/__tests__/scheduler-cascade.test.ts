@@ -317,3 +317,16 @@ describe('simulateCascade — chain propagation', () => {
     expect(res.kind).toBe('iteration-overflow')
   })
 })
+
+describe('simulateCascade — cycle bailout', () => {
+  it('Test 11: A→B→A cycle in graph → returns cycle, no shifts', () => {
+    const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
+    const relations = [rel('A', 'B'), rel('B', 'A')]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 2), newDue: Date.UTC(2026, 4, 6) }]
+    const res = simulateCascade(primary, [A, B], relations, () => true)
+    expect(res.kind).toBe('cycle')
+    if (res.kind !== 'cycle') return
+    expect(new Set(res.cycleNodes)).toEqual(new Set(['A', 'B']))
+  })
+})
