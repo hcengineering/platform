@@ -353,15 +353,16 @@ export function simulateCascade (
   // a future code path inserts into `shifts` outside the guarded branches.
   for (const ref of primarySet) shifts.delete(ref)
 
-  // Step 7: empty → no-cascade.
-  if (shifts.size === 0) return { kind: 'no-cascade', primary }
-
-  // Step 8: permission check covers BOTH primary edits and cascade shifts.
+  // Step 7: permission check covers BOTH primary edits and cascade shifts.
   // For a single-bar drag this is redundant with the bar's editability gate
   // (the bar wouldn't have been draggable in the first place), but for
   // parent-drag the primary array also includes descendant Issues that
   // may not be individually editable — failing to gate them would let
-  // the user write to a locked child via the parent. (Codex review.)
+  // the user write to a locked child via the parent.
+  //
+  // This MUST run BEFORE the shifts.size === 0 early-return below: a
+  // parent-drag with no external successors would otherwise bypass the
+  // child permission gate and silently commit. (Codex review round 8.)
   const locked: Issue[] = []
   const lockedSet = new Set<Ref<Issue>>()
   for (const pe of primary) {
@@ -385,6 +386,9 @@ export function simulateCascade (
       skippedUnscheduled: skippedRefs.size
     }
   }
+
+  // Step 8: empty → no-cascade (only reachable once permissions are clear).
+  if (shifts.size === 0) return { kind: 'no-cascade', primary }
 
   return {
     kind: 'cascade',
