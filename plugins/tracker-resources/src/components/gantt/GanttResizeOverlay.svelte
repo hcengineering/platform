@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
-  import type { Writable } from 'svelte/store'
+  import { writable, type Writable } from 'svelte/store'
   import type { DragState } from './lib/types'
   import type { TimeScale } from './lib/time-scale'
 
-  export let activeDrag: Writable<DragState>
+  const idleDrag: DragState = { kind: 'idle' }
+
+  export let activeDrag: Writable<DragState> = writable(idleDrag)
   export let timeScale: TimeScale
   export let canvasHeight: number = 600
 
@@ -70,7 +72,7 @@
     return null
   }
 
-  $: state = $activeDrag
+  $: state = $activeDrag ?? idleDrag
   $: geom = originGeometry(state)
   $: gx = guideX(state)
   $: pd = pillDate(state)

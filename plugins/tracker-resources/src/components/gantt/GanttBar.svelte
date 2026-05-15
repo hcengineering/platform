@@ -197,7 +197,9 @@
         role="button"
         tabindex="-1"
         aria-label={issue.title}
+        on:pointerdown|stopPropagation={() => {}}
         on:mousedown={onBarDown('body')}
+        on:click|stopPropagation={() => {}}
         on:contextmenu={onBarContextMenu}
         on:mouseenter={() => {
           hovered = true
@@ -221,7 +223,9 @@
           role="button"
           tabindex="-1"
           aria-label={ariaResizeStart}
+          on:pointerdown|stopPropagation={() => {}}
           on:mousedown={onBarDown('left')}
+          on:click|stopPropagation={() => {}}
           on:contextmenu={onBarContextMenu}
         />
         <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -236,7 +240,9 @@
           role="button"
           tabindex="-1"
           aria-label={ariaResizeEnd}
+          on:pointerdown|stopPropagation={() => {}}
           on:mousedown={onBarDown('right')}
+          on:click|stopPropagation={() => {}}
           on:contextmenu={onBarContextMenu}
         />
       {/if}
@@ -289,7 +295,9 @@
       role="button"
       tabindex="-1"
       aria-label={issue.title}
+      on:pointerdown|stopPropagation={() => {}}
       on:mousedown={onBarDown('body')}
+      on:click|stopPropagation={() => {}}
       on:contextmenu={onBarContextMenu}
       on:mouseenter={() => {
         hovered = true
@@ -313,7 +321,9 @@
         role="button"
         tabindex="-1"
         aria-label={ariaResizeStart}
+        on:pointerdown|stopPropagation={() => {}}
         on:mousedown={onBarDown('left')}
+        on:click|stopPropagation={() => {}}
         on:contextmenu={onBarContextMenu}
       />
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -328,7 +338,9 @@
         role="button"
         tabindex="-1"
         aria-label={ariaResizeEnd}
+        on:pointerdown|stopPropagation={() => {}}
         on:mousedown={onBarDown('right')}
+        on:click|stopPropagation={() => {}}
         on:contextmenu={onBarContextMenu}
       />
     {/if}
