@@ -2,7 +2,12 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+  import { writable, type Writable } from 'svelte/store'
+  import type { Ref } from '@hcengineering/core'
+  import type { Issue } from '@hcengineering/tracker'
   import type { TimeScale } from './lib/time-scale'
+  import type { DragState } from './lib/types'
 
   // Bar is rendered for both Issues and synthetic milestone summaries; the
   // structural subset below is all the bar geometry needs.
@@ -14,6 +19,38 @@
   // Status category drives bar fill: backlog grey, todo blue, in-progress
   // amber, completed green, cancelled muted. null = no status info.
   export let statusCategory: string | null = null
+
+  // PR 3 edit-mode props. issueObj carries the full Issue when this bar
+  // represents one (vs. a synthetic milestone-summary); editable gates the
+  // resize-handle rendering and the mousedown handlers; activeDrag is the
+  // shared store written by the drag-controller reducer.
+  export let editable: boolean = false
+  export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
+  export let issueRef: Ref<Issue> | undefined = undefined
+  export let issueObj: Issue | undefined = undefined
+
+  const dispatch = createEventDispatcher<{
+    barMouseDown: { issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }
+  }>()
+
+  /**
+   * Each visible region of the bar (body + the two resize handles) gets
+   * its own mousedown listener with an explicit edge tag. This is simpler
+   * and more reliable than position-detection: SVG event.target identifies
+   * the clicked element directly, no DOMRect math needed.
+   * Codex review 2026-05-10: avoid the previous unified onBarMouseDown +
+   * detectEdge because the resize-handle <rect>s would not fire it without
+   * separate listeners.
+   */
+  function onBarDown (edge: 'left' | 'right' | 'body') {
+    return (evt: MouseEvent): void => {
+      if (!editable || issueObj === undefined) return
+      if (evt.button !== 0) return // only left-click starts a drag
+      dispatch('barMouseDown', { issue: issueObj, edge, cursorX: evt.clientX })
+      evt.preventDefault()
+      evt.stopPropagation()
+    }
+  }
 
   // Status-driven fill + matching text color. Active gets the most
   // emphatic treatment (saturated fill, white text) so the user can
@@ -103,7 +140,31 @@
       stroke={barColors.border}
       stroke-width={1}
       class="bar"
+      class:editable
+      on:mousedown={onBarDown('body')}
     />
+    {#if editable && w >= 18}
+      <rect
+        class="resize-handle resize-left"
+        x={x}
+        y={barY}
+        width={6}
+        height={barH}
+        fill="transparent"
+        pointer-events="all"
+        on:mousedown={onBarDown('left')}
+      />
+      <rect
+        class="resize-handle resize-right"
+        x={x + w - 6}
+        y={barY}
+        width={6}
+        height={barH}
+        fill="transparent"
+        pointer-events="all"
+        on:mousedown={onBarDown('right')}
+      />
+    {/if}
     {#if barLabel !== ''}
       <text
         x={x + 6}
@@ -131,5 +192,16 @@
   }
   .summary-label {
     font-weight: 600;
+  }
+  .bar.editable {
+    cursor: grab;
+  }
+  :global(svg.gantt-canvas .resize-handle) {
+    cursor: ew-resize;
+  }
+  :global(svg.gantt-canvas .resize-handle.resize-left:hover),
+  :global(svg.gantt-canvas .resize-handle.resize-right:hover) {
+    fill: var(--theme-state-info-color, #6366f1);
+    fill-opacity: 0.35;
   }
 </style>
