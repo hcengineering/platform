@@ -105,6 +105,27 @@
   export let connectedIds: Set<Ref<Issue>> = new Set()
   export let hoveredIssue: Ref<Issue> | null = null
   export let hoveredEdge: { source: Ref<Issue>, target: Ref<Issue> } | null = null
+  // PR5 critical-path overlay state (forwarded down to GanttBar +
+  // GanttDependencyLayer). showCriticalPath gates rendering so the
+  // base view doesn't gain visual weight when the toggle is off.
+  export let criticalSet: Set<Ref<Issue>> = new Set()
+  export let criticalRelations: Set<Ref<IssueRelation>> = new Set()
+  export let violatedRelations: Set<Ref<IssueRelation>> = new Set()
+  export let cpSlack: Map<Ref<Issue>, number> = new Map()
+  export let showCriticalPath: boolean = false
+
+  /**
+   * Returns true iff any IssueRelation involving this issue is in the
+   * CP module's violatedRelations set. Used by GanttBar to paint a red
+   * dashed border on the bar.
+   */
+  function hasViolation (issueId: Ref<Issue>): boolean {
+    if (violatedRelations.size === 0) return false
+    for (const r of relations) {
+      if ((r.attachedTo === issueId || r.target === issueId) && violatedRelations.has(r._id)) return true
+    }
+    return false
+  }
 
   function statusCategoryFor (issue: any): string | null {
     if (statusCategoryMap === undefined) return null
@@ -294,6 +315,10 @@
               {activeDrag}
               issueRef={row.issue._id}
               dragTarget={{ kind: 'issue', doc: row.issue }}
+              isCritical={showCriticalPath && criticalSet.has(row.issue._id)}
+              isViolated={showCriticalPath && hasViolation(row.issue._id)}
+              slackMs={cpSlack.get(row.issue._id) ?? 0}
+              showSlackGlyph={showCriticalPath}
               on:barMouseDown
               on:barClick
               on:contextMenu
@@ -313,6 +338,9 @@
     {connectedIds}
     {hoveredIssue}
     {hoveredEdge}
+    {criticalRelations}
+    {violatedRelations}
+    {showCriticalPath}
     on:openEditor
     on:hoverEdge
   />

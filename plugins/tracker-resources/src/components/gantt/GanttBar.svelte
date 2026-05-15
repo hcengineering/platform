@@ -34,6 +34,16 @@
   export let dragTarget: DragTarget | undefined = undefined
   export let focused: boolean = false
   export let selected: boolean = false
+  // PR5 critical-path overlay
+  export let isCritical: boolean = false
+  export let isViolated: boolean = false
+  export let slackMs: number = 0
+  export let showSlackGlyph: boolean = false
+
+  const DAY_MS_FOR_SLACK = 86_400_000
+  $: slackPx = showSlackGlyph && slackMs > 0
+    ? Math.max(2, (slackMs / DAY_MS_FOR_SLACK) * timeScale.pxPerDay)
+    : 0
 
   const dispatch = createEventDispatcher<{
     barMouseDown: { target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }
@@ -249,13 +259,15 @@
       rx={3}
       ry={3}
       fill={barColors.fill}
-      stroke={barColors.border}
-      stroke-width={1}
+      stroke={isCritical ? '#dc2626' : barColors.border}
+      stroke-width={isCritical ? 2 : 1}
+      stroke-dasharray={isViolated ? '4 2' : 'none'}
       class="bar"
       class:editable
       class:active-drag={isThisBarActive}
       class:focused
       class:selected
+      class:critical={isCritical}
       role="button"
       tabindex="-1"
       aria-label={issue.title}
@@ -272,6 +284,37 @@
         dispatch('barHover', { issue: null })
       }}
     />
+    {#if isCritical && showSlackGlyph}
+      <!-- PR5: 18%-opacity red overlay on critical bars, on top of the
+           status fill. pointer-events: none so drag/click stays routed
+           to the underlying bar rect. -->
+      <rect
+        x={x}
+        y={barY}
+        width={w}
+        height={barH}
+        rx={3}
+        ry={3}
+        fill="#dc2626"
+        fill-opacity="0.18"
+        pointer-events="none"
+      />
+    {/if}
+    {#if slackPx > 0 && !isCritical}
+      <!-- PR5: slack glyph — light-grey trailing bar showing total
+           slack (LS - ES). Critical bars (slack = 0) don't render this. -->
+      <rect
+        x={x + w + 1}
+        y={barY + 2}
+        width={slackPx}
+        height={barH - 4}
+        rx={2}
+        ry={2}
+        fill="#9ca3af"
+        fill-opacity="0.4"
+        pointer-events="none"
+      />
+    {/if}
     {#if editable && selected && w >= 18}
       <rect
         x={x - 3}

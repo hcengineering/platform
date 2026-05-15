@@ -22,6 +22,10 @@
   export let connectedIds: Set<Ref<Issue>> = new Set()
   export let hoveredIssue: Ref<Issue> | null = null
   export let hoveredEdge: { source: Ref<Issue>, target: Ref<Issue> } | null = null
+  // PR5 critical-path overlay
+  export let criticalRelations: Set<Ref<IssueRelation>> = new Set()
+  export let violatedRelations: Set<Ref<IssueRelation>> = new Set()
+  export let showCriticalPath: boolean = false
 
   $: dragState = $activeDrag
 
@@ -51,6 +55,8 @@
         sourceBar={src}
         targetBar={dst}
         dimmed={isDimmed(rel)}
+        isCritical={showCriticalPath && criticalRelations.has(rel._id)}
+        isViolated={showCriticalPath && violatedRelations.has(rel._id)}
         on:openEditor
         on:hoverEdge
       />
