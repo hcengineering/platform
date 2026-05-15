@@ -2,7 +2,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
-  import { type ApplyOperations, type Class, type Doc, type DocumentQuery, type Ref, type Space, SortingOrder } from '@hcengineering/core'
+  import { type ApplyOperations, type Class, type Doc, type DocumentQuery, generateId, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { type Issue, type IssueRelation, type Milestone, type Project, type WorkingDaysConfig } from '@hcengineering/tracker'
   import { connectedIssueIds } from './lib/dependency-router'
@@ -32,6 +32,8 @@
   import { GROUP_BY_KEYS, type GroupByKey } from './lib/group-by'
   import { buildGroupedRows, groupRowsToLayoutRows } from './lib/build-rows'
   import { applyFilter, countActiveFilters, type GanttFilter, type GanttFilterValue } from './lib/filter-predicate'
+  import { UndoManager, type UndoEntry, type UndoResult } from './lib/undo-manager'
+  import { createFlashStore, flashIssues } from './lib/flash-store'
   import { reduce } from './lib/drag-controller'
   import { buildLayout } from './lib/layout'
   import { shouldPromoteCanvasPan, shouldStartCanvasPan } from './lib/pan-target'
@@ -49,6 +51,8 @@
   import NavPrev from '@hcengineering/ui/src/components/icons/NavPrev.svelte'
   import NavNext from '@hcengineering/ui/src/components/icons/NavNext.svelte'
   import Calendar from '@hcengineering/ui/src/components/icons/Calendar.svelte'
+  import IconUndo from '@hcengineering/ui/src/components/icons/Undo.svelte'
+  import IconRedo from '@hcengineering/ui/src/components/icons/Redo.svelte'
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export let _class: Ref<Class<Doc>>
@@ -175,6 +179,21 @@
   let ganttFilter: GanttFilter = {}
   let filterPopupOpen = false
   $: filterCount = countActiveFilters(ganttFilter)
+
+  // Phase 3c — Undo/Redo. One manager per GanttView mount; the stack lives
+  // in memory and is dropped on navigation-away (Spec §"Open Q2"). The
+  // flash-store drives a transient highlight on bars touched by an undo/redo
+  // so the user sees what just rolled back (Spec §"Visual Feedback").
+  // TxOperations & Client has the structural subset UndoApplyClient needs;
+  // the cast lives at the construction site so the manager itself stays free
+  // of any tracker/core imports beyond pure types.
+  const undoManager = new UndoManager(getClient() as unknown as ConstructorParameters<typeof UndoManager>[0])
+  const canUndo = undoManager.canUndo
+  const canRedo = undoManager.canRedo
+  const nextUndoDescription = undoManager.nextUndoDescription
+  const nextRedoDescription = undoManager.nextRedoDescription
+  const undoFlashStore = createFlashStore()
+  onDestroy(() => undoManager.clear())
   /**
    * When the user picks a new group-by mode, drop the collapsed-state — it
    * was indexed by keys from the previous mode and would either be a no-op
@@ -1401,7 +1420,71 @@
     await commitWithCascade(primaryEdits, false, i.space, 'none')
   }
 
+  /**
+   * Phase 3c — central handler called from the toolbar buttons and the
+   * Cmd+Z / Ctrl+Z keyboard shortcut. Surfaces conflict / error results as
+   * toasts; on success flashes the affected bars for 1.5 s so the user sees
+   * what just reverted.
+   */
+  async function handleUndo (): Promise<void> {
+    const r: UndoResult = await undoManager.undo()
+    await showUndoResultToast(r)
+  }
+
+  async function handleRedo (): Promise<void> {
+    const r: UndoResult = await undoManager.redo()
+    await showUndoResultToast(r)
+  }
+
+  async function showUndoResultToast (r: UndoResult): Promise<void> {
+    if (r.kind === 'success') {
+      if (r.affectedIds.length > 0) flashIssues(r.affectedIds, 1500, undoFlashStore)
+      return
+    }
+    if (r.kind === 'empty') return
+    if (r.kind === 'conflicted') {
+      const title = await translate(tracker.string.GanttUndoConflict, {}, undefined)
+      addNotification(title, '', undefined as any, undefined, NotificationSeverity.Warning)
+      return
+    }
+    if (r.kind === 'error') {
+      const title = await translate(tracker.string.GanttUndoFailed, {}, undefined)
+      addNotification(title, String(r.error), undefined as any, undefined, NotificationSeverity.Error)
+    }
+  }
+
+  /**
+   * True when a text-entry control owns focus — in that case Cmd+Z / Ctrl+Z
+   * is the browser's native text-undo and we must NOT hijack it. Otherwise
+   * the Gantt is the consumer.
+   */
+  function isTextInputFocused (): boolean {
+    const el = document.activeElement
+    if (el === null) return false
+    if (el instanceof HTMLInputElement) return el.type !== 'checkbox' && el.type !== 'radio' && el.type !== 'button'
+    if (el instanceof HTMLTextAreaElement) return true
+    if (el instanceof HTMLSelectElement) return false
+    return el.getAttribute('contenteditable') === 'true'
+  }
+
   function onKey (e: KeyboardEvent): void {
+    // Phase 3c — Cmd+Z / Ctrl+Z (Undo) and Cmd+Shift+Z / Ctrl+Shift+Z (Redo).
+    // Checked FIRST so they win against the Phase-1 zoom/pan shortcuts which
+    // share the +/-/Tab/Arrow keyspace. Skip when a text input owns focus so
+    // the browser's native text-undo keeps working in DependencyEditor /
+    // inline cell edits / CreateIssue.
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'z' || e.key === 'Z')) {
+      if (isTextInputFocused()) return
+      // Require focus inside the Gantt root — same guard as the rest of onKey.
+      if (!(containerEl?.contains(document.activeElement) ?? false)) return
+      e.preventDefault()
+      if (e.shiftKey) {
+        void handleRedo()
+      } else {
+        void handleUndo()
+      }
+      return
+    }
     // Only react when focus is inside the Gantt root — otherwise we'd hijack
     // global shortcuts.
     if (!(containerEl?.contains(document.activeElement) ?? false)) return
@@ -1822,6 +1905,31 @@
         {/each}
       </div>
       <div class="toolbar-right">
+        <!-- Phase 3c: Undo/Redo. The buttons mirror the Cmd+Z / Cmd+Shift+Z
+             keyboard shortcuts wired in onKey() below — disabled state and
+             tooltip description come from the UndoManager reactive stores.
+             Sits before the filter button so the most frequent operations
+             cluster together. -->
+        <button
+          type="button"
+          class="gantt-toolbar-icon-btn"
+          disabled={!$canUndo}
+          use:tooltip={{ label: tracker.string.GanttUndo }}
+          on:click={() => { void handleUndo() }}
+          aria-label={$nextUndoDescription ?? ''}
+        >
+          <Icon icon={IconUndo} size="small" />
+        </button>
+        <button
+          type="button"
+          class="gantt-toolbar-icon-btn"
+          disabled={!$canRedo}
+          use:tooltip={{ label: tracker.string.GanttRedo }}
+          on:click={() => { void handleRedo() }}
+          aria-label={$nextRedoDescription ?? ''}
+        >
+          <Icon icon={IconRedo} size="small" />
+        </button>
         <!-- Phase 3b: Filter button + group-by dropdown. Lightweight inline
              UI for v1; the full Tracker filter-store integration is staged
              for 3b.v2 (Spec §"Reuse, nicht Neuentwicklung"). The Ctrl+F
@@ -2143,6 +2251,24 @@
      in the toolbar-right cell; the filter popup is positioned absolute so
      it overlaps the canvas without re-flowing layout. */
   .gantt-filter-wrap { position: relative; }
+  .gantt-toolbar-icon-btn {
+    height: 26px;
+    width: 26px;
+    padding: 0;
+    border: 1px solid var(--theme-divider-color);
+    background: var(--theme-button-default);
+    color: var(--theme-content-color);
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .gantt-toolbar-icon-btn:hover:not(:disabled) { background: var(--theme-button-hovered); }
+  .gantt-toolbar-icon-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
   .gantt-filter-btn {
     height: 26px;
     padding: 0 10px;
