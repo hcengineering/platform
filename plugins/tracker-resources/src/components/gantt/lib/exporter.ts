@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
+import { buildGanttExportSvg, type GanttExportInput } from './export-renderer'
+
 /**
  * Browser-side Gantt PNG/PDF export.
  *
@@ -165,7 +167,7 @@ export function downloadBlob (blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = filename.endsWith('.png') ? filename : filename + '.png'
+  a.download = filename
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
@@ -180,7 +182,80 @@ export async function exportElementAndDownloadPng (
   options: ExportOptions = {}
 ): Promise<void> {
   const blob = await exportElementToPng(el, options)
-  downloadBlob(blob, filename)
+  downloadBlob(blob, filename.endsWith('.png') ? filename : filename + '.png')
+}
+
+function svgSize (svg: string): { width: number, height: number } {
+  const width = Number(svg.match(/\bwidth="(\d+(?:\.\d+)?)"/)?.[1] ?? 1)
+  const height = Number(svg.match(/\bheight="(\d+(?:\.\d+)?)"/)?.[1] ?? 1)
+  return { width, height }
+}
+
+async function svgToPngBlob (svg: string, scale = 2): Promise<Blob> {
+  const { width, height } = svgSize(svg)
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  try {
+    const img = new Image()
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve()
+      img.onerror = () => reject(new Error('Could not render Gantt export SVG'))
+      img.src = url
+    })
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.ceil(width * scale))
+    canvas.height = Math.max(1, Math.ceil(height * scale))
+    const ctx = canvas.getContext('2d')
+    if (ctx === null) throw new Error('2D canvas context unavailable')
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+    return await canvasToPngBlob(canvas)
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
+function blobToDataUrl (blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result))
+    reader.onerror = () => reject(reader.error ?? new Error('Could not read export image'))
+    reader.readAsDataURL(blob)
+  })
+}
+
+export async function exportGanttDataToPng (
+  input: GanttExportInput,
+  filename: string = 'gantt-export'
+): Promise<void> {
+  const svg = buildGanttExportSvg(input)
+  const blob = await svgToPngBlob(svg, 2)
+  downloadBlob(blob, filename.endsWith('.png') ? filename : filename + '.png')
+}
+
+export async function exportGanttDataToPdf (
+  input: GanttExportInput,
+  filename: string = 'gantt-export'
+): Promise<void> {
+  const svg = buildGanttExportSvg(input)
+  const { width, height } = svgSize(svg)
+  const png = await svgToPngBlob(svg, 2)
+  const dataUrl = await blobToDataUrl(png)
+  const mod = await import('jspdf')
+  const JsPdfCtor = mod.jsPDF
+  // Custom-sized page, not a browser printout. Keep 1 CSS px ≈ 0.75 pt so the
+  // exported issue list and bars stay legible instead of being squeezed to A4.
+  const pageW = Math.max(300, width * 0.75)
+  const pageH = Math.max(200, height * 0.75)
+  const pdf = new JsPdfCtor({
+    orientation: pageW >= pageH ? 'landscape' : 'portrait',
+    unit: 'pt',
+    format: [pageW, pageH],
+    compress: true
+  })
+  pdf.addImage(dataUrl, 'PNG', 0, 0, pageW, pageH)
+  pdf.save(filename.endsWith('.pdf') ? filename : filename + '.pdf')
 }
 
 /**
@@ -329,5 +404,5 @@ export async function exportAndDownload (
   options: ExportOptions = {}
 ): Promise<void> {
   const blob = await exportGanttSvgToPng(svg, options)
-  downloadBlob(blob, filename)
+  downloadBlob(blob, filename.endsWith('.png') ? filename : filename + '.png')
 }
