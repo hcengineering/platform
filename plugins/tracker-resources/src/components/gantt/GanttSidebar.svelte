@@ -23,7 +23,6 @@
     type SidebarColumnKey
   } from './lib/sidebar-columns'
   import type { GanttSortState, SortDirection } from './lib/sidebar-sort'
-  import { computeYViewport, sliceVisibleRows } from './lib/y-viewport'
 
   export let rows: LayoutRow[]
   export let width: number = 280
@@ -50,17 +49,6 @@
   export let columns: readonly SidebarColumnKey[] = DEFAULT_COLUMNS
   export let widths: Record<string, number> = { ...DEFAULT_WIDTHS }
   export let sort: GanttSortState = { column: null, direction: 'asc' }
-  // Tier-3 Item 5 — Y-axis virtualization. When all three are set, only rows
-  // intersecting the [scrollTop, scrollTop+viewportHeight] band are rendered,
-  // with absolute-positioning so the DOM aligns with the canvas bars at the
-  // same y. When any is omitted (e.g. fixtures/tests), the legacy render
-  // path renders every row in document order — bit-for-bit compatible with
-  // prior phases.
-  export let scrollTop: number = 0
-  export let viewportHeight: number = 0
-  export let rowHeight: number = 0
-  /** Extra rows rendered above + below the visible band. Default 5 (spec §4). */
-  export let overscan: number = 5
 
   /** Set of columns that have a meaningful comparator — others are non-sortable. */
   const SORTABLE_COLUMNS: ReadonlySet<SidebarColumnKey> = new Set<SidebarColumnKey>([
@@ -109,44 +97,6 @@
   $: dragState = $activeDrag
   $: activeIssueIdStr = activeDragTargetId(dragState)
   $: anyDragActive = dragState.kind !== 'idle' && dragState.kind !== 'hover-bar'
-
-  // Tier-3 Item 5 — virtualization is "on" when the parent wires the three
-  // viewport props. Off → render every row (legacy path, preserved for
-  // tests / embed previews).
-  $: virtualizationOn = rowHeight > 0 && viewportHeight > 0
-  // When the parent applies a sort that re-orders the `rows` array, each
-  // row's `.y` field (set by `buildLayout` on the un-sorted ordering) no
-  // longer matches the sorted position. Re-stamp `y = index × rowHeight`
-  // so the absolute-positioned rows visually appear in the order they're
-  // passed in. This is identical to buildLayout's own y assignment for
-  // uniform-height rows, just keyed on the current (post-sort) index.
-  $: indexedRows = virtualizationOn
-    ? rows.map((r, i) => ({ row: r, vy: i * rowHeight }))
-    : rows.map((r) => ({ row: r, vy: r.y }))
-  // Total scrollable height — rowCount × rowHeight, matching the canvas.
-  $: totalRowsHeight = rows.length * (rowHeight > 0 ? rowHeight : 0) || (rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0)
-  $: yViewport = virtualizationOn
-    ? computeYViewport({
-        rowCount: rows.length,
-        rowHeight,
-        scrollTop,
-        viewportHeight,
-        overscan
-      })
-    : null
-  // Slice on the re-stamped vy (so post-sort order matters) and project the
-  // result back to `{ row, vy }` pairs the template iterates over.
-  $: visibleIndexed = (virtualizationOn && yViewport !== null)
-    ? indexedRows.filter((p) => {
-        return p.vy + (p.row.height ?? rowHeight) > scrollTop - overscan * rowHeight &&
-          p.vy < scrollTop + viewportHeight + overscan * rowHeight
-      })
-    : indexedRows
-  // When virtualizing, render the slice anchored to its re-stamped vy; the
-  // wrapper carries an explicit height so the scroller's scrollHeight
-  // matches the unvirtualized layout. The add-issue-row sits BELOW the
-  // spacer so it always renders at the bottom of the list.
-  $: spacerHeight = virtualizationOn ? totalRowsHeight : 0
 
   const dispatch = createEventDispatcher<{
     jump: { x: number }
@@ -270,14 +220,8 @@
         />
       {/each}
     </div>
-    <div
-      class="sidebar-grid-body"
-      class:has-hover={hoveredRowId !== null}
-      class:virtualized={virtualizationOn}
-      style={virtualizationOn ? `height: ${spacerHeight}px;` : ''}
-    >
-      {#each visibleIndexed as p (p.row.id)}
-        {@const row = p.row}
+    <div class="sidebar-grid-body" class:has-hover={hoveredRowId !== null}>
+      {#each rows as row (row.id)}
         {#if row.kind === 'group-header'}
           <!-- Phase 3b — swimlane header in the extended-grid sidebar.
                Spans the full grid width via grid-column: 1 / -1. -->
@@ -286,9 +230,7 @@
             class="sidebar-grid-row gantt-group-header"
             class:collapsed={row.collapsed}
             role="row"
-            style={virtualizationOn
-              ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px;`
-              : `height: ${row.height}px;`}
+            style="height: {row.height}px;"
           >
             <button
               type="button"
@@ -309,9 +251,7 @@
           class:milestone={row.kind === 'milestone'}
           class:hovered={hoveredRowId === row.id}
           role="row"
-          style={virtualizationOn
-            ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px;`
-            : `height: ${row.height}px;`}
+          style="height: {row.height}px;"
           on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
           on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
           on:mouseleave={() => dispatch('hoverRow', { id: null })}
@@ -338,9 +278,6 @@
         class="add-issue-row"
         role="button"
         tabindex="0"
-        style={virtualizationOn
-          ? `position: absolute; top: ${spacerHeight}px; left: 0; right: 0;`
-          : ''}
         on:click={() => dispatch('addIssue')}
         on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatch('addIssue') }}
       >
@@ -350,14 +287,8 @@
     </div>
   </div>
 {:else}
-<div
-  class="sidebar-rows"
-  class:has-hover={hoveredRowId !== null}
-  class:virtualized={virtualizationOn}
-  style={virtualizationOn ? `width: ${width}px; height: ${spacerHeight}px;` : `width: ${width}px;`}
->
-  {#each visibleIndexed as p (p.row.id)}
-    {@const row = p.row}
+<div class="sidebar-rows" class:has-hover={hoveredRowId !== null} style="width: {width}px;">
+  {#each rows as row (row.id)}
     {#if row.kind === 'group-header'}
       <!-- Phase 3b — swimlane header in the sidebar. Click the chevron to
            collapse/expand the lane. Label + count occupy the full width of
@@ -367,9 +298,7 @@
       <div
         class="sidebar-row gantt-group-header"
         class:collapsed={row.collapsed}
-        style={virtualizationOn
-          ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px;`
-          : `height: ${row.height}px;`}
+        style="height: {row.height}px;"
       >
         <span class="col-toggle">
           <button
@@ -396,9 +325,7 @@
       class:milestone={row.kind === 'milestone'}
       class:hovered={hoveredRowId === row.id}
       class:drag-dimmed={anyDragActive && row.issue !== null && activeIssueIdStr !== null && String(row.issue._id) !== activeIssueIdStr}
-      style={virtualizationOn
-        ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px; padding-left: ${8 + indent}px;`
-        : `height: ${row.height}px; padding-left: ${8 + indent}px;`}
+      style="height: {row.height}px; padding-left: {8 + indent}px;"
       on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
       on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
       on:mouseleave={() => dispatch('hoverRow', { id: null })}
@@ -515,9 +442,6 @@
     class="add-issue-row"
     role="button"
     tabindex="0"
-    style={virtualizationOn
-      ? `position: absolute; top: ${spacerHeight}px; left: 0; right: 0;`
-      : ''}
     on:click={() => dispatch('addIssue')}
     on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatch('addIssue') }}
   >
@@ -548,13 +472,6 @@
     display: flex;
     flex-direction: column;
   }
-  /* Tier-3 Item 5 — when virtualized, the body acts as a positioning
-     ancestor for absolute-positioned rows. `display: block` cancels the
-     flex layout so absolute children honour `top: N px`. */
-  .sidebar-grid-body.virtualized {
-    display: block;
-    position: relative;
-  }
   .sidebar-grid-row {
     display: flex;
     align-items: stretch;
@@ -576,9 +493,6 @@
   /* Legacy compact mode (default) — preserved bit-for-bit. */
   .sidebar-rows {
     background: var(--theme-comp-header-color);
-  }
-  .sidebar-rows.virtualized {
-    position: relative;
   }
   .col-toggle {
     flex: 0 0 18px;

@@ -7,7 +7,6 @@
   import { type Issue, type IssueRelation, type Milestone, type Project, type WorkingDaysConfig } from '@hcengineering/tracker'
   import { connectedIssueIds } from './lib/dependency-router'
   import { wouldCreateCycle, simulateCascade, addScheduleDays } from './lib/scheduler'
-  import { newCascadeToken } from './lib/cascade-token'
   import { fsAnchor, ssAnchor, ffAnchor, sfAnchor } from './lib/working-days'
   import { computeCriticalPath } from './lib/critical-path'
   import type { CriticalPathResult } from './lib/types'
@@ -28,6 +27,11 @@
   import GanttConfirmCommitPopup from './GanttConfirmCommitPopup.svelte'
   import GanttHeader from './GanttHeader.svelte'
   import GanttSidebar from './GanttSidebar.svelte'
+  import { DEFAULT_COLUMNS, DEFAULT_WIDTHS, type SidebarColumnKey } from './lib/sidebar-columns'
+  import { cycleSort, comparatorFor, type GanttSortState } from './lib/sidebar-sort'
+  import { GROUP_BY_KEYS, type GroupByKey } from './lib/group-by'
+  import { buildGroupedRows, groupRowsToLayoutRows } from './lib/build-rows'
+  import { applyFilter, countActiveFilters, type GanttFilter, type GanttFilterValue } from './lib/filter-predicate'
   import { reduce } from './lib/drag-controller'
   import { buildLayout } from './lib/layout'
   import { shouldPromoteCanvasPan, shouldStartCanvasPan } from './lib/pan-target'
@@ -152,6 +156,57 @@
   // Customize-view panel (same pattern as ganttConfirmMove etc.).
   $: showCriticalPath = ((viewOptions as Record<string, unknown>)?.ganttCriticalPath ?? false) === true
   $: showSlackColumn = ((viewOptions as Record<string, unknown>)?.ganttSlackColumn ?? false) === true
+  // Phase 3a: extended sidebar grid. Toggled via Customize-view; default OFF
+  // so existing users see the legacy compact layout. When ON, the sidebar
+  // renders a sortable header row + per-column cells via GanttSidebarColumn.
+  $: extendedColumns = ((viewOptions as Record<string, unknown>)?.ganttSidebarColumnsExtended ?? false) === true
+
+  // Phase 3b — Filter-Bar + Group-By Swimlanes.
+  // Both pieces of state are in-memory only for v1 (mirrors Phase 3a):
+  // persisting them as workspace-stored ViewOptions is deferred to 3b.v2
+  // once `view.update(...)` from a Svelte component is wired through the
+  // Customize-view drawer's storage path. The current `viewOptions` prop
+  // is read-only from this side.
+  let ganttGroupBy: GroupByKey = (() => {
+    const v = (viewOptions as Record<string, unknown>)?.ganttGroupBy
+    return typeof v === 'string' && (GROUP_BY_KEYS as readonly string[]).includes(v) ? v as GroupByKey : 'none'
+  })()
+  let collapsedGroups: Set<string> = new Set()
+  let ganttFilter: GanttFilter = {}
+  let filterPopupOpen = false
+  $: filterCount = countActiveFilters(ganttFilter)
+  /**
+   * When the user picks a new group-by mode, drop the collapsed-state — it
+   * was indexed by keys from the previous mode and would either be a no-op
+   * or accidentally collapse a same-named bucket in the new mode.
+   */
+  function setGroupBy (next: GroupByKey): void {
+    if (next === ganttGroupBy) return
+    ganttGroupBy = next
+    collapsedGroups = new Set()
+  }
+  function toggleGroup (key: string): void {
+    const next = new Set(collapsedGroups)
+    if (next.has(key)) next.delete(key)
+    else next.add(key)
+    collapsedGroups = next
+  }
+  function clearFilter (): void {
+    ganttFilter = {}
+  }
+  function toggleFilterValue (key: keyof GanttFilter, value: GanttFilterValue): void {
+    const current = ganttFilter[key] ?? []
+    const idx = current.indexOf(value)
+    const nextValues = idx >= 0 ? [...current.slice(0, idx), ...current.slice(idx + 1)] : [...current, value]
+    ganttFilter = { ...ganttFilter, [key]: nextValues }
+  }
+  function onGroupBySelectChange (e: Event): void {
+    const target = e.target
+    if (target instanceof HTMLSelectElement) {
+      setGroupBy(target.value as GroupByKey)
+    }
+  }
+
   // 200 ms debounced recompute on issues / relations / toggle / cfg change.
   $: void scheduleCpRecompute(issues, relations, showCriticalPath, workingDaysCfg)
 
@@ -309,14 +364,43 @@
 
   let collapsedIds: Set<string> = new Set()
   function onToggle (e: CustomEvent<{ id: string }>): void {
+    // Phase 3b: group-header rows carry an `id` like "group:<key>". Route
+    // those toggles into `collapsedGroups`, leaving the legacy issue and
+    // milestone collapse state in `collapsedIds`.
+    if (e.detail.id.startsWith('group:')) {
+      toggleGroup(e.detail.id.slice('group:'.length))
+      return
+    }
     const next = new Set(collapsedIds)
     if (next.has(e.detail.id)) next.delete(e.detail.id)
     else next.add(e.detail.id)
     collapsedIds = next
   }
 
-  $: rows = buildLayout(issues, milestoneMarkers, 'none', { rowHeight: ROW_HEIGHT, collapsedIds })
-  $: summaryRanges = computeSummaryRanges(rows, issues)
+  // Phase 3b — apply the filter predicate to the raw issue feed BEFORE either
+  // legacy buildLayout (hierarchy) or buildGroupedRows (swimlanes) runs. When
+  // groupBy is active the hierarchy is intentionally flattened: sub-issues
+  // appear in their own bucket per their own status/priority/assignee, not
+  // under the parent (Spec §"Konflikt: Hierarchie vs Group-By"). The
+  // milestone-row overlay path is similarly suppressed because lane-headers
+  // already provide the visual grouping affordance.
+  $: filteredIssues = filterCount === 0 ? issues : applyFilter(issues, ganttFilter)
+  $: rows = (() => {
+    if (ganttGroupBy === 'none') {
+      return buildLayout(filteredIssues, milestoneMarkers, 'none', { rowHeight: ROW_HEIGHT, collapsedIds })
+    }
+    // Phase-3a sort comparator (when active) is applied *within* each lane.
+    const withinGroupCompare = extendedColumns && sidebarSort.column !== null
+      ? comparatorFor(sidebarSort.column, sidebarSort.direction)
+      : undefined
+    const grouped = buildGroupedRows(filteredIssues, ganttGroupBy, {
+      rowHeight: ROW_HEIGHT,
+      collapsedGroups,
+      withinGroupCompare
+    })
+    return groupRowsToLayoutRows(grouped)
+  })()
+  $: summaryRanges = computeSummaryRanges(rows, filteredIssues)
   $: statusCategoryMap = buildStatusCategoryMap($statusStore.byId)
   function buildStatusCategoryMap (byId: Map<any, any>): Map<string, string> {
     const out = new Map<string, string>()
@@ -865,11 +949,7 @@
     for (const i of allInSpace) allByRef.set(i._id, i)
 
     if (altKey) {
-      // Tier-2 Item 5 — cascadeToken plumbing. Tag every cascade-related
-      // commit with a unique token (scope-string) so Tier-2 Item 6 (bulk-
-      // drag) and Tier-4 Item 14 (cascade-shift notification) can correlate
-      // every sub-Tx of one user-action to a single batch downstream.
-      const ops = client.apply(undefined, newCascadeToken('gantt-cascade-bypass'))
+      const ops = client.apply(undefined, 'gantt-cascade-bypass')
       for (const pe of primaryEdits) {
         await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
       }
@@ -969,7 +1049,7 @@
             return
           }
         }
-        const ops = client.apply(undefined, newCascadeToken('gantt-no-cascade'))
+        const ops = client.apply(undefined, 'gantt-no-cascade')
         for (const pe of result.primary) {
           await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
         }
@@ -1038,7 +1118,7 @@
     shifts: CascadeShift[]
   ): Promise<void> {
     const client = getClient()
-    const ops = client.apply(undefined, newCascadeToken('gantt-cascade-commit'))
+    const ops = client.apply(undefined, 'gantt-cascade-commit')
     for (const pe of primary) {
       await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
     }
@@ -1368,6 +1448,13 @@
       void exportToPng()
       e.preventDefault()
     }
+    // Phase 3b: Ctrl/Cmd+F opens the Gantt filter popup. Reserved as a
+    // placeholder in Phase 1; wired here. preventDefault stops the browser
+    // find dialog from stealing focus.
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+      filterPopupOpen = !filterPopupOpen
+      e.preventDefault()
+    }
   }
 
   function cycleZoom (delta: number): void {
@@ -1645,6 +1732,45 @@
   $: viewport = { left: canvasViewportLeft, right: canvasViewportLeft + canvasViewportWidth }
   $: sidebarWidthPx = (showIssueCode || showTitle || showStatus) ? userSidebarWidth : 60
 
+  // Phase 3a — sidebar column state. Columns + widths default to the
+  // Phase-2-equivalent identifier/title/predecessors/slack quartet so the
+  // extended-grid path mirrors the legacy sidebar's column list at startup.
+  // Width changes from the header-cell resize handle are mutated in-place
+  // (transient, not persisted in v1).
+  let sidebarColumns: readonly SidebarColumnKey[] = DEFAULT_COLUMNS
+  let sidebarWidths: Record<string, number> = { ...DEFAULT_WIDTHS }
+  let sidebarSort: GanttSortState = { column: null, direction: 'asc' }
+
+  function onSidebarSort (evt: CustomEvent<{ column: SidebarColumnKey }>): void {
+    sidebarSort = cycleSort(sidebarSort, evt.detail.column)
+  }
+
+  function onSidebarWidthChange (evt: CustomEvent<{ column: SidebarColumnKey, width: number, commit: boolean }>): void {
+    sidebarWidths = { ...sidebarWidths, [evt.detail.column]: evt.detail.width }
+    // commit=true currently only signals end-of-drag; persistence to user
+    // preferences is a Phase-3a.v2 follow-up.
+  }
+
+  /**
+   * Phase 3a — apply the current sort to the data feed BEFORE flattening
+   * into LayoutRows. When the sort column is null, this is a no-op and the
+   * upstream rank ordering is preserved (legacy behaviour). When a sort is
+   * active, the hierarchy view is intentionally broken — see spec §"Sort +
+   * Hierarchy" for the tooltip warning.
+   */
+  $: sortedRows = (() => {
+    // When group-by is active the sort has already been applied within each
+    // lane via `withinGroupCompare` in `buildGroupedRows`; re-sorting here
+    // would intermix lane-headers with issue rows and break the y layout.
+    if (ganttGroupBy !== 'none') return rows
+    if (sidebarSort.column === null || !extendedColumns) return rows
+    const cmp = comparatorFor(sidebarSort.column, sidebarSort.direction)
+    return [...rows].sort((a, b) => {
+      if (a.issue === null || b.issue === null) return 0
+      return cmp(a.issue, b.issue)
+    })
+  })()
+
   $: loading = loadingIssues || loadingMilestones
 </script>
 
@@ -1695,7 +1821,80 @@
           >{z[0].toUpperCase() + z.slice(1)}</button>
         {/each}
       </div>
-      <div class="toolbar-right" />
+      <div class="toolbar-right">
+        <!-- Phase 3b: Filter button + group-by dropdown. Lightweight inline
+             UI for v1; the full Tracker filter-store integration is staged
+             for 3b.v2 (Spec §"Reuse, nicht Neuentwicklung"). The Ctrl+F
+             keyboard shortcut (registered globally below) toggles the same
+             popup. The filter dropdown only exposes status/priority/assignee
+             for v1; component/milestone follow the same pattern. -->
+        <div class="gantt-filter-wrap">
+          <button
+            type="button"
+            class="gantt-filter-btn"
+            class:has-active-filter={filterCount > 0}
+            use:tooltip={{ label: tracker.string.GanttFilter }}
+            on:click={() => { filterPopupOpen = !filterPopupOpen }}
+          >
+            <Label label={tracker.string.GanttFilter} />
+            {#if filterCount > 0}<span class="gantt-filter-badge">{filterCount}</span>{/if}
+          </button>
+          {#if filterPopupOpen}
+            <!-- svelte-ignore a11y-no-static-element-interactions a11y-click-events-have-key-events -->
+            <div class="gantt-filter-popup" role="dialog">
+              <div class="gantt-filter-popup-row">
+                <button
+                  type="button"
+                  class="gantt-filter-clear"
+                  on:click={clearFilter}
+                  disabled={filterCount === 0}
+                >
+                  <Label label={tracker.string.GanttFilterClear} />
+                </button>
+              </div>
+              <!-- Filter dimensions are populated from the project's actual
+                   status/priority/assignee universe in 3b.v2; v1 ships with
+                   plain numeric priority buckets which exist regardless of
+                   project. -->
+              <div class="gantt-filter-popup-section">
+                <div class="gantt-filter-popup-title"><Label label={tracker.string.GanttFilterByPriority} /></div>
+                {#each [0, 1, 2, 3, 4] as p (p)}
+                  <label class="gantt-filter-popup-item">
+                    <input
+                      type="checkbox"
+                      checked={(ganttFilter.priority ?? []).includes(p)}
+                      on:change={() => toggleFilterValue('priority', p)}
+                    />
+                    <span>P{p}</span>
+                  </label>
+                {/each}
+              </div>
+            </div>
+          {/if}
+        </div>
+        <div class="gantt-groupby-wrap" use:tooltip={{ label: tracker.string.GanttGroupOverridesHierarchy }}>
+          <Label label={tracker.string.GanttGroupBy} />
+          <!-- svelte-ignore a11y-no-onchange -->
+          <select
+            class="gantt-groupby-select"
+            value={ganttGroupBy}
+            on:change={onGroupBySelectChange}
+          >
+            {#each GROUP_BY_KEYS as key (key)}
+              <option value={key}>
+                {#if key === 'none'}<Label label={tracker.string.GanttGroupByNone} />
+                {:else if key === 'status'}<Label label={tracker.string.GanttGroupByStatus} />
+                {:else if key === 'priority'}<Label label={tracker.string.GanttGroupByPriority} />
+                {:else if key === 'assignee'}<Label label={tracker.string.GanttGroupByAssignee} />
+                {:else if key === 'component'}<Label label={tracker.string.GanttGroupByComponent} />
+                {:else if key === 'milestone'}<Label label={tracker.string.GanttGroupByMilestone} />
+                {:else if key === 'label'}<Label label={tracker.string.GanttGroupByLabel} />
+                {/if}
+              </option>
+            {/each}
+          </select>
+        </div>
+      </div>
     </div>
 
     <!-- Plane-style two-axis scrolling: gantt-scroller handles vertical only,
@@ -1749,7 +1948,7 @@
         <!-- Row 2: sidebar (sticky-left) / resize handle (sticky-left) / canvas -->
         <div class="cell sidebar-cell">
           <GanttSidebar
-            {rows}
+            rows={sortedRows}
             width={sidebarWidthPx}
             {timeScale}
             viewportLeft={viewport.left}
@@ -1765,6 +1964,10 @@
             criticalSet={cpResult.critical}
             {showCriticalPath}
             {showSlackColumn}
+            {extendedColumns}
+            columns={sidebarColumns}
+            widths={sidebarWidths}
+            sort={sidebarSort}
             on:jump={onJump}
             on:toggle={onToggle}
             on:openIssue={onIssueOpen}
@@ -1773,6 +1976,8 @@
             on:addIssue={newIssue}
             on:rowContextMenu={handleRowContextMenu}
             on:rowDragStart={handleRowDragStart}
+            on:sortChange={onSidebarSort}
+            on:widthChange={onSidebarWidthChange}
           />
         </div>
         <div
@@ -1933,7 +2138,98 @@
   }
   .toolbar-left { display: flex; gap: 4px; }
   .toolbar-center { display: flex; gap: 2px; justify-self: center; }
-  .toolbar-right { display: flex; gap: 4px; justify-self: end; position: relative; }
+  .toolbar-right { display: flex; gap: 8px; justify-self: end; position: relative; align-items: center; }
+  /* Phase 3b — Filter + Group-By controls. Sit next to the zoom switcher
+     in the toolbar-right cell; the filter popup is positioned absolute so
+     it overlaps the canvas without re-flowing layout. */
+  .gantt-filter-wrap { position: relative; }
+  .gantt-filter-btn {
+    height: 26px;
+    padding: 0 10px;
+    border: 1px solid var(--theme-divider-color);
+    background: var(--theme-button-default);
+    color: var(--theme-content-color);
+    font-size: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .gantt-filter-btn:hover { background: var(--theme-button-hovered); }
+  .gantt-filter-btn.has-active-filter {
+    background: var(--theme-button-pressed);
+    font-weight: 600;
+  }
+  .gantt-filter-badge {
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: var(--theme-warning-color, #d4a017);
+    color: var(--theme-content-color);
+    font-size: 10px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .gantt-filter-popup {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 30;
+    min-width: 200px;
+    padding: 8px;
+    border: 1px solid var(--theme-divider-color);
+    background: var(--theme-popup-color, var(--theme-comp-header-color));
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    font-size: 12px;
+    color: var(--theme-content-color);
+  }
+  .gantt-filter-popup-row { display: flex; justify-content: flex-end; margin-bottom: 6px; }
+  .gantt-filter-clear {
+    height: 22px;
+    padding: 0 8px;
+    border: 1px solid var(--theme-divider-color);
+    background: var(--theme-button-default);
+    color: var(--theme-content-color);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+  }
+  .gantt-filter-clear:disabled { opacity: 0.5; cursor: not-allowed; }
+  .gantt-filter-popup-section { margin-bottom: 8px; }
+  .gantt-filter-popup-title { font-weight: 600; margin-bottom: 4px; opacity: 0.85; }
+  .gantt-filter-popup-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+    cursor: pointer;
+  }
+  .gantt-groupby-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    padding: 0 8px;
+    border: 1px solid var(--theme-divider-color);
+    background: var(--theme-button-default);
+    color: var(--theme-content-color);
+    font-size: 12px;
+    border-radius: 4px;
+  }
+  .gantt-groupby-select {
+    height: 22px;
+    border: none;
+    background: transparent;
+    color: var(--theme-content-color);
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+  }
   .nav-btn {
     height: 26px;
     min-width: 28px;
