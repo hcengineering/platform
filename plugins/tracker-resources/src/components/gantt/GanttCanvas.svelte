@@ -223,7 +223,9 @@
   </g>
 
   <!-- Row backgrounds: alternating zebra + hover highlight. Painted before
-       bars so they appear behind the bar geometry. -->
+       bars so they appear behind the bar geometry. Phase 3b: group-header
+       rows get an explicit tint band so the swimlane is visually distinct
+       across the canvas, matching the sidebar's group-header row. -->
   <g class="row-bg" transform="translate(0, {milestoneStripHeight})">
     {#each visibleRows as row (rowKey(row))}
       {@const isHover = hoveredRowId === row.id}
@@ -235,6 +237,7 @@
         class="row-rect"
         class:hovered={isHover}
         class:milestone-bg={row.kind === 'milestone'}
+        class:group-header-bg={row.kind === 'group-header'}
         class:dimmed={row.issue !== null && isDimmed(row.issue._id)}
       />
     {/each}
@@ -464,6 +467,12 @@
   }
   :global(svg.gantt-canvas .row-rect.milestone-bg.hovered) {
     fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);
+  }
+  /* Phase 3b — swimlane header band painted behind the group-header row
+     so the lane boundary reads across the entire canvas width. */
+  :global(svg.gantt-canvas .row-rect.group-header-bg) {
+    fill: var(--theme-divider-color);
+    opacity: 0.7;
   }
   /* Phase-2 weekend / holiday tint — theme-aware via divider colour so it
      stays subtle in both light and dark themes. */
