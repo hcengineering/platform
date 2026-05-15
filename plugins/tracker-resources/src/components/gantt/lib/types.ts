@@ -201,3 +201,33 @@ export type DragEvent =
       hoveredBar: Issue | null
     }
   | { type: 'mouseup-connector' }
+
+// ---------------------------------------------------------------------------
+// PR4b — Cascade simulation types
+// ---------------------------------------------------------------------------
+
+/** A single primary issue-edit (the dragged bar, plus parent-drag descendants). */
+export interface PrimaryEdit {
+  issue: Issue
+  newStart: number
+  newDue: number
+}
+
+/** One issue shifted by the cascade (push-successor or pull-predecessor). */
+export interface CascadeShift {
+  issue: Issue
+  oldStart: number
+  oldDue: number
+  newStart: number
+  newDue: number
+  reason: 'push-successor' | 'pull-predecessor'
+  triggeredBy: Ref<Issue>
+}
+
+/** Discriminated result of simulateCascade. */
+export type SimulateResult =
+  | { kind: 'no-cascade', primary: PrimaryEdit[] }
+  | { kind: 'cascade', primary: PrimaryEdit[], shifts: CascadeShift[], skippedUnscheduled: number }
+  | { kind: 'cycle', cycleNodes: Ref<Issue>[] }
+  | { kind: 'iteration-overflow' }
+  | { kind: 'permission-denied', lockedIssues: Issue[], primary: PrimaryEdit[], shifts: CascadeShift[], skippedUnscheduled: number }
