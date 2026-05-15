@@ -416,7 +416,31 @@ export default mergeIds(trackerId, tracker, {
     GanttFilterByStatus: '' as IntlString,
     GanttFilterByPriority: '' as IntlString,
     GanttFilterByAssignee: '' as IntlString,
-    GanttFilterEmpty: '' as IntlString
+    GanttFilterEmpty: '' as IntlString,
+    // Undo / Redo
+    GanttUndo: '' as IntlString,
+    GanttRedo: '' as IntlString,
+    GanttUndoTooltip: '' as IntlString,
+    GanttRedoTooltip: '' as IntlString,
+    GanttUndoEmpty: '' as IntlString,
+    GanttRedoEmpty: '' as IntlString,
+    GanttUndoConflict: '' as IntlString,
+    GanttUndoConflictHint: '' as IntlString,
+    GanttUndoFailed: '' as IntlString,
+    GanttUndoDescMove: '' as IntlString,
+    GanttUndoDescResize: '' as IntlString,
+    GanttUndoDescCascade: '' as IntlString,
+    GanttUndoDescCreateDep: '' as IntlString,
+    GanttUndoDescDeleteDep: '' as IntlString,
+    GanttUndoDescEditDep: '' as IntlString,
+    // Bulk-Select + Bulk-Drag
+    GanttBulkSelectedCount: '' as IntlString,
+    GanttBulkBoundaryHit: '' as IntlString,
+    GanttBulkClearSelection: '' as IntlString,
+    // Activity-Log
+    AddedRelation: '' as IntlString,
+    RemovedRelation: '' as IntlString,
+    UpdatedRelation: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
