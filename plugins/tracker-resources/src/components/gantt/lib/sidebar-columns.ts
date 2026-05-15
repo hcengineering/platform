@@ -122,3 +122,28 @@ export function clampWidth (px: number): number {
   if (rounded > MAX_WIDTH) return MAX_WIDTH
   return rounded
 }
+
+/**
+ * v121.2 fix — total pixel width of the visible column set. Used by the
+ * extended sidebar grid to size the outer container to the actual columns
+ * sum, so the outer GanttView sidebar grid-column tracks the inner grid
+ * and the resize handle / column headers / overflow line up.
+ *
+ * Per-column overrides that are missing, negative, or non-finite are
+ * coerced to {@link DEFAULT_WIDTHS} for that column — matches the
+ * defensive parsing contract in {@link parseColumns}.
+ */
+export function computeTotalWidth (
+  cols: readonly SidebarColumnKey[],
+  widths: Record<string, number>
+): number {
+  let sum = 0
+  for (const c of cols) {
+    const override = widths[c]
+    const usable = typeof override === 'number' && Number.isFinite(override) && override > 0
+      ? override
+      : DEFAULT_WIDTHS[c]
+    sum += usable
+  }
+  return sum
+}
