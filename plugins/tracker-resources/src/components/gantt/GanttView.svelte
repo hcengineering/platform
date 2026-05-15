@@ -87,7 +87,7 @@
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import { type BarLabelSlot } from './lib/bar-labels'
   import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
-  import { Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
+  import { Icon, IconChevronDown, IconChevronRight, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
   import { showMenu, statusStore } from '@hcengineering/view-resources'
   import { getEventPositionElement } from '@hcengineering/ui'
@@ -4160,28 +4160,68 @@
             <span class="hamburger-glyph" aria-hidden="true">≡</span>
           </button>
         {/if}
-        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToStart }} on:click={jumpToStart}>
+        <!-- v121.11 / Bug 3 — Date-Nav buttons. The four icon-only nav
+             buttons (jumpToStart, prev, next, jumpToEnd) had only a
+             tooltip but no accessible name.  Set both aria-label and
+             title from the resolved translation so screen-readers and
+             native browser tooltips both work; the existing huly
+             tooltip via use:tooltip stays untouched. -->
+        <button
+          class="nav-btn icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttJumpToStart }}
+          on:click={jumpToStart}
+          aria-label={ariaLabelOf(tracker.string.GanttJumpToStart)}
+          title={ariaLabelOf(tracker.string.GanttJumpToStart)}
+        >
           <Icon icon={ArrowLeft} size="small" />
         </button>
-        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttPreviousPeriod }} on:click={() => pageScroll(-1)}>
+        <button
+          class="nav-btn icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
+          on:click={() => pageScroll(-1)}
+          aria-label={ariaLabelOf(tracker.string.GanttPreviousPeriod)}
+          title={ariaLabelOf(tracker.string.GanttPreviousPeriod)}
+        >
           <Icon icon={NavPrev} size="small" />
         </button>
         <button class="nav-btn today-btn" type="button" on:click={jumpToToday}>
           <Label label={tracker.string.GanttToday} />
         </button>
-        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttNextPeriod }} on:click={() => pageScroll(1)}>
+        <button
+          class="nav-btn icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttNextPeriod }}
+          on:click={() => pageScroll(1)}
+          aria-label={ariaLabelOf(tracker.string.GanttNextPeriod)}
+          title={ariaLabelOf(tracker.string.GanttNextPeriod)}
+        >
           <Icon icon={NavNext} size="small" />
         </button>
-        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToEnd }} on:click={jumpToEnd}>
+        <button
+          class="nav-btn icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttJumpToEnd }}
+          on:click={jumpToEnd}
+          aria-label={ariaLabelOf(tracker.string.GanttJumpToEnd)}
+          title={ariaLabelOf(tracker.string.GanttJumpToEnd)}
+        >
           <Icon icon={ArrowRight} size="small" />
         </button>
-        <label class="date-input-wrap" use:tooltip={{ label: tracker.string.GanttJumpToDate }}>
+        <label
+          class="date-input-wrap"
+          use:tooltip={{ label: tracker.string.GanttJumpToDate }}
+          aria-label={ariaLabelOf(tracker.string.GanttJumpToDate)}
+          title={ariaLabelOf(tracker.string.GanttJumpToDate)}
+        >
           <Icon icon={Calendar} size="small" />
           <input
             type="date"
             class="date-input"
             bind:value={datePickerValue}
             on:change={() => jumpToDate(datePickerValue)}
+            aria-label={ariaLabelOf(tracker.string.GanttJumpToDate)}
           />
         </label>
       </div>
@@ -4197,32 +4237,11 @@
         {/each}
       </div>
       <div class="toolbar-right">
-        <!-- Tier-4 Item 12 — Tree-View — Expand-/Collapse-all controls for the
-             hierarchy view. Hidden when group-by is active because the
-             swimlane lanes are mutually exclusive with the tree (Spec §"Group-By + Tree"). -->
-        {#if ganttGroupBy === 'none'}
-          <!-- v121 fix — order was Expand → Collapse, swapped per user
-               feedback so Collapse-all comes first (matches the visual
-               left-to-right "compact ⇒ wide" reading order). -->
-          <button
-            type="button"
-            class="gantt-toolbar-icon-btn gantt-tree-btn"
-            use:tooltip={{ label: tracker.string.GanttCollapseAll }}
-            aria-label={ariaLabelOf(tracker.string.GanttCollapseAll)}
-            on:click={collapseAllTree}
-          >
-            <span class="gantt-tree-glyph" aria-hidden="true">▶▶</span>
-          </button>
-          <button
-            type="button"
-            class="gantt-toolbar-icon-btn gantt-tree-btn"
-            use:tooltip={{ label: tracker.string.GanttExpandAll }}
-            aria-label={ariaLabelOf(tracker.string.GanttExpandAll)}
-            on:click={expandAllTree}
-          >
-            <span class="gantt-tree-glyph" aria-hidden="true">▼▼</span>
-          </button>
-        {/if}
+        <!-- v121.12 / Refactor C — Tree-View Expand-/Collapse-all moved
+             from the top toolbar into the sidebar corner-range strip
+             (rendered below) so they sit above the actual sidebar list
+             they operate on. User-report v121.12 #C: the buttons were
+             too far away from the rows in the previous toolbar position. -->
         <!-- Phase 3c: Undo/Redo. The buttons mirror the Cmd+Z / Cmd+Shift+Z
              keyboard shortcuts wired in onKey() below — disabled state and
              tooltip description come from the UndoManager reactive stores.
@@ -4383,6 +4402,34 @@
             </div>
           {/if}
           <div class="corner-range">
+            <!-- v121.12 / Refactor C — Expand/Collapse-all buttons live
+                 in the corner cell directly above the sidebar list. Only
+                 visible when groupBy is 'none' (tree mode); in swimlane
+                 mode the tree-toggle has no rows to act on. Same icon
+                 set + aria-labels as v121.11 to keep the affordance
+                 consistent with the inline row toggles. -->
+            {#if ganttGroupBy === 'none'}
+              <button
+                type="button"
+                class="corner-tree-btn"
+                use:tooltip={{ label: tracker.string.GanttCollapseAll }}
+                aria-label={ariaLabelOf(tracker.string.GanttCollapseAll)}
+                title={ariaLabelOf(tracker.string.GanttCollapseAll)}
+                on:click={collapseAllTree}
+              >
+                <Icon icon={IconChevronRight} size="small" />
+              </button>
+              <button
+                type="button"
+                class="corner-tree-btn"
+                use:tooltip={{ label: tracker.string.GanttExpandAll }}
+                aria-label={ariaLabelOf(tracker.string.GanttExpandAll)}
+                title={ariaLabelOf(tracker.string.GanttExpandAll)}
+                on:click={expandAllTree}
+              >
+                <Icon icon={IconChevronDown} size="small" />
+              </button>
+            {/if}
             <button class="range-nav" type="button"
               use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
               on:click={() => pageScroll(-1)}>«</button>
@@ -5016,6 +5063,27 @@
     font-size: 14px;
   }
   .range-nav:hover { background: var(--theme-button-hovered); }
+  /* v121.12 / Refactor C — sidebar tree-toggle buttons. Same metrics as
+     range-nav so the corner-range strip stays visually balanced; the
+     ChevronRight/Down icons match the inline row toggles. min hit area
+     bumped to 32px on phones via the existing breakpoint media query. */
+  .corner-tree-btn {
+    width: 24px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--theme-divider-color);
+    background: transparent;
+    color: var(--theme-darker-color);
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .corner-tree-btn:hover {
+    background: var(--theme-button-hovered);
+    color: var(--theme-content-color);
+  }
   .range-text {
     cursor: pointer;
     user-select: none;
