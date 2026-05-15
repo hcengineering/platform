@@ -283,7 +283,12 @@
     "UnsetParentIssue": "Odebrat nadřazený úkol",
     "ForbidCreateProjectPermission": "Zakázat vytvoření projektu",
     "ForbidCreateProjectPermissionDescription": "Zakazuje uživatelům vytvářet nové projekty",
-    "AllowCreatingIssues": "Povolit vytváření úkolů"
+    "AllowCreatingIssues": "Povolit vytváření úkolů",
+    "Day": "Den",
+    "Gantt": "Gantt",
+    "Month": "Měsíc",
+    "Quarter": "Čtvrtletí",
+    "Week": "Týden"
   },
   "status": {}
 }

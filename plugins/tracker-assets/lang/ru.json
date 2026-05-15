@@ -293,7 +293,12 @@
     "UnsetParentIssue": "Снять родительскую задачу",
     "ForbidCreateProjectPermission": "Запретить создание проекта",
     "ForbidCreateProjectPermissionDescription": "Запрещает пользователям создавать новые проекты",
-    "AllowCreatingIssues": "Разрешить создание задач"
+    "AllowCreatingIssues": "Разрешить создание задач",
+    "Day": "День",
+    "Gantt": "Gantt",
+    "Month": "Месяц",
+    "Quarter": "Квартал",
+    "Week": "Неделя"
   },
   "status": {}
 }
