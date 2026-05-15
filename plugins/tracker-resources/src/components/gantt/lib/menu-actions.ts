@@ -5,12 +5,14 @@
 
 import type { Issue } from '@hcengineering/tracker'
 import type { Action as UiAction, PopupAlignment } from '@hcengineering/ui'
-import { DatePopup, showPopup } from '@hcengineering/ui'
+import { DatePopup, NotificationSeverity, addNotification, showPopup } from '@hcengineering/ui'
 import Calendar from '@hcengineering/ui/src/components/icons/Calendar.svelte'
 import { getClient } from '@hcengineering/presentation'
+import { translate } from '@hcengineering/platform'
 import type { Timestamp } from '@hcengineering/core'
 import tracker from '../../../plugin'
 import { snapToUtcMidnight } from './time-scale'
+import GanttHierarchySubmenu from '../GanttHierarchySubmenu.svelte'
 
 const DAY_MS = 86_400_000
 
@@ -49,7 +51,13 @@ export function openSetStartDate (issue: Issue, anchor: PopupAlignment | undefin
       if (newStart !== null && issue.startDate == null && issue.dueDate == null) {
         patch.dueDate = newStart + DAY_MS
       }
-      void client.updateDoc(issue._class, issue.space, issue._id, patch)
+      // Surface failures (permission denied, validation, conflict) the same
+      // way commitDrag does (Codex review-4 2026-05-11) so the user gets
+      // visible feedback instead of a silent fire-and-forget.
+      client.updateDoc(issue._class, issue.space, issue._id, patch).catch(async (err) => {
+        const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
+        addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
+      })
     }
   )
 }
@@ -75,6 +83,21 @@ export function ganttExtraActions (issue: Issue, anchor: PopupAlignment | undefi
       action: async () => {
         openSetStartDate(issue, anchor)
       }
+    },
+    {
+      // Hierarchy ▸ submenu: combines SetParent, Add sub-issue, Link existing
+      // as sub-issue into one Gantt entry. The two existing model actions
+      // (tracker:action:SetParent, tracker:action:NewSubIssue) are excluded
+      // from the parent menu via GANTT_MENU_EXCLUDED_ACTIONS in GanttView.
+      // `action` is required by the ui.Action interface but is a no-op for
+      // submenu entries — Menu.svelte routes the click to `component` when
+      // present (showActionPopup at packages/ui/src/components/Menu.svelte:82).
+      label: tracker.string.Hierarchy,
+      icon: tracker.icon.Parent,
+      group: 'associate',
+      action: async () => { /* submenu — handled by component */ },
+      component: GanttHierarchySubmenu,
+      props: { issue }
     }
   ]
 }

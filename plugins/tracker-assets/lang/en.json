@@ -317,7 +317,12 @@
     "GanttDragNoPermission": "You don't have permission to edit this issue",
     "GanttDragValidation": "Date is not valid: {reason}",
     "GanttResizingTooltip": "{from} days → {to} days ({delta} d)",
-    "SetStartDate": "Set start date…"
+    "SetStartDate": "Set start date…",
+    "Hierarchy": "Hierarchy",
+    "LinkExistingSubIssue": "Link existing as sub-issue…",
+    "SetParentIssueLabel": "Set parent issue…",
+    "GanttDragToSchedule": "Drag to schedule",
+    "GanttDurationTooltip": "Duration: {days} d"
   },
   "status": {}
 }

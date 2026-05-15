@@ -365,6 +365,7 @@ export default mergeIds(trackerId, tracker, {
     LeadPresenter: '' as AnyComponent,
     SetDueDateActionPopup: '' as AnyComponent,
     SetParentIssueActionPopup: '' as AnyComponent,
+    LinkSubIssueActionPopup: '' as AnyComponent,
     EditComponent: '' as AnyComponent,
     IssuesView: '' as AnyComponent,
     KanbanView: '' as AnyComponent,
