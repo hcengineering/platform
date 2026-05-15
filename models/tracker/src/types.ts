@@ -267,6 +267,19 @@ export class TIssue extends TTask implements Issue {
 
   @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
     todos?: CollectionSize<ToDo>
+
+  /**
+   * Tier-2 Item 5 — Auto-Scheduling-Toggle.
+   *
+   * Optional property so existing issues stay on the default cascade
+   * behaviour with no migration. `@Hidden` keeps the field out of the
+   * generic filter/sort UI in `getFiltredKeys`; the dedicated toggle in
+   * `ControlPanel.svelte` is the supported entry point. Cascade-time
+   * checks live in `gantt/lib/scheduler.ts` (Step 5b filter).
+   */
+  @Prop(TypeString(), tracker.string.SchedulingMode)
+  @Hidden()
+    schedulingMode?: 'auto' | 'manual'
 }
 /**
  * @public
