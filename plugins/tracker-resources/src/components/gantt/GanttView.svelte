@@ -3,9 +3,10 @@
 -->
 <script lang="ts">
   import { type Class, type Doc, type DocumentQuery, type Ref, type Space, SortingOrder } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { type Issue, type Milestone } from '@hcengineering/tracker'
-  import { Loading } from '@hcengineering/ui'
+  import { Loading, addNotification, NotificationSeverity } from '@hcengineering/ui'
+  import { translate } from '@hcengineering/platform'
   import { type Viewlet, type ViewOptions } from '@hcengineering/view'
   import { onDestroy, onMount } from 'svelte'
   import { writable } from 'svelte/store'
@@ -14,7 +15,9 @@
   import GanttCanvas from './GanttCanvas.svelte'
   import GanttHeader from './GanttHeader.svelte'
   import GanttSidebar from './GanttSidebar.svelte'
+  import { reduce } from './lib/drag-controller'
   import { buildLayout } from './lib/layout'
+  import { descendantsWithDates } from './lib/scheduler'
   import { createTimeScale } from './lib/time-scale'
   import { type DragState, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import { Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
@@ -294,6 +297,96 @@
     if (space === undefined) return
     showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top')
   }
+
+  // -------------------------------------------------------------------------
+  // PR 3 edit-mode: bar mousedown → reducer; window mousemove/mouseup; commit.
+  // -------------------------------------------------------------------------
+
+  function handleBarMouseDown (e: CustomEvent<{ issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }>): void {
+    activeDrag.update((s) => reduce(s, {
+      type: 'mousedown-bar',
+      issue: e.detail.issue,
+      edge: e.detail.edge,
+      cursorX: e.detail.cursorX
+    }, timeScale))
+  }
+
+  /**
+   * Translate the window-space `MouseEvent.clientX` into the canvas's content
+   * coordinate. Used for `dragging-unscheduled` so the bar lands at the date
+   * under the cursor, not at a delta from "today". Returns undefined when
+   * the cursor is outside the canvas (e.g., still over the sidebar) so the
+   * reducer keeps its default preview.
+   */
+  function computeCanvasX (e: MouseEvent): number | undefined {
+    if (scrollerEl === undefined) return undefined
+    const rect = scrollerEl.getBoundingClientRect()
+    const sidebarEdge = rect.left + sidebarWidthPx
+    if (e.clientX < sidebarEdge) return undefined
+    return e.clientX - sidebarEdge + canvasViewportLeft
+  }
+
+  function handleCanvasMouseMove (e: MouseEvent): void {
+    activeDrag.update((s) =>
+      reduce(s, { type: 'mousemove', cursorX: e.clientX, canvasX: computeCanvasX(e) }, timeScale)
+    )
+  }
+
+  async function handleCanvasMouseUp (): Promise<void> {
+    const state = $activeDrag
+    activeDrag.set({ kind: 'idle' })
+    if (state.kind === 'idle' || state.kind === 'hover-bar') return
+    try {
+      await commitDrag(state)
+    } catch (err) {
+      const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
+      addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
+    }
+  }
+
+  async function commitDrag (state: DragState): Promise<void> {
+    if (state.kind === 'idle' || state.kind === 'hover-bar') return
+    // Guard: an unscheduled-drag that never reached the canvas (e.g. the user
+    // clicked the drag-grip and released without moving) must NOT silently
+    // schedule the issue to "today". Codex review-3 (2026-05-10).
+    if (state.kind === 'dragging-unscheduled' && !state.hasCanvasTarget) return
+    const client = getClient()
+    const ops = client.apply('gantt-drag')
+    if (state.kind === 'dragging-body' || state.kind === 'dragging-unscheduled') {
+      await ops.update(state.issue, { startDate: state.previewStart, dueDate: state.previewDue })
+      const delta = state.previewStart - state.originStart
+      if (delta !== 0) {
+        for (const child of descendantsWithDates(state.issue, issues)) {
+          await ops.update(child, {
+            startDate: (child.startDate as number) + delta,
+            dueDate: (child.dueDate as number) + delta
+          })
+        }
+      }
+    } else if (state.kind === 'resizing-left') {
+      await ops.update(state.issue, { startDate: state.previewStart })
+    } else if (state.kind === 'resizing-right') {
+      await ops.update(state.issue, { dueDate: state.previewDue })
+    }
+    const result = await ops.commit()
+    if (!result.result) {
+      const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
+      addNotification(title, '', undefined as any, undefined, NotificationSeverity.Error)
+    }
+  }
+
+  // Attach/detach window-level mousemove + mouseup only while a drag is active.
+  $: if ($activeDrag.kind !== 'idle' && $activeDrag.kind !== 'hover-bar') {
+    window.addEventListener('mousemove', handleCanvasMouseMove)
+    window.addEventListener('mouseup', handleCanvasMouseUp)
+  } else {
+    window.removeEventListener('mousemove', handleCanvasMouseMove)
+    window.removeEventListener('mouseup', handleCanvasMouseUp)
+  }
+  onDestroy(() => {
+    window.removeEventListener('mousemove', handleCanvasMouseMove)
+    window.removeEventListener('mouseup', handleCanvasMouseUp)
+  })
 
   function jumpToToday (): void {
     if (hScrollEl === undefined) return
@@ -632,7 +725,7 @@
               {activeDrag}
               on:openIssue={onIssueOpen}
               on:hoverRow={onRowHover}
-              on:barMouseDown
+              on:barMouseDown={handleBarMouseDown}
             />
           </div>
         </div>
