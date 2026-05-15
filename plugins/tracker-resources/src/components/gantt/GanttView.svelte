@@ -64,9 +64,12 @@
   const ZOOM_LEVELS: readonly ZoomLevel[] = ['day', 'week', 'month', 'quarter']
 
   let userSidebarWidth: number = DEFAULT_SIDEBAR_WIDTH
-  let showIssueCode: boolean = true
-  let showTitle: boolean = true
-  let showSettings: boolean = false
+
+  // Sidebar column visibility is wired to two ToggleViewOptions registered
+  // in models/tracker/src/viewlets.ts (Customize-View dropdown). Issue-code
+  // defaults OFF — the code is still surfaced in the hover tooltip.
+  $: showIssueCode = (viewOptions as Record<string, unknown>)?.ganttShowIssueCode === true
+  $: showTitle = ((viewOptions as Record<string, unknown>)?.ganttShowTitle ?? true) !== false
 
   function setZoom (z: ZoomLevel): void {
     zoom = z
@@ -213,6 +216,10 @@
     if (scrollerEl !== undefined) {
       scrollerEl.scrollTo({ left: Math.max(0, e.detail.x - 80), behavior: 'smooth' })
     }
+  }
+
+  function issueCode (i: Issue): string {
+    return (i as unknown as { identifier?: string }).identifier ?? 'Issue'
   }
 
   function onIssueOpen (e: CustomEvent<{ issue: { _id: string, _class: string } }>): void {
@@ -367,26 +374,7 @@
           >{z[0].toUpperCase() + z.slice(1)}</button>
         {/each}
       </div>
-      <div class="toolbar-right">
-        <button
-          type="button"
-          class="settings-btn"
-          title="Display settings"
-          on:click={() => { showSettings = !showSettings }}
-        >⚙</button>
-        {#if showSettings}
-          <div class="settings-popover">
-            <label>
-              <input type="checkbox" bind:checked={showIssueCode} />
-              Issue code
-            </label>
-            <label>
-              <input type="checkbox" bind:checked={showTitle} />
-              Title
-            </label>
-          </div>
-        {/if}
-      </div>
+      <div class="toolbar-right" />
     </div>
 
     <div class="gantt-body">
@@ -470,7 +458,8 @@
           {/if}
           <div class="tt-line">Target: {new Date(ms.targetDate).toISOString().slice(0, 10)}</div>
         {:else if issue !== null}
-          <div class="tt-head">Issue</div>
+          {@const code = issueCode(issue)}
+          <div class="tt-head">{code}</div>
           <div class="tt-title">{issue.title}</div>
           {#if issue.startDate !== null}
             <div class="tt-line">Start: {new Date(issue.startDate).toISOString().slice(0, 10)}</div>
