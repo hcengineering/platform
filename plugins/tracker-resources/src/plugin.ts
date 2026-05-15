@@ -358,6 +358,13 @@ export default mergeIds(trackerId, tracker, {
     DependencyDeleteConfirm: '' as IntlString,
     DependencyCycle: '' as IntlString,
     DependencyEditTitle: '' as IntlString,
+    // Tier-4 #11: Visual DependencyEditor
+    DependencyKindHintFS: '' as IntlString,
+    DependencyKindHintSS: '' as IntlString,
+    DependencyKindHintFF: '' as IntlString,
+    DependencyKindHintSF: '' as IntlString,
+    DependencyPickKind: '' as IntlString,
+    DependencyChangeKind: '' as IntlString,
     GanttShowPredecessors: '' as IntlString,
     Predecessors: '' as IntlString,
     NoPredecessors: '' as IntlString,
