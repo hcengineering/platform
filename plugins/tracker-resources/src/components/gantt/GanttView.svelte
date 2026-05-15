@@ -13,6 +13,7 @@
   import tracker from '../../plugin'
   import { canEditIssue } from '../../utils'
   import GanttCanvas from './GanttCanvas.svelte'
+  import GanttConfirmCommitPopup from './GanttConfirmCommitPopup.svelte'
   import GanttHeader from './GanttHeader.svelte'
   import GanttSidebar from './GanttSidebar.svelte'
   import { reduce } from './lib/drag-controller'
@@ -74,6 +75,14 @@
   const activeDrag = writable<DragState>({ kind: 'idle' })
   let editableIssueIds: Set<string> = new Set()
 
+  /**
+   * Click-to-select gate (user feedback 2026-05-11): a bar must be clicked
+   * once to become "selected" (blue outline) before drag/resize can begin
+   * on it. Prevents accidentally dragging an issue while panning the
+   * canvas horizontally. Clicking outside any bar clears the selection.
+   */
+  let selectedIssueId: string | null = null
+
   let canvasViewportLeft = 0
   let canvasViewportWidth = 1200
   let scrollTop = 0
@@ -94,6 +103,8 @@
   $: showIssueCode = (viewOptions as Record<string, unknown>)?.ganttShowIssueCode === true
   $: showTitle = ((viewOptions as Record<string, unknown>)?.ganttShowTitle ?? true) !== false
   $: showStatus = ((viewOptions as Record<string, unknown>)?.ganttShowStatus ?? true) !== false
+  $: confirmMove = ((viewOptions as Record<string, unknown>)?.ganttConfirmMove ?? true) !== false
+  $: confirmResize = ((viewOptions as Record<string, unknown>)?.ganttConfirmResize ?? true) !== false
 
   function setZoom (z: ZoomLevel): void {
     zoom = z
@@ -305,12 +316,32 @@
   // -------------------------------------------------------------------------
 
   function handleBarMouseDown (e: CustomEvent<{ issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }>): void {
+    const id = String(e.detail.issue._id)
+    // Click-to-select gate: if this bar isn't already selected, the first
+    // mousedown just selects it (no drag starts). User has to mousedown a
+    // second time on the now-selected bar to actually drag/resize. Codex-
+    // safe and matches Plane's UX (user feedback 2026-05-11).
+    if (selectedIssueId !== id) {
+      selectedIssueId = id
+      return
+    }
     activeDrag.update((s) => reduce(s, {
       type: 'mousedown-bar',
       issue: e.detail.issue,
       edge: e.detail.edge,
       cursorX: e.detail.cursorX
     }, timeScale))
+  }
+
+  /**
+   * Clear selection when the user clicks outside any bar — e.g. on the
+   * canvas background. Bar mousedowns stopPropagation, so this only fires
+   * for clicks that didn't land on a bar.
+   */
+  function onBackgroundClick (e: MouseEvent): void {
+    const target = e.target as HTMLElement | null
+    if (target?.closest('.bar-wrap') !== null) return
+    selectedIssueId = null
   }
 
   /**
@@ -338,12 +369,57 @@
     const state = $activeDrag
     activeDrag.set({ kind: 'idle' })
     if (state.kind === 'idle' || state.kind === 'hover-bar') return
+    // Skip the confirmation prompt when the preview didn't actually change
+    // anything (drag with zero-delta — e.g. mouseup without movement).
+    const previewDelta = previewChangedFromOrigin(state)
+    if (!previewDelta) return
+    // Wrap the commit in the user-configurable confirmation dialog when the
+    // matching ganttConfirm{Move,Resize} ViewOption is on (default-on).
+    const needsConfirm =
+      ((state.kind === 'dragging-body' || state.kind === 'dragging-unscheduled') && confirmMove) ||
+      ((state.kind === 'resizing-left' || state.kind === 'resizing-right') && confirmResize)
     try {
+      if (needsConfirm) {
+        const proceed = await askConfirm(state)
+        if (!proceed) return
+      }
       await commitDrag(state)
     } catch (err) {
       const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
       addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
     }
+  }
+
+  /** True when the preview window is different from the origin window. */
+  function previewChangedFromOrigin (state: DragState): boolean {
+    if (state.kind === 'dragging-body' || state.kind === 'dragging-unscheduled') {
+      return state.previewStart !== state.originStart || state.previewDue !== state.originDue
+    }
+    if (state.kind === 'resizing-left') return state.previewStart !== state.originStart
+    if (state.kind === 'resizing-right') return state.previewDue !== state.originDue
+    return false
+  }
+
+  /**
+   * Open the confirm dialog and resolve true on Apply / false on Cancel.
+   * The popup dispatches `close` with a boolean payload, which Huly's
+   * showPopup routes to the 4th-arg resultHandler.
+   */
+  async function askConfirm (state: DragState): Promise<boolean> {
+    if (state.kind === 'idle' || state.kind === 'hover-bar') return false
+    const newStart = (state.kind === 'resizing-right' ? state.originStart : (state as { previewStart: number }).previewStart)
+    const newDue = (state.kind === 'resizing-left' ? state.originDue : (state as { previewDue: number }).previewDue)
+    const kind: 'move' | 'resize' = state.kind === 'resizing-left' || state.kind === 'resizing-right' ? 'resize' : 'move'
+    return await new Promise<boolean>((resolve) => {
+      showPopup(
+        GanttConfirmCommitPopup,
+        { issue: state.issue, kind, newStart, newDue },
+        'top',
+        (result: boolean | undefined) => {
+          resolve(result === true)
+        }
+      )
+    })
   }
 
   async function commitDrag (state: DragState): Promise<void> {
@@ -742,8 +818,8 @@
   $: loading = loadingIssues || loadingMilestones
 </script>
 
-<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-<div class="gantt-root" tabindex="0" bind:this={containerEl}>
+<!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+<div class="gantt-root" tabindex="0" bind:this={containerEl} on:click={onBackgroundClick}>
   {#if loading}
     <Loading />
   {:else}
@@ -882,6 +958,7 @@
               {editableIssueIds}
               {activeDrag}
               {focusedIssueId}
+              {selectedIssueId}
               on:openIssue={onIssueOpen}
               on:hoverRow={onRowHover}
               on:barMouseDown={handleBarMouseDown}

@@ -39,6 +39,7 @@
   export let editableIssueIds: Set<string> = new Set()
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
   export let focusedIssueId: string | null = null
+  export let selectedIssueId: string | null = null
 
   function statusCategoryFor (issue: any): string | null {
     if (statusCategoryMap === undefined) return null
@@ -53,6 +54,10 @@
 
   function isFocused (issueId: unknown): boolean {
     return focusedIssueId !== null && String(issueId) === focusedIssueId
+  }
+
+  function isSelected (issueId: unknown): boolean {
+    return selectedIssueId !== null && String(issueId) === selectedIssueId
   }
 
   // PR 3 spotlight dim: while a drag is active, dim every row that is NOT the
@@ -176,6 +181,7 @@
               statusCategory={statusCategoryFor(row.issue)}
               editable={isEditable(row.issue._id)}
               focused={isFocused(row.issue._id)}
+              selected={isSelected(row.issue._id)}
               {activeDrag}
               issueRef={row.issue._id}
               issueObj={row.issue}
