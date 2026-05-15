@@ -609,12 +609,17 @@
       }
       return
     }
-    activeDrag.set({ kind: 'idle' })
-    if (state.kind === 'idle' || state.kind === 'hover-bar') return
+    if (state.kind === 'idle' || state.kind === 'hover-bar') {
+      activeDrag.set({ kind: 'idle' })
+      return
+    }
     // Skip the confirmation prompt when the preview didn't actually change
     // anything (drag with zero-delta — e.g. mouseup without movement).
     const previewDelta = previewChangedFromOrigin(state)
-    if (!previewDelta) return
+    if (!previewDelta) {
+      activeDrag.set({ kind: 'idle' })
+      return
+    }
     // Wrap the commit in the user-configurable confirmation dialog when the
     // matching ganttConfirm{Move,Resize} ViewOption is on (default-on).
     const needsConfirm =
@@ -629,6 +634,16 @@
       state.kind !== 'idle' && state.kind !== 'hover-bar' &&
       state.target.kind === 'issue' &&
       (state.kind === 'dragging-body' || state.kind === 'resizing-left' || state.kind === 'resizing-right')
+
+    // For cascade-eligible issue drags, defer the idle-reset to either the
+    // popup resultHandler (so the dragged bar stays at its preview position
+    // while the user reads the popup) or to the no-popup exit paths inside
+    // commitWithCascade. For legacy paths (milestone, dragging-unscheduled,
+    // askConfirm) clear the preview now so the bar's animation is consistent
+    // with PR3.3 behaviour.
+    if (!cascadeEligibleIssue) {
+      activeDrag.set({ kind: 'idle' })
+    }
 
     try {
       // For cascade-eligible issue states, ConfirmCascadePopup (or the
@@ -793,6 +808,7 @@
       if (!result.result) {
         const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
         addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
+        activeDrag.set({ kind: 'idle' })
         return
       }
       // Count direct violations against full-space relations + full-space issue dates.
@@ -813,6 +829,7 @@
         const t = await translate(tracker.string.CascadeBannerBypass, { count: violations }, undefined)
         addNotification(t, '', undefined as any, undefined, NotificationSeverity.Warning)
       }
+      activeDrag.set({ kind: 'idle' })
       return
     }
 
@@ -842,7 +859,11 @@
         if (primaryEdits.length > 1) {
           // Parent-drag (or any multi-primary commit) — show the mini-timeline
           // confirm so the user sees every issue that will move.
-          activeDrag.set({ kind: 'idle' })
+          //
+          // Keep the dragState alive (do NOT reset to idle here) so the
+          // dragged bars remain at their preview positions while the user
+          // decides. activeDrag is only released after the popup resolves —
+          // commit → idle on success, cancel → idle on dismiss.
           showPopup(
             ConfirmCascadePopup,
             {
@@ -853,8 +874,13 @@
             },
             'middle',
             (ok: boolean) => {
-              if (ok !== true) return
-              void commitCascadeBatch(result.primary, [])
+              if (ok !== true) {
+                activeDrag.set({ kind: 'idle' })
+                return
+              }
+              void commitCascadeBatch(result.primary, []).finally(() => {
+                activeDrag.set({ kind: 'idle' })
+              })
             }
           )
           return
@@ -883,12 +909,19 @@
           const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
           addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
         }
+        // No popup, no further async — release the preview now that the
+        // server-state has caught up (or failed). The bar transitions from
+        // its preview position to the freshly committed issue.startDate.
+        activeDrag.set({ kind: 'idle' })
         return
       }
       case 'cascade':
       case 'permission-denied': {
-        // Drop the live preview before the modal blocks input.
-        activeDrag.set({ kind: 'idle' })
+        // Keep the live preview alive while the popup is open so the
+        // dragged bar visually stays at the proposed position. activeDrag
+        // is released only when the popup resolves: idle-after-commit on
+        // confirm so the bar transitions cleanly to its new server-state,
+        // or idle-on-cancel so the bar springs back to its original dates.
         showPopup(
           ConfirmCascadePopup,
           {
@@ -899,9 +932,19 @@
           },
           'middle',
           (ok: boolean) => {
-            if (ok !== true) return // Cancel or close
-            if (result.kind === 'permission-denied') return // Confirm disabled, but defensively ignore
-            void commitCascadeBatch(result.primary, result.shifts)
+            if (ok !== true) {
+              activeDrag.set({ kind: 'idle' })
+              return
+            }
+            if (result.kind === 'permission-denied') {
+              // Confirm is disabled in the popup; defensively treat
+              // a `true` close as a cancel — release the preview.
+              activeDrag.set({ kind: 'idle' })
+              return
+            }
+            void commitCascadeBatch(result.primary, result.shifts).finally(() => {
+              activeDrag.set({ kind: 'idle' })
+            })
           }
         )
         return
