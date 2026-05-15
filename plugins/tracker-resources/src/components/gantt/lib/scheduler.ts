@@ -356,10 +356,25 @@ export function simulateCascade (
   // Step 7: empty → no-cascade.
   if (shifts.size === 0) return { kind: 'no-cascade', primary }
 
-  // Step 8: permission check.
+  // Step 8: permission check covers BOTH primary edits and cascade shifts.
+  // For a single-bar drag this is redundant with the bar's editability gate
+  // (the bar wouldn't have been draggable in the first place), but for
+  // parent-drag the primary array also includes descendant Issues that
+  // may not be individually editable — failing to gate them would let
+  // the user write to a locked child via the parent. (Codex review.)
   const locked: Issue[] = []
+  const lockedSet = new Set<Ref<Issue>>()
+  for (const pe of primary) {
+    if (!canEdit(pe.issue._id) && !lockedSet.has(pe.issue._id)) {
+      locked.push(pe.issue)
+      lockedSet.add(pe.issue._id)
+    }
+  }
   for (const s of shifts.values()) {
-    if (!canEdit(s.issue._id)) locked.push(s.issue)
+    if (!canEdit(s.issue._id) && !lockedSet.has(s.issue._id)) {
+      locked.push(s.issue)
+      lockedSet.add(s.issue._id)
+    }
   }
   if (locked.length > 0) {
     return {
