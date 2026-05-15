@@ -336,23 +336,13 @@
         on:mousedown={onBarDown('right')}
       />
     {/if}
-    {#if editable && (selected || isThisConnectorActive) && dragTarget !== undefined && dragTarget.kind === 'issue' && w >= 18}
-      <GanttConnectorDot
-        cx={x + w + 12}
-        cy={barY + barH - 2}
-        sourceId={String(dragTarget.doc._id)}
-        sourceSpace={String(dragTarget.doc.space)}
-        hitR={10}
-        on:connectorDown={(e) => {
-          if (dragTarget === undefined || dragTarget.kind !== 'issue') return
-          dispatch('connectorDown', {
-            source: dragTarget.doc,
-            cursorClientX: e.detail.cursorX,
-            cursorClientY: e.detail.cursorY
-          })
-        }}
-      />
-    {/if}
+    <!-- PR4a connector-dot rendering moved to a sibling overlay layer in
+         GanttCanvas (rendered AFTER GanttDependencyLayer) so the dot
+         paints above dep-arrows. Keeping a duplicate dot inside the bar
+         would also work, but the in-bar copy is rendered before the
+         dep-layer and therefore occluded by the arrow's 12 px invisible
+         click target. The overlay is the single source of truth. -->
+
     {#if barLabel !== ''}
       <text
         x={x + 6}
