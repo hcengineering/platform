@@ -263,6 +263,17 @@ export function ganttViewOptions (): ViewOptionsModel {
         defaultValue: true,
         actionTarget: 'display',
         label: tracker.string.GanttConfirmResize
+      },
+      {
+        // PR4a: sidebar column showing predecessor notation (e.g. "12FS+2d").
+        // Hidden by default so existing users don't see a new column appear.
+        // Toggling on requires no migration — the column is purely derived
+        // from the IssueRelation collection that already exists from PR1.
+        key: 'ganttShowPredecessors',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowPredecessors
       }
     ]
   }
