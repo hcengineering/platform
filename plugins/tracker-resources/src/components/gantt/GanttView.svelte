@@ -629,11 +629,13 @@
     // dragging-unscheduled stays on the legacy confirm path because it does
     // NOT go through commitWithCascade (the issue had no dates, no relations
     // to cascade). Only cascade-eligible issue states are rerouted to
-    // ConfirmCascadePopup.
+    // ConfirmCascadePopup. At this point state has been narrowed past
+    // idle/hover-bar by the early return on line 613, and past
+    // connector-drawing/connector-target-hover by the handlers earlier in
+    // this function, so accessing state.target is type-safe.
     const cascadeEligibleIssue =
-      state.kind !== 'idle' && state.kind !== 'hover-bar' &&
-      state.target.kind === 'issue' &&
-      (state.kind === 'dragging-body' || state.kind === 'resizing-left' || state.kind === 'resizing-right')
+      (state.kind === 'dragging-body' || state.kind === 'resizing-left' || state.kind === 'resizing-right') &&
+      state.target.kind === 'issue'
 
     // activeDrag is no longer reset at this point — neither for cascade
     // nor legacy paths. The bar must visually stay at its preview position
@@ -658,13 +660,14 @@
         }
       }
       await commitDrag(state, e)
-      // commitDrag's legacy branches (milestone, dragging-unscheduled) do
-      // not manage activeDrag themselves — release the preview now that
-      // the server-state has been written (or failed). commitWithCascade
-      // paths release activeDrag internally (popup resultHandler / no-cascade
-      // direct / alt-bypass), so it's safe to call this unconditionally:
-      // setting idle on an already-idle store is a no-op.
-      activeDrag.set({ kind: 'idle' })
+      // commitDrag's legacy branches (milestone, dragging-unscheduled) set
+      // activeDrag to idle themselves after their ops.commit() returns —
+      // see commitDrag below. The cascade path (commitWithCascade) hands
+      // off ownership to the popup resultHandler and only sets idle when
+      // that handler fires, NOT when commitDrag returns. So we must NOT
+      // unconditionally reset here: doing so would tear down the cascade
+      // popup's preview the instant commitDrag returned (popup still open,
+      // bar already springing back — Codex blocker 2).
     } catch (err) {
       const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
       addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
@@ -693,9 +696,15 @@
    * either field name — see its component header.
    */
   async function askConfirm (state: DragState): Promise<boolean> {
-    if (state.kind === 'idle' || state.kind === 'hover-bar') return false
-    const newStart = (state.kind === 'resizing-right' ? state.originStart : (state as { previewStart: number }).previewStart)
-    const newDue = (state.kind === 'resizing-left' ? state.originEnd : (state as { previewEnd: number }).previewEnd)
+    // Narrow to drag/resize states that carry a `target` field.
+    if (
+      state.kind !== 'dragging-body' &&
+      state.kind !== 'dragging-unscheduled' &&
+      state.kind !== 'resizing-left' &&
+      state.kind !== 'resizing-right'
+    ) return false
+    const newStart = state.kind === 'resizing-right' ? state.originStart : state.previewStart
+    const newDue = state.kind === 'resizing-left' ? state.originEnd : state.previewEnd
     const kind: 'move' | 'resize' = state.kind === 'resizing-left' || state.kind === 'resizing-right' ? 'resize' : 'move'
     return await new Promise<boolean>((resolve) => {
       showPopup(
@@ -1019,7 +1028,13 @@
   }
 
   async function commitDrag (state: DragState, event?: PointerEvent | MouseEvent): Promise<void> {
-    if (state.kind === 'idle' || state.kind === 'hover-bar') return
+    // Narrow to drag/resize states that carry a `target` field.
+    if (
+      state.kind !== 'dragging-body' &&
+      state.kind !== 'dragging-unscheduled' &&
+      state.kind !== 'resizing-left' &&
+      state.kind !== 'resizing-right'
+    ) return
     // Guard: an unscheduled-drag that never reached the canvas (e.g. the user
     // clicked the drag-grip and released without moving) must NOT silently
     // schedule the issue to "today". Codex review-3 (2026-05-10).
@@ -1041,6 +1056,8 @@
         const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
         addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
       }
+      // Legacy path manages its own preview lifecycle.
+      activeDrag.set({ kind: 'idle' })
       return
     }
 
@@ -1054,6 +1071,8 @@
         const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
         addNotification(t, '', undefined as any, undefined, NotificationSeverity.Error)
       }
+      // Legacy path manages its own preview lifecycle.
+      activeDrag.set({ kind: 'idle' })
       return
     }
 

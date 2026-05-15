@@ -68,10 +68,24 @@
 
   async function openEditor (rel: IssueRelation): Promise<void> {
     // canEdit is determined by the source (predecessor) issue per
-    // spec §1 decision A. For incoming rows the source is `other`;
-    // for outgoing rows the source is `issue` itself.
-    const sourceIssue = otherIssues.get(String(rel.attachedTo)) ?? issue
-    const canEdit = !readonly && await canEditIssue(sourceIssue)
+    // spec §1 decision A. For outgoing rows the source IS this issue
+    // (`rel.attachedTo === issue._id`); the editor can open with our
+    // own permission. For incoming rows the source is the OTHER issue;
+    // if the otherIssues map hasn't resolved it yet (live query in
+    // flight), we open the editor in read-only mode rather than
+    // optimistically granting edit-rights via `issue` as a fallback —
+    // that would let a viewer of issue B edit a relation owned by A.
+    // The DependencyEditor itself remains usable for inspection.
+    const isOutgoing = String(rel.attachedTo) === String(issue._id)
+    let canEdit = false
+    if (!readonly) {
+      if (isOutgoing) {
+        canEdit = await canEditIssue(issue)
+      } else {
+        const source = otherIssues.get(String(rel.attachedTo))
+        canEdit = source !== undefined && await canEditIssue(source)
+      }
+    }
     showPopup(DependencyEditor, { relation: rel, canEdit }, 'middle')
   }
 
