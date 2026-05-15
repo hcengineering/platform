@@ -3,6 +3,8 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { tooltip } from '@hcengineering/ui'
+  import tracker from '../../plugin'
   import type { LayoutRow } from './lib/types'
   import type { TimeScale } from './lib/time-scale'
   import IssuePresenter from '../issues/IssuePresenter.svelte'
@@ -86,7 +88,7 @@
           <button
             type="button"
             class="toggle-btn"
-            title={row.collapsed ? 'Expand' : 'Collapse'}
+            use:tooltip={{ label: row.collapsed ? tracker.string.GanttExpand : tracker.string.GanttCollapse }}
             on:click={() => dispatch('toggle', { id: row.id })}
           >
             {row.collapsed ? '▶' : '▼'}
@@ -134,7 +136,7 @@
           <button
             type="button"
             class="jump-btn"
-            title={dir === 'left' ? 'Scroll left to bar' : 'Scroll right to bar'}
+            use:tooltip={{ label: dir === 'left' ? tracker.string.GanttScrollLeftToBar : tracker.string.GanttScrollRightToBar }}
             on:click={() => dispatch('jump', { x: jumpX })}
           >
             {dir === 'left' ? '←' : '→'}
