@@ -250,6 +250,11 @@ export interface Issue extends Task {
 
   startDate: Timestamp | null // for Gantt scheduling; null = unscheduled
 
+  // Phase 1.B — soft deadline, independent of dueDate. The Gantt renders
+  // a flag marker at this date and flags the issue as overdue when
+  // dueDate > deadline. Undefined for issues that haven't opted in.
+  deadline?: Timestamp | null
+
   space: Ref<Project>
 
   milestone?: Ref<Milestone> | null
