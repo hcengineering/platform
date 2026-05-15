@@ -317,7 +317,17 @@ export default mergeIds(trackerId, tracker, {
     Quarter: '' as IntlString,
     Week: '' as IntlString,
     GanttShowIssueCode: '' as IntlString,
-    GanttShowTitle: '' as IntlString
+    GanttShowTitle: '' as IntlString,
+    GanttToday: '' as IntlString,
+    GanttJumpToStart: '' as IntlString,
+    GanttJumpToEnd: '' as IntlString,
+    GanttJumpToDate: '' as IntlString,
+    GanttPreviousPeriod: '' as IntlString,
+    GanttNextPeriod: '' as IntlString,
+    GanttScrollLeftToBar: '' as IntlString,
+    GanttScrollRightToBar: '' as IntlString,
+    GanttExpand: '' as IntlString,
+    GanttCollapse: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
