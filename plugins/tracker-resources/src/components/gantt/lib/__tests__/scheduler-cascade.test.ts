@@ -1,4 +1,4 @@
-import { detectCycle } from '../scheduler'
+import { detectCycle, addScheduleDays } from '../scheduler'
 import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 
@@ -58,5 +58,22 @@ describe('detectCycle', () => {
   it('reports a self-loop relation as a cycle', () => {
     const relations = [rel('A', 'A')]
     expect(detectCycle(relations)).not.toBeNull()
+  })
+})
+
+describe('addScheduleDays', () => {
+  it('adds N days in milliseconds (Phase-1 calendar days)', () => {
+    const base = Date.UTC(2026, 4, 12)
+    expect(addScheduleDays(base, 5)).toBe(Date.UTC(2026, 4, 17))
+  })
+
+  it('subtracts N days when given a negative argument', () => {
+    const base = Date.UTC(2026, 4, 12)
+    expect(addScheduleDays(base, -3)).toBe(Date.UTC(2026, 4, 9))
+  })
+
+  it('returns base unchanged when days = 0', () => {
+    const base = Date.UTC(2026, 4, 12)
+    expect(addScheduleDays(base, 0)).toBe(base)
   })
 })
