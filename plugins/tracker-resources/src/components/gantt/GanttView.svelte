@@ -15,7 +15,8 @@
   import { buildLayout } from './lib/layout'
   import { createTimeScale } from './lib/time-scale'
   import { type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
-  import { Icon, Label, showPanel, tooltip } from '@hcengineering/ui'
+  import { Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
+  import CreateIssue from '../CreateIssue.svelte'
   import { statusStore } from '@hcengineering/view-resources'
   import ArrowLeft from '@hcengineering/ui/src/components/icons/ArrowLeft.svelte'
   import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
@@ -264,6 +265,11 @@
       e.detail.issue._class as Ref<Class<Doc>>,
       'content'
     )
+  }
+
+  function newIssue (): void {
+    if (space === undefined) return
+    showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top')
   }
 
   function jumpToToday (): void {
@@ -574,6 +580,7 @@
             on:toggle={onToggle}
             on:openIssue={onIssueOpen}
             on:hoverRow={onRowHover}
+            on:addIssue={newIssue}
           />
         </div>
         <div
