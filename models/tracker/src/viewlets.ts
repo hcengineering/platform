@@ -213,10 +213,10 @@ export function issueConfig (
 }
 
 export function ganttViewOptions (): ViewOptionsModel {
-  // PR 2 ships a minimal read-only Gantt. Group-by / dropdown ViewOptions
-  // are intentionally NOT advertised here — the canvas does not honour them
-  // yet. They will be added in PR 3 alongside drag/edit + Component swimlanes
-  // so users never see options that have no effect.
+  // PR 2 ships a minimal read-only Gantt. Group-by, "Show colors" and other
+  // dropdown ViewOptions are intentionally NOT advertised — the canvas does
+  // not honour them yet. They will be added in PR 3 alongside drag/edit +
+  // Component swimlanes so users never see options that have no effect.
   return {
     groupBy: [],
     orderBy: [
@@ -224,7 +224,7 @@ export function ganttViewOptions (): ViewOptionsModel {
       ['rank', SortingOrder.Ascending],
       ['dueDate', SortingOrder.Ascending]
     ],
-    other: [showColorsViewOption]
+    other: []
   }
 }
 
@@ -253,23 +253,10 @@ export function defineViewlets (builder: Builder): void {
     core.space.Model,
     {
       label: tracker.string.Gantt,
-      icon: tracker.icon.Issues,
+      icon: tracker.icon.Gantt,
       component: tracker.component.GanttView
     },
     tracker.viewlet.Gantt
-  )
-
-  builder.createDoc(
-    view.class.Viewlet,
-    core.space.Model,
-    {
-      attachTo: tracker.class.Issue,
-      descriptor: tracker.viewlet.Gantt,
-      viewOptions: ganttViewOptions(),
-      configOptions: { strict: true, hiddenKeys: ['title'] },
-      config: ganttConfig()
-    },
-    tracker.viewlet.IssueGantt
   )
 
   builder.createDoc(
@@ -547,6 +534,23 @@ export function defineViewlets (builder: Builder): void {
       ]
     },
     tracker.viewlet.IssueKanban
+  )
+
+  // Gantt is registered AFTER List + Kanban so List remains the default
+  // viewlet (ViewletSelector falls back to viewlets[0] when no preference
+  // is saved). Putting Gantt last avoids surprising users with an empty
+  // canvas on first visit.
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Issue,
+      descriptor: tracker.viewlet.Gantt,
+      viewOptions: ganttViewOptions(),
+      configOptions: { strict: true, hiddenKeys: ['title'] },
+      config: ganttConfig()
+    },
+    tracker.viewlet.IssueGantt
   )
 
   const componentListViewOptions: ViewOptionsModel = {

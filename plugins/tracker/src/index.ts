@@ -496,6 +496,7 @@ const pluginState = plugin(trackerId, {
 
     TimeReport: '' as Asset,
     Estimation: '' as Asset,
+    Gantt: '' as Asset,
 
     // Project icons
     Home: '' as Asset,

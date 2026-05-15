@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
-  import { type Issue } from '@hcengineering/tracker'
-  import { type TimeScale } from './lib/time-scale'
+  import type { TimeScale } from './lib/time-scale'
 
-  export let issue: Issue
+  // Bar is rendered for both Issues and synthetic milestone summaries; the
+  // structural subset below is all the bar geometry needs.
+  export let issue: { title: string; startDate: number | null; dueDate: number | null }
   export let row: { y: number; height: number }
   export let timeScale: TimeScale
   export let isSummary: boolean = false
@@ -15,8 +16,13 @@
   $: effectiveStart = isSummary ? summaryRange?.startDate ?? issue.startDate : issue.startDate
   $: effectiveDue = isSummary ? summaryRange?.dueDate ?? issue.dueDate : issue.dueDate
   $: visible = effectiveStart !== null && effectiveDue !== null
-  $: startVal = (effectiveStart ?? 0) as number
-  $: dueVal = (effectiveDue ?? 0) as number
+  $: rawStart = (effectiveStart ?? 0) as number
+  $: rawDue = (effectiveDue ?? 0) as number
+  // Normalise reversed ranges (start > due): render the bar across [min, max]
+  // rather than collapsing to a 2px sliver at the start. Tooltip mirrors the
+  // visual order so the user sees the same range that's drawn.
+  $: startVal = Math.min(rawStart, rawDue)
+  $: dueVal = Math.max(rawStart, rawDue)
   $: x = visible ? timeScale.toX(startVal) : 0
   $: x2 = visible ? timeScale.toX(dueVal) : 0
   $: w = Math.max(2, x2 - x + timeScale.pxPerDay) // inclusive duration: see spec §8.0

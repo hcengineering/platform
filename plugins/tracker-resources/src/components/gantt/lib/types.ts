@@ -16,23 +16,31 @@ export interface Tick {
   level: 'major' | 'minor' // major ticks render thicker + with text label
 }
 
-/** A row in the flattened layout. May be an issue or a component-swimlane header. */
+/** A row in the flattened layout. May be an issue, milestone, or swimlane header. */
 export interface LayoutRow {
-  kind: 'issue' | 'component-swimlane'
+  kind: 'issue' | 'milestone' | 'component-swimlane'
+  /** Stable key for keyed each-blocks and the collapsed-set. */
+  id: string
   /** Y-coord top-edge of the row in canvas pixels. */
   y: number
   /** Row height in pixels. */
   height: number
-  /** Tree depth — 0 for top-level issues. */
+  /** Tree depth — 0 for top-level rows. */
   depth: number
   /** Whether this row is currently rendered (vs virtually skipped). */
   visible: boolean
-  /** The issue this row represents — null for swimlane headers. */
+  /** The issue this row represents — null for milestone/swimlane rows. */
   issue: Issue | null
-  /** The component this swimlane represents — null for issue rows. */
+  /** The milestone this row represents — null for issue/swimlane rows. */
+  milestone: MilestoneMarker | null
+  /** The component this swimlane represents — null otherwise. */
   component: Ref<TrackerComponent> | null
-  /** True iff this issue has children (renders as summary "claw" bar). */
+  /** True iff this row has children (renders as summary "claw" bar). */
   isSummary: boolean
+  /** True iff this row has children and the user can collapse/expand it. */
+  collapsible: boolean
+  /** True iff currently collapsed (children hidden). */
+  collapsed: boolean
 }
 
 /** Cached aggregate dates of a parent issue's children, for summary-bar rendering. */
