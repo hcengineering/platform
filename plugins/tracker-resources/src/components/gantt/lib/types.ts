@@ -133,6 +133,23 @@ export type DragState =
        */
       hasCanvasTarget: boolean
     }
+  | {
+      kind: 'connector-drawing'
+      /** Source issue the user is drawing the dependency from. */
+      source: Issue
+      /** Pixel x/y of the connector-dot on the source bar (where the curve starts). */
+      originPx: { x: number, y: number }
+      /** Live cursor x/y in canvas-content coordinates (where the curve ends). */
+      cursorPx: { x: number, y: number }
+    }
+  | {
+      kind: 'connector-target-hover'
+      source: Issue
+      originPx: { x: number, y: number }
+      cursorPx: { x: number, y: number }
+      /** Candidate target issue under the pointer. */
+      target: Issue
+    }
 
 /**
  * Input events fed into the drag-controller reducer.
@@ -171,3 +188,16 @@ export type DragEvent =
   | { type: 'mousemove', cursorX: number, canvasX?: number }
   | { type: 'mouseup' }
   | { type: 'cancel' }
+  | {
+      type: 'mousedown-connector'
+      source: Issue
+      originPx: { x: number, y: number }
+      cursorPx: { x: number, y: number }
+    }
+  | {
+      type: 'mousemove-connector'
+      cursorPx: { x: number, y: number }
+      /** Bar under the cursor right now, or null when over empty canvas. */
+      hoveredBar: Issue | null
+    }
+  | { type: 'mouseup-connector' }
