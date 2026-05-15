@@ -1,0 +1,3 @@
+# Override root-level lib/ ignore — this lib/ is source code, not build output.
+!lib/
+!lib/**
