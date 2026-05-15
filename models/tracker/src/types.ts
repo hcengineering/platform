@@ -246,6 +246,15 @@ export class TIssue extends TTask implements Issue {
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
   declare dueDate: Timestamp | null
 
+  // Phase 1.B — soft deadline, independent of dueDate. Optional.
+  // When set, the Gantt renders a flag marker at this date and flags the
+  // issue as overdue when dueDate > deadline. Undefined for existing issues
+  // until the user opts in via the Issue editor (Phase 1 ships the
+  // inline ControlPanel field; a Gantt context-menu shortcut is a
+  // separate follow-up, see Out-of-scope section).
+  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.Deadline)
+    deadline?: Timestamp | null
+
   @Prop(TypeRef(tracker.class.Milestone), tracker.string.Milestone, { icon: tracker.icon.Milestone })
   @Index(IndexKind.Indexed)
     milestone!: Ref<Milestone> | null
