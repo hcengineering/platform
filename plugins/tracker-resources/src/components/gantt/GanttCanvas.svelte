@@ -348,6 +348,36 @@
     {/each}
   </g>
 
+  <g class="deadline-layer" transform="translate(0, {milestoneStripHeight})">
+    {#each visibleRows as row (rowKey(row))}
+      {#if row.kind === 'issue' && row.issue !== null && hasDeadline(row.issue)}
+        {@const dlVal = getDeadline(row.issue)}
+        {#if dlVal !== null}
+          {@const dx = timeScale.toX(dlVal)}
+          {@const dy = row.y + 4}
+          {@const overdue = isOverdue(row.issue)}
+          <g class="deadline-marker" class:overdue>
+            <line
+              x1={dx} y1={dy}
+              x2={dx} y2={dy + 26}
+              stroke={overdue ? '#dc2626' : '#f59e0b'}
+              stroke-width="1.5"
+              stroke-dasharray="2 2"
+              pointer-events="none"
+            />
+            <polygon
+              points="{dx},{dy} {dx + 8},{dy + 4} {dx},{dy + 8}"
+              fill={overdue ? '#dc2626' : '#f59e0b'}
+              pointer-events="none"
+            >
+              <title>{overdue ? 'Overdue (past deadline)' : 'Deadline'}: {new Date(dlVal).toISOString().slice(0, 10)}</title>
+            </polygon>
+          </g>
+        {/if}
+      {/if}
+    {/each}
+  </g>
+
   <GanttDependencyLayer
     {relations}
     barRects={barRects}
