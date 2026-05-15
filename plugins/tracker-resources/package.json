@@ -76,6 +76,7 @@
     "@hcengineering/converter-resources": "workspace:^0.7.0",
     "@hcengineering/workbench": "workspace:^0.7.0",
     "@hcengineering/workbench-resources": "workspace:^0.7.0",
+    "@tanstack/svelte-virtual": "^3.13.6",
     "fast-equals": "^5.2.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
