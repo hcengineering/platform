@@ -13,6 +13,7 @@
   import AssigneeEditor from '../issues/AssigneeEditor.svelte'
   import StartDateEditor from '../issues/StartDateEditor.svelte'
   import DueDateEditor from '../issues/DueDateEditor.svelte'
+  import EstimationEditor from '../issues/timereport/EstimationEditor.svelte'
 
   /**
    * Phase 1.E — lightweight popover surfaced by single-click on a Gantt bar
@@ -62,6 +63,17 @@
   <div class="quick-info__row">
     <span class="label"><Label label={tracker.string.DueDate}/></span>
     <DueDateEditor value={issueWithLookup} width="100%" editable={true} />
+  </div>
+
+  <!-- v121.11 / Bug 4 — Spec calls for Status / Priority / Assignee /
+       Estimation in the quick-info popover. The first three were already
+       wired in Phase 1.E; Estimation completes the row-set so the popover
+       matches the docs. Reuses the existing EstimationEditor from
+       issues/timereport/ — opens the same EstimationPopup as the full
+       editor, so update semantics stay identical. -->
+  <div class="quick-info__row">
+    <span class="label"><Label label={tracker.string.Estimation}/></span>
+    <EstimationEditor value={issue} kind="link" width="100%" isEditable={true} />
   </div>
 
   <footer class="quick-info__footer">
