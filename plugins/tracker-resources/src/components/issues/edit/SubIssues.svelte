@@ -78,6 +78,7 @@
       <Button
         icon={IconScaleFull}
         kind={'ghost'}
+        disabled={size === 0}
         showTooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
         on:click={() => {
           const filter = createFilter(tracker.class.Issue, 'attachedTo', [issue._id])
