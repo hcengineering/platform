@@ -3,12 +3,20 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { Issue, IssueRelation } from '@hcengineering/tracker'
+import type { Issue, IssueRelation, WorkingDaysConfig } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 import type { CriticalPathResult } from './types'
-import { detectCycle, addScheduleDays } from './scheduler'
-
-const DAY_MS = 86_400_000
+import { detectCycle } from './scheduler'
+import {
+  fsAnchor,
+  ssAnchor,
+  ffAnchor,
+  sfAnchor,
+  fsReverseAnchor,
+  ssReverseAnchor,
+  ffReverseAnchor,
+  sfReverseAnchor
+} from './working-days'
 
 const EMPTY_RESULT: CriticalPathResult = {
   critical: new Set(),
@@ -35,17 +43,22 @@ interface Bound {
  * forward fields of A, return the lower bound this relation imposes on
  * either ES(B) or EF(B).
  *
- * FS uses EF(A) + DAY_MS + lag*DAY_MS because dates are inclusive: the
- * successor can start at the earliest on the day AFTER the predecessor ends.
- * SS, FF, SF use the anchor directly with only lag applied.
+ * Routes through the per-kind anchor helpers in `working-days.ts`, which
+ * fall back to legacy calendar-day arithmetic when `cfg` is undefined and
+ * apply the +1-day FS rule consistently with the cascade scheduler.
  */
-function forwardBound (rel: IssueRelation, predES: number, predEF: number): Bound {
+function forwardBound (
+  rel: IssueRelation,
+  predES: number,
+  predEF: number,
+  cfg: WorkingDaysConfig | undefined
+): Bound {
   const lag = rel.lag ?? 0
   switch (rel.kind) {
-    case 'finish-to-start':  return { field: 'ES', value: predEF + DAY_MS + lag * DAY_MS }
-    case 'start-to-start':   return { field: 'ES', value: addScheduleDays(predES, lag) }
-    case 'finish-to-finish': return { field: 'EF', value: addScheduleDays(predEF, lag) }
-    case 'start-to-finish':  return { field: 'EF', value: addScheduleDays(predES, lag) }
+    case 'finish-to-start':  return { field: 'ES', value: fsAnchor(predEF, lag, cfg) }
+    case 'start-to-start':   return { field: 'ES', value: ssAnchor(predES, lag, cfg) }
+    case 'finish-to-finish': return { field: 'EF', value: ffAnchor(predEF, lag, cfg) }
+    case 'start-to-finish':  return { field: 'EF', value: sfAnchor(predES, lag, cfg) }
   }
 }
 
@@ -54,15 +67,20 @@ function forwardBound (rel: IssueRelation, predES: number, predEF: number): Boun
  * backward fields of B, return the upper bound this relation imposes on
  * either LS(A) or LF(A).
  *
- * FS uses LS(B) - DAY_MS (mirror of the +DAY_MS in forwardBound).
+ * Mirrors {@link forwardBound} via the reverse anchor helpers.
  */
-function backwardBound (rel: IssueRelation, succLS: number, succLF: number): Bound {
+function backwardBound (
+  rel: IssueRelation,
+  succLS: number,
+  succLF: number,
+  cfg: WorkingDaysConfig | undefined
+): Bound {
   const lag = rel.lag ?? 0
   switch (rel.kind) {
-    case 'finish-to-start':  return { field: 'EF', value: succLS - DAY_MS - lag * DAY_MS }
-    case 'start-to-start':   return { field: 'ES', value: addScheduleDays(succLS, -lag) }
-    case 'finish-to-finish': return { field: 'EF', value: addScheduleDays(succLF, -lag) }
-    case 'start-to-finish':  return { field: 'ES', value: addScheduleDays(succLF, -lag) }
+    case 'finish-to-start':  return { field: 'EF', value: fsReverseAnchor(succLS, lag, cfg) }
+    case 'start-to-start':   return { field: 'ES', value: ssReverseAnchor(succLS, lag, cfg) }
+    case 'finish-to-finish': return { field: 'EF', value: ffReverseAnchor(succLF, lag, cfg) }
+    case 'start-to-finish':  return { field: 'ES', value: sfReverseAnchor(succLF, lag, cfg) }
   }
 }
 
@@ -122,8 +140,10 @@ function topoSort (issues: ScheduledIssue[], relations: IssueRelation[]): Schedu
  */
 export function computeCriticalPath (
   issues: Issue[],
-  relations: IssueRelation[]
+  relations: IssueRelation[],
+  workingDays?: WorkingDaysConfig
 ): CriticalPathResult {
+  const cfg = workingDays
   // Graceful degrade on cycle (reuse PR4b's DFS helper).
   if (detectCycle(relations) !== null) {
     return { ...EMPTY_RESULT, cycle: true }
@@ -177,7 +197,7 @@ export function computeCriticalPath (
       if (pred === undefined) continue
       const predES = es.get(pred._id) ?? pred.startDate
       const predEF = ef.get(pred._id) ?? pred.dueDate
-      const b = forwardBound(r, predES, predEF)
+      const b = forwardBound(r, predES, predEF, cfg)
       if (b.field === 'ES') {
         if (b.value > newES) { newES = b.value; newEF = newES + dur }
       } else {
@@ -190,7 +210,7 @@ export function computeCriticalPath (
       for (const r of incRels) {
         const pred = scheduled.find((p) => p._id === r.attachedTo)
         if (pred === undefined) continue
-        const b = forwardBound(r, es.get(pred._id) ?? pred.startDate, ef.get(pred._id) ?? pred.dueDate)
+        const b = forwardBound(r, es.get(pred._id) ?? pred.startDate, ef.get(pred._id) ?? pred.dueDate, cfg)
         if ((b.field === 'ES' && b.value > i.startDate) || (b.field === 'EF' && b.value > i.dueDate)) {
           violated.add(r._id)
         }
@@ -232,7 +252,7 @@ export function computeCriticalPath (
       if (succ === undefined) continue
       const succLS = ls.get(succ._id) ?? succ.startDate
       const succLF = lf.get(succ._id) ?? succ.dueDate
-      const b = backwardBound(r, succLS, succLF)
+      const b = backwardBound(r, succLS, succLF, cfg)
       if (b.field === 'EF') {
         if (b.value < newLF) { newLF = b.value; newLS = newLF - dur }
       } else {
@@ -261,7 +281,7 @@ export function computeCriticalPath (
     const pred = scheduled.find((p) => p._id === r.attachedTo)
     const succ = scheduled.find((s) => s._id === r.target)
     if (pred === undefined || succ === undefined) continue
-    const b = forwardBound(r, es.get(pred._id) ?? pred.startDate, ef.get(pred._id) ?? pred.dueDate)
+    const b = forwardBound(r, es.get(pred._id) ?? pred.startDate, ef.get(pred._id) ?? pred.dueDate, cfg)
     const succAnchor = b.field === 'ES' ? (es.get(succ._id) ?? succ.startDate) : (ef.get(succ._id) ?? succ.dueDate)
     if (b.value === succAnchor) criticalRelations.add(r._id)
   }
