@@ -167,13 +167,14 @@
 
 <style lang="scss">
   .gantt-sidebar {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     border-right: 1px solid var(--theme-divider-color);
     background: var(--theme-comp-header-color);
     overflow: hidden;
     min-height: 0;
+    height: 100%;
   }
   .sidebar-header {
     display: flex;

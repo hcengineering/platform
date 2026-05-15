@@ -579,7 +579,18 @@
     overflow: hidden;
     min-height: 0;
   }
-  .sidebar-host { flex: 0 0 auto; min-height: 0; }
+  /* sidebar-host clips the GanttSidebar's natural height (= 57 rows × 36px)
+     to its own height. Without this clip the sidebar's natural height makes
+     gantt-body's scrollHeight blow up, which breaks page-scroll containment
+     and the wheel-forward logic that depends on the host bounding box. */
+  .sidebar-host {
+    flex: 0 0 auto;
+    min-height: 0;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
   .resize-handle {
     flex: 0 0 5px;
     cursor: col-resize;
