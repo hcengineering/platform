@@ -37,7 +37,6 @@ export default mergeIds(trackerId, tracker, {
     List: '' as Ref<ViewletDescriptor>,
     Kanban: '' as Ref<ViewletDescriptor>,
     Gantt: '' as Ref<ViewletDescriptor>,
-    IssueGantt: '' as Ref<Viewlet>,
     MilestoneIssuesList: '' as Ref<Viewlet>,
     ComponentIssuesList: '' as Ref<Viewlet>
   },
