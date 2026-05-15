@@ -73,7 +73,11 @@ function topoSort (issues: ScheduledIssue[], relations: IssueRelation[]): Schedu
   const inDegree = new Map<Ref<Issue>, number>()
   for (const i of issues) inDegree.set(i._id, 0)
   for (const r of relations) {
-    if (byRef.has(r.target)) {
+    // Both endpoints must be in the scheduled set, otherwise the source
+    // never gets dequeued and the target stays in-degree > 0 forever,
+    // dropping it from the order. The caller passes activeRels (already
+    // filtered), but check defensively so this helper is safe to reuse.
+    if (byRef.has(r.attachedTo) && byRef.has(r.target)) {
       inDegree.set(r.target, (inDegree.get(r.target) ?? 0) + 1)
     }
   }
