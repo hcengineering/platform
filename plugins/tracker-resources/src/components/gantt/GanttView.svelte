@@ -641,6 +641,22 @@
     hoveredEdge = e.detail as { source: Ref<Issue>, target: Ref<Issue> } | null
   }
 
+  /**
+   * Tier-3 Item 5 — smooth-scroll the outer scroller to the row of the
+   * given issue, called when the user clicks an off-viewport dependency
+   * indicator triangle. Looks up the row's y in the current sorted layout
+   * and scrolls so the row sits 1/3 down from the top of the viewport
+   * (Asana / MS Project pattern — gives breathing room above + below).
+   */
+  function handleScrollToRow (e: CustomEvent<{ issue: Ref<Issue> }>): void {
+    if (scrollerEl == null) return
+    const targetId = String(e.detail.issue)
+    const row = sortedRows.find((r) => r.issue !== null && String(r.issue._id) === targetId)
+    if (row === undefined) return
+    const targetTop = Math.max(0, row.y - scrollerEl.clientHeight / 3)
+    scrollerEl.scrollTo({ top: targetTop, behavior: 'smooth' })
+  }
+
   function handleOpenEditor (e: CustomEvent<{ relation: IssueRelation }>): void {
     const rel = e.detail.relation
     // canEdit if the user can update the source issue (spec §1 decision A).
@@ -2135,6 +2151,7 @@
               on:hoverEdge={handleHoverEdge}
               on:connectorDown={handleConnectorDown}
               on:barHover={handleBarHover}
+              on:scrollToRow={handleScrollToRow}
             />
           </div>
         </div>

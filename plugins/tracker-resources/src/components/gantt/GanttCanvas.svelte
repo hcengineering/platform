@@ -12,7 +12,7 @@
   import GanttResizeOverlay from './GanttResizeOverlay.svelte'
   import GanttTodayMarker from './GanttTodayMarker.svelte'
   import { type TimeScale } from './lib/time-scale'
-  import { type BarRect } from './lib/dependency-router'
+  import { type BarRect, type YBounds } from './lib/dependency-router'
   import GanttDependencyLayer from './GanttDependencyLayer.svelte'
   import GanttConnectorDot from './GanttConnectorDot.svelte'
   import { activeDragTargetId } from './lib/drag-state'
@@ -28,6 +28,7 @@
     barHover: { issue: Issue | null }
     openEditor: { relation: IssueRelation }
     hoverEdge: { source: Ref<Issue>, target: Ref<Issue> } | null
+    scrollToRow: { issue: Ref<Issue> }
   }>()
 
   function openIssue (i: { _id: any, _class: any }): void {
@@ -132,6 +133,12 @@
   }
 
   $: visibleRows = filterVisibleRows(rows, scrollTop, viewportHeight)
+  // Tier-3 Item 5 — Y-viewport bounds in canvas-pixel space so the
+  // dependency layer can clip arrows to off-viewport bars. Bars in
+  // barRects live at `milestoneStripHeight + row.y + 6` etc., already in
+  // the canvas coordinate system, so the bounds are just the scroll
+  // window expressed in the same space.
+  $: depYBounds = { top: scrollTop, bottom: scrollTop + viewportHeight } satisfies YBounds
   $: rowsHeight = rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0
   $: totalHeight = rowsHeight + milestoneStripHeight
   $: tickViewport = computeTickViewport(viewport.left, viewport.right, dataWidth)
@@ -338,8 +345,10 @@
     {criticalRelations}
     {violatedRelations}
     {showCriticalPath}
+    yBounds={depYBounds}
     on:openEditor
     on:hoverEdge
+    on:scrollToRow
   />
 
   <!--
