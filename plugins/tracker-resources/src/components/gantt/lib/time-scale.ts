@@ -31,8 +31,8 @@ export interface TimeScale {
   ticks: (range: [number, number]) => Tick[]
 }
 
-export function createTimeScale (zoom: ZoomLevel, origin: number): TimeScale {
-  const pxPerDay = PX_PER_DAY[zoom]
+export function createTimeScale (zoom: ZoomLevel, origin: number, pxPerDayOverride?: number): TimeScale {
+  const pxPerDay = pxPerDayOverride ?? PX_PER_DAY[zoom]
   const originSnapped = snapToUtcMidnight(origin)
 
   const toX = (t: number): number => ((t - originSnapped) / DAY_MS) * pxPerDay
