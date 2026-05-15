@@ -101,42 +101,6 @@ function topoSort (issues: ScheduledIssue[], relations: IssueRelation[]): Schedu
 }
 
 /**
- * Build a map from each issue to its connected-component ID (using undirected
- * BFS over the relation graph). Issues not appearing in any relation form
- * singleton components. Used to compute per-component project-finish so that
- * isolated issues always get slack=0 (they are their own project end).
- */
-function buildComponents (issues: ScheduledIssue[], relations: IssueRelation[]): Map<Ref<Issue>, number> {
-  // Build undirected adjacency.
-  const adj = new Map<Ref<Issue>, Set<Ref<Issue>>>()
-  const issueSet = new Set<Ref<Issue>>(issues.map((i) => i._id))
-  for (const i of issues) adj.set(i._id, new Set())
-  for (const r of relations) {
-    if (!issueSet.has(r.attachedTo) || !issueSet.has(r.target)) continue
-    adj.get(r.attachedTo)?.add(r.target)
-    adj.get(r.target)?.add(r.attachedTo)
-  }
-  const component = new Map<Ref<Issue>, number>()
-  let compId = 0
-  for (const i of issues) {
-    if (component.has(i._id)) continue
-    const queue: Ref<Issue>[] = [i._id]
-    component.set(i._id, compId)
-    while (queue.length > 0) {
-      const cur = queue.shift() as Ref<Issue>
-      for (const nb of adj.get(cur) ?? []) {
-        if (!component.has(nb)) {
-          component.set(nb, compId)
-          queue.push(nb)
-        }
-      }
-    }
-    compId++
-  }
-  return component
-}
-
-/**
  * Compute the critical path for the given issue + relation graph.
  *
  * Single-source forward pass (ES/EF) over a topological order, then
@@ -235,27 +199,29 @@ export function computeCriticalPath (
     ef.set(i._id, newEF)
   }
 
-  // Per-component project finish: max EF over sinks in each component.
-  // An isolated issue (no relations) is its own component and is always critical.
-  const components = buildComponents(scheduled, activeRels)
-  const compFinish = new Map<number, number>()
+  // Project finish = max EF over ALL sinks (standard CPM single-project
+  // semantics; Codex review). An isolated issue with EF earlier than the
+  // global maximum gets positive slack and is NOT critical — that matches
+  // the user's mental model of a single Gantt = a single project.
+  let projectFinish = -Infinity
   for (const i of scheduled) {
     if ((outgoing.get(i._id) ?? []).length === 0) {
-      const cid = components.get(i._id) ?? 0
-      const cur = compFinish.get(cid) ?? -Infinity
-      compFinish.set(cid, Math.max(cur, ef.get(i._id) ?? i.dueDate))
+      projectFinish = Math.max(projectFinish, ef.get(i._id) ?? i.dueDate)
     }
   }
+  if (!isFinite(projectFinish)) {
+    // All sinks resolved to -Infinity (empty graph) — bail with empty result.
+    return EMPTY_RESULT
+  }
 
-  // Backward pass: LF = per-component project finish for sinks, then min over successors.
+  // Backward pass: LF = projectFinish for sinks, then min over successors.
   const ls = new Map<Ref<Issue>, number>()
   const lf = new Map<Ref<Issue>, number>()
   const reverseOrder = order.slice().reverse()
   for (const i of reverseOrder) {
     const dur = i.dueDate - i.startDate
     const outRels = outgoing.get(i._id) ?? []
-    const cid = components.get(i._id) ?? 0
-    let newLF = outRels.length === 0 ? (compFinish.get(cid) ?? i.dueDate) : Infinity
+    let newLF = outRels.length === 0 ? projectFinish : Infinity
     let newLS = newLF - dur
     for (const r of outRels) {
       const succ = scheduled.find((s) => s._id === r.target)

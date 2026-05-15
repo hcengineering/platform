@@ -27,6 +27,23 @@
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
   export let relations: IssueRelation[] = []
   export let showPredecessors: boolean = false
+  // PR5: slack column (numeric days) + CP badge
+  export let slack: Map<Ref<Issue>, number> = new Map()
+  export let criticalSet: Set<Ref<Issue>> = new Set()
+  export let showCriticalPath: boolean = false
+  export let showSlackColumn: boolean = false
+
+  const DAY_MS_SIDEBAR = 86_400_000
+
+  function slackDaysFor (rowIssueId: string | undefined): number {
+    if (rowIssueId === undefined) return 0
+    const ms = slack.get(rowIssueId as Ref<Issue>) ?? 0
+    return Math.round(ms / DAY_MS_SIDEBAR)
+  }
+
+  function isCriticalRow (rowIssueId: string | undefined): boolean {
+    return rowIssueId !== undefined && criticalSet.has(rowIssueId as Ref<Issue>)
+  }
 
   $: dragState = $activeDrag
   $: activeIssueIdStr = activeDragTargetId(dragState)
@@ -210,6 +227,15 @@
               <Label label={tracker.string.NoPredecessors} />
             {:else}
               {text}
+            {/if}
+          </span>
+        {/if}
+        {#if showCriticalPath && showSlackColumn && row.issue !== null}
+          <span class="cell-slack">
+            {#if isCriticalRow(String(row.issue._id))}
+              <span class="cp-badge"><Label label={tracker.string.CriticalPathBadge} /></span>
+            {:else}
+              {slackDaysFor(String(row.issue._id))}d
             {/if}
           </span>
         {/if}
@@ -403,5 +429,23 @@
     color: var(--theme-content-color);
     margin-left: auto;
     padding-left: 8px;
+  }
+  .cell-slack {
+    font-size: 11px;
+    color: var(--theme-content-trans-color);
+    padding-left: 8px;
+    text-align: right;
+    min-width: 40px;
+    flex-shrink: 0;
+  }
+  .cp-badge {
+    display: inline-block;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: #dc2626;
+    color: white;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
   }
 </style>

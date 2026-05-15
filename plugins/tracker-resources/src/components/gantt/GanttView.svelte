@@ -7,6 +7,8 @@
   import { type Issue, type IssueRelation, type Milestone } from '@hcengineering/tracker'
   import { connectedIssueIds } from './lib/dependency-router'
   import { wouldCreateCycle, simulateCascade, addScheduleDays } from './lib/scheduler'
+  import { computeCriticalPath } from './lib/critical-path'
+  import type { CriticalPathResult } from './lib/types'
   import type { PrimaryEdit, SimulateResult, CascadeShift } from './lib/types'
   import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
   import DependencyEditor from '../DependencyEditor.svelte'
@@ -91,6 +93,19 @@
   // PR4a: dependency state
   let relations: IssueRelation[] = []
   let optimisticRelations: IssueRelation[] = []
+  // PR5: critical path + slack. ViewOptions toggle the visual layer;
+  // the algorithm runs on every (issues, relations) change with a
+  // 200 ms debounce so interactive drag updates settle quickly without
+  // hammering the BFS per pointermove.
+  let cpResult: CriticalPathResult = {
+    critical: new Set(),
+    criticalRelations: new Set(),
+    slack: new Map(),
+    violatedRelations: new Set(),
+    cycle: false
+  }
+  let cpDirtyTimer: ReturnType<typeof setTimeout> | null = null
+  let lastCpCycleNotifiedAt = 0
   let hoveredIssue: Ref<Issue> | null = null
   let hoveredEdge: { source: Ref<Issue>, target: Ref<Issue> } | null = null
   $: displayedRelations = [...relations, ...optimisticRelations.filter((pending) =>
@@ -129,6 +144,12 @@
   $: showStatus = ((viewOptions as Record<string, unknown>)?.ganttShowStatus ?? true) !== false
   $: confirmMove = ((viewOptions as Record<string, unknown>)?.ganttConfirmMove ?? true) !== false
   $: confirmResize = ((viewOptions as Record<string, unknown>)?.ganttConfirmResize ?? true) !== false
+  // PR5: critical-path + slack visualization. Toggled via the
+  // Customize-view panel (same pattern as ganttConfirmMove etc.).
+  $: showCriticalPath = ((viewOptions as Record<string, unknown>)?.ganttCriticalPath ?? false) === true
+  $: showSlackColumn = ((viewOptions as Record<string, unknown>)?.ganttSlackColumn ?? false) === true
+  // 200 ms debounced recompute on issues / relations / toggle change.
+  $: void scheduleCpRecompute(issues, relations, showCriticalPath)
 
   function setZoom (z: ZoomLevel): void {
     zoom = z
@@ -338,6 +359,45 @@
     Math.ceil(timeScale.toX(dateRange.to) - timeScale.toX(dateRange.from))
   )
   $: totalCanvasWidth = computeCanvasRenderWidth(dataCanvasWidth, canvasViewportWidth)
+
+  /**
+   * PR5: trigger a debounced critical-path recompute. The 200 ms delay is
+   * from spec §6: drag interactions can fire dozens of updates per second
+   * via reactive cascades, but the user only needs the CP overlay to
+   * settle once dragging stops. On cycle detection we surface a banner
+   * at most once per minute so a long-lived cycle doesn't flood the
+   * notification tray.
+   */
+  function scheduleCpRecompute (
+    _issues: Issue[],
+    _relations: IssueRelation[],
+    _show: boolean
+  ): void {
+    if (!showCriticalPath) {
+      if (cpResult.critical.size > 0 || cpResult.cycle) {
+        cpResult = {
+          critical: new Set(),
+          criticalRelations: new Set(),
+          slack: new Map(),
+          violatedRelations: new Set(),
+          cycle: false
+        }
+      }
+      return
+    }
+    if (cpDirtyTimer !== null) clearTimeout(cpDirtyTimer)
+    cpDirtyTimer = setTimeout(() => {
+      cpResult = computeCriticalPath(issues, relations)
+      cpDirtyTimer = null
+      if (cpResult.cycle && Date.now() - lastCpCycleNotifiedAt > 60_000) {
+        lastCpCycleNotifiedAt = Date.now()
+        void (async () => {
+          const t = await translate(tracker.string.CriticalPathCycle, {}, undefined)
+          addNotification(t, '', undefined as any, undefined, NotificationSeverity.Warning)
+        })()
+      }
+    }, 200)
+  }
 
   function handleVScroll (e: Event): void {
     const t = e.target as HTMLDivElement
@@ -1671,6 +1731,10 @@
             {activeDrag}
             relations={displayedRelations}
             {showPredecessors}
+            slack={cpResult.slack}
+            criticalSet={cpResult.critical}
+            {showCriticalPath}
+            {showSlackColumn}
             on:jump={onJump}
             on:toggle={onToggle}
             on:openIssue={onIssueOpen}
@@ -1713,6 +1777,11 @@
               {connectedIds}
               {hoveredIssue}
               {hoveredEdge}
+              criticalSet={cpResult.critical}
+              criticalRelations={cpResult.criticalRelations}
+              violatedRelations={cpResult.violatedRelations}
+              cpSlack={cpResult.slack}
+              {showCriticalPath}
               on:openIssue={onIssueOpen}
               on:hoverRow={onRowHover}
               on:barMouseDown={handleBarMouseDown}
