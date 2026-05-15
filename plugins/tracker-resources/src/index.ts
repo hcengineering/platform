@@ -124,6 +124,7 @@ import RelatedIssueTemplates from './components/issues/related/RelatedIssueTempl
 import IssueRelationPresenter from './components/IssueRelationPresenter.svelte'
 import RelationActivityPresenter from './components/activity/RelationActivityPresenter.svelte'
 import DependencyShiftedPresenter from './components/notifications/DependencyShiftedPresenter.svelte'
+import PredecessorsColumnPresenter from './components/issues/PredecessorsColumnPresenter.svelte'
 
 import ComponentSelector from './components/components/ComponentSelector.svelte'
 
@@ -463,6 +464,7 @@ export default async (): Promise<Resources> => ({
     IssueRelationPresenter,
     RelationActivityPresenter,
     DependencyShiftedPresenter,
+    PredecessorsColumn: PredecessorsColumnPresenter,
     ComponentSelector,
     IssueTemplates,
     IssueTemplatePresenter,
