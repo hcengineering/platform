@@ -276,7 +276,12 @@
     "UnsetParentIssue": "親イシューの設定を解除",
     "ForbidCreateProjectPermission": "プロジェクト作成禁止",
     "ForbidCreateProjectPermissionDescription": "ユーザーが新しいプロジェクトを作成することを禁止します",
-    "AllowCreatingIssues": "イシューの作成を許可"
+    "AllowCreatingIssues": "イシューの作成を許可",
+    "Day": "日",
+    "Gantt": "Gantt",
+    "Month": "月",
+    "Quarter": "四半期",
+    "Week": "週"
   },
   "status": {}
 }
