@@ -41,6 +41,12 @@
     dispatch('openIssue', { issue: { _id: issue._id as string, _class: issue._class as string } })
   }
 
+  function onDragGripDown (issue: Issue): (evt: MouseEvent) => void {
+    return (evt: MouseEvent): void => {
+      dispatch('rowDragStart', { issue, cursorX: evt.clientX })
+    }
+  }
+
   function onRowContextMenu (evt: MouseEvent, row: LayoutRow): void {
     if (row.issue === null) return
     evt.preventDefault()
@@ -136,8 +142,8 @@
           <!-- svelte-ignore a11y-no-static-element-interactions a11y-no-noninteractive-element-interactions -->
           <span
             class="drag-grip"
-            title="Drag to schedule"
-            on:mousedown|stopPropagation={(e) => { if (row.issue !== null) dispatch('rowDragStart', { issue: row.issue, cursorX: e.clientX }) }}
+            use:tooltip={{ label: tracker.string.GanttDragToSchedule }}
+            on:mousedown|stopPropagation={row.issue !== null ? onDragGripDown(row.issue) : undefined}
           >⋮⋮</span>
         {/if}
         {#if showStatus}

@@ -354,7 +354,7 @@
     if (state.kind === 'dragging-unscheduled' && !state.hasCanvasTarget) return
     const client = getClient()
     const ops = client.apply('gantt-drag')
-    if (state.kind === 'dragging-body' || state.kind === 'dragging-unscheduled') {
+    if (state.kind === 'dragging-body') {
       await ops.update(state.issue, { startDate: state.previewStart, dueDate: state.previewDue })
       const delta = state.previewStart - state.originStart
       if (delta !== 0) {
@@ -365,6 +365,13 @@
           })
         }
       }
+    } else if (state.kind === 'dragging-unscheduled') {
+      // Unscheduled-drag only schedules the parent issue. originStart is the
+      // synthetic "today" anchor — using its delta to shift existing scheduled
+      // descendants would move them by a wildly unrelated amount (Codex
+      // review-4 2026-05-11). Descendants stay put; the user can drag the
+      // (now-scheduled) parent again to do a coordinated shift.
+      await ops.update(state.issue, { startDate: state.previewStart, dueDate: state.previewDue })
     } else if (state.kind === 'resizing-left') {
       await ops.update(state.issue, { startDate: state.previewStart })
     } else if (state.kind === 'resizing-right') {
@@ -411,7 +418,11 @@
     'tracker:action:EditRelatedTargets',
     'tracker:action:MoveToProject',
     'tracker:action:CopyAsMarkdownTable',
-    'tracker:action:UnsetParent'
+    'tracker:action:UnsetParent',
+    // Below are surfaced via the local Hierarchy ▸ submenu instead, so the
+    // top-level menu has one collapsed entry rather than three separate ones.
+    'tracker:action:SetParent',
+    'tracker:action:NewSubIssue'
   ]
 
   function openGanttMenu (event: MouseEvent, issue: Issue): void {
@@ -662,8 +673,18 @@
     scrollerEl.scrollTop = panStartScrollTop - (e.clientY - panStartY)
   }
   function onCanvasPanEnd (e: PointerEvent): void {
+    // Guard: only release the pointer if we actually captured it. A pointerup
+    // bubbling from a child element that was excluded by the pan-handler
+    // exclusion list (e.g. resize-handle, drag-grip) shouldn't reach
+    // releasePointerCapture, but browsers throw `InvalidStateError` if the
+    // element isn't actually capturing the given pointerId. Codex review-4
+    // 2026-05-11.
+    if (!panning) return
     panning = false
-    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+    const el = e.currentTarget as HTMLElement
+    if (typeof el.hasPointerCapture === 'function' && el.hasPointerCapture(e.pointerId)) {
+      el.releasePointerCapture(e.pointerId)
+    }
   }
 
   // Drag-resize the sidebar.
@@ -947,7 +968,7 @@
           {/if}
           {#if issue.startDate !== null && issue.dueDate !== null}
             {@const days = Math.round((Math.max(issue.dueDate, issue.startDate) - Math.min(issue.dueDate, issue.startDate)) / 86_400_000) + 1}
-            <div class="tt-line">Duration: {days} day{days === 1 ? '' : 's'}</div>
+            <div class="tt-line"><Label label={tracker.string.GanttDurationTooltip} params={{ days }} /></div>
           {/if}
         {/if}
       </div>

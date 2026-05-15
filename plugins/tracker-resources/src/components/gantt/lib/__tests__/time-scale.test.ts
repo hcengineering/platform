@@ -76,3 +76,38 @@ describe('createTimeScale', () => {
     }
   })
 })
+
+describe('time-scale — secondary label (year/month supra row)', () => {
+  const DAY = 86_400_000
+
+  it('day-zoom: secondaryLabel set on 1st of month and on first visible tick', () => {
+    const scale = createTimeScale('day', Date.UTC(2026, 0, 1))
+    // Span 2 months: Jan 28 – Feb 5
+    const ticks = scale.ticks([Date.UTC(2026, 0, 28), Date.UTC(2026, 1, 5)])
+    const withSecondary = ticks.filter((t) => t.secondaryLabel !== undefined)
+    // Expect: first visible tick (Jan 28) + Feb 1
+    expect(withSecondary).toHaveLength(2)
+    expect(withSecondary[0].secondaryLabel).toMatch(/jan/i)
+    expect(new Date(withSecondary[1].date).getUTCDate()).toBe(1)
+    expect(withSecondary[1].secondaryLabel).toMatch(/feb/i)
+  })
+
+  it('week-zoom: secondaryLabel = year on first visible week + first week of new year', () => {
+    const scale = createTimeScale('week', Date.UTC(2026, 11, 1))
+    // Span across the 2026/2027 year boundary
+    const ticks = scale.ticks([Date.UTC(2026, 11, 1), Date.UTC(2027, 0, 31)])
+    const withSecondary = ticks.filter((t) => t.secondaryLabel !== undefined)
+    expect(withSecondary.length).toBeGreaterThanOrEqual(2)
+    expect(withSecondary[0].secondaryLabel).toBe('2026')
+    expect(withSecondary[1].secondaryLabel).toBe('2027')
+  })
+
+  it('quarter-zoom: label is "Qn" only, year goes to secondaryLabel', () => {
+    const scale = createTimeScale('quarter', Date.UTC(2026, 0, 1))
+    const ticks = scale.ticks([Date.UTC(2026, 0, 1), Date.UTC(2026, 11, 31)])
+    expect(ticks.map((t) => t.label)).toEqual(['Q1', 'Q2', 'Q3', 'Q4'])
+    expect(ticks[0].secondaryLabel).toBe('2026')
+    expect(ticks[1].secondaryLabel).toBeUndefined() // Q2 same year
+    void DAY
+  })
+})

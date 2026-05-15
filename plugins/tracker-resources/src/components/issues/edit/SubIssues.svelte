@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import { Issue, trackerId } from '@hcengineering/tracker'
-  import { Button, IconScaleFull, Label, closeTooltip, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
+  import { Button, IconAdd, IconScaleFull, Label, closeTooltip, getCurrentResolvedLocation, navigate, showPopup } from '@hcengineering/ui'
   import { createFilter, restrictionStore, setFilters } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
+  import LinkSubIssueActionPopup from '../../LinkSubIssueActionPopup.svelte'
   import QueryIssuesList from './QueryIssuesList.svelte'
 
   export let issue: Issue
@@ -44,6 +45,21 @@
     <Label label={tracker.string.SubIssuesList} params={{ subIssues: size }} />
   </svelte:fragment>
   <svelte:fragment slot="buttons">
+    <!--
+      Link existing as sub-issue: opens LinkSubIssueActionPopup which picks
+      an existing issue from the same space and rewrites its `attachedTo` to
+      point at this issue. Complement of QueryIssuesList's built-in "create
+      new sub-issue" (the createLabel button) — together both flows let the
+      user grow the sub-tree without leaving the EditIssue panel.
+    -->
+    <Button
+      icon={IconAdd}
+      kind={'ghost'}
+      showTooltip={{ label: tracker.string.LinkExistingSubIssue, direction: 'bottom' }}
+      on:click={() => {
+        showPopup(LinkSubIssueActionPopup, { value: issue }, 'top')
+      }}
+    />
     {#if !$restrictionStore.disableNavigation}
       <Button
         icon={IconScaleFull}

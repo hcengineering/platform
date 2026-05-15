@@ -46,46 +46,84 @@ export function createTimeScale (zoom: ZoomLevel, origin: number): TimeScale {
 
     switch (zoom) {
       case 'day': {
+        // Secondary label: month name on the 1st of each month, or on the
+        // first visible tick (so the user sees a context label even if the
+        // viewport starts mid-month).
+        let lastMonth = -1
+        let first = true
         while (cursor <= to) {
           const d = new Date(cursor)
           const isMonday = d.getUTCDay() === 1
+          const m = d.getUTCMonth()
+          let secondary: string | undefined
+          if (first || m !== lastMonth) {
+            secondary = d.toLocaleString(undefined, { month: 'short', timeZone: 'UTC' })
+            lastMonth = m
+            first = false
+          }
           result.push({
             date: cursor,
             label: d.getUTCDate().toString(),
-            level: isMonday ? 'major' : 'minor'
+            level: isMonday ? 'major' : 'minor',
+            secondaryLabel: secondary
           })
           cursor += DAY_MS
         }
         break
       }
       case 'week': {
+        // Secondary label: year on the first week of each year (or first
+        // visible week). Aligns the supra-row with year boundaries.
         const d = new Date(cursor)
         const dow = d.getUTCDay() // 0=Sun
         const offsetToMonday = ((1 - dow) + 7) % 7
         cursor += offsetToMonday * DAY_MS
+        let lastYear = -1
+        let first = true
         while (cursor <= to) {
           const c = new Date(cursor)
           const isFirstWeekOfMonth = c.getUTCDate() <= 7
+          const y = c.getUTCFullYear()
+          let secondary: string | undefined
+          if (first || y !== lastYear) {
+            secondary = String(y)
+            lastYear = y
+            first = false
+          }
           result.push({
             date: cursor,
             label: `W${isoWeekNumber(c)}`,
-            level: isFirstWeekOfMonth ? 'major' : 'minor'
+            level: isFirstWeekOfMonth ? 'major' : 'minor',
+            secondaryLabel: secondary
           })
           cursor += 7 * DAY_MS
         }
         break
       }
       case 'month': {
+        // Secondary label: year on January (or first visible month). Was
+        // entirely missing before — without it, you couldn't tell which year
+        // a month belonged to in a multi-year span.
         const start = new Date(cursor)
         let y = start.getUTCFullYear()
         let m = start.getUTCMonth()
         cursor = Date.UTC(y, m, 1)
+        let lastYear = -1
+        let first = true
         while (cursor <= to) {
           const c = new Date(cursor)
+          const yr = c.getUTCFullYear()
+          let secondary: string | undefined
+          if (first || yr !== lastYear) {
+            secondary = String(yr)
+            lastYear = yr
+            first = false
+          }
           result.push({
             date: cursor,
             label: c.toLocaleString(undefined, { month: 'short', timeZone: 'UTC' }),
-            level: c.getUTCMonth() === 0 ? 'major' : 'minor'
+            level: c.getUTCMonth() === 0 ? 'major' : 'minor',
+            secondaryLabel: secondary
           })
           m += 1
           if (m > 11) { m = 0; y += 1 }
@@ -94,17 +132,30 @@ export function createTimeScale (zoom: ZoomLevel, origin: number): TimeScale {
         break
       }
       case 'quarter': {
+        // Split the year out of the primary label and put it on the supra
+        // row — previously the label was "Q1 2026" side-by-side, which is
+        // visually noisy in a dense Quarter view.
         const start = new Date(cursor)
         let y = start.getUTCFullYear()
         let q = Math.floor(start.getUTCMonth() / 3)
         cursor = Date.UTC(y, q * 3, 1)
+        let lastYear = -1
+        let first = true
         while (cursor <= to) {
           const c = new Date(cursor)
           const qNum = Math.floor(c.getUTCMonth() / 3) + 1
+          const yr = c.getUTCFullYear()
+          let secondary: string | undefined
+          if (first || yr !== lastYear) {
+            secondary = String(yr)
+            lastYear = yr
+            first = false
+          }
           result.push({
             date: cursor,
-            label: `Q${qNum} ${c.getUTCFullYear()}`,
-            level: qNum === 1 ? 'major' : 'minor'
+            label: `Q${qNum}`,
+            level: qNum === 1 ? 'major' : 'minor',
+            secondaryLabel: secondary
           })
           q += 1
           if (q > 3) { q = 0; y += 1 }

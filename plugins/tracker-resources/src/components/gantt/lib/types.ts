@@ -12,8 +12,16 @@ export type ZoomLevel = 'day' | 'week' | 'month' | 'quarter'
 /** A single tick on the time-axis header (vertical gridline + label). */
 export interface Tick {
   date: number             // UTC ms
-  label: string            // pre-formatted, locale-aware
+  label: string            // pre-formatted, locale-aware (primary row)
   level: 'major' | 'minor' // major ticks render thicker + with text label
+  /**
+   * Optional supra-label rendered on a second header row above `label` when
+   * the segment changes from the previous tick. Day view sets it to month
+   * name on the 1st of each month; week view sets it to the year on the
+   * first week of each year; month view sets it to the year on January;
+   * quarter view sets it to the year on Q1.
+   */
+  secondaryLabel?: string
 }
 
 /** A row in the flattened layout. May be an issue, milestone, or swimlane header. */
