@@ -73,9 +73,7 @@
   {modeSelectorProps}
 >
   <svelte:fragment slot="header-tools">
-    {#if !isGanttMode}
-      <ViewletSettingButton bind:viewOptions bind:viewlet />
-    {/if}
+    <ViewletSettingButton bind:viewOptions bind:viewlet />
   </svelte:fragment>
 
   <svelte:fragment slot="extra">
