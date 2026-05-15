@@ -391,30 +391,27 @@
   })
 
   /**
-   * Curated Gantt context-menu action allow-list. The default Huly menu lists
-   * ~19 actions which is overwhelming for a Gantt-specific right-click. We
-   * keep only the actions that make sense when interacting with a bar:
-   * - Open (Edit issue)
-   * - Status / Priority / Assignee (existing submenu actions with › indicator)
-   * - Set start date / Set due date (date-only, the core Gantt edit)
-   * - Copy issue ID + URL (clipboard utilities, title omitted as redundant)
-   * - Duplicate / Delete
+   * Slim the Gantt context menu by deny-listing actions that are noise for a
+   * Gantt-specific right-click. Keeps Open (Issue's overridden EditIssue
+   * action), Status/Priority/Assignee submenus (›), Set start/due date,
+   * Add sub-issue, Set parent issue, Copy ID/URL, Duplicate, Delete.
    *
-   * Component / Milestone / Labels / SubIssue / SetParent / Relations / Move-
-   * to-project / time-report stay accessible from the standard List/Kanban
-   * menu but are hidden from the Gantt context menu (per user feedback
-   * 2026-05-11: too tall, restructure with submenus).
+   * Deny-list (vs. allow-list) is needed because tracker registers a custom
+   * Open action for `tracker.class.Issue` with an auto-generated ID; allow-
+   * listing by static ID misses it. Codex review-style cleanup + user UX
+   * feedback 2026-05-11: too tall, slimmer + keep parent/sub-issue access.
    */
-  const GANTT_MENU_INCLUDED_ACTIONS = [
-    'view:action:Open',
-    'tracker:action:SetStatus',
-    'tracker:action:SetPriority',
-    'tracker:action:SetAssignee',
-    'tracker:action:SetDueDate',
-    'tracker:action:CopyIssueId',
-    'tracker:action:CopyIssueLink',
-    'tracker:action:Duplicate',
-    'tracker:action:DeleteIssue'
+  const GANTT_MENU_EXCLUDED_ACTIONS = [
+    'tracker:action:SetComponent',
+    'tracker:action:SetMilestone',
+    'tracker:action:SetLabels',
+    'tracker:action:CopyIssueTitle',
+    'tracker:action:Relations',
+    'tracker:action:NewRelatedIssue',
+    'tracker:action:EditRelatedTargets',
+    'tracker:action:MoveToProject',
+    'tracker:action:CopyAsMarkdownTable',
+    'tracker:action:UnsetParent'
   ]
 
   function openGanttMenu (event: MouseEvent, issue: Issue): void {
@@ -425,7 +422,7 @@
       object: issue,
       baseMenuClass: tracker.class.Issue,
       actions: extra,
-      includedActions: GANTT_MENU_INCLUDED_ACTIONS
+      excludedActions: GANTT_MENU_EXCLUDED_ACTIONS
     })
   }
 
