@@ -261,6 +261,48 @@
   }
   let datePickerValue: string = ''
 
+  // Custom horizontal scrollbar thumb geometry (proxy for hScrollEl).
+  $: hTrackWidth = canvasViewportWidth > 0 ? canvasViewportWidth : 1
+  $: hThumbWidth = totalCanvasWidth > 0
+    ? Math.max(40, (hTrackWidth * hTrackWidth) / totalCanvasWidth)
+    : hTrackWidth
+  $: hThumbMax = Math.max(0, hTrackWidth - hThumbWidth)
+  $: hScrollMax = Math.max(1, totalCanvasWidth - hTrackWidth)
+  $: hThumbLeft = canvasViewportLeft <= 0 ? 0 : (canvasViewportLeft / hScrollMax) * hThumbMax
+
+  let dragThumb = false
+  let dragThumbStartX = 0
+  let dragThumbStartScroll = 0
+  function onThumbDragStart (e: PointerEvent): void {
+    e.stopPropagation()
+    e.preventDefault()
+    if (hScrollEl === undefined) return
+    dragThumb = true
+    dragThumbStartX = e.clientX
+    dragThumbStartScroll = hScrollEl.scrollLeft
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  }
+  function onThumbDragMove (e: PointerEvent): void {
+    if (!dragThumb || hScrollEl === undefined) return
+    const dx = e.clientX - dragThumbStartX
+    const ratio = hThumbMax > 0 ? dx / hThumbMax : 0
+    hScrollEl.scrollLeft = dragThumbStartScroll + ratio * hScrollMax
+  }
+  function onThumbDragEnd (e: PointerEvent): void {
+    if (!dragThumb) return
+    dragThumb = false
+    ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+  }
+  function onProxyTrackClick (e: PointerEvent): void {
+    // Click on track (not thumb): page-scroll towards click position.
+    if ((e.target as HTMLElement).classList.contains('hscroll-thumb')) return
+    if (hScrollEl === undefined) return
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    const clickX = e.clientX - rect.left
+    const dir = clickX < hThumbLeft ? -1 : 1
+    hScrollEl.scrollBy({ left: dir * hTrackWidth * 0.8, behavior: 'smooth' })
+  }
+
   // Wheel-forwarding is no longer needed: sidebar lives inside the same
   // .gantt-scroller as the canvas, with position:sticky;left:0. Browser
   // handles native scrolling at the right speed regardless of where the
@@ -462,19 +504,32 @@
         </div>
       </div>
     </div>
-    <!-- Sticky-bottom horizontal scrollbar proxy. Always visible at the
-         bottom edge of the viewport regardless of how far the user has
-         scrolled vertically. -->
+    <!-- Sticky-bottom horizontal scrollbar proxy. Thumb is a sibling
+         of the (hidden-native-scrollbar) track so it stays in viewport
+         coordinates instead of being carried by track.scrollLeft. -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="gantt-hscrollbar"
       style="padding-left: {sidebarWidthPx + 5}px;"
     >
-      <div
-        class="hscroll-track"
-        bind:this={hScrollEl}
-        on:scroll={handleHScroll}
-      >
-        <div class="hscroll-spacer" style="width: {totalCanvasWidth}px;" />
+      <div class="hscroll-shell">
+        <div
+          class="hscroll-track-custom"
+          bind:this={hScrollEl}
+          on:scroll={handleHScroll}
+          on:pointerdown={onProxyTrackClick}
+        >
+          <div class="hscroll-spacer" style="width: {totalCanvasWidth}px;" />
+        </div>
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          class="hscroll-thumb"
+          style="left: {hThumbLeft}px; width: {hThumbWidth}px;"
+          on:pointerdown={onThumbDragStart}
+          on:pointermove={onThumbDragMove}
+          on:pointerup={onThumbDragEnd}
+          on:pointercancel={onThumbDragEnd}
+        />
       </div>
     </div>
     {#if tooltipState.visible && tooltipState.row !== null}
@@ -629,18 +684,44 @@
   .hscroll-inner { will-change: transform; }
   .gantt-hscrollbar {
     flex: 0 0 auto;
-    height: 14px;
+    height: 16px;
     border-top: 1px solid var(--theme-divider-color);
-    background: var(--theme-comp-header-color);
+    background: var(--theme-divider-color);
     display: flex;
     box-sizing: border-box;
   }
-  .hscroll-track {
-    flex: 1 1 auto;
+  /* Custom horizontal scrollbar — DOM-based thumb sits on top of a
+     hidden native scroll track. Bypasses Huly's global
+     `* { scrollbar-width: none }` and any browser overlay-scrollbar
+     differences so the bar is unambiguously visible. */
+  .hscroll-shell {
+    flex: 1 1 0;
+    min-width: 0;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+  }
+  .hscroll-track-custom {
+    width: 100%;
+    height: 100%;
     overflow-x: scroll;
     overflow-y: hidden;
+    scrollbar-width: none;            /* Firefox: hide native */
   }
+  .hscroll-track-custom::-webkit-scrollbar { display: none; } /* WebKit: hide */
   .hscroll-spacer { height: 1px; }
+  .hscroll-thumb {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    background: var(--theme-content-color, #4b5563);
+    border-radius: 6px;
+    cursor: grab;
+    pointer-events: auto;
+    transition: background 100ms ease;
+  }
+  .hscroll-thumb:hover { background: var(--theme-state-info-color, #6366f1); }
+  .hscroll-thumb:active { cursor: grabbing; background: var(--theme-state-info-color, #6366f1); }
   .cell {
     box-sizing: border-box;
   }
