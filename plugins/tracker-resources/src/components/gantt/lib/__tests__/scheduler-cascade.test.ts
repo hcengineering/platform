@@ -202,3 +202,89 @@ describe('simulateCascade — pull-predecessor', () => {
     expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 3, 28)) // A duration 4d → start = 2026-04-28
   })
 })
+
+describe('simulateCascade — parent-drag and edge cases', () => {
+  it('Test 8: parent-drag with two children, each child has a successor', () => {
+    const Parent = issue('P', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 15))
+    const C1 = issue('C1', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const C2 = issue('C2', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
+    const S1 = issue('S1', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 8))
+    const S2 = issue('S2', Date.UTC(2026, 4, 11), Date.UTC(2026, 4, 13))
+    const relations = [rel('C1', 'S1', 'finish-to-start'), rel('C2', 'S2', 'finish-to-start')]
+    const primary: PrimaryEdit[] = [
+      { issue: Parent, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 18) },
+      { issue: C1, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) },
+      { issue: C2, newStart: Date.UTC(2026, 4, 9), newDue: Date.UTC(2026, 4, 13) }
+    ]
+    const res = simulateCascade(primary, [Parent, C1, C2, S1, S2], relations, () => true)
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    const shiftIds = res.shifts.map((s) => s.issue._id).sort()
+    expect(shiftIds).toEqual(['S1', 'S2'])
+  })
+
+  it('Test 10: unscheduled successor is skipped, counted', () => {
+    const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const B = issue('B') // no dates
+    const relations = [rel('A', 'B', 'finish-to-start')]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }]
+    const res = simulateCascade(primary, [A, B], relations, () => true)
+    expect(res.kind).toBe('no-cascade')
+    // skippedUnscheduled is not surfaced in no-cascade; convert behaviour-test instead:
+    // simulate with a real shifted successor as well to inspect the field
+  })
+
+  it('Test 10b: skippedUnscheduled is reported in cascade result', () => {
+    const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
+    const C = issue('C') // no dates
+    const relations = [rel('A', 'B', 'finish-to-start'), rel('A', 'C', 'finish-to-start')]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }]
+    const res = simulateCascade(primary, [A, B, C], relations, () => true)
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    expect(res.skippedUnscheduled).toBe(1)
+    expect(res.shifts.map((s) => s.issue._id)).toEqual(['B'])
+  })
+
+  it('Test 17: A→B→C with A and C both primary — B is cascaded, C is not overwritten', () => {
+    const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
+    const C = issue('C', Date.UTC(2026, 4, 11), Date.UTC(2026, 4, 15))
+    const relations = [rel('A', 'B'), rel('B', 'C')]
+    const newCStart = Date.UTC(2026, 4, 25)
+    const newCDue = Date.UTC(2026, 4, 29)
+    const primary: PrimaryEdit[] = [
+      { issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) },
+      { issue: C, newStart: newCStart, newDue: newCDue }
+    ]
+    const res = simulateCascade(primary, [A, B, C], relations, () => true)
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    // B must be shifted (push by A). C must NOT appear in shifts — its
+    // primary edit is authoritative even though B→C would otherwise
+    // propagate.
+    const shiftIds = res.shifts.map((s) => s.issue._id)
+    expect(shiftIds).toContain('B')
+    expect(shiftIds).not.toContain('C')
+  })
+
+  it('Test 14: primary-vs-cascade merge — child in primary is not re-shifted', () => {
+    const Parent = issue('P', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 15))
+    const Sibling = issue('Sib', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 3))
+    const Child = issue('Child', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const relations = [rel('Sib', 'Child', 'finish-to-start', 0)]
+    const primary: PrimaryEdit[] = [
+      { issue: Parent, newStart: Date.UTC(2026, 4, 5), newDue: Date.UTC(2026, 4, 19) },
+      { issue: Child, newStart: Date.UTC(2026, 4, 5), newDue: Date.UTC(2026, 4, 9) }
+    ]
+    const res = simulateCascade(primary, [Parent, Sibling, Child], relations, () => true)
+    // Sib has no incoming relations and is unaffected. Child is primary → must
+    // not appear in shifts even though Sib→Child would force a push otherwise.
+    if (res.kind === 'cascade') {
+      expect(res.shifts.map((s) => s.issue._id)).not.toContain('Child')
+    } else {
+      expect(res.kind).toBe('no-cascade')
+    }
+  })
+})
