@@ -75,6 +75,24 @@ export interface HulyIssueHeader {
   estimation?: number // in hours
   remainingTime?: number // in hours
   comments?: HulyComment[]
+  // Phase 2 — schedule fields surfaced in the Gantt viewlet.
+  // Dates are ISO YYYY-MM-DD; the importer treats them as UTC midnight.
+  startDate?: string
+  dueDate?: string
+  // Phase 1.B — independent soft deadline. Renders a flag marker in
+  // the Gantt; turns red+pulsing when dueDate > deadline.
+  deadline?: string
+  // Foreign-key references to Component / Milestone by their human
+  // label. Looked up by label at build time against the components/
+  // milestones declared on the parent Project's YAML. Unknown labels
+  // are reported as an importer error.
+  component?: string
+  milestone?: string
+  // Phase 2 — Finish-to-Start dependency list, by predecessor issue
+  // identifier (e.g. 'GAME-3') or by relative front-matter title.
+  // Resolved at build time after all issue identifiers are assigned.
+  // Limited to FS kind for the first cut.
+  predecessors?: string[]
 }
 
 export interface HulySpaceSettings {
@@ -89,12 +107,33 @@ export interface HulySpaceSettings {
   emoji?: string
 }
 
+export interface HulyProjectComponent {
+  label: string
+  description?: string
+}
+
+export interface HulyProjectMilestone {
+  label: string
+  description?: string
+  // ISO date YYYY-MM-DD (UTC midnight)
+  targetDate: string
+  // Optional ISO start date
+  startDate?: string
+}
+
 export interface HulyProjectSettings extends HulySpaceSettings {
   class: 'tracker:class:Project'
   identifier: string
   id?: 'tracker:project:DefaultProject'
   projectType?: string
   defaultIssueStatus?: string
+  // Phase 2 — declarative components + milestones on the project.
+  // Issues reference them by label (case-sensitive) via their
+  // `component` / `milestone` front-matter fields. Each entry is
+  // materialised as a single tracker.class.Component / Milestone doc
+  // in the project's space.
+  components?: HulyProjectComponent[]
+  milestones?: HulyProjectMilestone[]
 }
 
 export interface HulyTeamspaceSettings extends HulySpaceSettings {
@@ -404,6 +443,37 @@ export class HulyFormatImporter {
 
         this.metadataRegistry.setRefMetadata(issuePath, tracker.class.Issue, `${projectIdentifier}-${issueNumber}`)
 
+        const parseIsoDate = (iso?: string): number | undefined => {
+          if (iso === undefined || iso === null || String(iso).trim() === '') return undefined
+          const s = String(iso).trim()
+          // Phase 2 — relative-date placeholders for the Game Design
+          // Example and similar demo workspaces. Forms supported:
+          //   ${today}        — UTC midnight of install day
+          //   ${today+5d}     — N days after install
+          //   ${today-3d}     — N days before install
+          //   ${today+2w}     — N weeks
+          //   ${today+1mo}    — N calendar months
+          const relMatch = s.match(/^\$\{today(?:([+-])(\d+)(d|w|mo))?\}$/)
+          if (relMatch !== null) {
+            const today = new Date()
+            today.setUTCHours(0, 0, 0, 0)
+            if (relMatch[1] === undefined) return today.getTime()
+            const sign = relMatch[1] === '+' ? 1 : -1
+            const n = Number(relMatch[2]) * sign
+            if (relMatch[3] === 'd') return today.getTime() + n * 86_400_000
+            if (relMatch[3] === 'w') return today.getTime() + n * 7 * 86_400_000
+            if (relMatch[3] === 'mo') {
+              const r = new Date(today.getTime())
+              r.setUTCMonth(r.getUTCMonth() + n)
+              return r.getTime()
+            }
+            return today.getTime()
+          }
+          const [y, m, d] = s.split('-').map(Number)
+          if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) return undefined
+          return Date.UTC(y, m - 1, d)
+        }
+
         const issue: ImportIssue = {
           id: this.metadataRegistry.getRef(issuePath) as Ref<Issue>,
           class: tracker.class.Issue,
@@ -416,7 +486,14 @@ export class HulyFormatImporter {
           remainingTime: issueHeader.remainingTime,
           comments: await this.processComments(currentPath, issueHeader.comments),
           subdocs: [], // Will be added via builder
-          assignee: this.findPersonByName(issueHeader.assignee)
+          assignee: this.findPersonByName(issueHeader.assignee),
+          // Phase 2 — Gantt scheduling fields
+          startDate: parseIsoDate(issueHeader.startDate),
+          dueDate: parseIsoDate(issueHeader.dueDate),
+          deadline: parseIsoDate(issueHeader.deadline),
+          componentLabel: issueHeader.component,
+          milestoneLabel: issueHeader.milestone,
+          predecessors: issueHeader.predecessors
         }
 
         builder.addIssue(projectPath, issuePath, issue, parentIssuePath)
@@ -613,6 +690,29 @@ export class HulyFormatImporter {
   }
 
   private async processProject (data: HulyProjectSettings): Promise<ImportProject> {
+    const parseIsoDate = (iso?: string): number | undefined => {
+      if (iso === undefined || iso === null || String(iso).trim() === '') return undefined
+      const s = String(iso).trim()
+      const relMatch = s.match(/^\$\{today(?:([+-])(\d+)(d|w|mo))?\}$/)
+      if (relMatch !== null) {
+        const today = new Date()
+        today.setUTCHours(0, 0, 0, 0)
+        if (relMatch[1] === undefined) return today.getTime()
+        const sign = relMatch[1] === '+' ? 1 : -1
+        const n = Number(relMatch[2]) * sign
+        if (relMatch[3] === 'd') return today.getTime() + n * 86_400_000
+        if (relMatch[3] === 'w') return today.getTime() + n * 7 * 86_400_000
+        if (relMatch[3] === 'mo') {
+          const r = new Date(today.getTime())
+          r.setUTCMonth(r.getUTCMonth() + n)
+          return r.getTime()
+        }
+        return today.getTime()
+      }
+      const [y, m, d] = s.split('-').map(Number)
+      if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) return undefined
+      return Date.UTC(y, m - 1, d)
+    }
     return {
       class: tracker.class.Project,
       id: data.id as Ref<Project>,
@@ -626,7 +726,15 @@ export class HulyFormatImporter {
       defaultIssueStatus: data.defaultIssueStatus !== undefined ? { name: data.defaultIssueStatus } : undefined,
       owners: data.owners !== undefined ? data.owners.map((name) => this.findAccountByName(name)) : [],
       members: data.members !== undefined ? data.members.map((name) => this.findAccountByName(name)) : [],
-      docs: []
+      docs: [],
+      // Phase 2 — declarative components + milestones
+      components: data.components,
+      milestones: data.milestones?.map((m) => ({
+        label: m.label,
+        description: m.description,
+        targetDate: parseIsoDate(m.targetDate) ?? Date.now(),
+        startDate: parseIsoDate(m.startDate)
+      }))
     }
   }
 
