@@ -181,12 +181,15 @@ export function simulateCascade (
 
   // Step 1: relation index.
   const bySource = new Map<Ref<Issue>, IssueRelation[]>()
+  const byTarget = new Map<Ref<Issue>, IssueRelation[]>()
   for (const r of relations) {
     const bucket = bySource.get(r.attachedTo)
     if (bucket === undefined) bySource.set(r.attachedTo, [r])
     else bucket.push(r)
+    const tbucket = byTarget.get(r.target)
+    if (tbucket === undefined) byTarget.set(r.target, [r])
+    else tbucket.push(r)
   }
-  // byTarget intentionally deferred until pull-predecessor task (Task 6).
 
   // Step 2: working state.
   const issuesByRef = new Map<Ref<Issue>, Issue>()
@@ -279,6 +282,53 @@ export function simulateCascade (
           triggeredBy: cur
         })
         queue.push(r.target)
+      }
+    }
+
+    // Incoming: cur is successor of rel.attachedTo.
+    const incoming = byTarget.get(cur) ?? []
+    for (const r of incoming) {
+      // Primary-set protection (mirror of the outgoing check above).
+      if (primarySet.has(r.attachedTo)) continue
+      const predIssue = issuesByRef.get(r.attachedTo)
+      if (predIssue === undefined) continue
+      if (predIssue.startDate == null || predIssue.dueDate == null) {
+        skippedRefs.add(r.attachedTo)
+        continue
+      }
+      const predDates = current.get(r.attachedTo) as WorkingDates
+      const lag = r.lag ?? 0
+      let requiredAnchor: number
+      let predAnchorIsDue: boolean
+      if (r.kind === 'finish-to-start') {
+        requiredAnchor = addScheduleDays(curDates.start, -lag)
+        predAnchorIsDue = true
+      } else if (r.kind === 'start-to-start') {
+        requiredAnchor = addScheduleDays(curDates.start, -lag)
+        predAnchorIsDue = false
+      } else if (r.kind === 'finish-to-finish') {
+        requiredAnchor = addScheduleDays(curDates.due, -lag)
+        predAnchorIsDue = true
+      } else /* start-to-finish */ {
+        requiredAnchor = addScheduleDays(curDates.due, -lag)
+        predAnchorIsDue = false
+      }
+      const predAnchor = predAnchorIsDue ? predDates.due : predDates.start
+      if (requiredAnchor < predAnchor) {
+        const delta = predAnchor - requiredAnchor
+        const newStart = predAnchorIsDue ? predDates.start - delta : requiredAnchor
+        const newDue = predAnchorIsDue ? requiredAnchor : predDates.due - delta
+        current.set(r.attachedTo, { start: newStart, due: newDue })
+        shifts.set(r.attachedTo, {
+          issue: predIssue,
+          oldStart: predIssue.startDate,
+          oldDue: predIssue.dueDate,
+          newStart,
+          newDue,
+          reason: 'pull-predecessor',
+          triggeredBy: cur
+        })
+        queue.push(r.attachedTo)
       }
     }
   }
