@@ -127,6 +127,41 @@ describe('getGroupLabel', () => {
   it('passes through raw id otherwise — UI resolves to display name', () => {
     expect(getGroupLabel('foo-bar', 'status')).toBe('foo-bar')
   })
+
+  it('resolves real id via nameLookup map when provided (v121 fix)', () => {
+    const lookup = new Map<string, string>([
+      ['comp-1', 'Backend'],
+      ['comp-2', 'Frontend'],
+      ['ms-1', 'Sprint 12']
+    ])
+    expect(getGroupLabel('comp-1', 'component', lookup)).toBe('Backend')
+    expect(getGroupLabel('comp-2', 'component', lookup)).toBe('Frontend')
+    expect(getGroupLabel('ms-1', 'milestone', lookup)).toBe('Sprint 12')
+  })
+
+  it('falls back to raw id if nameLookup lacks the key (async warm-up safe)', () => {
+    const lookup = new Map<string, string>([['known', 'Known Name']])
+    expect(getGroupLabel('unknown-id', 'component', lookup)).toBe('unknown-id')
+  })
+
+  it('keeps sentinel labels even when nameLookup is provided', () => {
+    const lookup = new Map<string, string>([[NO_COMPONENT_KEY, 'should-be-ignored']])
+    // Sentinels are switched on by case before the lookup; lookup never
+    // overrides them so the i18n-baseline copy stays consistent.
+    expect(getGroupLabel(NO_COMPONENT_KEY, 'component', lookup)).toBe('No component')
+  })
+
+  it('resolves priority numeric keys via nameLookup (v121 fix — P0..P4 → real names)', () => {
+    const lookup = new Map<string, string>([
+      ['0', 'No priority'],
+      ['1', 'Urgent'],
+      ['2', 'High'],
+      ['3', 'Medium'],
+      ['4', 'Low']
+    ])
+    expect(getGroupLabel('1', 'priority', lookup)).toBe('Urgent')
+    expect(getGroupLabel('4', 'priority', lookup)).toBe('Low')
+  })
 })
 
 describe('GROUP_BY_KEYS', () => {
