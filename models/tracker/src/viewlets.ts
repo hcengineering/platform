@@ -306,6 +306,27 @@ export function ganttViewOptions (): ViewOptionsModel {
         defaultValue: false,
         actionTarget: 'display',
         label: tracker.string.GanttSidebarColumnsExtended
+      },
+      {
+        // Phase 3b: group-by swimlanes. Issues group into horizontal lanes
+        // by status/priority/assignee/component/milestone/label. Default
+        // 'none' preserves the legacy hierarchy view bit-for-bit. The
+        // sidebar shows a chevron + label + count header per lane; the
+        // canvas paints a tint band behind each header.
+        key: 'ganttGroupBy',
+        type: 'dropdown',
+        defaultValue: 'none',
+        values: [
+          { id: 'none', label: tracker.string.GanttGroupByNone },
+          { id: 'status', label: tracker.string.GanttGroupByStatus },
+          { id: 'priority', label: tracker.string.GanttGroupByPriority },
+          { id: 'assignee', label: tracker.string.GanttGroupByAssignee },
+          { id: 'component', label: tracker.string.GanttGroupByComponent },
+          { id: 'milestone', label: tracker.string.GanttGroupByMilestone },
+          { id: 'label', label: tracker.string.GanttGroupByLabel }
+        ],
+        actionTarget: 'display',
+        label: tracker.string.GanttGroupBy
       }
     ]
   }
