@@ -468,7 +468,13 @@
     "SchedulingModeHint": "Manuelle Planung fixiert die Termine dieses Issues. Der Cascade-Scheduler verschiebt es nicht mehr, wenn ein Vorgänger oder Nachfolger gezogen wird. Zurück auf Auto, um wieder in die Kaskade einzusteigen.",
     "SchedulingModeTooltipAuto": "Auto-Planung — Kaskade darf dieses Issue verschieben",
     "SchedulingModeTooltipManual": "Manuelle Planung — gegen Kaskade geschützt",
-    "GanttBarManualPinTooltip": "Manuelle Planung — gegen Kaskade geschützt"
+    "GanttBarManualPinTooltip": "Manuelle Planung — gegen Kaskade geschützt",
+    "GanttBulkSelectedCount": "{count} Issues ausgewählt",
+    "GanttBulkBoundaryHit": "Drag gestoppt: ein selektiertes Issue trifft eine Vorgänger-Grenze",
+    "GanttBulkClearSelection": "Esc drücken um Auswahl zu leeren",
+    "AddedRelation": "Abhängigkeit hinzugefügt",
+    "RemovedRelation": "Abhängigkeit entfernt",
+    "UpdatedRelation": "Abhängigkeit geändert"
   },
   "status": {}
 }

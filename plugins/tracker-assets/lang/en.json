@@ -469,7 +469,13 @@
     "SchedulingModeHint": "Manual scheduling pins the dates of this issue. The cascade scheduler will never move it when a predecessor or successor is dragged. Toggle back to Auto to rejoin the cascade.",
     "SchedulingModeTooltipAuto": "Auto schedule — cascade may shift this issue",
     "SchedulingModeTooltipManual": "Manual schedule — protected from cascade",
-    "GanttBarManualPinTooltip": "Manual schedule — protected from cascade"
+    "GanttBarManualPinTooltip": "Manual schedule — protected from cascade",
+    "GanttBulkSelectedCount": "{count} issues selected",
+    "GanttBulkBoundaryHit": "Drag stopped: a selected issue hit a predecessor boundary",
+    "GanttBulkClearSelection": "Press Esc to clear selection",
+    "AddedRelation": "added dependency",
+    "RemovedRelation": "removed dependency",
+    "UpdatedRelation": "updated dependency"
   },
   "status": {}
 }
