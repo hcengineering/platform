@@ -441,6 +441,7 @@ const pluginState = plugin(trackerId, {
     RelatedIssuesSection: '' as AnyComponent,
     RelatedIssueSelector: '' as AnyComponent,
     RelatedIssueTemplates: '' as AnyComponent,
+    IssueRelationPresenter: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateIssue: '' as AnyComponent,
     ProjectPresenter: '' as AnyComponent,
