@@ -418,6 +418,16 @@ export const trackerOperation: MigrateOperation = {
         state: 'gantt-add-startdate',
         mode: 'upgrade',
         func: migrateAddStartDate
+      },
+      {
+        // Phase-2 working-days calendar. The property is optional and
+        // additive — every existing Project keeps `workingDaysConfig =
+        // undefined` (legacy calendar-day semantics). The migration entry
+        // exists only so the tracker state-tracker registers the schema
+        // version bump; no data is touched.
+        state: 'gantt-add-working-days-config',
+        mode: 'upgrade',
+        func: async () => {}
       }
     ])
   },

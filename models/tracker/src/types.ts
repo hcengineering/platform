@@ -74,7 +74,8 @@ import {
   type RelatedIssueTarget,
   type RelatedSpaceRule,
   type TimeReportDayType,
-  type TimeSpendReport
+  type TimeSpendReport,
+  type WorkingDaysConfig
 } from '@hcengineering/tracker'
 import tracker from './plugin'
 import { type TaskType } from '@hcengineering/task'
@@ -137,6 +138,9 @@ export class TProject extends TTaskProject implements Project {
 
   @Prop(Collection(tracker.class.RelatedIssueTarget), tracker.string.RelatedIssues)
     relatedIssueTargets!: number
+
+  @Prop(TypeRecord(), tracker.string.WorkingDaysConfig)
+    workingDaysConfig?: WorkingDaysConfig
 }
 /**
  * @public
