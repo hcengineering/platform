@@ -298,7 +298,9 @@
     "Gantt": "Gantt",
     "Month": "Month",
     "Quarter": "Quarter",
-    "Week": "Week"
+    "Week": "Week",
+    "GanttShowIssueCode": "Show issue code",
+    "GanttShowTitle": "Show title"
   },
   "status": {}
 }
