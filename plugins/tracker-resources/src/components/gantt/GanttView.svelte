@@ -11,6 +11,7 @@
   import { computeCriticalPath } from './lib/critical-path'
   import type { CriticalPathResult } from './lib/types'
   import { exportAndDownload } from './lib/exporter'
+  import { ganttToolbarApi } from './lib/gantt-toolbar-bus'
   import GanttHelpPopup from './GanttHelpPopup.svelte'
   import type { PrimaryEdit, SimulateResult, CascadeShift } from './lib/types'
   import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
@@ -70,7 +71,10 @@
   const DEFAULT_SIDEBAR_WIDTH = 280
   const HEADER_HEIGHT = 56
   const MILESTONE_STRIP_HEIGHT = 0
-  const TOOLBAR_HEIGHT = 40
+  // Phase 2 — toolbar moved to IssuesView header; gantt-root now
+  // starts directly with the canvas. Kept as 0 so the v-scrollbar
+  // top offset math below stays simple.
+  const TOOLBAR_HEIGHT = 0
 
   let hoveredRowId: string | null = null
   let tooltipState: { visible: boolean, x: number, y: number, row: LayoutRow | null } = {
@@ -1883,6 +1887,31 @@
   })
   onDestroy(() => {
     resizeObs?.disconnect()
+    // Phase 2 — clear the toolbar bus on unmount so the controls
+    // disappear from IssuesView's header when the user switches away
+    // from the Gantt viewlet.
+    ganttToolbarApi.set(null)
+  })
+
+  // Phase 2 — keep the toolbar bus in sync with our local state.
+  // The store re-writes on every change of `zoom` or `datePickerValue`,
+  // which causes the GanttToolbarControls component in IssuesView's
+  // header-tools slot to re-render with the current values. Setting
+  // the store also imperatively publishes the handler functions so
+  // the consumer can invoke them.
+  $: ganttToolbarApi.set({
+    zoom,
+    datePickerValue,
+    setZoom,
+    jumpToToday,
+    jumpToStart,
+    jumpToEnd,
+    pageScroll,
+    jumpToDate,
+    cycleZoom,
+    toggleFullscreen,
+    exportToPng,
+    exportToPdf
   })
 
   $: viewport = { left: canvasViewportLeft, right: canvasViewportLeft + canvasViewportWidth }
@@ -2717,5 +2746,51 @@
   .tt-line {
     font-size: 12px;
     line-height: 1.5;
+  }
+
+  /* Phase 2.3c — PDF export via browser print. When the user clicks
+     the PDF button, GanttView toggles the .gantt-printing class on
+     the gantt-root and calls window.print(). The @media print block
+     below hides the surrounding chrome (sidebar, header, popups) and
+     expands the Gantt to fill the printable page area so the
+     resulting PDF is a clean single-page Gantt chart.
+     The class is removed automatically ~1s later. */
+  :global(body.is-modal) .gantt-printing,
+  .gantt-printing :global(.hover-tooltip),
+  .gantt-printing :global(.popup),
+  .gantt-printing :global(.antiPopup) {
+    display: none !important;
+  }
+
+  @media print {
+    /* When called via window.print(), hide everything except the
+       Gantt root + canvas. The page layout collapses to just the
+       chart. */
+    :global(body > *:not(.popup)),
+    :global(.app-content),
+    :global(.popupPanel),
+    :global(.antiNav-list) {
+      visibility: visible;
+    }
+    :global(.gantt-printing) {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      background: white !important;
+    }
+    :global(.gantt-printing .gantt-scroller) {
+      overflow: visible !important;
+      max-height: none !important;
+    }
+    :global(.gantt-printing .hover-tooltip),
+    :global(.gantt-printing .popup),
+    :global(.gantt-printing .gantt-hscrollbar),
+    :global(.gantt-printing .gantt-vscrollbar) {
+      display: none !important;
+    }
   }
 </style>
