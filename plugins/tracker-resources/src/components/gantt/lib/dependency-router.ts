@@ -125,6 +125,81 @@ export function arrowheadPoints (p1: Point, p2: Point): [Point, Point, Point] {
 }
 
 /**
+ * Tier-3 Item 5 — Y-axis viewport bounds in canvas coordinate space. Used
+ * by {@link classifyArrowVisibility} to decide whether a dependency arrow's
+ * source / target endpoint is on-screen. Same coordinate space as `BarRect`.
+ */
+export interface YBounds {
+  top: number
+  bottom: number
+}
+
+/** Possible visibility states of a dependency arrow against the y-viewport. */
+export type ArrowVisibility =
+  | { kind: 'both-visible' }
+  | { kind: 'source-only', targetEdge: 'top' | 'bottom' }
+  | { kind: 'target-only', sourceEdge: 'top' | 'bottom' }
+  | { kind: 'both-off', sourceEdge: 'top' | 'bottom', targetEdge: 'top' | 'bottom' }
+  | { kind: 'none' }
+
+/**
+ * Decide which sides of a dependency arrow are on-screen vs clipped to the
+ * y-viewport edge. A bar is considered "visible" when any pixel of its
+ * vertical range `[top, bottom)` overlaps `bounds`. Both bars below or both
+ * above is `'none'` — the arrow doesn't cross the visible band. Both
+ * endpoints off but on opposite sides (`both-off` with opposite edges)
+ * means the arrow path crosses the viewport vertically and must still be
+ * drawn (clipped to the top + bottom edges).
+ */
+export function classifyArrowVisibility (
+  source: BarRect | null,
+  target: BarRect | null,
+  bounds: YBounds
+): ArrowVisibility {
+  if (source === null || target === null) return { kind: 'none' }
+
+  const sourceVisible = source.bottom > bounds.top && source.top < bounds.bottom
+  const targetVisible = target.bottom > bounds.top && target.top < bounds.bottom
+
+  if (sourceVisible && targetVisible) return { kind: 'both-visible' }
+
+  const edgeOf = (bar: BarRect): 'top' | 'bottom' =>
+    bar.top >= bounds.bottom ? 'bottom' : 'top'
+
+  if (sourceVisible) {
+    return { kind: 'source-only', targetEdge: edgeOf(target) }
+  }
+  if (targetVisible) {
+    return { kind: 'target-only', sourceEdge: edgeOf(source) }
+  }
+
+  // Both off — but on the same side both above / both below → no crossing.
+  const sourceEdge = edgeOf(source)
+  const targetEdge = edgeOf(target)
+  if (sourceEdge === targetEdge) return { kind: 'none' }
+
+  return { kind: 'both-off', sourceEdge, targetEdge }
+}
+
+/**
+ * Compute the synthetic endpoint to use when one end of a dependency arrow
+ * lives off-screen. The endpoint sits on the viewport edge (top or bottom)
+ * at the same horizontal x as the off-screen bar would have used. Caller
+ * uses this to draw a bezier that ends at the viewport edge instead of at
+ * the off-screen bar, with a small triangle indicator on top.
+ */
+export function clippedEndpointPx (
+  bar: BarRect,
+  anchor: Anchor,
+  bounds: YBounds,
+  offEdge: 'top' | 'bottom'
+): Point {
+  const x = anchor === 'start' ? bar.left : bar.right
+  const y = offEdge === 'top' ? bounds.top : bounds.bottom
+  return { x, y }
+}
+
+/**
  * Hover-emphasize set: which bars + arrows should stay at full opacity.
  * When the user hovers an issue bar, the bar itself plus its direct
  * predecessors and successors get highlighted. When the user hovers an

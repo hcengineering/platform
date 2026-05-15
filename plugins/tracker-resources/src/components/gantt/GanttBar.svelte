@@ -526,8 +526,7 @@
         width={6}
         height={barH}
         class="bar-resize-handle left"
-        on:pointerdown|stopPropagation
-        on:mousedown={onBarDown('left')}
+        on:pointerdown={onBarPointer('left')}
       />
       <rect
         x={x + w - 3}
@@ -535,8 +534,7 @@
         width={6}
         height={barH}
         class="bar-resize-handle right"
-        on:pointerdown|stopPropagation
-        on:mousedown={onBarDown('right')}
+        on:pointerdown={onBarPointer('right')}
       />
     {/if}
     <!-- PR4a connector-dot rendering moved to a sibling overlay layer in

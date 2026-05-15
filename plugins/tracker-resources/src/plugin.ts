@@ -339,7 +339,10 @@ export default mergeIds(trackerId, tracker, {
     GanttScrollRightToBar: '' as IntlString,
     GanttExpand: '' as IntlString,
     GanttCollapse: '' as IntlString,
-    // Tier-3 Item 5 — off-viewport dependency-arrow indicators
+    GanttExpandAll: '' as IntlString,
+    GanttCollapseAll: '' as IntlString,
+    GanttTreeBreadcrumb: '' as IntlString,
+    // Off-viewport dependency-arrow indicators
     GanttArrowIndicatorSourceAbove: '' as IntlString,
     GanttArrowIndicatorSourceBelow: '' as IntlString,
     GanttArrowIndicatorTargetAbove: '' as IntlString,
