@@ -178,17 +178,27 @@
 
   $: visibleIssueIds = issues.map((i) => i._id)
   $: relationDocQuery = (space !== undefined ? { space } : {}) as DocumentQuery<IssueRelation>
-  $: relationQuery.query(
-    tracker.class.IssueRelation,
-    {
-      ...relationDocQuery,
-      $or: [
-        { attachedTo: { $in: visibleIssueIds } },
-        { target: { $in: visibleIssueIds } }
-      ]
-    } as DocumentQuery<IssueRelation>,
-    (res: IssueRelation[]) => { relations = res }
-  )
+  $: {
+    // Guard against the empty-array case: $in: [] is rejected by the
+    // CockroachDB adapter with `<string> = <string[]>` (no rows match,
+    // but the cast still fails). Skip the query until there are visible
+    // issues, and clear stale relations explicitly.
+    if (visibleIssueIds.length === 0) {
+      relations = []
+    } else {
+      relationQuery.query(
+        tracker.class.IssueRelation,
+        {
+          ...relationDocQuery,
+          $or: [
+            { attachedTo: { $in: visibleIssueIds } },
+            { target: { $in: visibleIssueIds } }
+          ]
+        } as DocumentQuery<IssueRelation>,
+        (res: IssueRelation[]) => { relations = res }
+      )
+    }
+  }
 
   $: dateRange = computeDateRange(issues, milestones, zoom)
 
