@@ -149,6 +149,15 @@
          editable but functionally inert — commitDrag's parent-pulls-
          children path was unreachable from the UI. -->
     {#if editable && !isMilestoneSummary}
+      <!--
+        role="button" makes the interactive SVG rect addressable by AT
+        (screen reader announces "Drag {title} to reschedule"). Keyboard
+        access is handled at the GanttView level (Tab/ArrowLeft/Right —
+        see onKey handler in GanttView.svelte), so the per-rect
+        a11y-click-events-have-key-events warning is intentionally
+        ignored. Codex review-6 2026-05-11.
+      -->
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <rect
         x={x}
         y={barY}
@@ -158,10 +167,14 @@
         class="summary-hit"
         class:selected
         class:active-drag={isThisBarActive}
+        role="button"
+        tabindex="-1"
+        aria-label={issue.title}
         on:mousedown={onBarDown('body')}
         on:contextmenu={onBarContextMenu}
       />
       {#if w >= 18}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <rect
           class="resize-handle resize-left"
           x={x}
@@ -170,9 +183,13 @@
           height={barH}
           fill="transparent"
           pointer-events="all"
+          role="button"
+          tabindex="-1"
+          aria-label="Resize start"
           on:mousedown={onBarDown('left')}
           on:contextmenu={onBarContextMenu}
         />
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <rect
           class="resize-handle resize-right"
           x={x + w - 6}
@@ -181,6 +198,9 @@
           height={barH}
           fill="transparent"
           pointer-events="all"
+          role="button"
+          tabindex="-1"
+          aria-label="Resize end"
           on:mousedown={onBarDown('right')}
           on:contextmenu={onBarContextMenu}
         />
@@ -215,6 +235,7 @@
     {/if}
     <title>{tooltipText}</title>
   {:else}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <rect
       x={x}
       y={barY}
@@ -230,10 +251,14 @@
       class:active-drag={isThisBarActive}
       class:focused
       class:selected
+      role="button"
+      tabindex="-1"
+      aria-label={issue.title}
       on:mousedown={onBarDown('body')}
       on:contextmenu={onBarContextMenu}
     />
     {#if editable && w >= 18}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <rect
         class="resize-handle resize-left"
         x={x}
@@ -242,9 +267,13 @@
         height={barH}
         fill="transparent"
         pointer-events="all"
+        role="button"
+        tabindex="-1"
+        aria-label="Resize start"
         on:mousedown={onBarDown('left')}
         on:contextmenu={onBarContextMenu}
       />
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
       <rect
         class="resize-handle resize-right"
         x={x + w - 6}
@@ -253,6 +282,9 @@
         height={barH}
         fill="transparent"
         pointer-events="all"
+        role="button"
+        tabindex="-1"
+        aria-label="Resize end"
         on:mousedown={onBarDown('right')}
         on:contextmenu={onBarContextMenu}
       />
