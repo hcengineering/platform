@@ -6,7 +6,24 @@
   import { writable, type Writable } from 'svelte/store'
   import type { Ref } from '@hcengineering/core'
   import type { Issue, IssueRelation } from '@hcengineering/tracker'
-  import { type BarRect, bezierPath } from './lib/dependency-router'
+  import {
+    type ArrowVisibility,
+    type BarRect,
+    type YBounds,
+    bezierPath,
+    classifyArrowVisibility
+  } from './lib/dependency-router'
+
+  const BOTH_VISIBLE: ArrowVisibility = { kind: 'both-visible' }
+
+  function resolveVisibility (
+    src: BarRect | null,
+    dst: BarRect | null,
+    bounds: YBounds | undefined
+  ): ArrowVisibility {
+    if (bounds === undefined) return BOTH_VISIBLE
+    return classifyArrowVisibility(src, dst, bounds)
+  }
   import type { DragState } from './lib/types'
   import GanttDependencyArrow from './GanttDependencyArrow.svelte'
 
@@ -26,6 +43,15 @@
   export let criticalRelations: Set<Ref<IssueRelation>> = new Set()
   export let violatedRelations: Set<Ref<IssueRelation>> = new Set()
   export let showCriticalPath: boolean = false
+  /**
+   * Tier-3 Item 5 — Y-axis viewport bounds in canvas-pixel space (same
+   * coordinate system as the barRects map above). When `undefined`, every
+   * arrow is rendered in full (legacy mode, used by embed previews and
+   * fixtures). When set, off-viewport endpoints are clipped to the edge
+   * and rendered with a small triangle indicator the user can click to
+   * scroll-to-row.
+   */
+  export let yBounds: YBounds | undefined = undefined
 
   $: dragState = $activeDrag
 
@@ -50,16 +76,22 @@
     {#if rel !== undefined && rel.kind !== undefined}
       {@const src = barRects.get(String(rel.attachedTo)) ?? null}
       {@const dst = barRects.get(String(rel.target)) ?? null}
-      <GanttDependencyArrow
-        relation={rel}
-        sourceBar={src}
-        targetBar={dst}
-        dimmed={isDimmed(rel)}
-        isCritical={showCriticalPath && criticalRelations.has(rel._id)}
-        isViolated={showCriticalPath && violatedRelations.has(rel._id)}
-        on:openEditor
-        on:hoverEdge
-      />
+      {@const visibility = resolveVisibility(src, dst, yBounds)}
+      {#if visibility.kind !== 'none'}
+        <GanttDependencyArrow
+          relation={rel}
+          sourceBar={src}
+          targetBar={dst}
+          dimmed={isDimmed(rel)}
+          isCritical={showCriticalPath && criticalRelations.has(rel._id)}
+          isViolated={showCriticalPath && violatedRelations.has(rel._id)}
+          {visibility}
+          {yBounds}
+          on:openEditor
+          on:hoverEdge
+          on:scrollToRow
+        />
+      {/if}
     {/if}
   {/each}
 
