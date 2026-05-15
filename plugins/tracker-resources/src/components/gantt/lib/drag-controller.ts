@@ -42,16 +42,27 @@ function reduceFromHover (
   if (event.type === 'mouseleave-bar') {
     return { kind: 'idle' }
   }
-  if (event.type === 'mousedown-bar' && event.edge === 'body') {
+  if (event.type === 'mousedown-bar') {
     if (event.issue.startDate == null || event.issue.dueDate == null) return state
-    return {
-      kind: 'dragging-body',
+    const base = {
       issue: event.issue,
       originStart: event.issue.startDate,
       originDue: event.issue.dueDate,
-      cursorStartX: event.cursorX,
-      previewStart: event.issue.startDate,
-      previewDue: event.issue.dueDate
+      cursorStartX: event.cursorX
+    }
+    if (event.edge === 'body') {
+      return {
+        kind: 'dragging-body',
+        ...base,
+        previewStart: event.issue.startDate,
+        previewDue: event.issue.dueDate
+      }
+    }
+    if (event.edge === 'left') {
+      return { kind: 'resizing-left', ...base, previewStart: event.issue.startDate }
+    }
+    if (event.edge === 'right') {
+      return { kind: 'resizing-right', ...base, previewDue: event.issue.dueDate }
     }
   }
   void timeScale
@@ -62,7 +73,9 @@ function reduceFromActive (state: DragState, event: DragEvent, timeScale: TimeSc
   if (event.type === 'mouseup' || event.type === 'cancel') {
     return { kind: 'idle' }
   }
-  if (event.type === 'mousemove' && state.kind === 'dragging-body') {
+  if (event.type !== 'mousemove') return state
+
+  if (state.kind === 'dragging-body') {
     const deltaPx = event.cursorX - state.cursorStartX
     const deltaMs = (deltaPx / timeScale.pxPerDay) * 86_400_000
     return {
@@ -71,6 +84,22 @@ function reduceFromActive (state: DragState, event: DragEvent, timeScale: TimeSc
       previewDue: snapToUtcMidnight(state.originDue + deltaMs)
     }
   }
+
+  if (state.kind === 'resizing-left') {
+    const deltaPx = event.cursorX - state.cursorStartX
+    const deltaMs = (deltaPx / timeScale.pxPerDay) * 86_400_000
+    const candidate = snapToUtcMidnight(state.originStart + deltaMs)
+    // Clamp so previewStart never crosses originDue (would invert the bar).
+    return { ...state, previewStart: Math.min(candidate, state.originDue) }
+  }
+
+  if (state.kind === 'resizing-right') {
+    const deltaPx = event.cursorX - state.cursorStartX
+    const deltaMs = (deltaPx / timeScale.pxPerDay) * 86_400_000
+    const candidate = snapToUtcMidnight(state.originDue + deltaMs)
+    return { ...state, previewDue: Math.max(candidate, state.originStart) }
+  }
+
   return state
 }
 

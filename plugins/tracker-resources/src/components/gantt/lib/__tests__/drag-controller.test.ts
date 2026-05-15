@@ -108,3 +108,92 @@ describe('drag-controller — body drag', () => {
     expect(next).toEqual({ kind: 'idle' })
   })
 })
+
+describe('drag-controller — resize-left', () => {
+  it('mousedown-bar on edge=left transitions hover → resizing-left', () => {
+    const hover: DragState = { kind: 'hover-bar', issueId: issue._id, edge: 'left' }
+    const next = reduce(
+      hover,
+      { type: 'mousedown-bar', issue, edge: 'left', cursorX: 50 },
+      ts
+    )
+    expect(next.kind).toBe('resizing-left')
+    if (next.kind !== 'resizing-left') return
+    expect(next.previewStart).toBe(issue.startDate)
+    expect(next.originDue).toBe(issue.dueDate)
+  })
+
+  it('resize-left mousemove updates previewStart but not originDue', () => {
+    const resizing: DragState = {
+      kind: 'resizing-left',
+      issue,
+      originStart: issue.startDate as number,
+      originDue: issue.dueDate as number,
+      cursorStartX: 50,
+      previewStart: issue.startDate as number
+    }
+    // 14 px = 1 day at week zoom
+    const next = reduce(resizing, { type: 'mousemove', cursorX: 64 }, ts)
+    if (next.kind !== 'resizing-left') throw new Error('expected resizing-left')
+    expect(next.previewStart).toBe((issue.startDate as number) + 1 * 86_400_000)
+  })
+
+  it('resize-left clamps previewStart to be ≤ originDue', () => {
+    const resizing: DragState = {
+      kind: 'resizing-left',
+      issue,
+      originStart: issue.startDate as number,
+      originDue: issue.dueDate as number,
+      cursorStartX: 50,
+      previewStart: issue.startDate as number
+    }
+    // Move 100 days right — past the due date
+    const next = reduce(resizing, { type: 'mousemove', cursorX: 50 + 100 * 14 }, ts)
+    if (next.kind !== 'resizing-left') throw new Error('expected resizing-left')
+    expect(next.previewStart).toBe(issue.dueDate)
+  })
+})
+
+describe('drag-controller — resize-right', () => {
+  it('mousedown-bar on edge=right transitions hover → resizing-right', () => {
+    const hover: DragState = { kind: 'hover-bar', issueId: issue._id, edge: 'right' }
+    const next = reduce(
+      hover,
+      { type: 'mousedown-bar', issue, edge: 'right', cursorX: 250 },
+      ts
+    )
+    expect(next.kind).toBe('resizing-right')
+    if (next.kind !== 'resizing-right') return
+    expect(next.previewDue).toBe(issue.dueDate)
+    expect(next.originStart).toBe(issue.startDate)
+  })
+
+  it('resize-right mousemove updates previewDue but not originStart', () => {
+    const resizing: DragState = {
+      kind: 'resizing-right',
+      issue,
+      originStart: issue.startDate as number,
+      originDue: issue.dueDate as number,
+      cursorStartX: 250,
+      previewDue: issue.dueDate as number
+    }
+    const next = reduce(resizing, { type: 'mousemove', cursorX: 264 }, ts)
+    if (next.kind !== 'resizing-right') throw new Error('expected resizing-right')
+    expect(next.previewDue).toBe((issue.dueDate as number) + 1 * 86_400_000)
+  })
+
+  it('resize-right clamps previewDue to be ≥ originStart', () => {
+    const resizing: DragState = {
+      kind: 'resizing-right',
+      issue,
+      originStart: issue.startDate as number,
+      originDue: issue.dueDate as number,
+      cursorStartX: 250,
+      previewDue: issue.dueDate as number
+    }
+    // Move 100 days left — past the start
+    const next = reduce(resizing, { type: 'mousemove', cursorX: 250 - 100 * 14 }, ts)
+    if (next.kind !== 'resizing-right') throw new Error('expected resizing-right')
+    expect(next.previewDue).toBe(issue.startDate)
+  })
+})
