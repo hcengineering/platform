@@ -72,6 +72,7 @@
   // defaults OFF — the code is still surfaced in the hover tooltip.
   $: showIssueCode = (viewOptions as Record<string, unknown>)?.ganttShowIssueCode === true
   $: showTitle = ((viewOptions as Record<string, unknown>)?.ganttShowTitle ?? true) !== false
+  $: showStatus = ((viewOptions as Record<string, unknown>)?.ganttShowStatus ?? true) !== false
 
   function setZoom (z: ZoomLevel): void {
     zoom = z
@@ -451,7 +452,7 @@
   })
 
   $: viewport = { left: canvasViewportLeft, right: canvasViewportLeft + canvasViewportWidth }
-  $: sidebarWidthPx = (showIssueCode || showTitle) ? userSidebarWidth : 60
+  $: sidebarWidthPx = (showIssueCode || showTitle || showStatus) ? userSidebarWidth : 60
 
   $: loading = loadingIssues || loadingMilestones
 </script>
@@ -512,6 +513,7 @@
         <!-- Row 1: corner / resize-corner / time-axis header (all sticky-top) -->
         <div class="cell corner" style="height: {HEADER_HEIGHT}px;">
           <span class="col-toggle" />
+          {#if showStatus}<span class="col-status" />{/if}
           {#if showIssueCode}<span class="col-id"><Label label={tracker.string.Issue} /></span>{/if}
           {#if showTitle}<span class="col-title"><Label label={tracker.string.Title} /></span>{/if}
           <span class="col-jump" />
@@ -532,6 +534,7 @@
             viewportRight={viewport.right}
             {showIssueCode}
             {showTitle}
+            {showStatus}
             {hoveredRowId}
             on:jump={onJump}
             on:toggle={onToggle}
@@ -861,6 +864,7 @@
     letter-spacing: 0.05em;
   }
   .corner .col-toggle { flex: 0 0 18px; }
+  .corner .col-status { flex: 0 0 22px; }
   .corner .col-id { flex: 0 0 80px; }
   .corner .col-title { flex: 1 1 auto; }
   .corner .col-jump { flex: 0 0 28px; }

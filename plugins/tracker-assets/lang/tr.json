@@ -282,6 +282,7 @@
     "Gantt": "Gantt",
     "GanttShowIssueCode": "Show issue code",
     "GanttShowTitle": "Show title",
+    "GanttShowStatus": "Show status",
     "GanttToday": "Today",
     "GanttJumpToStart": "Jump to start",
     "GanttJumpToEnd": "Jump to end",

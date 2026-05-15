@@ -318,6 +318,7 @@ export default mergeIds(trackerId, tracker, {
     Week: '' as IntlString,
     GanttShowIssueCode: '' as IntlString,
     GanttShowTitle: '' as IntlString,
+    GanttShowStatus: '' as IntlString,
     GanttToday: '' as IntlString,
     GanttJumpToStart: '' as IntlString,
     GanttJumpToEnd: '' as IntlString,
