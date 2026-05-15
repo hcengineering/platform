@@ -330,3 +330,17 @@ describe('simulateCascade — cycle bailout', () => {
     expect(new Set(res.cycleNodes)).toEqual(new Set(['A', 'B']))
   })
 })
+
+describe('simulateCascade — permission denied', () => {
+  it('Test 12: canEdit returns false for B → permission-denied, shifts populated', () => {
+    const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
+    const relations = [rel('A', 'B', 'finish-to-start')]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }]
+    const res = simulateCascade(primary, [A, B], relations, (ref) => ref !== 'B')
+    expect(res.kind).toBe('permission-denied')
+    if (res.kind !== 'permission-denied') return
+    expect(res.lockedIssues.map((i) => i._id)).toEqual(['B'])
+    expect(res.shifts.map((s) => s.issue._id)).toEqual(['B'])
+  })
+})
