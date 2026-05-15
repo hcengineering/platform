@@ -4,7 +4,10 @@
 <script lang="ts">
   import { type ApplyOperations, type Class, type Doc, type DocumentQuery, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { type Issue, type Milestone } from '@hcengineering/tracker'
+  import { type Issue, type IssueRelation, type Milestone } from '@hcengineering/tracker'
+  import { connectedIssueIds } from './lib/dependency-router'
+  import { wouldCreateCycle } from './lib/scheduler'
+  import DependencyEditor from '../DependencyEditor.svelte'
   import EditMilestone from '../milestones/EditMilestone.svelte'
   import { Loading, addNotification, NotificationSeverity } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
@@ -79,6 +82,13 @@
   // editable={} flag for both row kinds without parallel data structures.
   let editableIssueIds: Set<string> = new Set()
 
+  // PR4a: dependency state
+  let relations: IssueRelation[] = []
+  let hoveredIssue: Ref<Issue> | null = null
+  let hoveredEdge: { source: Ref<Issue>, target: Ref<Issue> } | null = null
+  $: connectedIds = connectedIssueIds(hoveredIssue, hoveredEdge, relations)
+  $: showPredecessors = ((viewOptions as Record<string, unknown>)?.ganttShowPredecessors ?? false) !== false
+
   /**
    * Click-to-select gate (user feedback 2026-05-11): a bar must be clicked
    * once to become "selected" (blue outline) before drag/resize can begin
@@ -120,6 +130,7 @@
 
   const issueQuery = createQuery()
   const milestoneQuery = createQuery()
+  const relationQuery = createQuery()
 
   $: issueDocQuery = (space !== undefined
     ? { space, ...(query as DocumentQuery<Issue>) }
@@ -163,6 +174,20 @@
       milestones = res
       loadingMilestones = false
     }
+  )
+
+  $: visibleIssueIds = issues.map((i) => i._id)
+  $: relationDocQuery = (space !== undefined ? { space } : {}) as DocumentQuery<IssueRelation>
+  $: relationQuery.query(
+    tracker.class.IssueRelation,
+    {
+      ...relationDocQuery,
+      $or: [
+        { attachedTo: { $in: visibleIssueIds } },
+        { target: { $in: visibleIssueIds } }
+      ]
+    } as DocumentQuery<IssueRelation>,
+    (res: IssueRelation[]) => { relations = res }
   )
 
   $: dateRange = computeDateRange(issues, milestones, zoom)
@@ -379,6 +404,33 @@
     }, timeScale))
   }
 
+  function handleConnectorDown (e: CustomEvent<{ source: Issue, originPx: { x: number, y: number } }>): void {
+    activeDrag.update((s) => reduce(s, {
+      type: 'mousedown-connector',
+      source: e.detail.source,
+      originPx: e.detail.originPx,
+      cursorPx: e.detail.originPx
+    }, timeScale))
+  }
+
+  function handleBarHover (e: CustomEvent<{ issue: Issue | null }>): void {
+    hoveredIssue = (e.detail.issue?._id ?? null) as Ref<Issue> | null
+  }
+
+  function handleHoverEdge (e: CustomEvent<{ source: Ref<Issue>, target: Ref<Issue> } | null>): void {
+    hoveredEdge = e.detail as { source: Ref<Issue>, target: Ref<Issue> } | null
+  }
+
+  function handleOpenEditor (e: CustomEvent<{ relation: IssueRelation }>): void {
+    const rel = e.detail.relation
+    // canEdit if the user can update the source issue (spec §1 decision A).
+    const sourceIssue = issues.find((i) => i._id === rel.attachedTo)
+    void (async () => {
+      const canEdit = sourceIssue !== undefined ? await canEditIssue(sourceIssue) : false
+      showPopup(DependencyEditor, { relation: rel, canEdit }, 'middle')
+    })()
+  }
+
   /**
    * Clear selection when the user clicks outside any bar — e.g. on the
    * canvas background. Bar mousedowns stopPropagation, so this only fires
@@ -414,6 +466,29 @@
   }
 
   function handleCanvasMouseMove (e: MouseEvent): void {
+    // PR4a: while connector-drawing, dispatch mousemove-connector with
+    // svg-local cursorPx + the issue under the cursor. Coordinate frame
+    // matches barRects (computed in GanttCanvas) so the live bezier
+    // anchors correctly. document.elementFromPoint hits the bar's <rect>
+    // through the .bar-wrap <g> whose data-issue-id was added in Task 15.
+    const state = $activeDrag
+    if (state.kind === 'connector-drawing' || state.kind === 'connector-target-hover') {
+      const svg = scrollerEl?.querySelector('svg.gantt-canvas') as SVGSVGElement | null
+      if (svg === null) return
+      const svgRect = svg.getBoundingClientRect()
+      const cursorPx = { x: e.clientX - svgRect.left, y: e.clientY - svgRect.top }
+      const hoveredEl = document.elementFromPoint(e.clientX, e.clientY)
+      const issueId = hoveredEl?.closest('.bar-wrap')?.getAttribute('data-issue-id') as Ref<Issue> | null
+      const hoveredBar = issueId !== null
+        ? issues.find((i) => i._id === issueId) ?? null
+        : null
+      activeDrag.update((s) => reduce(s, {
+        type: 'mousemove-connector',
+        cursorPx,
+        hoveredBar: hoveredBar !== null && hoveredBar._id !== state.source._id ? hoveredBar : null
+      }, timeScale))
+      return  // Don't also fire mousemove for bar drag
+    }
     activeDrag.update((s) =>
       reduce(s, { type: 'mousemove', cursorX: e.clientX, canvasX: computeCanvasX(e) }, timeScale)
     )
@@ -421,6 +496,33 @@
 
   async function handleCanvasMouseUp (): Promise<void> {
     const state = $activeDrag
+    if (state.kind === 'connector-drawing') {
+      activeDrag.set({ kind: 'idle' })
+      return
+    }
+    if (state.kind === 'connector-target-hover') {
+      const src = state.source
+      const tgt = state.target
+      activeDrag.set({ kind: 'idle' })
+      // Cycle check before any write. Spec §2 decision A (block + toast).
+      if (wouldCreateCycle(src._id, tgt._id, relations)) {
+        const title = await translate(tracker.string.DependencyCycle, {}, undefined)
+        addNotification(title, '', undefined as any, undefined, NotificationSeverity.Error)
+        return
+      }
+      const client = getClient()
+      const ops = client.apply(undefined, 'gantt-dependency-create')
+      await ops.addCollection(
+        tracker.class.IssueRelation,
+        src.space,
+        src._id,
+        tracker.class.Issue,
+        'relations',
+        { target: tgt._id, kind: 'finish-to-start', lag: 0 }
+      )
+      await ops.commit()
+      return
+    }
     activeDrag.set({ kind: 'idle' })
     if (state.kind === 'idle' || state.kind === 'hover-bar') return
     // Skip the confirmation prompt when the preview didn't actually change
@@ -1061,6 +1163,8 @@
             {showStatus}
             {hoveredRowId}
             {activeDrag}
+            {relations}
+            {showPredecessors}
             on:jump={onJump}
             on:toggle={onToggle}
             on:openIssue={onIssueOpen}
@@ -1098,10 +1202,18 @@
               {focusedIssueId}
               {selectedIssueId}
               {milestonesById}
+              {relations}
+              {connectedIds}
+              {hoveredIssue}
+              {hoveredEdge}
               on:openIssue={onIssueOpen}
               on:hoverRow={onRowHover}
               on:barMouseDown={handleBarMouseDown}
               on:contextMenu={handleBarContextMenu}
+              on:openEditor={handleOpenEditor}
+              on:hoverEdge={handleHoverEdge}
+              on:connectorDown={handleConnectorDown}
+              on:barHover={handleBarHover}
             />
           </div>
         </div>
