@@ -11,6 +11,7 @@
   import tracker from '../../plugin'
   import type { TimeScale } from './lib/time-scale'
   import type { DragState, DragTarget } from './lib/types'
+  import GanttConnectorDot from './GanttConnectorDot.svelte'
 
   // Bar is rendered for both Issues and synthetic milestone summaries; the
   // structural subset below is all the bar geometry needs.
@@ -39,7 +40,11 @@
   const dispatch = createEventDispatcher<{
     barMouseDown: { target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }
     contextMenu: { issue: Issue, event: MouseEvent }
+    connectorDown: { source: Issue, cursorClientX: number, cursorClientY: number }
+    barHover: { issue: Issue | null }
   }>()
+
+  let hovered = false
 
   function onBarContextMenu (evt: MouseEvent): void {
     // Context-menu is currently issue-only (PR3 menu wires Issue actions);
@@ -189,6 +194,14 @@
         aria-label={issue.title}
         on:mousedown={onBarDown('body')}
         on:contextmenu={onBarContextMenu}
+        on:mouseenter={() => {
+          hovered = true
+          if (dragTarget !== undefined && dragTarget.kind === 'issue') dispatch('barHover', { issue: dragTarget.doc })
+        }}
+        on:mouseleave={() => {
+          hovered = false
+          dispatch('barHover', { issue: null })
+        }}
       />
       {#if selected && w >= 18}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -273,6 +286,14 @@
       aria-label={issue.title}
       on:mousedown={onBarDown('body')}
       on:contextmenu={onBarContextMenu}
+      on:mouseenter={() => {
+        hovered = true
+        if (dragTarget !== undefined && dragTarget.kind === 'issue') dispatch('barHover', { issue: dragTarget.doc })
+      }}
+      on:mouseleave={() => {
+        hovered = false
+        dispatch('barHover', { issue: null })
+      }}
     />
     {#if editable && selected && w >= 18}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -304,6 +325,20 @@
         aria-label={ariaResizeEnd}
         on:mousedown={onBarDown('right')}
         on:contextmenu={onBarContextMenu}
+      />
+    {/if}
+    {#if editable && hovered && dragTarget !== undefined && dragTarget.kind === 'issue' && w >= 18}
+      <GanttConnectorDot
+        cx={x + w}
+        cy={barY + barH / 2}
+        on:connectorDown={(e) => {
+          if (dragTarget === undefined || dragTarget.kind !== 'issue') return
+          dispatch('connectorDown', {
+            source: dragTarget.doc,
+            cursorClientX: e.detail.cursorX,
+            cursorClientY: e.detail.cursorY
+          })
+        }}
       />
     {/if}
     {#if barLabel !== ''}
