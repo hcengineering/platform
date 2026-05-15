@@ -1,3 +1,8 @@
+//
+// Copyright © 2026 Hardcore Engineering Inc.
+// SPDX-License-Identifier: EPL-2.0
+//
+
 import { detectCycle, addScheduleDays } from '../scheduler'
 import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
@@ -32,8 +37,6 @@ function rel (source: string, target: string, kind: 'finish-to-start' | 'start-t
     createdBy: 'me' as any
   } as unknown as IssueRelation
 }
-
-const DAY = 86_400_000
 
 describe('detectCycle', () => {
   it('returns null for an acyclic graph', () => {
