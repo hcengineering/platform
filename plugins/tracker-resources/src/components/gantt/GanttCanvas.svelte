@@ -4,22 +4,38 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
-  import type { Issue, Milestone } from '@hcengineering/tracker'
+  import type { Ref } from '@hcengineering/core'
+  import type { Issue, IssueRelation, Milestone } from '@hcengineering/tracker'
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange } from './lib/types'
   import { filterVisibleRows } from './lib/layout'
   import GanttBar from './GanttBar.svelte'
   import GanttResizeOverlay from './GanttResizeOverlay.svelte'
   import GanttTodayMarker from './GanttTodayMarker.svelte'
   import { type TimeScale } from './lib/time-scale'
+  import { type BarRect } from './lib/dependency-router'
+  import GanttDependencyLayer from './GanttDependencyLayer.svelte'
 
   const dispatch = createEventDispatcher<{
     openIssue: { issue: { _id: string, _class: string } }
     hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
     barMouseDown: { target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }
     contextMenu: { issue: Issue, event: MouseEvent }
+    connectorDown: { source: Issue, originPx: { x: number, y: number } }
+    barHover: { issue: Issue | null }
+    openEditor: { relation: IssueRelation }
+    hoverEdge: { source: Ref<Issue>, target: Ref<Issue> } | null
   }>()
   function openIssue (i: { _id: any, _class: any }): void {
     dispatch('openIssue', { issue: { _id: i._id as string, _class: i._class as string } })
+  }
+
+  function forwardConnectorDown (e: CustomEvent<{ source: Issue, cursorClientX: number, cursorClientY: number }>): void {
+    const rect = barRects.get(String(e.detail.source._id))
+    if (rect === undefined) return
+    dispatch('connectorDown', {
+      source: e.detail.source,
+      originPx: { x: rect.right, y: (rect.top + rect.bottom) / 2 }
+    })
   }
 
   export let rows: LayoutRow[]
@@ -45,6 +61,12 @@
   export let focusedIssueId: string | null = null
   export let selectedIssueId: string | null = null
   export let milestonesById: Map<string, Milestone> = new Map()
+
+  // PR4a dependency-layer props — defaulted so existing call-sites don't break.
+  export let relations: IssueRelation[] = []
+  export let connectedIds: Set<Ref<Issue>> = new Set()
+  export let hoveredIssue: Ref<Issue> | null = null
+  export let hoveredEdge: { source: Ref<Issue>, target: Ref<Issue> } | null = null
 
   function statusCategoryFor (issue: any): string | null {
     if (statusCategoryMap === undefined) return null
@@ -85,6 +107,28 @@
     timeScale.fromX(Math.max(0, viewport.left - 100)),
     timeScale.fromX(viewport.right + 100)
   ])
+
+  /**
+   * Per-bar pixel rectangle for the dependency router. Re-derives from the
+   * same row geometry the canvas uses to position GanttBar; the dependency
+   * layer reads this Map to anchor arrows. Cache keyed by stringified
+   * Ref<Issue> for parity with editableIssueIds.
+   */
+  $: barRects = (() => {
+    const map = new Map<string, BarRect>()
+    for (const row of rows) {
+      if (row.kind !== 'issue' || row.issue === null) continue
+      const start = row.issue.startDate
+      const due = row.issue.dueDate
+      if (start === null || due === null) continue
+      const left = timeScale.toX(Math.min(start, due))
+      const right = timeScale.toX(Math.max(start, due)) + timeScale.pxPerDay
+      const top = milestoneStripHeight + row.y + 6
+      const bottom = milestoneStripHeight + row.y + row.height - 6
+      map.set(String(row.issue._id), { left, top, right, bottom })
+    }
+    return map
+  })()
 
   function rowKey (row: LayoutRow): string {
     return row.id
@@ -193,6 +237,7 @@
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <g
             class="bar-wrap"
+            data-issue-id={String(row.issue._id)}
             on:dblclick|stopPropagation={() => row.issue !== null && openIssue(row.issue)}
           >
             <GanttBar
@@ -210,12 +255,25 @@
               dragTarget={{ kind: 'issue', doc: row.issue }}
               on:barMouseDown
               on:contextMenu
+              on:connectorDown={forwardConnectorDown}
+              on:barHover
             />
           </g>
         {/if}
       </g>
     {/each}
   </g>
+
+  <GanttDependencyLayer
+    {relations}
+    barRects={barRects}
+    {activeDrag}
+    {connectedIds}
+    {hoveredIssue}
+    {hoveredEdge}
+    on:openEditor
+    on:hoverEdge
+  />
 
   <!-- Milestone target-date markers as short tick + diamond at the top
        of the canvas only (redesign: less visual noise than a
