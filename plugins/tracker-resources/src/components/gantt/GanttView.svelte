@@ -4089,7 +4089,16 @@
   {#if loading}
     <Loading />
   {:else}
-    <div class="gantt-toolbar" style="height: {TOOLBAR_HEIGHT}px;">
+    <!-- v121.11 / Bug 1 — Toolbar Overflow. Switched fixed `height` to
+         `min-height` and bound the measured client-height into
+         `toolbarHeightPx` so the absolute-positioned vertical scrollbar
+         still starts below the toolbar even when the flex-wrap
+         (@media max-width: 1024px) breaks the controls into two rows. -->
+    <div
+      class="gantt-toolbar"
+      style="min-height: {TOOLBAR_HEIGHT}px;"
+      bind:clientHeight={toolbarHeightPx}
+    >
       <div class="toolbar-left">
         <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToStart }} on:click={jumpToStart}>
           <Icon icon={ArrowLeft} size="small" />
@@ -4430,7 +4439,7 @@
     {#if vHasOverflow}
       <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div class="gantt-vscrollbar"
-        style="top: {TOOLBAR_HEIGHT}px; bottom: 11px;">
+        style="top: {toolbarHeightPx}px; bottom: 11px;">
         <div
           class="vscroll-thumb"
           style="top: {vThumbTop}px; height: {vThumbHeight}px;"
@@ -4528,9 +4537,30 @@
     border-bottom: 1px solid var(--theme-divider-color);
     background: var(--theme-comp-header-color);
   }
-  .toolbar-left { display: flex; gap: 4px; }
-  .toolbar-center { display: flex; gap: 2px; justify-self: center; }
-  .toolbar-right { display: flex; gap: 8px; justify-self: end; position: relative; align-items: center; }
+  .toolbar-left { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .toolbar-center { display: flex; flex-wrap: wrap; gap: 2px; justify-self: center; align-items: center; }
+  .toolbar-right { display: flex; flex-wrap: wrap; gap: 8px; justify-self: end; position: relative; align-items: center; }
+  /* v121.11 / Bug 1 — Toolbar Overflow on small screens. Below 1024px the
+     fixed 3-column grid (1fr / auto / 1fr) gets cramped: zoom-buttons get
+     clipped or undo/redo/saved-views/group-by/PNG/PDF/fullscreen overflow
+     past the right edge. We collapse the grid into a single column and
+     let each cluster (left / center / right) wrap inside itself.
+     Phone (<=640px) keeps the existing mobile drawer + hamburger flow
+     untouched — no behaviour change there. */
+  @media (max-width: 1024px) {
+    .gantt-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 8px;
+      padding: 4px 8px;
+    }
+    .toolbar-left,
+    .toolbar-center,
+    .toolbar-right {
+      justify-self: start;
+      flex: 0 1 auto;
+    }
+  }
   /* v121.3-E — Group-By controls. The Filter-related `.gantt-filter-*`
      blocks were removed together with the toolbar Filter button; the
      standard FilterBar in IssuesView now owns filter state. */
