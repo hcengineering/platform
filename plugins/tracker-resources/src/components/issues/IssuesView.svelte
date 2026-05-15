@@ -5,7 +5,14 @@
   import { Issue, TrackerEvents } from '@hcengineering/tracker'
   import { Button, IconAdd, IModeSelector, showPopup, themeStore } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
-  import { FilterBar, SpaceHeader, ViewletContentView, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    FilterBar,
+    SpaceHeader,
+    ViewletContentView,
+    ViewletSettingButton,
+    getViewOptions,
+    viewOptionStore
+  } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
   import GanttToolbarControls from '../gantt/GanttToolbarControls.svelte'
@@ -25,6 +32,20 @@
   let viewlet: WithLookup<Viewlet> | undefined = undefined
   const viewlets: WithLookup<Viewlet>[] | undefined = undefined
   let viewOptions: ViewOptions | undefined
+
+  // v121.2 — the Gantt viewlet has its own toolbar inside GanttView with
+  // dedicated Filter / Group-by / Sort / Tree-View / Virtualization
+  // controls. The standard ViewletSettingButton renders TWO icon buttons
+  // (ViewOptions + Configure) which both carry the "Customize View"
+  // tooltip but only the first one wires up to the underlying viewOptions;
+  // worse, its groupBy/orderBy don't drive the Gantt view at all. Hide
+  // them in Gantt mode so the user isn't left clicking dead buttons —
+  // but still resolve a viewOptions object inline so ViewletContentView
+  // mounts (without it the Gantt component never renders).
+  $: isGanttMode = viewlet?.descriptor === tracker.viewlet.Gantt
+  $: if (isGanttMode && viewlet !== undefined) {
+    viewOptions = getViewOptions(viewlet, $viewOptionStore)
+  }
 
   let search = ''
   let searchQuery: DocumentQuery<Issue> = { ...query }
@@ -55,7 +76,9 @@
   {modeSelectorProps}
 >
   <svelte:fragment slot="header-tools">
-    <ViewletSettingButton bind:viewOptions bind:viewlet />
+    {#if !isGanttMode}
+      <ViewletSettingButton bind:viewOptions bind:viewlet />
+    {/if}
   </svelte:fragment>
 
   <svelte:fragment slot="extra">
