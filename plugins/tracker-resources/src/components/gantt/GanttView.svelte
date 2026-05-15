@@ -26,7 +26,7 @@
   import { descendantsWithDates } from './lib/scheduler'
   import { createTimeScale } from './lib/time-scale'
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
-  import { computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
+  import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
   import { Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
   import { showMenu, statusStore } from '@hcengineering/view-resources'
@@ -88,9 +88,13 @@
 
   // PR4a: dependency state
   let relations: IssueRelation[] = []
+  let optimisticRelations: IssueRelation[] = []
   let hoveredIssue: Ref<Issue> | null = null
   let hoveredEdge: { source: Ref<Issue>, target: Ref<Issue> } | null = null
-  $: connectedIds = connectedIssueIds(hoveredIssue, hoveredEdge, relations)
+  $: displayedRelations = [...relations, ...optimisticRelations.filter((pending) =>
+    !relations.some((rel) => rel.attachedTo === pending.attachedTo && rel.target === pending.target && rel.kind === pending.kind)
+  )]
+  $: connectedIds = connectedIssueIds(hoveredIssue, hoveredEdge, displayedRelations)
   $: showPredecessors = ((viewOptions as Record<string, unknown>)?.ganttShowPredecessors ?? false) !== false
 
   /**
@@ -190,7 +194,12 @@
   $: relationQuery.query(
     tracker.class.IssueRelation,
     relationDocQuery,
-    (res: IssueRelation[]) => { relations = res }
+    (res: IssueRelation[]) => {
+      relations = res
+      optimisticRelations = optimisticRelations.filter((pending) =>
+        !res.some((rel) => rel.attachedTo === pending.attachedTo && rel.target === pending.target && rel.kind === pending.kind)
+      )
+    }
   )
 
   $: dateRange = computeDateRange(issues, milestones, zoom)
@@ -238,7 +247,13 @@
     }
   }
 
-  $: timeScale = createTimeScale(zoom, dateRange.from)
+  $: baseTimeScale = createTimeScale(zoom, dateRange.from)
+  $: baseDataCanvasWidth = Math.max(
+    1,
+    Math.ceil(baseTimeScale.toX(dateRange.to) - baseTimeScale.toX(dateRange.from))
+  )
+  $: adaptivePxPerDay = computeAdaptivePxPerDay(baseTimeScale.pxPerDay, baseDataCanvasWidth, canvasViewportWidth)
+  $: timeScale = createTimeScale(zoom, dateRange.from, adaptivePxPerDay)
   $: milestoneMarkers = milestones.map<MilestoneMarker>(m => ({
     _id: m._id,
     label: m.label,
@@ -313,8 +328,9 @@
     return result
   }
 
-  // Render at least the visible canvas width. Otherwise a short date range
-  // leaves a blank band on the right even though the Gantt area has room.
+  // Stretch the time scale when the bounded data range is narrower than the
+  // visible canvas. Otherwise the final quarter/month/day area is correct,
+  // but empty whitespace still occupies the remaining right side.
   $: dataCanvasWidth = Math.max(
     1,
     Math.ceil(timeScale.toX(dateRange.to) - timeScale.toX(dateRange.from))
@@ -418,6 +434,54 @@
       originPx: e.detail.originPx,
       cursorPx: e.detail.originPx
     }, timeScale))
+    attachWindowDragListeners()
+  }
+
+  function handleNativeConnectorDown (e: MouseEvent | PointerEvent): void {
+    const target = e.target as Element | null
+    const connector = target?.closest('.gantt-connector') as SVGElement | null
+    if (connector === null) return
+    const sourceId = connector.getAttribute('data-source-id')
+    if (sourceId === null) return
+    const sourceSpace = connector.getAttribute('data-source-space')
+    const source = issues.find((issue) => String(issue._id) === sourceId) ??
+      (sourceSpace !== null
+        ? ({ _id: sourceId as Ref<Issue>, space: sourceSpace as Issue['space'] } as Issue)
+        : undefined)
+    if (source === undefined) return
+    const anchor = connector.querySelector('.gantt-connector-hit') as SVGCircleElement | null
+    const originPx = {
+      x: Number(anchor?.getAttribute('cx') ?? 0),
+      y: Number(anchor?.getAttribute('cy') ?? 0)
+    }
+    if (!Number.isFinite(originPx.x) || !Number.isFinite(originPx.y)) return
+    e.preventDefault()
+    e.stopPropagation()
+    activeDrag.update((s) => reduce(s, {
+      type: 'mousedown-connector',
+      source,
+      originPx,
+      cursorPx: originPx
+    }, timeScale))
+    attachWindowDragListeners()
+  }
+
+  function handleConnectorStartEvent (e: Event): void {
+    const detail = (e as CustomEvent<{
+      sourceId: string
+      sourceSpace: string
+      originPx: { x: number, y: number }
+    }>).detail
+    if (detail === undefined) return
+    const source = issues.find((issue) => String(issue._id) === detail.sourceId) ??
+      ({ _id: detail.sourceId as Ref<Issue>, space: detail.sourceSpace as Issue['space'] } as Issue)
+    activeDrag.update((s) => reduce(s, {
+      type: 'mousedown-connector',
+      source,
+      originPx: detail.originPx,
+      cursorPx: detail.originPx
+    }, timeScale))
+    attachWindowDragListeners()
   }
 
   function handleBarHover (e: CustomEvent<{ issue: Issue | null }>): void {
@@ -472,7 +536,7 @@
     return e.clientX - sidebarEdge + canvasViewportLeft
   }
 
-  function handleCanvasMouseMove (e: MouseEvent): void {
+  function handleCanvasPointerMove (e: MouseEvent): void {
     // PR4a: while connector-drawing, dispatch mousemove-connector with
     // svg-local cursorPx + the issue under the cursor. Coordinate frame
     // matches barRects (computed in GanttCanvas) so the live bezier
@@ -501,7 +565,7 @@
     )
   }
 
-  async function handleCanvasMouseUp (): Promise<void> {
+  async function handleCanvasPointerUp (): Promise<void> {
     const state = $activeDrag
     if (state.kind === 'connector-drawing') {
       activeDrag.set({ kind: 'idle' })
@@ -519,6 +583,16 @@
       }
       const client = getClient()
       const ops = client.apply(undefined, 'gantt-dependency-create')
+      const optimistic = {
+        _id: `gantt:optimistic:${String(src._id)}:${String(tgt._id)}:${Date.now()}`,
+        _class: tracker.class.IssueRelation,
+        space: src.space,
+        attachedTo: src._id,
+        target: tgt._id,
+        kind: 'finish-to-start',
+        lag: 0
+      } as unknown as IssueRelation
+      optimisticRelations = [...optimisticRelations, optimistic]
       await ops.addCollection(
         tracker.class.IssueRelation,
         src.space,
@@ -527,7 +601,10 @@
         'relations',
         { target: tgt._id, kind: 'finish-to-start', lag: 0 }
       )
-      await ops.commit()
+      const result = await ops.commit()
+      if (!result.result) {
+        optimisticRelations = optimisticRelations.filter((rel) => rel !== optimistic)
+      }
       return
     }
     activeDrag.set({ kind: 'idle' })
@@ -695,17 +772,32 @@
     }
   }
 
-  // Attach/detach window-level mousemove + mouseup only while a drag is active.
+  function attachWindowDragListeners (): void {
+    window.addEventListener('pointermove', handleCanvasPointerMove)
+    window.addEventListener('pointerup', handleCanvasPointerUp)
+    window.addEventListener('pointercancel', handleCanvasPointerUp)
+    window.addEventListener('mousemove', handleCanvasPointerMove)
+    window.addEventListener('mouseup', handleCanvasPointerUp)
+  }
+
+  function detachWindowDragListeners (): void {
+    window.removeEventListener('pointermove', handleCanvasPointerMove)
+    window.removeEventListener('pointerup', handleCanvasPointerUp)
+    window.removeEventListener('pointercancel', handleCanvasPointerUp)
+    window.removeEventListener('mousemove', handleCanvasPointerMove)
+    window.removeEventListener('mouseup', handleCanvasPointerUp)
+  }
+
+  // Attach/detach window-level pointer listeners only while a drag is active.
+  // Connector creation starts from pointerdown; handleConnectorDown also
+  // attaches immediately so the first pointermove cannot race Svelte's flush.
   $: if ($activeDrag.kind !== 'idle' && $activeDrag.kind !== 'hover-bar') {
-    window.addEventListener('mousemove', handleCanvasMouseMove)
-    window.addEventListener('mouseup', handleCanvasMouseUp)
+    attachWindowDragListeners()
   } else {
-    window.removeEventListener('mousemove', handleCanvasMouseMove)
-    window.removeEventListener('mouseup', handleCanvasMouseUp)
+    detachWindowDragListeners()
   }
   onDestroy(() => {
-    window.removeEventListener('mousemove', handleCanvasMouseMove)
-    window.removeEventListener('mouseup', handleCanvasMouseUp)
+    detachWindowDragListeners()
   })
 
   /**
@@ -838,9 +930,19 @@
 
   onMount(() => {
     window.addEventListener('keydown', onKey)
+    containerEl?.addEventListener('pointerdown', handleNativeConnectorDown, true)
+    containerEl?.addEventListener('mousedown', handleNativeConnectorDown, true)
+    document.addEventListener('pointerdown', handleNativeConnectorDown, true)
+    document.addEventListener('mousedown', handleNativeConnectorDown, true)
+    document.addEventListener('gantt-connector-start', handleConnectorStartEvent)
   })
   onDestroy(() => {
     window.removeEventListener('keydown', onKey)
+    containerEl?.removeEventListener('pointerdown', handleNativeConnectorDown, true)
+    containerEl?.removeEventListener('mousedown', handleNativeConnectorDown, true)
+    document.removeEventListener('pointerdown', handleNativeConnectorDown, true)
+    document.removeEventListener('mousedown', handleNativeConnectorDown, true)
+    document.removeEventListener('gantt-connector-start', handleConnectorStartEvent)
   })
 
   function jumpToToday (): void {
@@ -1089,7 +1191,14 @@
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-<div class="gantt-root" tabindex="0" bind:this={containerEl} on:click={onBackgroundClick}>
+<div
+  class="gantt-root"
+  tabindex="0"
+  bind:this={containerEl}
+  on:pointerdown|capture={handleNativeConnectorDown}
+  on:mousedown|capture={handleNativeConnectorDown}
+  on:click={onBackgroundClick}
+>
   {#if loading}
     <Loading />
   {:else}
@@ -1194,7 +1303,7 @@
             {showStatus}
             {hoveredRowId}
             {activeDrag}
-            {relations}
+            relations={displayedRelations}
             {showPredecessors}
             on:jump={onJump}
             on:toggle={onToggle}
@@ -1234,7 +1343,7 @@
               {focusedIssueId}
               {selectedIssueId}
               {milestonesById}
-              {relations}
+              relations={displayedRelations}
               {connectedIds}
               {hoveredIssue}
               {hoveredEdge}

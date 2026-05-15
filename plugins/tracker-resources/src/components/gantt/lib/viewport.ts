@@ -18,6 +18,16 @@ export function computeCanvasRenderWidth (
   return Math.max(1, dataRangeWidth, viewportWidth)
 }
 
+export function computeAdaptivePxPerDay (
+  basePxPerDay: number,
+  dataRangeWidth: number,
+  viewportWidth: number
+): number {
+  if (basePxPerDay <= 0 || dataRangeWidth <= 0 || viewportWidth <= 0) return basePxPerDay
+  if (dataRangeWidth >= viewportWidth) return basePxPerDay
+  return basePxPerDay * (viewportWidth / dataRangeWidth)
+}
+
 export function computeTickViewport (
   viewportLeft: number,
   viewportRight: number,
