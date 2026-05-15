@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
-  import type { Writable } from 'svelte/store'
+  import { writable, type Writable } from 'svelte/store'
   import type { Ref } from '@hcengineering/core'
   import type { Issue, IssueRelation } from '@hcengineering/tracker'
   import { type BarRect, bezierPath } from './lib/dependency-router'
@@ -16,10 +16,10 @@
    * stays in sync with the source bar's connector-dot position and the
    * cursor — same store pattern as GanttResizeOverlay.
    */
-  export let relations: IssueRelation[]
-  export let barRects: Map<string, BarRect>
-  export let activeDrag: Writable<DragState>
-  export let connectedIds: Set<Ref<Issue>>
+  export let relations: IssueRelation[] = []
+  export let barRects: Map<string, BarRect> = new Map()
+  export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
+  export let connectedIds: Set<Ref<Issue>> = new Set()
   export let hoveredIssue: Ref<Issue> | null = null
   export let hoveredEdge: { source: Ref<Issue>, target: Ref<Issue> } | null = null
 
@@ -32,6 +32,7 @@
   }
 
   function livePath (): string | null {
+    if (dragState === undefined) return null
     if (dragState.kind !== 'connector-drawing' && dragState.kind !== 'connector-target-hover') return null
     return bezierPath(dragState.originPx, dragState.cursorPx)
   }
@@ -39,17 +40,19 @@
 </script>
 
 <g class="gantt-dep-layer">
-  {#each relations as rel (rel._id)}
-    {@const src = barRects.get(String(rel.attachedTo)) ?? null}
-    {@const dst = barRects.get(String(rel.target)) ?? null}
-    <GanttDependencyArrow
-      relation={rel}
-      sourceBar={src}
-      targetBar={dst}
-      dimmed={isDimmed(rel)}
-      on:openEditor
-      on:hoverEdge
-    />
+  {#each relations as rel (rel?._id)}
+    {#if rel !== undefined && rel.kind !== undefined}
+      {@const src = barRects.get(String(rel.attachedTo)) ?? null}
+      {@const dst = barRects.get(String(rel.target)) ?? null}
+      <GanttDependencyArrow
+        relation={rel}
+        sourceBar={src}
+        targetBar={dst}
+        dimmed={isDimmed(rel)}
+        on:openEditor
+        on:hoverEdge
+      />
+    {/if}
   {/each}
 
   {#if live !== null}
