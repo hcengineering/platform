@@ -6,7 +6,7 @@
 import type { DependencyKind } from '@hcengineering/tracker'
 import { anchorOf, endpointPx, type BarRect } from '../dependency-router'
 import { bezierPath, pathMidpoint, arrowheadPoints } from '../dependency-router'
-import { connectedIssueIds } from '../dependency-router'
+import { connectedIssueIds, classifyArrowVisibility, clippedEndpointPx, type YBounds } from '../dependency-router'
 import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 
@@ -129,5 +129,98 @@ describe('connectedIssueIds', () => {
   it('ignores unrelated issues', () => {
     const s = connectedIssueIds(A, null, [mkRel('A', 'B'), mkRel('B', 'C'), mkRel('D', 'D')])
     expect(s.has(D)).toBe(false)
+  })
+})
+
+describe('classifyArrowVisibility', () => {
+  const bounds: YBounds = { top: 100, bottom: 500 }
+  const barIn1: BarRect = { left: 50, top: 110, right: 80, bottom: 130 }
+  const barIn2: BarRect = { left: 200, top: 200, right: 240, bottom: 220 }
+  const barAbove: BarRect = { left: 90, top: 0, right: 120, bottom: 20 }
+  const barBelow: BarRect = { left: 90, top: 600, right: 120, bottom: 620 }
+
+  it('both endpoints inside → both-visible', () => {
+    expect(classifyArrowVisibility(barIn1, barIn2, bounds)).toEqual({ kind: 'both-visible' })
+  })
+
+  it('source in, target below → source-only with targetEdge=bottom', () => {
+    expect(classifyArrowVisibility(barIn1, barBelow, bounds)).toEqual({
+      kind: 'source-only',
+      targetEdge: 'bottom'
+    })
+  })
+
+  it('source in, target above → source-only with targetEdge=top', () => {
+    expect(classifyArrowVisibility(barIn1, barAbove, bounds)).toEqual({
+      kind: 'source-only',
+      targetEdge: 'top'
+    })
+  })
+
+  it('source above, target in → target-only with sourceEdge=top', () => {
+    expect(classifyArrowVisibility(barAbove, barIn2, bounds)).toEqual({
+      kind: 'target-only',
+      sourceEdge: 'top'
+    })
+  })
+
+  it('source below, target in → target-only with sourceEdge=bottom', () => {
+    expect(classifyArrowVisibility(barBelow, barIn2, bounds)).toEqual({
+      kind: 'target-only',
+      sourceEdge: 'bottom'
+    })
+  })
+
+  it('source above, target below → both-off crossing viewport', () => {
+    expect(classifyArrowVisibility(barAbove, barBelow, bounds)).toEqual({
+      kind: 'both-off',
+      sourceEdge: 'top',
+      targetEdge: 'bottom'
+    })
+  })
+
+  it('both below viewport → none (no crossing)', () => {
+    const barBelow2: BarRect = { left: 200, top: 700, right: 230, bottom: 720 }
+    expect(classifyArrowVisibility(barBelow, barBelow2, bounds)).toEqual({ kind: 'none' })
+  })
+
+  it('both above viewport → none (no crossing)', () => {
+    const barAbove2: BarRect = { left: 200, top: 30, right: 230, bottom: 50 }
+    expect(classifyArrowVisibility(barAbove, barAbove2, bounds)).toEqual({ kind: 'none' })
+  })
+
+  it('null source → none', () => {
+    expect(classifyArrowVisibility(null, barIn1, bounds)).toEqual({ kind: 'none' })
+  })
+
+  it('null target → none', () => {
+    expect(classifyArrowVisibility(barIn1, null, bounds)).toEqual({ kind: 'none' })
+  })
+
+  it('bar straddling top edge counts as visible', () => {
+    const straddle: BarRect = { left: 50, top: 80, right: 80, bottom: 120 }
+    expect(classifyArrowVisibility(straddle, barIn2, bounds)).toEqual({ kind: 'both-visible' })
+  })
+
+  it('bar straddling bottom edge counts as visible', () => {
+    const straddle: BarRect = { left: 50, top: 480, right: 80, bottom: 520 }
+    expect(classifyArrowVisibility(straddle, barIn2, bounds)).toEqual({ kind: 'both-visible' })
+  })
+})
+
+describe('clippedEndpointPx', () => {
+  const bounds: YBounds = { top: 100, bottom: 500 }
+  const bar: BarRect = { left: 80, top: 600, right: 140, bottom: 620 }
+
+  it('start anchor + bottom edge → (bar.left, bounds.bottom)', () => {
+    expect(clippedEndpointPx(bar, 'start', bounds, 'bottom')).toEqual({ x: 80, y: 500 })
+  })
+
+  it('finish anchor + bottom edge → (bar.right, bounds.bottom)', () => {
+    expect(clippedEndpointPx(bar, 'finish', bounds, 'bottom')).toEqual({ x: 140, y: 500 })
+  })
+
+  it('start anchor + top edge → (bar.left, bounds.top)', () => {
+    expect(clippedEndpointPx(bar, 'start', bounds, 'top')).toEqual({ x: 80, y: 100 })
   })
 })
