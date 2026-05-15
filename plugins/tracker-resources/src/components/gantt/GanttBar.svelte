@@ -76,9 +76,34 @@
 
   $: effectiveStart = isSummary ? summaryRange?.startDate ?? issue.startDate : issue.startDate
   $: effectiveDue = isSummary ? summaryRange?.dueDate ?? issue.dueDate : issue.dueDate
-  $: visible = effectiveStart !== null && effectiveDue !== null
-  $: rawStart = (effectiveStart ?? 0) as number
-  $: rawDue = (effectiveDue ?? 0) as number
+
+  // PR 3 edit-mode: while THIS bar is the active drag target, swap the bar
+  // geometry over to the reducer's preview values so the bar visually tracks
+  // the cursor without waiting for the server round-trip. Other bars keep
+  // their stored geometry.
+  $: dragState = $activeDrag
+  $: isThisBarActive =
+    issueRef !== undefined &&
+    'issue' in dragState &&
+    (dragState as { issue?: Issue }).issue?._id === issueRef
+  $: previewStart = (() => {
+    if (!isThisBarActive) return effectiveStart
+    if (dragState.kind === 'dragging-body' || dragState.kind === 'dragging-unscheduled') return dragState.previewStart
+    if (dragState.kind === 'resizing-left') return dragState.previewStart
+    if (dragState.kind === 'resizing-right') return dragState.originStart
+    return effectiveStart
+  })()
+  $: previewDue = (() => {
+    if (!isThisBarActive) return effectiveDue
+    if (dragState.kind === 'dragging-body' || dragState.kind === 'dragging-unscheduled') return dragState.previewDue
+    if (dragState.kind === 'resizing-left') return dragState.originDue
+    if (dragState.kind === 'resizing-right') return dragState.previewDue
+    return effectiveDue
+  })()
+
+  $: visible = previewStart !== null && previewDue !== null
+  $: rawStart = (previewStart ?? 0) as number
+  $: rawDue = (previewDue ?? 0) as number
   // Normalise reversed ranges (start > due): render the bar across [min, max]
   // rather than collapsing to a 2px sliver at the start. Tooltip mirrors the
   // visual order so the user sees the same range that's drawn.
@@ -141,6 +166,7 @@
       stroke-width={1}
       class="bar"
       class:editable
+      class:active-drag={isThisBarActive}
       on:mousedown={onBarDown('body')}
     />
     {#if editable && w >= 18}
@@ -203,5 +229,10 @@
   :global(svg.gantt-canvas .resize-handle.resize-right:hover) {
     fill: var(--theme-state-info-color, #6366f1);
     fill-opacity: 0.35;
+  }
+  .bar.active-drag {
+    stroke: var(--theme-state-info-color, #6366f1);
+    stroke-width: 2px;
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--theme-state-info-color, #6366f1) 50%, transparent));
   }
 </style>
