@@ -201,7 +201,7 @@ async function addGanttPhase1ViewOptions (client: MigrationUpgradeClient): Promi
   const txOp = new TxOperations(client, core.account.System)
 
   const viewlets = await client.findAll(view.class.Viewlet, {
-    _id: tracker.viewlet.IssueGantt
+    _id: trackerModel.viewlet.IssueGantt
   })
   if (viewlets.length === 0) return
 
