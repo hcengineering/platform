@@ -56,6 +56,22 @@
     <ViewletSettingButton bind:viewOptions bind:viewlet />
   </svelte:fragment>
 
+  <svelte:fragment slot="extra">
+    <!-- Gantt controls render in the SECOND header row when
+         the Gantt viewlet is active. Layout:
+           [centred: date-nav + zoom]   [right: PNG/PDF/Fullscreen]
+         The date-nav+zoom group is wrapped with `margin: auto` so it
+         stays centred regardless of how much All/Active/Backlog
+         (ModeSelector) and PNG/PDF/Fullscreen consume on the sides. -->
+    {#if viewlet?._id === tracker.viewlet.IssueGantt}
+      <div class="gantt-row2-center">
+        <GanttToolbarControls />
+      </div>
+      <GanttExtraActions />
+    {/if}
+  </svelte:fragment>
+
+
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
   </svelte:fragment>
@@ -79,6 +95,18 @@
     />
   </svelte:fragment>
 </SpaceHeader>
+
+<style>
+  /* Phase 2 — center the Gantt date-nav + zoom group between
+     ModeSelector (left) and PNG/PDF/Fullscreen (right) on row 2. */
+  :global(.gantt-row2-center) {
+    display: inline-flex;
+    align-items: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+</style>
+
 <FilterBar
   _class={tracker.class.Issue}
   {space}
