@@ -401,6 +401,14 @@
     })
   }
 
+  function handleRowDragStart (e: CustomEvent<{ issue: Issue, cursorX: number }>): void {
+    activeDrag.update((s) => reduce(s, {
+      type: 'mousedown-unscheduled',
+      issue: e.detail.issue,
+      cursorX: e.detail.cursorX
+    }, timeScale))
+  }
+
   function handleRowContextMenu (e: CustomEvent<{ issue: { _id: string, _class: string }, event: MouseEvent }>): void {
     const found = issues.find((i) => String(i._id) === e.detail.issue._id)
     if (found === undefined) return
@@ -800,6 +808,7 @@
             on:hoverRow={onRowHover}
             on:addIssue={newIssue}
             on:rowContextMenu={handleRowContextMenu}
+            on:rowDragStart={handleRowDragStart}
           />
         </div>
         <div
