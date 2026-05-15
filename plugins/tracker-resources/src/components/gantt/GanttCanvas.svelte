@@ -19,6 +19,7 @@
     openIssue: { issue: { _id: string, _class: string } }
     hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
     barMouseDown: { target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }
+    barClick: { target: DragTarget }
     contextMenu: { issue: Issue, event: MouseEvent }
     connectorDown: { source: Issue, originPx: { x: number, y: number } }
     barHover: { issue: Issue | null }
@@ -230,6 +231,7 @@
                 issueRef={ms._id}
                 dragTarget={{ kind: 'milestone', doc: fullMs }}
                 on:barMouseDown
+                on:barClick
               />
             </g>
           {/if}
@@ -254,6 +256,7 @@
               issueRef={row.issue._id}
               dragTarget={{ kind: 'issue', doc: row.issue }}
               on:barMouseDown
+              on:barClick
               on:contextMenu
               on:connectorDown={forwardConnectorDown}
               on:barHover

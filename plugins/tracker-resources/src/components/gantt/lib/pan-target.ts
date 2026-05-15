@@ -5,9 +5,10 @@
 
 /**
  * Elements that own an explicit interaction and must not start the canvas-pan
- * gesture. Normal Gantt bars are intentionally not excluded: a short click on
- * a bar selects it, while click-and-hold/drag on the same bar pans the
- * timeline just like dragging on empty canvas.
+ * gesture. Unselected Gantt bars are intentionally not excluded: a short click
+ * selects the bar, while click-and-hold/drag on that same unselected bar pans
+ * the timeline just like dragging on empty canvas. Once selected, the bar body
+ * and resize handles become explicit edit controls and are excluded.
  */
 export const PAN_EXCLUDED_SELECTOR = [
   '.sidebar-cell',
@@ -17,7 +18,10 @@ export const PAN_EXCLUDED_SELECTOR = [
   '.toggle-btn',
   '.jump-btn',
   '.resize-cell',
-  '.gantt-connector-dot'
+  '.gantt-connector-dot',
+  'rect.bar.selected',
+  '.summary-hit.selected',
+  '.bar-resize-handle'
 ].join(', ')
 
 export function shouldStartCanvasPan (target: Pick<Element, 'closest'> | null): boolean {
