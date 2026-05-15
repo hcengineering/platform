@@ -362,14 +362,14 @@
             <line
               x1={dx} y1={dy}
               x2={dx} y2={dy + 26}
-              stroke={overdue ? '#dc2626' : '#f59e0b'}
+              stroke={overdue ? 'var(--theme-state-negative-color)' : 'var(--theme-warning-color)'}
               stroke-width="1.5"
               stroke-dasharray="2 2"
               pointer-events="none"
             />
             <polygon
               points="{dx},{dy} {dx + 8},{dy + 4} {dx},{dy + 8}"
-              fill={overdue ? '#dc2626' : '#f59e0b'}
+              fill={overdue ? 'var(--theme-state-negative-color)' : 'var(--theme-warning-color)'}
               pointer-events="none"
             >
               <title>{overdue ? 'Overdue (past deadline)' : 'Deadline'}: {new Date(dlVal).toISOString().slice(0, 10)}</title>
@@ -460,7 +460,7 @@
             cx={xOv - 8}
             cy={barYOv + barHOv / 2}
             r={isCurrentTarget ? 6 : 4}
-            fill={isCurrentTarget ? '#6366f1' : '#94a3b8'}
+            fill={isCurrentTarget ? 'var(--theme-state-info-color, #6366f1)' : 'var(--theme-state-regular-color)'}
             stroke="#ffffff"
             stroke-width={isCurrentTarget ? 1.5 : 1}
             opacity={isCurrentTarget ? 1 : 0.55}

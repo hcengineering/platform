@@ -70,7 +70,7 @@
     {cx}
     {cy}
     {r}
-    fill="#6366f1"
+    fill="var(--theme-state-info-color, #6366f1)"
     stroke="#ffffff"
     stroke-width={1.5}
     pointer-events="none"
@@ -89,6 +89,6 @@
     filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.4));
   }
   :global(svg.gantt-canvas .gantt-connector:hover .gantt-connector-dot) {
-    fill: #4f46e5;
+    fill: var(--theme-state-info-hover, #4f46e5);
   }
 </style>

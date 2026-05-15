@@ -223,13 +223,29 @@
       case 'tracker:statusCategory:Backlog':
         return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)', text: 'var(--theme-content-color)' }
       case 'task:statusCategory:ToDo':
-        return { fill: '#dbeafe', border: '#3b82f6', text: '#1e3a8a' }
+        return {
+          fill: 'var(--theme-state-primary-background-color)',
+          border: 'var(--theme-state-primary-color)',
+          text: 'var(--theme-caption-color)'
+        }
       case 'task:statusCategory:Active':
-        return { fill: '#f59e0b', border: '#d97706', text: '#ffffff' }
+        return {
+          fill: 'var(--theme-warning-color)',
+          border: 'var(--theme-warning-color)',
+          text: 'var(--theme-button-contrast-color)'
+        }
       case 'task:statusCategory:Won':
-        return { fill: '#10b981', border: '#059669', text: '#ffffff' }
+        return {
+          fill: 'var(--theme-state-positive-color)',
+          border: 'var(--theme-state-positive-hover)',
+          text: 'var(--theme-button-contrast-color)'
+        }
       case 'task:statusCategory:Lost':
-        return { fill: '#d1d5db', border: '#9ca3af', text: '#374151' }
+        return {
+          fill: 'var(--theme-state-regular-background-color)',
+          border: 'var(--theme-state-regular-color)',
+          text: 'var(--theme-content-color)'
+        }
       default:
         return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)', text: 'var(--theme-content-color)' }
     }
@@ -431,7 +447,7 @@
       rx={3}
       ry={3}
       fill={barColors.fill}
-      stroke={(isCritical || isViolated) ? '#dc2626' : barColors.border}
+      stroke={(isCritical || isViolated) ? 'var(--theme-state-negative-color)' : barColors.border}
       stroke-width={(isCritical || isViolated) ? 2 : 1}
       stroke-dasharray={isViolated ? '4 2' : 'none'}
       class="bar"
@@ -470,7 +486,7 @@
         height={barH}
         rx={3}
         ry={3}
-        fill="#dc2626"
+        fill="var(--theme-state-negative-color)"
         fill-opacity="0.18"
         pointer-events="none"
       />
@@ -485,7 +501,7 @@
         height={barH - 4}
         rx={2}
         ry={2}
-        fill="#9ca3af"
+        fill="var(--theme-state-regular-color)"
         fill-opacity="0.4"
         pointer-events="none"
       />
