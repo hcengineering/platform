@@ -296,6 +296,10 @@ async function checkRecordAvailable (): Promise<void> {
       }, 500)
     } else if (endpoint !== '') {
       const res = await fetch(concatLink(endpoint, '/checkRecordAvailable'))
+      if (!res.ok || !res.headers.get('content-type')?.includes('application/json')) {
+        isRecordingAvailable.set(false)
+        return
+      }
       const result = await res.json()
       isRecordingAvailable.set(result)
     } else {
