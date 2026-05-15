@@ -271,9 +271,10 @@
   function onCanvasPanStart (e: PointerEvent): void {
     if (scrollerEl === undefined) return
     // Only pan with primary mouse button on empty space — let SVG/HTML
-    // children (bars, buttons, links) handle their own click/dblclick.
+    // children (bars, buttons, links, resize-handle) handle their own
+    // click/drag without competing with the canvas pan.
     const target = e.target as HTMLElement
-    if (target.closest('.bar-wrap, button, a, .toggle-btn, .jump-btn, .settings-popover')) return
+    if (target.closest('.bar-wrap, button, a, .toggle-btn, .jump-btn, .settings-popover, .resize-cell')) return
     panning = true
     panStartX = e.clientX
     panStartY = e.clientY
@@ -296,6 +297,8 @@
   let resizeStartX = 0
   let resizeStartWidth = 0
   function onResizeStart (e: PointerEvent): void {
+    e.stopPropagation()
+    e.preventDefault()
     resizing = true
     resizeStartX = e.clientX
     resizeStartWidth = userSidebarWidth
@@ -303,13 +306,16 @@
   }
   function onResizeMove (e: PointerEvent): void {
     if (!resizing) return
+    e.stopPropagation()
     const next = resizeStartWidth + (e.clientX - resizeStartX)
     userSidebarWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, next))
-    queueMicrotask(syncViewport)
   }
   function onResizeEnd (e: PointerEvent): void {
+    if (!resizing) return
+    e.stopPropagation()
     resizing = false
     ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+    queueMicrotask(syncViewport)
   }
 
   let resizeObs: ResizeObserver | undefined

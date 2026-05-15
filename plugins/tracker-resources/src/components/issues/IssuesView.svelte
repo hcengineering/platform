@@ -3,11 +3,15 @@
   import { Asset, IntlString, translateCB } from '@hcengineering/platform'
   import { ComponentExtensions } from '@hcengineering/presentation'
   import { Issue, TrackerEvents } from '@hcengineering/tracker'
-  import { IModeSelector, themeStore } from '@hcengineering/ui'
+  import { Button, IconAdd, IModeSelector, showPopup, themeStore } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import { FilterBar, SpaceHeader, ViewletContentView, ViewletSettingButton } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
+
+  function newIssue (): void {
+    showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top')
+  }
 
   export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Issue> = {}
@@ -64,6 +68,14 @@
     <ComponentExtensions
       extension={tracker.extensions.IssueListHeader}
       props={{ size: 'small', kind: 'tertiary', space }}
+    />
+    <Button
+      kind="primary"
+      icon={IconAdd}
+      iconProps={{ size: 'medium' }}
+      shape="round"
+      showTooltip={{ label: tracker.string.NewIssue }}
+      on:click={newIssue}
     />
   </svelte:fragment>
 </SpaceHeader>
