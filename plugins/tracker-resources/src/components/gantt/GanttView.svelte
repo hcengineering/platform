@@ -9,6 +9,8 @@
   import { wouldCreateCycle, simulateCascade, addScheduleDays } from './lib/scheduler'
   import { computeCriticalPath } from './lib/critical-path'
   import type { CriticalPathResult } from './lib/types'
+  import { exportAndDownload } from './lib/exporter'
+  import GanttHelpPopup from './GanttHelpPopup.svelte'
   import type { PrimaryEdit, SimulateResult, CascadeShift } from './lib/types'
   import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
   import DependencyEditor from '../DependencyEditor.svelte'
@@ -1351,6 +1353,48 @@
     if (e.key === 'Escape' && $activeDrag.kind !== 'idle') {
       activeDrag.set({ kind: 'idle' })
       e.preventDefault()
+      return
+    }
+    // PR6: zoom shortcuts. `+` / `=` zoom in, `-` zoom out. The same
+    // key positions as the browser's native zoom but scoped to the Gantt.
+    if (e.key === '+' || e.key === '=') {
+      cycleZoom(1)
+      e.preventDefault()
+      return
+    }
+    if (e.key === '-' || e.key === '_') {
+      cycleZoom(-1)
+      e.preventDefault()
+      return
+    }
+    // PR6: '?' or Shift+/ shows the keyboard help overlay.
+    if (e.key === '?') {
+      showPopup(GanttHelpPopup, {}, 'middle')
+      e.preventDefault()
+      return
+    }
+    // PR6: 'e' / 'E' exports the visible Gantt SVG to PNG.
+    if (e.key === 'e' || e.key === 'E') {
+      void exportToPng()
+      e.preventDefault()
+    }
+  }
+
+  function cycleZoom (delta: number): void {
+    const levels: ZoomLevel[] = ['day', 'week', 'month', 'quarter']
+    const idx = levels.indexOf(zoom)
+    const next = levels[Math.min(levels.length - 1, Math.max(0, idx + delta))]
+    if (next !== zoom) setZoom(next)
+  }
+
+  async function exportToPng (): Promise<void> {
+    const svg = scrollerEl?.querySelector('svg.gantt-canvas') as SVGSVGElement | null
+    if (svg === null) return
+    try {
+      await exportAndDownload(svg, `gantt-${new Date().toISOString().slice(0, 10)}`)
+    } catch (err) {
+      const title = await translate(tracker.string.GanttExportFailed, {}, undefined)
+      addNotification(title, String(err), undefined as any, undefined, NotificationSeverity.Error)
     }
   }
 

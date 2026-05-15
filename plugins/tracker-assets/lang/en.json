@@ -363,7 +363,11 @@
     "SlackColumn": "Slack column",
     "Slack": "Slack",
     "CriticalPathCycle": "Dependency cycle detected — critical path unavailable until resolved.",
-    "CriticalPathBadge": "CP"
+    "CriticalPathBadge": "CP",
+    "GanttHelpTitle": "Keyboard shortcuts",
+    "GanttHelpEsc": "Press Esc or ? to close",
+    "GanttExport": "Export to PNG",
+    "GanttExportFailed": "Export failed"
   },
   "status": {}
 }
