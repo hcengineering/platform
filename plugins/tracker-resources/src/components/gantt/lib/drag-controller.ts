@@ -196,11 +196,21 @@ function reduceFromConnector (
   // we don't even attempt a target-hover state, so wouldCreateCycle never
   // sees that edge).
   if (event.hoveredBar !== null && event.hoveredBar._id === state.source._id) {
-    return { ...state, kind: 'connector-drawing', cursorPx: event.cursorPx }
+    return {
+      kind: 'connector-drawing',
+      source: state.source,
+      originPx: state.originPx,
+      cursorPx: event.cursorPx
+    }
   }
 
   if (event.hoveredBar === null) {
-    return { ...state, kind: 'connector-drawing', cursorPx: event.cursorPx }
+    return {
+      kind: 'connector-drawing',
+      source: state.source,
+      originPx: state.originPx,
+      cursorPx: event.cursorPx
+    }
   }
 
   return {
