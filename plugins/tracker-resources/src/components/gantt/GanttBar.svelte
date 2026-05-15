@@ -438,6 +438,19 @@
     {/if}
     <title>{tooltipText}</title>
   {:else}
+    <!--
+      A11Y keyboard navigation: each bar uses tabindex="-1" intentionally
+      — bars are NOT individually Tab-stops. Keyboard access is owned by
+      the GanttView-level `onKey` handler (Tab/Shift-Tab cycles
+      scheduledIssues via moveFocus(), Arrow keys shift the focused bar
+      by 1d / 7d). Letting the browser focus every rect natively would
+      cycle in DOM order which doesn't match the visual chart order, so
+      we centralise focus management instead. The role="button" still
+      makes the bar discoverable to assistive tech; the
+      a11y-click-events-have-key-events warning is suppressed because the
+      keyboard behaviour lives in the parent handler, not on this rect.
+      See GanttView.svelte ~L2359 onKey handler for the canonical path.
+    -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <rect
       x={x}
