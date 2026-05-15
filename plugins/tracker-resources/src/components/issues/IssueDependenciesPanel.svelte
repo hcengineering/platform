@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
-  import { createQuery, getClient, ObjectSearchPopup, type ObjectSearchResult } from '@hcengineering/presentation'
+  import { createQuery, getClient, ObjectPopup } from '@hcengineering/presentation'
   import { Label, addNotification, NotificationSeverity, showPopup } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
-  import type { Ref } from '@hcengineering/core'
+  import { SortingOrder, type Ref } from '@hcengineering/core'
   import type { Issue, IssueRelation } from '@hcengineering/tracker'
   import tracker from '../../plugin'
   import { canEditIssue } from '../../utils'
@@ -93,40 +93,35 @@
   }
 
   function onAddDependency (): void {
-    // The CockroachDB persistence adapter chokes on `$nin: <Ref[]>` against
-    // JSONB-stored arrays (`unsupported comparison operator: _id != ALL …`),
-    // so we cannot pass `ignore` to ObjectSearchPopup. We filter
-    // self / duplicate / cross-project in the result callback instead.
+    // Picker scoped to the current project via `docQuery: { space }` — the
+    // server query never returns issues from other projects, so the user
+    // cannot accidentally pick a cross-project target. Self-link and
+    // already-successor are excluded via `ignoreObjects` so they don't even
+    // appear in the list. Cycle detection happens in the callback because
+    // it depends on the whole relation graph, not just a doc id.
     //
-    // `allowCategory: [tracker.completion.IssueCategory]` opens the popup
-    // pre-focused on the Issue tab — the picker's other tabs (Person,
-    // Project, Document, …) are not relevant for a dependency.
+    // Matching the SetParent picker (SetParentIssueActionPopup.svelte) so
+    // dependency- and parent-pickers behave consistently: same component,
+    // same project-scoping, same spotlight search mode.
+    const ignoreObjects: Ref<Issue>[] = [issue._id, ...outgoing.map((r) => r.target)]
     showPopup(
-      ObjectSearchPopup,
+      ObjectPopup,
       {
         _class: tracker.class.Issue,
-        allowCategory: [tracker.completion.IssueCategory],
-        label: tracker.string.SelectIssue
+        docQuery: { space: issue.space },
+        options: { sort: { modifiedOn: SortingOrder.Descending } },
+        ignoreObjects,
+        placeholder: tracker.string.SelectIssue,
+        category: tracker.completion.IssueCategory,
+        searchMode: 'spotlight',
+        multiSelect: false,
+        allowDeselect: false,
+        shadows: true,
+        width: 'large'
       },
       'top',
-      async (picked: ObjectSearchResult | undefined) => {
-        if (picked === undefined) return
-        const target = picked.doc as Issue
-        // Reject self-link.
-        if (String(target._id) === String(issue._id)) {
-          const title = await translate(tracker.string.DependencyCycle, {}, undefined)
-          addNotification(title, '', undefined as any, undefined, NotificationSeverity.Warning)
-          return
-        }
-        // Reject cross-project (Phase-1 only allows intra-project deps).
-        if (String(target.space) !== String(issue.space)) {
-          const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
-          addNotification(title, 'Cross-project dependencies are not supported. Pick an issue from this project.', undefined as any, undefined, NotificationSeverity.Warning)
-          return
-        }
-        // Reject duplicate (already a successor) — silent.
-        if (outgoing.some((r) => String(r.target) === String(target._id))) return
-        // Cycle detection: would this new arrow close a loop?
+      async (target: Issue | undefined | null) => {
+        if (target === undefined || target === null) return
         if (wouldCreateCycle(issue._id, target._id, [...incoming, ...outgoing])) {
           const title = await translate(tracker.string.DependencyCycle, {}, undefined)
           addNotification(title, '', undefined as any, undefined, NotificationSeverity.Warning)
