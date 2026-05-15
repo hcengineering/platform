@@ -344,7 +344,15 @@
     "DependencyEditTitle": "Edit dependency",
     "GanttShowPredecessors": "Show predecessors column",
     "Predecessors": "Predecessors",
-    "NoPredecessors": "—"
+    "NoPredecessors": "—",
+    "CascadeConfirmTitle": "{count, plural, one {1 issue will be shifted} other {# issues will be shifted}}",
+    "CascadeConfirmConfirm": "Confirm",
+    "CascadeConfirmCancel": "Cancel",
+    "CascadeBannerCycle": "Dependency cycle detected — cannot cascade. Resolve the cycle first.",
+    "CascadeBannerOverflow": "Cascade did not converge after {max} iterations — change rejected.",
+    "CascadeBannerBypass": "{count} successors may now violate constraints — Alt-drag bypassed cascade.",
+    "CascadeLockedSuccessors": "{count, plural, one {1 successor is locked} other {# successors are locked}} — you cannot edit them. Cancel and contact the owner.",
+    "CascadeSkippedUnscheduled": "{count, plural, one {1 other successor has no dates and was not shifted} other {# other successors have no dates and were not shifted}}"
   },
   "status": {}
 }

@@ -342,7 +342,16 @@ export default mergeIds(trackerId, tracker, {
     DependencyEditTitle: '' as IntlString,
     GanttShowPredecessors: '' as IntlString,
     Predecessors: '' as IntlString,
-    NoPredecessors: '' as IntlString
+    NoPredecessors: '' as IntlString,
+    // PR4b: cascade simulation confirmation + error banners
+    CascadeConfirmTitle: '' as IntlString,
+    CascadeConfirmConfirm: '' as IntlString,
+    CascadeConfirmCancel: '' as IntlString,
+    CascadeBannerCycle: '' as IntlString,
+    CascadeBannerOverflow: '' as IntlString,
+    CascadeBannerBypass: '' as IntlString,
+    CascadeLockedSuccessors: '' as IntlString,
+    CascadeSkippedUnscheduled: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,
