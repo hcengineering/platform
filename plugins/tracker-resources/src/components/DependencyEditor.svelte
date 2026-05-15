@@ -3,13 +3,21 @@
 // SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, tick } from 'svelte'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, Label, NumberInput } from '@hcengineering/ui'
+  import { translate } from '@hcengineering/platform'
+  import { Button, Label, NumberInput, themeStore } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import type { IssueRelation } from '@hcengineering/tracker'
   import tracker from '../plugin'
   import { kindCode, kindFromCode } from './gantt/lib/predecessor-format'
+  import MiniDependencyDiagram from './dependency/MiniDependencyDiagram.svelte'
+  import {
+    DIAGRAM_KINDS,
+    diagramGridIndex,
+    clampLagSlider,
+    type DiagramKindCode
+  } from './dependency/diagram-helpers'
 
   /**
    * Popup for editing a single IssueRelation. Opened from
@@ -18,6 +26,11 @@
    * Save and Delete; reads `Permission.UpdateIssue` on the source issue,
    * resolved by the caller (GanttView), same check as connector-dot
    * visibility. Spec §5.
+   *
+   * Tier-4 #11: kind picker rewritten as a 2×2 grid of mini SVG diagrams
+   * (FS / SS / FF / SF). After a pick, the grid collapses to a compact
+   * single-diagram view with an inline lag slider; a "Change kind" button
+   * re-expands the grid.
    */
   export let relation: IssueRelation
   export let canEdit: boolean
@@ -32,17 +45,82 @@
   const dispatch = createEventDispatcher<{ close: void }>()
   const client = getClient()
 
-  let kindCodeValue: 'FS' | 'SS' | 'FF' | 'SF' = kindCode(relation.kind)
+  let kindCodeValue: DiagramKindCode = kindCode(relation.kind)
+  let pickKindAriaLabel = ''
+  $: void translate(tracker.string.DependencyPickKind, {}, $themeStore.language).then((t) => {
+    pickKindAriaLabel = t
+  })
   let lagValue: number = relation.lag
   let confirmingDelete = false
+  // Tier-4 #11 — picker stays compact when an existing kind is already set
+  // (i.e. when editing an existing relation, which is the common case here
+  // since the editor opens from a click on an existing arrow). The "Change
+  // kind" button re-expands the grid.
+  let pickerExpanded = false
+  let gridEl: HTMLDivElement | null = null
 
   $: dirty = kindFromCode(kindCodeValue) !== relation.kind || lagValue !== relation.lag
+  // Slider range is the comfortable UX window; the NumberInput still allows
+  // the full storage clamp (-30..+90) so power-users can enter wider values.
+  const SLIDER_MIN = -14
+  const SLIDER_MAX = 14
+  $: sliderValue = clampLagSlider(lagValue, SLIDER_MIN, SLIDER_MAX)
+  $: outOfSliderRange = lagValue < SLIDER_MIN || lagValue > SLIDER_MAX
 
   function clampLag (n: number): number {
     if (Number.isNaN(n)) return 0
     if (n < -30) return -30
     if (n > 90) return 90
     return Math.round(n)
+  }
+
+  async function focusKindButton (code: DiagramKindCode): Promise<void> {
+    await tick()
+    const btn = gridEl?.querySelector<HTMLButtonElement>(`button[data-kind="${code}"]`)
+    btn?.focus()
+  }
+
+  function pickKind (code: DiagramKindCode): void {
+    kindCodeValue = code
+    pickerExpanded = false
+  }
+
+  function changeKind (): void {
+    pickerExpanded = true
+    void focusKindButton(kindCodeValue)
+  }
+
+  function onGridKeydown (event: KeyboardEvent): void {
+    let dir: 'up' | 'down' | 'left' | 'right' | null = null
+    if (event.key === 'ArrowUp') dir = 'up'
+    else if (event.key === 'ArrowDown') dir = 'down'
+    else if (event.key === 'ArrowLeft') dir = 'left'
+    else if (event.key === 'ArrowRight') dir = 'right'
+    else if (event.key === 'Enter' || event.key === ' ') {
+      // Native button activation handles click; only act when the focused
+      // element exposes a data-kind. Prevent default to avoid form submit.
+      const focused = document.activeElement as HTMLButtonElement | null
+      const k = focused?.dataset?.kind as DiagramKindCode | undefined
+      if (k !== undefined && DIAGRAM_KINDS.includes(k)) {
+        event.preventDefault()
+        pickKind(k)
+      }
+      return
+    } else return
+
+    const focused = document.activeElement as HTMLButtonElement | null
+    const current = (focused?.dataset?.kind as DiagramKindCode | undefined) ?? kindCodeValue
+    const next = diagramGridIndex(current, dir)
+    if (next !== null) {
+      event.preventDefault()
+      void focusKindButton(next)
+    }
+  }
+
+  function onSliderInput (event: Event): void {
+    if (!canEdit) return
+    const v = Number((event.target as HTMLInputElement).value)
+    lagValue = clampLag(v)
   }
 
   async function save (): Promise<void> {
@@ -87,36 +165,73 @@
   function cancel (): void {
     dispatch('close')
   }
-
-  const KIND_OPTIONS: Array<{ code: 'FS' | 'SS' | 'FF' | 'SF', label: typeof tracker.string.DependencyKindFS }> = [
-    { code: 'FS', label: tracker.string.DependencyKindFS },
-    { code: 'SS', label: tracker.string.DependencyKindSS },
-    { code: 'FF', label: tracker.string.DependencyKindFF },
-    { code: 'SF', label: tracker.string.DependencyKindSF }
-  ]
 </script>
 
 <div class="dep-editor">
   <div class="header">
     <span class="title"><Label label={tracker.string.DependencyEditTitle} /></span>
   </div>
-  <div class="row">
+
+  <div class="row picker-row">
     <span class="label"><Label label={tracker.string.DependencyKind} /></span>
-    <select class="select" bind:value={kindCodeValue} disabled={!canEdit}>
-      {#each KIND_OPTIONS as opt}
-        <option value={opt.code}><Label label={opt.label} /></option>
-      {/each}
-    </select>
+    {#if pickerExpanded}
+      <div
+        class="kind-grid"
+        bind:this={gridEl}
+        role="radiogroup"
+        tabindex="-1"
+        aria-label={pickKindAriaLabel}
+        on:keydown={onGridKeydown}
+      >
+        {#each DIAGRAM_KINDS as code}
+          <MiniDependencyDiagram
+            kind={code}
+            selected={code === kindCodeValue}
+            disabled={!canEdit}
+            on:pick={(e) => pickKind(e.detail)}
+          />
+        {/each}
+      </div>
+    {:else}
+      <div class="compact-view">
+        <MiniDependencyDiagram kind={kindCodeValue} selected compact disabled />
+        <button
+          type="button"
+          class="change-link"
+          disabled={!canEdit}
+          on:click={changeKind}
+        >
+          <Label label={tracker.string.DependencyChangeKind} />
+        </button>
+      </div>
+    {/if}
   </div>
-  <div class="row">
+
+  <div class="row lag-row">
     <span class="label"><Label label={tracker.string.DependencyLag} /></span>
-    <div class="lag-spinner">
-      <NumberInput
-        bind:value={lagValue}
-        minValue={-30}
-        maxValue={90}
-        disabled={!canEdit}
+    <div class="lag-controls">
+      <input
+        type="range"
+        class="lag-slider"
+        min={SLIDER_MIN}
+        max={SLIDER_MAX}
+        step="1"
+        value={sliderValue}
+        disabled={!canEdit || outOfSliderRange}
+        aria-valuemin={SLIDER_MIN}
+        aria-valuemax={SLIDER_MAX}
+        aria-valuenow={sliderValue}
+        on:input={onSliderInput}
       />
+      <div class="lag-spinner">
+        <NumberInput
+          bind:value={lagValue}
+          minValue={-30}
+          maxValue={90}
+          disabled={!canEdit}
+        />
+      </div>
+      <span class="lag-unit">d</span>
     </div>
   </div>
 
@@ -145,7 +260,7 @@
     gap: 12px;
     padding: 16px;
     min-width: 320px;
-    max-width: 400px;
+    max-width: 420px;
     background: var(--theme-popup-color);
     border: 1px solid var(--theme-popup-divider);
     border-radius: 8px;
@@ -161,26 +276,68 @@
     align-items: center;
     gap: 12px;
   }
+  .picker-row {
+    align-items: flex-start;
+  }
   .row .label {
     width: 92px;
+    flex-shrink: 0;
     font-size: 13px;
     color: var(--theme-content-color);
+    padding-top: 6px;
   }
-  .select {
-    flex: 1;
-    height: 28px;
-    padding: 0 8px;
-    border: 1px solid var(--theme-button-border);
-    background: var(--theme-button-default);
-    color: var(--theme-content-color);
-    border-radius: 4px;
-    font-size: 13px;
+  .kind-grid {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    grid-template-rows: repeat(2, auto);
+    gap: 8px;
   }
-  .lag-spinner {
+  .compact-view {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 6px;
+  }
+  .change-link {
+    background: none;
+    border: none;
+    color: var(--theme-link-color);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 2px 6px;
+    text-decoration: underline;
+    &:hover:not([disabled]) {
+      color: var(--theme-caption-color);
+    }
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  .lag-row {
+    align-items: center;
+  }
+  .lag-row .label {
+    padding-top: 0;
+  }
+  .lag-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     flex: 1;
+  }
+  .lag-slider {
+    flex: 1;
+    min-width: 80px;
+    accent-color: var(--theme-link-color);
+  }
+  .lag-spinner {
+    width: 64px;
+    flex-shrink: 0;
+  }
+  .lag-unit {
+    font-size: 12px;
+    color: var(--theme-darker-color);
   }
   .confirm {
     display: flex;
