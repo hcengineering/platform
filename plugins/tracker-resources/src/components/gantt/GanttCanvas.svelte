@@ -38,6 +38,7 @@
   // contexts that don't wire the drag state (e.g. embedded preview).
   export let editableIssueIds: Set<string> = new Set()
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
+  export let focusedIssueId: string | null = null
 
   function statusCategoryFor (issue: any): string | null {
     if (statusCategoryMap === undefined) return null
@@ -48,6 +49,10 @@
 
   function isEditable (issueId: unknown): boolean {
     return editableIssueIds.has(String(issueId))
+  }
+
+  function isFocused (issueId: unknown): boolean {
+    return focusedIssueId !== null && String(issueId) === focusedIssueId
   }
 
   $: visibleRows = filterVisibleRows(rows, scrollTop, viewportHeight)
@@ -158,6 +163,7 @@
               summaryRange={summaryFor(row)}
               statusCategory={statusCategoryFor(row.issue)}
               editable={isEditable(row.issue._id)}
+              focused={isFocused(row.issue._id)}
               {activeDrag}
               issueRef={row.issue._id}
               issueObj={row.issue}
