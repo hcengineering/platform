@@ -7,11 +7,15 @@
 
   export let timeScale: TimeScale
   export let canvasHeight: number
-  export let viewport: { left: number; right: number }
+  // Viewport accepted for API compatibility but no longer needed for visibility
+  // (the SVG itself spans the whole canvas, scrollbar clips off-viewport).
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export let viewport: { left: number; right: number } = { left: 0, right: 0 }
+  $: void viewport
 
   $: today = Date.now()
   $: x = timeScale.toX(today)
-  $: visible = x >= viewport.left && x <= viewport.right
+  $: visible = true
 </script>
 
 {#if visible}
