@@ -1587,6 +1587,50 @@
     }
   }
 
+  // PDF export. Uses the browser's print pipeline with
+  // a Gantt-specific print stylesheet so we don't pull in jsPDF.
+  // Caller picks "Save as PDF" in the browser print dialog.
+  function exportToPdf (): void {
+    if (containerEl == null) return
+    containerEl.classList.add('gantt-printing')
+    try {
+      window.print()
+    } finally {
+      // Defer the cleanup so the browser has time to render the
+      // print stylesheet before the class is removed. afterprint
+      // event would be more correct but isn't reliable cross-browser.
+      setTimeout(() => containerEl?.classList.remove('gantt-printing'), 1000)
+    }
+  }
+
+  // Fullscreen toggle. Walk up the DOM from gantt-root to find an
+  // ancestor that includes the second header row so the toolbar stays
+  // accessible in fullscreen.
+  function getFullscreenTarget (): Element | null {
+    if (containerEl == null) return null
+    let el: Element | null = containerEl
+    while (el != null && el !== document.body) {
+      const cls = el.className?.toString() ?? ''
+      if (cls.includes('popupPanel-body') || cls.includes('app-content') ||
+          cls.includes('antiPanel-application')) {
+        return el
+      }
+      el = el.parentElement
+    }
+    return document.body
+  }
+
+  function toggleFullscreen (): void {
+    if (document.fullscreenElement != null) {
+      void document.exitFullscreen().catch(() => {})
+      return
+    }
+    const target = getFullscreenTarget()
+    if (target == null) return
+    void (target as HTMLElement).requestFullscreen().catch(() => {})
+  }
+
+
   onMount(() => {
     window.addEventListener('keydown', onKey)
   })
