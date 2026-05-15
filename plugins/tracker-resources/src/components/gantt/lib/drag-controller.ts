@@ -52,11 +52,24 @@ function reduceFromIdle (state: DragState & { kind: 'idle' }, event: DragEvent):
       cursorStartX: event.cursorX
     }
     if (event.edge === 'body') {
+      // Tier-2 Item 6: when the mousedown carries a co-drag payload we
+      // mount it into the dragging-body state with anchorDeltaMs = 0. The
+      // reducer's mousemove branch maintains it from there.
       return {
         kind: 'dragging-body',
         ...base,
         previewStart: event.originStart,
-        previewEnd: event.originEnd
+        previewEnd: event.originEnd,
+        ...(event.coDrag !== undefined
+          ? {
+              coDrag: {
+                anchorDeltaMs: 0,
+                members: event.coDrag.members,
+                minDeltaMs: event.coDrag.minDeltaMs,
+                maxDeltaMs: event.coDrag.maxDeltaMs
+              }
+            }
+          : {})
       }
     }
     if (event.edge === 'left') {
@@ -115,7 +128,17 @@ function reduceFromHover (
         kind: 'dragging-body',
         ...base,
         previewStart: event.originStart,
-        previewEnd: event.originEnd
+        previewEnd: event.originEnd,
+        ...(event.coDrag !== undefined
+          ? {
+              coDrag: {
+                anchorDeltaMs: 0,
+                members: event.coDrag.members,
+                minDeltaMs: event.coDrag.minDeltaMs,
+                maxDeltaMs: event.coDrag.maxDeltaMs
+              }
+            }
+          : {})
       }
     }
     if (event.edge === 'left') {
@@ -145,11 +168,33 @@ function reduceFromActive (state: DragState, event: DragEvent, timeScale: TimeSc
 
   if (state.kind === 'dragging-body') {
     const deltaPx = event.cursorX - state.cursorStartX
-    const deltaMs = (deltaPx / timeScale.pxPerDay) * 86_400_000
+    const rawDeltaMs = (deltaPx / timeScale.pxPerDay) * 86_400_000
+    // Tier-2 Item 6: when a co-drag is active, clamp the raw delta to the
+    // shared min/max window — the hard-stop semantic from the spec. Snap
+    // is computed against the clamped delta so the entire group lands on
+    // identical UTC-midnight boundaries.
+    if (state.coDrag !== undefined) {
+      const clampedDeltaMs = Math.max(
+        state.coDrag.minDeltaMs,
+        Math.min(state.coDrag.maxDeltaMs, rawDeltaMs)
+      )
+      const previewStart = snapToUtcMidnight(state.originStart + clampedDeltaMs)
+      const previewEnd = snapToUtcMidnight(state.originEnd + clampedDeltaMs)
+      // anchorDeltaMs tracks the snapped delta from the leading bar so that
+      // every other member's preview = origin + anchorDeltaMs lands on the
+      // same midnight grid.
+      const anchorDeltaMs = previewStart - state.originStart
+      return {
+        ...state,
+        previewStart,
+        previewEnd,
+        coDrag: { ...state.coDrag, anchorDeltaMs }
+      }
+    }
     return {
       ...state,
-      previewStart: snapToUtcMidnight(state.originStart + deltaMs),
-      previewEnd: snapToUtcMidnight(state.originEnd + deltaMs)
+      previewStart: snapToUtcMidnight(state.originStart + rawDeltaMs),
+      previewEnd: snapToUtcMidnight(state.originEnd + rawDeltaMs)
     }
   }
 
