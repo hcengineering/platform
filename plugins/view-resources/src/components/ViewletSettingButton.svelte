@@ -28,6 +28,10 @@
   export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let defaultViewOptions: ViewOptions | undefined = undefined
   export let defaultConfig: (BuildModelKey | string)[] | undefined = undefined
+  // v121.12/v121.16/v121.18 — the previously-exported `showViewOptions` prop
+  // was removed in v121.18 (audit-cleanup) after v121.16 reverted v121.12 §B's
+  // sole caller. Both child buttons (ViewOptionsButton + Configure ButtonIcon)
+  // now always render whenever the viewlet defines them.
 
   let btn: HTMLButtonElement
   let pressed: boolean = false
@@ -66,13 +70,18 @@
   {#if viewOptions}
     <ViewOptionsButton {viewlet} {kind} {viewOptions} {viewOptionsConfig} />
   {/if}
+  <!-- v121.12 / Refactor B — Configure-columns button gets its own
+       IntlString so the tooltip differs from the sibling ViewOptionsButton
+       (which keeps "Customize view"). Before v121.12 both buttons rendered
+       the same tooltip "Customize view" with no way for the user to tell
+       them apart. -->
   <ButtonIcon
     icon={view.icon.Configure}
     {disabled}
     {kind}
     size={'small'}
     {pressed}
-    tooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
+    tooltip={{ label: view.string.ConfigureColumns, direction: 'bottom' }}
     dataId={'btn-viewSetting'}
     bind:element={btn}
     on:click={clickHandler}
