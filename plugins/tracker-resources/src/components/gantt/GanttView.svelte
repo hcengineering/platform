@@ -38,18 +38,11 @@
   import GanttHeader from './GanttHeader.svelte'
   import GanttSidebar from './GanttSidebar.svelte'
   import { DEFAULT_COLUMNS, DEFAULT_WIDTHS, computeTotalWidth, type SidebarColumnKey } from './lib/sidebar-columns'
-  import { setConfirming, isConfirming } from './lib/confirm-gate'
   import { cycleSort, comparatorFor, type GanttSortState } from './lib/sidebar-sort'
   import { createTreeExpandStore, type TreeExpandStore } from './lib/tree-expand-store'
   import { GROUP_BY_KEYS, type GroupByKey } from './lib/group-by'
   import { buildGroupedRows, groupRowsToLayoutRows } from './lib/build-rows'
-  // v121.3-E — GanttFilter / applyFilter removed in favour of the standard
-  // FilterBar (FilterButton in IssuesView.svelte). The standard filter
-  // flows into `query` via `resultQuery`, so the issue-side filtering is
-  // already done at the data-query layer. `lib/filter-predicate` is
-  // retained for ad-hoc future use but no longer wired into the Gantt
-  // toolbar — the toolbar Filter button + Ctrl+F popup were redundant
-  // with the FilterBar and confused users (two state-sets per session).
+  import { applyFilter, countActiveFilters, type GanttFilter, type GanttFilterValue } from './lib/filter-predicate'
   import { UndoManager, type UndoEntry, type UndoResult } from './lib/undo-manager'
   import { createFlashStore, flashIssues } from './lib/flash-store'
   import { reduce } from './lib/drag-controller'
@@ -57,12 +50,6 @@
   import { shouldPromoteCanvasPan, shouldStartCanvasPan } from './lib/pan-target'
   import { descendantsWithDates } from './lib/scheduler'
   import { createTimeScale } from './lib/time-scale'
-  import {
-    applyWheelZoom,
-    cursorAnchoredScrollLeft,
-    pxPerDayToTickZoom,
-    ZOOM_PX_PER_DAY
-  } from './lib/zoom'
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import { type BarLabelSlot } from './lib/bar-labels'
   import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
@@ -182,11 +169,6 @@
 
   let zoom: ZoomLevel = 'week'
   const ZOOM_LEVELS: readonly ZoomLevel[] = ['day', 'week', 'month', 'quarter']
-  // v121.3-C — continuous Ctrl+Wheel zoom. `userPxPerDay` is the
-  // single-source-of-truth for the horizontal scale when set; when null
-  // we fall back to the preset table (`ZOOM_PX_PER_DAY[zoom]`). The
-  // preset buttons clear the override; Ctrl+Wheel sets it.
-  let userPxPerDay: number | null = null
 
   let userSidebarWidth: number = DEFAULT_SIDEBAR_WIDTH
 
@@ -218,9 +200,9 @@
     return typeof v === 'string' && (GROUP_BY_KEYS as readonly string[]).includes(v) ? v as GroupByKey : 'none'
   })()
   let collapsedGroups: Set<string> = new Set()
-  // v121.3-E — `ganttFilter` / `filterPopupOpen` / `filterCount` removed
-  // with the gantt-toolbar Filter button. Filter state lives on the
-  // standard FilterBar in IssuesView.svelte and reaches us via `query`.
+  let ganttFilter: GanttFilter = {}
+  let filterPopupOpen = false
+  $: filterCount = countActiveFilters(ganttFilter)
 
   // Phase 3c — Undo/Redo. One manager per GanttView mount; the stack lives
   // in memory and is dropped on navigation-away (Spec §"Open Q2"). The
@@ -252,6 +234,15 @@
     else next.add(key)
     collapsedGroups = next
   }
+  function clearFilter (): void {
+    ganttFilter = {}
+  }
+  function toggleFilterValue (key: keyof GanttFilter, value: GanttFilterValue): void {
+    const current = ganttFilter[key] ?? []
+    const idx = current.indexOf(value)
+    const nextValues = idx >= 0 ? [...current.slice(0, idx), ...current.slice(idx + 1)] : [...current, value]
+    ganttFilter = { ...ganttFilter, [key]: nextValues }
+  }
   function onGroupBySelectChange (e: Event): void {
     const target = e.target
     if (target instanceof HTMLSelectElement) {
@@ -264,21 +255,11 @@
 
   function setZoom (z: ZoomLevel): void {
     zoom = z
-    // v121.3-C — preset button clears any wheel-zoom override so the
-    // canonical preset px/day takes over again.
-    userPxPerDay = null
     if (hScrollEl != null) {
       hScrollEl.scrollLeft = 0
     }
     queueMicrotask(syncViewport)
   }
-
-  // v121.3-C — derived px/day used by both the time-scale and the tick
-  // generator: prefer the wheel-zoom override when set, else the preset.
-  $: effectivePxPerDay = userPxPerDay !== null ? userPxPerDay : ZOOM_PX_PER_DAY[zoom]
-  // Tick granularity follows pxPerDay (continuous zoom). On preset clicks
-  // this resolves back to the matching ZoomLevel via the same table.
-  $: tickZoomLevel = userPxPerDay !== null ? pxPerDayToTickZoom(userPxPerDay) : zoom
 
   const issueQuery = createQuery()
   const milestoneQuery = createQuery()
@@ -395,9 +376,7 @@
     }
   )
 
-  // v121.3-C — padding follows the active tick granularity, so a
-  // wheel-zoomed view also gets sensible left/right padding.
-  $: dateRange = computeDateRange(issues, milestones, tickZoomLevel)
+  $: dateRange = computeDateRange(issues, milestones, zoom)
 
   // PR3.3: lookup so GanttCanvas can build a `DragTarget` for a milestone
   // bar without having to thread the full Milestone[] down.
@@ -442,19 +421,13 @@
     }
   }
 
-  // v121.3-C — base scale uses `effectivePxPerDay` (preset OR wheel-zoom
-  // override) and `tickZoomLevel` for tick granularity. When the user has
-  // an explicit override (Ctrl+Wheel), we skip the adaptive widen-to-fill
-  // pass so the user's chosen scale is respected literally.
-  $: baseTimeScale = createTimeScale(tickZoomLevel, dateRange.from, effectivePxPerDay)
+  $: baseTimeScale = createTimeScale(zoom, dateRange.from)
   $: baseDataCanvasWidth = Math.max(
     1,
     Math.ceil(baseTimeScale.toX(dateRange.to) - baseTimeScale.toX(dateRange.from))
   )
-  $: adaptivePxPerDay = userPxPerDay !== null
-    ? effectivePxPerDay
-    : computeAdaptivePxPerDay(baseTimeScale.pxPerDay, baseDataCanvasWidth, canvasViewportWidth)
-  $: timeScale = createTimeScale(tickZoomLevel, dateRange.from, adaptivePxPerDay)
+  $: adaptivePxPerDay = computeAdaptivePxPerDay(baseTimeScale.pxPerDay, baseDataCanvasWidth, canvasViewportWidth)
+  $: timeScale = createTimeScale(zoom, dateRange.from, adaptivePxPerDay)
   $: milestoneMarkers = milestones.map<MilestoneMarker>(m => ({
     _id: m._id,
     label: m.label,
@@ -536,15 +509,10 @@
   // `includeBreadcrumbs: true`. This lets non-matching parents be rendered
   // as filter-breadcrumbs (Spec §"Filter+Tree"). The group-by path keeps the
   // hard-filter behaviour since swimlanes have no parent-context to preserve.
-  // v121.3-E — `filteredIssues` is now a thin alias for `issues` because
-  // server-side filtering already happened in IssuesView.svelte via the
-  // standard FilterBar resultQuery → GanttView `query` → issueQuery.query
-  // path. `filterMatchIds` is also retired — without a client-side filter
-  // there are no "filter-breadcrumb" parents to render, all issues we
-  // hold are by definition matches. Downstream consumers keep using
-  // `filteredIssues` so the rename surface stays small.
-  $: filteredIssues = issues
-  $: filterMatchIds = null as Set<string> | null
+  $: filteredIssues = filterCount === 0 ? issues : applyFilter(issues, ganttFilter)
+  $: filterMatchIds = filterCount === 0
+    ? null
+    : new Set(filteredIssues.map(i => String(i._id)))
 
   // v121 fix — id→display-name lookup for group-by swimlanes. Built
   // reactively from the live stores; reading the wrong key just falls back
@@ -743,9 +711,6 @@
   function onJump (e: CustomEvent<{ x: number }>): void {
     if (hScrollEl != null) {
       hScrollEl.scrollTo({ left: Math.max(0, e.detail.x - 80), behavior: 'smooth' })
-      // v121.3-B — see jumpToToday comment; force viewport resync so the
-      // dependency-arrow visibility re-runs without waiting on pointermove.
-      queueMicrotask(syncViewport)
     }
   }
 
@@ -935,12 +900,6 @@
     if (row === undefined) return
     const targetTop = Math.max(0, row.y - scrollerEl.clientHeight / 3)
     scrollerEl.scrollTo({ top: targetTop, behavior: 'smooth' })
-    // v121.3-B — Jump-to-Position arrows previously needed a pointermove
-    // before dependency arrows to other rows showed up because the
-    // programmatic vertical scroll did not always re-fire the scroll event
-    // (no-op when target equals current top). Force a viewport resync so
-    // depYBounds + classifyArrowVisibility re-run immediately.
-    queueMicrotask(syncViewport)
   }
 
   function handleOpenEditor (e: CustomEvent<{ relation: IssueRelation }>): void {
@@ -993,11 +952,6 @@
   }
 
   function handleCanvasPointerMove (e: MouseEvent): void {
-    // v121.2 — once a confirmation popup is open the drag preview must
-    // freeze at the position the user released the bar. Without this
-    // gate, every pointermove call into the reducer kept moving the
-    // preview while the popup was visible (hover-bug).
-    if (isConfirming()) return
     // PR4a: while connector-drawing, dispatch mousemove-connector with
     // svg-local cursorPx + the issue under the cursor. Coordinate frame
     // matches barRects (computed in GanttCanvas) so the live bezier
@@ -1027,13 +981,6 @@
   }
 
   async function handleCanvasPointerUp (e?: PointerEvent | MouseEvent): Promise<void> {
-    // v121.2 — when a confirmation popup is up the user's click on the
-    // Cancel / Apply button bubbles pointerup to the window. Without this
-    // guard we'd re-enter the commit path while activeDrag is still in
-    // `dragging-body`, opening a second popup on top of the first
-    // (double-popup bug). The popup's own resolve handler is the single
-    // exit point that releases the gate and decides commit/cancel.
-    if (isConfirming()) return
     const state = $activeDrag
     if (state.kind === 'connector-drawing') {
       activeDrag.set({ kind: 'idle' })
@@ -1200,20 +1147,12 @@
     const newStart = state.kind === 'resizing-right' ? state.originStart : state.previewStart
     const newDue = state.kind === 'resizing-left' ? state.originEnd : state.previewEnd
     const kind: 'move' | 'resize' = state.kind === 'resizing-left' || state.kind === 'resizing-right' ? 'resize' : 'move'
-    // v121.2 — gate further pointer input + re-entry of handleCanvasPointerUp
-    // while the confirmation popup is visible. Without this, pointermove
-    // keeps shoving the preview bar around (hover-bug) and the Cancel/Apply
-    // button's mouseup re-fires handleCanvasPointerUp, opening a second
-    // popup (double-popup bug). The flag is cleared inside the resolve
-    // path below so any code path out of the popup releases the gate.
-    setConfirming(true)
     return await new Promise<boolean>((resolve) => {
       showPopup(
         GanttConfirmCommitPopup,
         { issue: state.target.doc, kind, newStart, newDue },
         'top',
         (result: boolean | undefined) => {
-          setConfirming(false)
           resolve(result === true)
         }
       )
@@ -1400,9 +1339,6 @@
           // dragged bars remain at their preview positions while the user
           // decides. activeDrag is only released after the popup resolves —
           // commit → idle on success, cancel → idle on dismiss.
-          // v121.2 — gate pointer input + handleCanvasPointerUp re-entry
-          // while the cascade popup is up (bulk-drag hover-bug / double-popup).
-          setConfirming(true)
           showPopup(
             ConfirmCascadePopup,
             {
@@ -1413,7 +1349,6 @@
             },
             'middle',
             (ok: boolean) => {
-              setConfirming(false)
               if (ok !== true) {
                 activeDrag.set({ kind: 'idle' })
                 return
@@ -1427,17 +1362,12 @@
         }
         if (legacyConfirmKind !== 'none') {
           const pe = primaryEdits[0]
-          // v121.2 — same gate around the single-issue legacy popup.
-          setConfirming(true)
           const ok = await new Promise<boolean>((resolve) => {
             showPopup(
               GanttConfirmCommitPopup,
               { issue: pe.issue, kind: legacyConfirmKind, newStart: pe.newStart, newDue: pe.newDue },
               'top',
-              (r: boolean | undefined) => {
-                setConfirming(false)
-                resolve(r === true)
-              }
+              (r: boolean | undefined) => resolve(r === true)
             )
           })
           if (!ok) {
@@ -1470,8 +1400,6 @@
         // is released only when the popup resolves: idle-after-commit on
         // confirm so the bar transitions cleanly to its new server-state,
         // or idle-on-cancel so the bar springs back to its original dates.
-        // v121.2 — gate pointer input + handleCanvasPointerUp re-entry.
-        setConfirming(true)
         showPopup(
           ConfirmCascadePopup,
           {
@@ -1482,7 +1410,6 @@
           },
           'middle',
           (ok: boolean) => {
-            setConfirming(false)
             if (ok !== true) {
               activeDrag.set({ kind: 'idle' })
               return
@@ -1927,28 +1854,13 @@
     }
     if (r.kind === 'empty') return
     if (r.kind === 'conflicted') {
-      // v121.3-D — add a hint sub-line explaining why this frame was
-      // dropped from the stack (instead of re-queued) so users don't keep
-      // mashing Ctrl-Z and seeing the same toast.
       const title = await translate(tracker.string.GanttUndoConflict, {}, undefined)
-      const hint = await translate(tracker.string.GanttUndoConflictHint, {}, undefined)
-      addNotification(title, hint, undefined as any, undefined, NotificationSeverity.Warning)
-      // Surface the frame details in DevTools — invaluable for debugging
-      // intermittent "undo did nothing" reports because the manager's
-      // conflict-detection is permissive (it prefers false-positive over
-      // silent overwrite, see undo-manager.ts checkConflict comment).
-      console.warn('[gantt-undo] conflict — frame dropped', {
-        entry: r.entry
-      })
+      addNotification(title, '', undefined as any, undefined, NotificationSeverity.Warning)
       return
     }
     if (r.kind === 'error') {
       const title = await translate(tracker.string.GanttUndoFailed, {}, undefined)
       addNotification(title, String(r.error), undefined as any, undefined, NotificationSeverity.Error)
-      console.warn('[gantt-undo] error — frame dropped', {
-        entry: r.entry,
-        error: r.error
-      })
     }
   }
 
@@ -2055,13 +1967,13 @@
       void exportToPng()
       e.preventDefault()
     }
-    // v121.3-E — Phase-3b Ctrl/Cmd+F toggle removed together with the
-    // gantt-toolbar Filter button. The standard FilterBar in IssuesView
-    // is now the single source of filter truth; the browser's native
-    // find dialog (which Ctrl+F was hijacking) is more useful here than
-    // a redundant gantt-local popup. A future refactor can re-bind
-    // Ctrl+F to focus the FilterBar's `+ Filter` button via a custom
-    // event.
+    // Phase 3b: Ctrl/Cmd+F opens the Gantt filter popup. Reserved as a
+    // placeholder in Phase 1; wired here. preventDefault stops the browser
+    // find dialog from stealing focus.
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+      filterPopupOpen = !filterPopupOpen
+      e.preventDefault()
+    }
   }
 
   function cycleZoom (delta: number): void {
@@ -2069,31 +1981,6 @@
     const idx = levels.indexOf(zoom)
     const next = levels[Math.min(levels.length - 1, Math.max(0, idx + delta))]
     if (next !== zoom) setZoom(next)
-  }
-
-  // v121.3-C — Ctrl+Wheel (Cmd+Wheel on Mac) over the scroller: continuous
-  // zoom with cursor-anchored scroll. Without Ctrl we let the wheel pass
-  // through to the native scroller (vertical scroll / shift-wheel
-  // horizontal). All math lives in lib/zoom.ts for unit-testability.
-  function onScrollerWheel (e: WheelEvent): void {
-    if (!(e.ctrlKey || e.metaKey)) return
-    if (hScrollEl == null) return
-    e.preventDefault()
-    const rect = hScrollEl.getBoundingClientRect()
-    const cursorX = Math.max(0, e.clientX - rect.left)
-    const oldPpd = effectivePxPerDay
-    const oldScrollLeft = hScrollEl.scrollLeft
-    const newPpd = applyWheelZoom(oldPpd, e.deltaY)
-    if (newPpd === oldPpd) return
-    userPxPerDay = newPpd
-    // Apply scrollLeft on the next tick so the new layout (driven by the
-    // updated effectivePxPerDay) has rendered with the new scrollWidth.
-    const nextScroll = cursorAnchoredScrollLeft(cursorX, oldScrollLeft, oldPpd, newPpd)
-    queueMicrotask(() => {
-      if (hScrollEl == null) return
-      hScrollEl.scrollLeft = nextScroll
-      syncViewport()
-    })
   }
 
   async function exportToPng (): Promise<void> {
@@ -2123,35 +2010,22 @@
     }
   })
 
-  // v121.3-B — programmatic scroll helpers: after any scrollTo / scrollBy
-  // we proactively sync the viewport (one frame for smooth scroll to start +
-  // one for the final position). Smooth-scroll fires real `scroll` events
-  // during animation, but when the requested left equals the current
-  // scrollLeft (e.g. jumpToToday when already centred on today) no event
-  // fires at all, and reactive consumers (dependency-arrow visibility,
-  // hThumbLeft) stay stale until the next pointermove. The explicit
-  // queueMicrotask path keeps `canvasViewportLeft` and dependant reactive
-  // expressions (including classifyArrowVisibility) in sync.
   function jumpToToday (): void {
     if (hScrollEl == null) return
     const x = timeScale.toX(Date.now())
     hScrollEl.scrollTo({ left: Math.max(0, x - canvasViewportWidth / 2), behavior: 'smooth' })
-    queueMicrotask(syncViewport)
   }
   function pageScroll (dir: -1 | 1): void {
     if (hScrollEl == null) return
     hScrollEl.scrollBy({ left: dir * canvasViewportWidth * 0.8, behavior: 'smooth' })
-    queueMicrotask(syncViewport)
   }
   function jumpToStart (): void {
     if (hScrollEl == null) return
     hScrollEl.scrollTo({ left: 0, behavior: 'smooth' })
-    queueMicrotask(syncViewport)
   }
   function jumpToEnd (): void {
     if (hScrollEl == null) return
     hScrollEl.scrollTo({ left: hScrollEl.scrollWidth, behavior: 'smooth' })
-    queueMicrotask(syncViewport)
   }
   function jumpToDate (iso: string): void {
     if (hScrollEl == null || iso === '') return
@@ -2159,7 +2033,6 @@
     if (isNaN(t)) return
     const x = timeScale.toX(t)
     hScrollEl.scrollTo({ left: Math.max(0, x - canvasViewportWidth / 2), behavior: 'smooth' })
-    queueMicrotask(syncViewport)
   }
   let datePickerValue: string = ''
 
@@ -3803,8 +3676,7 @@
           <button
             type="button"
             class="zoom-btn"
-            class:active={userPxPerDay === null && zoom === z}
-            class:closest={userPxPerDay !== null && tickZoomLevel === z}
+            class:active={zoom === z}
             on:click={() => setZoom(z)}
           >{z[0].toUpperCase() + z.slice(1)}</button>
         {/each}
@@ -3861,10 +3733,58 @@
         >
           <Icon icon={IconRedo} size="small" />
         </button>
-        <!-- The standard Tracker FilterBar is the single source of filter truth:
-             its `resultQuery` flows into GanttView's `query` prop, so
-             server-side filtering is already applied. Group-By stays here
-             because it is a gantt-specific layout concern (swimlanes). -->
+        <!-- Phase 3b: Filter button + group-by dropdown. Lightweight inline
+             UI for v1; the full Tracker filter-store integration is staged
+             for 3b.v2 (Spec §"Reuse, nicht Neuentwicklung"). The Ctrl+F
+             keyboard shortcut (registered globally below) toggles the same
+             popup. The filter dropdown only exposes status/priority/assignee
+             for v1; component/milestone follow the same pattern. -->
+        <div class="gantt-filter-wrap">
+          <button
+            type="button"
+            class="gantt-filter-btn"
+            class:has-active-filter={filterCount > 0}
+            use:tooltip={{ label: tracker.string.GanttFilter }}
+            on:click={() => { filterPopupOpen = !filterPopupOpen }}
+          >
+            <Label label={tracker.string.GanttFilter} />
+            {#if filterCount > 0}<span class="gantt-filter-badge">{filterCount}</span>{/if}
+          </button>
+          {#if filterPopupOpen}
+            <!-- svelte-ignore a11y-no-static-element-interactions a11y-click-events-have-key-events -->
+            <div class="gantt-filter-popup" role="dialog">
+              <div class="gantt-filter-popup-row">
+                <button
+                  type="button"
+                  class="gantt-filter-clear"
+                  on:click={clearFilter}
+                  disabled={filterCount === 0}
+                >
+                  <Label label={tracker.string.GanttFilterClear} />
+                </button>
+              </div>
+              <!-- Filter dimensions are populated from the project's actual
+                   status/priority/assignee universe in 3b.v2; v1 ships with
+                   plain numeric priority buckets which exist regardless of
+                   project. v121 fix — labels render as Urgent/High/Medium/
+                   Low/No Priority (translated via tracker.string) instead of
+                   the implementation-detail P0..P4 numerics. -->
+              <div class="gantt-filter-popup-section">
+                <div class="gantt-filter-popup-title"><Label label={tracker.string.GanttFilterByPriority} /></div>
+                {#each [IssuePriority.NoPriority, IssuePriority.Urgent, IssuePriority.High, IssuePriority.Medium, IssuePriority.Low] as p (p)}
+                  <label class="gantt-filter-popup-item">
+                    <input
+                      type="checkbox"
+                      checked={(ganttFilter.priority ?? []).includes(p)}
+                      on:change={() => toggleFilterValue('priority', p)}
+                    />
+                    <span><Label label={issuePriorities[p].label} /></span>
+                  </label>
+                {/each}
+              </div>
+            </div>
+          {/if}
+        </div>
         <div class="gantt-groupby-wrap" use:tooltip={{ label: tracker.string.GanttGroupOverridesHierarchy }}>
           <Label label={tracker.string.GanttGroupBy} />
           <!-- svelte-ignore a11y-no-onchange -->
@@ -3904,7 +3824,6 @@
       on:pointermove={onCanvasPanMove}
       on:pointerup={onCanvasPanEnd}
       on:pointercancel={onCanvasPanEnd}
-      on:wheel|nonpassive={onScrollerWheel}
     >
       <div
         class="gantt-grid"
@@ -4158,9 +4077,10 @@
   .toolbar-left { display: flex; gap: 4px; }
   .toolbar-center { display: flex; gap: 2px; justify-self: center; }
   .toolbar-right { display: flex; gap: 8px; justify-self: end; position: relative; align-items: center; }
-  /* v121.3-E — Group-By controls. The Filter-related `.gantt-filter-*`
-     blocks were removed together with the toolbar Filter button; the
-     standard FilterBar in IssuesView now owns filter state. */
+  /* Phase 3b — Filter + Group-By controls. Sit next to the zoom switcher
+     in the toolbar-right cell; the filter popup is positioned absolute so
+     it overlaps the canvas without re-flowing layout. */
+  .gantt-filter-wrap { position: relative; }
   .gantt-toolbar-icon-btn {
     height: 26px;
     width: 26px;
@@ -4338,14 +4258,6 @@
   .zoom-btn.active {
     background: var(--theme-button-pressed);
     font-weight: 600;
-  }
-  /* v121.3-C — `closest` is set while the user is in continuous (Ctrl+Wheel)
-     zoom; it highlights which preset the current pxPerDay is closest to,
-     with a softer style than `active` so the user can tell the two
-     states apart. */
-  .zoom-btn.closest {
-    background: var(--theme-button-hovered);
-    font-weight: 500;
   }
   /* .settings-btn / .settings-popover removed — replaced by Huly's
      Customize-View ViewOption pattern (ToggleViewOption) which renders

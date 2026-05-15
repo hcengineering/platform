@@ -6,6 +6,7 @@
 import {
   parseColumns,
   clampWidth,
+  computeTotalWidth,
   DEFAULT_WIDTHS,
   DEFAULT_COLUMNS,
   ALL_COLUMN_KEYS,
@@ -95,5 +96,40 @@ describe('sidebar-columns: constants', () => {
 
   it('MIN_WIDTH < MAX_WIDTH', () => {
     expect(MIN_WIDTH).toBeLessThan(MAX_WIDTH)
+  })
+})
+
+describe('sidebar-columns: computeTotalWidth', () => {
+  it('sums explicit widths for every visible column', () => {
+    const cols: SidebarColumnKey[] = ['identifier', 'title', 'predecessors', 'slack']
+    const widths = { identifier: 80, title: 240, predecessors: 140, slack: 60 }
+    expect(computeTotalWidth(cols, widths)).toBe(520)
+  })
+
+  it('falls back to DEFAULT_WIDTHS when a column has no override', () => {
+    const cols: SidebarColumnKey[] = ['identifier', 'title']
+    expect(computeTotalWidth(cols, {})).toBe(
+      DEFAULT_WIDTHS.identifier + DEFAULT_WIDTHS.title
+    )
+  })
+
+  it('matches DEFAULT_COLUMNS sum when widths is empty', () => {
+    const expected = DEFAULT_COLUMNS.reduce((s, c) => s + DEFAULT_WIDTHS[c], 0)
+    expect(computeTotalWidth(DEFAULT_COLUMNS, {})).toBe(expected)
+  })
+
+  it('returns 0 for empty column list', () => {
+    expect(computeTotalWidth([], { identifier: 80 })).toBe(0)
+  })
+
+  it('rejects negative width overrides and uses the default instead', () => {
+    const cols: SidebarColumnKey[] = ['identifier']
+    expect(computeTotalWidth(cols, { identifier: -5 })).toBe(DEFAULT_WIDTHS.identifier)
+  })
+
+  it('coerces non-finite override values (NaN, Infinity) to the default', () => {
+    const cols: SidebarColumnKey[] = ['identifier']
+    expect(computeTotalWidth(cols, { identifier: NaN })).toBe(DEFAULT_WIDTHS.identifier)
+    expect(computeTotalWidth(cols, { identifier: Infinity })).toBe(DEFAULT_WIDTHS.identifier)
   })
 })
