@@ -3,10 +3,11 @@
   import { Asset, IntlString, translateCB } from '@hcengineering/platform'
   import { ComponentExtensions } from '@hcengineering/presentation'
   import { Issue, TrackerEvents } from '@hcengineering/tracker'
-  import { Button, IconAdd, IModeSelector, showPopup, themeStore } from '@hcengineering/ui'
+  import { Button, IconAdd, IModeSelector, SearchInput, showPopup, themeStore } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
+    FilterButton,
     SpaceHeader,
     ViewletContentView,
     ViewletSettingButton,
@@ -15,6 +16,7 @@
   } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
+  import GanttToolbarBar from '../gantt/GanttToolbarBar.svelte'
   function newIssue (): void {
     showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top')
   }
@@ -71,6 +73,7 @@
   {space}
   {resultQuery}
   {modeSelectorProps}
+  overrideSearch={isGanttMode}
 >
   <svelte:fragment slot="header-tools">
     <ViewletSettingButton
@@ -82,9 +85,32 @@
     />
   </svelte:fragment>
 
+  <!-- Gantt mode unifies the legacy gantt-toolbar with the SpaceHeader's
+       search row. Filter + Group-by + Lupe + Date-Nav + Zoom + Undo/Redo
+       live in one row; trailing slot adds Hamburger + Fullscreen after
+       the All/Active/Backlog ModeSelector. State + handlers bridge via
+       ganttToolbarSnapshot written by GanttView. List/Kanban mode keeps
+       the SpaceHeader default (SearchInput + FilterButton). -->
+  <svelte:fragment slot="search" let:search let:setSearch>
+    {#if isGanttMode}
+      <FilterButton _class={tracker.class.Issue} {space} />
+      <GanttToolbarBar section="search" />
+      <SearchInput
+        value={search}
+        on:change={(e) => setSearch(typeof e.detail === 'string' ? e.detail : '')}
+        collapsed
+      />
+    {/if}
+  </svelte:fragment>
+  <svelte:fragment slot="extra-trailing">
+    {#if isGanttMode}
+      <GanttToolbarBar section="trailing" />
+    {/if}
+  </svelte:fragment>
+
   <svelte:fragment slot="extra">
-    <!-- Gantt toolbar controls are rendered inside GanttView.svelte
-         (the Tier-stack toolbar). No duplicate buttons here. -->
+    <!-- Default extra slot is empty: ModeSelector is rendered by SpaceHeader
+         from `modeSelectorProps`; trailing icons go into extra-trailing. -->
   </svelte:fragment>
 
 
