@@ -56,6 +56,7 @@
   import { createTreeExpandStore, type TreeExpandStore } from './lib/tree-expand-store'
   import { GROUP_BY_KEYS, type GroupByKey } from './lib/group-by'
   import { buildGroupedRows, groupRowsToLayoutRows } from './lib/build-rows'
+  import { ganttToolbarSnapshot } from './ganttToolbarStore'
   // E — GanttFilter / applyFilter removed in favour of the standard
   // FilterBar (FilterButton in IssuesView.svelte). The standard filter
   // flows into `query` via `resultQuery`, so the issue-side filtering is
@@ -123,11 +124,11 @@
   const DEFAULT_SIDEBAR_WIDTH = 280
   const HEADER_HEIGHT = 56
   const MILESTONE_STRIP_HEIGHT = 0
-  const TOOLBAR_HEIGHT = 40
-  //  / Bug 1 — bound to the toolbar element's clientHeight so the
-  // overlaid vertical scrollbar follows the toolbar's true measured height
-  // (it may wrap into a second row at narrow viewport widths, see CSS).
-  let toolbarHeightPx = TOOLBAR_HEIGHT
+  // Toolbar lives outside GanttView (hoisted into IssuesView's SpaceHeader
+  // row 2 via ganttToolbarSnapshot). With no in-Gantt toolbar strip the
+  // overlaid vertical scrollbar simply starts at the top of .gantt-root,
+  // so the offset is always 0.
+  const toolbarHeightPx = 0
 
   //  / Bug 2 — i18n raw-keys in aria-labels. `aria-label={tracker.string.Foo}`
   // sets the literal IntlString id ("tracker:string:Foo"), it does not
@@ -3146,6 +3147,51 @@
     .map((r) => (r.issue as Issue)._id)
 
   $: loading = loadingIssues || loadingMilestones
+
+  // Toolbar-portal bridge. GanttView keeps owning every piece of toolbar
+  // state and every handler; the snapshot below carries them out to
+  // GanttToolbarBar (mounted in IssuesView's SpaceHeader row 2 slots), so
+  // the user sees a single unified row instead of a separate gantt-toolbar
+  // strip. Reactive deps below cover every primitive the bar reads; the
+  // handler refs are stable so re-setting them is cheap. The store is
+  // cleared in onDestroy so a non-Gantt viewlet doesn't render stale
+  // controls if the user switches view mode without unmounting IssuesView.
+  $: ganttToolbarSnapshot.set({
+    layoutMode,
+    mobileDrawerOpen,
+    toggleMobileDrawer: () => { mobileDrawerOpen = !mobileDrawerOpen },
+    datePickerValue,
+    setDatePickerValue: (v) => { datePickerValue = v },
+    jumpToStart,
+    pageScrollPrev: () => pageScroll(-1),
+    jumpToToday,
+    pageScrollNext: () => pageScroll(1),
+    jumpToEnd,
+    jumpToDate,
+    zoomDropdownItems,
+    zoomDropdownSelection,
+    onZoomDropdownSelected,
+    visibleDays,
+    visibleDaysInput,
+    setVisibleDaysInput: (n) => { visibleDaysInput = n },
+    applyVisibleDaysInput,
+    onVisibleDaysKeyDown,
+    canUndo: $canUndo,
+    canRedo: $canRedo,
+    nextUndoDescription: $nextUndoDescription,
+    nextRedoDescription: $nextRedoDescription,
+    handleUndo: () => { void handleUndo() },
+    handleRedo: () => { void handleRedo() },
+    ganttGroupBy,
+    onGroupBySelectChange,
+    savedViewModified,
+    savedViewName: $selectedFilterStore?.name ?? '',
+    onUpdateSavedViewClick,
+    toggleFullscreen,
+    openMoreActionsMenu,
+    ariaLabels
+  })
+  onDestroy(() => ganttToolbarSnapshot.set(null))
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-click-events-have-key-events a11y-no-static-element-interactions -->
@@ -3158,246 +3204,6 @@
   {#if loading}
     <Loading />
   {:else}
-    <!--  / Bug 1 — Toolbar Overflow. Switched fixed `height` to
-         `min-height` and bound the measured client-height into
-         `toolbarHeightPx` so the absolute-positioned vertical scrollbar
-         still starts below the toolbar even when the flex-wrap
-         (@media max-width: 1024px) breaks the controls into two rows. -->
-    <div
-      class="gantt-toolbar"
-      style="min-height: {TOOLBAR_HEIGHT}px;"
-      bind:clientHeight={toolbarHeightPx}
-    >
-      <div class="toolbar-left">
-        {#if layoutMode === 'phone'}
-          <!--  — Mobile-Friendly Gantt. Hamburger button
-               toggles the slide-out drawer that hosts the issue list on
-               Phone. The legacy sidebar grid is hidden behind a CSS
-               @media (max-width: 640px) rule below. -->
-          <button
-            class="nav-btn icon-btn mobile-hamburger"
-            type="button"
-            use:tooltip={{ label: mobileDrawerOpen ? tracker.string.GanttMobileCloseSidebar : tracker.string.GanttMobileOpenSidebar }}
-            aria-label={ariaLabelOf(mobileDrawerOpen ? tracker.string.GanttMobileCloseSidebar : tracker.string.GanttMobileOpenSidebar)}
-            aria-expanded={mobileDrawerOpen}
-            on:click={() => { mobileDrawerOpen = !mobileDrawerOpen }}
-          >
-            <span class="hamburger-glyph" aria-hidden="true">≡</span>
-          </button>
-        {/if}
-        <!--  / Bug 3 — Date-Nav buttons. The four icon-only nav
-             buttons (jumpToStart, prev, next, jumpToEnd) had only a
-             tooltip but no accessible name.  Set both aria-label and
-             title from the resolved translation so screen-readers and
-             native browser tooltips both work; the existing huly
-             tooltip via use:tooltip stays untouched. -->
-        <button
-          class="nav-btn icon-btn"
-          type="button"
-          use:tooltip={{ label: tracker.string.GanttJumpToStart }}
-          on:click={jumpToStart}
-          aria-label={ariaLabelOf(tracker.string.GanttJumpToStart)}
-          title={ariaLabelOf(tracker.string.GanttJumpToStart)}
-        >
-          <Icon icon={ArrowLeft} size="small" />
-        </button>
-        <button
-          class="nav-btn icon-btn"
-          type="button"
-          use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
-          on:click={() => pageScroll(-1)}
-          aria-label={ariaLabelOf(tracker.string.GanttPreviousPeriod)}
-          title={ariaLabelOf(tracker.string.GanttPreviousPeriod)}
-        >
-          <Icon icon={NavPrev} size="small" />
-        </button>
-        <button class="nav-btn today-btn" type="button" on:click={jumpToToday}>
-          <Label label={tracker.string.GanttToday} />
-        </button>
-        <button
-          class="nav-btn icon-btn"
-          type="button"
-          use:tooltip={{ label: tracker.string.GanttNextPeriod }}
-          on:click={() => pageScroll(1)}
-          aria-label={ariaLabelOf(tracker.string.GanttNextPeriod)}
-          title={ariaLabelOf(tracker.string.GanttNextPeriod)}
-        >
-          <Icon icon={NavNext} size="small" />
-        </button>
-        <button
-          class="nav-btn icon-btn"
-          type="button"
-          use:tooltip={{ label: tracker.string.GanttJumpToEnd }}
-          on:click={jumpToEnd}
-          aria-label={ariaLabelOf(tracker.string.GanttJumpToEnd)}
-          title={ariaLabelOf(tracker.string.GanttJumpToEnd)}
-        >
-          <Icon icon={ArrowRight} size="small" />
-        </button>
-        <label
-          class="date-input-wrap"
-          use:tooltip={{ label: tracker.string.GanttJumpToDate }}
-          aria-label={ariaLabelOf(tracker.string.GanttJumpToDate)}
-          title={ariaLabelOf(tracker.string.GanttJumpToDate)}
-        >
-          <Icon icon={Calendar} size="small" />
-          <input
-            type="date"
-            class="date-input"
-            bind:value={datePickerValue}
-            on:change={() => jumpToDate(datePickerValue)}
-            aria-label={ariaLabelOf(tracker.string.GanttJumpToDate)}
-          />
-        </label>
-      </div>
-      <div class="toolbar-center">
-        <!--  — Four preset buttons replaced by a single Dropdown +
-             numeric range input. Custom is only shown in the list while
-             active (set via Ctrl+Wheel zoom or via the days-input); it is
-             never a directly-selectable preset. Keyboard shortcuts D/W/M/Q
-             remain wired in onKey() below for power users. -->
-        <DropdownLabelsIntl
-          kind={'regular'}
-          size={'small'}
-          justify={'left'}
-          label={tracker.string.GanttZoomLabel}
-          items={zoomDropdownItems}
-          selected={zoomDropdownSelection}
-          shouldUpdateUndefined={false}
-          on:selected={onZoomDropdownSelected}
-        />
-        <div
-          class="zoom-days-input"
-          use:tooltip={{ label: tracker.string.GanttZoomVisibleDays, props: { days: visibleDays } }}
-          aria-label={ariaLabelOf(tracker.string.GanttZoomDaysAria)}
-        >
-          <EditBox
-            bind:value={visibleDaysInput}
-            format={'number'}
-            minValue={MIN_VISIBLE_DAYS}
-            maxValue={MAX_VISIBLE_DAYS}
-            kind={'editbox'}
-            on:blur={applyVisibleDaysInput}
-            on:keydown={onVisibleDaysKeyDown}
-          />
-          <span class="zoom-days-suffix"><Label label={tracker.string.GanttZoomDaysSuffix} /></span>
-        </div>
-      </div>
-      <div class="toolbar-right">
-        <!--  / Refactor C — Tree-View Expand-/Collapse-all moved
-             from the top toolbar into the sidebar corner-range strip
-             (rendered below) so they sit above the actual sidebar list
-             they operate on. User-report the buttons were
-             too far away from the rows in the previous toolbar position. -->
-        <!-- Phase 3c: Undo/Redo. The buttons mirror the Cmd+Z / Cmd+Shift+Z
-             keyboard shortcuts wired in onKey() below — disabled state and
-             tooltip description come from the UndoManager reactive stores.
-             Sits before the filter button so the most frequent operations
-             cluster together. -->
-        <button
-          type="button"
-          class="gantt-toolbar-icon-btn"
-          disabled={!$canUndo}
-          use:tooltip={{ label: tracker.string.GanttUndo }}
-          on:click={() => { void handleUndo() }}
-          aria-label={$nextUndoDescription ?? ariaLabelOf(tracker.string.GanttUndo)}
-        >
-          <Icon icon={IconUndo} size="small" />
-        </button>
-        <button
-          type="button"
-          class="gantt-toolbar-icon-btn"
-          disabled={!$canRedo}
-          use:tooltip={{ label: tracker.string.GanttRedo }}
-          on:click={() => { void handleRedo() }}
-          aria-label={$nextRedoDescription ?? ariaLabelOf(tracker.string.GanttRedo)}
-        >
-          <Icon icon={IconRedo} size="small" />
-        </button>
-        <!-- E — The Phase-3b gantt-toolbar Filter button + popup
-             was removed. The standard Tracker FilterBar (FilterButton in
-             IssuesView.svelte's second header row) is now the single
-             source of filter truth: its `resultQuery` flows into
-             GanttView's `query` prop, so server-side filtering is
-             already applied and there's no need for a gantt-local
-             priority-chips popup. Group-By stays here because it is a
-             gantt-specific layout concern (swimlanes), not a filter. -->
-
-        <!--  / Refactor D — Saved-View dropdown moved into the
-             "More actions" hamburger menu (rendered at the trailing edge
-             of the toolbar). Only the inline "Modified" indicator +
-             update-button remain visible when a saved view is currently
-             applied AND has unsaved changes — those are status, not
-             actions, and stay inline so the user sees them at a glance. -->
-        {#if savedViewModified}
-          <div class="gantt-savedview-wrap" use:tooltip={{ label: tracker.string.GanttSavedView }}>
-            <span class="gantt-savedview-name">
-              {$selectedFilterStore?.name ?? ''}
-            </span>
-            <span class="gantt-savedview-modified">
-              <Label label={tracker.string.GanttSavedViewModified} />
-            </span>
-            <button
-              type="button"
-              class="gantt-toolbar-icon-btn"
-              use:tooltip={{ label: tracker.string.GanttSavedViewUpdate }}
-              aria-label={ariaLabelOf(tracker.string.GanttSavedViewUpdate)}
-              on:click={onUpdateSavedViewClick}
-            >
-              <span class="gantt-toolbar-text-glyph" aria-hidden="true">↻</span>
-            </button>
-          </div>
-        {/if}
-
-        <div class="gantt-groupby-wrap" use:tooltip={{ label: tracker.string.GanttGroupOverridesHierarchy }}>
-          <Label label={tracker.string.GanttGroupBy} />
-          <!-- svelte-ignore a11y-no-onchange -->
-          <select
-            class="gantt-groupby-select"
-            value={ganttGroupBy}
-            on:change={onGroupBySelectChange}
-          >
-            {#each GROUP_BY_KEYS as key (key)}
-              <option value={key}>
-                {#if key === 'none'}<Label label={tracker.string.GanttGroupByNone} />
-                {:else if key === 'status'}<Label label={tracker.string.GanttGroupByStatus} />
-                {:else if key === 'priority'}<Label label={tracker.string.GanttGroupByPriority} />
-                {:else if key === 'assignee'}<Label label={tracker.string.GanttGroupByAssignee} />
-                {:else if key === 'component'}<Label label={tracker.string.GanttGroupByComponent} />
-                {:else if key === 'milestone'}<Label label={tracker.string.GanttGroupByMilestone} />
-                {:else if key === 'label'}<Label label={tracker.string.GanttGroupByLabel} />
-                {/if}
-              </option>
-            {/each}
-          </select>
-        </div>
-        <!--  / Refactor D — Toolbar row-2 trailing cluster.
-             Fullscreen stays inline (high-frequency, immediate-effect).
-             Save view / Load view / Export PNG / Export PDF moved into
-             the "More actions" hamburger menu so the toolbar no longer
-             overflows on mid-width viewports. -->
-        <button
-          type="button"
-          class="gantt-toolbar-icon-btn"
-          use:tooltip={{ label: tracker.string.GanttFullscreen }}
-          aria-label={ariaLabelOf(tracker.string.GanttFullscreen)}
-          title={ariaLabelOf(tracker.string.GanttFullscreen)}
-          on:click={toggleFullscreen}
-        >
-          <span class="gantt-toolbar-text-glyph" aria-hidden="true">⛶</span>
-        </button>
-        <button
-          type="button"
-          class="gantt-toolbar-icon-btn"
-          use:tooltip={{ label: tracker.string.GanttMoreActions }}
-          aria-label={ariaLabelOf(tracker.string.GanttMoreActions)}
-          title={ariaLabelOf(tracker.string.GanttMoreActions)}
-          on:click={openMoreActionsMenu}
-        >
-          <Icon icon={IconMoreV} size="small" />
-        </button>
-      </div>
-    </div>
 
     <!-- Plane-style two-axis scrolling: gantt-scroller handles vertical only,
          while a separate sticky-bottom proxy bar handles horizontal so the
