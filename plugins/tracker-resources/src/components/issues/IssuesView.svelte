@@ -95,18 +95,18 @@
     {#if isGanttMode}
       <!-- The search cluster uses flex-direction: row-reverse (huly UI
            convention), so child markup order is REVERSED from visual L→R.
-           Desired visual L→R: Filter → Group-by → Lupe → Date-Nav → Week →
-           days → Undo/Redo. So in markup we go LAST=Filter (visually
-           leftmost), MIDDLE=Group-by, MIDDLE=Lupe, FIRST=rest of toolbar
-           (visually rightmost). -->
+           Desired visual L→R: Lupe → Filter → Group-by → Date-Nav → Week →
+           days → Undo/Redo. So markup: FIRST=rest of toolbar (visually
+           rightmost), then Group-by, then Filter, then LAST=Lupe (visually
+           leftmost). -->
       <GanttToolbarBar section="search-end" />
+      <GanttToolbarBar section="search-mid" />
+      <FilterButton _class={tracker.class.Issue} {space} />
       <SearchInput
         value={search}
         on:change={(e) => setSearch(typeof e.detail === 'string' ? e.detail : '')}
         collapsed
       />
-      <GanttToolbarBar section="search-mid" />
-      <FilterButton _class={tracker.class.Issue} {space} />
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="extra-trailing">
