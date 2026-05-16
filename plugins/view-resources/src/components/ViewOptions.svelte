@@ -17,6 +17,13 @@
   // the user sees the same control twice in two places without a wire
   // between them.
   export let hideGroupingAndOrdering: boolean = false
+  /**
+   * Other-toggle keys that should not render in this popup instance. Useful
+   * when a viewlet exposes the same ViewOption through its own toolbar (e.g.
+   * Gantt's group-by lives both in the toolbar and as a ViewOption) and the
+   * popup duplicate is undesired.
+   */
+  export let hideKeys: string[] = []
 
   const dispatch = createEventDispatcher()
 
@@ -84,7 +91,15 @@
     return true
   }
 
-  $: visibleOthers = config.other.filter((p) => !p.hidden?.(viewOptions))
+  $: visibleOthers = config.other.filter((p) => {
+    if (p.hidden?.(viewOptions) === true) return false
+    if (hideKeys.includes(p.key)) return false
+    if (p.dependsOn != null) {
+      const parentValue = (viewOptions as Record<string, unknown>)?.[p.dependsOn]
+      if (parentValue !== true) return false
+    }
+    return true
+  })
 </script>
 
 <div class="antiCard dialog menu">

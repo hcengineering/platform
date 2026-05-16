@@ -45,6 +45,23 @@
    */
   export let hideGroupingAndOrdering: boolean = false
 
+  /**
+   * Keys in this list are skipped from the popup's "other" rendering.
+   * Forwarded to ViewOptionsButton → ViewOptions. Use it when a viewlet
+   * renders the same ViewOption elsewhere (e.g. Gantt has a toolbar
+   * `Group by` dropdown for `ganttGroupBy`, so the popup duplicate
+   * is hidden).
+   */
+  export let hideKeys: string[] = []
+
+  /**
+   * When false, the Configure-columns ButtonIcon is hidden. List mode keeps
+   * the default `true` (column visibility is meaningful there). Gantt mode
+   * passes false because the Gantt sidebar uses its own ganttSidebarShow*
+   * ViewOptions and the standard column config has no effect there.
+   */
+  export let showConfigureColumns: boolean = true
+
   let btn: HTMLButtonElement
   let pressed: boolean = false
 
@@ -80,13 +97,11 @@
 
 {#if viewlet}
   {#if viewOptions && showViewOptions}
-    <ViewOptionsButton {viewlet} {kind} {viewOptions} {viewOptionsConfig} {hideGroupingAndOrdering} />
+    <ViewOptionsButton {viewlet} {kind} {viewOptions} {viewOptionsConfig} {hideGroupingAndOrdering} {hideKeys} />
   {/if}
-  <!--  / Refactor B — Configure-columns button gets its own
-       IntlString so the tooltip differs from the sibling ViewOptionsButton
-       (which keeps "Customize view"). Before  both buttons rendered
-       the same tooltip "Customize view" with no way for the user to tell
-       them apart. -->
+  {#if showConfigureColumns}
+  <!-- Configure-columns button gets its own IntlString so the tooltip differs
+       from the sibling ViewOptionsButton (which keeps "Customize view"). -->
   <ButtonIcon
     icon={view.icon.Configure}
     {disabled}
@@ -98,4 +113,5 @@
     bind:element={btn}
     on:click={clickHandler}
   />
+  {/if}
 {/if}

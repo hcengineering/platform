@@ -366,17 +366,82 @@ export function ganttViewOptions (): ViewOptionsModel {
         label: tracker.string.GanttQuickInfoOnClick
       },
       {
-        // Phase 3a: extended sidebar grid. When on, the sidebar renders a
-        // sortable header row + per-column cells (identifier, title, status,
-        // priority, estimation, dates, predecessors, slack, etc.). When off,
-        // the legacy compact 4-column layout is preserved bit-for-bit.
-        // Per-column visibility / order / width customisation is staged for
-        // Phase 3a.v2 — v1 ships with a sensible default column set.
+        // Extended sidebar grid. When on, the sidebar renders a sortable
+        // header row + per-column cells (identifier, title, predecessors,
+        // slack, plus any toggled columns below). When off, the legacy
+        // compact layout is preserved.
         key: 'ganttSidebarColumnsExtended',
         type: 'toggle',
         defaultValue: false,
         actionTarget: 'display',
         label: tracker.string.GanttSidebarColumnsExtended
+      },
+      // Per-column visibility toggles for the extended sidebar. Hidden when
+      // ganttSidebarColumnsExtended is off. Identifier + Title + Predecessors
+      // + Slack are always shown (default column set).
+      {
+        key: 'ganttSidebarShowStatus',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowStatus,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowPriority',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowPriority,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowAssignee',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowAssignee,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowEstimation',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowEstimation,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowStartDate',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowStartDate,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowDueDate',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowDueDate,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowDeadline',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowDeadline,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowProgress',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowProgress,
+        dependsOn: 'ganttSidebarColumnsExtended'
       },
       {
         // Phase 3b: group-by swimlanes. Issues group into horizontal lanes
