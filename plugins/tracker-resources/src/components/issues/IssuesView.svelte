@@ -93,17 +93,28 @@
        the SpaceHeader default (SearchInput + FilterButton). -->
   <svelte:fragment slot="search" let:search let:setSearch>
     {#if isGanttMode}
-      <FilterButton _class={tracker.class.Issue} {space} />
-      <GanttToolbarBar section="search" />
+      <!-- The search cluster uses flex-direction: row-reverse (huly UI
+           convention), so child markup order is REVERSED from visual L→R.
+           Desired visual L→R: Filter → Group-by → Lupe → Date-Nav → Week →
+           days → Undo/Redo. So in markup we go LAST=Filter (visually
+           leftmost), MIDDLE=Group-by, MIDDLE=Lupe, FIRST=rest of toolbar
+           (visually rightmost). -->
+      <GanttToolbarBar section="search-end" />
       <SearchInput
         value={search}
         on:change={(e) => setSearch(typeof e.detail === 'string' ? e.detail : '')}
         collapsed
       />
+      <GanttToolbarBar section="search-mid" />
+      <FilterButton _class={tracker.class.Issue} {space} />
     {/if}
   </svelte:fragment>
   <svelte:fragment slot="extra-trailing">
     {#if isGanttMode}
+      <!-- extra cluster is flex-direction: row (not row-reverse), so markup
+           order matches visual order. Hamburger first → Fullscreen last,
+           per the user's spec (swapped from the legacy fullscreen-first
+           ordering). -->
       <GanttToolbarBar section="trailing" />
     {/if}
   </svelte:fragment>

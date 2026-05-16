@@ -9,12 +9,20 @@
 <!--
   Lifted Gantt toolbar. The controls render in IssuesView's SpaceHeader
   row 2 via slot overrides; their state lives in GanttView and is
-  bridged here via `ganttToolbarSnapshot`. Two render sections share one
-  component so the markup stays DRY:
-    section="search"   → Group-by + Date-Nav + Zoom + days + Undo/Redo
-                         (mounted between Filter-button and Lupe)
-    section="trailing" → Hamburger + Fullscreen
-                         (mounted after the All/Active/Backlog ModeSelector)
+  bridged here via `ganttToolbarSnapshot`. Three render sections share
+  one component so the markup stays DRY:
+    section="search-mid" → Group-by (mounted between Filter and Lupe)
+    section="search-end" → Date-Nav + Zoom + days + Undo/Redo
+                           (mounted after the Lupe SearchInput)
+    section="trailing"   → Hamburger + Fullscreen
+                           (mounted after the All/Active/Backlog
+                           ModeSelector)
+
+  Note on ordering: the SpaceHeader's row 2 search cluster uses
+  flex-direction: row-reverse, so child markup order is REVERSED from
+  visual L→R within both `search-mid` and `search-end` sections. The
+  markup below already accounts for that — the first <button> here
+  becomes the RIGHTMOST visible element of the section.
 -->
 <script lang="ts">
   import { DropdownLabelsIntl, EditBox, Icon, tooltip } from '@hcengineering/ui'
@@ -31,7 +39,7 @@
   import { GROUP_BY_KEYS } from './lib/group-by'
   import { ganttToolbarSnapshot } from './ganttToolbarStore'
 
-  export let section: 'search' | 'trailing'
+  export let section: 'search-mid' | 'search-end' | 'trailing'
 
   // Constants — kept identical to GanttView so the input widget validates
   // the same range whether the user types in the toolbar or hits D/W/M/Q.
@@ -53,9 +61,10 @@
 
 {#if $ganttToolbarSnapshot != null}
   {@const snap = $ganttToolbarSnapshot}
-  {#if section === 'search'}
-    <!-- Group-by select sits to the LEFT of the Lupe in the unified row.
-         The user's spec puts it directly after the Filter button. -->
+  {#if section === 'search-mid'}
+    <!-- Group-by select sits between Filter (leftmost) and Lupe (SearchInput)
+         in the unified row. Only this one element lives here so the user's
+         spec order is preserved across the row-reverse flex container. -->
     <div class="gantt-tb-groupby-wrap" use:tooltip={{ label: tracker.string.GanttGroupOverridesHierarchy }}>
       <Label label={tracker.string.GanttGroupBy} />
       <!-- svelte-ignore a11y-no-onchange -->
@@ -80,115 +89,14 @@
     </div>
   {/if}
 
-  {#if section === 'search'}
-    <!-- Date-Nav cluster: jump-start, prev-page, Today, next-page, jump-end,
-         date-picker. Order matches the user's spec (Date-Nav → Week → days). -->
-    <button
-      class="gantt-tb-icon-btn"
-      type="button"
-      use:tooltip={{ label: tracker.string.GanttJumpToStart }}
-      on:click={snap.jumpToStart}
-      aria-label={snap.ariaLabels[tracker.string.GanttJumpToStart] ?? ''}
-    >
-      <Icon icon={ArrowLeft} size="small" />
-    </button>
-    <button
-      class="gantt-tb-icon-btn"
-      type="button"
-      use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
-      on:click={snap.pageScrollPrev}
-      aria-label={snap.ariaLabels[tracker.string.GanttPreviousPeriod] ?? ''}
-    >
-      <Icon icon={NavPrev} size="small" />
-    </button>
-    <button class="gantt-tb-today-btn" type="button" on:click={snap.jumpToToday}>
-      <Label label={tracker.string.GanttToday} />
-    </button>
-    <button
-      class="gantt-tb-icon-btn"
-      type="button"
-      use:tooltip={{ label: tracker.string.GanttNextPeriod }}
-      on:click={snap.pageScrollNext}
-      aria-label={snap.ariaLabels[tracker.string.GanttNextPeriod] ?? ''}
-    >
-      <Icon icon={NavNext} size="small" />
-    </button>
-    <button
-      class="gantt-tb-icon-btn"
-      type="button"
-      use:tooltip={{ label: tracker.string.GanttJumpToEnd }}
-      on:click={snap.jumpToEnd}
-      aria-label={snap.ariaLabels[tracker.string.GanttJumpToEnd] ?? ''}
-    >
-      <Icon icon={ArrowRight} size="small" />
-    </button>
-    <label class="gantt-tb-date-wrap" use:tooltip={{ label: tracker.string.GanttJumpToDate }}>
-      <Icon icon={Calendar} size="small" />
-      <input
-        type="date"
-        class="gantt-tb-date-input"
-        value={snap.datePickerValue}
-        on:input={onDateInput}
-        on:change={onDateChange}
-        aria-label={snap.ariaLabels[tracker.string.GanttJumpToDate] ?? ''}
-      />
-    </label>
-
-    <!-- Zoom preset dropdown + visible-days input. Kept tightly grouped
-         (same spacing rules as the legacy toolbar-center cluster). -->
-    <DropdownLabelsIntl
-      kind={'regular'}
-      size={'small'}
-      justify={'left'}
-      label={tracker.string.GanttZoomLabel}
-      items={snap.zoomDropdownItems}
-      selected={snap.zoomDropdownSelection}
-      shouldUpdateUndefined={false}
-      on:selected={snap.onZoomDropdownSelected}
-    />
-    <div
-      class="gantt-tb-days-wrap"
-      use:tooltip={{ label: tracker.string.GanttZoomVisibleDays, props: { days: snap.visibleDays } }}
-    >
-      <EditBox
-        value={snap.visibleDaysInput}
-        format={'number'}
-        minValue={MIN_VISIBLE_DAYS}
-        maxValue={MAX_VISIBLE_DAYS}
-        kind={'editbox'}
-        on:value={(e) => snap.setVisibleDaysInput(Number(e.detail))}
-        on:blur={snap.applyVisibleDaysInput}
-        on:keydown={snap.onVisibleDaysKeyDown}
-      />
-      <span class="gantt-tb-days-suffix"><Label label={tracker.string.GanttZoomDaysSuffix} /></span>
-    </div>
-
-    <!-- Undo/Redo: mirror Cmd+Z / Cmd+Shift+Z keyboard shortcuts. Disabled
-         state + descriptive aria label flow through the UndoManager stores
-         registered in GanttView. -->
-    <button
-      type="button"
-      class="gantt-tb-icon-btn"
-      disabled={!snap.canUndo}
-      use:tooltip={{ label: tracker.string.GanttUndo }}
-      on:click={snap.handleUndo}
-      aria-label={snap.nextUndoDescription ?? snap.ariaLabels[tracker.string.GanttUndo] ?? ''}
-    >
-      <Icon icon={IconUndo} size="small" />
-    </button>
-    <button
-      type="button"
-      class="gantt-tb-icon-btn"
-      disabled={!snap.canRedo}
-      use:tooltip={{ label: tracker.string.GanttRedo }}
-      on:click={snap.handleRedo}
-      aria-label={snap.nextRedoDescription ?? snap.ariaLabels[tracker.string.GanttRedo] ?? ''}
-    >
-      <Icon icon={IconRedo} size="small" />
-    </button>
-
-    <!-- Saved-view modified indicator stays in the search cluster so it sits
-         next to the controls that mutate the view's state. -->
+  {#if section === 'search-end'}
+    <!-- search-end renders AFTER the Lupe in the unified row. Markup below
+         is in REVERSE visual order because the parent .hulyHeader-buttonsGroup
+         .search uses flex-direction: row-reverse. Visual L→R intent:
+           jumpStart, prev, Today, next, jumpEnd, date, Week, days, Undo, Redo,
+           [savedView indicator if dirty].
+         So in markup we go FIRST = Saved-view indicator (rightmost) and
+         LAST = jumpStart (leftmost of this cluster). -->
     {#if snap.savedViewModified}
       <div class="gantt-tb-savedview-wrap" use:tooltip={{ label: tracker.string.GanttSavedView }}>
         <span class="gantt-tb-savedview-name">{snap.savedViewName}</span>
@@ -206,6 +114,102 @@
         </button>
       </div>
     {/if}
+    <button
+      type="button"
+      class="gantt-tb-icon-btn"
+      disabled={!snap.canRedo}
+      use:tooltip={{ label: tracker.string.GanttRedo }}
+      on:click={snap.handleRedo}
+      aria-label={snap.nextRedoDescription ?? snap.ariaLabels[tracker.string.GanttRedo] ?? ''}
+    >
+      <Icon icon={IconRedo} size="small" />
+    </button>
+    <button
+      type="button"
+      class="gantt-tb-icon-btn"
+      disabled={!snap.canUndo}
+      use:tooltip={{ label: tracker.string.GanttUndo }}
+      on:click={snap.handleUndo}
+      aria-label={snap.nextUndoDescription ?? snap.ariaLabels[tracker.string.GanttUndo] ?? ''}
+    >
+      <Icon icon={IconUndo} size="small" />
+    </button>
+    <div
+      class="gantt-tb-days-wrap"
+      use:tooltip={{ label: tracker.string.GanttZoomVisibleDays, props: { days: snap.visibleDays } }}
+    >
+      <EditBox
+        value={snap.visibleDaysInput}
+        format={'number'}
+        minValue={MIN_VISIBLE_DAYS}
+        maxValue={MAX_VISIBLE_DAYS}
+        kind={'editbox'}
+        on:value={(e) => snap.setVisibleDaysInput(Number(e.detail))}
+        on:blur={snap.applyVisibleDaysInput}
+        on:keydown={snap.onVisibleDaysKeyDown}
+      />
+      <span class="gantt-tb-days-suffix"><Label label={tracker.string.GanttZoomDaysSuffix} /></span>
+    </div>
+    <DropdownLabelsIntl
+      kind={'regular'}
+      size={'small'}
+      justify={'left'}
+      label={tracker.string.GanttZoomLabel}
+      items={snap.zoomDropdownItems}
+      selected={snap.zoomDropdownSelection}
+      shouldUpdateUndefined={false}
+      on:selected={snap.onZoomDropdownSelected}
+    />
+    <label class="gantt-tb-date-wrap" use:tooltip={{ label: tracker.string.GanttJumpToDate }}>
+      <Icon icon={Calendar} size="small" />
+      <input
+        type="date"
+        class="gantt-tb-date-input"
+        value={snap.datePickerValue}
+        on:input={onDateInput}
+        on:change={onDateChange}
+        aria-label={snap.ariaLabels[tracker.string.GanttJumpToDate] ?? ''}
+      />
+    </label>
+    <button
+      class="gantt-tb-icon-btn"
+      type="button"
+      use:tooltip={{ label: tracker.string.GanttJumpToEnd }}
+      on:click={snap.jumpToEnd}
+      aria-label={snap.ariaLabels[tracker.string.GanttJumpToEnd] ?? ''}
+    >
+      <Icon icon={ArrowRight} size="small" />
+    </button>
+    <button
+      class="gantt-tb-icon-btn"
+      type="button"
+      use:tooltip={{ label: tracker.string.GanttNextPeriod }}
+      on:click={snap.pageScrollNext}
+      aria-label={snap.ariaLabels[tracker.string.GanttNextPeriod] ?? ''}
+    >
+      <Icon icon={NavNext} size="small" />
+    </button>
+    <button class="gantt-tb-today-btn" type="button" on:click={snap.jumpToToday}>
+      <Label label={tracker.string.GanttToday} />
+    </button>
+    <button
+      class="gantt-tb-icon-btn"
+      type="button"
+      use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
+      on:click={snap.pageScrollPrev}
+      aria-label={snap.ariaLabels[tracker.string.GanttPreviousPeriod] ?? ''}
+    >
+      <Icon icon={NavPrev} size="small" />
+    </button>
+    <button
+      class="gantt-tb-icon-btn"
+      type="button"
+      use:tooltip={{ label: tracker.string.GanttJumpToStart }}
+      on:click={snap.jumpToStart}
+      aria-label={snap.ariaLabels[tracker.string.GanttJumpToStart] ?? ''}
+    >
+      <Icon icon={ArrowLeft} size="small" />
+    </button>
   {/if}
 
   {#if section === 'trailing'}
