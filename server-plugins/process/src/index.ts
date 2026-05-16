@@ -126,6 +126,7 @@ export default plugin(serverProcessId, {
     NumberFromString: '' as Resource<TransformFunc>,
     DateFromString: '' as Resource<TransformFunc>,
     MarkupFromString: '' as Resource<TransformFunc>,
+    StringFromIdentifier: '' as Resource<TransformFunc>,
     YearFromDate: '' as Resource<TransformFunc>,
     MonthFromDate: '' as Resource<TransformFunc>,
     DayFromDate: '' as Resource<TransformFunc>,

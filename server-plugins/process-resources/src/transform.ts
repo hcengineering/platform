@@ -582,6 +582,10 @@ export function MarkupFromString (value: string): string {
   return value
 }
 
+export function StringFromIdentifier (value: string): string {
+  return value
+}
+
 export function StringFromEnum (value: string): string {
   if (value == null) return ''
   return String(value)

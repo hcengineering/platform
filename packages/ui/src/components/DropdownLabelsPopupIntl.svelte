@@ -23,12 +23,24 @@
   import ui from '../plugin'
 
   export let items: DropdownIntlItem[]
-  export let selected: DropdownIntlItem['id'] | undefined = undefined
+  export let selected: DropdownIntlItem['id'] | Array<DropdownIntlItem['id']> | undefined = undefined
+  export let multiselect: boolean = false
   export let params: Record<string, any> = {}
   export let withSearch: boolean = false
   export let searchPlaceholder: IntlString = ui.string.Search
 
   const dispatch = createEventDispatcher()
+
+  function isSelected (
+    selected: DropdownIntlItem['id'] | Array<DropdownIntlItem['id']> | undefined,
+    item: DropdownIntlItem
+  ): boolean {
+    if (Array.isArray(selected)) {
+      return selected.includes(item.id)
+    } else {
+      return item.id === selected
+    }
+  }
   let btns: HTMLButtonElement[] = []
 
   const keyDown = (ev: KeyboardEvent, n?: number): void => {
@@ -100,7 +112,18 @@
             keyDown(ev, i)
           }}
           on:click={() => {
-            dispatch('close', item.id)
+            if (multiselect && Array.isArray(selected)) {
+              const index = selected.indexOf(item.id)
+              if (index !== -1) {
+                selected.splice(index, 1)
+                selected = selected
+              } else {
+                selected = selected === undefined ? [item.id] : [...selected, item.id]
+              }
+              dispatch('update', selected)
+            } else {
+              dispatch('close', item.id)
+            }
           }}
         >
           <div class="flex-grow caption-color nowrap flex-presenter flex-gap-2">
@@ -110,7 +133,7 @@
             <Label label={item.label} params={item.params ?? params} />
           </div>
           <div class="check">
-            {#if item.id === selected}<IconCheck size={'small'} />{/if}
+            {#if isSelected(selected, item)}<IconCheck size={'small'} />{/if}
           </div>
         </button>
       {/each}

@@ -26,10 +26,13 @@
     getCurrentLocation,
     getPlatformColorDef,
     IconDelete,
+    IconSettings,
+    Label,
     ModernEditbox,
     navigate,
     showPopup,
     themeStore,
+    Toggle,
     ToggleWithLabel
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -37,6 +40,7 @@
   import { exportModule } from '../../exporter'
   import card from '../../plugin'
   import { deleteMasterTag } from '../../utils'
+  import VersioningSetting from './VersioningSetting.svelte'
 
   export let masterTag: MasterTag
 
@@ -143,6 +147,12 @@
     })
   }
 
+  function versioningSetting (): void {
+    showPopup(VersioningSetting, {
+      masterTag: masterTag._id
+    })
+  }
+
   let versioningEnabled = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
   $: versioningEnabled = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
 </script>
@@ -191,15 +201,16 @@
     {/if}
   </div>
   {#if !h.isMixin(masterTag._id)}
-    <div class="mx-2">
-      <ToggleWithLabel
-        label={card.string.Versioning}
-        on={versioningEnabled}
-        disabled={versioningEnabled}
-        on:change={enableVersioning}
-      />
+    <div class="mx-2 flex-between items-center">
+      <Label label={card.string.Versioning} />
+      <div class="flex items-center gap-1">
+        {#if versioningEnabled}
+          <ButtonIcon icon={setting.icon.Setting} size="extra-small" on:click={versioningSetting} />
+        {/if}
+        <Toggle on={versioningEnabled} disabled={versioningEnabled} on:change={enableVersioning} />
+      </div>
     </div>
-    <div class="mx-2">
+    <div class="mx-2 pt-2">
       <ToggleWithLabel
         label={card.string.SingleColumn}
         on={masterTag.singleColumn}

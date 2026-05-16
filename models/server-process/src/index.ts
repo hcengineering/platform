@@ -207,6 +207,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.DateFromNumber
   })
 
+  builder.mixin(process.function.StringFromIdentifier, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.StringFromIdentifier
+  })
+
   builder.mixin(process.function.NumberFromString, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.NumberFromString
   })

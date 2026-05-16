@@ -39,6 +39,7 @@ import core, {
   type Space,
   toRank,
   type TxOperations,
+  type VersionableClass,
   type WithLookup
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
@@ -74,6 +75,7 @@ import CreateSpace from './components/navigator/CreateSpace.svelte'
 import card from './plugin'
 import { type NavigatorConfig } from './types'
 import { writable } from 'svelte/store'
+import { makeRank } from '@hcengineering/rank'
 
 export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: () => void): Promise<void> {
   if (tag !== undefined) {
@@ -280,7 +282,7 @@ export async function createTypePermissions (masterTag: MasterTag | Tag): Promis
 async function cloneCard (
   origin: Card,
   overrideProps: Record<string, any>,
-  relationToCopy: Set<string> | 'all',
+  versionableClass?: VersionableClass,
   copyIds: boolean = false
 ): Promise<Ref<Card>> {
   const client = getClient()
@@ -292,8 +294,12 @@ async function cloneCard (
   const skipClasses = copyIds
     ? [core.class.TypeCollaborativeDoc]
     : [core.class.TypeCollaborativeDoc, core.class.TypeIdentifier]
+  const systemFields = ['_class', 'id', 'createdOn', 'modifiedOn', 'modifiedBy', 'createdBy', 'createdOn', 'rank']
 
   for (const [key, attr] of attrs) {
+    if (versionableClass?.excludedProperties?.includes(key) === true || systemFields.includes(key)) {
+      continue
+    }
     if (attr.type._class === core.class.Collection) {
       ;(props as any)[key] = 0
     } else if (!skipClasses.includes(attr.type._class)) {
@@ -303,19 +309,25 @@ async function cloneCard (
   for (const [k, v] of Object.entries(overrideProps)) {
     ;(props as any)[k] = v
   }
+  props.rank = makeRank(origin.rank, undefined)
   const targetId = generateId<Card>()
   const relationsA = await client.findAll(core.class.Relation, { docA: origin._id })
   const relationsB = await client.findAll(core.class.Relation, { docB: origin._id })
 
-  const markup = await getMarkup(makeDocCollabId(origin, 'content'), origin.content)
-  if (!isEmptyMarkup(markup)) {
-    const collabId = makeCollabId(base, targetId, 'content')
-    props.content = await createMarkup(collabId, markup)
+  if (versionableClass?.excludedProperties?.includes('content') !== true) {
+    const markup = await getMarkup(makeDocCollabId(origin, 'content'), origin.content)
+    if (!isEmptyMarkup(markup)) {
+      const collabId = makeCollabId(base, targetId, 'content')
+      props.content = await createMarkup(collabId, markup)
+    }
   }
 
   const ops = client.apply(`Duplicate_card_${origin._id}`)
   await ops.createDoc(base, origin.space, props, targetId)
   for (const mixin of mixins) {
+    if (versionableClass?.excludeMixins?.includes(mixin) === true) {
+      continue
+    }
     const mixinAttrs = h.getOwnAttributes(mixin)
     const as = h.as(origin, mixin)
     const attributes: Partial<Data<Doc>> = {}
@@ -326,7 +338,7 @@ async function cloneCard (
   }
 
   for (const rel of relationsA) {
-    if (relationToCopy === 'all' || relationToCopy.has(`${rel.association}_b`)) {
+    if (versionableClass?.excludedRelations?.includes(`${rel.association}_b`) !== true) {
       await ops.createDoc(core.class.Relation, core.space.Workspace, {
         docA: targetId,
         docB: rel.docB,
@@ -335,7 +347,7 @@ async function cloneCard (
     }
   }
   for (const rel of relationsB) {
-    if (relationToCopy === 'all' || relationToCopy.has(`${rel.association}_a`)) {
+    if (versionableClass?.excludedRelations?.includes(`${rel.association}_a`) !== true) {
       await ops.createDoc(core.class.Relation, core.space.Workspace, {
         docA: rel.docA,
         docB: targetId,
@@ -345,25 +357,23 @@ async function cloneCard (
   }
   await ops.commit()
 
-  const attachments = await client.findAll(attachment.class.Attachment, { attachedTo: origin._id })
-  const attachmentOps = client.apply(`Duplicate_attachments_${origin._id}`)
-  for (const att of attachments) {
-    const { _id, modifiedBy, modifiedOn, attachedTo, attachedToClass, collection, space, ...props } = att
-    await attachmentOps.addCollection(attachment.class.Attachment, origin.space, targetId, base, 'attachments', props)
+  if (versionableClass?.excludedProperties?.includes('attachments') !== true) {
+    const attachments = await client.findAll(attachment.class.Attachment, { attachedTo: origin._id })
+    const attachmentOps = client.apply(`Duplicate_attachments_${origin._id}`)
+    for (const att of attachments) {
+      const { _id, modifiedBy, modifiedOn, attachedTo, attachedToClass, collection, space, ...props } = att
+      await attachmentOps.addCollection(attachment.class.Attachment, origin.space, targetId, base, 'attachments', props)
+    }
+    await attachmentOps.commit()
   }
-  await attachmentOps.commit()
 
   return targetId
 }
 
 export async function duplicateCard (origin: Card): Promise<void> {
-  const targetId = await cloneCard(
-    origin,
-    {
-      title: `${origin.title} (Copy)`
-    },
-    'all'
-  )
+  const targetId = await cloneCard(origin, {
+    title: `${origin.title} (Copy)`
+  })
 
   const loc = getCurrentLocation()
   loc.path[2] = cardId
@@ -513,14 +523,17 @@ export async function cardFactory (props: Record<string, any> = {}): Promise<Ref
   return await createCard(_class, space, props.data, props.content)
 }
 
-export async function createNewVersion (card: Card, relationsToCopy: Set<string>): Promise<Ref<Card>> {
+export async function createNewVersion (card: Card): Promise<Ref<Card>> {
+  const client = getClient()
+  const mixin = client.getHierarchy().classHierarchyMixin(card._class, core.mixin.VersionableClass)
+
   return await cloneCard(
     card,
     {
       baseId: card.baseId,
       docCreatedBy: card.docCreatedBy ?? card.createdBy ?? card.modifiedBy
     },
-    relationsToCopy,
+    mixin,
     true
   )
 }
