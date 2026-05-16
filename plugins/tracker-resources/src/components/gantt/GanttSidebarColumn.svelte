@@ -30,8 +30,8 @@
   export let width: number
   export let relations: IssueRelation[] = []
   export let issueNumberOf: (ref: Ref<Issue>) => string = () => ''
-  export let slack = new Map<Ref<Issue>, number>()
-  export let criticalSet = new Set<Ref<Issue>>()
+  export let slack: Map<Ref<Issue>, number> = new Map()
+  export let criticalSet: Set<Ref<Issue>> = new Set()
   export let showCriticalPath: boolean = false
 
   const DAY_MS = 86_400_000
@@ -49,16 +49,11 @@
 
   function priorityLabel (p: IssuePriority): string {
     switch (p) {
-      case IssuePriority.Urgent:
-        return 'Urgent'
-      case IssuePriority.High:
-        return 'High'
-      case IssuePriority.Medium:
-        return 'Medium'
-      case IssuePriority.Low:
-        return 'Low'
-      default:
-        return '—'
+      case IssuePriority.Urgent: return 'Urgent'
+      case IssuePriority.High: return 'High'
+      case IssuePriority.Medium: return 'Medium'
+      case IssuePriority.Low: return 'Low'
+      default: return '—'
     }
   }
 
@@ -90,18 +85,14 @@
         role="link"
         tabindex="0"
         on:click={onTitleClick}
-        on:keydown={(e) => {
-          if (e.key === 'Enter') onTitleClick()
-        }}
+        on:keydown={(e) => { if (e.key === 'Enter') onTitleClick() }}
       >
         {issue.title}
       </span>
     {:else if column === 'status'}
       <span class="cell-content cell-status"><StatusBadge {issue} /></span>
     {:else if column === 'priority'}
-      <span class="cell-content cell-priority" title={priorityLabel(issue.priority)}
-        >{priorityLabel(issue.priority)}</span
-      >
+      <span class="cell-content cell-priority" title={priorityLabel(issue.priority)}>{priorityLabel(issue.priority)}</span>
     {:else if column === 'assignee'}
       <span class="cell-content cell-assignee dim">
         {issue.assignee !== null ? '·' : '—'}
@@ -142,8 +133,27 @@
     {:else if column === 'createdOn'}
       <span class="cell-content cell-date">{formatDateShort(issue.createdOn ?? null)}</span>
     {/if}
+  {:else if row.kind === 'milestone' && row.milestone !== null}
+    <!-- Milestone rows in extended-columns mode. The legacy single-cell
+         sidebar showed the milestone label inline; the extended grid
+         iterates columns and previously rendered an empty placeholder
+         everywhere, hiding the milestone text. Map the milestone fields
+         onto the matching columns so the label + dates stay visible. -->
+    {#if column === 'title'}
+      <span class="cell-content cell-title cell-milestone-title" title={row.milestone.label}>{row.milestone.label}</span>
+    {:else if column === 'startDate'}
+      <span class="cell-content cell-date">{formatDateShort(row.milestone.startDate)}</span>
+    {:else if column === 'dueDate'}
+      <span class="cell-content cell-date">{formatDateShort(row.milestone.targetDate)}</span>
+    {:else if column === 'deadline'}
+      <span class="cell-content cell-date">{formatDateShort(row.milestone.targetDate)}</span>
+    {:else}
+      <span class="cell-content dim"></span>
+    {/if}
   {:else}
-    <!-- non-issue rows (milestone / swimlane) — render a thin placeholder -->
+    <!-- swimlane / group rows — no per-column data, render a thin placeholder.
+         The group-header row already renders the label via its own branch
+         in GanttSidebar.svelte. -->
     <span class="cell-content dim"></span>
   {/if}
 </div>
@@ -168,14 +178,16 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .cell-title.clickable {
-    cursor: pointer;
+  .cell-title.clickable { cursor: pointer; }
+  .cell-title.clickable:hover { text-decoration: underline; }
+  /* Milestone labels in extended-columns mode — same column as issue
+     titles but italic to match the legacy compact sidebar's milestone
+     row styling. */
+  .cell-milestone-title {
+    font-style: italic;
+    font-weight: 500;
   }
-  .cell-title.clickable:hover {
-    text-decoration: underline;
-  }
-  .cell-numeric,
-  .cell-date {
+  .cell-numeric, .cell-date {
     text-align: right;
     font-variant-numeric: tabular-nums;
     font-size: 12px;

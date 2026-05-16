@@ -214,11 +214,11 @@
 
   {#if section === 'trailing'}
     <!-- Trailing cluster sits AFTER the All/Active/Backlog ModeSelector.
-         Hamburger comes BEFORE Fullscreen per the user's spec (swap from
-         the legacy order). Hamburger renders on every layout — on desktop
-         it acts as the More-Actions menu (Save / Load / Export); on phone
-         it ALSO toggles the slide-out drawer. The store dispatches the
-         right action via openMoreActionsMenu/toggleMobileDrawer. -->
+         Only the Hamburger lives here now — Fullscreen was hoisted to the
+         global status bar (packages/ui/.../Root.svelte) so it's reachable
+         from every viewlet, not only Gantt. On phone the Hamburger toggles
+         the slide-out drawer; on desktop it opens the More-Actions menu
+         (Save / Load / Export). -->
     {#if snap.layoutMode === 'phone'}
       <button
         type="button"
@@ -241,15 +241,6 @@
         <Icon icon={IconMoreV} size="small" />
       </button>
     {/if}
-    <button
-      type="button"
-      class="gantt-tb-icon-btn"
-      use:tooltip={{ label: tracker.string.GanttFullscreen }}
-      on:click={snap.toggleFullscreen}
-      aria-label={snap.ariaLabels[tracker.string.GanttFullscreen] ?? ''}
-    >
-      <span class="gantt-tb-text-glyph" aria-hidden="true">⛶</span>
-    </button>
   {/if}
 {/if}
 
