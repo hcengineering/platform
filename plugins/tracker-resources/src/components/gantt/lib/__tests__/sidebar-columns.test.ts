@@ -63,7 +63,7 @@ describe('sidebar-columns: clampWidth', () => {
   })
 
   it('clamps above MAX_WIDTH', () => {
-    expect(clampWidth(500)).toBe(MAX_WIDTH)
+    expect(clampWidth(MAX_WIDTH + 100)).toBe(MAX_WIDTH)
     expect(clampWidth(10_000)).toBe(MAX_WIDTH)
   })
 

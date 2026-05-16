@@ -89,7 +89,7 @@ export const DEFAULT_WIDTHS: Record<SidebarColumnKey, number> = {
 /** Hard floor — narrower than this and the cell content is unreadable. */
 export const MIN_WIDTH = 40
 /** Hard ceiling — wider than this and the sidebar drowns the canvas. */
-export const MAX_WIDTH = 400
+export const MAX_WIDTH = 600
 
 const KNOWN_SET: ReadonlySet<string> = new Set(ALL_COLUMN_KEYS)
 

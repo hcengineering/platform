@@ -440,6 +440,15 @@ export default mergeIds(trackerId, tracker, {
     GanttSidebarColProgress: '' as IntlString,
     GanttSidebarColModifiedOn: '' as IntlString,
     GanttSidebarColCreatedOn: '' as IntlString,
+    // Per-column visibility toggles for the extended sidebar
+    GanttSidebarShowStatus: '' as IntlString,
+    GanttSidebarShowPriority: '' as IntlString,
+    GanttSidebarShowAssignee: '' as IntlString,
+    GanttSidebarShowEstimation: '' as IntlString,
+    GanttSidebarShowStartDate: '' as IntlString,
+    GanttSidebarShowDueDate: '' as IntlString,
+    GanttSidebarShowDeadline: '' as IntlString,
+    GanttSidebarShowProgress: '' as IntlString,
     // Phase 3b — Filter-Bar + Group-By Swimlanes
     GanttGroupBy: '' as IntlString,
     GanttGroupByNone: '' as IntlString,

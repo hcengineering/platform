@@ -119,7 +119,7 @@
 
   const ROW_HEIGHT = 36
   const MIN_SIDEBAR_WIDTH = 120
-  const MAX_SIDEBAR_WIDTH = 600
+  const MAX_SIDEBAR_WIDTH = 1200
   const DEFAULT_SIDEBAR_WIDTH = 280
   const HEADER_HEIGHT = 56
   const MILESTONE_STRIP_HEIGHT = 0
@@ -293,6 +293,17 @@
   // so existing users see the legacy compact layout. When ON, the sidebar
   // renders a sortable header row + per-column cells via GanttSidebarColumn.
   $: extendedColumns = ((viewOptions as Record<string, unknown>)?.ganttSidebarColumnsExtended ?? false) === true
+  // Per-column visibility toggles for the extended sidebar. Each toggle adds
+  // its column to the default identifier+title+predecessors+slack set. Hidden
+  // when extendedColumns=false (toggle row is then collapsed in the popup too).
+  $: ganttSidebarShowStatus = ((viewOptions as Record<string, unknown>)?.ganttSidebarShowStatus ?? false) === true
+  $: ganttSidebarShowPriority = ((viewOptions as Record<string, unknown>)?.ganttSidebarShowPriority ?? false) === true
+  $: ganttSidebarShowAssignee = ((viewOptions as Record<string, unknown>)?.ganttSidebarShowAssignee ?? false) === true
+  $: ganttSidebarShowEstimation = ((viewOptions as Record<string, unknown>)?.ganttSidebarShowEstimation ?? false) === true
+  $: ganttSidebarShowStartDate = ((viewOptions as Record<string, unknown>)?.ganttSidebarShowStartDate ?? false) === true
+  $: ganttSidebarShowDueDate = ((viewOptions as Record<string, unknown>)?.ganttSidebarShowDueDate ?? false) === true
+  $: ganttSidebarShowDeadline = ((viewOptions as Record<string, unknown>)?.ganttSidebarShowDeadline ?? false) === true
+  $: ganttSidebarShowProgress = ((viewOptions as Record<string, unknown>)?.ganttSidebarShowProgress ?? false) === true
 
   // Phase 1.A — bar-label slots driven by Customize-view ViewOptions.
   // Defaults preserve legacy "title inside the bar" rendering.
@@ -2952,23 +2963,45 @@
     }
   }
 
-  // Drag-resize the sidebar.
+  // Drag-resize the sidebar. In legacy mode the handle drives userSidebarWidth
+  // directly. In extended-grid mode it instead scales every column-width
+  // proportionally so the user can widen the whole sidebar even though each
+  // column also carries its own width.
   let resizing = false
   let resizeStartX = 0
   let resizeStartWidth = 0
+  let resizeStartColumnWidths: Record<string, number> = {}
   function onResizeStart (e: PointerEvent): void {
     e.stopPropagation()
     e.preventDefault()
     resizing = true
     resizeStartX = e.clientX
-    resizeStartWidth = userSidebarWidth
+    resizeStartWidth = sidebarWidthPx
+    if (extendedColumns) {
+      resizeStartColumnWidths = { ...sidebarWidths }
+    }
     ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
   }
   function onResizeMove (e: PointerEvent): void {
     if (!resizing) return
     e.stopPropagation()
-    const next = resizeStartWidth + (e.clientX - resizeStartX)
-    userSidebarWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, next))
+    const delta = e.clientX - resizeStartX
+    if (extendedColumns) {
+      // Scale every column width proportionally so the user can widen the
+      // whole sidebar even though each column also carries its own width.
+      // Clamp the total to MIN/MAX_SIDEBAR_WIDTH; per-column MIN/MAX is then
+      // enforced by clampWidth on the next user-driven per-column resize.
+      const target = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, resizeStartWidth + delta))
+      const scale = target / resizeStartWidth
+      const next: Record<string, number> = {}
+      for (const k of Object.keys(resizeStartColumnWidths)) {
+        next[k] = resizeStartColumnWidths[k] * scale
+      }
+      sidebarWidths = next
+    } else {
+      const next = resizeStartWidth + delta
+      userSidebarWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, next))
+    }
   }
   function onResizeEnd (e: PointerEvent): void {
     if (!resizing) return
@@ -3047,12 +3080,27 @@
     ? computeTotalWidth(sidebarColumns, sidebarWidths)
     : ((showIssueCode || showTitle || showStatus) ? userSidebarWidth : 60)
 
-  // Phase 3a — sidebar column state. Columns + widths default to the
-  // Phase-2-equivalent identifier/title/predecessors/slack quartet so the
-  // extended-grid path mirrors the legacy sidebar's column list at startup.
-  // Width changes from the header-cell resize handle are mutated in-place
-  // (transient, not persisted in v1).
-  let sidebarColumns: readonly SidebarColumnKey[] = DEFAULT_COLUMNS
+  // Sidebar column state. The default set (identifier + title + predecessors +
+  // slack) is always rendered; each ganttSidebarShow* toggle appends the
+  // corresponding column. Width state lives client-side (resize handle is
+  // transient; persistence is a follow-up).
+  $: sidebarColumns = (() => {
+    const cols: SidebarColumnKey[] = [...DEFAULT_COLUMNS]
+    const insertBefore = (col: SidebarColumnKey, before: SidebarColumnKey) => {
+      const idx = cols.indexOf(before)
+      if (idx >= 0) cols.splice(idx, 0, col); else cols.push(col)
+    }
+    // Order matches the natural reading order on a Gantt sidebar.
+    if (ganttSidebarShowStatus) insertBefore('status', 'predecessors')
+    if (ganttSidebarShowPriority) insertBefore('priority', 'predecessors')
+    if (ganttSidebarShowAssignee) insertBefore('assignee', 'predecessors')
+    if (ganttSidebarShowEstimation) insertBefore('estimation', 'predecessors')
+    if (ganttSidebarShowStartDate) insertBefore('startDate', 'predecessors')
+    if (ganttSidebarShowDueDate) insertBefore('dueDate', 'predecessors')
+    if (ganttSidebarShowDeadline) insertBefore('deadline', 'predecessors')
+    if (ganttSidebarShowProgress) insertBefore('progress', 'predecessors')
+    return cols
+  })()
   let sidebarWidths: Record<string, number> = { ...DEFAULT_WIDTHS }
   let sidebarSort: GanttSortState = { column: null, direction: 'asc' }
 

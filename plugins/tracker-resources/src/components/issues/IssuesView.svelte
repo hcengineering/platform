@@ -77,6 +77,8 @@
       bind:viewOptions
       bind:viewlet
       hideGroupingAndOrdering={isGanttMode}
+      showConfigureColumns={!isGanttMode}
+      hideKeys={isGanttMode ? ['ganttGroupBy'] : []}
     />
   </svelte:fragment>
 
