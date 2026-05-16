@@ -133,8 +133,27 @@
     {:else if column === 'createdOn'}
       <span class="cell-content cell-date">{formatDateShort(issue.createdOn ?? null)}</span>
     {/if}
+  {:else if row.kind === 'milestone' && row.milestone !== null}
+    <!-- Milestone rows in extended-columns mode. The legacy single-cell
+         sidebar showed the milestone label inline; the extended grid
+         iterates columns and previously rendered an empty placeholder
+         everywhere, hiding the milestone text. Map the milestone fields
+         onto the matching columns so the label + dates stay visible. -->
+    {#if column === 'title'}
+      <span class="cell-content cell-title cell-milestone-title" title={row.milestone.label}>{row.milestone.label}</span>
+    {:else if column === 'startDate'}
+      <span class="cell-content cell-date">{formatDateShort(row.milestone.startDate)}</span>
+    {:else if column === 'dueDate'}
+      <span class="cell-content cell-date">{formatDateShort(row.milestone.targetDate)}</span>
+    {:else if column === 'deadline'}
+      <span class="cell-content cell-date">{formatDateShort(row.milestone.targetDate)}</span>
+    {:else}
+      <span class="cell-content dim"></span>
+    {/if}
   {:else}
-    <!-- non-issue rows (milestone / swimlane) — render a thin placeholder -->
+    <!-- swimlane / group rows — no per-column data, render a thin placeholder.
+         The group-header row already renders the label via its own branch
+         in GanttSidebar.svelte. -->
     <span class="cell-content dim"></span>
   {/if}
 </div>
@@ -161,6 +180,13 @@
   }
   .cell-title.clickable { cursor: pointer; }
   .cell-title.clickable:hover { text-decoration: underline; }
+  /* Milestone labels in extended-columns mode — same column as issue
+     titles but italic to match the legacy compact sidebar's milestone
+     row styling. */
+  .cell-milestone-title {
+    font-style: italic;
+    font-weight: 500;
+  }
   .cell-numeric, .cell-date {
     text-align: right;
     font-variant-numeric: tabular-nums;
