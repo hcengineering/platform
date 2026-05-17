@@ -26,6 +26,7 @@
   import { getResource } from '@hcengineering/platform'
   import { Readable } from 'svelte/store'
   import { canChangeAttribute } from '../permissions'
+  import { canEditSpace } from '../visibilityTester'
 
   export let objects: Doc[]
   export let config: Array<string | BuildModelKey>
@@ -81,7 +82,7 @@
     dispatch('row-focus', object)
   }
 
-  const joinProps = (attribute: AttributeModel, object: Doc, readonly: boolean) => {
+  const joinProps = (attribute: AttributeModel, object: Doc, readonly: boolean, editable: boolean) => {
     const readonlyParams =
       readonly || (attribute?.attribute?.readonly ?? false)
         ? {
@@ -89,7 +90,12 @@
             editable: false,
             disabled: true
           }
-        : {}
+        : {
+            readonly: !editable,
+            editable
+          }
+
+    console.log('attr', attribute, readonlyParams)
     if (attribute.collectionAttr || attribute.attribute?.type?._class === core.class.TypeIdentifier) {
       return { object, ...attribute.props, ...readonlyParams }
     }
@@ -98,6 +104,7 @@
     }
     return { ...attribute.props, space: object.space, ...readonlyParams }
   }
+
   function getValue (attribute: AttributeModel, object: Doc): any {
     if (attribute.castRequest) {
       return getObjectValue(
@@ -117,6 +124,7 @@
     if (attr === undefined) return
     if (attribute.collectionAttr) return
     if (attribute.isLookup) return
+    if (attribute.attribute?.readonly === true) return
     const key = attribute.castRequest ? attribute.key.substring(attribute.castRequest.length + 1) : attribute.key
     return (value: any) => {
       onChange(value, doc, key, attr)
@@ -170,6 +178,13 @@
     if (permissionsStore === undefined) return true
     return canChangeAttribute(attr, object.space as Ref<TypedSpace>, permissionsStore, object._class)
   }
+
+  async function canEdit (object: Doc): Promise<boolean> {
+    if (client.getHierarchy().isDerived(object._class, core.class.Space)) {
+      return await canEditSpace(object)
+    }
+    return true
+  }
 </script>
 
 {#if !model || isBuildingModel}
@@ -213,30 +228,33 @@
             bind:this={refs[row]}
             on:contextmenu={contextHandler(object, row)}
           >
-            {#each model as attribute, cell}
-              <td
-                class:align-left={attribute.displayProps?.align === 'left'}
-                class:align-center={attribute.displayProps?.align === 'center'}
-                class:align-right={attribute.displayProps?.align === 'right'}
-              >
-                <div class:antiTable-cells__firstCell={!cell}>
-                  <svelte:component
-                    this={attribute.presenter}
-                    value={getValue(attribute, object)}
-                    onChange={getOnChange(object, attribute)}
-                    label={attribute.label}
-                    attribute={attribute.attribute}
-                    {...joinProps(
-                      attribute,
-                      object,
-                      readonly ||
-                        $restrictionStore.readonly ||
-                        !canChangeAttr(object, attribute.attribute, $permissionsStore)
-                    )}
-                  />
-                </div>
-              </td>
-            {/each}
+            {#await canEdit(object) then canEditObject}
+              {#each model as attribute, cell}
+                <td
+                  class:align-left={attribute.displayProps?.align === 'left'}
+                  class:align-center={attribute.displayProps?.align === 'center'}
+                  class:align-right={attribute.displayProps?.align === 'right'}
+                >
+                  <div class:antiTable-cells__firstCell={!cell}>
+                    <svelte:component
+                      this={attribute.presenter}
+                      value={getValue(attribute, object)}
+                      onChange={getOnChange(object, attribute)}
+                      label={attribute.label}
+                      attribute={attribute.attribute}
+                      {...joinProps(
+                        attribute,
+                        object,
+                        readonly ||
+                          $restrictionStore.readonly ||
+                          !canChangeAttr(object, attribute.attribute, $permissionsStore),
+                        canEditObject
+                      )}
+                    />
+                  </div>
+                </td>
+              {/each}
+            {/await}
           </tr>
         {/each}
       </tbody>
