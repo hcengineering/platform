@@ -28,6 +28,7 @@ export default mergeIds(cardId, card, {
     ManageMasterTagsTools: '' as AnyComponent,
     MasterTags: '' as AnyComponent,
     CreateTag: '' as AnyComponent,
+    DuplicateCard: '' as AnyComponent,
     CardPresenter: '' as AnyComponent,
     CardsPresenter: '' as AnyComponent,
     FavoriteCardPresenter: '' as AnyComponent,

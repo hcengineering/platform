@@ -31,7 +31,7 @@
   const hierarchy = client.getHierarchy()
   const ancestors = hierarchy.getAncestors(masterTag)
   const mixins = hierarchy.getAllPossibleMixins(masterTag)
-  const current = hierarchy.classHierarchyMixin(masterTag, core.mixin.VersionableClass)
+  const current = hierarchy.classHierarchyMixin(masterTag, card.mixin.DuplicateSetting)
 
   const mixinsItems = mixins.map((it) => {
     const cl = hierarchy.getClass(it)
@@ -67,6 +67,8 @@
     .toArray()
     .filter((it) => {
       if (systemFields.includes(it.name)) return false
+      if (it.readonly === true || it.hidden === true) return false
+      if (it.type._class === core.class.TypeIdentifier) return false
       return true
     })
     .map((p) => {
@@ -82,18 +84,16 @@
 
   async function save (): Promise<void> {
     if (current?._id === masterTag) {
-      await client.updateMixin(masterTag, card.class.MasterTag, core.space.Model, core.mixin.VersionableClass, {
+      await client.updateMixin(masterTag, card.class.MasterTag, core.space.Model, card.mixin.DuplicateSetting, {
         excludedRelations: [...excludedRelations],
         excludedProperties: [...excludedProperties],
-        excludeMixins: [...excludeMixins],
-        enabled: true
+        excludeMixins: [...excludeMixins]
       })
     } else {
-      await client.createMixin(masterTag, card.class.MasterTag, core.space.Model, core.mixin.VersionableClass, {
+      await client.createMixin(masterTag, card.class.MasterTag, core.space.Model, card.mixin.DuplicateSetting, {
         excludedRelations: [...excludedRelations],
         excludedProperties: [...excludedProperties],
-        excludeMixins: [...excludeMixins],
-        enabled: true
+        excludeMixins: [...excludeMixins]
       })
     }
     dispatch('close')
@@ -125,7 +125,7 @@
 </script>
 
 <Card
-  label={card.string.NewVersion}
+  label={card.string.Duplicate}
   okLabel={presentation.string.Save}
   canSave={true}
   width={'medium'}

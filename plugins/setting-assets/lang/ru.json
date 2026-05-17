@@ -239,6 +239,7 @@
     "TwoFactorAuthEnabled": "Двухфакторная аутентификация включена",
     "TwoFactorAuthDisabled": "Двухфакторная аутентификация отключена",
     "ShowQRCode": "Показать QR-код",
-    "EnterVerificationCode": "Введите код подтверждения"
+    "EnterVerificationCode": "Введите код подтверждения",
+    "OverrideAttribute": "Переопределить атрибут"
   }
 }
