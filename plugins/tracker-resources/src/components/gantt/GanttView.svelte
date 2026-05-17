@@ -75,7 +75,8 @@
     applyWheelZoom,
     cursorAnchoredScrollLeft,
     pxPerDayToTickZoom,
-    ZOOM_PX_PER_DAY
+    ZOOM_PX_PER_DAY,
+    MIN_PPD
   } from './lib/zoom'
   import {
     dropdownSelectionForPxPerDay,
@@ -447,7 +448,11 @@
       return
     }
     if (canvasViewportWidth <= 0) return
-    const nextPpd = pxPerDayFromVisibleDays(canvasViewportWidth, days)
+    const rawPpd = pxPerDayFromVisibleDays(canvasViewportWidth, days)
+    // Honour the dynamic zoom-out floor (5% pad each side); if the user
+    // typed a day-count that would zoom out beyond it, clamp + re-sync
+    // the input on the next reactive pass.
+    const nextPpd = Math.max(rawPpd, dynamicMinPpd)
     // Editing the day count puts the toolbar into Custom-state by design —
     // we set `userPxPerDay` directly, which the reactive block above maps
     // back to a Custom selection unless the value happens to round to a
@@ -818,6 +823,36 @@
   // C — padding follows the active tick granularity, so a
   // wheel-zoomed view also gets sensible left/right padding.
   $: dateRange = computeDateRange(issues, milestones, tickZoomLevel)
+
+  // Maximum-zoom-out floor: bars must always occupy at least
+  // BAR_COVERAGE_MIN of the canvas viewport, so the user can't pan into
+  // an empty void where the issues collapse to a tiny island. Computed
+  // from the unpadded data extent (earliest barStart → latest barEnd)
+  // and the live canvas width. Falls back to the static MIN_PPD when
+  // we don't yet have a viewport width or any issues/milestones to
+  // measure.
+  const BAR_COVERAGE_MIN = 0.9 // 5% pad left + 5% pad right = 90% bars
+  $: barExtentDays = (() => {
+    const DAY_MS = 86_400_000
+    const ts: number[] = []
+    for (const i of issues) {
+      if (i.startDate !== null && i.startDate !== undefined) ts.push(i.startDate)
+      if (i.dueDate !== null && i.dueDate !== undefined) ts.push(i.dueDate)
+    }
+    for (const m of milestones) {
+      if (m.targetDate !== null && m.targetDate !== undefined) ts.push(m.targetDate)
+    }
+    if (ts.length < 2) return 0
+    return (Math.max(...ts) - Math.min(...ts)) / DAY_MS
+  })()
+  $: dynamicMinPpd = (canvasViewportWidth > 0 && barExtentDays > 0)
+    ? Math.max(MIN_PPD, (BAR_COVERAGE_MIN * canvasViewportWidth) / barExtentDays)
+    : MIN_PPD
+  // Re-clamp the wheel-zoom override if the dataset or viewport shrinks
+  // so an already-overridden value never sits below the new floor.
+  $: if (userPxPerDay !== null && userPxPerDay < dynamicMinPpd) {
+    userPxPerDay = dynamicMinPpd
+  }
 
   // PR3.3: lookup so GanttCanvas can build a `DragTarget` for a milestone
   // bar without having to thread the full Milestone[] down.
@@ -2614,7 +2649,12 @@
     // already multiplicatively adaptive, but in the low-density bands the
     // absolute pixel-delta per notch is small enough that users perceive
     // the same exp() step as slower than at high density.
-    const newPpd = applyWheelZoom(oldPpd, e.deltaY)
+    const rawPpd = applyWheelZoom(oldPpd, e.deltaY)
+    // Honour the dynamic zoom-out floor: bars must stay at least
+    // BAR_COVERAGE_MIN of the viewport. Without this clamp the user can
+    // wheel out into an empty void where the issues collapse to a tiny
+    // island in the middle of the canvas.
+    const newPpd = Math.max(rawPpd, dynamicMinPpd)
     if (newPpd === oldPpd) return
     userPxPerDay = newPpd
     if (hScrollEl != null) {
@@ -2666,7 +2706,9 @@
     if (pinchState.initialDistance <= 0) return
     const ratio = pinchState.currentDistance / pinchState.initialDistance
     const oldPpd = effectivePxPerDay
-    const newPpd = computePxPerDayFromRatio(pinchState.initialPxPerDay, ratio)
+    const rawPpd = computePxPerDayFromRatio(pinchState.initialPxPerDay, ratio)
+    // Same dynamic zoom-out floor as the wheel-zoom path.
+    const newPpd = Math.max(rawPpd, dynamicMinPpd)
     if (newPpd === oldPpd) return
     if (hScrollEl == null) return
     e.preventDefault()

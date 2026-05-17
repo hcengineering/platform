@@ -26,8 +26,8 @@
 -->
 <script lang="ts">
   import { DropdownLabelsIntl, EditBox, Icon, tooltip } from '@hcengineering/ui'
-  import ArrowLeft from '@hcengineering/ui/src/components/icons/ArrowLeft.svelte'
-  import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
+  import JumpToStart from '@hcengineering/ui/src/components/icons/JumpToStart.svelte'
+  import JumpToEnd from '@hcengineering/ui/src/components/icons/JumpToEnd.svelte'
   import NavPrev from '@hcengineering/ui/src/components/icons/NavPrev.svelte'
   import NavNext from '@hcengineering/ui/src/components/icons/NavNext.svelte'
   import Calendar from '@hcengineering/ui/src/components/icons/Calendar.svelte'
@@ -178,7 +178,7 @@
       on:click={snap.jumpToEnd}
       aria-label={snap.ariaLabels[tracker.string.GanttJumpToEnd] ?? ''}
     >
-      <Icon icon={ArrowRight} size="small" />
+      <Icon icon={JumpToEnd} size="small" />
     </button>
     <button
       class="gantt-tb-icon-btn"
@@ -208,7 +208,7 @@
       on:click={snap.jumpToStart}
       aria-label={snap.ariaLabels[tracker.string.GanttJumpToStart] ?? ''}
     >
-      <Icon icon={ArrowLeft} size="small" />
+      <Icon icon={JumpToStart} size="small" />
     </button>
   {/if}
 
