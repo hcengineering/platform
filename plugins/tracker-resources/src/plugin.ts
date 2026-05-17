@@ -341,6 +341,7 @@ export default mergeIds(trackerId, tracker, {
     GanttCollapse: '' as IntlString,
     GanttExpandAll: '' as IntlString,
     GanttCollapseAll: '' as IntlString,
+    GanttCornerNoOpInSwimlane: '' as IntlString,
     GanttTreeBreadcrumb: '' as IntlString,
     // Off-viewport dependency-arrow indicators
     GanttArrowIndicatorSourceAbove: '' as IntlString,
