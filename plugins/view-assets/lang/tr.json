@@ -155,6 +155,8 @@
     "ForbidAttributeChanges": "Özellik yasakla: ",
     "AllowAttributeChanges": "Özellik izin ver: ",
     "RelationshipTable": "İlişki tablosu",
-    "FilterOverflowBadge": "+{count}"
+    "FilterOverflowBadge": "+{count}",
+    "AddFilter": "Filtre ekle",
+    "HiddenFilters": "Gizli filtreler"
   }
 }

@@ -155,6 +155,8 @@
     "ForbidAttributeChanges": "属性の変更を禁止: ",
     "AllowAttributeChanges": "属性の変更を許可: ",
     "RelationshipTable": "関係テーブル",
-    "FilterOverflowBadge": "+{count}"
+    "FilterOverflowBadge": "+{count}",
+    "AddFilter": "フィルターを追加",
+    "HiddenFilters": "非表示のフィルター"
   }
 }

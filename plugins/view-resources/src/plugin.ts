@@ -56,6 +56,8 @@ export default mergeIds(viewId, view, {
     RestoreDefaults: '' as IntlString,
     Filter: '' as IntlString,
     ClearFilters: '' as IntlString,
+    AddFilter: '' as IntlString,
+    HiddenFilters: '' as IntlString,
     FilterIsNot: '' as IntlString,
     FilterIsEither: '' as IntlString,
     FilterIsEitherPlural: '' as IntlString,

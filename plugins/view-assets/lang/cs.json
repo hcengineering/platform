@@ -155,6 +155,8 @@
     "ForbidAttributeChanges": "Zakázat změny: ",
     "AllowAttributeChanges": "Povolit změny: ",
     "RelationshipTable": "Tabulka vztahů",
-    "FilterOverflowBadge": "+{count}"
+    "FilterOverflowBadge": "+{count}",
+    "AddFilter": "Přidat filtr",
+    "HiddenFilters": "Skryté filtry"
   }
 }

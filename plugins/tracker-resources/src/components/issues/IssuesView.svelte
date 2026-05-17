@@ -186,6 +186,21 @@
 </SpaceHeader>
 
 <slot name="afterHeader" />
+{#if !isGanttMode}
+  <!-- List/Kanban modes: render the chip strip below the SpaceHeader.
+       Gantt has its own inline placement inside the search slot above.
+       Mounted unconditionally so the filter→query reactive path is live
+       even when the user clears all filters; the visual row hides when
+       $filterStore is empty (.below-header-filters[data-empty="true"]). -->
+  <div class="below-header-filters" data-empty={$filterStore.length === 0}>
+    <InlineFilterChips
+      _class={tracker.class.Issue}
+      {space}
+      query={searchQuery}
+      on:change={(e) => (resultQuery = e.detail)}
+    />
+  </div>
+{/if}
 {#if viewlet && viewOptions}
   <ViewletContentView
     _class={tracker.class.Issue}
@@ -205,3 +220,16 @@
     activeFilters={$filterStore.map((f) => f.key.key)}
   />
 {/if}
+
+<style lang="scss">
+  .below-header-filters {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    min-height: 1.75rem;
+    border-bottom: 1px solid var(--theme-divider-color);
+  }
+  .below-header-filters[data-empty='true'] {
+    display: none;
+  }
+</style>

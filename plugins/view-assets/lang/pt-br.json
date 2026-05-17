@@ -155,6 +155,8 @@
     "ForbidAttributeChanges": "Proibir alterações: ",
     "AllowAttributeChanges": "Permitir alterações: ",
     "RelationshipTable": "Tabela de relacionamentos",
-    "FilterOverflowBadge": "+{count}"
+    "FilterOverflowBadge": "+{count}",
+    "AddFilter": "Adicionar filtro",
+    "HiddenFilters": "Filtros ocultos"
   }
 }
