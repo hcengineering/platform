@@ -308,7 +308,7 @@
     if (attr === undefined) return
     if (attribute.collectionAttr) return
     if (attribute.isLookup) return
-    if (attribute?.attribute?.readonly === true) return
+    if (attribute.attribute?.readonly === true) return
     const key = attribute.castRequest ? attribute.key.substring(attribute.castRequest.length + 1) : attribute.key
     return (value: any) => {
       onChange(value, doc, key, attr)

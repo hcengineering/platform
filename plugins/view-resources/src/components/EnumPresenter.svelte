@@ -21,6 +21,7 @@
 
   export let value: string
   export let type: EnumOf | undefined = undefined
+  export let readonly = false
   export let onChange: ((value: string) => void) | undefined = undefined
 
   let items: DropdownTextItem[] = []
@@ -42,7 +43,7 @@
     )
 </script>
 
-{#if onChange !== undefined && type !== undefined}
+{#if onChange !== undefined && type !== undefined && !readonly}
   <span use:tooltip={value ? { label: getEmbeddedLabel(value) } : undefined}>
     <DropdownLabels
       bind:selected={value}
