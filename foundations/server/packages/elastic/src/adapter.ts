@@ -314,17 +314,42 @@ class ElasticAdapter implements FullTextAdapter {
     from: number | undefined
   ): Promise<IndexedDoc[]> {
     if (query.$search === undefined) return []
+    const raw = String(query.$search)
+    // When the user input contains a `:` token we treat it as Lucene-style
+    // field:value syntax (e.g. `searchTitle:loader`, `identifier:OSKOS-`,
+    // `comments.message:foo`). Routing through `query_string` rather than
+    // `simple_query_string` lets ES parse the field-targeted clauses + apply
+    // per-field boosts. Without a `:` token we keep the legacy
+    // `simple_query_string` path for full backwards compatibility.
+    const usesQueryString = raw.includes(':')
+    const queryBlock: any = usesQueryString
+      ? {
+          query_string: {
+            query: raw,
+            fields: [
+              'searchTitle^3',
+              'searchShortTitle^2',
+              'identifier^2',
+              'description.plain',
+              'comments.message^0.7',
+              'fulltextSummary'
+            ],
+            default_operator: 'AND',
+            allow_leading_wildcard: false
+          }
+        }
+      : {
+          simple_query_string: {
+            query: raw,
+            analyze_wildcard: true,
+            flags: 'OR|PREFIX|PHRASE|FUZZY|NOT|ESCAPE',
+            default_operator: 'and'
+          }
+        }
     const request: any = {
       bool: {
         must: [
-          {
-            simple_query_string: {
-              query: query.$search,
-              analyze_wildcard: true,
-              flags: 'OR|PREFIX|PHRASE|FUZZY|NOT|ESCAPE',
-              default_operator: 'and'
-            }
-          },
+          queryBlock,
           {
             term: {
               workspaceId
