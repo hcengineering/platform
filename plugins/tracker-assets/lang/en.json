@@ -309,7 +309,6 @@
     "DependencyShiftedSubject": "Dependency shift",
     "DependencyShiftedDeltaDays": "{delta, plural, =0 {no shift} =1 {+1 day} =-1 {-1 day} other {{deltaSigned} days}}",
     "DependencyShiftedNoChange": "no schedule change",
-    "Color": "Color",
     "AllowCreatingIssues": "Allow creating issues",
     "Day": "Day",
     "Week": "Week",
@@ -460,13 +459,6 @@
     "GanttGroupByComponent": "Component",
     "GanttGroupByMilestone": "Milestone",
     "GanttGroupByLabel": "Label",
-    "GanttColorBy": "Color by",
-    "GanttColorByStatus": "Status",
-    "GanttColorByPriority": "Priority",
-    "GanttColorByAssignee": "Assignee",
-    "GanttColorByComponent": "Component",
-    "GanttColorByMilestone": "Milestone",
-    "GanttColorByNone": "Uniform (no color coding)",
     "GanttGroupOverridesHierarchy": "Group-By overrides hierarchy indentation. Set Group by to None to see the parent/child tree.",
     "GanttUnassigned": "Unassigned",
     "GanttNoComponent": "No component",
@@ -535,9 +527,10 @@
     "GanttMobileOpenSidebar": "Open issue list",
     "GanttMobileCloseSidebar": "Close issue list",
     "GanttMobileReadOnly": "Mobile view is read-only — open on a larger screen to edit",
-    "GanttShowPastDueOverlay": "Show overdue overlay",
-    "GanttShowBlockedOverlay": "Show blocked overlay",
-    "GanttShowSubIssueProgress": "Show sub-issue progress"
+    "SearchEmptyTitle": "No issues found for \"{query}\"",
+    "SearchEmptyActiveFilters": "Active filters: {filters}",
+    "SearchEmptyClearFilters": "Search without filters",
+    "SearchEmptyAllProjects": "Search in all projects"
   },
   "status": {}
 }

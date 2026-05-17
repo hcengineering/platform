@@ -60,13 +60,14 @@
     Menu,
     noCategory,
     openDoc,
+    resultIssueCountStore,
     SelectDirection,
     setGroupByValues,
     showMenu,
     statusStore
   } from '@hcengineering/view-resources'
   import { ChatMessagesPresenter } from '@hcengineering/chunter-resources'
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
 
   import tracker from '../../plugin'
   import { activeProjects } from '../../utils'
@@ -142,6 +143,11 @@
 
   // Category information only
   let tasks: DocWithRank[] = []
+
+  // Plan 2 T8 — feed the shared result-count store so IssuesView can show
+  // its SearchEmptyState card when the user's search yields zero hits.
+  $: resultIssueCountStore.set(tasks.length)
+  onDestroy(() => resultIssueCountStore.set(-1))
 
   $: groupByDocs = groupBy(tasks, groupByKey, categories)
 

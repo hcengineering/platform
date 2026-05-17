@@ -27,8 +27,9 @@
   import { createQuery, getClient, reduceCalls } from '@hcengineering/presentation'
   import { AnyComponent, AnySvelteComponent } from '@hcengineering/ui'
   import { BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
   import { SelectionFocusProvider } from '../../selection'
+  import { resultIssueCountStore } from '../../stores'
   import { buildConfigLookup } from '../../utils'
   import { getResultOptions, getResultQuery } from '../../viewOptions'
   import ListCategories from './ListCategories.svelte'
@@ -64,6 +65,13 @@
   let docs: Doc[] = []
   let fastDocs: Doc[] = []
   let slowDocs: Doc[] = []
+
+  // Plan 2 T8 — every viewlet writes its result-count into the shared
+  // resultIssueCountStore so IssuesView's SearchEmptyState card can render
+  // when search has no matches. Reset to -1 on destroy so a viewlet swap
+  // doesn't leave a stale value that triggers the empty-state.
+  $: resultIssueCountStore.set(docs.length)
+  onDestroy(() => resultIssueCountStore.set(-1))
 
   $: orderBy = viewOptions.orderBy
 
