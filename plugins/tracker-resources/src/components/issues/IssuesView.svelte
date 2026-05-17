@@ -108,7 +108,7 @@
         on:change={(e) => (resultQuery = e.detail)}
       />
       <FilterButton _class={tracker.class.Issue} {space} />
-      {#if modeSelectorProps !== undefined}
+      {#if modeSelectorProps !== undefined && (viewOptions?.showQuickModeSelector ?? true) !== false}
         <ModeSelector kind={'subtle'} props={modeSelectorProps} />
       {/if}
       <SearchInput
