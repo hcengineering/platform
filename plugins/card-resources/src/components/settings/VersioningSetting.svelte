@@ -175,7 +175,7 @@
           {@const id = `${assoc._id}_a`}
           <span>{assoc.nameA}</span>
           <Toggle
-            on={excludedRelations.has(id)}
+            on={!excludedRelations.has(id)}
             on:change={(e) => {
               if (e.detail === true) {
                 excludedRelations.delete(id)
