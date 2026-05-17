@@ -22,6 +22,7 @@
   import { createEventDispatcher } from 'svelte'
 
   import { TypeSelector, selectedTaskTypeStore, selectedTypeStore, taskTypeStore } from '@hcengineering/task-resources'
+  import { filterStore } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import IssuesView from './IssuesView.svelte'
 
@@ -74,12 +75,21 @@
   $: if (mode === undefined || (queries as any)[mode] === undefined) {
     ;[[mode]] = config
   }
+  // ModeSelector ↔ Status-Filter conflict resolution. When the user has an
+  // explicit Status filter active (via FilterButton/InlineFilterChips), the
+  // ModeSelector greys out + shows a tooltip — status is now controlled by
+  // the filter chip rather than the All/Active/Backlog shortcut. Re-enables
+  // automatically when the status-filter is removed.
+  $: hasStatusFilter = $filterStore.some((f) => f.key.key === 'status')
+
   $: if (mode !== undefined) {
     query = { ...(queries as any)[mode] }
     modeSelectorProps = {
       config,
       mode,
-      onChange: (newMode: string) => dispatch('action', { mode: newMode })
+      onChange: (newMode: string) => dispatch('action', { mode: newMode }),
+      disabled: hasStatusFilter,
+      disabledReason: tracker.string.ModeSelectorDisabledByFilter
     }
   }
 

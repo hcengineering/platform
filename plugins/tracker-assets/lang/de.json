@@ -351,6 +351,7 @@
     "GanttExpandAll": "Alle aufklappen",
     "GanttCollapseAll": "Alle zuklappen",
     "GanttCornerNoOpInSwimlane": "Wirkungslos im Group-by-Modus",
+    "ModeSelectorDisabledByFilter": "Status wird über aktive Filter gesteuert. Entferne den Status-Filter, um die Schnellauswahl zu nutzen.",
     "GanttTreeBreadcrumb": "Elternelement einer passenden Aufgabe",
     "GanttArrowIndicatorSourceAbove": "Quellzeile liegt oberhalb des Sichtbereichs — Klick zum Scrollen",
     "GanttArrowIndicatorSourceBelow": "Quellzeile liegt unterhalb des Sichtbereichs — Klick zum Scrollen",
