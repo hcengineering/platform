@@ -41,6 +41,7 @@
   import card from '../../plugin'
   import { deleteMasterTag } from '../../utils'
   import VersioningSetting from './VersioningSetting.svelte'
+  import DuplicateSetting from './DuplicateSetting.svelte'
 
   export let masterTag: MasterTag
 
@@ -153,6 +154,12 @@
     })
   }
 
+  function duplicateSetting (): void {
+    showPopup(DuplicateSetting, {
+      masterTag: masterTag._id
+    })
+  }
+
   let versioningEnabled = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
   $: versioningEnabled = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
 </script>
@@ -216,6 +223,12 @@
         on={masterTag.singleColumn}
         on:change={(e) => attributeUpdated('singleColumn', e.detail)}
       />
+    </div>
+    <div class="mx-2 flex-between items-center">
+      <Label label={card.string.Duplicate} />
+      <div class="flex items-center gap-1">
+        <ButtonIcon icon={setting.icon.Setting} size="extra-small" on:click={duplicateSetting} />
+      </div>
     </div>
   {/if}
 </div>

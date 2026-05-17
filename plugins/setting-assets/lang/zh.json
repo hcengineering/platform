@@ -239,6 +239,7 @@
     "TwoFactorAuthEnabled": "双因素认证已启用",
     "TwoFactorAuthDisabled": "双因素认证已禁用",
     "ShowQRCode": "显示QR码",
-    "EnterVerificationCode": "输入验证码"
+    "EnterVerificationCode": "输入验证码",
+    "OverrideAttribute": "覆盖属性"
   }
 }

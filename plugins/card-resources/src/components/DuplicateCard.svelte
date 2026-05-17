@@ -15,23 +15,24 @@
 //
 -->
 <script lang="ts">
-  import { MasterTag } from '@hcengineering/card'
   import core, { Doc, Mixin, Ref } from '@hcengineering/core'
-  import presentation, { Card, getClient } from '@hcengineering/presentation'
+  import { Card, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import { DropdownLabelsIntl, Label, Toggle } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
-  import card from '../../plugin'
+  import card from '../plugin'
+  import { duplicateCard } from '../utils'
+  import { Card as CardType } from '@hcengineering/card'
 
-  export let masterTag: Ref<MasterTag>
+  export let value: CardType
 
   const dispatch = createEventDispatcher()
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
-  const ancestors = hierarchy.getAncestors(masterTag)
-  const mixins = hierarchy.getAllPossibleMixins(masterTag)
-  const current = hierarchy.classHierarchyMixin(masterTag, core.mixin.VersionableClass)
+  const ancestors = hierarchy.getAncestors(value._class)
+  const mixins = hierarchy.findAllMixins(value)
+  const current = hierarchy.classHierarchyMixin(value._class, card.mixin.DuplicateSetting)
 
   const mixinsItems = mixins.map((it) => {
     const cl = hierarchy.getClass(it)
@@ -62,11 +63,13 @@
     'comments'
   ]
   const allProperties = hierarchy
-    .getAllAttributes(masterTag, core.class.Doc)
+    .getAllAttributes(value._class, core.class.Doc)
     .values()
     .toArray()
     .filter((it) => {
       if (systemFields.includes(it.name)) return false
+      if (it.readonly === true || it.hidden === true) return false
+      if (it.type._class === core.class.TypeIdentifier) return false
       return true
     })
     .map((p) => {
@@ -81,21 +84,11 @@
   const relationsB = associations.filter((it) => targets.has(it.classA))
 
   async function save (): Promise<void> {
-    if (current?._id === masterTag) {
-      await client.updateMixin(masterTag, card.class.MasterTag, core.space.Model, core.mixin.VersionableClass, {
-        excludedRelations: [...excludedRelations],
-        excludedProperties: [...excludedProperties],
-        excludeMixins: [...excludeMixins],
-        enabled: true
-      })
-    } else {
-      await client.createMixin(masterTag, card.class.MasterTag, core.space.Model, core.mixin.VersionableClass, {
-        excludedRelations: [...excludedRelations],
-        excludedProperties: [...excludedProperties],
-        excludeMixins: [...excludeMixins],
-        enabled: true
-      })
-    }
+    await duplicateCard(value, {
+      excludedProperties: [...excludedProperties],
+      excludedRelations: [...excludedRelations],
+      excludeMixins: [...excludeMixins]
+    })
     dispatch('close')
   }
 
@@ -124,14 +117,7 @@
   }
 </script>
 
-<Card
-  label={card.string.NewVersion}
-  okLabel={presentation.string.Save}
-  canSave={true}
-  width={'medium'}
-  okAction={save}
-  on:close
->
+<Card label={card.string.Duplicate} canSave={true} width={'medium'} okAction={save} on:close>
   <div class="flex-col flex-gap-2">
     {#if allProperties.length > 0}
       <div class="flex-between">
