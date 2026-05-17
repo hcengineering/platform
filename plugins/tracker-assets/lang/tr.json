@@ -300,7 +300,11 @@
     "SearchScopeTitle": "Title only",
     "SearchScopeTitleDescription": "Title + Description",
     "SearchScopeAll": "Title + Description + Comments",
-    "SearchHighlight": "Highlight search matches"
+    "SearchHighlight": "Highlight search matches",
+    "SearchEmptyTitle": "No issues found for \"{query}\"",
+    "SearchEmptyActiveFilters": "Active filters: {filters}",
+    "SearchEmptyClearFilters": "Search without filters",
+    "SearchEmptyAllProjects": "Search in all projects"
   },
   "status": {}
 }

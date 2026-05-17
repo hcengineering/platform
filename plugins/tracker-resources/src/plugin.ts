@@ -349,6 +349,10 @@ export default mergeIds(trackerId, tracker, {
     SearchScopeTitleDescription: '' as IntlString,
     SearchScopeAll: '' as IntlString,
     SearchHighlight: '' as IntlString,
+    SearchEmptyTitle: '' as IntlString,
+    SearchEmptyActiveFilters: '' as IntlString,
+    SearchEmptyClearFilters: '' as IntlString,
+    SearchEmptyAllProjects: '' as IntlString,
     GanttTreeBreadcrumb: '' as IntlString,
     // Off-viewport dependency-arrow indicators
     GanttArrowIndicatorSourceAbove: '' as IntlString,

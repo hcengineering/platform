@@ -524,7 +524,11 @@
     "GanttMobileMenu": "Menü",
     "GanttMobileOpenSidebar": "Issue-Liste öffnen",
     "GanttMobileCloseSidebar": "Issue-Liste schließen",
-    "GanttMobileReadOnly": "Mobile Ansicht nur lesbar — größeres Display für Bearbeitung verwenden"
+    "GanttMobileReadOnly": "Mobile Ansicht nur lesbar — größeres Display für Bearbeitung verwenden",
+    "SearchEmptyTitle": "Keine Treffer für \"{query}\"",
+    "SearchEmptyActiveFilters": "Aktive Filter: {filters}",
+    "SearchEmptyClearFilters": "Suche ohne Filter",
+    "SearchEmptyAllProjects": "In allen Projekten suchen"
   },
   "status": {}
 }
