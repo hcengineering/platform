@@ -155,6 +155,8 @@
     "ForbidAttributeChanges": "Vieta modifiche: ",
     "AllowAttributeChanges": "Consenti modifiche: ",
     "RelationshipTable": "Tabella delle relazioni",
-    "FilterOverflowBadge": "+{count}"
+    "FilterOverflowBadge": "+{count}",
+    "AddFilter": "Aggiungi filtro",
+    "HiddenFilters": "Filtri nascosti"
   }
 }
