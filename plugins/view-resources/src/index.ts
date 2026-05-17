@@ -182,6 +182,7 @@ export { default as ViewletClassSettings } from './components/ViewletClassSettin
 export { default as ViewletSelector } from './components/ViewletSelector.svelte'
 export { default as ViewletsSettingButton } from './components/ViewletsSettingButton.svelte'
 export { default as FilterButton } from './components/filter/FilterButton.svelte'
+export { default as InlineFilterChips } from './components/filter/InlineFilterChips.svelte'
 export { default as FilterRemovedNotification } from './components/filter/FilterRemovedNotification.svelte'
 export { default as PersonIdFilter } from './components/filter/PersonIdFilter.svelte'
 export { default as PersonIdFilterValuePresenter } from './components/filter/PersonIdFilterValuePresenter.svelte'
