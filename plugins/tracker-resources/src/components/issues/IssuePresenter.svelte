@@ -18,8 +18,8 @@
   import { taskTypeStore } from '@hcengineering/task-resources'
   import TaskTypeIcon from '@hcengineering/task-resources/src/components/taskTypes/TaskTypeIcon.svelte'
   import type { Issue } from '@hcengineering/tracker'
-  import { AnySvelteComponent, Icon, tooltip } from '@hcengineering/ui'
-  import { DocNavLink, ObjectMention } from '@hcengineering/view-resources'
+  import { AnySvelteComponent, HighlightedText, Icon, tooltip } from '@hcengineering/ui'
+  import { DocNavLink, ObjectMention, rawSearchTextStore } from '@hcengineering/view-resources'
   import { ObjectPresenterType } from '@hcengineering/view'
 
   import tracker from '../../plugin'
@@ -65,7 +65,7 @@
             </div>
           {/if}
           <span class="overflow-label" class:select-text={!noSelect} title={value?.title}>
-            {value.identifier}
+            <HighlightedText text={value.identifier} query={$rawSearchTextStore} />
             <slot name="details" />
           </span>
         </span>

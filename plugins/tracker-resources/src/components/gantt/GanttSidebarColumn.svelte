@@ -16,7 +16,8 @@
   import type { Ref } from '@hcengineering/core'
   import type { Issue, IssueRelation } from '@hcengineering/tracker'
   import { IssuePriority } from '@hcengineering/tracker'
-  import { Label } from '@hcengineering/ui'
+  import { HighlightedText, Label } from '@hcengineering/ui'
+  import { rawSearchTextStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import StatusBadge from './StatusBadge.svelte'
@@ -94,7 +95,7 @@
           if (e.key === 'Enter') onTitleClick()
         }}
       >
-        {issue.title}
+        <HighlightedText text={issue.title} query={$rawSearchTextStore} />
       </span>
     {:else if column === 'status'}
       <span class="cell-content cell-status"><StatusBadge {issue} /></span>
