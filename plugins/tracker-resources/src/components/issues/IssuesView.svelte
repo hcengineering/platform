@@ -187,56 +187,21 @@
 
 <slot name="afterHeader" />
 {#if viewlet && viewOptions}
-  <!-- Always mount the viewlet so its onDestroy doesn't reset the
-       result-count store mid-render (which would otherwise create a
-       mount/unmount loop with the SearchEmptyState below). The
-       SearchEmptyState is layered ON TOP of the empty viewlet area when
-       the user has typed a search and zero hits come back. -->
-  <div class="issuesview-content">
-    <ViewletContentView
-      _class={tracker.class.Issue}
-      {viewlet}
-      query={resultQuery}
-      {space}
-      {viewOptions}
-      createItemDialog={CreateIssue}
-      createItemLabel={tracker.string.AddIssueTooltip}
-      createItemEvent={TrackerEvents.IssuePlusButtonClicked}
-      createItemDialogProps={{ shouldSaveDraft: true }}
-    />
-    {#if shouldShowEmptyState($rawSearchTextStore, $resultIssueCountStore)}
-      <div class="issuesview-empty-overlay">
-        <SearchEmptyState
-          searchText={$rawSearchTextStore}
-          activeFilters={$filterStore.map((f) => f.key.key)}
-        />
-      </div>
-    {/if}
-  </div>
+  <ViewletContentView
+    _class={tracker.class.Issue}
+    {viewlet}
+    query={resultQuery}
+    {space}
+    {viewOptions}
+    createItemDialog={CreateIssue}
+    createItemLabel={tracker.string.AddIssueTooltip}
+    createItemEvent={TrackerEvents.IssuePlusButtonClicked}
+    createItemDialogProps={{ shouldSaveDraft: true }}
+  />
 {/if}
-
-<style lang="scss">
-  .issuesview-content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 0;
-    min-height: 0;
-  }
-  .issuesview-empty-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--theme-surface-color);
-    pointer-events: none;
-  }
-  /* Re-enable pointer-events on the empty-state card itself so the user
-     can click "Suche ohne Filter" / "In allen Projekten suchen". The
-     wrapping overlay stays click-through so the bar-resize handles or
-     anything else under it stays usable when the overlay flickers. */
-  .issuesview-empty-overlay :global(.search-empty-state) {
-    pointer-events: auto;
-  }
-</style>
+{#if shouldShowEmptyState($rawSearchTextStore, $resultIssueCountStore)}
+  <SearchEmptyState
+    searchText={$rawSearchTextStore}
+    activeFilters={$filterStore.map((f) => f.key.key)}
+  />
+{/if}
