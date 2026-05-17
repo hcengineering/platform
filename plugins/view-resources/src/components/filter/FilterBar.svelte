@@ -14,12 +14,12 @@
 -->
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, getCurrentAccount } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
   import { getClient, reduceCalls } from '@hcengineering/presentation'
   import { Button, IconAdd, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
-  import { Filter, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
+  import { Filter, FilterMode, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { filterStore, removeFilter, selectedFilterStore, updateFilter } from '../../filter'
+  import { makeFilterQuery } from '../../filter/query-builder'
   import view from '../../plugin'
   import { activeViewlet, getActiveViewletId, makeViewletKey } from '../../utils'
   import { getViewOptions, viewOptionStore } from '../../viewOptions'
@@ -78,67 +78,14 @@
     }
   }
 
+  const resolveMode = async (id: Ref<FilterMode>): Promise<FilterMode | undefined> =>
+    await client.findOne(view.class.FilterMode, { _id: id })
+
+  // Use the default resource resolver (getResource), wired to the platform
+  // registry. Tests inject a mock via the helper's third parameter.
   const makeQuery = reduceCalls(async (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> => {
-    const newQuery = hierarchy.clone(query)
-    for (let i = 0; i < filters.length; i++) {
-      const filter = filters[i]
-      const mode = await client.findOne(view.class.FilterMode, { _id: filter.mode })
-      if (mode === undefined) continue
-      const result = await getResource(mode.result)
-      const newValue = await result(filter, () => {
-        makeQuery(query, filters)
-      })
-
-      let filterKey = filter.key.key
-
-      const attr = client.getHierarchy().getAttribute(filter.key._class, filter.key.key)
-      if (client.getHierarchy().isMixin(attr.attributeOf)) {
-        filterKey = attr.attributeOf + '.' + filter.key.key
-      }
-
-      if (newQuery[filterKey] === null || newQuery[filterKey] === undefined) {
-        newQuery[filterKey] = newValue
-      } else {
-        let merged = false
-        for (const key in newValue) {
-          if (newQuery[filterKey][key] === undefined) {
-            if (key === '$in' && typeof newQuery[filterKey] === 'string') {
-              newQuery[filterKey] = { $in: newValue[key].filter((p: any) => p === newQuery[filterKey]) }
-            } else {
-              newQuery[filterKey][key] = newValue[key]
-            }
-            merged = true
-            continue
-          }
-          if (key === '$in') {
-            newQuery[filterKey][key] = newQuery[filterKey][key].filter((p: any) => newValue[key].includes(p))
-            merged = true
-            continue
-          }
-          if (key === '$nin') {
-            newQuery[filterKey][key] = [...newQuery[filterKey][key], ...newValue[key]]
-            merged = true
-            continue
-          }
-          if (key === '$lt') {
-            newQuery[filterKey][key] =
-              newQuery[filterKey][key] < newValue[key] ? newQuery[filterKey][key] : newValue[key]
-            merged = true
-            continue
-          }
-          if (key === '$gt') {
-            newQuery[filterKey][key] =
-              newQuery[filterKey][key] > newValue[key] ? newQuery[filterKey][key] : newValue[key]
-            merged = true
-            continue
-          }
-        }
-        if (!merged) {
-          Object.assign(newQuery[filterKey], newValue)
-        }
-      }
-    }
-    dispatch('change', newQuery)
+    const next = await makeFilterQuery(query, filters, resolveMode, undefined, hierarchy)
+    dispatch('change', next)
   })
 
   $: makeQuery(query, $filterStore)
