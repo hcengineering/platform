@@ -75,7 +75,35 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
       action: view.function.HideArchived,
       label: view.string.HideArchived
     },
-    ...(!kanban ? [showColorsViewOption] : [])
+    ...(!kanban ? [showColorsViewOption] : []),
+    // Search + Quick-filter toggles (Plan 2 T5). Apply to List, Kanban and
+    // Gantt uniformly via the shared `issuesOptions()` factory used by every
+    // Issue viewlet that doesn't carry its own block.
+    {
+      key: 'showQuickModeSelector',
+      type: 'toggle',
+      defaultValue: true,
+      actionTarget: 'display',
+      label: tracker.string.ShowQuickModeSelector
+    },
+    {
+      key: 'searchScope',
+      type: 'dropdown',
+      defaultValue: 'all',
+      values: [
+        { id: 'title', label: tracker.string.SearchScopeTitle },
+        { id: 'title-description', label: tracker.string.SearchScopeTitleDescription },
+        { id: 'all', label: tracker.string.SearchScopeAll }
+      ],
+      label: tracker.string.SearchScopeLabel
+    },
+    {
+      key: 'searchHighlight',
+      type: 'toggle',
+      defaultValue: true,
+      actionTarget: 'display',
+      label: tracker.string.SearchHighlight
+    }
   ]
 })
 
@@ -478,6 +506,34 @@ export function ganttViewOptions (): ViewOptionsModel {
         ],
         actionTarget: 'display',
         label: tracker.string.GanttGroupBy
+      },
+      // Plan 2 T5 — shared search + quick-filter toggles for every Issue
+      // viewlet. Mirror the entries in `issuesOptions()` so the Gantt's own
+      // ViewOptions block exposes the same Customize-View knobs.
+      {
+        key: 'showQuickModeSelector',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.ShowQuickModeSelector
+      },
+      {
+        key: 'searchScope',
+        type: 'dropdown',
+        defaultValue: 'all',
+        values: [
+          { id: 'title', label: tracker.string.SearchScopeTitle },
+          { id: 'title-description', label: tracker.string.SearchScopeTitleDescription },
+          { id: 'all', label: tracker.string.SearchScopeAll }
+        ],
+        label: tracker.string.SearchScopeLabel
+      },
+      {
+        key: 'searchHighlight',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.SearchHighlight
       }
     ]
   }

@@ -343,6 +343,12 @@ export default mergeIds(trackerId, tracker, {
     GanttCollapseAll: '' as IntlString,
     GanttCornerNoOpInSwimlane: '' as IntlString,
     ModeSelectorDisabledByFilter: '' as IntlString,
+    ShowQuickModeSelector: '' as IntlString,
+    SearchScopeLabel: '' as IntlString,
+    SearchScopeTitle: '' as IntlString,
+    SearchScopeTitleDescription: '' as IntlString,
+    SearchScopeAll: '' as IntlString,
+    SearchHighlight: '' as IntlString,
     GanttTreeBreadcrumb: '' as IntlString,
     // Off-viewport dependency-arrow indicators
     GanttArrowIndicatorSourceAbove: '' as IntlString,

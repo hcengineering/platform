@@ -292,7 +292,15 @@
     "GanttScrollLeftToBar": "Scroll left to bar",
     "GanttScrollRightToBar": "Scroll right to bar",
     "GanttExpand": "Expand",
-    "GanttCollapse": "Collapse"
+    "GanttCollapse": "Collapse",
+    "GanttCornerNoOpInSwimlane": "No effect in group-by mode",
+    "ModeSelectorDisabledByFilter": "Status is controlled by an active filter. Remove the status filter to use this shortcut.",
+    "ShowQuickModeSelector": "Quick filter: All / Active / Backlog",
+    "SearchScopeLabel": "Search in…",
+    "SearchScopeTitle": "Title only",
+    "SearchScopeTitleDescription": "Title + Description",
+    "SearchScopeAll": "Title + Description + Comments",
+    "SearchHighlight": "Highlight search matches"
   },
   "status": {}
 }
