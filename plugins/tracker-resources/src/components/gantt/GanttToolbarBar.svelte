@@ -25,19 +25,19 @@
   becomes the RIGHTMOST visible element of the section.
 -->
 <script lang="ts">
-  import { DropdownLabelsIntl, EditBox, Icon, tooltip, IconMoreV, Label } from '@hcengineering/ui'
-  import ArrowLeft from '@hcengineering/ui/src/components/icons/ArrowLeft.svelte'
-  import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
+  import { DropdownLabelsIntl, EditBox, Icon, tooltip } from '@hcengineering/ui'
+  import JumpToStart from '@hcengineering/ui/src/components/icons/JumpToStart.svelte'
+  import JumpToEnd from '@hcengineering/ui/src/components/icons/JumpToEnd.svelte'
   import NavPrev from '@hcengineering/ui/src/components/icons/NavPrev.svelte'
   import NavNext from '@hcengineering/ui/src/components/icons/NavNext.svelte'
   import Calendar from '@hcengineering/ui/src/components/icons/Calendar.svelte'
   import IconUndo from '@hcengineering/ui/src/components/icons/Undo.svelte'
   import IconRedo from '@hcengineering/ui/src/components/icons/Redo.svelte'
+  import { IconMoreV } from '@hcengineering/ui'
+  import { Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { GROUP_BY_KEYS } from './lib/group-by'
   import { ganttToolbarSnapshot } from './ganttToolbarStore'
-
-  const COLOR_BY_KEYS = ['status', 'priority', 'assignee', 'component', 'milestone', 'none'] as const
 
   export let section: 'search-mid' | 'search-end' | 'trailing'
 
@@ -68,7 +68,11 @@
     <div class="gantt-tb-groupby-wrap" use:tooltip={{ label: tracker.string.GanttGroupOverridesHierarchy }}>
       <Label label={tracker.string.GanttGroupBy} />
       <!-- svelte-ignore a11y-no-onchange -->
-      <select class="gantt-tb-groupby-select" value={snap.ganttGroupBy} on:change={snap.onGroupBySelectChange}>
+      <select
+        class="gantt-tb-groupby-select"
+        value={snap.ganttGroupBy}
+        on:change={snap.onGroupBySelectChange}
+      >
         {#each GROUP_BY_KEYS as key (key)}
           <option value={key}>
             {#if key === 'none'}<Label label={tracker.string.GanttGroupByNone} />
@@ -78,27 +82,6 @@
             {:else if key === 'component'}<Label label={tracker.string.GanttGroupByComponent} />
             {:else if key === 'milestone'}<Label label={tracker.string.GanttGroupByMilestone} />
             {:else if key === 'label'}<Label label={tracker.string.GanttGroupByLabel} />
-            {/if}
-          </option>
-        {/each}
-      </select>
-    </div>
-    <div class="gantt-tb-colorby-wrap" use:tooltip={{ label: tracker.string.GanttColorBy }}>
-      <Label label={tracker.string.GanttColorBy} />
-      <!-- svelte-ignore a11y-no-onchange -->
-      <select
-        class="gantt-tb-colorby-select"
-        value={snap.ganttBarColorBy}
-        on:change={snap.onColorBySelectChange}
-      >
-        {#each COLOR_BY_KEYS as key (key)}
-          <option value={key}>
-            {#if key === 'status'}<Label label={tracker.string.GanttColorByStatus} />
-            {:else if key === 'priority'}<Label label={tracker.string.GanttColorByPriority} />
-            {:else if key === 'assignee'}<Label label={tracker.string.GanttColorByAssignee} />
-            {:else if key === 'component'}<Label label={tracker.string.GanttColorByComponent} />
-            {:else if key === 'milestone'}<Label label={tracker.string.GanttColorByMilestone} />
-            {:else if key === 'none'}<Label label={tracker.string.GanttColorByNone} />
             {/if}
           </option>
         {/each}
@@ -161,9 +144,7 @@
         minValue={MIN_VISIBLE_DAYS}
         maxValue={MAX_VISIBLE_DAYS}
         kind={'editbox'}
-        on:value={(e) => {
-          snap.setVisibleDaysInput(Number(e.detail))
-        }}
+        on:value={(e) => snap.setVisibleDaysInput(Number(e.detail))}
         on:blur={snap.applyVisibleDaysInput}
         on:keydown={snap.onVisibleDaysKeyDown}
       />
@@ -197,7 +178,7 @@
       on:click={snap.jumpToEnd}
       aria-label={snap.ariaLabels[tracker.string.GanttJumpToEnd] ?? ''}
     >
-      <Icon icon={ArrowRight} size="small" />
+      <Icon icon={JumpToEnd} size="small" />
     </button>
     <button
       class="gantt-tb-icon-btn"
@@ -227,7 +208,7 @@
       on:click={snap.jumpToStart}
       aria-label={snap.ariaLabels[tracker.string.GanttJumpToStart] ?? ''}
     >
-      <Icon icon={ArrowLeft} size="small" />
+      <Icon icon={JumpToStart} size="small" />
     </button>
   {/if}
 
@@ -242,13 +223,9 @@
       <button
         type="button"
         class="gantt-tb-icon-btn"
-        use:tooltip={{
-          label: snap.mobileDrawerOpen ? tracker.string.GanttMobileCloseSidebar : tracker.string.GanttMobileOpenSidebar
-        }}
+        use:tooltip={{ label: snap.mobileDrawerOpen ? tracker.string.GanttMobileCloseSidebar : tracker.string.GanttMobileOpenSidebar }}
         on:click={snap.toggleMobileDrawer}
-        aria-label={snap.ariaLabels[
-          snap.mobileDrawerOpen ? tracker.string.GanttMobileCloseSidebar : tracker.string.GanttMobileOpenSidebar
-        ] ?? ''}
+        aria-label={snap.ariaLabels[snap.mobileDrawerOpen ? tracker.string.GanttMobileCloseSidebar : tracker.string.GanttMobileOpenSidebar] ?? ''}
         aria-expanded={snap.mobileDrawerOpen}
       >
         <span class="gantt-tb-text-glyph" aria-hidden="true">≡</span>
@@ -361,29 +338,6 @@
   }
 
   .gantt-tb-groupby-select {
-    background: transparent;
-    border: none;
-    color: var(--theme-content-color);
-    font: inherit;
-    cursor: pointer;
-    outline: none;
-    padding-right: 0.5rem;
-  }
-
-  .gantt-tb-colorby-wrap {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    height: 1.75rem;
-    padding: 0 0.5rem;
-    border: 1px solid var(--theme-button-border);
-    border-radius: 0.25rem;
-    color: var(--theme-content-color);
-    font-size: 0.75rem;
-    flex-shrink: 0;
-  }
-
-  .gantt-tb-colorby-select {
     background: transparent;
     border: none;
     color: var(--theme-content-color);
