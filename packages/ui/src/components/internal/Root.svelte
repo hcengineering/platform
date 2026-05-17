@@ -278,13 +278,12 @@
           {/if}
         </div>
         <div class="flex-row-reverse flex-gap-0-5" style:-webkit-app-region={'no-drag'}>
-          <Settings />
-          <!-- Global Fullscreen toggle. Sits visually between the Clock and
-               the Settings (gear) icon (parent uses flex-row-reverse, so
-               markup order is reversed L→R). Available on every page so the
-               user can toggle fullscreen from anywhere, not only inside the
-               Gantt viewlet that previously owned this control. -->
+          <!-- Global Fullscreen toggle. Markup-first → visually rightmost in
+               this row-reverse flex container. Sits beyond the Settings
+               (gear) so it occupies the very right edge of the status bar
+               and is reachable from every viewlet (not only Gantt). -->
           <Fullscreen />
+          <Settings />
           <Clock />
           <div class="flex-row-center flex-gap-0-5">
             {#if !secondRow}
