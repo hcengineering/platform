@@ -159,6 +159,7 @@
     "RoleLabel": "Role: {role}",
     "ForbidAttributeChanges": "Forbid changes: ",
     "AllowAttributeChanges": "Allow changes: ",
-    "RelationshipTable": "Traceability Matrix"
+    "RelationshipTable": "Traceability Matrix",
+    "FilterOverflowBadge": "+{count}"
   }
 }

@@ -154,6 +154,7 @@
     "RoleLabel": "Rol: {role}",
     "ForbidAttributeChanges": "Özellik yasakla: ",
     "AllowAttributeChanges": "Özellik izin ver: ",
-    "RelationshipTable": "İlişki tablosu"
+    "RelationshipTable": "İlişki tablosu",
+    "FilterOverflowBadge": "+{count}"
   }
 }

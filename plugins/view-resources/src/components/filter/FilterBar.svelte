@@ -15,17 +15,15 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import { getClient, reduceCalls } from '@hcengineering/presentation'
-  import { Button, IconAdd, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
+  import { Button, getCurrentLocation, showPopup } from '@hcengineering/ui'
   import { Filter, FilterMode, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { filterStore, removeFilter, selectedFilterStore, updateFilter } from '../../filter'
+  import { filterStore, selectedFilterStore } from '../../filter'
   import { makeFilterQuery } from '../../filter/query-builder'
   import view from '../../plugin'
   import { activeViewlet, getActiveViewletId, makeViewletKey } from '../../utils'
   import { getViewOptions, viewOptionStore } from '../../viewOptions'
   import FilterSave from './FilterSave.svelte'
-  import FilterSection from './FilterSection.svelte'
-  import FilterTypePopup from './FilterTypePopup.svelte'
 
   export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined
@@ -36,26 +34,6 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
-
-  function onChange (e: Filter | undefined) {
-    if (e === undefined) return
-    updateFilter(e)
-  }
-
-  function add (e: MouseEvent) {
-    const target = eventToHTMLElement(e)
-    showPopup(
-      FilterTypePopup,
-      {
-        _class,
-        target,
-        space,
-        index: $filterStore.map((it) => it.index).reduce((a, b) => Math.max(a, b), 0) + 1,
-        onChange
-      },
-      target
-    )
-  }
 
   async function saveFilteredView () {
     showPopup(FilterSave, { viewOptions, _class })
@@ -115,95 +93,40 @@
   }
 </script>
 
-{#if visible && $filterStore && $filterStore.length > 0}
-  <div class="filterbar-container">
-    <div class="filters">
-      {#each $filterStore as filter, i}
-        <FilterSection
-          {space}
-          {filter}
-          on:change={() => {
-            makeQuery(query, $filterStore)
-            updateFilter(filter)
-          }}
-          on:remove={() => {
-            removeFilter(i)
-          }}
-        />
-      {/each}
-      <div class="add-filter">
-        <Button size={'small'} icon={IconAdd} kind={'ghost'} on:click={add} />
-      </div>
-    </div>
-
-    {#if !hideSaveButtons}
-      <div class="flex gap-1-5">
+{#if visible && $filterStore && $filterStore.length > 0 && !hideSaveButtons}
+  <div class="filterbar-saveas-container">
+    <div class="flex gap-1-5">
+      <Button
+        icon={view.icon.Views}
+        label={view.string.SaveAs}
+        width={'fit-content'}
+        on:click={async () => {
+          await saveFilteredView()
+        }}
+      />
+      {#if selectedFilterChanged($selectedFilterStore, $filterStore, $activeViewlet, $viewOptionStore)}
         <Button
           icon={view.icon.Views}
-          label={view.string.SaveAs}
+          label={view.string.Save}
           width={'fit-content'}
           on:click={async () => {
-            await saveFilteredView()
+            await saveCurrentFilteredView($selectedFilterStore)
           }}
         />
-        {#if selectedFilterChanged($selectedFilterStore, $filterStore, $activeViewlet, $viewOptionStore)}
-          <Button
-            icon={view.icon.Views}
-            label={view.string.Save}
-            width={'fit-content'}
-            on:click={async () => {
-              await saveCurrentFilteredView($selectedFilterStore)
-            }}
-          />
-        {/if}
-      </div>
-    {/if}
+      {/if}
+    </div>
   </div>
 {/if}
 
 <style lang="scss">
-  .filterbar-container {
-    display: grid;
-    grid-template-columns: auto auto;
-    justify-content: space-between;
+  .filterbar-saveas-container {
+    display: flex;
+    justify-content: flex-end;
     align-items: center;
-    padding: var(--spacing-1) var(--spacing-2) var(--spacing-1) var(--spacing-2);
+    padding: var(--spacing-1) var(--spacing-2);
     width: 100%;
     min-width: 0;
     background-color: var(--theme-comp-header-color);
     border-bottom: 1px solid var(--theme-divider-color);
-
-    .filters {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      flex-grow: 1;
-      margin-bottom: -0.375rem;
-      width: 100%;
-      min-width: 0;
-    }
-    .add-filter {
-      margin-bottom: 0.375rem;
-    }
-
-    // .filter-button {
-    //   display: flex;
-    //   align-items: baseline;
-    //   flex-shrink: 0;
-    //   padding: 0 0.375rem;
-    //   height: 1.5rem;
-    //   min-width: 1.5rem;
-    //   white-space: nowrap;
-    //   line-height: 150%;
-    //   color: var(--accent-color);
-    //   background-color: transparent;
-    //   border-radius: 0.25rem;
-    //   transition-duration: background-color 0.15s ease-in-out;
-
-    //   &:hover {
-    //     color: var(--caption-color);
-    //     background-color: var(--noborder-bg-hover);
-    //   }
-    // }
   }
 </style>

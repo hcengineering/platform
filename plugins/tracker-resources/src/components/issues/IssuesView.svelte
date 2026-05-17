@@ -6,8 +6,8 @@
   import { Button, IconAdd, IModeSelector, SearchInput, showPopup, themeStore } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import {
-    FilterBar,
     FilterButton,
+    InlineFilterChips,
     SpaceHeader,
     ViewletContentView,
     ViewletSettingButton,
@@ -100,6 +100,12 @@
            rightmost), then Group-by, then Filter, then LAST=Lupe (visually
            leftmost). -->
       <GanttToolbarBar section="search-end" />
+      <InlineFilterChips
+        _class={tracker.class.Issue}
+        {space}
+        query={searchQuery}
+        on:change={(e) => (resultQuery = e.detail)}
+      />
       <GanttToolbarBar section="search-mid" />
       <FilterButton _class={tracker.class.Issue} {space} />
       <SearchInput
@@ -149,13 +155,6 @@
   </svelte:fragment>
 </SpaceHeader>
 
-<FilterBar
-  _class={tracker.class.Issue}
-  {space}
-  query={searchQuery}
-  {viewOptions}
-  on:change={(e) => (resultQuery = e.detail)}
-/>
 <slot name="afterHeader" />
 {#if viewlet && viewOptions}
   <ViewletContentView
