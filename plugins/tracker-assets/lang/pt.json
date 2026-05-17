@@ -54,8 +54,8 @@
     "NewIssuePlaceholder": "Novo",
     "ResumeDraft": "Retomar rascunho",
     "SaveIssue": "Criar problema",
-    "SetPriority": "Definir prioridade\u2026",
-    "SetStatus": "Definir estado\u2026",
+    "SetPriority": "Definir prioridade…",
+    "SetStatus": "Definir estado…",
     "SelectIssue": "Selecionar problema",
     "Priority": "Prioridade",
     "NoPriority": "Sem prioridade",
@@ -81,8 +81,8 @@
     "AssignTo": "Atribuir a...",
     "AssignedTo": "Atribuído a {value}",
     "Parent": "Problema superior",
-    "SetParent": "Definir problema superior\u2026",
-    "ChangeParent": "Alterar problema superior\u2026",
+    "SetParent": "Definir problema superior…",
+    "ChangeParent": "Alterar problema superior…",
     "RemoveParent": "Remover problema superior",
     "OpenParent": "Abrir problema superior",
     "SubIssues": "Sub-problemas",
@@ -96,7 +96,7 @@
     "Labels": "Etiquetas",
     "Component": "Componente",
     "Space": "",
-    "SetDueDate": "Definir data de vencimento\u2026",
+    "SetDueDate": "Definir data de vencimento…",
     "ChangeDueDate": "Alterar data de vencimento",
     "ModificationDate": "Atualizado {value}",
     "Project": "Projeto",
@@ -295,7 +295,6 @@
     "GanttScrollRightToBar": "Scroll right to bar",
     "GanttExpand": "Expand",
     "GanttCollapse": "Collapse"
-  
   },
   "status": {}
 }

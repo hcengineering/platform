@@ -67,13 +67,11 @@
     "Back": "返回",
     "List": "列表",
     "NumberLabels": "{count, plural, =0 {无标签} =1 {1 个标签} other {# 个标签}}",
-
     "CategoryBacklog": "积压",
     "CategoryUnstarted": "未开始",
     "CategoryStarted": "已开始",
     "CategoryCompleted": "已完成",
     "CategoryCanceled": "已取消",
-
     "Title": "标题",
     "Name": "名称",
     "Description": "描述",
@@ -146,14 +144,12 @@
     "ComponentMembersSearchPlaceholder": "更改组件成员…",
     "MoveToProject": "移动到项目",
     "Duplicate": "复制",
-
     "GotoIssues": "前往问题",
     "GotoActive": "前往活跃问题",
     "GotoBacklog": "前往积压",
     "GotoComponents": "前往组件",
     "GotoMyIssues": "前往我的问题",
     "GotoTrackerApplication": "切换到追踪器应用",
-
     "CreatedOne": "已创建",
     "MoveIssues": "移动问题",
     "MoveIssuesDescription": "选择要移动问题的项目",
@@ -165,7 +161,6 @@
     "Replacement": "替换项",
     "Original": "原始",
     "OriginalDescription": "此部分的项目将在新项目中创建",
-
     "Relations": "关系",
     "RemoveRelation": "移除关系…",
     "AddBlockedBy": "标记为被阻塞…",
@@ -180,7 +175,6 @@
     "Blocks": "阻塞",
     "Related": "相关",
     "RelatedIssues": "相关问题",
-
     "EditIssue": "编辑 {title}",
     "EditWorkflowStatuses": "编辑问题状态",
     "EditProject": "编辑项目",
@@ -195,21 +189,17 @@
     "DeleteWorkflowStatus": "删除问题状态",
     "DeleteWorkflowStatusConfirm": "您想要删除“{status}”状态吗？",
     "DeleteWorkflowStatusErrorDescription": "“{status}”状态有 {count, plural, =1 {1 个问题} other {# 个问题}} 分配。请选择一个状态进行移动",
-
     "Save": "保存",
     "IncludeItemsThatMatch": "包括符合条件的项目",
     "AnyFilter": "任何过滤器",
     "AllFilters": "所有过滤器",
     "NoDescription": "无描述",
     "SearchIssue": "搜索任务…",
-
     "StatusHistory": "状态历史",
     "NewSubIssue": "添加子问题…",
     "AddLabel": "添加标签",
-
     "DeleteIssue": "删除 {issueCount, plural, =1 {问题} other {# 个问题}}",
     "DeleteIssueConfirm": "您想要删除 {issueCount, plural, =1 {问题} other {问题}}{subIssueCount, plural, =0 {?} =1 { 和子问题？} other { 和子问题？}}",
-
     "Milestone": "里程碑",
     "NoMilestone": "无里程碑",
     "MoveToMilestone": "选择里程碑",
@@ -220,13 +210,10 @@
     "ClosedMilestones": "已完成",
     "AddToMilestone": "添加到里程碑",
     "MilestoneNamePlaceholder": "里程碑名称",
-
     "NewMilestone": "新里程碑",
     "CreateMilestone": "创建",
-
     "MoveAndDeleteMilestone": "将问题移动到 {newMilestone} 并删除 {deleteMilestone}",
     "MoveAndDeleteMilestoneConfirm": "您想要删除里程碑并将问题移动到其他里程碑吗？",
-
     "Estimation": "估算",
     "ReportedTime": "花费时间",
     "RemainingTime": "剩余时间",
@@ -245,11 +232,9 @@
     "CapacityValue": "共 {value} 天",
     "NewRelatedIssue": "新相关问题",
     "RelatedIssuesNotFound": "未找到相关问题",
-
     "AddedReference": "添加了引用",
     "AddedAsBlocked": "标记为被阻塞",
     "AddedAsBlocking": "标记为阻塞",
-
     "IssueTemplate": "模板",
     "IssueTemplates": "模板",
     "NewProcess": "新模板",
@@ -258,12 +243,10 @@
     "TemplateReplace": "您想要应用新模板吗？",
     "TemplateReplaceConfirm": "所有字段将被新模板值覆盖",
     "Apply": "应用",
-
     "CurrentWorkDay": "当前工作日",
     "PreviousWorkDay": "前一个工作日",
     "TimeReportDayTypeLabel": "选择时间报告日类型",
     "DefaultAssignee": "默认问题受理人",
-
     "SevenHoursLength": "七小时",
     "EightHoursLength": "八小时",
     "HourLabel": "小时",
@@ -312,7 +295,6 @@
     "GanttScrollRightToBar": "Scroll right to bar",
     "GanttExpand": "Expand",
     "GanttCollapse": "Collapse"
-  
   },
   "status": {}
 }

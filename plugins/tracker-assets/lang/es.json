@@ -54,8 +54,8 @@
     "NewIssuePlaceholder": "Nueva",
     "ResumeDraft": "Continuar borrador",
     "SaveIssue": "Crear tarea",
-    "SetPriority": "Establecer prioridad\u2026",
-    "SetStatus": "Establecer estado\u2026",
+    "SetPriority": "Establecer prioridad…",
+    "SetStatus": "Establecer estado…",
     "SelectIssue": "Seleccionar tarea",
     "Priority": "Prioridad",
     "NoPriority": "Sin prioridad",
@@ -295,7 +295,6 @@
     "GanttScrollRightToBar": "Scroll right to bar",
     "GanttExpand": "Expand",
     "GanttCollapse": "Collapse"
-  
   },
   "status": {}
 }
