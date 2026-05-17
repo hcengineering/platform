@@ -526,7 +526,11 @@
     "GanttMobileMenu": "Menu",
     "GanttMobileOpenSidebar": "Open issue list",
     "GanttMobileCloseSidebar": "Close issue list",
-    "GanttMobileReadOnly": "Mobile view is read-only — open on a larger screen to edit"
+    "GanttMobileReadOnly": "Mobile view is read-only — open on a larger screen to edit",
+    "SearchEmptyTitle": "No issues found for \"{query}\"",
+    "SearchEmptyActiveFilters": "Active filters: {filters}",
+    "SearchEmptyClearFilters": "Search without filters",
+    "SearchEmptyAllProjects": "Search in all projects"
   },
   "status": {}
 }

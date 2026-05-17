@@ -31,7 +31,7 @@
   import { translate, translateCB, type IntlString } from '@hcengineering/platform'
   import { type FilteredView, type Viewlet, type ViewOptions } from '@hcengineering/view'
   import view from '@hcengineering/view'
-  import { selectedFilterStore } from '@hcengineering/view-resources'
+  import { resultIssueCountStore, selectedFilterStore } from '@hcengineering/view-resources'
   import core from '@hcengineering/core'
   import { getCurrentResolvedLocation } from '@hcengineering/ui'
   import { onDestroy, onMount, tick } from 'svelte'
@@ -186,6 +186,13 @@
 
   let issues: Issue[] = []
   let milestones: Milestone[] = []
+
+  // Plan 2 T8 — shared result-count store consumed by IssuesView to gate
+  // the SearchEmptyState card. Reset to -1 on destroy so route/viewlet
+  // transitions never leave a stale 0 that would falsely trigger the
+  // empty-state.
+  $: resultIssueCountStore.set(issues.length + milestones.length)
+  onDestroy(() => resultIssueCountStore.set(-1))
   let loadingIssues = true
   let loadingMilestones = true
 
