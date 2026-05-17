@@ -28,9 +28,14 @@
     name={'modeSelector'}
     items={modeList}
     selected={props.mode}
+    disabled={props.disabled ?? false}
+    tooltip={(props.disabled === true && props.disabledReason !== undefined)
+      ? { label: props.disabledReason, direction: 'bottom' }
+      : undefined}
     {kind}
     {onlyIcons}
     on:select={(result) => {
+      if (props.disabled === true) return
       if (result.detail !== undefined && result.detail.action) result.detail.action()
     }}
   />
