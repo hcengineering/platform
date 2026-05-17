@@ -75,7 +75,35 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
       action: view.function.HideArchived,
       label: view.string.HideArchived
     },
-    ...(!kanban ? [showColorsViewOption] : [])
+    ...(!kanban ? [showColorsViewOption] : []),
+    // Search + Quick-filter toggles (Plan 2 T5). Apply to List, Kanban and
+    // Gantt uniformly via the shared `issuesOptions()` factory used by every
+    // Issue viewlet that doesn't carry its own block.
+    {
+      key: 'showQuickModeSelector',
+      type: 'toggle',
+      defaultValue: true,
+      actionTarget: 'display',
+      label: tracker.string.ShowQuickModeSelector
+    },
+    {
+      key: 'searchScope',
+      type: 'dropdown',
+      defaultValue: 'all',
+      values: [
+        { id: 'title', label: tracker.string.SearchScopeTitle },
+        { id: 'title-description', label: tracker.string.SearchScopeTitleDescription },
+        { id: 'all', label: tracker.string.SearchScopeAll }
+      ],
+      label: tracker.string.SearchScopeLabel
+    },
+    {
+      key: 'searchHighlight',
+      type: 'toggle',
+      defaultValue: true,
+      actionTarget: 'display',
+      label: tracker.string.SearchHighlight
+    }
   ]
 })
 
@@ -318,14 +346,14 @@ export function ganttViewOptions (): ViewOptionsModel {
         actionTarget: 'display',
         label: tracker.string.GanttBarLabelLeft,
         values: [
-          { id: 'none', label: tracker.string.BarLabelNone },
-          { id: 'title', label: tracker.string.BarLabelTitle },
+          { id: 'none',       label: tracker.string.BarLabelNone },
+          { id: 'title',      label: tracker.string.BarLabelTitle },
           { id: 'identifier', label: tracker.string.BarLabelIdentifier },
-          { id: 'assignee', label: tracker.string.BarLabelAssignee },
-          { id: 'priority', label: tracker.string.BarLabelPriority },
-          { id: 'status', label: tracker.string.BarLabelStatus },
+          { id: 'assignee',   label: tracker.string.BarLabelAssignee },
+          { id: 'priority',   label: tracker.string.BarLabelPriority },
+          { id: 'status',     label: tracker.string.BarLabelStatus },
           { id: 'estimation', label: tracker.string.BarLabelEstimation },
-          { id: 'progress', label: tracker.string.BarLabelProgress }
+          { id: 'progress',   label: tracker.string.BarLabelProgress }
         ]
       },
       {
@@ -337,14 +365,14 @@ export function ganttViewOptions (): ViewOptionsModel {
         actionTarget: 'display',
         label: tracker.string.GanttBarLabelInside,
         values: [
-          { id: 'none', label: tracker.string.BarLabelNone },
-          { id: 'title', label: tracker.string.BarLabelTitle },
+          { id: 'none',       label: tracker.string.BarLabelNone },
+          { id: 'title',      label: tracker.string.BarLabelTitle },
           { id: 'identifier', label: tracker.string.BarLabelIdentifier },
-          { id: 'assignee', label: tracker.string.BarLabelAssignee },
-          { id: 'priority', label: tracker.string.BarLabelPriority },
-          { id: 'status', label: tracker.string.BarLabelStatus },
+          { id: 'assignee',   label: tracker.string.BarLabelAssignee },
+          { id: 'priority',   label: tracker.string.BarLabelPriority },
+          { id: 'status',     label: tracker.string.BarLabelStatus },
           { id: 'estimation', label: tracker.string.BarLabelEstimation },
-          { id: 'progress', label: tracker.string.BarLabelProgress }
+          { id: 'progress',   label: tracker.string.BarLabelProgress }
         ]
       },
       {
@@ -356,14 +384,14 @@ export function ganttViewOptions (): ViewOptionsModel {
         actionTarget: 'display',
         label: tracker.string.GanttBarLabelRight,
         values: [
-          { id: 'none', label: tracker.string.BarLabelNone },
-          { id: 'title', label: tracker.string.BarLabelTitle },
+          { id: 'none',       label: tracker.string.BarLabelNone },
+          { id: 'title',      label: tracker.string.BarLabelTitle },
           { id: 'identifier', label: tracker.string.BarLabelIdentifier },
-          { id: 'assignee', label: tracker.string.BarLabelAssignee },
-          { id: 'priority', label: tracker.string.BarLabelPriority },
-          { id: 'status', label: tracker.string.BarLabelStatus },
+          { id: 'assignee',   label: tracker.string.BarLabelAssignee },
+          { id: 'priority',   label: tracker.string.BarLabelPriority },
+          { id: 'status',     label: tracker.string.BarLabelStatus },
           { id: 'estimation', label: tracker.string.BarLabelEstimation },
-          { id: 'progress', label: tracker.string.BarLabelProgress }
+          { id: 'progress',   label: tracker.string.BarLabelProgress }
         ]
       },
       {
@@ -479,33 +507,33 @@ export function ganttViewOptions (): ViewOptionsModel {
         actionTarget: 'display',
         label: tracker.string.GanttGroupBy
       },
+      // Plan 2 T5 — shared search + quick-filter toggles for every Issue
+      // viewlet. Mirror the entries in `issuesOptions()` so the Gantt's own
+      // ViewOptions block exposes the same Customize-View knobs.
       {
-        // Phase 3.10 — overlay toggles. When past-due is on, overdue bars
-        // get a diagonal red-stripe overlay; when blocked is on, bars with
-        // an unsatisfied predecessor get a hatch overlay. Both default ON
-        // so new users immediately see the visual cues.
-        key: 'ganttShowPastDueOverlay',
+        key: 'showQuickModeSelector',
         type: 'toggle',
         defaultValue: true,
         actionTarget: 'display',
-        label: tracker.string.GanttShowPastDueOverlay
+        label: tracker.string.ShowQuickModeSelector
       },
       {
-        key: 'ganttShowBlockedOverlay',
+        key: 'searchScope',
+        type: 'dropdown',
+        defaultValue: 'all',
+        values: [
+          { id: 'title', label: tracker.string.SearchScopeTitle },
+          { id: 'title-description', label: tracker.string.SearchScopeTitleDescription },
+          { id: 'all', label: tracker.string.SearchScopeAll }
+        ],
+        label: tracker.string.SearchScopeLabel
+      },
+      {
+        key: 'searchHighlight',
         type: 'toggle',
         defaultValue: true,
         actionTarget: 'display',
-        label: tracker.string.GanttShowBlockedOverlay
-      },
-      {
-        // Sub-issue progress fill: when ON, parent bars show a secondary
-        // fill proportional to child-issue completion. Default OFF to keep
-        // the chart uncluttered for teams that don't use sub-issues.
-        key: 'ganttShowSubIssueProgress',
-        type: 'toggle',
-        defaultValue: false,
-        actionTarget: 'display',
-        label: tracker.string.GanttShowSubIssueProgress
+        label: tracker.string.SearchHighlight
       }
     ]
   }
@@ -514,12 +542,7 @@ export function ganttViewOptions (): ViewOptionsModel {
 export function ganttConfig (): BuildModelKey[] {
   // Minimal config — Gantt drives its own column layout.
   return [
-    {
-      key: '',
-      presenter: tracker.component.PriorityEditor,
-      label: tracker.string.Priority,
-      props: { kind: 'list', size: 'small' }
-    },
+    { key: '', presenter: tracker.component.PriorityEditor, label: tracker.string.Priority, props: { kind: 'list', size: 'small' } },
     { key: '', presenter: tracker.component.IssuePresenter, label: tracker.string.Issue }
   ]
 }
