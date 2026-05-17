@@ -154,6 +154,7 @@
     "RoleLabel": "Ruolo: {role}",
     "ForbidAttributeChanges": "Vieta modifiche: ",
     "AllowAttributeChanges": "Consenti modifiche: ",
-    "RelationshipTable": "Tabella delle relazioni"
+    "RelationshipTable": "Tabella delle relazioni",
+    "FilterOverflowBadge": "+{count}"
   }
 }

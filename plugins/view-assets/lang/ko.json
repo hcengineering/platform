@@ -154,6 +154,7 @@
     "RoleLabel": "역할: {role}",
     "ForbidAttributeChanges": "변경 금지: ",
     "AllowAttributeChanges": "변경 허용: ",
-    "RelationshipTable": "추적 매트릭스"
+    "RelationshipTable": "추적 매트릭스",
+    "FilterOverflowBadge": "+{count}"
   }
 }
