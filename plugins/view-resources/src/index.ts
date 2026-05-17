@@ -194,6 +194,7 @@ export { default as StatusRefPresenter } from './components/status/StatusRefPres
 export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 
 export * from './filter'
+export { makeFilterQuery } from './filter/query-builder'
 export * from './icons'
 export * from './middleware'
 export * from './objectIterator'
