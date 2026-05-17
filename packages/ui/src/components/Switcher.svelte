@@ -5,7 +5,7 @@
   //
 
   import { createEventDispatcher } from 'svelte'
-  import type { TabItem } from '../types'
+  import type { LabelAndProps, TabItem } from '../types'
   import SwitcherBase from './SwitcherBase.svelte'
 
   export let items: TabItem[]
@@ -13,6 +13,11 @@
   export let kind: 'nuance' | 'subtle' = 'nuance'
   export let name: string
   export let onlyIcons: boolean = false
+  /** When true, all items render disabled; click events are ignored. */
+  export let disabled: boolean = false
+  /** Group-level tooltip; when set and `disabled` is true, every item
+   *  shows this tooltip instead of its own. */
+  export let tooltip: LabelAndProps | undefined = undefined
 
   const dispatch = createEventDispatcher()
 </script>
@@ -23,14 +28,20 @@
       id={item.id}
       {name}
       {kind}
+      {disabled}
       checked={selected === item.id}
       icon={item.icon}
       color={item.color}
       title={onlyIcons ? undefined : item.label}
       label={onlyIcons ? undefined : item.labelIntl}
       labelParams={onlyIcons ? undefined : item.labelParams}
-      tooltip={item.tooltip ? { label: item.tooltip } : undefined}
+      tooltip={disabled && tooltip !== undefined
+        ? tooltip
+        : item.tooltip
+          ? { label: item.tooltip }
+          : undefined}
       on:change={() => {
+        if (disabled) return
         dispatch('select', item)
         if (item.action !== undefined) item.action()
       }}

@@ -21,12 +21,13 @@
   export let name: string
   export let checked: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
+  export let disabled: boolean = false
 
   $: woTitle = title === undefined && label === undefined
 </script>
 
-<label use:tp={tooltip} class="switcher-element__wrapper" data-view={tooltip?.label} data-id={`tab-${id}`}>
-  <input type="radio" class="switcher" {name} {checked} on:change />
+<label use:tp={tooltip} class="switcher-element__wrapper" class:disabled data-view={tooltip?.label} data-id={`tab-${id}`}>
+  <input type="radio" class="switcher" {name} {checked} {disabled} on:change />
   <div class="switcher-element {kind}" class:woTitle>
     {#if icon}<div class="icon"><Icon {icon} size={'small'} fill={color} /></div>{/if}
     {#if label}<span><Label {label} params={labelParams} /></span>{/if}
@@ -113,5 +114,12 @@
     span {
       color: var(--global-primary-TextColor);
     }
+  }
+  .switcher-element__wrapper.disabled {
+    pointer-events: none;
+    opacity: 0.4;
+  }
+  .switcher-element__wrapper.disabled .switcher-element {
+    cursor: not-allowed;
   }
 </style>

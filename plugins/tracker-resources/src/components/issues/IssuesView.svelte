@@ -3,7 +3,7 @@
   import { Asset, IntlString, translateCB } from '@hcengineering/platform'
   import { ComponentExtensions } from '@hcengineering/presentation'
   import { Issue, TrackerEvents } from '@hcengineering/tracker'
-  import { Button, IconAdd, IModeSelector, SearchInput, showPopup, themeStore } from '@hcengineering/ui'
+  import { Button, IconAdd, IModeSelector, ModeSelector, SearchInput, showPopup, themeStore } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import {
     FilterButton,
@@ -72,7 +72,7 @@
   {label}
   {space}
   {resultQuery}
-  {modeSelectorProps}
+  modeSelectorProps={isGanttMode ? undefined : modeSelectorProps}
   overrideSearch={isGanttMode}
 >
   <svelte:fragment slot="header-tools">
@@ -100,14 +100,17 @@
            rightmost), then Group-by, then Filter, then LAST=Lupe (visually
            leftmost). -->
       <GanttToolbarBar section="search-end" />
+      <GanttToolbarBar section="search-mid" />
       <InlineFilterChips
         _class={tracker.class.Issue}
         {space}
         query={searchQuery}
         on:change={(e) => (resultQuery = e.detail)}
       />
-      <GanttToolbarBar section="search-mid" />
       <FilterButton _class={tracker.class.Issue} {space} />
+      {#if modeSelectorProps !== undefined}
+        <ModeSelector kind={'subtle'} props={modeSelectorProps} />
+      {/if}
       <SearchInput
         value={search}
         on:change={(e) => setSearch(typeof e.detail === 'string' ? e.detail : '')}
