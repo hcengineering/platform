@@ -196,6 +196,7 @@ export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from '
 
 export * from './filter'
 export { makeFilterQuery } from './filter/query-builder'
+export { resultIssueCountStore, rawSearchTextStore } from './stores'
 export * from './icons'
 export * from './middleware'
 export * from './objectIterator'

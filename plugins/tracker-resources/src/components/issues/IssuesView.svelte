@@ -3,7 +3,7 @@
   import { Asset, IntlString, translateCB } from '@hcengineering/platform'
   import { ComponentExtensions } from '@hcengineering/presentation'
   import { Issue, TrackerEvents } from '@hcengineering/tracker'
-  import { Button, IconAdd, IModeSelector, ModeSelector, SearchInput, showPopup, themeStore } from '@hcengineering/ui'
+  import { Button, IconAdd, IModeSelector, ModeSelector, SearchInputAdvanced, showPopup, themeStore } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import {
     FilterButton,
@@ -12,6 +12,7 @@
     ViewletContentView,
     ViewletSettingButton,
     getViewOptions,
+    rawSearchTextStore,
     viewOptionStore
   } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
@@ -46,12 +47,33 @@
     viewOptions = getViewOptions(viewlet, $viewOptionStore)
   }
 
+  // Two distinct search states:
+  // - `search` is what SpaceHeader's built-in SearchInput writes (used by
+  //   List + Kanban viewlets, where SpaceHeader still manages the input).
+  // - `searchRaw` + `searchEncoded` are written by SearchInputAdvanced in
+  //   the Gantt-mode slot override. `searchRaw` mirrors the user input
+  //   verbatim (drives the input field + the T9 HighlightedText store);
+  //   `searchEncoded` is the wire-form (e.g. `searchTitle:(loader)`) sent
+  //   to ES as $search.
   let search = ''
-  let searchQuery: DocumentQuery<Issue> = { ...query }
-  function updateSearchQuery (search: string): void {
-    searchQuery = search === '' ? { ...query } : { ...query, $search: search }
+  let searchRaw = ''
+  let searchEncoded = ''
+
+  function onSearchChange (e: CustomEvent<{ raw: string, encoded: string }>): void {
+    searchRaw = e.detail.raw
+    searchEncoded = e.detail.encoded
+    rawSearchTextStore.set(searchRaw)
   }
-  $: if (query) updateSearchQuery(search)
+
+  // Pick whichever search-string is owned by the active viewlet's slot.
+  // Gantt uses the {raw, encoded} pair via the slot override; List + Kanban
+  // use the SpaceHeader-bound `search` string (legacy path).
+  $: effectiveSearch = isGanttMode ? searchEncoded : search
+  let searchQuery: DocumentQuery<Issue> = { ...query }
+  function updateSearchQuery (eff: string): void {
+    searchQuery = eff === '' ? { ...query } : { ...query, $search: eff }
+  }
+  $: if (query !== undefined) updateSearchQuery(effectiveSearch)
   let resultQuery: DocumentQuery<Issue> = { ...searchQuery }
 
   $: if (title) {
@@ -111,9 +133,10 @@
       {#if modeSelectorProps !== undefined && (viewOptions?.showQuickModeSelector ?? true) !== false}
         <ModeSelector kind={'subtle'} props={modeSelectorProps} />
       {/if}
-      <SearchInput
-        value={search}
-        on:change={(e) => setSearch(typeof e.detail === 'string' ? e.detail : '')}
+      <SearchInputAdvanced
+        value={searchRaw}
+        on:change={onSearchChange}
+        scope={(viewOptions?.searchScope ?? 'all')}
         collapsed
       />
     {/if}
