@@ -339,6 +339,7 @@
     "GanttCollapse": "Collapse",
     "GanttExpandAll": "Expand all",
     "GanttCollapseAll": "Collapse all",
+    "GanttCornerNoOpInSwimlane": "No effect in group-by mode",
     "GanttTreeBreadcrumb": "Parent of a matching issue",
     "GanttArrowIndicatorSourceAbove": "Source row is above the viewport — click to scroll",
     "GanttArrowIndicatorSourceBelow": "Source row is below the viewport — click to scroll",

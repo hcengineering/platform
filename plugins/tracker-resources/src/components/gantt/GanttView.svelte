@@ -3303,43 +3303,29 @@
             </div>
           {/if}
           <div class="corner-range">
-            <!--  / Refactor C — Expand/Collapse-all buttons live
-                 in the corner cell directly above the sidebar list. Only
-                 visible when groupBy is 'none' (tree mode); in swimlane
-                 mode the tree-toggle has no rows to act on. Same icon
-                 set + aria-labels as  to keep the affordance
-                 consistent with the inline row toggles. -->
-            {#if ganttGroupBy === 'none'}
-              <button
-                type="button"
-                class="corner-tree-btn"
-                use:tooltip={{ label: tracker.string.GanttCollapseAll }}
-                aria-label={ariaLabelOf(tracker.string.GanttCollapseAll)}
-                title={ariaLabelOf(tracker.string.GanttCollapseAll)}
-                on:click={collapseAllTree}
-              >
-                <Icon icon={IconChevronRight} size="small" />
-              </button>
-              <button
-                type="button"
-                class="corner-tree-btn"
-                use:tooltip={{ label: tracker.string.GanttExpandAll }}
-                aria-label={ariaLabelOf(tracker.string.GanttExpandAll)}
-                title={ariaLabelOf(tracker.string.GanttExpandAll)}
-                on:click={expandAllTree}
-              >
-                <Icon icon={IconChevronDown} size="small" />
-              </button>
-            {/if}
-            <button class="range-nav" type="button"
-              use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
-              on:click={() => pageScroll(-1)}>«</button>
-            <span class="range-text" on:click={jumpToToday} on:keydown={(e) => { if (e.key === 'Enter') jumpToToday() }} role="button" tabindex="0">
-              {formatRange(dateRange.from)} – {formatRange(dateRange.to)}
-            </span>
-            <button class="range-nav" type="button"
-              use:tooltip={{ label: tracker.string.GanttNextPeriod }}
-              on:click={() => pageScroll(1)}>»</button>
+            <!-- Tree-collapse / -expand. Always visible (was: only when groupBy=none).
+                 Disabled when swimlanes are active (no rows to act on); tooltip
+                 explains the no-op. -->
+            <button
+              type="button"
+              class="corner-tree-btn"
+              class:tree-btn-disabled={ganttGroupBy !== 'none'}
+              use:tooltip={{ label: ganttGroupBy === 'none' ? tracker.string.GanttCollapseAll : tracker.string.GanttCornerNoOpInSwimlane }}
+              aria-label={ariaLabelOf(tracker.string.GanttCollapseAll)}
+              on:click={() => { if (ganttGroupBy === 'none') collapseAllTree() }}
+            >
+              <Icon icon={IconChevronRight} size="small" />
+            </button>
+            <button
+              type="button"
+              class="corner-tree-btn"
+              class:tree-btn-disabled={ganttGroupBy !== 'none'}
+              use:tooltip={{ label: ganttGroupBy === 'none' ? tracker.string.GanttExpandAll : tracker.string.GanttCornerNoOpInSwimlane }}
+              aria-label={ariaLabelOf(tracker.string.GanttExpandAll)}
+              on:click={() => { if (ganttGroupBy === 'none') expandAllTree() }}
+            >
+              <Icon icon={IconChevronDown} size="small" />
+            </button>
           </div>
         </div>
         <div class="cell resize-corner" style="height: {HEADER_HEIGHT}px;" />
@@ -3908,22 +3894,8 @@
     font-size: 12px;
     color: var(--theme-content-color);
   }
-  .range-nav {
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    border: 1px solid var(--theme-divider-color);
-    background: transparent;
-    color: var(--theme-darker-color);
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  .range-nav:hover { background: var(--theme-button-hovered); }
-  /*  / Refactor C — sidebar tree-toggle buttons. Same metrics as
-     range-nav so the corner-range strip stays visually balanced; the
-     ChevronRight/Down icons match the inline row toggles. min hit area
-     bumped to 32px on phones via the existing breakpoint media query. */
+  /* sidebar tree-toggle buttons. ChevronRight/Down icons match the inline row toggles.
+     min hit area bumped to 32px on phones via the existing breakpoint media query. */
   .corner-tree-btn {
     width: 24px;
     height: 22px;
@@ -3941,12 +3913,13 @@
     background: var(--theme-button-hovered);
     color: var(--theme-content-color);
   }
-  .range-text {
-    cursor: pointer;
-    user-select: none;
-    font-weight: 500;
+  .corner-tree-btn.tree-btn-disabled {
+    opacity: 0.4;
+    cursor: default;
   }
-  .range-text:hover { color: var(--theme-state-info-color, #6366f1); text-decoration: underline; }
+  .corner-tree-btn.tree-btn-disabled:hover {
+    background: transparent;
+  }
   .corner .col-toggle { flex: 0 0 18px; }
   .corner .col-status { flex: 0 0 22px; }
   .corner .col-id { flex: 0 0 80px; }
