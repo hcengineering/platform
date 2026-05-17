@@ -17,7 +17,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { Button, IconFilter, eventToHTMLElement, resolvedLocationStore, showPopup } from '@hcengineering/ui'
   import { Filter, ViewOptions } from '@hcengineering/view'
-  import { filterStore, getFilterKey, selectedFilterStore, setFilters } from '../../filter'
+  import { filterStore, getFilterKey, selectedFilterStore, setFilters, updateFilter } from '../../filter'
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
   import IconClose from '../icons/Close.svelte'
@@ -54,8 +54,13 @@
     save(_class, p)
   })
 
+  function nextFilterIndex (): number {
+    const current = $filterStore.map((f) => f.index)
+    return current.length === 0 ? 1 : Math.max(...current) + 1
+  }
+
   function onChange (e: Filter | undefined): void {
-    if (e !== undefined) setFilters([e])
+    if (e !== undefined) updateFilter(e)
   }
 
   onDestroy(() => {
@@ -70,7 +75,7 @@
         _class,
         space,
         target,
-        index: 1,
+        index: nextFilterIndex(),
         onChange,
         viewOptions
       },
