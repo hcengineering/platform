@@ -115,11 +115,21 @@
       color: var(--global-primary-TextColor);
     }
   }
+  /* Disabled state keeps pointer-events so the tooltip (which carries the
+     "why is this disabled" reason) stays reachable on hover. The native
+     `disabled` attribute on the underlying <input type="radio"> still
+     blocks the actual selection — see :30. */
   .switcher-element__wrapper.disabled {
-    pointer-events: none;
     opacity: 0.4;
   }
   .switcher-element__wrapper.disabled .switcher-element {
     cursor: not-allowed;
+  }
+  .switcher-element__wrapper.disabled:hover .switcher-element {
+    background-color: transparent;
+  }
+  .switcher-element__wrapper.disabled:hover .switcher-element .icon,
+  .switcher-element__wrapper.disabled:hover .switcher-element span {
+    color: var(--global-secondary-TextColor);
   }
 </style>

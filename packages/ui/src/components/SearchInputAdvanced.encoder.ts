@@ -37,36 +37,72 @@ const PREFIX_ALIAS: Record<string, string> = {
   comments: 'comments.message'
 }
 
-/** Matches ANY `field:` token at the start of a substring. */
-const ANY_PREFIX_RE = /(^|\s)([a-zA-Z][a-zA-Z0-9_.]*)\s*:/g
+/** Allowed ES-native fields users may type directly. */
+const ES_NATIVE_FIELDS = new Set([
+  'searchTitle',
+  'searchShortTitle',
+  'identifier',
+  'description.plain',
+  'comments.message',
+  'fulltextSummary'
+])
 const USER_PREFIX_KEYS = new Set(Object.keys(PREFIX_ALIAS))
 
+/**
+ * Matches `field:` tokens at the start of a substring. Restricted to known
+ * user-prefixes + ES-native fields so a stray colon (URLs, times, code) is
+ * NOT mistaken for a field-targeted query (which would route to
+ * query_string and silently fail on parse errors). Anything else is passed
+ * through verbatim and the adapter keeps the simple_query_string path.
+ */
+function buildKnownPrefixRe (): RegExp {
+  const fields = [...USER_PREFIX_KEYS, ...ES_NATIVE_FIELDS]
+    // escape dots in `description.plain`, `comments.message`
+    .map((f) => f.replace(/\./g, '\\.'))
+    .join('|')
+  return new RegExp(`(^|\\s)(${fields})\\s*:`, 'gi')
+}
+const KNOWN_PREFIX_RE = buildKnownPrefixRe()
+
 function aliasPrefixes (input: string): string {
-  return input.replace(ANY_PREFIX_RE, (m, lead: string, field: string) => {
-    if (USER_PREFIX_KEYS.has(field.toLowerCase())) {
-      return `${lead}${PREFIX_ALIAS[field.toLowerCase()]}:`
-    }
-    return m
+  KNOWN_PREFIX_RE.lastIndex = 0
+  return input.replace(KNOWN_PREFIX_RE, (_m, lead: string, field: string) => {
+    const lower = field.toLowerCase()
+    const aliased = PREFIX_ALIAS[lower] ?? field
+    return `${lead}${aliased}:`
   })
 }
 
-function hasPrefix (input: string): boolean {
-  ANY_PREFIX_RE.lastIndex = 0
-  return ANY_PREFIX_RE.test(input)
+function hasKnownPrefix (input: string): boolean {
+  KNOWN_PREFIX_RE.lastIndex = 0
+  return KNOWN_PREFIX_RE.test(input)
+}
+
+/**
+ * Escape Lucene query_string reserved characters so a bare term we wrap
+ * in a scope clause (e.g. `searchTitle:(POC: design review)`) does not
+ * accidentally re-enter field-targeted parsing on the inner `:` (which
+ * would throw a query_string_parsing_exception in ES and surface as zero
+ * hits). Covers the full Lucene reserved set; the wrapping parens are
+ * added by the caller, not by user input, so they stay un-escaped here.
+ */
+function escapeForQueryString (s: string): string {
+  return s.replace(/[+\-!(){}[\]^"~*?:\\/]/g, '\\$&')
 }
 
 export function encodeSearch (raw: string, scope: SearchScope): string {
   const trimmed = raw.trim()
   if (trimmed === '') return ''
   const aliased = aliasPrefixes(trimmed)
-  if (hasPrefix(trimmed)) return aliased // user picked a scope explicitly
+  if (hasKnownPrefix(trimmed)) return aliased // user picked a scope explicitly
+  const safe = escapeForQueryString(aliased)
   switch (scope) {
     case 'title':
-      return `searchTitle:(${aliased})`
+      return `searchTitle:(${safe})`
     case 'title-description':
-      return `(searchTitle:(${aliased}) OR description.plain:(${aliased}))`
+      return `(searchTitle:(${safe}) OR description.plain:(${safe}))`
     case 'all':
     default:
-      return aliased
+      return aliased // scope=all routes via simple_query_string; no escaping needed
   }
 }

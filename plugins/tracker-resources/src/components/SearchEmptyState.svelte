@@ -25,17 +25,25 @@
   function gotoAllIssues (): void {
     const loc = getCurrentResolvedLocation()
     // Tracker URL shape: /workbench/<ws>/tracker/<project|special>/<view>
-    // The "All Issues" special-view is at path index 3 keyed 'allIssues'.
+    // Replace whatever sits at the project-or-special slot (path index 3)
+    // with the 'allIssues' special-view. If the URL is shorter for any
+    // reason (unexpected route), we extend it rather than corrupting it.
+    if (loc.path.length < 3 || loc.path[2] !== 'tracker') {
+      // Not on a tracker route — do nothing rather than navigate somewhere
+      // the user didn't ask for.
+      return
+    }
     loc.path[3] = 'allIssues'
+    loc.path.length = 4
     navigate(loc)
   }
 </script>
 
-<div class="search-empty-state">
-  <div class="icon">🔍</div>
-  <div class="title">
+<div class="search-empty-state" role="region" aria-live="polite">
+  <div class="icon" aria-hidden="true">🔍</div>
+  <h2 class="title">
     <Label label={tracker.string.SearchEmptyTitle} params={{ query: searchText }} />
-  </div>
+  </h2>
   {#if activeFilters.length > 0}
     <div class="filters-info">
       <Label
@@ -65,8 +73,10 @@
     font-size: 2rem;
   }
   .title {
+    margin: 0;
     font-weight: 500;
     font-size: 1rem;
+    color: var(--theme-content-color);
   }
   .filters-info {
     font-size: 0.875rem;

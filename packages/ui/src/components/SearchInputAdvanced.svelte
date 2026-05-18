@@ -18,6 +18,7 @@
   import type { IntlString } from '@hcengineering/platform'
   import { translateCB } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
+  import IconClose from './icons/Close.svelte'
   import IconSearch from './icons/Search.svelte'
   import plugin from '../plugin'
   import { encodeSearch, type SearchScope } from './SearchInputAdvanced.encoder'
@@ -53,16 +54,43 @@
   // overwrite `_search` mid-typing (would clobber the cursor + value).
   $: if (value !== _search && value !== undefined) _search = value
 
+  // Re-emit when the scope prop changes so a Customize-View toggle from
+  // e.g. `all` to `title` immediately re-encodes the current input —
+  // otherwise the UI advertises "Title search" while the query is still
+  // running with the old encoding until the user types again. Guarded
+  // against the mount-time call (when there is no input yet) so we don't
+  // emit an empty initial event over a freshly bound parent.
+  //
+  // Compare + update must live in the SAME reactive block: Svelte
+  // topologically sorts `$:` blocks by dependency, so splitting compare
+  // and update into two `$:` lines lets Svelte run the assignment first
+  // (because the compare reads what the assignment writes), leaving the
+  // compare with `lastEmittedScope === scope` and skipping the emit.
+  let lastEmittedScope: SearchScope | undefined
+  $: {
+    if (lastEmittedScope !== undefined && lastEmittedScope !== scope && _search.trim() !== '') {
+      clearTimeout(timer)
+      emit()
+    }
+    lastEmittedScope = scope
+  }
+
   function emit (): void {
     const raw = _search.trim()
     const encoded = encodeSearch(raw, scope)
-    value = _search // parent-owned value mirrors raw, never encoded
     dispatch('change', { raw, encoded })
   }
 
   function restart (): void {
     clearTimeout(timer)
     timer = setTimeout(emit, delay)
+  }
+
+  function clearSearch (): void {
+    _search = ''
+    clearTimeout(timer)
+    emit()
+    input?.focus()
   }
 
   onDestroy(() => clearTimeout(timer))
@@ -74,7 +102,7 @@
 <label
   class="searchInput-wrapper"
   class:collapsed
-  class:filled={value !== undefined && value !== ''}
+  class:filled={_search !== ''}
   style:width
 >
   <div class="searchInput-icon"><IconSearch size={'small'} /></div>
@@ -92,8 +120,23 @@
         clearTimeout(timer)
         emit()
       }
+      if (evt.key === 'Escape' && _search !== '') {
+        evt.preventDefault()
+        clearSearch()
+      }
     }}
   />
+  <!-- Clear-button parallel to SearchInput.svelte:87. The :not(:placeholder-shown)
+       CSS selector below toggles visibility based on the input value. -->
+  <button
+    type="button"
+    class="searchInput-button"
+    aria-label="Clear search"
+    tabindex="-1"
+    on:click={clearSearch}
+  >
+    <div><IconClose size={'small'} /></div>
+  </button>
 </label>
 
 <style lang="scss">

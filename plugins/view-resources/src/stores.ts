@@ -19,3 +19,11 @@ export const resultIssueCountStore = writable<number>(-1)
  * writes it on every debounced change event.
  */
 export const rawSearchTextStore = writable<string>('')
+
+/**
+ * Customize-View toggle: whether matched substrings should be visually
+ * highlighted in result rows. Defaults to true. The IssuesView consumer
+ * mirrors `viewOptions.searchHighlight` into this store so HighlightedText
+ * can short-circuit to a no-op when the user turned highlighting off.
+ */
+export const searchHighlightEnabledStore = writable<boolean>(true)

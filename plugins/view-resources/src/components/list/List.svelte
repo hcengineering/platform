@@ -68,9 +68,13 @@
 
   // Plan 2 T8 — every viewlet writes its result-count into the shared
   // resultIssueCountStore so IssuesView's SearchEmptyState card can render
-  // when search has no matches. Reset to -1 on destroy so a viewlet swap
-  // doesn't leave a stale value that triggers the empty-state.
-  $: resultIssueCountStore.set(docs.length)
+  // when search has no matches. queryReady is RE-armed false on every
+  // query change (`$: queryReady = false` below) so a stale count from a
+  // previous query never lingers as truth — without this reset the
+  // SearchEmptyState card could remain stuck on `0` after a successful
+  // search produced new results.
+  let queryReady = false
+  $: if (queryReady) resultIssueCountStore.set(docs.length)
   onDestroy(() => resultIssueCountStore.set(-1))
 
   $: orderBy = viewOptions.orderBy
@@ -100,6 +104,12 @@
   $: void update(query, viewOptions)
 
   $: queryNoLookup = noLookup(resultQuery)
+  // Re-arm queryReady whenever the underlying query mutates so the result
+  // count stops claiming the previous query's outcome (see comment above).
+  $: {
+    void queryNoLookup
+    queryReady = false
+  }
 
   let fastQueryIds = new Set<Ref<Doc>>()
 
@@ -120,6 +130,7 @@
     (res) => {
       fastDocs = res
       fastQueryIds = new Set(res.map((it) => it._id))
+      queryReady = true
     },
     { ...categoryQueryOptions, limit: 1000 }
   )

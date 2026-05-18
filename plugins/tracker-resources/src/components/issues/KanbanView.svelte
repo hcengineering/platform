@@ -116,6 +116,10 @@
   })
 
   $: queryNoLookup = getCategoryQueryNoLookup(resultQuery)
+  $: {
+    void queryNoLookup
+    queryReady = false
+  }
 
   function toIssue (object: any): WithLookup<Issue> {
     return object as WithLookup<Issue>
@@ -146,7 +150,11 @@
 
   // Plan 2 T8 — feed the shared result-count store so IssuesView can show
   // its SearchEmptyState card when the user's search yields zero hits.
-  $: resultIssueCountStore.set(tasks.length)
+  // queryReady is re-armed false on every query change so a stale 0 from
+  // a previous query never lingers — otherwise the empty-state card could
+  // stick after a successful search yielded new tasks.
+  let queryReady = false
+  $: if (queryReady) resultIssueCountStore.set(tasks.length)
   onDestroy(() => resultIssueCountStore.set(-1))
 
   $: groupByDocs = groupBy(tasks, groupByKey, categories)
@@ -177,6 +185,7 @@
     (res) => {
       fastDocs = res
       fastQueryIds = new Set(res.map((it) => it._id))
+      queryReady = true
     },
     { ...categoryQueryOptions, limit: 1000 }
   )

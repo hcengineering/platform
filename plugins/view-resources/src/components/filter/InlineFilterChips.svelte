@@ -3,20 +3,20 @@
 // SPDX-License-Identifier: EPL-2.0
 -->
 <!--
-  Inline filter chips. Renders the active filter list in a single horizontal
-  row; trailing chips collapse to a "+N" button + popover when the row is
-  too narrow. Replaces the standalone <FilterBar /> chip-row render in the
-  Tracker IssuesView. Both consumers share the same query-builder helper
-  (`makeFilterQuery`), so the resulting query is bit-identical to legacy.
+  Presentational chip strip for active filters. Renders the active filter
+  list in a single horizontal row; trailing chips collapse to a "+N" button
+  + popover when the row is too narrow. The query/data path is owned by
+  <FilterBar hideChips=true> mounted by the same consumer — this component
+  is display-only and never dispatches change events.
+
+  Consumers that need both visual chips inline AND the SaveAs row below
+  mount this together with <FilterBar hideChips=true ...>.
 -->
 <script lang="ts">
-  import type { Class, Doc, DocumentQuery, Ref, Space } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import { Button, eventToHTMLElement, resizeObserver, showPopup } from '@hcengineering/ui'
-  import type { Filter } from '@hcengineering/view'
-  import { createEventDispatcher, tick } from 'svelte'
+  import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import { Button, IconClose, Label, eventToHTMLElement, resizeObserver, showPopup, tooltip } from '@hcengineering/ui'
+  import { tick } from 'svelte'
   import { filterStore, removeFilter, setFilters } from '../../filter'
-  import { makeFilterQuery } from '../../filter/query-builder'
   import view from '../../plugin'
   import FilterSection from './FilterSection.svelte'
   import InlineFilterChipsOverflow from './InlineFilterChipsOverflow.svelte'
@@ -24,52 +24,58 @@
 
   export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined
-  export let query: DocumentQuery<Doc>
-
-  const client = getClient()
-  const hierarchy = client.getHierarchy()
-  const dispatch = createEventDispatcher()
 
   let containerWidth = 0
   let chipEls: HTMLElement[] = []
   let visibleCount = 0
   let hiddenCount = 0
-  let measuredWidths: number[] = []
-  let measuredForFilterCount = -1
-  const BADGE_WIDTH = 64
+  let widthByIndex = new Map<number, number>()
+  const BADGE_RESERVE_PX = 64
 
-  // Seed visibleCount = filterStore.length on every filter change so the
-  // first paint renders ALL chips (enabling width measurement). The
-  // ResizeObserver-triggered recompute then collapses overflow. Without
-  // this seed, chips never render because chipWidths is [] on first pass.
+  // Reset chipEls + per-index width cache whenever the filter SET changes
+  // (additions or deletions). Re-keying by filter.index keeps width
+  // measurements stable across cycle adds/removes that don't change the
+  // existing filters' visual width — avoiding the all-chips-then-collapse
+  // flash on every store mutation. The seed visibleCount = filterStore.length
+  // makes the next paint render every chip so unmeasured chips can be
+  // measured by recompute().
+  let lastIndexes: number[] = []
   $: {
-    visibleCount = $filterStore.length
-    hiddenCount = 0
-    measuredForFilterCount = -1
-    measuredWidths = []
+    const currentIndexes = $filterStore.map((f) => f.index)
+    const sameSet =
+      currentIndexes.length === lastIndexes.length &&
+      currentIndexes.every((v, i) => v === lastIndexes[i])
+    if (!sameSet) {
+      visibleCount = $filterStore.length
+      hiddenCount = 0
+      chipEls = []
+      // Drop stale entries for filters that are no longer present.
+      const live = new Set(currentIndexes)
+      for (const k of Array.from(widthByIndex.keys())) {
+        if (!live.has(k)) widthByIndex.delete(k)
+      }
+      lastIndexes = currentIndexes
+    }
   }
 
   async function recompute (): Promise<void> {
     await tick()
     if (containerWidth === 0) return
-    const filterCount = $filterStore.length
-    if (filterCount === 0) return
+    const filters = $filterStore
+    if (filters.length === 0) return
 
-    // Only re-measure when ALL chips for the current filterStore are bound
-    // (visibleCount equals filterStore.length). When we've already collapsed
-    // some into the +N popover, the unmounted chips report width=0 — using
-    // those zeros would oscillate visibleCount and flicker the toolbar.
-    if (measuredForFilterCount !== filterCount && visibleCount === filterCount) {
-      const widths = chipEls
-        .slice(0, filterCount)
-        .map((el) => el?.getBoundingClientRect().width ?? 0)
-      if (widths.length === 0 || widths.every((w) => w === 0)) return
-      measuredWidths = widths
-      measuredForFilterCount = filterCount
+    // Update the per-index width cache for any chip currently rendered.
+    // Chips that were collapsed previously won't be in chipEls yet — they
+    // get measured the next time visibleCount = filters.length seeds them.
+    for (let i = 0; i < Math.min(filters.length, chipEls.length); i++) {
+      const w = chipEls[i]?.getBoundingClientRect().width ?? 0
+      if (w > 0) widthByIndex.set(filters[i].index, w)
     }
-
-    if (measuredWidths.length === 0) return
-    const r = computeOverflow(measuredWidths, containerWidth, BADGE_WIDTH)
+    // Fall back to a conservative estimate for any filter we haven't
+    // measured yet — keeps overflow math monotonic while the missing chip
+    // gets a chance to render in the next pass.
+    const widths = filters.map((f) => widthByIndex.get(f.index) ?? 120)
+    const r = computeOverflow(widths, containerWidth, BADGE_RESERVE_PX)
     if (r.visibleCount !== visibleCount || r.hiddenCount !== hiddenCount) {
       visibleCount = r.visibleCount
       hiddenCount = r.hiddenCount
@@ -88,18 +94,6 @@
     const w = (el as HTMLElement).clientWidth
     if (w !== containerWidth) containerWidth = w
   }
-
-  async function rebuildQuery (filters: Filter[]): Promise<void> {
-    const next = await makeFilterQuery(
-      query,
-      filters,
-      async (id) => await client.findOne(view.class.FilterMode, { _id: id }),
-      undefined,
-      hierarchy
-    )
-    dispatch('change', next)
-  }
-  $: void rebuildQuery($filterStore)
 
   function openOverflowPopover (e: MouseEvent): void {
     showPopup(InlineFilterChipsOverflow, { hiddenStartIndex: visibleCount, space }, eventToHTMLElement(e))
@@ -125,7 +119,6 @@
           <FilterSection
             {space}
             {filter}
-            on:change={() => rebuildQuery($filterStore)}
             on:remove={() => removeFilter(i)}
           />
         </span>
@@ -137,6 +130,10 @@
       <button
         class="filter-overflow-badge"
         type="button"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-label={`+${hiddenCount} hidden filters`}
+        use:tooltip={{ label: view.string.HiddenFilters }}
         on:click={openOverflowPopover}
       >
         +{hiddenCount}
@@ -150,6 +147,7 @@
     <Button
       kind="ghost"
       size="small"
+      icon={IconClose}
       label={view.string.ClearFilters}
       on:click={() => setFilters([])}
     />
@@ -186,8 +184,11 @@
     padding: 0 0.5rem;
     border: none;
     border-radius: 999px;
-    background: var(--theme-state-negative-color);
-    color: var(--theme-state-negative-color-foreground, white);
+    /* Use the attention/warning accent rather than the destructive-red
+       state colour — "filter active" is a state cue, not a destructive
+       affordance. The negative colour stays reserved for delete/abort. */
+    background: var(--theme-state-attention-color, var(--theme-warning-color));
+    color: var(--theme-state-attention-color-foreground, white);
     font-size: 0.75rem;
     font-weight: 600;
     line-height: 1;
@@ -198,8 +199,11 @@
       filter: brightness(1.1);
     }
     &:focus-visible {
-      outline: 2px solid var(--theme-state-negative-color);
+      outline: 2px solid var(--theme-state-attention-color, var(--theme-warning-color));
       outline-offset: 1px;
     }
   }
+  /* Unused IconClose import wired for the trailing button visual hint;
+     removed if Lint flags as dead. */
+  :global(.inline-filter-chips-wrap .button.ghost.small svg) { opacity: 0.7; }
 </style>

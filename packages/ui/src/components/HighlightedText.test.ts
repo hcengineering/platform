@@ -28,9 +28,9 @@ describe('splitHighlightSegments', () => {
     ])
   })
   it('strips id: prefix from the query before matching', () => {
-    expect(splitHighlightSegments('OSKOS-51 something', 'id:OSKOS-')).toEqual([
+    expect(splitHighlightSegments('HULY-51 something', 'id:HULY-')).toEqual([
       { text: '', match: false },
-      { text: 'OSKOS-', match: true },
+      { text: 'HULY-', match: true },
       { text: '51 something', match: false }
     ])
   })
@@ -43,14 +43,14 @@ describe('splitHighlightSegments', () => {
   })
   it('multi-prefix query strips only the first prefix (known v1 limitation)', () => {
     // The helper handles only the leading prefix. A user typing
-    // `title:loader id:OSKOS-` gets the `title:` stripped, leaving
-    // `loader id:OSKOS-` as the literal substring to highlight — which
+    // `title:loader id:HULY-` gets the `title:` stripped, leaving
+    // `loader id:HULY-` as the literal substring to highlight — which
     // will not match anything in a normal Issue title. Documented as
     // a v1 limitation; v2 (out of this plan) would parse the query
     // into a list of (field, term) tuples and highlight each match
     // separately.
-    expect(splitHighlightSegments('Telescopic loader OSKOS-51', 'title:loader id:OSKOS-')).toEqual([
-      { text: 'Telescopic loader OSKOS-51', match: false }
+    expect(splitHighlightSegments('Telescopic loader HULY-51', 'title:loader id:HULY-')).toEqual([
+      { text: 'Telescopic loader HULY-51', match: false }
     ])
   })
 })
