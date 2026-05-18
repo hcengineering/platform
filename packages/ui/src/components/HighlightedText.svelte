@@ -14,7 +14,13 @@
 
   export let text: string = ''
   export let query: string = ''
-  $: segments = splitHighlightSegments(text, query)
+  /**
+   * `enabled=false` short-circuits the highlight pass — consumers wire this
+   * to the searchHighlight Customize-View toggle so users can opt out of
+   * the marker styling without losing search itself.
+   */
+  export let enabled: boolean = true
+  $: segments = enabled ? splitHighlightSegments(text, query) : [{ text, match: false }]
 </script>
 
 {#each segments as seg}

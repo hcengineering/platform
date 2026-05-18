@@ -23,6 +23,38 @@ import tags from '@hcengineering/tags'
 import { type ViewOptionModel, type BuildModelKey, type ViewOptionsModel } from '@hcengineering/view'
 import tracker from './plugin'
 
+// Plan 2 T5 — shared Customize-View knobs reused by both `issuesOptions()`
+// (List + Kanban) and the Gantt viewlet block. Keep this list as the single
+// source of truth so a change in one place can never disagree with the
+// other half of the UI.
+const SEARCH_VIEW_OPTIONS: ViewOptionModel[] = [
+  {
+    key: 'showQuickModeSelector',
+    type: 'toggle',
+    defaultValue: true,
+    actionTarget: 'display',
+    label: tracker.string.ShowQuickModeSelector
+  },
+  {
+    key: 'searchScope',
+    type: 'dropdown',
+    defaultValue: 'all',
+    values: [
+      { id: 'title', label: tracker.string.SearchScopeTitle },
+      { id: 'title-description', label: tracker.string.SearchScopeTitleDescription },
+      { id: 'all', label: tracker.string.SearchScopeAll }
+    ],
+    label: tracker.string.SearchScopeLabel
+  },
+  {
+    key: 'searchHighlight',
+    type: 'toggle',
+    defaultValue: true,
+    actionTarget: 'display',
+    label: tracker.string.SearchHighlight
+  }
+]
+
 export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
   groupBy: [
     'status',
@@ -76,34 +108,7 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
       label: view.string.HideArchived
     },
     ...(!kanban ? [showColorsViewOption] : []),
-    // Search + Quick-filter toggles (Plan 2 T5). Apply to List, Kanban and
-    // Gantt uniformly via the shared `issuesOptions()` factory used by every
-    // Issue viewlet that doesn't carry its own block.
-    {
-      key: 'showQuickModeSelector',
-      type: 'toggle',
-      defaultValue: true,
-      actionTarget: 'display',
-      label: tracker.string.ShowQuickModeSelector
-    },
-    {
-      key: 'searchScope',
-      type: 'dropdown',
-      defaultValue: 'all',
-      values: [
-        { id: 'title', label: tracker.string.SearchScopeTitle },
-        { id: 'title-description', label: tracker.string.SearchScopeTitleDescription },
-        { id: 'all', label: tracker.string.SearchScopeAll }
-      ],
-      label: tracker.string.SearchScopeLabel
-    },
-    {
-      key: 'searchHighlight',
-      type: 'toggle',
-      defaultValue: true,
-      actionTarget: 'display',
-      label: tracker.string.SearchHighlight
-    }
+    ...SEARCH_VIEW_OPTIONS
   ]
 })
 
@@ -507,34 +512,7 @@ export function ganttViewOptions (): ViewOptionsModel {
         actionTarget: 'display',
         label: tracker.string.GanttGroupBy
       },
-      // Plan 2 T5 — shared search + quick-filter toggles for every Issue
-      // viewlet. Mirror the entries in `issuesOptions()` so the Gantt's own
-      // ViewOptions block exposes the same Customize-View knobs.
-      {
-        key: 'showQuickModeSelector',
-        type: 'toggle',
-        defaultValue: true,
-        actionTarget: 'display',
-        label: tracker.string.ShowQuickModeSelector
-      },
-      {
-        key: 'searchScope',
-        type: 'dropdown',
-        defaultValue: 'all',
-        values: [
-          { id: 'title', label: tracker.string.SearchScopeTitle },
-          { id: 'title-description', label: tracker.string.SearchScopeTitleDescription },
-          { id: 'all', label: tracker.string.SearchScopeAll }
-        ],
-        label: tracker.string.SearchScopeLabel
-      },
-      {
-        key: 'searchHighlight',
-        type: 'toggle',
-        defaultValue: true,
-        actionTarget: 'display',
-        label: tracker.string.SearchHighlight
-      }
+      ...SEARCH_VIEW_OPTIONS
     ]
   }
 }
