@@ -18,6 +18,7 @@ import type {
   LoginInfo,
   OtpInfo,
   RegionInfo,
+  WorkspaceConfiguration,
   WorkspaceLoginInfo,
   WorkspaceInviteInfo,
   ProviderInfo,
@@ -177,7 +178,8 @@ export async function signUpOtp (email: string, first: string, last: string): Pr
 
 export async function createWorkspace (
   workspaceName: string,
-  region?: string
+  region?: string,
+  configuration?: WorkspaceConfiguration
 ): Promise<[Status, WorkspaceLoginInfo | null]> {
   const token = getMetadata(presentation.metadata.Token)
   if (token == null) {
@@ -190,7 +192,7 @@ export async function createWorkspace (
   }
 
   try {
-    const workspaceLoginInfo = await getAccountClient(token).createWorkspace(workspaceName, region)
+    const workspaceLoginInfo = await getAccountClient(token).createWorkspace(workspaceName, region, configuration)
 
     Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: true })
 

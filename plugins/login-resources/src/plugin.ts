@@ -83,6 +83,7 @@ export default mergeIds(loginId, login, {
     LogInAndJoin: '' as IntlString,
     SignUpAndJoin: '' as IntlString,
     CreateNewAccount: '' as IntlString,
-    SignedInAs: '' as IntlString<{ name: string }>
+    SignedInAs: '' as IntlString<{ name: string }>,
+    CreateSampleProjects: '' as IntlString
   }
 })

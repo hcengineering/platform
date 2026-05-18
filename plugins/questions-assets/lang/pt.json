@@ -30,6 +30,8 @@
     "SingleChoiceQuestion": "Seleção única (não avaliada)",
     "TypePercentage": "Percentagem",
     "TypeQuestionOption": "Opção",
-    "TypeRank": "Posição"
+    "TypeRank": "Posição",
+    "ConfigLabel": "Questões",
+    "ConfigDescription": "Criação de questões e avaliações usada por formações, quizzes e inquéritos"
   }
 }

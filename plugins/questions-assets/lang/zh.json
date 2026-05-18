@@ -30,6 +30,8 @@
     "SingleChoiceQuestion": "单项选择（不评分）",
     "TypePercentage": "百分比",
     "TypeQuestionOption": "选项",
-    "TypeRank": "排名"
+    "TypeRank": "排名",
+    "ConfigLabel": "问题",
+    "ConfigDescription": "用于培训、测验和调查的问题与评估编辑工具"
   }
 }

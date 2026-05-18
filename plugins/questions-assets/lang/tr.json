@@ -30,6 +30,8 @@
     "SingleChoiceQuestion": "Tekli seçim (puanlanmaz)",
     "TypePercentage": "Yüzde",
     "TypeQuestionOption": "Seçenek",
-    "TypeRank": "Sıra"
+    "TypeRank": "Sıra",
+    "ConfigLabel": "Sorular",
+    "ConfigDescription": "Eğitimler, sınavlar ve anketler tarafından kullanılan soru ve değerlendirme oluşturma"
   }
 }

@@ -646,6 +646,7 @@ describe('PostgresAccountDB', () => {
               w.created_by,
               w.created_on,
               w.billing_account,
+              w.pending_configuration,
               json_build_object(
                 'mode', s.mode,
                 'processing_progress', s.processing_progress,
@@ -690,6 +691,7 @@ describe('PostgresAccountDB', () => {
               w.created_by,
               w.created_on,
               w.billing_account,
+              w.pending_configuration,
               json_build_object(
                 'mode', s.mode,
                 'processing_progress', s.processing_progress,
@@ -759,6 +761,7 @@ describe('PostgresAccountDB', () => {
               w.created_by,
               w.created_on,
               w.billing_account,
+              w.pending_configuration,
               json_build_object(
                 'mode', s.mode,
                 'processing_progress', s.processing_progress,
@@ -832,6 +835,7 @@ describe('PostgresAccountDB', () => {
               w.created_by,
               w.created_on,
               w.billing_account,
+              w.pending_configuration,
               json_build_object(
                 'mode', s.mode,
                 'processing_progress', s.processing_progress,
@@ -924,6 +928,7 @@ describe('PostgresAccountDB', () => {
               w.created_by,
               w.created_on,
               w.billing_account,
+              w.pending_configuration,
               json_build_object(
                 'mode', s.mode,
                 'processing_progress', s.processing_progress,

@@ -899,6 +899,25 @@ export type WorkspaceUpdateEvent =
   | 'delete-started'
   | 'delete-done'
 
+/**
+ * Initial-state configuration captured at workspace creation. Currently only
+ * carries whether the workspace should be populated with demo content. Lives
+ * on `WorkspaceInfo.pendingConfiguration` until consumed by workspace-service
+ * after model init, then cleared back to `null`.
+ *
+ * Kept as a struct (rather than a bare boolean) so future opt-in fields can
+ * be added without breaking the wire format.
+ *
+ * @public
+ */
+export interface WorkspaceConfiguration {
+  /**
+   * Whether to run the workspace init script (sample projects and other demo content).
+   * Defaults to `true` on the server side to preserve legacy behavior.
+   */
+  withDemoContent?: boolean
+}
+
 export interface WorkspaceInfo {
   uuid: WorkspaceUuid
   dataId?: WorkspaceDataId // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
@@ -912,6 +931,9 @@ export interface WorkspaceInfo {
   allowReadOnlyGuest?: boolean // Should always be set for NEW workspaces
   allowGuestSignUp?: boolean // Should always be set for NEW workspaces
   passwordAgingRule?: number // in days
+  // Initial-state configuration set by the user at workspace creation. Read once
+  // by workspace-service after model init, then cleared back to `null`.
+  pendingConfiguration?: WorkspaceConfiguration | null
 }
 
 export interface BackupStatus {

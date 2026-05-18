@@ -55,6 +55,7 @@ import type {
   Subscription,
   SubscriptionData,
   UserProfile,
+  WorkspaceConfiguration,
   WorkspaceLoginInfo,
   WorkspaceOperation
 } from './types'
@@ -134,7 +135,11 @@ export interface AccountClient {
   getWorkspacesInfo: (workspaces: WorkspaceUuid[]) => Promise<WorkspaceInfoWithStatus[]>
   updateLastVisit: (workspaces: WorkspaceUuid[]) => Promise<void>
   getRegionInfo: () => Promise<RegionInfo[]>
-  createWorkspace: (name: string, region?: string) => Promise<WorkspaceLoginInfo>
+  createWorkspace: (
+    name: string,
+    region?: string,
+    configuration?: WorkspaceConfiguration
+  ) => Promise<WorkspaceLoginInfo>
   signUpOtp: (email: string, first: string, last: string) => Promise<OtpInfo>
   /**
    * Deprecated. Only to be used for dev setups without mail service.
@@ -668,10 +673,14 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async createWorkspace (workspaceName: string, region?: string): Promise<WorkspaceLoginInfo> {
+  async createWorkspace (
+    workspaceName: string,
+    region?: string,
+    configuration?: WorkspaceConfiguration
+  ): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'createWorkspace' as const,
-      params: { workspaceName, region }
+      params: { workspaceName, region, configuration }
     }
 
     return await this.rpc(request)

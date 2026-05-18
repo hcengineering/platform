@@ -31,6 +31,7 @@ import {
   SocialIdType,
   systemAccountUuid,
   readOnlyGuestAccountUuid,
+  type WorkspaceConfiguration,
   type WorkspaceMemberInfo,
   type WorkspaceUuid,
   type IntegrationKind
@@ -556,9 +557,10 @@ export async function createWorkspace (
   params: {
     workspaceName: string
     region?: string
+    configuration?: WorkspaceConfiguration
   }
 ): Promise<WorkspaceLoginInfo> {
-  const { workspaceName, region } = params
+  const { workspaceName, region, configuration } = params
 
   if (workspaceName == null || workspaceName.length === 0) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
@@ -596,7 +598,23 @@ export async function createWorkspace (
     )
   }
 
-  const { workspaceUuid, workspaceUrl } = await createWorkspaceRecord(ctx, db, branding, workspaceName, account, region)
+  // Persist the client-provided configuration as-is. The only currently
+  // supported field is `withDemoContent`; future fields can be added without
+  // changing the wire shape.
+  const pendingConfiguration =
+    configuration?.withDemoContent !== undefined ? { withDemoContent: configuration.withDemoContent } : undefined
+
+  const { workspaceUuid, workspaceUrl } = await createWorkspaceRecord(
+    ctx,
+    db,
+    branding,
+    workspaceName,
+    account,
+    region,
+    'pending-creation',
+    undefined,
+    pendingConfiguration
+  )
 
   await db.assignWorkspace(account, workspaceUuid, AccountRole.Owner)
 

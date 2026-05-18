@@ -56,7 +56,8 @@
     "LineTool": "Linie",
     "RectangleTool": "Rechteck",
     "EllipseTool": "Ellipse",
-    "PaletteManagementMenu": "Farbpresets verwalten"
+    "PaletteManagementMenu": "Farbpresets verwalten",
+    "BetaVersion": "Beta-Version"
   },
   "status": {
     "FileTooLarge": "Datei zu groß"
