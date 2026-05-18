@@ -212,6 +212,100 @@ export function issueConfig (
   ]
 }
 
+export function ganttViewOptions (): ViewOptionsModel {
+  // PR 2 ships a minimal read-only Gantt. Group-by + Show-colors are
+  // intentionally NOT advertised — the canvas does not honour them yet.
+  // The two sidebar-column toggles below ARE wired up to GanttSidebar.
+  return {
+    groupBy: [],
+    orderBy: [
+      ['startDate', SortingOrder.Ascending],
+      ['rank', SortingOrder.Ascending],
+      ['dueDate', SortingOrder.Ascending]
+    ],
+    other: [
+      {
+        key: 'ganttShowIssueCode',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowIssueCode
+      },
+      {
+        key: 'ganttShowTitle',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowTitle
+      },
+      {
+        key: 'ganttShowStatus',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowStatus
+      },
+      {
+        // Default-on safety prompt: when set, dragging an issue's bar to a
+        // new date range shows a confirm dialog before writing the change.
+        // User feedback 2026-05-11: easy to misclick a bar while panning,
+        // and a one-click confirm prevents accidental schedule edits.
+        key: 'ganttConfirmMove',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttConfirmMove
+      },
+      {
+        // Same idea but for left/right resize handles.
+        key: 'ganttConfirmResize',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttConfirmResize
+      },
+      {
+        // PR4a: sidebar column showing predecessor notation (e.g. "12FS+2d").
+        // Hidden by default so existing users don't see a new column appear.
+        // Toggling on requires no migration — the column is purely derived
+        // from the IssueRelation collection that already exists from PR1.
+        key: 'ganttShowPredecessors',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowPredecessors
+      },
+      {
+        // PR5: critical-path overlay toggle. When on, critical bars get a red
+        // border and fill overlay; critical relations get red arrows; non-critical
+        // bars show a grey slack glyph.
+        key: 'ganttCriticalPath',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.CriticalPathOn
+      },
+      {
+        // PR5: slack column in the sidebar. Shows numeric slack days or "CP" badge
+        // for critical issues. Requires ganttCriticalPath to be meaningful.
+        key: 'ganttSlackColumn',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.SlackColumn
+      }
+    ]
+  }
+}
+
+export function ganttConfig (): BuildModelKey[] {
+  // Minimal config — Gantt drives its own column layout.
+  return [
+    { key: '', presenter: tracker.component.PriorityEditor, label: tracker.string.Priority, props: { kind: 'list', size: 'small' } },
+    { key: '', presenter: tracker.component.IssuePresenter, label: tracker.string.Issue }
+  ]
+}
+
 export function defineViewlets (builder: Builder): void {
   builder.createDoc(
     view.class.ViewletDescriptor,
@@ -222,6 +316,17 @@ export function defineViewlets (builder: Builder): void {
       component: tracker.component.KanbanView
     },
     tracker.viewlet.Kanban
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: tracker.string.Gantt,
+      icon: tracker.icon.Gantt,
+      component: tracker.component.GanttView
+    },
+    tracker.viewlet.Gantt
   )
 
   builder.createDoc(
@@ -501,6 +606,23 @@ export function defineViewlets (builder: Builder): void {
     tracker.viewlet.IssueKanban
   )
 
+  // Gantt is registered AFTER List + Kanban so List remains the default
+  // viewlet (ViewletSelector falls back to viewlets[0] when no preference
+  // is saved). Putting Gantt last avoids surprising users with an empty
+  // canvas on first visit.
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Issue,
+      descriptor: tracker.viewlet.Gantt,
+      viewOptions: ganttViewOptions(),
+      configOptions: { strict: true, hiddenKeys: ['title'] },
+      config: ganttConfig()
+    },
+    tracker.viewlet.IssueGantt
+  )
+
   const componentListViewOptions: ViewOptionsModel = {
     groupBy: ['lead', 'createdBy', 'modifiedBy'],
     orderBy: [
@@ -663,7 +785,7 @@ export function defineViewlets (builder: Builder): void {
       viewOptions: milestoneOptions,
       configOptions: {
         strict: true,
-        hiddenKeys: ['targetDate', 'label', 'description']
+        hiddenKeys: ['startDate', 'targetDate', 'label', 'description']
       },
       config: [
         {
@@ -672,6 +794,12 @@ export function defineViewlets (builder: Builder): void {
         },
         { key: '', presenter: tracker.component.MilestonePresenter, props: { shouldUseMargin: true } },
         { key: '', displayProps: { grow: true } },
+        {
+          key: '',
+          label: tracker.string.StartDate,
+          presenter: tracker.component.MilestoneDatePresenter,
+          props: { field: 'startDate' }
+        },
         {
           key: '',
           label: tracker.string.TargetDate,

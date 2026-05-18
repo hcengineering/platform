@@ -39,6 +39,7 @@ import {
   TClassicProjectTypeData,
   TComponent,
   TIssue,
+  TIssueRelation,
   TIssueStatus,
   TIssueTemplate,
   TIssueTypeData,
@@ -195,7 +196,9 @@ function defineFilters (builder: Builder): void {
         key: 'milestone',
         component: view.component.ObjectFilter,
         showNested: false
-      }
+      },
+      'startDate',
+      'dueDate'
     ],
     ignoreKeys: ['number', 'estimation', 'attachedTo'],
     getVisibleFilters: tracker.function.GetVisibleFilters
@@ -441,6 +444,7 @@ export function createModel (builder: Builder): void {
     TProject,
     TComponent,
     TIssue,
+    TIssueRelation,
     TIssueTemplate,
     TIssueStatus,
     TTypeIssuePriority,

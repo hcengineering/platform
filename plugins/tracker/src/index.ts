@@ -120,6 +120,22 @@ export enum IssuePriority {
 }
 
 /**
+ * Dependency kind between two Issues for Gantt scheduling.
+ *
+ * - `finish-to-start` (FS): A must finish before B can start. Most common.
+ * - `start-to-start` (SS): A must start before B can start.
+ * - `finish-to-finish` (FF): A must finish before B can finish.
+ * - `start-to-finish` (SF): A must start before B can finish. Rare.
+ *
+ * @public
+ */
+export type DependencyKind =
+  | 'finish-to-start'
+  | 'start-to-start'
+  | 'finish-to-finish'
+  | 'start-to-finish'
+
+/**
  * @public
  */
 export enum IssuesGrouping {
@@ -175,6 +191,7 @@ export interface Milestone extends Doc {
   comments: number
   attachments?: number
 
+  startDate: Timestamp | null // null = open-ended begin marker
   targetDate: Timestamp
 }
 
@@ -195,6 +212,8 @@ export interface Issue extends Task {
   blockedBy?: RelatedDocument[]
   relations?: RelatedDocument[]
   parents: IssueParentInfo[]
+
+  startDate: Timestamp | null // for Gantt scheduling; null = unscheduled
 
   space: Ref<Project>
 
@@ -236,6 +255,7 @@ export interface IssueDraft {
   assignee: Ref<Person> | null
   component: Ref<Component> | null
   space: Ref<Project>
+  startDate: Timestamp | null
   dueDate: Timestamp | null
   milestone?: Ref<Milestone> | null
 
@@ -324,6 +344,21 @@ export interface IssueParentInfo {
 }
 
 /**
+ * Typed dependency between two Issues, used by the Gantt view to compute
+ * cascade scheduling and critical path.
+ *
+ * Persisted as an AttachedDoc collection 'relations' on the source Issue.
+ *
+ * @public
+ */
+export interface IssueRelation extends AttachedDoc<Issue, 'relations'> {
+  target: Ref<Issue>               // successor
+  kind: DependencyKind
+  /** Lag in schedule days; can be negative (overlap). */
+  lag: number
+}
+
+/**
  * @public
  */
 export interface IssueChildInfo {
@@ -366,6 +401,7 @@ const pluginState = plugin(trackerId, {
   class: {
     Project: '' as Ref<Class<Project>>,
     Issue: '' as Ref<Class<Issue>>,
+    IssueRelation: '' as Ref<Class<IssueRelation>>,
     IssueTemplate: '' as Ref<Class<IssueTemplate>>,
     Component: '' as Ref<Class<Component>>,
     IssueStatus: '' as Ref<Class<IssueStatus>>,
@@ -405,6 +441,7 @@ const pluginState = plugin(trackerId, {
     RelatedIssuesSection: '' as AnyComponent,
     RelatedIssueSelector: '' as AnyComponent,
     RelatedIssueTemplates: '' as AnyComponent,
+    IssueRelationPresenter: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateIssue: '' as AnyComponent,
     ProjectPresenter: '' as AnyComponent,
@@ -464,6 +501,7 @@ const pluginState = plugin(trackerId, {
 
     TimeReport: '' as Asset,
     Estimation: '' as Asset,
+    Gantt: '' as Asset,
 
     // Project icons
     Home: '' as Asset,
@@ -520,6 +558,39 @@ const pluginState = plugin(trackerId, {
     Project: '' as IntlString,
     RelatedIssues: '' as IntlString,
     Issue: '' as IntlString,
+    IssueStartDate: '' as IntlString,
+    SetStartDate: '' as IntlString,
+    GanttDragFailed: '' as IntlString,
+    GanttDragNoPermission: '' as IntlString,
+    GanttDragValidation: '' as IntlString,
+    GanttDragConflict: '' as IntlString,
+    GanttResizingTooltip: '' as IntlString,
+    Hierarchy: '' as IntlString,
+    LinkExistingSubIssue: '' as IntlString,
+    LinkExistingParentIssue: '' as IntlString,
+    CreateNewSubIssue: '' as IntlString,
+    CreateNewParentIssue: '' as IntlString,
+    AddParentIssue: '' as IntlString,
+    AddSubIssue: '' as IntlString,
+    AddDependency: '' as IntlString,
+    AddPredecessor: '' as IntlString,
+    AddSuccessor: '' as IntlString,
+    AddPredecessorHint: '' as IntlString,
+    AddSuccessorHint: '' as IntlString,
+    SetParentIssueLabel: '' as IntlString,
+    GanttDragToSchedule: '' as IntlString,
+    GanttDurationTooltip: '' as IntlString,
+    GanttConfirmMove: '' as IntlString,
+    GanttConfirmResize: '' as IntlString,
+    GanttConfirmMoveTitle: '' as IntlString,
+    GanttConfirmResizeTitle: '' as IntlString,
+    GanttConfirmMoveBody: '' as IntlString,
+    GanttConfirmResizeBody: '' as IntlString,
+    GanttConfirmApply: '' as IntlString,
+    GanttAriaResizeStart: '' as IntlString,
+    GanttAriaResizeEnd: '' as IntlString,
+    GanttDependency: '' as IntlString,
+    GanttLag: '' as IntlString,
     NewProject: '' as IntlString,
     UnsetParentIssue: '' as IntlString,
     ForbidCreateProjectPermission: '' as IntlString,

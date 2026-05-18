@@ -301,6 +301,24 @@ export async function canEditIssue (issue?: Issue | WithLookup<Issue>): Promise<
   return collaborator !== undefined
 }
 
+/**
+ * Mirrors {@link canEditIssue} for Milestones (PR3.2 Gantt edit-parity).
+ * Milestones don't have createdBy-as-Person semantics in the same way Issues
+ * do — a project-member who can see the milestone can typically also edit it.
+ * Guests fall through to the no-edit branch.
+ */
+export async function canEditMilestone (milestone?: Milestone): Promise<boolean> {
+  if (milestone === undefined) return false
+
+  const account = getCurrentAccount()
+  const isGuest =
+    account.role === AccountRole.Guest ||
+    account.role === AccountRole.DocGuest ||
+    account.role === AccountRole.ReadOnlyGuest
+
+  return !isGuest
+}
+
 export function getTimeReportDate (type: TimeReportDayType): number {
   const date = new Date(Date.now())
 

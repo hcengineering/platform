@@ -52,6 +52,7 @@ import ProjectComponents from './components/components/ProjectComponents.svelte'
 import CreateIssue from './components/CreateIssue.svelte'
 import EditRelatedTargets from './components/EditRelatedTargets.svelte'
 import EditRelatedTargetsPopup from './components/EditRelatedTargetsPopup.svelte'
+import GanttView from './components/gantt/GanttView.svelte'
 import AssigneeEditor from './components/issues/AssigneeEditor.svelte'
 import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
 import EditIssue from './components/issues/edit/EditIssue.svelte'
@@ -88,6 +89,7 @@ import ProjectFilterValuePresenter from './components/projects/ProjectFilterValu
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
+import LinkSubIssueActionPopup from './components/LinkSubIssueActionPopup.svelte'
 import SettingsRelatedTargets from './components/SettingsRelatedTargets.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import {
@@ -119,6 +121,7 @@ import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svel
 
 import RelatedIssues from './components/issues/related/RelatedIssues.svelte'
 import RelatedIssueTemplates from './components/issues/related/RelatedIssueTemplates.svelte'
+import IssueRelationPresenter from './components/IssueRelationPresenter.svelte'
 
 import ComponentSelector from './components/components/ComponentSelector.svelte'
 
@@ -431,9 +434,11 @@ export default async (): Promise<Resources> => ({
     LeadPresenter,
     SetDueDateActionPopup,
     SetParentIssueActionPopup,
+    LinkSubIssueActionPopup,
     EditComponent,
     IssuesView,
     KanbanView,
+    GanttView,
     ProjectComponents,
     IssuePreview,
     RelationsPopup,
@@ -453,6 +458,7 @@ export default async (): Promise<Resources> => ({
     SubIssuesSelector,
     RelatedIssues,
     RelatedIssueTemplates,
+    IssueRelationPresenter,
     ComponentSelector,
     IssueTemplates,
     IssueTemplatePresenter,

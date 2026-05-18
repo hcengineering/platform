@@ -69,6 +69,7 @@ WithMarkup<Issue>,
 | 'reports'
 | 'childInfo'
 | 'dueDate'
+| 'startDate'
 | 'kind'
 | 'reviews'
 | 'reviewThreads'
