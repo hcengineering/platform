@@ -34,6 +34,22 @@ export function definePresenters (builder: Builder): void {
     presenter: tracker.component.NotificationIssuePresenter
   })
 
+  //
+  // IssueRelation — single-line "FS +Nd → OSTRO-29 Title" presenter so
+  // the activity feed shows which dependency was added or removed
+  // (instead of the generic "Dependency" class label).
+  //
+  builder.mixin(tracker.class.IssueRelation, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: tracker.component.IssueRelationPresenter
+  })
+
+  //
+  //  — Dependency-Shift bundle notification renderer.
+  //
+  builder.mixin(tracker.class.DependencyShiftedNotification, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: tracker.component.DependencyShiftedPresenter
+  })
+
   builder.mixin(tracker.class.Issue, core.class.Class, view.mixin.PreviewPresenter, {
     presenter: tracker.component.IssuePreview
   })

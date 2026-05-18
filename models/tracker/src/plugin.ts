@@ -71,6 +71,7 @@ export default mergeIds(trackerId, tracker, {
     IssueList: '' as Ref<Viewlet>,
     IssueTemplateList: '' as Ref<Viewlet>,
     IssueKanban: '' as Ref<Viewlet>,
+    IssueGantt: '' as Ref<Viewlet>,
     MilestoneList: '' as Ref<Viewlet>,
     ComponentList: '' as Ref<Viewlet>,
     ProjectList: '' as Ref<Viewlet>,
@@ -79,6 +80,8 @@ export default mergeIds(trackerId, tracker, {
   ids: {
     TrackerNotificationGroup: '' as Ref<NotificationGroup>,
     AssigneeNotification: '' as Ref<NotificationType>,
+    //  — Notification on Dependency-Shift.
+    DependencyShiftedNotification: '' as Ref<NotificationType>,
     BaseProjectType: '' as Ref<ProjectType>,
     GuestIssueClassPermission: '' as Ref<Doc>,
     ModulePermissionGroup: '' as Ref<Doc>,

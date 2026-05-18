@@ -38,7 +38,9 @@ import {
   DOMAIN_TRACKER,
   TClassicProjectTypeData,
   TComponent,
+  TDependencyShiftedNotification,
   TIssue,
+  TIssueRelation,
   TIssueStatus,
   TIssueTemplate,
   TIssueTypeData,
@@ -160,6 +162,34 @@ function defineNotifications (builder: Builder): void {
     tracker.ids.AssigneeNotification
   )
 
+  //  — Notification on Dependency-Shift.
+  // The cascade bundle is created client-side as a CommonInboxNotification
+  // subclass (see `dependency-shift-send.ts`); this NotificationType wires it
+  // into the user's tracker notification group so settings/Inbox provider
+  // routing work the same as the assignee type. `field` is bound to the
+  // `cascadeToken` attribute so the auto-`dueDate` generated type stays
+  // distinct (and they don't compete on the same `dueDate` notify channel).
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
+      hidden: false,
+      generated: false,
+      label: tracker.string.DependencyShifted,
+      group: tracker.ids.TrackerNotificationGroup,
+      field: 'cascadeToken',
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: tracker.class.DependencyShiftedNotification,
+      templates: {
+        textTemplate: '{sender} shifted {trigger} — {count} dependent issues moved',
+        htmlTemplate: '<p>{sender} shifted {trigger} — {count} dependent issues moved</p>',
+        subjectTemplate: 'Dependency shift'
+      },
+      defaultEnabled: true
+    },
+    tracker.ids.DependencyShiftedNotification
+  )
+
   generateClassNotificationTypes(
     builder,
     tracker.class.Issue,
@@ -195,7 +225,9 @@ function defineFilters (builder: Builder): void {
         key: 'milestone',
         component: view.component.ObjectFilter,
         showNested: false
-      }
+      },
+      'startDate',
+      'dueDate'
     ],
     ignoreKeys: ['number', 'estimation', 'attachedTo'],
     getVisibleFilters: tracker.function.GetVisibleFilters
@@ -441,6 +473,7 @@ export function createModel (builder: Builder): void {
     TProject,
     TComponent,
     TIssue,
+    TIssueRelation,
     TIssueTemplate,
     TIssueStatus,
     TTypeIssuePriority,
@@ -451,7 +484,8 @@ export function createModel (builder: Builder): void {
     TRelatedIssueTarget,
     TTypeEstimation,
     TTypeRemainingTime,
-    TProjectTargetPreference
+    TProjectTargetPreference,
+    TDependencyShiftedNotification
   )
 
   builder.mixin(tracker.class.Project, core.class.Class, activity.mixin.ActivityDoc, {})
@@ -593,6 +627,35 @@ export function createModel (builder: Builder): void {
     },
     tracker.ids.IssueRemovedActivityViewlet
   )
+
+  //  — Activity-Log Remove-Detail Fix.
+  // Three symmetric viewlets so IssueRelation add/remove/update show up in
+  // the issue activity feed with a kind+lag+target.title snapshot instead
+  // of the previous empty "removed related to:" row. The
+  // RelationActivityPresenter reuses IssueRelationPresenter, which is
+  // already registered as the ObjectPresenter for tracker.class.IssueRelation
+  // (models/tracker/src/presenters.ts).
+  builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
+    objectClass: tracker.class.IssueRelation,
+    action: 'create',
+    icon: tracker.icon.Issue,
+    label: tracker.string.AddedRelation,
+    component: tracker.component.RelationActivityPresenter
+  })
+  builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
+    objectClass: tracker.class.IssueRelation,
+    action: 'remove',
+    icon: tracker.icon.Issue,
+    label: tracker.string.RemovedRelation,
+    component: tracker.component.RelationActivityPresenter
+  })
+  builder.createDoc(activity.class.DocUpdateMessageViewlet, core.space.Model, {
+    objectClass: tracker.class.IssueRelation,
+    action: 'update',
+    icon: tracker.icon.Issue,
+    label: tracker.string.UpdatedRelation,
+    component: tracker.component.RelationActivityPresenter
+  })
 
   builder.createDoc(
     activity.class.DocUpdateMessageViewlet,

@@ -20,10 +20,22 @@
   export let modeSelectorProps: IModeSelector | undefined = undefined
   export let adaptive: HeaderAdaptive = 'doubleRow'
   export let resultQuery: DocumentQuery<Doc> = {}
+  /**
+   * When true the consumer's `search` slot replaces the built-in
+   * SearchInput + FilterButton. Used by IssuesView in Gantt mode to lift
+   * the gantt toolbar controls into row 2 alongside Filter + Lupe. Default
+   * false so other viewlets keep the standard search behaviour even when
+   * they forward an (otherwise empty) `search` slot upward.
+   */
+  export let overrideSearch: boolean = false
 
   let scroller: HTMLElement
 
   $: viewletActions = viewlet != null ? getViewletSpecialActions(getClient(), viewlet) : []
+
+  function setSearchProp (v: string): void {
+    search = v
+  }
 </script>
 
 <Header
@@ -49,8 +61,18 @@
   {/if}
 
   <svelte:fragment slot="search">
-    <SearchInput bind:value={search} collapsed />
-    <FilterButton {_class} {space} />
+    {#if overrideSearch}
+      <!-- Consumer-driven override. Used by IssuesView in Gantt mode to lift
+           the gantt toolbar controls (Group-by, Date-Nav, Zoom, Undo/Redo)
+           into the SpaceHeader's row 2, alongside Filter + SearchInput.
+           The slot props expose the current search value + a setter so the
+           consumer can render its own SearchInput while keeping the search
+           state owned here. -->
+      <slot name="search" {search} setSearch={setSearchProp} />
+    {:else}
+      <SearchInput bind:value={search} collapsed />
+      <FilterButton {_class} {space} />
+    {/if}
   </svelte:fragment>
   <svelte:fragment slot="actions">
     {#each viewletActions as action (action._id)}
@@ -70,5 +92,9 @@
     {#if modeSelectorProps !== undefined}
       <ModeSelector kind={'subtle'} props={modeSelectorProps} />
     {/if}
+    <!-- Trailing extra cluster. Lives AFTER the ModeSelector (All/Active/
+         Backlog) so consumer-supplied trailing icons (e.g. the Gantt
+         Hamburger + Fullscreen) stay at the far right of row 2. -->
+    <slot name="extra-trailing" />
   </svelte:fragment>
 </Header>

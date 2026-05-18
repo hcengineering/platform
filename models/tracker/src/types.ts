@@ -51,6 +51,8 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-core'
+import notification from '@hcengineering/model-notification'
+import { TCommonInboxNotification } from '@hcengineering/model-notification'
 import task, { TTask, TProject as TTaskProject } from '@hcengineering/model-task'
 import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import tags, { type TagElement } from '@hcengineering/tags'
@@ -58,10 +60,13 @@ import time, { type ToDo } from '@hcengineering/time'
 import {
   type ProjectTargetPreference,
   type Component,
+  type DependencyKind,
+  type DependencyShiftedNotification,
   type Issue,
   type IssueChildInfo,
   type IssueParentInfo,
   type IssuePriority,
+  type IssueRelation,
   type IssueStatus,
   type IssueTemplate,
   type IssueTemplateChild,
@@ -71,8 +76,10 @@ import {
   type RelatedClassRule,
   type RelatedIssueTarget,
   type RelatedSpaceRule,
+  type ShiftedIssuePayload,
   type TimeReportDayType,
-  type TimeSpendReport
+  type TimeSpendReport,
+  type WorkingDaysConfig
 } from '@hcengineering/tracker'
 import tracker from './plugin'
 import { type TaskType } from '@hcengineering/task'
@@ -135,6 +142,9 @@ export class TProject extends TTaskProject implements Project {
 
   @Prop(Collection(tracker.class.RelatedIssueTarget), tracker.string.RelatedIssues)
     relatedIssueTargets!: number
+
+  @Prop(TypeRecord(), tracker.string.WorkingDaysConfig)
+    workingDaysConfig?: WorkingDaysConfig
 }
 /**
  * @public
@@ -233,8 +243,21 @@ export class TIssue extends TTask implements Issue {
   @ReadOnly()
   declare space: Ref<Project>
 
+  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.IssueStartDate)
+  @Index(IndexKind.Indexed)
+  declare startDate: Timestamp | null
+
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
   declare dueDate: Timestamp | null
+
+  // Phase 1.B — soft deadline, independent of dueDate. Optional.
+  // When set, the Gantt renders a flag marker at this date and flags the
+  // issue as overdue when dueDate > deadline. Undefined for existing issues
+  // until the user opts in via the Issue editor (Phase 1 ships the
+  // inline ControlPanel field; a Gantt context-menu shortcut is a
+  // separate follow-up, see Out-of-scope section).
+  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.Deadline)
+    deadline?: Timestamp | null
 
   @Prop(TypeRef(tracker.class.Milestone), tracker.string.Milestone, { icon: tracker.icon.Milestone })
   @Index(IndexKind.Indexed)
@@ -257,6 +280,19 @@ export class TIssue extends TTask implements Issue {
 
   @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
     todos?: CollectionSize<ToDo>
+
+  /**
+   *  — Auto-Scheduling-Toggle.
+   *
+   * Optional property so existing issues stay on the default cascade
+   * behaviour with no migration. `@Hidden` keeps the field out of the
+   * generic filter/sort UI in `getFiltredKeys`; the dedicated toggle in
+   * `ControlPanel.svelte` is the supported entry point. Cascade-time
+   * checks live in `gantt/lib/scheduler.ts` (Step 5b filter).
+   */
+  @Prop(TypeString(), tracker.string.SchedulingMode)
+  @Hidden()
+    schedulingMode?: 'auto' | 'manual'
 }
 /**
  * @public
@@ -340,6 +376,28 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
   @Prop(TypeString(), tracker.string.TimeSpendReportDescription)
     description!: string
 }
+
+/**
+ * @public
+ */
+@Model(tracker.class.IssueRelation, core.class.AttachedDoc, DOMAIN_TRACKER)
+@UX(tracker.string.GanttDependency, tracker.icon.Issue)
+export class TIssueRelation extends TAttachedDoc implements IssueRelation {
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
+  declare attachedTo: Ref<Issue>
+
+  declare collection: 'relations'
+
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
+  @Index(IndexKind.Indexed)
+    target!: Ref<Issue>
+
+  @Prop(TypeString(), tracker.string.GanttDependency)
+    kind!: DependencyKind
+
+  @Prop(TypeNumber(), tracker.string.GanttLag)
+    lag!: number
+}
 /**
  * @public
  */
@@ -389,6 +447,9 @@ export class TMilestone extends TDoc implements Milestone {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
+  @Prop(TypeDate(), tracker.string.StartDate)
+    startDate!: Timestamp | null
+
   @Prop(TypeDate(), tracker.string.TargetDate)
     targetDate!: Timestamp
 
@@ -428,3 +489,35 @@ export class TClassicProjectTypeData extends TProject implements RolesAssignment
 @Mixin(tracker.mixin.IssueTypeData, tracker.class.Issue)
 @UX(getEmbeddedLabel('Issue'), tracker.icon.Issue)
 export class TIssueTypeData extends TIssue {}
+
+/**
+ *  — Notification on Dependency-Shift.
+ *
+ * Persisted model class for the cascade-shift bundle notification. Extends
+ * `CommonInboxNotification` so it inherits inbox/email/push routing for
+ * free; the cascade-specific payload lives in the (un-`@Prop`'d) fields
+ * which are still serialised as part of the Doc body — same pattern that
+ * `TReactionInboxNotification` uses for its `ref`/`emoji` fields.
+ *
+ * @public
+ */
+@Model(tracker.class.DependencyShiftedNotification, notification.class.CommonInboxNotification)
+export class TDependencyShiftedNotification
+  extends TCommonInboxNotification
+  implements DependencyShiftedNotification {
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
+    triggerIssueId!: Ref<Issue>
+
+  @Prop(TypeString(), tracker.string.Issue)
+    triggerIssueIdentifier!: string
+
+  @Prop(TypeString(), tracker.string.Issue)
+    triggerIssueTitle!: string
+
+  triggerUserId!: AccountUuid
+
+  shiftedIssues!: ShiftedIssuePayload[]
+
+  @Prop(TypeString(), tracker.string.DependencyShifted)
+    cascadeToken!: string
+}
