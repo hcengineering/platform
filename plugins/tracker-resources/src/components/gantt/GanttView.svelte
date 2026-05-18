@@ -191,10 +191,16 @@
   // the SearchEmptyState card. Reset to -1 on destroy so route/viewlet
   // transitions never leave a stale 0 that would falsely trigger the
   // empty-state.
-  $: resultIssueCountStore.set(issues.length + milestones.length)
-  onDestroy(() => resultIssueCountStore.set(-1))
+  // Plan 2 T8 — write the result count once BOTH issue and milestone
+  // queries have resolved; the seed -1 prevents the SearchEmptyState card
+  // from flashing during the initial load before any results arrive.
   let loadingIssues = true
   let loadingMilestones = true
+  $: if (!loadingIssues && !loadingMilestones) {
+    resultIssueCountStore.set(issues.length + milestones.length)
+  }
+  onDestroy(() => resultIssueCountStore.set(-1))
+
 
   // PR 3 edit-mode state: a single source of truth for explicit drag/resize
   // interactions. Normal bar-body mouse drags are no longer issue moves; they
@@ -749,6 +755,18 @@
     ? { space, ...(query as DocumentQuery<Issue>) }
     : { ...(query as DocumentQuery<Issue>) }) as DocumentQuery<Issue>
   $: milestoneDocQuery = (space !== undefined ? { space } : {}) as DocumentQuery<Milestone>
+  // Re-arm the loading flags on every query mutation so the result-count
+  // store (above) doesn't write a stale `issues.length + milestones.length`
+  // from the previous query in the window between the new query firing
+  // and its first LiveQuery callback delivering fresh data.
+  $: {
+    void issueDocQuery
+    loadingIssues = true
+  }
+  $: {
+    void milestoneDocQuery
+    loadingMilestones = true
+  }
   $: issueQuery.query(
     tracker.class.Issue,
     issueDocQuery,

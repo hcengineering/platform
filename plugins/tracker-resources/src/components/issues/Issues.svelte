@@ -82,6 +82,19 @@
   // automatically when the status-filter is removed.
   $: hasStatusFilter = $filterStore.some((f) => f.key.key === 'status')
 
+  // Spec §7.4 — reset the mode to 'all' on the RISING edge of hasStatusFilter
+  // so a "Status is Backlog" filter added while in Active mode doesn't leave
+  // the ModeSelector greyed-out with a stale "Active" highlight that lies
+  // about what is actually filtered. Falling-edge does nothing — the user's
+  // last explicit mode is preserved when the filter is removed.
+  let lastHadStatusFilter = false
+  $: {
+    if (hasStatusFilter && !lastHadStatusFilter && mode !== 'all') {
+      dispatch('action', { mode: 'all' })
+    }
+    lastHadStatusFilter = hasStatusFilter
+  }
+
   $: if (mode !== undefined) {
     query = { ...(queries as any)[mode] }
     modeSelectorProps = {

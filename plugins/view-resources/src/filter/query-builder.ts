@@ -36,13 +36,15 @@ const defaultResolveResource: ResourceResolver = async <T>(r: Resource<T>) => ge
 /**
  * Deep-clone a query so the helper never mutates the caller's `base`.
  * Prefers `hierarchy.clone()` when available (it knows about huly's
- * domain model and may preserve special types); falls back to a
+ * domain model and may preserve special types); falls back to
+ * `structuredClone` (Node 17+, all modern browsers), and finally to a
  * JSON-roundtrip for the simple `DocumentQuery` shape that filters
  * actually compose against. This mirrors `FilterBar.svelte:83` which
  * always did `hierarchy.clone(query)` before mutating.
  */
 function cloneQuery (base: DocumentQuery<Doc>, hierarchy?: Hierarchy): DocumentQuery<Doc> {
   if (hierarchy !== undefined) return hierarchy.clone(base)
+  if (typeof structuredClone === 'function') return structuredClone(base)
   return JSON.parse(JSON.stringify(base))
 }
 
