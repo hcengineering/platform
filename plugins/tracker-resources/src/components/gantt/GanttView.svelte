@@ -4054,7 +4054,11 @@
     flex: 1 1 auto;
     display: flex;
     align-items: center;
-    justify-content: center;
+    /* Left-align the tree-toggle buttons; the original `justify-content:
+       center` made sense when the corner also held « » date-nav buttons,
+       but those were dropped in the PR3a corner-range refactor so the
+       remaining collapse/expand-all buttons should stay at the start. */
+    justify-content: flex-start;
     gap: 8px;
     padding: 2px 8px 4px;
     font-size: 12px;
