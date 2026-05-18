@@ -591,6 +591,7 @@ export class WorkspaceImporter {
       rank,
       comments: issue.comments?.length ?? 0,
       subIssues: issue.subdocs.length,
+      startDate: null,
       dueDate: null,
       parents: parentsInfo,
       remainingTime,
