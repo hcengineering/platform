@@ -140,6 +140,24 @@ export interface ImportProject extends ImportSpace<ImportIssue> {
   projectType?: ImportProjectType
   defaultIssueStatus?: ImportStatus
   description?: string
+  // Phase 2 — declarative components + milestones associated with
+  // this project. The importer materialises one Component / Milestone
+  // doc per entry and exposes the labels to ImportIssue look-ups.
+  components?: ImportProjectComponent[]
+  milestones?: ImportProjectMilestone[]
+}
+
+export interface ImportProjectComponent {
+  label: string
+  description?: string
+}
+
+export interface ImportProjectMilestone {
+  label: string
+  description?: string
+  // UTC midnight epoch ms; HulyFormatImporter parses YYYY-MM-DD inputs.
+  targetDate: number
+  startDate?: number
 }
 
 export interface ImportIssue extends ImportDoc {
@@ -152,6 +170,23 @@ export interface ImportIssue extends ImportDoc {
   estimation?: number
   remainingTime?: number
   comments?: ImportComment[]
+  // Phase 2 — Gantt-scheduling fields. Dates are UTC midnight epoch
+  // ms; HulyFormatImporter parses YYYY-MM-DD inputs.
+  startDate?: number
+  dueDate?: number
+  // Phase 1.B — soft deadline; renders a flag marker in the Gantt.
+  deadline?: number
+  // Component / Milestone references — by LABEL at parse time, the
+  // builder resolves them to actual Ref<Component> / Ref<Milestone>
+  // against the project's `components` / `milestones` arrays at
+  // build time. Unknown labels cause a validation error.
+  componentLabel?: string
+  milestoneLabel?: string
+  // Phase 2 — finish-to-start dependency list. Each entry is a
+  // FRONT-MATTER issue title or an absolute identifier (e.g.
+  // 'GAME-3'). The builder resolves the references to Ref<Issue>
+  // and emits one IssueRelation per pair after all issues exist.
+  predecessors?: string[]
 }
 
 export interface ImportComment {
@@ -434,10 +469,190 @@ export class WorkspaceImporter {
       throw new Error('Project not found: ' + projectId)
     }
 
+    // Phase 2 — create Component / Milestone docs declared on the
+    // project. The maps keep them addressable by label for later
+    // resolution from issue front-matter.
+    const componentIds = new Map<string, Ref<any>>()
+    const milestoneIds = new Map<string, Ref<any>>()
+    if (project.components !== undefined) {
+      for (const c of project.components) {
+        const id = generateId()
+        await this.client.createDoc(
+          tracker.class.Component,
+          projectId,
+          {
+            label: c.label,
+            description: c.description ?? '',
+            lead: null,
+            comments: 0,
+            attachments: 0
+          },
+          id
+        )
+        componentIds.set(c.label, id)
+      }
+    }
+    if (project.milestones !== undefined) {
+      for (const m of project.milestones) {
+        const id = generateId()
+        await this.client.createDoc(
+          tracker.class.Milestone,
+          projectId,
+          {
+            label: m.label,
+            description: m.description ?? '',
+            status: 0, // MilestoneStatus.Planned
+            comments: 0,
+            attachments: 0,
+            startDate: m.startDate ?? null,
+            targetDate: m.targetDate
+          },
+          id
+        )
+        milestoneIds.set(m.label, id)
+      }
+    }
+
+    // Issue id ↔ identifier index for predecessor resolution after
+    // all issues are created.
+    const issueIdByTitle = new Map<string, Ref<Issue>>()
+    const issueIdByIdentifier = new Map<string, Ref<Issue>>()
+
     for (const issue of project.docs) {
-      await this.createIssueWithSubissues(issue, tracker.ids.NoParent, projectDoc, projectId, [])
+      await this.createIssueWithSubissuesEx(
+        issue,
+        tracker.ids.NoParent,
+        projectDoc,
+        projectId,
+        [],
+        componentIds,
+        milestoneIds,
+        issueIdByTitle,
+        issueIdByIdentifier
+      )
+    }
+
+    // Resolve predecessors → IssueRelation docs after all issues exist.
+    const collectAllIssues = (docs: ImportIssue[], out: ImportIssue[] = []): ImportIssue[] => {
+      for (const d of docs) {
+        out.push(d)
+        if (d.subdocs?.length > 0) collectAllIssues(d.subdocs as ImportIssue[], out)
+      }
+      return out
+    }
+    const allIssues = collectAllIssues(project.docs)
+    for (const issue of allIssues) {
+      if (issue.predecessors === undefined || issue.predecessors.length === 0) continue
+      const targetId = issueIdByTitle.get(issue.title) ?? (issue.id as Ref<Issue> | undefined)
+      if (targetId === undefined) {
+        this.logger.error(`Cannot resolve target for predecessors of "${issue.title}"`)
+        continue
+      }
+      for (const predRef of issue.predecessors) {
+        const fromId = issueIdByIdentifier.get(predRef) ?? issueIdByTitle.get(predRef)
+        if (fromId === undefined) {
+          this.logger.error(`Unknown predecessor "${predRef}" for issue "${issue.title}"`)
+          continue
+        }
+        await this.client.addCollection(
+          tracker.class.IssueRelation,
+          projectId,
+          fromId,
+          tracker.class.Issue,
+          'relations',
+          { target: targetId, kind: 'finish-to-start', lag: 0 }
+        )
+      }
     }
     return projectId
+  }
+
+  async createIssueWithSubissuesEx (
+    issue: ImportIssue,
+    parentId: Ref<Issue>,
+    project: Project,
+    spaceId: Ref<Project>,
+    parentsInfo: IssueParentInfo[],
+    componentIds: Map<string, Ref<any>>,
+    milestoneIds: Map<string, Ref<any>>,
+    issueIdByTitle: Map<string, Ref<Issue>>,
+    issueIdByIdentifier: Map<string, Ref<Issue>>
+  ): Promise<{ id: Ref<Issue>, identifier: string }> {
+    this.logger.log('Creating issue: ' + issue.title)
+    const issueResult = await this.createIssueWithSchedule(
+      issue,
+      project,
+      parentId,
+      spaceId,
+      parentsInfo,
+      componentIds,
+      milestoneIds
+    )
+    issueIdByTitle.set(issue.title, issueResult.id)
+    issueIdByIdentifier.set(issueResult.identifier, issueResult.id)
+
+    if (issue.subdocs?.length > 0) {
+      const parentsInfoEx = [
+        {
+          parentId: issueResult.id,
+          parentTitle: issue.title,
+          space: spaceId,
+          identifier: issueResult.identifier
+        },
+        ...parentsInfo
+      ]
+
+      for (const child of issue.subdocs) {
+        await this.createIssueWithSubissuesEx(
+          child as ImportIssue,
+          issueResult.id,
+          project,
+          spaceId,
+          parentsInfoEx,
+          componentIds,
+          milestoneIds,
+          issueIdByTitle,
+          issueIdByIdentifier
+        )
+      }
+    }
+
+    return issueResult
+  }
+
+  async createIssueWithSchedule (
+    issue: ImportIssue,
+    project: Project,
+    parentId: Ref<Issue>,
+    spaceId: Ref<Project>,
+    parentsInfo: IssueParentInfo[],
+    componentIds: Map<string, Ref<any>>,
+    milestoneIds: Map<string, Ref<any>>
+  ): Promise<{ id: Ref<Issue>, identifier: string }> {
+    // Delegate to the original createIssue path, then update the
+    // scheduling-related fields if the front-matter declared them.
+    // We do it in two steps to keep `createIssue` backward-compatible
+    // for callers (Linear/Notion/Trello importers) that don't pass
+    // the new component/milestone maps.
+    const base = await this.createIssue(issue, project, parentId, spaceId, parentsInfo)
+    const patch: Partial<Issue> = {}
+    if (issue.startDate !== undefined) patch.startDate = issue.startDate
+    if (issue.dueDate !== undefined) patch.dueDate = issue.dueDate
+    if (issue.deadline !== undefined) patch.deadline = issue.deadline
+    if (issue.componentLabel !== undefined) {
+      const cid = componentIds.get(issue.componentLabel)
+      if (cid !== undefined) patch.component = cid
+      else this.logger.error(`Unknown component "${issue.componentLabel}" on issue "${issue.title}"`)
+    }
+    if (issue.milestoneLabel !== undefined) {
+      const mid = milestoneIds.get(issue.milestoneLabel)
+      if (mid !== undefined) patch.milestone = mid
+      else this.logger.error(`Unknown milestone "${issue.milestoneLabel}" on issue "${issue.title}"`)
+    }
+    if (Object.keys(patch).length > 0) {
+      await this.client.updateDoc(tracker.class.Issue, spaceId, base.id, patch)
+    }
+    return base
   }
 
   async createIssueWithSubissues (
@@ -591,6 +806,7 @@ export class WorkspaceImporter {
       rank,
       comments: issue.comments?.length ?? 0,
       subIssues: issue.subdocs.length,
+      startDate: null,
       dueDate: null,
       parents: parentsInfo,
       remainingTime,

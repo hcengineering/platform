@@ -14,18 +14,47 @@
 -->
 <script lang="ts">
   import { Issue, trackerId } from '@hcengineering/tracker'
-  import { Button, IconScaleFull, Label, closeTooltip, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
+  import { Button, IconScaleFull, Label, closeTooltip, getCurrentResolvedLocation, navigate, showPopup } from '@hcengineering/ui'
   import { createFilter, restrictionStore, setFilters } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
+  import LinkSubIssueActionPopup from '../../LinkSubIssueActionPopup.svelte'
+  import HierarchyAddPopup from '../HierarchyAddPopup.svelte'
   import QueryIssuesList from './QueryIssuesList.svelte'
 
   export let issue: Issue
   export let shouldSaveDraft: boolean = false
 
-  // showPopup(tracker.component.CreateIssue, { space: issue.space, parentIssue: issue, shouldSaveDraft }, 'top')
   export let focusIndex = -1
 
   let size = issue.subIssues
+
+  /**
+   * Sub-issue add chooser: same pattern as EditIssue's parent-chooser —
+   * a single + button opens HierarchyAddPopup with two options, then
+   * routes to CreateIssue (sub-issue prefilled with parentIssue: this)
+   * or to LinkSubIssueActionPopup (pick an existing issue in this space
+   * and attach it as a child). Eliminates the discoverability problem
+   * the icon-only LinkExisting button had when collapsed under the
+   * `hasSubIssues` slot-gate.
+   */
+  function openSubChooser (): void {
+    showPopup(
+      HierarchyAddPopup,
+      { direction: 'sub' },
+      'top',
+      (mode?: 'create' | 'link') => {
+        if (mode === 'link') {
+          showPopup(LinkSubIssueActionPopup, { value: issue }, 'top')
+        } else if (mode === 'create') {
+          showPopup(
+            tracker.component.CreateIssue,
+            { space: issue.space, parentIssue: issue, shouldSaveDraft },
+            'top'
+          )
+        }
+      }
+    )
+  }
 </script>
 
 <QueryIssuesList
@@ -33,6 +62,7 @@
   query={{ attachedTo: issue._id }}
   createParams={{ space: issue.space, parentIssue: issue }}
   createLabel={tracker.string.AddSubIssues}
+  customAddAction={openSubChooser}
   hasSubIssues={issue.subIssues > 0}
   {focusIndex}
   {shouldSaveDraft}
@@ -48,6 +78,7 @@
       <Button
         icon={IconScaleFull}
         kind={'ghost'}
+        disabled={size === 0}
         showTooltip={{ label: tracker.string.OpenSubIssues, direction: 'bottom' }}
         on:click={() => {
           const filter = createFilter(tracker.class.Issue, 'attachedTo', [issue._id])

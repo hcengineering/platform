@@ -212,6 +212,270 @@ export function issueConfig (
   ]
 }
 
+export function ganttViewOptions (): ViewOptionsModel {
+  // PR 2 ships a minimal read-only Gantt. Group-by + Show-colors are
+  // intentionally NOT advertised — the canvas does not honour them yet.
+  // The two sidebar-column toggles below ARE wired up to GanttSidebar.
+  return {
+    groupBy: [],
+    orderBy: [
+      ['startDate', SortingOrder.Ascending],
+      ['rank', SortingOrder.Ascending],
+      ['dueDate', SortingOrder.Ascending]
+    ],
+    other: [
+      {
+        key: 'ganttShowIssueCode',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowIssueCode
+      },
+      {
+        key: 'ganttShowTitle',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowTitle
+      },
+      {
+        key: 'ganttShowStatus',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowStatus
+      },
+      {
+        // Default-on safety prompt: when set, dragging an issue's bar to a
+        // new date range shows a confirm dialog before writing the change.
+        // User feedback 2026-05-11: easy to misclick a bar while panning,
+        // and a one-click confirm prevents accidental schedule edits.
+        key: 'ganttConfirmMove',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttConfirmMove
+      },
+      {
+        // Same idea but for left/right resize handles.
+        key: 'ganttConfirmResize',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttConfirmResize
+      },
+      {
+        // PR4a: sidebar column showing predecessor notation (e.g. "12FS+2d").
+        // Hidden by default so existing users don't see a new column appear.
+        // Toggling on requires no migration — the column is purely derived
+        // from the IssueRelation collection that already exists from PR1.
+        key: 'ganttShowPredecessors',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowPredecessors
+      },
+      {
+        // PR5: critical-path overlay toggle. When on, critical bars get a red
+        // border and fill overlay; critical relations get red arrows; non-critical
+        // bars show a grey slack glyph.
+        key: 'ganttCriticalPath',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.CriticalPathOn
+      },
+      {
+        // PR5: slack column in the sidebar. Shows numeric slack days or "CP" badge
+        // for critical issues. Requires ganttCriticalPath to be meaningful.
+        key: 'ganttSlackColumn',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.SlackColumn
+      },
+      {
+        // Phase 1.A — bar label slot (left of bar).
+        // Default 'none' so existing users see no left-side label.
+        key: 'ganttBarLabelLeft',
+        type: 'dropdown',
+        defaultValue: 'none',
+        actionTarget: 'display',
+        label: tracker.string.GanttBarLabelLeft,
+        values: [
+          { id: 'none',       label: tracker.string.BarLabelNone },
+          { id: 'title',      label: tracker.string.BarLabelTitle },
+          { id: 'identifier', label: tracker.string.BarLabelIdentifier },
+          { id: 'assignee',   label: tracker.string.BarLabelAssignee },
+          { id: 'priority',   label: tracker.string.BarLabelPriority },
+          { id: 'status',     label: tracker.string.BarLabelStatus },
+          { id: 'estimation', label: tracker.string.BarLabelEstimation },
+          { id: 'progress',   label: tracker.string.BarLabelProgress }
+        ]
+      },
+      {
+        // Phase 1.A — bar label slot (inside bar, rendered only if bar > 60px wide).
+        // Default 'title' preserves the legacy in-bar title rendering.
+        key: 'ganttBarLabelInside',
+        type: 'dropdown',
+        defaultValue: 'title',
+        actionTarget: 'display',
+        label: tracker.string.GanttBarLabelInside,
+        values: [
+          { id: 'none',       label: tracker.string.BarLabelNone },
+          { id: 'title',      label: tracker.string.BarLabelTitle },
+          { id: 'identifier', label: tracker.string.BarLabelIdentifier },
+          { id: 'assignee',   label: tracker.string.BarLabelAssignee },
+          { id: 'priority',   label: tracker.string.BarLabelPriority },
+          { id: 'status',     label: tracker.string.BarLabelStatus },
+          { id: 'estimation', label: tracker.string.BarLabelEstimation },
+          { id: 'progress',   label: tracker.string.BarLabelProgress }
+        ]
+      },
+      {
+        // Phase 1.A — bar label slot (right of bar).
+        // Default 'none'.
+        key: 'ganttBarLabelRight',
+        type: 'dropdown',
+        defaultValue: 'none',
+        actionTarget: 'display',
+        label: tracker.string.GanttBarLabelRight,
+        values: [
+          { id: 'none',       label: tracker.string.BarLabelNone },
+          { id: 'title',      label: tracker.string.BarLabelTitle },
+          { id: 'identifier', label: tracker.string.BarLabelIdentifier },
+          { id: 'assignee',   label: tracker.string.BarLabelAssignee },
+          { id: 'priority',   label: tracker.string.BarLabelPriority },
+          { id: 'status',     label: tracker.string.BarLabelStatus },
+          { id: 'estimation', label: tracker.string.BarLabelEstimation },
+          { id: 'progress',   label: tracker.string.BarLabelProgress }
+        ]
+      },
+      {
+        // Phase 1.E — opt-in for Quick-Info-Popover.
+        // false (default = legacy) = single-click only selects + focuses
+        //   the bar (no popup, no editor); double-click on the bar opens
+        //   the full editor as before. No behaviour change for existing users.
+        // true = single-click selects + focuses AND opens the lightweight
+        //   Quick-Info popover. Double-click continues to open the full
+        //   editor on top of the popover.
+        key: 'ganttQuickInfoOnClick',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttQuickInfoOnClick
+      },
+      {
+        // Extended sidebar grid. When on, the sidebar renders a sortable
+        // header row + per-column cells (identifier, title, predecessors,
+        // slack, plus any toggled columns below). When off, the legacy
+        // compact layout is preserved.
+        key: 'ganttSidebarColumnsExtended',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarColumnsExtended
+      },
+      // Per-column visibility toggles for the extended sidebar. Hidden when
+      // ganttSidebarColumnsExtended is off. Identifier + Title + Predecessors
+      // + Slack are always shown (default column set).
+      {
+        key: 'ganttSidebarShowStatus',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowStatus,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowPriority',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowPriority,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowAssignee',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowAssignee,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowEstimation',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowEstimation,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowStartDate',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowStartDate,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowDueDate',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowDueDate,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowDeadline',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowDeadline,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        key: 'ganttSidebarShowProgress',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttSidebarShowProgress,
+        dependsOn: 'ganttSidebarColumnsExtended'
+      },
+      {
+        // Phase 3b: group-by swimlanes. Issues group into horizontal lanes
+        // by status/priority/assignee/component/milestone/label. Default
+        // 'none' preserves the legacy hierarchy view bit-for-bit. The
+        // sidebar shows a chevron + label + count header per lane; the
+        // canvas paints a tint band behind each header.
+        key: 'ganttGroupBy',
+        type: 'dropdown',
+        defaultValue: 'none',
+        values: [
+          { id: 'none', label: tracker.string.GanttGroupByNone },
+          { id: 'status', label: tracker.string.GanttGroupByStatus },
+          { id: 'priority', label: tracker.string.GanttGroupByPriority },
+          { id: 'assignee', label: tracker.string.GanttGroupByAssignee },
+          { id: 'component', label: tracker.string.GanttGroupByComponent },
+          { id: 'milestone', label: tracker.string.GanttGroupByMilestone },
+          { id: 'label', label: tracker.string.GanttGroupByLabel }
+        ],
+        actionTarget: 'display',
+        label: tracker.string.GanttGroupBy
+      }
+    ]
+  }
+}
+
+export function ganttConfig (): BuildModelKey[] {
+  // Minimal config — Gantt drives its own column layout.
+  return [
+    { key: '', presenter: tracker.component.PriorityEditor, label: tracker.string.Priority, props: { kind: 'list', size: 'small' } },
+    { key: '', presenter: tracker.component.IssuePresenter, label: tracker.string.Issue }
+  ]
+}
+
 export function defineViewlets (builder: Builder): void {
   builder.createDoc(
     view.class.ViewletDescriptor,
@@ -222,6 +486,17 @@ export function defineViewlets (builder: Builder): void {
       component: tracker.component.KanbanView
     },
     tracker.viewlet.Kanban
+  )
+
+  builder.createDoc(
+    view.class.ViewletDescriptor,
+    core.space.Model,
+    {
+      label: tracker.string.Gantt,
+      icon: tracker.icon.Gantt,
+      component: tracker.component.GanttView
+    },
+    tracker.viewlet.Gantt
   )
 
   builder.createDoc(
@@ -501,6 +776,23 @@ export function defineViewlets (builder: Builder): void {
     tracker.viewlet.IssueKanban
   )
 
+  // Gantt is registered AFTER List + Kanban so List remains the default
+  // viewlet (ViewletSelector falls back to viewlets[0] when no preference
+  // is saved). Putting Gantt last avoids surprising users with an empty
+  // canvas on first visit.
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.Issue,
+      descriptor: tracker.viewlet.Gantt,
+      viewOptions: ganttViewOptions(),
+      configOptions: { strict: true, hiddenKeys: ['title'] },
+      config: ganttConfig()
+    },
+    tracker.viewlet.IssueGantt
+  )
+
   const componentListViewOptions: ViewOptionsModel = {
     groupBy: ['lead', 'createdBy', 'modifiedBy'],
     orderBy: [
@@ -663,7 +955,7 @@ export function defineViewlets (builder: Builder): void {
       viewOptions: milestoneOptions,
       configOptions: {
         strict: true,
-        hiddenKeys: ['targetDate', 'label', 'description']
+        hiddenKeys: ['startDate', 'targetDate', 'label', 'description']
       },
       config: [
         {
@@ -672,6 +964,12 @@ export function defineViewlets (builder: Builder): void {
         },
         { key: '', presenter: tracker.component.MilestonePresenter, props: { shouldUseMargin: true } },
         { key: '', displayProps: { grow: true } },
+        {
+          key: '',
+          label: tracker.string.StartDate,
+          presenter: tracker.component.MilestoneDatePresenter,
+          props: { field: 'startDate' }
+        },
         {
           key: '',
           label: tracker.string.TargetDate,

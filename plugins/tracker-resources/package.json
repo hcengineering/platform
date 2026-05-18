@@ -8,12 +8,14 @@
     "build": "compile ui",
     "build:docs": "api-extractor run --local",
     "svelte-check": "do-svelte-check",
+    "test": "jest --passWithNoTests --silent",
     "_phase:svelte-check": "do-svelte-check",
     "format": "format src",
     "build:watch": "compile ui",
     "_phase:build": "compile ui",
     "_phase:format": "format src",
-    "_phase:validate": "compile validate"
+    "_phase:validate": "compile validate",
+    "_phase:test": "jest --passWithNoTests --silent"
   },
   "devDependencies": {
     "svelte-loader": "^3.2.0",
@@ -74,7 +76,10 @@
     "@hcengineering/converter-resources": "workspace:^0.7.0",
     "@hcengineering/workbench": "workspace:^0.7.0",
     "@hcengineering/workbench-resources": "workspace:^0.7.0",
+    "@tanstack/svelte-virtual": "^3.13.6",
     "fast-equals": "^5.2.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.2",
     "svelte": "^4.2.20"
   }
 }
