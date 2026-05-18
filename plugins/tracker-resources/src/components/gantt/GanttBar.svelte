@@ -1,0 +1,370 @@
+<!--
+// Copyright © 2026 Hardcore Engineering Inc.
+-->
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+  import { writable, type Writable } from 'svelte/store'
+  import { themeStore } from '@hcengineering/ui'
+  import { translate } from '@hcengineering/platform'
+  import type { Ref } from '@hcengineering/core'
+  import type { Issue } from '@hcengineering/tracker'
+  import tracker from '../../plugin'
+  import type { TimeScale } from './lib/time-scale'
+  import type { DragState } from './lib/types'
+
+  // Bar is rendered for both Issues and synthetic milestone summaries; the
+  // structural subset below is all the bar geometry needs.
+  export let issue: { title: string; startDate: number | null; dueDate: number | null }
+  export let row: { y: number; height: number }
+  export let timeScale: TimeScale
+  export let isSummary: boolean = false
+  export let summaryRange: { startDate: number | null; dueDate: number | null } | null = null
+  // Status category drives bar fill: backlog grey, todo blue, in-progress
+  // amber, completed green, cancelled muted. null = no status info.
+  export let statusCategory: string | null = null
+
+  // PR 3 edit-mode props. issueObj carries the full Issue when this bar
+  // represents one (vs. a synthetic milestone-summary); editable gates the
+  // resize-handle rendering and the mousedown handlers; activeDrag is the
+  // shared store written by the drag-controller reducer.
+  export let editable: boolean = false
+  export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
+  export let issueRef: Ref<Issue> | undefined = undefined
+  export let issueObj: Issue | undefined = undefined
+  export let focused: boolean = false
+  export let selected: boolean = false
+
+  const dispatch = createEventDispatcher<{
+    barMouseDown: { issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }
+    contextMenu: { issue: Issue, event: MouseEvent }
+  }>()
+
+  function onBarContextMenu (evt: MouseEvent): void {
+    if (issueObj === undefined) return
+    evt.preventDefault()
+    evt.stopPropagation()
+    dispatch('contextMenu', { issue: issueObj, event: evt })
+  }
+
+  /**
+   * Each visible region of the bar (body + the two resize handles) gets
+   * its own mousedown listener with an explicit edge tag. This is simpler
+   * and more reliable than position-detection: SVG event.target identifies
+   * the clicked element directly, no DOMRect math needed.
+   * review note (2026-05-10): avoid the previous unified onBarMouseDown +
+   * detectEdge because the resize-handle <rect>s would not fire it without
+   * separate listeners.
+   */
+  function onBarDown (edge: 'left' | 'right' | 'body') {
+    return (evt: MouseEvent): void => {
+      if (!editable || issueObj === undefined) return
+      if (evt.button !== 0) return // only left-click starts a drag
+      dispatch('barMouseDown', { issue: issueObj, edge, cursorX: evt.clientX })
+      evt.preventDefault()
+      evt.stopPropagation()
+    }
+  }
+
+  // Status-driven fill + matching text color. Active gets the most
+  // emphatic treatment (saturated fill, white text) so the user can
+  // spot in-flight work at a glance — redesign feedback.
+  $: barColors = statusFill(statusCategory)
+  function statusFill (cat: string | null): { fill: string, border: string, text: string } {
+    switch (cat) {
+      case 'task:statusCategory:UnStarted':
+      case 'tracker:statusCategory:Backlog':
+        return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)', text: 'var(--theme-content-color)' }
+      case 'task:statusCategory:ToDo':
+        return { fill: '#dbeafe', border: '#3b82f6', text: '#1e3a8a' }
+      case 'task:statusCategory:Active':
+        return { fill: '#f59e0b', border: '#d97706', text: '#ffffff' }
+      case 'task:statusCategory:Won':
+        return { fill: '#10b981', border: '#059669', text: '#ffffff' }
+      case 'task:statusCategory:Lost':
+        return { fill: '#d1d5db', border: '#9ca3af', text: '#374151' }
+      default:
+        return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)', text: 'var(--theme-content-color)' }
+    }
+  }
+
+  $: effectiveStart = isSummary ? summaryRange?.startDate ?? issue.startDate : issue.startDate
+  $: effectiveDue = isSummary ? summaryRange?.dueDate ?? issue.dueDate : issue.dueDate
+
+  // PR 3 edit-mode: while THIS bar is the active drag target, swap the bar
+  // geometry over to the reducer's preview values so the bar visually tracks
+  // the cursor without waiting for the server round-trip. Other bars keep
+  // their stored geometry.
+  $: dragState = $activeDrag
+  $: isThisBarActive =
+    issueRef !== undefined &&
+    'issue' in dragState &&
+    (dragState as { issue?: Issue }).issue?._id === issueRef
+  $: previewStart = (() => {
+    if (!isThisBarActive) return effectiveStart
+    if (dragState.kind === 'dragging-body' || dragState.kind === 'dragging-unscheduled') return dragState.previewStart
+    if (dragState.kind === 'resizing-left') return dragState.previewStart
+    if (dragState.kind === 'resizing-right') return dragState.originStart
+    return effectiveStart
+  })()
+  $: previewDue = (() => {
+    if (!isThisBarActive) return effectiveDue
+    if (dragState.kind === 'dragging-body' || dragState.kind === 'dragging-unscheduled') return dragState.previewDue
+    if (dragState.kind === 'resizing-left') return dragState.originDue
+    if (dragState.kind === 'resizing-right') return dragState.previewDue
+    return effectiveDue
+  })()
+
+  $: visible = previewStart !== null && previewDue !== null
+  $: rawStart = (previewStart ?? 0) as number
+  $: rawDue = (previewDue ?? 0) as number
+  // Normalise reversed ranges (start > due): render the bar across [min, max]
+  // rather than collapsing to a 2px sliver at the start. Tooltip mirrors the
+  // visual order so the user sees the same range that's drawn.
+  $: startVal = Math.min(rawStart, rawDue)
+  $: dueVal = Math.max(rawStart, rawDue)
+  $: x = visible ? timeScale.toX(startVal) : 0
+  $: x2 = visible ? timeScale.toX(dueVal) : 0
+  $: w = Math.max(2, x2 - x + timeScale.pxPerDay) // inclusive duration: see spec §8.0
+  $: tooltipText = visible
+    ? `${issue.title} (${new Date(startVal).toISOString().slice(0, 10)} → ${new Date(dueVal).toISOString().slice(0, 10)})`
+    : ''
+  // Milestone summaries pass no issueObj because they aggregate child dates
+  // synthetically — those stay read-only. Parent-issue summaries DO have an
+  // issueObj (the parent), and that one is editable.
+  $: isMilestoneSummary = isSummary && issueObj === undefined
+
+  // ARIA labels for the resize handles — translated up-front so the rect
+  // can use them as plain strings (svg `aria-label` accepts only strings).
+  let ariaResizeStart = 'Resize start date'
+  let ariaResizeEnd = 'Resize due date'
+  $: void translate(tracker.string.GanttAriaResizeStart, {}, $themeStore.language).then((s) => { ariaResizeStart = s })
+  $: void translate(tracker.string.GanttAriaResizeEnd, {}, $themeStore.language).then((s) => { ariaResizeEnd = s })
+  // Heuristic: ~7.5px per character at 13px font — leave breathing room.
+  const CHAR_PX = 7.5
+  $: maxChars = Math.floor((w - 12) / CHAR_PX)
+  $: barLabel = maxChars >= 4
+    ? (issue.title.length > maxChars ? issue.title.slice(0, Math.max(1, maxChars - 1)) + '…' : issue.title)
+    : ''
+</script>
+
+{#if visible}
+  {@const barY = row.y + 6}
+  {@const barH = row.height - 12}
+  {#if isSummary}
+    <!-- MS-Project-style claw: thin black bar with downward triangles at
+         both ends. review note (2026-05-11): a transparent hit-rect
+         spanning the full claw width receives mousedown/contextmenu so
+         parent-issues (which render as a claw because they have children)
+         can still be dragged. Without this rect the claw was visually
+         editable but functionally inert — commitDrag's parent-pulls-
+         children path was unreachable from the UI. -->
+    {#if editable && !isMilestoneSummary}
+      <!--
+        role="button" makes the interactive SVG rect addressable by AT
+        (screen reader announces "Drag {title} to reschedule"). Keyboard
+        access is handled at the GanttView level (Tab/ArrowLeft/Right —
+        see onKey handler in GanttView.svelte), so the per-rect
+        a11y-click-events-have-key-events warning is intentionally
+        ignored. review note 2026-05-11.
+      -->
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <rect
+        x={x}
+        y={barY}
+        width={w}
+        height={barH}
+        fill="transparent"
+        class="summary-hit"
+        class:selected
+        class:active-drag={isThisBarActive}
+        role="button"
+        tabindex="-1"
+        aria-label={issue.title}
+        on:mousedown={onBarDown('body')}
+        on:contextmenu={onBarContextMenu}
+      />
+      {#if w >= 18}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <rect
+          class="resize-handle resize-left"
+          x={x}
+          y={barY}
+          width={6}
+          height={barH}
+          fill="transparent"
+          pointer-events="all"
+          role="button"
+          tabindex="-1"
+          aria-label={ariaResizeStart}
+          on:mousedown={onBarDown('left')}
+          on:contextmenu={onBarContextMenu}
+        />
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <rect
+          class="resize-handle resize-right"
+          x={x + w - 6}
+          y={barY}
+          width={6}
+          height={barH}
+          fill="transparent"
+          pointer-events="all"
+          role="button"
+          tabindex="-1"
+          aria-label={ariaResizeEnd}
+          on:mousedown={onBarDown('right')}
+          on:contextmenu={onBarContextMenu}
+        />
+      {/if}
+    {/if}
+    <line
+      x1={x + 1}
+      x2={x + w - 1}
+      y1={barY + barH / 2}
+      y2={barY + barH / 2}
+      stroke="var(--theme-content-color)"
+      stroke-width={3}
+      pointer-events="none"
+    />
+    <polygon
+      points="{x},{barY + barH / 2 - 1} {x + 6},{barY + barH / 2 - 1} {x + 3},{barY + barH / 2 + 5}"
+      fill="var(--theme-content-color)"
+      pointer-events="none"
+    />
+    <polygon
+      points="{x + w - 6},{barY + barH / 2 - 1} {x + w},{barY + barH / 2 - 1} {x + w - 3},{barY + barH / 2 + 5}"
+      fill="var(--theme-content-color)"
+      pointer-events="none"
+    />
+    {#if barLabel !== ''}
+      <text
+        x={x + 10}
+        y={barY + barH / 2 - 4}
+        class="bar-label summary-label"
+        fill="var(--theme-content-color)"
+      >{barLabel}</text>
+    {/if}
+    <title>{tooltipText}</title>
+  {:else}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <rect
+      x={x}
+      y={barY}
+      width={w}
+      height={barH}
+      rx={3}
+      ry={3}
+      fill={barColors.fill}
+      stroke={barColors.border}
+      stroke-width={1}
+      class="bar"
+      class:editable
+      class:active-drag={isThisBarActive}
+      class:focused
+      class:selected
+      role="button"
+      tabindex="-1"
+      aria-label={issue.title}
+      on:mousedown={onBarDown('body')}
+      on:contextmenu={onBarContextMenu}
+    />
+    {#if editable && w >= 18}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <rect
+        class="resize-handle resize-left"
+        x={x}
+        y={barY}
+        width={6}
+        height={barH}
+        fill="transparent"
+        pointer-events="all"
+        role="button"
+        tabindex="-1"
+        aria-label={ariaResizeStart}
+        on:mousedown={onBarDown('left')}
+        on:contextmenu={onBarContextMenu}
+      />
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <rect
+        class="resize-handle resize-right"
+        x={x + w - 6}
+        y={barY}
+        width={6}
+        height={barH}
+        fill="transparent"
+        pointer-events="all"
+        role="button"
+        tabindex="-1"
+        aria-label={ariaResizeEnd}
+        on:mousedown={onBarDown('right')}
+        on:contextmenu={onBarContextMenu}
+      />
+    {/if}
+    {#if barLabel !== ''}
+      <text
+        x={x + 6}
+        y={barY + barH / 2 + 4}
+        class="bar-label"
+        fill={barColors.text}
+      >{barLabel}</text>
+    {/if}
+    <title>{tooltipText}</title>
+  {/if}
+{/if}
+
+<style lang="scss">
+  .bar {
+    transition: filter 120ms ease;
+  }
+  .bar:hover {
+    filter: brightness(1.1);
+  }
+  .bar-label {
+    font-size: 13px;
+    user-select: none;
+    pointer-events: none;
+    dominant-baseline: alphabetic;
+  }
+  .summary-label {
+    font-weight: 600;
+  }
+  .bar.editable {
+    cursor: grab;
+  }
+  :global(svg.gantt-canvas .resize-handle) {
+    cursor: ew-resize;
+  }
+  :global(svg.gantt-canvas .resize-handle.resize-left:hover),
+  :global(svg.gantt-canvas .resize-handle.resize-right:hover) {
+    fill: var(--theme-state-info-color, #6366f1);
+    fill-opacity: 0.35;
+  }
+  .bar.active-drag {
+    stroke: var(--theme-state-info-color, #6366f1);
+    stroke-width: 2px;
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--theme-state-info-color, #6366f1) 50%, transparent));
+  }
+  .bar.focused {
+    stroke: var(--theme-state-info-color, #6366f1);
+    stroke-width: 2px;
+    stroke-dasharray: 2,2;
+  }
+  /*
+   * Click-to-select state: solid blue outline so the user can clearly see
+   * which bar is armed for drag/resize. Distinct from .focused (dashed,
+   * keyboard-only) and .active-drag (glow, mid-drag).
+   */
+  .bar.selected {
+    stroke: var(--theme-state-info-color, #6366f1);
+    stroke-width: 2px;
+    filter: drop-shadow(0 0 2px color-mix(in srgb, var(--theme-state-info-color, #6366f1) 35%, transparent));
+  }
+  /* Parent-issue summary claw: invisible hit-rect with select/drag visual
+     feedback when the user has armed the claw via click. */
+  :global(svg.gantt-canvas .summary-hit) {
+    cursor: grab;
+  }
+  :global(svg.gantt-canvas .summary-hit.selected),
+  :global(svg.gantt-canvas .summary-hit.active-drag) {
+    fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 12%, transparent);
+  }
+</style>

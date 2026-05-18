@@ -37,8 +37,10 @@
     Label,
     createFocusManager,
     getCurrentResolvedLocation,
-    navigate
+    navigate,
+    showPopup
   } from '@hcengineering/ui'
+  import SetParentIssueActionPopup from '../../SetParentIssueActionPopup.svelte'
   import view from '@hcengineering/view'
   import { DocNavLink, ParentsNavigator, showMenu, RelationsEditor } from '@hcengineering/view-resources'
   import ProjectPresenter from '../../projects/ProjectPresenter.svelte'
@@ -321,6 +323,19 @@
             />
           </div>
         {/if}
+      </div>
+    {:else if !effectiveReadonly && issue !== undefined}
+      <div class="mb-6 flex-row-center">
+        <Button
+          icon={tracker.icon.Parent}
+          iconProps={{ size: 'medium' }}
+          label={tracker.string.SetParentIssueLabel}
+          kind={'ghost'}
+          dataId={'btnSetParent'}
+          on:click={(e) => {
+            showPopup(SetParentIssueActionPopup, { value: issue }, 'top')
+          }}
+        />
       </div>
     {/if}
     <EditBox
