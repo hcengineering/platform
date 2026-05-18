@@ -28,6 +28,39 @@
   export let viewOptionsConfig: ViewOptionModel[] | undefined = undefined
   export let defaultViewOptions: ViewOptions | undefined = undefined
   export let defaultConfig: (BuildModelKey | string)[] | undefined = undefined
+  /**
+   * When false, the ViewOptionsButton (filter / group-by / sort) is hidden
+   * entirely and only the Configure-columns ButtonIcon renders. List mode
+   * leaves this at the default `true`.
+   */
+  export let showViewOptions: boolean = true
+
+  /**
+   * When true, the ViewOptionsButton is still shown but the popup it
+   * opens hides its grouping + ordering rows. Use this in viewlets that
+   * render dedicated group-by/sort controls of their own (e.g. the Gantt
+   * toolbar) so users do not see the same control twice without a wire.
+   * The popup's "other" toggles (bar labels, confirm-dialogs, etc.) keep
+   * rendering normally.
+   */
+  export let hideGroupingAndOrdering: boolean = false
+
+  /**
+   * Keys in this list are skipped from the popup's "other" rendering.
+   * Forwarded to ViewOptionsButton → ViewOptions. Use it when a viewlet
+   * renders the same ViewOption elsewhere (e.g. Gantt has a toolbar
+   * `Group by` dropdown for `ganttGroupBy`, so the popup duplicate
+   * is hidden).
+   */
+  export let hideKeys: string[] = []
+
+  /**
+   * When false, the Configure-columns ButtonIcon is hidden. List mode keeps
+   * the default `true` (column visibility is meaningful there). Gantt mode
+   * passes false because the Gantt sidebar uses its own ganttSidebarShow*
+   * ViewOptions and the standard column config has no effect there.
+   */
+  export let showConfigureColumns: boolean = true
 
   let btn: HTMLButtonElement
   let pressed: boolean = false
@@ -63,18 +96,22 @@
 </script>
 
 {#if viewlet}
-  {#if viewOptions}
-    <ViewOptionsButton {viewlet} {kind} {viewOptions} {viewOptionsConfig} />
+  {#if viewOptions && showViewOptions}
+    <ViewOptionsButton {viewlet} {kind} {viewOptions} {viewOptionsConfig} {hideGroupingAndOrdering} {hideKeys} />
   {/if}
+  {#if showConfigureColumns}
+  <!-- Configure-columns button gets its own IntlString so the tooltip differs
+       from the sibling ViewOptionsButton (which keeps "Customize view"). -->
   <ButtonIcon
     icon={view.icon.Configure}
     {disabled}
     {kind}
     size={'small'}
     {pressed}
-    tooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
+    tooltip={{ label: view.string.ConfigureColumns, direction: 'bottom' }}
     dataId={'btn-viewSetting'}
     bind:element={btn}
     on:click={clickHandler}
   />
+  {/if}
 {/if}

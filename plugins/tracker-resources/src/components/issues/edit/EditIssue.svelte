@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { AttachmentStyleBoxCollabEditor } from '@hcengineering/attachment-resources'
-  import { Class, Doc, Ref, WithLookup } from '@hcengineering/core'
+  import { Class, Doc, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { Panel } from '@hcengineering/panel'
   import presentation, {
     ActionContext,
@@ -37,8 +37,12 @@
     Label,
     createFocusManager,
     getCurrentResolvedLocation,
-    navigate
+    navigate,
+    showPopup
   } from '@hcengineering/ui'
+  import SetParentIssueActionPopup from '../../SetParentIssueActionPopup.svelte'
+  import HierarchyAddPopup from '../HierarchyAddPopup.svelte'
+  import { makeRank } from '@hcengineering/task'
   import view from '@hcengineering/view'
   import { DocNavLink, ParentsNavigator, showMenu, RelationsEditor } from '@hcengineering/view-resources'
   import ProjectPresenter from '../../projects/ProjectPresenter.svelte'
@@ -196,6 +200,44 @@
     await client.update(issue, { attachedTo: tracker.ids.NoParent })
     Analytics.handleEvent(TrackerEvents.IssueParentUnset, { issue: issue.identifier ?? issue._id })
   }
+
+  /**
+   * Open the two-option chooser for adding a parent issue, then route the
+   * user's choice to CreateIssue (new) or SetParentIssueActionPopup (link).
+   * For 'create', wait for CreateIssue's close-with-id (added in this PR
+   * to the upstream CreateIssue) and re-rank the current issue to the end
+   * of the new parent's children — matches LinkSubIssueActionPopup.onClose.
+   */
+  function openParentChooser (): void {
+    if (issue === undefined || effectiveReadonly) return
+    const target: Issue = issue
+    showPopup(
+      HierarchyAddPopup,
+      { direction: 'parent' },
+      'top',
+      (mode?: 'create' | 'link') => {
+        if (mode === 'link') {
+          showPopup(SetParentIssueActionPopup, { value: target }, 'top')
+        } else if (mode === 'create') {
+          showPopup(
+            tracker.component.CreateIssue,
+            { space: target.space, shouldSaveDraft: true },
+            'top',
+            async (newId?: Ref<Issue>) => {
+              if (newId === undefined) return
+              const lastAttached = await client.findOne(
+                tracker.class.Issue,
+                { attachedTo: newId },
+                { sort: { rank: SortingOrder.Descending } }
+              )
+              const rank = makeRank(lastAttached?.rank, undefined)
+              await client.update(target, { attachedTo: newId, rank })
+            }
+          )
+        }
+      }
+    )
+  }
 </script>
 
 {#if !embedded}
@@ -321,6 +363,19 @@
             />
           </div>
         {/if}
+      </div>
+    {:else if !effectiveReadonly && issue !== undefined}
+      <div class="mb-6 flex-row-center">
+        <Button
+          icon={tracker.icon.Parent}
+          iconProps={{ size: 'medium' }}
+          label={tracker.string.AddParentIssue}
+          kind={'ghost'}
+          dataId={'btnSetParent'}
+          on:click={(e) => {
+            openParentChooser()
+          }}
+        />
       </div>
     {/if}
     <EditBox

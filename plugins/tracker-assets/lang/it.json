@@ -123,6 +123,9 @@
     "NoAssignee": "Nessun assegnatario",
     "LastUpdated": "Ultimo aggiornamento",
     "DueDate": "Data di scadenza",
+    "IssueStartDate": "Data di inizio",
+    "GanttDependency": "Dependency",
+    "GanttLag": "Lag",
     "Manual": "Manuale",
     "All": "Tutti",
     "PastWeek": "Settimana scorsa",
@@ -273,7 +276,26 @@
     "UnsetParentIssue": "Annulla l'issue genitore",
     "ForbidCreateProjectPermission": "Vieta creazione progetto",
     "ForbidCreateProjectPermissionDescription": "Vieta agli utenti di creare nuovi progetti",
-    "AllowCreatingIssues": "Consenti la creazione di issue"
+    "AllowCreatingIssues": "Consenti la creazione di issue",
+    "Day": "Day",
+    "Week": "Week",
+    "Month": "Month",
+    "Quarter": "Quarter",
+    "Gantt": "Gantt",
+    "GanttShowIssueCode": "Show issue code",
+    "GanttShowTitle": "Show title",
+    "GanttShowStatus": "Show status",
+    "GanttToday": "Today",
+    "GanttJumpToStart": "Jump to start",
+    "GanttJumpToEnd": "Jump to end",
+    "GanttJumpToDate": "Jump to date",
+    "GanttPreviousPeriod": "Previous period",
+    "GanttNextPeriod": "Next period",
+    "GanttScrollLeftToBar": "Scroll left to bar",
+    "GanttScrollRightToBar": "Scroll right to bar",
+    "GanttExpand": "Expand",
+    "GanttCollapse": "Collapse"
+  
   },
   "status": {}
 }

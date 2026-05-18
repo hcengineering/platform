@@ -123,6 +123,9 @@
     "NoAssignee": "担当者なし",
     "LastUpdated": "最終更新日",
     "DueDate": "期日",
+    "IssueStartDate": "開始日",
+    "GanttDependency": "Dependency",
+    "GanttLag": "Lag",
     "Manual": "手動",
     "All": "すべて",
     "PastWeek": "先週",
@@ -273,7 +276,26 @@
     "UnsetParentIssue": "親イシューの設定を解除",
     "ForbidCreateProjectPermission": "プロジェクト作成禁止",
     "ForbidCreateProjectPermissionDescription": "ユーザーが新しいプロジェクトを作成することを禁止します",
-    "AllowCreatingIssues": "イシューの作成を許可"
+    "AllowCreatingIssues": "イシューの作成を許可",
+    "Day": "Day",
+    "Week": "Week",
+    "Month": "Month",
+    "Quarter": "Quarter",
+    "Gantt": "Gantt",
+    "GanttShowIssueCode": "Show issue code",
+    "GanttShowTitle": "Show title",
+    "GanttShowStatus": "Show status",
+    "GanttToday": "Today",
+    "GanttJumpToStart": "Jump to start",
+    "GanttJumpToEnd": "Jump to end",
+    "GanttJumpToDate": "Jump to date",
+    "GanttPreviousPeriod": "Previous period",
+    "GanttNextPeriod": "Next period",
+    "GanttScrollLeftToBar": "Scroll left to bar",
+    "GanttScrollRightToBar": "Scroll right to bar",
+    "GanttExpand": "Expand",
+    "GanttCollapse": "Collapse"
+  
   },
   "status": {}
 }

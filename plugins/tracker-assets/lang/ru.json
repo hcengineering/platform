@@ -125,6 +125,9 @@
     "NoAssignee": "Нет исполнителя",
     "LastUpdated": "Последнее обновление",
     "DueDate": "Срок",
+    "IssueStartDate": "Дата начала",
+    "GanttDependency": "Dependency",
+    "GanttLag": "Lag",
     "Manual": "Пользовательский",
     "All": "Все",
     "PastWeek": "Предыдущая неделя",
@@ -290,7 +293,26 @@
     "UnsetParentIssue": "Снять родительскую задачу",
     "ForbidCreateProjectPermission": "Запретить создание проекта",
     "ForbidCreateProjectPermissionDescription": "Запрещает пользователям создавать новые проекты",
-    "AllowCreatingIssues": "Разрешить создание задач"
+    "AllowCreatingIssues": "Разрешить создание задач",
+    "Day": "Day",
+    "Week": "Week",
+    "Month": "Month",
+    "Quarter": "Quarter",
+    "Gantt": "Gantt",
+    "GanttShowIssueCode": "Show issue code",
+    "GanttShowTitle": "Show title",
+    "GanttShowStatus": "Show status",
+    "GanttToday": "Today",
+    "GanttJumpToStart": "Jump to start",
+    "GanttJumpToEnd": "Jump to end",
+    "GanttJumpToDate": "Jump to date",
+    "GanttPreviousPeriod": "Previous period",
+    "GanttNextPeriod": "Next period",
+    "GanttScrollLeftToBar": "Scroll left to bar",
+    "GanttScrollRightToBar": "Scroll right to bar",
+    "GanttExpand": "Expand",
+    "GanttCollapse": "Collapse"
+  
   },
   "status": {}
 }

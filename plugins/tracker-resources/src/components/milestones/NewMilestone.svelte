@@ -34,6 +34,7 @@
     status: MilestoneStatus.Planned,
     comments: 0,
     attachments: 0,
+    startDate: null,
     targetDate: Date.now() + 14 * 24 * 60 * 60 * 1000
   }
 
@@ -76,6 +77,14 @@
   />
   <svelte:fragment slot="pool">
     <MilestoneStatusEditor bind:value={object.status} {object} kind="regular" />
+    <DatePresenter
+      bind:value={object.startDate}
+      editable
+      label={tracker.string.StartDate}
+      detail={ui.string.SelectDate}
+      kind={'regular'}
+      size={'large'}
+    />
     <DatePresenter
       bind:value={object.targetDate}
       editable

@@ -115,6 +115,9 @@
     "NoAssignee": "Bez přiřazení",
     "LastUpdated": "Poslední aktualizace",
     "DueDate": "Datum splnění",
+    "IssueStartDate": "Datum zahájení",
+    "GanttDependency": "Dependency",
+    "GanttLag": "Lag",
     "Manual": "Manuální",
     "All": "Vše",
     "PastWeek": "Minulý týden",
@@ -280,7 +283,26 @@
     "UnsetParentIssue": "Odebrat nadřazený úkol",
     "ForbidCreateProjectPermission": "Zakázat vytvoření projektu",
     "ForbidCreateProjectPermissionDescription": "Zakazuje uživatelům vytvářet nové projekty",
-    "AllowCreatingIssues": "Povolit vytváření úkolů"
+    "AllowCreatingIssues": "Povolit vytváření úkolů",
+    "Day": "Day",
+    "Week": "Week",
+    "Month": "Month",
+    "Quarter": "Quarter",
+    "Gantt": "Gantt",
+    "GanttShowIssueCode": "Show issue code",
+    "GanttShowTitle": "Show title",
+    "GanttShowStatus": "Show status",
+    "GanttToday": "Today",
+    "GanttJumpToStart": "Jump to start",
+    "GanttJumpToEnd": "Jump to end",
+    "GanttJumpToDate": "Jump to date",
+    "GanttPreviousPeriod": "Previous period",
+    "GanttNextPeriod": "Next period",
+    "GanttScrollLeftToBar": "Scroll left to bar",
+    "GanttScrollRightToBar": "Scroll right to bar",
+    "GanttExpand": "Expand",
+    "GanttCollapse": "Collapse"
+  
   },
   "status": {}
 }
