@@ -35,20 +35,18 @@
     "SelectItemAll": "Vybrat všechny položky",
     "SelectItemNone": "Zrušit výběr všech položek",
     "NumberItems": "{count, plural, =0 {žádné položky} =1 {1 položka} other {# položek}}",
-
     "Assigned": "Přiřazeno",
     "Created": "Vytvořeno",
     "Subscribed": "Odebíráno",
-
     "ShowPreview": "Zobrazit náhled dokumentu",
     "ShowActions": "Zobrazit akce",
-
     "ActionPlaceholder": "Hledat nebo spustit příkaz...",
     "General": "Obecné",
     "Navigation": "Navigace",
     "Editor": "Editor",
     "MarkdownFormatting": "Formátování",
     "CustomizeView": "Přizpůsobit zobrazení",
+    "ConfigureColumns": "Konfigurovat sloupce",
     "Filter": "Filtr",
     "ClearFilters": "Vymazat filtry",
     "FilterLessThan": "Méně než",
@@ -78,7 +76,6 @@
     "Grouping": "Seskupení",
     "Ordering": "Řazení",
     "Manual": "Manuální",
-
     "FilteredViews": "Filtrovaná zobrazení",
     "NewFilteredView": "Nové filtrované zobrazení",
     "FilteredViewName": "Název filtrovaného zobrazení",
@@ -119,7 +116,6 @@
     "TableCopiedToClipboard": "Tabulka zkopírována do schránky",
     "TableCopyFailed": "Nepodařilo se zkopírovat tabulku do schránky",
     "PublicView": "Veřejné",
-
     "ChooseIcon": "Vybrat ikonu",
     "IconColor": "Vybrat barvu ikony",
     "IconCategory": "Ikona",

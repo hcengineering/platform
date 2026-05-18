@@ -125,6 +125,9 @@
     "NoAssignee": "无受理人",
     "LastUpdated": "最后更新",
     "DueDate": "截止日期",
+    "IssueStartDate": "开始日期",
+    "GanttDependency": "Dependency",
+    "GanttLag": "Lag",
     "Manual": "手动",
     "All": "全部",
     "PastWeek": "过去一周",
@@ -290,7 +293,26 @@
     "UnsetParentIssue": "取消父问题",
     "ForbidCreateProjectPermission": "禁止创建项目",
     "ForbidCreateProjectPermissionDescription": "禁止用户创建新项目",
-    "AllowCreatingIssues": "允许创建问题"
+    "AllowCreatingIssues": "允许创建问题",
+    "Day": "Day",
+    "Week": "Week",
+    "Month": "Month",
+    "Quarter": "Quarter",
+    "Gantt": "Gantt",
+    "GanttShowIssueCode": "Show issue code",
+    "GanttShowTitle": "Show title",
+    "GanttShowStatus": "Show status",
+    "GanttToday": "Today",
+    "GanttJumpToStart": "Jump to start",
+    "GanttJumpToEnd": "Jump to end",
+    "GanttJumpToDate": "Jump to date",
+    "GanttPreviousPeriod": "Previous period",
+    "GanttNextPeriod": "Next period",
+    "GanttScrollLeftToBar": "Scroll left to bar",
+    "GanttScrollRightToBar": "Scroll right to bar",
+    "GanttExpand": "Expand",
+    "GanttCollapse": "Collapse"
+  
   },
   "status": {}
 }

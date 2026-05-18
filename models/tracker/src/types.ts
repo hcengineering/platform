@@ -58,10 +58,12 @@ import time, { type ToDo } from '@hcengineering/time'
 import {
   type ProjectTargetPreference,
   type Component,
+  type DependencyKind,
   type Issue,
   type IssueChildInfo,
   type IssueParentInfo,
   type IssuePriority,
+  type IssueRelation,
   type IssueStatus,
   type IssueTemplate,
   type IssueTemplateChild,
@@ -72,7 +74,8 @@ import {
   type RelatedIssueTarget,
   type RelatedSpaceRule,
   type TimeReportDayType,
-  type TimeSpendReport
+  type TimeSpendReport,
+  type WorkingDaysConfig
 } from '@hcengineering/tracker'
 import tracker from './plugin'
 import { type TaskType } from '@hcengineering/task'
@@ -135,6 +138,9 @@ export class TProject extends TTaskProject implements Project {
 
   @Prop(Collection(tracker.class.RelatedIssueTarget), tracker.string.RelatedIssues)
     relatedIssueTargets!: number
+
+  @Prop(TypeRecord(), tracker.string.WorkingDaysConfig)
+    workingDaysConfig?: WorkingDaysConfig
 }
 /**
  * @public
@@ -233,8 +239,21 @@ export class TIssue extends TTask implements Issue {
   @ReadOnly()
   declare space: Ref<Project>
 
+  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.IssueStartDate)
+  @Index(IndexKind.Indexed)
+  declare startDate: Timestamp | null
+
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
   declare dueDate: Timestamp | null
+
+  // Phase 1.B — soft deadline, independent of dueDate. Optional.
+  // When set, the Gantt renders a flag marker at this date and flags the
+  // issue as overdue when dueDate > deadline. Undefined for existing issues
+  // until the user opts in via the Issue editor (Phase 1 ships the
+  // inline ControlPanel field; a Gantt context-menu shortcut is a
+  // separate follow-up, see Out-of-scope section).
+  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.Deadline)
+    deadline?: Timestamp | null
 
   @Prop(TypeRef(tracker.class.Milestone), tracker.string.Milestone, { icon: tracker.icon.Milestone })
   @Index(IndexKind.Indexed)
@@ -257,6 +276,19 @@ export class TIssue extends TTask implements Issue {
 
   @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
     todos?: CollectionSize<ToDo>
+
+  /**
+   *  — Auto-Scheduling-Toggle.
+   *
+   * Optional property so existing issues stay on the default cascade
+   * behaviour with no migration. `@Hidden` keeps the field out of the
+   * generic filter/sort UI in `getFiltredKeys`; the dedicated toggle in
+   * `ControlPanel.svelte` is the supported entry point. Cascade-time
+   * checks live in `gantt/lib/scheduler.ts` (Step 5b filter).
+   */
+  @Prop(TypeString(), tracker.string.SchedulingMode)
+  @Hidden()
+    schedulingMode?: 'auto' | 'manual'
 }
 /**
  * @public
@@ -340,6 +372,28 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
   @Prop(TypeString(), tracker.string.TimeSpendReportDescription)
     description!: string
 }
+
+/**
+ * @public
+ */
+@Model(tracker.class.IssueRelation, core.class.AttachedDoc, DOMAIN_TRACKER)
+@UX(tracker.string.GanttDependency, tracker.icon.Issue)
+export class TIssueRelation extends TAttachedDoc implements IssueRelation {
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
+  declare attachedTo: Ref<Issue>
+
+  declare collection: 'relations'
+
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
+  @Index(IndexKind.Indexed)
+    target!: Ref<Issue>
+
+  @Prop(TypeString(), tracker.string.GanttDependency)
+    kind!: DependencyKind
+
+  @Prop(TypeNumber(), tracker.string.GanttLag)
+    lag!: number
+}
 /**
  * @public
  */
@@ -388,6 +442,9 @@ export class TMilestone extends TDoc implements Milestone {
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
+
+  @Prop(TypeDate(), tracker.string.StartDate)
+    startDate!: Timestamp | null
 
   @Prop(TypeDate(), tracker.string.TargetDate)
     targetDate!: Timestamp
