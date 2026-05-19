@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import TiptapTableCell from '@tiptap/extension-table-cell'
+import { TableCell as TiptapTableCell } from '@tiptap/extension-table'
 import { Plugin } from '@tiptap/pm/state'
 import { type Node } from '@tiptap/pm/model'
 import { CellSelection, TableMap } from '@tiptap/pm/tables'

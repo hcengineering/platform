@@ -52,7 +52,7 @@ export class AuthenticationExtension implements Extension {
         })
 
         if (readonly) {
-          data.connection.readOnly = true
+          data.connectionConfig.readOnly = true
         }
 
         // verify workspace can be accessed with the token

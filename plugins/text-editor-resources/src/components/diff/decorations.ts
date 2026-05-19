@@ -16,10 +16,10 @@
 import { type MarkupNode } from '@hcengineering/text'
 import { type Editor } from '@tiptap/core'
 import { ChangeSet } from '@tiptap/pm/changeset'
+import { yDocToProsemirrorJSON } from '@tiptap/y-tiptap'
 import { type Node as ProseMirrorNode, type Schema } from '@tiptap/pm/model'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import { deepEqual } from 'fast-equals'
-import { yDocToProsemirrorJSON } from 'y-prosemirror'
 import { type Doc as Ydoc } from 'yjs'
 import { recreateTransform } from './recreate'
 

@@ -19,9 +19,9 @@
   import type { AwarenessState, AwarenessStateMap } from '@hcengineering/text-editor'
   import { AnySvelteComponent, Button, DelayedCaller } from '@hcengineering/ui'
   import { Editor } from '@tiptap/core'
+  import { relativePositionToAbsolutePosition, ySyncPluginKey } from '@tiptap/y-tiptap'
   import { onMount } from 'svelte'
   import { createRelativePositionFromJSON } from 'yjs'
-  import { relativePositionToAbsolutePosition, ySyncPluginKey } from 'y-prosemirror'
   import { Provider } from '../provider/types'
 
   export let provider: Provider

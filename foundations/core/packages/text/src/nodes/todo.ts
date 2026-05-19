@@ -1,5 +1,4 @@
-import { TaskItem } from '@tiptap/extension-task-item'
-import { TaskList } from '@tiptap/extension-task-list'
+import { TaskItem, TaskList } from '@tiptap/extension-list'
 
 import { getDataAttribute } from './utils'
 

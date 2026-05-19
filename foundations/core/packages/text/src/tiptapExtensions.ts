@@ -17,30 +17,41 @@ export { TextStyle, type TextStyleOptions } from '@tiptap/extension-text-style'
 export { Blockquote, type BlockquoteOptions } from '@tiptap/extension-blockquote'
 export { Bold, type BoldOptions } from '@tiptap/extension-bold'
 export { Document } from '@tiptap/extension-document'
-export { Dropcursor, type DropcursorOptions } from '@tiptap/extension-dropcursor'
-export { Gapcursor } from '@tiptap/extension-gapcursor'
+export { Dropcursor, Gapcursor, UndoRedo, type DropcursorOptions, type UndoRedoOptions } from '@tiptap/extensions'
 export { HardBreak, type HardBreakOptions } from '@tiptap/extension-hard-break'
 export { Heading, type HeadingOptions } from '@tiptap/extension-heading'
-export { History, type HistoryOptions } from '@tiptap/extension-history'
 export { HorizontalRule, type HorizontalRuleOptions } from '@tiptap/extension-horizontal-rule'
 export { Italic, type ItalicOptions } from '@tiptap/extension-italic'
 export { Paragraph, type ParagraphOptions } from '@tiptap/extension-paragraph'
 export { Strike, type StrikeOptions } from '@tiptap/extension-strike'
 export { Text } from '@tiptap/extension-text'
 export { Link, type LinkOptions } from '@tiptap/extension-link'
+export {
+  BulletList,
+  type BulletListOptions,
+  ListItem,
+  type ListItemOptions,
+  OrderedList,
+  type OrderedListOptions,
+  TaskList,
+  type TaskListOptions,
+  TaskItem,
+  type TaskItemOptions
+} from '@tiptap/extension-list'
 export { Typography, type TypographyOptions } from '@tiptap/extension-typography'
 export { Underline, type UnderlineOptions } from '@tiptap/extension-underline'
-export { BulletList, type BulletListOptions } from '@tiptap/extension-bullet-list'
-export { ListItem, type ListItemOptions } from '@tiptap/extension-list-item'
-export { OrderedList, type OrderedListOptions } from '@tiptap/extension-ordered-list'
 export { TextAlign, type TextAlignOptions } from '@tiptap/extension-text-align'
-export { TaskList, type TaskListOptions } from '@tiptap/extension-task-list'
 export { Highlight, type HighlightOptions } from '@tiptap/extension-highlight'
 export { Subscript } from '@tiptap/extension-subscript'
 export { Superscript } from '@tiptap/extension-superscript'
 
-export { Table, type TableOptions } from '@tiptap/extension-table'
-export { TableCell, type TableCellOptions } from '@tiptap/extension-table-cell'
-export { TableHeader, type TableHeaderOptions } from '@tiptap/extension-table-header'
-export { TableRow, type TableRowOptions } from '@tiptap/extension-table-row'
-export { TaskItem, type TaskItemOptions } from '@tiptap/extension-task-item'
+export {
+  Table,
+  TableCell,
+  TableHeader,
+  TableRow,
+  type TableOptions,
+  type TableCellOptions,
+  type TableHeaderOptions,
+  type TableRowOptions
+} from '@tiptap/extension-table'

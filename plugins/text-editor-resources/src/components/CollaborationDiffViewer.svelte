@@ -88,7 +88,7 @@
     const kit = await getEditorKit({
       collaboration: {
         collaboration: { document: ydocCopy, field },
-        collaborationCursor: false,
+        collaborationCaret: false,
         inlineComments: false
       },
       qms: {

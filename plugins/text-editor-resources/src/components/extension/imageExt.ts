@@ -199,6 +199,7 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
       queueMicrotask(() => {
         setNodeLoadingState(true)
       })
+
       const setImageProps = (src: string | null, srcset: string | null): void => {
         if (destroyed) return
         if (src != null) imgElement.src = src
@@ -206,7 +207,7 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
         const finishLoading = (): void => {
           setNodeLoadingState(false)
         }
-        void imgElement.decode().then(finishLoading, finishLoading)
+        void imgElement.decode().finally(finishLoading)
       }
 
       for (const [k, v] of Object.entries(divAttributes)) {

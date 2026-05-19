@@ -19,6 +19,8 @@ import CodeBlock, { CodeBlockOptions } from '@tiptap/extension-code-block'
 export const codeBlockOptions: CodeBlockOptions = {
   defaultLanguage: 'plaintext',
   languageClassPrefix: 'language-',
+  enableTabIndentation: undefined,
+  tabSize: undefined,
   exitOnArrowDown: true,
   exitOnTripleEnter: true,
   HTMLAttributes: {
@@ -44,7 +46,7 @@ export const CodeBlockExtension = CodeBlock.extend({
       language: {
         default: null,
         parseHTML: (element) => {
-          const { languageClassPrefix } = this.options
+          const languageClassPrefix = this.options.languageClassPrefix ?? ''
           let fchild = element.firstElementChild
           if (fchild == null) {
             for (const c of element.childNodes) {

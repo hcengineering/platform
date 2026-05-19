@@ -64,7 +64,7 @@
     "png-chunks-extract": "^1.0.0",
     "svelte": "^4.2.20",
     "uuid": "^11.1.1",
-    "yjs": "^13.6.27"
+    "yjs": "^13.6.30"
   },
   "repository": {
     "type": "git",
