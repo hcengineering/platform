@@ -91,6 +91,7 @@
         <Button
           icon={isLocked ? Lock : Unlock}
           kind={'link'}
+          disabled={readonly}
           size={'medium'}
           showTooltip={{ label: isLocked ? card.string.UnLockSection : card.string.LockSection }}
           on:click={toggleLock}
