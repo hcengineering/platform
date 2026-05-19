@@ -1232,7 +1232,8 @@ export async function sendEmailConfirmation (
   ctx: MeasureContext,
   branding: Branding | null,
   account: PersonUuid,
-  email: string
+  email: string,
+  extra?: Record<string, string>
 ): Promise<void> {
   const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
   if (mailURL === undefined || mailURL === '') {
@@ -1249,7 +1250,8 @@ export async function sendEmailConfirmation (
   }
 
   const token = generateToken(account, undefined, {
-    confirmEmail: email
+    confirmEmail: email,
+    ...(extra ?? {})
   })
 
   const link = concatLink(front, `/login/confirm?id=${token}`)
