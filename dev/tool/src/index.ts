@@ -130,6 +130,14 @@ import { ensureMissingSocialIdentities } from './contact'
 import { performGithubAccountMigrations } from './github'
 import { performGmailAccountMigrations } from './gmail'
 import { getToolToken, getWorkspace, getWorkspaceTransactorEndpoint } from './utils'
+import {
+  createReadlinePrompter,
+  deleteUser,
+  deleteWorkspace,
+  deleteWorkspaceStorage,
+  type AccountAdmin,
+  type WorkspaceResolver
+} from './deletion'
 
 import { createRestClient } from '@hcengineering/api-client'
 import { type CardID } from '@hcengineering/communication-types'
@@ -465,6 +473,106 @@ export function devTool (
   //     await setAccountAdmin(db, email, role === 'true')
   //   })
   // })
+
+  function resolveOperator (): string {
+    return process.env.SUDO_USER ?? process.env.USER ?? process.env.USERNAME ?? 'unknown'
+  }
+
+  function makeAdmin (): AccountAdmin {
+    const client = getAccountClient(getToolToken())
+    return {
+      deleteAccount: async (uuid) => {
+        await client.deleteAccount(uuid)
+      },
+      performWorkspaceOperation: async (workspaceId, op) => await client.performWorkspaceOperation(workspaceId, op)
+    }
+  }
+
+  program
+    .command('delete-user <email>')
+    .description('Delete an account on user request (GDPR). Confirms by retyping the email and writes an audit entry.')
+    .option('--yes <email>', 'Non-interactive confirmation; must equal <email>')
+    .option('--force', 'Proceed even if the user is the sole Owner of a workspace', false)
+    .option('--dry-run', 'Report what would be deleted without touching anything', false)
+    .option('--reason <reason>', 'Ticket id or human reason, recorded in the audit entry')
+    .action(async (email: string, cmd: { yes?: string, force: boolean, dryRun: boolean, reason?: string }) => {
+      await withAccountDatabase(async (db) => {
+        const result = await deleteUser({
+          ctx: toolCtx,
+          db,
+          admin: makeAdmin(),
+          prompter: createReadlinePrompter(),
+          params: {
+            email,
+            confirm: cmd.yes,
+            force: cmd.force,
+            dryRun: cmd.dryRun,
+            reason: cmd.reason,
+            operator: resolveOperator()
+          }
+        })
+        console.log(JSON.stringify(result, null, 2))
+      })
+    })
+
+  program
+    .command('delete-workspace <workspace>')
+    .description('Mark a workspace pending-deletion; workspace-service performs the DB drop asynchronously.')
+    .option('--yes <url>', 'Non-interactive confirmation; must equal the workspace url')
+    .option('--dry-run', 'Report what would happen without marking the workspace', false)
+    .option('--reason <reason>', 'Ticket id or human reason, recorded in the audit entry')
+    .action(async (workspace: string, cmd: { yes?: string, dryRun: boolean, reason?: string }) => {
+      await withAccountDatabase(async (db) => {
+        const resolver: WorkspaceResolver = { getWorkspace: async (idOrUrl) => await getWorkspace(db, idOrUrl) }
+        const result = await deleteWorkspace({
+          ctx: toolCtx,
+          resolver,
+          admin: makeAdmin(),
+          prompter: createReadlinePrompter(),
+          params: {
+            workspace,
+            confirm: cmd.yes,
+            dryRun: cmd.dryRun,
+            reason: cmd.reason,
+            operator: resolveOperator()
+          }
+        })
+        console.log(JSON.stringify(result, null, 2))
+      })
+    })
+
+  program
+    .command('delete-workspace-storage <workspace>')
+    .description(
+      'Scan (default) or remove (--apply) all blobs/objects for a workspace. ' +
+        'Run after workspace-service has dropped the DB so live transactor never reads missing blobs.'
+    )
+    .option('--apply', 'Actually delete; without this flag the command only reports counts.', false)
+    .option('--yes <url>', 'Non-interactive confirmation; must equal the workspace url. Required with --apply.')
+    .option('--batch-size <n>', 'Objects per remove() call', '500')
+    .option('--reason <reason>', 'Ticket id or human reason, recorded in the audit entry')
+    .action(async (workspace: string, cmd: { apply: boolean, yes?: string, batchSize: string, reason?: string }) => {
+      await withAccountDatabase(async (db) => {
+        await withStorage(async (storage) => {
+          const resolver: WorkspaceResolver = { getWorkspace: async (idOrUrl) => await getWorkspace(db, idOrUrl) }
+          const result = await deleteWorkspaceStorage({
+            ctx: toolCtx,
+            resolver,
+            storage,
+            prompter: createReadlinePrompter(),
+            params: {
+              workspace,
+              apply: cmd.apply,
+              confirm: cmd.yes,
+              batchSize: Number.parseInt(cmd.batchSize, 10),
+              reason: cmd.reason,
+              operator: resolveOperator()
+            }
+          })
+          console.log(JSON.stringify(result, null, 2))
+        })
+      })
+    })
 
   async function doUpgrade (
     toolCtx: MeasureMetricsContext,
