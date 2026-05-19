@@ -34,6 +34,7 @@ import core, {
   makeDocCollabId,
   type Markup,
   type MarkupBlobRef,
+  type Mixin,
   type Ref,
   type RelatedDocument,
   type Space,
@@ -69,11 +70,12 @@ import workbench, { type LocationData, type Widget, type WidgetTab } from '@hcen
 import { createWidgetTab } from '@hcengineering/workbench-resources'
 
 import attachment from '@hcengineering/attachment'
+import { makeRank } from '@hcengineering/rank'
+import { writable } from 'svelte/store'
 import CardSearchItem from './components/CardSearchItem.svelte'
 import CreateSpace from './components/navigator/CreateSpace.svelte'
 import card from './plugin'
 import { type NavigatorConfig } from './types'
-import { writable } from 'svelte/store'
 
 export async function deleteMasterTag (tag: MasterTag | undefined, onDelete?: () => void): Promise<void> {
   if (tag !== undefined) {
@@ -277,10 +279,16 @@ export async function createTypePermissions (masterTag: MasterTag | Tag): Promis
   }
 }
 
+interface CopySettings {
+  excludedProperties?: string[]
+  excludedRelations?: string[] // ${associationId}_${a|b}
+  excludeMixins?: Array<Ref<Mixin<Doc>>>
+}
+
 async function cloneCard (
   origin: Card,
   overrideProps: Record<string, any>,
-  relationToCopy: Set<string> | 'all',
+  config?: CopySettings,
   copyIds: boolean = false
 ): Promise<Ref<Card>> {
   const client = getClient()
@@ -292,8 +300,12 @@ async function cloneCard (
   const skipClasses = copyIds
     ? [core.class.TypeCollaborativeDoc]
     : [core.class.TypeCollaborativeDoc, core.class.TypeIdentifier]
+  const systemFields = ['_class', 'id', 'createdOn', 'modifiedOn', 'modifiedBy', 'createdBy', 'createdOn', 'rank']
 
   for (const [key, attr] of attrs) {
+    if (config?.excludedProperties?.includes(key) === true || systemFields.includes(key)) {
+      continue
+    }
     if (attr.type._class === core.class.Collection) {
       ;(props as any)[key] = 0
     } else if (!skipClasses.includes(attr.type._class)) {
@@ -303,19 +315,25 @@ async function cloneCard (
   for (const [k, v] of Object.entries(overrideProps)) {
     ;(props as any)[k] = v
   }
+  props.rank = makeRank(origin.rank, undefined)
   const targetId = generateId<Card>()
   const relationsA = await client.findAll(core.class.Relation, { docA: origin._id })
   const relationsB = await client.findAll(core.class.Relation, { docB: origin._id })
 
-  const markup = await getMarkup(makeDocCollabId(origin, 'content'), origin.content)
-  if (!isEmptyMarkup(markup)) {
-    const collabId = makeCollabId(base, targetId, 'content')
-    props.content = await createMarkup(collabId, markup)
+  if (config?.excludedProperties?.includes('content') !== true) {
+    const markup = await getMarkup(makeDocCollabId(origin, 'content'), origin.content)
+    if (!isEmptyMarkup(markup)) {
+      const collabId = makeCollabId(base, targetId, 'content')
+      props.content = await createMarkup(collabId, markup)
+    }
   }
 
   const ops = client.apply(`Duplicate_card_${origin._id}`)
   await ops.createDoc(base, origin.space, props, targetId)
   for (const mixin of mixins) {
+    if (config?.excludeMixins?.includes(mixin) === true) {
+      continue
+    }
     const mixinAttrs = h.getOwnAttributes(mixin)
     const as = h.as(origin, mixin)
     const attributes: Partial<Data<Doc>> = {}
@@ -326,7 +344,7 @@ async function cloneCard (
   }
 
   for (const rel of relationsA) {
-    if (relationToCopy === 'all' || relationToCopy.has(`${rel.association}_b`)) {
+    if (config?.excludedRelations?.includes(`${rel.association}_b`) !== true) {
       await ops.createDoc(core.class.Relation, core.space.Workspace, {
         docA: targetId,
         docB: rel.docB,
@@ -335,7 +353,7 @@ async function cloneCard (
     }
   }
   for (const rel of relationsB) {
-    if (relationToCopy === 'all' || relationToCopy.has(`${rel.association}_a`)) {
+    if (config?.excludedRelations?.includes(`${rel.association}_a`) !== true) {
       await ops.createDoc(core.class.Relation, core.space.Workspace, {
         docA: rel.docA,
         docB: targetId,
@@ -345,24 +363,26 @@ async function cloneCard (
   }
   await ops.commit()
 
-  const attachments = await client.findAll(attachment.class.Attachment, { attachedTo: origin._id })
-  const attachmentOps = client.apply(`Duplicate_attachments_${origin._id}`)
-  for (const att of attachments) {
-    const { _id, modifiedBy, modifiedOn, attachedTo, attachedToClass, collection, space, ...props } = att
-    await attachmentOps.addCollection(attachment.class.Attachment, origin.space, targetId, base, 'attachments', props)
+  if (config?.excludedProperties?.includes('attachments') !== true) {
+    const attachments = await client.findAll(attachment.class.Attachment, { attachedTo: origin._id })
+    const attachmentOps = client.apply(`Duplicate_attachments_${origin._id}`)
+    for (const att of attachments) {
+      const { _id, modifiedBy, modifiedOn, attachedTo, attachedToClass, collection, space, ...props } = att
+      await attachmentOps.addCollection(attachment.class.Attachment, origin.space, targetId, base, 'attachments', props)
+    }
+    await attachmentOps.commit()
   }
-  await attachmentOps.commit()
 
   return targetId
 }
 
-export async function duplicateCard (origin: Card): Promise<void> {
+export async function duplicateCard (origin: Card, config?: CopySettings): Promise<void> {
   const targetId = await cloneCard(
     origin,
     {
       title: `${origin.title} (Copy)`
     },
-    'all'
+    config
   )
 
   const loc = getCurrentLocation()
@@ -513,14 +533,17 @@ export async function cardFactory (props: Record<string, any> = {}): Promise<Ref
   return await createCard(_class, space, props.data, props.content)
 }
 
-export async function createNewVersion (card: Card, relationsToCopy: Set<string>): Promise<Ref<Card>> {
+export async function createNewVersion (card: Card): Promise<Ref<Card>> {
+  const client = getClient()
+  const mixin = client.getHierarchy().classHierarchyMixin(card._class, core.mixin.VersionableClass)
+
   return await cloneCard(
     card,
     {
       baseId: card.baseId,
       docCreatedBy: card.docCreatedBy ?? card.createdBy ?? card.modifiedBy
     },
-    relationsToCopy,
+    mixin,
     true
   )
 }

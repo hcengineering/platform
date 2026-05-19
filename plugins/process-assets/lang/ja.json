@@ -175,7 +175,8 @@
     "MarkupFromText": "マークアップからテキスト",
     "TextFromSelect": "テキストから選択",
     "SelectFromText": "選択からテキスト",
-    "AskSubclass": "サブクラスを尋ねる"
+    "AskSubclass": "サブクラスを尋ねる",
+    "TextFromIdentifier": "テキストから識別子"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

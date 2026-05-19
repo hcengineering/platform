@@ -64,6 +64,7 @@
   $: isLocked = value.readonlySections?.includes(tag._id) ?? false
   $: canLock = canLockSection(value.space, $permissionsStore)
   $: canUnlock = canUnlockSection(value.space, $permissionsStore)
+  $: _readonly = readonly || isLocked
 
   async function toggleLock (ev: MouseEvent): Promise<void> {
     ev.stopPropagation()
@@ -126,8 +127,8 @@
   </div>
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
-  <CardAttributes object={value} _class={tag._id} to={tag.extends} {readonly} {ignoreKeys} />
-  <MarkupProperties doc={value} {readonly} {tag} />
+  <CardAttributes object={value} _class={tag._id} to={tag.extends} readonly={_readonly} {ignoreKeys} />
+  <MarkupProperties doc={value} readonly={_readonly} {tag} />
 </ExpandCollapse>
 
 <style lang="scss">

@@ -162,6 +162,23 @@ export class Hierarchy {
     return Array.from(resultSet)
   }
 
+  getAllPossibleMixins (_class: Ref<Class<Doc>>, to: Ref<Class<Doc>> = core.class.Doc): Ref<Mixin<Doc>>[] {
+    const result = new Set<Ref<Mixin<Doc>>>()
+    let c = this.getClass(_class)
+
+    while (c._id !== to && c.extends !== undefined) {
+      const _descendants = this.descendants.get(c._id)
+      for (const d of _descendants ?? []) {
+        if (this.isMixin(d) && this.getBaseClass(d) === c._id) {
+          result.add(d)
+        }
+      }
+      c = this.getClass(c.extends)
+    }
+
+    return [...result]
+  }
+
   isMixin (_class: Ref<Class<Doc>>): boolean {
     const data = this.classifiers.get(_class)
     return data !== undefined && this._isMixin(data)

@@ -176,7 +176,8 @@
     "TextFromMarkup": "Разметка из текста",
     "TextFromSelect": "Текст из выбора",
     "SelectFromText": "Выбор из текста",
-    "AskSubclass": "Спросить подкласс"
+    "AskSubclass": "Спросить подкласс",
+    "TextFromIdentifier": "Текст из идентификатора"
   },
   "error": {
     "MethodNotFound": "Метод не найден: {methodId}",

@@ -264,7 +264,13 @@ export function createActions (builder: Builder): void {
   createAction(
     builder,
     {
-      action: card.actionImpl.DuplicateCard,
+      action: view.actionImpl.ShowPopup,
+      actionProps: {
+        component: card.component.DuplicateCard,
+        fillProps: {
+          _object: 'value'
+        }
+      },
       label: card.string.Duplicate,
       icon: card.icon.Duplicate,
       input: 'focus',
