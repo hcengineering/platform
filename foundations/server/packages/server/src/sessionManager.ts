@@ -766,7 +766,7 @@ export class TSessionManager implements SessionManager {
             this.workspaceInfoCache.delete(token.workspace)
           }
 
-          if (wsInfo.passwordAgingRule !== undefined && wsInfo.passwordAgingRule > 0) {
+          if (wsInfo.passwordAgingRule != null && wsInfo.passwordAgingRule > 0) {
             const isPasswordAgingOk = await this.checkPasswordAging(ctx, rawToken)
             if (!isPasswordAgingOk) {
               return { error: new Status(Severity.ERROR, platform.status.PasswordExpired, {}), terminate: true }
