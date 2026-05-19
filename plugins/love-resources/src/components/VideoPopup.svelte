@@ -15,8 +15,7 @@
 <script lang="ts">
   import { Ref } from '@hcengineering/core'
   import { Room as TypeRoom } from '@hcengineering/love'
-  import { Scroller } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, afterUpdate } from 'svelte'
 
   import ParticipantsListView from './meeting/ParticipantsListView.svelte'
   import ScreenSharingView from './meeting/ScreenSharingView.svelte'
@@ -27,41 +26,31 @@
   const dispatch = createEventDispatcher()
 
   let withScreenSharing: boolean = false
-  let divScroll: HTMLElement
+  let participantsPane: HTMLElement | undefined
 
-  const dispatchFit = (_?: boolean): void => {
+  const dispatchFit = (): void => {
     setTimeout(() => {
-      if (divScroll) {
-        const notFit: number = divScroll.scrollHeight - divScroll.clientHeight
-        dispatch('changeContent', { notFit })
-      }
+      if (participantsPane == null) return
+      const notFit = participantsPane.scrollHeight - participantsPane.clientHeight
+      dispatch('changeContent', { notFit })
     }, 10)
   }
 
-  $: dispatchFit(withScreenSharing)
+  afterUpdate(dispatchFit)
 </script>
 
 <div class="antiPopup videoPopup-container" class:isDock>
   <div class="screenContainer" class:hidden={!withScreenSharing}>
     <ScreenSharingView showLocalTrack={false} bind:hasActiveTrack={withScreenSharing} />
   </div>
-  <Scroller
-    bind:divScroll
-    noStretch
-    padding={'.5rem'}
-    containerName={'videoPopupСontainer'}
-    onResize={dispatchFit}
-    stickedScrollBars
-  >
-    <div class="videoGrid">
-      <ParticipantsListView
-        {room}
-        on:participantsCount={(evt) => {
-          dispatchFit(evt.detail > 0)
-        }}
-      />
-    </div>
-  </Scroller>
+  <div class="participantsPane" bind:this={participantsPane}>
+    <ParticipantsListView
+      {room}
+      on:participantsCount={() => {
+        dispatchFit()
+      }}
+    />
+  </div>
   <div class="antiNav-space" />
 </div>
 
@@ -101,20 +90,20 @@
     }
   }
 
-  .videoGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-flow: row;
-    gap: var(--spacing-1);
+  .participantsPane {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0.5rem;
   }
-  @container videoPopupСontainer (max-width: 60rem) {
-    .videoGrid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  @container videoPopupСontainer (max-width: 30rem) {
-    .videoGrid {
-      grid-template-columns: 1fr;
-    }
+  .participantsPane :global(.participants-grid) {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    --participants-gap: var(--spacing-1);
   }
 </style>
