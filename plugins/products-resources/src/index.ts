@@ -34,7 +34,13 @@ import ProductVersionsPresenter from './components/product-version/ProductVersio
 import ProductVersionStateEditor from './components/product-version/ProductVersionStateEditor.svelte'
 import ProductVersionStatePresenter from './components/product-version/ProductVersionStatePresenter.svelte'
 import ProductVersionVersionPresenter from './components/product-version/ProductVersionVersionPresenter.svelte'
-import { canDeleteProductVersion, getVisibleFilters, productIdentifierProvider } from './utils'
+import {
+  canCreateProductVersion,
+  canDeleteProductVersion,
+  createProductVersion,
+  getVisibleFilters,
+  productIdentifierProvider
+} from './utils'
 
 const toObjectSearchResult = (e: WithLookup<Product>): ObjectSearchResult => ({
   doc: e,
@@ -86,7 +92,11 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     GetVisibleFilters: getVisibleFilters,
+    CanCreateProductVersion: canCreateProductVersion,
     CanDeleteProductVersion: canDeleteProductVersion,
     ProductIdentifierProvider: productIdentifierProvider
+  },
+  actionImpl: {
+    CreateProductVersion: createProductVersion
   }
 })
