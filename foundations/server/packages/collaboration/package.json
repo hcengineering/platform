@@ -40,7 +40,7 @@
     "@hcengineering/text": "workspace:^0.7.19",
     "@hcengineering/text-ydoc": "workspace:^0.7.19",
     "base64-js": "^1.5.1",
-    "yjs": "^13.6.27"
+    "yjs": "^13.6.30"
   },
   "repository": {
     "type": "git",

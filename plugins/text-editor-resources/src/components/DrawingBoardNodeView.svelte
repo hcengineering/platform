@@ -55,8 +55,11 @@
   function resizeFinish (): void {
     if (resizedHeight !== undefined) {
       if (typeof getPos === 'function') {
-        const tr = editor.state.tr.setNodeMarkup(getPos(), undefined, { ...node.attrs, height: resizedHeight })
-        editor.view.dispatch(tr)
+        const pos = getPos()
+        if (typeof pos === 'number') {
+          const tr = editor.state.tr.setNodeMarkup(pos, undefined, { ...node.attrs, height: resizedHeight })
+          editor.view.dispatch(tr)
+        }
       }
       resizedHeight = undefined
     }

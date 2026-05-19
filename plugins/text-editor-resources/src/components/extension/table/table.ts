@@ -16,7 +16,7 @@
 import textEditor, { type ActionContext } from '@hcengineering/text-editor'
 import { getEventPositionElement, SelectPopup, showPopup } from '@hcengineering/ui'
 import { type Editor } from '@tiptap/core'
-import TiptapTable from '@tiptap/extension-table'
+import { Table as TiptapTable } from '@tiptap/extension-table'
 import { CellSelection, TableMap } from '@tiptap/pm/tables'
 
 import { type EditorState, Plugin, TextSelection, type Transaction } from '@tiptap/pm/state'

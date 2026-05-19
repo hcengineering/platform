@@ -169,8 +169,9 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
         if (typeof getPos !== 'function') return
 
         const pos = getPos()
-        const node = editor.view.state.doc.nodeAt(pos)
+        if (pos === undefined) return
 
+        const node = editor.view.state.doc.nodeAt(pos)
         if (node?.type.name !== MermaidExtension.name) return
 
         const nodePatch: NodePatchSpec = {
@@ -203,6 +204,7 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
         e.stopPropagation()
 
         const pos = getPos()
+        if (pos === undefined) return
 
         const { selection } = editor.view.state
         const mermaid = editor.view.state.doc.nodeAt(pos)
@@ -319,6 +321,8 @@ export const MermaidExtension = CodeBlockLowlight.extend<MermaidOptions>({
         if (nodeState.selected === newState) return
         if (typeof getPos !== 'function') return
         const pos = getPos()
+        if (pos === undefined) return
+
         const tr = setTxMeta(editor.view.state.tr, {
           nodePatch: {
             pos,

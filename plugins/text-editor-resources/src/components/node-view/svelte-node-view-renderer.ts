@@ -162,9 +162,9 @@ class SvelteNodeView extends NodeView<SvelteNodeViewComponent, Editor, SvelteNod
 
   handleSelectionUpdate (): void {
     const { from, to } = this.editor.state.selection
-    const pos = this.getPos()
 
-    if (typeof pos !== 'number') {
+    const pos = this.getPos()
+    if (pos === undefined) {
       return
     }
 
