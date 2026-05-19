@@ -22,6 +22,7 @@ describe('telemetry', () => {
       info: jest.fn(),
       error: jest.fn(),
       warn: jest.fn(),
+      debug: jest.fn(),
       close: jest.fn(async () => {}),
       logOperation: jest.fn()
     }

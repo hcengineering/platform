@@ -2222,6 +2222,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-events-processor",
+      "projectFolder": "services/notification/pod-events-processor",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/pod-telegram",
       "projectFolder": "services/telegram/pod-telegram",
       "shouldPublish": false

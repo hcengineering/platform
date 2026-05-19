@@ -88,6 +88,12 @@ For detailed information about the platform architecture, services, and their in
   - [Docker](https://docs.docker.com/get-docker/)
   - [Docker Compose](https://docs.docker.com/compose/install/)
 
+If you use `nvm`, run this after entering the repo to align your shell with the repository Node version:
+
+```bash
+nvm use
+```
+
 ## Verification
 
 To verify the installation, perform the following checks in your terminal:

@@ -16,7 +16,7 @@ export class SplitLogger implements MeasureLogger {
     const rootDir = this.opts.root ?? 'logs'
 
     this.logger = winston.createLogger({
-      level: 'info',
+      level: process.env.LOG_LEVEL === 'debug' ? 'debug' : 'info',
       exitOnError: false
     })
     const errorPrinter = ({ message, stack, ...rest }: Error): object => ({
@@ -97,6 +97,13 @@ export class SplitLogger implements MeasureLogger {
       this.opts.parent.warn({ message, ...obj })
     }
     this.logger.warn({ message, ...obj })
+  }
+
+  debug (message: string, obj?: Record<string, any>): void {
+    if (this.opts.parent !== undefined) {
+      this.opts.parent.debug({ message, ...obj })
+    }
+    this.logger.debug({ message, ...obj })
   }
 
   logOperation (operation: string, time: number, params: ParamsType): void {

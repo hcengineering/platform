@@ -1,5 +1,5 @@
 //
-// Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,24 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 import { config as dotenvConfig } from 'dotenv'
 
 dotenvConfig()
 
-export interface Config {
-  DbUrl: string
-  PollInterval: number
+interface Config {
+  ServiceId: string
+  Secret: string
+  AccountsUrl: string
   QueueRegion: string
-  QueueConfig: string
   LogLevel: 'info' | 'debug'
+  ClientCacheTtlMs: number
 }
 
 const config: Config = {
-  DbUrl: process.env.DB_URL ?? 'postgres://localhost:5432/huly',
-  PollInterval: process.env.POLL_INTERVAL != null ? Number(process.env.POLL_INTERVAL) : 20000,
-  QueueRegion: process.env.QUEUE_REGION ?? '',
-  QueueConfig: process.env.QUEUE_CONFIG ?? '',
-  LogLevel: process.env.LOG_LEVEL === 'debug' ? 'debug' : 'info'
+  ServiceId: process.env.SERVICE_ID ?? 'events-processor',
+  Secret: process.env.SECRET ?? 'secret',
+  AccountsUrl: process.env.ACCOUNTS_URL ?? 'http://localhost:3000',
+  QueueRegion: process.env.QUEUE_REGION ?? 'localhost',
+  LogLevel: process.env.LOG_LEVEL === 'debug' ? 'debug' : 'info',
+  ClientCacheTtlMs: Number(process.env.CLIENT_CACHE_TTL_MS ?? 60_000)
 }
 
 export default config

@@ -33,7 +33,8 @@ When a timer expires, the service relays the exact `data` payload to the target 
 | `DB_URL` | `postgres://localhost:5432/huly` | Connection string for the PostgreSQL database. |
 | `POLL_INTERVAL` | `5000` | Polling interval for expired events in milliseconds. |
 | `QUEUE_CONFIG` | - | Kafka bootstrap servers configuration. |
-| `QUEUE_REGION` | `cockroach` | Platform region configuration. |
+| `QUEUE_REGION` | (empty) | Kafka topic prefix; must match transactor `REGION` / other services `QUEUE_REGION`. |
+| `LOG_LEVEL` | `info` | Set to `debug` for verbose diagnostic logs (`ctx.debug`) on TimeMachine consumes and poll batches. |
 
 ## Database Schema
 

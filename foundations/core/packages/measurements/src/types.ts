@@ -50,6 +50,12 @@ export interface Metrics extends MetricsData {
 }
 
 /**
+ * Root log verbosity for {@link MeasureContext.debug} (child contexts inherit unless overridden in {@link MeasureContext.newChild}).
+ * @public
+ */
+export type MeasureLogLevel = 'info' | 'debug'
+
+/**
  * @public
  */
 export interface MeasureLogger {
@@ -57,6 +63,8 @@ export interface MeasureLogger {
   error: (message: string, obj?: Record<string, any>) => void
 
   warn: (message: string, obj?: Record<string, any>) => void
+
+  debug: (message: string, obj?: Record<string, any>) => void
 
   logOperation: (operation: string, time: number, params: ParamsType) => void
 
@@ -94,6 +102,7 @@ export interface MeasureContext<Q = any> {
       logger?: MeasureLogger
       span?: WithOptions['span'] // By default true
       meta?: Record<string, string | number | boolean>
+      logLevel?: MeasureLogLevel
     }
   ) => MeasureContext
 
@@ -128,6 +137,7 @@ export interface MeasureContext<Q = any> {
   error: (message: string, obj?: Record<string, any>) => void
   info: (message: string, obj?: Record<string, any>) => void
   warn: (message: string, obj?: Record<string, any>) => void
+  debug: (message: string, obj?: Record<string, any>) => void // No-op unless this context was created with log level `debug`.
 
   // Mark current context as complete
   // If no value is passed, time difference will be used.

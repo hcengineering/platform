@@ -32,6 +32,7 @@ describe('AttachmentHandler', () => {
       info: jest.fn(),
       error: jest.fn(),
       warn: jest.fn(),
+      debug: jest.fn(),
       logOperation: jest.fn(),
       childLogger: jest.fn(),
       close: jest.fn()
@@ -40,6 +41,7 @@ describe('AttachmentHandler', () => {
     error: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
+    debug: jest.fn(),
     end: jest.fn(),
     getParams: jest.fn()
   }
