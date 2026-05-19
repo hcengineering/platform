@@ -127,7 +127,8 @@ export class CrossWorkspaceExporter {
       relations = [],
       fieldMappers = {},
       skipDeletedObsolete = true,
-      exportOnlyEffective = false
+      exportOnlyEffective = false,
+      customHandlers = []
     } = options
 
     // Store field mappers
@@ -142,6 +143,8 @@ export class CrossWorkspaceExporter {
     )
     // Update document exporter with new data mapper
     this.documentExporter.setDataMapper(this.dataMapper)
+    // Register custom export handlers for this run
+    this.documentExporter.setCustomHandlers(customHandlers)
 
     // Pre-fetch current account's employee ID if available
     if (this.currentAccount !== undefined) {
