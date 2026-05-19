@@ -17,14 +17,45 @@ import {
   type Class,
   type Doc,
   type DocumentQuery,
+  type Hierarchy,
+  type LowLevelStorage,
   type MeasureContext,
   type Ref,
   type Space,
+  type TxOperations,
   type WorkspaceIds
 } from '@hcengineering/core'
 import { type Pipeline } from '@hcengineering/server-core'
 
 export type PipelineFactory = (ctx: MeasureContext, workspace: WorkspaceIds) => Promise<Pipeline>
+
+export interface CustomExportHandlerContext {
+  context: MeasureContext
+  targetClient: TxOperations
+  state: ExportState
+  spaceExporter: {
+    getOrCreateTargetSpace: (
+      sourceSpaceId: Ref<Space>,
+      sourceHierarchy: Hierarchy,
+      sourceLowLevel: LowLevelStorage
+    ) => Promise<Ref<Space>>
+  }
+  sourceHierarchy: Hierarchy
+  sourceLowLevel: LowLevelStorage
+}
+
+/**
+ * Hook for class-specific export behavior.
+ *
+ * When the exporter encounters a document derived from `class`, it calls
+ * `resolve` instead of the default duplicate-and-remap flow. The handler is
+ * responsible for finding or creating the appropriate target document and
+ * returning its id.
+ */
+export interface CustomExportHandler<T extends Doc = Doc> {
+  class: Ref<Class<T>>
+  resolve: (sourceDoc: T, ctx: CustomExportHandlerContext) => Promise<Ref<Doc> | undefined>
+}
 
 export interface RelationDefinition {
   /** When set, this relation applies only to documents of this class (or its subclasses). */
@@ -53,6 +84,9 @@ export interface ExportOptions {
   skipDeletedObsolete?: boolean
   // Whether to export only documents with effective status
   exportOnlyEffective?: boolean
+  // Class-specific export handlers, applied before the default flow. Useful
+  // for collapsing or deduplicating documents (e.g. ProductVersion).
+  customHandlers?: CustomExportHandler[]
 }
 
 export interface ExportResult {
