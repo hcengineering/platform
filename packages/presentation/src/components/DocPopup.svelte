@@ -24,6 +24,7 @@
     IconAdd,
     IconCheck,
     IconSearch,
+    Label,
     ListView,
     Spinner,
     Submenu,
@@ -126,6 +127,13 @@
     } else {
       checkSelected(item._id)
     }
+  }
+
+  function clearSelection (): void {
+    if (multiSelect) return
+
+    selected = undefined
+    dispatch(closeAfterSelect ? 'close' : 'update', undefined)
   }
 
   function onKeydown (key: KeyboardEvent): void {
@@ -258,6 +266,25 @@
     </div>
   {:else if !embedded}
     <div class="menu-space" />
+  {/if}
+  {#if allowDeselect && selected && !multiSelect}
+    <button
+      class="menu-item withList w-full flex-row-center"
+      disabled={readonly || loading}
+      on:click={clearSelection}
+    >
+      <span class="label" class:disabled={readonly || loading}>
+        <Label label={titleDeselect ?? presentation.string.Deselect} />
+      </span>
+      <div class="check" class:disabled={readonly}>
+        {#if loading}
+          <Spinner size={'small'} />
+        {:else}
+          <Icon icon={IconCheck} size={'small'} />
+        {/if}
+      </div>
+    </button>
+    <div class="menu-separator" />
   {/if}
   <div class="scroll">
     <div class="box">
