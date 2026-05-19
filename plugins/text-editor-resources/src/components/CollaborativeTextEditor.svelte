@@ -363,7 +363,7 @@
         objectClass,
         objectSpace,
 
-        history: false,
+        undoRedo: false,
         shortcuts: {
           imageUpload: canAttachFiles && { attachFile, getFileUrl },
           fileUpload: canAttachFiles && { attachFile }
@@ -407,7 +407,7 @@
         },
         collaboration: {
           collaboration: { document: ydoc, field },
-          collaborationCursor: {
+          collaborationCaret: {
             provider,
             user,
             render: renderCursor,

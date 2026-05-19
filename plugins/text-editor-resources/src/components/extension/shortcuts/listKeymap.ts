@@ -14,7 +14,7 @@
 //
 
 import { isAtStartOfNode, isNodeActive, type Editor } from '@tiptap/core'
-import ListKeymap, { listHelpers, type ListKeymapOptions } from '@tiptap/extension-list-keymap'
+import { listHelpers, ListKeymap, type ListKeymapOptions } from '@tiptap/extension-list'
 import { type ResolvedPos, type Node } from '@tiptap/pm/model'
 import { type EditorState } from '@tiptap/pm/state'
 

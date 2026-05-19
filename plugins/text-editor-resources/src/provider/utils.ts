@@ -47,12 +47,16 @@ export function createRemoteProvider (ydoc: Ydoc, doc: CollaborativeDoc, content
     }
   }
 
+  const url = new URL(collaboratorUrl)
+  if (content != null) {
+    url.searchParams.append('content', content)
+  }
+
   const provider = new HocuspocusCollabProvider({
-    url: collaboratorUrl,
+    url: url.toString(),
     name: documentId,
     document: ydoc,
     token,
-    parameters: { content },
     onConnect: () => {
       clearReconnectGrace()
       void setPlatformStatus(OK)
