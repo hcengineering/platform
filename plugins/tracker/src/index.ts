@@ -120,6 +120,22 @@ export enum IssuePriority {
 }
 
 /**
+ * Dependency kind between two Issues for Gantt scheduling.
+ *
+ * - `finish-to-start` (FS): A must finish before B can start. Most common.
+ * - `start-to-start` (SS): A must start before B can start.
+ * - `finish-to-finish` (FF): A must finish before B can finish.
+ * - `start-to-finish` (SF): A must start before B can finish. Rare.
+ *
+ * @public
+ */
+export type DependencyKind =
+  | 'finish-to-start'
+  | 'start-to-start'
+  | 'finish-to-finish'
+  | 'start-to-finish'
+
+/**
  * @public
  */
 export enum IssuesGrouping {
@@ -175,6 +191,7 @@ export interface Milestone extends Doc {
   comments: number
   attachments?: number
 
+  startDate: Timestamp | null // null = open-ended begin marker
   targetDate: Timestamp
 }
 
@@ -195,6 +212,8 @@ export interface Issue extends Task {
   blockedBy?: RelatedDocument[]
   relations?: RelatedDocument[]
   parents: IssueParentInfo[]
+
+  startDate: Timestamp | null // for Gantt scheduling; null = unscheduled
 
   space: Ref<Project>
 
@@ -236,6 +255,7 @@ export interface IssueDraft {
   assignee: Ref<Person> | null
   component: Ref<Component> | null
   space: Ref<Project>
+  startDate: Timestamp | null
   dueDate: Timestamp | null
   milestone?: Ref<Milestone> | null
 
@@ -324,6 +344,21 @@ export interface IssueParentInfo {
 }
 
 /**
+ * Typed dependency between two Issues, used by the Gantt view to compute
+ * cascade scheduling and critical path.
+ *
+ * Persisted as an AttachedDoc collection 'relations' on the source Issue.
+ *
+ * @public
+ */
+export interface IssueRelation extends AttachedDoc<Issue, 'relations'> {
+  target: Ref<Issue>               // successor
+  kind: DependencyKind
+  /** Lag in schedule days; can be negative (overlap). */
+  lag: number
+}
+
+/**
  * @public
  */
 export interface IssueChildInfo {
@@ -366,6 +401,7 @@ const pluginState = plugin(trackerId, {
   class: {
     Project: '' as Ref<Class<Project>>,
     Issue: '' as Ref<Class<Issue>>,
+    IssueRelation: '' as Ref<Class<IssueRelation>>,
     IssueTemplate: '' as Ref<Class<IssueTemplate>>,
     Component: '' as Ref<Class<Component>>,
     IssueStatus: '' as Ref<Class<IssueStatus>>,
@@ -520,6 +556,9 @@ const pluginState = plugin(trackerId, {
     Project: '' as IntlString,
     RelatedIssues: '' as IntlString,
     Issue: '' as IntlString,
+    IssueStartDate: '' as IntlString,
+    GanttDependency: '' as IntlString,
+    GanttLag: '' as IntlString,
     NewProject: '' as IntlString,
     UnsetParentIssue: '' as IntlString,
     ForbidCreateProjectPermission: '' as IntlString,

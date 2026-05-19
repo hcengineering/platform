@@ -16,9 +16,10 @@
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Milestone } from '@hcengineering/tracker'
-  import { EditBox, Label } from '@hcengineering/ui'
+  import { DatePresenter, EditBox, Label } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import tracker from '../../plugin'
+  import MilestoneStatusEditor from './MilestoneStatusEditor.svelte'
   import QueryIssuesList from '../issues/edit/QueryIssuesList.svelte'
 
   export let object: Milestone
@@ -33,12 +34,27 @@
     await client.update(object, { [field]: value })
   }
 
+  async function changeStartDate (value: number | null | undefined): Promise<void> {
+    await client.update(object, { startDate: value ?? null })
+  }
+  async function changeTargetDate (value: number | null | undefined): Promise<void> {
+    if (value === null || value === undefined) return
+    await client.update(object, { targetDate: value })
+  }
+
   $: if (oldLabel !== object.label) {
     oldLabel = object.label
     rawLabel = object.label
   }
 
-  onMount(() => dispatch('open', { ignoreKeys: ['label', 'description', 'attachments'] }))
+  // status / startDate / targetDate are rendered in this component's body in
+  // chronological order (Status → Start → Target). Hide them from the
+  // auto-generated side panel so they don't appear twice.
+  onMount(() =>
+    dispatch('open', {
+      ignoreKeys: ['label', 'description', 'attachments', 'status', 'startDate', 'targetDate']
+    })
+  )
   $: descriptionKey = client.getHierarchy().getAttribute(tracker.class.Component, 'description')
   let descriptionBox: AttachmentStyleBoxEditor
 </script>
@@ -58,6 +74,33 @@
   }}
 />
 
+<div class="dates-row mt-4">
+  <div class="date-cell">
+    <span class="cell-label"><Label label={tracker.string.Status} /></span>
+    <MilestoneStatusEditor value={object.status} {object} kind="regular" />
+  </div>
+  <div class="date-cell">
+    <span class="cell-label"><Label label={tracker.string.StartDate} /></span>
+    <DatePresenter
+      value={object.startDate}
+      editable
+      kind={'regular'}
+      size={'medium'}
+      on:change={(e) => { void changeStartDate(e.detail) }}
+    />
+  </div>
+  <div class="date-cell">
+    <span class="cell-label"><Label label={tracker.string.TargetDate} /></span>
+    <DatePresenter
+      value={object.targetDate}
+      editable
+      kind={'regular'}
+      size={'medium'}
+      on:change={(e) => { void changeTargetDate(e.detail) }}
+    />
+  </div>
+</div>
+
 <div class="w-full mt-6">
   <AttachmentStyleBoxEditor
     focusIndex={30}
@@ -67,6 +110,26 @@
     placeholder={tracker.string.IssueDescriptionPlaceholder}
   />
 </div>
+
+<style lang="scss">
+  .dates-row {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .date-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 8rem;
+  }
+  .cell-label {
+    font-size: 0.85rem;
+    color: var(--theme-darker-color);
+    font-weight: 500;
+  }
+</style>
 
 <div class="w-full mt-6">
   <QueryIssuesList
