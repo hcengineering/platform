@@ -1268,7 +1268,7 @@ export async function signUpJoin (
     workspaceUrl: string
   },
   meta?: Meta
-): Promise<WorkspaceLoginInfo> {
+): Promise<WorkspaceLoginInfo | LoginInfo> {
   const { email, password, first, last, inviteId, workspaceUrl } = params
 
   if (password == null || password === '' || first == null || first === '') {
@@ -1284,8 +1284,47 @@ export async function signUpJoin (
     inviteId
   })
 
-  const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last ?? '', true)
+  // Require email confirmation just like the regular signUp flow.
+  // Auto-confirm only when no mail service is configured (dev setups).
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  const forceConfirmation = mailURL !== undefined && mailURL !== ''
+
+  const { account, socialId } = await signUpByEmail(
+    ctx,
+    db,
+    branding,
+    email,
+    password,
+    first,
+    last ?? '',
+    !forceConfirmation
+  )
   void setTimezone(ctx, db, account, null, meta)
+
+  if (forceConfirmation) {
+    const person = await db.person.findOne({ uuid: account })
+    if (person == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+    }
+
+    const normalizedEmail = cleanEmail(email)
+    // Thread the invite info through the confirmation token so the user
+    // is auto-joined to the workspace once they confirm their email.
+    await sendEmailConfirmation(ctx, branding, account, normalizedEmail, {
+      inviteId,
+      workspaceUrl
+    })
+
+    return {
+      account,
+      name: getPersonName(person),
+      socialId,
+      token: undefined
+    }
+  }
+
+  ctx.warn('Please provide MAIL_URL to enable sign up email confirmations.')
+  await confirmHulyIds(ctx, db, account)
 
   return await doJoinByInvite(
     ctx,
@@ -1303,7 +1342,7 @@ export async function confirm (
   db: AccountDB,
   branding: Branding | null,
   token: string
-): Promise<LoginInfo> {
+): Promise<LoginInfo | WorkspaceLoginInfo> {
   const { account, extra } = decodeTokenVerbose(ctx, token)
 
   const email = extra?.confirmEmail
@@ -1321,11 +1360,42 @@ export async function confirm (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: account }))
   }
 
-  const result = {
+  const result: LoginInfo = {
     account,
     name: getPersonName(person),
     socialId,
     token: generateToken(account)
+  }
+
+  // If invite info was carried through the confirmation token (signUpJoin flow),
+  // finish the workspace join now that the email is verified.
+  const inviteId = typeof extra?.inviteId === 'string' ? extra.inviteId : ''
+  const workspaceUrl = typeof extra?.workspaceUrl === 'string' ? extra.workspaceUrl : ''
+  if (inviteId !== '' || workspaceUrl !== '') {
+    try {
+      const joinInfo = await getWorkspaceJoinInfo(ctx, db, email, inviteId, workspaceUrl)
+      const joinResult = await doJoinByInvite(
+        ctx,
+        db,
+        branding,
+        generateToken(account, joinInfo.workspace?.uuid),
+        account,
+        joinInfo.workspace,
+        joinInfo.invite
+      )
+      ctx.info('Email confirmed and workspace joined via invite', { account, email, inviteId })
+      return joinResult
+    } catch (err: any) {
+      // The email is now verified, but the invite is stale/expired/invalid.
+      // Fall back to returning the basic login info so the user is at least signed in.
+      ctx.error('Email confirmed but failed to auto-join workspace via invite', {
+        account,
+        email,
+        inviteId,
+        workspaceUrl,
+        err
+      })
+    }
   }
 
   ctx.info('Email confirmed', { account, email })

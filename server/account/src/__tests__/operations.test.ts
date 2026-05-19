@@ -41,6 +41,7 @@ import {
   login,
   confirm,
   signUp,
+  signUpJoin,
   validateOtp,
   signUpOtp,
   restorePassword,
@@ -1856,6 +1857,74 @@ describe('account operations', () => {
           new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: mockAccountId }))
         )
       })
+
+      test('should auto-join workspace after confirming email when invite info is present in token', async () => {
+        const mockInviteId = 'invite-uuid'
+        const mockWorkspaceUrl = 'test-workspace'
+        const mockWorkspaceUuid = 'ws-uuid' as WorkspaceUuid
+        const mockSocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+        const mockPerson = {
+          uuid: mockPersonId,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        }
+        const mockInvite: any = {
+          id: mockInviteId,
+          workspaceUuid: mockWorkspaceUuid,
+          email: mockEmail,
+          remainingUses: 1,
+          expiresOn: Date.now() + 100000,
+          role: AccountRole.User
+        }
+        const mockWorkspace: any = {
+          uuid: mockWorkspaceUuid,
+          url: mockWorkspaceUrl,
+          name: 'Test Workspace',
+          region: 'us'
+        }
+        const joinResult = {
+          account: mockAccountId,
+          workspace: mockWorkspaceUuid,
+          workspaceUrl: mockWorkspaceUrl,
+          endpoint: 'endpoint',
+          role: AccountRole.User,
+          token: 'mocked-token'
+        }
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId,
+          extra: { confirmEmail: mockEmail, inviteId: mockInviteId, workspaceUrl: mockWorkspaceUrl }
+        })
+
+        jest.spyOn(utils, 'confirmEmail').mockResolvedValue(mockSocialId._id)
+        jest.spyOn(utils, 'confirmHulyIds').mockResolvedValue()
+        jest.spyOn(utils, 'getWorkspaceJoinInfo').mockResolvedValue({
+          email: mockEmail,
+          invite: mockInvite,
+          workspace: mockWorkspace
+        } as any)
+        jest.spyOn(utils, 'doJoinByInvite').mockResolvedValue(joinResult as any)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+
+        const result = await confirm(mockCtx, mockDb, mockBranding, mockToken)
+
+        expect(utils.confirmEmail).toHaveBeenCalledWith(mockCtx, mockDb, mockAccountId, mockEmail)
+        expect(utils.getWorkspaceJoinInfo).toHaveBeenCalledWith(
+          mockCtx,
+          mockDb,
+          mockEmail,
+          mockInviteId,
+          mockWorkspaceUrl
+        )
+        expect(utils.doJoinByInvite).toHaveBeenCalled()
+        expect(result).toEqual(joinResult)
+      })
     })
 
     describe('signUpOtp', () => {
@@ -2249,6 +2318,142 @@ describe('account operations', () => {
             action: 'verify'
           })
         ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {})))
+      })
+    })
+
+    describe('signUpJoin', () => {
+      const mockInviteId = 'invite-uuid'
+      const mockWorkspaceUrl = 'test-workspace'
+      const mockWorkspaceUuid = 'ws-uuid' as WorkspaceUuid
+      const mockInvite: any = {
+        id: mockInviteId,
+        workspaceUuid: mockWorkspaceUuid,
+        email: mockEmail,
+        remainingUses: 1,
+        expiresOn: Date.now() + 100000,
+        role: AccountRole.User
+      }
+      const mockWorkspace: any = {
+        uuid: mockWorkspaceUuid,
+        url: mockWorkspaceUrl,
+        name: 'Test Workspace',
+        region: 'us'
+      }
+      const baseParams = {
+        email: mockEmail,
+        password: mockPassword,
+        first: mockFirstName,
+        last: mockLastName,
+        inviteId: mockInviteId,
+        workspaceUrl: mockWorkspaceUrl
+      }
+
+      test('should NOT auto-confirm and should send confirmation with invite info when MAIL_URL is configured', async () => {
+        const mockSocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+        const mockPerson = {
+          uuid: mockPersonId,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        }
+
+        jest.spyOn(utils, 'getWorkspaceJoinInfo').mockResolvedValue({
+          email: mockEmail,
+          invite: mockInvite,
+          workspace: mockWorkspace
+        } as any)
+        jest.spyOn(utils, 'signUpByEmail').mockResolvedValue({
+          account: mockAccountId,
+          socialId: mockSocialId._id
+        })
+        jest.spyOn(utils, 'sendEmailConfirmation').mockResolvedValue()
+        jest.spyOn(utils, 'doJoinByInvite').mockResolvedValue({} as any)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+        ;(getMetadata as jest.Mock).mockReturnValue('http://mail-service.com')
+
+        const result = await signUpJoin(mockCtx, mockDb, mockBranding, mockToken, baseParams)
+
+        // signUpByEmail must NOT mark the new account/social-id as confirmed
+        expect(utils.signUpByEmail).toHaveBeenCalledWith(
+          mockCtx,
+          mockDb,
+          mockBranding,
+          mockEmail,
+          mockPassword,
+          mockFirstName,
+          mockLastName,
+          false
+        )
+        // Confirmation email must be sent, threading the invite info through the token
+        expect(utils.sendEmailConfirmation).toHaveBeenCalledWith(
+          mockCtx,
+          mockBranding,
+          mockAccountId,
+          mockEmail,
+          expect.objectContaining({ inviteId: mockInviteId, workspaceUrl: mockWorkspaceUrl })
+        )
+        // Workspace join must be deferred until after email confirmation
+        expect(utils.doJoinByInvite).not.toHaveBeenCalled()
+        expect(result).toEqual({
+          account: mockAccountId,
+          name: 'John Doe',
+          socialId: mockSocialId._id,
+          token: undefined
+        })
+      })
+
+      test('should auto-confirm and join when MAIL_URL is not configured (dev fallback)', async () => {
+        const mockSocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+        const joinResult = {
+          account: mockAccountId,
+          workspace: mockWorkspaceUuid,
+          workspaceUrl: mockWorkspaceUrl,
+          endpoint: 'endpoint',
+          role: AccountRole.User,
+          token: 'mocked-token'
+        }
+
+        jest.spyOn(utils, 'getWorkspaceJoinInfo').mockResolvedValue({
+          email: mockEmail,
+          invite: mockInvite,
+          workspace: mockWorkspace
+        } as any)
+        jest.spyOn(utils, 'signUpByEmail').mockResolvedValue({
+          account: mockAccountId,
+          socialId: mockSocialId._id
+        })
+        jest.spyOn(utils, 'sendEmailConfirmation').mockResolvedValue()
+        jest.spyOn(utils, 'doJoinByInvite').mockResolvedValue(joinResult as any)
+        ;(getMetadata as jest.Mock).mockReturnValue('') // No mail service configured
+
+        const result = await signUpJoin(mockCtx, mockDb, mockBranding, mockToken, baseParams)
+
+        expect(utils.sendEmailConfirmation).not.toHaveBeenCalled()
+        expect(utils.doJoinByInvite).toHaveBeenCalled()
+        expect(result).toEqual(joinResult)
+      })
+
+      test('should fail with missing required fields', async () => {
+        const testCases = [
+          { ...baseParams, password: '' },
+          { ...baseParams, first: '' }
+        ]
+        for (const testCase of testCases) {
+          await expect(signUpJoin(mockCtx, mockDb, mockBranding, mockToken, testCase as any)).rejects.toThrow(
+            new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+          )
+        }
       })
     })
   })
