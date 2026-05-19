@@ -21,7 +21,6 @@ import {
   Dropcursor,
   Gapcursor,
   Heading,
-  History,
   HorizontalRule,
   Italic,
   Link,
@@ -37,7 +36,8 @@ import {
   TextAlign,
   TextStyle,
   Typography,
-  Underline
+  Underline,
+  UndoRedo
 } from '../tiptapExtensions'
 
 import { ExtensionFactory, extensionKit } from '../kit'
@@ -81,7 +81,7 @@ export const CommonKitFactory = (e: ExtensionFactory) =>
 
     dropcursor: e(Dropcursor),
     gapcursor: e(Gapcursor),
-    history: e(History)
+    undoRedo: e(UndoRedo)
   }) as const
 
 export const CommonKit = extensionKit('common-kit', CommonKitFactory)

@@ -32,13 +32,13 @@ export const IsEmptyContentExtension: Extension<IsEmptyContentOptions, IsEmptyCo
       }
     },
     onCreate () {
-      this.parent?.()
+      // this.parent?.()
 
       this.storage.isEmpty = this.editor.isEmpty
       this.options.onChange(this.storage.isEmpty)
     },
     onUpdate () {
-      this.parent?.()
+      // this.parent?.()
 
       if (this.storage.isEmpty !== this.editor.isEmpty) {
         this.storage.isEmpty = this.editor.isEmpty

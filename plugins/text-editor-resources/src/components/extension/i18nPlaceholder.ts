@@ -15,7 +15,7 @@
 
 import { type IntlString, translate } from '@hcengineering/platform'
 import { type ThemeOptions } from '@hcengineering/theme'
-import { type PlaceholderOptions, Placeholder } from '@tiptap/extension-placeholder'
+import { type PlaceholderOptions, Placeholder } from '@tiptap/extensions'
 import { type Readable, get } from 'svelte/store'
 
 export interface I18nPlaceholderOptions extends PlaceholderOptions {
@@ -35,8 +35,15 @@ export const I18nPlaceholderExtension = Placeholder.extend<I18nPlaceholderOption
   addOptions () {
     return {
       ...this.parent?.(),
+      placeholder: '',
       placeholderIntl: '' as IntlString,
       placeholderIntlParams: {},
+      emptyEditorClass: 'is-editor-empty',
+      emptyNodeClass: 'is-empty',
+      dataAttribute: 'placeholder',
+      showOnlyWhenEditable: true,
+      showOnlyCurrent: true,
+      includeChildren: false,
       themeStore: undefined as any
     }
   },

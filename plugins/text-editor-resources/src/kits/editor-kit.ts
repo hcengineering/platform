@@ -30,12 +30,12 @@ import {
 } from '@hcengineering/text'
 import textEditor, { type ActionContext, type ExtensionCreator, type TextEditorMode } from '@hcengineering/text-editor'
 import { type AnyExtension, Extension } from '@tiptap/core'
-import TableHeader from '@tiptap/extension-table-header'
+import { TableHeader } from '@tiptap/extension-table'
 import 'prosemirror-codemark/dist/codemark.css'
 import 'katex/dist/katex.min.css'
 
 import Collaboration from '@tiptap/extension-collaboration'
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
+import CollaborationCaret from '@tiptap/extension-collaboration-caret'
 import { CodeBlockHighlighExtension, codeBlockHighlightOptions } from '../components/extension/codeSnippets/codeblock'
 import { MermaidExtension, mermaidOptions } from '../components/extension/codeSnippets/mermaid'
 import { DrawingBoardExtension } from '../components/extension/drawingBoard'
@@ -181,7 +181,7 @@ const subKits = {
     (e) =>
       ({
         collaboration: e(Collaboration),
-        collaborationCursor: e(CollaborationCursor),
+        collaborationCaret: e(CollaborationCaret),
         inlineComments: e(InlineCommentCollaborationExtension)
       }) as const
   ),

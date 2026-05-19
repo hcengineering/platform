@@ -17,7 +17,7 @@ import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext, generateId, metricsAggregate } from '@hcengineering/core'
 import type { StorageAdapter } from '@hcengineering/server-core'
 import { Token, TokenError, decodeToken } from '@hcengineering/server-token'
-import { Hocuspocus } from '@hocuspocus/server'
+import { Server } from '@hocuspocus/server'
 import bp from 'body-parser'
 import cors from 'cors'
 import express from 'express'
@@ -57,7 +57,7 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
   const extensionsCtx = ctx.newChild('extensions', {}, { span: false })
   const transformer = new MarkupTransformer()
 
-  const hocuspocus = new Hocuspocus({
+  const server = new Server({
     address: '0.0.0.0',
     port,
 
@@ -195,7 +195,11 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
       async (ctx) => {
         try {
           const response: RpcResponse = await rpcCtx.with(request.method, {}, (ctx) => {
-            return method(ctx, context, documentId, request.payload, { hocuspocus, storageAdapter, transformer })
+            return method(ctx, context, documentId, request.payload, {
+              hocuspocus: server.hocuspocus,
+              storageAdapter,
+              transformer
+            })
           })
           res.status(200).send(response)
         } catch (err: any) {
@@ -213,22 +217,22 @@ export async function start (ctx: MeasureContext, config: Config, storageAdapter
 
   wss.on('connection', (incoming: WebSocket, request: IncomingMessage) => {
     const context: Partial<Context> = { connectionId: generateId() }
-    hocuspocus.handleConnection(incoming, request, context)
+    server.hocuspocus.handleConnection(incoming, request, context)
   })
 
-  const server = createServer(app)
+  const httpServer = createServer(app)
 
-  server.on('upgrade', (request: IncomingMessage, socket: any, head: Buffer) => {
+  httpServer.on('upgrade', (request: IncomingMessage, socket: any, head: Buffer) => {
     wss.handleUpgrade(request, socket, head, (ws) => {
       wss.emit('connection', ws, request)
     })
   })
 
-  server.listen(port)
+  httpServer.listen(port)
 
   ctx.info('Running collaborator server', { port })
 
   return async () => {
-    server.close()
+    httpServer.close()
   }
 }
