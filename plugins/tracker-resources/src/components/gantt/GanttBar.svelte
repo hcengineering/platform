@@ -5,13 +5,14 @@
   import { createEventDispatcher, getContext, onDestroy } from 'svelte'
   import { writable, type Readable, type Writable } from 'svelte/store'
   import type { Ref } from '@hcengineering/core'
-  import type { Issue, Milestone } from '@hcengineering/tracker'
+  import type { Issue, IssueStatus, Milestone } from '@hcengineering/tracker'
   import type { TimeScale } from './lib/time-scale'
   import type { DragState, DragTarget } from './lib/types'
   import GanttConnectorDot from './GanttConnectorDot.svelte'
   import { activeDragTargetId } from './lib/drag-state'
   import { resolveBarLabel, type BarLabelSlot } from './lib/bar-labels'
   import { resolveBarColors, type BarColorMode, type BarColorContext } from './lib/bar-colors'
+  import { isPastDue, isBlocked } from './lib/bar-overlays'
   import { getPlatformColor, themeStore } from '@hcengineering/ui'
   //  — Mobile-Friendly Gantt.
   import type { LayoutMode } from './lib/breakpoint'
@@ -223,6 +224,23 @@
   // tests that mount GanttBar in isolation).
   const modeStore = getContext<Writable<BarColorMode>>('gantt-bar-color-mode')
   const ctxStore  = getContext<Readable<BarColorContext>>('gantt-bar-color-context')
+
+  // Overlay toggle stores — may be undefined outside GanttView context.
+  const pastDueStore    = getContext<Writable<boolean>>('gantt-overlay-past-due')
+  const blockedStore    = getContext<Writable<boolean>>('gantt-overlay-blocked')
+  const predsByIdStore  = getContext<Readable<Map<string, Array<Ref<Issue>>>>>('gantt-predecessors-by-issue')
+  const predStatusStore = getContext<Readable<Map<string, Ref<IssueStatus>>>>('gantt-pred-status-by-issue')
+
+  $: predecessorIds = issue._id != null ? ($predsByIdStore?.get(String(issue._id)) ?? []) : []
+  $: showPastDue = (pastDueStore !== undefined ? $pastDueStore : true) &&
+    isPastDue(issue, ctxStore !== undefined ? $ctxStore.statusCategoryFor : () => null, Date.now())
+  $: showBlocked = (blockedStore !== undefined ? $blockedStore : true) &&
+    isBlocked(
+      issue,
+      predecessorIds,
+      predStatusStore !== undefined ? ($predStatusStore ?? new Map()) : new Map(),
+      ctxStore !== undefined ? $ctxStore.statusCategoryFor : () => null
+    )
 
   $: mode = modeStore !== undefined ? $modeStore : 'status'
   $: triple = (ctxStore !== undefined && modeStore !== undefined)
@@ -480,6 +498,33 @@
         dispatch('barHover', { issue: null })
       }}
     />
+    {#if showBlocked}
+      <pattern id={`hatch-${issue._id ?? 'syn'}`} patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+        <line x1="0" y1="0" x2="0" y2="6" stroke="var(--theme-content-color)" stroke-opacity="0.15" stroke-width="2" />
+      </pattern>
+      <rect
+        x={x}
+        y={barY}
+        width={w}
+        height={barH}
+        rx={3}
+        ry={3}
+        fill={`url(#hatch-${issue._id ?? 'syn'})`}
+        pointer-events="none"
+      />
+    {/if}
+
+    {#if showPastDue}
+      <rect
+        x={x}
+        y={barY}
+        width={3}
+        height={barH}
+        fill="var(--theme-state-negative-color)"
+        pointer-events="none"
+      />
+    {/if}
+
     {#if isCritical && showSlackGlyph}
       <!-- PR5: 18%-opacity red overlay on critical bars, on top of the
            status fill. pointer-events: none so drag/click stays routed

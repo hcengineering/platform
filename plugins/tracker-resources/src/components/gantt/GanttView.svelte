@@ -4,7 +4,7 @@
 <script lang="ts">
   import { type ApplyOperations, type Class, type Doc, type DocumentQuery, generateId, getCurrentAccount, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { type Component, type Issue, type IssueRelation, type Milestone, type Project, type WorkingDaysConfig, IssuePriority } from '@hcengineering/tracker'
+  import { type Component, type Issue, type IssueRelation, type IssueStatus, type Milestone, type Project, type WorkingDaysConfig, IssuePriority } from '@hcengineering/tracker'
   import { type TagElement } from '@hcengineering/tags'
   import { type Person } from '@hcengineering/contact'
   import tags from '@hcengineering/tags'
@@ -208,12 +208,19 @@
   // Live BarColorContext derived from current Gantt data — see below.
   const barColorContextStore = writable<BarColorContext>(buildBarColorContext([], new Map(), new Map(), new Map()))
 
+  // Predecessor maps for the blocked-hatch overlay — populated reactively
+  // below; GanttBar reads them via context.
+  const predecessorsByIssueIdStore = writable<Map<string, Array<Ref<Issue>>>>(new Map())
+  const predStatusByIssueIdStore   = writable<Map<string, Ref<IssueStatus>>>(new Map())
+
   // Init contexts ONCE at component setup. Updates flow via .set() below.
   setContext('gantt-bar-color-mode', ganttBarColorBy)
   setContext('gantt-overlay-past-due', ganttShowPastDueOverlay)
   setContext('gantt-overlay-blocked', ganttShowBlockedOverlay)
   setContext('gantt-progress-fill', ganttShowSubIssueProgress)
   setContext('gantt-bar-color-context', barColorContextStore)
+  setContext('gantt-predecessors-by-issue', predecessorsByIssueIdStore)
+  setContext('gantt-pred-status-by-issue',  predStatusByIssueIdStore)
 
   // PR3.3: single Set holds editable Issue _ids AND Milestone _ids — both
   // are stringified Ref<...> so a single Set lookup serves the bar
@@ -848,6 +855,30 @@
   $: componentsById = new Map<string, Component>(
     components.map((c) => [String(c._id), c])
   )
+
+  // Predecessor maps for blocked-hatch overlay (Step 8.1).
+  // Map<successorId stringified, Array<predecessorId>> — FS dependencies only.
+  $: predecessorsByIssueId = (() => {
+    const m = new Map<string, Array<Ref<Issue>>>()
+    for (const rel of relations) {
+      if (rel.kind !== 'finish-to-start') continue
+      const downstream = String(rel.target)
+      const upstream = rel.attachedTo as Ref<Issue>
+      const arr = m.get(downstream)
+      if (arr === undefined) m.set(downstream, [upstream])
+      else arr.push(upstream)
+    }
+    return m
+  })()
+
+  // Map<issueId stringified, Ref<IssueStatus>> — predecessor status lookup.
+  $: predStatusByIssueId = new Map<string, Ref<IssueStatus>>(
+    issues.map((i) => [String(i._id), i.status])
+  )
+
+  // Push predecessor maps into context stores whenever they change.
+  $: predecessorsByIssueIdStore.set(predecessorsByIssueId)
+  $: predStatusByIssueIdStore.set(predStatusByIssueId)
 
   function paddingDays (z: ZoomLevel): number {
     switch (z) {
