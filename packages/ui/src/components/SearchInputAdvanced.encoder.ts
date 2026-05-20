@@ -90,11 +90,85 @@ function escapeForQueryString (s: string): string {
   return s.replace(/[+\-!(){}[\]^"~*?:\\/]/g, '\\$&')
 }
 
+/**
+ * Reserved chars that BREAK ES `query_string` parsing inside a field-value
+ * position. Narrower than the full Lucene reserved set because we want to
+ * preserve readable, raw values for the common cases. Specifically:
+ *
+ * - `-` is omitted: ES treats `-` mid-term or at end-of-term as literal text
+ *   (identifier-style values like `HULY-51` work without escaping; the only
+ *   problematic position is the very start of a clause where `-` is the NOT
+ *   operator, but a token starting with `-` would already be lexed as a
+ *   bare term, never landing here as a field value).
+ * - `*` and `?` are omitted: users may legitimately type them as wildcards.
+ * - `:` is omitted: the tokenizer split on the field-value boundary, so a
+ *   trailing `:` cannot appear in the value at this point.
+ *
+ * What stays — these literally crash the parser when mid-value:
+ *   `+`  `!`  `(`  `)`  `{`  `}`  `[`  `]`  `^`  `"`  `~`  `\`  `/`
+ */
+const PREFIX_VALUE_RESERVED_RE = /[+!(){}[\]^"~\\/]/
+
+/**
+ * For prefix-targeted inputs (e.g. `title:C++ developer` or
+ * `comments:foo/bar`), wrap the `<value>` portion of each `<field>:<value>`
+ * clause in parens + escape Lucene-reserved chars when the value would
+ * otherwise blow up the ES `query_string` parser.
+ *
+ * Without this, ES parses `C++` as `C` + `+` + `+` and throws
+ * `query_string_parsing_exception`, surfacing as zero hits for completely
+ * legitimate user input.
+ *
+ * Strategy: regex-scan the aliased string for `<field>:<value>` clauses
+ * where <value> is one of three forms:
+ *   1. Already user-wrapped in parens:   `searchTitle:(...)`     → escape inside
+ *   2. Quoted phrase:                    `searchTitle:"foo bar"` → pass through (ES treats as phrase literal)
+ *   3. Bare run of non-whitespace:       `searchTitle:loader`    → escape+wrap ONLY if reserved chars present
+ *
+ * Anything outside these clauses (whitespace, boolean operators
+ * AND/OR/NOT, standalone parens the user typed for boolean grouping)
+ * passes through verbatim. Clean bare values stay unwrapped so the wire
+ * string stays readable for the common case.
+ */
+function escapePrefixValues (aliased: string): string {
+  // Single regex matches ALL three value-shapes per clause. We anchor on
+  // a known ES-native field name to avoid touching unrelated colons in
+  // user text (e.g. URLs that survived aliasing — though aliasing would
+  // not have run on them in the first place since they lack a known
+  // prefix).
+  const fieldAlt = [...ES_NATIVE_FIELDS].map((f) => f.replace(/\./g, '\\.')).join('|')
+  // The value patterns, longest-match first:
+  //   \(([^()]*)\)              — paren-wrapped: capture inner
+  //   "([^"]*)"                 — quoted phrase: pass through inner
+  //   ([^\s()]+)                — bare run up to whitespace or paren
+  const clauseRe = new RegExp(`\\b(${fieldAlt}):(?:\\(([^()]*)\\)|"([^"]*)"|([^\\s()]+))`, 'g')
+
+  return aliased.replace(clauseRe, (_match, field: string, paren?: string, quoted?: string, bare?: string) => {
+    if (paren !== undefined) {
+      // User wrapped in parens already — re-emit with escaped content
+      // so ES sees a parser-safe literal regardless of what the user
+      // put inside.
+      return `${field}:(${escapeForQueryString(paren)})`
+    }
+    if (quoted !== undefined) {
+      // Quoted phrase passes through; ES treats it as a phrase literal.
+      return `${field}:"${quoted}"`
+    }
+    // Bare value: preserve verbatim if no reserved chars (keeps the
+    // wire string readable), wrap+escape only when needed.
+    const value = bare ?? ''
+    if (!PREFIX_VALUE_RESERVED_RE.test(value)) {
+      return `${field}:${value}`
+    }
+    return `${field}:(${escapeForQueryString(value)})`
+  })
+}
+
 export function encodeSearch (raw: string, scope: SearchScope): string {
   const trimmed = raw.trim()
   if (trimmed === '') return ''
   const aliased = aliasPrefixes(trimmed)
-  if (hasKnownPrefix(trimmed)) return aliased // user picked a scope explicitly
+  if (hasKnownPrefix(trimmed)) return escapePrefixValues(aliased)
   const safe = escapeForQueryString(aliased)
   switch (scope) {
     case 'title':

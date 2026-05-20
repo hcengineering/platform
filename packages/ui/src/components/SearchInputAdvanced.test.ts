@@ -59,4 +59,39 @@ describe('encodeSearch', () => {
     expect(encodeSearch('foo (bar) [baz]', 'title'))
       .toBe('searchTitle:(foo \\(bar\\) \\[baz\\])')
   })
+
+  // ─── Prefix-value escaping (F2 — Codex Round-5) ──────────────────────────
+  // Codex flagged that prefix-targeted inputs were sent verbatim to ES
+  // query_string, which crashes the parser on Lucene-reserved chars like
+  // `+` or `/`. We now wrap+escape ONLY when the value would otherwise
+  // blow up; clean values stay readable.
+  it('wraps + escapes prefix values containing Lucene reserved chars', () => {
+    expect(encodeSearch('title:C++', 'all')).toBe('searchTitle:(C\\+\\+)')
+    expect(encodeSearch('comments:foo/bar', 'all')).toBe('comments.message:(foo\\/bar)')
+  })
+  it('treats user-typed parens around a prefix value as ES grouping', () => {
+    // `title:(scope)` is ambiguous between "literal parens in text" and
+    // "ES query_string grouping". We pick the latter (more useful to
+    // power users); a user who wants literal parens can quote the value:
+    // `title:"(scope)"`.
+    expect(encodeSearch('title:(scope)', 'all')).toBe('searchTitle:(scope)')
+    expect(encodeSearch('title:(C++)', 'all')).toBe('searchTitle:(C\\+\\+)')
+  })
+  it('leaves clean prefix values bare so the wire string stays readable', () => {
+    // No reserved chars → no wrap. Preserves the simple common case.
+    expect(encodeSearch('title:loader', 'all')).toBe('searchTitle:loader')
+    expect(encodeSearch('id:HULY-51', 'all')).toBe('identifier:HULY-51')
+    expect(encodeSearch('comments:fixed', 'all')).toBe('comments.message:fixed')
+  })
+  it('passes quoted prefix values through as phrase literals', () => {
+    // Quoted phrases are an ES query_string phrase literal — no escape
+    // needed even when the inner text would otherwise be reserved.
+    expect(encodeSearch('title:"foo bar"', 'all')).toBe('searchTitle:"foo bar"')
+  })
+  it('preserves boolean operators between prefix clauses', () => {
+    // Power-user syntax: AND/OR between prefix-targeted clauses must
+    // pass through, only the values get wrapped when needed.
+    expect(encodeSearch('title:C++ OR id:HULY-1', 'all'))
+      .toBe('searchTitle:(C\\+\\+) OR identifier:HULY-1')
+  })
 })
