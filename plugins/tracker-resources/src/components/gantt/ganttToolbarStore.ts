@@ -8,6 +8,7 @@
 import { writable } from 'svelte/store'
 import type { DropdownIntlItem } from '@hcengineering/ui'
 import type { GroupByKey } from './lib/group-by'
+import type { BarColorMode } from './lib/bar-colors'
 
 // Snapshot of every value the lifted Gantt-toolbar row needs to render.
 // GanttView writes this reactively; GanttToolbarBar (mounted in IssuesView's
@@ -54,6 +55,9 @@ export interface GanttToolbarSnapshot {
   openMoreActionsMenu: (e: MouseEvent) => void
 
   ariaLabels: Record<string, string>
+
+  ganttBarColorBy: BarColorMode
+  onColorBySelectChange: (ev: Event) => void
 }
 
 export const ganttToolbarSnapshot = writable<GanttToolbarSnapshot | null>(null)
