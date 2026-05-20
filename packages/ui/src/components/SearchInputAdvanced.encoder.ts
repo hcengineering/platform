@@ -113,114 +113,199 @@ function escapeForQueryString (s: string): string {
 const PREFIX_VALUE_RESERVED_RE = /[+!(){}[\]^"~\\/:]/
 
 /**
- * For prefix-targeted inputs (e.g. `title:C++ developer` or
- * `comments:foo/bar`), wrap the `<value>` portion of each `<field>:<value>`
- * clause in parens + escape Lucene-reserved chars when the value would
- * otherwise blow up the ES `query_string` parser.
+ * Single-pass tokenizer for the prefix-routed encode path.
  *
- * Without this, ES parses `C++` as `C` + `+` + `+` and throws
- * `query_string_parsing_exception`, surfacing as zero hits for completely
- * legitimate user input.
+ * Background: previous iterations of `escapePrefixValues` stacked two
+ * regex passes (clause-replace + whitespace-split). Each new edge case
+ * (colon-in-value, attached parens, C++ in orphan position, quoted-
+ * phrase splitting) required another regex tweak and the logic became
+ * fragile. This tokenizer replaces both passes with one walker that
+ * emits typed tokens; each token type has exactly one rendering rule.
  *
- * Strategy: regex-scan the aliased string for `<field>:<value>` clauses
- * where <value> is one of three forms:
- *   1. Already user-wrapped in parens:   `searchTitle:(...)`     → escape inside
- *   2. Quoted phrase:                    `searchTitle:"foo bar"` → pass through (ES treats as phrase literal)
- *   3. Bare run of non-whitespace:       `searchTitle:loader`    → escape+wrap ONLY if reserved chars present
+ * Token grammar:
  *
- * Anything outside these clauses (whitespace, boolean operators
- * AND/OR/NOT, standalone parens the user typed for boolean grouping)
- * passes through verbatim. Clean bare values stay unwrapped so the wire
- * string stays readable for the common case.
+ *   ws            whitespace run
+ *   bool-op       'AND' | 'OR' | 'NOT' (uppercase, standalone)
+ *   quoted        `"...somestring..."` — pass through unchanged
+ *   field-clause  `<known-field>:<value>` where <value> is one of
+ *                   - paren-wrapped  `(...)`     — re-emit with inner escaped
+ *                   - quoted phrase  `"..."`      — pass through
+ *                   - bare run       `[^\s]+`     — escape+wrap if reserved
+ *   bare          any other non-whitespace run — escape reserved chars
+ *
+ * The tokenizer attempts matches in that priority order at every
+ * token boundary (positions immediately after whitespace or at start
+ * of input).
  */
-function escapePrefixValues (aliased: string): string {
-  // First pass: process known-field clauses (\b<field>:<value>) so they
-  // emit ES-safe wire syntax.
-  const fieldAlt = [...ES_NATIVE_FIELDS].map((f) => f.replace(/\./g, '\\.')).join('|')
-  // Value patterns, longest-match first:
-  //   \(([^()]*)\)  — paren-wrapped: re-emit with inner content escaped
-  //   "([^"]*)"     — quoted phrase: pass through (ES phrase literal)
-  //   ([^\s]+)      — bare run up to whitespace. INCLUDES attached parens
-  //                   etc. so values like `title:foo(bar)` or `title:foo)`
-  //                   get captured as the full value `foo(bar)`/`foo)` and
-  //                   hit the reserved-char escape branch — without this,
-  //                   `foo(bar)` would split into bare=`foo` (clean,
-  //                   passed bare) + orphan `(bar)` which pass 2 would
-  //                   then try to escape but the resulting token
-  //                   `searchTitle:foo(bar)` would already have been
-  //                   joined and pass 2 would treat the whole thing as a
-  //                   known-field clause and skip it (Codex Round-8).
-  const clauseRe = new RegExp(`\\b(${fieldAlt}):(?:\\(([^()]*)\\)|"([^"]*)"|([^\\s]+))`, 'g')
 
-  const firstPass = aliased.replace(clauseRe, (_match, field: string, paren?: string, quoted?: string, bare?: string) => {
-    if (paren !== undefined) {
-      return `${field}:(${escapeForQueryString(paren)})`
-    }
-    if (quoted !== undefined) {
-      return `${field}:"${quoted}"`
-    }
-    const value = bare ?? ''
-    if (!PREFIX_VALUE_RESERVED_RE.test(value)) {
-      return `${field}:${value}`
-    }
-    return `${field}:(${escapeForQueryString(value)})`
-  })
+type Token =
+  | { kind: 'ws', raw: string }
+  | { kind: 'bool-op', raw: 'AND' | 'OR' | 'NOT' }
+  | { kind: 'quoted', raw: string } // includes the surrounding quotes
+  | { kind: 'field-clause', field: string, value: ClauseValue }
+  | { kind: 'bare', raw: string }
 
-  // Second pass: orphan bare tokens in a prefixed query. Once ANY known
-  // prefix appears in the input, the adapter routes the whole string
-  // through ES `query_string` (strict parser). Bare tokens like `C++`,
-  // `foo/bar` or `12:30` that follow the prefix clause still hit that
-  // strict parser, so any Lucene-reserved char in them blows up the
-  // entire query — exactly the failure mode Round-6/7 surfaced.
-  //
-  // Strategy: scan whitespace-separated tokens, escape PREFIX_VALUE_RESERVED_RE
-  // chars in tokens that AREN'T:
-  //   - known-field clauses (pass 1 already made them safe)
-  //   - boolean operators (`AND`/`OR`/`NOT` are case-sensitive uppercase
-  //     in Lucene query_string; lowercase is parsed as bare terms)
-  //   - quoted phrases (ES treats `"foo bar"` as a phrase literal)
-  //
-  // We deliberately don't try to preserve standalone `(`/`)` for boolean
-  // grouping in orphan tokens: a power user who really wants grouping
-  // can write it as a known-field clause (`title:(foo OR bar)`) where
-  // pass 1 honours the parens correctly.
-  // Stateful tokenizer that respects quoted phrases: a `"..."` may span
-  // whitespace and survives as one token (or as part of a larger token
-  // like `searchTitle:"foo bar"`). A naive `\S+` split would tear the
-  // phrase apart at the inner whitespace and the trailing `bar"` token
-  // would then get its closing `"` escaped, breaking ES phrase syntax.
-  const knownClauseRe = new RegExp(`^(?:${fieldAlt}):`)
-  function processToken (tok: string): string {
-    if (knownClauseRe.test(tok)) return tok
-    if (tok === 'AND' || tok === 'OR' || tok === 'NOT') return tok
-    if (tok.startsWith('"') && tok.endsWith('"')) return tok
-    if (!PREFIX_VALUE_RESERVED_RE.test(tok)) return tok
-    return tok.replace(/[+!(){}[\]^"~\\/:]/g, '\\$&')
-  }
+type ClauseValue =
+  | { kind: 'paren', inner: string }
+  | { kind: 'quoted', inner: string }
+  | { kind: 'bare', raw: string }
 
-  let out = ''
-  let buf = ''
-  let inQuote = false
-  for (const ch of firstPass) {
-    if (inQuote) {
-      buf += ch
-      if (ch === '"') inQuote = false
-      continue
-    }
-    if (ch === '"') {
-      buf += ch
-      inQuote = true
-      continue
-    }
+const BOOL_OPS = new Set(['AND', 'OR', 'NOT'])
+
+function tokenize (input: string): Token[] {
+  const tokens: Token[] = []
+  // Pre-sort field names longest-first so `description.plain` matches
+  // before `description` would (if ever added). Currently no overlap
+  // but defensive.
+  const fields = [...ES_NATIVE_FIELDS].sort((a, b) => b.length - a.length)
+
+  let i = 0
+  while (i < input.length) {
+    const ch = input[i]
+
+    // ws
     if (/\s/.test(ch)) {
-      if (buf !== '') { out += processToken(buf); buf = '' }
-      out += ch
+      let end = i + 1
+      while (end < input.length && /\s/.test(input[end])) end++
+      tokens.push({ kind: 'ws', raw: input.slice(i, end) })
+      i = end
       continue
     }
-    buf += ch
+
+    // standalone quoted phrase
+    if (ch === '"') {
+      const close = input.indexOf('"', i + 1)
+      if (close >= 0) {
+        // Boundary check: after close must be EOF or whitespace
+        if (close + 1 === input.length || /\s/.test(input[close + 1])) {
+          tokens.push({ kind: 'quoted', raw: input.slice(i, close + 1) })
+          i = close + 1
+          continue
+        }
+      }
+      // Unbalanced or attached — fall through to bare
+    }
+
+    // field-clause: known field name at a token boundary, followed by `:`
+    let matched = false
+    for (const field of fields) {
+      if (i + field.length + 1 > input.length) continue
+      if (input.slice(i, i + field.length) !== field) continue
+      if (input[i + field.length] !== ':') continue
+      const valueStart = i + field.length + 1
+
+      // paren-wrapped value
+      if (input[valueStart] === '(') {
+        const close = input.indexOf(')', valueStart + 1)
+        if (close >= 0) {
+          tokens.push({
+            kind: 'field-clause',
+            field,
+            value: { kind: 'paren', inner: input.slice(valueStart + 1, close) }
+          })
+          i = close + 1
+          matched = true
+          break
+        }
+      }
+
+      // quoted value
+      if (input[valueStart] === '"') {
+        const close = input.indexOf('"', valueStart + 1)
+        if (close >= 0) {
+          tokens.push({
+            kind: 'field-clause',
+            field,
+            value: { kind: 'quoted', inner: input.slice(valueStart + 1, close) }
+          })
+          i = close + 1
+          matched = true
+          break
+        }
+      }
+
+      // bare value: run up to whitespace
+      let end = valueStart
+      while (end < input.length && !/\s/.test(input[end])) end++
+      if (end > valueStart) {
+        tokens.push({
+          kind: 'field-clause',
+          field,
+          value: { kind: 'bare', raw: input.slice(valueStart, end) }
+        })
+        i = end
+        matched = true
+        break
+      }
+    }
+    if (matched) continue
+
+    // boolean operator (uppercase, standalone — boundary on both sides)
+    for (const op of BOOL_OPS) {
+      if (input.slice(i, i + op.length) !== op) continue
+      const after = i + op.length
+      if (after !== input.length && !/\s/.test(input[after])) continue
+      tokens.push({ kind: 'bool-op', raw: op as 'AND' | 'OR' | 'NOT' })
+      i = after
+      matched = true
+      break
+    }
+    if (matched) continue
+
+    // bare token: run up to next whitespace
+    let end = i
+    while (end < input.length && !/\s/.test(input[end])) end++
+    tokens.push({ kind: 'bare', raw: input.slice(i, end) })
+    i = end
   }
-  if (buf !== '') out += processToken(buf)
-  return out
+  return tokens
+}
+
+/** Render a single token into its ES-safe wire form. */
+function renderToken (tok: Token): string {
+  switch (tok.kind) {
+    case 'ws':
+    case 'bool-op':
+    case 'quoted':
+      return tok.raw
+
+    case 'field-clause': {
+      const { field, value } = tok
+      switch (value.kind) {
+        case 'paren':
+          // User explicitly wrapped value in parens. Re-emit with the inner
+          // content escaped so any reserved chars become literal — the
+          // wrapping parens themselves are ES grouping syntax, not user
+          // text.
+          return `${field}:(${escapeForQueryString(value.inner)})`
+        case 'quoted':
+          // ES phrase literal; pass inner content through verbatim.
+          return `${field}:"${value.inner}"`
+        case 'bare':
+          // Clean value: emit bare for a readable wire string. Reserved
+          // chars present: wrap in parens with full Lucene escape so ES
+          // query_string parses the value as a single literal token.
+          if (!PREFIX_VALUE_RESERVED_RE.test(value.raw)) {
+            return `${field}:${value.raw}`
+          }
+          return `${field}:(${escapeForQueryString(value.raw)})`
+      }
+    }
+
+    case 'bare': {
+      // Orphan bare token in a prefix-routed query. Once ANY known prefix
+      // appears, the adapter routes via ES query_string (strict parser),
+      // so reserved chars here also break the query. Escape per
+      // PREFIX_VALUE_RESERVED_RE (narrower than the full Lucene set —
+      // see the constant's JSDoc for why `-`, `*`, `?` are excluded).
+      if (!PREFIX_VALUE_RESERVED_RE.test(tok.raw)) return tok.raw
+      return tok.raw.replace(/[+!(){}[\]^"~\\/:]/g, '\\$&')
+    }
+  }
+}
+
+function escapePrefixValues (aliased: string): string {
+  return tokenize(aliased).map(renderToken).join('')
 }
 
 export function encodeSearch (raw: string, scope: SearchScope): string {
