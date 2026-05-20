@@ -387,6 +387,12 @@
     cursor: pointer;
     outline: none;
     padding: 0 0.125rem;
+    /* Cap intrinsic width — native <select> sizes itself to the longest
+       option which can blow up if a label gets long; clipping here keeps
+       the toolbar predictable. The selected value still renders cleanly
+       because options open in a native dropdown that ignores this cap. */
+    max-width: 8rem;
+    text-overflow: ellipsis;
     /* Trim native chevron padding so the value text + chevron sit snug. */
     appearance: none;
     -webkit-appearance: none;
