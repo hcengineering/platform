@@ -526,7 +526,10 @@
     "GanttMobileMenu": "Menu",
     "GanttMobileOpenSidebar": "Open issue list",
     "GanttMobileCloseSidebar": "Close issue list",
-    "GanttMobileReadOnly": "Mobile view is read-only — open on a larger screen to edit"
+    "GanttMobileReadOnly": "Mobile view is read-only — open on a larger screen to edit",
+    "GanttShowPastDueOverlay": "Show overdue overlay",
+    "GanttShowBlockedOverlay": "Show blocked overlay",
+    "GanttShowSubIssueProgress": "Show sub-issue progress"
   },
   "status": {}
 }

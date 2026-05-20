@@ -478,6 +478,34 @@ export function ganttViewOptions (): ViewOptionsModel {
         ],
         actionTarget: 'display',
         label: tracker.string.GanttGroupBy
+      },
+      {
+        // Phase 3.10 — overlay toggles. When past-due is on, overdue bars
+        // get a diagonal red-stripe overlay; when blocked is on, bars with
+        // an unsatisfied predecessor get a hatch overlay. Both default ON
+        // so new users immediately see the visual cues.
+        key: 'ganttShowPastDueOverlay',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowPastDueOverlay
+      },
+      {
+        key: 'ganttShowBlockedOverlay',
+        type: 'toggle',
+        defaultValue: true,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowBlockedOverlay
+      },
+      {
+        // Sub-issue progress fill: when ON, parent bars show a secondary
+        // fill proportional to child-issue completion. Default OFF to keep
+        // the chart uncluttered for teams that don't use sub-issues.
+        key: 'ganttShowSubIssueProgress',
+        type: 'toggle',
+        defaultValue: false,
+        actionTarget: 'display',
+        label: tracker.string.GanttShowSubIssueProgress
       }
     ]
   }

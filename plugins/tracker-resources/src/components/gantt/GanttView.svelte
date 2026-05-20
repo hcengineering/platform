@@ -338,6 +338,23 @@
   $: ganttSidebarShowDeadline = ((viewOptions as Record<string, unknown>)?.ganttSidebarShowDeadline ?? false) === true
   $: ganttSidebarShowProgress = ((viewOptions as Record<string, unknown>)?.ganttSidebarShowProgress ?? false) === true
 
+  // Phase 3.10 — overlay + sub-issue-progress toggles driven by Customize-view.
+  // Unconditional .set() with default fallback — active-default-reset policy:
+  // when a key is absent in the incoming viewOptions blob (e.g. switching back
+  // to a default view from a saved one that had these set), the store snaps
+  // back to the spec default rather than retaining the previous saved-view value.
+  $: {
+    const vo = (viewOptions as Record<string, unknown> | undefined) ?? {}
+    const pastDue = vo.ganttShowPastDueOverlay
+    ganttShowPastDueOverlay.set(typeof pastDue === 'boolean' ? pastDue : true)
+
+    const blocked = vo.ganttShowBlockedOverlay
+    ganttShowBlockedOverlay.set(typeof blocked === 'boolean' ? blocked : true)
+
+    const progress = vo.ganttShowSubIssueProgress
+    ganttShowSubIssueProgress.set(typeof progress === 'boolean' ? progress : false)
+  }
+
   // Phase 1.A — bar-label slots driven by Customize-view ViewOptions.
   // Defaults preserve legacy "title inside the bar" rendering.
   $: barLabelLeft = (((viewOptions as Record<string, unknown>)?.ganttBarLabelLeft as string) ?? 'none') as BarLabelSlot

@@ -509,7 +509,11 @@ export default mergeIds(trackerId, tracker, {
     // Activity-Log
     AddedRelation: '' as IntlString,
     RemovedRelation: '' as IntlString,
-    UpdatedRelation: '' as IntlString
+    UpdatedRelation: '' as IntlString,
+    // Phase 3.10 — Customize-View overlay + progress toggles
+    GanttShowPastDueOverlay: '' as IntlString,
+    GanttShowBlockedOverlay: '' as IntlString,
+    GanttShowSubIssueProgress: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

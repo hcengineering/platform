@@ -524,7 +524,10 @@
     "GanttMobileMenu": "Menü",
     "GanttMobileOpenSidebar": "Issue-Liste öffnen",
     "GanttMobileCloseSidebar": "Issue-Liste schließen",
-    "GanttMobileReadOnly": "Mobile Ansicht nur lesbar — größeres Display für Bearbeitung verwenden"
+    "GanttMobileReadOnly": "Mobile Ansicht nur lesbar — größeres Display für Bearbeitung verwenden",
+    "GanttShowPastDueOverlay": "Überfällig markieren",
+    "GanttShowBlockedOverlay": "Blockiert markieren",
+    "GanttShowSubIssueProgress": "Teilaufgaben-Fortschritt anzeigen"
   },
   "status": {}
 }
