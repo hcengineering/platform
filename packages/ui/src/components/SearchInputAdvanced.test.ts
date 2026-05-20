@@ -120,4 +120,43 @@ describe('encodeSearch', () => {
     expect(encodeSearch('title:meeting 12:30', 'all'))
       .toBe('searchTitle:meeting 12\\:30')
   })
+
+  // ─── Orphan tokens with non-colon reserved chars (Codex Round-7) ─────────
+  // Once any prefix appears, the adapter routes via ES query_string so
+  // EVERY bare token must be parser-safe — not just colon-bearing ones.
+  it('escapes orphan + signs in tokens that follow a prefix clause', () => {
+    expect(encodeSearch('title:meeting C++', 'all'))
+      .toBe('searchTitle:meeting C\\+\\+')
+  })
+  it('escapes orphan slashes in tokens that follow a prefix clause', () => {
+    expect(encodeSearch('title:meeting foo/bar', 'all'))
+      .toBe('searchTitle:meeting foo\\/bar')
+  })
+  it('escapes orphan parens / brackets / braces in trailing tokens', () => {
+    expect(encodeSearch('title:meeting foo)', 'all'))
+      .toBe('searchTitle:meeting foo\\)')
+    expect(encodeSearch('title:bug list[0]', 'all'))
+      .toBe('searchTitle:bug list\\[0\\]')
+  })
+  it('preserves boolean operators AND/OR/NOT verbatim between orphan tokens', () => {
+    expect(encodeSearch('title:meeting AND foo OR bar', 'all'))
+      .toBe('searchTitle:meeting AND foo OR bar')
+  })
+  it('passes through quoted phrases as orphan tokens', () => {
+    expect(encodeSearch('title:meeting "release notes"', 'all'))
+      .toBe('searchTitle:meeting "release notes"')
+  })
+  it('preserves wildcards * and ? in orphan tokens', () => {
+    // Wildcards are legitimate ES query_string syntax for prefix /
+    // single-char match. Leave them un-escaped so the user can type
+    // them on purpose.
+    expect(encodeSearch('title:meeting foo*', 'all'))
+      .toBe('searchTitle:meeting foo*')
+    expect(encodeSearch('title:meeting b?r', 'all'))
+      .toBe('searchTitle:meeting b?r')
+  })
+  it('preserves hyphens mid-token in orphan tokens (ES tolerant)', () => {
+    expect(encodeSearch('title:meeting bug-fix', 'all'))
+      .toBe('searchTitle:meeting bug-fix')
+  })
 })
