@@ -17,6 +17,7 @@
 // No schema migration is needed — `FilteredView.viewOptions` is open.
 
 import type { ZoomLevel } from './types'
+import type { BarColorMode } from './bar-colors'
 
 const ZOOM_LEVELS: readonly ZoomLevel[] = ['day', 'week', 'month', 'quarter']
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
@@ -25,6 +26,10 @@ export interface GanttSavedViewOptions {
   zoomLevel: ZoomLevel
   /** ISO 'YYYY-MM-DD' UTC-midnight anchor, only set when the user fixes the time window. */
   panAnchorDate?: string
+  ganttBarColorBy?: BarColorMode
+  ganttShowPastDueOverlay?: boolean
+  ganttShowBlockedOverlay?: boolean
+  ganttShowSubIssueProgress?: boolean
 }
 
 function isZoomLevel (v: unknown): v is ZoomLevel {
@@ -37,6 +42,12 @@ function isValidIsoDate (v: unknown): v is string {
   return Number.isFinite(t)
 }
 
+const BAR_COLOR_MODES: readonly BarColorMode[] = ['status', 'priority', 'assignee', 'component', 'milestone', 'none']
+
+function isBarColorMode (v: unknown): v is BarColorMode {
+  return typeof v === 'string' && (BAR_COLOR_MODES as readonly string[]).includes(v)
+}
+
 /** Read the Gantt-specific keys back out of a (possibly mixed) viewOptions blob. */
 export function extractGanttSavedView (raw: Record<string, unknown> | undefined): GanttSavedViewOptions {
   if (raw == null) return { zoomLevel: 'week' }
@@ -44,6 +55,18 @@ export function extractGanttSavedView (raw: Record<string, unknown> | undefined)
   const out: GanttSavedViewOptions = { zoomLevel: zoom }
   if (isValidIsoDate(raw.ganttPanAnchorDate)) {
     out.panAnchorDate = raw.ganttPanAnchorDate
+  }
+  if (isBarColorMode(raw.ganttBarColorBy)) {
+    out.ganttBarColorBy = raw.ganttBarColorBy
+  }
+  if (typeof raw.ganttShowPastDueOverlay === 'boolean') {
+    out.ganttShowPastDueOverlay = raw.ganttShowPastDueOverlay
+  }
+  if (typeof raw.ganttShowBlockedOverlay === 'boolean') {
+    out.ganttShowBlockedOverlay = raw.ganttShowBlockedOverlay
+  }
+  if (typeof raw.ganttShowSubIssueProgress === 'boolean') {
+    out.ganttShowSubIssueProgress = raw.ganttShowSubIssueProgress
   }
   return out
 }
@@ -65,6 +88,23 @@ export function mergeGanttSavedView (
     out.ganttPanAnchorDate = opts.panAnchorDate
   } else {
     delete out.ganttPanAnchorDate
+  }
+
+  // Bar-color toolbar state. Only persist when the caller explicitly
+  // supplied a value — undefined means "use existing value if any". We
+  // intentionally do NOT delete on undefined; the loader's active-default
+  // reset (Task 11) handles missing keys.
+  if (isBarColorMode(opts.ganttBarColorBy)) {
+    out.ganttBarColorBy = opts.ganttBarColorBy
+  }
+  if (typeof opts.ganttShowPastDueOverlay === 'boolean') {
+    out.ganttShowPastDueOverlay = opts.ganttShowPastDueOverlay
+  }
+  if (typeof opts.ganttShowBlockedOverlay === 'boolean') {
+    out.ganttShowBlockedOverlay = opts.ganttShowBlockedOverlay
+  }
+  if (typeof opts.ganttShowSubIssueProgress === 'boolean') {
+    out.ganttShowSubIssueProgress = opts.ganttShowSubIssueProgress
   }
   return out
 }
