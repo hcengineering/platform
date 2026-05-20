@@ -226,6 +226,7 @@ export interface Milestone extends Doc {
 
   startDate: Timestamp | null // null = open-ended begin marker
   targetDate: Timestamp
+  color?: number
 }
 
 /**
@@ -475,6 +476,7 @@ export interface Component extends Doc {
   space: Ref<Project>
   comments: number
   attachments?: number
+  color?: number
 }
 
 /**
@@ -723,7 +725,8 @@ const pluginState = plugin(trackerId, {
     DependencyShiftedMessage: '' as IntlString,
     DependencyShiftedSubject: '' as IntlString,
     DependencyShiftedDeltaDays: '' as IntlString,
-    DependencyShiftedNoChange: '' as IntlString
+    DependencyShiftedNoChange: '' as IntlString,
+    Color: '' as IntlString
   },
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,

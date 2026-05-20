@@ -320,6 +320,7 @@
     "DependencyShiftedSubject": "Abhängigkeits-Verschiebung",
     "DependencyShiftedDeltaDays": "{delta, plural, =0 {keine Verschiebung} =1 {+1 Tag} =-1 {-1 Tag} other {{deltaSigned} Tage}}",
     "DependencyShiftedNoChange": "keine Termin-Änderung",
+    "Color": "Farbe",
     "AllowCreatingIssues": "Erstellen von Aufgaben erlauben",
     "Day": "Day",
     "Week": "Week",

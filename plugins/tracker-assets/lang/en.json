@@ -309,6 +309,7 @@
     "DependencyShiftedSubject": "Dependency shift",
     "DependencyShiftedDeltaDays": "{delta, plural, =0 {no shift} =1 {+1 day} =-1 {-1 day} other {{deltaSigned} days}}",
     "DependencyShiftedNoChange": "no schedule change",
+    "Color": "Color",
     "AllowCreatingIssues": "Allow creating issues",
     "Day": "Day",
     "Week": "Week",
