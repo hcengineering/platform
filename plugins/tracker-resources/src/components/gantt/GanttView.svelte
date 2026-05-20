@@ -222,6 +222,11 @@
   setContext('gantt-predecessors-by-issue', predecessorsByIssueIdStore)
   setContext('gantt-pred-status-by-issue',  predStatusByIssueIdStore)
 
+  const subIssuesByParent = writable<Map<string, Issue[]>>(new Map())
+  setContext('gantt-sub-issues-by-parent', subIssuesByParent)
+
+  const subIssuesQuery = createQuery()
+
   // PR3.3: single Set holds editable Issue _ids AND Milestone _ids — both
   // are stringified Ref<...> so a single Set lookup serves the bar
   // editable={} flag for both row kinds without parallel data structures.
@@ -879,6 +884,31 @@
   // Push predecessor maps into context stores whenever they change.
   $: predecessorsByIssueIdStore.set(predecessorsByIssueId)
   $: predStatusByIssueIdStore.set(predStatusByIssueId)
+
+  $: if ($ganttShowSubIssueProgress) {
+    const parents = issues.filter(i => i.subIssues > 0).map(i => i._id)
+    if (parents.length === 0) {
+      subIssuesByParent.set(new Map())
+    } else {
+      // Global query — ignores the active filter on purpose, per spec section D.
+      subIssuesQuery.query(
+        tracker.class.Issue,
+        { attachedTo: { $in: parents } },
+        (loaded: Issue[]) => {
+          const m = new Map<string, Issue[]>()
+          for (const s of loaded) {
+            const k = String(s.attachedTo)
+            if (!m.has(k)) m.set(k, [])
+            m.get(k)!.push(s)
+          }
+          subIssuesByParent.set(m)
+        }
+      )
+    }
+  } else {
+    subIssuesQuery.unsubscribe()
+    subIssuesByParent.set(new Map())
+  }
 
   function paddingDays (z: ZoomLevel): number {
     switch (z) {

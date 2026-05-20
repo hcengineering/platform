@@ -13,6 +13,7 @@
   import { resolveBarLabel, type BarLabelSlot } from './lib/bar-labels'
   import { resolveBarColors, type BarColorMode, type BarColorContext } from './lib/bar-colors'
   import { isPastDue, isBlocked } from './lib/bar-overlays'
+  import { progressFraction } from './lib/progress-fraction'
   import { getPlatformColor, themeStore } from '@hcengineering/ui'
   //  — Mobile-Friendly Gantt.
   import type { LayoutMode } from './lib/breakpoint'
@@ -242,7 +243,13 @@
       ctxStore !== undefined ? $ctxStore.statusCategoryFor : () => null
     )
 
+  const subsStore = getContext<Readable<Map<string, Issue[]>>>('gantt-sub-issues-by-parent')
+  const progressStore = getContext<Writable<boolean>>('gantt-progress-fill')
+
   $: mode = modeStore !== undefined ? $modeStore : 'status'
+  $: progressFrac = (!isSummary && (progressStore !== undefined ? ($progressStore ?? false) : false) && mode === 'status' && issue._id != null)
+    ? progressFraction(issue as any, $subsStore?.get(String(issue._id)) ?? [], ctxStore !== undefined ? $ctxStore.statusCategoryFor : () => null)
+    : null
   $: triple = (ctxStore !== undefined && modeStore !== undefined)
     ? resolveBarColors(issue, mode, $ctxStore)
     : resolveBarColors(issue, 'status', {
@@ -498,6 +505,19 @@
         dispatch('barHover', { issue: null })
       }}
     />
+    {#if progressFrac !== null && progressFrac > 0}
+      <rect
+        x={x}
+        y={barY}
+        width={w * progressFrac}
+        height={barH}
+        rx={3}
+        ry={3}
+        fill="var(--theme-bg-accent-color)"
+        fill-opacity="0.35"
+        pointer-events="none"
+      />
+    {/if}
     {#if showBlocked}
       <pattern id={`hatch-${issue._id ?? 'syn'}`} patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
         <line x1="0" y1="0" x2="0" y2="6" stroke="var(--theme-content-color)" stroke-opacity="0.15" stroke-width="2" />
