@@ -94,4 +94,30 @@ describe('encodeSearch', () => {
     expect(encodeSearch('title:C++ OR id:HULY-1', 'all'))
       .toBe('searchTitle:(C\\+\\+) OR identifier:HULY-1')
   })
+
+  // ─── Colon-in-value (Codex Round-6) ──────────────────────────────────────
+  // The bare-value regex is greedy across non-whitespace so a value can
+  // contain its own colon. Without escaping that, ES query_string would
+  // re-parse the inner colon as another field-targeted clause and the
+  // entire query crashes. The encoder now wraps+escapes such values.
+  it('wraps + escapes colons inside prefix values', () => {
+    expect(encodeSearch('title:POC:123', 'all'))
+      .toBe('searchTitle:(POC\\:123)')
+    expect(encodeSearch('title:12:30', 'all'))
+      .toBe('searchTitle:(12\\:30)')
+    expect(encodeSearch('comments:bug:fix', 'all'))
+      .toBe('comments.message:(bug\\:fix)')
+  })
+  it('handles colon-in-value alongside other reserved chars', () => {
+    expect(encodeSearch('title:POC:C++', 'all'))
+      .toBe('searchTitle:(POC\\:C\\+\\+)')
+  })
+  it('escapes orphan colons in bare tokens that follow a prefix clause', () => {
+    // 'title:meeting 12:30' — the 12:30 has no known-field anchor, but
+    // ES query_string still sees a colon there and tries to parse '12'
+    // as a field. Second pass escapes orphan colons so they read as
+    // literal text.
+    expect(encodeSearch('title:meeting 12:30', 'all'))
+      .toBe('searchTitle:meeting 12\\:30')
+  })
 })
