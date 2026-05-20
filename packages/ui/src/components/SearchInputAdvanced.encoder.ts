@@ -157,26 +157,61 @@ function escapePrefixValues (aliased: string): string {
     return `${field}:(${escapeForQueryString(value)})`
   })
 
-  // Second pass: orphan colons in bare tokens that AREN'T known-field
-  // clauses. Example: `title:meeting 12:30` → first pass emits
-  // `searchTitle:meeting 12:30` (the `12:30` token has no known-field
-  // anchor, so the first pass left it alone). Without this second pass,
-  // ES query_string would parse `12:30` as field=`12` value=`30`, which
-  // either errors or returns zero hits because no field `12` exists.
+  // Second pass: orphan bare tokens in a prefixed query. Once ANY known
+  // prefix appears in the input, the adapter routes the whole string
+  // through ES `query_string` (strict parser). Bare tokens like `C++`,
+  // `foo/bar` or `12:30` that follow the prefix clause still hit that
+  // strict parser, so any Lucene-reserved char in them blows up the
+  // entire query — exactly the failure mode Round-6/7 surfaced.
   //
-  // Strategy: scan whitespace-separated tokens, escape any `:` in tokens
-  // that don't already start with a known field name. Tokens that ARE
-  // known-field clauses (now safely emitted by pass 1) are recognised by
-  // their `<field>:(...)` / `<field>:"..."` / `<field>:<safe-value>`
-  // shape and passed through.
-  return firstPass.replace(/\S+/g, (tok) => {
-    if (!tok.includes(':')) return tok
-    // Is this a known-field clause? Match the same field alternation.
-    if (new RegExp(`^(?:${fieldAlt}):`).test(tok)) return tok
-    // Orphan token with a colon — escape every colon so ES treats it
-    // as literal text instead of opening a new field clause.
-    return tok.replace(/:/g, '\\:')
-  })
+  // Strategy: scan whitespace-separated tokens, escape PREFIX_VALUE_RESERVED_RE
+  // chars in tokens that AREN'T:
+  //   - known-field clauses (pass 1 already made them safe)
+  //   - boolean operators (`AND`/`OR`/`NOT` are case-sensitive uppercase
+  //     in Lucene query_string; lowercase is parsed as bare terms)
+  //   - quoted phrases (ES treats `"foo bar"` as a phrase literal)
+  //
+  // We deliberately don't try to preserve standalone `(`/`)` for boolean
+  // grouping in orphan tokens: a power user who really wants grouping
+  // can write it as a known-field clause (`title:(foo OR bar)`) where
+  // pass 1 honours the parens correctly.
+  // Stateful tokenizer that respects quoted phrases: a `"..."` may span
+  // whitespace and survives as one token (or as part of a larger token
+  // like `searchTitle:"foo bar"`). A naive `\S+` split would tear the
+  // phrase apart at the inner whitespace and the trailing `bar"` token
+  // would then get its closing `"` escaped, breaking ES phrase syntax.
+  const knownClauseRe = new RegExp(`^(?:${fieldAlt}):`)
+  function processToken (tok: string): string {
+    if (knownClauseRe.test(tok)) return tok
+    if (tok === 'AND' || tok === 'OR' || tok === 'NOT') return tok
+    if (tok.startsWith('"') && tok.endsWith('"')) return tok
+    if (!PREFIX_VALUE_RESERVED_RE.test(tok)) return tok
+    return tok.replace(/[+!(){}[\]^"~\\/:]/g, '\\$&')
+  }
+
+  let out = ''
+  let buf = ''
+  let inQuote = false
+  for (const ch of firstPass) {
+    if (inQuote) {
+      buf += ch
+      if (ch === '"') inQuote = false
+      continue
+    }
+    if (ch === '"') {
+      buf += ch
+      inQuote = true
+      continue
+    }
+    if (/\s/.test(ch)) {
+      if (buf !== '') { out += processToken(buf); buf = '' }
+      out += ch
+      continue
+    }
+    buf += ch
+  }
+  if (buf !== '') out += processToken(buf)
+  return out
 }
 
 export function encodeSearch (raw: string, scope: SearchScope): string {
