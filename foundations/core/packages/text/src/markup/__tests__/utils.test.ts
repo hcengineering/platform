@@ -35,13 +35,26 @@ import { Editor, getSchema } from '@tiptap/core'
 import { ServerKit } from '../../kits/server-kit'
 import { getMarkup, htmlToJSON, htmlToMarkup, jsonToHTML, jsonToPmNode, jsonToText, pmNodeToJSON } from '../utils'
 
-// mock tiptap functions
-jest.mock('@tiptap/html', () => ({
-  generateHTML: jest.fn(() => '<p>hello</p>'),
-  generateJSON: jest.fn(() => ({
-    type: 'doc',
-    content: [{ type: 'paragraph', content: [{ type: 'text', text: 'hello' }] }]
-  }))
+// mock zeed-dom functions
+jest.mock('zeed-dom', () => ({
+  createHTMLDocument: jest.fn(() => ({
+    createElement: (tag: string) => document.createElement(tag),
+    createTextNode: (data: string) => document.createTextNode(data),
+    createDocumentFragment: () => {
+      const frag = document.createDocumentFragment()
+      ;(frag as any).render = () => {
+        const div = document.createElement('div')
+        div.appendChild(frag.cloneNode(true))
+        return div.innerHTML
+      }
+      return frag
+    }
+  })),
+  parseHTML: jest.fn((html: string) => {
+    const el = document.createElement('div')
+    el.innerHTML = html
+    return el
+  })
 }))
 
 const extensions = [ServerKit]
@@ -332,7 +345,8 @@ describe('jsonToPmNode', () => {
 describe('htmlToMarkup', () => {
   it('converts HTML to Markup', () => {
     const html = '<p>hello</p>'
-    const expectedMarkup = '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello"}]}]}'
+    const expectedMarkup =
+      '{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"hello"}]}]}'
     expect(htmlToMarkup(html)).toEqual(expectedMarkup)
   })
 })
@@ -340,8 +354,24 @@ describe('htmlToMarkup', () => {
 describe('htmlToJSON', () => {
   it('converts HTML to JSON', () => {
     const html = '<p>hello</p>'
-    const json = nodeDoc(nodeParagraph(nodeText('hello')))
-    expect(htmlToJSON(html)).toEqual(json)
+    const node: MarkupNode = {
+      type: MarkupNodeType.doc,
+      content: [
+        {
+          type: MarkupNodeType.paragraph,
+          attrs: {
+            textAlign: null
+          },
+          content: [
+            {
+              type: MarkupNodeType.text,
+              text: 'hello'
+            }
+          ]
+        }
+      ]
+    }
+    expect(htmlToJSON(html)).toEqual(node)
   })
 })
 

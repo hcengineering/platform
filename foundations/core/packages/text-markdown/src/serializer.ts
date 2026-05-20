@@ -61,7 +61,7 @@ function backticksFor (side: boolean): string {
 }
 
 function isPlainURL (link: MarkupMark, parent: MarkupNode, index: number): boolean {
-  if (link.attrs?.title !== undefined || !/^\w+:/.test(link.attrs?.href)) return false
+  if (link.attrs?.title != null || !/^\w+:/.test(link.attrs?.href)) return false
   const content = parent.content?.[index]
   if (content === undefined) {
     return false
@@ -387,13 +387,11 @@ export const storeMarks: Record<string, MarkProcessor> = {
         // eslint-disable-next-line
         const url = href.replace(/[\(\)"\\<>]/g, '\\$&')
         const hasSpaces = url.includes(' ')
+        const title = (mark.attrs?.title as string) ?? ''
 
         return inAutolink === true
           ? '>'
-          : '](' +
-              (hasSpaces ? `<${url}>` : url) +
-              (mark.attrs?.title !== undefined ? ` "${(mark.attrs?.title as string).replace(/"/g, '\\"')}"` : '') +
-              ')'
+          : '](' + (hasSpaces ? `<${url}>` : url) + (title !== '' ? ` "${title.replace(/"/g, '\\"')}"` : '') + ')'
       }
     },
     mixable: false,
@@ -409,13 +407,13 @@ export const storeMarks: Record<string, MarkProcessor> = {
   },
   textColor: {
     open: (state, mark, parent, index) => {
-      if (mark.attrs?.color === undefined) {
+      if (mark.attrs?.color == null) {
         return ''
       }
       return `<span style="color: ${mark.attrs.color}" data-color="${mark.attrs.color}">`
     },
     close: (state, mark, parent, index) => {
-      if (mark.attrs?.color === undefined) {
+      if (mark.attrs?.color == null) {
         return ''
       }
       return '</span>'
