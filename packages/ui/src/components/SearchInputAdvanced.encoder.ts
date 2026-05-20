@@ -140,8 +140,17 @@ function escapePrefixValues (aliased: string): string {
   // Value patterns, longest-match first:
   //   \(([^()]*)\)  — paren-wrapped: re-emit with inner content escaped
   //   "([^"]*)"     — quoted phrase: pass through (ES phrase literal)
-  //   ([^\s()]+)    — bare run up to whitespace or paren
-  const clauseRe = new RegExp(`\\b(${fieldAlt}):(?:\\(([^()]*)\\)|"([^"]*)"|([^\\s()]+))`, 'g')
+  //   ([^\s]+)      — bare run up to whitespace. INCLUDES attached parens
+  //                   etc. so values like `title:foo(bar)` or `title:foo)`
+  //                   get captured as the full value `foo(bar)`/`foo)` and
+  //                   hit the reserved-char escape branch — without this,
+  //                   `foo(bar)` would split into bare=`foo` (clean,
+  //                   passed bare) + orphan `(bar)` which pass 2 would
+  //                   then try to escape but the resulting token
+  //                   `searchTitle:foo(bar)` would already have been
+  //                   joined and pass 2 would treat the whole thing as a
+  //                   known-field clause and skip it (Codex Round-8).
+  const clauseRe = new RegExp(`\\b(${fieldAlt}):(?:\\(([^()]*)\\)|"([^"]*)"|([^\\s]+))`, 'g')
 
   const firstPass = aliased.replace(clauseRe, (_match, field: string, paren?: string, quoted?: string, bare?: string) => {
     if (paren !== undefined) {
