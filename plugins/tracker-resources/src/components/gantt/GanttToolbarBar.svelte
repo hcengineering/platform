@@ -37,6 +37,8 @@
   import { GROUP_BY_KEYS } from './lib/group-by'
   import { ganttToolbarSnapshot } from './ganttToolbarStore'
 
+  const COLOR_BY_KEYS = ['status', 'priority', 'assignee', 'component', 'milestone', 'none'] as const
+
   export let section: 'search-mid' | 'search-end' | 'trailing'
 
   // Constants — kept identical to GanttView so the input widget validates
@@ -76,6 +78,27 @@
             {:else if key === 'component'}<Label label={tracker.string.GanttGroupByComponent} />
             {:else if key === 'milestone'}<Label label={tracker.string.GanttGroupByMilestone} />
             {:else if key === 'label'}<Label label={tracker.string.GanttGroupByLabel} />
+            {/if}
+          </option>
+        {/each}
+      </select>
+    </div>
+    <div class="gantt-tb-colorby-wrap" use:tooltip={{ label: tracker.string.GanttColorBy }}>
+      <Label label={tracker.string.GanttColorBy} />
+      <!-- svelte-ignore a11y-no-onchange -->
+      <select
+        class="gantt-tb-colorby-select"
+        value={snap.ganttBarColorBy}
+        on:change={snap.onColorBySelectChange}
+      >
+        {#each COLOR_BY_KEYS as key (key)}
+          <option value={key}>
+            {#if key === 'status'}<Label label={tracker.string.GanttColorByStatus} />
+            {:else if key === 'priority'}<Label label={tracker.string.GanttColorByPriority} />
+            {:else if key === 'assignee'}<Label label={tracker.string.GanttColorByAssignee} />
+            {:else if key === 'component'}<Label label={tracker.string.GanttColorByComponent} />
+            {:else if key === 'milestone'}<Label label={tracker.string.GanttColorByMilestone} />
+            {:else if key === 'none'}<Label label={tracker.string.GanttColorByNone} />
             {/if}
           </option>
         {/each}
@@ -338,6 +361,29 @@
   }
 
   .gantt-tb-groupby-select {
+    background: transparent;
+    border: none;
+    color: var(--theme-content-color);
+    font: inherit;
+    cursor: pointer;
+    outline: none;
+    padding-right: 0.5rem;
+  }
+
+  .gantt-tb-colorby-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.75rem;
+    padding: 0 0.5rem;
+    border: 1px solid var(--theme-button-border);
+    border-radius: 0.25rem;
+    color: var(--theme-content-color);
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .gantt-tb-colorby-select {
     background: transparent;
     border: none;
     color: var(--theme-content-color);
