@@ -282,6 +282,14 @@ function renderToken (tok: Token): string {
           // ES phrase literal; pass inner content through verbatim.
           return `${field}:"${value.inner}"`
         case 'bare':
+          // Leading '-' on a field-targeted value would be parsed by ES
+          // query_string as the Lucene NOT operator (NOT foo), not as
+          // literal text. Wrap+escape so the minus stays literal. Mid-
+          // token hyphens (HULY-51, bug-fix) are unaffected — they only
+          // hit this branch when value.raw does NOT start with '-'.
+          if (value.raw.startsWith('-')) {
+            return `${field}:(${escapeForQueryString(value.raw)})`
+          }
           // Clean value: emit bare for a readable wire string. Reserved
           // chars present: wrap in parens with full Lucene escape so ES
           // query_string parses the value as a single literal token.
@@ -298,6 +306,13 @@ function renderToken (tok: Token): string {
       // so reserved chars here also break the query. Escape per
       // PREFIX_VALUE_RESERVED_RE (narrower than the full Lucene set —
       // see the constant's JSDoc for why `-`, `*`, `?` are excluded).
+      //
+      // Special case: leading '-' would be parsed as Lucene NOT-operator
+      // even though mid-token '-' is tolerant. Escape the leading minus
+      // explicitly so the orphan token stays a literal term.
+      if (tok.raw.startsWith('-')) {
+        return '\\-' + tok.raw.slice(1).replace(/[+!(){}[\]^"~\\/:]/g, '\\$&')
+      }
       if (!PREFIX_VALUE_RESERVED_RE.test(tok.raw)) return tok.raw
       return tok.raw.replace(/[+!(){}[\]^"~\\/:]/g, '\\$&')
     }

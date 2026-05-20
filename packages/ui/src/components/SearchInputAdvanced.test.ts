@@ -185,4 +185,28 @@ describe('encodeSearch', () => {
     expect(encodeSearch('title:foo(bar)', 'all'))
       .toBe('searchTitle:(foo\\(bar\\))')
   })
+
+  // ─── Leading-hyphen escape (Lucene NOT-operator) ─────────────────────────
+  // `-` mid-token (HULY-51, bug-fix) is tolerated by ES, but a leading
+  // '-' is interpreted as the Lucene NOT operator. Field-targeted values
+  // with leading '-' need to be wrap+escaped; orphan tokens with leading
+  // '-' need at minimum the minus escaped so they stay literal.
+  it('wraps + escapes prefix values starting with a hyphen', () => {
+    expect(encodeSearch('title:-foo', 'all'))
+      .toBe('searchTitle:(\\-foo)')
+    expect(encodeSearch('id:-WORK-1', 'all'))
+      .toBe('identifier:(\\-WORK\\-1)')
+  })
+  it('escapes a leading hyphen in orphan bare tokens after a prefix clause', () => {
+    expect(encodeSearch('title:meeting -cancelled', 'all'))
+      .toBe('searchTitle:meeting \\-cancelled')
+  })
+  it('preserves mid-token hyphens in field values and orphan tokens', () => {
+    // Regression: identifier-style values keep their internal hyphens.
+    expect(encodeSearch('id:HULY-51', 'all'))
+      .toBe('identifier:HULY-51')
+    // Regression: orphan token with mid-hyphen passes through untouched.
+    expect(encodeSearch('title:meeting bug-fix', 'all'))
+      .toBe('searchTitle:meeting bug-fix')
+  })
 })
