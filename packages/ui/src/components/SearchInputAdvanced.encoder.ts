@@ -101,13 +101,16 @@ function escapeForQueryString (s: string): string {
  *   operator, but a token starting with `-` would already be lexed as a
  *   bare term, never landing here as a field value).
  * - `*` and `?` are omitted: users may legitimately type them as wildcards.
- * - `:` is omitted: the tokenizer split on the field-value boundary, so a
- *   trailing `:` cannot appear in the value at this point.
  *
  * What stays — these literally crash the parser when mid-value:
- *   `+`  `!`  `(`  `)`  `{`  `}`  `[`  `]`  `^`  `"`  `~`  `\`  `/`
+ *   `+`  `!`  `(`  `)`  `{`  `}`  `[`  `]`  `^`  `"`  `~`  `\`  `/`  `:`
+ *
+ * `:` is included because the bare-value regex is greedy across non-whitespace
+ * (so `title:POC:123` lands here as value `POC:123`); without escaping ES
+ * query_string would re-parse the inner `:` as another field-targeted
+ * clause, blowing up the entire query.
  */
-const PREFIX_VALUE_RESERVED_RE = /[+!(){}[\]^"~\\/]/
+const PREFIX_VALUE_RESERVED_RE = /[+!(){}[\]^"~\\/:]/
 
 /**
  * For prefix-targeted inputs (e.g. `title:C++ developer` or
@@ -131,36 +134,48 @@ const PREFIX_VALUE_RESERVED_RE = /[+!(){}[\]^"~\\/]/
  * string stays readable for the common case.
  */
 function escapePrefixValues (aliased: string): string {
-  // Single regex matches ALL three value-shapes per clause. We anchor on
-  // a known ES-native field name to avoid touching unrelated colons in
-  // user text (e.g. URLs that survived aliasing — though aliasing would
-  // not have run on them in the first place since they lack a known
-  // prefix).
+  // First pass: process known-field clauses (\b<field>:<value>) so they
+  // emit ES-safe wire syntax.
   const fieldAlt = [...ES_NATIVE_FIELDS].map((f) => f.replace(/\./g, '\\.')).join('|')
-  // The value patterns, longest-match first:
-  //   \(([^()]*)\)              — paren-wrapped: capture inner
-  //   "([^"]*)"                 — quoted phrase: pass through inner
-  //   ([^\s()]+)                — bare run up to whitespace or paren
+  // Value patterns, longest-match first:
+  //   \(([^()]*)\)  — paren-wrapped: re-emit with inner content escaped
+  //   "([^"]*)"     — quoted phrase: pass through (ES phrase literal)
+  //   ([^\s()]+)    — bare run up to whitespace or paren
   const clauseRe = new RegExp(`\\b(${fieldAlt}):(?:\\(([^()]*)\\)|"([^"]*)"|([^\\s()]+))`, 'g')
 
-  return aliased.replace(clauseRe, (_match, field: string, paren?: string, quoted?: string, bare?: string) => {
+  const firstPass = aliased.replace(clauseRe, (_match, field: string, paren?: string, quoted?: string, bare?: string) => {
     if (paren !== undefined) {
-      // User wrapped in parens already — re-emit with escaped content
-      // so ES sees a parser-safe literal regardless of what the user
-      // put inside.
       return `${field}:(${escapeForQueryString(paren)})`
     }
     if (quoted !== undefined) {
-      // Quoted phrase passes through; ES treats it as a phrase literal.
       return `${field}:"${quoted}"`
     }
-    // Bare value: preserve verbatim if no reserved chars (keeps the
-    // wire string readable), wrap+escape only when needed.
     const value = bare ?? ''
     if (!PREFIX_VALUE_RESERVED_RE.test(value)) {
       return `${field}:${value}`
     }
     return `${field}:(${escapeForQueryString(value)})`
+  })
+
+  // Second pass: orphan colons in bare tokens that AREN'T known-field
+  // clauses. Example: `title:meeting 12:30` → first pass emits
+  // `searchTitle:meeting 12:30` (the `12:30` token has no known-field
+  // anchor, so the first pass left it alone). Without this second pass,
+  // ES query_string would parse `12:30` as field=`12` value=`30`, which
+  // either errors or returns zero hits because no field `12` exists.
+  //
+  // Strategy: scan whitespace-separated tokens, escape any `:` in tokens
+  // that don't already start with a known field name. Tokens that ARE
+  // known-field clauses (now safely emitted by pass 1) are recognised by
+  // their `<field>:(...)` / `<field>:"..."` / `<field>:<safe-value>`
+  // shape and passed through.
+  return firstPass.replace(/\S+/g, (tok) => {
+    if (!tok.includes(':')) return tok
+    // Is this a known-field clause? Match the same field alternation.
+    if (new RegExp(`^(?:${fieldAlt}):`).test(tok)) return tok
+    // Orphan token with a colon — escape every colon so ES treats it
+    // as literal text instead of opening a new field clause.
+    return tok.replace(/:/g, '\\:')
   })
 }
 
