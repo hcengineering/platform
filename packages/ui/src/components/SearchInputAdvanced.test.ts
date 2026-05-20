@@ -60,11 +60,11 @@ describe('encodeSearch', () => {
       .toBe('searchTitle:(foo \\(bar\\) \\[baz\\])')
   })
 
-  // ─── Prefix-value escaping (F2 — Codex Round-5) ──────────────────────────
-  // Codex flagged that prefix-targeted inputs were sent verbatim to ES
-  // query_string, which crashes the parser on Lucene-reserved chars like
-  // `+` or `/`. We now wrap+escape ONLY when the value would otherwise
-  // blow up; clean values stay readable.
+  // ─── Prefix-value escaping ───────────────────────────────────────────────
+  // Prefix-targeted inputs were previously sent verbatim to ES query_string,
+  // which crashes the parser on Lucene-reserved chars like `+` or `/`.
+  // We now wrap+escape ONLY when the value would otherwise blow up; clean
+  // values stay readable.
   it('wraps + escapes prefix values containing Lucene reserved chars', () => {
     expect(encodeSearch('title:C++', 'all')).toBe('searchTitle:(C\\+\\+)')
     expect(encodeSearch('comments:foo/bar', 'all')).toBe('comments.message:(foo\\/bar)')
@@ -95,7 +95,7 @@ describe('encodeSearch', () => {
       .toBe('searchTitle:(C\\+\\+) OR identifier:HULY-1')
   })
 
-  // ─── Colon-in-value (Codex Round-6) ──────────────────────────────────────
+  // ─── Colon-in-value handling ─────────────────────────────────────────────
   // The bare-value regex is greedy across non-whitespace so a value can
   // contain its own colon. Without escaping that, ES query_string would
   // re-parse the inner colon as another field-targeted clause and the
@@ -121,7 +121,7 @@ describe('encodeSearch', () => {
       .toBe('searchTitle:meeting 12\\:30')
   })
 
-  // ─── Orphan tokens with non-colon reserved chars (Codex Round-7) ─────────
+  // ─── Orphan tokens with reserved chars ───────────────────────────────────
   // Once any prefix appears, the adapter routes via ES query_string so
   // EVERY bare token must be parser-safe — not just colon-bearing ones.
   it('escapes orphan + signs in tokens that follow a prefix clause', () => {
@@ -160,7 +160,7 @@ describe('encodeSearch', () => {
       .toBe('searchTitle:meeting bug-fix')
   })
 
-  // ─── Attached parens in prefix values (Codex Round-8) ────────────────────
+  // ─── Attached parens in prefix values ────────────────────────────────────
   // The bare-value regex previously stopped before `(` / `)`, so
   // `title:foo(bar)` slipped through as `searchTitle:foo(bar)` raw —
   // pass 2 saw a known-field prefix on the token and passed it through
