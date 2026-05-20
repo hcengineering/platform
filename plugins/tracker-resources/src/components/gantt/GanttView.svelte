@@ -49,7 +49,8 @@
     extractGanttSavedView,
     isoDateForTimestamp,
     mergeGanttSavedView,
-    timestampForIsoDate
+    timestampForIsoDate,
+    type GanttSavedViewOptions
   } from './lib/gantt-view-options'
   import { filterGanttFilteredViews } from './lib/saved-views'
   import { DEFAULT_COLUMNS, DEFAULT_WIDTHS, computeTotalWidth, type SidebarColumnKey } from './lib/sidebar-columns'
@@ -507,6 +508,30 @@
     const opts = extractGanttSavedView(raw)
     zoom = opts.zoomLevel
     userPxPerDay = null
+    // Pull (and default-reset) the four new toolbar fields. Defaults must
+    // match the spec (Status / on / on / off) so stale state from a
+    // previous saved view cannot leak into the loaded view.
+    const mode = raw?.ganttBarColorBy
+    ganttBarColorBy.set(
+      (typeof mode === 'string' && (['status', 'priority', 'assignee', 'component', 'milestone', 'none'] as const).includes(mode as any))
+        ? (mode as BarColorMode)
+        : 'status'
+    )
+    ganttShowPastDueOverlay.set(
+      typeof raw?.ganttShowPastDueOverlay === 'boolean'
+        ? raw.ganttShowPastDueOverlay
+        : true
+    )
+    ganttShowBlockedOverlay.set(
+      typeof raw?.ganttShowBlockedOverlay === 'boolean'
+        ? raw.ganttShowBlockedOverlay
+        : true
+    )
+    ganttShowSubIssueProgress.set(
+      typeof raw?.ganttShowSubIssueProgress === 'boolean'
+        ? raw.ganttShowSubIssueProgress
+        : false
+    )
     // Wait one tick so the new zoom propagates into `timeScale` before we
     // scroll — otherwise toX() uses the previous pxPerDay and the anchor
     // lands at the wrong column (Spec §"Pan-Anchor-Race bei langsamem Mount").
@@ -545,7 +570,13 @@
 
   function buildSavedViewOptions (fixTimeWindow: boolean): Record<string, unknown> {
     const base = (viewOptions as Record<string, unknown> | undefined) ?? {}
-    const payload: { zoomLevel: ZoomLevel, panAnchorDate?: string } = { zoomLevel: zoom }
+    const payload: GanttSavedViewOptions = {
+      zoomLevel: zoom,
+      ganttBarColorBy: $ganttBarColorBy,
+      ganttShowPastDueOverlay: $ganttShowPastDueOverlay,
+      ganttShowBlockedOverlay: $ganttShowBlockedOverlay,
+      ganttShowSubIssueProgress: $ganttShowSubIssueProgress
+    }
     if (fixTimeWindow && hScrollEl != null) {
       // Anchor = the visible-left date in the time scale (UTC midnight).
       const t = timeScale.fromX(hScrollEl.scrollLeft)
@@ -694,6 +725,10 @@
     if (fv === undefined || fv.viewletId !== viewlet?._id) return false
     const saved = (fv.viewOptions as Record<string, unknown> | undefined) ?? {}
     if (saved.ganttZoomLevel !== zoom) return true
+    if ((saved.ganttBarColorBy ?? 'status') !== $ganttBarColorBy) return true
+    if ((saved.ganttShowPastDueOverlay ?? true) !== $ganttShowPastDueOverlay) return true
+    if ((saved.ganttShowBlockedOverlay ?? true) !== $ganttShowBlockedOverlay) return true
+    if ((saved.ganttShowSubIssueProgress ?? false) !== $ganttShowSubIssueProgress) return true
     return false
   }
 
