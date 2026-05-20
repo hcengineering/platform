@@ -19,6 +19,7 @@
     searchHighlightEnabledStore,
     viewOptionStore
   } from '@hcengineering/view-resources'
+  import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
   import GanttToolbarBar from '../gantt/GanttToolbarBar.svelte'
@@ -67,8 +68,17 @@
   function onSearchChange (e: CustomEvent<{ raw: string, encoded: string }>): void {
     searchRaw = e.detail.raw
     searchEncoded = e.detail.encoded
-    rawSearchTextStore.set(searchRaw)
   }
+
+  // Sync rawSearchTextStore reactively with the LOCAL searchRaw so that
+  // route/space changes that remount this component immediately reset
+  // the global store to the empty initial value. Previously the store
+  // was only written from onSearchChange(), so the new view mounted
+  // with an empty input field but the global store still held the
+  // PREVIOUS view's search text — Empty-State + match-highlight could
+  // then react to a stale query that the user never typed in this view.
+  $: rawSearchTextStore.set(searchRaw)
+  onDestroy(() => rawSearchTextStore.set(''))
 
   let searchQuery: DocumentQuery<Issue> = { ...query }
   function updateSearchQuery (eff: string): void {

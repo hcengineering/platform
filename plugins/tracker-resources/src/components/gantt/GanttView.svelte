@@ -707,6 +707,15 @@
       }
       const next = allFilteredViews.find((v) => String(v._id) === sid)
       if (next !== undefined) {
+        // Reset the guard BEFORE setting the store. The reactive Apply
+        // block above short-circuits when the loaded view's _id equals
+        // `lastAppliedSavedViewId` — desired behaviour for cross-viewlet
+        // store traffic, but it breaks the user's intent HERE: after
+        // locally tweaking color/overlay/zoom they explicitly re-selected
+        // the same saved view to REVERT their dirty state. Without this
+        // reset the click would be a no-op and savedViewModified stays
+        // true forever.
+        lastAppliedSavedViewId = null
         selectedFilterStore.set(next)
       }
     })
