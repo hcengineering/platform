@@ -15,7 +15,7 @@
 
 import { Markup } from '@hcengineering/core'
 import { Editor, Extensions, getSchema } from '@tiptap/core'
-import { generateHTML, generateJSON } from '@tiptap/html'
+import { generateHTML, generateJSON } from '@tiptap/html/server'
 import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 
 import { MarkupNode, jsonToMarkup } from '@hcengineering/text-core'

@@ -95,9 +95,20 @@ const markups: Array<{ name: string, markup: Markup, skipYdocCompare?: boolean }
       '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","marks":[{"type":"italic","attrs":{}}],"text":"hello "},{"type":"text","marks":[{"type":"bold","attrs":{}},{"type":"italic","attrs":{}}],"text":"world"}]}]}'
   },
   {
+    name: 'text with link',
+    markup:
+      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello world","marks":[{"type":"link","attrs":{"href":"http://example.com","target":"_blank","rel":"noopener noreferrer","class":"cursor-pointer"}}]}]}]}',
+    skipYdocCompare: true
+  },
+  {
+    name: 'text with link with title',
+    markup:
+      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello world","marks":[{"type":"link","attrs":{"href":"http://example.com","target":"_blank","rel":"noopener noreferrer","class":"cursor-pointer","title":"example"}}]}]}]}'
+  },
+  {
     name: 'text with link and italic marks',
     markup:
-      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello "},{"type":"text","text":"hello world","marks":[{"type":"link","attrs":{"href":"http://example.com","target":"_blank","rel":"noopener noreferrer","class":"cursor-pointer"}},{"type":"italic","attrs":{}}]}]}]}'
+      '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"hello "},{"type":"text","text":"hello world","marks":[{"type":"link","attrs":{"href":"http://example.com","target":"_blank","rel":"noopener noreferrer","class":"cursor-pointer","title":"example"}},{"type":"italic","attrs":{}}]}]}]}'
   },
   {
     name: 'image',
