@@ -159,4 +159,30 @@ describe('encodeSearch', () => {
     expect(encodeSearch('title:meeting bug-fix', 'all'))
       .toBe('searchTitle:meeting bug-fix')
   })
+
+  // ─── Attached parens in prefix values (Codex Round-8) ────────────────────
+  // The bare-value regex previously stopped before `(` / `)`, so
+  // `title:foo(bar)` slipped through as `searchTitle:foo(bar)` raw —
+  // pass 2 saw a known-field prefix on the token and passed it through
+  // verbatim, never escaping the embedded parens. Now the bare-value
+  // pattern extends to whitespace, so attached parens get captured as
+  // part of the value and wrapped+escaped properly.
+  it('wraps + escapes prefix values with attached parens', () => {
+    expect(encodeSearch('title:foo(bar)', 'all'))
+      .toBe('searchTitle:(foo\\(bar\\))')
+    expect(encodeSearch('title:foo)', 'all'))
+      .toBe('searchTitle:(foo\\))')
+  })
+  it('wraps + escapes prefix values with attached brackets', () => {
+    expect(encodeSearch('title:list[0]', 'all'))
+      .toBe('searchTitle:(list\\[0\\])')
+  })
+  it('keeps user-wrapped parens distinct from attached parens', () => {
+    // `title:(scope)` — explicit paren-wrap, value is `scope` (no
+    // reserved chars after stripping the wrap) — passes through bare.
+    expect(encodeSearch('title:(scope)', 'all')).toBe('searchTitle:(scope)')
+    // `title:foo(bar)` — bare value with attached parens, wrap+escape.
+    expect(encodeSearch('title:foo(bar)', 'all'))
+      .toBe('searchTitle:(foo\\(bar\\))')
+  })
 })
