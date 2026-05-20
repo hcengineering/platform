@@ -14,11 +14,12 @@
 //
 
 import { Markup } from '@hcengineering/core'
-import { Editor, Extensions, getSchema } from '@tiptap/core'
-import { generateHTML, generateJSON } from '@tiptap/html/server'
-import { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
-
 import { MarkupNode, jsonToMarkup } from '@hcengineering/text-core'
+
+import { Editor, Extensions, getSchema, JSONContent } from '@tiptap/core'
+import { DOMParser, DOMSerializer, ParseOptions, Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
+import { VHTMLDocument, createHTMLDocument, parseHTML } from 'zeed-dom'
+
 import { defaultExtensions } from '../extensions'
 
 /** @public */
@@ -77,4 +78,62 @@ export function htmlToJSON (html: string, extensions?: Extensions): MarkupNode {
 export function jsonToHTML (json: MarkupNode, extensions?: Extensions): string {
   extensions = extensions ?? defaultExtensions
   return generateHTML(json, extensions)
+}
+
+//  Tiptap 2.x.x utils
+
+export function generateHTML (doc: JSONContent, extensions: Extensions): string {
+  const schema = getSchema(extensions)
+  const contentNode = ProseMirrorNode.fromJSON(schema, doc)
+
+  return getHTMLFromFragment(contentNode, schema)
+}
+
+/**
+ * Generates a JSON object from the given HTML string and converts it into a Prosemirror node with content.
+ * @param {string} html - The HTML string to be converted into a Prosemirror node.
+ * @param {Extensions} extensions - The extensions to be used for generating the schema.
+ * @param {ParseOptions} options - The options to be supplied to the parser.
+ * @returns {Record<string, any>} - The generated JSON object.
+ * @example
+ * const html = '<p>Hello, world!</p>'
+ * const extensions = [...]
+ * const json = generateJSON(html, extensions)
+ * console.log(json) // { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello, world!' }] }] }
+ */
+export function generateJSON (html: string, extensions: Extensions, options?: ParseOptions): Record<string, any> {
+  const schema = getSchema(extensions)
+  const dom = parseHTML(html) as unknown as Node
+
+  return DOMParser.fromSchema(schema).parse(dom, options).toJSON()
+}
+
+/**
+ * Returns the HTML string representation of a given document node.
+ *
+ * @param doc - The document node to serialize.
+ * @param schema - The Prosemirror schema to use for serialization.
+ * @returns The HTML string representation of the document fragment.
+ *
+ * @example
+ * ```typescript
+ * const html = getHTMLFromFragment(doc, schema)
+ * ```
+ */
+export function getHTMLFromFragment (doc: ProseMirrorNode, schema: Schema, options?: { document?: Document }): string {
+  if (options?.document != null) {
+    // The caller is relying on their own document implementation. Use this
+    // instead of the default zeed-dom.
+    const wrap = options.document.createElement('div')
+
+    DOMSerializer.fromSchema(schema).serializeFragment(doc.content, { document: options.document }, wrap)
+    return wrap.innerHTML
+  }
+
+  // Use zeed-dom for serialization.
+  const zeedDocument = DOMSerializer.fromSchema(schema).serializeFragment(doc.content, {
+    document: createHTMLDocument() as unknown as Document
+  }) as unknown as VHTMLDocument
+
+  return zeedDocument.render()
 }
