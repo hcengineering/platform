@@ -39,6 +39,8 @@
   import { GROUP_BY_KEYS } from './lib/group-by'
   import { ganttToolbarSnapshot } from './ganttToolbarStore'
 
+  const COLOR_BY_KEYS = ['status', 'priority', 'assignee', 'component', 'milestone', 'none'] as const
+
   export let section: 'search-mid' | 'search-end' | 'trailing'
 
   // Constants — kept identical to GanttView so the input widget validates
@@ -65,13 +67,18 @@
     <!-- Group-by select sits between Filter (leftmost) and Lupe (SearchInput)
          in the unified row. Only this one element lives here so the user's
          spec order is preserved across the row-reverse flex container. -->
-    <div class="gantt-tb-groupby-wrap" use:tooltip={{ label: tracker.string.GanttGroupOverridesHierarchy }}>
-      <Label label={tracker.string.GanttGroupBy} />
+    <!-- Compact dropdowns: visible labels removed, intent surfaced via
+         tooltip on the wrap. Each dropdown shows only the current value
+         (e.g. "Status") plus a small icon prefix so users can distinguish
+         the two at a glance without reading. -->
+    <div class="gantt-tb-groupby-wrap" use:tooltip={{ label: tracker.string.GanttGroupBy }}>
+      <span class="gantt-tb-dd-icon" aria-hidden="true">▤</span>
       <!-- svelte-ignore a11y-no-onchange -->
       <select
         class="gantt-tb-groupby-select"
         value={snap.ganttGroupBy}
         on:change={snap.onGroupBySelectChange}
+        aria-label={snap.ariaLabels?.[tracker.string.GanttGroupBy] ?? ''}
       >
         {#each GROUP_BY_KEYS as key (key)}
           <option value={key}>
@@ -82,6 +89,28 @@
             {:else if key === 'component'}<Label label={tracker.string.GanttGroupByComponent} />
             {:else if key === 'milestone'}<Label label={tracker.string.GanttGroupByMilestone} />
             {:else if key === 'label'}<Label label={tracker.string.GanttGroupByLabel} />
+            {/if}
+          </option>
+        {/each}
+      </select>
+    </div>
+    <div class="gantt-tb-colorby-wrap" use:tooltip={{ label: tracker.string.GanttColorBy }}>
+      <span class="gantt-tb-dd-icon" aria-hidden="true">●</span>
+      <!-- svelte-ignore a11y-no-onchange -->
+      <select
+        class="gantt-tb-colorby-select"
+        value={snap.ganttBarColorBy}
+        on:change={snap.onColorBySelectChange}
+        aria-label={snap.ariaLabels?.[tracker.string.GanttColorBy] ?? ''}
+      >
+        {#each COLOR_BY_KEYS as key (key)}
+          <option value={key}>
+            {#if key === 'status'}<Label label={tracker.string.GanttColorByStatus} />
+            {:else if key === 'priority'}<Label label={tracker.string.GanttColorByPriority} />
+            {:else if key === 'assignee'}<Label label={tracker.string.GanttColorByAssignee} />
+            {:else if key === 'component'}<Label label={tracker.string.GanttColorByComponent} />
+            {:else if key === 'milestone'}<Label label={tracker.string.GanttColorByMilestone} />
+            {:else if key === 'none'}<Label label={tracker.string.GanttColorByNone} />
             {/if}
           </option>
         {/each}
@@ -324,12 +353,16 @@
     color: var(--theme-dark-color);
   }
 
-  .gantt-tb-groupby-wrap {
+  /* Compact icon-only dropdowns: visible "Group by"/"Color by" label
+     removed (lives on the tooltip), small text glyph as prefix so the
+     two dropdowns stay distinguishable at a glance. */
+  .gantt-tb-groupby-wrap,
+  .gantt-tb-colorby-wrap {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: 0.125rem;
     height: 1.75rem;
-    padding: 0 0.5rem;
+    padding: 0 0.25rem 0 0.375rem;
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
     color: var(--theme-content-color);
@@ -337,14 +370,36 @@
     flex-shrink: 0;
   }
 
-  .gantt-tb-groupby-select {
+  .gantt-tb-dd-icon {
+    font-size: 0.85rem;
+    line-height: 1;
+    opacity: 0.55;
+    color: var(--theme-content-color);
+    pointer-events: none;
+  }
+
+  .gantt-tb-groupby-select,
+  .gantt-tb-colorby-select {
     background: transparent;
     border: none;
     color: var(--theme-content-color);
     font: inherit;
     cursor: pointer;
     outline: none;
-    padding-right: 0.5rem;
+    padding: 0 0.125rem;
+    /* Trim native chevron padding so the value text + chevron sit snug. */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 0.875rem;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--theme-content-color) 50%),
+      linear-gradient(135deg, var(--theme-content-color) 50%, transparent 50%);
+    background-position:
+      calc(100% - 6px) 50%,
+      calc(100% - 2px) 50%;
+    background-size: 4px 4px;
+    background-repeat: no-repeat;
   }
 
   .gantt-tb-savedview-wrap {
