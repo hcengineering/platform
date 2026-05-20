@@ -15,10 +15,17 @@
 //
 
 import contact, { type Person, type Employee } from '@hcengineering/contact'
+import { SocialIdType } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 
 export async function canResendInvitation (employee: Employee): Promise<boolean> {
-  return !employee.active
+  const client = getClient()
+  const emailSocialId = await client.findOne(contact.class.SocialIdentity, {
+    attachedTo: employee._id,
+    type: SocialIdType.EMAIL
+  })
+
+  return emailSocialId !== undefined
 }
 
 export async function canMergePersons (person: Person): Promise<boolean> {
