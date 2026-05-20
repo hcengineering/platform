@@ -507,7 +507,11 @@
 <style lang="scss">
   .gantt-canvas {
     display: block;
-    background: var(--theme-bg-color);
+    /* Lighter than --theme-bg-color so the canvas reads as a distinct
+       workspace surface against the rest of the Huly chrome. In light
+       theme: ~#FBFBFC (nearly white). In dark theme: #1E2024
+       (slightly lifted off the page background). */
+    background: var(--theme-comp-header-color);
   }
   :global(svg.gantt-canvas g.bar-wrap) {
     cursor: pointer;
