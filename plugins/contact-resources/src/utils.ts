@@ -365,6 +365,49 @@ export const myEmployeeStore = derived(
 )
 
 /**
+ * Reads the browser's IANA timezone identifier.
+ * Returns `undefined` if the runtime cannot resolve one (e.g. SSR, jsdom).
+ */
+function detectBrowserTimezone (): string | undefined {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    return tz !== '' ? tz : undefined
+  } catch {
+    return undefined
+  }
+}
+
+let timezoneSyncInFlight = false
+
+/**
+ * If the current user's {@link Employee} mixin has a different timezone than the
+ * browser reports, push the browser value into the mixin. This is the canonical
+ * write path for {@link Employee.timezone}: each user only ever writes their own
+ * record, so no cross-account authority is required.
+ */
+async function syncMyEmployeeTimezone (employee: WithLookup<Employee> | undefined): Promise<void> {
+  if (timezoneSyncInFlight || employee === undefined) return
+  const browserTz = detectBrowserTimezone()
+  if (browserTz === undefined || employee.timezone === browserTz) return
+
+  timezoneSyncInFlight = true
+  try {
+    const client = getClient()
+    await client.updateMixin(employee._id, contact.class.Person, employee.space, contact.mixin.Employee, {
+      timezone: browserTz
+    })
+  } catch (err) {
+    console.error('Failed to sync employee timezone', err)
+  } finally {
+    timezoneSyncInFlight = false
+  }
+}
+
+myEmployeeStore.subscribe((employee) => {
+  void syncMyEmployeeTimezone(employee)
+})
+
+/**
  * [Ref<Employee> => PersonId (primary)] mapping
  */
 export const primarySocialIdByEmployeeRefStore = writable<Map<Ref<Employee>, PersonId>>(new Map())
