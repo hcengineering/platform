@@ -118,7 +118,7 @@
     "UserProfile": "Профиль пользователя",
     "DeactivatedAccount": "Деактивированный аккаунт",
     "LocalTime": "местного времени",
-    "Timezone": "Timezone",
+    "Timezone": "Часовой пояс",
     "Everyone": "Все",
     "Here": "Здесь",
     "EveryoneDescription": "Уведомить всех в этом {title}",
