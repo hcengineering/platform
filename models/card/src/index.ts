@@ -12,7 +12,6 @@
 // limitations under the License.
 
 import activity from '@hcengineering/activity'
-import communication from '@hcengineering/communication'
 import {
   type CanCreateCardResource,
   type Card,
@@ -23,6 +22,7 @@ import {
   type CardViewDefaults,
   type CreateCardExtension,
   DOMAIN_CARD,
+  type DuplicateSetting,
   type ExportExtension,
   type ExportFunc,
   type FavoriteCard,
@@ -34,6 +34,8 @@ import {
   type Tag
 } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
+import communication from '@hcengineering/communication'
+import converter from '@hcengineering/converter'
 import core, {
   AccountRole,
   type Blobs,
@@ -46,6 +48,7 @@ import core, {
   DOMAIN_SPACE,
   IndexKind,
   type MarkupBlobRef,
+  type Mixin as MixinType,
   type MixinData,
   type Rank,
   type Ref,
@@ -77,7 +80,7 @@ import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
 import view, { type Viewlet } from '@hcengineering/model-view'
 import workbench, { WidgetType } from '@hcengineering/model-workbench'
-import converter from '@hcengineering/converter'
+import notification from '@hcengineering/notification'
 import { type Asset, getEmbeddedLabel, type IntlString, type Resource } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
@@ -86,7 +89,6 @@ import { type BuildModelKey, type ViewOptionModel } from '@hcengineering/view'
 import { createActions } from './actions'
 import { defineActionPermissions, definePermissions } from './permissions'
 import card from './plugin'
-import notification from '@hcengineering/notification'
 
 export { cardId } from '@hcengineering/card'
 
@@ -221,6 +223,13 @@ export class TCreateCardExtension extends TMasterTag implements CreateCardExtens
 @Model(card.class.ExportExtension, core.class.Doc, DOMAIN_MODEL)
 export class TExportExtension extends TDoc implements ExportExtension {
   func!: Resource<ExportFunc>
+}
+
+@Mixin(card.mixin.DuplicateSetting, card.class.MasterTag)
+export class TDuplicateSetting extends TMasterTag implements DuplicateSetting {
+  excludedProperties?: string[]
+  excludedRelations?: string[] // ${associationId}_${a|b}
+  excludeMixins?: Ref<MixinType<Doc>>[]
 }
 
 export * from './migration'
@@ -441,7 +450,8 @@ export function createModel (builder: Builder): void {
     TFavoriteCard,
     TFavoriteType,
     TCreateCardExtension,
-    TExportExtension
+    TExportExtension,
+    TDuplicateSetting
   )
 
   builder.createDoc(

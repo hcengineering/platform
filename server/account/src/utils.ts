@@ -952,7 +952,7 @@ export async function updatePasswordAgingRule (
   branding: Branding | null,
   token: string,
   params: {
-    days: number
+    days?: number
   }
 ): Promise<void> {
   const { days } = params
@@ -966,7 +966,7 @@ export async function updatePasswordAgingRule (
   if (accRole == null || getRolePower(accRole) < getRolePower(AccountRole.Maintainer)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
-  await db.updatePasswordAgingRule(workspace, days)
+  await db.updatePasswordAgingRule(workspace, days ?? null)
 }
 
 export async function checkPasswordAging (
@@ -1235,7 +1235,8 @@ export async function sendEmailConfirmation (
   ctx: MeasureContext,
   branding: Branding | null,
   account: PersonUuid,
-  email: string
+  email: string,
+  extra?: Record<string, string>
 ): Promise<void> {
   const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
   if (mailURL === undefined || mailURL === '') {
@@ -1252,7 +1253,8 @@ export async function sendEmailConfirmation (
   }
 
   const token = generateToken(account, undefined, {
-    confirmEmail: email
+    confirmEmail: email,
+    ...(extra ?? {})
   })
 
   const link = concatLink(front, `/login/confirm?id=${token}`)

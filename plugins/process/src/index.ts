@@ -378,6 +378,7 @@ export default plugin(processId, {
     EmptyValue: '' as Ref<ProcessFunction>,
     EmptyArray: '' as Ref<ProcessFunction>,
     CurrentDate: '' as Ref<ProcessFunction>,
+    StringFromIdentifier: '' as Ref<ProcessFunction>,
     StringFromNumber: '' as Ref<ProcessFunction>,
     StringFromDate: '' as Ref<ProcessFunction>,
     StringFromMarkup: '' as Ref<ProcessFunction>,

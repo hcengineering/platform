@@ -239,6 +239,7 @@
     "TwoFactorAuthEnabled": "L'autenticazione a due fattori è abilitata",
     "TwoFactorAuthDisabled": "L'autenticazione a due fattori è disabilitata",
     "ShowQRCode": "Mostra codice QR",
-    "EnterVerificationCode": "Inserisci codice di verifica"
+    "EnterVerificationCode": "Inserisci codice di verifica",
+    "OverrideAttribute": "Sovrascrivi attributo"
   }
 }

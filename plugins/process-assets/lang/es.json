@@ -176,7 +176,8 @@
     "MarkupFromText": "Markup desde texto",
     "TextFromSelect": "Texto desde selección",
     "SelectFromText": "Selección desde texto",
-    "AskSubclass": "Preguntar por subclase"
+    "AskSubclass": "Preguntar por subclase",
+    "TextFromIdentifier": "Texto desde identificador"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",

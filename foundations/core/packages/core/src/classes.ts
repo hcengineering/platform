@@ -930,7 +930,7 @@ export interface WorkspaceInfo {
   billingAccount?: PersonUuid // Should always be set for NEW workspaces
   allowReadOnlyGuest?: boolean // Should always be set for NEW workspaces
   allowGuestSignUp?: boolean // Should always be set for NEW workspaces
-  passwordAgingRule?: number // in days
+  passwordAgingRule?: number | null // in days
   // Initial-state configuration set by the user at workspace creation. Read once
   // by workspace-service after model init, then cleared back to `null`.
   pendingConfiguration?: WorkspaceConfiguration | null

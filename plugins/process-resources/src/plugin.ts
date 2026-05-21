@@ -267,6 +267,7 @@ export default mergeIds(processId, process, {
     UnlockField: '' as IntlString,
     Export: '' as IntlString,
     Import: '' as IntlString,
+    TextFromIdentifier: '' as IntlString,
     TextFromNumber: '' as IntlString,
     TextFromDate: '' as IntlString,
     TextFromCheckbox: '' as IntlString,

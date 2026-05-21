@@ -239,6 +239,7 @@
         "TwoFactorAuthEnabled": "2단계 인증이 활성화됨",
         "TwoFactorAuthDisabled": "2단계 인증이 비활성화됨",
         "ShowQRCode": "QR 코드 표시",
-        "EnterVerificationCode": "인증 코드 입력"
+        "EnterVerificationCode": "인증 코드 입력",
+        "OverrideAttribute": "속성 재정의"
     }
 }

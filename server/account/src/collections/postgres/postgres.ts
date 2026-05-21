@@ -822,7 +822,7 @@ export class PostgresAccountDB implements AccountDB {
       .client`UPDATE ${this.client(this.workspace.getTableName())} SET allow_guest_sign_up = ${guestSignUpAllowed} WHERE uuid = ${workspaceId}`
   }
 
-  async updatePasswordAgingRule (workspaceId: WorkspaceUuid, days: number): Promise<void> {
+  async updatePasswordAgingRule (workspaceId: WorkspaceUuid, days: number | null): Promise<void> {
     await this
       .client`UPDATE ${this.client(this.workspace.getTableName())} SET password_aging_rule = ${days} WHERE uuid = ${workspaceId}`
   }

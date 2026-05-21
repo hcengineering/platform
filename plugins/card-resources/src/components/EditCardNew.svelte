@@ -277,7 +277,7 @@
         }}
       />
 
-      {#if !_readonly}
+      {#if !readonly}
         <Button
           icon={IconMoreH}
           iconProps={{ size: 'medium' }}
