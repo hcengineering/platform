@@ -121,8 +121,17 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
       root.setAttribute('data-embed-src', node.attrs.src)
       root.classList.add('embed-node')
 
-      const pos = typeof getPos === 'function' ? (getPos() ?? 0) : 0
-      setLoadingState(editor.view, pos, true)
+      let isLoading = false
+      const updateLoadingState = (loading: boolean): void => {
+        if (isLoading === loading) return
+        isLoading = loading
+        const pos = typeof getPos === 'function' ? getPos() : 0
+        setLoadingState(editor.view, pos, loading)
+      }
+
+      queueMicrotask(() => {
+        updateLoadingState(true)
+      })
       root.setAttribute('block-editor-blur', 'true')
 
       let handle: EmbedNodeViewHandle | undefined
@@ -147,6 +156,7 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
           finish()
           const pos = typeof getPos === 'function' ? (getPos() ?? 0) : 0
           setLoadingState(editor.view, pos, false)
+          updateLoadingState(false)
         })
 
       return {
