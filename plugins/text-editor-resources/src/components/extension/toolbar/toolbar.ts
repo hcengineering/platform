@@ -88,7 +88,7 @@ export interface SelectionCursorContext {
 
 export const ToolbarExtension = Extension.create<ToolbarOptions>({
   addProseMirrorPlugins () {
-    return [LoadingStatePlugin(), ToolbarControlPlugin(this.editor, this.options)]
+    return [ToolbarControlPlugin(this.editor, this.options)]
   }
 })
 
@@ -581,18 +581,20 @@ function scanForLoadingState (view: EditorView, range: Range): boolean {
     return false
   }
 
-  const loadingState = getLoadingState(view.state)
-  if (loadingState === undefined || loadingState.loadingNodes.size === 0) {
-    return false
-  }
+  const docSize = view.state.doc.content.size
+  const from = minmax(range.from, 0, docSize)
+  const to = minmax(range.to, 0, docSize)
 
-  for (const pos of loadingState.loadingNodes) {
-    if (pos >= range.from && pos <= range.to) {
-      return true
+  let isLoading = false
+  view.state.doc.nodesBetween(from, to, (node, pos) => {
+    const dom = view.nodeDOM(pos)
+    if (dom instanceof HTMLElement && hasLoadingMarker(dom)) {
+      isLoading = true
+      return false
     }
-  }
+  })
 
-  return false
+  return isLoading
 }
 
 function scanForAnchor (view: EditorView, range: Range): HTMLElement | undefined {
@@ -732,11 +734,27 @@ function minmax (value = 0, min = 0, max = 0): number {
 }
 
 export function setLoadingState (view: EditorView, pos: number, loading: boolean): void {
-  const meta: LoadingStateTxMeta = {
-    setLoading: { pos, loading }
+  const dom = view.nodeDOM(pos)
+  if (!(dom instanceof HTMLElement)) {
+    return
   }
 
-  view.dispatch(view.state.tr.setMeta(loadingStatePluginKey, meta).setMeta('loadingState', loading))
+  const isLoading = dom.dataset.toolbarLoading === 'true'
+  if (isLoading === loading) {
+    return
+  }
+
+  if (loading) {
+    dom.dataset.toolbarLoading = 'true'
+  } else {
+    delete dom.dataset.toolbarLoading
+  }
+
+  view.dispatch(view.state.tr.setMeta('loadingState', loading))
+}
+
+function hasLoadingMarker (dom: HTMLElement): boolean {
+  return dom.dataset.toolbarLoading === 'true' || dom.querySelector('[data-toolbar-loading="true"]') !== null
 }
 
 export const GeneralToolbarProvider: ToolbarProvider<any> = {

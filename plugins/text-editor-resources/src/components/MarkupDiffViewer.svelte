@@ -1,6 +1,6 @@
 <!--
 //
-// Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2022, 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -36,13 +36,15 @@
   let element: HTMLElement
   let editor: Editor | undefined
 
-  let _decoration = DecorationSet.empty
   let oldContent: MarkupNode | undefined
   let decorateFailed = false
   let editorMountFailed = false
+  let _lastDecorated: MarkupNode | undefined
+
+  const diffPluginKey = new PluginKey<DecorationSet>('diffs')
 
   function updateEditor (editor: Editor, comparedVersion?: MarkupNode): void {
-    if (comparedVersion === undefined) {
+    if (comparedVersion === undefined || comparedVersion === _lastDecorated) {
       return
     }
 
@@ -51,7 +53,8 @@
       const r = calculateDecorations(editor, oldContent, node)
       if (r !== undefined) {
         oldContent = r.oldContent
-        _decoration = r.decorations
+        _lastDecorated = comparedVersion
+        editor.view.dispatch(editor.view.state.tr.setMeta(diffPluginKey, r.decorations))
       }
       decorateFailed = false
     } catch (err: unknown) {
@@ -60,22 +63,21 @@
     }
   }
 
-  const updateDecorations = (): void => {
-    if (editor?.schema !== undefined) {
-      updateEditor(editor, comparedVersion)
-    }
-  }
-
-  // TODO: should be implemented as regular plugin
   const DecorationExtension = Extension.create({
     addProseMirrorPlugins () {
       return [
         new Plugin({
-          key: new PluginKey('diffs'),
+          key: diffPluginKey,
+          state: {
+            init: () => DecorationSet.empty,
+            apply (tr, value) {
+              const next = tr.getMeta(diffPluginKey)
+              return next !== undefined ? next : value
+            }
+          },
           props: {
-            decorations () {
-              updateDecorations()
-              return _decoration
+            decorations (state) {
+              return diffPluginKey.getState(state)
             }
           }
         })
