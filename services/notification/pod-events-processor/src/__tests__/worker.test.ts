@@ -13,9 +13,9 @@
 // limitations under the License.
 //
 
+import calendar from '@hcengineering/calendar'
 import contact from '@hcengineering/contact'
 import core, { type MeasureContext, type WorkspaceUuid } from '@hcengineering/core'
-import modelTime from '@hcengineering/model-time'
 import notification from '@hcengineering/notification'
 import { PlatformError, Severity, Status } from '@hcengineering/platform'
 import type { ConsumerControl } from '@hcengineering/server-core'
@@ -197,8 +197,8 @@ describe('handleScheduledNotification', () => {
           user: 'person-1',
           objectId: 'todo-1',
           objectClass: 'time:class:ToDo',
-          headerIcon: time.icon.Planned,
-          types: [modelTime.ids.ToDoReminder],
+          headerIcon: calendar.icon.Reminder,
+          types: [calendar.ids.ReminderNotification],
           docNotifyContext: 'doc-notify-created-id'
         }),
         expectedNotificationId,

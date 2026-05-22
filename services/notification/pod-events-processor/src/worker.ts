@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import calendar from '@hcengineering/calendar'
 import contact, { type Person, type PersonSpace } from '@hcengineering/contact'
 import core, {
   type AccountUuid,
@@ -27,7 +28,6 @@ import core, {
 } from '@hcengineering/core'
 import type { ConsumerControl } from '@hcengineering/server-core'
 import notification, { type CommonInboxNotification, type DocNotifyContext } from '@hcengineering/notification'
-import modelTime from '@hcengineering/model-time'
 import { jsonToMarkup, nodeDoc, nodeParagraph, nodeText } from '@hcengineering/text-core'
 import time, { type ToDo } from '@hcengineering/time'
 import { getClient, type ClientBundle } from './client'
@@ -133,11 +133,11 @@ export async function handleScheduledNotification (
         user: target.receiverAccount,
         objectId: target.objectId,
         objectClass: target.objectClass,
-        headerIcon: time.icon.Planned,
-        header: time.string.ToDo,
-        message: time.string.ToDo,
+        headerIcon: calendar.icon.Reminder,
+        header: calendar.string.Reminder,
+        message: calendar.string.Reminder,
         messageHtml: jsonToMarkup(nodeDoc(nodeParagraph(nodeText(target.titleText)))),
-        types: [modelTime.ids.ToDoReminder],
+        types: [calendar.ids.ReminderNotification],
         isViewed: false,
         archived: false,
         docNotifyContext: docNotifyContext._id

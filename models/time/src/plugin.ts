@@ -58,8 +58,7 @@ export default mergeIds(timeId, time, {
   ids: {
     ToDoCreated: '' as Ref<NotificationType>,
     ModulePermissionGroup: '' as Ref<Doc>,
-    ModulePermissionGroupReadOnlyGuest: '' as Ref<Doc>,
-    ToDoReminder: '' as Ref<NotificationType>
+    ModulePermissionGroupReadOnlyGuest: '' as Ref<Doc>
   },
   function: {
     ToDoTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
