@@ -13,65 +13,38 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Icon, IconError, IconInfo, Label, tooltip } from '@hcengineering/ui'
+  import { Button, IconError, IconInfo, showPopup } from '@hcengineering/ui'
   import billing from '../plugin'
   import { restrictionStore } from '../stores/restriction'
-  import { upgradePlan } from '../utils'
   import LimitsFooterPopup from './LimitsFooterPopup.svelte'
 
-  $: state = $restrictionStore
-  $: isWarning = state.mode === 'warning'
-  $: isRestricted = state.mode === 'restricted'
-  $: visible = isWarning || isRestricted
+  let wrapperEl: HTMLDivElement
 
-  $: gracePeriodEndsAtDate = state.gracePeriodEndsAt !== undefined ? new Date(state.gracePeriodEndsAt) : undefined
-  $: formattedDate =
-    gracePeriodEndsAtDate !== undefined
-      ? gracePeriodEndsAtDate.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
-      : ''
+  $: state = $restrictionStore
+  $: isRestricted = state.mode === 'restricted'
+  $: visible = state.mode !== 'ok'
 
   function handleClick (): void {
-    void upgradePlan()
+    showPopup(LimitsFooterPopup, {}, wrapperEl)
   }
 </script>
 
 {#if visible}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    class="antiNav-element limits-footer"
-    class:warning={isWarning}
-    class:restricted={isRestricted}
-    use:tooltip={{ component: LimitsFooterPopup, direction: 'top' }}
-    on:click={handleClick}
-  >
-    <div class="an-element__icon">
-      {#if isRestricted}
-        <Icon icon={IconError} size={'small'} />
-      {:else}
-        <Icon icon={IconInfo} size={'small'} />
-      {/if}
-    </div>
-    <span class="an-element__label">
-      {#if isRestricted}
-        <Label label={billing.string.LimitExceededRestrictedTitle} />
-      {:else}
-        <Label label={billing.string.LimitExceededWarningTitle} params={{ date: formattedDate }} />
-      {/if}
-    </span>
+  <div class="limits-footer-wrapper" bind:this={wrapperEl}>
+    <Button
+      kind={'warning'}
+      size="medium"
+      icon={isRestricted ? IconError : IconInfo}
+      label={billing.string.LimitsExceededShort}
+      justify="left"
+      width="100%"
+      on:click={handleClick}
+    />
   </div>
 {/if}
 
 <style lang="scss">
-  .limits-footer {
-    &.warning .an-element__icon {
-      color: var(--theme-warning-color, var(--theme-content-color));
-    }
-    &.restricted .an-element__icon {
-      color: var(--theme-error-color, var(--theme-content-color));
-    }
-    &.restricted .an-element__label {
-      color: var(--theme-error-color, var(--theme-caption-color));
-    }
+  .limits-footer-wrapper {
+    margin: 0.5rem 0.75rem;
   }
 </style>

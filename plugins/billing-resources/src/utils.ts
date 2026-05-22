@@ -25,7 +25,13 @@ import {
 } from '@hcengineering/account-client'
 import { getClient as getBillingClientRaw, type BillingClient } from '@hcengineering/billing-client'
 import { getClient as getPaymentClientRaw, type PaymentClient } from '@hcengineering/payment-client'
+import drive, { type File as DriveFile } from '@hcengineering/drive'
 import {
+  type Account,
+  type AttachedDoc,
+  type Class,
+  type Doc,
+  type Ref,
   type UsageStatus,
   type WorkspaceInfoWithStatus,
   AccountRole,
@@ -34,6 +40,8 @@ import {
 } from '@hcengineering/core'
 import { showPopup } from '@hcengineering/ui'
 import { getTierLimitsBytes, type RestrictedFeature, type Tier } from '@hcengineering/billing'
+
+import type { LargestFileRow } from './stores/largestFilesLogic'
 
 import { setSubscriptionState, updateLimitExceeded, subscriptionStore } from './stores/subscription'
 import { restrictionStore, isFeatureRestricted as isFeatureRestrictedIn } from './stores/restriction'
@@ -158,6 +166,71 @@ export async function getWorkspaceInfo (): Promise<WorkspaceInfoWithStatus | und
   const accountClient = getAccountClient()
   if (accountClient == null) return undefined
   return await accountClient.getWorkspaceInfo(false)
+}
+
+export function canManageStorage (account: Account | undefined | null): boolean {
+  if (account == null) return false
+  return hasAccountRole(account, AccountRole.Maintainer)
+}
+
+const DELETE_CONCURRENCY = 5
+
+/** Result of a single delete attempt within a batch. */
+export interface FileDeleteResult {
+  row: LargestFileRow
+  success: boolean
+  error?: unknown
+}
+
+export async function deleteFilesBatch (
+  rows: LargestFileRow[],
+  onProgress?: (done: number, total: number) => void
+): Promise<FileDeleteResult[]> {
+  const client = getClient()
+  const total = rows.length
+  const results: FileDeleteResult[] = new Array(total)
+  let done = 0
+  let cursor = 0
+
+  async function worker (): Promise<void> {
+    while (true) {
+      const index = cursor++
+      if (index >= total) return
+      const row = rows[index]
+      try {
+        if (row.source === 'attachment') {
+          const ref = row.ref
+          if (ref.attachedTo === undefined || ref.attachedToClass === undefined) {
+            throw new Error('Attachment is missing parent reference')
+          }
+          await client.removeCollection<Doc, AttachedDoc>(
+            ref._class as Ref<Class<AttachedDoc>>,
+            ref.space,
+            ref._id as Ref<AttachedDoc>,
+            ref.attachedTo,
+            ref.attachedToClass,
+            'attachments'
+          )
+        } else {
+          await client.removeDoc(drive.class.File, row.ref.space, row.ref._id as Ref<DriveFile>)
+        }
+        results[index] = { row, success: true }
+      } catch (err) {
+        results[index] = { row, success: false, error: err }
+      } finally {
+        done++
+        onProgress?.(done, total)
+      }
+    }
+  }
+
+  const workers: Array<Promise<void>> = []
+  const workerCount = Math.min(DELETE_CONCURRENCY, Math.max(1, total))
+  for (let i = 0; i < workerCount; i++) {
+    workers.push(worker())
+  }
+  await Promise.all(workers)
+  return results
 }
 
 export async function upgradePlan (): Promise<void> {

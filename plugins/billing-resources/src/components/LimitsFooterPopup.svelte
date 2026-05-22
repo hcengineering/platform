@@ -13,11 +13,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Label } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
+  import { Button, Label } from '@hcengineering/ui'
   import billing from '../plugin'
   import { restrictionStore } from '../stores/restriction'
   import { subscriptionStore } from '../stores/subscription'
+  import { upgradePlan } from '../utils'
   import UsageSection from './UsageSection.svelte'
+
+  const dispatch = createEventDispatcher()
 
   $: rState = $restrictionStore
   $: subState = $subscriptionStore
@@ -27,32 +31,42 @@
     gracePeriodEndsAtDate !== undefined
       ? gracePeriodEndsAtDate.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
       : ''
+
+  function handleUpgrade (): void {
+    dispatch('close')
+    void upgradePlan()
+  }
 </script>
 
-<div class="limits-footer-popup p-2">
-  <div class="title">
-    {#if rState.mode === 'restricted'}
-      <Label label={billing.string.LimitExceededRestrictedTitle} />
-    {:else}
-      <Label label={billing.string.LimitExceededWarningTitle} params={{ date: formattedDate }} />
-    {/if}
-  </div>
-  <div class="hint">
-    {#if rState.mode === 'restricted'}
-      <Label label={billing.string.LimitExceededRestrictedHint} />
-    {:else}
-      <Label label={billing.string.LimitExceededWarningHint} params={{ date: formattedDate }} />
-    {/if}
-  </div>
-
-  {#if subState.usageInfo !== undefined}
-    <div class="usage">
-      <UsageSection usage={subState.usageInfo} tier={subState.currentTier} />
+<div class="limits-footer-popup">
+  <div class="header" class:warning={rState.mode === 'warning'} class:restricted={rState.mode === 'restricted'}>
+    <div class="title">
+      {#if rState.mode === 'restricted'}
+        <Label label={billing.string.LimitExceededRestrictedTitle} />
+      {:else}
+        <Label label={billing.string.LimitExceededWarningTitle} params={{ date: formattedDate }} />
+      {/if}
     </div>
-  {/if}
+  </div>
 
-  <div class="cta">
-    <Label label={billing.string.UpgradePlanCta} />
+  <div class="body">
+    <div class="hint">
+      {#if rState.mode === 'restricted'}
+        <Label label={billing.string.LimitExceededRestrictedHint} />
+      {:else}
+        <Label label={billing.string.LimitExceededWarningHint} params={{ date: formattedDate }} />
+      {/if}
+    </div>
+
+    {#if subState.usageInfo !== undefined}
+      <div class="usage">
+        <UsageSection usage={subState.usageInfo} tier={subState.currentTier} />
+      </div>
+    {/if}
+
+    <div class="footer">
+      <Button kind="primary" size="medium" label={billing.string.UpgradePlanCta} on:click={handleUpgrade} />
+    </div>
   </div>
 </div>
 
@@ -60,25 +74,53 @@
   .limits-footer-popup {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    min-width: 18rem;
-    max-width: 24rem;
+    min-width: 20rem;
+    max-width: 26rem;
+    background: var(--theme-popup-color);
+    border: 1px solid var(--theme-popup-divider);
+    border-radius: var(--small-BorderRadius);
+    box-shadow: var(--theme-popup-shadow);
+    overflow: hidden;
 
-    .title {
-      font-weight: 600;
-      color: var(--theme-caption-color);
+    .header {
+      padding: 0.625rem 0.875rem;
+      border-bottom: 1px solid var(--theme-popup-divider);
+
+      .title {
+        font-weight: 600;
+        color: var(--theme-caption-color);
+      }
+
+      &.warning {
+        background: var(--theme-warning-color, var(--theme-popup-hover));
+        .title {
+          color: var(--theme-on-warning-color, var(--theme-caption-color));
+        }
+      }
+      &.restricted {
+        background: var(--theme-error-color, var(--theme-popup-hover));
+        .title {
+          color: var(--theme-on-error-color, #fff);
+        }
+      }
     }
+
+    .body {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 0.875rem;
+    }
+
     .hint {
       color: var(--theme-content-color);
       font-size: 0.8125rem;
+      line-height: 1.4;
     }
-    .usage {
-      margin-top: 0.25rem;
-    }
-    .cta {
-      margin-top: 0.25rem;
-      color: var(--theme-link-color, var(--theme-caption-color));
-      font-weight: 500;
+
+    .footer {
+      display: flex;
+      justify-content: flex-end;
     }
   }
 </style>

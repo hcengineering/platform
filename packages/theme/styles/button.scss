@@ -196,7 +196,7 @@
       border-color: var(--theme-button-attention-hover-border);
       transform: translateY(-2px);
       box-shadow: var(--theme-button-attention-hover-shadow);
-      
+
       &::before { left: 100%; }
     }
 
@@ -225,6 +225,41 @@
       background: var(--theme-button-attention-active-gradient);
       
       span { color: var(--button-accent-LabelColor); }
+    }
+  }
+
+  &.warning {
+    font-weight: 500;
+    border: 1px solid var(--theme-button-warning-border);
+    background: var(--theme-button-warning-bg);
+
+    .icon { color: var(--theme-button-warning-color); }
+    span { color: var(--theme-button-warning-color); }
+
+    &:not(.disabled, :disabled):hover {
+      background: var(--theme-button-warning-hover-bg);
+      border-color: var(--theme-button-warning-hover-border);
+    }
+
+    &:not(.disabled, :disabled):active,
+    &.pressed:not(.disabled, :disabled) {
+      background: var(--theme-button-warning-active-bg);
+    }
+
+    &:not(.no-focus):focus {
+      box-shadow: var(--theme-button-warning-focus-ring);
+    }
+
+    &:disabled:not(.loading),
+    &.disabled:not(.loading) {
+      background: var(--button-disabled-BackgroundColor);
+      border-color: var(--button-disabled-BackgroundColor);
+    }
+
+    &.loading {
+      background: var(--theme-button-warning-active-bg);
+
+      span { color: var(--theme-button-warning-color); }
     }
   }
 
@@ -643,6 +678,39 @@
       box-shadow: none;
 
       &::before { display: none; }
+
+      .btn-icon,
+      .btn-right-icon { color: var(--primary-button-disabled-color); }
+    }
+  }
+  &.warning {
+    font-weight: 500;
+    color: var(--theme-button-warning-color);
+    background: var(--theme-button-warning-bg);
+    border: 1px solid var(--theme-button-warning-border);
+
+    .btn-icon,
+    .btn-right-icon { color: var(--theme-button-warning-color); }
+
+    &:hover {
+      background: var(--theme-button-warning-hover-bg);
+      border-color: var(--theme-button-warning-hover-border);
+    }
+
+    &:active,
+    &.pressed,
+    &.pressed:hover {
+      background: var(--theme-button-warning-active-bg);
+    }
+
+    &:not(.no-focus):focus {
+      box-shadow: var(--theme-button-warning-focus-ring);
+    }
+
+    &:disabled {
+      color: var(--primary-button-disabled-color);
+      background: var(--primary-button-disabled);
+      border-color: var(--primary-button-disabled);
 
       .btn-icon,
       .btn-right-icon { color: var(--primary-button-disabled-color); }
