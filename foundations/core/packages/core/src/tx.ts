@@ -53,7 +53,8 @@ export enum WorkspaceEvent {
   SecurityChange,
   MaintenanceNotification,
   BulkUpdate,
-  LastTx
+  LastTx,
+  AccountDisabled
 }
 
 /**
