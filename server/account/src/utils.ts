@@ -866,7 +866,7 @@ export async function selectWorkspace (
   if (accountUuid === systemAccountUuid) {
     return {
       account: accountUuid,
-      token: generateToken(accountUuid, workspace.uuid, extra, undefined, {
+      token: await generateTokenWithVersion(ctx, db, accountUuid, workspace.uuid, extra, {
         grant,
         sub,
         exp,
@@ -928,7 +928,7 @@ export async function selectWorkspace (
 
   return {
     account: accountUuid,
-    token: generateToken(accountUuid, workspace.uuid, extra, undefined, {
+    token: await generateTokenWithVersion(ctx, db, accountUuid, workspace.uuid, extra, {
       grant,
       sub,
       exp,
@@ -1284,6 +1284,7 @@ export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite,
 
 export async function sendEmailConfirmation (
   ctx: MeasureContext,
+  db: AccountDB,
   branding: Branding | null,
   account: PersonUuid,
   email: string,
@@ -1303,7 +1304,7 @@ export async function sendEmailConfirmation (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
-  const token = generateToken(account, undefined, {
+  const token = await generateTokenWithVersion(ctx, db, account, undefined, {
     confirmEmail: email,
     ...(extra ?? {})
   })
@@ -1666,7 +1667,7 @@ export async function loginOrSignUpWithProvider (
       account: personUuid as AccountUuid,
       socialId: socialIdId,
       name: getPersonName(person),
-      token: generateToken(personUuid, undefined, extraToken)
+      token: await generateTokenWithVersion(ctx, db, personUuid, undefined, extraToken)
     }
   } catch (err: any) {
     Analytics.handleError(err)
@@ -1718,7 +1719,7 @@ export async function joinWithProvider (
     ctx,
     db,
     branding,
-    generateToken(loginInfo.account, workspaceUuid),
+    await generateTokenWithVersion(ctx, db, loginInfo.account, workspaceUuid),
     loginInfo.account,
     workspace,
     invite

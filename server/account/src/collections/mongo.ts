@@ -40,6 +40,8 @@ import type {
   AccountDB,
   AccountEvent,
   AccountAggregatedInfo,
+  AdminAuditLogCollection,
+  AdminAuditLogEntry,
   DbCollection,
   Integration,
   IntegrationSecret,
@@ -392,6 +394,44 @@ interface MigrationInfo {
   lastProcessedTime: number
 }
 
+class MongoAdminAuditLogCollection implements AdminAuditLogCollection {
+  constructor (private readonly db: Db) {}
+
+  private get collection (): Collection<AdminAuditLogEntry & { _id: any }> {
+    return this.db.collection('admin_audit_log')
+  }
+
+  async insert (entry: Omit<AdminAuditLogEntry, 'id' | 'tsMs'>): Promise<void> {
+    await this.collection.insertOne({
+      id: new UUID().toString(),
+      tsMs: Date.now(),
+      adminAccount: entry.adminAccount,
+      targetAccount: entry.targetAccount,
+      action: entry.action,
+      workspaceUuid: entry.workspaceUuid,
+      details: entry.details
+    } as any)
+  }
+
+  async findByTarget (target: AccountUuid, limit: number): Promise<AdminAuditLogEntry[]> {
+    const rows = await this.collection
+      .find({ targetAccount: target } as any)
+      .sort({ tsMs: -1 })
+      .limit(limit)
+      .toArray()
+    return rows.map(({ _id, ...rest }) => rest as AdminAuditLogEntry)
+  }
+
+  async findByAdmin (admin: AccountUuid, limit: number): Promise<AdminAuditLogEntry[]> {
+    const rows = await this.collection
+      .find({ adminAccount: admin } as any)
+      .sort({ tsMs: -1 })
+      .limit(limit)
+      .toArray()
+    return rows.map(({ _id, ...rest }) => rest as AdminAuditLogEntry)
+  }
+}
+
 export class MongoAccountDB implements AccountDB {
   migration: MongoDbCollection<MigrationInfo, 'key'>
   person: MongoDbCollection<Person, 'uuid'>
@@ -411,6 +451,7 @@ export class MongoAccountDB implements AccountDB {
 
   workspaceMembers: MongoDbCollection<WorkspaceMember>
   workspacePermission: MongoDbCollection<WorkspacePermission>
+  adminAuditLog: AdminAuditLogCollection
 
   constructor (readonly db: Db) {
     this.migration = new MongoDbCollection<MigrationInfo, 'key'>('migration', db, 'key')
@@ -431,6 +472,7 @@ export class MongoAccountDB implements AccountDB {
 
     this.workspaceMembers = new MongoDbCollection<WorkspaceMember>('workspaceMembers', db)
     this.workspacePermission = new MongoDbCollection<WorkspacePermission>('workspacePermissions', db)
+    this.adminAuditLog = new MongoAdminAuditLogCollection(db)
   }
 
   async init (): Promise<void> {

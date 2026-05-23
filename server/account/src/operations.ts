@@ -127,7 +127,8 @@ import {
   checkPasswordAging,
   generateTotpSecret,
   verifyTotpCode,
-  getTotpUrl
+  getTotpUrl,
+  generateTokenWithVersion
 } from './utils'
 
 const NIL_UUID = '00000000-0000-0000-0000-000000000000' as AccountUuid
@@ -236,7 +237,9 @@ export async function login (
     return {
       account: existingAccount.uuid,
       token: isConfirmed
-        ? generateToken(
+        ? await generateTokenWithVersion(
+          ctx,
+          db,
           existingAccount.tfaSecret != null ? NIL_UUID : existingAccount.uuid,
           undefined,
           existingAccount.tfaSecret != null ? { ...extraToken, tfaAccount: existingAccount.uuid } : extraToken
@@ -322,7 +325,7 @@ export async function signUp (
   if (forceConfirmation) {
     const normalizedEmail = cleanEmail(email)
 
-    await sendEmailConfirmation(ctx, branding, account, normalizedEmail)
+    await sendEmailConfirmation(ctx, db, branding, account, normalizedEmail)
   } else {
     ctx.warn('Please provide MAIL_URL to enable sign up email confirmations.')
     await confirmEmail(ctx, db, account, email)
@@ -334,7 +337,7 @@ export async function signUp (
     account,
     name: getPersonName(person),
     socialId,
-    token: !forceConfirmation ? generateToken(account) : undefined
+    token: !forceConfirmation ? await generateTokenWithVersion(ctx, db, account) : undefined
   }
 }
 
@@ -528,7 +531,9 @@ export async function validateOtp (
       : { authMethod: 'otp' }
 
     const _token = isConfirmed
-      ? generateToken(
+      ? await generateTokenWithVersion(
+        ctx,
+        db,
         targetAccount?.tfaSecret != null ? NIL_UUID : emailSocialId.personUuid,
         undefined,
         targetAccount?.tfaSecret != null ? { ...extraToken, tfaAccount: emailSocialId.personUuid } : extraToken
@@ -624,7 +629,7 @@ export async function createWorkspace (
     account,
     socialId: socialId._id,
     name: getPersonName(person),
-    token: generateToken(account, workspaceUuid, extra),
+    token: await generateTokenWithVersion(ctx, db, account, workspaceUuid, extra),
     endpoint: getEndpoint(workspaceUuid, region, EndpointKind.External),
     workspace: workspaceUuid,
     workspaceUrl,
@@ -1247,7 +1252,7 @@ export async function checkAutoJoin (
       }
 
       if (token === undefined || token === null) {
-        token = generateToken(targetAccount.uuid)
+        token = await generateTokenWithVersion(ctx, db, targetAccount.uuid)
       }
       return await selectWorkspace(ctx, db, branding, token, { workspaceUrl: workspace.url, kind: 'external' })
     }
@@ -1271,7 +1276,15 @@ export async function checkAutoJoin (
     true
   )
 
-  return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
+  return await doJoinByInvite(
+    ctx,
+    db,
+    branding,
+    await generateTokenWithVersion(ctx, db, account, workspaceUuid),
+    account,
+    workspace,
+    invite
+  )
 }
 
 /**
@@ -1333,7 +1346,7 @@ export async function signUpJoin (
     const normalizedEmail = cleanEmail(email)
     // Thread the invite info through the confirmation token so the user
     // is auto-joined to the workspace once they confirm their email.
-    await sendEmailConfirmation(ctx, branding, account, normalizedEmail, {
+    await sendEmailConfirmation(ctx, db, branding, account, normalizedEmail, {
       inviteId,
       workspaceUrl
     })
@@ -1353,7 +1366,7 @@ export async function signUpJoin (
     ctx,
     db,
     branding,
-    generateToken(account, workspaceJoinInfo.workspace?.uuid),
+    await generateTokenWithVersion(ctx, db, account, workspaceJoinInfo.workspace?.uuid),
     account,
     workspaceJoinInfo.workspace,
     workspaceJoinInfo.invite
@@ -1387,7 +1400,7 @@ export async function confirm (
     account,
     name: getPersonName(person),
     socialId,
-    token: generateToken(account)
+    token: await generateTokenWithVersion(ctx, db, account)
   }
 
   // If invite info was carried through the confirmation token (signUpJoin flow),
@@ -1401,7 +1414,7 @@ export async function confirm (
         ctx,
         db,
         branding,
-        generateToken(account, joinInfo.workspace?.uuid),
+        await generateTokenWithVersion(ctx, db, account, joinInfo.workspace?.uuid),
         account,
         joinInfo.workspace,
         joinInfo.invite
@@ -1517,7 +1530,7 @@ export async function requestPasswordReset (
   const { mailURL, mailAuth } = getMailUrl()
   const front = getFrontUrl(branding)
 
-  const token = generateToken(account.uuid, undefined, {
+  const token = await generateTokenWithVersion(ctx, db, account.uuid, undefined, {
     restoreEmail: normalizedEmail
   })
 
@@ -1590,7 +1603,7 @@ export async function requestPasswordSetup (
 
   const { mailURL, mailAuth } = getMailUrl()
   const front = getFrontUrl(branding)
-  const resetToken = generateToken(accountUuid, undefined, { restoreEmail: emailSocialId.value })
+  const resetToken = await generateTokenWithVersion(ctx, db, accountUuid, undefined, { restoreEmail: emailSocialId.value })
   const link = concatLink(front, `/login/recovery?id=${resetToken}`)
   const lang = branding?.language
   const text = await translate(accountPlugin.string.PasswordSetupText, { link }, lang)
@@ -1728,7 +1741,7 @@ export async function leaveWorkspace (
     return {
       account,
       name: getPersonName(person),
-      token: generateToken(account, undefined, extra)
+      token: await generateTokenWithVersion(ctx, db, account, undefined, extra)
     }
   }
 
@@ -1910,7 +1923,7 @@ export async function verify2fa (
 
   return {
     account: accountUuid,
-    token: generateToken(accountUuid, undefined, filteredExtra),
+    token: await generateTokenWithVersion(ctx, db, accountUuid, undefined, filteredExtra),
     name: getPersonName(person),
     socialId: socialId?._id
   }
@@ -2190,7 +2203,7 @@ export async function getLoginInfoByToken (
     account: accountUuid,
     name: getPersonName(person),
     socialId: socialId?._id,
-    token: generateToken(accountUuid, workspaceUuid, extra, undefined, { grant, nbf, exp, sub })
+    token: await generateTokenWithVersion(ctx, db, accountUuid, workspaceUuid, extra, { grant, nbf, exp, sub })
   }
 
   if (!isSystem) {
@@ -2777,7 +2790,7 @@ export async function refreshHulyAssistantToken (
     key
   }
 
-  const secret = generateToken(account, undefined, { userAiAssistant: 'true' })
+  const secret = await generateTokenWithVersion(ctx, db, account, undefined, { userAiAssistant: 'true' })
 
   const existingToken = await db.integrationSecret.findOne(integrationSecretKey)
 
