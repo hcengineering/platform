@@ -71,7 +71,8 @@ import {
   updateWorkspaceRole,
   getPersonName,
   doMergeAccounts,
-  assignableRoles
+  assignableRoles,
+  verifyTokenVersion
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -127,6 +128,7 @@ export async function listAccountsAdmin (
   token: string,
   params: ListAccountsAdminParams
 ): Promise<{ total: number, accounts: AccountListRow[] }> {
+  await verifyTokenVersion(ctx, db, token)
   const { extra } = decodeTokenVerbose(ctx, token)
   if (extra?.admin !== 'true') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -136,6 +138,8 @@ export async function listAccountsAdmin (
   // optimization (server-side filter + count) is a follow-up.
   const allAccounts = await db.account.find({})
   const allSocialIds = await db.socialId.find({})
+  const allPersons = await db.person.find({})
+  const personByUuid = new Map(allPersons.map((p) => [p.uuid, p]))
   const adminEmails = new Set(
     (process.env.ADMIN_EMAILS ?? '')
       .split(',')
@@ -153,11 +157,12 @@ export async function listAccountsAdmin (
       const authMethods: Array<'email' | 'oidc'> = []
       if (emailSocials.length > 0) authMethods.push('email')
       if (oidcSocials.length > 0) authMethods.push('oidc')
+      const person = personByUuid.get(acc.uuid as unknown as PersonUuid)
 
       return {
         uuid: acc.uuid,
-        firstName: (acc as any).firstName ?? '',
-        lastName: (acc as any).lastName ?? '',
+        firstName: person?.firstName ?? '',
+        lastName: person?.lastName ?? '',
         primaryEmail,
         authMethods,
         hasPassword: acc.hash != null,
@@ -229,6 +234,7 @@ export async function getAccountDetails (
   token: string,
   params: { accountUuid: AccountUuid }
 ): Promise<AccountDetailsResponse> {
+  await verifyTokenVersion(ctx, db, token)
   const { extra } = decodeTokenVerbose(ctx, token)
   if (extra?.admin !== 'true') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -239,6 +245,7 @@ export async function getAccountDetails (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
 
+  const person = await db.person.findOne({ uuid: params.accountUuid as unknown as PersonUuid })
   const socialIds = await db.socialId.find({ personUuid: params.accountUuid })
   const workspaces = await db.getAccountWorkspaces(params.accountUuid)
   const roleMap = await db.getWorkspaceRoles(params.accountUuid)
@@ -268,8 +275,8 @@ export async function getAccountDetails (
 
   return {
     uuid: account.uuid,
-    firstName: (account as any).firstName ?? '',
-    lastName: (account as any).lastName ?? '',
+    firstName: person?.firstName ?? '',
+    lastName: person?.lastName ?? '',
     status: account.disabledAt != null ? 'disabled' : 'active',
     disabledAt: account.disabledAt ?? null,
     lastActivityAt: account.lastActivityAt ?? null,

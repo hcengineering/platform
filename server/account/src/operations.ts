@@ -202,6 +202,11 @@ export async function login (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
 
+    if (existingAccount.disabledAt != null) {
+      ctx.warn('Login attempt on disabled account', { email: normalizedEmail })
+      throw new PlatformError(new Status(Severity.ERROR, 'account_disabled' as any, {}))
+    }
+
     // Check if account is locked due to too many failed login attempts
     if (isAccountPasswordLocked(existingAccount)) {
       ctx.warn('Login attempt on locked account - password login locked', {
@@ -442,6 +447,11 @@ export async function validateOtp (
     await db.otp.deleteMany({ socialId: emailSocialId._id })
 
     const targetAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
+
+    if (targetAccount?.disabledAt != null) {
+      ctx.warn('OTP validation attempt on disabled account', { email: normalizedEmail })
+      throw new PlatformError(new Status(Severity.ERROR, 'account_disabled' as any, {}))
+    }
 
     if (action !== 'verify') {
       // login/sign up
@@ -3306,6 +3316,19 @@ export async function getWorkspaceUsersWithPermission (
 // Admin user management (V27) — admin-gated mutation endpoints
 // =====================================================================
 
+/**
+ * Verify the caller is an active admin: token-version not stale, account
+ * not disabled, and extra.admin === 'true'. Returns the caller account uuid.
+ */
+async function requireAdmin (ctx: MeasureContext, db: AccountDB, token: string): Promise<AccountUuid> {
+  await verifyTokenVersion(ctx, db, token)
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  if (extra?.admin !== 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  return account
+}
+
 export async function setWorkspaceMemberRole (
   ctx: MeasureContext,
   db: AccountDB,
@@ -3313,10 +3336,7 @@ export async function setWorkspaceMemberRole (
   token: string,
   params: { accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, newRole: AccountRole }
 ): Promise<{ ok: true }> {
-  const { account: adminUuid, extra } = decodeTokenVerbose(ctx, token)
-  if (extra?.admin !== 'true') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  const adminUuid = await requireAdmin(ctx, db, token)
 
   const currentRole = await db.getWorkspaceRole(params.accountUuid, params.workspaceUuid)
   if (currentRole == null) {
@@ -3352,10 +3372,7 @@ export async function removeWorkspaceMember (
   token: string,
   params: { accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid }
 ): Promise<{ ok: true, wasMember: boolean }> {
-  const { account: adminUuid, extra } = decodeTokenVerbose(ctx, token)
-  if (extra?.admin !== 'true') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  const adminUuid = await requireAdmin(ctx, db, token)
 
   const currentRole = await db.getWorkspaceRole(params.accountUuid, params.workspaceUuid)
   if (currentRole == null) {
@@ -3389,10 +3406,7 @@ export async function triggerPasswordReset (
   token: string,
   params: { accountUuid: AccountUuid }
 ): Promise<{ ok: true, emailSentTo: string }> {
-  const { account: adminUuid, extra } = decodeTokenVerbose(ctx, token)
-  if (extra?.admin !== 'true') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  const adminUuid = await requireAdmin(ctx, db, token)
 
   const socials = await db.socialId.find({ personUuid: params.accountUuid })
   const emailSocial = socials.find((s) => s.type === SocialIdType.EMAIL)
@@ -3407,11 +3421,17 @@ export async function triggerPasswordReset (
 
   try {
     await requestPasswordReset(ctx, db, branding, '', { email: emailSocial.value })
-  } catch (err) {
-    ctx.warn('Password reset email send failed; audit still recorded', {
-      err,
-      accountUuid: params.accountUuid
+  } catch (err: any) {
+    ctx.error('Password reset email send failed', { err, accountUuid: params.accountUuid })
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid as AccountUuid,
+      targetAccount: params.accountUuid,
+      action: 'trigger_password_reset',
+      workspaceUuid: null,
+      details: { emailSentTo: emailSocial.value, failed: true, errMsg: err?.message ?? String(err) }
     })
+    if (err instanceof PlatformError) throw err
+    throw new PlatformError(new Status(Severity.ERROR, 'password_reset_send_failed' as any, {}))
   }
 
   await db.adminAuditLog.insert({
@@ -3425,12 +3445,40 @@ export async function triggerPasswordReset (
   return { ok: true, emailSentTo: emailSocial.value }
 }
 
-function isLastAdmin (targetEmail: string): boolean {
-  const adminEmails = (process.env.ADMIN_EMAILS ?? '')
+function getConfiguredAdminEmails (): string[] {
+  return (process.env.ADMIN_EMAILS ?? '')
     .split(',')
     .map((e) => e.trim())
     .filter(Boolean)
-  return adminEmails.length === 1 && adminEmails[0] === targetEmail
+}
+
+/**
+ * Returns true when disabling the target account would leave zero active
+ * admins. Walks the configured ADMIN_EMAILS list, resolves each entry to
+ * an account via its email social id, and counts only accounts that
+ * currently exist and are not already disabled.
+ */
+async function isLastAdmin (db: AccountDB, targetEmail: string): Promise<boolean> {
+  const adminEmails = getConfiguredAdminEmails()
+  if (adminEmails.length === 0) return false
+
+  const targetEmailNorm = targetEmail.trim().toLowerCase()
+  if (!adminEmails.map((e) => e.toLowerCase()).includes(targetEmailNorm)) {
+    return false
+  }
+
+  let activeOtherAdmins = 0
+  for (const email of adminEmails) {
+    if (email.toLowerCase() === targetEmailNorm) continue
+    const socialId = await db.socialId.findOne({ type: SocialIdType.EMAIL, value: email })
+    if (socialId == null) continue
+    const account = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
+    if (account == null) continue
+    if (account.disabledAt != null) continue
+    activeOtherAdmins += 1
+  }
+
+  return activeOtherAdmins === 0
 }
 
 export async function disableAccount (
@@ -3441,10 +3489,7 @@ export async function disableAccount (
   token: string,
   params: { accountUuid: AccountUuid }
 ): Promise<{ ok: true }> {
-  const { account: adminUuid, extra } = decodeTokenVerbose(ctx, token)
-  if (extra?.admin !== 'true') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  const adminUuid = await requireAdmin(ctx, db, token)
 
   if (adminUuid === params.accountUuid) {
     throw new PlatformError(new Status(Severity.ERROR, 'cannot_self_disable' as any, {}))
@@ -3452,7 +3497,7 @@ export async function disableAccount (
 
   const socials = await db.socialId.find({ personUuid: params.accountUuid })
   const targetEmail = socials.find((s) => s.type === SocialIdType.EMAIL)?.value
-  if (targetEmail != null && isLastAdmin(targetEmail)) {
+  if (targetEmail != null && (await isLastAdmin(db, targetEmail))) {
     throw new PlatformError(new Status(Severity.ERROR, 'last_admin' as any, {}))
   }
 
@@ -3503,15 +3548,27 @@ export async function enableAccount (
   token: string,
   params: { accountUuid: AccountUuid }
 ): Promise<{ ok: true }> {
-  const { account: adminUuid, extra } = decodeTokenVerbose(ctx, token)
-  if (extra?.admin !== 'true') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  const adminUuid = await requireAdmin(ctx, db, token)
 
   const account = await db.account.findOne({ uuid: params.accountUuid })
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
+
+  // If the account is not currently disabled, this is a no-op: don't bump
+  // tokenVersion (spec §10.7 — idempotent for never-disabled). Still record
+  // the audit entry so admins see the action even when it had no effect.
+  if (account.disabledAt == null) {
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid as AccountUuid,
+      targetAccount: params.accountUuid,
+      action: 'enable',
+      workspaceUuid: null,
+      details: { noop: true }
+    })
+    return { ok: true }
+  }
+
   const newVersion = (account.tokenVersion ?? 0) + 1
   await db.account.update({ uuid: params.accountUuid }, { disabledAt: null, tokenVersion: newVersion })
   await db.adminAuditLog.insert({

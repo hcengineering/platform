@@ -22,7 +22,8 @@ const ctx = { newChild: () => ctx, info: () => {} } as unknown as MeasureContext
 
 const fakeDb = (account: any): any => ({
   account: { findOne: async () => account },
-  socialId: { find: async () => [] },
+  socialId: { find: async () => [], findOne: async () => null },
+  person: { findOne: async () => ({ uuid: TARGET_UUID, firstName: 'Charlie', lastName: 'Citrine' }) },
   getAccountWorkspaces: async () => [],
   getWorkspaceRoles: async () => new Map(),
   adminAuditLog: { findByTarget: async () => [] }

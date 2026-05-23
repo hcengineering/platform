@@ -1655,6 +1655,9 @@ export async function loginOrSignUpWithProvider (
 
       await createAccount(db, personUuid, true)
       await db.person.update({ uuid: personUuid }, { firstName: first, lastName: last })
+    } else if (account.disabledAt != null) {
+      ctx.warn('Provider login attempt on disabled account', { email: normalizedEmail })
+      throw new PlatformError(new Status(Severity.ERROR, 'account_disabled' as any, {}))
     }
 
     // We should check and reset password if there's an account with password but no social ids have been

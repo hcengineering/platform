@@ -48,14 +48,19 @@ describe('triggerPasswordReset', () => {
     )
   })
 
-  it('succeeds for user with email + password', async () => {
+  it('surfaces password_reset_send_failed when the email send fails', async () => {
+    const audit: any[] = []
     const db = {
       socialId: { find: async () => [{ personUuid: TARGET, type: 'email', value: 'user@example.com' }] },
       account: { findOne: async () => ({ uuid: TARGET, hash: Buffer.from('x') }) },
-      adminAuditLog: { insert: async () => {} }
+      adminAuditLog: { insert: async (e: any) => audit.push(e) }
     } as any
-    const res = await triggerPasswordReset(ctx, db, null, ADMIN_TOKEN, { accountUuid: TARGET })
-    expect(res.ok).toBe(true)
-    expect(res.emailSentTo).toBe('user@example.com')
+    // No MAIL_URL set -> requestPasswordReset throws InternalServerError ->
+    // triggerPasswordReset re-throws and records a failed audit entry.
+    await expect(triggerPasswordReset(ctx, db, null, ADMIN_TOKEN, { accountUuid: TARGET })).rejects.toThrow(
+      PlatformError
+    )
+    expect(audit.length).toBe(1)
+    expect(audit[0].details.failed).toBe(true)
   })
 })

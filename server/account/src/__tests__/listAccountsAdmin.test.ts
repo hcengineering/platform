@@ -21,11 +21,11 @@ const ctx = { newChild: () => ctx, info: () => {}, warn: () => {}, error: () => 
 
 const fakeDb = (): any => ({
   account: {
-    find: async () => [
-      { uuid: 'u1', firstName: 'Alice', lastName: 'A', disabledAt: null, tokenVersion: 0, lastActivityAt: 1700000000000 }
-    ]
+    find: async () => [{ uuid: 'u1', disabledAt: null, tokenVersion: 0, lastActivityAt: 1700000000000 }],
+    findOne: async () => null
   },
-  socialId: { find: async () => [] },
+  socialId: { find: async () => [], findOne: async () => null },
+  person: { find: async () => [{ uuid: 'u1', firstName: 'Alice', lastName: 'A' }] },
   getWorkspaceRoles: async () => new Map()
 })
 
