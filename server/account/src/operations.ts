@@ -3301,6 +3301,49 @@ export async function getWorkspaceUsersWithPermission (
   return await db.getWorkspaceUsersWithPermission(workspace, permission)
 }
 
+// =====================================================================
+// Admin user management (V27) — admin-gated mutation endpoints
+// =====================================================================
+
+export async function setWorkspaceMemberRole (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, newRole: AccountRole }
+): Promise<{ ok: true }> {
+  const { account: adminUuid, extra } = decodeTokenVerbose(ctx, token)
+  if (extra?.admin !== 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const currentRole = await db.getWorkspaceRole(params.accountUuid, params.workspaceUuid)
+  if (currentRole == null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.AccountNotFound, { account: params.accountUuid })
+    )
+  }
+
+  if (currentRole === AccountRole.Owner && params.newRole !== AccountRole.Owner) {
+    const members = await db.getWorkspaceMembers(params.workspaceUuid)
+    const otherOwners = members.filter((m) => m.role === AccountRole.Owner && m.person !== params.accountUuid)
+    if (otherOwners.length === 0) {
+      throw new PlatformError(new Status(Severity.ERROR, 'last_owner_in_workspace' as any, {}))
+    }
+  }
+
+  await db.updateWorkspaceRole(params.accountUuid, params.workspaceUuid, params.newRole)
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid as AccountUuid,
+    targetAccount: params.accountUuid,
+    action: 'role_change',
+    workspaceUuid: params.workspaceUuid,
+    details: { oldRole: currentRole, newRole: params.newRole }
+  })
+
+  return { ok: true }
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -3378,6 +3421,7 @@ export type AccountMethods =
   | 'hasWorkspacePermission'
   | 'getWorkspacePermissions'
   | 'getWorkspaceUsersWithPermission'
+  | 'setWorkspaceMemberRole'
 
 /**
  * @public
@@ -3444,6 +3488,9 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     hasWorkspacePermission: wrap(hasWorkspacePermission),
     getWorkspacePermissions: wrap(getWorkspacePermissions),
     getWorkspaceUsersWithPermission: wrap(getWorkspaceUsersWithPermission),
+
+    /* ADMIN USER MANAGEMENT (V27) */
+    setWorkspaceMemberRole: wrap(setWorkspaceMemberRole),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
