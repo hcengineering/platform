@@ -108,6 +108,10 @@
   function onClose (): void {
     dispatch('close')
   }
+
+  function parseRole (v: string): AccountRole {
+    return Number(v) as AccountRole
+  }
 </script>
 
 <div class="drawer-overlay" on:click={onClose} role="presentation" />
@@ -148,7 +152,7 @@
               <strong>{m.workspaceName}</strong>
               <select
                 value={m.role}
-                on:change={(e) => onChangeRole(m.workspaceUuid, e.currentTarget.value as unknown as AccountRole)}
+                on:change={(e) => onChangeRole(m.workspaceUuid, parseRole(e.currentTarget.value))}
               >
                 <option value={AccountRole.User}>User</option>
                 <option value={AccountRole.Maintainer}>Maintainer</option>
