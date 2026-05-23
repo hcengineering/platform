@@ -77,6 +77,7 @@ import {
   type QueueUserMessage,
   QueueWorkspaceEvent,
   type QueueWorkspaceMessage,
+  type QueueAccountLifecycleMessage,
   type Session,
   type SessionHealth,
   type SessionManager,
@@ -125,6 +126,7 @@ export class TSessionManager implements SessionManager {
   workspaceProducer: PlatformQueueProducer<QueueWorkspaceMessage>
   usersProducer: PlatformQueueProducer<QueueUserMessage>
   workspaceConsumer: ConsumerHandle
+  accountLifecycleConsumer: ConsumerHandle
 
   now: number = Date.now()
 
@@ -172,6 +174,47 @@ export class TSessionManager implements SessionManager {
         ) {
           // Handle workspace messages
           this.workspaceInfoCache.delete(msg.workspace)
+        }
+      }
+    )
+
+    this.accountLifecycleConsumer = this.queue.createConsumer<QueueAccountLifecycleMessage>(
+      ctx.newChild('account-lifecycle-consume', {}, { span: false }),
+      'account.lifecycle',
+      generateId(),
+      async (ctx, msg) => {
+        const m = msg.value
+        if (m.event !== 'disabled') return
+
+        const matching = Array.from(this.sessions.entries()).filter(
+          ([, entry]) => entry.session.getUser() === m.accountUuid
+        )
+        if (matching.length === 0) return
+
+        const tx: TxWorkspaceEvent = {
+          _id: generateId(),
+          _class: core.class.TxWorkspaceEvent,
+          event: WorkspaceEvent.AccountDisabled,
+          modifiedBy: core.account.System,
+          modifiedOn: Date.now(),
+          objectSpace: core.space.DerivedTx,
+          space: core.space.DerivedTx,
+          createdBy: core.account.System,
+          params: { reason: m.reason ?? 'manual_admin_action' }
+        }
+
+        const sessionIdMap: Record<string, Tx[]> = {}
+        for (const [, entry] of matching) {
+          sessionIdMap[entry.session.sessionId] = [tx]
+        }
+        this.broadcastSessions(ctx, sessionIdMap)
+
+        for (const [, entry] of matching) {
+          try {
+            await entry.socket.close()
+          } catch (err) {
+            ctx.warn('failed to close socket for disabled account', { err })
+          }
         }
       }
     )
