@@ -102,7 +102,10 @@ export default plugin(loginId, {
     TwoFactorAuth: '' as IntlString,
     EnterTwoFactorCode: '' as IntlString,
     TwoFactorCode: '' as IntlString,
-    Verify: '' as IntlString
+    Verify: '' as IntlString,
+    AccountDisabledTitle: '' as IntlString,
+    AccountDisabledBody: '' as IntlString,
+    SignOut: '' as IntlString
   },
   function: {
     SendInvite: '' as Resource<(email: string, role: AccountRole) => Promise<void>>,

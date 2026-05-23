@@ -54,6 +54,8 @@
   import loginBack2xWebp from '../../img/login_back_2x.webp'
   import AdminWorkspaces from './AdminWorkspaces.svelte'
   import ChangePassword from './ChangePassword.svelte'
+  import ForceLogoutModal from './ForceLogoutModal.svelte'
+  import { forceLogoutReason } from '../utils'
 
   export let page: Pages = 'signup'
 
@@ -121,6 +123,10 @@
 
   onMount(chooseToken)
 </script>
+
+{#if $forceLogoutReason != null}
+  <ForceLogoutModal reason={$forceLogoutReason} />
+{/if}
 
 {#if page === 'admin'}
   <AdminWorkspaces />
