@@ -50,7 +50,9 @@ import type {
   UserProfile,
   Subscription,
   WorkspacePermission,
-  DBFlavor
+  DBFlavor,
+  AdminAuditLogCollection,
+  AdminAuditLogEntry
 } from '../../types'
 
 function toSnakeCase (str: string): string {
@@ -515,6 +517,70 @@ export class AccountPostgresDbCollection
   }
 }
 
+class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
+  constructor (
+    private readonly client: Sql,
+    private readonly ns: string
+  ) {}
+
+  private getTableName (): string {
+    return `${this.ns}.admin_audit_log`
+  }
+
+  async insert (entry: Omit<AdminAuditLogEntry, 'id' | 'tsMs'>): Promise<void> {
+    const sql = `
+      INSERT INTO ${this.getTableName()}
+        (admin_account, target_account, action, workspace_uuid, details)
+      VALUES ($1::text, $2::text, $3::text, $4::text, $5::jsonb)
+    `
+    await this.client.unsafe(sql, [
+      entry.adminAccount,
+      entry.targetAccount,
+      entry.action,
+      entry.workspaceUuid,
+      entry.details != null ? JSON.stringify(entry.details) : null
+    ])
+  }
+
+  async findByTarget (target: AccountUuid, limit: number): Promise<AdminAuditLogEntry[]> {
+    const sql = `
+      SELECT id, ts_ms AS "tsMs", admin_account AS "adminAccount",
+             target_account AS "targetAccount", action,
+             workspace_uuid AS "workspaceUuid", details
+      FROM ${this.getTableName()}
+      WHERE target_account = $1::text
+      ORDER BY ts_ms DESC LIMIT $2::int
+    `
+    const rows = await this.client.unsafe(sql, [target, limit])
+    return rows.map(this.parseRow)
+  }
+
+  async findByAdmin (admin: AccountUuid, limit: number): Promise<AdminAuditLogEntry[]> {
+    const sql = `
+      SELECT id, ts_ms AS "tsMs", admin_account AS "adminAccount",
+             target_account AS "targetAccount", action,
+             workspace_uuid AS "workspaceUuid", details
+      FROM ${this.getTableName()}
+      WHERE admin_account = $1::text
+      ORDER BY ts_ms DESC LIMIT $2::int
+    `
+    const rows = await this.client.unsafe(sql, [admin, limit])
+    return rows.map(this.parseRow)
+  }
+
+  private parseRow (row: any): AdminAuditLogEntry {
+    return {
+      id: row.id,
+      tsMs: Number(row.tsMs),
+      adminAccount: row.adminAccount,
+      targetAccount: row.targetAccount,
+      action: row.action,
+      workspaceUuid: row.workspaceUuid,
+      details: typeof row.details === 'string' ? JSON.parse(row.details) : row.details
+    }
+  }
+}
+
 export class PostgresAccountDB implements AccountDB {
   private readonly retryOptions = {
     maxAttempts: 5,
@@ -540,6 +606,7 @@ export class PostgresAccountDB implements AccountDB {
   userProfile: PostgresDbCollection<UserProfile, 'personUuid'>
   subscription: PostgresDbCollection<Subscription, 'id'>
   workspacePermission: PostgresDbCollection<WorkspacePermission>
+  adminAuditLog: AdminAuditLogCollection
 
   constructor (
     readonly client: Sql,
@@ -609,6 +676,7 @@ export class PostgresAccountDB implements AccountDB {
       timestampFields: ['createdOn'],
       withRetryClient
     })
+    this.adminAuditLog = new PostgresAdminAuditLogCollection(client, ns)
   }
 
   getWsMembersTableName (): string {

@@ -73,6 +73,30 @@ export interface Account {
   lastActivityAt?: number | null     // epoch-ms; null = no logins yet
 }
 
+// V27 admin user management
+export type AdminAuditAction =
+  | 'role_change'
+  | 'remove_member'
+  | 'trigger_password_reset'
+  | 'disable'
+  | 'enable'
+
+export interface AdminAuditLogEntry {
+  id: string
+  tsMs: number
+  adminAccount: AccountUuid
+  targetAccount: AccountUuid
+  action: AdminAuditAction
+  workspaceUuid: WorkspaceUuid | null
+  details: Record<string, any> | null
+}
+
+export interface AdminAuditLogCollection {
+  insert: (entry: Omit<AdminAuditLogEntry, 'id' | 'tsMs'>) => Promise<void>
+  findByTarget: (target: AccountUuid, limit: number) => Promise<AdminAuditLogEntry[]>
+  findByAdmin: (admin: AccountUuid, limit: number) => Promise<AdminAuditLogEntry[]>
+}
+
 // TODO: type data with generic type
 export interface AccountEvent {
   accountUuid: AccountUuid
@@ -331,6 +355,7 @@ export interface AccountDB {
   userProfile: DbCollection<UserProfile>
   subscription: DbCollection<Subscription>
   workspacePermission: DbCollection<WorkspacePermission>
+  adminAuditLog: AdminAuditLogCollection
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
