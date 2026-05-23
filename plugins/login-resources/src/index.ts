@@ -100,6 +100,7 @@ setForceLogoutHandler((reason: string) => {
   forceLogoutReason.set(reason)
   try {
     setMetadata(presentation.metadata.Token, null)
+    setMetadataLocalStorage(login.metadata.LoginAccount, null)
     setMetadataLocalStorage(login.metadata.LoginEndpoint, null)
   } catch (err) {
     console.error('failed to clear session metadata on force-logout', err)

@@ -20,9 +20,11 @@ import core, {
   type WorkspaceUuid,
   type PersonUuid,
   TxCreateDoc,
-  type Doc
+  type Doc,
+  WorkspaceEvent,
+  type TxWorkspaceEvent
 } from '@hcengineering/core'
-import { connect } from '../connection'
+import { connect, setForceLogoutHandler } from '../connection'
 
 // Mock CloseEvent for Node.js environment (used in MockWebSocket)
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
@@ -370,5 +372,109 @@ describe('connect function', () => {
     // Close immediately after test
     await client.close()
     await new Promise((resolve) => setTimeout(resolve, 50))
+  })
+})
+
+describe('force-logout via WorkspaceEvent.AccountDisabled', () => {
+  let connections: Array<{ close: () => Promise<void> }> = []
+  let mockWebSockets: MockWebSocket[] = []
+
+  afterEach(async () => {
+    setForceLogoutHandler(() => {})
+    for (const conn of connections) await conn.close()
+    connections = []
+    for (const ws of mockWebSockets) {
+      ws.clearAllTimers()
+      if (ws.readyState !== ClientSocketReadyState.CLOSED) ws.close()
+    }
+    mockWebSockets = []
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  })
+
+  function makeAccountDisabledTx (reason = 'manual_admin_action'): TxWorkspaceEvent {
+    return {
+      _id: generateId(),
+      _class: core.class.TxWorkspaceEvent,
+      event: WorkspaceEvent.AccountDisabled,
+      modifiedBy: core.account.System,
+      modifiedOn: Date.now(),
+      space: core.space.DerivedTx,
+      objectSpace: core.space.DerivedTx,
+      createdBy: core.account.System,
+      params: { reason }
+    } as unknown as TxWorkspaceEvent
+  }
+
+  it('invokes the registered handler when an AccountDisabled Tx arrives on the wire', async () => {
+    let receivedReason: string | null = null
+    setForceLogoutHandler((reason) => {
+      receivedReason = reason
+    })
+
+    const mockWs = new MockWebSocket('ws://localhost:3333')
+    mockWebSockets.push(mockWs)
+    const handler = jest.fn()
+    const client = connect('ws://localhost:3333', handler, 'ws' as WorkspaceUuid, 'u' as PersonUuid, {
+      socketFactory: () => mockWs as any
+    })
+    connections.push(client)
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    // broadcastSessions in server sends { result: [tx] } — id is undefined for broadcasts.
+    const tx = makeAccountDisabledTx('manual_admin_action')
+    mockWs.simulateMessage(JSON.stringify({ result: [tx] }))
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    expect(receivedReason).toBe('manual_admin_action')
+  })
+
+  it('skips reconnect after force-logout fires (close does NOT spawn a new socket)', async () => {
+    setForceLogoutHandler(() => {})
+
+    const mockWs = new MockWebSocket('ws://localhost:3333')
+    mockWebSockets.push(mockWs)
+    let socketCallCount = 0
+    const handler = jest.fn()
+    const client = connect('ws://localhost:3333', handler, 'ws' as WorkspaceUuid, 'u' as PersonUuid, {
+      socketFactory: () => {
+        socketCallCount++
+        return mockWs as any
+      }
+    })
+    connections.push(client)
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    const baselineCalls = socketCallCount
+
+    mockWs.simulateMessage(JSON.stringify({ result: [makeAccountDisabledTx()] }))
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    mockWs.close()
+    await new Promise((resolve) => setTimeout(resolve, 200))
+
+    // scheduleOpen would have caused a second socketFactory call. Force-logout
+    // must suppress that.
+    expect(socketCallCount).toBe(baselineCalls)
+  })
+
+  it('defaults reason to "account_disabled" when params.reason is missing', async () => {
+    let receivedReason: string | null = null
+    setForceLogoutHandler((reason) => {
+      receivedReason = reason
+    })
+
+    const mockWs = new MockWebSocket('ws://localhost:3333')
+    mockWebSockets.push(mockWs)
+    const client = connect('ws://localhost:3333', jest.fn(), 'ws' as WorkspaceUuid, 'u' as PersonUuid, {
+      socketFactory: () => mockWs as any
+    })
+    connections.push(client)
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    const tx = makeAccountDisabledTx() as any
+    tx.params = undefined // no reason
+    mockWs.simulateMessage(JSON.stringify({ result: [tx] }))
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    expect(receivedReason).toBe('account_disabled')
   })
 })
