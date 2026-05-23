@@ -928,6 +928,10 @@ export async function selectWorkspace (
     void setTimezone(ctx, db, accountUuid, account, meta)
   }
 
+  if (accountUuid !== systemAccountUuid && accountUuid !== readOnlyGuestAccountUuid) {
+    await touchLastActivity(db, accountUuid)
+  }
+
   if (role === AccountRole.ReadOnlyGuest) {
     if (extra == null) {
       extra = {}
@@ -1684,6 +1688,7 @@ export async function loginOrSignUpWithProvider (
     }
 
     await confirmHulyIds(ctx, db, personUuid as AccountUuid)
+    await touchLastActivity(db, personUuid as AccountUuid)
     const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
     ctx.info('Provider login succeeded', { email, normalizedEmail, emailSocialId, socialId, ...extraToken })
 

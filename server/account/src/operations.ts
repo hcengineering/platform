@@ -129,7 +129,8 @@ import {
   verifyTotpCode,
   getTotpUrl,
   generateTokenWithVersion,
-  verifyTokenVersion
+  verifyTokenVersion,
+  touchLastActivity
 } from './utils'
 
 const NIL_UUID = '00000000-0000-0000-0000-000000000000' as AccountUuid
@@ -227,6 +228,7 @@ export async function login (
 
     // Successful login - reset failed attempts counter
     await resetFailedLoginAttempts(db, existingAccount.uuid)
+    await touchLastActivity(db, existingAccount.uuid)
 
     const isConfirmed = emailSocialId.verifiedOn != null
 
@@ -540,6 +542,10 @@ export async function validateOtp (
         targetAccount?.tfaSecret != null ? { ...extraToken, tfaAccount: emailSocialId.personUuid } : extraToken
       )
       : undefined
+
+    if (emailSocialId.personUuid != null) {
+      await touchLastActivity(db, emailSocialId.personUuid as AccountUuid)
+    }
 
     return {
       account: emailSocialId.personUuid as AccountUuid,
