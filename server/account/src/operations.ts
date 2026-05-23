@@ -3496,6 +3496,35 @@ export async function disableAccount (
   return { ok: true }
 }
 
+export async function enableAccount (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid }
+): Promise<{ ok: true }> {
+  const { account: adminUuid, extra } = decodeTokenVerbose(ctx, token)
+  if (extra?.admin !== 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+  const newVersion = (account.tokenVersion ?? 0) + 1
+  await db.account.update({ uuid: params.accountUuid }, { disabledAt: null, tokenVersion: newVersion })
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid as AccountUuid,
+    targetAccount: params.accountUuid,
+    action: 'enable',
+    workspaceUuid: null,
+    details: null
+  })
+
+  return { ok: true }
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -3577,6 +3606,7 @@ export type AccountMethods =
   | 'removeWorkspaceMember'
   | 'triggerPasswordReset'
   | 'disableAccount'
+  | 'enableAccount'
 
 /**
  * @public
@@ -3683,6 +3713,7 @@ export function getMethods (
     removeWorkspaceMember: wrap(removeWorkspaceMember),
     triggerPasswordReset: wrap(triggerPasswordReset),
     disableAccount: wrapWithDeps(disableAccount, deps),
+    enableAccount: wrap(enableAccount),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
