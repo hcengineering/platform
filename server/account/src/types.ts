@@ -67,6 +67,10 @@ export interface Account {
   maxWorkspaces?: number
   failedLoginAttempts?: number // Number of consecutive failed login attempts
   tfaSecret?: string
+  // V27 admin user management:
+  disabledAt?: number | null         // epoch-ms; null = active
+  tokenVersion?: number              // monotonic counter, default 0
+  lastActivityAt?: number | null     // epoch-ms; null = no logins yet
 }
 
 // TODO: type data with generic type
