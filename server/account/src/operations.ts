@@ -3381,6 +3381,49 @@ export async function removeWorkspaceMember (
   return { ok: true, wasMember: true }
 }
 
+export async function triggerPasswordReset (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid }
+): Promise<{ ok: true, emailSentTo: string }> {
+  const { account: adminUuid, extra } = decodeTokenVerbose(ctx, token)
+  if (extra?.admin !== 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const socials = await db.socialId.find({ personUuid: params.accountUuid })
+  const emailSocial = socials.find((s) => s.type === SocialIdType.EMAIL)
+  if (emailSocial == null) {
+    throw new PlatformError(new Status(Severity.ERROR, 'user_has_no_email' as any, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account?.hash == null) {
+    throw new PlatformError(new Status(Severity.ERROR, 'user_has_no_password' as any, {}))
+  }
+
+  try {
+    await requestPasswordReset(ctx, db, branding, '', { email: emailSocial.value })
+  } catch (err) {
+    ctx.warn('Password reset email send failed; audit still recorded', {
+      err,
+      accountUuid: params.accountUuid
+    })
+  }
+
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid as AccountUuid,
+    targetAccount: params.accountUuid,
+    action: 'trigger_password_reset',
+    workspaceUuid: null,
+    details: { emailSentTo: emailSocial.value }
+  })
+
+  return { ok: true, emailSentTo: emailSocial.value }
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -3460,6 +3503,7 @@ export type AccountMethods =
   | 'getWorkspaceUsersWithPermission'
   | 'setWorkspaceMemberRole'
   | 'removeWorkspaceMember'
+  | 'triggerPasswordReset'
 
 /**
  * @public
@@ -3530,6 +3574,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     /* ADMIN USER MANAGEMENT (V27) */
     setWorkspaceMemberRole: wrap(setWorkspaceMemberRole),
     removeWorkspaceMember: wrap(removeWorkspaceMember),
+    triggerPasswordReset: wrap(triggerPasswordReset),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
