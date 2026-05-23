@@ -545,3 +545,16 @@ export interface AccountAggregatedInfo extends Omit<Account, 'hash' | 'salt'>, P
   socialIds: SocialId[]
   workspaces: Omit<WorkspaceInfo, 'allowReadOnlyGuest' | 'allowGuestSignUp'>[]
 }
+
+/**
+ * Optional deps the account pod injects into a subset of method handlers.
+ * Currently the only consumer is disableAccount, which uses the
+ * accountLifecycleProducer to broadcast force-logout signals across pods.
+ * When undefined, disableAccount still bumps tokenVersion (which gives
+ * a slower but correct fallback path).
+ */
+export interface AccountMethodDeps {
+  accountLifecycleProducer?: {
+    send: (ctx: any, workspace: any, msgs: any[], partitionKey?: string) => Promise<void>
+  }
+}

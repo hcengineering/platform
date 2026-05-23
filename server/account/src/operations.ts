@@ -37,7 +37,7 @@ import {
   type IntegrationKind
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
-import { decodeToken, decodeTokenVerbose, generateToken, type PermissionsGrant } from '@hcengineering/server-token'
+import { decodeToken, decodeTokenVerbose, generateToken, type PermissionsGrant, TokenError } from '@hcengineering/server-token'
 
 import { isAdminEmail } from './admin'
 import { accountPlugin } from './plugin'
@@ -47,6 +47,7 @@ import {
   type MailboxSecret,
   type AccountDB,
   type AccountMethodHandler,
+  type AccountMethodDeps,
   type LoginInfo,
   type LoginInfoWithWorkspaces,
   type Mailbox,
@@ -3424,6 +3425,77 @@ export async function triggerPasswordReset (
   return { ok: true, emailSentTo: emailSocial.value }
 }
 
+function isLastAdmin (targetEmail: string): boolean {
+  const adminEmails = (process.env.ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean)
+  return adminEmails.length === 1 && adminEmails[0] === targetEmail
+}
+
+export async function disableAccount (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  deps: AccountMethodDeps,
+  token: string,
+  params: { accountUuid: AccountUuid }
+): Promise<{ ok: true }> {
+  const { account: adminUuid, extra } = decodeTokenVerbose(ctx, token)
+  if (extra?.admin !== 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  if (adminUuid === params.accountUuid) {
+    throw new PlatformError(new Status(Severity.ERROR, 'cannot_self_disable' as any, {}))
+  }
+
+  const socials = await db.socialId.find({ personUuid: params.accountUuid })
+  const targetEmail = socials.find((s) => s.type === SocialIdType.EMAIL)?.value
+  if (targetEmail != null && isLastAdmin(targetEmail)) {
+    throw new PlatformError(new Status(Severity.ERROR, 'last_admin' as any, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+  const newVersion = (account.tokenVersion ?? 0) + 1
+  await db.account.update(
+    { uuid: params.accountUuid },
+    { disabledAt: Date.now(), tokenVersion: newVersion }
+  )
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid as AccountUuid,
+    targetAccount: params.accountUuid,
+    action: 'disable',
+    workspaceUuid: null,
+    details: { reason: 'manual_admin_action' }
+  })
+
+  if (deps.accountLifecycleProducer !== undefined) {
+    try {
+      await deps.accountLifecycleProducer.send(
+        ctx,
+        systemAccountUuid as unknown as WorkspaceUuid,
+        [
+          {
+            accountUuid: params.accountUuid,
+            event: 'disabled',
+            timestamp: Date.now(),
+            reason: 'manual_admin_action'
+          }
+        ],
+        params.accountUuid
+      )
+    } catch (err) {
+      ctx.warn('failed to emit account.lifecycle event; relying on token-version fallback', { err })
+    }
+  }
+
+  return { ok: true }
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -3504,11 +3576,46 @@ export type AccountMethods =
   | 'setWorkspaceMemberRole'
   | 'removeWorkspaceMember'
   | 'triggerPasswordReset'
+  | 'disableAccount'
 
 /**
  * @public
  */
-export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMethods, AccountMethodHandler>> {
+function wrapWithDeps<
+  F extends (
+    ctx: MeasureContext,
+    db: AccountDB,
+    branding: Branding | null,
+    deps: AccountMethodDeps,
+    ...args: any[]
+  ) => Promise<any>
+> (method: F, deps: AccountMethodDeps | undefined): AccountMethodHandler {
+  return async function (ctx, db, branding, request, token, meta) {
+    return await method(ctx, db, branding, deps ?? {}, token, { ...request.params }, meta)
+      .then((result) => ({ id: request.id, result }))
+      .catch((err: Error) => {
+        const status =
+          err instanceof PlatformError
+            ? err.status
+            : new Status(Severity.ERROR, platform.status.InternalServerError, {})
+        if (err instanceof TokenError) {
+          return { error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
+        }
+        if (status.code === platform.status.InternalServerError) {
+          Analytics.handleError(err)
+          ctx.error('Error while processing account method', { method: method.name, status, origErr: err })
+        } else {
+          ctx.error('Error while processing account method', { method: method.name, status })
+        }
+        return { error: status }
+      })
+  }
+}
+
+export function getMethods (
+  hasSignUp: boolean = true,
+  deps?: AccountMethodDeps
+): Partial<Record<AccountMethods, AccountMethodHandler>> {
   return {
     /* OPERATIONS */
     login: wrap(login),
@@ -3575,6 +3682,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     setWorkspaceMemberRole: wrap(setWorkspaceMemberRole),
     removeWorkspaceMember: wrap(removeWorkspaceMember),
     triggerPasswordReset: wrap(triggerPasswordReset),
+    disableAccount: wrapWithDeps(disableAccount, deps),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
