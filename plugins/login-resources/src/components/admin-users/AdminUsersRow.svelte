@@ -134,9 +134,17 @@
   }
 
   .auth-badge {
-    background: var(--theme-bg-accent-color);
-    color: var(--theme-content-color);
+    background: transparent;
+    color: var(--theme-darker-color);
     border: 1px solid var(--theme-divider-color);
+    font-family: var(--mono-font, 'SF Mono', 'Menlo', 'Consolas', monospace);
+    letter-spacing: 0;
+    text-transform: lowercase;
+    padding: 0.05rem 0.35rem;
+  }
+
+  .auth-badge + .auth-badge {
+    margin-left: 0.2rem;
   }
 
   .muted {

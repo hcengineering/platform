@@ -355,7 +355,7 @@
     </Header>
 
     <div class="hulyComponent-content__column content admin-ws">
-      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+      <Scroller align={'stretch'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content withoutMaxWidth">
 
         <!-- Stat cards mirror the Users page so both admin sections share the same visual rhythm. -->
@@ -773,11 +773,12 @@
           <span class="ml-2">Enable deletion</span>
         </label>
       </div>
-      <div class="ws-card flex-no-shrink">
-        <SearchEdit bind:value={accountSearch} width={'100%'} on:change={accountSearchChanged} />
-      </div>
 
-      <div class="ws-accounts-pager flex-row-center">
+      <div class="ws-card ws-accounts-toolbar flex-no-shrink">
+        <div class="ws-accounts-search">
+          <SearchEdit bind:value={accountSearch} width={'100%'} on:change={accountSearchChanged} />
+        </div>
+        <div class="ws-accounts-pager">
         <Button
           label={getEmbeddedLabel('Previous')}
           disabled={accountSkip === 0}
@@ -795,6 +796,7 @@
             await loadAccounts(accountSearch, accountSkip, accountLimit)
           }}
         />
+        </div>
       </div>
 
       <div class="fs-title p-1 select-text-i">
@@ -862,9 +864,17 @@
   }
 
   .ws-stats {
+    width: 100%;
+    box-sizing: border-box;
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: var(--spacing-2);
+  }
+
+  .ws-breakdown,
+  .ws-section-header {
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .stat-item {
@@ -946,10 +956,22 @@
   }
 
   .ws-card {
+    width: 100%;
+    box-sizing: border-box;
     padding: var(--spacing-2);
     background: var(--theme-bg-color);
     border: 1px solid var(--theme-divider-color);
     border-radius: var(--small-BorderRadius);
+  }
+
+  .ws-accounts-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+  }
+
+  .ws-accounts-search {
+    flex: 1;
   }
 
   .ws-card-title {
@@ -1005,9 +1027,10 @@
   }
 
   .ws-accounts-pager {
-    justify-content: center;
-    gap: 0.6rem;
-    padding: var(--spacing-2) 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
   }
 
   .super-admin-toggle {

@@ -232,11 +232,11 @@
   }
 
   .stat-active {
-    color: var(--theme-state-positive-color, #10b981);
+    color: #059669;
   }
 
   .stat-disabled {
-    color: var(--theme-state-negative-color, #ef4444);
+    color: #dc2626;
   }
 
   .filters {
