@@ -30,73 +30,71 @@
   }
 </script>
 
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th class="sortable" on:click={() => setSort('name')}>
-          Name <span class="arrow">{sortArrow('name')}</span>
-        </th>
-        <th>Email</th>
-        <th class="col-auth">Auth</th>
-        <th class="col-num sortable" on:click={() => setSort('workspace_count')}>
-          Workspaces <span class="arrow">{sortArrow('workspace_count')}</span>
-        </th>
-        <th class="sortable" on:click={() => setSort('last_activity')}>
-          Last activity <span class="arrow">{sortArrow('last_activity')}</span>
-        </th>
-        <th class="col-status">Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#if loading}
-        <tr><td colspan="6" class="state">Loading…</td></tr>
-      {:else if accounts.length === 0}
-        <tr><td colspan="6" class="state">No users match the current filters.</td></tr>
-      {:else}
-        {#each accounts as account (account.uuid)}
-          <AdminUsersRow {account} on:click={() => onRowClick(account.uuid)} />
-        {/each}
-      {/if}
-    </tbody>
-  </table>
+<div class="users-table">
+  <div class="users-table__head">
+    <div class="head-cell cell-name sortable" on:click={() => setSort('name')}>
+      Name <span class="arrow">{sortArrow('name')}</span>
+    </div>
+    <div class="head-cell cell-email">Email</div>
+    <div class="head-cell cell-auth">Auth</div>
+    <div class="head-cell cell-ws sortable" on:click={() => setSort('workspace_count')}>
+      Workspaces <span class="arrow">{sortArrow('workspace_count')}</span>
+    </div>
+    <div class="head-cell cell-activity sortable" on:click={() => setSort('last_activity')}>
+      Last activity <span class="arrow">{sortArrow('last_activity')}</span>
+    </div>
+    <div class="head-cell cell-status">Status</div>
+  </div>
+  <div class="users-table__body">
+    {#if loading}
+      <div class="empty">Loading…</div>
+    {:else if accounts.length === 0}
+      <div class="empty">No users match the current filters.</div>
+    {:else}
+      {#each accounts as account (account.uuid)}
+        <AdminUsersRow {account} on:click={() => onRowClick(account.uuid)} />
+      {/each}
+    {/if}
+  </div>
 </div>
 
 <style lang="scss">
-  .table-wrap {
-    width: 100%;
-    overflow-x: auto;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-  }
-
-  thead {
+  .users-table {
     background: var(--theme-bg-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--small-BorderRadius);
+    overflow: hidden;
   }
 
-  th {
-    text-align: left;
-    padding: 0.65rem 1rem;
+  .users-table__head {
+    display: grid;
+    grid-template-columns: minmax(180px, 2fr) minmax(180px, 2fr) auto minmax(100px, 1fr) minmax(120px, 1fr) auto;
+    align-items: center;
+    background: var(--theme-bg-accent-color);
+    border-bottom: 1px solid var(--theme-divider-color);
+  }
+
+  .head-cell {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.72rem;
     font-weight: 500;
-    font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--theme-content-color);
-    opacity: 0.65;
-    border-bottom: 1px solid var(--theme-divider-color);
+    color: var(--theme-darker-color);
     white-space: nowrap;
   }
 
-  th.sortable {
+  .head-cell.cell-ws,
+  .head-cell.cell-status {
+    text-align: right;
+  }
+
+  .sortable {
     cursor: pointer;
     user-select: none;
+    transition: color 80ms ease;
 
     &:hover {
-      opacity: 1;
       color: var(--theme-caption-color);
     }
   }
@@ -105,23 +103,29 @@
     display: inline-block;
     width: 0.75rem;
     color: var(--theme-caption-color);
-    opacity: 0.8;
   }
 
-  .col-num {
-    text-align: right;
-  }
-
-  .col-status,
-  .col-auth {
-    width: 1%;
-    white-space: nowrap;
-  }
-
-  .state {
+  .empty {
+    padding: var(--spacing-4);
     text-align: center;
-    padding: 3rem;
-    color: var(--theme-content-color);
-    opacity: 0.55;
+    color: var(--theme-darker-color);
+    font-size: 0.9rem;
+  }
+
+  :global(.users-table__body .users-table-row) {
+    display: grid;
+    grid-template-columns: minmax(180px, 2fr) minmax(180px, 2fr) auto minmax(100px, 1fr) minmax(120px, 1fr) auto;
+    align-items: center;
+    border-bottom: 1px solid var(--theme-divider-color);
+    cursor: pointer;
+    transition: background 80ms ease;
+  }
+
+  :global(.users-table__body .users-table-row:hover) {
+    background: var(--theme-popup-hover);
+  }
+
+  :global(.users-table__body .users-table-row:last-child) {
+    border-bottom: none;
   }
 </style>

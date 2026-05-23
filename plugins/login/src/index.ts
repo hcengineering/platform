@@ -105,7 +105,11 @@ export default plugin(loginId, {
     Verify: '' as IntlString,
     AccountDisabledTitle: '' as IntlString,
     AccountDisabledBody: '' as IntlString,
-    SignOut: '' as IntlString
+    SignOut: '' as IntlString,
+    AdminPanel: '' as IntlString,
+    AdminUsers: '' as IntlString,
+    AdminWorkspaces: '' as IntlString,
+    BackToWorkbench: '' as IntlString
   },
   function: {
     SendInvite: '' as Resource<(email: string, role: AccountRole) => Promise<void>>,

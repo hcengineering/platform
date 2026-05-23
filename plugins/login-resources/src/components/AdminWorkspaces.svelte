@@ -43,6 +43,8 @@
   import { workbenchId } from '@hcengineering/workbench'
   import { getAccountClient, getAllWorkspaces, getRegionInfo, performWorkspaceOperation } from '../utils'
   import AdminShell from './admin-shell/AdminShell.svelte'
+  import { Breadcrumb, Header, IconSettings } from '@hcengineering/ui'
+  import login from '@hcengineering/login'
 
   $: now = $ticker
 
@@ -340,22 +342,21 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 {#if isAdmin}
-<AdminShell section="workspaces" title="Workspaces" subtitle="Operate workspaces — archive, migrate, audit and clean up.">
-  <svelte:fragment slot="actions">
-    <label class="super-admin-toggle">
-      <CheckBox bind:checked={superAdminMode} />
-      <span>Enable deletion</span>
-    </label>
-  </svelte:fragment>
+<AdminShell section="workspaces">
+  <div class="hulyComponent">
+    <Header adaptive={'disabled'}>
+      <Breadcrumb icon={IconSettings} label={login.string.AdminWorkspaces} size={'large'} isCurrent />
+      <svelte:fragment slot="actions">
+        <label class="super-admin-toggle flex-row-center">
+          <CheckBox bind:checked={superAdminMode} />
+          <span class="ml-2">Enable deletion</span>
+        </label>
+      </svelte:fragment>
+    </Header>
 
-  <div class="admin-ws">
-        <div class="flex-between" style="display:none">
-          <div class="fs-title p-3">Workspaces administration panel</div>
-          <div class="flex-row-center">
-            <span class="mr-4">Enable deletion</span>
-            <CheckBox bind:checked={superAdminMode} />
-          </div>
-        </div>
+    <div class="hulyComponent-content__column content admin-ws">
+      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+        <div class="hulyComponent-content">
         <div class="fs-title p-3">
           Workspaces: {workspaces.length} active: {workspaces.filter((it) => isActiveMode(it.mode)).length}
           upgrading: {workspaces.filter((it) => isUpgradingMode(it.mode)).length}
@@ -815,56 +816,34 @@
             {/each}
           </div>
         </Scroller>
-      </div>
+        </div>
+      </Scroller>
+    </div>
+  </div>
 </AdminShell>
 <Popup />
 {/if}
 
 <style lang="scss">
-  :global(.admin-ws) {
+  :global(.admin-ws .hulyComponent-content) {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    padding: 0;
+    gap: var(--spacing-2);
   }
 
-  :global(.admin-ws > .fs-title) {
-    background: var(--theme-popup-color);
+  :global(.admin-ws .hulyComponent-content > .fs-title),
+  :global(.admin-ws .hulyComponent-content > .p-3) {
+    background: var(--theme-bg-color);
     border: 1px solid var(--theme-divider-color);
-    border-radius: 0.6rem;
-    padding: 0.85rem 1rem !important;
-    font-size: 0.9rem !important;
+    border-radius: var(--small-BorderRadius);
+    padding: var(--spacing-2) !important;
     color: var(--theme-content-color);
-    line-height: 1.6;
-  }
-
-  :global(.admin-ws > .p-3) {
-    background: var(--theme-popup-color);
-    border: 1px solid var(--theme-divider-color);
-    border-radius: 0.6rem;
-    padding: 0.85rem 1rem !important;
-  }
-
-  :global(.admin-ws > .fs-title .focused-button) {
-    border-radius: 0.45rem;
-  }
-
-  :global(.admin-ws .anticrm-panel) {
-    border: none !important;
-    border-radius: 0.6rem;
-    background: var(--theme-popup-color);
-    padding: 0;
-    overflow: hidden;
+    font-size: 0.875rem;
   }
 
   .super-admin-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.35rem 0.65rem;
-    background: var(--theme-popup-color);
-    border: 1px solid var(--theme-divider-color);
-    border-radius: 0.4rem;
     font-size: 0.85rem;
     color: var(--theme-content-color);
     cursor: pointer;

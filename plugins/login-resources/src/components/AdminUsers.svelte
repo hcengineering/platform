@@ -4,8 +4,19 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { getAccountClient } from '../utils'
+  import login from '@hcengineering/login'
+  import setting from '@hcengineering/setting'
+  import {
+    Breadcrumb,
+    Header,
+    Scroller,
+    SearchInput,
+    DropdownLabelsIntl,
+    Label,
+    type DropdownIntlItem
+  } from '@hcengineering/ui'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import AdminShell from './admin-shell/AdminShell.svelte'
-  import AdminUsersFilterBar from './admin-users/AdminUsersFilterBar.svelte'
   import AdminUsersTable from './admin-users/AdminUsersTable.svelte'
   import AdminUsersPagination from './admin-users/AdminUsersPagination.svelte'
   import AdminUsersDrawer from './admin-users/AdminUsersDrawer.svelte'
@@ -29,11 +40,39 @@
   let selectedUuid: string | null = null
   let errorMessage: string | null = null
 
+  let search = ''
+  let debounceTimer: ReturnType<typeof setTimeout> | undefined
+
   $: counts = {
     active: accounts.filter((a) => a.status === 'active').length,
     disabled: accounts.filter((a) => a.status === 'disabled').length,
     admins: accounts.filter((a) => a.isAdmin).length
   }
+
+  $: {
+    if (debounceTimer != null) clearTimeout(debounceTimer)
+    const desired = search
+    debounceTimer = setTimeout(() => {
+      if (filter.search !== (desired !== '' ? desired : undefined)) {
+        filter = { ...filter, search: desired !== '' ? desired : undefined }
+        offset = 0
+        void refresh()
+      }
+    }, 300)
+  }
+
+  const authItems: DropdownIntlItem[] = [
+    { id: 'all', label: getEmbeddedLabel('All auth methods') },
+    { id: 'email_only', label: getEmbeddedLabel('Email only') },
+    { id: 'oidc', label: getEmbeddedLabel('OIDC only') },
+    { id: 'mixed', label: getEmbeddedLabel('Email + OIDC') }
+  ]
+
+  const statusItems: DropdownIntlItem[] = [
+    { id: 'all', label: getEmbeddedLabel('All statuses') },
+    { id: 'active', label: getEmbeddedLabel('Active') },
+    { id: 'disabled', label: getEmbeddedLabel('Disabled') }
+  ]
 
   async function refresh (): Promise<void> {
     loading = true
@@ -59,8 +98,14 @@
 
   onMount(refresh)
 
-  function onFilterChange (e: CustomEvent<typeof filter>): void {
-    filter = e.detail
+  function onAuthChange (e: CustomEvent<string>): void {
+    filter = { ...filter, authMethod: e.detail as any }
+    offset = 0
+    void refresh()
+  }
+
+  function onStatusChange (e: CustomEvent<string>): void {
+    filter = { ...filter, status: e.detail as any }
     offset = 0
     void refresh()
   }
@@ -88,40 +133,66 @@
   }
 </script>
 
-<AdminShell
-  section="users"
-  title="Users"
-  subtitle="Manage accounts, identities, workspace memberships and access."
->
-  <div class="stats">
-    <div class="stat">
-      <span class="stat-label">Total</span>
-      <span class="stat-value">{total}</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">Active</span>
-      <span class="stat-value stat-active">{counts.active}</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">Disabled</span>
-      <span class="stat-value stat-disabled">{counts.disabled}</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">Admins</span>
-      <span class="stat-value">{counts.admins}</span>
-    </div>
-  </div>
+<AdminShell section="users">
+  <div class="hulyComponent">
+    <Header adaptive={'disabled'}>
+      <Breadcrumb icon={setting.icon.Members} label={login.string.AdminUsers} size={'large'} isCurrent />
+      <svelte:fragment slot="search">
+        <SearchInput bind:value={search} collapsed />
+      </svelte:fragment>
+    </Header>
 
-  <div class="card">
-    <AdminUsersFilterBar bind:filter on:change={onFilterChange} />
+    <div class="hulyComponent-content__column content">
+      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+        <div class="hulyComponent-content">
+          <div class="stats">
+            <div class="stat-item">
+              <span class="stat-label">Total</span>
+              <span class="stat-value">{total}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Active</span>
+              <span class="stat-value stat-active">{counts.active}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Disabled</span>
+              <span class="stat-value stat-disabled">{counts.disabled}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Admins</span>
+              <span class="stat-value">{counts.admins}</span>
+            </div>
+          </div>
 
-    {#if errorMessage}
-      <div class="error-banner">{errorMessage}</div>
-    {/if}
+          <div class="filters flex-row-center flex-gap-2 p-2">
+            <DropdownLabelsIntl
+              items={authItems}
+              selected={filter.authMethod ?? 'all'}
+              kind={'regular'}
+              size={'medium'}
+              on:selected={onAuthChange}
+            />
+            <DropdownLabelsIntl
+              items={statusItems}
+              selected={filter.status ?? 'active'}
+              kind={'regular'}
+              size={'medium'}
+              on:selected={onStatusChange}
+            />
+          </div>
 
-    <AdminUsersTable {accounts} {sort} {loading} on:sort={onSortChange} on:row-click={onRowClick} />
+          {#if errorMessage}
+            <div class="error-banner">
+              <Label label={getEmbeddedLabel(errorMessage)} />
+            </div>
+          {/if}
 
-    <AdminUsersPagination {total} {offset} {limit} on:page={onPageChange} />
+          <AdminUsersTable {accounts} {sort} {loading} on:sort={onSortChange} on:row-click={onRowClick} />
+
+          <AdminUsersPagination {total} {offset} {limit} on:page={onPageChange} />
+        </div>
+      </Scroller>
+    </div>
   </div>
 </AdminShell>
 
@@ -133,57 +204,52 @@
   .stats {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-3);
   }
 
-  .stat {
+  .stat-item {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    padding: 0.9rem 1rem;
-    background: var(--theme-popup-color);
+    padding: var(--spacing-2);
+    background: var(--theme-bg-color);
     border: 1px solid var(--theme-divider-color);
-    border-radius: 0.6rem;
+    border-radius: var(--small-BorderRadius);
   }
 
   .stat-label {
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--theme-content-color);
-    opacity: 0.55;
+    color: var(--theme-darker-color);
   }
 
   .stat-value {
-    font-size: 1.45rem;
-    font-weight: 600;
+    font-size: 1.4rem;
+    font-weight: 500;
     color: var(--theme-caption-color);
-    letter-spacing: -0.02em;
   }
 
   .stat-active {
-    color: #10b981;
+    color: var(--theme-state-positive-color, #10b981);
   }
 
   .stat-disabled {
-    color: #ef4444;
+    color: var(--theme-state-negative-color, #ef4444);
   }
 
-  .card {
-    background: var(--theme-popup-color);
-    border: 1px solid var(--theme-divider-color);
-    border-radius: 0.75rem;
-    overflow: hidden;
+  .filters {
+    margin-bottom: var(--spacing-2);
   }
 
   .error-banner {
-    padding: 0.6rem 1rem;
-    margin: 0.75rem;
-    background: rgba(239, 68, 68, 0.08);
-    border: 1px solid rgba(239, 68, 68, 0.25);
-    border-radius: 0.5rem;
-    color: #b91c1c;
+    padding: var(--spacing-2);
+    margin-bottom: var(--spacing-2);
+    background: var(--theme-state-negative-background-color, rgba(239, 68, 68, 0.08));
+    border: 1px solid var(--theme-state-negative-border-color, rgba(239, 68, 68, 0.3));
+    border-radius: var(--small-BorderRadius);
+    color: var(--theme-state-negative-color, #b91c1c);
     font-size: 0.85rem;
   }
 </style>

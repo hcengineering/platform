@@ -105,6 +105,10 @@
     "CreateSampleProjects": "Beispielprojekte und Demo-Inhalte erstellen",
     "AccountDisabledTitle": "Konto deaktiviert",
     "AccountDisabledBody": "Ihr Konto wurde von einem Administrator deaktiviert. Bitte wenden Sie sich an Ihren Administrator, falls Sie dies fuer fehlerhaft halten.",
-    "SignOut": "Abmelden"
+    "SignOut": "Abmelden",
+    "AdminPanel": "Admin-Bereich",
+    "AdminUsers": "Benutzer",
+    "AdminWorkspaces": "Workspaces",
+    "BackToWorkbench": "Zurueck zum Workbench"
   }
 }

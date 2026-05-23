@@ -3,6 +3,8 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { Button, IconBack, IconForward } from '@hcengineering/ui'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
 
   export let total: number = 0
   export let offset: number = 0
@@ -22,66 +24,38 @@
   }
 </script>
 
-<div class="pagination">
+<div class="pagination flex-row-center flex-no-shrink p-2">
   <span class="info">
     Page {page} of {totalPages} · Showing {from}–{to} of {total}
   </span>
-  <div class="actions">
-    <button class="btn" disabled={!hasPrev} on:click={() => go(offset - limit)}>
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M15 6l-6 6 6 6" />
-      </svg>
-      Prev
-    </button>
-    <button class="btn" disabled={!hasNext} on:click={() => go(offset + limit)}>
-      Next
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 6l6 6-6 6" />
-      </svg>
-    </button>
+  <div class="actions flex-row-center flex-gap-2">
+    <Button
+      icon={IconBack}
+      label={getEmbeddedLabel('Prev')}
+      kind={'regular'}
+      size={'small'}
+      disabled={!hasPrev}
+      on:click={() => go(offset - limit)}
+    />
+    <Button
+      iconRight={IconForward}
+      label={getEmbeddedLabel('Next')}
+      kind={'regular'}
+      size={'small'}
+      disabled={!hasNext}
+      on:click={() => go(offset + limit)}
+    />
   </div>
 </div>
 
 <style lang="scss">
   .pagination {
-    display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 0.65rem 1rem;
-    border-top: 1px solid var(--theme-divider-color);
+    margin-top: var(--spacing-2);
   }
 
   .info {
-    font-size: 0.8rem;
-    color: var(--theme-content-color);
-    opacity: 0.65;
-  }
-
-  .actions {
-    display: flex;
-    gap: 0.4rem;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.35rem 0.65rem;
-    background: var(--theme-bg-color);
-    border: 1px solid var(--theme-divider-color);
-    color: var(--theme-content-color);
-    border-radius: 0.35rem;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: background 80ms ease;
-
-    &:hover:not(:disabled) {
-      background: var(--theme-popup-hover);
-    }
-
-    &:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
+    font-size: 0.82rem;
+    color: var(--theme-darker-color);
   }
 </style>

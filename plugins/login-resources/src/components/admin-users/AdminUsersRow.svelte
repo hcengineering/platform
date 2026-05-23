@@ -21,72 +21,63 @@
   }
 </script>
 
-<tr on:click>
-  <td class="cell-name">
+<div class="users-table-row" on:click on:keydown role="button" tabindex="0">
+  <div class="cell cell-name">
     <span class="avatar">{initials(account.firstName, account.lastName)}</span>
     <div class="name-block">
       <span class="full-name">{account.firstName} {account.lastName}</span>
       {#if account.isAdmin}
-        <span class="badge admin">Admin</span>
+        <span class="badge admin-badge">Admin</span>
       {/if}
     </div>
-  </td>
-  <td class="email">{account.primaryEmail ?? '—'}</td>
-  <td class="auth">
+  </div>
+  <div class="cell cell-email">{account.primaryEmail ?? '—'}</div>
+  <div class="cell cell-auth">
     {#each account.authMethods as m}
       <span class="badge auth-badge">{m}</span>
     {/each}
     {#if account.authMethods.length === 0}
       <span class="muted">—</span>
     {/if}
-  </td>
-  <td class="col-num">{account.workspaceCount}</td>
-  <td class="last-activity"
-      title={account.lastActivityAt != null ? new Date(account.lastActivityAt).toLocaleString() : ''}>
+  </div>
+  <div class="cell cell-ws">{account.workspaceCount}</div>
+  <div class="cell cell-activity"
+       title={account.lastActivityAt != null ? new Date(account.lastActivityAt).toLocaleString() : ''}>
     {formatLastActivity(account.lastActivityAt)}
-  </td>
-  <td class="col-status">
+  </div>
+  <div class="cell cell-status">
     <span class="status status-{account.status}">
       <span class="status-dot" />
       {account.status}
     </span>
-  </td>
-</tr>
+  </div>
+</div>
 
 <style lang="scss">
-  tr {
-    cursor: pointer;
-    transition: background 80ms ease;
-
-    &:hover {
-      background: var(--theme-popup-hover);
-    }
-  }
-
-  td {
-    padding: 0.7rem 1rem;
-    border-bottom: 1px solid var(--theme-divider-color);
+  .cell {
+    padding: 0.65rem 0.85rem;
     color: var(--theme-content-color);
-    vertical-align: middle;
+    font-size: 0.875rem;
+    min-width: 0;
   }
 
   .cell-name {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.6rem;
   }
 
   .avatar {
     flex-shrink: 0;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--theme-bg-accent-color), var(--theme-popup-color));
+    background: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-divider-color);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: var(--theme-caption-color);
     letter-spacing: 0.02em;
@@ -95,41 +86,49 @@
   .name-block {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 0.1rem;
+    min-width: 0;
   }
 
   .full-name {
     color: var(--theme-caption-color);
     font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .email {
-    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
-    font-size: 0.85rem;
-    opacity: 0.85;
+  .cell-email {
+    font-family: var(--mono-font, 'SF Mono', 'Menlo', 'Consolas', monospace);
+    font-size: 0.82rem;
+    color: var(--theme-darker-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .auth {
+  .cell-auth {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.25rem;
   }
 
   .badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.1rem 0.45rem;
+    padding: 0.05rem 0.4rem;
     border-radius: 999px;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     line-height: 1.4;
+    height: 18px;
   }
 
-  .badge.admin {
+  .admin-badge {
     background: rgba(245, 158, 11, 0.12);
-    color: #b45309;
+    color: var(--theme-warning-color, #b45309);
     border: 1px solid rgba(245, 158, 11, 0.3);
     width: fit-content;
   }
@@ -141,24 +140,22 @@
   }
 
   .muted {
-    color: var(--theme-content-color);
-    opacity: 0.4;
+    color: var(--theme-darker-color);
   }
 
-  .col-num {
+  .cell-ws {
     text-align: right;
     font-variant-numeric: tabular-nums;
     color: var(--theme-caption-color);
   }
 
-  .last-activity {
-    font-size: 0.85rem;
-    color: var(--theme-content-color);
-    opacity: 0.85;
+  .cell-activity {
+    font-size: 0.82rem;
+    color: var(--theme-darker-color);
     white-space: nowrap;
   }
 
-  .col-status {
+  .cell-status {
     text-align: right;
   }
 
@@ -166,9 +163,9 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.15rem 0.55rem 0.15rem 0.5rem;
+    padding: 0.1rem 0.55rem 0.1rem 0.5rem;
     border-radius: 999px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 500;
     text-transform: capitalize;
   }
@@ -181,20 +178,14 @@
   }
 
   .status-active {
-    background: rgba(16, 185, 129, 0.1);
-    color: #047857;
-
-    .status-dot {
-      background: #10b981;
-    }
+    background: var(--theme-state-positive-background-color, rgba(16, 185, 129, 0.12));
+    color: var(--theme-state-positive-color, #047857);
+    .status-dot { background: var(--theme-state-positive-color, #10b981); }
   }
 
   .status-disabled {
-    background: rgba(239, 68, 68, 0.1);
-    color: #b91c1c;
-
-    .status-dot {
-      background: #ef4444;
-    }
+    background: var(--theme-state-negative-background-color, rgba(239, 68, 68, 0.1));
+    color: var(--theme-state-negative-color, #b91c1c);
+    .status-dot { background: var(--theme-state-negative-color, #ef4444); }
   }
 </style>
