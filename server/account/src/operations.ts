@@ -3344,6 +3344,43 @@ export async function setWorkspaceMemberRole (
   return { ok: true }
 }
 
+export async function removeWorkspaceMember (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid }
+): Promise<{ ok: true, wasMember: boolean }> {
+  const { account: adminUuid, extra } = decodeTokenVerbose(ctx, token)
+  if (extra?.admin !== 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const currentRole = await db.getWorkspaceRole(params.accountUuid, params.workspaceUuid)
+  if (currentRole == null) {
+    return { ok: true, wasMember: false }
+  }
+
+  if (currentRole === AccountRole.Owner) {
+    const members = await db.getWorkspaceMembers(params.workspaceUuid)
+    const otherOwners = members.filter((m) => m.role === AccountRole.Owner && m.person !== params.accountUuid)
+    if (otherOwners.length === 0) {
+      throw new PlatformError(new Status(Severity.ERROR, 'last_owner_in_workspace' as any, {}))
+    }
+  }
+
+  await db.unassignWorkspace(params.accountUuid, params.workspaceUuid)
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid as AccountUuid,
+    targetAccount: params.accountUuid,
+    action: 'remove_member',
+    workspaceUuid: params.workspaceUuid,
+    details: { priorRole: currentRole }
+  })
+
+  return { ok: true, wasMember: true }
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -3422,6 +3459,7 @@ export type AccountMethods =
   | 'getWorkspacePermissions'
   | 'getWorkspaceUsersWithPermission'
   | 'setWorkspaceMemberRole'
+  | 'removeWorkspaceMember'
 
 /**
  * @public
@@ -3491,6 +3529,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
 
     /* ADMIN USER MANAGEMENT (V27) */
     setWorkspaceMemberRole: wrap(setWorkspaceMemberRole),
+    removeWorkspaceMember: wrap(removeWorkspaceMember),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
