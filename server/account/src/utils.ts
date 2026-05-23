@@ -225,6 +225,27 @@ export async function verifyTokenVersion (ctx: MeasureContext, db: AccountDB, to
   }
 }
 
+const LAST_ACTIVITY_THROTTLE_MS = 5 * 60 * 1000
+
+/**
+ * Update account.lastActivityAt with throttling. Only writes when the existing
+ * value is older than 5 minutes (or null) to avoid a hot-path write storm.
+ * Best-effort: failures are logged and swallowed, never block auth.
+ */
+export async function touchLastActivity (db: AccountDB, accountUuid: AccountUuid): Promise<void> {
+  try {
+    const account = await db.account.findOne({ uuid: accountUuid })
+    if (account == null) return
+    const now = Date.now()
+    const last = account.lastActivityAt ?? 0
+    if (now - last < LAST_ACTIVITY_THROTTLE_MS) return
+    await db.account.update({ uuid: accountUuid }, { lastActivityAt: now })
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('touchLastActivity failed', { accountUuid, err })
+  }
+}
+
 export function wrap (
   accountMethod: (ctx: MeasureContext, db: AccountDB, branding: Branding | null, ...args: any[]) => Promise<any>
 ): AccountMethodHandler {
