@@ -5,7 +5,14 @@ import { serveAccount } from '@hcengineering/account-service'
 import { Analytics } from '@hcengineering/analytics'
 import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import { newMetrics } from '@hcengineering/core'
-import { initStatisticsContext, loadBrandingMap } from '@hcengineering/server-core'
+import {
+  initStatisticsContext,
+  loadBrandingMap,
+  type PlatformQueue,
+  type PlatformQueueProducer,
+  type QueueAccountLifecycleMessage
+} from '@hcengineering/server-core'
+import { getPlatformQueue } from '@hcengineering/kafka'
 import { join } from 'path'
 
 configureAnalytics('account', process.env.VERSION ?? '0.7.0')
@@ -27,4 +34,28 @@ const metricsContext = initStatisticsContext('account', {
 
 const brandingPath = process.env.BRANDING_PATH
 
-serveAccount(metricsContext, loadBrandingMap(brandingPath), () => {})
+const queueConfig = process.env.QUEUE_CONFIG
+let queue: PlatformQueue | undefined
+let accountLifecycleProducer: PlatformQueueProducer<QueueAccountLifecycleMessage> | undefined
+
+if (queueConfig != null && queueConfig.trim() !== '') {
+  try {
+    const region = process.env.REGION
+    queue = getPlatformQueue('account', region)
+    accountLifecycleProducer = queue.getProducer<QueueAccountLifecycleMessage>(
+      metricsContext.newChild('account-lifecycle-producer', {}),
+      'account.lifecycle'
+    )
+  } catch (err) {
+    metricsContext.warn('account.lifecycle queue producer unavailable; relying on token-version fallback', { err })
+    queue = undefined
+    accountLifecycleProducer = undefined
+  }
+}
+
+serveAccount(metricsContext, loadBrandingMap(brandingPath), { accountLifecycleProducer }, () => {
+  void accountLifecycleProducer?.close()
+  if (queue !== undefined) {
+    void queue.shutdown()
+  }
+})

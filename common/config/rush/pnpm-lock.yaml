@@ -30149,6 +30149,9 @@ importers:
       '@hcengineering/core':
         specifier: workspace:^0.7.26
         version: link:../../foundations/core/packages/core
+      '@hcengineering/kafka':
+        specifier: workspace:^0.7.18
+        version: link:../../foundations/server/packages/kafka
       '@hcengineering/platform':
         specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/platform

@@ -4,6 +4,7 @@
 
 import account, {
   type AccountMethods,
+  type AccountMethodDeps,
   type Meta,
   type ClientNetworkPosition,
   EndpointKind,
@@ -43,7 +44,12 @@ const KEEP_ALIVE_HEADERS = {
 /**
  * @public
  */
-export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap, onClose?: () => void): void {
+export function serveAccount (
+  measureCtx: MeasureContext,
+  brandings: BrandingMap,
+  deps?: AccountMethodDeps,
+  onClose?: () => void
+): void {
   console.log('Starting account service with brandings: ', brandings)
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUrl = process.env.DB_URL
@@ -135,7 +141,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   setMetadata(serverToken.metadata.Service, undefined)
 
   const hasSignUp = process.env.DISABLE_SIGNUP !== 'true'
-  const methods = getMethods(hasSignUp)
+  const methods = getMethods(hasSignUp, deps)
 
   const dbNs = process.env.DB_NS
   const accountsDb = getAccountDB(dbUrl, dbNs)
