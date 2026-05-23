@@ -46,7 +46,8 @@ export default mergeIds(workbenchId, workbench, {
     AccessDenied: '' as IntlString,
     Widget: '' as IntlString,
     WidgetPreference: '' as IntlString,
-    Tab: '' as IntlString
+    Tab: '' as IntlString,
+    AdminPanel: '' as IntlString
   },
   component: {
     SpacePanel: '' as AnyComponent,

@@ -27,6 +27,7 @@
     createQuery,
     getCurrentWorkspaceUrl,
     hasResource,
+    isAdminUser,
     isDisabled
   } from '@hcengineering/presentation'
   import setting, { RoleCapability, settingId, SettingsCategory } from '@hcengineering/setting'
@@ -186,6 +187,25 @@
           loc.path[0] = loginId
           loc.path[1] = 'selectWorkspace'
           loc.path.length = 2
+          navigate(loc)
+        },
+        group: 'end'
+      })
+    }
+
+    if (isAdminUser()) {
+      actions.push({
+        icon: setting.icon.AccountSettings,
+        label: workbench.string.AdminPanel,
+        action: async () => {
+          closePopup()
+          const loc = getCurrentResolvedLocation()
+          loc.fragment = undefined
+          loc.query = undefined
+          loc.path[0] = loginId
+          loc.path[1] = 'admin'
+          loc.path[2] = 'users'
+          loc.path.length = 3
           navigate(loc)
         },
         group: 'end'

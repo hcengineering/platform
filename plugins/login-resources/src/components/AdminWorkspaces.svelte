@@ -42,6 +42,7 @@
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { getAccountClient, getAllWorkspaces, getRegionInfo, performWorkspaceOperation } from '../utils'
+  import AdminShell from './admin-shell/AdminShell.svelte'
 
   $: now = $ticker
 
@@ -339,10 +340,16 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 {#if isAdmin}
-  <Scroller>
-    <div class="flex-column flex-grow p-5">
-      <div class="anticrm-panel flex-row flex-grow" style:overflow-y={'auto'}>
-        <div class="flex-between">
+<AdminShell section="workspaces" title="Workspaces" subtitle="Operate workspaces — archive, migrate, audit and clean up.">
+  <svelte:fragment slot="actions">
+    <label class="super-admin-toggle">
+      <CheckBox bind:checked={superAdminMode} />
+      <span>Enable deletion</span>
+    </label>
+  </svelte:fragment>
+
+  <div class="admin-ws">
+        <div class="flex-between" style="display:none">
           <div class="fs-title p-3">Workspaces administration panel</div>
           <div class="flex-row-center">
             <span class="mr-4">Enable deletion</span>
@@ -809,7 +816,57 @@
           </div>
         </Scroller>
       </div>
-    </div>
-  </Scroller>
-  <Popup />
+</AdminShell>
+<Popup />
 {/if}
+
+<style lang="scss">
+  :global(.admin-ws) {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0;
+  }
+
+  :global(.admin-ws > .fs-title) {
+    background: var(--theme-popup-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.6rem;
+    padding: 0.85rem 1rem !important;
+    font-size: 0.9rem !important;
+    color: var(--theme-content-color);
+    line-height: 1.6;
+  }
+
+  :global(.admin-ws > .p-3) {
+    background: var(--theme-popup-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.6rem;
+    padding: 0.85rem 1rem !important;
+  }
+
+  :global(.admin-ws > .fs-title .focused-button) {
+    border-radius: 0.45rem;
+  }
+
+  :global(.admin-ws .anticrm-panel) {
+    border: none !important;
+    border-radius: 0.6rem;
+    background: var(--theme-popup-color);
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .super-admin-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.65rem;
+    background: var(--theme-popup-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--theme-content-color);
+    cursor: pointer;
+  }
+</style>

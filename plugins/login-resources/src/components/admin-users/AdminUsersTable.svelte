@@ -24,55 +24,104 @@
     dispatch('row-click', { uuid })
   }
 
-  function sortIndicator (field: string): string {
+  function sortArrow (field: string): string {
     if (sort?.field !== field) return ''
-    return sort.direction === 'asc' ? ' ASC' : ' DESC'
+    return sort.direction === 'asc' ? '↑' : '↓'
   }
 </script>
 
-<table class="users-table">
-  <thead>
-    <tr>
-      <th class="sortable" on:click={() => setSort('name')}>Name{sortIndicator('name')}</th>
-      <th>Email</th>
-      <th>Auth</th>
-      <th class="sortable" on:click={() => setSort('workspace_count')}>Workspaces{sortIndicator('workspace_count')}</th>
-      <th class="sortable" on:click={() => setSort('last_activity')}>Last activity{sortIndicator('last_activity')}</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    {#if loading}
-      <tr><td colspan="6" class="loading">Loading...</td></tr>
-    {:else if accounts.length === 0}
-      <tr><td colspan="6" class="empty">No users match your filters.</td></tr>
-    {:else}
-      {#each accounts as account (account.uuid)}
-        <AdminUsersRow {account} on:click={() => onRowClick(account.uuid)} />
-      {/each}
-    {/if}
-  </tbody>
-</table>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th class="sortable" on:click={() => setSort('name')}>
+          Name <span class="arrow">{sortArrow('name')}</span>
+        </th>
+        <th>Email</th>
+        <th class="col-auth">Auth</th>
+        <th class="col-num sortable" on:click={() => setSort('workspace_count')}>
+          Workspaces <span class="arrow">{sortArrow('workspace_count')}</span>
+        </th>
+        <th class="sortable" on:click={() => setSort('last_activity')}>
+          Last activity <span class="arrow">{sortArrow('last_activity')}</span>
+        </th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {#if loading}
+        <tr><td colspan="6" class="state">Loading…</td></tr>
+      {:else if accounts.length === 0}
+        <tr><td colspan="6" class="state">No users match the current filters.</td></tr>
+      {:else}
+        {#each accounts as account (account.uuid)}
+          <AdminUsersRow {account} on:click={() => onRowClick(account.uuid)} />
+        {/each}
+      {/if}
+    </tbody>
+  </table>
+</div>
 
 <style lang="scss">
-  .users-table {
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 0.9rem;
   }
-  th,
-  td {
-    padding: 0.5rem 0.75rem;
+
+  thead {
+    background: var(--theme-bg-color);
+  }
+
+  th {
     text-align: left;
+    padding: 0.65rem 1rem;
+    font-weight: 500;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--theme-content-color);
+    opacity: 0.65;
     border-bottom: 1px solid var(--theme-divider-color);
+    white-space: nowrap;
   }
+
   th.sortable {
     cursor: pointer;
     user-select: none;
+
+    &:hover {
+      opacity: 1;
+      color: var(--theme-caption-color);
+    }
   }
-  .loading,
-  .empty {
+
+  .arrow {
+    display: inline-block;
+    width: 0.75rem;
+    color: var(--theme-caption-color);
+    opacity: 0.8;
+  }
+
+  .col-num {
+    text-align: right;
+  }
+
+  .col-status,
+  .col-auth {
+    width: 1%;
+    white-space: nowrap;
+  }
+
+  .state {
     text-align: center;
-    color: var(--theme-content-trans-color);
-    padding: 2rem;
+    padding: 3rem;
+    color: var(--theme-content-color);
+    opacity: 0.55;
   }
 </style>
