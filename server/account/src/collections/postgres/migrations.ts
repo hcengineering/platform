@@ -83,7 +83,8 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
     getV23Migration(ns, flavor),
     getV24Migration(ns, flavor),
     getV25Migration(ns, flavor),
-    getV26Migration(ns, flavor)
+    getV26Migration(ns, flavor),
+    getV27Migration(ns, flavor)
   ]
 }
 
@@ -806,6 +807,36 @@ function getV26Migration (ns: string, flavor: DBFlavor): [string, string] {
     -- after model init, then cleared back to NULL.
     ALTER TABLE ${ns}.workspace
     ADD COLUMN IF NOT EXISTS pending_configuration JSONB;
+    `
+  ]
+}
+
+function getV27Migration (ns: string, flavor: DBFlavor): [string, string] {
+  const types = dbTypes[flavor]
+  return [
+    'account_db_v27_admin_user_management',
+    `
+    /* Account: disable + token-version + last activity */
+    ALTER TABLE ${ns}.account
+      ADD COLUMN IF NOT EXISTS disabled_at ${types.int8} NULL,
+      ADD COLUMN IF NOT EXISTS token_version ${types.int4} NOT NULL DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS last_activity_at ${types.int8} NULL;
+
+    /* Admin audit log table */
+    CREATE TABLE IF NOT EXISTS ${ns}.admin_audit_log (
+      id              ${types.string} NOT NULL DEFAULT gen_random_uuid()::TEXT,
+      ts_ms           ${types.int8} NOT NULL DEFAULT current_epoch_ms(),
+      admin_account   ${types.string} NOT NULL,
+      target_account  ${types.string} NOT NULL,
+      action          ${types.string} NOT NULL,
+      workspace_uuid  ${types.string} NULL,
+      details         JSONB NULL,
+      PRIMARY KEY (id)
+    );
+
+    CREATE INDEX IF NOT EXISTS admin_audit_log_target_idx ON ${ns}.admin_audit_log (target_account, ts_ms DESC);
+    CREATE INDEX IF NOT EXISTS admin_audit_log_admin_idx  ON ${ns}.admin_audit_log (admin_account, ts_ms DESC);
+    CREATE INDEX IF NOT EXISTS admin_audit_log_ts_idx     ON ${ns}.admin_audit_log (ts_ms DESC);
     `
   ]
 }
