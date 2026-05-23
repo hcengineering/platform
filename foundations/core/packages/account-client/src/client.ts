@@ -57,7 +57,10 @@ import type {
   UserProfile,
   WorkspaceConfiguration,
   WorkspaceLoginInfo,
-  WorkspaceOperation
+  WorkspaceOperation,
+  ListAccountsAdminParams,
+  AccountListRow,
+  AccountDetailsResponse
 } from './types'
 import { getClientTimezone, isNetworkError } from './utils'
 
@@ -267,6 +270,22 @@ export interface AccountClient {
   generate2faSecret: () => Promise<{ secret: string, url: string }>
   enable2fa: (secret: string, code: string) => Promise<void>
   disable2fa: (code: string) => Promise<void>
+
+  // Admin user management (V27)
+  listAccountsAdmin: (params: ListAccountsAdminParams) => Promise<{ total: number, accounts: AccountListRow[] }>
+  getAccountDetails: (accountUuid: AccountUuid) => Promise<AccountDetailsResponse>
+  setWorkspaceMemberRole: (
+    accountUuid: AccountUuid,
+    workspaceUuid: WorkspaceUuid,
+    newRole: AccountRole
+  ) => Promise<{ ok: true }>
+  removeWorkspaceMember: (
+    accountUuid: AccountUuid,
+    workspaceUuid: WorkspaceUuid
+  ) => Promise<{ ok: true, wasMember: boolean }>
+  triggerPasswordReset: (accountUuid: AccountUuid) => Promise<{ ok: true, emailSentTo: string }>
+  disableAccount: (accountUuid: AccountUuid) => Promise<{ ok: true }>
+  enableAccount: (accountUuid: AccountUuid) => Promise<{ ok: true }>
 }
 
 /** @public */
@@ -1385,6 +1404,56 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async listAccountsAdmin (
+    params: ListAccountsAdminParams
+  ): Promise<{ total: number, accounts: AccountListRow[] }> {
+    const request = { method: 'listAccountsAdmin' as const, params }
+    return await this.rpc(request)
+  }
+
+  async getAccountDetails (accountUuid: AccountUuid): Promise<AccountDetailsResponse> {
+    const request = { method: 'getAccountDetails' as const, params: { accountUuid } }
+    return await this.rpc(request)
+  }
+
+  async setWorkspaceMemberRole (
+    accountUuid: AccountUuid,
+    workspaceUuid: WorkspaceUuid,
+    newRole: AccountRole
+  ): Promise<{ ok: true }> {
+    const request = {
+      method: 'setWorkspaceMemberRole' as const,
+      params: { accountUuid, workspaceUuid, newRole }
+    }
+    return await this.rpc(request)
+  }
+
+  async removeWorkspaceMember (
+    accountUuid: AccountUuid,
+    workspaceUuid: WorkspaceUuid
+  ): Promise<{ ok: true, wasMember: boolean }> {
+    const request = {
+      method: 'removeWorkspaceMember' as const,
+      params: { accountUuid, workspaceUuid }
+    }
+    return await this.rpc(request)
+  }
+
+  async triggerPasswordReset (accountUuid: AccountUuid): Promise<{ ok: true, emailSentTo: string }> {
+    const request = { method: 'triggerPasswordReset' as const, params: { accountUuid } }
+    return await this.rpc(request)
+  }
+
+  async disableAccount (accountUuid: AccountUuid): Promise<{ ok: true }> {
+    const request = { method: 'disableAccount' as const, params: { accountUuid } }
+    return await this.rpc(request)
+  }
+
+  async enableAccount (accountUuid: AccountUuid): Promise<{ ok: true }> {
+    const request = { method: 'enableAccount' as const, params: { accountUuid } }
+    return await this.rpc(request)
   }
 }
 
