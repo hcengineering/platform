@@ -40,9 +40,9 @@ import core, {
   ClientConnectEvent
 } from '@hcengineering/core'
 import platform, { Severity, Status, getMetadata, getPlugins, setPlatformStatus } from '@hcengineering/platform'
-import { connect } from './connection'
+import { connect, setForceLogoutHandler } from './connection'
 
-export { connect }
+export { connect, setForceLogoutHandler }
 
 let dbRequest: IDBOpenDBRequest | undefined
 let dbPromise: Promise<IDBDatabase | undefined> = Promise.resolve(undefined)

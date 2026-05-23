@@ -84,3 +84,12 @@ export interface BottomAction {
 }
 
 export * from './utils'
+
+import { setForceLogoutHandler } from '@hcengineering/client-resources'
+import { forceLogoutReason } from './utils'
+
+// Bridge the connection-layer force-logout signal into the Svelte store
+// consumed by LoginApp.svelte / ForceLogoutModal.svelte.
+setForceLogoutHandler((reason: string) => {
+  forceLogoutReason.set(reason)
+})

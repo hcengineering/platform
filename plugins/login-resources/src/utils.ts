@@ -1145,3 +1145,15 @@ export function getAccountDisplayName (loginInfo: LoginInfo | null | undefined):
 
   return loginInfo.account
 }
+
+import { writable, type Writable } from 'svelte/store'
+
+/**
+ * Cross-component force-logout signal. Set by client-resources via the
+ * setForceLogoutHandler bridge wired in index.ts. Read by LoginApp.svelte
+ * to display the ForceLogoutModal.
+ *
+ * null = no force-logout active
+ * string = the reason ('account_disabled', 'manual_admin_action', etc.)
+ */
+export const forceLogoutReason: Writable<string | null> = writable(null)

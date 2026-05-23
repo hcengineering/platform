@@ -53,6 +53,8 @@ import core, {
   TxApplyIf,
   TxHandler,
   TxResult,
+  type TxWorkspaceEvent,
+  WorkspaceEvent,
   type WorkspaceUuid
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status } from '@hcengineering/platform'
@@ -63,6 +65,25 @@ const SECOND = 1000
 const pingTimeout = 10 * SECOND
 const hangTimeout = 5 * 60 * SECOND
 const dialTimeout = 30 * SECOND
+
+// Module-private force-logout handler registry. Set by login-resources via the
+// re-exported setForceLogoutHandler. Called from the Tx-dispatch when an
+// AccountDisabled TxWorkspaceEvent arrives.
+let forceLogoutHandlerInternal: ((reason: string) => void) | null = null
+
+export function setForceLogoutHandler (handler: (reason: string) => void): void {
+  forceLogoutHandlerInternal = handler
+}
+
+function notifyForceLogout (reason: string): void {
+  if (forceLogoutHandlerInternal != null) {
+    try {
+      forceLogoutHandlerInternal(reason)
+    } catch (err) {
+      console.error('force-logout handler threw', err)
+    }
+  }
+}
 
 class RequestPromise {
   startTime: number = Date.now()
@@ -117,6 +138,8 @@ class Connection implements ClientConnection {
   private pingResponse: number = Date.now()
 
   private helloReceived: boolean = false
+
+  private forcedLogoutReason: string | null = null
 
   private account: Account | undefined
 
@@ -495,6 +518,15 @@ class Connection implements ClientConnection {
           this.opt?.onUpgrade?.()
           return
         }
+        if (
+          tx?._class === core.class.TxWorkspaceEvent &&
+          (tx as TxWorkspaceEvent).event === WorkspaceEvent.AccountDisabled
+        ) {
+          const params = (tx as TxWorkspaceEvent).params as { reason?: string } | undefined
+          const reason = params?.reason ?? 'account_disabled'
+          this.forcedLogoutReason = reason
+          notifyForceLogout(reason)
+        }
       }
       this.handlers.forEach((handler) => {
         handler(...txArr)
@@ -633,6 +665,9 @@ class Connection implements ClientConnection {
     wsocket.onclose = (ev) => {
       if (this.websocket !== wsocket) {
         wsocket.close()
+        return
+      }
+      if (this.forcedLogoutReason != null) {
         return
       }
       this.scheduleOpen(this.ctx, true)

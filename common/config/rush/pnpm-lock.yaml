@@ -22904,6 +22904,9 @@ importers:
       '@hcengineering/analytics-providers':
         specifier: workspace:^0.7.0
         version: link:../../packages/analytics-providers
+      '@hcengineering/client-resources':
+        specifier: workspace:^0.7.0
+        version: link:../../foundations/core/packages/client-resources
       '@hcengineering/core':
         specifier: workspace:^0.7.26
         version: link:../../foundations/core/packages/core
