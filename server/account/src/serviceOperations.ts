@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import {
-  type AccountRole,
+  AccountRole,
   type Data,
   isActiveMode,
   type MeasureContext,
@@ -32,7 +32,7 @@ import {
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
-import type { ListAccountsAdminParams, AccountListRow } from '@hcengineering/account-client'
+import type { ListAccountsAdminParams, AccountListRow, AccountDetailsResponse } from '@hcengineering/account-client'
 
 import { accountPlugin } from './plugin'
 import type {
@@ -220,6 +220,68 @@ export async function listAccountsAdmin (
   const total = filtered.length
   const accounts = filtered.slice(params.pagination.offset, params.pagination.offset + params.pagination.limit)
   return { total, accounts }
+}
+
+export async function getAccountDetails (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid }
+): Promise<AccountDetailsResponse> {
+  const { extra } = decodeTokenVerbose(ctx, token)
+  if (extra?.admin !== 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+
+  const socialIds = await db.socialId.find({ personUuid: params.accountUuid })
+  const workspaces = await db.getAccountWorkspaces(params.accountUuid)
+  const roleMap = await db.getWorkspaceRoles(params.accountUuid)
+
+  const workspaceMemberships = workspaces.map((w) => ({
+    workspaceUuid: w.uuid,
+    workspaceName: w.name,
+    workspaceUrl: w.url,
+    role: roleMap.get(w.uuid) ?? AccountRole.User
+  }))
+
+  const recentAuditEntries = (await db.adminAuditLog.findByTarget(params.accountUuid, 20)).map((e) => ({
+    tsMs: e.tsMs,
+    adminFirstName: '',
+    adminLastName: '',
+    action: e.action,
+    details: e.details
+  }))
+
+  const primaryEmail = socialIds.find((s) => s.type === SocialIdType.EMAIL)?.value ?? ''
+  const adminEmails = new Set(
+    (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean)
+  )
+
+  return {
+    uuid: account.uuid,
+    firstName: (account as any).firstName ?? '',
+    lastName: (account as any).lastName ?? '',
+    status: account.disabledAt != null ? 'disabled' : 'active',
+    disabledAt: account.disabledAt ?? null,
+    lastActivityAt: account.lastActivityAt ?? null,
+    isAdmin: primaryEmail !== '' && adminEmails.has(primaryEmail),
+    socialIds: socialIds.map((s) => ({
+      type: s.type,
+      value: s.value,
+      verified: (s as any).verifiedOn != null
+    })),
+    workspaceMemberships,
+    recentAuditEntries
+  }
 }
 
 export async function performWorkspaceOperation (
@@ -1250,6 +1312,7 @@ export type AccountServiceMethods =
   | 'findPersonBySocialKey'
   | 'listAccounts'
   | 'listAccountsAdmin'
+  | 'getAccountDetails'
   | 'findFullSocialIds'
   | 'getSubscriptionByProviderId'
   | 'upsertSubscription'
@@ -1287,6 +1350,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     listAccounts: wrap(listAccounts),
     listAccountsAdmin: wrap(listAccountsAdmin),
+    getAccountDetails: wrap(getAccountDetails),
     getSubscriptionByProviderId: wrap(getSubscriptionByProviderId),
     upsertSubscription: wrap(upsertSubscription)
   }
