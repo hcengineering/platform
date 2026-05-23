@@ -35779,6 +35779,9 @@ importers:
 
   ../../server/account:
     dependencies:
+      '@hcengineering/account-client':
+        specifier: workspace:^0.7.25
+        version: link:../../foundations/core/packages/account-client
       '@hcengineering/analytics':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/analytics

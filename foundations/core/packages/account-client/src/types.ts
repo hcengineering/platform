@@ -243,3 +243,56 @@ export interface Subscription {
  * Used by billing service to upsert subscription data
  */
 export type SubscriptionData = Omit<Subscription, 'createdOn' | 'updatedOn'>
+
+// =====================================================================
+// Admin user management DTOs (V27)
+// =====================================================================
+
+export interface ListAccountsAdminParams {
+  search?: string
+  authMethod?: 'all' | 'email_only' | 'oidc' | 'mixed'
+  status?: 'all' | 'active' | 'disabled'
+  workspaceUuids?: WorkspaceUuid[]
+  sort?: {
+    field: 'name' | 'last_activity' | 'workspace_count'
+    direction: 'asc' | 'desc'
+  }
+  pagination: { limit: number, offset: number }
+}
+
+export interface AccountListRow {
+  uuid: AccountUuid
+  firstName: string
+  lastName: string
+  primaryEmail: string | null
+  authMethods: Array<'email' | 'oidc'>
+  hasPassword: boolean
+  workspaceCount: number
+  status: 'active' | 'disabled'
+  lastActivityAt: number | null
+  isAdmin: boolean
+}
+
+export interface AccountDetailsResponse {
+  uuid: AccountUuid
+  firstName: string
+  lastName: string
+  status: 'active' | 'disabled'
+  disabledAt: number | null
+  lastActivityAt: number | null
+  isAdmin: boolean
+  socialIds: Array<{ type: string, value: string, verified: boolean }>
+  workspaceMemberships: Array<{
+    workspaceUuid: WorkspaceUuid
+    workspaceName: string
+    workspaceUrl: string
+    role: AccountRole
+  }>
+  recentAuditEntries: Array<{
+    tsMs: number
+    adminFirstName: string
+    adminLastName: string
+    action: string
+    details: any
+  }>
+}
