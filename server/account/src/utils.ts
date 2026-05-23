@@ -172,6 +172,57 @@ export function isGuest (account: AccountUuid, extra: Record<string, any> | unde
   return account === GUEST_ACCOUNT && extra?.guest === 'true'
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * Issue a JWT token that includes the account's current `token_version` as a string claim
+ * when version > 0. Accounts with version 0 (or no row) get a token without the claim,
+ * which `verifyTokenVersion` treats as version 0.
+ *
+ * Skips the DB lookup for guest accounts and non-UUID principals (e.g. service accounts).
+ */
+export async function generateTokenWithVersion (
+  ctx: MeasureContext,
+  db: AccountDB,
+  accountUuid: PersonUuid,
+  workspaceUuid?: WorkspaceUuid,
+  extra?: Record<string, string>,
+  options?: Parameters<typeof generateToken>[4]
+): Promise<string> {
+  let mergedExtra = extra
+  if (accountUuid !== GUEST_ACCOUNT && UUID_REGEX.test(accountUuid)) {
+    const account = await db.account.findOne({ uuid: accountUuid as AccountUuid })
+    if (account?.tokenVersion != null && account.tokenVersion > 0) {
+      mergedExtra = { ...(extra ?? {}), token_version: String(account.tokenVersion) }
+    }
+  }
+  return generateToken(accountUuid, workspaceUuid, mergedExtra, undefined, options)
+}
+
+/**
+ * Verify that a token's `token_version` claim is not less than the account's current
+ * tokenVersion, and that the account is not disabled. Called from DB-aware token-
+ * verification paths (getLoginInfoByToken, selectWorkspace, provider-login refresh).
+ *
+ * Throws TokenError on mismatch / disabled.
+ */
+export async function verifyTokenVersion (ctx: MeasureContext, db: AccountDB, token: string): Promise<void> {
+  const { account: accountUuid, extra } = decodeTokenVerbose(ctx, token)
+  if (accountUuid === GUEST_ACCOUNT) return
+  if (!UUID_REGEX.test(accountUuid)) return
+  const tokenVersionClaim = parseInt(extra?.token_version ?? '0', 10)
+  const account = await db.account.findOne({ uuid: accountUuid as AccountUuid })
+  if (account == null) {
+    throw new TokenError('Account not found')
+  }
+  if (account.disabledAt != null) {
+    throw new TokenError('Account disabled')
+  }
+  if ((account.tokenVersion ?? 0) > tokenVersionClaim) {
+    throw new TokenError('Token version invalidated')
+  }
+}
+
 export function wrap (
   accountMethod: (ctx: MeasureContext, db: AccountDB, branding: Branding | null, ...args: any[]) => Promise<any>
 ): AccountMethodHandler {
