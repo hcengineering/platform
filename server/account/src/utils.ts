@@ -209,12 +209,14 @@ export async function generateTokenWithVersion (
 export async function verifyTokenVersion (ctx: MeasureContext, db: AccountDB, token: string): Promise<void> {
   const { account: accountUuid, extra } = decodeTokenVerbose(ctx, token)
   if (accountUuid === GUEST_ACCOUNT) return
+  if (accountUuid === systemAccountUuid) return
+  if (accountUuid === readOnlyGuestAccountUuid) return
   if (!UUID_REGEX.test(accountUuid)) return
   const tokenVersionClaim = parseInt(extra?.token_version ?? '0', 10)
   const account = await db.account.findOne({ uuid: accountUuid as AccountUuid })
-  if (account == null) {
-    throw new TokenError('Account not found')
-  }
+  // Account row may be missing for service-issued tokens (e.g. NIL_UUID for 2FA-pending).
+  // Only enforce when a row exists.
+  if (account == null) return
   if (account.disabledAt != null) {
     throw new TokenError('Account disabled')
   }
@@ -809,6 +811,7 @@ export async function selectWorkspace (
   let nbf: number | undefined
   try {
     const decodedToken = decodeTokenVerbose(ctx, token ?? '')
+    await verifyTokenVersion(ctx, db, token ?? '')
     accountUuid = decodedToken.account
     if (workspace == null) {
       workspace = await getWorkspaceById(db, decodedToken.workspace)

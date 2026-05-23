@@ -128,7 +128,8 @@ import {
   generateTotpSecret,
   verifyTotpCode,
   getTotpUrl,
-  generateTokenWithVersion
+  generateTokenWithVersion,
+  verifyTokenVersion
 } from './utils'
 
 const NIL_UUID = '00000000-0000-0000-0000-000000000000' as AccountUuid
@@ -2078,6 +2079,7 @@ export async function getLoginInfoByToken (
 
   try {
     ;({ account, workspace: workspaceUuid, extra, grant, nbf, exp, sub } = decodeTokenVerbose(ctx, token))
+    await verifyTokenVersion(ctx, db, token)
     if (grant != null && sub == null) {
       sub = (await db.generatePersonUuid()) as AccountUuid
     }
