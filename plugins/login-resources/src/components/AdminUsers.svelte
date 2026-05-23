@@ -137,9 +137,6 @@
   <div class="hulyComponent">
     <Header adaptive={'disabled'}>
       <Breadcrumb icon={setting.icon.Members} label={login.string.AdminUsers} size={'large'} isCurrent />
-      <svelte:fragment slot="search">
-        <SearchInput bind:value={search} collapsed />
-      </svelte:fragment>
     </Header>
 
     <div class="hulyComponent-content__column content">
@@ -164,7 +161,10 @@
             </div>
           </div>
 
-          <div class="filters flex-row-center flex-gap-2 p-2">
+          <div class="filters">
+            <div class="filters-search">
+              <SearchInput bind:value={search} width={'100%'} placeholder={getEmbeddedLabel('Search by name or email…')} />
+            </div>
             <DropdownLabelsIntl
               items={authItems}
               selected={filter.authMethod ?? 'all'}
@@ -240,7 +240,15 @@
   }
 
   .filters {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
     margin-bottom: var(--spacing-2);
+  }
+
+  .filters-search {
+    flex: 1;
+    max-width: 480px;
   }
 
   .error-banner {

@@ -21,7 +21,9 @@
   }
 </script>
 
-<div class="users-table-row" on:click on:keydown role="button" tabindex="0">
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="row body" on:click>
   <div class="cell cell-name">
     <span class="avatar">{initials(account.firstName, account.lastName)}</span>
     <div class="name-block">
@@ -31,7 +33,9 @@
       {/if}
     </div>
   </div>
-  <div class="cell cell-email">{account.primaryEmail ?? '—'}</div>
+  <div class="cell cell-email" title={account.primaryEmail ?? ''}>
+    {account.primaryEmail ?? '—'}
+  </div>
   <div class="cell cell-auth">
     {#each account.authMethods as m}
       <span class="badge auth-badge">{m}</span>
@@ -54,11 +58,29 @@
 </div>
 
 <style lang="scss">
+  /*
+   * .row uses display:contents so its 6 cells participate in the parent
+   * .users-table grid → columns align across all rows.
+   * Cells get padding + border-bottom directly so visual rows still feel
+   * coherent without a wrapper element.
+   */
+  .row {
+    display: contents;
+    cursor: pointer;
+  }
+
   .cell {
     padding: 0.65rem 0.85rem;
     color: var(--theme-content-color);
     font-size: 0.875rem;
+    border-bottom: 1px solid var(--theme-divider-color);
     min-width: 0;
+    background: var(--theme-bg-color);
+    transition: background 80ms ease;
+  }
+
+  .row:hover .cell {
+    background: var(--theme-popup-hover);
   }
 
   .cell-name {
@@ -69,15 +91,15 @@
 
   .avatar {
     flex-shrink: 0;
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     background: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-divider-color);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 600;
     color: var(--theme-caption-color);
     letter-spacing: 0.02em;
@@ -86,7 +108,7 @@
   .name-block {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    gap: 0.15rem;
     min-width: 0;
   }
 
@@ -109,19 +131,19 @@
 
   .cell-auth {
     display: flex;
+    align-items: center;
     flex-wrap: nowrap;
     gap: 0.25rem;
+    overflow: hidden;
   }
 
   .badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.05rem 0.4rem;
     border-radius: 999px;
     font-size: 0.68rem;
     font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
     line-height: 1.4;
     height: 18px;
   }
@@ -130,6 +152,8 @@
     background: rgba(245, 158, 11, 0.12);
     color: var(--theme-warning-color, #b45309);
     border: 1px solid rgba(245, 158, 11, 0.3);
+    text-transform: uppercase;
+    padding: 0.05rem 0.4rem;
     width: fit-content;
   }
 
@@ -138,13 +162,8 @@
     color: var(--theme-darker-color);
     border: 1px solid var(--theme-divider-color);
     font-family: var(--mono-font, 'SF Mono', 'Menlo', 'Consolas', monospace);
-    letter-spacing: 0;
     text-transform: lowercase;
-    padding: 0.05rem 0.35rem;
-  }
-
-  .auth-badge + .auth-badge {
-    margin-left: 0.2rem;
+    padding: 0.05rem 0.4rem;
   }
 
   .muted {
@@ -152,6 +171,7 @@
   }
 
   .cell-ws {
+    justify-self: end;
     text-align: right;
     font-variant-numeric: tabular-nums;
     color: var(--theme-caption-color);
@@ -161,10 +181,12 @@
     font-size: 0.82rem;
     color: var(--theme-darker-color);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .cell-status {
-    text-align: right;
+    justify-self: end;
   }
 
   .status {
@@ -182,18 +204,17 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    display: inline-block;
   }
 
   .status-active {
-    background: var(--theme-state-positive-background-color, rgba(16, 185, 129, 0.12));
-    color: var(--theme-state-positive-color, #047857);
-    .status-dot { background: var(--theme-state-positive-color, #10b981); }
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    .status-dot { background: #10b981; }
   }
 
   .status-disabled {
-    background: var(--theme-state-negative-background-color, rgba(239, 68, 68, 0.1));
-    color: var(--theme-state-negative-color, #b91c1c);
-    .status-dot { background: var(--theme-state-negative-color, #ef4444); }
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    .status-dot { background: #ef4444; }
   }
 </style>

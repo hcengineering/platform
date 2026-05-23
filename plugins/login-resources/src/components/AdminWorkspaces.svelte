@@ -764,7 +764,6 @@
             </div>
           </Scroller>
         </div>
-      </div>
 
       <div class="ws-section-header">
         <h3 class="ws-section-title">Accounts</h3>
@@ -799,32 +798,43 @@
         </div>
       </div>
 
-      <div class="fs-title p-1 select-text-i">
-        <Scroller maxHeight={40} noStretch={true}>
-          <div class="mr-4">
+      <div class="ws-accounts-table">
+        <div class="ws-accounts-head">
+          <div>Account</div>
+          <div>Social IDs</div>
+          <div>Workspaces</div>
+          <div class="ws-accounts-actions-col">Actions</div>
+        </div>
+        <div class="ws-accounts-body">
+          <Scroller maxHeight={40} noStretch={true}>
             {#each accounts as account}
-              <tr class="flex focused-button bordered min-h-8">
-                <div class="p-1 flex flex-col w-60">
-                  <div class="label overflow-label flex flex-row-center">
-                    {account.firstName}
-                    {account.lastName}
-                  </div>
-                  <div>{account.uuid}</div>
+              <div class="ws-account-row">
+                <div class="ws-account-cell ws-account-cell-name">
+                  <div class="ws-account-name">{account.firstName} {account.lastName}</div>
+                  <code class="ws-account-uuid" title={account.uuid}>{account.uuid}</code>
                 </div>
 
-                <div class="p-1 flex flex-col" style:width={'24rem'}>
-                  <div class="label">Social IDs: {account.socialIds.length}</div>
+                <div class="ws-account-cell">
+                  <div class="ws-account-count">{account.socialIds.length} total</div>
                   {#each account.socialIds as socialId}
-                    <div class="mr-2">{socialId.type}:{socialId.value}</div>
+                    <div class="ws-account-meta" title={socialId.value}>
+                      <span class="ws-account-meta-key">{socialId.type}</span>
+                      <span class="ws-account-meta-val">{socialId.value}</span>
+                    </div>
                   {/each}
                 </div>
-                <div class="p-1 flex flex-col">
-                  <div class="label">Workspaces: {account.workspaces.length}</div>
+
+                <div class="ws-account-cell">
+                  <div class="ws-account-count">{account.workspaces.length} total</div>
                   {#each account.workspaces as workspace}
-                    <div>{workspace.name} {workspace.url} {workspace.uuid} {workspace.dataId}</div>
+                    <div class="ws-account-meta" title={`${workspace.name} · ${workspace.url} · ${workspace.uuid}`}>
+                      <span class="ws-account-meta-key">{workspace.name}</span>
+                      <span class="ws-account-meta-val">{workspace.url}</span>
+                    </div>
                   {/each}
                 </div>
-                <div class="flex flex-row-center p-1">
+
+                <div class="ws-account-cell ws-account-cell-actions">
                   {#if accountSuperAdminMode}
                     <Button
                       icon={IconStop}
@@ -844,10 +854,11 @@
                     />
                   {/if}
                 </div>
-              </tr>
+              </div>
             {/each}
-          </div>
-        </Scroller>
+          </Scroller>
+        </div>
+      </div>
         </div>
       </Scroller>
     </div>
@@ -1041,14 +1052,130 @@
     cursor: pointer;
   }
 
-  // Restyle the remaining upstream sections (workspace list scroller + raw account rows)
-  // so they share the same card look as the new sections above.
-  :global(.admin-ws .hulyComponent-content > .fs-title.p-1),
-  :global(.admin-ws .hulyComponent-content > .fs-title.select-text-i) {
+  // Restyle the remaining upstream section (workspace list scroller) so it shares the same card look.
+  :global(.admin-ws .hulyComponent-content > .fs-title.p-1) {
     background: var(--theme-bg-color);
     border: 1px solid var(--theme-divider-color);
     border-radius: var(--small-BorderRadius);
     padding: var(--spacing-1) !important;
     overflow: hidden;
+  }
+
+  /* Accounts table — deterministic grid columns shared by header + every row */
+  .ws-accounts-table {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--theme-bg-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--small-BorderRadius);
+    overflow: hidden;
+  }
+
+  .ws-accounts-head,
+  .ws-account-row {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.4fr) minmax(260px, 1.6fr) minmax(260px, 1.6fr) 110px;
+    align-items: start;
+  }
+
+  .ws-accounts-head {
+    padding: 0;
+    background: var(--theme-bg-accent-color);
+    border-bottom: 1px solid var(--theme-divider-color);
+
+    & > div {
+      padding: 0.55rem 0.85rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--theme-darker-color);
+    }
+
+    .ws-accounts-actions-col {
+      justify-self: end;
+      text-align: right;
+    }
+  }
+
+  .ws-accounts-body {
+    min-height: 0;
+  }
+
+  .ws-account-row {
+    border-bottom: 1px solid var(--theme-divider-color);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  .ws-account-cell {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.82rem;
+    color: var(--theme-content-color);
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .ws-account-cell-actions {
+    justify-self: end;
+    align-self: center;
+    flex-direction: row;
+    gap: 0.3rem;
+  }
+
+  .ws-account-name {
+    color: var(--theme-caption-color);
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+
+  .ws-account-uuid {
+    font-family: var(--mono-font, 'SF Mono', 'Menlo', 'Consolas', monospace);
+    font-size: 0.7rem;
+    color: var(--theme-darker-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+  }
+
+  .ws-account-count {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--theme-darker-color);
+  }
+
+  .ws-account-meta {
+    display: flex;
+    gap: 0.4rem;
+    min-width: 0;
+    align-items: baseline;
+  }
+
+  .ws-account-meta-key {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--theme-darker-color);
+    padding: 0.05rem 0.35rem;
+    background: var(--theme-bg-accent-color);
+    border-radius: 0.2rem;
+    line-height: 1.4;
+  }
+
+  .ws-account-meta-val {
+    font-family: var(--mono-font, 'SF Mono', 'Menlo', 'Consolas', monospace);
+    font-size: 0.75rem;
+    color: var(--theme-content-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
   }
 </style>

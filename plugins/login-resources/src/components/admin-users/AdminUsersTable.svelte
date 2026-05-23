@@ -31,68 +31,80 @@
 </script>
 
 <div class="users-table">
-  <div class="users-table__head">
-    <div class="head-cell cell-name sortable" on:click={() => setSort('name')}>
+  <div class="row head">
+    <div class="cell cell-name sortable" on:click={() => setSort('name')}>
       Name <span class="arrow">{sortArrow('name')}</span>
     </div>
-    <div class="head-cell cell-email">Email</div>
-    <div class="head-cell cell-auth">Auth</div>
-    <div class="head-cell cell-ws sortable" on:click={() => setSort('workspace_count')}>
+    <div class="cell cell-email">Email</div>
+    <div class="cell cell-auth">Auth</div>
+    <div class="cell cell-ws sortable" on:click={() => setSort('workspace_count')}>
       Workspaces <span class="arrow">{sortArrow('workspace_count')}</span>
     </div>
-    <div class="head-cell cell-activity sortable" on:click={() => setSort('last_activity')}>
+    <div class="cell cell-activity sortable" on:click={() => setSort('last_activity')}>
       Last activity <span class="arrow">{sortArrow('last_activity')}</span>
     </div>
-    <div class="head-cell cell-status">Status</div>
+    <div class="cell cell-status">Status</div>
   </div>
-  <div class="users-table__body">
-    {#if loading}
-      <div class="empty">Loading…</div>
-    {:else if accounts.length === 0}
-      <div class="empty">No users match the current filters.</div>
-    {:else}
-      {#each accounts as account (account.uuid)}
-        <AdminUsersRow {account} on:click={() => onRowClick(account.uuid)} />
-      {/each}
-    {/if}
-  </div>
+  {#if loading}
+    <div class="empty">Loading…</div>
+  {:else if accounts.length === 0}
+    <div class="empty">No users match the current filters.</div>
+  {:else}
+    {#each accounts as account (account.uuid)}
+      <AdminUsersRow {account} on:click={() => onRowClick(account.uuid)} />
+    {/each}
+  {/if}
 </div>
 
 <style lang="scss">
+  /*
+   * Single grid for the whole table: head + every row inherit the same
+   * grid-template-columns via `display: contents` on the .row wrapper.
+   * This guarantees the columns line up across rows, which a per-row grid
+   * does not. All numeric / status columns get fixed widths so they never
+   * shrink or shift per content.
+   */
   .users-table {
+    display: grid;
+    grid-template-columns:
+      minmax(220px, 2fr)   /* Name + avatar     */
+      minmax(220px, 3fr)   /* Email             */
+      140px                /* Auth              */
+      110px                /* Workspaces (num)  */
+      minmax(140px, 1fr)   /* Last activity     */
+      120px;               /* Status            */
+    align-items: center;
     background: var(--theme-bg-color);
     border: 1px solid var(--theme-divider-color);
     border-radius: var(--small-BorderRadius);
     overflow: hidden;
   }
 
-  .users-table__head {
-    display: grid;
-    grid-template-columns: minmax(180px, 2fr) minmax(180px, 2fr) auto minmax(100px, 1fr) minmax(120px, 1fr) auto;
-    align-items: center;
-    background: var(--theme-bg-accent-color);
-    border-bottom: 1px solid var(--theme-divider-color);
+  .row {
+    display: contents;
   }
 
-  .head-cell {
-    padding: 0.5rem 0.85rem;
+  .head .cell {
+    padding: 0.55rem 0.85rem;
     font-size: 0.72rem;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--theme-darker-color);
+    background: var(--theme-bg-accent-color);
+    border-bottom: 1px solid var(--theme-divider-color);
     white-space: nowrap;
   }
 
-  .head-cell.cell-ws,
-  .head-cell.cell-status {
+  .cell-ws,
+  .cell-status {
+    justify-self: end;
     text-align: right;
   }
 
-  .sortable {
+  .head .sortable {
     cursor: pointer;
     user-select: none;
-    transition: color 80ms ease;
 
     &:hover {
       color: var(--theme-caption-color);
@@ -106,26 +118,10 @@
   }
 
   .empty {
+    grid-column: 1 / -1;
     padding: var(--spacing-4);
     text-align: center;
     color: var(--theme-darker-color);
     font-size: 0.9rem;
-  }
-
-  :global(.users-table__body .users-table-row) {
-    display: grid;
-    grid-template-columns: minmax(180px, 2fr) minmax(180px, 2fr) auto minmax(100px, 1fr) minmax(120px, 1fr) auto;
-    align-items: center;
-    border-bottom: 1px solid var(--theme-divider-color);
-    cursor: pointer;
-    transition: background 80ms ease;
-  }
-
-  :global(.users-table__body .users-table-row:hover) {
-    background: var(--theme-popup-hover);
-  }
-
-  :global(.users-table__body .users-table-row:last-child) {
-    border-bottom: none;
   }
 </style>
