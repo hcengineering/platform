@@ -40,10 +40,10 @@
   }
 
   function backToWorkbench (): void {
-    const loc = getCurrentLocation()
-    loc.path[0] = 'workbench'
-    loc.path.length = 1
-    navigate(loc)
+    // Mirror Huly Settings: go through the workspace picker so we always land
+    // on a valid /workbench/{workspaceUrl}, even when the user has cleared
+    // their local workspace context inside the admin panel.
+    navigate({ path: ['login', 'selectWorkspace'] })
   }
 
   $: _ = $locationStore

@@ -356,115 +356,145 @@
 
     <div class="hulyComponent-content__column content admin-ws">
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
-        <div class="hulyComponent-content">
-        <div class="fs-title p-3">
-          Workspaces: {workspaces.length} active: {workspaces.filter((it) => isActiveMode(it.mode)).length}
-          upgrading: {workspaces.filter((it) => isUpgradingMode(it.mode)).length}
-          <br />
-          Backupable: {backupable.length} new: {backupable.reduce((p, it) => p + (it.backupInfo == null ? 1 : 0), 0)}
-          Active: {data?.workspaces.length ?? -1}
-          <br />
-          <span class="mt-2">
-            Users: {data?.usersTotal}/{data?.connectionsTotal}
-          </span>
+        <div class="hulyComponent-content withoutMaxWidth">
 
-          <div class="flex-row-center">
-            {#each byVersion.entries() as [k, v]}
-              <div class="p-1">
-                {k}: {v.length}
-              </div>
-            {/each}
+        <!-- Stat cards mirror the Users page so both admin sections share the same visual rhythm. -->
+        <div class="ws-stats">
+          <div class="stat-item">
+            <span class="stat-label">Total</span>
+            <span class="stat-value">{workspaces.length}</span>
           </div>
-          <div class="flex-row-center">
-            {#each byRegion.entries() as [k, v]}
-              <div class="p-1">
-                {k ?? ''}: {v.length}
-              </div>
-            {/each}
+          <div class="stat-item">
+            <span class="stat-label">Active</span>
+            <span class="stat-value stat-positive">{workspaces.filter((it) => isActiveMode(it.mode)).length}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Upgrading</span>
+            <span class="stat-value">{workspaces.filter((it) => isUpgradingMode(it.mode)).length}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Backupable</span>
+            <span class="stat-value">
+              {backupable.length}
+              <span class="stat-sub">
+                ({backupable.reduce((p, it) => p + (it.backupInfo == null ? 1 : 0), 0)} new)
+              </span>
+            </span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Live</span>
+            <span class="stat-value">{data?.workspaces.length ?? '—'}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Users / Connections</span>
+            <span class="stat-value">{data?.usersTotal ?? 0}<span class="stat-sub">/{data?.connectionsTotal ?? 0}</span></span>
           </div>
         </div>
-        <div class="fs-title p-3 flex-no-shrink" data-testid="workspace-search-container">
+
+        {#if byVersion.size > 0 || byRegion.size > 0}
+          <div class="ws-breakdown">
+            {#if byVersion.size > 0}
+              <div class="ws-breakdown-row">
+                <span class="ws-breakdown-label">By version:</span>
+                {#each byVersion.entries() as [k, v]}
+                  <span class="ws-chip">{k}<span class="ws-chip-count">{v.length}</span></span>
+                {/each}
+              </div>
+            {/if}
+            {#if byRegion.size > 0}
+              <div class="ws-breakdown-row">
+                <span class="ws-breakdown-label">By region:</span>
+                {#each byRegion.entries() as [k, v]}
+                  <span class="ws-chip">{k ?? '—'}<span class="ws-chip-count">{v.length}</span></span>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        {/if}
+
+        <div class="ws-card flex-no-shrink" data-testid="workspace-search-container">
           <SearchEdit bind:value={search} width={'100%'} />
         </div>
 
-        <div class="p-3 flex-col">
-          <span class="fs-title mr-2">Filters: </span>
-          <div class="flex-row-center">
-            Show active workspaces:
-            <CheckBox bind:checked={showActive} />
+        <div class="ws-card">
+          <div class="ws-card-title">Filters</div>
+          <div class="ws-filter-grid">
+            <label class="ws-filter">
+              <CheckBox bind:checked={showActive} />
+              <span>Active workspaces</span>
+            </label>
+            <label class="ws-filter">
+              <CheckBox bind:checked={showArchived} />
+              <span>Archived workspaces</span>
+            </label>
+            <label class="ws-filter">
+              <CheckBox bind:checked={showDeleted} />
+              <span>Deleted workspaces</span>
+            </label>
+            <label class="ws-filter">
+              <CheckBox bind:checked={showOther} />
+              <span>Other workspaces</span>
+            </label>
+            <label class="ws-filter">
+              <CheckBox bind:checked={showGrAttempts} />
+              <span>Attempts {'>='}0</span>
+            </label>
+            <label class="ws-filter">
+              <CheckBox bind:checked={showSelectedRegionOnly} />
+              <span>Selected region only</span>
+            </label>
+            <label class="ws-filter">
+              <CheckBox bind:checked={showInactive} />
+              <span>Inactive workspaces</span>
+            </label>
           </div>
-          <div class="flex-row-center">
-            <span class="mr-2">Show archived workspaces:</span>
-            <CheckBox bind:checked={showArchived} />
+        </div>
+
+        <div class="ws-card">
+          <div class="ws-card-title">Sorting & regions</div>
+          <div class="ws-control-row">
+            <span class="ws-control-label">Sort order</span>
+            <ButtonMenu
+              selected={sortingRule}
+              autoSelectionIfOne
+              title={sortRules[sortingRule]}
+              items={Object.entries(sortRules).map((it) => ({ id: it[0], label: getEmbeddedLabel(it[1]) }))}
+              on:selected={(it) => {
+                sortingRule = it.detail
+              }}
+            />
           </div>
-          <div class="flex-row-center">
-            <span class="mr-2">Show deleted workspaces:</span>
-            <CheckBox bind:checked={showDeleted} />
+          <div class="ws-control-row">
+            <span class="ws-control-label">Migrate to region</span>
+            <ButtonMenu
+              selected={selectedRegionId}
+              autoSelectionIfOne
+              title={selectedRegionName}
+              items={regionInfo.map((it) => ({
+                id: it.region === '' ? '#' : it.region,
+                label: getEmbeddedLabel(it.name.length > 0 ? it.name : it.region + ' (hidden)')
+              }))}
+              on:selected={(it) => {
+                selectedRegionId = it.detail === '#' ? '' : it.detail
+              }}
+            />
           </div>
-          <div class="flex-row-center">
-            <span class="mr-2">Show other workspaces:</span>
-            <CheckBox bind:checked={showOther} />
-          </div>
-          <div class="flex-row-center">
-            <span class="mr-2">Show attempts >=0 workspaces:</span>
-            <CheckBox bind:checked={showGrAttempts} />
-          </div>
-          <div class="flex-row-center">
-            <span class="mr-2">Show selected region only:</span>
+          <div class="ws-control-row">
+            <span class="ws-control-label">Filter by region</span>
             <CheckBox bind:checked={showSelectedRegionOnly} />
+            <ButtonMenu
+              selected={filterRegionId}
+              autoSelectionIfOne
+              title={filteredRegionName}
+              items={regionInfo.map((it) => ({
+                id: it.region === '' ? '#' : it.region,
+                label: getEmbeddedLabel(it.name.length > 0 ? it.name : it.region + ' (hidden)')
+              }))}
+              on:selected={(it) => {
+                filterRegionId = it.detail === '#' ? '' : it.detail
+              }}
+            />
           </div>
-          <div class="flex-row-center">
-            <span class="mr-2">Show inactive workspaces:</span>
-            <CheckBox bind:checked={showInactive} />
-          </div>
-        </div>
-
-        <div class="fs-title p-3 flex-row-center">
-          <span class="mr-2"> Sorting order: {sortingRule} </span>
-          <ButtonMenu
-            selected={sortingRule}
-            autoSelectionIfOne
-            title={sortRules[sortingRule]}
-            items={Object.entries(sortRules).map((it) => ({ id: it[0], label: getEmbeddedLabel(it[1]) }))}
-            on:selected={(it) => {
-              sortingRule = it.detail
-            }}
-          />
-        </div>
-
-        <div class="fs-title p-3 flex-row-center">
-          <span class="mr-2"> Migration region selector: </span>
-          <ButtonMenu
-            selected={selectedRegionId}
-            autoSelectionIfOne
-            title={selectedRegionName}
-            items={regionInfo.map((it) => ({
-              id: it.region === '' ? '#' : it.region,
-              label: getEmbeddedLabel(it.name.length > 0 ? it.name : it.region + ' (hidden)')
-            }))}
-            on:selected={(it) => {
-              selectedRegionId = it.detail === '#' ? '' : it.detail
-            }}
-          />
-        </div>
-
-        <div class="fs-title p-3 flex-row-center">
-          <div class="mr-2">
-            <CheckBox bind:checked={showSelectedRegionOnly} />
-          </div>
-          <span class="mr-2"> Filtere region selector: </span>
-          <ButtonMenu
-            selected={filterRegionId}
-            autoSelectionIfOne
-            title={filteredRegionName}
-            items={regionInfo.map((it) => ({
-              id: it.region === '' ? '#' : it.region,
-              label: getEmbeddedLabel(it.name.length > 0 ? it.name : it.region + ' (hidden)')
-            }))}
-            on:selected={(it) => {
-              filterRegionId = it.detail === '#' ? '' : it.detail
-            }}
-          />
         </div>
         <div class="fs-title p-1">
           <Scroller maxHeight={40} noStretch={true}>
@@ -736,18 +766,18 @@
         </div>
       </div>
 
-      <div class="flex-between">
-        <div class="fs-title p-3">Accounts administration panel</div>
-        <div class="flex-row-center">
-          <span class="mr-4">Enable deletion</span>
+      <div class="ws-section-header">
+        <h3 class="ws-section-title">Accounts</h3>
+        <label class="super-admin-toggle flex-row-center">
           <CheckBox bind:checked={accountSuperAdminMode} />
-        </div>
+          <span class="ml-2">Enable deletion</span>
+        </label>
       </div>
-      <div class="fs-title p-3 flex-no-shrink">
+      <div class="ws-card flex-no-shrink">
         <SearchEdit bind:value={accountSearch} width={'100%'} on:change={accountSearchChanged} />
       </div>
 
-      <div class="flex-row-center p-3">
+      <div class="ws-accounts-pager flex-row-center">
         <Button
           label={getEmbeddedLabel('Previous')}
           disabled={accountSkip === 0}
@@ -831,14 +861,153 @@
     gap: var(--spacing-2);
   }
 
-  :global(.admin-ws .hulyComponent-content > .fs-title),
-  :global(.admin-ws .hulyComponent-content > .p-3) {
+  .ws-stats {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--spacing-2);
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: var(--spacing-2);
     background: var(--theme-bg-color);
     border: 1px solid var(--theme-divider-color);
     border-radius: var(--small-BorderRadius);
-    padding: var(--spacing-2) !important;
+  }
+
+  .stat-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--theme-darker-color);
+  }
+
+  .stat-value {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--theme-caption-color);
+    line-height: 1.1;
+  }
+
+  .stat-sub {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--theme-darker-color);
+    margin-left: 0.25rem;
+  }
+
+  .stat-positive {
+    color: var(--theme-state-positive-color, #10b981);
+  }
+
+  .ws-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: var(--spacing-2);
+    background: var(--theme-bg-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--small-BorderRadius);
+  }
+
+  .ws-breakdown-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .ws-breakdown-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--theme-darker-color);
+    margin-right: 0.25rem;
+  }
+
+  .ws-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.1rem 0.45rem;
+    background: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 999px;
+    font-size: 0.78rem;
     color: var(--theme-content-color);
-    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ws-chip-count {
+    font-weight: 600;
+    color: var(--theme-caption-color);
+  }
+
+  .ws-card {
+    padding: var(--spacing-2);
+    background: var(--theme-bg-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--small-BorderRadius);
+  }
+
+  .ws-card-title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--theme-darker-color);
+    margin-bottom: 0.55rem;
+  }
+
+  .ws-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.4rem 1.25rem;
+  }
+
+  .ws-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.85rem;
+    color: var(--theme-content-color);
+    cursor: pointer;
+  }
+
+  .ws-control-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.25rem 0;
+  }
+
+  .ws-control-label {
+    flex: 0 0 11rem;
+    font-size: 0.82rem;
+    color: var(--theme-darker-color);
+  }
+
+  .ws-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: var(--spacing-2) 0 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--theme-divider-color);
+  }
+
+  .ws-section-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--theme-caption-color);
+  }
+
+  .ws-accounts-pager {
+    justify-content: center;
+    gap: 0.6rem;
+    padding: var(--spacing-2) 0;
   }
 
   .super-admin-toggle {
@@ -847,5 +1016,16 @@
     font-size: 0.85rem;
     color: var(--theme-content-color);
     cursor: pointer;
+  }
+
+  // Restyle the remaining upstream sections (workspace list scroller + raw account rows)
+  // so they share the same card look as the new sections above.
+  :global(.admin-ws .hulyComponent-content > .fs-title.p-1),
+  :global(.admin-ws .hulyComponent-content > .fs-title.select-text-i) {
+    background: var(--theme-bg-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--small-BorderRadius);
+    padding: var(--spacing-1) !important;
+    overflow: hidden;
   }
 </style>
