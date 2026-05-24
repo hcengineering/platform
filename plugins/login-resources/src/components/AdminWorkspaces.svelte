@@ -43,6 +43,7 @@
   import { workbenchId } from '@hcengineering/workbench'
   import { getAccountClient, getAllWorkspaces, getRegionInfo, performWorkspaceOperation } from '../utils'
   import AdminShell from './admin-shell/AdminShell.svelte'
+  import AdminWorkspaceDrawer from './admin-workspaces/AdminWorkspaceDrawer.svelte'
   import { Breadcrumb, Header, IconSettings } from '@hcengineering/ui'
   import login from '@hcengineering/login'
 
@@ -338,6 +339,10 @@
     accountSkip = 0
     await loadAccounts(ev.detail, accountSkip, accountLimit)
   }
+
+  let selectedWorkspaceUuid: string | null = null
+  function openWorkspace (uuid: string): void { selectedWorkspaceUuid = uuid }
+  function closeWorkspace (): void { selectedWorkspaceUuid = null }
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -594,7 +599,7 @@
                       {@const stats = statsByWorkspace.get(workspace.uuid ?? '')}
                       <!-- svelte-ignore a11y-click-events-have-key-events -->
                       <!-- svelte-ignore a11y-no-static-element-interactions -->
-                      <tr class="flex fs-title cursor-pointer focused-button bordered" id={`${workspace.uuid}`}>
+                      <tr class="flex fs-title cursor-pointer focused-button bordered row-clickable" id={`${workspace.uuid}`} on:click={() => openWorkspace(workspace.uuid)}>
                         <div class="label overflow-label p-1 flex flex-row-center" style:width={'15rem'}>
                           {wsName}
                           {#if stats}
@@ -864,6 +869,9 @@
     </div>
   </div>
 </AdminShell>
+{#if selectedWorkspaceUuid != null}
+  <AdminWorkspaceDrawer workspaceUuid={selectedWorkspaceUuid} on:close={closeWorkspace} />
+{/if}
 <Popup />
 {/if}
 
@@ -1167,6 +1175,10 @@
     background: var(--theme-bg-accent-color);
     border-radius: 0.2rem;
     line-height: 1.4;
+  }
+
+  .row-clickable {
+    cursor: pointer;
   }
 
   .ws-account-meta-val {
