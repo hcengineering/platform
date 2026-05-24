@@ -22,11 +22,11 @@
   <span class="label">{count} selected</span>
   <button class="link" on:click={() => dispatch('deselect-all')}>Clear</button>
   <div class="spacer" />
-  <Button label={getEmbeddedLabel('Add to workspace') as any} on:click={() => dispatch('add')} />
-  <Button label={getEmbeddedLabel('Remove from workspace') as any} on:click={() => dispatch('remove')} />
-  <Button label={getEmbeddedLabel('Disable') as any} kind={'dangerous'} on:click={() => dispatch('disable')} />
-  <Button label={getEmbeddedLabel('Enable') as any} on:click={() => dispatch('enable')} />
-  <Button label={getEmbeddedLabel('Send password reset') as any} on:click={() => dispatch('reset')} />
+  <Button label={getEmbeddedLabel('Add to workspace')} on:click={() => dispatch('add')} />
+  <Button label={getEmbeddedLabel('Remove from workspace')} on:click={() => dispatch('remove')} />
+  <Button label={getEmbeddedLabel('Disable')} kind={'dangerous'} on:click={() => dispatch('disable')} />
+  <Button label={getEmbeddedLabel('Enable')} on:click={() => dispatch('enable')} />
+  <Button label={getEmbeddedLabel('Send password reset')} on:click={() => dispatch('reset')} />
 </div>
 
 <style lang="scss">

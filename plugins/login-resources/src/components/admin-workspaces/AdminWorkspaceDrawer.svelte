@@ -122,7 +122,7 @@
             <div class="role">
               <DropdownLabelsIntl
                 items={roleItems}
-                selected={m.role as any}
+                selected={m.role}
                 on:selected={(e) => onChangeRole(m.accountUuid, e.detail)}
               />
             </div>

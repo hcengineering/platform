@@ -74,9 +74,9 @@
 <div class="popup">
   <h3>Create user</h3>
   <div class="grid">
-    <label>First name<EditBox bind:value={firstName} placeholder={'Jane' as any} /></label>
-    <label>Last name<EditBox bind:value={lastName} placeholder={'Doe' as any} /></label>
-    <label class="full">Email<EditBox bind:value={email} placeholder={'jane@example.com' as any} /></label>
+    <label>First name<EditBox bind:value={firstName} placeholder={'Jane'} /></label>
+    <label>Last name<EditBox bind:value={lastName} placeholder={'Doe'} /></label>
+    <label class="full">Email<EditBox bind:value={email} placeholder={'jane@example.com'} /></label>
     <fieldset class="full">
       <legend>Password setup</legend>
       <label><input type="radio" bind:group={passwordMode} value="invite" /> Send invite email</label>
@@ -95,14 +95,14 @@
         {/each}
       </select>
       {#if selectedWs != null}
-        <DropdownLabelsIntl items={roleItems} selected={role as any} on:selected={(e) => { role = e.detail }} />
+        <DropdownLabelsIntl items={roleItems} selected={role} on:selected={(e) => { role = e.detail }} />
       {/if}
     </fieldset>
   </div>
   {#if error}<div class="error">{error}</div>{/if}
   <div class="actions">
-    <Button label={'login:string.Cancel' as any} on:click={() => dispatch('close')} />
-    <Button label={'login:string.Create' as any} kind={'primary'} disabled={busy} on:click={confirm} />
+    <Button label={getEmbeddedLabel('Cancel')} on:click={() => dispatch('close')} />
+    <Button label={getEmbeddedLabel('Create')} kind={'primary'} disabled={busy} on:click={confirm} />
   </div>
 </div>
 

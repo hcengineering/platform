@@ -441,7 +441,7 @@
               </div>
             </div>
             {#if isAdminUser()}
-              <Button label={'login:string.AddUser' as any} kind={'primary'} on:click={openCreateAccount} />
+              <Button label={getEmbeddedLabel('Add user')} kind={'primary'} on:click={openCreateAccount} />
             {/if}
           </div>
 

@@ -40,6 +40,10 @@
     }
   })
 
+  function setRole (detail: unknown): void {
+    role = detail as AccountRole
+  }
+
   function confirm (): void {
     if (selectedWs == null) return
     // PopupInstance forwards the close-event payload to the showPopup
@@ -83,17 +87,17 @@
         <span class="field-label">Role</span>
         <DropdownLabelsIntl
           items={roleItems}
-          selected={role as any}
-          on:selected={(e) => { role = e.detail as AccountRole }}
+          selected={role}
+          on:selected={(e) => setRole(e.detail)}
         />
       </label>
     {/if}
   {/if}
 
   <div class="actions">
-    <Button label={getEmbeddedLabel('Cancel') as any} on:click={cancel} />
+    <Button label={getEmbeddedLabel('Cancel')} on:click={cancel} />
     <Button
-      label={getEmbeddedLabel('Confirm') as any}
+      label={getEmbeddedLabel('Confirm')}
       kind={'primary'}
       disabled={loading || selectedWs == null}
       on:click={confirm}

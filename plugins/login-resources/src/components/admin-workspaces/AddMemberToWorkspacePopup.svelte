@@ -73,12 +73,12 @@
       <p class="muted">No matching accounts.</p>
     {/if}
   </div>
-  <DropdownLabelsIntl items={roleItems} selected={role as any} on:selected={(e) => { role = e.detail }} />
+  <DropdownLabelsIntl items={roleItems} selected={role} on:selected={(e) => { role = e.detail }} />
   {#if error}<div class="error">{error}</div>{/if}
   <div class="actions">
-    <Button label={'login:string.Cancel' as any} on:click={() => dispatch('close')} />
+    <Button label={getEmbeddedLabel('Cancel')} on:click={() => dispatch('close')} />
     <Button
-      label={'login:string.Confirm' as any}
+      label={getEmbeddedLabel('Confirm')}
       kind={'primary'}
       disabled={busy || selectedAccountUuid == null}
       on:click={confirm}

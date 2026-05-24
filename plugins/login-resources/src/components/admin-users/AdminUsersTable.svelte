@@ -138,7 +138,7 @@
     {#each accounts as account (account.uuid)}
       <AdminUsersRow
         {account}
-        selected={selectedUuids.has(account.uuid as string)}
+        selected={selectedUuids.has(String(account.uuid))}
         on:click={() => onRowClick(account.uuid)}
         on:toggle-selection={onToggleRow}
       />
