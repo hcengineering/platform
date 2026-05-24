@@ -5,7 +5,7 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { getAccountClient } from '../../utils'
   import type { AccountDetailsResponse } from '@hcengineering/account-client'
-  import { AccountRole } from '@hcengineering/core'
+  import { AccountRole, type AccountUuid } from '@hcengineering/core'
   import {
     Button,
     ButtonIcon,
@@ -24,7 +24,7 @@
   import AddToWorkspacePopup from './AddToWorkspacePopup.svelte'
   import { confirmAction, notify } from './util'
 
-  export let accountUuid: string
+  export let accountUuid: AccountUuid
   // Optional: parent passes the ordered list of currently-visible uuids so
   // the drawer can offer Prev / Next navigation without closing first.
   // Defaults to empty → pager is hidden if not provided.
@@ -64,7 +64,7 @@
     loading = true
     errorMessage = null
     try {
-      details = await getAccountClient().getAccountDetails(accountUuid as any)
+      details = await getAccountClient().getAccountDetails(accountUuid)
     } catch (err: any) {
       errorMessage = err?.message ?? 'Failed to load account'
     } finally {
@@ -128,7 +128,7 @@
   async function onChangeRole (workspaceUuid: string, newRole: AccountRole): Promise<void> {
     busy = true
     try {
-      await getAccountClient().setWorkspaceMemberRole(accountUuid as any, workspaceUuid as any, newRole)
+      await getAccountClient().setWorkspaceMemberRole(accountUuid, workspaceUuid as any, newRole)
       await load()
       dispatch('account-changed')
     } catch (err: any) {
@@ -150,7 +150,7 @@
       async () => {
         busy = true
         try {
-          await getAccountClient().removeWorkspaceMember(accountUuid as any, workspaceUuid as any)
+          await getAccountClient().removeWorkspaceMember(accountUuid, workspaceUuid as any)
           await load()
           dispatch('account-changed')
         } catch (err: any) {
@@ -190,7 +190,7 @@
       async () => {
         busy = true
         try {
-          const res = await getAccountClient().triggerPasswordReset(accountUuid as any)
+          const res = await getAccountClient().triggerPasswordReset(accountUuid)
           notify('Email sent', `Password-reset email sent to ${res.emailSentTo}.`)
         } catch (err: any) {
           const code = err?.status?.code
@@ -214,7 +214,7 @@
       async () => {
         busy = true
         try {
-          await getAccountClient().disableAccount(accountUuid as any)
+          await getAccountClient().disableAccount(accountUuid)
           await load()
           dispatch('account-changed')
         } catch (err: any) {
@@ -237,7 +237,7 @@
     confirmAction('Re-enable account', 'Allow this user to log in again. Continue?', false, async () => {
       busy = true
       try {
-        await getAccountClient().enableAccount(accountUuid as any)
+        await getAccountClient().enableAccount(accountUuid)
         await load()
         dispatch('account-changed')
       } catch (err: any) {
