@@ -183,6 +183,7 @@ export async function listAccountsAdmin (
       .filter(Boolean)
   )
 
+  const workspacesByAccount = new Map<string, string[]>()
   const rows: AccountListRow[] = await Promise.all(
     allAccounts.map(async (acc) => {
       const socials = allSocialIds.filter((s) => s.personUuid === acc.uuid)
@@ -194,6 +195,8 @@ export async function listAccountsAdmin (
       if (emailSocials.length > 0) authMethods.push('email')
       if (oidcSocials.length > 0) authMethods.push('oidc')
       const person = personByUuid.get(acc.uuid as unknown as PersonUuid)
+
+      workspacesByAccount.set(acc.uuid as string, Array.from(workspaceRoles.keys()) as string[])
 
       return {
         uuid: acc.uuid,
@@ -244,19 +247,91 @@ export async function listAccountsAdmin (
     filtered = filteredWithCheck
   }
 
-  const sortField = params.sort?.field ?? 'name'
-  const sortDir = params.sort?.direction ?? 'asc'
-  filtered.sort((a, b) => {
-    let cmp = 0
-    if (sortField === 'name') {
-      cmp = (a.firstName + a.lastName).localeCompare(b.firstName + b.lastName)
-    } else if (sortField === 'last_activity') {
-      cmp = (a.lastActivityAt ?? 0) - (b.lastActivityAt ?? 0)
-    } else if (sortField === 'workspace_count') {
-      cmp = a.workspaceCount - b.workspaceCount
+  if (params.emailContains != null && params.emailContains !== '') {
+    const needle = params.emailContains.trim().toLowerCase()
+    filtered = filtered.filter((r) => (r.primaryEmail ?? '').toLowerCase().includes(needle))
+  }
+  if (params.nameContains != null && params.nameContains !== '') {
+    const needle = params.nameContains.trim().toLowerCase()
+    filtered = filtered.filter((r) => `${r.firstName} ${r.lastName}`.toLowerCase().includes(needle))
+  }
+  if (params.statusIn != null && params.statusIn.length > 0) {
+    const allowed = new Set(params.statusIn)
+    filtered = filtered.filter((r) => allowed.has(r.status))
+  }
+  if (params.authMethodIn != null && params.authMethodIn.length > 0) {
+    const allowed = new Set(params.authMethodIn)
+    filtered = filtered.filter((r) => {
+      const has = r.authMethods.length
+      const eOnly = r.authMethods.includes('email') && !r.authMethods.includes('oidc')
+      const oOnly = r.authMethods.includes('oidc') && !r.authMethods.includes('email')
+      const mixed = r.authMethods.includes('email') && r.authMethods.includes('oidc')
+      if (eOnly && allowed.has('email_only')) return true
+      if (oOnly && allowed.has('oidc')) return true
+      if (mixed && allowed.has('mixed')) return true
+      if (has === 0 && allowed.has('none')) return true
+      return false
+    })
+  }
+  if (params.workspaceUuidsIn != null && params.workspaceUuidsIn.length > 0) {
+    // intersection with the existing single-value workspaceUuids if both set
+    const idsCol = new Set(params.workspaceUuidsIn as string[])
+    filtered = filtered.filter((r) => {
+      const memberOf = workspacesByAccount.get(r.uuid as string) ?? []
+      return memberOf.some((id) => idsCol.has(id))
+    })
+  }
+  if (params.workspaceCountRange != null) {
+    const { min, max } = params.workspaceCountRange
+    filtered = filtered.filter(
+      (r) => (min == null || r.workspaceCount >= min) && (max == null || r.workspaceCount <= max)
+    )
+  }
+  if (params.lastActivityFilter != null) {
+    if (params.lastActivityFilter.kind === 'never') {
+      filtered = filtered.filter((r) => r.lastActivityAt == null)
+    } else {
+      const { fromMs, toMs } = params.lastActivityFilter
+      filtered = filtered.filter((r) => {
+        const ts = r.lastActivityAt
+        if (ts == null) return false
+        if (fromMs != null && ts < fromMs) return false
+        if (toMs != null && ts > toMs) return false
+        return true
+      })
     }
-    return sortDir === 'asc' ? cmp : -cmp
-  })
+  }
+
+  if (params.sort != null) {
+    const dir = params.sort.direction === 'desc' ? -1 : 1
+    const cmp = (a: AccountListRow, b: AccountListRow): number => {
+      switch (params.sort!.field) {
+        case 'name':
+          return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`) * dir
+        case 'email':
+          return (a.primaryEmail ?? '￿').localeCompare(b.primaryEmail ?? '￿') * dir
+        case 'auth':
+          return a.authMethods.join('+').localeCompare(b.authMethods.join('+')) * dir
+        case 'workspace_count':
+          return (a.workspaceCount - b.workspaceCount) * dir
+        case 'last_activity': {
+          const av = a.lastActivityAt ?? -1
+          const bv = b.lastActivityAt ?? -1
+          return (av - bv) * dir
+        }
+        case 'status':
+          return (a.status === b.status ? 0 : a.status === 'active' ? -1 : 1) * dir
+        default:
+          return 0
+      }
+    }
+    filtered.sort(cmp)
+  } else {
+    // default sort: name asc (preserves prior behavior when no sort param given)
+    filtered.sort((a, b) =>
+      `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
+    )
+  }
 
   const total = filtered.length
   const accounts = filtered.slice(params.pagination.offset, params.pagination.offset + params.pagination.limit)
