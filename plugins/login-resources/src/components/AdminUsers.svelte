@@ -17,12 +17,20 @@
     type DropdownIntlItem
   } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { MessageBox } from '@hcengineering/presentation'
   import AdminShell from './admin-shell/AdminShell.svelte'
   import AdminUsersTable from './admin-users/AdminUsersTable.svelte'
   import AdminUsersPagination from './admin-users/AdminUsersPagination.svelte'
   import AdminUsersDrawer from './admin-users/AdminUsersDrawer.svelte'
   import ColumnFilterPopup from './admin-users/ColumnFilterPopup.svelte'
-  import type { AccountListRow, ListAccountsAdminParams } from '@hcengineering/account-client'
+  import BulkActionBar from './admin-users/BulkActionBar.svelte'
+  import BulkPickWorkspacePopup from './admin-users/BulkPickWorkspacePopup.svelte'
+  import type {
+    AccountListRow,
+    BulkResult,
+    ListAccountsAdminParams
+  } from '@hcengineering/account-client'
+  import { type AccountUuid } from '@hcengineering/core'
 
   interface AdminFilter {
     search?: string
@@ -50,6 +58,39 @@
   let loading = false
   let selectedUuid: string | null = null
   let errorMessage: string | null = null
+
+  // Bulk-selection state. Kept as a Set<string> (account uuid).
+  // Distinct from `selectedUuid` (drawer target) so the drawer can stay
+  // open while selection changes, and so a row check does NOT pop the
+  // drawer (the row checkbox cell stops click-propagation).
+  let selectedUuids: Set<string> = new Set()
+
+  function clearSel (): void {
+    selectedUuids = new Set()
+  }
+
+  function onToggleSelection (e: CustomEvent<{ uuid: string, selected: boolean }>): void {
+    const { uuid, selected } = e.detail
+    const next = new Set(selectedUuids)
+    if (selected) {
+      next.add(uuid)
+    } else {
+      next.delete(uuid)
+    }
+    selectedUuids = next
+  }
+
+  function onToggleAll (e: CustomEvent<{ selected: boolean }>): void {
+    const { selected } = e.detail
+    const next = new Set(selectedUuids)
+    const visible = accounts.map((a) => a.uuid as string)
+    if (selected) {
+      for (const u of visible) next.add(u)
+    } else {
+      for (const u of visible) next.delete(u)
+    }
+    selectedUuids = next
+  }
 
   let search = ''
   let debounceTimer: ReturnType<typeof setTimeout> | undefined
@@ -145,6 +186,152 @@
     void refresh()
   }
 
+  // -------------------------------------------------------------------------
+  // Bulk-action helpers
+  // -------------------------------------------------------------------------
+  // Local copy of the helper used in AdminUsersDrawer.svelte:62. Promoting
+  // to a shared util is a follow-up; for now we keep the same signature
+  // and behavior so reviewers can compare side-by-side.
+  function confirmAction (
+    title: string,
+    message: string,
+    dangerous: boolean,
+    action: () => Promise<void>
+  ): void {
+    showPopup(MessageBox, {
+      label: getEmbeddedLabel(title),
+      message: getEmbeddedLabel(message),
+      okLabel: getEmbeddedLabel('Confirm'),
+      dangerous,
+      action
+    })
+  }
+
+  // Both success and failure use MessageBox (info-only, canSubmit:false).
+  // We deliberately avoid `addNotification(title, subTitle, component, ...)`
+  // from ui/utils.ts:101 — its signature requires a notification-component
+  // prop which is overkill for plain-text outcomes here.
+  function showBulkResult (r: BulkResult): void {
+    if (r.failed.length === 0) {
+      showPopup(MessageBox, {
+        label: getEmbeddedLabel('Bulk action complete'),
+        message: getEmbeddedLabel(`${r.succeeded.length} account(s) updated.`),
+        okLabel: getEmbeddedLabel('Dismiss'),
+        canSubmit: false
+      })
+      return
+    }
+    const detail = r.failed.map((f) => `• ${f.accountUuid}: ${f.error}`).join('\n')
+    showPopup(MessageBox, {
+      label: getEmbeddedLabel('Bulk action — some failures'),
+      message: getEmbeddedLabel(
+        `${r.succeeded.length} succeeded, ${r.failed.length} failed:\n\n${detail}`
+      ),
+      okLabel: getEmbeddedLabel('Dismiss'),
+      canSubmit: false
+    })
+  }
+
+  function selectedUuidsArray (): AccountUuid[] {
+    return [...selectedUuids] as AccountUuid[]
+  }
+
+  function onBulkAdd (): void {
+    if (selectedUuids.size === 0) return
+    showPopup(
+      BulkPickWorkspacePopup,
+      { mode: 'add' },
+      'middle',
+      (picked: { workspaceUuid: string, role?: AccountRole } | undefined) => {
+        if (picked == null) return
+        void (async () => {
+          try {
+            const r = await getAccountClient().bulkAddToWorkspace(
+              selectedUuidsArray(),
+              picked.workspaceUuid as any,
+              picked.role ?? AccountRole.User
+            )
+            showBulkResult(r)
+            clearSel()
+            await refresh()
+          } catch (err: any) {
+            errorMessage = err?.message ?? 'Bulk add failed'
+          }
+        })()
+      }
+    )
+  }
+
+  function onBulkRemove (): void {
+    if (selectedUuids.size === 0) return
+    showPopup(
+      BulkPickWorkspacePopup,
+      { mode: 'remove' },
+      'middle',
+      (picked: { workspaceUuid: string } | undefined) => {
+        if (picked == null) return
+        void (async () => {
+          try {
+            const r = await getAccountClient().bulkRemoveFromWorkspace(
+              selectedUuidsArray(),
+              picked.workspaceUuid as any
+            )
+            showBulkResult(r)
+            clearSel()
+            await refresh()
+          } catch (err: any) {
+            errorMessage = err?.message ?? 'Bulk remove failed'
+          }
+        })()
+      }
+    )
+  }
+
+  function onBulkDisable (): void {
+    if (selectedUuids.size === 0) return
+    confirmAction(
+      'Disable accounts',
+      `Disable ${selectedUuids.size} accounts? Disabled users are immediately signed out of every workspace.`,
+      true,
+      async () => {
+        const r = await getAccountClient().bulkSetDisabled(selectedUuidsArray(), true)
+        showBulkResult(r)
+        clearSel()
+        await refresh()
+      }
+    )
+  }
+
+  function onBulkEnable (): void {
+    if (selectedUuids.size === 0) return
+    confirmAction(
+      'Enable accounts',
+      `Re-enable ${selectedUuids.size} accounts?`,
+      false,
+      async () => {
+        const r = await getAccountClient().bulkSetDisabled(selectedUuidsArray(), false)
+        showBulkResult(r)
+        clearSel()
+        await refresh()
+      }
+    )
+  }
+
+  function onBulkReset (): void {
+    if (selectedUuids.size === 0) return
+    confirmAction(
+      'Send password-reset emails',
+      `Send password-reset emails to ${selectedUuids.size} accounts?`,
+      false,
+      async () => {
+        const r = await getAccountClient().bulkSendPasswordReset(selectedUuidsArray())
+        showBulkResult(r)
+        clearSel()
+        await refresh()
+      }
+    )
+  }
+
   function onOpenColumnFilter (e: CustomEvent<{ column: string, anchor: HTMLElement }>): void {
     const { column, anchor } = e.detail
     showPopup(
@@ -225,12 +412,25 @@
             {sort}
             {loading}
             {columnFilters}
+            {selectedUuids}
             on:sort={onSortChange}
             on:row-click={onRowClick}
             on:open-filter={onOpenColumnFilter}
+            on:toggle-selection={onToggleSelection}
+            on:toggle-all={onToggleAll}
           />
 
           <AdminUsersPagination {total} {offset} {limit} on:page={onPageChange} />
+
+          <BulkActionBar
+            count={selectedUuids.size}
+            on:deselect-all={clearSel}
+            on:add={onBulkAdd}
+            on:remove={onBulkRemove}
+            on:disable={onBulkDisable}
+            on:enable={onBulkEnable}
+            on:reset={onBulkReset}
+          />
         </div>
       </Scroller>
     </div>

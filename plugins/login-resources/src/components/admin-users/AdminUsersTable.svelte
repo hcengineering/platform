@@ -3,7 +3,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
-  import { Icon, IconFilter } from '@hcengineering/ui'
+  import { CheckBox, Icon, IconFilter } from '@hcengineering/ui'
   import AdminUsersRow from './AdminUsersRow.svelte'
   import type { AccountListRow } from '@hcengineering/account-client'
 
@@ -11,6 +11,7 @@
   export let sort: { field: string, direction: 'asc' | 'desc' } | undefined = undefined
   export let loading: boolean = false
   export let columnFilters: Record<string, any> = {}
+  export let selectedUuids: Set<string> = new Set()
 
   type ColumnKey = 'name' | 'email' | 'auth' | 'workspaces' | 'last_activity' | 'status'
 
@@ -18,7 +19,22 @@
     sort: typeof sort
     'row-click': { uuid: string }
     'open-filter': { column: ColumnKey, anchor: HTMLElement }
+    'toggle-selection': { uuid: string, selected: boolean }
+    'toggle-all': { selected: boolean }
   }>()
+
+  // Master-checkbox state: derived from current page contents
+  $: visibleUuids = accounts.map((a) => a.uuid as string)
+  $: selectedOnPage = visibleUuids.filter((u) => selectedUuids.has(u)).length
+  $: allSelected = visibleUuids.length > 0 && selectedOnPage === visibleUuids.length
+
+  function onToggleAll (e: CustomEvent<boolean>): void {
+    dispatch('toggle-all', { selected: e.detail })
+  }
+
+  function onToggleRow (e: CustomEvent<{ uuid: string, selected: boolean }>): void {
+    dispatch('toggle-selection', e.detail)
+  }
 
   function setSort (field: string): void {
     let direction: 'asc' | 'desc' = 'asc'
@@ -44,6 +60,9 @@
 
 <div class="users-table">
   <div class="row head">
+    <div class="cell cell-checkbox" on:click|stopPropagation>
+      <CheckBox checked={allSelected} on:value={onToggleAll} />
+    </div>
     <div class="cell cell-name sortable">
       <span class="hdr-label" on:click={() => setSort('name')}>Name <span class="arrow">{sortArrow('name')}</span></span>
       <button
@@ -117,7 +136,12 @@
     <div class="empty">No users match the current filters.</div>
   {:else}
     {#each accounts as account (account.uuid)}
-      <AdminUsersRow {account} on:click={() => onRowClick(account.uuid)} />
+      <AdminUsersRow
+        {account}
+        selected={selectedUuids.has(account.uuid as string)}
+        on:click={() => onRowClick(account.uuid)}
+        on:toggle-selection={onToggleRow}
+      />
     {/each}
   {/if}
 </div>
@@ -133,6 +157,7 @@
   .users-table {
     display: grid;
     grid-template-columns:
+      34px                 /* Selection checkbox */
       minmax(220px, 2fr)   /* Name + avatar     */
       minmax(220px, 3fr)   /* Email             */
       140px                /* Auth              */
@@ -141,7 +166,7 @@
       120px;               /* Status            */
     align-items: center;
     width: 100%;
-    max-width: 72rem;
+    max-width: 76rem;
     margin: 0;
     background: var(--theme-bg-color);
     border: 1px solid var(--theme-divider-color);
@@ -173,6 +198,13 @@
     justify-self: end;
     text-align: right;
     justify-content: flex-end;
+  }
+
+  .cell-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0;
   }
 
   .head .sortable .hdr-label {

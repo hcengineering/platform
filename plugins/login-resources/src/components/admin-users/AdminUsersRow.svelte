@@ -2,9 +2,20 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
+  import { CheckBox } from '@hcengineering/ui'
   import type { AccountListRow } from '@hcengineering/account-client'
 
   export let account: AccountListRow
+  export let selected: boolean = false
+
+  const dispatch = createEventDispatcher<{
+    'toggle-selection': { uuid: string, selected: boolean }
+  }>()
+
+  function onCheckboxToggle (e: CustomEvent<boolean>): void {
+    dispatch('toggle-selection', { uuid: account.uuid as string, selected: e.detail })
+  }
 
   function formatLastActivity (ts: number | null): string {
     if (ts == null) return '—'
@@ -24,6 +35,9 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="row body" on:click>
+  <div class="cell cell-checkbox" on:click|stopPropagation>
+    <CheckBox checked={selected} on:value={onCheckboxToggle} />
+  </div>
   <div class="cell cell-name">
     <span class="avatar">{initials(account.firstName, account.lastName)}</span>
     <div class="name-block">
@@ -81,6 +95,13 @@
 
   .row:hover .cell {
     background: var(--theme-popup-hover);
+  }
+
+  .cell-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0;
   }
 
   .cell-name {
