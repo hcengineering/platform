@@ -41,6 +41,7 @@
   import { getAllWorkspaces, getRegionInfo, performWorkspaceOperation } from '../utils'
   import AdminShell from './admin-shell/AdminShell.svelte'
   import AdminWorkspaceDrawer from './admin-workspaces/AdminWorkspaceDrawer.svelte'
+  import LongRunningWorkspaceBanner from './admin-workspaces/LongRunningWorkspaceBanner.svelte'
   import WorkspaceColumnFilterPopup from './admin-workspaces/WorkspaceColumnFilterPopup.svelte'
   import MassActionConfirm from './admin-users/MassActionConfirm.svelte'
   import { Breadcrumb, Header, IconSettings } from '@hcengineering/ui'
@@ -170,6 +171,39 @@
   const backupInterval: number = 43200
 
   let backupable: WorkspaceInfo[] = []
+
+  // Long-running workspace detection (threshold 1h, TODO: env-driven via metadata)
+  const longRunningThresholdHours = 1
+  $: longRunningCandidates = workspaces.filter((it) => {
+    const nonTerminal = !isActiveMode(it.mode) && !isArchivingMode(it.mode) && it.mode !== 'archived' && it.mode !== 'deleted'
+    if (!nonTerminal) return false
+    const lpt = (it as any).lastProcessingTime
+    if (lpt == null) return false
+    return (Date.now() - lpt) > longRunningThresholdHours * 3600_000
+  })
+
+  function onShowLongRunning (): void {
+    columnFilters = { mode: { modes: ['upgrading', 'migration', 'restoring', 'archiving', 'deleting', 'reconnecting'] } }
+  }
+
+  function onResetLongRunning (): void {
+    if (longRunningCandidates.length === 0) return
+    showPopup(MassActionConfirm, {
+      title: `Reset attempts for ${longRunningCandidates.length} workspace(s)`,
+      affectedCount: longRunningCandidates.length,
+      filterSummary: 'Long-running candidates',
+      dangerousScope: false,
+      typedConfirmPhrase: '',
+      actionLabel: 'Reset attempts',
+      dangerous: false
+    }, 'middle', (confirmed) => {
+      if (confirmed !== true) return
+      void performWorkspaceOperation(
+        longRunningCandidates.map((it) => it.uuid),
+        'reset-attempts'
+      )
+    })
+  }
 
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
 
@@ -449,6 +483,13 @@
             {/if}
           </div>
         {/if}
+
+        <LongRunningWorkspaceBanner
+          candidates={longRunningCandidates}
+          thresholdHours={longRunningThresholdHours}
+          on:show-all={onShowLongRunning}
+          on:reset-attempts={onResetLongRunning}
+        />
 
         <div class="ws-list-toolbar">
           <div class="ws-list-toolbar-title">
