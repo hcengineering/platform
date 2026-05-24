@@ -449,7 +449,7 @@
                       dangerous: true
                     },
                     'middle',
-                    (confirmed: boolean | undefined) => {
+                    (confirmed) => {
                       if (confirmed !== true) return
                       void performWorkspaceOperation(massActiveAll.map((it) => it.uuid), 'archive')
                     }
@@ -488,7 +488,7 @@
                       dangerous: false
                     },
                     'middle',
-                    (confirmed: boolean | undefined) => {
+                    (confirmed) => {
                       if (confirmed !== true) return
                       void performWorkspaceOperation(massActiveMigratable.map((it) => it.uuid), 'migrate-to', migrateTargetRegionId)
                     }

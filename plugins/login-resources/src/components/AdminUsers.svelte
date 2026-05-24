@@ -349,7 +349,7 @@
         helperText: 'Disabled users cannot log in again. Existing sessions expire within the token TTL (up to 24h). Plan 2 will wire realtime eviction.'
       },
       'middle',
-      (confirmed: boolean | undefined) => {
+      (confirmed) => {
         if (confirmed !== true) return
         void (async () => {
           const r = await getAccountClient().bulkSetDisabled(selectedUuidsArray(), true)
@@ -375,7 +375,7 @@
         dangerous: false
       },
       'middle',
-      (confirmed: boolean | undefined) => {
+      (confirmed) => {
         if (confirmed !== true) return
         void (async () => {
           const r = await getAccountClient().bulkSetDisabled(selectedUuidsArray(), false)
@@ -401,7 +401,7 @@
         dangerous: false
       },
       'middle',
-      (confirmed: boolean | undefined) => {
+      (confirmed) => {
         if (confirmed !== true) return
         void (async () => {
           const r = await getAccountClient().bulkSendPasswordReset(selectedUuidsArray())
