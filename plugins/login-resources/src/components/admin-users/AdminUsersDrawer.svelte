@@ -9,6 +9,7 @@
   import {
     Button,
     ButtonIcon,
+    IconAdd,
     IconClose,
     IconDelete,
     Label,
@@ -19,6 +20,7 @@
   } from '@hcengineering/ui'
   import { MessageBox } from '@hcengineering/presentation'
   import { getEmbeddedLabel } from '@hcengineering/platform'
+  import AddToWorkspacePopup from './AddToWorkspacePopup.svelte'
 
   export let accountUuid: string
 
@@ -105,6 +107,22 @@
           }
         } finally {
           busy = false
+        }
+      }
+    )
+  }
+
+  function openAddToWorkspace (): void {
+    if (details == null) return
+    const excluded = details.workspaceMemberships.map((m) => m.workspaceUuid as string)
+    showPopup(
+      AddToWorkspacePopup,
+      { accountUuid: details.uuid, excludedWorkspaceUuids: excluded },
+      'middle',
+      (updated: AccountDetailsResponse | undefined) => {
+        if (updated != null) {
+          details = updated
+          dispatch('account-changed')
         }
       }
     )
@@ -268,6 +286,16 @@
               {/each}
             </ul>
           {/if}
+          <div class="add-row">
+            <Button
+              kind={'regular'}
+              size={'small'}
+              icon={IconAdd}
+              label={getEmbeddedLabel('Add to workspace')}
+              disabled={busy}
+              on:click={openAddToWorkspace}
+            />
+          </div>
         </section>
 
         <section>
@@ -560,5 +588,11 @@
     :global(button) {
       width: 100%;
     }
+  }
+
+  .add-row {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: var(--spacing-1-5, 0.5rem);
   }
 </style>
