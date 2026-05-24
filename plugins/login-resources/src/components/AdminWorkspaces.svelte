@@ -383,27 +383,50 @@
             <span class="stat-label">Active</span>
             <span class="stat-value stat-positive">{workspaces.filter((it) => isActiveMode(it.mode)).length}</span>
           </div>
+          {#if workspaces.filter((it) => isUpgradingMode(it.mode)).length > 0}
+            <div class="stat-item">
+              <span class="stat-label">Upgrading</span>
+              <span class="stat-value">{workspaces.filter((it) => isUpgradingMode(it.mode)).length}</span>
+            </div>
+          {/if}
+          {#if data != null}
+            <div class="stat-item">
+              <span class="stat-label">With active sessions</span>
+              <span class="stat-value">{data.workspaces.length}</span>
+            </div>
+          {/if}
           <div class="stat-item">
-            <span class="stat-label">Upgrading</span>
-            <span class="stat-value">{workspaces.filter((it) => isUpgradingMode(it.mode)).length}</span>
+            <span class="stat-label">Users</span>
+            <span class="stat-value">{data?.usersTotal ?? 0}</span>
           </div>
           <div class="stat-item">
-            <span class="stat-label">Backupable</span>
+            <span class="stat-label">Connections</span>
+            <span class="stat-value">{data?.connectionsTotal ?? 0}</span>
+          </div>
+          {@const now30d = Date.now() - 30 * 86400_000}
+          <div class="stat-item">
+            <span class="stat-label">Created 30d</span>
+            <span class="stat-value">{workspaces.filter((it) => (it.createdOn ?? 0) > now30d).length}</span>
+          </div>
+          {@const totalStorageMb = workspaces.reduce((sum, it) => sum + getBackupSize(it), 0)}
+          <div class="stat-item">
+            <span class="stat-label">Total Storage</span>
             <span class="stat-value">
-              {backupable.length}
-              <span class="stat-sub">
-                ({backupable.reduce((p, it) => p + (it.backupInfo == null ? 1 : 0), 0)} new)
-              </span>
+              {totalStorageMb >= 1024 ? (totalStorageMb / 1024).toFixed(1) + ' GB' : Math.round(totalStorageMb) + ' MB'}
             </span>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Live</span>
-            <span class="stat-value">{data?.workspaces.length ?? '—'}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Users / Connections</span>
-            <span class="stat-value">{data?.usersTotal ?? 0}<span class="stat-sub">/{data?.connectionsTotal ?? 0}</span></span>
-          </div>
+          {@const longRunningThresholdMs = 1 * 3600_000}
+          {@const longRunningCount = workspaces.filter((it) =>
+            !isActiveMode(it.mode) && !isArchivingMode(it.mode) &&
+            it.mode !== 'archived' && it.mode !== 'deleted' &&
+            ((it as any).lastProcessingTime != null && (Date.now() - (it as any).lastProcessingTime) > longRunningThresholdMs)
+          ).length}
+          {#if longRunningCount > 0}
+            <div class="stat-item stat-warning">
+              <span class="stat-label">Long-running &gt; 1h</span>
+              <span class="stat-value">{longRunningCount}</span>
+            </div>
+          {/if}
         </div>
 
         {#if byVersion.size > 0 || byRegion.size > 0}
@@ -782,6 +805,12 @@
 
   .stat-positive {
     color: var(--theme-state-positive-color, #10b981);
+  }
+
+  .stat-warning {
+    border-color: rgba(245, 158, 11, 0.5);
+    background: rgba(245, 158, 11, 0.06);
+    .stat-value { color: #b45309; }
   }
 
   .ws-breakdown {

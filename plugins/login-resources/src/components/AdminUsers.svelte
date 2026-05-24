@@ -463,8 +463,17 @@
               <span class="stat-pill"><span class="dot dot-active" /> Active <strong>{counts.active}</strong></span>
               <span class="stat-pill"><span class="dot dot-disabled" /> Disabled <strong>{counts.disabled}</strong></span>
               <span class="stat-pill">Admins <strong>{counts.admins}</strong></span>
+              {@const orphanCount = accounts.filter((a) => a.status === 'active' && a.workspaceCount === 0).length}
+              {#if orphanCount > 0}
+                <span class="stat-pill stat-pill-warning">Orphan <strong>{orphanCount}</strong></span>
+              {/if}
             </div>
             {#if isAdminUser()}
+              <Button label={getEmbeddedLabel('Orphan accounts')} kind={'regular'} size={'medium'} on:click={() => {
+                columnFilters = { orphan: { orphan: true } }
+                offset = 0
+                void refresh()
+              }} />
               <Button label={getEmbeddedLabel('Add user')} kind={'primary'} on:click={openCreateAccount} />
             {/if}
           </div>
@@ -579,6 +588,13 @@
       color: var(--theme-caption-color);
       font-weight: 600;
     }
+  }
+
+  .stat-pill-warning {
+    color: #b45309;
+    background: rgba(245, 158, 11, 0.10);
+    border-radius: 999px;
+    padding: 0.1rem 0.6rem;
   }
 
   .dot {
