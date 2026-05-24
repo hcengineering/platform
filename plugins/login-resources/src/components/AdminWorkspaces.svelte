@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount, onDestroy } from 'svelte'
   import { RegionInfo } from '@hcengineering/account-client'
   import {
     groupByArray,
@@ -362,6 +363,35 @@
   function openWorkspace (uuid: string): void { selectedWorkspaceUuid = uuid }
   function closeWorkspace (): void { selectedWorkspaceUuid = null }
 
+  // Keyboard navigation — ArrowUp/Down moves focus; Enter opens drawer.
+  let wsTableEl: HTMLElement
+  let wsFocusedIndex = -1
+
+  function onWsKey (ev: KeyboardEvent): void {
+    // Do not hijack keys when an input or textarea is focused.
+    const tag = (document.activeElement as HTMLElement | null)?.tagName
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return
+    if (wsTableEl == null || (!wsTableEl.contains(document.activeElement) && document.activeElement !== document.body)) return
+    if (visibleWorkspaces.length === 0) return
+    if (ev.key === 'ArrowDown') {
+      ev.preventDefault()
+      wsFocusedIndex = Math.min(visibleWorkspaces.length - 1, wsFocusedIndex + 1)
+    } else if (ev.key === 'ArrowUp') {
+      ev.preventDefault()
+      wsFocusedIndex = Math.max(0, wsFocusedIndex - 1)
+    } else if (ev.key === 'Enter' && wsFocusedIndex >= 0) {
+      ev.preventDefault()
+      openWorkspace(visibleWorkspaces[wsFocusedIndex].uuid)
+    }
+  }
+
+  onMount(() => {
+    document.addEventListener('keydown', onWsKey)
+  })
+  onDestroy(() => {
+    document.removeEventListener('keydown', onWsKey)
+  })
+
   // Flat list cap. The previous UI grouped rows into Hour/Day/Weeks/...
   // <Expandable> buckets — that bucketing is now gone (one flat sortable
   // list is enough for the typical admin workload). Limit lets us cap
@@ -603,7 +633,7 @@
           </div>
         </div>
 
-        <div class="ws-table">
+        <div class="ws-table" bind:this={wsTableEl} tabindex="0" role="grid" aria-rowcount={visibleWorkspaces.length + 1}>
           <!-- Grid header: every row inherits the same grid-template via display:contents -->
           <div class="ws-row ws-head">
             {#each [
@@ -638,14 +668,14 @@
           {#if visibleWorkspaces.length === 0}
             <div class="ws-empty">No workspaces match the current filters.</div>
           {:else}
-            {#each visibleWorkspaces as workspace (workspace.uuid)}
+            {#each visibleWorkspaces as workspace, wsIdx (workspace.uuid)}
               {@const wsName = workspace.name}
               {@const lastUsageDays = Math.round((now - (workspace.lastVisit ?? 0)) / (1000 * 3600 * 24))}
               {@const bIdx = backupIdx.get(workspace.uuid)}
               {@const stats = statsByWorkspace.get(workspace.uuid ?? '')}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <!-- svelte-ignore a11y-no-static-element-interactions -->
-              <div class="ws-row ws-body" on:click={() => openWorkspace(workspace.uuid)}>
+              <div class="ws-row ws-body" role="row" aria-rowindex={wsIdx + 2} class:ws-is-focused={wsIdx === wsFocusedIndex} on:click={() => openWorkspace(workspace.uuid)}>
                 <div class="ws-cell ws-cell-name" title={wsName}>
                   <span class="ws-name-text">{wsName}</span>
                   {#if stats}
@@ -1073,6 +1103,12 @@
 
   .ws-body:hover .ws-cell {
     background: var(--theme-list-row-color, rgba(96, 165, 250, 0.06));
+  }
+
+  /* Keyboard-focused workspace row. */
+  .ws-body.ws-is-focused .ws-cell {
+    outline: 2px solid #2563eb;
+    outline-offset: -2px;
   }
 
   .ws-cell-num {

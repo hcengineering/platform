@@ -2,7 +2,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount, onDestroy } from 'svelte'
   import { CheckBox, Icon, IconFilter } from '@hcengineering/ui'
   import AdminUsersRow from './AdminUsersRow.svelte'
   import type { AccountListRow } from '@hcengineering/account-client'
@@ -25,6 +25,39 @@
     'toggle-selection': { uuid: string, selected: boolean }
     'toggle-all': { selected: boolean }
   }>()
+
+  let containerEl: HTMLElement
+  let focusedIndex = -1
+
+  function onKey (ev: KeyboardEvent): void {
+    // Do not hijack keys when an input or textarea is focused.
+    const tag = (document.activeElement as HTMLElement | null)?.tagName
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return
+    if (containerEl == null || (!containerEl.contains(document.activeElement) && document.activeElement !== document.body)) return
+    if (accounts.length === 0) return
+    if (ev.key === 'ArrowDown') {
+      ev.preventDefault()
+      focusedIndex = Math.min(accounts.length - 1, focusedIndex + 1)
+    } else if (ev.key === 'ArrowUp') {
+      ev.preventDefault()
+      focusedIndex = Math.max(0, focusedIndex - 1)
+    } else if (ev.key === 'Enter' && focusedIndex >= 0) {
+      ev.preventDefault()
+      dispatch('row-click', { uuid: accounts[focusedIndex].uuid as string })
+    } else if (ev.key === ' ' && focusedIndex >= 0) {
+      ev.preventDefault()
+      const uuid = String(accounts[focusedIndex].uuid)
+      const wasSelected = selectedUuids.has(uuid)
+      dispatch('toggle-selection', { uuid, selected: !wasSelected })
+    }
+  }
+
+  onMount(() => {
+    document.addEventListener('keydown', onKey)
+  })
+  onDestroy(() => {
+    document.removeEventListener('keydown', onKey)
+  })
 
   // Master-checkbox state: derived from current page contents
   $: visibleUuids = accounts.map((a) => a.uuid as string)
@@ -56,7 +89,7 @@
   }
 </script>
 
-<div class="users-table">
+<div class="users-table" bind:this={containerEl} tabindex="0" role="grid" aria-rowcount={accounts.length + 1} aria-busy={loading}>
   <div class="row head">
     <div class="cell cell-checkbox" on:click|stopPropagation>
       <CheckBox checked={allSelected} on:value={onToggleAll} />
@@ -133,11 +166,13 @@
   {:else if accounts.length === 0}
     <div class="empty">No users match the current filters.</div>
   {:else}
-    {#each accounts as account (account.uuid)}
+    {#each accounts as account, idx (account.uuid)}
       <AdminUsersRow
         {account}
         selected={selectedUuids.has(String(account.uuid))}
         active={activeUuid === String(account.uuid)}
+        focused={idx === focusedIndex}
+        ariaRowIndex={idx + 2}
         on:click={() => onRowClick(account.uuid)}
         on:toggle-selection={onToggleRow}
       />

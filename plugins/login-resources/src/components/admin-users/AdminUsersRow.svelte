@@ -12,6 +12,10 @@
   // row is visually marked while the drawer is shown, removing the need
   // for a full-screen dimming scrim.
   export let active: boolean = false
+  // Keyboard-focused row (ArrowUp/ArrowDown from the parent table).
+  export let focused: boolean = false
+  // aria-rowindex for accessibility (header row = 1, first body row = 2).
+  export let ariaRowIndex: number | undefined = undefined
 
   const dispatch = createEventDispatcher<{
     'toggle-selection': { uuid: string, selected: boolean }
@@ -38,7 +42,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="row body" class:is-active={active} on:click>
+<div class="row body" role="row" aria-rowindex={ariaRowIndex} class:is-active={active} class:is-focused={focused} on:click>
   <div class="cell cell-checkbox" on:click|stopPropagation>
     <CheckBox checked={selected} on:value={onCheckboxToggle} />
   </div>
@@ -117,6 +121,13 @@
   }
   .row.is-active .cell-checkbox {
     box-shadow: inset 3px 0 0 #2563eb;
+  }
+
+  /* Keyboard-focused row: 2px blue outline on all cells so keyboard
+     users can see which row ArrowUp/ArrowDown has landed on. */
+  .row.is-focused .cell {
+    outline: 2px solid #2563eb;
+    outline-offset: -2px;
   }
 
   .cell-checkbox {
