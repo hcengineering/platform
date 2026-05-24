@@ -16,7 +16,7 @@
   // selection checkboxes). null → no drawer open.
   export let activeUuid: string | null = null
 
-  type ColumnKey = 'name' | 'email' | 'auth' | 'workspaces' | 'last_activity' | 'status'
+  type ColumnKey = 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status'
 
   const dispatch = createEventDispatcher<{
     sort: typeof sort
@@ -98,9 +98,9 @@
       <span class="hdr-label" on:click={() => setSort('workspace_count')}><span class="arrow">{sort?.field === 'workspace_count' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Workspaces</span>
       <button
         class="filter-btn"
-        class:active={columnFilters?.workspaces != null}
+        class:active={columnFilters?.workspace_count != null}
         title="Filter by workspace count"
-        on:click|stopPropagation={(e) => openFilter('workspaces', e.currentTarget)}
+        on:click|stopPropagation={(e) => openFilter('workspace_count', e.currentTarget)}
       >
         <Icon icon={IconFilter} size={'x-small'} />
       </button>

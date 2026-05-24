@@ -6,7 +6,7 @@
   import { Button, CheckBox } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
 
-  export let column: 'name' | 'email' | 'auth' | 'workspaces' | 'last_activity' | 'status'
+  export let column: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status'
   export let current: any = undefined
 
   const dispatch = createEventDispatcher()
@@ -66,7 +66,7 @@
         payload = { authMethodIn: sel.length > 0 ? sel : undefined }
         break
       }
-      case 'workspaces':
+      case 'workspace_count':
         payload = {
           workspaceCountRange:
             wsMin != null || wsMax != null ? { min: wsMin ?? undefined, max: wsMax ?? undefined } : undefined
@@ -109,7 +109,7 @@
     <label><CheckBox bind:checked={authSel.oidc} /> OIDC only</label>
     <label><CheckBox bind:checked={authSel.mixed} /> Mixed</label>
     <label><CheckBox bind:checked={authSel.none} /> None</label>
-  {:else if column === 'workspaces'}
+  {:else if column === 'workspace_count'}
     <div>min: <input type="number" min="0" bind:value={wsMin} /></div>
     <div>max: <input type="number" min="0" bind:value={wsMax} /></div>
   {:else if column === 'last_activity'}
