@@ -425,7 +425,7 @@ export async function getWorkspaceMembersAdmin (
 // CreateAccountParams and CreateAccountResponse are imported from
 // '@hcengineering/account-client' (Task 1b). Do NOT redeclare them locally.
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+$/
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function createAccountAdmin (
   ctx: MeasureContext,

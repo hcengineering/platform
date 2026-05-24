@@ -51,7 +51,7 @@ function mockDb (o: Opts = {}): any {
 beforeEach(() => sendMailMock.mockReset().mockResolvedValue(true))
 
 describe('createAccountAdmin', () => {
-  const base = { firstName: 'A', lastName: 'B', email: 'new@x', passwordMode: 'set' as const, password: 'longenoughpw' }
+  const base = { firstName: 'A', lastName: 'B', email: 'new@example.com', passwordMode: 'set' as const, password: 'longenoughpw' }
 
   it('rejects non-admin', async () => {
     await expect(createAccountAdmin(ctx, mockDb(), null, 'u', base)).rejects.toThrow(PlatformError)
@@ -77,7 +77,7 @@ describe('createAccountAdmin', () => {
 
   it('invite-mode sets inviteEmailSent from helper', async () => {
     sendMailMock.mockResolvedValueOnce(false)
-    const r = await createAccountAdmin(ctx, mockDb(), null, 'admin', { firstName: 'A', lastName: 'B', email: 'x@x', passwordMode: 'invite' })
+    const r = await createAccountAdmin(ctx, mockDb(), null, 'admin', { firstName: 'A', lastName: 'B', email: 'x@example.com', passwordMode: 'invite' })
     expect(r.inviteEmailSent).toBe(false)
   })
 
