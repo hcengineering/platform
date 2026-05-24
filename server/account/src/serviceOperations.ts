@@ -37,8 +37,12 @@ import type {
   AccountListRow,
   AccountDetailsResponse,
   AddWorkspaceMemberParams,
-  WorkspaceMembersAdminResponse
+  WorkspaceMembersAdminResponse,
+  CreateAccountParams,
+  CreateAccountResponse
 } from '@hcengineering/account-client'
+
+import { sendPasswordResetEmail } from './operations'
 
 import { accountPlugin } from './plugin'
 import type {
@@ -78,7 +82,8 @@ import {
   getPersonName,
   doMergeAccounts,
   assignableRoles,
-  verifyTokenVersion
+  verifyTokenVersion,
+  signUpByEmail
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -415,6 +420,99 @@ export async function getWorkspaceMembersAdmin (
     workspaceMode: workspace.mode,
     members: enriched
   }
+}
+
+// CreateAccountParams and CreateAccountResponse are imported from
+// '@hcengineering/account-client' (Task 1b). Do NOT redeclare them locally.
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+$/
+
+export async function createAccountAdmin (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: CreateAccountParams
+): Promise<CreateAccountResponse> {
+  await assertAdmin(ctx, db, token)
+  const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+
+  if (!EMAIL_RE.test(params.email)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Invalid email' }))
+  }
+  const normalizedEmail = params.email.toLowerCase()
+
+  if (params.passwordMode === 'set') {
+    if (params.password == null || params.password.length < 8) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Password must be at least 8 characters' }))
+    }
+  }
+
+  // signUpByEmail (utils.ts:722) already does email-collision detection
+  // (throws AccountAlreadyExists), person creation, social-id creation,
+  // account-row insert via the internal `createAccount` helper, and
+  // optional password setting. We mark the email confirmed because the
+  // admin is vouching for it.
+  let newUuid: AccountUuid
+  try {
+    const r = await signUpByEmail(
+      ctx, db, branding,
+      normalizedEmail,
+      params.passwordMode === 'set' ? (params.password ?? null) : null,
+      params.firstName,
+      params.lastName,
+      true /* confirmed — admin vouches for the email */,
+      false /* automatic */
+    )
+    newUuid = r.account
+  } catch (err: any) {
+    if (err instanceof PlatformError && err.status.code === platform.status.AccountAlreadyExists) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Conflict, { msg: 'Account with this email already exists' }))
+    }
+    throw err
+  }
+
+  let initialWorkspaceAssigned: boolean | null = null
+  if (params.initialWorkspace != null) {
+    try {
+      const ws = await getWorkspaceById(db, params.initialWorkspace.workspaceUuid)
+      if (ws == null) throw new Error('Workspace gone')
+      if (!ACTIVE_WORKSPACE_MODES.has(ws.mode)) throw new Error('Workspace not available')
+      await db.assignWorkspace(newUuid, params.initialWorkspace.workspaceUuid, params.initialWorkspace.role)
+      initialWorkspaceAssigned = true
+    } catch (err: any) {
+      ctx.error('initial workspace assignment failed', { err, accountUuid: newUuid })
+      initialWorkspaceAssigned = false
+    }
+  }
+
+  let inviteEmailSent: boolean | null = null
+  if (params.passwordMode === 'invite') {
+    try {
+      inviteEmailSent = await sendPasswordResetEmail(ctx, db, branding, newUuid, normalizedEmail)
+    } catch (err: any) {
+      // Helper throws on missing MAIL_URL / token issues. The account
+      // itself is already committed; createAccountAdmin's contract is
+      // that the account stays and the admin retries the email later.
+      ctx.error('createAccountAdmin: invite email helper threw', { err, accountUuid: newUuid })
+      inviteEmailSent = false
+    }
+  }
+
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: newUuid,
+    action: 'create_account',
+    workspaceUuid: params.initialWorkspace?.workspaceUuid ?? null,
+    details: {
+      email: normalizedEmail,
+      passwordMode: params.passwordMode,
+      initialWorkspaceAssigned
+    }
+  })
+
+  const account = await getAccountDetails(ctx, db, branding, token, { accountUuid: newUuid })
+  return { account, inviteEmailSent, initialWorkspaceAssigned }
 }
 
 export async function performWorkspaceOperation (
@@ -1448,6 +1546,7 @@ export type AccountServiceMethods =
   | 'getAccountDetails'
   | 'addWorkspaceMember'
   | 'getWorkspaceMembersAdmin'
+  | 'createAccountAdmin'
   | 'findFullSocialIds'
   | 'getSubscriptionByProviderId'
   | 'upsertSubscription'
@@ -1488,6 +1587,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     getAccountDetails: wrap(getAccountDetails),
     addWorkspaceMember: wrap(addWorkspaceMember),
     getWorkspaceMembersAdmin: wrap(getWorkspaceMembersAdmin),
+    createAccountAdmin: wrap(createAccountAdmin),
     getSubscriptionByProviderId: wrap(getSubscriptionByProviderId),
     upsertSubscription: wrap(upsertSubscription)
   }
