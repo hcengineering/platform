@@ -345,7 +345,8 @@
         dangerousScope: usersDangerousScope,
         typedConfirmPhrase: 'DISABLE ALL',
         actionLabel: 'Disable',
-        dangerous: true
+        dangerous: true,
+        helperText: 'Disabled users cannot log in again. Existing sessions expire within the token TTL (up to 24h). Plan 2 will wire realtime eviction.'
       },
       'middle',
       (confirmed: boolean | undefined) => {
