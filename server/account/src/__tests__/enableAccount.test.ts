@@ -20,7 +20,7 @@ const ctx = { newChild: () => ctx, error: () => {} } as unknown as MeasureContex
 import { enableAccount } from '../operations'
 
 describe('enableAccount', () => {
-  it('clears disabledAt and bumps tokenVersion', async () => {
+  it('clears disabledAt and bumps tokenVersion atomically via $inc', async () => {
     let updatedTo: any = null
     const db = {
       account: {
@@ -34,6 +34,9 @@ describe('enableAccount', () => {
     const res = await enableAccount(ctx, db, null, ADMIN_TOKEN, { accountUuid: TARGET })
     expect(res).toEqual({ ok: true })
     expect(updatedTo.disabledAt).toBeNull()
-    expect(updatedTo.tokenVersion).toBe(6)
+    expect(updatedTo.$inc).toEqual({ tokenVersion: 1 })
+    // The literal computed tokenVersion must NOT be passed — that would
+    // re-enable the race.
+    expect(updatedTo.tokenVersion).toBeUndefined()
   })
 })

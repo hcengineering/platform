@@ -3531,10 +3531,9 @@ export async function disableAccount (
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
-  const newVersion = (account.tokenVersion ?? 0) + 1
   await db.account.update(
     { uuid: params.accountUuid },
-    { disabledAt: Date.now(), tokenVersion: newVersion }
+    { disabledAt: Date.now(), $inc: { tokenVersion: 1 } } as any
   )
   await db.adminAuditLog.insert({
     adminAccount: adminUuid as AccountUuid,
@@ -3595,8 +3594,7 @@ export async function enableAccount (
     return { ok: true }
   }
 
-  const newVersion = (account.tokenVersion ?? 0) + 1
-  await db.account.update({ uuid: params.accountUuid }, { disabledAt: null, tokenVersion: newVersion })
+  await db.account.update({ uuid: params.accountUuid }, { disabledAt: null, $inc: { tokenVersion: 1 } } as any)
   await db.adminAuditLog.insert({
     adminAccount: adminUuid as AccountUuid,
     targetAccount: params.accountUuid,

@@ -83,4 +83,25 @@ describe('disableAccount', () => {
     )
     expect(res).toEqual({ ok: true })
   })
+
+  it('uses $inc for tokenVersion to avoid race', async () => {
+    const updateCalls: any[] = []
+    const db = {
+      account: {
+        findOne: async () => ({ uuid: TARGET, tokenVersion: 7 }),
+        update: async (query: any, ops: any) => {
+          updateCalls.push({ query, ops })
+        }
+      },
+      socialId: { find: async () => [{ personUuid: TARGET, type: 'email', value: 'other@example.com' }] },
+      adminAuditLog: { insert: async () => undefined }
+    } as any
+    await disableAccount(ctx, db, null, {}, ADMIN_TOKEN, { accountUuid: TARGET })
+    expect(updateCalls).toHaveLength(1)
+    expect(updateCalls[0].ops.$inc).toEqual({ tokenVersion: 1 })
+    expect(updateCalls[0].ops.disabledAt).toBeDefined()
+    // The literal computed tokenVersion must NOT be passed — that would
+    // re-enable the race.
+    expect(updateCalls[0].ops.tokenVersion).toBeUndefined()
+  })
 })

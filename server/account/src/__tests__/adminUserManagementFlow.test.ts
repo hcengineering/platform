@@ -44,7 +44,13 @@ function makeDb (initialRole: AccountRole = AccountRole.User): any {
     account: {
       findOne: async (): Promise<any> => state.role == null ? null : { ...state },
       update: async (q: any, ops: any) => {
-        Object.assign(state, ops)
+        const { $inc, ...rest } = ops
+        Object.assign(state, rest)
+        if ($inc != null) {
+          for (const [k, v] of Object.entries($inc as Record<string, number>)) {
+            state[k] = (state[k] ?? 0) + v
+          }
+        }
       }
     },
     socialId: {
