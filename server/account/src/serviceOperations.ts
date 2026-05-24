@@ -45,16 +45,21 @@ import type {
 
 import {
   disableAccount,
+  disableAccountInternal,
   enableAccount,
   removeWorkspaceMember,
+  removeWorkspaceMemberInternal,
   sendPasswordResetEmail,
-  triggerPasswordReset
+  triggerPasswordReset,
+  triggerPasswordResetInternal,
+  wrapWithDeps
 } from './operations'
 
 import { accountPlugin } from './plugin'
 import type {
   AccountAggregatedInfo,
   AccountDB,
+  AccountMethodDeps,
   AccountMethodHandler,
   Integration,
   IntegrationKey,
@@ -310,6 +315,44 @@ export async function addWorkspaceMember (
   return await getAccountDetails(ctx, db, branding, token, { accountUuid: params.accountUuid })
 }
 
+/**
+ * Add a workspace member WITHOUT re-checking admin auth or resolving the workspace.
+ * Caller must pass a pre-resolved adminUuid and workspace.
+ */
+export async function addWorkspaceMemberInternal (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  adminUuid: AccountUuid,
+  params: { workspace: WorkspaceInfoWithStatus, accountUuid: AccountUuid, role: AccountRole }
+): Promise<void> {
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: params.accountUuid as string }))
+  }
+  if (account.disabledAt != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Cannot add disabled account' }))
+  }
+
+  if (!ACTIVE_WORKSPACE_MODES.has(params.workspace.status.mode)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Workspace not available' }))
+  }
+
+  const existingRole = await db.getWorkspaceRole(params.accountUuid, params.workspace.uuid)
+  if (existingRole != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Conflict, { msg: 'Already a member' }))
+  }
+
+  await db.assignWorkspace(params.accountUuid, params.workspace.uuid, params.role)
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'add_workspace_member',
+    workspaceUuid: params.workspace.uuid,
+    details: { role: params.role }
+  })
+}
+
 // WorkspaceMembersAdminResponse is imported from '@hcengineering/account-client'
 // (Task 1b). Do NOT redeclare it locally.
 
@@ -505,8 +548,14 @@ export async function bulkAddToWorkspace (
 ): Promise<BulkResult> {
   await assertAdmin(ctx, db, token)
   assertBulkSize(params.accountUuids)
+  const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+  // Resolve workspace ONCE — not per-row.
+  const workspace = await getWorkspaceInfoWithStatusById(db, params.workspaceUuid)
+  if (workspace == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, {}))
+  }
   return await bulkLoop(params.accountUuids, async (uuid) => {
-    await addWorkspaceMember(ctx, db, branding, token, { accountUuid: uuid, workspaceUuid: params.workspaceUuid, role: params.role })
+    await addWorkspaceMemberInternal(ctx, db, branding, adminUuid, { workspace, accountUuid: uuid, role: params.role })
   })
 }
 
@@ -523,7 +572,7 @@ export async function bulkRemoveFromWorkspace (
   return await bulkLoop(
     params.accountUuids,
     async (uuid) => {
-      await removeWorkspaceMember(ctx, db, branding, token, { accountUuid: uuid, workspaceUuid: params.workspaceUuid })
+      await removeWorkspaceMemberInternal(ctx, db, adminUuid, { accountUuid: uuid, workspaceUuid: params.workspaceUuid })
     },
     { adminUuid, reason: 'cannot bulk-remove self from workspace; use single-row remove with explicit confirmation' }
   )
@@ -533,6 +582,7 @@ export async function bulkSetDisabled (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
+  deps: AccountMethodDeps,
   token: string,
   params: { accountUuids: AccountUuid[], disabled: boolean }
 ): Promise<BulkResult> {
@@ -543,11 +593,10 @@ export async function bulkSetDisabled (
     params.accountUuids,
     async (uuid) => {
       if (params.disabled) {
-        // NOTE: passing {} for deps means accountLifecycleProducer is unavailable —
-        // bulk-disabled users get tokenVersion bumped (logged out on next request) but
-        // do NOT receive an immediate force-logout via Redpanda. For real-time eviction
-        // prefer the single-account disableAccount endpoint per account.
-        await disableAccount(ctx, db, branding, {}, token, { accountUuid: uuid })
+        // Use disableAccountInternal to skip per-row admin re-check.
+        // deps.accountLifecycleProducer is threaded through so bulk-disabled
+        // accounts receive an immediate force-logout event (§2.3).
+        await disableAccountInternal(ctx, db, deps, adminUuid, { accountUuid: uuid })
       } else {
         await enableAccount(ctx, db, branding, token, { accountUuid: uuid })
       }
@@ -565,8 +614,9 @@ export async function bulkSendPasswordReset (
 ): Promise<BulkResult> {
   await assertAdmin(ctx, db, token)
   assertBulkSize(params.accountUuids)
+  const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
   return await bulkLoop(params.accountUuids, async (uuid) => {
-    await triggerPasswordReset(ctx, db, branding, token, { accountUuid: uuid })
+    await triggerPasswordResetInternal(ctx, db, branding, adminUuid, { accountUuid: uuid })
   })
 }
 
@@ -1613,7 +1663,7 @@ export type AccountServiceMethods =
 /**
  * @public
  */
-export function getServiceMethods (): Partial<Record<AccountServiceMethods, AccountMethodHandler>> {
+export function getServiceMethods (deps?: AccountMethodDeps): Partial<Record<AccountServiceMethods, AccountMethodHandler>> {
   return {
     getPendingWorkspace: wrap(getPendingWorkspace),
     updateWorkspaceInfo: wrap(updateWorkspaceInfo),
@@ -1649,7 +1699,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     createAccountAdmin: wrap(createAccountAdmin),
     bulkAddToWorkspace: wrap(bulkAddToWorkspace),
     bulkRemoveFromWorkspace: wrap(bulkRemoveFromWorkspace),
-    bulkSetDisabled: wrap(bulkSetDisabled),
+    bulkSetDisabled: wrapWithDeps(bulkSetDisabled, deps),
     bulkSendPasswordReset: wrap(bulkSendPasswordReset),
     getSubscriptionByProviderId: wrap(getSubscriptionByProviderId),
     upsertSubscription: wrap(upsertSubscription)

@@ -28,12 +28,15 @@ jest.mock('../utils', () => ({
 
 const ctx = { newChild: () => ctx, info: () => {}, warn: () => {}, error: () => {} } as unknown as MeasureContext
 
-// Track every call made via the mocked removeWorkspaceMember so the test
+// Track every call made via the mocked removeWorkspaceMemberInternal so the test
 // can assert which uuids made it past the selfFilter into the operation.
 const removeCalls: any[] = []
 jest.mock('../operations', () => ({
   ...jest.requireActual('../operations'),
   removeWorkspaceMember: async (_c: any, _db: any, _b: any, _t: any, params: any) => {
+    removeCalls.push(params)
+  },
+  removeWorkspaceMemberInternal: async (_c: any, _db: any, _adminUuid: any, params: any) => {
     removeCalls.push(params)
   }
 }))

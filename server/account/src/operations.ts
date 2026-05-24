@@ -3471,6 +3471,155 @@ export async function triggerPasswordReset (
   return { ok: true, emailSentTo: emailSocial.value }
 }
 
+// ─── *Internal helpers ───────────────────────────────────────────────────────
+// These take a pre-resolved adminUuid (and optionally a pre-resolved workspace)
+// so that bulk endpoints can call assertAdmin + workspace lookup ONCE per call
+// instead of O(n) per row.  The public functions above remain unchanged and
+// call the corresponding *Internal helper after their own validation.
+
+/**
+ * Remove a workspace member WITHOUT re-checking admin auth.
+ * Caller must have already verified admin privileges and resolved workspaceUuid.
+ */
+export async function removeWorkspaceMemberInternal (
+  ctx: MeasureContext,
+  db: AccountDB,
+  adminUuid: AccountUuid,
+  params: { accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid }
+): Promise<{ ok: true, wasMember: boolean }> {
+  const currentRole = await db.getWorkspaceRole(params.accountUuid, params.workspaceUuid)
+  if (currentRole == null) {
+    return { ok: true, wasMember: false }
+  }
+
+  if (currentRole === AccountRole.Owner) {
+    const members = await db.getWorkspaceMembers(params.workspaceUuid)
+    const otherOwners = members.filter((m) => m.role === AccountRole.Owner && m.person !== params.accountUuid)
+    if (otherOwners.length === 0) {
+      throw new PlatformError(new Status(Severity.ERROR, 'last_owner_in_workspace' as any, {}))
+    }
+  }
+
+  await db.unassignWorkspace(params.accountUuid, params.workspaceUuid)
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'remove_member',
+    workspaceUuid: params.workspaceUuid,
+    details: { priorRole: currentRole }
+  })
+
+  return { ok: true, wasMember: true }
+}
+
+/**
+ * Disable an account WITHOUT re-checking admin auth.
+ * Caller must have already verified admin privileges.
+ */
+export async function disableAccountInternal (
+  ctx: MeasureContext,
+  db: AccountDB,
+  deps: AccountMethodDeps,
+  adminUuid: AccountUuid,
+  params: { accountUuid: AccountUuid }
+): Promise<{ ok: true }> {
+  if (adminUuid === params.accountUuid) {
+    throw new PlatformError(new Status(Severity.ERROR, 'cannot_self_disable' as any, {}))
+  }
+
+  const socials = await db.socialId.find({ personUuid: params.accountUuid })
+  const targetEmail = socials.find((s) => s.type === SocialIdType.EMAIL)?.value
+  if (targetEmail != null && (await isLastAdmin(db, targetEmail))) {
+    throw new PlatformError(new Status(Severity.ERROR, 'last_admin' as any, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+  await db.account.update(
+    { uuid: params.accountUuid },
+    { disabledAt: Date.now(), $inc: { tokenVersion: 1 } } as any
+  )
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'disable',
+    workspaceUuid: null,
+    details: { reason: 'manual_admin_action' }
+  })
+
+  if (deps.accountLifecycleProducer !== undefined) {
+    try {
+      await deps.accountLifecycleProducer.send(
+        ctx,
+        systemAccountUuid as unknown as WorkspaceUuid,
+        [
+          {
+            accountUuid: params.accountUuid,
+            event: 'disabled',
+            timestamp: Date.now(),
+            reason: 'manual_admin_action'
+          }
+        ],
+        params.accountUuid
+      )
+    } catch (err) {
+      ctx.warn('failed to emit account.lifecycle event; relying on token-version fallback', { err })
+    }
+  }
+
+  return { ok: true }
+}
+
+/**
+ * Trigger a password-reset email WITHOUT re-checking admin auth.
+ * Caller must have already verified admin privileges.
+ */
+export async function triggerPasswordResetInternal (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  adminUuid: AccountUuid,
+  params: { accountUuid: AccountUuid }
+): Promise<{ ok: true, emailSentTo: string }> {
+  const socials = await db.socialId.find({ personUuid: params.accountUuid })
+  const emailSocial = socials.find((s) => s.type === SocialIdType.EMAIL)
+  if (emailSocial == null) {
+    throw new PlatformError(new Status(Severity.ERROR, 'user_has_no_email' as any, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account?.hash == null) {
+    throw new PlatformError(new Status(Severity.ERROR, 'user_has_no_password' as any, {}))
+  }
+
+  try {
+    await requestPasswordReset(ctx, db, branding, '', { email: emailSocial.value })
+  } catch (err: any) {
+    ctx.error('Password reset email send failed', { err, accountUuid: params.accountUuid })
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid,
+      targetAccount: params.accountUuid,
+      action: 'trigger_password_reset',
+      workspaceUuid: null,
+      details: { emailSentTo: emailSocial.value, failed: true, errMsg: err?.message ?? String(err) }
+    })
+    if (err instanceof PlatformError) throw err
+    throw new PlatformError(new Status(Severity.ERROR, 'password_reset_send_failed' as any, {}))
+  }
+
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'trigger_password_reset',
+    workspaceUuid: null,
+    details: { emailSentTo: emailSocial.value }
+  })
+
+  return { ok: true, emailSentTo: emailSocial.value }
+}
+
 function getConfiguredAdminEmails (): string[] {
   return (process.env.ADMIN_EMAILS ?? '')
     .split(',')
@@ -3692,7 +3841,7 @@ export type AccountMethods =
 /**
  * @public
  */
-function wrapWithDeps<
+export function wrapWithDeps<
   F extends (
     ctx: MeasureContext,
     db: AccountDB,
@@ -3815,7 +3964,7 @@ export function getMethods (
     isReadOnlyGuest: wrap(isReadOnlyGuest),
 
     /* SERVICE METHODS */
-    ...getServiceMethods()
+    ...getServiceMethods(deps)
   }
 }
 
