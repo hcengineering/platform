@@ -303,7 +303,7 @@
           <div class="info-grid">
             <span class="label">Last activity</span>
             <span class="value-plain">
-              {details.lastActivityAt != null ? new Date(details.lastActivityAt).toLocaleString() : '—'}
+              {details.lastActivityAt != null ? new Date(details.lastActivityAt).toLocaleString() : 'Never'}
             </span>
             {#if details.disabledAt != null}
               <span class="label">Disabled at</span>
@@ -315,30 +315,34 @@
         <section>
           <div class="section-title">Actions</div>
           <div class="actions-stack">
+            <!-- Password reset is the daily-routine action; full-width primary. -->
             <Button
-              kind={'regular'}
+              kind={'primary'}
               size={'medium'}
               label={getEmbeddedLabel('Send password-reset email')}
               disabled={busy}
               on:click={onTriggerPasswordReset}
             />
-            {#if details.status === 'active'}
-              <Button
-                kind={'dangerous'}
-                size={'medium'}
-                label={getEmbeddedLabel('Disable account')}
-                disabled={busy}
-                on:click={onDisable}
-              />
-            {:else}
-              <Button
-                kind={'primary'}
-                size={'medium'}
-                label={getEmbeddedLabel('Re-enable account')}
-                disabled={busy}
-                on:click={onEnable}
-              />
-            {/if}
+            <!-- Disable / re-enable are rarer + destructive; compact secondary row. -->
+            <div class="actions-secondary">
+              {#if details.status === 'active'}
+                <Button
+                  kind={'dangerous'}
+                  size={'small'}
+                  label={getEmbeddedLabel('Disable account')}
+                  disabled={busy}
+                  on:click={onDisable}
+                />
+              {:else}
+                <Button
+                  kind={'regular'}
+                  size={'small'}
+                  label={getEmbeddedLabel('Re-enable account')}
+                  disabled={busy}
+                  on:click={onEnable}
+                />
+              {/if}
+            </div>
           </div>
         </section>
       {/if}
@@ -582,12 +586,21 @@
   .actions-stack {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-1);
+    gap: var(--spacing-2);
     align-items: stretch;
 
-    :global(button) {
+    > :global(button) {
+      /* Primary password-reset button takes the full row width. */
       width: 100%;
     }
+  }
+
+  .actions-secondary {
+    /* Disable / re-enable: compact, right-aligned, no full-width.
+       Pushes the destructive action out of the user's center of focus. */
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.25rem;
   }
 
   .add-row {

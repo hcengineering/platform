@@ -18,7 +18,7 @@
   }
 
   function formatLastActivity (ts: number | null): string {
-    if (ts == null) return '—'
+    if (ts == null) return 'Never'
     const delta = Date.now() - ts
     if (delta < 60_000) return 'just now'
     if (delta < 3_600_000) return `${Math.floor(delta / 60_000)}m ago`
@@ -228,14 +228,18 @@
   }
 
   .status-active {
-    background: rgba(16, 185, 129, 0.12);
+    background: rgba(16, 185, 129, 0.10);
     color: #059669;
     .status-dot { background: #10b981; }
   }
 
+  /* Disabled is visually heavier than Active so a single disabled row
+     in a sea of active ones pops out when scanning. */
   .status-disabled {
-    background: rgba(239, 68, 68, 0.1);
-    color: #dc2626;
-    .status-dot { background: #ef4444; }
+    background: rgba(239, 68, 68, 0.18);
+    color: #b91c1c;
+    font-weight: 600;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    .status-dot { background: #dc2626; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.18); }
   }
 </style>

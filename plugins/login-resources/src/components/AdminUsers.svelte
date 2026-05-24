@@ -422,23 +422,11 @@
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content">
           <div class="stats-row">
-            <div class="stats">
-              <div class="stat-item">
-                <span class="stat-label">Total</span>
-                <span class="stat-value">{total}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">Active</span>
-                <span class="stat-value stat-active">{counts.active}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">Disabled</span>
-                <span class="stat-value stat-disabled">{counts.disabled}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">Admins</span>
-                <span class="stat-value">{counts.admins}</span>
-              </div>
+            <div class="stats-pills">
+              <span class="stat-pill">Total <strong>{total}</strong></span>
+              <span class="stat-pill"><span class="dot dot-active" /> Active <strong>{counts.active}</strong></span>
+              <span class="stat-pill"><span class="dot dot-disabled" /> Disabled <strong>{counts.disabled}</strong></span>
+              <span class="stat-pill">Admins <strong>{counts.admins}</strong></span>
             </div>
             {#if isAdminUser()}
               <Button label={getEmbeddedLabel('Add user')} kind={'primary'} on:click={openCreateAccount} />
@@ -484,7 +472,9 @@
             on:toggle-all={onToggleAll}
           />
 
-          <AdminUsersPagination {total} {offset} {limit} on:page={onPageChange} />
+          {#if total > limit}
+            <AdminUsersPagination {total} {offset} {limit} on:page={onPageChange} />
+          {/if}
 
           <BulkActionBar
             count={selectedUuids.size}
@@ -509,55 +499,55 @@
   .hulyComponent-content {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    /* Center the bounded admin sections so the right-side empty area
+       on wide viewports doesn't look like an unused drawer slot. */
   }
 
   .stats-row {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: var(--spacing-2);
-    margin-bottom: var(--spacing-3);
+    margin-bottom: var(--spacing-2);
     width: 100%;
     max-width: 72rem;
   }
 
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--spacing-2);
-    flex: 1;
-  }
-
-  .stat-item {
+  .stats-pills {
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: var(--spacing-2);
-    background: var(--theme-bg-color);
-    border: 1px solid var(--theme-divider-color);
-    border-radius: var(--small-BorderRadius);
-  }
-
-  .stat-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 1rem;
+    font-size: 0.8rem;
     color: var(--theme-darker-color);
   }
 
-  .stat-value {
-    font-size: 1.4rem;
-    font-weight: 500;
-    color: var(--theme-caption-color);
+  .stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    line-height: 1.2;
+
+    strong {
+      color: var(--theme-caption-color);
+      font-weight: 600;
+    }
   }
 
-  .stat-active {
-    color: #059669;
+  .dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    display: inline-block;
   }
 
-  .stat-disabled {
-    color: #dc2626;
+  .dot-active {
+    background: #10b981;
+  }
+
+  .dot-disabled {
+    background: #ef4444;
   }
 
   .filters {

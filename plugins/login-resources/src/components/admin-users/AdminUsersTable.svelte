@@ -232,15 +232,21 @@
     cursor: pointer;
     color: var(--theme-darker-color);
     border-radius: 0.25rem;
+    /* Stay quiet until used. Hovered or active states call attention. */
+    opacity: 0.35;
+    transition: opacity 80ms ease, color 80ms ease, background 80ms ease;
 
     &:hover {
+      opacity: 1;
       color: var(--theme-caption-color);
       background: var(--theme-divider-color);
     }
 
     &.active {
-      color: var(--theme-caption-color);
-      background: var(--theme-list-button-color, rgba(96, 165, 250, 0.18));
+      /* Filter currently applied to this column — show it. */
+      opacity: 1;
+      color: #2563eb;
+      background: rgba(96, 165, 250, 0.18);
     }
   }
 
