@@ -104,11 +104,11 @@
     // so we keep .popup as a single-class fallback. Down from six to one
     // upstream selector.
     if (target.closest('[data-drawer-keep-open], .popup') != null) return
-    dispatch('close')
+    tryClose()
   }
 
   function onKeyDown (ev: KeyboardEvent): void {
-    if (ev.key === 'Escape') dispatch('close')
+    if (ev.key === 'Escape') tryClose()
   }
 
   onMount(() => {
@@ -266,8 +266,21 @@
     notify('Copied', `Email ${details.primaryEmail} copied.`)
   }
 
-  function onClose (): void {
+  function tryClose (): void {
+    if (busy) {
+      confirmAction(
+        'Close while busy?',
+        'An operation is still in progress. Close anyway?',
+        false,
+        async () => { dispatch('close') }
+      )
+      return
+    }
     dispatch('close')
+  }
+
+  function onClose (): void {
+    tryClose()
   }
 
   function initials (first: string, last: string): string {
