@@ -54,6 +54,8 @@ import type {
   DBFlavor,
   AdminAuditLogCollection,
   AdminAuditLogEntry,
+  AdminAuditLogListParams,
+  AdminAuditLogListResult,
   ListAccountsAdminQueryParams
 } from '../../types'
 import type { AccountListRow } from '@hcengineering/account-client'
@@ -572,6 +574,74 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
     `
     const rows = await this.client.unsafe(sql, [admin, limit])
     return rows.map(this.parseRow)
+  }
+
+  async listAuditAdmin (params: AdminAuditLogListParams): Promise<AdminAuditLogListResult> {
+    const conds: string[] = []
+    const args: any[] = []
+    const ph = (v: any): string => { args.push(v); return `$${args.length}` }
+
+    const f = params.filter ?? {}
+    if (f.adminUuid != null) conds.push(`al.admin_account = ${ph(f.adminUuid)}`)
+    if (f.action != null) conds.push(`al.action = ${ph(f.action)}`)
+    if (f.targetAccountUuid != null) conds.push(`al.target_account = ${ph(f.targetAccountUuid)}`)
+    if (f.targetWorkspaceUuid != null) conds.push(`al.workspace_uuid = ${ph(f.targetWorkspaceUuid)}`)
+    if (f.from != null) conds.push(`al.ts_ms >= ${ph(f.from)}`)
+    if (f.to != null) conds.push(`al.ts_ms <= ${ph(f.to)}`)
+
+    // Cursor: base64 "{ts_ms}_{id}", scroll DESC
+    if (params.cursor != null) {
+      const decoded = Buffer.from(params.cursor, 'base64').toString('utf-8')
+      const sepIdx = decoded.lastIndexOf('_')
+      const cTs = decoded.slice(0, sepIdx)
+      const cId = decoded.slice(sepIdx + 1)
+      conds.push(`(al.ts_ms < ${ph(Number(cTs))} OR (al.ts_ms = ${ph(Number(cTs))} AND al.id < ${ph(cId)}))`)
+    }
+
+    const where = conds.length === 0 ? 'TRUE' : conds.join(' AND ')
+    const limit = Math.min(Math.max(1, params.limit ?? 50), 200)
+    const limitPh = ph(limit + 1)  // fetch +1 to detect nextCursor
+
+    const tbl = this.getTableName()
+    const ns = this.ns
+    const sql = `
+      SELECT
+        al.id, al.ts_ms, al.admin_account, al.target_account, al.workspace_uuid, al.action, al.details,
+        ap.first_name AS admin_first_name, ap.last_name AS admin_last_name,
+        tp.first_name AS target_first_name, tp.last_name AS target_last_name,
+        w.name AS target_ws_name, w.url AS target_ws_url
+      FROM ${tbl} al
+      LEFT JOIN ${ns}.person ap ON ap.uuid = al.admin_account
+      LEFT JOIN ${ns}.person tp ON tp.uuid = al.target_account
+      LEFT JOIN ${ns}.workspace w ON w.uuid = al.workspace_uuid
+      WHERE ${where}
+      ORDER BY al.ts_ms DESC, al.id DESC
+      LIMIT ${limitPh}
+    `
+    const rows = await this.client.unsafe(sql, args)
+    const hasMore = rows.length > limit
+    const visible = rows.slice(0, limit)
+    const nextCursor = hasMore
+      ? Buffer.from(`${(visible[visible.length - 1] as any).ts_ms}_${(visible[visible.length - 1] as any).id}`).toString('base64')
+      : null
+
+    const entries = visible.map((r: any) => ({
+      id: r.id,
+      tsMs: Number(r.ts_ms),
+      adminAccount: r.admin_account as AccountUuid,
+      targetAccount: r.target_account as AccountUuid | null,
+      action: r.action,
+      workspaceUuid: r.workspace_uuid as WorkspaceUuid | null,
+      details: typeof r.details === 'string' ? JSON.parse(r.details) : r.details,
+      adminFirstName: r.admin_first_name ?? '',
+      adminLastName: r.admin_last_name ?? '',
+      targetFirstName: r.target_first_name ?? undefined,
+      targetLastName: r.target_last_name ?? undefined,
+      targetWsName: r.target_ws_name ?? undefined,
+      targetWsUrl: r.target_ws_url ?? undefined
+    }))
+
+    return { entries, nextCursor }
   }
 
   private parseRow (row: any): AdminAuditLogEntry {

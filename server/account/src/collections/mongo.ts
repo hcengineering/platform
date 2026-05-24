@@ -42,6 +42,8 @@ import type {
   AccountAggregatedInfo,
   AdminAuditLogCollection,
   AdminAuditLogEntry,
+  AdminAuditLogListParams,
+  AdminAuditLogListResult,
   DbCollection,
   Integration,
   IntegrationSecret,
@@ -431,6 +433,11 @@ class MongoAdminAuditLogCollection implements AdminAuditLogCollection {
       .limit(limit)
       .toArray()
     return rows.map(({ _id, ...rest }) => rest as AdminAuditLogEntry)
+  }
+
+  async listAuditAdmin (_params: AdminAuditLogListParams): Promise<AdminAuditLogListResult> {
+    // Mongo is not used in production; Postgres impl handles this.
+    throw new Error('listAuditAdmin not implemented for MongoDB')
   }
 }
 

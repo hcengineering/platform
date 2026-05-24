@@ -126,10 +126,36 @@ export interface ListAccountsAdminQueryParams {
   pagination?: { limit?: number, offset?: number }
 }
 
+export interface AdminAuditLogListParams {
+  filter?: {
+    adminUuid?: AccountUuid
+    action?: string
+    targetAccountUuid?: AccountUuid
+    targetWorkspaceUuid?: WorkspaceUuid
+    from?: number
+    to?: number
+  }
+  cursor?: string
+  limit?: number
+}
+
+export interface AdminAuditLogListResult {
+  entries: Array<AdminAuditLogEntry & {
+    adminFirstName: string
+    adminLastName: string
+    targetFirstName?: string
+    targetLastName?: string
+    targetWsName?: string
+    targetWsUrl?: string
+  }>
+  nextCursor: string | null
+}
+
 export interface AdminAuditLogCollection {
   insert: (entry: Omit<AdminAuditLogEntry, 'id' | 'tsMs'>) => Promise<void>
   findByTarget: (target: AccountUuid, limit: number) => Promise<AdminAuditLogEntry[]>
   findByAdmin: (admin: AccountUuid, limit: number) => Promise<AdminAuditLogEntry[]>
+  listAuditAdmin: (params: AdminAuditLogListParams) => Promise<AdminAuditLogListResult>
 }
 
 // TODO: type data with generic type

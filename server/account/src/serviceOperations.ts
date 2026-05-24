@@ -40,7 +40,10 @@ import type {
   WorkspaceMembersAdminResponse,
   CreateAccountParams,
   CreateAccountResponse,
-  BulkResult
+  BulkResult,
+  ListAuditAdminParams,
+  ListAuditAdminResponse,
+  AuditEntry
 } from '@hcengineering/account-client'
 
 import {
@@ -268,6 +271,39 @@ export async function getAccountDetails (
     workspaceMemberships,
     recentAuditEntries
   }
+}
+
+export async function listAuditAdmin (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: ListAuditAdminParams
+): Promise<ListAuditAdminResponse> {
+  await assertAdmin(ctx, db, token)
+  const rawResult = await db.adminAuditLog.listAuditAdmin({
+    filter: params.filter as any,
+    cursor: params.pagination?.cursor,
+    limit: params.pagination?.limit
+  })
+  const entries: AuditEntry[] = rawResult.entries.map((e) => ({
+    id: e.id,
+    tsMs: e.tsMs,
+    admin: {
+      uuid: e.adminAccount,
+      firstName: e.adminFirstName,
+      lastName: e.adminLastName
+    },
+    action: e.action,
+    targetAccount: e.targetAccount != null
+      ? { uuid: e.targetAccount, firstName: e.targetFirstName ?? '', lastName: e.targetLastName ?? '' }
+      : undefined,
+    targetWorkspace: e.workspaceUuid != null
+      ? { uuid: e.workspaceUuid, name: e.targetWsName ?? '', url: e.targetWsUrl ?? '' }
+      : undefined,
+    details: e.details
+  }))
+  return { entries, nextCursor: rawResult.nextCursor }
 }
 
 // AddWorkspaceMemberParams is imported from '@hcengineering/account-client'
@@ -1677,6 +1713,7 @@ export type AccountServiceMethods =
   | 'listAccounts'
   | 'listAccountsAdmin'
   | 'getAccountDetails'
+  | 'listAuditAdmin'
   | 'addWorkspaceMember'
   | 'getWorkspaceMembersAdmin'
   | 'createAccountAdmin'
@@ -1722,6 +1759,7 @@ export function getServiceMethods (deps?: AccountMethodDeps): Partial<Record<Acc
     listAccounts: wrap(listAccounts),
     listAccountsAdmin: wrap(listAccountsAdmin),
     getAccountDetails: wrap(getAccountDetails),
+    listAuditAdmin: wrap(listAuditAdmin),
     addWorkspaceMember: wrap(addWorkspaceMember),
     getWorkspaceMembersAdmin: wrap(getWorkspaceMembersAdmin),
     createAccountAdmin: wrap(createAccountAdmin),

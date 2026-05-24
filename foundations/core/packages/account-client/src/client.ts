@@ -65,7 +65,10 @@ import type {
   WorkspaceMembersAdminResponse,
   BulkResult,
   CreateAccountParams,
-  CreateAccountResponse
+  CreateAccountResponse,
+  ListAuditAdminParams,
+  ListAuditAdminResponse,
+  AuditEntry
 } from './types'
 import { getClientTimezone, isNetworkError } from './utils'
 
@@ -279,6 +282,7 @@ export interface AccountClient {
   // Admin user management (V27)
   listAccountsAdmin: (params: ListAccountsAdminParams) => Promise<{ total: number, accounts: AccountListRow[] }>
   getAccountDetails: (accountUuid: AccountUuid) => Promise<AccountDetailsResponse>
+  listAuditAdmin: (params: ListAuditAdminParams) => Promise<ListAuditAdminResponse>
   setWorkspaceMemberRole: (
     accountUuid: AccountUuid,
     workspaceUuid: WorkspaceUuid,
@@ -1431,6 +1435,11 @@ class AccountClientImpl implements AccountClient {
 
   async getAccountDetails (accountUuid: AccountUuid): Promise<AccountDetailsResponse> {
     const request = { method: 'getAccountDetails' as const, params: { accountUuid } }
+    return await this.rpc(request)
+  }
+
+  async listAuditAdmin (params: ListAuditAdminParams): Promise<ListAuditAdminResponse> {
+    const request = { method: 'listAuditAdmin' as const, params }
     return await this.rpc(request)
   }
 

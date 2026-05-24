@@ -334,6 +334,35 @@ export interface BulkResult {
   failed: Array<{ accountUuid: AccountUuid, error: string }>
 }
 
+// Audit log DTOs (Task 3-5)
+
+export interface AuditEntry {
+  id: string
+  tsMs: number
+  admin: { uuid: AccountUuid, firstName: string, lastName: string }
+  action: string
+  targetAccount?: { uuid: AccountUuid, firstName: string, lastName: string }
+  targetWorkspace?: { uuid: WorkspaceUuid, name: string, url: string }
+  details: any | null
+}
+
+export interface ListAuditAdminParams {
+  filter?: {
+    adminUuid?: AccountUuid
+    action?: string
+    targetAccountUuid?: AccountUuid
+    targetWorkspaceUuid?: WorkspaceUuid
+    from?: number  // ms
+    to?: number
+  }
+  pagination?: { cursor?: string, limit?: number }
+}
+
+export interface ListAuditAdminResponse {
+  entries: AuditEntry[]
+  nextCursor: string | null
+}
+
 export interface CreateAccountParams {
   firstName: string
   lastName: string
