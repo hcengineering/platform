@@ -13,6 +13,7 @@
     SearchInput,
     DropdownLabelsIntl,
     Label,
+    showPopup,
     type DropdownIntlItem
   } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
@@ -20,6 +21,7 @@
   import AdminUsersTable from './admin-users/AdminUsersTable.svelte'
   import AdminUsersPagination from './admin-users/AdminUsersPagination.svelte'
   import AdminUsersDrawer from './admin-users/AdminUsersDrawer.svelte'
+  import ColumnFilterPopup from './admin-users/ColumnFilterPopup.svelte'
   import type { AccountListRow, ListAccountsAdminParams } from '@hcengineering/account-client'
 
   interface AdminFilter {
@@ -33,6 +35,15 @@
   let sort: ListAccountsAdminParams['sort'] = { field: 'name', direction: 'asc' }
   let offset = 0
   const limit = 50
+
+  // Per-column filter partials. Each entry holds a small object that
+  // contributes one or more keys to the listAccountsAdmin filter
+  // payload (e.g. { nameContains: 'foo' }, { statusIn: ['active'] }).
+  let columnFilters: Record<string, any> = {}
+
+  function mergeColumnFilters (cf: Record<string, any>): Record<string, any> {
+    return Object.values(cf).reduce<Record<string, any>>((acc, partial) => ({ ...acc, ...partial }), {})
+  }
 
   let accounts: AccountListRow[] = []
   let total = 0
@@ -78,13 +89,15 @@
     loading = true
     errorMessage = null
     try {
+      const merged = mergeColumnFilters(columnFilters)
       const params: ListAccountsAdminParams = {
         search: filter.search,
         authMethod: filter.authMethod,
         status: filter.status,
         workspaceUuids: filter.workspaceUuids as any,
         sort,
-        pagination: { limit, offset }
+        pagination: { limit, offset },
+        ...merged
       }
       const res = await getAccountClient().listAccountsAdmin(params)
       accounts = res.accounts
@@ -130,6 +143,26 @@
 
   function onAccountChanged (): void {
     void refresh()
+  }
+
+  function onOpenColumnFilter (e: CustomEvent<{ column: string, anchor: HTMLElement }>): void {
+    const { column, anchor } = e.detail
+    showPopup(
+      ColumnFilterPopup,
+      { column, current: columnFilters[column] },
+      anchor,
+      (result: { column: string, payload: any | 'clear' } | undefined) => {
+        if (result == null) return
+        if (result.payload === 'clear') {
+          const { [result.column]: _drop, ...rest } = columnFilters
+          columnFilters = rest
+        } else {
+          columnFilters = { ...columnFilters, [result.column]: result.payload }
+        }
+        offset = 0
+        void refresh()
+      }
+    )
   }
 </script>
 
@@ -187,7 +220,15 @@
             </div>
           {/if}
 
-          <AdminUsersTable {accounts} {sort} {loading} on:sort={onSortChange} on:row-click={onRowClick} />
+          <AdminUsersTable
+            {accounts}
+            {sort}
+            {loading}
+            {columnFilters}
+            on:sort={onSortChange}
+            on:row-click={onRowClick}
+            on:open-filter={onOpenColumnFilter}
+          />
 
           <AdminUsersPagination {total} {offset} {limit} on:page={onPageChange} />
         </div>
