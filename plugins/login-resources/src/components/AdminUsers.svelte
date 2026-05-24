@@ -8,6 +8,7 @@
   import setting from '@hcengineering/setting'
   import {
     Breadcrumb,
+    Button,
     Header,
     Scroller,
     SearchInput,
@@ -17,7 +18,7 @@
     type DropdownIntlItem
   } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { MessageBox } from '@hcengineering/presentation'
+  import { MessageBox, isAdminUser } from '@hcengineering/presentation'
   import AdminShell from './admin-shell/AdminShell.svelte'
   import AdminUsersTable from './admin-users/AdminUsersTable.svelte'
   import AdminUsersPagination from './admin-users/AdminUsersPagination.svelte'
@@ -25,6 +26,7 @@
   import ColumnFilterPopup from './admin-users/ColumnFilterPopup.svelte'
   import BulkActionBar from './admin-users/BulkActionBar.svelte'
   import BulkPickWorkspacePopup from './admin-users/BulkPickWorkspacePopup.svelte'
+  import CreateAccountPopup from './admin-users/CreateAccountPopup.svelte'
   import type {
     AccountListRow,
     BulkResult,
@@ -363,6 +365,36 @@
       }
     )
   }
+
+  // -------------------------------------------------------------------------
+  // Create-account flow
+  // -------------------------------------------------------------------------
+  // Opens CreateAccountPopup and, on success, conditionally warns about
+  // partial failures (inviteEmailSent === false / initialWorkspaceAssigned
+  // === false) before opening the new account's drawer. Cancel returns
+  // undefined and is ignored.
+  function openCreateAccount (): void {
+    showPopup(CreateAccountPopup, {}, 'middle', (r: any) => {
+      if (r == null) return
+      const warnings: string[] = []
+      if (r.inviteEmailSent === false) {
+        warnings.push('Invite email could not be sent — use "Send password reset" from the drawer.')
+      }
+      if (r.initialWorkspaceAssigned === false) {
+        warnings.push('Initial workspace assignment failed — set it manually from the drawer.')
+      }
+      if (warnings.length > 0) {
+        showPopup(MessageBox, {
+          label: getEmbeddedLabel('Account created with warnings'),
+          message: getEmbeddedLabel(warnings.join('\n\n')),
+          okLabel: getEmbeddedLabel('Dismiss'),
+          canSubmit: false
+        })
+      }
+      selectedUuid = r.account.uuid
+      void refresh()
+    })
+  }
 </script>
 
 <AdminShell section="users">
@@ -374,23 +406,28 @@
     <div class="hulyComponent-content__column content">
       <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content">
-          <div class="stats">
-            <div class="stat-item">
-              <span class="stat-label">Total</span>
-              <span class="stat-value">{total}</span>
+          <div class="stats-row">
+            <div class="stats">
+              <div class="stat-item">
+                <span class="stat-label">Total</span>
+                <span class="stat-value">{total}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Active</span>
+                <span class="stat-value stat-active">{counts.active}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Disabled</span>
+                <span class="stat-value stat-disabled">{counts.disabled}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Admins</span>
+                <span class="stat-value">{counts.admins}</span>
+              </div>
             </div>
-            <div class="stat-item">
-              <span class="stat-label">Active</span>
-              <span class="stat-value stat-active">{counts.active}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Disabled</span>
-              <span class="stat-value stat-disabled">{counts.disabled}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Admins</span>
-              <span class="stat-value">{counts.admins}</span>
-            </div>
+            {#if isAdminUser()}
+              <Button label={'login:string.AddUser' as any} kind={'primary'} on:click={openCreateAccount} />
+            {/if}
           </div>
 
           <div class="filters">
@@ -460,13 +497,21 @@
     align-items: flex-start;
   }
 
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .stats-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: var(--spacing-2);
     margin-bottom: var(--spacing-3);
     width: 100%;
     max-width: 72rem;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--spacing-2);
+    flex: 1;
   }
 
   .stat-item {
