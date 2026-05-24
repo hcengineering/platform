@@ -189,6 +189,16 @@
 
   $: statsByWorkspace = new Map((data?.workspaces ?? []).map((it) => [it.wsId, it]))
 
+  $: sessionOpsByWs = new Map(
+    Array.from(statsByWorkspace.entries()).map(([wsId, stats]) => [
+      wsId,
+      (stats.sessions ?? []).reduce(
+        (sum, s) => sum + (s.mins5.tx + s.mins5.find) + (s.current.tx + s.current.find),
+        0
+      )
+    ])
+  )
+
   $: {
     // Assign backup idx
     const backupSorting = [...workspaces].filter((it) => {
@@ -543,10 +553,7 @@
                     <span class="ws-name-stats" title="active sessions · ops in last 5m">
                       {stats.sessions?.length ?? 0}
                       ·
-                      {(stats.sessions ?? []).reduceRight(
-                        (p, it) => p + (it.mins5.tx + it.mins5.find) + (it.current.tx + it.current.find),
-                        0
-                      )}
+                      {sessionOpsByWs.get(workspace.uuid ?? '') ?? 0}
                     </span>
                   {/if}
                   <div class="ws-name-actions" on:click|stopPropagation>
