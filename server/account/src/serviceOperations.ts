@@ -36,7 +36,8 @@ import type {
   ListAccountsAdminParams,
   AccountListRow,
   AccountDetailsResponse,
-  AddWorkspaceMemberParams
+  AddWorkspaceMemberParams,
+  WorkspaceMembersAdminResponse
 } from '@hcengineering/account-client'
 
 import { accountPlugin } from './plugin'
@@ -354,6 +355,66 @@ export async function addWorkspaceMember (
   })
 
   return await getAccountDetails(ctx, db, branding, token, { accountUuid: params.accountUuid })
+}
+
+// WorkspaceMembersAdminResponse is imported from '@hcengineering/account-client'
+// (Task 1b). Do NOT redeclare it locally.
+
+export async function getWorkspaceMembersAdmin (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { workspaceUuid: WorkspaceUuid }
+): Promise<WorkspaceMembersAdminResponse> {
+  await assertAdmin(ctx, db, token)
+
+  const workspace = await getWorkspaceById(db, params.workspaceUuid)
+  if (workspace == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: params.workspaceUuid as string }))
+  }
+
+  const members = await db.getWorkspaceMembers(params.workspaceUuid)
+  const accountUuids = members.map((m: any) => m.person)
+  const allAccounts = await db.account.find({})
+  const accountByUuid = new Map(allAccounts.filter((a: any) => accountUuids.includes(a.uuid)).map((a: any) => [a.uuid, a]))
+  const allPersons = await db.person.find({})
+  const personByUuid = new Map(allPersons.map((p: any) => [p.uuid, p]))
+  const allSocials = await db.socialId.find({})
+  const socialsByPerson = new Map<string, any[]>()
+  for (const s of allSocials) {
+    const k = s.personUuid as string
+    if (!socialsByPerson.has(k)) socialsByPerson.set(k, [])
+    socialsByPerson.get(k)!.push(s)
+  }
+  const adminEmails = new Set(
+    (process.env.ADMIN_EMAILS ?? '').split(',').map((e) => e.trim()).filter(Boolean)
+  )
+
+  const enriched = members.map((m: any) => {
+    const uuid = (m.person) as AccountUuid
+    const acc = accountByUuid.get(uuid) ?? { disabledAt: null, lastActivityAt: null }
+    const person = personByUuid.get(uuid)
+    const primaryEmail = (socialsByPerson.get(uuid as string) ?? []).find((s) => s.type === 'email')?.value ?? null
+    return {
+      accountUuid: uuid,
+      firstName: person?.firstName ?? '',
+      lastName: person?.lastName ?? '',
+      primaryEmail,
+      role: m.role as AccountRole,
+      lastActivityAt: toEpochMs(acc.lastActivityAt),
+      status: acc.disabledAt != null ? ('disabled' as const) : ('active' as const),
+      isAdmin: primaryEmail != null && adminEmails.has(primaryEmail)
+    }
+  })
+
+  return {
+    workspaceUuid: workspace.uuid,
+    workspaceName: workspace.name ?? '',
+    workspaceUrl: workspace.url ?? '',
+    workspaceMode: workspace.mode,
+    members: enriched
+  }
 }
 
 export async function performWorkspaceOperation (
@@ -1386,6 +1447,7 @@ export type AccountServiceMethods =
   | 'listAccountsAdmin'
   | 'getAccountDetails'
   | 'addWorkspaceMember'
+  | 'getWorkspaceMembersAdmin'
   | 'findFullSocialIds'
   | 'getSubscriptionByProviderId'
   | 'upsertSubscription'
@@ -1425,6 +1487,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     listAccountsAdmin: wrap(listAccountsAdmin),
     getAccountDetails: wrap(getAccountDetails),
     addWorkspaceMember: wrap(addWorkspaceMember),
+    getWorkspaceMembersAdmin: wrap(getWorkspaceMembersAdmin),
     getSubscriptionByProviderId: wrap(getSubscriptionByProviderId),
     upsertSubscription: wrap(upsertSubscription)
   }
