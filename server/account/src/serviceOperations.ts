@@ -39,10 +39,17 @@ import type {
   AddWorkspaceMemberParams,
   WorkspaceMembersAdminResponse,
   CreateAccountParams,
-  CreateAccountResponse
+  CreateAccountResponse,
+  BulkResult
 } from '@hcengineering/account-client'
 
-import { sendPasswordResetEmail } from './operations'
+import {
+  disableAccount,
+  enableAccount,
+  removeWorkspaceMember,
+  sendPasswordResetEmail,
+  triggerPasswordReset
+} from './operations'
 
 import { accountPlugin } from './plugin'
 import type {
@@ -513,6 +520,104 @@ export async function createAccountAdmin (
 
   const account = await getAccountDetails(ctx, db, branding, token, { accountUuid: newUuid })
   return { account, inviteEmailSent, initialWorkspaceAssigned }
+}
+
+// BulkResult is imported from '@hcengineering/account-client' (Task 1b).
+// Do NOT redeclare it locally.
+
+const BULK_MAX = 200
+
+function assertBulkSize (uuids: AccountUuid[]): void {
+  if (uuids.length > BULK_MAX) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: `Too many accounts in one batch (max ${BULK_MAX})` }))
+  }
+}
+
+async function bulkLoop (
+  uuids: AccountUuid[],
+  op: (uuid: AccountUuid) => Promise<void>,
+  selfFilter?: { adminUuid: AccountUuid, reason: string }
+): Promise<BulkResult> {
+  const result: BulkResult = { succeeded: [], failed: [] }
+  for (const uuid of uuids) {
+    if (selfFilter != null && uuid === selfFilter.adminUuid) {
+      result.failed.push({ accountUuid: uuid, error: selfFilter.reason })
+      continue
+    }
+    try {
+      await op(uuid)
+      result.succeeded.push(uuid)
+    } catch (err: any) {
+      const msg = err instanceof PlatformError ? (err.status.params as any)?.msg ?? err.status.code : String(err?.message ?? err)
+      result.failed.push({ accountUuid: uuid, error: msg })
+    }
+  }
+  return result
+}
+
+export async function bulkAddToWorkspace (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuids: AccountUuid[], workspaceUuid: WorkspaceUuid, role: AccountRole }
+): Promise<BulkResult> {
+  await assertAdmin(ctx, db, token)
+  assertBulkSize(params.accountUuids)
+  return await bulkLoop(params.accountUuids, async (uuid) => {
+    await addWorkspaceMember(ctx, db, branding, token, { accountUuid: uuid, workspaceUuid: params.workspaceUuid, role: params.role })
+  })
+}
+
+export async function bulkRemoveFromWorkspace (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuids: AccountUuid[], workspaceUuid: WorkspaceUuid }
+): Promise<BulkResult> {
+  await assertAdmin(ctx, db, token)
+  assertBulkSize(params.accountUuids)
+  return await bulkLoop(params.accountUuids, async (uuid) => {
+    await removeWorkspaceMember(ctx, db, branding, token, { accountUuid: uuid, workspaceUuid: params.workspaceUuid })
+  })
+}
+
+export async function bulkSetDisabled (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuids: AccountUuid[], disabled: boolean }
+): Promise<BulkResult> {
+  await assertAdmin(ctx, db, token)
+  assertBulkSize(params.accountUuids)
+  const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+  return await bulkLoop(
+    params.accountUuids,
+    async (uuid) => {
+      if (params.disabled) {
+        await disableAccount(ctx, db, branding, {}, token, { accountUuid: uuid })
+      } else {
+        await enableAccount(ctx, db, branding, token, { accountUuid: uuid })
+      }
+    },
+    params.disabled ? { adminUuid, reason: 'cannot disable self' } : undefined
+  )
+}
+
+export async function bulkSendPasswordReset (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuids: AccountUuid[] }
+): Promise<BulkResult> {
+  await assertAdmin(ctx, db, token)
+  assertBulkSize(params.accountUuids)
+  return await bulkLoop(params.accountUuids, async (uuid) => {
+    await triggerPasswordReset(ctx, db, branding, token, { accountUuid: uuid })
+  })
 }
 
 export async function performWorkspaceOperation (
@@ -1547,6 +1652,10 @@ export type AccountServiceMethods =
   | 'addWorkspaceMember'
   | 'getWorkspaceMembersAdmin'
   | 'createAccountAdmin'
+  | 'bulkAddToWorkspace'
+  | 'bulkRemoveFromWorkspace'
+  | 'bulkSetDisabled'
+  | 'bulkSendPasswordReset'
   | 'findFullSocialIds'
   | 'getSubscriptionByProviderId'
   | 'upsertSubscription'
@@ -1588,6 +1697,10 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     addWorkspaceMember: wrap(addWorkspaceMember),
     getWorkspaceMembersAdmin: wrap(getWorkspaceMembersAdmin),
     createAccountAdmin: wrap(createAccountAdmin),
+    bulkAddToWorkspace: wrap(bulkAddToWorkspace),
+    bulkRemoveFromWorkspace: wrap(bulkRemoveFromWorkspace),
+    bulkSetDisabled: wrap(bulkSetDisabled),
+    bulkSendPasswordReset: wrap(bulkSendPasswordReset),
     getSubscriptionByProviderId: wrap(getSubscriptionByProviderId),
     upsertSubscription: wrap(upsertSubscription)
   }
