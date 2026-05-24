@@ -40,15 +40,13 @@
   </div>
   <div class="cell cell-name" title={`${account.firstName} ${account.lastName}`.trim()}>
     <span class="avatar">{initials(account.firstName, account.lastName)}</span>
-    <div class="name-block">
-      <span class="full-name">{account.firstName} {account.lastName}</span>
-      {#if account.isAdmin}
-        <span class="badge admin-badge">Admin</span>
-      {/if}
-    </div>
+    <span class="full-name">{account.firstName} {account.lastName}</span>
+    {#if account.isAdmin}
+      <span class="badge admin-badge" title="Instance administrator">Admin</span>
+    {/if}
   </div>
   <div class="cell cell-email" title={account.primaryEmail ?? ''}>
-    {account.primaryEmail ?? 'No email'}
+    <span class="email-text">{account.primaryEmail ?? 'No email'}</span>
   </div>
   <div class="cell cell-auth">
     {#each account.authMethods as m}
@@ -78,42 +76,48 @@
    * Cells get padding + border-bottom directly so visual rows still feel
    * coherent without a wrapper element.
    */
+  /* Row uses display:contents so its cells participate in the parent
+     .users-table grid → columns align across rows. Each cell gets the
+     same fixed min-height so a row with badges next to a row without is
+     not visually shorter or taller. */
   .row {
     display: contents;
     cursor: pointer;
   }
 
   .cell {
-    padding: 0.65rem 0.85rem;
+    /* min-height makes every row exactly 56px regardless of cell content
+       (Material data-table standard). */
+    min-height: 56px;
+    padding: 0 1rem;
     color: var(--theme-content-color);
     font-size: 0.875rem;
+    line-height: 1.3;
     border-bottom: 1px solid var(--theme-divider-color);
     min-width: 0;
     background: var(--theme-bg-color);
     transition: background 80ms ease;
+    display: flex;
+    align-items: center;
   }
 
   .row:hover .cell {
-    background: var(--theme-popup-hover);
+    background: var(--theme-list-row-color, rgba(96, 165, 250, 0.06));
   }
 
   .cell-checkbox {
-    display: flex;
-    align-items: center;
     justify-content: center;
-    padding: 0.4rem 0;
+    padding: 0;
   }
 
   .cell-name {
-    display: flex;
-    align-items: center;
     gap: 0.6rem;
   }
 
   .avatar {
     flex-shrink: 0;
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: var(--theme-bg-accent-color);
     border: 1px solid var(--theme-divider-color);
@@ -126,35 +130,36 @@
     letter-spacing: 0.02em;
   }
 
-  .name-block {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    min-width: 0;
-  }
-
   .full-name {
     color: var(--theme-caption-color);
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    min-width: 0;
   }
 
   .cell-email {
-    font-family: var(--mono-font, 'SF Mono', 'Menlo', 'Consolas', monospace);
+    /* No mono-font here — email is part of the user-row visual hierarchy
+       and the mono-font made it feel like a code dump. */
     font-size: 0.82rem;
     color: var(--theme-darker-color);
+    /* flex+center already inherited from .cell */
+    overflow: hidden;
+  }
+
+  .email-text {
+    /* Truncation needs the text in its own block-ish span; the cell is
+       a flex container so we can't put ellipsis on it directly. */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    width: 100%;
   }
 
   .cell-auth {
-    display: flex;
-    align-items: center;
     flex-wrap: nowrap;
-    gap: 0.25rem;
+    gap: 0.3rem;
     overflow: hidden;
   }
 
@@ -164,27 +169,28 @@
     border-radius: 999px;
     font-size: 0.68rem;
     font-weight: 500;
-    letter-spacing: 0.02em;
-    line-height: 1.4;
-    height: 18px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    height: 20px;
+    flex-shrink: 0;
   }
 
   .admin-badge {
-    background: rgba(245, 158, 11, 0.12);
+    background: rgba(245, 158, 11, 0.14);
     color: var(--theme-warning-color, #b45309);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    border: 1px solid rgba(245, 158, 11, 0.32);
     text-transform: uppercase;
-    padding: 0.05rem 0.4rem;
-    width: fit-content;
+    padding: 0 0.45rem;
+    margin-left: 0.3rem;
   }
 
   .auth-badge {
-    background: transparent;
+    background: var(--theme-bg-accent-color);
     color: var(--theme-darker-color);
     border: 1px solid var(--theme-divider-color);
-    font-family: var(--mono-font, 'SF Mono', 'Menlo', 'Consolas', monospace);
     text-transform: lowercase;
-    padding: 0.05rem 0.4rem;
+    padding: 0 0.5rem;
+    letter-spacing: 0.02em;
   }
 
   .muted {
@@ -192,10 +198,12 @@
   }
 
   .cell-ws {
-    justify-self: end;
+    justify-content: flex-end;
     text-align: right;
     font-variant-numeric: tabular-nums;
+    font-weight: 500;
     color: var(--theme-caption-color);
+    padding-right: 1.5rem;
   }
 
   .cell-activity {
@@ -204,27 +212,30 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
   }
 
   .cell-status {
-    justify-self: end;
+    justify-content: flex-end;
   }
 
   .status {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.1rem 0.55rem 0.1rem 0.5rem;
+    padding: 0.2rem 0.6rem 0.2rem 0.55rem;
     border-radius: 999px;
     font-size: 0.7rem;
     font-weight: 500;
     text-transform: capitalize;
+    line-height: 1;
   }
 
   .status-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
+    flex-shrink: 0;
   }
 
   .status-active {
@@ -240,6 +251,7 @@
     color: #b91c1c;
     font-weight: 600;
     border: 1px solid rgba(239, 68, 68, 0.4);
+    padding: 0.2rem 0.55rem;
     .status-dot { background: #dc2626; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.18); }
   }
 </style>

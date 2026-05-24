@@ -428,7 +428,7 @@
     </Header>
 
     <div class="hulyComponent-content__column content">
-      <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
+      <Scroller padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content">
           <div class="stats-row">
             <div class="stats-pills">
@@ -514,9 +514,12 @@
   .hulyComponent-content {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    /* Center the bounded admin sections so the right-side empty area
-       on wide viewports doesn't look like an unused drawer slot. */
+    align-items: stretch;
+    /* Use the full available content width. Each child (stats-row,
+       filters, table) gets its own padding via the parent Scroller and
+       its own internal sub-layout. */
+    width: 100%;
+    gap: var(--spacing-2);
   }
 
   .stats-row {
@@ -526,7 +529,7 @@
     gap: var(--spacing-2);
     margin-bottom: var(--spacing-2);
     width: 100%;
-    max-width: 72rem;
+    max-width: none;
   }
 
   .stats-pills {
@@ -571,7 +574,7 @@
     gap: var(--spacing-2);
     margin-bottom: var(--spacing-2);
     width: 100%;
-    max-width: 72rem;
+    max-width: none;
   }
 
   .filters-search {

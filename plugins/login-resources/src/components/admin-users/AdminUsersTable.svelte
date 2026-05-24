@@ -160,21 +160,22 @@
    */
   .users-table {
     display: grid;
+    /* Full-width table that fills whatever container it's in. Email
+       and Last-activity stretch to claim the slack; Workspaces+Status
+       stay narrow + fixed. */
     grid-template-columns:
-      34px                 /* Selection checkbox */
-      minmax(220px, 2fr)   /* Name + avatar     */
-      minmax(220px, 3fr)   /* Email             */
-      140px                /* Auth              */
-      110px                /* Workspaces (num)  */
+      44px                 /* Selection checkbox */
+      minmax(240px, 1.5fr) /* Name + avatar + admin badge */
+      minmax(240px, 2fr)   /* Email             */
+      minmax(140px, 0.7fr) /* Auth              */
+      100px                /* Workspaces (num)  */
       minmax(140px, 1fr)   /* Last activity     */
       120px;               /* Status            */
-    align-items: center;
+    align-items: stretch;
     width: 100%;
-    max-width: 76rem;
-    margin: 0;
     background: var(--theme-bg-color);
     border: 1px solid var(--theme-divider-color);
-    border-radius: var(--small-BorderRadius);
+    border-radius: var(--medium-BorderRadius, 0.5rem);
     overflow: hidden;
   }
 
@@ -183,11 +184,12 @@
   }
 
   .head .cell {
-    padding: 0.55rem 0.85rem;
+    min-height: 44px;
+    padding: 0 1rem;
     font-size: 0.72rem;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     color: var(--theme-darker-color);
     background: var(--theme-bg-accent-color);
     border-bottom: 1px solid var(--theme-divider-color);
@@ -197,18 +199,18 @@
     gap: 0.35rem;
   }
 
-  .cell-ws,
-  .cell-status {
-    justify-self: end;
-    text-align: right;
+  .head .cell-ws,
+  .head .cell-status {
     justify-content: flex-end;
   }
 
-  .cell-checkbox {
-    display: flex;
-    align-items: center;
+  .head .cell-ws {
+    padding-right: 1.5rem;
+  }
+
+  .head .cell-checkbox {
     justify-content: center;
-    padding: 0.4rem 0;
+    padding: 0;
   }
 
   .head .sortable .hdr-label {
