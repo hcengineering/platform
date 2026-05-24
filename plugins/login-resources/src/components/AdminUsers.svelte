@@ -27,6 +27,7 @@
   import BulkActionBar from './admin-users/BulkActionBar.svelte'
   import BulkPickWorkspacePopup from './admin-users/BulkPickWorkspacePopup.svelte'
   import CreateAccountPopup from './admin-users/CreateAccountPopup.svelte'
+  import MassActionConfirm from './admin-users/MassActionConfirm.svelte'
   import type {
     AccountListRow,
     BulkResult,
@@ -102,6 +103,23 @@
     disabled: accounts.filter((a) => a.status === 'disabled').length,
     admins: accounts.filter((a) => a.isAdmin).length
   }
+
+  $: activeFilterKeys = Object.keys(columnFilters).filter((k) => columnFilters[k] != null)
+  $: filterSummary = activeFilterKeys.length === 0
+    ? 'No filter set — operating on all accounts'
+    : `Filter: ${activeFilterKeys.join(', ')}`
+
+  // dangerousScope = true when admin is acting on the entire universe.
+  // Important caveat: `total` here is the BACKEND-FILTERED count, not the
+  // unfiltered universe. With backend pagination + filters, an admin who
+  // filters down to 5 users + selects all 5 would otherwise trigger the
+  // typed-confirm (5 == 5 == total) — that's not the footgun we want to
+  // catch. So we require BOTH conditions: no filter is active AND
+  // selected count covers the filtered total. With no filter, total IS
+  // the universe. With a filter, the typed-confirm is suppressed because
+  // the admin has explicitly narrowed scope.
+  $: usersDangerousScope =
+    activeFilterKeys.length === 0 && selectedUuids.size === total && total > 0
 
   // Ordered uuid list passed to the drawer so the drawer's Prev/Next pager
   // knows the page's row order. Cast in a reactive (not inline in markup)
@@ -318,54 +336,78 @@
 
   function onBulkDisable (): void {
     if (selectedUuids.size === 0) return
-    confirmAction(
-      'Disable accounts',
-      `Disable ${selectedUuids.size} accounts? Disabled users are immediately signed out of every workspace.`,
-      true,
-      async () => {
-        const r = await getAccountClient().bulkSetDisabled(selectedUuidsArray(), true)
-        showBulkResult(r)
-        // Preserve the selection only when EVERY action failed — admin can retry
-        // without re-selecting. Otherwise clear so the bar doesn't stick around
-        // pointing at uuids that were just successfully acted on.
-        if (r.succeeded.length > 0) clearSel()
-        await refresh()
+    showPopup(
+      MassActionConfirm,
+      {
+        title: `Disable ${selectedUuids.size} accounts`,
+        affectedCount: selectedUuids.size,
+        filterSummary,
+        dangerousScope: usersDangerousScope,
+        typedConfirmPhrase: 'DISABLE ALL',
+        actionLabel: 'Disable',
+        dangerous: true
+      },
+      'middle',
+      (confirmed: boolean | undefined) => {
+        if (confirmed !== true) return
+        void (async () => {
+          const r = await getAccountClient().bulkSetDisabled(selectedUuidsArray(), true)
+          showBulkResult(r)
+          if (r.succeeded.length > 0) clearSel()
+          await refresh()
+        })()
       }
     )
   }
 
   function onBulkEnable (): void {
     if (selectedUuids.size === 0) return
-    confirmAction(
-      'Enable accounts',
-      `Re-enable ${selectedUuids.size} accounts?`,
-      false,
-      async () => {
-        const r = await getAccountClient().bulkSetDisabled(selectedUuidsArray(), false)
-        showBulkResult(r)
-        // Preserve the selection only when EVERY action failed — admin can retry
-        // without re-selecting. Otherwise clear so the bar doesn't stick around
-        // pointing at uuids that were just successfully acted on.
-        if (r.succeeded.length > 0) clearSel()
-        await refresh()
+    showPopup(
+      MassActionConfirm,
+      {
+        title: `Re-enable ${selectedUuids.size} accounts`,
+        affectedCount: selectedUuids.size,
+        filterSummary,
+        dangerousScope: usersDangerousScope,
+        typedConfirmPhrase: 'ENABLE ALL',
+        actionLabel: 'Enable',
+        dangerous: false
+      },
+      'middle',
+      (confirmed: boolean | undefined) => {
+        if (confirmed !== true) return
+        void (async () => {
+          const r = await getAccountClient().bulkSetDisabled(selectedUuidsArray(), false)
+          showBulkResult(r)
+          if (r.succeeded.length > 0) clearSel()
+          await refresh()
+        })()
       }
     )
   }
 
   function onBulkReset (): void {
     if (selectedUuids.size === 0) return
-    confirmAction(
-      'Send password-reset emails',
-      `Send password-reset emails to ${selectedUuids.size} accounts?`,
-      false,
-      async () => {
-        const r = await getAccountClient().bulkSendPasswordReset(selectedUuidsArray())
-        showBulkResult(r)
-        // Preserve the selection only when EVERY action failed — admin can retry
-        // without re-selecting. Otherwise clear so the bar doesn't stick around
-        // pointing at uuids that were just successfully acted on.
-        if (r.succeeded.length > 0) clearSel()
-        await refresh()
+    showPopup(
+      MassActionConfirm,
+      {
+        title: `Send password-reset emails to ${selectedUuids.size} accounts`,
+        affectedCount: selectedUuids.size,
+        filterSummary,
+        dangerousScope: usersDangerousScope,
+        typedConfirmPhrase: 'RESET ALL',
+        actionLabel: 'Send password-reset emails',
+        dangerous: false
+      },
+      'middle',
+      (confirmed: boolean | undefined) => {
+        if (confirmed !== true) return
+        void (async () => {
+          const r = await getAccountClient().bulkSendPasswordReset(selectedUuidsArray())
+          showBulkResult(r)
+          if (r.succeeded.length > 0) clearSel()
+          await refresh()
+        })()
       }
     )
   }
