@@ -499,6 +499,16 @@
             </span>
           </div>
           <div class="ws-list-toolbar-actions">
+            <Button
+              kind={'regular'}
+              size={'small'}
+              label={getEmbeddedLabel('Top 10 by storage')}
+              on:click={() => {
+                columnFilters = {}
+                sortField = 'backup_size'
+                sortDir = 'desc'
+              }}
+            />
             {#if massActiveAll.length > 0}
               <Button
                 icon={IconStop}
@@ -578,7 +588,7 @@
               { field: 'mode', label: 'Mode', filter: true },
               { field: 'attempts', label: 'Attempts', filter: true, num: true },
               { field: 'progress', label: 'Progress', filter: false, num: true },
-              { field: 'backup_size', label: 'Backup size', filter: true },
+              { field: 'backup_size', label: 'Storage', filter: true },
               { field: 'backup_age', label: 'Backup age', filter: true },
             ] as col}
               <div class="ws-cell ws-head-cell" class:ws-cell-num={col.num} class:ws-is-sorted={sortField === col.field}>
