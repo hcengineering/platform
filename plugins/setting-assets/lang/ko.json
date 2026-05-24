@@ -24,6 +24,7 @@
         "SendAgainIn": "재전송 가능 시간",
         "Value": "값",
         "Signout": "로그아웃",
+        "AdminPanel": "관리자 패널",
         "Settings": "설정",
         "SelectWorkspace": "워크스페이스 선택",
         "InviteWorkspace": "워크스페이스에 초대",

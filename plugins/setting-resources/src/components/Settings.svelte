@@ -15,7 +15,7 @@
 <script lang="ts">
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import login, { loginId } from '@hcengineering/login'
-  import { getClient, createQuery, isDisabled } from '@hcengineering/presentation'
+  import { getClient, createQuery, isAdminUser, isDisabled } from '@hcengineering/presentation'
   import settingPlg from '../plugin'
   import setting, { SettingsCategory, SettingsEvents } from '@hcengineering/setting'
   import {
@@ -112,6 +112,9 @@
     Analytics.handleEvent(SettingsEvents.SelectWorkspace)
     navigate({ path: [loginId, 'selectWorkspace'] })
   }
+  function openAdminPanel (): void {
+    navigate({ path: [loginId, 'admin', 'users'] })
+  }
   function inviteWorkspace (): void {
     Analytics.handleEvent(SettingsEvents.InviteToWorkspace)
     showPopup(login.component.InviteLink, {})
@@ -188,6 +191,13 @@
       </Scroller>
 
       <NavFooter split>
+        {#if isAdminUser()}
+          <NavItem
+            icon={setting.icon.AdminPanel}
+            label={setting.string.AdminPanel}
+            on:click={openAdminPanel}
+          />
+        {/if}
         <NavItem
           icon={setting.icon.SelectWorkspace}
           label={setting.string.SelectWorkspace}
