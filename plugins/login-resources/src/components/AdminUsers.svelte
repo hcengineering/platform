@@ -29,7 +29,7 @@
     workspaceUuids?: string[]
   }
 
-  let filter: AdminFilter = { status: 'active' }
+  let filter: AdminFilter = { status: 'all' }
   let sort: ListAccountsAdminParams['sort'] = { field: 'name', direction: 'asc' }
   let offset = 0
   const limit = 50
@@ -174,7 +174,7 @@
             />
             <DropdownLabelsIntl
               items={statusItems}
-              selected={filter.status ?? 'active'}
+              selected={filter.status ?? 'all'}
               kind={'regular'}
               size={'medium'}
               on:selected={onStatusChange}

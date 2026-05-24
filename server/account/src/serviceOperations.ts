@@ -82,6 +82,14 @@ import {
 // Move to config?
 const processingTimeoutMs = 30 * 1000
 
+// Postgres int8 columns come back as string from node-postgres; coerce so the
+// JSON response stays a real epoch-ms number (new Date(string) -> Invalid Date).
+function toEpochMs (v: number | string | null | undefined): number | null {
+  if (v == null) return null
+  const n = typeof v === 'number' ? v : Number(v)
+  return Number.isFinite(n) ? n : null
+}
+
 export async function listWorkspaces (
   ctx: MeasureContext,
   db: AccountDB,
@@ -168,7 +176,7 @@ export async function listAccountsAdmin (
         hasPassword: acc.hash != null,
         workspaceCount: workspaceRoles.size,
         status: acc.disabledAt != null ? ('disabled' as const) : ('active' as const),
-        lastActivityAt: acc.lastActivityAt ?? null,
+        lastActivityAt: toEpochMs(acc.lastActivityAt),
         isAdmin: primaryEmail != null && adminEmails.has(primaryEmail)
       }
     })
@@ -278,8 +286,8 @@ export async function getAccountDetails (
     firstName: person?.firstName ?? '',
     lastName: person?.lastName ?? '',
     status: account.disabledAt != null ? 'disabled' : 'active',
-    disabledAt: account.disabledAt ?? null,
-    lastActivityAt: account.lastActivityAt ?? null,
+    disabledAt: toEpochMs(account.disabledAt),
+    lastActivityAt: toEpochMs(account.lastActivityAt),
     isAdmin: primaryEmail !== '' && adminEmails.has(primaryEmail),
     socialIds: socialIds.map((s) => ({
       type: s.type,
