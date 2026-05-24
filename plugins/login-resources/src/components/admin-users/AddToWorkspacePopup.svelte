@@ -7,6 +7,7 @@
   import { Button, DropdownLabelsIntl, type DropdownIntlItem } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getAccountClient } from '../../utils'
+  import { parseRole } from './util'
 
   export let accountUuid: string
   export let excludedWorkspaceUuids: string[] = [] // workspaces user is already in
@@ -37,10 +38,6 @@
     }
   }
   void load()
-
-  function parseRole (v: any): AccountRole {
-    return Number(v) as AccountRole
-  }
 
   async function confirm (): Promise<void> {
     if (selectedWs == null) return

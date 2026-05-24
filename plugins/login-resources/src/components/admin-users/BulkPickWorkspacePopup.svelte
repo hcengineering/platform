@@ -7,6 +7,7 @@
   import { Button, DropdownLabelsIntl, type DropdownIntlItem } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getAccountClient } from '../../utils'
+  import { parseRole } from './util'
 
   // 'add' → workspace + role payload; 'remove' → workspace only.
   // A dedicated popup (rather than reusing AddToWorkspacePopup) avoids
@@ -41,7 +42,7 @@
   })
 
   function setRole (detail: unknown): void {
-    role = detail as AccountRole
+    role = parseRole(detail)
   }
 
   function confirm (): void {

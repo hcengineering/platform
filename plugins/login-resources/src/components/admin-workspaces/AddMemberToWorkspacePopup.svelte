@@ -7,6 +7,7 @@
   import { Button, DropdownLabelsIntl, type DropdownIntlItem, SearchEdit } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getAccountClient } from '../../utils'
+  import { parseRole } from '../admin-users/util'
 
   export let workspaceUuid: string
 
@@ -73,7 +74,7 @@
       <p class="muted">No matching accounts.</p>
     {/if}
   </div>
-  <DropdownLabelsIntl items={roleItems} selected={role} on:selected={(e) => { role = e.detail }} />
+  <DropdownLabelsIntl items={roleItems} selected={role} on:selected={(e) => { role = parseRole(e.detail) }} />
   {#if error}<div class="error">{error}</div>{/if}
   <div class="actions">
     <Button label={getEmbeddedLabel('Cancel')} on:click={() => dispatch('close')} />
