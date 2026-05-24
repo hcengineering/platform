@@ -5,6 +5,7 @@
   import { createEventDispatcher } from 'svelte'
   import { CheckBox } from '@hcengineering/ui'
   import type { AccountListRow } from '@hcengineering/account-client'
+  import { getAccountClient } from '../../utils'
 
   export let account: AccountListRow
   export let selected: boolean = false
@@ -38,6 +39,26 @@
   function initials (first: string, last: string): string {
     return ((first[0] ?? '') + (last[0] ?? '')).toUpperCase() || '?'
   }
+
+  // Admin-badge hover: lazily fetch ADMIN_EMAILS from account-pod.
+  let adminEmails: string[] = []
+  let adminEmailsLoaded = false
+  let adminBadgeTitle = 'Instance administrator — hover to load admin list'
+
+  async function onAdminBadgeHover (): Promise<void> {
+    if (adminEmailsLoaded) return
+    try {
+      const res = await getAccountClient().getAdminEmails()
+      adminEmails = res.emails
+      adminEmailsLoaded = true
+      adminBadgeTitle = adminEmails.length > 0
+        ? `Configured via ADMIN_EMAILS\nAdmins: ${adminEmails.join(', ')}`
+        : 'Configured via ADMIN_EMAILS\n(no emails configured)'
+    } catch {
+      adminEmailsLoaded = true
+      adminBadgeTitle = 'Instance administrator'
+    }
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -50,7 +71,12 @@
     <span class="avatar">{initials(account.firstName, account.lastName)}</span>
     <span class="full-name">{account.firstName} {account.lastName}</span>
     {#if account.isAdmin}
-      <span class="badge admin-badge" title="Instance administrator">Admin</span>
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <span
+        class="badge admin-badge"
+        title={adminBadgeTitle}
+        on:mouseenter={() => { void onAdminBadgeHover() }}
+      >Admin</span>
     {/if}
   </div>
   <div class="cell cell-email" title={account.primaryEmail ?? ''}>

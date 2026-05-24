@@ -1684,6 +1684,18 @@ export async function getSubscriptionByProviderId (
   return subscription ?? null
 }
 
+export async function getAdminEmails (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {}
+): Promise<{ emails: string[] }> {
+  await assertAdmin(ctx, db, token)
+  const emails = (process.env.ADMIN_EMAILS ?? '').split(',').map((e) => e.trim()).filter(Boolean)
+  return { emails }
+}
+
 export type AccountServiceMethods =
   | 'getPendingWorkspace'
   | 'updateWorkspaceInfo'
@@ -1724,6 +1736,7 @@ export type AccountServiceMethods =
   | 'findFullSocialIds'
   | 'getSubscriptionByProviderId'
   | 'upsertSubscription'
+  | 'getAdminEmails'
 
 /**
  * @public
@@ -1768,6 +1781,7 @@ export function getServiceMethods (deps?: AccountMethodDeps): Partial<Record<Acc
     bulkSetDisabled: wrapWithDeps(bulkSetDisabled, deps),
     bulkSendPasswordReset: wrap(bulkSendPasswordReset),
     getSubscriptionByProviderId: wrap(getSubscriptionByProviderId),
-    upsertSubscription: wrap(upsertSubscription)
+    upsertSubscription: wrap(upsertSubscription),
+    getAdminEmails: wrap(getAdminEmails)
   }
 }

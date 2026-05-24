@@ -306,6 +306,7 @@ export interface AccountClient {
   bulkRemoveFromWorkspace: (accountUuids: AccountUuid[], workspaceUuid: WorkspaceUuid) => Promise<BulkResult>
   bulkSetDisabled: (accountUuids: AccountUuid[], disabled: boolean) => Promise<BulkResult>
   bulkSendPasswordReset: (accountUuids: AccountUuid[]) => Promise<BulkResult>
+  getAdminEmails: () => Promise<{ emails: string[] }>
 }
 
 /** @public */
@@ -1526,6 +1527,11 @@ class AccountClientImpl implements AccountClient {
 
   async bulkSendPasswordReset (accountUuids: AccountUuid[]): Promise<BulkResult> {
     const request = { method: 'bulkSendPasswordReset' as const, params: { accountUuids } }
+    return await this.rpc(request)
+  }
+
+  async getAdminEmails (): Promise<{ emails: string[] }> {
+    const request = { method: 'getAdminEmails' as const, params: {} }
     return await this.rpc(request)
   }
 }
