@@ -70,8 +70,8 @@
     <div class="cell cell-checkbox" on:click|stopPropagation>
       <CheckBox checked={allSelected} on:value={onToggleAll} />
     </div>
-    <div class="cell cell-name sortable" class:is-sorted={isSorted('name')}>
-      <span class="hdr-label" on:click={() => setSort('name')}><span class="arrow">{sortArrow('name')}</span>Name</span>
+    <div class="cell cell-name sortable" class:is-sorted={sort?.field === 'name'}>
+      <span class="hdr-label" on:click={() => setSort('name')}><span class="arrow">{sort?.field === 'name' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Name</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.name != null}
@@ -81,8 +81,8 @@
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
-    <div class="cell cell-email sortable" class:is-sorted={isSorted('email')}>
-      <span class="hdr-label" on:click={() => setSort('email')}><span class="arrow">{sortArrow('email')}</span>Email</span>
+    <div class="cell cell-email sortable" class:is-sorted={sort?.field === 'email'}>
+      <span class="hdr-label" on:click={() => setSort('email')}><span class="arrow">{sort?.field === 'email' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Email</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.email != null}
@@ -92,8 +92,8 @@
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
-    <div class="cell cell-auth sortable" class:is-sorted={isSorted('auth')}>
-      <span class="hdr-label" on:click={() => setSort('auth')}><span class="arrow">{sortArrow('auth')}</span>Auth</span>
+    <div class="cell cell-auth sortable" class:is-sorted={sort?.field === 'auth'}>
+      <span class="hdr-label" on:click={() => setSort('auth')}><span class="arrow">{sort?.field === 'auth' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Auth</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.auth != null}
@@ -103,8 +103,8 @@
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
-    <div class="cell cell-ws sortable" class:is-sorted={isSorted('workspace_count')}>
-      <span class="hdr-label" on:click={() => setSort('workspace_count')}><span class="arrow">{sortArrow('workspace_count')}</span>Workspaces</span>
+    <div class="cell cell-ws sortable" class:is-sorted={sort?.field === 'workspace_count'}>
+      <span class="hdr-label" on:click={() => setSort('workspace_count')}><span class="arrow">{sort?.field === 'workspace_count' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Workspaces</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.workspaces != null}
@@ -114,8 +114,8 @@
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
-    <div class="cell cell-activity sortable" class:is-sorted={isSorted('last_activity')}>
-      <span class="hdr-label" on:click={() => setSort('last_activity')}><span class="arrow">{sortArrow('last_activity')}</span>Last activity</span>
+    <div class="cell cell-activity sortable" class:is-sorted={sort?.field === 'last_activity'}>
+      <span class="hdr-label" on:click={() => setSort('last_activity')}><span class="arrow">{sort?.field === 'last_activity' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Last activity</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.last_activity != null}
@@ -125,8 +125,8 @@
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
-    <div class="cell cell-status sortable" class:is-sorted={isSorted('status')}>
-      <span class="hdr-label" on:click={() => setSort('status')}><span class="arrow">{sortArrow('status')}</span>Status</span>
+    <div class="cell cell-status sortable" class:is-sorted={sort?.field === 'status'}>
+      <span class="hdr-label" on:click={() => setSort('status')}><span class="arrow">{sort?.field === 'status' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Status</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.status != null}

@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { RegionInfo, AccountAggregatedInfo } from '@hcengineering/account-client'
+  import { RegionInfo } from '@hcengineering/account-client'
   import {
-    AccountUuid,
     groupByArray,
     isActiveMode,
     isArchivingMode,
@@ -10,7 +9,6 @@
     isRestoringMode,
     isUpgradingMode,
     reduceCalls,
-    systemAccountUuid,
     versionToString,
     type WorkspaceInfoWithStatus
   } from '@hcengineering/core'
@@ -19,40 +17,37 @@
     copyTextToClipboard,
     isAdminUser,
     MessageBox,
-    type OverviewStatistics,
-    type WorkspaceStatistics
+    type OverviewStatistics
   } from '@hcengineering/presentation'
   import {
     Button,
     ButtonMenu,
     CheckBox,
+    Icon,
     IconArrowRight,
     IconCopy,
     IconDownOutline,
+    IconFilter,
     IconOpen,
     IconStart,
     IconStop,
     locationToUrl,
     Popup,
     Scroller,
-    SearchEdit,
     showPopup,
     ticker
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
-  import { getAccountClient, getAllWorkspaces, getRegionInfo, performWorkspaceOperation } from '../utils'
+  import { getAllWorkspaces, getRegionInfo, performWorkspaceOperation } from '../utils'
   import AdminShell from './admin-shell/AdminShell.svelte'
   import AdminWorkspaceDrawer from './admin-workspaces/AdminWorkspaceDrawer.svelte'
+  import WorkspaceColumnFilterPopup from './admin-workspaces/WorkspaceColumnFilterPopup.svelte'
   import { Breadcrumb, Header, IconSettings } from '@hcengineering/ui'
   import login from '@hcengineering/login'
 
   $: now = $ticker
 
   $: isAdmin = isAdminUser()
-
-  const accountClient = getAccountClient()
-
-  let search: string = ''
 
   async function select (workspace: string): Promise<void> {
     const url = locationToUrl({ path: [workbenchId, workspace] })
@@ -63,23 +58,22 @@
 
   let workspaces: WorkspaceInfo[] = []
 
-  enum SortingRule {
-    Activity = '1',
-    Name = '2',
-    BackupDate = '3',
-    BackupSize = '4',
-    LastVisit = '5'
+  // Per-column sort. Click header → sort by that column; click again → reverse.
+  type SortField = 'name' | 'region' | 'last_visit' | 'mode' | 'attempts' | 'progress' | 'backup_size' | 'backup_age'
+  let sortField: SortField = 'name'
+  let sortDir: 'asc' | 'desc' = 'asc'
+
+  function setSort (field: SortField): void {
+    if (sortField === field) {
+      sortDir = sortDir === 'asc' ? 'desc' : 'asc'
+    } else {
+      sortField = field
+      sortDir = 'asc'
+    }
   }
 
-  let sortingRule = SortingRule.Activity
-
-  const sortRules = {
-    [SortingRule.Activity]: 'Active users',
-    [SortingRule.Name]: 'Name',
-    [SortingRule.BackupDate]: 'Backup date',
-    [SortingRule.BackupSize]: 'Backup size',
-    [SortingRule.LastVisit]: 'Last visit'
-  }
+  // Per-column filters. Each entry is a small payload object for one column.
+  let columnFilters: Record<string, any> = {}
 
   const updateWorkspaces = reduceCalls(async (_: number) => {
     const res = await getAllWorkspaces()
@@ -88,33 +82,6 @@
 
   $: void updateWorkspaces($ticker)
 
-  // Individual filters
-
-  let showActive: boolean = true
-  let showArchived: boolean = false
-  let showDeleted: boolean = false
-  let showOther: boolean = true
-  let showGrAttempts: boolean = true
-  let showSelectedRegionOnly: boolean = false
-  let showInactive = false
-
-  function isWorkspaceInactive (it: WorkspaceInfo, stats: WorkspaceStatistics | undefined): boolean {
-    if (stats === undefined) {
-      return true
-    }
-    const ops = (stats.sessions ?? []).reduceRight(
-      (p, it) => p + (it.mins5.tx + it.mins5.find) + (it.current.tx + it.current.find),
-      0
-    )
-    if (ops === 0) {
-      return true
-    }
-    if (stats.sessions.filter((it) => (it.userId as any) !== systemAccountUuid).length === 0) {
-      return true
-    }
-    return false
-  }
-
   function getBackupSize (workspace: WorkspaceInfo): number {
     return Math.max(
       workspace.backupInfo?.backupSize ?? 0,
@@ -122,42 +89,80 @@
     )
   }
 
-  $: sortedWorkspaces = workspaces
-    .filter(
-      (it) =>
-        ((it.name?.includes(search) ?? false) ||
-          (it.url?.includes(search) ?? false) ||
-          it.uuid?.includes(search) ||
-          it.createdBy?.includes(search)) &&
-        (showSelectedRegionOnly ? it.region === filterRegionId : true) &&
-        (showInactive ? isWorkspaceInactive(it, statsByWorkspace.get(it.uuid)) : true) &&
-        ((showActive && isActiveMode(it.mode)) ||
-          (showArchived && isArchivingMode(it.mode)) ||
-          (showDeleted && isDeletingMode(it.mode)) ||
-          (showOther &&
-            (isMigrationMode(it.mode) ||
-              isRestoringMode(it.mode) ||
-              isUpgradingMode(it.mode) ||
-              (isArchivingMode(it.mode) && it.mode !== 'archived'))) ||
-          (showGrAttempts && it.processingAttempts > 0))
-    )
-    .sort((a, b) => {
-      switch (sortingRule) {
-        case SortingRule.Activity: {
-          const aStats = statsByWorkspace.get(a.uuid ?? '')
-          const bStats = statsByWorkspace.get(b.uuid ?? '')
-          return (bStats?.sessions?.length ?? 0) - (aStats?.sessions?.length ?? 0)
-        }
-        case SortingRule.BackupDate: {
-          return (a.backupInfo?.lastBackup ?? 0) - (b.backupInfo?.lastBackup ?? 0)
-        }
-        case SortingRule.BackupSize:
-          return getBackupSize(b) - getBackupSize(a)
-        case SortingRule.LastVisit:
-          return (b.lastVisit ?? 0) - (a.lastVisit ?? 0)
+  function getLastVisitDays (it: WorkspaceInfo): number {
+    return Math.round((now - (it.lastVisit ?? 0)) / (1000 * 3600 * 24))
+  }
+
+  function getBackupAgeHours (it: WorkspaceInfo): number | null {
+    if (it.backupInfo == null) return null
+    return Math.round((now - it.backupInfo.lastBackup) / (1000 * 3600))
+  }
+
+  // Reactive predicate + comparator. Inline closures so Svelte tracks the
+  // changes to columnFilters / sortField / sortDir (a plain function would
+  // not re-run the reactive sortedWorkspaces statement when these change).
+  $: matchesColumnFilters = (cf: Record<string, any>) => (it: WorkspaceInfo): boolean => {
+    if (cf.name?.nameContains != null) {
+      const needle = cf.name.nameContains.toLowerCase()
+      const hay = `${it.name ?? ''} ${it.url ?? ''} ${it.uuid ?? ''} ${it.createdBy ?? ''}`.toLowerCase()
+      if (!hay.includes(needle)) return false
+    }
+    if (cf.region?.regions != null) {
+      const region = it.region ?? ''
+      if (!cf.region.regions.includes(region)) return false
+    }
+    if (cf.mode?.modes != null) {
+      if (!cf.mode.modes.includes(it.mode ?? '')) return false
+    }
+    if (cf.last_visit != null) {
+      const d = getLastVisitDays(it)
+      if (cf.last_visit.min != null && d < cf.last_visit.min) return false
+      if (cf.last_visit.max != null && d > cf.last_visit.max) return false
+    }
+    if (cf.attempts != null) {
+      const a = it.processingAttempts ?? 0
+      if (cf.attempts.min != null && a < cf.attempts.min) return false
+      if (cf.attempts.max != null && a > cf.attempts.max) return false
+    }
+    if (cf.backup_size != null) {
+      const sizeMb = getBackupSize(it)
+      if (cf.backup_size.min != null && sizeMb < cf.backup_size.min) return false
+      if (cf.backup_size.max != null && sizeMb > cf.backup_size.max) return false
+    }
+    if (cf.backup_age != null) {
+      const h = getBackupAgeHours(it)
+      if (h == null) return false
+      if (cf.backup_age.min != null && h < cf.backup_age.min) return false
+      if (cf.backup_age.max != null && h > cf.backup_age.max) return false
+    }
+    return true
+  }
+
+  $: comparator = ((field: SortField, dir: 'asc' | 'desc') => {
+    const mult = dir === 'asc' ? 1 : -1
+    return (a: WorkspaceInfo, b: WorkspaceInfo): number => {
+      switch (field) {
+        case 'name':
+          return mult * ((a.name ?? a.url ?? a.uuid) ?? '').localeCompare((b.name ?? b.url ?? b.uuid) ?? '')
+        case 'region':
+          return mult * (a.region ?? '').localeCompare(b.region ?? '')
+        case 'last_visit':
+          return mult * ((a.lastVisit ?? 0) - (b.lastVisit ?? 0))
+        case 'mode':
+          return mult * (a.mode ?? '').localeCompare(b.mode ?? '')
+        case 'attempts':
+          return mult * ((a.processingAttempts ?? 0) - (b.processingAttempts ?? 0))
+        case 'progress':
+          return mult * ((a.processingProgress ?? 0) - (b.processingProgress ?? 0))
+        case 'backup_size':
+          return mult * (getBackupSize(a) - getBackupSize(b))
+        case 'backup_age':
+          return mult * ((a.backupInfo?.lastBackup ?? 0) - (b.backupInfo?.lastBackup ?? 0))
       }
-      return (b.url ?? b.uuid).localeCompare(a.url ?? a.uuid)
-    })
+    }
+  })(sortField, sortDir)
+
+  $: sortedWorkspaces = workspaces.filter(matchesColumnFilters(columnFilters)).sort(comparator)
 
   let backupIdx = new Map<string, number>()
 
@@ -246,40 +251,33 @@
   let limit = 50
 
   let regionInfo: RegionInfo[] = []
-
   let regionTitles: Record<string, string> = {}
 
-  let selectedRegionId: string = ''
-
-  let filterRegionId: string = ''
+  // Migrate-target region for the Mass Migrate button. Defaults to the
+  // first region; user picks via the inline dropdown next to the button.
+  let migrateTargetRegionId: string = ''
 
   void getRegionInfo().then((_regionInfo) => {
     regionInfo = _regionInfo ?? []
     regionTitles = Object.fromEntries(
       regionInfo.map((it) => [it.region, it.name.length !== 0 ? it.name : it.region.length > 0 ? it.region : 'Default'])
     )
-    if (selectedRegionId === '' && regionInfo.length > 0) {
-      selectedRegionId = regionInfo[0].region
-    }
-    if (filterRegionId === '' && regionInfo.length > 0) {
-      filterRegionId = regionInfo[0].region
+    if (migrateTargetRegionId === '' && regionInfo.length > 0) {
+      migrateTargetRegionId = regionInfo[0].region
     }
   })
 
-  $: selectedRegionRef = regionInfo.find((it) => it.region === selectedRegionId)
-  $: selectedRegionName =
-    selectedRegionRef !== undefined
-      ? selectedRegionRef.name.length > 0
-        ? selectedRegionRef.name
-        : selectedRegionRef.region
-      : ''
+  $: regionFilterItems = regionInfo.map((it) => ({
+    id: it.region,
+    label: regionTitles[it.region] ?? (it.region === '' ? 'Default' : it.region)
+  }))
 
-  $: filteredRegionRef = regionInfo.find((it) => it.region === filterRegionId)
-  $: filteredRegionName =
-    filteredRegionRef !== undefined
-      ? filteredRegionRef.name.length > 0
-        ? filteredRegionRef.name
-        : filteredRegionRef.region
+  $: migrateTargetRef = regionInfo.find((it) => it.region === migrateTargetRegionId)
+  $: migrateTargetName =
+    migrateTargetRef !== undefined
+      ? migrateTargetRef.name.length > 0
+        ? migrateTargetRef.name
+        : migrateTargetRef.region
       : ''
 
   $: byVersion = groupByArray(
@@ -296,27 +294,27 @@
   )
 
   let superAdminMode = false
-  let accountSuperAdminMode = false
 
-  let accountSearch = ''
-  let accountSkip = 0
-  const accountLimit = 10
-  let accounts: AccountAggregatedInfo[] = []
-
-  const loadAccounts = reduceCalls(async (search?: string, skip?: number, limit?: number): Promise<void> => {
-    console.log('Called loadAccounts', search, skip, limit)
-    accounts = await accountClient.listAccounts(search, skip, limit)
-  })
-
-  void loadAccounts(accountSearch, accountSkip, accountLimit)
-
-  async function deleteAccount (uuid: AccountUuid): Promise<void> {
-    await accountClient.deleteAccount(uuid)
+  function openColumnFilter (column: string, anchor: HTMLElement): void {
+    showPopup(
+      WorkspaceColumnFilterPopup,
+      { column, current: columnFilters[column], regions: regionFilterItems },
+      anchor,
+      (result: { column: string, payload: any | 'clear' } | undefined) => {
+        if (result == null) return
+        if (result.payload === 'clear') {
+          const { [result.column]: _drop, ...rest } = columnFilters
+          columnFilters = rest
+        } else {
+          columnFilters = { ...columnFilters, [result.column]: result.payload }
+        }
+      }
+    )
   }
 
-  async function accountSearchChanged (ev: CustomEvent<string>): Promise<void> {
-    accountSkip = 0
-    await loadAccounts(ev.detail, accountSkip, accountLimit)
+  function sortArrow (field: SortField): string {
+    if (sortField !== field) return ''
+    return sortDir === 'asc' ? '↑' : '↓'
   }
 
   let selectedWorkspaceUuid: string | null = null
@@ -333,7 +331,7 @@
   // Active workspaces in the current filtered list — used by the two
   // mass-action buttons above the list.
   $: massActiveAll = sortedWorkspaces.filter((it) => isActiveMode(it.mode))
-  $: massActiveMigratable = massActiveAll.filter((it) => (it.region ?? '') !== selectedRegionId)
+  $: massActiveMigratable = massActiveAll.filter((it) => (it.region ?? '') !== migrateTargetRegionId)
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -408,90 +406,6 @@
           </div>
         {/if}
 
-        <div class="ws-card flex-no-shrink" data-testid="workspace-search-container">
-          <SearchEdit bind:value={search} width={'100%'} />
-        </div>
-
-        <div class="ws-card">
-          <div class="ws-card-title">Filters</div>
-          <div class="ws-filter-grid">
-            <label class="ws-filter">
-              <CheckBox bind:checked={showActive} />
-              <span>Active workspaces</span>
-            </label>
-            <label class="ws-filter">
-              <CheckBox bind:checked={showArchived} />
-              <span>Archived workspaces</span>
-            </label>
-            <label class="ws-filter">
-              <CheckBox bind:checked={showDeleted} />
-              <span>Deleted workspaces</span>
-            </label>
-            <label class="ws-filter">
-              <CheckBox bind:checked={showOther} />
-              <span>Other workspaces</span>
-            </label>
-            <label class="ws-filter">
-              <CheckBox bind:checked={showGrAttempts} />
-              <span>Attempts {'>='}0</span>
-            </label>
-            <label class="ws-filter">
-              <CheckBox bind:checked={showSelectedRegionOnly} />
-              <span>Selected region only</span>
-            </label>
-            <label class="ws-filter">
-              <CheckBox bind:checked={showInactive} />
-              <span>Inactive workspaces</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="ws-card">
-          <div class="ws-card-title">Sorting & regions</div>
-          <div class="ws-control-row">
-            <span class="ws-control-label">Sort order</span>
-            <ButtonMenu
-              selected={sortingRule}
-              autoSelectionIfOne
-              title={sortRules[sortingRule]}
-              items={Object.entries(sortRules).map((it) => ({ id: it[0], label: getEmbeddedLabel(it[1]) }))}
-              on:selected={(it) => {
-                sortingRule = it.detail
-              }}
-            />
-          </div>
-          <div class="ws-control-row">
-            <span class="ws-control-label">Migrate to region</span>
-            <ButtonMenu
-              selected={selectedRegionId}
-              autoSelectionIfOne
-              title={selectedRegionName}
-              items={regionInfo.map((it) => ({
-                id: it.region === '' ? '#' : it.region,
-                label: getEmbeddedLabel(it.name.length > 0 ? it.name : it.region + ' (hidden)')
-              }))}
-              on:selected={(it) => {
-                selectedRegionId = it.detail === '#' ? '' : it.detail
-              }}
-            />
-          </div>
-          <div class="ws-control-row">
-            <span class="ws-control-label">Filter by region</span>
-            <CheckBox bind:checked={showSelectedRegionOnly} />
-            <ButtonMenu
-              selected={filterRegionId}
-              autoSelectionIfOne
-              title={filteredRegionName}
-              items={regionInfo.map((it) => ({
-                id: it.region === '' ? '#' : it.region,
-                label: getEmbeddedLabel(it.name.length > 0 ? it.name : it.region + ' (hidden)')
-              }))}
-              on:selected={(it) => {
-                filterRegionId = it.detail === '#' ? '' : it.detail
-              }}
-            />
-          </div>
-        </div>
         <div class="ws-list-toolbar">
           <div class="ws-list-toolbar-title">
             Workspaces
@@ -517,18 +431,30 @@
                 }}
               />
             {/if}
-            {#if regionInfo.length > 0 && massActiveMigratable.length > 0}
+            {#if regionInfo.length > 1 && massActiveMigratable.length > 0}
+              <span class="ws-migrate-region-label">to</span>
+              <ButtonMenu
+                selected={migrateTargetRegionId}
+                title={migrateTargetName}
+                items={regionInfo.map((it) => ({
+                  id: it.region === '' ? '#' : it.region,
+                  label: getEmbeddedLabel(it.name.length > 0 ? it.name : it.region + ' (hidden)')
+                }))}
+                on:selected={(it) => {
+                  migrateTargetRegionId = it.detail === '#' ? '' : it.detail
+                }}
+              />
               <Button
                 icon={IconArrowRight}
                 size={'small'}
                 kind={'positive'}
-                label={getEmbeddedLabel(`Mass Migrate ${massActiveMigratable.length} to ${selectedRegionName ?? ''}`)}
+                label={getEmbeddedLabel(`Mass Migrate ${massActiveMigratable.length}`)}
                 on:click={() => {
                   showPopup(MessageBox, {
                     label: getEmbeddedLabel(`Mass Migrate ${massActiveMigratable.length}`),
-                    message: getEmbeddedLabel(`Please confirm migrate ${massActiveMigratable.length} workspaces`),
+                    message: getEmbeddedLabel(`Please confirm migrate ${massActiveMigratable.length} workspaces to ${migrateTargetName}`),
                     action: async () => {
-                      await performWorkspaceOperation(massActiveMigratable.map((it) => it.uuid), 'migrate-to', selectedRegionId)
+                      await performWorkspaceOperation(massActiveMigratable.map((it) => it.uuid), 'migrate-to', migrateTargetRegionId)
                     }
                   })
                 }}
@@ -540,14 +466,32 @@
         <div class="ws-table">
           <!-- Grid header: every row inherits the same grid-template via display:contents -->
           <div class="ws-row ws-head">
-            <div class="ws-cell">Name</div>
-            <div class="ws-cell">Region</div>
-            <div class="ws-cell ws-cell-num">Last visit</div>
-            <div class="ws-cell">Mode</div>
-            <div class="ws-cell ws-cell-num">Attempts</div>
-            <div class="ws-cell ws-cell-num">Progress</div>
-            <div class="ws-cell">Backup size</div>
-            <div class="ws-cell">Backup age</div>
+            {#each [
+              { field: 'name', label: 'Name', filter: true },
+              { field: 'region', label: 'Region', filter: true },
+              { field: 'last_visit', label: 'Last visit', filter: true, num: true },
+              { field: 'mode', label: 'Mode', filter: true },
+              { field: 'attempts', label: 'Attempts', filter: true, num: true },
+              { field: 'progress', label: 'Progress', filter: false, num: true },
+              { field: 'backup_size', label: 'Backup size', filter: true },
+              { field: 'backup_age', label: 'Backup age', filter: true },
+            ] as col}
+              <div class="ws-cell ws-head-cell" class:ws-cell-num={col.num} class:ws-is-sorted={sortField === col.field}>
+                <span class="ws-hdr-label" on:click={() => setSort(col.field)}>
+                  <span class="ws-sort-arrow">{sortField === col.field ? (sortDir === 'asc' ? '↑' : '↓') : ''}</span>{col.label}
+                </span>
+                {#if col.filter}
+                  <button
+                    class="ws-filter-btn"
+                    class:active={columnFilters[col.field] != null}
+                    title={`Filter by ${col.label}`}
+                    on:click|stopPropagation={(e) => openColumnFilter(col.field, e.currentTarget)}
+                  >
+                    <Icon icon={IconFilter} size={'x-small'} />
+                  </button>
+                {/if}
+              </div>
+            {/each}
             <div class="ws-cell ws-cell-actions">Actions</div>
           </div>
 
@@ -686,7 +630,7 @@
                       }}
                     />
                   {/if}
-                  {#if regionInfo.length > 0 && workspace.mode === 'active' && (workspace.region ?? '') !== selectedRegionId}
+                  {#if regionInfo.length > 0 && workspace.mode === 'active' && (workspace.region ?? '') !== migrateTargetRegionId}
                     <Button
                       icon={IconArrowRight}
                       size={'small'}
@@ -697,7 +641,7 @@
                           label: getEmbeddedLabel(`Migrate ${workspace.url}`),
                           message: getEmbeddedLabel('Please confirm'),
                           action: async () => {
-                            await performWorkspaceOperation(workspace.uuid, 'migrate-to', selectedRegionId)
+                            await performWorkspaceOperation(workspace.uuid, 'migrate-to', migrateTargetRegionId)
                           }
                         })
                       }}
@@ -736,100 +680,6 @@
           </div>
         {/if}
 
-      <div class="ws-section-header">
-        <h3 class="ws-section-title">Accounts</h3>
-        <label class="super-admin-toggle flex-row-center">
-          <CheckBox bind:checked={accountSuperAdminMode} />
-          <span class="ml-2">Enable deletion</span>
-        </label>
-      </div>
-
-      <div class="ws-card ws-accounts-toolbar flex-no-shrink">
-        <div class="ws-accounts-search">
-          <SearchEdit bind:value={accountSearch} width={'100%'} on:change={accountSearchChanged} />
-        </div>
-        <div class="ws-accounts-pager">
-        <Button
-          label={getEmbeddedLabel('Previous')}
-          disabled={accountSkip === 0}
-          on:click={async () => {
-            accountSkip = Math.max(0, accountSkip - accountLimit)
-            await loadAccounts(accountSearch, accountSkip, accountLimit)
-          }}
-        />
-        <span class="mx-2">Page {Math.floor(accountSkip / accountLimit) + 1}</span>
-        <Button
-          label={getEmbeddedLabel('Next')}
-          disabled={accounts.length < accountLimit}
-          on:click={async () => {
-            accountSkip += accountLimit
-            await loadAccounts(accountSearch, accountSkip, accountLimit)
-          }}
-        />
-        </div>
-      </div>
-
-      <div class="ws-accounts-table">
-        <div class="ws-accounts-head">
-          <div>Account</div>
-          <div>Social IDs</div>
-          <div>Workspaces</div>
-          <div class="ws-accounts-actions-col">Actions</div>
-        </div>
-        <div class="ws-accounts-body">
-          <Scroller maxHeight={40} noStretch={true}>
-            {#each accounts as account}
-              <div class="ws-account-row">
-                <div class="ws-account-cell ws-account-cell-name">
-                  <div class="ws-account-name">{account.firstName} {account.lastName}</div>
-                  <code class="ws-account-uuid" title={account.uuid}>{account.uuid}</code>
-                </div>
-
-                <div class="ws-account-cell">
-                  <div class="ws-account-count">{account.socialIds.length} total</div>
-                  {#each account.socialIds as socialId}
-                    <div class="ws-account-meta" title={socialId.value}>
-                      <span class="ws-account-meta-key">{socialId.type}</span>
-                      <span class="ws-account-meta-val">{socialId.value}</span>
-                    </div>
-                  {/each}
-                </div>
-
-                <div class="ws-account-cell">
-                  <div class="ws-account-count">{account.workspaces.length} total</div>
-                  {#each account.workspaces as workspace}
-                    <div class="ws-account-meta" title={`${workspace.name} · ${workspace.url} · ${workspace.uuid}`}>
-                      <span class="ws-account-meta-key">{workspace.name}</span>
-                      <span class="ws-account-meta-val">{workspace.url}</span>
-                    </div>
-                  {/each}
-                </div>
-
-                <div class="ws-account-cell ws-account-cell-actions">
-                  {#if accountSuperAdminMode}
-                    <Button
-                      icon={IconStop}
-                      size={'small'}
-                      kind={'dangerous'}
-                      label={getEmbeddedLabel('Delete')}
-                      on:click={() => {
-                        showPopup(MessageBox, {
-                          label: getEmbeddedLabel(`Delete account ${account.firstName} ${account.lastName}`),
-                          message: getEmbeddedLabel('Please confirm account deletion. This action cannot be undone.'),
-                          action: async () => {
-                            await deleteAccount(account.uuid)
-                            await loadAccounts(accountSearch, accountSkip, accountLimit)
-                          }
-                        })
-                      }}
-                    />
-                  {/if}
-                </div>
-              </div>
-            {/each}
-          </Scroller>
-        </div>
-      </div>
         </div>
       </Scroller>
     </div>
@@ -856,8 +706,7 @@
     gap: var(--spacing-2);
   }
 
-  .ws-breakdown,
-  .ws-section-header {
+  .ws-breakdown {
     width: 100%;
     box-sizing: border-box;
   }
@@ -940,84 +789,6 @@
     color: var(--theme-caption-color);
   }
 
-  .ws-card {
-    width: 100%;
-    box-sizing: border-box;
-    padding: var(--spacing-2);
-    background: var(--theme-bg-color);
-    border: 1px solid var(--theme-divider-color);
-    border-radius: var(--small-BorderRadius);
-  }
-
-  .ws-accounts-toolbar {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
-  }
-
-  .ws-accounts-search {
-    flex: 1;
-  }
-
-  .ws-card-title {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--theme-darker-color);
-    margin-bottom: 0.55rem;
-  }
-
-  .ws-filter-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 0.4rem 1.25rem;
-  }
-
-  .ws-filter {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    font-size: 0.85rem;
-    color: var(--theme-content-color);
-    cursor: pointer;
-  }
-
-  .ws-control-row {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    padding: 0.25rem 0;
-  }
-
-  .ws-control-label {
-    flex: 0 0 11rem;
-    font-size: 0.82rem;
-    color: var(--theme-darker-color);
-  }
-
-  .ws-section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: var(--spacing-2) 0 0;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--theme-divider-color);
-  }
-
-  .ws-section-title {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--theme-caption-color);
-  }
-
-  .ws-accounts-pager {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    flex-shrink: 0;
-  }
-
   .ws-list-toolbar {
     display: flex;
     align-items: center;
@@ -1096,6 +867,61 @@
     letter-spacing: 0.04em;
     color: var(--theme-darker-color);
     white-space: nowrap;
+    gap: 0.35rem;
+  }
+
+  .ws-hdr-label {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      color: var(--theme-caption-color);
+    }
+  }
+
+  .ws-sort-arrow {
+    display: inline-block;
+    width: 0.75rem;
+    margin-right: 0.15rem;
+    color: var(--theme-caption-color);
+    font-weight: 700;
+  }
+
+  .ws-head .ws-is-sorted {
+    background: var(--theme-bg-color);
+    color: var(--theme-caption-color);
+    font-weight: 600;
+  }
+
+  .ws-filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 0;
+    padding: 0.1rem 0.25rem;
+    cursor: pointer;
+    color: var(--theme-darker-color);
+    border-radius: 0.25rem;
+    opacity: 0.35;
+    transition: opacity 80ms ease, color 80ms ease, background 80ms ease;
+
+    &:hover {
+      opacity: 1;
+      color: var(--theme-caption-color);
+      background: var(--theme-divider-color);
+    }
+
+    &.active {
+      opacity: 1;
+      color: #2563eb;
+      background: rgba(96, 165, 250, 0.18);
+    }
+  }
+
+  .ws-migrate-region-label {
+    font-size: 0.78rem;
+    color: var(--theme-darker-color);
   }
 
   .ws-body {
@@ -1210,125 +1036,4 @@
     cursor: pointer;
   }
 
-  /* Accounts table — deterministic grid columns shared by header + every row */
-  .ws-accounts-table {
-    width: 100%;
-    box-sizing: border-box;
-    background: var(--theme-bg-color);
-    border: 1px solid var(--theme-divider-color);
-    border-radius: var(--small-BorderRadius);
-    overflow: hidden;
-  }
-
-  .ws-accounts-head,
-  .ws-account-row {
-    display: grid;
-    grid-template-columns: minmax(220px, 1.4fr) minmax(260px, 1.6fr) minmax(260px, 1.6fr) 110px;
-    align-items: start;
-  }
-
-  .ws-accounts-head {
-    padding: 0;
-    background: var(--theme-bg-accent-color);
-    border-bottom: 1px solid var(--theme-divider-color);
-
-    & > div {
-      padding: 0.55rem 0.85rem;
-      font-size: 0.72rem;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--theme-darker-color);
-    }
-
-    .ws-accounts-actions-col {
-      justify-self: end;
-      text-align: right;
-    }
-  }
-
-  .ws-accounts-body {
-    min-height: 0;
-  }
-
-  .ws-account-row {
-    border-bottom: 1px solid var(--theme-divider-color);
-
-    &:last-child {
-      border-bottom: 0;
-    }
-  }
-
-  .ws-account-cell {
-    padding: 0.65rem 0.85rem;
-    font-size: 0.82rem;
-    color: var(--theme-content-color);
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-  }
-
-  .ws-account-cell-actions {
-    justify-self: end;
-    align-self: center;
-    flex-direction: row;
-    gap: 0.3rem;
-  }
-
-  .ws-account-name {
-    color: var(--theme-caption-color);
-    font-weight: 500;
-    font-size: 0.875rem;
-  }
-
-  .ws-account-uuid {
-    font-family: var(--mono-font, 'SF Mono', 'Menlo', 'Consolas', monospace);
-    font-size: 0.7rem;
-    color: var(--theme-darker-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: block;
-  }
-
-  .ws-account-count {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--theme-darker-color);
-  }
-
-  .ws-account-meta {
-    display: flex;
-    gap: 0.4rem;
-    min-width: 0;
-    align-items: baseline;
-  }
-
-  .ws-account-meta-key {
-    flex-shrink: 0;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--theme-darker-color);
-    padding: 0.05rem 0.35rem;
-    background: var(--theme-bg-accent-color);
-    border-radius: 0.2rem;
-    line-height: 1.4;
-  }
-
-  .row-clickable {
-    cursor: pointer;
-  }
-
-  .ws-account-meta-val {
-    font-family: var(--mono-font, 'SF Mono', 'Menlo', 'Consolas', monospace);
-    font-size: 0.75rem;
-    color: var(--theme-content-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
-  }
 </style>
