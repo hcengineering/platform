@@ -12,7 +12,9 @@ import account, {
   getAccountDB,
   getAllTransactors,
   getMethods,
-  cleanExpiredOtp
+  cleanExpiredOtp,
+  listAccountsAdmin,
+  assertAdmin
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
@@ -450,6 +452,58 @@ export function serveAccount (
       { method: request.method }
     )
   })
+
+  // ── CSV Export routes ────────────────────────────────────────────────────
+  // NOTE: token is passed via query string because window.open() cannot set
+  // Authorization headers. Security headers prevent caching + referrer leaks.
+  function csvLine (cols: string[]): string {
+    return cols.map((c) => {
+      const s = String(c ?? '')
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return '"' + s.replace(/"/g, '""') + '"'
+      }
+      return s
+    }).join(',') + '\n'
+  }
+
+  router.get('/api/v1/admin/export/accounts.csv', async (ctx) => {
+    const token = (ctx.query.token as string) ?? extractToken(ctx.request.headers) ?? ''
+    const [db] = await accountsDb
+    const childCtx = measureCtx.newChild('csv-export-accounts', {})
+    try {
+      await assertAdmin(childCtx, db, token)
+    } catch {
+      ctx.res.writeHead(403, { 'Content-Type': 'text/plain' })
+      ctx.res.end('Forbidden')
+      return
+    }
+    ctx.res.writeHead(200, {
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': `attachment; filename="huly-users-${Date.now()}.csv"`,
+      'Cache-Control': 'no-store',
+      'Referrer-Policy': 'no-referrer'
+    })
+    ctx.res.write('uuid,firstName,lastName,primaryEmail,status,workspaceCount,lastActivityAt,isAdmin\n')
+    const pageSize = 500
+    let offset = 0
+    for (;;) {
+      const { accounts } = await listAccountsAdmin(childCtx, db, null, token, {
+        pagination: { limit: pageSize, offset }
+      })
+      for (const a of accounts) {
+        ctx.res.write(csvLine([
+          a.uuid, a.firstName, a.lastName, a.primaryEmail ?? '', a.status,
+          String(a.workspaceCount), a.lastActivityAt != null ? new Date(a.lastActivityAt).toISOString() : '',
+          String(a.isAdmin)
+        ]))
+      }
+      if (accounts.length < pageSize) break
+      offset += pageSize
+    }
+    ctx.res.end()
+  })
+
+  // ── End CSV Export routes ────────────────────────────────────────────────
 
   app.use(router.routes()).use(router.allowedMethods())
 

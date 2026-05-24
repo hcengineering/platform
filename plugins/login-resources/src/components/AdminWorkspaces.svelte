@@ -503,6 +503,18 @@
             <Button
               kind={'regular'}
               size={'small'}
+              label={getEmbeddedLabel('Export CSV')}
+              on:click={() => {
+                const tok = getMetadata(presentation.metadata.Token) ?? ''
+                const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
+                const filterB64 = btoa(JSON.stringify(columnFilters))
+                const sortB64 = btoa(JSON.stringify({ field: sortField, direction: sortDir }))
+                window.open(`${accountsUrl.replace(/\/$/, '')}/api/v1/admin/export/accounts.csv?token=${encodeURIComponent(tok)}&filter=${filterB64}&sort=${sortB64}`)
+              }}
+            />
+            <Button
+              kind={'regular'}
+              size={'small'}
               label={getEmbeddedLabel('Top 10 by storage')}
               on:click={() => {
                 columnFilters = {}

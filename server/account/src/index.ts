@@ -19,5 +19,6 @@ export * from './operations'
 export * from './plugin'
 export * from './utils'
 export * from './types'
+export { listAccountsAdmin, assertAdmin } from './serviceOperations'
 export type { MongoAccountDB } from './collections/mongo'
 export default accountPlugin

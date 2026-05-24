@@ -18,8 +18,8 @@
     getCurrentLocation,
     type DropdownIntlItem
   } from '@hcengineering/ui'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { MessageBox, isAdminUser } from '@hcengineering/presentation'
+  import { getEmbeddedLabel, getMetadata } from '@hcengineering/platform'
+  import presentation, { MessageBox, isAdminUser } from '@hcengineering/presentation'
   import AdminShell from './admin-shell/AdminShell.svelte'
   import FilterPresetMenu from './admin-shell/FilterPresetMenu.svelte'
   import AdminUsersTable from './admin-users/AdminUsersTable.svelte'
@@ -483,6 +483,13 @@
                 columnFilters = { orphan: { orphan: true } }
                 offset = 0
                 void refresh()
+              }} />
+              <Button label={getEmbeddedLabel('Export CSV')} kind={'regular'} size={'medium'} on:click={() => {
+                const tok = getMetadata(presentation.metadata.Token) ?? ''
+                const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
+                const filterB64 = btoa(JSON.stringify(columnFilters))
+                const sortB64 = btoa(JSON.stringify(sort))
+                window.open(`${accountsUrl.replace(/\/$/, '')}/api/v1/admin/export/accounts.csv?token=${encodeURIComponent(tok)}&filter=${filterB64}&sort=${sortB64}`)
               }} />
               <Button label={getEmbeddedLabel('Add user')} kind={'primary'} on:click={openCreateAccount} />
             {/if}
