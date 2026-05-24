@@ -40,6 +40,7 @@
   import { workbenchId } from '@hcengineering/workbench'
   import { getAllWorkspaces, getRegionInfo, performWorkspaceOperation } from '../utils'
   import AdminShell from './admin-shell/AdminShell.svelte'
+  import FilterPresetMenu from './admin-shell/FilterPresetMenu.svelte'
   import AdminWorkspaceDrawer from './admin-workspaces/AdminWorkspaceDrawer.svelte'
   import LongRunningWorkspaceBanner from './admin-workspaces/LongRunningWorkspaceBanner.svelte'
   import WorkspaceColumnFilterPopup from './admin-workspaces/WorkspaceColumnFilterPopup.svelte'
@@ -507,6 +508,18 @@
                 columnFilters = {}
                 sortField = 'backup_size'
                 sortDir = 'desc'
+              }}
+            />
+            <FilterPresetMenu
+              storageKey={'workspaces'}
+              currentState={{ filters: columnFilters, sort: { field: sortField, direction: sortDir } }}
+              on:apply={(e) => {
+                const p = e.detail
+                columnFilters = p.filters ?? {}
+                if (p.sort != null) {
+                  sortField = p.sort.field ?? 'name'
+                  sortDir = p.sort.direction ?? 'asc'
+                }
               }}
             />
             {#if massActiveAll.length > 0}

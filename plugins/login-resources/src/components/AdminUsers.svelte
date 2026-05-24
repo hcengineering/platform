@@ -20,6 +20,7 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { MessageBox, isAdminUser } from '@hcengineering/presentation'
   import AdminShell from './admin-shell/AdminShell.svelte'
+  import FilterPresetMenu from './admin-shell/FilterPresetMenu.svelte'
   import AdminUsersTable from './admin-users/AdminUsersTable.svelte'
   import AdminUsersPagination from './admin-users/AdminUsersPagination.svelte'
   import AdminUsersDrawer from './admin-users/AdminUsersDrawer.svelte'
@@ -495,6 +496,18 @@
               kind={'regular'}
               size={'medium'}
               on:selected={onStatusChange}
+            />
+            <FilterPresetMenu
+              storageKey={'users'}
+              currentState={{ filters: columnFilters, sort, search: filter.search }}
+              on:apply={(e) => {
+                const p = e.detail
+                columnFilters = p.filters ?? {}
+                if (p.sort != null) sort = p.sort
+                if (p.search != null) filter = { ...filter, search: p.search }
+                offset = 0
+                void refresh()
+              }}
             />
           </div>
 
