@@ -313,11 +313,6 @@
     )
   }
 
-  function sortArrow (field: SortField): string {
-    if (sortField !== field) return ''
-    return sortDir === 'asc' ? '↑' : '↓'
-  }
-
   let selectedWorkspaceUuid: string | null = null
   function openWorkspace (uuid: string): void { selectedWorkspaceUuid = uuid }
   function closeWorkspace (): void { selectedWorkspaceUuid = null }

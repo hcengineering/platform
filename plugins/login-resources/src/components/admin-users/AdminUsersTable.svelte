@@ -51,15 +51,6 @@
     dispatch('row-click', { uuid })
   }
 
-  function sortArrow (field: string): string {
-    if (sort?.field !== field) return ''
-    return sort.direction === 'asc' ? '↑' : '↓'
-  }
-
-  function isSorted (field: string): boolean {
-    return sort?.field === field
-  }
-
   function openFilter (column: ColumnKey, anchor: HTMLElement): void {
     dispatch('open-filter', { column, anchor })
   }
