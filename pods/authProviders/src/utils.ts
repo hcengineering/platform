@@ -120,7 +120,7 @@ export async function handleProviderAuth (
         queryObj.navigateUrl = state.navigateUrl
       }
 
-      const query = encodeURIComponent(qs.stringify(queryObj))
+      const query = qs.stringify(queryObj)
 
       // Successful authentication, redirect to your application
       measureCtx.info('Success auth, redirect', { email, type: providerType, target: origin })
