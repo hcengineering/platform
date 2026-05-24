@@ -20,6 +20,7 @@
   let role: AccountRole = AccountRole.User
   let busy = false
   let error: string | null = null
+  let searchDebounceTimer: ReturnType<typeof setTimeout> | undefined
 
   async function reload (): Promise<void> {
     // listAccountsAdmin used so we get statusIn/pagination control; admin token is implied
@@ -31,6 +32,13 @@
     accounts = rows
   }
   void reload()
+
+  function onSearchChange (): void {
+    if (searchDebounceTimer != null) clearTimeout(searchDebounceTimer)
+    searchDebounceTimer = setTimeout(() => {
+      void reload()
+    }, 300)
+  }
 
   const roleItems: DropdownIntlItem[] = [
     { id: AccountRole.Owner as any, label: getEmbeddedLabel('Owner') },
@@ -61,7 +69,7 @@
 
 <div class="popup">
   <h3>Add member to workspace</h3>
-  <SearchEdit bind:value={search} on:change={reload} width={'100%'} />
+  <SearchEdit bind:value={search} on:change={onSearchChange} width={'100%'} />
   <div class="list">
     {#each accounts as a (a.uuid)}
       <label class="row">
