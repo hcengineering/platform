@@ -32,7 +32,7 @@
     BulkResult,
     ListAccountsAdminParams
   } from '@hcengineering/account-client'
-  import { type AccountUuid } from '@hcengineering/core'
+  import { AccountRole, type AccountUuid } from '@hcengineering/core'
 
   interface AdminFilter {
     search?: string
