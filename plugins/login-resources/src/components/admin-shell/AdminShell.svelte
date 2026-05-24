@@ -19,6 +19,7 @@
     Separator
   } from '@hcengineering/ui'
   import RedirectToLogin from './RedirectToLogin.svelte'
+  import GlobalSearch from './GlobalSearch.svelte'
 
   type Section = 'users' | 'workspaces' | 'audit'
 
@@ -56,6 +57,7 @@
       <div class="antiPanel-wrap__content hulyNavPanel-container">
         <div class="hulyNavPanel-header">
           <Label label={login.string.AdminPanel} />
+          <GlobalSearch />
         </div>
 
         <Scroller shrink>

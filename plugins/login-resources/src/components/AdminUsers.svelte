@@ -15,6 +15,7 @@
     DropdownLabelsIntl,
     Label,
     showPopup,
+    getCurrentLocation,
     type DropdownIntlItem
   } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
@@ -189,7 +190,15 @@
     }
   }
 
-  onMount(refresh)
+  onMount(() => {
+    void refresh()
+    // Open drawer pre-set by ?drawer=<uuid> (e.g. from GlobalSearch)
+    const loc = getCurrentLocation()
+    const wantUuid = loc.query?.drawer
+    if (wantUuid != null && wantUuid !== '') {
+      selectedUuid = wantUuid
+    }
+  })
 
   function onAuthChange (e: CustomEvent<string>): void {
     filter = { ...filter, authMethod: e.detail as any }
