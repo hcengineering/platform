@@ -58,6 +58,7 @@ import {
 import { accountPlugin } from './plugin'
 import type {
   AccountAggregatedInfo,
+  AdminAuditAction,
   AccountDB,
   AccountMethodDeps,
   AccountMethodHandler,
@@ -620,6 +621,17 @@ export async function bulkSendPasswordReset (
   })
 }
 
+function actionForWorkspaceEvent (event: string): AdminAuditAction {
+  switch (event) {
+    case 'archive': return 'archive_workspace'
+    case 'unarchive': return 'unarchive_workspace'
+    case 'migrate-to': return 'migrate_workspace'
+    case 'delete': return 'delete_workspace'
+    case 'reset-attempts': return 'reset_workspace_attempts'
+    default: return event as AdminAuditAction  // defensive fallthrough
+  }
+}
+
 export async function performWorkspaceOperation (
   ctx: MeasureContext,
   db: AccountDB,
@@ -632,13 +644,15 @@ export async function performWorkspaceOperation (
   }
 ): Promise<boolean> {
   const { workspaceId, event, params } = parameters
-  const { extra, workspace } = decodeTokenVerbose(ctx, token)
+  const { extra, workspace, account: callerAccount } = decodeTokenVerbose(ctx, token)
 
   if (extra?.admin !== 'true') {
     if (event !== 'unarchive' || workspaceId !== workspace) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
     }
   }
+
+  const adminUuid = callerAccount as AccountUuid
 
   const workspaceUuids = Array.isArray(workspaceId) ? workspaceId : [workspaceId]
 
@@ -716,6 +730,20 @@ export async function performWorkspaceOperation (
 
     if (Object.keys(update).length !== 0) {
       await db.workspaceStatus.update({ workspaceUuid: workspace.uuid }, update)
+      // Write audit entry for this workspace operation. targetAccount is null
+      // because this is a workspace-level action (V28 relaxed the NOT NULL).
+      try {
+        await db.adminAuditLog.insert({
+          adminAccount: adminUuid,
+          targetAccount: null,
+          workspaceUuid: workspace.uuid,
+          action: actionForWorkspaceEvent(event),
+          details: { previousMode: workspace.status.mode, params: params ?? [] }
+        })
+      } catch (auditErr) {
+        // Audit failure must NOT roll back the workspace operation itself.
+        ctx.warn('performWorkspaceOperation: failed to write audit log entry', { auditErr, workspaceUuid: workspace.uuid, event })
+      }
       ops++
     }
   }

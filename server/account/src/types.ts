@@ -83,6 +83,12 @@ export type AdminAuditAction =
   | 'enable'
   | 'create_account'         // new: createAccountAdmin endpoint
   | 'add_workspace_member'   // new: addWorkspaceMember + bulkAddToWorkspace
+  // Workspace-operation audit entries (V28 — targetAccount is null for these)
+  | 'archive_workspace'
+  | 'unarchive_workspace'
+  | 'migrate_workspace'
+  | 'delete_workspace'
+  | 'reset_workspace_attempts'
 
 export interface AdminAuditLogEntry {
   id: string
