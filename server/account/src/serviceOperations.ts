@@ -365,13 +365,25 @@ export async function getAccountDetails (
     role: roleMap.get(w.uuid) ?? AccountRole.User
   }))
 
-  const recentAuditEntries = (await db.adminAuditLog.findByTarget(params.accountUuid, 20)).map((e) => ({
-    tsMs: e.tsMs,
-    adminFirstName: '',
-    adminLastName: '',
-    action: e.action,
-    details: e.details
-  }))
+  const auditRaw = await db.adminAuditLog.findByTarget(params.accountUuid, 20)
+  const adminUuids = Array.from(new Set(auditRaw.map((e) => e.adminAccount).filter((u): u is AccountUuid => u != null)))
+  const adminPersons =
+    adminUuids.length > 0
+      ? await db.person.find({ uuid: { $in: adminUuids as unknown as PersonUuid[] } })
+      : []
+  const adminNameByUuid = new Map<string, { firstName: string, lastName: string }>(
+    adminPersons.map((p) => [p.uuid as unknown as string, { firstName: p.firstName, lastName: p.lastName }])
+  )
+  const recentAuditEntries = auditRaw.map((e) => {
+    const n = adminNameByUuid.get(e.adminAccount as unknown as string)
+    return {
+      tsMs: e.tsMs,
+      adminFirstName: n?.firstName ?? '',
+      adminLastName: n?.lastName ?? '',
+      action: e.action,
+      details: e.details
+    }
+  })
 
   const primaryEmail = socialIds.find((s) => s.type === SocialIdType.EMAIL)?.value ?? ''
   const adminEmails = new Set(
