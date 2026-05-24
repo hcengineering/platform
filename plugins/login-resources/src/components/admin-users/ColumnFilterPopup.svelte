@@ -110,8 +110,10 @@
     <label><CheckBox bind:checked={authSel.mixed} /> Mixed</label>
     <label><CheckBox bind:checked={authSel.none} /> None</label>
   {:else if column === 'workspace_count'}
-    <div>min: <input type="number" min="0" bind:value={wsMin} /></div>
-    <div>max: <input type="number" min="0" bind:value={wsMax} /></div>
+    <div>min: <input type="number" min="0" value={wsMin ?? ''}
+                     on:input={(e) => { wsMin = e.currentTarget.value === '' ? null : Math.max(0, Number(e.currentTarget.value)) }} /></div>
+    <div>max: <input type="number" min="0" value={wsMax ?? ''}
+                     on:input={(e) => { wsMax = e.currentTarget.value === '' ? null : Math.max(0, Number(e.currentTarget.value)) }} /></div>
   {:else if column === 'last_activity'}
     <label><input type="radio" bind:group={activityKind} value="range" /> Range</label>
     <label><input type="radio" bind:group={activityKind} value="never" /> Never active</label>

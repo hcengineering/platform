@@ -270,9 +270,10 @@ export async function listAccountsAdmin (
     })
   }
   if (params.workspaceCountRange != null) {
-    const { min, max } = params.workspaceCountRange
+    const wsMin = params.workspaceCountRange.min != null ? Math.max(0, params.workspaceCountRange.min) : undefined
+    const wsMax = params.workspaceCountRange.max != null ? Math.max(0, params.workspaceCountRange.max) : undefined
     filtered = filtered.filter(
-      (r) => (min == null || r.workspaceCount >= min) && (max == null || r.workspaceCount <= max)
+      (r) => (wsMin == null || r.workspaceCount >= wsMin) && (wsMax == null || r.workspaceCount <= wsMax)
     )
   }
   if (params.lastActivityFilter != null) {
