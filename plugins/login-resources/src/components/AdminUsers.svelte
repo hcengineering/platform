@@ -474,6 +474,7 @@
             {loading}
             {columnFilters}
             {selectedUuids}
+            activeUuid={selectedUuid}
             on:sort={onSortChange}
             on:row-click={onRowClick}
             on:open-filter={onOpenColumnFilter}

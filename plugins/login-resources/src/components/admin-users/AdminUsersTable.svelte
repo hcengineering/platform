@@ -12,6 +12,9 @@
   export let loading: boolean = false
   export let columnFilters: Record<string, any> = {}
   export let selectedUuids: Set<string> = new Set()
+  // Currently-open drawer uuid (single row marker, separate from bulk-
+  // selection checkboxes). null → no drawer open.
+  export let activeUuid: string | null = null
 
   type ColumnKey = 'name' | 'email' | 'auth' | 'workspaces' | 'last_activity' | 'status'
 
@@ -143,6 +146,7 @@
       <AdminUsersRow
         {account}
         selected={selectedUuids.has(String(account.uuid))}
+        active={activeUuid === String(account.uuid)}
         on:click={() => onRowClick(account.uuid)}
         on:toggle-selection={onToggleRow}
       />

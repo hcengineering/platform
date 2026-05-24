@@ -2,7 +2,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { getAccountClient } from '../../utils'
   import type { AccountDetailsResponse } from '@hcengineering/account-client'
   import { AccountRole } from '@hcengineering/core'
@@ -72,7 +72,51 @@
     }
   }
 
-  onMount(load)
+  // Refetch whenever the parent switches to a different row without
+  // re-mounting the drawer (clicking another user row).
+  let loadedUuid: string | null = null
+  $: if (accountUuid !== loadedUuid) {
+    loadedUuid = accountUuid
+    void load()
+  }
+
+  // Outside-click closes the drawer. But:
+  //   • Clicks INSIDE the drawer must not close it.
+  //   • Clicks on another user row should SWITCH the drawer's account,
+  //     not close it (the row's own click handler dispatches row-click,
+  //     parent then updates accountUuid).
+  //   • Clicks inside any popup spawned BY the drawer (MessageBox,
+  //     dropdowns) must not close it.
+  let drawerEl: HTMLElement
+
+  function onDocPointerDown (ev: MouseEvent): void {
+    const target = ev.target as HTMLElement | null
+    if (target == null) return
+    if (drawerEl?.contains(target)) return
+    // Any click within the users-table (row, header, checkbox cell)
+    // stays — switching to another row must not close + reopen.
+    if (target.closest('.users-table') != null) return
+    // Popup layers (MessageBox, DropdownPopup, Menu, Panel) render
+    // outside the drawer DOM. Don't close when the user is interacting
+    // with one of them.
+    if (target.closest('.popup, .selectPopup, .antiPopup, .popupPanel, .ap-box, .menu-options') != null) return
+    dispatch('close')
+  }
+
+  function onKeyDown (ev: KeyboardEvent): void {
+    if (ev.key === 'Escape') dispatch('close')
+  }
+
+  onMount(() => {
+    // Initial load is handled by the reactive block above (loadedUuid null → run).
+    document.addEventListener('mousedown', onDocPointerDown, true)
+    document.addEventListener('keydown', onKeyDown)
+  })
+
+  onDestroy(() => {
+    document.removeEventListener('mousedown', onDocPointerDown, true)
+    document.removeEventListener('keydown', onKeyDown)
+  })
 
   // Truncate long IDs (HULY uuid, OIDC sub hash) to head…tail so a long
   // value stays on one line. The full value still sits on the title attr.
@@ -237,8 +281,7 @@
   }
 </script>
 
-<div class="drawer-overlay" on:click={onClose} role="presentation" />
-<aside class="drawer hulyComponent" role="dialog" aria-modal="true">
+<aside class="drawer hulyComponent" role="dialog" aria-modal="true" bind:this={drawerEl}>
   <div class="drawer-header">
     <div class="drawer-title">
       <Label label={getEmbeddedLabel('Account details')} />
@@ -410,13 +453,6 @@
 </aside>
 
 <style lang="scss">
-  .drawer-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.35);
-    z-index: 9000;
-  }
-
   .drawer {
     position: fixed;
     top: 0;

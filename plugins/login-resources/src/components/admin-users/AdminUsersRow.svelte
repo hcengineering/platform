@@ -8,6 +8,10 @@
 
   export let account: AccountListRow
   export let selected: boolean = false
+  // True when this row's drawer is currently open. Adds .is-active so the
+  // row is visually marked while the drawer is shown, removing the need
+  // for a full-screen dimming scrim.
+  export let active: boolean = false
 
   const dispatch = createEventDispatcher<{
     'toggle-selection': { uuid: string, selected: boolean }
@@ -34,7 +38,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="row body" on:click>
+<div class="row body" class:is-active={active} on:click>
   <div class="cell cell-checkbox" on:click|stopPropagation>
     <CheckBox checked={selected} on:value={onCheckboxToggle} />
   </div>
@@ -103,6 +107,16 @@
 
   .row:hover .cell {
     background: var(--theme-list-row-color, rgba(96, 165, 250, 0.06));
+  }
+
+  /* Marker for the row whose drawer is currently open. Stronger than
+     hover so it's obvious even when the cursor moves away to interact
+     with the drawer. Left bar on the first cell anchors the eye. */
+  .row.is-active .cell {
+    background: rgba(96, 165, 250, 0.14);
+  }
+  .row.is-active .cell-checkbox {
+    box-shadow: inset 3px 0 0 #2563eb;
   }
 
   .cell-checkbox {
