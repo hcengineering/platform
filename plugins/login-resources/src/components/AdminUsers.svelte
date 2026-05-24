@@ -143,6 +143,18 @@
       const res = await getAccountClient().listAccountsAdmin(params)
       accounts = res.accounts
       total = res.total
+      // Preserve only still-visible selections (avoids stale uuids in the
+      // bulk-action bar after filter/sort/refetch).
+      if (selectedUuids.size > 0) {
+        const visible = new Set(accounts.map((a) => a.uuid as string))
+        const next = new Set<string>()
+        for (const u of selectedUuids) {
+          if (visible.has(u)) next.add(u)
+        }
+        if (next.size !== selectedUuids.size) {
+          selectedUuids = next
+        }
+      }
     } catch (err: any) {
       errorMessage = err?.message ?? 'Failed to load users'
     } finally {
