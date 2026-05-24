@@ -90,6 +90,18 @@ function toEpochMs (v: number | string | null | undefined): number | null {
   return Number.isFinite(n) ? n : null
 }
 
+/**
+ * Verify that the provided token belongs to an admin user.
+ * Throws PlatformError with Forbidden status if the token is invalid or does not have admin privileges.
+ */
+export async function assertAdmin (ctx: MeasureContext, db: AccountDB, token: string): Promise<void> {
+  await verifyTokenVersion(ctx, db, token)
+  const { extra } = decodeTokenVerbose(ctx, token)
+  if (extra?.admin !== 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+}
+
 export async function listWorkspaces (
   ctx: MeasureContext,
   db: AccountDB,
@@ -136,11 +148,7 @@ export async function listAccountsAdmin (
   token: string,
   params: ListAccountsAdminParams
 ): Promise<{ total: number, accounts: AccountListRow[] }> {
-  await verifyTokenVersion(ctx, db, token)
-  const { extra } = decodeTokenVerbose(ctx, token)
-  if (extra?.admin !== 'true') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  await assertAdmin(ctx, db, token)
 
   // Initial implementation does the filtering in JS for simplicity. The Postgres-side
   // optimization (server-side filter + count) is a follow-up.
@@ -242,11 +250,7 @@ export async function getAccountDetails (
   token: string,
   params: { accountUuid: AccountUuid }
 ): Promise<AccountDetailsResponse> {
-  await verifyTokenVersion(ctx, db, token)
-  const { extra } = decodeTokenVerbose(ctx, token)
-  if (extra?.admin !== 'true') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  await assertAdmin(ctx, db, token)
 
   const account = await db.account.findOne({ uuid: params.accountUuid })
   if (account == null) {
