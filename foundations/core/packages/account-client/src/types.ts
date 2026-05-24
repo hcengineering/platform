@@ -253,11 +253,21 @@ export interface ListAccountsAdminParams {
   authMethod?: 'all' | 'email_only' | 'oidc' | 'mixed'
   status?: 'all' | 'active' | 'disabled'
   workspaceUuids?: WorkspaceUuid[]
+  // v4 admin-panel enhancements — per-column filter inputs (AND with the globals above)
+  emailContains?: string
+  nameContains?: string
+  statusIn?: Array<'active' | 'disabled'>
+  authMethodIn?: Array<'email_only' | 'oidc' | 'mixed' | 'none'>
+  workspaceUuidsIn?: WorkspaceUuid[]
+  workspaceCountRange?: { min?: number, max?: number }
+  lastActivityFilter?:
+    | { kind: 'range', fromMs?: number, toMs?: number }
+    | { kind: 'never' }
   sort?: {
-    field: 'name' | 'last_activity' | 'workspace_count'
+    field: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status'
     direction: 'asc' | 'desc'
   }
-  pagination: { limit: number, offset: number }
+  pagination: { limit: number, offset: number }   // EXISTING required-nested, do NOT flatten
 }
 
 export interface AccountListRow {
@@ -295,4 +305,47 @@ export interface AccountDetailsResponse {
     action: string
     details: any
   }>
+}
+
+export interface AddWorkspaceMemberParams {
+  accountUuid: AccountUuid
+  workspaceUuid: WorkspaceUuid
+  role: AccountRole
+}
+
+export interface WorkspaceMembersAdminResponse {
+  workspaceUuid: WorkspaceUuid
+  workspaceName: string
+  workspaceUrl: string
+  workspaceMode: string
+  members: Array<{
+    accountUuid: AccountUuid
+    firstName: string
+    lastName: string
+    primaryEmail: string | null
+    role: AccountRole
+    lastActivityAt: number | null
+    status: 'active' | 'disabled'
+    isAdmin: boolean
+  }>
+}
+
+export interface BulkResult {
+  succeeded: AccountUuid[]
+  failed: Array<{ accountUuid: AccountUuid, error: string }>
+}
+
+export interface CreateAccountParams {
+  firstName: string
+  lastName: string
+  email: string
+  passwordMode: 'invite' | 'set'
+  password?: string
+  initialWorkspace?: { workspaceUuid: WorkspaceUuid, role: AccountRole }
+}
+
+export interface CreateAccountResponse {
+  account: AccountDetailsResponse
+  inviteEmailSent: boolean | null
+  initialWorkspaceAssigned: boolean | null
 }
