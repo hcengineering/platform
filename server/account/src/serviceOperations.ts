@@ -80,6 +80,7 @@ import {
   getRolePower,
   getSocialIdByKey,
   getWorkspaceById,
+  getWorkspaceInfoWithStatusById,
   getWorkspacesInfoWithStatusByIds,
   verifyAllowedServices,
   wrap,
@@ -419,11 +420,11 @@ export async function addWorkspaceMember (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Cannot add disabled account' }))
   }
 
-  const workspace = await getWorkspaceById(db, params.workspaceUuid)
+  const workspace = await getWorkspaceInfoWithStatusById(db, params.workspaceUuid)
   if (workspace == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: params.workspaceUuid as string }))
   }
-  if (!ACTIVE_WORKSPACE_MODES.has(workspace.mode)) {
+  if (!ACTIVE_WORKSPACE_MODES.has(workspace.status.mode)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Workspace not available' }))
   }
 
@@ -456,7 +457,7 @@ export async function getWorkspaceMembersAdmin (
 ): Promise<WorkspaceMembersAdminResponse> {
   await assertAdmin(ctx, db, token)
 
-  const workspace = await getWorkspaceById(db, params.workspaceUuid)
+  const workspace = await getWorkspaceInfoWithStatusById(db, params.workspaceUuid)
   if (workspace == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: params.workspaceUuid as string }))
   }
@@ -499,7 +500,7 @@ export async function getWorkspaceMembersAdmin (
     workspaceUuid: workspace.uuid,
     workspaceName: workspace.name ?? '',
     workspaceUrl: workspace.url ?? '',
-    workspaceMode: workspace.mode,
+    workspaceMode: workspace.status.mode,
     members: enriched
   }
 }
@@ -557,9 +558,9 @@ export async function createAccountAdmin (
   let initialWorkspaceAssigned: boolean | null = null
   if (params.initialWorkspace != null) {
     try {
-      const ws = await getWorkspaceById(db, params.initialWorkspace.workspaceUuid)
+      const ws = await getWorkspaceInfoWithStatusById(db, params.initialWorkspace.workspaceUuid)
       if (ws == null) throw new Error('Workspace gone')
-      if (!ACTIVE_WORKSPACE_MODES.has(ws.mode)) throw new Error('Workspace not available')
+      if (!ACTIVE_WORKSPACE_MODES.has(ws.status.mode)) throw new Error('Workspace not available')
       await db.assignWorkspace(newUuid, params.initialWorkspace.workspaceUuid, params.initialWorkspace.role)
       initialWorkspaceAssigned = true
     } catch (err: any) {
@@ -672,6 +673,10 @@ export async function bulkSetDisabled (
     params.accountUuids,
     async (uuid) => {
       if (params.disabled) {
+        // NOTE: passing {} for deps means accountLifecycleProducer is unavailable —
+        // bulk-disabled users get tokenVersion bumped (logged out on next request) but
+        // do NOT receive an immediate force-logout via Redpanda. For real-time eviction
+        // prefer the single-account disableAccount endpoint per account.
         await disableAccount(ctx, db, branding, {}, token, { accountUuid: uuid })
       } else {
         await enableAccount(ctx, db, branding, token, { accountUuid: uuid })

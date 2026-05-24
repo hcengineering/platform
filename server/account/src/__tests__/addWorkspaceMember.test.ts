@@ -29,9 +29,16 @@ interface MockOpts {
 }
 
 function mockDb (o: MockOpts): any {
+  // getWorkspaceInfoWithStatusById merges db.workspace + db.workspaceStatus;
+  // the legacy `{ mode }` payload on `workspace` is split: identity fields
+  // remain on the workspace row, `mode` is served from the status row.
+  const ws = o.workspace
+  const wsRow = ws == null ? null : { uuid: WS, name: 'n', url: 'u' }
+  const statusRow = ws == null ? null : { workspaceUuid: WS, mode: ws.mode }
   return {
     account: { findOne: async () => o.account ?? null },
-    workspace: { findOne: async () => o.workspace ?? null },
+    workspace: { findOne: async () => wsRow },
+    workspaceStatus: { findOne: async () => statusRow },
     getWorkspaceRole: async () => o.currentRole ?? null,
     assignWorkspace: jest.fn(async () => undefined),
     adminAuditLog: { insert: async () => undefined }
@@ -88,9 +95,10 @@ describe('addWorkspaceMember', () => {
     db.getWorkspaceRoles = async () => new Map()
     db.getAccountWorkspaces = async () => []
     db.workspace = {
-      findOne: async () => ({ uuid: WS, mode: 'active', name: 'n', url: 'u' }),
+      findOne: async () => ({ uuid: WS, name: 'n', url: 'u' }),
       find: async () => []
     }
+    db.workspaceStatus = { findOne: async () => ({ workspaceUuid: WS, mode: 'active' }) }
     await addWorkspaceMember(ctx, db, null, ADMIN, { accountUuid: TARGET, workspaceUuid: WS, role: AccountRole.User })
     expect(assignSpy).toHaveBeenCalledWith(TARGET, WS, AccountRole.User)
     expect(auditInsert).toHaveBeenCalledWith(expect.objectContaining({ action: 'add_workspace_member' }))

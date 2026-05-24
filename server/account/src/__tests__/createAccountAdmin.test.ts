@@ -13,14 +13,14 @@ jest.mock('@hcengineering/server-token', () => ({
 // of that is fragile; instead we mock signUpByEmail itself so the test
 // stays focused on createAccountAdmin's own logic (email validation,
 // password rule, guards, audit-log, response shape).
-const signUpByEmailMock = jest.fn(async () => ({ account: 'new-account-uuid' as any, socialId: 'new-social-id' as any }))
+const signUpByEmailMock = jest.fn(async (..._args: any[]) => ({ account: 'new-account-uuid' as any, socialId: 'new-social-id' as any }))
 jest.mock('../utils', () => ({
-  ...jest.requireActual('../utils'),
+  ...(jest.requireActual('../utils') as Record<string, unknown>),
   verifyTokenVersion: jest.fn(async () => undefined),
   signUpByEmail: (...args: any[]) => signUpByEmailMock(...args)
 }))
 
-const sendMailMock = jest.fn(async () => true)
+const sendMailMock = jest.fn(async (..._args: any[]) => true)
 jest.mock('../operations', () => ({
   __esModule: true,
   sendPasswordResetEmail: (...args: any[]) => sendMailMock(...args)
@@ -35,11 +35,18 @@ import { createAccountAdmin } from '../serviceOperations'
 // createAccountAdmin's own body + the final getAccountDetails refetch.
 interface Opts { workspace?: any, assignThrows?: boolean }
 function mockDb (o: Opts = {}): any {
+  // getWorkspaceInfoWithStatusById merges db.workspace + db.workspaceStatus.
+  // Split the legacy `{ ..., mode }` fixture across the two collections so
+  // the new lookup helper can rebuild `{ ...ws, status: { mode } }`.
+  const ws = o.workspace
+  const wsRow = ws == null ? null : { uuid: ws.uuid, name: ws.name, url: ws.url }
+  const statusRow = ws == null ? null : { workspaceUuid: ws.uuid, mode: ws.mode }
   return {
     socialId: { findOne: async () => null, find: async () => [] },
     account: { findOne: async () => ({ uuid: 'new-account-uuid' as any, disabledAt: null, lastActivityAt: null }), find: async () => [] },
     person: { findOne: async () => ({ uuid: 'new-account-uuid' as any, firstName: '', lastName: '' }), find: async () => [] },
-    workspace: { findOne: async () => o.workspace ?? null, find: async () => [] },
+    workspace: { findOne: async () => wsRow, find: async () => [] },
+    workspaceStatus: { findOne: async () => statusRow },
     getWorkspaceRole: async () => null,
     getWorkspaceRoles: async () => new Map(),
     getAccountWorkspaces: async () => [],

@@ -30,9 +30,12 @@ function db (): any {
       update: async () => undefined
     },
     workspace: {
-      findOne: async () => ({ mode: 'active', uuid: 'ws', name: 'n', url: 'u' }),
+      findOne: async () => ({ uuid: 'ws', name: 'n', url: 'u' }),
       find: async () => []
     },
+    // addWorkspaceMember now resolves the workspace via
+    // getWorkspaceInfoWithStatusById which reads from db.workspaceStatus too.
+    workspaceStatus: { findOne: async () => ({ workspaceUuid: 'ws', mode: 'active' }) },
     getWorkspaceRole: async () => null,
     getWorkspaceRoles: async () => new Map(),
     getAccountWorkspaces: async () => [],

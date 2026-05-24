@@ -266,7 +266,10 @@
               picked.role ?? AccountRole.User
             )
             showBulkResult(r)
-            clearSel()
+            // Preserve the selection only when EVERY action failed — admin can retry
+            // without re-selecting. Otherwise clear so the bar doesn't stick around
+            // pointing at uuids that were just successfully acted on.
+            if (r.succeeded.length > 0) clearSel()
             await refresh()
           } catch (err: any) {
             errorMessage = err?.message ?? 'Bulk add failed'
@@ -291,7 +294,10 @@
               picked.workspaceUuid as any
             )
             showBulkResult(r)
-            clearSel()
+            // Preserve the selection only when EVERY action failed — admin can retry
+            // without re-selecting. Otherwise clear so the bar doesn't stick around
+            // pointing at uuids that were just successfully acted on.
+            if (r.succeeded.length > 0) clearSel()
             await refresh()
           } catch (err: any) {
             errorMessage = err?.message ?? 'Bulk remove failed'
@@ -310,7 +316,10 @@
       async () => {
         const r = await getAccountClient().bulkSetDisabled(selectedUuidsArray(), true)
         showBulkResult(r)
-        clearSel()
+        // Preserve the selection only when EVERY action failed — admin can retry
+        // without re-selecting. Otherwise clear so the bar doesn't stick around
+        // pointing at uuids that were just successfully acted on.
+        if (r.succeeded.length > 0) clearSel()
         await refresh()
       }
     )
@@ -325,7 +334,10 @@
       async () => {
         const r = await getAccountClient().bulkSetDisabled(selectedUuidsArray(), false)
         showBulkResult(r)
-        clearSel()
+        // Preserve the selection only when EVERY action failed — admin can retry
+        // without re-selecting. Otherwise clear so the bar doesn't stick around
+        // pointing at uuids that were just successfully acted on.
+        if (r.succeeded.length > 0) clearSel()
         await refresh()
       }
     )
@@ -340,7 +352,10 @@
       async () => {
         const r = await getAccountClient().bulkSendPasswordReset(selectedUuidsArray())
         showBulkResult(r)
-        clearSel()
+        // Preserve the selection only when EVERY action failed — admin can retry
+        // without re-selecting. Otherwise clear so the bar doesn't stick around
+        // pointing at uuids that were just successfully acted on.
+        if (r.succeeded.length > 0) clearSel()
         await refresh()
       }
     )

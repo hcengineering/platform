@@ -22,8 +22,17 @@ import { getWorkspaceMembersAdmin } from '../serviceOperations'
 const WS = 'ws-uuid' as any
 
 function mockDb (workspace: any, members: any[], accounts: any[], persons: any[], socials: any[]): any {
+  // getWorkspaceInfoWithStatusById merges db.workspace + db.workspaceStatus;
+  // split the legacy `{ ..., mode }` payload across the two collections.
+  const wsRow = workspace == null
+    ? null
+    : { uuid: workspace.uuid, name: workspace.name, url: workspace.url }
+  const statusRow = workspace == null
+    ? null
+    : { workspaceUuid: workspace.uuid, mode: workspace.mode }
   return {
-    workspace: { findOne: async () => workspace },
+    workspace: { findOne: async () => wsRow },
+    workspaceStatus: { findOne: async () => statusRow },
     getWorkspaceMembers: async () => members,
     account: { find: async () => accounts },
     person: { find: async () => persons },
