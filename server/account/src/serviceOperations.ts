@@ -236,18 +236,6 @@ export async function listAccountsAdmin (
       filtered = filtered.filter((r) => r.authMethods.length > 1)
     }
   }
-  if (params.workspaceUuids != null && params.workspaceUuids.length > 0) {
-    const wsSet = new Set(params.workspaceUuids)
-    const filteredWithCheck: AccountListRow[] = []
-    for (const r of filtered) {
-      const wsRoles = await db.getWorkspaceRoles(r.uuid)
-      if (Array.from(wsRoles.keys()).some((uuid) => wsSet.has(uuid))) {
-        filteredWithCheck.push(r)
-      }
-    }
-    filtered = filteredWithCheck
-  }
-
   if (params.emailContains != null && params.emailContains !== '') {
     const needle = params.emailContains.trim().toLowerCase()
     filtered = filtered.filter((r) => (r.primaryEmail ?? '').toLowerCase().includes(needle))
@@ -275,7 +263,6 @@ export async function listAccountsAdmin (
     })
   }
   if (params.workspaceUuidsIn != null && params.workspaceUuidsIn.length > 0) {
-    // intersection with the existing single-value workspaceUuids if both set
     const idsCol = new Set(params.workspaceUuidsIn as string[])
     filtered = filtered.filter((r) => {
       const memberOf = workspacesByAccount.get(r.uuid as string) ?? []

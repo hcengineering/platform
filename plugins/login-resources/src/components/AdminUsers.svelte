@@ -161,7 +161,7 @@
         search: filter.search,
         authMethod: filter.authMethod,
         status: filter.status,
-        workspaceUuids: filter.workspaceUuids as any,
+        workspaceUuidsIn: filter.workspaceUuids as any,
         sort,
         pagination: { limit, offset },
         ...merged

@@ -252,7 +252,6 @@ export interface ListAccountsAdminParams {
   search?: string
   authMethod?: 'all' | 'email_only' | 'oidc' | 'mixed'
   status?: 'all' | 'active' | 'disabled'
-  workspaceUuids?: WorkspaceUuid[]
   // v4 admin-panel enhancements — per-column filter inputs (AND with the globals above)
   emailContains?: string
   nameContains?: string
