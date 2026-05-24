@@ -71,7 +71,7 @@
   </div>
   <div class="cell cell-status">
     <span class="status status-{account.status}">
-      <span class="status-dot" />
+      <span class="status-dot" aria-label={account.status} aria-hidden="false" />
       {account.status}
     </span>
   </div>

@@ -633,6 +633,9 @@
           </div>
         </div>
 
+        <div aria-live="polite" class="ws-sr-only">
+          Showing {visibleWorkspaces.length} of {sortedWorkspaces.length} workspace{sortedWorkspaces.length !== 1 ? 's' : ''}
+        </div>
         <div class="ws-table" bind:this={wsTableEl} tabindex="0" role="grid" aria-rowcount={visibleWorkspaces.length + 1}>
           <!-- Grid header: every row inherits the same grid-template via display:contents -->
           <div class="ws-row ws-head">
@@ -1205,6 +1208,18 @@
     display: flex;
     justify-content: center;
     margin-top: var(--spacing-2);
+  }
+
+  .ws-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .super-admin-toggle {

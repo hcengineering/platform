@@ -89,6 +89,9 @@
   }
 </script>
 
+<div aria-live="polite" class="sr-only">
+  {#if !loading}Showing {accounts.length} user{accounts.length !== 1 ? 's' : ''}{/if}
+</div>
 <div class="users-table" bind:this={containerEl} tabindex="0" role="grid" aria-rowcount={accounts.length + 1} aria-busy={loading}>
   <div class="row head">
     <div class="cell cell-checkbox" on:click|stopPropagation>
@@ -298,5 +301,17 @@
     text-align: center;
     color: var(--theme-darker-color);
     font-size: 0.9rem;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 </style>
