@@ -32,7 +32,12 @@ import {
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
-import type { ListAccountsAdminParams, AccountListRow, AccountDetailsResponse } from '@hcengineering/account-client'
+import type {
+  ListAccountsAdminParams,
+  AccountListRow,
+  AccountDetailsResponse,
+  AddWorkspaceMemberParams
+} from '@hcengineering/account-client'
 
 import { accountPlugin } from './plugin'
 import type {
@@ -81,6 +86,8 @@ import {
 
 // Move to config?
 const processingTimeoutMs = 30 * 1000
+
+const ACTIVE_WORKSPACE_MODES = new Set(['active', 'creating', 'upgrading', 'restoring'])
 
 // Postgres int8 columns come back as string from node-postgres; coerce so the
 // JSON response stays a real epoch-ms number (new Date(string) -> Invalid Date).
@@ -301,6 +308,52 @@ export async function getAccountDetails (
     workspaceMemberships,
     recentAuditEntries
   }
+}
+
+// AddWorkspaceMemberParams is imported from '@hcengineering/account-client'
+// (Task 1b). Do NOT redeclare it locally.
+
+export async function addWorkspaceMember (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: AddWorkspaceMemberParams
+): Promise<AccountDetailsResponse> {
+  await assertAdmin(ctx, db, token)
+  const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: params.accountUuid as string }))
+  }
+  if (account.disabledAt != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Cannot add disabled account' }))
+  }
+
+  const workspace = await getWorkspaceById(db, params.workspaceUuid)
+  if (workspace == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: params.workspaceUuid as string }))
+  }
+  if (!ACTIVE_WORKSPACE_MODES.has(workspace.mode)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Workspace not available' }))
+  }
+
+  const existingRole = await db.getWorkspaceRole(params.accountUuid, params.workspaceUuid)
+  if (existingRole != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Conflict, { msg: 'Already a member' }))
+  }
+
+  await db.assignWorkspace(params.accountUuid, params.workspaceUuid, params.role)
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'add_workspace_member',
+    workspaceUuid: params.workspaceUuid,
+    details: { role: params.role }
+  })
+
+  return await getAccountDetails(ctx, db, branding, token, { accountUuid: params.accountUuid })
 }
 
 export async function performWorkspaceOperation (
@@ -1332,6 +1385,7 @@ export type AccountServiceMethods =
   | 'listAccounts'
   | 'listAccountsAdmin'
   | 'getAccountDetails'
+  | 'addWorkspaceMember'
   | 'findFullSocialIds'
   | 'getSubscriptionByProviderId'
   | 'upsertSubscription'
@@ -1370,6 +1424,7 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     listAccounts: wrap(listAccounts),
     listAccountsAdmin: wrap(listAccountsAdmin),
     getAccountDetails: wrap(getAccountDetails),
+    addWorkspaceMember: wrap(addWorkspaceMember),
     getSubscriptionByProviderId: wrap(getSubscriptionByProviderId),
     upsertSubscription: wrap(upsertSubscription)
   }
