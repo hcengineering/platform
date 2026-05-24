@@ -1510,6 +1510,62 @@ export async function changePassword (
   ctx.info('Password changed', { accountUuid })
 }
 
+/**
+ * Internal — sends the password-reset email and reports whether the mail
+ * service accepted it. Three failure modes, handled like the original
+ * inline code at operations.ts:1561 did:
+ *   - Missing MAIL_URL config            -> THROWS via getMailUrl()
+ *   - Token generation / translate fails -> THROWS (caller's problem)
+ *   - fetch raises a network exception   -> THROWS (caller's problem)
+ *   - HTTP response.ok === false         -> RETURNS false (logged)
+ *   - HTTP response.ok === true          -> RETURNS true
+ * The boolean exists only to let callers distinguish "mail server said
+ * no" from "mail server said yes". Anything more catastrophic stays an
+ * exception, exactly as in the legacy requestPasswordReset.
+ */
+export async function sendPasswordResetEmail (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  accountUuid: AccountUuid,
+  email: string
+): Promise<boolean> {
+  const front = getFrontUrl(branding)
+  const { mailURL, mailAuth } = getMailUrl()  // THROWS when MAIL_URL missing — matches legacy
+
+  const normalizedEmail = cleanEmail(email)
+  const token = await generateTokenWithVersion(ctx, db, accountUuid, undefined, {
+    restoreEmail: normalizedEmail
+  })
+
+  const link = concatLink(front, `/login/recovery?id=${token}`)
+  const lang = branding?.language
+  const text = await translate(accountPlugin.string.RecoveryText, { link }, lang)
+  const html = await translate(accountPlugin.string.RecoveryHTML, { link }, lang)
+  const subject = await translate(accountPlugin.string.RecoverySubject, {}, lang)
+
+  // NO try/catch around fetch — network exceptions propagate to the
+  // caller (legacy behavior). createAccountAdmin wraps THIS call in its
+  // own try/catch to convert anything to inviteEmailSent=false for its
+  // local UX needs, but requestPasswordReset must let exceptions through.
+  const response = await fetch(concatLink(mailURL, '/send'), {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
+    },
+    body: JSON.stringify({ text, html, subject, to: normalizedEmail })
+  })
+  if (response.ok) {
+    ctx.info('Password reset email sent', { email, normalizedEmail, accountUuid })
+    return true
+  }
+  ctx.error(`Failed to send reset password email: ${response.statusText}`, {
+    email, normalizedEmail, accountUuid
+  })
+  return false
+}
+
 export async function requestPasswordReset (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1545,41 +1601,11 @@ export async function requestPasswordReset (
     )
   }
 
-  const { mailURL, mailAuth } = getMailUrl()
-  const front = getFrontUrl(branding)
-
-  const token = await generateTokenWithVersion(ctx, db, account.uuid, undefined, {
-    restoreEmail: normalizedEmail
-  })
-
-  const link = concatLink(front, `/login/recovery?id=${token}`)
-  const lang = branding?.language
-  const text = await translate(accountPlugin.string.RecoveryText, { link }, lang)
-  const html = await translate(accountPlugin.string.RecoveryHTML, { link }, lang)
-  const subject = await translate(accountPlugin.string.RecoverySubject, {}, lang)
-
-  const response = await fetch(concatLink(mailURL, '/send'), {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
-    },
-    body: JSON.stringify({
-      text,
-      html,
-      subject,
-      to: normalizedEmail
-    })
-  })
-  if (response.ok) {
-    ctx.info('Password reset email sent', { email, normalizedEmail, account: account.uuid })
-  } else {
-    ctx.error(`Failed to send reset password email: ${response.statusText}`, {
-      email,
-      normalizedEmail,
-      account: account.uuid
-    })
-  }
+  // Helper sends, logs and either returns true/false on fetch outcomes or
+  // throws on config/token errors. requestPasswordReset has always allowed
+  // the throw to propagate to its single caller (triggerPasswordReset), so
+  // we keep the same shape and just discard the boolean.
+  await sendPasswordResetEmail(ctx, db, branding, account.uuid, normalizedEmail)
 }
 
 /**
