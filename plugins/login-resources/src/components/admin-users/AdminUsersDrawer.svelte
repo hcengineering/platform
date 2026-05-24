@@ -4,7 +4,7 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import { getAccountClient } from '../../utils'
-  import type { AccountDetailsResponse } from '@hcengineering/account-client'
+  import type { AccountDetailsResponse, AuditEntry } from '@hcengineering/account-client'
   import { AccountRole, type AccountUuid } from '@hcengineering/core'
   import {
     Button,
@@ -258,6 +258,28 @@
     return ((first?.[0] ?? '') + (last?.[0] ?? '')).toUpperCase() || '?'
   }
 
+  // ── Audit tab ──────────────────────────────────────────────────────────────
+  let auditTab = false
+  let auditEntries: AuditEntry[] = []
+  let auditLoading = false
+
+  async function loadAudit (): Promise<void> {
+    auditLoading = true
+    try {
+      const res = await getAccountClient().listAuditAdmin({
+        filter: { targetAccountUuid: accountUuid },
+        pagination: { limit: 50 }
+      })
+      auditEntries = res.entries
+    } finally {
+      auditLoading = false
+    }
+  }
+
+  $: if (auditTab && accountUuid != null) {
+    void loadAudit()
+  }
+
 </script>
 
 <aside class="drawer hulyComponent" role="dialog" aria-modal="true" bind:this={drawerEl}>
@@ -287,8 +309,14 @@
     <ButtonIcon icon={IconClose} kind={'tertiary'} size={'small'} on:click={onClose} />
   </div>
 
+  <div class="drawer-tabs">
+    <button class:active={!auditTab} on:click={() => { auditTab = false }}>Details</button>
+    <button class:active={auditTab} on:click={() => { auditTab = true }}>Audit ({auditEntries.length})</button>
+  </div>
+
   <Scroller>
     <div class="drawer-body">
+      {#if !auditTab}
       {#if loading}
         <div class="state">Loading…</div>
       {:else if errorMessage != null}
@@ -427,6 +455,26 @@
           </div>
         </section>
       {/if}
+      {/if}<!-- end !auditTab -->
+
+      {#if auditTab}
+        <div class="audit-tab">
+          {#if auditLoading}
+            <p>Loading…</p>
+          {:else if auditEntries.length === 0}
+            <p>No audit entries.</p>
+          {:else}
+            <ul class="audit-list">
+              {#each auditEntries as e (e.id)}
+                <li>
+                  <strong>{new Date(e.tsMs).toLocaleString()}</strong> — {e.admin.firstName} {e.admin.lastName} → <code>{e.action}</code>
+                  {#if e.details != null}<pre>{JSON.stringify(e.details, null, 2)}</pre>{/if}
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        </div>
+      {/if}
     </div>
   </Scroller>
 </aside>
@@ -445,6 +493,56 @@
     z-index: 9001;
     display: flex;
     flex-direction: column;
+  }
+
+  .drawer-tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.4rem var(--spacing-3) 0;
+    border-bottom: 1px solid var(--theme-divider-color);
+    flex-shrink: 0;
+
+    button {
+      background: transparent;
+      border: 0;
+      padding: 0.4rem 0.75rem;
+      border-radius: 0.35rem 0.35rem 0 0;
+      cursor: pointer;
+      color: var(--theme-darker-color);
+
+      &.active {
+        background: var(--theme-bg-accent-color);
+        color: var(--theme-caption-color);
+      }
+    }
+  }
+
+  .audit-tab {
+    padding: var(--spacing-2) 0;
+  }
+
+  .audit-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--theme-divider-color);
+      font-size: 0.85rem;
+
+      code {
+        font-family: var(--mono-font, monospace);
+      }
+
+      pre {
+        margin: 0.25rem 0 0;
+        font-family: var(--mono-font, monospace);
+        font-size: 0.72rem;
+        color: var(--theme-darker-color);
+        white-space: pre-wrap;
+      }
+    }
   }
 
   .drawer-header {

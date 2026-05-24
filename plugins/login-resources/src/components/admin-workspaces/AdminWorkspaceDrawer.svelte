@@ -15,7 +15,8 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { AccountRole } from '@hcengineering/core'
   import { getAccountClient } from '../../utils'
-  import type { WorkspaceMembersAdminResponse } from '@hcengineering/account-client'
+  import type { WorkspaceMembersAdminResponse, AuditEntry } from '@hcengineering/account-client'
+  import type { WorkspaceUuid } from '@hcengineering/core'
   import AddMemberToWorkspacePopup from './AddMemberToWorkspacePopup.svelte'
 
   export let workspaceUuid: string
@@ -92,6 +93,28 @@
       if (added === true) await load()
     })
   }
+
+  // ── Audit tab ──────────────────────────────────────────────────────────────
+  let auditTab = false
+  let auditEntries: AuditEntry[] = []
+  let auditLoading = false
+
+  async function loadAudit (): Promise<void> {
+    auditLoading = true
+    try {
+      const res = await client.listAuditAdmin({
+        filter: { targetWorkspaceUuid: workspaceUuid as WorkspaceUuid },
+        pagination: { limit: 50 }
+      })
+      auditEntries = res.entries
+    } finally {
+      auditLoading = false
+    }
+  }
+
+  $: if (auditTab && workspaceUuid != null) {
+    void loadAudit()
+  }
 </script>
 
 <div class="drawer">
@@ -103,7 +126,14 @@
     {/if}
     <button class="close" on:click={close}>×</button>
   </div>
+
+  <div class="drawer-tabs">
+    <button class:active={!auditTab} on:click={() => { auditTab = false }}>Details</button>
+    <button class:active={auditTab} on:click={() => { auditTab = true }}>Audit ({auditEntries.length})</button>
+  </div>
+
   <Scroller>
+    {#if !auditTab}
     {#if loading}
       <Loading />
     {:else if err}
@@ -144,6 +174,26 @@
         </div>
       </div>
     {/if}
+    {/if}<!-- end !auditTab -->
+
+    {#if auditTab}
+      <div class="audit-tab">
+        {#if auditLoading}
+          <p>Loading…</p>
+        {:else if auditEntries.length === 0}
+          <p>No audit entries.</p>
+        {:else}
+          <ul class="audit-list">
+            {#each auditEntries as e (e.id)}
+              <li>
+                <strong>{new Date(e.tsMs).toLocaleString()}</strong> — {e.admin.firstName} {e.admin.lastName} → <code>{e.action}</code>
+                {#if e.details != null}<pre>{JSON.stringify(e.details, null, 2)}</pre>{/if}
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </div>
+    {/if}
   </Scroller>
 </div>
 
@@ -161,6 +211,57 @@
     display: flex;
     flex-direction: column;
   }
+
+  .drawer-tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.4rem 1rem 0;
+    border-bottom: 1px solid var(--theme-divider-color);
+    flex-shrink: 0;
+
+    button {
+      background: transparent;
+      border: 0;
+      padding: 0.4rem 0.75rem;
+      border-radius: 0.35rem 0.35rem 0 0;
+      cursor: pointer;
+      color: var(--theme-darker-color);
+
+      &.active {
+        background: var(--theme-bg-accent-color);
+        color: var(--theme-caption-color);
+      }
+    }
+  }
+
+  .audit-tab {
+    padding: 0.75rem 1rem;
+  }
+
+  .audit-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--theme-divider-color);
+      font-size: 0.85rem;
+
+      code {
+        font-family: var(--mono-font, monospace);
+      }
+
+      pre {
+        margin: 0.25rem 0 0;
+        font-family: var(--mono-font, monospace);
+        font-size: 0.72rem;
+        color: var(--theme-darker-color);
+        white-space: pre-wrap;
+      }
+    }
+  }
+
   .header {
     display: flex;
     align-items: center;
