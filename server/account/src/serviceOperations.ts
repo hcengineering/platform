@@ -666,9 +666,14 @@ export async function bulkRemoveFromWorkspace (
 ): Promise<BulkResult> {
   await assertAdmin(ctx, db, token)
   assertBulkSize(params.accountUuids)
-  return await bulkLoop(params.accountUuids, async (uuid) => {
-    await removeWorkspaceMember(ctx, db, branding, token, { accountUuid: uuid, workspaceUuid: params.workspaceUuid })
-  })
+  const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+  return await bulkLoop(
+    params.accountUuids,
+    async (uuid) => {
+      await removeWorkspaceMember(ctx, db, branding, token, { accountUuid: uuid, workspaceUuid: params.workspaceUuid })
+    },
+    { adminUuid, reason: 'cannot bulk-remove self from workspace; use single-row remove with explicit confirmation' }
+  )
 }
 
 export async function bulkSetDisabled (
