@@ -10,6 +10,8 @@
     Button,
     ButtonIcon,
     IconAdd,
+    IconChevronLeft,
+    IconChevronRight,
     IconClose,
     IconDelete,
     Label,
@@ -23,8 +25,29 @@
   import AddToWorkspacePopup from './AddToWorkspacePopup.svelte'
 
   export let accountUuid: string
+  // Optional: parent passes the ordered list of currently-visible uuids so
+  // the drawer can offer Prev / Next navigation without closing first.
+  // Defaults to empty → pager is hidden if not provided.
+  export let visibleUuids: string[] = []
 
-  const dispatch = createEventDispatcher<{ close: void, 'account-changed': void }>()
+  const dispatch = createEventDispatcher<{
+    close: void
+    'account-changed': void
+    navigate: { uuid: string }
+  }>()
+
+  // Pager position is purely derived from props.
+  $: pagerIndex = visibleUuids.indexOf(accountUuid)
+  $: pagerTotal = visibleUuids.length
+  $: hasPrev = pagerIndex > 0
+  $: hasNext = pagerIndex >= 0 && pagerIndex < pagerTotal - 1
+
+  function goPrev (): void {
+    if (hasPrev) dispatch('navigate', { uuid: visibleUuids[pagerIndex - 1] })
+  }
+  function goNext (): void {
+    if (hasNext) dispatch('navigate', { uuid: visibleUuids[pagerIndex + 1] })
+  }
   let details: AccountDetailsResponse | null = null
   let loading = true
   let errorMessage: string | null = null
@@ -50,6 +73,13 @@
   }
 
   onMount(load)
+
+  // Truncate long IDs (HULY uuid, OIDC sub hash) to head…tail so a long
+  // value stays on one line. The full value still sits on the title attr.
+  function truncateMiddle (s: string, head: number, tail: number): string {
+    if (s.length <= head + tail + 1) return s
+    return `${s.slice(0, head)}…${s.slice(-tail)}`
+  }
 
   function notify (title: string, message: string, dangerous = false): void {
     showPopup(MessageBox, {
@@ -213,6 +243,25 @@
     <div class="drawer-title">
       <Label label={getEmbeddedLabel('Account details')} />
     </div>
+    {#if pagerTotal > 1 && pagerIndex >= 0}
+      <div class="drawer-pager">
+        <ButtonIcon
+          icon={IconChevronLeft}
+          kind={'tertiary'}
+          size={'small'}
+          disabled={!hasPrev}
+          on:click={goPrev}
+        />
+        <span class="pager-pos">{pagerIndex + 1} / {pagerTotal}</span>
+        <ButtonIcon
+          icon={IconChevronRight}
+          kind={'tertiary'}
+          size={'small'}
+          disabled={!hasNext}
+          on:click={goNext}
+        />
+      </div>
+    {/if}
     <ButtonIcon icon={IconClose} kind={'tertiary'} size={'small'} on:click={onClose} />
   </div>
 
@@ -243,7 +292,17 @@
               {#each details.socialIds as sid}
                 <li class="flex-row-center p-2">
                   <span class="badge type">{sid.type}</span>
-                  <span class="value">{sid.value}</span>
+                  <!-- Email values stay full; long hash IDs (HULY uuid, OIDC sub
+                       hash) are truncated middle so the row keeps one line. The
+                       full value is on the title attribute for click-and-hold
+                       inspection. -->
+                  <span class="value" title={sid.value}>
+                    {#if sid.type === 'email'}
+                      {sid.value}
+                    {:else}
+                      {truncateMiddle(sid.value, 10, 6)}
+                    {/if}
+                  </span>
                   {#if sid.verified}
                     <span class="badge verified">verified</span>
                   {/if}
@@ -377,9 +436,25 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--spacing-2);
     padding: var(--spacing-2) var(--spacing-3);
     border-bottom: 1px solid var(--theme-divider-color);
     flex-shrink: 0;
+  }
+
+  .drawer-pager {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: auto;
+  }
+
+  .pager-pos {
+    font-size: 0.78rem;
+    color: var(--theme-darker-color);
+    min-width: 3.5rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
   }
 
   .drawer-title {

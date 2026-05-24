@@ -38,7 +38,7 @@
   <div class="cell cell-checkbox" on:click|stopPropagation>
     <CheckBox checked={selected} on:value={onCheckboxToggle} />
   </div>
-  <div class="cell cell-name">
+  <div class="cell cell-name" title={`${account.firstName} ${account.lastName}`.trim()}>
     <span class="avatar">{initials(account.firstName, account.lastName)}</span>
     <div class="name-block">
       <span class="full-name">{account.firstName} {account.lastName}</span>
@@ -48,7 +48,7 @@
     </div>
   </div>
   <div class="cell cell-email" title={account.primaryEmail ?? ''}>
-    {account.primaryEmail ?? '—'}
+    {account.primaryEmail ?? 'No email'}
   </div>
   <div class="cell cell-auth">
     {#each account.authMethods as m}

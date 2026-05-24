@@ -53,6 +53,10 @@
     return sort.direction === 'asc' ? '↑' : '↓'
   }
 
+  function isSorted (field: string): boolean {
+    return sort?.field === field
+  }
+
   function openFilter (column: ColumnKey, anchor: HTMLElement): void {
     dispatch('open-filter', { column, anchor })
   }
@@ -63,8 +67,8 @@
     <div class="cell cell-checkbox" on:click|stopPropagation>
       <CheckBox checked={allSelected} on:value={onToggleAll} />
     </div>
-    <div class="cell cell-name sortable">
-      <span class="hdr-label" on:click={() => setSort('name')}>Name <span class="arrow">{sortArrow('name')}</span></span>
+    <div class="cell cell-name sortable" class:is-sorted={isSorted('name')}>
+      <span class="hdr-label" on:click={() => setSort('name')}><span class="arrow">{sortArrow('name')}</span>Name</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.name != null}
@@ -74,8 +78,8 @@
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
-    <div class="cell cell-email sortable">
-      <span class="hdr-label" on:click={() => setSort('email')}>Email <span class="arrow">{sortArrow('email')}</span></span>
+    <div class="cell cell-email sortable" class:is-sorted={isSorted('email')}>
+      <span class="hdr-label" on:click={() => setSort('email')}><span class="arrow">{sortArrow('email')}</span>Email</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.email != null}
@@ -85,8 +89,8 @@
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
-    <div class="cell cell-auth sortable">
-      <span class="hdr-label" on:click={() => setSort('auth')}>Auth <span class="arrow">{sortArrow('auth')}</span></span>
+    <div class="cell cell-auth sortable" class:is-sorted={isSorted('auth')}>
+      <span class="hdr-label" on:click={() => setSort('auth')}><span class="arrow">{sortArrow('auth')}</span>Auth</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.auth != null}
@@ -96,8 +100,8 @@
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
-    <div class="cell cell-ws sortable">
-      <span class="hdr-label" on:click={() => setSort('workspace_count')}>Workspaces <span class="arrow">{sortArrow('workspace_count')}</span></span>
+    <div class="cell cell-ws sortable" class:is-sorted={isSorted('workspace_count')}>
+      <span class="hdr-label" on:click={() => setSort('workspace_count')}><span class="arrow">{sortArrow('workspace_count')}</span>Workspaces</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.workspaces != null}
@@ -107,8 +111,8 @@
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
-    <div class="cell cell-activity sortable">
-      <span class="hdr-label" on:click={() => setSort('last_activity')}>Last activity <span class="arrow">{sortArrow('last_activity')}</span></span>
+    <div class="cell cell-activity sortable" class:is-sorted={isSorted('last_activity')}>
+      <span class="hdr-label" on:click={() => setSort('last_activity')}><span class="arrow">{sortArrow('last_activity')}</span>Last activity</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.last_activity != null}
@@ -118,8 +122,8 @@
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
-    <div class="cell cell-status sortable">
-      <span class="hdr-label" on:click={() => setSort('status')}>Status <span class="arrow">{sortArrow('status')}</span></span>
+    <div class="cell cell-status sortable" class:is-sorted={isSorted('status')}>
+      <span class="hdr-label" on:click={() => setSort('status')}><span class="arrow">{sortArrow('status')}</span>Status</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.status != null}
@@ -219,7 +223,17 @@
   .arrow {
     display: inline-block;
     width: 0.75rem;
+    margin-right: 0.15rem;
     color: var(--theme-caption-color);
+    font-weight: 700;
+  }
+
+  /* Header cell currently sorted by: tinted bg + caption-colored label
+     so the active sort is obvious without needing to read the arrow. */
+  .head .cell.is-sorted {
+    background: var(--theme-bg-color);
+    color: var(--theme-caption-color);
+    font-weight: 600;
   }
 
   .filter-btn {

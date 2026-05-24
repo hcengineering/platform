@@ -103,6 +103,11 @@
     admins: accounts.filter((a) => a.isAdmin).length
   }
 
+  // Ordered uuid list passed to the drawer so the drawer's Prev/Next pager
+  // knows the page's row order. Cast in a reactive (not inline in markup)
+  // because Svelte 4's attribute-brace parser rejects `as` casts inline.
+  $: visibleAccountUuids = accounts.map((a) => a.uuid as string)
+
   $: {
     if (debounceTimer != null) clearTimeout(debounceTimer)
     const desired = search
@@ -194,6 +199,10 @@
 
   function onDrawerClose (): void {
     selectedUuid = null
+  }
+
+  function onDrawerNavigate (e: CustomEvent<{ uuid: string }>): void {
+    selectedUuid = e.detail.uuid
   }
 
   function onAccountChanged (): void {
@@ -492,7 +501,13 @@
 </AdminShell>
 
 {#if selectedUuid != null}
-  <AdminUsersDrawer accountUuid={selectedUuid} on:close={onDrawerClose} on:account-changed={onAccountChanged} />
+  <AdminUsersDrawer
+    accountUuid={selectedUuid}
+    visibleUuids={visibleAccountUuids}
+    on:close={onDrawerClose}
+    on:account-changed={onAccountChanged}
+    on:navigate={onDrawerNavigate}
+  />
 {/if}
 
 <style lang="scss">
