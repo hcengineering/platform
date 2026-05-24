@@ -13,6 +13,7 @@
     IconChevronLeft,
     IconChevronRight,
     IconClose,
+    IconCopy,
     IconDelete,
     Label,
     Scroller,
@@ -21,6 +22,7 @@
     type DropdownIntlItem
   } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { copyTextToClipboard } from '@hcengineering/presentation'
   import AddToWorkspacePopup from './AddToWorkspacePopup.svelte'
   import { confirmAction, notify } from './util'
 
@@ -250,6 +252,20 @@
     })
   }
 
+  function onCopyUuid (): void {
+    void copyTextToClipboard(String(accountUuid))
+    notify('Copied', 'Account UUID copied to clipboard.')
+  }
+
+  function onCopyEmail (): void {
+    if (details?.primaryEmail == null || details.primaryEmail === '') {
+      notify('No email', 'This user has no primary email.', true)
+      return
+    }
+    void copyTextToClipboard(details.primaryEmail)
+    notify('Copied', `Email ${details.primaryEmail} copied.`)
+  }
+
   function onClose (): void {
     dispatch('close')
   }
@@ -330,6 +346,22 @@
               <span class="status-dot" />
               {details.status}
             </span>
+          </div>
+          <div class="copy-actions">
+            <ButtonIcon
+              icon={IconCopy}
+              kind={'tertiary'}
+              size={'small'}
+              on:click={onCopyUuid}
+              showTooltip={{ label: getEmbeddedLabel('Copy UUID') }}
+            />
+            <ButtonIcon
+              icon={IconCopy}
+              kind={'tertiary'}
+              size={'small'}
+              on:click={onCopyEmail}
+              showTooltip={{ label: getEmbeddedLabel('Copy email') }}
+            />
           </div>
         </div>
 
@@ -595,6 +627,14 @@
     align-items: center;
     gap: 1rem;
     margin-bottom: var(--spacing-3);
+  }
+
+  .copy-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: auto;
+    flex-shrink: 0;
   }
 
   .avatar {
