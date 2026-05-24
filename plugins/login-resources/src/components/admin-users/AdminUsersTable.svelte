@@ -203,14 +203,10 @@
     gap: 0.35rem;
   }
 
-  .head .cell-ws,
-  .head .cell-status {
-    justify-content: flex-end;
-  }
-
-  .head .cell-ws {
-    padding-right: 1.5rem;
-  }
+  /* All header labels left-aligned (default justify-content of .cell
+     is flex-start). cell-ws + cell-status used to be right-aligned;
+     they are now left so headers match the (now also left-aligned)
+     row content underneath. */
 
   .head .cell-checkbox {
     justify-content: center;

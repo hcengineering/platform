@@ -343,6 +343,12 @@
   let selectedWorkspaceUuid: string | null = null
   function openWorkspace (uuid: string): void { selectedWorkspaceUuid = uuid }
   function closeWorkspace (): void { selectedWorkspaceUuid = null }
+
+  // Default: all time-bucket groups expanded so the page shows actual
+  // workspaces immediately. Without this admins land on a page that
+  // looks empty even though `Total: N` says otherwise — collapsed
+  // <Expandable> sections hide every row.
+  let groupsExpanded: boolean = true
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -501,6 +507,28 @@
             />
           </div>
         </div>
+        <div class="ws-list-toolbar">
+          <div class="ws-list-toolbar-title">Workspaces</div>
+          <Button
+            kind={'regular'}
+            size={'small'}
+            label={getEmbeddedLabel(groupsExpanded ? 'Collapse all' : 'Expand all')}
+            on:click={() => { groupsExpanded = !groupsExpanded }}
+          />
+        </div>
+
+        <div class="ws-list-head">
+          <div style:width={'15rem'}>Name</div>
+          <div style:width={'5rem'}>Region</div>
+          <div style:width={'5rem'}>Last visit</div>
+          <div style:width={'10rem'}>Mode</div>
+          <div style:width={'5rem'}>Attempts</div>
+          <div style:width={'5rem'}>Progress</div>
+          <div style:width={'15rem'}>Backup size</div>
+          <div style:width={'15rem'}>Backup age</div>
+          <div>Actions</div>
+        </div>
+
         <div class="fs-title p-1">
           <Scroller maxHeight={40} noStretch={true}>
             <div class="mr-4">
@@ -516,7 +544,7 @@
                 {@const maintenance = v.length - activeAll.length - archivedV.length - deletedV.length}
                 {@const grByRegion = groupByArray(v, (it) => regionTitles[it.region ?? ''])}
                 {#if v.length > 0}
-                  <Expandable expandable={true} bordered={true} expanded={search.trim().length > 0}>
+                  <Expandable expandable={true} bordered={true} expanded={groupsExpanded || search.trim().length > 0}>
                     <svelte:fragment slot="title">
                       <span class="fs-title focused-button flex-row-center">
                         {k} -
@@ -1050,6 +1078,48 @@
     align-items: center;
     gap: 0.4rem;
     flex-shrink: 0;
+  }
+
+  .ws-list-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-2);
+    padding: 0.25rem 0.1rem;
+  }
+
+  .ws-list-toolbar-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--theme-caption-color);
+  }
+
+  /* Column header above all time-bucket groups. Same column widths
+     used in the rows below so headers line up with row cells. */
+  .ws-list-head {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.45rem 0.55rem;
+    background: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-divider-color);
+    border-bottom: 0;
+    border-radius: var(--small-BorderRadius) var(--small-BorderRadius) 0 0;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--theme-darker-color);
+
+    & > div {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    & > div:last-child {
+      flex: 1;
+    }
   }
 
   .super-admin-toggle {

@@ -212,12 +212,14 @@
   }
 
   .cell-ws {
-    justify-content: flex-end;
-    text-align: right;
+    /* Left-aligned to match the header above and the visual rhythm of
+       the other text columns. Number stays tabular-nums so it does
+       not shift when sorted. */
+    justify-content: flex-start;
+    text-align: left;
     font-variant-numeric: tabular-nums;
     font-weight: 500;
     color: var(--theme-caption-color);
-    padding-right: 1.5rem;
   }
 
   .cell-activity {
@@ -230,7 +232,9 @@
   }
 
   .cell-status {
-    justify-content: flex-end;
+    /* Left-aligned status pill so the column header (left-aligned)
+       sits directly above the pill, matching the other columns. */
+    justify-content: flex-start;
   }
 
   .status {
