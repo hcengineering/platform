@@ -20,9 +20,9 @@
     showPopup,
     type DropdownIntlItem
   } from '@hcengineering/ui'
-  import { MessageBox } from '@hcengineering/presentation'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import AddToWorkspacePopup from './AddToWorkspacePopup.svelte'
+  import { confirmAction, notify } from './util'
 
   export let accountUuid: string
   // Optional: parent passes the ordered list of currently-visible uuids so
@@ -123,26 +123,6 @@
   function truncateMiddle (s: string, head: number, tail: number): string {
     if (s.length <= head + tail + 1) return s
     return `${s.slice(0, head)}…${s.slice(-tail)}`
-  }
-
-  function notify (title: string, message: string, dangerous = false): void {
-    showPopup(MessageBox, {
-      label: getEmbeddedLabel(title),
-      message: getEmbeddedLabel(message),
-      okLabel: getEmbeddedLabel('OK'),
-      dangerous,
-      canSubmit: true
-    })
-  }
-
-  function confirmAction (title: string, message: string, dangerous: boolean, action: () => Promise<void>): void {
-    showPopup(MessageBox, {
-      label: getEmbeddedLabel(title),
-      message: getEmbeddedLabel(message),
-      okLabel: getEmbeddedLabel('Confirm'),
-      dangerous,
-      action
-    })
   }
 
   async function onChangeRole (workspaceUuid: string, newRole: AccountRole): Promise<void> {
@@ -276,9 +256,6 @@
     return ((first?.[0] ?? '') + (last?.[0] ?? '')).toUpperCase() || '?'
   }
 
-  function parseRole (v: any): AccountRole {
-    return Number(v) as AccountRole
-  }
 </script>
 
 <aside class="drawer hulyComponent" role="dialog" aria-modal="true" bind:this={drawerEl}>

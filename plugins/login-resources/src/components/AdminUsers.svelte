@@ -28,6 +28,7 @@
   import BulkPickWorkspacePopup from './admin-users/BulkPickWorkspacePopup.svelte'
   import CreateAccountPopup from './admin-users/CreateAccountPopup.svelte'
   import MassActionConfirm from './admin-users/MassActionConfirm.svelte'
+  import { confirmAction } from './admin-users/util'
   import type {
     AccountListRow,
     BulkResult,
@@ -230,23 +231,6 @@
   // -------------------------------------------------------------------------
   // Bulk-action helpers
   // -------------------------------------------------------------------------
-  // Local copy of the helper used in AdminUsersDrawer.svelte:62. Promoting
-  // to a shared util is a follow-up; for now we keep the same signature
-  // and behavior so reviewers can compare side-by-side.
-  function confirmAction (
-    title: string,
-    message: string,
-    dangerous: boolean,
-    action: () => Promise<void>
-  ): void {
-    showPopup(MessageBox, {
-      label: getEmbeddedLabel(title),
-      message: getEmbeddedLabel(message),
-      okLabel: getEmbeddedLabel('Confirm'),
-      dangerous,
-      action
-    })
-  }
 
   // Both success and failure use MessageBox (info-only, canSubmit:false).
   // We deliberately avoid `addNotification(title, subTitle, component, ...)`
