@@ -23,6 +23,8 @@
   let role: AccountRole = AccountRole.User
   let busy = false
   let error: string | null = null
+  let pw1Visible = false
+  let pw2Visible = false
 
   void (async () => { workspaces = await client.listWorkspaces() })()
 
@@ -82,8 +84,28 @@
       <label><input type="radio" bind:group={passwordMode} value="invite" /> Send invite email</label>
       <label><input type="radio" bind:group={passwordMode} value="set" /> Set password now</label>
       {#if passwordMode === 'set'}
-        <label>Password<input type="password" bind:value={password} /></label>
-        <label>Confirm<input type="password" bind:value={passwordConfirm} /></label>
+        <label>Password
+          <div class="pw-input-row">
+            <input type={pw1Visible ? 'text' : 'password'} autocomplete="new-password"
+                   aria-describedby="pw1-help" bind:value={password} />
+            <button type="button" class="pw-toggle" on:click={() => { pw1Visible = !pw1Visible }}
+                    aria-label={pw1Visible ? 'Hide password' : 'Show password'}>
+              {pw1Visible ? '◯' : '●'}
+            </button>
+          </div>
+          <span class="pw-help" id="pw1-help">Min 8 chars</span>
+        </label>
+        <label>Confirm
+          <div class="pw-input-row">
+            <input type={pw2Visible ? 'text' : 'password'} autocomplete="new-password"
+                   aria-describedby="pw2-help" bind:value={passwordConfirm} />
+            <button type="button" class="pw-toggle" on:click={() => { pw2Visible = !pw2Visible }}
+                    aria-label={pw2Visible ? 'Hide password' : 'Show password'}>
+              {pw2Visible ? '◯' : '●'}
+            </button>
+          </div>
+          <span class="pw-help" id="pw2-help">Min 8 chars</span>
+        </label>
       {/if}
     </fieldset>
     <fieldset class="full">
@@ -114,4 +136,28 @@
   legend { padding: 0 0.3rem; font-size: 0.8rem; color: var(--theme-darker-color); }
   .error { color: var(--theme-error-color, #ef4444); font-size: 0.85rem; }
   .actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+  .pw-input-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.25rem;
+  }
+  .pw-toggle {
+    flex-shrink: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--theme-darker-color);
+    padding: 0 0.4rem;
+
+    &:hover {
+      color: var(--theme-caption-color);
+    }
+  }
+  .pw-help {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--theme-darker-color);
+    margin-top: 0.2rem;
+  }
 </style>
