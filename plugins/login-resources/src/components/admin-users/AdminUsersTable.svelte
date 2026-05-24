@@ -35,15 +35,21 @@
     <div class="cell cell-name sortable" on:click={() => setSort('name')}>
       Name <span class="arrow">{sortArrow('name')}</span>
     </div>
-    <div class="cell cell-email">Email</div>
-    <div class="cell cell-auth">Auth</div>
+    <div class="cell cell-email sortable" on:click={() => setSort('email')}>
+      Email <span class="arrow">{sortArrow('email')}</span>
+    </div>
+    <div class="cell cell-auth sortable" on:click={() => setSort('auth')}>
+      Auth <span class="arrow">{sortArrow('auth')}</span>
+    </div>
     <div class="cell cell-ws sortable" on:click={() => setSort('workspace_count')}>
       Workspaces <span class="arrow">{sortArrow('workspace_count')}</span>
     </div>
     <div class="cell cell-activity sortable" on:click={() => setSort('last_activity')}>
       Last activity <span class="arrow">{sortArrow('last_activity')}</span>
     </div>
-    <div class="cell cell-status">Status</div>
+    <div class="cell cell-status sortable" on:click={() => setSort('status')}>
+      Status <span class="arrow">{sortArrow('status')}</span>
+    </div>
   </div>
   {#if loading}
     <div class="empty">Loading…</div>
@@ -74,6 +80,9 @@
       minmax(140px, 1fr)   /* Last activity     */
       120px;               /* Status            */
     align-items: center;
+    width: 100%;
+    max-width: 72rem;
+    margin: 0;
     background: var(--theme-bg-color);
     border: 1px solid var(--theme-divider-color);
     border-radius: var(--small-BorderRadius);

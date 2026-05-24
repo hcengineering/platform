@@ -201,11 +201,19 @@
 {/if}
 
 <style lang="scss">
+  .hulyComponent-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .stats {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--spacing-2);
     margin-bottom: var(--spacing-3);
+    width: 100%;
+    max-width: 72rem;
   }
 
   .stat-item {
@@ -244,6 +252,8 @@
     align-items: center;
     gap: var(--spacing-2);
     margin-bottom: var(--spacing-2);
+    width: 100%;
+    max-width: 72rem;
   }
 
   .filters-search {
