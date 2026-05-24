@@ -14,8 +14,10 @@
     Label,
     Scroller,
     DropdownLabelsIntl,
+    showPopup,
     type DropdownIntlItem
   } from '@hcengineering/ui'
+  import { MessageBox } from '@hcengineering/presentation'
   import { getEmbeddedLabel } from '@hcengineering/platform'
 
   export let accountUuid: string
@@ -47,10 +49,24 @@
 
   onMount(load)
 
-  function showError (msg: string): void {
-    if (typeof window !== 'undefined') {
-      window.alert(msg)
-    }
+  function notify (title: string, message: string, dangerous = false): void {
+    showPopup(MessageBox, {
+      label: getEmbeddedLabel(title),
+      message: getEmbeddedLabel(message),
+      okLabel: getEmbeddedLabel('OK'),
+      dangerous,
+      canSubmit: true
+    })
+  }
+
+  function confirmAction (title: string, message: string, dangerous: boolean, action: () => Promise<void>): void {
+    showPopup(MessageBox, {
+      label: getEmbeddedLabel(title),
+      message: getEmbeddedLabel(message),
+      okLabel: getEmbeddedLabel('Confirm'),
+      dangerous,
+      action
+    })
   }
 
   async function onChangeRole (workspaceUuid: string, newRole: AccountRole): Promise<void> {
@@ -61,82 +77,103 @@
       dispatch('account-changed')
     } catch (err: any) {
       if (err?.status?.code === 'last_owner_in_workspace') {
-        showError('Cannot demote the last Owner of this workspace. There must be at least one Owner.')
+        notify('Cannot demote last Owner', 'There must be at least one Owner per workspace.', true)
       } else {
-        showError(err?.message ?? 'Failed to change role.')
+        notify('Failed to change role', err?.message ?? String(err), true)
       }
     } finally {
       busy = false
     }
   }
 
-  async function onRemoveFromWorkspace (workspaceUuid: string, workspaceName: string): Promise<void> {
-    if (typeof window !== 'undefined' && !window.confirm(`Remove from "${workspaceName}"?`)) return
-    busy = true
-    try {
-      await getAccountClient().removeWorkspaceMember(accountUuid as any, workspaceUuid as any)
-      await load()
-      dispatch('account-changed')
-    } catch (err: any) {
-      if (err?.status?.code === 'last_owner_in_workspace') {
-        showError('Cannot remove the last Owner.')
-      } else {
-        showError(err?.message ?? 'Failed to remove member.')
+  function onRemoveFromWorkspace (workspaceUuid: string, workspaceName: string): void {
+    confirmAction(
+      'Remove from workspace',
+      `Remove this user from "${workspaceName}"?`,
+      true,
+      async () => {
+        busy = true
+        try {
+          await getAccountClient().removeWorkspaceMember(accountUuid as any, workspaceUuid as any)
+          await load()
+          dispatch('account-changed')
+        } catch (err: any) {
+          if (err?.status?.code === 'last_owner_in_workspace') {
+            notify('Cannot remove last Owner', 'There must be at least one Owner per workspace.', true)
+          } else {
+            notify('Failed to remove member', err?.message ?? String(err), true)
+          }
+        } finally {
+          busy = false
+        }
       }
-    } finally {
-      busy = false
-    }
+    )
   }
 
-  async function onTriggerPasswordReset (): Promise<void> {
-    busy = true
-    try {
-      const res = await getAccountClient().triggerPasswordReset(accountUuid as any)
-      showError(`Password-reset email sent to ${res.emailSentTo}`)
-    } catch (err: any) {
-      const code = err?.status?.code
-      if (code === 'user_has_no_password' || code === 'user_has_no_email') {
-        showError('This user signs in via OIDC only — password reset does not apply.')
-      } else {
-        showError(err?.message ?? 'Failed to send password reset.')
+  function onTriggerPasswordReset (): void {
+    confirmAction(
+      'Send password-reset email',
+      'A password-reset email will be sent to the user\'s primary email address. Continue?',
+      false,
+      async () => {
+        busy = true
+        try {
+          const res = await getAccountClient().triggerPasswordReset(accountUuid as any)
+          notify('Email sent', `Password-reset email sent to ${res.emailSentTo}.`)
+        } catch (err: any) {
+          const code = err?.status?.code
+          if (code === 'user_has_no_password' || code === 'user_has_no_email') {
+            notify('Not applicable', 'This user signs in via OIDC only — password reset does not apply.', true)
+          } else {
+            notify('Failed to send password reset', err?.message ?? String(err), true)
+          }
+        } finally {
+          busy = false
+        }
       }
-    } finally {
-      busy = false
-    }
+    )
   }
 
-  async function onDisable (): Promise<void> {
-    if (typeof window !== 'undefined' && !window.confirm('Disable this account? Active sessions will be terminated.')) return
-    busy = true
-    try {
-      await getAccountClient().disableAccount(accountUuid as any)
-      await load()
-      dispatch('account-changed')
-    } catch (err: any) {
-      const code = err?.status?.code
-      if (code === 'cannot_self_disable') {
-        showError('You cannot disable your own account.')
-      } else if (code === 'last_admin') {
-        showError('Cannot disable the last admin. At least one active admin must remain.')
-      } else {
-        showError(err?.message ?? 'Failed to disable account.')
+  function onDisable (): void {
+    confirmAction(
+      'Disable account',
+      'Active sessions will be terminated and the user will be unable to log in until you re-enable the account. Continue?',
+      true,
+      async () => {
+        busy = true
+        try {
+          await getAccountClient().disableAccount(accountUuid as any)
+          await load()
+          dispatch('account-changed')
+        } catch (err: any) {
+          const code = err?.status?.code
+          if (code === 'cannot_self_disable') {
+            notify('Cannot disable yourself', 'You cannot disable your own account.', true)
+          } else if (code === 'last_admin') {
+            notify('Last admin', 'Cannot disable the last admin. At least one active admin must remain.', true)
+          } else {
+            notify('Failed to disable account', err?.message ?? String(err), true)
+          }
+        } finally {
+          busy = false
+        }
       }
-    } finally {
-      busy = false
-    }
+    )
   }
 
-  async function onEnable (): Promise<void> {
-    busy = true
-    try {
-      await getAccountClient().enableAccount(accountUuid as any)
-      await load()
-      dispatch('account-changed')
-    } catch (err: any) {
-      showError(err?.message ?? 'Failed to enable account.')
-    } finally {
-      busy = false
-    }
+  function onEnable (): void {
+    confirmAction('Re-enable account', 'Allow this user to log in again. Continue?', false, async () => {
+      busy = true
+      try {
+        await getAccountClient().enableAccount(accountUuid as any)
+        await load()
+        dispatch('account-changed')
+      } catch (err: any) {
+        notify('Failed to enable account', err?.message ?? String(err), true)
+      } finally {
+        busy = false
+      }
+    })
   }
 
   function onClose (): void {

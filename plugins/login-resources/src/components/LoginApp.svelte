@@ -138,6 +138,7 @@
   {:else}
     <AdminWorkspaces />
   {/if}
+  <Popup />
 {:else}
   <div
     class="theme-dark w-full h-full backd"

@@ -456,6 +456,9 @@ export class AccountPostgresDbCollection
         a.max_workspaces,
         a.failed_login_attempts,
         a.tfa_secret,
+        a.disabled_at,
+        a.token_version,
+        a.last_activity_at,
         p.hash,
         p.salt
       FROM ${this.getTableName()} as a
