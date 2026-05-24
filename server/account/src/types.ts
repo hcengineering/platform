@@ -80,6 +80,8 @@ export type AdminAuditAction =
   | 'trigger_password_reset'
   | 'disable'
   | 'enable'
+  | 'create_account'         // new: createAccountAdmin endpoint
+  | 'add_workspace_member'   // new: addWorkspaceMember + bulkAddToWorkspace
 
 export interface AdminAuditLogEntry {
   id: string
