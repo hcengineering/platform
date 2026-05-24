@@ -42,6 +42,7 @@
   import AdminShell from './admin-shell/AdminShell.svelte'
   import AdminWorkspaceDrawer from './admin-workspaces/AdminWorkspaceDrawer.svelte'
   import WorkspaceColumnFilterPopup from './admin-workspaces/WorkspaceColumnFilterPopup.svelte'
+  import MassActionConfirm from './admin-users/MassActionConfirm.svelte'
   import { Breadcrumb, Header, IconSettings } from '@hcengineering/ui'
   import login from '@hcengineering/login'
 
@@ -332,6 +333,21 @@
   // mass-action buttons above the list.
   $: massActiveAll = sortedWorkspaces.filter((it) => isActiveMode(it.mode))
   $: massActiveMigratable = massActiveAll.filter((it) => (it.region ?? '') !== migrateTargetRegionId)
+
+  // Filter-summary string used by MassActionConfirm. Builds from the
+  // currently-applied columnFilters keys; if no filter is active, returns
+  // the explicit "No filter set" warning so admins see the universe size
+  // they're about to act on.
+  $: activeFilterKeys = Object.keys(columnFilters).filter((k) => columnFilters[k] != null)
+  $: filterSummary = activeFilterKeys.length === 0
+    ? 'No filter set'
+    : `Filter: ${activeFilterKeys.join(', ')}`
+
+  // dangerousScope = true when admin would act on the entire universe.
+  // For Workspaces this means: no filter set AND the action targets all
+  // active workspaces in the instance. Both mass actions on this page
+  // operate on the full filtered set, so no-filter = universe = dangerous.
+  $: workspacesDangerousScope = activeFilterKeys.length === 0
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -421,13 +437,23 @@
                 kind={'ghost'}
                 label={getEmbeddedLabel(`Mass Archive ${massActiveAll.length}`)}
                 on:click={() => {
-                  showPopup(MessageBox, {
-                    label: getEmbeddedLabel(`Mass Archive ${massActiveAll.length}`),
-                    message: getEmbeddedLabel(`Please confirm archive ${massActiveAll.length} workspaces`),
-                    action: async () => {
+                  showPopup(
+                    MassActionConfirm,
+                    {
+                      title: `Mass Archive ${massActiveAll.length}`,
+                      affectedCount: massActiveAll.length,
+                      filterSummary,
+                      dangerousScope: workspacesDangerousScope,
+                      typedConfirmPhrase: 'ARCHIVE ALL',
+                      actionLabel: 'Archive',
+                      dangerous: true
+                    },
+                    'middle',
+                    (confirmed: boolean | undefined) => {
+                      if (confirmed !== true) return
                       void performWorkspaceOperation(massActiveAll.map((it) => it.uuid), 'archive')
                     }
-                  })
+                  )
                 }}
               />
             {/if}
@@ -450,13 +476,23 @@
                 kind={'positive'}
                 label={getEmbeddedLabel(`Mass Migrate ${massActiveMigratable.length}`)}
                 on:click={() => {
-                  showPopup(MessageBox, {
-                    label: getEmbeddedLabel(`Mass Migrate ${massActiveMigratable.length}`),
-                    message: getEmbeddedLabel(`Please confirm migrate ${massActiveMigratable.length} workspaces to ${migrateTargetName}`),
-                    action: async () => {
-                      await performWorkspaceOperation(massActiveMigratable.map((it) => it.uuid), 'migrate-to', migrateTargetRegionId)
+                  showPopup(
+                    MassActionConfirm,
+                    {
+                      title: `Mass Migrate ${massActiveMigratable.length} → ${migrateTargetName}`,
+                      affectedCount: massActiveMigratable.length,
+                      filterSummary,
+                      dangerousScope: workspacesDangerousScope,
+                      typedConfirmPhrase: 'MIGRATE ALL',
+                      actionLabel: 'Migrate',
+                      dangerous: false
+                    },
+                    'middle',
+                    (confirmed: boolean | undefined) => {
+                      if (confirmed !== true) return
+                      void performWorkspaceOperation(massActiveMigratable.map((it) => it.uuid), 'migrate-to', migrateTargetRegionId)
                     }
-                  })
+                  )
                 }}
               />
             {/if}
