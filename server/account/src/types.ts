@@ -34,6 +34,7 @@ import {
   type WorkspaceInfo,
   type IntegrationKind
 } from '@hcengineering/core'
+import type { AccountListRow } from '@hcengineering/account-client'
 import type { EndpointInfo } from './utils'
 
 /* ========= D A T A B A S E  E N T I T I E S ========= */
@@ -87,10 +88,36 @@ export interface AdminAuditLogEntry {
   id: string
   tsMs: number
   adminAccount: AccountUuid
-  targetAccount: AccountUuid
+  targetAccount: AccountUuid | null  // nullable: workspace-only audit entries have null here (V28)
   action: AdminAuditAction
   workspaceUuid: WorkspaceUuid | null
   details: Record<string, any> | null
+}
+
+/**
+ * Parameters for the SQL-pushdown listAccountsAdmin query (Task 2-2).
+ * This is a server-internal type; the public API uses ListAccountsAdminParams
+ * from \@hcengineering/account-client.
+ */
+export interface ListAccountsAdminQueryParams {
+  search?: string
+  statusIn?: Array<'active' | 'disabled'>
+  isAdmin?: boolean
+  authMethodIn?: Array<'email_only' | 'oidc' | 'mixed'>
+  nameContains?: string
+  emailContains?: string
+  workspaceUuidsIn?: WorkspaceUuid[]
+  wsMin?: number
+  wsMax?: number
+  lastActivityFilter?:
+    | { kind: 'never' }
+    | { kind: 'before', tsMs: number }
+    | { kind: 'after', tsMs: number }
+    | { kind: 'between', from: number, to: number }
+    | { kind: 'range', fromMs?: number, toMs?: number }  // legacy compat with existing params shape
+  orphan?: boolean
+  sort?: { field: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status', direction: 'asc' | 'desc' }
+  pagination?: { limit?: number, offset?: number }
 }
 
 export interface AdminAuditLogCollection {
@@ -396,6 +423,7 @@ export interface AccountDB {
   resetPassword: (accountId: AccountUuid) => Promise<void>
   deleteAccount: (accountId: AccountUuid) => Promise<void>
   listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
+  listAccountsAdmin: (params: ListAccountsAdminQueryParams) => Promise<{ rows: AccountListRow[], total: number }>
   generatePersonUuid: () => Promise<PersonUuid>
 }
 

@@ -25,6 +25,7 @@ import {
 } from '@hcengineering/core'
 
 import { getMigrations } from './migrations'
+import { buildListAccountsAdminSql, rowToAccountListRow } from './listAccountsAdminPg'
 import type {
   DbCollection,
   Query,
@@ -52,8 +53,10 @@ import type {
   WorkspacePermission,
   DBFlavor,
   AdminAuditLogCollection,
-  AdminAuditLogEntry
+  AdminAuditLogEntry,
+  ListAccountsAdminQueryParams
 } from '../../types'
+import type { AccountListRow } from '@hcengineering/account-client'
 
 function toSnakeCase (str: string): string {
   // Preserve leading underscore
@@ -1281,6 +1284,19 @@ export class PostgresAccountDB implements AccountDB {
         return converted as AccountAggregatedInfo
       })
     })
+  }
+
+  async listAccountsAdmin (params: ListAccountsAdminQueryParams): Promise<{ rows: AccountListRow[], total: number }> {
+    const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map((e) => e.trim()).filter(Boolean)
+    const { rowsSql, countSql, rowsArgs, countArgs } = buildListAccountsAdminSql(this.ns, params, adminEmails)
+    const [rows, count] = await Promise.all([
+      this.client.unsafe(rowsSql, rowsArgs),
+      this.client.unsafe(countSql, countArgs)
+    ])
+    return {
+      rows: rows.map((r: any) => rowToAccountListRow(r, adminEmails)),
+      total: Number((count[0] as any).n)
+    }
   }
 
   async generatePersonUuid (): Promise<PersonUuid> {

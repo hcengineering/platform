@@ -60,6 +60,7 @@ import type {
   IntegrationKey,
   IntegrationSecret,
   IntegrationSecretKey,
+  ListAccountsAdminQueryParams,
   Query,
   SocialId,
   Subscription,
@@ -171,160 +172,24 @@ export async function listAccountsAdmin (
 ): Promise<{ total: number, accounts: AccountListRow[] }> {
   await assertAdmin(ctx, db, token)
 
-  // Initial implementation does the filtering in JS for simplicity. The Postgres-side
-  // optimization (server-side filter + count) is a follow-up.
-  const allAccounts = await db.account.find({})
-  const allSocialIds = await db.socialId.find({})
-  const allPersons = await db.person.find({})
-  const personByUuid = new Map(allPersons.map((p) => [p.uuid, p]))
-  const adminEmails = new Set(
-    (process.env.ADMIN_EMAILS ?? '')
-      .split(',')
-      .map((e) => e.trim())
-      .filter(Boolean)
-  )
-
-  const workspacesByAccount = new Map<string, string[]>()
-  const rows: AccountListRow[] = await Promise.all(
-    allAccounts.map(async (acc) => {
-      const socials = allSocialIds.filter((s) => s.personUuid === acc.uuid)
-      const emailSocials = socials.filter((s) => s.type === SocialIdType.EMAIL)
-      const oidcSocials = socials.filter((s) => s.type === SocialIdType.OIDC)
-      const workspaceRoles = await db.getWorkspaceRoles(acc.uuid)
-      const primaryEmail = emailSocials[0]?.value ?? null
-      const authMethods: Array<'email' | 'oidc'> = []
-      if (emailSocials.length > 0) authMethods.push('email')
-      if (oidcSocials.length > 0) authMethods.push('oidc')
-      const person = personByUuid.get(acc.uuid as unknown as PersonUuid)
-
-      workspacesByAccount.set(acc.uuid as string, Array.from(workspaceRoles.keys()) as string[])
-
-      return {
-        uuid: acc.uuid,
-        firstName: person?.firstName ?? '',
-        lastName: person?.lastName ?? '',
-        primaryEmail,
-        authMethods,
-        hasPassword: acc.hash != null,
-        workspaceCount: workspaceRoles.size,
-        status: acc.disabledAt != null ? ('disabled' as const) : ('active' as const),
-        lastActivityAt: toEpochMs(acc.lastActivityAt),
-        isAdmin: primaryEmail != null && adminEmails.has(primaryEmail)
-      }
-    })
-  )
-
-  let filtered = rows
-  if (params.search != null && params.search.trim() !== '') {
-    const needle = params.search.trim().toLowerCase()
-    filtered = filtered.filter(
-      (r) =>
-        r.firstName.toLowerCase().includes(needle) ||
-        r.lastName.toLowerCase().includes(needle) ||
-        (r.primaryEmail ?? '').toLowerCase().includes(needle)
-    )
-  }
-  if (params.status != null && params.status !== 'all') {
-    filtered = filtered.filter((r) => r.status === params.status)
-  }
-  if (params.authMethod != null && params.authMethod !== 'all') {
-    if (params.authMethod === 'email_only') {
-      filtered = filtered.filter((r) => r.authMethods.length === 1 && r.authMethods[0] === 'email')
-    } else if (params.authMethod === 'oidc') {
-      filtered = filtered.filter((r) => r.authMethods.length === 1 && r.authMethods[0] === 'oidc')
-    } else if (params.authMethod === 'mixed') {
-      filtered = filtered.filter((r) => r.authMethods.length > 1)
-    }
-  }
-  if (params.emailContains != null && params.emailContains !== '') {
-    const needle = params.emailContains.trim().toLowerCase()
-    filtered = filtered.filter((r) => (r.primaryEmail ?? '').toLowerCase().includes(needle))
-  }
-  if (params.nameContains != null && params.nameContains !== '') {
-    const needle = params.nameContains.trim().toLowerCase()
-    filtered = filtered.filter((r) => `${r.firstName} ${r.lastName}`.toLowerCase().includes(needle))
-  }
-  if (params.statusIn != null && params.statusIn.length > 0) {
-    const allowed = new Set(params.statusIn)
-    filtered = filtered.filter((r) => allowed.has(r.status))
-  }
-  if (params.authMethodIn != null && params.authMethodIn.length > 0) {
-    const allowed = new Set(params.authMethodIn)
-    filtered = filtered.filter((r) => {
-      const has = r.authMethods.length
-      const eOnly = r.authMethods.includes('email') && !r.authMethods.includes('oidc')
-      const oOnly = r.authMethods.includes('oidc') && !r.authMethods.includes('email')
-      const mixed = r.authMethods.includes('email') && r.authMethods.includes('oidc')
-      if (eOnly && allowed.has('email_only')) return true
-      if (oOnly && allowed.has('oidc')) return true
-      if (mixed && allowed.has('mixed')) return true
-      if (has === 0 && allowed.has('none')) return true
-      return false
-    })
-  }
-  if (params.workspaceUuidsIn != null && params.workspaceUuidsIn.length > 0) {
-    const idsCol = new Set(params.workspaceUuidsIn as string[])
-    filtered = filtered.filter((r) => {
-      const memberOf = workspacesByAccount.get(r.uuid as string) ?? []
-      return memberOf.some((id) => idsCol.has(id))
-    })
-  }
-  if (params.workspaceCountRange != null) {
-    const wsMin = params.workspaceCountRange.min != null ? Math.max(0, params.workspaceCountRange.min) : undefined
-    const wsMax = params.workspaceCountRange.max != null ? Math.max(0, params.workspaceCountRange.max) : undefined
-    filtered = filtered.filter(
-      (r) => (wsMin == null || r.workspaceCount >= wsMin) && (wsMax == null || r.workspaceCount <= wsMax)
-    )
-  }
-  if (params.lastActivityFilter != null) {
-    if (params.lastActivityFilter.kind === 'never') {
-      filtered = filtered.filter((r) => r.lastActivityAt == null)
-    } else {
-      const { fromMs, toMs } = params.lastActivityFilter
-      filtered = filtered.filter((r) => {
-        const ts = r.lastActivityAt
-        if (ts == null) return false
-        if (fromMs != null && ts < fromMs) return false
-        if (toMs != null && ts > toMs) return false
-        return true
-      })
-    }
+  // Map the public ListAccountsAdminParams (account-client) to the internal
+  // ListAccountsAdminQueryParams used by the DB layer.
+  const query: ListAccountsAdminQueryParams = {
+    search: params.search,
+    statusIn: params.statusIn,
+    authMethodIn: params.authMethodIn,
+    nameContains: params.nameContains,
+    emailContains: params.emailContains,
+    workspaceUuidsIn: params.workspaceUuidsIn,
+    wsMin: params.workspaceCountRange?.min,
+    wsMax: params.workspaceCountRange?.max,
+    lastActivityFilter: params.lastActivityFilter,
+    sort: params.sort,
+    pagination: { limit: params.pagination.limit, offset: params.pagination.offset }
   }
 
-  if (params.sort != null) {
-    const dir = params.sort.direction === 'desc' ? -1 : 1
-    const cmp = (a: AccountListRow, b: AccountListRow): number => {
-      switch (params.sort!.field) {
-        case 'name':
-          return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`) * dir
-        case 'email':
-          return (a.primaryEmail ?? '￿').localeCompare(b.primaryEmail ?? '￿') * dir
-        case 'auth':
-          return a.authMethods.join('+').localeCompare(b.authMethods.join('+')) * dir
-        case 'workspace_count':
-          return (a.workspaceCount - b.workspaceCount) * dir
-        case 'last_activity': {
-          const av = a.lastActivityAt ?? -1
-          const bv = b.lastActivityAt ?? -1
-          return (av - bv) * dir
-        }
-        case 'status':
-          return (a.status === b.status ? 0 : a.status === 'active' ? -1 : 1) * dir
-        default:
-          return 0
-      }
-    }
-    filtered.sort(cmp)
-  } else {
-    // default sort: name asc (preserves prior behavior when no sort param given)
-    filtered.sort((a, b) =>
-      `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
-    )
-  }
-
-  const total = filtered.length
-  const accounts = filtered.slice(params.pagination.offset, params.pagination.offset + params.pagination.limit)
-  return { total, accounts }
+  const { rows, total } = await db.listAccountsAdmin(query)
+  return { accounts: rows, total }
 }
 
 export async function getAccountDetails (

@@ -60,8 +60,10 @@ import type {
   WorkspaceOperation,
   WorkspaceStatus,
   WorkspaceStatusData,
-  WorkspacePermission
+  WorkspacePermission,
+  ListAccountsAdminQueryParams
 } from '../types'
+import type { AccountListRow } from '@hcengineering/account-client'
 import { isShallowEqual } from '../utils'
 
 interface MongoIndex {
@@ -915,6 +917,13 @@ export class MongoAccountDB implements AccountDB {
 
   async listAccounts (search?: string, skip?: number, limit?: number): Promise<AccountAggregatedInfo[]> {
     throw new Error('Not implemented')
+  }
+
+  async listAccountsAdmin (_params: ListAccountsAdminQueryParams): Promise<{ rows: AccountListRow[], total: number }> {
+    // Mongo is a dev/test-only backend. The SQL-pushdown implementation lives in
+    // the Postgres backend. Mongo intentionally throws so callers know this path
+    // is not perf-optimised.
+    throw new Error('listAccountsAdmin not implemented for Mongo backend')
   }
 
   async generatePersonUuid (): Promise<PersonUuid> {
