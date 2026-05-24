@@ -54,6 +54,7 @@
   import loginBack2xWebp from '../../img/login_back_2x.webp'
   import AdminWorkspaces from './AdminWorkspaces.svelte'
   import AdminUsers from './AdminUsers.svelte'
+  import AdminAudit from './AdminAudit.svelte'
   import ChangePassword from './ChangePassword.svelte'
   import ForceLogoutModal from './ForceLogoutModal.svelte'
   import { forceLogoutReason } from '../utils'
@@ -135,6 +136,8 @@
 {#if page === 'admin'}
   {#if subPath === 'users'}
     <AdminUsers />
+  {:else if subPath === 'audit'}
+    <AdminAudit />
   {:else}
     <AdminWorkspaces />
   {/if}

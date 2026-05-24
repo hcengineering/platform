@@ -5,6 +5,7 @@
   import { isAdminUser } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import login from '@hcengineering/login'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import {
     deviceOptionsStore as deviceInfo,
     getCurrentLocation,
@@ -19,7 +20,7 @@
   } from '@hcengineering/ui'
   import RedirectToLogin from './RedirectToLogin.svelte'
 
-  type Section = 'users' | 'workspaces'
+  type Section = 'users' | 'workspaces' | 'audit'
 
   export let section: Section
 
@@ -72,6 +73,14 @@
             selected={section === 'workspaces'}
             on:click={() => {
               go('workspaces')
+            }}
+          />
+          <NavItem
+            icon={setting.icon.AdminPanel}
+            label={getEmbeddedLabel('Audit log')}
+            selected={section === 'audit'}
+            on:click={() => {
+              go('audit')
             }}
           />
         </Scroller>
