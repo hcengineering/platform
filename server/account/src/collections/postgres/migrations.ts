@@ -84,7 +84,8 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
     getV24Migration(ns, flavor),
     getV25Migration(ns, flavor),
     getV26Migration(ns, flavor),
-    getV27Migration(ns, flavor)
+    getV27Migration(ns, flavor),
+    getV28Migration(ns, flavor)
   ]
 }
 
@@ -837,6 +838,42 @@ function getV27Migration (ns: string, flavor: DBFlavor): [string, string] {
     CREATE INDEX IF NOT EXISTS admin_audit_log_target_idx ON ${ns}.admin_audit_log (target_account, ts_ms DESC);
     CREATE INDEX IF NOT EXISTS admin_audit_log_admin_idx  ON ${ns}.admin_audit_log (admin_account, ts_ms DESC);
     CREATE INDEX IF NOT EXISTS admin_audit_log_ts_idx     ON ${ns}.admin_audit_log (ts_ms DESC);
+    `
+  ]
+}
+
+function getV28Migration (ns: string, _flavor: DBFlavor): [string, string] {
+  // V28 — admin audit log: allow workspace-only entries; add admin-panel indexes.
+  // - target_account is nullable so performWorkspaceOperation can write
+  //   { workspace_uuid: ws, target_account: null } rows for archive/migrate/etc.
+  // - CHECK guarantees at least one target slot is filled.
+  // - 5 indexes cover the SQL-pushdown listAccountsAdmin query.
+  return [
+    'account_db_v28_admin_audit_log_relax_and_indexes',
+    `
+    ALTER TABLE ${ns}.admin_audit_log
+      ALTER COLUMN target_account DROP NOT NULL;
+
+    ALTER TABLE ${ns}.admin_audit_log
+      ADD CONSTRAINT admin_audit_log_target_required_chk
+      CHECK (target_account IS NOT NULL OR workspace_uuid IS NOT NULL);
+
+    CREATE INDEX IF NOT EXISTS admin_audit_log_workspace_idx
+      ON ${ns}.admin_audit_log (workspace_uuid, ts_ms DESC)
+      WHERE workspace_uuid IS NOT NULL;
+
+    CREATE INDEX IF NOT EXISTS account_disabled_at_idx
+      ON ${ns}.account (disabled_at);
+
+    CREATE INDEX IF NOT EXISTS account_last_activity_idx
+      ON ${ns}.account (last_activity_at);
+
+    CREATE INDEX IF NOT EXISTS social_id_person_verified_idx
+      ON ${ns}.social_id (person_uuid)
+      WHERE verified_on IS NOT NULL;
+
+    CREATE INDEX IF NOT EXISTS workspace_members_account_idx
+      ON ${ns}.workspace_members (account_uuid);
     `
   ]
 }
