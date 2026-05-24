@@ -98,7 +98,7 @@
   }
 </script>
 
-<div class="popup">
+<div class="popup" data-drawer-keep-open>
   {#if column === 'name' || column === 'email'}
     <input type="text" bind:value={textValue} placeholder="contains…" />
   {:else if column === 'status'}

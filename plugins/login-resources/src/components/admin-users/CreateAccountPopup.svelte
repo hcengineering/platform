@@ -71,7 +71,7 @@
   }
 </script>
 
-<div class="popup">
+<div class="popup" data-drawer-keep-open>
   <h3>Create user</h3>
   <div class="grid">
     <label>First name<EditBox bind:value={firstName} placeholder={'Jane'} /></label>

@@ -63,7 +63,7 @@
   }
 </script>
 
-<div class="popup">
+<div class="popup" data-drawer-keep-open>
   <h3 class="title">
     {mode === 'add' ? 'Add selection to workspace' : 'Remove selection from workspace'}
   </h3>

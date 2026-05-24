@@ -96,10 +96,12 @@
     // Any click within the users-table (row, header, checkbox cell)
     // stays — switching to another row must not close + reopen.
     if (target.closest('.users-table') != null) return
-    // Popup layers (MessageBox, DropdownPopup, Menu, Panel) render
-    // outside the drawer DOM. Don't close when the user is interacting
-    // with one of them.
-    if (target.closest('.popup, .selectPopup, .antiPopup, .popupPanel, .ap-box, .menu-options') != null) return
+    // Popup layers rendered outside the drawer DOM declare themselves with
+    // data-drawer-keep-open on their root element. One residual upstream
+    // coupling: MessageBox (presentation pkg) cannot be modified from here,
+    // so we keep .popup as a single-class fallback. Down from six to one
+    // upstream selector.
+    if (target.closest('[data-drawer-keep-open], .popup') != null) return
     dispatch('close')
   }
 

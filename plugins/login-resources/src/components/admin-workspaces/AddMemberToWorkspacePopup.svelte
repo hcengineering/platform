@@ -67,7 +67,7 @@
   }
 </script>
 
-<div class="popup">
+<div class="popup" data-drawer-keep-open>
   <h3>Add member to workspace</h3>
   <SearchEdit bind:value={search} on:change={onSearchChange} width={'100%'} />
   <div class="list">

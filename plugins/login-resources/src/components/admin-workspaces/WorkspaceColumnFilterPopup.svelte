@@ -79,7 +79,7 @@
   }
 </script>
 
-<div class="filter-popup">
+<div class="filter-popup" data-drawer-keep-open>
   {#if column === 'name'}
     <EditBox bind:value={textValue} placeholder={getEmbeddedLabel('Name contains…')} kind={'editbox'} />
   {:else if column === 'region'}

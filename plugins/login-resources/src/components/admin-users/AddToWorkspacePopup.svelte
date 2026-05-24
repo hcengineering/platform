@@ -61,7 +61,7 @@
   }
 </script>
 
-<div class="popup">
+<div class="popup" data-drawer-keep-open>
   <h3>Add to workspace</h3>
   {#if loadError != null}
     <div class="error">{loadError}</div>
