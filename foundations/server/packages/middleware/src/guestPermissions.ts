@@ -10,6 +10,7 @@ import core, {
   type Class,
   type Doc,
   type ClassPermission,
+  getClassCollaborators,
   type Permission,
   hasAccountRole,
   type MeasureContext,
@@ -157,7 +158,54 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
       } else if (cudTx.space !== core.space.DerivedTx && (await this.isForbiddenTx(ctx, cudTx, account))) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       }
+      if (await this.isForbiddenCollabOnlyGuestFieldUpdate(ctx, cudTx, account)) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      }
     }
+  }
+
+  /**
+   * Class-agnostic veto for field updates on docs whose class has opted into
+   * mention-grants-access. The opt-in is the pair (provideSecurity: true,
+   * mentionsGrantAccess: true) on the class's ClassCollaborators model entry.
+   *
+   * For such classes, a guest-tier account that obtained read visibility ONLY
+   * through Collaborator status (i.e. is NOT in the doc's space.members) must
+   * not be able to modify the doc's fields via TxUpdateDoc. Comments via
+   * chunter.class.ChatMessage createAccessLevel still pass through.
+   *
+   * Space-member guests retain their current behavior — they pass through
+   * this check untouched and their normal access rules continue to apply.
+   * User+ accounts always pass through.
+   *
+   * If the class has not opted in, this veto is a no-op (returns false).
+   */
+  private async isForbiddenCollabOnlyGuestFieldUpdate (
+    ctx: MeasureContext<SessionData>,
+    cudTx: TxCUD<Doc>,
+    account: Account
+  ): Promise<boolean> {
+    if (cudTx._class !== core.class.TxUpdateDoc) return false
+
+    const isGuest =
+      account.role === AccountRole.Guest ||
+      account.role === AccountRole.DocGuest ||
+      account.role === AccountRole.ReadOnlyGuest
+    if (!isGuest) return false
+
+    const classCollab = getClassCollaborators(
+      this.context.modelDb,
+      this.context.hierarchy,
+      cudTx.objectClass
+    )
+    if (classCollab?.provideSecurity !== true) return false
+    if (classCollab.mentionsGrantAccess !== true) return false
+
+    const space = (await this.findAll<Space>(ctx, core.class.Space, { _id: cudTx.objectSpace }))[0]
+    if (space === undefined) return false
+    if (space.members?.includes(account.uuid) === true) return false
+
+    return true
   }
 
   /**
