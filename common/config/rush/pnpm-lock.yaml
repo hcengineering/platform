@@ -18056,6 +18056,9 @@ importers:
       '@hcengineering/text':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/text
+      '@hcengineering/text-core':
+        specifier: workspace:^0.7.0
+        version: link:../../foundations/core/packages/text-core
       '@hcengineering/text-editor':
         specifier: workspace:^0.7.0
         version: link:../text-editor
