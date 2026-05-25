@@ -444,10 +444,48 @@
   $: visibleWorkspaces = sortedWorkspaces.slice(0, limit)
   $: hasMore = sortedWorkspaces.length > limit
 
-  // Active workspaces in the current filtered list — used by the two
-  // mass-action buttons above the list.
+  // Active workspaces in the current filtered list — kept for context
+  // (e.g. selection-count hints) but Mass Archive / Mass Migrate now
+  // operate on `selectedActiveWorkspaces` (checkbox-driven subset).
   $: massActiveAll = sortedWorkspaces.filter((it) => isActiveMode(it.mode))
   $: massActiveMigratable = massActiveAll.filter((it) => (it.region ?? '') !== migrateTargetRegionId)
+
+  // Per-row selection state — parity with AdminUsers page.
+  // Selection survives filter changes (UUIDs are stable), but Mass-action
+  // buttons gate on the intersection of selection + currently visible +
+  // isActiveMode so admins only ever archive/migrate what they can see.
+  let selectedWorkspaceUuids: Set<string> = new Set()
+
+  function clearWsSelection (): void {
+    selectedWorkspaceUuids = new Set()
+  }
+
+  function toggleWsSelection (uuid: string, selected: boolean): void {
+    const next = new Set(selectedWorkspaceUuids)
+    if (selected) next.add(uuid)
+    else next.delete(uuid)
+    selectedWorkspaceUuids = next
+  }
+
+  function toggleAllWsSelection (selected: boolean): void {
+    const next = new Set(selectedWorkspaceUuids)
+    for (const w of visibleWorkspaces) {
+      if (selected) next.add(w.uuid)
+      else next.delete(w.uuid)
+    }
+    selectedWorkspaceUuids = next
+  }
+
+  // Subset of currently visible workspaces that are (a) checked by the
+  // admin AND (b) in an active mode. Non-active rows (archiving / migrating
+  // / archived / deleting / ...) are skipped — Mass Archive / Mass Migrate
+  // only make sense on active workspaces.
+  $: selectedActiveWorkspaces = visibleWorkspaces.filter(
+    (w) => selectedWorkspaceUuids.has(w.uuid) && isActiveMode(w.mode)
+  )
+  $: selectedMigratableWorkspaces = selectedActiveWorkspaces.filter(
+    (it) => (it.region ?? '') !== migrateTargetRegionId
+  )
 
   // Filter-summary string used by MassActionConfirm. Builds from the
   // currently-applied columnFilters keys; if no filter is active, returns
@@ -596,20 +634,28 @@
                 }
               }}
             />
-            {#if massActiveAll.length > 0}
+            {#if selectedWorkspaceUuids.size > 0}
+              <span class="ws-selected-count">
+                Selected: {selectedWorkspaceUuids.size}
+                <button class="ws-clear-sel" on:click={clearWsSelection}>Clear</button>
+              </span>
+            {/if}
+            {#if selectedActiveWorkspaces.length > 0}
               <Button
                 icon={IconStop}
                 size={'small'}
                 kind={'ghost'}
-                label={getEmbeddedLabel(`Mass Archive ${massActiveAll.length}`)}
+                label={getEmbeddedLabel(`Mass Archive ${selectedActiveWorkspaces.length}`)}
                 on:click={() => {
                   showPopup(
                     MassActionConfirm,
                     {
-                      title: `Mass Archive ${massActiveAll.length}`,
-                      affectedCount: massActiveAll.length,
+                      title: `Mass Archive ${selectedActiveWorkspaces.length}`,
+                      affectedCount: selectedActiveWorkspaces.length,
                       filterSummary,
-                      dangerousScope: workspacesDangerousScope,
+                      // Selection-based: admin already explicitly picked
+                      // the rows, no "universe" warning needed.
+                      dangerousScope: false,
                       typedConfirmPhrase: 'ARCHIVE ALL',
                       actionLabel: 'Archive',
                       dangerous: true
@@ -617,13 +663,13 @@
                     'middle',
                     (confirmed) => {
                       if (confirmed !== true) return
-                      void performWorkspaceOperation(massActiveAll.map((it) => it.uuid), 'archive')
+                      void performWorkspaceOperation(selectedActiveWorkspaces.map((it) => it.uuid), 'archive')
                     }
                   )
                 }}
               />
             {/if}
-            {#if regionInfo.length > 1 && massActiveMigratable.length > 0}
+            {#if regionInfo.length > 1 && selectedMigratableWorkspaces.length > 0}
               <span class="ws-migrate-region-label">to</span>
               <ButtonMenu
                 selected={migrateTargetRegionId}
@@ -640,15 +686,15 @@
                 icon={IconArrowRight}
                 size={'small'}
                 kind={'positive'}
-                label={getEmbeddedLabel(`Mass Migrate ${massActiveMigratable.length}`)}
+                label={getEmbeddedLabel(`Mass Migrate ${selectedMigratableWorkspaces.length}`)}
                 on:click={() => {
                   showPopup(
                     MassActionConfirm,
                     {
-                      title: `Mass Migrate ${massActiveMigratable.length} → ${migrateTargetName}`,
-                      affectedCount: massActiveMigratable.length,
+                      title: `Mass Migrate ${selectedMigratableWorkspaces.length} → ${migrateTargetName}`,
+                      affectedCount: selectedMigratableWorkspaces.length,
                       filterSummary,
-                      dangerousScope: workspacesDangerousScope,
+                      dangerousScope: false,
                       typedConfirmPhrase: 'MIGRATE ALL',
                       actionLabel: 'Migrate',
                       dangerous: false
@@ -656,7 +702,7 @@
                     'middle',
                     (confirmed) => {
                       if (confirmed !== true) return
-                      void performWorkspaceOperation(massActiveMigratable.map((it) => it.uuid), 'migrate-to', migrateTargetRegionId)
+                      void performWorkspaceOperation(selectedMigratableWorkspaces.map((it) => it.uuid), 'migrate-to', migrateTargetRegionId)
                     }
                   )
                 }}
@@ -671,6 +717,13 @@
         <div class="ws-table" bind:this={wsTableEl} tabindex="0" role="grid" aria-rowcount={visibleWorkspaces.length + 1}>
           <!-- Grid header: every row inherits the same grid-template via display:contents -->
           <div class="ws-row ws-head">
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <div class="ws-cell ws-cell-checkbox" on:click|stopPropagation>
+              <CheckBox
+                checked={visibleWorkspaces.length > 0 && visibleWorkspaces.every((w) => selectedWorkspaceUuids.has(w.uuid))}
+                on:value={(e) => toggleAllWsSelection(e.detail)}
+              />
+            </div>
             {#each [
               { field: 'name', label: 'Name', filter: true },
               { field: 'region', label: 'Region', filter: true },
@@ -711,6 +764,13 @@
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <!-- svelte-ignore a11y-no-static-element-interactions -->
               <div class="ws-row ws-body" role="row" aria-rowindex={wsIdx + 2} class:ws-is-focused={wsIdx === wsFocusedIndex} on:click={() => openWorkspace(workspace.uuid)}>
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <div class="ws-cell ws-cell-checkbox" on:click|stopPropagation>
+                  <CheckBox
+                    checked={selectedWorkspaceUuids.has(workspace.uuid)}
+                    on:value={(e) => toggleWsSelection(workspace.uuid, e.detail)}
+                  />
+                </div>
                 <div class="ws-cell ws-cell-name" title={wsName}>
                   <span class="ws-name-text">{wsName}</span>
                   {#if stats}
@@ -1045,6 +1105,7 @@
   .ws-table {
     display: grid;
     grid-template-columns:
+      2.25rem            /* Checkbox */
       minmax(260px, 2fr) /* Name + open/copy buttons */
       80px               /* Region */
       90px               /* Last visit (days) */
@@ -1162,6 +1223,40 @@
 
   .ws-cell-num {
     font-variant-numeric: tabular-nums;
+  }
+
+  .ws-cell-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .ws-selected-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.78rem;
+    color: var(--theme-caption-color);
+    background: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ws-clear-sel {
+    background: transparent;
+    border: 0;
+    padding: 0 0.25rem;
+    cursor: pointer;
+    color: var(--theme-darker-color);
+    font-size: 0.72rem;
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--theme-caption-color);
+    }
   }
 
   .ws-cell-actions {
