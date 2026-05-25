@@ -51,6 +51,7 @@ import {
   disableAccount,
   disableAccountInternal,
   enableAccount,
+  enableAccountInternal,
   removeWorkspaceMember,
   removeWorkspaceMemberInternal,
   sendPasswordResetEmail,
@@ -646,7 +647,10 @@ export async function bulkSetDisabled (
         // accounts receive an immediate force-logout event (§2.3).
         await disableAccountInternal(ctx, db, deps, adminUuid, { accountUuid: uuid }, batchId)
       } else {
-        await enableAccount(ctx, db, branding, token, { accountUuid: uuid }, batchId)
+        // Mirror the disable branch: enableAccountInternal skips the
+        // per-row requireAdmin + verifyTokenVersion + account findOne
+        // that the public enableAccount would re-run for each uuid.
+        await enableAccountInternal(ctx, db, adminUuid, { accountUuid: uuid }, batchId)
       }
     },
     params.disabled ? { adminUuid, reason: 'cannot disable self' } : undefined

@@ -3722,16 +3722,19 @@ export async function disableAccount (
   return { ok: true }
 }
 
-export async function enableAccount (
+/**
+ * Re-enable a disabled account WITHOUT re-checking admin auth.
+ * Caller must have already verified admin privileges (assertAdmin + token
+ * version) — this sibling of disableAccountInternal exists so bulk loops
+ * can avoid N redundant requireAdmin() round-trips per row.
+ */
+export async function enableAccountInternal (
   ctx: MeasureContext,
   db: AccountDB,
-  branding: Branding | null,
-  token: string,
+  adminUuid: AccountUuid,
   params: { accountUuid: AccountUuid },
   batchId?: string
 ): Promise<{ ok: true }> {
-  const adminUuid = await requireAdmin(ctx, db, token)
-
   const account = await db.account.findOne({ uuid: params.accountUuid })
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
@@ -3742,7 +3745,7 @@ export async function enableAccount (
   // the audit entry so admins see the action even when it had no effect.
   if (account.disabledAt == null) {
     await db.adminAuditLog.insert({
-      adminAccount: adminUuid as AccountUuid,
+      adminAccount: adminUuid,
       targetAccount: params.accountUuid,
       action: 'enable',
       workspaceUuid: null,
@@ -3754,7 +3757,7 @@ export async function enableAccount (
 
   await db.account.update({ uuid: params.accountUuid }, { disabledAt: null, $inc: { tokenVersion: 1 } } as any)
   await db.adminAuditLog.insert({
-    adminAccount: adminUuid as AccountUuid,
+    adminAccount: adminUuid,
     targetAccount: params.accountUuid,
     action: 'enable',
     workspaceUuid: null,
@@ -3763,6 +3766,18 @@ export async function enableAccount (
   })
 
   return { ok: true }
+}
+
+export async function enableAccount (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid },
+  batchId?: string
+): Promise<{ ok: true }> {
+  const adminUuid = await requireAdmin(ctx, db, token)
+  return await enableAccountInternal(ctx, db, adminUuid as AccountUuid, params, batchId)
 }
 
 export type AccountMethods =
