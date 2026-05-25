@@ -577,7 +577,6 @@
               {/if}
             </div>
             {#if isAdminUser()}
-              <Button label={getEmbeddedLabel('Export CSV')} kind={'ghost'} size={'medium'} on:click={exportAccountsCsv} />
               <Button label={getEmbeddedLabel('Add user')} kind={'primary'} on:click={openCreateAccount} />
             {/if}
           </div>
@@ -612,6 +611,9 @@
                 void refresh()
               }}
             />
+            {#if isAdminUser()}
+              <Button label={getEmbeddedLabel('Export CSV')} kind={'regular'} size={'medium'} on:click={exportAccountsCsv} />
+            {/if}
           </div>
 
           {#if errorMessage}

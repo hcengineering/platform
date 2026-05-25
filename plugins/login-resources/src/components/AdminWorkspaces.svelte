@@ -626,12 +626,6 @@
             <Button
               kind={'ghost'}
               size={'small'}
-              label={getEmbeddedLabel('Export CSV')}
-              on:click={exportWorkspacesCsv}
-            />
-            <Button
-              kind={'ghost'}
-              size={'small'}
               label={getEmbeddedLabel('Top 10 by storage')}
               disabled={totalStorageMb === 0}
               on:click={() => {
@@ -651,6 +645,12 @@
                   sortDir = p.sort.direction ?? 'asc'
                 }
               }}
+            />
+            <Button
+              kind={'regular'}
+              size={'small'}
+              label={getEmbeddedLabel('Export CSV')}
+              on:click={exportWorkspacesCsv}
             />
             <!-- Issue 17: primary "Add workspace" shortcut; navigates
                  to the existing /login/createWorkspace flow. -->
