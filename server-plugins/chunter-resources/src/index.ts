@@ -37,7 +37,9 @@ import core, {
   TxUpdateDoc,
   UserStatus,
   getClassCollaborators,
-  type MeasureContext
+  resolveMentionGrantTarget,
+  type MeasureContext,
+  type Collaborator
 } from '@hcengineering/core'
 import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
@@ -208,25 +210,64 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
     }
   }
 
-  const classCollab = (
+  // Resolve the Doc the mention-Collaborator records should land on.
+  //   - targetDoc has provideSecurity:true && mentionsGrantAccess:true:
+  //     helper returns targetDoc itself → grants access on that doc.
+  //   - targetDoc unprotected, but its attachedTo chain reaches an opted-in
+  //     ancestor (e.g. ThreadMessage → ChatMessage → Issue): helper returns
+  //     that ancestor → grants access on the Issue, not the thread.
+  //   - nothing in the chain is opted in: helper returns null.
+  // The grant-target branch writes Collaborator on the resolved doc and
+  // dedups against THAT doc's collaborator list (not against targetDoc's,
+  // which is the wrong basis when targetDoc is a child like ThreadMessage).
+  const grantTarget = await resolveMentionGrantTarget(targetDoc, (cls, q) =>
+    control.findAll(control.ctx, cls, q)
+  )
+  const targetClassCollab = (
     await control.findAll(control.ctx, core.class.ClassCollaborators, { attachedTo: targetDoc._class })
   )[0]
-  if (classCollab?.provideSecurity !== true) {
+  const isProtectedTarget = targetClassCollab?.provideSecurity === true
+
+  if (grantTarget != null) {
+    const grantCollabs = (
+      await control.findAll<Collaborator>(control.ctx, core.class.Collaborator, {
+        attachedTo: grantTarget._id
+      })
+    ).map((c) => c.collaborator)
+
+    for (const collab of collaboratorsFromMessage) {
+      if (grantCollabs.includes(collab)) {
+        continue
+      }
+      res.push(
+        control.txFactory.createTxCreateDoc(core.class.Collaborator, grantTarget.space, {
+          attachedTo: grantTarget._id,
+          attachedToClass: grantTarget._class,
+          collaborator: collab,
+          collection: 'collaborators'
+        })
+      )
+    }
+  } else if (!isProtectedTarget) {
+    // Legacy notification-routing path: targetDoc is not provideSecurity,
+    // so Collaborator records here are purely for notification fan-out
+    // (today's behavior for Channels, DirectMessages, etc.).
     for (const collab of collaboratorsFromMessage) {
       if (currentCollaborators.includes(collab)) {
         continue
       }
-
-      const tx = control.txFactory.createTxCreateDoc(core.class.Collaborator, targetDoc.space, {
-        attachedTo: targetDoc._id,
-        attachedToClass: targetDoc._class,
-        collaborator: collab,
-        collection: 'collaborators'
-      })
-
-      res.push(tx)
+      res.push(
+        control.txFactory.createTxCreateDoc(core.class.Collaborator, targetDoc.space, {
+          attachedTo: targetDoc._id,
+          attachedToClass: targetDoc._class,
+          collaborator: collab,
+          collection: 'collaborators'
+        })
+      )
     }
   }
+  // Else: protected target without mentionsGrantAccess (QMS / Love today)
+  // → no-op, preserving pre-PR behavior for those classes.
 
   if (account != null && isChannel && !(targetDoc as Channel).members.includes(account)) {
     res.push(...joinChannel(control, targetDoc as Channel, account))
