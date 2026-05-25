@@ -7,6 +7,7 @@ export type FilterDecodeReason =
   | 'invalid-json'
   | 'not-object'
   | 'prototype-pollution'
+  | 'too-deep'
 
 export class FilterDecodeError extends Error {
   constructor (
@@ -26,10 +27,18 @@ const FORBIDDEN_KEYS: ReadonlySet<string> = new Set([
 
 const BASE64_RE = /^[A-Za-z0-9+/]*={0,2}$/
 
-function rejectPollutionDeep (node: unknown, path: string): void {
+const MAX_NESTING_DEPTH = 32
+
+function rejectPollutionDeep (node: unknown, path: string, depth: number): void {
+  if (depth > MAX_NESTING_DEPTH) {
+    throw new FilterDecodeError(
+      `filter exceeds maximum nesting depth (${MAX_NESTING_DEPTH}) at ${path}`,
+      'too-deep'
+    )
+  }
   if (node === null || typeof node !== 'object') return
   if (Array.isArray(node)) {
-    node.forEach((item, i) => rejectPollutionDeep(item, `${path}[${i}]`))
+    node.forEach((item, i) => rejectPollutionDeep(item, `${path}[${i}]`, depth + 1))
     return
   }
   for (const k of Object.keys(node as object)) {
@@ -39,7 +48,7 @@ function rejectPollutionDeep (node: unknown, path: string): void {
         'prototype-pollution'
       )
     }
-    rejectPollutionDeep((node as Record<string, unknown>)[k], `${path}.${k}`)
+    rejectPollutionDeep((node as Record<string, unknown>)[k], `${path}.${k}`, depth + 1)
   }
 }
 
@@ -71,7 +80,7 @@ export function decodeFilterParam (raw: unknown): Record<string, any> {
     throw new FilterDecodeError('filter must be a JSON object', 'not-object')
   }
 
-  rejectPollutionDeep(parsed, 'filter')
+  rejectPollutionDeep(parsed, 'filter', 0)
 
   return parsed as Record<string, any>
 }

@@ -94,4 +94,28 @@ describe('decodeFilterParam', () => {
     try { decodeFilterParam(b64('{"__proto__":{"x":42}}')) } catch {}
     expect(({} as any).x).toBeUndefined()
   })
+
+  it('rejects payloads that exceed the nesting-depth cap (DoS guard)', () => {
+    // Build an object 100 levels deep — well past the 32 cap.
+    let json = 'null'
+    for (let i = 0; i < 100; i++) {
+      json = `{"a":${json}}`
+    }
+    try {
+      decodeFilterParam(b64(json))
+      fail('expected throw')
+    } catch (e) {
+      expect(e).toBeInstanceOf(FilterDecodeError)
+      expect((e as FilterDecodeError).reason).toBe('too-deep')
+    }
+  })
+
+  it('accepts payloads at the edge of the depth cap', () => {
+    // 20 levels deep — comfortably under the 32 cap; should pass.
+    let json = '{"leaf":1}'
+    for (let i = 0; i < 19; i++) {
+      json = `{"a":${json}}`
+    }
+    expect(() => decodeFilterParam(b64(json))).not.toThrow()
+  })
 })
