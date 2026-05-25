@@ -33,7 +33,6 @@
     IconStart,
     IconStop,
     locationToUrl,
-    Popup,
     Scroller,
     showPopup,
     ticker
@@ -954,7 +953,6 @@
 {#if selectedWorkspaceUuid != null}
   <AdminWorkspaceDrawer workspaceUuid={selectedWorkspaceUuid} on:close={closeWorkspace} />
 {/if}
-<Popup />
 {/if}
 
 <style lang="scss">
