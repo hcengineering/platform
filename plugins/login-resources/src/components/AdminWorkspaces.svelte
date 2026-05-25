@@ -1231,12 +1231,15 @@
     outline-offset: -2px;
   }
 
-  /* Drawer-open workspace row — matches the AdminUsers .is-active pattern. */
+  /* Drawer-open workspace row — matches the AdminUsers .is-active pattern.
+     Stronger than the default row stripe so it's obvious even when the
+     cursor moves away to interact with the drawer. Left bar on the first
+     cell anchors the eye. */
   .ws-body.ws-is-active .ws-cell {
-    background: var(--theme-list-row-color, rgba(96, 165, 250, 0.10));
+    background: rgba(96, 165, 250, 0.14);
   }
   .ws-body.ws-is-active .ws-cell-checkbox {
-    background: var(--theme-list-row-color, rgba(96, 165, 250, 0.10));
+    box-shadow: inset 3px 0 0 var(--theme-button-focused-border, var(--primary-button-color, #2563eb));
   }
 
   .ws-cell-num {
