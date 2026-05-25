@@ -2,7 +2,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
   import {
     Button,
     DropdownLabelsIntl,
@@ -59,6 +59,38 @@
   function close (): void {
     dispatch('close')
   }
+
+  // Outside-click / Escape dismisses the drawer (mirrors AdminUsersDrawer).
+  //   • Clicks INSIDE the drawer must not close it.
+  //   • Clicks on another workspace row should SWITCH the drawer's
+  //     workspace, not close it (the row's own click handler dispatches,
+  //     parent then updates workspaceUuid → the reactive refetch fires).
+  //   • Clicks inside any popup spawned BY the drawer (MessageBox,
+  //     dropdowns) must not close it.
+  let drawerEl: HTMLElement
+
+  function onDocPointerDown (ev: MouseEvent): void {
+    const target = ev.target as HTMLElement | null
+    if (target == null) return
+    if (drawerEl?.contains(target)) return
+    if (target.closest('.ws-table') != null) return
+    if (target.closest('[data-drawer-keep-open], .popup') != null) return
+    close()
+  }
+
+  function onKeyDown (ev: KeyboardEvent): void {
+    if (ev.key === 'Escape') close()
+  }
+
+  onMount(() => {
+    document.addEventListener('mousedown', onDocPointerDown, true)
+    document.addEventListener('keydown', onKeyDown)
+  })
+
+  onDestroy(() => {
+    document.removeEventListener('mousedown', onDocPointerDown, true)
+    document.removeEventListener('keydown', onKeyDown)
+  })
 
   async function onChangeRole (accountUuid: string, role: AccountRole): Promise<void> {
     try {
@@ -150,7 +182,7 @@
   }
 </script>
 
-<div class="drawer">
+<div class="drawer" bind:this={drawerEl}>
   <div class="header">
     <button class="back" on:click={close} aria-label="Close drawer">←</button>
     {#if data}

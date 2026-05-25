@@ -9,6 +9,7 @@
   import {
     deviceOptionsStore as deviceInfo,
     getCurrentLocation,
+    IconActivity,
     IconArrowLeft,
     IconSettings,
     Label,
@@ -76,7 +77,7 @@
             }}
           />
           <NavItem
-            icon={setting.icon.AdminPanel}
+            icon={IconActivity}
             label={getEmbeddedLabel('Audit log')}
             selected={section === 'audit'}
             on:click={() => {
