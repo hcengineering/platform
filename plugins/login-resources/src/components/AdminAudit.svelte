@@ -5,6 +5,7 @@
   import { onMount } from 'svelte'
   import { Breadcrumb, Button, DropdownLabelsIntl, Header, Icon, IconFilter, Scroller } from '@hcengineering/ui'
   import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
+  import type { DropdownIntlItem } from '@hcengineering/ui'
   import { getAccountClient } from '../utils'
   import type { AuditEntry, ListAuditAdminParams } from '@hcengineering/account-client'
   import AdminShell from './admin-shell/AdminShell.svelte'
@@ -26,6 +27,70 @@
   let filterTargetName = ''
   let filterFrom = ''
   let filterTo = ''
+  // V32 — Date-range preset dropdown. Default on first mount is "Last 3
+  // days" so the table opens scoped instead of returning the full
+  // history. When a preset is picked, filterFrom/filterTo are clamped
+  // and the two <input type="date"> become disabled so the admin must
+  // explicitly switch to "Custom range" to hand-edit dates.
+  const datePresets: DropdownIntlItem[] = [
+    { id: '1d', label: getEmbeddedLabel('Last 1 day') },
+    { id: '2d', label: getEmbeddedLabel('Last 2 days') },
+    { id: '3d', label: getEmbeddedLabel('Last 3 days') },
+    { id: '1w', label: getEmbeddedLabel('Last 1 week') },
+    { id: '2w', label: getEmbeddedLabel('Last 2 weeks') },
+    { id: '1m', label: getEmbeddedLabel('Last 1 month') },
+    { id: 'custom', label: getEmbeddedLabel('Custom range') }
+  ]
+  let dateRangePreset: string = '3d'
+  const datePresetLabels: Record<string, string> = {
+    '1d': 'Last 1 day',
+    '2d': 'Last 2 days',
+    '3d': 'Last 3 days',
+    '1w': 'Last 1 week',
+    '2w': 'Last 2 weeks',
+    '1m': 'Last 1 month',
+    custom: 'Custom range'
+  }
+  // Internal flag — when applyDateRangePreset mutates filterFrom/filterTo
+  // we don't want the bind:value watchers to flip dateRangePreset back
+  // to 'custom'. Setting/clearing this around the writes is enough.
+  let presetApplying = false
+
+  function applyDateRangePreset (id: string): void {
+    if (id === 'custom') {
+      dateRangePreset = 'custom'
+      void reload(true)
+      return
+    }
+    const days = id === '1d' ? 1 : id === '2d' ? 2 : id === '3d' ? 3
+      : id === '1w' ? 7 : id === '2w' ? 14 : 30
+    const now = new Date()
+    const past = new Date(now.getTime() - days * 86_400_000)
+    const fmt = (d: Date): string =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    presetApplying = true
+    filterFrom = fmt(past)
+    filterTo = fmt(now)
+    presetApplying = false
+    dateRangePreset = id
+    void reload(true)
+  }
+
+  function onDatePresetSelected (e: CustomEvent<string | number>): void {
+    applyDateRangePreset(String(e.detail))
+  }
+
+  // Manual edit to either date input bumps us into Custom mode so the
+  // dropdown stays in sync with what's actually applied. The disabled
+  // attribute on the inputs already blocks edits while a preset is
+  // active, but defence-in-depth: a screen-reader path or programmatic
+  // change would still mark us as custom.
+  function onDateInputChanged (): void {
+    if (presetApplying) return
+    if (dateRangePreset !== 'custom') {
+      dateRangePreset = 'custom'
+    }
+  }
   // The action vocabulary is the set of `action: '<string>'` literals
   // passed to db.adminAuditLog.insert() across the account service.
   // Keep this list in sync with serviceOperations.ts/operations.ts —
@@ -70,7 +135,9 @@
   }
 
   onMount(() => {
-    void reload()
+    // V32 — apply the default preset; this sets filterFrom/filterTo and
+    // calls reload() exactly once, so no separate void reload() here.
+    applyDateRangePreset('3d')
   })
 
   function setSort (field: SortField): void {
@@ -86,10 +153,10 @@
     filterAdminName = ''
     filterTargetName = ''
     selectedActionIds = []
-    filterFrom = ''
-    filterTo = ''
     sort = { field: 'time', direction: 'desc' }
-    void reload(true)
+    // V32 — Reset goes back to the default preset (Last 3 days), not to
+    // an empty date range. applyDateRangePreset triggers reload().
+    applyDateRangePreset('3d')
   }
 
   function onActionSelected (e: CustomEvent<string | number | Array<string | number>>): void {
@@ -231,9 +298,27 @@
               <div class="audit-filter-field audit-filter-field--inline" data-filter-col="time">
                 <span class="audit-filter-label">Date range</span>
                 <div class="audit-filter-date-row">
-                  <input class="audit-filter-date audit-filter-from" type="date" bind:value={filterFrom} aria-label="From date" />
+                  <div class="audit-filter-preset">
+                    <DropdownLabelsIntl
+                      kind="regular"
+                      size="medium"
+                      items={datePresets}
+                      selected={dateRangePreset}
+                      label={getEmbeddedLabel(datePresetLabels[dateRangePreset] ?? 'Last 3 days')}
+                      on:selected={onDatePresetSelected}
+                    />
+                  </div>
+                  <input class="audit-filter-date audit-filter-from" type="date"
+                         bind:value={filterFrom}
+                         disabled={dateRangePreset !== 'custom'}
+                         on:change={onDateInputChanged}
+                         aria-label="From date" />
                   <span class="audit-filter-date-sep">→</span>
-                  <input class="audit-filter-date audit-filter-to" type="date" bind:value={filterTo} aria-label="To date" />
+                  <input class="audit-filter-date audit-filter-to" type="date"
+                         bind:value={filterTo}
+                         disabled={dateRangePreset !== 'custom'}
+                         on:change={onDateInputChanged}
+                         aria-label="To date" />
                 </div>
               </div>
             </div>
@@ -428,6 +513,21 @@
   .audit-filter-date {
     flex: 0 0 10.5rem;
     min-width: 10.5rem;
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      background: var(--theme-bg-accent-color);
+    }
+  }
+
+  // V32 — Wraps the preset DropdownLabelsIntl so it sits flush with the
+  // date inputs. The dropdown component supplies its own button styling
+  // so we only need the inline-flex container.
+  .audit-filter-preset {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
   }
 
   .audit-filter-date-row {
