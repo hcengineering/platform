@@ -647,6 +647,14 @@ abstract class PostgresAdapterBase implements DbAdapter {
             collabRes += ` OR EXISTS (SELECT 1 FROM ${translateDomain(DOMAIN_COLLABORATOR)} collab_sec WHERE collab_sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND collab_sec."attachedTo" = ${domain}."attachedTo" AND collab_sec.collaborator = '${acc.uuid}')`
           }
         }
+        // Self-Collaborator visibility: any non-Admin/non-System caller can always read
+        // their own Collaborator records, regardless of space membership. Without this,
+        // a Guest who is a Collaborator on a doc in a project they are not a member of
+        // could never enumerate their own subscriptions (e.g. the tracker "Subscribed"
+        // tab queries Collaborator by `{collaborator: self}`).
+        if (domain === DOMAIN_COLLABORATOR) {
+          collabRes += ` OR ${domain}.collaborator = '${acc.uuid}'`
+        }
         return `AND (${res}${collabRes})`
       }
     }

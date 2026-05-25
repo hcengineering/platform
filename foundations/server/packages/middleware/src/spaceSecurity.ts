@@ -643,12 +643,19 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     const collabReadBypass =
       (collabSec?.provideSecurity === true || collabSec?.provideAttachedSecurity === true) &&
       [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role)
+    // Self-Collaborator visibility: let the Postgres adapter's self-collab OR-branch
+    // (storage.ts, addSecurity) fire for any non-System caller when reading the
+    // Collaborator class itself. Required for queries like the tracker "Subscribed"
+    // tab `{collaborator: self, attachedToClass: Issue}`, which must surface the
+    // user's own subscriptions even on docs in non-member spaces.
+    const selfCollabBypass = this.context.hierarchy.isDerived(_class, core.class.Collaborator)
 
     if (
       !isSystem(account, ctx) &&
       account.role !== AccountRole.DocGuest &&
       domain !== DOMAIN_MODEL &&
-      !collabReadBypass
+      !collabReadBypass &&
+      !selfCollabBypass
     ) {
       if (!isOwner(account, ctx) || !isSpace || !showArchived) {
         if (newQuery[field] !== undefined) {
