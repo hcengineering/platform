@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import activity, { type ActivityInfoMessage } from '@hcengineering/activity'
 import { Analytics } from '@hcengineering/analytics'
 import contact, { Employee, Person } from '@hcengineering/contact'
 import core, {
@@ -32,6 +33,7 @@ import github, {
   GithubTodo,
   LastReviewState
 } from '@hcengineering/github'
+import { getPublicLink } from '@hcengineering/server-guest-resources'
 import task, { TaskType, calcRank, makeRank } from '@hcengineering/task'
 import time, { ToDo, ToDoPriority } from '@hcengineering/time'
 import tracker, { Issue, IssuePriority, IssueStatus, Project } from '@hcengineering/tracker'
@@ -76,6 +78,48 @@ type GithubPullRequestData = GithubIssueData &
 Omit<GithubPullRequest, keyof Issue | 'commits' | 'reviews' | 'reviewComments'>
 
 type GithubPullRequestUpdate = DocumentUpdate<WithMarkup<GithubPullRequest>>
+
+const HULY_PR_TICKET_LINK_MARKER_PREFIX = '<!-- huly-pr-ticket-link:'
+const trackerIdentifierPattern = /\b([A-Z][A-Z0-9]{1,15}-\d+)\b/gi
+
+export function extractTrackerIdentifiersFromPullRequest (title?: string | null, body?: string | null): string[] {
+  const identifiers: string[] = []
+  const seen = new Set<string>()
+
+  for (const match of `${title ?? ''}\n${body ?? ''}`.matchAll(trackerIdentifierPattern)) {
+    const identifier = match[1].toUpperCase()
+    if (!seen.has(identifier)) {
+      seen.add(identifier)
+      identifiers.push(identifier)
+    }
+  }
+
+  return identifiers
+}
+
+export function getPullRequestTicketLinkMarker (
+  repository: GithubIntegrationRepository,
+  prNumber: number,
+  identifier: string
+): string {
+  return `${HULY_PR_TICKET_LINK_MARKER_PREFIX}${repository.nodeId ?? repository._id}:${prNumber}:${identifier} -->`
+}
+
+export function buildPullRequestTicketBacklinkBody (identifier: string, issueUrl: string, marker: string): string {
+  return `${marker}\n<p>Connected to <b><a href="${issueUrl}">Huly&reg;: ${identifier}</a></b></p>`
+}
+
+export function getPullRequestTicketActivityId (
+  repository: GithubIntegrationRepository,
+  prNumber: number,
+  issueId: Ref<Issue>
+): Ref<ActivityInfoMessage> {
+  return `github:pr-ticket-link:${repository._id}:${prNumber}:${issueId}` as Ref<ActivityInfoMessage>
+}
+
+export function isPullRequestTicketTargetIssue (issue?: Pick<Issue, '_class'>): boolean {
+  return issue !== undefined && issue._class !== github.class.GithubPullRequest
+}
 
 export class PullRequestSyncManager extends IssueSyncManagerBase implements DocSyncManager {
   externalDerivedSync = true
@@ -185,6 +229,24 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
         repo,
         'no external data found'
       )
+      return
+    }
+
+    const linkedToExistingIssue = await this.ensurePullRequestTicketLinks(
+      ctx,
+      event.pull_request.number,
+      externalData,
+      repo,
+      integration
+    )
+    if (linkedToExistingIssue) {
+      ctx.info('Skip pull request mirror for linked Huly issue', {
+        action: event.action,
+        prNumber: event.pull_request.number,
+        repo: repo.name,
+        url: externalData.url,
+        workspace: this.provider.getWorkspaceId()
+      })
       return
     }
 
@@ -372,6 +434,185 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       await derivedClient?.update(child, { needSync: '' })
     }
     this.provider.sync()
+  }
+
+  private async ensurePullRequestTicketLinks (
+    ctx: MeasureContext,
+    prNumber: number,
+    pullRequestExternal: PullRequestExternalData,
+    repo: GithubIntegrationRepository,
+    integration: IntegrationContainer
+  ): Promise<boolean> {
+    const identifiers = extractTrackerIdentifiersFromPullRequest(pullRequestExternal.title, pullRequestExternal.body)
+    if (identifiers.length === 0) {
+      return false
+    }
+
+    let linkedExistingIssue = false
+
+    for (const identifier of identifiers) {
+      try {
+        const issue = await this.client.findOne(tracker.class.Issue, { identifier }, { showArchived: true })
+        if (issue === undefined) {
+          ctx.info('No Huly issue found for pull request ticket identifier', {
+            identifier,
+            url: pullRequestExternal.url,
+            workspace: this.provider.getWorkspaceId()
+          })
+          continue
+        }
+
+        if (!isPullRequestTicketTargetIssue(issue)) {
+          ctx.info('Pull request ticket identifier resolved to GitHub pull request mirror', {
+            identifier,
+            prNumber,
+            url: pullRequestExternal.url,
+            workspace: this.provider.getWorkspaceId()
+          })
+          continue
+        }
+
+        linkedExistingIssue = true
+
+        const issueUrl = await getPublicLink(
+          issue,
+          this.client,
+          {
+            uuid: this.provider.getWorkspaceId(),
+            url: this.provider.getWorkspaceUrl()
+          },
+          false,
+          this.provider.getBranding()
+        )
+
+        await this.ensureGithubTicketBacklink(ctx, integration, repo, prNumber, identifier, issueUrl)
+        await this.ensureHulyPullRequestLink(issue, pullRequestExternal, repo)
+      } catch (err: any) {
+        ctx.error('Failed to link pull request to Huly ticket identifier', {
+          identifier,
+          url: pullRequestExternal.url,
+          err: errorToObj(err)
+        })
+      }
+    }
+
+    return linkedExistingIssue
+  }
+
+  private async shouldSyncPullRequestAsGithubTask (
+    ctx: MeasureContext,
+    integration: IntegrationContainer,
+    repo: GithubIntegrationRepository,
+    pullRequestExternal: PullRequestExternalData
+  ): Promise<boolean> {
+    const linkedToExistingIssue = await this.ensurePullRequestTicketLinks(
+      ctx,
+      pullRequestExternal.number,
+      pullRequestExternal,
+      repo,
+      integration
+    )
+
+    if (!linkedToExistingIssue) {
+      return true
+    }
+
+    ctx.info('Skip pull request mirror for linked Huly issue', {
+      prNumber: pullRequestExternal.number,
+      repo: repo.name,
+      url: pullRequestExternal.url,
+      workspace: this.provider.getWorkspaceId()
+    })
+    return false
+  }
+
+  private async filterPullRequestsForGithubTaskSync (
+    ctx: MeasureContext,
+    integration: IntegrationContainer,
+    repo: GithubIntegrationRepository,
+    pullRequests: PullRequestExternalData[]
+  ): Promise<PullRequestExternalData[]> {
+    const filtered: PullRequestExternalData[] = []
+    for (const pullRequest of pullRequests) {
+      if (await this.shouldSyncPullRequestAsGithubTask(ctx, integration, repo, pullRequest)) {
+        filtered.push(pullRequest)
+      }
+    }
+    return filtered
+  }
+
+  private async ensureGithubTicketBacklink (
+    ctx: MeasureContext,
+    integration: IntegrationContainer,
+    repository: GithubIntegrationRepository,
+    prNumber: number,
+    identifier: string,
+    issueUrl: string
+  ): Promise<void> {
+    const owner = repository.owner?.login
+    if (owner == null) {
+      ctx.info('Cannot add pull request Huly backlink without repository owner', {
+        repository: repository.name,
+        identifier,
+        prNumber
+      })
+      return
+    }
+
+    const marker = getPullRequestTicketLinkMarker(repository, prNumber, identifier)
+    const headers = { 'X-GitHub-Api-Version': '2022-11-28' }
+    const commentPages = integration.octokit.paginate.iterator(integration.octokit.rest.issues.listComments, {
+      owner,
+      repo: repository.name,
+      issue_number: prNumber,
+      per_page: 100,
+      headers
+    })
+
+    for await (const comments of commentPages) {
+      if (comments.data.some((comment) => comment.body?.includes(marker) === true)) {
+        return
+      }
+    }
+
+    await integration.octokit.rest.issues.createComment({
+      owner,
+      repo: repository.name,
+      issue_number: prNumber,
+      body: buildPullRequestTicketBacklinkBody(identifier, issueUrl, marker),
+      headers
+    })
+  }
+
+  private async ensureHulyPullRequestLink (
+    issue: Issue,
+    pullRequestExternal: PullRequestExternalData,
+    repository: GithubIntegrationRepository
+  ): Promise<void> {
+    const activityId = getPullRequestTicketActivityId(repository, pullRequestExternal.number, issue._id)
+    const existing = await this.client.findOne(activity.class.ActivityInfoMessage, { _id: activityId })
+    if (existing !== undefined) {
+      return
+    }
+
+    await this.client.addCollection(
+      activity.class.ActivityInfoMessage,
+      issue.space,
+      issue._id,
+      issue._class,
+      'activity',
+      {
+        message: github.string.PullRequestConnectedActivityInfo,
+        icon: github.icon.Github,
+        props: {
+          url: pullRequestExternal.url,
+          repository: repository.url?.replace('api.github.com/repos', 'github.com'),
+          repoName: repository.name,
+          number: pullRequestExternal.number
+        }
+      },
+      activityId
+    )
   }
 
   async syncToTarget (
@@ -1356,7 +1597,8 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
               data: cutObjectArray(response)
             })
           }
-          await this.syncIssues(ctx, github.class.GithubPullRequest, repo, issues, derivedClient, docsPart)
+          const issuesToSync = await this.filterPullRequestsForGithubTaskSync(ctx, integration, repo, issues)
+          await this.syncIssues(ctx, github.class.GithubPullRequest, repo, issuesToSync, derivedClient, docsPart)
         } catch (err: any) {
           if (partsize > 1) {
             partsize = 1
@@ -1539,7 +1781,10 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
           })
         }
 
-        await this.syncIssues(ctx, github.class.GithubPullRequest, repo, issues, derivedClient)
+        const issuesToSync = await this.filterPullRequestsForGithubTaskSync(ctx, integration, repo, issues)
+        if (issuesToSync.length > 0) {
+          await this.syncIssues(ctx, github.class.GithubPullRequest, repo, issuesToSync, derivedClient)
+        }
       }
     } catch (err: any) {
       ctx.error('Error', { err })
