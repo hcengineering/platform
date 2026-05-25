@@ -1376,7 +1376,7 @@ export class PostgresAccountDB implements AccountDB {
       `DELETE FROM ${this.ns}.admin_audit_log WHERE ts_ms < $1`,
       [beforeMs]
     )
-    return (res as any).count ?? 0
+    return res.count ?? 0
   }
 
   async generatePersonUuid (): Promise<PersonUuid> {
