@@ -325,12 +325,39 @@ export class DBCollectionHelper implements DomainHelperOperations {
   async create (domain: Domain): Promise<void> {}
 
   async exists (domain: Domain): Promise<boolean> {
-    // Always exists. We don't need to check for index existence
-    return true
+    // Migrations can reference legacy domains that were removed from the current model,
+    // so this must check the physical table instead of the initialized model-domain set.
+    const tableName = translateDomain(domain)
+    const res = await this.client.execute(
+      `
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name = $1
+        LIMIT 1
+      `,
+      [tableName]
+    )
+    return res.length > 0
   }
 
   async listDomains (): Promise<Set<Domain>> {
-    return this.domains
+    const rows = await this.client.execute(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name NOT LIKE 'pg_%'
+        AND table_name NOT LIKE 'cluster_%'
+        AND table_name NOT LIKE 'kv_%'
+        AND table_name NOT LIKE 'node_%'
+    `)
+    const tableNames = new Set(rows.map((it) => it.table_name as Domain))
+    for (const domain of this.domains) {
+      if (tableNames.has(translateDomain(domain) as Domain)) {
+        tableNames.add(domain)
+      }
+    }
+    return tableNames
   }
 
   async createIndex (domain: Domain, value: string | FieldIndexConfig<Doc>, options?: { name: string }): Promise<void> {}
