@@ -3,7 +3,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import { Button, ButtonMenu } from '@hcengineering/ui'
+  import { ButtonMenu } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
 
   // table key used as localStorage namespace ('users' or 'workspaces')
@@ -56,32 +56,42 @@
   onMount(load)
 
   $: presetNames = Object.keys(presets)
+
+  // Issue 15: Single combined dropdown replacing the previous trio
+  // (Apply preset / Save as preset… / Manage). Items are flat (the UI
+  // DropdownIntlItem type has no `disabled`/`divider` field, so we
+  // skip dividers entirely — apply / save / delete sit in one list).
+  // Action prefix on the id lets a single on:selected handler route
+  // to the right callback.
+  $: menuItems = [
+    ...presetNames.map((n) => ({ id: `apply::${n}`, label: getEmbeddedLabel(`Apply: ${n}`) })),
+    { id: '__save', label: getEmbeddedLabel('Save current filter as preset…') },
+    ...presetNames.map((n) => ({ id: `del::${n}`, label: getEmbeddedLabel(`Delete: ${n}`) }))
+  ]
+
+  function onSelected (e: CustomEvent<string | number>): void {
+    const v = String(e.detail)
+    if (v === '__save') { onSaveCurrent(); return }
+    if (v.startsWith('apply::')) { onApply(v.slice(7)); return }
+    if (v.startsWith('del::')) { onDelete(v.slice(5)) }
+  }
 </script>
 
 <div class="filter-preset-menu" data-drawer-keep-open>
-  {#if presetNames.length > 0}
-    <ButtonMenu
-      items={presetNames.map((name) => ({ id: name, label: getEmbeddedLabel(name) }))}
-      selected={''}
-      title="Apply preset"
-      on:selected={(e) => { onApply(e.detail) }}
-    />
-  {/if}
-  <Button kind={'regular'} size={'small'} label={getEmbeddedLabel('Save as preset…')} on:click={onSaveCurrent} />
-  {#if presetNames.length > 0}
-    <ButtonMenu
-      items={presetNames.map((name) => ({ id: name, label: getEmbeddedLabel(`Delete "${name}"`) }))}
-      selected={''}
-      title="Manage"
-      on:selected={(e) => { onDelete(e.detail) }}
-    />
-  {/if}
+  <ButtonMenu
+    items={menuItems}
+    selected={''}
+    title={'Presets'}
+    kind={'secondary'}
+    size={'small'}
+    noSelection
+    on:selected={onSelected}
+  />
 </div>
 
 <style lang="scss">
   .filter-preset-menu {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
   }
 </style>
