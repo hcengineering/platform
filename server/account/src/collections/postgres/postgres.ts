@@ -1369,6 +1369,16 @@ export class PostgresAccountDB implements AccountDB {
     }
   }
 
+  async pruneAuditOlderThan (beforeMs: number): Promise<number> {
+    // Index range scan on admin_audit_log_ts_idx (ts_ms DESC) covers this DELETE.
+    // Returns the rowcount so the scheduled job can log progress.
+    const res = await this.client.unsafe(
+      `DELETE FROM ${this.ns}.admin_audit_log WHERE ts_ms < $1`,
+      [beforeMs]
+    )
+    return (res as any).count ?? 0
+  }
+
   async generatePersonUuid (): Promise<PersonUuid> {
     const res = await this.client`SELECT gen_random_uuid();`
 

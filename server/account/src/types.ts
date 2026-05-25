@@ -456,6 +456,14 @@ export interface AccountDB {
   deleteAccount: (accountId: AccountUuid) => Promise<void>
   listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
   listAccountsAdmin: (params: ListAccountsAdminQueryParams) => Promise<{ rows: AccountListRow[], total: number }>
+  /**
+   * Delete admin_audit_log rows whose ts_ms is strictly less than `beforeMs`.
+   * Returns the number of rows deleted. Used by the scheduled retention job
+   * in account-service (env `AUDIT_RETENTION_DAYS`, default 365).
+   *
+   * Mongo backend throws — v7 runs on CockroachDB exclusively.
+   */
+  pruneAuditOlderThan: (beforeMs: number) => Promise<number>
   generatePersonUuid: () => Promise<PersonUuid>
 }
 

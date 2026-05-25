@@ -165,6 +165,28 @@ export function serveAccount (
     csvExportLimiter.gc(Date.now())
   }, 60_000).unref()
 
+  // ── admin_audit_log retention ─────────────────────────────────────────
+  // AUDIT_RETENTION_DAYS: positive N keeps the last N days, 0 disables.
+  // Default 365 to bound table growth on long-running deployments.
+  const retentionDays = parseInt(process.env.AUDIT_RETENTION_DAYS ?? '365', 10)
+  if (Number.isFinite(retentionDays) && retentionDays > 0) {
+    const dayMs = 86_400_000
+    const runPrune = async (): Promise<void> => {
+      const [db] = await accountsDb
+      const cutoff = Date.now() - retentionDays * dayMs
+      try {
+        const deleted = await db.pruneAuditOlderThan(cutoff)
+        measureCtx.info('audit_log pruned', { deleted, retentionDays })
+      } catch (err) {
+        measureCtx.error('audit_log prune failed', { error: err })
+      }
+    }
+    // Initial run 5 min after startup so we don't hammer cockroach right at boot.
+    setTimeout(() => { void runPrune() }, 5 * 60_000).unref()
+    // Then once every 24h.
+    setInterval(() => { void runPrune() }, dayMs).unref()
+  }
+
   // Key the limiter on a SHA-256 of the token rather than the raw token.
   // Limiter state lives in process memory and can land in heap dumps,
   // crash logs, or third-party APM samples. Hashing means a leaked

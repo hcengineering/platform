@@ -933,6 +933,11 @@ export class MongoAccountDB implements AccountDB {
     throw new Error('listAccountsAdmin not implemented for Mongo backend')
   }
 
+  async pruneAuditOlderThan (_beforeMs: number): Promise<number> {
+    // Same rationale as listAccountsAdmin — v7 audit log lives in CockroachDB.
+    throw new Error('pruneAuditOlderThan not implemented for Mongo backend')
+  }
+
   async generatePersonUuid (): Promise<PersonUuid> {
     return new UUID().toJSON() as PersonUuid
   }
