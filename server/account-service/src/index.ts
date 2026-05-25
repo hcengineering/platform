@@ -14,7 +14,9 @@ import account, {
   getMethods,
   cleanExpiredOtp,
   listAccountsAdmin,
-  assertAdmin
+  assertAdmin,
+  decodeFilterParam,
+  FilterDecodeError
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
@@ -466,20 +468,6 @@ export function serveAccount (
     }).join(',') + '\n'
   }
 
-  // Decode the base64-utf8 JSON filter blob sent by the admin UI. Returns
-  // an empty object on malformed input so a corrupted query string can't
-  // crash the export route (export then degrades to "all rows").
-  function decodeFilterParam (raw: unknown): Record<string, any> {
-    if (typeof raw !== 'string' || raw === '') return {}
-    try {
-      const json = Buffer.from(raw, 'base64').toString('utf-8')
-      const obj = JSON.parse(json)
-      return (obj != null && typeof obj === 'object') ? obj : {}
-    } catch {
-      return {}
-    }
-  }
-
   router.get('/api/v1/admin/export/accounts.csv', async (ctx) => {
     const token = (ctx.query.token as string) ?? extractToken(ctx.request.headers) ?? ''
     const [db] = await accountsDb
@@ -492,7 +480,14 @@ export function serveAccount (
       return
     }
     // Respect the same filter+sort the user sees in the admin UI.
-    const filterObj = decodeFilterParam(ctx.query.filter)
+    let filterObj: Record<string, any>
+    try {
+      filterObj = decodeFilterParam(ctx.query.filter)
+    } catch (err) {
+      ctx.res.writeHead(400, { 'Content-Type': 'text/plain' })
+      ctx.res.end(err instanceof FilterDecodeError ? err.message : 'Bad filter')
+      return
+    }
     ctx.res.writeHead(200, {
       'Content-Type': 'text/csv; charset=utf-8',
       'Content-Disposition': `attachment; filename="huly-users-${Date.now()}.csv"`,

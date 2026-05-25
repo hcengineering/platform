@@ -21,4 +21,5 @@ export * from './utils'
 export * from './types'
 export { listAccountsAdmin, assertAdmin } from './serviceOperations'
 export type { MongoAccountDB } from './collections/mongo'
+export { decodeFilterParam, FilterDecodeError } from './util/decodeFilterParam'
 export default accountPlugin
