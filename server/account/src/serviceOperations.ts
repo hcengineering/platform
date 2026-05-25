@@ -196,6 +196,7 @@ export async function listAccountsAdmin (
     wsMax: params.workspaceCountRange?.max,
     lastActivityFilter: params.lastActivityFilter,
     orphan: (params as any).orphan === true ? true : undefined,
+    isAdmin: (params as any).isAdmin === true ? true : undefined,
     sort: params.sort,
     pagination: { limit: params.pagination.limit, offset: params.pagination.offset }
   }

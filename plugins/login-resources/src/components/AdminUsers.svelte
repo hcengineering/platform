@@ -113,6 +113,41 @@
     offset = 0
     void refresh()
   }
+
+  // Issue 19: stat-pill helpers. Active/Disabled pills mutate the
+  // status dropdown filter; Admins pill flows through columnFilters so
+  // it merges into the listAccountsAdmin params alongside orphan. Total
+  // pill clears every filter (status + admin + orphan).
+  function hasAnyFilter (): boolean {
+    return (filter.status ?? 'all') !== 'all' ||
+      columnFilters?.isAdmin?.isAdmin === true ||
+      columnFilters?.orphan?.orphan === true
+  }
+
+  function clearAllFilters (): void {
+    filter = { ...filter, status: 'all' }
+    const { isAdmin: _a, orphan: _o, ...rest } = columnFilters
+    columnFilters = rest
+    offset = 0
+    void refresh()
+  }
+
+  function toggleStatusFilter (target: 'active' | 'disabled'): void {
+    filter = { ...filter, status: filter.status === target ? 'all' : target }
+    offset = 0
+    void refresh()
+  }
+
+  function toggleAdminFilter (): void {
+    if (columnFilters?.isAdmin?.isAdmin === true) {
+      const { isAdmin: _drop, ...rest } = columnFilters
+      columnFilters = rest
+    } else {
+      columnFilters = { ...columnFilters, isAdmin: { isAdmin: true } }
+    }
+    offset = 0
+    void refresh()
+  }
   let debounceTimer: ReturnType<typeof setTimeout> | undefined
 
   // Trigger CSV download with the same filter+sort the user currently sees.
@@ -552,10 +587,54 @@
           <div class="stats-row">
             <div class="stats-pills">
               <span class="stat-leading-icon"><Icon icon={setting.icon.Members} size={'small'} /></span>
-              <span class="stat-pill">Total <strong>{total}</strong></span>
-              <span class="stat-pill"><span class="dot dot-active" /> Active <strong>{counts.active}</strong></span>
-              <span class="stat-pill"><span class="dot dot-disabled" /> Disabled <strong>{counts.disabled}</strong></span>
-              <span class="stat-pill">Admins <strong>{counts.admins}</strong></span>
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <span
+                class="stat-pill stat-pill-clickable stat-pill-total"
+                class:is-filter-active={!hasAnyFilter()}
+                role="button"
+                tabindex="0"
+                title="Show all users (clear filters)"
+                on:click={clearAllFilters}
+                on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); clearAllFilters() } }}
+              >
+                Total <strong>{total}</strong>
+              </span>
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <span
+                class="stat-pill stat-pill-clickable stat-pill-active"
+                class:is-filter-active={filter.status === 'active'}
+                role="button"
+                tabindex="0"
+                title={filter.status === 'active' ? 'Click to clear status filter' : 'Click to filter: only active accounts'}
+                on:click={() => toggleStatusFilter('active')}
+                on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleStatusFilter('active') } }}
+              >
+                <span class="dot dot-active" /> Active <strong>{counts.active}</strong>
+              </span>
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <span
+                class="stat-pill stat-pill-clickable stat-pill-disabled"
+                class:is-filter-active={filter.status === 'disabled'}
+                role="button"
+                tabindex="0"
+                title={filter.status === 'disabled' ? 'Click to clear status filter' : 'Click to filter: only disabled accounts'}
+                on:click={() => toggleStatusFilter('disabled')}
+                on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleStatusFilter('disabled') } }}
+              >
+                <span class="dot dot-disabled" /> Disabled <strong>{counts.disabled}</strong>
+              </span>
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <span
+                class="stat-pill stat-pill-clickable stat-pill-admin"
+                class:is-filter-active={columnFilters?.isAdmin?.isAdmin === true}
+                role="button"
+                tabindex="0"
+                title={columnFilters?.isAdmin?.isAdmin === true ? 'Click to clear admin filter' : 'Click to filter: only admin accounts'}
+                on:click={toggleAdminFilter}
+                on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAdminFilter() } }}
+              >
+                Admins <strong>{counts.admins}</strong>
+              </span>
               {#if orphanCount > 0}
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <span
@@ -722,28 +801,67 @@
     padding: 0.1rem 0.6rem;
   }
 
-  /* Issue 14: Orphan pill is the filter-toggle now — give it button
-     affordance (pointer cursor, focus ring, hover lift). When the
-     filter is active the pill switches to a stronger warning fill
-     with a tiny filter-icon prefix so admins can see the filter is on
-     and click again to clear. */
+  /* Issue 19: shared affordance for any clickable stat-pill (Total,
+     Active, Disabled, Admins, Orphan). Pointer cursor, neutral hover
+     lift via theme accent, visible focus ring. Active state colors
+     are applied by the semantic variants below. */
   .stat-pill-clickable {
     cursor: pointer;
     user-select: none;
     border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 0.1rem 0.6rem;
     transition: background 80ms ease, border-color 80ms ease, color 80ms ease;
 
     &:hover {
-      background: rgba(245, 158, 11, 0.18);
+      background: var(--theme-bg-accent-color, rgba(148, 163, 184, 0.18));
     }
 
     &:focus-visible {
-      outline: 2px solid #2563eb;
+      outline: 2px solid var(--theme-button-focused-border, #2563eb);
       outline-offset: 2px;
     }
   }
 
-  .stat-pill-clickable.is-filter-active {
+  /* Total pill: neutral tint when no other filter is active. Acts as
+     a "show all" state indicator. */
+  .stat-pill-total.is-filter-active {
+    background: var(--theme-bg-accent-color, rgba(148, 163, 184, 0.22));
+    border-color: var(--theme-divider-color, rgba(148, 163, 184, 0.45));
+  }
+
+  .stat-pill-active.is-filter-active {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: rgba(16, 185, 129, 0.45);
+    color: var(--theme-state-positive-color, #047857);
+
+    strong {
+      color: var(--theme-state-positive-color, #047857);
+    }
+  }
+
+  .stat-pill-disabled.is-filter-active {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.45);
+    color: var(--theme-state-negative-color, #b91c1c);
+
+    strong {
+      color: var(--theme-state-negative-color, #b91c1c);
+    }
+  }
+
+  .stat-pill-admin.is-filter-active {
+    background: rgba(96, 165, 250, 0.18);
+    border-color: rgba(96, 165, 250, 0.45);
+    color: var(--primary-button-color, #2563eb);
+
+    strong {
+      color: var(--primary-button-color, #2563eb);
+    }
+  }
+
+  /* Issue 14: Orphan pill amber active state (kept identical to v4). */
+  .stat-pill-warning.is-filter-active {
     background: rgba(245, 158, 11, 0.28);
     border-color: rgba(245, 158, 11, 0.55);
     color: #92400e;

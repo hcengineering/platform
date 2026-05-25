@@ -265,6 +265,9 @@ export interface ListAccountsAdminParams {
   // Active accounts with zero workspaces. Drives the "Orphan accounts"
   // quick-filter button in AdminUsers.
   orphan?: boolean
+  // Filter to admin accounts only (primaryEmail matches the configured
+  // admin-emails allowlist). Drives the Admins stat-pill quick-filter.
+  isAdmin?: boolean
   sort?: {
     field: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status'
     direction: 'asc' | 'desc'
