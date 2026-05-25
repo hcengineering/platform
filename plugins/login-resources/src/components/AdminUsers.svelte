@@ -10,6 +10,7 @@
     Breadcrumb,
     Button,
     Header,
+    Icon,
     Scroller,
     SearchInput,
     DropdownLabelsIntl,
@@ -487,6 +488,7 @@
         <div class="hulyComponent-content">
           <div class="stats-row">
             <div class="stats-pills">
+              <span class="stat-leading-icon"><Icon icon={setting.icon.Members} size={'small'} /></span>
               <span class="stat-pill">Total <strong>{total}</strong></span>
               <span class="stat-pill"><span class="dot dot-active" /> Active <strong>{counts.active}</strong></span>
               <span class="stat-pill"><span class="dot dot-disabled" /> Disabled <strong>{counts.disabled}</strong></span>
@@ -616,6 +618,13 @@
     gap: 0.4rem 1rem;
     font-size: 0.8rem;
     color: var(--theme-darker-color);
+  }
+
+  .stat-leading-icon {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 0.35rem;
+    opacity: 0.7;
   }
 
   .stat-pill {
