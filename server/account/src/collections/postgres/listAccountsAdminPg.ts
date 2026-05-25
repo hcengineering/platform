@@ -15,6 +15,7 @@
 
 import type { AccountListRow } from '@hcengineering/account-client'
 import type { ListAccountsAdminQueryParams } from '../../types'
+import { escapeLike } from '../../util/escapeLike'
 
 // Whitelist of sort columns — never interpolate unsanitised user input.
 const ALLOWED_SORT_FIELDS: Record<string, string> = {
@@ -39,12 +40,15 @@ export function buildListAccountsAdminSql (
     return `$${args.length}`
   }
 
-  // search — ILIKE across name parts + primary_email
+  // search — ILIKE across name parts + primary_email. Escape user-
+  // supplied % and _ so the box is a literal-substring filter, not a
+  // wildcard DSL. ESCAPE '\' lets PG interpret the doubled-up
+  // backslashes from escapeLike() as literals.
   if (params.search != null && params.search.trim() !== '') {
-    const needle = `%${params.search.trim()}%`
+    const needle = `%${escapeLike(params.search.trim())}%`
     const i = args.length + 1
     args.push(needle)
-    conds.push(`(p.first_name ILIKE $${i} OR p.last_name ILIKE $${i} OR s.primary_email ILIKE $${i} OR a.uuid::TEXT ILIKE $${i})`)
+    conds.push(`(p.first_name ILIKE $${i} ESCAPE '\\' OR p.last_name ILIKE $${i} ESCAPE '\\' OR s.primary_email ILIKE $${i} ESCAPE '\\' OR a.uuid::TEXT ILIKE $${i} ESCAPE '\\')`)
   }
 
   // statusIn
@@ -71,14 +75,15 @@ export function buildListAccountsAdminSql (
     if (orParts.length > 0) conds.push(`(${orParts.join(' OR ')})`)
   }
 
-  // nameContains
+  // nameContains — see escapeLike() comment in `search` above for the
+  // rationale; same treatment, same ESCAPE clause.
   if (params.nameContains != null && params.nameContains.trim() !== '') {
-    conds.push(`(p.first_name || ' ' || p.last_name) ILIKE ${ph('%' + params.nameContains.trim() + '%')}`)
+    conds.push(`(p.first_name || ' ' || p.last_name) ILIKE ${ph('%' + escapeLike(params.nameContains.trim()) + '%')} ESCAPE '\\'`)
   }
 
   // emailContains
   if (params.emailContains != null && params.emailContains.trim() !== '') {
-    conds.push(`s.primary_email ILIKE ${ph('%' + params.emailContains.trim() + '%')}`)
+    conds.push(`s.primary_email ILIKE ${ph('%' + escapeLike(params.emailContains.trim()) + '%')} ESCAPE '\\'`)
   }
 
   // workspaceUuidsIn — account must be member of at least one of the listed workspaces

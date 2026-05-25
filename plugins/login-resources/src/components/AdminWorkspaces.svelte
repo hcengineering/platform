@@ -224,7 +224,9 @@
   function exportWorkspacesCsv (): void {
     const cols = ['uuid', 'name', 'url', 'mode', 'region', 'version',
       'createdOn', 'lastVisit', 'backupSizeMB', 'lastBackupAt']
-    const header = cols.join(',') + '\n'
+    // RFC-4180 CRLF + UTF-8 BOM (D2) — see csv.ts and the accounts CSV
+    // route in account-service/src/index.ts for the rationale.
+    const header = cols.join(',') + '\r\n'
     const rows = sortedWorkspaces.map((w) => [
       w.uuid,
       (w as any).name ?? '',
@@ -236,8 +238,9 @@
       w.lastVisit != null ? new Date(w.lastVisit).toISOString() : '',
       Math.round(getBackupSize(w)),
       w.backupInfo?.lastBackup != null ? new Date(w.backupInfo.lastBackup).toISOString() : ''
-    ].map(csvEscape).join(',') + '\n').join('')
-    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8' })
+    ].map(csvEscape).join(',') + '\r\n').join('')
+    const BOM = '﻿'
+    const blob = new Blob([BOM + header + rows], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url

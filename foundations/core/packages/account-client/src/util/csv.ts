@@ -17,8 +17,11 @@ export function csvEscape (v: unknown): string {
 }
 
 /**
- * Build a single CSV row from a list of values, terminating with \n.
+ * Build a single CSV row from a list of values, terminating with \r\n
+ * per RFC 4180 §2.1. The CRLF terminator is what Excel-on-Windows and
+ * older spreadsheet apps expect; a bare LF was being silently coerced
+ * to one mangled row on some import paths.
  */
 export function csvLine (cols: ReadonlyArray<unknown>): string {
-  return cols.map(csvEscape).join(',') + '\n'
+  return cols.map(csvEscape).join(',') + '\r\n'
 }

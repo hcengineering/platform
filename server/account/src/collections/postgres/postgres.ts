@@ -26,6 +26,7 @@ import {
 
 import { getMigrations } from './migrations'
 import { buildListAccountsAdminSql, rowToAccountListRow } from './listAccountsAdminPg'
+import { escapeLike } from '../../util/escapeLike'
 import type {
   DbCollection,
   Query,
@@ -598,24 +599,27 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
     // targetNameOrUrl matches against the target account's name OR the
     // target workspace's name/url.
     const ns = this.ns
+    // V30 + D1 (security): substring filters must escape % and _ so a
+    // user typing `%` in the input does not turn into a broad wildcard.
+    // ESCAPE '\' is required everywhere the escaped pattern is used.
     if (f.adminNameOrEmail != null && f.adminNameOrEmail.trim() !== '') {
-      const pat = `%${f.adminNameOrEmail.trim()}%`
+      const pat = `%${escapeLike(f.adminNameOrEmail.trim())}%`
       const p = ph(pat)
       conds.push(
-        `(ap.first_name ILIKE ${p} OR ap.last_name ILIKE ${p}
-          OR (ap.first_name || ' ' || ap.last_name) ILIKE ${p}
+        `(ap.first_name ILIKE ${p} ESCAPE '\\' OR ap.last_name ILIKE ${p} ESCAPE '\\'
+          OR (ap.first_name || ' ' || ap.last_name) ILIKE ${p} ESCAPE '\\'
           OR EXISTS (SELECT 1 FROM ${ns}.social_id s
                      WHERE s.person_uuid::TEXT = al.admin_account
-                       AND s.value ILIKE ${p}))`
+                       AND s.value ILIKE ${p} ESCAPE '\\'))`
       )
     }
     if (f.targetNameOrUrl != null && f.targetNameOrUrl.trim() !== '') {
-      const pat = `%${f.targetNameOrUrl.trim()}%`
+      const pat = `%${escapeLike(f.targetNameOrUrl.trim())}%`
       const p = ph(pat)
       conds.push(
-        `(tp.first_name ILIKE ${p} OR tp.last_name ILIKE ${p}
-          OR (tp.first_name || ' ' || tp.last_name) ILIKE ${p}
-          OR w.name ILIKE ${p} OR w.url ILIKE ${p})`
+        `(tp.first_name ILIKE ${p} ESCAPE '\\' OR tp.last_name ILIKE ${p} ESCAPE '\\'
+          OR (tp.first_name || ' ' || tp.last_name) ILIKE ${p} ESCAPE '\\'
+          OR w.name ILIKE ${p} ESCAPE '\\' OR w.url ILIKE ${p} ESCAPE '\\')`
       )
     }
     if (Array.isArray(f.actionIn) && f.actionIn.length > 0) {

@@ -510,8 +510,10 @@ export function serveAccount (
       return
     }
     if (!csvExportLimiter.allow(limiterKey(token), Date.now())) {
+      // charset=utf-8 so the em-dash in the body renders correctly in
+      // browsers that default to ISO-8859-1 for text/plain (D3).
       ctx.res.writeHead(429, {
-        'Content-Type': 'text/plain',
+        'Content-Type': 'text/plain; charset=utf-8',
         'Retry-After': '60'
       })
       ctx.res.end('Too many exports — try again in 60 seconds.')
@@ -532,7 +534,10 @@ export function serveAccount (
       'Cache-Control': 'no-store',
       'Referrer-Policy': 'no-referrer'
     })
-    ctx.res.write('uuid,firstName,lastName,primaryEmail,status,workspaceCount,lastActivityAt,isAdmin\n')
+    // UTF-8 BOM (D2) — Excel-on-Windows decodes the file as ISO-8859-1
+    // without it, which mangles every non-ASCII byte in names/emails.
+    // Followed by an RFC-4180 CRLF-terminated header row.
+    ctx.res.write('﻿uuid,firstName,lastName,primaryEmail,status,workspaceCount,lastActivityAt,isAdmin\r\n')
     const pageSize = 500
     let offset = 0
     for (;;) {

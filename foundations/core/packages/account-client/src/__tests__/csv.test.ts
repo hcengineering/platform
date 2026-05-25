@@ -27,10 +27,10 @@ describe('csvEscape', () => {
 })
 
 describe('csvLine', () => {
-  it('joins values with commas and appends \\n', () => {
-    expect(csvLine(['a', 1, 'b'])).toBe('a,1,b\n')
+  it('joins values with commas and appends RFC-4180 CRLF', () => {
+    expect(csvLine(['a', 1, 'b'])).toBe('a,1,b\r\n')
   })
   it('escapes each value individually', () => {
-    expect(csvLine(['a,b', 'c'])).toBe('"a,b",c\n')
+    expect(csvLine(['a,b', 'c'])).toBe('"a,b",c\r\n')
   })
 })
