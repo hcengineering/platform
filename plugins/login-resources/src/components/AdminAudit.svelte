@@ -51,6 +51,14 @@
   $: hasFilter = filterAdmin.trim() !== '' || filterAction.trim() !== '' ||
                  filterTargetAcc.trim() !== '' || filterTargetWs.trim() !== '' ||
                  filterFrom !== '' || filterTo !== ''
+
+  const PAGE_RENDER_CAP = 200  // hard ceiling on simultaneously-rendered rows
+  // listAuditAdmin sorts ORDER BY ts_ms DESC (verified in
+  // server/account/src/collections/postgres/postgres.ts) — entries[0] is
+  // the NEWEST row. Slice from the head, not the tail.
+  $: visibleEntries = entries.length > PAGE_RENDER_CAP
+    ? entries.slice(0, PAGE_RENDER_CAP)
+    : entries
 </script>
 
 <AdminShell section="audit">
@@ -77,6 +85,13 @@
             <Button kind="primary" label={getEmbeddedLabel('Apply')} on:click={() => { void reload(true) }} />
           </div>
 
+          {#if entries.length > PAGE_RENDER_CAP}
+            <div class="audit-cap-notice" role="status">
+              Showing the most recent {PAGE_RENDER_CAP} of {entries.length} loaded
+              entries. Apply a filter to narrow the result set.
+            </div>
+          {/if}
+
           <table class="audit-table">
             <thead>
               <tr>
@@ -88,7 +103,7 @@
               </tr>
             </thead>
             <tbody>
-              {#each entries as e (e.id)}
+              {#each visibleEntries as e (e.id)}
                 <tr>
                   <td>{new Date(e.tsMs).toLocaleString()}</td>
                   <td>{e.admin.firstName} {e.admin.lastName}</td>
@@ -200,5 +215,15 @@
     display: flex;
     justify-content: center;
     margin-top: var(--spacing-2);
+  }
+
+  .audit-cap-notice {
+    padding: 0.5rem 0.75rem;
+    margin-bottom: var(--spacing-2);
+    background: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--theme-darker-color);
   }
 </style>
