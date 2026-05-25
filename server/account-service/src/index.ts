@@ -28,12 +28,14 @@ import platform, { Severity, Status, addStringsLoader, setMetadata, unknownStatu
 import serverToken, { decodeToken, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 import cors from '@koa/cors'
 import type Cookies from 'cookies'
+import { createHash } from 'crypto'
 import { type IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import os from 'os'
 import { migrateFromOldAccounts } from './migration/migration'
+import { TokenBucketLimiter } from './util/rateLimiter'
 
 export * from './migration/utils'
 export * from './migration/types'
@@ -156,6 +158,20 @@ export function serveAccount (
       console.log('Migrations verified/done')
     }
   })
+
+  const csvExportLimiter = new TokenBucketLimiter({ max: 5, windowMs: 60_000 })
+  // GC every minute — sub-second precision not needed for cleanup.
+  setInterval(() => {
+    csvExportLimiter.gc(Date.now())
+  }, 60_000).unref()
+
+  // Key the limiter on a SHA-256 of the token rather than the raw token.
+  // Limiter state lives in process memory and can land in heap dumps,
+  // crash logs, or third-party APM samples. Hashing means a leaked
+  // state-snapshot doesn't grant the holder a usable admin token.
+  // (Account-uuid would also work but requires decoding the token —
+  // hashing keeps the limiter independent of the auth layer.)
+  const limiterKey = (token: string): string => createHash('sha256').update(token).digest('hex')
 
   const app = new Koa()
   const router = new Router()
@@ -469,6 +485,14 @@ export function serveAccount (
     } catch {
       ctx.res.writeHead(403, { 'Content-Type': 'text/plain' })
       ctx.res.end('Forbidden')
+      return
+    }
+    if (!csvExportLimiter.allow(limiterKey(token), Date.now())) {
+      ctx.res.writeHead(429, {
+        'Content-Type': 'text/plain',
+        'Retry-After': '60'
+      })
+      ctx.res.end('Too many exports — try again in 60 seconds.')
       return
     }
     // Respect the same filter+sort the user sees in the admin UI.
