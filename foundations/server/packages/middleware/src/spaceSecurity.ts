@@ -649,13 +649,20 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     // tab `{collaborator: self, attachedToClass: Issue}`, which must surface the
     // user's own subscriptions even on docs in non-member spaces.
     const selfCollabBypass = this.context.hierarchy.isDerived(_class, core.class.Collaborator)
+    // Containing-Space visibility for collab-only Guests: let the Postgres adapter's
+    // space-collab OR-branch surface Spaces that host docs the caller is a
+    // Collaborator on. Required so the project/space nav tree can list projects
+    // where the user is collab-only (no member status).
+    const spaceCollabBypass =
+      isSpace && [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role)
 
     if (
       !isSystem(account, ctx) &&
       account.role !== AccountRole.DocGuest &&
       domain !== DOMAIN_MODEL &&
       !collabReadBypass &&
-      !selfCollabBypass
+      !selfCollabBypass &&
+      !spaceCollabBypass
     ) {
       if (!isOwner(account, ctx) || !isSpace || !showArchived) {
         if (newQuery[field] !== undefined) {

@@ -655,6 +655,16 @@ abstract class PostgresAdapterBase implements DbAdapter {
         if (domain === DOMAIN_COLLABORATOR) {
           collabRes += ` OR ${domain}.collaborator = '${acc.uuid}'`
         }
+        // Containing-Space visibility for collab-only Guests: surface Spaces that
+        // host docs the caller is a Collaborator on. Required for the project/space
+        // nav tree to list such projects (and for any code resolving the doc's
+        // parent space to succeed). The Collaborator record's `space` field always
+        // mirrors the parent doc's `space`, so existence of any such record naming
+        // the caller is sufficient evidence that the Space contains something they
+        // can see.
+        if (domain === DOMAIN_SPACE && [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(acc.role)) {
+          collabRes += ` OR EXISTS (SELECT 1 FROM ${translateDomain(DOMAIN_COLLABORATOR)} space_collab WHERE space_collab."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND space_collab.space = ${domain}._id AND space_collab.collaborator = '${acc.uuid}')`
+        }
         return `AND (${res}${collabRes})`
       }
     }
