@@ -24,6 +24,7 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { copyTextToClipboard } from '@hcengineering/presentation'
   import AddToWorkspacePopup from './AddToWorkspacePopup.svelte'
+  import AuditEmptyState from '../admin-shell/AuditEmptyState.svelte'
   import { confirmAction, notify } from './util'
 
   export let accountUuid: AccountUuid
@@ -294,7 +295,7 @@
   let actionFilter = ''
   $: visibleAuditEntries = actionFilter.trim() === ''
     ? auditEntries
-    : auditEntries.filter((e) => e.action.includes(actionFilter.trim()))
+    : auditEntries.filter((e) => e.action.toLowerCase().includes(actionFilter.trim().toLowerCase()))
 
   async function loadAudit (): Promise<void> {
     auditLoading = true
@@ -522,7 +523,9 @@
           {#if auditLoading}
             <p>Loading…</p>
           {:else if visibleAuditEntries.length === 0}
-            <p>No audit entries.</p>
+            <AuditEmptyState
+              hasFilter={actionFilter.trim() !== ''}
+              on:clearFilter={() => { actionFilter = '' }} />
           {:else}
             <ul class="audit-list">
               {#each visibleAuditEntries as e (e.id)}
