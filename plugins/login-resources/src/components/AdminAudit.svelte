@@ -85,6 +85,17 @@
     }
     return out
   })()
+
+  let expandedDetails: Set<string> = new Set()
+  function toggleDetails (id: string): void {
+    expandedDetails = new Set(expandedDetails)
+    expandedDetails.has(id) ? expandedDetails.delete(id) : expandedDetails.add(id)
+  }
+  function summary (details: unknown): string {
+    if (details == null || typeof details !== 'object') return ''
+    const keys = Object.keys(details as object)
+    return `${keys.length} key${keys.length === 1 ? '' : 's'}`
+  }
 </script>
 
 <AdminShell section="audit">
@@ -151,7 +162,18 @@
                         {e.targetWorkspace.name || e.targetWorkspace.url}
                       {/if}
                     </td>
-                    <td><pre>{e.details != null ? JSON.stringify(e.details, null, 2) : ''}</pre></td>
+                    <td>
+                      {#if e.details != null}
+                        {#if expandedDetails.has(e.id)}
+                          <pre class="audit-details-expanded">{JSON.stringify(e.details, null, 2)}</pre>
+                          <button class="audit-details-toggle" on:click={() => toggleDetails(e.id)}>Collapse</button>
+                        {:else}
+                          <button class="audit-details-toggle" on:click={() => toggleDetails(e.id)}>
+                            {summary(e.details)} — expand
+                          </button>
+                        {/if}
+                      {/if}
+                    </td>
                   </tr>
                 {/each}
               {/each}
@@ -272,5 +294,24 @@
     font-size: 0.78rem;
     color: var(--theme-darker-color);
     border-top: 2px solid var(--theme-divider-color);
+  }
+
+  .audit-details-toggle {
+    background: none;
+    border: 1px dashed var(--theme-divider-color);
+    border-radius: 0.25rem;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.78rem;
+    color: var(--theme-darker-color);
+    cursor: pointer;
+    &:hover { color: var(--theme-content-color); border-color: var(--theme-content-color); }
+  }
+  .audit-details-expanded {
+    margin: 0 0 0.25rem 0;
+    font-family: var(--mono-font, 'SF Mono', monospace);
+    font-size: 0.72rem;
+    color: var(--theme-darker-color);
+    white-space: pre-wrap;
+    max-width: 28rem;
   }
 </style>
