@@ -567,6 +567,9 @@
           <div class="stat-item">
             <span class="stat-label">Total Storage</span>
             <span class="stat-value">{totalStorageFormatted}</span>
+            {#if totalStorageMb === 0}
+              <span class="stat-hint">No backup data yet</span>
+            {/if}
           </div>
         </div>
 
@@ -616,6 +619,7 @@
               kind={'regular'}
               size={'small'}
               label={getEmbeddedLabel('Top 10 by storage')}
+              disabled={totalStorageMb === 0}
               on:click={() => {
                 columnFilters = {}
                 sortField = 'backup_size'
@@ -1016,6 +1020,12 @@
     font-weight: 400;
     color: var(--theme-darker-color);
     margin-left: 0.25rem;
+  }
+
+  .stat-hint {
+    font-size: 0.72rem;
+    color: var(--theme-darker-color);
+    opacity: 0.7;
   }
 
   .stat-positive {
