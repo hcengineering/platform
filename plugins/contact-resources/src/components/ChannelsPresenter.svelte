@@ -14,11 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { Channel } from '@hcengineering/contact'
+  import type { Channel, Person } from '@hcengineering/contact'
+  import type { Ref } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
+  import { createQuery } from '@hcengineering/presentation'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
   import { showPopup } from '@hcengineering/ui'
   import { ViewAction } from '@hcengineering/view'
+  import contact from '../plugin'
+  import { canEditPersonContactDetails } from '../utils'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
 
   export let value: Channel[] | Channel | null
@@ -28,6 +32,30 @@
   export let size: ButtonSize = 'small'
   export let length: 'tiny' | 'short' | 'full' = 'short'
   export let shape: 'circle' | undefined = 'circle'
+
+  let attachedPerson: Person | undefined = undefined
+  const personQuery = createQuery()
+
+  $: channel = Array.isArray(value) ? value[0] : value
+  $: if (channel?.attachedToClass === contact.class.Person) {
+    personQuery.query(
+      contact.class.Person,
+      {
+        _id: channel.attachedTo as Ref<Person>
+      },
+      (res) => {
+        attachedPerson = res[0]
+      }
+    )
+  } else {
+    personQuery.unsubscribe()
+    attachedPerson = undefined
+  }
+
+  $: effectiveEditable =
+    channel?.attachedToClass === contact.class.Person
+      ? editable === true && attachedPerson !== undefined && canEditPersonContactDetails(attachedPerson)
+      : editable
 
   async function _open (ev: CustomEvent): Promise<void> {
     if (ev.detail.presenter !== undefined && Array.isArray(value)) {
@@ -44,5 +72,5 @@
 </script>
 
 {#if value}
-  <ChannelsDropdown bind:value {length} {kind} {size} {shape} {editable} on:open={_open} />
+  <ChannelsDropdown bind:value {length} {kind} {size} {shape} editable={effectiveEditable} on:open={_open} />
 {/if}
