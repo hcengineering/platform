@@ -100,8 +100,9 @@ const config: Config = (() => {
       blobSize: (parseNumber(process.env.CACHE_BLOB_SIZE) ?? 64) * 1024, // Default 64KB
       blobCount: parseNumber(process.env.CACHE_BLOB_COUNT) ?? 1000
     },
-    // Default 5 GiB. Override via MAX_FILE_SIZE in bytes (e.g. 10737418240 for 10 GiB).
-    MaxFileSize: parseNumber(process.env.MAX_FILE_SIZE) ?? 5 * 1024 * 1024 * 1024
+    // Configured in megabytes via MAX_FILE_SIZE_MB (default 5120 MB = 5 GiB,
+    // e.g. set to 10240 for 10 GiB).
+    MaxFileSize: (parseNumber(process.env.MAX_FILE_SIZE_MB) ?? 5120) * 1024 * 1024
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)
