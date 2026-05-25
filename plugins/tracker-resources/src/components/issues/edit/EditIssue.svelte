@@ -47,7 +47,7 @@
 
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { generateIssueShortLink, getIssueIdByIdentifier } from '../../../issues'
-  import { canEditIssue } from '../../../utils'
+  import { canCommentOnIssue, canEditIssueFields } from '../../../utils'
   import tracker from '../../../plugin'
   import IssueStatusActivity from '../IssueStatusActivity.svelte'
   import ControlPanel from './ControlPanel.svelte'
@@ -73,16 +73,29 @@
   let descriptionBox: AttachmentStyleBoxCollabEditor
   let showAllMixins: boolean
 
+  // Two independent gates:
+  //   effectiveReadonly — Issue field editors (title, status, dates, ...).
+  //                       Driven by canEditIssueFields(). Guests are blocked.
+  //   canComment        — Comment composer at the bottom of the panel.
+  //                       Driven by canCommentOnIssue(). Guests who are
+  //                       Creator OR Collaborator on the issue are allowed.
   let effectiveReadonly = true
+  let canComment = false
   $: if (issue !== undefined) {
     const currentIssue = issue
-    void canEditIssue(currentIssue).then((canEdit) => {
+    void canEditIssueFields(currentIssue).then((canEdit) => {
       if (issue === currentIssue) {
         effectiveReadonly = readonly || !canEdit
       }
     })
+    void canCommentOnIssue(currentIssue).then((v) => {
+      if (issue === currentIssue) {
+        canComment = !readonly && v
+      }
+    })
   } else {
     effectiveReadonly = readonly
+    canComment = false
   }
 
   const inboxClient = InboxNotificationsClientImpl.getClient()
@@ -211,7 +224,7 @@
   <Panel
     object={issue}
     isHeader={false}
-    withoutInput={effectiveReadonly}
+    withoutInput={!canComment}
     allowClose={!embedded}
     isAside={true}
     isSub={false}
