@@ -35883,7 +35883,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../account
       '@hcengineering/account-client':
-        specifier: workspace:*
+        specifier: workspace:^0.7.25
         version: link:../../foundations/core/packages/account-client
       '@hcengineering/analytics':
         specifier: workspace:^0.7.19

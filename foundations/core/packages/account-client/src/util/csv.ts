@@ -4,11 +4,14 @@
 
 /**
  * Escape a single value for CSV. Adds double-quote wrapping only when
- * the value contains a comma, double quote, or newline.
+ * the value contains a comma, double quote, CR, or LF. CR/LF both
+ * trigger quoting because RFC 4180 permits CRLF terminators inside
+ * quoted fields and Excel-on-Windows treats a bare \r as a record
+ * separator.
  */
 export function csvEscape (v: unknown): string {
   const s = v == null ? '' : String(v)
-  return (s.includes(',') || s.includes('"') || s.includes('\n'))
+  return (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r'))
     ? '"' + s.replace(/"/g, '""') + '"'
     : s
 }

@@ -18,6 +18,12 @@ describe('csvEscape', () => {
   it('quotes when the value contains a newline', () => {
     expect(csvEscape('line1\nline2')).toBe('"line1\nline2"')
   })
+  it('quotes when the value contains a carriage return', () => {
+    expect(csvEscape('line1\rline2')).toBe('"line1\rline2"')
+  })
+  it('quotes when the value contains CRLF', () => {
+    expect(csvEscape('line1\r\nline2')).toBe('"line1\r\nline2"')
+  })
 })
 
 describe('csvLine', () => {
