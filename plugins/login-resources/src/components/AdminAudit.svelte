@@ -9,6 +9,7 @@
   import type { AuditEntry, ListAuditAdminParams } from '@hcengineering/account-client'
   import type { AccountUuid, WorkspaceUuid } from '@hcengineering/core'
   import AdminShell from './admin-shell/AdminShell.svelte'
+  import AuditEmptyState from './admin-shell/AuditEmptyState.svelte'
   import setting from '@hcengineering/setting'
 
   let entries: AuditEntry[] = []
@@ -46,6 +47,10 @@
   onMount(() => {
     void reload()
   })
+
+  $: hasFilter = filterAdmin.trim() !== '' || filterAction.trim() !== '' ||
+                 filterTargetAcc.trim() !== '' || filterTargetWs.trim() !== '' ||
+                 filterFrom !== '' || filterTo !== ''
 </script>
 
 <AdminShell section="audit">
@@ -99,7 +104,12 @@
                 </tr>
               {/each}
               {#if entries.length === 0 && !loading}
-                <tr><td colspan="5" class="audit-empty">No audit entries match the current filter.</td></tr>
+                <tr><td colspan="5"><AuditEmptyState {hasFilter}
+                    on:clearFilter={() => {
+                      filterAdmin = ''; filterAction = ''; filterTargetAcc = '';
+                      filterTargetWs = ''; filterFrom = ''; filterTo = '';
+                      void reload(true)
+                    }} /></td></tr>
               {/if}
             </tbody>
           </table>
@@ -183,12 +193,6 @@
       color: var(--theme-darker-color);
       max-width: 28rem;
       white-space: pre-wrap;
-    }
-
-    .audit-empty {
-      text-align: center;
-      color: var(--theme-darker-color);
-      padding: 1.5rem;
     }
   }
 

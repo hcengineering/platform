@@ -291,6 +291,10 @@
   let auditTab = false
   let auditEntries: AuditEntry[] = []
   let auditLoading = false
+  let actionFilter = ''
+  $: visibleAuditEntries = actionFilter.trim() === ''
+    ? auditEntries
+    : auditEntries.filter((e) => e.action.includes(actionFilter.trim()))
 
   async function loadAudit (): Promise<void> {
     auditLoading = true
@@ -510,13 +514,18 @@
 
       {#if auditTab}
         <div class="audit-tab">
+          <div class="drawer-audit-filter">
+            <input type="text" bind:value={actionFilter}
+                   placeholder="Filter by action (disable, archive_workspace, …)"
+                   aria-label="Filter audit by action" />
+          </div>
           {#if auditLoading}
             <p>Loading…</p>
-          {:else if auditEntries.length === 0}
+          {:else if visibleAuditEntries.length === 0}
             <p>No audit entries.</p>
           {:else}
             <ul class="audit-list">
-              {#each auditEntries as e (e.id)}
+              {#each visibleAuditEntries as e (e.id)}
                 <li>
                   <strong>{new Date(e.tsMs).toLocaleString()}</strong> — {e.admin.firstName} {e.admin.lastName} → <code>{e.action}</code>
                   {#if e.details != null}<pre>{JSON.stringify(e.details, null, 2)}</pre>{/if}
@@ -877,5 +886,18 @@
     display: flex;
     justify-content: flex-start;
     margin-top: var(--spacing-1-5, 0.5rem);
+  }
+
+  .drawer-audit-filter {
+    padding: 0 0 0.75rem 0;
+    input {
+      width: 100%;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid var(--theme-divider-color);
+      border-radius: 0.35rem;
+      background: var(--theme-bg-color);
+      color: var(--theme-content-color);
+      font-size: 0.85rem;
+    }
   }
 </style>
