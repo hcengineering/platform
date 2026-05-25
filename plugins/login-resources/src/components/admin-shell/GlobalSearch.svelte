@@ -97,7 +97,11 @@
           {/each}
         </ul>
       {:else if query.trim() !== ''}
-        <p class="gs-empty">No matches.</p>
+        <div class="gs-empty">
+          <span class="gs-empty-icon" aria-hidden="true">🔍</span>
+          <p>No matches for "<strong>{query.trim()}</strong>".</p>
+          <p class="gs-empty-hint">Try a partial name, email, or UUID.</p>
+        </div>
       {/if}
     </div>
   </div>
@@ -176,9 +180,17 @@
   }
 
   .gs-empty {
-    padding: 1rem;
-    text-align: center;
-    color: var(--theme-darker-color);
-    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1.5rem 1rem;
+
+    .gs-empty-icon {
+      font-size: 1.6rem;
+      opacity: 0.5;
+    }
+    p { margin: 0; font-size: 0.85rem; color: var(--theme-darker-color); }
+    .gs-empty-hint { opacity: 0.7; font-size: 0.78rem; }
   }
 </style>
