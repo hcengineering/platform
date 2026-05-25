@@ -19,7 +19,6 @@
     Separator
   } from '@hcengineering/ui'
   import RedirectToLogin from './RedirectToLogin.svelte'
-  import GlobalSearch from './GlobalSearch.svelte'
 
   type Section = 'users' | 'workspaces' | 'audit'
 
@@ -57,7 +56,6 @@
       <div class="antiPanel-wrap__content hulyNavPanel-container">
         <div class="hulyNavPanel-header">
           <Label label={login.string.AdminPanel} />
-          <GlobalSearch />
         </div>
 
         <Scroller shrink>
@@ -116,12 +114,4 @@
     padding: 0.25rem 0;
   }
 
-  /* Stack the panel title + GlobalSearch vertically; default Huly
-     hulyNavPanel-header is a flex-row which makes the search trigger
-     collide with the 2-line "Admin panel" title at narrow widths. */
-  :global(.hulyNavPanel-header) {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 0.5rem;
-  }
 </style>
