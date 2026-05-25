@@ -107,10 +107,22 @@
     const tok = getMetadata(presentation.metadata.Token) ?? ''
     const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
     const merged = mergeColumnFilters(columnFilters)
+    // Mirror the refresh()-side mapping: server SQL only reads the *In
+    // arrays, so the toolbar dropdowns must be translated before export.
+    const statusIn: Array<'active' | 'disabled'> | undefined =
+      filter.status === 'active'
+        ? ['active']
+        : filter.status === 'disabled'
+          ? ['disabled']
+          : undefined
+    const authMethodIn: Array<'email_only' | 'oidc' | 'mixed'> | undefined =
+      filter.authMethod != null && filter.authMethod !== 'all'
+        ? [filter.authMethod]
+        : undefined
     const params: Record<string, any> = {
       search: filter.search,
-      authMethod: filter.authMethod,
-      status: filter.status,
+      statusIn,
+      authMethodIn,
       workspaceUuidsIn: filter.workspaceUuids,
       sort,
       ...merged
@@ -178,10 +190,24 @@
     errorMessage = null
     try {
       const merged = mergeColumnFilters(columnFilters)
+      // The legacy single-string `status` / `authMethod` request fields are
+      // not consumed by the server's SQL builder (which only reads the
+      // *In array variants). Map them here so the toolbar dropdowns
+      // actually narrow the result set; drop the vestigial fields entirely.
+      const statusIn: Array<'active' | 'disabled'> | undefined =
+        filter.status === 'active'
+          ? ['active']
+          : filter.status === 'disabled'
+            ? ['disabled']
+            : undefined
+      const authMethodIn: Array<'email_only' | 'oidc' | 'mixed'> | undefined =
+        filter.authMethod != null && filter.authMethod !== 'all'
+          ? [filter.authMethod]
+          : undefined
       const params: ListAccountsAdminParams = {
         search: filter.search,
-        authMethod: filter.authMethod,
-        status: filter.status,
+        statusIn,
+        authMethodIn,
         workspaceUuidsIn: filter.workspaceUuids as any,
         sort,
         pagination: { limit, offset },
