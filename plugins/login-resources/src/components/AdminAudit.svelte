@@ -3,11 +3,10 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { Breadcrumb, Button, Header, Scroller } from '@hcengineering/ui'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { Breadcrumb, Button, DropdownLabelsIntl, Header, Scroller } from '@hcengineering/ui'
+  import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
   import { getAccountClient } from '../utils'
   import type { AuditEntry, ListAuditAdminParams } from '@hcengineering/account-client'
-  import type { AccountUuid, WorkspaceUuid } from '@hcengineering/core'
   import AdminShell from './admin-shell/AdminShell.svelte'
   import AuditEmptyState from './admin-shell/AuditEmptyState.svelte'
   import setting from '@hcengineering/setting'
@@ -15,25 +14,51 @@
   let entries: AuditEntry[] = []
   let nextCursor: string | null = null
   let loading = false
-  let filterAdmin = ''
-  let filterAction = ''
-  let filterTargetWs = ''
-  let filterTargetAcc = ''
+
+  // V30 — Audit-log filter redesign.
+  // The old UI showed 4 UUID inputs which the admin doesn't recognise
+  // (the table itself displays names, not UUIDs). Replaced with
+  // substring filters bound to the same identifiers the table renders:
+  // admin name/email and target user/workspace name. Action is a multi-
+  // select of the known audit-write call sites in serviceOperations.ts
+  // / operations.ts so the admin doesn't have to guess strings.
+  let filterAdminName = ''
+  let filterTargetName = ''
   let filterFrom = ''
   let filterTo = ''
+  // The action vocabulary is the set of `action: '<string>'` literals
+  // passed to db.adminAuditLog.insert() across the account service.
+  // Keep this list in sync with serviceOperations.ts/operations.ts —
+  // grep -nE "action: '" server/account/src for the source of truth.
+  interface ActionOption { id: string, label: IntlString }
+  const ACTION_OPTIONS: ActionOption[] = [
+    { id: 'create_account', label: getEmbeddedLabel('create_account') },
+    { id: 'disable', label: getEmbeddedLabel('disable') },
+    { id: 'enable', label: getEmbeddedLabel('enable') },
+    { id: 'trigger_password_reset', label: getEmbeddedLabel('trigger_password_reset') },
+    { id: 'add_workspace_member', label: getEmbeddedLabel('add_workspace_member') },
+    { id: 'remove_member', label: getEmbeddedLabel('remove_member') },
+    { id: 'role_change', label: getEmbeddedLabel('role_change') }
+  ]
+  let selectedActionIds: string[] = []
+
+  // V30 — Server-side sort. Default = time DESC (= legacy behaviour).
+  type SortField = 'time' | 'admin' | 'action' | 'target'
+  type SortDir = 'asc' | 'desc'
+  let sort: { field: SortField, direction: SortDir } = { field: 'time', direction: 'desc' }
 
   async function reload (resetCursor = true): Promise<void> {
     loading = true
     try {
       const params: ListAuditAdminParams = {
         filter: {
-          adminUuid: filterAdmin.trim() !== '' ? filterAdmin.trim() as AccountUuid : undefined,
-          action: filterAction.trim() !== '' ? filterAction.trim() : undefined,
-          targetAccountUuid: filterTargetAcc.trim() !== '' ? filterTargetAcc.trim() as AccountUuid : undefined,
-          targetWorkspaceUuid: filterTargetWs.trim() !== '' ? filterTargetWs.trim() as WorkspaceUuid : undefined,
+          adminNameOrEmail: filterAdminName.trim() !== '' ? filterAdminName.trim() : undefined,
+          targetNameOrUrl: filterTargetName.trim() !== '' ? filterTargetName.trim() : undefined,
+          actionIn: selectedActionIds.length > 0 ? selectedActionIds : undefined,
           from: filterFrom !== '' ? new Date(filterFrom).getTime() : undefined,
           to: filterTo !== '' ? new Date(filterTo).getTime() : undefined
         },
+        sort,
         pagination: resetCursor ? { limit: 50 } : { cursor: nextCursor ?? undefined, limit: 50 }
       }
       const res = await getAccountClient(null).listAuditAdmin(params)
@@ -48,14 +73,40 @@
     void reload()
   })
 
-  $: hasFilter = filterAdmin.trim() !== '' || filterAction.trim() !== '' ||
-                 filterTargetAcc.trim() !== '' || filterTargetWs.trim() !== '' ||
+  function setSort (field: SortField): void {
+    let direction: SortDir = field === 'time' ? 'desc' : 'asc'
+    if (sort.field === field) {
+      direction = sort.direction === 'asc' ? 'desc' : 'asc'
+    }
+    sort = { field, direction }
+    void reload(true)
+  }
+
+  function clearFilters (): void {
+    filterAdminName = ''
+    filterTargetName = ''
+    selectedActionIds = []
+    filterFrom = ''
+    filterTo = ''
+    sort = { field: 'time', direction: 'desc' }
+    void reload(true)
+  }
+
+  function onActionSelected (e: CustomEvent<string | number | Array<string | number>>): void {
+    const v = e.detail
+    selectedActionIds = Array.isArray(v) ? v.map((x) => String(x)) : v != null ? [String(v)] : []
+    void reload(true)
+  }
+
+  $: hasFilter = filterAdminName.trim() !== '' || filterTargetName.trim() !== '' ||
+                 selectedActionIds.length > 0 ||
                  filterFrom !== '' || filterTo !== ''
 
   const PAGE_RENDER_CAP = 200  // hard ceiling on simultaneously-rendered rows
-  // listAuditAdmin sorts ORDER BY ts_ms DESC (verified in
-  // server/account/src/collections/postgres/postgres.ts) — entries[0] is
-  // the NEWEST row. Slice from the head, not the tail.
+  // listAuditAdmin orders by the active sort (default ts_ms DESC,
+  // verified in server/account/src/collections/postgres/postgres.ts).
+  // entries[0] is the first row of the active sort — slice from the
+  // head so the user sees the top of the result set, never the tail.
   $: visibleEntries = entries.length > PAGE_RENDER_CAP
     ? entries.slice(0, PAGE_RENDER_CAP)
     : entries
@@ -63,10 +114,10 @@
   // Plan 1d Task 3 — Walk visibleEntries once into groups keyed by batchId so
   // consecutive same-batchId rows render under one non-interactive header.
   // Rows with no batchId remain singleton groups so the existing single-action
-  // UX is unchanged. listAuditAdmin already orders DESC by (ts_ms, id), so
-  // rows from one bulk call are guaranteed to be contiguous unless other
-  // unrelated activity is interleaved at the same ts_ms — defensive: only
-  // collapse when the same batchId is immediately adjacent.
+  // UX is unchanged. listAuditAdmin orders by (sort.field, al.id) consistently,
+  // so rows from one bulk call remain contiguous when the default time sort is
+  // active. Under other sort orders bulk grouping naturally degrades — the
+  // header still renders correctly for any contiguous run of the same batchId.
   interface EntryGroup {
     batchId: string | null
     entries: AuditEntry[]
@@ -96,6 +147,11 @@
     const keys = Object.keys(details as object)
     return `${keys.length} key${keys.length === 1 ? '' : 's'}`
   }
+
+  function arrowFor (field: SortField): string {
+    if (sort.field !== field) return ''
+    return sort.direction === 'asc' ? '↑' : '↓'
+  }
 </script>
 
 <AdminShell section="audit">
@@ -108,34 +164,88 @@
       <Scroller padding="var(--spacing-3)" bottomPadding="var(--spacing-3)">
         <div class="hulyComponent-content">
 
+          <!-- V30 — Filter bar. Three logical groups: who/what, date
+               range, and the apply/reset controls. Each control is
+               labelled so the admin can see what column it filters. -->
           <div class="audit-filter-bar">
-            <input class="audit-filter-text" type="text" bind:value={filterAdmin}
-                   placeholder="Admin UUID" />
-            <input class="audit-filter-text" type="text" bind:value={filterAction}
-                   placeholder="Action (disable, archive_workspace, …)" />
-            <input class="audit-filter-text" type="text" bind:value={filterTargetAcc}
-                   placeholder="Target account UUID" />
-            <input class="audit-filter-text" type="text" bind:value={filterTargetWs}
-                   placeholder="Target workspace UUID" />
-            <input class="audit-filter-date" type="date" bind:value={filterFrom} aria-label="From date" />
-            <input class="audit-filter-date" type="date" bind:value={filterTo} aria-label="To date" />
-            <Button kind="primary" label={getEmbeddedLabel('Apply')} on:click={() => { void reload(true) }} />
+            <div class="audit-filter-group">
+              <label class="audit-filter-field">
+                <span class="audit-filter-label">Admin (name or email)</span>
+                <input class="audit-filter-text" type="text" bind:value={filterAdminName}
+                       placeholder="e.g. Jane or jane@example.com"
+                       on:keydown={(ev) => { if (ev.key === 'Enter') void reload(true) }} />
+              </label>
+              <label class="audit-filter-field">
+                <span class="audit-filter-label">Target (user or workspace)</span>
+                <input class="audit-filter-text" type="text" bind:value={filterTargetName}
+                       placeholder="e.g. Acme or acme.huly"
+                       on:keydown={(ev) => { if (ev.key === 'Enter') void reload(true) }} />
+              </label>
+              <div class="audit-filter-field">
+                <span class="audit-filter-label">Actions</span>
+                <DropdownLabelsIntl
+                  kind="regular"
+                  size="medium"
+                  multiselect
+                  items={ACTION_OPTIONS}
+                  selected={selectedActionIds}
+                  label={getEmbeddedLabel(selectedActionIds.length === 0
+                    ? 'All actions'
+                    : `${selectedActionIds.length} selected`)}
+                  on:selected={onActionSelected}
+                />
+              </div>
+            </div>
+
+            <div class="audit-filter-group">
+              <div class="audit-filter-field audit-filter-field--inline">
+                <span class="audit-filter-label">Date range</span>
+                <div class="audit-filter-date-row">
+                  <input class="audit-filter-date" type="date" bind:value={filterFrom} aria-label="From date" />
+                  <span class="audit-filter-date-sep">→</span>
+                  <input class="audit-filter-date" type="date" bind:value={filterTo} aria-label="To date" />
+                </div>
+              </div>
+            </div>
+
+            <div class="audit-filter-actions">
+              <Button kind="primary" label={getEmbeddedLabel('Apply')} on:click={() => { void reload(true) }} />
+              {#if hasFilter || sort.field !== 'time' || sort.direction !== 'desc'}
+                <Button kind="ghost" label={getEmbeddedLabel('Reset')} on:click={clearFilters} />
+              {/if}
+            </div>
           </div>
 
           {#if entries.length > PAGE_RENDER_CAP}
             <div class="audit-cap-notice" role="status">
-              Showing the most recent {PAGE_RENDER_CAP} of {entries.length} loaded
-              entries. Apply a filter to narrow the result set.
+              Showing the first {PAGE_RENDER_CAP} of {entries.length} loaded
+              entries (current sort). Apply a filter to narrow the result set.
             </div>
           {/if}
 
           <table class="audit-table">
             <thead>
               <tr>
-                <th scope="col">Time</th>
-                <th scope="col">Admin</th>
-                <th scope="col">Action</th>
-                <th scope="col">Target</th>
+                <th scope="col" class="sortable" class:is-sorted={sort.field === 'time'}>
+                  <button type="button" class="sort-btn" on:click={() => setSort('time')}>
+                    <span class="sort-arrow">{arrowFor('time')}</span>Time
+                  </button>
+                </th>
+                <th scope="col" class="sortable" class:is-sorted={sort.field === 'admin'}>
+                  <button type="button" class="sort-btn" on:click={() => setSort('admin')}>
+                    <span class="sort-arrow">{arrowFor('admin')}</span>Admin
+                  </button>
+                </th>
+                <th scope="col" class="sortable" class:is-sorted={sort.field === 'action'}>
+                  <button type="button" class="sort-btn" on:click={() => setSort('action')}>
+                    <span class="sort-arrow">{arrowFor('action')}</span>Action
+                  </button>
+                </th>
+                <th scope="col" class="sortable" class:is-sorted={sort.field === 'target'}>
+                  <button type="button" class="sort-btn" on:click={() => setSort('target')}>
+                    <span class="sort-arrow">{arrowFor('target')}</span>Target
+                  </button>
+                </th>
                 <th scope="col">Details</th>
               </tr>
             </thead>
@@ -179,11 +289,7 @@
               {/each}
               {#if entries.length === 0 && !loading}
                 <tr><td colspan="5"><AuditEmptyState {hasFilter}
-                    on:clearFilter={() => {
-                      filterAdmin = ''; filterAction = ''; filterTargetAcc = '';
-                      filterTargetWs = ''; filterFrom = ''; filterTo = '';
-                      void reload(true)
-                    }} /></td></tr>
+                    on:clearFilter={clearFilters} /></td></tr>
               {/if}
             </tbody>
           </table>
@@ -204,15 +310,45 @@
   .audit-filter-bar {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
-    align-items: center;
+    gap: 0.75rem 1rem;
+    align-items: flex-end;
     margin-bottom: var(--spacing-2);
+    padding: 0.6rem 0.75rem;
+    background: var(--theme-bg-accent-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--small-BorderRadius);
+  }
+
+  .audit-filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    align-items: flex-end;
+  }
+
+  .audit-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 14rem;
+    flex: 1 1 14rem;
+  }
+
+  .audit-filter-field--inline {
+    min-width: auto;
+    flex: 0 0 auto;
+  }
+
+  .audit-filter-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--theme-darker-color);
+    font-weight: 600;
   }
 
   .audit-filter-text,
   .audit-filter-date {
-    flex: 1 1 14rem;
-    min-width: 0;
     padding: 0.4rem 0.6rem;
     border: 1px solid var(--theme-divider-color);
     border-radius: 0.35rem;
@@ -228,7 +364,26 @@
   }
 
   .audit-filter-date {
-    flex: 0 0 11rem;
+    flex: 0 0 10.5rem;
+    min-width: 10.5rem;
+  }
+
+  .audit-filter-date-row {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+
+  .audit-filter-date-sep {
+    color: var(--theme-darker-color);
+    font-size: 0.85rem;
+  }
+
+  .audit-filter-actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin-left: auto;
   }
 
   .audit-table {
@@ -255,6 +410,15 @@
       background: var(--theme-bg-accent-color);
     }
 
+    th.sortable {
+      padding: 0;
+    }
+
+    th.is-sorted {
+      background: var(--theme-bg-color);
+      color: var(--theme-caption-color);
+    }
+
     code {
       font-family: var(--mono-font, 'SF Mono', monospace);
       font-size: 0.8rem;
@@ -268,6 +432,37 @@
       max-width: 28rem;
       white-space: pre-wrap;
     }
+  }
+
+  .sort-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    &:hover {
+      color: var(--theme-caption-color);
+    }
+    &:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: -2px;
+    }
+  }
+
+  .sort-arrow {
+    display: inline-block;
+    width: 0.75rem;
+    color: var(--theme-caption-color);
+    font-weight: 700;
   }
 
   .audit-pager {

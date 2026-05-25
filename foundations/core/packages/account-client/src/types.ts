@@ -352,12 +352,26 @@ export interface AuditEntry {
 
 export interface ListAuditAdminParams {
   filter?: {
+    // Legacy UUID filters — kept for API compatibility. Prefer the
+    // name/email substring filters below for human-facing UIs.
     adminUuid?: AccountUuid
     action?: string
     targetAccountUuid?: AccountUuid
     targetWorkspaceUuid?: WorkspaceUuid
     from?: number  // ms
     to?: number
+    // V30 — Audit-log filter UX redesign. Substring-match against the
+    // identifiers the admin actually sees in the table (name / email /
+    // workspace name) instead of UUIDs.
+    adminNameOrEmail?: string
+    targetNameOrUrl?: string
+    // Multi-select action filter. When present takes precedence over the
+    // legacy `action` exact-match. Empty array is treated as "no filter".
+    actionIn?: string[]
+  }
+  sort?: {
+    field: 'time' | 'admin' | 'action' | 'target'
+    direction: 'asc' | 'desc'
   }
   pagination?: { cursor?: string, limit?: number }
 }

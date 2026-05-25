@@ -137,6 +137,14 @@ export interface AdminAuditLogListParams {
     targetWorkspaceUuid?: WorkspaceUuid
     from?: number
     to?: number
+    // V30 — Substring filters bound to UI-visible identifiers.
+    adminNameOrEmail?: string
+    targetNameOrUrl?: string
+    actionIn?: string[]
+  }
+  sort?: {
+    field: 'time' | 'admin' | 'action' | 'target'
+    direction: 'asc' | 'desc'
   }
   cursor?: string
   limit?: number

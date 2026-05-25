@@ -592,13 +592,82 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
     if (f.from != null) conds.push(`al.ts_ms >= ${ph(f.from)}`)
     if (f.to != null) conds.push(`al.ts_ms <= ${ph(f.to)}`)
 
-    // Cursor: base64 "{ts_ms}_{id}", scroll DESC
+    // V30 — substring filters bound to UI-visible identifiers (Audit-log
+    // filter redesign). adminNameOrEmail matches against the admin
+    // person's first+last name OR any of their social_id values (email).
+    // targetNameOrUrl matches against the target account's name OR the
+    // target workspace's name/url.
+    const ns = this.ns
+    if (f.adminNameOrEmail != null && f.adminNameOrEmail.trim() !== '') {
+      const pat = `%${f.adminNameOrEmail.trim()}%`
+      const p = ph(pat)
+      conds.push(
+        `(ap.first_name ILIKE ${p} OR ap.last_name ILIKE ${p}
+          OR (ap.first_name || ' ' || ap.last_name) ILIKE ${p}
+          OR EXISTS (SELECT 1 FROM ${ns}.social_id s
+                     WHERE s.person_uuid::TEXT = al.admin_account
+                       AND s.value ILIKE ${p}))`
+      )
+    }
+    if (f.targetNameOrUrl != null && f.targetNameOrUrl.trim() !== '') {
+      const pat = `%${f.targetNameOrUrl.trim()}%`
+      const p = ph(pat)
+      conds.push(
+        `(tp.first_name ILIKE ${p} OR tp.last_name ILIKE ${p}
+          OR (tp.first_name || ' ' || tp.last_name) ILIKE ${p}
+          OR w.name ILIKE ${p} OR w.url ILIKE ${p})`
+      )
+    }
+    if (Array.isArray(f.actionIn) && f.actionIn.length > 0) {
+      conds.push(`al.action = ANY(${ph(f.actionIn)}::text[])`)
+    }
+
+    // V30 — sort with whitelist mapping. Default = time DESC (legacy).
+    // Cursor pagination is keyset-style for the time-sort default. For
+    // other sort fields we use offset-based pagination (cursor encodes
+    // the next offset as "o:<n>") because keyset on non-unique string
+    // columns would need composite cursors which add little value here
+    // and we only paginate within a single in-browser session anyway.
+    const sortField = params.sort?.field ?? 'time'
+    const sortDir: 'asc' | 'desc' = params.sort?.direction === 'asc' ? 'asc' : 'desc'
+    const SORT_COLUMNS: Record<string, string> = {
+      time: 'al.ts_ms',
+      admin: "COALESCE(ap.first_name, '') || ' ' || COALESCE(ap.last_name, '')",
+      action: 'al.action',
+      target: "COALESCE(tp.first_name || ' ' || tp.last_name, w.name, w.url, '')"
+    }
+    const sortCol = SORT_COLUMNS[sortField] ?? SORT_COLUMNS.time
+    const dirSql = sortDir === 'asc' ? 'ASC' : 'DESC'
+    // Tiebreaker by al.id to make the order deterministic across pages.
+    const orderBy = `${sortCol} ${dirSql}, al.id ${dirSql}`
+
+    let offsetSql = ''
     if (params.cursor != null) {
       const decoded = Buffer.from(params.cursor, 'base64').toString('utf-8')
-      const sepIdx = decoded.lastIndexOf('_')
-      const cTs = decoded.slice(0, sepIdx)
-      const cId = decoded.slice(sepIdx + 1)
-      conds.push(`(al.ts_ms < ${ph(Number(cTs))} OR (al.ts_ms = ${ph(Number(cTs))} AND al.id < ${ph(cId)}))`)
+      if (decoded.startsWith('o:')) {
+        // Offset-style cursor used for non-time sort.
+        const off = Math.max(0, Number(decoded.slice(2)))
+        offsetSql = `OFFSET ${ph(off)}`
+      } else if (sortField === 'time') {
+        // Keyset cursor — only valid for the time-DESC default. Legacy
+        // format: base64("{ts_ms}_{id}"). Use DESC strict-less-than;
+        // for ASC we'd flip but the legacy cursor is only emitted in
+        // DESC mode, so this branch is only reached for DESC.
+        const sepIdx = decoded.lastIndexOf('_')
+        const cTs = decoded.slice(0, sepIdx)
+        const cId = decoded.slice(sepIdx + 1)
+        if (sortDir === 'desc') {
+          conds.push(
+            `(al.ts_ms < ${ph(Number(cTs))} OR (al.ts_ms = ${ph(Number(cTs))} AND al.id < ${ph(cId)}))`
+          )
+        } else {
+          conds.push(
+            `(al.ts_ms > ${ph(Number(cTs))} OR (al.ts_ms = ${ph(Number(cTs))} AND al.id > ${ph(cId)}))`
+          )
+        }
+      }
+      // Unknown cursor under a non-time sort: silently ignore (the page
+      // will simply restart from the top — safer than a hard error).
     }
 
     const where = conds.length === 0 ? 'TRUE' : conds.join(' AND ')
@@ -606,7 +675,6 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
     const limitPh = ph(limit + 1)  // fetch +1 to detect nextCursor
 
     const tbl = this.getTableName()
-    const ns = this.ns
     const sql = `
       SELECT
         al.id, al.ts_ms, al.admin_account, al.target_account, al.workspace_uuid, al.action, al.details, al.batch_id,
@@ -618,15 +686,26 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
       LEFT JOIN ${ns}.person tp ON tp.uuid::TEXT = al.target_account
       LEFT JOIN ${ns}.workspace w ON w.uuid::TEXT = al.workspace_uuid
       WHERE ${where}
-      ORDER BY al.ts_ms DESC, al.id DESC
+      ORDER BY ${orderBy}
       LIMIT ${limitPh}
+      ${offsetSql}
     `
     const rows = await this.client.unsafe(sql, args)
     const hasMore = rows.length > limit
     const visible = rows.slice(0, limit)
-    const nextCursor = hasMore
-      ? Buffer.from(`${(visible[visible.length - 1] as any).ts_ms}_${(visible[visible.length - 1] as any).id}`).toString('base64')
-      : null
+    let nextCursor: string | null = null
+    if (hasMore) {
+      if (sortField === 'time') {
+        const last: any = visible[visible.length - 1]
+        nextCursor = Buffer.from(`${last.ts_ms}_${last.id}`).toString('base64')
+      } else {
+        // Offset cursor: previous offset (0 if absent) + page size.
+        const prevOffset = params.cursor != null && Buffer.from(params.cursor, 'base64').toString('utf-8').startsWith('o:')
+          ? Number(Buffer.from(params.cursor, 'base64').toString('utf-8').slice(2))
+          : 0
+        nextCursor = Buffer.from(`o:${prevOffset + limit}`).toString('base64')
+      }
+    }
 
     const entries = visible.map((r: any) => ({
       id: r.id,

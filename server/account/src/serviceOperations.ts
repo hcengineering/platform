@@ -284,6 +284,7 @@ export async function listAuditAdmin (
   await assertAdmin(ctx, db, token)
   const rawResult = await db.adminAuditLog.listAuditAdmin({
     filter: params.filter as any,
+    sort: params.sort as any,
     cursor: params.pagination?.cursor,
     limit: params.pagination?.limit
   })
