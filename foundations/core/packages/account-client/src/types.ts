@@ -262,6 +262,9 @@ export interface ListAccountsAdminParams {
   lastActivityFilter?:
     | { kind: 'range', fromMs?: number, toMs?: number }
     | { kind: 'never' }
+  // Active accounts with zero workspaces. Drives the "Orphan accounts"
+  // quick-filter button in AdminUsers.
+  orphan?: boolean
   sort?: {
     field: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status'
     direction: 'asc' | 'desc'
