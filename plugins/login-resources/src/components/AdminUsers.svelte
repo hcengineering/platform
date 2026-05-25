@@ -31,6 +31,8 @@
   import CreateAccountPopup from './admin-users/CreateAccountPopup.svelte'
   import MassActionConfirm from './admin-users/MassActionConfirm.svelte'
   import { confirmAction } from './admin-users/util'
+  import { mergeColumnFilters } from './admin-shared/columnFilters'
+  import { DEBOUNCE_MS } from './admin-shared/constants'
   import type {
     AccountListRow,
     BulkResult,
@@ -54,10 +56,6 @@
   // contributes one or more keys to the listAccountsAdmin filter
   // payload (e.g. { nameContains: 'foo' }, { statusIn: ['active'] }).
   let columnFilters: Record<string, any> = {}
-
-  function mergeColumnFilters (cf: Record<string, any>): Record<string, any> {
-    return Object.values(cf).reduce<Record<string, any>>((acc, partial) => ({ ...acc, ...partial }), {})
-  }
 
   let accounts: AccountListRow[] = []
   let total = 0
@@ -158,7 +156,7 @@
         offset = 0
         void refresh()
       }
-    }, 300)
+    }, DEBOUNCE_MS)
   }
 
   const authItems: DropdownIntlItem[] = [

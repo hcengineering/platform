@@ -7,6 +7,7 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getAccountClient } from '../../utils'
   import type { AccountListRow } from '@hcengineering/account-client'
+  import { DEBOUNCE_MS } from '../admin-shared/constants'
 
   let query = ''
   let results: AccountListRow[] = []
@@ -34,7 +35,7 @@
   $: {
     void query
     if (debounceTimer != null) clearTimeout(debounceTimer)
-    debounceTimer = setTimeout(() => { void runSearch() }, 300)
+    debounceTimer = setTimeout(() => { void runSearch() }, DEBOUNCE_MS)
   }
 
   function onKeyDown (ev: KeyboardEvent): void {
