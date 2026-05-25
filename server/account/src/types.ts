@@ -98,6 +98,9 @@ export interface AdminAuditLogEntry {
   action: AdminAuditAction
   workspaceUuid: WorkspaceUuid | null
   details: Record<string, any> | null
+  // V29 — Bulk-action service calls stamp every row with one shared UUID so
+  // the admin UI can group "this is one operation". NULL on single-action sites.
+  batchId?: string | null
 }
 
 /**

@@ -3485,7 +3485,8 @@ export async function removeWorkspaceMemberInternal (
   ctx: MeasureContext,
   db: AccountDB,
   adminUuid: AccountUuid,
-  params: { accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid }
+  params: { accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid },
+  batchId?: string
 ): Promise<{ ok: true, wasMember: boolean }> {
   const currentRole = await db.getWorkspaceRole(params.accountUuid, params.workspaceUuid)
   if (currentRole == null) {
@@ -3506,7 +3507,8 @@ export async function removeWorkspaceMemberInternal (
     targetAccount: params.accountUuid,
     action: 'remove_member',
     workspaceUuid: params.workspaceUuid,
-    details: { priorRole: currentRole }
+    details: { priorRole: currentRole },
+    batchId
   })
 
   return { ok: true, wasMember: true }
@@ -3521,7 +3523,8 @@ export async function disableAccountInternal (
   db: AccountDB,
   deps: AccountMethodDeps,
   adminUuid: AccountUuid,
-  params: { accountUuid: AccountUuid }
+  params: { accountUuid: AccountUuid },
+  batchId?: string
 ): Promise<{ ok: true }> {
   if (adminUuid === params.accountUuid) {
     throw new PlatformError(new Status(Severity.ERROR, 'cannot_self_disable' as any, {}))
@@ -3546,7 +3549,8 @@ export async function disableAccountInternal (
     targetAccount: params.accountUuid,
     action: 'disable',
     workspaceUuid: null,
-    details: { reason: 'manual_admin_action' }
+    details: { reason: 'manual_admin_action' },
+    batchId
   })
 
   if (deps.accountLifecycleProducer !== undefined) {
@@ -3581,7 +3585,8 @@ export async function triggerPasswordResetInternal (
   db: AccountDB,
   branding: Branding | null,
   adminUuid: AccountUuid,
-  params: { accountUuid: AccountUuid }
+  params: { accountUuid: AccountUuid },
+  batchId?: string
 ): Promise<{ ok: true, emailSentTo: string }> {
   const socials = await db.socialId.find({ personUuid: params.accountUuid })
   const emailSocial = socials.find((s) => s.type === SocialIdType.EMAIL)
@@ -3603,7 +3608,8 @@ export async function triggerPasswordResetInternal (
       targetAccount: params.accountUuid,
       action: 'trigger_password_reset',
       workspaceUuid: null,
-      details: { emailSentTo: emailSocial.value, failed: true, errMsg: err?.message ?? String(err) }
+      details: { emailSentTo: emailSocial.value, failed: true, errMsg: err?.message ?? String(err) },
+      batchId
     })
     if (err instanceof PlatformError) throw err
     throw new PlatformError(new Status(Severity.ERROR, 'password_reset_send_failed' as any, {}))
@@ -3614,7 +3620,8 @@ export async function triggerPasswordResetInternal (
     targetAccount: params.accountUuid,
     action: 'trigger_password_reset',
     workspaceUuid: null,
-    details: { emailSentTo: emailSocial.value }
+    details: { emailSentTo: emailSocial.value },
+    batchId
   })
 
   return { ok: true, emailSentTo: emailSocial.value }
@@ -3720,7 +3727,8 @@ export async function enableAccount (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { accountUuid: AccountUuid }
+  params: { accountUuid: AccountUuid },
+  batchId?: string
 ): Promise<{ ok: true }> {
   const adminUuid = await requireAdmin(ctx, db, token)
 
@@ -3738,7 +3746,8 @@ export async function enableAccount (
       targetAccount: params.accountUuid,
       action: 'enable',
       workspaceUuid: null,
-      details: { noop: true }
+      details: { noop: true },
+      batchId
     })
     return { ok: true }
   }
@@ -3749,7 +3758,8 @@ export async function enableAccount (
     targetAccount: params.accountUuid,
     action: 'enable',
     workspaceUuid: null,
-    details: null
+    details: null,
+    batchId
   })
 
   return { ok: true }

@@ -85,7 +85,8 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
     getV25Migration(ns, flavor),
     getV26Migration(ns, flavor),
     getV27Migration(ns, flavor),
-    getV28Migration(ns, flavor)
+    getV28Migration(ns, flavor),
+    getV29Migration(ns, flavor)
   ]
 }
 
@@ -874,6 +875,28 @@ function getV28Migration (ns: string, _flavor: DBFlavor): [string, string] {
 
     CREATE INDEX IF NOT EXISTS workspace_members_account_idx
       ON ${ns}.workspace_members (account_uuid);
+    `
+  ]
+}
+
+function getV29Migration (ns: string, _flavor: DBFlavor): [string, string] {
+  // V29 — admin audit log: batch_id for bulk-action correlation (Plan 1d Task 3).
+  // - Bulk-action service calls (bulkSetDisabled, bulkAddToWorkspace,
+  //   bulkRemoveFromWorkspace, bulkSendPasswordReset, performWorkspaceOperation
+  //   on a list) generate one UUID and stamp every row with it, so the admin UI
+  //   can render "these N rows are from one operation".
+  // - Single-action sites pass nothing — column stays NULL and existing rows
+  //   are unaffected.
+  // - Partial index WHERE batch_id IS NOT NULL keeps the index small because
+  //   the vast majority of rows are singleton actions.
+  return [
+    'account_db_v29_admin_audit_log_batch_id',
+    `
+    ALTER TABLE ${ns}.admin_audit_log
+      ADD COLUMN IF NOT EXISTS batch_id UUID NULL;
+
+    CREATE INDEX IF NOT EXISTS admin_audit_log_batch_id_idx
+      ON ${ns}.admin_audit_log (batch_id) WHERE batch_id IS NOT NULL;
     `
   ]
 }

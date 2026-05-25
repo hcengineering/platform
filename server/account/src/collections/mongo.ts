@@ -413,7 +413,8 @@ class MongoAdminAuditLogCollection implements AdminAuditLogCollection {
       targetAccount: entry.targetAccount,
       action: entry.action,
       workspaceUuid: entry.workspaceUuid,
-      details: entry.details
+      details: entry.details,
+      batchId: entry.batchId ?? null
     } as any)
   }
 

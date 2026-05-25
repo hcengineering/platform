@@ -344,6 +344,10 @@ export interface AuditEntry {
   targetAccount?: { uuid: AccountUuid, firstName: string, lastName: string }
   targetWorkspace?: { uuid: WorkspaceUuid, name: string, url: string }
   details: any | null
+  // V29 — Bulk-action service calls stamp every row with one shared UUID so
+  // the admin UI can group "this is one operation". Undefined on single-action
+  // sites. Plan 1d Task 3.
+  batchId?: string
 }
 
 export interface ListAuditAdminParams {

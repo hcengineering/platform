@@ -536,17 +536,20 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
   }
 
   async insert (entry: Omit<AdminAuditLogEntry, 'id' | 'tsMs'>): Promise<void> {
+    // batch_id (V29) is NULL for single-action call sites; bulk-action service
+    // functions generate one UUID per call and pass it through to every row.
     const sql = `
       INSERT INTO ${this.getTableName()}
-        (admin_account, target_account, action, workspace_uuid, details)
-      VALUES ($1::text, $2::text, $3::text, $4::text, $5::jsonb)
+        (admin_account, target_account, action, workspace_uuid, details, batch_id)
+      VALUES ($1::text, $2::text, $3::text, $4::text, $5::jsonb, $6::uuid)
     `
     await this.client.unsafe(sql, [
       entry.adminAccount,
       entry.targetAccount,
       entry.action,
       entry.workspaceUuid,
-      entry.details != null ? JSON.stringify(entry.details) : null
+      entry.details != null ? JSON.stringify(entry.details) : null,
+      entry.batchId ?? null
     ])
   }
 
@@ -606,7 +609,7 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
     const ns = this.ns
     const sql = `
       SELECT
-        al.id, al.ts_ms, al.admin_account, al.target_account, al.workspace_uuid, al.action, al.details,
+        al.id, al.ts_ms, al.admin_account, al.target_account, al.workspace_uuid, al.action, al.details, al.batch_id,
         ap.first_name AS admin_first_name, ap.last_name AS admin_last_name,
         tp.first_name AS target_first_name, tp.last_name AS target_last_name,
         w.name AS target_ws_name, w.url AS target_ws_url
@@ -633,6 +636,7 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
       action: r.action,
       workspaceUuid: r.workspace_uuid as WorkspaceUuid | null,
       details: typeof r.details === 'string' ? JSON.parse(r.details) : r.details,
+      batchId: r.batch_id ?? null,
       adminFirstName: r.admin_first_name ?? '',
       adminLastName: r.admin_last_name ?? '',
       targetFirstName: r.target_first_name ?? undefined,

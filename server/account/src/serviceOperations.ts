@@ -32,6 +32,7 @@ import {
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
+import { randomUUID } from 'crypto'
 import type {
   ListAccountsAdminParams,
   AccountListRow,
@@ -301,7 +302,8 @@ export async function listAuditAdmin (
     targetWorkspace: e.workspaceUuid != null
       ? { uuid: e.workspaceUuid, name: e.targetWsName ?? '', url: e.targetWsUrl ?? '' }
       : undefined,
-    details: e.details
+    details: e.details,
+    batchId: e.batchId ?? undefined
   }))
   return { entries, nextCursor: rawResult.nextCursor }
 }
@@ -361,7 +363,8 @@ export async function addWorkspaceMemberInternal (
   db: AccountDB,
   branding: Branding | null,
   adminUuid: AccountUuid,
-  params: { workspace: WorkspaceInfoWithStatus, accountUuid: AccountUuid, role: AccountRole }
+  params: { workspace: WorkspaceInfoWithStatus, accountUuid: AccountUuid, role: AccountRole },
+  batchId?: string
 ): Promise<void> {
   const account = await db.account.findOne({ uuid: params.accountUuid })
   if (account == null) {
@@ -386,7 +389,8 @@ export async function addWorkspaceMemberInternal (
     targetAccount: params.accountUuid,
     action: 'add_workspace_member',
     workspaceUuid: params.workspace.uuid,
-    details: { role: params.role }
+    details: { role: params.role },
+    batchId
   })
 }
 
@@ -591,8 +595,11 @@ export async function bulkAddToWorkspace (
   if (workspace == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, {}))
   }
+  // V29 — One batch UUID per bulk call, stamped on every audit row so the
+  // admin UI can group "these N rows are from one operation" (Plan 1d Task 3).
+  const batchId = randomUUID()
   return await bulkLoop(params.accountUuids, async (uuid) => {
-    await addWorkspaceMemberInternal(ctx, db, branding, adminUuid, { workspace, accountUuid: uuid, role: params.role })
+    await addWorkspaceMemberInternal(ctx, db, branding, adminUuid, { workspace, accountUuid: uuid, role: params.role }, batchId)
   })
 }
 
@@ -606,10 +613,11 @@ export async function bulkRemoveFromWorkspace (
   await assertAdmin(ctx, db, token)
   assertBulkSize(params.accountUuids)
   const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+  const batchId = randomUUID()
   return await bulkLoop(
     params.accountUuids,
     async (uuid) => {
-      await removeWorkspaceMemberInternal(ctx, db, adminUuid, { accountUuid: uuid, workspaceUuid: params.workspaceUuid })
+      await removeWorkspaceMemberInternal(ctx, db, adminUuid, { accountUuid: uuid, workspaceUuid: params.workspaceUuid }, batchId)
     },
     { adminUuid, reason: 'cannot bulk-remove self from workspace; use single-row remove with explicit confirmation' }
   )
@@ -626,6 +634,7 @@ export async function bulkSetDisabled (
   await assertAdmin(ctx, db, token)
   assertBulkSize(params.accountUuids)
   const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+  const batchId = randomUUID()
   return await bulkLoop(
     params.accountUuids,
     async (uuid) => {
@@ -633,9 +642,9 @@ export async function bulkSetDisabled (
         // Use disableAccountInternal to skip per-row admin re-check.
         // deps.accountLifecycleProducer is threaded through so bulk-disabled
         // accounts receive an immediate force-logout event (§2.3).
-        await disableAccountInternal(ctx, db, deps, adminUuid, { accountUuid: uuid })
+        await disableAccountInternal(ctx, db, deps, adminUuid, { accountUuid: uuid }, batchId)
       } else {
-        await enableAccount(ctx, db, branding, token, { accountUuid: uuid })
+        await enableAccount(ctx, db, branding, token, { accountUuid: uuid }, batchId)
       }
     },
     params.disabled ? { adminUuid, reason: 'cannot disable self' } : undefined
@@ -652,8 +661,9 @@ export async function bulkSendPasswordReset (
   await assertAdmin(ctx, db, token)
   assertBulkSize(params.accountUuids)
   const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+  const batchId = randomUUID()
   return await bulkLoop(params.accountUuids, async (uuid) => {
-    await triggerPasswordResetInternal(ctx, db, branding, adminUuid, { accountUuid: uuid })
+    await triggerPasswordResetInternal(ctx, db, branding, adminUuid, { accountUuid: uuid }, batchId)
   })
 }
 
@@ -696,6 +706,12 @@ export async function performWorkspaceOperation (
   if (workspaces.length === 0) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, {}))
   }
+
+  // V29 — When invoked with an array of workspaceIds, stamp every audit row
+  // with one shared UUID so the admin UI can group "this is one bulk archive".
+  // Single-workspace invocations also get a batchId-less NULL, since a single
+  // row needs no grouping (Plan 1d Task 3).
+  const batchId = Array.isArray(workspaceId) && workspaceId.length > 1 ? randomUUID() : undefined
 
   let ops = 0
   for (const workspace of workspaces) {
@@ -774,7 +790,8 @@ export async function performWorkspaceOperation (
           targetAccount: null,
           workspaceUuid: workspace.uuid,
           action: actionForWorkspaceEvent(event),
-          details: { previousMode: workspace.status.mode, params: params ?? [] }
+          details: { previousMode: workspace.status.mode, params: params ?? [] },
+          batchId
         })
       } catch (auditErr) {
         // Audit failure must NOT roll back the workspace operation itself.

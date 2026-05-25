@@ -104,6 +104,27 @@
     ? auditEntries
     : auditEntries.filter((e) => e.action.toLowerCase().includes(actionFilter.trim().toLowerCase()))
 
+  // Plan 1d Task 3 — Group consecutive same-batchId entries under a
+  // non-interactive header. Same logic as AdminAudit.svelte.
+  interface AuditEntryGroup {
+    batchId: string | null
+    entries: AuditEntry[]
+  }
+  $: visibleAuditGroups = ((): AuditEntryGroup[] => {
+    const out: AuditEntryGroup[] = []
+    let current: AuditEntryGroup | null = null
+    for (const e of visibleAuditEntries) {
+      const bid = e.batchId ?? null
+      if (current != null && bid != null && current.batchId === bid) {
+        current.entries.push(e)
+      } else {
+        current = { batchId: bid, entries: [e] }
+        out.push(current)
+      }
+    }
+    return out
+  })()
+
   async function loadAudit (): Promise<void> {
     auditLoading = true
     try {
@@ -196,11 +217,20 @@
             on:clearFilter={() => { actionFilter = '' }} />
         {:else}
           <ul class="audit-list">
-            {#each visibleAuditEntries as e (e.id)}
-              <li>
-                <strong>{new Date(e.tsMs).toLocaleString()}</strong> — {e.admin.firstName} {e.admin.lastName} → <code>{e.action}</code>
-                {#if e.details != null}<pre>{JSON.stringify(e.details, null, 2)}</pre>{/if}
-              </li>
+            {#each visibleAuditGroups as g (g.batchId ?? g.entries[0].id)}
+              {#if g.entries.length > 1}
+                <li class="audit-batch-header">
+                  <strong>Bulk action by {g.entries[0].admin.firstName} {g.entries[0].admin.lastName}</strong>
+                   — {g.entries.length} entries · <code>{g.entries[0].action}</code> ·
+                   {new Date(g.entries[0].tsMs).toLocaleString()}
+                </li>
+              {/if}
+              {#each g.entries as e (e.id)}
+                <li>
+                  <strong>{new Date(e.tsMs).toLocaleString()}</strong> — {e.admin.firstName} {e.admin.lastName} → <code>{e.action}</code>
+                  {#if e.details != null}<pre>{JSON.stringify(e.details, null, 2)}</pre>{/if}
+                </li>
+              {/each}
             {/each}
           </ul>
         {/if}
@@ -270,6 +300,15 @@
         font-size: 0.72rem;
         color: var(--theme-darker-color);
         white-space: pre-wrap;
+      }
+
+      // Plan 1d Task 3 — Non-interactive grouping header. No buttons here.
+      &.audit-batch-header {
+        background: var(--theme-bg-accent-color);
+        padding: 0.4rem 0.5rem;
+        font-size: 0.78rem;
+        color: var(--theme-darker-color);
+        border-top: 2px solid var(--theme-divider-color);
       }
     }
   }

@@ -59,6 +59,32 @@
   $: visibleEntries = entries.length > PAGE_RENDER_CAP
     ? entries.slice(0, PAGE_RENDER_CAP)
     : entries
+
+  // Plan 1d Task 3 — Walk visibleEntries once into groups keyed by batchId so
+  // consecutive same-batchId rows render under one non-interactive header.
+  // Rows with no batchId remain singleton groups so the existing single-action
+  // UX is unchanged. listAuditAdmin already orders DESC by (ts_ms, id), so
+  // rows from one bulk call are guaranteed to be contiguous unless other
+  // unrelated activity is interleaved at the same ts_ms — defensive: only
+  // collapse when the same batchId is immediately adjacent.
+  interface EntryGroup {
+    batchId: string | null
+    entries: AuditEntry[]
+  }
+  $: entryGroups = ((): EntryGroup[] => {
+    const out: EntryGroup[] = []
+    let current: EntryGroup | null = null
+    for (const e of visibleEntries) {
+      const bid = e.batchId ?? null
+      if (current != null && bid != null && current.batchId === bid) {
+        current.entries.push(e)
+      } else {
+        current = { batchId: bid, entries: [e] }
+        out.push(current)
+      }
+    }
+    return out
+  })()
 </script>
 
 <AdminShell section="audit">
@@ -103,20 +129,31 @@
               </tr>
             </thead>
             <tbody>
-              {#each visibleEntries as e (e.id)}
-                <tr>
-                  <td>{new Date(e.tsMs).toLocaleString()}</td>
-                  <td>{e.admin.firstName} {e.admin.lastName}</td>
-                  <td><code>{e.action}</code></td>
-                  <td>
-                    {#if e.targetAccount != null}
-                      {e.targetAccount.firstName} {e.targetAccount.lastName}
-                    {:else if e.targetWorkspace != null}
-                      {e.targetWorkspace.name || e.targetWorkspace.url}
-                    {/if}
-                  </td>
-                  <td><pre>{e.details != null ? JSON.stringify(e.details, null, 2) : ''}</pre></td>
-                </tr>
+              {#each entryGroups as g (g.batchId ?? g.entries[0].id)}
+                {#if g.entries.length > 1}
+                  <tr class="audit-batch-header">
+                    <td colspan="5">
+                      <strong>Bulk action by {g.entries[0].admin.firstName} {g.entries[0].admin.lastName}</strong>
+                       — {g.entries.length} entries · <code>{g.entries[0].action}</code> ·
+                       {new Date(g.entries[0].tsMs).toLocaleString()}
+                    </td>
+                  </tr>
+                {/if}
+                {#each g.entries as e (e.id)}
+                  <tr>
+                    <td>{new Date(e.tsMs).toLocaleString()}</td>
+                    <td>{e.admin.firstName} {e.admin.lastName}</td>
+                    <td><code>{e.action}</code></td>
+                    <td>
+                      {#if e.targetAccount != null}
+                        {e.targetAccount.firstName} {e.targetAccount.lastName}
+                      {:else if e.targetWorkspace != null}
+                        {e.targetWorkspace.name || e.targetWorkspace.url}
+                      {/if}
+                    </td>
+                    <td><pre>{e.details != null ? JSON.stringify(e.details, null, 2) : ''}</pre></td>
+                  </tr>
+                {/each}
               {/each}
               {#if entries.length === 0 && !loading}
                 <tr><td colspan="5"><AuditEmptyState {hasFilter}
@@ -225,5 +262,15 @@
     border-radius: 0.35rem;
     font-size: 0.85rem;
     color: var(--theme-darker-color);
+  }
+
+  // Plan 1d Task 3 — Non-interactive batch-grouping header for bulk actions.
+  // No buttons here; reverse-batch CTA is explicitly deferred to Plan 1f.
+  .audit-batch-header td {
+    background: var(--theme-bg-accent-color);
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+    color: var(--theme-darker-color);
+    border-top: 2px solid var(--theme-divider-color);
   }
 </style>
