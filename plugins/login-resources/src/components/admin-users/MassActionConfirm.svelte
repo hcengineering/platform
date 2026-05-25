@@ -51,7 +51,7 @@
       <strong>{filterSummary}</strong> — this will {actionLabel.toLowerCase()} ALL {affectedCount} item(s) in the
       system. Type <code>{typedConfirmPhrase}</code> to confirm.
     </div>
-    <EditBox bind:value={typedValue} placeholder={typedConfirmPhrase} kind={'editbox'} />
+    <EditBox bind:value={typedValue} placeholder={getEmbeddedLabel(typedConfirmPhrase)} kind={'editbox'} />
     {#if helperText !== ''}
       <span class="helper">{helperText}</span>
     {/if}
