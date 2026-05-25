@@ -2,7 +2,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import {
     Button,
     DropdownLabelsIntl,
@@ -47,7 +47,14 @@
       loading = false
     }
   }
-  onMount(load)
+
+  // Refetch when the parent swaps the workspace without re-mounting the drawer
+  // (clicking another row in the table). Same pattern as AdminUsersDrawer.
+  let loadedUuid: string | null = null
+  $: if (workspaceUuid !== loadedUuid) {
+    loadedUuid = workspaceUuid
+    void load()
+  }
 
   function close (): void {
     dispatch('close')

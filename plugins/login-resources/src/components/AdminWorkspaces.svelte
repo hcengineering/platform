@@ -767,7 +767,7 @@
               {@const stats = statsByWorkspace.get(workspace.uuid ?? '')}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <!-- svelte-ignore a11y-no-static-element-interactions -->
-              <div class="ws-row ws-body" role="row" aria-rowindex={wsIdx + 2} class:ws-is-focused={wsIdx === wsFocusedIndex} on:click={() => openWorkspace(workspace.uuid)}>
+              <div class="ws-row ws-body" role="row" aria-rowindex={wsIdx + 2} class:ws-is-focused={wsIdx === wsFocusedIndex} class:ws-is-active={workspace.uuid === selectedWorkspaceUuid} on:click={() => openWorkspace(workspace.uuid)}>
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div class="ws-cell ws-cell-checkbox" on:click|stopPropagation>
                   <CheckBox
@@ -1227,8 +1227,16 @@
 
   /* Keyboard-focused workspace row. */
   .ws-body.ws-is-focused .ws-cell {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--theme-button-focused-border, var(--primary-button-color, #2563eb));
     outline-offset: -2px;
+  }
+
+  /* Drawer-open workspace row — matches the AdminUsers .is-active pattern. */
+  .ws-body.ws-is-active .ws-cell {
+    background: var(--theme-list-row-color, rgba(96, 165, 250, 0.10));
+  }
+  .ws-body.ws-is-active .ws-cell-checkbox {
+    background: var(--theme-list-row-color, rgba(96, 165, 250, 0.10));
   }
 
   .ws-cell-num {
