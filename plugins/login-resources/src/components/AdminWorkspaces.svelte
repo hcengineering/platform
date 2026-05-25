@@ -646,6 +646,9 @@
             {#if selectedWorkspaceUuids.size > 0}
               <span class="ws-selected-count">
                 Selected: {selectedWorkspaceUuids.size}
+                {#if selectedActiveWorkspaces.length !== selectedWorkspaceUuids.size}
+                  <span class="ws-selected-active">· {selectedActiveWorkspaces.length} active</span>
+                {/if}
                 <button class="ws-clear-sel" on:click={clearWsSelection}>Clear</button>
               </span>
             {/if}
@@ -1268,6 +1271,12 @@
     border: 1px solid var(--theme-divider-color);
     border-radius: 999px;
     font-variant-numeric: tabular-nums;
+  }
+
+  .ws-selected-active {
+    color: var(--theme-darker-color);
+    font-weight: normal;
+    margin-left: 0.25rem;
   }
 
   .ws-clear-sel {
