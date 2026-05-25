@@ -98,7 +98,7 @@
       <CheckBox checked={allSelected} on:value={onToggleAll} />
     </div>
     <div class="cell cell-name sortable" class:is-sorted={sort?.field === 'name'}>
-      <span class="hdr-label" on:click={() => setSort('name')}><span class="arrow">{sort?.field === 'name' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Name</span>
+      <span class="hdr-label" on:click={() => setSort('name')}>{#if sort?.field === 'name'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Name</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.name != null}
@@ -109,7 +109,7 @@
       </button>
     </div>
     <div class="cell cell-email sortable" class:is-sorted={sort?.field === 'email'}>
-      <span class="hdr-label" on:click={() => setSort('email')}><span class="arrow">{sort?.field === 'email' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Email</span>
+      <span class="hdr-label" on:click={() => setSort('email')}>{#if sort?.field === 'email'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Email</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.email != null}
@@ -120,7 +120,7 @@
       </button>
     </div>
     <div class="cell cell-auth sortable" class:is-sorted={sort?.field === 'auth'}>
-      <span class="hdr-label" on:click={() => setSort('auth')}><span class="arrow">{sort?.field === 'auth' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Auth</span>
+      <span class="hdr-label" on:click={() => setSort('auth')}>{#if sort?.field === 'auth'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Auth</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.auth != null}
@@ -131,7 +131,7 @@
       </button>
     </div>
     <div class="cell cell-ws sortable" class:is-sorted={sort?.field === 'workspace_count'}>
-      <span class="hdr-label" on:click={() => setSort('workspace_count')}><span class="arrow">{sort?.field === 'workspace_count' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Workspaces</span>
+      <span class="hdr-label" on:click={() => setSort('workspace_count')}>{#if sort?.field === 'workspace_count'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Workspaces</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.workspace_count != null}
@@ -142,7 +142,7 @@
       </button>
     </div>
     <div class="cell cell-activity sortable" class:is-sorted={sort?.field === 'last_activity'}>
-      <span class="hdr-label" on:click={() => setSort('last_activity')}><span class="arrow">{sort?.field === 'last_activity' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Last activity</span>
+      <span class="hdr-label" on:click={() => setSort('last_activity')}>{#if sort?.field === 'last_activity'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Last activity</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.last_activity != null}
@@ -153,7 +153,7 @@
       </button>
     </div>
     <div class="cell cell-status sortable" class:is-sorted={sort?.field === 'status'}>
-      <span class="hdr-label" on:click={() => setSort('status')}><span class="arrow">{sort?.field === 'status' ? (sort.direction === 'asc' ? '↑' : '↓') : ''}</span>Status</span>
+      <span class="hdr-label" on:click={() => setSort('status')}>{#if sort?.field === 'status'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Status</span>
       <button
         class="filter-btn"
         class:active={columnFilters?.status != null}

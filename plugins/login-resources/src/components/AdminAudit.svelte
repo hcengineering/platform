@@ -234,22 +234,22 @@
               <tr>
                 <th scope="col" class="sortable" class:is-sorted={sort.field === 'time'}>
                   <button type="button" class="sort-btn" on:click={() => setSort('time')}>
-                    <span class="sort-arrow">{arrowFor('time')}</span>Time
+                    {#if sort.field === 'time'}<span class="sort-arrow">{arrowFor('time')}</span>{/if}Time
                   </button>
                 </th>
                 <th scope="col" class="sortable" class:is-sorted={sort.field === 'admin'}>
                   <button type="button" class="sort-btn" on:click={() => setSort('admin')}>
-                    <span class="sort-arrow">{arrowFor('admin')}</span>Admin
+                    {#if sort.field === 'admin'}<span class="sort-arrow">{arrowFor('admin')}</span>{/if}Admin
                   </button>
                 </th>
                 <th scope="col" class="sortable" class:is-sorted={sort.field === 'action'}>
                   <button type="button" class="sort-btn" on:click={() => setSort('action')}>
-                    <span class="sort-arrow">{arrowFor('action')}</span>Action
+                    {#if sort.field === 'action'}<span class="sort-arrow">{arrowFor('action')}</span>{/if}Action
                   </button>
                 </th>
                 <th scope="col" class="sortable" class:is-sorted={sort.field === 'target'}>
                   <button type="button" class="sort-btn" on:click={() => setSort('target')}>
-                    <span class="sort-arrow">{arrowFor('target')}</span>Target
+                    {#if sort.field === 'target'}<span class="sort-arrow">{arrowFor('target')}</span>{/if}Target
                   </button>
                 </th>
                 <th scope="col">Details</th>

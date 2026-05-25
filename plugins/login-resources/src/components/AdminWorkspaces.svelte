@@ -745,7 +745,7 @@
             ] as col}
               <div class="ws-cell ws-head-cell" class:ws-cell-num={col.num} class:ws-is-sorted={sortField === col.field}>
                 <span class="ws-hdr-label" on:click={() => setSort(col.field)}>
-                  <span class="ws-sort-arrow">{sortField === col.field ? (sortDir === 'asc' ? '↑' : '↓') : ''}</span>{col.label}
+                  {#if sortField === col.field}<span class="ws-sort-arrow">{sortDir === 'asc' ? '↑' : '↓'}</span>{/if}{col.label}
                 </span>
                 {#if col.filter}
                   <button
