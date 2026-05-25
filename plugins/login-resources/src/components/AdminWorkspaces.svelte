@@ -483,8 +483,9 @@
       <Scroller align={'stretch'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
         <div class="hulyComponent-content withoutMaxWidth">
 
-        <!-- Stat cards mirror the Users page so both admin sections share the same visual rhythm. -->
-        <div class="ws-stats">
+        <!-- Stat cards mirror the Users page so both admin sections share the same visual rhythm.
+             Plan 1e V7: split into two bands — counts (brand-default) vs capacity (muted accent). -->
+        <div class="ws-stats ws-stats-counts">
           <div class="stat-item">
             <span class="stat-label">Total</span>
             <span class="stat-value">{workspaces.length}</span>
@@ -517,16 +518,18 @@
             <span class="stat-label">Created 30d</span>
             <span class="stat-value">{createdLast30dCount}</span>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Total Storage</span>
-            <span class="stat-value">{totalStorageFormatted}</span>
-          </div>
           {#if longRunningStatCount > 0}
             <div class="stat-item stat-warning">
               <span class="stat-label">Long-running &gt; 1h</span>
               <span class="stat-value">{longRunningStatCount}</span>
             </div>
           {/if}
+        </div>
+        <div class="ws-stats ws-stats-capacity">
+          <div class="stat-item">
+            <span class="stat-label">Total Storage</span>
+            <span class="stat-value">{totalStorageFormatted}</span>
+          </div>
         </div>
 
         {#if byVersion.size > 0 || byRegion.size > 0}
@@ -906,6 +909,17 @@
     // long labels (e.g. "Long-running candidates").
     grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
     gap: var(--spacing-2);
+  }
+
+  // Plan 1e V7: two-band styling — counts (default) vs capacity (muted accent).
+  .ws-stats-capacity {
+    margin-top: var(--spacing-1);
+
+    .stat-item {
+      background: var(--theme-bg-accent-color);
+
+      .stat-label { opacity: 0.7; }
+    }
   }
 
   .ws-breakdown {
