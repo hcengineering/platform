@@ -251,7 +251,12 @@
 
   const endpoint = getMetadata(presentation.metadata.StatsUrl)
 
+  const STATS_MIN_INTERVAL_MS = 30_000
+
+  let lastStatsFetchMs = 0
   async function fetchStats (time: number): Promise<void> {
+    if (time - lastStatsFetchMs < STATS_MIN_INTERVAL_MS) return
+    lastStatsFetchMs = time
     await fetch(endpoint + `/api/v1/overview?token=${token}`, {})
       .then(async (json) => {
         data = await json.json()
