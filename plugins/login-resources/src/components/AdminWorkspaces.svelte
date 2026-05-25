@@ -239,7 +239,10 @@
       Math.round(getBackupSize(w)),
       w.backupInfo?.lastBackup != null ? new Date(w.backupInfo.lastBackup).toISOString() : ''
     ].map(csvEscape).join(',') + '\r\n').join('')
-    const BOM = '﻿'
+    // Use String.fromCharCode(0xFEFF) — svelte-loader strips a raw U+FEFF
+    // character from string literals as parser-safety, so the byte sequence
+    // EF BB BF would never land in the blob. fromCharCode bypasses that.
+    const BOM = String.fromCharCode(0xFEFF)
     const blob = new Blob([BOM + header + rows], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')

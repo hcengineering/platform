@@ -551,8 +551,11 @@ export function serveAccount (
     })
     // UTF-8 BOM (D2) — Excel-on-Windows decodes the file as ISO-8859-1
     // without it, which mangles every non-ASCII byte in names/emails.
-    // Followed by an RFC-4180 CRLF-terminated header row.
-    ctx.res.write('﻿uuid,firstName,lastName,primaryEmail,status,workspaceCount,lastActivityAt,isAdmin\r\n')
+    // Emit the raw 3-byte EF BB BF sequence as a Buffer so tooling
+    // (esbuild, eslint, terser) can't silently strip a literal U+FEFF
+    // from string source. Followed by an RFC-4180 CRLF header row.
+    ctx.res.write(Buffer.from([0xEF, 0xBB, 0xBF]))
+    ctx.res.write('uuid,firstName,lastName,primaryEmail,status,workspaceCount,lastActivityAt,isAdmin\r\n')
     const pageSize = 500
     let offset = 0
     for (;;) {
