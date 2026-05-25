@@ -631,7 +631,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid #2563eb;
+      outline: 2px solid var(--theme-button-focused-border, var(--primary-button-color, #2563eb));
       outline-offset: -2px;
     }
   }
