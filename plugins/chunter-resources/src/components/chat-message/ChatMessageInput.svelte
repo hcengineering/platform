@@ -17,12 +17,25 @@
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage, ChunterEvents, ThreadMessage } from '@hcengineering/chunter'
-  import { Class, Doc, generateId, getCurrentAccount, Ref, type CommitResult } from '@hcengineering/core'
-  import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
-  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import contact, { type Person } from '@hcengineering/contact'
+  import core, {
+    type AccountUuid,
+    Class,
+    Doc,
+    generateId,
+    getCurrentAccount,
+    Ref,
+    resolveMentionGrantTarget,
+    type Space,
+    type CommitResult
+  } from '@hcengineering/core'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { createQuery, DraftController, draftsStore, getClient, MessageBox } from '@hcengineering/presentation'
+  import { EmptyMarkup, isEmptyMarkup, markupToJSON } from '@hcengineering/text'
+  import { extractReferences } from '@hcengineering/text-core'
   import { createEventDispatcher } from 'svelte'
   import { getObjectId } from '@hcengineering/view-resources'
-  import { ThrottledCaller } from '@hcengineering/ui'
+  import { showPopup, ThrottledCaller } from '@hcengineering/ui'
   import { getSpace, editingMessageStore } from '@hcengineering/activity-resources'
 
   import { getChannelSpace } from '../../utils'
@@ -126,8 +139,78 @@
     currentMessage.attachments = attachments
   }
 
+  /**
+   * Disclosure UX for the mention-grants-access flow. If the message
+   * mentions a Person whose AccountUuid is NOT already in the resolved
+   * grant-target's space.members, show a confirmation dialog before
+   * submitting. The actual access grant happens server-side via the
+   * chunter trigger (Collaborator record) + SpaceSecurity middleware
+   * (provideSecurity OR-branch). This dialog only surfaces the fact
+   * to the actor — a scripted API client could still bypass it.
+   *
+   * Returns true if the message should be sent, false to cancel.
+   */
+  async function confirmMentionGrantsAccess (markup: string): Promise<boolean> {
+    if (markup === undefined || markup === '' || isEmptyMarkup(markup)) return true
+    let node
+    try {
+      node = markupToJSON(markup)
+    } catch {
+      return true
+    }
+    const references = extractReferences(node)
+    const mentionedPersonIds = references
+      .filter(({ objectClass }) => hierarchy.isDerived(objectClass, contact.class.Person))
+      .map(({ objectId }) => objectId as Ref<Person>)
+    if (mentionedPersonIds.length === 0) return true
+
+    const grantTarget = await resolveMentionGrantTarget(object, (cls, q) => client.findAll(cls, q))
+    if (grantTarget == null) return true
+
+    const space = (await client.findAll<Space>(core.class.Space, { _id: grantTarget.space }))[0]
+    if (space === undefined) return true
+    const members = new Set<AccountUuid>(space.members ?? [])
+
+    const persons = await client.findAll(contact.class.Person, { _id: { $in: mentionedPersonIds } })
+    const newGrantees = persons.filter(
+      (p) => p.personUuid != null && !members.has(p.personUuid as AccountUuid)
+    )
+    if (newGrantees.length === 0) return true
+
+    const names = newGrantees.map((p) => `${p.name ?? p.personUuid}`).join(', ')
+    const targetName: string =
+      (grantTarget as any).name ?? (grantTarget as any).title ?? grantTarget._id
+    const spaceName: string = (space as any).name ?? space._id
+
+    return await new Promise<boolean>((resolve) => {
+      showPopup(
+        MessageBox,
+        {
+          label: getEmbeddedLabel('Heads up — this mention grants access'),
+          message: getEmbeddedLabel(
+            `${names} ${
+              newGrantees.length === 1 ? 'is not a member' : 'are not members'
+            } of "${spaceName}". Sending this comment will grant ${
+              newGrantees.length === 1 ? 'them' : 'them'
+            } read access to "${targetName}" and the ability to post comments on it. They will not be able to edit the document's fields. This is enforced by server policy; if you cancel, no access is granted.`
+          ),
+          okLabel: getEmbeddedLabel('Send and grant access'),
+          dangerous: false,
+          canSubmit: true
+        },
+        undefined,
+        (res?: boolean) => {
+          resolve(res === true)
+        }
+      )
+    })
+  }
+
   async function handleCreate (event: CustomEvent, _id: Ref<ChatMessage>): Promise<void> {
     try {
+      const proceed = await confirmMentionGrantsAccess(event.detail?.message ?? '')
+      if (!proceed) return
+
       const res = await createMessage(event, _id, `chunter.create.${_class} ${object._class}`)
 
       console.log(`create.${_class} measure`, res.serverTime, res.time)
