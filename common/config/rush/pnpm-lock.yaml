@@ -35882,6 +35882,9 @@ importers:
       '@hcengineering/account':
         specifier: workspace:^0.7.0
         version: link:../account
+      '@hcengineering/account-client':
+        specifier: workspace:*
+        version: link:../../foundations/core/packages/account-client
       '@hcengineering/analytics':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/analytics

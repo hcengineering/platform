@@ -20,6 +20,7 @@ import account, {
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
+import { csvLine } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
 import { metricsAggregate, type Branding, type BrandingMap, type MeasureContext } from '@hcengineering/core'
@@ -458,15 +459,6 @@ export function serveAccount (
   // ── CSV Export routes ────────────────────────────────────────────────────
   // NOTE: token is passed via query string because window.open() cannot set
   // Authorization headers. Security headers prevent caching + referrer leaks.
-  function csvLine (cols: string[]): string {
-    return cols.map((c) => {
-      const s = String(c ?? '')
-      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-        return '"' + s.replace(/"/g, '""') + '"'
-      }
-      return s
-    }).join(',') + '\n'
-  }
 
   router.get('/api/v1/admin/export/accounts.csv', async (ctx) => {
     const token = (ctx.query.token as string) ?? extractToken(ctx.request.headers) ?? ''

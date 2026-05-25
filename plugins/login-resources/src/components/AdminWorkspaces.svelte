@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte'
-  import { RegionInfo } from '@hcengineering/account-client'
+  import { csvEscape, RegionInfo } from '@hcengineering/account-client'
   import {
     groupByArray,
     isActiveMode,
@@ -218,13 +218,6 @@
   }
 
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
-
-  function csvEscape (v: any): string {
-    const s = v == null ? '' : String(v)
-    return (s.includes(',') || s.includes('"') || s.includes('\n'))
-      ? '"' + s.replace(/"/g, '""') + '"'
-      : s
-  }
 
   // Export the *currently filtered+sorted* list as a CSV file. Generated
   // client-side because workspace list is already fully loaded — keeps
