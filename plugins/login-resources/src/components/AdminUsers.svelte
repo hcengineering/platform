@@ -101,10 +101,12 @@
   let debounceTimer: ReturnType<typeof setTimeout> | undefined
 
   // Trigger CSV download with the same filter+sort the user currently sees.
-  // Extracted out of the markup because Svelte's template parser refuses
-  // TypeScript type annotations inside inline handlers.
-  function exportAccountsCsv (): void {
+  // Fetch + blob download so the admin Bearer token travels in the
+  // Authorization header instead of the URL (no token in history, server
+  // access logs, or Referer headers on any redirect/subresource).
+  async function exportAccountsCsv (): Promise<void> {
     const tok = getMetadata(presentation.metadata.Token) ?? ''
+    if (tok === '') return
     const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
     const merged = mergeColumnFilters(columnFilters)
     // Mirror the refresh()-side mapping: server SQL only reads the *In
@@ -128,7 +130,27 @@
       ...merged
     }
     const filterB64 = btoa(unescape(encodeURIComponent(JSON.stringify(params))))
-    window.open(`${accountsUrl.replace(/\/$/, '')}/api/v1/admin/export/accounts.csv?token=${encodeURIComponent(tok)}&filter=${encodeURIComponent(filterB64)}`)
+    const url = `${accountsUrl.replace(/\/$/, '')}/api/v1/admin/export/accounts.csv?filter=${encodeURIComponent(filterB64)}`
+
+    try {
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${tok}` } })
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '')
+        console.error('CSV export failed', res.status, errText)
+        return
+      }
+      const blob = await res.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = `huly-users-${Date.now()}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(blobUrl)
+    } catch (err) {
+      console.error('CSV export error', err)
+    }
   }
 
   $: counts = {

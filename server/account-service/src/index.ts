@@ -510,11 +510,16 @@ export function serveAccount (
   })
 
   // ── CSV Export routes ────────────────────────────────────────────────────
-  // NOTE: token is passed via query string because window.open() cannot set
-  // Authorization headers. Security headers prevent caching + referrer leaks.
+  // NOTE: clients now use fetch + Authorization header + blob download
+  // (no token-in-URL leakage). The ?token= query-string fallback is kept
+  // for one release with a deprecation warning so external scripts that
+  // bookmarked the old URL still work.
 
   router.get('/api/v1/admin/export/accounts.csv', async (ctx) => {
     const token = (ctx.query.token as string) ?? extractToken(ctx.request.headers) ?? ''
+    if (ctx.query.token != null) {
+      measureCtx.warn('CSV export: deprecated token-in-query usage', {})
+    }
     const [db] = await accountsDb
     const childCtx = measureCtx.newChild('csv-export-accounts', {})
     try {
