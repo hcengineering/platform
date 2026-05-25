@@ -171,6 +171,11 @@ export function serveAccount (
   const retentionDays = parseInt(process.env.AUDIT_RETENTION_DAYS ?? '365', 10)
   if (Number.isFinite(retentionDays) && retentionDays > 0) {
     const dayMs = 86_400_000
+    // Hold the interval handle so the runPrune closure can disable
+    // itself the first time it encounters a backend that doesn't
+    // support pruning (currently MongoDB). Otherwise we'd log the
+    // same 'not implemented' error every 24h forever.
+    let intervalHandle: NodeJS.Timeout | null = null
     const runPrune = async (): Promise<void> => {
       const [db] = await accountsDb
       const cutoff = Date.now() - retentionDays * dayMs
@@ -178,13 +183,23 @@ export function serveAccount (
         const deleted = await db.pruneAuditOlderThan(cutoff)
         measureCtx.info('audit_log pruned', { deleted, retentionDays })
       } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (msg.includes('not implemented for Mongo')) {
+          measureCtx.info('audit_log retention: backend does not support prune, disabling timer')
+          if (intervalHandle !== null) {
+            clearInterval(intervalHandle)
+            intervalHandle = null
+          }
+          return
+        }
         measureCtx.error('audit_log prune failed', { error: err })
       }
     }
     // Initial run 5 min after startup so we don't hammer cockroach right at boot.
     setTimeout(() => { void runPrune() }, 5 * 60_000).unref()
     // Then once every 24h.
-    setInterval(() => { void runPrune() }, dayMs).unref()
+    intervalHandle = setInterval(() => { void runPrune() }, dayMs)
+    intervalHandle.unref()
   }
 
   // Key the limiter on a SHA-256 of the token rather than the raw token.
