@@ -98,6 +98,21 @@
   }
 
   let search = ''
+
+  // Toggle the "active accounts with no workspaces" filter (Issue 14).
+  // Driven by the clickable orphan stat-pill — clicking once activates
+  // columnFilters.orphan, clicking again clears it. Replaces the old
+  // "Orphan accounts" button which had no off-switch.
+  function toggleOrphanFilter (): void {
+    if (columnFilters?.orphan?.orphan === true) {
+      const { orphan: _drop, ...rest } = columnFilters
+      columnFilters = rest
+    } else {
+      columnFilters = { ...columnFilters, orphan: { orphan: true } }
+    }
+    offset = 0
+    void refresh()
+  }
   let debounceTimer: ReturnType<typeof setTimeout> | undefined
 
   // Trigger CSV download with the same filter+sort the user currently sees.
@@ -542,16 +557,27 @@
               <span class="stat-pill"><span class="dot dot-disabled" /> Disabled <strong>{counts.disabled}</strong></span>
               <span class="stat-pill">Admins <strong>{counts.admins}</strong></span>
               {#if orphanCount > 0}
-                <span class="stat-pill stat-pill-warning">Orphan <strong>{orphanCount}</strong></span>
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <span
+                  class="stat-pill stat-pill-warning stat-pill-clickable"
+                  class:is-filter-active={columnFilters?.orphan?.orphan === true}
+                  role="button"
+                  tabindex="0"
+                  title={columnFilters?.orphan?.orphan === true
+                    ? 'Click to clear the orphan filter'
+                    : 'Click to filter: active accounts with no workspaces'}
+                  on:click={toggleOrphanFilter}
+                  on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleOrphanFilter() } }}
+                >
+                  {#if columnFilters?.orphan?.orphan === true}
+                    <span class="filter-icon" aria-hidden="true">⏵</span>
+                  {/if}
+                  Orphan <strong>{orphanCount}</strong>
+                </span>
               {/if}
             </div>
             {#if isAdminUser()}
-              <Button label={getEmbeddedLabel('Orphan accounts')} kind={'regular'} size={'medium'} on:click={() => {
-                columnFilters = { orphan: { orphan: true } }
-                offset = 0
-                void refresh()
-              }} />
-              <Button label={getEmbeddedLabel('Export CSV')} kind={'regular'} size={'medium'} on:click={exportAccountsCsv} />
+              <Button label={getEmbeddedLabel('Export CSV')} kind={'ghost'} size={'medium'} on:click={exportAccountsCsv} />
               <Button label={getEmbeddedLabel('Add user')} kind={'primary'} on:click={openCreateAccount} />
             {/if}
           </div>
@@ -692,6 +718,46 @@
     background: rgba(245, 158, 11, 0.10);
     border-radius: 999px;
     padding: 0.1rem 0.6rem;
+  }
+
+  /* Issue 14: Orphan pill is the filter-toggle now — give it button
+     affordance (pointer cursor, focus ring, hover lift). When the
+     filter is active the pill switches to a stronger warning fill
+     with a tiny filter-icon prefix so admins can see the filter is on
+     and click again to clear. */
+  .stat-pill-clickable {
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid transparent;
+    transition: background 80ms ease, border-color 80ms ease, color 80ms ease;
+
+    &:hover {
+      background: rgba(245, 158, 11, 0.18);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+  }
+
+  .stat-pill-clickable.is-filter-active {
+    background: rgba(245, 158, 11, 0.28);
+    border-color: rgba(245, 158, 11, 0.55);
+    color: #92400e;
+
+    strong {
+      color: #92400e;
+    }
+  }
+
+  .filter-icon {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 0.25rem;
+    font-size: 0.65rem;
+    line-height: 1;
+    color: #92400e;
   }
 
   .dot {

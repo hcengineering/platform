@@ -90,7 +90,12 @@
       <span class="muted">—</span>
     {/if}
   </div>
-  <div class="cell cell-ws">{account.workspaceCount}</div>
+  <div class="cell cell-ws">
+    {account.workspaceCount}
+    {#if account.status === 'active' && account.workspaceCount === 0}
+      <span class="orphan-badge" title="Active account with no workspaces">orphan</span>
+    {/if}
+  </div>
   <div class="cell cell-activity last-activity-cell"
        title={account.lastActivityAt != null ? new Date(account.lastActivityAt).toISOString() : 'Never'}>
     {formatLastActivity(account.lastActivityAt)}
@@ -257,6 +262,24 @@
     font-variant-numeric: tabular-nums;
     font-weight: 500;
     color: var(--theme-caption-color);
+    gap: 0.4rem;
+  }
+
+  /* Issue 14: row-level orphan marker. Renders next to the "0" in the
+     WORKSPACES column when an account is active but has no workspace
+     associations, so admins can spot orphans by scanning the table
+     even without the filter active. */
+  .orphan-badge {
+    display: inline-block;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.14);
+    color: var(--theme-warning-color, #b45309);
+    border: 1px solid rgba(245, 158, 11, 0.32);
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   .cell-activity {
