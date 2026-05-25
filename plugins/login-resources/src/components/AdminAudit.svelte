@@ -148,7 +148,13 @@
     return `${keys.length} key${keys.length === 1 ? '' : 's'}`
   }
 
-  function arrowFor (field: SortField): string {
+  // Svelte 4 reactivity caveat: a plain helper that reads `sort` via
+  // closure is not re-evaluated by Svelte when sort changes, so the
+  // header arrow stayed frozen on its first-render value (the reviewer
+  // saw '↓' that never flipped to '↑'). Wrap in a reactive factory:
+  // `$:` re-runs whenever `sort` changes and produces a fresh closure,
+  // which forces every {arrowFor(...)} call site to re-render.
+  $: arrowFor = (field: SortField): string => {
     if (sort.field !== field) return ''
     return sort.direction === 'asc' ? '↑' : '↓'
   }
