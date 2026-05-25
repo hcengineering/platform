@@ -184,6 +184,16 @@
     return (Date.now() - lpt) > longRunningThresholdHours * 3600_000
   })
 
+  // Dashboard stat helpers (moved out of template — Svelte 4 only allows
+  // {@const} as immediate child of {#if}/{#each}/etc., not at top-level
+  // markup. Reactives compute and the template just references them).
+  $: createdLast30dCount = workspaces.filter((it) => (it.createdOn ?? 0) > (Date.now() - 30 * 86400_000)).length
+  $: totalStorageMb = workspaces.reduce((sum, it) => sum + getBackupSize(it), 0)
+  $: totalStorageFormatted = totalStorageMb >= 1024
+    ? (totalStorageMb / 1024).toFixed(1) + ' GB'
+    : Math.round(totalStorageMb) + ' MB'
+  $: longRunningStatCount = longRunningCandidates.length
+
   function onShowLongRunning (): void {
     columnFilters = { mode: { modes: ['upgrading', 'migration', 'restoring', 'archiving', 'deleting', 'reconnecting'] } }
   }
@@ -468,28 +478,18 @@
             <span class="stat-label">Connections</span>
             <span class="stat-value">{data?.connectionsTotal ?? 0}</span>
           </div>
-          {@const now30d = Date.now() - 30 * 86400_000}
           <div class="stat-item">
             <span class="stat-label">Created 30d</span>
-            <span class="stat-value">{workspaces.filter((it) => (it.createdOn ?? 0) > now30d).length}</span>
+            <span class="stat-value">{createdLast30dCount}</span>
           </div>
-          {@const totalStorageMb = workspaces.reduce((sum, it) => sum + getBackupSize(it), 0)}
           <div class="stat-item">
             <span class="stat-label">Total Storage</span>
-            <span class="stat-value">
-              {totalStorageMb >= 1024 ? (totalStorageMb / 1024).toFixed(1) + ' GB' : Math.round(totalStorageMb) + ' MB'}
-            </span>
+            <span class="stat-value">{totalStorageFormatted}</span>
           </div>
-          {@const longRunningThresholdMs = 1 * 3600_000}
-          {@const longRunningCount = workspaces.filter((it) =>
-            !isActiveMode(it.mode) && !isArchivingMode(it.mode) &&
-            it.mode !== 'archived' && it.mode !== 'deleted' &&
-            ((it as any).lastProcessingTime != null && (Date.now() - (it as any).lastProcessingTime) > longRunningThresholdMs)
-          ).length}
-          {#if longRunningCount > 0}
+          {#if longRunningStatCount > 0}
             <div class="stat-item stat-warning">
               <span class="stat-label">Long-running &gt; 1h</span>
-              <span class="stat-value">{longRunningCount}</span>
+              <span class="stat-value">{longRunningStatCount}</span>
             </div>
           {/if}
         </div>

@@ -86,8 +86,13 @@
       {#if passwordMode === 'set'}
         <label>Password
           <div class="pw-input-row">
-            <input type={pw1Visible ? 'text' : 'password'} autocomplete="new-password"
-                   aria-describedby="pw1-help" bind:value={password} />
+            {#if pw1Visible}
+              <input type="text" autocomplete="new-password"
+                     aria-describedby="pw1-help" bind:value={password} />
+            {:else}
+              <input type="password" autocomplete="new-password"
+                     aria-describedby="pw1-help" bind:value={password} />
+            {/if}
             <button type="button" class="pw-toggle" on:click={() => { pw1Visible = !pw1Visible }}
                     aria-label={pw1Visible ? 'Hide password' : 'Show password'}>
               {pw1Visible ? '◯' : '●'}
@@ -97,8 +102,13 @@
         </label>
         <label>Confirm
           <div class="pw-input-row">
-            <input type={pw2Visible ? 'text' : 'password'} autocomplete="new-password"
-                   aria-describedby="pw2-help" bind:value={passwordConfirm} />
+            {#if pw2Visible}
+              <input type="text" autocomplete="new-password"
+                     aria-describedby="pw2-help" bind:value={passwordConfirm} />
+            {:else}
+              <input type="password" autocomplete="new-password"
+                     aria-describedby="pw2-help" bind:value={passwordConfirm} />
+            {/if}
             <button type="button" class="pw-toggle" on:click={() => { pw2Visible = !pw2Visible }}
                     aria-label={pw2Visible ? 'Hide password' : 'Show password'}>
               {pw2Visible ? '◯' : '●'}

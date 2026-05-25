@@ -500,16 +500,7 @@ module.exports = [
       hot: true,
       client: {
         logging: 'info',
-        overlay: {
-          errors: true,
-          warnings: false,
-          runtimeErrors: (error) => {
-            if (error.message.includes('ResizeObserver')) {
-              return false
-            }
-            return true
-          }
-        },
+        overlay: false,
         progress: false,
         // Wenn der dev-server hinter einem Reverse-Proxy auf 443 läuft
         // (z.B. dev.huly.uray.io → huly-dev-nginx → :8080), zeigt der

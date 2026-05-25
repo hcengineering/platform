@@ -106,6 +106,7 @@
     disabled: accounts.filter((a) => a.status === 'disabled').length,
     admins: accounts.filter((a) => a.isAdmin).length
   }
+  $: orphanCount = accounts.filter((a) => a.status === 'active' && a.workspaceCount === 0).length
 
   $: activeFilterKeys = Object.keys(columnFilters).filter((k) => columnFilters[k] != null)
   $: filterSummary = activeFilterKeys.length === 0
@@ -473,7 +474,6 @@
               <span class="stat-pill"><span class="dot dot-active" /> Active <strong>{counts.active}</strong></span>
               <span class="stat-pill"><span class="dot dot-disabled" /> Disabled <strong>{counts.disabled}</strong></span>
               <span class="stat-pill">Admins <strong>{counts.admins}</strong></span>
-              {@const orphanCount = accounts.filter((a) => a.status === 'active' && a.workspaceCount === 0).length}
               {#if orphanCount > 0}
                 <span class="stat-pill stat-pill-warning">Orphan <strong>{orphanCount}</strong></span>
               {/if}

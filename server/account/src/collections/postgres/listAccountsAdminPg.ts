@@ -140,12 +140,17 @@ export function buildListAccountsAdminSql (
       GROUP BY account_uuid
     ),
     socials AS (
+      -- Compare via the stored \`key\` text column (format "<type>:<value>")
+      -- to avoid enum coercion. Some legacy rows have type values that
+      -- are no longer in the social_id_type enum; reading them directly
+      -- triggers "invalid input value for enum" inside aggregates.
+      -- \`key\` is a STORED generated column, so it doesn't re-evaluate
+      -- the enum at SELECT time.
       SELECT
         person_uuid,
-        BOOL_OR(type = 'email' AND verified_on IS NOT NULL) AS has_email,
-        BOOL_OR(type = 'oidc'  AND verified_on IS NOT NULL) AS has_oidc,
-        BOOL_OR(type = 'password' AND verified_on IS NOT NULL) AS has_password,
-        MIN(value) FILTER (WHERE type = 'email' AND verified_on IS NOT NULL) AS primary_email
+        BOOL_OR(key LIKE 'email:%' AND verified_on IS NOT NULL) AS has_email,
+        BOOL_OR(key LIKE 'oidc:%'  AND verified_on IS NOT NULL) AS has_oidc,
+        MIN(value) FILTER (WHERE key LIKE 'email:%' AND verified_on IS NOT NULL) AS primary_email
       FROM ${ns}.social_id
       GROUP BY person_uuid
     )`
@@ -164,7 +169,6 @@ export function buildListAccountsAdminSql (
       CASE WHEN a.disabled_at IS NULL THEN 'active' ELSE 'disabled' END AS status,
       a.last_activity_at,
       a.disabled_at,
-      a.hash IS NOT NULL AS has_password,
       COALESCE(s.has_email, false) AS has_email,
       COALESCE(s.has_oidc,  false) AS has_oidc,
       s.primary_email,
@@ -199,7 +203,6 @@ export function rowToAccountListRow (row: any, adminEmails: string[]): AccountLi
     lastActivityAt: row.last_activity_at != null ? Number(row.last_activity_at) : null,
     primaryEmail: primaryEmail !== '' ? primaryEmail : null,
     authMethods,
-    hasPassword: row.has_password === true || row.has_password === 't',
     workspaceCount: Number(row.workspace_count ?? 0),
     isAdmin
   }

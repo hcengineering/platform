@@ -84,7 +84,7 @@
           {#each results as r}
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-            <li on:click={() => openUser(r.uuid as string)}>
+            <li on:click={() => openUser(String(r.uuid))}>
               <strong>{r.firstName} {r.lastName}</strong>
               <span class="gs-email">{r.primaryEmail ?? ''}</span>
             </li>
