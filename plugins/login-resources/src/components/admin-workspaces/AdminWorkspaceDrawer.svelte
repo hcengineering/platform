@@ -119,12 +119,12 @@
 
 <div class="drawer">
   <div class="header">
-    <button class="back" on:click={close}>←</button>
+    <button class="back" on:click={close} aria-label="Close drawer">←</button>
     {#if data}
       <div class="title">{data.workspaceName}</div>
       <div class="sub">{data.workspaceUrl} · {data.workspaceMode}</div>
     {/if}
-    <button class="close" on:click={close}>×</button>
+    <button class="close" on:click={close} aria-label="Close drawer">×</button>
   </div>
 
   <div class="drawer-tabs">

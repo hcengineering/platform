@@ -335,7 +335,13 @@
         />
       </div>
     {/if}
-    <ButtonIcon icon={IconClose} kind={'tertiary'} size={'small'} on:click={onClose} />
+    <!-- Plain <button> instead of ButtonIcon so we can attach an
+         aria-label — ButtonIcon/ButtonBase don't forward aria-* props, and
+         a11y rule for icon-only close buttons (WCAG 4.1.2) trumps visual
+         consistency here. Visual size matches ButtonIcon size="small". -->
+    <button class="drawer-close" on:click={onClose} aria-label="Close drawer">
+      <IconClose size={'small'} />
+    </button>
   </div>
 
   <div class="drawer-tabs">
@@ -605,6 +611,29 @@
     align-items: center;
     gap: 0.25rem;
     margin-left: auto;
+  }
+
+  .drawer-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    background: transparent;
+    border: 0;
+    border-radius: 0.35rem;
+    cursor: pointer;
+    color: var(--theme-content-color);
+
+    &:hover {
+      background: var(--theme-bg-accent-color);
+      color: var(--theme-caption-color);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: -2px;
+    }
   }
 
   .pager-pos {

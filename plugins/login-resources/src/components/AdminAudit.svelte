@@ -75,11 +75,11 @@
           <table class="audit-table">
             <thead>
               <tr>
-                <th>Time</th>
-                <th>Admin</th>
-                <th>Action</th>
-                <th>Target</th>
-                <th>Details</th>
+                <th scope="col">Time</th>
+                <th scope="col">Admin</th>
+                <th scope="col">Action</th>
+                <th scope="col">Target</th>
+                <th scope="col">Details</th>
               </tr>
             </thead>
             <tbody>
