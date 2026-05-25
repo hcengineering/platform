@@ -3,7 +3,7 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { Breadcrumb, Button, DropdownLabelsIntl, Header, Scroller } from '@hcengineering/ui'
+  import { Breadcrumb, Button, DropdownLabelsIntl, Header, Icon, IconFilter, Scroller } from '@hcengineering/ui'
   import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
   import { getAccountClient } from '../utils'
   import type { AuditEntry, ListAuditAdminParams } from '@hcengineering/account-client'
@@ -148,6 +148,30 @@
     return `${keys.length} key${keys.length === 1 ? '' : 's'}`
   }
 
+  // V31 — Per-column filter buttons in the table header. Each button
+  // scrolls the matching control in the top filter bar into view and
+  // focuses it, so the admin gets the Users-table parity she expects
+  // without duplicating the top-bar inputs. No new popup component.
+  let filterBarEl: HTMLElement | undefined
+  function focusInput (col: 'admin' | 'target' | 'action' | 'time'): void {
+    if (filterBarEl == null) return
+    const selector = {
+      admin: 'input.audit-filter-admin',
+      target: 'input.audit-filter-target',
+      // DropdownLabelsIntl renders as a Button; pick the button inside the
+      // wrapper that owns the action multi-select.
+      action: '.audit-filter-action-wrap button',
+      time: 'input.audit-filter-from'
+    }[col]
+    const el = filterBarEl.querySelector<HTMLElement>(selector)
+    if (el == null) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    setTimeout(() => {
+      el.focus()
+      if (el instanceof HTMLInputElement) el.select()
+    }, 200)
+  }
+
   // Svelte 4 reactivity caveat: a plain helper that reads `sort` via
   // closure is not re-evaluated by Svelte when sort changes, so the
   // header arrow stayed frozen on its first-render value (the reviewer
@@ -173,21 +197,21 @@
           <!-- V30 — Filter bar. Three logical groups: who/what, date
                range, and the apply/reset controls. Each control is
                labelled so the admin can see what column it filters. -->
-          <div class="audit-filter-bar">
+          <div class="audit-filter-bar" bind:this={filterBarEl}>
             <div class="audit-filter-group">
-              <label class="audit-filter-field">
+              <label class="audit-filter-field" data-filter-col="admin">
                 <span class="audit-filter-label">Admin (name or email)</span>
-                <input class="audit-filter-text" type="text" bind:value={filterAdminName}
+                <input class="audit-filter-text audit-filter-admin" type="text" bind:value={filterAdminName}
                        placeholder="e.g. Jane or jane@example.com"
                        on:keydown={(ev) => { if (ev.key === 'Enter') void reload(true) }} />
               </label>
-              <label class="audit-filter-field">
+              <label class="audit-filter-field" data-filter-col="target">
                 <span class="audit-filter-label">Target (user or workspace)</span>
-                <input class="audit-filter-text" type="text" bind:value={filterTargetName}
+                <input class="audit-filter-text audit-filter-target" type="text" bind:value={filterTargetName}
                        placeholder="e.g. Acme or acme.huly"
                        on:keydown={(ev) => { if (ev.key === 'Enter') void reload(true) }} />
               </label>
-              <div class="audit-filter-field">
+              <div class="audit-filter-field audit-filter-action-wrap" data-filter-col="action">
                 <span class="audit-filter-label">Actions</span>
                 <DropdownLabelsIntl
                   kind="regular"
@@ -204,12 +228,12 @@
             </div>
 
             <div class="audit-filter-group">
-              <div class="audit-filter-field audit-filter-field--inline">
+              <div class="audit-filter-field audit-filter-field--inline" data-filter-col="time">
                 <span class="audit-filter-label">Date range</span>
                 <div class="audit-filter-date-row">
-                  <input class="audit-filter-date" type="date" bind:value={filterFrom} aria-label="From date" />
+                  <input class="audit-filter-date audit-filter-from" type="date" bind:value={filterFrom} aria-label="From date" />
                   <span class="audit-filter-date-sep">→</span>
-                  <input class="audit-filter-date" type="date" bind:value={filterTo} aria-label="To date" />
+                  <input class="audit-filter-date audit-filter-to" type="date" bind:value={filterTo} aria-label="To date" />
                 </div>
               </div>
             </div>
@@ -233,24 +257,56 @@
             <thead>
               <tr>
                 <th scope="col" class="sortable" class:is-sorted={sort.field === 'time'}>
-                  <button type="button" class="sort-btn" on:click={() => setSort('time')}>
-                    {#if sort.field === 'time'}<span class="sort-arrow">{arrowFor('time')}</span>{/if}Time
-                  </button>
+                  <div class="th-row">
+                    <button type="button" class="sort-btn" on:click={() => setSort('time')}>
+                      {#if sort.field === 'time'}<span class="sort-arrow">{arrowFor('time')}</span>{/if}Time
+                    </button>
+                    <button class="filter-btn"
+                            class:active={filterFrom !== '' || filterTo !== ''}
+                            title="Filter by date range"
+                            on:click|stopPropagation={() => focusInput('time')}>
+                      <Icon icon={IconFilter} size={'x-small'} />
+                    </button>
+                  </div>
                 </th>
                 <th scope="col" class="sortable" class:is-sorted={sort.field === 'admin'}>
-                  <button type="button" class="sort-btn" on:click={() => setSort('admin')}>
-                    {#if sort.field === 'admin'}<span class="sort-arrow">{arrowFor('admin')}</span>{/if}Admin
-                  </button>
+                  <div class="th-row">
+                    <button type="button" class="sort-btn" on:click={() => setSort('admin')}>
+                      {#if sort.field === 'admin'}<span class="sort-arrow">{arrowFor('admin')}</span>{/if}Admin
+                    </button>
+                    <button class="filter-btn"
+                            class:active={filterAdminName.trim() !== ''}
+                            title="Filter by admin name or email"
+                            on:click|stopPropagation={() => focusInput('admin')}>
+                      <Icon icon={IconFilter} size={'x-small'} />
+                    </button>
+                  </div>
                 </th>
                 <th scope="col" class="sortable" class:is-sorted={sort.field === 'action'}>
-                  <button type="button" class="sort-btn" on:click={() => setSort('action')}>
-                    {#if sort.field === 'action'}<span class="sort-arrow">{arrowFor('action')}</span>{/if}Action
-                  </button>
+                  <div class="th-row">
+                    <button type="button" class="sort-btn" on:click={() => setSort('action')}>
+                      {#if sort.field === 'action'}<span class="sort-arrow">{arrowFor('action')}</span>{/if}Action
+                    </button>
+                    <button class="filter-btn"
+                            class:active={selectedActionIds.length > 0}
+                            title="Filter by action"
+                            on:click|stopPropagation={() => focusInput('action')}>
+                      <Icon icon={IconFilter} size={'x-small'} />
+                    </button>
+                  </div>
                 </th>
                 <th scope="col" class="sortable" class:is-sorted={sort.field === 'target'}>
-                  <button type="button" class="sort-btn" on:click={() => setSort('target')}>
-                    {#if sort.field === 'target'}<span class="sort-arrow">{arrowFor('target')}</span>{/if}Target
-                  </button>
+                  <div class="th-row">
+                    <button type="button" class="sort-btn" on:click={() => setSort('target')}>
+                      {#if sort.field === 'target'}<span class="sort-arrow">{arrowFor('target')}</span>{/if}Target
+                    </button>
+                    <button class="filter-btn"
+                            class:active={filterTargetName.trim() !== ''}
+                            title="Filter by target user or workspace"
+                            on:click|stopPropagation={() => focusInput('target')}>
+                      <Icon icon={IconFilter} size={'x-small'} />
+                    </button>
+                  </div>
                 </th>
                 <th scope="col">Details</th>
               </tr>
@@ -440,8 +496,19 @@
     }
   }
 
-  .sort-btn {
+  // V31 — Header row container so the sort button and the per-column
+  // filter button can sit side-by-side. Sort button claims slack so the
+  // header text stays left-aligned with body cells; filter button is
+  // narrow + right-flush.
+  .th-row {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
     width: 100%;
+  }
+
+  .sort-btn {
+    flex: 1;
     text-align: left;
     background: transparent;
     border: 0;
@@ -469,6 +536,41 @@
     width: 0.75rem;
     color: var(--theme-caption-color);
     font-weight: 700;
+  }
+
+  // Per-column filter button — mirrors the AdminUsersTable .filter-btn
+  // (transparent, quiet at 0.35 opacity until hover/active). Active
+  // state matches the Users page (#2563eb on translucent blue).
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 0;
+    padding: 0.1rem 0.25rem;
+    margin-right: 0.4rem;
+    cursor: pointer;
+    color: var(--theme-darker-color);
+    border-radius: 0.25rem;
+    opacity: 0.35;
+    transition: opacity 80ms ease, color 80ms ease, background 80ms ease;
+
+    &:hover {
+      opacity: 1;
+      color: var(--theme-caption-color);
+      background: var(--theme-divider-color);
+    }
+    &:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: -2px;
+      opacity: 1;
+    }
+
+    &.active {
+      opacity: 1;
+      color: #2563eb;
+      background: rgba(96, 165, 250, 0.18);
+    }
   }
 
   .audit-pager {
