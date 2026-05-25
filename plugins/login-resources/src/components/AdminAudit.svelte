@@ -3,7 +3,7 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { Breadcrumb, Button, EditBox, Header, Scroller } from '@hcengineering/ui'
+  import { Breadcrumb, Button, Header, Scroller } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getAccountClient } from '../utils'
   import type { AuditEntry, ListAuditAdminParams } from '@hcengineering/account-client'
@@ -59,12 +59,16 @@
         <div class="hulyComponent-content">
 
           <div class="audit-filter-bar">
-            <EditBox bind:value={filterAdmin} placeholder={getEmbeddedLabel('Admin UUID')} kind="editbox" />
-            <EditBox bind:value={filterAction} placeholder={getEmbeddedLabel('Action (e.g. disable, archive_workspace)')} kind="editbox" />
-            <EditBox bind:value={filterTargetAcc} placeholder={getEmbeddedLabel('Target account UUID')} kind="editbox" />
-            <EditBox bind:value={filterTargetWs} placeholder={getEmbeddedLabel('Target workspace UUID')} kind="editbox" />
-            <input type="date" bind:value={filterFrom} />
-            <input type="date" bind:value={filterTo} />
+            <input class="audit-filter-text" type="text" bind:value={filterAdmin}
+                   placeholder="Admin UUID" />
+            <input class="audit-filter-text" type="text" bind:value={filterAction}
+                   placeholder="Action (disable, archive_workspace, …)" />
+            <input class="audit-filter-text" type="text" bind:value={filterTargetAcc}
+                   placeholder="Target account UUID" />
+            <input class="audit-filter-text" type="text" bind:value={filterTargetWs}
+                   placeholder="Target workspace UUID" />
+            <input class="audit-filter-date" type="date" bind:value={filterFrom} aria-label="From date" />
+            <input class="audit-filter-date" type="date" bind:value={filterTo} aria-label="To date" />
             <Button kind="primary" label={getEmbeddedLabel('Apply')} on:click={() => { void reload(true) }} />
           </div>
 
@@ -119,14 +123,28 @@
     gap: 0.4rem;
     align-items: center;
     margin-bottom: var(--spacing-2);
+  }
 
-    input[type="date"] {
-      padding: 0.35rem 0.5rem;
-      border: 1px solid var(--theme-divider-color);
-      border-radius: 0.35rem;
-      background: var(--theme-bg-color);
-      color: var(--theme-content-color);
+  .audit-filter-text,
+  .audit-filter-date {
+    flex: 1 1 14rem;
+    min-width: 0;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.35rem;
+    background: var(--theme-bg-color);
+    color: var(--theme-content-color);
+    font-size: 0.85rem;
+    font-family: inherit;
+
+    &:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: -2px;
     }
+  }
+
+  .audit-filter-date {
+    flex: 0 0 11rem;
   }
 
   .audit-table {

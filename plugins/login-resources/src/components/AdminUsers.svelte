@@ -487,9 +487,19 @@
               <Button label={getEmbeddedLabel('Export CSV')} kind={'regular'} size={'medium'} on:click={() => {
                 const tok = getMetadata(presentation.metadata.Token) ?? ''
                 const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
-                const filterB64 = btoa(JSON.stringify(columnFilters))
-                const sortB64 = btoa(JSON.stringify(sort))
-                window.open(`${accountsUrl.replace(/\/$/, '')}/api/v1/admin/export/accounts.csv?token=${encodeURIComponent(tok)}&filter=${filterB64}&sort=${sortB64}`)
+                // Send the *merged* admin-list params (without pagination) so
+                // the server can apply the same filter+sort the user sees.
+                const merged = mergeColumnFilters(columnFilters)
+                const params: Record<string, any> = {
+                  search: filter.search,
+                  authMethod: filter.authMethod,
+                  status: filter.status,
+                  workspaceUuidsIn: filter.workspaceUuids,
+                  sort,
+                  ...merged
+                }
+                const filterB64 = btoa(unescape(encodeURIComponent(JSON.stringify(params))))
+                window.open(`${accountsUrl.replace(/\/$/, '')}/api/v1/admin/export/accounts.csv?token=${encodeURIComponent(tok)}&filter=${encodeURIComponent(filterB64)}`)
               }} />
               <Button label={getEmbeddedLabel('Add user')} kind={'primary'} on:click={openCreateAccount} />
             {/if}

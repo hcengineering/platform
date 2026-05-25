@@ -67,7 +67,7 @@
       on:selected={(e) => { onApply(e.detail) }}
     />
   {/if}
-  <Button kind={'ghost'} size={'small'} label={getEmbeddedLabel('Save as preset…')} on:click={onSaveCurrent} />
+  <Button kind={'regular'} size={'small'} label={getEmbeddedLabel('Save as preset…')} on:click={onSaveCurrent} />
   {#if presetNames.length > 0}
     <ButtonMenu
       items={presetNames.map((name) => ({ id: name, label: getEmbeddedLabel(`Delete "${name}"`) }))}

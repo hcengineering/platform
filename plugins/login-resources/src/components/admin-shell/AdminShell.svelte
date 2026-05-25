@@ -115,4 +115,13 @@
     border-top: 1px solid var(--theme-navpanel-divider);
     padding: 0.25rem 0;
   }
+
+  /* Stack the panel title + GlobalSearch vertically; default Huly
+     hulyNavPanel-header is a flex-row which makes the search trigger
+     collide with the 2-line "Admin panel" title at narrow widths. */
+  :global(.hulyNavPanel-header) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.5rem;
+  }
 </style>

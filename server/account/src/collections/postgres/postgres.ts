@@ -611,9 +611,9 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
         tp.first_name AS target_first_name, tp.last_name AS target_last_name,
         w.name AS target_ws_name, w.url AS target_ws_url
       FROM ${tbl} al
-      LEFT JOIN ${ns}.person ap ON ap.uuid = al.admin_account
-      LEFT JOIN ${ns}.person tp ON tp.uuid = al.target_account
-      LEFT JOIN ${ns}.workspace w ON w.uuid = al.workspace_uuid
+      LEFT JOIN ${ns}.person ap ON ap.uuid::TEXT = al.admin_account
+      LEFT JOIN ${ns}.person tp ON tp.uuid::TEXT = al.target_account
+      LEFT JOIN ${ns}.workspace w ON w.uuid::TEXT = al.workspace_uuid
       WHERE ${where}
       ORDER BY al.ts_ms DESC, al.id DESC
       LIMIT ${limitPh}

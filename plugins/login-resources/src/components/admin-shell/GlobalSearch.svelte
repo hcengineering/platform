@@ -27,7 +27,12 @@
     }
   }
 
+  // Svelte 4 static dependency tracking only sees identifiers used directly
+  // inside the reactive block — `query` is otherwise hidden behind the
+  // runSearch() closure, so the block would never re-run on input. Read
+  // `query` explicitly so the block is invalidated on every keystroke.
   $: {
+    void query
     if (debounceTimer != null) clearTimeout(debounceTimer)
     debounceTimer = setTimeout(() => { void runSearch() }, 300)
   }

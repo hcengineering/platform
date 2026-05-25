@@ -466,6 +466,20 @@ export function serveAccount (
     }).join(',') + '\n'
   }
 
+  // Decode the base64-utf8 JSON filter blob sent by the admin UI. Returns
+  // an empty object on malformed input so a corrupted query string can't
+  // crash the export route (export then degrades to "all rows").
+  function decodeFilterParam (raw: unknown): Record<string, any> {
+    if (typeof raw !== 'string' || raw === '') return {}
+    try {
+      const json = Buffer.from(raw, 'base64').toString('utf-8')
+      const obj = JSON.parse(json)
+      return (obj != null && typeof obj === 'object') ? obj : {}
+    } catch {
+      return {}
+    }
+  }
+
   router.get('/api/v1/admin/export/accounts.csv', async (ctx) => {
     const token = (ctx.query.token as string) ?? extractToken(ctx.request.headers) ?? ''
     const [db] = await accountsDb
@@ -477,6 +491,8 @@ export function serveAccount (
       ctx.res.end('Forbidden')
       return
     }
+    // Respect the same filter+sort the user sees in the admin UI.
+    const filterObj = decodeFilterParam(ctx.query.filter)
     ctx.res.writeHead(200, {
       'Content-Type': 'text/csv; charset=utf-8',
       'Content-Disposition': `attachment; filename="huly-users-${Date.now()}.csv"`,
@@ -488,6 +504,7 @@ export function serveAccount (
     let offset = 0
     for (;;) {
       const { accounts } = await listAccountsAdmin(childCtx, db, null, token, {
+        ...filterObj,
         pagination: { limit: pageSize, offset }
       })
       for (const a of accounts) {

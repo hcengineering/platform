@@ -219,6 +219,43 @@
 
   const token: string = getMetadata(presentation.metadata.Token) ?? ''
 
+  function csvEscape (v: any): string {
+    const s = v == null ? '' : String(v)
+    return (s.includes(',') || s.includes('"') || s.includes('\n'))
+      ? '"' + s.replace(/"/g, '""') + '"'
+      : s
+  }
+
+  // Export the *currently filtered+sorted* list as a CSV file. Generated
+  // client-side because workspace list is already fully loaded — keeps
+  // filter/sort parity with what the user sees, no server round-trip.
+  function exportWorkspacesCsv (): void {
+    const cols = ['uuid', 'name', 'url', 'mode', 'region', 'version',
+      'createdOn', 'lastVisit', 'backupSizeMB', 'lastBackupAt']
+    const header = cols.join(',') + '\n'
+    const rows = sortedWorkspaces.map((w) => [
+      w.uuid,
+      (w as any).name ?? '',
+      (w as any).url ?? '',
+      w.mode ?? '',
+      (w as any).region ?? '',
+      ((w as any).versionMajor != null) ? `${(w as any).versionMajor}.${(w as any).versionMinor}.${(w as any).versionPatch}` : '',
+      w.createdOn != null ? new Date(w.createdOn).toISOString() : '',
+      w.lastVisit != null ? new Date(w.lastVisit).toISOString() : '',
+      Math.round(getBackupSize(w)),
+      w.backupInfo?.lastBackup != null ? new Date(w.backupInfo.lastBackup).toISOString() : ''
+    ].map(csvEscape).join(',') + '\n').join('')
+    const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `huly-workspaces-${Date.now()}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   const endpoint = getMetadata(presentation.metadata.StatsUrl)
 
   async function fetchStats (time: number): Promise<void> {
@@ -534,13 +571,7 @@
               kind={'regular'}
               size={'small'}
               label={getEmbeddedLabel('Export CSV')}
-              on:click={() => {
-                const tok = getMetadata(presentation.metadata.Token) ?? ''
-                const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
-                const filterB64 = btoa(JSON.stringify(columnFilters))
-                const sortB64 = btoa(JSON.stringify({ field: sortField, direction: sortDir }))
-                window.open(`${accountsUrl.replace(/\/$/, '')}/api/v1/admin/export/accounts.csv?token=${encodeURIComponent(tok)}&filter=${filterB64}&sort=${sortB64}`)
-              }}
+              on:click={exportWorkspacesCsv}
             />
             <Button
               kind={'regular'}
@@ -872,7 +903,10 @@
     width: 100%;
     box-sizing: border-box;
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    // Auto-wrap stat tiles instead of forcing 6 columns; under ~1200px the
+    // fixed 6-col grid squeezes 4-digit numbers into 2 lines and crushes
+    // long labels (e.g. "Long-running candidates").
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
     gap: var(--spacing-2);
   }
 
