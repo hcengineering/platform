@@ -630,7 +630,26 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
     let clientFilterSpaces: Set<Ref<Space>> | undefined
 
-    if (!isSystem(account, ctx) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
+    // When a class opts into collaborator-grants-read security AND the caller is a Guest/ReadOnlyGuest,
+    // we deliberately skip the middleware-level space filter. The Postgres adapter's `collabRes`
+    // OR-branch (see postgres/src/storage.ts, getSecurityClause) joins Collaborator records into the
+    // visibility check, so Guests can read individual docs they were added to as Collaborator even
+    // when they are not members of the owning Space. Filtering by space here would strip those docs
+    // before the adapter ever sees the query.
+    const collabSec =
+      domain !== DOMAIN_MODEL
+        ? getClassCollaborators(this.context.modelDb, this.context.hierarchy, _class)
+        : undefined
+    const collabReadBypass =
+      (collabSec?.provideSecurity === true || collabSec?.provideAttachedSecurity === true) &&
+      [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role)
+
+    if (
+      !isSystem(account, ctx) &&
+      account.role !== AccountRole.DocGuest &&
+      domain !== DOMAIN_MODEL &&
+      !collabReadBypass
+    ) {
       if (!isOwner(account, ctx) || !isSpace || !showArchived) {
         if (newQuery[field] !== undefined) {
           const res = await this.mergeQuery(ctx, account, newQuery[field], domain, isSpace, showArchived)
