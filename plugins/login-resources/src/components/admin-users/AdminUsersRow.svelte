@@ -91,8 +91,8 @@
     {/if}
   </div>
   <div class="cell cell-ws">{account.workspaceCount}</div>
-  <div class="cell cell-activity"
-       title={account.lastActivityAt != null ? new Date(account.lastActivityAt).toLocaleString() : ''}>
+  <div class="cell cell-activity last-activity-cell"
+       title={account.lastActivityAt != null ? new Date(account.lastActivityAt).toISOString() : 'Never'}>
     {formatLastActivity(account.lastActivityAt)}
   </div>
   <div class="cell cell-status">
@@ -266,6 +266,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
     font-variant-numeric: tabular-nums;
+  }
+
+  .last-activity-cell {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 12rem;
   }
 
   .cell-status {
