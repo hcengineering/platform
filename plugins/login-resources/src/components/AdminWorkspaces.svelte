@@ -38,7 +38,7 @@
     ticker
   } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
-  import { getAllWorkspaces, getRegionInfo, performWorkspaceOperation } from '../utils'
+  import { getAllWorkspaces, getRegionInfo, goTo, performWorkspaceOperation } from '../utils'
   import AdminShell from './admin-shell/AdminShell.svelte'
   import FilterPresetMenu from './admin-shell/FilterPresetMenu.svelte'
   import AdminWorkspaceDrawer from './admin-workspaces/AdminWorkspaceDrawer.svelte'
@@ -506,6 +506,15 @@
   // active workspaces in the instance. Both mass actions on this page
   // operate on the full filtered set, so no-filter = universe = dangerous.
   $: workspacesDangerousScope = activeFilterKeys.length === 0
+
+  // Issue 17: Add-workspace shortcut for admins. The actual creation
+  // flow already exists at /login/createWorkspace (CreateWorkspace.svelte);
+  // the button just jumps there. An inline popup would be nicer but
+  // duplicates the multi-step creation form, so reuse is the safer
+  // minimum-diff option.
+  function openCreateWorkspace (): void {
+    goTo('createWorkspace')
+  }
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -615,13 +624,13 @@
           </div>
           <div class="ws-list-toolbar-actions">
             <Button
-              kind={'regular'}
+              kind={'ghost'}
               size={'small'}
               label={getEmbeddedLabel('Export CSV')}
               on:click={exportWorkspacesCsv}
             />
             <Button
-              kind={'regular'}
+              kind={'ghost'}
               size={'small'}
               label={getEmbeddedLabel('Top 10 by storage')}
               disabled={totalStorageMb === 0}
@@ -642,6 +651,14 @@
                   sortDir = p.sort.direction ?? 'asc'
                 }
               }}
+            />
+            <!-- Issue 17: primary "Add workspace" shortcut; navigates
+                 to the existing /login/createWorkspace flow. -->
+            <Button
+              kind={'primary'}
+              size={'small'}
+              label={getEmbeddedLabel('Add workspace')}
+              on:click={openCreateWorkspace}
             />
             {#if selectedWorkspaceUuids.size > 0}
               <span class="ws-selected-count">
