@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Space } from '@hcengineering/core'
+  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { Project } from '@hcengineering/tracker'
   import { IconWithEmoji } from '@hcengineering/presentation'
@@ -33,6 +33,14 @@
 
   let specials: SpecialNavModel[] = []
 
+  // Hide non-Issues specials (Components / Milestones / Templates) on
+  // collab-only projects — the user has read on individual issues via
+  // Collaborator records but no membership in the project itself, so
+  // those sub-views would be empty and confusing. The Issues sub-view
+  // stays because the postgres adapter's collab-OR-branch surfaces the
+  // doc-level visibility there.
+  $: isCollabOnlyProject = !space.members.includes(getCurrentAccount().uuid)
+
   async function updateSpecials (model: SpacesNavModel, space: Project): Promise<void> {
     const newSpecials: SpecialNavModel[] = []
     for (const sp of model.specials ?? []) {
@@ -42,6 +50,12 @@
         if (visibleIf !== undefined) {
           shouldAdd = await visibleIf([space])
         }
+      }
+      // Filter to Issues only when the caller is not a member; everything
+      // else (Components / Milestones / Templates) would render as an
+      // empty list and clutter the tree.
+      if (shouldAdd && isCollabOnlyProject && sp.id !== 'issues') {
+        shouldAdd = false
       }
       if (shouldAdd) {
         newSpecials.push(sp)
