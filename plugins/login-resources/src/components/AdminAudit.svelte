@@ -127,7 +127,11 @@
         sort,
         pagination: resetCursor ? { limit: 50 } : { cursor: nextCursor ?? undefined, limit: 50 }
       }
-      const res = await getAccountClient(null).listAuditAdmin(params)
+      // Pass the default token — the server-side `listAuditAdmin` requires
+      // the admin extra claim (assertAdmin) that the logged-in admin's token
+      // carries. Passing `null` here sends an unauthenticated request and
+      // every call returns Forbidden, leaving the table permanently empty.
+      const res = await getAccountClient().listAuditAdmin(params)
       entries = resetCursor ? res.entries : [...entries, ...res.entries]
       nextCursor = res.nextCursor
     } finally {
