@@ -701,6 +701,16 @@
             </div>
           {/if}
 
+          <BulkActionBar
+            count={selectedUuids.size}
+            on:deselect-all={clearSel}
+            on:add={onBulkAdd}
+            on:remove={onBulkRemove}
+            on:disable={onBulkDisable}
+            on:enable={onBulkEnable}
+            on:reset={onBulkReset}
+          />
+
           <AdminUsersTable
             {accounts}
             {sort}
@@ -718,16 +728,6 @@
           {#if total > limit}
             <AdminUsersPagination {total} {offset} {limit} on:page={onPageChange} />
           {/if}
-
-          <BulkActionBar
-            count={selectedUuids.size}
-            on:deselect-all={clearSel}
-            on:add={onBulkAdd}
-            on:remove={onBulkRemove}
-            on:disable={onBulkDisable}
-            on:enable={onBulkEnable}
-            on:reset={onBulkReset}
-          />
         </div>
       </Scroller>
     </div>

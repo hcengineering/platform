@@ -31,22 +31,24 @@
 
 <style lang="scss">
   /*
-   * Sticky bulk-action bar pinned to the bottom of the scroll container.
-   * Hidden (display:none) when no rows are selected so it does not steal
-   * keyboard focus or screen-reader narration during single-row workflows.
+   * Sticky bulk-action bar pinned to the top of the scroll container, just
+   * above the table — follows the standard data-grid convention rather than
+   * the bottom-toolbar pattern. Hidden (display:none) when no rows are
+   * selected so it does not steal keyboard focus or screen-reader narration
+   * during single-row workflows.
    */
   .bar {
     position: sticky;
-    bottom: 0;
+    top: 0;
     display: flex;
     align-items: center;
     gap: 0.75rem;
     padding: 0.6rem 1rem;
-    margin-top: var(--spacing-2);
+    margin-bottom: var(--spacing-2);
     background: var(--theme-popup-color);
     border: 1px solid var(--theme-divider-color);
     border-radius: var(--small-BorderRadius);
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     width: 100%;
     max-width: 76rem;
     z-index: 5;
