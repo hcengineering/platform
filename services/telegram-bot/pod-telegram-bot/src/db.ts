@@ -15,10 +15,11 @@
 
 import postgres from 'postgres'
 import { AccountUuid, Ref, WorkspaceUuid } from '@hcengineering/core'
+import { ChunterSpace } from '@hcengineering/chunter'
 import { ActivityMessage } from '@hcengineering/activity'
 
 import config from './config'
-import { ChannelId, ChannelRecord, MessageRecord, OtpRecord, ReplyRecord } from './types'
+import { ChannelId, ChannelRecord, ForumTopicRecord, MessageRecord, OtpRecord, ReplyRecord } from './types'
 
 export async function getDb (): Promise<PostgresDB> {
   const sql = postgres(config.DbUrl, {
@@ -36,6 +37,7 @@ const otpTable = 'telegram_bot.otp'
 const messagesTable = 'telegram_bot.messages'
 const channelsTable = 'telegram_bot.channels'
 const repliesTable = 'telegram_bot.replies'
+const forumTopicsTable = 'telegram_bot.forum_topics'
 
 type DBFlavor = 'cockroach' | 'postgres' | 'unknown'
 
@@ -73,7 +75,7 @@ export class PostgresDB {
 
     const sql = `
         CREATE SCHEMA IF NOT EXISTS telegram_bot;
-        
+
         CREATE TABLE IF NOT EXISTS ${otpTable} (
           telegram_id INT8 NOT NULL,
           telegram_username TEXT NOT NULL,
@@ -82,7 +84,7 @@ export class PostgresDB {
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           PRIMARY KEY (code)
         );
-        
+
         CREATE TABLE IF NOT EXISTS ${messagesTable} (
           message_id VARCHAR(255) NOT NULL,
           workspace UUID NOT NULL,
@@ -107,6 +109,17 @@ export class PostgresDB {
           telegram_user_id INT8 NOT NULL,
           reply_id INT8 NOT NULL,
           PRIMARY KEY (message_id, telegram_user_id, reply_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS ${forumTopicsTable} (
+          workspace UUID NOT NULL,
+          account UUID NOT NULL,
+          channel_id VARCHAR(255) NOT NULL,
+          forum_chat_id INT8 NOT NULL,
+          topic_id INT8 NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          PRIMARY KEY (workspace, account, channel_id),
+          UNIQUE (forum_chat_id, topic_id)
         );
   `
 
@@ -217,6 +230,44 @@ export class PostgresDB {
     return res.map(toReplyRecord)[0]
   }
 
+  async getForumTopic (
+    workspace: WorkspaceUuid,
+    account: AccountUuid,
+    channelId: Ref<ChunterSpace>
+  ): Promise<ForumTopicRecord | undefined> {
+    const sql = `
+      SELECT * FROM ${forumTopicsTable}
+      WHERE workspace = $1::uuid AND account = $2::uuid AND channel_id = $3::varchar
+      LIMIT 1`
+    const res = await this.client.unsafe(sql, [workspace, account, channelId])
+    return res.map(toForumTopicRecord)[0]
+  }
+
+  async insertForumTopic (record: Omit<ForumTopicRecord, 'createdAt'>): Promise<void> {
+    const sql = `
+      INSERT INTO ${forumTopicsTable} (
+        workspace, account, channel_id, forum_chat_id, topic_id
+      )
+      VALUES ($1::uuid, $2::uuid, $3::varchar, $4::int8, $5::int8)
+      ON CONFLICT (workspace, account, channel_id) DO NOTHING`
+    await this.client.unsafe(sql, [
+      record.workspace,
+      record.account,
+      record.channelId,
+      record.forumChatId,
+      record.topicId
+    ])
+  }
+
+  async getForumTopicByThread (forumChatId: number, topicId: number): Promise<ForumTopicRecord | undefined> {
+    const sql = `
+      SELECT * FROM ${forumTopicsTable}
+      WHERE forum_chat_id = $1::int8 AND topic_id = $2::int8
+      LIMIT 1`
+    const res = await this.client.unsafe(sql, [forumChatId, topicId])
+    return res.map(toForumTopicRecord)[0]
+  }
+
   async close (): Promise<void> {
     await this.client.end({ timeout: 0 })
   }
@@ -257,5 +308,16 @@ function toMessageRecord (raw: any): MessageRecord {
     workspace: raw.workspace,
     account: raw.account,
     telegramMessageId: Number(raw.telegram_message_id)
+  }
+}
+
+function toForumTopicRecord (raw: any): ForumTopicRecord {
+  return {
+    workspace: raw.workspace,
+    account: raw.account,
+    channelId: raw.channel_id,
+    forumChatId: Number(raw.forum_chat_id),
+    topicId: Number(raw.topic_id),
+    createdAt: new Date(raw.created_at)
   }
 }
