@@ -2903,13 +2903,10 @@ export async function deleteAccount (
   token: string,
   params: { uuid?: AccountUuid }
 ): Promise<void> {
-  const { extra } = decodeTokenVerbose(ctx, token)
-
-  const isAdmin = extra?.admin === 'true'
-
-  if (!isAdmin) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
+  // Token-version-aware admin check: rejects tokens that were minted
+  // before the caller's `tokenVersion` was bumped (e.g. caller's own
+  // privileges were revoked mid-session).
+  const adminUuid = await requireAdmin(ctx, db, token)
 
   const { uuid } = params
 
@@ -2917,11 +2914,37 @@ export async function deleteAccount (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
+  // Two safety rails consistent with `disableAccount`:
+  //   1. cannot_self_delete — admin can't lock themselves out by deleting
+  //      their own row mid-session.
+  //   2. last_admin — at least one active admin (by ADMIN_EMAILS membership)
+  //      must remain so the panel itself stays reachable.
+  if (adminUuid === uuid) {
+    throw new PlatformError(new Status(Severity.ERROR, 'cannot_self_delete' as any, {}))
+  }
+
+  const socials = await db.socialId.find({ personUuid: uuid })
+  const targetEmail = socials.find((s) => s.type === SocialIdType.EMAIL)?.value
+  if (targetEmail != null && (await isLastAdmin(db, targetEmail))) {
+    throw new PlatformError(new Status(Severity.ERROR, 'last_admin' as any, {}))
+  }
+
   await db.deleteAccount(uuid)
   await db.accountEvent.insertOne({
     accountUuid: uuid,
     eventType: AccountEventType.ACCOUNT_DELETED,
     time: Date.now()
+  })
+
+  // Append to admin_audit_log so the deletion shows up in Audit log
+  // alongside disable / enable / role-change rows. We log AFTER the
+  // delete completes so a failed cascade does not leave a phantom entry.
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid as AccountUuid,
+    targetAccount: uuid,
+    action: 'delete_account',
+    workspaceUuid: null,
+    details: { targetEmail: targetEmail ?? null }
   })
 }
 

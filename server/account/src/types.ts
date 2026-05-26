@@ -82,6 +82,7 @@ export type AdminAuditAction =
   | 'disable'
   | 'enable'
   | 'create_account'         // new: createAccountAdmin endpoint
+  | 'delete_account'         // new: hard-delete via deleteAccount (irreversible)
   | 'add_workspace_member'   // new: addWorkspaceMember + bulkAddToWorkspace
   // Workspace-operation audit entries (V28 — targetAccount is null for these)
   | 'archive_workspace'
