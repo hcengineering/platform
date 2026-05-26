@@ -2923,6 +2923,15 @@ export async function deleteAccount (
     throw new PlatformError(new Status(Severity.ERROR, 'cannot_self_delete' as any, {}))
   }
 
+  // Existence check BEFORE destructive work or audit insert: a bad UUID
+  // must surface as AccountNotFound to the caller rather than as a
+  // DB-layer cascade failure, a phantom ACCOUNT_DELETED event, or an
+  // orphan admin_audit_log row referencing a never-existed account.
+  const targetAccount = await db.account.findOne({ uuid })
+  if (targetAccount == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+
   const socials = await db.socialId.find({ personUuid: uuid })
   const targetEmail = socials.find((s) => s.type === SocialIdType.EMAIL)?.value
   if (targetEmail != null && (await isLastAdmin(db, targetEmail))) {

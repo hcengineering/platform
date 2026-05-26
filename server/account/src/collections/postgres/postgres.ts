@@ -1317,6 +1317,15 @@ export class PostgresAccountDB implements AccountDB {
       // Unassign from all workspaces
       await rTx`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE account_uuid = ${accountUuid}`
 
+      // V19 subscription rows + V24 workspace_permissions rows both carry
+      // a NO-CASCADE FK on account(uuid). Without explicit cleanup the
+      // final DELETE on account hits a FK violation when the target
+      // owned a billing subscription or had any per-workspace permission
+      // grant. Delete them in-transaction so the cascade is atomic with
+      // the rest of the account teardown.
+      await this.subscription.deleteMany({ accountUuid }, rTx)
+      await this.workspacePermission.deleteMany({ accountUuid }, rTx)
+
       // This removes the account along with the password if any
       await this.account.deleteMany({ uuid: accountUuid }, rTx)
     })
