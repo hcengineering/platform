@@ -48,7 +48,12 @@
   let shownSpaces: Space[] = []
 
   const adminUser = isAdminUser()
-  let activeClasses: Ref<typeof core.class.Space>[] = []
+
+  $: activeClasses = (model
+    ? Array.from(new Set(getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c)))).filter(
+        (it) => !hierarchy.isMixin(it)
+      )
+    : []) as Ref<typeof core.class.Space>[]
 
   $: spaces = adminUser || collabSpaces.length === 0
     ? memberSpaces
@@ -57,29 +62,24 @@
         return [...memberSpaces, ...collabSpaces.filter((s) => !seen.has(s._id))]
       })()
 
-  $: if (model) {
-    const classes = Array.from(new Set(getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c)))).filter(
-      (it) => !hierarchy.isMixin(it)
+  $: if (model && activeClasses.length > 0) {
+    const classes = activeClasses
+    query.query<Space>(
+      classes.length === 1 ? classes[0] : core.class.Space,
+      !adminUser
+        ? {
+            ...(classes.length === 1 ? {} : { _class: { $in: classes } }),
+            members: getCurrentAccount().uuid
+          }
+        : { ...(classes.length === 1 ? {} : { _class: { $in: classes } }) },
+      (result) => {
+        memberSpaces = result
+      },
+      { sort: { name: SortingOrder.Ascending } }
     )
-    activeClasses = classes as Ref<typeof core.class.Space>[]
-    if (classes.length > 0) {
-      query.query<Space>(
-        classes.length === 1 ? classes[0] : core.class.Space,
-        !adminUser
-          ? {
-              ...(classes.length === 1 ? {} : { _class: { $in: classes } }),
-              members: getCurrentAccount().uuid
-            }
-          : { ...(classes.length === 1 ? {} : { _class: { $in: classes } }) },
-        (result) => {
-          memberSpaces = result
-        },
-        { sort: { name: SortingOrder.Ascending } }
-      )
-    } else {
-      query.unsubscribe()
-      memberSpaces = []
-    }
+  } else if (model) {
+    query.unsubscribe()
+    memberSpaces = []
   }
 
   // Track every Space that hosts a Collaborator record naming the current account.
