@@ -122,7 +122,18 @@
           targetNameOrUrl: filterTargetName.trim() !== '' ? filterTargetName.trim() : undefined,
           actionIn: selectedActionIds.length > 0 ? selectedActionIds : undefined,
           from: filterFrom !== '' ? new Date(filterFrom).getTime() : undefined,
-          to: filterTo !== '' ? new Date(filterTo).getTime() : undefined
+          // `filterTo` is a yyyy-mm-dd string from the date input. `new Date(str)`
+          // parses it as UTC midnight (00:00:00.000) of that day, which then
+          // excludes every event later that day — i.e. selecting "Last 3 days"
+          // on May 26 with the date input at 05/26 hides every audit entry
+          // logged between 00:00 and "now" on 05/26. Anchor `to` to the end of
+          // the local day so the picker behaves inclusively (the matching
+          // server-side `to` is treated as a `<=` bound).
+          to: filterTo !== '' ? (() => {
+            const d = new Date(filterTo)
+            d.setHours(23, 59, 59, 999)
+            return d.getTime()
+          })() : undefined
         },
         sort,
         pagination: resetCursor ? { limit: 50 } : { cursor: nextCursor ?? undefined, limit: 50 }

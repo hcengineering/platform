@@ -64,6 +64,21 @@
   let selectedUuid: string | null = null
   let errorMessage: string | null = null
 
+  // Decode the calling admin's account uuid from the JWT payload (middle
+  // base64-segment). Used to grey out self-destructive actions in the drawer
+  // (Disable / Delete on the admin's own row). Server-side `cannot_self_*`
+  // guards still catch any bypass — this is a UX layer, not security.
+  const currentAdminUuid: string | undefined = (() => {
+    const tok = getMetadata(presentation.metadata.Token)
+    if (tok == null || tok === '') return undefined
+    const parts = tok.split('.')
+    if (parts.length !== 3) return undefined
+    try {
+      const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+      return typeof payload.account === 'string' ? payload.account : undefined
+    } catch { return undefined }
+  })()
+
   // Bulk-selection state. Kept as a Set<string> (account uuid).
   // Distinct from `selectedUuid` (drawer target) so the drawer can stay
   // open while selection changes, and so a row check does NOT pop the
@@ -738,6 +753,7 @@
   <AdminUsersDrawer
     accountUuid={selectedUuid}
     visibleUuids={visibleAccountUuids}
+    currentAdminUuid={currentAdminUuid}
     on:close={onDrawerClose}
     on:account-changed={onAccountChanged}
     on:navigate={onDrawerNavigate}

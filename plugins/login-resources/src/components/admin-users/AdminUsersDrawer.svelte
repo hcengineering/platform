@@ -33,6 +33,12 @@
   // the drawer can offer Prev / Next navigation without closing first.
   // Defaults to empty → pager is hidden if not provided.
   export let visibleUuids: string[] = []
+  // Optional: parent passes the calling admin's own account uuid so we can
+  // grey out destructive actions on the admin's own row. Server-side guards
+  // (cannot_self_delete, cannot_self_disable, last_admin) still enforce.
+  export let currentAdminUuid: string | undefined = undefined
+
+  $: isSelf = currentAdminUuid !== undefined && currentAdminUuid === accountUuid
 
   const dispatch = createEventDispatcher<{
     close: void
@@ -555,11 +561,15 @@
             <!-- Disable / re-enable are rarer + destructive; compact secondary row. -->
             <div class="actions-secondary">
               {#if details.status === 'active'}
+                <!-- Disable mirrors Delete: greyed out on the admin's own
+                     row (server-side `cannot_self_disable` still catches
+                     forged calls). Wording flips so the reason is visible
+                     without a hover tooltip. -->
                 <Button
                   kind={'dangerous'}
                   size={'small'}
-                  label={getEmbeddedLabel('Disable account')}
-                  disabled={busy}
+                  label={getEmbeddedLabel(isSelf ? 'Cannot disable yourself' : 'Disable account')}
+                  disabled={busy || isSelf}
                   on:click={onDisable}
                 />
               {:else}
@@ -575,14 +585,17 @@
 
             <!-- Danger zone: hard-delete sits separately from the disable/
                  enable row so the visual weight matches the consequence
-                 (irreversible). Typed-confirm in DeleteAccountConfirm. -->
+                 (irreversible). Typed-confirm in DeleteAccountConfirm.
+                 Disabled for the admin's own row so the destructive action
+                 is unreachable client-side; server-side `cannot_self_delete`
+                 still rejects any forged call from a scripted client. -->
             <div class="danger-zone">
               <span class="danger-zone-label">Danger zone</span>
               <Button
                 kind={'dangerous'}
                 size={'small'}
-                label={getEmbeddedLabel('Delete account…')}
-                disabled={busy}
+                label={getEmbeddedLabel(isSelf ? 'Cannot delete yourself' : 'Delete account…')}
+                disabled={busy || isSelf}
                 on:click={onDelete}
               />
             </div>
