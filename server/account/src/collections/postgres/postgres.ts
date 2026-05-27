@@ -1295,42 +1295,6 @@ export class PostgresAccountDB implements AccountDB {
     )
   }
 
-  async deleteAccount (accountUuid: AccountUuid): Promise<void> {
-    await this.withRetry(async (rTx) => {
-      const socialIds = await this.socialId.find({ personUuid: accountUuid }, undefined, undefined, rTx)
-
-      for (const socialIdObj of socialIds) {
-        await this.integrationSecret.deleteMany({ socialId: socialIdObj._id }, rTx)
-        await this.integration.deleteMany({ socialId: socialIdObj._id }, rTx)
-      }
-
-      const mailboxes = await this.mailbox.find({ accountUuid }, undefined, undefined, rTx)
-
-      for (const mailboxObj of mailboxes) {
-        await this.mailboxSecret.deleteMany({ mailbox: mailboxObj.mailbox }, rTx)
-      }
-
-      await this.mailbox.deleteMany({ accountUuid }, rTx)
-
-      await this.socialId.update({ personUuid: accountUuid }, { verifiedOn: undefined }, rTx)
-
-      // Unassign from all workspaces
-      await rTx`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE account_uuid = ${accountUuid}`
-
-      // V19 subscription rows + V24 workspace_permissions rows both carry
-      // a NO-CASCADE FK on account(uuid). Without explicit cleanup the
-      // final DELETE on account hits a FK violation when the target
-      // owned a billing subscription or had any per-workspace permission
-      // grant. Delete them in-transaction so the cascade is atomic with
-      // the rest of the account teardown.
-      await this.subscription.deleteMany({ accountUuid }, rTx)
-      await this.workspacePermission.deleteMany({ accountUuid }, rTx)
-
-      // This removes the account along with the password if any
-      await this.account.deleteMany({ uuid: accountUuid }, rTx)
-    })
-  }
-
   async listAccounts (search?: string, skip?: number, limit?: number): Promise<AccountAggregatedInfo[]> {
     const sqlChunks: string[] = [
       `

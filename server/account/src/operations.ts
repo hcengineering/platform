@@ -2896,67 +2896,6 @@ export async function releaseSocialId (
   return await doReleaseSocialId(db, personUuid, type, value, extra?.service ?? account, deleteIntegrations)
 }
 
-export async function deleteAccount (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { uuid?: AccountUuid }
-): Promise<void> {
-  // Token-version-aware admin check: rejects tokens that were minted
-  // before the caller's `tokenVersion` was bumped (e.g. caller's own
-  // privileges were revoked mid-session).
-  const adminUuid = await requireAdmin(ctx, db, token)
-
-  const { uuid } = params
-
-  if (uuid == null || uuid === '') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-  }
-
-  // Two safety rails consistent with `disableAccount`:
-  //   1. cannot_self_delete — admin can't lock themselves out by deleting
-  //      their own row mid-session.
-  //   2. last_admin — at least one active admin (by ADMIN_EMAILS membership)
-  //      must remain so the panel itself stays reachable.
-  if (adminUuid === uuid) {
-    throw new PlatformError(new Status(Severity.ERROR, 'cannot_self_delete' as any, {}))
-  }
-
-  // Existence check BEFORE destructive work or audit insert: a bad UUID
-  // must surface as AccountNotFound to the caller rather than as a
-  // DB-layer cascade failure, a phantom ACCOUNT_DELETED event, or an
-  // orphan admin_audit_log row referencing a never-existed account.
-  const targetAccount = await db.account.findOne({ uuid })
-  if (targetAccount == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
-  }
-
-  const socials = await db.socialId.find({ personUuid: uuid })
-  const targetEmail = socials.find((s) => s.type === SocialIdType.EMAIL)?.value
-  if (targetEmail != null && (await isLastAdmin(db, targetEmail))) {
-    throw new PlatformError(new Status(Severity.ERROR, 'last_admin' as any, {}))
-  }
-
-  await db.deleteAccount(uuid)
-  await db.accountEvent.insertOne({
-    accountUuid: uuid,
-    eventType: AccountEventType.ACCOUNT_DELETED,
-    time: Date.now()
-  })
-
-  // Append to admin_audit_log so the deletion shows up in Audit log
-  // alongside disable / enable / role-change rows. We log AFTER the
-  // delete completes so a failed cascade does not leave a phantom entry.
-  await db.adminAuditLog.insert({
-    adminAccount: adminUuid as AccountUuid,
-    targetAccount: uuid,
-    action: 'delete_account',
-    workspaceUuid: null,
-    details: { targetEmail: targetEmail ?? null }
-  })
-}
-
 export async function canMergeSpecifiedPersons (
   ctx: MeasureContext,
   db: AccountDB,
@@ -3875,7 +3814,6 @@ export type AccountMethods =
   | 'addHulyAssistantSocialId'
   | 'refreshHulyAssistantToken'
   | 'releaseSocialId'
-  | 'deleteAccount'
   | 'canMergeSpecifiedPersons'
   | 'mergeSpecifiedPersons'
   | 'setMyProfile'
@@ -3982,7 +3920,6 @@ export function getMethods (
     addHulyAssistantSocialId: wrap(addHulyAssistantSocialId),
     refreshHulyAssistantToken: wrap(refreshHulyAssistantToken),
     releaseSocialId: wrap(releaseSocialId),
-    deleteAccount: wrap(deleteAccount),
     canMergeSpecifiedPersons: wrap(canMergeSpecifiedPersons),
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
     setMyProfile: wrap(setMyProfile),

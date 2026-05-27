@@ -82,7 +82,6 @@ export type AdminAuditAction =
   | 'disable'
   | 'enable'
   | 'create_account'         // new: createAccountAdmin endpoint
-  | 'delete_account'         // new: hard-delete via deleteAccount (irreversible)
   | 'add_workspace_member'   // new: addWorkspaceMember + bulkAddToWorkspace
   // Workspace-operation audit entries (V28 — targetAccount is null for these)
   | 'archive_workspace'
@@ -465,7 +464,6 @@ export interface AccountDB {
   ) => Promise<WorkspaceInfoWithStatus | undefined>
   setPassword: (accountId: AccountUuid, passwordHash: Buffer, salt: Buffer) => Promise<void>
   resetPassword: (accountId: AccountUuid) => Promise<void>
-  deleteAccount: (accountId: AccountUuid) => Promise<void>
   listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
   listAccountsAdmin: (params: ListAccountsAdminQueryParams) => Promise<{ rows: AccountListRow[], total: number }>
   /**

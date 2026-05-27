@@ -98,7 +98,6 @@
   interface ActionOption { id: string, label: IntlString }
   const ACTION_OPTIONS: ActionOption[] = [
     { id: 'create_account', label: getEmbeddedLabel('create_account') },
-    { id: 'delete_account', label: getEmbeddedLabel('delete_account') },
     { id: 'disable', label: getEmbeddedLabel('disable') },
     { id: 'enable', label: getEmbeddedLabel('enable') },
     { id: 'trigger_password_reset', label: getEmbeddedLabel('trigger_password_reset') },

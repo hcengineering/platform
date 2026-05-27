@@ -181,7 +181,6 @@ export interface AccountClient {
   getMailboxes: () => Promise<MailboxInfo[]>
   deleteMailbox: (mailbox: string) => Promise<void>
   listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
-  deleteAccount: (uuid: AccountUuid) => Promise<void>
 
   workerHandshake: (region: string, version: Data<Version>, operation: WorkspaceOperation) => Promise<void>
   getPendingWorkspace: (
@@ -1095,15 +1094,6 @@ class AccountClientImpl implements AccountClient {
     }
 
     return await this.rpc(request)
-  }
-
-  async deleteAccount (uuid: AccountUuid): Promise<void> {
-    const request = {
-      method: 'deleteAccount' as const,
-      params: { uuid }
-    }
-
-    await this.rpc(request)
   }
 
   async releaseSocialId (
