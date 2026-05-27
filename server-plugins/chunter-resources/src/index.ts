@@ -277,6 +277,74 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
   return res
 }
 
+// V3d: self-contained grant helper used ONLY by OnChatMessageUpdated.
+// Do NOT refactor OnChatMessageCreated to call this — the create path is live-tested
+// and must remain provably unchanged. The ~25-line overlap is intentional.
+async function applyMentionGrants (ctx: MeasureContext, message: ChatMessage, control: TriggerControl): Promise<Tx[]> {
+  if (message.modifiedBy === core.account.System) return []
+  const mixin = getClassCollaborators(control.modelDb, control.hierarchy, message.attachedToClass)
+  if (mixin === undefined) return []
+
+  const targetDoc = (await control.findAll(ctx, message.attachedToClass, { _id: message.attachedTo }, { limit: 1 }))[0]
+  if (targetDoc === undefined) return []
+
+  const node = markupToJSON(message.message)
+  const references = extractReferences(node)
+  const mentionedPersons = references
+    .filter(({ objectClass }) => control.hierarchy.isDerived(objectClass, contact.class.Person))
+    .filter(({ grantsAccess }) => grantsAccess !== 'false') // V3c
+    .map(({ objectId }) => objectId as Ref<Person>)
+  // V3d is "a newly-added mention grants access". With no granting mention there
+  // is nothing to do — return early so a plain text edit never re-runs grant
+  // machinery, and the author is NOT re-added as a collaborator on every edit.
+  if (mentionedPersons.length === 0) return []
+  const employees = await control.findAll(ctx, contact.mixin.Employee, {
+    _id: { $in: mentionedPersons as Ref<Employee>[] }
+  })
+  // Update path grants ONLY the mentioned employees (not the author — the
+  // author was already added at create time; the create path is unchanged).
+  const collaboratorsFromMessage = employees.map((it) => it.personUuid).filter(notEmpty)
+  if (collaboratorsFromMessage.length === 0) return []
+
+  const grantTarget = await resolveMentionGrantTarget(targetDoc, (cls, q) => control.findAll(control.ctx, cls, q))
+  if (grantTarget == null) return [] // update-grant only applies to opted-in (protected) targets
+
+  const grantCollabs = (
+    await control.findAll<Collaborator>(control.ctx, core.class.Collaborator, { attachedTo: grantTarget._id })
+  ).map((c) => c.collaborator)
+
+  const res: Tx[] = []
+  for (const collab of collaboratorsFromMessage) {
+    if (grantCollabs.includes(collab)) continue // add-only: skip existing
+    res.push(
+      control.txFactory.createTxCreateDoc(core.class.Collaborator, grantTarget.space, {
+        attachedTo: grantTarget._id,
+        attachedToClass: grantTarget._class,
+        collaborator: collab,
+        collection: 'collaborators'
+      })
+    )
+  }
+  return res
+}
+
+async function OnChatMessageUpdated (ctx: MeasureContext, tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = tx as TxUpdateDoc<ChatMessage>
+  // Only act when the message body changed (a new mention may have been added).
+  if (actualTx.operations.message === undefined) return []
+
+  const current = (await control.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0] as
+    | ChatMessage
+    | undefined
+  if (current === undefined) return []
+
+  // Use the new text from the update operations (add-only: we grant for all
+  // currently-mentioned people; existing grants are deduped to no-ops, and we
+  // never remove — Collaborator has no provenance to safely remove by).
+  const message: ChatMessage = { ...current, message: actualTx.operations.message }
+  return await applyMentionGrants(ctx, message, control)
+}
+
 async function ChatNotificationsHandler (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
@@ -363,6 +431,14 @@ export async function ChunterTrigger (txes: TxCUD<Doc>[], control: TriggerContro
       control.hierarchy.isDerived(tx.objectClass, chunter.class.ChatMessage)
     ) {
       res.push(...(await control.ctx.with('OnChatMessageCreated', {}, (ctx) => OnChatMessageCreated(ctx, tx, control))))
+    }
+    if (
+      tx._class === core.class.TxUpdateDoc &&
+      control.hierarchy.isDerived(tx.objectClass, chunter.class.ChatMessage)
+    ) {
+      res.push(
+        ...(await control.ctx.with('OnChatMessageUpdated', {}, (ctx) => OnChatMessageUpdated(ctx, tx, control)))
+      )
     }
   }
   return res
