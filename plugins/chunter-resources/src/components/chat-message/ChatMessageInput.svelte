@@ -205,51 +205,63 @@
     return true
   }
 
-  async function handleCreate (event: CustomEvent, _id: Ref<ChatMessage>): Promise<void> {
+  // Returns true if the message was sent, false if the actor cancelled the
+  // grant dialog or the send failed. The caller (onMessage) must only clear
+  // the draft/input on a true result, otherwise a cancelled grant dialog
+  // would lose the unsent comment.
+  async function handleCreate (event: CustomEvent, _id: Ref<ChatMessage>): Promise<boolean> {
     try {
-      if (!(await prepareMentionGrantChoices(event))) return
+      if (!(await prepareMentionGrantChoices(event))) return false
 
       const res = await createMessage(event, _id, `chunter.create.${_class} ${object._class}`)
 
       console.log(`create.${_class} measure`, res.serverTime, res.time)
       const objectId = await getObjectId(object, client.getHierarchy())
       Analytics.handleEvent(ChunterEvents.MessageCreated, { ok: res.result, objectId, objectClass: object._class })
+      return true
     } catch (err: any) {
       const objectId = await getObjectId(object, client.getHierarchy())
       Analytics.handleEvent(ChunterEvents.MessageCreated, { ok: false, objectId, objectClass: object._class })
       Analytics.handleError(err)
+      return false
     }
   }
 
-  async function handleEdit (event: CustomEvent): Promise<void> {
+  async function handleEdit (event: CustomEvent): Promise<boolean> {
     try {
-      if (!(await prepareMentionGrantChoices(event))) return
+      if (!(await prepareMentionGrantChoices(event))) return false
 
       await editMessage(event)
       const objectId = await getObjectId(object, client.getHierarchy())
       Analytics.handleEvent(ChunterEvents.MessageEdited, { ok: true, objectId, objectClass: object._class })
+      return true
     } catch (err: any) {
       const objectId = await getObjectId(object, client.getHierarchy())
       Analytics.handleEvent(ChunterEvents.MessageEdited, { ok: false, objectId, objectClass: object._class })
       Analytics.handleError(err)
+      return false
     }
   }
 
   async function onMessage (event: CustomEvent): Promise<void> {
-    draftController.remove()
-    inputRef.removeDraft(false)
+    loading = true
 
+    let ok = false
     if (chatMessage !== undefined) {
-      loading = true
-      await handleEdit(event)
+      ok = await handleEdit(event)
     } else {
-      void handleCreate(event, _id)
+      ok = await handleCreate(event, _id)
       void deleteTypingInfo()
     }
 
-    // Remove draft from Local Storage
-    clear()
-    dispatch('submit', false)
+    // Only clear the input / drop the draft after a successful send or edit.
+    // A cancelled grant dialog (ok === false) must preserve the unsent comment.
+    if (ok) {
+      draftController.remove()
+      inputRef.removeDraft(false)
+      clear()
+      dispatch('submit', false)
+    }
     loading = false
   }
 
