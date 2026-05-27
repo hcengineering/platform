@@ -119,7 +119,9 @@
     { id: 'trigger_password_reset', label: getEmbeddedLabel('trigger_password_reset') },
     { id: 'add_workspace_member', label: getEmbeddedLabel('add_workspace_member') },
     { id: 'remove_member', label: getEmbeddedLabel('remove_member') },
-    { id: 'role_change', label: getEmbeddedLabel('role_change') }
+    { id: 'role_change', label: getEmbeddedLabel('role_change') },
+    // V13 — Denied admin attempt (self_disable, last_admin)
+    { id: 'admin_action_denied', label: getEmbeddedLabel('admin_action_denied') }
   ]
   let selectedActionIds: string[] = []
 

@@ -89,6 +89,8 @@ export type AdminAuditAction =
   | 'migrate_workspace'
   | 'delete_workspace'
   | 'reset_workspace_attempts'
+  // V13 — Denied admin attempt. Payload carries { reason, method, target }.
+  | 'admin_action_denied'
 
 export interface AdminAuditLogEntry {
   id: string

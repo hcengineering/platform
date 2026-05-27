@@ -48,6 +48,7 @@ import type {
 } from '@hcengineering/account-client'
 
 import {
+  auditAdminActionDenied,
   disableAccount,
   disableAccountInternal,
   enableAccount,
@@ -639,6 +640,16 @@ export async function bulkSetDisabled (
   assertBulkSize(params.accountUuids)
   const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
   const batchId = randomUUID()
+
+  // V13 — bulkLoop's selfFilter catches self-targets BEFORE op() runs,
+  // so the audit-write inside disableAccountInternal never fires for the
+  // bulk-self case. We audit it here, once per call, before bulkLoop
+  // strips the self-target. The rate-limit (60 min per
+  // (admin, reason, method)) handles repeat-call dedup.
+  if (params.disabled && params.accountUuids.includes(adminUuid)) {
+    await auditAdminActionDenied(ctx, db, adminUuid, 'self_disable', 'bulkSetDisabled', adminUuid)
+  }
+
   return await bulkLoop(
     params.accountUuids,
     async (uuid) => {
@@ -646,7 +657,10 @@ export async function bulkSetDisabled (
         // Use disableAccountInternal to skip per-row admin re-check.
         // deps.accountLifecycleProducer is threaded through so bulk-disabled
         // accounts receive an immediate force-logout event (§2.3).
-        await disableAccountInternal(ctx, db, deps, adminUuid, { accountUuid: uuid }, batchId)
+        // Pass methodName='bulkSetDisabled' so any last_admin denial that
+        // fires INSIDE disableAccountInternal is audited under the correct
+        // method tag (the rate-limit key includes method).
+        await disableAccountInternal(ctx, db, deps, adminUuid, { accountUuid: uuid }, batchId, 'bulkSetDisabled')
       } else {
         // Mirror the disable branch: enableAccountInternal skips the
         // per-row requireAdmin + verifyTokenVersion + account findOne
