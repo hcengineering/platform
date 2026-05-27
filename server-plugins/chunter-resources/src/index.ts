@@ -189,6 +189,7 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
   const references = extractReferences(node)
   const mentionedPersons = references
     .filter(({ objectClass }) => control.hierarchy.isDerived(objectClass, contact.class.Person))
+    .filter(({ grantsAccess }) => grantsAccess !== 'false') // V3c: skip explicitly-denied mentions
     .map(({ objectId }) => objectId as Ref<Person>)
   const employees =
     mentionedPersons.length > 0
