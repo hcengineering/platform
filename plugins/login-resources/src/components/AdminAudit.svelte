@@ -58,6 +58,21 @@
 
   function applyDateRangePreset (id: string): void {
     if (id === 'custom') {
+      // V7 — switching to Custom should preserve whatever From/To the
+      // previous preset wrote into the inputs so the admin can tweak one
+      // boundary without re-entering both. On cold-start (URL deep-link
+      // with ?preset=custom and no prior preset), fall back to a 3-day
+      // window so the inputs are never blank.
+      if (filterFrom === '' || filterTo === '') {
+        const now = new Date()
+        const past = new Date(now.getTime() - 3 * 86_400_000)
+        const fmt = (d: Date): string =>
+          `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        presetApplying = true
+        if (filterFrom === '') filterFrom = fmt(past)
+        if (filterTo === '') filterTo = fmt(now)
+        presetApplying = false
+      }
       dateRangePreset = 'custom'
       void reload(true)
       return
