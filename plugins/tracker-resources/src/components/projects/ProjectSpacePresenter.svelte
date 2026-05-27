@@ -17,8 +17,9 @@
   import { getResource } from '@hcengineering/platform'
   import { Project } from '@hcengineering/tracker'
   import { IconWithEmoji } from '@hcengineering/presentation'
-  import { getPlatformColorDef, getPlatformColorForTextDef, themeStore, type Action } from '@hcengineering/ui'
+  import { getPlatformColorDef, getPlatformColorForTextDef, themeStore, tooltip, type Action } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import tracker from '../../plugin'
   import { NavLink, TreeNode } from '@hcengineering/view-resources'
   import { SpacesNavModel, SpecialNavModel } from '@hcengineering/workbench'
   import { SpecialElement } from '@hcengineering/workbench-resources'
@@ -73,44 +74,90 @@
 </script>
 
 {#if specials}
-  <TreeNode
-    _id={space?._id}
-    icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : (space?.icon ?? model?.icon)}
-    iconProps={space?.icon === view.ids.IconWithEmoji
-      ? { icon: space.color }
-      : {
-          fill:
-            space.color !== undefined && typeof space.color !== 'string'
-              ? getPlatformColorDef(space.color, $themeStore.dark).icon
-              : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
-        }}
-    title={space.name}
-    type={'nested'}
-    highlighted={space._id === currentSpace}
-    {visible}
-    actions={() => getActions(space)}
-    {forciblyСollapsed}
-  >
-    {#each specials as special}
-      <NavLink space={space._id} special={special.id}>
-        <SpecialElement
-          indent
-          label={special.label}
-          icon={special.icon}
-          selected={deselect ? false : currentSpace === space._id && special.id === currentSpecial}
-        />
-      </NavLink>
-    {/each}
-
-    <svelte:fragment slot="visible">
-      {#if visible}
-        {@const item = specials.find((sp) => sp.id === currentSpecial && currentSpace === space._id)}
-        {#if item}
-          <NavLink space={space._id} special={item.id}>
-            <SpecialElement indent label={item.label} icon={item.icon} selected forciblyСollapsed />
+  {#if isCollabOnlyProject}
+    <div use:tooltip={{ label: tracker.string.SharedWithYouTooltip }}>
+      <TreeNode
+        _id={space?._id}
+        icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : (space?.icon ?? model?.icon)}
+        iconProps={space?.icon === view.ids.IconWithEmoji
+          ? { icon: space.color }
+          : {
+              fill:
+                space.color !== undefined && typeof space.color !== 'string'
+                  ? getPlatformColorDef(space.color, $themeStore.dark).icon
+                  : getPlatformColorForTextDef(space.name, $themeStore.dark).icon,
+              opacity: 0.6
+            }}
+        title={space.name}
+        type={'nested'}
+        highlighted={space._id === currentSpace}
+        {visible}
+        actions={() => getActions(space)}
+        {forciblyСollapsed}
+      >
+        {#each specials as special}
+          <NavLink space={space._id} special={special.id}>
+            <SpecialElement
+              indent
+              label={special.label}
+              icon={special.icon}
+              selected={deselect ? false : currentSpace === space._id && special.id === currentSpecial}
+            />
           </NavLink>
+        {/each}
+
+        <svelte:fragment slot="visible">
+          {#if visible}
+            {@const item = specials.find((sp) => sp.id === currentSpecial && currentSpace === space._id)}
+            {#if item}
+              <NavLink space={space._id} special={item.id}>
+                <SpecialElement indent label={item.label} icon={item.icon} selected forciblyСollapsed />
+              </NavLink>
+            {/if}
+          {/if}
+        </svelte:fragment>
+      </TreeNode>
+    </div>
+  {:else}
+    <TreeNode
+      _id={space?._id}
+      icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : (space?.icon ?? model?.icon)}
+      iconProps={space?.icon === view.ids.IconWithEmoji
+        ? { icon: space.color }
+        : {
+            fill:
+              space.color !== undefined && typeof space.color !== 'string'
+                ? getPlatformColorDef(space.color, $themeStore.dark).icon
+                : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
+          }}
+      title={space.name}
+      type={'nested'}
+      highlighted={space._id === currentSpace}
+      {visible}
+      actions={() => getActions(space)}
+      {forciblyСollapsed}
+    >
+      {#each specials as special}
+        <NavLink space={space._id} special={special.id}>
+          <SpecialElement
+            indent
+            label={special.label}
+            icon={special.icon}
+            selected={deselect ? false : currentSpace === space._id && special.id === currentSpecial}
+          />
+        </NavLink>
+      {/each}
+
+      <svelte:fragment slot="visible">
+        {#if visible}
+          {@const item = specials.find((sp) => sp.id === currentSpecial && currentSpace === space._id)}
+          {#if item}
+            <NavLink space={space._id} special={item.id}>
+              <SpecialElement indent label={item.label} icon={item.icon} selected forciblyСollapsed />
+            </NavLink>
+          {/if}
         {/if}
-      {/if}
-    </svelte:fragment>
-  </TreeNode>
+      </svelte:fragment>
+    </TreeNode>
+  {/if}
 {/if}
