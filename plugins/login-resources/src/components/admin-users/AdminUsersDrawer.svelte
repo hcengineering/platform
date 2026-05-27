@@ -136,6 +136,19 @@
     return `${s.slice(0, head)}…${s.slice(-tail)}`
   }
 
+  // V5a — Build a link to the workspace root from the admin panel.
+  // Workspace-root only (no Employee deep-link); per spec D12, V5b is a
+  // future enrichment if/when the per-workspace Ref<Employee> lookup is
+  // added to the admin-side data.
+  //
+  // workspaceMemberships rows have shape
+  //   { workspaceUuid, workspaceName, workspaceUrl, role }
+  // per server/account/src/serviceOperations.ts:227 — no archived field,
+  // so no archived-state branching here.
+  function buildWorkspaceLink (workspaceUrl: string): string {
+    return `${window.location.origin}/workbench/${workspaceUrl}`
+  }
+
   async function onChangeRole (workspaceUuid: string, newRole: AccountRole): Promise<void> {
     busy = true
     try {
@@ -459,6 +472,15 @@
                     <strong>{m.workspaceName}</strong>
                     <span class="ws-url">{m.workspaceUrl}</span>
                   </div>
+                  <a
+                    class="ws-link"
+                    href={buildWorkspaceLink(m.workspaceUrl)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Open workspace in new tab"
+                  >
+                    Open ↗
+                  </a>
                   <DropdownLabelsIntl
                     items={roleItems}
                     selected={m.role}
@@ -836,6 +858,17 @@
     font-size: 0.72rem;
     color: var(--theme-darker-color);
     font-family: var(--mono-font, 'SF Mono', 'Menlo', 'Consolas', monospace);
+  }
+
+  .ws-link {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    color: var(--theme-link-color);
+    text-decoration: none;
+    font-size: var(--font-size-small);
+  }
+  .ws-link:hover {
+    text-decoration: underline;
   }
 
   .badge {
