@@ -99,6 +99,24 @@ function makeControl (): any {
         const ids: string[] = query?._id?.$in ?? []
         return ids.map((id: string) => ({ _id: id, personUuid: `${id}-acc` }))
       }
+      if (_class === 'chunter:class:ChatMessage') {
+        // OnChatMessageUpdated loads the current stored message by _id before
+        // applying the update operations. Return a ChatMessage shape with the
+        // OLD (no-mention) body; the update tx supplies the new text.
+        return [
+          {
+            _id: 'msg-1',
+            _class: 'chunter:class:ChatMessage',
+            space: 'space-1',
+            attachedTo: TARGET._id,
+            attachedToClass: TARGET._class,
+            collection: 'comments',
+            message: makeMarkup(),
+            modifiedBy: 'social-author',
+            modifiedOn: 1
+          }
+        ]
+      }
       // targetDoc lookup (message.attachedTo)
       return [TARGET]
     }),
@@ -125,6 +143,27 @@ function makeCreateTx (markup: string): any {
   }
 }
 
+function makeUpdateTx (operations: any, modifiedBy = 'social-editor'): any {
+  return {
+    _class: coreDefault.class.TxUpdateDoc,
+    objectClass: 'chunter:class:ChatMessage',
+    objectId: 'msg-1',
+    objectSpace: 'space-1',
+    modifiedBy,
+    modifiedOn: 2,
+    operations
+  }
+}
+
+function collaboratorGrants (res: Tx[]): string[] {
+  return res
+    .filter(
+      (t): t is TxCreateDoc<any> =>
+        t._class === coreDefault.class.TxCreateDoc && (t as any).objectClass === coreDefault.class.Collaborator
+    )
+    .map((t) => (t as any).attributes.collaborator)
+}
+
 describe('ChunterTrigger mention grants — grantsAccess filter', () => {
   test("a reference with grantsAccess='false' yields no Collaborator tx for that person", async () => {
     const ctx = {} as unknown as MeasureContext
@@ -149,5 +188,58 @@ describe('ChunterTrigger mention grants — grantsAccess filter', () => {
       (c: any[]) => typeof c[1] === 'string' && c[1].includes('Employee')
     )
     expect(employeeCall?.[2]?._id?.$in).toEqual(['p1'])
+  })
+})
+
+describe('ChunterTrigger mention grants — V3d add-only re-grant on edit', () => {
+  test('a newly-added mention on edit grants the mentioned employee', async () => {
+    const control = makeControl()
+    const tx = makeUpdateTx({ message: makeMarkup({ id: 'p3' }) })
+
+    const res: Tx[] = await ChunterTrigger([tx], control)
+
+    expect(collaboratorGrants(res)).toContain('p3-acc')
+  })
+
+  test('a denied mention on edit grants nothing (V3c filter still applies)', async () => {
+    const control = makeControl()
+    const tx = makeUpdateTx({ message: makeMarkup({ id: 'p3', grantsAccess: 'false' }) })
+
+    const res: Tx[] = await ChunterTrigger([tx], control)
+
+    expect(collaboratorGrants(res)).not.toContain('p3-acc')
+  })
+
+  test('an already-granted collaborator is deduped — add-only no-op', async () => {
+    const control = makeControl()
+    // 'existing' resolves to personUuid 'existing-acc', which the grant target
+    // already lists (findAll Collaborator returns existing-acc) -> no new tx.
+    const tx = makeUpdateTx({ message: makeMarkup({ id: 'existing' }) })
+
+    const res: Tx[] = await ChunterTrigger([tx], control)
+
+    expect(collaboratorGrants(res)).not.toContain('existing-acc')
+    expect(collaboratorGrants(res)).toHaveLength(0)
+  })
+
+  test('a System-authored edit grants nothing (stale modifiedBy guard — uses edit actor)', async () => {
+    const control = makeControl()
+    // updateDoc2Doc sets message.modifiedBy = tx.modifiedBy = System, so the
+    // applyMentionGrants System guard fires. If the handler used the stored
+    // doc's (non-System) author instead, this would wrongly grant.
+    const tx = makeUpdateTx({ message: makeMarkup({ id: 'p3' }) }, coreDefault.account.System)
+
+    const res: Tx[] = await ChunterTrigger([tx], control)
+
+    expect(collaboratorGrants(res)).toHaveLength(0)
+  })
+
+  test('a non-message update (no operations.message) is a no-op', async () => {
+    const control = makeControl()
+    const tx = makeUpdateTx({ reactions: 1 })
+
+    const res: Tx[] = await ChunterTrigger([tx], control)
+
+    expect(collaboratorGrants(res)).toHaveLength(0)
   })
 })

@@ -338,10 +338,12 @@ async function OnChatMessageUpdated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
     | undefined
   if (current === undefined) return []
 
-  // Use the new text from the update operations (add-only: we grant for all
-  // currently-mentioned people; existing grants are deduped to no-ops, and we
-  // never remove — Collaborator has no provenance to safely remove by).
-  const message: ChatMessage = { ...current, message: actualTx.operations.message }
+  // Apply the update to the stored doc so the message text AND the actor
+  // (modifiedBy) reflect THIS edit — not the original author. applyMentionGrants
+  // guards on message.modifiedBy === System, so it must see the edit actor.
+  // Add-only: we grant for all currently-mentioned people; existing grants dedup
+  // to no-ops, and we never remove (Collaborator has no provenance to remove by).
+  const message = TxProcessor.updateDoc2Doc({ ...current }, actualTx)
   return await applyMentionGrants(ctx, message, control)
 }
 
