@@ -10,6 +10,7 @@
   import type { AuditEntry, ListAuditAdminParams } from '@hcengineering/account-client'
   import AdminShell from './admin-shell/AdminShell.svelte'
   import AuditEmptyState from './admin-shell/AuditEmptyState.svelte'
+  import { tzTooltip } from './admin-audit/tzTooltip'
   import setting from '@hcengineering/setting'
 
   let entries: AuditEntry[] = []
@@ -433,13 +434,13 @@
                     <td colspan="5">
                       <strong>Bulk action by {g.entries[0].admin.firstName} {g.entries[0].admin.lastName}</strong>
                        — {g.entries.length} entries · <code>{g.entries[0].action}</code> ·
-                       {new Date(g.entries[0].tsMs).toLocaleString()}
+                       <span title={tzTooltip(g.entries[0].tsMs)}>{new Date(g.entries[0].tsMs).toLocaleString()}</span>
                     </td>
                   </tr>
                 {/if}
                 {#each g.entries as e (e.id)}
                   <tr>
-                    <td>{new Date(e.tsMs).toLocaleString()}</td>
+                    <td title={tzTooltip(e.tsMs)}>{new Date(e.tsMs).toLocaleString()}</td>
                     <td>{e.admin.firstName} {e.admin.lastName}</td>
                     <td><code>{e.action}</code></td>
                     <td>
