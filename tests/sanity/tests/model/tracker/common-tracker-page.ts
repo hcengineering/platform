@@ -174,6 +174,14 @@ export class CommonTrackerPage extends CalendarPage {
     await this.inputComment().fill(`@${mention}`)
     await this.selectMention(mention)
     await this.buttonSendComment().click()
+    // V3 mention-grants: when the mentioned person is not already a member of
+    // the issue's grant target, sending opens a disclosure dialog. Confirm it
+    // with "Send with selected grants" so the comment actually gets sent and
+    // the test doesn't hang waiting for the assertion.
+    const confirm = this.page.getByRole('button', { name: 'Send with selected grants' })
+    if (await confirm.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await confirm.click()
+    }
   }
 
   async checkActivityContentExist (activityContent: string): Promise<void> {

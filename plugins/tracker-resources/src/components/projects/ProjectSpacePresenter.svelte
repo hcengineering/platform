@@ -42,7 +42,7 @@
   // doc-level visibility there.
   $: isCollabOnlyProject = !space.members.includes(getCurrentAccount().uuid)
 
-  async function updateSpecials (model: SpacesNavModel, space: Project): Promise<void> {
+  async function updateSpecials (model: SpacesNavModel, space: Project, collabOnly: boolean): Promise<void> {
     const newSpecials: SpecialNavModel[] = []
     for (const sp of model.specials ?? []) {
       let shouldAdd = true
@@ -55,7 +55,7 @@
       // Filter to Issues only when the caller is not a member; everything
       // else (Components / Milestones / Templates) would render as an
       // empty list and clutter the tree.
-      if (shouldAdd && isCollabOnlyProject && sp.id !== 'issues') {
+      if (shouldAdd && collabOnly && sp.id !== 'issues') {
         shouldAdd = false
       }
       if (shouldAdd) {
@@ -65,8 +65,11 @@
     specials = newSpecials
   }
 
+  // V1: re-derive specials whenever isCollabOnlyProject flips too — otherwise
+  // the user being added to / removed from the project mid-session keeps the
+  // sub-views (Components / Milestones / Templates) stale until a reload.
   $: if (model != null) {
-    void updateSpecials(model, space)
+    void updateSpecials(model, space, isCollabOnlyProject)
   }
   $: visible =
     (!deselect && currentSpace !== undefined && currentSpecial !== undefined && space._id === currentSpace) ||
@@ -80,7 +83,7 @@
         _id={space?._id}
         icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : (space?.icon ?? model?.icon)}
         iconProps={space?.icon === view.ids.IconWithEmoji
-          ? { icon: space.color }
+          ? { icon: space.color, opacity: 0.6 }
           : {
               fill:
                 space.color !== undefined && typeof space.color !== 'string'

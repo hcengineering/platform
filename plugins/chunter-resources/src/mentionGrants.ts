@@ -33,7 +33,9 @@ export function applyMentionGrantChoices (markup: Markup, choices: Map<string, b
   }
 
   const walk = (n: MarkupNode): void => {
-    if (n.type === MarkupNodeType.reference && n.attrs !== undefined) {
+    // Use `!= null` to guard against both `undefined` AND `null` — a defensive
+    // attrs == null on a reference node would otherwise throw on n.attrs.id.
+    if (n.type === MarkupNodeType.reference && n.attrs != null) {
       const id = n.attrs.id as string
       const choice = choices.get(id)
       if (choice !== undefined) {

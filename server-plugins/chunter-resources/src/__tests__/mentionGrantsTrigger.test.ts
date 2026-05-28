@@ -38,12 +38,11 @@ jest.mock('@hcengineering/server-contact', () => ({
   getPerson: jest.fn(async () => undefined)
 }))
 
-// Imported AFTER the mocks so the trigger picks up the mocked helpers.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { ChunterTrigger } = require('../index')
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const coreModule = require('@hcengineering/core')
-const coreDefault = coreModule.default
+// Imported AFTER the mocks (jest.mock above is hoisted by ts-jest, so even
+// these top-level ESM imports see the mocked module). Avoid `require()` so
+// the file passes `tsc --noEmit` (the package's tsconfig only ships @types/jest).
+import { ChunterTrigger } from '../index'
+import coreDefault from '@hcengineering/core'
 
 function makeMarkup (...refs: Array<{ id: string, grantsAccess?: 'true' | 'false' }>): string {
   return jsonToMarkup({
