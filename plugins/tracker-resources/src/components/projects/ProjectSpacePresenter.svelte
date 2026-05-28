@@ -40,7 +40,12 @@
   // those sub-views would be empty and confusing. The Issues sub-view
   // stays because the postgres adapter's collab-OR-branch surfaces the
   // doc-level visibility there.
-  $: isCollabOnlyProject = !space.members.includes(getCurrentAccount().uuid)
+  // V1: guard against space.members being null/undefined — Huly's sample
+  // projects + auto-templated projects can ship without an explicit members
+  // array (the DB stores NULL). Without the ?? [], `null.includes(...)` throws
+  // and isCollabOnlyProject silently becomes undefined → the filter never
+  // fires and the badge + sub-node hide silently break.
+  $: isCollabOnlyProject = !(space.members ?? []).includes(getCurrentAccount().uuid)
 
   async function updateSpecials (model: SpacesNavModel, space: Project, collabOnly: boolean): Promise<void> {
     const newSpecials: SpecialNavModel[] = []
