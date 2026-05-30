@@ -192,6 +192,7 @@ describe('GuestPermissionsMiddleware', () => {
         return a === b
       }
       ;(mw as any).context.hierarchy.classHierarchyMixin = () => undefined
+      ;(mw as any).context.hierarchy.getAncestors = () => []
     }
 
     it('allows create for covered class in any space (TxAccessLevel is irrelevant)', async () => {
@@ -276,6 +277,7 @@ describe('GuestPermissionsMiddleware', () => {
         if (b === core.class.Space) return false
         return a === b
       }
+      ;(mw as any).context.hierarchy.getAncestors = () => []
 
       const tx = makeCreateTx(UNCOVERED_CLASS, ALLOWED_SPACE)
       const ctx = makeCtx(makeAccount(AccountRole.Guest))
@@ -310,6 +312,7 @@ describe('GuestPermissionsMiddleware', () => {
         if (b === core.class.Space) return false
         return a === b
       }
+      ;(mw as any).context.hierarchy.getAncestors = () => []
 
       const tx = makeCreateTx(COVERED_CLASS, ALLOWED_SPACE)
       const ctx = makeCtx(makeAccount(AccountRole.Guest))
@@ -337,6 +340,7 @@ describe('GuestPermissionsMiddleware', () => {
         if (b === core.class.Space) return false
         return a === b
       }
+      ;(mw as any).context.hierarchy.getAncestors = () => []
 
       const tx = makeCreateTx(COVERED_CLASS, FORBIDDEN_SPACE)
       const ctx = makeCtx(makeAccount(AccountRole.Guest))
@@ -364,6 +368,7 @@ describe('GuestPermissionsMiddleware', () => {
         if (b === core.class.Space) return false
         return a === b
       }
+      ;(mw as any).context.hierarchy.getAncestors = () => []
     }
 
     it('allows guest to update document created by same account', async () => {
@@ -468,6 +473,7 @@ describe('GuestPermissionsMiddleware', () => {
         return a === b
       }
       ;(mw as any).context.hierarchy.classHierarchyMixin = () => undefined
+      ;(mw as any).context.hierarchy.getAncestors = () => []
 
       // First tx as guest should load cache
       const userCtx = makeCtx(makeAccount(AccountRole.User))
