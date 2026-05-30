@@ -240,6 +240,7 @@
     "TwoFactorAuthDisabled": "L'autenticazione a due fattori è disabilitata",
     "ShowQRCode": "Mostra codice QR",
     "EnterVerificationCode": "Inserisci codice di verifica",
+    "OverrideAttribute": "Sovrascrivi attributo",
     "ApiBaseUrl": "Base URL",
     "ApiEndpointAccount": "Get account info",
     "ApiEndpointFindAll": "Query documents by class",

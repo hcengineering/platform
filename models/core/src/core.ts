@@ -447,4 +447,7 @@ export class TCollaborator extends TAttachedDoc implements Collaborator {
 @MMixin(core.mixin.VersionableClass, core.class.Class)
 export class TVersionableClass extends TClass implements VersionableClass {
   enabled!: boolean
+  excludedProperties?: string[]
+  excludedRelations?: string[] // ${associationId}_${a|b}
+  excludeMixins?: Ref<Mixin<Doc>>[]
 }

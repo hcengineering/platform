@@ -176,7 +176,8 @@
     "MarkupFromText": "Markup from text",
     "TextFromSelect": "Text from select",
     "SelectFromText": "Select from text",
-    "AskSubclass": "Ask subclass"
+    "AskSubclass": "Ask subclass",
+    "TextFromIdentifier": "Text from identifier"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

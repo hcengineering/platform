@@ -14,8 +14,10 @@
 -->
 
 <script lang="ts">
+  import attachment from '@hcengineering/attachment'
   import { Card, Tag } from '@hcengineering/card'
-  import core, { Class, Doc, Ref, toRank } from '@hcengineering/core'
+  import core, { Blob, Class, Doc, Ref, toRank } from '@hcengineering/core'
+  import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { getClient, KeyedAttribute, updateAttribute } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'
   import { MarkupEditor } from '@hcengineering/view-resources'
@@ -60,6 +62,16 @@
       objectId: doc._id
     })
   }
+
+  async function attachFile (file: File): Promise<{ file: Ref<Blob>, type: string } | undefined> {
+    try {
+      const uploadFile = await getResource(attachment.helper.UploadFile)
+      const { uuid } = await uploadFile(file)
+      return { file: uuid, type: file.type }
+    } catch (err: any) {
+      await setPlatformStatus(unknownError(err))
+    }
+  }
 </script>
 
 {#each keys as key}
@@ -73,6 +85,7 @@
         onChange(value, key)
       }}
       {readonly}
+      {attachFile}
     />
   </div>
 {/each}

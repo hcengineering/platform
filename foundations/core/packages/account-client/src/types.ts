@@ -14,6 +14,8 @@ import {
   IntegrationKind
 } from '@hcengineering/core'
 
+export type { WorkspaceConfiguration } from '@hcengineering/core'
+
 export interface LoginInfo {
   account: AccountUuid
   name?: string
@@ -43,7 +45,7 @@ export interface LoginInfoWorkspace {
   role: AccountRole | null
   progress?: number
   branding?: string
-  passwordAgingRule?: number // in days
+  passwordAgingRule?: number | null // in days
 }
 
 export interface LoginInfoWithWorkspaces extends LoginInfo {

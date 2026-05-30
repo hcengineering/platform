@@ -78,6 +78,7 @@ import envConfig from './config'
 import { ApiError } from './error'
 import { ExportFormat, WorkspaceExporter } from './exporter'
 import { CrossWorkspaceExporter, type ExportOptions, type ExportResult } from './workspace'
+import { createProductVersionHandler } from './handlers/product-version-handler'
 
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
@@ -541,7 +542,8 @@ export function createServer (
             relations,
             fieldMappers,
             skipDeletedObsolete: skipDeletedObsolete ?? true,
-            exportOnlyEffective: exportOnlyEffective ?? false
+            exportOnlyEffective: exportOnlyEffective ?? false,
+            customHandlers: [createProductVersionHandler()]
           }
 
           const exportResult: ExportResult = await exporter.export(options)

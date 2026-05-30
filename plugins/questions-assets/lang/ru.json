@@ -30,6 +30,8 @@
     "SingleChoiceQuestion": "Одиночный выбор (без оценки)",
     "TypePercentage": "Проценты",
     "TypeQuestionOption": "Вариант",
-    "TypeRank": "Ранг"
+    "TypeRank": "Ранг",
+    "ConfigLabel": "Вопросы",
+    "ConfigDescription": "Конструктор вопросов и оценочных заданий для обучения, квизов и опросов"
   }
 }

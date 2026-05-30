@@ -777,7 +777,7 @@ class Connection implements ClientConnection {
       params: [_class, query, options],
       measure: (time, result, serverTime, queue, toReceive) => {
         if (typeof window !== 'undefined' && (time > 1000 || serverTime > 500)) {
-          console.error(
+          console.warn(
             'measure slow findAll',
             time,
             serverTime,

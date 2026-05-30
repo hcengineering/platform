@@ -107,6 +107,7 @@ import {
   LastValue,
   LowerCase,
   MarkupFromString,
+  StringFromIdentifier,
   Max,
   Min,
   Modulo,
@@ -800,6 +801,7 @@ export default async () => ({
     Max,
     StringFromMarkup,
     MarkupFromString,
+    StringFromIdentifier,
     StringFromEnum,
     EnumFromString
   },

@@ -240,6 +240,7 @@
     "TwoFactorAuthDisabled": "Two-factor authentication is disabled",
     "ShowQRCode": "Show QR code",
     "EnterVerificationCode": "Enter verification code",
+    "OverrideAttribute": "Override attribute",
     "ApiTokenStatusActive": "Active",
     "ApiTokenStatusExpiring": "Expiring",
     "ApiTokenStatusRevoked": "Revoked",

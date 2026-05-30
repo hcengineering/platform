@@ -16,12 +16,13 @@
 <script lang="ts">
   import { Card } from '@hcengineering/presentation'
   import { StyledTextBox } from '@hcengineering/text-editor-resources'
-  import type { EditorKitOptions } from '@hcengineering/text-editor-resources'
+  import type { EditorKitOptions, ImageUploadOptions } from '@hcengineering/text-editor-resources'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
 
   export let value: string
   export let kitOptions: Partial<EditorKitOptions> = { reference: true, emoji: true }
+  export let attachFile: ImageUploadOptions['attachFile'] | undefined = undefined
 
   const dispatch = createEventDispatcher()
   export let maxHeight: string = '40vh'
@@ -53,6 +54,7 @@
       mode={2}
       hideExtraButtons
       {maxHeight}
+      {attachFile}
       on:value={checkValue}
     />
   </div>

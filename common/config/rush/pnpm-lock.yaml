@@ -38292,6 +38292,9 @@ importers:
       '@hcengineering/postgres':
         specifier: workspace:^0.7.22
         version: link:../../../foundations/server/packages/postgres
+      '@hcengineering/products':
+        specifier: workspace:^0.7.0
+        version: link:../../../plugins/products
       '@hcengineering/server-client':
         specifier: workspace:^0.7.16
         version: link:../../../foundations/server/packages/client

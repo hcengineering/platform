@@ -238,6 +238,7 @@
     "TwoFactorAuthDisabled": "Dvoufaktorové ověřování je zakázáno",
     "ShowQRCode": "Zobrazit QR kód",
     "EnterVerificationCode": "Zadejte ověřovací kód",
+    "OverrideAttribute": "Přepsat atribut",
     "ApiBaseUrl": "Base URL",
     "ApiEndpointAccount": "Get account info",
     "ApiEndpointFindAll": "Query documents by class",

@@ -651,7 +651,7 @@ export class MongoAccountDB implements AccountDB {
     )
   }
 
-  async updatePasswordAgingRule (workspaceId: WorkspaceUuid, days: number): Promise<void> {
+  async updatePasswordAgingRule (workspaceId: WorkspaceUuid, days: number | null): Promise<void> {
     await this.workspace.update(
       {
         uuid: workspaceId
