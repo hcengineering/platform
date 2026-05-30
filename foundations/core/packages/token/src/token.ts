@@ -138,3 +138,75 @@ export function decodeTokenVerbose (ctx: MeasureContext, token: string): Token {
     throw new TokenError(err.message)
   }
 }
+
+/**
+ * Checks whether a token has passed its `exp` (seconds since epoch) deadline.
+ * `decodeToken` only verifies the signature — expiry must be checked separately.
+ * @public
+ */
+export function isTokenExpired (token: Token, now: number = Date.now()): boolean {
+  return token.exp !== undefined && token.exp * 1000 <= now
+}
+
+/**
+ * Resolves whether a revokable API token (identified by `extra.apiTokenId`)
+ * has been revoked. Registered by services that can reach the account
+ * (see {@link setApiTokenRevocationChecker}); other services skip the check.
+ * @public
+ */
+export type ApiTokenRevocationChecker = (apiTokenId: string, token: Token, raw: string) => Promise<boolean>
+
+let apiTokenRevocationChecker: ApiTokenRevocationChecker | undefined
+
+const REVOCATION_CACHE_TTL_MS = 60_000
+const revocationCache = new Map<string, { revoked: boolean, checkedAt: number }>()
+
+/**
+ * Registers the revocation resolver used by {@link verifyToken}. Services with
+ * an account client install this once at startup; this is the "method to verify"
+ * metadata the token plugin needs to enforce revocation without depending on the
+ * account client directly.
+ * @public
+ */
+export function setApiTokenRevocationChecker (checker: ApiTokenRevocationChecker | undefined): void {
+  apiTokenRevocationChecker = checker
+  revocationCache.clear()
+}
+
+async function isApiTokenRevoked (apiTokenId: string, token: Token, raw: string, now: number): Promise<boolean> {
+  const cached = revocationCache.get(apiTokenId)
+  // Revocation is irreversible — once confirmed it stays cached.
+  if (cached?.revoked === true) return true
+  if (cached === undefined || now - cached.checkedAt > REVOCATION_CACHE_TTL_MS) {
+    try {
+      const revoked = await (apiTokenRevocationChecker as ApiTokenRevocationChecker)(apiTokenId, token, raw)
+      revocationCache.set(apiTokenId, { revoked, checkedAt: now })
+      return revoked
+    } catch {
+      // Account unreachable: fall back to the stale verdict (fail-open) and retry next TTL.
+      return cached?.revoked ?? false
+    }
+  }
+  return cached.revoked
+}
+
+/**
+ * Decodes and fully validates a token: signature (via {@link decodeToken}),
+ * expiry, and — for revokable API tokens — revocation. Reuse this instead of
+ * `decodeToken` anywhere expired or revoked tokens must be rejected (transactor
+ * REST API, blob access, etc.) so the policy lives in one place.
+ * @public
+ */
+export async function verifyToken (token: string, secret?: string): Promise<Token> {
+  const decoded = decodeToken(token, true, secret)
+  if (isTokenExpired(decoded)) {
+    throw new TokenError('Token expired')
+  }
+  const apiTokenId = decoded.extra?.apiTokenId
+  if (apiTokenId !== undefined && apiTokenRevocationChecker !== undefined) {
+    if (await isApiTokenRevoked(apiTokenId, decoded, token, Date.now())) {
+      throw new TokenError('Token revoked')
+    }
+  }
+  return decoded
+}

@@ -2800,9 +2800,9 @@ async function listApiTokens (
 }
 
 /**
- * Soft-revoke: marks the token as revoked in the DB.
- * The JWT itself remains valid until expiry — full revocation requires
- * a denylist check at the transactor level (future enhancement).
+ * Marks the token as revoked in the DB. Enforcement is centralized: the account
+ * rejects revoked tokens (see `wrap`), and services validate via `verifyToken`,
+ * so a revoked token stops working within the verification cache TTL (~60s).
  */
 async function revokeApiToken (
   ctx: MeasureContext,
@@ -2825,25 +2825,6 @@ async function revokeApiToken (
 
   await db.apiToken.update({ id: tokenId }, { revoked: true })
   ctx.info('API token revoked', { tokenId, account })
-}
-
-/**
- * Checks if a specific API token has been revoked.
- * Used by the transactor to enforce revocation at the request level.
- */
-async function checkApiTokenRevoked (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { apiTokenId: string }
-): Promise<boolean> {
-  const { apiTokenId } = params
-  const existing = await db.apiToken.findOne({ id: apiTokenId })
-  if (existing == null) {
-    return true // Unknown token treated as revoked
-  }
-  return existing.revoked
 }
 
 /**
@@ -3618,7 +3599,6 @@ export type AccountMethods =
   | 'revokeApiToken'
   | 'listWorkspaceApiTokens'
   | 'revokeWorkspaceApiToken'
-  | 'checkApiTokenRevoked'
 
 /**
  * @public
@@ -3692,7 +3672,6 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     revokeApiToken: wrap(revokeApiToken),
     listWorkspaceApiTokens: wrap(listWorkspaceApiTokens),
     revokeWorkspaceApiToken: wrap(revokeWorkspaceApiToken),
-    checkApiTokenRevoked: wrap(checkApiTokenRevoked),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),

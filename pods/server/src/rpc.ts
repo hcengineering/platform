@@ -27,7 +27,7 @@ import core, {
 } from '@hcengineering/core'
 import { rpcJSONReplacer, type RateLimitInfo } from '@hcengineering/rpc'
 import type { ClientSessionCtx, ConnectionSocket, Session, SessionManager } from '@hcengineering/server-core'
-import { decodeToken, generateToken } from '@hcengineering/server-token'
+import { setApiTokenRevocationChecker, verifyToken, type Token } from '@hcengineering/server-token'
 
 import { createHash } from 'crypto'
 import { type Express, type Response as ExpressResponse, type Request } from 'express'
@@ -37,7 +37,7 @@ import { promisify } from 'util'
 import { gzip } from 'zlib'
 import { retrieveJson } from './utils'
 
-import { unknownError } from '@hcengineering/platform'
+import platform, { PlatformError, unknownError } from '@hcengineering/platform'
 
 export const COMMUNICATION_DOMAIN = 'communication' as OperationDomain
 interface RPCClientInfo {
@@ -129,40 +129,24 @@ async function sendJson (
   res.end(body)
 }
 
-// ── API Token Revocation Cache ──────────────────────────────────────
-// Per-token cache with 60s TTL. Once a token is confirmed revoked it
-// stays cached permanently (revocation is irreversible). Non-revoked
-// tokens are re-checked every TTL interval.
-const REVOCATION_CACHE_TTL_MS = 60_000
-const revocationCache = new Map<string, { revoked: boolean, checkedAt: number }>()
-
-async function isApiTokenRevoked (apiTokenId: string, accountClient: AccountClient): Promise<boolean> {
-  const now = Date.now()
-  const cached = revocationCache.get(apiTokenId)
-
-  // Permanently cached once revoked
-  if (cached?.revoked === true) return true
-
-  // Re-check if stale or missing
-  if (cached == null || now - cached.checkedAt > REVOCATION_CACHE_TTL_MS) {
-    try {
-      const revoked = await accountClient.checkApiTokenRevoked(apiTokenId)
-      revocationCache.set(apiTokenId, { revoked, checkedAt: now })
-      return revoked
-    } catch {
-      // If we can't reach the account service, use stale cache or allow
-      return cached?.revoked ?? false
-    }
-  }
-
-  return cached.revoked
-}
-
 // ── Token Scope Enforcement ─────────────────────────────────────────
 // Phase 1: coarse scopes only (read:*, write:*, delete:*)
 
 export function hasScope (scopes: string[], required: string): boolean {
   return scopes.includes(required)
+}
+
+// Scopes are carried in the JWT as a JSON-serialized string under `extra.scopes`.
+// Parse once per request and thread the result through, rather than re-decoding.
+export function parseScopes (decoded: Token): string[] | undefined {
+  const raw = decoded.extra?.scopes
+  if (raw === undefined) return undefined
+  try {
+    const scopes = JSON.parse(raw)
+    return Array.isArray(scopes) ? scopes : undefined
+  } catch {
+    return undefined
+  }
 }
 
 export function getRequiredScope (method: string): string | null {
@@ -193,6 +177,22 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     return getAccountClientRaw(accountsUrl, token)
   }
 
+  // Centralized revocation resolution for verifyToken: the account is the source
+  // of truth, so we simply ask it to validate the presenter's own token via an
+  // existing method. A rejection (Unauthorized) means revoked or expired; any
+  // other failure is transient and left for verifyToken's cache to retry.
+  setApiTokenRevocationChecker(async (_apiTokenId, _token, raw) => {
+    try {
+      await getAccountClient(raw).getLoginInfoByToken()
+      return false
+    } catch (err: any) {
+      if (err instanceof PlatformError && err.status?.code === platform.status.Unauthorized) {
+        return true
+      }
+      throw err
+    }
+  })
+
   async function withSession (
     req: Request,
     res: ExpressResponse,
@@ -201,7 +201,8 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       ctx: ClientSessionCtx,
       session: Session,
       rateLimit: RateLimitInfo | undefined,
-      token: string
+      token: string,
+      scopes: string[] | undefined
     ) => Promise<void>
   ): Promise<void> {
     try {
@@ -218,30 +219,22 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       const workspaceId = decodeURIComponent(req.params.workspaceId)
       token = token.split(' ')[1]
 
-      const decodedToken = decodeToken(token)
+      // Verify signature, expiry, and (for revokable API tokens) revocation.
+      let decodedToken: Token
+      try {
+        decodedToken = await verifyToken(token)
+      } catch (err: any) {
+        sendError(res, 401, { message: 'Invalid or revoked token' })
+        return
+      }
       if (workspaceId !== decodedToken.workspace) {
         sendError(res, 403, { message: 'Invalid workspace', workspace: decodedToken.workspace })
         return
       }
 
-      // Reject revoked API tokens (cached check, ~60s TTL)
-      const apiTokenId = decodedToken.extra?.apiTokenId
-      if (apiTokenId !== undefined) {
-        if (
-          await isApiTokenRevoked(
-            apiTokenId,
-            getAccountClient(generateToken(systemAccountUuid, undefined, { service: 'server' }))
-          )
-        ) {
-          sendError(res, 401, { message: 'Token has been revoked' })
-          return
-        }
-      }
-
       // Enforce token scopes (Phase 1: coarse scopes — read:*, write:*, delete:*)
-      const scopesRaw = decodedToken.extra?.scopes
-      if (scopesRaw !== undefined) {
-        const scopes: string[] = JSON.parse(scopesRaw)
+      const scopes = parseScopes(decodedToken)
+      if (scopes !== undefined) {
         const requiredScope = getRequiredScope(method)
         if (requiredScope !== null && !hasScope(scopes, requiredScope)) {
           sendError(res, 403, { message: 'Insufficient token scope', required: requiredScope })
@@ -272,7 +265,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         method,
         rpc.client,
         async (ctx, rateLimit) => {
-          await operation(ctx, rpc.session, rateLimit, token)
+          await operation(ctx, rpc.session, rateLimit, token, scopes)
         }
       )
       if (rateLimit !== undefined) {
@@ -349,19 +342,13 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
   })
 
   app.post('/api/v1/tx/:workspaceId', (req, res) => {
-    void withSession(req, res, 'tx', async (ctx, session, rateLimit, token) => {
+    void withSession(req, res, 'tx', async (ctx, session, rateLimit, token, scopes) => {
       const tx: any = (await retrieveJson(req)) ?? {}
 
-      // Enforce delete:* scope for remove transactions
-      if (tx._class === core.class.TxRemoveDoc) {
-        const scopesStr = decodeToken(token).extra?.scopes
-        if (scopesStr !== undefined) {
-          const scopes: string[] = JSON.parse(scopesStr)
-          if (!scopes.includes('delete:*')) {
-            sendError(res, 403, { message: 'Insufficient token scope', required: 'delete:*' })
-            return
-          }
-        }
+      // Enforce delete:* scope for remove transactions (write:* already checked in withSession)
+      if (tx._class === core.class.TxRemoveDoc && scopes !== undefined && !scopes.includes('delete:*')) {
+        sendError(res, 403, { message: 'Insufficient token scope', required: 'delete:*' })
+        return
       }
 
       if (tx._class === core.class.TxDomainEvent) {
