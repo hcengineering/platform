@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, Ref, SortingOrder, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import core, { Class, Doc, Ref, SortingOrder, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import { createQuery, getClient, isAdminUser } from '@hcengineering/presentation'
@@ -53,7 +53,7 @@
     ? Array.from(new Set(getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c)))).filter(
         (it) => !hierarchy.isMixin(it)
       )
-    : []) as Ref<typeof core.class.Space>[]
+    : []) as Ref<Class<Space>>[]
 
   $: spaces = adminUser || collabSpaces.length === 0
     ? memberSpaces
