@@ -60,6 +60,13 @@
       // Filter to Issues only when the caller is not a member; everything
       // else (Components / Milestones / Templates) would render as an
       // empty list and clutter the tree.
+      // SCOPE LIMIT (V1): only `tracker.class.Issue` opts into mentions-
+      // grant-access today (see models/tracker/src/index.ts). If another
+      // tracker class later sets ClassCollaborators.provideSecurity = true
+      // + grants its own Collaborator edges, this hard-coded `'issues'`
+      // check will hide that class's sub-view for collab-only Guests.
+      // Make the check class- or special-driven before flipping the
+      // second opt-in.
       if (shouldAdd && collabOnly && sp.id !== 'issues') {
         shouldAdd = false
       }
