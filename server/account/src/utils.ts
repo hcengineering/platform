@@ -43,7 +43,13 @@ import otpGenerator from 'otp-generator'
 import { authenticator } from 'otplib'
 
 import { Analytics } from '@hcengineering/analytics'
-import { decodeToken, decodeTokenVerbose, generateToken, type PermissionsGrant, TokenError } from '@hcengineering/server-token'
+import {
+  decodeToken,
+  decodeTokenVerbose,
+  generateToken,
+  type PermissionsGrant,
+  TokenError
+} from '@hcengineering/server-token'
 import { MongoAccountDB } from './collections/mongo'
 import { PostgresAccountDB } from './collections/postgres/postgres'
 import { accountPlugin } from './plugin'

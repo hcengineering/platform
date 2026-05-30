@@ -24,7 +24,8 @@
   // account service on authentication and stored as the login endpoint (a
   // ws(s):// URL); derive the http(s) base from it the same way other tools do.
   const transactorEndpoint = (fetchMetadataLocalStorage(login.metadata.LoginEndpoint) ?? '').replace(/^ws/, 'http')
-  const baseApiUrl = (transactorEndpoint.endsWith('/') ? transactorEndpoint.slice(0, -1) : transactorEndpoint) + '/api/v1'
+  const baseApiUrl =
+    (transactorEndpoint.endsWith('/') ? transactorEndpoint.slice(0, -1) : transactorEndpoint) + '/api/v1'
   $: curlExample = `curl -H "Authorization: Bearer YOUR_TOKEN" \\\n  "${baseApiUrl}/find-all/WORKSPACE_ID?class=tracker:class:Project"`
 
   async function copySnippet (text: string): Promise<void> {
