@@ -23,8 +23,7 @@ import core, {
   type Ref,
   SortingOrder,
   type Space,
-  type Tx,
-  type Type
+  type Tx
 } from '@hcengineering/core'
 import {
   type Builder,
@@ -35,8 +34,8 @@ import {
   TypeAny,
   TypeBoolean,
   TypeIntlString,
-  TypeRecord,
   TypeRank,
+  TypeRecord,
   TypeRef,
   TypeString,
   UX
@@ -47,7 +46,7 @@ import { TToDo } from '@hcengineering/model-time'
 import view, { createAction } from '@hcengineering/model-view'
 import workbench from '@hcengineering/model-workbench'
 import notification, { type NotificationGroup } from '@hcengineering/notification'
-import { type Asset, getEmbeddedLabel, type IntlString, type Resource } from '@hcengineering/platform'
+import { type Asset, type IntlString, type Resource, getEmbeddedLabel } from '@hcengineering/platform'
 import {
   type ApproveRequest,
   type CheckFunc,
