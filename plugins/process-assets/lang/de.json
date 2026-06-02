@@ -172,7 +172,11 @@
     "TextFromSelect": "Text aus Auswahl",
     "SelectFromText": "Auswahl aus Text",
     "AskSubclass": "Nach Unterklasse fragen",
-    "TextFromIdentifier": "Text aus Identifikator"
+    "TextFromIdentifier": "Text aus Identifikator",
+    "ExportWithSlots": "Slot-Export",
+    "ExportWithoutSlots": "Slot-freier Export",
+    "RequiredSlots": "Erforderliche Slots",
+    "Bindings": "Bindungen"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

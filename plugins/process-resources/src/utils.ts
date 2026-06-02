@@ -63,13 +63,18 @@ import { showPopup } from '@hcengineering/ui'
 import { type AttributeCategory } from '@hcengineering/view'
 import process from './plugin'
 
-export function isTypeEqual (toCheck: Type<any> | undefined, attr: Type<any>): boolean {
-  const skip = ['label', 'icon', 'hidden', 'readonly']
+export function isTypeEqual (toCheck: any | undefined, attr: Type<any>): boolean {
   if (toCheck === undefined) return true
-  if (Object.keys(attr).length !== Object.keys(toCheck).length) return true
-  for (const key of Object.keys(attr)) {
-    if (skip.includes(key)) continue
-    if (toCheck[key as keyof Type<any>] !== attr[key as keyof Type<any>]) return false
+  const check = toCheck.type !== undefined ? toCheck.type : toCheck
+  if (check._class !== attr._class) return false
+  if (check._class === core.class.RefTo) {
+    return (check as RefTo<Doc>).to === (attr as RefTo<Doc>).to
+  }
+  if (check._class === core.class.ArrOf) {
+    return isTypeEqual((check as ArrOf<Doc>).of, (attr as ArrOf<Doc>).of)
+  }
+  if (check._class === core.class.EnumOf) {
+    return check.of === (attr as any).of
   }
   return true
 }

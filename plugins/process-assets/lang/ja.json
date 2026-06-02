@@ -176,7 +176,11 @@
     "TextFromSelect": "テキストから選択",
     "SelectFromText": "選択からテキスト",
     "AskSubclass": "サブクラスを尋ねる",
-    "TextFromIdentifier": "テキストから識別子"
+    "TextFromIdentifier": "テキストから識別子",
+    "ExportWithSlots": "スロット付きでエクスポート",
+    "ExportWithoutSlots": "スロットなしでエクスポート",
+    "RequiredSlots": "必須スロット",
+    "Bindings": "バインディング"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

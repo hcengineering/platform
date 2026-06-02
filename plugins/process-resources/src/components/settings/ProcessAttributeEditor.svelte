@@ -46,7 +46,10 @@
 
   $: value = object[objectKey ?? key]
 
-  $: attribute = hierarchy.getAttribute(_class, key)
+  $: slot = process.requiredSlots?.[key] as any
+  $: attribute = slot
+    ? ({ name: key, label: slot.label, _id: key, type: slot } as any)
+    : hierarchy.getAttribute(_class, key)
   $: presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
   $: context = getContext(client, process, presenterClass.attrClass, presenterClass.category, attribute._id, true)
 

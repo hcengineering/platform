@@ -266,6 +266,8 @@ export default mergeIds(processId, process, {
     LockField: '' as IntlString,
     UnlockField: '' as IntlString,
     Export: '' as IntlString,
+    ExportWithSlots: '' as IntlString,
+    ExportWithoutSlots: '' as IntlString,
     Import: '' as IntlString,
     TextFromIdentifier: '' as IntlString,
     TextFromNumber: '' as IntlString,
@@ -283,7 +285,9 @@ export default mergeIds(processId, process, {
     DateDifference: '' as IntlString,
     TextFromSelect: '' as IntlString,
     SelectFromText: '' as IntlString,
-    AskSubclass: '' as IntlString
+    AskSubclass: '' as IntlString,
+    RequiredSlots: '' as IntlString,
+    Bindings: '' as IntlString
   },
   permission: {
     RunProcess: '' as Ref<Permission>,

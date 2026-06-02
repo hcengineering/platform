@@ -24,6 +24,19 @@ import { SelectedExecutionContext } from './types'
  */
 export const processId = 'process' as Plugin
 
+export interface SlotModel {
+  slotKind: 'attribute' | 'class' | 'association' | 'process' | 'unknown'
+  _class: Ref<Class<Doc>>
+  label?: IntlString
+  name?: string
+  memberOf?: string
+}
+
+export interface AttributeSlotModel extends SlotModel {
+  slotKind: 'attribute'
+  type: Type<any>
+}
+
 // Process model dscription
 export interface Process extends Doc {
   masterTag: Ref<MasterTag | Tag>
@@ -34,6 +47,8 @@ export interface Process extends Doc {
   automationOnly?: boolean
   context: Record<ContextId, ProcessContext>
   resultType?: Type<any>
+  requiredSlots?: Record<string, SlotModel>
+  bindings?: Record<string, string>
 }
 
 export interface ProcessContext {
