@@ -107,6 +107,7 @@ describe('Process Export/Import Integration', () => {
           methodId: process.method.CreateCard,
           params: {
             title: `\${$userRequest(${attrId},title,card:class:Card)}`,
+            otherAttr: '${@sourceAttr}',
             contextRef: '${$context(__CONTEXT_0__)}'
           }
         }
@@ -128,7 +129,10 @@ describe('Process Export/Import Integration', () => {
     // Verify normalization
     expect(json).toContain('__SLOT_')
     expect(json).toContain('__CONTEXT_')
-    expect(json).not.toContain(attrId) // Should be replaced by slot placeholder
+    const transitionDoc = docs.find((d: any) => d._class === process.class.Transition) as any
+    const exportedParams = transitionDoc.actions[0].params
+    expect(exportedParams.otherAttr).not.toContain(attrId)
+    expect(exportedParams.otherAttr).toContain('__SLOT_sourceAttr__')
 
     // 2. Import
     const newMasterTag = generateId()
@@ -156,6 +160,9 @@ describe('Process Export/Import Integration', () => {
     // CRITICAL: Check if DSL restored the REAL attribute ID
     expect(importedParams.title).toContain(attrId)
     expect(importedParams.title).not.toContain('__SLOT_')
+
+    expect(importedParams.otherAttr).toContain(attrId)
+    expect(importedParams.otherAttr).not.toContain('__SLOT_')
 
     // Check if context was restored (it gets a NEW ID, not the placeholder)
     expect(importedParams.contextRef).toContain('${$context(')

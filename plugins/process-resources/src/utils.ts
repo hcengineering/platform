@@ -63,15 +63,27 @@ import { showPopup } from '@hcengineering/ui'
 import { type AttributeCategory } from '@hcengineering/view'
 import process from './plugin'
 
-export function isTypeEqual (toCheck: any | undefined, attr: Type<any>): boolean {
+export function isTypeEqual (toCheck: any | undefined, attr: Type<any>, bindings?: Record<string, string>): boolean {
   if (toCheck === undefined) return true
   const check = toCheck.type !== undefined ? toCheck.type : toCheck
   if (check._class !== attr._class) return false
   if (check._class === core.class.RefTo) {
-    return (check as RefTo<Doc>).to === (attr as RefTo<Doc>).to
+    let checkTo = (check as RefTo<Doc>).to
+    if (checkTo.startsWith('__SLOT_')) {
+      const slotId = checkTo.replace(/^__SLOT_(.+)__$/, '$1')
+      checkTo = (bindings?.[slotId] ?? slotId) as unknown as Ref<Class<Doc>>
+    }
+
+    let attrTo = (attr as RefTo<Doc>).to
+    if (attrTo.startsWith('__SLOT_')) {
+      const slotId = attrTo.replace(/^__SLOT_(.+)__$/, '$1')
+      attrTo = (bindings?.[slotId] ?? slotId) as unknown as Ref<Class<Doc>>
+    }
+
+    return checkTo === attrTo
   }
   if (check._class === core.class.ArrOf) {
-    return isTypeEqual((check as ArrOf<Doc>).of, (attr as ArrOf<Doc>).of)
+    return isTypeEqual((check as ArrOf<Doc>).of, (attr as ArrOf<Doc>).of, bindings)
   }
   if (check._class === core.class.EnumOf) {
     return check.of === (attr as any).of

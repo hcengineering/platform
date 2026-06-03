@@ -95,7 +95,6 @@
             editable
           }
 
-    console.log('attr', attribute, readonlyParams)
     if (attribute.collectionAttr || attribute.attribute?.type?._class === core.class.TypeIdentifier) {
       return { object, ...attribute.props, ...readonlyParams }
     }

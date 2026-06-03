@@ -126,7 +126,7 @@
     } else {
       const attributes = memberOfTag ? hierarchy.getAllAttributes(memberOfTag, core.class.Doc) : []
       possible = Array.from(attributes.values())
-        .filter((attr) => !attr.hidden && isTypeEqual(slot, attr.type))
+        .filter((attr) => !attr.hidden && isTypeEqual(slot, attr.type, bindings))
         .map((a) => ({
           id: a.name,
           label: a.label,

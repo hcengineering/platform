@@ -511,13 +511,12 @@ describe('detectSlots refined', () => {
     detectSlots({ masterTag } as any, transitions, slots, bindings, m, h)
 
     // Expected Slots:
-    // Both attr1Id and attr2Id should be detected.
-    // They get their IDs as slot names because they are passed as 'name' to addAttribute.
+    // attr1Id should be detected, but attr2Id should not because it is inside a user request.
+    // It gets its ID as slot name because it is passed as 'name' to addAttribute.
     expect(bindings).toEqual({
-      [attr1Id]: attr1Id,
-      [attr2Id]: attr2Id
+      [attr1Id]: attr1Id
     })
-    expect(Object.keys(slots).sort()).toEqual([attr1Id, attr2Id].sort())
+    expect(Object.keys(slots).sort()).toEqual([attr1Id])
   })
 
   test('Test 10: Detection of custom classes (not attributes)', async () => {
@@ -701,7 +700,7 @@ describe('detectSlots refined', () => {
             _id: '__ACTION_1__',
             _class: 'process:Action' as any,
             methodId: process.method.UpdateCard,
-            params: { title: `\${$userRequest(${attrId})}` }
+            params: { title: `\${$someFunction(${attrId})}` }
           }
         ] as any,
         process: processId,

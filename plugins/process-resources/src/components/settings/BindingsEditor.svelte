@@ -100,7 +100,7 @@
       // Default: attribute matching
       const attributes = hierarchy.getAllAttributes(memberOfTag, core.class.Doc)
       possible = Array.from(attributes.values())
-        .filter((attr) => !(attr.hidden ?? false) && isTypeEqual(slot as any, attr.type))
+        .filter((attr) => !(attr.hidden ?? false) && isTypeEqual(slot as any, attr.type, process.bindings))
         .map((a) => ({ id: a.name, label: a.label, name: a.name }))
     }
 

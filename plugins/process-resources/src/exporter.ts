@@ -829,6 +829,9 @@ function scanParamValue (
   m: ModelDb,
   h: Hierarchy
 ): void {
+  if (val.includes('$userRequest')) {
+    return
+  }
   const potentialIds = extractPotentialIds(val)
 
   for (const id of potentialIds) {
