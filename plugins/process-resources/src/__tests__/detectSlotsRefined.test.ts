@@ -1138,4 +1138,79 @@ describe('detectSlots refined', () => {
     expect(subProcSlot).toBeDefined()
     expect(subProcSlot.memberOf).toBeDefined() // It should refer to slot created for ClassB
   })
+
+  test('Test 24: User Example (Execute-2.json simulation)', async () => {
+    const mainClassId = 'ClassA'
+    const testResultClassId = '69e8d19c618de58dbaf9ecf2'
+    const attemptsAttrId = 'custom6a00914a295035d76ab16e1d'
+    const attemptNumAttrId = 'custom69eb7f41889a0214e41368cb'
+
+    const mainClassDoc = { _id: mainClassId, _class: 'core:class:Class', name: 'ClassA', label: 'Main Entity' }
+    const testResultClassDoc = { _id: testResultClassId, _class: 'core:class:Class', name: 'TestResult', label: '(T) Test Result' }
+    
+    const attemptsAttrDoc = {
+      _id: attemptsAttrId,
+      _class: 'core:class:Attribute',
+      name: 'attempts',
+      label: 'Attempts',
+      attributeOf: mainClassId,
+      type: 'core:class:TypeNumber'
+    }
+    const attemptNumAttrDoc = {
+      _id: attemptNumAttrId,
+      _class: 'core:class:Attribute',
+      name: 'attemptNumber',
+      label: 'Attempt number',
+      attributeOf: testResultClassId,
+      type: 'core:class:TypeNumber'
+    }
+
+    m.findObject = jest.fn().mockImplementation((id) => {
+      if (id === mainClassId) return mainClassDoc
+      if (id === testResultClassId) return testResultClassDoc
+      if (id === attemptsAttrId) return attemptsAttrDoc
+      if (id === attemptNumAttrId) return attemptNumAttrDoc
+      if (id === 'process:method:CreateCard') return { _id: 'process:method:CreateCard', requiredParams: ['_class'] }
+      return undefined
+    })
+
+    h.findAttribute = jest.fn().mockImplementation((tag, attrId) => {
+      if (tag === mainClassId && attrId === attemptsAttrId) return attemptsAttrDoc
+      if (tag === testResultClassId && attrId === attemptNumAttrId) return attemptNumAttrDoc
+      return undefined
+    })
+
+    const transitions = [
+      {
+        _id: 'tr1',
+        actions: [
+          {
+            _id: 'act1',
+            methodId: 'process:method:CreateCard',
+            params: {
+              _class: testResultClassId,
+              [attemptNumAttrId]: `\${@${attemptsAttrId}}`
+            }
+          }
+        ]
+      }
+    ]
+
+    const slots: Record<string, any> = {}
+    const bindings: Record<string, string> = {}
+    detectSlots({ masterTag: mainClassId } as any, transitions as any[], slots, bindings, m, h)
+
+    // attempts (attemptsAttrId) belongs to mainClassId (masterTag), so its memberOf must be undefined.
+    // attemptNumber (attemptNumAttrId) belongs to testResultClassId, so its memberOf must point to the testResultClassId slot.
+    const attemptsSlotName = 'attempts'
+    const attemptNumSlotName = 'attemptNumber'
+    const testResultSlotName = '(T) Test Result'
+
+    expect(slots[attemptsSlotName]).toBeDefined()
+    expect(slots[attemptNumSlotName]).toBeDefined()
+    expect(slots[testResultSlotName]).toBeDefined()
+
+    expect(slots[attemptsSlotName].memberOf).toBeUndefined()
+    expect(slots[attemptNumSlotName].memberOf).toBe(`__SLOT_${testResultSlotName}__`)
+  })
 })
