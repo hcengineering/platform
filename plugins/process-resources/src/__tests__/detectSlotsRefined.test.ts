@@ -1146,8 +1146,13 @@ describe('detectSlots refined', () => {
     const attemptNumAttrId = 'custom69eb7f41889a0214e41368cb'
 
     const mainClassDoc = { _id: mainClassId, _class: 'core:class:Class', name: 'ClassA', label: 'Main Entity' }
-    const testResultClassDoc = { _id: testResultClassId, _class: 'core:class:Class', name: 'TestResult', label: '(T) Test Result' }
-    
+    const testResultClassDoc = {
+      _id: testResultClassId,
+      _class: 'core:class:Class',
+      name: 'TestResult',
+      label: '(T) Test Result'
+    }
+
     const attemptsAttrDoc = {
       _id: attemptsAttrId,
       _class: 'core:class:Attribute',
