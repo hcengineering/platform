@@ -74,6 +74,7 @@
 
   const query = createQuery()
 
+  let ancestors: Map<Ref<Department>, Ref<Department>[]> = new Map<Ref<Department>, Ref<Department>[]>()
   let descendants: Map<Ref<Department>, Department[]> = new Map<Ref<Department>, Department[]>()
   let departments: Map<Ref<Department>, Department> = new Map<Ref<Department>, Department>()
 
@@ -83,6 +84,9 @@
   query.query(hr.class.Department, {}, (res) => {
     departments.clear()
     descendants.clear()
+    ancestors.clear()
+
+    // build descendants and departments
     for (const doc of res) {
       if (doc.parent !== undefined && doc._id !== hr.ids.Head) {
         const current = descendants.get(doc.parent) ?? []
@@ -91,8 +95,28 @@
       }
       departments.set(doc._id, doc)
     }
+
+    // build ancestors: for each department, walk up to root
+    const byId = new Map<Ref<Department>, Ref<Department>>()
+    for (const doc of res) {
+      byId.set(doc._id, doc.parent ?? hr.ids.Head)
+    }
+
+    for (const doc of res) {
+      const list: Ref<Department>[] = []
+      let parent: Ref<Department> | undefined = doc._id
+      while (parent !== undefined && parent !== hr.ids.Head) {
+        parent = byId.get(parent)
+        if (parent !== undefined) {
+          list.push(parent)
+        }
+      }
+      ancestors.set(doc._id, list)
+    }
+
     departments = departments
     descendants = descendants
+    ancestors = ancestors
   })
 
   function inc (val: number): void {
@@ -299,6 +323,7 @@
     <ScheduleView
       {department}
       {descendants}
+      {ancestors}
       departmentById={departments}
       staffQuery={resultQuery}
       {currentDate}
