@@ -201,7 +201,7 @@ Use this table when deciding who should handle work. The orchestrator should mat
 
 Tahle cast popisuje, jak se ma nova Huly produkcni zmena prevest na Praut.
 
-Hlavni pravidlo: update nikdy nejde rovnou do `develop`. Skript vytvori samostatnou branch, aplikuje Praut overlay, spusti kontroly a pripravi podklady pro PR. Clovek potom schvali vysledek.
+Hlavni pravidlo: update nikdy nejde rovnou do `develop`. Skript vytvori samostatnou branch, aplikuje Praut overlay, vytvori jeden DCO signed-off update commit, spusti kontroly a pripravi podklady pro PR. Clovek potom schvali vysledek.
 
 Zdroj pravdy pro pravidla je `praut.overlay.json`.
 
@@ -222,11 +222,15 @@ Zdroj pravdy pro pravidla je `praut.overlay.json`.
 ### Produkcni update postup
 
 1. `upstream-sync-agent` spusti `node scripts/praut-upstream-update.mjs --upstream-ref <huly-ref>`.
-2. Skript overi cisty working tree, fetchne Huly upstream a vytvori Praut update branch.
-3. Skript mergne Huly ref, aplikuje Praut overlay a aktualizuje generated casti tohoto dokumentu.
-4. Skript spusti governance, overlay check, changed-package validace/testy, build, validate a smoke.
-5. Pokud je potreba PR, spusti se `--push --create-pr` nebo GitHub Actions workflow `Praut Upstream Update`.
-6. PR musi projit review podle zlutych/cervenych oblasti a az potom muze do `develop`.
+2. Skript overi cisty working tree, fetchne Huly upstream a vytvori Praut update branch z aktualniho Praut `develop`.
+3. Skript pouzije Huly ref jako squash update. Cizi upstream commity se neprenasi do PR historie, aby DCO nekontrolovalo sign-off autoru z Huly.
+4. Skript aplikuje Praut overlay, aktualizuje generated casti tohoto dokumentu a vytvori jeden commit se `Signed-off-by` footerem podle nakonfigurovaneho Git autora.
+5. Skript spusti governance, overlay check, changed-package validace/testy, build, validate a smoke.
+6. Skript zapise report do `.cache/praut-update-report.md`; v GitHub Actions se stejny report zobrazi v job summary a ulozi jako artifact.
+7. Pokud je potreba PR, spusti se `--push --create-pr` nebo GitHub Actions workflow `Praut Upstream Update`.
+8. PR musi projit review podle zlutych/cervenych oblasti a az potom muze do `develop`.
+
+GitHub Actions workflow `Praut Upstream Update` bezi pravidelne kazde pondeli a pri rucnim spusteni. Planovany beh vytvari update PR, pokud vznikne novy update commit. Workflow nesmi automaticky mergovat do `develop`.
 
 ### Co znamena vysledek
 
