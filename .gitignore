@@ -112,5 +112,6 @@ dev/tool/history.json
 .aider*
 /combined_dependencies
 .tmp
+.cache/praut-upstream/
 ws-tests/docker-compose.override.yml
 .cursor/*

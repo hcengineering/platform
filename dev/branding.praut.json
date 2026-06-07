@@ -1,0 +1,16 @@
+{
+  "praut.local:8087": {
+    "key": "praut",
+    "title": "PRAUT",
+    "protocol": "http",
+    "language": "cs",
+    "lastNameFirst": "false"
+  },
+  "localhost:8087": {
+    "key": "praut",
+    "title": "PRAUT",
+    "protocol": "http",
+    "language": "cs",
+    "lastNameFirst": "false"
+  }
+}

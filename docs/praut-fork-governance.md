@@ -1,0 +1,11556 @@
+# Praut Fork Governance
+
+This document tells Praut agents and engineers how to keep this repository as a maintainable fork of Huly Platform while adding Praut-specific product behavior.
+
+## ZELENA OBLAST
+
+Sem patri Praut-owned casti. To znamena: jsou to mista urcena pro nasi firmu, nase funkce, nase automatizace, nase dokumenty a nase nasazeni. Do techto casti muzeme sahat bezpecne jako prvni volba.
+
+Pravidlo: kdyz jde neco udelat tady, udelej to tady a nesahej kvuli tomu do Huly core.
+
+| Path | What it is | Can we change it? | Notes |
+| --- | --- | --- | --- |
+| `plugins/praut-*` | Praut user-facing modules | Yes | Best place for Praut screens and workflows. |
+| `server-plugins/praut-*` | Praut server-side feature modules | Yes | Use for backend logic tied to Praut features. |
+| `models/praut-*` | Praut data model extensions | Yes | Use for Praut-specific records, fields, and migrations. |
+| `packages/praut-*` | Shared Praut libraries | Yes | Use when multiple Praut modules need the same code. |
+| `services/praut-*` | Praut-specific services | Yes | Use for standalone Praut service processes. |
+| `docs/praut-*` | Praut documentation | Yes | Keep operational decisions here. |
+| `scripts/praut-*` | Praut automation | Yes | Keep scripts repeatable and non-destructive by default. |
+| `dev/docker-compose.praut*.yaml` | Praut deployment overrides | Yes | Prefer overrides over editing base Huly compose files. |
+
+## ZLUTA OBLAST
+
+Sem patri sdilene nebo citlive casti. Do techto casti sahat muzeme, ale ne automaticky. Zmena tady muze ovlivnit build, deployment, desktop aplikaci, testy, export dat, backup nebo kompatibilitu s budoucimi Huly aktualizacemi.
+
+Pravidlo: sahat jen s review od uvedeneho owner agenta.
+
+| Path | What it is | Can we change it? | Required review |
+| --- | --- | --- | --- |
+| `dev/branding*.json` | Local branding config | Yes, carefully | `frontend-branding-agent` |
+| `dev/prod/public/branding*.json` | Production branding config | Yes, carefully | `frontend-branding-agent` |
+| `desktop` | Desktop app wrapper | Yes, carefully | `frontend-branding-agent` or `qa-release-agent` |
+| `desktop-package` | Desktop packaging assets/config | Yes, carefully | `frontend-branding-agent` or `qa-release-agent` |
+| `qms-desktop-package` | QMS desktop packaging | Yes, carefully | `frontend-branding-agent` or `qa-release-agent` |
+| `.github/workflows` | CI/CD automation | Yes, carefully | `qa-release-agent` |
+| `tests`, `ws-tests`, `qms-tests` | Automated tests | Yes, carefully | `qa-release-agent` |
+| `dev/tool` | Internal admin/migration tooling | Yes, carefully | `data-migration-agent` |
+| `services/export` | Export service | Yes, carefully | `data-migration-agent` |
+| `server/backup` | Backup/restore internals | Yes, carefully | `data-migration-agent` plus `platform-core-agent` |
+
+## CERVENA OBLAST
+
+Sem patri Huly core. To znamena casti, ktere jsou primarne vlastnene upstream Huly projektem. Zmeny tady muzou rozbit hodne casti najednou a hlavne ztizi budouci aktualizace z Huly.
+
+Pravidlo: bez explicitni vyjimky nebo upstream-sync review sem nesahat.
+
+| Path | What it is | Can we change it? | Safer alternative |
+| --- | --- | --- | --- |
+| `foundations` | Lowest-level platform libraries | No, except reviewed core patch | Add Praut wrapper/package if possible. |
+| `packages` except `packages/praut-*` | Shared platform packages | No, except reviewed core patch | Add `packages/praut-*` or plugin-level adapter. |
+| `models` except `models/praut-*` | Huly domain models | No, except reviewed migration/model patch | Add Praut model extension. |
+| `plugins` except `plugins/praut-*` | Huly product plugins | No, except reviewed compatibility patch | Add Praut plugin or extension. |
+| `server-plugins` except `server-plugins/praut-*` | Huly server plugins | No, except reviewed compatibility patch | Add Praut server plugin. |
+| `server` | Core backend services | No, except reviewed platform patch | Add service/config overlay where possible. |
+| `pods` | Deployable platform service entrypoints | No, except reviewed deployment patch | Use compose/env override. |
+| `common/config/rush` | Monorepo package manager config | No, except dependency governance patch | Avoid new dependencies; use existing tooling. |
+| `rush.json` | Monorepo project registry | No, except when adding approved Praut packages | Keep additions minimal and grouped. |
+
+## Plain Language Overview
+
+This repository is Praut's own copy of Huly Platform. We want two things at the same time:
+
+1. Keep receiving useful updates from Huly.
+2. Build Praut-specific features, branding, and workflows for our company.
+
+Those two goals can fight each other. If we rewrite random Huly files, every future Huly update becomes harder. This document is the map that tells people and agents where Praut changes should go, which files should normally stay untouched, and who should handle each type of work.
+
+Read it like this:
+
+- If something is in **ZELENA OBLAST**, it is the preferred place for our own company-specific work.
+- If something is in **ZLUTA OBLAST**, it can be changed, but the right owner agent must review it.
+- If something is in **CERVENA OBLAST**, treat it as original Huly territory and do not change it without review.
+- If something is listed as an **unapproved core difference**, it means our fork differs from Huly in a place that should be reviewed.
+- If a person or agent is unsure, send the work to `upstream-sync-agent` first.
+
+## Basic Terms
+
+| Term | Meaning |
+| --- | --- |
+| Repository | A folder of source code tracked by Git. This whole project is one repository. |
+| Huly | The original open-source platform we are building on. |
+| Praut | Our company-specific product/version built on top of Huly. |
+| Fork | Our own copy of someone else's repository. This repo is a fork of Huly Platform. |
+| Upstream | The original Huly repository that new Huly updates come from. |
+| Origin | Our Praut GitHub repository where our fork lives. |
+| Merge/update | Bringing new upstream Huly changes into our Praut fork. |
+| Core | Shared Huly platform code. Changing it can make future updates harder. |
+| Overlay | A Praut-specific layer added beside Huly code, instead of rewriting Huly code. |
+| Plugin | A module that adds product behavior without changing the whole platform. |
+| Model | Data structure definitions: what kinds of records exist and what fields they have. |
+| Migration | A controlled change that moves old data into a new structure. |
+| Agent | A specialized coding assistant or workflow worker responsible for a type of task. |
+| Orchestrator | The coordinator that decides which agent should handle a request. |
+
+## How To Read Statuses
+
+| Status | Meaning | What to do |
+| --- | --- | --- |
+| `added` | The file exists in Praut but not in upstream Huly. | Usually fine if it is in an overlay path. |
+| `modified` | The file exists in both repos, but Praut changed it. | Review carefully if it is Huly core. |
+| `deleted` | The file exists in Huly but is missing in Praut. | Confirm this was intentional before updating from upstream. |
+| `overlay` | The path matches Praut's preferred customization areas. | Safe default place for Praut-specific work. |
+| `exception` | The path is not normal overlay, but this document explicitly allows it. | Keep the reason documented. |
+| `core` | The path belongs to upstream Huly and has no exception. | Avoid changing it or escalate for review. |
+
+## Directory Guide For Non-Developers
+
+| Directory | Plain meaning | Normal owner |
+| --- | --- | --- |
+| `plugins` | User-facing app features and screens. | Product/frontend agents |
+| `server-plugins` | Server-side feature logic connected to plugins. | Backend/model agents |
+| `models` | Definitions of business objects, fields, and migrations. | Model agents |
+| `packages` | Shared building blocks used by many parts of the app. | Platform agents |
+| `foundations` | Low-level platform base libraries. | Platform agents only |
+| `server` | Backend services and server infrastructure. | Backend/platform agents |
+| `services` | Separate service processes such as export, backup, mail, or integrations. | Backend/service agents |
+| `pods` | Deployable service entrypoints. | Platform/deployment agents |
+| `dev` | Local and production development/deployment configuration. | Deployment/branding agents |
+| `desktop` and `desktop-package` | Desktop app build and packaging. | Branding/release agents |
+| `tests`, `ws-tests`, `qms-tests` | Automated checks that prove the app still works. | QA/release agents |
+| `docs` | Human-readable documentation and runbooks. | Any owner, depending on topic |
+| `scripts` | Automation commands for repeatable work. | Data/platform agents |
+
+## Sources Of Truth
+
+- Upstream Huly repository: `https://github.com/hcengineering/platform`
+- Praut fork repository: `https://github.com/PrautAutomation/HulyPrautplatform`
+- Default policy: keep Praut customization in overlay paths; treat direct Huly core edits as explicit exceptions.
+
+Regenerate the generated sections with:
+
+```bash
+node scripts/praut-governance.mjs update-doc
+```
+
+Audit current Praut changes against upstream with:
+
+```bash
+node scripts/praut-governance.mjs diff-custom
+node scripts/praut-governance.mjs check
+```
+
+## Allowed Praut Overlay Paths
+
+Praut-specific work should live in these paths whenever possible:
+
+In simple terms: if we are building something for Praut, we should first try to put it in one of these places. That keeps Huly's original code cleaner and makes future updates easier.
+
+| Path pattern | Purpose | Agent owner |
+| --- | --- | --- |
+| `plugins/praut-*` | Praut client plugins and resources | `praut-product-agent` |
+| `server-plugins/praut-*` | Praut server plugin behavior | `model-agent` |
+| `models/praut-*` | Praut data model and migrations | `model-agent` |
+| `packages/praut-*` | Shared Praut packages | `platform-core-agent` |
+| `services/praut-*` | Praut service pods | `platform-core-agent` |
+| `docs/praut-*` | Praut governance, extraction, migration, and runbooks | `data-migration-agent` |
+| `scripts/praut-*` | Praut automation scripts | `data-migration-agent` |
+| `dev/docker-compose.praut*.yaml` | Praut deployment overrides | `frontend-branding-agent` |
+| `dev/branding*.json` | Praut local branding config | `frontend-branding-agent` |
+| `dev/prod/public/branding*.json` | Praut production branding config | `frontend-branding-agent` |
+| `desktop-package/src/*Praut*` | Praut desktop branding assets | `frontend-branding-agent` |
+| `qms-desktop-package/src/*Praut*` | Praut QMS desktop branding assets | `frontend-branding-agent` |
+
+## Allowed Core Patch Exceptions
+
+Direct edits outside overlay paths must be listed here before they are considered intentional. Keep this list short.
+
+In simple terms: this is the small list of Huly-owned areas we allow ourselves to change. If a changed Huly file is not listed here, assume it needs review.
+
+| Path pattern | Reason | Owner | Review rule |
+| --- | --- | --- | --- |
+| `docs/praut-fork-governance.md` | Governance document maintained by Praut | `upstream-sync-agent` | Must preserve generated markers |
+| `scripts/praut-governance.mjs` | Governance automation for this fork | `upstream-sync-agent` | Must stay manifest-compatible |
+| `praut.overlay.json` | Praut overlay manifest and update source of truth | `upstream-sync-agent` | Must be reviewed before changing path rules |
+| `.gitignore` | Allows local governance cache path | `upstream-sync-agent` | Must not hide source files |
+
+## Agent Routing
+
+Use this table when deciding who should handle work. The orchestrator should match the request to the closest role, then send the task with the relevant paths and constraints.
+
+| Agent role | Send requests here when they involve | Primary paths | Allowed changes | Escalate when |
+| --- | --- | --- | --- | --- |
+| `upstream-sync-agent` | Updating from Huly upstream, resolving merge conflicts, protected inventory, governance exceptions | repo root, `.github`, `docs/praut-fork-governance.md`, `scripts/praut-governance.mjs` | Merge hygiene, generated inventories, exception bookkeeping | A core patch has no exception or changes public behavior |
+| `platform-core-agent` | Runtime platform behavior, shared packages, server foundations, pods, non-product infrastructure | `packages`, `foundations`, `server`, `pods`, `services` | Minimal core patches, Praut shared packages, compatibility fixes | A change can break upstream sync or workspace compatibility |
+| `model-agent` | Domain models, migrations, server plugins, data contracts | `models`, `server-plugins` | Praut model overlays, migrations, schema-compatible extensions | Existing Huly model semantics must change |
+| `frontend-branding-agent` | Branding, client config, deployment UI config, desktop packaging | `dev/prod`, `dev/branding*.json`, `desktop`, `desktop-package`, `qms-desktop-package` | Branding overlays, config overrides, asset wiring | Branding requires modifying generic Huly UI components |
+| `praut-product-agent` | Praut product modules, workflows, onboarding, vertical features | `plugins/praut-*`, `models/praut-*`, `server-plugins/praut-*` | New Praut modules and product behavior | Feature needs changes in shared Huly plugin APIs |
+| `data-migration-agent` | Data export/import, backup, Huly-to-Praut mapping, extraction runbooks | `scripts/praut-*`, `docs/praut-*`, `dev/tool`, `services/export`, `server/backup` | Migration scripts, data maps, extraction docs | Source data format is unclear or destructive migration is needed |
+| `qa-release-agent` | Build validation, smoke tests, release readiness, upgrade checks | tests, `ws-tests`, `qms-tests`, `.github/workflows` | Test plans, CI fixes, release checklists | A failing check suggests product behavior changed |
+
+## Governance Rules For Orchestrators
+
+- Route work to the most specific agent role from the table above.
+- Prefer creating or extending Praut overlay paths over editing upstream Huly paths.
+- Before assigning a core edit, run `node scripts/praut-governance.mjs check`.
+- If `check` reports an unapproved core change, assign `upstream-sync-agent` to either move it to an overlay or add a reviewed exception.
+- For upstream updates, run `node scripts/praut-governance.mjs update-doc` after merge conflicts are resolved.
+- For data migration work, keep raw extraction, internal backup, and readable transform outputs as separate artifacts.
+
+## Praut Update Pipeline
+
+Tahle cast popisuje, jak se ma nova Huly produkcni zmena prevest na Praut.
+
+Hlavni pravidlo: update nikdy nejde rovnou do `develop`. Skript vytvori samostatnou branch, aplikuje Praut overlay, spusti kontroly a pripravi podklady pro PR. Clovek potom schvali vysledek.
+
+Zdroj pravdy pro pravidla je `praut.overlay.json`.
+
+### Bezne prikazy
+
+| Ucel | Prikaz |
+| --- | --- |
+| Zkontrolovat manifest | `node scripts/praut-governance.mjs check-manifest` |
+| Ukazat rozdily proti Huly | `node scripts/praut-governance.mjs diff-custom` |
+| Zkontrolovat cervenou oblast | `node scripts/praut-governance.mjs check` |
+| Prepsat baseline historicke cervene oblasti | `node scripts/praut-governance.mjs generate-baseline` |
+| Aplikovat Praut overlay | `node scripts/praut-apply-overlay.mjs` |
+| Jen overit overlay | `node scripts/praut-apply-overlay.mjs --check` |
+| Spustit Praut smoke test | `node scripts/praut-smoke.mjs` |
+| Suchy beh upstream update | `node scripts/praut-upstream-update.mjs --dry-run --upstream-ref main` |
+| Pripravit update branch | `node scripts/praut-upstream-update.mjs --upstream-ref main` |
+
+### Produkcni update postup
+
+1. `upstream-sync-agent` spusti `node scripts/praut-upstream-update.mjs --upstream-ref <huly-ref>`.
+2. Skript overi cisty working tree, fetchne Huly upstream a vytvori Praut update branch.
+3. Skript mergne Huly ref, aplikuje Praut overlay a aktualizuje generated casti tohoto dokumentu.
+4. Skript spusti governance, overlay check, changed-package validace/testy, build, validate a smoke.
+5. Pokud je potreba PR, spusti se `--push --create-pr` nebo GitHub Actions workflow `Praut Upstream Update`.
+6. PR musi projit review podle zlutych/cervenych oblasti a az potom muze do `develop`.
+
+### Co znamena vysledek
+
+| Vysledek | Vyznam | Co dal |
+| --- | --- | --- |
+| `overlay` | Praut-owned zmena v zelene oblasti. | Normalni review. |
+| `exception` | Schvalena zmena mimo beznou zelenou oblast. | Zkontrolovat, ze duvod porad plati. |
+| `review` | Zluta oblast. | Poslat owner agentovi uvedenemu v tabulce agentu. |
+| `baseline` | Historicky schvaleny rozdil v cervene oblasti se stejnym local/upstream hashem. | Nechat byt, pokud se nezmenil duvod baseline. |
+| `core` | Cervena oblast bez vyjimky. | Zastavit update, presunout do overlay nebo pridat schvalenou vyjimku. |
+
+### Core baseline
+
+Soubor `praut-core-baseline.json` je seznam historickych rozdilu v cervene oblasti, ktere uz v tomto forku existovaly. Neni to povoleni menit Huly core. Je to jen oddeleni stareho dluhu od novych zmen.
+
+Baseline se pocita presne podle hashu. Pokud se zmeni soubor u nas nebo v Huly upstreamu, zaznam prestane platit a rozdil znovu spadne do review/core kontroly.
+
+Baseline se smi prepsat jen po review `upstream-sync-agent`. Bezny produktovy agent baseline negeneruje.
+
+### Povinne review pred produkci
+
+- `upstream-sync-agent` potvrdi, ze Huly update byl prevzat z ocekavaneho refu.
+- `qa-release-agent` potvrdi, ze build, validate a smoke vysly spravne.
+- `frontend-branding-agent` potvrdi, ze Praut branding/config zustal spravny.
+- `data-migration-agent` potvrdi, ze update nemeni datove/exportni chovani bez planu.
+- Jakykoliv `core` rozdil musi byt vyresen pred mergem.
+
+## GENERATED - NEUPRAVOVAT RUCNE
+
+These sections are rewritten by automation. Do not edit anything below this heading by hand.
+
+| Location | Update command |
+| --- | --- |
+| `Upstream Protected Inventory` in this document | `node scripts/praut-governance.mjs update-doc` |
+| `Praut Customization Inventory` in this document | `node scripts/praut-governance.mjs update-doc` |
+| `.cache/praut-upstream/` | Created and refreshed by `scripts/praut-governance.mjs` |
+
+### Upstream Protected Inventory - NEUPRAVOVAT RUCNE
+
+This generated section lists the current Huly upstream files. These files are the baseline we compare against. Most of them should stay as close to upstream as practical.
+
+<!-- BEGIN GENERATED: upstream-protected-inventory -->
+Generated from upstream `https://github.com/hcengineering/platform` ref `main` at `2026-06-07T13:52:58.204Z`.
+
+| Top-level path | Tracked files | Protection rule |
+| --- | ---: | --- |
+| `plugins` | 5116 | Protected upstream-owned path |
+| `foundations` | 1354 | Protected upstream-owned path |
+| `models` | 838 | Protected upstream-owned path |
+| `services` | 722 | Protected upstream-owned path |
+| `packages` | 671 | Protected upstream-owned path |
+| `server-plugins` | 476 | Protected upstream-owned path |
+| `tests` | 249 | Reviewed shared path |
+| `pods` | 195 | Protected upstream-owned path |
+| `dev` | 172 | Protected upstream-owned path |
+| `server` | 157 | Protected upstream-owned path |
+| `qms-tests` | 110 | Reviewed shared path |
+| `desktop` | 72 | Reviewed shared path |
+| `common` | 49 | Protected upstream-owned path |
+| `ws-tests` | 42 | Reviewed shared path |
+| `templates` | 39 | Protected upstream-owned path |
+| `qms-desktop-package` | 12 | Reviewed shared path |
+| `desktop-package` | 11 | Reviewed shared path |
+| `.github` | 9 | Protected upstream-owned path |
+| `scripts` | 5 | Protected upstream-owned path |
+| `.vscode` | 3 | Protected upstream-owned path |
+| `.gitattributes` | 1 | Protected upstream-owned path |
+| `.gitignore` | 1 | Protected upstream-owned path |
+| `.gitmodules` | 1 | Protected upstream-owned path |
+| `.nvmrc` | 1 | Protected upstream-owned path |
+| `.prettierrc` | 1 | Protected upstream-owned path |
+| `"services` | 1 | Protected upstream-owned path |
+| `ARCHITECTURE_OVERVIEW.md` | 1 | Protected upstream-owned path |
+| `changelog.md` | 1 | Protected upstream-owned path |
+| `cliff.toml` | 1 | Protected upstream-owned path |
+| `docs` | 1 | Protected upstream-owned path |
+| `LICENSE` | 1 | Protected upstream-owned path |
+| `package-lock.json` | 1 | Protected upstream-owned path |
+| `README.md` | 1 | Protected upstream-owned path |
+| `rush.json` | 1 | Protected upstream-owned path |
+
+Total upstream tracked files: **10316**.
+
+### Complete Protected File List
+
+<details>
+<summary><code>plugins</code> (5116 files)</summary>
+
+- `plugins/achievement-assets/.eslintrc.js`
+- `plugins/achievement-assets/assets/EarliestAdopter.png`
+- `plugins/achievement-assets/assets/Epic.png`
+- `plugins/achievement-assets/assets/Legendary.png`
+- `plugins/achievement-assets/config/rig.json`
+- `plugins/achievement-assets/jest.config.js`
+- `plugins/achievement-assets/lang/cs.json`
+- `plugins/achievement-assets/lang/de.json`
+- `plugins/achievement-assets/lang/en.json`
+- `plugins/achievement-assets/lang/es.json`
+- `plugins/achievement-assets/lang/fr.json`
+- `plugins/achievement-assets/lang/it.json`
+- `plugins/achievement-assets/lang/ja.json`
+- `plugins/achievement-assets/lang/ko.json`
+- `plugins/achievement-assets/lang/pt-br.json`
+- `plugins/achievement-assets/lang/pt.json`
+- `plugins/achievement-assets/lang/ru.json`
+- `plugins/achievement-assets/lang/tr.json`
+- `plugins/achievement-assets/lang/zh.json`
+- `plugins/achievement-assets/package.json`
+- `plugins/achievement-assets/src/__tests__/lang.test.ts`
+- `plugins/achievement-assets/src/index.ts`
+- `plugins/achievement-assets/tsconfig.json`
+- `plugins/achievement-resources/.eslintrc.js`
+- `plugins/achievement-resources/.prettierrc`
+- `plugins/achievement-resources/config/rig.json`
+- `plugins/achievement-resources/jest.config.js`
+- `plugins/achievement-resources/package.json`
+- `plugins/achievement-resources/postcss.config.js`
+- `plugins/achievement-resources/src/components/AchievementsHeader.svelte`
+- `plugins/achievement-resources/src/components/PersonAchievementsPresenter.svelte`
+- `plugins/achievement-resources/src/index.ts`
+- `plugins/achievement-resources/src/plugin.ts`
+- `plugins/achievement-resources/src/utils.ts`
+- `plugins/achievement-resources/svelte.config.js`
+- `plugins/achievement-resources/tsconfig.json`
+- `plugins/achievement/.eslintrc.js`
+- `plugins/achievement/.npmignore`
+- `plugins/achievement/config/rig.json`
+- `plugins/achievement/jest.config.js`
+- `plugins/achievement/package.json`
+- `plugins/achievement/src/index.ts`
+- `plugins/achievement/tsconfig.json`
+- `plugins/activity-assets/.eslintrc.js`
+- `plugins/activity-assets/assets/icons.svg`
+- `plugins/activity-assets/config/rig.json`
+- `plugins/activity-assets/jest.config.js`
+- `plugins/activity-assets/lang/cs.json`
+- `plugins/activity-assets/lang/de.json`
+- `plugins/activity-assets/lang/en.json`
+- `plugins/activity-assets/lang/es.json`
+- `plugins/activity-assets/lang/fr.json`
+- `plugins/activity-assets/lang/it.json`
+- `plugins/activity-assets/lang/ja.json`
+- `plugins/activity-assets/lang/ko.json`
+- `plugins/activity-assets/lang/pt-br.json`
+- `plugins/activity-assets/lang/pt.json`
+- `plugins/activity-assets/lang/ru.json`
+- `plugins/activity-assets/lang/tr.json`
+- `plugins/activity-assets/lang/zh.json`
+- `plugins/activity-assets/package.json`
+- `plugins/activity-assets/src/__tests__/lang.test.ts`
+- `plugins/activity-assets/src/index.ts`
+- `plugins/activity-assets/tsconfig.json`
+- `plugins/activity-resources/.eslintrc.js`
+- `plugins/activity-resources/.prettierrc`
+- `plugins/activity-resources/config/rig.json`
+- `plugins/activity-resources/jest.config.js`
+- `plugins/activity-resources/package.json`
+- `plugins/activity-resources/postcss.config.js`
+- `plugins/activity-resources/src/activity.ts`
+- `plugins/activity-resources/src/activityMessagesUtils.ts`
+- `plugins/activity-resources/src/components/activity-info-message/ActivityInfoMessagePresenter.svelte`
+- `plugins/activity-resources/src/components/activity-info-message/ActivityInfoMessagePreview.svelte`
+- `plugins/activity-resources/src/components/activity-message/ActivityMessageHeader.svelte`
+- `plugins/activity-resources/src/components/activity-message/ActivityMessageNotificationLabel.svelte`
+- `plugins/activity-resources/src/components/activity-message/ActivityMessagePresenter.svelte`
+- `plugins/activity-resources/src/components/activity-message/ActivityMessagePreview.svelte`
+- `plugins/activity-resources/src/components/activity-message/ActivityMessageTemplate.svelte`
+- `plugins/activity-resources/src/components/activity-message/ActivityMessageTooltip.svelte`
+- `plugins/activity-resources/src/components/activity-message/BaseMessagePreview.svelte`
+- `plugins/activity-resources/src/components/activity-message/InlineAction.svelte`
+- `plugins/activity-resources/src/components/activity-reference/ActivityReferencePresenter.svelte`
+- `plugins/activity-resources/src/components/activity-reference/ActivityReferencePreview.svelte`
+- `plugins/activity-resources/src/components/activity-reference/ReferenceContent.svelte`
+- `plugins/activity-resources/src/components/activity-reference/ReferenceSrcPresenter.svelte`
+- `plugins/activity-resources/src/components/Activity.svelte`
+- `plugins/activity-resources/src/components/ActivityDocLink.svelte`
+- `plugins/activity-resources/src/components/ActivityExtension.svelte`
+- `plugins/activity-resources/src/components/ActivityFilter.svelte`
+- `plugins/activity-resources/src/components/ActivityMessageAction.svelte`
+- `plugins/activity-resources/src/components/ActivityMessageActions.svelte`
+- `plugins/activity-resources/src/components/BasePreview.svelte`
+- `plugins/activity-resources/src/components/doc-update-message/attributes/AddedAttributesPresenter.svelte`
+- `plugins/activity-resources/src/components/doc-update-message/attributes/ChangeAttributesTemplate.svelte`
+- `plugins/activity-resources/src/components/doc-update-message/attributes/RemovedAttributesPresenter.svelte`
+- `plugins/activity-resources/src/components/doc-update-message/attributes/SetAttributesPresenter.svelte`
+- `plugins/activity-resources/src/components/doc-update-message/DocUpdateMessageAttributes.svelte`
+- `plugins/activity-resources/src/components/doc-update-message/DocUpdateMessageContent.svelte`
+- `plugins/activity-resources/src/components/doc-update-message/DocUpdateMessageHeader.svelte`
+- `plugins/activity-resources/src/components/doc-update-message/DocUpdateMessageObjectValue.svelte`
+- `plugins/activity-resources/src/components/doc-update-message/DocUpdateMessagePresenter.svelte`
+- `plugins/activity-resources/src/components/doc-update-message/DocUpdateMessagePreview.svelte`
+- `plugins/activity-resources/src/components/FilterPopup.svelte`
+- `plugins/activity-resources/src/components/icons/Close.svelte`
+- `plugins/activity-resources/src/components/MessageTimestamp.svelte`
+- `plugins/activity-resources/src/components/reactions/ReactionPresenter.svelte`
+- `plugins/activity-resources/src/components/reactions/Reactions.svelte`
+- `plugins/activity-resources/src/components/reactions/ReactionsPresenter.svelte`
+- `plugins/activity-resources/src/components/reactions/ReactionsPreview.svelte`
+- `plugins/activity-resources/src/components/reactions/ReactionsTooltip.svelte`
+- `plugins/activity-resources/src/components/Replies.svelte`
+- `plugins/activity-resources/src/index.ts`
+- `plugins/activity-resources/src/plugin.ts`
+- `plugins/activity-resources/src/references.ts`
+- `plugins/activity-resources/src/types.ts`
+- `plugins/activity-resources/src/utils.ts`
+- `plugins/activity-resources/svelte.config.js`
+- `plugins/activity-resources/tsconfig.json`
+- `plugins/activity/.eslintrc.js`
+- `plugins/activity/.npmignore`
+- `plugins/activity/config/rig.json`
+- `plugins/activity/jest.config.js`
+- `plugins/activity/package.json`
+- `plugins/activity/src/index.ts`
+- `plugins/activity/tsconfig.json`
+- `plugins/ai-assistant-assets/.eslintrc.js`
+- `plugins/ai-assistant-assets/config/rig.json`
+- `plugins/ai-assistant-assets/jest.config.js`
+- `plugins/ai-assistant-assets/lang/cs.json`
+- `plugins/ai-assistant-assets/lang/de.json`
+- `plugins/ai-assistant-assets/lang/en.json`
+- `plugins/ai-assistant-assets/lang/es.json`
+- `plugins/ai-assistant-assets/lang/fr.json`
+- `plugins/ai-assistant-assets/lang/it.json`
+- `plugins/ai-assistant-assets/lang/ja.json`
+- `plugins/ai-assistant-assets/lang/ko.json`
+- `plugins/ai-assistant-assets/lang/pt-br.json`
+- `plugins/ai-assistant-assets/lang/pt.json`
+- `plugins/ai-assistant-assets/lang/ru.json`
+- `plugins/ai-assistant-assets/lang/tr.json`
+- `plugins/ai-assistant-assets/lang/zh.json`
+- `plugins/ai-assistant-assets/package.json`
+- `plugins/ai-assistant-assets/src/__tests__/lang.test.ts`
+- `plugins/ai-assistant-assets/src/index.ts`
+- `plugins/ai-assistant-assets/tsconfig.json`
+- `plugins/ai-assistant-resources/.eslintrc.js`
+- `plugins/ai-assistant-resources/.prettierrc`
+- `plugins/ai-assistant-resources/config/rig.json`
+- `plugins/ai-assistant-resources/jest.config.js`
+- `plugins/ai-assistant-resources/package.json`
+- `plugins/ai-assistant-resources/postcss.config.js`
+- `plugins/ai-assistant-resources/src/components/Configure.svelte`
+- `plugins/ai-assistant-resources/src/components/icons/HulyAssistant.svelte`
+- `plugins/ai-assistant-resources/src/index.ts`
+- `plugins/ai-assistant-resources/src/plugin.ts`
+- `plugins/ai-assistant-resources/src/utils.ts`
+- `plugins/ai-assistant-resources/svelte.config.js`
+- `plugins/ai-assistant-resources/tsconfig.json`
+- `plugins/ai-assistant/.eslintrc.js`
+- `plugins/ai-assistant/.npmignore`
+- `plugins/ai-assistant/config/rig.json`
+- `plugins/ai-assistant/jest.config.js`
+- `plugins/ai-assistant/package.json`
+- `plugins/ai-assistant/src/index.ts`
+- `plugins/ai-assistant/tsconfig.json`
+- `plugins/ai-bot-resources/.eslintrc.js`
+- `plugins/ai-bot-resources/.prettierrc`
+- `plugins/ai-bot-resources/config/rig.json`
+- `plugins/ai-bot-resources/jest.config.js`
+- `plugins/ai-bot-resources/package.json`
+- `plugins/ai-bot-resources/postcss.config.js`
+- `plugins/ai-bot-resources/src/index.ts`
+- `plugins/ai-bot-resources/src/plugin.ts`
+- `plugins/ai-bot-resources/src/requests.ts`
+- `plugins/ai-bot-resources/src/utils.ts`
+- `plugins/ai-bot-resources/svelte.config.js`
+- `plugins/ai-bot-resources/tsconfig.json`
+- `plugins/ai-bot/.eslintrc.js`
+- `plugins/ai-bot/.npmignore`
+- `plugins/ai-bot/config/rig.json`
+- `plugins/ai-bot/jest.config.js`
+- `plugins/ai-bot/package.json`
+- `plugins/ai-bot/src/index.ts`
+- `plugins/ai-bot/src/rest.ts`
+- `plugins/ai-bot/tsconfig.json`
+- `plugins/analytics-collector-assets/.eslintrc.js`
+- `plugins/analytics-collector-assets/config/rig.json`
+- `plugins/analytics-collector-assets/jest.config.js`
+- `plugins/analytics-collector-assets/lang/cs.json`
+- `plugins/analytics-collector-assets/lang/de.json`
+- `plugins/analytics-collector-assets/lang/en.json`
+- `plugins/analytics-collector-assets/lang/es.json`
+- `plugins/analytics-collector-assets/lang/fr.json`
+- `plugins/analytics-collector-assets/lang/it.json`
+- `plugins/analytics-collector-assets/lang/ja.json`
+- `plugins/analytics-collector-assets/lang/ko.json`
+- `plugins/analytics-collector-assets/lang/pt-br.json`
+- `plugins/analytics-collector-assets/lang/pt.json`
+- `plugins/analytics-collector-assets/lang/ru.json`
+- `plugins/analytics-collector-assets/lang/tr.json`
+- `plugins/analytics-collector-assets/lang/zh.json`
+- `plugins/analytics-collector-assets/package.json`
+- `plugins/analytics-collector-assets/src/__tests__/lang.test.ts`
+- `plugins/analytics-collector-assets/src/index.ts`
+- `plugins/analytics-collector-assets/tsconfig.json`
+- `plugins/analytics-collector-resources/.eslintrc.js`
+- `plugins/analytics-collector-resources/.prettierrc`
+- `plugins/analytics-collector-resources/config/rig.json`
+- `plugins/analytics-collector-resources/jest.config.js`
+- `plugins/analytics-collector-resources/package.json`
+- `plugins/analytics-collector-resources/postcss.config.js`
+- `plugins/analytics-collector-resources/src/index.ts`
+- `plugins/analytics-collector-resources/svelte.config.js`
+- `plugins/analytics-collector-resources/tsconfig.json`
+- `plugins/analytics-collector/.eslintrc.js`
+- `plugins/analytics-collector/.npmignore`
+- `plugins/analytics-collector/config/rig.json`
+- `plugins/analytics-collector/jest.config.js`
+- `plugins/analytics-collector/package.json`
+- `plugins/analytics-collector/src/index.ts`
+- `plugins/analytics-collector/src/types.ts`
+- `plugins/analytics-collector/src/utils.ts`
+- `plugins/analytics-collector/tsconfig.json`
+- `plugins/attachment-assets/.eslintrc.js`
+- `plugins/attachment-assets/assets/icons.svg`
+- `plugins/attachment-assets/config/rig.json`
+- `plugins/attachment-assets/jest.config.js`
+- `plugins/attachment-assets/lang/cs.json`
+- `plugins/attachment-assets/lang/de.json`
+- `plugins/attachment-assets/lang/en.json`
+- `plugins/attachment-assets/lang/es.json`
+- `plugins/attachment-assets/lang/fr.json`
+- `plugins/attachment-assets/lang/it.json`
+- `plugins/attachment-assets/lang/ja.json`
+- `plugins/attachment-assets/lang/ko.json`
+- `plugins/attachment-assets/lang/pt-br.json`
+- `plugins/attachment-assets/lang/pt.json`
+- `plugins/attachment-assets/lang/ru.json`
+- `plugins/attachment-assets/lang/tr.json`
+- `plugins/attachment-assets/lang/zh.json`
+- `plugins/attachment-assets/package.json`
+- `plugins/attachment-assets/src/__tests__/lang.test.ts`
+- `plugins/attachment-assets/src/index.ts`
+- `plugins/attachment-assets/tsconfig.json`
+- `plugins/attachment-resources/.eslintrc.js`
+- `plugins/attachment-resources/.prettierrc`
+- `plugins/attachment-resources/config/rig.json`
+- `plugins/attachment-resources/jest.config.js`
+- `plugins/attachment-resources/package.json`
+- `plugins/attachment-resources/postcss.config.js`
+- `plugins/attachment-resources/src/components/AccordionEditor.svelte`
+- `plugins/attachment-resources/src/components/activity/AttachmentsUpdatedMessage.svelte`
+- `plugins/attachment-resources/src/components/AddAttachment.svelte`
+- `plugins/attachment-resources/src/components/AttachmentAction.svelte`
+- `plugins/attachment-resources/src/components/AttachmentActions.svelte`
+- `plugins/attachment-resources/src/components/AttachmentDocList.svelte`
+- `plugins/attachment-resources/src/components/AttachmentDroppable.svelte`
+- `plugins/attachment-resources/src/components/AttachmentGalleryPresenter.svelte`
+- `plugins/attachment-resources/src/components/AttachmentGroup.svelte`
+- `plugins/attachment-resources/src/components/AttachmentImagePreview.svelte`
+- `plugins/attachment-resources/src/components/AttachmentList.svelte`
+- `plugins/attachment-resources/src/components/AttachmentName.svelte`
+- `plugins/attachment-resources/src/components/AttachmentPopup.svelte`
+- `plugins/attachment-resources/src/components/AttachmentPresenter.svelte`
+- `plugins/attachment-resources/src/components/AttachmentPreview.svelte`
+- `plugins/attachment-resources/src/components/AttachmentPreviewPopup.svelte`
+- `plugins/attachment-resources/src/components/AttachmentRefInput.svelte`
+- `plugins/attachment-resources/src/components/Attachments.svelte`
+- `plugins/attachment-resources/src/components/AttachmentsGalleryView.svelte`
+- `plugins/attachment-resources/src/components/AttachmentsGrid.svelte`
+- `plugins/attachment-resources/src/components/AttachmentsListView.svelte`
+- `plugins/attachment-resources/src/components/AttachmentsPresenter.svelte`
+- `plugins/attachment-resources/src/components/AttachmentsTooltip.svelte`
+- `plugins/attachment-resources/src/components/AttachmentStyleBoxCollabEditor.svelte`
+- `plugins/attachment-resources/src/components/AttachmentStyleBoxEditor.svelte`
+- `plugins/attachment-resources/src/components/AttachmentStyledBox.svelte`
+- `plugins/attachment-resources/src/components/AttachmentVideoPreview.svelte`
+- `plugins/attachment-resources/src/components/AudioPlayer.svelte`
+- `plugins/attachment-resources/src/components/DrawingPresenter.svelte`
+- `plugins/attachment-resources/src/components/FileBrowser.svelte`
+- `plugins/attachment-resources/src/components/FileBrowserFilters.svelte`
+- `plugins/attachment-resources/src/components/FileBrowserSortMenu.svelte`
+- `plugins/attachment-resources/src/components/icons/Attachment.svelte`
+- `plugins/attachment-resources/src/components/icons/Attachments.svelte`
+- `plugins/attachment-resources/src/components/icons/BrokenImage.svelte`
+- `plugins/attachment-resources/src/components/icons/FileDownload.svelte`
+- `plugins/attachment-resources/src/components/icons/Pause.svelte`
+- `plugins/attachment-resources/src/components/icons/Play.svelte`
+- `plugins/attachment-resources/src/components/icons/Trash.svelte`
+- `plugins/attachment-resources/src/components/icons/UploadDuo.svelte`
+- `plugins/attachment-resources/src/components/icons/Web.svelte`
+- `plugins/attachment-resources/src/components/LinkPreview.svelte`
+- `plugins/attachment-resources/src/components/LinkPreviewCard.svelte`
+- `plugins/attachment-resources/src/components/LinkPreviewIcon.svelte`
+- `plugins/attachment-resources/src/components/LinkPreviewImage.svelte`
+- `plugins/attachment-resources/src/components/LinkPreviewList.svelte`
+- `plugins/attachment-resources/src/components/LinkPreviewPresenter.svelte`
+- `plugins/attachment-resources/src/components/Photos.svelte`
+- `plugins/attachment-resources/src/components/PreviewPopupActions.svelte`
+- `plugins/attachment-resources/src/components/PreviewWidget.svelte`
+- `plugins/attachment-resources/src/index.ts`
+- `plugins/attachment-resources/src/plugin.ts`
+- `plugins/attachment-resources/src/stores.ts`
+- `plugins/attachment-resources/src/types.ts`
+- `plugins/attachment-resources/src/utils.ts`
+- `plugins/attachment-resources/svelte.config.js`
+- `plugins/attachment-resources/tsconfig.json`
+- `plugins/attachment/.eslintrc.js`
+- `plugins/attachment/.npmignore`
+- `plugins/attachment/config/rig.json`
+- `plugins/attachment/jest.config.js`
+- `plugins/attachment/package.json`
+- `plugins/attachment/src/analytics.ts`
+- `plugins/attachment/src/index.ts`
+- `plugins/attachment/tsconfig.json`
+- `plugins/billing-assets/.eslintrc.js`
+- `plugins/billing-assets/assets/icons.svg`
+- `plugins/billing-assets/config/rig.json`
+- `plugins/billing-assets/jest.config.js`
+- `plugins/billing-assets/lang/cs.json`
+- `plugins/billing-assets/lang/de.json`
+- `plugins/billing-assets/lang/en.json`
+- `plugins/billing-assets/lang/es.json`
+- `plugins/billing-assets/lang/fr.json`
+- `plugins/billing-assets/lang/it.json`
+- `plugins/billing-assets/lang/ja.json`
+- `plugins/billing-assets/lang/ko.json`
+- `plugins/billing-assets/lang/pt-br.json`
+- `plugins/billing-assets/lang/pt.json`
+- `plugins/billing-assets/lang/ru.json`
+- `plugins/billing-assets/lang/tr.json`
+- `plugins/billing-assets/lang/zh.json`
+- `plugins/billing-assets/package.json`
+- `plugins/billing-assets/src/__tests__/lang.test.ts`
+- `plugins/billing-assets/src/index.ts`
+- `plugins/billing-assets/tsconfig.json`
+- `plugins/billing-resources/.eslintrc.js`
+- `plugins/billing-resources/.prettierrc`
+- `plugins/billing-resources/config/rig.json`
+- `plugins/billing-resources/jest.config.js`
+- `plugins/billing-resources/package.json`
+- `plugins/billing-resources/postcss.config.js`
+- `plugins/billing-resources/src/components/BillingErrorNotification.svelte`
+- `plugins/billing-resources/src/components/Category.svelte`
+- `plugins/billing-resources/src/components/Chart/Crosshair.svelte`
+- `plugins/billing-resources/src/components/Chart/GridLines.svelte`
+- `plugins/billing-resources/src/components/Chart/Line.svelte`
+- `plugins/billing-resources/src/components/Chart/LineChart.svelte`
+- `plugins/billing-resources/src/components/Chart/Point.svelte`
+- `plugins/billing-resources/src/components/Chart/XAxis.svelte`
+- `plugins/billing-resources/src/components/ChartCard.svelte`
+- `plugins/billing-resources/src/components/LimitsIndicator.svelte`
+- `plugins/billing-resources/src/components/ResourceUsage.svelte`
+- `plugins/billing-resources/src/components/Settings.svelte`
+- `plugins/billing-resources/src/components/StatsCard.svelte`
+- `plugins/billing-resources/src/components/Subscriptions.svelte`
+- `plugins/billing-resources/src/components/SubscriptionsModal.svelte`
+- `plugins/billing-resources/src/components/UsageExtension.svelte`
+- `plugins/billing-resources/src/components/UsagePopup.svelte`
+- `plugins/billing-resources/src/components/UsageProgress.svelte`
+- `plugins/billing-resources/src/components/UsageSection.svelte`
+- `plugins/billing-resources/src/components/WorkbenchExtension.svelte`
+- `plugins/billing-resources/src/index.ts`
+- `plugins/billing-resources/src/plugin.ts`
+- `plugins/billing-resources/src/stores/subscription.ts`
+- `plugins/billing-resources/src/utils.ts`
+- `plugins/billing-resources/svelte.config.js`
+- `plugins/billing-resources/tsconfig.json`
+- `plugins/billing/.eslintrc.js`
+- `plugins/billing/.npmignore`
+- `plugins/billing/config/rig.json`
+- `plugins/billing/jest.config.js`
+- `plugins/billing/package.json`
+- `plugins/billing/src/index.ts`
+- `plugins/billing/src/plugin.ts`
+- `plugins/billing/src/types.ts`
+- `plugins/billing/tsconfig.json`
+- `plugins/bitrix-assets/.eslintrc.js`
+- `plugins/bitrix-assets/assets/icons.svg`
+- `plugins/bitrix-assets/config/rig.json`
+- `plugins/bitrix-assets/jest.config.js`
+- `plugins/bitrix-assets/lang/cs.json`
+- `plugins/bitrix-assets/lang/de.json`
+- `plugins/bitrix-assets/lang/en.json`
+- `plugins/bitrix-assets/lang/es.json`
+- `plugins/bitrix-assets/lang/fr.json`
+- `plugins/bitrix-assets/lang/it.json`
+- `plugins/bitrix-assets/lang/ja.json`
+- `plugins/bitrix-assets/lang/ko.json`
+- `plugins/bitrix-assets/lang/pt-br.json`
+- `plugins/bitrix-assets/lang/pt.json`
+- `plugins/bitrix-assets/lang/ru.json`
+- `plugins/bitrix-assets/lang/tr.json`
+- `plugins/bitrix-assets/lang/zh.json`
+- `plugins/bitrix-assets/package.json`
+- `plugins/bitrix-assets/src/__tests__/lang.test.ts`
+- `plugins/bitrix-assets/src/index.ts`
+- `plugins/bitrix-assets/tsconfig.json`
+- `plugins/bitrix-resources/.eslintrc.js`
+- `plugins/bitrix-resources/.prettierrc`
+- `plugins/bitrix-resources/config/rig.json`
+- `plugins/bitrix-resources/jest.config.js`
+- `plugins/bitrix-resources/package.json`
+- `plugins/bitrix-resources/postcss.config.js`
+- `plugins/bitrix-resources/src/components/AttributeMapper.svelte`
+- `plugins/bitrix-resources/src/components/BitrixConfigure.svelte`
+- `plugins/bitrix-resources/src/components/BitrixConnect.svelte`
+- `plugins/bitrix-resources/src/components/BitrixFieldLookup.svelte`
+- `plugins/bitrix-resources/src/components/BitrixImport.svelte`
+- `plugins/bitrix-resources/src/components/CreateMapping.svelte`
+- `plugins/bitrix-resources/src/components/CreateMappingAttribute.svelte`
+- `plugins/bitrix-resources/src/components/EntityMapping.svelte`
+- `plugins/bitrix-resources/src/components/EnumPopup.svelte`
+- `plugins/bitrix-resources/src/components/FieldMappingPresenter.svelte`
+- `plugins/bitrix-resources/src/components/FieldMappingSynchronizer.svelte`
+- `plugins/bitrix-resources/src/components/icons/Bitrix.svelte`
+- `plugins/bitrix-resources/src/components/mappings/CopyMapping.svelte`
+- `plugins/bitrix-resources/src/components/mappings/CopyMappingPresenter.svelte`
+- `plugins/bitrix-resources/src/components/mappings/CreateChannelMapping.svelte`
+- `plugins/bitrix-resources/src/components/mappings/CreateChannelMappingPresenter.svelte`
+- `plugins/bitrix-resources/src/components/mappings/CreateHRApplicationMapping.svelte`
+- `plugins/bitrix-resources/src/components/mappings/CreateHRApplicationPresenter.svelte`
+- `plugins/bitrix-resources/src/components/mappings/CreateTagMapping.svelte`
+- `plugins/bitrix-resources/src/components/mappings/CreateTagMappingPresenter.svelte`
+- `plugins/bitrix-resources/src/components/mappings/DownloadAttachmentMapping.svelte`
+- `plugins/bitrix-resources/src/components/mappings/DownloadAttachmentPresenter.svelte`
+- `plugins/bitrix-resources/src/components/mappings/FindReferenceMapping.svelte`
+- `plugins/bitrix-resources/src/components/mappings/FindReferencePresenter.svelte`
+- `plugins/bitrix-resources/src/index.ts`
+- `plugins/bitrix-resources/src/plugin.ts`
+- `plugins/bitrix-resources/src/queue.ts`
+- `plugins/bitrix-resources/svelte.config.js`
+- `plugins/bitrix-resources/tsconfig.json`
+- `plugins/bitrix/.eslintrc.js`
+- `plugins/bitrix/.npmignore`
+- `plugins/bitrix/config/rig.json`
+- `plugins/bitrix/jest.config.js`
+- `plugins/bitrix/package.json`
+- `plugins/bitrix/src/client.ts`
+- `plugins/bitrix/src/hr.ts`
+- `plugins/bitrix/src/index.ts`
+- `plugins/bitrix/src/sync.ts`
+- `plugins/bitrix/src/types.ts`
+- `plugins/bitrix/src/utils.ts`
+- `plugins/bitrix/tsconfig.json`
+- `plugins/board-assets/.eslintrc.js`
+- `plugins/board-assets/assets/icons.svg`
+- `plugins/board-assets/config/rig.json`
+- `plugins/board-assets/jest.config.js`
+- `plugins/board-assets/lang/cs.json`
+- `plugins/board-assets/lang/de.json`
+- `plugins/board-assets/lang/en.json`
+- `plugins/board-assets/lang/es.json`
+- `plugins/board-assets/lang/fr.json`
+- `plugins/board-assets/lang/it.json`
+- `plugins/board-assets/lang/ja.json`
+- `plugins/board-assets/lang/ko.json`
+- `plugins/board-assets/lang/pt-br.json`
+- `plugins/board-assets/lang/pt.json`
+- `plugins/board-assets/lang/ru.json`
+- `plugins/board-assets/lang/tr.json`
+- `plugins/board-assets/lang/zh.json`
+- `plugins/board-assets/package.json`
+- `plugins/board-assets/src/__tests__/lang.test.ts`
+- `plugins/board-assets/src/index.ts`
+- `plugins/board-assets/tsconfig.json`
+- `plugins/board-resources/.eslintrc.js`
+- `plugins/board-resources/.prettierrc`
+- `plugins/board-resources/config/rig.json`
+- `plugins/board-resources/jest.config.js`
+- `plugins/board-resources/package.json`
+- `plugins/board-resources/postcss.config.js`
+- `plugins/board-resources/src/components/add-card/AddCard.svelte`
+- `plugins/board-resources/src/components/add-card/AddCardEditor.svelte`
+- `plugins/board-resources/src/components/add-card/AddMultipleCardsPopup.svelte`
+- `plugins/board-resources/src/components/Archive.svelte`
+- `plugins/board-resources/src/components/BoardHeader.svelte`
+- `plugins/board-resources/src/components/BoardMenu.svelte`
+- `plugins/board-resources/src/components/BoardPresenter.svelte`
+- `plugins/board-resources/src/components/CardArchive.svelte`
+- `plugins/board-resources/src/components/CardPresenter.svelte`
+- `plugins/board-resources/src/components/CreateBoard.svelte`
+- `plugins/board-resources/src/components/CreateCard.svelte`
+- `plugins/board-resources/src/components/EditCard.svelte`
+- `plugins/board-resources/src/components/editor/CardActions.svelte`
+- `plugins/board-resources/src/components/editor/CardCoverEditor.svelte`
+- `plugins/board-resources/src/components/KanbanCard.svelte`
+- `plugins/board-resources/src/components/KanbanView.svelte`
+- `plugins/board-resources/src/components/LabelsView.svelte`
+- `plugins/board-resources/src/components/ListArchive.svelte`
+- `plugins/board-resources/src/components/ListHeader.svelte`
+- `plugins/board-resources/src/components/MenuMainPage.svelte`
+- `plugins/board-resources/src/components/popups/CardCoverPicker.svelte`
+- `plugins/board-resources/src/components/popups/CopyCard.svelte`
+- `plugins/board-resources/src/components/popups/DateRangePicker.svelte`
+- `plugins/board-resources/src/components/popups/MoveCard.svelte`
+- `plugins/board-resources/src/components/presenters/CardCoverPresenter.svelte`
+- `plugins/board-resources/src/components/presenters/ColorPresenter.svelte`
+- `plugins/board-resources/src/components/presenters/DatePresenter.svelte`
+- `plugins/board-resources/src/components/presenters/NotificationPresenter.svelte`
+- `plugins/board-resources/src/components/selectors/RankSelect.svelte`
+- `plugins/board-resources/src/components/selectors/SpaceSelect.svelte`
+- `plugins/board-resources/src/components/selectors/StateSelect.svelte`
+- `plugins/board-resources/src/components/TableView.svelte`
+- `plugins/board-resources/src/components/TemplatesIcon.svelte`
+- `plugins/board-resources/src/components/UserBoxList.svelte`
+- `plugins/board-resources/src/index.ts`
+- `plugins/board-resources/src/plugin.ts`
+- `plugins/board-resources/src/utils/BoardUtils.ts`
+- `plugins/board-resources/src/utils/CardActionUtils.ts`
+- `plugins/board-resources/src/utils/CardUtils.ts`
+- `plugins/board-resources/svelte.config.js`
+- `plugins/board-resources/tsconfig.json`
+- `plugins/board/.eslintrc.js`
+- `plugins/board/.npmignore`
+- `plugins/board/config/rig.json`
+- `plugins/board/jest.config.js`
+- `plugins/board/package.json`
+- `plugins/board/src/index.ts`
+- `plugins/board/tsconfig.json`
+- `plugins/calendar-assets/.eslintrc.js`
+- `plugins/calendar-assets/assets/icons.svg`
+- `plugins/calendar-assets/assets/permission.png`
+- `plugins/calendar-assets/config/rig.json`
+- `plugins/calendar-assets/jest.config.js`
+- `plugins/calendar-assets/lang/cs.json`
+- `plugins/calendar-assets/lang/de.json`
+- `plugins/calendar-assets/lang/en.json`
+- `plugins/calendar-assets/lang/es.json`
+- `plugins/calendar-assets/lang/fr.json`
+- `plugins/calendar-assets/lang/it.json`
+- `plugins/calendar-assets/lang/ja.json`
+- `plugins/calendar-assets/lang/ko.json`
+- `plugins/calendar-assets/lang/pt-br.json`
+- `plugins/calendar-assets/lang/pt.json`
+- `plugins/calendar-assets/lang/ru.json`
+- `plugins/calendar-assets/lang/tr.json`
+- `plugins/calendar-assets/lang/zh.json`
+- `plugins/calendar-assets/package.json`
+- `plugins/calendar-assets/src/__tests__/lang.test.ts`
+- `plugins/calendar-assets/src/index.ts`
+- `plugins/calendar-assets/tsconfig.json`
+- `plugins/calendar-resources/.eslintrc.js`
+- `plugins/calendar-resources/.prettierrc`
+- `plugins/calendar-resources/config/rig.json`
+- `plugins/calendar-resources/jest.config.js`
+- `plugins/calendar-resources/package.json`
+- `plugins/calendar-resources/postcss.config.js`
+- `plugins/calendar-resources/src/api.ts`
+- `plugins/calendar-resources/src/components/AddParticipant.svelte`
+- `plugins/calendar-resources/src/components/ByDateSelector.svelte`
+- `plugins/calendar-resources/src/components/CalDavAccess.svelte`
+- `plugins/calendar-resources/src/components/CalendarEventPresenter.svelte`
+- `plugins/calendar-resources/src/components/CalendarHeader.svelte`
+- `plugins/calendar-resources/src/components/CalendarNavigation.svelte`
+- `plugins/calendar-resources/src/components/CalendarSelector.svelte`
+- `plugins/calendar-resources/src/components/CalendarSettings.svelte`
+- `plugins/calendar-resources/src/components/CalendarView.svelte`
+- `plugins/calendar-resources/src/components/CalendarWidget.svelte`
+- `plugins/calendar-resources/src/components/CalendarWidgetHeader.svelte`
+- `plugins/calendar-resources/src/components/ConnectApp.svelte`
+- `plugins/calendar-resources/src/components/CreateEvent.svelte`
+- `plugins/calendar-resources/src/components/CreateReminder.svelte`
+- `plugins/calendar-resources/src/components/DateEditor.svelte`
+- `plugins/calendar-resources/src/components/DateLocalePresenter.svelte`
+- `plugins/calendar-resources/src/components/DateTimePresenter.svelte`
+- `plugins/calendar-resources/src/components/Day.svelte`
+- `plugins/calendar-resources/src/components/DayCalendar.svelte`
+- `plugins/calendar-resources/src/components/DocReminder.svelte`
+- `plugins/calendar-resources/src/components/DocRemindersPopup.svelte`
+- `plugins/calendar-resources/src/components/EditEvent.svelte`
+- `plugins/calendar-resources/src/components/EventElement.svelte`
+- `plugins/calendar-resources/src/components/EventParticipantItem.svelte`
+- `plugins/calendar-resources/src/components/EventParticipants.svelte`
+- `plugins/calendar-resources/src/components/EventPresenter.svelte`
+- `plugins/calendar-resources/src/components/EventReminderItem.svelte`
+- `plugins/calendar-resources/src/components/EventReminders.svelte`
+- `plugins/calendar-resources/src/components/Events.svelte`
+- `plugins/calendar-resources/src/components/EventsPopup.svelte`
+- `plugins/calendar-resources/src/components/EventTimeEditor.svelte`
+- `plugins/calendar-resources/src/components/EventTimeExtraButton.svelte`
+- `plugins/calendar-resources/src/components/icons/Calendar.svelte`
+- `plugins/calendar-resources/src/components/IntegrationConfigure.svelte`
+- `plugins/calendar-resources/src/components/IntegrationConnect.svelte`
+- `plugins/calendar-resources/src/components/IntegrationState.svelte`
+- `plugins/calendar-resources/src/components/LocationEditor.svelte`
+- `plugins/calendar-resources/src/components/MonthSelector.svelte`
+- `plugins/calendar-resources/src/components/ParticipantsPopup.svelte`
+- `plugins/calendar-resources/src/components/PersonsPresenter.svelte`
+- `plugins/calendar-resources/src/components/ReccurancePopup.svelte`
+- `plugins/calendar-resources/src/components/ReminderPopup.svelte`
+- `plugins/calendar-resources/src/components/ReminderPresenter.svelte`
+- `plugins/calendar-resources/src/components/RRulePresenter.svelte`
+- `plugins/calendar-resources/src/components/SaveEventReminder.svelte`
+- `plugins/calendar-resources/src/components/ScheduleEditor.svelte`
+- `plugins/calendar-resources/src/components/ScheduleNavSection.svelte`
+- `plugins/calendar-resources/src/components/SetPosSelector.svelte`
+- `plugins/calendar-resources/src/components/TimeDuration.svelte`
+- `plugins/calendar-resources/src/components/TimeZoneSelector.svelte`
+- `plugins/calendar-resources/src/components/UpdateRecInstancePopup.svelte`
+- `plugins/calendar-resources/src/components/VisibilityEditor.svelte`
+- `plugins/calendar-resources/src/index.ts`
+- `plugins/calendar-resources/src/plugin.ts`
+- `plugins/calendar-resources/src/types.ts`
+- `plugins/calendar-resources/src/utils.ts`
+- `plugins/calendar-resources/svelte.config.js`
+- `plugins/calendar-resources/tsconfig.json`
+- `plugins/calendar/.eslintrc.js`
+- `plugins/calendar/.npmignore`
+- `plugins/calendar/config/rig.json`
+- `plugins/calendar/jest.config.js`
+- `plugins/calendar/package.json`
+- `plugins/calendar/src/__tests__/utils.test.ts`
+- `plugins/calendar/src/index.ts`
+- `plugins/calendar/src/utils.ts`
+- `plugins/calendar/tsconfig.json`
+- `plugins/card-assets/.eslintrc.js`
+- `plugins/card-assets/assets/icons.svg`
+- `plugins/card-assets/config/rig.json`
+- `plugins/card-assets/jest.config.js`
+- `plugins/card-assets/lang/cs.json`
+- `plugins/card-assets/lang/de.json`
+- `plugins/card-assets/lang/en.json`
+- `plugins/card-assets/lang/es.json`
+- `plugins/card-assets/lang/fr.json`
+- `plugins/card-assets/lang/it.json`
+- `plugins/card-assets/lang/ja.json`
+- `plugins/card-assets/lang/ko.json`
+- `plugins/card-assets/lang/pt-br.json`
+- `plugins/card-assets/lang/pt.json`
+- `plugins/card-assets/lang/ru.json`
+- `plugins/card-assets/lang/tr.json`
+- `plugins/card-assets/lang/zh.json`
+- `plugins/card-assets/package.json`
+- `plugins/card-assets/src/__tests__/lang.test.ts`
+- `plugins/card-assets/src/index.ts`
+- `plugins/card-assets/tsconfig.json`
+- `plugins/card-resources/.eslintrc.js`
+- `plugins/card-resources/.prettierrc`
+- `plugins/card-resources/config/rig.json`
+- `plugins/card-resources/jest.config.js`
+- `plugins/card-resources/package.json`
+- `plugins/card-resources/postcss.config.js`
+- `plugins/card-resources/src/__tests__/tagFormatter.test.ts`
+- `plugins/card-resources/src/card.ts`
+- `plugins/card-resources/src/cardTableFormatter.ts`
+- `plugins/card-resources/src/cardUtils.ts`
+- `plugins/card-resources/src/components/CardArrayEditor.svelte`
+- `plugins/card-resources/src/components/CardAttributeEditor.svelte`
+- `plugins/card-resources/src/components/CardAttributes.svelte`
+- `plugins/card-resources/src/components/CardCollaborators.svelte`
+- `plugins/card-resources/src/components/CardEditor.svelte`
+- `plugins/card-resources/src/components/CardFeedView.svelte`
+- `plugins/card-resources/src/components/CardGridItem.svelte`
+- `plugins/card-resources/src/components/CardGridView.svelte`
+- `plugins/card-resources/src/components/CardIcon.svelte`
+- `plugins/card-resources/src/components/CardPathPresenter.svelte`
+- `plugins/card-resources/src/components/CardPresenter.svelte`
+- `plugins/card-resources/src/components/CardRefPresenter.svelte`
+- `plugins/card-resources/src/components/CardSearchItem.svelte`
+- `plugins/card-resources/src/components/CardSection.svelte`
+- `plugins/card-resources/src/components/CardSelector.svelte`
+- `plugins/card-resources/src/components/CardsPopup.svelte`
+- `plugins/card-resources/src/components/CardsPresenter.svelte`
+- `plugins/card-resources/src/components/CardTagColored.svelte`
+- `plugins/card-resources/src/components/CardTagsColored.svelte`
+- `plugins/card-resources/src/components/CardTimestamp.svelte`
+- `plugins/card-resources/src/components/CardVersionSelector.svelte`
+- `plugins/card-resources/src/components/CardWidget.svelte`
+- `plugins/card-resources/src/components/CardWidgetTab.svelte`
+- `plugins/card-resources/src/components/ChangeType.svelte`
+- `plugins/card-resources/src/components/Childs.svelte`
+- `plugins/card-resources/src/components/ColoredCardIcon.svelte`
+- `plugins/card-resources/src/components/Content.svelte`
+- `plugins/card-resources/src/components/ContentEditor.svelte`
+- `plugins/card-resources/src/components/ContentPreview.svelte`
+- `plugins/card-resources/src/components/CreateCardButton.svelte`
+- `plugins/card-resources/src/components/CreateCardPopup.svelte`
+- `plugins/card-resources/src/components/CreateTag.svelte`
+- `plugins/card-resources/src/components/Description.svelte`
+- `plugins/card-resources/src/components/EditCard.svelte`
+- `plugins/card-resources/src/components/EditCardNew.svelte`
+- `plugins/card-resources/src/components/EditCardNewContent.svelte`
+- `plugins/card-resources/src/components/EditCardTableOfContents.svelte`
+- `plugins/card-resources/src/components/EditorActions.svelte`
+- `plugins/card-resources/src/components/FavoriteCardPresenter.svelte`
+- `plugins/card-resources/src/components/Favorites.svelte`
+- `plugins/card-resources/src/components/FeedCardPresenter.svelte`
+- `plugins/card-resources/src/components/FilePlaceholder.svelte`
+- `plugins/card-resources/src/components/icons/Lock.svelte`
+- `plugins/card-resources/src/components/icons/Unlock.svelte`
+- `plugins/card-resources/src/components/icons/UploadDuo.svelte`
+- `plugins/card-resources/src/components/LabelsPresenter.svelte`
+- `plugins/card-resources/src/components/Main.svelte`
+- `plugins/card-resources/src/components/MarkupProperties.svelte`
+- `plugins/card-resources/src/components/MasterTagAttributes.svelte`
+- `plugins/card-resources/src/components/MasterTags.svelte`
+- `plugins/card-resources/src/components/MasterTagSelector.svelte`
+- `plugins/card-resources/src/components/navigator-next/Navigator.svelte`
+- `plugins/card-resources/src/components/navigator-next/NavigatorCard.svelte`
+- `plugins/card-resources/src/components/navigator-next/NavigatorCards.svelte`
+- `plugins/card-resources/src/components/navigator-next/NavigatorCardsSection.svelte`
+- `plugins/card-resources/src/components/navigator-next/NavigatorHierarchy.svelte`
+- `plugins/card-resources/src/components/navigator-next/NavigatorSpace.svelte`
+- `plugins/card-resources/src/components/navigator-next/NavigatorType.svelte`
+- `plugins/card-resources/src/components/navigator-next/NavigatorVariant.svelte`
+- `plugins/card-resources/src/components/navigator/CardHeaderButton.svelte`
+- `plugins/card-resources/src/components/navigator/CreateSpace.svelte`
+- `plugins/card-resources/src/components/navigator/MyCards.svelte`
+- `plugins/card-resources/src/components/navigator/SpacePresenter.svelte`
+- `plugins/card-resources/src/components/navigator/TagHierarchy.svelte`
+- `plugins/card-resources/src/components/navigator/TypesNavigator.svelte`
+- `plugins/card-resources/src/components/navigator/TypesSelector.svelte`
+- `plugins/card-resources/src/components/NewCardForm.svelte`
+- `plugins/card-resources/src/components/NewVersionPopup.svelte`
+- `plugins/card-resources/src/components/NotifyMarker.svelte`
+- `plugins/card-resources/src/components/ParentNamesPresenter.svelte`
+- `plugins/card-resources/src/components/sections/AttachmentsSection.svelte`
+- `plugins/card-resources/src/components/sections/CardCommunicatiomMessages.svelte`
+- `plugins/card-resources/src/components/sections/ChildrenSection.svelte`
+- `plugins/card-resources/src/components/sections/ContentSection.svelte`
+- `plugins/card-resources/src/components/sections/OldMessagesCardSection.svelte`
+- `plugins/card-resources/src/components/sections/PropertiesSection.svelte`
+- `plugins/card-resources/src/components/sections/RelationsSection.svelte`
+- `plugins/card-resources/src/components/SetParentActionPopup.svelte`
+- `plugins/card-resources/src/components/settings/ChildsSection.svelte`
+- `plugins/card-resources/src/components/settings/CreateRelation.svelte`
+- `plugins/card-resources/src/components/settings/CreateRolePopup.svelte`
+- `plugins/card-resources/src/components/settings/EditRole.svelte`
+- `plugins/card-resources/src/components/settings/GeneralSection.svelte`
+- `plugins/card-resources/src/components/settings/ManageMasterTags.svelte`
+- `plugins/card-resources/src/components/settings/ManageMasterTagsContent.svelte`
+- `plugins/card-resources/src/components/settings/ManageMasterTagsTools.svelte`
+- `plugins/card-resources/src/components/settings/MasterTagEditor.svelte`
+- `plugins/card-resources/src/components/settings/ProperitiesSection.svelte`
+- `plugins/card-resources/src/components/settings/RelationSetting.svelte`
+- `plugins/card-resources/src/components/settings/RelationsSection.svelte`
+- `plugins/card-resources/src/components/settings/RolesPopup.svelte`
+- `plugins/card-resources/src/components/settings/RolesSection.svelte`
+- `plugins/card-resources/src/components/settings/TagsHierarchy.svelte`
+- `plugins/card-resources/src/components/settings/TagsSection.svelte`
+- `plugins/card-resources/src/components/settings/view/AssociationsSelect.svelte`
+- `plugins/card-resources/src/components/settings/view/CreateView.svelte`
+- `plugins/card-resources/src/components/settings/view/DescriptorBox.svelte`
+- `plugins/card-resources/src/components/settings/view/EditView.svelte`
+- `plugins/card-resources/src/components/settings/view/RelatedTagSelect.svelte`
+- `plugins/card-resources/src/components/settings/view/utils.ts`
+- `plugins/card-resources/src/components/settings/view/ViewConfigSection.svelte`
+- `plugins/card-resources/src/components/settings/view/ViewOptionsButton.svelte`
+- `plugins/card-resources/src/components/settings/view/ViewSetting.svelte`
+- `plugins/card-resources/src/components/settings/view/ViewSettingButton.svelte`
+- `plugins/card-resources/src/components/settings/view/ViewsSection.svelte`
+- `plugins/card-resources/src/components/TagAttributes.svelte`
+- `plugins/card-resources/src/components/TagDivider.svelte`
+- `plugins/card-resources/src/components/TagsEditor.svelte`
+- `plugins/card-resources/src/components/TagsPopup.svelte`
+- `plugins/card-resources/src/components/TypeSelector.svelte`
+- `plugins/card-resources/src/draft.ts`
+- `plugins/card-resources/src/exporter.ts`
+- `plugins/card-resources/src/index.ts`
+- `plugins/card-resources/src/plugin.ts`
+- `plugins/card-resources/src/tagFormatter.ts`
+- `plugins/card-resources/src/types.ts`
+- `plugins/card-resources/src/utils.ts`
+- `plugins/card-resources/svelte.config.js`
+- `plugins/card-resources/tsconfig.json`
+- `plugins/card/.eslintrc.js`
+- `plugins/card/.npmignore`
+- `plugins/card/config/rig.json`
+- `plugins/card/jest.config.js`
+- `plugins/card/package.json`
+- `plugins/card/src/analytics.ts`
+- `plugins/card/src/index.ts`
+- `plugins/card/tsconfig.json`
+- `plugins/chat-assets/.eslintrc.js`
+- `plugins/chat-assets/assets/icons.svg`
+- `plugins/chat-assets/config/rig.json`
+- `plugins/chat-assets/jest.config.js`
+- `plugins/chat-assets/lang/cs.json`
+- `plugins/chat-assets/lang/de.json`
+- `plugins/chat-assets/lang/en.json`
+- `plugins/chat-assets/lang/es.json`
+- `plugins/chat-assets/lang/fr.json`
+- `plugins/chat-assets/lang/it.json`
+- `plugins/chat-assets/lang/ja.json`
+- `plugins/chat-assets/lang/ko.json`
+- `plugins/chat-assets/lang/pt-br.json`
+- `plugins/chat-assets/lang/pt.json`
+- `plugins/chat-assets/lang/ru.json`
+- `plugins/chat-assets/lang/tr.json`
+- `plugins/chat-assets/lang/zh.json`
+- `plugins/chat-assets/package.json`
+- `plugins/chat-assets/src/__tests__/lang.test.ts`
+- `plugins/chat-assets/src/index.ts`
+- `plugins/chat-assets/tsconfig.json`
+- `plugins/chat-resources/.eslintrc.js`
+- `plugins/chat-resources/.prettierrc`
+- `plugins/chat-resources/config/rig.json`
+- `plugins/chat-resources/jest.config.js`
+- `plugins/chat-resources/package.json`
+- `plugins/chat-resources/postcss.config.js`
+- `plugins/chat-resources/src/components/ChatApplication.svelte`
+- `plugins/chat-resources/src/components/ChatNavigation.svelte`
+- `plugins/chat-resources/src/components/ChatNavigationCategoryList.svelte`
+- `plugins/chat-resources/src/index.ts`
+- `plugins/chat-resources/src/location.ts`
+- `plugins/chat-resources/src/plugin.ts`
+- `plugins/chat-resources/src/settings.ts`
+- `plugins/chat-resources/src/types.ts`
+- `plugins/chat-resources/src/ui.ts`
+- `plugins/chat-resources/svelte.config.js`
+- `plugins/chat-resources/tsconfig.json`
+- `plugins/chat/.eslintrc.js`
+- `plugins/chat/.npmignore`
+- `plugins/chat/config/rig.json`
+- `plugins/chat/jest.config.js`
+- `plugins/chat/package.json`
+- `plugins/chat/src/index.ts`
+- `plugins/chat/tsconfig.json`
+- `plugins/chunter-assets/.eslintrc.js`
+- `plugins/chunter-assets/assets/icons.svg`
+- `plugins/chunter-assets/CHANGELOG.json`
+- `plugins/chunter-assets/CHANGELOG.md`
+- `plugins/chunter-assets/config/rig.json`
+- `plugins/chunter-assets/jest.config.js`
+- `plugins/chunter-assets/lang/cs.json`
+- `plugins/chunter-assets/lang/de.json`
+- `plugins/chunter-assets/lang/en.json`
+- `plugins/chunter-assets/lang/es.json`
+- `plugins/chunter-assets/lang/fr.json`
+- `plugins/chunter-assets/lang/it.json`
+- `plugins/chunter-assets/lang/ja.json`
+- `plugins/chunter-assets/lang/ko.json`
+- `plugins/chunter-assets/lang/pt-br.json`
+- `plugins/chunter-assets/lang/pt.json`
+- `plugins/chunter-assets/lang/ru.json`
+- `plugins/chunter-assets/lang/tr.json`
+- `plugins/chunter-assets/lang/zh.json`
+- `plugins/chunter-assets/package.json`
+- `plugins/chunter-assets/src/__tests__/lang.test.ts`
+- `plugins/chunter-assets/src/index.ts`
+- `plugins/chunter-assets/tsconfig.json`
+- `plugins/chunter-resources/.eslintrc.js`
+- `plugins/chunter-resources/.prettierrc`
+- `plugins/chunter-resources/CHANGELOG.json`
+- `plugins/chunter-resources/CHANGELOG.md`
+- `plugins/chunter-resources/config/rig.json`
+- `plugins/chunter-resources/img/avatar.png`
+- `plugins/chunter-resources/jest.config.js`
+- `plugins/chunter-resources/package.json`
+- `plugins/chunter-resources/postcss.config.js`
+- `plugins/chunter-resources/src/channelDataProvider.ts`
+- `plugins/chunter-resources/src/components/activity/ChannelCreatedMessage.svelte`
+- `plugins/chunter-resources/src/components/activity/MembersChangedMessage.svelte`
+- `plugins/chunter-resources/src/components/BaseChatScroller.svelte`
+- `plugins/chunter-resources/src/components/BlankView.svelte`
+- `plugins/chunter-resources/src/components/Channel.svelte`
+- `plugins/chunter-resources/src/components/ChannelEmbeddedContent.svelte`
+- `plugins/chunter-resources/src/components/ChannelHeader.svelte`
+- `plugins/chunter-resources/src/components/ChannelIcon.svelte`
+- `plugins/chunter-resources/src/components/ChannelInput.svelte`
+- `plugins/chunter-resources/src/components/ChannelMembers.svelte`
+- `plugins/chunter-resources/src/components/ChannelMessagesFilter.svelte`
+- `plugins/chunter-resources/src/components/ChannelMessagesSeparator.svelte`
+- `plugins/chunter-resources/src/components/ChannelPanel.svelte`
+- `plugins/chunter-resources/src/components/ChannelPresenter.svelte`
+- `plugins/chunter-resources/src/components/ChannelPreview.svelte`
+- `plugins/chunter-resources/src/components/ChannelSidebarView.svelte`
+- `plugins/chunter-resources/src/components/ChannelTypingInfo.svelte`
+- `plugins/chunter-resources/src/components/ChannelView.svelte`
+- `plugins/chunter-resources/src/components/chat-message/ChatMessageHeader.svelte`
+- `plugins/chunter-resources/src/components/chat-message/ChatMessageInput.svelte`
+- `plugins/chunter-resources/src/components/chat-message/ChatMessagePopup.svelte`
+- `plugins/chunter-resources/src/components/chat-message/ChatMessagePresenter.svelte`
+- `plugins/chunter-resources/src/components/chat-message/ChatMessagePreview.svelte`
+- `plugins/chunter-resources/src/components/chat-message/ChatMessagesPresenter.svelte`
+- `plugins/chunter-resources/src/components/chat/ChannelAside.svelte`
+- `plugins/chunter-resources/src/components/chat/Chat.svelte`
+- `plugins/chunter-resources/src/components/chat/create/CreateChannel.svelte`
+- `plugins/chunter-resources/src/components/chat/create/CreateDirectChat.svelte`
+- `plugins/chunter-resources/src/components/chat/DocAside.svelte`
+- `plugins/chunter-resources/src/components/chat/navigator/ChatNavGroup.svelte`
+- `plugins/chunter-resources/src/components/chat/navigator/ChatNavigator.svelte`
+- `plugins/chunter-resources/src/components/chat/navigator/ChatNavItem.svelte`
+- `plugins/chunter-resources/src/components/chat/navigator/ChatNavSection.svelte`
+- `plugins/chunter-resources/src/components/chat/navigator/ChatSpecialElement.svelte`
+- `plugins/chunter-resources/src/components/chat/navigator/NavItem.svelte`
+- `plugins/chunter-resources/src/components/chat/specials/ChunterBrowser.svelte`
+- `plugins/chunter-resources/src/components/chat/specials/MessagesBrowser.svelte`
+- `plugins/chunter-resources/src/components/chat/specials/SavedMessages.svelte`
+- `plugins/chunter-resources/src/components/chat/types.ts`
+- `plugins/chunter-resources/src/components/chat/utils.ts`
+- `plugins/chunter-resources/src/components/ChatWidget.svelte`
+- `plugins/chunter-resources/src/components/ChatWidgetTab.svelte`
+- `plugins/chunter-resources/src/components/ChunterEmployeePresenter.svelte`
+- `plugins/chunter-resources/src/components/ConvertDmToPrivateChannel.svelte`
+- `plugins/chunter-resources/src/components/DirectIcon.svelte`
+- `plugins/chunter-resources/src/components/DirectMessageButton.svelte`
+- `plugins/chunter-resources/src/components/DmHeader.svelte`
+- `plugins/chunter-resources/src/components/DmPresenter.svelte`
+- `plugins/chunter-resources/src/components/EditChannel.svelte`
+- `plugins/chunter-resources/src/components/EditChannelDescriptionAttachments.svelte`
+- `plugins/chunter-resources/src/components/EditChannelDescriptionTab.svelte`
+- `plugins/chunter-resources/src/components/EditChannelSettingsTab.svelte`
+- `plugins/chunter-resources/src/components/Header.svelte`
+- `plugins/chunter-resources/src/components/icons/Lock.svelte`
+- `plugins/chunter-resources/src/components/inline-comment/InlineCommentPresenter.svelte`
+- `plugins/chunter-resources/src/components/inline-comment/InlineCommentThread.svelte`
+- `plugins/chunter-resources/src/components/JumpToDateSelector.svelte`
+- `plugins/chunter-resources/src/components/LoadingHistory.svelte`
+- `plugins/chunter-resources/src/components/notification/ChatMessageNotificationLabel.svelte`
+- `plugins/chunter-resources/src/components/notification/JoinChannelNotificationPresenter.svelte`
+- `plugins/chunter-resources/src/components/notification/ThreadNotificationPresenter.svelte`
+- `plugins/chunter-resources/src/components/PinnedMessages.svelte`
+- `plugins/chunter-resources/src/components/PinnedMessagesPopup.svelte`
+- `plugins/chunter-resources/src/components/ReverseChannelScrollView.svelte`
+- `plugins/chunter-resources/src/components/threads/ThreadContent.svelte`
+- `plugins/chunter-resources/src/components/threads/ThreadMessagePresenter.svelte`
+- `plugins/chunter-resources/src/components/threads/ThreadMessagePreview.svelte`
+- `plugins/chunter-resources/src/components/threads/ThreadParentPresenter.svelte`
+- `plugins/chunter-resources/src/components/threads/Threads.svelte`
+- `plugins/chunter-resources/src/components/threads/ThreadSidebarView.svelte`
+- `plugins/chunter-resources/src/components/threads/ThreadView.svelte`
+- `plugins/chunter-resources/src/components/threads/ThreadViewPanel.svelte`
+- `plugins/chunter-resources/src/components/WorkbenchTabExtension.svelte`
+- `plugins/chunter-resources/src/index.ts`
+- `plugins/chunter-resources/src/navigation.ts`
+- `plugins/chunter-resources/src/plugin.ts`
+- `plugins/chunter-resources/src/scroll.ts`
+- `plugins/chunter-resources/src/stores.ts`
+- `plugins/chunter-resources/src/utils.ts`
+- `plugins/chunter-resources/svelte.config.js`
+- `plugins/chunter-resources/tsconfig.json`
+- `plugins/chunter/.eslintrc.js`
+- `plugins/chunter/.npmignore`
+- `plugins/chunter/CHANGELOG.json`
+- `plugins/chunter/CHANGELOG.md`
+- `plugins/chunter/config/rig.json`
+- `plugins/chunter/jest.config.js`
+- `plugins/chunter/package.json`
+- `plugins/chunter/src/analytics.ts`
+- `plugins/chunter/src/index.ts`
+- `plugins/chunter/src/utils.ts`
+- `plugins/chunter/tsconfig.json`
+- `plugins/client-resources/.eslintrc.js`
+- `plugins/client-resources/.npmignore`
+- `plugins/client-resources/CHANGELOG.json`
+- `plugins/client-resources/CHANGELOG.md`
+- `plugins/client-resources/config/rig.json`
+- `plugins/client-resources/jest.config.js`
+- `plugins/client-resources/package.json`
+- `plugins/client-resources/readme.md`
+- `plugins/client-resources/src/connection.ts`
+- `plugins/client-resources/src/index.ts`
+- `plugins/client-resources/tsconfig.json`
+- `plugins/client/.eslintrc.js`
+- `plugins/client/.npmignore`
+- `plugins/client/CHANGELOG.json`
+- `plugins/client/CHANGELOG.md`
+- `plugins/client/config/rig.json`
+- `plugins/client/jest.config.js`
+- `plugins/client/package.json`
+- `plugins/client/src/index.ts`
+- `plugins/client/tsconfig.json`
+- `plugins/communication-assets/.eslintrc.js`
+- `plugins/communication-assets/assets/icons.svg`
+- `plugins/communication-assets/config/rig.json`
+- `plugins/communication-assets/jest.config.js`
+- `plugins/communication-assets/lang/cs.json`
+- `plugins/communication-assets/lang/de.json`
+- `plugins/communication-assets/lang/en.json`
+- `plugins/communication-assets/lang/es.json`
+- `plugins/communication-assets/lang/fr.json`
+- `plugins/communication-assets/lang/it.json`
+- `plugins/communication-assets/lang/ja.json`
+- `plugins/communication-assets/lang/ko.json`
+- `plugins/communication-assets/lang/pt-br.json`
+- `plugins/communication-assets/lang/pt.json`
+- `plugins/communication-assets/lang/ru.json`
+- `plugins/communication-assets/lang/tr.json`
+- `plugins/communication-assets/lang/zh.json`
+- `plugins/communication-assets/package.json`
+- `plugins/communication-assets/src/__tests__/lang.test.ts`
+- `plugins/communication-assets/src/index.ts`
+- `plugins/communication-assets/tsconfig.json`
+- `plugins/communication-resources/.eslintrc.js`
+- `plugins/communication-resources/.prettierrc`
+- `plugins/communication-resources/config/rig.json`
+- `plugins/communication-resources/jest.config.js`
+- `plugins/communication-resources/package.json`
+- `plugins/communication-resources/postcss.config.js`
+- `plugins/communication-resources/src/actions.ts`
+- `plugins/communication-resources/src/activity.ts`
+- `plugins/communication-resources/src/components/AttachmentName.svelte`
+- `plugins/communication-resources/src/components/AttachmentsPreview.svelte`
+- `plugins/communication-resources/src/components/AttachmentsTooltip.svelte`
+- `plugins/communication-resources/src/components/CollaboratorPresenter.svelte`
+- `plugins/communication-resources/src/components/CreateCardFromMessagePopup.svelte`
+- `plugins/communication-resources/src/components/CreateDirect.svelte`
+- `plugins/communication-resources/src/components/DateSeparator.svelte`
+- `plugins/communication-resources/src/components/DirectIcon.svelte`
+- `plugins/communication-resources/src/components/icons/At.svelte`
+- `plugins/communication-resources/src/components/icons/Attach.svelte`
+- `plugins/communication-resources/src/components/icons/MessageMultiple.svelte`
+- `plugins/communication-resources/src/components/input/AppletPreview.svelte`
+- `plugins/communication-resources/src/components/input/AttachmentsHeader.svelte`
+- `plugins/communication-resources/src/components/input/BlobPreview.svelte`
+- `plugins/communication-resources/src/components/input/LinkPreview.svelte`
+- `plugins/communication-resources/src/components/input/MessageInput.svelte`
+- `plugins/communication-resources/src/components/message/activity/ActivityAddAttributeViewer.svelte`
+- `plugins/communication-resources/src/components/message/activity/ActivityAttributeValue.svelte`
+- `plugins/communication-resources/src/components/message/activity/ActivityCollaborativeContentViewer.svelte`
+- `plugins/communication-resources/src/components/message/activity/ActivityObjectValue.svelte`
+- `plugins/communication-resources/src/components/message/activity/ActivityRemoveAttributeViewer.svelte`
+- `plugins/communication-resources/src/components/message/activity/ActivitySetAttributeViewer.svelte`
+- `plugins/communication-resources/src/components/message/activity/ActivityUpdateAttributeViewer.svelte`
+- `plugins/communication-resources/src/components/message/activity/ActivityUpdateCollaboratorsViewer.svelte`
+- `plugins/communication-resources/src/components/message/activity/ActivityUpdateProcessViewer.svelte`
+- `plugins/communication-resources/src/components/message/activity/ActivityUpdateTagViewer.svelte`
+- `plugins/communication-resources/src/components/message/activity/ActivityUpdateTypeViewer.svelte`
+- `plugins/communication-resources/src/components/message/activity/ActivityUpdateViewer.svelte`
+- `plugins/communication-resources/src/components/message/ActivityMessageViewer.svelte`
+- `plugins/communication-resources/src/components/message/MessageActionsPanel.svelte`
+- `plugins/communication-resources/src/components/message/MessageBody.svelte`
+- `plugins/communication-resources/src/components/message/MessageContentViewer.svelte`
+- `plugins/communication-resources/src/components/message/MessageFooter.svelte`
+- `plugins/communication-resources/src/components/message/MessagePresenter.svelte`
+- `plugins/communication-resources/src/components/message/MessagesGroupPresenter.svelte`
+- `plugins/communication-resources/src/components/message/MessagesLoading.svelte`
+- `plugins/communication-resources/src/components/message/MessagesSeparator.svelte`
+- `plugins/communication-resources/src/components/message/OneRowMessageBody.svelte`
+- `plugins/communication-resources/src/components/MessagePreview.svelte`
+- `plugins/communication-resources/src/components/MessagesList.svelte`
+- `plugins/communication-resources/src/components/MessagesSection.svelte`
+- `plugins/communication-resources/src/components/poll/CreatePoll.svelte`
+- `plugins/communication-resources/src/components/poll/PollOptionPresenter.svelte`
+- `plugins/communication-resources/src/components/poll/PollPresenter.svelte`
+- `plugins/communication-resources/src/components/poll/PollPreview.svelte`
+- `plugins/communication-resources/src/components/poll/PollResults.svelte`
+- `plugins/communication-resources/src/components/poll/UserVoteActivityPresenter.svelte`
+- `plugins/communication-resources/src/components/poll/UserVotesPresenter.svelte`
+- `plugins/communication-resources/src/components/preview/ExtendedMessagePreview.svelte`
+- `plugins/communication-resources/src/components/preview/PreviewTemplate.svelte`
+- `plugins/communication-resources/src/components/ReactionPresenter.svelte`
+- `plugins/communication-resources/src/components/ReactionsList.svelte`
+- `plugins/communication-resources/src/components/ReactionsTooltip.svelte`
+- `plugins/communication-resources/src/components/TextInput.svelte`
+- `plugins/communication-resources/src/components/thread/Thread.svelte`
+- `plugins/communication-resources/src/components/thread/ThreadCollaborators.svelte`
+- `plugins/communication-resources/src/components/thread/ThreadLastReply.svelte`
+- `plugins/communication-resources/src/components/thread/ThreadRepliesCount.svelte`
+- `plugins/communication-resources/src/components/thread/ThreadTags.svelte`
+- `plugins/communication-resources/src/components/thread/ThreadTitle.svelte`
+- `plugins/communication-resources/src/components/TypingPresenter.svelte`
+- `plugins/communication-resources/src/draft.ts`
+- `plugins/communication-resources/src/index.ts`
+- `plugins/communication-resources/src/messages.ts`
+- `plugins/communication-resources/src/plugin.ts`
+- `plugins/communication-resources/src/poll.ts`
+- `plugins/communication-resources/src/stores.ts`
+- `plugins/communication-resources/src/types.ts`
+- `plugins/communication-resources/src/utils.ts`
+- `plugins/communication-resources/svelte.config.js`
+- `plugins/communication-resources/tsconfig.json`
+- `plugins/communication/.eslintrc.js`
+- `plugins/communication/.npmignore`
+- `plugins/communication/config/rig.json`
+- `plugins/communication/jest.config.js`
+- `plugins/communication/package.json`
+- `plugins/communication/src/direct.ts`
+- `plugins/communication/src/index.ts`
+- `plugins/communication/src/poll.ts`
+- `plugins/communication/src/types.ts`
+- `plugins/communication/tsconfig.json`
+- `plugins/contact-assets/.eslintrc.js`
+- `plugins/contact-assets/assets/icons.svg`
+- `plugins/contact-assets/assets/profile-background-light.png`
+- `plugins/contact-assets/assets/profile-background.png`
+- `plugins/contact-assets/CHANGELOG.json`
+- `plugins/contact-assets/CHANGELOG.md`
+- `plugins/contact-assets/config/rig.json`
+- `plugins/contact-assets/jest.config.js`
+- `plugins/contact-assets/lang/cs.json`
+- `plugins/contact-assets/lang/de.json`
+- `plugins/contact-assets/lang/en.json`
+- `plugins/contact-assets/lang/es.json`
+- `plugins/contact-assets/lang/fr.json`
+- `plugins/contact-assets/lang/it.json`
+- `plugins/contact-assets/lang/ja.json`
+- `plugins/contact-assets/lang/ko.json`
+- `plugins/contact-assets/lang/pt-br.json`
+- `plugins/contact-assets/lang/pt.json`
+- `plugins/contact-assets/lang/ru.json`
+- `plugins/contact-assets/lang/tr.json`
+- `plugins/contact-assets/lang/zh.json`
+- `plugins/contact-assets/package.json`
+- `plugins/contact-assets/src/__tests__/lang.test.ts`
+- `plugins/contact-assets/src/index.ts`
+- `plugins/contact-assets/tsconfig.json`
+- `plugins/contact-resources/.eslintrc.js`
+- `plugins/contact-resources/.prettierrc`
+- `plugins/contact-resources/CHANGELOG.json`
+- `plugins/contact-resources/CHANGELOG.md`
+- `plugins/contact-resources/config/rig.json`
+- `plugins/contact-resources/jest.config.js`
+- `plugins/contact-resources/package.json`
+- `plugins/contact-resources/postcss.config.js`
+- `plugins/contact-resources/src/assignee.ts`
+- `plugins/contact-resources/src/cache.ts`
+- `plugins/contact-resources/src/components/AccountArrayEditor.svelte`
+- `plugins/contact-resources/src/components/AccountBox.svelte`
+- `plugins/contact-resources/src/components/activity/ActivityChannelPresenter.svelte`
+- `plugins/contact-resources/src/components/activity/NameChangedActivityMessage.svelte`
+- `plugins/contact-resources/src/components/AddMembersPopup.svelte`
+- `plugins/contact-resources/src/components/AssigneeBox.svelte`
+- `plugins/contact-resources/src/components/AssigneePopup.svelte`
+- `plugins/contact-resources/src/components/Avatar.svelte`
+- `plugins/contact-resources/src/components/AvatarInstance.svelte`
+- `plugins/contact-resources/src/components/AvatarRef.svelte`
+- `plugins/contact-resources/src/components/ChannelEditor.svelte`
+- `plugins/contact-resources/src/components/ChannelFilter.svelte`
+- `plugins/contact-resources/src/components/ChannelIcon.svelte`
+- `plugins/contact-resources/src/components/ChannelPanel.svelte`
+- `plugins/contact-resources/src/components/ChannelPresenter.svelte`
+- `plugins/contact-resources/src/components/Channels.svelte`
+- `plugins/contact-resources/src/components/ChannelsDropdown.svelte`
+- `plugins/contact-resources/src/components/ChannelsEditor.svelte`
+- `plugins/contact-resources/src/components/ChannelsPopup.svelte`
+- `plugins/contact-resources/src/components/ChannelsPresenter.svelte`
+- `plugins/contact-resources/src/components/ChannelsView.svelte`
+- `plugins/contact-resources/src/components/CollaborationUserAvatar.svelte`
+- `plugins/contact-resources/src/components/CombineAvatars.svelte`
+- `plugins/contact-resources/src/components/ContactArrayEditor.svelte`
+- `plugins/contact-resources/src/components/ContactList.svelte`
+- `plugins/contact-resources/src/components/ContactNamePresenter.svelte`
+- `plugins/contact-resources/src/components/ContactPresenter.svelte`
+- `plugins/contact-resources/src/components/ContactRefPresenter.svelte`
+- `plugins/contact-resources/src/components/Contacts.svelte`
+- `plugins/contact-resources/src/components/ContactsTabs.svelte`
+- `plugins/contact-resources/src/components/CreateContact.svelte`
+- `plugins/contact-resources/src/components/CreateEmployee.svelte`
+- `plugins/contact-resources/src/components/CreateGuest.svelte`
+- `plugins/contact-resources/src/components/CreateOrganization.svelte`
+- `plugins/contact-resources/src/components/CreatePerson.svelte`
+- `plugins/contact-resources/src/components/DeleteConfirmationPopup.svelte`
+- `plugins/contact-resources/src/components/EditableAvatar.svelte`
+- `plugins/contact-resources/src/components/EditAvatarPopup.svelte`
+- `plugins/contact-resources/src/components/EditMember.svelte`
+- `plugins/contact-resources/src/components/EditOrganization.svelte`
+- `plugins/contact-resources/src/components/EditOrganizationPanel.svelte`
+- `plugins/contact-resources/src/components/EditPerson.svelte`
+- `plugins/contact-resources/src/components/EmployeeArrayEditor.svelte`
+- `plugins/contact-resources/src/components/EmployeeAttributePresenter.svelte`
+- `plugins/contact-resources/src/components/EmployeeBox.svelte`
+- `plugins/contact-resources/src/components/EmployeeBrowser.svelte`
+- `plugins/contact-resources/src/components/EmployeeEditor.svelte`
+- `plugins/contact-resources/src/components/EmployeeFilter.svelte`
+- `plugins/contact-resources/src/components/EmployeeFilterValuePresenter.svelte`
+- `plugins/contact-resources/src/components/EmployeePresenter.svelte`
+- `plugins/contact-resources/src/components/EmployeeRefPresenter.svelte`
+- `plugins/contact-resources/src/components/icons/AddAvatar.svelte`
+- `plugins/contact-resources/src/components/icons/AddMember.svelte`
+- `plugins/contact-resources/src/components/icons/Avatar.svelte`
+- `plugins/contact-resources/src/components/icons/Company.svelte`
+- `plugins/contact-resources/src/components/icons/Copy.svelte`
+- `plugins/contact-resources/src/components/icons/Edit.svelte`
+- `plugins/contact-resources/src/components/icons/EmptyAvatar.svelte`
+- `plugins/contact-resources/src/components/icons/ExpandRightDouble.svelte`
+- `plugins/contact-resources/src/components/icons/Members.svelte`
+- `plugins/contact-resources/src/components/icons/MembersOutline.svelte`
+- `plugins/contact-resources/src/components/icons/Person.svelte`
+- `plugins/contact-resources/src/components/LanguageEditor.svelte`
+- `plugins/contact-resources/src/components/LanguageIcon.svelte`
+- `plugins/contact-resources/src/components/LanguagePresenter.svelte`
+- `plugins/contact-resources/src/components/LanguagesArrayEditor.svelte`
+- `plugins/contact-resources/src/components/LanguagesPopup.svelte`
+- `plugins/contact-resources/src/components/MemberPresenter.svelte`
+- `plugins/contact-resources/src/components/Members.svelte`
+- `plugins/contact-resources/src/components/MembersBox.svelte`
+- `plugins/contact-resources/src/components/MembersPresenter.svelte`
+- `plugins/contact-resources/src/components/MergeAttributeComparer.svelte`
+- `plugins/contact-resources/src/components/MergeComparer.svelte`
+- `plugins/contact-resources/src/components/MergePersons.svelte`
+- `plugins/contact-resources/src/components/OrganizationCard.svelte`
+- `plugins/contact-resources/src/components/OrganizationEditor.svelte`
+- `plugins/contact-resources/src/components/OrganizationPresenter.svelte`
+- `plugins/contact-resources/src/components/person/DeactivatedHeader.svelte`
+- `plugins/contact-resources/src/components/person/EmployeePreviewPopup.svelte`
+- `plugins/contact-resources/src/components/person/ModernProfilePopup.svelte`
+- `plugins/contact-resources/src/components/person/PersonPreviewProvider.svelte`
+- `plugins/contact-resources/src/components/person/TimePresenter.svelte`
+- `plugins/contact-resources/src/components/person/utils.ts`
+- `plugins/contact-resources/src/components/PersonCard.svelte`
+- `plugins/contact-resources/src/components/PersonContent.svelte`
+- `plugins/contact-resources/src/components/PersonEditor.svelte`
+- `plugins/contact-resources/src/components/PersonElement.svelte`
+- `plugins/contact-resources/src/components/PersonFilterValuePresenter.svelte`
+- `plugins/contact-resources/src/components/PersonIcon.svelte`
+- `plugins/contact-resources/src/components/PersonIdArrayEditor.svelte`
+- `plugins/contact-resources/src/components/PersonIdFilter.svelte`
+- `plugins/contact-resources/src/components/PersonPresenter.svelte`
+- `plugins/contact-resources/src/components/PersonRefPresenter.svelte`
+- `plugins/contact-resources/src/components/SelectAvatarPopup.svelte`
+- `plugins/contact-resources/src/components/SelectAvatars.svelte`
+- `plugins/contact-resources/src/components/SelectUsersPopup.svelte`
+- `plugins/contact-resources/src/components/SocialEditor.svelte`
+- `plugins/contact-resources/src/components/SocialIdentityPresenter.svelte`
+- `plugins/contact-resources/src/components/SpaceMembers.svelte`
+- `plugins/contact-resources/src/components/SpaceMembersEditor.svelte`
+- `plugins/contact-resources/src/components/SystemAvatar.svelte`
+- `plugins/contact-resources/src/components/TranslationSettings.svelte`
+- `plugins/contact-resources/src/components/UserBox.svelte`
+- `plugins/contact-resources/src/components/UserBoxItems.svelte`
+- `plugins/contact-resources/src/components/UserBoxList.svelte`
+- `plugins/contact-resources/src/components/UserDetails.svelte`
+- `plugins/contact-resources/src/components/UserInfo.svelte`
+- `plugins/contact-resources/src/components/UsersList.svelte`
+- `plugins/contact-resources/src/components/UsersPopup.svelte`
+- `plugins/contact-resources/src/components/WorkspaceMemberStatusEditor.svelte`
+- `plugins/contact-resources/src/index.ts`
+- `plugins/contact-resources/src/plugin.ts`
+- `plugins/contact-resources/src/translation.ts`
+- `plugins/contact-resources/src/utils.ts`
+- `plugins/contact-resources/src/visibilityTester.ts`
+- `plugins/contact-resources/src/workspaceMemberStatus.ts`
+- `plugins/contact-resources/svelte.config.js`
+- `plugins/contact-resources/tsconfig.json`
+- `plugins/contact/.eslintrc.js`
+- `plugins/contact/.npmignore`
+- `plugins/contact/CHANGELOG.json`
+- `plugins/contact/CHANGELOG.md`
+- `plugins/contact/config/rig.json`
+- `plugins/contact/jest.config.js`
+- `plugins/contact/package.json`
+- `plugins/contact/src/__tests__/cache.test.ts`
+- `plugins/contact/src/__tests__/workspaceMemberStatusUtils.test.ts`
+- `plugins/contact/src/analytics.ts`
+- `plugins/contact/src/avatar.ts`
+- `plugins/contact/src/cache.ts`
+- `plugins/contact/src/index.ts`
+- `plugins/contact/src/types.ts`
+- `plugins/contact/src/utils.ts`
+- `plugins/contact/src/workspaceMemberStatusUtils.ts`
+- `plugins/contact/tsconfig.json`
+- `plugins/controlled-documents-assets/.eslintrc.js`
+- `plugins/controlled-documents-assets/assets/icons.svg`
+- `plugins/controlled-documents-assets/config/rig.json`
+- `plugins/controlled-documents-assets/jest.config.js`
+- `plugins/controlled-documents-assets/lang/cs.json`
+- `plugins/controlled-documents-assets/lang/de.json`
+- `plugins/controlled-documents-assets/lang/en.json`
+- `plugins/controlled-documents-assets/lang/es.json`
+- `plugins/controlled-documents-assets/lang/fr.json`
+- `plugins/controlled-documents-assets/lang/it.json`
+- `plugins/controlled-documents-assets/lang/ja.json`
+- `plugins/controlled-documents-assets/lang/ko.json`
+- `plugins/controlled-documents-assets/lang/pt-br.json`
+- `plugins/controlled-documents-assets/lang/pt.json`
+- `plugins/controlled-documents-assets/lang/ru.json`
+- `plugins/controlled-documents-assets/lang/tr.json`
+- `plugins/controlled-documents-assets/lang/zh.json`
+- `plugins/controlled-documents-assets/package.json`
+- `plugins/controlled-documents-assets/src/__tests__/lang.test.ts`
+- `plugins/controlled-documents-assets/src/index.ts`
+- `plugins/controlled-documents-assets/tsconfig.json`
+- `plugins/controlled-documents-resources/.eslintrc.js`
+- `plugins/controlled-documents-resources/.prettierrc`
+- `plugins/controlled-documents-resources/config/rig.json`
+- `plugins/controlled-documents-resources/jest.config.js`
+- `plugins/controlled-documents-resources/package.json`
+- `plugins/controlled-documents-resources/postcss.config.js`
+- `plugins/controlled-documents-resources/src/components/Categories.svelte`
+- `plugins/controlled-documents-resources/src/components/category/popups/DeleteCategoryPopup.svelte`
+- `plugins/controlled-documents-resources/src/components/category/presenters/CategoryPresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/create-doc/CreateFolder.svelte`
+- `plugins/controlled-documents-resources/src/components/create-doc/QmsDocumentWizard.svelte`
+- `plugins/controlled-documents-resources/src/components/create-doc/QmsTemplateWizard.svelte`
+- `plugins/controlled-documents-resources/src/components/create-doc/steps/InfoStep.svelte`
+- `plugins/controlled-documents-resources/src/components/create-doc/steps/LocationStep.svelte`
+- `plugins/controlled-documents-resources/src/components/create-doc/steps/TeamStep.svelte`
+- `plugins/controlled-documents-resources/src/components/create-doc/steps/TemplateStep.svelte`
+- `plugins/controlled-documents-resources/src/components/CreateDocument.svelte`
+- `plugins/controlled-documents-resources/src/components/CreateDocumentCategory.svelte`
+- `plugins/controlled-documents-resources/src/components/docspace/CreateDocumentSpaceType.svelte`
+- `plugins/controlled-documents-resources/src/components/docspace/CreateDocumentsSpace.svelte`
+- `plugins/controlled-documents-resources/src/components/document/common/DocumentStatusTag.svelte`
+- `plugins/controlled-documents-resources/src/components/document/DocTeam.svelte`
+- `plugins/controlled-documents-resources/src/components/document/DocumentDiffViewer.svelte`
+- `plugins/controlled-documents-resources/src/components/document/DocumentHistory.svelte`
+- `plugins/controlled-documents-resources/src/components/document/DocumentsContent.svelte`
+- `plugins/controlled-documents-resources/src/components/document/DocumentSignatories.svelte`
+- `plugins/controlled-documents-resources/src/components/document/DocumentTitle.svelte`
+- `plugins/controlled-documents-resources/src/components/document/EditDocContent.svelte`
+- `plugins/controlled-documents-resources/src/components/document/EditDocReasonAndImpact.svelte`
+- `plugins/controlled-documents-resources/src/components/document/EditDocRelease.svelte`
+- `plugins/controlled-documents-resources/src/components/document/EditDocTeam.svelte`
+- `plugins/controlled-documents-resources/src/components/document/editors/AbstractEditor.svelte`
+- `plugins/controlled-documents-resources/src/components/document/popups/AddCommentPopup.svelte`
+- `plugins/controlled-documents-resources/src/components/document/popups/ChangeCategoryPopup.svelte`
+- `plugins/controlled-documents-resources/src/components/document/popups/ChangeDocCodePopup.svelte`
+- `plugins/controlled-documents-resources/src/components/document/popups/ChangeDocPrefixPopup.svelte`
+- `plugins/controlled-documents-resources/src/components/document/popups/ChangeOwnerPopup.svelte`
+- `plugins/controlled-documents-resources/src/components/document/popups/CommentFilterSettingsPopup.svelte`
+- `plugins/controlled-documents-resources/src/components/document/popups/DocumentCommentsPopup.svelte`
+- `plugins/controlled-documents-resources/src/components/document/popups/TransferDocumentPopup.svelte`
+- `plugins/controlled-documents-resources/src/components/document/presenters/CategoryPresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/document/presenters/ControlledStateFilterValuePresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/document/presenters/DocumentPrefixPresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/document/presenters/DocumentPresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/document/presenters/DocumentTitlePresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/document/presenters/DocumentVersionPresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/document/presenters/OwnerPresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/document/presenters/StateFilterValuePresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/document/presenters/StatePresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/document/presenters/TitlePresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/DocumentApprovalGuideItem.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/DocumentApprovalItem.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/DocumentApprovalsTab.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/DocumentCommentsTab.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/DocumentCommentThread.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/DocumentInfoTab.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/DocumentRightPanel.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/info/DocumentFlatHierarchy.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/info/DocumentFlatTreeElement.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/info/DocumentInfo.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/info/DocumentInfoLabel.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/RightPanelTabHeader.svelte`
+- `plugins/controlled-documents-resources/src/components/document/right-panel/SignatureInfo.svelte`
+- `plugins/controlled-documents-resources/src/components/document/store.ts`
+- `plugins/controlled-documents-resources/src/components/document/types.ts`
+- `plugins/controlled-documents-resources/src/components/DocumentBoxItems.svelte`
+- `plugins/controlled-documents-resources/src/components/DocumentItem.svelte`
+- `plugins/controlled-documents-resources/src/components/DocumentMetaPresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/Documents.svelte`
+- `plugins/controlled-documents-resources/src/components/DocumentsContainer.svelte`
+- `plugins/controlled-documents-resources/src/components/DocumentsPopup.svelte`
+- `plugins/controlled-documents-resources/src/components/DocumentTemplates.svelte`
+- `plugins/controlled-documents-resources/src/components/DocumentVersionsPopup.svelte`
+- `plugins/controlled-documents-resources/src/components/DocumentVersionsPopupItem.svelte`
+- `plugins/controlled-documents-resources/src/components/EditDoc.svelte`
+- `plugins/controlled-documents-resources/src/components/EditDocPanel.svelte`
+- `plugins/controlled-documents-resources/src/components/EditDocumentCategory.svelte`
+- `plugins/controlled-documents-resources/src/components/EditProjectDoc.svelte`
+- `plugins/controlled-documents-resources/src/components/FailedToCreateDocument.svelte`
+- `plugins/controlled-documents-resources/src/components/hierarchy/DocHierarchyLevel.svelte`
+- `plugins/controlled-documents-resources/src/components/hierarchy/DocumentParentSelector.svelte`
+- `plugins/controlled-documents-resources/src/components/hierarchy/DocumentSpacePresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/hierarchy/DropArea.svelte`
+- `plugins/controlled-documents-resources/src/components/hierarchy/DropMarker.svelte`
+- `plugins/controlled-documents-resources/src/components/icons/Approved.svelte`
+- `plugins/controlled-documents-resources/src/components/icons/Cancelled.svelte`
+- `plugins/controlled-documents-resources/src/components/icons/DocumentIcon.svelte`
+- `plugins/controlled-documents-resources/src/components/icons/IconWarning.svelte`
+- `plugins/controlled-documents-resources/src/components/icons/Info.svelte`
+- `plugins/controlled-documents-resources/src/components/icons/Rejected.svelte`
+- `plugins/controlled-documents-resources/src/components/icons/Waiting.svelte`
+- `plugins/controlled-documents-resources/src/components/MyDocuments.svelte`
+- `plugins/controlled-documents-resources/src/components/NewDocumentHeader.svelte`
+- `plugins/controlled-documents-resources/src/components/print/DocumentPrintTitlePage.svelte`
+- `plugins/controlled-documents-resources/src/components/print/DocumentTemplateFooter.svelte`
+- `plugins/controlled-documents-resources/src/components/print/DocumentTemplateHeader.svelte`
+- `plugins/controlled-documents-resources/src/components/project/ProjectPresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/project/ProjectRefPresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/project/Projects.svelte`
+- `plugins/controlled-documents-resources/src/components/project/ProjectSelector.svelte`
+- `plugins/controlled-documents-resources/src/components/project/ProjectSelectorPopup.svelte`
+- `plugins/controlled-documents-resources/src/components/project/ProjectSelectorPopupItem.svelte`
+- `plugins/controlled-documents-resources/src/components/project/ProjectsView.svelte`
+- `plugins/controlled-documents-resources/src/components/requests/DocumentApprovalRequest.svelte`
+- `plugins/controlled-documents-resources/src/components/requests/DocumentApprovalRequestPresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/requests/DocumentRequestPresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/requests/DocumentReviewRequest.svelte`
+- `plugins/controlled-documents-resources/src/components/requests/DocumentReviewRequestPresenter.svelte`
+- `plugins/controlled-documents-resources/src/components/requests/StatusControl.svelte`
+- `plugins/controlled-documents-resources/src/components/SignatureDialog.svelte`
+- `plugins/controlled-documents-resources/src/components/TeamPopup.svelte`
+- `plugins/controlled-documents-resources/src/docTableFormatter.ts`
+- `plugins/controlled-documents-resources/src/docutils.ts`
+- `plugins/controlled-documents-resources/src/index.ts`
+- `plugins/controlled-documents-resources/src/navigation.ts`
+- `plugins/controlled-documents-resources/src/plugin.ts`
+- `plugins/controlled-documents-resources/src/stores/editors/document.ts`
+- `plugins/controlled-documents-resources/src/stores/editors/document/actions.ts`
+- `plugins/controlled-documents-resources/src/stores/editors/document/canCreateNewDraft.ts`
+- `plugins/controlled-documents-resources/src/stores/editors/document/canCreateNewSnapshot.ts`
+- `plugins/controlled-documents-resources/src/stores/editors/document/canRestoreDraft.ts`
+- `plugins/controlled-documents-resources/src/stores/editors/document/canSendForApproval.ts`
+- `plugins/controlled-documents-resources/src/stores/editors/document/canSendForReview.ts`
+- `plugins/controlled-documents-resources/src/stores/editors/document/comparison.ts`
+- `plugins/controlled-documents-resources/src/stores/editors/document/documentComments.ts`
+- `plugins/controlled-documents-resources/src/stores/editors/document/editor.ts`
+- `plugins/controlled-documents-resources/src/stores/editors/document/query.ts`
+- `plugins/controlled-documents-resources/src/stores/wizards/create-document.ts`
+- `plugins/controlled-documents-resources/src/stores/wizards/create-document/actions.ts`
+- `plugins/controlled-documents-resources/src/stores/wizards/create-document/wizard.ts`
+- `plugins/controlled-documents-resources/src/styles/_colors.scss`
+- `plugins/controlled-documents-resources/src/text.ts`
+- `plugins/controlled-documents-resources/src/utils.ts`
+- `plugins/controlled-documents-resources/svelte.config.js`
+- `plugins/controlled-documents-resources/tsconfig.json`
+- `plugins/controlled-documents/.eslintrc.js`
+- `plugins/controlled-documents/.npmignore`
+- `plugins/controlled-documents/config/rig.json`
+- `plugins/controlled-documents/jest.config.js`
+- `plugins/controlled-documents/package.json`
+- `plugins/controlled-documents/src/__tests__/projectDocumentTree.test.ts`
+- `plugins/controlled-documents/src/docutils.ts`
+- `plugins/controlled-documents/src/index.ts`
+- `plugins/controlled-documents/src/plugin.ts`
+- `plugins/controlled-documents/src/types.ts`
+- `plugins/controlled-documents/src/utils.ts`
+- `plugins/controlled-documents/tsconfig.json`
+- `plugins/converter-resources/.eslintrc.js`
+- `plugins/converter-resources/.prettierrc`
+- `plugins/converter-resources/config/rig.json`
+- `plugins/converter-resources/jest.config.js`
+- `plugins/converter-resources/package.json`
+- `plugins/converter-resources/postcss.config.js`
+- `plugins/converter-resources/src/__tests__/copyAsMarkdownTable.test.ts`
+- `plugins/converter-resources/src/__tests__/formatter.utils.test.ts`
+- `plugins/converter-resources/src/__tests__/formatter.valueFormatter.test.ts`
+- `plugins/converter-resources/src/__tests__/markdown.escape.test.ts`
+- `plugins/converter-resources/src/__tests__/MarkdownTableConverter.test.ts`
+- `plugins/converter-resources/src/__tests__/model.tableModel.test.ts`
+- `plugins/converter-resources/src/__tests__/relationshipBuilder.test.ts`
+- `plugins/converter-resources/src/actionImpl.ts`
+- `plugins/converter-resources/src/components/CopyAsMarkdownButton.svelte`
+- `plugins/converter-resources/src/data/index.ts`
+- `plugins/converter-resources/src/data/metadataBuilder.ts`
+- `plugins/converter-resources/src/data/personLoader.ts`
+- `plugins/converter-resources/src/data/relationshipBuilder.ts`
+- `plugins/converter-resources/src/formatter/index.ts`
+- `plugins/converter-resources/src/formatter/registry.ts`
+- `plugins/converter-resources/src/formatter/utils.ts`
+- `plugins/converter-resources/src/formatter/valueFormatter.ts`
+- `plugins/converter-resources/src/index.ts`
+- `plugins/converter-resources/src/markdown/copyActions.ts`
+- `plugins/converter-resources/src/markdown/escape.ts`
+- `plugins/converter-resources/src/markdown/index.ts`
+- `plugins/converter-resources/src/markdown/link.ts`
+- `plugins/converter-resources/src/markdown/tableBuilder.ts`
+- `plugins/converter-resources/src/model/headerGenerator.ts`
+- `plugins/converter-resources/src/model/index.ts`
+- `plugins/converter-resources/src/model/tableModel.ts`
+- `plugins/converter-resources/src/model/viewletLoader.ts`
+- `plugins/converter-resources/src/plugin.ts`
+- `plugins/converter-resources/src/types.ts`
+- `plugins/converter-resources/svelte.config.js`
+- `plugins/converter-resources/tsconfig.json`
+- `plugins/converter/.eslintrc.js`
+- `plugins/converter/config/rig.json`
+- `plugins/converter/jest.config.js`
+- `plugins/converter/package.json`
+- `plugins/converter/src/index.ts`
+- `plugins/converter/src/plugin.ts`
+- `plugins/converter/src/types.ts`
+- `plugins/converter/tsconfig.json`
+- `plugins/desktop-downloads-assets/.eslintrc.js`
+- `plugins/desktop-downloads-assets/assets/icons.svg`
+- `plugins/desktop-downloads-assets/config/rig.json`
+- `plugins/desktop-downloads-assets/jest.config.js`
+- `plugins/desktop-downloads-assets/lang/cs.json`
+- `plugins/desktop-downloads-assets/lang/de.json`
+- `plugins/desktop-downloads-assets/lang/en.json`
+- `plugins/desktop-downloads-assets/lang/es.json`
+- `plugins/desktop-downloads-assets/lang/fr.json`
+- `plugins/desktop-downloads-assets/lang/it.json`
+- `plugins/desktop-downloads-assets/lang/ja.json`
+- `plugins/desktop-downloads-assets/lang/ko.json`
+- `plugins/desktop-downloads-assets/lang/pt-br.json`
+- `plugins/desktop-downloads-assets/lang/pt.json`
+- `plugins/desktop-downloads-assets/lang/ru.json`
+- `plugins/desktop-downloads-assets/lang/tr.json`
+- `plugins/desktop-downloads-assets/lang/zh.json`
+- `plugins/desktop-downloads-assets/package.json`
+- `plugins/desktop-downloads-assets/src/__tests__/lang.test.ts`
+- `plugins/desktop-downloads-assets/src/index.ts`
+- `plugins/desktop-downloads-assets/tsconfig.json`
+- `plugins/desktop-downloads-resources/.eslintrc.js`
+- `plugins/desktop-downloads-resources/.prettierrc`
+- `plugins/desktop-downloads-resources/config/rig.json`
+- `plugins/desktop-downloads-resources/jest.config.js`
+- `plugins/desktop-downloads-resources/package.json`
+- `plugins/desktop-downloads-resources/postcss.config.js`
+- `plugins/desktop-downloads-resources/src/components/FileDownloadExt.svelte`
+- `plugins/desktop-downloads-resources/src/components/FileDownloadStatusPopup.svelte`
+- `plugins/desktop-downloads-resources/src/components/icons/Completed.svelte`
+- `plugins/desktop-downloads-resources/src/components/icons/Download.svelte`
+- `plugins/desktop-downloads-resources/src/components/icons/DownloadProgress.svelte`
+- `plugins/desktop-downloads-resources/src/components/WorkbenchExtension.svelte`
+- `plugins/desktop-downloads-resources/src/index.ts`
+- `plugins/desktop-downloads-resources/src/plugin.ts`
+- `plugins/desktop-downloads-resources/src/store.ts`
+- `plugins/desktop-downloads-resources/src/utils.ts`
+- `plugins/desktop-downloads-resources/svelte.config.js`
+- `plugins/desktop-downloads-resources/tsconfig.json`
+- `plugins/desktop-downloads/.eslintrc.js`
+- `plugins/desktop-downloads/.npmignore`
+- `plugins/desktop-downloads/config/rig.json`
+- `plugins/desktop-downloads/jest.config.js`
+- `plugins/desktop-downloads/package.json`
+- `plugins/desktop-downloads/src/index.ts`
+- `plugins/desktop-downloads/src/plugin.ts`
+- `plugins/desktop-downloads/src/types.ts`
+- `plugins/desktop-downloads/src/utils.ts`
+- `plugins/desktop-downloads/tsconfig.json`
+- `plugins/desktop-preferences-assets/.eslintrc.js`
+- `plugins/desktop-preferences-assets/assets/icons.svg`
+- `plugins/desktop-preferences-assets/config/rig.json`
+- `plugins/desktop-preferences-assets/jest.config.js`
+- `plugins/desktop-preferences-assets/lang/cs.json`
+- `plugins/desktop-preferences-assets/lang/de.json`
+- `plugins/desktop-preferences-assets/lang/en.json`
+- `plugins/desktop-preferences-assets/lang/es.json`
+- `plugins/desktop-preferences-assets/lang/fr.json`
+- `plugins/desktop-preferences-assets/lang/ja.json`
+- `plugins/desktop-preferences-assets/lang/ko.json`
+- `plugins/desktop-preferences-assets/lang/pt-br.json`
+- `plugins/desktop-preferences-assets/lang/pt.json`
+- `plugins/desktop-preferences-assets/lang/ru.json`
+- `plugins/desktop-preferences-assets/lang/tr.json`
+- `plugins/desktop-preferences-assets/lang/zh.json`
+- `plugins/desktop-preferences-assets/package.json`
+- `plugins/desktop-preferences-assets/src/__tests__/lang.test.ts`
+- `plugins/desktop-preferences-assets/src/index.ts`
+- `plugins/desktop-preferences-assets/tsconfig.json`
+- `plugins/desktop-preferences-resources/.eslintrc.js`
+- `plugins/desktop-preferences-resources/.prettierrc`
+- `plugins/desktop-preferences-resources/config/rig.json`
+- `plugins/desktop-preferences-resources/jest.config.js`
+- `plugins/desktop-preferences-resources/package.json`
+- `plugins/desktop-preferences-resources/postcss.config.js`
+- `plugins/desktop-preferences-resources/src/components/DesktopPreferencesPresenter.svelte`
+- `plugins/desktop-preferences-resources/src/index.ts`
+- `plugins/desktop-preferences-resources/src/plugin.ts`
+- `plugins/desktop-preferences-resources/src/utils.ts`
+- `plugins/desktop-preferences-resources/svelte.config.js`
+- `plugins/desktop-preferences-resources/tsconfig.json`
+- `plugins/desktop-preferences/.eslintrc.js`
+- `plugins/desktop-preferences/.npmignore`
+- `plugins/desktop-preferences/config/rig.json`
+- `plugins/desktop-preferences/jest.config.js`
+- `plugins/desktop-preferences/package.json`
+- `plugins/desktop-preferences/src/index.ts`
+- `plugins/desktop-preferences/tsconfig.json`
+- `plugins/devmodel-resources/.eslintrc.js`
+- `plugins/devmodel-resources/.prettierrc`
+- `plugins/devmodel-resources/config/rig.json`
+- `plugins/devmodel-resources/jest.config.js`
+- `plugins/devmodel-resources/package.json`
+- `plugins/devmodel-resources/postcss.config.js`
+- `plugins/devmodel-resources/src/components/ContentPopup.svelte`
+- `plugins/devmodel-resources/src/components/ModelView.svelte`
+- `plugins/devmodel-resources/src/index.ts`
+- `plugins/devmodel-resources/src/plugin.ts`
+- `plugins/devmodel-resources/svelte.config.js`
+- `plugins/devmodel-resources/tsconfig.json`
+- `plugins/devmodel/.eslintrc.js`
+- `plugins/devmodel/.npmignore`
+- `plugins/devmodel/config/rig.json`
+- `plugins/devmodel/jest.config.js`
+- `plugins/devmodel/package.json`
+- `plugins/devmodel/src/index.ts`
+- `plugins/devmodel/tsconfig.json`
+- `plugins/diffview-assets/.eslintrc.js`
+- `plugins/diffview-assets/assets/icons.svg`
+- `plugins/diffview-assets/config/rig.json`
+- `plugins/diffview-assets/jest.config.js`
+- `plugins/diffview-assets/lang/cs.json`
+- `plugins/diffview-assets/lang/de.json`
+- `plugins/diffview-assets/lang/en.json`
+- `plugins/diffview-assets/lang/es.json`
+- `plugins/diffview-assets/lang/fr.json`
+- `plugins/diffview-assets/lang/it.json`
+- `plugins/diffview-assets/lang/ja.json`
+- `plugins/diffview-assets/lang/ko.json`
+- `plugins/diffview-assets/lang/pt-br.json`
+- `plugins/diffview-assets/lang/pt.json`
+- `plugins/diffview-assets/lang/ru.json`
+- `plugins/diffview-assets/lang/tr.json`
+- `plugins/diffview-assets/lang/zh.json`
+- `plugins/diffview-assets/package.json`
+- `plugins/diffview-assets/src/__tests__/lang.test.ts`
+- `plugins/diffview-assets/src/index.ts`
+- `plugins/diffview-assets/tsconfig.json`
+- `plugins/diffview-resources/.eslintrc.js`
+- `plugins/diffview-resources/.prettierrc`
+- `plugins/diffview-resources/config/rig.json`
+- `plugins/diffview-resources/jest.config.js`
+- `plugins/diffview-resources/package.json`
+- `plugins/diffview-resources/postcss.config.js`
+- `plugins/diffview-resources/src/components/DiffView.svelte`
+- `plugins/diffview-resources/src/components/DiffViewModeDropdown.svelte`
+- `plugins/diffview-resources/src/components/FileDiffContent.svelte`
+- `plugins/diffview-resources/src/components/FileDiffHeader.svelte`
+- `plugins/diffview-resources/src/components/FileDiffView.svelte`
+- `plugins/diffview-resources/src/components/Highlight.svelte`
+- `plugins/diffview-resources/src/components/InlineDiffView.svelte`
+- `plugins/diffview-resources/src/components/theme/github-dark.scss`
+- `plugins/diffview-resources/src/components/theme/github.scss`
+- `plugins/diffview-resources/src/index.ts`
+- `plugins/diffview-resources/src/parser.ts`
+- `plugins/diffview-resources/src/plugin.ts`
+- `plugins/diffview-resources/src/render.ts`
+- `plugins/diffview-resources/src/utils.ts`
+- `plugins/diffview-resources/svelte.config.js`
+- `plugins/diffview-resources/tsconfig.json`
+- `plugins/diffview/.eslintrc.js`
+- `plugins/diffview/.npmignore`
+- `plugins/diffview/config/rig.json`
+- `plugins/diffview/jest.config.js`
+- `plugins/diffview/package.json`
+- `plugins/diffview/src/index.ts`
+- `plugins/diffview/src/types.ts`
+- `plugins/diffview/tsconfig.json`
+- `plugins/document-assets/.eslintrc.js`
+- `plugins/document-assets/assets/icons.svg`
+- `plugins/document-assets/config/rig.json`
+- `plugins/document-assets/jest.config.js`
+- `plugins/document-assets/lang/cs.json`
+- `plugins/document-assets/lang/de.json`
+- `plugins/document-assets/lang/en.json`
+- `plugins/document-assets/lang/es.json`
+- `plugins/document-assets/lang/fr.json`
+- `plugins/document-assets/lang/it.json`
+- `plugins/document-assets/lang/ja.json`
+- `plugins/document-assets/lang/ko.json`
+- `plugins/document-assets/lang/pt-br.json`
+- `plugins/document-assets/lang/pt.json`
+- `plugins/document-assets/lang/ru.json`
+- `plugins/document-assets/lang/tr.json`
+- `plugins/document-assets/lang/zh.json`
+- `plugins/document-assets/package.json`
+- `plugins/document-assets/src/__tests__/lang.test.ts`
+- `plugins/document-assets/src/index.ts`
+- `plugins/document-assets/tsconfig.json`
+- `plugins/document-resources/.eslintrc.js`
+- `plugins/document-resources/.prettierrc`
+- `plugins/document-resources/config/rig.json`
+- `plugins/document-resources/jest.config.js`
+- `plugins/document-resources/package.json`
+- `plugins/document-resources/postcss.config.js`
+- `plugins/document-resources/src/components/CreateDocument.svelte`
+- `plugins/document-resources/src/components/CreateSnapshot.svelte`
+- `plugins/document-resources/src/components/DocumentEditor.svelte`
+- `plugins/document-resources/src/components/DocumentIcon.svelte`
+- `plugins/document-resources/src/components/DocumentInlineEditor.svelte`
+- `plugins/document-resources/src/components/DocumentItem.svelte`
+- `plugins/document-resources/src/components/DocumentPresenter.svelte`
+- `plugins/document-resources/src/components/Documents.svelte`
+- `plugins/document-resources/src/components/DocumentSearchIcon.svelte`
+- `plugins/document-resources/src/components/DocumentTitle.svelte`
+- `plugins/document-resources/src/components/DocumentToDoPresenter.svelte`
+- `plugins/document-resources/src/components/EditDoc.svelte`
+- `plugins/document-resources/src/components/Move.svelte`
+- `plugins/document-resources/src/components/MyDocuments.svelte`
+- `plugins/document-resources/src/components/navigator/DocHierarchy.svelte`
+- `plugins/document-resources/src/components/navigator/DocTreeElement.svelte`
+- `plugins/document-resources/src/components/navigator/DropArea.svelte`
+- `plugins/document-resources/src/components/navigator/DropMarker.svelte`
+- `plugins/document-resources/src/components/navigator/TeamspaceSpacePresenter.svelte`
+- `plugins/document-resources/src/components/NewDocumentHeader.svelte`
+- `plugins/document-resources/src/components/NotificationDocumentPresenter.svelte`
+- `plugins/document-resources/src/components/sidebar/History.svelte`
+- `plugins/document-resources/src/components/sidebar/HistoryView.svelte`
+- `plugins/document-resources/src/components/sidebar/References.svelte`
+- `plugins/document-resources/src/components/teamspace/CreateTeamspace.svelte`
+- `plugins/document-resources/src/components/teamspace/TeamspacePresenter.svelte`
+- `plugins/document-resources/src/index.ts`
+- `plugins/document-resources/src/plugin.ts`
+- `plugins/document-resources/src/utils.ts`
+- `plugins/document-resources/svelte.config.js`
+- `plugins/document-resources/tsconfig.json`
+- `plugins/document/.eslintrc.js`
+- `plugins/document/.npmignore`
+- `plugins/document/config/rig.json`
+- `plugins/document/jest.config.js`
+- `plugins/document/package.json`
+- `plugins/document/src/analytics.ts`
+- `plugins/document/src/index.ts`
+- `plugins/document/src/plugin.ts`
+- `plugins/document/src/types.ts`
+- `plugins/document/src/utils.ts`
+- `plugins/document/tsconfig.json`
+- `plugins/drive-assets/.eslintrc.js`
+- `plugins/drive-assets/assets/icons.svg`
+- `plugins/drive-assets/config/rig.json`
+- `plugins/drive-assets/jest.config.js`
+- `plugins/drive-assets/lang/cs.json`
+- `plugins/drive-assets/lang/de.json`
+- `plugins/drive-assets/lang/en.json`
+- `plugins/drive-assets/lang/es.json`
+- `plugins/drive-assets/lang/fr.json`
+- `plugins/drive-assets/lang/it.json`
+- `plugins/drive-assets/lang/ja.json`
+- `plugins/drive-assets/lang/ko.json`
+- `plugins/drive-assets/lang/pt-br.json`
+- `plugins/drive-assets/lang/pt.json`
+- `plugins/drive-assets/lang/ru.json`
+- `plugins/drive-assets/lang/tr.json`
+- `plugins/drive-assets/lang/zh.json`
+- `plugins/drive-assets/package.json`
+- `plugins/drive-assets/src/__tests__/lang.test.ts`
+- `plugins/drive-assets/src/index.ts`
+- `plugins/drive-assets/tsconfig.json`
+- `plugins/drive-resources/.eslintrc.js`
+- `plugins/drive-resources/.prettierrc`
+- `plugins/drive-resources/config/rig.json`
+- `plugins/drive-resources/jest.config.js`
+- `plugins/drive-resources/package.json`
+- `plugins/drive-resources/postcss.config.js`
+- `plugins/drive-resources/src/components/CreateDrive.svelte`
+- `plugins/drive-resources/src/components/CreateFolder.svelte`
+- `plugins/drive-resources/src/components/DrivePanel.svelte`
+- `plugins/drive-resources/src/components/DrivePresenter.svelte`
+- `plugins/drive-resources/src/components/DriveSpaceHeader.svelte`
+- `plugins/drive-resources/src/components/DriveSpacePresenter.svelte`
+- `plugins/drive-resources/src/components/EditFile.svelte`
+- `plugins/drive-resources/src/components/EditFileVersions.svelte`
+- `plugins/drive-resources/src/components/EditFolder.svelte`
+- `plugins/drive-resources/src/components/FileAside.svelte`
+- `plugins/drive-resources/src/components/FileDropArea.svelte`
+- `plugins/drive-resources/src/components/FileHeader.svelte`
+- `plugins/drive-resources/src/components/FilePanel.svelte`
+- `plugins/drive-resources/src/components/FilePresenter.svelte`
+- `plugins/drive-resources/src/components/FileSearchItem.svelte`
+- `plugins/drive-resources/src/components/FileSizePresenter.svelte`
+- `plugins/drive-resources/src/components/FileVersionPresenter.svelte`
+- `plugins/drive-resources/src/components/FileVersionVersionPresenter.svelte`
+- `plugins/drive-resources/src/components/FolderBrowser.svelte`
+- `plugins/drive-resources/src/components/FolderHeader.svelte`
+- `plugins/drive-resources/src/components/FolderPanel.svelte`
+- `plugins/drive-resources/src/components/FolderPresenter.svelte`
+- `plugins/drive-resources/src/components/FolderSearchItem.svelte`
+- `plugins/drive-resources/src/components/FolderTreeLevel.svelte`
+- `plugins/drive-resources/src/components/GridItem.svelte`
+- `plugins/drive-resources/src/components/GridView.svelte`
+- `plugins/drive-resources/src/components/icons/FileDownload.svelte`
+- `plugins/drive-resources/src/components/icons/FileTypeAudio.svelte`
+- `plugins/drive-resources/src/components/icons/FileTypeImage.svelte`
+- `plugins/drive-resources/src/components/icons/FileTypePdf.svelte`
+- `plugins/drive-resources/src/components/icons/FileTypeText.svelte`
+- `plugins/drive-resources/src/components/icons/FileTypeVideo.svelte`
+- `plugins/drive-resources/src/components/icons/FileUpload.svelte`
+- `plugins/drive-resources/src/components/icons/Folder.svelte`
+- `plugins/drive-resources/src/components/icons/FolderThumbnail.svelte`
+- `plugins/drive-resources/src/components/MoveResource.svelte`
+- `plugins/drive-resources/src/components/RenamePopup.svelte`
+- `plugins/drive-resources/src/components/ResourcePresenter.svelte`
+- `plugins/drive-resources/src/components/Thumbnail.svelte`
+- `plugins/drive-resources/src/index.ts`
+- `plugins/drive-resources/src/navigation.ts`
+- `plugins/drive-resources/src/plugin.ts`
+- `plugins/drive-resources/src/utils.ts`
+- `plugins/drive-resources/svelte.config.js`
+- `plugins/drive-resources/tsconfig.json`
+- `plugins/drive/.eslintrc.js`
+- `plugins/drive/.npmignore`
+- `plugins/drive/config/rig.json`
+- `plugins/drive/jest.config.js`
+- `plugins/drive/package.json`
+- `plugins/drive/src/analytics.ts`
+- `plugins/drive/src/index.ts`
+- `plugins/drive/src/plugin.ts`
+- `plugins/drive/src/types.ts`
+- `plugins/drive/src/utils.ts`
+- `plugins/drive/tsconfig.json`
+- `plugins/emoji-assets/.eslintrc.js`
+- `plugins/emoji-assets/assets/icons.svg`
+- `plugins/emoji-assets/config/rig.json`
+- `plugins/emoji-assets/jest.config.js`
+- `plugins/emoji-assets/lang/cs.json`
+- `plugins/emoji-assets/lang/de.json`
+- `plugins/emoji-assets/lang/en.json`
+- `plugins/emoji-assets/lang/es.json`
+- `plugins/emoji-assets/lang/fr.json`
+- `plugins/emoji-assets/lang/it.json`
+- `plugins/emoji-assets/lang/ja.json`
+- `plugins/emoji-assets/lang/ko.json`
+- `plugins/emoji-assets/lang/pt-br.json`
+- `plugins/emoji-assets/lang/pt.json`
+- `plugins/emoji-assets/lang/ru.json`
+- `plugins/emoji-assets/lang/tr.json`
+- `plugins/emoji-assets/lang/zh.json`
+- `plugins/emoji-assets/package.json`
+- `plugins/emoji-assets/src/__tests__/lang.test.ts`
+- `plugins/emoji-assets/src/index.ts`
+- `plugins/emoji-assets/tsconfig.json`
+- `plugins/emoji-resources/.eslintrc.js`
+- `plugins/emoji-resources/.prettierrc`
+- `plugins/emoji-resources/config/rig.json`
+- `plugins/emoji-resources/jest.config.js`
+- `plugins/emoji-resources/package.json`
+- `plugins/emoji-resources/postcss.config.js`
+- `plugins/emoji-resources/src/components/ActionsPopup.svelte`
+- `plugins/emoji-resources/src/components/EmojiButton.svelte`
+- `plugins/emoji-resources/src/components/EmojiGroup.svelte`
+- `plugins/emoji-resources/src/components/EmojiGroupPalette.svelte`
+- `plugins/emoji-resources/src/components/EmojiPopup.svelte`
+- `plugins/emoji-resources/src/components/EmojiPresenter.svelte`
+- `plugins/emoji-resources/src/components/settings/CreateCustomEmojiPopup.svelte`
+- `plugins/emoji-resources/src/components/settings/CustomEmojiPresenter.svelte`
+- `plugins/emoji-resources/src/components/settings/SettingsEmojiTable.svelte`
+- `plugins/emoji-resources/src/components/SkinTonePopup.svelte`
+- `plugins/emoji-resources/src/components/SkinToneTooltip.svelte`
+- `plugins/emoji-resources/src/components/WorkbenchExtension.svelte`
+- `plugins/emoji-resources/src/index.ts`
+- `plugins/emoji-resources/src/store.ts`
+- `plugins/emoji-resources/src/types.ts`
+- `plugins/emoji-resources/src/utils.ts`
+- `plugins/emoji-resources/svelte.config.js`
+- `plugins/emoji-resources/tsconfig.json`
+- `plugins/emoji/.eslintrc.js`
+- `plugins/emoji/.npmignore`
+- `plugins/emoji/config/rig.json`
+- `plugins/emoji/jest.config.js`
+- `plugins/emoji/package.json`
+- `plugins/emoji/src/index.ts`
+- `plugins/emoji/src/plugin.ts`
+- `plugins/emoji/src/types.ts`
+- `plugins/emoji/src/utils.ts`
+- `plugins/emoji/tsconfig.json`
+- `plugins/export-assets/.eslintrc.js`
+- `plugins/export-assets/assets/icons.svg`
+- `plugins/export-assets/config/rig.json`
+- `plugins/export-assets/jest.config.js`
+- `plugins/export-assets/lang/cs.json`
+- `plugins/export-assets/lang/de.json`
+- `plugins/export-assets/lang/en.json`
+- `plugins/export-assets/lang/es.json`
+- `plugins/export-assets/lang/fr.json`
+- `plugins/export-assets/lang/it.json`
+- `plugins/export-assets/lang/ja.json`
+- `plugins/export-assets/lang/ko.json`
+- `plugins/export-assets/lang/pt-br.json`
+- `plugins/export-assets/lang/pt.json`
+- `plugins/export-assets/lang/ru.json`
+- `plugins/export-assets/lang/tr.json`
+- `plugins/export-assets/lang/zh.json`
+- `plugins/export-assets/package.json`
+- `plugins/export-assets/src/__tests__/lang.test.ts`
+- `plugins/export-assets/src/index.ts`
+- `plugins/export-assets/tsconfig.json`
+- `plugins/export-resources/.eslintrc.js`
+- `plugins/export-resources/.prettierrc`
+- `plugins/export-resources/config/rig.json`
+- `plugins/export-resources/jest.config.js`
+- `plugins/export-resources/package.json`
+- `plugins/export-resources/postcss.config.js`
+- `plugins/export-resources/src/components/ExportButton.svelte`
+- `plugins/export-resources/src/components/ExportNotification.svelte`
+- `plugins/export-resources/src/components/ExportResultPanel.svelte`
+- `plugins/export-resources/src/components/ExportSettings.svelte`
+- `plugins/export-resources/src/components/ExportToWorkspaceModal.svelte`
+- `plugins/export-resources/src/export.ts`
+- `plugins/export-resources/src/index.ts`
+- `plugins/export-resources/src/plugin.ts`
+- `plugins/export-resources/svelte.config.js`
+- `plugins/export-resources/tsconfig.json`
+- `plugins/export/.eslintrc.js`
+- `plugins/export/.npmignore`
+- `plugins/export/config/rig.json`
+- `plugins/export/jest.config.js`
+- `plugins/export/package.json`
+- `plugins/export/src/index.ts`
+- `plugins/export/src/plugin.ts`
+- `plugins/export/src/types.ts`
+- `plugins/export/src/utils.ts`
+- `plugins/export/tsconfig.json`
+- `plugins/global-profile-assets/.eslintrc.js`
+- `plugins/global-profile-assets/assets/hero-dark.png`
+- `plugins/global-profile-assets/assets/hero-light.jpg`
+- `plugins/global-profile-assets/assets/icons.svg`
+- `plugins/global-profile-assets/config/rig.json`
+- `plugins/global-profile-assets/jest.config.js`
+- `plugins/global-profile-assets/lang/cs.json`
+- `plugins/global-profile-assets/lang/de.json`
+- `plugins/global-profile-assets/lang/en.json`
+- `plugins/global-profile-assets/lang/es.json`
+- `plugins/global-profile-assets/lang/fr.json`
+- `plugins/global-profile-assets/lang/it.json`
+- `plugins/global-profile-assets/lang/ja.json`
+- `plugins/global-profile-assets/lang/ko.json`
+- `plugins/global-profile-assets/lang/pt-br.json`
+- `plugins/global-profile-assets/lang/pt.json`
+- `plugins/global-profile-assets/lang/ru.json`
+- `plugins/global-profile-assets/lang/tr.json`
+- `plugins/global-profile-assets/lang/zh.json`
+- `plugins/global-profile-assets/package.json`
+- `plugins/global-profile-assets/src/__tests__/lang.test.ts`
+- `plugins/global-profile-assets/src/index.ts`
+- `plugins/global-profile-assets/tsconfig.json`
+- `plugins/global-profile-resources/.eslintrc.js`
+- `plugins/global-profile-resources/.prettierrc`
+- `plugins/global-profile-resources/config/rig.json`
+- `plugins/global-profile-resources/jest.config.js`
+- `plugins/global-profile-resources/package.json`
+- `plugins/global-profile-resources/postcss.config.js`
+- `plugins/global-profile-resources/src/components/EditGlobalProfilePopup.svelte`
+- `plugins/global-profile-resources/src/components/GlobalProfileApp.svelte`
+- `plugins/global-profile-resources/src/components/ProfileField.svelte`
+- `plugins/global-profile-resources/src/index.ts`
+- `plugins/global-profile-resources/src/utils.ts`
+- `plugins/global-profile-resources/svelte.config.js`
+- `plugins/global-profile-resources/tsconfig.json`
+- `plugins/global-profile/.eslintrc.js`
+- `plugins/global-profile/.npmignore`
+- `plugins/global-profile/config/rig.json`
+- `plugins/global-profile/jest.config.js`
+- `plugins/global-profile/package.json`
+- `plugins/global-profile/src/index.ts`
+- `plugins/global-profile/src/plugin.ts`
+- `plugins/global-profile/tsconfig.json`
+- `plugins/gmail-assets/.eslintrc.js`
+- `plugins/gmail-assets/config/rig.json`
+- `plugins/gmail-assets/jest.config.js`
+- `plugins/gmail-assets/lang/cs.json`
+- `plugins/gmail-assets/lang/de.json`
+- `plugins/gmail-assets/lang/en.json`
+- `plugins/gmail-assets/lang/es.json`
+- `plugins/gmail-assets/lang/fr.json`
+- `plugins/gmail-assets/lang/it.json`
+- `plugins/gmail-assets/lang/ja.json`
+- `plugins/gmail-assets/lang/ko.json`
+- `plugins/gmail-assets/lang/pt-br.json`
+- `plugins/gmail-assets/lang/pt.json`
+- `plugins/gmail-assets/lang/ru.json`
+- `plugins/gmail-assets/lang/tr.json`
+- `plugins/gmail-assets/lang/zh.json`
+- `plugins/gmail-assets/package.json`
+- `plugins/gmail-assets/src/__tests__/lang.test.ts`
+- `plugins/gmail-assets/src/index.ts`
+- `plugins/gmail-assets/tsconfig.json`
+- `plugins/gmail-resources/.eslintrc.js`
+- `plugins/gmail-resources/.prettierrc`
+- `plugins/gmail-resources/config/rig.json`
+- `plugins/gmail-resources/jest.config.js`
+- `plugins/gmail-resources/package.json`
+- `plugins/gmail-resources/postcss.config.js`
+- `plugins/gmail-resources/src/api.ts`
+- `plugins/gmail-resources/src/components/activity/GmailSharedMessage.svelte`
+- `plugins/gmail-resources/src/components/activity/GmailWriteMessage.svelte`
+- `plugins/gmail-resources/src/components/Chats.svelte`
+- `plugins/gmail-resources/src/components/Configure.svelte`
+- `plugins/gmail-resources/src/components/ConfigureV2.svelte`
+- `plugins/gmail-resources/src/components/Connect.svelte`
+- `plugins/gmail-resources/src/components/FullMessage.svelte`
+- `plugins/gmail-resources/src/components/FullMessageContent.svelte`
+- `plugins/gmail-resources/src/components/FullMessagePopup.svelte`
+- `plugins/gmail-resources/src/components/icons/GmailColor.svelte`
+- `plugins/gmail-resources/src/components/icons/Inbox.svelte`
+- `plugins/gmail-resources/src/components/IntegrationSelector.svelte`
+- `plugins/gmail-resources/src/components/IntegrationState.svelte`
+- `plugins/gmail-resources/src/components/Main.svelte`
+- `plugins/gmail-resources/src/components/Message.svelte`
+- `plugins/gmail-resources/src/components/Messages.svelte`
+- `plugins/gmail-resources/src/components/NewMessage.svelte`
+- `plugins/gmail-resources/src/components/NewMessages.svelte`
+- `plugins/gmail-resources/src/components/SharedMessages.svelte`
+- `plugins/gmail-resources/src/index.ts`
+- `plugins/gmail-resources/src/plugin.ts`
+- `plugins/gmail-resources/src/utils.ts`
+- `plugins/gmail-resources/svelte.config.js`
+- `plugins/gmail-resources/tsconfig.json`
+- `plugins/gmail/.eslintrc.js`
+- `plugins/gmail/.npmignore`
+- `plugins/gmail/config/rig.json`
+- `plugins/gmail/jest.config.js`
+- `plugins/gmail/package.json`
+- `plugins/gmail/src/analytics.ts`
+- `plugins/gmail/src/index.ts`
+- `plugins/gmail/tsconfig.json`
+- `plugins/guest-assets/.eslintrc.js`
+- `plugins/guest-assets/assets/icons.svg`
+- `plugins/guest-assets/config/rig.json`
+- `plugins/guest-assets/jest.config.js`
+- `plugins/guest-assets/lang/cs.json`
+- `plugins/guest-assets/lang/de.json`
+- `plugins/guest-assets/lang/en.json`
+- `plugins/guest-assets/lang/es.json`
+- `plugins/guest-assets/lang/fr.json`
+- `plugins/guest-assets/lang/it.json`
+- `plugins/guest-assets/lang/ja.json`
+- `plugins/guest-assets/lang/ko.json`
+- `plugins/guest-assets/lang/pt-br.json`
+- `plugins/guest-assets/lang/pt.json`
+- `plugins/guest-assets/lang/ru.json`
+- `plugins/guest-assets/lang/tr.json`
+- `plugins/guest-assets/lang/zh.json`
+- `plugins/guest-assets/package.json`
+- `plugins/guest-assets/src/__tests__/lang.test.ts`
+- `plugins/guest-assets/src/index.ts`
+- `plugins/guest-assets/tsconfig.json`
+- `plugins/guest-resources/.eslintrc.js`
+- `plugins/guest-resources/.prettierrc`
+- `plugins/guest-resources/config/rig.json`
+- `plugins/guest-resources/jest.config.js`
+- `plugins/guest-resources/package.json`
+- `plugins/guest-resources/postcss.config.js`
+- `plugins/guest-resources/src/components/CreatePublicLink.svelte`
+- `plugins/guest-resources/src/components/Guest.svelte`
+- `plugins/guest-resources/src/components/GuestApp.svelte`
+- `plugins/guest-resources/src/connect.ts`
+- `plugins/guest-resources/src/index.ts`
+- `plugins/guest-resources/src/plugin.ts`
+- `plugins/guest-resources/src/utils.ts`
+- `plugins/guest-resources/svelte.config.js`
+- `plugins/guest-resources/tsconfig.json`
+- `plugins/guest/.eslintrc.js`
+- `plugins/guest/.npmignore`
+- `plugins/guest/config/rig.json`
+- `plugins/guest/jest.config.js`
+- `plugins/guest/package.json`
+- `plugins/guest/src/index.ts`
+- `plugins/guest/src/utils.ts`
+- `plugins/guest/tsconfig.json`
+- `plugins/hr-assets/.eslintrc.js`
+- `plugins/hr-assets/assets/icons.svg`
+- `plugins/hr-assets/config/rig.json`
+- `plugins/hr-assets/jest.config.js`
+- `plugins/hr-assets/lang/cs.json`
+- `plugins/hr-assets/lang/de.json`
+- `plugins/hr-assets/lang/en.json`
+- `plugins/hr-assets/lang/es.json`
+- `plugins/hr-assets/lang/fr.json`
+- `plugins/hr-assets/lang/it.json`
+- `plugins/hr-assets/lang/ja.json`
+- `plugins/hr-assets/lang/ko.json`
+- `plugins/hr-assets/lang/pt-br.json`
+- `plugins/hr-assets/lang/pt.json`
+- `plugins/hr-assets/lang/ru.json`
+- `plugins/hr-assets/lang/tr.json`
+- `plugins/hr-assets/lang/zh.json`
+- `plugins/hr-assets/package.json`
+- `plugins/hr-assets/src/__tests__/lang.test.ts`
+- `plugins/hr-assets/src/index.ts`
+- `plugins/hr-assets/tsconfig.json`
+- `plugins/hr-resources/.eslintrc.js`
+- `plugins/hr-resources/.prettierrc`
+- `plugins/hr-resources/config/rig.json`
+- `plugins/hr-resources/jest.config.js`
+- `plugins/hr-resources/package.json`
+- `plugins/hr-resources/postcss.config.js`
+- `plugins/hr-resources/src/components/CreateDepartment.svelte`
+- `plugins/hr-resources/src/components/CreateRequest.svelte`
+- `plugins/hr-resources/src/components/DepartmentCard.svelte`
+- `plugins/hr-resources/src/components/DepartmentEditor.svelte`
+- `plugins/hr-resources/src/components/DepartmentPresenter.svelte`
+- `plugins/hr-resources/src/components/DepartmentRefPresenter.svelte`
+- `plugins/hr-resources/src/components/DepartmentStaff.svelte`
+- `plugins/hr-resources/src/components/EditDepartment.svelte`
+- `plugins/hr-resources/src/components/EditRequest.svelte`
+- `plugins/hr-resources/src/components/EditRequestType.svelte`
+- `plugins/hr-resources/src/components/Members.svelte`
+- `plugins/hr-resources/src/components/PersonsPresenter.svelte`
+- `plugins/hr-resources/src/components/RequestPresenter.svelte`
+- `plugins/hr-resources/src/components/RequestsPopup.svelte`
+- `plugins/hr-resources/src/components/Schedule.svelte`
+- `plugins/hr-resources/src/components/schedule/CreatePublicHoliday.svelte`
+- `plugins/hr-resources/src/components/schedule/ExportPopup.svelte`
+- `plugins/hr-resources/src/components/schedule/HolidayPresenter.svelte`
+- `plugins/hr-resources/src/components/schedule/MonthTableView.svelte`
+- `plugins/hr-resources/src/components/schedule/MonthView.svelte`
+- `plugins/hr-resources/src/components/schedule/ReportPresenter.svelte`
+- `plugins/hr-resources/src/components/schedule/ScheduleRequest.svelte`
+- `plugins/hr-resources/src/components/schedule/StaffPresenter.svelte`
+- `plugins/hr-resources/src/components/schedule/StatPresenter.svelte`
+- `plugins/hr-resources/src/components/schedule/YearView.svelte`
+- `plugins/hr-resources/src/components/ScheduleView.svelte`
+- `plugins/hr-resources/src/components/sidebar/DepartmentsHierarchy.svelte`
+- `plugins/hr-resources/src/components/sidebar/Sidebar.svelte`
+- `plugins/hr-resources/src/components/Structure.svelte`
+- `plugins/hr-resources/src/components/TzDateEditor.svelte`
+- `plugins/hr-resources/src/components/TzDatePresenter.svelte`
+- `plugins/hr-resources/src/index.ts`
+- `plugins/hr-resources/src/plugin.ts`
+- `plugins/hr-resources/src/utils.ts`
+- `plugins/hr-resources/svelte.config.js`
+- `plugins/hr-resources/tsconfig.json`
+- `plugins/hr/.eslintrc.js`
+- `plugins/hr/.npmignore`
+- `plugins/hr/config/rig.json`
+- `plugins/hr/jest.config.js`
+- `plugins/hr/package.json`
+- `plugins/hr/src/analytics.ts`
+- `plugins/hr/src/index.ts`
+- `plugins/hr/src/utils.ts`
+- `plugins/hr/tsconfig.json`
+- `plugins/huly-mail-assets/.eslintrc.js`
+- `plugins/huly-mail-assets/config/rig.json`
+- `plugins/huly-mail-assets/jest.config.js`
+- `plugins/huly-mail-assets/lang/cs.json`
+- `plugins/huly-mail-assets/lang/de.json`
+- `plugins/huly-mail-assets/lang/en.json`
+- `plugins/huly-mail-assets/lang/es.json`
+- `plugins/huly-mail-assets/lang/fr.json`
+- `plugins/huly-mail-assets/lang/it.json`
+- `plugins/huly-mail-assets/lang/ja.json`
+- `plugins/huly-mail-assets/lang/ko.json`
+- `plugins/huly-mail-assets/lang/pt-br.json`
+- `plugins/huly-mail-assets/lang/pt.json`
+- `plugins/huly-mail-assets/lang/ru.json`
+- `plugins/huly-mail-assets/lang/tr.json`
+- `plugins/huly-mail-assets/lang/zh.json`
+- `plugins/huly-mail-assets/package.json`
+- `plugins/huly-mail-assets/src/__tests__/lang.test.ts`
+- `plugins/huly-mail-assets/src/index.ts`
+- `plugins/huly-mail-assets/tsconfig.json`
+- `plugins/huly-mail-resources/.eslintrc.js`
+- `plugins/huly-mail-resources/.prettierrc`
+- `plugins/huly-mail-resources/config/rig.json`
+- `plugins/huly-mail-resources/jest.config.js`
+- `plugins/huly-mail-resources/package.json`
+- `plugins/huly-mail-resources/postcss.config.js`
+- `plugins/huly-mail-resources/src/components/Configure.svelte`
+- `plugins/huly-mail-resources/src/components/icons/HulyMail.svelte`
+- `plugins/huly-mail-resources/src/components/IntegrationState.svelte`
+- `plugins/huly-mail-resources/src/index.ts`
+- `plugins/huly-mail-resources/src/plugin.ts`
+- `plugins/huly-mail-resources/src/utils.ts`
+- `plugins/huly-mail-resources/svelte.config.js`
+- `plugins/huly-mail-resources/tsconfig.json`
+- `plugins/huly-mail/.eslintrc.js`
+- `plugins/huly-mail/.npmignore`
+- `plugins/huly-mail/config/rig.json`
+- `plugins/huly-mail/jest.config.js`
+- `plugins/huly-mail/package.json`
+- `plugins/huly-mail/src/index.ts`
+- `plugins/huly-mail/tsconfig.json`
+- `plugins/image-cropper-resources/.eslintrc.js`
+- `plugins/image-cropper-resources/.prettierrc`
+- `plugins/image-cropper-resources/config/rig.json`
+- `plugins/image-cropper-resources/jest.config.js`
+- `plugins/image-cropper-resources/package.json`
+- `plugins/image-cropper-resources/postcss.config.js`
+- `plugins/image-cropper-resources/src/components/Cropper.svelte`
+- `plugins/image-cropper-resources/src/index.ts`
+- `plugins/image-cropper-resources/svelte.config.js`
+- `plugins/image-cropper-resources/tsconfig.json`
+- `plugins/image-cropper/.eslintrc.js`
+- `plugins/image-cropper/.npmignore`
+- `plugins/image-cropper/config/rig.json`
+- `plugins/image-cropper/jest.config.js`
+- `plugins/image-cropper/package.json`
+- `plugins/image-cropper/src/index.ts`
+- `plugins/image-cropper/tsconfig.json`
+- `plugins/inbox-assets/.eslintrc.js`
+- `plugins/inbox-assets/assets/icons.svg`
+- `plugins/inbox-assets/config/rig.json`
+- `plugins/inbox-assets/jest.config.js`
+- `plugins/inbox-assets/lang/cs.json`
+- `plugins/inbox-assets/lang/de.json`
+- `plugins/inbox-assets/lang/en.json`
+- `plugins/inbox-assets/lang/es.json`
+- `plugins/inbox-assets/lang/fr.json`
+- `plugins/inbox-assets/lang/it.json`
+- `plugins/inbox-assets/lang/ja.json`
+- `plugins/inbox-assets/lang/ko.json`
+- `plugins/inbox-assets/lang/pt-br.json`
+- `plugins/inbox-assets/lang/pt.json`
+- `plugins/inbox-assets/lang/ru.json`
+- `plugins/inbox-assets/lang/tr.json`
+- `plugins/inbox-assets/lang/zh.json`
+- `plugins/inbox-assets/package.json`
+- `plugins/inbox-assets/src/__tests__/lang.test.ts`
+- `plugins/inbox-assets/src/index.ts`
+- `plugins/inbox-assets/tsconfig.json`
+- `plugins/inbox-resources/.eslintrc.js`
+- `plugins/inbox-resources/.prettierrc`
+- `plugins/inbox-resources/config/rig.json`
+- `plugins/inbox-resources/jest.config.js`
+- `plugins/inbox-resources/package.json`
+- `plugins/inbox-resources/postcss.config.js`
+- `plugins/inbox-resources/src/client.ts`
+- `plugins/inbox-resources/src/components/InboxApplication.svelte`
+- `plugins/inbox-resources/src/components/InboxCard.svelte`
+- `plugins/inbox-resources/src/components/InboxCardIcon.svelte`
+- `plugins/inbox-resources/src/components/InboxCardTitle.svelte`
+- `plugins/inbox-resources/src/components/InboxHeader.svelte`
+- `plugins/inbox-resources/src/components/InboxNavigation.svelte`
+- `plugins/inbox-resources/src/components/InboxNotification.svelte`
+- `plugins/inbox-resources/src/components/InboxViewSettings.svelte`
+- `plugins/inbox-resources/src/components/legacy/ActivityInboxNotificationPresenter.svelte`
+- `plugins/inbox-resources/src/components/legacy/CommonInboxNotificationPresenter.svelte`
+- `plugins/inbox-resources/src/components/legacy/LegacyNotification.svelte`
+- `plugins/inbox-resources/src/components/legacy/LegacyNotifications.svelte`
+- `plugins/inbox-resources/src/components/legacy/MentionInboxNotificationPresenter.svelte`
+- `plugins/inbox-resources/src/components/legacy/ReactionInboxNotificationPresenter.svelte`
+- `plugins/inbox-resources/src/components/MessageNotification.svelte`
+- `plugins/inbox-resources/src/components/ModernNotifications.svelte`
+- `plugins/inbox-resources/src/components/NotificationTemplate.svelte`
+- `plugins/inbox-resources/src/components/NotifyMarker.svelte`
+- `plugins/inbox-resources/src/components/preview/NotificationPreview.svelte`
+- `plugins/inbox-resources/src/components/preview/PreviewTemplate.svelte`
+- `plugins/inbox-resources/src/components/ReactionNotification.svelte`
+- `plugins/inbox-resources/src/index.ts`
+- `plugins/inbox-resources/src/location.ts`
+- `plugins/inbox-resources/src/plugin.ts`
+- `plugins/inbox-resources/src/settings.ts`
+- `plugins/inbox-resources/src/type.ts`
+- `plugins/inbox-resources/svelte.config.js`
+- `plugins/inbox-resources/tsconfig.json`
+- `plugins/inbox/.eslintrc.js`
+- `plugins/inbox/.npmignore`
+- `plugins/inbox/config/rig.json`
+- `plugins/inbox/jest.config.js`
+- `plugins/inbox/package.json`
+- `plugins/inbox/src/index.ts`
+- `plugins/inbox/tsconfig.json`
+- `plugins/inventory-assets/.eslintrc.js`
+- `plugins/inventory-assets/assets/icons.svg`
+- `plugins/inventory-assets/config/rig.json`
+- `plugins/inventory-assets/jest.config.js`
+- `plugins/inventory-assets/lang/cs.json`
+- `plugins/inventory-assets/lang/de.json`
+- `plugins/inventory-assets/lang/en.json`
+- `plugins/inventory-assets/lang/es.json`
+- `plugins/inventory-assets/lang/fr.json`
+- `plugins/inventory-assets/lang/it.json`
+- `plugins/inventory-assets/lang/ja.json`
+- `plugins/inventory-assets/lang/ko.json`
+- `plugins/inventory-assets/lang/pt-br.json`
+- `plugins/inventory-assets/lang/pt.json`
+- `plugins/inventory-assets/lang/ru.json`
+- `plugins/inventory-assets/lang/tr.json`
+- `plugins/inventory-assets/lang/zh.json`
+- `plugins/inventory-assets/package.json`
+- `plugins/inventory-assets/src/__tests__/lang.test.ts`
+- `plugins/inventory-assets/src/index.ts`
+- `plugins/inventory-assets/tsconfig.json`
+- `plugins/inventory-resources/.eslintrc.js`
+- `plugins/inventory-resources/.prettierrc`
+- `plugins/inventory-resources/config/rig.json`
+- `plugins/inventory-resources/jest.config.js`
+- `plugins/inventory-resources/package.json`
+- `plugins/inventory-resources/postcss.config.js`
+- `plugins/inventory-resources/src/components/Categories.svelte`
+- `plugins/inventory-resources/src/components/CategoryPresenter.svelte`
+- `plugins/inventory-resources/src/components/CategoryRefPresenter.svelte`
+- `plugins/inventory-resources/src/components/CreateCategory.svelte`
+- `plugins/inventory-resources/src/components/CreateProduct.svelte`
+- `plugins/inventory-resources/src/components/CreateVariant.svelte`
+- `plugins/inventory-resources/src/components/EditProduct.svelte`
+- `plugins/inventory-resources/src/components/HierarchyElement.svelte`
+- `plugins/inventory-resources/src/components/HierarchyView.svelte`
+- `plugins/inventory-resources/src/components/icons/Collapse.svelte`
+- `plugins/inventory-resources/src/components/icons/Expand.svelte`
+- `plugins/inventory-resources/src/components/ProductPresenter.svelte`
+- `plugins/inventory-resources/src/components/VariantPresenter.svelte`
+- `plugins/inventory-resources/src/components/Variants.svelte`
+- `plugins/inventory-resources/src/index.ts`
+- `plugins/inventory-resources/src/plugin.ts`
+- `plugins/inventory-resources/svelte.config.js`
+- `plugins/inventory-resources/tsconfig.json`
+- `plugins/inventory/.eslintrc.js`
+- `plugins/inventory/.npmignore`
+- `plugins/inventory/config/rig.json`
+- `plugins/inventory/jest.config.js`
+- `plugins/inventory/package.json`
+- `plugins/inventory/src/index.ts`
+- `plugins/inventory/tsconfig.json`
+- `plugins/lead-assets/.eslintrc.js`
+- `plugins/lead-assets/assets/icons.svg`
+- `plugins/lead-assets/config/rig.json`
+- `plugins/lead-assets/jest.config.js`
+- `plugins/lead-assets/lang/cs.json`
+- `plugins/lead-assets/lang/de.json`
+- `plugins/lead-assets/lang/en.json`
+- `plugins/lead-assets/lang/es.json`
+- `plugins/lead-assets/lang/fr.json`
+- `plugins/lead-assets/lang/it.json`
+- `plugins/lead-assets/lang/ja.json`
+- `plugins/lead-assets/lang/ko.json`
+- `plugins/lead-assets/lang/pt-br.json`
+- `plugins/lead-assets/lang/pt.json`
+- `plugins/lead-assets/lang/ru.json`
+- `plugins/lead-assets/lang/tr.json`
+- `plugins/lead-assets/lang/zh.json`
+- `plugins/lead-assets/package.json`
+- `plugins/lead-assets/src/__tests__/lang.test.ts`
+- `plugins/lead-assets/src/index.ts`
+- `plugins/lead-assets/tsconfig.json`
+- `plugins/lead-resources/.eslintrc.js`
+- `plugins/lead-resources/.prettierrc`
+- `plugins/lead-resources/config/rig.json`
+- `plugins/lead-resources/jest.config.js`
+- `plugins/lead-resources/package.json`
+- `plugins/lead-resources/postcss.config.js`
+- `plugins/lead-resources/src/components/CreateCustomer.svelte`
+- `plugins/lead-resources/src/components/CreateFunnel.svelte`
+- `plugins/lead-resources/src/components/CreateLead.svelte`
+- `plugins/lead-resources/src/components/EditFunnel.svelte`
+- `plugins/lead-resources/src/components/EditLead.svelte`
+- `plugins/lead-resources/src/components/KanbanCard.svelte`
+- `plugins/lead-resources/src/components/LeadPresenter.svelte`
+- `plugins/lead-resources/src/components/Leads.svelte`
+- `plugins/lead-resources/src/components/LeadsPopup.svelte`
+- `plugins/lead-resources/src/components/LeadsPresenter.svelte`
+- `plugins/lead-resources/src/components/MyLeads.svelte`
+- `plugins/lead-resources/src/components/NewItemsHeader.svelte`
+- `plugins/lead-resources/src/components/TemplatesIcon.svelte`
+- `plugins/lead-resources/src/components/TitlePresenter.svelte`
+- `plugins/lead-resources/src/index.ts`
+- `plugins/lead-resources/src/plugin.ts`
+- `plugins/lead-resources/src/utils.ts`
+- `plugins/lead-resources/svelte.config.js`
+- `plugins/lead-resources/tsconfig.json`
+- `plugins/lead/.eslintrc.js`
+- `plugins/lead/.npmignore`
+- `plugins/lead/config/rig.json`
+- `plugins/lead/jest.config.js`
+- `plugins/lead/package.json`
+- `plugins/lead/src/analytics.ts`
+- `plugins/lead/src/index.ts`
+- `plugins/lead/tsconfig.json`
+- `plugins/login-assets/.eslintrc.js`
+- `plugins/login-assets/CHANGELOG.json`
+- `plugins/login-assets/CHANGELOG.md`
+- `plugins/login-assets/config/rig.json`
+- `plugins/login-assets/jest.config.js`
+- `plugins/login-assets/lang/cs.json`
+- `plugins/login-assets/lang/de.json`
+- `plugins/login-assets/lang/en.json`
+- `plugins/login-assets/lang/es.json`
+- `plugins/login-assets/lang/fr.json`
+- `plugins/login-assets/lang/it.json`
+- `plugins/login-assets/lang/ja.json`
+- `plugins/login-assets/lang/ko.json`
+- `plugins/login-assets/lang/pt-br.json`
+- `plugins/login-assets/lang/pt.json`
+- `plugins/login-assets/lang/ru.json`
+- `plugins/login-assets/lang/tr.json`
+- `plugins/login-assets/lang/zh.json`
+- `plugins/login-assets/package.json`
+- `plugins/login-assets/src/__tests__/lang.test.ts`
+- `plugins/login-assets/src/index.ts`
+- `plugins/login-assets/tsconfig.json`
+- `plugins/login-resources/.eslintrc.js`
+- `plugins/login-resources/.prettierrc`
+- `plugins/login-resources/CHANGELOG.json`
+- `plugins/login-resources/CHANGELOG.md`
+- `plugins/login-resources/config/rig.json`
+- `plugins/login-resources/img/back_signin.png`
+- `plugins/login-resources/img/back.svg`
+- `plugins/login-resources/img/login_back_2x.avif`
+- `plugins/login-resources/img/login_back_2x.png`
+- `plugins/login-resources/img/login_back_2x.webp`
+- `plugins/login-resources/img/login_back.avif`
+- `plugins/login-resources/img/login_back.png`
+- `plugins/login-resources/img/login_back.webp`
+- `plugins/login-resources/img/logo-dark.svg`
+- `plugins/login-resources/img/logo-light.svg`
+- `plugins/login-resources/jest.config.js`
+- `plugins/login-resources/package.json`
+- `plugins/login-resources/postcss.config.js`
+- `plugins/login-resources/src/__tests__/mutex.test.ts`
+- `plugins/login-resources/src/__tests__/signupTokenGuard.test.ts`
+- `plugins/login-resources/src/actions.ts`
+- `plugins/login-resources/src/analytics.ts`
+- `plugins/login-resources/src/components/AdminWorkspaces.svelte`
+- `plugins/login-resources/src/components/Auth.svelte`
+- `plugins/login-resources/src/components/AutoJoin.svelte`
+- `plugins/login-resources/src/components/BottomAction.svelte`
+- `plugins/login-resources/src/components/ChangePassword.svelte`
+- `plugins/login-resources/src/components/Confirmation.svelte`
+- `plugins/login-resources/src/components/ConfirmationSend.svelte`
+- `plugins/login-resources/src/components/CreateWorkspaceForm.svelte`
+- `plugins/login-resources/src/components/Form.svelte`
+- `plugins/login-resources/src/components/icons/Github.svelte`
+- `plugins/login-resources/src/components/icons/Google.svelte`
+- `plugins/login-resources/src/components/icons/InviteWorkspace.svelte`
+- `plugins/login-resources/src/components/icons/LoginIcon.svelte`
+- `plugins/login-resources/src/components/icons/OpenId.svelte`
+- `plugins/login-resources/src/components/InviteLink.svelte`
+- `plugins/login-resources/src/components/Join.svelte`
+- `plugins/login-resources/src/components/LoginApp.svelte`
+- `plugins/login-resources/src/components/LoginForm.svelte`
+- `plugins/login-resources/src/components/LoginOtpForm.svelte`
+- `plugins/login-resources/src/components/LoginPasswordForm.svelte`
+- `plugins/login-resources/src/components/LoginTfaForm.svelte`
+- `plugins/login-resources/src/components/OtpForm.svelte`
+- `plugins/login-resources/src/components/PasswordRequest.svelte`
+- `plugins/login-resources/src/components/PasswordRestore.svelte`
+- `plugins/login-resources/src/components/Providers.svelte`
+- `plugins/login-resources/src/components/providers/Github.svelte`
+- `plugins/login-resources/src/components/providers/Google.svelte`
+- `plugins/login-resources/src/components/providers/OpenId.svelte`
+- `plugins/login-resources/src/components/ProvidersOnlyForm.svelte`
+- `plugins/login-resources/src/components/SelectWorkspace.svelte`
+- `plugins/login-resources/src/components/SignupForm.svelte`
+- `plugins/login-resources/src/components/StatusControl.svelte`
+- `plugins/login-resources/src/components/Tabs.svelte`
+- `plugins/login-resources/src/index.ts`
+- `plugins/login-resources/src/loginFormLayout.ts`
+- `plugins/login-resources/src/mutex.ts`
+- `plugins/login-resources/src/plugin.ts`
+- `plugins/login-resources/src/types.ts`
+- `plugins/login-resources/src/utils.ts`
+- `plugins/login-resources/src/validations.ts`
+- `plugins/login-resources/svelte.config.js`
+- `plugins/login-resources/tsconfig.json`
+- `plugins/login/.eslintrc.js`
+- `plugins/login/.npmignore`
+- `plugins/login/CHANGELOG.json`
+- `plugins/login/CHANGELOG.md`
+- `plugins/login/config/rig.json`
+- `plugins/login/jest.config.js`
+- `plugins/login/package.json`
+- `plugins/login/src/index.ts`
+- `plugins/login/tsconfig.json`
+- `plugins/love-assets/.eslintrc.js`
+- `plugins/love-assets/assets/icons.svg`
+- `plugins/love-assets/assets/knock.wav`
+- `plugins/love-assets/assets/meeting-end-notification.wav`
+- `plugins/love-assets/config/rig.json`
+- `plugins/love-assets/jest.config.js`
+- `plugins/love-assets/lang/cs.json`
+- `plugins/love-assets/lang/de.json`
+- `plugins/love-assets/lang/en.json`
+- `plugins/love-assets/lang/es.json`
+- `plugins/love-assets/lang/fr.json`
+- `plugins/love-assets/lang/it.json`
+- `plugins/love-assets/lang/ja.json`
+- `plugins/love-assets/lang/ko.json`
+- `plugins/love-assets/lang/pt-br.json`
+- `plugins/love-assets/lang/pt.json`
+- `plugins/love-assets/lang/ru.json`
+- `plugins/love-assets/lang/tr.json`
+- `plugins/love-assets/lang/zh.json`
+- `plugins/love-assets/package.json`
+- `plugins/love-assets/src/__tests__/lang.test.ts`
+- `plugins/love-assets/src/index.ts`
+- `plugins/love-assets/tsconfig.json`
+- `plugins/love-resources/.eslintrc.js`
+- `plugins/love-resources/.prettierrc`
+- `plugins/love-resources/config/rig.json`
+- `plugins/love-resources/jest.config.js`
+- `plugins/love-resources/package.json`
+- `plugins/love-resources/postcss.config.js`
+- `plugins/love-resources/src/broadcast.ts`
+- `plugins/love-resources/src/components/AddRoomPopup.svelte`
+- `plugins/love-resources/src/components/EditFloorPopup.svelte`
+- `plugins/love-resources/src/components/EditMeetingData.svelte`
+- `plugins/love-resources/src/components/EditMeetingMinutes.svelte`
+- `plugins/love-resources/src/components/EditMeetingScheduleData.svelte`
+- `plugins/love-resources/src/components/EditRoom.svelte`
+- `plugins/love-resources/src/components/Floor.svelte`
+- `plugins/love-resources/src/components/FloorAttributePresenter.svelte`
+- `plugins/love-resources/src/components/FloorConfigure.svelte`
+- `plugins/love-resources/src/components/FloorGrid.svelte`
+- `plugins/love-resources/src/components/FloorPreview.svelte`
+- `plugins/love-resources/src/components/FloorView.svelte`
+- `plugins/love-resources/src/components/Hall.svelte`
+- `plugins/love-resources/src/components/icons/BadConnection.svelte`
+- `plugins/love-resources/src/components/icons/MicDisabled.svelte`
+- `plugins/love-resources/src/components/icons/Share.svelte`
+- `plugins/love-resources/src/components/LanguageIcon.svelte`
+- `plugins/love-resources/src/components/LoveWidget.svelte`
+- `plugins/love-resources/src/components/Main.svelte`
+- `plugins/love-resources/src/components/MediaPopupItemExt.svelte`
+- `plugins/love-resources/src/components/meeting/CamSettingPopup.svelte`
+- `plugins/love-resources/src/components/meeting/ControlBar.svelte`
+- `plugins/love-resources/src/components/meeting/ControlBarContainer.svelte`
+- `plugins/love-resources/src/components/meeting/ControlExt.svelte`
+- `plugins/love-resources/src/components/meeting/controls/CameraButton.svelte`
+- `plugins/love-resources/src/components/meeting/controls/LeaveRoomButton.svelte`
+- `plugins/love-resources/src/components/meeting/controls/MeetingOptionsButton.svelte`
+- `plugins/love-resources/src/components/meeting/controls/MicrophoneButton.svelte`
+- `plugins/love-resources/src/components/meeting/controls/RecordingButton.svelte`
+- `plugins/love-resources/src/components/meeting/controls/RoomAccessButton.svelte`
+- `plugins/love-resources/src/components/meeting/controls/SendReactionButton.svelte`
+- `plugins/love-resources/src/components/meeting/controls/ShareScreenButton.svelte`
+- `plugins/love-resources/src/components/meeting/controls/TranscriptionButton.svelte`
+- `plugins/love-resources/src/components/meeting/invites/InviteEmployeeButton.svelte`
+- `plugins/love-resources/src/components/meeting/invites/InviteRequestPopup.svelte`
+- `plugins/love-resources/src/components/meeting/invites/InviteResponsePopup.svelte`
+- `plugins/love-resources/src/components/meeting/invites/JoinRequestPopup.svelte`
+- `plugins/love-resources/src/components/meeting/invites/JoinResponsePopup.svelte`
+- `plugins/love-resources/src/components/meeting/LastParticipantNotification.svelte`
+- `plugins/love-resources/src/components/meeting/MeetingHeader.svelte`
+- `plugins/love-resources/src/components/meeting/MicSettingPopup.svelte`
+- `plugins/love-resources/src/components/meeting/ParticipantsListView.svelte`
+- `plugins/love-resources/src/components/meeting/ParticipantView.svelte`
+- `plugins/love-resources/src/components/meeting/Reaction.svelte`
+- `plugins/love-resources/src/components/meeting/ScreenSharingView.svelte`
+- `plugins/love-resources/src/components/meeting/widget/ChatTab.svelte`
+- `plugins/love-resources/src/components/meeting/widget/MeetingWidget.svelte`
+- `plugins/love-resources/src/components/meeting/widget/MeetingWidgetHeader.svelte`
+- `plugins/love-resources/src/components/meeting/widget/TranscriptionTab.svelte`
+- `plugins/love-resources/src/components/meeting/widget/VideoTab.svelte`
+- `plugins/love-resources/src/components/meeting/widget/WidgetSwitcher.svelte`
+- `plugins/love-resources/src/components/MeetingData.svelte`
+- `plugins/love-resources/src/components/MeetingMinutesDocEditor.svelte`
+- `plugins/love-resources/src/components/MeetingMinutesPresenter.svelte`
+- `plugins/love-resources/src/components/MeetingMinutesSearchItem.svelte`
+- `plugins/love-resources/src/components/MeetingMinutesSection.svelte`
+- `plugins/love-resources/src/components/MeetingMinutesStatusPresenter.svelte`
+- `plugins/love-resources/src/components/MeetingMinutesTable.svelte`
+- `plugins/love-resources/src/components/MeetingScheduleData.svelte`
+- `plugins/love-resources/src/components/ParticipantsList.svelte`
+- `plugins/love-resources/src/components/PersonActionPopup.svelte`
+- `plugins/love-resources/src/components/Room.svelte`
+- `plugins/love-resources/src/components/RoomAccessPopup.svelte`
+- `plugins/love-resources/src/components/RoomButton.svelte`
+- `plugins/love-resources/src/components/RoomConfigure.svelte`
+- `plugins/love-resources/src/components/RoomLanguage.svelte`
+- `plugins/love-resources/src/components/RoomLanguageEditor.svelte`
+- `plugins/love-resources/src/components/RoomLanguageSelector.svelte`
+- `plugins/love-resources/src/components/RoomModal.svelte`
+- `plugins/love-resources/src/components/RoomPopup.svelte`
+- `plugins/love-resources/src/components/RoomPresenter.svelte`
+- `plugins/love-resources/src/components/RoomPreview.svelte`
+- `plugins/love-resources/src/components/RoomSelector.svelte`
+- `plugins/love-resources/src/components/RoomSettingsPopup.svelte`
+- `plugins/love-resources/src/components/RoomTranscriptionSettings.svelte`
+- `plugins/love-resources/src/components/SelectScreenSourcePopup.svelte`
+- `plugins/love-resources/src/components/Settings.svelte`
+- `plugins/love-resources/src/components/ShareSettingPopup.svelte`
+- `plugins/love-resources/src/components/SharingStateIndicator.svelte`
+- `plugins/love-resources/src/components/SharingStatePopup.svelte`
+- `plugins/love-resources/src/components/VideoPopup.svelte`
+- `plugins/love-resources/src/components/WorkbenchExtension.svelte`
+- `plugins/love-resources/src/index.ts`
+- `plugins/love-resources/src/invites.ts`
+- `plugins/love-resources/src/joinRequests.ts`
+- `plugins/love-resources/src/liveKitClient.ts`
+- `plugins/love-resources/src/loveClient.ts`
+- `plugins/love-resources/src/meetings.ts`
+- `plugins/love-resources/src/plugin.ts`
+- `plugins/love-resources/src/stores.ts`
+- `plugins/love-resources/src/types.ts`
+- `plugins/love-resources/src/utils.ts`
+- `plugins/love-resources/svelte.config.js`
+- `plugins/love-resources/tsconfig.json`
+- `plugins/love/.eslintrc.js`
+- `plugins/love/.npmignore`
+- `plugins/love/config/rig.json`
+- `plugins/love/jest.config.js`
+- `plugins/love/package.json`
+- `plugins/love/src/analytics.ts`
+- `plugins/love/src/index.ts`
+- `plugins/love/src/plugin.ts`
+- `plugins/love/src/types.ts`
+- `plugins/love/src/utils.ts`
+- `plugins/love/tsconfig.json`
+- `plugins/mail-assets/.eslintrc.js`
+- `plugins/mail-assets/assets/icons.svg`
+- `plugins/mail-assets/config/rig.json`
+- `plugins/mail-assets/jest.config.js`
+- `plugins/mail-assets/lang/cs.json`
+- `plugins/mail-assets/lang/de.json`
+- `plugins/mail-assets/lang/en.json`
+- `plugins/mail-assets/lang/es.json`
+- `plugins/mail-assets/lang/fr.json`
+- `plugins/mail-assets/lang/it.json`
+- `plugins/mail-assets/lang/ja.json`
+- `plugins/mail-assets/lang/ko.json`
+- `plugins/mail-assets/lang/pt-br.json`
+- `plugins/mail-assets/lang/pt.json`
+- `plugins/mail-assets/lang/ru.json`
+- `plugins/mail-assets/lang/tr.json`
+- `plugins/mail-assets/lang/zh.json`
+- `plugins/mail-assets/package.json`
+- `plugins/mail-assets/src/__tests__/lang.test.ts`
+- `plugins/mail-assets/src/index.ts`
+- `plugins/mail-assets/tsconfig.json`
+- `plugins/mail/.eslintrc.js`
+- `plugins/mail/.npmignore`
+- `plugins/mail/config/rig.json`
+- `plugins/mail/jest.config.js`
+- `plugins/mail/package.json`
+- `plugins/mail/src/index.ts`
+- `plugins/mail/tsconfig.json`
+- `plugins/media-assets/.eslintrc.js`
+- `plugins/media-assets/assets/icons.svg`
+- `plugins/media-assets/config/rig.json`
+- `plugins/media-assets/jest.config.js`
+- `plugins/media-assets/lang/cs.json`
+- `plugins/media-assets/lang/de.json`
+- `plugins/media-assets/lang/en.json`
+- `plugins/media-assets/lang/es.json`
+- `plugins/media-assets/lang/fr.json`
+- `plugins/media-assets/lang/it.json`
+- `plugins/media-assets/lang/ja.json`
+- `plugins/media-assets/lang/ko.json`
+- `plugins/media-assets/lang/pt-br.json`
+- `plugins/media-assets/lang/pt.json`
+- `plugins/media-assets/lang/ru.json`
+- `plugins/media-assets/lang/tr.json`
+- `plugins/media-assets/lang/zh.json`
+- `plugins/media-assets/package.json`
+- `plugins/media-assets/src/__tests__/lang.test.ts`
+- `plugins/media-assets/src/index.ts`
+- `plugins/media-assets/tsconfig.json`
+- `plugins/media-resources/.eslintrc.js`
+- `plugins/media-resources/.prettierrc`
+- `plugins/media-resources/config/rig.json`
+- `plugins/media-resources/jest.config.js`
+- `plugins/media-resources/package.json`
+- `plugins/media-resources/postcss.config.js`
+- `plugins/media-resources/src/components/CamStateButton.svelte`
+- `plugins/media-resources/src/components/icons/CamOff.svelte`
+- `plugins/media-resources/src/components/icons/CamOn.svelte`
+- `plugins/media-resources/src/components/icons/MicOff.svelte`
+- `plugins/media-resources/src/components/icons/MicOn.svelte`
+- `plugins/media-resources/src/components/icons/Speaker.svelte`
+- `plugins/media-resources/src/components/MediaExt.svelte`
+- `plugins/media-resources/src/components/MediaPopup.svelte`
+- `plugins/media-resources/src/components/MediaPopupCamPreview.svelte`
+- `plugins/media-resources/src/components/MediaPopupCamSelector.svelte`
+- `plugins/media-resources/src/components/MediaPopupItem.svelte`
+- `plugins/media-resources/src/components/MediaPopupMicSelector.svelte`
+- `plugins/media-resources/src/components/MediaPopupSpkSelector.svelte`
+- `plugins/media-resources/src/components/MediaSettingsButton.svelte`
+- `plugins/media-resources/src/components/MediaState.svelte`
+- `plugins/media-resources/src/components/MicStateButton.svelte`
+- `plugins/media-resources/src/components/StatusIcon.svelte`
+- `plugins/media-resources/src/components/WorkbenchExtension.svelte`
+- `plugins/media-resources/src/index.ts`
+- `plugins/media-resources/src/plugin.ts`
+- `plugins/media-resources/src/stores.ts`
+- `plugins/media-resources/src/utils.ts`
+- `plugins/media-resources/svelte.config.js`
+- `plugins/media-resources/tsconfig.json`
+- `plugins/media/.eslintrc.js`
+- `plugins/media/.npmignore`
+- `plugins/media/config/rig.json`
+- `plugins/media/jest.config.js`
+- `plugins/media/package.json`
+- `plugins/media/src/__tests__/utils.test.ts`
+- `plugins/media/src/index.ts`
+- `plugins/media/src/plugin.ts`
+- `plugins/media/src/types.ts`
+- `plugins/media/src/utils.ts`
+- `plugins/media/tsconfig.json`
+- `plugins/notification-assets/.eslintrc.js`
+- `plugins/notification-assets/assets/icons.svg`
+- `plugins/notification-assets/assets/inbox-notification.wav`
+- `plugins/notification-assets/config/rig.json`
+- `plugins/notification-assets/jest.config.js`
+- `plugins/notification-assets/lang/cs.json`
+- `plugins/notification-assets/lang/de.json`
+- `plugins/notification-assets/lang/en.json`
+- `plugins/notification-assets/lang/es.json`
+- `plugins/notification-assets/lang/fr.json`
+- `plugins/notification-assets/lang/it.json`
+- `plugins/notification-assets/lang/ja.json`
+- `plugins/notification-assets/lang/ko.json`
+- `plugins/notification-assets/lang/pt-br.json`
+- `plugins/notification-assets/lang/pt.json`
+- `plugins/notification-assets/lang/ru.json`
+- `plugins/notification-assets/lang/tr.json`
+- `plugins/notification-assets/lang/zh.json`
+- `plugins/notification-assets/package.json`
+- `plugins/notification-assets/src/__tests__/lang.test.ts`
+- `plugins/notification-assets/src/index.ts`
+- `plugins/notification-assets/tsconfig.json`
+- `plugins/notification-resources/.eslintrc.js`
+- `plugins/notification-resources/.prettierrc`
+- `plugins/notification-resources/config/rig.json`
+- `plugins/notification-resources/jest.config.js`
+- `plugins/notification-resources/package.json`
+- `plugins/notification-resources/postcss.config.js`
+- `plugins/notification-resources/src/components/activity/CollaboratorsChanged.svelte`
+- `plugins/notification-resources/src/components/BrowserNotificatator.svelte`
+- `plugins/notification-resources/src/components/CollaboratorEditor.svelte`
+- `plugins/notification-resources/src/components/DocNotifyContextCard.svelte`
+- `plugins/notification-resources/src/components/DocNotifyContextPresenter.svelte`
+- `plugins/notification-resources/src/components/inbox/ActivityInboxNotificationPresenter.svelte`
+- `plugins/notification-resources/src/components/inbox/CommonInboxNotificationPresenter.svelte`
+- `plugins/notification-resources/src/components/inbox/Inbox.svelte`
+- `plugins/notification-resources/src/components/inbox/InboxGroupedListView.svelte`
+- `plugins/notification-resources/src/components/inbox/InboxMenuButton.svelte`
+- `plugins/notification-resources/src/components/inbox/InboxNotificationPresenter.svelte`
+- `plugins/notification-resources/src/components/inbox/MentionInboxNotificationPresenter.svelte`
+- `plugins/notification-resources/src/components/inbox/ReactionInboxNotificationPresenter.svelte`
+- `plugins/notification-resources/src/components/inbox/SettingsButton.svelte`
+- `plugins/notification-resources/src/components/inbox/SettingsPopup.svelte`
+- `plugins/notification-resources/src/components/Notification.svelte`
+- `plugins/notification-resources/src/components/NotificationCollaboratorsChanged.svelte`
+- `plugins/notification-resources/src/components/NotificationPresenter.svelte`
+- `plugins/notification-resources/src/components/NotifyContextIcon.svelte`
+- `plugins/notification-resources/src/components/NotifyMarker.svelte`
+- `plugins/notification-resources/src/components/settings/GeneralPreferencesGroup.svelte`
+- `plugins/notification-resources/src/components/settings/NotificationGroupSetting.svelte`
+- `plugins/notification-resources/src/components/settings/NotificationSettings.svelte`
+- `plugins/notification-resources/src/components/settings/ProviderPreferences.svelte`
+- `plugins/notification-resources/src/inboxNotificationsClient.ts`
+- `plugins/notification-resources/src/index.ts`
+- `plugins/notification-resources/src/plugin.ts`
+- `plugins/notification-resources/src/types.ts`
+- `plugins/notification-resources/src/utils.ts`
+- `plugins/notification-resources/svelte.config.js`
+- `plugins/notification-resources/tsconfig.json`
+- `plugins/notification/.eslintrc.js`
+- `plugins/notification/.npmignore`
+- `plugins/notification/config/rig.json`
+- `plugins/notification/jest.config.js`
+- `plugins/notification/package.json`
+- `plugins/notification/postcss.config.js`
+- `plugins/notification/src/index.ts`
+- `plugins/notification/src/serviceWorker.ts`
+- `plugins/notification/src/types.ts`
+- `plugins/notification/svelte.config.js`
+- `plugins/notification/tsconfig.json`
+- `plugins/onboard-assets/.eslintrc.js`
+- `plugins/onboard-assets/CHANGELOG.json`
+- `plugins/onboard-assets/CHANGELOG.md`
+- `plugins/onboard-assets/config/rig.json`
+- `plugins/onboard-assets/jest.config.js`
+- `plugins/onboard-assets/lang/cs.json`
+- `plugins/onboard-assets/lang/de.json`
+- `plugins/onboard-assets/lang/en.json`
+- `plugins/onboard-assets/lang/es.json`
+- `plugins/onboard-assets/lang/fr.json`
+- `plugins/onboard-assets/lang/it.json`
+- `plugins/onboard-assets/lang/ja.json`
+- `plugins/onboard-assets/lang/ko.json`
+- `plugins/onboard-assets/lang/pt-br.json`
+- `plugins/onboard-assets/lang/pt.json`
+- `plugins/onboard-assets/lang/ru.json`
+- `plugins/onboard-assets/lang/tr.json`
+- `plugins/onboard-assets/lang/zh.json`
+- `plugins/onboard-assets/package.json`
+- `plugins/onboard-assets/src/__tests__/lang.test.ts`
+- `plugins/onboard-assets/src/index.ts`
+- `plugins/onboard-assets/tsconfig.json`
+- `plugins/onboard-resources/.eslintrc.js`
+- `plugins/onboard-resources/.prettierrc`
+- `plugins/onboard-resources/CHANGELOG.json`
+- `plugins/onboard-resources/CHANGELOG.md`
+- `plugins/onboard-resources/config/rig.json`
+- `plugins/onboard-resources/img/back_signin.png`
+- `plugins/onboard-resources/img/back.svg`
+- `plugins/onboard-resources/img/login_back_2x.avif`
+- `plugins/onboard-resources/img/login_back_2x.png`
+- `plugins/onboard-resources/img/login_back_2x.webp`
+- `plugins/onboard-resources/img/login_back.avif`
+- `plugins/onboard-resources/img/login_back.png`
+- `plugins/onboard-resources/img/login_back.webp`
+- `plugins/onboard-resources/img/logo-dark.svg`
+- `plugins/onboard-resources/img/logo-light.svg`
+- `plugins/onboard-resources/jest.config.js`
+- `plugins/onboard-resources/package.json`
+- `plugins/onboard-resources/postcss.config.js`
+- `plugins/onboard-resources/src/analytics.ts`
+- `plugins/onboard-resources/src/components/Auth.svelte`
+- `plugins/onboard-resources/src/components/BottomAction.svelte`
+- `plugins/onboard-resources/src/components/Form.svelte`
+- `plugins/onboard-resources/src/components/icons/OnboardIcon.svelte`
+- `plugins/onboard-resources/src/components/OnboardApp.svelte`
+- `plugins/onboard-resources/src/components/OnboardForm.svelte`
+- `plugins/onboard-resources/src/components/OnboardUserForm.svelte`
+- `plugins/onboard-resources/src/components/OnboardWorkspaceForm.svelte`
+- `plugins/onboard-resources/src/components/StatusControl.svelte`
+- `plugins/onboard-resources/src/index.ts`
+- `plugins/onboard-resources/src/plugin.ts`
+- `plugins/onboard-resources/src/utils.ts`
+- `plugins/onboard-resources/svelte.config.js`
+- `plugins/onboard-resources/tsconfig.json`
+- `plugins/onboard/.eslintrc.js`
+- `plugins/onboard/.npmignore`
+- `plugins/onboard/config/rig.json`
+- `plugins/onboard/jest.config.js`
+- `plugins/onboard/package.json`
+- `plugins/onboard/src/index.ts`
+- `plugins/onboard/tsconfig.json`
+- `plugins/openai/.eslintrc.js`
+- `plugins/openai/.npmignore`
+- `plugins/openai/config/rig.json`
+- `plugins/openai/jest.config.js`
+- `plugins/openai/package.json`
+- `plugins/openai/src/index.ts`
+- `plugins/openai/src/utils.ts`
+- `plugins/openai/tsconfig.json`
+- `plugins/preference-assets/.eslintrc.js`
+- `plugins/preference-assets/assets/icons.svg`
+- `plugins/preference-assets/config/rig.json`
+- `plugins/preference-assets/jest.config.js`
+- `plugins/preference-assets/lang/cs.json`
+- `plugins/preference-assets/lang/de.json`
+- `plugins/preference-assets/lang/en.json`
+- `plugins/preference-assets/lang/es.json`
+- `plugins/preference-assets/lang/fr.json`
+- `plugins/preference-assets/lang/it.json`
+- `plugins/preference-assets/lang/ja.json`
+- `plugins/preference-assets/lang/ko.json`
+- `plugins/preference-assets/lang/pt-br.json`
+- `plugins/preference-assets/lang/pt.json`
+- `plugins/preference-assets/lang/ru.json`
+- `plugins/preference-assets/lang/tr.json`
+- `plugins/preference-assets/lang/zh.json`
+- `plugins/preference-assets/package.json`
+- `plugins/preference-assets/src/__tests__/lang.test.ts`
+- `plugins/preference-assets/src/index.ts`
+- `plugins/preference-assets/tsconfig.json`
+- `plugins/preference/.eslintrc.js`
+- `plugins/preference/.npmignore`
+- `plugins/preference/config/rig.json`
+- `plugins/preference/jest.config.js`
+- `plugins/preference/package.json`
+- `plugins/preference/src/index.ts`
+- `plugins/preference/tsconfig.json`
+- `plugins/presence-resources/.eslintrc.js`
+- `plugins/presence-resources/.prettierrc`
+- `plugins/presence-resources/config/rig.json`
+- `plugins/presence-resources/jest.config.js`
+- `plugins/presence-resources/package.json`
+- `plugins/presence-resources/postcss.config.js`
+- `plugins/presence-resources/src/client.ts`
+- `plugins/presence-resources/src/components/Presence.svelte`
+- `plugins/presence-resources/src/components/PresenceAvatars.svelte`
+- `plugins/presence-resources/src/components/PresenceContext.svelte`
+- `plugins/presence-resources/src/components/PresenceList.svelte`
+- `plugins/presence-resources/src/components/WorkbenchExtension.svelte`
+- `plugins/presence-resources/src/index.ts`
+- `plugins/presence-resources/src/plugin.ts`
+- `plugins/presence-resources/src/presence.ts`
+- `plugins/presence-resources/src/store.ts`
+- `plugins/presence-resources/src/types.ts`
+- `plugins/presence-resources/src/typing.ts`
+- `plugins/presence-resources/svelte.config.js`
+- `plugins/presence-resources/tsconfig.json`
+- `plugins/presence/.eslintrc.js`
+- `plugins/presence/.npmignore`
+- `plugins/presence/config/rig.json`
+- `plugins/presence/jest.config.js`
+- `plugins/presence/package.json`
+- `plugins/presence/src/index.ts`
+- `plugins/presence/src/plugin.ts`
+- `plugins/presence/src/types.ts`
+- `plugins/presence/tsconfig.json`
+- `plugins/print-assets/.eslintrc.js`
+- `plugins/print-assets/assets/icons.svg`
+- `plugins/print-assets/config/rig.json`
+- `plugins/print-assets/jest.config.js`
+- `plugins/print-assets/lang/cs.json`
+- `plugins/print-assets/lang/de.json`
+- `plugins/print-assets/lang/en.json`
+- `plugins/print-assets/lang/es.json`
+- `plugins/print-assets/lang/fr.json`
+- `plugins/print-assets/lang/it.json`
+- `plugins/print-assets/lang/ja.json`
+- `plugins/print-assets/lang/ko.json`
+- `plugins/print-assets/lang/pt-br.json`
+- `plugins/print-assets/lang/pt.json`
+- `plugins/print-assets/lang/ru.json`
+- `plugins/print-assets/lang/tr.json`
+- `plugins/print-assets/lang/zh.json`
+- `plugins/print-assets/package.json`
+- `plugins/print-assets/src/__tests__/lang.test.ts`
+- `plugins/print-assets/src/index.ts`
+- `plugins/print-assets/tsconfig.json`
+- `plugins/print-resources/.eslintrc.js`
+- `plugins/print-resources/.prettierrc`
+- `plugins/print-resources/config/rig.json`
+- `plugins/print-resources/jest.config.js`
+- `plugins/print-resources/package.json`
+- `plugins/print-resources/postcss.config.js`
+- `plugins/print-resources/src/components/DOCXViewer.svelte`
+- `plugins/print-resources/src/components/PrintBulkToPDF.svelte`
+- `plugins/print-resources/src/components/PrintToPDF.svelte`
+- `plugins/print-resources/src/index.ts`
+- `plugins/print-resources/src/plugin.ts`
+- `plugins/print-resources/src/printUtils.test.ts`
+- `plugins/print-resources/src/printUtils.ts`
+- `plugins/print-resources/svelte.config.js`
+- `plugins/print-resources/tsconfig.json`
+- `plugins/print/.eslintrc.js`
+- `plugins/print/.npmignore`
+- `plugins/print/config/rig.json`
+- `plugins/print/jest.config.js`
+- `plugins/print/package.json`
+- `plugins/print/src/index.ts`
+- `plugins/print/src/plugin.ts`
+- `plugins/print/src/utils.ts`
+- `plugins/print/tsconfig.json`
+- `plugins/process-assets/.eslintrc.js`
+- `plugins/process-assets/assets/icons.svg`
+- `plugins/process-assets/config/rig.json`
+- `plugins/process-assets/jest.config.js`
+- `plugins/process-assets/lang/cs.json`
+- `plugins/process-assets/lang/de.json`
+- `plugins/process-assets/lang/en.json`
+- `plugins/process-assets/lang/es.json`
+- `plugins/process-assets/lang/fr.json`
+- `plugins/process-assets/lang/it.json`
+- `plugins/process-assets/lang/ja.json`
+- `plugins/process-assets/lang/ko.json`
+- `plugins/process-assets/lang/pt-br.json`
+- `plugins/process-assets/lang/pt.json`
+- `plugins/process-assets/lang/ru.json`
+- `plugins/process-assets/lang/tr.json`
+- `plugins/process-assets/lang/zh.json`
+- `plugins/process-assets/package.json`
+- `plugins/process-assets/src/__tests__/lang.test.ts`
+- `plugins/process-assets/src/index.ts`
+- `plugins/process-assets/tsconfig.json`
+- `plugins/process-resources/.eslintrc.js`
+- `plugins/process-resources/.prettierrc`
+- `plugins/process-resources/config/rig.json`
+- `plugins/process-resources/jest.config.js`
+- `plugins/process-resources/package.json`
+- `plugins/process-resources/postcss.config.js`
+- `plugins/process-resources/src/components/ActionTypePresenter.svelte`
+- `plugins/process-resources/src/components/ApproveRequestButtons.svelte`
+- `plugins/process-resources/src/components/ApproveRequestPresenter.svelte`
+- `plugins/process-resources/src/components/attributeEditors/AttrContextPresenter.svelte`
+- `plugins/process-resources/src/components/attributeEditors/ConfigurePopup.svelte`
+- `plugins/process-resources/src/components/attributeEditors/ConstContextPresenter.svelte`
+- `plugins/process-resources/src/components/attributeEditors/ConstValuePopup.svelte`
+- `plugins/process-resources/src/components/attributeEditors/ContextSelectorPopup.svelte`
+- `plugins/process-resources/src/components/attributeEditors/ContextValue.svelte`
+- `plugins/process-resources/src/components/attributeEditors/ContextValuePresenter.svelte`
+- `plugins/process-resources/src/components/attributeEditors/ExecutionContextPresenter.svelte`
+- `plugins/process-resources/src/components/attributeEditors/ExecutionContextSelector.svelte`
+- `plugins/process-resources/src/components/attributeEditors/FunctionContextPresenter.svelte`
+- `plugins/process-resources/src/components/attributeEditors/FunctionPresenter.svelte`
+- `plugins/process-resources/src/components/attributeEditors/FunctionSelector.svelte`
+- `plugins/process-resources/src/components/attributeEditors/NestedContextPresenter.svelte`
+- `plugins/process-resources/src/components/attributeEditors/NestedContextSelector.svelte`
+- `plugins/process-resources/src/components/attributeEditors/RelatedContextSelector.svelte`
+- `plugins/process-resources/src/components/attributeEditors/RelContextPresenter.svelte`
+- `plugins/process-resources/src/components/contextEditors/ClassUserInput.svelte`
+- `plugins/process-resources/src/components/contextEditors/FallbackEditor.svelte`
+- `plugins/process-resources/src/components/contextEditors/ProcessContextPresenter.svelte`
+- `plugins/process-resources/src/components/contextEditors/ProcessContextRawPresenter.svelte`
+- `plugins/process-resources/src/components/contextEditors/RequestUserInput.svelte`
+- `plugins/process-resources/src/components/contextEditors/RequestUserInputAttribute.svelte`
+- `plugins/process-resources/src/components/contextEditors/ResultInput.svelte`
+- `plugins/process-resources/src/components/contextEditors/RoleEditor.svelte`
+- `plugins/process-resources/src/components/contextEditors/ToDoContextSelector.svelte`
+- `plugins/process-resources/src/components/criterias/ArraySizeCriteria.svelte`
+- `plugins/process-resources/src/components/criterias/AttributeCriteria.svelte`
+- `plugins/process-resources/src/components/criterias/BaseCriteria.svelte`
+- `plugins/process-resources/src/components/criterias/BaseCriteriaEditor.svelte`
+- `plugins/process-resources/src/components/criterias/ContextCriteria.svelte`
+- `plugins/process-resources/src/components/criterias/CriteriasEditor.svelte`
+- `plugins/process-resources/src/components/criterias/ModeSelector.svelte`
+- `plugins/process-resources/src/components/criterias/RangeCriteria.svelte`
+- `plugins/process-resources/src/components/criterias/SubProcessStateCriteria.svelte`
+- `plugins/process-resources/src/components/ErrorPresenter.svelte`
+- `plugins/process-resources/src/components/ErrorTooltip.svelte`
+- `plugins/process-resources/src/components/ExecutionAllToDos.svelte`
+- `plugins/process-resources/src/components/ExecutionDetails.svelte`
+- `plugins/process-resources/src/components/ExecutionMyToDos.svelte`
+- `plugins/process-resources/src/components/ExecutionNotification.svelte`
+- `plugins/process-resources/src/components/ExecutionRefPresenter.svelte`
+- `plugins/process-resources/src/components/ExecutonPresenter.svelte`
+- `plugins/process-resources/src/components/ExecutonProgressPresenter.svelte`
+- `plugins/process-resources/src/components/LogActionPresenter.svelte`
+- `plugins/process-resources/src/components/Main.svelte`
+- `plugins/process-resources/src/components/Navigator.svelte`
+- `plugins/process-resources/src/components/NextTriggers.svelte`
+- `plugins/process-resources/src/components/NotifierExtension.svelte`
+- `plugins/process-resources/src/components/presenters/AddRelationPresenter.svelte`
+- `plugins/process-resources/src/components/presenters/AddTagPresenter.svelte`
+- `plugins/process-resources/src/components/presenters/CreateCardPresenter.svelte`
+- `plugins/process-resources/src/components/presenters/SubProcessPresenter.svelte`
+- `plugins/process-resources/src/components/presenters/ToDoPresenter.svelte`
+- `plugins/process-resources/src/components/presenters/UpdateAttributePresenter.svelte`
+- `plugins/process-resources/src/components/presenters/UpdateCardPresenter.svelte`
+- `plugins/process-resources/src/components/ProcessAttribute.svelte`
+- `plugins/process-resources/src/components/ProcessesCardSection.svelte`
+- `plugins/process-resources/src/components/ProcessesExtension.svelte`
+- `plugins/process-resources/src/components/ProcessesHeaderExtension.svelte`
+- `plugins/process-resources/src/components/ProcessesSection.svelte`
+- `plugins/process-resources/src/components/ProcessPresenter.svelte`
+- `plugins/process-resources/src/components/RequestsCardSection.svelte`
+- `plugins/process-resources/src/components/RequestsExtension.svelte`
+- `plugins/process-resources/src/components/RunProcessCardPopup.svelte`
+- `plugins/process-resources/src/components/RunProcessPopup.svelte`
+- `plugins/process-resources/src/components/settings/ActionPresenter.svelte`
+- `plugins/process-resources/src/components/settings/ActionsPresenter.svelte`
+- `plugins/process-resources/src/components/settings/AddRelationEditor.svelte`
+- `plugins/process-resources/src/components/settings/AddTagEditor.svelte`
+- `plugins/process-resources/src/components/settings/AddTransitionButton.svelte`
+- `plugins/process-resources/src/components/settings/AddTransitionPopup.svelte`
+- `plugins/process-resources/src/components/settings/ApproveRequestEditor.svelte`
+- `plugins/process-resources/src/components/settings/ApproveRequestTriggerEditor.svelte`
+- `plugins/process-resources/src/components/settings/ApproveRequestTriggerPresenter.svelte`
+- `plugins/process-resources/src/components/settings/AsideStepEditor.svelte`
+- `plugins/process-resources/src/components/settings/AsideTransitionEditor.svelte`
+- `plugins/process-resources/src/components/settings/AssociationSelector.svelte`
+- `plugins/process-resources/src/components/settings/CancelSubProcessEditor.svelte`
+- `plugins/process-resources/src/components/settings/CancelToDoEditor.svelte`
+- `plugins/process-resources/src/components/settings/CardUpdateEditor.svelte`
+- `plugins/process-resources/src/components/settings/CardUpdatePresenter.svelte`
+- `plugins/process-resources/src/components/settings/ContextEditor.svelte`
+- `plugins/process-resources/src/components/settings/ContextFooter.svelte`
+- `plugins/process-resources/src/components/settings/CreateCardEditor.svelte`
+- `plugins/process-resources/src/components/settings/FieldChangesEditor.svelte`
+- `plugins/process-resources/src/components/settings/FunctionSubmenu.svelte`
+- `plugins/process-resources/src/components/settings/InitParamsEditor.svelte`
+- `plugins/process-resources/src/components/settings/LockFieldEditor.svelte`
+- `plugins/process-resources/src/components/settings/LockFieldPresenter.svelte`
+- `plugins/process-resources/src/components/settings/LockSectionEditor.svelte`
+- `plugins/process-resources/src/components/settings/LockSectionPresenter.svelte`
+- `plugins/process-resources/src/components/settings/Navigator.svelte`
+- `plugins/process-resources/src/components/settings/ParamsEditor.svelte`
+- `plugins/process-resources/src/components/settings/ProcessAttributeEditor.svelte`
+- `plugins/process-resources/src/components/settings/ProcessEditor.svelte`
+- `plugins/process-resources/src/components/settings/ProcesssSetting.svelte`
+- `plugins/process-resources/src/components/settings/ResultCriteriaEditor.svelte`
+- `plugins/process-resources/src/components/settings/ResultEditor.svelte`
+- `plugins/process-resources/src/components/settings/ResultFieldTypeEditor.svelte`
+- `plugins/process-resources/src/components/settings/ResultsEditor.svelte`
+- `plugins/process-resources/src/components/settings/ResultTypeEditor.svelte`
+- `plugins/process-resources/src/components/settings/ResultTypeSelector.svelte`
+- `plugins/process-resources/src/components/settings/StateInlineEditor.svelte`
+- `plugins/process-resources/src/components/settings/StatePresenter.svelte`
+- `plugins/process-resources/src/components/settings/StatesInlineEditor.svelte`
+- `plugins/process-resources/src/components/settings/StepEditor.svelte`
+- `plugins/process-resources/src/components/settings/SubProcessEditor.svelte`
+- `plugins/process-resources/src/components/settings/SubProcessMatchEditor.svelte`
+- `plugins/process-resources/src/components/settings/SubProcessMatchPresenter.svelte`
+- `plugins/process-resources/src/components/settings/TagSelector.svelte`
+- `plugins/process-resources/src/components/settings/TimeEditor.svelte`
+- `plugins/process-resources/src/components/settings/TimePresenter.svelte`
+- `plugins/process-resources/src/components/settings/ToDoEditor.svelte`
+- `plugins/process-resources/src/components/settings/ToDoParamsEditor.svelte`
+- `plugins/process-resources/src/components/settings/ToDoPresenter.svelte`
+- `plugins/process-resources/src/components/settings/ToDoRemoveParamsEditor.svelte`
+- `plugins/process-resources/src/components/settings/ToDoValuePresenter.svelte`
+- `plugins/process-resources/src/components/settings/TransitionEditor.svelte`
+- `plugins/process-resources/src/components/settings/TransitionPresenter.svelte`
+- `plugins/process-resources/src/components/settings/TransitionRefPresenter.svelte`
+- `plugins/process-resources/src/components/settings/TransitionsInlineEditor.svelte`
+- `plugins/process-resources/src/components/settings/TriggerPresenter.svelte`
+- `plugins/process-resources/src/components/settings/UnLockFieldPresenter.svelte`
+- `plugins/process-resources/src/components/settings/UnLockSectionPresenter.svelte`
+- `plugins/process-resources/src/components/settings/UpdateCardEditor.svelte`
+- `plugins/process-resources/src/components/SignatureDialog.svelte`
+- `plugins/process-resources/src/components/transformEditors/AppendEditor.svelte`
+- `plugins/process-resources/src/components/transformEditors/ArrayElementEditor.svelte`
+- `plugins/process-resources/src/components/transformEditors/CutEditor.svelte`
+- `plugins/process-resources/src/components/transformEditors/DateDifferenceEditor.svelte`
+- `plugins/process-resources/src/components/transformEditors/DateOffsetEditor.svelte`
+- `plugins/process-resources/src/components/transformEditors/FilterEditor.svelte`
+- `plugins/process-resources/src/components/transformEditors/MultiArrayElementEditor.svelte`
+- `plugins/process-resources/src/components/transformEditors/NumberEditor.svelte`
+- `plugins/process-resources/src/components/transformEditors/ReplaceEditor.svelte`
+- `plugins/process-resources/src/components/transformEditors/SplitEditor.svelte`
+- `plugins/process-resources/src/components/transformPresenters/NumberPresenter.svelte`
+- `plugins/process-resources/src/components/transformPresenters/RolePresenter.svelte`
+- `plugins/process-resources/src/exporter.ts`
+- `plugins/process-resources/src/index.ts`
+- `plugins/process-resources/src/middleware.ts`
+- `plugins/process-resources/src/plugin.ts`
+- `plugins/process-resources/src/query.ts`
+- `plugins/process-resources/src/types.ts`
+- `plugins/process-resources/src/utils.ts`
+- `plugins/process-resources/svelte.config.js`
+- `plugins/process-resources/tsconfig.json`
+- `plugins/process/.eslintrc.js`
+- `plugins/process/.npmignore`
+- `plugins/process/config/rig.json`
+- `plugins/process/docs/dsl.md`
+- `plugins/process/jest.config.js`
+- `plugins/process/package.json`
+- `plugins/process/src/__tests__/dslContext.test.ts`
+- `plugins/process/src/dslContext.ts`
+- `plugins/process/src/errors.ts`
+- `plugins/process/src/index.ts`
+- `plugins/process/src/types.ts`
+- `plugins/process/src/utils.ts`
+- `plugins/process/tsconfig.json`
+- `plugins/products-assets/.eslintrc.js`
+- `plugins/products-assets/assets/icons.svg`
+- `plugins/products-assets/config/rig.json`
+- `plugins/products-assets/jest.config.js`
+- `plugins/products-assets/lang/cs.json`
+- `plugins/products-assets/lang/de.json`
+- `plugins/products-assets/lang/en.json`
+- `plugins/products-assets/lang/es.json`
+- `plugins/products-assets/lang/fr.json`
+- `plugins/products-assets/lang/it.json`
+- `plugins/products-assets/lang/ja.json`
+- `plugins/products-assets/lang/ko.json`
+- `plugins/products-assets/lang/pt-br.json`
+- `plugins/products-assets/lang/pt.json`
+- `plugins/products-assets/lang/ru.json`
+- `plugins/products-assets/lang/tr.json`
+- `plugins/products-assets/lang/zh.json`
+- `plugins/products-assets/package.json`
+- `plugins/products-assets/src/__tests__/lang.test.ts`
+- `plugins/products-assets/src/index.ts`
+- `plugins/products-assets/tsconfig.json`
+- `plugins/products-resources/.eslintrc.js`
+- `plugins/products-resources/.prettierrc`
+- `plugins/products-resources/config/rig.json`
+- `plugins/products-resources/jest.config.js`
+- `plugins/products-resources/package.json`
+- `plugins/products-resources/postcss.config.js`
+- `plugins/products-resources/src/components/DocIcon.svelte`
+- `plugins/products-resources/src/components/product-version/ChangeControlInlineEditor.svelte`
+- `plugins/products-resources/src/components/product-version/CreateProductVersion.svelte`
+- `plugins/products-resources/src/components/product-version/EditProductVersion.svelte`
+- `plugins/products-resources/src/components/product-version/ProductVersionInlineEditor.svelte`
+- `plugins/products-resources/src/components/product-version/ProductVersionPresenter.svelte`
+- `plugins/products-resources/src/components/product-version/ProductVersionsEditor.svelte`
+- `plugins/products-resources/src/components/product-version/ProductVersionsPopup.svelte`
+- `plugins/products-resources/src/components/product-version/ProductVersionsPresenter.svelte`
+- `plugins/products-resources/src/components/product-version/ProductVersionStateEditor.svelte`
+- `plugins/products-resources/src/components/product-version/ProductVersionStatePresenter.svelte`
+- `plugins/products-resources/src/components/product-version/ProductVersionVersionPresenter.svelte`
+- `plugins/products-resources/src/components/product/CreateProduct.svelte`
+- `plugins/products-resources/src/components/product/EditProduct.svelte`
+- `plugins/products-resources/src/components/product/NewProductHeader.svelte`
+- `plugins/products-resources/src/components/product/ProductPresenter.svelte`
+- `plugins/products-resources/src/components/product/ProductSearchIcon.svelte`
+- `plugins/products-resources/src/components/product/ProductSearchItem.svelte`
+- `plugins/products-resources/src/index.ts`
+- `plugins/products-resources/src/plugin.ts`
+- `plugins/products-resources/src/types.ts`
+- `plugins/products-resources/src/utils.ts`
+- `plugins/products-resources/svelte.config.js`
+- `plugins/products-resources/tsconfig.json`
+- `plugins/products/.eslintrc.js`
+- `plugins/products/.npmignore`
+- `plugins/products/config/rig.json`
+- `plugins/products/jest.config.js`
+- `plugins/products/package.json`
+- `plugins/products/src/index.ts`
+- `plugins/products/src/plugin.ts`
+- `plugins/products/src/types.ts`
+- `plugins/products/tsconfig.json`
+- `plugins/questions-assets/.eslintrc.js`
+- `plugins/questions-assets/assets/icons.svg`
+- `plugins/questions-assets/config/rig.json`
+- `plugins/questions-assets/jest.config.js`
+- `plugins/questions-assets/lang/cs.json`
+- `plugins/questions-assets/lang/de.json`
+- `plugins/questions-assets/lang/en.json`
+- `plugins/questions-assets/lang/es.json`
+- `plugins/questions-assets/lang/fr.json`
+- `plugins/questions-assets/lang/it.json`
+- `plugins/questions-assets/lang/ja.json`
+- `plugins/questions-assets/lang/ko.json`
+- `plugins/questions-assets/lang/pt-br.json`
+- `plugins/questions-assets/lang/pt.json`
+- `plugins/questions-assets/lang/ru.json`
+- `plugins/questions-assets/lang/tr.json`
+- `plugins/questions-assets/lang/zh.json`
+- `plugins/questions-assets/package.json`
+- `plugins/questions-assets/src/__tests__/lang.test.ts`
+- `plugins/questions-assets/src/index.ts`
+- `plugins/questions-assets/tsconfig.json`
+- `plugins/questions-resources/.eslintrc.js`
+- `plugins/questions-resources/.prettierrc`
+- `plugins/questions-resources/config/rig.json`
+- `plugins/questions-resources/jest.config.js`
+- `plugins/questions-resources/package.json`
+- `plugins/questions-resources/postcss.config.js`
+- `plugins/questions-resources/src/actions/ActionWithAvailability.ts`
+- `plugins/questions-resources/src/actions/questionDeleteAction.ts`
+- `plugins/questions-resources/src/actions/questionDuplicateAction.ts`
+- `plugins/questions-resources/src/actions/questionMoveDownAction.ts`
+- `plugins/questions-resources/src/actions/questionMoveUpAction.ts`
+- `plugins/questions-resources/src/components/AnswersCollectionEditor.svelte`
+- `plugins/questions-resources/src/components/AnswersItemEditor.svelte`
+- `plugins/questions-resources/src/components/LabelEditor.svelte`
+- `plugins/questions-resources/src/components/LayoutRow.svelte`
+- `plugins/questions-resources/src/components/MultipleChoiceAnswerDataEditor.svelte`
+- `plugins/questions-resources/src/components/MultipleChoiceQuestionDataEditor.svelte`
+- `plugins/questions-resources/src/components/OptionsList.svelte`
+- `plugins/questions-resources/src/components/OrderingAnswerDataEditor.svelte`
+- `plugins/questions-resources/src/components/OrderingQuestionDataEditor.svelte`
+- `plugins/questions-resources/src/components/QuestionsCollectionEditor.svelte`
+- `plugins/questions-resources/src/components/QuestionsItemEditor.svelte`
+- `plugins/questions-resources/src/components/RadioButton.svelte`
+- `plugins/questions-resources/src/components/SingleChoiceAnswerDataEditor.svelte`
+- `plugins/questions-resources/src/components/SingleChoiceQuestionDataEditor.svelte`
+- `plugins/questions-resources/src/functions/MultipleChoiceAssessmentAssess.ts`
+- `plugins/questions-resources/src/functions/MultipleChoiceAssessmentInit.ts`
+- `plugins/questions-resources/src/functions/MultipleChoiceQuestionInit.ts`
+- `plugins/questions-resources/src/functions/OrderingAssessmentAssess.ts`
+- `plugins/questions-resources/src/functions/OrderingAssessmentInit.ts`
+- `plugins/questions-resources/src/functions/OrderingQuestionInit.ts`
+- `plugins/questions-resources/src/functions/SingleChoiceAssessmentAssess.ts`
+- `plugins/questions-resources/src/functions/SingleChoiceAssessmentInit.ts`
+- `plugins/questions-resources/src/functions/SingleChoiceQuestionInit.ts`
+- `plugins/questions-resources/src/index.ts`
+- `plugins/questions-resources/src/plugin.ts`
+- `plugins/questions-resources/src/utils/assessAnswer.ts`
+- `plugins/questions-resources/src/utils/assessAnswers.ts`
+- `plugins/questions-resources/src/utils/calculateAnswersToPass.ts`
+- `plugins/questions-resources/src/utils/canUpdateQuestion.ts`
+- `plugins/questions-resources/src/utils/copyQuestions.ts`
+- `plugins/questions-resources/src/utils/createAnswer.ts`
+- `plugins/questions-resources/src/utils/createQuestion.ts`
+- `plugins/questions-resources/src/utils/findAnswers.ts`
+- `plugins/questions-resources/src/utils/findNextQuestion.ts`
+- `plugins/questions-resources/src/utils/findPreviousQuestion.ts`
+- `plugins/questions-resources/src/utils/findQuestions.ts`
+- `plugins/questions-resources/src/utils/getCurrentEmployeeRef.ts`
+- `plugins/questions-resources/src/utils/getQuestionClasses.ts`
+- `plugins/questions-resources/src/utils/getQuestionMixin.ts`
+- `plugins/questions-resources/src/utils/index.ts`
+- `plugins/questions-resources/src/utils/initQuestion.ts`
+- `plugins/questions-resources/src/utils/isAssessment.ts`
+- `plugins/questions-resources/src/utils/moveItem.ts`
+- `plugins/questions-resources/src/utils/queryQuestions.ts`
+- `plugins/questions-resources/src/utils/releaseQuestion.ts`
+- `plugins/questions-resources/src/utils/updateAnswer.ts`
+- `plugins/questions-resources/src/utils/updateQuestion.ts`
+- `plugins/questions-resources/svelte.config.js`
+- `plugins/questions-resources/tsconfig.json`
+- `plugins/questions/.eslintrc.js`
+- `plugins/questions/config/rig.json`
+- `plugins/questions/jest.config.js`
+- `plugins/questions/package.json`
+- `plugins/questions/src/doc-types/base.ts`
+- `plugins/questions/src/doc-types/index.ts`
+- `plugins/questions/src/doc-types/mixin.ts`
+- `plugins/questions/src/doc-types/questions/MultipleChoice.ts`
+- `plugins/questions/src/doc-types/questions/Ordering.ts`
+- `plugins/questions/src/doc-types/questions/SingleChoice.ts`
+- `plugins/questions/src/index.ts`
+- `plugins/questions/tsconfig.json`
+- `plugins/rating-assets/.eslintrc.js`
+- `plugins/rating-assets/assets/icon.svg`
+- `plugins/rating-assets/config/rig.json`
+- `plugins/rating-assets/jest.config.js`
+- `plugins/rating-assets/lang/cs.json`
+- `plugins/rating-assets/lang/de.json`
+- `plugins/rating-assets/lang/en.json`
+- `plugins/rating-assets/lang/es.json`
+- `plugins/rating-assets/lang/fr.json`
+- `plugins/rating-assets/lang/it.json`
+- `plugins/rating-assets/lang/ja.json`
+- `plugins/rating-assets/lang/ko.json`
+- `plugins/rating-assets/lang/pt-br.json`
+- `plugins/rating-assets/lang/pt.json`
+- `plugins/rating-assets/lang/ru.json`
+- `plugins/rating-assets/lang/tr.json`
+- `plugins/rating-assets/lang/zh.json`
+- `plugins/rating-assets/package.json`
+- `plugins/rating-assets/src/__tests__/lang.test.ts`
+- `plugins/rating-assets/src/index.ts`
+- `plugins/rating-assets/tsconfig.json`
+- `plugins/rating-resources/.eslintrc.js`
+- `plugins/rating-resources/.prettierrc`
+- `plugins/rating-resources/config/rig.json`
+- `plugins/rating-resources/img/skill.svg`
+- `plugins/rating-resources/jest.config.js`
+- `plugins/rating-resources/package.json`
+- `plugins/rating-resources/postcss.config.js`
+- `plugins/rating-resources/src/components/DocReactionPresenter.svelte`
+- `plugins/rating-resources/src/components/NavigatorRating.svelte`
+- `plugins/rating-resources/src/components/RatingActivities.svelte`
+- `plugins/rating-resources/src/components/RatingEditor.svelte`
+- `plugins/rating-resources/src/components/RatingRing.svelte`
+- `plugins/rating-resources/src/components/RatingWidget.svelte`
+- `plugins/rating-resources/src/components/ReactionPresenter.svelte`
+- `plugins/rating-resources/src/components/ReactionsTooltip.svelte`
+- `plugins/rating-resources/src/index.ts`
+- `plugins/rating-resources/src/plugin.ts`
+- `plugins/rating-resources/svelte.config.js`
+- `plugins/rating-resources/tsconfig.json`
+- `plugins/rating/.eslintrc.js`
+- `plugins/rating/.npmignore`
+- `plugins/rating/config/rig.json`
+- `plugins/rating/jest.config.js`
+- `plugins/rating/package.json`
+- `plugins/rating/src/index.ts`
+- `plugins/rating/src/utils.ts`
+- `plugins/rating/tsconfig.json`
+- `plugins/recorder-assets/.eslintrc.js`
+- `plugins/recorder-assets/assets/icon.svg`
+- `plugins/recorder-assets/config/rig.json`
+- `plugins/recorder-assets/jest.config.js`
+- `plugins/recorder-assets/lang/cs.json`
+- `plugins/recorder-assets/lang/de.json`
+- `plugins/recorder-assets/lang/en.json`
+- `plugins/recorder-assets/lang/es.json`
+- `plugins/recorder-assets/lang/fr.json`
+- `plugins/recorder-assets/lang/it.json`
+- `plugins/recorder-assets/lang/ja.json`
+- `plugins/recorder-assets/lang/ko.json`
+- `plugins/recorder-assets/lang/pt-br.json`
+- `plugins/recorder-assets/lang/pt.json`
+- `plugins/recorder-assets/lang/ru.json`
+- `plugins/recorder-assets/lang/tr.json`
+- `plugins/recorder-assets/lang/zh.json`
+- `plugins/recorder-assets/package.json`
+- `plugins/recorder-assets/src/__tests__/lang.test.ts`
+- `plugins/recorder-assets/src/index.ts`
+- `plugins/recorder-assets/tsconfig.json`
+- `plugins/recorder-resources/.eslintrc.js`
+- `plugins/recorder-resources/.npmignore`
+- `plugins/recorder-resources/.prettierrc`
+- `plugins/recorder-resources/config/rig.json`
+- `plugins/recorder-resources/jest.config.js`
+- `plugins/recorder-resources/package.json`
+- `plugins/recorder-resources/postcss.config.js`
+- `plugins/recorder-resources/src/__tests__/chunk-reader.test.ts`
+- `plugins/recorder-resources/src/components/Draggable.svelte`
+- `plugins/recorder-resources/src/components/icons/CamOff.svelte`
+- `plugins/recorder-resources/src/components/icons/CamOn.svelte`
+- `plugins/recorder-resources/src/components/icons/Circle.svelte`
+- `plugins/recorder-resources/src/components/icons/CircleLarge.svelte`
+- `plugins/recorder-resources/src/components/icons/CircleMedium.svelte`
+- `plugins/recorder-resources/src/components/icons/CircleSmall.svelte`
+- `plugins/recorder-resources/src/components/icons/Close.svelte`
+- `plugins/recorder-resources/src/components/icons/Collapse.svelte`
+- `plugins/recorder-resources/src/components/icons/Expand.svelte`
+- `plugins/recorder-resources/src/components/icons/MicOff.svelte`
+- `plugins/recorder-resources/src/components/icons/MicOn.svelte`
+- `plugins/recorder-resources/src/components/icons/Pause.svelte`
+- `plugins/recorder-resources/src/components/icons/Play.svelte`
+- `plugins/recorder-resources/src/components/icons/Rec.svelte`
+- `plugins/recorder-resources/src/components/icons/Record.svelte`
+- `plugins/recorder-resources/src/components/icons/RecordOff.svelte`
+- `plugins/recorder-resources/src/components/icons/RecordOn.svelte`
+- `plugins/recorder-resources/src/components/icons/Restart.svelte`
+- `plugins/recorder-resources/src/components/icons/Settings.svelte`
+- `plugins/recorder-resources/src/components/icons/Share.svelte`
+- `plugins/recorder-resources/src/components/icons/Stop.svelte`
+- `plugins/recorder-resources/src/components/icons/Trash.svelte`
+- `plugins/recorder-resources/src/components/RecorderExt.svelte`
+- `plugins/recorder-resources/src/components/RecordingPopup.svelte`
+- `plugins/recorder-resources/src/components/SettingsPopup.svelte`
+- `plugins/recorder-resources/src/components/ShareSettingsPopup.svelte`
+- `plugins/recorder-resources/src/components/WorkbenchExtension.svelte`
+- `plugins/recorder-resources/src/composer.ts`
+- `plugins/recorder-resources/src/const.ts`
+- `plugins/recorder-resources/src/index.ts`
+- `plugins/recorder-resources/src/plugin.ts`
+- `plugins/recorder-resources/src/recorder-worker.ts`
+- `plugins/recorder-resources/src/recorder.ts`
+- `plugins/recorder-resources/src/recording.ts`
+- `plugins/recorder-resources/src/screen-recorder.ts`
+- `plugins/recorder-resources/src/stores/composer.ts`
+- `plugins/recorder-resources/src/stores/manager.ts`
+- `plugins/recorder-resources/src/stores/recorder.ts`
+- `plugins/recorder-resources/src/stream.ts`
+- `plugins/recorder-resources/src/types.ts`
+- `plugins/recorder-resources/src/uploader.ts`
+- `plugins/recorder-resources/src/utils.ts`
+- `plugins/recorder-resources/svelte.config.js`
+- `plugins/recorder-resources/tsconfig.json`
+- `plugins/recorder/.eslintrc.js`
+- `plugins/recorder/.npmignore`
+- `plugins/recorder/config/rig.json`
+- `plugins/recorder/jest.config.js`
+- `plugins/recorder/package.json`
+- `plugins/recorder/src/index.ts`
+- `plugins/recorder/tsconfig.json`
+- `plugins/recruit-assets/.eslintrc.js`
+- `plugins/recruit-assets/assets/icons.svg`
+- `plugins/recruit-assets/CHANGELOG.json`
+- `plugins/recruit-assets/CHANGELOG.md`
+- `plugins/recruit-assets/config/rig.json`
+- `plugins/recruit-assets/jest.config.js`
+- `plugins/recruit-assets/lang/cs.json`
+- `plugins/recruit-assets/lang/de.json`
+- `plugins/recruit-assets/lang/en.json`
+- `plugins/recruit-assets/lang/es.json`
+- `plugins/recruit-assets/lang/fr.json`
+- `plugins/recruit-assets/lang/it.json`
+- `plugins/recruit-assets/lang/ja.json`
+- `plugins/recruit-assets/lang/ko.json`
+- `plugins/recruit-assets/lang/pt-br.json`
+- `plugins/recruit-assets/lang/pt.json`
+- `plugins/recruit-assets/lang/ru.json`
+- `plugins/recruit-assets/lang/tr.json`
+- `plugins/recruit-assets/lang/zh.json`
+- `plugins/recruit-assets/package.json`
+- `plugins/recruit-assets/src/__tests__/lang.test.ts`
+- `plugins/recruit-assets/src/index.ts`
+- `plugins/recruit-assets/tsconfig.json`
+- `plugins/recruit-resources/.eslintrc.js`
+- `plugins/recruit-resources/.prettierrc`
+- `plugins/recruit-resources/CHANGELOG.json`
+- `plugins/recruit-resources/CHANGELOG.md`
+- `plugins/recruit-resources/config/rig.json`
+- `plugins/recruit-resources/img/avatar.png`
+- `plugins/recruit-resources/img/bg-green-crop.jpg`
+- `plugins/recruit-resources/img/bg-green-mixed.jpg`
+- `plugins/recruit-resources/img/bg-green.png`
+- `plugins/recruit-resources/img/bg-pink-crop.jpg`
+- `plugins/recruit-resources/img/bg-pink-mixed.jpg`
+- `plugins/recruit-resources/img/bg-pink.png`
+- `plugins/recruit-resources/img/bond.png`
+- `plugins/recruit-resources/img/elon.png`
+- `plugins/recruit-resources/img/girl.png`
+- `plugins/recruit-resources/img/header-green.png`
+- `plugins/recruit-resources/img/header-pink.png`
+- `plugins/recruit-resources/jest.config.js`
+- `plugins/recruit-resources/package.json`
+- `plugins/recruit-resources/postcss.config.js`
+- `plugins/recruit-resources/src/actionImpl.ts`
+- `plugins/recruit-resources/src/components/ApplicantFilter.svelte`
+- `plugins/recruit-resources/src/components/ApplicantNamePresenter.svelte`
+- `plugins/recruit-resources/src/components/ApplicationItem.svelte`
+- `plugins/recruit-resources/src/components/ApplicationPresenter.svelte`
+- `plugins/recruit-resources/src/components/Applications.svelte`
+- `plugins/recruit-resources/src/components/ApplicationsPopup.svelte`
+- `plugins/recruit-resources/src/components/ApplicationsPresenter.svelte`
+- `plugins/recruit-resources/src/components/CandidateCard.svelte`
+- `plugins/recruit-resources/src/components/CreateApplication.svelte`
+- `plugins/recruit-resources/src/components/CreateCandidate.svelte`
+- `plugins/recruit-resources/src/components/CreateOrganization.svelte`
+- `plugins/recruit-resources/src/components/CreateVacancy.svelte`
+- `plugins/recruit-resources/src/components/EditApplication.svelte`
+- `plugins/recruit-resources/src/components/EditVacancy.svelte`
+- `plugins/recruit-resources/src/components/icons/Application.svelte`
+- `plugins/recruit-resources/src/components/icons/Company.svelte`
+- `plugins/recruit-resources/src/components/icons/ExpandRightDouble.svelte`
+- `plugins/recruit-resources/src/components/icons/FileDuo.svelte`
+- `plugins/recruit-resources/src/components/icons/Shuffle.svelte`
+- `plugins/recruit-resources/src/components/icons/Vacancy.svelte`
+- `plugins/recruit-resources/src/components/KanbanCard.svelte`
+- `plugins/recruit-resources/src/components/MoveApplication.svelte`
+- `plugins/recruit-resources/src/components/NewCandidateHeader.svelte`
+- `plugins/recruit-resources/src/components/NotificationApplicantPresenter.svelte`
+- `plugins/recruit-resources/src/components/OptimizeSkills.svelte`
+- `plugins/recruit-resources/src/components/Organizations.svelte`
+- `plugins/recruit-resources/src/components/organizations/VacancyListApplicationsPopup.svelte`
+- `plugins/recruit-resources/src/components/organizations/VacancyListCountPresenter.svelte`
+- `plugins/recruit-resources/src/components/organizations/VacancyPopup.svelte`
+- `plugins/recruit-resources/src/components/review/CreateOpinion.svelte`
+- `plugins/recruit-resources/src/components/review/CreateReview.svelte`
+- `plugins/recruit-resources/src/components/review/EditOpinion.svelte`
+- `plugins/recruit-resources/src/components/review/EditReview.svelte`
+- `plugins/recruit-resources/src/components/review/OpinionPresenter.svelte`
+- `plugins/recruit-resources/src/components/review/Opinions.svelte`
+- `plugins/recruit-resources/src/components/review/OpinionsPopup.svelte`
+- `plugins/recruit-resources/src/components/review/OpinionsPresenter.svelte`
+- `plugins/recruit-resources/src/components/review/ReviewPresenter.svelte`
+- `plugins/recruit-resources/src/components/review/Reviews.svelte`
+- `plugins/recruit-resources/src/components/SectionEmpty.svelte`
+- `plugins/recruit-resources/src/components/SkillsView.svelte`
+- `plugins/recruit-resources/src/components/TemplatesIcon.svelte`
+- `plugins/recruit-resources/src/components/Vacancies.svelte`
+- `plugins/recruit-resources/src/components/VacancyApplications.svelte`
+- `plugins/recruit-resources/src/components/VacancyApplicationsPopup.svelte`
+- `plugins/recruit-resources/src/components/VacancyCard.svelte`
+- `plugins/recruit-resources/src/components/VacancyCountPresenter.svelte`
+- `plugins/recruit-resources/src/components/VacancyEditor.svelte`
+- `plugins/recruit-resources/src/components/VacancyItem.svelte`
+- `plugins/recruit-resources/src/components/VacancyItemPresenter.svelte`
+- `plugins/recruit-resources/src/components/VacancyList.svelte`
+- `plugins/recruit-resources/src/components/VacancyModifiedPresenter.svelte`
+- `plugins/recruit-resources/src/components/VacancyOrgPresenter.svelte`
+- `plugins/recruit-resources/src/components/VacancyPresenter.svelte`
+- `plugins/recruit-resources/src/components/VacancyTemplateEditor.svelte`
+- `plugins/recruit-resources/src/components/YesNo.svelte`
+- `plugins/recruit-resources/src/index.ts`
+- `plugins/recruit-resources/src/plugin.ts`
+- `plugins/recruit-resources/src/utils.ts`
+- `plugins/recruit-resources/svelte.config.js`
+- `plugins/recruit-resources/tsconfig.json`
+- `plugins/recruit/.eslintrc.js`
+- `plugins/recruit/.npmignore`
+- `plugins/recruit/CHANGELOG.json`
+- `plugins/recruit/CHANGELOG.md`
+- `plugins/recruit/config/rig.json`
+- `plugins/recruit/jest.config.js`
+- `plugins/recruit/package.json`
+- `plugins/recruit/src/analytics.ts`
+- `plugins/recruit/src/index.ts`
+- `plugins/recruit/src/types.ts`
+- `plugins/recruit/tsconfig.json`
+- `plugins/request-assets/.eslintrc.js`
+- `plugins/request-assets/assets/icons.svg`
+- `plugins/request-assets/config/rig.json`
+- `plugins/request-assets/jest.config.js`
+- `plugins/request-assets/lang/cs.json`
+- `plugins/request-assets/lang/de.json`
+- `plugins/request-assets/lang/en.json`
+- `plugins/request-assets/lang/es.json`
+- `plugins/request-assets/lang/fr.json`
+- `plugins/request-assets/lang/it.json`
+- `plugins/request-assets/lang/ja.json`
+- `plugins/request-assets/lang/ko.json`
+- `plugins/request-assets/lang/pt-br.json`
+- `plugins/request-assets/lang/pt.json`
+- `plugins/request-assets/lang/ru.json`
+- `plugins/request-assets/lang/tr.json`
+- `plugins/request-assets/lang/zh.json`
+- `plugins/request-assets/package.json`
+- `plugins/request-assets/src/__tests__/lang.test.ts`
+- `plugins/request-assets/src/index.ts`
+- `plugins/request-assets/tsconfig.json`
+- `plugins/request-resources/.eslintrc.js`
+- `plugins/request-resources/.prettierrc`
+- `plugins/request-resources/config/rig.json`
+- `plugins/request-resources/jest.config.js`
+- `plugins/request-resources/package.json`
+- `plugins/request-resources/postcss.config.js`
+- `plugins/request-resources/src/components/EditRequest.svelte`
+- `plugins/request-resources/src/components/icons/Comments.svelte`
+- `plugins/request-resources/src/components/icons/DocFail.svelte`
+- `plugins/request-resources/src/components/icons/DocSuccess.svelte`
+- `plugins/request-resources/src/components/NotificationRequestView.svelte`
+- `plugins/request-resources/src/components/RequestActions.svelte`
+- `plugins/request-resources/src/components/RequestDetail.svelte`
+- `plugins/request-resources/src/components/RequestDetailPopup.svelte`
+- `plugins/request-resources/src/components/RequestedChangedNotification.svelte`
+- `plugins/request-resources/src/components/RequestLabel.svelte`
+- `plugins/request-resources/src/components/RequestPresenter.svelte`
+- `plugins/request-resources/src/components/RequestStatusPresenter.svelte`
+- `plugins/request-resources/src/components/RequestView.svelte`
+- `plugins/request-resources/src/index.ts`
+- `plugins/request-resources/src/plugin.ts`
+- `plugins/request-resources/svelte.config.js`
+- `plugins/request-resources/tsconfig.json`
+- `plugins/request/.eslintrc.js`
+- `plugins/request/config/rig.json`
+- `plugins/request/jest.config.js`
+- `plugins/request/package.json`
+- `plugins/request/src/index.ts`
+- `plugins/request/tsconfig.json`
+- `plugins/setting-assets/.eslintrc.js`
+- `plugins/setting-assets/assets/icons.svg`
+- `plugins/setting-assets/config/rig.json`
+- `plugins/setting-assets/jest.config.js`
+- `plugins/setting-assets/lang/cs.json`
+- `plugins/setting-assets/lang/de.json`
+- `plugins/setting-assets/lang/en.json`
+- `plugins/setting-assets/lang/es.json`
+- `plugins/setting-assets/lang/fr.json`
+- `plugins/setting-assets/lang/it.json`
+- `plugins/setting-assets/lang/ja.json`
+- `plugins/setting-assets/lang/ko.json`
+- `plugins/setting-assets/lang/pt-br.json`
+- `plugins/setting-assets/lang/pt.json`
+- `plugins/setting-assets/lang/ru.json`
+- `plugins/setting-assets/lang/tr.json`
+- `plugins/setting-assets/lang/zh.json`
+- `plugins/setting-assets/package.json`
+- `plugins/setting-assets/src/__tests__/lang.test.ts`
+- `plugins/setting-assets/src/index.ts`
+- `plugins/setting-assets/tsconfig.json`
+- `plugins/setting-resources/.eslintrc.js`
+- `plugins/setting-resources/.prettierrc`
+- `plugins/setting-resources/config/rig.json`
+- `plugins/setting-resources/jest.config.js`
+- `plugins/setting-resources/package.json`
+- `plugins/setting-resources/postcss.config.js`
+- `plugins/setting-resources/src/__tests__/inviteSettingsUtils.test.ts`
+- `plugins/setting-resources/src/__tests__/roleCapability.test.ts`
+- `plugins/setting-resources/src/components/AnonymousGuestSpaceInput.svelte`
+- `plugins/setting-resources/src/components/ApiTokenPopup.svelte`
+- `plugins/setting-resources/src/components/AssociationEditor.svelte`
+- `plugins/setting-resources/src/components/AvailableSpacesInput.svelte`
+- `plugins/setting-resources/src/components/Backup.svelte`
+- `plugins/setting-resources/src/components/ClassAttributeRow.svelte`
+- `plugins/setting-resources/src/components/ClassAttributes.svelte`
+- `plugins/setting-resources/src/components/ClassAttributesList.svelte`
+- `plugins/setting-resources/src/components/ClassHierarchy.svelte`
+- `plugins/setting-resources/src/components/ClassSetting.svelte`
+- `plugins/setting-resources/src/components/Configure.svelte`
+- `plugins/setting-resources/src/components/CreateAttribute.svelte`
+- `plugins/setting-resources/src/components/CreateAttributePopup.svelte`
+- `plugins/setting-resources/src/components/CreateMixin.svelte`
+- `plugins/setting-resources/src/components/CreateRelation.svelte`
+- `plugins/setting-resources/src/components/EditAttribute.svelte`
+- `plugins/setting-resources/src/components/EditClassLabel.svelte`
+- `plugins/setting-resources/src/components/EditEnum.svelte`
+- `plugins/setting-resources/src/components/EditRelation.svelte`
+- `plugins/setting-resources/src/components/EnumSetting.svelte`
+- `plugins/setting-resources/src/components/EnumValues.svelte`
+- `plugins/setting-resources/src/components/EnumValuesList.svelte`
+- `plugins/setting-resources/src/components/General.svelte`
+- `plugins/setting-resources/src/components/GuestPermissionsSettings.svelte`
+- `plugins/setting-resources/src/components/icons/BulletList.svelte`
+- `plugins/setting-resources/src/components/icons/CrossedArrows.svelte`
+- `plugins/setting-resources/src/components/icons/Error.svelte`
+- `plugins/setting-resources/src/components/icons/Members.svelte`
+- `plugins/setting-resources/src/components/icons/Person.svelte`
+- `plugins/setting-resources/src/components/icons/Report.svelte`
+- `plugins/setting-resources/src/components/integrations/BaseIntegrationState.svelte`
+- `plugins/setting-resources/src/components/integrations/IntegrationCard.svelte`
+- `plugins/setting-resources/src/components/integrations/IntegrationErrorNotification.svelte`
+- `plugins/setting-resources/src/components/integrations/IntegrationLabel.svelte`
+- `plugins/setting-resources/src/components/integrations/Integrations.svelte`
+- `plugins/setting-resources/src/components/integrations/IntegrationStateRow.svelte`
+- `plugins/setting-resources/src/components/integrations/IntegrationTag.svelte`
+- `plugins/setting-resources/src/components/InviteSetting.svelte`
+- `plugins/setting-resources/src/components/MailboxEditorModal.svelte`
+- `plugins/setting-resources/src/components/Mailboxes.svelte`
+- `plugins/setting-resources/src/components/MailboxItem.svelte`
+- `plugins/setting-resources/src/components/Members.svelte`
+- `plugins/setting-resources/src/components/OfficeSettings.svelte`
+- `plugins/setting-resources/src/components/Password.svelte`
+- `plugins/setting-resources/src/components/presenters/AttributePermissionPresenter.svelte`
+- `plugins/setting-resources/src/components/presenters/ClassPermissionPresenter.svelte`
+- `plugins/setting-resources/src/components/presenters/PermissionPresenter.svelte`
+- `plugins/setting-resources/src/components/presenters/SpaceTypeDescriptorPresenter.svelte`
+- `plugins/setting-resources/src/components/Privacy.svelte`
+- `plugins/setting-resources/src/components/Profile.svelte`
+- `plugins/setting-resources/src/components/RelationSetting.svelte`
+- `plugins/setting-resources/src/components/Settings.svelte`
+- `plugins/setting-resources/src/components/SettingsWidget.svelte`
+- `plugins/setting-resources/src/components/socialIds/AddEmailSocialId.svelte`
+- `plugins/setting-resources/src/components/socialIds/AddSocialId.svelte`
+- `plugins/setting-resources/src/components/socialIds/SocialIdRow.svelte`
+- `plugins/setting-resources/src/components/socialIds/SocialIdsEditor.svelte`
+- `plugins/setting-resources/src/components/Spaces.svelte`
+- `plugins/setting-resources/src/components/spaceTypes/CreateSpaceType.svelte`
+- `plugins/setting-resources/src/components/spaceTypes/editor/CreateRole.svelte`
+- `plugins/setting-resources/src/components/spaceTypes/editor/SpaceTypeEditor.svelte`
+- `plugins/setting-resources/src/components/spaceTypes/editor/SpaceTypeGeneralSectionEditor.svelte`
+- `plugins/setting-resources/src/components/spaceTypes/editor/SpaceTypePropertiesSectionEditor.svelte`
+- `plugins/setting-resources/src/components/spaceTypes/editor/SpaceTypeRolesSectionEditor.svelte`
+- `plugins/setting-resources/src/components/spaceTypes/ManageSpaceTypeContent.svelte`
+- `plugins/setting-resources/src/components/spaceTypes/ManageSpaceTypes.svelte`
+- `plugins/setting-resources/src/components/spaceTypes/ManageSpaceTypesTools.svelte`
+- `plugins/setting-resources/src/components/spaceTypes/RoleEditor.svelte`
+- `plugins/setting-resources/src/components/spaceTypes/SpaceTypes.svelte`
+- `plugins/setting-resources/src/components/Support.svelte`
+- `plugins/setting-resources/src/components/Terms.svelte`
+- `plugins/setting-resources/src/components/TwoFactorSettings.svelte`
+- `plugins/setting-resources/src/components/typeEditors/ArrayEditor.svelte`
+- `plugins/setting-resources/src/components/typeEditors/BooleanTypeEditor.svelte`
+- `plugins/setting-resources/src/components/typeEditors/DateTypeEditor.svelte`
+- `plugins/setting-resources/src/components/typeEditors/EmployeeRefEditor.svelte`
+- `plugins/setting-resources/src/components/typeEditors/EnumPopup.svelte`
+- `plugins/setting-resources/src/components/typeEditors/EnumSelect.svelte`
+- `plugins/setting-resources/src/components/typeEditors/EnumTypeEditor.svelte`
+- `plugins/setting-resources/src/components/typeEditors/HyperlinkTypeEditor.svelte`
+- `plugins/setting-resources/src/components/typeEditors/IdentifierTypeEditor.svelte`
+- `plugins/setting-resources/src/components/typeEditors/MarkupTypeEditor.svelte`
+- `plugins/setting-resources/src/components/typeEditors/NumberTypeEditor.svelte`
+- `plugins/setting-resources/src/components/typeEditors/RefEditor.svelte`
+- `plugins/setting-resources/src/components/typeEditors/RoleAssignmentEditor.svelte`
+- `plugins/setting-resources/src/components/typeEditors/StringTypeEditor.svelte`
+- `plugins/setting-resources/src/components/typeEditors/TypesPopup.svelte`
+- `plugins/setting-resources/src/components/UserRoleSelect.svelte`
+- `plugins/setting-resources/src/components/WorkspacePermissionEditor.svelte`
+- `plugins/setting-resources/src/components/WorkspaceSettings.svelte`
+- `plugins/setting-resources/src/hasRoleCapabilityAsync.ts`
+- `plugins/setting-resources/src/index.ts`
+- `plugins/setting-resources/src/inviteSettingsUtils.ts`
+- `plugins/setting-resources/src/plugin.ts`
+- `plugins/setting-resources/src/roleCapability.ts`
+- `plugins/setting-resources/src/store.ts`
+- `plugins/setting-resources/src/types.ts`
+- `plugins/setting-resources/src/utils.ts`
+- `plugins/setting-resources/svelte.config.js`
+- `plugins/setting-resources/tsconfig.json`
+- `plugins/setting/.eslintrc.js`
+- `plugins/setting/.npmignore`
+- `plugins/setting/config/rig.json`
+- `plugins/setting/jest.config.js`
+- `plugins/setting/package.json`
+- `plugins/setting/src/analytics.ts`
+- `plugins/setting/src/index.ts`
+- `plugins/setting/src/spaceTypeEditor.ts`
+- `plugins/setting/src/utils.ts`
+- `plugins/setting/tsconfig.json`
+- `plugins/sign/.eslintrc.js`
+- `plugins/sign/.npmignore`
+- `plugins/sign/config/rig.json`
+- `plugins/sign/jest.config.js`
+- `plugins/sign/package.json`
+- `plugins/sign/src/index.ts`
+- `plugins/sign/src/plugin.ts`
+- `plugins/sign/src/utils.ts`
+- `plugins/sign/tsconfig.json`
+- `plugins/support-assets/.eslintrc.js`
+- `plugins/support-assets/assets/icons.svg`
+- `plugins/support-assets/config/rig.json`
+- `plugins/support-assets/jest.config.js`
+- `plugins/support-assets/lang/cs.json`
+- `plugins/support-assets/lang/de.json`
+- `plugins/support-assets/lang/en.json`
+- `plugins/support-assets/lang/es.json`
+- `plugins/support-assets/lang/fr.json`
+- `plugins/support-assets/lang/it.json`
+- `plugins/support-assets/lang/ja.json`
+- `plugins/support-assets/lang/ko.json`
+- `plugins/support-assets/lang/pt-br.json`
+- `plugins/support-assets/lang/pt.json`
+- `plugins/support-assets/lang/ru.json`
+- `plugins/support-assets/lang/tr.json`
+- `plugins/support-assets/lang/zh.json`
+- `plugins/support-assets/package.json`
+- `plugins/support-assets/src/__tests__/lang.test.ts`
+- `plugins/support-assets/src/index.ts`
+- `plugins/support-assets/tsconfig.json`
+- `plugins/support-resources/.eslintrc.js`
+- `plugins/support-resources/.prettierrc`
+- `plugins/support-resources/config/rig.json`
+- `plugins/support-resources/jest.config.js`
+- `plugins/support-resources/package.json`
+- `plugins/support-resources/postcss.config.js`
+- `plugins/support-resources/src/index.ts`
+- `plugins/support-resources/src/plugin.ts`
+- `plugins/support-resources/src/support.ts`
+- `plugins/support-resources/svelte.config.js`
+- `plugins/support-resources/tsconfig.json`
+- `plugins/support/.eslintrc.js`
+- `plugins/support/.npmignore`
+- `plugins/support/config/rig.json`
+- `plugins/support/jest.config.js`
+- `plugins/support/package.json`
+- `plugins/support/src/index.ts`
+- `plugins/support/src/types.ts`
+- `plugins/support/src/utils.ts`
+- `plugins/support/tsconfig.json`
+- `plugins/survey-assets/.eslintrc.js`
+- `plugins/survey-assets/assets/icons.svg`
+- `plugins/survey-assets/config/rig.json`
+- `plugins/survey-assets/jest.config.js`
+- `plugins/survey-assets/lang/cs.json`
+- `plugins/survey-assets/lang/de.json`
+- `plugins/survey-assets/lang/en.json`
+- `plugins/survey-assets/lang/es.json`
+- `plugins/survey-assets/lang/fr.json`
+- `plugins/survey-assets/lang/it.json`
+- `plugins/survey-assets/lang/ja.json`
+- `plugins/survey-assets/lang/ko.json`
+- `plugins/survey-assets/lang/pt-br.json`
+- `plugins/survey-assets/lang/pt.json`
+- `plugins/survey-assets/lang/ru.json`
+- `plugins/survey-assets/lang/tr.json`
+- `plugins/survey-assets/lang/zh.json`
+- `plugins/survey-assets/package.json`
+- `plugins/survey-assets/src/__tests__/lang.test.ts`
+- `plugins/survey-assets/src/index.ts`
+- `plugins/survey-assets/tsconfig.json`
+- `plugins/survey-resources/.eslintrc.js`
+- `plugins/survey-resources/.prettierrc`
+- `plugins/survey-resources/config/rig.json`
+- `plugins/survey-resources/jest.config.js`
+- `plugins/survey-resources/package.json`
+- `plugins/survey-resources/postcss.config.js`
+- `plugins/survey-resources/src/components/CreateSurvey.svelte`
+- `plugins/survey-resources/src/components/EditPoll.svelte`
+- `plugins/survey-resources/src/components/EditPollPanel.svelte`
+- `plugins/survey-resources/src/components/EditQuestion.svelte`
+- `plugins/survey-resources/src/components/EditSurvey.svelte`
+- `plugins/survey-resources/src/components/EditSurveyPanel.svelte`
+- `plugins/survey-resources/src/components/icons/Question.svelte`
+- `plugins/survey-resources/src/components/PollCollection.svelte`
+- `plugins/survey-resources/src/components/PollQuestion.svelte`
+- `plugins/survey-resources/src/components/SurveyPopup.svelte`
+- `plugins/survey-resources/src/components/SurveyPresenter.svelte`
+- `plugins/survey-resources/src/index.ts`
+- `plugins/survey-resources/src/plugin.ts`
+- `plugins/survey-resources/src/utils.ts`
+- `plugins/survey-resources/svelte.config.js`
+- `plugins/survey-resources/tsconfig.json`
+- `plugins/survey/.eslintrc.js`
+- `plugins/survey/.npmignore`
+- `plugins/survey/config/rig.json`
+- `plugins/survey/jest.config.js`
+- `plugins/survey/package.json`
+- `plugins/survey/src/index.ts`
+- `plugins/survey/src/types.ts`
+- `plugins/survey/tsconfig.json`
+- `plugins/tags-assets/.eslintrc.js`
+- `plugins/tags-assets/assets/icons.svg`
+- `plugins/tags-assets/config/rig.json`
+- `plugins/tags-assets/jest.config.js`
+- `plugins/tags-assets/lang/cs.json`
+- `plugins/tags-assets/lang/de.json`
+- `plugins/tags-assets/lang/en.json`
+- `plugins/tags-assets/lang/es.json`
+- `plugins/tags-assets/lang/fr.json`
+- `plugins/tags-assets/lang/it.json`
+- `plugins/tags-assets/lang/ja.json`
+- `plugins/tags-assets/lang/ko.json`
+- `plugins/tags-assets/lang/pt-br.json`
+- `plugins/tags-assets/lang/pt.json`
+- `plugins/tags-assets/lang/ru.json`
+- `plugins/tags-assets/lang/tr.json`
+- `plugins/tags-assets/lang/zh.json`
+- `plugins/tags-assets/package.json`
+- `plugins/tags-assets/src/__tests__/lang.test.ts`
+- `plugins/tags-assets/src/index.ts`
+- `plugins/tags-assets/tsconfig.json`
+- `plugins/tags-resources/.eslintrc.js`
+- `plugins/tags-resources/.prettierrc`
+- `plugins/tags-resources/config/rig.json`
+- `plugins/tags-resources/img/skill.svg`
+- `plugins/tags-resources/jest.config.js`
+- `plugins/tags-resources/package.json`
+- `plugins/tags-resources/postcss.config.js`
+- `plugins/tags-resources/src/components/CategoryBar.svelte`
+- `plugins/tags-resources/src/components/CategoryPresenter.svelte`
+- `plugins/tags-resources/src/components/CollapsedTags.svelte`
+- `plugins/tags-resources/src/components/CreateTagElement.svelte`
+- `plugins/tags-resources/src/components/DocTagsEditor.svelte`
+- `plugins/tags-resources/src/components/DraftTagsEditor.svelte`
+- `plugins/tags-resources/src/components/DraftTagsPopup.svelte`
+- `plugins/tags-resources/src/components/EditTagElement.svelte`
+- `plugins/tags-resources/src/components/icons/TagIcon.svelte`
+- `plugins/tags-resources/src/components/icons/View.svelte`
+- `plugins/tags-resources/src/components/icons/ViewHide.svelte`
+- `plugins/tags-resources/src/components/LabelsPresenter.svelte`
+- `plugins/tags-resources/src/components/ObjectsTagsEditorPopup.svelte`
+- `plugins/tags-resources/src/components/TagElement.svelte`
+- `plugins/tags-resources/src/components/TagElementCountPresenter.svelte`
+- `plugins/tags-resources/src/components/TagElementPresenter.svelte`
+- `plugins/tags-resources/src/components/TagFilterPresenter.svelte`
+- `plugins/tags-resources/src/components/TagItem.svelte`
+- `plugins/tags-resources/src/components/TagReferencePresenter.svelte`
+- `plugins/tags-resources/src/components/Tags.svelte`
+- `plugins/tags-resources/src/components/TagsAttributeEditor.svelte`
+- `plugins/tags-resources/src/components/TagsCategoryPopup.svelte`
+- `plugins/tags-resources/src/components/TagsDropdownEditor.svelte`
+- `plugins/tags-resources/src/components/TagsEditor.svelte`
+- `plugins/tags-resources/src/components/TagsEditorPopup.svelte`
+- `plugins/tags-resources/src/components/TagsFilter.svelte`
+- `plugins/tags-resources/src/components/TagsFilterPresenter.svelte`
+- `plugins/tags-resources/src/components/TagsItemPresenter.svelte`
+- `plugins/tags-resources/src/components/TagsPopup.svelte`
+- `plugins/tags-resources/src/components/TagsPresentationPopup.svelte`
+- `plugins/tags-resources/src/components/TagsPresenter.svelte`
+- `plugins/tags-resources/src/components/TagsReferencePresenter.svelte`
+- `plugins/tags-resources/src/components/TagsView.svelte`
+- `plugins/tags-resources/src/components/WeightPopup.svelte`
+- `plugins/tags-resources/src/index.ts`
+- `plugins/tags-resources/src/plugin.ts`
+- `plugins/tags-resources/src/utils.ts`
+- `plugins/tags-resources/svelte.config.js`
+- `plugins/tags-resources/tsconfig.json`
+- `plugins/tags/.eslintrc.js`
+- `plugins/tags/.npmignore`
+- `plugins/tags/config/rig.json`
+- `plugins/tags/jest.config.js`
+- `plugins/tags/package.json`
+- `plugins/tags/src/analytics.ts`
+- `plugins/tags/src/index.ts`
+- `plugins/tags/tsconfig.json`
+- `plugins/task-assets/.eslintrc.js`
+- `plugins/task-assets/assets/icons.svg`
+- `plugins/task-assets/CHANGELOG.json`
+- `plugins/task-assets/CHANGELOG.md`
+- `plugins/task-assets/config/rig.json`
+- `plugins/task-assets/jest.config.js`
+- `plugins/task-assets/lang/cs.json`
+- `plugins/task-assets/lang/de.json`
+- `plugins/task-assets/lang/en.json`
+- `plugins/task-assets/lang/es.json`
+- `plugins/task-assets/lang/fr.json`
+- `plugins/task-assets/lang/it.json`
+- `plugins/task-assets/lang/ja.json`
+- `plugins/task-assets/lang/ko.json`
+- `plugins/task-assets/lang/pt-br.json`
+- `plugins/task-assets/lang/pt.json`
+- `plugins/task-assets/lang/ru.json`
+- `plugins/task-assets/lang/tr.json`
+- `plugins/task-assets/lang/zh.json`
+- `plugins/task-assets/package.json`
+- `plugins/task-assets/src/__tests__/lang.test.ts`
+- `plugins/task-assets/src/index.ts`
+- `plugins/task-assets/tsconfig.json`
+- `plugins/task-resources/.eslintrc.js`
+- `plugins/task-resources/.prettierrc`
+- `plugins/task-resources/CHANGELOG.json`
+- `plugins/task-resources/CHANGELOG.md`
+- `plugins/task-resources/config/rig.json`
+- `plugins/task-resources/jest.config.js`
+- `plugins/task-resources/package.json`
+- `plugins/task-resources/postcss.config.js`
+- `plugins/task-resources/src/components/AssignedTasks.svelte`
+- `plugins/task-resources/src/components/AssigneePresenter.svelte`
+- `plugins/task-resources/src/components/CreateFilter.svelte`
+- `plugins/task-resources/src/components/CreateFilterPopup.svelte`
+- `plugins/task-resources/src/components/Dashboard.svelte`
+- `plugins/task-resources/src/components/DueDateEditor.svelte`
+- `plugins/task-resources/src/components/icons/Folder.svelte`
+- `plugins/task-resources/src/components/icons/IconBacklog.svelte`
+- `plugins/task-resources/src/components/icons/IconCanceled.svelte`
+- `plugins/task-resources/src/components/icons/IconCompleted.svelte`
+- `plugins/task-resources/src/components/icons/IconStarted.svelte`
+- `plugins/task-resources/src/components/icons/IconUnstarted.svelte`
+- `plugins/task-resources/src/components/icons/LayerBottom.svelte`
+- `plugins/task-resources/src/components/icons/Layers.svelte`
+- `plugins/task-resources/src/components/icons/LayerTop.svelte`
+- `plugins/task-resources/src/components/icons/Lost.svelte`
+- `plugins/task-resources/src/components/icons/Won.svelte`
+- `plugins/task-resources/src/components/kanban/KanbanDragDone.svelte`
+- `plugins/task-resources/src/components/kanban/KanbanView.svelte`
+- `plugins/task-resources/src/components/KanbanTemplatePresenter.svelte`
+- `plugins/task-resources/src/components/projectTypes/CreateProjectType.svelte`
+- `plugins/task-resources/src/components/projectTypes/ProjectTypeAutomationsSectionEditor.svelte`
+- `plugins/task-resources/src/components/projectTypes/ProjectTypeGeneralSectionEditor.svelte`
+- `plugins/task-resources/src/components/projectTypes/ProjectTypePresenter.svelte`
+- `plugins/task-resources/src/components/projectTypes/ProjectTypeSelector.svelte`
+- `plugins/task-resources/src/components/projectTypes/ProjectTypeTasksTypeSectionEditor.svelte`
+- `plugins/task-resources/src/components/state/ApproveStatusRenamePopup.svelte`
+- `plugins/task-resources/src/components/state/CreateStatePopup.svelte`
+- `plugins/task-resources/src/components/state/DeleteStateConfirmationPopup.svelte`
+- `plugins/task-resources/src/components/state/StateEditor.svelte`
+- `plugins/task-resources/src/components/state/StateIconPresenter.svelte`
+- `plugins/task-resources/src/components/state/StatePresenter.svelte`
+- `plugins/task-resources/src/components/state/StateRefPresenter.svelte`
+- `plugins/task-resources/src/components/state/StatesBar.svelte`
+- `plugins/task-resources/src/components/state/StatesPopup.svelte`
+- `plugins/task-resources/src/components/state/StatesProjectEditor.svelte`
+- `plugins/task-resources/src/components/state/TypeStatesPopup.svelte`
+- `plugins/task-resources/src/components/StatusFilter.svelte`
+- `plugins/task-resources/src/components/StatusSelector.svelte`
+- `plugins/task-resources/src/components/StatusTableView.svelte`
+- `plugins/task-resources/src/components/TaskHeader.svelte`
+- `plugins/task-resources/src/components/TaskPresenter.svelte`
+- `plugins/task-resources/src/components/taskTypes/CreateTaskType.svelte`
+- `plugins/task-resources/src/components/taskTypes/ProjectTypeClassPresenter.svelte`
+- `plugins/task-resources/src/components/taskTypes/TaskKindSelector.svelte`
+- `plugins/task-resources/src/components/taskTypes/TaskTypeClassPresenter.svelte`
+- `plugins/task-resources/src/components/taskTypes/TaskTypeEditor.svelte`
+- `plugins/task-resources/src/components/taskTypes/TaskTypeIcon.svelte`
+- `plugins/task-resources/src/components/taskTypes/TaskTypeKindEditor.svelte`
+- `plugins/task-resources/src/components/taskTypes/TaskTypeListPresenter.svelte`
+- `plugins/task-resources/src/components/taskTypes/TaskTypePresenter.svelte`
+- `plugins/task-resources/src/components/taskTypes/TaskTypeRefEditor.svelte`
+- `plugins/task-resources/src/components/TemplatesIcon.svelte`
+- `plugins/task-resources/src/components/TypeSelector.svelte`
+- `plugins/task-resources/src/components/TypesView.svelte`
+- `plugins/task-resources/src/index.ts`
+- `plugins/task-resources/src/plugin.ts`
+- `plugins/task-resources/src/utils.ts`
+- `plugins/task-resources/svelte.config.js`
+- `plugins/task-resources/tsconfig.json`
+- `plugins/task/.eslintrc.js`
+- `plugins/task/.npmignore`
+- `plugins/task/CHANGELOG.json`
+- `plugins/task/CHANGELOG.md`
+- `plugins/task/config/rig.json`
+- `plugins/task/jest.config.js`
+- `plugins/task/package.json`
+- `plugins/task/src/index.ts`
+- `plugins/task/src/utils.ts`
+- `plugins/task/tsconfig.json`
+- `plugins/telegram-assets/.eslintrc.js`
+- `plugins/telegram-assets/assets/icons.svg`
+- `plugins/telegram-assets/config/rig.json`
+- `plugins/telegram-assets/jest.config.js`
+- `plugins/telegram-assets/lang/cs.json`
+- `plugins/telegram-assets/lang/de.json`
+- `plugins/telegram-assets/lang/en.json`
+- `plugins/telegram-assets/lang/es.json`
+- `plugins/telegram-assets/lang/fr.json`
+- `plugins/telegram-assets/lang/it.json`
+- `plugins/telegram-assets/lang/ja.json`
+- `plugins/telegram-assets/lang/ko.json`
+- `plugins/telegram-assets/lang/pt-br.json`
+- `plugins/telegram-assets/lang/pt.json`
+- `plugins/telegram-assets/lang/ru.json`
+- `plugins/telegram-assets/lang/tr.json`
+- `plugins/telegram-assets/lang/zh.json`
+- `plugins/telegram-assets/package.json`
+- `plugins/telegram-assets/src/__tests__/lang.test.ts`
+- `plugins/telegram-assets/src/index.ts`
+- `plugins/telegram-assets/tsconfig.json`
+- `plugins/telegram-resources/.eslintrc.js`
+- `plugins/telegram-resources/.prettierrc`
+- `plugins/telegram-resources/config/rig.json`
+- `plugins/telegram-resources/jest.config.js`
+- `plugins/telegram-resources/package.json`
+- `plugins/telegram-resources/postcss.config.js`
+- `plugins/telegram-resources/src/api.ts`
+- `plugins/telegram-resources/src/components/activity/TelegramMessageCreated.svelte`
+- `plugins/telegram-resources/src/components/Chat.svelte`
+- `plugins/telegram-resources/src/components/config/ChannelsConfig.svelte`
+- `plugins/telegram-resources/src/components/Configure.svelte`
+- `plugins/telegram-resources/src/components/ConfigureBotPopup.svelte`
+- `plugins/telegram-resources/src/components/Connect.svelte`
+- `plugins/telegram-resources/src/components/Date.svelte`
+- `plugins/telegram-resources/src/components/icons/Telegram.svelte`
+- `plugins/telegram-resources/src/components/icons/TelegramColor.svelte`
+- `plugins/telegram-resources/src/components/IntegrationState.svelte`
+- `plugins/telegram-resources/src/components/Message.svelte`
+- `plugins/telegram-resources/src/components/MessagePresenter.svelte`
+- `plugins/telegram-resources/src/components/Messages.svelte`
+- `plugins/telegram-resources/src/components/NotificationProviderPresenter.svelte`
+- `plugins/telegram-resources/src/components/PhoneInput.svelte`
+- `plugins/telegram-resources/src/components/PinPad.svelte`
+- `plugins/telegram-resources/src/components/Reconnect.svelte`
+- `plugins/telegram-resources/src/components/SharedMessages.svelte`
+- `plugins/telegram-resources/src/components/TelegramIntegrationDescription.svelte`
+- `plugins/telegram-resources/src/index.ts`
+- `plugins/telegram-resources/src/plugin.ts`
+- `plugins/telegram-resources/src/utils.ts`
+- `plugins/telegram-resources/svelte.config.js`
+- `plugins/telegram-resources/tsconfig.json`
+- `plugins/telegram/.eslintrc.js`
+- `plugins/telegram/.npmignore`
+- `plugins/telegram/config/rig.json`
+- `plugins/telegram/jest.config.js`
+- `plugins/telegram/package.json`
+- `plugins/telegram/src/index.ts`
+- `plugins/telegram/tsconfig.json`
+- `plugins/templates-assets/.eslintrc.js`
+- `plugins/templates-assets/assets/icons.svg`
+- `plugins/templates-assets/config/rig.json`
+- `plugins/templates-assets/jest.config.js`
+- `plugins/templates-assets/lang/cs.json`
+- `plugins/templates-assets/lang/de.json`
+- `plugins/templates-assets/lang/en.json`
+- `plugins/templates-assets/lang/es.json`
+- `plugins/templates-assets/lang/fr.json`
+- `plugins/templates-assets/lang/it.json`
+- `plugins/templates-assets/lang/ja.json`
+- `plugins/templates-assets/lang/ko.json`
+- `plugins/templates-assets/lang/pt-br.json`
+- `plugins/templates-assets/lang/pt.json`
+- `plugins/templates-assets/lang/ru.json`
+- `plugins/templates-assets/lang/tr.json`
+- `plugins/templates-assets/lang/zh.json`
+- `plugins/templates-assets/package.json`
+- `plugins/templates-assets/src/__tests__/lang.test.ts`
+- `plugins/templates-assets/src/index.ts`
+- `plugins/templates-assets/tsconfig.json`
+- `plugins/templates-resources/.eslintrc.js`
+- `plugins/templates-resources/.prettierrc`
+- `plugins/templates-resources/config/rig.json`
+- `plugins/templates-resources/jest.config.js`
+- `plugins/templates-resources/package.json`
+- `plugins/templates-resources/postcss.config.js`
+- `plugins/templates-resources/src/components/Copy.svelte`
+- `plugins/templates-resources/src/components/CreateTemplateCategory.svelte`
+- `plugins/templates-resources/src/components/EditGroup.svelte`
+- `plugins/templates-resources/src/components/EditorTemplatePopup.svelte`
+- `plugins/templates-resources/src/components/FieldPopup.svelte`
+- `plugins/templates-resources/src/components/Move.svelte`
+- `plugins/templates-resources/src/components/TemplatePopup.svelte`
+- `plugins/templates-resources/src/components/Templates.svelte`
+- `plugins/templates-resources/src/index.ts`
+- `plugins/templates-resources/src/plugin.ts`
+- `plugins/templates-resources/src/utils.ts`
+- `plugins/templates-resources/svelte.config.js`
+- `plugins/templates-resources/tsconfig.json`
+- `plugins/templates/.eslintrc.js`
+- `plugins/templates/.npmignore`
+- `plugins/templates/config/rig.json`
+- `plugins/templates/jest.config.js`
+- `plugins/templates/package.json`
+- `plugins/templates/src/index.ts`
+- `plugins/templates/tsconfig.json`
+- `plugins/test-management-assets/.eslintrc.js`
+- `plugins/test-management-assets/assets/icons.svg`
+- `plugins/test-management-assets/config/rig.json`
+- `plugins/test-management-assets/jest.config.js`
+- `plugins/test-management-assets/lang/cs.json`
+- `plugins/test-management-assets/lang/de.json`
+- `plugins/test-management-assets/lang/en.json`
+- `plugins/test-management-assets/lang/es.json`
+- `plugins/test-management-assets/lang/fr.json`
+- `plugins/test-management-assets/lang/it.json`
+- `plugins/test-management-assets/lang/ja.json`
+- `plugins/test-management-assets/lang/ko.json`
+- `plugins/test-management-assets/lang/pt-br.json`
+- `plugins/test-management-assets/lang/pt.json`
+- `plugins/test-management-assets/lang/ru.json`
+- `plugins/test-management-assets/lang/tr.json`
+- `plugins/test-management-assets/lang/zh.json`
+- `plugins/test-management-assets/package.json`
+- `plugins/test-management-assets/src/__tests__/lang.test.ts`
+- `plugins/test-management-assets/src/index.ts`
+- `plugins/test-management-assets/tsconfig.json`
+- `plugins/test-management-resources/.eslintrc.js`
+- `plugins/test-management-resources/.prettierrc`
+- `plugins/test-management-resources/config/rig.json`
+- `plugins/test-management-resources/jest.config.js`
+- `plugins/test-management-resources/package.json`
+- `plugins/test-management-resources/postcss.config.js`
+- `plugins/test-management-resources/src/components/project/CreateProject.svelte`
+- `plugins/test-management-resources/src/components/project/ProjectPresenter.svelte`
+- `plugins/test-management-resources/src/components/project/ProjectSpacePresenter.svelte`
+- `plugins/test-management-resources/src/components/test-case/CreateTestCase.svelte`
+- `plugins/test-management-resources/src/components/test-case/EditTestCase.svelte`
+- `plugins/test-management-resources/src/components/test-case/RunButton.svelte`
+- `plugins/test-management-resources/src/components/test-case/SelectTestCasesModal.svelte`
+- `plugins/test-management-resources/src/components/test-case/StatusEditor.svelte`
+- `plugins/test-management-resources/src/components/test-case/TestCaseDetails.svelte`
+- `plugins/test-management-resources/src/components/test-case/TestCasePresenter.svelte`
+- `plugins/test-management-resources/src/components/test-case/TestCaseSelector.svelte`
+- `plugins/test-management-resources/src/components/test-case/TestCasesList.svelte`
+- `plugins/test-management-resources/src/components/test-case/TestCaseStatusPresenter.svelte`
+- `plugins/test-management-resources/src/components/test-plan/CreateTestPlanButton.svelte`
+- `plugins/test-management-resources/src/components/test-plan/NewTestPlanAside.svelte`
+- `plugins/test-management-resources/src/components/test-plan/NewTestPlanPanel.svelte`
+- `plugins/test-management-resources/src/components/test-plan/RunTestPlanButton.svelte`
+- `plugins/test-management-resources/src/components/test-plan/TestPlanItemPresenter.svelte`
+- `plugins/test-management-resources/src/components/test-plan/TestPlanPresenter.svelte`
+- `plugins/test-management-resources/src/components/test-result/EditTestResult.svelte`
+- `plugins/test-management-resources/src/components/test-result/RightHeader.svelte`
+- `plugins/test-management-resources/src/components/test-result/store/testIteratorStore.ts`
+- `plugins/test-management-resources/src/components/test-result/TestResultAside.svelte`
+- `plugins/test-management-resources/src/components/test-result/TestResultFooter.svelte`
+- `plugins/test-management-resources/src/components/test-result/TestResultHeader.svelte`
+- `plugins/test-management-resources/src/components/test-result/TestResultPresenter.svelte`
+- `plugins/test-management-resources/src/components/test-result/TestResultStatusEditor.svelte`
+- `plugins/test-management-resources/src/components/test-result/TestResultStatusPresenter.svelte`
+- `plugins/test-management-resources/src/components/test-result/TestRunner.svelte`
+- `plugins/test-management-resources/src/components/test-run/CreateTestRunButton.svelte`
+- `plugins/test-management-resources/src/components/test-run/EditTestRun.svelte`
+- `plugins/test-management-resources/src/components/test-run/NewTestRunAside.svelte`
+- `plugins/test-management-resources/src/components/test-run/NewTestRunPanel.svelte`
+- `plugins/test-management-resources/src/components/test-run/store/testRunStore.ts`
+- `plugins/test-management-resources/src/components/test-run/TestResultModeSelector.svelte`
+- `plugins/test-management-resources/src/components/test-run/TestRunAside.svelte`
+- `plugins/test-management-resources/src/components/test-run/TestRunButton.svelte`
+- `plugins/test-management-resources/src/components/test-run/TestRunHeader.svelte`
+- `plugins/test-management-resources/src/components/test-run/TestRunPresenter.svelte`
+- `plugins/test-management-resources/src/components/test-run/TestRunResult.svelte`
+- `plugins/test-management-resources/src/components/test-run/TestRunStats.svelte`
+- `plugins/test-management-resources/src/components/test-suite/CreateTestSuite.svelte`
+- `plugins/test-management-resources/src/components/test-suite/EditTestSuite.svelte`
+- `plugins/test-management-resources/src/components/test-suite/TestSuitePresenter.svelte`
+- `plugins/test-management-resources/src/components/test-suite/TestSuiteRefPresenter.svelte`
+- `plugins/test-management-resources/src/components/TestManagementSpaceHeader.svelte`
+- `plugins/test-management-resources/src/index.ts`
+- `plugins/test-management-resources/src/navigation.ts`
+- `plugins/test-management-resources/src/plugin.ts`
+- `plugins/test-management-resources/src/testRunUtils.ts`
+- `plugins/test-management-resources/src/types.ts`
+- `plugins/test-management-resources/src/utils.ts`
+- `plugins/test-management-resources/svelte.config.js`
+- `plugins/test-management-resources/tsconfig.json`
+- `plugins/test-management/.eslintrc.js`
+- `plugins/test-management/.npmignore`
+- `plugins/test-management/config/rig.json`
+- `plugins/test-management/jest.config.js`
+- `plugins/test-management/package.json`
+- `plugins/test-management/src/analytics.ts`
+- `plugins/test-management/src/index.ts`
+- `plugins/test-management/src/plugin.ts`
+- `plugins/test-management/src/types.ts`
+- `plugins/test-management/tsconfig.json`
+- `plugins/text-editor-assets/.eslintrc.js`
+- `plugins/text-editor-assets/assets/icons.svg`
+- `plugins/text-editor-assets/config/rig.json`
+- `plugins/text-editor-assets/jest.config.js`
+- `plugins/text-editor-assets/lang/cs.json`
+- `plugins/text-editor-assets/lang/de.json`
+- `plugins/text-editor-assets/lang/en.json`
+- `plugins/text-editor-assets/lang/es.json`
+- `plugins/text-editor-assets/lang/fr.json`
+- `plugins/text-editor-assets/lang/it.json`
+- `plugins/text-editor-assets/lang/ja.json`
+- `plugins/text-editor-assets/lang/ko.json`
+- `plugins/text-editor-assets/lang/pt-br.json`
+- `plugins/text-editor-assets/lang/pt.json`
+- `plugins/text-editor-assets/lang/ru.json`
+- `plugins/text-editor-assets/lang/tr.json`
+- `plugins/text-editor-assets/lang/zh.json`
+- `plugins/text-editor-assets/package.json`
+- `plugins/text-editor-assets/src/__tests__/lang.test.ts`
+- `plugins/text-editor-assets/src/index.ts`
+- `plugins/text-editor-assets/tsconfig.json`
+- `plugins/text-editor-resources/.eslintrc.js`
+- `plugins/text-editor-resources/.prettierrc`
+- `plugins/text-editor-resources/config/rig.json`
+- `plugins/text-editor-resources/jest.config.js`
+- `plugins/text-editor-resources/package.json`
+- `plugins/text-editor-resources/postcss.config.js`
+- `plugins/text-editor-resources/src/command/deleteAttachment.ts`
+- `plugins/text-editor-resources/src/commands.ts`
+- `plugins/text-editor-resources/src/components/Collaboration.svelte`
+- `plugins/text-editor-resources/src/components/CollaborationDiffViewer.svelte`
+- `plugins/text-editor-resources/src/components/CollaborationUserPopup.svelte`
+- `plugins/text-editor-resources/src/components/CollaborationUsers.svelte`
+- `plugins/text-editor-resources/src/components/CollaborativeAttributeBox.svelte`
+- `plugins/text-editor-resources/src/components/CollaborativeAttributeSectionBox.svelte`
+- `plugins/text-editor-resources/src/components/CollaborativeTextEditor.svelte`
+- `plugins/text-editor-resources/src/components/CollaboratorEditor.svelte`
+- `plugins/text-editor-resources/src/components/diff/decorations.ts`
+- `plugins/text-editor-resources/src/components/diff/diff.ts`
+- `plugins/text-editor-resources/src/components/diff/recreate.ts`
+- `plugins/text-editor-resources/src/components/DrawingBoardEditor.svelte`
+- `plugins/text-editor-resources/src/components/DrawingBoardNodeView.svelte`
+- `plugins/text-editor-resources/src/components/DrawingBoardPopup.svelte`
+- `plugins/text-editor-resources/src/components/DummyPopup.svelte`
+- `plugins/text-editor-resources/src/components/editor-context.ts`
+- `plugins/text-editor-resources/src/components/editor/actions.ts`
+- `plugins/text-editor-resources/src/components/editor/collaboration.ts`
+- `plugins/text-editor-resources/src/components/editor/editorProps.ts`
+- `plugins/text-editor-resources/src/components/extension/codeSnippets/codeblock.ts`
+- `plugins/text-editor-resources/src/components/extension/codeSnippets/mermaid.ts`
+- `plugins/text-editor-resources/src/components/extension/codeSnippets/MermaidPopup.svelte`
+- `plugins/text-editor-resources/src/components/extension/colors.ts`
+- `plugins/text-editor-resources/src/components/extension/drawingBoard.ts`
+- `plugins/text-editor-resources/src/components/extension/editorContext.ts`
+- `plugins/text-editor-resources/src/components/extension/embed/embed.ts`
+- `plugins/text-editor-resources/src/components/extension/embed/EmbedToolbarHead.svelte`
+- `plugins/text-editor-resources/src/components/extension/embed/providers/drive.ts`
+- `plugins/text-editor-resources/src/components/extension/embed/providers/youtube.ts`
+- `plugins/text-editor-resources/src/components/extension/emoji.ts`
+- `plugins/text-editor-resources/src/components/extension/fileExt.ts`
+- `plugins/text-editor-resources/src/components/extension/hardBreak.ts`
+- `plugins/text-editor-resources/src/components/extension/hooks/editable.ts`
+- `plugins/text-editor-resources/src/components/extension/hooks/focus.ts`
+- `plugins/text-editor-resources/src/components/extension/hooks/isEmptyContent.ts`
+- `plugins/text-editor-resources/src/components/extension/i18nPlaceholder.ts`
+- `plugins/text-editor-resources/src/components/extension/imageExt.ts`
+- `plugins/text-editor-resources/src/components/extension/inlineCommands.ts`
+- `plugins/text-editor-resources/src/components/extension/inlineComment.ts`
+- `plugins/text-editor-resources/src/components/extension/leftMenu.ts`
+- `plugins/text-editor-resources/src/components/extension/mathematics.test.ts`
+- `plugins/text-editor-resources/src/components/extension/mathematics.ts`
+- `plugins/text-editor-resources/src/components/extension/note.ts`
+- `plugins/text-editor-resources/src/components/extension/popups/ColorPicker.svelte`
+- `plugins/text-editor-resources/src/components/extension/qms/qmsInlineComment.ts`
+- `plugins/text-editor-resources/src/components/extension/qms/qmsInlineCommentMark.ts`
+- `plugins/text-editor-resources/src/components/extension/reference.ts`
+- `plugins/text-editor-resources/src/components/extension/shortcuts/__tests__/smartPaste.test.ts`
+- `plugins/text-editor-resources/src/components/extension/shortcuts/fileUpload.ts`
+- `plugins/text-editor-resources/src/components/extension/shortcuts/handleSubmit.ts`
+- `plugins/text-editor-resources/src/components/extension/shortcuts/imageUpload.ts`
+- `plugins/text-editor-resources/src/components/extension/shortcuts/indent.ts`
+- `plugins/text-editor-resources/src/components/extension/shortcuts/linkKeymap.ts`
+- `plugins/text-editor-resources/src/components/extension/shortcuts/listKeymap.ts`
+- `plugins/text-editor-resources/src/components/extension/shortcuts/paragraphKeymap.ts`
+- `plugins/text-editor-resources/src/components/extension/shortcuts/smartPaste.ts`
+- `plugins/text-editor-resources/src/components/extension/shortcuts/tableMetadata.ts`
+- `plugins/text-editor-resources/src/components/extension/shortcuts/tablePaste.test.ts`
+- `plugins/text-editor-resources/src/components/extension/shortcuts/tablePaste.ts`
+- `plugins/text-editor-resources/src/components/extension/suggestion.ts`
+- `plugins/text-editor-resources/src/components/extension/table/actions/index.ts`
+- `plugins/text-editor-resources/src/components/extension/table/actions/OriginalTableDataViewer.svelte`
+- `plugins/text-editor-resources/src/components/extension/table/actions/refreshTable.ts`
+- `plugins/text-editor-resources/src/components/extension/table/actions/seeOriginalTableData.ts`
+- `plugins/text-editor-resources/src/components/extension/table/actions/showTableDiff.ts`
+- `plugins/text-editor-resources/src/components/extension/table/actions/TableDiffViewer.svelte`
+- `plugins/text-editor-resources/src/components/extension/table/actions/TableRefreshConfirmation.svelte`
+- `plugins/text-editor-resources/src/components/extension/table/actions/TableSourceInfo.svelte`
+- `plugins/text-editor-resources/src/components/extension/table/actions/tableUtils.ts`
+- `plugins/text-editor-resources/src/components/extension/table/decorations/actions.ts`
+- `plugins/text-editor-resources/src/components/extension/table/decorations/cellsHandle.ts`
+- `plugins/text-editor-resources/src/components/extension/table/decorations/columnHandlerDecoration.ts`
+- `plugins/text-editor-resources/src/components/extension/table/decorations/columnInsertDecoration.ts`
+- `plugins/text-editor-resources/src/components/extension/table/decorations/icons.ts`
+- `plugins/text-editor-resources/src/components/extension/table/decorations/plugins.ts`
+- `plugins/text-editor-resources/src/components/extension/table/decorations/rowHandlerDecoration.ts`
+- `plugins/text-editor-resources/src/components/extension/table/decorations/rowInsertDecoration.ts`
+- `plugins/text-editor-resources/src/components/extension/table/decorations/tableDragMarkerDecoration.ts`
+- `plugins/text-editor-resources/src/components/extension/table/decorations/tableSelectionDecoration.ts`
+- `plugins/text-editor-resources/src/components/extension/table/decorations/utils.ts`
+- `plugins/text-editor-resources/src/components/extension/table/index.ts`
+- `plugins/text-editor-resources/src/components/extension/table/refreshTable.ts`
+- `plugins/text-editor-resources/src/components/extension/table/table.ts`
+- `plugins/text-editor-resources/src/components/extension/table/tableCell.ts`
+- `plugins/text-editor-resources/src/components/extension/table/tableMetadata.ts`
+- `plugins/text-editor-resources/src/components/extension/table/TableNodeView.svelte`
+- `plugins/text-editor-resources/src/components/extension/table/tableRow.ts`
+- `plugins/text-editor-resources/src/components/extension/table/types.ts`
+- `plugins/text-editor-resources/src/components/extension/table/utils.ts`
+- `plugins/text-editor-resources/src/components/extension/toc.ts`
+- `plugins/text-editor-resources/src/components/extension/todo/todo.ts`
+- `plugins/text-editor-resources/src/components/extension/todo/ToDoItemNodeView.svelte`
+- `plugins/text-editor-resources/src/components/extension/todo/ToDoListNodeView.svelte`
+- `plugins/text-editor-resources/src/components/extension/toolbar/EditorToolbar.svelte`
+- `plugins/text-editor-resources/src/components/extension/toolbar/toolbar.ts`
+- `plugins/text-editor-resources/src/components/extension/types.ts`
+- `plugins/text-editor-resources/src/components/extensions.ts`
+- `plugins/text-editor-resources/src/components/FullDescriptionBox.svelte`
+- `plugins/text-editor-resources/src/components/icons/Attach.svelte`
+- `plugins/text-editor-resources/src/components/icons/Description.svelte`
+- `plugins/text-editor-resources/src/components/icons/RIMention.svelte`
+- `plugins/text-editor-resources/src/components/icons/Send.svelte`
+- `plugins/text-editor-resources/src/components/icons/Table.svelte`
+- `plugins/text-editor-resources/src/components/icons/table/AddColAfter.svelte`
+- `plugins/text-editor-resources/src/components/icons/table/AddColBefore.svelte`
+- `plugins/text-editor-resources/src/components/icons/table/AddRowAfter.svelte`
+- `plugins/text-editor-resources/src/components/icons/table/AddRowBefore.svelte`
+- `plugins/text-editor-resources/src/components/icons/table/DeleteCol.svelte`
+- `plugins/text-editor-resources/src/components/icons/table/DeleteRow.svelte`
+- `plugins/text-editor-resources/src/components/icons/table/DeleteTable.svelte`
+- `plugins/text-editor-resources/src/components/icons/table/Duplicate.svelte`
+- `plugins/text-editor-resources/src/components/InlineCommandsList.svelte`
+- `plugins/text-editor-resources/src/components/LinkPopup.svelte`
+- `plugins/text-editor-resources/src/components/MarkupDiffViewer.svelte`
+- `plugins/text-editor-resources/src/components/MentionList.svelte`
+- `plugins/text-editor-resources/src/components/MentionPopup.svelte`
+- `plugins/text-editor-resources/src/components/node-view/context.ts`
+- `plugins/text-editor-resources/src/components/node-view/index.ts`
+- `plugins/text-editor-resources/src/components/node-view/NodeViewContent.svelte`
+- `plugins/text-editor-resources/src/components/node-view/NodeViewWrapper.svelte`
+- `plugins/text-editor-resources/src/components/node-view/svelte-node-view-renderer.ts`
+- `plugins/text-editor-resources/src/components/node-view/svelte-renderer.ts`
+- `plugins/text-editor-resources/src/components/note/ConfigureNotePopup.svelte`
+- `plugins/text-editor-resources/src/components/note/DisplayNotePopup.svelte`
+- `plugins/text-editor-resources/src/components/ReferenceInput.svelte`
+- `plugins/text-editor-resources/src/components/StringDiffViewer.svelte`
+- `plugins/text-editor-resources/src/components/StyledTextArea.svelte`
+- `plugins/text-editor-resources/src/components/StyledTextBox.svelte`
+- `plugins/text-editor-resources/src/components/StyledTextEditor.svelte`
+- `plugins/text-editor-resources/src/components/TextActionButton.svelte`
+- `plugins/text-editor-resources/src/components/TextEditor.svelte`
+- `plugins/text-editor-resources/src/components/toc/TableOfContents.svelte`
+- `plugins/text-editor-resources/src/components/toc/TableOfContentsContent.svelte`
+- `plugins/text-editor-resources/src/components/toc/TableOfContentsPopup.svelte`
+- `plugins/text-editor-resources/src/index.ts`
+- `plugins/text-editor-resources/src/kits/editor-kit.ts`
+- `plugins/text-editor-resources/src/plugin.ts`
+- `plugins/text-editor-resources/src/provider/hocuspocus.ts`
+- `plugins/text-editor-resources/src/provider/types.ts`
+- `plugins/text-editor-resources/src/provider/utils.test.ts`
+- `plugins/text-editor-resources/src/provider/utils.ts`
+- `plugins/text-editor-resources/src/utils.ts`
+- `plugins/text-editor-resources/svelte.config.js`
+- `plugins/text-editor-resources/tsconfig.json`
+- `plugins/text-editor/.eslintrc.js`
+- `plugins/text-editor/.npmignore`
+- `plugins/text-editor/config/rig.json`
+- `plugins/text-editor/jest.config.js`
+- `plugins/text-editor/package.json`
+- `plugins/text-editor/src/index.ts`
+- `plugins/text-editor/src/plugin.ts`
+- `plugins/text-editor/src/types.ts`
+- `plugins/text-editor/tsconfig.json`
+- `plugins/time-assets/.eslintrc.js`
+- `plugins/time-assets/assets/icons.svg`
+- `plugins/time-assets/config/rig.json`
+- `plugins/time-assets/jest.config.js`
+- `plugins/time-assets/lang/cs.json`
+- `plugins/time-assets/lang/de.json`
+- `plugins/time-assets/lang/en.json`
+- `plugins/time-assets/lang/es.json`
+- `plugins/time-assets/lang/fr.json`
+- `plugins/time-assets/lang/it.json`
+- `plugins/time-assets/lang/ja.json`
+- `plugins/time-assets/lang/ko.json`
+- `plugins/time-assets/lang/pt-br.json`
+- `plugins/time-assets/lang/pt.json`
+- `plugins/time-assets/lang/ru.json`
+- `plugins/time-assets/lang/tr.json`
+- `plugins/time-assets/lang/zh.json`
+- `plugins/time-assets/package.json`
+- `plugins/time-assets/src/__tests__/lang.test.ts`
+- `plugins/time-assets/src/index.ts`
+- `plugins/time-assets/tsconfig.json`
+- `plugins/time-resources/.eslintrc.js`
+- `plugins/time-resources/.prettierrc`
+- `plugins/time-resources/config/rig.json`
+- `plugins/time-resources/jest.config.js`
+- `plugins/time-resources/package.json`
+- `plugins/time-resources/postcss.config.js`
+- `plugins/time-resources/src/components/Border.svelte`
+- `plugins/time-resources/src/components/CreateToDo.svelte`
+- `plugins/time-resources/src/components/CreateToDoPopup.svelte`
+- `plugins/time-resources/src/components/DueDateEditor.svelte`
+- `plugins/time-resources/src/components/EditToDo.svelte`
+- `plugins/time-resources/src/components/EditWorkSlot.svelte`
+- `plugins/time-resources/src/components/Header.svelte`
+- `plugins/time-resources/src/components/icons/Priority.svelte`
+- `plugins/time-resources/src/components/icons/Sun.svelte`
+- `plugins/time-resources/src/components/Me.svelte`
+- `plugins/time-resources/src/components/NotificationToDoPresenter.svelte`
+- `plugins/time-resources/src/components/PlanningCalendar.svelte`
+- `plugins/time-resources/src/components/PlanView.svelte`
+- `plugins/time-resources/src/components/presenters/ApplicantPresenter.svelte`
+- `plugins/time-resources/src/components/presenters/CardPresenter.svelte`
+- `plugins/time-resources/src/components/presenters/DocumentPresenter.svelte`
+- `plugins/time-resources/src/components/presenters/IssuePresenter.svelte`
+- `plugins/time-resources/src/components/presenters/LeadPresenter.svelte`
+- `plugins/time-resources/src/components/presenters/TimePresenter.svelte`
+- `plugins/time-resources/src/components/PriorityEditor.svelte`
+- `plugins/time-resources/src/components/TaskSelector.svelte`
+- `plugins/time-resources/src/components/team/agenda/Agenda.svelte`
+- `plugins/time-resources/src/components/team/agenda/DayPlan.svelte`
+- `plugins/time-resources/src/components/team/agenda/EventItem.svelte`
+- `plugins/time-resources/src/components/team/agenda/PlanGroup.svelte`
+- `plugins/time-resources/src/components/team/agenda/PlanItem.svelte`
+- `plugins/time-resources/src/components/team/agenda/PlanPerson.svelte`
+- `plugins/time-resources/src/components/team/calendar/Calendar.svelte`
+- `plugins/time-resources/src/components/team/calendar/EventElement.svelte`
+- `plugins/time-resources/src/components/team/calendar/PersonCalendar.svelte`
+- `plugins/time-resources/src/components/team/calendar/TeamCalendar.svelte`
+- `plugins/time-resources/src/components/team/calendar/TeamCalendarDay.svelte`
+- `plugins/time-resources/src/components/team/calendar/TxPanel.svelte`
+- `plugins/time-resources/src/components/team/Team.svelte`
+- `plugins/time-resources/src/components/team/TeamNavigator.svelte`
+- `plugins/time-resources/src/components/team/utils.ts`
+- `plugins/time-resources/src/components/team/WithTeamData.svelte`
+- `plugins/time-resources/src/components/ToDoCheckbox.svelte`
+- `plugins/time-resources/src/components/ToDoDraggable.svelte`
+- `plugins/time-resources/src/components/ToDoDuration.svelte`
+- `plugins/time-resources/src/components/ToDoElement.svelte`
+- `plugins/time-resources/src/components/ToDoGroup.svelte`
+- `plugins/time-resources/src/components/ToDoPresenter.svelte`
+- `plugins/time-resources/src/components/ToDoPriorityPresenter.svelte`
+- `plugins/time-resources/src/components/ToDoProjectGroup.svelte`
+- `plugins/time-resources/src/components/ToDos.svelte`
+- `plugins/time-resources/src/components/ToDosNavigator.svelte`
+- `plugins/time-resources/src/components/TodoWorkslots.svelte`
+- `plugins/time-resources/src/components/WorkItemPresenter.svelte`
+- `plugins/time-resources/src/components/WorkSlotElement.svelte`
+- `plugins/time-resources/src/components/Workslots.svelte`
+- `plugins/time-resources/src/dragging.ts`
+- `plugins/time-resources/src/index.ts`
+- `plugins/time-resources/src/plugin.ts`
+- `plugins/time-resources/src/types.ts`
+- `plugins/time-resources/src/utils.ts`
+- `plugins/time-resources/svelte.config.js`
+- `plugins/time-resources/tsconfig.json`
+- `plugins/time/.eslintrc.js`
+- `plugins/time/.npmignore`
+- `plugins/time/config/rig.json`
+- `plugins/time/jest.config.js`
+- `plugins/time/package.json`
+- `plugins/time/src/analytics.ts`
+- `plugins/time/src/index.ts`
+- `plugins/time/tsconfig.json`
+- `plugins/tracker-assets/.eslintrc.js`
+- `plugins/tracker-assets/assets/icons.svg`
+- `plugins/tracker-assets/config/rig.json`
+- `plugins/tracker-assets/jest.config.js`
+- `plugins/tracker-assets/lang/cs.json`
+- `plugins/tracker-assets/lang/de.json`
+- `plugins/tracker-assets/lang/en.json`
+- `plugins/tracker-assets/lang/es.json`
+- `plugins/tracker-assets/lang/fr.json`
+- `plugins/tracker-assets/lang/it.json`
+- `plugins/tracker-assets/lang/ja.json`
+- `plugins/tracker-assets/lang/ko.json`
+- `plugins/tracker-assets/lang/pt-br.json`
+- `plugins/tracker-assets/lang/pt.json`
+- `plugins/tracker-assets/lang/ru.json`
+- `plugins/tracker-assets/lang/tr.json`
+- `plugins/tracker-assets/lang/zh.json`
+- `plugins/tracker-assets/package.json`
+- `plugins/tracker-assets/src/__tests__/lang.test.ts`
+- `plugins/tracker-assets/src/index.ts`
+- `plugins/tracker-assets/tsconfig.json`
+- `plugins/tracker-resources/.eslintrc.js`
+- `plugins/tracker-resources/.prettierrc`
+- `plugins/tracker-resources/config/rig.json`
+- `plugins/tracker-resources/img/avatar.png`
+- `plugins/tracker-resources/img/voltron.png`
+- `plugins/tracker-resources/jest.config.js`
+- `plugins/tracker-resources/package.json`
+- `plugins/tracker-resources/postcss.config.js`
+- `plugins/tracker-resources/src/component.ts`
+- `plugins/tracker-resources/src/components/activity/PriorityIcon.svelte`
+- `plugins/tracker-resources/src/components/activity/StatusIcon.svelte`
+- `plugins/tracker-resources/src/components/components/ComponentBrowser.svelte`
+- `plugins/tracker-resources/src/components/components/ComponentEditor.svelte`
+- `plugins/tracker-resources/src/components/components/ComponentFilterValuePresenter.svelte`
+- `plugins/tracker-resources/src/components/components/ComponentPresenter.svelte`
+- `plugins/tracker-resources/src/components/components/ComponentRefPresenter.svelte`
+- `plugins/tracker-resources/src/components/components/Components.svelte`
+- `plugins/tracker-resources/src/components/components/ComponentsContent.svelte`
+- `plugins/tracker-resources/src/components/components/ComponentSelector.svelte`
+- `plugins/tracker-resources/src/components/components/ComponentTitlePresenter.svelte`
+- `plugins/tracker-resources/src/components/components/DeleteComponentPresenter.svelte`
+- `plugins/tracker-resources/src/components/components/EditComponent.svelte`
+- `plugins/tracker-resources/src/components/components/IconComponent.svelte`
+- `plugins/tracker-resources/src/components/components/LeadPopup.svelte`
+- `plugins/tracker-resources/src/components/components/LeadPresenter.svelte`
+- `plugins/tracker-resources/src/components/components/NewComponent.svelte`
+- `plugins/tracker-resources/src/components/components/ProjectComponents.svelte`
+- `plugins/tracker-resources/src/components/CreateIssue.svelte`
+- `plugins/tracker-resources/src/components/EditRelatedTargets.svelte`
+- `plugins/tracker-resources/src/components/EditRelatedTargetsPopup.svelte`
+- `plugins/tracker-resources/src/components/icons/Collapsed.svelte`
+- `plugins/tracker-resources/src/components/icons/Expanded.svelte`
+- `plugins/tracker-resources/src/components/issues/AssigneeEditor.svelte`
+- `plugins/tracker-resources/src/components/issues/DueDateEditor.svelte`
+- `plugins/tracker-resources/src/components/issues/DueDatePresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/Duration.svelte`
+- `plugins/tracker-resources/src/components/issues/edit/ControlPanel.svelte`
+- `plugins/tracker-resources/src/components/issues/edit/CopyToClipboard.svelte`
+- `plugins/tracker-resources/src/components/issues/edit/CopyToClipboardButton.svelte`
+- `plugins/tracker-resources/src/components/issues/edit/EditIssue.svelte`
+- `plugins/tracker-resources/src/components/issues/edit/QueryIssuesList.svelte`
+- `plugins/tracker-resources/src/components/issues/edit/SubIssueList.svelte`
+- `plugins/tracker-resources/src/components/issues/edit/SubIssues.svelte`
+- `plugins/tracker-resources/src/components/issues/edit/SubIssueSelector.svelte`
+- `plugins/tracker-resources/src/components/issues/edit/SubIssuesSelector.svelte`
+- `plugins/tracker-resources/src/components/issues/IssueExtra.svelte`
+- `plugins/tracker-resources/src/components/issues/IssueItem.svelte`
+- `plugins/tracker-resources/src/components/issues/IssueNotification.svelte`
+- `plugins/tracker-resources/src/components/issues/IssuePresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/IssuePreview.svelte`
+- `plugins/tracker-resources/src/components/issues/Issues.svelte`
+- `plugins/tracker-resources/src/components/issues/IssueSearchIcon.svelte`
+- `plugins/tracker-resources/src/components/issues/IssueStatusActivity.svelte`
+- `plugins/tracker-resources/src/components/issues/IssueStatusIcon.svelte`
+- `plugins/tracker-resources/src/components/issues/IssueStatusPresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/IssuesView.svelte`
+- `plugins/tracker-resources/src/components/issues/KanbanView.svelte`
+- `plugins/tracker-resources/src/components/issues/ModificationDatePresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/Move.svelte`
+- `plugins/tracker-resources/src/components/issues/move/ComponentMovePresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/move/ComponentReplacementPopup.svelte`
+- `plugins/tracker-resources/src/components/issues/move/SelectReplacement.svelte`
+- `plugins/tracker-resources/src/components/issues/NotificationIssuePresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/ParentIssue.svelte`
+- `plugins/tracker-resources/src/components/issues/ParentNamesPresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/PriorityEditor.svelte`
+- `plugins/tracker-resources/src/components/issues/PriorityFilterValuePresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/PriorityIconPresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/PriorityInlineEditor.svelte`
+- `plugins/tracker-resources/src/components/issues/PriorityPresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/PriorityRefPresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/related/RelatedIssuePopup.svelte`
+- `plugins/tracker-resources/src/components/issues/related/RelatedIssuePresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/related/RelatedIssues.svelte`
+- `plugins/tracker-resources/src/components/issues/related/RelatedIssueSelector.svelte`
+- `plugins/tracker-resources/src/components/issues/related/RelatedIssuesSection.svelte`
+- `plugins/tracker-resources/src/components/issues/related/RelatedIssueTemplates.svelte`
+- `plugins/tracker-resources/src/components/issues/RelationEditor.svelte`
+- `plugins/tracker-resources/src/components/issues/RelationEditorPart.svelte`
+- `plugins/tracker-resources/src/components/issues/StatusEditor.svelte`
+- `plugins/tracker-resources/src/components/issues/StatusFilterValuePresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/StatusPresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/StatusRefPresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/StatusSelector.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/EstimationEditor.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/EstimationPopup.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/EstimationProgressCircle.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/EstimationStatsPresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/EstimationSubIssueList.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/EstimationValueEditor.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/ReportedTimeEditor.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/ReportsPopup.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/SubIssuesEstimations.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/TimePresenter.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/TimeReportDayDropdown.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/TimeReportDayIcon.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/TimeSpendReport.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/TimeSpendReportPopup.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/TimeSpendReports.svelte`
+- `plugins/tracker-resources/src/components/issues/timereport/TimeSpendReportsList.svelte`
+- `plugins/tracker-resources/src/components/issues/TitlePresenter.svelte`
+- `plugins/tracker-resources/src/components/LabelsView.svelte`
+- `plugins/tracker-resources/src/components/milestones/EditMilestone.svelte`
+- `plugins/tracker-resources/src/components/milestones/IssueStatistics.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestoneBrowser.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestoneContent.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestoneDatePresenter.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestoneEditor.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestoneFilter.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestonePopup.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestonePresenter.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestoneRefPresenter.svelte`
+- `plugins/tracker-resources/src/components/milestones/Milestones.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestoneSelector.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestoneStatusEditor.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestoneStatusIcon.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestoneStatusPresenter.svelte`
+- `plugins/tracker-resources/src/components/milestones/MilestoneTitlePresenter.svelte`
+- `plugins/tracker-resources/src/components/milestones/MoveAndDeleteMilestonePopup.svelte`
+- `plugins/tracker-resources/src/components/milestones/NewMilestone.svelte`
+- `plugins/tracker-resources/src/components/myissues/MyIssues.svelte`
+- `plugins/tracker-resources/src/components/NewIssueHeader.svelte`
+- `plugins/tracker-resources/src/components/NopeComponent.svelte`
+- `plugins/tracker-resources/src/components/projects/CreateProject.svelte`
+- `plugins/tracker-resources/src/components/projects/MembersArrayEditor.svelte`
+- `plugins/tracker-resources/src/components/projects/ProjectFilterValuePresenter.svelte`
+- `plugins/tracker-resources/src/components/projects/ProjectPresenter.svelte`
+- `plugins/tracker-resources/src/components/projects/ProjectSpacePresenter.svelte`
+- `plugins/tracker-resources/src/components/RelationsPopup.svelte`
+- `plugins/tracker-resources/src/components/SetDueDateActionPopup.svelte`
+- `plugins/tracker-resources/src/components/SetParentIssueActionPopup.svelte`
+- `plugins/tracker-resources/src/components/SettingsRelatedTargets.svelte`
+- `plugins/tracker-resources/src/components/SubIssues.svelte`
+- `plugins/tracker-resources/src/components/templates/CreateIssueTemplate.svelte`
+- `plugins/tracker-resources/src/components/templates/DraftIssueChildEditor.svelte`
+- `plugins/tracker-resources/src/components/templates/DraftIssueChildList.svelte`
+- `plugins/tracker-resources/src/components/templates/EditIssueTemplate.svelte`
+- `plugins/tracker-resources/src/components/templates/EstimationEditor.svelte`
+- `plugins/tracker-resources/src/components/templates/IssueTemplateChildEditor.svelte`
+- `plugins/tracker-resources/src/components/templates/IssueTemplateChildList.svelte`
+- `plugins/tracker-resources/src/components/templates/IssueTemplateChilds.svelte`
+- `plugins/tracker-resources/src/components/templates/IssueTemplatePresenter.svelte`
+- `plugins/tracker-resources/src/components/templates/IssueTemplates.svelte`
+- `plugins/tracker-resources/src/components/templates/IssueTemplatesContent.svelte`
+- `plugins/tracker-resources/src/components/templates/IssueTemplatesView.svelte`
+- `plugins/tracker-resources/src/components/templates/TemplateControlPanel.svelte`
+- `plugins/tracker-resources/src/index.ts`
+- `plugins/tracker-resources/src/issues.ts`
+- `plugins/tracker-resources/src/issueTableFormatter.ts`
+- `plugins/tracker-resources/src/plugin.ts`
+- `plugins/tracker-resources/src/types.ts`
+- `plugins/tracker-resources/src/utils.ts`
+- `plugins/tracker-resources/svelte.config.js`
+- `plugins/tracker-resources/tsconfig.json`
+- `plugins/tracker/.eslintrc.js`
+- `plugins/tracker/.npmignore`
+- `plugins/tracker/config/rig.json`
+- `plugins/tracker/jest.config.js`
+- `plugins/tracker/package.json`
+- `plugins/tracker/src/analytics.ts`
+- `plugins/tracker/src/index.ts`
+- `plugins/tracker/tsconfig.json`
+- `plugins/training-assets/.eslintrc.js`
+- `plugins/training-assets/assets/icons.svg`
+- `plugins/training-assets/config/rig.json`
+- `plugins/training-assets/jest.config.js`
+- `plugins/training-assets/lang/cs.json`
+- `plugins/training-assets/lang/de.json`
+- `plugins/training-assets/lang/en.json`
+- `plugins/training-assets/lang/es.json`
+- `plugins/training-assets/lang/fr.json`
+- `plugins/training-assets/lang/it.json`
+- `plugins/training-assets/lang/ja.json`
+- `plugins/training-assets/lang/ko.json`
+- `plugins/training-assets/lang/pt-br.json`
+- `plugins/training-assets/lang/pt.json`
+- `plugins/training-assets/lang/ru.json`
+- `plugins/training-assets/lang/tr.json`
+- `plugins/training-assets/lang/zh.json`
+- `plugins/training-assets/package.json`
+- `plugins/training-assets/src/__tests__/lang.test.ts`
+- `plugins/training-assets/src/index.ts`
+- `plugins/training-assets/tsconfig.json`
+- `plugins/training-resources/.eslintrc.js`
+- `plugins/training-resources/.prettierrc`
+- `plugins/training-resources/config/rig.json`
+- `plugins/training-resources/jest.config.js`
+- `plugins/training-resources/package.json`
+- `plugins/training-resources/postcss.config.js`
+- `plugins/training-resources/src/actions/trainingChangeOwnerAction.ts`
+- `plugins/training-resources/src/actions/trainingDeleteAction.ts`
+- `plugins/training-resources/src/actions/trainingDraftAction.ts`
+- `plugins/training-resources/src/actions/trainingDuplicateAction.ts`
+- `plugins/training-resources/src/actions/trainingReleaseAction.ts`
+- `plugins/training-resources/src/actions/trainingRequestCancelAction.ts`
+- `plugins/training-resources/src/actions/trainingRequestChangeOwnerAction.ts`
+- `plugins/training-resources/src/actions/trainingRequestCreateAction.ts`
+- `plugins/training-resources/src/components/DocumentPresenter.svelte`
+- `plugins/training-resources/src/components/EmployeeEditor.svelte`
+- `plugins/training-resources/src/components/IncomingRequestAttemptsPresenter.svelte`
+- `plugins/training-resources/src/components/IncomingRequestPresenter.svelte`
+- `plugins/training-resources/src/components/IncomingRequestStatePresenter.svelte`
+- `plugins/training-resources/src/components/NestedSpecialView.svelte`
+- `plugins/training-resources/src/components/NullablePositiveNumberEditor.svelte`
+- `plugins/training-resources/src/components/PanelBody.svelte`
+- `plugins/training-resources/src/components/PanelTitle.svelte`
+- `plugins/training-resources/src/components/Score.svelte`
+- `plugins/training-resources/src/components/SentRequestCompletionPopup.svelte`
+- `plugins/training-resources/src/components/SentRequestCompletionPresenter.svelte`
+- `plugins/training-resources/src/components/SentRequestPresenter.svelte`
+- `plugins/training-resources/src/components/SentRequestStatePresenter.svelte`
+- `plugins/training-resources/src/components/Settings.svelte`
+- `plugins/training-resources/src/components/TrainingAttemptNumberPresenter.svelte`
+- `plugins/training-resources/src/components/TrainingAttemptPanel.svelte`
+- `plugins/training-resources/src/components/TrainingAttemptPanelQuestions.svelte`
+- `plugins/training-resources/src/components/TrainingAttemptPresenter.svelte`
+- `plugins/training-resources/src/components/TrainingAttemptScorePresenter.svelte`
+- `plugins/training-resources/src/components/TrainingAttemptStateFilterPresenter.svelte`
+- `plugins/training-resources/src/components/TrainingAttemptStatePresenter.svelte`
+- `plugins/training-resources/src/components/TrainingAttributes.svelte`
+- `plugins/training-resources/src/components/TrainingChangeOwnerPopup.svelte`
+- `plugins/training-resources/src/components/TrainingCodePresenter.svelte`
+- `plugins/training-resources/src/components/TrainingCreator.svelte`
+- `plugins/training-resources/src/components/TrainingNotification.svelte`
+- `plugins/training-resources/src/components/TrainingPanel.svelte`
+- `plugins/training-resources/src/components/TrainingPanelIncomingRequests.svelte`
+- `plugins/training-resources/src/components/TrainingPanelMyResults.svelte`
+- `plugins/training-resources/src/components/TrainingPanelOverview.svelte`
+- `plugins/training-resources/src/components/TrainingPanelQuestions.svelte`
+- `plugins/training-resources/src/components/TrainingPanelSentRequests.svelte`
+- `plugins/training-resources/src/components/TrainingPanelTraineesResults.svelte`
+- `plugins/training-resources/src/components/TrainingPassingScorePresenter.svelte`
+- `plugins/training-resources/src/components/TrainingPassingScoreSlider.svelte`
+- `plugins/training-resources/src/components/TrainingPresenter.svelte`
+- `plugins/training-resources/src/components/TrainingRefEditor.svelte`
+- `plugins/training-resources/src/components/TrainingRefEditorPopup.svelte`
+- `plugins/training-resources/src/components/TrainingRequestAttributes.svelte`
+- `plugins/training-resources/src/components/TrainingRequestChangeOwnerPopup.svelte`
+- `plugins/training-resources/src/components/TrainingRequestCreator.svelte`
+- `plugins/training-resources/src/components/TrainingRequestDueDateEditor.svelte`
+- `plugins/training-resources/src/components/TrainingRequestMaxAttemptsEditor.svelte`
+- `plugins/training-resources/src/components/TrainingRequestMaxAttemptsPresenter.svelte`
+- `plugins/training-resources/src/components/TrainingRequestNotificationPresenter.svelte`
+- `plugins/training-resources/src/components/TrainingRequestPanel.svelte`
+- `plugins/training-resources/src/components/TrainingRequestPanelMyResults.svelte`
+- `plugins/training-resources/src/components/TrainingRequestPanelTraineesResults.svelte`
+- `plugins/training-resources/src/components/TrainingRequestRolesEditor.svelte`
+- `plugins/training-resources/src/components/TrainingRequestRolesEditorPopup.svelte`
+- `plugins/training-resources/src/components/TrainingRequestTraineesEditor.svelte`
+- `plugins/training-resources/src/components/TrainingRevisionPresenter.svelte`
+- `plugins/training-resources/src/components/TrainingStateFilterPresenter.svelte`
+- `plugins/training-resources/src/components/TrainingStatePresenter.svelte`
+- `plugins/training-resources/src/components/TrainingTitlePresenter.svelte`
+- `plugins/training-resources/src/components/ViewAllTrainings.svelte`
+- `plugins/training-resources/src/components/ViewIncomingRequests.svelte`
+- `plugins/training-resources/src/components/ViewMyResults.svelte`
+- `plugins/training-resources/src/components/ViewMyTrainings.svelte`
+- `plugins/training-resources/src/components/ViewSentRequests.svelte`
+- `plugins/training-resources/src/components/ViewTraineesResults.svelte`
+- `plugins/training-resources/src/functions/trainingAttemptLinkProviderEncode.ts`
+- `plugins/training-resources/src/functions/trainingAttemptStateAllValues.ts`
+- `plugins/training-resources/src/functions/trainingAttemptStateSort.ts`
+- `plugins/training-resources/src/functions/trainingLinkProviderEncode.ts`
+- `plugins/training-resources/src/functions/trainingRequestLinkProviderEncode.ts`
+- `plugins/training-resources/src/functions/trainingRequestObjectTitleProvider.ts`
+- `plugins/training-resources/src/functions/trainingStateAllValues.ts`
+- `plugins/training-resources/src/functions/trainingStateSort.ts`
+- `plugins/training-resources/src/index.ts`
+- `plugins/training-resources/src/plugin.ts`
+- `plugins/training-resources/src/routing/resolveLocation.ts`
+- `plugins/training-resources/src/routing/routes/allTrainingsRoute.ts`
+- `plugins/training-resources/src/routing/routes/documentRoute.ts`
+- `plugins/training-resources/src/routing/routes/incomingRequestsRoute.ts`
+- `plugins/training-resources/src/routing/routes/myResultsRoute.ts`
+- `plugins/training-resources/src/routing/routes/myTrainingsRoute.ts`
+- `plugins/training-resources/src/routing/routes/sentRequestsRoute.ts`
+- `plugins/training-resources/src/routing/routes/traineesResultsRoute.ts`
+- `plugins/training-resources/src/routing/routes/trainingAttemptRoute.ts`
+- `plugins/training-resources/src/routing/routes/trainingRequestRoute.ts`
+- `plugins/training-resources/src/routing/routes/trainingRoute.ts`
+- `plugins/training-resources/src/routing/utils/getPanelFragment.ts`
+- `plugins/training-resources/src/routing/utils/Route.ts`
+- `plugins/training-resources/src/routing/utils/TriainingRoutingParts.ts`
+- `plugins/training-resources/src/utils/canCancelTrainingRequest.ts`
+- `plugins/training-resources/src/utils/canChangeTrainingOwner.ts`
+- `plugins/training-resources/src/utils/canChangeTrainingRequestOwner.ts`
+- `plugins/training-resources/src/utils/canCreateTraining.ts`
+- `plugins/training-resources/src/utils/canCreateTrainingAttempt.ts`
+- `plugins/training-resources/src/utils/canCreateTrainingRequest.ts`
+- `plugins/training-resources/src/utils/canDeleteTraining.ts`
+- `plugins/training-resources/src/utils/canReleaseTraining.ts`
+- `plugins/training-resources/src/utils/canUpdateTrainingAttempt.ts`
+- `plugins/training-resources/src/utils/canUpdateTrainingOverview.ts`
+- `plugins/training-resources/src/utils/canUpdateTrainingQuestions.ts`
+- `plugins/training-resources/src/utils/canUpdateTrainingRequest.ts`
+- `plugins/training-resources/src/utils/canViewTraining.ts`
+- `plugins/training-resources/src/utils/canViewTrainingAttempt.ts`
+- `plugins/training-resources/src/utils/canViewTrainingIncomingRequests.ts`
+- `plugins/training-resources/src/utils/canViewTrainingMyResults.ts`
+- `plugins/training-resources/src/utils/canViewTrainingOverview.ts`
+- `plugins/training-resources/src/utils/canViewTrainingQuestsions.ts`
+- `plugins/training-resources/src/utils/canViewTrainingRequest.ts`
+- `plugins/training-resources/src/utils/canViewTrainingSentRequests.ts`
+- `plugins/training-resources/src/utils/canViewTrainingTraineesResults.ts`
+- `plugins/training-resources/src/utils/changeTrainingOwner.ts`
+- `plugins/training-resources/src/utils/changeTrainingRequestOwner.ts`
+- `plugins/training-resources/src/utils/CompletionMap.ts`
+- `plugins/training-resources/src/utils/copyTrainingAttachments.ts`
+- `plugins/training-resources/src/utils/copyTrainingQuestions.ts`
+- `plugins/training-resources/src/utils/createTraining.ts`
+- `plugins/training-resources/src/utils/createTrainingAttempt.ts`
+- `plugins/training-resources/src/utils/createTrainingRequest.ts`
+- `plugins/training-resources/src/utils/getCurrentEmployeeRef.ts`
+- `plugins/training-resources/src/utils/getNextTrainingSeqNumber.ts`
+- `plugins/training-resources/src/utils/index.ts`
+- `plugins/training-resources/src/utils/queryLatestOwnAttempt.ts`
+- `plugins/training-resources/src/utils/submitTrainingAttempt.ts`
+- `plugins/training-resources/svelte.config.js`
+- `plugins/training-resources/tsconfig.json`
+- `plugins/training/.eslintrc.js`
+- `plugins/training/config/rig.json`
+- `plugins/training/jest.config.js`
+- `plugins/training/package.json`
+- `plugins/training/src/index.ts`
+- `plugins/training/src/types.ts`
+- `plugins/training/tsconfig.json`
+- `plugins/uploader-assets/.eslintrc.js`
+- `plugins/uploader-assets/assets/icons.svg`
+- `plugins/uploader-assets/config/rig.json`
+- `plugins/uploader-assets/jest.config.js`
+- `plugins/uploader-assets/lang/cs.json`
+- `plugins/uploader-assets/lang/de.json`
+- `plugins/uploader-assets/lang/en.json`
+- `plugins/uploader-assets/lang/es.json`
+- `plugins/uploader-assets/lang/fr.json`
+- `plugins/uploader-assets/lang/it.json`
+- `plugins/uploader-assets/lang/ja.json`
+- `plugins/uploader-assets/lang/ko.json`
+- `plugins/uploader-assets/lang/pt-br.json`
+- `plugins/uploader-assets/lang/pt.json`
+- `plugins/uploader-assets/lang/ru.json`
+- `plugins/uploader-assets/lang/tr.json`
+- `plugins/uploader-assets/lang/zh.json`
+- `plugins/uploader-assets/package.json`
+- `plugins/uploader-assets/src/__tests__/lang.test.ts`
+- `plugins/uploader-assets/src/index.ts`
+- `plugins/uploader-assets/tsconfig.json`
+- `plugins/uploader-resources/.eslintrc.js`
+- `plugins/uploader-resources/.prettierrc`
+- `plugins/uploader-resources/config/rig.json`
+- `plugins/uploader-resources/jest.config.js`
+- `plugins/uploader-resources/package.json`
+- `plugins/uploader-resources/postcss.config.js`
+- `plugins/uploader-resources/src/components/FileUploadExt.svelte`
+- `plugins/uploader-resources/src/components/FileUploadStatusBar.svelte`
+- `plugins/uploader-resources/src/components/FileUploadStatusPopup.svelte`
+- `plugins/uploader-resources/src/components/icons/Completed.svelte`
+- `plugins/uploader-resources/src/components/icons/Error.svelte`
+- `plugins/uploader-resources/src/components/icons/Retry.svelte`
+- `plugins/uploader-resources/src/components/WorkbenchExtension.svelte`
+- `plugins/uploader-resources/src/index.ts`
+- `plugins/uploader-resources/src/plugin.ts`
+- `plugins/uploader-resources/src/store.ts`
+- `plugins/uploader-resources/src/utils.ts`
+- `plugins/uploader-resources/svelte.config.js`
+- `plugins/uploader-resources/tsconfig.json`
+- `plugins/uploader/.eslintrc.js`
+- `plugins/uploader/.npmignore`
+- `plugins/uploader/config/rig.json`
+- `plugins/uploader/jest.config.js`
+- `plugins/uploader/package.json`
+- `plugins/uploader/src/index.ts`
+- `plugins/uploader/src/plugin.ts`
+- `plugins/uploader/src/types.ts`
+- `plugins/uploader/src/utils.ts`
+- `plugins/uploader/tsconfig.json`
+- `plugins/view-assets/.eslintrc.js`
+- `plugins/view-assets/assets/icons.svg`
+- `plugins/view-assets/CHANGELOG.json`
+- `plugins/view-assets/CHANGELOG.md`
+- `plugins/view-assets/config/rig.json`
+- `plugins/view-assets/jest.config.js`
+- `plugins/view-assets/lang/cs.json`
+- `plugins/view-assets/lang/de.json`
+- `plugins/view-assets/lang/en.json`
+- `plugins/view-assets/lang/es.json`
+- `plugins/view-assets/lang/fr.json`
+- `plugins/view-assets/lang/it.json`
+- `plugins/view-assets/lang/ja.json`
+- `plugins/view-assets/lang/ko.json`
+- `plugins/view-assets/lang/pt-br.json`
+- `plugins/view-assets/lang/pt.json`
+- `plugins/view-assets/lang/ru.json`
+- `plugins/view-assets/lang/tr.json`
+- `plugins/view-assets/lang/zh.json`
+- `plugins/view-assets/package.json`
+- `plugins/view-assets/src/__tests__/lang.test.ts`
+- `plugins/view-assets/src/index.ts`
+- `plugins/view-assets/tsconfig.json`
+- `plugins/view-resources/.eslintrc.js`
+- `plugins/view-resources/.prettierrc`
+- `plugins/view-resources/CHANGELOG.json`
+- `plugins/view-resources/CHANGELOG.md`
+- `plugins/view-resources/config/rig.json`
+- `plugins/view-resources/jest.config.js`
+- `plugins/view-resources/package.json`
+- `plugins/view-resources/postcss.config.js`
+- `plugins/view-resources/src/__tests__/folderUtils.test.ts`
+- `plugins/view-resources/src/__tests__/objectIterator.test.ts`
+- `plugins/view-resources/src/actionImpl.ts`
+- `plugins/view-resources/src/actions.ts`
+- `plugins/view-resources/src/blob.ts`
+- `plugins/view-resources/src/components/ActionButton.svelte`
+- `plugins/view-resources/src/components/ActionHandler.svelte`
+- `plugins/view-resources/src/components/ActionsPopup.svelte`
+- `plugins/view-resources/src/components/ArrayEditor.svelte`
+- `plugins/view-resources/src/components/ArrayEditorPopup.svelte`
+- `plugins/view-resources/src/components/AssociationPresenter.svelte`
+- `plugins/view-resources/src/components/AttachedDocPanel.svelte`
+- `plugins/view-resources/src/components/BaseDocPresenter.svelte`
+- `plugins/view-resources/src/components/BooleanEditor.svelte`
+- `plugins/view-resources/src/components/BooleanEditorPopup.svelte`
+- `plugins/view-resources/src/components/BooleanPresenter.svelte`
+- `plugins/view-resources/src/components/BooleanTruePresenter.svelte`
+- `plugins/view-resources/src/components/ClassAttributeBar.svelte`
+- `plugins/view-resources/src/components/ClassPresenter.svelte`
+- `plugins/view-resources/src/components/ClassRefPresenter.svelte`
+- `plugins/view-resources/src/components/CollaborativeDocEditor.svelte`
+- `plugins/view-resources/src/components/CollaborativeHTMLEditor.svelte`
+- `plugins/view-resources/src/components/ColorsPopup.svelte`
+- `plugins/view-resources/src/components/DateEditor.svelte`
+- `plugins/view-resources/src/components/DatePresenter.svelte`
+- `plugins/view-resources/src/components/DateTimePresenter.svelte`
+- `plugins/view-resources/src/components/DocAttributeBar.svelte`
+- `plugins/view-resources/src/components/DocNavLink.svelte`
+- `plugins/view-resources/src/components/DocReferencePresenter.svelte`
+- `plugins/view-resources/src/components/DocsNavigator.svelte`
+- `plugins/view-resources/src/components/DocTable.svelte`
+- `plugins/view-resources/src/components/EditBoxPopup.svelte`
+- `plugins/view-resources/src/components/EditDoc.svelte`
+- `plugins/view-resources/src/components/EnumArrayEditor.svelte`
+- `plugins/view-resources/src/components/EnumEditor.svelte`
+- `plugins/view-resources/src/components/EnumPresenter.svelte`
+- `plugins/view-resources/src/components/FileSizePresenter.svelte`
+- `plugins/view-resources/src/components/filter/ArrayFilter.svelte`
+- `plugins/view-resources/src/components/filter/DateFilter.svelte`
+- `plugins/view-resources/src/components/filter/DateFilterPresenter.svelte`
+- `plugins/view-resources/src/components/filter/DatePresenter.svelte`
+- `plugins/view-resources/src/components/filter/FilterBar.svelte`
+- `plugins/view-resources/src/components/filter/FilterButton.svelte`
+- `plugins/view-resources/src/components/filter/FilterRemovedNotification.svelte`
+- `plugins/view-resources/src/components/filter/FilterSave.svelte`
+- `plugins/view-resources/src/components/filter/FilterSection.svelte`
+- `plugins/view-resources/src/components/filter/FilterTypePopup.svelte`
+- `plugins/view-resources/src/components/filter/ModeSelector.svelte`
+- `plugins/view-resources/src/components/filter/ObjectFilter.svelte`
+- `plugins/view-resources/src/components/filter/PersonIdFilter.svelte`
+- `plugins/view-resources/src/components/filter/PersonIdFilterValuePresenter.svelte`
+- `plugins/view-resources/src/components/filter/StringFilter.svelte`
+- `plugins/view-resources/src/components/filter/StringFilterPresenter.svelte`
+- `plugins/view-resources/src/components/filter/TimestampFilter.svelte`
+- `plugins/view-resources/src/components/filter/ValueFilter.svelte`
+- `plugins/view-resources/src/components/FixedColumn.svelte`
+- `plugins/view-resources/src/components/folders/FoldersBrowser.svelte`
+- `plugins/view-resources/src/components/folders/FolderTreeLevel.svelte`
+- `plugins/view-resources/src/components/folders/store/folderStore.ts`
+- `plugins/view-resources/src/components/folders/store/folderUtils.ts`
+- `plugins/view-resources/src/components/ForbiddenNotification.svelte`
+- `plugins/view-resources/src/components/HTMLEditor.svelte`
+- `plugins/view-resources/src/components/HTMLPresenter.svelte`
+- `plugins/view-resources/src/components/HyperlinkEditor.svelte`
+- `plugins/view-resources/src/components/HyperlinkEditorPopup.svelte`
+- `plugins/view-resources/src/components/HyperlinkPresenter.svelte`
+- `plugins/view-resources/src/components/IconPicker.svelte`
+- `plugins/view-resources/src/components/icons/ChevronDown.svelte`
+- `plugins/view-resources/src/components/icons/ChevronUp.svelte`
+- `plugins/view-resources/src/components/icons/Close.svelte`
+- `plugins/view-resources/src/components/icons/Pause.svelte`
+- `plugins/view-resources/src/components/icons/Play.svelte`
+- `plugins/view-resources/src/components/icons/UpDown.svelte`
+- `plugins/view-resources/src/components/IdPresenter.svelte`
+- `plugins/view-resources/src/components/IntlStringPresenter.svelte`
+- `plugins/view-resources/src/components/LinkPresenter.svelte`
+- `plugins/view-resources/src/components/linkPresenters/GithubPresenter.svelte`
+- `plugins/view-resources/src/components/linkPresenters/YoutubePresenter.svelte`
+- `plugins/view-resources/src/components/list/DividerPresenter.svelte`
+- `plugins/view-resources/src/components/list/GrowPresenter.svelte`
+- `plugins/view-resources/src/components/list/List.svelte`
+- `plugins/view-resources/src/components/list/ListCategories.svelte`
+- `plugins/view-resources/src/components/list/ListCategory.svelte`
+- `plugins/view-resources/src/components/list/ListHeader.svelte`
+- `plugins/view-resources/src/components/list/ListItem.svelte`
+- `plugins/view-resources/src/components/list/ListPresenter.svelte`
+- `plugins/view-resources/src/components/list/ListView.svelte`
+- `plugins/view-resources/src/components/list/SortableDocList.svelte`
+- `plugins/view-resources/src/components/list/SortableList.svelte`
+- `plugins/view-resources/src/components/list/SortableListItem.svelte`
+- `plugins/view-resources/src/components/MarkupDiffPresenter.svelte`
+- `plugins/view-resources/src/components/MarkupEditor.svelte`
+- `plugins/view-resources/src/components/MarkupEditorPopup.svelte`
+- `plugins/view-resources/src/components/MarkupPresenter.svelte`
+- `plugins/view-resources/src/components/MarkupPreviewPopup.svelte`
+- `plugins/view-resources/src/components/masterDetail/ClassHeader.svelte`
+- `plugins/view-resources/src/components/masterDetail/MasterDetailBrowser.svelte`
+- `plugins/view-resources/src/components/masterDetail/MasterDetailView.svelte`
+- `plugins/view-resources/src/components/Menu.svelte`
+- `plugins/view-resources/src/components/Move.svelte`
+- `plugins/view-resources/src/components/navigator/NavLink.svelte`
+- `plugins/view-resources/src/components/navigator/TreeElement.svelte`
+- `plugins/view-resources/src/components/navigator/TreeItem.svelte`
+- `plugins/view-resources/src/components/navigator/TreeNode.svelte`
+- `plugins/view-resources/src/components/NumberEditor.svelte`
+- `plugins/view-resources/src/components/NumberPresenter.svelte`
+- `plugins/view-resources/src/components/ObjectBox.svelte`
+- `plugins/view-resources/src/components/ObjectBoxPopup.svelte`
+- `plugins/view-resources/src/components/ObjectIcon.svelte`
+- `plugins/view-resources/src/components/ObjectMention.svelte`
+- `plugins/view-resources/src/components/ObjectPresenter.svelte`
+- `plugins/view-resources/src/components/ObjectSearchBox.svelte`
+- `plugins/view-resources/src/components/ParentsNavigator.svelte`
+- `plugins/view-resources/src/components/PersonArrayEditor.svelte`
+- `plugins/view-resources/src/components/PersonIdPresenter.svelte`
+- `plugins/view-resources/src/components/PopupDialog.svelte`
+- `plugins/view-resources/src/components/ReadOnlyNotification.svelte`
+- `plugins/view-resources/src/components/relation/AddRelationPopup.svelte`
+- `plugins/view-resources/src/components/RelationEditor.svelte`
+- `plugins/view-resources/src/components/RelationsEditor.svelte`
+- `plugins/view-resources/src/components/RelationshipTable.svelte`
+- `plugins/view-resources/src/components/RelationshipTableBrowser.svelte`
+- `plugins/view-resources/src/components/RelationsSelectorPopup.svelte`
+- `plugins/view-resources/src/components/RolePresenter.svelte`
+- `plugins/view-resources/src/components/SearchSelector.svelte`
+- `plugins/view-resources/src/components/SimpleNotification.svelte`
+- `plugins/view-resources/src/components/SpaceHeader.svelte`
+- `plugins/view-resources/src/components/SpacePresenter.svelte`
+- `plugins/view-resources/src/components/SpaceRefPresenter.svelte`
+- `plugins/view-resources/src/components/SpaceTypeSelector.svelte`
+- `plugins/view-resources/src/components/status/StatusPresenter.svelte`
+- `plugins/view-resources/src/components/status/StatusRefPresenter.svelte`
+- `plugins/view-resources/src/components/StringEditor.svelte`
+- `plugins/view-resources/src/components/StringPresenter.svelte`
+- `plugins/view-resources/src/components/Table.svelte`
+- `plugins/view-resources/src/components/TableBrowser.svelte`
+- `plugins/view-resources/src/components/TimestampPresenter.svelte`
+- `plugins/view-resources/src/components/TreeView.svelte`
+- `plugins/view-resources/src/components/UpDownNavigator.svelte`
+- `plugins/view-resources/src/components/ValueSelector.svelte`
+- `plugins/view-resources/src/components/viewer/AudioPlayer.svelte`
+- `plugins/view-resources/src/components/viewer/AudioViewer.svelte`
+- `plugins/view-resources/src/components/viewer/ImageViewer.svelte`
+- `plugins/view-resources/src/components/viewer/PDFViewer.svelte`
+- `plugins/view-resources/src/components/viewer/TextViewer.svelte`
+- `plugins/view-resources/src/components/viewer/VideoViewer.svelte`
+- `plugins/view-resources/src/components/ViewletClassSettings.svelte`
+- `plugins/view-resources/src/components/ViewletContentView.svelte`
+- `plugins/view-resources/src/components/ViewletPanelHeader.svelte`
+- `plugins/view-resources/src/components/ViewletSelector.svelte`
+- `plugins/view-resources/src/components/ViewletSetting.svelte`
+- `plugins/view-resources/src/components/ViewletSettingButton.svelte`
+- `plugins/view-resources/src/components/ViewletsSettingButton.svelte`
+- `plugins/view-resources/src/components/ViewOptions.svelte`
+- `plugins/view-resources/src/components/ViewOptionsButton.svelte`
+- `plugins/view-resources/src/filter.ts`
+- `plugins/view-resources/src/icons.ts`
+- `plugins/view-resources/src/index.ts`
+- `plugins/view-resources/src/middleware.ts`
+- `plugins/view-resources/src/objectIterator.ts`
+- `plugins/view-resources/src/permissions.ts`
+- `plugins/view-resources/src/plugin.ts`
+- `plugins/view-resources/src/selection.ts`
+- `plugins/view-resources/src/status.ts`
+- `plugins/view-resources/src/utils.ts`
+- `plugins/view-resources/src/viewletContextStore.ts`
+- `plugins/view-resources/src/viewletUtils.ts`
+- `plugins/view-resources/src/viewOptions.ts`
+- `plugins/view-resources/src/visibilityTester.ts`
+- `plugins/view-resources/svelte.config.js`
+- `plugins/view-resources/tsconfig.json`
+- `plugins/view/.eslintrc.js`
+- `plugins/view/.npmignore`
+- `plugins/view/CHANGELOG.json`
+- `plugins/view/CHANGELOG.md`
+- `plugins/view/config/rig.json`
+- `plugins/view/jest.config.js`
+- `plugins/view/package.json`
+- `plugins/view/src/index.ts`
+- `plugins/view/src/types.ts`
+- `plugins/view/src/utils.ts`
+- `plugins/view/tsconfig.json`
+- `plugins/workbench-assets/.eslintrc.js`
+- `plugins/workbench-assets/assets/icons.svg`
+- `plugins/workbench-assets/config/rig.json`
+- `plugins/workbench-assets/jest.config.js`
+- `plugins/workbench-assets/lang/cs.json`
+- `plugins/workbench-assets/lang/de.json`
+- `plugins/workbench-assets/lang/en.json`
+- `plugins/workbench-assets/lang/es.json`
+- `plugins/workbench-assets/lang/fr.json`
+- `plugins/workbench-assets/lang/it.json`
+- `plugins/workbench-assets/lang/ja.json`
+- `plugins/workbench-assets/lang/ko.json`
+- `plugins/workbench-assets/lang/pt-br.json`
+- `plugins/workbench-assets/lang/pt.json`
+- `plugins/workbench-assets/lang/ru.json`
+- `plugins/workbench-assets/lang/tr.json`
+- `plugins/workbench-assets/lang/zh.json`
+- `plugins/workbench-assets/package.json`
+- `plugins/workbench-assets/src/__tests__/lang.test.ts`
+- `plugins/workbench-assets/src/index.ts`
+- `plugins/workbench-assets/tsconfig.json`
+- `plugins/workbench-resources/.eslintrc.js`
+- `plugins/workbench-resources/.prettierrc`
+- `plugins/workbench-resources/CHANGELOG.json`
+- `plugins/workbench-resources/CHANGELOG.md`
+- `plugins/workbench-resources/config/rig.json`
+- `plugins/workbench-resources/jest.config.js`
+- `plugins/workbench-resources/package.json`
+- `plugins/workbench-resources/postcss.config.js`
+- `plugins/workbench-resources/src/components/AccountPopup.svelte`
+- `plugins/workbench-resources/src/components/AppItem.svelte`
+- `plugins/workbench-resources/src/components/ApplicationPresenter.svelte`
+- `plugins/workbench-resources/src/components/Applications.svelte`
+- `plugins/workbench-resources/src/components/AppSwitcher.svelte`
+- `plugins/workbench-resources/src/components/Archive.svelte`
+- `plugins/workbench-resources/src/components/ComponentNavigator.svelte`
+- `plugins/workbench-resources/src/components/HelpAndSupport.svelte`
+- `plugins/workbench-resources/src/components/icons/Collapsed.svelte`
+- `plugins/workbench-resources/src/components/icons/Documentation.svelte`
+- `plugins/workbench-resources/src/components/icons/Drag.svelte`
+- `plugins/workbench-resources/src/components/icons/Keyboard.svelte`
+- `plugins/workbench-resources/src/components/icons/TodoCheck.svelte`
+- `plugins/workbench-resources/src/components/icons/TodoUncheck.svelte`
+- `plugins/workbench-resources/src/components/icons/TopMenu.svelte`
+- `plugins/workbench-resources/src/components/Logo.svelte`
+- `plugins/workbench-resources/src/components/MetricsStats.svelte`
+- `plugins/workbench-resources/src/components/NavFooter.svelte`
+- `plugins/workbench-resources/src/components/NavHeader.svelte`
+- `plugins/workbench-resources/src/components/Navigator.svelte`
+- `plugins/workbench-resources/src/components/navigator/SpacePanel.svelte`
+- `plugins/workbench-resources/src/components/navigator/SpacesNav.svelte`
+- `plugins/workbench-resources/src/components/navigator/SpacesNavItem.svelte`
+- `plugins/workbench-resources/src/components/navigator/SpecialElement.svelte`
+- `plugins/workbench-resources/src/components/navigator/StarredNav.svelte`
+- `plugins/workbench-resources/src/components/navigator/StarredNavItem.svelte`
+- `plugins/workbench-resources/src/components/navigator/TreeSeparator.svelte`
+- `plugins/workbench-resources/src/components/SavedView.svelte`
+- `plugins/workbench-resources/src/components/SelectWorkspaceMenu.svelte`
+- `plugins/workbench-resources/src/components/ServerManager.svelte`
+- `plugins/workbench-resources/src/components/ServerManagerGeneral.svelte`
+- `plugins/workbench-resources/src/components/ServerManagerServerStatistics.svelte`
+- `plugins/workbench-resources/src/components/ServerManagerUsers.svelte`
+- `plugins/workbench-resources/src/components/sidebar/Sidebar.svelte`
+- `plugins/workbench-resources/src/components/sidebar/SidebarExpanded.svelte`
+- `plugins/workbench-resources/src/components/sidebar/SidebarMini.svelte`
+- `plugins/workbench-resources/src/components/sidebar/SidebarTab.svelte`
+- `plugins/workbench-resources/src/components/sidebar/SidebarTabs.svelte`
+- `plugins/workbench-resources/src/components/sidebar/widgets/AddWidgetsPopup.svelte`
+- `plugins/workbench-resources/src/components/sidebar/widgets/WidgetPresenter.svelte`
+- `plugins/workbench-resources/src/components/sidebar/widgets/WidgetsBar.svelte`
+- `plugins/workbench-resources/src/components/SpaceContent.svelte`
+- `plugins/workbench-resources/src/components/SpaceHeader.svelte`
+- `plugins/workbench-resources/src/components/SpaceView.svelte`
+- `plugins/workbench-resources/src/components/SpecialView.svelte`
+- `plugins/workbench-resources/src/components/statistics/MetricsInfo.svelte`
+- `plugins/workbench-resources/src/components/statistics/Params.svelte`
+- `plugins/workbench-resources/src/components/Workbench.svelte`
+- `plugins/workbench-resources/src/components/WorkbenchApp.svelte`
+- `plugins/workbench-resources/src/components/WorkbenchTabPresenter.svelte`
+- `plugins/workbench-resources/src/components/WorkbenchTabs.svelte`
+- `plugins/workbench-resources/src/connect.ts`
+- `plugins/workbench-resources/src/index.ts`
+- `plugins/workbench-resources/src/mobile.ts`
+- `plugins/workbench-resources/src/plugin.ts`
+- `plugins/workbench-resources/src/sidebar.ts`
+- `plugins/workbench-resources/src/utils.ts`
+- `plugins/workbench-resources/src/workbench.ts`
+- `plugins/workbench-resources/svelte.config.js`
+- `plugins/workbench-resources/tsconfig.json`
+- `plugins/workbench/.eslintrc.js`
+- `plugins/workbench/.npmignore`
+- `plugins/workbench/CHANGELOG.json`
+- `plugins/workbench/CHANGELOG.md`
+- `plugins/workbench/config/rig.json`
+- `plugins/workbench/jest.config.js`
+- `plugins/workbench/package.json`
+- `plugins/workbench/src/analytics.ts`
+- `plugins/workbench/src/index.ts`
+- `plugins/workbench/src/plugin.ts`
+- `plugins/workbench/src/types.ts`
+- `plugins/workbench/src/utils.ts`
+- `plugins/workbench/tsconfig.json`
+
+</details>
+
+<details>
+<summary><code>foundations</code> (1354 files)</summary>
+
+- `foundations/communication/.gitattributes`
+- `foundations/communication/.github/workflows/ci.yml`
+- `foundations/communication/.gitignore`
+- `foundations/communication/.npmrc`
+- `foundations/communication/.prettierrc`
+- `foundations/communication/.version`
+- `foundations/communication/common/changes/@hcengineering/communication-rest-client/main_2025-10-29-08-20.json`
+- `foundations/communication/common/changes/@hcengineering/communication-sdk-types/main_2025-10-29-08-20.json`
+- `foundations/communication/common/changes/@hcengineering/communication-server/main_2025-10-29-08-20.json`
+- `foundations/communication/common/changes/@hcengineering/communication-types/main_2025-10-29-08-20.json`
+- `foundations/communication/common/config/rush/.npmrc`
+- `foundations/communication/common/config/rush/.npmrc-publish`
+- `foundations/communication/common/config/rush/.pnpmfile.cjs`
+- `foundations/communication/common/config/rush/artifactory.json`
+- `foundations/communication/common/config/rush/build-cache.json`
+- `foundations/communication/common/config/rush/cobuild.json`
+- `foundations/communication/common/config/rush/command-line.json`
+- `foundations/communication/common/config/rush/common-versions.json`
+- `foundations/communication/common/config/rush/custom-tips.json`
+- `foundations/communication/common/config/rush/experiments.json`
+- `foundations/communication/common/config/rush/pnpm-config.json`
+- `foundations/communication/common/config/rush/pnpm-lock.yaml`
+- `foundations/communication/common/config/rush/repo-state.json`
+- `foundations/communication/common/config/rush/rush-plugins.json`
+- `foundations/communication/common/config/rush/subspaces.json`
+- `foundations/communication/common/config/rush/version-policies.json`
+- `foundations/communication/common/git-hooks/commit-msg.sample`
+- `foundations/communication/common/scripts/install-run-rush-pnpm.js`
+- `foundations/communication/common/scripts/install-run-rush.js`
+- `foundations/communication/common/scripts/install-run-rushx.js`
+- `foundations/communication/common/scripts/install-run.js`
+- `foundations/communication/common/scripts/package.json`
+- `foundations/communication/common/scripts/run-tests-with-coverage.js`
+- `foundations/communication/common/scripts/show-coverage-summary.js`
+- `foundations/communication/common/scripts/show-coverage-summary.sh`
+- `foundations/communication/common/scripts/show-coverage.sh`
+- `foundations/communication/example.json`
+- `foundations/communication/packages/client-query/.eslintrc.cjs`
+- `foundations/communication/packages/client-query/CHANGELOG.json`
+- `foundations/communication/packages/client-query/CHANGELOG.md`
+- `foundations/communication/packages/client-query/config/rig.json`
+- `foundations/communication/packages/client-query/package.json`
+- `foundations/communication/packages/client-query/src/index.ts`
+- `foundations/communication/packages/client-query/src/init.ts`
+- `foundations/communication/packages/client-query/src/query.ts`
+- `foundations/communication/packages/client-query/tsconfig.json`
+- `foundations/communication/packages/cockroach/.eslintrc.cjs`
+- `foundations/communication/packages/cockroach/CHANGELOG.json`
+- `foundations/communication/packages/cockroach/CHANGELOG.md`
+- `foundations/communication/packages/cockroach/config/rig.json`
+- `foundations/communication/packages/cockroach/package.json`
+- `foundations/communication/packages/cockroach/src/adapter.ts`
+- `foundations/communication/packages/cockroach/src/client.ts`
+- `foundations/communication/packages/cockroach/src/connection.ts`
+- `foundations/communication/packages/cockroach/src/db/base.ts`
+- `foundations/communication/packages/cockroach/src/db/label.ts`
+- `foundations/communication/packages/cockroach/src/db/mapping.ts`
+- `foundations/communication/packages/cockroach/src/db/message.ts`
+- `foundations/communication/packages/cockroach/src/db/notification.ts`
+- `foundations/communication/packages/cockroach/src/db/peer.ts`
+- `foundations/communication/packages/cockroach/src/db/utils.ts`
+- `foundations/communication/packages/cockroach/src/index.ts`
+- `foundations/communication/packages/cockroach/src/init.ts`
+- `foundations/communication/packages/cockroach/src/schema.ts`
+- `foundations/communication/packages/cockroach/src/types.ts`
+- `foundations/communication/packages/cockroach/src/utils.ts`
+- `foundations/communication/packages/cockroach/tsconfig.json`
+- `foundations/communication/packages/query/.eslintrc.cjs`
+- `foundations/communication/packages/query/CHANGELOG.json`
+- `foundations/communication/packages/query/CHANGELOG.md`
+- `foundations/communication/packages/query/config/rig.json`
+- `foundations/communication/packages/query/package.json`
+- `foundations/communication/packages/query/src/collaborators/query.ts`
+- `foundations/communication/packages/query/src/config/rig.json`
+- `foundations/communication/packages/query/src/index.ts`
+- `foundations/communication/packages/query/src/label/query.ts`
+- `foundations/communication/packages/query/src/lq.ts`
+- `foundations/communication/packages/query/src/messages/query.ts`
+- `foundations/communication/packages/query/src/notification-contexts/query.ts`
+- `foundations/communication/packages/query/src/notifications/query.ts`
+- `foundations/communication/packages/query/src/result.ts`
+- `foundations/communication/packages/query/src/types.ts`
+- `foundations/communication/packages/query/src/utils.ts`
+- `foundations/communication/packages/query/src/window.ts`
+- `foundations/communication/packages/query/tsconfig.json`
+- `foundations/communication/packages/rest-client/.eslintrc.cjs`
+- `foundations/communication/packages/rest-client/CHANGELOG.json`
+- `foundations/communication/packages/rest-client/CHANGELOG.md`
+- `foundations/communication/packages/rest-client/config/rig.json`
+- `foundations/communication/packages/rest-client/package.json`
+- `foundations/communication/packages/rest-client/src/index.ts`
+- `foundations/communication/packages/rest-client/src/rest.ts`
+- `foundations/communication/packages/rest-client/src/types.ts`
+- `foundations/communication/packages/rest-client/src/utils.ts`
+- `foundations/communication/packages/rest-client/tsconfig.json`
+- `foundations/communication/packages/sdk-types/.eslintrc.cjs`
+- `foundations/communication/packages/sdk-types/CHANGELOG.json`
+- `foundations/communication/packages/sdk-types/CHANGELOG.md`
+- `foundations/communication/packages/sdk-types/config/rig.json`
+- `foundations/communication/packages/sdk-types/package.json`
+- `foundations/communication/packages/sdk-types/src/client.ts`
+- `foundations/communication/packages/sdk-types/src/db.ts`
+- `foundations/communication/packages/sdk-types/src/domain.ts`
+- `foundations/communication/packages/sdk-types/src/events/card.ts`
+- `foundations/communication/packages/sdk-types/src/events/common.ts`
+- `foundations/communication/packages/sdk-types/src/events/event.ts`
+- `foundations/communication/packages/sdk-types/src/events/label.ts`
+- `foundations/communication/packages/sdk-types/src/events/message.ts`
+- `foundations/communication/packages/sdk-types/src/events/notification.ts`
+- `foundations/communication/packages/sdk-types/src/events/peer.ts`
+- `foundations/communication/packages/sdk-types/src/index.ts`
+- `foundations/communication/packages/sdk-types/src/query.ts`
+- `foundations/communication/packages/sdk-types/src/serverApi.ts`
+- `foundations/communication/packages/sdk-types/tsconfig.json`
+- `foundations/communication/packages/server/.eslintrc.cjs`
+- `foundations/communication/packages/server/CHANGELOG.json`
+- `foundations/communication/packages/server/CHANGELOG.md`
+- `foundations/communication/packages/server/config/rig.json`
+- `foundations/communication/packages/server/jest.config.js`
+- `foundations/communication/packages/server/package.json`
+- `foundations/communication/packages/server/src/__mocks__/notification/notification.ts`
+- `foundations/communication/packages/server/src/__mocks__/triggers/all.ts`
+- `foundations/communication/packages/server/src/__tests__/blob.test.ts`
+- `foundations/communication/packages/server/src/__tests__/client.test.ts`
+- `foundations/communication/packages/server/src/__tests__/error.test.ts`
+- `foundations/communication/packages/server/src/__tests__/index.test.ts`
+- `foundations/communication/packages/server/src/__tests__/messageId.test.ts`
+- `foundations/communication/packages/server/src/__tests__/metadata.test.ts`
+- `foundations/communication/packages/server/src/__tests__/middleware/base.test.ts`
+- `foundations/communication/packages/server/src/__tests__/middleware/broadcast.test.ts`
+- `foundations/communication/packages/server/src/__tests__/middleware/date.test.ts`
+- `foundations/communication/packages/server/src/__tests__/middleware/id.test.ts`
+- `foundations/communication/packages/server/src/__tests__/middleware/indentity.test.ts`
+- `foundations/communication/packages/server/src/__tests__/middleware/peer.test.ts`
+- `foundations/communication/packages/server/src/__tests__/middleware/permissions.test.ts`
+- `foundations/communication/packages/server/src/__tests__/middleware/storage.test.ts`
+- `foundations/communication/packages/server/src/__tests__/middleware/triggers.test.ts`
+- `foundations/communication/packages/server/src/__tests__/middleware/validate.test.ts`
+- `foundations/communication/packages/server/src/__tests__/middlewares.test.ts`
+- `foundations/communication/packages/server/src/__tests__/notification/notification.test.ts`
+- `foundations/communication/packages/server/src/blob.ts`
+- `foundations/communication/packages/server/src/client.ts`
+- `foundations/communication/packages/server/src/error.ts`
+- `foundations/communication/packages/server/src/index.ts`
+- `foundations/communication/packages/server/src/messageId.ts`
+- `foundations/communication/packages/server/src/metadata.ts`
+- `foundations/communication/packages/server/src/middleware/base.ts`
+- `foundations/communication/packages/server/src/middleware/broadcast.ts`
+- `foundations/communication/packages/server/src/middleware/date.ts`
+- `foundations/communication/packages/server/src/middleware/id.ts`
+- `foundations/communication/packages/server/src/middleware/indentity.ts`
+- `foundations/communication/packages/server/src/middleware/peer.ts`
+- `foundations/communication/packages/server/src/middleware/permissions.ts`
+- `foundations/communication/packages/server/src/middleware/storage.ts`
+- `foundations/communication/packages/server/src/middleware/triggers.ts`
+- `foundations/communication/packages/server/src/middleware/validate.ts`
+- `foundations/communication/packages/server/src/middlewares.ts`
+- `foundations/communication/packages/server/src/notification/notification.ts`
+- `foundations/communication/packages/server/src/triggers/all.ts`
+- `foundations/communication/packages/server/src/triggers/card.ts`
+- `foundations/communication/packages/server/src/triggers/message.ts`
+- `foundations/communication/packages/server/src/triggers/notification.ts`
+- `foundations/communication/packages/server/src/triggers/utils.ts`
+- `foundations/communication/packages/server/src/types.ts`
+- `foundations/communication/packages/server/tsconfig.json`
+- `foundations/communication/packages/shared/.eslintrc.cjs`
+- `foundations/communication/packages/shared/CHANGELOG.json`
+- `foundations/communication/packages/shared/CHANGELOG.md`
+- `foundations/communication/packages/shared/config/rig.json`
+- `foundations/communication/packages/shared/package.json`
+- `foundations/communication/packages/shared/src/index.ts`
+- `foundations/communication/packages/shared/src/processor.ts`
+- `foundations/communication/packages/shared/src/retry.ts`
+- `foundations/communication/packages/shared/src/utils.ts`
+- `foundations/communication/packages/shared/tsconfig.json`
+- `foundations/communication/README.md`
+- `foundations/communication/rush.json`
+- `foundations/communication/translate.json`
+- `foundations/core/.gitattributes`
+- `foundations/core/.github/copilot-instructions.md`
+- `foundations/core/.github/workflows/ci.yml`
+- `foundations/core/.gitignore`
+- `foundations/core/.nvmrc`
+- `foundations/core/.prettierrc`
+- `foundations/core/.vscode/extensions.json`
+- `foundations/core/common/changes/@hcengineering/account-client/account-permissions_2025-12-17-16-28.json`
+- `foundations/core/common/changes/@hcengineering/core/add-permissions_2025-12-17-15-33.json`
+- `foundations/core/common/changes/@hcengineering/core/fix-clone_2026-01-13-06-37.json`
+- `foundations/core/common/config/rush/.npmrc`
+- `foundations/core/common/config/rush/.npmrc-publish`
+- `foundations/core/common/config/rush/.pnpmfile.cjs`
+- `foundations/core/common/config/rush/artifactory.json`
+- `foundations/core/common/config/rush/build-cache.json`
+- `foundations/core/common/config/rush/cobuild.json`
+- `foundations/core/common/config/rush/command-line.json`
+- `foundations/core/common/config/rush/common-versions.json`
+- `foundations/core/common/config/rush/custom-tips.json`
+- `foundations/core/common/config/rush/experiments.json`
+- `foundations/core/common/config/rush/pnpm-config.json`
+- `foundations/core/common/config/rush/pnpm-lock.yaml`
+- `foundations/core/common/config/rush/repo-state.json`
+- `foundations/core/common/config/rush/rush-plugins.json`
+- `foundations/core/common/config/rush/subspaces.json`
+- `foundations/core/common/config/rush/version-policies.json`
+- `foundations/core/common/git-hooks/commit-msg.sample`
+- `foundations/core/common/scripts/generate-coverage-html.js`
+- `foundations/core/common/scripts/install-run-rush-pnpm.js`
+- `foundations/core/common/scripts/install-run-rush.js`
+- `foundations/core/common/scripts/install-run-rushx.js`
+- `foundations/core/common/scripts/install-run.js`
+- `foundations/core/common/scripts/merge-coverage.js`
+- `foundations/core/common/scripts/package.json`
+- `foundations/core/common/scripts/show-coverage.sh`
+- `foundations/core/LICENSE`
+- `foundations/core/packages/account-client/.eslintrc.js`
+- `foundations/core/packages/account-client/.npmignore`
+- `foundations/core/packages/account-client/CHANGELOG.json`
+- `foundations/core/packages/account-client/CHANGELOG.md`
+- `foundations/core/packages/account-client/config/rig.json`
+- `foundations/core/packages/account-client/jest.config.js`
+- `foundations/core/packages/account-client/package.json`
+- `foundations/core/packages/account-client/src/__tests__/utils.test.ts`
+- `foundations/core/packages/account-client/src/client.ts`
+- `foundations/core/packages/account-client/src/index.ts`
+- `foundations/core/packages/account-client/src/types.ts`
+- `foundations/core/packages/account-client/src/utils.ts`
+- `foundations/core/packages/account-client/tsconfig.json`
+- `foundations/core/packages/analytics-service/.eslintrc.js`
+- `foundations/core/packages/analytics-service/.npmignore`
+- `foundations/core/packages/analytics-service/CHANGELOG.json`
+- `foundations/core/packages/analytics-service/CHANGELOG.md`
+- `foundations/core/packages/analytics-service/config/rig.json`
+- `foundations/core/packages/analytics-service/jest.config.js`
+- `foundations/core/packages/analytics-service/package.json`
+- `foundations/core/packages/analytics-service/src/index.ts`
+- `foundations/core/packages/analytics-service/src/logging.ts`
+- `foundations/core/packages/analytics-service/tsconfig.json`
+- `foundations/core/packages/analytics/.eslintrc.js`
+- `foundations/core/packages/analytics/.npmignore`
+- `foundations/core/packages/analytics/CHANGELOG.json`
+- `foundations/core/packages/analytics/CHANGELOG.md`
+- `foundations/core/packages/analytics/config/rig.json`
+- `foundations/core/packages/analytics/jest.config.js`
+- `foundations/core/packages/analytics/package.json`
+- `foundations/core/packages/analytics/src/index.ts`
+- `foundations/core/packages/analytics/tsconfig.json`
+- `foundations/core/packages/api-client/.eslintrc.js`
+- `foundations/core/packages/api-client/.npmignore`
+- `foundations/core/packages/api-client/CHANGELOG.json`
+- `foundations/core/packages/api-client/CHANGELOG.md`
+- `foundations/core/packages/api-client/config/rig.json`
+- `foundations/core/packages/api-client/jest.config.js`
+- `foundations/core/packages/api-client/package.json`
+- `foundations/core/packages/api-client/README.md`
+- `foundations/core/packages/api-client/src/__tests__/config.test.ts`
+- `foundations/core/packages/api-client/src/__tests__/markup-client.test.ts`
+- `foundations/core/packages/api-client/src/__tests__/markup-types.test.ts`
+- `foundations/core/packages/api-client/src/__tests__/rest-utils.test.ts`
+- `foundations/core/packages/api-client/src/__tests__/utils.test.ts`
+- `foundations/core/packages/api-client/src/client.ts`
+- `foundations/core/packages/api-client/src/config.ts`
+- `foundations/core/packages/api-client/src/index.ts`
+- `foundations/core/packages/api-client/src/markup/client.ts`
+- `foundations/core/packages/api-client/src/markup/index.ts`
+- `foundations/core/packages/api-client/src/markup/types.ts`
+- `foundations/core/packages/api-client/src/rest/adapter.ts`
+- `foundations/core/packages/api-client/src/rest/index.ts`
+- `foundations/core/packages/api-client/src/rest/rest.ts`
+- `foundations/core/packages/api-client/src/rest/tx.ts`
+- `foundations/core/packages/api-client/src/rest/types.ts`
+- `foundations/core/packages/api-client/src/rest/utils.ts`
+- `foundations/core/packages/api-client/src/socket/browser.ts`
+- `foundations/core/packages/api-client/src/socket/index.ts`
+- `foundations/core/packages/api-client/src/socket/node.ts`
+- `foundations/core/packages/api-client/src/storage/client.ts`
+- `foundations/core/packages/api-client/src/storage/error.ts`
+- `foundations/core/packages/api-client/src/storage/index.ts`
+- `foundations/core/packages/api-client/src/storage/types.ts`
+- `foundations/core/packages/api-client/src/types.ts`
+- `foundations/core/packages/api-client/src/utils.ts`
+- `foundations/core/packages/api-client/tsconfig.json`
+- `foundations/core/packages/client-resources/.eslintrc.js`
+- `foundations/core/packages/client-resources/.npmignore`
+- `foundations/core/packages/client-resources/CHANGELOG.json`
+- `foundations/core/packages/client-resources/CHANGELOG.md`
+- `foundations/core/packages/client-resources/config/rig.json`
+- `foundations/core/packages/client-resources/jest.config.js`
+- `foundations/core/packages/client-resources/package.json`
+- `foundations/core/packages/client-resources/readme.md`
+- `foundations/core/packages/client-resources/src/__tests__/connection.test.ts`
+- `foundations/core/packages/client-resources/src/__tests__/integration.test.ts`
+- `foundations/core/packages/client-resources/src/connection.ts`
+- `foundations/core/packages/client-resources/src/index.ts`
+- `foundations/core/packages/client-resources/tsconfig.json`
+- `foundations/core/packages/client/.eslintrc.js`
+- `foundations/core/packages/client/.npmignore`
+- `foundations/core/packages/client/CHANGELOG.json`
+- `foundations/core/packages/client/CHANGELOG.md`
+- `foundations/core/packages/client/config/rig.json`
+- `foundations/core/packages/client/jest.config.js`
+- `foundations/core/packages/client/package.json`
+- `foundations/core/packages/client/src/__tests__/client.test.ts`
+- `foundations/core/packages/client/src/index.ts`
+- `foundations/core/packages/client/tsconfig.json`
+- `foundations/core/packages/collaborator-client/.eslintrc.js`
+- `foundations/core/packages/collaborator-client/.npmignore`
+- `foundations/core/packages/collaborator-client/CHANGELOG.json`
+- `foundations/core/packages/collaborator-client/CHANGELOG.md`
+- `foundations/core/packages/collaborator-client/config/rig.json`
+- `foundations/core/packages/collaborator-client/jest.config.js`
+- `foundations/core/packages/collaborator-client/package.json`
+- `foundations/core/packages/collaborator-client/src/__tests__/utils.test.ts`
+- `foundations/core/packages/collaborator-client/src/client.ts`
+- `foundations/core/packages/collaborator-client/src/index.ts`
+- `foundations/core/packages/collaborator-client/src/utils.ts`
+- `foundations/core/packages/collaborator-client/tsconfig.json`
+- `foundations/core/packages/core/.eslintrc.js`
+- `foundations/core/packages/core/.npmignore`
+- `foundations/core/packages/core/CHANGELOG.json`
+- `foundations/core/packages/core/CHANGELOG.md`
+- `foundations/core/packages/core/config/rig.json`
+- `foundations/core/packages/core/jest.config.js`
+- `foundations/core/packages/core/lang/cs.json`
+- `foundations/core/packages/core/lang/de.json`
+- `foundations/core/packages/core/lang/en.json`
+- `foundations/core/packages/core/lang/es.json`
+- `foundations/core/packages/core/lang/fr.json`
+- `foundations/core/packages/core/lang/it.json`
+- `foundations/core/packages/core/lang/ja.json`
+- `foundations/core/packages/core/lang/ko.json`
+- `foundations/core/packages/core/lang/pt-br.json`
+- `foundations/core/packages/core/lang/pt.json`
+- `foundations/core/packages/core/lang/ru.json`
+- `foundations/core/packages/core/lang/tr.json`
+- `foundations/core/packages/core/lang/zh.json`
+- `foundations/core/packages/core/package.json`
+- `foundations/core/packages/core/src/__tests__/autoJoinRoles.test.ts`
+- `foundations/core/packages/core/src/__tests__/client.test.ts`
+- `foundations/core/packages/core/src/__tests__/clone.test.ts`
+- `foundations/core/packages/core/src/__tests__/collaboration.test.ts`
+- `foundations/core/packages/core/src/__tests__/collaborators.test.ts`
+- `foundations/core/packages/core/src/__tests__/common.test.ts`
+- `foundations/core/packages/core/src/__tests__/connection.ts`
+- `foundations/core/packages/core/src/__tests__/contexts.test.ts`
+- `foundations/core/packages/core/src/__tests__/hierarchy.test.ts`
+- `foundations/core/packages/core/src/__tests__/lang.test.ts`
+- `foundations/core/packages/core/src/__tests__/limiter-edge-cases.test.ts`
+- `foundations/core/packages/core/src/__tests__/limits.test.ts`
+- `foundations/core/packages/core/src/__tests__/memdb.test.ts`
+- `foundations/core/packages/core/src/__tests__/minmodel.ts`
+- `foundations/core/packages/core/src/__tests__/objvalue.test.ts`
+- `foundations/core/packages/core/src/__tests__/operator-bugs.test.ts`
+- `foundations/core/packages/core/src/__tests__/operator.test.ts`
+- `foundations/core/packages/core/src/__tests__/query.test.ts`
+- `foundations/core/packages/core/src/__tests__/rate-limiter.test.ts`
+- `foundations/core/packages/core/src/__tests__/test.json`
+- `foundations/core/packages/core/src/__tests__/time.test.ts`
+- `foundations/core/packages/core/src/__tests__/utils.test.ts`
+- `foundations/core/packages/core/src/autoJoinRoles.ts`
+- `foundations/core/packages/core/src/backup.ts`
+- `foundations/core/packages/core/src/benchmark.ts`
+- `foundations/core/packages/core/src/classes.ts`
+- `foundations/core/packages/core/src/client.ts`
+- `foundations/core/packages/core/src/clone.ts`
+- `foundations/core/packages/core/src/collaboration.ts`
+- `foundations/core/packages/core/src/collaborators.ts`
+- `foundations/core/packages/core/src/common.ts`
+- `foundations/core/packages/core/src/component.ts`
+- `foundations/core/packages/core/src/hierarchy.ts`
+- `foundations/core/packages/core/src/index.ts`
+- `foundations/core/packages/core/src/memdb.ts`
+- `foundations/core/packages/core/src/objvalue.ts`
+- `foundations/core/packages/core/src/operations.ts`
+- `foundations/core/packages/core/src/operator.ts`
+- `foundations/core/packages/core/src/predicate.ts`
+- `foundations/core/packages/core/src/proxy.ts`
+- `foundations/core/packages/core/src/query.ts`
+- `foundations/core/packages/core/src/server.ts`
+- `foundations/core/packages/core/src/status.ts`
+- `foundations/core/packages/core/src/storage.ts`
+- `foundations/core/packages/core/src/time.ts`
+- `foundations/core/packages/core/src/tx.ts`
+- `foundations/core/packages/core/src/utils.ts`
+- `foundations/core/packages/core/src/versioning.ts`
+- `foundations/core/packages/core/tsconfig.json`
+- `foundations/core/packages/hulylake-client/.eslintrc.js`
+- `foundations/core/packages/hulylake-client/.npmignore`
+- `foundations/core/packages/hulylake-client/CHANGELOG.json`
+- `foundations/core/packages/hulylake-client/CHANGELOG.md`
+- `foundations/core/packages/hulylake-client/config/rig.json`
+- `foundations/core/packages/hulylake-client/jest.config.js`
+- `foundations/core/packages/hulylake-client/package.json`
+- `foundations/core/packages/hulylake-client/src/client.ts`
+- `foundations/core/packages/hulylake-client/src/error.ts`
+- `foundations/core/packages/hulylake-client/src/index.ts`
+- `foundations/core/packages/hulylake-client/src/types.ts`
+- `foundations/core/packages/hulylake-client/src/utils.ts`
+- `foundations/core/packages/hulylake-client/tsconfig.json`
+- `foundations/core/packages/measurements-otlp/.eslintrc.js`
+- `foundations/core/packages/measurements-otlp/.npmignore`
+- `foundations/core/packages/measurements-otlp/CHANGELOG.json`
+- `foundations/core/packages/measurements-otlp/CHANGELOG.md`
+- `foundations/core/packages/measurements-otlp/config/rig.json`
+- `foundations/core/packages/measurements-otlp/jest.config.js`
+- `foundations/core/packages/measurements-otlp/package.json`
+- `foundations/core/packages/measurements-otlp/src/__tests__/telemetry.suspendError.test.ts`
+- `foundations/core/packages/measurements-otlp/src/__tests__/telemetry.test.ts`
+- `foundations/core/packages/measurements-otlp/src/index.ts`
+- `foundations/core/packages/measurements-otlp/src/telemetry.ts`
+- `foundations/core/packages/measurements-otlp/tsconfig.json`
+- `foundations/core/packages/measurements/.eslintrc.js`
+- `foundations/core/packages/measurements/.npmignore`
+- `foundations/core/packages/measurements/CHANGELOG.json`
+- `foundations/core/packages/measurements/CHANGELOG.md`
+- `foundations/core/packages/measurements/config/rig.json`
+- `foundations/core/packages/measurements/jest.config.js`
+- `foundations/core/packages/measurements/package.json`
+- `foundations/core/packages/measurements/src/__tests__/context.test.ts`
+- `foundations/core/packages/measurements/src/__tests__/index.test.ts`
+- `foundations/core/packages/measurements/src/__tests__/metrics.test.ts`
+- `foundations/core/packages/measurements/src/__tests__/performance.test.ts`
+- `foundations/core/packages/measurements/src/context.ts`
+- `foundations/core/packages/measurements/src/index.ts`
+- `foundations/core/packages/measurements/src/metrics.ts`
+- `foundations/core/packages/measurements/src/types.ts`
+- `foundations/core/packages/measurements/tsconfig.json`
+- `foundations/core/packages/model/.eslintrc.js`
+- `foundations/core/packages/model/.npmignore`
+- `foundations/core/packages/model/CHANGELOG.json`
+- `foundations/core/packages/model/CHANGELOG.md`
+- `foundations/core/packages/model/config/rig.json`
+- `foundations/core/packages/model/jest.config.js`
+- `foundations/core/packages/model/package.json`
+- `foundations/core/packages/model/src/dsl.ts`
+- `foundations/core/packages/model/src/index.ts`
+- `foundations/core/packages/model/src/migration.ts`
+- `foundations/core/packages/model/src/utils.ts`
+- `foundations/core/packages/model/tsconfig.json`
+- `foundations/core/packages/platform/.eslintrc.js`
+- `foundations/core/packages/platform/.npmignore`
+- `foundations/core/packages/platform/CHANGELOG.json`
+- `foundations/core/packages/platform/CHANGELOG.md`
+- `foundations/core/packages/platform/config/rig.json`
+- `foundations/core/packages/platform/jest.config.js`
+- `foundations/core/packages/platform/lang/cs.json`
+- `foundations/core/packages/platform/lang/de.json`
+- `foundations/core/packages/platform/lang/en.json`
+- `foundations/core/packages/platform/lang/es.json`
+- `foundations/core/packages/platform/lang/fr.json`
+- `foundations/core/packages/platform/lang/it.json`
+- `foundations/core/packages/platform/lang/ja.json`
+- `foundations/core/packages/platform/lang/ko.json`
+- `foundations/core/packages/platform/lang/pt-br.json`
+- `foundations/core/packages/platform/lang/pt.json`
+- `foundations/core/packages/platform/lang/ru.json`
+- `foundations/core/packages/platform/lang/tr.json`
+- `foundations/core/packages/platform/lang/zh.json`
+- `foundations/core/packages/platform/package.json`
+- `foundations/core/packages/platform/src/__tests__/i18n.test.ts`
+- `foundations/core/packages/platform/src/__tests__/ident.test.ts`
+- `foundations/core/packages/platform/src/__tests__/lang/de.json`
+- `foundations/core/packages/platform/src/__tests__/lang/en.json`
+- `foundations/core/packages/platform/src/__tests__/lang/es.json`
+- `foundations/core/packages/platform/src/__tests__/lang/fr.json`
+- `foundations/core/packages/platform/src/__tests__/lang/it.json`
+- `foundations/core/packages/platform/src/__tests__/lang/ja.json`
+- `foundations/core/packages/platform/src/__tests__/lang/pt.json`
+- `foundations/core/packages/platform/src/__tests__/lang/zh.json`
+- `foundations/core/packages/platform/src/__tests__/plugin.ts`
+- `foundations/core/packages/platform/src/__tests__/resource.test.ts`
+- `foundations/core/packages/platform/src/__tests__/status.test.ts`
+- `foundations/core/packages/platform/src/event.ts`
+- `foundations/core/packages/platform/src/i18n.ts`
+- `foundations/core/packages/platform/src/ident.ts`
+- `foundations/core/packages/platform/src/index.ts`
+- `foundations/core/packages/platform/src/metadata.ts`
+- `foundations/core/packages/platform/src/platform.ts`
+- `foundations/core/packages/platform/src/resource.ts`
+- `foundations/core/packages/platform/src/status.ts`
+- `foundations/core/packages/platform/src/testUtils.ts`
+- `foundations/core/packages/platform/tsconfig.json`
+- `foundations/core/packages/postgres-base/.eslintrc.js`
+- `foundations/core/packages/postgres-base/.npmignore`
+- `foundations/core/packages/postgres-base/CHANGELOG.json`
+- `foundations/core/packages/postgres-base/CHANGELOG.md`
+- `foundations/core/packages/postgres-base/config/rig.json`
+- `foundations/core/packages/postgres-base/jest.config.js`
+- `foundations/core/packages/postgres-base/package.json`
+- `foundations/core/packages/postgres-base/src/index.ts`
+- `foundations/core/packages/postgres-base/tsconfig.json`
+- `foundations/core/packages/query/.eslintrc.js`
+- `foundations/core/packages/query/.npmignore`
+- `foundations/core/packages/query/CHANGELOG.json`
+- `foundations/core/packages/query/CHANGELOG.md`
+- `foundations/core/packages/query/config/rig.json`
+- `foundations/core/packages/query/jest.config.js`
+- `foundations/core/packages/query/package.json`
+- `foundations/core/packages/query/src/__tests__/advanced-coverage.test.ts`
+- `foundations/core/packages/query/src/__tests__/bug-hunting.test.ts`
+- `foundations/core/packages/query/src/__tests__/connection.ts`
+- `foundations/core/packages/query/src/__tests__/deep-lookup.test.ts`
+- `foundations/core/packages/query/src/__tests__/final-coverage.test.ts`
+- `foundations/core/packages/query/src/__tests__/init-utility.test.ts`
+- `foundations/core/packages/query/src/__tests__/livequery-coverage.test.ts`
+- `foundations/core/packages/query/src/__tests__/minmodel.ts`
+- `foundations/core/packages/query/src/__tests__/push-pull.test.ts`
+- `foundations/core/packages/query/src/__tests__/query.test.ts`
+- `foundations/core/packages/query/src/__tests__/queue-bugs.test.ts`
+- `foundations/core/packages/query/src/__tests__/refs-coverage.test.ts`
+- `foundations/core/packages/query/src/__tests__/remaining-edge-cases.test.ts`
+- `foundations/core/packages/query/src/__tests__/workspace-events.test.ts`
+- `foundations/core/packages/query/src/index.ts`
+- `foundations/core/packages/query/src/refs.ts`
+- `foundations/core/packages/query/src/results.ts`
+- `foundations/core/packages/query/src/types.ts`
+- `foundations/core/packages/query/tsconfig.json`
+- `foundations/core/packages/rank/.eslintrc.js`
+- `foundations/core/packages/rank/CHANGELOG.json`
+- `foundations/core/packages/rank/CHANGELOG.md`
+- `foundations/core/packages/rank/config/rig.json`
+- `foundations/core/packages/rank/jest.config.js`
+- `foundations/core/packages/rank/package.json`
+- `foundations/core/packages/rank/src/__tests__/utils.test.ts`
+- `foundations/core/packages/rank/src/index.ts`
+- `foundations/core/packages/rank/src/types.ts`
+- `foundations/core/packages/rank/src/utils.ts`
+- `foundations/core/packages/rank/tsconfig.json`
+- `foundations/core/packages/retry/.eslintrc.js`
+- `foundations/core/packages/retry/.npmignore`
+- `foundations/core/packages/retry/CHANGELOG.json`
+- `foundations/core/packages/retry/CHANGELOG.md`
+- `foundations/core/packages/retry/config/rig.json`
+- `foundations/core/packages/retry/jest.config.js`
+- `foundations/core/packages/retry/package.json`
+- `foundations/core/packages/retry/readme.md`
+- `foundations/core/packages/retry/src/__test__/decorator.test.ts`
+- `foundations/core/packages/retry/src/__test__/delay.test.ts`
+- `foundations/core/packages/retry/src/__test__/retry.test.ts`
+- `foundations/core/packages/retry/src/__test__/retryable.test.ts`
+- `foundations/core/packages/retry/src/decorator.ts`
+- `foundations/core/packages/retry/src/delay.ts`
+- `foundations/core/packages/retry/src/index.ts`
+- `foundations/core/packages/retry/src/logger.ts`
+- `foundations/core/packages/retry/src/retry.ts`
+- `foundations/core/packages/retry/src/retryable.ts`
+- `foundations/core/packages/retry/tsconfig.json`
+- `foundations/core/packages/rpc/.eslintrc.js`
+- `foundations/core/packages/rpc/.npmignore`
+- `foundations/core/packages/rpc/CHANGELOG.json`
+- `foundations/core/packages/rpc/CHANGELOG.md`
+- `foundations/core/packages/rpc/config/rig.json`
+- `foundations/core/packages/rpc/jest.config.js`
+- `foundations/core/packages/rpc/package.json`
+- `foundations/core/packages/rpc/src/index.ts`
+- `foundations/core/packages/rpc/src/rpc.ts`
+- `foundations/core/packages/rpc/src/sliding.ts`
+- `foundations/core/packages/rpc/src/test/rateLimit.spec.ts`
+- `foundations/core/packages/rpc/tsconfig.json`
+- `foundations/core/packages/storage-client/.eslintrc.js`
+- `foundations/core/packages/storage-client/.npmignore`
+- `foundations/core/packages/storage-client/CHANGELOG.json`
+- `foundations/core/packages/storage-client/CHANGELOG.md`
+- `foundations/core/packages/storage-client/config/rig.json`
+- `foundations/core/packages/storage-client/jest.config.js`
+- `foundations/core/packages/storage-client/package.json`
+- `foundations/core/packages/storage-client/src/__tests__/create-file-storage.test.ts`
+- `foundations/core/packages/storage-client/src/__tests__/datalake-storage.test.ts`
+- `foundations/core/packages/storage-client/src/__tests__/front-storage.test.ts`
+- `foundations/core/packages/storage-client/src/__tests__/hulylake-storage.test.ts`
+- `foundations/core/packages/storage-client/src/__tests__/integration.test.ts`
+- `foundations/core/packages/storage-client/src/__tests__/upload.test.ts`
+- `foundations/core/packages/storage-client/src/client/datalake.ts`
+- `foundations/core/packages/storage-client/src/client/front.ts`
+- `foundations/core/packages/storage-client/src/client/hulylake.ts`
+- `foundations/core/packages/storage-client/src/client/index.ts`
+- `foundations/core/packages/storage-client/src/index.ts`
+- `foundations/core/packages/storage-client/src/types.ts`
+- `foundations/core/packages/storage-client/src/upload.ts`
+- `foundations/core/packages/storage-client/tsconfig.json`
+- `foundations/core/packages/storage/.eslintrc.js`
+- `foundations/core/packages/storage/.npmignore`
+- `foundations/core/packages/storage/CHANGELOG.json`
+- `foundations/core/packages/storage/CHANGELOG.md`
+- `foundations/core/packages/storage/config/rig.json`
+- `foundations/core/packages/storage/jest.config.js`
+- `foundations/core/packages/storage/package.json`
+- `foundations/core/packages/storage/src/index.ts`
+- `foundations/core/packages/storage/tsconfig.json`
+- `foundations/core/packages/text-core/.eslintrc.js`
+- `foundations/core/packages/text-core/CHANGELOG.json`
+- `foundations/core/packages/text-core/CHANGELOG.md`
+- `foundations/core/packages/text-core/config/rig.json`
+- `foundations/core/packages/text-core/jest.config.js`
+- `foundations/core/packages/text-core/package.json`
+- `foundations/core/packages/text-core/src/index.ts`
+- `foundations/core/packages/text-core/src/markup/__tests__/traverse.test.ts`
+- `foundations/core/packages/text-core/src/markup/__tests__/utils.test.ts`
+- `foundations/core/packages/text-core/src/markup/dsl.ts`
+- `foundations/core/packages/text-core/src/markup/model.ts`
+- `foundations/core/packages/text-core/src/markup/reference.ts`
+- `foundations/core/packages/text-core/src/markup/traverse.ts`
+- `foundations/core/packages/text-core/src/markup/utils.ts`
+- `foundations/core/packages/text-core/tsconfig.json`
+- `foundations/core/packages/text-html/.eslintrc.js`
+- `foundations/core/packages/text-html/CHANGELOG.json`
+- `foundations/core/packages/text-html/CHANGELOG.md`
+- `foundations/core/packages/text-html/config/rig.json`
+- `foundations/core/packages/text-html/jest.config.js`
+- `foundations/core/packages/text-html/package.json`
+- `foundations/core/packages/text-html/src/__tests__/html.test.ts`
+- `foundations/core/packages/text-html/src/index.ts`
+- `foundations/core/packages/text-html/src/parser.ts`
+- `foundations/core/packages/text-html/src/serializer.ts`
+- `foundations/core/packages/text-html/tsconfig.json`
+- `foundations/core/packages/text-markdown/.eslintrc.js`
+- `foundations/core/packages/text-markdown/CHANGELOG.json`
+- `foundations/core/packages/text-markdown/CHANGELOG.md`
+- `foundations/core/packages/text-markdown/config/rig.json`
+- `foundations/core/packages/text-markdown/jest.config.js`
+- `foundations/core/packages/text-markdown/package.json`
+- `foundations/core/packages/text-markdown/src/__tests__/markdown.test.ts`
+- `foundations/core/packages/text-markdown/src/compare.ts`
+- `foundations/core/packages/text-markdown/src/index.ts`
+- `foundations/core/packages/text-markdown/src/marks.ts`
+- `foundations/core/packages/text-markdown/src/node.ts`
+- `foundations/core/packages/text-markdown/src/parser.ts`
+- `foundations/core/packages/text-markdown/src/serializer.ts`
+- `foundations/core/packages/text-markdown/tsconfig.json`
+- `foundations/core/packages/text-ydoc/.eslintrc.js`
+- `foundations/core/packages/text-ydoc/CHANGELOG.json`
+- `foundations/core/packages/text-ydoc/CHANGELOG.md`
+- `foundations/core/packages/text-ydoc/config/rig.json`
+- `foundations/core/packages/text-ydoc/jest.config.js`
+- `foundations/core/packages/text-ydoc/package.json`
+- `foundations/core/packages/text-ydoc/src/__tests__/ydoc.test.ts`
+- `foundations/core/packages/text-ydoc/src/index.ts`
+- `foundations/core/packages/text-ydoc/src/ydoc.ts`
+- `foundations/core/packages/text-ydoc/tsconfig.json`
+- `foundations/core/packages/text/.eslintrc.js`
+- `foundations/core/packages/text/CHANGELOG.json`
+- `foundations/core/packages/text/CHANGELOG.md`
+- `foundations/core/packages/text/config/rig.json`
+- `foundations/core/packages/text/jest.config.js`
+- `foundations/core/packages/text/package.json`
+- `foundations/core/packages/text/src/extensions.ts`
+- `foundations/core/packages/text/src/index.ts`
+- `foundations/core/packages/text/src/kit.ts`
+- `foundations/core/packages/text/src/kits/common-kit.ts`
+- `foundations/core/packages/text/src/kits/server-kit.ts`
+- `foundations/core/packages/text/src/marks/code.ts`
+- `foundations/core/packages/text/src/marks/colors.ts`
+- `foundations/core/packages/text/src/marks/inlineComment.ts`
+- `foundations/core/packages/text/src/marks/noteBase.ts`
+- `foundations/core/packages/text/src/marks/qmsInlineCommentMark.ts`
+- `foundations/core/packages/text/src/markup/__tests__/dsl.test.ts`
+- `foundations/core/packages/text/src/markup/__tests__/utils.test.ts`
+- `foundations/core/packages/text/src/markup/utils.ts`
+- `foundations/core/packages/text/src/nodes/codeblock.ts`
+- `foundations/core/packages/text/src/nodes/comment.ts`
+- `foundations/core/packages/text/src/nodes/embed.ts`
+- `foundations/core/packages/text/src/nodes/emoji.ts`
+- `foundations/core/packages/text/src/nodes/file.ts`
+- `foundations/core/packages/text/src/nodes/image.ts`
+- `foundations/core/packages/text/src/nodes/index.ts`
+- `foundations/core/packages/text/src/nodes/markdown.ts`
+- `foundations/core/packages/text/src/nodes/mermaid.ts`
+- `foundations/core/packages/text/src/nodes/reference.ts`
+- `foundations/core/packages/text/src/nodes/todo.ts`
+- `foundations/core/packages/text/src/nodes/utils.ts`
+- `foundations/core/packages/text/src/tiptapExtensions.ts`
+- `foundations/core/packages/text/tsconfig.json`
+- `foundations/core/packages/token/.eslintrc.js`
+- `foundations/core/packages/token/.npmignore`
+- `foundations/core/packages/token/CHANGELOG.json`
+- `foundations/core/packages/token/CHANGELOG.md`
+- `foundations/core/packages/token/config/rig.json`
+- `foundations/core/packages/token/jest.config.js`
+- `foundations/core/packages/token/package.json`
+- `foundations/core/packages/token/src/__tests__/token.test.ts`
+- `foundations/core/packages/token/src/index.ts`
+- `foundations/core/packages/token/src/plugin.ts`
+- `foundations/core/packages/token/src/token.ts`
+- `foundations/core/packages/token/tsconfig.json`
+- `foundations/core/README.md`
+- `foundations/core/rush.json`
+- `foundations/hulylake/.dockerignore`
+- `foundations/hulylake/.github/workflows/build.yaml`
+- `foundations/hulylake/.gitignore`
+- `foundations/hulylake/Cargo.lock`
+- `foundations/hulylake/Cargo.toml`
+- `foundations/hulylake/Dockerfile`
+- `foundations/hulylake/Justfile`
+- `foundations/hulylake/server/Cargo.toml`
+- `foundations/hulylake/server/etc/migrations/V1__initial.sql`
+- `foundations/hulylake/server/Justfile`
+- `foundations/hulylake/server/src/blob.rs`
+- `foundations/hulylake/server/src/compact.rs`
+- `foundations/hulylake/server/src/conditional.rs`
+- `foundations/hulylake/server/src/config.rs`
+- `foundations/hulylake/server/src/handlers.rs`
+- `foundations/hulylake/server/src/main.rs`
+- `foundations/hulylake/server/src/merge.rs`
+- `foundations/hulylake/server/src/mutex.rs`
+- `foundations/hulylake/server/src/patch.rs`
+- `foundations/hulylake/server/src/postgres.rs`
+- `foundations/hulylake/server/src/recovery.rs`
+- `foundations/hulylake/server/src/s3.rs`
+- `foundations/hulylake/tests/Cargo.toml`
+- `foundations/hulylake/tests/src/auth.rs`
+- `foundations/hulylake/tests/src/compact.rs`
+- `foundations/hulylake/tests/src/config.rs`
+- `foundations/hulylake/tests/src/get.rs`
+- `foundations/hulylake/tests/src/head.rs`
+- `foundations/hulylake/tests/src/main.rs`
+- `foundations/hulylake/tests/src/patch.rs`
+- `foundations/hulylake/tests/src/put.rs`
+- `foundations/hulylake/tests/src/sanity.rs`
+- `foundations/hulylake/tests/src/util.rs`
+- `foundations/hulylake/tests/tanu.toml`
+- `foundations/hulypulse/.github/workflows/build.yml`
+- `foundations/hulypulse/.github/workflows/ci.yml`
+- `foundations/hulypulse/.gitignore`
+- `foundations/hulypulse/Cargo.lock`
+- `foundations/hulypulse/Cargo.toml`
+- `foundations/hulypulse/client/off/client.ts`
+- `foundations/hulypulse/Dockerfile`
+- `foundations/hulypulse/LICENSE`
+- `foundations/hulypulse/policy.repo`
+- `foundations/hulypulse/README.md`
+- `foundations/hulypulse/scripts/claims_exp.json`
+- `foundations/hulypulse/scripts/claims_system.json`
+- `foundations/hulypulse/scripts/claims_wrong_ws.json`
+- `foundations/hulypulse/scripts/claims.json`
+- `foundations/hulypulse/scripts/claims2.json`
+- `foundations/hulypulse/scripts/lleo_TEST_HTTP_API.sh`
+- `foundations/hulypulse/scripts/pulse_lib_huly.sh`
+- `foundations/hulypulse/scripts/pulse_lib_lleo.sh`
+- `foundations/hulypulse/scripts/pulse_lib.sh`
+- `foundations/hulypulse/scripts/TEST_HTTP_API_repo.sh`
+- `foundations/hulypulse/scripts/TEST_HTTP_API.sh`
+- `foundations/hulypulse/scripts/TEST_lleo.html`
+- `foundations/hulypulse/scripts/TEST_no_auth.html`
+- `foundations/hulypulse/scripts/test_pulse_system.sh`
+- `foundations/hulypulse/scripts/test_pulse.sh`
+- `foundations/hulypulse/scripts/TEST_WS_API.sh`
+- `foundations/hulypulse/scripts/TEST.html`
+- `foundations/hulypulse/scripts/TEST00.sh`
+- `foundations/hulypulse/scripts/token.sh`
+- `foundations/hulypulse/scripts/typing-test.sh`
+- `foundations/hulypulse/src/config.rs`
+- `foundations/hulypulse/src/config/default.toml`
+- `foundations/hulypulse/src/db.rs`
+- `foundations/hulypulse/src/GOT.sh`
+- `foundations/hulypulse/src/handlers_http.rs`
+- `foundations/hulypulse/src/handlers_ws.rs`
+- `foundations/hulypulse/src/hub_service.rs`
+- `foundations/hulypulse/src/main.rs`
+- `foundations/hulypulse/src/memory.rs`
+- `foundations/hulypulse/src/redis.rs`
+- `foundations/hulypulse/src/workspace_owner.rs`
+- `foundations/hulypulse/tests/rest_api.rs`
+- `foundations/hulypulse/tests/ws.rs`
+- `foundations/net/.gitattributes`
+- `foundations/net/.github/workflows/ci.yml`
+- `foundations/net/.gitignore`
+- `foundations/net/.prettierrc`
+- `foundations/net/.vscode/extensions.json`
+- `foundations/net/.vscode/launch.json`
+- `foundations/net/CHANGELOG.md`
+- `foundations/net/common/changes/@hcengineering/network-backrpc/refactoring-back-rpc_2025-10-06-13-11.json`
+- `foundations/net/common/changes/@hcengineering/network-client/refactoring-back-rpc_2025-10-06-13-11.json`
+- `foundations/net/common/config/rush/.npmrc`
+- `foundations/net/common/config/rush/.npmrc-publish`
+- `foundations/net/common/config/rush/.pnpmfile.cjs`
+- `foundations/net/common/config/rush/artifactory.json`
+- `foundations/net/common/config/rush/build-cache.json`
+- `foundations/net/common/config/rush/cobuild.json`
+- `foundations/net/common/config/rush/command-line.json`
+- `foundations/net/common/config/rush/common-versions.json`
+- `foundations/net/common/config/rush/custom-tips.json`
+- `foundations/net/common/config/rush/experiments.json`
+- `foundations/net/common/config/rush/pnpm-config.json`
+- `foundations/net/common/config/rush/pnpm-lock.yaml`
+- `foundations/net/common/config/rush/repo-state.json`
+- `foundations/net/common/config/rush/rush-plugins.json`
+- `foundations/net/common/config/rush/subspaces.json`
+- `foundations/net/common/config/rush/version-policies.json`
+- `foundations/net/common/git-hooks/commit-msg.sample`
+- `foundations/net/common/scripts/bump-changes-from-tag.sh`
+- `foundations/net/common/scripts/docker_build.sh`
+- `foundations/net/common/scripts/docker_tag_push.sh`
+- `foundations/net/common/scripts/docker_tag.sh`
+- `foundations/net/common/scripts/docker.sh`
+- `foundations/net/common/scripts/esbuild.js`
+- `foundations/net/common/scripts/generate-coverage-html.js`
+- `foundations/net/common/scripts/install-run-rush-pnpm.js`
+- `foundations/net/common/scripts/install-run-rush.js`
+- `foundations/net/common/scripts/install-run-rushx.js`
+- `foundations/net/common/scripts/install-run.js`
+- `foundations/net/common/scripts/merge-coverage.js`
+- `foundations/net/common/scripts/package.json`
+- `foundations/net/common/scripts/README_BUMP.md`
+- `foundations/net/common/scripts/README.md`
+- `foundations/net/common/scripts/show-coverage.sh`
+- `foundations/net/CONTRIBUTING.md`
+- `foundations/net/docs/AUTO_DISPOSAL_GUIDE.md`
+- `foundations/net/docs/CONTAINER_DEVELOPMENT.md`
+- `foundations/net/docs/CORE_CONCEPTS.md`
+- `foundations/net/docs/HA_STATELESS_CONTAINERS.md`
+- `foundations/net/docs/MULTI_TENANT.md`
+- `foundations/net/docs/PRODUCTION_DEPLOYMENT.md`
+- `foundations/net/docs/QUICKSTART_HA.md`
+- `foundations/net/docs/QUICKSTART.md`
+- `foundations/net/docs/README.md`
+- `foundations/net/examples/01-basic-container-request-response.ts`
+- `foundations/net/examples/02-event-broadcasting.ts`
+- `foundations/net/examples/03-multi-tenant.ts`
+- `foundations/net/examples/04-complete-production-setup.ts`
+- `foundations/net/examples/05-error-handling-retry.ts`
+- `foundations/net/examples/custom-timeout-example.ts`
+- `foundations/net/examples/ha-stateless-container-example.ts`
+- `foundations/net/examples/package.json`
+- `foundations/net/examples/README.md`
+- `foundations/net/examples/tsconfig.json`
+- `foundations/net/Huly.md`
+- `foundations/net/LICENSE`
+- `foundations/net/packages/backrpc/.eslintrc.js`
+- `foundations/net/packages/backrpc/.npmignore`
+- `foundations/net/packages/backrpc/config/rig.json`
+- `foundations/net/packages/backrpc/jest.config.js`
+- `foundations/net/packages/backrpc/package.json`
+- `foundations/net/packages/backrpc/src/__test__/backrpc.spec.ts`
+- `foundations/net/packages/backrpc/src/__test__/zmq.spec.ts`
+- `foundations/net/packages/backrpc/src/__tests__/json-utils.test.ts`
+- `foundations/net/packages/backrpc/src/client.ts`
+- `foundations/net/packages/backrpc/src/context.ts`
+- `foundations/net/packages/backrpc/src/index.ts`
+- `foundations/net/packages/backrpc/src/json-utils.ts`
+- `foundations/net/packages/backrpc/src/server.ts`
+- `foundations/net/packages/backrpc/src/types.ts`
+- `foundations/net/packages/backrpc/tsconfig.json`
+- `foundations/net/packages/client/.eslintrc.js`
+- `foundations/net/packages/client/.npmignore`
+- `foundations/net/packages/client/config/rig.json`
+- `foundations/net/packages/client/jest.config.js`
+- `foundations/net/packages/client/package.json`
+- `foundations/net/packages/client/src/__tests__/client-extended.spec.ts`
+- `foundations/net/packages/client/src/__tests__/client.spec.ts`
+- `foundations/net/packages/client/src/__tests__/containerConnection.spec.ts`
+- `foundations/net/packages/client/src/__tests__/dispose.spec.ts`
+- `foundations/net/packages/client/src/__tests__/establish.spec.ts`
+- `foundations/net/packages/client/src/agent.ts`
+- `foundations/net/packages/client/src/client.ts`
+- `foundations/net/packages/client/src/index.ts`
+- `foundations/net/packages/client/src/types.ts`
+- `foundations/net/packages/client/tsconfig.json`
+- `foundations/net/packages/core/.eslintrc.js`
+- `foundations/net/packages/core/.npmignore`
+- `foundations/net/packages/core/config/rig.json`
+- `foundations/net/packages/core/jest.config.js`
+- `foundations/net/packages/core/package.json`
+- `foundations/net/packages/core/src/__test__/agent-extended.spec.ts`
+- `foundations/net/packages/core/src/__test__/alive-checkins.spec.ts`
+- `foundations/net/packages/core/src/__test__/ha-stateless.spec.ts`
+- `foundations/net/packages/core/src/__test__/network-extended.spec.ts`
+- `foundations/net/packages/core/src/__test__/network.spec.ts`
+- `foundations/net/packages/core/src/__test__/proxy.test.ts`
+- `foundations/net/packages/core/src/__test__/tickMgr.spec.ts`
+- `foundations/net/packages/core/src/__test__/utils-extended.spec.ts`
+- `foundations/net/packages/core/src/agent.ts`
+- `foundations/net/packages/core/src/api/agent.ts`
+- `foundations/net/packages/core/src/api/client.ts`
+- `foundations/net/packages/core/src/api/network.ts`
+- `foundations/net/packages/core/src/api/timeouts.ts`
+- `foundations/net/packages/core/src/api/types.ts`
+- `foundations/net/packages/core/src/api/utils.ts`
+- `foundations/net/packages/core/src/containers.ts`
+- `foundations/net/packages/core/src/endpoints.ts`
+- `foundations/net/packages/core/src/index.ts`
+- `foundations/net/packages/core/src/network.ts`
+- `foundations/net/packages/core/src/proxy.ts`
+- `foundations/net/packages/core/src/utils.ts`
+- `foundations/net/packages/core/tsconfig.json`
+- `foundations/net/packages/server/.eslintrc.js`
+- `foundations/net/packages/server/.npmignore`
+- `foundations/net/packages/server/config/rig.json`
+- `foundations/net/packages/server/jest.config.js`
+- `foundations/net/packages/server/package.json`
+- `foundations/net/packages/server/src/__test__/dummySession.ts`
+- `foundations/net/packages/server/src/__test__/dummyWorkspace.ts`
+- `foundations/net/packages/server/src/__test__/network.spec.ts`
+- `foundations/net/packages/server/src/__test__/server-extended.spec.ts`
+- `foundations/net/packages/server/src/index.ts`
+- `foundations/net/packages/server/src/server.ts`
+- `foundations/net/packages/server/tsconfig.json`
+- `foundations/net/pods/network-pod/.eslintrc.js`
+- `foundations/net/pods/network-pod/.npmignore`
+- `foundations/net/pods/network-pod/config/rig.json`
+- `foundations/net/pods/network-pod/Dockerfile`
+- `foundations/net/pods/network-pod/jest.config.js`
+- `foundations/net/pods/network-pod/package.json`
+- `foundations/net/pods/network-pod/src/index.ts`
+- `foundations/net/pods/network-pod/tsconfig.json`
+- `foundations/net/pods/network-tool/.eslintrc.js`
+- `foundations/net/pods/network-tool/.npmignore`
+- `foundations/net/pods/network-tool/bench_cli.md`
+- `foundations/net/pods/network-tool/config/rig.json`
+- `foundations/net/pods/network-tool/Dockerfile`
+- `foundations/net/pods/network-tool/jest.config.js`
+- `foundations/net/pods/network-tool/package.json`
+- `foundations/net/pods/network-tool/src/agents.ts`
+- `foundations/net/pods/network-tool/src/benchmark.ts`
+- `foundations/net/pods/network-tool/src/index.ts`
+- `foundations/net/pods/network-tool/src/request.ts`
+- `foundations/net/pods/network-tool/src/utils.ts`
+- `foundations/net/pods/network-tool/tsconfig.json`
+- `foundations/net/README.md`
+- `foundations/net/rush.json`
+- `foundations/net/test-examples.sh`
+- `foundations/net/tests/.eslintrc.js`
+- `foundations/net/tests/.gitignore`
+- `foundations/net/tests/.npmignore`
+- `foundations/net/tests/config/rig.json`
+- `foundations/net/tests/docker-compose.yaml`
+- `foundations/net/tests/jest.config.js`
+- `foundations/net/tests/package.json`
+- `foundations/net/tests/prepare.sh`
+- `foundations/net/tests/src/__tests__/client.test.ts`
+- `foundations/net/tests/src/index.ts`
+- `foundations/net/tests/tsconfig.json`
+- `foundations/net/todo.md`
+- `foundations/server/.gitattributes`
+- `foundations/server/.github/copilot-instructions.md`
+- `foundations/server/.github/workflows/ci.yml`
+- `foundations/server/.gitignore`
+- `foundations/server/.nvmrc`
+- `foundations/server/.prettierrc`
+- `foundations/server/.vscode/extensions.json`
+- `foundations/server/common/changes/@hcengineering/postgres/fix-ne-predicate_2026-01-12-06-01.json`
+- `foundations/server/common/config/rush/.npmrc`
+- `foundations/server/common/config/rush/.npmrc-publish`
+- `foundations/server/common/config/rush/.pnpmfile.cjs`
+- `foundations/server/common/config/rush/artifactory.json`
+- `foundations/server/common/config/rush/build-cache.json`
+- `foundations/server/common/config/rush/cobuild.json`
+- `foundations/server/common/config/rush/command-line.json`
+- `foundations/server/common/config/rush/common-versions.json`
+- `foundations/server/common/config/rush/custom-tips.json`
+- `foundations/server/common/config/rush/experiments.json`
+- `foundations/server/common/config/rush/pnpm-config.json`
+- `foundations/server/common/config/rush/pnpm-lock.yaml`
+- `foundations/server/common/config/rush/repo-state.json`
+- `foundations/server/common/config/rush/rush-plugins.json`
+- `foundations/server/common/config/rush/subspaces.json`
+- `foundations/server/common/config/rush/version-policies.json`
+- `foundations/server/common/git-hooks/commit-msg.sample`
+- `foundations/server/common/scripts/generate-coverage-html.js`
+- `foundations/server/common/scripts/install-run-rush-pnpm.js`
+- `foundations/server/common/scripts/install-run-rush.js`
+- `foundations/server/common/scripts/install-run-rushx.js`
+- `foundations/server/common/scripts/install-run.js`
+- `foundations/server/common/scripts/merge-coverage.js`
+- `foundations/server/common/scripts/package-lock.json`
+- `foundations/server/common/scripts/package.json`
+- `foundations/server/common/scripts/README.md`
+- `foundations/server/common/scripts/run-tests-with-coverage.js`
+- `foundations/server/common/scripts/show-coverage-summary.js`
+- `foundations/server/common/scripts/show-coverage-summary.sh`
+- `foundations/server/common/scripts/show-coverage.sh`
+- `foundations/server/docs/tx-ordering-middleware-implementation.md`
+- `foundations/server/LICENSE`
+- `foundations/server/packages/client/.eslintrc.js`
+- `foundations/server/packages/client/.npmignore`
+- `foundations/server/packages/client/CHANGELOG.json`
+- `foundations/server/packages/client/CHANGELOG.md`
+- `foundations/server/packages/client/config/rig.json`
+- `foundations/server/packages/client/jest.config.js`
+- `foundations/server/packages/client/package.json`
+- `foundations/server/packages/client/src/account.ts`
+- `foundations/server/packages/client/src/blob.ts`
+- `foundations/server/packages/client/src/client.ts`
+- `foundations/server/packages/client/src/index.ts`
+- `foundations/server/packages/client/src/plugin.ts`
+- `foundations/server/packages/client/src/token.ts`
+- `foundations/server/packages/client/tsconfig.json`
+- `foundations/server/packages/collaboration/.eslintrc.js`
+- `foundations/server/packages/collaboration/.npmignore`
+- `foundations/server/packages/collaboration/CHANGELOG.json`
+- `foundations/server/packages/collaboration/CHANGELOG.md`
+- `foundations/server/packages/collaboration/config/rig.json`
+- `foundations/server/packages/collaboration/jest.config.js`
+- `foundations/server/packages/collaboration/package.json`
+- `foundations/server/packages/collaboration/src/__tests__/storage.test.ts`
+- `foundations/server/packages/collaboration/src/__tests__/ydoc.test.ts`
+- `foundations/server/packages/collaboration/src/index.ts`
+- `foundations/server/packages/collaboration/src/storage.ts`
+- `foundations/server/packages/collaboration/src/ydoc.ts`
+- `foundations/server/packages/collaboration/tsconfig.json`
+- `foundations/server/packages/core/.eslintrc.js`
+- `foundations/server/packages/core/.npmignore`
+- `foundations/server/packages/core/CHANGELOG.json`
+- `foundations/server/packages/core/CHANGELOG.md`
+- `foundations/server/packages/core/config/rig.json`
+- `foundations/server/packages/core/jest.config.js`
+- `foundations/server/packages/core/package.json`
+- `foundations/server/packages/core/src/__tests__/performance-benchmark.ts`
+- `foundations/server/packages/core/src/__tests__/shared-integration.ts`
+- `foundations/server/packages/core/src/__tests__/utils.test.ts`
+- `foundations/server/packages/core/src/adapter.ts`
+- `foundations/server/packages/core/src/base.ts`
+- `foundations/server/packages/core/src/benchmark/index.ts`
+- `foundations/server/packages/core/src/configuration.ts`
+- `foundations/server/packages/core/src/content.ts`
+- `foundations/server/packages/core/src/dbAdapterManager.ts`
+- `foundations/server/packages/core/src/domainHelper.ts`
+- `foundations/server/packages/core/src/index.ts`
+- `foundations/server/packages/core/src/limitter.ts`
+- `foundations/server/packages/core/src/mem.ts`
+- `foundations/server/packages/core/src/nullAdapter.ts`
+- `foundations/server/packages/core/src/pipeline.ts`
+- `foundations/server/packages/core/src/plugin.ts`
+- `foundations/server/packages/core/src/queue/dummyQueue.ts`
+- `foundations/server/packages/core/src/queue/index.ts`
+- `foundations/server/packages/core/src/queue/types.ts`
+- `foundations/server/packages/core/src/queue/users.ts`
+- `foundations/server/packages/core/src/queue/utils.ts`
+- `foundations/server/packages/core/src/queue/workspace.ts`
+- `foundations/server/packages/core/src/service.ts`
+- `foundations/server/packages/core/src/stats.ts`
+- `foundations/server/packages/core/src/storage.ts`
+- `foundations/server/packages/core/src/triggers.ts`
+- `foundations/server/packages/core/src/types.ts`
+- `foundations/server/packages/core/src/utils.ts`
+- `foundations/server/packages/core/tsconfig.json`
+- `foundations/server/packages/datalake/.eslintrc.js`
+- `foundations/server/packages/datalake/.npmignore`
+- `foundations/server/packages/datalake/CHANGELOG.json`
+- `foundations/server/packages/datalake/CHANGELOG.md`
+- `foundations/server/packages/datalake/config/rig.json`
+- `foundations/server/packages/datalake/jest.config.js`
+- `foundations/server/packages/datalake/package.json`
+- `foundations/server/packages/datalake/src/__tests__/utils.test.ts`
+- `foundations/server/packages/datalake/src/client.ts`
+- `foundations/server/packages/datalake/src/error.ts`
+- `foundations/server/packages/datalake/src/index.ts`
+- `foundations/server/packages/datalake/src/perfTest.ts`
+- `foundations/server/packages/datalake/src/utils.ts`
+- `foundations/server/packages/datalake/tsconfig.json`
+- `foundations/server/packages/elastic/.eslintrc.js`
+- `foundations/server/packages/elastic/.npmignore`
+- `foundations/server/packages/elastic/CHANGELOG.json`
+- `foundations/server/packages/elastic/CHANGELOG.md`
+- `foundations/server/packages/elastic/config/rig.json`
+- `foundations/server/packages/elastic/jest.config.js`
+- `foundations/server/packages/elastic/package.json`
+- `foundations/server/packages/elastic/src/__tests__/adapter.test.ts`
+- `foundations/server/packages/elastic/src/adapter.ts`
+- `foundations/server/packages/elastic/src/index.ts`
+- `foundations/server/packages/elastic/tsconfig.json`
+- `foundations/server/packages/hulylake/.eslintrc.js`
+- `foundations/server/packages/hulylake/.npmignore`
+- `foundations/server/packages/hulylake/CHANGELOG.json`
+- `foundations/server/packages/hulylake/CHANGELOG.md`
+- `foundations/server/packages/hulylake/config/rig.json`
+- `foundations/server/packages/hulylake/jest.config.js`
+- `foundations/server/packages/hulylake/package.json`
+- `foundations/server/packages/hulylake/src/__tests__/utils.test.ts`
+- `foundations/server/packages/hulylake/src/error.ts`
+- `foundations/server/packages/hulylake/src/index.ts`
+- `foundations/server/packages/hulylake/src/utils.ts`
+- `foundations/server/packages/hulylake/tsconfig.json`
+- `foundations/server/packages/kafka/.eslintrc.js`
+- `foundations/server/packages/kafka/.npmignore`
+- `foundations/server/packages/kafka/CHANGELOG.json`
+- `foundations/server/packages/kafka/CHANGELOG.md`
+- `foundations/server/packages/kafka/config/rig.json`
+- `foundations/server/packages/kafka/jest.config.js`
+- `foundations/server/packages/kafka/package.json`
+- `foundations/server/packages/kafka/src/__test__/queue.spec.ts`
+- `foundations/server/packages/kafka/src/index.ts`
+- `foundations/server/packages/kafka/tsconfig.json`
+- `foundations/server/packages/middleware/.eslintrc.js`
+- `foundations/server/packages/middleware/.npmignore`
+- `foundations/server/packages/middleware/CHANGELOG.json`
+- `foundations/server/packages/middleware/CHANGELOG.md`
+- `foundations/server/packages/middleware/config/rig.json`
+- `foundations/server/packages/middleware/jest.config.js`
+- `foundations/server/packages/middleware/package.json`
+- `foundations/server/packages/middleware/src/applyTx.ts`
+- `foundations/server/packages/middleware/src/broadcast.ts`
+- `foundations/server/packages/middleware/src/configuration.ts`
+- `foundations/server/packages/middleware/src/contextName.ts`
+- `foundations/server/packages/middleware/src/dbAdapter.ts`
+- `foundations/server/packages/middleware/src/dbAdapterHelper.ts`
+- `foundations/server/packages/middleware/src/derivedEntry.ts`
+- `foundations/server/packages/middleware/src/domainFind.ts`
+- `foundations/server/packages/middleware/src/domainTx.ts`
+- `foundations/server/packages/middleware/src/findSecurity.ts`
+- `foundations/server/packages/middleware/src/fulltext.ts`
+- `foundations/server/packages/middleware/src/guestPermissions.ts`
+- `foundations/server/packages/middleware/src/identifier.ts`
+- `foundations/server/packages/middleware/src/identity.ts`
+- `foundations/server/packages/middleware/src/index.ts`
+- `foundations/server/packages/middleware/src/liveQuery.ts`
+- `foundations/server/packages/middleware/src/lookup.ts`
+- `foundations/server/packages/middleware/src/lowLevel.ts`
+- `foundations/server/packages/middleware/src/model.ts`
+- `foundations/server/packages/middleware/src/modified.ts`
+- `foundations/server/packages/middleware/src/normalizeTx.ts`
+- `foundations/server/packages/middleware/src/pluginConfig.ts`
+- `foundations/server/packages/middleware/src/private.ts`
+- `foundations/server/packages/middleware/src/queryJoin.ts`
+- `foundations/server/packages/middleware/src/queue.ts`
+- `foundations/server/packages/middleware/src/rank.ts`
+- `foundations/server/packages/middleware/src/spacePermissions.ts`
+- `foundations/server/packages/middleware/src/spaceSecurity.ts`
+- `foundations/server/packages/middleware/src/tests/guestPermissions.test.ts`
+- `foundations/server/packages/middleware/src/tests/liveQuery.race.test.ts`
+- `foundations/server/packages/middleware/src/tests/queryJoiner.spec.ts`
+- `foundations/server/packages/middleware/src/tests/txOrdering.test.ts`
+- `foundations/server/packages/middleware/src/triggers.ts`
+- `foundations/server/packages/middleware/src/txOrdering.ts`
+- `foundations/server/packages/middleware/src/txPush.ts`
+- `foundations/server/packages/middleware/src/userStatus.ts`
+- `foundations/server/packages/middleware/src/utils.ts`
+- `foundations/server/packages/middleware/src/versioning.ts`
+- `foundations/server/packages/middleware/tsconfig.json`
+- `foundations/server/packages/minio/.eslintrc.js`
+- `foundations/server/packages/minio/.npmignore`
+- `foundations/server/packages/minio/CHANGELOG.json`
+- `foundations/server/packages/minio/CHANGELOG.md`
+- `foundations/server/packages/minio/config/rig.json`
+- `foundations/server/packages/minio/jest.config.js`
+- `foundations/server/packages/minio/package.json`
+- `foundations/server/packages/minio/src/__tests__/minio.test.ts`
+- `foundations/server/packages/minio/src/index.ts`
+- `foundations/server/packages/minio/tsconfig.json`
+- `foundations/server/packages/mongo/.eslintrc.js`
+- `foundations/server/packages/mongo/.npmignore`
+- `foundations/server/packages/mongo/CHANGELOG.json`
+- `foundations/server/packages/mongo/CHANGELOG.md`
+- `foundations/server/packages/mongo/config/rig.json`
+- `foundations/server/packages/mongo/jest.config.js`
+- `foundations/server/packages/mongo/package.json`
+- `foundations/server/packages/mongo/src/__tests__/minmodel.ts`
+- `foundations/server/packages/mongo/src/__tests__/storage.test.ts`
+- `foundations/server/packages/mongo/src/__tests__/tasks.ts`
+- `foundations/server/packages/mongo/src/index.ts`
+- `foundations/server/packages/mongo/src/storage.ts`
+- `foundations/server/packages/mongo/src/utils.ts`
+- `foundations/server/packages/mongo/tsconfig.json`
+- `foundations/server/packages/postgres/.eslintrc.js`
+- `foundations/server/packages/postgres/.npmignore`
+- `foundations/server/packages/postgres/CHANGELOG.json`
+- `foundations/server/packages/postgres/CHANGELOG.md`
+- `foundations/server/packages/postgres/config/rig.json`
+- `foundations/server/packages/postgres/jest.config.js`
+- `foundations/server/packages/postgres/migrations/allSchema.sql`
+- `foundations/server/packages/postgres/migrations/calendarSchema.sql`
+- `foundations/server/packages/postgres/migrations/dncSchema.sql`
+- `foundations/server/packages/postgres/migrations/eventSchema.sql`
+- `foundations/server/packages/postgres/migrations/notificationSchema.sql`
+- `foundations/server/packages/postgres/migrations/spaceSchema.sql`
+- `foundations/server/packages/postgres/migrations/timeSchema.sql`
+- `foundations/server/packages/postgres/migrations/txSchema.sql`
+- `foundations/server/packages/postgres/migrations/uncSchema.sql`
+- `foundations/server/packages/postgres/package.json`
+- `foundations/server/packages/postgres/src/__tests__/conversion.spec.ts`
+- `foundations/server/packages/postgres/src/__tests__/integration.test.ts`
+- `foundations/server/packages/postgres/src/__tests__/minmodel.ts`
+- `foundations/server/packages/postgres/src/__tests__/storage.test.ts`
+- `foundations/server/packages/postgres/src/__tests__/tasks.ts`
+- `foundations/server/packages/postgres/src/__tests__/utils.spec.ts`
+- `foundations/server/packages/postgres/src/__tests__/utils.ts`
+- `foundations/server/packages/postgres/src/index.ts`
+- `foundations/server/packages/postgres/src/schemas.ts`
+- `foundations/server/packages/postgres/src/storage.ts`
+- `foundations/server/packages/postgres/src/types.ts`
+- `foundations/server/packages/postgres/src/utils.ts`
+- `foundations/server/packages/postgres/tsconfig.json`
+- `foundations/server/packages/s3/.eslintrc.js`
+- `foundations/server/packages/s3/.npmignore`
+- `foundations/server/packages/s3/CHANGELOG.json`
+- `foundations/server/packages/s3/CHANGELOG.md`
+- `foundations/server/packages/s3/config/rig.json`
+- `foundations/server/packages/s3/jest.config.js`
+- `foundations/server/packages/s3/package.json`
+- `foundations/server/packages/s3/src/__tests__/s3.test.ts`
+- `foundations/server/packages/s3/src/index.ts`
+- `foundations/server/packages/s3/src/perfTest.ts`
+- `foundations/server/packages/s3/tsconfig.json`
+- `foundations/server/packages/server-storage/.eslintrc.js`
+- `foundations/server/packages/server-storage/.npmignore`
+- `foundations/server/packages/server-storage/CHANGELOG.json`
+- `foundations/server/packages/server-storage/CHANGELOG.md`
+- `foundations/server/packages/server-storage/config/rig.json`
+- `foundations/server/packages/server-storage/jest.config.js`
+- `foundations/server/packages/server-storage/package.json`
+- `foundations/server/packages/server-storage/src/fallback.ts`
+- `foundations/server/packages/server-storage/src/index.ts`
+- `foundations/server/packages/server-storage/src/readonly.ts`
+- `foundations/server/packages/server-storage/src/starter.ts`
+- `foundations/server/packages/server-storage/src/tests/aggregator.spec.ts`
+- `foundations/server/packages/server-storage/src/tests/memAdapters.ts`
+- `foundations/server/packages/server-storage/src/tests/testConfig.spec.ts`
+- `foundations/server/packages/server-storage/tsconfig.json`
+- `foundations/server/packages/server/.eslintrc.js`
+- `foundations/server/packages/server/.npmignore`
+- `foundations/server/packages/server/CHANGELOG.json`
+- `foundations/server/packages/server/CHANGELOG.md`
+- `foundations/server/packages/server/config/rig.json`
+- `foundations/server/packages/server/jest.config.js`
+- `foundations/server/packages/server/package.json`
+- `foundations/server/packages/server/src/__tests__/sessionManager.test.ts`
+- `foundations/server/packages/server/src/blobs.ts`
+- `foundations/server/packages/server/src/client.ts`
+- `foundations/server/packages/server/src/index.ts`
+- `foundations/server/packages/server/src/sessionManager.ts`
+- `foundations/server/packages/server/src/starter.ts`
+- `foundations/server/packages/server/src/stats.ts`
+- `foundations/server/packages/server/src/utils.ts`
+- `foundations/server/packages/server/src/workspace.ts`
+- `foundations/server/packages/server/tsconfig.json`
+- `foundations/server/README.md`
+- `foundations/server/rush.json`
+- `foundations/server/tests/.env`
+- `foundations/server/tests/docker-compose.yaml`
+- `foundations/server/tests/prepare-tests.sh`
+- `foundations/server/tests/wait-elastic.sh`
+- `foundations/stream/.DS_Store`
+- `foundations/stream/.github/workflows/docker-push.yaml`
+- `foundations/stream/.github/workflows/main.yaml`
+- `foundations/stream/.github/yamllint.yaml`
+- `foundations/stream/.gitignore`
+- `foundations/stream/.golangci.yaml`
+- `foundations/stream/cmd/stream/main.go`
+- `foundations/stream/cmd/stream/otel.go`
+- `foundations/stream/Dockerfile`
+- `foundations/stream/go.mod`
+- `foundations/stream/go.sum`
+- `foundations/stream/internal/pkg/api/v1/recording/handler.go`
+- `foundations/stream/internal/pkg/api/v1/transcoding/handler.go`
+- `foundations/stream/internal/pkg/config/config.go`
+- `foundations/stream/internal/pkg/executor/executor_test.go`
+- `foundations/stream/internal/pkg/executor/executor.go`
+- `foundations/stream/internal/pkg/log/zap.go`
+- `foundations/stream/internal/pkg/manifest/hls_test.go`
+- `foundations/stream/internal/pkg/manifest/hls.go`
+- `foundations/stream/internal/pkg/mediaconvert/command_test.go`
+- `foundations/stream/internal/pkg/mediaconvert/command.go`
+- `foundations/stream/internal/pkg/mediaconvert/coordinator.go`
+- `foundations/stream/internal/pkg/mediaconvert/multipart.go`
+- `foundations/stream/internal/pkg/mediaconvert/scheduler.go`
+- `foundations/stream/internal/pkg/mediaconvert/strategy.go`
+- `foundations/stream/internal/pkg/mediaconvert/stream.go`
+- `foundations/stream/internal/pkg/mediaconvert/transcoder.go`
+- `foundations/stream/internal/pkg/pprof/pprof.go`
+- `foundations/stream/internal/pkg/profile/profile_test.go`
+- `foundations/stream/internal/pkg/profile/profile.go`
+- `foundations/stream/internal/pkg/queue/config_test.go`
+- `foundations/stream/internal/pkg/queue/config.go`
+- `foundations/stream/internal/pkg/queue/queue.go`
+- `foundations/stream/internal/pkg/queue/worker.go`
+- `foundations/stream/internal/pkg/resconv/resconv_test.go`
+- `foundations/stream/internal/pkg/resconv/resconv.go`
+- `foundations/stream/internal/pkg/sharedpipe/shared_pipe_bench_test.go`
+- `foundations/stream/internal/pkg/sharedpipe/shared_pipe.go`
+- `foundations/stream/internal/pkg/storage/datalake.go`
+- `foundations/stream/internal/pkg/storage/s3.go`
+- `foundations/stream/internal/pkg/storage/storage.go`
+- `foundations/stream/internal/pkg/token/token_test.go`
+- `foundations/stream/internal/pkg/token/token.go`
+- `foundations/stream/internal/pkg/tracing/tracing.go`
+- `foundations/stream/internal/pkg/uploader/options.go`
+- `foundations/stream/internal/pkg/uploader/uploader.go`
+- `foundations/stream/LICENSE`
+- `foundations/stream/README.md`
+- `foundations/utils/.gitattributes`
+- `foundations/utils/.github/workflows/ci.yml`
+- `foundations/utils/.gitignore`
+- `foundations/utils/.nvmrc`
+- `foundations/utils/.prettierrc`
+- `foundations/utils/.vscode/extensions.json`
+- `foundations/utils/.vscode/launch.json`
+- `foundations/utils/common/changes/@hcengineering/platform-rig/fix-svelte_2025-12-04-15-46.json`
+- `foundations/utils/common/config/rush/.npmrc`
+- `foundations/utils/common/config/rush/.npmrc-publish`
+- `foundations/utils/common/config/rush/.pnpmfile.cjs`
+- `foundations/utils/common/config/rush/artifactory.json`
+- `foundations/utils/common/config/rush/build-cache.json`
+- `foundations/utils/common/config/rush/cobuild.json`
+- `foundations/utils/common/config/rush/command-line.json`
+- `foundations/utils/common/config/rush/common-versions.json`
+- `foundations/utils/common/config/rush/custom-tips.json`
+- `foundations/utils/common/config/rush/experiments.json`
+- `foundations/utils/common/config/rush/pnpm-config.json`
+- `foundations/utils/common/config/rush/pnpm-lock.yaml`
+- `foundations/utils/common/config/rush/repo-state.json`
+- `foundations/utils/common/config/rush/rush-plugins.json`
+- `foundations/utils/common/config/rush/subspaces.json`
+- `foundations/utils/common/config/rush/version-policies.json`
+- `foundations/utils/common/git-hooks/commit-msg.sample`
+- `foundations/utils/common/scripts/install-run-rush-pnpm.js`
+- `foundations/utils/common/scripts/install-run-rush.js`
+- `foundations/utils/common/scripts/install-run-rushx.js`
+- `foundations/utils/common/scripts/install-run.js`
+- `foundations/utils/common/scripts/package.json`
+- `foundations/utils/LICENSE`
+- `foundations/utils/packages/platform-rig/.npmignore`
+- `foundations/utils/packages/platform-rig/bin/bump-changes-from-tag.js`
+- `foundations/utils/packages/platform-rig/bin/bump-package-version.js`
+- `foundations/utils/packages/platform-rig/bin/compile.js`
+- `foundations/utils/packages/platform-rig/bin/do-svelte-check.js`
+- `foundations/utils/packages/platform-rig/bin/format.js`
+- `foundations/utils/packages/platform-rig/bin/sync-eslint-deps.js`
+- `foundations/utils/packages/platform-rig/bin/update-deps.js`
+- `foundations/utils/packages/platform-rig/CHANGELOG.json`
+- `foundations/utils/packages/platform-rig/CHANGELOG.md`
+- `foundations/utils/packages/platform-rig/package.json`
+- `foundations/utils/packages/platform-rig/profiles/assets/config/rush-project.json`
+- `foundations/utils/packages/platform-rig/profiles/assets/eslint.config.json`
+- `foundations/utils/packages/platform-rig/profiles/assets/tsconfig.json`
+- `foundations/utils/packages/platform-rig/profiles/default/config/rush-project.json`
+- `foundations/utils/packages/platform-rig/profiles/default/eslint.config.json`
+- `foundations/utils/packages/platform-rig/profiles/default/tsconfig.json`
+- `foundations/utils/packages/platform-rig/profiles/model/config/rush-project.json`
+- `foundations/utils/packages/platform-rig/profiles/model/eslint.config.json`
+- `foundations/utils/packages/platform-rig/profiles/model/tsconfig.json`
+- `foundations/utils/packages/platform-rig/profiles/node/config/rush-project.json`
+- `foundations/utils/packages/platform-rig/profiles/node/eslint.config.json`
+- `foundations/utils/packages/platform-rig/profiles/node/tsconfig.json`
+- `foundations/utils/packages/platform-rig/profiles/package/config/rush-project.json`
+- `foundations/utils/packages/platform-rig/profiles/package/config/typescript.json`
+- `foundations/utils/packages/platform-rig/profiles/package/eslint.config.json`
+- `foundations/utils/packages/platform-rig/profiles/package/tsconfig.json`
+- `foundations/utils/packages/platform-rig/profiles/ui/config/rush-project.json`
+- `foundations/utils/packages/platform-rig/profiles/ui/eslint.config.json`
+- `foundations/utils/packages/platform-rig/profiles/ui/svelte.config.js`
+- `foundations/utils/packages/platform-rig/profiles/ui/svelte/index.d.ts`
+- `foundations/utils/packages/platform-rig/profiles/ui/tsconfig.json`
+- `foundations/utils/packages/ui-test/.eslintignore`
+- `foundations/utils/packages/ui-test/.eslintrc.js`
+- `foundations/utils/packages/ui-test/.npmignore`
+- `foundations/utils/packages/ui-test/config/rig.json`
+- `foundations/utils/packages/ui-test/jest.config.js`
+- `foundations/utils/packages/ui-test/package.json`
+- `foundations/utils/packages/ui-test/postcss.config.js`
+- `foundations/utils/packages/ui-test/src/component/Test.svelte`
+- `foundations/utils/packages/ui-test/src/index.ts`
+- `foundations/utils/packages/ui-test/src/svelte.d.ts_`
+- `foundations/utils/packages/ui-test/svelte.config.js`
+- `foundations/utils/packages/ui-test/tsconfig.json`
+- `foundations/utils/README.md`
+- `foundations/utils/rush.json`
+
+</details>
+
+<details>
+<summary><code>models</code> (838 files)</summary>
+
+- `models/achievement/.eslintrc.js`
+- `models/achievement/.npmignore`
+- `models/achievement/config/rig.json`
+- `models/achievement/jest.config.js`
+- `models/achievement/package.json`
+- `models/achievement/src/index.ts`
+- `models/achievement/src/plugin.ts`
+- `models/achievement/tsconfig.json`
+- `models/activity/.eslintrc.js`
+- `models/activity/.npmignore`
+- `models/activity/config/rig.json`
+- `models/activity/jest.config.js`
+- `models/activity/package.json`
+- `models/activity/src/actions.ts`
+- `models/activity/src/index.ts`
+- `models/activity/src/migration.ts`
+- `models/activity/src/notification.ts`
+- `models/activity/src/plugin.ts`
+- `models/activity/tsconfig.json`
+- `models/ai-assistant/.eslintrc.js`
+- `models/ai-assistant/.npmignore`
+- `models/ai-assistant/config/rig.json`
+- `models/ai-assistant/jest.config.js`
+- `models/ai-assistant/package.json`
+- `models/ai-assistant/src/index.ts`
+- `models/ai-assistant/src/plugin.ts`
+- `models/ai-assistant/tsconfig.json`
+- `models/ai-bot/.eslintrc.js`
+- `models/ai-bot/.npmignore`
+- `models/ai-bot/config/rig.json`
+- `models/ai-bot/jest.config.js`
+- `models/ai-bot/package.json`
+- `models/ai-bot/src/index.ts`
+- `models/ai-bot/src/migration.ts`
+- `models/ai-bot/src/plugin.ts`
+- `models/ai-bot/tsconfig.json`
+- `models/all/.eslintrc.js`
+- `models/all/.npmignore`
+- `models/all/CHANGELOG.json`
+- `models/all/CHANGELOG.md`
+- `models/all/config/rig.json`
+- `models/all/jest.config.js`
+- `models/all/package.json`
+- `models/all/src/build.ts`
+- `models/all/src/index.ts`
+- `models/all/src/migration.ts`
+- `models/all/src/show.ts`
+- `models/all/tsconfig.json`
+- `models/analytics-collector/.eslintrc.js`
+- `models/analytics-collector/.npmignore`
+- `models/analytics-collector/config/rig.json`
+- `models/analytics-collector/jest.config.js`
+- `models/analytics-collector/package.json`
+- `models/analytics-collector/src/index.ts`
+- `models/analytics-collector/src/migration.ts`
+- `models/analytics-collector/src/plugin.ts`
+- `models/analytics-collector/tsconfig.json`
+- `models/attachment/.eslintrc.js`
+- `models/attachment/.npmignore`
+- `models/attachment/config/rig.json`
+- `models/attachment/jest.config.js`
+- `models/attachment/package.json`
+- `models/attachment/src/index.ts`
+- `models/attachment/src/migration.ts`
+- `models/attachment/src/plugin.ts`
+- `models/attachment/tsconfig.json`
+- `models/billing/.eslintrc.js`
+- `models/billing/.npmignore`
+- `models/billing/config/rig.json`
+- `models/billing/jest.config.js`
+- `models/billing/package.json`
+- `models/billing/src/index.ts`
+- `models/billing/tsconfig.json`
+- `models/bitrix/.eslintrc.js`
+- `models/bitrix/.npmignore`
+- `models/bitrix/config/rig.json`
+- `models/bitrix/jest.config.js`
+- `models/bitrix/package.json`
+- `models/bitrix/src/index.ts`
+- `models/bitrix/src/migration.ts`
+- `models/bitrix/src/plugin.ts`
+- `models/bitrix/tsconfig.json`
+- `models/board/.eslintrc.js`
+- `models/board/.npmignore`
+- `models/board/config/rig.json`
+- `models/board/jest.config.js`
+- `models/board/package.json`
+- `models/board/src/index.ts`
+- `models/board/src/migration.ts`
+- `models/board/src/plugin.ts`
+- `models/board/tsconfig.json`
+- `models/calendar/.eslintrc.js`
+- `models/calendar/.npmignore`
+- `models/calendar/config/rig.json`
+- `models/calendar/jest.config.js`
+- `models/calendar/package.json`
+- `models/calendar/src/index.ts`
+- `models/calendar/src/migration.ts`
+- `models/calendar/src/plugin.ts`
+- `models/calendar/tsconfig.json`
+- `models/card/.eslintrc.js`
+- `models/card/.npmignore`
+- `models/card/config/rig.json`
+- `models/card/jest.config.js`
+- `models/card/package.json`
+- `models/card/src/actions.ts`
+- `models/card/src/index.ts`
+- `models/card/src/migration.ts`
+- `models/card/src/permissions.ts`
+- `models/card/src/plugin.ts`
+- `models/card/tsconfig.json`
+- `models/chat/.eslintrc.js`
+- `models/chat/.npmignore`
+- `models/chat/config/rig.json`
+- `models/chat/jest.config.js`
+- `models/chat/package.json`
+- `models/chat/src/__tests__/migration.test.ts`
+- `models/chat/src/index.ts`
+- `models/chat/src/migration.ts`
+- `models/chat/src/plugin.ts`
+- `models/chat/tsconfig.json`
+- `models/chunter/.eslintrc.js`
+- `models/chunter/.npmignore`
+- `models/chunter/CHANGELOG.json`
+- `models/chunter/CHANGELOG.md`
+- `models/chunter/config/rig.json`
+- `models/chunter/jest.config.js`
+- `models/chunter/package.json`
+- `models/chunter/src/actions.ts`
+- `models/chunter/src/index.ts`
+- `models/chunter/src/migration.ts`
+- `models/chunter/src/notifications.ts`
+- `models/chunter/src/plugin.ts`
+- `models/chunter/src/types.ts`
+- `models/chunter/tsconfig.json`
+- `models/communication/.eslintrc.js`
+- `models/communication/.npmignore`
+- `models/communication/config/rig.json`
+- `models/communication/package.json`
+- `models/communication/src/actions.ts`
+- `models/communication/src/applets.ts`
+- `models/communication/src/index.ts`
+- `models/communication/src/migration.ts`
+- `models/communication/src/plugin.ts`
+- `models/communication/src/types.ts`
+- `models/communication/tsconfig.json`
+- `models/contact/.eslintrc.js`
+- `models/contact/.npmignore`
+- `models/contact/CHANGELOG.json`
+- `models/contact/CHANGELOG.md`
+- `models/contact/config/rig.json`
+- `models/contact/jest.config.js`
+- `models/contact/package.json`
+- `models/contact/src/index.ts`
+- `models/contact/src/migration.ts`
+- `models/contact/src/plugin.ts`
+- `models/contact/tsconfig.json`
+- `models/controlled-documents/.eslintrc.js`
+- `models/controlled-documents/.npmignore`
+- `models/controlled-documents/config/rig.json`
+- `models/controlled-documents/jest.config.js`
+- `models/controlled-documents/package.json`
+- `models/controlled-documents/src/index.ts`
+- `models/controlled-documents/src/migration.ts`
+- `models/controlled-documents/src/permissions.ts`
+- `models/controlled-documents/src/plugin.ts`
+- `models/controlled-documents/src/roles.ts`
+- `models/controlled-documents/src/spaceType.ts`
+- `models/controlled-documents/src/types.ts`
+- `models/controlled-documents/tsconfig.json`
+- `models/converter/.eslintrc.js`
+- `models/converter/.npmignore`
+- `models/converter/config/rig.json`
+- `models/converter/jest.config.js`
+- `models/converter/package.json`
+- `models/converter/src/index.ts`
+- `models/converter/tsconfig.json`
+- `models/core/.eslintrc.js`
+- `models/core/.npmignore`
+- `models/core/CHANGELOG.json`
+- `models/core/CHANGELOG.md`
+- `models/core/config/rig.json`
+- `models/core/jest.config.js`
+- `models/core/package.json`
+- `models/core/src/benchmark.ts`
+- `models/core/src/component.ts`
+- `models/core/src/core.ts`
+- `models/core/src/index.ts`
+- `models/core/src/migration.ts`
+- `models/core/src/permissions.ts`
+- `models/core/src/security.ts`
+- `models/core/src/spaceType.ts`
+- `models/core/src/status.ts`
+- `models/core/src/transient.ts`
+- `models/core/src/tx.ts`
+- `models/core/tsconfig.json`
+- `models/desktop-downloads/.eslintrc.js`
+- `models/desktop-downloads/.npmignore`
+- `models/desktop-downloads/config/rig.json`
+- `models/desktop-downloads/jest.config.js`
+- `models/desktop-downloads/package.json`
+- `models/desktop-downloads/src/index.ts`
+- `models/desktop-downloads/src/plugin.ts`
+- `models/desktop-downloads/tsconfig.json`
+- `models/desktop-preferences/.eslintrc.js`
+- `models/desktop-preferences/.npmignore`
+- `models/desktop-preferences/config/rig.json`
+- `models/desktop-preferences/jest.config.js`
+- `models/desktop-preferences/package.json`
+- `models/desktop-preferences/src/index.ts`
+- `models/desktop-preferences/tsconfig.json`
+- `models/document/.eslintrc.js`
+- `models/document/.npmignore`
+- `models/document/config/rig.json`
+- `models/document/jest.config.js`
+- `models/document/package.json`
+- `models/document/src/index.ts`
+- `models/document/src/migration.ts`
+- `models/document/src/permissions.ts`
+- `models/document/src/plugin.ts`
+- `models/document/tsconfig.json`
+- `models/drive/.eslintrc.js`
+- `models/drive/.npmignore`
+- `models/drive/config/rig.json`
+- `models/drive/jest.config.js`
+- `models/drive/package.json`
+- `models/drive/src/index.ts`
+- `models/drive/src/migration.ts`
+- `models/drive/src/permissions.ts`
+- `models/drive/src/plugin.ts`
+- `models/drive/tsconfig.json`
+- `models/emoji/.eslintrc.js`
+- `models/emoji/.npmignore`
+- `models/emoji/config/rig.json`
+- `models/emoji/jest.config.js`
+- `models/emoji/package.json`
+- `models/emoji/src/index.ts`
+- `models/emoji/src/models.ts`
+- `models/emoji/src/plugin.ts`
+- `models/emoji/tsconfig.json`
+- `models/export/.eslintrc.js`
+- `models/export/.npmignore`
+- `models/export/config/rig.json`
+- `models/export/jest.config.js`
+- `models/export/package.json`
+- `models/export/src/index.ts`
+- `models/export/src/migration.ts`
+- `models/export/src/plugin.ts`
+- `models/export/tsconfig.json`
+- `models/gmail/.eslintrc.js`
+- `models/gmail/.npmignore`
+- `models/gmail/config/rig.json`
+- `models/gmail/jest.config.js`
+- `models/gmail/package.json`
+- `models/gmail/src/index.ts`
+- `models/gmail/src/migration.ts`
+- `models/gmail/src/notification.ts`
+- `models/gmail/src/plugin.ts`
+- `models/gmail/tsconfig.json`
+- `models/guest/.eslintrc.js`
+- `models/guest/.npmignore`
+- `models/guest/config/rig.json`
+- `models/guest/jest.config.js`
+- `models/guest/package.json`
+- `models/guest/src/index.ts`
+- `models/guest/src/migration.ts`
+- `models/guest/src/plugin.ts`
+- `models/guest/src/utils.ts`
+- `models/guest/tsconfig.json`
+- `models/hr/.eslintrc.js`
+- `models/hr/.npmignore`
+- `models/hr/config/rig.json`
+- `models/hr/jest.config.js`
+- `models/hr/package.json`
+- `models/hr/src/index.ts`
+- `models/hr/src/migration.ts`
+- `models/hr/src/plugin.ts`
+- `models/hr/tsconfig.json`
+- `models/huly-mail/.eslintrc.js`
+- `models/huly-mail/.npmignore`
+- `models/huly-mail/config/rig.json`
+- `models/huly-mail/jest.config.js`
+- `models/huly-mail/package.json`
+- `models/huly-mail/src/index.ts`
+- `models/huly-mail/src/plugin.ts`
+- `models/huly-mail/tsconfig.json`
+- `models/inbox/.eslintrc.js`
+- `models/inbox/.npmignore`
+- `models/inbox/config/rig.json`
+- `models/inbox/jest.config.js`
+- `models/inbox/package.json`
+- `models/inbox/src/index.ts`
+- `models/inbox/src/migration.ts`
+- `models/inbox/src/plugin.ts`
+- `models/inbox/tsconfig.json`
+- `models/inventory/.eslintrc.js`
+- `models/inventory/.npmignore`
+- `models/inventory/config/rig.json`
+- `models/inventory/jest.config.js`
+- `models/inventory/package.json`
+- `models/inventory/src/index.ts`
+- `models/inventory/src/migration.ts`
+- `models/inventory/src/plugin.ts`
+- `models/inventory/tsconfig.json`
+- `models/lead/.eslintrc.js`
+- `models/lead/.npmignore`
+- `models/lead/config/rig.json`
+- `models/lead/jest.config.js`
+- `models/lead/package.json`
+- `models/lead/src/index.ts`
+- `models/lead/src/migration.ts`
+- `models/lead/src/permissions.ts`
+- `models/lead/src/plugin.ts`
+- `models/lead/src/spaceType.ts`
+- `models/lead/src/types.ts`
+- `models/lead/tsconfig.json`
+- `models/love/.eslintrc.js`
+- `models/love/.npmignore`
+- `models/love/config/rig.json`
+- `models/love/jest.config.js`
+- `models/love/package.json`
+- `models/love/src/index.ts`
+- `models/love/src/migration.ts`
+- `models/love/src/plugin.ts`
+- `models/love/tsconfig.json`
+- `models/mail/.eslintrc.js`
+- `models/mail/.npmignore`
+- `models/mail/config/rig.json`
+- `models/mail/jest.config.js`
+- `models/mail/package.json`
+- `models/mail/src/index.ts`
+- `models/mail/tsconfig.json`
+- `models/media/.eslintrc.js`
+- `models/media/.npmignore`
+- `models/media/config/rig.json`
+- `models/media/jest.config.js`
+- `models/media/package.json`
+- `models/media/src/index.ts`
+- `models/media/src/plugin.ts`
+- `models/media/tsconfig.json`
+- `models/notification/.eslintrc.js`
+- `models/notification/.npmignore`
+- `models/notification/config/rig.json`
+- `models/notification/jest.config.js`
+- `models/notification/package.json`
+- `models/notification/src/index.ts`
+- `models/notification/src/migration.ts`
+- `models/notification/src/plugin.ts`
+- `models/notification/tsconfig.json`
+- `models/preference/.eslintrc.js`
+- `models/preference/.npmignore`
+- `models/preference/config/rig.json`
+- `models/preference/jest.config.js`
+- `models/preference/package.json`
+- `models/preference/src/index.ts`
+- `models/preference/src/migration.ts`
+- `models/preference/tsconfig.json`
+- `models/presence/.eslintrc.js`
+- `models/presence/.npmignore`
+- `models/presence/config/rig.json`
+- `models/presence/jest.config.js`
+- `models/presence/package.json`
+- `models/presence/src/index.ts`
+- `models/presence/src/plugin.ts`
+- `models/presence/tsconfig.json`
+- `models/presentation/.eslintrc.js`
+- `models/presentation/.npmignore`
+- `models/presentation/config/rig.json`
+- `models/presentation/jest.config.js`
+- `models/presentation/package.json`
+- `models/presentation/src/index.ts`
+- `models/presentation/src/plugin.ts`
+- `models/presentation/tsconfig.json`
+- `models/print/.eslintrc.js`
+- `models/print/.npmignore`
+- `models/print/config/rig.json`
+- `models/print/jest.config.js`
+- `models/print/package.json`
+- `models/print/src/index.ts`
+- `models/print/src/migration.ts`
+- `models/print/src/plugin.ts`
+- `models/print/tsconfig.json`
+- `models/process/.eslintrc.js`
+- `models/process/.npmignore`
+- `models/process/config/rig.json`
+- `models/process/jest.config.js`
+- `models/process/package.json`
+- `models/process/src/actions.ts`
+- `models/process/src/functions.ts`
+- `models/process/src/index.ts`
+- `models/process/src/migration.ts`
+- `models/process/src/permission.ts`
+- `models/process/src/plugin.ts`
+- `models/process/src/triggers.ts`
+- `models/process/tsconfig.json`
+- `models/products/.eslintrc.js`
+- `models/products/.npmignore`
+- `models/products/config/rig.json`
+- `models/products/jest.config.js`
+- `models/products/package.json`
+- `models/products/src/index.ts`
+- `models/products/src/migration.ts`
+- `models/products/src/plugin.ts`
+- `models/products/src/roles.ts`
+- `models/products/tsconfig.json`
+- `models/questions/.eslintrc.js`
+- `models/questions/config/rig.json`
+- `models/questions/jest.config.js`
+- `models/questions/package.json`
+- `models/questions/src/doc-types/base.ts`
+- `models/questions/src/doc-types/index.ts`
+- `models/questions/src/doc-types/mixin.ts`
+- `models/questions/src/doc-types/questions/MultipleChoice.ts`
+- `models/questions/src/doc-types/questions/Ordering.ts`
+- `models/questions/src/doc-types/questions/SingleChoice.ts`
+- `models/questions/src/index.ts`
+- `models/questions/src/migration.ts`
+- `models/questions/src/plugin.ts`
+- `models/questions/tsconfig.json`
+- `models/rating/.eslintrc.js`
+- `models/rating/.npmignore`
+- `models/rating/config/rig.json`
+- `models/rating/jest.config.js`
+- `models/rating/package.json`
+- `models/rating/src/actions.ts`
+- `models/rating/src/index.ts`
+- `models/rating/src/migration.ts`
+- `models/rating/src/plugin.ts`
+- `models/rating/tsconfig.json`
+- `models/recorder/.eslintrc.js`
+- `models/recorder/.npmignore`
+- `models/recorder/config/rig.json`
+- `models/recorder/jest.config.js`
+- `models/recorder/package.json`
+- `models/recorder/src/index.ts`
+- `models/recorder/src/migration.ts`
+- `models/recorder/src/plugin.ts`
+- `models/recorder/tsconfig.json`
+- `models/recruit/.eslintrc.js`
+- `models/recruit/.npmignore`
+- `models/recruit/CHANGELOG.json`
+- `models/recruit/CHANGELOG.md`
+- `models/recruit/config/rig.json`
+- `models/recruit/jest.config.js`
+- `models/recruit/package.json`
+- `models/recruit/src/index.ts`
+- `models/recruit/src/migration.ts`
+- `models/recruit/src/permissions.ts`
+- `models/recruit/src/plugin.ts`
+- `models/recruit/src/review.ts`
+- `models/recruit/src/spaceType.ts`
+- `models/recruit/src/types.ts`
+- `models/recruit/tsconfig.json`
+- `models/request/.eslintrc.js`
+- `models/request/config/rig.json`
+- `models/request/jest.config.js`
+- `models/request/package.json`
+- `models/request/src/index.ts`
+- `models/request/src/migration.ts`
+- `models/request/src/plugin.ts`
+- `models/request/tsconfig.json`
+- `models/server-activity/.eslintrc.js`
+- `models/server-activity/.npmignore`
+- `models/server-activity/config/rig.json`
+- `models/server-activity/jest.config.js`
+- `models/server-activity/package.json`
+- `models/server-activity/src/index.ts`
+- `models/server-activity/src/migration.ts`
+- `models/server-activity/tsconfig.json`
+- `models/server-ai-bot/.eslintrc.js`
+- `models/server-ai-bot/.npmignore`
+- `models/server-ai-bot/config/rig.json`
+- `models/server-ai-bot/jest.config.js`
+- `models/server-ai-bot/package.json`
+- `models/server-ai-bot/src/index.ts`
+- `models/server-ai-bot/tsconfig.json`
+- `models/server-attachment/.eslintrc.js`
+- `models/server-attachment/.npmignore`
+- `models/server-attachment/config/rig.json`
+- `models/server-attachment/jest.config.js`
+- `models/server-attachment/package.json`
+- `models/server-attachment/src/index.ts`
+- `models/server-attachment/tsconfig.json`
+- `models/server-calendar/.eslintrc.js`
+- `models/server-calendar/.npmignore`
+- `models/server-calendar/config/rig.json`
+- `models/server-calendar/jest.config.js`
+- `models/server-calendar/package.json`
+- `models/server-calendar/src/index.ts`
+- `models/server-calendar/tsconfig.json`
+- `models/server-card/.eslintrc.js`
+- `models/server-card/.npmignore`
+- `models/server-card/config/rig.json`
+- `models/server-card/jest.config.js`
+- `models/server-card/package.json`
+- `models/server-card/src/index.ts`
+- `models/server-card/tsconfig.json`
+- `models/server-chunter/.eslintrc.js`
+- `models/server-chunter/.npmignore`
+- `models/server-chunter/config/rig.json`
+- `models/server-chunter/jest.config.js`
+- `models/server-chunter/package.json`
+- `models/server-chunter/src/index.ts`
+- `models/server-chunter/tsconfig.json`
+- `models/server-collaboration/.eslintrc.js`
+- `models/server-collaboration/.npmignore`
+- `models/server-collaboration/config/rig.json`
+- `models/server-collaboration/jest.config.js`
+- `models/server-collaboration/package.json`
+- `models/server-collaboration/src/index.ts`
+- `models/server-collaboration/tsconfig.json`
+- `models/server-contact/.eslintrc.js`
+- `models/server-contact/.npmignore`
+- `models/server-contact/config/rig.json`
+- `models/server-contact/jest.config.js`
+- `models/server-contact/package.json`
+- `models/server-contact/src/index.ts`
+- `models/server-contact/tsconfig.json`
+- `models/server-controlled-documents/.eslintrc.js`
+- `models/server-controlled-documents/.npmignore`
+- `models/server-controlled-documents/config/rig.json`
+- `models/server-controlled-documents/jest.config.js`
+- `models/server-controlled-documents/package.json`
+- `models/server-controlled-documents/src/index.ts`
+- `models/server-controlled-documents/tsconfig.json`
+- `models/server-core/.eslintrc.js`
+- `models/server-core/.npmignore`
+- `models/server-core/CHANGELOG.json`
+- `models/server-core/CHANGELOG.md`
+- `models/server-core/config/rig.json`
+- `models/server-core/jest.config.js`
+- `models/server-core/package.json`
+- `models/server-core/src/index.ts`
+- `models/server-core/tsconfig.json`
+- `models/server-document/.eslintrc.js`
+- `models/server-document/.npmignore`
+- `models/server-document/config/rig.json`
+- `models/server-document/jest.config.js`
+- `models/server-document/package.json`
+- `models/server-document/src/index.ts`
+- `models/server-document/tsconfig.json`
+- `models/server-drive/.eslintrc.js`
+- `models/server-drive/.npmignore`
+- `models/server-drive/config/rig.json`
+- `models/server-drive/jest.config.js`
+- `models/server-drive/package.json`
+- `models/server-drive/src/index.ts`
+- `models/server-drive/tsconfig.json`
+- `models/server-gmail/.eslintrc.js`
+- `models/server-gmail/.npmignore`
+- `models/server-gmail/config/rig.json`
+- `models/server-gmail/jest.config.js`
+- `models/server-gmail/package.json`
+- `models/server-gmail/src/index.ts`
+- `models/server-gmail/tsconfig.json`
+- `models/server-guest/.eslintrc.js`
+- `models/server-guest/.npmignore`
+- `models/server-guest/config/rig.json`
+- `models/server-guest/jest.config.js`
+- `models/server-guest/package.json`
+- `models/server-guest/src/index.ts`
+- `models/server-guest/tsconfig.json`
+- `models/server-hr/.eslintrc.js`
+- `models/server-hr/.npmignore`
+- `models/server-hr/config/rig.json`
+- `models/server-hr/jest.config.js`
+- `models/server-hr/package.json`
+- `models/server-hr/src/index.ts`
+- `models/server-hr/tsconfig.json`
+- `models/server-inventory/.eslintrc.js`
+- `models/server-inventory/.npmignore`
+- `models/server-inventory/config/rig.json`
+- `models/server-inventory/jest.config.js`
+- `models/server-inventory/package.json`
+- `models/server-inventory/src/index.ts`
+- `models/server-inventory/tsconfig.json`
+- `models/server-lead/.eslintrc.js`
+- `models/server-lead/.npmignore`
+- `models/server-lead/config/rig.json`
+- `models/server-lead/jest.config.js`
+- `models/server-lead/package.json`
+- `models/server-lead/src/index.ts`
+- `models/server-lead/tsconfig.json`
+- `models/server-love/.eslintrc.js`
+- `models/server-love/.npmignore`
+- `models/server-love/config/rig.json`
+- `models/server-love/jest.config.js`
+- `models/server-love/package.json`
+- `models/server-love/src/index.ts`
+- `models/server-love/tsconfig.json`
+- `models/server-notification/.eslintrc.js`
+- `models/server-notification/.npmignore`
+- `models/server-notification/config/rig.json`
+- `models/server-notification/jest.config.js`
+- `models/server-notification/package.json`
+- `models/server-notification/src/index.ts`
+- `models/server-notification/tsconfig.json`
+- `models/server-process/.eslintrc.js`
+- `models/server-process/.npmignore`
+- `models/server-process/config/rig.json`
+- `models/server-process/jest.config.js`
+- `models/server-process/package.json`
+- `models/server-process/src/index.ts`
+- `models/server-process/tsconfig.json`
+- `models/server-products/.eslintrc.js`
+- `models/server-products/.npmignore`
+- `models/server-products/config/rig.json`
+- `models/server-products/jest.config.js`
+- `models/server-products/package.json`
+- `models/server-products/src/index.ts`
+- `models/server-products/tsconfig.json`
+- `models/server-recruit/.eslintrc.js`
+- `models/server-recruit/.npmignore`
+- `models/server-recruit/config/rig.json`
+- `models/server-recruit/jest.config.js`
+- `models/server-recruit/package.json`
+- `models/server-recruit/src/index.ts`
+- `models/server-recruit/tsconfig.json`
+- `models/server-request/.eslintrc.js`
+- `models/server-request/.npmignore`
+- `models/server-request/config/rig.json`
+- `models/server-request/jest.config.js`
+- `models/server-request/package.json`
+- `models/server-request/src/index.ts`
+- `models/server-request/tsconfig.json`
+- `models/server-setting/.eslintrc.js`
+- `models/server-setting/.npmignore`
+- `models/server-setting/config/rig.json`
+- `models/server-setting/jest.config.js`
+- `models/server-setting/package.json`
+- `models/server-setting/src/index.ts`
+- `models/server-setting/tsconfig.json`
+- `models/server-tags/.eslintrc.js`
+- `models/server-tags/.npmignore`
+- `models/server-tags/config/rig.json`
+- `models/server-tags/jest.config.js`
+- `models/server-tags/package.json`
+- `models/server-tags/src/index.ts`
+- `models/server-tags/tsconfig.json`
+- `models/server-task/.eslintrc.js`
+- `models/server-task/.npmignore`
+- `models/server-task/config/rig.json`
+- `models/server-task/jest.config.js`
+- `models/server-task/package.json`
+- `models/server-task/src/index.ts`
+- `models/server-task/tsconfig.json`
+- `models/server-telegram/.eslintrc.js`
+- `models/server-telegram/.npmignore`
+- `models/server-telegram/config/rig.json`
+- `models/server-telegram/jest.config.js`
+- `models/server-telegram/package.json`
+- `models/server-telegram/src/index.ts`
+- `models/server-telegram/tsconfig.json`
+- `models/server-templates/.eslintrc.js`
+- `models/server-templates/.npmignore`
+- `models/server-templates/config/rig.json`
+- `models/server-templates/jest.config.js`
+- `models/server-templates/package.json`
+- `models/server-templates/src/index.ts`
+- `models/server-templates/tsconfig.json`
+- `models/server-time/.eslintrc.js`
+- `models/server-time/.npmignore`
+- `models/server-time/config/rig.json`
+- `models/server-time/jest.config.js`
+- `models/server-time/package.json`
+- `models/server-time/src/index.ts`
+- `models/server-time/tsconfig.json`
+- `models/server-tracker/.eslintrc.js`
+- `models/server-tracker/.npmignore`
+- `models/server-tracker/config/rig.json`
+- `models/server-tracker/jest.config.js`
+- `models/server-tracker/package.json`
+- `models/server-tracker/src/index.ts`
+- `models/server-tracker/tsconfig.json`
+- `models/server-training/.eslintrc.js`
+- `models/server-training/.npmignore`
+- `models/server-training/config/rig.json`
+- `models/server-training/jest.config.js`
+- `models/server-training/package.json`
+- `models/server-training/src/index.ts`
+- `models/server-training/tsconfig.json`
+- `models/server-view/.eslintrc.js`
+- `models/server-view/.npmignore`
+- `models/server-view/config/rig.json`
+- `models/server-view/jest.config.js`
+- `models/server-view/package.json`
+- `models/server-view/src/index.ts`
+- `models/server-view/tsconfig.json`
+- `models/setting/.eslintrc.js`
+- `models/setting/.npmignore`
+- `models/setting/config/rig.json`
+- `models/setting/jest.config.js`
+- `models/setting/package.json`
+- `models/setting/src/index.ts`
+- `models/setting/src/migration.ts`
+- `models/setting/src/plugin.ts`
+- `models/setting/tsconfig.json`
+- `models/support/.eslintrc.js`
+- `models/support/.npmignore`
+- `models/support/config/rig.json`
+- `models/support/jest.config.js`
+- `models/support/package.json`
+- `models/support/src/index.ts`
+- `models/support/tsconfig.json`
+- `models/survey/.eslintrc.js`
+- `models/survey/.npmignore`
+- `models/survey/config/rig.json`
+- `models/survey/jest.config.js`
+- `models/survey/package.json`
+- `models/survey/src/index.ts`
+- `models/survey/src/migration.ts`
+- `models/survey/src/plugin.ts`
+- `models/survey/src/types.ts`
+- `models/survey/tsconfig.json`
+- `models/tags/.eslintrc.js`
+- `models/tags/.npmignore`
+- `models/tags/config/rig.json`
+- `models/tags/jest.config.js`
+- `models/tags/package.json`
+- `models/tags/src/index.ts`
+- `models/tags/src/migration.ts`
+- `models/tags/src/plugin.ts`
+- `models/tags/tsconfig.json`
+- `models/task/.eslintrc.js`
+- `models/task/.npmignore`
+- `models/task/CHANGELOG.json`
+- `models/task/CHANGELOG.md`
+- `models/task/config/rig.json`
+- `models/task/jest.config.js`
+- `models/task/package.json`
+- `models/task/src/index.ts`
+- `models/task/src/migration.ts`
+- `models/task/src/plugin.ts`
+- `models/task/tsconfig.json`
+- `models/telegram/.eslintrc.js`
+- `models/telegram/.npmignore`
+- `models/telegram/config/rig.json`
+- `models/telegram/jest.config.js`
+- `models/telegram/package.json`
+- `models/telegram/src/index.ts`
+- `models/telegram/src/migration.ts`
+- `models/telegram/src/notification.ts`
+- `models/telegram/src/plugin.ts`
+- `models/telegram/tsconfig.json`
+- `models/templates/.eslintrc.js`
+- `models/templates/.npmignore`
+- `models/templates/config/rig.json`
+- `models/templates/jest.config.js`
+- `models/templates/package.json`
+- `models/templates/src/index.ts`
+- `models/templates/src/migration.ts`
+- `models/templates/src/plugin.ts`
+- `models/templates/tsconfig.json`
+- `models/test-management/.eslintrc.js`
+- `models/test-management/.npmignore`
+- `models/test-management/config/rig.json`
+- `models/test-management/jest.config.js`
+- `models/test-management/package.json`
+- `models/test-management/src/index.ts`
+- `models/test-management/src/migration.ts`
+- `models/test-management/src/plugin.ts`
+- `models/test-management/src/presenters.ts`
+- `models/test-management/src/types.ts`
+- `models/test-management/tsconfig.json`
+- `models/text-editor/.eslintrc.js`
+- `models/text-editor/.npmignore`
+- `models/text-editor/config/rig.json`
+- `models/text-editor/jest.config.js`
+- `models/text-editor/package.json`
+- `models/text-editor/src/index.ts`
+- `models/text-editor/src/migration.ts`
+- `models/text-editor/src/plugin.ts`
+- `models/text-editor/tsconfig.json`
+- `models/time/.eslintrc.js`
+- `models/time/.npmignore`
+- `models/time/config/rig.json`
+- `models/time/jest.config.js`
+- `models/time/package.json`
+- `models/time/src/index.ts`
+- `models/time/src/migration.ts`
+- `models/time/src/plugin.ts`
+- `models/time/tsconfig.json`
+- `models/tracker/.eslintrc.js`
+- `models/tracker/.npmignore`
+- `models/tracker/config/rig.json`
+- `models/tracker/jest.config.js`
+- `models/tracker/package.json`
+- `models/tracker/src/actions.ts`
+- `models/tracker/src/index.ts`
+- `models/tracker/src/migration.ts`
+- `models/tracker/src/permissions.ts`
+- `models/tracker/src/plugin.ts`
+- `models/tracker/src/presenters.ts`
+- `models/tracker/src/types.ts`
+- `models/tracker/src/viewlets.ts`
+- `models/tracker/tsconfig.json`
+- `models/training/.eslintrc.js`
+- `models/training/config/rig.json`
+- `models/training/jest.config.js`
+- `models/training/package.json`
+- `models/training/src/index.ts`
+- `models/training/src/migration.ts`
+- `models/training/src/plugin.ts`
+- `models/training/src/roles.ts`
+- `models/training/src/types.ts`
+- `models/training/tsconfig.json`
+- `models/uploader/.eslintrc.js`
+- `models/uploader/.npmignore`
+- `models/uploader/config/rig.json`
+- `models/uploader/jest.config.js`
+- `models/uploader/package.json`
+- `models/uploader/src/index.ts`
+- `models/uploader/src/models.ts`
+- `models/uploader/src/plugin.ts`
+- `models/uploader/tsconfig.json`
+- `models/view/.eslintrc.js`
+- `models/view/.npmignore`
+- `models/view/CHANGELOG.json`
+- `models/view/CHANGELOG.md`
+- `models/view/config/rig.json`
+- `models/view/jest.config.js`
+- `models/view/package.json`
+- `models/view/src/index.ts`
+- `models/view/src/migration.ts`
+- `models/view/src/plugin.ts`
+- `models/view/src/utils.ts`
+- `models/view/tsconfig.json`
+- `models/workbench/.eslintrc.js`
+- `models/workbench/.npmignore`
+- `models/workbench/CHANGELOG.json`
+- `models/workbench/CHANGELOG.md`
+- `models/workbench/config/rig.json`
+- `models/workbench/jest.config.js`
+- `models/workbench/package.json`
+- `models/workbench/src/index.ts`
+- `models/workbench/src/migration.ts`
+- `models/workbench/src/plugin.ts`
+- `models/workbench/tsconfig.json`
+
+</details>
+
+<details>
+<summary><code>services</code> (722 files)</summary>
+
+- `services/ai-bot/love-agent/.eslintrc.cjs`
+- `services/ai-bot/love-agent/.prettierrc`
+- `services/ai-bot/love-agent/Dockerfile`
+- `services/ai-bot/love-agent/esbuild.config.js`
+- `services/ai-bot/love-agent/package.json`
+- `services/ai-bot/love-agent/pnpm-lock.yaml`
+- `services/ai-bot/love-agent/src/agent.ts`
+- `services/ai-bot/love-agent/src/config.ts`
+- `services/ai-bot/love-agent/src/deepgram/stt.ts`
+- `services/ai-bot/love-agent/src/index.ts`
+- `services/ai-bot/love-agent/src/openai/stt.ts`
+- `services/ai-bot/love-agent/src/start.ts`
+- `services/ai-bot/love-agent/src/type.ts`
+- `services/ai-bot/love-agent/src/utils.ts`
+- `services/ai-bot/love-agent/tsconfig.json`
+- `services/ai-bot/pod-ai-bot/.eslintrc.js`
+- `services/ai-bot/pod-ai-bot/.npmignore`
+- `services/ai-bot/pod-ai-bot/assets/avatar.png`
+- `services/ai-bot/pod-ai-bot/config/rig.json`
+- `services/ai-bot/pod-ai-bot/Dockerfile`
+- `services/ai-bot/pod-ai-bot/jest.config.js`
+- `services/ai-bot/pod-ai-bot/package.json`
+- `services/ai-bot/pod-ai-bot/src/billing.ts`
+- `services/ai-bot/pod-ai-bot/src/config.ts`
+- `services/ai-bot/pod-ai-bot/src/controller.ts`
+- `services/ai-bot/pod-ai-bot/src/index.ts`
+- `services/ai-bot/pod-ai-bot/src/loaders.ts`
+- `services/ai-bot/pod-ai-bot/src/server/error.ts`
+- `services/ai-bot/pod-ai-bot/src/server/server.ts`
+- `services/ai-bot/pod-ai-bot/src/start.ts`
+- `services/ai-bot/pod-ai-bot/src/storage.ts`
+- `services/ai-bot/pod-ai-bot/src/types.ts`
+- `services/ai-bot/pod-ai-bot/src/utils/account.ts`
+- `services/ai-bot/pod-ai-bot/src/utils/common.ts`
+- `services/ai-bot/pod-ai-bot/src/utils/openai.ts`
+- `services/ai-bot/pod-ai-bot/src/utils/platform.ts`
+- `services/ai-bot/pod-ai-bot/src/utils/tools.ts`
+- `services/ai-bot/pod-ai-bot/src/workspace/love.ts`
+- `services/ai-bot/pod-ai-bot/src/workspace/workspaceClient.ts`
+- `services/ai-bot/pod-ai-bot/tsconfig.json`
+- `services/analytics-collector/pod-analytics-collector/.eslintrc.js`
+- `services/analytics-collector/pod-analytics-collector/.npmignore`
+- `services/analytics-collector/pod-analytics-collector/config/rig.json`
+- `services/analytics-collector/pod-analytics-collector/Dockerfile`
+- `services/analytics-collector/pod-analytics-collector/geodb/GeoLite2-City.mmdb`
+- `services/analytics-collector/pod-analytics-collector/geodb/GeoLite2-Country.mmdb`
+- `services/analytics-collector/pod-analytics-collector/jest.config.js`
+- `services/analytics-collector/pod-analytics-collector/package.json`
+- `services/analytics-collector/pod-analytics-collector/src/config.ts`
+- `services/analytics-collector/pod-analytics-collector/src/error.ts`
+- `services/analytics-collector/pod-analytics-collector/src/geoip.ts`
+- `services/analytics-collector/pod-analytics-collector/src/index.ts`
+- `services/analytics-collector/pod-analytics-collector/src/main.ts`
+- `services/analytics-collector/pod-analytics-collector/src/server.ts`
+- `services/analytics-collector/pod-analytics-collector/tsconfig.json`
+- `services/backup/backup-api-pod/.eslintrc.js`
+- `services/backup/backup-api-pod/.npmignore`
+- `services/backup/backup-api-pod/config/rig.json`
+- `services/backup/backup-api-pod/Dockerfile`
+- `services/backup/backup-api-pod/jest.config.js`
+- `services/backup/backup-api-pod/package.json`
+- `services/backup/backup-api-pod/src/config.ts`
+- `services/backup/backup-api-pod/src/const.ts`
+- `services/backup/backup-api-pod/src/error.ts`
+- `services/backup/backup-api-pod/src/index.ts`
+- `services/backup/backup-api-pod/src/main.ts`
+- `services/backup/backup-api-pod/src/server.ts`
+- `services/backup/backup-api-pod/tsconfig.json`
+- `services/billing/pod-billing/.eslintrc.js`
+- `services/billing/pod-billing/.gitignore`
+- `services/billing/pod-billing/.npmignore`
+- `services/billing/pod-billing/config/rig.json`
+- `services/billing/pod-billing/Dockerfile`
+- `services/billing/pod-billing/jest.config.js`
+- `services/billing/pod-billing/package.json`
+- `services/billing/pod-billing/src/billing.ts`
+- `services/billing/pod-billing/src/config.ts`
+- `services/billing/pod-billing/src/db/logged.ts`
+- `services/billing/pod-billing/src/db/migrations.ts`
+- `services/billing/pod-billing/src/db/postgres.ts`
+- `services/billing/pod-billing/src/db/retry.ts`
+- `services/billing/pod-billing/src/index.ts`
+- `services/billing/pod-billing/src/main.ts`
+- `services/billing/pod-billing/src/middleware.ts`
+- `services/billing/pod-billing/src/server.ts`
+- `services/billing/pod-billing/src/types.ts`
+- `services/billing/pod-billing/src/usage.ts`
+- `services/billing/pod-billing/tsconfig.json`
+- `services/calendar/pod-calendar-mailer/.eslintrc.js`
+- `services/calendar/pod-calendar-mailer/.npmignore`
+- `services/calendar/pod-calendar-mailer/config/rig.json`
+- `services/calendar/pod-calendar-mailer/Dockerfile`
+- `services/calendar/pod-calendar-mailer/jest.config.js`
+- `services/calendar/pod-calendar-mailer/package.json`
+- `services/calendar/pod-calendar-mailer/src/__tests__/handlers.test.ts`
+- `services/calendar/pod-calendar-mailer/src/config.ts`
+- `services/calendar/pod-calendar-mailer/src/handlers.ts`
+- `services/calendar/pod-calendar-mailer/src/index.ts`
+- `services/calendar/pod-calendar-mailer/src/notification.ts`
+- `services/calendar/pod-calendar-mailer/src/types.ts`
+- `services/calendar/pod-calendar-mailer/src/utils.ts`
+- `services/calendar/pod-calendar-mailer/tsconfig.json`
+- `services/calendar/pod-calendar/.eslintrc.js`
+- `services/calendar/pod-calendar/.npmignore`
+- `services/calendar/pod-calendar/config/rig.json`
+- `services/calendar/pod-calendar/Dockerfile`
+- `services/calendar/pod-calendar/jest.config.js`
+- `services/calendar/pod-calendar/package.json`
+- `services/calendar/pod-calendar/src/auth.ts`
+- `services/calendar/pod-calendar/src/base64.ts`
+- `services/calendar/pod-calendar/src/calendar.ts`
+- `services/calendar/pod-calendar/src/calendarController.ts`
+- `services/calendar/pod-calendar/src/client.ts`
+- `services/calendar/pod-calendar/src/config.ts`
+- `services/calendar/pod-calendar/src/error.ts`
+- `services/calendar/pod-calendar/src/index.ts`
+- `services/calendar/pod-calendar/src/integrations.ts`
+- `services/calendar/pod-calendar/src/kvsUtils.ts`
+- `services/calendar/pod-calendar/src/main.ts`
+- `services/calendar/pod-calendar/src/mutex.ts`
+- `services/calendar/pod-calendar/src/outcomingClient.ts`
+- `services/calendar/pod-calendar/src/pushHandler.ts`
+- `services/calendar/pod-calendar/src/rateLimiter.ts`
+- `services/calendar/pod-calendar/src/server.ts`
+- `services/calendar/pod-calendar/src/sync.ts`
+- `services/calendar/pod-calendar/src/tokens.ts`
+- `services/calendar/pod-calendar/src/types.ts`
+- `services/calendar/pod-calendar/src/utils.ts`
+- `services/calendar/pod-calendar/src/watch.ts`
+- `services/calendar/pod-calendar/src/workspaceClient.ts`
+- `services/calendar/pod-calendar/tsconfig.json`
+- `services/datalake/pod-datalake/.eslintrc.js`
+- `services/datalake/pod-datalake/.npmignore`
+- `services/datalake/pod-datalake/config/rig.json`
+- `services/datalake/pod-datalake/Dockerfile`
+- `services/datalake/pod-datalake/jest.config.js`
+- `services/datalake/pod-datalake/package.json`
+- `services/datalake/pod-datalake/schema/datalake.sql`
+- `services/datalake/pod-datalake/src/config.ts`
+- `services/datalake/pod-datalake/src/const.ts`
+- `services/datalake/pod-datalake/src/datalake/cache.ts`
+- `services/datalake/pod-datalake/src/datalake/datalake.ts`
+- `services/datalake/pod-datalake/src/datalake/db.ts`
+- `services/datalake/pod-datalake/src/datalake/encodings.ts`
+- `services/datalake/pod-datalake/src/datalake/index.ts`
+- `services/datalake/pod-datalake/src/datalake/queue.ts`
+- `services/datalake/pod-datalake/src/datalake/retry.ts`
+- `services/datalake/pod-datalake/src/datalake/types.ts`
+- `services/datalake/pod-datalake/src/datalake/utils.ts`
+- `services/datalake/pod-datalake/src/error.ts`
+- `services/datalake/pod-datalake/src/handlers/blob.ts`
+- `services/datalake/pod-datalake/src/handlers/index.ts`
+- `services/datalake/pod-datalake/src/handlers/meta.ts`
+- `services/datalake/pod-datalake/src/handlers/multipart.ts`
+- `services/datalake/pod-datalake/src/handlers/s3.ts`
+- `services/datalake/pod-datalake/src/hash.ts`
+- `services/datalake/pod-datalake/src/index.ts`
+- `services/datalake/pod-datalake/src/main.ts`
+- `services/datalake/pod-datalake/src/middleware.ts`
+- `services/datalake/pod-datalake/src/s3/bucket.ts`
+- `services/datalake/pod-datalake/src/s3/client.ts`
+- `services/datalake/pod-datalake/src/s3/index.ts`
+- `services/datalake/pod-datalake/src/s3/types.ts`
+- `services/datalake/pod-datalake/src/server.ts`
+- `services/datalake/pod-datalake/src/tempdir.ts`
+- `services/datalake/pod-datalake/tsconfig.json`
+- `services/export/pod-export/.eslintrc.js`
+- `services/export/pod-export/.npmignore`
+- `services/export/pod-export/config/rig.json`
+- `services/export/pod-export/Dockerfile`
+- `services/export/pod-export/jest.config.js`
+- `services/export/pod-export/package.json`
+- `services/export/pod-export/README.md`
+- `services/export/pod-export/src/__tests__/attachment-exporter.test.ts`
+- `services/export/pod-export/src/__tests__/data-mapper.test.ts`
+- `services/export/pod-export/src/__tests__/relation-exporter.test.ts`
+- `services/export/pod-export/src/__tests__/workspace-exporter.test.ts`
+- `services/export/pod-export/src/config.ts`
+- `services/export/pod-export/src/converter.ts`
+- `services/export/pod-export/src/csv/csv-serializer.ts`
+- `services/export/pod-export/src/error.ts`
+- `services/export/pod-export/src/exporter.ts`
+- `services/export/pod-export/src/index.ts`
+- `services/export/pod-export/src/json/json-serializer.ts`
+- `services/export/pod-export/src/main.ts`
+- `services/export/pod-export/src/notifications.ts`
+- `services/export/pod-export/src/server.ts`
+- `services/export/pod-export/src/transformer.ts`
+- `services/export/pod-export/src/types.ts`
+- `services/export/pod-export/src/workspace/attachment-exporter.ts`
+- `services/export/pod-export/src/workspace/data-mapper.ts`
+- `services/export/pod-export/src/workspace/document-exporter.ts`
+- `services/export/pod-export/src/workspace/index.ts`
+- `services/export/pod-export/src/workspace/relation-exporter.ts`
+- `services/export/pod-export/src/workspace/space-exporter.ts`
+- `services/export/pod-export/src/workspace/types.ts`
+- `services/export/pod-export/src/workspace/workspace-exporter.ts`
+- `services/export/pod-export/tsconfig.json`
+- `services/github/github-assets/.eslintrc.js`
+- `services/github/github-assets/assets/icons.svg`
+- `services/github/github-assets/config/rig.json`
+- `services/github/github-assets/jest.config.js`
+- `services/github/github-assets/lang/cs.json`
+- `services/github/github-assets/lang/de.json`
+- `services/github/github-assets/lang/en.json`
+- `services/github/github-assets/lang/es.json`
+- `services/github/github-assets/lang/fr.json`
+- `services/github/github-assets/lang/it.json`
+- `services/github/github-assets/lang/ko.json`
+- `services/github/github-assets/lang/pt-br.json`
+- `services/github/github-assets/lang/pt.json`
+- `services/github/github-assets/lang/ru.json`
+- `services/github/github-assets/lang/sp.json`
+- `services/github/github-assets/lang/tr.json`
+- `services/github/github-assets/lang/zh.json`
+- `services/github/github-assets/package.json`
+- `services/github/github-assets/src/__tests__/lang.test.ts`
+- `services/github/github-assets/src/index.ts`
+- `services/github/github-assets/tsconfig.json`
+- `services/github/github-resources/.eslintrc.js`
+- `services/github/github-resources/.prettierrc`
+- `services/github/github-resources/config/rig.json`
+- `services/github/github-resources/jest.config.js`
+- `services/github/github-resources/package.json`
+- `services/github/github-resources/postcss.config.js`
+- `services/github/github-resources/src/components/AuthenticationCheck.svelte`
+- `services/github/github-resources/src/components/Configure.svelte`
+- `services/github/github-resources/src/components/Connect.svelte`
+- `services/github/github-resources/src/components/ConnectApp.svelte`
+- `services/github/github-resources/src/components/ConnectProject.svelte`
+- `services/github/github-resources/src/components/EditPullRequest.svelte`
+- `services/github/github-resources/src/components/GithubIcon.svelte`
+- `services/github/github-resources/src/components/GithubIntegerations.svelte`
+- `services/github/github-resources/src/components/GithubIssueHeader.svelte`
+- `services/github/github-resources/src/components/GithubIssueInfo.svelte`
+- `services/github/github-resources/src/components/GithubIssueInfoHeader.svelte`
+- `services/github/github-resources/src/components/GithubPersonProfile.svelte`
+- `services/github/github-resources/src/components/GithubRepositories.svelte`
+- `services/github/github-resources/src/components/IntegrationState.svelte`
+- `services/github/github-resources/src/components/languageColors.ts`
+- `services/github/github-resources/src/components/MarkdownDescriptionDiff.svelte`
+- `services/github/github-resources/src/components/presenters/GithubIssuePresenter.svelte`
+- `services/github/github-resources/src/components/presenters/GithubReviewPresenter.svelte`
+- `services/github/github-resources/src/components/presenters/GithubReviewThreadPresenter.svelte`
+- `services/github/github-resources/src/components/presenters/MergeableValuePresenter.svelte`
+- `services/github/github-resources/src/components/presenters/PullRequestNotificationPresenter.svelte`
+- `services/github/github-resources/src/components/presenters/PullRequestPresenter.svelte`
+- `services/github/github-resources/src/components/presenters/PullRequestReviewDecisionValuePresenter.svelte`
+- `services/github/github-resources/src/components/presenters/PullRequestStateValuePresenter.svelte`
+- `services/github/github-resources/src/components/presenters/RepositoryPresenter.svelte`
+- `services/github/github-resources/src/components/presenters/ReviewCommentPresenter.svelte`
+- `services/github/github-resources/src/components/presenters/TitlePresenter.svelte`
+- `services/github/github-resources/src/components/PullRequestDiff.svelte`
+- `services/github/github-resources/src/components/PullRequestMergeState.svelte`
+- `services/github/github-resources/src/components/PullRequests.svelte`
+- `services/github/github-resources/src/components/PullRequestsView.svelte`
+- `services/github/github-resources/src/components/RepositoryPresenter.svelte`
+- `services/github/github-resources/src/components/RepositoryPresenterRef.svelte`
+- `services/github/github-resources/src/components/RepositoryPresenterRefEditor.svelte`
+- `services/github/github-resources/src/components/RepositorySelector.svelte`
+- `services/github/github-resources/src/components/utils.ts`
+- `services/github/github-resources/src/configuration.ts`
+- `services/github/github-resources/src/index.ts`
+- `services/github/github-resources/src/plugin.ts`
+- `services/github/github-resources/svelte.config.js`
+- `services/github/github-resources/tsconfig.json`
+- `services/github/github.graphql`
+- `services/github/github/.eslintrc.js`
+- `services/github/github/.npmignore`
+- `services/github/github/config/rig.json`
+- `services/github/github/jest.config.js`
+- `services/github/github/package.json`
+- `services/github/github/src/index.ts`
+- `services/github/github/tsconfig.json`
+- `services/github/model-github/.eslintrc.js`
+- `services/github/model-github/.npmignore`
+- `services/github/model-github/config/rig.json`
+- `services/github/model-github/jest.config.js`
+- `services/github/model-github/package.json`
+- `services/github/model-github/src/index.ts`
+- `services/github/model-github/src/migration.ts`
+- `services/github/model-github/src/plugin.ts`
+- `services/github/model-github/tsconfig.json`
+- `services/github/pod-github/.eslintrc.js`
+- `services/github/pod-github/.gitignore`
+- `services/github/pod-github/.npmignore`
+- `services/github/pod-github/config/rig.json`
+- `services/github/pod-github/Dockerfile`
+- `services/github/pod-github/jest.config.js`
+- `services/github/pod-github/package.json`
+- `services/github/pod-github/Readme.md`
+- `services/github/pod-github/run.sh`
+- `services/github/pod-github/src/__tests__/workspaceUtils.test.ts`
+- `services/github/pod-github/src/client.ts`
+- `services/github/pod-github/src/collaborator.ts`
+- `services/github/pod-github/src/config.ts`
+- `services/github/pod-github/src/index.ts`
+- `services/github/pod-github/src/loaders.ts`
+- `services/github/pod-github/src/markdown/__tests__/markdown.json.gz`
+- `services/github/pod-github/src/markdown/__tests__/markup.test.ts`
+- `services/github/pod-github/src/markdown/__tests__/testMarkdowns.test.ts_`
+- `services/github/pod-github/src/markdown/__tests__/textmodel.test.ts`
+- `services/github/pod-github/src/markdown/extensions.ts`
+- `services/github/pod-github/src/markdown/index.ts`
+- `services/github/pod-github/src/notifications.ts`
+- `services/github/pod-github/src/platform.ts`
+- `services/github/pod-github/src/server.ts`
+- `services/github/pod-github/src/sync/__tests__/pullrequests.test.ts`
+- `services/github/pod-github/src/sync/comments.ts`
+- `services/github/pod-github/src/sync/configuration.ts`
+- `services/github/pod-github/src/sync/githubTypes.ts`
+- `services/github/pod-github/src/sync/guest.ts`
+- `services/github/pod-github/src/sync/issueBase.ts`
+- `services/github/pod-github/src/sync/issues.ts`
+- `services/github/pod-github/src/sync/pullrequests.ts`
+- `services/github/pod-github/src/sync/repository.ts`
+- `services/github/pod-github/src/sync/reviewComments.ts`
+- `services/github/pod-github/src/sync/reviews.ts`
+- `services/github/pod-github/src/sync/reviewThreads.ts`
+- `services/github/pod-github/src/sync/users.ts`
+- `services/github/pod-github/src/sync/utils.ts`
+- `services/github/pod-github/src/types.ts`
+- `services/github/pod-github/src/users.ts`
+- `services/github/pod-github/src/utils.ts`
+- `services/github/pod-github/src/worker.ts`
+- `services/github/pod-github/src/workspaceUtils.ts`
+- `services/github/pod-github/tsconfig.json`
+- `services/github/readme.md`
+- `services/github/server-github-model/.eslintrc.js`
+- `services/github/server-github-model/.npmignore`
+- `services/github/server-github-model/config/rig.json`
+- `services/github/server-github-model/jest.config.js`
+- `services/github/server-github-model/package.json`
+- `services/github/server-github-model/src/index.ts`
+- `services/github/server-github-model/tsconfig.json`
+- `services/github/server-github-resources/.eslintrc.js`
+- `services/github/server-github-resources/.npmignore`
+- `services/github/server-github-resources/config/rig.json`
+- `services/github/server-github-resources/jest.config.js`
+- `services/github/server-github-resources/package.json`
+- `services/github/server-github-resources/src/index.ts`
+- `services/github/server-github-resources/tsconfig.json`
+- `services/github/server-github/.eslintrc.js`
+- `services/github/server-github/.npmignore`
+- `services/github/server-github/config/rig.json`
+- `services/github/server-github/jest.config.js`
+- `services/github/server-github/package.json`
+- `services/github/server-github/src/index.ts`
+- `services/github/server-github/tsconfig.json`
+- `services/gmail/pod-gmail/.eslintrc.js`
+- `services/gmail/pod-gmail/.gitignore`
+- `services/gmail/pod-gmail/.npmignore`
+- `services/gmail/pod-gmail/config/rig.json`
+- `services/gmail/pod-gmail/Dockerfile`
+- `services/gmail/pod-gmail/jest.config.js`
+- `services/gmail/pod-gmail/package.json`
+- `services/gmail/pod-gmail/README.md`
+- `services/gmail/pod-gmail/src/__mocks__/config.ts`
+- `services/gmail/pod-gmail/src/__tests__/attachments.test.ts`
+- `services/gmail/pod-gmail/src/__tests__/config.test.ts`
+- `services/gmail/pod-gmail/src/__tests__/gmailClient.test.ts`
+- `services/gmail/pod-gmail/src/__tests__/gmailController.test.ts`
+- `services/gmail/pod-gmail/src/__tests__/message-v1.test.ts`
+- `services/gmail/pod-gmail/src/__tests__/message.test.ts`
+- `services/gmail/pod-gmail/src/__tests__/sync.test.ts`
+- `services/gmail/pod-gmail/src/__tests__/syncState.test.ts`
+- `services/gmail/pod-gmail/src/__tests__/tokens.test.ts`
+- `services/gmail/pod-gmail/src/accounts.ts`
+- `services/gmail/pod-gmail/src/base64.ts`
+- `services/gmail/pod-gmail/src/client.ts`
+- `services/gmail/pod-gmail/src/config.ts`
+- `services/gmail/pod-gmail/src/error.ts`
+- `services/gmail/pod-gmail/src/gmail.ts`
+- `services/gmail/pod-gmail/src/gmail/auth.ts`
+- `services/gmail/pod-gmail/src/gmail/utils.ts`
+- `services/gmail/pod-gmail/src/gmailController.ts`
+- `services/gmail/pod-gmail/src/index.ts`
+- `services/gmail/pod-gmail/src/integrations.ts`
+- `services/gmail/pod-gmail/src/main.ts`
+- `services/gmail/pod-gmail/src/message/adapter.ts`
+- `services/gmail/pod-gmail/src/message/attachments.ts`
+- `services/gmail/pod-gmail/src/message/sync.ts`
+- `services/gmail/pod-gmail/src/message/syncState.ts`
+- `services/gmail/pod-gmail/src/message/types.ts`
+- `services/gmail/pod-gmail/src/message/v1/message.ts`
+- `services/gmail/pod-gmail/src/message/v2/message.ts`
+- `services/gmail/pod-gmail/src/message/v2/send.ts`
+- `services/gmail/pod-gmail/src/rateLimiter.ts`
+- `services/gmail/pod-gmail/src/server.ts`
+- `services/gmail/pod-gmail/src/tokens.ts`
+- `services/gmail/pod-gmail/src/types.ts`
+- `services/gmail/pod-gmail/src/utils.ts`
+- `services/gmail/pod-gmail/src/workspaceClient.ts`
+- `services/gmail/pod-gmail/tsconfig.json`
+- `services/love/.eslintrc.js`
+- `services/love/.npmignore`
+- `services/love/config/rig.json`
+- `services/love/Dockerfile`
+- `services/love/jest.config.js`
+- `services/love/package.json`
+- `services/love/src/billing.ts`
+- `services/love/src/client.ts`
+- `services/love/src/config.ts`
+- `services/love/src/index.ts`
+- `services/love/src/main.ts`
+- `services/love/src/preset.ts`
+- `services/love/src/storage.ts`
+- `services/love/src/workspaceClient.ts`
+- `services/love/tsconfig.json`
+- `services/mail/mail-common/.eslintrc.js`
+- `services/mail/mail-common/.gitignore`
+- `services/mail/mail-common/.npmignore`
+- `services/mail/mail-common/config/rig.json`
+- `services/mail/mail-common/jest.config.js`
+- `services/mail/mail-common/package.json`
+- `services/mail/mail-common/src/__tests__/__mocks__/meetingMail.html`
+- `services/mail/mail-common/src/__tests__/channel.test.ts`
+- `services/mail/mail-common/src/__tests__/md.test.ts`
+- `services/mail/mail-common/src/__tests__/message.test.ts`
+- `services/mail/mail-common/src/__tests__/mutex.test.ts`
+- `services/mail/mail-common/src/__tests__/parseEmailHeader.test.ts`
+- `services/mail/mail-common/src/__tests__/parseNameFromEmailHeader.test.ts`
+- `services/mail/mail-common/src/__tests__/person.test.ts`
+- `services/mail/mail-common/src/__tests__/personFactory.test.ts`
+- `services/mail/mail-common/src/__tests__/personSpaces.test.ts`
+- `services/mail/mail-common/src/__tests__/queue.test.ts`
+- `services/mail/mail-common/src/__tests__/thread.test.ts`
+- `services/mail/mail-common/src/__tests__/utils.test.ts`
+- `services/mail/mail-common/src/channel.ts`
+- `services/mail/mail-common/src/index.ts`
+- `services/mail/mail-common/src/md.ts`
+- `services/mail/mail-common/src/message.ts`
+- `services/mail/mail-common/src/mutex.ts`
+- `services/mail/mail-common/src/person.ts`
+- `services/mail/mail-common/src/personSpaces.ts`
+- `services/mail/mail-common/src/queue.ts`
+- `services/mail/mail-common/src/thread.ts`
+- `services/mail/mail-common/src/txHandler.ts`
+- `services/mail/mail-common/src/types.ts`
+- `services/mail/mail-common/src/utils.ts`
+- `services/mail/mail-common/tsconfig.json`
+- `services/mail/pod-mail-worker/.eslintrc.js`
+- `services/mail/pod-mail-worker/.gitignore`
+- `services/mail/pod-mail-worker/.npmignore`
+- `services/mail/pod-mail-worker/build.sh`
+- `services/mail/pod-mail-worker/config/rig.json`
+- `services/mail/pod-mail-worker/Dockerfile`
+- `services/mail/pod-mail-worker/jest.config.js`
+- `services/mail/pod-mail-worker/package.json`
+- `services/mail/pod-mail-worker/README.md`
+- `services/mail/pod-mail-worker/src/__tests__/__mocks__/2attachments.txt`
+- `services/mail/pod-mail-worker/src/__tests__/__mocks__/attachment.txt`
+- `services/mail/pod-mail-worker/src/__tests__/__mocks__/base64Message.json`
+- `services/mail/pod-mail-worker/src/__tests__/decode.test.ts`
+- `services/mail/pod-mail-worker/src/__tests__/handlerMta.test.ts`
+- `services/mail/pod-mail-worker/src/__tests__/parseMail.test.ts`
+- `services/mail/pod-mail-worker/src/__tests__/utils.test.ts`
+- `services/mail/pod-mail-worker/src/client.ts`
+- `services/mail/pod-mail-worker/src/config.ts`
+- `services/mail/pod-mail-worker/src/decode.ts`
+- `services/mail/pod-mail-worker/src/handlerMta.ts`
+- `services/mail/pod-mail-worker/src/index.ts`
+- `services/mail/pod-mail-worker/src/mailWorker.ts`
+- `services/mail/pod-mail-worker/src/send.ts`
+- `services/mail/pod-mail-worker/src/types.ts`
+- `services/mail/pod-mail-worker/src/utils.ts`
+- `services/mail/pod-mail-worker/src/workspaceClient.ts`
+- `services/mail/pod-mail-worker/tsconfig.json`
+- `services/mail/pod-mail/.eslintrc.js`
+- `services/mail/pod-mail/.gitignore`
+- `services/mail/pod-mail/.npmignore`
+- `services/mail/pod-mail/build.sh`
+- `services/mail/pod-mail/config/rig.json`
+- `services/mail/pod-mail/Dockerfile`
+- `services/mail/pod-mail/jest.config.js`
+- `services/mail/pod-mail/package.json`
+- `services/mail/pod-mail/README.md`
+- `services/mail/pod-mail/src/__tests__/config.test.ts`
+- `services/mail/pod-mail/src/__tests__/main.test.ts`
+- `services/mail/pod-mail/src/config.ts`
+- `services/mail/pod-mail/src/error.ts`
+- `services/mail/pod-mail/src/index.ts`
+- `services/mail/pod-mail/src/mail.ts`
+- `services/mail/pod-mail/src/main.ts`
+- `services/mail/pod-mail/src/server.ts`
+- `services/mail/pod-mail/src/transport.ts`
+- `services/mail/pod-mail/src/types.ts`
+- `services/mail/pod-mail/tsconfig.json`
+- `services/notification/pod-notification/.eslintrc.js`
+- `services/notification/pod-notification/.npmignore`
+- `services/notification/pod-notification/build.sh`
+- `services/notification/pod-notification/config/rig.json`
+- `services/notification/pod-notification/Dockerfile`
+- `services/notification/pod-notification/jest.config.js`
+- `services/notification/pod-notification/package.json`
+- `services/notification/pod-notification/README.md`
+- `services/notification/pod-notification/src/__tests__/push.test.ts`
+- `services/notification/pod-notification/src/__tests__/server.test.ts`
+- `services/notification/pod-notification/src/config.ts`
+- `services/notification/pod-notification/src/error.ts`
+- `services/notification/pod-notification/src/index.ts`
+- `services/notification/pod-notification/src/main.ts`
+- `services/notification/pod-notification/src/push.ts`
+- `services/notification/pod-notification/src/server.ts`
+- `services/notification/pod-notification/src/types.ts`
+- `services/notification/pod-notification/tsconfig.json`
+- `services/payment/pod-payment/.eslintrc.js`
+- `services/payment/pod-payment/.gitignore`
+- `services/payment/pod-payment/.npmignore`
+- `services/payment/pod-payment/config/rig.json`
+- `services/payment/pod-payment/Dockerfile`
+- `services/payment/pod-payment/jest.config.js`
+- `services/payment/pod-payment/package.json`
+- `services/payment/pod-payment/README.md`
+- `services/payment/pod-payment/src/config.ts`
+- `services/payment/pod-payment/src/factory.ts`
+- `services/payment/pod-payment/src/index.ts`
+- `services/payment/pod-payment/src/main.ts`
+- `services/payment/pod-payment/src/middleware.ts`
+- `services/payment/pod-payment/src/providers/index.ts`
+- `services/payment/pod-payment/src/providers/polar/__tests__/provider.test.ts`
+- `services/payment/pod-payment/src/providers/polar/client.ts`
+- `services/payment/pod-payment/src/providers/polar/index.ts`
+- `services/payment/pod-payment/src/providers/polar/provider.ts`
+- `services/payment/pod-payment/src/providers/polar/types.ts`
+- `services/payment/pod-payment/src/providers/polar/utils.ts`
+- `services/payment/pod-payment/src/providers/polar/webhook.ts`
+- `services/payment/pod-payment/src/providers/stripe/__tests__/provider.test.ts`
+- `services/payment/pod-payment/src/providers/stripe/__tests__/utils.test.ts`
+- `services/payment/pod-payment/src/providers/stripe/__tests__/webhook.test.ts`
+- `services/payment/pod-payment/src/providers/stripe/client.ts`
+- `services/payment/pod-payment/src/providers/stripe/index.ts`
+- `services/payment/pod-payment/src/providers/stripe/provider.ts`
+- `services/payment/pod-payment/src/providers/stripe/types.ts`
+- `services/payment/pod-payment/src/providers/stripe/utils.ts`
+- `services/payment/pod-payment/src/providers/stripe/webhook.ts`
+- `services/payment/pod-payment/src/reconciliation.ts`
+- `services/payment/pod-payment/src/server.ts`
+- `services/payment/pod-payment/src/utils.ts`
+- `services/payment/pod-payment/tsconfig.json`
+- `services/print/pod-print/.eslintrc.js`
+- `services/print/pod-print/.gitignore`
+- `services/print/pod-print/.npmignore`
+- `services/print/pod-print/config/rig.json`
+- `services/print/pod-print/Dockerfile`
+- `services/print/pod-print/jest.config.js`
+- `services/print/pod-print/package.json`
+- `services/print/pod-print/src/config.ts`
+- `services/print/pod-print/src/convert.ts`
+- `services/print/pod-print/src/error.ts`
+- `services/print/pod-print/src/index.ts`
+- `services/print/pod-print/src/main.ts`
+- `services/print/pod-print/src/middleware.ts`
+- `services/print/pod-print/src/print.ts`
+- `services/print/pod-print/src/server.ts`
+- `services/print/pod-print/tsconfig.json`
+- `services/process/.eslintrc.js`
+- `services/process/.npmignore`
+- `services/process/config/rig.json`
+- `services/process/Dockerfile`
+- `services/process/jest.config.js`
+- `services/process/package.json`
+- `services/process/src/collaborator.ts`
+- `services/process/src/config.ts`
+- `services/process/src/errors.ts`
+- `services/process/src/index.ts`
+- `services/process/src/init.ts`
+- `services/process/src/main.ts`
+- `services/process/src/utils.ts`
+- `services/process/tsconfig.json`
+- `services/rating/.eslintrc.js`
+- `services/rating/.npmignore`
+- `services/rating/build.sh`
+- `services/rating/config/rig.json`
+- `services/rating/Dockerfile`
+- `services/rating/jest.config.js`
+- `services/rating/package.json`
+- `services/rating/run.sh`
+- `services/rating/src/__start__.ts`
+- `services/rating/src/__tests__/raiting.spec.ts`
+- `services/rating/src/calculator.ts`
+- `services/rating/src/get-model.ts`
+- `services/rating/src/index.ts`
+- `services/rating/src/manager.ts`
+- `services/rating/src/server.ts`
+- `services/rating/src/types.ts`
+- `services/rating/src/utils.ts`
+- `services/rating/tsconfig.json`
+- `services/rekoni/.eslintrc.js`
+- `services/rekoni/config/rig.json`
+- `services/rekoni/demo/hh_err1.pdf`
+- `services/rekoni/demo/pdf1.pdf`
+- `services/rekoni/demo/pdf1.txt`
+- `services/rekoni/demo/pdf2.pdf`
+- `services/rekoni/demo/pdf3.pdf`
+- `services/rekoni/demo/pdf4.pdf`
+- `services/rekoni/demo/pdf5.pdf`
+- `services/rekoni/demo/pdf6.pdf`
+- `services/rekoni/docker_tag.sh`
+- `services/rekoni/Dockerfile`
+- `services/rekoni/esbuild.js`
+- `services/rekoni/jest.config.js`
+- `services/rekoni/package.json`
+- `services/rekoni/src/__tests__/demo.test.ts`
+- `services/rekoni/src/__tests__/docx.smoke.test.ts`
+- `services/rekoni/src/__tests__/extractor.test_.ts`
+- `services/rekoni/src/__tests__/fixtures/minimal-smoke.docx`
+- `services/rekoni/src/__tests__/hh.test.ts`
+- `services/rekoni/src/config.ts`
+- `services/rekoni/src/error.ts`
+- `services/rekoni/src/extractors/doc.ts`
+- `services/rekoni/src/extractors/docx.ts`
+- `services/rekoni/src/extractors/html.ts`
+- `services/rekoni/src/extractors/index.ts`
+- `services/rekoni/src/extractors/pdf.ts`
+- `services/rekoni/src/extractors/rtf.ts`
+- `services/rekoni/src/extractors/types.ts`
+- `services/rekoni/src/extractpdf.ts`
+- `services/rekoni/src/find-skills.ts`
+- `services/rekoni/src/generic.ts`
+- `services/rekoni/src/headhunter.ts`
+- `services/rekoni/src/index.ts`
+- `services/rekoni/src/jwt.ts`
+- `services/rekoni/src/linkedin.ts`
+- `services/rekoni/src/podborio.ts`
+- `services/rekoni/src/process.ts`
+- `services/rekoni/src/server.ts`
+- `services/rekoni/src/skills.ts`
+- `services/rekoni/src/types.ts`
+- `services/rekoni/src/utils.ts`
+- `services/rekoni/tsconfig.json`
+- `services/sign/pod-sign/.eslintrc.js`
+- `services/sign/pod-sign/.npmignore`
+- `services/sign/pod-sign/config/rig.json`
+- `services/sign/pod-sign/debug/branding.json`
+- `services/sign/pod-sign/debug/certificate.p12`
+- `services/sign/pod-sign/Dockerfile`
+- `services/sign/pod-sign/jest.config.js`
+- `services/sign/pod-sign/package.json`
+- `services/sign/pod-sign/src/branding.ts`
+- `services/sign/pod-sign/src/client.ts`
+- `services/sign/pod-sign/src/config.ts`
+- `services/sign/pod-sign/src/error.ts`
+- `services/sign/pod-sign/src/index.ts`
+- `services/sign/pod-sign/src/main.ts`
+- `services/sign/pod-sign/src/server.ts`
+- `services/sign/pod-sign/src/sign.ts`
+- `services/sign/pod-sign/src/signController.ts`
+- `services/sign/pod-sign/src/token.ts`
+- `services/sign/pod-sign/tsconfig.json`
+- `services/telegram-bot/pod-telegram-bot/.eslintrc.js`
+- `services/telegram-bot/pod-telegram-bot/.npmignore`
+- `services/telegram-bot/pod-telegram-bot/config/rig.json`
+- `services/telegram-bot/pod-telegram-bot/Dockerfile`
+- `services/telegram-bot/pod-telegram-bot/jest.config.js`
+- `services/telegram-bot/pod-telegram-bot/package.json`
+- `services/telegram-bot/pod-telegram-bot/src/__tests__/postgres-real.test.ts`
+- `services/telegram-bot/pod-telegram-bot/src/account.ts`
+- `services/telegram-bot/pod-telegram-bot/src/config.ts`
+- `services/telegram-bot/pod-telegram-bot/src/db.ts`
+- `services/telegram-bot/pod-telegram-bot/src/error.ts`
+- `services/telegram-bot/pod-telegram-bot/src/index.ts`
+- `services/telegram-bot/pod-telegram-bot/src/limiter.ts`
+- `services/telegram-bot/pod-telegram-bot/src/loaders.ts`
+- `services/telegram-bot/pod-telegram-bot/src/server.ts`
+- `services/telegram-bot/pod-telegram-bot/src/start.ts`
+- `services/telegram-bot/pod-telegram-bot/src/telegraf/bot.ts`
+- `services/telegram-bot/pod-telegram-bot/src/telegraf/commands.ts`
+- `services/telegram-bot/pod-telegram-bot/src/telegraf/types.ts`
+- `services/telegram-bot/pod-telegram-bot/src/types.ts`
+- `services/telegram-bot/pod-telegram-bot/src/utils.ts`
+- `services/telegram-bot/pod-telegram-bot/src/worker.ts`
+- `services/telegram-bot/pod-telegram-bot/src/workspace.ts`
+- `services/telegram-bot/pod-telegram-bot/tsconfig.json`
+- `services/telegram/pod-telegram/.eslintrc.js`
+- `services/telegram/pod-telegram/.npmignore`
+- `services/telegram/pod-telegram/config/rig.json`
+- `services/telegram/pod-telegram/Dockerfile`
+- `services/telegram/pod-telegram/jest.config.js`
+- `services/telegram/pod-telegram/package.json`
+- `services/telegram/pod-telegram/src/config.ts`
+- `services/telegram/pod-telegram/src/error.ts`
+- `services/telegram/pod-telegram/src/escaping.ts`
+- `services/telegram/pod-telegram/src/index.ts`
+- `services/telegram/pod-telegram/src/main.ts`
+- `services/telegram/pod-telegram/src/markup.ts`
+- `services/telegram/pod-telegram/src/platform.ts`
+- `services/telegram/pod-telegram/src/queue.ts`
+- `services/telegram/pod-telegram/src/server.ts`
+- `services/telegram/pod-telegram/src/storage.ts`
+- `services/telegram/pod-telegram/src/telegram.ts`
+- `services/telegram/pod-telegram/src/types.ts`
+- `services/telegram/pod-telegram/src/utils.ts`
+- `services/telegram/pod-telegram/src/workspace.ts`
+- `services/telegram/pod-telegram/tsconfig.json`
+- `services/translate/.eslintrc.js`
+- `services/translate/.npmignore`
+- `services/translate/config/rig.json`
+- `services/translate/Dockerfile`
+- `services/translate/jest.config.js`
+- `services/translate/package.json`
+- `services/translate/src/billing.ts`
+- `services/translate/src/config.ts`
+- `services/translate/src/conroller.ts`
+- `services/translate/src/index.ts`
+- `services/translate/src/storage.ts`
+- `services/translate/src/utils.ts`
+- `services/translate/tsconfig.json`
+- `services/worker/.eslintrc.js`
+- `services/worker/.gitignore`
+- `services/worker/.npmignore`
+- `services/worker/config/rig.json`
+- `services/worker/Dockerfile`
+- `services/worker/jest.config.js`
+- `services/worker/package.json`
+- `services/worker/README.md`
+- `services/worker/src/activities.ts`
+- `services/worker/src/config.ts`
+- `services/worker/src/db.ts`
+- `services/worker/src/index.ts`
+- `services/worker/src/worker.ts`
+- `services/worker/tsconfig.json`
+
+</details>
+
+<details>
+<summary><code>packages</code> (671 files)</summary>
+
+- `packages/analytics-providers/.eslintrc.js`
+- `packages/analytics-providers/config/rig.json`
+- `packages/analytics-providers/jest.config.js`
+- `packages/analytics-providers/package.json`
+- `packages/analytics-providers/src/analyticsCollector.ts`
+- `packages/analytics-providers/src/configure.ts`
+- `packages/analytics-providers/src/index.ts`
+- `packages/analytics-providers/src/types.ts`
+- `packages/analytics-providers/src/utils.ts`
+- `packages/analytics-providers/tsconfig.json`
+- `packages/billing-client/.eslintrc.js`
+- `packages/billing-client/.npmignore`
+- `packages/billing-client/config/rig.json`
+- `packages/billing-client/jest.config.js`
+- `packages/billing-client/package.json`
+- `packages/billing-client/src/client.ts`
+- `packages/billing-client/src/error.ts`
+- `packages/billing-client/src/index.ts`
+- `packages/billing-client/src/types.ts`
+- `packages/billing-client/tsconfig.json`
+- `packages/highlight/.eslintrc.js`
+- `packages/highlight/.prettierrc`
+- `packages/highlight/config/rig.json`
+- `packages/highlight/jest.config.js`
+- `packages/highlight/package.json`
+- `packages/highlight/postcss.config.js`
+- `packages/highlight/src/index.ts`
+- `packages/highlight/src/languages/svelte.ts`
+- `packages/highlight/src/languages/vlang.ts`
+- `packages/highlight/svelte.config.js`
+- `packages/highlight/tsconfig.json`
+- `packages/hls/.eslintrc.js`
+- `packages/hls/.prettierrc`
+- `packages/hls/config/rig.json`
+- `packages/hls/jest.config.js`
+- `packages/hls/package.json`
+- `packages/hls/postcss.config.js`
+- `packages/hls/src/components/HlsVideo.svelte`
+- `packages/hls/src/index.ts`
+- `packages/hls/svelte.config.js`
+- `packages/hls/tsconfig.json`
+- `packages/hulypulse-client/.eslintrc.js`
+- `packages/hulypulse-client/config/rig.json`
+- `packages/hulypulse-client/jest.config.js`
+- `packages/hulypulse-client/jest.setup.js`
+- `packages/hulypulse-client/package.json`
+- `packages/hulypulse-client/README.md`
+- `packages/hulypulse-client/src/client.ts`
+- `packages/hulypulse-client/src/index.ts`
+- `packages/hulypulse-client/tsconfig.json`
+- `packages/importer/.eslintrc.js`
+- `packages/importer/.npmignore`
+- `packages/importer/config/rig.json`
+- `packages/importer/jest.config.js`
+- `packages/importer/package.json`
+- `packages/importer/src/clickup/clickup.ts`
+- `packages/importer/src/docx/docx.ts`
+- `packages/importer/src/docx/preprocessors.ts`
+- `packages/importer/src/huly/cards.ts`
+- `packages/importer/src/huly/huly.ts`
+- `packages/importer/src/huly/parser.ts`
+- `packages/importer/src/huly/preprocessor.ts`
+- `packages/importer/src/huly/registry.ts`
+- `packages/importer/src/huly/schema.ts`
+- `packages/importer/src/huly/validation.ts`
+- `packages/importer/src/importer/builder.ts`
+- `packages/importer/src/importer/dowloader.ts`
+- `packages/importer/src/importer/frontUploader.ts`
+- `packages/importer/src/importer/importer.ts`
+- `packages/importer/src/importer/logger.ts`
+- `packages/importer/src/importer/preprocessor.ts`
+- `packages/importer/src/importer/storageUploader.ts`
+- `packages/importer/src/importer/uploader.ts`
+- `packages/importer/src/index.ts`
+- `packages/importer/src/notion/notion.ts`
+- `packages/importer/src/types.ts`
+- `packages/importer/tsconfig.json`
+- `packages/integration-client/.eslintrc.js`
+- `packages/integration-client/.npmignore`
+- `packages/integration-client/config/rig.json`
+- `packages/integration-client/jest.config.js`
+- `packages/integration-client/jest.setup.js`
+- `packages/integration-client/package.json`
+- `packages/integration-client/src/__tests__/client.test.ts`
+- `packages/integration-client/src/__tests__/events.test.ts`
+- `packages/integration-client/src/__tests__/index.test.ts`
+- `packages/integration-client/src/__tests__/utils.test.ts`
+- `packages/integration-client/src/client.ts`
+- `packages/integration-client/src/events.ts`
+- `packages/integration-client/src/index.ts`
+- `packages/integration-client/src/request.ts`
+- `packages/integration-client/src/types.ts`
+- `packages/integration-client/src/utils.ts`
+- `packages/integration-client/tsconfig.json`
+- `packages/kanban/.eslintrc.js`
+- `packages/kanban/.prettierrc`
+- `packages/kanban/config/rig.json`
+- `packages/kanban/jest.config.js`
+- `packages/kanban/package.json`
+- `packages/kanban/postcss.config.js`
+- `packages/kanban/src/components/Kanban.svelte`
+- `packages/kanban/src/components/KanbanRow.svelte`
+- `packages/kanban/src/index.ts`
+- `packages/kanban/src/types.ts`
+- `packages/kanban/svelte.config.js`
+- `packages/kanban/tsconfig.json`
+- `packages/kvs-client/.eslintrc.js`
+- `packages/kvs-client/.npmignore`
+- `packages/kvs-client/config/rig.json`
+- `packages/kvs-client/jest.config.js`
+- `packages/kvs-client/jest.setup.js`
+- `packages/kvs-client/package.json`
+- `packages/kvs-client/src/__tests__/client.test.ts`
+- `packages/kvs-client/src/client.ts`
+- `packages/kvs-client/src/index.ts`
+- `packages/kvs-client/src/types.ts`
+- `packages/kvs-client/tsconfig.json`
+- `packages/panel/.eslintrc.js`
+- `packages/panel/.prettierrc`
+- `packages/panel/CHANGELOG.json`
+- `packages/panel/CHANGELOG.md`
+- `packages/panel/config/rig.json`
+- `packages/panel/jest.config.js`
+- `packages/panel/package.json`
+- `packages/panel/postcss.config.js`
+- `packages/panel/src/components/Panel.svelte`
+- `packages/panel/src/index.ts`
+- `packages/panel/svelte.config.js`
+- `packages/panel/tsconfig.json`
+- `packages/payment-client/.eslintrc.js`
+- `packages/payment-client/.npmignore`
+- `packages/payment-client/config/rig.json`
+- `packages/payment-client/jest.config.js`
+- `packages/payment-client/package.json`
+- `packages/payment-client/src/client.ts`
+- `packages/payment-client/src/error.ts`
+- `packages/payment-client/src/index.ts`
+- `packages/payment-client/src/types.ts`
+- `packages/payment-client/tsconfig.json`
+- `packages/presentation/.eslintrc.js`
+- `packages/presentation/.prettierrc`
+- `packages/presentation/CHANGELOG.json`
+- `packages/presentation/CHANGELOG.md`
+- `packages/presentation/config/rig.json`
+- `packages/presentation/jest.config.js`
+- `packages/presentation/lang/cs.json`
+- `packages/presentation/lang/de.json`
+- `packages/presentation/lang/en.json`
+- `packages/presentation/lang/es.json`
+- `packages/presentation/lang/fr.json`
+- `packages/presentation/lang/it.json`
+- `packages/presentation/lang/ja.json`
+- `packages/presentation/lang/ko.json`
+- `packages/presentation/lang/pt-br.json`
+- `packages/presentation/lang/pt.json`
+- `packages/presentation/lang/ru.json`
+- `packages/presentation/lang/tr.json`
+- `packages/presentation/lang/zh.json`
+- `packages/presentation/package.json`
+- `packages/presentation/postcss.config.js`
+- `packages/presentation/src/___tests___/drawing.test.ts`
+- `packages/presentation/src/___tests___/drawingCommandsProcessor.test.ts`
+- `packages/presentation/src/___tests___/drawingUtils.test.ts`
+- `packages/presentation/src/___tests___/link-preview.test.ts`
+- `packages/presentation/src/__mocks__/README.md`
+- `packages/presentation/src/__mocks__/setup.ts`
+- `packages/presentation/src/__mocks__/svelte-animate.ts`
+- `packages/presentation/src/__mocks__/svelte-component.ts`
+- `packages/presentation/src/__mocks__/svelte-runtime.ts`
+- `packages/presentation/src/__mocks__/svelte-store.ts`
+- `packages/presentation/src/__mocks__/svelte-transition.ts`
+- `packages/presentation/src/__mocks__/svelte.ts`
+- `packages/presentation/src/attributes.ts`
+- `packages/presentation/src/collaborator.ts`
+- `packages/presentation/src/communication.ts`
+- `packages/presentation/src/components/ActionContext.svelte`
+- `packages/presentation/src/components/AttributeBarEditor.svelte`
+- `packages/presentation/src/components/AttributeEditor.svelte`
+- `packages/presentation/src/components/AttributesBar.svelte`
+- `packages/presentation/src/components/breadcrumbs/Breadcrumbs.svelte`
+- `packages/presentation/src/components/breadcrumbs/BreadcrumbsElement.svelte`
+- `packages/presentation/src/components/breadcrumbs/types.ts`
+- `packages/presentation/src/components/breadcrumbs/utils.ts`
+- `packages/presentation/src/components/Card.svelte`
+- `packages/presentation/src/components/DocPopup.svelte`
+- `packages/presentation/src/components/DownloadFileButton.svelte`
+- `packages/presentation/src/components/DrawingBoard.svelte`
+- `packages/presentation/src/components/DrawingBoardColorSelectorIcon.svelte`
+- `packages/presentation/src/components/DrawingBoardToolbar.svelte`
+- `packages/presentation/src/components/DrawingBoardToolbarColorIcon.svelte`
+- `packages/presentation/src/components/extensions/ComponentExtensions.svelte`
+- `packages/presentation/src/components/extensions/DocCreateExtComponent.svelte`
+- `packages/presentation/src/components/extensions/manager.ts`
+- `packages/presentation/src/components/FilePreview.svelte`
+- `packages/presentation/src/components/FilePreviewPopup.svelte`
+- `packages/presentation/src/components/FileTypeIcon.svelte`
+- `packages/presentation/src/components/HTMLViewer.svelte`
+- `packages/presentation/src/components/icons/Download.svelte`
+- `packages/presentation/src/components/icons/Ellipse.svelte`
+- `packages/presentation/src/components/icons/Eraser.svelte`
+- `packages/presentation/src/components/icons/ExpandDown.svelte`
+- `packages/presentation/src/components/icons/ExpandUp.svelte`
+- `packages/presentation/src/components/icons/Forward.svelte`
+- `packages/presentation/src/components/icons/Line.svelte`
+- `packages/presentation/src/components/icons/MaximizeH.svelte`
+- `packages/presentation/src/components/icons/MaximizeO.svelte`
+- `packages/presentation/src/components/icons/MaximizeV.svelte`
+- `packages/presentation/src/components/icons/Move.svelte`
+- `packages/presentation/src/components/icons/Rectangle.svelte`
+- `packages/presentation/src/components/icons/Text.svelte`
+- `packages/presentation/src/components/IconWithEmoji.svelte`
+- `packages/presentation/src/components/Image.svelte`
+- `packages/presentation/src/components/InlineAttributeBar.svelte`
+- `packages/presentation/src/components/InlineAttributeBarEditor.svelte`
+- `packages/presentation/src/components/LiteMessageViewer.svelte`
+- `packages/presentation/src/components/markup/CodeBlockNode.svelte`
+- `packages/presentation/src/components/markup/lite/LiteNode.svelte`
+- `packages/presentation/src/components/markup/lite/LiteNodeContent.svelte`
+- `packages/presentation/src/components/markup/lite/LiteNodes.svelte`
+- `packages/presentation/src/components/markup/Mark.svelte`
+- `packages/presentation/src/components/markup/MarkdownNode.svelte`
+- `packages/presentation/src/components/markup/Node.svelte`
+- `packages/presentation/src/components/markup/NodeContent.svelte`
+- `packages/presentation/src/components/markup/NodeMarks.svelte`
+- `packages/presentation/src/components/markup/ObjectNode.svelte`
+- `packages/presentation/src/components/MessageBox.svelte`
+- `packages/presentation/src/components/MessageViewer.svelte`
+- `packages/presentation/src/components/NavLink.svelte`
+- `packages/presentation/src/components/ObjectPopup.svelte`
+- `packages/presentation/src/components/ObjectSearchPopup.svelte`
+- `packages/presentation/src/components/PDFViewer.svelte`
+- `packages/presentation/src/components/SearchResult.svelte`
+- `packages/presentation/src/components/SpaceCreateCard.svelte`
+- `packages/presentation/src/components/SpaceInfo.svelte`
+- `packages/presentation/src/components/SpaceMultiBoxList.svelte`
+- `packages/presentation/src/components/SpaceSelect.svelte`
+- `packages/presentation/src/components/SpaceSelector.svelte`
+- `packages/presentation/src/components/SpacesMultiPopup.svelte`
+- `packages/presentation/src/components/SpacesPopup.svelte`
+- `packages/presentation/src/configuration.ts`
+- `packages/presentation/src/context.ts`
+- `packages/presentation/src/drafts.ts`
+- `packages/presentation/src/drawing.ts`
+- `packages/presentation/src/drawingColors.ts`
+- `packages/presentation/src/drawingCommand.ts`
+- `packages/presentation/src/drawingCommandsProcessor.ts`
+- `packages/presentation/src/drawingUtils.ts`
+- `packages/presentation/src/file.ts`
+- `packages/presentation/src/filetypes.ts`
+- `packages/presentation/src/image.ts`
+- `packages/presentation/src/index.ts`
+- `packages/presentation/src/link-preview.ts`
+- `packages/presentation/src/pipeline.ts`
+- `packages/presentation/src/plugin.ts`
+- `packages/presentation/src/preview.ts`
+- `packages/presentation/src/pulse.ts`
+- `packages/presentation/src/rules.ts`
+- `packages/presentation/src/search.ts`
+- `packages/presentation/src/sound.ts`
+- `packages/presentation/src/stats.ts`
+- `packages/presentation/src/types.ts`
+- `packages/presentation/src/utils.ts`
+- `packages/presentation/svelte.config.js`
+- `packages/presentation/tsconfig.json`
+- `packages/rekoni/.eslintrc.js`
+- `packages/rekoni/config/rig.json`
+- `packages/rekoni/jest.config.js`
+- `packages/rekoni/package.json`
+- `packages/rekoni/postcss.config.js`
+- `packages/rekoni/src/index.ts`
+- `packages/rekoni/src/plugin.ts`
+- `packages/rekoni/src/types.ts`
+- `packages/rekoni/tsconfig.json`
+- `packages/theme/.eslintrc.js`
+- `packages/theme/.prettierrc`
+- `packages/theme/config/rig.json`
+- `packages/theme/fonts/complete/woff/IBMPlexSans-Bold.woff`
+- `packages/theme/fonts/complete/woff/IBMPlexSans-Medium.woff`
+- `packages/theme/fonts/complete/woff/IBMPlexSans-Regular.woff`
+- `packages/theme/fonts/complete/woff/IBMPlexSans-SemiBold.woff`
+- `packages/theme/fonts/complete/woff/mono/IBMPlexMono-Bold.woff`
+- `packages/theme/fonts/complete/woff/mono/IBMPlexMono-Medium.woff`
+- `packages/theme/fonts/complete/woff/mono/IBMPlexMono-Regular.woff`
+- `packages/theme/fonts/complete/woff/mono/IBMPlexMono-SemiBold.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-0-400-normal.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-1-400-normal.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-10-400-normal.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-11-400-normal.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-2-400-normal.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-3-400-normal.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-4-400-normal.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-5-400-normal.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-6-400-normal.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-7-400-normal.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-8-400-normal.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-9-400-normal.woff`
+- `packages/theme/fonts/complete/woff/noto-color/noto-color-emoji-emoji-400-normal.woff`
+- `packages/theme/fonts/complete/woff2/IBMPlexSans-Bold.woff2`
+- `packages/theme/fonts/complete/woff2/IBMPlexSans-Medium.woff2`
+- `packages/theme/fonts/complete/woff2/IBMPlexSans-Regular.woff2`
+- `packages/theme/fonts/complete/woff2/IBMPlexSans-SemiBold.woff2`
+- `packages/theme/fonts/complete/woff2/mono/IBMPlexMono-Bold.woff2`
+- `packages/theme/fonts/complete/woff2/mono/IBMPlexMono-Medium.woff2`
+- `packages/theme/fonts/complete/woff2/mono/IBMPlexMono-Regular.woff2`
+- `packages/theme/fonts/complete/woff2/mono/IBMPlexMono-SemiBold.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-0-400-normal.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-1-400-normal.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-10-400-normal.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-11-400-normal.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-2-400-normal.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-3-400-normal.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-4-400-normal.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-5-400-normal.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-6-400-normal.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-7-400-normal.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-8-400-normal.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-9-400-normal.woff2`
+- `packages/theme/fonts/complete/woff2/noto-color/noto-color-emoji-emoji-400-normal.woff2`
+- `packages/theme/jest.config.js`
+- `packages/theme/package.json`
+- `packages/theme/postcss.config.js`
+- `packages/theme/src/index.ts`
+- `packages/theme/src/InvertedTheme.svelte`
+- `packages/theme/src/Theme.svelte`
+- `packages/theme/src/variants.ts`
+- `packages/theme/styles/_colors.scss`
+- `packages/theme/styles/_layouts.scss`
+- `packages/theme/styles/_lumia-colors.scss`
+- `packages/theme/styles/_print.scss`
+- `packages/theme/styles/_text-editor.scss`
+- `packages/theme/styles/_vars.scss`
+- `packages/theme/styles/button.scss`
+- `packages/theme/styles/common.scss`
+- `packages/theme/styles/components.scss`
+- `packages/theme/styles/dialogs.scss`
+- `packages/theme/styles/editors.scss`
+- `packages/theme/styles/github-dark.scss`
+- `packages/theme/styles/github-light.scss`
+- `packages/theme/styles/global.scss`
+- `packages/theme/styles/love.scss`
+- `packages/theme/styles/mixins.scss`
+- `packages/theme/styles/mono.scss`
+- `packages/theme/styles/noto-color.scss`
+- `packages/theme/styles/panel.scss`
+- `packages/theme/styles/popups.scss`
+- `packages/theme/styles/prose.scss`
+- `packages/theme/styles/tables.scss`
+- `packages/theme/svelte.config.js`
+- `packages/theme/tsconfig.json`
+- `packages/ui/.eslintrc.js`
+- `packages/ui/.prettierrc`
+- `packages/ui/CHANGELOG.json`
+- `packages/ui/CHANGELOG.md`
+- `packages/ui/config/rig.json`
+- `packages/ui/jest.config.js`
+- `packages/ui/lang/cs.json`
+- `packages/ui/lang/de.json`
+- `packages/ui/lang/en.json`
+- `packages/ui/lang/es.json`
+- `packages/ui/lang/fr.json`
+- `packages/ui/lang/it.json`
+- `packages/ui/lang/ja.json`
+- `packages/ui/lang/ko.json`
+- `packages/ui/lang/pt-br.json`
+- `packages/ui/lang/pt.json`
+- `packages/ui/lang/ru.json`
+- `packages/ui/lang/tr.json`
+- `packages/ui/lang/zh.json`
+- `packages/ui/package.json`
+- `packages/ui/postcss.config.js`
+- `packages/ui/src/__test__/colors.test.ts`
+- `packages/ui/src/__test__/location.test.ts`
+- `packages/ui/src/__test__/search.test.ts`
+- `packages/ui/src/colors.ts`
+- `packages/ui/src/components/AccordionItem.svelte`
+- `packages/ui/src/components/ActionIcon.svelte`
+- `packages/ui/src/components/AppLoading.svelte`
+- `packages/ui/src/components/BarDashboard.svelte`
+- `packages/ui/src/components/Blurhash.svelte`
+- `packages/ui/src/components/BooleanIcon.svelte`
+- `packages/ui/src/components/Breadcrumb.svelte`
+- `packages/ui/src/components/Breadcrumbs.svelte`
+- `packages/ui/src/components/Button.svelte`
+- `packages/ui/src/components/ButtonBase.svelte`
+- `packages/ui/src/components/ButtonGroup.svelte`
+- `packages/ui/src/components/ButtonIcon.svelte`
+- `packages/ui/src/components/ButtonMenu.svelte`
+- `packages/ui/src/components/ButtonWithDropdown.svelte`
+- `packages/ui/src/components/calendar/DateInputBox.svelte`
+- `packages/ui/src/components/calendar/DatePicker.svelte`
+- `packages/ui/src/components/calendar/DatePopup.svelte`
+- `packages/ui/src/components/calendar/DatePresenter.svelte`
+- `packages/ui/src/components/calendar/DateRangePicker.svelte`
+- `packages/ui/src/components/calendar/DateRangePopup.svelte`
+- `packages/ui/src/components/calendar/DateRangePresenter.svelte`
+- `packages/ui/src/components/calendar/DateTimePresenter.svelte`
+- `packages/ui/src/components/calendar/DateTimeRangePresenter.svelte`
+- `packages/ui/src/components/calendar/DueDatePopup.svelte`
+- `packages/ui/src/components/calendar/DueDatePresenter.svelte`
+- `packages/ui/src/components/calendar/icons/DPCalendar.svelte`
+- `packages/ui/src/components/calendar/icons/DPCalendarOver.svelte`
+- `packages/ui/src/components/calendar/icons/DPClock.svelte`
+- `packages/ui/src/components/calendar/icons/DPClockBold.svelte`
+- `packages/ui/src/components/calendar/icons/DPEnd.svelte`
+- `packages/ui/src/components/calendar/icons/DPSetCalendar.svelte`
+- `packages/ui/src/components/calendar/icons/DPStart.svelte`
+- `packages/ui/src/components/calendar/internal/DateUtils.ts`
+- `packages/ui/src/components/calendar/Month.svelte`
+- `packages/ui/src/components/calendar/MonthCalendar.svelte`
+- `packages/ui/src/components/calendar/MonthSquare.svelte`
+- `packages/ui/src/components/calendar/RangeDatePopup.svelte`
+- `packages/ui/src/components/calendar/Shifts.svelte`
+- `packages/ui/src/components/calendar/SimpleDatePopup.svelte`
+- `packages/ui/src/components/calendar/SimpleTimePopup.svelte`
+- `packages/ui/src/components/calendar/TimeInputBox.svelte`
+- `packages/ui/src/components/calendar/TimePopup.svelte`
+- `packages/ui/src/components/calendar/WeekCalendar.svelte`
+- `packages/ui/src/components/calendar/YearCalendar.svelte`
+- `packages/ui/src/components/CheckBox.svelte`
+- `packages/ui/src/components/CheckBoxList.svelte.txt`
+- `packages/ui/src/components/CheckBoxWithLabel.svelte.txt`
+- `packages/ui/src/components/Chevron.svelte`
+- `packages/ui/src/components/Chip.svelte`
+- `packages/ui/src/components/CircleButton.svelte`
+- `packages/ui/src/components/CodeForm.svelte`
+- `packages/ui/src/components/CodeInput.svelte`
+- `packages/ui/src/components/ColorPopup.svelte`
+- `packages/ui/src/components/Component.svelte`
+- `packages/ui/src/components/Dialog.svelte`
+- `packages/ui/src/components/Dock.svelte`
+- `packages/ui/src/components/Dropdown.svelte`
+- `packages/ui/src/components/DropdownLabels.svelte`
+- `packages/ui/src/components/DropdownLabelsIntl.svelte`
+- `packages/ui/src/components/DropdownLabelsPopup.svelte`
+- `packages/ui/src/components/DropdownLabelsPopupIntl.svelte`
+- `packages/ui/src/components/DropdownPopup.svelte`
+- `packages/ui/src/components/DropdownRecord.svelte`
+- `packages/ui/src/components/DropdownRecordPopup.svelte`
+- `packages/ui/src/components/EditBox.svelte`
+- `packages/ui/src/components/EditWithIcon.svelte`
+- `packages/ui/src/components/EmbeddedHTML.svelte`
+- `packages/ui/src/components/EmbeddedPDF.svelte`
+- `packages/ui/src/components/ErrorPopup.svelte`
+- `packages/ui/src/components/ErrorPresenter.svelte`
+- `packages/ui/src/components/Expandable.svelte`
+- `packages/ui/src/components/ExpandCollapse.svelte`
+- `packages/ui/src/components/FilterButton.svelte`
+- `packages/ui/src/components/FilterCategoryPopup.svelte`
+- `packages/ui/src/components/FilterOptionPopup.svelte`
+- `packages/ui/src/components/FocusHandler.svelte`
+- `packages/ui/src/components/Fold.svelte`
+- `packages/ui/src/components/Grid.svelte`
+- `packages/ui/src/components/Header.svelte`
+- `packages/ui/src/components/HeaderButton.svelte`
+- `packages/ui/src/components/Hotkey.svelte`
+- `packages/ui/src/components/HotkeyGroup.svelte`
+- `packages/ui/src/components/Html.svelte`
+- `packages/ui/src/components/Icon.svelte`
+- `packages/ui/src/components/icons/Activity.svelte`
+- `packages/ui/src/components/icons/ActivityEdit.svelte`
+- `packages/ui/src/components/icons/Add.svelte`
+- `packages/ui/src/components/icons/ArrowLeft.svelte`
+- `packages/ui/src/components/icons/ArrowRight.svelte`
+- `packages/ui/src/components/icons/Attachment.svelte`
+- `packages/ui/src/components/icons/Back.svelte`
+- `packages/ui/src/components/icons/BlueCheck.svelte`
+- `packages/ui/src/components/icons/Calendar.svelte`
+- `packages/ui/src/components/icons/Check.svelte`
+- `packages/ui/src/components/icons/CheckAll.svelte`
+- `packages/ui/src/components/icons/CheckCircle.svelte`
+- `packages/ui/src/components/icons/Checkmark.svelte`
+- `packages/ui/src/components/icons/ChevronDown.svelte`
+- `packages/ui/src/components/icons/ChevronLeft.svelte`
+- `packages/ui/src/components/icons/ChevronRight.svelte`
+- `packages/ui/src/components/icons/CircleAdd.svelte`
+- `packages/ui/src/components/icons/Circles.svelte`
+- `packages/ui/src/components/icons/Close.svelte`
+- `packages/ui/src/components/icons/CollapseArrow.svelte`
+- `packages/ui/src/components/icons/ColStar.svelte`
+- `packages/ui/src/components/icons/Copy.svelte`
+- `packages/ui/src/components/icons/Delete.svelte`
+- `packages/ui/src/components/icons/Description.svelte`
+- `packages/ui/src/components/icons/Details.svelte`
+- `packages/ui/src/components/icons/DetailsFilled.svelte`
+- `packages/ui/src/components/icons/Down.svelte`
+- `packages/ui/src/components/icons/DownOutline.svelte`
+- `packages/ui/src/components/icons/Dropdown.svelte`
+- `packages/ui/src/components/icons/DropdownDown.svelte`
+- `packages/ui/src/components/icons/DropdownRight.svelte`
+- `packages/ui/src/components/icons/Edit.svelte`
+- `packages/ui/src/components/icons/Error.svelte`
+- `packages/ui/src/components/icons/Expand.svelte`
+- `packages/ui/src/components/icons/File.svelte`
+- `packages/ui/src/components/icons/Filter.svelte`
+- `packages/ui/src/components/icons/Folder.svelte`
+- `packages/ui/src/components/icons/FolderCollapsed.svelte`
+- `packages/ui/src/components/icons/FolderExpanded.svelte`
+- `packages/ui/src/components/icons/Forward.svelte`
+- `packages/ui/src/components/icons/HalfUpDown.svelte`
+- `packages/ui/src/components/icons/History.svelte`
+- `packages/ui/src/components/icons/Info.svelte`
+- `packages/ui/src/components/icons/KeyCommand.svelte`
+- `packages/ui/src/components/icons/KeyOption.svelte`
+- `packages/ui/src/components/icons/KeyShift.svelte`
+- `packages/ui/src/components/icons/Left.svelte`
+- `packages/ui/src/components/icons/Like.svelte`
+- `packages/ui/src/components/icons/Link.svelte`
+- `packages/ui/src/components/icons/Maximize.svelte`
+- `packages/ui/src/components/icons/MaxWidth.svelte`
+- `packages/ui/src/components/icons/MenuClose.svelte`
+- `packages/ui/src/components/icons/MenuOpen.svelte`
+- `packages/ui/src/components/icons/Minimize.svelte`
+- `packages/ui/src/components/icons/MinWidth.svelte`
+- `packages/ui/src/components/icons/Mixin.svelte`
+- `packages/ui/src/components/icons/MoreH.svelte`
+- `packages/ui/src/components/icons/MoreV.svelte`
+- `packages/ui/src/components/icons/MoreV2.svelte`
+- `packages/ui/src/components/icons/NavNext.svelte`
+- `packages/ui/src/components/icons/NavPrev.svelte`
+- `packages/ui/src/components/icons/Open.svelte`
+- `packages/ui/src/components/icons/OpenedArrow.svelte`
+- `packages/ui/src/components/icons/Options.svelte`
+- `packages/ui/src/components/icons/Redo.svelte`
+- `packages/ui/src/components/icons/Right.svelte`
+- `packages/ui/src/components/icons/Scale.svelte`
+- `packages/ui/src/components/icons/ScaleFull.svelte`
+- `packages/ui/src/components/icons/Scribble.svelte`
+- `packages/ui/src/components/icons/Search.svelte`
+- `packages/ui/src/components/icons/Send.svelte`
+- `packages/ui/src/components/icons/Settings.svelte`
+- `packages/ui/src/components/icons/Share.svelte`
+- `packages/ui/src/components/icons/SquareExpand.svelte`
+- `packages/ui/src/components/icons/SquareSpinner.svelte`
+- `packages/ui/src/components/icons/Start.svelte`
+- `packages/ui/src/components/icons/Stop.svelte`
+- `packages/ui/src/components/icons/TableOfContents.svelte`
+- `packages/ui/src/components/icons/Thread.svelte`
+- `packages/ui/src/components/icons/ToDetails.svelte`
+- `packages/ui/src/components/icons/Undo.svelte`
+- `packages/ui/src/components/icons/Up.svelte`
+- `packages/ui/src/components/icons/UpOutline.svelte`
+- `packages/ui/src/components/Image.svelte`
+- `packages/ui/src/components/internal/Clock.svelte`
+- `packages/ui/src/components/internal/ClockFace.svelte`
+- `packages/ui/src/components/internal/ClockPopup.svelte`
+- `packages/ui/src/components/internal/ErrorBoundary.ts`
+- `packages/ui/src/components/internal/ErrorComponent.svelte`
+- `packages/ui/src/components/internal/icons/CheckCircled.svelte`
+- `packages/ui/src/components/internal/icons/Computer.svelte`
+- `packages/ui/src/components/internal/icons/EmojiStyle.svelte`
+- `packages/ui/src/components/internal/icons/FontSize.svelte`
+- `packages/ui/src/components/internal/icons/Language.svelte`
+- `packages/ui/src/components/internal/icons/Phone.svelte`
+- `packages/ui/src/components/internal/icons/Search.svelte`
+- `packages/ui/src/components/internal/icons/Settings.svelte`
+- `packages/ui/src/components/internal/icons/Theme.svelte`
+- `packages/ui/src/components/internal/icons/WiFi.svelte`
+- `packages/ui/src/components/internal/Root.svelte`
+- `packages/ui/src/components/internal/RootBarExtension.svelte`
+- `packages/ui/src/components/internal/Settings.svelte`
+- `packages/ui/src/components/internal/SettingsPopup.svelte`
+- `packages/ui/src/components/internal/ThemeButton.svelte`
+- `packages/ui/src/components/Label.svelte`
+- `packages/ui/src/components/Lazy.svelte`
+- `packages/ui/src/components/Like.svelte`
+- `packages/ui/src/components/Link.svelte`
+- `packages/ui/src/components/LinkWrapper.svelte`
+- `packages/ui/src/components/ListView.svelte`
+- `packages/ui/src/components/ListViewItem.svelte`
+- `packages/ui/src/components/Loading.svelte`
+- `packages/ui/src/components/Menu.svelte`
+- `packages/ui/src/components/MiniToggle.svelte`
+- `packages/ui/src/components/Modal.svelte`
+- `packages/ui/src/components/ModernButton.svelte`
+- `packages/ui/src/components/ModernCheckbox.svelte`
+- `packages/ui/src/components/ModernDialog.svelte`
+- `packages/ui/src/components/ModernEditbox.svelte`
+- `packages/ui/src/components/ModernPopup.svelte`
+- `packages/ui/src/components/ModernRadioButton.svelte`
+- `packages/ui/src/components/ModernTab.svelte`
+- `packages/ui/src/components/ModernToggle.svelte`
+- `packages/ui/src/components/ModeSelector.svelte`
+- `packages/ui/src/components/MouseSpeedTracker.svelte`
+- `packages/ui/src/components/MultiProgress.svelte`
+- `packages/ui/src/components/NavGroup.svelte`
+- `packages/ui/src/components/NavItem.svelte`
+- `packages/ui/src/components/NestedDropdown.svelte`
+- `packages/ui/src/components/NestedMenu.svelte`
+- `packages/ui/src/components/NestedSelectPopup.svelte`
+- `packages/ui/src/components/notifications/actions.ts`
+- `packages/ui/src/components/notifications/Notification.svelte`
+- `packages/ui/src/components/notifications/Notification.ts`
+- `packages/ui/src/components/notifications/NotificationPosition.ts`
+- `packages/ui/src/components/notifications/Notifications.svelte`
+- `packages/ui/src/components/notifications/NotificationSeverity.ts`
+- `packages/ui/src/components/notifications/store.ts`
+- `packages/ui/src/components/NotificationToast.svelte`
+- `packages/ui/src/components/NumberInput.svelte`
+- `packages/ui/src/components/Panel.svelte`
+- `packages/ui/src/components/PanelInstance.svelte`
+- `packages/ui/src/components/PlainTextEditor.svelte`
+- `packages/ui/src/components/Popup.svelte`
+- `packages/ui/src/components/PopupInstance.svelte`
+- `packages/ui/src/components/PopupMenu.svelte`
+- `packages/ui/src/components/Progress.svelte`
+- `packages/ui/src/components/ProgressCircle.svelte`
+- `packages/ui/src/components/RadioButton.svelte`
+- `packages/ui/src/components/RadioGroup.svelte`
+- `packages/ui/src/components/RootStatusComponent.svelte`
+- `packages/ui/src/components/Row.svelte`
+- `packages/ui/src/components/ScrollBox.svelte`
+- `packages/ui/src/components/Scroller.svelte`
+- `packages/ui/src/components/ScrollerBar.svelte`
+- `packages/ui/src/components/SearchEdit.svelte`
+- `packages/ui/src/components/SearchInput.svelte`
+- `packages/ui/src/components/SearchPicker.svelte`
+- `packages/ui/src/components/Section.svelte`
+- `packages/ui/src/components/SectionEmpty.svelte`
+- `packages/ui/src/components/SelectBox.svelte`
+- `packages/ui/src/components/SelectPopup.svelte`
+- `packages/ui/src/components/Separator.svelte`
+- `packages/ui/src/components/ShowMore.svelte`
+- `packages/ui/src/components/Spinner.svelte`
+- `packages/ui/src/components/SplitButton.svelte`
+- `packages/ui/src/components/StateTag.svelte`
+- `packages/ui/src/components/Status.svelte`
+- `packages/ui/src/components/StatusBadge.svelte`
+- `packages/ui/src/components/StatusBarButton.svelte`
+- `packages/ui/src/components/StepsDialog.svelte`
+- `packages/ui/src/components/StylishEdit.svelte`
+- `packages/ui/src/components/Submenu.svelte`
+- `packages/ui/src/components/Switcher.svelte`
+- `packages/ui/src/components/SwitcherBase.svelte`
+- `packages/ui/src/components/TabList.svelte`
+- `packages/ui/src/components/Tabs.svelte`
+- `packages/ui/src/components/TabsControl.svelte`
+- `packages/ui/src/components/TextArea.svelte`
+- `packages/ui/src/components/TextAreaEditor.svelte`
+- `packages/ui/src/components/TimeLeft.svelte`
+- `packages/ui/src/components/Timeline.svelte`
+- `packages/ui/src/components/TimeShiftPicker.svelte`
+- `packages/ui/src/components/TimeShiftPopup.svelte`
+- `packages/ui/src/components/TimeShiftPresenter.svelte`
+- `packages/ui/src/components/TimeSince.svelte`
+- `packages/ui/src/components/TimeZonesPopup.svelte`
+- `packages/ui/src/components/Toggle.svelte`
+- `packages/ui/src/components/ToggleButton.svelte`
+- `packages/ui/src/components/ToggleWithLabel.svelte`
+- `packages/ui/src/components/TooltipInstance.svelte`
+- `packages/ui/src/components/Video.svelte`
+- `packages/ui/src/components/wizard/ModernWizardBar.svelte`
+- `packages/ui/src/components/wizard/ModernWizardDialog.svelte`
+- `packages/ui/src/components/wizard/Wizard.svelte`
+- `packages/ui/src/components/wizard/WizardStep.svelte`
+- `packages/ui/src/focus.ts`
+- `packages/ui/src/index.ts`
+- `packages/ui/src/lazy.ts`
+- `packages/ui/src/location.ts`
+- `packages/ui/src/modals.ts`
+- `packages/ui/src/panelup.ts`
+- `packages/ui/src/plugin.ts`
+- `packages/ui/src/popups.ts`
+- `packages/ui/src/resize.ts`
+- `packages/ui/src/search.ts`
+- `packages/ui/src/stores.ts`
+- `packages/ui/src/svg.d.ts`
+- `packages/ui/src/tooltips.ts`
+- `packages/ui/src/types.ts`
+- `packages/ui/src/utils.ts`
+- `packages/ui/svelte.config.js`
+- `packages/ui/tsconfig.json`
+
+</details>
+
+<details>
+<summary><code>server-plugins</code> (476 files)</summary>
+
+- `server-plugins/activity-resources/.eslintrc.js`
+- `server-plugins/activity-resources/.npmignore`
+- `server-plugins/activity-resources/config/rig.json`
+- `server-plugins/activity-resources/jest.config.js`
+- `server-plugins/activity-resources/package.json`
+- `server-plugins/activity-resources/src/__tests__/references.test.ts`
+- `server-plugins/activity-resources/src/index.ts`
+- `server-plugins/activity-resources/src/newActivity.ts`
+- `server-plugins/activity-resources/src/references.ts`
+- `server-plugins/activity-resources/src/utils.ts`
+- `server-plugins/activity-resources/tsconfig.json`
+- `server-plugins/activity/.eslintrc.js`
+- `server-plugins/activity/.npmignore`
+- `server-plugins/activity/config/rig.json`
+- `server-plugins/activity/jest.config.js`
+- `server-plugins/activity/package.json`
+- `server-plugins/activity/src/index.ts`
+- `server-plugins/activity/src/types.ts`
+- `server-plugins/activity/src/utils.ts`
+- `server-plugins/activity/tsconfig.json`
+- `server-plugins/ai-bot-resources/.eslintrc.js`
+- `server-plugins/ai-bot-resources/.npmignore`
+- `server-plugins/ai-bot-resources/.prettierignore`
+- `server-plugins/ai-bot-resources/config/rig.json`
+- `server-plugins/ai-bot-resources/jest.config.js`
+- `server-plugins/ai-bot-resources/package.json`
+- `server-plugins/ai-bot-resources/src/index.ts`
+- `server-plugins/ai-bot-resources/src/utils.ts`
+- `server-plugins/ai-bot-resources/tsconfig.json`
+- `server-plugins/ai-bot/.eslintrc.js`
+- `server-plugins/ai-bot/.npmignore`
+- `server-plugins/ai-bot/config/rig.json`
+- `server-plugins/ai-bot/jest.config.js`
+- `server-plugins/ai-bot/package.json`
+- `server-plugins/ai-bot/src/index.ts`
+- `server-plugins/ai-bot/src/types.ts`
+- `server-plugins/ai-bot/tsconfig.json`
+- `server-plugins/analytics-collector-resources/.eslintrc.js`
+- `server-plugins/analytics-collector-resources/.npmignore`
+- `server-plugins/analytics-collector-resources/.prettierignore`
+- `server-plugins/analytics-collector-resources/config/rig.json`
+- `server-plugins/analytics-collector-resources/jest.config.js`
+- `server-plugins/analytics-collector-resources/package.json`
+- `server-plugins/analytics-collector-resources/src/index.ts`
+- `server-plugins/analytics-collector-resources/src/utils.ts`
+- `server-plugins/analytics-collector-resources/tsconfig.json`
+- `server-plugins/analytics-collector/.eslintrc.js`
+- `server-plugins/analytics-collector/.npmignore`
+- `server-plugins/analytics-collector/config/rig.json`
+- `server-plugins/analytics-collector/jest.config.js`
+- `server-plugins/analytics-collector/package.json`
+- `server-plugins/analytics-collector/src/index.ts`
+- `server-plugins/analytics-collector/tsconfig.json`
+- `server-plugins/attachment-resources/.eslintrc.js`
+- `server-plugins/attachment-resources/.npmignore`
+- `server-plugins/attachment-resources/config/rig.json`
+- `server-plugins/attachment-resources/jest.config.js`
+- `server-plugins/attachment-resources/package.json`
+- `server-plugins/attachment-resources/src/index.ts`
+- `server-plugins/attachment-resources/tsconfig.json`
+- `server-plugins/attachment/.eslintrc.js`
+- `server-plugins/attachment/.npmignore`
+- `server-plugins/attachment/config/rig.json`
+- `server-plugins/attachment/jest.config.js`
+- `server-plugins/attachment/package.json`
+- `server-plugins/attachment/src/index.ts`
+- `server-plugins/attachment/tsconfig.json`
+- `server-plugins/calendar-resources/.eslintrc.js`
+- `server-plugins/calendar-resources/.npmignore`
+- `server-plugins/calendar-resources/config/rig.json`
+- `server-plugins/calendar-resources/jest.config.js`
+- `server-plugins/calendar-resources/package.json`
+- `server-plugins/calendar-resources/src/index.ts`
+- `server-plugins/calendar-resources/tsconfig.json`
+- `server-plugins/calendar/.eslintrc.js`
+- `server-plugins/calendar/.npmignore`
+- `server-plugins/calendar/config/rig.json`
+- `server-plugins/calendar/jest.config.js`
+- `server-plugins/calendar/package.json`
+- `server-plugins/calendar/src/index.ts`
+- `server-plugins/calendar/tsconfig.json`
+- `server-plugins/card-resources/.eslintrc.js`
+- `server-plugins/card-resources/.npmignore`
+- `server-plugins/card-resources/config/rig.json`
+- `server-plugins/card-resources/jest.config.js`
+- `server-plugins/card-resources/package.json`
+- `server-plugins/card-resources/src/index.ts`
+- `server-plugins/card-resources/tsconfig.json`
+- `server-plugins/card/.eslintrc.js`
+- `server-plugins/card/.npmignore`
+- `server-plugins/card/config/rig.json`
+- `server-plugins/card/jest.config.js`
+- `server-plugins/card/package.json`
+- `server-plugins/card/src/index.ts`
+- `server-plugins/card/tsconfig.json`
+- `server-plugins/chunter-resources/.eslintrc.js`
+- `server-plugins/chunter-resources/.npmignore`
+- `server-plugins/chunter-resources/config/rig.json`
+- `server-plugins/chunter-resources/jest.config.js`
+- `server-plugins/chunter-resources/package.json`
+- `server-plugins/chunter-resources/src/index.ts`
+- `server-plugins/chunter-resources/tsconfig.json`
+- `server-plugins/chunter/.eslintrc.js`
+- `server-plugins/chunter/.npmignore`
+- `server-plugins/chunter/config/rig.json`
+- `server-plugins/chunter/jest.config.js`
+- `server-plugins/chunter/package.json`
+- `server-plugins/chunter/src/index.ts`
+- `server-plugins/chunter/tsconfig.json`
+- `server-plugins/collaboration-resources/.eslintrc.js`
+- `server-plugins/collaboration-resources/.npmignore`
+- `server-plugins/collaboration-resources/config/rig.json`
+- `server-plugins/collaboration-resources/jest.config.js`
+- `server-plugins/collaboration-resources/package.json`
+- `server-plugins/collaboration-resources/src/index.ts`
+- `server-plugins/collaboration-resources/tsconfig.json`
+- `server-plugins/collaboration/.eslintrc.js`
+- `server-plugins/collaboration/.npmignore`
+- `server-plugins/collaboration/config/rig.json`
+- `server-plugins/collaboration/jest.config.js`
+- `server-plugins/collaboration/package.json`
+- `server-plugins/collaboration/src/index.ts`
+- `server-plugins/collaboration/tsconfig.json`
+- `server-plugins/contact-resources/.eslintrc.js`
+- `server-plugins/contact-resources/.npmignore`
+- `server-plugins/contact-resources/config/rig.json`
+- `server-plugins/contact-resources/jest.config.js`
+- `server-plugins/contact-resources/package.json`
+- `server-plugins/contact-resources/src/index.ts`
+- `server-plugins/contact-resources/tsconfig.json`
+- `server-plugins/contact/.eslintrc.js`
+- `server-plugins/contact/.npmignore`
+- `server-plugins/contact/config/rig.json`
+- `server-plugins/contact/jest.config.js`
+- `server-plugins/contact/package.json`
+- `server-plugins/contact/src/index.ts`
+- `server-plugins/contact/src/utils.ts`
+- `server-plugins/contact/tsconfig.json`
+- `server-plugins/controlled-documents-resources/.eslintrc.js`
+- `server-plugins/controlled-documents-resources/.npmignore`
+- `server-plugins/controlled-documents-resources/.prettierignore`
+- `server-plugins/controlled-documents-resources/config/rig.json`
+- `server-plugins/controlled-documents-resources/jest.config.js`
+- `server-plugins/controlled-documents-resources/package.json`
+- `server-plugins/controlled-documents-resources/src/index.ts`
+- `server-plugins/controlled-documents-resources/tsconfig.json`
+- `server-plugins/controlled-documents/.eslintrc.js`
+- `server-plugins/controlled-documents/.npmignore`
+- `server-plugins/controlled-documents/.prettierignore`
+- `server-plugins/controlled-documents/config/rig.json`
+- `server-plugins/controlled-documents/jest.config.js`
+- `server-plugins/controlled-documents/package.json`
+- `server-plugins/controlled-documents/src/index.ts`
+- `server-plugins/controlled-documents/tsconfig.json`
+- `server-plugins/document-resources/.eslintrc.js`
+- `server-plugins/document-resources/.npmignore`
+- `server-plugins/document-resources/.prettierignore`
+- `server-plugins/document-resources/config/rig.json`
+- `server-plugins/document-resources/jest.config.js`
+- `server-plugins/document-resources/package.json`
+- `server-plugins/document-resources/src/index.ts`
+- `server-plugins/document-resources/tsconfig.json`
+- `server-plugins/document/.eslintrc.js`
+- `server-plugins/document/.npmignore`
+- `server-plugins/document/.prettierignore`
+- `server-plugins/document/config/rig.json`
+- `server-plugins/document/jest.config.js`
+- `server-plugins/document/package.json`
+- `server-plugins/document/src/index.ts`
+- `server-plugins/document/tsconfig.json`
+- `server-plugins/drive-resources/.eslintrc.js`
+- `server-plugins/drive-resources/.npmignore`
+- `server-plugins/drive-resources/config/rig.json`
+- `server-plugins/drive-resources/jest.config.js`
+- `server-plugins/drive-resources/package.json`
+- `server-plugins/drive-resources/src/index.ts`
+- `server-plugins/drive-resources/tsconfig.json`
+- `server-plugins/drive/.eslintrc.js`
+- `server-plugins/drive/.npmignore`
+- `server-plugins/drive/config/rig.json`
+- `server-plugins/drive/jest.config.js`
+- `server-plugins/drive/package.json`
+- `server-plugins/drive/src/index.ts`
+- `server-plugins/drive/tsconfig.json`
+- `server-plugins/gmail-resources/.eslintrc.js`
+- `server-plugins/gmail-resources/.npmignore`
+- `server-plugins/gmail-resources/config/rig.json`
+- `server-plugins/gmail-resources/jest.config.js`
+- `server-plugins/gmail-resources/package.json`
+- `server-plugins/gmail-resources/src/index.ts`
+- `server-plugins/gmail-resources/tsconfig.json`
+- `server-plugins/gmail/.eslintrc.js`
+- `server-plugins/gmail/.npmignore`
+- `server-plugins/gmail/config/rig.json`
+- `server-plugins/gmail/jest.config.js`
+- `server-plugins/gmail/package.json`
+- `server-plugins/gmail/src/index.ts`
+- `server-plugins/gmail/tsconfig.json`
+- `server-plugins/guest-resources/.eslintrc.js`
+- `server-plugins/guest-resources/.npmignore`
+- `server-plugins/guest-resources/config/rig.json`
+- `server-plugins/guest-resources/jest.config.js`
+- `server-plugins/guest-resources/package.json`
+- `server-plugins/guest-resources/src/index.ts`
+- `server-plugins/guest-resources/tsconfig.json`
+- `server-plugins/guest/.eslintrc.js`
+- `server-plugins/guest/.npmignore`
+- `server-plugins/guest/config/rig.json`
+- `server-plugins/guest/jest.config.js`
+- `server-plugins/guest/package.json`
+- `server-plugins/guest/src/index.ts`
+- `server-plugins/guest/tsconfig.json`
+- `server-plugins/hr-resources/.eslintrc.js`
+- `server-plugins/hr-resources/.npmignore`
+- `server-plugins/hr-resources/config/rig.json`
+- `server-plugins/hr-resources/jest.config.js`
+- `server-plugins/hr-resources/package.json`
+- `server-plugins/hr-resources/src/index.ts`
+- `server-plugins/hr-resources/tsconfig.json`
+- `server-plugins/hr/.eslintrc.js`
+- `server-plugins/hr/.npmignore`
+- `server-plugins/hr/config/rig.json`
+- `server-plugins/hr/jest.config.js`
+- `server-plugins/hr/package.json`
+- `server-plugins/hr/src/index.ts`
+- `server-plugins/hr/tsconfig.json`
+- `server-plugins/inventory-resources/.eslintrc.js`
+- `server-plugins/inventory-resources/.npmignore`
+- `server-plugins/inventory-resources/config/rig.json`
+- `server-plugins/inventory-resources/jest.config.js`
+- `server-plugins/inventory-resources/package.json`
+- `server-plugins/inventory-resources/src/index.ts`
+- `server-plugins/inventory-resources/tsconfig.json`
+- `server-plugins/inventory/.eslintrc.js`
+- `server-plugins/inventory/.npmignore`
+- `server-plugins/inventory/config/rig.json`
+- `server-plugins/inventory/jest.config.js`
+- `server-plugins/inventory/package.json`
+- `server-plugins/inventory/src/index.ts`
+- `server-plugins/inventory/tsconfig.json`
+- `server-plugins/lead-resources/.eslintrc.js`
+- `server-plugins/lead-resources/.npmignore`
+- `server-plugins/lead-resources/config/rig.json`
+- `server-plugins/lead-resources/jest.config.js`
+- `server-plugins/lead-resources/package.json`
+- `server-plugins/lead-resources/src/index.ts`
+- `server-plugins/lead-resources/tsconfig.json`
+- `server-plugins/lead/.eslintrc.js`
+- `server-plugins/lead/.npmignore`
+- `server-plugins/lead/config/rig.json`
+- `server-plugins/lead/jest.config.js`
+- `server-plugins/lead/package.json`
+- `server-plugins/lead/src/index.ts`
+- `server-plugins/lead/tsconfig.json`
+- `server-plugins/love-resources/.eslintrc.js`
+- `server-plugins/love-resources/.npmignore`
+- `server-plugins/love-resources/.prettierignore`
+- `server-plugins/love-resources/config/rig.json`
+- `server-plugins/love-resources/jest.config.js`
+- `server-plugins/love-resources/package.json`
+- `server-plugins/love-resources/src/index.ts`
+- `server-plugins/love-resources/tsconfig.json`
+- `server-plugins/love/.eslintrc.js`
+- `server-plugins/love/.npmignore`
+- `server-plugins/love/config/rig.json`
+- `server-plugins/love/jest.config.js`
+- `server-plugins/love/package.json`
+- `server-plugins/love/src/index.ts`
+- `server-plugins/love/tsconfig.json`
+- `server-plugins/notification-resources/.eslintrc.js`
+- `server-plugins/notification-resources/.npmignore`
+- `server-plugins/notification-resources/config/rig.json`
+- `server-plugins/notification-resources/jest.config.js`
+- `server-plugins/notification-resources/package.json`
+- `server-plugins/notification-resources/src/index.ts`
+- `server-plugins/notification-resources/src/push.ts`
+- `server-plugins/notification-resources/src/types.ts`
+- `server-plugins/notification-resources/src/utils.ts`
+- `server-plugins/notification-resources/tsconfig.json`
+- `server-plugins/notification/.eslintrc.js`
+- `server-plugins/notification/.npmignore`
+- `server-plugins/notification/config/rig.json`
+- `server-plugins/notification/jest.config.js`
+- `server-plugins/notification/package.json`
+- `server-plugins/notification/src/index.ts`
+- `server-plugins/notification/tsconfig.json`
+- `server-plugins/preference/.eslintrc.js`
+- `server-plugins/preference/.npmignore`
+- `server-plugins/preference/config/rig.json`
+- `server-plugins/preference/jest.config.js`
+- `server-plugins/preference/package.json`
+- `server-plugins/preference/src/index.ts`
+- `server-plugins/preference/tsconfig.json`
+- `server-plugins/process-resources/.eslintrc.js`
+- `server-plugins/process-resources/.npmignore`
+- `server-plugins/process-resources/.prettierignore`
+- `server-plugins/process-resources/config/rig.json`
+- `server-plugins/process-resources/jest.config.js`
+- `server-plugins/process-resources/package.json`
+- `server-plugins/process-resources/src/functions.ts`
+- `server-plugins/process-resources/src/index.ts`
+- `server-plugins/process-resources/src/rollback.ts`
+- `server-plugins/process-resources/src/transform.ts`
+- `server-plugins/process-resources/src/utils.ts`
+- `server-plugins/process-resources/tsconfig.json`
+- `server-plugins/process/.eslintrc.js`
+- `server-plugins/process/.npmignore`
+- `server-plugins/process/config/rig.json`
+- `server-plugins/process/jest.config.js`
+- `server-plugins/process/package.json`
+- `server-plugins/process/src/index.ts`
+- `server-plugins/process/src/types.ts`
+- `server-plugins/process/tsconfig.json`
+- `server-plugins/rating/.eslintrc.js`
+- `server-plugins/rating/.npmignore`
+- `server-plugins/rating/config/rig.json`
+- `server-plugins/rating/jest.config.js`
+- `server-plugins/rating/package.json`
+- `server-plugins/rating/src/index.ts`
+- `server-plugins/rating/tsconfig.json`
+- `server-plugins/recruit-resources/.eslintrc.js`
+- `server-plugins/recruit-resources/.npmignore`
+- `server-plugins/recruit-resources/config/rig.json`
+- `server-plugins/recruit-resources/jest.config.js`
+- `server-plugins/recruit-resources/package.json`
+- `server-plugins/recruit-resources/src/index.ts`
+- `server-plugins/recruit-resources/tsconfig.json`
+- `server-plugins/recruit/.eslintrc.js`
+- `server-plugins/recruit/.npmignore`
+- `server-plugins/recruit/config/rig.json`
+- `server-plugins/recruit/jest.config.js`
+- `server-plugins/recruit/package.json`
+- `server-plugins/recruit/src/index.ts`
+- `server-plugins/recruit/tsconfig.json`
+- `server-plugins/request-resources/.eslintrc.js`
+- `server-plugins/request-resources/.npmignore`
+- `server-plugins/request-resources/config/rig.json`
+- `server-plugins/request-resources/jest.config.js`
+- `server-plugins/request-resources/package.json`
+- `server-plugins/request-resources/src/index.ts`
+- `server-plugins/request-resources/tsconfig.json`
+- `server-plugins/request/.eslintrc.js`
+- `server-plugins/request/.npmignore`
+- `server-plugins/request/config/rig.json`
+- `server-plugins/request/jest.config.js`
+- `server-plugins/request/package.json`
+- `server-plugins/request/src/index.ts`
+- `server-plugins/request/tsconfig.json`
+- `server-plugins/setting-resources/.eslintrc.js`
+- `server-plugins/setting-resources/.npmignore`
+- `server-plugins/setting-resources/config/rig.json`
+- `server-plugins/setting-resources/jest.config.js`
+- `server-plugins/setting-resources/package.json`
+- `server-plugins/setting-resources/src/index.ts`
+- `server-plugins/setting-resources/tsconfig.json`
+- `server-plugins/setting/.eslintrc.js`
+- `server-plugins/setting/.npmignore`
+- `server-plugins/setting/config/rig.json`
+- `server-plugins/setting/jest.config.js`
+- `server-plugins/setting/package.json`
+- `server-plugins/setting/src/index.ts`
+- `server-plugins/setting/tsconfig.json`
+- `server-plugins/tags-resources/.eslintrc.js`
+- `server-plugins/tags-resources/.npmignore`
+- `server-plugins/tags-resources/config/rig.json`
+- `server-plugins/tags-resources/jest.config.js`
+- `server-plugins/tags-resources/package.json`
+- `server-plugins/tags-resources/src/index.ts`
+- `server-plugins/tags-resources/tsconfig.json`
+- `server-plugins/tags/.eslintrc.js`
+- `server-plugins/tags/.npmignore`
+- `server-plugins/tags/config/rig.json`
+- `server-plugins/tags/jest.config.js`
+- `server-plugins/tags/package.json`
+- `server-plugins/tags/src/index.ts`
+- `server-plugins/tags/tsconfig.json`
+- `server-plugins/task-resources/.eslintrc.js`
+- `server-plugins/task-resources/.npmignore`
+- `server-plugins/task-resources/config/rig.json`
+- `server-plugins/task-resources/jest.config.js`
+- `server-plugins/task-resources/package.json`
+- `server-plugins/task-resources/src/index.ts`
+- `server-plugins/task-resources/tsconfig.json`
+- `server-plugins/task/.eslintrc.js`
+- `server-plugins/task/.npmignore`
+- `server-plugins/task/config/rig.json`
+- `server-plugins/task/jest.config.js`
+- `server-plugins/task/package.json`
+- `server-plugins/task/src/index.ts`
+- `server-plugins/task/tsconfig.json`
+- `server-plugins/telegram-resources/.eslintrc.js`
+- `server-plugins/telegram-resources/.npmignore`
+- `server-plugins/telegram-resources/config/rig.json`
+- `server-plugins/telegram-resources/jest.config.js`
+- `server-plugins/telegram-resources/package.json`
+- `server-plugins/telegram-resources/src/index.ts`
+- `server-plugins/telegram-resources/tsconfig.json`
+- `server-plugins/telegram/.eslintrc.js`
+- `server-plugins/telegram/.npmignore`
+- `server-plugins/telegram/config/rig.json`
+- `server-plugins/telegram/jest.config.js`
+- `server-plugins/telegram/package.json`
+- `server-plugins/telegram/src/index.ts`
+- `server-plugins/telegram/src/types.ts`
+- `server-plugins/telegram/tsconfig.json`
+- `server-plugins/templates/.eslintrc.js`
+- `server-plugins/templates/.npmignore`
+- `server-plugins/templates/config/rig.json`
+- `server-plugins/templates/jest.config.js`
+- `server-plugins/templates/package.json`
+- `server-plugins/templates/src/index.ts`
+- `server-plugins/templates/tsconfig.json`
+- `server-plugins/time-resources/.eslintrc.js`
+- `server-plugins/time-resources/.npmignore`
+- `server-plugins/time-resources/config/rig.json`
+- `server-plugins/time-resources/jest.config.js`
+- `server-plugins/time-resources/package.json`
+- `server-plugins/time-resources/src/index.ts`
+- `server-plugins/time-resources/tsconfig.json`
+- `server-plugins/time/.eslintrc.js`
+- `server-plugins/time/.npmignore`
+- `server-plugins/time/config/rig.json`
+- `server-plugins/time/jest.config.js`
+- `server-plugins/time/package.json`
+- `server-plugins/time/src/index.ts`
+- `server-plugins/time/tsconfig.json`
+- `server-plugins/tracker-resources/.eslintrc.js`
+- `server-plugins/tracker-resources/.npmignore`
+- `server-plugins/tracker-resources/config/rig.json`
+- `server-plugins/tracker-resources/jest.config.js`
+- `server-plugins/tracker-resources/package.json`
+- `server-plugins/tracker-resources/src/index.ts`
+- `server-plugins/tracker-resources/src/utils.ts`
+- `server-plugins/tracker-resources/tsconfig.json`
+- `server-plugins/tracker/.eslintrc.js`
+- `server-plugins/tracker/.npmignore`
+- `server-plugins/tracker/config/rig.json`
+- `server-plugins/tracker/jest.config.js`
+- `server-plugins/tracker/package.json`
+- `server-plugins/tracker/src/index.ts`
+- `server-plugins/tracker/tsconfig.json`
+- `server-plugins/training-resources/.eslintrc.js`
+- `server-plugins/training-resources/.npmignore`
+- `server-plugins/training-resources/.prettierignore`
+- `server-plugins/training-resources/config/rig.json`
+- `server-plugins/training-resources/jest.config.js`
+- `server-plugins/training-resources/package.json`
+- `server-plugins/training-resources/src/functions/TrainingRequestHTMLPresenter.ts`
+- `server-plugins/training-resources/src/functions/TrainingRequestNotificationTypeMatch.ts`
+- `server-plugins/training-resources/src/functions/TrainingRequestTextPresenter.ts`
+- `server-plugins/training-resources/src/index.ts`
+- `server-plugins/training-resources/src/utils/isTxCreateDoc.ts`
+- `server-plugins/training-resources/src/utils/isTxUpdateDoc.ts`
+- `server-plugins/training-resources/tsconfig.json`
+- `server-plugins/training/.eslintrc.js`
+- `server-plugins/training/.npmignore`
+- `server-plugins/training/.prettierignore`
+- `server-plugins/training/config/rig.json`
+- `server-plugins/training/jest.config.js`
+- `server-plugins/training/package.json`
+- `server-plugins/training/src/index.ts`
+- `server-plugins/training/tsconfig.json`
+- `server-plugins/view-resources/.eslintrc.js`
+- `server-plugins/view-resources/.npmignore`
+- `server-plugins/view-resources/config/rig.json`
+- `server-plugins/view-resources/jest.config.js`
+- `server-plugins/view-resources/package.json`
+- `server-plugins/view-resources/src/index.ts`
+- `server-plugins/view-resources/tsconfig.json`
+- `server-plugins/view/.eslintrc.js`
+- `server-plugins/view/.npmignore`
+- `server-plugins/view/config/rig.json`
+- `server-plugins/view/jest.config.js`
+- `server-plugins/view/package.json`
+- `server-plugins/view/src/index.ts`
+- `server-plugins/view/tsconfig.json`
+
+</details>
+
+<details>
+<summary><code>tests</code> (249 files)</summary>
+
+- `tests/.env`
+- `tests/branding-test.json`
+- `tests/build-reload.sh`
+- `tests/create-local.sh`
+- `tests/docker-compose.override.yaml`
+- `tests/docker-compose.purepg.yaml`
+- `tests/docker-compose.yaml`
+- `tests/install-elastic-plugin-setup.sh`
+- `tests/install-elastic-plugin.sh`
+- `tests/prepare-cockroach.sh`
+- `tests/prepare-pg.sh`
+- `tests/prepare-tests.sh`
+- `tests/prepare.sh`
+- `tests/profile-download.sh`
+- `tests/profile-generate.sh`
+- `tests/profile-start.sh`
+- `tests/readme.md`
+- `tests/restore-cockroach.sh`
+- `tests/restore-local.sh`
+- `tests/restore-pg.sh`
+- `tests/restore-workspace.sh`
+- `tests/sanity-ws/000001/_migrations-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/_migrations-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/activity-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/activity-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/attachment-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/attachment-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/blob-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/blob-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/calendar-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/calendar-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/channel-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/channel-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/chunter-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/chunter-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/contact-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/contact-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/doc-index-state-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/doc-index-state-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/documents-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/documents-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/hr-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/hr-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/inventory-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/inventory-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/kanban-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/kanban-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/love-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/love-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/notification-dnc-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/notification-dnc-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/preference-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/preference-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/space-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/space-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/status-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/status-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/tags-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/tags-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/task-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/task-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/time-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/time-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/tracker-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/tracker-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/training-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/training-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000001/tx-1730472769365-0.snp.gz`
+- `tests/sanity-ws/000001/tx-data-1730472769365-1.tar.gz`
+- `tests/sanity-ws/000002/_migrations-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/_migrations-data-1738083875888-1.tar.gz`
+- `tests/sanity-ws/000002/contact-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/contact-data-1738083875888-1.tar.gz`
+- `tests/sanity-ws/000002/doc-index-state-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/documents-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/documents-data-1738083875888-1.tar.gz`
+- `tests/sanity-ws/000002/kanban-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/love-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/love-data-1738083875888-1.tar.gz`
+- `tests/sanity-ws/000002/model_tx-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/model_tx-data-1738083875888-1.tar.gz`
+- `tests/sanity-ws/000002/notification-dnc-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/notification-dnc-data-1738083875888-1.tar.gz`
+- `tests/sanity-ws/000002/sequence-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/sequence-data-1738083875888-1.tar.gz`
+- `tests/sanity-ws/000002/space-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/space-data-1738083875888-1.tar.gz`
+- `tests/sanity-ws/000002/task-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/task-data-1738083875888-1.tar.gz`
+- `tests/sanity-ws/000002/training-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/tx-1738083875888-0.snp.gz`
+- `tests/sanity-ws/000002/tx-data-1738083875888-1.tar.gz`
+- `tests/sanity-ws/backup.json.gz`
+- `tests/sanity-ws/backup.size.gz`
+- `tests/sanity/.env`
+- `tests/sanity/.eslintrc.js`
+- `tests/sanity/.gitignore`
+- `tests/sanity/config/rig.json`
+- `tests/sanity/package.json`
+- `tests/sanity/tests/actions.spec.ts`
+- `tests/sanity/tests/API/AccountClient.ts`
+- `tests/sanity/tests/API/Api.ts`
+- `tests/sanity/tests/API/GithubIntegration.ts`
+- `tests/sanity/tests/auth/auth.setup.ts`
+- `tests/sanity/tests/chat/chat.spec.ts`
+- `tests/sanity/tests/chat/direct-chat.spec.ts`
+- `tests/sanity/tests/chat/dynamic-issues-chats.spec.ts`
+- `tests/sanity/tests/chat/dynamic-recruting-chats.spec.ts`
+- `tests/sanity/tests/chat/types.ts`
+- `tests/sanity/tests/collaborative/applications.spec.ts`
+- `tests/sanity/tests/collaborative/issues.spec.ts`
+- `tests/sanity/tests/contact.duplicate.spec.ts`
+- `tests/sanity/tests/contacts.spec.ts`
+- `tests/sanity/tests/custom-atributes/class-properties-page.ts`
+- `tests/sanity/tests/custom-atributes/custom-attributes-page.ts`
+- `tests/sanity/tests/custom-atributes/custom-attributes.spec.ts`
+- `tests/sanity/tests/documents/documents-content.spec.ts`
+- `tests/sanity/tests/documents/documents-link.spec.ts`
+- `tests/sanity/tests/documents/documents.spec.ts`
+- `tests/sanity/tests/documents/teamspace.spec.ts`
+- `tests/sanity/tests/drive/drive.spec.ts`
+- `tests/sanity/tests/files/cat.jpeg`
+- `tests/sanity/tests/files/cat2.jpeg`
+- `tests/sanity/tests/files/cat3.jpeg`
+- `tests/sanity/tests/hr.spec.ts`
+- `tests/sanity/tests/inbox/inbox.spec.ts`
+- `tests/sanity/tests/index.ts`
+- `tests/sanity/tests/indexer.spec.ts`
+- `tests/sanity/tests/integrations.spec.ts`
+- `tests/sanity/tests/integrations/github-integrations.spec.ts`
+- `tests/sanity/tests/login.spec.ts`
+- `tests/sanity/tests/model/calendar-page.ts`
+- `tests/sanity/tests/model/channel-page.ts`
+- `tests/sanity/tests/model/chunter-page.ts`
+- `tests/sanity/tests/model/common-page.ts`
+- `tests/sanity/tests/model/common-types.ts`
+- `tests/sanity/tests/model/contacts/contact-page.ts`
+- `tests/sanity/tests/model/contacts/contract-page.ts`
+- `tests/sanity/tests/model/contacts/employee-details-page.ts`
+- `tests/sanity/tests/model/contacts/employees-page.ts`
+- `tests/sanity/tests/model/contacts/navigation-menu-page.ts`
+- `tests/sanity/tests/model/contacts/types.ts`
+- `tests/sanity/tests/model/documents/document-content-page.ts`
+- `tests/sanity/tests/model/documents/document-create-popup.ts`
+- `tests/sanity/tests/model/documents/document-move-popup.ts`
+- `tests/sanity/tests/model/documents/documents-page.ts`
+- `tests/sanity/tests/model/documents/types.ts`
+- `tests/sanity/tests/model/drive/drive-create-edit-popup.ts`
+- `tests/sanity/tests/model/drive/drive-drives-page.ts`
+- `tests/sanity/tests/model/drive/drive-files-page.ts`
+- `tests/sanity/tests/model/drive/drive-left-menu.ts`
+- `tests/sanity/tests/model/drive/types.ts`
+- `tests/sanity/tests/model/inbox.ts/inbox-page.ts`
+- `tests/sanity/tests/model/leads/leads-page.ts`
+- `tests/sanity/tests/model/left-side-menu-page.ts`
+- `tests/sanity/tests/model/login-page.ts`
+- `tests/sanity/tests/model/notification-page.ts`
+- `tests/sanity/tests/model/planning/planning-navigation-menu-page.ts`
+- `tests/sanity/tests/model/planning/planning-page.ts`
+- `tests/sanity/tests/model/planning/types.ts`
+- `tests/sanity/tests/model/profile/notifications-page.ts`
+- `tests/sanity/tests/model/profile/user-profile-page.ts`
+- `tests/sanity/tests/model/recruiting/applications-details-page.ts`
+- `tests/sanity/tests/model/recruiting/applications-page.ts`
+- `tests/sanity/tests/model/recruiting/common-recruiting-page.ts`
+- `tests/sanity/tests/model/recruiting/companies-page.ts`
+- `tests/sanity/tests/model/recruiting/company-details-page.ts`
+- `tests/sanity/tests/model/recruiting/navigation-menu-page.ts`
+- `tests/sanity/tests/model/recruiting/recruiting-page.ts`
+- `tests/sanity/tests/model/recruiting/talent-details-page.ts`
+- `tests/sanity/tests/model/recruiting/talents-page.ts`
+- `tests/sanity/tests/model/recruiting/types.ts`
+- `tests/sanity/tests/model/recruiting/vacancies-page.ts`
+- `tests/sanity/tests/model/recruiting/vacancy-details-page.ts`
+- `tests/sanity/tests/model/select-workspace-page.ts`
+- `tests/sanity/tests/model/settings-page.ts`
+- `tests/sanity/tests/model/sidebar-page.ts`
+- `tests/sanity/tests/model/signin-page.ts`
+- `tests/sanity/tests/model/signup-page.ts`
+- `tests/sanity/tests/model/spotlight-popup.ts`
+- `tests/sanity/tests/model/statusbar.ts`
+- `tests/sanity/tests/model/team-page.ts`
+- `tests/sanity/tests/model/tracker/all-projects-page.ts`
+- `tests/sanity/tests/model/tracker/common-tracker-page.ts`
+- `tests/sanity/tests/model/tracker/component-details-page.ts`
+- `tests/sanity/tests/model/tracker/components-page.ts`
+- `tests/sanity/tests/model/tracker/edit-project-page.ts`
+- `tests/sanity/tests/model/tracker/issue-comment-popup.ts`
+- `tests/sanity/tests/model/tracker/issues-details-page.ts`
+- `tests/sanity/tests/model/tracker/issues-page.ts`
+- `tests/sanity/tests/model/tracker/milestones-details-page.ts`
+- `tests/sanity/tests/model/tracker/milestones-page.ts`
+- `tests/sanity/tests/model/tracker/new-project-page.ts`
+- `tests/sanity/tests/model/tracker/public-link-popup.ts`
+- `tests/sanity/tests/model/tracker/template-details-page.ts`
+- `tests/sanity/tests/model/tracker/templates-page.ts`
+- `tests/sanity/tests/model/tracker/tracker-navigation-menu-page.ts`
+- `tests/sanity/tests/model/tracker/types.ts`
+- `tests/sanity/tests/model/types.ts`
+- `tests/sanity/tests/model/workspace/classes-pages.ts`
+- `tests/sanity/tests/model/workspace/owner-pages.ts`
+- `tests/sanity/tests/model/workspace/workspace-settings-page.ts`
+- `tests/sanity/tests/org.members.spec.ts`
+- `tests/sanity/tests/planning/plan.spec.ts`
+- `tests/sanity/tests/planning/todos.spec.ts`
+- `tests/sanity/tests/playwright.config.ts`
+- `tests/sanity/tests/recruiting/applications.spec.ts`
+- `tests/sanity/tests/recruiting/companies.spec.ts`
+- `tests/sanity/tests/recruiting/interview.spec.ts`
+- `tests/sanity/tests/recruiting/reviews.spec.ts`
+- `tests/sanity/tests/recruiting/skills.spec.ts`
+- `tests/sanity/tests/recruiting/talents.spec.ts`
+- `tests/sanity/tests/recruiting/vacancies.spec.ts`
+- `tests/sanity/tests/settings.spec.ts`
+- `tests/sanity/tests/tags.spec.ts`
+- `tests/sanity/tests/text/issueOnboardingText.ts`
+- `tests/sanity/tests/tracker/attachments.spec.ts`
+- `tests/sanity/tests/tracker/common-steps.ts`
+- `tests/sanity/tests/tracker/component.spec.ts`
+- `tests/sanity/tests/tracker/filter.spec.ts`
+- `tests/sanity/tests/tracker/issues-duplicate.spec.ts`
+- `tests/sanity/tests/tracker/issues.spec.ts`
+- `tests/sanity/tests/tracker/layout.spec.ts`
+- `tests/sanity/tests/tracker/loading.spec.ts`
+- `tests/sanity/tests/tracker/mentions.spec.ts`
+- `tests/sanity/tests/tracker/milestone.spec.ts`
+- `tests/sanity/tests/tracker/projects.spec.ts`
+- `tests/sanity/tests/tracker/public-link.spec.ts`
+- `tests/sanity/tests/tracker/related-issues.spec.ts`
+- `tests/sanity/tests/tracker/relations.spec.ts`
+- `tests/sanity/tests/tracker/subissues.spec.ts`
+- `tests/sanity/tests/tracker/template.spec.ts`
+- `tests/sanity/tests/tracker/tracker.spec.ts`
+- `tests/sanity/tests/tracker/tracker.utils.ts`
+- `tests/sanity/tests/utils.ts`
+- `tests/sanity/tests/workbench.spec.ts`
+- `tests/sanity/tests/workbench/customize-sidebar-apps.spec.ts`
+- `tests/sanity/tests/workspace/create.spec.ts`
+- `tests/sanity/tests/workspace/onboarding-workspace.spec.ts`
+- `tests/sanity/tests/workspace/workspace-settings.spec.ts`
+- `tests/sanity/tsconfig.json`
+- `tests/shutdown.sh`
+- `tests/tool-cockroach.sh`
+- `tests/tool-local.sh`
+- `tests/tool-pg.sh`
+- `tests/tool.sh`
+- `tests/update-snapshot-ci.sh`
+- `tests/update-snapshot.sh`
+- `tests/wait-elastic.sh`
+
+</details>
+
+<details>
+<summary><code>pods</code> (195 files)</summary>
+
+- `pods/account/.eslintrc.js`
+- `pods/account/.gitignore`
+- `pods/account/.npmignore`
+- `pods/account/build.sh`
+- `pods/account/config/rig.json`
+- `pods/account/Dockerfile`
+- `pods/account/jest.config.js`
+- `pods/account/package.json`
+- `pods/account/src/__start.ts`
+- `pods/account/tsconfig.json`
+- `pods/authProviders/.eslintrc.js`
+- `pods/authProviders/.npmignore`
+- `pods/authProviders/config/rig.json`
+- `pods/authProviders/jest.config.js`
+- `pods/authProviders/package.json`
+- `pods/authProviders/src/github.ts`
+- `pods/authProviders/src/google.ts`
+- `pods/authProviders/src/index.ts`
+- `pods/authProviders/src/openid.ts`
+- `pods/authProviders/src/token.ts`
+- `pods/authProviders/src/utils.ts`
+- `pods/authProviders/tsconfig.json`
+- `pods/backup/.eslintrc.js`
+- `pods/backup/.npmignore`
+- `pods/backup/build.sh`
+- `pods/backup/config/rig.json`
+- `pods/backup/Dockerfile`
+- `pods/backup/jest.config.js`
+- `pods/backup/package.json`
+- `pods/backup/src/get-model.ts`
+- `pods/backup/src/index.ts`
+- `pods/backup/tsconfig.json`
+- `pods/collaborator/.eslintrc.js`
+- `pods/collaborator/.npmignore`
+- `pods/collaborator/build.sh`
+- `pods/collaborator/config/rig.json`
+- `pods/collaborator/Dockerfile`
+- `pods/collaborator/jest.config.js`
+- `pods/collaborator/package.json`
+- `pods/collaborator/src/__start.ts`
+- `pods/collaborator/src/index.ts`
+- `pods/collaborator/tsconfig.json`
+- `pods/embeddings/__index__.py`
+- `pods/embeddings/model.py`
+- `pods/embeddings/readme.md`
+- `pods/embeddings/requirenents.txt`
+- `pods/embeddings/server.py`
+- `pods/external/.gitignore`
+- `pods/external/bin/build.sh`
+- `pods/external/bin/push.sh`
+- `pods/external/package.json`
+- `pods/external/README.md`
+- `pods/external/services.d/huly-caldav.service`
+- `pods/external/services.d/huly-schedule.service`
+- `pods/external/services.d/hulygun.service`
+- `pods/external/services.d/hulykvs.service`
+- `pods/external/services.d/hulylake.service`
+- `pods/external/services.d/hulypulse.service`
+- `pods/external/services.d/stream.service`
+- `pods/front/.eslintrc.js`
+- `pods/front/.npmignore`
+- `pods/front/build.sh`
+- `pods/front/config/rig.json`
+- `pods/front/Dockerfile`
+- `pods/front/jest.config.js`
+- `pods/front/package.json`
+- `pods/front/run.sh`
+- `pods/front/src/__start.ts`
+- `pods/front/src/index.ts`
+- `pods/front/tsconfig.json`
+- `pods/fulltext/.eslintrc.js`
+- `pods/fulltext/.npmignore`
+- `pods/fulltext/build.sh`
+- `pods/fulltext/config/rig.json`
+- `pods/fulltext/Dockerfile`
+- `pods/fulltext/jest.config.js`
+- `pods/fulltext/package.json`
+- `pods/fulltext/README.md`
+- `pods/fulltext/run.sh`
+- `pods/fulltext/src/__tests__/indexing.spec.ts`
+- `pods/fulltext/src/__tests__/minmodel.ts`
+- `pods/fulltext/src/__tests__/utils.ts`
+- `pods/fulltext/src/get-model.ts`
+- `pods/fulltext/src/index.ts`
+- `pods/fulltext/src/manager.ts`
+- `pods/fulltext/src/server.ts`
+- `pods/fulltext/src/utils.ts`
+- `pods/fulltext/src/workspace.ts`
+- `pods/fulltext/tsconfig.json`
+- `pods/link-preview/.eslintrc.js`
+- `pods/link-preview/Dockerfile`
+- `pods/link-preview/jest.config.js`
+- `pods/link-preview/package.json`
+- `pods/link-preview/src/__tests__/parse.test.ts`
+- `pods/link-preview/src/config.ts`
+- `pods/link-preview/src/error.ts`
+- `pods/link-preview/src/index.ts`
+- `pods/link-preview/src/middleware.ts`
+- `pods/link-preview/src/parse.ts`
+- `pods/link-preview/src/server.ts`
+- `pods/link-preview/tsconfig.json`
+- `pods/media/.eslintrc.js`
+- `pods/media/.gitignore`
+- `pods/media/.npmignore`
+- `pods/media/build.sh`
+- `pods/media/config/rig.json`
+- `pods/media/Dockerfile`
+- `pods/media/jest.config.js`
+- `pods/media/package.json`
+- `pods/media/src/client.ts`
+- `pods/media/src/config.ts`
+- `pods/media/src/handler.ts`
+- `pods/media/src/index.ts`
+- `pods/media/src/types.ts`
+- `pods/media/tsconfig.json`
+- `pods/preview/.eslintrc.js`
+- `pods/preview/.npmignore`
+- `pods/preview/config/rig.json`
+- `pods/preview/Dockerfile`
+- `pods/preview/jest.config.js`
+- `pods/preview/package.json`
+- `pods/preview/src/__tests__/singleflight.test.ts`
+- `pods/preview/src/cache.ts`
+- `pods/preview/src/config.ts`
+- `pods/preview/src/error.ts`
+- `pods/preview/src/index.ts`
+- `pods/preview/src/metadata/image.ts`
+- `pods/preview/src/metadata/index.ts`
+- `pods/preview/src/metadata/video.ts`
+- `pods/preview/src/middleware.ts`
+- `pods/preview/src/providers/doc.ts`
+- `pods/preview/src/providers/fallback.ts`
+- `pods/preview/src/providers/image.ts`
+- `pods/preview/src/providers/index.ts`
+- `pods/preview/src/providers/octet.ts`
+- `pods/preview/src/providers/pdf.ts`
+- `pods/preview/src/providers/video.ts`
+- `pods/preview/src/server.ts`
+- `pods/preview/src/service.ts`
+- `pods/preview/src/singleflight.ts`
+- `pods/preview/src/tempdir.ts`
+- `pods/preview/src/types.ts`
+- `pods/preview/src/utils/blurhash.ts`
+- `pods/preview/src/utils/bmp.ts`
+- `pods/preview/src/utils/ffmpeg.ts`
+- `pods/preview/src/utils/heic.ts`
+- `pods/preview/src/utils/index.ts`
+- `pods/preview/src/utils/libreoffice.ts`
+- `pods/preview/src/utils/pdf.ts`
+- `pods/preview/src/utils/sharp.ts`
+- `pods/preview/src/utils/utils.ts`
+- `pods/preview/tsconfig.json`
+- `pods/server/.eslintrc.js`
+- `pods/server/.npmignore`
+- `pods/server/build.sh`
+- `pods/server/CHANGELOG.json`
+- `pods/server/CHANGELOG.md`
+- `pods/server/config/rig.json`
+- `pods/server/Dockerfile`
+- `pods/server/jest.config.js`
+- `pods/server/package.json`
+- `pods/server/src/__start.ts`
+- `pods/server/src/__tests__/compression.spec.ts`
+- `pods/server/src/__tests__/minmodel.ts`
+- `pods/server/src/__tests__/remote.test.ts.txt`
+- `pods/server/src/__tests__/server.test.ts`
+- `pods/server/src/get-model.ts`
+- `pods/server/src/index.ts`
+- `pods/server/src/profiler.ts`
+- `pods/server/src/rpc.ts`
+- `pods/server/src/server_http.ts`
+- `pods/server/src/server.ts`
+- `pods/server/src/utils.ts`
+- `pods/server/tsconfig.json`
+- `pods/stats/.eslintrc.js`
+- `pods/stats/.npmignore`
+- `pods/stats/build.sh`
+- `pods/stats/config/rig.json`
+- `pods/stats/Dockerfile`
+- `pods/stats/jest.config.js`
+- `pods/stats/package.json`
+- `pods/stats/src/__start.ts`
+- `pods/stats/src/stats.ts`
+- `pods/stats/tsconfig.json`
+- `pods/workspace/.eslintrc.js`
+- `pods/workspace/.gitignore`
+- `pods/workspace/.npmignore`
+- `pods/workspace/build.sh`
+- `pods/workspace/config/rig.json`
+- `pods/workspace/Dockerfile`
+- `pods/workspace/download-init-scripts.sh`
+- `pods/workspace/jest.config.js`
+- `pods/workspace/package.json`
+- `pods/workspace/src/__start.ts`
+- `pods/workspace/tsconfig.json`
+
+</details>
+
+<details>
+<summary><code>dev</code> (172 files)</summary>
+
+- `dev/.env`
+- `dev/base-image/base.Dockerfile`
+- `dev/base-image/build.sh`
+- `dev/base-image/front.Dockerfile`
+- `dev/base-image/preview.Dockerfile`
+- `dev/base-image/print.Dockerfile`
+- `dev/base-image/push.sh`
+- `dev/base-image/rekoni.Dockerfile`
+- `dev/base-image/slim.Dockerfile`
+- `dev/branding.json`
+- `dev/doc-import-tool/.eslintrc.js`
+- `dev/doc-import-tool/config/rig.json`
+- `dev/doc-import-tool/esbuild.js`
+- `dev/doc-import-tool/jest.config.js`
+- `dev/doc-import-tool/package.json`
+- `dev/doc-import-tool/readme.md`
+- `dev/doc-import-tool/src/__start.ts`
+- `dev/doc-import-tool/src/commands.ts`
+- `dev/doc-import-tool/src/config.ts`
+- `dev/doc-import-tool/src/convert/convert.ts`
+- `dev/doc-import-tool/src/extract/common.ts`
+- `dev/doc-import-tool/src/extract/container.ts`
+- `dev/doc-import-tool/src/extract/extract.ts`
+- `dev/doc-import-tool/src/extract/meta.ts`
+- `dev/doc-import-tool/src/extract/nodes.ts`
+- `dev/doc-import-tool/src/extract/sections.ts`
+- `dev/doc-import-tool/src/extract/types.ts`
+- `dev/doc-import-tool/src/helpers.ts`
+- `dev/doc-import-tool/src/import.ts`
+- `dev/doc-import-tool/src/index.ts`
+- `dev/doc-import-tool/src/type/docx4js.d.ts`
+- `dev/doc-import-tool/toc.json`
+- `dev/doc-import-tool/toc2.json`
+- `dev/doc-import-tool/tsconfig.json`
+- `dev/docker-compose.min.yaml`
+- `dev/docker-compose.pg.yaml`
+- `dev/docker-compose.yaml`
+- `dev/import-tool/.eslintrc.js`
+- `dev/import-tool/build.sh`
+- `dev/import-tool/config/rig.json`
+- `dev/import-tool/Dockerfile`
+- `dev/import-tool/docs/clickup/README.md`
+- `dev/import-tool/docs/huly/example-workspace/Difficulty.yaml`
+- `dev/import-tool/docs/huly/example-workspace/Documentation.yaml`
+- `dev/import-tool/docs/huly/example-workspace/Documentation/files/architecture.png`
+- `dev/import-tool/docs/huly/example-workspace/Documentation/Getting Started.md`
+- `dev/import-tool/docs/huly/example-workspace/Documentation/User Guide.md`
+- `dev/import-tool/docs/huly/example-workspace/Documentation/User Guide/Installation.md`
+- `dev/import-tool/docs/huly/example-workspace/Project Alpha.yaml`
+- `dev/import-tool/docs/huly/example-workspace/Project Alpha/1.Project Setup.md`
+- `dev/import-tool/docs/huly/example-workspace/Project Alpha/1.Project Setup/2.Configure CI.md`
+- `dev/import-tool/docs/huly/example-workspace/Project Alpha/4.Update Docs.md`
+- `dev/import-tool/docs/huly/example-workspace/Project Alpha/files/config.yaml`
+- `dev/import-tool/docs/huly/example-workspace/Project Alpha/files/screenshot.png`
+- `dev/import-tool/docs/huly/example-workspace/Project Alpha/files/screenshot/drawing1.json`
+- `dev/import-tool/docs/huly/example-workspace/QMS Documents.yaml`
+- `dev/import-tool/docs/huly/example-workspace/QMS Documents/[SOP-001] Document Control.md`
+- `dev/import-tool/docs/huly/example-workspace/QMS Documents/[SOP-001] Document Control/[SOP-002] Document Review.md`
+- `dev/import-tool/docs/huly/example-workspace/QMS Documents/[WI-001] Document Template Usage.md`
+- `dev/import-tool/docs/huly/example-workspace/RecipeAssociations.yaml`
+- `dev/import-tool/docs/huly/example-workspace/Recipes.yaml`
+- `dev/import-tool/docs/huly/example-workspace/Recipes/Chocolate Lava Cake.md`
+- `dev/import-tool/docs/huly/example-workspace/Recipes/Chocolate Lava Cake/Chocolate Sauce.md`
+- `dev/import-tool/docs/huly/example-workspace/Recipes/Classic Margherita Pizza.md`
+- `dev/import-tool/docs/huly/example-workspace/Recipes/DietaryType.yaml`
+- `dev/import-tool/docs/huly/example-workspace/Recipes/files/cake.png`
+- `dev/import-tool/docs/huly/example-workspace/Recipes/Vegan/Mushroom Risotto.md`
+- `dev/import-tool/docs/huly/example-workspace/Recipes/Vegan/Vegan Recipe.yaml`
+- `dev/import-tool/docs/huly/README.md`
+- `dev/import-tool/docs/notion/README.md`
+- `dev/import-tool/esbuild.js`
+- `dev/import-tool/jest.config.js`
+- `dev/import-tool/package.json`
+- `dev/import-tool/README.md`
+- `dev/import-tool/src/__start.ts`
+- `dev/import-tool/src/index.ts`
+- `dev/import-tool/tsconfig.json`
+- `dev/local-mongo/.env`
+- `dev/local-mongo/.gitignore`
+- `dev/local-mongo/docker-compose.yaml`
+- `dev/local-mongo/dump.sh`
+- `dev/local-mongo/import.sh`
+- `dev/local-mongo/mongod.conf`
+- `dev/local-mongo/readme.md`
+- `dev/local-mongo/start.sh`
+- `dev/local-mongo/stop.sh`
+- `dev/nlp/embeddings/openai_embedding_01.json`
+- `dev/nlp/embeddings/openai_embedding_01.txt`
+- `dev/prod/.browserslistrc`
+- `dev/prod/.env`
+- `dev/prod/.env-prod`
+- `dev/prod/.eslintrc.js`
+- `dev/prod/.gitignore`
+- `dev/prod/CHANGELOG.json`
+- `dev/prod/CHANGELOG.md`
+- `dev/prod/config.json`
+- `dev/prod/config/rig.json`
+- `dev/prod/package.json`
+- `dev/prod/postcss.config.js`
+- `dev/prod/public/branding.json`
+- `dev/prod/public/config-dev.json`
+- `dev/prod/public/config-huly.json`
+- `dev/prod/public/config-test.json`
+- `dev/prod/public/config-worker-local.json`
+- `dev/prod/public/config-worker.json`
+- `dev/prod/public/config.json`
+- `dev/prod/public/huly/apple-touch-icon.png`
+- `dev/prod/public/huly/favicon.ico`
+- `dev/prod/public/huly/favicon.svg`
+- `dev/prod/public/huly/icon-1024.png`
+- `dev/prod/public/huly/icon-1600.png`
+- `dev/prod/public/huly/icon-192.png`
+- `dev/prod/public/huly/icon-256.png`
+- `dev/prod/public/huly/icon-512.png`
+- `dev/prod/public/huly/site.webmanifest`
+- `dev/prod/public/tracex/favicon_16.png`
+- `dev/prod/public/tracex/favicon_192.png`
+- `dev/prod/public/tracex/favicon_32.png`
+- `dev/prod/public/tracex/favicon.ico`
+- `dev/prod/public/tracex/favicon.png`
+- `dev/prod/public/tracex/favicon.svg`
+- `dev/prod/src/analytics.ts`
+- `dev/prod/src/app-integration-tools.ts`
+- `dev/prod/src/index.ejs`
+- `dev/prod/src/main-dev.ts`
+- `dev/prod/src/main.ts`
+- `dev/prod/src/platform-dev.ts`
+- `dev/prod/src/platform.ts`
+- `dev/prod/tsconfig.json`
+- `dev/prod/webpack.config.js`
+- `dev/readme.md`
+- `dev/scripts/debug_account.sh`
+- `dev/storybook/.storybook/decorators/ThemeDecorator.svelte`
+- `dev/storybook/.storybook/main.js`
+- `dev/storybook/.storybook/preview.js`
+- `dev/storybook/.storybook/styles/styles.scss`
+- `dev/storybook/babel.config.json`
+- `dev/storybook/package.json`
+- `dev/storybook/stories/Button.stories.ts`
+- `dev/tool/.eslintrc.js`
+- `dev/tool/.npmignore`
+- `dev/tool/build.sh`
+- `dev/tool/config/rig.json`
+- `dev/tool/Dockerfile`
+- `dev/tool/jest.config.js`
+- `dev/tool/package.json`
+- `dev/tool/src/__start.ts`
+- `dev/tool/src/account.ts`
+- `dev/tool/src/benchmark.ts`
+- `dev/tool/src/calendar.ts`
+- `dev/tool/src/clean.ts`
+- `dev/tool/src/communication.ts`
+- `dev/tool/src/configuration.ts`
+- `dev/tool/src/contact.test.ts`
+- `dev/tool/src/contact.ts`
+- `dev/tool/src/csv.ts`
+- `dev/tool/src/db.ts`
+- `dev/tool/src/elastic.ts`
+- `dev/tool/src/github.ts`
+- `dev/tool/src/gmail.ts`
+- `dev/tool/src/index.ts`
+- `dev/tool/src/markup.ts`
+- `dev/tool/src/mdiff.ts`
+- `dev/tool/src/mixin.ts`
+- `dev/tool/src/qms.ts`
+- `dev/tool/src/restoreGithub.ts`
+- `dev/tool/src/storage.ts`
+- `dev/tool/src/telegram.ts`
+- `dev/tool/src/utils.ts`
+- `dev/tool/src/workspace.ts`
+- `dev/tool/tsconfig.json`
+- `dev/upgrade.sh`
+
+</details>
+
+<details>
+<summary><code>server</code> (157 files)</summary>
+
+- `server/account-service/.eslintrc.js`
+- `server/account-service/.npmignore`
+- `server/account-service/build.sh`
+- `server/account-service/config/rig.json`
+- `server/account-service/jest.config.js`
+- `server/account-service/package.json`
+- `server/account-service/src/index.ts`
+- `server/account-service/src/migration/collections/mongo.ts`
+- `server/account-service/src/migration/migration.ts`
+- `server/account-service/src/migration/types.ts`
+- `server/account-service/src/migration/utils.ts`
+- `server/account-service/tsconfig.json`
+- `server/account/.eslintrc.js`
+- `server/account/.npmignore`
+- `server/account/config/rig.json`
+- `server/account/jest.config.js`
+- `server/account/lang/cs.json`
+- `server/account/lang/de.json`
+- `server/account/lang/en.json`
+- `server/account/lang/es.json`
+- `server/account/lang/fr.json`
+- `server/account/lang/it.json`
+- `server/account/lang/ko.json`
+- `server/account/lang/pt-br.json`
+- `server/account/lang/pt.json`
+- `server/account/lang/ru.json`
+- `server/account/lang/tr.json`
+- `server/account/lang/zh.json`
+- `server/account/package.json`
+- `server/account/src/__tests__/mongo.test.ts`
+- `server/account/src/__tests__/operations.test.ts`
+- `server/account/src/__tests__/postgres-real.test.ts`
+- `server/account/src/__tests__/postgres.test.ts`
+- `server/account/src/__tests__/sanitize.spec.ts`
+- `server/account/src/__tests__/serviceOperations.test.ts`
+- `server/account/src/__tests__/ssoPassword.test.ts`
+- `server/account/src/__tests__/utils.test.ts`
+- `server/account/src/admin.ts`
+- `server/account/src/collections/mongo.ts`
+- `server/account/src/collections/postgres/migrations.ts`
+- `server/account/src/collections/postgres/postgres.ts`
+- `server/account/src/index.ts`
+- `server/account/src/operations.ts`
+- `server/account/src/plugin.ts`
+- `server/account/src/serviceOperations.ts`
+- `server/account/src/types.ts`
+- `server/account/src/utils.ts`
+- `server/account/tsconfig.json`
+- `server/backup-service/.eslintrc.js`
+- `server/backup-service/.npmignore`
+- `server/backup-service/config/rig.json`
+- `server/backup-service/jest.config.js`
+- `server/backup-service/package.json`
+- `server/backup-service/src/config.ts`
+- `server/backup-service/src/index.ts`
+- `server/backup-service/tsconfig.json`
+- `server/backup/.eslintrc.js`
+- `server/backup/.npmignore`
+- `server/backup/config/rig.json`
+- `server/backup/jest.config.js`
+- `server/backup/package.json`
+- `server/backup/src/backup.ts`
+- `server/backup/src/index.ts`
+- `server/backup/src/restore.ts`
+- `server/backup/src/service.ts`
+- `server/backup/src/storage.ts`
+- `server/backup/src/types.ts`
+- `server/backup/src/utils.ts`
+- `server/backup/tsconfig.json`
+- `server/collaborator/.eslintrc.js`
+- `server/collaborator/.npmignore`
+- `server/collaborator/config/rig.json`
+- `server/collaborator/jest.config.js`
+- `server/collaborator/package.json`
+- `server/collaborator/src/__start.ts`
+- `server/collaborator/src/config.ts`
+- `server/collaborator/src/context.ts`
+- `server/collaborator/src/extensions/authentication.ts`
+- `server/collaborator/src/extensions/storage.ts`
+- `server/collaborator/src/index.ts`
+- `server/collaborator/src/platform.ts`
+- `server/collaborator/src/rpc/index.ts`
+- `server/collaborator/src/rpc/methods/createContent.ts`
+- `server/collaborator/src/rpc/methods/getContent.ts`
+- `server/collaborator/src/rpc/methods/index.ts`
+- `server/collaborator/src/rpc/methods/updateContent.ts`
+- `server/collaborator/src/rpc/rpc.ts`
+- `server/collaborator/src/server.ts`
+- `server/collaborator/src/starter.ts`
+- `server/collaborator/src/storage/adapter.ts`
+- `server/collaborator/src/storage/platform.ts`
+- `server/collaborator/src/transformers/markup.ts`
+- `server/collaborator/src/utils.ts`
+- `server/collaborator/tsconfig.json`
+- `server/front/.eslintrc.js`
+- `server/front/.npmignore`
+- `server/front/build.sh`
+- `server/front/config/rig.json`
+- `server/front/jest.config.js`
+- `server/front/package.json`
+- `server/front/readme.md`
+- `server/front/run.sh`
+- `server/front/src/__start.ts`
+- `server/front/src/index.ts`
+- `server/front/src/starter.ts`
+- `server/front/src/utils.ts`
+- `server/front/tsconfig.json`
+- `server/indexer/.eslintrc.js`
+- `server/indexer/.npmignore`
+- `server/indexer/CHANGELOG.json`
+- `server/indexer/CHANGELOG.md`
+- `server/indexer/config/rig.json`
+- `server/indexer/jest.config.js`
+- `server/indexer/package.json`
+- `server/indexer/src/fulltext.ts`
+- `server/indexer/src/index.ts`
+- `server/indexer/src/indexer/index.ts`
+- `server/indexer/src/indexer/indexer.ts`
+- `server/indexer/src/indexer/types.ts`
+- `server/indexer/src/indexer/utils.ts`
+- `server/indexer/src/mapper.ts`
+- `server/indexer/src/rekoni.ts`
+- `server/indexer/tsconfig.json`
+- `server/server-pipeline/.eslintrc.js`
+- `server/server-pipeline/.npmignore`
+- `server/server-pipeline/config/rig.json`
+- `server/server-pipeline/jest.config.js`
+- `server/server-pipeline/package.json`
+- `server/server-pipeline/src/blobStorage.ts`
+- `server/server-pipeline/src/communication.ts`
+- `server/server-pipeline/src/index.ts`
+- `server/server-pipeline/src/internationalization.ts`
+- `server/server-pipeline/src/pipeline.ts`
+- `server/server-pipeline/src/serverPlugins.ts`
+- `server/server-pipeline/tsconfig.json`
+- `server/tool/.eslintrc.js`
+- `server/tool/.npmignore`
+- `server/tool/config/rig.json`
+- `server/tool/jest.config.js`
+- `server/tool/package.json`
+- `server/tool/src/connect.ts`
+- `server/tool/src/index.ts`
+- `server/tool/src/initializer.ts`
+- `server/tool/src/plugin.ts`
+- `server/tool/src/upgrade.ts`
+- `server/tool/src/utils.ts`
+- `server/tool/tsconfig.json`
+- `server/workspace-service/.eslintrc.js`
+- `server/workspace-service/.npmignore`
+- `server/workspace-service/build.sh`
+- `server/workspace-service/config/rig.json`
+- `server/workspace-service/jest.config.js`
+- `server/workspace-service/package.json`
+- `server/workspace-service/src/index.ts`
+- `server/workspace-service/src/service.ts`
+- `server/workspace-service/src/ws-operations.ts`
+- `server/workspace-service/tsconfig.json`
+
+</details>
+
+<details>
+<summary><code>qms-tests</code> (110 files)</summary>
+
+- `qms-tests/.env`
+- `qms-tests/branding-test.json`
+- `qms-tests/create-local.sh`
+- `qms-tests/docker-compose.yaml`
+- `qms-tests/prepare.sh`
+- `qms-tests/restore-local.sh`
+- `qms-tests/restore-workspace.sh`
+- `qms-tests/sanity-ws-qms/000001/_migrations-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/_migrations-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/activity-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/activity-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/attachment-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/attachment-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/automation-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/automation-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/blob-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/blob-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/calendar-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/calendar-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/channel-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/channel-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/contact-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/contact-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/doc-index-state-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/doc-index-state-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/documents-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/documents-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/fulltext-blob-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/fulltext-blob-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/hr-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/hr-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/kanban-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/kanban-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/love-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/love-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/notification-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/notification-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/request-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/request-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/space-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/space-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/status-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/status-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/tags-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/tags-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/training-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/training-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/000001/tx-1716580272084-0.snp.gz`
+- `qms-tests/sanity-ws-qms/000001/tx-data-1716580272084-1.tar.gz`
+- `qms-tests/sanity-ws-qms/backup.json.gz`
+- `qms-tests/sanity/.env`
+- `qms-tests/sanity/.eslintrc.js`
+- `qms-tests/sanity/.gitignore`
+- `qms-tests/sanity/config/rig.json`
+- `qms-tests/sanity/package.json`
+- `qms-tests/sanity/tests/auth/auth.setup.ts`
+- `qms-tests/sanity/tests/documents/categories.spec.ts`
+- `qms-tests/sanity/tests/documents/common-documents-steps.ts`
+- `qms-tests/sanity/tests/documents/documents.spec.ts`
+- `qms-tests/sanity/tests/documents/ES-20.spec.ts`
+- `qms-tests/sanity/tests/documents/ES-20.spec.ts-snapshots/-Users-jasminmusic-Documents-GitHub-platform-qms-tests-sanity-tests-screenshots-TESTS-277-pdf-preview-QMS-darwin.png`
+- `qms-tests/sanity/tests/documents/ES-40.1.spec.ts`
+- `qms-tests/sanity/tests/documents/ES-40.2.spec.ts`
+- `qms-tests/sanity/tests/documents/ES-40.spec.ts`
+- `qms-tests/sanity/tests/documents/ES-50.spec.ts`
+- `qms-tests/sanity/tests/documents/ES-50.spec.ts-snapshots/-Users-jasminmusic-Documents-GitHub-platform-qms-tests-sanity-tests-screenshots-TESTS-386-pdf-preview-QMS-darwin.png`
+- `qms-tests/sanity/tests/documents/ES-50.spec.ts-snapshots/-Users-jasminmusic-Documents-GitHub-platform-qms-tests-sanity-tests-screenshots-TESTS-387-pdf-preview-QMS-darwin.png`
+- `qms-tests/sanity/tests/documents/REQ-03.spec.ts`
+- `qms-tests/sanity/tests/documents/REQ-04-01.spec.ts`
+- `qms-tests/sanity/tests/documents/REQ-04-01.spec.ts-snapshots/-Users-jasminmusic-Documents-GitHub-platform-qms-tests-sanity-tests-screenshots-TESTS-271-pdf-preview-QMS-darwin.png`
+- `qms-tests/sanity/tests/documents/REQ-04-01.spec.ts-snapshots/-Users-jasminmusic-Documents-GitHub-platform-qms-tests-sanity-tests-screenshots-TESTS-272-pdf-preview-QMS-darwin.png`
+- `qms-tests/sanity/tests/documents/REQ-04-01.spec.ts-snapshots/-Users-jasminmusic-Documents-GitHub-platform-qms-tests-sanity-tests-screenshots-TESTS-273-pdf-preview-QMS-darwin.png`
+- `qms-tests/sanity/tests/documents/REQ-04.spec.ts`
+- `qms-tests/sanity/tests/documents/REQ-05-1.spec.ts`
+- `qms-tests/sanity/tests/documents/REQ-05.spec.ts`
+- `qms-tests/sanity/tests/documents/REQ-10.spec.ts`
+- `qms-tests/sanity/tests/documents/REQ-14.spec.ts`
+- `qms-tests/sanity/tests/documents/templates.spec.ts`
+- `qms-tests/sanity/tests/files/cat.jpeg`
+- `qms-tests/sanity/tests/login/registration.spec.ts`
+- `qms-tests/sanity/tests/model/calendar-page.ts`
+- `qms-tests/sanity/tests/model/common-page.ts`
+- `qms-tests/sanity/tests/model/contact-page.ts`
+- `qms-tests/sanity/tests/model/documents/categories-page.ts`
+- `qms-tests/sanity/tests/model/documents/category-create-popup.ts`
+- `qms-tests/sanity/tests/model/documents/category-details-page.ts`
+- `qms-tests/sanity/tests/model/documents/document-approvals-page.ts`
+- `qms-tests/sanity/tests/model/documents/document-comments-page.ts`
+- `qms-tests/sanity/tests/model/documents/document-common-page.ts`
+- `qms-tests/sanity/tests/model/documents/document-content-page.ts`
+- `qms-tests/sanity/tests/model/documents/document-history-page.ts`
+- `qms-tests/sanity/tests/model/documents/document-reason-impact-page.ts`
+- `qms-tests/sanity/tests/model/documents/document-release-page.ts`
+- `qms-tests/sanity/tests/model/documents/documents-page.ts`
+- `qms-tests/sanity/tests/model/documents/navigation-menu-page.ts`
+- `qms-tests/sanity/tests/model/documents/pdf-pages.ts`
+- `qms-tests/sanity/tests/model/documents/templates-page.ts`
+- `qms-tests/sanity/tests/model/left-side-menu-page.ts`
+- `qms-tests/sanity/tests/model/login-page.ts`
+- `qms-tests/sanity/tests/model/select-workspace-page.ts`
+- `qms-tests/sanity/tests/model/setting-page.ts`
+- `qms-tests/sanity/tests/model/signup-page.ts`
+- `qms-tests/sanity/tests/model/types.ts`
+- `qms-tests/sanity/tests/model/visual-check.ts`
+- `qms-tests/sanity/tests/playwright.config.ts`
+- `qms-tests/sanity/tests/utils.ts`
+- `qms-tests/sanity/tsconfig.json`
+- `qms-tests/tool-local.sh`
+- `qms-tests/tool.sh`
+- `qms-tests/update-snapshot.sh`
+
+</details>
+
+<details>
+<summary><code>desktop</code> (72 files)</summary>
+
+- `desktop/.env`
+- `desktop/.env-dev`
+- `desktop/.eslintrc.js`
+- `desktop/config/rig.json`
+- `desktop/contextBridge.svg`
+- `desktop/declarations.d.ts`
+- `desktop/jest.config.js`
+- `desktop/package.json`
+- `desktop/postcss.config.js`
+- `desktop/public/AppIcon.ico`
+- `desktop/public/AppIcon.png`
+- `desktop/public/icons/card_app_Card.ico`
+- `desktop/public/icons/chunter_app_Chunter.ico`
+- `desktop/public/icons/contact_app_Contacts.ico`
+- `desktop/public/icons/document_app_Documents.ico`
+- `desktop/public/icons/drive_app_Drive.ico`
+- `desktop/public/icons/hr_app_HR.ico`
+- `desktop/public/icons/InboxIcon.ico`
+- `desktop/public/icons/love_app_Love.ico`
+- `desktop/public/icons/process_app_Process.ico`
+- `desktop/public/icons/recruit_app_Recruit.ico`
+- `desktop/public/icons/SettingsIcon.ico`
+- `desktop/public/icons/testManagement_app_TestManagement.ico`
+- `desktop/public/icons/time_app_Me.ico`
+- `desktop/public/icons/time_app_Team.ico`
+- `desktop/public/icons/tracker_app_Tracker.ico`
+- `desktop/public/TrayIconWithBadge.ico`
+- `desktop/readme.md`
+- `desktop/src/__test__/main/config.test.ts`
+- `desktop/src/__test__/main/findInPage.test.ts`
+- `desktop/src/__test__/main/path.test.ts`
+- `desktop/src/__test__/main/selfCheckingNode.test.ts`
+- `desktop/src/__test__/main/settings.test.ts`
+- `desktop/src/__test__/main/trayUtils.test.ts`
+- `desktop/src/__test__/ui/menuBuilder.test.ts`
+- `desktop/src/__test__/ui/selfCheckingDom.test.ts`
+- `desktop/src/__test__/ui/titleBarMenuState.test.ts`
+- `desktop/src/__test__/ui/typesUtils.test.ts`
+- `desktop/src/main/args.ts`
+- `desktop/src/main/config.ts`
+- `desktop/src/main/customMenu.ts`
+- `desktop/src/main/findInPage.ts`
+- `desktop/src/main/findInPageOverlayHost.ts`
+- `desktop/src/main/osIntegration.ts`
+- `desktop/src/main/path.ts`
+- `desktop/src/main/permissions.ts`
+- `desktop/src/main/settings.ts`
+- `desktop/src/main/standardMenu.ts`
+- `desktop/src/main/start.ts`
+- `desktop/src/main/tray.ts`
+- `desktop/src/main/trayUtils.ts`
+- `desktop/src/main/updater.ts`
+- `desktop/src/main/windowsSpecificSetup.ts`
+- `desktop/src/ui/find-in-page-overlay.ejs`
+- `desktop/src/ui/findInPageBar.ts`
+- `desktop/src/ui/findInPageOverlay.ts`
+- `desktop/src/ui/index.ejs`
+- `desktop/src/ui/index.ts`
+- `desktop/src/ui/ipcMessages.ts`
+- `desktop/src/ui/notifications.ts`
+- `desktop/src/ui/platform.ts`
+- `desktop/src/ui/preload.ts`
+- `desktop/src/ui/screenShare.ts`
+- `desktop/src/ui/titleBarMenu.ts`
+- `desktop/src/ui/titleBarMenuState.ts`
+- `desktop/src/ui/types.ts`
+- `desktop/src/ui/typesUtils.ts`
+- `desktop/start-dev.bat`
+- `desktop/start-dev.ps1`
+- `desktop/tests/fixtures/deep-link.html`
+- `desktop/tsconfig.json`
+- `desktop/webpack.config.js`
+
+</details>
+
+<details>
+<summary><code>common</code> (49 files)</summary>
+
+- `common/config/rush/.npmrc`
+- `common/config/rush/.npmrc-publish`
+- `common/config/rush/.pnpmfile.cjs`
+- `common/config/rush/artifactory.json`
+- `common/config/rush/build-cache.json`
+- `common/config/rush/cobuild.json`
+- `common/config/rush/command-line.json`
+- `common/config/rush/common-versions.json`
+- `common/config/rush/custom-tips.json`
+- `common/config/rush/experiments.json`
+- `common/config/rush/pnpm-config.json`
+- `common/config/rush/pnpm-lock.yaml`
+- `common/config/rush/repo-state.json`
+- `common/config/rush/rush-plugins.json`
+- `common/config/rush/subspaces.json`
+- `common/config/rush/version-policies.json`
+- `common/git-hooks/commit-msg.sample`
+- `common/scripts/build_docker.sh`
+- `common/scripts/bump.js`
+- `common/scripts/check_model_version.js`
+- `common/scripts/check-versions.js`
+- `common/scripts/docker_build.sh`
+- `common/scripts/docker_patch.sh`
+- `common/scripts/docker_tag_push.sh`
+- `common/scripts/docker_tag.sh`
+- `common/scripts/docker-server.sh`
+- `common/scripts/docker.sh`
+- `common/scripts/each-diff.sh`
+- `common/scripts/esbuild.js`
+- `common/scripts/fast-format.sh`
+- `common/scripts/fix-packages.js`
+- `common/scripts/format-show.sh`
+- `common/scripts/git_version.sh`
+- `common/scripts/install-run-rush-pnpm.js`
+- `common/scripts/install-run-rush.js`
+- `common/scripts/install-run-rushx.js`
+- `common/scripts/install-run.js`
+- `common/scripts/mongo_dump.sh`
+- `common/scripts/mongo_restore.sh`
+- `common/scripts/outdated.sh`
+- `common/scripts/package.json`
+- `common/scripts/safe-publish.js`
+- `common/scripts/sass-quiet.js`
+- `common/scripts/show_tag.js`
+- `common/scripts/show_version.js`
+- `common/scripts/svelte-check-show.sh`
+- `common/scripts/sync-versions.js`
+- `common/scripts/update-package-versions.js`
+- `common/scripts/version.txt`
+
+</details>
+
+<details>
+<summary><code>ws-tests</code> (42 files)</summary>
+
+- `ws-tests/.env`
+- `ws-tests/api-tests/.eslintrc.js`
+- `ws-tests/api-tests/.gitignore`
+- `ws-tests/api-tests/.npmignore`
+- `ws-tests/api-tests/config/rig.json`
+- `ws-tests/api-tests/jest.config.js`
+- `ws-tests/api-tests/package.json`
+- `ws-tests/api-tests/src/__tests__/client.test.ts`
+- `ws-tests/api-tests/src/__tests__/rest.test.ts`
+- `ws-tests/api-tests/src/__tests__/storage.test.ts`
+- `ws-tests/api-tests/src/index.ts`
+- `ws-tests/api-tests/tsconfig.json`
+- `ws-tests/branding-test.json`
+- `ws-tests/build-reload.sh`
+- `ws-tests/create-local.sh`
+- `ws-tests/create-version-override.sh`
+- `ws-tests/docker-compose.yaml`
+- `ws-tests/fetch-tool-bundle.sh`
+- `ws-tests/prepare_data.sh`
+- `ws-tests/prepare.sh`
+- `ws-tests/profile-download.sh`
+- `ws-tests/profile-generate.sh`
+- `ws-tests/profile-start.sh`
+- `ws-tests/pull-images.sh`
+- `ws-tests/reset-version.sh`
+- `ws-tests/sanity/.env`
+- `ws-tests/sanity/.eslintrc.js`
+- `ws-tests/sanity/.gitignore`
+- `ws-tests/sanity/config/rig.json`
+- `ws-tests/sanity/package.json`
+- `ws-tests/sanity/tests/auth/auth.setup.ts`
+- `ws-tests/sanity/tests/index.ts`
+- `ws-tests/sanity/tests/model/admin.page.ts`
+- `ws-tests/sanity/tests/playwright.config.ts`
+- `ws-tests/sanity/tests/workspace/archive.spec.ts`
+- `ws-tests/sanity/tests/workspace/create.spec.ts`
+- `ws-tests/sanity/tests/workspace/migrate.spec.ts`
+- `ws-tests/sanity/tsconfig.json`
+- `ws-tests/tool-europe.sh`
+- `ws-tests/tool-local.sh`
+- `ws-tests/tool.sh`
+- `ws-tests/wait-elastic.sh`
+
+</details>
+
+<details>
+<summary><code>templates</code> (39 files)</summary>
+
+- `templates/apply.js`
+- `templates/assets/.eslintrc.js`
+- `templates/assets/config/rig.json`
+- `templates/assets/jest.config.js`
+- `templates/assets/package.json`
+- `templates/assets/src/__tests__/lang.test.ts`
+- `templates/assets/tsconfig.json`
+- `templates/cloud/.eslintrc.js`
+- `templates/cloud/config/rig.json`
+- `templates/cloud/jest.config.js`
+- `templates/cloud/package.json`
+- `templates/cloud/tsconfig.json`
+- `templates/default/package.json`
+- `templates/model/.eslintrc.js`
+- `templates/model/config/rig.json`
+- `templates/model/jest.config.js`
+- `templates/model/package.json`
+- `templates/model/tsconfig.json`
+- `templates/node/.eslintrc.js`
+- `templates/node/config/rig.json`
+- `templates/node/jest.config.js`
+- `templates/node/package.json`
+- `templates/node/tsconfig.json`
+- `templates/package/package.json`
+- `templates/platform/.eslintrc.js`
+- `templates/platform/config/rig.json`
+- `templates/platform/jest.config.js`
+- `templates/platform/package.json`
+- `templates/platform/tsconfig.json`
+- `templates/readme.md`
+- `templates/ui/.eslintrc.js`
+- `templates/ui/.prettierrc`
+- `templates/ui/config/rig.json`
+- `templates/ui/jest.config.js`
+- `templates/ui/package.json`
+- `templates/ui/postcss.config.js`
+- `templates/ui/svelte.config.js`
+- `templates/ui/tsconfig.json`
+- `templates/webpack/package.json`
+
+</details>
+
+<details>
+<summary><code>qms-desktop-package</code> (12 files)</summary>
+
+- `qms-desktop-package/.env`
+- `qms-desktop-package/config/rig.json`
+- `qms-desktop-package/entitlements.mac.plist`
+- `qms-desktop-package/installer.nsh`
+- `qms-desktop-package/package.json`
+- `qms-desktop-package/readme.md`
+- `qms-desktop-package/scripts/copy-publish-artifacts.sh`
+- `qms-desktop-package/scripts/notarize.js`
+- `qms-desktop-package/src/AppIcon.icns`
+- `qms-desktop-package/src/AppIcon.ico`
+- `qms-desktop-package/src/AppIcon.png`
+- `qms-desktop-package/src/config/config.json`
+
+</details>
+
+<details>
+<summary><code>desktop-package</code> (11 files)</summary>
+
+- `desktop-package/.env`
+- `desktop-package/config/rig.json`
+- `desktop-package/entitlements.mac.plist`
+- `desktop-package/installer.nsh`
+- `desktop-package/package.json`
+- `desktop-package/readme.md`
+- `desktop-package/scripts/copy-publish-artifacts.sh`
+- `desktop-package/scripts/notarize.js`
+- `desktop-package/src/AppIcon.icns`
+- `desktop-package/src/AppIcon.ico`
+- `desktop-package/src/AppIcon.png`
+
+</details>
+
+<details>
+<summary><code>.github</code> (9 files)</summary>
+
+- `.github/actions/free-disk-space/action.yml`
+- `.github/copilot-instructions.md`
+- `.github/dependabot.yml`
+- `.github/issue_template.md`
+- `.github/pull_request_template.md`
+- `.github/workflows/baseimage.yaml`
+- `.github/workflows/integrations._yml`
+- `.github/workflows/main.yml`
+- `.github/workflows/publish-npm.yml`
+
+</details>
+
+<details>
+<summary><code>scripts</code> (5 files)</summary>
+
+- `scripts/build.sh`
+- `scripts/fast-start.sh`
+- `scripts/presetup-rush.sh`
+- `scripts/takeUpstream.sh`
+- `scripts/verify-changed.sh`
+
+</details>
+
+<details>
+<summary><code>.vscode</code> (3 files)</summary>
+
+- `.vscode/extensions.json`
+- `.vscode/launch.json`
+- `.vscode/settings.json`
+
+</details>
+
+<details>
+<summary><code>.gitattributes</code> (1 files)</summary>
+
+- `.gitattributes`
+
+</details>
+
+<details>
+<summary><code>.gitignore</code> (1 files)</summary>
+
+- `.gitignore`
+
+</details>
+
+<details>
+<summary><code>.gitmodules</code> (1 files)</summary>
+
+- `.gitmodules`
+
+</details>
+
+<details>
+<summary><code>.nvmrc</code> (1 files)</summary>
+
+- `.nvmrc`
+
+</details>
+
+<details>
+<summary><code>.prettierrc</code> (1 files)</summary>
+
+- `.prettierrc`
+
+</details>
+
+<details>
+<summary><code>"services</code> (1 files)</summary>
+
+- `"services/rekoni/demo/\320\240\320\265\320\267\321\216\320\274\320\265 \320\222\320\273\320\260\321\201\320\276\320\262\320\260 \320\220\320\275\320\260\321\202\320\276\320\273\320\270\321\217.docx"`
+
+</details>
+
+<details>
+<summary><code>ARCHITECTURE_OVERVIEW.md</code> (1 files)</summary>
+
+- `ARCHITECTURE_OVERVIEW.md`
+
+</details>
+
+<details>
+<summary><code>changelog.md</code> (1 files)</summary>
+
+- `changelog.md`
+
+</details>
+
+<details>
+<summary><code>cliff.toml</code> (1 files)</summary>
+
+- `cliff.toml`
+
+</details>
+
+<details>
+<summary><code>docs</code> (1 files)</summary>
+
+- `docs/disableFeatures.md`
+
+</details>
+
+<details>
+<summary><code>LICENSE</code> (1 files)</summary>
+
+- `LICENSE`
+
+</details>
+
+<details>
+<summary><code>package-lock.json</code> (1 files)</summary>
+
+- `package-lock.json`
+
+</details>
+
+<details>
+<summary><code>README.md</code> (1 files)</summary>
+
+- `README.md`
+
+</details>
+
+<details>
+<summary><code>rush.json</code> (1 files)</summary>
+
+- `rush.json`
+
+</details>
+
+<!-- END GENERATED: upstream-protected-inventory -->
+
+### Praut Customization Inventory - NEUPRAVOVAT RUCNE
+
+This generated section lists how Praut differs from upstream Huly. It is the fastest way to see what we have customized and what still needs review.
+
+<!-- BEGIN GENERATED: praut-customization-inventory -->
+Generated at `2026-06-07T13:52:58.205Z` by comparing this fork against upstream.
+
+- Overlay customizations: **13**
+- Approved exception changes: **3**
+- Review-required shared changes: **21**
+- Baselined historical core differences: **646**
+- Unapproved core differences: **0**
+
+### Overlay Customizations
+
+| Status | Path |
+| --- | --- |
+| added | `dev/branding.praut.json` |
+| added | `dev/prod/public/branding.praut.json` |
+| added | `docs/praut-fork-governance.md` |
+| added | `docs/praut-huly-data-extraction.md` |
+| added | `docs/praut-overlay.schema.json` |
+| added | `docs/praut-platform-technology-audit.md` |
+| added | `docs/praut-system-customization-manual.md` |
+| added | `scripts/praut-apply-overlay.mjs` |
+| added | `scripts/praut-extract.sh` |
+| added | `scripts/praut-governance.mjs` |
+| added | `scripts/praut-huly-extract.sh` |
+| added | `scripts/praut-smoke.mjs` |
+| added | `scripts/praut-upstream-update.mjs` |
+
+### Approved Exception Changes
+
+| Status | Path |
+| --- | --- |
+| modified | `.gitignore` |
+| added | `praut-core-baseline.json` |
+| added | `praut.overlay.json` |
+
+### Review Required Shared Changes
+
+| Status | Path |
+| --- | --- |
+| modified | `.github/workflows/main.yml` |
+| added | `.github/workflows/praut-upstream-update.yml` |
+| modified | `desktop-package/package.json` |
+| modified | `desktop/package.json` |
+| modified | `dev/tool/package.json` |
+| modified | `qms-desktop-package/package.json` |
+| modified | `qms-tests/sanity/package.json` |
+| modified | `server/backup/package.json` |
+| modified | `services/export/pod-export/package.json` |
+| added | `services/export/pod-export/src/__tests__/product-version-handler.test.ts` |
+| added | `services/export/pod-export/src/handlers/product-version-handler.ts` |
+| modified | `services/export/pod-export/src/server.ts` |
+| modified | `services/export/pod-export/src/workspace/document-exporter.ts` |
+| modified | `services/export/pod-export/src/workspace/types.ts` |
+| modified | `services/export/pod-export/src/workspace/workspace-exporter.ts` |
+| modified | `tests/sanity/package.json` |
+| modified | `tests/sanity/tests/model/select-workspace-page.ts` |
+| modified | `tests/sanity/tests/workspace/create.spec.ts` |
+| modified | `ws-tests/api-tests/package.json` |
+| deleted | `ws-tests/api-tests/src/__tests__/client.test.ts` |
+| modified | `ws-tests/sanity/package.json` |
+
+### Baselined Historical Core Differences
+
+| Status | Path |
+| --- | --- |
+| modified | `.vscode/settings.json` |
+| modified | `README.md` |
+| modified | `changelog.md` |
+| modified | `common/config/rush/pnpm-lock.yaml` |
+| modified | `common/scripts/package.json` |
+| modified | `common/scripts/version.txt` |
+| modified | `dev/doc-import-tool/package.json` |
+| modified | `dev/import-tool/package.json` |
+| modified | `dev/prod/package.json` |
+| modified | `foundations/communication/common/scripts/package.json` |
+| modified | `foundations/communication/packages/client-query/package.json` |
+| modified | `foundations/communication/packages/cockroach/package.json` |
+| modified | `foundations/communication/packages/query/package.json` |
+| modified | `foundations/communication/packages/rest-client/package.json` |
+| modified | `foundations/communication/packages/sdk-types/package.json` |
+| modified | `foundations/communication/packages/server/package.json` |
+| modified | `foundations/communication/packages/shared/package.json` |
+| modified | `foundations/core/common/scripts/package.json` |
+| modified | `foundations/core/packages/account-client/package.json` |
+| modified | `foundations/core/packages/account-client/src/client.ts` |
+| modified | `foundations/core/packages/account-client/src/types.ts` |
+| modified | `foundations/core/packages/analytics-service/package.json` |
+| modified | `foundations/core/packages/analytics/package.json` |
+| modified | `foundations/core/packages/api-client/package.json` |
+| modified | `foundations/core/packages/client-resources/package.json` |
+| modified | `foundations/core/packages/client-resources/src/connection.ts` |
+| modified | `foundations/core/packages/client/package.json` |
+| modified | `foundations/core/packages/collaborator-client/package.json` |
+| modified | `foundations/core/packages/core/package.json` |
+| modified | `foundations/core/packages/core/src/classes.ts` |
+| modified | `foundations/core/packages/core/src/hierarchy.ts` |
+| modified | `foundations/core/packages/core/src/versioning.ts` |
+| modified | `foundations/core/packages/hulylake-client/package.json` |
+| modified | `foundations/core/packages/measurements-otlp/package.json` |
+| modified | `foundations/core/packages/measurements/package.json` |
+| modified | `foundations/core/packages/model/package.json` |
+| modified | `foundations/core/packages/platform/package.json` |
+| modified | `foundations/core/packages/postgres-base/package.json` |
+| modified | `foundations/core/packages/query/package.json` |
+| modified | `foundations/core/packages/rank/package.json` |
+| modified | `foundations/core/packages/retry/package.json` |
+| modified | `foundations/core/packages/rpc/package.json` |
+| modified | `foundations/core/packages/storage-client/package.json` |
+| modified | `foundations/core/packages/storage/package.json` |
+| modified | `foundations/core/packages/text-core/package.json` |
+| modified | `foundations/core/packages/text-html/package.json` |
+| modified | `foundations/core/packages/text-markdown/package.json` |
+| modified | `foundations/core/packages/text-ydoc/package.json` |
+| modified | `foundations/core/packages/text/package.json` |
+| modified | `foundations/core/packages/token/package.json` |
+| modified | `foundations/server/common/scripts/package.json` |
+| modified | `foundations/server/packages/client/package.json` |
+| modified | `foundations/server/packages/collaboration/package.json` |
+| modified | `foundations/server/packages/core/package.json` |
+| modified | `foundations/server/packages/datalake/package.json` |
+| modified | `foundations/server/packages/elastic/package.json` |
+| modified | `foundations/server/packages/hulylake/package.json` |
+| modified | `foundations/server/packages/kafka/package.json` |
+| modified | `foundations/server/packages/middleware/package.json` |
+| modified | `foundations/server/packages/minio/package.json` |
+| modified | `foundations/server/packages/mongo/package.json` |
+| modified | `foundations/server/packages/postgres/package.json` |
+| modified | `foundations/server/packages/s3/package.json` |
+| modified | `foundations/server/packages/server-storage/package.json` |
+| modified | `foundations/server/packages/server/package.json` |
+| modified | `foundations/server/packages/server/src/sessionManager.ts` |
+| modified | `foundations/utils/common/scripts/package.json` |
+| modified | `foundations/utils/packages/platform-rig/package.json` |
+| modified | `foundations/utils/packages/ui-test/package.json` |
+| modified | `models/achievement/package.json` |
+| modified | `models/activity/package.json` |
+| modified | `models/ai-assistant/package.json` |
+| modified | `models/ai-bot/package.json` |
+| modified | `models/all/package.json` |
+| modified | `models/all/src/index.ts` |
+| modified | `models/analytics-collector/package.json` |
+| modified | `models/attachment/package.json` |
+| modified | `models/billing/package.json` |
+| modified | `models/bitrix/package.json` |
+| modified | `models/board/package.json` |
+| modified | `models/calendar/package.json` |
+| modified | `models/card/package.json` |
+| modified | `models/card/src/actions.ts` |
+| modified | `models/card/src/index.ts` |
+| modified | `models/card/src/plugin.ts` |
+| modified | `models/chat/package.json` |
+| modified | `models/chunter/package.json` |
+| modified | `models/communication/package.json` |
+| modified | `models/contact/package.json` |
+| modified | `models/controlled-documents/package.json` |
+| modified | `models/converter/package.json` |
+| modified | `models/core/package.json` |
+| modified | `models/core/src/core.ts` |
+| modified | `models/desktop-downloads/package.json` |
+| modified | `models/desktop-preferences/package.json` |
+| modified | `models/document/package.json` |
+| modified | `models/drive/package.json` |
+| modified | `models/emoji/package.json` |
+| modified | `models/export/package.json` |
+| modified | `models/gmail/package.json` |
+| modified | `models/guest/package.json` |
+| modified | `models/hr/package.json` |
+| modified | `models/huly-mail/package.json` |
+| modified | `models/inbox/package.json` |
+| modified | `models/inventory/package.json` |
+| modified | `models/lead/package.json` |
+| modified | `models/love/package.json` |
+| modified | `models/mail/package.json` |
+| modified | `models/media/package.json` |
+| modified | `models/notification/package.json` |
+| modified | `models/preference/package.json` |
+| modified | `models/presence/package.json` |
+| modified | `models/presentation/package.json` |
+| modified | `models/print/package.json` |
+| modified | `models/process/package.json` |
+| modified | `models/process/src/functions.ts` |
+| modified | `models/process/src/index.ts` |
+| modified | `models/products/package.json` |
+| modified | `models/products/src/index.ts` |
+| modified | `models/products/src/plugin.ts` |
+| modified | `models/questions/package.json` |
+| modified | `models/rating/package.json` |
+| modified | `models/recorder/package.json` |
+| modified | `models/recruit/package.json` |
+| modified | `models/request/package.json` |
+| modified | `models/server-activity/package.json` |
+| modified | `models/server-ai-bot/package.json` |
+| modified | `models/server-attachment/package.json` |
+| modified | `models/server-calendar/package.json` |
+| modified | `models/server-card/package.json` |
+| modified | `models/server-chunter/package.json` |
+| modified | `models/server-collaboration/package.json` |
+| modified | `models/server-contact/package.json` |
+| modified | `models/server-controlled-documents/package.json` |
+| modified | `models/server-core/package.json` |
+| modified | `models/server-document/package.json` |
+| modified | `models/server-drive/package.json` |
+| modified | `models/server-gmail/package.json` |
+| modified | `models/server-guest/package.json` |
+| modified | `models/server-hr/package.json` |
+| modified | `models/server-inventory/package.json` |
+| modified | `models/server-lead/package.json` |
+| modified | `models/server-love/package.json` |
+| modified | `models/server-notification/package.json` |
+| modified | `models/server-process/package.json` |
+| modified | `models/server-process/src/index.ts` |
+| modified | `models/server-products/package.json` |
+| modified | `models/server-recruit/package.json` |
+| modified | `models/server-request/package.json` |
+| modified | `models/server-setting/package.json` |
+| modified | `models/server-tags/package.json` |
+| modified | `models/server-task/package.json` |
+| modified | `models/server-telegram/package.json` |
+| modified | `models/server-templates/package.json` |
+| modified | `models/server-time/package.json` |
+| modified | `models/server-tracker/package.json` |
+| modified | `models/server-training/package.json` |
+| modified | `models/server-view/package.json` |
+| modified | `models/setting/package.json` |
+| modified | `models/support/package.json` |
+| modified | `models/survey/package.json` |
+| modified | `models/tags/package.json` |
+| modified | `models/task/package.json` |
+| modified | `models/telegram/package.json` |
+| modified | `models/templates/package.json` |
+| modified | `models/test-management/package.json` |
+| modified | `models/text-editor/package.json` |
+| modified | `models/time/package.json` |
+| modified | `models/tracker/package.json` |
+| modified | `models/training/package.json` |
+| modified | `models/uploader/package.json` |
+| modified | `models/view/package.json` |
+| modified | `models/workbench/package.json` |
+| modified | `packages/analytics-providers/package.json` |
+| modified | `packages/billing-client/package.json` |
+| modified | `packages/highlight/package.json` |
+| modified | `packages/hls/package.json` |
+| modified | `packages/hulypulse-client/package.json` |
+| modified | `packages/importer/package.json` |
+| modified | `packages/integration-client/package.json` |
+| modified | `packages/kanban/package.json` |
+| modified | `packages/kvs-client/package.json` |
+| modified | `packages/panel/package.json` |
+| modified | `packages/payment-client/package.json` |
+| modified | `packages/presentation/lang/cs.json` |
+| modified | `packages/presentation/lang/de.json` |
+| modified | `packages/presentation/lang/en.json` |
+| modified | `packages/presentation/lang/es.json` |
+| modified | `packages/presentation/lang/fr.json` |
+| modified | `packages/presentation/lang/it.json` |
+| modified | `packages/presentation/lang/ja.json` |
+| modified | `packages/presentation/lang/pt-br.json` |
+| modified | `packages/presentation/lang/pt.json` |
+| modified | `packages/presentation/lang/ru.json` |
+| modified | `packages/presentation/lang/tr.json` |
+| modified | `packages/presentation/lang/zh.json` |
+| modified | `packages/presentation/package.json` |
+| added | `packages/presentation/src/components/PluginConfigurationCard.svelte` |
+| modified | `packages/presentation/src/index.ts` |
+| modified | `packages/presentation/src/plugin.ts` |
+| modified | `packages/rekoni/package.json` |
+| modified | `packages/theme/package.json` |
+| modified | `packages/ui/package.json` |
+| modified | `packages/ui/src/components/DropdownLabelsIntl.svelte` |
+| modified | `packages/ui/src/components/DropdownLabelsPopupIntl.svelte` |
+| modified | `plugins/achievement-assets/package.json` |
+| modified | `plugins/achievement-resources/package.json` |
+| modified | `plugins/achievement/package.json` |
+| modified | `plugins/activity-assets/package.json` |
+| modified | `plugins/activity-resources/package.json` |
+| modified | `plugins/activity/package.json` |
+| modified | `plugins/ai-assistant-assets/package.json` |
+| modified | `plugins/ai-assistant-resources/package.json` |
+| modified | `plugins/ai-assistant/package.json` |
+| modified | `plugins/ai-bot-resources/package.json` |
+| modified | `plugins/ai-bot/package.json` |
+| modified | `plugins/analytics-collector-assets/package.json` |
+| modified | `plugins/analytics-collector-resources/package.json` |
+| modified | `plugins/analytics-collector/package.json` |
+| modified | `plugins/attachment-assets/package.json` |
+| modified | `plugins/attachment-resources/package.json` |
+| modified | `plugins/attachment/package.json` |
+| modified | `plugins/billing-assets/package.json` |
+| modified | `plugins/billing-resources/package.json` |
+| modified | `plugins/billing/package.json` |
+| modified | `plugins/bitrix-assets/package.json` |
+| modified | `plugins/bitrix-resources/package.json` |
+| modified | `plugins/bitrix/package.json` |
+| modified | `plugins/board-assets/package.json` |
+| modified | `plugins/board-resources/package.json` |
+| modified | `plugins/board/package.json` |
+| modified | `plugins/calendar-assets/package.json` |
+| modified | `plugins/calendar-resources/package.json` |
+| modified | `plugins/calendar/package.json` |
+| modified | `plugins/card-assets/package.json` |
+| modified | `plugins/card-resources/package.json` |
+| added | `plugins/card-resources/src/__tests__/cardTableFormatter.test.ts` |
+| added | `plugins/card-resources/src/__tests__/markupCellRoundTrip.test.ts` |
+| modified | `plugins/card-resources/src/cardTableFormatter.ts` |
+| modified | `plugins/card-resources/src/components/CardArrayEditor.svelte` |
+| modified | `plugins/card-resources/src/components/CardAttributeEditor.svelte` |
+| modified | `plugins/card-resources/src/components/CardVersionSelector.svelte` |
+| added | `plugins/card-resources/src/components/DuplicateCard.svelte` |
+| modified | `plugins/card-resources/src/components/EditCardNew.svelte` |
+| modified | `plugins/card-resources/src/components/MarkupProperties.svelte` |
+| modified | `plugins/card-resources/src/components/MasterTagAttributes.svelte` |
+| deleted | `plugins/card-resources/src/components/NewVersionPopup.svelte` |
+| modified | `plugins/card-resources/src/components/TagAttributes.svelte` |
+| added | `plugins/card-resources/src/components/settings/DuplicateSetting.svelte` |
+| modified | `plugins/card-resources/src/components/settings/GeneralSection.svelte` |
+| added | `plugins/card-resources/src/components/settings/VersioningSetting.svelte` |
+| modified | `plugins/card-resources/src/components/settings/view/ViewSetting.svelte` |
+| modified | `plugins/card-resources/src/index.ts` |
+| modified | `plugins/card-resources/src/plugin.ts` |
+| modified | `plugins/card-resources/src/utils.ts` |
+| modified | `plugins/card/package.json` |
+| modified | `plugins/card/src/index.ts` |
+| modified | `plugins/chat-assets/package.json` |
+| modified | `plugins/chat-resources/package.json` |
+| modified | `plugins/chat/package.json` |
+| modified | `plugins/chunter-assets/package.json` |
+| modified | `plugins/chunter-resources/package.json` |
+| modified | `plugins/chunter/package.json` |
+| modified | `plugins/client-resources/package.json` |
+| modified | `plugins/client/package.json` |
+| modified | `plugins/communication-assets/package.json` |
+| modified | `plugins/communication-resources/package.json` |
+| modified | `plugins/communication/package.json` |
+| modified | `plugins/contact-assets/package.json` |
+| modified | `plugins/contact-resources/package.json` |
+| modified | `plugins/contact/package.json` |
+| modified | `plugins/controlled-documents-assets/package.json` |
+| modified | `plugins/controlled-documents-resources/package.json` |
+| modified | `plugins/controlled-documents/package.json` |
+| modified | `plugins/converter-resources/package.json` |
+| modified | `plugins/converter/package.json` |
+| modified | `plugins/desktop-downloads-assets/package.json` |
+| modified | `plugins/desktop-downloads-resources/package.json` |
+| modified | `plugins/desktop-downloads/package.json` |
+| modified | `plugins/desktop-preferences-assets/package.json` |
+| modified | `plugins/desktop-preferences-resources/package.json` |
+| modified | `plugins/desktop-preferences/package.json` |
+| modified | `plugins/devmodel-resources/package.json` |
+| modified | `plugins/devmodel/package.json` |
+| modified | `plugins/diffview-assets/package.json` |
+| modified | `plugins/diffview-resources/package.json` |
+| modified | `plugins/diffview/package.json` |
+| modified | `plugins/document-assets/package.json` |
+| modified | `plugins/document-resources/package.json` |
+| modified | `plugins/document/package.json` |
+| modified | `plugins/drive-assets/package.json` |
+| modified | `plugins/drive-resources/package.json` |
+| modified | `plugins/drive/package.json` |
+| modified | `plugins/emoji-assets/package.json` |
+| modified | `plugins/emoji-resources/package.json` |
+| modified | `plugins/emoji/package.json` |
+| modified | `plugins/export-assets/package.json` |
+| modified | `plugins/export-resources/package.json` |
+| modified | `plugins/export/package.json` |
+| modified | `plugins/global-profile-assets/package.json` |
+| modified | `plugins/global-profile-resources/package.json` |
+| modified | `plugins/global-profile/package.json` |
+| modified | `plugins/gmail-assets/package.json` |
+| modified | `plugins/gmail-resources/package.json` |
+| modified | `plugins/gmail/package.json` |
+| modified | `plugins/guest-assets/package.json` |
+| modified | `plugins/guest-resources/package.json` |
+| modified | `plugins/guest/package.json` |
+| modified | `plugins/hr-assets/package.json` |
+| modified | `plugins/hr-resources/package.json` |
+| modified | `plugins/hr-resources/src/components/Schedule.svelte` |
+| modified | `plugins/hr-resources/src/components/ScheduleView.svelte` |
+| modified | `plugins/hr-resources/src/components/schedule/CreatePublicHoliday.svelte` |
+| modified | `plugins/hr-resources/src/components/schedule/MonthTableView.svelte` |
+| modified | `plugins/hr-resources/src/components/schedule/MonthView.svelte` |
+| modified | `plugins/hr-resources/src/components/schedule/YearView.svelte` |
+| modified | `plugins/hr-resources/src/utils.ts` |
+| modified | `plugins/hr/package.json` |
+| modified | `plugins/huly-mail-assets/package.json` |
+| modified | `plugins/huly-mail-resources/package.json` |
+| modified | `plugins/huly-mail/package.json` |
+| modified | `plugins/image-cropper-resources/package.json` |
+| modified | `plugins/image-cropper/package.json` |
+| modified | `plugins/inbox-assets/package.json` |
+| modified | `plugins/inbox-resources/package.json` |
+| modified | `plugins/inbox/package.json` |
+| modified | `plugins/inventory-assets/package.json` |
+| modified | `plugins/inventory-resources/package.json` |
+| modified | `plugins/inventory/package.json` |
+| modified | `plugins/lead-assets/package.json` |
+| modified | `plugins/lead-resources/package.json` |
+| modified | `plugins/lead/package.json` |
+| modified | `plugins/login-assets/lang/cs.json` |
+| modified | `plugins/login-assets/lang/de.json` |
+| modified | `plugins/login-assets/lang/en.json` |
+| modified | `plugins/login-assets/lang/es.json` |
+| modified | `plugins/login-assets/lang/fr.json` |
+| modified | `plugins/login-assets/lang/it.json` |
+| modified | `plugins/login-assets/lang/ja.json` |
+| modified | `plugins/login-assets/lang/pt-br.json` |
+| modified | `plugins/login-assets/lang/pt.json` |
+| modified | `plugins/login-assets/lang/ru.json` |
+| modified | `plugins/login-assets/lang/tr.json` |
+| modified | `plugins/login-assets/lang/zh.json` |
+| modified | `plugins/login-assets/package.json` |
+| modified | `plugins/login-resources/package.json` |
+| modified | `plugins/login-resources/src/components/CreateWorkspaceForm.svelte` |
+| modified | `plugins/login-resources/src/components/Form.svelte` |
+| modified | `plugins/login-resources/src/plugin.ts` |
+| modified | `plugins/login-resources/src/utils.ts` |
+| modified | `plugins/login/package.json` |
+| modified | `plugins/love-assets/package.json` |
+| modified | `plugins/love-resources/package.json` |
+| modified | `plugins/love/package.json` |
+| modified | `plugins/mail-assets/package.json` |
+| modified | `plugins/mail/package.json` |
+| modified | `plugins/media-assets/package.json` |
+| modified | `plugins/media-resources/package.json` |
+| modified | `plugins/media/package.json` |
+| modified | `plugins/notification-assets/package.json` |
+| modified | `plugins/notification-resources/package.json` |
+| added | `plugins/notification-resources/src/desktop.test.ts` |
+| added | `plugins/notification-resources/src/desktop.ts` |
+| modified | `plugins/notification-resources/src/utils.ts` |
+| modified | `plugins/notification/package.json` |
+| modified | `plugins/onboard-assets/package.json` |
+| modified | `plugins/onboard-resources/package.json` |
+| modified | `plugins/onboard/package.json` |
+| modified | `plugins/openai/package.json` |
+| modified | `plugins/preference-assets/package.json` |
+| modified | `plugins/preference/package.json` |
+| modified | `plugins/presence-resources/package.json` |
+| modified | `plugins/presence/package.json` |
+| modified | `plugins/print-assets/package.json` |
+| modified | `plugins/print-resources/package.json` |
+| modified | `plugins/print/package.json` |
+| modified | `plugins/process-assets/lang/cs.json` |
+| modified | `plugins/process-assets/lang/de.json` |
+| modified | `plugins/process-assets/lang/en.json` |
+| modified | `plugins/process-assets/lang/es.json` |
+| modified | `plugins/process-assets/lang/fr.json` |
+| modified | `plugins/process-assets/lang/it.json` |
+| modified | `plugins/process-assets/lang/ja.json` |
+| modified | `plugins/process-assets/lang/ko.json` |
+| modified | `plugins/process-assets/lang/pt-br.json` |
+| modified | `plugins/process-assets/lang/pt.json` |
+| modified | `plugins/process-assets/lang/ru.json` |
+| modified | `plugins/process-assets/lang/tr.json` |
+| modified | `plugins/process-assets/lang/zh.json` |
+| modified | `plugins/process-assets/package.json` |
+| modified | `plugins/process-resources/package.json` |
+| added | `plugins/process-resources/src/__tests__/detectSlotsRefined.test.ts` |
+| added | `plugins/process-resources/src/__tests__/integration.test.ts` |
+| added | `plugins/process-resources/src/__tests__/minmodel.ts` |
+| modified | `plugins/process-resources/src/components/ProcessesSection.svelte` |
+| added | `plugins/process-resources/src/components/settings/BindingsEditor.svelte` |
+| added | `plugins/process-resources/src/components/settings/ImportSlotsPopup.svelte` |
+| modified | `plugins/process-resources/src/components/settings/ProcessAttributeEditor.svelte` |
+| modified | `plugins/process-resources/src/components/settings/ProcessEditor.svelte` |
+| modified | `plugins/process-resources/src/components/settings/TagSelector.svelte` |
+| modified | `plugins/process-resources/src/components/settings/UpdateCardEditor.svelte` |
+| modified | `plugins/process-resources/src/exporter.ts` |
+| modified | `plugins/process-resources/src/plugin.ts` |
+| modified | `plugins/process-resources/src/utils.ts` |
+| modified | `plugins/process/package.json` |
+| modified | `plugins/process/src/index.ts` |
+| modified | `plugins/products-assets/package.json` |
+| modified | `plugins/products-resources/package.json` |
+| modified | `plugins/products-resources/src/index.ts` |
+| modified | `plugins/products-resources/src/utils.ts` |
+| modified | `plugins/products/package.json` |
+| modified | `plugins/questions-assets/lang/cs.json` |
+| modified | `plugins/questions-assets/lang/de.json` |
+| modified | `plugins/questions-assets/lang/en.json` |
+| modified | `plugins/questions-assets/lang/es.json` |
+| modified | `plugins/questions-assets/lang/fr.json` |
+| modified | `plugins/questions-assets/lang/it.json` |
+| modified | `plugins/questions-assets/lang/ja.json` |
+| modified | `plugins/questions-assets/lang/pt-br.json` |
+| modified | `plugins/questions-assets/lang/pt.json` |
+| modified | `plugins/questions-assets/lang/ru.json` |
+| modified | `plugins/questions-assets/lang/tr.json` |
+| modified | `plugins/questions-assets/lang/zh.json` |
+| modified | `plugins/questions-assets/package.json` |
+| modified | `plugins/questions-resources/package.json` |
+| modified | `plugins/questions/package.json` |
+| modified | `plugins/questions/src/index.ts` |
+| modified | `plugins/rating-assets/package.json` |
+| modified | `plugins/rating-resources/package.json` |
+| modified | `plugins/rating/package.json` |
+| modified | `plugins/recorder-assets/package.json` |
+| modified | `plugins/recorder-resources/package.json` |
+| modified | `plugins/recorder/package.json` |
+| modified | `plugins/recruit-assets/package.json` |
+| modified | `plugins/recruit-resources/package.json` |
+| modified | `plugins/recruit/package.json` |
+| modified | `plugins/request-assets/package.json` |
+| modified | `plugins/request-resources/package.json` |
+| modified | `plugins/request/package.json` |
+| modified | `plugins/setting-assets/lang/cs.json` |
+| modified | `plugins/setting-assets/lang/de.json` |
+| modified | `plugins/setting-assets/lang/en.json` |
+| modified | `plugins/setting-assets/lang/es.json` |
+| modified | `plugins/setting-assets/lang/fr.json` |
+| modified | `plugins/setting-assets/lang/it.json` |
+| modified | `plugins/setting-assets/lang/ja.json` |
+| modified | `plugins/setting-assets/lang/ko.json` |
+| modified | `plugins/setting-assets/lang/pt-br.json` |
+| modified | `plugins/setting-assets/lang/pt.json` |
+| modified | `plugins/setting-assets/lang/ru.json` |
+| modified | `plugins/setting-assets/lang/tr.json` |
+| modified | `plugins/setting-assets/lang/zh.json` |
+| modified | `plugins/setting-assets/package.json` |
+| modified | `plugins/setting-resources/package.json` |
+| modified | `plugins/setting-resources/src/components/ClassAttributesList.svelte` |
+| modified | `plugins/setting-resources/src/components/Configure.svelte` |
+| modified | `plugins/setting-resources/src/components/General.svelte` |
+| modified | `plugins/setting-resources/src/plugin.ts` |
+| modified | `plugins/setting/package.json` |
+| modified | `plugins/sign/package.json` |
+| modified | `plugins/support-assets/package.json` |
+| modified | `plugins/support-resources/package.json` |
+| modified | `plugins/support/package.json` |
+| modified | `plugins/survey-assets/package.json` |
+| modified | `plugins/survey-resources/package.json` |
+| modified | `plugins/survey/package.json` |
+| modified | `plugins/tags-assets/package.json` |
+| modified | `plugins/tags-resources/package.json` |
+| modified | `plugins/tags/package.json` |
+| modified | `plugins/task-assets/package.json` |
+| modified | `plugins/task-resources/package.json` |
+| modified | `plugins/task/package.json` |
+| modified | `plugins/telegram-assets/package.json` |
+| modified | `plugins/telegram-resources/package.json` |
+| modified | `plugins/telegram/package.json` |
+| modified | `plugins/templates-assets/package.json` |
+| modified | `plugins/templates-resources/package.json` |
+| modified | `plugins/templates/package.json` |
+| modified | `plugins/test-management-assets/package.json` |
+| modified | `plugins/test-management-resources/package.json` |
+| modified | `plugins/test-management/package.json` |
+| modified | `plugins/text-editor-assets/package.json` |
+| modified | `plugins/text-editor-resources/package.json` |
+| modified | `plugins/text-editor/package.json` |
+| modified | `plugins/time-assets/package.json` |
+| modified | `plugins/time-resources/package.json` |
+| modified | `plugins/time/package.json` |
+| modified | `plugins/tracker-assets/package.json` |
+| modified | `plugins/tracker-resources/package.json` |
+| modified | `plugins/tracker/package.json` |
+| modified | `plugins/training-assets/package.json` |
+| modified | `plugins/training-resources/package.json` |
+| modified | `plugins/training/package.json` |
+| modified | `plugins/uploader-assets/package.json` |
+| modified | `plugins/uploader-resources/package.json` |
+| modified | `plugins/uploader/package.json` |
+| modified | `plugins/view-assets/package.json` |
+| modified | `plugins/view-resources/package.json` |
+| modified | `plugins/view-resources/src/components/DocTable.svelte` |
+| modified | `plugins/view-resources/src/components/EnumPresenter.svelte` |
+| modified | `plugins/view-resources/src/components/MarkupEditor.svelte` |
+| modified | `plugins/view-resources/src/components/MarkupEditorPopup.svelte` |
+| modified | `plugins/view-resources/src/components/Table.svelte` |
+| modified | `plugins/view-resources/src/components/ViewletSetting.svelte` |
+| modified | `plugins/view-resources/src/utils.ts` |
+| modified | `plugins/view/package.json` |
+| modified | `plugins/workbench-assets/package.json` |
+| modified | `plugins/workbench-resources/package.json` |
+| modified | `plugins/workbench/package.json` |
+| modified | `pods/account/package.json` |
+| modified | `pods/authProviders/package.json` |
+| modified | `pods/backup/package.json` |
+| modified | `pods/collaborator/package.json` |
+| modified | `pods/external/package.json` |
+| modified | `pods/front/package.json` |
+| modified | `pods/fulltext/package.json` |
+| modified | `pods/link-preview/package.json` |
+| modified | `pods/media/package.json` |
+| modified | `pods/preview/package.json` |
+| modified | `pods/server/package.json` |
+| modified | `pods/stats/package.json` |
+| modified | `pods/workspace/package.json` |
+| modified | `server-plugins/activity-resources/package.json` |
+| modified | `server-plugins/activity/package.json` |
+| modified | `server-plugins/ai-bot-resources/package.json` |
+| modified | `server-plugins/ai-bot/package.json` |
+| modified | `server-plugins/analytics-collector-resources/package.json` |
+| modified | `server-plugins/analytics-collector/package.json` |
+| modified | `server-plugins/attachment-resources/package.json` |
+| modified | `server-plugins/attachment/package.json` |
+| modified | `server-plugins/calendar-resources/package.json` |
+| modified | `server-plugins/calendar/package.json` |
+| modified | `server-plugins/card-resources/package.json` |
+| modified | `server-plugins/card/package.json` |
+| modified | `server-plugins/chunter-resources/package.json` |
+| modified | `server-plugins/chunter/package.json` |
+| modified | `server-plugins/collaboration-resources/package.json` |
+| modified | `server-plugins/collaboration/package.json` |
+| modified | `server-plugins/contact-resources/package.json` |
+| modified | `server-plugins/contact/package.json` |
+| modified | `server-plugins/controlled-documents-resources/package.json` |
+| modified | `server-plugins/controlled-documents/package.json` |
+| modified | `server-plugins/document-resources/package.json` |
+| modified | `server-plugins/document/package.json` |
+| modified | `server-plugins/drive-resources/package.json` |
+| modified | `server-plugins/drive/package.json` |
+| modified | `server-plugins/gmail-resources/package.json` |
+| modified | `server-plugins/gmail/package.json` |
+| modified | `server-plugins/guest-resources/package.json` |
+| modified | `server-plugins/guest/package.json` |
+| modified | `server-plugins/hr-resources/package.json` |
+| modified | `server-plugins/hr/package.json` |
+| modified | `server-plugins/inventory-resources/package.json` |
+| modified | `server-plugins/inventory/package.json` |
+| modified | `server-plugins/lead-resources/package.json` |
+| modified | `server-plugins/lead/package.json` |
+| modified | `server-plugins/love-resources/package.json` |
+| modified | `server-plugins/love/package.json` |
+| modified | `server-plugins/notification-resources/package.json` |
+| modified | `server-plugins/notification/package.json` |
+| modified | `server-plugins/preference/package.json` |
+| modified | `server-plugins/process-resources/package.json` |
+| modified | `server-plugins/process-resources/src/functions.ts` |
+| modified | `server-plugins/process-resources/src/index.ts` |
+| modified | `server-plugins/process-resources/src/transform.ts` |
+| modified | `server-plugins/process-resources/src/utils.ts` |
+| modified | `server-plugins/process/package.json` |
+| modified | `server-plugins/process/src/index.ts` |
+| modified | `server-plugins/rating/package.json` |
+| modified | `server-plugins/recruit-resources/package.json` |
+| modified | `server-plugins/recruit/package.json` |
+| modified | `server-plugins/request-resources/package.json` |
+| modified | `server-plugins/request/package.json` |
+| modified | `server-plugins/setting-resources/package.json` |
+| modified | `server-plugins/setting/package.json` |
+| modified | `server-plugins/tags-resources/package.json` |
+| modified | `server-plugins/tags/package.json` |
+| modified | `server-plugins/task-resources/package.json` |
+| modified | `server-plugins/task/package.json` |
+| modified | `server-plugins/telegram-resources/package.json` |
+| modified | `server-plugins/telegram/package.json` |
+| modified | `server-plugins/templates/package.json` |
+| modified | `server-plugins/time-resources/package.json` |
+| modified | `server-plugins/time/package.json` |
+| modified | `server-plugins/tracker-resources/package.json` |
+| modified | `server-plugins/tracker/package.json` |
+| modified | `server-plugins/training-resources/package.json` |
+| modified | `server-plugins/training/package.json` |
+| modified | `server-plugins/view-resources/package.json` |
+| modified | `server-plugins/view/package.json` |
+| modified | `server/account-service/package.json` |
+| modified | `server/account/package.json` |
+| modified | `server/account/src/__tests__/operations.test.ts` |
+| modified | `server/account/src/__tests__/postgres.test.ts` |
+| modified | `server/account/src/collections/mongo.ts` |
+| modified | `server/account/src/collections/postgres/migrations.ts` |
+| modified | `server/account/src/collections/postgres/postgres.ts` |
+| modified | `server/account/src/operations.ts` |
+| modified | `server/account/src/serviceOperations.ts` |
+| modified | `server/account/src/types.ts` |
+| modified | `server/account/src/utils.ts` |
+| modified | `server/backup-service/package.json` |
+| modified | `server/collaborator/package.json` |
+| modified | `server/front/package.json` |
+| modified | `server/indexer/package.json` |
+| modified | `server/server-pipeline/package.json` |
+| modified | `server/tool/package.json` |
+| modified | `server/workspace-service/package.json` |
+| added | `server/workspace-service/src/__tests__/configuration.test.ts` |
+| added | `server/workspace-service/src/configuration.ts` |
+| modified | `server/workspace-service/src/ws-operations.ts` |
+| modified | `services/ai-bot/pod-ai-bot/package.json` |
+| modified | `services/analytics-collector/pod-analytics-collector/package.json` |
+| modified | `services/backup/backup-api-pod/package.json` |
+| modified | `services/billing/pod-billing/package.json` |
+| modified | `services/calendar/pod-calendar-mailer/package.json` |
+| modified | `services/calendar/pod-calendar/package.json` |
+| modified | `services/datalake/pod-datalake/package.json` |
+| modified | `services/github/github-assets/package.json` |
+| modified | `services/github/github-resources/package.json` |
+| modified | `services/github/github/package.json` |
+| modified | `services/github/model-github/package.json` |
+| modified | `services/github/pod-github/package.json` |
+| modified | `services/github/pod-github/src/worker.ts` |
+| modified | `services/github/server-github-model/package.json` |
+| modified | `services/github/server-github-resources/package.json` |
+| modified | `services/github/server-github/package.json` |
+| modified | `services/gmail/pod-gmail/package.json` |
+| modified | `services/love/package.json` |
+| modified | `services/mail/mail-common/package.json` |
+| modified | `services/mail/pod-mail-worker/package.json` |
+| modified | `services/mail/pod-mail/package.json` |
+| modified | `services/notification/pod-notification/package.json` |
+| modified | `services/payment/pod-payment/package.json` |
+| modified | `services/print/pod-print/package.json` |
+| modified | `services/process/package.json` |
+| modified | `services/rating/package.json` |
+| modified | `services/rekoni/package.json` |
+| modified | `services/sign/pod-sign/package.json` |
+| modified | `services/telegram-bot/pod-telegram-bot/package.json` |
+| modified | `services/telegram/pod-telegram/package.json` |
+| modified | `services/translate/package.json` |
+| modified | `services/worker/package.json` |
+| modified | `templates/assets/package.json` |
+| modified | `templates/package/package.json` |
+| modified | `templates/ui/package.json` |
+
+### Unapproved Core Differences
+
+_None._
+<!-- END GENERATED: praut-customization-inventory -->

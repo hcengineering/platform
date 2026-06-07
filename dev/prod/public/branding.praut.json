@@ -1,0 +1,58 @@
+{
+  "praut.cz": {
+    "title": "PRAUT",
+    "languages": "cs,en",
+    "defaultLanguage": "cs",
+    "defaultApplication": "tracker",
+    "defaultSpecial": "issues",
+    "lastNameFirst": "false",
+    "links": [
+      {
+        "rel": "manifest",
+        "href": "/praut/site.webmanifest"
+      },
+      {
+        "rel": "icon",
+        "href": "/praut/favicon.svg",
+        "type": "image/svg+xml"
+      },
+      {
+        "rel": "shortcut icon",
+        "href": "/praut/favicon.ico",
+        "sizes": "any"
+      },
+      {
+        "rel": "apple-touch-icon",
+        "href": "/praut/apple-touch-icon.png"
+      }
+    ]
+  },
+  "www.praut.cz": {
+    "title": "PRAUT",
+    "languages": "cs,en",
+    "defaultLanguage": "cs",
+    "defaultApplication": "tracker",
+    "defaultSpecial": "issues",
+    "lastNameFirst": "false",
+    "links": [
+      {
+        "rel": "manifest",
+        "href": "/praut/site.webmanifest"
+      },
+      {
+        "rel": "icon",
+        "href": "/praut/favicon.svg",
+        "type": "image/svg+xml"
+      },
+      {
+        "rel": "shortcut icon",
+        "href": "/praut/favicon.ico",
+        "sizes": "any"
+      },
+      {
+        "rel": "apple-touch-icon",
+        "href": "/praut/apple-touch-icon.png"
+      }
+    ]
+  }
+}

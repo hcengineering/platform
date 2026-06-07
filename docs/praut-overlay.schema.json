@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Praut Overlay Manifest",
+  "type": "object",
+  "required": ["version", "upstream", "praut", "paths", "branding", "transforms", "validation", "smoke"],
+  "properties": {
+    "version": { "type": "integer" },
+    "upstream": {
+      "type": "object",
+      "required": ["url", "defaultRef", "remoteName"]
+    },
+    "praut": {
+      "type": "object",
+      "required": ["baseBranch", "updateBranchPrefix", "originRemote"]
+    },
+    "paths": {
+      "type": "object",
+      "required": ["green", "yellow", "red", "exceptions"]
+    },
+    "branding": {
+      "type": "object",
+      "required": ["title", "localHosts", "productionHosts", "defaultLanguage", "languages"]
+    },
+    "transforms": { "type": "array" },
+    "validation": { "type": "object" },
+    "smoke": { "type": "object" }
+  }
+}

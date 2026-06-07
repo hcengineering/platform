@@ -1,0 +1,65 @@
+name: Praut Upstream Update
+
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_ref:
+        description: 'Huly upstream ref to merge'
+        required: false
+        default: 'main'
+      create_pr:
+        description: 'Push update branch and create PR'
+        required: false
+        default: true
+        type: boolean
+      skip_validation:
+        description: 'Skip build/validate gate'
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: '17 3 * * 1'
+
+concurrency:
+  group: praut-upstream-update-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: develop
+          fetch-depth: 0
+          filter: tree:0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Configure Git author
+        run: |
+          git config user.name "praut-upstream-bot"
+          git config user.email "praut-upstream-bot@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Apply Huly update to Praut branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ARGS=(--upstream-ref "${{ github.event.inputs.upstream_ref || 'main' }}")
+          if [[ "${{ github.event.inputs.skip_validation || 'false' }}" == "true" ]]; then
+            ARGS+=(--skip-validation)
+          fi
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.create_pr || 'true' }}" == "true" ]]; then
+            ARGS+=(--create-pr)
+          fi
+          node scripts/praut-upstream-update.mjs "${ARGS[@]}"

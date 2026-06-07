@@ -1,0 +1,133 @@
+{
+  "$schema": "./docs/praut-overlay.schema.json",
+  "version": 1,
+  "upstream": {
+    "name": "huly-platform",
+    "url": "https://github.com/hcengineering/platform",
+    "defaultRef": "main",
+    "remoteName": "upstream"
+  },
+  "praut": {
+    "baseBranch": "develop",
+    "updateBranchPrefix": "praut/update-huly",
+    "originRemote": "origin"
+  },
+  "paths": {
+    "green": [
+      "^plugins/praut-[^/]+(?:/|$)",
+      "^server-plugins/praut-[^/]+(?:/|$)",
+      "^models/praut-[^/]+(?:/|$)",
+      "^packages/praut-[^/]+(?:/|$)",
+      "^services/praut-[^/]+(?:/|$)",
+      "^docs/praut-[^/]+(?:/|$)",
+      "^scripts/praut-[^/]+$",
+      "^dev/docker-compose\\.praut.*\\.ya?ml$",
+      "^dev/branding.*\\.json$",
+      "^dev/prod/public/branding.*\\.json$",
+      "^desktop-package/src/.*Praut.*$",
+      "^qms-desktop-package/src/.*Praut.*$"
+    ],
+    "yellow": [
+      "^desktop(?:/|$)",
+      "^desktop-package(?:/|$)",
+      "^qms-desktop-package(?:/|$)",
+      "^\\.github/workflows(?:/|$)",
+      "^tests(?:/|$)",
+      "^ws-tests(?:/|$)",
+      "^qms-tests(?:/|$)",
+      "^dev/tool(?:/|$)",
+      "^services/export(?:/|$)",
+      "^server/backup(?:/|$)"
+    ],
+    "red": [
+      "^foundations(?:/|$)",
+      "^packages(?:/|$)",
+      "^models(?:/|$)",
+      "^plugins(?:/|$)",
+      "^server-plugins(?:/|$)",
+      "^server(?:/|$)",
+      "^services(?:/|$)",
+      "^pods(?:/|$)",
+      "^common/config/rush(?:/|$)",
+      "^rush\\.json$"
+    ],
+    "exceptions": [
+      {
+        "path": "docs/praut-fork-governance.md",
+        "owner": "upstream-sync-agent",
+        "reason": "Governance document maintained by Praut; generated markers must be preserved."
+      },
+      {
+        "path": "scripts/praut-governance.mjs",
+        "owner": "upstream-sync-agent",
+        "reason": "Governance automation for this fork."
+      },
+      {
+        "path": "praut.overlay.json",
+        "owner": "upstream-sync-agent",
+        "reason": "Praut overlay manifest and update source of truth."
+      },
+      {
+        "path": "praut-core-baseline.json",
+        "owner": "upstream-sync-agent",
+        "reason": "Approved historical core drift baseline with exact hash matching."
+      },
+      {
+        "path": ".gitignore",
+        "owner": "upstream-sync-agent",
+        "reason": "Allows local governance cache path without hiding source files."
+      }
+    ]
+  },
+  "branding": {
+    "status": "placeholder",
+    "title": "PRAUT",
+    "localHosts": ["praut.local:8087", "localhost:8087"],
+    "productionHosts": ["praut.cz", "www.praut.cz"],
+    "defaultLanguage": "cs",
+    "languages": "cs,en",
+    "defaultApplication": "tracker",
+    "defaultSpecial": "issues",
+    "assetBasePath": "/praut",
+    "todos": [
+      "Doplnit finalni logo, favicon, app icons a desktop update URL.",
+      "Doplnit finalni primary/secondary barvy a legal/footer texty.",
+      "Potvrdit produkcni domeny, TLS a desktop signing identity."
+    ]
+  },
+  "transforms": [
+    {
+      "name": "praut-branding-files",
+      "owner": "frontend-branding-agent",
+      "kind": "branding-json",
+      "targets": ["dev/branding.praut.json", "dev/prod/public/branding.praut.json"]
+    },
+    {
+      "name": "governance-generated-sections",
+      "owner": "upstream-sync-agent",
+      "kind": "governance-update",
+      "targets": ["docs/praut-fork-governance.md"]
+    }
+  ],
+  "validation": {
+    "changed": "scripts/verify-changed.sh",
+    "build": "node common/scripts/install-run-rush.js build",
+    "validate": "node common/scripts/install-run-rush.js validate",
+    "smoke": "node scripts/praut-smoke.mjs"
+  },
+  "smoke": {
+    "requiredFiles": [
+      "praut.overlay.json",
+      "docs/praut-fork-governance.md",
+      "praut-core-baseline.json",
+      "scripts/praut-governance.mjs",
+      "scripts/praut-apply-overlay.mjs",
+      "scripts/praut-upstream-update.mjs",
+      "scripts/praut-smoke.mjs"
+    ],
+    "generatedMarkers": [
+      "upstream-protected-inventory",
+      "praut-customization-inventory"
+    ]
+  }
+}
