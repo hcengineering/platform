@@ -63,6 +63,11 @@
         "reason": "Praut product source of truth for MVP scope, module decisions, roles, AI boundaries, and implementation order."
       },
       {
+        "path": "docs/praut-mvp-implementation-plan.md",
+        "owner": "praut-product-agent",
+        "reason": "Praut MVP implementation plan that converts the product manifest into agent-ready engineering phases."
+      },
+      {
         "path": "scripts/praut-governance.mjs",
         "owner": "upstream-sync-agent",
         "reason": "Governance automation for this fork."
