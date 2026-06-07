@@ -14,6 +14,8 @@ function usage () {
                                       [--skip-validation] [--manifest <path>]
 
 Creates a Praut update branch for a Huly upstream ref. The script never merges to develop.
+The update branch is intentionally squashed into one DCO-signed commit so upstream commits with
+foreign or missing sign-offs do not block the Praut PR.
 `)
 }
 
@@ -113,10 +115,14 @@ function writeReport (report) {
   const reportPath = path.join(repoRoot, '.cache', 'praut-update-report.md')
   mkdirSync(path.dirname(reportPath), { recursive: true })
   writeFileSync(reportPath, report)
+  const stepSummary = process.env.GITHUB_STEP_SUMMARY
+  if (stepSummary != null && stepSummary !== '') {
+    writeFileSync(stepSummary, `${report}\n`, { flag: 'a' })
+  }
   console.log(`Report: ${normalizePath(path.relative(repoRoot, reportPath))}`)
 }
 
-function buildReport ({ manifest, upstreamRef, branchName, upstreamSha, validation }) {
+function buildReport ({ manifest, upstreamRef, branchName, upstreamSha, updateCommit, validation }) {
   return `# Praut Upstream Update Report
 
 - Upstream: \`${manifest.upstream.url}\`
@@ -124,6 +130,7 @@ function buildReport ({ manifest, upstreamRef, branchName, upstreamSha, validati
 - Upstream SHA: \`${upstreamSha}\`
 - Praut base branch: \`${manifest.praut.baseBranch}\`
 - Update branch: \`${branchName}\`
+- Update commit: \`${updateCommit ?? 'not created'}\`
 - Auto-merge to production: \`no\`
 
 ## Required Review
@@ -168,7 +175,7 @@ function createPullRequest (manifest, branchName, report) {
   const title = `Update Huly upstream for Praut: ${branchName.split('/').pop()}`
   const bodyPath = path.join(repoRoot, '.cache', 'praut-update-pr-body.md')
   writeFileSync(bodyPath, report)
-  run('gh', [
+  const args = [
     'pr',
     'create',
     '--base',
@@ -179,7 +186,33 @@ function createPullRequest (manifest, branchName, report) {
     title,
     '--body-file',
     bodyPath
+  ]
+  const repo = process.env.GITHUB_REPOSITORY
+  if (repo != null && repo !== '') args.splice(2, 0, '--repo', repo)
+  run('gh', args)
+}
+
+function hasStagedChanges () {
+  const res = spawnSync('git', ['diff', '--cached', '--quiet'], { cwd: repoRoot, encoding: 'utf8' })
+  if (res.status === 0) return false
+  if (res.status === 1) return true
+  throw new Error('git diff --cached --quiet failed')
+}
+
+function createSignedUpdateCommit (manifest, upstreamRef, upstreamSha) {
+  git(['add', '-A'])
+  if (!hasStagedChanges()) return null
+  git([
+    'commit',
+    '--signoff',
+    '-m',
+    `Update Huly upstream for Praut: ${upstreamRef}`,
+    '-m',
+    `Upstream: ${manifest.upstream.url}`,
+    '-m',
+    `Upstream-SHA: ${upstreamSha}`
   ])
+  return gitOutput(['rev-parse', 'HEAD'])
 }
 
 function main () {
@@ -206,22 +239,31 @@ function main () {
     git(['fetch', manifest.praut.originRemote, manifest.praut.baseBranch])
     git(['fetch', manifest.upstream.remoteName, upstreamRef])
     const upstreamSha = gitOutput(['rev-parse', `${manifest.upstream.remoteName}/${upstreamRef}`])
-    git(['checkout', '-B', branchName, `${manifest.praut.originRemote}/${manifest.praut.baseBranch}`])
-    git(['merge', '--no-edit', '--no-ff', upstreamSha])
+    const baseRef = `${manifest.praut.originRemote}/${manifest.praut.baseBranch}`
+    git(['checkout', '-B', branchName, baseRef])
+    git(['merge', '--squash', upstreamSha])
     nodeScript('scripts/praut-apply-overlay.mjs')
     nodeScript('scripts/praut-governance.mjs', ['update-doc', '--ref', upstreamRef])
+    const updateCommit = createSignedUpdateCommit(manifest, upstreamRef, upstreamSha)
+
+    if (updateCommit == null) {
+      console.log(`No changes to commit after applying ${manifest.upstream.remoteName}/${upstreamRef}.`)
+      const report = buildReport({ manifest, upstreamRef, branchName, upstreamSha, updateCommit, validation })
+      writeReport(report)
+      return
+    }
 
     if (!opts.skipValidation) {
       validation = runValidation(manifest, upstreamRef)
     }
 
-    const report = buildReport({ manifest, upstreamRef, branchName, upstreamSha, validation })
+    const report = buildReport({ manifest, upstreamRef, branchName, upstreamSha, updateCommit, validation })
     writeReport(report)
 
     const failedValidation = validation.filter((item) => !item.ok)
 
     if (opts.push || opts.createPr) {
-      git(['push', '-u', manifest.praut.originRemote, branchName])
+      git(['push', '--force-with-lease', '-u', manifest.praut.originRemote, branchName])
     }
     if (opts.createPr) createPullRequest(manifest, branchName, report)
     if (failedValidation.length > 0) {

@@ -45,8 +45,8 @@ jobs:
 
       - name: Configure Git author
         run: |
-          git config user.name "praut-upstream-bot"
-          git config user.email "praut-upstream-bot@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Install dependencies
         run: node common/scripts/install-run-rush.js install
@@ -59,7 +59,15 @@ jobs:
           if [[ "${{ github.event.inputs.skip_validation || 'false' }}" == "true" ]]; then
             ARGS+=(--skip-validation)
           fi
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.create_pr || 'true' }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.create_pr || 'true' }}" == "true" ]]; then
             ARGS+=(--create-pr)
           fi
           node scripts/praut-upstream-update.mjs "${ARGS[@]}"
+
+      - name: Upload update report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: praut-upstream-update-report
+          path: .cache/praut-update-report.md
+          if-no-files-found: ignore
