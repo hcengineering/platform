@@ -143,6 +143,7 @@
   "productionUpdate": {
     "owner": "upstream-sync-agent",
     "description": "Production-safe Huly update pipeline. It creates an update branch, reapplies PRAUT overlay, runs gates, writes reports, and blocks PR creation when unauthorized red/core drift is detected.",
+    "test": "node --test scripts/praut-production-update.test.mjs",
     "reports": {
       "markdown": ".cache/praut-production-update-report.md",
       "json": ".cache/praut-production-update-report.json"
@@ -199,6 +200,7 @@
       "scripts/praut-apply-overlay.mjs",
       "scripts/praut-upstream-update.mjs",
       "scripts/praut-production-update.mjs",
+      "scripts/praut-production-update.test.mjs",
       "scripts/praut-smoke.mjs"
     ],
     "generatedMarkers": [

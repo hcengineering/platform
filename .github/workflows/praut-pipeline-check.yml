@@ -1,0 +1,38 @@
+name: Praut Pipeline Check
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/praut-*.yml'
+      - 'docs/praut-overlay.schema.json'
+      - 'praut.overlay.json'
+      - 'scripts/praut-*.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Check script syntax
+        run: |
+          node --check scripts/praut-production-update.mjs
+          node --check scripts/praut-production-update.test.mjs
+          node --check scripts/praut-governance.mjs
+
+      - name: Validate manifest and smoke
+        run: |
+          node scripts/praut-governance.mjs check-manifest
+          node scripts/praut-smoke.mjs
+
+      - name: Run production update unit tests
+        run: node --test scripts/praut-production-update.test.mjs
