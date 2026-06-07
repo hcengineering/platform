@@ -11,7 +11,7 @@ const defaultManifestPath = path.join(repoRoot, 'praut.overlay.json')
 function usage () {
   console.log(`Usage:
   node scripts/praut-production-update.mjs [--upstream-ref <ref>] [--push] [--create-pr]
-                                           [--skip-expensive-validation] [--allow-core]
+                                           [--dry-run] [--skip-expensive-validation] [--allow-core]
                                            [--manifest <path>]
 
 Runs the production-safe Praut update pipeline:
@@ -19,12 +19,16 @@ Runs the production-safe Praut update pipeline:
   2. re-check overlay/governance/test gates
   3. write markdown and JSON reports
   4. push/create PR only when production gates pass
+
+Use --dry-run to test gates and report generation without creating an update branch,
+switching branches, pushing, or creating a PR.
 `)
 }
 
 function parseArgs (argv) {
   const opts = {
     upstreamRef: undefined,
+    dryRun: false,
     push: false,
     createPr: false,
     allowCore: false,
@@ -36,6 +40,7 @@ function parseArgs (argv) {
     const arg = argv[i]
     if (arg === '--upstream-ref' || arg === '--ref') opts.upstreamRef = requiredValue(argv, ++i, arg)
     else if (arg === '--manifest') opts.manifestPath = path.resolve(repoRoot, requiredValue(argv, ++i, arg))
+    else if (arg === '--dry-run') opts.dryRun = true
     else if (arg === '--push') opts.push = true
     else if (arg === '--create-pr') opts.createPr = true
     else if (arg === '--allow-core') opts.allowCore = true
@@ -78,6 +83,23 @@ function run (cmd, args, options = {}) {
     ok: res.status === 0,
     status: res.status,
     output
+  }
+}
+
+function createDryRunUpdate (manifest, upstreamRef) {
+  const branch = currentBranch()
+  const commit = currentCommit()
+  return {
+    ok: true,
+    output: `Dry-run only. Did not fetch, merge, switch branches, commit, push, or create a PR for ${upstreamRef}.`,
+    branch,
+    commit,
+    beforeBranch: branch,
+    beforeCommit: commit,
+    noChanges: true,
+    changed: false,
+    dryRun: true,
+    baseBranch: manifest.praut.baseBranch
   }
 }
 
@@ -308,7 +330,7 @@ function main () {
     const upstreamRef = opts.upstreamRef ?? manifest.upstream.defaultRef
 
     mustRun(process.execPath, ['scripts/praut-governance.mjs', 'check-manifest'])
-    const update = createUpdateBranch(manifest, opts.manifestPath, upstreamRef)
+    const update = opts.dryRun ? createDryRunUpdate(manifest, upstreamRef) : createUpdateBranch(manifest, opts.manifestPath, upstreamRef)
     if (!update.ok) throw new Error(`Update branch creation failed: ${update.output.trim()}`)
 
     const gates = runGates(manifest, opts, { upstreamRef })
@@ -319,6 +341,7 @@ function main () {
       options: {
         push: opts.push,
         createPr: opts.createPr,
+        dryRun: opts.dryRun,
         allowCore: opts.allowCore,
         skipExpensiveValidation: opts.skipExpensiveValidation
       },
@@ -333,10 +356,10 @@ function main () {
       return
     }
 
-    if ((opts.push || opts.createPr) && !update.noChanges) {
+    if (!opts.dryRun && (opts.push || opts.createPr) && !update.noChanges) {
       pushBranch(manifest, update.branch)
     }
-    if (opts.createPr && !update.noChanges) {
+    if (!opts.dryRun && opts.createPr && !update.noChanges) {
       createPullRequest(manifest, report)
     }
   } catch (err) {
@@ -345,4 +368,16 @@ function main () {
   }
 }
 
-main()
+export {
+  buildMarkdownReport,
+  createDryRunUpdate,
+  evaluateGates,
+  parseArgs,
+  parseGovernanceOutput,
+  renderCommand,
+  shouldSkipGate
+}
+
+if (process.argv[1] != null && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main()
+}
