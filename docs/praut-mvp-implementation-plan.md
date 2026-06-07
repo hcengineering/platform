@@ -108,6 +108,158 @@ Pravidla:
 - PRAUT model ma pridavat jen chybejici obchodni stav, schvalovani a vazby,
 - model nesmi prepisovat semantiku existujicich Huly trid.
 
+### PrautOpportunity model spec
+
+`PrautOpportunity` je obchodni mezikrok mezi Huly leadem a projektovou realizaci. Neprepisuje `lead:class:Lead`; jen zachycuje PRAUT obchodni stav, schvalovani a pripravu predani.
+
+#### Statusy opportunity
+
+| Status | Vyznam | Kdo smi posunout |
+| --- | --- | --- |
+| `new` | prilezitost vznikla z leadu, jeste neni kvalifikovana | obchodnik |
+| `qualified` | obchodnik potvrzuje, ze stoji za dalsi praci | obchodnik |
+| `proposalDraft` | system nebo clovek pripravuje navrh odpovedi/nabidky | obchodnik |
+| `proposalReview` | nabidka nebo odpoved ceka na lidske schvaleni | schvalovatel |
+| `proposalSent` | nabidka byla schvalena a odeslana mimo automaticke odeslani | obchodnik |
+| `won` | klient prijal nabidku | obchodnik / vedeni |
+| `lost` | prilezitost skoncila bez zakazky | obchodnik |
+| `handoffReady` | prilezitost je pripravena k predani do projektu | projektovy manager |
+| `handoffDone` | projekt/ukoly byly vytvoreny nebo propojeny | projektovy manager |
+
+Zakazane automaticke prechody:
+
+- do `proposalSent`,
+- do `won`,
+- do `lost` u strategickeho klienta,
+- do `handoffDone`, pokud chybi odpovedna osoba nebo rozsah prace.
+
+#### Pole opportunity
+
+| Pole | Typ | Povinne | Source of truth | Poznamka |
+| --- | --- | --- | --- | --- |
+| `title` | string | ano | PRAUT | kratky obchodni nazev |
+| `sourceLead` | `Ref<lead.class.Lead>` | doporucene | Huly Lead | prazdne jen u rucne zalozene prilezitosti |
+| `organization` | `Ref<contact.class.Organization>` | doporucene | Contact | firma zakaznika |
+| `primaryContact` | `Ref<contact.class.Person>` | doporucene | Contact | hlavni kontakt |
+| `status` | enum/string nebo `Ref<Status>` | ano | PRAUT | pouzit nejjednodussi kompatibilni variantu v modelu |
+| `owner` | `Ref<contact.mixin.Employee>` | ano | PRAUT | odpovedny obchodnik |
+| `estimatedValue` | number | ne | PRAUT | nezavazny odhad, ne fakturacni autorita |
+| `currency` | string | ne | PRAUT | napr. `CZK`, `EUR` |
+| `needSummary` | collaborative/markup text | ne | PRAUT | shrnuti potreby klienta |
+| `nextStep` | string | ne | PRAUT | dalsi rucni krok |
+| `nextStepDue` | timestamp | ne | PRAUT | termin dalsiho kroku |
+| `requiresApproval` | boolean | ano | PRAUT | true pred nabidkou, cenou, AI vystupem nebo handoffem |
+| `lastApproval` | `Ref<PrautApproval>` | ne | PRAUT | posledni relevantni schvaleni |
+| `project` | `Ref<tracker.class.Project>` nebo vazebni entita | ne | Tracker | po predani |
+| `createdBy` | account/person ref | ano | Core/PRAUT | audit |
+| `createdOn` | timestamp | ano | Core/PRAUT | audit |
+| `modifiedOn` | timestamp | ano | Core/PRAUT | audit |
+
+Minimalni prvni implementace smi zacit jen s poli: `title`, `sourceLead`, `organization`, `primaryContact`, `status`, `owner`, `requiresApproval`, `lastApproval`.
+
+### PrautApproval model spec
+
+`PrautApproval` je auditni zaznam lidskeho rozhodnuti. Neni to obecna chat zprava a neni to AI vystup. Slouzi k dohledani, kdo schvalil nebo odmitl dulezity krok.
+
+#### Typy approvalu
+
+| Typ | Kdy se pouzije | Automaticky povinne |
+| --- | --- | --- |
+| `proposalText` | pred odeslanim odpovedi nebo nabidky klientovi | ano |
+| `proposalPrice` | pri cene, odhadu nebo obchodnich podminkach | ano |
+| `aiOutput` | pokud AI pripravila text, scoring nebo doporuceni s dopadem | ano |
+| `projectHandoff` | pred vytvorenim projektu/ukolu ze zakazky | ano |
+| `exception` | nestandardni obchodni, pravni nebo reputacni situace | ano |
+
+#### Rozhodnuti approvalu
+
+| Hodnota | Vyznam |
+| --- | --- |
+| `approved` | clovek schvalil dalsi krok |
+| `rejected` | clovek krok zamitl |
+| `changesRequested` | clovek chce upravu pred pokracovanim |
+| `escalated` | rozhodnuti se predava vyssi roli |
+
+#### Pole approvalu
+
+| Pole | Typ | Povinne | Source of truth | Poznamka |
+| --- | --- | --- | --- | --- |
+| `opportunity` | `Ref<PrautOpportunity>` | ano | PRAUT | k cemu se schvaleni vztahuje |
+| `approvalType` | enum/string | ano | PRAUT | viz typy approvalu |
+| `decision` | enum/string | ano | PRAUT | viz rozhodnuti |
+| `approvedBy` | account/person ref | ano | PRAUT/Core | realny clovek, ne system |
+| `decidedOn` | timestamp | ano | PRAUT | cas rozhodnuti |
+| `summary` | string | ano | PRAUT | kratke vysvetleni |
+| `sourceAiOutput` | ref/string | ne | PRAUT | pokud se schvaloval AI vystup |
+| `sourceDocument` | ref | ne | Document | pokud se schvaloval dokument/nabidka |
+| `riskLevel` | `low` / `medium` / `high` | ano | PRAUT | minimalni risk klasifikace |
+
+Pravidla:
+
+- `approvedBy` nesmi byt systemovy bot,
+- `decision = approved` je nutne pred `proposalSent` a `handoffDone`,
+- `riskLevel = high` musi mit `summary` s duvodem,
+- schvaleni se nema prepisovat; pri zmene vznikne novy `PrautApproval`.
+
+### PrautProjectLink model spec
+
+`PrautProjectLink` se pouzije, pokud nebude stacit jednoducha reference z opportunity na tracker projekt.
+
+Minimalni pole:
+
+| Pole | Typ | Povinne | Poznamka |
+| --- | --- | --- | --- |
+| `opportunity` | `Ref<PrautOpportunity>` | ano | obchodni zdroj |
+| `project` | `Ref<tracker.class.Project>` | ano | realizacni projekt |
+| `createdFromApproval` | `Ref<PrautApproval>` | ano | audit predani |
+| `createdBy` | account/person ref | ano | kdo predani provedl |
+| `createdOn` | timestamp | ano | kdy se predani stalo |
+
+Prvni implementace muze `PrautProjectLink` odlozit, pokud staci pole `project` na `PrautOpportunity`.
+
+### PrautRiskFlag model spec
+
+`PrautRiskFlag` oznacuje pripad, ktery nesmi bez cloveka pokracovat.
+
+Typy rizika:
+
+- `missingData`,
+- `highValue`,
+- `legalText`,
+- `customerConflict`,
+- `aiUncertainty`,
+- `sensitiveData`,
+- `manualException`.
+
+Minimalni pole:
+
+| Pole | Typ | Povinne | Poznamka |
+| --- | --- | --- | --- |
+| `opportunity` | `Ref<PrautOpportunity>` | ano | kde riziko vzniklo |
+| `riskType` | enum/string | ano | typ rizika |
+| `riskLevel` | `low` / `medium` / `high` | ano | priorita kontroly |
+| `message` | string | ano | srozumitelne vysvetleni |
+| `resolvedBy` | account/person ref | ne | kdo riziko uzavrel |
+| `resolvedOn` | timestamp | ne | kdy se vyresilo |
+
+### Migrační pravidla modelu
+
+- Prvni PR s modelem smi pridat jen nove PRAUT tridy; nesmi menit Huly `Lead`, `Issue`, `Contact` ani `Document`.
+- Migrace musi byt additive-only.
+- Zadna nova trida nesmi byt povinna pro existujici Huly workspace, dokud neni pripraveny backfill nebo fallback.
+- Pokud se pozdeji bude generovat opportunity z existujicich leadu, musi to byt samostatny idempotentni migration/import krok.
+- Export/import mapping se musi aktualizovat pred pouzitim realnych dat.
+
+### Validacni pravidla modelu
+
+Minimalni validace pred implementaci automatizaci:
+
+- opportunity bez `owner` nesmi prejit do `proposalReview`,
+- opportunity bez `approved` `proposalText` approvalu nesmi prejit do `proposalSent`,
+- opportunity bez `approved` `projectHandoff` approvalu nesmi prejit do `handoffDone`,
+- high-risk flag musi blokovat automaticke pokracovani,
+- AI vystup bez lidskeho approvalu nesmi byt oznacen jako finalni vystup.
+
 Definition of done:
 
 - je jasne, ktere pole je source of truth,
@@ -334,4 +486,3 @@ MVP je hotove, kdyz:
 - governance hlasi `core = 0`,
 - CI build/validate/test pro dotcene casti prochazi,
 - je popsany datovy tok a produkcni rizika.
-
