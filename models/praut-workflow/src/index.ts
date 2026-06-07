@@ -7,12 +7,14 @@
 //
 
 import type { Builder } from '@hcengineering/model'
+import { TPrautApproval, TPrautOpportunity, TPrautRiskFlag } from './types'
 
 export { default, prautWorkflowId, type PrautWorkflowStage } from '@hcengineering/praut-workflow'
+export * from './types'
 
 /**
  * @public
  */
-export function createModel (builder: Builder): void {
-  void builder
+export function createModel(builder: Builder): void {
+  builder.createModel(TPrautOpportunity, TPrautApproval, TPrautRiskFlag)
 }
