@@ -85,8 +85,8 @@ import { RepositorySyncMapper } from './sync/repository'
 import { ReviewCommentSyncManager } from './sync/reviewComments'
 import { ReviewThreadSyncManager } from './sync/reviewThreads'
 import { ReviewSyncManager } from './sync/reviews'
-import { UsersSyncManager, fetchViewerDetails } from './sync/users'
 import { appendGuestLinkToImage } from './sync/guest'
+import { UsersSyncManager, fetchViewerDetails } from './sync/users'
 import { errorToObj } from './sync/utils'
 import {
   ContainerFocus,
