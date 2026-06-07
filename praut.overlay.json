@@ -58,6 +58,11 @@
         "reason": "Governance document maintained by Praut; generated markers must be preserved."
       },
       {
+        "path": "docs/praut-product-manifest.md",
+        "owner": "praut-product-agent",
+        "reason": "Praut product source of truth for MVP scope, module decisions, roles, AI boundaries, and implementation order."
+      },
+      {
         "path": "scripts/praut-governance.mjs",
         "owner": "upstream-sync-agent",
         "reason": "Governance automation for this fork."
