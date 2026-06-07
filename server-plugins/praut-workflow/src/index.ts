@@ -9,8 +9,10 @@
 import type { Plugin, Resource } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import type { createOpportunityFromLead, createRiskFlag, requestApproval } from './service'
+import type { createOpportunityTxesFromLead, requestApprovalTxes } from './tx'
 
 export * from './service'
+export * from './tx'
 
 /**
  * @public
@@ -24,6 +26,8 @@ export default plugin(serverPrautWorkflowId, {
   function: {
     CreateOpportunityFromLead: '' as Resource<typeof createOpportunityFromLead>,
     RequestApproval: '' as Resource<typeof requestApproval>,
-    CreateRiskFlag: '' as Resource<typeof createRiskFlag>
+    CreateRiskFlag: '' as Resource<typeof createRiskFlag>,
+    CreateOpportunityTxesFromLead: '' as Resource<typeof createOpportunityTxesFromLead>,
+    RequestApprovalTxes: '' as Resource<typeof requestApprovalTxes>
   }
 })
