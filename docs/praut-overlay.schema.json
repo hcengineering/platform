@@ -2,7 +2,17 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Praut Overlay Manifest",
   "type": "object",
-  "required": ["version", "upstream", "praut", "paths", "branding", "transforms", "validation", "smoke"],
+  "required": [
+    "version",
+    "upstream",
+    "praut",
+    "paths",
+    "branding",
+    "transforms",
+    "productionUpdate",
+    "validation",
+    "smoke"
+  ],
   "properties": {
     "version": { "type": "integer" },
     "upstream": {
@@ -21,7 +31,54 @@
       "type": "object",
       "required": ["title", "localHosts", "productionHosts", "defaultLanguage", "languages"]
     },
-    "transforms": { "type": "array" },
+    "transforms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "owner", "kind", "targets"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "owner": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "minLength": 1 },
+          "reapply": { "enum": ["automatic", "manual", "never"] },
+          "review": { "enum": ["required", "required-on-change", "optional"] },
+          "test": { "type": "string" },
+          "targets": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "productionUpdate": {
+      "type": "object",
+      "required": ["owner", "reports", "requiredAgents", "blockOn", "gates"],
+      "properties": {
+        "owner": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "reports": {
+          "type": "object",
+          "required": ["markdown", "json"],
+          "properties": {
+            "markdown": { "type": "string", "minLength": 1 },
+            "json": { "type": "string", "minLength": 1 }
+          }
+        },
+        "requiredAgents": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "blockOn": {
+          "type": "object",
+          "required": ["core", "dirtyUnapproved", "failedValidation"]
+        },
+        "gates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "command"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "command": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
     "validation": { "type": "object" },
     "smoke": { "type": "object" }
   }

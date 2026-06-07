@@ -57,17 +57,20 @@ jobs:
         run: |
           ARGS=(--upstream-ref "${{ github.event.inputs.upstream_ref || 'main' }}")
           if [[ "${{ github.event.inputs.skip_validation || 'false' }}" == "true" ]]; then
-            ARGS+=(--skip-validation)
+            ARGS+=(--skip-expensive-validation)
           fi
           if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.create_pr || 'true' }}" == "true" ]]; then
             ARGS+=(--create-pr)
           fi
-          node scripts/praut-upstream-update.mjs "${ARGS[@]}"
+          node scripts/praut-production-update.mjs "${ARGS[@]}"
 
       - name: Upload update report
         if: always()
         uses: actions/upload-artifact@v5
         with:
           name: praut-upstream-update-report
-          path: .cache/praut-update-report.md
+          path: |
+            .cache/praut-update-report.md
+            .cache/praut-production-update-report.md
+            .cache/praut-production-update-report.json
           if-no-files-found: ignore
