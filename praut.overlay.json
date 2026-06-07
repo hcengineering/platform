@@ -125,15 +125,65 @@
       "name": "praut-branding-files",
       "owner": "frontend-branding-agent",
       "kind": "branding-json",
+      "reapply": "automatic",
+      "review": "required-on-change",
+      "test": "node scripts/praut-smoke.mjs",
       "targets": ["dev/branding.praut.json", "dev/prod/public/branding.praut.json"]
     },
     {
       "name": "governance-generated-sections",
       "owner": "upstream-sync-agent",
       "kind": "governance-update",
+      "reapply": "automatic",
+      "review": "required-on-change",
+      "test": "node scripts/praut-governance.mjs check-manifest",
       "targets": ["docs/praut-fork-governance.md"]
     }
   ],
+  "productionUpdate": {
+    "owner": "upstream-sync-agent",
+    "description": "Production-safe Huly update pipeline. It creates an update branch, reapplies PRAUT overlay, runs gates, writes reports, and blocks PR creation when unauthorized red/core drift is detected.",
+    "reports": {
+      "markdown": ".cache/praut-production-update-report.md",
+      "json": ".cache/praut-production-update-report.json"
+    },
+    "requiredAgents": [
+      "upstream-sync-agent",
+      "praut-product-agent",
+      "qa-release-agent"
+    ],
+    "blockOn": {
+      "core": true,
+      "dirtyUnapproved": true,
+      "failedValidation": true
+    },
+    "gates": [
+      {
+        "name": "manifest",
+        "command": "node scripts/praut-governance.mjs check-manifest"
+      },
+      {
+        "name": "overlay",
+        "command": "node scripts/praut-apply-overlay.mjs --check"
+      },
+      {
+        "name": "governance",
+        "command": "node scripts/praut-governance.mjs check --json --ref ${UPSTREAM_REF}"
+      },
+      {
+        "name": "rush-check",
+        "command": "node common/scripts/install-run-rush.js check"
+      },
+      {
+        "name": "changed",
+        "command": "scripts/verify-changed.sh"
+      },
+      {
+        "name": "smoke",
+        "command": "node scripts/praut-smoke.mjs"
+      }
+    ]
+  },
   "validation": {
     "changed": "scripts/verify-changed.sh",
     "build": "node common/scripts/install-run-rush.js build",
@@ -148,6 +198,7 @@
       "scripts/praut-governance.mjs",
       "scripts/praut-apply-overlay.mjs",
       "scripts/praut-upstream-update.mjs",
+      "scripts/praut-production-update.mjs",
       "scripts/praut-smoke.mjs"
     ],
     "generatedMarkers": [

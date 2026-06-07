@@ -143,7 +143,17 @@ function loadManifest (manifestPath) {
 }
 
 function validateManifest (manifest, manifestPath = defaultManifestPath) {
-  const requiredTop = ['version', 'upstream', 'praut', 'paths', 'branding', 'transforms', 'validation', 'smoke']
+  const requiredTop = [
+    'version',
+    'upstream',
+    'praut',
+    'paths',
+    'branding',
+    'transforms',
+    'productionUpdate',
+    'validation',
+    'smoke'
+  ]
   for (const key of requiredTop) {
     if (manifest[key] == null) throw new Error(`Invalid manifest ${normalizePath(path.relative(repoRoot, manifestPath))}: missing ${key}`)
   }
@@ -160,6 +170,38 @@ function validateManifest (manifest, manifestPath = defaultManifestPath) {
   for (const exception of manifest.paths.exceptions) {
     if (typeof exception.path !== 'string' || exception.path === '') {
       throw new Error('Invalid manifest exception: path is required')
+    }
+  }
+  for (const transform of manifest.transforms) {
+    for (const key of ['name', 'owner', 'kind']) {
+      if (typeof transform[key] !== 'string' || transform[key] === '') {
+        throw new Error(`Invalid manifest transform: ${key} is required`)
+      }
+    }
+    if (!Array.isArray(transform.targets) || transform.targets.length === 0) {
+      throw new Error(`Invalid manifest transform ${transform.name}: targets must be a non-empty array`)
+    }
+  }
+  if (manifest.productionUpdate.reports == null) {
+    throw new Error('Invalid manifest productionUpdate: reports is required')
+  }
+  for (const key of ['markdown', 'json']) {
+    if (typeof manifest.productionUpdate.reports[key] !== 'string' || manifest.productionUpdate.reports[key] === '') {
+      throw new Error(`Invalid manifest productionUpdate.reports.${key}: path is required`)
+    }
+  }
+  if (!Array.isArray(manifest.productionUpdate.requiredAgents) || manifest.productionUpdate.requiredAgents.length === 0) {
+    throw new Error('Invalid manifest productionUpdate.requiredAgents: expected non-empty array')
+  }
+  if (!Array.isArray(manifest.productionUpdate.gates) || manifest.productionUpdate.gates.length === 0) {
+    throw new Error('Invalid manifest productionUpdate.gates: expected non-empty array')
+  }
+  for (const gate of manifest.productionUpdate.gates) {
+    if (typeof gate.name !== 'string' || gate.name === '') {
+      throw new Error('Invalid manifest productionUpdate gate: name is required')
+    }
+    if (typeof gate.command !== 'string' || gate.command === '') {
+      throw new Error(`Invalid manifest productionUpdate gate ${gate.name}: command is required`)
     }
   }
 }
