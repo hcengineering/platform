@@ -559,8 +559,12 @@ function summarizeChanges (changes) {
 
 function checkChanges (changes, rules, opts) {
   const unapproved = changes.filter((change) => change.kind === 'core')
+  const changesByPath = new Map(changes.map((change) => [change.path, change]))
   const dirty = gitStatusFiles()
-  const dirtyUnapproved = dirty.filter((file) => pathKind(file, rules) === 'core')
+  const dirtyUnapproved = dirty.filter((file) => {
+    const change = changesByPath.get(file)
+    return change?.kind === 'core'
+  })
 
   if (opts.json) {
     printJson({

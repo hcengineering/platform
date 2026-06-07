@@ -73,6 +73,16 @@
         "reason": "Approved historical core drift baseline with exact hash matching."
       },
       {
+        "path": "common/config/rush/pnpm-lock.yaml",
+        "owner": "upstream-sync-agent",
+        "reason": "Dependency lockfile may change only as a consequence of reviewed Praut/yellow package dependency changes."
+      },
+      {
+        "path": "dev/prod/package.json",
+        "owner": "frontend-branding-agent",
+        "reason": "Production frontend package dependency versions must stay consistent with desktop/frontend build dependencies."
+      },
+      {
         "path": ".gitignore",
         "owner": "upstream-sync-agent",
         "reason": "Allows local governance cache path without hiding source files."
