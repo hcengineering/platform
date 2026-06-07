@@ -93,6 +93,11 @@
         "reason": "Production frontend package dependency versions must stay consistent with desktop/frontend build dependencies."
       },
       {
+        "path": "rush.json",
+        "owner": "upstream-sync-agent",
+        "reason": "Rush inventory may change only to register approved Praut-owned packages in green overlay paths."
+      },
+      {
         "path": ".gitignore",
         "owner": "upstream-sync-agent",
         "reason": "Allows local governance cache path without hiding source files."

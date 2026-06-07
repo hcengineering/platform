@@ -1136,6 +1136,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/praut-workflow",
+      "projectFolder": "plugins/praut-workflow",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/lead-assets",
       "projectFolder": "plugins/lead-assets",
       "shouldPublish": false
@@ -1148,6 +1153,11 @@
     {
       "packageName": "@hcengineering/model-lead",
       "projectFolder": "models/lead",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-praut-workflow",
+      "projectFolder": "models/praut-workflow",
       "shouldPublish": false
     },
     // {
@@ -1358,6 +1368,11 @@
     {
       "packageName": "@hcengineering/server-lead",
       "projectFolder": "server-plugins/lead",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-praut-workflow",
+      "projectFolder": "server-plugins/praut-workflow",
       "shouldPublish": false
     },
     {
