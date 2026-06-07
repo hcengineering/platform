@@ -34274,6 +34274,15 @@ importers:
 
   ../../server-plugins/praut-workflow:
     dependencies:
+      '@hcengineering/contact':
+        specifier: workspace:^0.7.423
+        version: link:../../plugins/contact
+      '@hcengineering/core':
+        specifier: workspace:^0.7.423
+        version: link:../../foundations/core/packages/core
+      '@hcengineering/lead':
+        specifier: workspace:^0.7.423
+        version: link:../../plugins/lead
       '@hcengineering/platform':
         specifier: workspace:^0.7.423
         version: link:../../foundations/core/packages/platform
