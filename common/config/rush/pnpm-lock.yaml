@@ -9156,15 +9156,30 @@ importers:
 
   ../../models/praut-workflow:
     dependencies:
+      '@hcengineering/contact':
+        specifier: workspace:^0.7.423
+        version: link:../../plugins/contact
+      '@hcengineering/core':
+        specifier: workspace:^0.7.423
+        version: link:../../foundations/core/packages/core
+      '@hcengineering/lead':
+        specifier: workspace:^0.7.423
+        version: link:../../plugins/lead
       '@hcengineering/model':
         specifier: workspace:^0.7.423
         version: link:../../foundations/core/packages/model
+      '@hcengineering/model-core':
+        specifier: workspace:^0.7.423
+        version: link:../core
       '@hcengineering/platform':
         specifier: workspace:^0.7.423
         version: link:../../foundations/core/packages/platform
       '@hcengineering/praut-workflow':
         specifier: workspace:^0.7.423
         version: link:../../plugins/praut-workflow
+      '@hcengineering/tracker':
+        specifier: workspace:^0.7.423
+        version: link:../../plugins/tracker
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: workspace:^0.7.423
@@ -24190,12 +24205,21 @@ importers:
 
   ../../plugins/praut-workflow:
     dependencies:
+      '@hcengineering/contact':
+        specifier: workspace:^0.7.423
+        version: link:../contact
       '@hcengineering/core':
         specifier: workspace:^0.7.423
         version: link:../../foundations/core/packages/core
+      '@hcengineering/lead':
+        specifier: workspace:^0.7.423
+        version: link:../lead
       '@hcengineering/platform':
         specifier: workspace:^0.7.423
         version: link:../../foundations/core/packages/platform
+      '@hcengineering/tracker':
+        specifier: workspace:^0.7.423
+        version: link:../tracker
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: workspace:^0.7.423
@@ -61751,7 +61775,7 @@ snapshots:
   node-loader@2.0.0(webpack@5.102.1):
     dependencies:
       loader-utils: 2.0.4
-      webpack: 5.102.1
+      webpack: 5.102.1(esbuild@0.25.12)(webpack-cli@5.1.4)
 
   node-localstorage@2.2.1:
     dependencies:
