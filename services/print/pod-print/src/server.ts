@@ -34,7 +34,7 @@ import { join } from 'path'
 import config from './config'
 import { convertToHtml } from './convert'
 import { ApiError } from './error'
-import { PrintOptions, print, validKinds } from './print'
+import { PrintOptions, print, validKinds, validPageOrientations } from './print'
 import { withMeasureContext } from './middleware'
 
 function getAccountClient (token: string): AccountClient {
@@ -142,9 +142,14 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
 
 function parsePrintOptions (query: Request['query']): PrintOptions {
   const kind = query.kind as PrintOptions['kind']
+  const orientation = query.orientation as PrintOptions['orientation']
 
   if (kind !== undefined && !validKinds.includes(kind as any)) {
     throw new ApiError(400, `Invalid print kind: ${kind}`)
+  }
+
+  if (orientation !== undefined && !validPageOrientations.includes(orientation as any)) {
+    throw new ApiError(400, `Invalid page orientation: ${orientation}`)
   }
 
   const rawWidth = (query.width ?? '') as string
@@ -164,7 +169,7 @@ function parsePrintOptions (query: Request['query']): PrintOptions {
     throw new ApiError(400, 'Both width and height must be provided')
   }
 
-  return { kind, viewport }
+  return { kind, orientation, viewport }
 }
 
 export function createServer (
@@ -211,10 +216,15 @@ export function createServer (
 
       const options = parsePrintOptions(req.query)
 
-      const printRes = await ctx.with('print', { kind: options.kind }, (ctx) => print(ctx, link, options), {
-        url,
-        viewport: options.viewport
-      })
+      const printRes = await ctx.with(
+        'print',
+        { kind: options.kind, orientation: options.orientation },
+        (ctx) => print(ctx, link, options),
+        {
+          url,
+          viewport: options.viewport
+        }
+      )
 
       if (printRes === undefined) {
         throw new ApiError(400, 'Failed to print')
@@ -290,10 +300,15 @@ export function createServer (
 
         const link = await getPublicLink(doc, client, wsIds, true, null)
 
-        const printRes = await ctx.with('print', { kind: options.kind }, (ctx) => print(ctx, link, options), {
-          link,
-          viewport: options.viewport
-        })
+        const printRes = await ctx.with(
+          'print',
+          { kind: options.kind, orientation: options.orientation },
+          (ctx) => print(ctx, link, options),
+          {
+            link,
+            viewport: options.viewport
+          }
+        )
 
         if (printRes === undefined) {
           throw new ApiError(400, 'Failed to print')
