@@ -1,4 +1,4 @@
-// Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -11,6 +11,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { writable } from 'svelte/store'
+import { readable, writable } from 'svelte/store'
 
 export const isAppFocusedStore = writable(true)
+
+export const printModeStore = readable(false, (set) => {
+  if (globalThis.window?.matchMedia === undefined) {
+    return
+  }
+
+  const printMedia = globalThis.window.matchMedia('print')
+
+  const update = (): void => {
+    set(printMedia.matches)
+  }
+
+  update()
+  printMedia.addEventListener('change', update)
+
+  return () => {
+    printMedia.removeEventListener('change', update)
+  }
+})
