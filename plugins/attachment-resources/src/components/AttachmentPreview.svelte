@@ -87,14 +87,14 @@
     height: fit-content;
 
     &.extraWidth {
-      padding-right: 2.5rem;
+      padding-inline-end: 2.5rem;
     }
 
     .actions {
       visibility: hidden;
       position: absolute;
       top: 0.25rem;
-      right: 0.25rem;
+      inset-inline-end: 0.25rem;
       padding: 0.125rem;
       background-color: var(--theme-comp-header-color);
       border: 1px solid var(--theme-divider-color);

@@ -1173,7 +1173,7 @@
     }
     .antiPanel-application:not(.horizontal) {
       border-radius: var(--medium-BorderRadius) 0 0 var(--medium-BorderRadius);
-      border-right: none;
+      border-inline-end: none;
     }
   }
 
@@ -1184,13 +1184,13 @@
     z-index: 1;
 
     &.portrait {
-      margin-left: 1rem;
+      margin-inline-start: 1rem;
 
       .logo-container {
-        margin-right: 0.5rem;
+        margin-inline-end: 0.5rem;
       }
       .topmenu-container {
-        margin-right: 0.5rem;
+        margin-inline-end: 0.5rem;
       }
     }
     &.landscape {
@@ -1220,12 +1220,12 @@
       top: 4px;
     }
     .logo-container.mini {
-      left: 4px;
+      inset-inline-start: 4px;
       width: 1.75rem;
       height: 1.75rem;
     }
     .topmenu-container.mini {
-      left: calc(1.75rem + 8px);
+      inset-inline-start: calc(1.75rem + 8px);
     }
   }
 
@@ -1247,15 +1247,15 @@
       }
     }
     &.horizontal {
-      margin-right: 1rem;
-      padding-left: 1rem;
-      border-left: 1px solid var(--theme-navpanel-divider);
+      margin-inline-end: 1rem;
+      padding-inline-start: 1rem;
+      border-inline-start: 1px solid var(--theme-navpanel-divider);
 
       &:not(.mini) > *:not(:last-child) {
-        margin-right: 0.75rem;
+        margin-inline-end: 0.75rem;
       }
       &.mini > *:not(:last-child) {
-        margin-right: 0.25rem;
+        margin-inline-end: 0.25rem;
       }
     }
   }
@@ -1272,15 +1272,15 @@
       gap: 0.25rem;
     }
     &.horizontal {
-      margin-right: 1rem;
-      padding-left: 1rem;
-      border-left: 1px solid var(--theme-navpanel-divider);
+      margin-inline-end: 1rem;
+      padding-inline-start: 1rem;
+      border-inline-start: 1px solid var(--theme-navpanel-divider);
 
       &:not(.mini) > *:not(:last-child) {
-        margin-right: 0.75rem;
+        margin-inline-end: 0.75rem;
       }
       &.mini > *:not(:last-child) {
-        margin-right: 0.25rem;
+        margin-inline-end: 0.25rem;
       }
     }
   }
@@ -1289,7 +1289,7 @@
     position: fixed;
     display: none;
     top: 0;
-    left: 0;
+    inset-inline-start: 0;
     width: 100vw;
     height: 100vh;
     z-index: 10;

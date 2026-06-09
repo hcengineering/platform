@@ -190,14 +190,14 @@
     }
 
     .btn-icon {
-      margin-right: 0.375rem;
+      margin-inline-end: 0.375rem;
       width: 1rem;
       height: 1rem;
       transition: color 0.15s;
       pointer-events: none;
 
       &.buttonIconNoLabel {
-        margin-right: 0;
+        margin-inline-end: 0;
       }
       &.normal {
         color: var(--theme-content-color);
@@ -325,7 +325,7 @@
         }
       }
       &.small .btn-icon {
-        margin-right: 0.25rem;
+        margin-inline-end: 0.25rem;
       }
     }
     &.regular {

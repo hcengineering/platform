@@ -118,7 +118,7 @@
     min-height: 0;
     position: absolute;
     top: 0;
-    left: 0;
+    inset-inline-start: 0;
 
     &.invisible {
       visibility: hidden;
@@ -133,7 +133,7 @@
     min-width: 0;
     min-height: 0;
     top: 0;
-    left: 0;
+    inset-inline-start: 0;
     background-color: var(--theme-panel-color);
   }
 </style>

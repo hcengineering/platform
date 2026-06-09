@@ -54,7 +54,7 @@
   }
   .content,
   .content {
-    padding-left: 0.25rem;
+    padding-inline-start: 0.25rem;
     isolation: isolate;
     order: 0;
     width: 100%;
@@ -68,7 +68,7 @@
       position: absolute;
       width: 1.75rem;
       height: 1.75rem;
-      right: 1rem;
+      inset-inline-end: 1rem;
       top: 1rem;
       border-radius: 0.375rem;
       display: flex;
@@ -95,7 +95,7 @@
   .action-container {
     position: absolute;
     top: 0;
-    right: 0;
+    inset-inline-end: 0;
     padding: 1rem;
     display: flex;
     align-items: flex-start;
@@ -106,8 +106,8 @@
 
   .img {
     position: absolute;
-    left: 0;
-    right: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
     top: 0;
     bottom: 0;
     height: 5.5rem;

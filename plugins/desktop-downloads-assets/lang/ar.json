@@ -1,0 +1,10 @@
+{
+  "string": {
+    "Downloads": "التنزيلات",
+    "Completed": "مكتمل",
+    "Cancelled": "ملغى",
+    "Interrupted": "متوقف",
+    "Paused": "موقَّف مؤقتًا",
+    "Progressing": "قيد التقدم"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "string": {
+    "IntegrationLabel": "Huly Mail",
+    "IntegrationDescription": "اربط صندوق بريد Huly الخاص بك لإرسال الرسائل واستقبالها وإدارتها",
+    "Connect": "اتصال",
+    "ConnectHulyMail": "ربط صندوق بريد Huly",
+    "Cancel": "إلغاء",
+    "Email": "البريد الإلكتروني",
+    "Status": "الحالة",
+    "FailedToConnect": "خدمة بريد Huly غير متاحة",
+    "TotalMessages": "إجمالي الرسائل:",
+    "Configure": "تكوين بريد Huly",
+    "ChannelSpace": "مساحة قناة الرسائل",
+    "PersonSpaceInfo": "سيكون البريد متاحًا لك",
+    "SharedSpaceInfo": "سيكون البريد متاحًا لجميع المشاركين في المساحة",
+    "Mailbox": "صندوق البريد",
+    "MailboxesNotConfigured": "لم يتم العثور على صناديق بريد",
+    "ConfigureMailBoxes": "يرجى إضافة صندوق بريد في قسم `Mailboxes` للبدء"
+  }
+}

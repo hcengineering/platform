@@ -210,13 +210,13 @@
   .name {
     width: 100%;
     font-weight: 500;
-    margin-left: 1rem;
+    margin-inline-start: 1rem;
     display: flex;
     align-items: center;
     font-size: 1.5rem;
 
     &.editable {
-      margin-left: 0;
+      margin-inline-start: 0;
     }
   }
 </style>

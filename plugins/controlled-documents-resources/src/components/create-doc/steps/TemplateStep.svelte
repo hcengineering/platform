@@ -209,7 +209,7 @@
   }
 
   .template {
-    margin-left: 0.625rem;
+    margin-inline-start: 0.625rem;
     padding: 1.5rem 0;
     border-bottom: 1px solid var(--theme-divider-color);
     display: flex;

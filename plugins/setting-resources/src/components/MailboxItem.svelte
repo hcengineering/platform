@@ -218,7 +218,7 @@
     padding-bottom: 0.75rem;
 
     &:first-child {
-      border-right: 1px solid var(--theme-divider-color);
+      border-inline-end: 1px solid var(--theme-divider-color);
     }
   }
 </style>

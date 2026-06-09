@@ -429,7 +429,7 @@
 
     .hulyPopupEmoji-footer {
       position: absolute;
-      left: 50%;
+      inset-inline-start: 50%;
       bottom: 0.75rem;
       width: calc(100% - 1.5rem);
       height: 1rem;

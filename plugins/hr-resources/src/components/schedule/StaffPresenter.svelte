@@ -68,7 +68,7 @@
     color: var(--theme-warning-color);
     opacity: 0.8;
     font-size: 0.75rem;
-    margin-left: 0.25rem;
+    margin-inline-start: 0.25rem;
   }
   .member-department {
     color: var(--theme-caption-color);

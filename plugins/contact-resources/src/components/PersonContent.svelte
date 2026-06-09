@@ -151,7 +151,7 @@
 
 <style lang="scss">
   .status {
-    margin-left: 0.25rem;
+    margin-inline-start: 0.25rem;
     padding: 0 0.25rem;
     white-space: nowrap;
     font-size: 0.75rem;

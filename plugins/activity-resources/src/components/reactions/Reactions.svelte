@@ -111,7 +111,7 @@
     .counter {
       font-size: 0.75rem;
       color: var(--global-secondary-TextColor);
-      margin-left: 0.25rem;
+      margin-inline-start: 0.25rem;
     }
 
     .hulyReactions-button {

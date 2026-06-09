@@ -129,8 +129,8 @@
       justify-content: center;
       align-items: center;
       top: 0;
-      left: 0.5rem;
-      right: 0.5rem;
+      inset-inline-start: 0.5rem;
+      inset-inline-end: 0.5rem;
       min-width: 0;
       width: calc(100% - 1rem);
       height: 100%;

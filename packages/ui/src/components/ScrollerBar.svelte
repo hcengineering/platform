@@ -133,7 +133,7 @@
     visibility: hidden;
     position: absolute;
     bottom: -8px;
-    left: 0;
+    inset-inline-start: 0;
     height: 5px;
     transform-origin: center;
     transform: scaleX(0);
@@ -146,7 +146,7 @@
     visibility: hidden;
     position: absolute;
     bottom: -8px;
-    left: 0;
+    inset-inline-start: 0;
     height: 5px;
     min-width: 2rem;
     max-width: calc(100% - 12px);
@@ -170,7 +170,7 @@
 
       & + .track {
         visibility: visible;
-        left: 0;
+        inset-inline-start: 0;
         transform: scaleY(1);
       }
     }

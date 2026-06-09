@@ -113,13 +113,13 @@
       &.left {
         border-top: 0.25rem solid transparent;
         border-bottom: 0.25rem solid transparent;
-        border-left: 0.25rem solid var(--global-primary-LinkColor);
-        border-right: none;
+        border-inline-start: 0.25rem solid var(--global-primary-LinkColor);
+        border-inline-end: none;
       }
 
       &.down {
-        border-left: 0.25rem solid transparent;
-        border-right: 0.25rem solid transparent;
+        border-inline-start: 0.25rem solid transparent;
+        border-inline-end: 0.25rem solid transparent;
         border-top: 0.25rem solid var(--global-primary-LinkColor);
         border-bottom: none;
       }
@@ -130,7 +130,7 @@
 
       .triangle {
         &.left {
-          border-left-color: var(--global-focus-BorderColor);
+          border-inline-start-color: var(--global-focus-BorderColor);
         }
 
         &.down {

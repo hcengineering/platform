@@ -152,14 +152,14 @@
     .eCellInfoData {
       display: flex;
       flex-direction: column;
-      margin-left: 1rem;
+      margin-inline-start: 1rem;
     }
 
     .eCellInfoMenu {
-      margin-left: auto;
+      margin-inline-start: auto;
       position: absolute;
       bottom: 1rem;
-      right: 0.5rem;
+      inset-inline-end: 0.5rem;
     }
 
     .eCellInfoFilename {

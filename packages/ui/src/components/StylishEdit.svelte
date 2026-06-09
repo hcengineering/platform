@@ -105,7 +105,7 @@
     .label {
       position: absolute;
       top: 1rem;
-      left: 1.25rem;
+      inset-inline-start: 1.25rem;
       font-size: 0.75rem;
       color: var(--theme-caption-color);
       opacity: 0.8;

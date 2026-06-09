@@ -38,7 +38,7 @@
     user-select: none;
 
     span {
-      margin-left: 0.25rem;
+      margin-inline-start: 0.25rem;
       white-space: nowrap;
       text-transform: capitalize;
       font-weight: 500;

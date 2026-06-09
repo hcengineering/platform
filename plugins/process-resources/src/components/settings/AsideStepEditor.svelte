@@ -89,6 +89,6 @@
 
 <style lang="scss">
   .title {
-    padding-left: 2rem;
+    padding-inline-start: 2rem;
   }
 </style>

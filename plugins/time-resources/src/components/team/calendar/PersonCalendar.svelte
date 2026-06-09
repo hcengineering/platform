@@ -193,7 +193,7 @@
     z-index: 1;
 
     &.timeline-resource-header {
-      left: 0;
+      inset-inline-start: 0;
       z-index: 2;
     }
   }
@@ -216,7 +216,7 @@
     background-color: $timeline-bg-color;
 
     position: sticky;
-    left: 0;
+    inset-inline-start: 0;
     z-index: 1;
   }
 
@@ -272,7 +272,7 @@
   }
 
   .timeline-cell {
-    border-right: $timeline-border;
+    border-inline-end: $timeline-border;
 
     width: $timeline-column-width;
     height: 100%;
@@ -301,7 +301,7 @@
   }
 
   .timeline-resource-cell {
-    border-right: $timeline-border;
+    border-inline-end: $timeline-border;
 
     width: 100%;
     height: 100%;
@@ -311,8 +311,8 @@
   .timeline-event-wrapper {
     position: absolute;
     height: 1.5rem;
-    padding-left: 0.125rem;
-    padding-right: 0.125rem;
+    padding-inline-start: 0.125rem;
+    padding-inline-end: 0.125rem;
 
     pointer-events: all;
   }

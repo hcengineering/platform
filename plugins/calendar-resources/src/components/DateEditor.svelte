@@ -203,6 +203,6 @@
   .divider {
     width: 0;
     height: 1.25rem;
-    border-left: 1px solid var(--global-ui-BorderColor);
+    border-inline-start: 1px solid var(--global-ui-BorderColor);
   }
 </style>

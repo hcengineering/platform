@@ -48,7 +48,7 @@
     height: 100%;
     overflow-x: auto;
     overflow-y: hidden;
-    margin-right: 0;
+    margin-inline-end: 0;
     margin-bottom: -0.75rem;
     scrollbar-width: thin;
 
@@ -57,7 +57,7 @@
       display: flex;
       padding: 0 0 0.375rem 0;
       top: 0;
-      left: 0;
+      inset-inline-start: 0;
       width: auto;
       height: 100%;
       &.stretch {

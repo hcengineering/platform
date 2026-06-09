@@ -154,13 +154,13 @@
 
     .upload-popup__header {
       padding-bottom: 1rem;
-      margin-left: 0.5rem;
-      margin-right: 0.625rem;
+      margin-inline-start: 0.5rem;
+      margin-inline-end: 0.625rem;
     }
 
     .upload-popup__content {
       margin: 0.5rem;
-      margin-right: 0.625rem;
+      margin-inline-end: 0.625rem;
     }
   }
 

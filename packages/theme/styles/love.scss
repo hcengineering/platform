@@ -10,8 +10,8 @@
     justify-content: space-between;
     gap: .25rem;
     bottom: calc(100% + .125rem);
-    left: 0;
-    right: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
   }
   &__field {
     position: relative;
@@ -21,8 +21,8 @@
   &::before {
     position: absolute;
     content: '';
-    left: calc(100% / var(--huly-floor-roomWidth) / 5 * -1);
-    right: calc(100% / var(--huly-floor-roomWidth) / 5 * -1);
+    inset-inline-start: calc(100% / var(--huly-floor-roomWidth) / 5 * -1);
+    inset-inline-end: calc(100% / var(--huly-floor-roomWidth) / 5 * -1);
     background-color: var(--theme-popup-color);
     border: 1px solid var(--theme-popup-divider);
     border-radius: 1rem;
@@ -76,8 +76,8 @@
   .preview &::before {
     top: calc(100% / var(--huly-floor-roomHeight) / 3 * -1);
     bottom: calc(100% / var(--huly-floor-roomHeight) / 3 * -1);
-    left: calc(100% / var(--huly-floor-roomWidth) / 3 * -1);
-    right: calc(100% / var(--huly-floor-roomWidth) / 3 * -1);
+    inset-inline-start: calc(100% / var(--huly-floor-roomWidth) / 3 * -1);
+    inset-inline-end: calc(100% / var(--huly-floor-roomWidth) / 3 * -1);
     border-radius: .375rem;
 
     .floorGrid-room__field { border-radius: .25rem; }

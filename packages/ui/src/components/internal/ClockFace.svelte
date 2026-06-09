@@ -61,7 +61,7 @@
   .hour {
     position: absolute;
     top: 1px;
-    left: 50%;
+    inset-inline-start: 50%;
     width: 1px;
     height: calc(var(--clockface-size, 64px) / 32);
     background: var(--theme-clockface-hours);
@@ -97,7 +97,7 @@
     .minute-arrow,
     .hour-arrow {
       position: absolute;
-      left: calc(50% - 0.5px);
+      inset-inline-start: calc(50% - 0.5px);
       box-shadow: va(--theme-clockface-arrows-shadow);
       transform: rotate(0deg);
     }
@@ -112,7 +112,7 @@
       &::after {
         content: '';
         position: absolute;
-        left: 50%;
+        inset-inline-start: 50%;
         border-radius: 50%;
         transform: translateX(-50%);
       }
@@ -138,7 +138,7 @@
     }
     .hour-arrow {
       top: calc(var(--clockface-radius) * 0.5);
-      left: calc(50% - 1px);
+      inset-inline-start: calc(50% - 1px);
       width: 3px;
       height: var(--clockface-hour-arrow);
       background: var(--theme-clockface-min-arrow);

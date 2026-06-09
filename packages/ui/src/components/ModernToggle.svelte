@@ -41,7 +41,7 @@
       content: '';
       position: absolute;
       top: 50%;
-      left: 50%;
+      inset-inline-start: 50%;
       width: var(--spacing-1);
       height: var(--spacing-1);
       background-color: var(--selector-IconColor);
@@ -55,7 +55,7 @@
       border-radius: var(--medium-BorderRadius);
 
       &::after {
-        left: var(--spacing-0_5);
+        inset-inline-start: var(--spacing-0_5);
         width: var(--spacing-1);
         height: var(--spacing-1);
       }
@@ -66,7 +66,7 @@
       border-radius: var(--large-BorderRadius);
 
       &::after {
-        left: var(--spacing-0_75);
+        inset-inline-start: var(--spacing-0_75);
         width: var(--spacing-1_75);
         height: var(--spacing-1_75);
       }
@@ -90,10 +90,10 @@
       background-color: var(--selector-active-BackgroundColor);
 
       &.small::after {
-        left: var(--spacing-2_5);
+        inset-inline-start: var(--spacing-2_5);
       }
       &.large::after {
-        left: var(--spacing-3_5);
+        inset-inline-start: var(--spacing-3_5);
       }
     }
     &:disabled + .toggle-element {

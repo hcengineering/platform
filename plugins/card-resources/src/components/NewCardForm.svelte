@@ -285,7 +285,7 @@
   .corner-container {
     position: absolute;
     top: 0.75rem;
-    right: 1rem;
+    inset-inline-end: 1rem;
     z-index: 100;
     display: flex;
     align-items: center;
@@ -314,7 +314,7 @@
       z-index: 1;
     }
     &.description {
-      padding-left: 0.375rem;
+      padding-inline-start: 0.375rem;
       margin-top: -2rem;
       padding-top: 1rem;
       width: 100%;

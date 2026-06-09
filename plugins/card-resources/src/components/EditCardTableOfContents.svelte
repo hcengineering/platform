@@ -320,7 +320,7 @@
     //inset: 0;
     z-index: 1;
     top: 0;
-    right: 0.25rem;
+    inset-inline-end: 0.25rem;
     width: 2rem;
     height: fit-content;
 
@@ -351,8 +351,8 @@
     animation: 0.5s fadeIn;
     animation-fill-mode: forwards;
     visibility: hidden;
-    left: 0;
-    right: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
   }
 
   @keyframes fadeIn {

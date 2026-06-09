@@ -63,6 +63,6 @@
 
 <style lang="scss">
   .root {
-    padding-left: 0;
+    padding-inline-start: 0;
   }
 </style>

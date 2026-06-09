@@ -42,7 +42,7 @@
     padding: var(--spacing-1_5);
     min-width: 0;
     min-height: 0;
-    text-align: left;
+    text-align: start;
     border-radius: var(--extra-small-BorderRadius);
     border: none;
 
@@ -88,7 +88,7 @@
     }
     &__keys {
       gap: var(--spacing-0_25);
-      margin-left: var(--spacing-1);
+      margin-inline-start: var(--spacing-1);
 
       .key {
         padding: var(--spacing-0_5);
@@ -237,7 +237,7 @@
     // width: 100%;
     min-width: 0;
     min-height: 2.25rem;
-    text-align: left;
+    text-align: start;
     color: var(--theme-caption-color);
     border-radius: .25rem;
 
@@ -246,7 +246,7 @@
     
     .icon, .color, .tag {
       flex-shrink: 0;
-      margin-right: .5rem;
+      margin-inline-end: .5rem;
     }
     .icon,
     div.check {
@@ -257,7 +257,7 @@
     div.check {
       flex-shrink: 0;
 
-      &:not(.ml-0) { margin-left: .5rem; }
+      &:not(.ml-0) { margin-inline-start: .5rem; }
     }
     .color {
       width: .875rem;
@@ -317,7 +317,7 @@
       font-weight: 500;
       font-size: .625rem;
       text-transform: uppercase;
-      text-align: left;
+      text-align: start;
       color: var(--theme-caption-color);
       background-color: var(--theme-popup-color);
       
@@ -410,7 +410,7 @@
   .ap-menuItem {
     flex-shrink: 0;
     justify-content: flex-start;
-    text-align: left;
+    text-align: start;
     min-width: 0;
     color: var(--theme-caption-color);
     cursor: pointer;
@@ -420,8 +420,8 @@
       border-radius: .25rem;
     }
     &:not(.separator, .noMargin) {
-      margin-left: .5rem;
-      margin-right: .5rem;
+      margin-inline-start: .5rem;
+      margin-inline-end: .5rem;
     }
     &.withComp {
       display: flex;
@@ -456,17 +456,17 @@
 
       .drag {
         flex-shrink: 0;
-        margin-right: .375rem;
+        margin-inline-end: .375rem;
         color: var(--theme-trans-color);
       }
       .icon {
         flex-shrink: 0;
-        margin-right: .5rem;
+        margin-inline-end: .5rem;
       }
       .logo {
         overflow: hidden;
         flex-shrink: 0;
-        margin-right: .5rem;
+        margin-inline-end: .5rem;
         width: 2rem;
         height: 2rem;
         border-radius: .25rem;
@@ -514,13 +514,13 @@
       border-radius: .375rem;
     }
     .ap-menuItem:not(.separator, .noMargin) {
-      margin-left: .375rem;
-      margin-right: .375rem;
+      margin-inline-start: .375rem;
+      margin-inline-end: .375rem;
     }
   }
   .ap-check {
     flex-shrink: 0;
-    margin-left: 1rem;
+    margin-inline-start: 1rem;
     width: 1rem;
     height: 1rem;
     color: var(--theme-popup-checkicon);
@@ -563,7 +563,7 @@
         color: var(--theme-dark-color);
         outline: none;
 
-        &:not(:last-child) { margin-right: .375rem; }
+        &:not(:last-child) { margin-inline-end: .375rem; }
         &:not(.selected, .disabled) { cursor: pointer; }
         &.disabled { color: var(--theme-darker-color); }
         &.selected { color: var(--theme-caption-color); }
@@ -572,7 +572,7 @@
       &:not(.bordered) .tab.selected::after {
         position: absolute;
         content: '';
-        left: 0;
+        inset-inline-start: 0;
         bottom: -1px;
         width: 100%;
         height: 2px;
@@ -594,7 +594,7 @@
       display: flex;
       flex-direction: column;
       margin: 0 .5rem;
-      text-align: left;
+      text-align: start;
   
       .ap-caption {
         margin: .5rem 0 0 .75rem;
@@ -617,14 +617,14 @@
   padding: .25rem .5rem;
   min-width: 0;
   min-height: 2.25rem;
-  text-align: left;
+  text-align: start;
   color: var(--theme-caption-color);
   border-radius: .25rem;
   outline: none;
   cursor: pointer;
 
   .icon {
-    margin-right: .5rem;
+    margin-inline-end: .5rem;
     color: var(--theme-dark-color);
   }
   &.withHover:hover { background-color: var(--theme-popup-hover); }
@@ -635,13 +635,13 @@
 .antiPopup-submenu {
   position: relative;
   span {
-    padding-right: 1rem;
+    padding-inline-end: 1rem;
   }
   &::after {
     content: '▶';
     position: absolute;
     top: 50%;
-    right: 0.5rem;
+    inset-inline-end: 0.5rem;
     font-size: 0.375rem;
     color: var(--theme-dark-color);
     transform: translateY(-50%);

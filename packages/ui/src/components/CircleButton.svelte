@@ -75,8 +75,8 @@
       position: absolute;
       top: -0.25rem;
       bottom: -0.25rem;
-      left: -0.25rem;
-      right: -0.25rem;
+      inset-inline-start: -0.25rem;
+      inset-inline-end: -0.25rem;
       border: 1px solid var(--primary-button-default);
       border-radius: 50%;
     }

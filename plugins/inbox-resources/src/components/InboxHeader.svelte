@@ -134,6 +134,6 @@
     color: var(--global-secondary-TextColor);
     font-weight: 500;
     font-size: 0.625rem;
-    margin-left: 0.25rem;
+    margin-inline-start: 0.25rem;
   }
 </style>

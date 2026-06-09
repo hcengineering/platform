@@ -26,8 +26,8 @@
     height: 0.125rem;
     background-color: var(--primary-button-focused);
 
-    left: 0.75rem;
-    right: 0.75rem;
+    inset-inline-start: 0.75rem;
+    inset-inline-end: 0.75rem;
     top: 10rem;
   }
 </style>

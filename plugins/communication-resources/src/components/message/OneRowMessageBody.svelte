@@ -119,6 +119,6 @@
   .message__footer {
     display: flex;
     flex-direction: column;
-    margin-left: 3.5rem;
+    margin-inline-start: 3.5rem;
   }
 </style>

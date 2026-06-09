@@ -111,7 +111,7 @@
   }
   .center {
     position: absolute;
-    left: 50%;
+    inset-inline-start: 50%;
     transform: translateX(-50%);
   }
 

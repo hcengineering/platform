@@ -722,7 +722,7 @@
       &::after,
       &::before {
         top: 0;
-        left: -2px;
+        inset-inline-start: -2px;
         width: calc(4px + var(--separator-size, 1px));
         height: 100%;
       }
@@ -744,12 +744,12 @@
       }
       &.short {
         width: calc(100% - 1rem);
-        margin-left: 0.5rem;
+        margin-inline-start: 0.5rem;
       }
       &::after,
       &::before {
         top: -2px;
-        left: 0;
+        inset-inline-start: 0;
         width: 100%;
         height: calc(4px + var(--separator-size, 1px));
       }

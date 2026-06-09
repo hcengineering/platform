@@ -242,8 +242,8 @@
 
     .header {
       flex-shrink: 0;
-      padding-right: 2rem;
-      padding-left: 2rem;
+      padding-inline-end: 2rem;
+      padding-inline-start: 2rem;
     }
 
     .block {
@@ -253,8 +253,8 @@
       min-height: 0;
       padding-top: 1rem;
       padding-bottom: 1rem;
-      padding-right: 2rem;
-      padding-left: 2rem;
+      padding-inline-end: 2rem;
+      padding-inline-start: 2rem;
 
       &:not(.end) {
         border-bottom: 1px solid var(--theme-divider-color);

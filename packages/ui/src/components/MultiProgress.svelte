@@ -81,16 +81,16 @@
       display: flex;
       align-items: center;
       top: 0;
-      left: 0;
+      inset-inline-start: 0;
       height: 100%;
-      padding-left: 0.5rem;
+      padding-inline-start: 0.5rem;
       &.first {
-        border-top-left-radius: 0.25rem;
-        border-bottom-left-radius: 0.25rem;
+        border-start-start-radius: 0.25rem;
+        border-end-start-radius: 0.25rem;
       }
       &.last {
-        border-top-right-radius: 0.25rem;
-        border-bottom-right-radius: 0.25rem;
+        border-start-end-radius: 0.25rem;
+        border-end-end-radius: 0.25rem;
       }
     }
   }

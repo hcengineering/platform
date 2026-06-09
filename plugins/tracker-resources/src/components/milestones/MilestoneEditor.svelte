@@ -165,7 +165,7 @@
 
 <style lang="scss">
   .minus-margin {
-    margin-left: -0.5rem;
+    margin-inline-start: -0.5rem;
     &-vSpace {
       margin: -0.25rem 0;
     }

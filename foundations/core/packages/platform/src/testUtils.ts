@@ -10,7 +10,7 @@ function makeLocaleMatcher (target: object): object {
   )
 }
 
-const langs = ['en', 'ru']
+const langs = ['en', 'ru', 'ar']
 
 /**
  * @public

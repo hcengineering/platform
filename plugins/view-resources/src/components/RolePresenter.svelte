@@ -71,7 +71,7 @@
     display: flex;
     min-width: 0;
     .mixin-selector {
-      margin-left: 8px;
+      margin-inline-start: 8px;
       padding-inline: 0.25rem;
       cursor: pointer;
       height: 24px;

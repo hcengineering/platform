@@ -118,8 +118,8 @@
 
 <style lang="scss">
   .draft-circle-container {
-    margin-left: auto;
-    padding-right: 12px;
+    margin-inline-start: auto;
+    padding-inline-end: 12px;
   }
   .draft-circle {
     height: 6px;

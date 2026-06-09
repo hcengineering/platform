@@ -73,7 +73,7 @@
 
   .showMore {
     position: absolute;
-    left: 50%;
+    inset-inline-start: 50%;
     bottom: 0.25rem;
     padding: 0.5rem 1rem;
     transform: translateX(-50%);

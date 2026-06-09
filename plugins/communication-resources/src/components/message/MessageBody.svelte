@@ -277,7 +277,7 @@
     align-items: center;
     justify-content: center;
     height: 1.313rem;
-    right: 0;
+    inset-inline-end: 0;
     visibility: hidden;
   }
 </style>

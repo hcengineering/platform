@@ -269,7 +269,7 @@
     overflow: hidden;
     position: absolute;
     top: 50%;
-    left: 50%;
+    inset-inline-start: 50%;
     height: 50%;
     aspect-ratio: 1;
     border-radius: 50%;
@@ -294,7 +294,7 @@
       gap: 0.25rem;
       padding: 0.25rem 0.5rem;
       top: 0.25rem;
-      left: 0.25rem;
+      inset-inline-start: 0.25rem;
       max-width: 12rem;
       font-weight: 500;
       font-size: 0.75rem;
@@ -305,7 +305,7 @@
       backdrop-filter: blur(3px);
 
       &.withIcon {
-        padding-left: 0.25rem;
+        padding-inline-start: 0.25rem;
       }
     }
     &.speach::before,

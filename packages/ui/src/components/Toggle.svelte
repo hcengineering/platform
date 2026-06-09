@@ -70,7 +70,7 @@
           background-color: var(--theme-toggle-on-bg-hover);
         }
         &:before {
-          left: 1.125rem;
+          inset-inline-start: 1.125rem;
           background: var(--theme-toggle-on-sw-color);
         }
       }
@@ -97,7 +97,7 @@
         content: '';
         position: absolute;
         top: 0.125rem;
-        left: 0.125rem;
+        inset-inline-start: 0.125rem;
         display: inline-block;
         width: 1rem;
         height: 1rem;

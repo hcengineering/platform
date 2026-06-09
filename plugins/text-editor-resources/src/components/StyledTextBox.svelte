@@ -420,7 +420,7 @@
     }
 
     :global(.select-text) {
-      padding-left: 40px; /* Увеличил отступ */
+      padding-inline-start: 40px; /* Увеличил отступ */
       position: relative;
     }
   }

@@ -134,7 +134,7 @@
   .marker {
     position: absolute;
     top: 1.1rem;
-    right: 0.375rem;
+    inset-inline-end: 0.375rem;
     width: 0.425rem;
     height: 0.425rem;
     border-radius: 50%;

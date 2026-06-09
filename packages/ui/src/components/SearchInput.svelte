@@ -159,7 +159,7 @@
 
     input {
       margin: 0;
-      margin-right: var(--spacing-1_5);
+      margin-inline-end: var(--spacing-1_5);
       padding: 0;
       width: 100%;
       height: 100%;

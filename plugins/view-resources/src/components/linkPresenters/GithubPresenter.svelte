@@ -105,7 +105,7 @@
 
 <style lang="scss">
   .line {
-    margin-right: 1rem;
+    margin-inline-end: 1rem;
     width: 0.4rem;
     border-radius: 0.25rem;
   }

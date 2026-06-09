@@ -235,8 +235,8 @@
 
 <style lang="scss">
   .background-selector {
-    margin-left: auto;
-    margin-right: 0.5rem;
+    margin-inline-start: auto;
+    margin-inline-end: 0.5rem;
     width: 1rem;
     height: 1rem;
     border-radius: 0.25rem;

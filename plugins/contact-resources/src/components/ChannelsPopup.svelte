@@ -49,7 +49,7 @@
 <style lang="scss">
   .button {
     flex-shrink: 0;
-    margin-left: 1.5rem;
+    margin-inline-start: 1.5rem;
     color: var(--dark-color);
     cursor: pointer;
     &:hover {

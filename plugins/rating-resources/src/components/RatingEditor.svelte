@@ -258,7 +258,7 @@
   .reaction-remove {
     position: absolute;
     top: -0.35rem;
-    right: -0.35rem;
+    inset-inline-end: -0.35rem;
     width: 0.9rem;
     height: 0.9rem;
     padding: 0;

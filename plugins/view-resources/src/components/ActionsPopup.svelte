@@ -495,18 +495,18 @@
       }
 
       .ml {
-        margin-left: 0.62rem;
+        margin-inline-start: 0.62rem;
       }
       .mr {
-        margin-right: 0.62rem;
+        margin-inline-end: 0.62rem;
       }
     }
   }
 
   .actionsDoc {
     margin-top: 1rem;
-    margin-left: 1.25rem;
-    margin-right: 1.25rem;
+    margin-inline-start: 1.25rem;
+    margin-inline-end: 1.25rem;
   }
 
   .actionsInput {
@@ -523,8 +523,8 @@
 
   .header.actionsHeader {
     padding-top: 1rem;
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
+    padding-inline-start: 1.25rem;
+    padding-inline-end: 1.25rem;
   }
 
   .selectPopup.actionsPopup {
@@ -562,7 +562,7 @@
   }
 
   .key-box + .key-box {
-    margin-left: 0.5rem;
+    margin-inline-start: 0.5rem;
   }
 
   .item-box {

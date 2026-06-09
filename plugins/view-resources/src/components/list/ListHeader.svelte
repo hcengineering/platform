@@ -225,8 +225,8 @@
     background: var(--theme-bg-color);
 
     &:not(.subLevel) {
-      border-top-left-radius: 0.25rem;
-      border-top-right-radius: 0.25rem;
+      border-start-start-radius: 0.25rem;
+      border-start-end-radius: 0.25rem;
     }
     .on-hover {
       visibility: hidden;
@@ -239,7 +239,7 @@
       flex-shrink: 0;
       min-width: 1rem;
       min-height: 1rem;
-      margin-right: 0.75rem;
+      margin-inline-end: 0.75rem;
       color: var(--theme-caption-color);
       transform-origin: center;
       transform: rotate(90deg);
@@ -252,7 +252,7 @@
           content: '';
           position: absolute;
           top: 0.375rem;
-          left: 0.375rem;
+          inset-inline-start: 0.375rem;
           width: 0.25rem;
           height: 0.25rem;
           background-color: var(--theme-dark-color);
@@ -265,11 +265,11 @@
       position: absolute;
       content: '';
       top: 0;
-      left: 0;
-      right: 0;
+      inset-inline-start: 0;
+      inset-inline-end: 0;
       bottom: 0;
-      border-top-left-radius: 0.25rem;
-      border-top-right-radius: 0.25rem;
+      border-start-start-radius: 0.25rem;
+      border-start-end-radius: 0.25rem;
       pointer-events: none;
     }
     &::after {
@@ -302,10 +302,10 @@
       top: 0;
       padding: 0 2.5rem;
       background: var(--theme-list-subheader-color);
-      border-left: 1px solid transparent;
-      border-right: 1px solid transparent;
-      // border-left: 1px solid var(--theme-list-subheader-divider);
-      // border-right: 1px solid var(--theme-list-subheader-divider);
+      border-inline-start: 1px solid transparent;
+      border-inline-end: 1px solid transparent;
+      // border-inline-start: 1px solid var(--theme-list-subheader-divider);
+      // border-inline-end: 1px solid var(--theme-list-subheader-divider);
       border-bottom: 1px solid var(--theme-list-subheader-divider);
       // here should be top 3rem for sticky, but with ExpandCollapse it gives strange behavior
 

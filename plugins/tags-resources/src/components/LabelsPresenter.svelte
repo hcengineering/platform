@@ -157,7 +157,7 @@
     transition: box-shadow 0.15s ease-in-out;
   }
   .wrap-short:not(:last-child) {
-    margin-right: 0.375rem;
+    margin-inline-end: 0.375rem;
   }
   .wrap-full {
     margin: 0.125rem;

@@ -79,7 +79,7 @@
   .cards-container {
     display: inline-flex;
     flex-shrink: 1;
-    margin-left: 0;
+    margin-inline-start: 0;
     min-width: calc(
       (var(--cards-container-card-min-width, 2rem) + 1.26rem) * var(--cards-container-parents, 1) +
         var(--cards-container-card-min-width, 2rem)

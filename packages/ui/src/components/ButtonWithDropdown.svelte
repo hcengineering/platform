@@ -109,7 +109,7 @@
     background-color: var(--theme-content-color);
     min-width: 1px;
     opacity: 0.25;
-    right: -0.75rem;
+    inset-inline-end: -0.75rem;
 
     &.primary,
     &.secondary,

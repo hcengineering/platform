@@ -155,8 +155,8 @@
 
     &--button {
       display: none;
-      padding-left: 0.25rem;
-      padding-right: 0.25rem;
+      padding-inline-start: 0.25rem;
+      padding-inline-end: 0.25rem;
       position: relative;
       margin: -1em auto -1em;
       z-index: 1;

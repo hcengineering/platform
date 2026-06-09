@@ -79,7 +79,7 @@
     margin: 0 0.5rem;
     @media print {
       line-height: 3rem;
-      margin-left: 0;
+      margin-inline-start: 0;
     }
   }
 

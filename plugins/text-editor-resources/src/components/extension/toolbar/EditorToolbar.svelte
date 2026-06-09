@@ -115,7 +115,7 @@
 <style lang="scss">
   .link {
     padding: 0 0.5rem;
-    padding-right: 0;
+    padding-inline-end: 0;
     max-width: 20rem;
     font-weight: 400;
     overflow: hidden;

@@ -151,7 +151,7 @@
 
 <style lang="scss">
   .header {
-    padding-left: 2rem;
+    padding-inline-start: 2rem;
   }
 
   .title {

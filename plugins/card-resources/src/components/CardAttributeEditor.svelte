@@ -95,7 +95,7 @@
     border-bottom: 1px solid var(--theme-divider-color);
     height: 100%;
     padding: 1rem;
-    padding-left: 0;
+    padding-inline-start: 0;
     overflow: hidden;
 
     &.withoutBorder {

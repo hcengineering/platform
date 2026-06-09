@@ -403,7 +403,7 @@
   .pseudo-element {
     height: 2rem;
     margin: 0 0.75rem;
-    padding-left: 2.5rem;
-    padding-right: 0.75rem;
+    padding-inline-start: 2.5rem;
+    padding-inline-end: 0.75rem;
   }
 </style>

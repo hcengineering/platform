@@ -70,7 +70,7 @@
 
   .counter {
     color: var(--theme-dark-color);
-    margin-left: auto;
+    margin-inline-start: auto;
 
     &.error {
       color: var(--theme-error-color);

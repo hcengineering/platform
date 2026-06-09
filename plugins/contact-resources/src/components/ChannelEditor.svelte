@@ -235,7 +235,7 @@
       content: '';
       position: absolute;
       top: 0;
-      left: 0;
+      inset-inline-start: 0;
       width: 100%;
       height: 100%;
       background-color: var(--theme-popup-hover);
@@ -254,7 +254,7 @@
       overflow: hidden;
       min-width: 0;
       top: 50%;
-      left: 50%;
+      inset-inline-start: 50%;
       width: calc(100% - 0.5rem);
       text-align: center;
       font-size: 0.75rem;
@@ -286,9 +286,9 @@
     &.bottom::before {
       content: '';
       position: absolute;
-      margin-left: -9px;
+      margin-inline-start: -9px;
       top: -6px;
-      left: 50%;
+      inset-inline-start: 50%;
       width: 18px;
       height: 7px;
     }

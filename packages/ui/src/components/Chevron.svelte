@@ -81,5 +81,24 @@
         transform: rotate(90deg);
       }
     }
+
+    // RTL: mirror horizontal chevrons (next/prev, breadcrumb, tree carets).
+    // Vertical states (expanded / down) are intentionally left unchanged.
+    :global([dir='rtl']) &.outline {
+      &.right {
+        transform: rotate(90deg);
+      }
+      &.left {
+        transform: rotate(-90deg);
+      }
+    }
+    :global([dir='rtl']) &:not(.outline):not(.expanded) {
+      &.right {
+        transform: rotate(180deg);
+      }
+      &.left {
+        transform: rotate(0deg);
+      }
+    }
   }
 </style>

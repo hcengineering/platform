@@ -46,7 +46,7 @@
 
 <style lang="scss">
   .caption {
-    margin-right: 1rem;
+    margin-inline-end: 1rem;
     color: var(--caption-color);
     user-select: none;
     span {

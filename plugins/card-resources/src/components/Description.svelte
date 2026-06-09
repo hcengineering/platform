@@ -118,7 +118,7 @@
   .toc {
     width: 1rem;
     pointer-events: all;
-    margin-left: -3rem;
+    margin-inline-start: -3rem;
     position: sticky;
     top: 0;
   }

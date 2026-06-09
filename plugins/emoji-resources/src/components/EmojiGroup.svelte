@@ -85,7 +85,7 @@
         content: '';
         position: absolute;
         top: -1px;
-        left: 0;
+        inset-inline-start: 0;
         width: 100%;
         height: 150%;
         background: var(--theme-popup-trans-gradient);

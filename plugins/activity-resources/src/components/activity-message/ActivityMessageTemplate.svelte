@@ -338,11 +338,11 @@
       position: absolute;
       visibility: hidden;
       top: -0.75rem;
-      right: 0.75rem;
+      inset-inline-end: 0.75rem;
 
       &.embedded {
         top: 0.25rem;
-        right: 0.25rem;
+        inset-inline-end: 0.25rem;
       }
 
       &.opened:not(.pending) {
@@ -407,7 +407,7 @@
     white-space: nowrap;
 
     span {
-      margin-left: 0.25rem;
+      margin-inline-start: 0.25rem;
       font-weight: 400;
       line-height: 1.25rem;
     }
@@ -416,7 +416,7 @@
   .notify {
     position: absolute;
     top: 0.5rem;
-    left: 0.25rem;
+    inset-inline-start: 0.25rem;
     height: 0.5rem;
     width: 0.5rem;
     background-color: var(--global-higlight-Color);
@@ -443,7 +443,7 @@
       linear-gradient(0deg, var(--global-ui-BackgroundColor), var(--global-ui-BackgroundColor));
     border: 1px solid var(--global-ui-BackgroundColor);
     top: -0.5rem;
-    left: -0.5rem;
+    inset-inline-start: -0.5rem;
     color: var(--white-color);
   }
 
@@ -465,12 +465,12 @@
     background: var(--theme-bg-color);
     border: 1px solid var(--global-ui-BorderColor);
     bottom: -0.375rem;
-    right: -0.375rem;
+    inset-inline-end: -0.375rem;
     color: var(--content-color);
   }
 
   .username {
     font-weight: 500;
-    margin-right: 0.25rem;
+    margin-inline-end: 0.25rem;
   }
 </style>

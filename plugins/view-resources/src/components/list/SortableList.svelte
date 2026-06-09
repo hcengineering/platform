@@ -142,10 +142,10 @@
       border-bottom: 1px solid var(--theme-caret-color);
     }
     &.row.is-dragged-over-before::before {
-      border-left: 1px solid var(--theme-caret-color);
+      border-inline-start: 1px solid var(--theme-caret-color);
     }
     &.row.is-dragged-over-after::before {
-      border-right: 1px solid var(--theme-caret-color);
+      border-inline-end: 1px solid var(--theme-caret-color);
     }
   }
 </style>

@@ -1,0 +1,64 @@
+{
+  "string": {
+    "Document": "مستند",
+    "ParentDocument": "المستند الأصل",
+    "ChildDocument": "المستند الفرعي",
+    "CreateDocument": "إنشاء مستند",
+    "Documents": "المستندات",
+    "CreateAnVersion": "إنشاء إصدار جديد",
+    "DocumentNamePlaceholder": "بلا عنوان",
+    "Name": "الاسم",
+    "Cancel": "إلغاء",
+    "Version": "الإصدار",
+    "SearchDocument": "البحث في المستندات...",
+    "Snapshot": "لقطة",
+    "NoVersions": "لم يتم تعريف أي إصدار",
+    "DocumentApplication": "المستندات",
+    "MyDocuments": "مستنداتي",
+    "Teamspace": "مساحة الفريق",
+    "Teamspaces": "مساحات الفرق",
+    "Labels": "التسميات",
+    "AddLabel": "إضافة تسمية",
+    "Authors": "المؤلفون",
+    "Backlinks": "الروابط الخلفية",
+    "History": "السجل",
+    "DescriptionPlaceholder": "اكتب للتفاصيل...",
+    "CreateTeamspace": "إنشاء مساحة فريق",
+    "EditTeamspace": "تعديل مساحة الفريق",
+    "NewTeamspace": "مساحة فريق جديدة",
+    "TeamspaceTitle": "عنوان مساحة الفريق",
+    "TeamspaceTitlePlaceholder": "مساحة فريق جديدة",
+    "TeamspaceDescriptionPlaceholder": "إضافة وصف ...",
+    "ChooseIcon": "اختيار أيقونة",
+    "TeamspaceMembers": "الأعضاء",
+    "NoParentDocument": "لا يوجد مستند أصل",
+    "NoBacklinks": "لا توجد روابط خلفية",
+    "NoHistory": "لا يوجد سجل سابق",
+    "Untitled": "بلا عنوان",
+
+    "Description": "الوصف",
+
+    "CopyDocumentUrl": "نسخ URL المستند إلى الحافظة",
+    "DocumentUrlCopied": "تم النسخ!",
+
+    "ViewMode": "عرض",
+    "EditMode": "تعديل",
+    "SuggestMode": "اقتراح",
+
+    "CompareTo": "مقارنة بـ...",
+    "Star": "إضافة إلى المميَّزة",
+    "Unstar": "إزالة من المميَّزة",
+
+    "Lock": "قفل",
+    "Unlock": "إلغاء القفل",
+    "Locked": "مقفل",
+
+    "ConfigLabel": "المستندات",
+    "ConfigDescription": "امتداد لتحرير المستندات التعاوني",
+
+    "Icon": "الأيقونة",
+    "Color": "اللون",
+    "ForbidCreateTeamspacePermission": "منع إنشاء مساحة فريق",
+    "ForbidCreateTeamspacePermissionDescription": "منع المستخدمين من إنشاء مساحات فرق جديدة"
+  }
+}

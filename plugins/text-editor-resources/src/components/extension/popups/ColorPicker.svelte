@@ -52,7 +52,7 @@
     border-radius: 0.5rem;
     box-shadow: var(--theme-popup-shadow);
     padding: 0.5rem;
-    margin-left: -4rem;
+    margin-inline-start: -4rem;
   }
 
   .palette {

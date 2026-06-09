@@ -89,7 +89,7 @@
 
     .eAttachmentCellMenu {
       visibility: hidden;
-      margin-left: 0.2rem;
+      margin-inline-start: 0.2rem;
       opacity: 0.6;
       cursor: pointer;
 

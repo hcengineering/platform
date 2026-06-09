@@ -506,7 +506,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding-right: 1rem;
+    padding-inline-end: 1rem;
     overflow: visible;
   }
 

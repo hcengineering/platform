@@ -84,7 +84,7 @@
     font-size: 0.8125rem;
     background-color: #f3f6fb;
     border: 1px solid rgba(43, 81, 144, 0.2);
-    border-left: 0.25rem solid #2b5190;
+    border-inline-start: 0.25rem solid #2b5190;
     border-radius: 0.25rem;
     cursor: pointer;
     padding: 0.25rem 0.5rem 0.25rem 1rem;

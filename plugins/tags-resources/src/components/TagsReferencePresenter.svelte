@@ -62,7 +62,7 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    padding-left: 0.5rem;
+    padding-inline-start: 0.5rem;
     height: 1.75rem;
     min-width: 0;
     min-height: 0;
@@ -122,7 +122,7 @@
       mask: radial-gradient(circle at 100% 50%, rgba(0, 0, 0, 0) 48.5%, rgb(0, 0, 0) 50%);
     }
     &:not(:first-child) {
-      margin-left: calc(1px - 0.25rem);
+      margin-inline-start: calc(1px - 0.25rem);
     }
   }
 </style>

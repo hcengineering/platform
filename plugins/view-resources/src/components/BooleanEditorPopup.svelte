@@ -69,7 +69,7 @@
     align-items: center;
     padding: 0.25rem 0.75rem;
     min-height: 2rem;
-    text-align: left;
+    text-align: start;
     color: var(--caption-color);
     cursor: pointer;
 

@@ -52,7 +52,7 @@
 <style lang="scss">
   .root {
     display: inline-flex;
-    margin-left: 0;
+    margin-inline-start: 0;
     min-width: 0;
 
     .names {

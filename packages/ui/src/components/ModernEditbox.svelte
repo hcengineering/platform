@@ -290,7 +290,7 @@
     .label {
       position: absolute;
       top: 0;
-      left: 0;
+      inset-inline-start: 0;
       height: 100%;
       padding: var(--spacing-2_5) var(--spacing-2);
       font-size: 0.875rem;

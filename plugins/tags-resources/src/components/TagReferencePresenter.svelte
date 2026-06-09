@@ -81,7 +81,7 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    padding-left: 0.5rem;
+    padding-inline-start: 0.5rem;
     height: 1.75rem;
     min-width: 0;
     min-height: 0;
@@ -98,15 +98,15 @@
     }
     .btn-close {
       flex-shrink: 0;
-      margin-left: 0.125rem;
+      margin-inline-start: 0.125rem;
       padding: 0 0.25rem 0 0.125rem;
       height: 1.75rem;
       color: var(--theme-content-color);
-      border-left: 1px solid transparent;
+      border-inline-start: 1px solid transparent;
 
       &:hover {
         color: var(--theme-caption-color);
-        border-left-color: var(--theme-divider-color);
+        border-inline-start-color: var(--theme-divider-color);
       }
     }
   }

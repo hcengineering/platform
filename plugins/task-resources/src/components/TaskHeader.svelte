@@ -95,13 +95,13 @@
 
     .column {
       position: relative;
-      margin-left: 3rem;
+      margin-inline-start: 3rem;
       &::before {
         content: '';
         position: absolute;
         top: 0;
         bottom: 0;
-        left: -1.5rem;
+        inset-inline-start: -1.5rem;
         width: 1px;
         background-color: var(--accent-bg-color);
       }

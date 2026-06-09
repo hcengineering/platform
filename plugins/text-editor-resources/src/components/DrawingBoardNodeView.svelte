@@ -187,7 +187,7 @@
     z-index: 1;
     position: absolute;
     top: 0.3rem;
-    right: 0.3rem;
+    inset-inline-end: 0.3rem;
   }
 
   .handle {
@@ -209,23 +209,23 @@
 
   .resizer {
     bottom: 0;
-    left: calc(50% - 4rem);
+    inset-inline-start: calc(50% - 4rem);
     width: 8rem;
     height: 0.6rem;
     cursor: row-resize;
-    border-top-left-radius: var(--small-BorderRadius);
-    border-top-right-radius: var(--small-BorderRadius);
+    border-start-start-radius: var(--small-BorderRadius);
+    border-start-end-radius: var(--small-BorderRadius);
     border-bottom: none;
   }
 
   .drag {
-    left: -0.6rem;
+    inset-inline-start: -0.6rem;
     top: calc(50% - 2rem);
     width: 0.6rem;
     height: 4rem;
     cursor: move;
-    border-top-left-radius: var(--small-BorderRadius);
-    border-bottom-left-radius: var(--small-BorderRadius);
-    border-right: none;
+    border-start-start-radius: var(--small-BorderRadius);
+    border-end-start-radius: var(--small-BorderRadius);
+    border-inline-end: none;
   }
 </style>

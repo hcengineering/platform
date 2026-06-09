@@ -257,16 +257,16 @@
         color: var(--theme-caption-color);
       }
       &.startRow:not(.wrongMonth) {
-        border-top-left-radius: 0.25rem;
-        border-bottom-left-radius: 0.25rem;
-        padding-left: 0;
-        margin-left: 0.125rem;
+        border-start-start-radius: 0.25rem;
+        border-end-start-radius: 0.25rem;
+        padding-inline-start: 0;
+        margin-inline-start: 0.125rem;
       }
       &.endRow:not(.wrongMonth) {
-        border-top-right-radius: 0.25rem;
-        border-bottom-right-radius: 0.25rem;
-        padding-right: 0;
-        margin-right: 0.125rem;
+        border-start-end-radius: 0.25rem;
+        border-end-end-radius: 0.25rem;
+        padding-inline-end: 0;
+        margin-inline-end: 0.125rem;
       }
     }
 
@@ -306,7 +306,7 @@
       position: absolute;
       content: '';
       top: 2.25rem;
-      left: 0;
+      inset-inline-start: 0;
       width: 100%;
       height: 1px;
       background-color: var(--theme-divider-color);

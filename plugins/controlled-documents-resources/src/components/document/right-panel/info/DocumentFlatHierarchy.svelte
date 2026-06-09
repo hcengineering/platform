@@ -99,10 +99,10 @@
     display: flex;
     flex-direction: column;
     padding: 0 1rem;
-    border-left: 2px solid var(--theme-navpanel-border);
+    border-inline-start: 2px solid var(--theme-navpanel-border);
     gap: 0.25rem;
 
-    padding-left: 0.25rem;
-    margin-left: 0.75rem;
+    padding-inline-start: 0.25rem;
+    margin-inline-start: 0.75rem;
   }
 </style>

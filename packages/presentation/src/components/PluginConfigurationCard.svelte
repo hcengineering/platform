@@ -142,6 +142,6 @@
     opacity: 0.75;
     font-size: 0.8125rem;
     line-height: 1.4;
-    padding-left: calc(1.25rem + 0.625rem);
+    padding-inline-start: calc(1.25rem + 0.625rem);
   }
 </style>

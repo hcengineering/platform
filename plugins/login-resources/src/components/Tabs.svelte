@@ -76,7 +76,7 @@
       cursor: default;
     }
     &:first-child {
-      margin-right: 1.75rem;
+      margin-inline-end: 1.75rem;
     }
     &:hover {
       text-decoration: none;

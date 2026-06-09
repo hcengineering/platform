@@ -94,7 +94,7 @@
       height: 1rem;
     }
     .label {
-      margin-left: 0.25rem;
+      margin-inline-start: 0.25rem;
     }
     &:hover {
       color: var(--theme-caption-color);

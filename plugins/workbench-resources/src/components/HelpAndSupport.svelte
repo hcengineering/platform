@@ -257,7 +257,7 @@
     border-radius: 0.25rem;
   }
   .key-box + .key-box {
-    margin-left: 0.5rem;
+    margin-inline-start: 0.5rem;
   }
   .category-box {
     position: sticky;

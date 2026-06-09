@@ -58,7 +58,7 @@
 
 <style lang="scss">
   .version-label {
-    margin-left: auto;
+    margin-inline-start: auto;
     font-size: 0.6875rem;
     color: var(--theme-dark-color);
     user-select: all;

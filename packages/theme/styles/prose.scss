@@ -34,7 +34,7 @@
 
   table.proseTable td:not(:last-child),
   table.proseTable th:not(:last-child) {
-    border-right: none !important;
+    border-inline-end: none !important;
   }
 
   table.proseTable tr:not(:last-child) td,
@@ -84,7 +84,7 @@ table.proseTable {
   }
 
   th {
-    text-align: left;
+    text-align: start;
     background-color: var(--text-editor-table-header-color);
   }
 
@@ -105,8 +105,8 @@ table.proseTable {
         z-index: var(--table-selection-z-index);
         top: var(--table-selection-border-indent);
         bottom: var(--table-selection-border-indent);
-        left: var(--table-selection-border-indent);
-        right: var(--table-selection-border-indent);
+        inset-inline-start: var(--table-selection-border-indent);
+        inset-inline-end: var(--table-selection-border-indent);
       }
 
       &__border-top::before {
@@ -117,12 +117,12 @@ table.proseTable {
         border-bottom-width: var(--table-selection-border-width);
       }
 
-      &__border-left::before {
-        border-left-width: var(--table-selection-border-width);
+      &__border-inline-start::before {
+        border-inline-start-width: var(--table-selection-border-width);
       }
 
-      &__border-right::before {
-        border-right-width: var(--table-selection-border-width);
+      &__border-inline-end::before {
+        border-inline-end-width: var(--table-selection-border-width);
       }
     }
 
@@ -157,8 +157,8 @@ table.proseTable {
           z-index: var(--table-handlers-z-index);
           top: var(--table-selection-border-indent);
           bottom: var(--table-selection-border-indent);
-          left: var(--table-selection-border-indent);
-          right: var(--table-selection-border-indent);
+          inset-inline-start: var(--table-selection-border-indent);
+          inset-inline-end: var(--table-selection-border-indent);
         }
 
         &:hover button {
@@ -186,8 +186,8 @@ table.proseTable {
       position: absolute;
       height: var(--table-handle-size);
       top: var(--table-handle-col-indent);
-      left: -1px;
-      right: -1px;
+      inset-inline-start: -1px;
+      inset-inline-end: -1px;
 
       button {
         height: 100%;
@@ -196,8 +196,8 @@ table.proseTable {
 
       &:hover {
         border-radius: var(--table-selection-border-radius);
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
+        border-end-start-radius: 0;
+        border-end-end-radius: 0;
 
         button {
           opacity: 1;
@@ -205,15 +205,15 @@ table.proseTable {
       }
 
       &__selected {
-        left: 0;
+        inset-inline-start: 0;
 
         &::before {
-          right: 0;
+          inset-inline-end: 0;
           top: 0;
           bottom: 0;
           border-bottom-width: 0;
-          border-bottom-left-radius: 0;
-          border-bottom-right-radius: 0;
+          border-end-start-radius: 0;
+          border-end-end-radius: 0;
         }
       }
     }
@@ -223,10 +223,10 @@ table.proseTable {
       width: var(--table-handle-size);
       top: -1px;
       bottom: -1px;
-      left: var(--table-handle-row-indent);
+      inset-inline-start: var(--table-handle-row-indent);
       border-radius: var(--table-selection-border-radius);
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
+      border-start-end-radius: 0;
+      border-end-end-radius: 0;
 
       button {
         width: 100%;
@@ -250,11 +250,11 @@ table.proseTable {
 
         &::before {
           bottom: 0;
-          left: 0;
-          right: 0;
-          border-right-width: 0;
-          border-top-right-radius: 0;
-          border-bottom-right-radius: 0;
+          inset-inline-start: 0;
+          inset-inline-end: 0;
+          border-inline-end-width: 0;
+          border-start-end-radius: 0;
+          border-end-end-radius: 0;
         }
       }
     }
@@ -273,7 +273,7 @@ table.proseTable {
       justify-content: flex-start;
       align-items: center;
       top: var(--table-insert-marker-indent);
-      right: -0.625rem;
+      inset-inline-end: -0.625rem;
       width: 1.25rem;
 
       .table-insert-marker {
@@ -283,7 +283,7 @@ table.proseTable {
 
     .column-resize-handle {
       position: absolute;
-      right: -1px;
+      inset-inline-end: -1px;
       top: -1px;
       bottom: -1px;
       width: 1px;
@@ -294,8 +294,8 @@ table.proseTable {
         content: '';
         position: absolute;
         top: 0;
-        left: -5px;
-        right: -5px;
+        inset-inline-start: -5px;
+        inset-inline-end: -5px;
         bottom: 0;
         cursor: col-resize;
         z-index: 100;
@@ -307,7 +307,7 @@ table.proseTable {
       flex-direction: row;
       justify-content: flex-start;
       align-items: center;
-      left: var(--table-insert-marker-indent);
+      inset-inline-start: var(--table-insert-marker-indent);
       bottom: -0.625rem;
       height: 1.25rem;
 
@@ -338,7 +338,7 @@ table.proseTable {
           content: '';
           border: 2px solid var(--text-editor-table-marker-color);
           border-radius: 50%;
-          margin-left: calc(0.5rem - 1px);
+          margin-inline-start: calc(0.5rem - 1px);
         }
 
         svg {
@@ -410,7 +410,7 @@ table.proseTable {
 
   .table-row-drag-marker {
     width: var(--table-handle-size);
-    left: var(--table-handle-row-indent);
+    inset-inline-start: var(--table-handle-row-indent);
 
     button {
       width: 100%;
@@ -432,10 +432,10 @@ table.proseTable {
 
 .proseBlockQuote {
   margin-inline: 1px 0;
-  padding-left: 1.5em;
-  padding-right: 1.5em;
+  padding-inline-start: 1.5em;
+  padding-inline-end: 1.5em;
   position: relative;
-  border-left: 2px solid var(--text-editor-block-quote-color);
+  border-inline-start: 2px solid var(--text-editor-block-quote-color);
 }
 
 .proseCode {
@@ -544,7 +544,7 @@ pre.proseCodeBlock>pre.proseCode {
   header {
     user-select: none;
     position: absolute;
-    right: 0.5rem;
+    inset-inline-end: 0.5rem;
     top: 0.5rem;
 
     display: flex;

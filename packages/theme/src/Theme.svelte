@@ -34,6 +34,10 @@
   const currentLanguage = writable<string>(getCurrentLanguage())
   const currentEmoji = writable<string>(getCurrentEmoji())
 
+  // Languages whose UI should render right-to-left.
+  const rtlLanguages = new Set<string>(['ar', 'he', 'fa', 'ur'])
+  const isRtlLanguage = (language: string): boolean => rtlLanguages.has((language ?? '').split(/[-_]/)[0])
+
   const setOptions = (currentFont: string, theme: string, language: string, emoji: string) => {
     themeOptions.set(new ThemeOptions(currentFont === 'normal-font' ? 16 : 14, isThemeDark(theme), language, emoji))
   }
@@ -70,6 +74,7 @@
     setMetadata(platform.metadata.locale, $currentLanguage)
     await loadPluginStrings($currentLanguage, set)
     setOptions(getCurrentFontSize(), getCurrentTheme(), language, getCurrentEmoji())
+    setDocumentLanguage()
   }
   const setEmoji = (emoji: string, set = true) => {
     currentEmoji.set(emoji)
@@ -124,6 +129,7 @@
 
   const setDocumentLanguage = (): void => {
     document.documentElement.lang = $currentLanguage
+    document.documentElement.dir = isRtlLanguage($currentLanguage) ? 'rtl' : 'ltr'
   }
 
   onMount(() => {

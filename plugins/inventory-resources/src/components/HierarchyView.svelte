@@ -101,12 +101,12 @@
     user-select: none;
     z-index: 5;
     padding: 0.5rem 1.5rem;
-    text-align: left;
+    text-align: start;
     &:first-child {
-      padding-left: 2.5rem;
+      padding-inline-start: 2.5rem;
     }
     &:last-child {
-      padding-right: 1.5rem;
+      padding-inline-end: 1.5rem;
     }
   }
 </style>

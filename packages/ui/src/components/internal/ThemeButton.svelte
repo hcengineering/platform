@@ -52,7 +52,7 @@
   :global(.statusPopupThemeButton svg.check) {
     position: absolute;
     bottom: 3px;
-    right: 3px;
+    inset-inline-end: 3px;
     width: 16px;
     height: 16px;
   }
@@ -71,7 +71,7 @@
         color: #000000cc;
         background-color: #fff;
         border-top: 1px solid rgba(0, 0, 0, 0.2);
-        border-left: 1px solid rgba(0, 0, 0, 0.2);
+        border-inline-start: 1px solid rgba(0, 0, 0, 0.2);
       }
     }
     .dark-container {
@@ -81,7 +81,7 @@
         color: #ffffffcc;
         background-color: #161516;
         border-top: 1px solid rgba(255, 255, 255, 0.2);
-        border-left: 1px solid rgba(255, 255, 255, 0.2);
+        border-inline-start: 1px solid rgba(255, 255, 255, 0.2);
       }
     }
     .light-container,
@@ -98,7 +98,7 @@
     }
     &.both {
       .light-container {
-        border-right: none;
+        border-inline-end: none;
         border-radius: 5.75px 0 0 5.75px;
       }
       .dark-container {

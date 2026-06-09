@@ -130,8 +130,8 @@
     overflow-y: hidden;
 
     &.expanded {
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
+      border-end-start-radius: 0;
+      border-end-end-radius: 0;
     }
   }
 
@@ -144,8 +144,8 @@
   .file-content {
     border: 1px solid var(--theme-divider-color);
     border-top: 0;
-    border-bottom-left-radius: 0.25rem;
-    border-bottom-right-radius: 0.25rem;
+    border-end-start-radius: 0.25rem;
+    border-end-end-radius: 0.25rem;
     overflow-y: hidden;
   }
 </style>

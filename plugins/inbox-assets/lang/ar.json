@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Inbox": "صندوق الوارد",
+    "ReactedToYourMessage": "تفاعل مع رسالتك",
+    "ClearAll": "مسح الكل",
+    "InboxIsClear": "صندوق الوارد فارغ",
+    "YouDontHaveAnyNewMessages": "ليس لديك أي رسائل جديدة",
+    "ReadAll": "تعليم الكل كمقروء",
+    "Clearing": "جارٍ المسح...",
+    "Reading": "جارٍ القراءة...",
+    "HideUserNames": "إخفاء أسماء المستخدمين"
+  }
+}

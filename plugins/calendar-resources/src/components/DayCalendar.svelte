@@ -1161,8 +1161,8 @@
       background-color: var(--highlight-red);
     }
     .now-line {
-      left: 3rem;
-      right: 0;
+      inset-inline-start: 3rem;
+      inset-inline-end: 0;
       width: 100%;
       height: 1px;
       min-height: 1px;
@@ -1173,8 +1173,8 @@
       &::before {
         content: '';
         top: -0.5rem;
-        left: -2.75rem;
-        right: calc(100% - 0.25rem);
+        inset-inline-start: -2.75rem;
+        inset-inline-end: calc(100% - 0.25rem);
         height: 1rem;
         border-radius: 0.125rem;
       }
@@ -1182,7 +1182,7 @@
         position: absolute;
         content: attr(data-now);
         top: -0.46rem;
-        left: -1.25rem;
+        inset-inline-start: -1.25rem;
         font-weight: 500;
         font-size: 0.66rem;
         color: var(--primary-button-color);
@@ -1203,7 +1203,7 @@
     }
   }
   .empty-cell {
-    border-left: 1px solid var(--theme-divider-color);
+    border-inline-start: 1px solid var(--theme-divider-color);
     border-bottom: 1px solid var(--theme-divider-color);
 
     &:not(.weekend) {
@@ -1234,8 +1234,8 @@
     &-start,
     &-end {
       position: absolute;
-      left: 0;
-      right: 0;
+      inset-inline-start: 0;
+      inset-inline-end: 0;
       height: 0.25rem;
       border-radius: 0.5rem;
       cursor: row-resize;
@@ -1243,8 +1243,8 @@
       &::after {
         position: absolute;
         content: '';
-        left: -0.25rem;
-        right: -0.25rem;
+        inset-inline-start: -0.25rem;
+        inset-inline-end: -0.25rem;
         height: 0.5rem;
         border: 1px solid transparent;
         transition-property: opacity, border-width, transform;
@@ -1323,7 +1323,7 @@
         justify-content: center;
       }
       &:not(.center) {
-        padding-left: var(--spacing-3);
+        padding-inline-start: var(--spacing-3);
       }
 
       .today {
@@ -1388,7 +1388,7 @@
     .header-time {
       position: absolute;
       top: var(--spacing-0_25);
-      right: var(--spacing-0_25);
+      inset-inline-end: var(--spacing-0_25);
       padding: var(--spacing-0_25) var(--spacing-1);
       font-size: 0.75rem;
       color: var(--theme-dark-color);

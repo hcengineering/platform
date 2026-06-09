@@ -220,7 +220,7 @@
       &:not(:first-child)::before {
         position: absolute;
         content: '';
-        border-left: $border;
+        border-inline-start: $border;
         inset: 0.375rem auto;
       }
     }

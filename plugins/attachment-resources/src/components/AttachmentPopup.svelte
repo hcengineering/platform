@@ -137,8 +137,8 @@
   .header {
     border-bottom: 1px solid var(--theme-divider-color);
     padding: 1rem 1.5rem;
-    margin-right: -0.5rem;
-    margin-left: -0.5rem;
+    margin-inline-end: -0.5rem;
+    margin-inline-start: -0.5rem;
     margin-bottom: 1rem;
   }
 

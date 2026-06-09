@@ -90,7 +90,7 @@
     min-width: 2rem;
     max-width: 2rem;
     height: 100%;
-    border-left: 1px solid var(--theme-divider-color);
+    border-inline-start: 1px solid var(--theme-divider-color);
     gap: 0.25rem;
     align-items: center;
     padding: 0.25rem 0;

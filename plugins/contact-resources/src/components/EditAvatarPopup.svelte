@@ -81,9 +81,9 @@
   .overlay {
     position: fixed;
     top: 0;
-    left: 0;
+    inset-inline-start: 0;
     bottom: 0;
-    right: 0;
+    inset-inline-end: 0;
 
     background: var(--theme-overlay-color);
     touch-action: none;
@@ -93,8 +93,8 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 0;
-    right: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
 
     overflow: auto;
 

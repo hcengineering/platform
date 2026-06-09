@@ -114,7 +114,7 @@
     }
     .label {
       font-size: 0.8125rem;
-      margin-left: 0.5rem;
+      margin-inline-start: 0.5rem;
 
       &.normal {
         color: var(--theme-content-color);

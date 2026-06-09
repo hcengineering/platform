@@ -136,7 +136,7 @@
       border-top-color: transparent;
     }
     .icon-arrow {
-      margin-left: 0.5rem;
+      margin-inline-start: 0.5rem;
       width: 0.325rem;
       height: 0.325rem;
       opacity: 0;

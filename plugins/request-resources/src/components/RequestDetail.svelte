@@ -93,10 +93,10 @@
     th,
     td {
       &:first-child {
-        padding-left: 1.5rem;
+        padding-inline-start: 1.5rem;
       }
       &:last-child {
-        padding-right: 1.5rem;
+        padding-inline-end: 1.5rem;
       }
     }
   }

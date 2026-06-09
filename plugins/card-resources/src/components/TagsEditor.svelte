@@ -162,6 +162,6 @@
     border: 1px solid var(--theme-content-color);
     width: 1px;
     height: 100%;
-    margin-left: 0.25rem;
+    margin-inline-start: 0.25rem;
   }
 </style>

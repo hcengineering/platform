@@ -332,7 +332,7 @@
 
       .history-box {
         -webkit-app-region: no-drag;
-        margin-left: var(--huly-history-box-left-indent, 4.625rem);
+        margin-inline-start: var(--huly-history-box-left-indent, 4.625rem);
       }
       .maintenanceScheduled {
         padding: 0 0.5rem;

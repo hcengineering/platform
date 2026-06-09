@@ -285,7 +285,7 @@
     .top-icon {
       flex-shrink: 0;
       margin-top: 1.375rem;
-      margin-right: 0.125rem;
+      margin-inline-end: 0.125rem;
 
       &.disabled {
         margin-top: 0.875rem;

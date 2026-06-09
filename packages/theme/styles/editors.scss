@@ -34,7 +34,7 @@
     &::after {
       position: absolute;
       top: 0;
-      left: -0.75rem;
+      inset-inline-start: -0.75rem;
       width: calc(100% + 1.5rem);
       height: 100%;
       border: 1px solid var(--theme-editbox-focus-border);

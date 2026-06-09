@@ -159,7 +159,7 @@
 
   .persons-count {
     position: absolute;
-    right: -0.188rem;
+    inset-inline-end: -0.188rem;
     bottom: -0.188rem;
     width: 0.938rem;
     height: 0.938rem;
@@ -174,7 +174,7 @@
     font-weight: 500;
 
     &.medium {
-      right: -0.313rem;
+      inset-inline-end: -0.313rem;
       bottom: -0.313rem;
       width: 1.5rem;
       height: 1.5rem;

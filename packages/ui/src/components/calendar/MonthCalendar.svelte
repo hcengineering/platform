@@ -132,7 +132,7 @@
     }
 
     &.left-border {
-      border-left: 1px solid var(--theme-divider-color);
+      border-inline-start: 1px solid var(--theme-divider-color);
     }
   }
 </style>
