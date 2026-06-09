@@ -1,0 +1,19 @@
+class: card:class:MasterTag
+title: Incident
+properties:
+  - label: zavaznost
+    type: TypeString
+  - label: dopad
+    type: TypeString
+  - label: system
+    refTo: "./Integrace.yaml"
+  - label: vlastnik
+    type: TypeString
+  - label: workaround
+    type: TypeString
+  - label: pricina
+    type: TypeString
+  - label: napravna akce
+    type: TypeString
+  - label: stav
+    enumOf: "./enum-incident-stav.yaml"

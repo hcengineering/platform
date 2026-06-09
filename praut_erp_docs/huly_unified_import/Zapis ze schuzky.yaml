@@ -1,0 +1,17 @@
+class: card:class:MasterTag
+title: Zapis ze schuzky
+properties:
+  - label: datum
+    type: TypeString
+  - label: ucastnici
+    type: TypeNumber
+  - label: projekt/klient
+    type: TypeString
+  - label: rozhodnuti
+    type: TypeString
+  - label: akcni polozky
+    type: TypeString
+  - label: citlivost
+    enumOf: "./enum-citlivost.yaml"
+  - label: stav
+    enumOf: "./enum-zapis-ze-schuzky-stav.yaml"

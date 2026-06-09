@@ -1,0 +1,19 @@
+class: card:class:MasterTag
+title: Change request
+properties:
+  - label: duvod
+    type: TypeString
+  - label: dopad
+    type: TypeString
+  - label: riziko
+    enumOf: "./enum-riziko-uroven.yaml"
+  - label: schvalovatel
+    type: TypeString
+  - label: test
+    type: TypeString
+  - label: nasazeni
+    type: TypeString
+  - label: rollback
+    type: TypeString
+  - label: stav
+    enumOf: "./enum-change-request-stav.yaml"

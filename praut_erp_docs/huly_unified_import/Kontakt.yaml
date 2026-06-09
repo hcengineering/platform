@@ -1,0 +1,17 @@
+class: card:class:MasterTag
+title: Kontakt
+properties:
+  - label: jmeno
+    type: TypeString
+  - label: firma
+    refTo: "./Firma.yaml"
+  - label: role
+    type: TypeString
+  - label: email
+    type: TypeString
+  - label: telefon
+    type: TypeString
+  - label: GDPR souhlas
+    type: TypeBoolean
+  - label: vlastnik
+    type: TypeString

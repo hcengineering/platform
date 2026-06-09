@@ -1,0 +1,7 @@
+class: core:class:Enum
+title: Trend
+values:
+  - roste
+  - stabilni
+  - klesa
+  - odchylka

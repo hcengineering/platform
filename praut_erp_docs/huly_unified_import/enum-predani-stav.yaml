@@ -1,0 +1,9 @@
+class: core:class:Enum
+title: Predani stav
+values:
+  - vyzadano
+  - pripravuje se
+  - ke kontrole
+  - prijato
+  - vraceno
+  - dokonceno

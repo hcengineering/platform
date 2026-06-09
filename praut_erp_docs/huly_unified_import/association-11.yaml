@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Zakazka.yaml"
+typeB: "./Predani.yaml"
+nameA: predani
+nameB: zakazka
+type: "1:N"

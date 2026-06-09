@@ -1,0 +1,9 @@
+class: core:class:Enum
+title: Incident stav
+values:
+  - detekovano
+  - triage
+  - reseni
+  - obnova
+  - postmortem
+  - uzavreno

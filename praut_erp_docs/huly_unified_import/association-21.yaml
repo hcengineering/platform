@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./AI funkce.yaml"
+typeB: "./Riziko.yaml"
+nameA: rizika
+nameB: aiFunkce
+type: "N:N"

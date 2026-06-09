@@ -1,0 +1,7 @@
+class: core:class:Enum
+title: SLA
+values:
+  - 4h
+  - 24h
+  - 3d
+  - bez SLA

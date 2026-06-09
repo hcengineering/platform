@@ -1,0 +1,9 @@
+class: core:class:Enum
+title: Faktura stav
+values:
+  - draft
+  - vystavena
+  - odeslano
+  - zaplaceno
+  - po splatnosti
+  - storno

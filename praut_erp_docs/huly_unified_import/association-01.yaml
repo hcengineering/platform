@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Firma.yaml"
+typeB: "./Kontakt.yaml"
+nameA: kontakty
+nameB: firma
+type: "1:N"

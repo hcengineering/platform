@@ -1,0 +1,17 @@
+class: card:class:MasterTag
+title: Predani
+properties:
+  - label: from role
+    type: TypeString
+  - label: to role
+    type: TypeString
+  - label: projekt
+    refTo: "./Projekt.yaml"
+  - label: deadline
+    type: TypeString
+  - label: otevrene otazky
+    type: TypeString
+  - label: potvrzeni prevzeti
+    type: TypeString
+  - label: stav
+    enumOf: "./enum-predani-stav.yaml"

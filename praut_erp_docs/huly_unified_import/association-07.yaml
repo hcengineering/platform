@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Obchodni prilezitost.yaml"
+typeB: "./Nabidka.yaml"
+nameA: nabidky
+nameB: prilezitost
+type: "1:N"

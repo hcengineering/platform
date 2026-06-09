@@ -1,0 +1,8 @@
+class: core:class:Enum
+title: Integrace stav
+values:
+  - navrh
+  - test
+  - aktivni
+  - pozastaveno
+  - vyrazeno

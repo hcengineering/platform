@@ -1,0 +1,5 @@
+class: document:class:Teamspace
+title: "Zakazky, projekty a ukoly"
+private: false
+autoJoin: true
+description: "Rizeni zakazek, projektu, ukolu, milniku, kapacit, predavani prace a casovych reportu."

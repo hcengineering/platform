@@ -1,0 +1,17 @@
+class: card:class:MasterTag
+title: KPI
+properties:
+  - label: definice
+    type: TypeString
+  - label: zdroj dat
+    type: TypeString
+  - label: vlastnik
+    type: TypeString
+  - label: frekvence
+    enumOf: "./enum-frekvence.yaml"
+  - label: cil
+    type: TypeString
+  - label: trend
+    enumOf: "./enum-trend.yaml"
+  - label: akce pri odchylce
+    type: TypeString

@@ -1,0 +1,7 @@
+class: core:class:Enum
+title: Health
+values:
+  - zeleny
+  - zluty
+  - cerveny
+  - v riziku

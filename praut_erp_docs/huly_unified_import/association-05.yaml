@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Firma.yaml"
+typeB: "./Zakaznicky pozadavek.yaml"
+nameA: zakaznickePozadavky
+nameB: klient
+type: "1:N"

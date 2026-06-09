@@ -1,0 +1,8 @@
+class: core:class:Enum
+title: Projekt faze
+values:
+  - priprava
+  - aktivni realizace
+  - revize
+  - klientske schvaleni
+  - dokonceno

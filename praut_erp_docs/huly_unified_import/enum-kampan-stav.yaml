@@ -1,0 +1,8 @@
+class: core:class:Enum
+title: Kampan stav
+values:
+  - navrh
+  - priprava
+  - aktivni
+  - vyhodnoceni
+  - uzavreno

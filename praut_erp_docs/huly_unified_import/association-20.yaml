@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Automatizace.yaml"
+typeB: "./Riziko.yaml"
+nameA: rizika
+nameB: automatizace
+type: "N:N"

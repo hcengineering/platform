@@ -1,0 +1,23 @@
+class: card:class:MasterTag
+title: Zakazka
+properties:
+  - label: klient
+    refTo: "./Firma.yaml"
+  - label: nabidka
+    refTo: "./Nabidka.yaml"
+  - label: PM
+    type: TypeString
+  - label: start
+    type: TypeString
+  - label: cilovy termin
+    type: TypeString
+  - label: rozpocet hodin
+    type: TypeNumber
+  - label: datum obnovy
+    type: TypeString
+  - label: typ spoluprace
+    enumOf: "./enum-typ-spoluprace.yaml"
+  - label: health
+    enumOf: "./enum-health.yaml"
+  - label: stav
+    enumOf: "./enum-zakazka-stav.yaml"

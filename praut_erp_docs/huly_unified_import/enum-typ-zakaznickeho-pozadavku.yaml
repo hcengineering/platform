@@ -1,0 +1,8 @@
+class: core:class:Enum
+title: Typ zakaznickeho pozadavku
+values:
+  - dotaz
+  - pozadavek
+  - problem
+  - incident
+  - zmena

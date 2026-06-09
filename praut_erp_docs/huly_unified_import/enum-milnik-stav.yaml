@@ -1,0 +1,9 @@
+class: core:class:Enum
+title: Milnik stav
+values:
+  - navrh
+  - planovany
+  - aktivni
+  - v riziku
+  - dodany
+  - akceptovany

@@ -1,0 +1,6 @@
+class: core:class:Enum
+title: Citlivost
+values:
+  - verejne
+  - interni
+  - citlive

@@ -1,0 +1,5 @@
+class: document:class:Teamspace
+title: "Zaklad systemu"
+private: false
+autoJoin: true
+description: "Zakladni pravidla, datovy model, role, opravneni, audit a bezpecnost ERP PRAUT."

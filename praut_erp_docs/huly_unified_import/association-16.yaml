@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Kampan.yaml"
+typeB: "./Obsahova polozka.yaml"
+nameA: obsahovePolozky
+nameB: kampan
+type: "1:N"

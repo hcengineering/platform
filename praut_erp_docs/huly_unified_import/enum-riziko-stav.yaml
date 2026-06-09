@@ -1,0 +1,8 @@
+class: core:class:Enum
+title: Riziko stav
+values:
+  - nove
+  - vyhodnoceno
+  - mitigace
+  - monitoring
+  - uzavreno

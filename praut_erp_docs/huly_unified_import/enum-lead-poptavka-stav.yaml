@@ -1,0 +1,9 @@
+class: core:class:Enum
+title: Lead Poptavka stav
+values:
+  - novy
+  - kontaktovat
+  - kvalifikace
+  - prevedeno
+  - odmitnuto
+  - archiv

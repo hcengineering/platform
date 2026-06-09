@@ -1,0 +1,8 @@
+class: core:class:Enum
+title: Automatizace stav
+values:
+  - navrh
+  - schvaleno
+  - aktivni
+  - pozastaveno
+  - vyrazeno

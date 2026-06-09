@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Lead Poptavka.yaml"
+typeB: "./Obchodni prilezitost.yaml"
+nameA: prilezitost
+nameB: lead
+type: "1:1"

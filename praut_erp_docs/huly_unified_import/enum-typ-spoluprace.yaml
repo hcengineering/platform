@@ -1,0 +1,7 @@
+class: core:class:Enum
+title: Typ spoluprace
+values:
+  - projekt
+  - retainer
+  - support
+  - jednorazove

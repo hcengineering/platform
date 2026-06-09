@@ -1,0 +1,19 @@
+class: card:class:MasterTag
+title: Kampan
+properties:
+  - label: cil
+    type: TypeString
+  - label: segment
+    type: TypeString
+  - label: platformy
+    type: TypeString
+  - label: start
+    type: TypeString
+  - label: konec
+    type: TypeString
+  - label: rozpocet
+    type: TypeNumber
+  - label: stav
+    enumOf: "./enum-kampan-stav.yaml"
+  - label: KPI
+    refTo: "./KPI.yaml"

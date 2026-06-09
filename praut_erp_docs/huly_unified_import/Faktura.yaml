@@ -1,0 +1,21 @@
+class: card:class:MasterTag
+title: Faktura
+properties:
+  - label: cislo faktury
+    type: TypeString
+  - label: zakazka
+    refTo: "./Zakazka.yaml"
+  - label: klient
+    refTo: "./Firma.yaml"
+  - label: vyse
+    type: TypeNumber
+  - label: datum vystaveni
+    type: TypeString
+  - label: datum splatnosti
+    type: TypeString
+  - label: datum zaplaceni
+    type: TypeString
+  - label: stav
+    enumOf: "./enum-faktura-stav.yaml"
+  - label: vlastnik
+    type: TypeString

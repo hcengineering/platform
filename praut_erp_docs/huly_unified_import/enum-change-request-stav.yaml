@@ -1,0 +1,10 @@
+class: core:class:Enum
+title: Change request stav
+values:
+  - navrh
+  - analyza
+  - schvaleno
+  - implementace
+  - test
+  - nasazeno
+  - rollback

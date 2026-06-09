@@ -1,0 +1,17 @@
+class: card:class:MasterTag
+title: Riziko
+properties:
+  - label: oblast
+    type: TypeString
+  - label: pravdepodobnost
+    type: TypeNumber
+  - label: dopad
+    type: TypeString
+  - label: vlastnik
+    type: TypeString
+  - label: mitigace
+    type: TypeString
+  - label: stav
+    enumOf: "./enum-riziko-stav.yaml"
+  - label: termin kontroly
+    type: TypeString

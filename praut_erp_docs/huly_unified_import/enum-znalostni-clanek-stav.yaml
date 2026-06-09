@@ -1,0 +1,8 @@
+class: core:class:Enum
+title: Znalostni clanek stav
+values:
+  - draft
+  - overeno
+  - publikovano
+  - zastarale
+  - archiv

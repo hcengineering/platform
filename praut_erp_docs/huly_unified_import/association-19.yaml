@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Zakaznicky pozadavek.yaml"
+typeB: "./Znalostni clanek.yaml"
+nameA: znalostniClanky
+nameB: zakaznickyPozadavek
+type: "1:N"

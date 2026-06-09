@@ -1,0 +1,6 @@
+class: core:class:Enum
+title: Riziko uroven
+values:
+  - nizke
+  - stredni
+  - vysoke

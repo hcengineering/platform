@@ -1,0 +1,19 @@
+class: card:class:MasterTag
+title: Zakaznicky pozadavek
+properties:
+  - label: klient
+    refTo: "./Firma.yaml"
+  - label: kontakt
+    refTo: "./Kontakt.yaml"
+  - label: typ
+    enumOf: "./enum-typ-zakaznickeho-pozadavku.yaml"
+  - label: priorita
+    enumOf: "./enum-priorita.yaml"
+  - label: SLA
+    enumOf: "./enum-sla.yaml"
+  - label: vlastnik
+    type: TypeString
+  - label: stav
+    enumOf: "./enum-zakaznicky-pozadavek-stav.yaml"
+  - label: dopad
+    type: TypeString

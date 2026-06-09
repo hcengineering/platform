@@ -1,0 +1,8 @@
+class: core:class:Enum
+title: Zapis ze schuzky stav
+values:
+  - draft
+  - ke kontrole
+  - potvrzeno
+  - akcni kroky otevrene
+  - uzavreno

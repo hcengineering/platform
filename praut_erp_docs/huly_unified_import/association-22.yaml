@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Integrace.yaml"
+typeB: "./Riziko.yaml"
+nameA: rizika
+nameB: integrace
+type: "N:N"

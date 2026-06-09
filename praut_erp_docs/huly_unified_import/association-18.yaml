@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Zakaznicky pozadavek.yaml"
+typeB: "./Incident.yaml"
+nameA: incident
+nameB: zakaznickyPozadavek
+type: "1:1"

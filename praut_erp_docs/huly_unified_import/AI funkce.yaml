@@ -1,0 +1,17 @@
+class: card:class:MasterTag
+title: AI funkce
+properties:
+  - label: vstup
+    type: TypeString
+  - label: vystup
+    type: TypeString
+  - label: autonomie
+    enumOf: "./enum-autonomie.yaml"
+  - label: kontrolor
+    type: TypeString
+  - label: citlivost
+    enumOf: "./enum-citlivost.yaml"
+  - label: omezeni
+    type: TypeString
+  - label: stav
+    enumOf: "./enum-ai-funkce-stav.yaml"

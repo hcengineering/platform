@@ -1,0 +1,7 @@
+class: core:class:Enum
+title: AI funkce stav
+values:
+  - povoleno
+  - povoleno se schvalenim
+  - zakazano
+  - pozastaveno

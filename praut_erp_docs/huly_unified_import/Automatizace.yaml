@@ -1,0 +1,21 @@
+class: card:class:MasterTag
+title: Automatizace
+properties:
+  - label: spoustec
+    type: TypeString
+  - label: vstup
+    type: TypeString
+  - label: akce
+    type: TypeString
+  - label: vystup
+    type: TypeString
+  - label: autonomie
+    enumOf: "./enum-autonomie.yaml"
+  - label: riziko
+    enumOf: "./enum-riziko-uroven.yaml"
+  - label: fallback
+    type: TypeString
+  - label: vlastnik
+    type: TypeString
+  - label: stav
+    enumOf: "./enum-automatizace-stav.yaml"

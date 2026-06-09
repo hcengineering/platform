@@ -1,0 +1,17 @@
+class: card:class:MasterTag
+title: Firma
+properties:
+  - label: nazev
+    type: TypeString
+  - label: ICO
+    type: TypeString
+  - label: web
+    type: TypeString
+  - label: segment
+    type: TypeString
+  - label: stav vztahu
+    enumOf: "./enum-firma-stav-vztahu.yaml"
+  - label: vlastnik
+    type: TypeString
+  - label: citlivost
+    enumOf: "./enum-citlivost.yaml"

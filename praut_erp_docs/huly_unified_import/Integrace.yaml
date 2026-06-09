@@ -1,0 +1,19 @@
+class: card:class:MasterTag
+title: Integrace
+properties:
+  - label: system
+    type: TypeString
+  - label: ucel
+    type: TypeString
+  - label: data
+    type: TypeString
+  - label: smer synchronizace
+    type: TypeString
+  - label: vlastnik
+    type: TypeString
+  - label: opravneni
+    type: TypeString
+  - label: riziko
+    enumOf: "./enum-riziko-uroven.yaml"
+  - label: stav
+    enumOf: "./enum-integrace-stav.yaml"

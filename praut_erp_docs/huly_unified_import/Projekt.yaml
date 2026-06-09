@@ -1,0 +1,17 @@
+class: card:class:MasterTag
+title: Projekt
+properties:
+  - label: zakazka
+    refTo: "./Zakazka.yaml"
+  - label: PM
+    type: TypeString
+  - label: faze
+    enumOf: "./enum-projekt-faze.yaml"
+  - label: deadline
+    type: TypeString
+  - label: skutecny cas
+    type: TypeNumber
+  - label: blokery
+    type: TypeString
+  - label: rizika
+    type: TypeString

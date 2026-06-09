@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Projekt.yaml"
+typeB: "./Incident.yaml"
+nameA: incidenty
+nameB: projekt
+type: "1:N"

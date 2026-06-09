@@ -1,0 +1,16 @@
+class: card:class:MasterTag
+title: Znalostni clanek
+properties:
+  - label: tema
+    type: TypeString
+  - label: kategorie
+    type: TypeString
+  - label: stav
+    enumOf: "./enum-znalostni-clanek-stav.yaml"
+  - label: vlastnik
+    type: TypeString
+  - label: posledni revize
+    type: TypeString
+  - label: souvisejici pozadavky
+    refTo: "./Zakaznicky pozadavek.yaml"
+    isArray: true

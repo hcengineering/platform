@@ -1,0 +1,9 @@
+class: core:class:Enum
+title: Nabidka stav
+values:
+  - draft
+  - interni kontrola
+  - ke schvaleni
+  - odeslano
+  - vyhrano
+  - prohrano

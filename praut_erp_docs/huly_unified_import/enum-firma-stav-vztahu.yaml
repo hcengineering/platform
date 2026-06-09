@@ -1,0 +1,8 @@
+class: core:class:Enum
+title: Firma stav vztahu
+values:
+  - novy
+  - aktivni
+  - strategicky
+  - neaktivni
+  - archiv

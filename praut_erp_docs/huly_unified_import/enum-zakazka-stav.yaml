@@ -1,0 +1,9 @@
+class: core:class:Enum
+title: Zakazka stav
+values:
+  - navrh
+  - pripraveno
+  - aktivni
+  - pozastaveno
+  - dokonceno
+  - archiv

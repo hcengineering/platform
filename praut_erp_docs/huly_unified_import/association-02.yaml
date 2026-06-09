@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Firma.yaml"
+typeB: "./Lead Poptavka.yaml"
+nameA: leady
+nameB: firma
+type: "1:N"

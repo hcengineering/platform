@@ -1,0 +1,21 @@
+class: card:class:MasterTag
+title: Lead/Poptavka
+properties:
+  - label: zdroj
+    type: TypeString
+  - label: firma
+    refTo: "./Firma.yaml"
+  - label: kontakt
+    refTo: "./Kontakt.yaml"
+  - label: potreba
+    type: TypeString
+  - label: rozpocet
+    type: TypeNumber
+  - label: termin
+    type: TypeString
+  - label: priorita
+    enumOf: "./enum-priorita.yaml"
+  - label: stav
+    enumOf: "./enum-lead-poptavka-stav.yaml"
+  - label: dalsi krok
+    type: TypeString

@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Change request.yaml"
+typeB: "./Riziko.yaml"
+nameA: rizika
+nameB: changeRequesty
+type: "N:N"

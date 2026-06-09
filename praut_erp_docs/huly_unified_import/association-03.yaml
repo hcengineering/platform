@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Firma.yaml"
+typeB: "./Obchodni prilezitost.yaml"
+nameA: prilezitosti
+nameB: firma
+type: "1:N"

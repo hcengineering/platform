@@ -1,0 +1,15 @@
+class: card:class:MasterTag
+title: Obchodni prilezitost
+properties:
+  - label: faze
+    enumOf: "./enum-obchodni-prilezitost-faze.yaml"
+  - label: hodnota
+    type: TypeNumber
+  - label: pravdepodobnost
+    type: TypeNumber
+  - label: ocekavane uzavreni
+    type: TypeString
+  - label: riziko
+    enumOf: "./enum-riziko-uroven.yaml"
+  - label: vlastnik
+    type: TypeString

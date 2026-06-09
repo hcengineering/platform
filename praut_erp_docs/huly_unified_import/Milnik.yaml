@@ -1,0 +1,15 @@
+class: card:class:MasterTag
+title: Milnik
+properties:
+  - label: projekt
+    refTo: "./Projekt.yaml"
+  - label: vlastnik
+    type: TypeString
+  - label: termin
+    type: TypeString
+  - label: stav
+    enumOf: "./enum-milnik-stav.yaml"
+  - label: vystupy
+    type: TypeString
+  - label: akceptacni kriterium
+    type: TypeString

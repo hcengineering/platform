@@ -1,0 +1,19 @@
+class: card:class:MasterTag
+title: Nabidka
+properties:
+  - label: klient
+    refTo: "./Firma.yaml"
+  - label: prilezitost
+    refTo: "./Obchodni prilezitost.yaml"
+  - label: rozsah
+    type: TypeString
+  - label: cena
+    type: TypeNumber
+  - label: platnost
+    type: TypeString
+  - label: verze
+    type: TypeString
+  - label: schvalovatel
+    type: TypeString
+  - label: stav
+    enumOf: "./enum-nabidka-stav.yaml"

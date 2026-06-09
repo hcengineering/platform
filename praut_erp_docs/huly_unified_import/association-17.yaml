@@ -1,0 +1,6 @@
+class: core:class:Association
+typeA: "./Kampan.yaml"
+typeB: "./Lead Poptavka.yaml"
+nameA: leady
+nameB: kampan
+type: "1:N"

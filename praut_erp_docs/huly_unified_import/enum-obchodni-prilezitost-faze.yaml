@@ -1,0 +1,9 @@
+class: core:class:Enum
+title: Obchodni prilezitost faze
+values:
+  - kvalifikace
+  - analyza
+  - nabidka
+  - vyjednavani
+  - vyhrano
+  - prohrano

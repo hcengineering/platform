@@ -1,0 +1,17 @@
+class: card:class:MasterTag
+title: Obsahova polozka
+properties:
+  - label: kampan
+    refTo: "./Kampan.yaml"
+  - label: format
+    type: TypeString
+  - label: platforma
+    type: TypeString
+  - label: autor
+    type: TypeString
+  - label: termin
+    type: TypeString
+  - label: stav
+    enumOf: "./enum-obsahova-polozka-stav.yaml"
+  - label: publikovana URL
+    type: TypeString
