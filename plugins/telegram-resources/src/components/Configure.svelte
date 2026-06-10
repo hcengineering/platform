@@ -586,7 +586,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding-right: 1rem;
+    padding-inline-end: 1rem;
   }
 
   .channel-space {

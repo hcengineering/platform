@@ -131,9 +131,9 @@
   .overlay {
     position: fixed;
     top: 0;
-    left: 0;
+    inset-inline-start: 0;
     bottom: 0;
-    right: 0;
+    inset-inline-end: 0;
     z-index: 1999;
   }
 
@@ -147,7 +147,7 @@
 
     @media screen and (max-width: 480px) {
       position: fixed;
-      left: var(--spacing-1);
+      inset-inline-start: var(--spacing-1);
       width: calc(100vw - var(--spacing-1) * 2);
       max-height: calc(100svh - 2rem);
     }

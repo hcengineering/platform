@@ -24,7 +24,7 @@
 
 <style lang="scss">
   span {
-    margin-left: 0.25rem;
+    margin-inline-start: 0.25rem;
     font-weight: 400;
     line-height: 1.25rem;
   }

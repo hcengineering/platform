@@ -70,7 +70,7 @@
       position: absolute;
       content: '';
       top: 50%;
-      left: 0;
+      inset-inline-start: 0;
       width: 100%;
       height: 1px;
       background-color: var(--highlight-select-border);

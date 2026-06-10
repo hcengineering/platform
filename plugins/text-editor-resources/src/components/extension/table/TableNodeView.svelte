@@ -151,8 +151,8 @@
 
     .table-scroller {
       padding: 1.5rem 0;
-      padding-left: var(--table-offscreen-spacing);
-      margin-right: var(--table-offscreen-spacing);
+      padding-inline-start: var(--table-offscreen-spacing);
+      margin-inline-end: var(--table-offscreen-spacing);
       overflow-x: scroll;
       scrollbar-width: auto;
     }
@@ -193,7 +193,7 @@
       }
 
       &__col {
-        right: calc(var(--table-offscreen-spacing) - 1.5rem);
+        inset-inline-end: calc(var(--table-offscreen-spacing) - 1.5rem);
         top: 0;
         bottom: 1rem;
         margin: 1.5rem 0;
@@ -205,8 +205,8 @@
 
       &__row {
         bottom: 1rem;
-        left: var(--table-offscreen-spacing);
-        right: var(--table-offscreen-spacing);
+        inset-inline-start: var(--table-offscreen-spacing);
+        inset-inline-end: var(--table-offscreen-spacing);
 
         .table-button {
           height: 1.25rem;

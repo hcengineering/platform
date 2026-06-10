@@ -1,0 +1,19 @@
+{
+  "status": {
+    "RequiredField": "حقل مطلوب {field}",
+    "FieldsDoNotMatch": "{field} لا يتطابق مع {field2}",
+    "ConnectingToServer": "جارٍ الاتصال بالخادم...."
+  },
+  "string": {
+    "CreateWorkspace": "إنشاء مساحة عمل",
+    "LastName": "اسم العائلة",
+    "FirstName": "الاسم الأول",
+    "Workspace": "اسم مساحة العمل",
+    "FillInProfile": "املأ ملفك الشخصي",
+    "SetUpPassword": "إعداد كلمة المرور",
+    "Next": "التالي",
+    "Skip": "تخطّي",
+    "SignUpCompleted": "اكتمل التسجيل",
+    "StartUsingHuly": "ابدأ استخدام Huly"
+  }
+}

@@ -95,7 +95,7 @@
 
     .shortTitle {
       display: flex;
-      padding-right: 0.5rem;
+      padding-inline-end: 0.5rem;
       color: var(--theme-darker-color);
     }
     .name {
@@ -104,7 +104,7 @@
     }
 
     .description {
-      padding-left: 0.5rem;
+      padding-inline-start: 0.5rem;
       color: var(--global-secondary-TextColor);
     }
   }

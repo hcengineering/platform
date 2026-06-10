@@ -69,7 +69,7 @@
   th,
   td {
     padding: 0.5rem 1.5rem;
-    text-align: left;
+    text-align: start;
   }
 
   th {

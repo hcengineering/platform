@@ -191,14 +191,14 @@
   .file-content {
     border: 1px solid var(--theme-divider-color);
     border-top: 0;
-    border-bottom-left-radius: 0.25rem;
-    border-bottom-right-radius: 0.25rem;
+    border-end-start-radius: 0.25rem;
+    border-end-end-radius: 0.25rem;
     overflow-y: hidden;
   }
   .file-info {
     border-top: 1px solid var(--theme-divider-color);
     font-weight: 600;
     direction: rtl;
-    text-align: left;
+    text-align: start;
   }
 </style>

@@ -141,13 +141,13 @@
 <style lang="scss">
   .step-row + .step-row {
     position: relative;
-    margin-left: 0.75rem;
+    margin-inline-start: 0.75rem;
 
     &::before {
       position: absolute;
       content: '';
       top: 50%;
-      left: -0.5rem;
+      inset-inline-start: -0.5rem;
       width: 0.25rem;
       height: 0.25rem;
       background-color: var(--dark-color);

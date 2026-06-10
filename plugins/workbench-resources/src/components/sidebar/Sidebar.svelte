@@ -68,13 +68,13 @@
   @media (max-width: 1024px) {
     .sidebar-container {
       width: 100%;
-      border-left-color: transparent;
+      border-inline-start-color: transparent;
     }
   }
   @media (max-width: 480px) {
     :global(.mobile-theme) .sidebar-container {
-      border-right: none;
-      border-bottom-right-radius: 0 !important;
+      border-inline-end: none;
+      border-end-end-radius: 0 !important;
     }
   }
 </style>

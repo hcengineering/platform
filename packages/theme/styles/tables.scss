@@ -30,7 +30,7 @@
       padding: var(--spacing-2) var(--spacing-2) var(--spacing-2) var(--spacing-2_5);
 
       span {
-        margin-left: var(--spacing-1_5);
+        margin-inline-start: var(--spacing-1_5);
       }
     }
     span {
@@ -153,7 +153,7 @@
         white-space: nowrap;
         word-break: break-all;
         text-overflow: ellipsis;
-        text-align: left;
+        text-align: start;
         flex-shrink: 1;
         min-width: 0;
         color: var(--global-primary-TextColor);
@@ -251,7 +251,7 @@
           border-radius: 0 0 var(--large-BorderRadius) var(--large-BorderRadius);
         }
         .hulyTableAttr-content__row-icon-wrapper {
-          margin-right: var(--spacing-0_5);
+          margin-inline-end: var(--spacing-0_5);
         }
       }
       .hulyTableAttr-content__row + .hulyTableAttr-content__row {

@@ -213,7 +213,7 @@
       &.td-body {
         border-bottom: 1px solid var(--divider-color);
         &:not(:last-child) {
-          border-right: 1px solid var(--divider-color);
+          border-inline-end: 1px solid var(--divider-color);
         }
       }
     }

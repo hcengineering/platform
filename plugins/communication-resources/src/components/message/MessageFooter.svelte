@@ -169,7 +169,7 @@
 
   .message__replies {
     padding-top: 0.5rem;
-    margin-left: -0.5rem;
+    margin-inline-start: -0.5rem;
     padding-bottom: 0;
     display: flex;
     flex-direction: column;

@@ -1,0 +1,15 @@
+{
+  "string": {
+    "Cancel": "إلغاء",
+    "Retry": "إعادة المحاولة",
+    "UploadFiles": "رفع الملفات",
+    "UploadFolders": "رفع المجلدات",
+    "UploadingTo": "جارٍ رفع {files, plural, =1 {# ملف} other {# ملفات}} إلى"
+  },
+  "status": {
+    "Error": "خطأ",
+    "Waiting": "في الانتظار",
+    "Uploading": "جارٍ الرفع",
+    "Completed": "اكتمل"
+  }
+}

@@ -64,9 +64,9 @@
       }
       &:not(.first) {
         border: 1px solid var(--theme-button-border);
-        border-right: 1px solid transparent;
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
+        border-inline-end: 1px solid transparent;
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
       }
     }
 

@@ -42,7 +42,7 @@
     display: flex;
     align-items: center;
     width: fit-content;
-    margin-right: 1px;
+    margin-inline-end: 1px;
     padding: 0 0.375rem;
     font-size: 0.75rem;
     height: 1.5rem;

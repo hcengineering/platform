@@ -91,7 +91,7 @@
 <style lang="scss">
   .color {
     flex-shrink: 0;
-    margin-right: 0.75rem;
+    margin-inline-end: 0.75rem;
     width: 1rem;
     height: 1rem;
     border-radius: 0.25rem;

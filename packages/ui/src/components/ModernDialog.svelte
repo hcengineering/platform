@@ -202,7 +202,7 @@
   .back {
     :global(button) {
       color: var(--theme-dialog-back-color) !important;
-      padding-left: 0 !important;
+      padding-inline-start: 0 !important;
     }
   }
 

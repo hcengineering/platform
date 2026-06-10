@@ -53,7 +53,7 @@
     flex: 1 1 auto;
     flex-direction: column;
     margin-top: -0.125rem;
-    margin-left: 0.75rem;
+    margin-inline-start: 0.75rem;
   }
 
   .title {

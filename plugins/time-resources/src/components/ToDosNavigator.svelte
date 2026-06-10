@@ -264,7 +264,7 @@
     min-width: 0;
 
     .dot {
-      margin-right: var(--spacing-0_75);
+      margin-inline-end: var(--spacing-0_75);
     }
     span {
       font-weight: 400;
@@ -293,7 +293,7 @@
     align-items: center;
     gap: 1px;
     top: 0.1875rem;
-    right: 0.1875rem;
+    inset-inline-end: 0.1875rem;
   }
   .noBorder {
     border-bottom-color: transparent;

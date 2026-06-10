@@ -1,0 +1,22 @@
+{
+  "string": {
+      "OnboardingChannelDescription": "المستخدم: {user}؛ مساحة العمل: {workspace}",
+      "Error": "خطأ: ",
+      "InProject": " في المشروع ",
+      "NavigateToSpecial": "{app}: فتح {special}",
+      "OpenSpecial": "فتح {special} ",
+      "Set": "تعيين ",
+      "To": " إلى ",
+      "Open": "فتح ",
+      "Workbench": "منضدة العمل: ",
+      "OnboardingChannel": "قناة الإعداد",
+      "OnboardingChannels": "قنوات الإعداد",
+      "WorkspaceId": "معرّف مساحة العمل",
+      "WorkspaceName": "اسم مساحة العمل",
+      "WorkspaceUrl": "عنوان URL لمساحة العمل",
+      "Account": "الحساب",
+      "UserName": "اسم المستخدم",
+      "DisableAIReplies": "تعطيل ردود الذكاء الاصطناعي",
+      "ShowAIReplies": "إظهار ردود الذكاء الاصطناعي"
+  }
+}

@@ -81,7 +81,7 @@
 
     &.removable {
       min-width: 3.25rem;
-      padding-right: 0.25rem;
+      padding-inline-end: 0.25rem;
     }
   }
 </style>

@@ -237,7 +237,7 @@
     min-height: 4rem;
 
     .divider {
-      margin-left: 0.5rem;
+      margin-inline-start: 0.5rem;
       width: 1px;
       height: 2.25rem;
     }

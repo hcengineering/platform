@@ -135,7 +135,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 0.25rem;
+    margin-inline-start: 0.25rem;
     gap: 0.125rem;
     font-weight: 600;
   }

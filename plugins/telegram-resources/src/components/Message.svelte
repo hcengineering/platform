@@ -125,7 +125,7 @@
     justify-content: stretch;
     align-items: center;
     flex-grow: 1;
-    margin-right: 2.5rem;
+    margin-inline-end: 2.5rem;
     padding: 0.25rem 0;
 
     &.out {
@@ -148,7 +148,7 @@
     }
     .time {
       align-self: flex-end;
-      margin-left: auto;
+      margin-inline-start: auto;
       color: var(--dark-color);
       font-size: 0.75rem;
       font-style: italic;

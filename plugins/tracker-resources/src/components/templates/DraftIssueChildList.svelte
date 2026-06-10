@@ -236,7 +236,7 @@
       display: flex;
       align-items: center;
       top: 50%;
-      left: 0.125rem;
+      inset-inline-start: 0.125rem;
       width: 1rem;
       height: 1rem;
       opacity: 0;

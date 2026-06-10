@@ -176,7 +176,7 @@
       min-height: 5rem;
     }
     &:not(:last-child) {
-      margin-right: 0.625rem;
+      margin-inline-end: 0.625rem;
     }
   }
 

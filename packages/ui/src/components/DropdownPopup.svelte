@@ -126,7 +126,7 @@
 
 <style lang="scss">
   .img {
-    margin-right: 0.75rem;
+    margin-inline-end: 0.75rem;
     width: 1.5rem;
     height: 1.5rem;
     flex-shrink: 0;

@@ -39,7 +39,7 @@
   }
 
   .content {
-    margin-left: 10px;
+    margin-inline-start: 10px;
   }
 
   .title {
@@ -53,7 +53,7 @@
   .close-button {
     position: absolute;
     top: 5px;
-    right: 5px;
+    inset-inline-end: 5px;
   }
 
   .row {

@@ -1,0 +1,33 @@
+{
+  "string": {
+    "Cancel": "إلغاء",
+    "Pause": "إيقاف مؤقت",
+    "Stop": "إيقاف",
+    "Resume": "استئناف",
+    "Record": "تسجيل",
+    "Done": "تم",
+    "CancelRecording": "إلغاء التسجيل",
+    "CancelRecordingConfirm": "هل أنت متأكد من رغبتك في إلغاء التسجيل؟",
+    "RestartRecording": "إعادة بدء التسجيل",
+    "RestartRecordingConfirm": "هل أنت متأكد من رغبتك في إعادة بدء التسجيل؟",
+    "ScreenRecordingName": "تسجيل الشاشة {date}",
+    "CameraRecordingName": "تسجيل الكاميرا {date}",
+    "ClickToSkip": "انقر للتخطي",
+    "RecordVideo": "تسجيل فيديو",
+    "ShareWithAudio": "مشاركة مع الصوت",
+    "ShareScreen": "مشاركة الشاشة",
+    "StopSharing": "إيقاف المشاركة",
+    "SelectVideoToRecord": "فعّل كاميرا الفيديو أو شارك الشاشة للتسجيل",
+    "CameraSize": "حجم الكاميرا",
+    "CameraPos": "موضع الكاميرا",
+    "Small": "صغير",
+    "Medium": "متوسط",
+    "Large": "كبير",
+    "TopLeft": "أعلى اليسار",
+    "TopRight": "أعلى اليمين",
+    "BottomLeft": "أسفل اليسار",
+    "BottomRight": "أسفل اليمين",
+    "Resolution": "الدقة",
+    "Original": "الأصلية"
+  }
+}

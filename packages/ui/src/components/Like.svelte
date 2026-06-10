@@ -40,12 +40,12 @@
     // line-height: 100%;
 
     span {
-      text-align: right;
+      text-align: end;
       font-size: 0.8125rem;
       color: var(--caption-color);
     }
     .icon {
-      margin-left: 0.25rem;
+      margin-inline-start: 0.25rem;
       color: var(--theme-trans-color);
       cursor: pointer;
 

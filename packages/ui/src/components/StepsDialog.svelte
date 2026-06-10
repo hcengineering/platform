@@ -211,7 +211,7 @@
     transition-duration: 0.15s;
     color: var(--content-color);
     border-radius: 1rem 0.25rem 0.25rem 1rem;
-    padding-right: 0.5rem;
+    padding-inline-end: 0.5rem;
 
     &:not(:last-child) {
       margin-bottom: 0.75rem;
@@ -265,7 +265,7 @@
       display: inline-flex;
       justify-content: center;
       align-items: center;
-      margin-right: 1rem;
+      margin-inline-end: 1rem;
       content: counter(item);
       color: var(--content-color);
       background-color: var(--trans-content-10);

@@ -79,7 +79,7 @@
     flex-direction: column;
     padding: 0.5rem;
     top: 1rem;
-    right: calc(100% - 0.5rem);
+    inset-inline-end: calc(100% - 0.5rem);
     bottom: 1rem;
     width: fit-content;
     width: 12rem;
@@ -92,7 +92,7 @@
 
     .btn {
       flex-shrink: 0;
-      margin-right: 0.75rem;
+      margin-inline-end: 0.75rem;
       padding: 0.25rem 0.5rem;
       background-color: transparent;
       border-radius: 0.25rem;

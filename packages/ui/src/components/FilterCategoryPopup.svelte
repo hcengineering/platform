@@ -197,7 +197,7 @@
     color: var(--theme-content-color);
     cursor: pointer;
     transition: background-color 0.15s ease;
-    text-align: left;
+    text-align: start;
 
     &:hover {
       background: var(--theme-bg-accent-hover);
@@ -227,7 +227,7 @@
   .active-value {
     font-size: 0.75rem;
     opacity: 0.8;
-    margin-left: 0.5rem;
+    margin-inline-start: 0.5rem;
   }
 
   .divider {

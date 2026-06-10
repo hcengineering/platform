@@ -49,7 +49,7 @@
 
 <style lang="scss">
   .attachments {
-    margin-left: 0;
+    margin-inline-start: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -67,6 +67,6 @@
     white-space: nowrap;
     min-width: 0;
     max-width: 100%;
-    margin-left: -0.25rem;
+    margin-inline-start: -0.25rem;
   }
 </style>

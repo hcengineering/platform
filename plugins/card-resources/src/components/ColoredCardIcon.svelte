@@ -71,7 +71,7 @@
     &__marker {
       position: absolute;
       top: -0.375rem;
-      right: 0;
+      inset-inline-end: 0;
       transform: translateX(calc(100% - 0.875rem));
       display: flex;
       align-items: center;

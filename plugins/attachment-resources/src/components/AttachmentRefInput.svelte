@@ -557,8 +557,8 @@
     overflow-y: hidden;
 
     .item + .item {
-      padding-left: 1rem;
-      border-left: 1px solid var(--theme-divider-color);
+      padding-inline-start: 1rem;
+      border-inline-start: 1px solid var(--theme-divider-color);
     }
   }
 </style>

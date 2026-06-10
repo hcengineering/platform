@@ -62,7 +62,7 @@
         content: '';
         position: absolute;
         top: 50%;
-        left: 50%;
+        inset-inline-start: 50%;
         width: var(--spacing-0_75);
         height: var(--spacing-0_75);
         background-color: var(--selector-IconColor);

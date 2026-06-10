@@ -133,7 +133,7 @@
   }
 
   .showMoreAttachmentsButton {
-    margin-left: 1.5rem;
+    margin-inline-start: 1.5rem;
     margin-top: 0.5rem;
     color: var(--caption-color);
     cursor: pointer;
@@ -145,7 +145,7 @@
   .attachmentRow {
     display: flex;
     align-items: center;
-    padding-right: 1rem;
+    padding-inline-end: 1rem;
     margin: 0 1.5rem;
     padding: 0.375rem 0;
 
@@ -158,7 +158,7 @@
     }
 
     .eAttachmentRowMenu {
-      margin-left: 0.2rem;
+      margin-inline-start: 0.2rem;
       visibility: hidden;
       opacity: 0.6;
       cursor: pointer;

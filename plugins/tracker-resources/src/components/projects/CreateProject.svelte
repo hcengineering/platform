@@ -593,7 +593,7 @@
 
 <style lang="scss">
   .duplicated-identifier {
-    left: 0;
+    inset-inline-start: 0;
     bottom: -0.25rem;
     color: var(--theme-warning-color);
   }

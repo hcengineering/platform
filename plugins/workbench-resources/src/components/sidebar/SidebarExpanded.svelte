@@ -167,13 +167,13 @@
     width: calc(100% - 3.5rem);
     background-color: var(--theme-panel-color);
     border-top: 1px solid transparent; // var(--theme-divider-color);
-    border-right: 1px solid var(--theme-divider-color);
-    border-left: none;
+    border-inline-end: 1px solid var(--theme-divider-color);
+    border-inline-start: none;
 
     &.float {
       position: absolute;
       top: 0;
-      right: 3.5rem;
+      inset-inline-end: 3.5rem;
       border-top-color: var(--theme-divider-color);
       border-bottom: 1px solid var(--theme-divider-color);
       z-index: 440;

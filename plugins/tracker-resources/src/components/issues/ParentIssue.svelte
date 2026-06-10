@@ -54,9 +54,9 @@
 
   .issue-title {
     margin: 0 0.25rem 0 0.375rem;
-    padding-right: 0.75rem;
+    padding-inline-end: 0.75rem;
     min-width: 0;
     color: var(--theme-caption-color);
-    border-right: 1px solid var(--theme-button-border);
+    border-inline-end: 1px solid var(--theme-button-border);
   }
 </style>

@@ -200,7 +200,7 @@
   .back-image {
     position: fixed;
     top: 32px;
-    left: 0;
+    inset-inline-start: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;

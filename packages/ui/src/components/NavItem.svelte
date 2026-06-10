@@ -191,7 +191,7 @@
     }
     .hulyNavItem-chevron {
       margin: 0;
-      margin-right: var(--spacing-0_75);
+      margin-inline-end: var(--spacing-0_75);
       padding: 0;
       width: 0.75rem;
       height: 0.75rem;
@@ -205,7 +205,7 @@
       }
     }
     .hulyNavItem-icon {
-      margin-right: var(--spacing-1);
+      margin-inline-end: var(--spacing-1);
       width: var(--global-min-Size);
       height: var(--global-min-Size);
       min-width: var(--global-min-Size);
@@ -227,7 +227,7 @@
     }
     .hulyNavItem-label,
     .hulyNavItem-wideLabel {
-      text-align: left;
+      text-align: start;
       color: var(--global-primary-TextColor);
     }
     .hulyNavItem-wideLabel {
@@ -263,7 +263,7 @@
 
       &.selected {
         &.indent {
-          padding-left: var(--spacing-4);
+          padding-inline-start: var(--spacing-4);
         }
         .hulyNavItem-icon {
           color: var(--global-accent-TextColor);
@@ -279,14 +279,14 @@
       .hulyNavItem-icon {
         width: 0.75rem;
         min-width: 0.75rem;
-        margin-right: 0.625rem;
+        margin-inline-end: 0.625rem;
       }
     }
     &.type-object {
       padding: 0 var(--spacing-0_5);
 
       .hulyNavItem-icon {
-        margin-right: var(--spacing-0_75);
+        margin-inline-end: var(--spacing-0_75);
         width: var(--global-extra-small-Size);
         height: var(--global-extra-small-Size);
         min-width: var(--global-extra-small-Size);
@@ -320,7 +320,7 @@
       }
     }
     &.indent {
-      padding-left: var(--spacing-4);
+      padding-inline-start: var(--spacing-4);
     }
     &:hover .hulyNavItem-chevron:enabled {
       color: var(--global-secondary-TextColor);

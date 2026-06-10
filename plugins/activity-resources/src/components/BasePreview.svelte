@@ -176,8 +176,8 @@
     color: var(--global-primary-TextColor);
     width: 100%;
     padding: 0 var(--spacing-0_5);
-    padding-right: var(--spacing-0_75);
-    padding-left: var(--spacing-1_25);
+    padding-inline-end: var(--spacing-0_75);
+    padding-inline-start: var(--spacing-1_25);
     position: relative;
 
     &.contentOnly {
@@ -193,7 +193,7 @@
       position: absolute;
       visibility: hidden;
       top: -1.75rem;
-      right: 0;
+      inset-inline-end: 0;
 
       &.opened {
         visibility: visible;
@@ -212,7 +212,7 @@
       display: flex;
       align-items: center;
       gap: var(--spacing-1);
-      margin-left: var(--spacing-0_5);
+      margin-inline-start: var(--spacing-0_5);
     }
 
     &:hover:not(.readonly) > .actions {
@@ -256,7 +256,7 @@
       color: var(--global-secondary-TextColor);
     }
     &.contentOnly {
-      margin-left: 0;
+      margin-inline-start: 0;
     }
   }
 </style>

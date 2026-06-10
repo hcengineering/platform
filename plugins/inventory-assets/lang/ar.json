@@ -1,0 +1,25 @@
+{
+  "status": {
+    "CategoryRequired": "الفئة مطلوبة",
+    "NameRequired": "الاسم مطلوب"
+  },
+  "string": {
+    "Categories": "الفئات",
+    "Category": "الفئة",
+    "CategoryCreateLabel": "فئة",
+    "CreateCategory": "إنشاء فئة",
+    "CreateSubcategory": "إنشاء فئة فرعية",
+    "Inventory": "المخزون",
+    "ProductCreateLabel": "منتج",
+    "CreateProduct": "إنشاء منتج",
+    "Products": "المنتجات",
+    "Product": "المنتج",
+    "Variant": "المتغير",
+    "SKU": "SKU",
+    "Variants": "المتغيرات",
+    "NoVariantsForProduct": "لا توجد متغيرات لهذا المنتج.",
+    "CreateVariant": "إنشاء متغير",
+    "ConfigLabel": "المخزون",
+    "ConfigDescription": "امتداد لإدارة الامتدادات"
+  }
+}

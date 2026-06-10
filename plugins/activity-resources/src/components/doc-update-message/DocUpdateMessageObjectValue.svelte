@@ -128,6 +128,6 @@
   .separator {
     font-weight: 500;
     color: var(--global-primary-LinkColor);
-    margin-left: -0.25rem;
+    margin-inline-start: -0.25rem;
   }
 </style>

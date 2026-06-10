@@ -315,7 +315,7 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      margin-left: var(--spacing-0_5);
+      margin-inline-start: var(--spacing-0_5);
 
       .actions {
         position: absolute;
@@ -323,7 +323,7 @@
         align-items: center;
         justify-content: center;
         top: -0.5rem;
-        right: 0.25rem;
+        inset-inline-end: 0.25rem;
         gap: 0.25rem;
         color: var(--global-secondary-TextColor);
       }
@@ -333,7 +333,7 @@
       font-weight: 400;
       color: var(--global-primary-TextColor);
       min-width: 0;
-      margin-right: 1rem;
+      margin-inline-end: 1rem;
     }
   }
 
@@ -343,7 +343,7 @@
     min-width: 0;
     flex-direction: column;
     margin-top: var(--spacing-1);
-    margin-left: var(--spacing-2_5);
+    margin-inline-start: var(--spacing-2_5);
   }
 
   .notification {
@@ -361,8 +361,8 @@
 
     &:first-child {
       .embeddedMarker {
-        border-top-left-radius: 0.5rem;
-        border-top-right-radius: 0.5rem;
+        border-start-start-radius: 0.5rem;
+        border-start-end-radius: 0.5rem;
       }
     }
 
@@ -375,8 +375,8 @@
 
     &:last-child {
       .embeddedMarker {
-        border-bottom-left-radius: 0.5rem;
-        border-bottom-right-radius: 0.5rem;
+        border-end-start-radius: 0.5rem;
+        border-end-end-radius: 0.5rem;
       }
     }
   }
@@ -391,7 +391,7 @@
     gap: 0.25rem;
     min-width: 0;
     overflow: hidden;
-    margin-right: 4rem;
+    margin-inline-end: 4rem;
   }
 
   .content {

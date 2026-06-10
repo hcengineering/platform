@@ -1,0 +1,30 @@
+{
+  "status": {
+    "LoadingPlugin": "جارٍ تحميل الإضافة {plugin}...",
+    "UnknownError": "خطأ غير معروف: {message}",
+    "InvalidId": "معرّف غير صالح: {id}",
+    "BadRequest": "طلب غير صالح",
+    "Forbidden": "محظور",
+    "Conflict": "تعارض",
+    "ExpiredLink": "انتهت صلاحية رابط الدعوة هذا",
+    "Unauthorized": "غير مصرَّح به",
+    "UnknownMethod": "طريقة غير معروفة: {method}",
+    "InternalServerError": "خطأ داخلي في الخادم",
+    "MaintenanceWarning": "الصيانة مجدولة خلال",
+    "MaintenanceWarningTime": "{time, plural, =1 {أقل من دقيقة} other {# دقيقة}}",
+    "AccountNotFound": "لم يُعثر على الحساب أو أن بيانات الاعتماد المقدَّمة غير صحيحة",
+    "AccountNotConfirmed": "لم يتم تأكيد الحساب",
+    "WorkspaceNotFound": "لم يُعثر على مساحة العمل",
+    "AccountAlreadyExists": "الحساب موجود بالفعل",
+    "WorkspaceRateLimit": "الخادم مشغول، يُرجى الانتظار قليلاً والمحاولة مرة أخرى",
+    "AccountAlreadyConfirmed": "تم تأكيد الحساب بالفعل",
+    "WorkspaceAlreadyExists": "مساحة العمل موجودة بالفعل",
+    "InvalidOtp": "رمز غير صالح",
+    "PasswordLoginLocked": "تم قفل تسجيل الدخول بكلمة المرور بسبب كثرة المحاولات الفاشلة. يُرجى استخدام طريقة تسجيل الدخول برمز OTP لإلغاء قفل حسابك.",
+    "InviteNotFound": "لم يُعثر على دعوة بالبريد الإلكتروني:{email}.",
+    "WorkspaceLimitReached": "لقد وصلت إلى الحد الأقصى لمساحات العمل. يُرجى التواصل معنا...",
+    "ReadOnlyAccount": "حساب ضيف تجريبي مجهول",
+    "SystemAccount": "حساب النظام",
+    "SocialIdAlreadyExists": "Social ID موجود بالفعل"
+  }
+}

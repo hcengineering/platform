@@ -101,7 +101,7 @@
   .file-info {
     font-weight: 600;
     direction: rtl;
-    text-align: left;
+    text-align: start;
   }
 
   .file-stats {

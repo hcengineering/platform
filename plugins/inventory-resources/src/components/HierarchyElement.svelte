@@ -103,11 +103,11 @@
     align-items: center;
     .menuRow {
       visibility: hidden;
-      margin-left: 0.5rem;
+      margin-inline-start: 0.5rem;
     }
     .expand {
-      margin-left: -1.5rem;
-      margin-right: 0.5rem;
+      margin-inline-start: -1.5rem;
+      margin-inline-end: 0.5rem;
     }
     .expand,
     .menuRow {
@@ -120,12 +120,12 @@
   }
   td {
     padding: 0.5rem 1.5rem;
-    text-align: left;
+    text-align: start;
     &:first-child {
-      padding-left: 2.5rem;
+      padding-inline-start: 2.5rem;
     }
     &:last-child {
-      padding-right: 1.5rem;
+      padding-inline-end: 1.5rem;
     }
   }
 

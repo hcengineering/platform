@@ -197,7 +197,7 @@
     border-radius: 0.25rem;
 
     &:not(:last-child) {
-      margin-right: 0.375rem;
+      margin-inline-end: 0.375rem;
     }
 
     &:hover {
@@ -229,7 +229,7 @@
       width: 1.75rem;
     }
     &.left-round {
-      padding-left: 0.5rem;
+      padding-inline-start: 0.5rem;
     }
     .btn-icon {
       color: var(--theme-halfcontent-color);

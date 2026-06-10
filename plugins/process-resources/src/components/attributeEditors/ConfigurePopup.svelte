@@ -443,6 +443,6 @@
   }
 
   .fallback {
-    padding-right: 1.25rem;
+    padding-inline-end: 1.25rem;
   }
 </style>

@@ -63,7 +63,7 @@
 
 <style lang="scss">
   .attachments {
-    margin-left: 0;
+    margin-inline-start: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -78,6 +78,6 @@
 
   .secondaryColor {
     color: var(--global-secondary-TextColor);
-    margin-left: -0.5rem;
+    margin-inline-start: -0.5rem;
   }
 </style>

@@ -214,7 +214,7 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-left: var(--spacing-0_5);
+      margin-inline-start: var(--spacing-0_5);
       height: 2.5rem;
       min-height: 2.5rem;
       max-height: 2.5rem;
@@ -223,14 +223,14 @@
     &__remove {
       display: flex;
       align-items: center;
-      margin-left: auto;
+      margin-inline-start: auto;
       min-width: 1.5rem;
     }
 
     &__content {
       display: flex;
       width: 100%;
-      padding-left: 0.5rem;
+      padding-inline-start: 0.5rem;
     }
 
     &__notifications {

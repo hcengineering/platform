@@ -86,7 +86,7 @@
 <style lang="scss">
   .divider {
     height: 100%;
-    border-left: 1px solid var(--theme-divider-color);
+    border-inline-start: 1px solid var(--theme-divider-color);
   }
   .attachments-list {
     overflow-x: auto;

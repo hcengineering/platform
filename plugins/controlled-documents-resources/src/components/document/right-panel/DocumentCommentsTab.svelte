@@ -102,7 +102,7 @@
   .dirty-mark {
     position: absolute;
     top: 0.375rem;
-    right: 0.375rem;
+    inset-inline-end: 0.375rem;
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;

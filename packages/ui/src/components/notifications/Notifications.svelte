@@ -30,24 +30,24 @@
   .top-left {
     position: fixed;
     top: 0;
-    left: 0;
+    inset-inline-start: 0;
   }
 
   .top-right {
     position: fixed;
     top: 0;
-    right: 0;
+    inset-inline-end: 0;
   }
 
   .bottom-left {
     position: fixed;
     bottom: 0;
-    left: 0;
+    inset-inline-start: 0;
   }
 
   .bottom-right {
     position: fixed;
     bottom: 0;
-    right: 0;
+    inset-inline-end: 0;
   }
 </style>

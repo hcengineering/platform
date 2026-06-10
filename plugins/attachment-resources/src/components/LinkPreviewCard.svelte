@@ -118,7 +118,7 @@
       height: 100%;
       background-color: var(--theme-button-default);
       border: 1px solid var(--theme-button-border);
-      border-left: none;
+      border-inline-start: none;
       border-radius: 0 0.25rem 0.25rem 0;
     }
     .no-line:hover ~ .info-container,

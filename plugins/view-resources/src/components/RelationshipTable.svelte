@@ -746,10 +746,10 @@
 
   td,
   th {
-    border-right: 1px solid var(--theme-trans-color);
+    border-inline-end: 1px solid var(--theme-trans-color);
 
     &.first {
-      border-left: 1px solid var(--theme-trans-color);
+      border-inline-start: 1px solid var(--theme-trans-color);
     }
   }
 
@@ -776,7 +776,7 @@
       align-items: center;
       width: max-content;
       position: sticky;
-      left: 0;
+      inset-inline-start: 0;
       height: 2.5rem;
     }
   }

@@ -62,7 +62,7 @@
 
       .triangle {
         &.left {
-          border-left-color: var(--global-focus-BorderColor);
+          border-inline-start-color: var(--global-focus-BorderColor);
         }
 
         &.down {

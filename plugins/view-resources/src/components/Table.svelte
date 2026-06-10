@@ -624,10 +624,10 @@
       align-items: center;
       width: max-content;
       position: sticky;
-      left: 0;
+      inset-inline-start: 0;
       height: 2.5rem;
       &.padding {
-        padding-left: 2.5rem;
+        padding-inline-start: 2.5rem;
       }
     }
   }

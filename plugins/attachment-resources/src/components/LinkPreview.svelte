@@ -115,7 +115,7 @@
   }
 
   .link-preview__delete-button {
-    margin-left: auto;
+    margin-inline-start: auto;
     cursor: pointer;
     visibility: hidden;
 

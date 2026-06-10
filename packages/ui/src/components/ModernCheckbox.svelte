@@ -63,7 +63,7 @@
         content: '';
         position: absolute;
         top: 50%;
-        left: 50%;
+        inset-inline-start: 50%;
         width: 0.625rem;
         height: 0.5rem;
         background-color: var(--selector-IconColor);
@@ -98,7 +98,7 @@
       content: '*';
       position: relative;
       top: -0.125rem;
-      left: 0.125rem;
+      inset-inline-start: 0.125rem;
       color: var(--global-error-TextColor);
     }
   }

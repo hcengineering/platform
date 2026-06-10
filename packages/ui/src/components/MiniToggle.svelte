@@ -71,7 +71,7 @@
           background-color: var(--theme-toggle-on-bg-hover);
         }
         &:before {
-          left: 9px;
+          inset-inline-start: 9px;
           background: var(--theme-toggle-on-sw-color);
         }
       }
@@ -101,7 +101,7 @@
         content: '';
         position: absolute;
         top: 2px;
-        left: 3px;
+        inset-inline-start: 3px;
         display: inline-block;
         width: 10px;
         height: 10px;
@@ -116,7 +116,7 @@
     }
 
     &-label {
-      margin-left: 0.375rem;
+      margin-inline-start: 0.375rem;
       font-size: 0.75rem;
       color: var(--content-color);
       cursor: pointer;

@@ -72,13 +72,13 @@
 
   .cell {
     border-bottom: 1px solid var(--theme-divider-color);
-    border-right: 1px solid var(--theme-divider-color);
+    border-inline-end: 1px solid var(--theme-divider-color);
     display: flex;
     justify-content: center;
     align-items: center;
 
     &.left-border {
-      border-left: 1px solid var(--theme-divider-color);
+      border-inline-start: 1px solid var(--theme-divider-color);
     }
 
     &.top-border {

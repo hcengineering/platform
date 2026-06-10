@@ -158,7 +158,7 @@
   }
 
   .tag {
-    margin-left: 0.5rem;
+    margin-inline-start: 0.5rem;
     padding: 0 0.875rem;
     height: 1.75rem;
     color: var(--theme-halfcontent-color);

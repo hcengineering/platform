@@ -169,7 +169,7 @@
     align-items: center;
     margin: 0 var(--spacing-1_5);
     padding: var(--spacing-1) var(--spacing-1_25);
-    text-align: left;
+    text-align: start;
     border: none;
     border-radius: var(--small-BorderRadius);
     outline: none;

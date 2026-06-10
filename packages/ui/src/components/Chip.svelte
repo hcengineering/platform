@@ -103,7 +103,7 @@
     }
 
     & :global(button.type-button-icon) {
-      margin-right: var(--spacing-0_25);
+      margin-inline-end: var(--spacing-0_25);
     }
   }
 </style>

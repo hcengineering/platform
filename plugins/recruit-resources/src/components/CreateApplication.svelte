@@ -444,7 +444,7 @@
     transform: rotate(90deg);
   }
   .color {
-    margin-right: 0.375rem;
+    margin-inline-end: 0.375rem;
     width: 0.875rem;
     height: 0.875rem;
     border: 1px solid rgba(0, 0, 0, 0.1);

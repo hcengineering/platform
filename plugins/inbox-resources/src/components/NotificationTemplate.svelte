@@ -28,13 +28,13 @@
     user-select: none;
 
     &:first-child .marker {
-      border-top-left-radius: 0.5rem;
-      border-top-right-radius: 0.5rem;
+      border-start-start-radius: 0.5rem;
+      border-start-end-radius: 0.5rem;
     }
 
     &:last-child .marker {
-      border-bottom-left-radius: 0.5rem;
-      border-bottom-right-radius: 0.5rem;
+      border-end-start-radius: 0.5rem;
+      border-end-end-radius: 0.5rem;
     }
 
     &:hover .marker {

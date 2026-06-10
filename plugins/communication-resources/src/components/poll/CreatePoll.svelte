@@ -334,6 +334,6 @@
     display: flex;
     align-items: center;
     gap: 0.125rem;
-    margin-right: -0.5rem;
+    margin-inline-end: -0.5rem;
   }
 </style>

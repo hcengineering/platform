@@ -111,7 +111,7 @@
   .slot {
     padding: var(--spacing-1) var(--spacing-1) var(--spacing-1) var(--spacing-2);
     background-color: var(--tag-nuance-SunshineBackground);
-    border-left: var(--extra-small-BorderRadius) solid var(--tag-accent-SunshineBackground);
+    border-inline-start: var(--extra-small-BorderRadius) solid var(--tag-accent-SunshineBackground);
     border-radius: var(--extra-small-BorderRadius) var(--small-BorderRadius) var(--small-BorderRadius)
       var(--extra-small-BorderRadius);
   }

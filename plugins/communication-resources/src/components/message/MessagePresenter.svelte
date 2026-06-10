@@ -222,7 +222,7 @@
   .message__actions {
     position: absolute;
     top: -0.75rem;
-    right: 2.25rem;
+    inset-inline-end: 2.25rem;
     visibility: hidden;
     z-index: 2;
 

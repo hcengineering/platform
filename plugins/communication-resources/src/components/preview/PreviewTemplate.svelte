@@ -170,7 +170,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 0.25rem;
+      margin-inline-end: 0.25rem;
     }
 
     &__content {
@@ -210,7 +210,7 @@
       font-size: 0.75rem;
       color: var(--global-tertiary-TextColor);
       white-space: nowrap;
-      margin-left: auto;
+      margin-inline-start: auto;
       max-width: 100%;
       min-width: 0;
       width: fit-content;

@@ -48,7 +48,7 @@
     justify-content: flex-start;
 
     .btn-icon {
-      margin-right: 0.375rem;
+      margin-inline-end: 0.375rem;
       width: 0.875rem;
       height: 0.875rem;
       transition: color 0.15s;

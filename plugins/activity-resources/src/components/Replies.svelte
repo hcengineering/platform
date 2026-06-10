@@ -134,11 +134,11 @@
     border-radius: 0.5rem;
     padding: 0.25rem 0.5rem;
     height: 2.125rem;
-    margin-left: -0.5rem;
+    margin-inline-start: -0.5rem;
     min-width: 14.5rem;
 
     .plus {
-      margin-left: 0.25rem;
+      margin-inline-start: 0.25rem;
     }
 
     .repliesCount {
@@ -151,11 +151,11 @@
     .lastReply {
       flex: 1;
       font-size: 0.75rem;
-      margin-right: 0.25rem;
+      margin-inline-end: 0.25rem;
     }
 
     .notifyMarker {
-      margin-right: 0.25rem;
+      margin-inline-end: 0.25rem;
       width: 0.425rem;
       height: 0.425rem;
       border-radius: 50%;

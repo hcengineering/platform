@@ -50,7 +50,7 @@
 <style lang="scss">
   .svg-newavatar {
     overflow: visible;
-    margin-right: -8%;
+    margin-inline-end: -8%;
   }
   .ava-inline {
     height: 0.875rem;

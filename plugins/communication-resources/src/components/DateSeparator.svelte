@@ -74,7 +74,7 @@
       border: 1px solid var(--highlight-select-border);
       font-weight: 500;
       position: absolute;
-      left: 50%;
+      inset-inline-start: 50%;
       transform: translateX(-50%);
       top: 0.25rem;
       min-height: 1.625rem;

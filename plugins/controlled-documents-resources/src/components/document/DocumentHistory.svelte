@@ -121,7 +121,7 @@
   .row {
     gap: 3rem;
     @media print {
-      border-left: 2px solid var(--theme-divider-color);
+      border-inline-start: 2px solid var(--theme-divider-color);
     }
   }
 

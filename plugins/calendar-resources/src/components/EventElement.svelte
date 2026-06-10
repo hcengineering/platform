@@ -87,7 +87,7 @@
     font-size: 0.8125rem;
     background-color: var(--calendar-event-back-color);
     border: 1px solid var(--calendar-event-border-color);
-    border-left: 0.25rem solid var(--calendar-event-handle-color);
+    border-inline-start: 0.25rem solid var(--calendar-event-handle-color);
     border-radius: 0.25rem;
     cursor: pointer;
     padding: 0.25rem 0.5rem 0.25rem 1rem;

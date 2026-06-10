@@ -119,7 +119,7 @@
           content: '';
           position: absolute;
           top: -0.375rem;
-          right: -0.375rem;
+          inset-inline-end: -0.375rem;
           width: 1rem;
           height: 1rem;
           border-radius: 50%;

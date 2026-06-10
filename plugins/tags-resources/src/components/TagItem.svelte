@@ -118,14 +118,14 @@
   }
   .tag-item-inline {
     position: relative;
-    padding-left: 0.75rem;
+    padding-inline-start: 0.75rem;
     color: var(--theme-content-color);
 
     &::before {
       position: absolute;
       content: '';
       top: 50%;
-      left: 0.125rem;
+      inset-inline-start: 0.125rem;
       width: 0.25rem;
       height: 0.25rem;
       background-color: var(--tag-color);

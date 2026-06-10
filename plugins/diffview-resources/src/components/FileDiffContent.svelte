@@ -171,12 +171,12 @@
   }
 
   .diff-table-split .code-line + .num-line {
-    border-left: 1px solid var(--theme-divider-color);
+    border-inline-start: 1px solid var(--theme-divider-color);
   }
 
   td {
     &.code-line {
-      border-left: 1px solid var(--theme-divider-color);
+      border-inline-start: 1px solid var(--theme-divider-color);
     }
 
     &.line-header {
@@ -206,7 +206,7 @@
 
   .num-line {
     padding: 0 0.5rem;
-    text-align: right;
+    text-align: end;
     vertical-align: top;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -225,6 +225,6 @@
   .code-line::before {
     content: attr(data-code-marker);
     position: absolute;
-    left: 0.5rem;
+    inset-inline-start: 0.5rem;
   }
 </style>

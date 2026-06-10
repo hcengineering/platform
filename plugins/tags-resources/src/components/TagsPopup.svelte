@@ -243,9 +243,9 @@
 <style lang="scss">
   .counter {
     margin-top: -0.125rem;
-    padding-right: 0.125rem;
+    padding-inline-end: 0.125rem;
     min-width: 1.5rem;
-    text-align: right;
+    text-align: end;
     font-size: 0.8125rem;
     color: var(--theme-caption-color);
   }

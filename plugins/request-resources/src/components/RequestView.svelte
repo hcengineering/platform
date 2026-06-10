@@ -74,10 +74,10 @@
     flex-wrap: wrap;
 
     & > * {
-      margin-right: 0.25rem;
+      margin-inline-end: 0.25rem;
     }
     & > *:last-child {
-      margin-right: 0;
+      margin-inline-end: 0;
     }
   }
 
@@ -88,7 +88,7 @@
 
   .time {
     align-self: baseline;
-    margin-left: 1rem;
+    margin-inline-start: 1rem;
     color: var(--dark-color);
   }
 </style>

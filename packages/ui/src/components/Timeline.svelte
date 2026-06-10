@@ -526,10 +526,10 @@
     pointer-events: none;
   }
   .monthMarker {
-    border-left: 1px dashed var(--highlight-select);
+    border-inline-start: 1px dashed var(--highlight-select);
   }
   .todayMarker {
-    border-left: 1px solid var(--primary-bg-color);
+    border-inline-start: 1px solid var(--primary-bg-color);
   }
 
   .timeline-background__headers,
@@ -543,12 +543,12 @@
     z-index: -1;
   }
   .timeline-background__headers {
-    left: 0;
+    inset-inline-start: 0;
     background-color: var(--theme-comp-header-color);
   }
   .timeline-background__viewbox,
   .timeline-foreground__viewbox {
-    right: 0;
+    inset-inline-end: 0;
     mask-image: linear-gradient(
       90deg,
       rgba(0, 0, 0, 0) 0,
@@ -589,7 +589,7 @@
     &::before {
       content: '';
       width: 10px;
-      left: 50%;
+      inset-inline-start: 50%;
     }
     &.moving {
       width: 2px;
@@ -604,8 +604,8 @@
     align-items: center;
     height: 100%;
     min-width: 0;
-    padding-left: 0.75rem;
-    padding-right: 1.15rem;
+    padding-inline-start: 0.75rem;
+    padding-inline-end: 1.15rem;
     // border-bottom: 1px solid var(--accent-bg-color);
   }
   .contentWrapper {
@@ -658,7 +658,7 @@
     }
     &.noTarget {
       mask-image: linear-gradient(to left, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 1) 2rem);
-      border-right-color: transparent;
+      border-inline-end-color: transparent;
     }
 
     .component-presenter {
@@ -686,10 +686,10 @@
     }
 
     &.left {
-      left: 1rem;
+      inset-inline-start: 1rem;
     }
     &.right {
-      right: 1rem;
+      inset-inline-end: 1rem;
     }
     &.add {
       transform: translateX(-50%);
@@ -745,10 +745,10 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    margin-left: 0.5rem;
+    margin-inline-start: 0.5rem;
 
     &:first-child {
-      margin-left: 0;
+      margin-inline-start: 0;
     }
   }
 </style>

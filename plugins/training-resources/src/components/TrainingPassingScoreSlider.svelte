@@ -92,7 +92,7 @@
       position: absolute;
       display: block;
       height: 100%;
-      left: 0;
+      inset-inline-start: 0;
       top: 0;
       z-index: -1;
     }
@@ -100,7 +100,7 @@
     .handle {
       cursor: col-resize;
       height: 100%;
-      left: 0;
+      inset-inline-start: 0;
       transform: translateX(-50%);
       position: absolute;
       top: 0;

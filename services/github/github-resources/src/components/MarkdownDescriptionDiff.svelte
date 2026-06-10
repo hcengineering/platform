@@ -53,9 +53,9 @@
 
 <style lang="scss">
   .line {
-    border-right: 1px solid #ddd;
+    border-inline-end: 1px solid #ddd;
     padding: 0 0.5em;
-    margin-right: 0.5em;
+    margin-inline-end: 0.5em;
     color: #888;
   }
 </style>

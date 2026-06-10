@@ -251,8 +251,8 @@
   .header {
     width: 100%;
     height: 12.5rem;
-    border-top-left-radius: 0.8rem;
-    border-top-right-radius: 0.8rem;
+    border-start-start-radius: 0.8rem;
+    border-start-end-radius: 0.8rem;
     overflow: hidden;
   }
 
@@ -260,20 +260,20 @@
     position: relative;
     width: 100%;
     flex: 1 1 0;
-    border-bottom-left-radius: 0.8rem;
-    border-bottom-right-radius: 0.8rem;
+    border-end-start-radius: 0.8rem;
+    border-end-end-radius: 0.8rem;
   }
 
   .edit {
     position: absolute;
     top: 1.5rem;
-    right: 1.5rem;
+    inset-inline-end: 1.5rem;
   }
 
   .actions {
     position: absolute;
     top: 1.5rem;
-    right: 1.5rem;
+    inset-inline-end: 1.5rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -288,7 +288,7 @@
     height: 10rem;
     background-color: var(--theme-popup-color);
     position: absolute;
-    left: 1.5rem;
+    inset-inline-start: 1.5rem;
     top: 6rem;
     border-radius: 100%;
   }
@@ -301,9 +301,9 @@
     margin: auto;
     border-radius: 100%;
     top: 0;
-    right: 0;
+    inset-inline-end: 0;
     bottom: 0;
-    left: 0;
+    inset-inline-start: 0;
   }
 
   .avatarText {
@@ -316,7 +316,7 @@
       transform: translate(-50%, -50%);
       position: absolute;
       top: 50%;
-      left: 50%;
+      inset-inline-start: 50%;
     }
   }
 

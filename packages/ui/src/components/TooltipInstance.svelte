@@ -574,8 +574,8 @@
     &.bottom::after,
     &.top::before,
     &.bottom::before {
-      left: 50%;
-      margin-left: -9px;
+      inset-inline-start: 50%;
+      margin-inline-start: -9px;
     }
     &.top::after,
     &.top::before {
@@ -597,19 +597,19 @@
     &.left::after,
     &.left::before {
       transform-origin: left top;
-      left: -0.25rem;
+      inset-inline-start: -0.25rem;
       transform: rotate(90deg);
     }
     &.right::after,
     &.right::before {
       transform-origin: right top;
-      right: -0.25rem;
+      inset-inline-end: -0.25rem;
       transform: rotate(-90deg);
     }
   }
 
   .keys {
-    margin-left: 0.5rem;
+    margin-inline-start: 0.5rem;
     display: flex;
     flex-shrink: 0;
     align-items: center;
@@ -664,7 +664,7 @@
   .modal-overlay {
     position: fixed;
     top: 0;
-    left: 0;
+    inset-inline-start: 0;
     width: 100%;
     height: 100vh;
     pointer-events: all;

@@ -120,14 +120,14 @@
     &__percentage {
       font-size: 0.875rem;
       color: var(--global-secondary-TextColor);
-      margin-left: -0.375rem;
-      margin-right: 1rem;
+      margin-inline-start: -0.375rem;
+      margin-inline-end: 1rem;
     }
 
     &__result {
       font-size: 0.875rem;
       color: var(--global-secondary-TextColor);
-      margin-left: auto;
+      margin-inline-start: auto;
     }
   }
 

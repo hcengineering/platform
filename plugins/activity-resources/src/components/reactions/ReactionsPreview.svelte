@@ -84,6 +84,6 @@
   .preview {
     cursor: pointer;
     white-space: nowrap;
-    margin-left: 0.5rem;
+    margin-inline-start: 0.5rem;
   }
 </style>

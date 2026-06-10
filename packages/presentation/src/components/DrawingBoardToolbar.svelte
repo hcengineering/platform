@@ -351,9 +351,9 @@
     bottom: 100%;
 
     &.inside {
-      left: 0.5rem;
+      inset-inline-start: 0.5rem;
       top: 0.5rem;
-      right: auto;
+      inset-inline-end: auto;
       bottom: unset;
       display: inline-flex;
       flex-wrap: wrap;
@@ -393,7 +393,7 @@
   .tool-indicator {
     position: absolute;
     bottom: -0.125rem;
-    right: -0.125rem;
+    inset-inline-end: -0.125rem;
     width: 0;
     height: 0;
     border-style: solid;

@@ -77,7 +77,7 @@
   }
 
   .timer {
-    margin-left: 0.125rem;
+    margin-inline-start: 0.125rem;
   }
 
   @keyframes pulse {

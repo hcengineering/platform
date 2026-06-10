@@ -84,7 +84,7 @@
 
 <style lang="scss">
   .line {
-    margin-right: 1rem;
+    margin-inline-end: 1rem;
     width: 0.4rem;
     border-radius: 0.25rem;
   }
@@ -95,7 +95,7 @@
     .play-btn {
       position: absolute;
       top: calc(50% - 50px);
-      left: calc(50% - 50px);
+      inset-inline-start: calc(50% - 50px);
       height: 100px;
       width: 100px;
     }

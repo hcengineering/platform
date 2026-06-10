@@ -82,8 +82,8 @@
       display: flex;
       align-items: center;
       gap: 0.25rem;
-      padding-right: var(--spacing-0_75);
-      padding-left: var(--spacing-1_25);
+      padding-inline-end: var(--spacing-0_75);
+      padding-inline-start: var(--spacing-1_25);
     }
 
     &__emoji {
@@ -95,7 +95,7 @@
       min-height: 1.325rem;
       height: 1.325rem;
       overflow: hidden;
-      margin-right: 0.25rem;
+      margin-inline-end: 0.25rem;
     }
   }
 </style>

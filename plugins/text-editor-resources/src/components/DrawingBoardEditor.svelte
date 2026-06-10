@@ -376,7 +376,7 @@
 
   .personAvatar {
     position: absolute;
-    left: 7px;
+    inset-inline-start: 7px;
     top: 17px;
     border-radius: 20%;
     box-shadow: 0.05rem 0.05rem 0.3rem rgba(0, 0, 0, 0.5);

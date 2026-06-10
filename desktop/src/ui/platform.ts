@@ -412,7 +412,7 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   const languages =
     myBranding.languages !== undefined && myBranding.languages !== ''
       ? myBranding.languages.split(',').map((l) => l.trim())
-      : ['en', 'ru', 'es', 'pt', 'pt-br', 'zh', 'fr', 'cs', 'it', 'de', 'ja', 'ko', 'tr']
+      : ['en', 'ru', 'es', 'pt', 'pt-br', 'zh', 'fr', 'cs', 'it', 'de', 'ja', 'ko', 'tr', 'ar']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
 

@@ -76,7 +76,7 @@
         position: absolute;
         content: attr(data-label);
         bottom: -0.75rem;
-        left: 50%;
+        inset-inline-start: 50%;
         text-transform: uppercase;
         font-weight: 500;
         font-size: 0.5rem;

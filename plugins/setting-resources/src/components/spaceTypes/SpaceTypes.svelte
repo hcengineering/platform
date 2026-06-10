@@ -114,7 +114,7 @@
         word-break: break-all;
         text-overflow: ellipsis;
         overflow: hidden;
-        text-align: left;
+        text-align: start;
         min-width: 0;
       }
       &__title {

@@ -44,7 +44,7 @@
   .notify-table-kind {
     position: absolute;
     top: 50%;
-    left: 50%;
+    inset-inline-start: 50%;
     width: 0.5rem;
     height: 0.5rem;
     background-color: currentColor;

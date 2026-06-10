@@ -789,7 +789,7 @@
   }
   .scrollArrow[data-direct='up'] {
     top: var(--scroller-header-height, 0);
-    left: calc(
+    inset-inline-start: calc(
       (100% - var(--scroller-right-offset, 0) - var(--scroller-left-offset, 0)) / 2 + var(--scroller-left-offset, 0)
     );
     transform: translateX(-50%) rotate(90deg);
@@ -799,12 +799,12 @@
       (100% - var(--scroller-header-height, 0) - var(--scroller-footer-height, 0)) / 2 +
         var(--scroller-header-height, 0)
     );
-    right: calc(var(--scroller-right-offset, 0) + 0.25rem);
+    inset-inline-end: calc(var(--scroller-right-offset, 0) + 0.25rem);
     transform: translateY(-50%) rotate(180deg);
   }
   .scrollArrow[data-direct='down'] {
     bottom: var(--scroller-footer-height, 0);
-    left: calc(
+    inset-inline-start: calc(
       (100% - var(--scroller-right-offset, 0) - var(--scroller-left-offset, 0)) / 2 + var(--scroller-left-offset, 0)
     );
     transform: translateX(-50%) rotate(-90deg);
@@ -814,7 +814,7 @@
       (100% - var(--scroller-header-height, 0) - var(--scroller-footer-height, 0)) / 2 +
         var(--scroller-header-height, 0)
     );
-    left: calc(var(--scroller-left-offset, 0) + 0.25rem);
+    inset-inline-start: calc(var(--scroller-left-offset, 0) + 0.25rem);
     transform: translateY(-50%);
   }
   .updown-container {
@@ -847,13 +847,13 @@
       transform: rotate(180deg);
     }
     &.vertical {
-      left: 50%;
+      inset-inline-start: 50%;
       bottom: -2.25rem;
       transform: translate(-50%, 0) rotate(0deg);
     }
     &.horizontal {
       top: 50%;
-      right: -1.5rem;
+      inset-inline-end: -1.5rem;
       transform: translate(0, -50%) rotate(90deg);
     }
   }
@@ -893,21 +893,21 @@
     }
     &.top.vertical {
       top: calc(var(--scroller-header-height) - 2rem);
-      left: 50%;
+      inset-inline-start: 50%;
       transform: translateX(-50%);
     }
     &.top.horizontal {
       top: 50%;
-      left: -2rem;
+      inset-inline-start: -2rem;
       transform: translateY(-50%);
     }
     &.bottom.vertical {
-      right: 50%;
+      inset-inline-end: 50%;
       bottom: calc(var(--scroller-footer-height) - 2rem);
       transform: translateX(50%);
     }
     &.bottom.horizontal {
-      right: -2rem;
+      inset-inline-end: -2rem;
       bottom: 50%;
       transform: translateY(50%);
     }
@@ -930,24 +930,24 @@
       min-width: 1.5rem;
     }
     // &.horizontal {
-    //   margin-right: 2rem;
+    //   margin-inline-end: 2rem;
     // }
     &.buttons.vertical {
       margin: 1.5rem 0;
     }
     &.buttons.horizontal {
-      margin-right: 2rem;
+      margin-inline-end: 2rem;
     }
     &.union.vertical {
       margin-bottom: 2.75rem;
     }
     &.union.horizontal {
-      margin-right: 1.5rem;
+      margin-inline-end: 1.5rem;
     }
     &.normal {
       .track,
       .bar {
-        right: 2px;
+        inset-inline-end: 2px;
       }
       .track-horizontal,
       .bar-horizontal {
@@ -957,7 +957,7 @@
     &.invert {
       .track,
       .bar {
-        left: 2px;
+        inset-inline-start: 2px;
       }
       .track-horizontal,
       .bar-horizontal {
@@ -1031,7 +1031,7 @@
   }
   .bar {
     top: 2px;
-    right: 2px;
+    inset-inline-end: 2px;
     width: 8px;
     min-height: 2rem;
     max-height: calc(100% - 12px);
@@ -1048,7 +1048,7 @@
     }
   }
   .bar-horizontal {
-    left: 2px;
+    inset-inline-start: 2px;
     bottom: var(--scroller-footer-height, 2px);
     height: 8px;
     min-width: 2rem;
@@ -1096,8 +1096,8 @@
   }
   .track-horizontal {
     bottom: var(--scroller-footer-height, 2px);
-    left: var(--scroller-left-offset, 2px);
-    right: var(--scroller-right-offset, 2px);
+    inset-inline-start: var(--scroller-left-offset, 2px);
+    inset-inline-end: var(--scroller-right-offset, 2px);
     height: 8px;
     transform: scaleY(0.1);
     &::after {
@@ -1139,7 +1139,7 @@
   .scroller-container.sticked {
     .bar,
     .track {
-      right: 0;
+      inset-inline-end: 0;
     }
     .bar-horizontal,
     .track-horizontal {

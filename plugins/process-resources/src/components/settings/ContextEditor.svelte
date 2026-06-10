@@ -89,7 +89,7 @@
     border: 0.0625rem solid var(---primary-button-default);
     border-radius: 0.375rem;
     background: #3575de33;
-    padding-left: 0.75rem;
+    padding-inline-start: 0.75rem;
     max-width: 100%;
     width: 100%;
     overflow: hidden;

@@ -1,0 +1,33 @@
+//
+// Right-to-left (RTL) adjustments.
+//
+// The bulk of mirroring is achieved by (a) `document.documentElement.dir = 'rtl'`
+// (set in Theme.svelte for RTL languages) which flips all flex/grid/inline flow,
+// and (b) the logical-property codemod (scripts/rtl-codemod.mjs) which rewrites
+// margins, paddings, borders, offsets, text-align and float to inline-logical
+// equivalents. This file covers only the things those two cannot express:
+// directional glyphs and a few hard physical cases.
+//
+
+// Generic helper — add `class="flip-rtl"` to any horizontally-directional glyph
+// (custom arrows, carets) that must point the other way under RTL.
+[dir='rtl'] {
+  .flip-rtl {
+    transform: scaleX(-1);
+  }
+
+  // Box shadows that intentionally fall to one side don't auto-mirror; most of
+  // Huly's shadows are symmetric, so nothing to do here by default. Add specific
+  // overrides if a one-sided shadow looks wrong under RTL.
+
+  // Keep code / pre / mono content left-to-right even inside an RTL document
+  // (source code and identifiers read LTR regardless of UI direction).
+  pre,
+  code,
+  .mono-font,
+  .embedded-monospace {
+    direction: ltr;
+    text-align: start;
+    unicode-bidi: embed;
+  }
+}

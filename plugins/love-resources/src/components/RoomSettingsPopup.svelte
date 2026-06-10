@@ -79,11 +79,11 @@
   }
 
   .groups {
-    padding-right: 0.5rem;
+    padding-inline-end: 0.5rem;
     width: 12rem;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--global-ui-BorderColor);
+    border-inline-end: 1px solid var(--global-ui-BorderColor);
   }
 
   .component {

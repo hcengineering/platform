@@ -304,7 +304,7 @@
     overflow: hidden;
 
     @media print {
-      margin-left: -1rem;
+      margin-inline-start: -1rem;
       overflow: visible;
     }
 
@@ -340,13 +340,13 @@
     position: absolute;
     width: 1rem;
     pointer-events: all;
-    left: 1px;
+    inset-inline-start: 1px;
     top: 1rem;
     z-index: 1;
   }
 
   .tocContent {
-    padding-left: 2.25rem;
+    padding-inline-start: 2.25rem;
   }
 
   .content {
@@ -365,7 +365,7 @@
     position: absolute;
     z-index: 100;
     top: 0;
-    left: 0;
+    inset-inline-start: 0;
     width: 100%;
     height: 100%;
     display: flex;

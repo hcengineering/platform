@@ -63,7 +63,7 @@
     .notifyMarker {
       position: absolute;
       top: -0.375rem;
-      right: -0.375rem;
+      inset-inline-end: -0.375rem;
     }
   }
 </style>

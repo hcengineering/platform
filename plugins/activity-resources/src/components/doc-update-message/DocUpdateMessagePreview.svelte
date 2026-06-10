@@ -144,10 +144,10 @@
     overflow: hidden;
     max-height: 1.25rem;
     color: var(--global-primary-TextColor);
-    margin-left: var(--spacing-0_5);
+    margin-inline-start: var(--spacing-0_5);
 
     &.contentOnly {
-      margin-left: 0;
+      margin-inline-start: 0;
     }
   }
 </style>

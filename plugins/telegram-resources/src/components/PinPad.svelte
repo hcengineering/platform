@@ -125,11 +125,11 @@
 
   .error-message {
     margin-top: 0.5rem;
-    margin-left: 0.2rem;
+    margin-inline-start: 0.2rem;
     color: var(--system-error-color);
 
     div {
-      margin-left: 0.3rem;
+      margin-inline-start: 0.3rem;
     }
   }
 </style>

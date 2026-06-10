@@ -127,7 +127,7 @@
 
     &.main {
       &.horizontal {
-        padding-right: 0.25rem;
+        padding-inline-end: 0.25rem;
       }
 
       &.vertical {

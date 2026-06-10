@@ -50,6 +50,6 @@
   }
 
   .with-margin {
-    margin-left: 0.5rem;
+    margin-inline-start: 0.5rem;
   }
 </style>

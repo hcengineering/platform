@@ -1,0 +1,18 @@
+{
+  "string": {
+    "BitrixTokenUrl": "رابط رمز Bitrix24",
+    "Bitrix": "",
+    "BitrixDesc": "تكامل Bitrix 24",
+    "Settings": "تكوين",
+    "NotAllowed": "غير مسموح بدون صلاحيات إدارية",
+    "BitrixEntityType": "تعيين الكيانات",
+    "FieldMapping": "تعيين الحقول",
+    "AddField": "إضافة تعيين",
+    "Attribute": "السمة",
+    "MapField": "تعيين...",
+    "BitrixImport": "المزامنة مع Bitrix",
+    "AddMapping": "إضافة تعيين كيان",
+    "ConfigLabel": "Bitrix24",
+    "ConfigDescription": "ملحق لتكامل Bitrix 24"
+  }
+}

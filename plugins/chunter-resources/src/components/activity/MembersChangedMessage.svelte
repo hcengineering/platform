@@ -117,6 +117,6 @@
   }
 
   .separator {
-    margin-left: -0.25rem;
+    margin-inline-start: -0.25rem;
   }
 </style>

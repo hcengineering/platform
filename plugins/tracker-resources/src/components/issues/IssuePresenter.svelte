@@ -93,7 +93,7 @@
     }
 
     .icon {
-      margin-right: 0.5rem;
+      margin-inline-end: 0.5rem;
       color: var(--theme-dark-color);
     }
   }

@@ -19,8 +19,8 @@
   .drop-area {
     pointer-events: none;
     position: absolute;
-    left: 0.75rem;
-    right: 0.75rem;
+    inset-inline-start: 0.75rem;
+    inset-inline-end: 0.75rem;
     top: 0;
     bottom: 0;
     background-color: var(--global-ui-highlight-BackgroundColor);
