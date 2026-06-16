@@ -53,6 +53,8 @@
     "ExportFilterEffectiveOnly": "Только действующие документы",
     "ExportFilterSkipArchivedObsolete": "Все кроме архивных и устаревших",
     "ExportFilterAll": "Все документы",
+    "ExportChildDocuments": "Экспортировать дочерние документы",
+    "ExportChildDocumentsDescription": "Также экспортировать документы, прикреплённые к выбранным",
     "ExportResultRecordTitle": "Экспорт документов из пространства {workspace} ({date})"
   }
 }

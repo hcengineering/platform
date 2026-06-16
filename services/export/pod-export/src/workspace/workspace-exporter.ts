@@ -98,7 +98,8 @@ export class CrossWorkspaceExporter {
         sourceHierarchy,
         sourceLowLevel,
         existingDocsMap,
-        relations
+        relations,
+        includeChildren
       ) => {
         return await this.documentExporter.exportDocument(
           doc,
@@ -107,7 +108,8 @@ export class CrossWorkspaceExporter {
           sourceHierarchy,
           sourceLowLevel,
           existingDocsMap,
-          relations
+          relations,
+          includeChildren
         )
       }
     )
@@ -128,6 +130,7 @@ export class CrossWorkspaceExporter {
       fieldMappers = {},
       skipDeletedObsolete = true,
       exportOnlyEffective = false,
+      includeChildren = false,
       customHandlers = []
     } = options
 
@@ -258,7 +261,8 @@ export class CrossWorkspaceExporter {
                 hierarchy,
                 lowLevelStorage,
                 existingDocsMap,
-                resolvedRelations
+                resolvedRelations,
+                includeChildren
               )
               if (exported) {
                 result.exportedCount++

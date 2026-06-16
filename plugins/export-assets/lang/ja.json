@@ -53,6 +53,8 @@
     "ExportFilterEffectiveOnly": "有効なドキュメントのみ",
     "ExportFilterSkipArchivedObsolete": "アーカイブ・廃止を除くすべて",
     "ExportFilterAll": "すべてのドキュメント",
+    "ExportChildDocuments": "子ドキュメントをエクスポート",
+    "ExportChildDocumentsDescription": "選択したドキュメントに添付されたドキュメントもエクスポートします",
     "ExportResultRecordTitle": "ワークスペース {workspace} からのドキュメントのエクスポート ({date})"
   }
 }
