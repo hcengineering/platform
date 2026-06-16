@@ -151,6 +151,10 @@
     "UnlockSection": "Unlock section",
     "CancelToDo": "Cancel Action item",
     "Export": "Export",
+    "ExportWithSlots": "Export with slots",
+    "ExportWithoutSlots": "Export without slots",
+    "RequiredSlots": "Required slots",
+    "Bindings": "Bindings",
     "Import": "Import",
     "CancelProcess": "Cancel process",
     "SyncWithField": "Sync with field",
@@ -176,7 +180,8 @@
     "MarkupFromText": "Markup from text",
     "TextFromSelect": "Text from select",
     "SelectFromText": "Select from text",
-    "AskSubclass": "Ask subclass"
+    "AskSubclass": "Ask subclass",
+    "TextFromIdentifier": "Text from identifier"
   },
   "error": {
     "MethodNotFound": "Method not found: {methodId}",

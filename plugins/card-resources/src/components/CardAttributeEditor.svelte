@@ -71,26 +71,14 @@
     <div class="divider" />
   {/if}
   <div class="masterTag">
-    <MasterTagAttributes
-      bind:this={masterTagAttributes}
-      readonly={readonly || h.getAncestors(value._class).some((p) => value.readonlySections?.includes(p))}
-      {value}
-      {ignoreKeys}
-      fourRows={columns === 2}
-    />
+    <MasterTagAttributes bind:this={masterTagAttributes} {readonly} {value} {ignoreKeys} fourRows={columns === 2} />
   </div>
   {#if mixins.length > 0}
     <div class="divider" />
     <Grid column={columns} columnGap={0} rowGap={0} alignItems={'start'}>
       {#each mixins as tag, i (tag._id)}
         <div class="tag" class:withoutBorder={Math.ceil((i + 1) / columns) === Math.ceil(mixins.length / columns)}>
-          <TagAttributes
-            bind:this={tagAttributes[i]}
-            readonly={readonly || value.readonlySections?.includes(tag._id)}
-            {tag}
-            {value}
-            {ignoreKeys}
-          />
+          <TagAttributes bind:this={tagAttributes[i]} {readonly} {tag} {value} {ignoreKeys} />
         </div>
       {/each}
     </Grid>

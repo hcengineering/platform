@@ -57,6 +57,7 @@
   }
 
   $: isLocked = hierarchy.getAncestors(value._class).some((p) => value.readonlySections?.includes(p)) ?? false
+  $: _readonly = readonly || isLocked
   $: canLock = canLockSection(value.space, $permissionsStore)
   $: canUnlock = canUnlockSection(value.space, $permissionsStore)
 
@@ -85,6 +86,7 @@
           icon={isLocked ? Lock : Unlock}
           kind={'link'}
           size={'medium'}
+          disabled={readonly}
           showTooltip={{ label: isLocked ? card.string.UnLockSection : card.string.LockSection }}
           on:click={toggleLock}
         />
@@ -120,8 +122,8 @@
   </div>
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
-  <CardAttributes object={value} _class={value._class} {readonly} {ignoreKeys} {fourRows} showCollaborators />
-  <MarkupProperties doc={value} {readonly} tag={undefined} />
+  <CardAttributes object={value} _class={value._class} readonly={_readonly} {ignoreKeys} {fourRows} showCollaborators />
+  <MarkupProperties doc={value} readonly={_readonly} tag={undefined} />
 </ExpandCollapse>
 
 <style lang="scss">

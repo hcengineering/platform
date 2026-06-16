@@ -1,0 +1,19 @@
+{
+  "string": {
+    "Channel": "Kanał",
+    "Channels": "Kanały",
+    "Chat": "Rozmowa",
+    "Description": "Opis",
+    "Loading": "Wczytywanie...",
+    "MessageIn": "Wiadomość #{title}",
+    "Thread": "Wątek",
+    "Threads": "Wątki",
+    "Title": "Nazwa",
+    "All": "Wszystkie nowości",
+    "Inbox": "Skrzynka odbiorcza",
+    "ReactedToYourMessage": "zareagował(a) na Twoją wiadomość",
+    "ClearAll": "Wyczyść wszystko",
+    "InboxIsClear": "Skrzynka odbiorcza jest pusta",
+    "YouDontHaveAnyNewMessages": "Nie masz nowych wiadomości"
+  }
+}

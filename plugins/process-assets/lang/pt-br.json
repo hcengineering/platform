@@ -164,7 +164,12 @@
     "MarkupFromText": "Marcação de texto",
     "TextFromSelect": "Texto de seleção",
     "SelectFromText": "Seleção de texto",
-    "AskSubclass": "Perguntar subclasse"
+    "AskSubclass": "Perguntar subclasse",
+    "TextFromIdentifier": "Texto de identificador",
+    "ExportWithSlots": "Exportar com slots",
+    "ExportWithoutSlots": "Exportar sem slots",
+    "RequiredSlots": "Slots necessários",
+    "Bindings": "Vinculações"
   },
   "error": {
     "MethodNotFound": "Método não encontrado: {methodId}",

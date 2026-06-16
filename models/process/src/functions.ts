@@ -604,6 +604,19 @@ export function defineFunctions (builder: Builder): void {
     process.class.ProcessFunction,
     core.space.Model,
     {
+      of: core.class.TypeIdentifier,
+      to: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.TextFromIdentifier,
+      type: 'convert'
+    },
+    process.function.StringFromIdentifier
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
       of: core.class.TypeDate,
       to: core.class.TypeString,
       category: 'attribute',

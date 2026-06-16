@@ -30,7 +30,6 @@ export default mergeIds(cardId, card, {
   },
   actionImpl: {
     DeleteMasterTag: '' as ViewAction,
-    DuplicateCard: '' as ViewAction,
     EditSpace: '' as ViewAction,
     CreateChild: '' as ViewAction
   },
@@ -39,7 +38,7 @@ export default mergeIds(cardId, card, {
     SetParent: '' as Ref<Action<Doc, any>>,
     UnsetParent: '' as Ref<Action<Doc, any>>,
     PublicLink: '' as Ref<Action<Doc, any>>,
-    Duplicate: '' as Ref<Action>,
+    Duplicate: '' as Ref<Action<Doc, any>>,
     CreateChild: '' as Ref<Action>
   },
   category: {

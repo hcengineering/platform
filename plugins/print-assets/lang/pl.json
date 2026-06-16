@@ -1,0 +1,10 @@
+{
+  "string": {
+    "PrintToPDF": "Eksportuj do PDF",
+    "PrintingDocumentOf": "Drukowanie dokumentu {current} z {total}",
+    "DownloadAll": "Pobierz wszystkie",
+    "PrintFailed": "Wydruk nie powiódł się",
+    "PrintSettings": "Ustawienia wydruku",
+    "LandscapeMode": "Orientacja pozioma"
+  }
+}

@@ -171,7 +171,12 @@
     "MarkupFromText": "İşaretlemeden metin",
     "TextFromSelect": "Seçimden metin",
     "SelectFromText": "Metinden seçim",
-    "AskSubclass": "Alt sınıfı sor"
+    "AskSubclass": "Alt sınıfı sor",
+    "TextFromIdentifier": "Tanımlayıcıdan metne",
+    "ExportWithSlots": "Slotlu dışa aktar",
+    "ExportWithoutSlots": "Slotsuz dışa aktar",
+    "RequiredSlots": "Gerekli slotlar",
+    "Bindings": "Bağlamalar"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

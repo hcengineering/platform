@@ -1,0 +1,15 @@
+{
+  "string": {
+    "Cancel": "Anuluj",
+    "Retry": "Ponów",
+    "UploadFiles": "Prześlij pliki",
+    "UploadFolders": "Prześlij foldery",
+    "UploadingTo": "Przesyłanie {files, plural, =1 {pliku} few other {# plików}} do"
+  },
+  "status": {
+    "Error": "Błąd",
+    "Waiting": "Oczekiwanie",
+    "Uploading": "Przesyłanie",
+    "Completed": "Ukończone"
+  }
+}
