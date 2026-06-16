@@ -50,6 +50,7 @@ import process, {
 import { ExecuteResult, ProcessControl, SuccessExecutionContext } from '@hcengineering/server-process'
 import { isEmptyMarkup } from '@hcengineering/text-core'
 import time, { ToDoPriority } from '@hcengineering/time'
+import { resolveAttributeId } from './utils'
 
 function checkResult (execution: Execution, results: Record<string, any> | undefined): boolean {
   if (results === undefined) return true
@@ -148,16 +149,23 @@ export function MatchCardCheck (
   if (card === undefined) return false
   const process = control.client.getModel().findObject(execution.process)
   if (process === undefined) return false
-  const markup = getMarkupParams(process, params, control)
+
   const h = control.client.getHierarchy()
   if (h.isMixin(process.masterTag)) {
     card = h.as(card, process.masterTag)
   }
+
+  const resolvedParams: Record<string, any> = {}
+  for (const key in params) {
+    resolvedParams[resolveAttributeId(process, key)] = params[key]
+  }
+  const markup = getMarkupParams(process, resolvedParams, control)
+
   for (const key of Object.keys(markup)) {
     if (isEmptyMarkup(card[key])) return false
   }
 
-  const res = matchQuery([card], params, process.masterTag, control.client.getHierarchy(), true)
+  const res = matchQuery([card], resolvedParams, process.masterTag, control.client.getHierarchy(), true)
   return res.length > 0
 }
 
@@ -189,23 +197,25 @@ export function FieldChangedCheck (
   context: Record<string, any>
 ): boolean {
   if (context.card === undefined) return false
-  const process = control.client.getModel().findObject(execution.process)
-  if (process === undefined) return false
+  const _process = control.client.getModel().findObject(execution.process)
+  if (_process === undefined) return false
   if (context.operations === undefined) return false
   const operations = context.operations as DocumentUpdate<Doc>
   const target = Object.keys(params)[0]
-  if (!TxProcessor.hasUpdate(operations, target)) return false
-  const markup = getMarkupParams(process, params, control)
   const h = control.client.getHierarchy()
   let card = context.card
-  if (h.isMixin(process.masterTag)) {
-    card = h.as(card, process.masterTag)
+  if (h.isMixin(_process.masterTag)) {
+    card = h.as(card, _process.masterTag)
   }
+  const realTarget = resolveAttributeId(_process, target)
+  if (!TxProcessor.hasUpdate(operations, realTarget)) return false
+  const resolvedParams = { [realTarget]: params[target] }
+  const markup = getMarkupParams(_process, resolvedParams, control)
   for (const key of Object.keys(markup)) {
     if (isEmptyMarkup(card[key])) return false
   }
 
-  const res = matchQuery([card], params, process.masterTag, control.client.getHierarchy(), true)
+  const res = matchQuery([card], resolvedParams, _process.masterTag, control.client.getHierarchy(), true)
   return res.length > 0
 }
 
@@ -292,13 +302,14 @@ export async function UpdateCard (
   const update: Record<string, any> = {}
   const prevValue: Record<string, any> = {}
   for (const key in params) {
-    const prevKey = checkMixinKey(key, _process.masterTag, hierarchy)
-    prevValue[key] = getObjectValue(prevKey, target)
-    const attr = hierarchy.findAttribute(_process.masterTag, key)
+    const realKey = resolveAttributeId(_process, key)
+    const prevKey = checkMixinKey(realKey, _process.masterTag, hierarchy)
+    prevValue[realKey] = getObjectValue(prevKey, target)
+    const attr = hierarchy.findAttribute(_process.masterTag, realKey)
     if (attr === undefined) {
-      update[key] = (params as any)[key]
+      update[realKey] = (params as any)[key]
     } else {
-      update[key] = respectAttributeType(attr.type, (params as any)[key])
+      update[realKey] = respectAttributeType(attr.type, (params as any)[key])
     }
   }
 
@@ -492,6 +503,10 @@ export async function RequestApproval (
   const group = generateId()
   const res: TxCreateDoc<ApproveRequest>[] = []
   const rollback: Tx[] = []
+  const _process = control.client.getModel().findObject(execution.process)
+  if (_process === undefined) {
+    throw processError(process.error.RequiredParamsNotProvided, { params: 'user' })
+  }
   for (const user of Array.isArray(params.user) ? params.user : [params.user]) {
     const id = generateId<ApproveRequest>()
     const tx = control.client.txFactory.createTxCreateDoc(
@@ -516,7 +531,7 @@ export async function RequestApproval (
         results,
         group,
         actionType: params.actionType,
-        field: (params as any).field
+        field: resolveAttributeId(_process, (params as any).field)
       },
       id
     )
@@ -728,6 +743,9 @@ export async function CreateToDo (
   const res: Tx[] = []
   const rollback: Tx[] = []
   const id = generateId<ProcessToDo>()
+  const _process = control.client.getModel().findObject(execution.process)
+  if (_process === undefined) return { txes: [], rollback: [], context: null }
+  const field = resolveAttributeId(_process, (params as any).field)
   const tx = control.client.txFactory.createTxCreateDoc(
     process.class.ProcessToDo,
     time.space.ToDos,
@@ -747,7 +765,7 @@ export async function CreateToDo (
       rank: '',
       withRollback: params.withRollback ?? false,
       results,
-      field: (params as any).field
+      field
     },
     id
   )
@@ -832,13 +850,21 @@ export async function CreateCard (
       throw processError(process.error.RequiredParamsNotProvided, { params: key })
     }
   }
+  const _process = control.client.getModel().findObject(execution.process)
+  if (_process === undefined) {
+    throw processError(process.error.RequiredParamsNotProvided, {})
+  }
+  const resolvedAttrs: Record<string, any> = {}
+  for (const key in attrs) {
+    resolvedAttrs[resolveAttributeId(_process, key)] = (attrs as any)[key]
+  }
   const masterTag = _class as Ref<MasterTag>
   const _id = generateId<Card>()
   const newContent =
     content !== undefined && !isEmpty(content) ? await getContent(control, content, _id, masterTag) : content
   const data = {
     title,
-    ...attrs
+    ...resolvedAttrs
   } as any
   if (newContent !== undefined) {
     data.content = newContent

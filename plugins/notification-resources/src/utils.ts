@@ -66,6 +66,7 @@ import { getObjectLinkId, parseLinkId } from '@hcengineering/view-resources'
 import type { LocationData } from '@hcengineering/workbench'
 import { get, writable } from 'svelte/store'
 
+import { isDesktopClient } from './desktop'
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
 
@@ -689,6 +690,10 @@ export const pushAllowed = writable<boolean>(false)
 
 export async function checkPermission (value: boolean): Promise<boolean> {
   if (!value) return true
+  if (isDesktopClient()) {
+    pushAllowed.set(false)
+    return false
+  }
   if ('serviceWorker' in navigator && 'PushManager' in window) {
     try {
       const loc = getCurrentLocation()
@@ -725,7 +730,8 @@ function addWorkerListener (): void {
 }
 
 export function pushAvailable (): boolean {
-  const publicKey = getMetadata(notification.metadata.PushPublicKey)
+  if (isDesktopClient()) return false
+  const publicKey = getPushPublicKey()
   return (
     'serviceWorker' in navigator &&
     'PushManager' in window &&
@@ -736,8 +742,12 @@ export function pushAvailable (): boolean {
 }
 
 export async function subscribePush (): Promise<boolean> {
+  if (isDesktopClient()) {
+    pushAllowed.set(false)
+    return false
+  }
   const client = getClient()
-  const publicKey = getMetadata(notification.metadata.PushPublicKey)
+  const publicKey = getPushPublicKey()
   if ('serviceWorker' in navigator && 'PushManager' in window && publicKey !== undefined) {
     try {
       const loc = getCurrentLocation()
@@ -790,6 +800,12 @@ export async function subscribePush (): Promise<boolean> {
   }
   pushAllowed.set(false)
   return false
+}
+
+function getPushPublicKey (): string | undefined {
+  const publicKey = getMetadata(notification.metadata.PushPublicKey)
+  if (publicKey === undefined) return undefined
+  return publicKey.trim() !== '' ? publicKey : undefined
 }
 
 async function cleanTag (_id: Ref<Doc>): Promise<void> {

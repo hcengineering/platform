@@ -177,7 +177,11 @@
     "TextFromSelect": "选择到文本",
     "SelectFromText": "文本到选择",
     "AskSubclass": "询问子类",
-    "TextFromIdentifier": "文本从标识符"
+    "TextFromIdentifier": "文本从标识符",
+    "ExportWithSlots": "导出包含槽",
+    "ExportWithoutSlots": "导出不含槽",
+    "RequiredSlots": "必需槽",
+    "Bindings": "绑定"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

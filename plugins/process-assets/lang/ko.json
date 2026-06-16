@@ -177,7 +177,11 @@
         "TextFromSelect": "선택에서 텍스트로",
         "SelectFromText": "텍스트에서 선택으로",
         "AskSubclass": "하위 클래스 선택",
-        "TextFromIdentifier": "식별자에서 텍스트로"
+        "TextFromIdentifier": "식별자에서 텍스트로",
+        "ExportWithSlots": "슬롯 포함 내보내기",
+        "ExportWithoutSlots": "슬롯 없이 내보내기",
+        "RequiredSlots": "필수 슬롯",
+        "Bindings": "바인딩"
     },
     "error": {
         "MethodNotFound": "메서드를 찾을 수 없습니다: {methodId}",

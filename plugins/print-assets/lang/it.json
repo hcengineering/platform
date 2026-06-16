@@ -3,6 +3,8 @@
     "PrintToPDF": "Stampa in PDF",
     "PrintingDocumentOf": "Stampa documento {current} di {total}",
     "DownloadAll": "Scarica tutto",
-    "PrintFailed": "Stampa non riuscita"
+    "PrintFailed": "Stampa non riuscita",
+    "PrintSettings": "Print settings",
+    "LandscapeMode": "Landscape mode"
   }
 }

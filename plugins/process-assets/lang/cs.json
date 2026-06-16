@@ -172,7 +172,11 @@
     "TextFromSelect": "Text z výběru",
     "SelectFromText": "Výběr z textu",
     "AskSubclass": "Zeptat se na podtřídu",
-    "TextFromIdentifier": "Text z identifikátoru"
+    "TextFromIdentifier": "Text z identifikátoru",
+    "ExportWithSlots": "Exportovat se sloty",
+    "ExportWithoutSlots": "Exportovat bez slotů",
+    "RequiredSlots": "Požadované sloty",
+    "Bindings": "Vazby"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

@@ -1,0 +1,30 @@
+{
+  "status": {
+    "LoadingPlugin": "Wczytywanie wtyczki {plugin}...",
+    "UnknownError": "Nieznany błąd: {message}",
+    "InvalidId": "Nieprawidłowy identyfikator: {id}",
+    "BadRequest": "Nieprawidłowe żądanie",
+    "Forbidden": "Brak dostępu",
+    "Conflict": "Konflikt",
+    "ExpiredLink": "Ten link zaproszenia wygasł",
+    "Unauthorized": "Nieautoryzowany",
+    "UnknownMethod": "Nieznana metoda: {method}",
+    "InternalServerError": "Wewnętrzny błąd serwera",
+    "MaintenanceWarning": "Konserwacja zaplanowana za",
+    "MaintenanceWarningTime": "{time, plural, =1 {mniej niż minutę} few {# minuty} other {# minut}}",
+    "AccountNotFound": "Nie znaleziono konta lub podane poświadczenia są nieprawidłowe",
+    "AccountNotConfirmed": "Konto niepotwierdzone",
+    "WorkspaceNotFound": "Nie znaleziono przestrzeni roboczej",
+    "AccountAlreadyExists": "Konto już istnieje",
+    "WorkspaceRateLimit": "Serwer jest zajęty, proszę poczekać chwilę i spróbować ponownie",
+    "AccountAlreadyConfirmed": "Konto zostało już potwierdzone",
+    "WorkspaceAlreadyExists": "Przestrzeń robocza już istnieje",
+    "InvalidOtp": "Nieprawidłowy kod",
+    "PasswordLoginLocked": "Logowanie hasłem jest zablokowane z powodu zbyt wielu nieudanych prób. Użyj metody logowania hasłem jednorazowym, aby odblokować konto.",
+    "InviteNotFound": "Zaproszenie za pomocą adresu e-mail: nie znaleziono adresu {email}.",
+    "WorkspaceLimitReached": "Osiągnąłeś limit przestrzeni roboczych. Skontaktuj się z nami...",
+    "ReadOnlyAccount": "Wersja demonstracyjna dla anonimowego gościa",
+    "SystemAccount": "Konto systemowe",
+    "SocialIdAlreadyExists": "Identyfikator społecznościowy już istnieje"
+  }
+}
