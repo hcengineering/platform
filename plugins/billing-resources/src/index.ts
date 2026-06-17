@@ -13,15 +13,36 @@
 // limitations under the License.
 //
 
-import type { Resources } from '@hcengineering/platform'
+import { getMetadata, translate, type Resources } from '@hcengineering/platform'
+import presentation, { setUploadGuard, UploadRestrictedError } from '@hcengineering/presentation'
+import billing from './plugin'
+import LimitsFooterIndicator from './components/LimitsFooterIndicator.svelte'
 import Settings from './components/Settings.svelte'
-import WorkbenchExtension from './components/WorkbenchExtension.svelte'
 import UsageExtension from './components/UsageExtension.svelte'
+import WorkbenchExtension from './components/WorkbenchExtension.svelte'
+import { isFeatureRestricted } from './utils'
 
-export default async (): Promise<Resources> => ({
-  component: {
-    Settings,
-    UsageExtension,
-    WorkbenchExtension
+export default async (): Promise<Resources> => {
+  // Skip enforcement entirely on deployments without payment integration
+  // (self-hosted / dev): no plan ⇒ no quota ⇒ nothing to restrict.
+  const paymentUrl = getMetadata(presentation.metadata.PaymentUrl)
+  if (paymentUrl !== undefined && paymentUrl !== '') {
+    setUploadGuard(async (_file) => {
+      if (isFeatureRestricted('fileUpload')) {
+        const message = await translate(billing.string.UploadRestrictedToast, {})
+        throw new UploadRestrictedError('plan_limit_exceeded', message)
+      }
+    })
+  } else {
+    setUploadGuard(undefined)
   }
-})
+
+  return {
+    component: {
+      LimitsFooterIndicator,
+      Settings,
+      UsageExtension,
+      WorkbenchExtension
+    }
+  }
+}
